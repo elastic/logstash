@@ -14,10 +14,28 @@ require "logstash/util/defaults_printer"
 require "logstash/shutdown_watcher"
 require "logstash/util/wrapped_synchronous_queue"
 require "logstash/pipeline_reporter"
+require "logstash/instrument/metric"
+require "logstash/instrument/namespaced_metric"
+require "logstash/instrument/null_metric"
+require "logstash/instrument/collector"
 require "logstash/output_delegator"
+require "logstash/filter_delegator"
 
 module LogStash; class Pipeline
-  attr_reader :inputs, :filters, :outputs, :worker_threads, :events_consumed, :events_filtered, :reporter, :pipeline_id, :logger, :thread, :config_str, :original_settings
+ attr_reader :inputs,
+    :filters,
+    :outputs,
+    :worker_threads,
+    :events_consumed,
+    :events_filtered,
+    :reporter,
+    :pipeline_id,
+    :metric,
+    :logger,
+    :started_at,
+    :thread,
+    :config_str,
+    :original_settings
 
   DEFAULT_SETTINGS = {
     :default_pipeline_workers => LogStash::Config::CpuCoreStrategy.maximum,
@@ -52,6 +70,16 @@ module LogStash; class Pipeline
 
     @worker_threads = []
 
+    # Metric object should be passed upstream, multiple pipeline share the same metric
+    # and collector only the namespace will changes.
+    # If no metric is given, we use a `NullMetric` for all internal calls.
+    # We also do this to make the changes backward compatible with previous testing of the
+    # pipeline.
+    #
+    # This need to be configured before we evaluate the code to make
+    # sure the metric instance is correctly send to the plugin.
+    @metric = settings.fetch(:metric, Instrument::NullMetric.new)
+
     grammar = LogStashConfigParser.new
     @config = grammar.parse(config_str)
     if @config.nil?
@@ -61,9 +89,12 @@ module LogStash; class Pipeline
     # The code will initialize all the plugins and define the
     # filter and output methods.
     code = @config.compile
+    @code = code
+
     # The config code is hard to represent as a log message...
     # So just print it.
     @logger.debug? && @logger.debug("Compiled pipeline code:\n#{code}")
+
     begin
       eval(code)
     rescue => e
@@ -99,7 +130,7 @@ module LogStash; class Pipeline
     safe_filters, unsafe_filters = @filters.partition(&:threadsafe?)
 
     if unsafe_filters.any?
-      plugins = unsafe_filters.collect { |f| f.class.config_name }
+      plugins = unsafe_filters.collect { |f| f.config_name }
       case thread_count
       when nil
         # user did not specify a worker thread count
@@ -128,6 +159,9 @@ module LogStash; class Pipeline
   end
 
   def run
+    @started_at = Time.now
+
+    LogStash::Util.set_thread_name("[#{pipeline_id}]-pipeline-manager")
     @logger.terminal(LogStash::Util::DefaultsPrinter.print(@settings))
     @thread = Thread.current
 
@@ -179,7 +213,7 @@ module LogStash; class Pipeline
     begin
       start_inputs
       @outputs.each {|o| o.register }
-      @filters.each {|f| f.register}
+      @filters.each {|f| f.register }
 
       pipeline_workers = safe_pipeline_worker_count
       batch_size = @settings[:pipeline_batch_size]
@@ -209,9 +243,12 @@ module LogStash; class Pipeline
   end
 
   # Main body of what a worker thread does
-  # Repeatedly takes batches off the queu, filters, then outputs them
+  # Repeatedly takes batches off the queue, filters, then outputs them
   def worker_loop(batch_size, batch_delay)
     running = true
+
+    namespace_events = metric.namespace([:stats, :events])
+    namespace_pipeline = metric.namespace([:stats, :pipelines, pipeline_id.to_s.to_sym, :events])
 
     while running
       # To understand the purpose behind this synchronize please read the body of take_batch
@@ -219,6 +256,8 @@ module LogStash; class Pipeline
       running = false if signal == LogStash::SHUTDOWN
 
       @events_consumed.increment(input_batch.size)
+      namespace_events.increment(:in, input_batch.size)
+      namespace_pipeline.increment(:in, input_batch.size)
 
       filtered_batch = filter_batch(input_batch)
 
@@ -229,7 +268,13 @@ module LogStash; class Pipeline
 
       @events_filtered.increment(filtered_batch.size)
 
+      namespace_events.increment(:filtered, filtered_batch.size)
+      namespace_pipeline.increment(:filtered, filtered_batch.size)
+
       output_batch(filtered_batch)
+
+      namespace_events.increment(:out, filtered_batch.size)
+      namespace_pipeline.increment(:out, filtered_batch.size)
 
       inflight_batches_synchronize { set_current_thread_inflight_batch(nil) }
     end
@@ -408,10 +453,14 @@ module LogStash; class Pipeline
   def plugin(plugin_type, name, *args)
     args << {} if args.empty?
 
+    pipeline_scoped_metric = metric.namespace([:stats, :pipelines, pipeline_id.to_s.to_sym, :plugins])
+
     klass = LogStash::Plugin.lookup(plugin_type, name)
 
     if plugin_type == "output"
-      LogStash::OutputDelegator.new(@logger, klass, default_output_workers, *args)
+      LogStash::OutputDelegator.new(@logger, klass, default_output_workers, pipeline_scoped_metric.namespace(:outputs), *args)
+    elsif plugin_type == "filter"
+      LogStash::FilterDelegator.new(@logger, klass, pipeline_scoped_metric.namespace(:filters), *args)
     else
       klass.new(*args)
     end
@@ -461,6 +510,15 @@ module LogStash; class Pipeline
       @logger.debug? && @logger.debug("Pushing flush onto pipeline")
       @input_queue.push(LogStash::FLUSH)
     end
+  end
+
+
+  # Calculate the uptime in milliseconds
+  #
+  # @return [Fixnum] Uptime in milliseconds, 0 if the pipeline is not started
+  def uptime
+    return 0 if started_at.nil?
+    ((Time.now.to_f - started_at.to_f) * 1000.0).to_i
   end
 
   # perform filters flush into the output queue

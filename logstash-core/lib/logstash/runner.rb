@@ -117,6 +117,11 @@ class LogStash::Runner < Clamp::Command
     require "stud/task"
     require "cabin" # gem 'cabin'
 
+
+    # Configure Logstash logging facility, this need to be done before everything else to
+    # make sure the logger has the correct settings and the log level is correctly defined.
+    configure_logging(log_file)
+
     LogStash::Util::set_thread_name(self.class.name)
 
     if RUBY_VERSION < "1.9.2"
@@ -162,7 +167,10 @@ class LogStash::Runner < Clamp::Command
     end
 
     @agent = create_agent(:logger => @logger,
-                          :auto_reload => @auto_reload)
+                          :auto_reload => @auto_reload,
+                          :collect_metric => true,
+                          :debug => debug?,
+                           :node_name => node_name)
 
     @agent.register_pipeline("main", @pipeline_settings.merge({
                           :config_string => config_string,
@@ -235,7 +243,6 @@ class LogStash::Runner < Clamp::Command
   #
   # Log file stuff, plugin path checking, etc.
   def configure
-    configure_logging(log_file)
     configure_plugin_paths(plugin_paths)
   end # def configure
 
@@ -254,6 +261,7 @@ class LogStash::Runner < Clamp::Command
 
   # Point logging at a specific path.
   def configure_logging(path)
+    @logger = Cabin::Channel.get(LogStash)
     # Set with the -v (or -vv...) flag
     if quiet?
       @logger.level = :error
