@@ -182,6 +182,17 @@ describe LogStash::Agent do
       fetched_config = subject.send(:fetch_config, settings)
       expect(fetched_config.strip).to eq(cli_config + IO.read(tmp_config_path))
     end
+  end
 
+  context "#started_at" do
+    it "return the start time when the agent is started" do
+      expect(subject.started_at).to be_kind_of(Time)
+    end
+  end
+
+  context "#uptime" do
+    it "return the number of milliseconds since start time" do
+      expect(subject.uptime).to be >= 0
+    end
   end
 end
