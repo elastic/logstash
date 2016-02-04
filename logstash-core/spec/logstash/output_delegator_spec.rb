@@ -1,4 +1,5 @@
 # encoding: utf-8
+require "logstash/output_delegator"
 require 'spec_helper'
 
 describe LogStash::OutputDelegator do
@@ -6,18 +7,20 @@ describe LogStash::OutputDelegator do
   let(:events) { 7.times.map { LogStash::Event.new }}
   let(:default_worker_count) { 1 }
 
-  subject { described_class.new(logger, out_klass, default_worker_count) }
+  subject { described_class.new(logger, out_klass, default_worker_count, LogStash::Instrument::NullMetric.new) }
 
   context "with a plain output plugin" do
     let(:out_klass) { double("output klass") }
     let(:out_inst) { double("output instance") }
 
-    before do
+    before(:each) do
       allow(out_klass).to receive(:new).with(any_args).and_return(out_inst)
       allow(out_klass).to receive(:threadsafe?).and_return(false)
       allow(out_klass).to receive(:workers_not_supported?).and_return(false)
       allow(out_inst).to receive(:register)
       allow(out_inst).to receive(:multi_receive)
+      allow(out_inst).to receive(:metric=).with(any_args)
+      allow(out_inst).to receive(:id).and_return("a-simple-plugin")
       allow(logger).to receive(:debug).with(any_args)
     end
 
@@ -56,6 +59,8 @@ describe LogStash::OutputDelegator do
         before do
           allow(out_klass).to receive(:threadsafe?).and_return(false)
           allow(out_klass).to receive(:workers_not_supported?).and_return(false)
+          allow(out_inst).to receive(:metric=).with(any_args)
+          allow(out_inst).to receive(:id).and_return("a-simple-plugin")
         end
 
         it "should instantiate multiple workers" do
@@ -71,6 +76,8 @@ describe LogStash::OutputDelegator do
       describe "threadsafe outputs" do
         before do
           allow(out_klass).to receive(:threadsafe?).and_return(true)
+          allow(out_inst).to receive(:metric=).with(any_args)
+          allow(out_inst).to receive(:id).and_return("a-simple-plugin")
           allow(out_klass).to receive(:workers_not_supported?).and_return(false)
         end
 

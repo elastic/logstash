@@ -1,6 +1,10 @@
 # encoding: utf-8
 require "spec_helper"
 require "logstash/plugin"
+require "logstash/outputs/base"
+require "logstash/codecs/base"
+require "logstash/inputs/base"
+require "logstash/filters/base"
 
 describe LogStash::Plugin do
   it "should fail lookup on inexisting type" do
@@ -164,6 +168,58 @@ describe LogStash::Plugin do
         LogStash::Plugin.new(args)
       end
 
+    end
+  end
+
+  describe "#id" do
+    plugin_types = [
+      LogStash::Filters::Base,
+      LogStash::Codecs::Base,
+      LogStash::Outputs::Base,
+      LogStash::Inputs::Base
+    ]
+
+    plugin_types.each do |plugin_type|
+      let(:plugin) do
+        Class.new(plugin_type) do
+          config_name "simple_plugin"
+
+          config :host, :validate => :string
+          config :export, :validte => :boolean
+
+          def register; end
+        end
+      end
+
+      let(:config) do
+        {
+          "host" => "127.0.0.1",
+          "export" => true
+        }
+      end
+
+      subject { plugin.new(config) }
+
+      context "plugin type is #{plugin_type}" do
+        context "when there is not ID configured for the output" do
+          it "it uses a UUID to identify this plugins" do
+            expect(subject.id).not_to eq(nil)
+          end
+
+          it "will be different between instance of plugins" do
+            expect(subject.id).not_to eq(plugin.new(config).id)
+          end
+        end
+
+        context "When a user provide an ID for the plugin" do
+          let(:id) { "ABC" }
+          let(:config) { super.merge("id" => id) }
+
+          it "uses the user provided ID" do
+            expect(subject.id).to eq(id)
+          end
+        end
+      end
     end
   end
 end
