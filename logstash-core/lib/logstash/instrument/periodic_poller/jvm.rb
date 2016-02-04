@@ -5,15 +5,11 @@ require 'monitoring'
 module LogStash module Instrument module PeriodicPoller
   class JVM < Base
 
-    attr_reader :heap_metrics, :non_heap_metrics, :pools_metrics
+    attr_reader :metric
 
     def initialize(metric, options = {})
       super(metric, options)
-      jvm_metrics      = metric.namespace(:jvm)
-      memory_metrics   = jvm_metrics.namespace(:memory)
-      @heap_metrics     = memory_metrics.namespace(:heap)
-      @non_heap_metrics = memory_metrics.namespace(:non_heap)
-      @pools_metrics = memory_metrics.namespace(:pools)
+      @metric = metric
     end
 
     def collect
@@ -30,23 +26,22 @@ module LogStash module Instrument module PeriodicPoller
       heap[:used_percent] = (heap[:used_in_bytes] / heap[:max_in_bytes].to_f)*100.0
 
       heap.each_pair do |key, value|
-        heap_metrics.gauge(key, value.to_i)
+        metric.gauge([:jvm, :memory, :heap], key, value.to_i)
       end
     end
 
     def collect_non_heap_metrics(data)
       non_heap = aggregate_information_for(data["non_heap"].values)
       non_heap.each_pair do |key, value|
-        non_heap_metrics.gauge(key, value.to_i)
+        metric.gauge([:jvm, :memory, :non_heap],key, value.to_i)
       end
     end
 
     def collect_pools_metrics(data)
       metrics = build_pools_metrics(data)
       metrics.each_pair do |key, hash|
-        metric = pools_metrics.namespace(key.to_sym)
         hash.each_pair do |p,v|
-          metric.gauge(p, v)
+          metric.gauge([:jvm, :memory, :pools, key.to_sym], p, v)
         end
       end
     end

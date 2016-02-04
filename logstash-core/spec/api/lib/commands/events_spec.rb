@@ -1,7 +1,6 @@
 # encoding: utf-8
 require_relative "../../spec_helper"
-require "app/stats/events_command"
-require 'ostruct'
+require "app/commands/stats/events_command"
 
 describe LogStash::Api::StatsEventsCommand do
 
@@ -10,18 +9,20 @@ describe LogStash::Api::StatsEventsCommand do
   subject { described_class.new(service) }
 
   let(:stats) do
-    { :base => { :events_in => OpenStruct.new(:value => 100), :events_filtered => OpenStruct.new(:value => 200) } }
+    { "stats" => { "events" => { "in" => 100,
+                                 "out" => 0,
+                                 "filtered" => 200 }}}
   end
 
   before(:each) do
-    allow(service).to receive(:get).with(:events_stats).and_return(stats)
+    allow(service).to receive(:get).with(:events_stats).and_return(LogStash::Json.dump(stats))
   end
 
   context "#schema" do
     let(:report) { subject.run }
 
     it "return events information" do
-      expect(report).to include({:in => 100, :dropped => 200 })
+      expect(report).to include({"in" => 100, "filtered" => 200 })
     end
 
   end

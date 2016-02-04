@@ -19,6 +19,10 @@ class LogStash::Api::Service
     LogStash::Instrument::Collector.instance.delete_observer(self)
   end
 
+  def agent
+    LogStash::Instrument::Collector.instance.agent
+  end
+
   def update(snapshot)
     logger.debug("[api-service] snapshot received", :snapshot => snapshot) if logger.debug?
     if @snapshot_rotation_mutex.try_lock
@@ -30,11 +34,10 @@ class LogStash::Api::Service
   def get(key)
     metric_store = @snapshot.metric_store
     if key == :jvm_memory_stats
-      metric_store.get(:root, :jvm, :memory)
+      data = metric_store.get_with_path("jvm/memory")[:jvm][:memory]
     else
-      { :base => metric_store.get(:root, :base) }
+      data = metric_store.get_with_path("stats/events")
     end
-  rescue
-    {}
+    LogStash::Json.dump(data)
   end
 end
