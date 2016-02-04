@@ -1,4 +1,4 @@
-pass::[<?edit_url https://github.com/elastic/logstash/edit/master/docs/asciidoc/static/include/pluginbody.asciidoc ?>]
+pass::[<?edit_url https://github.com/elastic/logstash/edit/master/docs/static/include/pluginbody.asciidoc ?>]
 
 === How to write a Logstash {plugintype} plugin
 
