@@ -22,9 +22,11 @@ module LogStash module Instrument
     SNAPSHOT_ROTATION_TIME_SECS = 1 # seconds
     SNAPSHOT_ROTATION_TIMEOUT_INTERVAL_SECS = 10 * 60 # seconds
 
+    attr_accessor :agent
+
     def initialize
       @metric_store = MetricStore.new
-
+      @agent = nil
       start_periodic_snapshotting
 
       @async_worker_pool

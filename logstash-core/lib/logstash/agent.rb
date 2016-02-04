@@ -72,7 +72,7 @@ class LogStash::Agent
   # @param settings [Hash] settings that will be passed when creating the pipeline.
   #   keys should be symbols such as :pipeline_workers and :pipeline_batch_delay
   def register_pipeline(pipeline_id, settings)
-    pipeline = create_pipeline(settings.merge(:pipeline_id => pipeline_id))
+    pipeline = create_pipeline(settings.merge(:pipeline_id => pipeline_id, :metric => metric))
     return unless pipeline.is_a?(LogStash::Pipeline)
     @pipelines[pipeline_id] = pipeline
   end
@@ -117,7 +117,7 @@ class LogStash::Agent
   end
 
   def stop_webserver
-    @webserver.stop
+    @webserver.stop if @webserver
   end
 
   def start_background_services
@@ -137,6 +137,7 @@ class LogStash::Agent
   def configure_metric
     if collect_metric?
       @logger.debug("Agent: Configuring metric collection")
+      LogStash::Instrument::Collector.instance.agent = self
       @metric = LogStash::Instrument::Metric.create
     else
       @metric = LogStash::Instrument::NullMetric.new
