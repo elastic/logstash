@@ -2,7 +2,13 @@
 require "logstash/environment"
 require "logstash/errors"
 require "logstash/config/cpu_core_strategy"
+require "logstash/instrument/collector"
+require "logstash/instrument/metric"
+require "logstash/instrument/periodic_pollers"
+require "logstash/instrument/collector"
+require "logstash/instrument/metric"
 require "logstash/pipeline"
+require "logstash/webserver"
 require "stud/trap"
 require "logstash/config/loader"
 require "uri"
@@ -12,7 +18,7 @@ require "securerandom"
 LogStash::Environment.load_locale!
 
 class LogStash::Agent
-  attr_reader :logger, :pipelines
+  attr_reader :metric, :debug, :node_name, :started_at, :pipelines, :logger
 
   # initialize method for LogStash::Agent
   # @param params [Hash] potential parameters are:
@@ -23,19 +29,26 @@ class LogStash::Agent
   def initialize(params)
     @logger = params[:logger]
     @auto_reload = params[:auto_reload]
-    @pipelines = {}
+    @debug  = params.fetch(:debug, false)
 
+    @pipelines = {}
+    @started_at = Time.now
     @node_name = params[:node_name] || Socket.gethostname
     @config_loader = LogStash::Config::Loader.new(@logger)
     @reload_interval = params[:reload_interval] || 3 # seconds
     @upgrade_mutex = Mutex.new
+
+    @collect_metric = params.fetch(:collect_metric, false)
+    configure_metric
   end
 
   def execute
     @thread = Thread.current # this var is implicilty used by Stud.stop?
     @logger.info("starting agent")
 
+    start_background_services
     start_pipelines
+    start_webserver
 
     return 1 if clean_state?
 
@@ -76,13 +89,96 @@ class LogStash::Agent
     end
   end
 
+  # Calculate the Logstash uptime in milliseconds
+  #
+  # @return [Fixnum] Uptime in milliseconds
+  def uptime
+    ((Time.now.to_f - started_at.to_f) * 1000.0).to_i
+  end
+
   def shutdown
+    shutdown_pipelines
+  end
+
+  def node_uuid
+    @node_uuid ||= SecureRandom.uuid
+  end
+
+  private
+
+  def start_webserver
+    options = { :debug => debug }
+    @webserver = LogStash::WebServer.new(@logger, options)
+    Thread.new(@webserver) do |webserver|
+      webserver.run
+    end
+  end
+
+  def stop_webserver
+    @webserver.stop
+  end
+
+  def start_background_services
+    if collect_metric?
+      @logger.debug("Agent: Starting metric periodic pollers")
+      @periodic_pollers.start
+    end
+  end
+
+  def stop_background_services
+    if collect_metric?
+      @logger.debug("Agent: Stopping metric periodic pollers")
+      @periodic_pollers.stop
+    end
+  end
+
+  def shutdown
+    stop_background_services
+    stop_webserver
     shutdown_pipelines
   end
 
   private
   def node_uuid
     @node_uuid ||= SecureRandom.uuid
+  end
+
+  def configure_metric
+    if collect_metric?
+      @logger.debug("Agent: Configuring metric collection")
+      @metric = LogStash::Instrument::Metric.create
+      add_metric_pipeline
+    else
+      @metric = LogStash::Instrument::NullMetric.new
+    end
+
+    @periodic_pollers = LogStash::Instrument::PeriodicPollers.new(metric)
+  end
+
+  def collect_metric?
+    @collect_metric
+  end
+
+  # Add a new pipeline sitting next to the main pipeline,
+  # This pipeline should only contains one input: the `metrics`
+  # and multiple shippers.
+  def add_metric_pipeline
+    @logger.debug("Agent: Adding metric pipeline")
+
+    metric_pipeline_config =<<-EOS
+      input {
+        metrics {}
+      }
+      output {
+        elasticsearch {
+          flush_size => 1
+          hosts => "127.0.0.1"
+          index => "metrics-%{+YYYY.MM.dd}"
+        }
+      }
+    EOS
+
+    @pipelines[:metric] = LogStash::Pipeline.new(metric_pipeline_config, { :pipeline_id => :metric })
   end
 
   def create_pipeline(settings)
@@ -174,5 +270,5 @@ class LogStash::Agent
   def clean_state?
     @pipelines.empty?
   end
-
 end # class LogStash::Agent
+
