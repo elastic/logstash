@@ -1,9 +1,9 @@
 # encoding: utf-8
 require "app/service"
-require "app/system/basicinfo_command"
-require "app/stats/events_command"
-require "app/stats/hotthreads_command"
-require "app/stats/memory_command"
+require "app/commands/system/basicinfo_command"
+require "app/commands/stats/events_command"
+require "app/commands/stats/hotthreads_command"
+require "app/commands/stats/memory_command"
 
 module LogStash::Api
   class CommandFactory
