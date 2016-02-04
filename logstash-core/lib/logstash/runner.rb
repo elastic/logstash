@@ -170,7 +170,7 @@ class LogStash::Runner < Clamp::Command
                           :auto_reload => @auto_reload,
                           :collect_metric => true,
                           :debug => debug?,
-                           :node_name => node_name)
+                          :node_name => node_name)
 
     @agent.register_pipeline("main", @pipeline_settings.merge({
                           :config_string => config_string,
