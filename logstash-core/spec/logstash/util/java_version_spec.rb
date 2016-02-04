@@ -19,10 +19,18 @@ describe "LogStash::Util::JavaVersion" do
     expect(mod.bad_java_version?("1.6.0")).to be_truthy
   end
 
-  it "should mark a good standard java version as good" do
-    expect(mod.bad_java_version?("1.7.0_51")).to be_falsey
+  it "should mark java 7 version as bad" do
+    expect(mod.bad_java_version?("1.7.0_51")).to be_truthy
   end
-
+  
+  it "should mark java version 8 as good" do
+    expect(mod.bad_java_version?("1.8.0")).to be_falsey
+  end
+  
+  it "should mark a good standard java version as good" do
+    expect(mod.bad_java_version?("1.8.0_65")).to be_falsey
+  end
+  
   it "should mark a good beta version as good" do
     expect(mod.bad_java_version?("1.8.0-beta")).to be_falsey
   end
