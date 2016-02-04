@@ -184,6 +184,15 @@ module LogStash::Util
     end
   end
 
+  # Take a instance reference and return the name of the class
+  # stripping all the modules.
+  #
+  # @param [Object] The object to return the class)
+  # @return [String] The name of the class
+  def self.class_name(instance)
+    instance.class.name.split("::").last
+  end
+
   def self.deep_clone(o)
     case o
     when Hash
