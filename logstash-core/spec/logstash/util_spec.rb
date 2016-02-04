@@ -3,7 +3,17 @@ require 'spec_helper'
 
 require "logstash/util"
 
+class ClassNameTest
+end
+
+module TestingClassName
+  class TestKlass
+  end
+end
+
 describe LogStash::Util do
+
+  subject { described_class }
 
   context "stringify_keys" do
     it "should convert hash symbol keys to strings" do
@@ -30,6 +40,24 @@ describe LogStash::Util do
     it "should convert innner array symbol values to strings" do
       expect(LogStash::Util.stringify_symbols({:a => [1, :b]})).to eq({"a" => [1, "b"]})
       expect(LogStash::Util.stringify_symbols([:a, [1, :b]])).to eq(["a", [1, "b"]])
+    end
+  end
+
+  describe ".class_name" do
+    context "when the class is a top level class" do
+      let(:klass) { ClassNameTest.new }
+
+      it "returns the name of the class" do
+        expect(subject.class_name(klass)).to eq("ClassNameTest")
+      end
+    end
+
+    context "when the class is nested inside modules" do
+      let(:klass) { TestingClassName::TestKlass.new }
+
+      it "returns the name of the class" do
+        expect(subject.class_name(klass)).to eq("TestKlass")
+      end
     end
   end
 end

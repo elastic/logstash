@@ -1,0 +1,42 @@
+{
+	"heap": {
+		"used_in_bytes": 1,
+		"committed_in_bytes": 2,
+		"max_in_bytes": 3,
+		"peak_used_in_bytes": 4,
+		"peak_max_in_bytes": 5,
+		"used_percent": 7
+
+	},
+	"non_heap": {
+		"used_in_bytes": 1,
+		"committed_in_bytes": 2,
+		"max_in_bytes": 3,
+		"peak_used_in_bytes": 4,
+		"peak_max_in_bytes": 5
+
+	},
+	"pools": {
+		"young": {
+			"used_in_bytes": 1,
+			"committed_in_bytes": 2,
+			"max_in_bytes": 3,
+			"peak_used_in_bytes": 4,
+			"peak_max_in_bytes": 5
+		},
+		"old": {
+			"used_in_bytes": 1,
+			"committed_in_bytes": 2,
+			"max_in_bytes": 3,
+			"peak_used_in_bytes": 4,
+			"peak_max_in_bytes": 5
+		},
+		"survivor": {
+			"used_in_bytes": 1,
+			"committed_in_bytes": 2,
+			"max_in_bytes": 3,
+			"peak_used_in_bytes": 4,
+			"peak_max_in_bytes": 5
+		}
+	}
+}
