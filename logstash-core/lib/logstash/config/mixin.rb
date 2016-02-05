@@ -1,7 +1,6 @@
 # encoding: utf-8
 require "logstash/namespace"
 require "logstash/config/registry"
-require "logstash/logging"
 require "logstash/util/password"
 require "logstash/version"
 require "logstash/environment"

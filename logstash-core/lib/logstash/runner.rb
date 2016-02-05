@@ -11,6 +11,7 @@ LogStash::Environment.load_locale!
 
 require "logstash/namespace"
 require "logstash/agent"
+require "logstash/util/loggable"
 
 class LogStash::Runner < Clamp::Command
 
@@ -113,9 +114,13 @@ class LogStash::Runner < Clamp::Command
     require "stud/task"
     require "cabin" # gem 'cabin'
 
+    # Configure the logging and the plugins path before doing anything
+    # else, we need to make sure the logger is configured with the right
+    # log level before actually trying to use it.
+    configure
+
     @agent = LogStash::Agent.new({ :node_name => node_name })
 
-    @logger = Cabin::Channel.get(LogStash)
 
     LogStash::Util::set_thread_name(self.class.name)
 
@@ -130,7 +135,6 @@ class LogStash::Runner < Clamp::Command
     LogStash::ShutdownWatcher.unsafe_shutdown = unsafe_shutdown?
     LogStash::ShutdownWatcher.logger = @logger
 
-    configure
 
     if version?
       show_version
@@ -223,6 +227,7 @@ class LogStash::Runner < Clamp::Command
 
   # Point logging at a specific path.
   def configure_logging(path)
+    @logger = Cabin::Channel.get(LogStash)
     # Set with the -v (or -vv...) flag
     if quiet?
       @logger.level = :error
@@ -263,6 +268,8 @@ class LogStash::Runner < Clamp::Command
     else
       @logger.subscribe(STDOUT)
     end
+
+    LogStash::Util::Loggable.logger = @logger
 
     # TODO(sissel): redirect stdout/stderr to the log as well
     # http://jira.codehaus.org/browse/JRUBY-7003

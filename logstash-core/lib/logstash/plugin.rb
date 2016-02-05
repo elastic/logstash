@@ -1,6 +1,5 @@
 # encoding: utf-8
 require "logstash/namespace"
-require "logstash/logging"
 require "logstash/config/mixin"
 require "cabin"
 require "concurrent"

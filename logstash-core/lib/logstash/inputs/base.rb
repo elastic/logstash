@@ -2,7 +2,6 @@
 require "logstash/namespace"
 require "logstash/event"
 require "logstash/plugin"
-require "logstash/logging"
 require "logstash/config/mixin"
 require "logstash/codecs/base"
 require "logstash/util/decorators"

@@ -14,7 +14,7 @@ gem "coveralls", :group => :development
 # 1.6 is the last supported version on jruby.
 gem "tins", "1.6", :group => :development
 gem "rspec", "~> 3.1.0", :group => :development
-gem "logstash-devutils", "~> 0.0.15", :group => :development
+gem "logstash-devutils", "~> 0.0.19", :group => :development
 gem "benchmark-ips", :group => :development
 gem "octokit", "3.8.0", :group => :build
 gem "stud", "~> 0.0.21", :group => :build
