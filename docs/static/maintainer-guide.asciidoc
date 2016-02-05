@@ -12,7 +12,7 @@ https://www.elastic.co/guide/en/logstash/current/contributing-to-logstash.html[_
 
 === Document Goals
 
-To help make the Logstash plugins community  participation easy with positive feedback.
+To help make the Logstash plugins community participation easy with positive feedback.
 
 To increase diversity.
 
