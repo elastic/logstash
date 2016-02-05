@@ -16,7 +16,7 @@ configure do
 end
 run LogStash::Api::Root
 
-namespaces = { "/_stats" => LogStash::Api::Stats }
+namespaces = { "/_node/stats" => LogStash::Api::Stats }
 
 namespaces.each_pair do |namespace, app|
   map(namespace) do

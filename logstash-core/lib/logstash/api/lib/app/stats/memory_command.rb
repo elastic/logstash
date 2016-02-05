@@ -5,26 +5,17 @@ require 'monitoring'
 class LogStash::Api::JvmMemoryCommand < LogStash::Api::Command
 
   def run
-    memory = service.get(:jvm_memory_stats)
+    memory = LogStash::Json.load(service.get(:jvm_memory_stats))
     {
-      :heap => dump(memory[:heap].marshal_dump),
-      :non_heap => dump(memory[:non_heap].marshal_dump),
-      :pools => memory[:pools].marshal_dump.inject({}) do |acc, (type, hash)|
-                  acc[type] = dump(hash.marshal_dump)
+      :heap => memory["heap"],
+      :non_heap => memory["non_heap"],
+      :pools => memory["pools"].inject({}) do |acc, (type, hash)|
+                  acc[type] = hash
                   acc
-                end
+               end
     }
   rescue
     {} # Something happen, so we just return an empty hash.
-  end
-
-  private
-
-  def dump(hash)
-    hash.inject({}) do |h, (k,v)|
-      h[k] = v.value
-      h
-    end
   end
 
 end

@@ -8,9 +8,9 @@ class LogStash::Api::StatsEventsCommand < LogStash::Api::Command
     #need to be tailored to the right metrics for this command.
     stats = service.get(:events_stats)
     {
-      :in => stats[:base][:events_in].value,
-      :out => 0,
-      :dropped => stats[:base][:events_filtered].value
+      :in => stats[:stats][:events][:in].value,
+      :out => stats[:stats][:events][:out].value,
+      :dropped => stats[:stats][:events][:filtered].value
     }
   rescue
     {}
