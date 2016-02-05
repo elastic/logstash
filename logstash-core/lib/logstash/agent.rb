@@ -131,7 +131,11 @@ class LogStash::Agent
         metrics {}
       }
       output {
-        null {}
+        elasticsearch {
+          flush_size => 1
+          hosts => "127.0.0.1"
+          index => "metrics-%{+YYYY.MM.dd}"
+        }
       }
     EOS
 
