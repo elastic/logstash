@@ -265,7 +265,7 @@ describe LogStash::Event do
 
       context "remove" do
         it "should raise an exception if you attempt to remove @timestamp" do
-          expect{subject.remove("@timestamp")}.to raise_error(TypeError)
+          expect{subject.remove("@timestamp")}.to raise_error(InvalidOperationException)
         end
       end
     end
