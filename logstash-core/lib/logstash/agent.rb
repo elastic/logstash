@@ -106,6 +106,7 @@ class LogStash::Agent
   def configure_metric
     if collect_metric?
       @logger.debug("Agent: Configuring metric collection")
+      LogStash::Instrument::Collector.instance.agent = self
       @metric = LogStash::Instrument::Metric.create
       add_metric_pipeline
     else
@@ -130,11 +131,7 @@ class LogStash::Agent
         metrics {}
       }
       output {
-        elasticsearch {
-          flush_size => 1
-          hosts => "127.0.0.1"
-          index => "metrics-%{+YYYY.MM.dd}"
-        }
+        null {}
       }
     EOS
 

@@ -19,6 +19,10 @@ class LogStash::Api::Service
     LogStash::Instrument::Collector.instance.delete_observer(self)
   end
 
+  def agent
+    LogStash::Instrument::Collector.instance.agent
+  end
+
   def update(snapshot)
     logger.debug("[api-service] snapshot received", :snapshot => snapshot) if logger.debug?
     if @snapshot_rotation_mutex.try_lock
