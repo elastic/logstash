@@ -107,7 +107,6 @@ class LogStash::Agent
     if collect_metric?
       @logger.debug("Agent: Configuring metric collection")
       @metric = LogStash::Instrument::Metric.create
-      add_metric_pipeline
     else
       @metric = LogStash::Instrument::NullMetric.new
     end
@@ -117,28 +116,6 @@ class LogStash::Agent
 
   def collect_metric?
     @collect_metric
-  end
-
-  # Add a new pipeline sitting next to the main pipeline,
-  # This pipeline should only contains one input: the `metrics`
-  # and multiple shippers.
-  def add_metric_pipeline
-    @logger.debug("Agent: Adding metric pipeline")
-
-    metric_pipeline_config =<<-EOS
-      input {
-        metrics {}
-      }
-      output {
-        elasticsearch {
-          flush_size => 1
-          hosts => "127.0.0.1"
-          index => "metrics-%{+YYYY.MM.dd}"
-        }
-      }
-    EOS
-
-    @pipelines[:metric] = LogStash::Pipeline.new(metric_pipeline_config, { :pipeline_id => :metric })
   end
 
   def pipeline_exist?(pipeline_id)
