@@ -11,24 +11,9 @@ describe LogStash::Api::Stats do
     described_class
   end
 
-  it "respond to the events resource" do
-    get "/events"
+  it "respond to the jvm resource" do
+    get "/jvm"
     expect(last_response).to be_ok
-  end
-
-  context "jvm" do
-    let(:type) { "jvm" }
-
-    it "respond to the hot_threads resource" do
-      get "#{type}/hot_threads"
-      expect(last_response).to be_ok
-    end
-
-    it "respond to the memory resource" do
-      get "#{type}/memory"
-      expect(last_response).to be_ok
-    end
-
   end
 
 end

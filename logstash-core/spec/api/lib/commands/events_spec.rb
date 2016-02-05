@@ -10,7 +10,9 @@ describe LogStash::Api::StatsEventsCommand do
   subject { described_class.new(service) }
 
   let(:stats) do
-    { :base => { :events_in => OpenStruct.new(:value => 100), :events_filtered => OpenStruct.new(:value => 200) } }
+    { :stats => { :events => { :in => OpenStruct.new(:value => 100),
+                                :out => OpenStruct.new(:value => 0),
+                                :filtered => OpenStruct.new(:value => 200) }}}
   end
 
   before(:each) do

@@ -11,7 +11,7 @@ describe "JVM stats" do
       let(:report) { subject.run }
 
       it "return hot threads information" do
-        expect(report).not_to be_empty
+        expect(report.to_s).not_to be_empty
       end
 
     end
