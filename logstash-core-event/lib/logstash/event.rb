@@ -16,6 +16,9 @@ require "logstash/string_interpolation"
 class LogStash::ShutdownEvent; end
 class LogStash::FlushEvent; end
 
+# Custom exceptions
+class InvalidOperationException < StandardError; end
+
 module LogStash
   FLUSH = LogStash::FlushEvent.new
 
@@ -180,7 +183,7 @@ class LogStash::Event
   # Remove a field or field reference. Returns the value of that field when deleted
   def remove(fieldref)
     if fieldref == TIMESTAMP || fieldref == "[#{TIMESTAMP}]"
-      raise TypeError, "The field '@timestamp' must not be removed"
+      raise InvalidOperationException, "The field '@timestamp' must not be removed"
     end
     @accessors.del(fieldref)
   end
