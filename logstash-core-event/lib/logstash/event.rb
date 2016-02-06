@@ -99,7 +99,13 @@ class LogStash::Event
       copy[k] = begin v.clone rescue v end
     end
 
-    self.class.new(copy)
+    cloned = self.class.new(copy)
+
+    # Clone metadata too
+    @metadata.each do |k,v|
+      cloned["@metadata"][k] = begin v.clone rescue v end
+    end
+    cloned
   end
 
   def to_s
