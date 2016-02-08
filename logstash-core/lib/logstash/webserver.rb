@@ -5,7 +5,7 @@ require 'puma/binder'
 require 'puma/configuration'
 require 'puma/commonlogger'
 
-module LogStash 
+module LogStash
   class WebServer
 
   extend Forwardable
@@ -65,7 +65,7 @@ module LogStash
     log "=== puma shutdown: #{Time.now} ==="
   end
 
-  private 
+  private
 
   def env
     @options[:debug] ? "development" : "production"

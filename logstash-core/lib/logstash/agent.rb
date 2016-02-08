@@ -97,6 +97,8 @@ class LogStash::Agent
   end
 
   def shutdown
+    stop_background_services
+    stop_webserver
     shutdown_pipelines
   end
 
@@ -110,6 +112,7 @@ class LogStash::Agent
     options = { :debug => debug }
     @webserver = LogStash::WebServer.new(@logger, options)
     Thread.new(@webserver) do |webserver|
+      LogStash::Util.set_thread_name("Api Webserver")
       webserver.run
     end
   end
@@ -130,12 +133,6 @@ class LogStash::Agent
       @logger.debug("Agent: Stopping metric periodic pollers")
       @periodic_pollers.stop
     end
-  end
-
-  def shutdown
-    stop_background_services
-    stop_webserver
-    shutdown_pipelines
   end
 
   private
@@ -271,4 +268,3 @@ class LogStash::Agent
     @pipelines.empty?
   end
 end # class LogStash::Agent
-
