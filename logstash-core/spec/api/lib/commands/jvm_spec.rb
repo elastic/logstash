@@ -52,11 +52,11 @@ describe "JVM stats" do
       end
 
       it "return heap information" do
-        expect(report.keys).to include(:heap)
+        expect(report.keys).to include(:heap_used_in_bytes)
       end
 
       it "return non heap information" do
-        expect(report.keys).to include(:non_heap)
+        expect(report.keys).to include(:non_heap_used_in_bytes)
       end
 
     end

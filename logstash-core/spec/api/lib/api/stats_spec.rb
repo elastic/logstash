@@ -11,6 +11,13 @@ describe LogStash::Api::Stats do
     described_class
   end
 
+  let(:agent) { double("agent") }
+
+  before(:each) do
+    expect_any_instance_of(LogStash::Api::JvmMemoryCommand).to receive(:started_at).and_return(1234567890)
+    expect_any_instance_of(LogStash::Api::JvmMemoryCommand).to receive(:uptime).and_return(10)
+  end
+
   it "respond to the jvm resource" do
     get "/jvm"
     expect(last_response).to be_ok

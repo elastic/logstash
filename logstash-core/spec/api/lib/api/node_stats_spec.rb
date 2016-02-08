@@ -16,14 +16,8 @@ describe LogStash::Api::NodeStats do
     expect(last_response).to be_ok
   end
 
-  context "jvm" do
-    let(:type) { "jvm" }
-
-    it "respond to the memory resource" do
-      get "jvm/memory"
-      expect(last_response).to be_ok
-    end
-
+  it "respond to the jvm resource" do
+    get "jvm"
+    expect(last_response).to be_ok
   end
-
 end
