@@ -15,7 +15,6 @@ describe LogStash::Inputs::Metrics do
   end
 
   describe "#update" do
-
     let(:namespaces)  { [:root, :base] }
     let(:key)        { :foo }
     let(:metric_store) { LogStash::Instrument::MetricStore.new }
