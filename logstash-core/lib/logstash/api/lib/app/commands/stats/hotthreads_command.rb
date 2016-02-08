@@ -6,7 +6,8 @@ require "socket"
 class LogStash::Api::HotThreadsCommand < LogStash::Api::Command
 
   def run(options={})
-    hash      = JRMonitor.threads.generate
+    filter = { :stacktrace_size => options.fetch(:stacktrace_size, 3) }
+    hash   = JRMonitor.threads.generate(filter)
     ThreadDump.new(hash, options)
   end
 
