@@ -33,9 +33,10 @@ class LogStash::Api::HotThreadsCommand < LogStash::Api::Command
 
     def to_s
       hash = to_hash
-      report = "::: {#{hash[:hostname]}} \n Hot threads at #{hash[:time]}, busiestThreads=#{top_count}:\n"
+      report =  "#{I18n.t("logstash.web_api.hot_threads.title", :hostname => hash[:hostname], :time => hash[:time], :top_count => top_count )} \n"
       hash[:threads].each do |thread|
         thread_report = ""
+        thread_report = "\t #{I18n.t("logstash.web_api.hot_threads.thread_title", :percent_of_cpu_time => thread[:percent_of_cpu_time], :thread_state => thread[:state], :thread_name => thread[:name])} \n"
         thread_report = "\t #{thread[:percent_of_cpu_time]} % of of cpu usage by #{thread[:state]} thread named '#{thread[:name]}'\n"
         thread_report << "\t\t #{thread[:path]}\n" if thread[:path]
         thread[:traces].split("\n").each do |trace|

@@ -69,6 +69,13 @@ en:
         data loss.
       forced_sigint: >-
         SIGINT received. Terminating immediately..
+    web_api:
+      hot_threads:
+        title: |-
+          ::: {%{hostname}}
+            Hot threads at %{time}, busiestThreads=%{top_count}:
+        thread_title: |-
+            %{percent_of_cpu_time} % of of cpu usage by %{thread_state} thread named '%{thread_name}'
     runner:
       short-help: |-
         usage:
