@@ -94,6 +94,7 @@ def fetch_yml_settings(settings_path)
   end
 end
 
+public
 def format_argv(argv)
   # TODO deprecate these two arguments in the next major version.
   # use -i irb or -i pry for console

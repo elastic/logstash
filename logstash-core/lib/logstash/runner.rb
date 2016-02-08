@@ -30,7 +30,7 @@ class LogStash::Runner < Clamp::Command
     I18n.t("logstash.runner.flag.config-string",
       :default_input => LogStash::Config::Defaults.input,
       :default_output => LogStash::Config::Defaults.output),
-    :default => "", :attribute_name => :config_string
+    :default => nil, :attribute_name => :config_string
 
   # Pipeline settings
   option ["-w", "--pipeline.workers"], "COUNT",

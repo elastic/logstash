@@ -28,7 +28,7 @@ class LogStash::Agent
   #   :auto_reload [Boolean] - enable reloading of pipelines
   #   :reload_interval [Integer] - reload pipelines every X seconds
   #   :logger [Cabin::Channel] - logger instance
-  def initialize(params)
+  def initialize(params = {})
     @logger = params[:logger]
     @auto_reload = params[:auto_reload]
     @pipelines = {}

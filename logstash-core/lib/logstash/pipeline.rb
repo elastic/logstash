@@ -155,8 +155,6 @@ module LogStash; class Pipeline
   def run
     @started_at = Time.now
 
-    LogStash::Util.set_thread_name("[#{pipeline_id}]-pipeline-manager")
-    @logger.terminal(LogStash::Util::DefaultsPrinter.print(@settings))
     @thread = Thread.current
     LogStash::Util.set_thread_name("[#{pipeline_id}]-pipeline-manager")
 
