@@ -5,9 +5,10 @@ require "socket"
 
 class LogStash::Api::HotThreadsCommand < LogStash::Api::Command
 
+  STACK_TRACES_SIZE_DEFAULT = 10.freeze
 
   def run(options={})
-    filter = { :stacktrace_size => options.fetch(:stacktrace_size, 10) }
+    filter = { :stacktrace_size => options.fetch(:stacktrace_size, STACK_TRACES_SIZE_DEFAULT) }
     hash   = JRMonitor.threads.generate(filter)
     ThreadDump.new(hash, self, options)
   end
@@ -16,15 +17,17 @@ class LogStash::Api::HotThreadsCommand < LogStash::Api::Command
 
   class ThreadDump
 
-    SKIPPED_THREADS = [ "Finalizer", "Reference Handler", "Signal Dispatcher" ].freeze
+    SKIPPED_THREADS             = [ "Finalizer", "Reference Handler", "Signal Dispatcher" ].freeze
+    THREADS_COUNT_DEFAULT       = 10.freeze
+    IGNORE_IDLE_THREADS_DEFAULT = true.freeze
 
     attr_reader :top_count, :ignore, :dump
 
     def initialize(dump, cmd, options={})
       @dump      = dump
       @options   = options
-      @top_count = options.fetch(:threads, 10)
-      @ignore    = options.fetch(:ignore_idle_threads, true)
+      @top_count = options.fetch(:threads, THREADS_COUNT_DEFAULT)
+      @ignore    = options.fetch(:ignore_idle_threads, IGNORE_IDLE_THREADS_DEFAULT)
       @cmd       = cmd
     end
 
@@ -78,7 +81,7 @@ class LogStash::Api::HotThreadsCommand < LogStash::Api::Command
     end
 
     def hostname
-      @cmd.service.agent.node_name
+      @cmd.hostname
     end
 
     def cpu_time_as_percent(hash)
