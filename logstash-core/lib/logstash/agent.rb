@@ -107,7 +107,6 @@ class LogStash::Agent
   end
 
   private
-
   def start_webserver
     options = { :debug => debug }
     @webserver = LogStash::WebServer.new(@logger, options)
@@ -133,11 +132,6 @@ class LogStash::Agent
       @logger.debug("Agent: Stopping metric periodic pollers")
       @periodic_pollers.stop
     end
-  end
-
-  private
-  def node_uuid
-    @node_uuid ||= SecureRandom.uuid
   end
 
   def configure_metric
