@@ -5,10 +5,11 @@ require "socket"
 
 class LogStash::Api::HotThreadsCommand < LogStash::Api::Command
 
+
   def run(options={})
     filter = { :stacktrace_size => options.fetch(:stacktrace_size, 3) }
     hash   = JRMonitor.threads.generate(filter)
-    ThreadDump.new(hash, options)
+    ThreadDump.new(hash, service, options)
   end
 
   private
@@ -19,11 +20,12 @@ class LogStash::Api::HotThreadsCommand < LogStash::Api::Command
 
     attr_reader :top_count, :ignore, :dump
 
-    def initialize(dump, options={})
+    def initialize(dump, service, options={})
       @dump    = dump
       @options = options
       @top_count = options.fetch(:threads, 3)
       @ignore    = options.fetch(:ignore_idle_threads, true)
+      @service   = service
     end
 
     def to_s
@@ -86,7 +88,7 @@ class LogStash::Api::HotThreadsCommand < LogStash::Api::Command
     end
 
     def hostname
-      Socket.gethostname
+      @service.agent.node_name
     end
 
     def cpu_time(hash)
