@@ -1,6 +1,6 @@
 # encoding: utf-8
 require_relative "../../spec_helper"
-require "app/stats/events_command"
+require "app/commands/stats/events_command"
 require 'ostruct'
 
 describe LogStash::Api::StatsEventsCommand do

@@ -1,6 +1,5 @@
 # encoding: utf-8
 require "app"
-require "app/stats/hotthreads_command"
 
 module LogStash::Api
   class Node < BaseApp

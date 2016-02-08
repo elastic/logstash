@@ -1,7 +1,7 @@
 # encoding: utf-8
 require_relative "../../spec_helper"
-require "app/stats/hotthreads_command"
-require "app/stats/memory_command"
+require "app/commands/stats/hotthreads_command"
+require "app/commands/stats/memory_command"
 
 describe "JVM stats" do
 
