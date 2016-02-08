@@ -35,10 +35,10 @@ class LogStash::Api::Service
     metric_store = @snapshot.metric_store
     if key == :jvm_memory_stats
       data = metric_store.get_with_path("jvm/memory")[:jvm][:memory]
-      LogStash::Json.dump(data)
     else
-      metric_store.get_with_path("stats/events")
+      data = metric_store.get_with_path("stats/events")
     end
+    LogStash::Json.dump(data)
   rescue
     {}
   end
