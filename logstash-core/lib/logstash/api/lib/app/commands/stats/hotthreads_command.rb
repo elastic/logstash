@@ -7,7 +7,7 @@ class LogStash::Api::HotThreadsCommand < LogStash::Api::Command
 
 
   def run(options={})
-    filter = { :stacktrace_size => options.fetch(:stacktrace_size, 3) }
+    filter = { :stacktrace_size => options.fetch(:stacktrace_size, 10) }
     hash   = JRMonitor.threads.generate(filter)
     ThreadDump.new(hash, self, options)
   end
@@ -23,7 +23,7 @@ class LogStash::Api::HotThreadsCommand < LogStash::Api::Command
     def initialize(dump, cmd, options={})
       @dump      = dump
       @options   = options
-      @top_count = options.fetch(:threads, 3)
+      @top_count = options.fetch(:threads, 10)
       @ignore    = options.fetch(:ignore_idle_threads, true)
       @cmd       = cmd
     end
