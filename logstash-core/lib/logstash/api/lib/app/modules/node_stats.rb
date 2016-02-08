@@ -14,6 +14,7 @@ module LogStash::Api
       memory_command = factory.build(:memory_command)
       payload = {
         :events => events_command.run,
+        :start_time_in_millis => events_command.started_at,
         :jvm => { :memory => memory_command.run }
       }
       respond_with payload
@@ -33,7 +34,7 @@ module LogStash::Api
     end
 
     # return hot threads information
-    get "/jvm/memory" do
+    get "/jvm" do
       command = factory.build(:memory_command)
       respond_with({ :memory => command.run })
     end
