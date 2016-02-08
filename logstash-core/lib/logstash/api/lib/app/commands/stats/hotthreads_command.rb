@@ -9,7 +9,7 @@ class LogStash::Api::HotThreadsCommand < LogStash::Api::Command
   def run(options={})
     filter = { :stacktrace_size => options.fetch(:stacktrace_size, 3) }
     hash   = JRMonitor.threads.generate(filter)
-    ThreadDump.new(hash, service, options)
+    ThreadDump.new(hash, self, options)
   end
 
   private
@@ -20,12 +20,12 @@ class LogStash::Api::HotThreadsCommand < LogStash::Api::Command
 
     attr_reader :top_count, :ignore, :dump
 
-    def initialize(dump, service, options={})
-      @dump    = dump
-      @options = options
+    def initialize(dump, cmd, options={})
+      @dump      = dump
+      @options   = options
       @top_count = options.fetch(:threads, 3)
       @ignore    = options.fetch(:ignore_idle_threads, true)
-      @service   = service
+      @cmd       = cmd
     end
 
     def to_s
@@ -33,7 +33,7 @@ class LogStash::Api::HotThreadsCommand < LogStash::Api::Command
       report = "::: {#{hash[:hostname]}} \n Hot threads at #{hash[:time]}, busiestThreads=#{top_count}:\n"
       hash[:threads].each do |thread|
         thread_report = ""
-        thread_report = "\t #{thread[:cpu_time]} micros of cpu usage by #{thread[:state]} thread named '#{thread[:name]}'\n"
+        thread_report = "\t #{thread[:percent_of_cpu_time]} % of of cpu usage by #{thread[:state]} thread named '#{thread[:name]}'\n"
         thread_report << "\t\t #{thread[:path]}\n" if thread[:path]
         thread[:traces].split("\n").each do |trace|
           thread_report << "#{trace}\n"
@@ -48,7 +48,7 @@ class LogStash::Api::HotThreadsCommand < LogStash::Api::Command
       each do |thread_name, _hash|
         thread_name, thread_path = _hash["thread.name"].split(": ")
         thread = { :name => thread_name,
-                   :cpu_time => cpu_time(_hash),
+                   :percent_of_cpu_time => cpu_time_as_percent(_hash),
                    :state => _hash["thread.state"]
         }
         thread[:path] = thread_path if thread_path
@@ -77,22 +77,16 @@ class LogStash::Api::HotThreadsCommand < LogStash::Api::Command
       end
     end
 
-    def build_report(hash)
-      thread_name, thread_path = hash["thread.name"].split(": ")
-      report = "\t #{cpu_time(hash)} micros of cpu usage by #{hash["thread.state"]} thread named '#{thread_name}'\n"
-      report << "\t\t #{thread_path}\n" if thread_path
-      hash["thread.stacktrace"].each do |trace|
-        report << "\t\t#{trace}\n"
-      end
-      report
+    def hostname
+      @cmd.service.agent.node_name
     end
 
-    def hostname
-      @service.agent.node_name
+    def cpu_time_as_percent(hash)
+      (((cpu_time(hash) / @cmd.uptime * 1.0)*10000).to_i)/100.0
     end
 
     def cpu_time(hash)
-      hash["cpu.time"] / 1000
+      hash["cpu.time"] / 1000000.0
     end
   end
 

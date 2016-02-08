@@ -14,5 +14,9 @@ module LogStash::Api
       raise "Not implemented"
     end
 
+    def uptime
+      service.agent.pipelines["base"].uptime
+    end
+
   end
 end
