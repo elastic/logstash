@@ -41,7 +41,9 @@ describe LogStash::Agent do
     let(:config_file) { Stud::Temporary.pathname }
 
     before :each do
-      File.open(config_file, "w") {|f| f.puts sample_config }
+      allow(subject).to receive(:start_webserver).and_return(false)
+      allow(subject).to receive(:stop_webserver).and_return(false)
+      File.open(config_file, "w") { |f| f.puts sample_config }
     end
 
     after :each do
