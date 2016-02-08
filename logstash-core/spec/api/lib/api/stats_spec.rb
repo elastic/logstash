@@ -1,7 +1,7 @@
 # encoding: utf-8
 require_relative "../../spec_helper"
 require "sinatra"
-require "app/stats"
+require "app/modules/stats"
 
 describe LogStash::Api::Stats do
 

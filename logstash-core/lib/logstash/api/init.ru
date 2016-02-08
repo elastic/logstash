@@ -4,9 +4,9 @@ Dir.glob('lib/**').each{ |d| $LOAD_PATH.unshift(File.join(ROOT, d)) }
 
 require 'sinatra'
 require 'app/root'
-require 'app/stats'
-require 'app/node'
-require 'app/node_stats'
+require 'app/modules/stats'
+require 'app/modules/node'
+require 'app/modules/node_stats'
 
 env = ENV["RACK_ENV"].to_sym
 set :environment, env
