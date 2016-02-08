@@ -15,7 +15,11 @@ module LogStash::Api
     end
 
     def uptime
-      service.agent.pipelines["base"].uptime
+      service.agent.uptime
+    end
+
+    def started_at
+      (service.agent.started_at.to_f*1000.0).to_i
     end
 
   end
