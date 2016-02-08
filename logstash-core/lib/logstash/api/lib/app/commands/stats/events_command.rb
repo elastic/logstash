@@ -8,8 +8,6 @@ class LogStash::Api::StatsEventsCommand < LogStash::Api::Command
     #need to be tailored to the right metrics for this command.
     stats =  LogStash::Json.load(service.get(:events_stats))
     stats["stats"]["events"]
-  rescue
-    {}
   end
 
 end

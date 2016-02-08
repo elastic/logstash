@@ -20,8 +20,6 @@ class LogStash::Api::JvmMemoryCommand < LogStash::Api::Command
           acc
     end
     }
-  rescue
-    {} # Something happen, so we just return an empty hash.
   end
 
 end

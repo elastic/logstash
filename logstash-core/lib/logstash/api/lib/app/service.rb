@@ -39,7 +39,5 @@ class LogStash::Api::Service
       data = metric_store.get_with_path("stats/events")
     end
     LogStash::Json.dump(data)
-  rescue
-    {}
   end
 end
