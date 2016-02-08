@@ -14,6 +14,10 @@ module LogStash::Api
       raise "Not implemented"
     end
 
+    def hostname
+      service.agent.node_name
+    end
+
     def uptime
       service.agent.uptime
     end
