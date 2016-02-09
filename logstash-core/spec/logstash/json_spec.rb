@@ -56,6 +56,20 @@ describe "LogStash::Json" do
         expect(LogStash::Json.dump(array)).to eql(json_array)
       end
 
+      context "pretty print" do
+
+        let(:hash) { { "foo" => "bar", :zoo => 2 } }
+
+        it "should serialize with pretty print" do
+          pprint_json = LogStash::Json.dump(hash, :pretty => true)
+          expect(pprint_json).to include("\n")
+        end
+
+        it "should by default do no pretty print" do
+          pprint_json = LogStash::Json.dump(hash)
+          expect(pprint_json).not_to include("\n")
+        end
+      end
     end
 
   else
