@@ -82,6 +82,10 @@ class LogStash::Runner < Clamp::Command
     I18n.t("logstash.runner.flag.auto_reload"),
     :attribute_name => :auto_reload, :default => false
 
+  option ["-ap", "--http-port"], "WEB_API_HTTP_PORT",
+    I18n.t("logstash.web_api.flag.http_port"),
+    :attribute_name => :web_api_http_port, :default => 9600
+
   def pipeline_workers=(pipeline_workers_value)
     @pipeline_settings[:pipeline_workers] = validate_positive_integer(pipeline_workers_value)
   end
@@ -170,7 +174,8 @@ class LogStash::Runner < Clamp::Command
                           :auto_reload => @auto_reload,
                           :collect_metric => true,
                           :debug => debug?,
-                           :node_name => node_name)
+                          :node_name => node_name,
+                          :web_api_http_port => @web_api_http_port)
 
     @agent.register_pipeline("main", @pipeline_settings.merge({
                           :config_string => config_string,

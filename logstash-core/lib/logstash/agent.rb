@@ -34,6 +34,8 @@ class LogStash::Agent
     @pipelines = {}
     @started_at = Time.now
     @node_name = params[:node_name] || Socket.gethostname
+    @web_api_http_port = params[:web_api_http_port] || 9600
+
     @config_loader = LogStash::Config::Loader.new(@logger)
     @reload_interval = params[:reload_interval] || 3 # seconds
     @upgrade_mutex = Mutex.new
@@ -108,7 +110,7 @@ class LogStash::Agent
 
   private
   def start_webserver
-    options = { :debug => debug }
+    options = { :debug => debug, :http_port => @web_api_http_port }
     @webserver = LogStash::WebServer.new(@logger, options)
     Thread.new(@webserver) do |webserver|
       LogStash::Util.set_thread_name("Api Webserver")
