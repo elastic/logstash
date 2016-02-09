@@ -18,7 +18,7 @@ class LogStash::Api::HotThreadsCommand < LogStash::Api::Command
   class ThreadDump
 
     SKIPPED_THREADS             = [ "Finalizer", "Reference Handler", "Signal Dispatcher" ].freeze
-    THREADS_COUNT_DEFAULT       = 10.freeze
+    THREADS_COUNT_DEFAULT       = 3.freeze
     IGNORE_IDLE_THREADS_DEFAULT = true.freeze
 
     attr_reader :top_count, :ignore, :dump
@@ -50,6 +50,7 @@ class LogStash::Api::HotThreadsCommand < LogStash::Api::Command
     def to_hash
       hash = { :hostname => hostname, :time => Time.now.iso8601, :busiest_threads => top_count, :threads => [] }
       each do |thread_name, _hash|
+        next if @ignore && _hash["thread.state"].include?("waiting")
         thread_name, thread_path = _hash["thread.name"].split(": ")
         thread = { :name => thread_name,
                    :percent_of_cpu_time => cpu_time_as_percent(_hash),
