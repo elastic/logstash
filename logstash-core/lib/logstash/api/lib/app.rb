@@ -25,6 +25,11 @@ module LogStash::Api
       @factory = CommandFactory.new(settings.service)
     end
 
+    not_found do
+      status 404
+      respond_with({})
+    end
+
     error do
       logger.error(env['sinatra.error'].message, :url => request.url, :ip => request.ip, :params => request.params)
     end
