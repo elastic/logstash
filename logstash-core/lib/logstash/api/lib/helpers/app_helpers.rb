@@ -3,10 +3,12 @@ require "logstash/json"
 
 module LogStash::Api::AppHelpers
 
-  def respond_with(data, as=:json)
+  def respond_with(data, options={})
+    as     = options.fetch(:as, :json)
+    pretty = params.has_key?("pretty")
     if as == :json
       content_type "application/json"
-      LogStash::Json.dump(data)
+      LogStash::Json.dump(data, {:pretty => pretty})
     else
       content_type "text/plain"
       data.to_s
