@@ -70,6 +70,8 @@ en:
       forced_sigint: >-
         SIGINT received. Terminating immediately..
     web_api:
+      flag:
+        http_port: Web API http port
       hot_threads:
         title: |-
           ::: {%{hostname}}
