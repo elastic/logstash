@@ -16,8 +16,10 @@ module LogStash
 
     def initialize(logger, options={})
       @logger      = logger
+      http_port    = options[:http_port] || 9600
       @options     = {}
-      @cli_options = options.merge({ :rackup => ::File.join(::File.dirname(__FILE__), "api", "init.ru")  })
+      @cli_options = options.merge({ :rackup => ::File.join(::File.dirname(__FILE__), "api", "init.ru"), 
+                                     :binds => ["tcp://0.0.0.0:#{http_port}"] })
       @status      = nil
 
       parse_options
