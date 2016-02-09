@@ -22,18 +22,17 @@ class LogStash::Agent < Clamp::Command
     :default => "", :attribute_name => :config_string
 
   option ["-w", "--pipeline-workers"], "COUNT",
-         I18n.t("logstash.runner.flag.pipeline-workers"),
+         I18n.t("logstash.agent.flag.pipeline-workers"),
          :attribute_name => :pipeline_workers,
          :default => LogStash::Pipeline::DEFAULT_SETTINGS[:default_pipeline_workers]
 
-
   option ["-b", "--pipeline-batch-size"], "SIZE",
-         I18n.t("logstash.runner.flag.pipeline-batch-size"),
+         I18n.t("logstash.agent.flag.pipeline-batch-size"),
          :attribute_name => :pipeline_batch_size,
          :default => LogStash::Pipeline::DEFAULT_SETTINGS[:pipeline_batch_size]
 
   option ["-u", "--pipeline-batch-delay"], "DELAY_IN_MS",
-         I18n.t("logstash.runner.flag.pipeline-batch-delay"),
+         I18n.t("logstash.agent.flag.pipeline-batch-delay"),
          :attribute_name => :pipeline_batch_delay,
          :default => LogStash::Pipeline::DEFAULT_SETTINGS[:pipeline_batch_delay]
 
