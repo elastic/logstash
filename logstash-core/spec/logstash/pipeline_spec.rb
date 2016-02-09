@@ -62,7 +62,7 @@ class DummyOutput < LogStash::Outputs::Base
 
   def register
   end
-  
+
   def receive(event)
     @events << event
   end
@@ -416,7 +416,7 @@ describe LogStash::Pipeline do
         }
       }
       filter {
-        multiline { 
+        multiline {
           pattern => "^NeverMatch"
           negate => true
           what => "previous"
@@ -428,7 +428,7 @@ describe LogStash::Pipeline do
       EOS
     end
     let(:output) { DummyOutput.new }
-    
+
     before do
       allow(DummyOutput).to receive(:new).with(any_args).and_return(output)
       allow(LogStash::Plugin).to receive(:lookup).with("input", "generator").and_return(LogStash::Inputs::Generator)
@@ -526,6 +526,61 @@ describe LogStash::Pipeline do
         expect(subject.uptime).to be > 0
         t.kill rescue nil
       end
+    end
+  end
+
+  context "when collecting metric in the pipeline" do
+    subject { described_class.new(config, { :metric => metric, :pipeline_id => pipeline_id }) }
+    let(:pipeline_id) { :main }
+    let(:metric) { LogStash::Instrument::Metric.create }
+    let(:number_of_events) { 1000 }
+    let(:config) do
+      <<-EOS
+      input { generator { count => #{number_of_events}} }
+      filter {
+         multiline {
+              pattern => "hello"
+              what => next
+          }
+      }
+      output { dummyoutput {} }
+      EOS
+    end
+    let(:dummyoutput) { DummyOutput.new }
+
+    before do
+      allow(DummyOutput).to receive(:new).with(any_args).and_return(dummyoutput)
+      allow(LogStash::Plugin).to receive(:lookup).with("input", "generator").and_return(LogStash::Inputs::Generator)
+      allow(LogStash::Plugin).to receive(:lookup).with("codec", "plain").and_return(LogStash::Codecs::Plain)
+      allow(LogStash::Plugin).to receive(:lookup).with("filter", "multiline").and_return(LogStash::Filters::Multiline)
+      allow(LogStash::Plugin).to receive(:lookup).with("output", "dummyoutput").and_return(DummyOutput)
+
+      # Reset the metric store
+      LogStash::Instrument::Collector.instance.clear
+    end
+
+    it "populates the differents core metrics" do
+      t = Thread.new { subject.run }
+      # make sure we have received all the generated events
+      sleep 0.01 while dummyoutput.events.size < number_of_events
+
+      collected_metric = LogStash::Instrument::Collector.instance.snapshot_metric.metric_store.get_with_path("stats/events")
+
+      expect(collected_metric[:stats][:events][:in].value).to eq(number_of_events)
+      expect(collected_metric[:stats][:events][:filtered].value).to eq(number_of_events)
+      expect(collected_metric[:stats][:events][:out].value).to eq(number_of_events)
+    end
+
+    it "populates the pipelines core metrics" do
+      t = Thread.new { subject.run }
+      # make sure we have received all the generated events
+      sleep 0.01 while dummyoutput.events.size < number_of_events
+
+      collected_metric = LogStash::Instrument::Collector.instance.snapshot_metric.metric_store.get_with_path("stats/pipelines/")
+
+      expect(collected_metric[:stats][:pipelines][:main][:events][:in].value).to eq(number_of_events)
+      expect(collected_metric[:stats][:pipelines][:main][:events][:filtered].value).to eq(number_of_events)
+      expect(collected_metric[:stats][:pipelines][:main][:events][:out].value).to eq(number_of_events)
     end
   end
 end

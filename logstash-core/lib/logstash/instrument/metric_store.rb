@@ -21,6 +21,10 @@ module LogStash module Instrument
       # We keep the structured cache to allow
       # the api to search the content of the differents nodes
       @store = Concurrent::Map.new
+
+      # This hash has only one dimension
+      # and allow fast retrieval of the metrics
+      @fast_lookup = Concurrent::Map.new
     end
 
     # This method use the namespace and key to search the corresponding value of
@@ -28,10 +32,32 @@ module LogStash module Instrument
     # path in the hash and return `new_value`
     #
     # @param [Array] The path where the values should be located
-    # @param [Object] The default object if the value is not found in the path
+    # @param [Symbol] The metric key
     # @return [Object] Return the new_value of the retrieve object in the tree
     def fetch_or_store(namespaces, key, default_value = nil)
-      fetch_or_store_namespaces(namespaces).fetch_or_store(key, block_given? ? yield(key) : default_value)
+      provided_value =  block_given? ? yield(key) : default_value
+
+      # We first check in the `@fast_lookup` store to see if we have already see that metrics before,
+      # This give us a `o(1)` access, which is faster than searching through the structured
+      # data store (Which is a `o(n)` operation where `n` is the number of element in the namespace and
+      # the value of the key). If the metric is already present in the `@fast_lookup`, the call to
+      # `#put_if_absent` will return the value. This value is send back directly to the caller.
+      #
+      # BUT. If the value is not present in the `@fast_lookup` the value will be inserted and
+      # `#puf_if_absent` will return nil. With this returned value of nil we assume that we don't
+      # have it in the `@metric_store` for structured search so we add it there too.
+      #
+      # The problem with only using the `@metric_store` directly all the time would require us
+      # to use the mutex around the structure since its a multi-level hash, without that it wont
+      # return a consistent value of the metric and this would slow down the code and would
+      # complixity the code.
+      if found_value = @fast_lookup.put_if_absent([namespaces, key], provided_value)
+        return found_value
+      else
+        # If we cannot find the value this mean we need to save it in the store.
+        fetch_or_store_namespaces(namespaces).fetch_or_store(key, provided_value)
+        return provided_value
+      end
     end
 
     # This method allow to retrieve values for a specific path,
@@ -80,7 +106,7 @@ module LogStash module Instrument
 
     private
     def get_all
-      each_recursively(@store).flatten
+      @fast_lookup.values
     end
 
     def get_recursively(key_paths, map, new_hash)
