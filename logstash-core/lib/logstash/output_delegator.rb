@@ -12,11 +12,17 @@ module LogStash class OutputDelegator
 
   # The *args this takes are the same format that a Outputs::Base takes. A list of hashes with parameters in them
   # Internally these just get merged together into a single hash
-  def initialize(logger, klass, default_worker_count, *args)
+  def initialize(logger, klass, default_worker_count, metric, *args)
     @logger = logger
     @threadsafe = klass.threadsafe?
     @config = args.reduce({}, :merge)
     @klass = klass
+
+    # Create an instance of the input so we can fetch the identifier
+    output = @klass.new(*args)
+
+    # Scope the metrics to the plugin
+    @metric = metric.namespace(output.id.to_sym)
 
     # We define this as an array regardless of threadsafety
     # to make reporting simpler, even though a threadsafe plugin will just have
@@ -39,6 +45,7 @@ module LogStash class OutputDelegator
 
     @workers += (@worker_count - 1).times.map do
       inst = @klass.new(*args)
+      inst.metric = @metric
       inst.register
       inst
     end
@@ -107,6 +114,7 @@ module LogStash class OutputDelegator
 
   def threadsafe_multi_receive(events)
     @events_received.increment(events.length)
+    @metric.increment(:events_in, events.length)
 
     @threadsafe_worker.multi_receive(events)
   end

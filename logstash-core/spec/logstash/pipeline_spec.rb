@@ -17,6 +17,21 @@ class DummyInput < LogStash::Inputs::Base
   end
 end
 
+class DummyInputGenerator < LogStash::Inputs::Base
+  config_name "dummyinputgenerator"
+  milestone 2
+
+  def register
+  end
+
+  def run(queue)
+    queue << Logstash::Event.new while !stop?
+  end
+
+  def close
+  end
+end
+
 class DummyCodec < LogStash::Codecs::Base
   config_name "dummycodec"
   milestone 2
@@ -53,8 +68,12 @@ class DummyOutput < LogStash::Outputs::Base
   end
 
   def close
-    @num_closes += 1
+    @num_closes = 1
   end
+end
+
+class DummyOutputMore < DummyOutput
+  config_name "dummyoutputmore"
 end
 
 class DummyFilter < LogStash::Filters::Base
@@ -120,8 +139,7 @@ describe LogStash::Pipeline do
 
       context "when there is no command line -w N set" do
         it "starts one filter thread" do
-          msg = "Defaulting pipeline worker threads to 1 because there are some" +
-                " filters that might not work with multiple worker threads"
+          msg = "Defaulting pipeline worker threads to 1 because there are some filters that might not work with multiple worker threads"
           pipeline = TestPipeline.new(test_config_with_filters)
           expect(pipeline.logger).to receive(:warn).with(msg,
             {:count_was=>worker_thread_count, :filters=>["dummyfilter"]})
@@ -132,8 +150,7 @@ describe LogStash::Pipeline do
 
       context "when there is command line -w N set" do
         it "starts multiple filter thread" do
-          msg = "Warning: Manual override - there are filters that might" +
-                " not work with multiple worker threads"
+          msg = "Warning: Manual override - there are filters that might not work with multiple worker threads"
           pipeline = TestPipeline.new(test_config_with_filters)
           expect(pipeline.logger).to receive(:warn).with(msg,
             {:worker_threads=> override_thread_count, :filters=>["dummyfilter"]})
@@ -356,6 +373,39 @@ describe LogStash::Pipeline do
     end
   end
 
+  context "metrics" do
+    config <<-CONFIG
+    input { }
+    filter { }
+    output { }
+    CONFIG
+
+    it "uses a `NullMetric` object if no metric is given" do
+      pipeline = LogStash::Pipeline.new(config)
+      expect(pipeline.metric).to be_kind_of(LogStash::Instrument::NullMetric)
+    end
+  end
+
+  context "Multiples pipelines" do
+    before do
+      allow(LogStash::Plugin).to receive(:lookup).with("input", "dummyinputgenerator").and_return(DummyInputGenerator)
+      allow(LogStash::Plugin).to receive(:lookup).with("codec", "plain").and_return(DummyCodec)
+      allow(LogStash::Plugin).to receive(:lookup).with("filter", "dummyfilter").and_return(DummyFilter)
+      allow(LogStash::Plugin).to receive(:lookup).with("output", "dummyoutput").and_return(DummyOutput)
+      allow(LogStash::Plugin).to receive(:lookup).with("output", "dummyoutputmore").and_return(DummyOutputMore)
+    end
+
+    let(:pipeline1) { LogStash::Pipeline.new("input { dummyinputgenerator {} } filter { dummyfilter {} } output { dummyoutput {}}") }
+    let(:pipeline2) { LogStash::Pipeline.new("input { dummyinputgenerator {} } filter { dummyfilter {} } output { dummyoutputmore {}}") }
+
+    it "should handle evaluating different config" do
+      expect(pipeline1.output_func(LogStash::Event.new)).not_to include(nil)
+      expect(pipeline1.filter_func(LogStash::Event.new)).not_to include(nil)
+      expect(pipeline2.output_func(LogStash::Event.new)).not_to include(nil)
+      expect(pipeline1.filter_func(LogStash::Event.new)).not_to include(nil)
+    end
+  end
+
   context "Periodic Flush" do
     let(:number_of_events) { 100 }
     let(:config) do
@@ -414,8 +464,8 @@ describe LogStash::Pipeline do
 
     it "should handle evaluating different config" do
       # When the functions are compiled from the AST it will generate instance
-      # variables that are unique to the actual config, the intance are pointing
-      # to conditionals/plugins.
+      # variables that are unique to the actual config, the intances are pointing
+      # to conditionals and/or plugins.
       #
       # Before the `defined_singleton_method`, the definition of the method was
       # not unique per class, but the `instance variables` were unique per class.
@@ -427,6 +477,55 @@ describe LogStash::Pipeline do
       expect(pipeline1.filter_func(LogStash::Event.new)).not_to include(nil)
       expect(pipeline2.output_func(LogStash::Event.new)).not_to include(nil)
       expect(pipeline1.filter_func(LogStash::Event.new)).not_to include(nil)
+    end
+  end
+
+  context "#started_at" do
+    let(:config) do
+      <<-EOS
+      input {
+        generator {}
+      }
+      EOS
+    end
+
+    subject { described_class.new(config) }
+
+    it "returns nil when the pipeline isnt started" do
+      expect(subject.started_at).to be_nil
+    end
+
+    it "return when the pipeline started working" do
+      t = Thread.new { subject.run }
+      sleep(0.1)
+      expect(subject.started_at).to be < Time.now
+      t.kill rescue nil
+    end
+  end
+
+  context "#uptime" do
+    let(:config) do
+      <<-EOS
+      input {
+        generator {}
+      }
+      EOS
+    end
+    subject { described_class.new(config) }
+
+    context "when the pipeline is not started" do
+      it "returns 0" do
+        expect(subject.uptime).to eq(0)
+      end
+    end
+
+    context "when the pipeline is started" do
+      it "return the duration in milliseconds" do
+        t = Thread.new { subject.run }
+        sleep(0.1)
+        expect(subject.uptime).to be > 0
+        t.kill rescue nil
+      end
     end
   end
 end

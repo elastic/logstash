@@ -2,8 +2,10 @@
 require "logstash/namespace"
 require "logstash/logging"
 require "logstash/config/mixin"
+require "logstash/instrument/null_metric"
 require "cabin"
 require "concurrent"
+require "securerandom"
 
 class LogStash::Plugin
   attr_accessor :params
@@ -11,26 +13,54 @@ class LogStash::Plugin
 
   NL = "\n"
 
-  public
+  include LogStash::Config::Mixin
+
+  # Disable or enable metric logging for this specific plugin instance
+  # by default we record all the metrics we can, but you can disable metrics collection
+  # for a specific plugin.
+  config :enable_metric, :validate => :boolean, :default => true
+
+  # Add a unique `ID` to the plugin instance, this `ID` is used for tracking
+  # information for a specific configuration of the plugin.
+  #
+  # ```
+  # output {
+  #  stdout {
+  #    id => "ABC"
+  #  }
+  # }
+  # ```
+  #
+  # If you don't explicitely set this variable Logstash will generate a unique name.
+  config :id, :validate => :string, :default => ""
+
   def hash
     params.hash ^
     self.class.name.hash
   end
 
-  public
+
   def eql?(other)
     self.class.name == other.class.name && @params == other.params
   end
 
-  public
   def initialize(params=nil)
     @params = LogStash::Util.deep_clone(params)
     @logger = Cabin::Channel.get(LogStash)
   end
 
+  # Return a uniq ID for this plugin configuration, by default
+  # we will generate a UUID
+  #
+  # If the user defines a `id => 'ABC'` in the configuration we will return
+  #
+  # @return [String] A plugin ID
+  def id
+    (@params["id"].nil? || @params["id"].empty?) ? SecureRandom.uuid : @params["id"]
+  end
+
   # close is called during shutdown, after the plugin worker
   # main task terminates
-  public
   def do_close
     @logger.debug("closing", :plugin => self)
     close
@@ -38,7 +68,6 @@ class LogStash::Plugin
 
   # Subclasses should implement this close method if you need to perform any
   # special tasks during shutdown (like flushing, etc.)
-  public
   def close
     # ..
   end
@@ -47,7 +76,6 @@ class LogStash::Plugin
     return "#{self.class.name}: #{@params}"
   end
 
-  public
   def inspect
     if !@params.nil?
       description = @params
@@ -59,13 +87,19 @@ class LogStash::Plugin
     end
   end
 
-  public
   def debug_info
     [self.class.to_s, original_params]
   end
 
+  def metric=(new_metric)
+    @metric = new_metric
+  end
+
+  def metric
+    @metric_plugin ||= enable_metric ? @metric : LogStash::Instrument::NullMetric.new
+  end
+
   # Look up a plugin by type and name.
-  public
   def self.lookup(type, name)
     path = "logstash/#{type}s/#{name}"
 
@@ -86,7 +120,6 @@ class LogStash::Plugin
   end
 
   private
-
   # lookup a plugin by type and name in the existing LogStash module namespace
   # ex.: namespace_lookup("filter", "grok") looks for LogStash::Filters::Grok
   # @param type [String] plugin type, "input", "ouput", "filter"

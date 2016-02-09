@@ -41,7 +41,9 @@ describe LogStash::Agent do
     let(:config_file) { Stud::Temporary.pathname }
 
     before :each do
-      File.open(config_file, "w") {|f| f.puts sample_config }
+      allow(subject).to receive(:start_webserver).and_return(false)
+      allow(subject).to receive(:stop_webserver).and_return(false)
+      File.open(config_file, "w") { |f| f.puts sample_config }
     end
 
     after :each do
@@ -182,6 +184,17 @@ describe LogStash::Agent do
       fetched_config = subject.send(:fetch_config, settings)
       expect(fetched_config.strip).to eq(cli_config + IO.read(tmp_config_path))
     end
+  end
 
+  context "#started_at" do
+    it "return the start time when the agent is started" do
+      expect(subject.started_at).to be_kind_of(Time)
+    end
+  end
+
+  context "#uptime" do
+    it "return the number of milliseconds since start time" do
+      expect(subject.uptime).to be >= 0
+    end
   end
 end

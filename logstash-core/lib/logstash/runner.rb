@@ -82,6 +82,10 @@ class LogStash::Runner < Clamp::Command
     I18n.t("logstash.runner.flag.auto_reload"),
     :attribute_name => :auto_reload, :default => false
 
+  option ["-ap", "--http-port"], "WEB_API_HTTP_PORT",
+    I18n.t("logstash.web_api.flag.http_port"),
+    :attribute_name => :web_api_http_port, :default => 9600
+
   def pipeline_workers=(pipeline_workers_value)
     @pipeline_settings[:pipeline_workers] = validate_positive_integer(pipeline_workers_value)
   end
@@ -116,6 +120,11 @@ class LogStash::Runner < Clamp::Command
     require "logstash/util/java_version"
     require "stud/task"
     require "cabin" # gem 'cabin'
+
+
+    # Configure Logstash logging facility, this need to be done before everything else to
+    # make sure the logger has the correct settings and the log level is correctly defined.
+    configure_logging(log_file)
 
     LogStash::Util::set_thread_name(self.class.name)
 
@@ -162,7 +171,11 @@ class LogStash::Runner < Clamp::Command
     end
 
     @agent = create_agent(:logger => @logger,
-                          :auto_reload => @auto_reload)
+                          :auto_reload => @auto_reload,
+                          :collect_metric => true,
+                          :debug => debug?,
+                          :node_name => node_name,
+                          :web_api_http_port => @web_api_http_port)
 
     @agent.register_pipeline("main", @pipeline_settings.merge({
                           :config_string => config_string,
@@ -235,7 +248,6 @@ class LogStash::Runner < Clamp::Command
   #
   # Log file stuff, plugin path checking, etc.
   def configure
-    configure_logging(log_file)
     configure_plugin_paths(plugin_paths)
   end # def configure
 
@@ -254,6 +266,7 @@ class LogStash::Runner < Clamp::Command
 
   # Point logging at a specific path.
   def configure_logging(path)
+    @logger = Cabin::Channel.get(LogStash)
     # Set with the -v (or -vv...) flag
     if quiet?
       @logger.level = :error
