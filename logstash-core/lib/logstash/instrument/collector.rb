@@ -61,6 +61,9 @@ module LogStash module Instrument
       end
     end
 
+    def clear
+      @metric_store = MetricStore.new
+    end
 
     # Monitor the `Concurrent::TimerTask` this update is triggered on every successful or not
     # run of the task, TimerTask implement Observable and the collector acts as
