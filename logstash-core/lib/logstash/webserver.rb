@@ -17,10 +17,12 @@ module LogStash
     def initialize(logger, options={})
       @logger      = logger
       @options     = {}
-      @cli_options = options.merge({ :rackup => ::File.join(::File.dirname(__FILE__), "api", "init.ru")  })
+      @cli_options = options.merge({ :rackup => ::File.join(::File.dirname(__FILE__), "api", "init.ru"), :binds => ["tcp://0.0.0.0:9600"] })
       @status      = nil
 
       parse_options
+
+      puts @options
 
       @runner  = nil
       @events  = ::Puma::Events.strings
