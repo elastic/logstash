@@ -15,8 +15,8 @@ module LogStash::Api
         :human => params.has_key?("human")
       }
       command = factory.build(:hot_threads_command)
-      type    = options[:human] ? :string : :json
-      respond_with(command.run(options), type)
+      as    = options[:human] ? :string : :json
+      respond_with(command.run(options), {:as => as})
     end
 
   end
