@@ -121,32 +121,20 @@ public class EventTest {
 
     @Test
     public void testFromJsonWithNull() throws Exception {
-        Map data1 = Event.fromJson(null)[0].toMap();
-        data1.remove("@timestamp");
-        Map data2 = new Event().toMap();
-        data2.remove("@timestamp");
-
-        assertEquals(data1, data2);
+        Event[] events = Event.fromJson(null);
+        assertEquals(0, events.length);
     }
 
     @Test
     public void testFromJsonWithEmptyString() throws Exception {
-        Map data1 = Event.fromJson("")[0].toMap();
-        data1.remove("@timestamp");
-        Map data2 = new Event().toMap();
-        data2.remove("@timestamp");
-
-        assertEquals(data1, data2);
+        Event[] events = Event.fromJson("");
+        assertEquals(0, events.length);
     }
 
     @Test
     public void testFromJsonWithBlankString() throws Exception {
-        Map data1 = Event.fromJson("   ")[0].toMap();
-        data1.remove("@timestamp");
-        Map data2 = new Event().toMap();
-        data2.remove("@timestamp");
-
-        assertEquals(data1, data2);
+        Event[] events = Event.fromJson("   ");
+        assertEquals(0, events.length);
     }
 
     @Test

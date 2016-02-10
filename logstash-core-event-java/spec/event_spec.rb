@@ -247,18 +247,14 @@ describe LogStash::Event do
       expect(event["[bar]"]).to eq("baz")
     end
 
-    it "should consistently handle blank string" do
+    it "should ignore blank strings" do
       blank_strings.each do |s|
-        t = LogStash::Timestamp.new
-        expect(LogStash::Event.from_json(s).size).to eq(1)
-
-        event1 = LogStash::Event.from_json(s)[0]
-        event2 = LogStash::Event.new(LogStash::Json.load(s))
-        event1.timestamp = t
-        event2.timestamp = t
-
-        expect(event1.to_hash).to eq(event2.to_hash)
+        expect(LogStash::Event.from_json(s).size).to eq(0)
       end
+    end
+
+    it "should raise TypeError on nil string" do
+      expect{LogStash::Event.from_json(nil)}.to raise_error TypeError
     end
 
     it "should consistently handle nil" do
