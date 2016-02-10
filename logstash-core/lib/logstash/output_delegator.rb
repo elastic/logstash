@@ -22,7 +22,9 @@ module LogStash class OutputDelegator
     output = @klass.new(*args)
 
     # Scope the metrics to the plugin
-    @metric = metric.namespace(output.id.to_sym)
+    namespaced_metric = metric.namespace(output.plugin_unique_name.to_sym)
+    @metric_events = namespaced_metric.namespace(:events)
+
 
     # We define this as an array regardless of threadsafety
     # to make reporting simpler, even though a threadsafe plugin will just have
@@ -114,17 +116,20 @@ module LogStash class OutputDelegator
 
   def threadsafe_multi_receive(events)
     @events_received.increment(events.length)
-    @metric.increment(:events_in, events.length)
+    @metric_events.increment(:in, events.length)
 
     @threadsafe_worker.multi_receive(events)
+    @metric_events.increment(:out, events.length)
   end
 
   def worker_multi_receive(events)
     @events_received.increment(events.length)
+    @metric_events.increment(:in, events.length)
 
     worker = @worker_queue.pop
     begin
       worker.multi_receive(events)
+      @metric_events.increment(:out, events.length)
     ensure
       @worker_queue.push(worker)
     end
