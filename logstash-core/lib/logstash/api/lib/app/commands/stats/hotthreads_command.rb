@@ -50,7 +50,6 @@ class LogStash::Api::HotThreadsCommand < LogStash::Api::Command
     def to_hash
       hash = { :hostname => hostname, :time => Time.now.iso8601, :busiest_threads => top_count, :threads => [] }
       each do |thread_name, _hash|
-        next if @ignore && _hash["thread.state"].include?("waiting")
         thread_name, thread_path = _hash["thread.name"].split(": ")
         thread = { :name => thread_name,
                    :percent_of_cpu_time => cpu_time_as_percent(_hash),
@@ -74,12 +73,35 @@ class LogStash::Api::HotThreadsCommand < LogStash::Api::Command
       dump.each_pair do |thread_name, _hash|
         break if i >= top_count
         if ignore
-          next if SKIPPED_THREADS.include?(thread_name)
-          next if thread_name.match(/Ruby-\d+-JIT-\d+/)
+          next if idle_thread?(thread_name, _hash)
         end
         block.call(thread_name, _hash)
         i += 1
       end
+    end
+
+    def idle_thread?(thread_name, data)
+      idle = false
+      if SKIPPED_THREADS.include?(thread_name)
+        # these are likely JVM dependent
+        idle = true
+      elsif thread_name.match(/Ruby-\d+-JIT-\d+/)
+        # This are internal JRuby JIT threads, 
+        # see java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor for details.
+        idle = true
+      elsif thread_name.match(/pool-\d+-thread-\d+/)
+        # This are threads used by the internal JRuby implementation to dispatch
+        # calls and tasks, see prg.jruby.internal.runtime.methods.DynamicMethod.call
+        idle = true
+      else
+        data["thread.stacktrace"].each do |trace|
+          if trace.start_with?("java.util.concurrent.ThreadPoolExecutor.getTask")
+            idle = true
+            break
+          end
+        end
+      end
+      idle
     end
 
     def hostname
