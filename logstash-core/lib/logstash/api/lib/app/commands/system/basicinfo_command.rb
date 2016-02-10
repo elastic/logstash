@@ -8,7 +8,7 @@ class LogStash::Api::SystemBasicInfoCommand < LogStash::Api::Command
     {
       "hostname" => hostname,
       "version" => {
-        "number" => LOGSTASH_VERSION,
+        "number" => LOGSTASH_VERSION
       }
     }
   end
