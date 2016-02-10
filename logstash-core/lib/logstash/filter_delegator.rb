@@ -3,14 +3,15 @@
 module LogStash
   class FilterDelegator
     extend Forwardable
-
-    def_delegators :@filter,
+    DELEGATED_METHODS = [
       :register,
       :close,
       :threadsafe?,
       :do_close,
       :do_stop,
       :periodic_flush
+    ]
+    def_delegators :@filter, *DELEGATED_METHODS
 
     def initialize(logger, klass, metric, *args)
       options = args.reduce({}, :merge)
@@ -41,7 +42,7 @@ module LogStash
       # There is no garantee in the context of filter
       # that EVENTS_INT == EVENTS_OUT, see the aggregates and
       # the split filter
-      @metric_events.increment(:out, new_events.size) unless new_events.nil?
+      @metric_events.increment(:out, new_events.count { |event| !event.cancelled? })
 
       return new_events
     end
