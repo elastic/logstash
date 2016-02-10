@@ -28,8 +28,6 @@ module LogStash module Instrument
       @metric_store = MetricStore.new
       @agent = nil
       start_periodic_snapshotting
-
-      @async_worker_pool
     end
 
     # The metric library will call this unique interface
