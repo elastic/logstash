@@ -59,6 +59,14 @@ class LogStash::Plugin
     (@params["id"].nil? || @params["id"].empty?) ? SecureRandom.uuid : @params["id"]
   end
 
+  # Return a unique_name, This is composed by the name of
+  # the plugin and the generated ID (of the configured one)
+  #
+  # @return [String] a unique name
+  def plugin_unique_name
+    "#{config_name}_#{id}"
+  end
+
   # close is called during shutdown, after the plugin worker
   # main task terminates
   def do_close
@@ -98,6 +106,13 @@ class LogStash::Plugin
   def metric
     @metric_plugin ||= enable_metric ? @metric : LogStash::Instrument::NullMetric.new
   end
+
+  # return the configured name of this plugin
+  # @return [String] The name of the plugin defined by `config_name`
+  def config_name
+    self.class.config_name
+  end
+
 
   # Look up a plugin by type and name.
   def self.lookup(type, name)
