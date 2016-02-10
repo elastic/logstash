@@ -62,7 +62,7 @@ module LogStash
         @runner.stop_blocked
       else
         @runner.stop
-      end rescue ""
+      end rescue nil
 
       @status = :stop
       log "=== puma shutdown: #{Time.now} ==="
