@@ -36,6 +36,10 @@ class LogStash::Agent < Clamp::Command
          :attribute_name => :pipeline_batch_delay,
          :default => LogStash::Pipeline::DEFAULT_SETTINGS[:pipeline_batch_delay]
 
+  option ["--filterworkers"], "COUNT",
+         I18n.t("logstash.agent.flag.filterworkers"),
+         :attribute_name => :filter_workers
+
   option ["-l", "--log"], "FILE",
     I18n.t("logstash.agent.flag.log"),
     :attribute_name => :log_file
@@ -134,6 +138,12 @@ class LogStash::Agent < Clamp::Command
     end
     configure
 
+
+    if filter_workers
+      @logger.warn("--filter-workers is deprecated! Please use --pipeline-workers or -w. This setting will be removed in the next major version!")
+      self.pipeline_workers = filter_workers
+    end
+
     # You must specify a config_string or config_path
     if @config_string.nil? && @config_path.nil?
       fail(help + "\n" + I18n.t("logstash.agent.missing-configuration"))
@@ -156,6 +166,7 @@ class LogStash::Agent < Clamp::Command
         @config_string += DEFAULT_OUTPUT
       end
     end
+
 
     begin
       pipeline = LogStash::Pipeline.new(@config_string, @pipeline_settings)
