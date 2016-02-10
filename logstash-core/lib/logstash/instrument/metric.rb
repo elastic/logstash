@@ -13,7 +13,7 @@ module LogStash module Instrument
   class Metric
     attr_reader :collector
 
-    def initialize(collector)
+    def initialize(collector = LogStash::Instrument::Collector.instance)
       @collector = collector
     end
 
@@ -67,13 +67,6 @@ module LogStash module Instrument
       raise MetricNoNamespaceProvided if name.nil? || name.empty?
 
       NamespacedMetric.new(self, name)
-    end
-
-    # Create a Metric instrance using the default Collector singleton reference
-    #
-    #
-    def self.create(collector = LogStash::Instrument::Collector.instance)
-      Metric.new(collector)
     end
 
     private

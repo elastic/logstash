@@ -188,7 +188,7 @@ describe LogStash::Agent do
 
   context "#started_at" do
     it "return the start time when the agent is started" do
-      expect(subject.started_at).to be_kind_of(Time)
+      expect(described_class::STARTED_AT).to be_kind_of(Time)
     end
   end
 
