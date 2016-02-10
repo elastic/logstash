@@ -162,12 +162,12 @@ public class Event implements Cloneable, Serializable {
     public static Event[] fromJson(String json)
             throws IOException
     {
-        Event[] result;
-
+        // empty/blank json string does not generate an event
         if (json == null || json.trim().isEmpty()) {
-            return new Event[]{ new Event() };
+            return new Event[]{ };
         }
 
+        Event[] result;
         Object o = mapper.readValue(json, Object.class);
         // we currently only support Map or Array json objects
         if (o instanceof Map) {
@@ -184,6 +184,7 @@ public class Event implements Cloneable, Serializable {
         } else {
             throw new IOException("incompatible json object type=" + o.getClass().getName() + " , only hash map or arrays are suppoted");
         }
+
         return result;
     }
 
