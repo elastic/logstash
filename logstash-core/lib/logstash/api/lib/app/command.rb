@@ -23,7 +23,7 @@ module LogStash::Api
     end
 
     def started_at
-      (service.agent.started_at.to_f*1000.0).to_i
+      (LogStash::Agent::STARTED_AT.to_f * 1000.0).to_i
     end
 
   end

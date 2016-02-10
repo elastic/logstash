@@ -27,7 +27,9 @@ module LogStash::Api
 
     not_found do
       status 404
-      respond_with({})
+      as   = params.has_key?("human") ? :string : :json
+      text = as == :string ? "" : {}
+      respond_with(text, :as => as)
     end
 
     error do
