@@ -1,9 +1,9 @@
 # encoding: utf-8
 require "puma"
-require 'puma/single'
-require 'puma/binder'
-require 'puma/configuration'
-require 'puma/commonlogger'
+require "puma/single"
+require "puma/binder"
+require "puma/configuration"
+require "puma/commonlogger"
 
 module LogStash 
   class WebServer
@@ -16,10 +16,12 @@ module LogStash
 
     def initialize(logger, options={})
       @logger      = logger
+      http_host    = options[:http_host] || '0.0.0.0'
       http_port    = options[:http_port] || 9600
+      puts options
       @options     = {}
-      @cli_options = options.merge({ :rackup => ::File.join(::File.dirname(__FILE__), "api", "init.ru"), 
-                                     :binds => ["tcp://0.0.0.0:#{http_port}"] })
+      @cli_options = options.merge({ :rackup => ::File.join(::File.dirname(__FILE__), "api", "init.ru"),
+                                     :binds => ["tcp://#{http_host}:#{http_port}"] })
       @status      = nil
 
       parse_options
@@ -42,11 +44,11 @@ module LogStash
     end
 
     def log(str)
-      logger.debug(str) if logger.debug?
+      logger.debug(str)
     end
 
     def error(str)
-      logger.error(str) if logger.error?
+      logger.error(str)
     end
 
     # Empty method, this method is required because of the puma usage we make through
