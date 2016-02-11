@@ -82,7 +82,11 @@ class LogStash::Runner < Clamp::Command
     I18n.t("logstash.runner.flag.auto_reload"),
     :attribute_name => :auto_reload, :default => false
 
-  option ["-ap", "--http-port"], "WEB_API_HTTP_PORT",
+  option ["--http-host"], "WEB_API_HTTP_HOST",
+    I18n.t("logstash.web_api.flag.http_host"),
+    :attribute_name => :web_api_http_host, :default => "0.0.0.0"
+
+  option ["--http-port"], "WEB_API_HTTP_PORT",
     I18n.t("logstash.web_api.flag.http_port"),
     :attribute_name => :web_api_http_port, :default => 9600
 
@@ -175,6 +179,7 @@ class LogStash::Runner < Clamp::Command
                           :collect_metric => true,
                           :debug => debug?,
                           :node_name => node_name,
+                          :web_api_http_host => @web_api_http_host,
                           :web_api_http_port => @web_api_http_port)
 
     @agent.register_pipeline("main", @pipeline_settings.merge({
