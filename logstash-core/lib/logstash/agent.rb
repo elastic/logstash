@@ -18,7 +18,9 @@ require "securerandom"
 LogStash::Environment.load_locale!
 
 class LogStash::Agent
-  attr_reader :metric, :debug, :node_name, :started_at, :pipelines, :logger
+  STARTED_AT = Time.now.freeze
+
+  attr_reader :metric, :debug, :node_name, :pipelines, :logger
 
   # initialize method for LogStash::Agent
   # @param params [Hash] potential parameters are:
@@ -32,7 +34,6 @@ class LogStash::Agent
     @debug  = params.fetch(:debug, false)
 
     @pipelines = {}
-    @started_at = Time.now
     @node_name = params[:node_name] || Socket.gethostname
     @web_api_http_port = params[:web_api_http_port]
 
@@ -41,7 +42,7 @@ class LogStash::Agent
     @upgrade_mutex = Mutex.new
 
     @collect_metric = params.fetch(:collect_metric, false)
-    configure_metric
+    setup_metric_collection
   end
 
   def execute
@@ -95,7 +96,7 @@ class LogStash::Agent
   #
   # @return [Fixnum] Uptime in milliseconds
   def uptime
-    ((Time.now.to_f - started_at.to_f) * 1000.0).to_i
+    ((Time.now.to_f - STARTED_AT.to_f) * 1000.0).to_i
   end
 
   def shutdown
@@ -123,24 +124,24 @@ class LogStash::Agent
   end
 
   def start_background_services
-    if collect_metric?
+    if collect_metrics?
       @logger.debug("Agent: Starting metric periodic pollers")
       @periodic_pollers.start
     end
   end
 
   def stop_background_services
-    if collect_metric?
+    if collect_metrics?
       @logger.debug("Agent: Stopping metric periodic pollers")
       @periodic_pollers.stop
     end
   end
 
-  def configure_metric
-    if collect_metric?
+  def setup_metric_collection
+    if collect_metrics?
       @logger.debug("Agent: Configuring metric collection")
       LogStash::Instrument::Collector.instance.agent = self
-      @metric = LogStash::Instrument::Metric.create
+      @metric = LogStash::Instrument::Metric.new
     else
       @metric = LogStash::Instrument::NullMetric.new
     end
@@ -148,7 +149,7 @@ class LogStash::Agent
     @periodic_pollers = LogStash::Instrument::PeriodicPollers.new(metric)
   end
 
-  def collect_metric?
+  def collect_metrics?
     @collect_metric
   end
 

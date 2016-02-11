@@ -532,7 +532,7 @@ describe LogStash::Pipeline do
   context "when collecting metric in the pipeline" do
     subject { described_class.new(config, { :metric => metric, :pipeline_id => pipeline_id }) }
     let(:pipeline_id) { :main }
-    let(:metric) { LogStash::Instrument::Metric.create }
+    let(:metric) { LogStash::Instrument::Metric.new }
     let(:number_of_events) { 1000 }
     let(:config) do
       <<-EOS

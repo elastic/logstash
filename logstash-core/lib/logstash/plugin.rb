@@ -32,7 +32,7 @@ class LogStash::Plugin
   # ```
   #
   # If you don't explicitely set this variable Logstash will generate a unique name.
-  config :id, :validate => :string, :default => ""
+  config :id, :validate => :string
 
   def hash
     params.hash ^
