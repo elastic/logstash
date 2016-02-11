@@ -535,7 +535,7 @@ describe LogStash::Pipeline do
     let(:metric) { LogStash::Instrument::Metric.new }
     let(:number_of_events) { 1000 }
     let(:multiline_id) { "my-multiline" }
-    let(:multiline_id_2) { "my-multiline_2" }
+    let(:multiline_id_other) { "my-multiline_other" }
     let(:dummy_output_id) { "my-dummyoutput" }
     let(:generator_id) { "my-generator" }
     let(:config) do
@@ -553,7 +553,7 @@ describe LogStash::Pipeline do
               what => next
           }
           multiline {
-               id => "#{multiline_id_2}"
+               id => "#{multiline_id_other}"
                pattern => "hello"
                what => next
            }
@@ -579,44 +579,45 @@ describe LogStash::Pipeline do
 
       Thread.new { subject.run }
       # make sure we have received all the generated events
-      sleep 0.01 while dummyoutput.events.size < number_of_events
+      sleep 1 while dummyoutput.events.size < number_of_events
     end
 
     after :each do
       subject.shutdown
     end
 
-    it "populates the differents core metrics" do
-      collected_metric = LogStash::Instrument::Collector.instance.snapshot_metric.metric_store.get_with_path("stats/events")
-      expect(collected_metric[:stats][:events][:in].value).to eq(number_of_events)
-      expect(collected_metric[:stats][:events][:filtered].value).to eq(number_of_events)
-      expect(collected_metric[:stats][:events][:out].value).to eq(number_of_events)
+    context "global metric" do
+      let(:collected_metric) { LogStash::Instrument::Collector.instance.snapshot_metric.metric_store.get_with_path("stats/events") }
+
+      it "populates the differents" do
+        expect(collected_metric[:stats][:events][:in].value).to eq(number_of_events)
+        expect(collected_metric[:stats][:events][:filtered].value).to eq(number_of_events)
+        expect(collected_metric[:stats][:events][:out].value).to eq(number_of_events)
+      end
     end
 
-    it "populates the pipelines core metrics" do
-      collected_metric = LogStash::Instrument::Collector.instance.snapshot_metric.metric_store.get_with_path("stats/pipelines/")
+    context "pipelines" do
+      let(:collected_metric) { LogStash::Instrument::Collector.instance.snapshot_metric.metric_store.get_with_path("stats/pipelines/") }
 
-      expect(collected_metric[:stats][:pipelines][:main][:events][:in].value).to eq(number_of_events)
-      expect(collected_metric[:stats][:pipelines][:main][:events][:filtered].value).to eq(number_of_events)
-      expect(collected_metric[:stats][:pipelines][:main][:events][:out].value).to eq(number_of_events)
-    end
+      it "populates the pipelines core metrics" do
+        expect(collected_metric[:stats][:pipelines][:main][:events][:in].value).to eq(number_of_events)
+        expect(collected_metric[:stats][:pipelines][:main][:events][:filtered].value).to eq(number_of_events)
+        expect(collected_metric[:stats][:pipelines][:main][:events][:out].value).to eq(number_of_events)
+      end
 
-    it "populates the filter metrics" do
-      collected_metric = LogStash::Instrument::Collector.instance.snapshot_metric.metric_store.get_with_path("stats/pipelines/")
+      it "populates the filter metrics" do
+        [multiline_id, multiline_id_other].map(&:to_sym).each do |id|
+          [:in, :out].each do |metric_key|
+            plugin_name = "multiline_#{id}".to_sym
+            expect(collected_metric[:stats][:pipelines][:main][:plugins][:filters][plugin_name][:events][metric_key].value).to eq(number_of_events)
+          end
+        end
+      end
 
-      plugin_name = "multiline_#{multiline_id}".to_sym
-      expect(collected_metric[:stats][:pipelines][:main][:plugins][:filters][plugin_name][:events][:in].value).to eq(number_of_events)
-      expect(collected_metric[:stats][:pipelines][:main][:plugins][:filters][plugin_name][:events][:out].value).to eq(number_of_events)
-
-      plugin_name = "multiline_#{multiline_id_2}".to_sym
-      expect(collected_metric[:stats][:pipelines][:main][:plugins][:filters][plugin_name][:events][:in].value).to eq(number_of_events)
-      expect(collected_metric[:stats][:pipelines][:main][:plugins][:filters][plugin_name][:events][:out].value).to eq(number_of_events)
-    end
-
-    it "populates the output metrics" do
-      collected_metric = LogStash::Instrument::Collector.instance.snapshot_metric.metric_store.get_with_path("stats/pipelines/")
-      plugin_name = "dummyoutput_#{dummy_output_id}".to_sym
-      expect(collected_metric[:stats][:pipelines][:main][:plugins][:outputs][plugin_name][:events][:out].value).to eq(number_of_events)
+      it "populates the output metrics" do
+        plugin_name = "dummyoutput_#{dummy_output_id}".to_sym
+        expect(collected_metric[:stats][:pipelines][:main][:plugins][:outputs][plugin_name][:events][:out].value).to eq(number_of_events)
+      end
     end
   end
 end

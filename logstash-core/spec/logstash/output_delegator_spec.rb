@@ -21,6 +21,7 @@ describe LogStash::OutputDelegator do
       allow(out_inst).to receive(:multi_receive)
       allow(out_inst).to receive(:metric=).with(any_args)
       allow(out_inst).to receive(:id).and_return("a-simple-plugin")
+      allow(out_inst).to receive(:plugin_unique_name).and_return("hello-123")
       allow(logger).to receive(:debug).with(any_args)
     end
 
