@@ -35,6 +35,7 @@ class LogStash::Agent
 
     @pipelines = {}
     @node_name = params[:node_name] || Socket.gethostname
+    @web_api_http_host = params[:web_api_http_host]
     @web_api_http_port = params[:web_api_http_port]
 
     @config_loader = LogStash::Config::Loader.new(@logger)
@@ -111,7 +112,7 @@ class LogStash::Agent
 
   private
   def start_webserver
-    options = { :debug => debug, :http_port => @web_api_http_port }
+    options = { :debug => debug, :http_host => @web_api_http_host, :http_port => @web_api_http_port }
     @webserver = LogStash::WebServer.new(@logger, options)
     Thread.new(@webserver) do |webserver|
       LogStash::Util.set_thread_name("Api Webserver")

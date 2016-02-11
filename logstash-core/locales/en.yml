@@ -71,6 +71,7 @@ en:
         SIGINT received. Terminating immediately..
     web_api:
       flag:
+        http_host: Web API binding host
         http_port: Web API http port
       hot_threads:
         title: |-
