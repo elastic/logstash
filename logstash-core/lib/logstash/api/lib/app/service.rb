@@ -23,6 +23,10 @@ class LogStash::Api::Service
     LogStash::Instrument::Collector.instance.agent
   end
 
+  def started?
+    !@snapshot.nil? && has_counters?
+  end
+
   def update(snapshot)
     logger.debug("[api-service] snapshot received", :snapshot => snapshot) if logger.debug?
     if @snapshot_rotation_mutex.try_lock
@@ -39,5 +43,16 @@ class LogStash::Api::Service
       data = metric_store.get_with_path("stats/events")
     end
     LogStash::Json.dump(data)
+  end
+
+  private
+
+  def has_counters?
+    return false if @snapshot.nil?
+    if @snapshot_rotation_mutex.try_lock
+      has = @snapshot.metric_store.all.clone.map { |t| t.class.to_s }.include?("LogStash::Instrument::MetricType::Counter")
+      @snapshot_rotation_mutex.unlock
+      return has
+    end
   end
 end

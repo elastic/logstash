@@ -47,10 +47,20 @@ module LogStash module Instrument module PeriodicPoller
     end
 
     def build_pools_metrics(data)
+      heap = data["heap"]
+      old  = {}
+      old = old.merge!(heap["CMS Old Gen"]) if heap.has_key?("CMS Old Gen")
+      old = old.merge!(heap["PS Old Gen"])  if heap.has_key?("PS Old Gen")
+      young = {}
+      young = young.merge!(heap["Par Eden Space"]) if heap.has_key?("Par Eden Space")
+      young = young.merge!(heap["PS Eden Space"])  if heap.has_key?("PS Eden Space")
+      survivor = {}
+      survivor = survivor.merge!(heap["Par Survivor Space"]) if heap.has_key?("Par Survivor Space")
+      survivor = survivor.merge!(heap["PS Survivor Space"])  if heap.has_key?("PS Survivor Space")
       {
-        "young"    => aggregate_information_for(data["heap"]["Par Eden Space"]),
-        "old"      => aggregate_information_for(data["heap"]["CMS Old Gen"]),
-        "survivor" => aggregate_information_for(data["heap"]["Par Survivor Space"]),
+        "young"    => aggregate_information_for(young),
+        "old"      => aggregate_information_for(old),
+        "survivor" => aggregate_information_for(survivor)
       }
     end
 
