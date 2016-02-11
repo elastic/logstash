@@ -42,7 +42,8 @@ module LogStash
       # There is no garantee in the context of filter
       # that EVENTS_INT == EVENTS_OUT, see the aggregates and
       # the split filter
-      @metric_events.increment(:out, new_events.count { |event| !event.cancelled? })
+      c = new_events.count { |event| !event.cancelled? }
+      @metric_events.increment(:out, c) if c > 0
 
       return new_events
     end
@@ -56,7 +57,7 @@ module LogStash
 
         # Filter plugins that does buffering or spooling of events like the
         # `Logstash-filter-aggregates` can return `NIL` and will flush on the next flush ticks.
-        @metric_events.increment(:out, new_events.size) unless new_events.nil?
+        @metric_events.increment(:out, new_events.size) if new_events && new_events.size > 0
         new_events
       end
     end
