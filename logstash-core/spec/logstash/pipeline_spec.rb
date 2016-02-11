@@ -579,7 +579,7 @@ describe LogStash::Pipeline do
 
       Thread.new { subject.run }
       # make sure we have received all the generated events
-      sleep 0.01 while dummyoutput.events.size < number_of_events
+      sleep 0.1 while dummyoutput.events.size < number_of_events
     end
 
     after :each do

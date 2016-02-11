@@ -13,6 +13,10 @@ describe LogStash::FilterDelegator do
   let(:metric) { LogStash::Instrument::NullMetric.new }
   let(:events) { [LogStash::Event.new, LogStash::Event.new] }
 
+  before :each do
+    allow(metric).to receive(:namespace).with(anything).and_return(metric)
+  end
+
   let(:plugin_klass) do
     Class.new(LogStash::Filters::Base) do
       config_name "super_plugin"
@@ -49,14 +53,14 @@ describe LogStash::FilterDelegator do
     context "when the flush return events" do
       it "increments the out" do
         subject.multi_filter([LogStash::Event.new])
-        expect_any_instance_of(LogStash::Instrument::NullMetric).to receive(:increment).with(:out, 1)
+        expect(metric).to receive(:increment).with(:out, 1)
         subject.flush({})
       end
     end
 
     context "when the flush doesn't return anything" do
       it "doesnt increment the out" do
-        expect_any_instance_of(LogStash::Instrument::NullMetric).not_to receive(:increment)
+        expect(metric).not_to receive(:increment)
         subject.flush({})
       end
     end
@@ -77,8 +81,8 @@ describe LogStash::FilterDelegator do
       end
 
       it "doesn't increment out" do
-        expect_any_instance_of(LogStash::Instrument::NullMetric).to receive(:increment).with(:in, events.size)
-        expect_any_instance_of(LogStash::Instrument::NullMetric).to receive(:increment).with(:out, 0 )
+        expect(metric).to receive(:increment).with(:in, events.size)
+        expect(metric).to receive(:increment).with(:out, 0 )
 
         subject.multi_filter(events)
       end
@@ -101,8 +105,8 @@ describe LogStash::FilterDelegator do
       end
 
       it "increments the in/out of the metric" do
-        expect_any_instance_of(LogStash::Instrument::NullMetric).to receive(:increment).with(:in, events.size)
-        expect_any_instance_of(LogStash::Instrument::NullMetric).to receive(:increment).with(:out, events.size * 2)
+        expect(metric).to receive(:increment).with(:in, events.size)
+        expect(metric).to receive(:increment).with(:out, events.size * 2)
 
         subject.multi_filter(events)
       end
@@ -126,8 +130,8 @@ describe LogStash::FilterDelegator do
     end
 
     it "increments the in/out of the metric" do
-      expect_any_instance_of(LogStash::Instrument::NullMetric).to receive(:increment).with(:in, events.size)
-      expect_any_instance_of(LogStash::Instrument::NullMetric).to receive(:increment).with(:out, events.size)
+      expect(metric).to receive(:increment).with(:in, events.size)
+      expect(metric).to receive(:increment).with(:out, events.size)
 
       subject.multi_filter(events)
     end
