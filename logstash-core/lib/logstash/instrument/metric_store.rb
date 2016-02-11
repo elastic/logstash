@@ -74,13 +74,16 @@ module LogStash module Instrument
     # of the map
     #
     # @param [Array] The path where values should be located
-    # @return nil if the values are not found
+    # @return [Hash]
     def get_with_path(path)
       key_paths = path.gsub(/^#{KEY_PATH_SEPARATOR}+/, "").split(KEY_PATH_SEPARATOR)
       get(*key_paths)
     end
 
-    # Use an array of symbols instead of path
+    # Similar to `get_with_path` but use symbols instead of string
+    #
+    # @param [Array<Symbol>
+    # @return [Hash]
     def get(*key_paths)
       # Normalize the symbols access
       key_paths.map(&:to_sym)
@@ -93,6 +96,9 @@ module LogStash module Instrument
 
     # Return all the individuals Metric,
     # This call mimic a Enum's each if a block is provided
+    #
+    # @param path [String] The search path for metrics
+    # @param [Array] The metric for the specific path
     def each(path = nil, &block)
       metrics = if path.nil?
         get_all
@@ -109,6 +115,20 @@ module LogStash module Instrument
       @fast_lookup.values
     end
 
+    # This method take an array of keys and recursively search the metric store structure
+    # and return a filtered hash of the structure. This method also take into consideration
+    # getting two different branchs.
+    #
+    #
+    # If one part of the `key_paths` contains a filter key with the following format.
+    # "pipeline01, pipeline_02", It know that need to fetch the branch `pipeline01` and `pipeline02`
+    #
+    # Look at the rspec test for more usage.
+    #
+    # @param key_paths [Array<Symbol>] The list of keys part to filter
+    # @param map [Concurrent::Map] The the part of map to search in
+    # @param new_hash [Hash] The hash to populate with the results.
+    # @return Hash
     def get_recursively(key_paths, map, new_hash)
       key_candidates = extract_filter_keys(key_paths.shift)
 
@@ -136,12 +156,25 @@ module LogStash module Instrument
       key.to_s.strip.split(FILTER_KEYS_SEPARATOR).map(&:to_sym)
     end
 
-    def transform_to_array(map)
+    # Take a hash and recursively flatten it into an array.
+    # This is useful if you are only interested in the leaf of the tree.
+    # Mostly used with `each` to get all the metrics from a specific namespaces
+    #
+    # This could be moved to `LogStash::Util` once this api stabilize
+    #
+    # @return [Array] One dimension array
+     def transform_to_array(map)
       map.values.collect do |value|
         value.is_a?(Hash) ? transform_to_array(value) : value
       end.flatten
     end
 
+    # Transform the Concurrent::Map hash into a ruby hash format,
+    # This is used to be serialize at the web api layer.
+    #
+    # This could be moved to `LogStash::Util` once this api stabilize
+    #
+    # @return [Hash]
     def transform_to_hash(map, new_hash = Hash.new)
       map.each_pair do |key, value|
         if value.is_a?(Concurrent::Map)
@@ -153,20 +186,6 @@ module LogStash module Instrument
       end
 
       return new_hash
-    end
-
-    # Recursively fetch only the leaf node that should be an instance
-    # of the `MetricType`
-    def each_recursively(values)
-      events = []
-      values.each_value do |value|
-        if value.is_a?(Concurrent::Map)
-          events << each_recursively(value)
-        else
-          events << value
-        end
-      end
-      return events
     end
 
     # This method iterate through the namespace path and try to find the corresponding
