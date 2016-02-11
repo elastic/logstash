@@ -11,13 +11,57 @@ describe LogStash::Api::NodeStats do
     described_class
   end
 
-  it "respond to the events resource" do
-    get "/events"
-    expect(last_response).to be_ok
+  context "#root" do
+
+    before(:all) do
+      get "/"
+    end
+
+    let(:payload) { JSON.parse(last_response.body) }
+
+    it "respond OK" do
+      expect(last_response).to be_ok
+    end
+
+    ["events", "jvm", "start_time_in_millis"].each do |key|
+      it "contains #{key} information" do
+        expect(payload).to include(key)
+      end
+    end
   end
 
-  it "respond to the jvm resource" do
-    get "jvm"
-    expect(last_response).to be_ok
+  context "#events" do
+
+    before(:all) do
+      get "/events"
+    end
+
+    let(:payload) { JSON.parse(last_response.body) }
+
+    it "respond OK" do
+      expect(last_response).to be_ok
+    end
+
+    it "contains events information" do
+      expect(payload).to include("events")
+    end
   end
+
+  context "#jvm" do
+
+    before(:all) do
+      get "jvm"
+    end
+
+    let(:payload) { JSON.parse(last_response.body) }
+
+    it "respond OK" do
+      expect(last_response).to be_ok
+    end
+
+    it "contains memory information" do
+      expect(payload).to include("memory")
+    end
+  end
+
 end
