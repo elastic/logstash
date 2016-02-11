@@ -31,7 +31,7 @@ module LogStash module Instrument
    end
 
    def namespace(key)
-      self.class.new
+     self.class.new
    end
 
    private
