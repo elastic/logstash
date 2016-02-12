@@ -18,7 +18,6 @@ module LogStash
       @logger      = logger
       http_host    = options[:http_host] || '127.0.0.1'
       http_port    = options[:http_port] || 9600
-      puts options
       @options     = {}
       @cli_options = options.merge({ :rackup => ::File.join(::File.dirname(__FILE__), "api", "init.ru"),
                                      :binds => ["tcp://#{http_host}:#{http_port}"] })
