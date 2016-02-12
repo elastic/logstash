@@ -12,7 +12,6 @@ describe "JVM stats" do
     before(:each) do
       allow(agent).to receive(:node_name).and_return("foo")
       expect_any_instance_of(LogStash::Api::Service).to receive(:agent).and_return(agent)
-      expect(subject).to receive(:uptime).and_return(10).at_least(:once)
     end
 
     context "#schema" do
