@@ -17,7 +17,7 @@ GEM
     aws-sdk-v1 (1.66.0)
       json (~> 1.4)
       nokogiri (>= 1.4.4)
-    backports (3.6.7)
+    backports (3.6.8)
     benchmark-ips (2.3.0)
     bindata (2.2.0)
     buftok (0.2.0)
@@ -133,9 +133,9 @@ GEM
     logstash-codec-graphite (2.0.2)
       logstash-codec-line
       logstash-core (>= 2.0.0.beta2, < 3.0.0)
-    logstash-codec-json (2.0.4)
+    logstash-codec-json (2.1.0)
       logstash-core (>= 2.0.0.beta2, < 3.0.0)
-    logstash-codec-json_lines (2.0.5)
+    logstash-codec-json_lines (2.1.1)
       logstash-codec-line (>= 2.1.0)
       logstash-core (>= 2.0.0.beta2, < 3.0.0)
     logstash-codec-line (2.1.0)
@@ -143,7 +143,7 @@ GEM
     logstash-codec-msgpack (2.0.2-java)
       logstash-core (>= 2.0.0.beta2, < 3.0.0)
       msgpack-jruby
-    logstash-codec-multiline (2.0.7)
+    logstash-codec-multiline (2.0.9)
       jls-grok (~> 0.11.1)
       logstash-core (>= 2.0.0, < 3.0.0)
       logstash-patterns-core
@@ -157,7 +157,7 @@ GEM
     logstash-codec-rubydebug (2.0.5)
       awesome_print
       logstash-core (>= 2.0.0.beta2, < 3.0.0)
-    logstash-core (2.2.1.snapshot1-java)
+    logstash-core (2.2.1-java)
       cabin (~> 0.7.0)
       clamp (~> 0.6.5)
       concurrent-ruby (= 0.9.2)
@@ -166,14 +166,14 @@ GEM
       i18n (= 0.6.9)
       jrjackson (~> 0.3.7)
       jruby-openssl (= 0.9.13)
-      logstash-core-event (~> 2.2.1.snapshot1)
+      logstash-core-event (~> 2.2.1)
       minitar (~> 0.5.4)
       pry (~> 0.10.1)
       rubyzip (~> 1.1.7)
       stud (~> 0.0.19)
       thread_safe (~> 0.3.5)
       treetop (< 1.5.0)
-    logstash-core-event (2.2.1.snapshot1-java)
+    logstash-core-event (2.2.1-java)
     logstash-devutils (0.0.18-java)
       gem_publisher
       insist (= 1.0.0)
@@ -192,7 +192,7 @@ GEM
       logstash-core (>= 2.0.0.beta2, < 3.0.0)
     logstash-filter-csv (2.1.1)
       logstash-core (>= 2.0.0.beta2, < 3.0.0)
-    logstash-filter-date (2.1.1)
+    logstash-filter-date (2.1.2)
       logstash-codec-json
       logstash-core (>= 2.0.0.beta2, < 3.0.0)
       logstash-input-generator
@@ -251,7 +251,7 @@ GEM
       logstash-core (>= 2.0.0.beta2, < 3.0.0)
       nokogiri
       xml-simple
-    logstash-input-beats (2.1.2)
+    logstash-input-beats (2.1.3)
       concurrent-ruby (~> 0.9.2)
       logstash-codec-multiline (~> 2.0.5)
       logstash-codec-plain
@@ -300,10 +300,11 @@ GEM
       logstash-codec-plain
       logstash-core (>= 2.0.0.beta2, < 3.0.0)
       stud
-    logstash-input-http (2.1.1)
+    logstash-input-http (2.2.0)
       logstash-codec-plain
       logstash-core (>= 2.0.0.beta2, < 3.0.0)
-      puma (~> 2.11.3)
+      puma (~> 2.16, >= 2.16.0)
+      rack (~> 1)
       stud
     logstash-input-http_poller (2.0.3)
       logstash-codec-plain
@@ -346,7 +347,7 @@ GEM
       logstash-codec-plain
       logstash-core (>= 2.0.0.beta2, < 3.0.0)
       stud (~> 0.0.22)
-    logstash-input-rabbitmq (3.1.3)
+    logstash-input-rabbitmq (3.1.4)
       logstash-codec-json
       logstash-core (>= 2.0.0.beta2, < 3.0.0)
       logstash-mixin-rabbitmq_connection (>= 2.3.0, < 3.0.0)
@@ -429,7 +430,7 @@ GEM
       logstash-filter-json
       logstash-input-generator
       logstash-output-file
-    logstash-output-elasticsearch (2.4.2-java)
+    logstash-output-elasticsearch (2.5.0-java)
       cabin (~> 0.6)
       concurrent-ruby
       elasticsearch (~> 1.0, >= 1.0.13)
@@ -569,8 +570,7 @@ GEM
       method_source (~> 0.8.1)
       slop (~> 3.4)
       spoon (~> 0.0)
-    puma (2.11.3-java)
-      rack (>= 1.1, < 2.0)
+    puma (2.16.0-java)
     rack (1.6.4)
     rake (10.5.0)
     redis (3.2.2)
@@ -671,8 +671,8 @@ DEPENDENCIES
   logstash-codec-oldlogstashjson
   logstash-codec-plain
   logstash-codec-rubydebug
-  logstash-core (= 2.2.1.snapshot1)
-  logstash-core-event (= 2.2.1.snapshot1)
+  logstash-core (= 2.2.1)
+  logstash-core-event (= 2.2.1)
   logstash-devutils (~> 0.0.15)
   logstash-filter-anonymize
   logstash-filter-checksum
