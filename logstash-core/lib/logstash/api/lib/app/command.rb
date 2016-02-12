@@ -25,6 +25,5 @@ module LogStash::Api
     def started_at
       (LogStash::Agent::STARTED_AT.to_f * 1000.0).to_i
     end
-
   end
 end
