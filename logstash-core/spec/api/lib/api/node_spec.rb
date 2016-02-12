@@ -45,7 +45,7 @@ describe LogStash::Api::Node do
 
       let(:payload) { last_response.body }
 
-      it "shuold return a plain text description" do
+      it "should return a plain text description" do
         expect{ JSON.parse(payload) }.to raise_error
       end
     end
