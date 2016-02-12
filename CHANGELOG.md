@@ -1,10 +1,30 @@
+## 2.2.1 (Feb 11, 2016)
+### general
+ - Reinstating `--filterworkers` CLI option which was inadvertently removed in 2.2.0 ([#4669](https://github.com/elastic/logstash/issues/4669))
+ - Fixed a bug where filters that periodically flush buffered events would not work in v2.2.0.
+   This bug affects multiline, metrics and aggregate filter ([#4620](https://github.com/elastic/logstash/issues/4620))
+
+ ### input
+  - TCP: Improved stability by fixing a couple of defects which were previously crashing this plugin.
+    - Fixed a bug where previous connection would accidentally be closed when accepting new socket connection ([#34](https://github.com/logstash-plugins/logstash-input-tcp/issues/34))
+    - Fixed an issue with log message which used a closed socket's peer address ([#35](https://github.com/logstash-plugins/logstash-input-tcp/issues/35))
+
+ ### output
+  - Elasticsearch: Handle full URIs in `hosts` parameter and improve validation for this config ([#362](https://github.com/logstash-plugins/logstash-output-elasticsearch/issues/362))
+  - HTTP: Better keepalive handling
+
+ ### codec
+  - Multiline: Fixed memory leak when `auto_flush` config was used ([#28](https://github.com/logstash-plugins/logstash-codec-multiline/issues/28))
+  - JSON Lines: Improved performance by using buffered tokenizer to split on lines instead of using line codec ([#17](https://github.com/logstash-plugins/logstash-codec-json_lines/issues/17))
+
 ## 2.2.0 (Jan 19, 2016)
 ### general
  - Updated internal architecture to combine the filter and output stages to a single phase that consumes
    messages from an in-memory queue, following the input stage. Another key change is processing
    a (micro) batch of events rather than a single event. This change is backward compatible with
    existing configurations ([#3693](https://github.com/elastic/logstash/issues/3693))
- - Added new CLI options: `-b, --pipeline-batch-size` and `-u, --pipeline-batch-delay`.   
+ - Added new CLI options: `-b, --pipeline-batch-size` and `-u, --pipeline-batch-delay`.
+ - Inadvertently removed CLI option `--filterworkers` which has been restored in 2.2.1
  - Fixed an issue with configtest switch in sysv init script ([#4321](https://github.com/elastic/logstash/pull/4321))
  - Update jruby-openssl library to 0.9.13
  - Include http_poller plugin in the list of default plugins
