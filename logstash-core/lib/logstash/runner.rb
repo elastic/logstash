@@ -84,7 +84,7 @@ class LogStash::Runner < Clamp::Command
 
   option ["--http-host"], "WEB_API_HTTP_HOST",
     I18n.t("logstash.web_api.flag.http_host"),
-    :attribute_name => :web_api_http_host, :default => "0.0.0.0"
+    :attribute_name => :web_api_http_host, :default => "127.0.0.1"
 
   option ["--http-port"], "WEB_API_HTTP_PORT",
     I18n.t("logstash.web_api.flag.http_port"),
