@@ -11,24 +11,57 @@ describe LogStash::Api::NodeStats do
     described_class
   end
 
-  let(:mem) do
-    { :heap_used_in_bytes => 10,
-      :pools => { :used_in_bytes => 20 }}
+  context "#root" do
+
+    before(:all) do
+      get "/"
+    end
+
+    let(:payload) { JSON.parse(last_response.body) }
+
+    it "respond OK" do
+      expect(last_response).to be_ok
+    end
+
+    ["events", "jvm", "start_time_in_millis"].each do |key|
+      it "contains #{key} information" do
+        expect(payload).to include(key)
+      end
+    end
   end
 
-  let(:events) do
-    { :in => 10, :out => 20 }
+  context "#events" do
+
+    before(:all) do
+      get "/events"
+    end
+
+    let(:payload) { JSON.parse(last_response.body) }
+
+    it "respond OK" do
+      expect(last_response).to be_ok
+    end
+
+    it "contains events information" do
+      expect(payload).to include("events")
+    end
   end
 
-  it "respond to the events resource" do
-    expect_any_instance_of(LogStash::Api::StatsEventsCommand).to receive(:run).and_return(events)
-    get "/events"
-    expect(last_response).to be_ok
+  context "#jvm" do
+
+    before(:all) do
+      get "jvm"
+    end
+
+    let(:payload) { JSON.parse(last_response.body) }
+
+    it "respond OK" do
+      expect(last_response).to be_ok
+    end
+
+    it "contains memory information" do
+      expect(payload).to include("memory")
+    end
   end
 
-  it "respond to the jvm resource" do
-    expect_any_instance_of(LogStash::Api::JvmMemoryCommand).to receive(:run).and_return(mem)
-    get "jvm"
-    expect(last_response).to be_ok
-  end
 end
