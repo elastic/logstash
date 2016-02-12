@@ -222,4 +222,39 @@ describe LogStash::Plugin do
       end
     end
   end
+
+  describe "#plugin_unique_name" do
+    let(:plugin) do
+      Class.new(LogStash::Filters::Base,) do
+        config_name "simple_plugin"
+        config :host, :validate => :string
+
+        def register; end
+      end
+    end
+
+    let(:config) do
+      {
+        "host" => "127.0.0.1"
+      }
+    end
+
+    context "when the id is provided" do
+      let(:my_id) { "mysuper-plugin" }
+      let(:config) { super.merge({ "id" => my_id })}
+      subject { plugin.new(config) }
+
+      it "return a human readable ID" do
+        expect(subject.plugin_unique_name).to eq("simple_plugin_#{my_id}")
+      end
+    end
+
+    context "when the id is not provided provided" do
+      subject { plugin.new(config) }
+
+      it "return a human readable ID" do
+        expect(subject.plugin_unique_name).to match(/^simple_plugin_/)
+      end
+    end
+  end
 end
