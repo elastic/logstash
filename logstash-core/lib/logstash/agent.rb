@@ -20,7 +20,7 @@ LogStash::Environment.load_locale!
 class LogStash::Agent
   STARTED_AT = Time.now.freeze
 
-  attr_reader :metric, :debug, :node_name, :pipelines, :logger
+  attr_reader :metric, :node_name, :pipelines, :logger
 
   # initialize method for LogStash::Agent
   # @param params [Hash] potential parameters are:
@@ -31,7 +31,6 @@ class LogStash::Agent
   def initialize(params)
     @logger = params[:logger]
     @auto_reload = params[:auto_reload]
-    @debug  = params.fetch(:debug, false)
 
     @pipelines = {}
     @node_name = params[:node_name] || Socket.gethostname
@@ -112,7 +111,7 @@ class LogStash::Agent
 
   private
   def start_webserver
-    options = { :debug => debug, :http_host => @web_api_http_host, :http_port => @web_api_http_port }
+    options = {:http_host => @web_api_http_host, :http_port => @web_api_http_port }
     @webserver = LogStash::WebServer.new(@logger, options)
     Thread.new(@webserver) do |webserver|
       LogStash::Util.set_thread_name("Api Webserver")
