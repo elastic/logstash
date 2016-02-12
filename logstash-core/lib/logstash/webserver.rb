@@ -16,7 +16,7 @@ module LogStash
 
     def initialize(logger, options={})
       @logger      = logger
-      http_host    = options[:http_host] || '0.0.0.0'
+      http_host    = options[:http_host] || '127.0.0.1'
       http_port    = options[:http_port] || 9600
       puts options
       @options     = {}
