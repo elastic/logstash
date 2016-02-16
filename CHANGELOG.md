@@ -4,10 +4,10 @@
     - Fixed a bug where previous connection would accidentally be closed when accepting new socket connection ([#34](https://github.com/logstash-plugins/logstash-input-tcp/issues/34))
     - Fixed an issue with log message which used a closed socket's peer address ([#35](https://github.com/logstash-plugins/logstash-input-tcp/issues/35))
 
- ### output
+### output
   - HTTP: Better keepalive handling
 
- ### codec
+### codec
   - Multiline: Fixed memory leak when `auto_flush` config was used ([#28](https://github.com/logstash-plugins/logstash-codec-multiline/issues/28))
   - JSON Lines: Improved performance by using buffered tokenizer to split on lines instead of using line codec ([#17](https://github.com/logstash-plugins/logstash-codec-json_lines/issues/17))
 
