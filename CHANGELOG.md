@@ -1,4 +1,4 @@
-## 2.1.2 (Feb 16, 2016)
+## 2.1.3 (Feb 16, 2016)
 ### input
   - TCP: Improved stability by fixing a couple of defects which were previously crashing this plugin.
     - Fixed a bug where previous connection would accidentally be closed when accepting new socket connection ([#34](https://github.com/logstash-plugins/logstash-input-tcp/issues/34))
