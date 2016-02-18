@@ -1,3 +1,7 @@
+## 2.2.2 (Feb 17, 2016)
+### output
+ - Elasticsearch: Fix regression with SSL option
+
 ## 2.2.1 (Feb 11, 2016)
 ### general
  - Reinstating `--filterworkers` CLI option which was inadvertently removed in 2.2.0 ([#4669](https://github.com/elastic/logstash/issues/4669))
