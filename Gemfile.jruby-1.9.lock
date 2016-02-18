@@ -18,7 +18,7 @@ GEM
       json (~> 1.4)
       nokogiri (>= 1.4.4)
     backports (3.6.8)
-    benchmark-ips (2.3.0)
+    benchmark-ips (2.5.0)
     bindata (2.2.0)
     buftok (0.2.0)
     builder (3.2.2)
@@ -157,7 +157,7 @@ GEM
     logstash-codec-rubydebug (2.0.5)
       awesome_print
       logstash-core (>= 2.0.0.beta2, < 3.0.0)
-    logstash-core (2.2.1-java)
+    logstash-core (2.2.2-java)
       cabin (~> 0.7.0)
       clamp (~> 0.6.5)
       concurrent-ruby (= 0.9.2)
@@ -166,14 +166,14 @@ GEM
       i18n (= 0.6.9)
       jrjackson (~> 0.3.7)
       jruby-openssl (= 0.9.13)
-      logstash-core-event (~> 2.2.1)
+      logstash-core-event (~> 2.2.2)
       minitar (~> 0.5.4)
       pry (~> 0.10.1)
       rubyzip (~> 1.1.7)
       stud (~> 0.0.19)
       thread_safe (~> 0.3.5)
       treetop (< 1.5.0)
-    logstash-core-event (2.2.1-java)
+    logstash-core-event (2.2.2-java)
     logstash-devutils (0.0.18-java)
       gem_publisher
       insist (= 1.0.0)
@@ -430,7 +430,7 @@ GEM
       logstash-filter-json
       logstash-input-generator
       logstash-output-file
-    logstash-output-elasticsearch (2.5.0-java)
+    logstash-output-elasticsearch (2.5.1-java)
       cabin (~> 0.6)
       concurrent-ruby
       elasticsearch (~> 1.0, >= 1.0.13)
@@ -592,7 +592,7 @@ GEM
     rspec-support (3.1.2)
     rspec-wait (0.0.8)
       rspec (>= 2.11, < 3.5)
-    ruby-maven (3.3.9)
+    ruby-maven (3.3.10)
       ruby-maven-libs (~> 3.3.1)
     ruby-maven-libs (3.3.3)
     rubyzip (1.1.7)
@@ -671,8 +671,8 @@ DEPENDENCIES
   logstash-codec-oldlogstashjson
   logstash-codec-plain
   logstash-codec-rubydebug
-  logstash-core (= 2.2.1)
-  logstash-core-event (= 2.2.1)
+  logstash-core (= 2.2.2)
+  logstash-core-event (= 2.2.2)
   logstash-devutils (~> 0.0.15)
   logstash-filter-anonymize
   logstash-filter-checksum
