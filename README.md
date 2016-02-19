@@ -68,6 +68,20 @@ To verify your environment, run `bin/logstash version` which should look like th
     $ bin/logstash version
     logstash 2.0.0.dev
 
+If you are seeing errors that look like
+
+    $ rake bootstrap
+    Installing minitar >= 0 because the build process needs it.
+    [bootstrap] Fetching and installing gem: minitar (>= 0)
+    rake aborted!
+    LoadError: no such file to load -- archive/tar/minitar
+    /Users/<user>/projects/logstash/rakelib/vendor.rake:17:in `untar'
+    /Users/<user>/projects/logstash/rakelib/vendor.rake:86:in `(root)'
+    Tasks: TOP => bootstrap => vendor:all => vendor:jruby
+    (See full trace by running task with --trace)
+
+then you may need to update your version of rubygems. Run `gem -v` to see the version of rubygems installed. Version 2.5.2 or higher should work. To update rubygems run `gem update --system` (you may need to run with `sudo` if you're using your system Ruby environment).
+
 ## Testing
 
 For testing you can use the *test* `rake` tasks and the `bin/rspec` command, see instructions below. Note that the `bin/logstash rspec` command has been replaced by `bin/rspec`.
