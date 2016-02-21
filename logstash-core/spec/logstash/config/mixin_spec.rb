@@ -151,4 +151,50 @@ describe LogStash::Config::Mixin do
       expect(subject.params).to include("password")
     end
   end
+
+  context "environment variable injection" do
+    let(:plugin_class) do
+      Class.new(LogStash::Filters::Base)  do
+        config_name "one_plugin"
+        config :oneString, :validate => :string
+        config :oneBoolean, :validate => :boolean
+        config :oneNumber, :validate => :number
+        config :oneArray, :validate => :array
+        config :oneHash, :validate => :hash
+      end
+    end
+    
+    ENV["MIXIN_SPEC_ENV_VAR"] = "123"
+
+    subject {
+      plugin_class.new({
+        "oneString" => "${notExistingVar}",
+        "oneBoolean" => "${notExistingVar:true}",
+        "oneNumber" => "${MIXIN_SPEC_ENV_VAR}",
+        "oneArray" => [ "first array value", "$MIXIN_SPEC_ENV_VAR" ],
+        "oneHash" => { "key" => "$MIXIN_SPEC_ENV_VAR" }
+      })
+    }
+     
+    it "should have oneString param as empty string (env var not found)" do
+      expect(subject.oneString).to(be == "")
+    end
+
+    it "should have oneNumber param with environment variable injected" do
+      expect(subject.oneNumber).to(be == 123)
+    end
+
+    it "should have oneBoolean param with default value" do
+      expect(subject.oneBoolean).to(be == true)
+    end
+
+    it "should have oneArray param with environment variable injected" do
+      expect(subject.oneArray).to include("123")
+    end
+
+    it "should have oneHash param with environment variable injected" do
+      expect(subject.oneHash["key"]).to(be == "123")
+    end
+  end
+
 end
