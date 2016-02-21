@@ -2,6 +2,8 @@
 
 module LogStash; module Util
   class WrappedSynchronousQueue
+    attr_reader :queue
+
     java_import java.util.concurrent.SynchronousQueue
     java_import java.util.concurrent.TimeUnit
 
@@ -13,8 +15,8 @@ module LogStash; module Util
     # it will block until the object can be added to the queue.
     #
     # @param [Object] Object to add to the queue
-    def push(obj)
-      @queue.put(obj)
+    def push(event)
+      @queue.put(event.to_java)
     end
     alias_method(:<<, :push)
 

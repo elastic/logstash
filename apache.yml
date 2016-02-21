@@ -1,0 +1,36 @@
+---
+graph:
+  log-reader:
+    component: input-stdin
+    to: [main-queue]
+  main-queue:
+    component: queue-synchronous
+    to: [apache-grok]
+  apache-grok:
+    component: filter-grok
+    options:
+      match:
+        message: '%{IPORHOST:clientip} %{USER:ident} %{USER:auth} \[%{HTTPDATE:timestamp}\] "%{WORD:verb} %{DATA:request} HTTP/%{NUMBER:httpversion}" %{NUMBER:response:int} (?:-|%{NUMBER:bytes:int}) %{QS:referrer} %{QS:agent}'
+    to: [apache-geoip]
+  apache-geoip:
+    component: filter-geoip
+    options:
+      source: clientip
+      target: geoip
+    to: [apache-ua]
+  apache-ua:
+    component: filter-useragent
+    options:
+      source: agent
+      target: useragent
+    to: [apache-date]
+  apache-date:
+    component: filter-date
+    options:
+      match: [ "timestamp", "dd/MMM/YYYY:HH:mm:ss Z" ]
+      locale: en
+    to: [main-out]
+  main-out:
+    component: output-stdout
+    options:
+      codec: dots

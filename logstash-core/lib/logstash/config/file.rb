@@ -5,6 +5,7 @@ require "logstash/config/config_ast"
 require "logstash/config/registry"
 require "logstash/errors"
 require "logger"
+java_import 'com.logstash.pipeline.graph.ConfigFile'
 
 class LogStash::Config::File
   include Enumerable
@@ -18,12 +19,7 @@ class LogStash::Config::File
   end # def initialize
 
   def parse(text)
-    grammar = LogStashConfigParser.new
-    result = grammar.parse(text)
-    if result.nil?
-      raise LogStash::ConfigurationError, grammar.failure_reason
-    end
-    return result
+    com.logstash.pipeline.graph.ConfigFile.fromString(config_str, LogStash::Pipeline::PipelineComponentProcessor)
   end # def parse
 
   def plugin(plugin_type, name, *args)

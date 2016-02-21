@@ -1,0 +1,21 @@
+---
+graph:
+  log-reader:
+    component: input-generator
+    options: {"message": "baz=bot blah=bar", "count": 5000000}
+    to: [main-queue]
+  main-queue:
+    component: queue-synchronous
+    to: [hello-kv]
+  hello-kv:
+    component: filter-kv
+    to: [main-out]
+  field-adder:
+    component: filter-mutate
+    options:
+      add_field:
+        foo: bar
+  main-out:
+    component: output-stdout
+    options:
+      codec: dots
