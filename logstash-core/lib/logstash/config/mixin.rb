@@ -38,6 +38,9 @@ module LogStash::Config::Mixin
   PLUGIN_VERSION_1_0_0 = LogStash::Util::PluginVersion.new(1, 0, 0)
   PLUGIN_VERSION_0_9_0 = LogStash::Util::PluginVersion.new(0, 9, 0)
 
+  ENV_PLACEHOLDER_REGEX = Regexp.new(/\$\w+|\$\{\w+(\:[^}]*)?\}/)
+
+
   # This method is called when someone does 'include LogStash::Config'
   def self.included(base)
     # Add the DSL methods to the 'base' given.
@@ -99,6 +102,23 @@ module LogStash::Config::Mixin
       end
     end
 
+    # Resolve environment variables references
+    params.each do |name, value|
+      if (value.is_a?(Hash))
+        value.each do |valueHashKey, valueHashValue|
+          value[valueHashKey.to_s] = replace_env_placeholders(valueHashValue)
+        end
+      else
+        if (value.is_a?(Array))
+          value.each_index do |valueArrayIndex|
+            value[valueArrayIndex] = replace_env_placeholders(value[valueArrayIndex])
+          end
+        else
+          params[name.to_s] = replace_env_placeholders(value)
+        end
+      end
+    end
+
     if !self.class.validate(params)
       raise LogStash::ConfigurationError,
         I18n.t("logstash.agent.configuration.invalid_plugin_settings")
@@ -125,6 +145,42 @@ module LogStash::Config::Mixin
 
     @config = params
   end # def config_init
+
+  # Replace all environment variable references in 'value' param by environment variable value and return updated value
+  # Process following patterns : $VAR, ${VAR}, ${VAR:defaultValue}
+  def replace_env_placeholders(value)
+    if (value.is_a?(String))
+      while value =~ ENV_PLACEHOLDER_REGEX
+        valueParts = value.partition(ENV_PLACEHOLDER_REGEX)
+        placeHolder = valueParts[1]
+        if placeHolder.start_with?("${")
+          envVarName = placeHolder.slice(2..placeHolder.length - 2)
+        else
+          envVarName = placeHolder.slice(1..placeHolder.length - 1)
+        end
+        if envVarName.include?(':')
+          placeHolderParts = envVarName.split(':')
+          envVarName = placeHolderParts[0]
+          defaultValue = placeHolderParts[1] || ""
+        else
+          defaultValue = ""
+        end
+
+        envVarValue = ENV[envVarName]
+        if envVarValue.nil?
+          envVarValue = defaultValue
+          if defaultValue.empty?
+            @logger.warn("In plugin '#{self.class.config_name}', " +
+                         "referenced environment variable '#{envVarName}' does not exist. " +
+                         "This reference has been replaced by empty string.")
+          end
+        end
+        value = valueParts[0] << envVarValue << valueParts[2]
+        @logger.info("Replacing config environment variable '#{placeHolder}' with #{envVarValue}")
+      end
+    end
+    return value
+  end # def replace_env_placeholders
 
   module DSL
     attr_accessor :flags
