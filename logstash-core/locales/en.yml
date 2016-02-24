@@ -4,8 +4,7 @@
 #     for unformatted text.
 en:
   oops: |-
-    The error reported is: 
-      %{error}
+    An unexpected error occurred!
   logstash:
     environment:
       jruby-required:  >-
