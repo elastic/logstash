@@ -77,13 +77,16 @@ setup_java() {
   fi
 
   if [ "$LS_USE_GC_LOGGING" ] ; then
+    if [ -z "$LS_GC_LOG_FILE" ] ; then
+      LS_GC_LOG_FILE="./logstash-gc.log"
+    fi
     JAVA_OPTS="$JAVA_OPTS -XX:+PrintGCDetails"
     JAVA_OPTS="$JAVA_OPTS -XX:+PrintGCTimeStamps"
     JAVA_OPTS="$JAVA_OPTS -XX:+PrintClassHistogram"
     JAVA_OPTS="$JAVA_OPTS -XX:+PrintTenuringDistribution"
     JAVA_OPTS="$JAVA_OPTS -XX:+PrintGCApplicationStoppedTime"
-    JAVA_OPTS="$JAVA_OPTS -Xloggc:./logstash-gc.log"
-    echo "Writing garbage collection logs to ./logstash-gc.log"
+    JAVA_OPTS="$JAVA_OPTS -Xloggc:${LS_GC_LOG_FILE}"
+    echo "Writing garbage collection logs to ${LS_GC_LOG_FILE}"
   fi
 
   export JAVACMD
