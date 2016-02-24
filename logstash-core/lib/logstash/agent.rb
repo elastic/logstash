@@ -86,7 +86,7 @@ class LogStash::Agent
         begin
           reload_pipeline!(pipeline_id)
         rescue => e
-          @logger.error I18n.t("oops", :error => e, :backtrace => e.backtrace)
+          @logger.error(I18n.t("oops"), :message => e.message, :class => e.class.name, :backtrace => e.backtrace)
         end
       end
     end

@@ -4,8 +4,7 @@
 #     for unformatted text.
 en:
   oops: |-
-    The error reported is: 
-      %{error} %{backtrace}
+    An unexpected error occurred!
   logstash:
     error: >-
       Error: %{error}
