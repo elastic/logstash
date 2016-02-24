@@ -108,12 +108,6 @@ class LogStash::Agent < Clamp::Command
     raise LogStash::ConfigurationError, message
   end # def fail
 
-  def report(message)
-    # Print to stdout just in case we're logging to a file
-    puts message
-    @logger.log(message) if log_file
-  end
-
   # Run the agent. This method is invoked after clamp parses the
   # flags given to this program.
   def execute
@@ -202,7 +196,7 @@ class LogStash::Agent < Clamp::Command
 
     # Stop now if we are only asking for a config test.
     if config_test?
-      report "Configuration OK"
+      @logger.terminal "Configuration OK"
       return
     end
 
@@ -213,15 +207,14 @@ class LogStash::Agent < Clamp::Command
     return 0
   rescue LogStash::ConfigurationError => e
     @logger.unsubscribe(stdout_logs) if show_startup_errors
-    report I18n.t("logstash.agent.error", :error => e)
+    @logger.error I18n.t("logstash.agent.error", :error => e)
     if !config_test?
-      report I18n.t("logstash.agent.configtest-flag-information")
+      @logger.info I18n.t("logstash.agent.configtest-flag-information")
     end
     return 1
   rescue => e
     @logger.unsubscribe(stdout_logs) if show_startup_errors
-    report I18n.t("oops", :error => e)
-    report e.backtrace if @logger.debug? || $DEBUGLIST.include?("stacktrace")
+    @logger.warn(I18n.t("oops"), :error => e, :class => e.class.name, :backtrace => e.backtrace)
     return 1
   ensure
     @log_fd.close if @log_fd
