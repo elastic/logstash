@@ -77,3 +77,33 @@ of workers by passing a command line flag such as:
 
 [source,shell]
 bin/logstash `-w 1`
+
+=== Upgrading Logstash to 2.2
+
+Logstash 2.2 re-architected the pipeline stages to provide more performance and help future enhancements in resiliency.
+The new pipeline introduced micro-batches, processing groups of events at a time. The default batch size is
+125 per worker. Also, the filter and output stages are executed in the same thread, but still, as different stages.
+The CLI flag `--pipeline-workers` or `-w` control the number of execution threads, which is set by default to number of cores.
+
+**Considerations for Elasticsearch Output**
+The default batch size of the pipeline is 125 events per worker. This will by default also be the bulk size
+used for the elasticsearch output. The Elasticsearch output's `flush_size` now acts only as a maximum bulk
+size (still defaulting to 500). For example, if your pipeline batch size is 3000 events, Elasticsearch
+Output will send 500 events at a time, in 6 separate bulk requests. In other words, for Elasticsearch output,
+bulk request size is chunked based on `flush_size` and `--pipeline-batch-size`. If `flush_size` is set greater
+than `--pipeline-batch-size`, it is ignored and `--pipeline-batch-size` will be used.
+
+The default number of output workers in Logstash 2.2 is now equal to the number of pipeline workers (`-w`)
+unless overridden in the Logstash config file. This can be problematic for some users as the
+extra workers may consume extra resources like file handles, especially in the case of the Elasticsearch
+output. Users with more than one Elasticsearch host may want to override the `workers` setting
+for the Elasticsearch output in their Logstash config to constrain that number to a low value, between 1 to 4.
+
+**Performance Tuning in 2.2**
+Since both filters and output workers are on the same thread, this could lead to threads being idle in I/O wait state.
+Thus, in 2.2, you can safely set `-w` to a number which is a multiple of the number of cores on your machine.
+A common way to tune performance is keep increasing the `-w` beyond the # of cores until performance no longer
+improves. A note of caution - make sure you also keep heapsize in mind, because the number of in-flight events
+are `#workers * batch_size * average_event size`. More in-flight events could add to memory pressure, eventually
+leading to Out of Memory errors. You can change the heapsize in Logstash by setting `LS_HEAP_SIZE`
+
