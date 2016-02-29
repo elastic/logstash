@@ -144,7 +144,7 @@ configtest() {
   HOME=${LS_HOME}
   export PATH HOME JAVA_OPTS LS_HEAP_SIZE LS_JAVA_OPTS LS_USE_GC_LOGGING
 
-  test_args="-f ${LS_CONF_DIR} --configtest ${LS_OPTS}"
+  test_args="--configtest -f ${LS_CONF_DIR} ${LS_OPTS}"
   $program ${test_args}
   [ $? -eq 0 ] && return 0
   # Program not configured
