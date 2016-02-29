@@ -24,6 +24,7 @@
 # logstash logging
 #LS_LOG_FILE=/var/log/logstash/logstash.log
 #LS_USE_GC_LOGGING="true"
+#LS_GC_LOG_FILE=/var/log/logstash/gc.log
 
 # logstash configuration directory
 #LS_CONF_DIR=/etc/logstash/conf.d
