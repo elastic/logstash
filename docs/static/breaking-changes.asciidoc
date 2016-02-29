@@ -1,6 +1,15 @@
 [[breaking-changes]]
 == Breaking changes
 
+**Breaking changes in 2.2**
+Although 2.2 is fully compatible with configurations from older versions, there are some architectural 
+changes to the pipeline that users need to take into consideration before deploying in production. 
+These changes are not strictly "breaking" in the semantic versioning sense, but they make Logstash behave differently 
+in runtime, and can also affect performance. We have compiled such a list in the <<_upgrading_logstash_to_2.2>> section. 
+Please review it before deploying 2.2 version.
+
+**Changes in 2.0**
+
 Version 2.0 of Logstash has some changes that are incompatible with previous versions of Logstash. This section discusses
 what you need to be aware of when migrating to this version.
 
