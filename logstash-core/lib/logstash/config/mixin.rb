@@ -160,9 +160,9 @@ module LogStash::Config::Mixin
       default = Regexp.last_match(:default)
 
       replacement = ENV.fetch(name, default)
-      #if replacement.nil?
-        #raise LogStash::ConfigurationError, "Cannot evaluate `#{placeholder}`. Environment variable `#{name}` is not set and there is no default value given."
-      #end
+      if replacement.nil?
+        raise LogStash::ConfigurationError, "Cannot evaluate `#{placeholder}`. Environment variable `#{name}` is not set and there is no default value given."
+      end
       @logger.info? && @logger.info("Replacing config environment variable '#{placeholder}' with `#{replacement}`")
       replacement
     end
