@@ -152,7 +152,7 @@ describe LogStash::Config::Mixin do
     end
   end
 
-  context "environment variable injection" do
+  context "environment variable evaluation" do
     let(:plugin_class) do
       Class.new(LogStash::Filters::Base)  do
         config_name "one_plugin"
@@ -164,36 +164,74 @@ describe LogStash::Config::Mixin do
       end
     end
 
-    ENV["MIXIN_SPEC_ENV_VAR"] = "123"
-
-    subject {
-      plugin_class.new({
-        "oneString" => "${notExistingVar}",
-        "oneBoolean" => "${notExistingVar:true}",
-        "oneNumber" => "${MIXIN_SPEC_ENV_VAR}",
-        "oneArray" => [ "first array value", "$MIXIN_SPEC_ENV_VAR" ],
-        "oneHash" => { "key" => "$MIXIN_SPEC_ENV_VAR" }
-      })
-    }
-
-    it "should have oneString param as empty string (env var not found)" do
-      expect(subject.oneString).to(be == "")
+    before do
+      ENV["MIXIN_SPEC_ENV_VAR"] = "123"
     end
 
-    it "should have oneNumber param with environment variable injected" do
-      expect(subject.oneNumber).to(be == 123)
+    after do
+      ENV.delete("MIXIN_SPEC_ENV_VAR")
     end
 
-    it "should have oneBoolean param with default value" do
-      expect(subject.oneBoolean).to(be == true)
+    context "when an environment variable is not set" do
+      context "and no default is given" do
+        before do
+          # Canary. Just in case somehow this is set.
+          expect(ENV["NoSuchVariable"]).to be_nil
+        end
+
+        it "should raise a configuration error" do
+          expect do
+            plugin_class.new("example" => "${NoSuchVariable}")
+          end.to raise_error(LogStash::ConfigurationError)
+        end
+      end
+
+      context "and a default is given" do
+        subject do
+          plugin_class.new(
+            "oneString" => "${notExistingVar:foo}",
+            "oneBoolean" => "${notExistingVar:true}",
+            "oneArray" => [ "first array value", "${notExistingVar:foo}" ],
+            "oneHash" => { "key" => "${notExistingVar:foo}" }
+          )
+        end
+
+        it "should use the default" do
+          expect(subject.oneString).to(be == "foo")
+          expect(subject.oneBoolean).to be_truthy
+          expect(subject.oneArray).to(be == ["first array value", "foo"])
+          expect(subject.oneHash).to(be == { "key" => "foo" })
+        end
+      end
     end
 
-    it "should have oneArray param with environment variable injected" do
-      expect(subject.oneArray).to include("123")
-    end
+    context "when an environment variable is set" do
+      before do
+        ENV["FunString"] = "fancy"
+        ENV["FunBool"] = "true"
+      end
 
-    it "should have oneHash param with environment variable injected" do
-      expect(subject.oneHash["key"]).to(be == "123")
+      after do
+        ENV.delete("FunString")
+        ENV.delete("FunBool")
+      end
+
+      subject do
+        plugin_class.new(
+          "oneString" => "${FunString:foo}",
+          "oneBoolean" => "${FunBool:false}",
+          "oneArray" => [ "first array value", "${FunString:foo}" ],
+          "oneHash" => { "key" => "${FunString:foo}" }
+        )
+      end
+
+      it "should use the value in the variable" do
+        expect(subject.oneString).to(be == "fancy")
+        expect(subject.oneBoolean).to(be_truthy)
+        expect(subject.oneArray).to(be == [ "first array value", "fancy" ])
+        expect(subject.oneHash).to(be == { "key" => "fancy" })
+      end
+
     end
   end
 
