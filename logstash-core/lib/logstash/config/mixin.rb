@@ -163,7 +163,7 @@ module LogStash::Config::Mixin
       if replacement.nil?
         raise LogStash::ConfigurationError, "Cannot evaluate `#{placeholder}`. Environment variable `#{name}` is not set and there is no default value given."
       end
-      @logger.info? && @logger.info("Replacing config environment variable '#{placeholder}' with `#{replacement}`")
+      @logger.info? && @logger.info("Evaluating environment variable placeholder", :placeholder => placeholder, :replacement => replacement)
       replacement
     end
   end # def replace_env_placeholders
