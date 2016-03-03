@@ -63,7 +63,7 @@ describe LogStash::Event do
       it "should raise error when formatting %{+%s} when @timestamp field is missing" do
         str = "hello-%{+%s}"
         subj = subject.clone
-        subj.instance_variable_get(:@accessors).del("[@timestamp]")
+        subj.remove("[@timestamp]")
         expect{ subj.sprintf(str) }.to raise_error(LogStash::Error)
       end
 
@@ -80,7 +80,7 @@ describe LogStash::Event do
       it "should raise error with %{+format} syntax when @timestamp field is missing", :if => RUBY_ENGINE == "jruby" do
         str = "logstash-%{+YYYY}"
         subj = subject.clone
-        subj.instance_variable_get(:@accessors).del("[@timestamp]")
+        subj.remove("[@timestamp]")
         expect{ subj.sprintf(str) }.to raise_error(LogStash::Error)
       end
 
@@ -263,16 +263,6 @@ describe LogStash::Event do
         end
       end
 
-      context "remove" do
-        it "should raise an exception if you attempt to remove @timestamp" do
-          expect{subject.remove("@timestamp")}.to raise_error(InvalidOperationException)
-        end
-        it "should not raise an exception if you attempt to remove timestamp" do
-          subject["timestamp"] = 1456933880
-          expect{subject.remove("timestamp")}.not_to raise_error
-          expect(subject["timestamp"]).to be_nil
-        end
-      end
     end
 
     it "timestamp parsing speed", :performance => true do
