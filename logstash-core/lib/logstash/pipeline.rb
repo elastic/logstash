@@ -167,8 +167,7 @@ module LogStash; class Pipeline
 
     start_workers
 
-    @logger.info("Pipeline started")
-    @logger.terminal("Logstash startup completed")
+    @logger.log("Pipeline #{@pipeline_id} started")
 
     # Block until all inputs have stopped
     # Generally this happens if SIGINT is sent and `shutdown` is called from an external thread
@@ -183,8 +182,7 @@ module LogStash; class Pipeline
     shutdown_flusher
     shutdown_workers
 
-    @logger.info("Pipeline shutdown complete.")
-    @logger.terminal("Logstash shutdown completed")
+    @logger.log("Pipeline #{@pipeline_id} has been shutdown")
 
     # exit code
     return 0
