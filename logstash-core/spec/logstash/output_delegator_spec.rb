@@ -31,6 +31,7 @@ describe LogStash::OutputDelegator do
 
     context "after having received a batch of events" do
       before do
+        subject.register
         subject.multi_receive(events)
       end
 
@@ -43,25 +44,35 @@ describe LogStash::OutputDelegator do
       end
     end
 
-    it "should register all workers on register" do
-      expect(out_inst).to receive(:register)
-      subject.register
-    end
 
-    it "should close all workers when closing" do
-      expect(out_inst).to receive(:do_close)
-      subject.do_close
+    describe "closing" do
+      before do
+        subject.register
+      end
+
+      it "should register all workers on register" do
+        expect(out_inst).to have_received(:register)
+      end
+
+      it "should close all workers when closing" do
+        expect(out_inst).to receive(:do_close)
+        subject.do_close
+      end
     end
 
     describe "concurrency and worker support" do
+      before do
+        allow(out_inst).to receive(:id).and_return("a-simple-plugin")
+        allow(out_inst).to receive(:metric=).with(any_args)
+        allow(out_klass).to receive(:workers_not_supported?).and_return(false)
+      end
+
       describe "non-threadsafe outputs that allow workers" do
         let(:default_worker_count) { 3 }
 
         before do
           allow(out_klass).to receive(:threadsafe?).and_return(false)
-          allow(out_klass).to receive(:workers_not_supported?).and_return(false)
-          allow(out_inst).to receive(:metric=).with(any_args)
-          allow(out_inst).to receive(:id).and_return("a-simple-plugin")
+          subject.register
         end
 
         it "should instantiate multiple workers" do
@@ -77,9 +88,7 @@ describe LogStash::OutputDelegator do
       describe "threadsafe outputs" do
         before do
           allow(out_klass).to receive(:threadsafe?).and_return(true)
-          allow(out_inst).to receive(:metric=).with(any_args)
-          allow(out_inst).to receive(:id).and_return("a-simple-plugin")
-          allow(out_klass).to receive(:workers_not_supported?).and_return(false)
+          subject.register
         end
 
         it "should return true when threadsafe? is invoked" do
@@ -96,13 +105,17 @@ describe LogStash::OutputDelegator do
         end
 
         it "should not utilize the worker queue" do
-          expect(subject.send(:worker_queue)).not_to receive(:pop)
-          subject.multi_receive(events)
+          expect(subject.send(:worker_queue)).to be_nil
         end
 
         it "should send received events to the worker" do
           expect(out_inst).to receive(:multi_receive).with(events)
           subject.multi_receive(events)
+        end
+
+        it "should close all workers when closing" do
+          expect(out_inst).to receive(:do_close)
+          subject.do_close
         end
       end
     end
@@ -123,11 +136,12 @@ describe LogStash::OutputDelegator do
     let(:default_worker_count) { 2 }
     let(:out_klass) { LogStash::Outputs::NOOPDelLegacyNoWorkers }
 
-    before do
+    before(:each) do
       allow(logger).to receive(:debug).with(any_args)
     end
 
     it "should only setup one worker" do
+      subject.register
       expect(subject.worker_count).to eql(1)
     end
   end
