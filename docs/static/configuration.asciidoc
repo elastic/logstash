@@ -599,6 +599,184 @@ output {
 }
 ----------------------------------
 
+[[environment-variables]]
+=== Using Environment Variables in Configuration
+==== Overview
+
+* You can set environment variable references into Logstash plugins configuration using `${var}` or `$var`.
+* Each reference will be replaced by environment variable value at Logstash startup.
+* The replacement is case-sensitive.
+* References to undefined variables raise a Logstash configuration error.
+* A default value can be given by using the form `${var:default value}`.
+* You can add environment variable references in any plugin option type : string, number, boolean, array or hash.
+* Environment variables are immutable. If you update the environment variable, you'll have to restart Logstash to pick the updated value.
+
+==== Examples
+
+[cols="a,a,a"]
+|==================================
+|Logstash config source	|Environment 	|Logstash config result
+
+|
+[source,ruby]
+----
+input {
+  tcp {
+    port => "$TCP_PORT"
+  }
+}
+----
+
+|
+[source,shell]
+----
+export TCP_PORT=12345
+----
+|
+[source,ruby]
+----
+input {
+  tcp {
+    port => 12345
+  }
+}
+----
+|
+[source,ruby]
+----
+input {
+  tcp {
+    port => "${TCP_PORT}"
+  }
+}
+----
+
+|
+[source,shell]
+----
+export TCP_PORT=12345
+----
+|
+[source,ruby]
+----
+input {
+  tcp {
+    port => 12345
+  }
+}
+----
+|
+[source,ruby]
+----
+input {
+  tcp {
+    port => "${TCP_PORT}"
+  }
+}
+----
+
+|
+No TCP_PORT defined
+|
+Raise a logstash configuration error
+|
+[source,ruby]
+----
+input {
+  tcp {
+    port => "${TCP_PORT:54321}"
+  }
+}
+----
+
+|
+No TCP_PORT defined
+|
+[source,ruby]
+----
+input {
+  tcp {
+    port => 54321
+  }
+}
+----
+|
+[source,ruby]
+----
+input {
+  tcp {
+    port => "${TCP_PORT:54321}"
+  }
+}
+----
+
+|
+[source,shell]
+----
+export TCP_PORT=12345
+----
+|
+[source,ruby]
+----
+input {
+  tcp {
+    port => 12345
+  }
+}
+----
+|
+[source,ruby]
+----
+filter {
+  mutate {
+    add_tag => [ "tag1", "${ENV_TAG}" ]
+  }
+}
+----
+
+|
+[source,shell]
+----
+export ENV_TAG="tag2"
+----
+|
+[source,ruby]
+----
+filter {
+  mutate {
+    add_tag => [ "tag1", "tag2" ]
+  }
+}
+----
+|
+[source,ruby]
+----
+filter {
+  mutate {
+    add_field => {
+      "my_path" => "${HOME}/file.log"
+    }
+  }
+}
+----
+|
+[source,shell]
+----
+export HOME="/path"
+----
+|
+[source,ruby]
+----
+filter {
+  mutate {
+    add_field => {
+      "my_path" => "/path/file.log"
+    }
+  }
+}
+----
+|==================================
+
 [[config-examples]]
 === Logstash Configuration Examples
 The following examples illustrate how you can configure Logstash to filter events, process Apache logs and syslog messages, and use conditionals to control what events are processed by a filter or output.
