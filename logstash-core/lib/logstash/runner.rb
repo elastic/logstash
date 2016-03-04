@@ -90,6 +90,10 @@ class LogStash::Runner < Clamp::Command
     I18n.t("logstash.web_api.flag.http_port"),
     :attribute_name => :web_api_http_port, :default => 9600
 
+  option ["--[no-]auto-download"], :flag,
+    I18n.t("logstash.agent.flag.autodownload"),
+    :default => false
+
   def pipeline_workers=(pipeline_workers_value)
     @pipeline_settings[:pipeline_workers] = validate_positive_integer(pipeline_workers_value)
   end
@@ -142,6 +146,8 @@ class LogStash::Runner < Clamp::Command
 
     LogStash::ShutdownWatcher.unsafe_shutdown = unsafe_shutdown?
     LogStash::ShutdownWatcher.logger = @logger
+
+    LogStash::Plugin.auto_download = auto_download?
 
     configure
 

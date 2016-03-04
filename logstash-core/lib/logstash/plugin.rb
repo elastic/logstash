@@ -101,6 +101,7 @@ class LogStash::Plugin
 
   # Look up a plugin by type and name.
   def self.lookup(type, name)
+    retried_once ||= false
     path = "logstash/#{type}s/#{name}"
 
     # first check if plugin already exists in namespace and continue to next step if not
@@ -116,7 +117,21 @@ class LogStash::Plugin
     # check again if plugin is now defined in namespace after the require
     namespace_lookup(type, name)
   rescue LoadError, NameError => e
-    raise(LogStash::PluginLoadingError, I18n.t("logstash.pipeline.plugin-loading-error", :type => type, :name => name, :path => path, :error => e.to_s))
+    if !auto_download? || retried_once then
+      raise(LogStash::PluginLoadingError, I18n.t("logstash.pipeline.plugin-loading-error", :type => type, :name => name, :path => path, :error => e.to_s))
+    else
+      install(type, name)
+      retried_once = true
+      retry
+    end
+  end
+
+  def self.auto_download?
+    @auto_download
+  end
+
+  def self.auto_download=(bool)
+    @auto_download = bool
   end
 
   private
@@ -149,5 +164,10 @@ class LogStash::Plugin
   # @return [Cabin::Channel] logger channel for class methods
   def self.logger
     @logger ||= Cabin::Channel.get(LogStash)
+  end
+
+  def self.install(type, name)
+    plugin_long_name = "logstash-#{type}-#{name.downcase}"
+    ::LogStash::PluginManager::Install.run(File.basename($0), [plugin_long_name])
   end
 end # class LogStash::Plugin
