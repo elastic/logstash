@@ -142,7 +142,7 @@ configtest() {
   fi
 
   HOME=${LS_HOME}
-  export PATH HOME JAVA_OPTS LS_HEAP_SIZE LS_JAVA_OPTS LS_USE_GC_LOGGING
+  export PATH HOME
 
   test_args="--configtest -f ${LS_CONF_DIR} ${LS_OPTS}"
   $program ${test_args}
