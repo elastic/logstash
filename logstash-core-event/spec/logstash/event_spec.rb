@@ -333,6 +333,7 @@ describe LogStash::Event do
           expect(subject[ "field1" ]).to eq([ "original1", "original2", "append1" ])
         end
       end
+
     end
 
     it "timestamp parsing speed", :performance => true do

@@ -25,6 +25,7 @@ script
   LS_HEAP_SIZE="1g"
   LS_LOG_FILE=/var/log/logstash/logstash.log
   LS_USE_GC_LOGGING=""
+  LS_GC_LOG_FILE=""
   LS_CONF_DIR="/etc/logstash/conf.d/*.conf"
   LS_OPEN_FILES=16384
   LS_NICE=19
@@ -40,7 +41,7 @@ script
   cd "${LS_HOME}"
 
   # Export variables
-  export PATH HOME LS_HEAP_SIZE LS_JAVA_OPTS LS_USE_GC_LOGGING
+  export PATH HOME LS_HEAP_SIZE LS_JAVA_OPTS LS_USE_GC_LOGGING LS_GC_LOG_FILE
   test -n "${JAVACMD}" && export JAVACMD
 
   exec nice -n ${LS_NICE} /opt/logstash/bin/logstash agent -f "${LS_CONF_DIR}" -l "${LS_LOG_FILE}" ${LS_OPTS}
