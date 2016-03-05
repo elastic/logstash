@@ -164,14 +164,6 @@ describe LogStash::Config::Mixin do
       end
     end
 
-    before do
-      ENV["MIXIN_SPEC_ENV_VAR"] = "123"
-    end
-
-    after do
-      ENV.delete("MIXIN_SPEC_ENV_VAR")
-    end
-
     context "when an environment variable is not set" do
       context "and no default is given" do
         before do
@@ -181,7 +173,7 @@ describe LogStash::Config::Mixin do
 
         it "should raise a configuration error" do
           expect do
-            plugin_class.new("example" => "${NoSuchVariable}")
+            plugin_class.new("oneString" => "${NoSuchVariable}")
           end.to raise_error(LogStash::ConfigurationError)
         end
       end
@@ -191,7 +183,7 @@ describe LogStash::Config::Mixin do
           plugin_class.new(
             "oneString" => "${notExistingVar:foo}",
             "oneBoolean" => "${notExistingVar:true}",
-            "oneArray" => [ "first array value", "${notExistingVar:foo}" ],
+            "oneArray" => [ "first array value", "${notExistingVar:foo}", "${notExistingVar:}", "${notExistingVar: }", "${notExistingVar:foo bar}" ],
             "oneHash" => { "key" => "${notExistingVar:foo}" }
           )
         end
@@ -199,7 +191,7 @@ describe LogStash::Config::Mixin do
         it "should use the default" do
           expect(subject.oneString).to(be == "foo")
           expect(subject.oneBoolean).to be_truthy
-          expect(subject.oneArray).to(be == ["first array value", "foo"])
+          expect(subject.oneArray).to(be == ["first array value", "foo", "", " ", "foo bar"])
           expect(subject.oneHash).to(be == { "key" => "foo" })
         end
       end
@@ -221,7 +213,7 @@ describe LogStash::Config::Mixin do
           "oneString" => "${FunString:foo}",
           "oneBoolean" => "${FunBool:false}",
           "oneArray" => [ "first array value", "${FunString:foo}" ],
-          "oneHash" => { "key" => "${FunString:foo}" }
+          "oneHash" => { "key1" => "${FunString:foo}", "key2" => "$FunString is ${FunBool}", "key3" => "${FunBool:false} or ${funbool:false}" }
         )
       end
 
@@ -229,7 +221,7 @@ describe LogStash::Config::Mixin do
         expect(subject.oneString).to(be == "fancy")
         expect(subject.oneBoolean).to(be_truthy)
         expect(subject.oneArray).to(be == [ "first array value", "fancy" ])
-        expect(subject.oneHash).to(be == { "key" => "fancy" })
+        expect(subject.oneHash).to(be == { "key1" => "fancy", "key2" => "fancy is true", "key3" => "true or false" })
       end
 
     end
