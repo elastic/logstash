@@ -37,6 +37,8 @@ module LogStash::Config::Mixin
 
   PLUGIN_VERSION_1_0_0 = LogStash::Util::PluginVersion.new(1, 0, 0)
   PLUGIN_VERSION_0_9_0 = LogStash::Util::PluginVersion.new(0, 9, 0)
+  
+  ENV_PLACEHOLDER_REGEX = /\$(?<name>\w+)|\$\{(?<name>\w+)(\:(?<default>[^}]*))?\}/
 
   # This method is called when someone does 'include LogStash::Config'
   def self.included(base)
@@ -99,6 +101,23 @@ module LogStash::Config::Mixin
       end
     end
 
+    # Resolve environment variables references
+    params.each do |name, value|
+      if (value.is_a?(Hash))
+        value.each do |valueHashKey, valueHashValue|
+          value[valueHashKey.to_s] = replace_env_placeholders(valueHashValue)
+        end
+      else
+        if (value.is_a?(Array))
+          value.each_index do |valueArrayIndex|
+            value[valueArrayIndex] = replace_env_placeholders(value[valueArrayIndex])
+          end
+        else
+          params[name.to_s] = replace_env_placeholders(value)
+        end
+      end
+    end
+
     if !self.class.validate(params)
       raise LogStash::ConfigurationError,
         I18n.t("logstash.runner.configuration.invalid_plugin_settings")
@@ -125,6 +144,29 @@ module LogStash::Config::Mixin
 
     @config = params
   end # def config_init
+
+  # Replace all environment variable references in 'value' param by environment variable value and return updated value
+  # Process following patterns : $VAR, ${VAR}, ${VAR:defaultValue}
+  def replace_env_placeholders(value)
+    return value unless value.is_a?(String)
+    #raise ArgumentError, "Cannot replace ENV placeholders on non-strings. Got #{value.class}" if !value.is_a?(String)
+
+    value.gsub(ENV_PLACEHOLDER_REGEX) do |placeholder|
+      # Note: Ruby docs claim[1] Regexp.last_match is thread-local and scoped to
+      # the call, so this should be thread-safe.
+      #
+      # [1] http://ruby-doc.org/core-2.1.1/Regexp.html#method-c-last_match
+      name = Regexp.last_match(:name)
+      default = Regexp.last_match(:default)
+
+      replacement = ENV.fetch(name, default)
+      if replacement.nil?
+        raise LogStash::ConfigurationError, "Cannot evaluate `#{placeholder}`. Environment variable `#{name}` is not set and there is no default value given."
+      end
+      @logger.info? && @logger.info("Evaluating environment variable placeholder", :placeholder => placeholder, :replacement => replacement)
+      replacement
+    end
+  end # def replace_env_placeholders
 
   module DSL
     attr_accessor :flags
