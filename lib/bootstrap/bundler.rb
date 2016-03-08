@@ -28,18 +28,31 @@ module LogStash
         end
       end
 
-      # This patch makes rubygems fetch directly from the remote servers
-      # the dependencies he need and might not have downloaded in a local
-      # repository. This basically enabled the offline feature to work as
-      # we remove the gems from the vendor directory before packacing.
-      ::Bundler::Source::Rubygems.module_exec do
-        def cached_gem(spec)
-          cached_built_in_gem(spec)
+      ::Bundler::Runtime.module_exec do
+        def rebuild_gem_cache
+          specs.each do |spec|
+            next if spec.name == "bundler"
+            next if spec.source.is_a?(::Bundler::Source::Path)
+            spec.source.send(:cached_built_in_gem, spec) if spec.source.respond_to?(:cached_built_in_gem)
+          end
         end
       end
+
     end
 
-    def setup!(options = {})
+    # This basically enabled the offline feature to work as
+    # we remove the gems from the vendor directory before packacing, so we need
+    # to fetch them back before moving forward.
+    def rebuild_gem_cache(options={})
+      configure!(options)
+      ::Bundler.load.rebuild_gem_cache
+    end
+
+
+    # Configure the minimum required set of options for Bundler like GEM_HOME location,
+    # GEMFILE_PATH, etc. It also apply internal patches and makes sure it setup to work
+    # as expected for internal LS usage.
+    def configure!(options={})
       options = {:without => [:development]}.merge(options)
       options[:without] = Array(options[:without])
 
@@ -61,6 +74,10 @@ module LogStash
       ::Bundler.settings[:gemfile] = Environment::GEMFILE_PATH
 
       ::Bundler.reset!
+    end
+
+    def setup!(options = {})
+      configure!(options)
       ::Bundler.setup
     end
 
