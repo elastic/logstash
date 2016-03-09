@@ -43,6 +43,7 @@ module LogStash class OutputDelegator
     # This queue is used to manage sharing across threads
     @worker_queue = SizedQueue.new(@worker_count)
 
+    # Register additional instances
     @workers += (@worker_count - 1).times.map do
       inst = @klass.new(*args)
       inst.metric = @metric
@@ -109,7 +110,8 @@ module LogStash class OutputDelegator
   end
 
   def register
-    @workers.each {|w| w.register}
+    # All instances should already be registered 
+    # @workers.each {|w| w.register}
   end
 
   def threadsafe_multi_receive(events)
