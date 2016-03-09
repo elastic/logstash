@@ -12,13 +12,6 @@ describe LogStash::Api::Root do
     described_class
   end
 
-  let(:agent) { double("agent") }
-
-  before(:each) do
-    allow(agent).to receive(:node_name).and_return("foo")
-    expect_any_instance_of(LogStash::Api::Service).to receive(:agent).and_return(agent)
-  end
-
   it "should respond to root resource" do
     get "/"
     expect(last_response).to be_ok
