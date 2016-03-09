@@ -24,7 +24,12 @@ module LogStash
       @options     = {}
       @cli_options = options.merge({ :rackup => ::File.join(::File.dirname(__FILE__), "api", "init.ru"),
                                      :binds => ["tcp://#{http_host}:#{http_port}"],
-                                     :debug => logger.debug? })
+                                     :debug => logger.debug?,
+                                     # Prevent puma from queueing request when not able to properly handling them,
+                                     # fixed https://github.com/elastic/logstash/issues/4674. See
+                                     # https://github.com/puma/puma/pull/640 for mode internal details in PUMA.
+                                     :queue_requests => false
+      })
       @status      = nil
 
       parse_options
