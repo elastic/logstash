@@ -11,12 +11,11 @@ module LogStash::Api
     # retrieved and show
     get "/" do
       events_command = factory.build(:events_command)
-      memory_command = factory.build(:memory_command)
       payload = {
         :events => events_command.run,
-        :start_time_in_millis => events_command.started_at,
-        :jvm => { :memory => memory_command.run }
+        :jvm => jvm_payload
       }
+
       respond_with payload
     end
 
@@ -35,9 +34,18 @@ module LogStash::Api
 
     # return hot threads information
     get "/jvm" do
-      command = factory.build(:memory_command)
-      respond_with({ :memory => command.run })
+      respond_with jvm_payload
     end
 
+    private
+
+    def jvm_payload
+      command = factory.build(:memory_command)
+      {
+        :timestamp => command.started_at,
+        :uptime_in_millis => command.uptime,
+        :mem => command.run
+      }
+    end
   end
 end

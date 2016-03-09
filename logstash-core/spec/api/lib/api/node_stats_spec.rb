@@ -28,6 +28,8 @@ describe LogStash::Api::NodeStats do
 
   it "respond to the jvm resource" do
     expect_any_instance_of(LogStash::Api::JvmMemoryCommand).to receive(:run).and_return(mem)
+    expect_any_instance_of(LogStash::Api::JvmMemoryCommand).to receive(:started_at).and_return(10)
+    expect_any_instance_of(LogStash::Api::JvmMemoryCommand).to receive(:uptime).and_return(100)
     get "jvm"
     expect(last_response).to be_ok
   end
