@@ -7,18 +7,13 @@ describe "JVM stats" do
 
   describe LogStash::Api::HotThreadsCommand do
 
-    let(:agent) { double("agent") }
-
-    before(:each) do
-      allow(agent).to receive(:node_name).and_return("foo")
-      expect_any_instance_of(LogStash::Api::Service).to receive(:agent).and_return(agent)
-      expect(subject).to receive(:uptime).and_return(10).at_least(:once)
+    let(:report) do
+      do_request { subject.run }
     end
 
     context "#schema" do
-      let(:report) { subject.run }
-
       it "return hot threads information" do
+        report = do_request { subject.run }
         expect(report.to_s).not_to be_empty
       end
 
@@ -29,7 +24,9 @@ describe "JVM stats" do
 
     context "#schema" do
 
-      let(:report) { subject.run }
+      let(:report) do
+        do_request { subject.run }
+      end
 
       it "return hot threads information" do
         expect(report).not_to be_empty

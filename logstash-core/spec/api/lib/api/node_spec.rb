@@ -14,7 +14,7 @@ describe LogStash::Api::Node do
   describe "#hot threads" do
 
     before(:all) do
-      get "/hot_threads"
+      do_request { get "/hot_threads" }
     end
 
     it "respond OK" do
@@ -28,10 +28,14 @@ describe LogStash::Api::Node do
     context "#threads count" do
 
       before(:all) do
-        get "/hot_threads?threads=5"
+        do_request { get "/hot_threads?threads=5" }
       end
 
       let(:payload) { JSON.parse(last_response.body) }
+
+      it "should return a json payload content type" do
+        expect(last_response.content_type).to eq("application/json")
+      end
 
       it "should return information for <= # requested threads" do
         expect(payload["threads"].count).to be <= 5
@@ -39,13 +43,18 @@ describe LogStash::Api::Node do
     end
 
     context "when asking for human output" do
+
       before(:all) do
-        get "/hot_threads?human"
+        do_request { get "/hot_threads?human" }
       end
 
       let(:payload) { last_response.body }
 
-      it "should return a plain text description" do
+      it "should return a text/plain content type" do
+        expect(last_response.content_type).to eq("text/plain;charset=utf-8")
+      end
+
+      it "should return a plain text payload" do
         expect{ JSON.parse(payload) }.to raise_error
       end
     end
@@ -53,7 +62,7 @@ describe LogStash::Api::Node do
     context "when requesting idle threads" do
 
       before(:all) do
-        get "/hot_threads?ignore_idle_threads=false&threads=10"
+        do_request { get "/hot_threads?ignore_idle_threads=false&threads=10" }
       end
 
       let(:payload) { JSON.parse(last_response.body) }

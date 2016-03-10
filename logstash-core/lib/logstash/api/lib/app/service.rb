@@ -48,11 +48,14 @@ class LogStash::Api::Service
   private
 
   def has_counters?
-    return false if @snapshot.nil?
-    if @snapshot_rotation_mutex.try_lock
-      has = @snapshot.metric_store.all.clone.map { |t| t.class.to_s }.include?("LogStash::Instrument::MetricType::Counter")
-      @snapshot_rotation_mutex.unlock
-      return has
+    (["LogStash::Instrument::MetricType::Counter", "LogStash::Instrument::MetricType::Gauge"] - metric_types).empty?
+  end
+
+  def metric_types
+    types = []
+    @snapshot_rotation_mutex.synchronize do
+      types = @snapshot.metric_store.all.map { |t| t.class.to_s }
     end
+    return types
   end
 end

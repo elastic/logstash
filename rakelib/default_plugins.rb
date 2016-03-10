@@ -119,8 +119,6 @@ module LogStash
       logstash-input-stdin
       logstash-input-tcp
       logstash-output-stdout
-      logstash-output-null
-      logstash-codec-rubydebug
     )
 
     TEST_JAR_DEPENDENCIES_PLUGINS = %w(
