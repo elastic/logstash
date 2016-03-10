@@ -43,8 +43,9 @@ reviewing and merging patches.
 
 ==== Patch Requirements
 
-A patch is a minimal and accurate answer to exactly one identified and agreed upon problem. It must conform to the code
-style guidelines and must include RSpec tests that verify the fitness of the solution.
+A patch is a minimal and accurate answer to exactly one identified and agreed upon problem. It must conform to the
+https://github.com/elastic/logstash/blob/master/STYLE.md[code style guidelines] and must include RSpec tests that verify
+the fitness of the solution.
 
 A patch will be automatically tested by a CI system that will report on the Pull Request status.
 
