@@ -4,8 +4,8 @@ $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 require 'logstash-core/version'
 
 Gem::Specification.new do |gem|
-  gem.authors       = ["Jordan Sissel", "Pete Fritchman", "Elasticsearch"]
-  gem.email         = ["jls@semicomplete.com", "petef@databits.net", "info@elasticsearch.com"]
+  gem.authors       = ["Elastic"]
+  gem.email         = ["info@elastic.co"]
   gem.description   = %q{The core components of logstash, the scalable log and event management tool}
   gem.summary       = %q{logstash-core - The core components of logstash}
   gem.homepage      = "http://www.elastic.co/guide/en/logstash/current/index.html"
@@ -17,7 +17,7 @@ Gem::Specification.new do |gem|
   gem.require_paths = ["lib"]
   gem.version       = LOGSTASH_CORE_VERSION
 
-  gem.add_runtime_dependency "logstash-core-event-java", "~> 3.0.0.dev"
+  gem.add_runtime_dependency "logstash-core-event-java", "2.3.0.snapshot1"
 
   gem.add_runtime_dependency "cabin", "~> 0.8.0" #(Apache 2.0 license)
   gem.add_runtime_dependency "pry", "~> 0.10.1"  #(Ruby license)
