@@ -13,7 +13,7 @@ describe LogStash::Api::Root do
   end
 
   it "should respond to root resource" do
-    get "/"
+    do_request { get "/" }
     expect(last_response).to be_ok
   end
 

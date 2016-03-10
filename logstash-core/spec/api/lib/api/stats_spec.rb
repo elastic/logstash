@@ -12,7 +12,7 @@ describe LogStash::Api::Stats do
   end
 
   it "respond to the jvm resource" do
-    get "/jvm"
+    do_request { get "/jvm" }
     expect(last_response).to be_ok
   end
 

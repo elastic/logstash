@@ -11,19 +11,19 @@ describe LogStash::Api::NodeStats do
     described_class
   end
 
+  let(:payload) { JSON.parse(last_response.body) }
+
   context "#root" do
 
     before(:all) do
-      get "/"
+      do_request { get "/" }
     end
-
-    let(:payload) { JSON.parse(last_response.body) }
 
     it "respond OK" do
       expect(last_response).to be_ok
     end
 
-    ["events", "jvm", "start_time_in_millis"].each do |key|
+    ["events", "jvm"].each do |key|
       it "contains #{key} information" do
         expect(payload).to include(key)
       end
@@ -32,11 +32,11 @@ describe LogStash::Api::NodeStats do
 
   context "#events" do
 
-    before(:all) do
-      get "/events"
-    end
-
     let(:payload) { JSON.parse(last_response.body) }
+
+    before(:all) do
+      do_request { get "/events" }
+    end
 
     it "respond OK" do
       expect(last_response).to be_ok
@@ -49,18 +49,18 @@ describe LogStash::Api::NodeStats do
 
   context "#jvm" do
 
-    before(:all) do
-      get "jvm"
-    end
-
     let(:payload) { JSON.parse(last_response.body) }
+
+    before(:all) do
+      do_request { get "/jvm" }
+    end
 
     it "respond OK" do
       expect(last_response).to be_ok
     end
 
     it "contains memory information" do
-      expect(payload).to include("memory")
+      expect(payload).to include("mem")
     end
   end
 
