@@ -24,6 +24,8 @@ en:
           Error: %{error}
           Exception: %{exception}
           Stack: %{stacktrace}
+      plugin-missing-error: >-
+        Detected missing plugin: '%{plugin}'. Installing..
       plugin-loading-error: >-
         Couldn't find any %{type} plugin named '%{name}'. Are you
         sure this is correct? Trying to load the %{name} %{type} plugin
@@ -186,6 +188,9 @@ en:
           Monitor configuration changes and reload
           whenever it is changed.
           NOTE: use SIGHUP to manually reload the config
+        autodownload: |+
+          Automatically download missing plugins from
+          Rubygems.
         log: |+
           Write logstash internal logs to the given
           file. Without this flag, logstash will emit
