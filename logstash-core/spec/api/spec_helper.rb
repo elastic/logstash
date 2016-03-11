@@ -113,3 +113,16 @@ module LogStash; module RSpec; module RunnerConfig
     end
   end
 end; end; end
+
+require 'rspec/expectations'
+
+RSpec::Matchers.define :be_available? do
+  match do |plugin|
+    begin
+      Gem::Specification.find_by_name(plugin["name"])
+      true
+    rescue
+      false
+    end
+  end
+end

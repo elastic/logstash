@@ -2,6 +2,7 @@
 require_relative "../../spec_helper"
 require "sinatra"
 require "app/modules/node_stats"
+require "logstash/json"
 
 describe LogStash::Api::NodeStats do
 
@@ -11,7 +12,7 @@ describe LogStash::Api::NodeStats do
     described_class
   end
 
-  let(:payload) { JSON.parse(last_response.body) }
+  let(:payload) { LogStash::Json.load(last_response.body) }
 
   context "#root" do
 
@@ -32,7 +33,7 @@ describe LogStash::Api::NodeStats do
 
   context "#events" do
 
-    let(:payload) { JSON.parse(last_response.body) }
+    let(:payload) { LogStash::Json.load(last_response.body) }
 
     before(:all) do
       do_request { get "/events" }
@@ -49,7 +50,7 @@ describe LogStash::Api::NodeStats do
 
   context "#jvm" do
 
-    let(:payload) { JSON.parse(last_response.body) }
+    let(:payload) { LogStash::Json.load(last_response.body) }
 
     before(:all) do
       do_request { get "/jvm" }
