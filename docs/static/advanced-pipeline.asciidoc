@@ -403,9 +403,8 @@ filebeat:
       fields:
         type: syslog
 output:
-  elasticsearch:
-    enabled: true
-    hosts: ["http://localhost:5043"]
+  logstash:
+    hosts: ["localhost:5043"]
   tls:
     certificate: /path/to/ssl-certificate.crt <2>
     certificate_key: /path/to/ssl-certificate.key
