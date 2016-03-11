@@ -2,6 +2,7 @@
 require_relative "../../spec_helper"
 require "sinatra"
 require "app/modules/node"
+require "logstash/json"
 
 describe LogStash::Api::Node do
 
@@ -22,7 +23,7 @@ describe LogStash::Api::Node do
     end
 
     it "should return a JSON object" do
-      expect{ JSON.parse(last_response.body) }.not_to raise_error
+      expect{ LogStash::Json.load(last_response.body) }.not_to raise_error
     end
 
     context "#threads count" do
@@ -31,7 +32,7 @@ describe LogStash::Api::Node do
         do_request { get "/hot_threads?threads=5" }
       end
 
-      let(:payload) { JSON.parse(last_response.body) }
+      let(:payload) { LogStash::Json.load(last_response.body) }
 
       it "should return a json payload content type" do
         expect(last_response.content_type).to eq("application/json")
@@ -65,7 +66,7 @@ describe LogStash::Api::Node do
         do_request { get "/hot_threads?ignore_idle_threads=false&threads=10" }
       end
 
-      let(:payload) { JSON.parse(last_response.body) }
+      let(:payload) { LogStash::Json.load(last_response.body) }
 
       it "should return JIT threads" do
         thread_names = payload["threads"].map { |thread_info| thread_info["name"] }

@@ -7,8 +7,7 @@ about Logstash:
 * <<root-resource-api>>
 * <<stats-info-api>>
 * <<hot-threads-api>>
-
-//NOTE: Need to add this to the doc after Alpha 1: * <<plugins-api>>
+* <<plugins-api>>
 
 [float]
 [[monitoring-common-options]]
@@ -39,11 +38,6 @@ to the query string. This makes sense when the stats results are
 being consumed by a monitoring tool, rather than intended for human
 consumption.  The default for the `human` flag is
 `false`.
-
-
-/////
-COMMENTED OUT because this API was moved to Alpha 2. Feel free to add review
-comments, tho, if you notice inaccuracies.
 
 [[plugins-api]]
 === Plugins API
@@ -77,7 +71,6 @@ Example response:
 ....
 ] 
 --------------------------------------------------
-/////
 
 [[root-resource-api]]
 === Root Resource API
