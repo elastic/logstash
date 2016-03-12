@@ -110,7 +110,7 @@ module LogStash
   end
 
   class KeyNode
-    KEY_NODE_DEFAULT_DELIMITER = ":-"
+    KEY_NODE_DEFAULT_DELIMITER = ":"
 
     def initialize(key)
       key_default = key.split(KEY_NODE_DEFAULT_DELIMITER, 2)

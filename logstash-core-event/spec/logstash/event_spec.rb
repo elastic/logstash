@@ -130,11 +130,11 @@ describe LogStash::Event do
         end
 
         it "should use default value, if field is not found" do
-          expect(subject.sprintf("%{undefined-field:-na}")).to eq("na")
+          expect(subject.sprintf("%{undefined-field:na}")).to eq("na")
         end
 
         it "should use empty default value, if field is not found" do
-          expect(subject.sprintf("%{undefined-field:-}")).to eq("")
+          expect(subject.sprintf("%{undefined-field:}")).to eq("")
         end
       end
     end
