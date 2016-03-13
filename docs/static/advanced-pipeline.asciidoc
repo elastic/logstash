@@ -117,6 +117,13 @@ filter {
     }
 }
 --------------------------------------------------------------------------------
+And change output to see a result :
+[source,json]
+--------------------------------------------------------------------------------
+output {
+  stdout { codec => rubydebug }
+}
+--------------------------------------------------------------------------------
 
 After processing, the sample line has the following JSON representation:
 
