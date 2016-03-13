@@ -308,7 +308,7 @@ require "logstash/outputs/zeromq"
 require "logstash/devutils/rspec/spec_helper"
 
 describe LogStash::Outputs::ZeroMQ do
-  let(:output) { described_class.new("mode" => "server", "topology" => "pushpull" }
+  let(:output) { described_class.new("mode" => "server", "topology" => "pushpull") }
   let(:tracer) { double("logger") }
 
   context "when in server mode" do
