@@ -247,3 +247,7 @@ en:
           Print the compiled config ruby code out as a debug log (you must also have --debug enabled).
           WARNING: This will include any 'password' options passed to plugin configs as plaintext, and may result
           in plaintext passwords appearing in your logs!
+        log-in-json: |+
+          Specify that Logstash should write its own logs in JSON form - one
+          event per line. If false, Logstash will log using Ruby's
+          Object#inspect (not easy to machine-parse)
