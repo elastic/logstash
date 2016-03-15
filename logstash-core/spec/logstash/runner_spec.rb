@@ -3,7 +3,10 @@ require "spec_helper"
 require "logstash/runner"
 require "stud/task"
 require "stud/trap"
+require "stud/temporary"
 require "logstash/util/java_version"
+require "logstash/logging/json"
+require "json"
 
 class NullRunner
   def run(args); end
@@ -16,7 +19,7 @@ describe LogStash::Runner do
 
   before :each do
     allow(Cabin::Channel).to receive(:get).with(LogStash).and_return(channel)
-    allow(channel).to receive(:subscribe).with(any_args)
+    allow(channel).to receive(:subscribe).with(any_args).and_call_original
   end
 
   describe "argument parsing" do
@@ -91,6 +94,32 @@ describe LogStash::Runner do
         expect(subject).to receive(:signal_usage_error).and_call_original
         expect(subject).to receive(:show_short_help)
         expect(subject.run(args)).to eq(1)
+      end
+    end
+  end
+
+  context "--log-in-json" do
+    subject { LogStash::Runner.new("") }
+    let(:logfile) { Stud::Temporary.file }
+    let(:args) { [ "--log-in-json", "-l", logfile.path, "-e", "input {} output{}" ] }
+
+    after do
+      logfile.close
+      File.unlink(logfile.path)
+    end
+
+    before do
+      expect(channel).to receive(:subscribe).with(kind_of(LogStash::Logging::JSON)).and_call_original
+      subject.run(args)
+
+      # Log file should have stuff in it.
+      expect(logfile.stat.size).to be > 0
+    end
+
+    it "should log in valid json. One object per line." do
+      logfile.each_line do |line|
+        expect(line).not_to be_empty
+        expect { JSON.parse(line) }.not_to raise_error
       end
     end
   end

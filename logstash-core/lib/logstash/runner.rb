@@ -102,6 +102,10 @@ class LogStash::Runner < Clamp::Command
     I18n.t("logstash.runner.flag.allow-env"),
     :attribute_name => :allow_env, :default => false
 
+  option ["--[no-]log-in-json"], :flag,
+    I18n.t("logstash.runner.flag.log-in-json"),
+    :default => false
+
   def pipeline_workers=(pipeline_workers_value)
     @pipeline_settings[:pipeline_workers] = validate_positive_integer(pipeline_workers_value)
   end
@@ -136,7 +140,7 @@ class LogStash::Runner < Clamp::Command
     require "logstash/util/java_version"
     require "stud/task"
     require "cabin" # gem 'cabin'
-
+    require "logstash/logging/json"
 
     # Configure Logstash logging facility, this need to be done before everything else to
     # make sure the logger has the correct settings and the log level is correctly defined.
@@ -326,11 +330,20 @@ class LogStash::Runner < Clamp::Command
                     :path => path, :error => e))
       end
 
-      @logger.subscribe(STDOUT, :level => :fatal)
-      @logger.subscribe(@log_fd)
+      if log_in_json?
+        @logger.subscribe(LogStash::Logging::JSON.new(STDOUT), :level => :fatal)
+        @logger.subscribe(LogStash::Logging::JSON.new(@log_fd))
+      else
+        @logger.subscribe(STDOUT, :level => :fatal)
+        @logger.subscribe(@log_fd)
+      end
       @logger.terminal "Sending logstash logs to #{path}."
     else
-      @logger.subscribe(STDOUT)
+      if log_in_json?
+        @logger.subscribe(LogStash::Logging::JSON.new(STDOUT))
+      else
+        @logger.subscribe(STDOUT)
+      end
     end
 
     if debug_config? && @logger.level != :debug
