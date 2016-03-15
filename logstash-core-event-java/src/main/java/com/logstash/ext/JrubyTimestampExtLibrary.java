@@ -140,7 +140,7 @@ public class JrubyTimestampExtLibrary implements Library {
             return RubyString.newString(context.runtime,  "\"" + this.timestamp.toIso8601() + "\"");
         }
 
-        public static Timestamp newTimetsamp(IRubyObject time)
+        public static Timestamp newTimestamp(IRubyObject time)
         {
             if (time.isNil()) {
                 return new Timestamp();
@@ -160,7 +160,7 @@ public class JrubyTimestampExtLibrary implements Library {
         public static IRubyObject ruby_coerce(ThreadContext context, IRubyObject recv, IRubyObject time)
         {
             try {
-                Timestamp ts = newTimetsamp(time);
+                Timestamp ts = newTimestamp(time);
                 return (ts == null) ? context.runtime.getNil() : RubyTimestamp.newRubyTimestamp(context.runtime, ts);
              } catch (IllegalArgumentException e) {
                 throw new RaiseException(
@@ -178,7 +178,7 @@ public class JrubyTimestampExtLibrary implements Library {
         {
             if (time instanceof RubyString) {
                 try {
-                    return RubyTimestamp.newRubyTimestamp(context.runtime, newTimetsamp(time));
+                    return RubyTimestamp.newRubyTimestamp(context.runtime, newTimestamp(time));
                 } catch (IllegalArgumentException e) {
                     throw new RaiseException(
                             context.runtime,
