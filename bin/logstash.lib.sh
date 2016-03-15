@@ -1,7 +1,7 @@
 unset CDPATH
 # This unwieldy bit of scripting is to try to catch instances where Logstash
 # was launched from a symlink, rather than a full path to the Logstash binary
-if [ -L $0 ]; then
+if [ -L "$0" ]; then
   # Launched from a symlink
   # --Test for the readlink binary
   RL=$(which readlink)
@@ -23,7 +23,9 @@ else
   SOURCEPATH=$0
 fi
 
-LOGSTASH_HOME=$(cd `dirname $SOURCEPATH`/..; pwd)
+DIR=`dirname "$SOURCEPATH"`
+cd "${DIR}/.."
+LOGSTASH_HOME="$(pwd)"
 export LOGSTASH_HOME
 
 # Defaults you can override with environment variables
@@ -61,10 +63,11 @@ setup_java() {
     JAVA_OPTS="$JAVA_OPTS -XX:+UseCMSInitiatingOccupancyOnly"
     # Causes the JVM to dump its heap on OutOfMemory.
     JAVA_OPTS="$JAVA_OPTS -XX:+HeapDumpOnOutOfMemoryError"
-    # The path to the heap dump location
-    # This variable needs to be isolated since it may contain spaces
-    HEAP_DUMP_PATH="-XX:HeapDumpPath=${LOGSTASH_HOME}/heapdump.hprof"
   fi
+
+  # The path to the heap dump location
+  # This variable needs to be isolated since it may contain spaces
+  HEAP_DUMP_PATH="-XX:HeapDumpPath=${LOGSTASH_HOME}/heapdump.hprof"
 
   if [ "$LS_JAVA_OPTS" ] ; then
     # The client set the variable LS_JAVA_OPTS, choosing his own
