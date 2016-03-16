@@ -5,6 +5,7 @@ import org.jruby.*;
 import org.jruby.anno.JRubyClass;
 import org.jruby.anno.JRubyMethod;
 import org.jruby.exceptions.RaiseException;
+import org.jruby.ext.bigdecimal.RubyBigDecimal;
 import org.jruby.javasupport.JavaUtil;
 import org.jruby.runtime.Arity;
 import org.jruby.runtime.ObjectAllocator;
@@ -197,11 +198,19 @@ public class JrubyTimestampExtLibrary implements Library {
         {
             RubyTime t;
             if (args.length == 1) {
-                t = (RubyTime)RubyTime.at(context, context.runtime.getTime(), args[0]);
+                IRubyObject epoch = args[0];
+
+                if (epoch instanceof RubyBigDecimal) {
+                    // bug in JRuby prevents correcly parsing a BigDecimal fractional part, see https://github.com/elastic/logstash/issues/4565
+                    double usec = ((RubyBigDecimal)epoch).frac().convertToFloat().getDoubleValue() * 1000000;
+                    t = (RubyTime)RubyTime.at(context, context.runtime.getTime(), ((RubyBigDecimal)epoch).to_int(), new RubyFloat(context.runtime, usec));
+                } else {
+                    t = (RubyTime)RubyTime.at(context, context.runtime.getTime(), epoch);
+                }
             } else {
                 t = (RubyTime)RubyTime.at(context, context.runtime.getTime(), args[0], args[1]);
             }
-            return RubyTimestamp.newRubyTimestamp(context.runtime,  new Timestamp(t.getDateTime()));
+            return RubyTimestamp.newRubyTimestamp(context.runtime, new Timestamp(t.getDateTime()));
         }
 
         @JRubyMethod(name = "now", meta = true)

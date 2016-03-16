@@ -70,7 +70,9 @@ public class Timestamp implements Cloneable {
     }
 
     public long usec() {
-        return new Duration(JAN_1_1970.toDateTime(DateTimeZone.UTC), this.time).getMillis();
+        // JodaTime only supports milliseconds precision we can only return usec at millisec precision.
+        // note that getMillis() return millis since epoch
+        return (new Duration(JAN_1_1970.toDateTime(DateTimeZone.UTC), this.time).getMillis() % 1000) * 1000;
     }
 
     @Override
