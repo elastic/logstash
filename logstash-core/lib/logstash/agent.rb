@@ -211,6 +211,12 @@ class LogStash::Agent
     return unless pipeline.is_a?(LogStash::Pipeline)
     return if pipeline.ready?
     @logger.info("starting pipeline", :id => id)
+
+    # Reset the current collected stats,
+    # starting a pipeline with a new configuration should be the same as restarting
+    # logstash.
+    reset_collector
+
     Thread.new do
       LogStash::Util.set_thread_name("pipeline.#{id}")
       begin
@@ -251,5 +257,9 @@ class LogStash::Agent
 
   def clean_state?
     @pipelines.empty?
+  end
+
+  def reset_collector
+    LogStash::Instrument::Collector.instance.clear
   end
 end # class LogStash::Agent
