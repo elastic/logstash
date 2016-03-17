@@ -4,9 +4,11 @@ import com.logstash.ext.JrubyTimestampExtLibrary;
 import org.jruby.Ruby;
 import org.jruby.RubyArray;
 import org.jruby.RubyHash;
+import org.jruby.ext.bigdecimal.RubyBigDecimal;
 import org.jruby.javasupport.JavaUtil;
 import org.jruby.runtime.builtin.IRubyObject;
 
+import java.math.BigDecimal;
 import java.util.*;
 
 public final class Rubyfier {
@@ -20,6 +22,9 @@ public final class Rubyfier {
         if (input instanceof Timestamp) return JrubyTimestampExtLibrary.RubyTimestamp.newRubyTimestamp(runtime, (Timestamp)input);
         if (input instanceof Collection) throw new ClassCastException("unexpected Collection type " + input.getClass());
 
+        // BigDecimal is not currenly handled by JRuby and this is the type Jackson uses for floats
+        if (input instanceof BigDecimal) return new RubyBigDecimal(runtime, runtime.getClass("BigDecimal"), (BigDecimal)input);
+
         return JavaUtil.convertJavaToUsableRubyObject(runtime, input);
     }
 
@@ -28,6 +33,9 @@ public final class Rubyfier {
         if (input instanceof List) return deepList(runtime, (List) input);
         if (input instanceof Timestamp) return JrubyTimestampExtLibrary.RubyTimestamp.newRubyTimestamp(runtime, (Timestamp)input);
         if (input instanceof Collection) throw new ClassCastException("unexpected Collection type " + input.getClass());
+
+        // BigDecimal is not currenly handled by JRuby and this is the type Jackson uses for floats
+        if (input instanceof BigDecimal) return new RubyBigDecimal(runtime, runtime.getClass("BigDecimal"), (BigDecimal)input);
 
         return input;
     }

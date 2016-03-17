@@ -96,6 +96,14 @@ describe LogStash::Event do
       e["[foo]"] = nil
       expect(e.to_hash).to include("foo" => nil)
     end
+
+    # BigDecinal is now natively converted by JRuby, see https://github.com/elastic/logstash/pull/4838
+    it "should set BigDecimal" do
+      e = LogStash::Event.new()
+      e["[foo]"] = BigDecimal.new(1)
+      expect(e["foo"]).to be_kind_of(BigDecimal)
+      expect(e["foo"]).to eq(BigDecimal.new(1))
+    end
   end
 
   context "timestamp" do
