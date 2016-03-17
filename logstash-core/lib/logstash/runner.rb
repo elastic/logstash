@@ -82,6 +82,10 @@ class LogStash::Runner < Clamp::Command
     I18n.t("logstash.runner.flag.auto_reload"),
     :attribute_name => :auto_reload, :default => false
 
+  option ["--reload-interval"], "RELOAD_INTERVAL",
+    I18n.t("logstash.runner.flag.reload_interval"),
+    :attribute_name => :reload_interval, :default => 3, &:to_i
+
   option ["--http-host"], "WEB_API_HTTP_HOST",
     I18n.t("logstash.web_api.flag.http_host"),
     :attribute_name => :web_api_http_host, :default => "127.0.0.1"
@@ -176,6 +180,7 @@ class LogStash::Runner < Clamp::Command
 
     @agent = create_agent(:logger => @logger,
                           :auto_reload => @auto_reload,
+                          :reload_interval => @reload_interval,
                           :collect_metric => true,
                           :debug => debug?,
                           :node_name => node_name,
