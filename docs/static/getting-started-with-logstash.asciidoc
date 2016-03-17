@@ -44,7 +44,9 @@ bin/logstash -e 'input { stdin { } } output { stdout {} }'
 The `-e` flag enables you to specify a configuration directly from the command line. Specifying configurations at the
 command line lets you quickly test configurations without having to edit a file between iterations.
 This pipeline takes input from the standard input, `stdin`, and moves that input to the standard output, `stdout`, in a
-structured format. Type hello world at the command prompt to see Logstash respond:
+structured format.
+
+Once "Logstash startup completed" is displayed, type hello world at the command prompt to see Logstash respond:
 
 [source,shell]
 hello world
