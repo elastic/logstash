@@ -2,6 +2,7 @@
 require "spec_helper"
 require "logstash/inputs/generator"
 require "logstash/filters/multiline"
+require_relative "../support/mocks_classes"
 
 class DummyInput < LogStash::Inputs::Base
   config_name "dummyinput"
@@ -45,30 +46,6 @@ class DummyCodec < LogStash::Codecs::Base
   end
 
   def close
-  end
-end
-
-class DummyOutput < LogStash::Outputs::Base
-  config_name "dummyoutput"
-  milestone 2
-
-  attr_reader :num_closes, :events
-
-  def initialize(params={})
-    super
-    @num_closes = 0
-    @events = []
-  end
-
-  def register
-  end
-
-  def receive(event)
-    @events << event
-  end
-
-  def close
-    @num_closes = 1
   end
 end
 
