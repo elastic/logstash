@@ -69,7 +69,7 @@ describe LogStash::Api::Node do
 
       it "should return JIT threads" do
         thread_names = payload["threads"].map { |thread_info| thread_info["name"] }
-        expect(thread_names.grep(/JIT/)).not_to be_empty
+        expect(thread_names.grep(/pool/)).not_to be_empty
       end
     end
 
