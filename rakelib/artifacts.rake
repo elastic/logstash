@@ -13,6 +13,13 @@ namespace "artifact" do
       "lib/pluginmanager/**/*",
       "patterns/**/*",
       "vendor/??*/**/*",
+      # To include ruby-maven's hidden ".mvn" directory, we need to
+      # do add the line below. This directory contains a file called
+      # "extensions.xml", which loads the ruby DSL for POMs.
+      # Failing to include this file results in updates breaking for
+      # plugins which use jar-dependencies.
+      # See more in https://github.com/elastic/logstash/issues/4818
+      "vendor/??*/**/.mvn/**/*",
       "Gemfile",
       "Gemfile.jruby-1.9.lock",
     ]
