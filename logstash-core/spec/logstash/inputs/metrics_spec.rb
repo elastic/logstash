@@ -3,6 +3,10 @@ require "logstash/inputs/metrics"
 require "spec_helper"
 
 describe LogStash::Inputs::Metrics do
+  before :each do
+    LogStash::Instrument::Collector.instance.clear
+  end
+
   let(:queue) { [] }
 
   describe "#run" do
