@@ -2,7 +2,7 @@
 graph:
   log-reader:
     component: input-generator
-    options: {"message": "baz=bot blah=bar", "count": 5000000}
+    options: {"message": "baz=bot blah=bar", "count": 10000000}
     to: [main-queue]
   main-queue:
     component: queue-synchronous
