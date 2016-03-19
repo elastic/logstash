@@ -135,6 +135,9 @@ en:
       flag:
         # Note: Wrap these at 55 chars so they display nicely when clamp emits
         # them in an 80-character terminal
+        node_name: |+
+          Specify the name of this logstash instance, if no value
+          is given it will default to the current hostname.
         config: |+
           Load the logstash config from a specific file
           or directory.  If a directory is given, all

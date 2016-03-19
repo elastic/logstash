@@ -84,7 +84,7 @@ class LogStash::Agent < Clamp::Command
     :attribute_name => :reload_interval, :default => 3, &:to_i
 
   option ["-n", "--node-name"], "NAME",
-    I18n.t("logstash.runner.flag.node_name"),
+    I18n.t("logstash.agent.flag.node_name"),
     :attribute_name => :node_name, :default => Socket.gethostname
 
   def initialize(*params)
