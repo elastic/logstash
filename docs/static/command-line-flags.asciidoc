@@ -56,6 +56,12 @@ Logstash has the following flags. You can use the `--help` flag to display this 
   Logstash can read multiple config files from a directory. If you combine this
   flag with `--debug`, Logstash will log the combined config file, annotating the
   individual config blocks with the source file it came from.
+  
+-r, --[no-]auto-reload
+  Monitor configuration changes and reload the configuration whenever it is changed.
+  
+--reload-interval RELOAD_INTERVAL
+  Specifies how often Logstash checks the config files for changes. The default is every 3 seconds.
 
 -h, --help
   Print help
