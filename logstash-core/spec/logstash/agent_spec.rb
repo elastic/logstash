@@ -70,12 +70,12 @@ describe LogStash::Agent do
 
     context "when auto_reload is true" do
       let(:agent_args) { [ "--auto-reload", "--config", config_file] } #reload_interval => 0.01, :config_path => } }
-      #let(:agent_args) { { :logger => logger, :auto_reload => false, :reload_interval => 0.01, :config_path => config_file } }
       context "if state is clean" do
         it "should periodically reload_state" do
-          allow(subject).to receive(:clean_state?).and_return(false)
           expect(subject).to receive(:reload_state!).at_least(3).times
-          t = Thread.new { subject.execute }
+          t = Thread.new(subject) {|subject| subject.execute }
+          sleep 0.01 until (subject.running_pipelines? && subject.pipelines.values.first.ready?)
+          # now that the pipeline has started, give time for reload_state! to happen a few times
           sleep 0.1
           Stud.stop!(t)
           t.join
