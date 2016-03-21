@@ -60,19 +60,5 @@ describe LogStash::Api::Node do
       end
     end
 
-    context "when requesting idle threads" do
-
-      before(:all) do
-        do_request { get "/hot_threads?ignore_idle_threads=false&threads=10" }
-      end
-
-      let(:payload) { LogStash::Json.load(last_response.body) }
-
-      it "should return JIT threads" do
-        thread_names = payload["threads"].map { |thread_info| thread_info["name"] }
-        expect(thread_names.grep(/pool/)).not_to be_empty
-      end
-    end
-
   end
 end
