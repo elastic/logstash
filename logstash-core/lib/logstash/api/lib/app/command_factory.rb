@@ -4,6 +4,7 @@ require "app/commands/system/basicinfo_command"
 require "app/commands/stats/events_command"
 require "app/commands/stats/hotthreads_command"
 require "app/commands/stats/memory_command"
+require "app/commands/system/plugins_command"
 
 module LogStash::Api
   class CommandFactory
@@ -16,7 +17,8 @@ module LogStash::Api
         :system_basic_info => SystemBasicInfoCommand,
         :events_command => StatsEventsCommand,
         :hot_threads_command => HotThreadsCommand,
-        :memory_command => JvmMemoryCommand
+        :memory_command => JvmMemoryCommand,
+        :plugins_command => PluginsCommand
       )
     end
 

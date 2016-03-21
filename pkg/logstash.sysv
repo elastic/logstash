@@ -90,13 +90,13 @@ stop() {
     echo "Killing $name (pid $pid) with SIGTERM"
     kill -TERM $pid
     # Wait for it to exit.
-    for i in 1 2 3 4 5 ; do
+    for i in 1 2 3 4 5 6 7 8 9 ; do
       echo "Waiting $name (pid $pid) to die..."
       status || break
       sleep 1
     done
     if status ; then
-      if [ "$KILL_ON_STOP_TIMEOUT" -eq 1 ] ; then
+      if [[ $KILL_ON_STOP_TIMEOUT -eq 1 ]] ; then
         echo "Timeout reached. Killing $name (pid $pid) with SIGKILL. This may result in data loss."
         kill -KILL $pid
         echo "$name killed with SIGKILL."
@@ -142,7 +142,7 @@ configtest() {
   fi
 
   HOME=${LS_HOME}
-  export PATH HOME JAVA_OPTS LS_HEAP_SIZE LS_JAVA_OPTS LS_USE_GC_LOGGING
+  export PATH HOME
 
   test_args="--configtest -f ${LS_CONF_DIR} ${LS_OPTS}"
   $program ${test_args}

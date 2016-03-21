@@ -186,6 +186,9 @@ en:
           Monitor configuration changes and reload
           whenever it is changed.
           NOTE: use SIGHUP to manually reload the config
+        reload_interval: |+
+          How frequently to poll the configuration location
+          for changes, in seconds.
         log: |+
           Write logstash internal logs to the given
           file. Without this flag, logstash will emit

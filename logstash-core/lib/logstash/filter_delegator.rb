@@ -3,14 +3,15 @@
 module LogStash
   class FilterDelegator
     extend Forwardable
-
-    def_delegators :@filter,
+    DELEGATED_METHODS = [
       :register,
       :close,
       :threadsafe?,
       :do_close,
       :do_stop,
       :periodic_flush
+    ]
+    def_delegators :@filter, *DELEGATED_METHODS
 
     def initialize(logger, klass, metric, *args)
       options = args.reduce({}, :merge)
@@ -20,7 +21,7 @@ module LogStash
       @filter = klass.new(options)
 
       # Scope the metrics to the plugin
-      namespaced_metric = metric.namespace(@filter.id.to_sym)
+      namespaced_metric = metric.namespace(@filter.plugin_unique_name.to_sym)
       @filter.metric = metric
 
       @metric_events = namespaced_metric.namespace(:events)
@@ -41,7 +42,8 @@ module LogStash
       # There is no garantee in the context of filter
       # that EVENTS_INT == EVENTS_OUT, see the aggregates and
       # the split filter
-      @metric_events.increment(:out, new_events.size) unless new_events.nil?
+      c = new_events.count { |event| !event.cancelled? }
+      @metric_events.increment(:out, c) if c > 0
 
       return new_events
     end
@@ -55,7 +57,7 @@ module LogStash
 
         # Filter plugins that does buffering or spooling of events like the
         # `Logstash-filter-aggregates` can return `NIL` and will flush on the next flush ticks.
-        @metric_events.increment(:out, new_events.size) unless new_events.nil?
+        @metric_events.increment(:out, new_events.size) if new_events && new_events.size > 0
         new_events
       end
     end

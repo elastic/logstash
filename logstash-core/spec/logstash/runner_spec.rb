@@ -16,10 +16,31 @@ describe LogStash::Runner do
 
   before :each do
     allow(Cabin::Channel).to receive(:get).with(LogStash).and_return(channel)
+    allow(LogStash::ShutdownWatcher).to receive(:logger).and_return(channel)
+    allow(channel).to receive(:log) {}
+  end
+
+  after :all do
+    LogStash::ShutdownWatcher.logger = nil
+  end
+
+  describe "argument precedence" do
+    let(:config) { "input {} output {}" }
+    let(:cli_args) { ["-e", config, "-w", 20] }
+    let(:settings_yml) { ["--pipeline.workers", 2] }
+
+    it "favors the last occurence of an option" do
+      expect(LogStash::Pipeline).to receive(:new).
+        with(config, hash_including("pipeline.workers" => 20)).and_call_original
+      subject.run("bin/logstash", settings_yml + cli_args)
+    end
   end
 
   describe "argument parsing" do
     subject { LogStash::Runner.new("") }
+    before :each do
+      allow(Cabin::Channel.get(LogStash)).to receive(:terminal)
+    end
     context "when -e is given" do
 
       let(:args) { ["-e", "input {} output {}"] }
@@ -118,7 +139,7 @@ describe LogStash::Runner do
 
     context "when :pipeline_workers is defined by the user" do
       it "should pass the value to the pipeline" do
-        main_pipeline_settings[:pipeline_workers] = 2
+        main_pipeline_settings["pipeline.workers"] = 2
         expect(LogStash::Pipeline).to receive(:new).with(pipeline_string, hash_including(main_pipeline_settings)).and_return(pipeline)
 
         args = ["-w", "2", "-e", pipeline_string]

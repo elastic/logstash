@@ -101,11 +101,6 @@ For testing you can use the *test* `rake` tasks and the `bin/rspec` command, see
     bin/rspec
     bin/rspec spec/foo/bar_spec.rb
 
----
-Note that if a plugin is installed using the plugin manager `bin/plugin install ...` do not forget to also install the plugins development dependencies using the following command after the plugin installation:
-
-    bin/plugin install --development
-
 ### Plugins tests
 
 To run the tests of all currently installed plugins:

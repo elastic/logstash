@@ -1,0 +1,286 @@
+[[monitoring]]
+== Monitoring APIs
+
+Logstash provides the following monitoring APIs to retrieve runtime metrics
+about Logstash:
+
+* <<root-resource-api>>
+* <<stats-info-api>>
+* <<hot-threads-api>>
+* <<plugins-api>>
+
+[float]
+[[monitoring-common-options]]
+=== Common Options
+
+The following options can be applied to all of the Logstash monitoring APIs.
+
+[float]
+==== Pretty Results
+
+When appending `?pretty=true` to any request made, the JSON returned
+will be pretty formatted (use it for debugging only!). Another option is
+to set `?format=yaml` which will cause the result to be returned in the
+(sometimes) more readable yaml format.
+
+[float]
+==== Human-Readable Output
+
+NOTE: For Alpha 1, the `human` option is supported for the <<hot-threads-api>>
+only. When you specify `human=true`, the results are returned in plain text instead of
+JSON format. The default is false.
+
+Statistics are returned in a format suitable for humans
+(eg `"exists_time": "1h"` or `"size": "1kb"`) and for computers
+(eg `"exists_time_in_millis": 3600000` or `"size_in_bytes": 1024`).
+The human-readable values can be turned off by adding `?human=false`
+to the query string. This makes sense when the stats results are
+being consumed by a monitoring tool, rather than intended for human
+consumption.  The default for the `human` flag is
+`false`.
+
+[[plugins-api]]
+=== Plugins API
+
+experimental[]
+
+The plugins API gets information about all Logstash plugins that are currently installed.
+This API basically returns the output of running the `bin/plugins list --verbose` command.
+
+[source,js]
+--------------------------------------------------
+GET /_plugins
+--------------------------------------------------
+
+The output is a JSON document.
+
+Example response:
+
+[source,js]
+--------------------------------------------------
+"total": 102
+"plugins" : [
+  {
+      "name": "logstash-output-pagerduty"
+      "version": "2.0.2"
+  },
+  {
+      "name": "logstash-output-elasticsearch"
+      "version": "2.1.2"
+  }
+....
+] 
+--------------------------------------------------
+
+[[root-resource-api]]
+=== Root Resource API
+
+experimental[]
+
+The root resource API retrieves general information about the Logstash instance, including
+the host name and version information.
+
+[source,js]
+--------------------------------------------------
+GET /
+--------------------------------------------------
+
+Example response:
+
+[source,js]
+--------------------------------------------------
+{
+   "hostname": "skywalker",
+    "version" : {
+        "number" : "2.1.0",       
+    }
+  }
+--------------------------------------------------
+
+
+See <<monitoring-common-options, Common Options>> for a list of options that can be applied to all
+Logstash monitoring APIs.
+
+[[stats-info-api]]
+=== Stats Info API
+
+experimental[]
+
+The stats info API retrieves runtime stats about Logstash. 
+
+// COMMENTED OUT until Logstash supports multiple pipelines: To retrieve all stats for the Logstash instance, use the `_node/stats` endpoint:
+
+[source,js]
+--------------------------------------------------
+GET /_node/stats/<types>
+--------------------------------------------------
+
+////
+COMMENTED OUT until Logstash supports multiple pipelines: To retrieve all stats per pipeline, use the `_pipelines/stats` endpoint:
+
+[source,js]
+--------------------------------------------------
+GET /_pipelines/stats/<types>
+--------------------------------------------------
+////
+
+Where `<types>` is optional and specifies the types of stats you want to return.
+
+By default, all stats are returned. You can limit this by combining any of the following types: 
+
+[horizontal]
+`events`::
+	Gets event information since startup. 
+`jvm`::
+	Gets JVM stats, including stats about garbage collection. 
+
+For example, the following request returns a JSON document that shows the number of events
+that were input, filtered, and output by Logstash since startup:
+
+[source,js]
+--------------------------------------------------
+GET /_node/stats/events
+--------------------------------------------------
+
+Example response:
+
+[source,js]
+--------------------------------------------------
+{
+    "events": {
+        "in": 91,
+        "filtered": 91,
+        "out": 91
+    }
+}
+--------------------------------------------------
+
+The following request returns a JSON document containing JVM stats:
+
+[source,js]
+--------------------------------------------------
+GET /_node/stats/jvm
+--------------------------------------------------
+
+Example response:
+
+[source,js]
+--------------------------------------------------
+"jvm":{  
+   "timestamp":1453233447702,
+   "uptime_in_millis":211125811,
+   "mem":{  
+      "heap_used_in_bytes":58442576,
+      "heap_used_percent":5,
+      "heap_committed_in_bytes":259522560,
+      "heap_max_in_bytes":1037959168,
+      "non_heap_used_in_bytes":56332256,
+      "non_heap_committed_in_bytes":57475072,
+      "pools":{  
+         "young":{  
+            "used_in_bytes":41672000,
+            "max_in_bytes":286326784,
+            "peak_used_in_bytes":71630848,
+            "peak_max_in_bytes":286326784
+         },
+         "survivor":{  
+            "used_in_bytes":260552,
+            "max_in_bytes":35782656,
+            "peak_used_in_bytes":8912896,
+            "peak_max_in_bytes":35782656
+         },
+         "old":{  
+            "used_in_bytes":16510024,
+            "max_in_bytes":715849728,
+            "peak_used_in_bytes":16510024,
+            "peak_max_in_bytes":715849728
+         }
+      }
+   }
+--------------------------------------------------
+
+See <<monitoring-common-options, Common Options>> for a list of options that can be applied to all
+Logstash monitoring APIs.
+
+[[hot-threads-api]]
+=== Hot Threads API
+
+experimental[]
+
+The hot threads API gets the current hot threads for Logstash. A hot thread is a
+Java thread that has high CPU usage and executes for a longer than normal period
+of time.
+
+[source,js]
+--------------------------------------------------
+GET /_node/hot_threads
+--------------------------------------------------
+
+The output is a JSON document that contains a breakdown of the top hot threads for
+Logstash. The parameters allowed are:
+
+[horizontal]
+`threads`:: 	        The number of hot threads to return. The default is 3. 
+`human`:: 	            If true, returns plain text instead of JSON format. The default is false. 
+`ignore_idle_threads`:: If true, does not return idle threads. The default is true.
+
+Example response:
+
+[source,js]
+--------------------------------------------------
+{
+  "hostname" : "Example-MBP-2",
+  "time" : "2016-03-08T17:58:18-08:00",
+  "busiest_threads" : 3,
+  "threads" : [ {
+    "name" : "LogStash::Runner",
+    "percent_of_cpu_time" : 16.93,
+    "state" : "timed_waiting",
+    "traces" : "\t\tjava.lang.Object.wait(Native Method)\n\t\tjava.lang.Thread.join(Thread.java:1253)\n\t\torg.jruby.internal.runtime.NativeThread.join(NativeThread.java:75)\n\t\torg.jruby.RubyThread.join(RubyThread.java:697)\n\t\torg.jruby.RubyThread$INVOKER$i$0$1$join.call(RubyThread$INVOKER$i$0$1$join.gen)\n\t\torg.jruby.internal.runtime.methods.JavaMethod$JavaMethodN.call(JavaMethod.java:663)\n\t\torg.jruby.internal.runtime.methods.DynamicMethod.call(DynamicMethod.java:198)\n\t\torg.jruby.runtime.callsite.CachingCallSite.cacheAndCall(CachingCallSite.java:306)\n\t\torg.jruby.runtime.callsite.CachingCallSite.call(CachingCallSite.java:136)\n\t\torg.jruby.ast.CallNoArgNode.interpret(CallNoArgNode.java:60)\n"
+  }, {
+    "name" : "Api Webserver",
+    "percent_of_cpu_time" : 0.39,
+    "state" : "timed_waiting",
+    "traces" : "\t\tjava.lang.Object.wait(Native Method)\n\t\tjava.lang.Thread.join(Thread.java:1253)\n\t\torg.jruby.internal.runtime.NativeThread.join(NativeThread.java:75)\n\t\torg.jruby.RubyThread.join(RubyThread.java:697)\n\t\torg.jruby.RubyThread$INVOKER$i$0$1$join.call(RubyThread$INVOKER$i$0$1$join.gen)\n\t\torg.jruby.internal.runtime.methods.JavaMethod$JavaMethodN.call(JavaMethod.java:663)\n\t\torg.jruby.internal.runtime.methods.DynamicMethod.call(DynamicMethod.java:198)\n\t\torg.jruby.runtime.callsite.CachingCallSite.cacheAndCall(CachingCallSite.java:306)\n\t\torg.jruby.runtime.callsite.CachingCallSite.call(CachingCallSite.java:136)\n\t\torg.jruby.ast.CallNoArgNode.interpret(CallNoArgNode.java:60)\n"
+  }, {
+    "name" : "Ruby-0-Thread-13",
+    "percent_of_cpu_time" : 0.15,
+    "state" : "timed_waiting",
+    "path" : "/Users/suyog/ws/elastic/logstash/build/logstash-3.0.0.dev/vendor/local_gems/f5685da5/logstash-core-3.0.0.dev-java/lib/logstash/pipeline.rb:496",
+    "traces" : "\t\tjava.lang.Object.wait(Native Method)\n\t\torg.jruby.RubyThread.sleep(RubyThread.java:1002)\n\t\torg.jruby.RubyKernel.sleep(RubyKernel.java:803)\n\t\torg.jruby.RubyKernel$INVOKER$s$0$1$sleep.call(RubyKernel$INVOKER$s$0$1$sleep.gen)\n\t\torg.jruby.internal.runtime.methods.JavaMethod$JavaMethodN.call(JavaMethod.java:667)\n\t\torg.jruby.internal.runtime.methods.DynamicMethod.call(DynamicMethod.java:206)\n\t\torg.jruby.runtime.callsite.CachingCallSite.call(CachingCallSite.java:168)\n\t\torg.jruby.ast.FCallOneArgNode.interpret(FCallOneArgNode.java:36)\n\t\torg.jruby.ast.NewlineNode.interpret(NewlineNode.java:105)\n\t\torg.jruby.ast.BlockNode.interpret(BlockNode.java:71)\n"
+  } ]
+--------------------------------------------------
+
+You can use the `?human` parameter to return the document in a human-readable format.
+
+[source,js]
+--------------------------------------------------
+GET /_node/hot_threads?human=true
+--------------------------------------------------
+
+Example of a human-readable response: 
+
+[source,js]
+--------------------------------------------------
+::: {Ringo Kid}{Gv3UrzR3SqmPQIgfG4qJMA}{127.0.0.1}{127.0.0.1:9300}
+   Hot threads at 2016-01-13T16:55:49.988Z, interval=500ms, busiestThreads=3, ignoreIdleThreads=true:
+
+    0.0% (216micros out of 500ms) cpu usage by thread 'elasticsearch[Ringo Kid][transport_client_timer][T#1]{Hashed wheel timer #1}'
+     10/10 snapshots sharing following 5 elements
+       java.lang.Thread.sleep(Native Method)
+       org.jboss.netty.util.HashedWheelTimer$Worker.waitForNextTick(HashedWheelTimer.java:445)
+       org.jboss.netty.util.HashedWheelTimer$Worker.run(HashedWheelTimer.java:364)
+       org.jboss.netty.util.ThreadRenamingRunnable.run(ThreadRenamingRunnable.java:108)
+       java.lang.Thread.run(Thread.java:745)
+
+    0.0% (216micros out of 500ms) cpu usage by thread 'elasticsearch[Ringo Kid][transport_client_timer][T#1]{Hashed wheel timer #1}'
+     10/10 snapshots sharing following 5 elements
+       java.lang.Thread.sleep(Native Method)
+       org.jboss.netty.util.HashedWheelTimer$Worker.waitForNextTick(HashedWheelTimer.java:445)
+       org.jboss.netty.util.HashedWheelTimer$Worker.run(HashedWheelTimer.java:364)
+       org.jboss.netty.util.ThreadRenamingRunnable.run(ThreadRenamingRunnable.java:108)
+       java.lang.Thread.run(Thread.java:745)
+--------------------------------------------------
+
+See <<monitoring-common-options, Common Options>> for a list of options that can be applied to all
+Logstash monitoring APIs.

@@ -151,4 +151,80 @@ describe LogStash::Config::Mixin do
       expect(subject.params).to include("password")
     end
   end
+
+  context "environment variable evaluation" do
+    let(:plugin_class) do
+      Class.new(LogStash::Filters::Base)  do
+        config_name "one_plugin"
+        config :oneString, :validate => :string
+        config :oneBoolean, :validate => :boolean
+        config :oneNumber, :validate => :number
+        config :oneArray, :validate => :array
+        config :oneHash, :validate => :hash
+      end
+    end
+
+    context "when an environment variable is not set" do
+      context "and no default is given" do
+        before do
+          # Canary. Just in case somehow this is set.
+          expect(ENV["NoSuchVariable"]).to be_nil
+        end
+
+        it "should raise a configuration error" do
+          expect do
+            plugin_class.new("oneString" => "${NoSuchVariable}")
+          end.to raise_error(LogStash::ConfigurationError)
+        end
+      end
+
+      context "and a default is given" do
+        subject do
+          plugin_class.new(
+            "oneString" => "${notExistingVar:foo}",
+            "oneBoolean" => "${notExistingVar:true}",
+            "oneArray" => [ "first array value", "${notExistingVar:foo}", "${notExistingVar:}", "${notExistingVar: }", "${notExistingVar:foo bar}" ],
+            "oneHash" => { "key" => "${notExistingVar:foo}" }
+          )
+        end
+
+        it "should use the default" do
+          expect(subject.oneString).to(be == "foo")
+          expect(subject.oneBoolean).to be_truthy
+          expect(subject.oneArray).to(be == ["first array value", "foo", "", " ", "foo bar"])
+          expect(subject.oneHash).to(be == { "key" => "foo" })
+        end
+      end
+    end
+
+    context "when an environment variable is set" do
+      before do
+        ENV["FunString"] = "fancy"
+        ENV["FunBool"] = "true"
+      end
+
+      after do
+        ENV.delete("FunString")
+        ENV.delete("FunBool")
+      end
+
+      subject do
+        plugin_class.new(
+          "oneString" => "${FunString:foo}",
+          "oneBoolean" => "${FunBool:false}",
+          "oneArray" => [ "first array value", "${FunString:foo}" ],
+          "oneHash" => { "key1" => "${FunString:foo}", "key2" => "$FunString is ${FunBool}", "key3" => "${FunBool:false} or ${funbool:false}" }
+        )
+      end
+
+      it "should use the value in the variable" do
+        expect(subject.oneString).to(be == "fancy")
+        expect(subject.oneBoolean).to(be_truthy)
+        expect(subject.oneArray).to(be == [ "first array value", "fancy" ])
+        expect(subject.oneHash).to(be == { "key1" => "fancy", "key2" => "fancy is true", "key3" => "true or false" })
+      end
+
+    end
+  end
+
 end
