@@ -28,12 +28,11 @@ class LogStash::Agent
   #   :auto_reload [Boolean] - enable reloading of pipelines
   #   :reload_interval [Integer] - reload pipelines every X seconds
   #   :logger [Cabin::Channel] - logger instance
-  def initialize(params)
+  def initialize(params = {})
     @logger = params[:logger]
     @auto_reload = params[:auto_reload]
-
     @pipelines = {}
-    @node_name = params[:node_name] || Socket.gethostname
+    @node_name = params[:node_name] || LogStash::DEFAULT_SETTINGS["node.name"]
     @web_api_http_host = params[:web_api_http_host]
     @web_api_http_port = params[:web_api_http_port]
 

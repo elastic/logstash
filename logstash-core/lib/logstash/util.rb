@@ -209,4 +209,31 @@ module LogStash::Util
       Marshal.load(Marshal.dump(o))
     end
   end
+
+
+  def self.flatten_hash(h,f="",g={})
+    return g.update({ f => h }) unless h.is_a? Hash
+    if f.empty?
+      h.each { |k,r| flatten_hash(r,k,g) }
+    else
+      h.each { |k,r| flatten_hash(r,"#{f}.#{k}",g) }
+    end
+    g
+  end
+
+  def self.flatten_arguments(hash)
+    args = []
+    hash.each do |key, value|
+      next if value.nil?
+      if value == true
+        args << "--#{key}"
+      elsif value == false
+        args << "--no-#{key}"
+      else
+        args << "--#{key}"
+        args << value
+      end
+    end
+    args
+  end
 end # module LogStash::Util

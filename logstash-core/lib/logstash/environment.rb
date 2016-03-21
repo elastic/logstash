@@ -1,7 +1,27 @@
 # encoding: utf-8
 require "logstash/errors"
+require "logstash/config/cpu_core_strategy"
 
 module LogStash
+
+  DEFAULT_SETTINGS = {
+    "node.name" => Socket.gethostname,
+    "config.path" => nil,
+    "config.string" => nil,
+    "config.test" => false,
+    "pipeline.workers" => LogStash::Config::CpuCoreStrategy.maximum,
+    "pipeline.batch.size" => 125,
+    "pipeline.batch.delay" => 5, # in milliseconds
+    "pipeline.flush_interval" => 5, # in seconds
+    "pipeline.flush_timeout_interval" => 60, # in seconds
+    "pipeline.unsafe_shutdown" => false,
+    "plugin.paths" => [],
+    "log" => nil,
+    "debug" => false,
+    "verbose" => false,
+    "quiet" => false,
+  }
+
   module Environment
     extend self
 
