@@ -63,6 +63,12 @@ Logstash has the following flags. You can use the `--help` flag to display this 
 --reload-interval RELOAD_INTERVAL
   Specifies how often Logstash checks the config files for changes. The default is every 3 seconds.
 
+--http-host WEB_API_HTTP_HOST 
+  Web API binding host (default: "127.0.0.1")
+
+--http-port WEB_API_HTTP_PORT
+  Web API http port (default: 9600)
+
 -h, --help
   Print help
 ----------------------------------
