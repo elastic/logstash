@@ -16,13 +16,12 @@ namespace "test" do
 
     desc "run test in the vagrant machines"
     task "run" => ["setup"] do
-      system("vagrant ssh logstash_test_ubuntu -c #{test_cmd}")
+      system("vagrant ssh logstash_test_ubuntu -c '#{test_cmd}'")
     end
     desc "vagrant teardown"
     task "down" => ["setup"] do
       system("vagrant down")
     end
-
 
     def test_cmd
       "cd logstash; rake test:core"
