@@ -64,7 +64,7 @@ developers who are iterating on a custom plugin and want to test it before creat
 
 [source,shell]
 ----------------------------------
-bin/logstash --pluginpath /opt/shared/my-custom-plugin/lib/
+bin/logstash --pluginpath /opt/shared/my-custom-plugin/lib
 ----------------------------------
 
 Note: Logstash will install your plugin depending on your file and directory structure. For example the following structure `/opt/shared/my-custom-plugin/lib/logstash/input/new_plugin.rb` will load a plugin called `logstash-input-new_plugin`
