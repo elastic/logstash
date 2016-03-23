@@ -2,14 +2,7 @@
 
 SETLOCAL
 
+ECHO "The use of bin/plugin is deprecated and will be removed in a feature release. Please use bin/logstash-plugin."
+
 set SCRIPT_DIR=%~dp0
-CALL "%SCRIPT_DIR%\setup.bat"
-
-:EXEC
-if "%VENDORED_JRUBY%" == "" (
-  %RUBYCMD% "%LS_HOME%\lib\pluginmanager\main.rb" %*
-) else (
-  %JRUBY_BIN% %jruby_opts% "%LS_HOME%\lib\pluginmanager\main.rb" %*
-)
-
-ENDLOCAL
+CALL "%SCRIPT_DIR%\logstash-plugin.bat" %*

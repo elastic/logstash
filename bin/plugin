@@ -1,13 +1,6 @@
 #!/bin/sh
 
-echo "The use of bin/plugin is deprecated and will be removed in a feature release."
+echo "The use of bin/plugin is deprecated and will be removed in a feature release. Please use bin/logstash-plugin."
 
 unset CDPATH
-. "$(cd `dirname $0`/..; pwd)/bin/logstash.lib.sh"
-setup
-
-# bin/plugin is a short lived ruby script thus we can use aggressive "faster starting JRuby options"
-# see https://github.com/jruby/jruby/wiki/Improving-startup-time
-export JRUBY_OPTS="$JRUBY_OPTS -J-XX:+TieredCompilation -J-XX:TieredStopAtLevel=1 -J-noverify -X-C -Xcompile.invokedynamic=false"
-
-ruby_exec "${LOGSTASH_HOME}/lib/pluginmanager/main.rb" "$@"
+sh "$(cd `dirname $0`/..; pwd)/bin/logstash-plugin" "$@"
