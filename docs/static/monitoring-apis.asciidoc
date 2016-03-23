@@ -45,7 +45,7 @@ consumption.  The default for the `human` flag is
 experimental[]
 
 The plugins API gets information about all Logstash plugins that are currently installed.
-This API basically returns the output of running the `bin/plugins list --verbose` command.
+This API basically returns the output of running the `bin/logstash-plugin list --verbose` command.
 
 [source,js]
 --------------------------------------------------

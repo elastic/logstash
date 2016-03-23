@@ -25,7 +25,7 @@ EOS
   }
 
   before :all do
-    command("bin/plugin install logstash-input-file logstash-output-file")
+    command("bin/logstash-plugin install logstash-input-file logstash-output-file")
   end
 
   it "writes events to file" do
