@@ -1,5 +1,7 @@
 #!/bin/sh
 
+echo "The use of bin/plugin is deprecated and will be removed in a feature release."
+
 unset CDPATH
 . "$(cd `dirname $0`/..; pwd)/bin/logstash.lib.sh"
 setup
