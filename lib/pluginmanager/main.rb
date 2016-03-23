@@ -38,7 +38,7 @@ end
 
 if $0 == __FILE__
   begin
-    LogStash::PluginManager::Main.run("bin/plugin", ARGV)
+    LogStash::PluginManager::Main.run("bin/logstash-plugin", ARGV)
   rescue LogStash::PluginManager::Error => e
     $stderr.puts(e.message)
     exit(1)

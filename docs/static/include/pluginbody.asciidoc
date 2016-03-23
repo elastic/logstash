@@ -845,7 +845,7 @@ Gem::Specification.new do |s|
   s.version = '0.1.0'
   s.licenses = ['Apache License (2.0)']
   s.summary = "This {plugintype} does x, y, z in Logstash"
-  s.description = "This gem is a logstash plugin required to be installed on top of the Logstash core pipeline using $LS_HOME/bin/plugin install gemname. This gem is not a stand-alone program"
+  s.description = "This gem is a logstash plugin required to be installed on top of the Logstash core pipeline using $LS_HOME/bin/logstash-plugin install gemname. This gem is not a stand-alone program"
   s.authors = ["Elastic"]
   s.email = 'info@elastic.co'
   s.homepage = "http://www.elastic.co/guide/en/logstash/current/index.html"
@@ -1051,7 +1051,7 @@ environment, and `0.1.0` with the correct version number from the gemspec file.
 [source,sh]
 [subs="attributes"]
 ----------------------------------
-bin/plugin install /my/logstash/plugins/logstash-{plugintype}-{pluginname}/logstash-{plugintype}-{pluginname}-0.1.0.gem
+bin/logstash-plugin install /my/logstash/plugins/logstash-{plugintype}-{pluginname}/logstash-{plugintype}-{pluginname}-0.1.0.gem
 ----------------------------------
 +
 * After running this, you should see feedback from Logstash that it was
@@ -1072,7 +1072,7 @@ currently available:
 
 [source,sh]
 ----------------------------------
-bin/plugin list
+bin/logstash-plugin list
 ----------------------------------
 Depending on what you have installed, you might see a short or long list of
 plugins: inputs, codecs, filters and outputs.
@@ -1275,7 +1275,7 @@ by running:
 [source,sh]
 [subs="attributes"]
 ----------------------------------
-bin/plugin install logstash-{plugintype}-mypluginname
+bin/logstash-plugin install logstash-{plugintype}-mypluginname
 ----------------------------------
 
 ==== Contributing your source code to https://github.com/logstash-plugins[logstash-plugins]

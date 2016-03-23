@@ -1,7 +1,7 @@
 namespace "package" do
 
   task "bundle" do
-    system("bin/plugin", "package")
+    system("bin/logstash-plugin", "package")
     raise(RuntimeError, $!.to_s) unless $?.success?
   end
 

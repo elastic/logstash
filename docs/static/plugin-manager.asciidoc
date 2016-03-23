@@ -2,7 +2,7 @@
 == Working with plugins
 
 Logstash has a rich collection of input, filter, codec and output plugins. Plugins are available as self-contained
-packages called gems and hosted on RubyGems.org. The plugin manager accesed via `bin/plugin` script is used to manage the
+packages called gems and hosted on RubyGems.org. The plugin manager accesed via `bin/logstash-plugin` script is used to manage the
 lifecycle of plugins in your Logstash deployment. You can install, uninstall and upgrade plugins using these Command Line
 Interface (CLI) described below.
 
@@ -15,10 +15,10 @@ available in your deployment:
 
 [source,shell]
 ----------------------------------
-bin/plugin list <1>
-bin/plugin list --verbose <2>
-bin/plugin list *namefragment* <3>
-bin/plugin list --group output <4>
+bin/logstash-plugin list <1>
+bin/logstash-plugin list --verbose <2>
+bin/logstash-plugin list *namefragment* <3>
+bin/logstash-plugin list --group output <4>
 ----------------------------------
 <1> Will list all installed plugins
 
@@ -38,7 +38,7 @@ installation.
 
 [source,shell]
 ----------------------------------
-bin/plugin install logstash-output-kafka
+bin/logstash-plugin install logstash-output-kafka
 ----------------------------------
 
 Once the plugin is successfully installed, you can start using it in your configuration file.
@@ -52,7 +52,7 @@ provides you the option to install a locally built plugin which is packaged as a
 
 [source,shell]
 ----------------------------------
-bin/plugin install /path/to/logstash-output-kafka-1.0.0.gem
+bin/logstash-plugin install /path/to/logstash-output-kafka-1.0.0.gem
 ----------------------------------
 
 [[installing-local-plugins-path]]
@@ -76,8 +76,8 @@ subcommand you can get the latest or update to a particular version of the plugi
 
 [source,shell]
 ----------------------------------
-bin/plugin update <1>
-bin/plugin update logstash-output-kafka <2>
+bin/logstash-plugin update <1>
+bin/logstash-plugin update logstash-output-kafka <2>
 ----------------------------------
 <1> will update all installed plugins
 
@@ -91,7 +91,7 @@ If you need to remove plugins from your Logstash installation:
 
 [source,shell]
 ----------------------------------
-bin/plugin uninstall logstash-output-kafka
+bin/logstash-plugin uninstall logstash-output-kafka
 ----------------------------------
 
 [[proxy-plugins]]
@@ -106,7 +106,7 @@ Proxy is used to handle HTTP requests. Logstash Plugins can be installed and upd
 ----------------------------------
 export HTTP_PROXY=http://127.0.0.1:3128
 
-bin/plugin install logstash-output-kafka
+bin/logstash-plugin install logstash-output-kafka
 ----------------------------------
 
 Once set, plugin commands install, update can be used through this proxy.
