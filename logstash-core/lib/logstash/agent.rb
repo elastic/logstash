@@ -77,6 +77,12 @@ class LogStash::Agent
   def register_pipeline(pipeline_id, settings)
     pipeline = create_pipeline(settings.merge(:pipeline_id => pipeline_id, :metric => metric))
     return unless pipeline.is_a?(LogStash::Pipeline)
+    if @auto_reload && pipeline.non_reloadable_plugins.any?
+      @logger.error(I18n.t("logstash.agent.non_reloadable_config_register"),
+                    :pipeline_id => pipeline_id,
+                    :plugins => pipeline.non_reloadable_plugins.map(&:class))
+      return
+    end
     @pipelines[pipeline_id] = pipeline
   end
 
@@ -107,6 +113,12 @@ class LogStash::Agent
 
   def node_uuid
     @node_uuid ||= SecureRandom.uuid
+  end
+
+  def running_pipelines?
+    @upgrade_mutex.synchronize do
+      @pipelines.select {|pipeline_id, _| running_pipeline?(pipeline_id) }.any?
+    end
   end
 
   private
@@ -183,6 +195,10 @@ class LogStash::Agent
     if old_pipeline.config_str == new_pipeline.config_str
       @logger.debug("no configuration change for pipeline",
                     :pipeline => id, :config => old_pipeline.config_str)
+    elsif new_pipeline.non_reloadable_plugins.any?
+      @logger.error(I18n.t("logstash.agent.non_reloadable_config_reload"),
+                    :pipeline_id => id,
+                    :plugins => new_pipeline.non_reloadable_plugins.map(&:class))
     else
       @logger.warn("fetched new config for pipeline. upgrading..",
                    :pipeline => id, :config => new_pipeline.config_str)
@@ -220,12 +236,6 @@ class LogStash::Agent
 
   def shutdown_pipelines
     @pipelines.each { |id, _| stop_pipeline(id) }
-  end
-
-  def running_pipelines?
-    @upgrade_mutex.synchronize do
-      @pipelines.select {|pipeline_id, _| running_pipeline?(pipeline_id) }.any?
-    end
   end
 
   def running_pipeline?(pipeline_id)

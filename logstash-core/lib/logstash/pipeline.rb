@@ -46,6 +46,10 @@ module LogStash; class Pipeline
   }
   MAX_INFLIGHT_WARN_THRESHOLD = 10_000
 
+  RELOAD_INCOMPATIBLE_PLUGINS = [
+    "LogStash::Inputs::Stdin"
+  ]
+
   def self.validate_config(config_str, settings = {})
     begin
       # There should be a better way to test this
@@ -546,4 +550,11 @@ module LogStash; class Pipeline
       .each {|t| t.delete("blocked_on") }
       .each {|t| t.delete("status") }
   end
+
+  def non_reloadable_plugins
+    (inputs + filters + outputs).select do |plugin|
+      RELOAD_INCOMPATIBLE_PLUGINS.include?(plugin.class.name)
+    end
+  end
+
 end end

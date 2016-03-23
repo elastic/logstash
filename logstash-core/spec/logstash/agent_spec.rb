@@ -19,8 +19,9 @@ describe LogStash::Agent do
 
   describe "register_pipeline" do
     let(:pipeline_id) { "main" }
+    let(:config_string) { "input { } filter { } output { }" }
     let(:settings) { {
-      :config_string => "input { } filter { } output { }",
+      :config_string => config_string,
       :pipeline_workers => 4
     } }
 
@@ -37,7 +38,7 @@ describe LogStash::Agent do
   end
 
   describe "#execute" do
-    let(:sample_config) { "input { generator { count => 100000 } } output { stdout { } }" }
+    let(:sample_config) { "input { generator { count => 100000 } } output { }" }
     let(:config_file) { Stud::Temporary.pathname }
 
     before :each do
@@ -51,15 +52,21 @@ describe LogStash::Agent do
     end
 
     context "when auto_reload is false" do
-      let(:agent_args) { { :logger => logger, :auto_reload => false, :reload_interval => 0.01, :config_path => config_file } }
+      let(:agent_args) { { :logger => logger, :auto_reload => false } }
+      let(:pipeline_id) { "main" }
+      let(:pipeline_settings) { { :config_path => config_file } }
 
-      before :each do
-        allow(subject).to receive(:sleep)
-        allow(subject).to receive(:clean_state?).and_return(false)
-        allow(subject).to receive(:running_pipelines?).and_return(true)
+      before(:each) do
+        subject.register_pipeline(pipeline_id, pipeline_settings)
       end
 
       context "if state is clean" do
+        before :each do
+          allow(subject).to receive(:running_pipelines?).and_return(true)
+          allow(subject).to receive(:sleep)
+          allow(subject).to receive(:clean_state?).and_return(false)
+        end
+
         it "should not reload_state!" do
           expect(subject).to_not receive(:reload_state!)
           t = Thread.new { subject.execute }
@@ -68,10 +75,49 @@ describe LogStash::Agent do
           t.join
         end
       end
+
+      context "when calling reload_state!" do
+        context "with a config that contains reload incompatible plugins" do
+          let(:second_pipeline_config) { "input { stdin {} } filter { } output { }" }
+
+          it "does not reload if new config contains reload incompatible plugins" do
+            t = Thread.new { subject.execute }
+            sleep 0.01 until subject.running_pipelines? && subject.pipelines.values.first.ready?
+            expect(subject).to_not receive(:upgrade_pipeline)
+            File.open(config_file, "w") { |f| f.puts second_pipeline_config }
+            subject.send(:reload_state!)
+            sleep 0.1
+            Stud.stop!(t)
+            t.join
+          end
+        end
+
+        context "with a config that does not contain reload incompatible plugins" do
+          let(:second_pipeline_config) { "input { generator { } } filter { } output { }" }
+
+          it "does not reload if new config contains reload incompatible plugins" do
+            t = Thread.new { subject.execute }
+            sleep 0.01 until subject.running_pipelines? && subject.pipelines.values.first.ready?
+            expect(subject).to receive(:upgrade_pipeline)
+            File.open(config_file, "w") { |f| f.puts second_pipeline_config }
+            subject.send(:reload_state!)
+            sleep 0.1
+            Stud.stop!(t)
+            t.join
+          end
+        end
+      end
     end
 
     context "when auto_reload is true" do
       let(:agent_args) { { :logger => logger, :auto_reload => true, :reload_interval => 0.01 } }
+      let(:pipeline_id) { "main" }
+      let(:pipeline_settings) { { :config_path => config_file } }
+
+      before(:each) do
+        subject.register_pipeline(pipeline_id, pipeline_settings)
+      end
+
       context "if state is clean" do
         it "should periodically reload_state" do
           allow(subject).to receive(:clean_state?).and_return(false)
@@ -80,6 +126,36 @@ describe LogStash::Agent do
           sleep 0.1
           Stud.stop!(t)
           t.join
+        end
+      end
+
+      context "when calling reload_state!" do
+        context "with a config that contains reload incompatible plugins" do
+          let(:second_pipeline_config) { "input { stdin {} } filter { } output { }" }
+
+          it "does not reload if new config contains reload incompatible plugins" do
+            t = Thread.new { subject.execute }
+            sleep 0.01 until subject.running_pipelines? && subject.pipelines.values.first.ready?
+            expect(subject).to_not receive(:upgrade_pipeline)
+            File.open(config_file, "w") { |f| f.puts second_pipeline_config }
+            sleep 0.1
+            Stud.stop!(t)
+            t.join
+          end
+        end
+
+        context "with a config that does not contain reload incompatible plugins" do
+          let(:second_pipeline_config) { "input { generator { } } filter { } output { }" }
+
+          it "does not reload if new config contains reload incompatible plugins" do
+            t = Thread.new { subject.execute }
+            sleep 0.01 until subject.running_pipelines? && subject.pipelines.values.first.ready?
+            expect(subject).to receive(:upgrade_pipeline).at_least(2).times
+            File.open(config_file, "w") { |f| f.puts second_pipeline_config }
+            sleep 0.1
+            Stud.stop!(t)
+            t.join
+          end
         end
       end
     end
@@ -166,7 +242,7 @@ describe LogStash::Agent do
   end
 
   describe "#fetch_config" do
-    let(:file_config) { "input { generator { count => 100 } } output { stdout { } }" }
+    let(:file_config) { "input { generator { count => 100 } } output { }" }
     let(:cli_config) { "filter { drop { } } " }
     let(:tmp_config_path) { Stud::Temporary.pathname }
     let(:agent_args) { { :logger => logger, :config_string => "filter { drop { } } ", :config_path => tmp_config_path } }
