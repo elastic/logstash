@@ -342,6 +342,12 @@ class LogStash::Agent < Clamp::Command
   def register_pipeline(pipeline_id, settings)
     pipeline = create_pipeline(settings.merge(:pipeline_id => pipeline_id))
     return unless pipeline.is_a?(LogStash::Pipeline)
+    if @auto_reload && pipeline.non_reloadable_plugins.any?
+      @logger.error(I18n.t("logstash.agent.non_reloadable_config_register"),
+                    :pipeline_id => pipeline_id,
+                    :plugins => pipeline.non_reloadable_plugins.map(&:class))
+      return
+    end
     @pipelines[pipeline_id] = pipeline
   end
 
@@ -424,6 +430,10 @@ class LogStash::Agent < Clamp::Command
     if old_pipeline.config_str == new_pipeline.config_str
       @logger.debug("no configuration change for pipeline",
                     :pipeline => id, :config => old_pipeline.config_str)
+    elsif new_pipeline.non_reloadable_plugins.any?
+      @logger.error(I18n.t("logstash.agent.non_reloadable_config_reload"),
+                    :pipeline_id => id,
+                    :plugins => new_pipeline.non_reloadable_plugins.map(&:class))
     else
       @logger.log("fetched new config for pipeline. upgrading..",
                    :pipeline => id, :config => new_pipeline.config_str)
