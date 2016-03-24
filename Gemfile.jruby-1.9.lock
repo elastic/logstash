@@ -420,8 +420,8 @@ GEM
       logstash-codec-plain
       logstash-core-plugin-api (~> 1.0)
       manticore (>= 0.5.2, < 1.0.0)
-    logstash-mixin-rabbitmq_connection (2.3.0-java)
-      logstash-core (>= 2.0.0.beta2, < 3.0.0)
+    logstash-mixin-rabbitmq_connection (2.3.1-java)
+      logstash-core-plugin-api (~> 1.0)
       march_hare (~> 2.15.0)
       stud (~> 0.0.22)
     logstash-output-cloudwatch (2.0.4)
