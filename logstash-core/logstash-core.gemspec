@@ -15,9 +15,9 @@ Gem::Specification.new do |gem|
   gem.test_files    = gem.files.grep(%r{^(test|spec|features)/})
   gem.name          = "logstash-core"
   gem.require_paths = ["lib"]
-  gem.version       = LOGSTASH_CORE_VERSION
+  gem.version       = LOGSTASH_CORE_VERSION.gsub(/-/, '.')
 
-  gem.add_runtime_dependency "logstash-core-event-java", "~> 3.0.0.dev"
+  gem.add_runtime_dependency "logstash-core-event-java", "~> 5.0.0.alpha1.snapshot1"
 
   gem.add_runtime_dependency "cabin", "~> 0.8.0" #(Apache 2.0 license)
   gem.add_runtime_dependency "pry", "~> 0.10.1"  #(Ruby license)
