@@ -170,6 +170,9 @@ class LogStashConfigAsciiDocGenerator
     # Now parse the real library
     code = File.new(file).read
 
+    # Read the plugin version from its gemspec
+    bundled_version = Gem::Specification::load(Dir.glob(File.join(File.dirname(file), "..", "..", "..", "*.gemspec"))[0]).version
+
     # inputs either inherit from Base or Threadable.
     if code =~ /\< ::LogStash::Inputs::Threadable/
       parse(File.new(File.join(base, "threadable.rb"), "r").read)
