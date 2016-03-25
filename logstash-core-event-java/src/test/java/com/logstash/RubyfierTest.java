@@ -8,6 +8,7 @@ import org.junit.Test;
 
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -217,4 +218,13 @@ public class RubyfierTest {
         assertEquals(RubyBigDecimal.class, rubyArray.toJavaArray()[0].getClass());
         assertEquals(1.0D, ((RubyBigDecimal)rubyArray.toJavaArray()[0]).getDoubleValue(), 0);
     }
+
+
+    @Test
+    public void testDeepWithBigInteger() {
+        Object result = Rubyfier.deep(Ruby.getGlobalRuntime(), new BigInteger("1"));
+        assertEquals(RubyBignum.class, result.getClass());
+        assertEquals(1L, ((RubyBignum)result).getLongValue());
+    }
+
 }

@@ -104,6 +104,13 @@ describe LogStash::Event do
       expect(e["foo"]).to be_kind_of(BigDecimal)
       expect(e["foo"]).to eq(BigDecimal.new(1))
     end
+
+    it "should set RubyBignum" do
+      e = LogStash::Event.new()
+      e["[foo]"] = -9223372036854776000
+      expect(e["foo"]).to be_kind_of(Bignum)
+      expect(e["foo"]).to eq(-9223372036854776000)
+    end
   end
 
   context "timestamp" do
