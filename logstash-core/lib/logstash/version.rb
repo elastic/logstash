@@ -11,4 +11,4 @@
 #       eventually this file should be in the root logstash lib fir and dependencies in logstash-core should be
 #       fixed.
 
-LOGSTASH_VERSION = "2.2.2"
+LOGSTASH_VERSION = "2.2.3.snapshot2"
