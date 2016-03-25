@@ -20,6 +20,7 @@ Logstash has the following flags. You can use the `--help` flag to display this 
  processing (default: number of cores).
  If you find that events are backing up, or that the CPU is not saturated, consider increasing
  this number to better utilize machine processing power.
+ NOTE: --filterworkers is deprecated. Please use --pipeline-workers or -w
 
 -b, --pipeline-batch-size SIZE
  This parameter defines the maximum number of events an individual worker thread will collect

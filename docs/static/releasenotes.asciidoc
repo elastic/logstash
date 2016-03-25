@@ -3,7 +3,7 @@
 
 * This release of Logstash includes support for offline plugin installation from storage media.
 * The `jruby-openssl` library version is now 0.9.13
-* The <<plugin-filters-multiline,multiline filter plugin>> is deprecated in favor of the multiline codec plugin. Support 
+* The <<plugins-filters-multiline,multiline filter plugin>> is deprecated in favor of the multiline codec plugin. Support 
 for the multiline filter plugin will be removed completely in a future release of Logstash.
 * The `http_poller` plugin is now installed by default.
 
