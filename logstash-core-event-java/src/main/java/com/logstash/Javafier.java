@@ -13,11 +13,14 @@ import org.jruby.RubyBoolean;
 import org.jruby.RubyFixnum;
 import org.jruby.RubyTime;
 import org.jruby.RubySymbol;
+import org.jruby.RubyBignum;
 import org.jruby.ext.bigdecimal.RubyBigDecimal;
 import com.logstash.ext.JrubyTimestampExtLibrary;
 import org.jruby.runtime.builtin.IRubyObject;
 import java.math.BigDecimal;
 import org.joda.time.DateTime;
+
+import java.math.BigInteger;
 import java.util.*;
 
 public class Javafier {
@@ -64,6 +67,10 @@ public class Javafier {
 
     public static BigDecimal deep(RubyBigDecimal bd) {
         return bd.getBigDecimalValue();
+    }
+
+    public static BigInteger deep(RubyBignum bn) {
+        return bn.getBigIntegerValue();
     }
 
     public static Timestamp deep(JrubyTimestampExtLibrary.RubyTimestamp t) {
@@ -114,6 +121,7 @@ public class Javafier {
             case RubyTimestamp: return deep((JrubyTimestampExtLibrary.RubyTimestamp)o);
             case RubyBoolean: return deep((RubyBoolean)o);
             case RubyFixnum: return deep((RubyFixnum)o);
+            case RubyBignum: return deep((RubyBignum)o);
             case RubyTime: return deep((RubyTime)o);
             case RubySymbol: return deep((RubySymbol)o);
             case RubyNil: return deep((RubyNil)o);
@@ -141,6 +149,7 @@ public class Javafier {
         RubyHash,
         RubyBoolean,
         RubyFixnum,
+        RubyBignum,
         RubyObject,
         RubyNil,
         RubyTime,
