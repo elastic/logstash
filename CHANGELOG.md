@@ -4,9 +4,9 @@
  - Fixed a bug where new pipeline might break plugins by calling the `register` method twice causing 
    undesired behavior ([#4851](https://github.com/elastic/logstash/issues/4851)).
  - Made `JAVA_OPTS` and `LS_JAVA_OPTS` work consistently on Windows  ([#4758](https://github.com/elastic/logstash/pull/4758)).
- - Fixed bug where specifying JMX parameters in `LS_JAVA_OPTS` caused Logstash not to restart properly
+ - Fixed a bug where specifying JMX parameters in `LS_JAVA_OPTS` caused Logstash not to restart properly
    ([#4319](https://github.com/elastic/logstash/issues/4319)).
- - Fixed a bug where upgrading plugins with Manticore threw an error and sometimes corrupted installation ([#4818](https://github.com/elastic/logstash/issues/4818)).
+ - Fixed a bug where upgrading plugins with jar-dependencies threw an error and sometimes corrupted installation ([#4818](https://github.com/elastic/logstash/issues/4818)).
  - Removed milestone warning that was displayed when the `--pluginpath` option was used to load plugins ([#4562](https://github.com/elastic/logstash/issues/4562)).
  
 ### input
