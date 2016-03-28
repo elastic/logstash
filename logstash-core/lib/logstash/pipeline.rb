@@ -37,6 +37,8 @@ module LogStash; class Pipeline
     :config_str,
     :original_settings
 
+  DEFAULT_OUTPUT_WORKERS = 1
+
   DEFAULT_SETTINGS = {
     :default_pipeline_workers => LogStash::Config::CpuCoreStrategy.maximum,
     :pipeline_batch_size => 125,
@@ -460,16 +462,12 @@ module LogStash; class Pipeline
     klass = LogStash::Plugin.lookup(plugin_type, name)
 
     if plugin_type == "output"
-      LogStash::OutputDelegator.new(@logger, klass, default_output_workers, pipeline_scoped_metric.namespace(:outputs), *args)
+      LogStash::OutputDelegator.new(@logger, klass, DEFAULT_OUTPUT_WORKERS, pipeline_scoped_metric.namespace(:outputs), *args)
     elsif plugin_type == "filter"
       LogStash::FilterDelegator.new(@logger, klass, pipeline_scoped_metric.namespace(:filters), *args)
     else
       klass.new(*args)
     end
-  end
-
-  def default_output_workers
-    @settings[:pipeline_workers] || @settings[:default_pipeline_workers]
   end
 
   # for backward compatibility in devutils for the rspec helpers, this method is not used
