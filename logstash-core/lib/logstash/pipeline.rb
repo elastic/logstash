@@ -19,6 +19,8 @@ require "logstash/output_delegator"
 module LogStash; class Pipeline
   attr_reader :inputs, :filters, :outputs, :worker_threads, :events_consumed, :events_filtered, :reporter, :pipeline_id, :logger, :thread, :config_str, :original_settings
 
+  DEFAULT_OUTPUT_WORKERS = 1
+
   DEFAULT_SETTINGS = {
     :default_pipeline_workers => LogStash::Config::CpuCoreStrategy.maximum,
     :pipeline_batch_size => 125,
@@ -413,14 +415,10 @@ module LogStash; class Pipeline
     klass = LogStash::Plugin.lookup(plugin_type, name)
 
     if plugin_type == "output"
-      LogStash::OutputDelegator.new(@logger, klass, default_output_workers, *args)
+      LogStash::OutputDelegator.new(@logger, klass, DEFAULT_OUTPUT_WORKERS, *args)
     else
       klass.new(*args)
     end
-  end
-
-  def default_output_workers
-    @settings[:pipeline_workers] || @settings[:default_pipeline_workers]
   end
 
   # for backward compatibility in devutils for the rspec helpers, this method is not used
