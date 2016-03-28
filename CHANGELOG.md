@@ -1,3 +1,39 @@
+## 2.2.3 (Mar 31, 2016)
+### general
+ - Added ability to configure custom garbage collection log file using `$LS_LOG_DIR`.
+ - Fixed a bug where new pipeline might break plugins by calling the `register` method twice causing 
+   undesired behavior ([#4851](https://github.com/elastic/logstash/issues/4851)).
+ - Made `JAVA_OPTS` and `LS_JAVA_OPTS` work consistently on Windows  ([#4758](https://github.com/elastic/logstash/pull/4758)).
+ - Fixed bug where specifying JMX parameters in `LS_JAVA_OPTS` caused Logstash not to restart properly
+   ([#4319](https://github.com/elastic/logstash/issues/4319)).
+ - Fixed a bug where upgrading plugins with Manticore threw an error and sometimes corrupted installation ([#4818](https://github.com/elastic/logstash/issues/4818)).
+ - Removed milestone warning that was displayed when the `--pluginpath` option was used to load plugins ([#4562](https://github.com/elastic/logstash/issues/4562)).
+ 
+### input
+ - Beats
+   - Enhanced to verify client certificates against CA ([#8](https://github.com/logstash-plugins/logstash-input-beats/issues/8)).
+ - RabbitMQ
+   - Breaking Change: Metadata is now disabled by default because it was regressing performance.
+   - Improved performance by using an internal queue and bulk ACKs.
+ - Redis
+   - Increased the batch_size to 100 by default. This provides a big jump in throughput and 
+    reduction in CPU utilization ([#25](https://github.com/logstash-plugins/logstash-input-redis/issues/25)).
+   - Added retry connection feature ([#91](https://github.com/logstash-plugins/logstash-input-jdbc/issues/91)).
+    
+### filter
+ - DNS: 
+   - Improved performance by adding caches to both successful and failed requests.
+   - Added support for retrying with the `:max_retries` setting.
+   - Lowered the default value of timeout from 2 to 0.5 seconds.
+
+### output   
+ - Elasticsearch
+   - Bumped minimum manticore version to 0.5.4 which fixes a memory leak when sniffing 
+       is used ([#392](https://github.com/logstash-plugins/logstash-output-elasticsearch/issues/392)).
+   - Fixed bug when updating documents with doc_as_upsert and scripting.
+   - Made error messages more verbose and easier to parse by humans.
+   - Retryable failures are now logged at the info level instead of warning. 
+
 ## 2.2.2 (Feb 17, 2016)
 ### output
  - Elasticsearch: Fix regression with SSL option
