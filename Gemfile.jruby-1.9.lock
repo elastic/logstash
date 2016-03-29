@@ -156,7 +156,7 @@ GEM
     logstash-codec-rubydebug (2.0.7)
       awesome_print
       logstash-core-plugin-api (~> 1.0)
-    logstash-core (2.2.3.snapshot2-java)
+    logstash-core (2.2.3-java)
       cabin (~> 0.7.0)
       clamp (~> 0.6.5)
       concurrent-ruby (= 0.9.2)
@@ -165,16 +165,16 @@ GEM
       i18n (= 0.6.9)
       jrjackson (~> 0.3.7)
       jruby-openssl (= 0.9.13)
-      logstash-core-event (~> 2.2.3.snapshot2)
+      logstash-core-event (~> 2.2.3)
       minitar (~> 0.5.4)
       pry (~> 0.10.1)
       rubyzip (~> 1.1.7)
       stud (~> 0.0.19)
       thread_safe (~> 0.3.5)
       treetop (< 1.5.0)
-    logstash-core-event (2.2.3.snapshot2-java)
-    logstash-core-plugin-api (1.1.0-java)
-      logstash-core (>= 2.0.0, <= 2.3.0.snapshot4)
+    logstash-core-event (2.2.3-java)
+    logstash-core-plugin-api (1.3.0-java)
+      logstash-core (>= 2.0.0, <= 2.3.0)
     logstash-devutils (0.0.18-java)
       gem_publisher
       insist (= 1.0.0)
@@ -193,11 +193,8 @@ GEM
       logstash-core-plugin-api (~> 1.0)
     logstash-filter-csv (2.1.3)
       logstash-core-plugin-api (~> 1.0)
-    logstash-filter-date (2.1.4)
-      logstash-codec-json
+    logstash-filter-date (2.1.5)
       logstash-core-plugin-api (~> 1.0)
-      logstash-input-generator
-      logstash-output-null
     logstash-filter-dns (2.1.3)
       logstash-core-plugin-api (~> 1.0)
       lru_redux (~> 1.1.0)
@@ -253,7 +250,7 @@ GEM
       logstash-core-plugin-api (~> 1.0)
       nokogiri
       xml-simple
-    logstash-input-beats (2.2.3)
+    logstash-input-beats (2.2.5)
       concurrent-ruby (>= 0.9.2, <= 1.0.0)
       logstash-codec-multiline (~> 2.0.5)
       logstash-codec-plain
@@ -573,7 +570,7 @@ GEM
       spoon (~> 0.0)
     puma (2.16.0-java)
     rack (1.6.4)
-    rake (11.1.1)
+    rake (11.1.2)
     redis (3.2.2)
     rspec (3.1.0)
       rspec-core (~> 3.1.0)
@@ -668,8 +665,8 @@ DEPENDENCIES
   logstash-codec-oldlogstashjson
   logstash-codec-plain
   logstash-codec-rubydebug
-  logstash-core (= 2.2.3.snapshot2)
-  logstash-core-event (= 2.2.3.snapshot2)
+  logstash-core (= 2.2.3)
+  logstash-core-event (= 2.2.3)
   logstash-devutils (~> 0.0.15)
   logstash-filter-anonymize
   logstash-filter-checksum
