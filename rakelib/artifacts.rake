@@ -100,8 +100,27 @@ namespace "artifact" do
     end
   end
 
-  task "prepare" => ["bootstrap", "plugin:install-default", "install-logstash-core", "install-logstash-core-event", "clean-bundle-config"]
-  task "prepare-all" => ["bootstrap", "plugin:install-all", "install-logstash-core", "install-logstash-core-event", "clean-bundle-config"]
+  # locate the "gem "logstash-core-plugin-api" ..." line in Gemfile, and if the :path => "..." option if specified
+  # build and install the local logstash-core-plugin-api gem otherwise just do nothing, bundler will deal with it.
+  task "install-logstash-core-plugin-api" do
+    # regex which matches a Gemfile gem definition for the logstash-core gem and captures the :path option
+    gem_line_regex = /^\s*gem\s+["']logstash-core-plugin-api["'](?:\s*,\s*["'][^"^']+["'])?(?:\s*,\s*:path\s*=>\s*["']([^"^']+)["'])?/i
+
+    lines = File.readlines("Gemfile")
+    matches = lines.select{|line| line[gem_line_regex]}
+    abort("ERROR: Gemfile format error, need a single logstash-core-plugin-api gem specification") if matches.size != 1
+
+    path = matches.first[gem_line_regex, 1]
+
+    if path
+      Rake::Task["plugin:install-local-core-gem"].invoke("logstash-core-plugin-api", path)
+    else
+      puts("[artifact:install-logstash-core-plugin-api] using logstash-core from Rubygems")
+    end
+  end
+
+  task "prepare" => ["bootstrap", "plugin:install-default", "install-logstash-core", "install-logstash-core-event", "install-logstash-core-plugin-api", "clean-bundle-config"]
+  task "prepare-all" => ["bootstrap", "plugin:install-all", "install-logstash-core", "install-logstash-core-event", "install-logstash-core-plugin-api", "clean-bundle-config"]
 
   desc "Build a tar.gz of default logstash plugins with all dependencies"
   task "tar" => ["prepare"] do
