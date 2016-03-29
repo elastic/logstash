@@ -68,6 +68,7 @@ describe LogStash::Agent do
         it "should not reload_state!" do
           expect(subject).to_not receive(:reload_state!)
           t = Thread.new { subject.execute }
+          sleep 0.01 until subject.running_pipelines? && subject.pipelines.values.first.ready?
           sleep 0.1
           Stud.stop!(t)
           t.join
