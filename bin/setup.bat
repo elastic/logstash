@@ -15,6 +15,10 @@ goto finally
 
 :setup_jruby
 REM setup_java()
+if not defined JAVA_HOME IF EXIST %ProgramData%\Oracle\java\javapath\java.exe (
+    for /f "tokens=2 delims=[]" %%a in ('dir %ProgramData%\Oracle\java\javapath\java.exe') do @set JAVA_HOME=%%a
+)
+if defined JAVA_HOME set JAVA_HOME=%JAVA_HOME:\bin\java.exe=%
 if not defined JAVA_HOME goto missing_java_home
 REM ***** JAVA options *****
 
