@@ -24,6 +24,8 @@
  - Fixed a bug where upgrading plugins with Manticore threw an error and sometimes corrupted installation ([#4818](https://github.com/elastic/logstash/issues/4818)).
  - Removed milestone warning that was displayed when the `--pluginpath` option was used to load plugins ([#4562](https://github.com/elastic/logstash/issues/4562)).
  - Upgraded to JRuby 1.7.24.
+ - Reverted default output workers to 1. Perviously we had made output workers the same as number of pipeline
+   workers ([#4877](https://github.com/elastic/logstash/issues/4877)).
    
 ### input
  - Beats
