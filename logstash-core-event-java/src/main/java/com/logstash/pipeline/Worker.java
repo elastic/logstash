@@ -60,9 +60,12 @@ public class Worker implements Runnable {
             Batch batch = takeBatch();
             batch = processBatch(batch);
             if (batch.isFlush()) graph.flush(batch.isShutdown());
-
             isShutdown = batch.isShutdown(); // Stop the loop
         }
+    }
+
+    public void join() throws InterruptedException {
+        this.thread.join();
     }
 
     public Batch takeBatch() {
@@ -87,8 +90,10 @@ public class Worker implements Runnable {
 
             if (event == Constants.flushEvent) {
                 flush = true;
+                break; // Don't delay when its time to flush!
             } else if (event == Constants.shutdownEvent) {
                 shutdown = true;
+                break; // Terminate the batch early. Required because only num_workers shutdown events are injected!
             } else if (event != null) {
                 batchSequence++;
                 event.setBatchSequence(batchSequence);

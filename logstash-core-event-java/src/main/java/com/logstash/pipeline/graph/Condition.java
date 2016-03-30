@@ -26,4 +26,15 @@ public class Condition {
         return source;
     }
 
+    public boolean equals(Condition other) {
+        if (this.source == null) {
+            if (other.source == null) {
+                return true;
+            } else {
+                return false;
+            }
+        } else {
+            return other.source.equals(this.source);
+        }
+    }
 }

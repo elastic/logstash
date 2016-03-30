@@ -7,7 +7,6 @@ import com.logstash.pipeline.graph.Edge;
 import com.logstash.pipeline.graph.Vertex;
 
 import java.util.*;
-import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -15,73 +14,102 @@ import java.util.stream.Stream;
  * Created by andrewvc on 2/20/16.
  */
 public class PipelineGraph {
+    private final Set<Vertex> sources;
+    private final List<Vertex> sortedVertices;
+    private final List<Vertex> postQueueVertices;
+    private Set<Edge> edges;
     private final Map<String, Vertex> vertices;
     private final ComponentProcessor componentProcessor;
 
-    public PipelineGraph(Map<String, Vertex> vertices, ComponentProcessor componentProcessor) {
-        this.vertices = vertices;
-        this.componentProcessor = componentProcessor;
-
-        //TODO: Make this streamy
-        Component[] components = this.getComponents();
-        for (int i=0; i < components.length; i++) {
-            Component component = components[i];
-            componentProcessor.setup(component);
+    public static class InvalidGraphError extends Throwable {
+        InvalidGraphError(String message) {
+            super(message);
         }
     }
 
-    public void processWorker(Batch batch) {
-        // Perform a breadth-first traversal, using the queue to track what's next
-        Deque<Map.Entry<Vertex,List<Event>>> queue = new LinkedList<>();
-        workerVertices().forEach(wv -> {
-            Map.Entry<Vertex, List<Event>> rootEntry = new AbstractMap.SimpleEntry<>(wv, batch.getEvents());
-            queue.addLast(rootEntry);
-        });
+    public PipelineGraph(Map<String, Vertex> vertices, ComponentProcessor componentProcessor) throws InvalidGraphError {
+        this.vertices = vertices;
+        this.componentProcessor = componentProcessor;
+        this.edges = getVertices().stream().flatMap(v -> v.getOutEdges().stream()).collect(Collectors.toSet());
+        // Precalculate source elements (those with no incoming edges)
+        this.sources = getVertices().stream().filter(Vertex::isSource).collect(Collectors.toSet());
 
-        // We want to accumulate as many events as possible and process all
-        // outputs last
-        Map<Vertex, List<Event>> terminalVerticesToEvents = new HashMap<>();
+        // Setup each vertex with the component processor
+        Arrays.stream(this.getComponents()).forEach(componentProcessor::setup);
 
-        Map.Entry<Vertex, List<Event>> current;
-        for(current = queue.pollFirst(); current != null; current = queue.pollFirst()) {
-            Vertex currentVertex = current.getKey();
-            List<Event> currentEvents = current.getValue();
+        this.sortedVertices = topologicalSort();
+        int queueIndex = this.sortedVertices.indexOf(this.queueVertex());
+        // Workers only process stuff after the queue, so this list becomes valuable
+        this.postQueueVertices = this.sortedVertices.subList(queueIndex+1,this.sortedVertices.size());
+    }
 
-            LinkedHashMap<Vertex, List<Event>> vMapping = processVertex(currentVertex, currentEvents);
+    // Uses Kahn's algorithm to do a topological sort and detect cycles
+    public List<Vertex> topologicalSort() throws InvalidGraphError {
+        List<Vertex> sorted = new ArrayList<>(this.vertices.size());
 
-            vMapping.forEach((mappingVertex, mappingEvents) -> {
-                if (mappingVertex.isTerminal()) {
-                    terminalVerticesToEvents.putIfAbsent(mappingVertex, new ArrayList<>());
-                    List<Event> terminalEvents = terminalVerticesToEvents.get(mappingVertex);
-                    terminalEvents.addAll(mappingEvents);
-                } else if (mappingEvents.size() > 0){
-                    queue.addLast(new AbstractMap.SimpleEntry<>(mappingVertex, mappingEvents));
+        Deque<Vertex> pending = new LinkedList<>();
+        pending.addAll(sources);
+
+        Set<Edge> traversedEdges = new HashSet<>();
+
+        while (!pending.isEmpty()) {
+            Vertex currentVertex = pending.removeFirst();
+            sorted.add(currentVertex);
+            currentVertex.getOutEdges().forEach(edge -> {
+                traversedEdges.add(edge);
+                Vertex toVertex = edge.getTo();
+                if (toVertex.getInEdges().stream().allMatch(traversedEdges::contains)) {
+                    pending.add(toVertex);
                 }
             });
         }
 
-        // Finally process our terminal (usually output) vertices
-        terminalVerticesToEvents.forEach((v, events) -> {
-            // Sort stuff so that batches come out in order
-            // People might want -w1 to maintain order, this helps that
-            events.sort(new Comparator<Event>() {
-                @Override
-                public int compare(Event e1, Event e2) {
+        // Check for cycles
+        if (this.edges.stream().noneMatch(traversedEdges::contains)) {
+            throw new InvalidGraphError("Graph has cycles, is not a DAG!");
+        }
+
+        return sorted;
+    }
+
+    public void processWorker(Batch batch) {
+        Map<Edge, List<Event>> edgePayloads = new HashMap<>(edges.size());
+
+        Set<Vertex> workerRootVertices = this.queueVertex().getOutVertices().collect(Collectors.toSet());
+
+        for (Vertex vertex : postQueueVertices) {
+            // Root elements get the input batch directly
+            // We should probably consider cloning these at some point
+            // because if we truly have multiple roots that would be problematic
+            List<Event> incoming;
+            if (workerRootVertices.contains(vertex)) {
+                incoming = batch.getEvents();
+            } else {
+                incoming = vertex.getInEdges().stream().
+                        flatMap(e -> edgePayloads.get(e).stream()).
+                        collect(Collectors.toList());
+            }
+
+            // Sort incoming events if we're sending to an output, this gives us strict ordering
+            // if a single worker is used and there is only one path through the pipeline
+            if (vertex.getComponent().getType() == Component.Type.OUTPUT) {
+                incoming.sort((e1, e2) -> {
                     // Nulls go last!
                     if (e1 == null && e2 == null) return 0;
                     else if (e1 == null) return 1;
                     else if (e2 == null) return -1;
                     else return Integer.compare(e1.getBatchSequence(), e2.getBatchSequence());
-                }
-            });
-            processVertex(v, events);
-        });
+                });
+            }
+
+            edgePayloads.putAll(processVertex(vertex, incoming));
+        }
     }
 
-    public LinkedHashMap<Vertex, List<Event>> processVertex(Vertex v, List<Event> inEvents) {
+    public LinkedHashMap<Edge, List<Event>> processVertex(Vertex v, List<Event> inEvents) {
         Component component = v.getComponent();
 
-        LinkedHashMap<Vertex, List<Event>> vMapping = new LinkedHashMap<>();
+        LinkedHashMap<Edge, List<Event>> vMapping = new LinkedHashMap<>();
         if (component.getType() == Component.Type.PREDICATE) {
             // Edges are in order of branching
             List<Event> remainingEvents = inEvents;
@@ -96,11 +124,11 @@ public class PipelineGraph {
                 }
                 remainingEvents = results.getFalseEvents();
 
-                vMapping.put(edge.getTo(), results.getTrueEvents());
+                vMapping.put(edge, results.getTrueEvents());
             }
         } else {
             List<Event> outEvents = componentProcessor.process(component, inEvents);
-            v.getOutVertices().forEach(outV -> vMapping.put(outV, outEvents));
+            v.getOutEdges().forEach(outE -> vMapping.put(outE, outEvents));
         }
 
         return vMapping;

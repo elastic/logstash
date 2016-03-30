@@ -236,44 +236,6 @@ module LogStash; class Pipeline
     end
   end
 
-  # Main body of what a worker thread does
-  # Repeatedly takes batches off the queue, filters, then outputs them
-  def worker_loop(batch_size, batch_delay)
-    running = true
-
-    namespace_events = metric.namespace([:stats, :events])
-    namespace_pipeline = metric.namespace([:stats, :pipelines, pipeline_id.to_s.to_sym, :events])
-
-    while running
-      # To understand the purpose behind this synchronize please read the body of take_batch
-      input_batch, signal = @input_queue_pop_mutex.synchronize { take_batch(batch_size, batch_delay) }
-      running = false if signal == LogStash::SHUTDOWN
-
-      @events_consumed.increment(input_batch.size)
-      namespace_events.increment(:in, input_batch.size)
-      namespace_pipeline.increment(:in, input_batch.size)
-
-      filtered_batch = filter_batch(input_batch)
-
-      if signal # Flush on SHUTDOWN or FLUSH
-        flush_options = (signal == LogStash::SHUTDOWN) ? {:final => true} : {}
-        flush_filters_to_batch(filtered_batch, flush_options)
-      end
-
-      @events_filtered.increment(filtered_batch.size)
-
-      namespace_events.increment(:filtered, filtered_batch.size)
-      namespace_pipeline.increment(:filtered, filtered_batch.size)
-
-      output_batch(filtered_batch)
-
-      namespace_events.increment(:out, filtered_batch.size)
-      namespace_pipeline.increment(:out, filtered_batch.size)
-
-      inflight_batches_synchronize { set_current_thread_inflight_batch(nil) }
-    end
-  end
-
   def set_current_thread_inflight_batch(batch)
     @inflight_batches[Thread.current] = batch
   end
@@ -354,9 +316,7 @@ module LogStash; class Pipeline
 
     before_stop.call if block_given?
 
-    @logger.info "Closing inputs"
     @inputs.each(&:do_stop)
-    @logger.info "Closed inputs"
   end # def shutdown
 
   # After `shutdown` is called from an external thread this is called from the main thread to
@@ -366,15 +326,14 @@ module LogStash; class Pipeline
     # Each worker thread will receive this exactly once!
     @worker_threads.each do |t|
       @logger.debug("Pushing shutdown", :thread => t)
-      10.times do
-        @input_queue.queue.put(LogStash::SHUTDOWN)
-      end
+      @input_queue.queue.put(com.logstash.pipeline.Constants.shutdownEvent)
     end
 
     @worker_threads.each do |t|
       @logger.debug("Shutdown waiting for worker thread #{t}")
       t.join
     end
+
 
     @filters.each(&:do_close)
     @outputs.each(&:do_close)
@@ -438,7 +397,7 @@ module LogStash; class Pipeline
   def flush
     if @flushing.compare_and_set(false, true)
       @logger.debug? && @logger.debug("Pushing flush onto pipeline")
-      @input_queue.push(LogStash::FLUSH)
+      @input_queue.push(com.logstash.pipeline.Constants.flushEvent)
     end
   end
 

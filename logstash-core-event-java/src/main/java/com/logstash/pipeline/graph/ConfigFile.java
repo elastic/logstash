@@ -41,7 +41,11 @@ public class ConfigFile {
         this.graphElement = tree.get("graph");
         buildVertices();
         connectVertices();
-        this.pipelineGraph = new PipelineGraph(vertices, componentProcessor);
+        try {
+            this.pipelineGraph = new PipelineGraph(vertices, componentProcessor);
+        } catch (PipelineGraph.InvalidGraphError invalidGraphError) {
+            throw new InvalidGraphConfigFile("Cycle detected in graph!");
+        }
     }
 
     public PipelineGraph getPipelineGraph() {
@@ -125,7 +129,7 @@ public class ConfigFile {
             throw new InvalidGraphConfigFile("Could not find vertex: " + toElemVertexName);
         }
 
-        v.addOutEdge(toElemVertex);
+        Vertex.linkVertices(v, toElemVertex);
     }
 
     private void createPredicateToEdges(Vertex v, JsonNode clauseNode) throws InvalidGraphConfigFile {
@@ -157,7 +161,7 @@ public class ConfigFile {
             if (condToVertex == null) {
                 throw new InvalidGraphConfigFile("Could not find vertex: " + condToVertexName);
             }
-            v.addOutEdge(condToVertex, currentCondition);
+            Vertex.linkVertices(v, condToVertex, currentCondition);
         }
     }
 
