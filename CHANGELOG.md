@@ -1,3 +1,67 @@
+## 5.0.0-alpha1 (April 5, 2016)
+### general
+ - Added APIs to monitor the Logstash pipeline. You can now query information/stats about event 
+   flow, JVM, and hot_threads.
+ - Added dynamic config, a new feature to track config file for changes and restart the 
+   pipeline (same process) with updated config changes. This feature can be enabled in two 
+   ways: Passing a CLI long-form option `--auto-reload` or with short-form `-r`. Another 
+   option, `--reload-interval <seconds>` controls how often LS should check the config files 
+   for changes. Alternatively, if you don't start with the CLI option, you can send SIGHUP 
+   or `kill -1` signal to LS to reload the config file, and restart the pipeline ([#4513](https://github.com/elastic/logstash/issues/4513)).
+ - Added support to evaluate environment variables inside the Logstash config. You can also specify a 
+   default if the variable is not defined. The syntax is `${myVar:default}` ([#3944](https://github.com/elastic/logstash/issues/3944)).
+ - Improved throughput performance across the board (up by 2x in some configs) by implementing Event 
+   representation in Java. Event is the main object that encapsulates data as it flows through 
+   Logstash and provides APIs for the plugins to perform processing. This change also enables 
+   faster serialization for future persistence work ([4191](https://github.com/elastic/logstash/issues/4191)).
+ - Added ability to configure custom garbage collection log file using `$LS_LOG_DIR`.
+ - `bin/plugin` in renamed to `bin/logstash-plugin`. This was renamed to prevent `PATH` being polluted 
+   when other components of the Elastic stack are installed on the same instance ([#4891](https://github.com/elastic/logstash/pull/4891)).
+ - Fixed a bug where new pipeline might break plugins by calling the `register` method twice causing 
+   undesired behavior ([#4851](https://github.com/elastic/logstash/issues/4851)).
+ - Made `JAVA_OPTS` and `LS_JAVA_OPTS` work consistently on Windows  ([#4758](https://github.com/elastic/logstash/pull/4758)).
+ - Fixed bug where specifying JMX parameters in `LS_JAVA_OPTS` caused Logstash not to restart properly
+   ([#4319](https://github.com/elastic/logstash/issues/4319)).
+ - Fixed a bug where upgrading plugins with Manticore threw an error and sometimes corrupted installation ([#4818](https://github.com/elastic/logstash/issues/4818)).
+ - Removed milestone warning that was displayed when the `--pluginpath` option was used to load plugins ([#4562](https://github.com/elastic/logstash/issues/4562)).
+ - Upgraded to JRuby 1.7.24.
+ - Reverted default output workers to 1. Perviously we had made output workers the same as number of pipeline
+   workers ([#4877](https://github.com/elastic/logstash/issues/4877)).
+   
+### input
+ - Beats
+   - Enhanced to verify client certificates against CA ([#8](https://github.com/logstash-plugins/logstash-input-beats/issues/8)).
+ - RabbitMQ
+   - Breaking Change: Metadata is now disabled by default because it was regressing performance.
+   - Improved performance by using an internal queue and bulk ACKs.
+ - Redis
+   - Increased the batch_size to 100 by default. This provides a big jump in throughput and 
+     reduction in CPU utilization ([#25](https://github.com/logstash-plugins/logstash-input-redis/issues/25)).
+ - JDBC
+   - Added retry connection feature ([#91](https://github.com/logstash-plugins/logstash-input-jdbc/issues/91)).
+ - Kafka
+   - Breaking: Added support for 0.9 consumer API. This plugin now supports SSL based encryption. This release 
+     changed a lot of configuration, so it is not backward compatible. Also, this version will not work with 
+     Kafka 0.8 broker
+   
+### filter
+  - DNS: 
+    - Improved performance by adding caches to both successful and failed requests.
+    - Added support for retrying with the `:max_retries` setting.
+    - Lowered the default value of timeout from 2 to 0.5 seconds.
+
+### output   
+  - Elasticsearch
+    - Bumped minimum manticore version to 0.5.4 which fixes a memory leak when sniffing 
+      is used ([#392](https://github.com/logstash-plugins/logstash-output-elasticsearch/issues/392)).
+    - Fixed bug when updating documents with doc_as_upsert and scripting.
+    - Made error messages more verbose and easier to parse by humans.
+    - Retryable failures are now logged at the info level instead of warning.
+  - Kafka
+    - Breaking: Added support for 0.9 API. This plugin now supports SSL based encryption. This release 
+      changed a lot of configuration, so it is not backward compatible. Also, this version will not work with 
+      Kafka 0.8 broker      
+
 ## 1.5.5 (Oct 29, 2015)
 ### general
  - Update to JRuby 1.7.22
