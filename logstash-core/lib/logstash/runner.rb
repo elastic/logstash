@@ -98,6 +98,10 @@ class LogStash::Runner < Clamp::Command
     I18n.t("logstash.web_api.flag.http_port"),
     :attribute_name => :web_api_http_port, :default => 9600
 
+  option ["--allow-env"], :flag,
+    I18n.t("logstash.runner.flag.allow_env"),
+    :attribute_name => :allow_env, :default => false
+
   def pipeline_workers=(pipeline_workers_value)
     @pipeline_settings[:pipeline_workers] = validate_positive_integer(pipeline_workers_value)
   end
@@ -195,7 +199,8 @@ class LogStash::Runner < Clamp::Command
     @agent.register_pipeline("main", @pipeline_settings.merge({
                           :config_string => config_string,
                           :config_path => config_path,
-                          :debug_config => debug_config?
+                          :debug_config => debug_config?,
+                          :allow_env => allow_env?
                           }))
 
     # enable sigint/sigterm before starting the agent
