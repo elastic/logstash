@@ -59,6 +59,8 @@ en:
       missing-configuration: >-
         No configuration file was specified. Perhaps you forgot to provide
         the '-f yourlogstash.conf' flag?
+      invalid-configuration: >-
+        The given configuration is invalid. Reason: %{error}
       reload-without-config-path: >-
         Configuration reloading also requires passing a configuration path with '-f yourlogstash.conf'
       error: >-
