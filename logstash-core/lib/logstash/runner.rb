@@ -166,9 +166,9 @@ class LogStash::Runner < Clamp::Command
     end
 
     if config_test?
-      config_loader = LogStash::Config::Loader.new(@logger, config_test?)
+      config_loader = LogStash::Config::Loader.new(@logger)
       config_str = config_loader.format_config(config_path, config_string)
-      config_error = LogStash::Pipeline.config_valid?(config_str)
+      config_error = LogStash::Pipeline.validate_config(config_str)
       if config_error == true
         @logger.terminal "Configuration OK"
         return 0
@@ -213,7 +213,7 @@ class LogStash::Runner < Clamp::Command
     show_short_help
     return 1
   rescue => e
-    @logger.fatal I18n.t("oops", :error => e, :backtrace => e.backtrace)
+    @logger.fatal(I18n.t("oops"), :error => e, :backtrace => e.backtrace)
     return 1
   ensure
     Stud::untrap("INT", sigint_id) unless sigint_id.nil?

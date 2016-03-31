@@ -56,6 +56,7 @@ module LogStash; class Pipeline
     begin
       # There should be a better way to test this
       self.new(config_str, settings)
+      true
     rescue => e
       e.message
     end
