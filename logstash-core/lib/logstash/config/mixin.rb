@@ -125,7 +125,7 @@ module LogStash::Config::Mixin
 
     # now that we know the parameters are valid, we can obfuscate the original copy
     # of the parameters before storing them as an instance variable
-    self.class.validate_check_parameter_values(original_params)
+    self.class.secure_params!(original_params)
     @original_params = original_params
 
     @config = params
@@ -499,6 +499,14 @@ module LogStash::Config::Mixin
       # Return the validator for later use, like with type coercion.
       return true, result
     end # def validate_value
+
+    def secure_params!(params)
+      params.each do |key, value|
+        if @config[key][:validate] == :password && !value.is_a?(::LogStash::Util::Password)
+          params[key] = ::LogStash::Util::Password.new(value)
+        end
+      end
+    end
 
     def hash_or_array(value)
       if !value.is_a?(Hash)
