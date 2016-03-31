@@ -87,6 +87,10 @@ class LogStash::Agent < Clamp::Command
     I18n.t("logstash.agent.flag.reload_interval"),
     :attribute_name => :reload_interval, :default => 3, &:to_i
 
+  option ["--allow-env"], :flag,
+    I18n.t("logstash.agent.flag.allow-env"),
+    :attribute_name => :allow_env, :default => false
+
   def initialize(*params)
     super(*params)
     @logger = Cabin::Channel.get(LogStash)
@@ -190,7 +194,8 @@ class LogStash::Agent < Clamp::Command
     register_pipeline("main", @pipeline_settings.merge({
                           :config_string => config_string,
                           :config_path => config_path,
-                          :debug_config => debug_config?
+                          :debug_config => debug_config?,
+                          :allow_env => allow_env?
                           }))
 
     sigint_id = trap_sigint()
