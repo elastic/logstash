@@ -137,6 +137,25 @@ describe LogStash::Pipeline do
         eos
       }
 
+      describe "debug compiled" do
+        let(:logger) { double("pipeline logger").as_null_object }
+
+        before do
+          expect(Cabin::Channel).to receive(:get).with(LogStash).and_return(logger).at_least(:once)
+          allow(logger).to receive(:debug?).and_return(true)
+        end
+
+        it "should not receive a debug message with the compiled code" do
+          expect(logger).not_to receive(:debug).with(/Compiled pipeline/, anything)
+          pipeline = TestPipeline.new(test_config_with_filters)
+        end
+
+        it "should print the compiled code if debug_config is set to true" do
+          expect(logger).to receive(:debug).with(/Compiled pipeline/, anything)
+          pipeline = TestPipeline.new(test_config_with_filters, :debug_config => true)
+        end
+      end
+
       context "when there is no command line -w N set" do
         it "starts one filter thread" do
           msg = "Defaulting pipeline worker threads to 1 because there are some filters that might not work with multiple worker threads"
