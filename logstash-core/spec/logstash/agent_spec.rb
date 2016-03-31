@@ -296,7 +296,7 @@ describe LogStash::Agent do
     end
   end
 
-  context "--config-test" do
+  describe "--config-test" do
     let(:cli_args) { ["-t", "-e", pipeline_string] }
 
     context "with a good configuration" do

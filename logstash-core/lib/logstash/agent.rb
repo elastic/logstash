@@ -166,12 +166,14 @@ class LogStash::Agent < Clamp::Command
     if config_test?
       config_loader = LogStash::Config::Loader.new(@logger)
       config_str = config_loader.format_config(config_path, config_string)
-      config_error = LogStash::Pipeline.validate_config(config_str)
-      if config_error == true
+      begin
+        # currently the best strategy to validate the configuration
+        # is creating a pipeline instance and checking for exceptions
+        LogStash::Pipeline.new(config_str)
         @logger.terminal "Configuration OK"
         return 0
-      else
-        @logger.fatal I18n.t("logstash.agent.error", :error => config_error)
+      rescue => e
+        @logger.fatal I18n.t("logstash.agent.invalid-configuration", :error => e.message)
         return 1
       end
     end
