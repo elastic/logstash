@@ -10,7 +10,7 @@ describe LogStash::Agent do
   subject { LogStash::Agent.new("", "") }
 
   before :each do
-    [:log, :info, :warn, :error, :fatal, :debug].each do |level|
+    [:log, :info, :warn, :error, :fatal, :debug, :terminal].each do |level|
       allow(logger).to receive(level)
     end
     [:info?, :warn?, :error?, :fatal?, :debug?].each do |level|
@@ -293,6 +293,24 @@ describe LogStash::Agent do
       expect(File).to receive(:directory?).and_return(false)
       expect(LogStash::Environment).not_to receive(:add_plugin_path)
       expect{subject.configure_plugin_paths(single_path)}.to raise_error(LogStash::ConfigurationError)
+    end
+  end
+
+  context "--config-test" do
+    let(:cli_args) { ["-t", "-e", pipeline_string] }
+
+    context "with a good configuration" do
+      let(:pipeline_string) { "input { } filter { } output { }" }
+      it "should exit successfuly" do
+        expect(subject.run(cli_args)).to eq(0)
+      end
+    end
+
+    context "with a bad configuration" do
+      let(:pipeline_string) { "rlwekjhrewlqrkjh" }
+      it "should fail by returning a bad exit code" do
+        expect(subject.run(cli_args)).to eq(1)
+      end
     end
   end
 
