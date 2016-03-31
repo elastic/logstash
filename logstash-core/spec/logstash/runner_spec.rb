@@ -16,6 +16,7 @@ describe LogStash::Runner do
 
   before :each do
     allow(Cabin::Channel).to receive(:get).with(LogStash).and_return(channel)
+    allow(channel).to receive(:subscribe).with(any_args)
   end
 
   describe "argument parsing" do
@@ -142,6 +143,22 @@ describe LogStash::Runner do
         expect(LogStash::Pipeline).to receive(:new).with(pipeline_string, hash_including(main_pipeline_settings)).and_return(pipeline)
 
         args = ["-w", "2", "-e", pipeline_string]
+        subject.run("bin/logstash", args)
+      end
+    end
+
+    describe "debug_config" do
+      it "should set 'debug_config' to false by default" do
+        expect(LogStash::Config::Loader).to receive(:new).with(anything, false).and_call_original
+        expect(LogStash::Pipeline).to receive(:new).with(pipeline_string, hash_including(:debug_config => false)).and_return(pipeline)
+        args = ["--debug", "-e", pipeline_string]
+        subject.run("bin/logstash", args)
+      end
+
+      it "should allow overriding debug_config" do
+        expect(LogStash::Config::Loader).to receive(:new).with(anything, true).and_call_original
+        expect(LogStash::Pipeline).to receive(:new).with(pipeline_string, hash_including(:debug_config => true)).and_return(pipeline)
+        args = ["--debug", "--debug-config",  "-e", pipeline_string]
         subject.run("bin/logstash", args)
       end
     end

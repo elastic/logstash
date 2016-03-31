@@ -37,7 +37,7 @@ class LogStash::Agent
     @web_api_http_host = params[:web_api_http_host]
     @web_api_http_port = params[:web_api_http_port]
 
-    @config_loader = LogStash::Config::Loader.new(@logger)
+    @config_loader = LogStash::Config::Loader.new(@logger, params[:debug_config])
     @reload_interval = params[:reload_interval] || 3 # seconds
     @upgrade_mutex = Mutex.new
 

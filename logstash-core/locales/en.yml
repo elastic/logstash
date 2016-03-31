@@ -239,3 +239,7 @@ en:
           it will default to the current hostname.
         agent: |+
           Specify an alternate agent plugin name.
+        debug_config: |+
+          Print the compiled config ruby code out as a debug log (you must also have --debug enabled).
+          WARNING: This will include any 'password' options passed to plugin configs as plaintext, and may result
+          in plaintext passwords appearing in your logs!
