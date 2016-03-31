@@ -4,7 +4,7 @@ require "rubygems/package"
 module LogStash::PluginManager
 
   class ValidationError < StandardError; end
-  DEFAULT_GEM_REQUIREMENTS = Gem::Requirement.new([">= 0.b"])
+  DEFAULT_GEM_REQUIREMENTS = Gem::Requirement.new([">= 0.a"])
 
   # check for valid logstash plugin gem name & version or .gem file, logs errors to $stdout
   # uses Rubygems API and will remotely validated agains the current Gem.sources
