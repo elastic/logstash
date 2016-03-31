@@ -95,7 +95,7 @@ describe LogStash::Runner do
     end
   end
 
-  context "--config-test" do
+  describe "--config-test" do
     subject { LogStash::Runner.new("") }
     let(:args) { ["-t", "-e", pipeline_string] }
 
