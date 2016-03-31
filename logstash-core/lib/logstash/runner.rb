@@ -53,6 +53,10 @@ class LogStash::Runner < Clamp::Command
   option "--verbose", :flag, I18n.t("logstash.runner.flag.verbose")
   option "--debug", :flag, I18n.t("logstash.runner.flag.debug")
 
+  option ["--debug-config"], :flag,
+         I18n.t("logstash.runner.flag.debug_config"),
+         :attribute_name => :debug_config, :default => false
+
   option ["-V", "--version"], :flag,
     I18n.t("logstash.runner.flag.version")
 
@@ -166,7 +170,7 @@ class LogStash::Runner < Clamp::Command
     end
 
     if config_test?
-      config_loader = LogStash::Config::Loader.new(@logger)
+      config_loader = LogStash::Config::Loader.new(@logger, @debug_config)
       config_str = config_loader.format_config(config_path, config_string)
       begin
         LogStash::Pipeline.new(config_str)
@@ -184,12 +188,14 @@ class LogStash::Runner < Clamp::Command
                           :collect_metric => true,
                           :debug => debug?,
                           :node_name => node_name,
+                          :debug_config => debug_config?,
                           :web_api_http_host => @web_api_http_host,
                           :web_api_http_port => @web_api_http_port)
 
     @agent.register_pipeline("main", @pipeline_settings.merge({
                           :config_string => config_string,
-                          :config_path => config_path
+                          :config_path => config_path,
+                          :debug_config => debug_config?
                           }))
 
     # enable sigint/sigterm before starting the agent
@@ -316,6 +322,10 @@ class LogStash::Runner < Clamp::Command
       @logger.terminal "Sending logstash logs to #{path}."
     else
       @logger.subscribe(STDOUT)
+    end
+
+    if debug_config? && @logger.level != :debug
+      @logger.warn("--debug-config was specified, but log level was not set to --debug! No config info will be logged.")
     end
 
     # TODO(sissel): redirect stdout/stderr to the log as well

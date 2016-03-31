@@ -44,7 +44,8 @@ module LogStash; class Pipeline
     :pipeline_batch_size => 125,
     :pipeline_batch_delay => 5, # in milliseconds
     :flush_interval => 5, # in seconds
-    :flush_timeout_interval => 60 # in seconds
+    :flush_timeout_interval => 60, # in seconds
+    :debug_config => false
   }
   MAX_INFLIGHT_WARN_THRESHOLD = 10_000
 
@@ -90,7 +91,10 @@ module LogStash; class Pipeline
 
     # The config code is hard to represent as a log message...
     # So just print it.
-    @logger.debug? && @logger.debug("Compiled pipeline code:\n#{code}")
+
+    if @settings[:debug_config] && logger.debug?
+      logger.debug("Compiled pipeline code", :code => code)
+    end
 
     begin
       eval(code)
@@ -544,6 +548,19 @@ module LogStash; class Pipeline
     (inputs + filters + outputs).select do |plugin|
       RELOAD_INCOMPATIBLE_PLUGINS.include?(plugin.class.name)
     end
+  end
+
+  # Sometimes we log stuff that will dump the pipeline which may contain
+  # sensitive information (like the raw syntax tree which can contain passwords)
+  # We want to hide most of what's in here
+  def inspect
+    {
+      :pipeline_id => @pipeline_id,
+      :settings => @settings.inspect,
+      :ready => @ready,
+      :running => @running,
+      :flushing => @flushing
+    }
   end
 
 end end
