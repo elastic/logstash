@@ -3,7 +3,7 @@ require_relative "default_plugins"
 namespace "plugin" do
 
   def install_plugins(*args)
-    system("bin/plugin", "install", *args)
+    system("bin/logstash-plugin", "install", *args)
     raise(RuntimeError, $!.to_s) unless $?.success?
   end
 
