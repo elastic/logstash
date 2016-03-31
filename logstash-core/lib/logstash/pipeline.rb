@@ -52,16 +52,6 @@ module LogStash; class Pipeline
     "LogStash::Inputs::Stdin"
   ]
 
-  def self.validate_config(config_str, settings = {})
-    begin
-      # There should be a better way to test this
-      self.new(config_str, settings)
-      true
-    rescue => e
-      e.message
-    end
-  end
-
   def initialize(config_str, settings = {})
     @config_str = config_str
     @original_settings = settings
