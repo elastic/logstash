@@ -191,6 +191,45 @@ describe LogStash::Agent do
     end
   end
 
+  describe "Environment Variables In Configs" do
+    let(:agent_args) { {
+      :logger => logger,
+      :auto_reload => false,
+      :reload_interval => 0.01
+    } }
+    let(:pipeline_id) { "main" }
+    let(:pipeline_config) { "input { generator { message => '${FOO}-bar' } } filter { } output { }" }
+    let(:pipeline_settings) { {
+      :config_string => pipeline_config,
+    } }
+
+    context "when allow_env is false" do
+      it "does not interpolate environment variables" do
+        expect(subject).to receive(:fetch_config).and_return(pipeline_config)
+        subject.register_pipeline(pipeline_id, pipeline_settings)
+        expect(subject.pipelines[pipeline_id].inputs.first.message).to eq("${FOO}-bar")
+      end
+    end
+
+    context "when allow_env is true" do
+      before :each do
+        @foo_content = ENV["FOO"]
+        ENV["FOO"] = "foo"
+        pipeline_settings.merge!(:allow_env => true)
+      end
+
+      after :each do
+        ENV["FOO"] = @foo_content
+      end
+
+      it "doesn't upgrade the state" do
+        expect(subject).to receive(:fetch_config).and_return(pipeline_config)
+        subject.register_pipeline(pipeline_id, pipeline_settings)
+        expect(subject.pipelines[pipeline_id].inputs.first.message).to eq("foo-bar")
+      end
+    end
+  end
+
   describe "#upgrade_pipeline" do
     let(:pipeline_id) { "main" }
     let(:pipeline_config) { "input { } filter { } output { }" }
