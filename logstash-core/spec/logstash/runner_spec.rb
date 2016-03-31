@@ -95,6 +95,26 @@ describe LogStash::Runner do
     end
   end
 
+  context "--config-test" do
+    subject { LogStash::Runner.new("") }
+    let(:args) { ["-t", "-e", pipeline_string] }
+
+    context "with a good configuration" do
+      let(:pipeline_string) { "input { } filter { } output { }" }
+      it "should exit successfuly" do
+        expect(channel).to receive(:terminal)
+        expect(subject.run(args)).to eq(0)
+      end
+    end
+
+    context "with a bad configuration" do
+      let(:pipeline_string) { "rlwekjhrewlqrkjh" }
+      it "should fail by returning a bad exit code" do
+        expect(channel).to receive(:fatal)
+        expect(subject.run(args)).to eq(1)
+      end
+    end
+  end
   describe "pipeline settings" do
     let(:pipeline_string) { "input { stdin {} } output { stdout {} }" }
     let(:main_pipeline_settings) { { :pipeline_id => "main" } }
