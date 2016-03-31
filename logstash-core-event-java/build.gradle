@@ -24,8 +24,10 @@ gradle.projectsEvaluated {
 
 apply plugin: 'java'
 apply plugin: 'idea'
+apply plugin: 'maven'
 
 group = 'org.logstash'
+version = '5.0.0.dev'
 
 project.sourceCompatibility = 1.7
 
@@ -94,6 +96,7 @@ idea {
 dependencies {
     compile 'com.fasterxml.jackson.core:jackson-core:2.7.1'
     compile 'com.fasterxml.jackson.core:jackson-databind:2.7.1-1'
+    compile 'joda-time:joda-time:2.9.3'
     provided 'org.jruby:jruby-core:1.7.22'
     testCompile 'junit:junit:4.12'
     testCompile 'net.javacrumbs.json-unit:json-unit:1.9.0'
@@ -104,4 +107,3 @@ task wrapper(type: Wrapper) {
     description = 'Install Gradle wrapper'
     gradleVersion = '2.8'
 }
-
