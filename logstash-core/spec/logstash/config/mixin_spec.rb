@@ -96,6 +96,10 @@ describe LogStash::Config::Mixin do
       clone = subject.class.new(subject.params)
       expect(clone.password.value).to(be == secret)
     end
+
+    it "should obfuscate original_params" do
+      expect(subject.original_params['password']).to(be_a(LogStash::Util::Password))
+    end
   end
 
   describe "obsolete settings" do

@@ -51,7 +51,7 @@ module LogStash::Config::Mixin
     # Keep a copy of the original config params so that we can later
     # differentiate between explicit configuration and implicit (default)
     # configuration.
-    @original_params = params.clone
+    original_params = params.clone
     
     # store the plugin type, turns LogStash::Inputs::Base into 'input'
     @plugin_type = self.class.ancestors.find { |a| a.name =~ /::Base$/ }.config_name
@@ -122,6 +122,11 @@ module LogStash::Config::Mixin
       @logger.debug("config #{self.class.name}/@#{key} = #{value.inspect}")
       instance_variable_set("@#{key}", value)
     end
+
+    # now that we know the parameters are valid, we can obfuscate the original copy
+    # of the parameters before storing them as an instance variable
+    self.class.validate_check_parameter_values(original_params)
+    @original_params = original_params
 
     @config = params
   end # def config_init
