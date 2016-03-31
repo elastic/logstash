@@ -165,6 +165,10 @@ describe LogStash::Config::Mixin do
         config :oneNumber, :validate => :number
         config :oneArray, :validate => :array
         config :oneHash, :validate => :hash
+
+        def initialize(params)
+          super(params.merge(LogStash::Config::Mixin::ALLOW_ENV_FLAG => true))
+        end
       end
     end
 
@@ -217,7 +221,7 @@ describe LogStash::Config::Mixin do
           "oneString" => "${FunString:foo}",
           "oneBoolean" => "${FunBool:false}",
           "oneArray" => [ "first array value", "${FunString:foo}" ],
-          "oneHash" => { "key1" => "${FunString:foo}", "key2" => "$FunString is ${FunBool}", "key3" => "${FunBool:false} or ${funbool:false}" }
+          "oneHash" => { "key1" => "${FunString:foo}", "key2" => "${FunString} is ${FunBool}", "key3" => "${FunBool:false} or ${funbool:false}" }
         )
       end
 

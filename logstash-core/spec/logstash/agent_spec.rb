@@ -190,6 +190,7 @@ describe LogStash::Agent do
     end
   end
 
+
   describe "#upgrade_pipeline" do
     let(:pipeline_id) { "main" }
     let(:pipeline_config) { "input { } filter { } output { }" }
@@ -361,6 +362,56 @@ describe LogStash::Agent do
       subject.run(args)
 
       expect(subject.config_loader.debug_config).to be_truthy
+    end
+  end
+
+  describe "allow_env param passing to pipeline" do
+    let(:pipeline_string) { "input {} output {}" }
+    let(:pipeline) { double("pipeline") }
+
+    it "should set 'allow_env' to false by default" do
+      args = ["-e", pipeline_string]
+      expect(LogStash::Pipeline).to receive(:new).with(pipeline_string, hash_including(:allow_env => false)).and_return(pipeline)
+      subject.run(args)
+    end
+
+    it "should support templating environment variables" do
+      args = ["-e", pipeline_string, "--allow-env"]
+      expect(LogStash::Pipeline).to receive(:new).with(pipeline_string, hash_including(:allow_env => true)).and_return(pipeline)
+      subject.run(args)
+    end
+  end
+
+  describe "Environment variables in config" do
+    let(:pipeline_id) { "main" }
+    let(:pipeline_config) { "input { generator { message => '${FOO}-bar' } } filter { } output { }" }
+    let(:pipeline_settings) { { :config_string => pipeline_config } }
+    let(:pipeline) { double("pipeline") }
+
+    context "when allow_env is false" do
+      it "does not interpolate environment variables" do
+        expect(subject).to receive(:fetch_config).and_return(pipeline_config)
+        subject.register_pipeline(pipeline_id, pipeline_settings)
+        expect(subject.pipelines[pipeline_id].inputs.first.message).to eq("${FOO}-bar")
+      end
+    end
+
+    context "when allow_env is true" do
+      before :each do
+        @foo_content = ENV["FOO"]
+        ENV["FOO"] = "foo"
+        pipeline_settings.merge!(:allow_env => true)
+      end
+
+      after :each do
+        ENV["FOO"] = @foo_content
+      end
+
+      it "doesn't upgrade the state" do
+        expect(subject).to receive(:fetch_config).and_return(pipeline_config)
+        subject.register_pipeline(pipeline_id, pipeline_settings)
+        expect(subject.pipelines[pipeline_id].inputs.first.message).to eq("foo-bar")
+      end
     end
   end
 end

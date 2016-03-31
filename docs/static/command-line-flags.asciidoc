@@ -64,6 +64,9 @@ Logstash has the following flags. You can use the `--help` flag to display this 
   
 -r, --[no-]auto-reload
   Monitor configuration changes and reload the configuration whenever it is changed.
+
+--allow-env
+  EXPERIMENTAL: Enable environment variable templating within configuration parameters.
   
 --reload-interval RELOAD_INTERVAL
   Specifies how often Logstash checks the config files for changes. The default is every 3 seconds.
