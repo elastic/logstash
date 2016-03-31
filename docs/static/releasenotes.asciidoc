@@ -1,61 +1,84 @@
 [[releasenotes]]
-== Logstash 2.1 Release Notes
+== Logstash 5.0-alpha1 Release Notes
 
-[float]
-== General
-
-* {lsissue}2376[Issue 2376]: Added ability to install and upgrade Logstash plugins without requiring internet
-connectivity.
-* {lsissue}3576[Issue 3576]: Support alternate or private Ruby gems server to install and update plugins.
-* {lsissue}3451[Issue 3451]: Added ability to reliably shutdown Logstash when there is a stall in event processing. This
-option can be enabled by passing `--allow-unsafe-shutdown` flag while starting Logstash. Please be aware that any in-
-flight events will be lost when shutdown happens.
-* {lsissue}4222[Issue 4222]: Fixed a memory leak which could be triggered when events having a date were serialized to
-string.
-* Added JDBC input to default package.
-* {lsissue}3243[Issue 3243]: Adding `--debug` to `--configtest` now shows the configuration in blocks annotated by source
-config file. Very useful when using multiple config files in a directory.
-* {lsissue}4130[Issue 4130]: Reset default worker threads to 1 when using non thread-safe filters like multiline.
-* Fixed file permissions for the `logrotate` configuration file.
-* {lsissue}3861[Issue 3861]: Changed the default heap size from 500MB to 1GB.
-* {lsissue}3645[Issue 3645]: Fixed config check option when starting Logstash through init scripts.
+* Added APIs to monitor the Logstash pipeline. You can now query information/stats about event flow, JVM, 
+  and hot_threads.
+* Added dynamic config, a new feature to track config file for changes and restart the 
+  pipeline (same process) with updated config changes. This feature can be enabled in two 
+  ways: Passing a CLI long-form option `--auto-reload` or with short-form `-r`. Another 
+  option, `--reload-interval <seconds>` controls how often LS should check the config files 
+  for changes. Alternatively, if you don't start with the CLI option, you can send SIGHUP 
+  or `kill -1` signal to LS to reload the config file, and restart the pipeline ({lsissue}4513[Issue 4513]).
+* Added support to evaluate environment variables inside the Logstash config. You can also specify a 
+  default if the variable is not defined. The syntax is `${myVar:default}` ({lsissue}3944[Issue 3944]).
+* Improved throughput performance across the board (up by 2x in some configs) by implementing Event 
+  representation in Java. Event is the main object that encapsulates data as it flows through 
+  Logstash and provides APIs for the plugins to perform processing. This change also enables 
+  faster serialization for future persistence work ({lsissue}4191[Issue 4191]).
+* Added ability to configure custom garbage collection log file using `$LS_LOG_DIR`.
+* Deprecated `bin/plugin` in favor of `bin/logstash-plugin`. In the next major version `bin/plugin` will 
+  be removed to prevent `PATH` being polluted when other components of the Elastic stack are installed on 
+  the same instance ({lsissue}4891[Issue 4891]).
+* Fixed a bug where new pipeline might break plugins by calling the `register` method twice causing 
+  undesired behavior ({lsissue}4851[Issue 4851])).
+* Made `JAVA_OPTS` and `LS_JAVA_OPTS` work consistently on Windows ({lsissue}4758[Issue 4758]).
+* Fixed bug where specifying JMX parameters in `LS_JAVA_OPTS` caused Logstash not to restart properly
+  ({lsissue}4319[Issue 4319]).
+* Fixed a bug where upgrading plugins with Manticore threw an error and sometimes corrupted installation ({lsissue}4818[Issue 4818]).
+* Removed milestone warning that was displayed when the `--pluginpath` option was used to load plugins ({lsissue}4562[Issue 4562]).
+* Upgraded to JRuby 1.7.24.
+* Reverted default output workers to 1. Previously we had made output workers the same as number of pipeline workers (#4877). 
 
 [float]
 == Input Plugins
 
-[float]
-=== Twitter
-* https://github.com/logstash-plugins/logstash-input-twitter/issues/21[Issue 21]: Added an option to fetch data from the
-sample Twitter streaming endpoint.
-* https://github.com/logstash-plugins/logstash-input-twitter/issues/22[Issue 22]: Added hashtags, symbols and
-user_mentions as data for the non extended tweet event.
-* https://github.com/logstash-plugins/logstash-input-twitter/issues/20[Issue 20]: Added an option to filter per location
-and language.
-* https://github.com/logstash-plugins/logstash-input-twitter/issues/11[Issue 11]: Added an option to stream data from a
-list of users.
+*`Kafka`:
+
+* Breaking: Added support for 0.9 consumer API. This plugin now supports SSL based encryption. 
+  This release changed a lot of configuration, so it is not backward compatible. Also, this version will not 
+  work with Kafka 0.8 broker
+
+*`Beats`*:
+
+* Enhanced to verify client certificates against CA (https://github.com/logstash-plugins/logstash-input-beats/issues/8[Issue 8]).
+
+*'RabbitMQ`*:
+
+* Breaking Change: Metadata is now disabled by default because it was regressing performance.
+* Improved performance by using an internal queue and bulk ACKs.
+
+*`Redis`*:
+
+* Increased the batch_size to 100 by default. This provides a big jump in throughput and 
+  reduction in CPU utilization (https://github.com/logstash-plugins/logstash-input-redis/issues/25[Issue 25])
+
+*`JDBC`*:
+
+* Added retry connection feature (https://github.com/logstash-plugins/logstash-input-http/issues/33[Issue 33])
 
 [float]
-=== Beats
-* https://github.com/logstash-plugins/logstash-input-beats/issues/10[Issue 10]: Properly handle multiline events from
-multiple sources, originating from Filebeat.
+== Filter Plugins
+
+*`DNS`*:
+
+* Improved performance by adding caches to both successful and failed requests.
+* Added support for retrying with the `:max_retries` setting.
+* Lowered the default value of timeout from 2 to 0.5 seconds.
 
 [float]
-=== File
-* https://github.com/logstash-plugins/logstash-input-file/issues/44[Issue 44]: Properly handle multiline events from
-multiple sources.
+== Output Plugins
 
-[float]
-=== Eventlog
-* https://github.com/logstash-plugins/logstash-input-eventlog/issues/11[Issue 11]: Change the underlying library to
-capture Event Logs from Windows more reliably.
+*`Elasticsearch`*:
 
-[float]
-== Output
+* Bumped minimum manticore version to 0.5.4 which fixes a memory leak when sniffing 
+  is used (https://github.com/logstash-plugins/logstash-output-elasticsearch/issues/392[Issue 392]).
+* Fixed bug when updating documents with doc_as_upsert and scripting.   
+* Made error messages more verbose and easier to parse by humans.
+* Retryable failures are now logged at the info level instead of warning.
 
-[float]
-=== Elasticsearch
-* Improved the default template to use doc_values wherever possible.
-* Improved the default template to disable fielddata on analyzed string fields.
-* https://github.com/logstash-plugins/logstash-output-elasticsearch/issues/260[Issue 260]: Added New setting: timeout.
-This lets you control the behavior of a slow/stuck request to Elasticsearch that could be, for example, caused by network,
-firewall, or load balancer issues.
+*`Kafka`*:
+
+Breaking: Added support for 0.9 API. This plugin now supports SSL based encryption. This release 
+changed a lot of configuration, so it is not backward compatible. Also, this version will not work 
+with Kafka 0.8 broker
+
