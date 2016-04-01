@@ -391,7 +391,7 @@ module LogStash; module Config; module AST
       if type == "filter"
         i = LogStash::Config::AST.defered_conditionals_index += 1
         source = <<-CODE
-          def cond_func_#{i}(input_events)
+          define_singleton_method :cond_func_#{i} do |input_events|
             result = []
             input_events.each do |event|
               events = [event]
