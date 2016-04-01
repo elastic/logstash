@@ -1,5 +1,5 @@
 [[breaking-changes]]
-== Breaking changes
+== Breaking Changes
 
 **Breaking changes in 2.2**
 Although 2.2 is fully compatible with configurations from older versions, there are some architectural 
@@ -78,7 +78,7 @@ as in previous releases.
 With the migration to the Java Event (https://github.com/elastic/logstash/issues/4191[Issue 4191]), we have changed 
 how you can access internal data. The Event object no longer returns a reference to the data. Instead, it returns a
 copy. This might change how you do manipulation of your data, especially when working with nested hashes.
-When working with nested hashes, it’s recommended that you use the `fieldref` syntax instead of using multiple brakets.
+When working with nested hashes, it’s recommended that you use the `fieldref` syntax instead of using multiple brackets.
 
 **Examples:**
 [source, js]
