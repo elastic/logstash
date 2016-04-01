@@ -1,5 +1,5 @@
 [[releasenotes]]
-== Logstash 2.2 Release Notes
+== Logstash 2.3 Release Notes
 
 * Added dynamic config, a new feature to track config file for changes and restart the 
   pipeline (same process) with updated config changes. This feature can be enabled in two 
@@ -25,6 +25,7 @@
 * Fixed a bug where upgrading plugins with Manticore threw an error and sometimes corrupted installation ({lsissue}4818[Issue 4818]).
 * Removed milestone warning that was displayed when the `--pluginpath` option was used to load plugins ({lsissue}4562[Issue 4562]).
 * Upgraded to JRuby 1.7.24.
+* Reverted default output workers to 1. Previously we had made output workers the same as number of pipeline workers (#4877). 
 
 [float]
 == Input Plugins
@@ -67,7 +68,4 @@
 * Made error messages more verbose and easier to parse by humans.
 * Retryable failures are now logged at the info level instead of warning.
 
-*`file`*:
 
-* https://github.com/logstash-plugins/logstash-output-file/issues/18[Issue 18] Adds configuration setting to set directory
-and file permission.
