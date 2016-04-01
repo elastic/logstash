@@ -2,7 +2,7 @@
 require "benchmark/ips"
 require "logstash/event"
 
-options = { :time => 10, :warmup => 10 }
+options = { :time => 10, :warmup => 30 }
 puts "Same Event instance"
 
 event = LogStash::Event.new("foo" => {"bar" => {"foobar" => "morebar"} })
