@@ -143,4 +143,37 @@ describe LogStashConfigParser do
       end
     end
   end
+
+  context "when creating two instances of the same configuration" do
+
+    let(:config_string) {
+      "input { generator { } }
+       filter {
+         if [type] == 'test' { filter1 { } }
+       }
+       output {
+         output1 { }
+       }"
+    }
+
+    let(:pipeline_klass) do
+      Class.new do
+        def initialize(config)
+          grammar = LogStashConfigParser.new
+          @config = grammar.parse(config)
+          @code = @config.compile
+          eval(@code)
+        end
+        def plugin(*args);end
+      end
+    end
+
+    describe "generated conditional functionals" do
+      it "should be defined at instance level" do
+        instance_1 = pipeline_klass.new(config_string)
+        instance_2 = pipeline_klass.new(config_string)
+        expect(instance_1.method(:cond_func_1).owner).to_not be(instance_2.method(:cond_func_1).owner)
+      end
+    end
+  end
 end
