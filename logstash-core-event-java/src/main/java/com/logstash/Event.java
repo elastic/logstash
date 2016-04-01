@@ -7,7 +7,11 @@ import org.jruby.RubySymbol;
 
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 
 public class Event implements Cloneable, Serializable {
@@ -48,7 +52,8 @@ public class Event implements Cloneable, Serializable {
 
     public Event(Map data)
     {
-        this.data = data;
+        this.data = (Map<String, Object>)Valuefier.convert(data);
+
         if (!this.data.containsKey(VERSION)) {
             this.data.put(VERSION, VERSION_ONE);
         }
@@ -119,7 +124,16 @@ public class Event implements Cloneable, Serializable {
         this.data.put(TIMESTAMP, this.timestamp);
     }
 
+    public Object getFieldForRuby(String reference) {
+        return _getField(reference);
+    }
+
     public Object getField(String reference) {
+        Object val = _getField(reference);
+        return Valuefier.unconvert(val);
+    }
+
+    private Object _getField(String reference) {
         if (reference.equals(METADATA)) {
             return this.metadata;
         } else if (reference.startsWith(METADATA_BRACKETS)) {
@@ -138,8 +152,10 @@ public class Event implements Cloneable, Serializable {
             this.metadata_accessors = new Accessors(this.metadata);
         } else if (reference.startsWith(METADATA_BRACKETS)) {
             this.metadata_accessors.set(reference.substring(METADATA_BRACKETS.length()), value);
-        } else {
+        } else if (value instanceof RubyJavaObject) {
             this.accessors.set(reference, value);
+        } else {
+            this.accessors.set(reference, new RubyJavaObject(value));
         }
     }
 

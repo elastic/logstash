@@ -11,15 +11,19 @@ import org.jruby.runtime.builtin.IRubyObject;
 import java.math.BigDecimal;
 import java.util.*;
 
+
 public final class Rubyfier {
 
-    private Rubyfier(){}
+    private Rubyfier() {
+    }
 
     public static IRubyObject deep(Ruby runtime, final Object input) {
-        if (input instanceof IRubyObject) return (IRubyObject)input;
+        if (input instanceof RubyJavaObject) return ((RubyJavaObject) input).getRubyValue(runtime);
+        if (input instanceof IRubyObject) return (IRubyObject) input;
         if (input instanceof Map) return deepMap(runtime, (Map) input);
         if (input instanceof List) return deepList(runtime, (List) input);
-        if (input instanceof Timestamp) return JrubyTimestampExtLibrary.RubyTimestamp.newRubyTimestamp(runtime, (Timestamp)input);
+        if (input instanceof Timestamp)
+            return JrubyTimestampExtLibrary.RubyTimestamp.newRubyTimestamp(runtime, (Timestamp) input);
         if (input instanceof Collection) throw new ClassCastException("unexpected Collection type " + input.getClass());
 
         // BigDecimal is not currenly handled by JRuby and this is the type Jackson uses for floats
@@ -31,7 +35,8 @@ public final class Rubyfier {
     public static Object deepOnly(Ruby runtime, final Object input) {
         if (input instanceof Map) return deepMap(runtime, (Map) input);
         if (input instanceof List) return deepList(runtime, (List) input);
-        if (input instanceof Timestamp) return JrubyTimestampExtLibrary.RubyTimestamp.newRubyTimestamp(runtime, (Timestamp)input);
+        if (input instanceof Timestamp)
+            return JrubyTimestampExtLibrary.RubyTimestamp.newRubyTimestamp(runtime, (Timestamp) input);
         if (input instanceof Collection) throw new ClassCastException("unexpected Collection type " + input.getClass());
 
         // BigDecimal is not currenly handled by JRuby and this is the type Jackson uses for floats
@@ -45,8 +50,7 @@ public final class Rubyfier {
         final RubyArray array = runtime.newArray(length);
 
         for (Object item : list) {
-            // use deepOnly because RubyArray.add already calls JavaUtil.convertJavaToUsableRubyObject on item
-            array.add(deepOnly(runtime, item));
+            array.add(deep(runtime, item));
         }
 
         return array;
@@ -56,8 +60,7 @@ public final class Rubyfier {
         RubyHash hash = RubyHash.newHash(runtime);
 
         for (Map.Entry<?, ?> entry : map.entrySet()) {
-            // use deepOnly on value because RubyHash.put already calls JavaUtil.convertJavaToUsableRubyObject on items
-            hash.put(entry.getKey(), deepOnly(runtime, entry.getValue()));
+            hash.put(entry.getKey(), deep(runtime, entry.getValue()));
         }
 
         return hash;

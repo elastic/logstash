@@ -1,22 +1,7 @@
 package com.logstash.ext;
 
-import com.logstash.Logger;
-import com.logstash.Event;
-import com.logstash.PathCache;
-import com.logstash.Javafier;
-import com.logstash.Timestamp;
-import com.logstash.Rubyfier;
-import com.logstash.Javafier;
-import org.jruby.Ruby;
-import org.jruby.RubyObject;
-import org.jruby.RubyClass;
-import org.jruby.RubyModule;
-import org.jruby.RubyString;
-import org.jruby.RubyHash;
-import org.jruby.RubyBoolean;
-import org.jruby.RubyArray;
-import org.jruby.RubyFloat;
-import org.jruby.RubyInteger;
+import com.logstash.*;
+import org.jruby.*;
 import org.jruby.anno.JRubyClass;
 import org.jruby.anno.JRubyMethod;
 import org.jruby.exceptions.RaiseException;
@@ -27,11 +12,10 @@ import org.jruby.runtime.ObjectAllocator;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.jruby.runtime.load.Library;
-import org.jruby.ext.bigdecimal.RubyBigDecimal;
+
 import java.io.IOException;
-import java.util.Map;
 import java.util.HashMap;
-import java.util.List;
+import java.util.Map;
 
 
 public class JrubyEventExtLibrary implements Library {
@@ -40,10 +24,12 @@ public class JrubyEventExtLibrary implements Library {
     private static RubyClass GENERATOR_ERROR = null;
     private static RubyClass LOGSTASH_ERROR = null;
 
+    @Override
     public void load(Ruby runtime, boolean wrap) throws IOException {
         RubyModule module = runtime.defineModule("LogStash");
 
         RubyClass clazz = runtime.defineClassUnder("Event", runtime.getObject(), new ObjectAllocator() {
+            @Override
             public IRubyObject allocate(Ruby runtime, RubyClass rubyClass) {
                 return new RubyEvent(runtime, rubyClass);
             }
@@ -141,7 +127,7 @@ public class JrubyEventExtLibrary implements Library {
         @JRubyMethod(name = "get", required = 1)
         public IRubyObject ruby_get_field(ThreadContext context, RubyString reference)
         {
-            Object value = this.event.getField(reference.asJavaString());
+            Object value = this.event.getFieldForRuby(reference.asJavaString());
             return Rubyfier.deep(context.runtime, value);
         }
 
@@ -156,7 +142,7 @@ public class JrubyEventExtLibrary implements Library {
                 }
                 this.event.setTimestamp(((JrubyTimestampExtLibrary.RubyTimestamp)value).getTimestamp());
             } else {
-                this.event.setField(r, Javafier.deep(value));
+                this.event.setField(r, Valuefier.convert(value));
             }
             return value;
         }
@@ -310,8 +296,9 @@ public class JrubyEventExtLibrary implements Library {
         @JRubyMethod(name = "tag", required = 1)
         public IRubyObject ruby_tag(ThreadContext context, RubyString value)
         {
+            //TODO(guy) should these tags be RubyJavaObjects?
             this.event.tag(((RubyString) value).asJavaString());
-            return context.runtime.getNil();
+            return context.nil;
         }
 
         @JRubyMethod(name = "timestamp")
