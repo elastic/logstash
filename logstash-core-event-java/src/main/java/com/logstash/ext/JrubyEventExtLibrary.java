@@ -20,6 +20,7 @@ import org.jruby.RubyInteger;
 import org.jruby.anno.JRubyClass;
 import org.jruby.anno.JRubyMethod;
 import org.jruby.exceptions.RaiseException;
+import org.jruby.java.proxies.ConcreteJavaProxy;
 import org.jruby.javasupport.JavaUtil;
 import org.jruby.runtime.Arity;
 import org.jruby.runtime.ObjectAllocator;
@@ -113,8 +114,8 @@ public class JrubyEventExtLibrary implements Library {
             return event;
         }
 
-        public void setEvent(Event event) {
-            this.event = event;
+        public void setEvent(IRubyObject event) {
+            this.event = (Event) event;
         }
 
         // def initialize(data = {})
@@ -274,6 +275,13 @@ public class JrubyEventExtLibrary implements Library {
             } catch (Exception e) {
                 throw new RaiseException(context.runtime, GENERATOR_ERROR, e.getMessage(), true);
             }
+        }
+
+        @JRubyMethod(name = "from_java", required = 1, meta = true)
+        public static IRubyObject ruby_from_java(ThreadContext context, IRubyObject recv, IRubyObject event) {
+            ConcreteJavaProxy eventProxy = (ConcreteJavaProxy) event;
+            Event converted = (Event) eventProxy.toJava(Event.class);
+            return RubyEvent.newRubyEvent(context.runtime, converted);
         }
 
         // @param value [String] the json string. A json object/map will convert to an array containing a single Event.

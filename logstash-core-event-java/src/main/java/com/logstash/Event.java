@@ -33,6 +33,7 @@ public class Event implements Cloneable, Serializable {
     // logger is static since once set there is no point in changing it at runtime
     // for other reasons than in tests/specs.
     private transient static Logger logger = DEFAULT_LOGGER;
+    private int batchSequence;
 
     public Event()
     {
@@ -292,5 +293,13 @@ public class Event implements Cloneable, Serializable {
     // for other reasons than in tests/specs.
     public static void setLogger(Logger logger) {
         Event.logger = logger;
+    }
+
+    public void setBatchSequence(int batchSequence) {
+        this.batchSequence = batchSequence;
+    }
+
+    public int getBatchSequence() {
+        return batchSequence;
     }
 }

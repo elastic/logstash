@@ -1,0 +1,24 @@
+---
+graph:
+  log-reader:
+    component: input-generator
+    options: {"message": "Hello 50", "count": 5000000}
+    to: [main-queue]
+  main-queue:
+    component: queue-synchronous
+    to: [hello-grok]
+  hello-grok:
+    component: filter-grok
+    options:
+      match:
+        message: "%{WORD:greeting} %{NUMBER:greetno}"
+    to: [main-out]
+  field-adder:
+    component: filter-mutate
+    options:
+      add_field:
+        foo: bar
+  main-out:
+    component: output-stdout
+    options:
+      codec: dots

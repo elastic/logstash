@@ -9,6 +9,11 @@ buildscript {
     }
 }
 
+plugins {
+    id 'java' // or 'groovy' Must be explicitly applied
+    id 'com.github.johnrengelman.shadow' version '1.2.3'
+}
+
 repositories {
     mavenLocal()
     mavenCentral()
@@ -27,7 +32,7 @@ apply plugin: 'idea'
 
 group = 'org.logstash'
 
-project.sourceCompatibility = 1.7
+project.sourceCompatibility = 1.8
 
 task sourcesJar(type: Jar, dependsOn: classes) {
     from sourceSets.main.allSource
@@ -94,10 +99,19 @@ idea {
 dependencies {
     compile 'com.fasterxml.jackson.core:jackson-core:2.7.1'
     compile 'com.fasterxml.jackson.core:jackson-databind:2.7.1-1'
+    compile 'com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.7.1'
+    compile 'commons-io:commons-io:2.4'
     provided 'org.jruby:jruby-core:1.7.22'
     testCompile 'junit:junit:4.12'
     testCompile 'net.javacrumbs.json-unit:json-unit:1.9.0'
 }
+
+shadowJar {
+    dependencies {
+        exclude(dependency('org.jruby:jruby-core:1.7.22'))
+    }
+}
+
 
 // See http://www.gradle.org/docs/current/userguide/gradle_wrapper.html
 task wrapper(type: Wrapper) {

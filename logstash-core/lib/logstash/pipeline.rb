@@ -20,6 +20,12 @@ require "logstash/instrument/null_metric"
 require "logstash/instrument/collector"
 require "logstash/output_delegator"
 require "logstash/filter_delegator"
+require "logstash/pipeline/ruby_component_processor"
+
+java_import 'com.logstash.pipeline.Worker'
+java_import 'com.logstash.pipeline.graph.ConfigFile'
+java_import 'com.logstash.pipeline.Constants'
+
 
 module LogStash; class Pipeline
  attr_reader :inputs,
@@ -61,9 +67,9 @@ module LogStash; class Pipeline
     settings.each {|setting, value| configure(setting, value) }
     @reporter = LogStash::PipelineReporter.new(@logger, self)
 
-    @inputs = nil
-    @filters = nil
-    @outputs = nil
+    @inputs = []
+    @filters = []
+    @outputs = []
 
     @worker_threads = []
 
@@ -77,26 +83,18 @@ module LogStash; class Pipeline
     # sure the metric instance is correctly send to the plugin.
     @metric = settings.fetch(:metric, Instrument::NullMetric.new)
 
-    grammar = LogStashConfigParser.new
-    @config = grammar.parse(config_str)
-    if @config.nil?
-      raise LogStash::ConfigurationError, grammar.failure_reason
+    component_processor = ::LogStash::Pipeline::RubyComponentProcessor.new(self) do |component, plugin|
+      case plugin
+        when LogStash::Inputs::Base
+          @inputs << plugin
+        when LogStash::FilterDelegator
+          @filters << plugin
+        when LogStash::OutputDelegator
+          @outputs << plugin
+      end
     end
-    # This will compile the config to ruby and evaluate the resulting code.
-    # The code will initialize all the plugins and define the
-    # filter and output methods.
-    code = @config.compile
-    @code = code
-
-    # The config code is hard to represent as a log message...
-    # So just print it.
-    @logger.debug? && @logger.debug("Compiled pipeline code:\n#{code}")
-
-    begin
-      eval(code)
-    rescue => e
-      raise
-    end
+    @config_file = com.logstash.pipeline.graph.ConfigFile.fromString(config_str, component_processor)
+    @graph = @config_file.getPipelineGraph()
 
     @input_queue = LogStash::Util::WrappedSynchronousQueue.new
     @events_filtered = Concurrent::AtomicFixnum.new(0)
@@ -224,121 +222,13 @@ module LogStash; class Pipeline
         @logger.warn "CAUTION: Recommended inflight events max exceeded! Logstash will run with up to #{max_inflight} events in memory in your current configuration. If your message sizes are large this may cause instability with the default heap size. Please consider setting a non-standard heap size, changing the batch size (currently #{batch_size}), or changing the number of pipeline workers (currently #{pipeline_workers})"
       end
 
-      pipeline_workers.times do |t|
-        @worker_threads << Thread.new do
-          LogStash::Util.set_thread_name("[#{pipeline_id}]>worker#{t}")
-          worker_loop(batch_size, batch_delay)
-        end
-      end
+      workers = com.logstash.pipeline.Worker.startWorkers(pipeline_workers, @graph, @input_queue.queue, batch_size, batch_delay)
+      @worker_threads = workers.map(&:getThread)
     ensure
       # it is important to garantee @ready to be true after the startup sequence has been completed
       # to potentially unblock the shutdown method which may be waiting on @ready to proceed
       @ready.make_true
     end
-  end
-
-  # Main body of what a worker thread does
-  # Repeatedly takes batches off the queue, filters, then outputs them
-  def worker_loop(batch_size, batch_delay)
-    running = true
-
-    namespace_events = metric.namespace([:stats, :events])
-    namespace_pipeline = metric.namespace([:stats, :pipelines, pipeline_id.to_s.to_sym, :events])
-
-    while running
-      # To understand the purpose behind this synchronize please read the body of take_batch
-      input_batch, signal = @input_queue_pop_mutex.synchronize { take_batch(batch_size, batch_delay) }
-      running = false if signal == LogStash::SHUTDOWN
-
-      @events_consumed.increment(input_batch.size)
-      namespace_events.increment(:in, input_batch.size)
-      namespace_pipeline.increment(:in, input_batch.size)
-
-      filtered_batch = filter_batch(input_batch)
-
-      if signal # Flush on SHUTDOWN or FLUSH
-        flush_options = (signal == LogStash::SHUTDOWN) ? {:final => true} : {}
-        flush_filters_to_batch(filtered_batch, flush_options)
-      end
-
-      @events_filtered.increment(filtered_batch.size)
-
-      namespace_events.increment(:filtered, filtered_batch.size)
-      namespace_pipeline.increment(:filtered, filtered_batch.size)
-
-      output_batch(filtered_batch)
-
-      namespace_events.increment(:out, filtered_batch.size)
-      namespace_pipeline.increment(:out, filtered_batch.size)
-
-      inflight_batches_synchronize { set_current_thread_inflight_batch(nil) }
-    end
-  end
-
-  def take_batch(batch_size, batch_delay)
-    batch = []
-    # Since this is externally synchronized in `worker_look` wec can guarantee that the visibility of an insight batch
-    # guaranteed to be a full batch not a partial batch
-    set_current_thread_inflight_batch(batch)
-
-    signal = false
-    batch_size.times do |t|
-      event = (t == 0) ? @input_queue.take : @input_queue.poll(batch_delay)
-
-      if event.nil?
-        next
-      elsif event == LogStash::SHUTDOWN || event == LogStash::FLUSH
-        # We MUST break here. If a batch consumes two SHUTDOWN events
-        # then another worker may have its SHUTDOWN 'stolen', thus blocking
-        # the pipeline. We should stop doing work after flush as well.
-        signal = event
-        break
-      else
-        batch << event
-      end
-    end
-
-    [batch, signal]
-  end
-
-  def filter_batch(batch)
-    batch.reduce([]) do |acc,e|
-      if e.is_a?(LogStash::Event)
-        filtered = filter_func(e)
-        filtered.each {|fe| acc << fe unless fe.cancelled?}
-      end
-      acc
-    end
-  rescue Exception => e
-    # Plugins authors should manage their own exceptions in the plugin code
-    # but if an exception is raised up to the worker thread they are considered
-    # fatal and logstash will not recover from this situation.
-    #
-    # Users need to check their configuration or see if there is a bug in the
-    # plugin.
-    @logger.error("Exception in pipelineworker, the pipeline stopped processing new events, please check your filter configuration and restart Logstash.",
-                  "exception" => e, "backtrace" => e.backtrace)
-    raise
-  end
-
-  # Take an array of events and send them to the correct output
-  def output_batch(batch)
-    # Build a mapping of { output_plugin => [events...]}
-    outputs_events = batch.reduce(Hash.new { |h, k| h[k] = [] }) do |acc, event|
-      # We ask the AST to tell us which outputs to send each event to
-      # Then, we stick it in the correct bin
-
-      # output_func should never return anything other than an Array but we have lots of legacy specs
-      # that monkeypatch it and return nil. We can deprecate  "|| []" after fixing these specs
-      outputs_for_event = output_func(event) || []
-
-      outputs_for_event.each { |output| acc[output] << event }
-      acc
-    end
-
-    # Now that we have our output to event mapping we can just invoke each output
-    # once with its list of events
-    outputs_events.each { |output, events| output.multi_receive(events) }
   end
 
   def set_current_thread_inflight_batch(batch)
@@ -421,9 +311,7 @@ module LogStash; class Pipeline
 
     before_stop.call if block_given?
 
-    @logger.info "Closing inputs"
     @inputs.each(&:do_stop)
-    @logger.info "Closed inputs"
   end # def shutdown
 
   # After `shutdown` is called from an external thread this is called from the main thread to
@@ -433,13 +321,14 @@ module LogStash; class Pipeline
     # Each worker thread will receive this exactly once!
     @worker_threads.each do |t|
       @logger.debug("Pushing shutdown", :thread => t)
-      @input_queue.push(LogStash::SHUTDOWN)
+      @input_queue.queue.put(com.logstash.pipeline.Constants.shutdownEvent)
     end
 
     @worker_threads.each do |t|
       @logger.debug("Shutdown waiting for worker thread #{t}")
       t.join
     end
+
 
     @filters.each(&:do_close)
     @outputs.each(&:do_close)
@@ -499,7 +388,7 @@ module LogStash; class Pipeline
   def flush
     if @flushing.compare_and_set(false, true)
       @logger.debug? && @logger.debug("Pushing flush onto pipeline")
-      @input_queue.push(LogStash::FLUSH)
+      @input_queue.push(com.logstash.pipeline.Constants.flushEvent)
     end
   end
 
