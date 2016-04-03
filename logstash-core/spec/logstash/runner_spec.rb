@@ -16,7 +16,6 @@ describe LogStash::Runner do
     allow(Cabin::Channel).to receive(:get).with(LogStash).and_return(channel)
   end
 
-
   context "argument parsing" do
     it "should run agent" do
       expect(Stud::Task).to receive(:new).once.and_return(nil)
@@ -55,5 +54,4 @@ describe LogStash::Runner do
       end
     end
   end
-
 end

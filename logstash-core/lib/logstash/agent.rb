@@ -11,7 +11,7 @@ require "logstash/pipeline"
 
 class LogStash::Agent < Clamp::Command
 
-  attr_reader :pipelines
+  attr_reader :pipelines, :config_loader
 
   DEFAULT_INPUT = "input { stdin { type => stdin } }"
   DEFAULT_OUTPUT = "output { stdout { codec => rubydebug } }"
@@ -58,6 +58,10 @@ class LogStash::Agent < Clamp::Command
   option "--verbose", :flag, I18n.t("logstash.agent.flag.verbose")
   option "--debug", :flag, I18n.t("logstash.agent.flag.debug")
 
+  option ["--debug-config"], :flag,
+         I18n.t("logstash.runner.flag.debug_config"),
+         :attribute_name => :debug_config, :default => false
+
   option ["-V", "--version"], :flag,
     I18n.t("logstash.agent.flag.version")
 
@@ -89,7 +93,6 @@ class LogStash::Agent < Clamp::Command
     @pipelines = {}
     @pipeline_settings ||= { :pipeline_id => "main" }
     @upgrade_mutex = Mutex.new
-    @config_loader = LogStash::Config::Loader.new(@logger)
   end
 
   def pipeline_workers=(pipeline_workers_value)
@@ -129,6 +132,8 @@ class LogStash::Agent < Clamp::Command
     require "logstash/pipeline"
     require "cabin" # gem 'cabin'
     require "logstash/plugin"
+
+    @config_loader = LogStash::Config::Loader.new(@logger, debug_config?)
 
     LogStash::ShutdownWatcher.unsafe_shutdown = unsafe_shutdown?
     LogStash::ShutdownWatcher.logger = @logger
@@ -180,7 +185,8 @@ class LogStash::Agent < Clamp::Command
 
     register_pipeline("main", @pipeline_settings.merge({
                           :config_string => config_string,
-                          :config_path => config_path
+                          :config_path => config_path,
+                          :debug_config => debug_config?
                           }))
 
     sigint_id = trap_sigint()
