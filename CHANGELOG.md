@@ -1,3 +1,9 @@
+## 2.2.4 (Apr 4, 2015)
+### general
+ - Hided sensitive data from from the log when shutting down a stale Logstash ([#4952](https://github.com/elastic/logstash/pull/4952)).
+ - Changed debug mode to not output the Configuration AST by default, added `--debug-config` flag to display the AST ([#4965](https://github.com/elastic/logstash/issues/4964)).
+ - Fixed the stop command of the Ubuntu init script ([#4940](https://github.com/elastic/logstash/issues/4940)
+
 ## 2.1.0 (Nov 24, 2015)
 ### general
  - Added ability to install and upgrade Logstash plugins without requiring internet connectivity (#2376). 
