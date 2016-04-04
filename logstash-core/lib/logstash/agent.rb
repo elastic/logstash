@@ -93,6 +93,7 @@ class LogStash::Agent < Clamp::Command
     @pipelines = {}
     @pipeline_settings ||= { :pipeline_id => "main" }
     @upgrade_mutex = Mutex.new
+    @config_loader = LogStash::Config::Loader.new(@logger)
   end
 
   def pipeline_workers=(pipeline_workers_value)
@@ -105,6 +106,11 @@ class LogStash::Agent < Clamp::Command
 
   def pipeline_batch_delay=(pipeline_batch_delay_value)
     @pipeline_settings[:pipeline_batch_delay] = validate_positive_integer(pipeline_batch_delay_value)
+  end
+
+  def debug_config=(debug_config)
+    @config_loader.debug_config = debug_config
+    @debug_config
   end
 
   def validate_positive_integer(str_arg)
@@ -132,8 +138,6 @@ class LogStash::Agent < Clamp::Command
     require "logstash/pipeline"
     require "cabin" # gem 'cabin'
     require "logstash/plugin"
-
-    @config_loader = LogStash::Config::Loader.new(@logger, debug_config?)
 
     LogStash::ShutdownWatcher.unsafe_shutdown = unsafe_shutdown?
     LogStash::ShutdownWatcher.logger = @logger
@@ -186,7 +190,7 @@ class LogStash::Agent < Clamp::Command
     register_pipeline("main", @pipeline_settings.merge({
                           :config_string => config_string,
                           :config_path => config_path,
-                          :debug_config => debug_config?
+                          :debug_config => @debug_config
                           }))
 
     sigint_id = trap_sigint()

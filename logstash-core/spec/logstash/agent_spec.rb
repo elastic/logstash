@@ -348,7 +348,7 @@ describe LogStash::Agent do
     let(:pipeline) { double("pipeline") }
 
     it "should set 'debug_config' to false by default" do
-      expect(LogStash::Pipeline).to receive(:new).with(pipeline_string, hash_including(:debug_config => false)).and_return(pipeline)
+      expect(LogStash::Pipeline).to receive(:new).and_return(pipeline)
       args = ["--debug", "-e", pipeline_string]
       subject.run(args)
 
@@ -356,7 +356,7 @@ describe LogStash::Agent do
     end
 
     it "should allow overriding debug_config" do
-      expect(LogStash::Pipeline).to receive(:new).with(pipeline_string, hash_including(:debug_config => true)).and_return(pipeline)
+      expect(LogStash::Pipeline).to receive(:new).and_return(pipeline)
       args = ["--debug", "--debug-config",  "-e", pipeline_string]
       subject.run(args)
 
