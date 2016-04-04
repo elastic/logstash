@@ -110,7 +110,7 @@ class LogStash::Agent < Clamp::Command
 
   def debug_config=(debug_config)
     @config_loader.debug_config = debug_config
-    @debug_config
+    @debug_config = true
   end
 
   def validate_positive_integer(str_arg)
@@ -190,7 +190,7 @@ class LogStash::Agent < Clamp::Command
     register_pipeline("main", @pipeline_settings.merge({
                           :config_string => config_string,
                           :config_path => config_path,
-                          :debug_config => @debug_config
+                          :debug_config => debug_config?
                           }))
 
     sigint_id = trap_sigint()
