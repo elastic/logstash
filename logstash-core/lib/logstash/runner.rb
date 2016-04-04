@@ -99,7 +99,7 @@ class LogStash::Runner < Clamp::Command
     :attribute_name => :web_api_http_port, :default => 9600
 
   option ["--allow-env"], :flag,
-    I18n.t("logstash.runner.flag.allow_env"),
+    I18n.t("logstash.runner.flag.allow-env"),
     :attribute_name => :allow_env, :default => false
 
   def pipeline_workers=(pipeline_workers_value)
