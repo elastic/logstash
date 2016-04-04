@@ -1,5 +1,5 @@
 [[breaking-changes]]
-== Breaking changes
+== Breaking Changes
 
 **Breaking changes in 2.2**
 Although 2.2 is fully compatible with configurations from older versions, there are some architectural 
@@ -70,3 +70,31 @@ Starting with the 2.0 release of Logstash, the default value of the `filter_work
 plugins is half of the available CPU cores, instead of 1. This change increases parallelism in filter execution for
 resource-intensive filtering operations. You can continue to use the `-w` flag to manually set the value for this option,
 as in previous releases.
+
+
+[float]
+=== Ruby Filter Breaking Changes
+
+With the migration to the Java Event (https://github.com/elastic/logstash/issues/4191[Issue 4191]), we have changed 
+how you can access internal data. The Event object no longer returns a reference to the data. Instead, it returns a
+copy. This might change how you do manipulation of your data, especially when working with nested hashes.
+When working with nested hashes, it’s recommended that you use the `fieldref` syntax instead of using multiple brackets.
+
+**Examples:**
+[source, js]
+----------------------------------
+filter { 
+  ruby {
+    codec => "event['uuid'] = event['uuid'].gsub(/b/, '')" # instead of using event['uuid'].gsub!(/b/, '')
+  }
+}
+----------------------------------
+
+[source, js]
+----------------------------------
+filter { 
+  ruby {
+    codec => "event['[product][price]'] = 10 # instead of using event['product']['price'] = 10
+  }
+}
+----------------------------------
