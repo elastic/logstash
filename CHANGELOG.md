@@ -1,3 +1,9 @@
+## 2.2.4 (Apr 4, 2015)
+### general
+ - Hided sensitive data from from the log when shutting down a stale Logstash ([#4952](https://github.com/elastic/logstash/pull/4952)).
+ - Changed debug mode to not output the Configuration AST by default, added `--debug-config` flag to display the AST ([#4965](https://github.com/elastic/logstash/issues/4964)).
+ - Fixed the stop command of the Ubuntu init script ([#4940](https://github.com/elastic/logstash/is
+
 ## 2.2.3 (Mar 31, 2016)
 ### general
  - Added ability to configure custom garbage collection log file using `$LS_LOG_DIR`.
