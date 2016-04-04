@@ -147,7 +147,7 @@ module LogStash class OutputDelegator
   end
 
   def do_close
-    @logger.debug("closing output delegator", :klass => self)
+    @logger.debug("closing output delegator", :klass => @klass)
 
     if @threadsafe
       @workers.each(&:do_close)
