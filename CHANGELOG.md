@@ -1,3 +1,17 @@
+## 2.3.1 (Apr 4, 2016)
+### general
+ - Fix a JRuby thread safety issue when using regular expression under multiple workers ([#4977](https://github.com/elastic/logstash/issues/4977)).
+ - Disable environment variables interpolation by default, this feature is now experimental to turn it on use the `--alow-env` flag ([#4958](https://github.com/elastic/logstash/issues/4958)).
+ - Hide sensitive data from from the log when shutting down a stale Logstash ([#4952](https://github.com/elastic/logstash/pull/4952)).
+ - Do not output the Configuration AST by default when running Logstash in debug mode, introduce `--debug-config` flag to display the AST ([#4965](https://github.com/elastic/logstash/issues/4964)).
+ - Fix the crash with the `--config-test` flag ([#4933](https://github.com/elastic/logstash/issues/4933)).
+ - Make filter conditionals work when running Logstash with the automatic configuration reloading. ([#4968](https://github.com/elastic/logstash/issues/4968)).
+ - Fix the stop command of the Ubuntu init script ([#4940](https://github.com/elastic/logstash/issues/4940)
+
+## input
+ - Beats 
+  - Do not use the identity map if we don't explicitly use the multiline codec ([#70](https://github.com/logstash-plugins/logstash-input-beats/pull/70)).
+
 ## 2.3.0 (Mar 29, 2016)
 ### general
  - Added dynamic config, a new feature to track config file for changes and restart the 
