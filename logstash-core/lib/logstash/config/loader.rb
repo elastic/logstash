@@ -1,7 +1,7 @@
 require "logstash/config/defaults"
 
 module LogStash; module Config; class Loader
-  attr_reader :debug_config
+  attr_accessor :debug_config
 
   def initialize(logger, debug_config=false)
     @logger = logger
