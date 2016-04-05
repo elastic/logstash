@@ -3,7 +3,7 @@
 
 source "https://rubygems.org"
 gem "logstash-core", "5.0.0.alpha1"
-gem "logstash-core-event-java", "5.0.0"
+gem "logstash-core-event-java", "5.0.0.alpha1"
 gem "logstash-core-plugin-api", "1.6.0"
 gem "file-dependencies", "0.1.6"
 gem "ci_reporter_rspec", "1.0.0", :group => :development
