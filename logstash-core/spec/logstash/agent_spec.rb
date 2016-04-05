@@ -58,5 +58,28 @@ describe LogStash::Agent do
       subject.configure_plugin_paths(multiple_paths)
     end
   end
-end
 
+  describe "debug_config" do
+    let(:pipeline_string) { "input {} output {}" }
+    let(:pipeline) { double("pipeline") }
+
+    before(:each) do
+      allow(pipeline).to receive(:run)
+    end
+    it "should set 'debug_config' to false by default" do
+      expect(LogStash::Pipeline).to receive(:new).
+        with(anything,hash_including(:debug_config => false)).
+        and_return(pipeline)
+      args = ["--debug", "-e", pipeline_string]
+      subject.run(args)
+    end
+
+    it "should allow overriding debug_config" do
+      expect(LogStash::Pipeline).to receive(:new).
+        with(anything, hash_including(:debug_config => true))
+        .and_return(pipeline)
+      args = ["--debug", "--debug-config",  "-e", pipeline_string]
+      subject.run(args)
+    end
+  end
+end
