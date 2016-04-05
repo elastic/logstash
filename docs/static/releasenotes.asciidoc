@@ -32,7 +32,7 @@
 [float]
 == Input Plugins
 
-*`Kafka`:
+*`Kafka`*:
 
 * Breaking: Added support for 0.9 consumer API. This plugin now supports SSL based encryption. 
   This release changed a lot of configuration, so it is not backward compatible. Also, this version will not 
