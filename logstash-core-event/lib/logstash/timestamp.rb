@@ -24,7 +24,13 @@ module LogStash
     end
 
     def self.at(*args)
-      Timestamp.new(::Time.at(*args))
+      epoch = args.first
+      if epoch.is_a?(BigDecimal)
+        # bug in JRuby prevents correcly parsing a BigDecimal fractional part, see https://github.com/elastic/logstash/issues/4565
+        Timestamp.new(::Time.at(epoch.to_i, epoch.frac.to_f * 1000000))
+      else
+        Timestamp.new(::Time.at(*args))
+      end
     end
 
     def self.parse(*args)
