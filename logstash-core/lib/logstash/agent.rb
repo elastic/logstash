@@ -9,6 +9,7 @@ require "logstash/pipeline"
 LogStash::Environment.load_locale!
 
 class LogStash::Agent < Clamp::Command
+
   DEFAULT_INPUT = "input { stdin { type => stdin } }"
   DEFAULT_OUTPUT = "output { stdout { codec => rubydebug } }"
 
@@ -52,6 +53,10 @@ class LogStash::Agent < Clamp::Command
   option "--quiet", :flag, I18n.t("logstash.agent.flag.quiet")
   option "--verbose", :flag, I18n.t("logstash.agent.flag.verbose")
   option "--debug", :flag, I18n.t("logstash.agent.flag.debug")
+
+  option "--debug-config", :flag,
+    I18n.t("logstash.runner.flag.debug_config"),
+    :attribute_name => :debug_config, :default => false
 
   option ["-V", "--version"], :flag,
     I18n.t("logstash.agent.flag.version")
@@ -263,6 +268,7 @@ class LogStash::Agent < Clamp::Command
   #
   # Log file stuff, plugin path checking, etc.
   def configure
+    @pipeline_settings[:debug_config] = debug_config?
     configure_logging(log_file)
     configure_plugin_paths(plugin_paths)
   end # def configure

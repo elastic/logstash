@@ -40,7 +40,7 @@ describe LogStash::Runner do
 
   describe "pipeline settings" do
     let(:pipeline_string) { "input { stdin {} } output { stdout {} }" }
-    let(:base_pipeline_settings) { { :pipeline_id => "base" } }
+    let(:base_pipeline_settings) { { :pipeline_id => "base", :debug_config => false } }
     let(:pipeline) { double("pipeline") }
 
     before(:each) do
