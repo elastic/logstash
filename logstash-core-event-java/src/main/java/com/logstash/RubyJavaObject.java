@@ -2,6 +2,7 @@ package com.logstash;
 
 import com.fasterxml.jackson.annotation.JsonValue;
 import org.jruby.Ruby;
+import org.jruby.RubyNil;
 import org.jruby.runtime.builtin.IRubyObject;
 
 import java.io.Serializable;
@@ -9,6 +10,7 @@ import java.io.Serializable;
 public class RubyJavaObject implements Serializable {
     private IRubyObject rubyValue;
     private Object javaValue;
+    private boolean is_ruby_nil;
 
     public RubyJavaObject(Object javaValue) {
         this.javaValue = javaValue;
@@ -17,6 +19,7 @@ public class RubyJavaObject implements Serializable {
 
     public RubyJavaObject(IRubyObject rubyValue) {
         this.rubyValue = rubyValue;
+        is_ruby_nil = (this.rubyValue instanceof RubyNil);
         this.javaValue = null;
     }
 
@@ -29,9 +32,25 @@ public class RubyJavaObject implements Serializable {
 
     @JsonValue
     public Object getJavaValue() {
+        if (is_ruby_nil) {
+            return null;
+        }
         if (javaValue == null) {
             javaValue = Javafier.deep(rubyValue);
         }
+        return javaValue;
+    }
+
+    public void update(final RubyJavaObject other) {
+        this.rubyValue = other.getRawRubyValue();
+        this.javaValue = other.getRawJavaValue();
+    }
+
+    protected IRubyObject getRawRubyValue() {
+        return rubyValue;
+    }
+
+    protected Object getRawJavaValue() {
         return javaValue;
     }
 
@@ -45,6 +64,17 @@ public class RubyJavaObject implements Serializable {
 
     public boolean hasJavaValue() {
         return null != javaValue;
+    }
+
+    public boolean isRubyNil() {  return is_ruby_nil; }
+
+    @Override
+    public String toString() {
+        final StringBuffer sb = new StringBuffer("RubyJavaObject{");
+        sb.append("rubyValue=").append(is_ruby_nil ? "nil" : rubyValue);
+        sb.append(", javaValue=").append(javaValue);
+        sb.append('}');
+        return sb.toString();
     }
 
     @Override
