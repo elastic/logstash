@@ -20,39 +20,20 @@ namespace "test" do
     require 'ci/reporter/rake/rspec_loader'
   end
 
-  def core_specs
-    # note that regardless if which logstash-core-event-* gem is live, we will always run the
-    # logstash-core-event specs since currently this is the most complete Event and Timestamp specs
-    # which actually defines the Event contract and should pass regardless of the actuall underlying
-    # implementation.
-    specs = ["spec/**/*_spec.rb", "logstash-core/spec/**/*_spec.rb", "logstash-core-event/spec/**/*_spec.rb"]
-
-    # figure if the logstash-core-event-java gem is loaded and if so add its specific specs in the core specs to run
-    begin
-      require "logstash-core-event-java/version"
-      specs << "logstash-core-event-java/spec/**/*_spec.rb"
-    rescue LoadError
-      # logstash-core-event-java gem is not live, ignore and skip specs
-    end
-
-    Rake::FileList[*specs]
-  end
-
   desc "run core specs"
-  task "core" => ["setup"] do
-    exit(RSpec::Core::Runner.run([core_specs]))
+  task "core" do
+    exit(LogStash::Test.run([LogStash::Test.core_specs]))
   end
 
   namespace "local" do
 
     desc "run core specs using local logstash-core code"
     task "core" do
-      rspec = LogStashHelpers::RSpec.new
-      rspec.cache_gemfiles
-      exit_code = 1
+      rspec = LogStash::Test.new.cache_gemfiles
+      exit_code = 1 # Something wrong happen
       begin
         LogStash::BundlerHelpers.update
-        exit_code = rspec.run([rspec.core_specs])
+        exit_code = LogStash::Test.run([LogStash::Test.core_specs])
       ensure
         rspec.restore_gemfiles
       end
@@ -62,17 +43,17 @@ namespace "test" do
 
 
   desc "run core specs in fail-fast mode"
-  task "core-fail-fast" => ["setup"] do
-    exit(RSpec::Core::Runner.run(["--fail-fast", core_specs]))
+  task "core-fail-fast" do
+    exit(LogStash::Test.run(["--fail-fast", LogStash::Test.core_specs]))
   end
 
   desc "run core specs on a single file"
   task "core-single-file", [:specfile] => ["setup"] do |t, args|
-    exit(RSpec::Core::Runner.run([Rake::FileList[args.specfile]]))
+    exit(LogStash::Test.run([Rake::FileList[args.specfile]]))
   end
 
   desc "run all installed plugins specs"
-  task "plugins" => ["setup"] do
+  task "plugins" do
     plugins_to_exclude = ENV.fetch("EXCLUDE_PLUGIN", "").split(",")
     # grab all spec files using the live plugins gem specs. this allows correclty also running the specs
     # of a local plugin dir added using the Gemfile :path option. before this, any local plugin spec would
@@ -88,7 +69,7 @@ namespace "test" do
     end.flatten.compact
 
     # "--format=documentation"
-    exit(RSpec::Core::Runner.run(["--order", "rand", test_files]))
+    exit(LogStash::Test.run(["--order", "rand", test_files]))
   end
 
   task "install-core" => ["bootstrap", "plugin:install-core", "plugin:install-development-dependencies"]

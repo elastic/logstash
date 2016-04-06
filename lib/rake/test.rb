@@ -59,13 +59,13 @@ module LogStash
 end
 
 
-module LogStashHelpers
+module LogStash
 
-  class RSpec
+  class Test
 
     attr_reader :gemfiles_cache
 
-    def setup
+    def self.setup
       require "bootstrap/environment"
       LogStash::Bundler.setup!({:without => [:build]})
       require "rspec/core/runner"
@@ -76,18 +76,19 @@ module LogStashHelpers
     def cache_gemfiles
       @gemfiles_cache = GemfileHelpers.new.load
       gemfiles_cache.point_core_gems_to_local_path
+      self
     end
 
     def restore_gemfiles
       gemfiles_cache.restore
     end
 
-    def run(specs)
+    def self.run(specs)
       setup
       ::RSpec::Core::Runner.run(specs)
     end
 
-    def core_specs
+    def self.core_specs
       # note that regardless if which logstash-core-event-* gem is live, we will always run the
       # logstash-core-event specs since currently this is the most complete Event and Timestamp specs
       # which actually defines the Event contract and should pass regardless of the actuall underlying
