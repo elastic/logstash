@@ -619,21 +619,6 @@ This feature is _experimental_, to enable it you will need to run logstash with 
 [cols="a,a,a"]
 |==================================
 |Logstash config source	|Environment 	|Logstash config result
-
-|
-[source,shell]
-----
-export TCP_PORT=12345
-----
-|
-[source,ruby]
-----
-input {
-  tcp {
-    port => 12345
-  }
-}
-----
 |
 [source,ruby]
 ----
