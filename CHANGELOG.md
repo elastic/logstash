@@ -1,7 +1,7 @@
 ## 2.3.1 (Apr 4, 2016)
 ### general
  - Fix a JRuby thread safety issue when using regular expression under multiple workers ([#4977](https://github.com/elastic/logstash/issues/4977)).
- - Disable environment variables interpolation by default, this feature is now experimental to turn it on use the `--alow-env` flag ([#4958](https://github.com/elastic/logstash/issues/4958)).
+ - Disable environment variables interpolation by default, this feature is now experimental to turn it on use the `--allow-env` flag ([#4958](https://github.com/elastic/logstash/issues/4958)).
  - Hide sensitive data from from the log when shutting down a stale Logstash ([#4952](https://github.com/elastic/logstash/pull/4952)).
  - Do not output the Configuration AST by default when running Logstash in debug mode, introduce `--debug-config` flag to display the AST ([#4965](https://github.com/elastic/logstash/issues/4964)).
  - Fix the crash with the `--config-test` flag ([#4933](https://github.com/elastic/logstash/issues/4933)).
