@@ -102,6 +102,4 @@ public class Valuefier {
         }
         return new RubyJavaObject(o);
     }
-
 }
-

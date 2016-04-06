@@ -152,7 +152,7 @@ public class Event implements Cloneable, Serializable {
             this.metadata_accessors = new Accessors(this.metadata);
         } else if (reference.startsWith(METADATA_BRACKETS)) {
             this.metadata_accessors.set(reference.substring(METADATA_BRACKETS.length()), value);
-        } else if (value instanceof RubyJavaObject) {
+        } else if (value instanceof List || value instanceof Map || value instanceof RubyJavaObject) {
             this.accessors.set(reference, value);
         } else {
             this.accessors.set(reference, new RubyJavaObject(value));
