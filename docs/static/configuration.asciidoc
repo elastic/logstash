@@ -643,7 +643,7 @@ This feature is _experimental_, to enable it you will need to run logstash with 
 
 ==== Overview
 
-* You can set environment variable references into Logstash plugins configuration using `${var}` or `$var`.
+* You can set environment variable references into Logstash plugins configuration using `${var}`.
 * Each reference will be replaced by environment variable value at Logstash startup.
 * The replacement is case-sensitive.
 * References to undefined variables raise a Logstash configuration error.
@@ -656,16 +656,6 @@ This feature is _experimental_, to enable it you will need to run logstash with 
 [cols="a,a,a"]
 |==================================
 |Logstash config source	|Environment 	|Logstash config result
-
-|
-[source,ruby]
-----
-input {
-  tcp {
-    port => "$TCP_PORT"
-  }
-}
-----
 
 |
 [source,shell]
