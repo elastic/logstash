@@ -2,6 +2,7 @@
 # most common CI systems can not know whats up with this tests.
 
 require "pluginmanager/util"
+require "rake/test"
 
 namespace "test" do
 
@@ -41,6 +42,24 @@ namespace "test" do
   task "core" => ["setup"] do
     exit(RSpec::Core::Runner.run([core_specs]))
   end
+
+  namespace "local" do
+
+    desc "run core specs using local logstash-core code"
+    task "core" do
+      rspec = LogStashHelpers::RSpec.new
+      rspec.cache_gemfiles
+      exit_code = 1
+      begin
+        LogStash::BundlerHelpers.update
+        exit_code = rspec.run([rspec.core_specs])
+      ensure
+        rspec.restore_gemfiles
+      end
+      exit(exit_code)
+    end
+  end
+
 
   desc "run core specs in fail-fast mode"
   task "core-fail-fast" => ["setup"] do
