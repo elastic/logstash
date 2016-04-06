@@ -9,10 +9,6 @@
   or `kill -1` signal to LS to reload the config file, and restart the pipeline ({lsissue}4513[Issue 4513]).
 * Added support to evaluate environment variables inside the Logstash config. You can also specify a 
   default if the variable is not defined. The syntax is `${myVar:default}` ({lsissue}3944[Issue 3944]).
-* Improved throughput performance across the board (up by 2x in some configs) by implementing Event 
-  representation in Java. Event is the main object that encapsulates data as it flows through 
-  Logstash and provides APIs for the plugins to perform processing. This change also enables 
-  faster serialization for future persistence work ({lsissue}4191[Issue 4191]).
 * Added ability to configure custom garbage collection log file using `$LS_LOG_DIR`.
 * Deprecated `bin/plugin` in favor of `bin/logstash-plugin`. In the next major version `bin/plugin` will 
   be removed to prevent `PATH` being polluted when other components of the Elastic stack are installed on 
