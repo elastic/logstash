@@ -144,7 +144,13 @@ module LogStash
       /^logstash-output-webhdfs$/,
       /^logstash-input-rackspace$/,
       /^logstash-output-rackspace$/,
-      /^logstash-input-dynamodb$/
+      /^logstash-input-dynamodb$/,
+      /^logstash-filter-language$/,
+      /^logstash-input-heroku$/,
+      /^logstash-output-google_cloud_storage$/,
+      /^logstash-input-journald$/,
+      /^logstash-input-log4j2$/,
+      /^logstash-codec-cloudtrail$/
     ])
 
 
