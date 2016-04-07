@@ -134,6 +134,7 @@ module LogStash
       /jms$/,
       /example$/,
       /drupal/i,
+      /^logstash-filter-language$/,
       /^logstash-output-logentries$/,
       /^logstash-input-jdbc$/,
       /^logstash-output-newrelic$/,
