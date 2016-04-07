@@ -1,7 +1,7 @@
 namespace "package" do
 
   task "bundle" do
-    system("bin/plugin", "package")
+    system("bin/plugin", "pack")
     raise(RuntimeError, $!.to_s) unless $?.success?
   end
 
