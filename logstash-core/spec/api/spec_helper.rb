@@ -97,7 +97,7 @@ end
 # this could be just included in the test and the runner will be
 # started managed for all tests.
 ##
-module LogStash; module RSpec; module RunnerConfig
+module LogStash; module Rspec; module RunnerConfig
   def self.included(klass)
     klass.before(:all) do
       LogStashRunner.instance.start
