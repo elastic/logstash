@@ -1,4 +1,5 @@
 require_relative "default_plugins"
+require 'rubygems'
 
 namespace "plugin" do
 
@@ -88,7 +89,10 @@ namespace "plugin" do
 
     puts("[plugin:build-local-core-gem] Building #{File.join(path, name)}.gemspec")
 
-    system("cd #{path}; gem build #{name}.gemspec")
+    Dir.chdir(path) do
+      spec = Gem::Specification.load("#{name}.gemspec")
+      Gem::Package.build(spec)
+    end
 
     task.reenable # Allow this task to be run again
   end
