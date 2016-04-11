@@ -1,6 +1,6 @@
 namespace "vendor" do
   VERSIONS = {
-    "jruby" => { "version" => "1.7.23", "sha1" => "2b5e796feeed2bcfab02f8bf2ff3d77ca318e310" },
+    "jruby" => { "version" => "1.7.25-SNAPSHOT", "sha1" => "c831fd8c353899d8e5964729931f599e0c1104cf" },
   }
 
   def vendor(*args)
@@ -73,7 +73,8 @@ namespace "vendor" do
       /lib\/ruby\/shared\/rdoc/,
     ])
 
-    url = "http://jruby.org.s3.amazonaws.com/downloads/#{version}/jruby-bin-#{version}.tar.gz"
+    # url = "http://jruby.org.s3.amazonaws.com/downloads/#{version}/jruby-bin-#{version}.tar.gz"
+    url = "http://ci.jruby.org/snapshots/jruby-1_7/jruby-bin-#{version}.tar.gz"
     download = file_fetch(url, info["sha1"])
 
     parent = vendor(name).gsub(/\/$/, "")
