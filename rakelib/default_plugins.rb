@@ -1,142 +1,7 @@
+require "logstash/json"
+
 module LogStash
   module RakeLib
-
-    # plugins included by default in the logstash distribution
-    DEFAULT_PLUGINS = %w(
-      logstash-input-heartbeat
-      logstash-codec-collectd
-      logstash-output-xmpp
-      logstash-codec-dots
-      logstash-codec-edn
-      logstash-codec-edn_lines
-      logstash-codec-fluent
-      logstash-codec-es_bulk
-      logstash-codec-graphite
-      logstash-codec-json
-      logstash-codec-json_lines
-      logstash-codec-line
-      logstash-codec-msgpack
-      logstash-codec-multiline
-      logstash-codec-netflow
-      logstash-codec-plain
-      logstash-codec-rubydebug
-      logstash-filter-clone
-      logstash-filter-csv
-      logstash-filter-date
-      logstash-filter-dns
-      logstash-filter-drop
-      logstash-filter-fingerprint
-      logstash-filter-geoip
-      logstash-filter-grok
-      logstash-filter-json
-      logstash-filter-kv
-      logstash-filter-metrics
-      logstash-filter-mutate
-      logstash-filter-ruby
-      logstash-filter-sleep
-      logstash-filter-split
-      logstash-filter-syslog_pri
-      logstash-filter-throttle
-      logstash-filter-urldecode
-      logstash-filter-useragent
-      logstash-filter-uuid
-      logstash-filter-xml
-      logstash-input-couchdb_changes
-      logstash-input-elasticsearch
-      logstash-input-exec
-      logstash-input-file
-      logstash-input-ganglia
-      logstash-input-gelf
-      logstash-input-generator
-      logstash-input-graphite
-      logstash-input-http
-      logstash-input-http_poller
-      logstash-input-imap
-      logstash-input-irc
-      logstash-input-jdbc
-      logstash-input-log4j
-      logstash-input-lumberjack
-      logstash-input-pipe
-      logstash-input-rabbitmq
-      logstash-input-redis
-      logstash-input-s3
-      logstash-input-snmptrap
-      logstash-input-sqs
-      logstash-input-stdin
-      logstash-input-syslog
-      logstash-input-tcp
-      logstash-input-twitter
-      logstash-input-udp
-      logstash-input-unix
-      logstash-input-xmpp
-      logstash-input-kafka
-      logstash-input-beats
-      logstash-output-cloudwatch
-      logstash-output-csv
-      logstash-output-elasticsearch
-      logstash-output-file
-      logstash-output-graphite
-      logstash-output-http
-      logstash-output-irc
-      logstash-output-kafka
-      logstash-output-nagios
-      logstash-output-null
-      logstash-output-pagerduty
-      logstash-output-pipe
-      logstash-output-rabbitmq
-      logstash-output-redis
-      logstash-output-s3
-      logstash-output-sns
-      logstash-output-sqs
-      logstash-output-statsd
-      logstash-output-stdout
-      logstash-output-tcp
-      logstash-output-udp
-      logstash-output-webhdfs
-    )
-
-    # plugins required to run the logstash core specs
-    CORE_SPECS_PLUGINS = %w(
-      logstash-filter-clone
-      logstash-filter-mutate
-      logstash-filter-multiline
-      logstash-input-generator
-      logstash-input-stdin
-      logstash-input-tcp
-      logstash-output-stdout
-    )
-
-    TEST_JAR_DEPENDENCIES_PLUGINS = %w(
-      logstash-input-kafka
-    )
-
-    TEST_VENDOR_PLUGINS = %w(
-      logstash-codec-collectd
-    )
-
-    ALL_PLUGINS_SKIP_LIST = Regexp.union([
-      /^logstash-filter-yaml$/,
-      /example$/,
-      /drupal/i,
-      /^logstash-output-logentries$/,
-      /^logstash-input-jdbc$/,
-      /^logstash-output-newrelic$/,
-      /^logstash-output-slack$/,
-      /^logstash-input-neo4j$/,
-      /^logstash-output-neo4j$/,
-      /^logstash-input-perfmon$/,
-      /^logstash-output-webhdfs$/,
-      /^logstash-input-rackspace$/,
-      /^logstash-output-rackspace$/,
-      /^logstash-input-dynamodb$/,
-      /^logstash-filter-language$/,
-      /^logstash-input-heroku$/,
-      /^logstash-output-google_cloud_storage$/,
-      /^logstash-input-journald$/,
-      /^logstash-input-log4j2$/,
-      /^logstash-codec-cloudtrail$/
-    ])
-
 
     # @return [Array<String>] list of all plugin names as defined in the logstash-plugins github organization, minus names that matches the ALL_PLUGINS_SKIP_LIST
     def self.fetch_all_plugins
@@ -152,5 +17,24 @@ module LogStash
       require 'gems'
       Gems.info(plugin) != "This rubygem could not be found."
     end
+
+    def self.fetch_plugins_for(type)
+      LogStash::Json.load(::File.read("rakelib/plugins-metadata.json")).select do |_, metadata|
+        metadata[type]
+      end.keys
+    end
+
+    # plugins included by default in the logstash distribution
+    DEFAULT_PLUGINS = self.fetch_plugins_for("default-plugins").freeze
+
+    # plugins required to run the logstash core specs
+    CORE_SPECS_PLUGINS = self.fetch_plugins_for("core-specs").freeze
+
+    TEST_JAR_DEPENDENCIES_PLUGINS = self.fetch_plugins_for("test-jar-dependencies").freeze
+
+    TEST_VENDOR_PLUGINS = self.fetch_plugins_for("test-vendor-plugin").freeze
+
+    ALL_PLUGINS_SKIP_LIST = Regexp.union(self.fetch_plugins_for("skip-list")).freeze
+
   end
 end
