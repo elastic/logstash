@@ -88,10 +88,40 @@ should kept to the minimum.
 
 Every plugin should have a changelog (CHANGELOG.md).  If not, please create one.  When changes are made to a plugin, make sure to include a changelog entry under the respective version to document the change.  The changelog should be easily understood from a user point of view.  As we iterate and release plugins rapidly, users use the changelog as a mechanism for deciding whether to update.
 
-Changes that are not user facing should be tagged as “Internal: ”.  For example:
+Changes that are not user facing should be tagged as `internal:`.  For example:
 
-* "Internal: Refactored specs for better testing"
-* "Default timeout configuration changed from 10s to 5s"
+[source,markdown]
+ - internal: Refactored specs for better testing
+ - config: Default timeout configuration changed from 10s to 5s
+
+===== Detailed format of CHANGELOG.md
+
+Sharing a similar format of CHANGELOG.md in plugins ease readability for users.
+Please see following annotated example and see a concrete example in https://raw.githubusercontent.com/logstash-plugins/logstash-filter-date/master/CHANGELOG.md[logstash-filter-date].
+
+[source,markdown]
+----
+## 1.0.x                              // <1> <2>
+ - change description                 // <3>
+ - tag: change description            // <3> <4>
+ - tag1,tag2: change description      // <3> <5>
+ - tag: Multi-line description        // <3> <6>
+   must be indented and can use
+   additional markdown syntax
+                                      // <7>
+## 1.0.0                              // <8>
+[...]
+
+----
+<1> Latest version is the first line of CHANGELOG.md
+<2> Each version identifier should be a level-1 section title using `##`
+<3> One change description is described as a list item using a dash `-` aligned under the version identifier
+<4> One change can be tagged by a word and suffixed by `:`. +
+    Common tags are `bugfix`, `feature`, `doc`, `test` or `internal`.
+<5> One change can have multiple tags separated by a comma and suffixed by `:`
+<6> A multi-line change description must be properly indented
+<7> Please take care to *separate versions with an empty line*
+<8> Previous version identifier
 
 ==== Continuous Integration
 
