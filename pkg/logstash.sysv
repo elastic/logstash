@@ -127,6 +127,12 @@ status() {
   fi
 }
 
+reload() {
+  if status ; then
+    kill -HUP `cat "$pidfile"`
+  fi
+}
+
 force_stop() {
   if status ; then
     stop
@@ -175,6 +181,7 @@ case "$1" in
     fi
     exit $code
     ;;
+  reload) reload ;;
   restart)
 
     quiet configtest
@@ -190,7 +197,7 @@ case "$1" in
     exit $?
     ;;
   *)
-    echo "Usage: $SCRIPTNAME {start|stop|force-stop|status|restart|configtest}" >&2
+    echo "Usage: $SCRIPTNAME {start|stop|force-stop|status|reload|restart|configtest}" >&2
     exit 3
   ;;
 esac
