@@ -2,74 +2,61 @@
 # most common CI systems can not know whats up with this tests.
 
 require "pluginmanager/util"
+require "rake/rspec"
 
 namespace "test" do
 
-  task "setup" do
-    # Need to be run here as because if run aftewarse (after the bundler.setup task) then the report got wrong
-    # numbers and misses files. There is an issue with our setup! method as this does not happen with the regular
-    # bundler.setup used in regular bundler flows.
-    Rake::Task["test:setup-simplecov"].invoke if ENV['COVERAGE']
-
-    require "bootstrap/environment"
-    LogStash::Bundler.setup!({:without => [:build]})
-
-    require "rspec/core/runner"
-    require "rspec"
-    require 'ci/reporter/rake/rspec_loader'
+  desc "run core specs, using the local logstash-core gems"
+  task "core" do
+    exit(LogStash::RSpec.run_with_local_core_gems([LogStash::RSpec.core_specs]))
   end
 
-  def core_specs
-    # note that regardless if which logstash-core-event-* gem is live, we will always run the
-    # logstash-core-event specs since currently this is the most complete Event and Timestamp specs
-    # which actually defines the Event contract and should pass regardless of the actuall underlying
-    # implementation.
-    specs = ["spec/**/*_spec.rb", "logstash-core/spec/**/*_spec.rb", "logstash-core-event/spec/**/*_spec.rb"]
+  desc "run core specs in fail-fast mode, using the local logstash-core gems"
+  task "core-fail-fast" do
+    exit(LogStash::RSpec.run_with_local_core_gems(["--fail-fast", LogStash::RSpec.core_specs]))
+  end
 
-    # figure if the logstash-core-event-java gem is loaded and if so add its specific specs in the core specs to run
-    begin
-      require "logstash-core-event-java/version"
-      specs << "logstash-core-event-java/spec/**/*_spec.rb"
-    rescue LoadError
-      # logstash-core-event-java gem is not live, ignore and skip specs
+  desc "run core specs on a single file, using the local logstash-core gems"
+  task "core-single-file", [:specfile] do |t, args|
+    exit(LogStash::RSpec.run_with_local_core_gems([Rake::FileList[args.specfile]]))
+  end
+
+  namespace "released" do
+
+    desc "run core specs, using the released logstash-core gem"
+    task "core" do
+      exit(LogStash::RSpec.run([LogStash::RSpec.core_specs]))
     end
 
-    Rake::FileList[*specs]
-  end
+    desc "run core specs in fail-fast mode, using the released logstash-core gem"
+    task "core-fail-fast" do
+      exit(LogStash::RSpec.run(["--fail-fast", LogStash::RSpec.core_specs]))
+    end
 
-  desc "run core specs"
-  task "core" => ["setup"] do
-    exit(RSpec::Core::Runner.run([core_specs]))
-  end
+    desc "run core specs on a single file, using the released logstash-core gem"
+    task "core-single-file", [:specfile] => ["setup"] do |t, args|
+      exit(LogStash::RSpec.run([Rake::FileList[args.specfile]]))
+    end
 
-  desc "run core specs in fail-fast mode"
-  task "core-fail-fast" => ["setup"] do
-    exit(RSpec::Core::Runner.run(["--fail-fast", core_specs]))
-  end
-
-  desc "run core specs on a single file"
-  task "core-single-file", [:specfile] => ["setup"] do |t, args|
-    exit(RSpec::Core::Runner.run([Rake::FileList[args.specfile]]))
-  end
-
-  desc "run all installed plugins specs"
-  task "plugins" => ["setup"] do
-    plugins_to_exclude = ENV.fetch("EXCLUDE_PLUGIN", "").split(",")
-    # grab all spec files using the live plugins gem specs. this allows correclty also running the specs
-    # of a local plugin dir added using the Gemfile :path option. before this, any local plugin spec would
-    # not be run because they were not under the vendor/bundle/jruby/1.9/gems path
-    test_files = LogStash::PluginManager.find_plugins_gem_specs.map do |spec|
-      if plugins_to_exclude.size > 0
-        if !plugins_to_exclude.include?(Pathname.new(spec.gem_dir).basename.to_s)
+    desc "run all installed plugins specs, using the released logstash-code gem"
+    task "plugins" do
+      plugins_to_exclude = ENV.fetch("EXCLUDE_PLUGIN", "").split(",")
+      # grab all spec files using the live plugins gem specs. this allows correclty also running the specs
+      # of a local plugin dir added using the Gemfile :path option. before this, any local plugin spec would
+      # not be run because they were not under the vendor/bundle/jruby/1.9/gems path
+      test_files = LogStash::PluginManager.find_plugins_gem_specs.map do |spec|
+        if plugins_to_exclude.size > 0
+          if !plugins_to_exclude.include?(Pathname.new(spec.gem_dir).basename.to_s)
+            Rake::FileList[File.join(spec.gem_dir, "spec/{input,filter,codec,output}s/*_spec.rb")]
+          end
+        else
           Rake::FileList[File.join(spec.gem_dir, "spec/{input,filter,codec,output}s/*_spec.rb")]
         end
-      else
-        Rake::FileList[File.join(spec.gem_dir, "spec/{input,filter,codec,output}s/*_spec.rb")]
-      end
-    end.flatten.compact
+      end.flatten.compact
 
-    # "--format=documentation"
-    exit(RSpec::Core::Runner.run(["--order", "rand", test_files]))
+      # "--format=documentation"
+      exit(LogStash::RSpec.run(["--order", "rand", test_files]))
+    end
   end
 
   task "install-core" => ["bootstrap", "plugin:install-core", "plugin:install-development-dependencies"]
@@ -85,23 +72,7 @@ namespace "test" do
   # Setup simplecov to group files per functional modules, like this is easier to spot places with small coverage
   task "setup-simplecov" do
     require "simplecov"
-    SimpleCov.start do
-      # Skip non core related directories and files.
-      ["vendor/", "spec/", "bootstrap/rspec", "Gemfile", "gemspec"].each do |pattern|
-        add_filter pattern
-      end
-
-      add_group "bootstrap", "bootstrap/" # This module is used during bootstraping of LS
-      add_group "plugin manager", "pluginmanager/" # Code related to the plugin manager
-      add_group "core" do |src_file| # The LS core codebase
-        /logstash\/\w+.rb/.match(src_file.filename)
-      end
-      add_group "core-util", "logstash/util" # Set of LS utils module
-      add_group "core-config", "logstash/config" # LS Configuration modules
-      add_group "core-patches", "logstash/patches" # Patches used to overcome known issues in dependencies.
-      # LS Core plugins code base.
-      add_group "core-plugins", [ "logstash/codecs", "logstash/filters", "logstash/outputs", "logstash/inputs" ]
-    end
+ 
     task.reenable
   end
 
@@ -112,7 +83,7 @@ namespace "test" do
     integration_path = File.join(source, "integration_run")
     FileUtils.rm_rf(integration_path)
 
-    exit(RSpec::Core::Runner.run([Rake::FileList["integration/**/*_spec.rb"]]))
+    exit(LogStash::RSpec.run([Rake::FileList["integration/**/*_spec.rb"]]))
   end
 
   namespace "integration" do
@@ -124,7 +95,7 @@ namespace "test" do
       FileUtils.mkdir_p(integration_path)
 
       puts "[integration_spec] configuring local environment for running test in #{integration_path}, if you want to change this behavior delete the directory."
-      exit(RSpec::Core::Runner.run([Rake::FileList["integration/**/*_spec.rb"]]))
+      exit(LogStash::RSpec.run([Rake::FileList["integration/**/*_spec.rb"]]))
     end
   end
 end
