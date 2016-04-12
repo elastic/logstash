@@ -65,7 +65,7 @@ by running:
 [source,sh]
 [subs="attributes"]
 ----------------------------------
-bin/plugin install logstash-{plugintype}-mypluginname
+bin/logstash-plugin install logstash-{plugintype}-mypluginname
 ----------------------------------
 
 ==== Contributing your source code to https://github.com/logstash-plugins[logstash-plugins]
