@@ -1,7 +1,7 @@
-# logstash - agent instance
+# logstash instance
 #
 
-description     "logstash agent"
+description     "logstash"
 
 start on virtual-filesystems
 stop on runlevel [06]
