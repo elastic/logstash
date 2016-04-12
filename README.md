@@ -98,9 +98,9 @@ You can install the default set of plugins included in the logstash package or a
     rake test:install-all
 
 ---
-Note that if a plugin is installed using the plugin manager `bin/plugin install ...` do not forget to also install the plugins development dependencies using the following command after the plugin installation:
+Note that if a plugin is installed using the plugin manager `bin/logstash-plugin install ...` do not forget to also install the plugins development dependencies using the following command after the plugin installation:
 
-    bin/plugin install --development
+    bin/logstash-plugin install --development
 
 ## Developing plugins
 

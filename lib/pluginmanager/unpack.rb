@@ -14,7 +14,7 @@ class LogStash::PluginManager::Unpack < LogStash::PluginManager::PackCommand
     validate_cache_location
     archive_manager.extract(package_file, LogStash::Environment::CACHE_PATH)
     puts("Unpacked at #{LogStash::Environment::CACHE_PATH}")
-    puts("The unpacked plugins can now be installed in local-only mode using bin/plugin install --local [plugin name]")
+    puts("The unpacked plugins can now be installed in local-only mode using bin/logstash-plugin install --local [plugin name]")
   end
 
   private
