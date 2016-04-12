@@ -16,7 +16,7 @@ module LogStash
     BUNDLE_DIR = ::File.join(LOGSTASH_HOME, "vendor", "bundle")
     GEMFILE_PATH = ::File.join(LOGSTASH_HOME, "Gemfile")
     LOCAL_GEM_PATH = ::File.join(LOGSTASH_HOME, 'vendor', 'local_gems')
-    CACHE_PATH = File.join(LOGSTASH_HOME, "vendor", "cache")
+    CACHE_PATH = ::File.join(LOGSTASH_HOME, "vendor", "cache")
 
     # @return [String] the ruby version string bundler uses to craft its gem path
     def gem_ruby_version
