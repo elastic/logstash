@@ -8,7 +8,7 @@
 # Set a home directory
 #LS_HOME=/var/lib/logstash
 
-# Arguments to pass to logstash agent
+# Arguments to pass to logstash
 #LS_OPTS=""
 
 # Arguments to pass to java
