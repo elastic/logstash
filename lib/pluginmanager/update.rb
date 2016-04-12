@@ -9,7 +9,7 @@ class LogStash::PluginManager::Update < LogStash::PluginManager::Command
 
   parameter "[PLUGIN] ...", "Plugin name(s) to upgrade to latest version", :attribute_name => :plugins_arg
   option "--[no-]verify", :flag, "verify plugin validity before installation", :default => true
-  option "--local", :flag, "force local-only plugin update. see bin/plugin package|unpack", :default => false
+  option "--local", :flag, "force local-only plugin update. see bin/logstash-plugin package|unpack", :default => false
 
   def execute
     local_gems = gemfile.locally_installed_gems

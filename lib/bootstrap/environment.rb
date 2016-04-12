@@ -57,7 +57,7 @@ module LogStash
 end
 
 
-# when launched as a script, not require'd, (currently from bin/logstash and bin/plugin) the first
+# when launched as a script, not require'd, (currently from bin/logstash and bin/logstash-plugin) the first
 # argument is the path of a Ruby file to require and a LogStash::Runner class is expected to be
 # defined and exposing the LogStash::Runner#main instance method which will be called with the current ARGV
 # currently lib/logstash/runner.rb and lib/pluginmanager/main.rb are called using this.

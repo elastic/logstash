@@ -20,18 +20,18 @@ all available plugins. You can distribute this bundle to all nodes without furth
 Working with offline plugins requires you to create an _offline package_, which is a compressed file that contains all of
 the plugins your offline Logstash installation requires, along with the dependencies for those plugins.
 
-. Create the offline package with the `bin/plugin pack` subcommand.
+. Create the offline package with the `bin/logstash-plugin pack` subcommand.
 +
-When you run the `bin/plugin pack` subcommand, Logstash creates a compressed bundle that contains all of the currently
+When you run the `bin/logstash-plugin pack` subcommand, Logstash creates a compressed bundle that contains all of the currently
 installed plugins and the dependencies for those plugins. By default, the compressed bundle is a GZipped TAR file when you
-run the `bin/plugin pack` subcommand on a UNIX machine. By default, when you run the `bin/plugin pack` subcommand on a
+run the `bin/logstash-plugin pack` subcommand on a UNIX machine. By default, when you run the `bin/logstash-plugin pack` subcommand on a
 Windows machine, the compressed bundle is a ZIP file. See <<managing-packs,Managing Plugin Packs>> for details on changing
 these default behaviors.
 +
 NOTE: Downloading all dependencies for the specified plugins may take some time, depending on the plugins listed.
 
 . Move the compressed bundle to the offline machines that are the source for offline plugin installation, then use the
-`bin/plugin unpack` subcommand to make the packaged plugins available.
+`bin/logstash-plugin unpack` subcommand to make the packaged plugins available.
 
 [float]
 === Install or Update a local plugin
@@ -41,24 +41,24 @@ examples:
 
 .Installing a local plugin
 ============
-`bin/plugin install --local logstash-input-jdbc`
+`bin/logstash-plugin install --local logstash-input-jdbc`
 ============
 
 .Updating a local plugin
 ============
-`bin/plugin update --local logstash-input-jdbc`
+`bin/logstash-plugin update --local logstash-input-jdbc`
 ============
 
 .Updating all local plugins in one command
 ============
-`bin/plugin update --local`
+`bin/logstash-plugin update --local`
 ============
 
 [float]
 [[managing-packs]]
 === Managing Plugin Packs
 
-The `pack` and `unpack` subcommands for `bin/plugin` take the following options:
+The `pack` and `unpack` subcommands for `bin/logstash-plugin` take the following options:
 
 [horizontal]
 `--tgz`:: Generate the offline package as a GZipped TAR file. The default behavior on UNIX systems.
