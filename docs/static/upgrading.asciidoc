@@ -69,7 +69,7 @@ These plugin updates are available for Logstash 2.0. To upgrade to the latest ve
 plugins, the command is:
 
 [source,shell]
-bin/plugin update <plugin_name>
+bin/logstash-plugin update <plugin_name>
 
 **Multiline Filter:** If you are using the Multiline Filter in your configuration and upgrade to Logstash 2.0,
 you will get an error. Make sure to explicitly set the number of filter workers (`-w`) to `1`. You can set the number
