@@ -86,7 +86,7 @@ module LogStash::Config::Mixin
         extra = opts[:obsolete].is_a?(String) ? opts[:obsolete] : ""
         extra.gsub!("%PLUGIN%", self.class.config_name)
         raise LogStash::ConfigurationError,
-          I18n.t("logstash.agent.configuration.obsolete", :name => name,
+          I18n.t("logstash.runner.configuration.obsolete", :name => name,
                  :plugin => self.class.config_name, :extra => extra)
       end
     end
