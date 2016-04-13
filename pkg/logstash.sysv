@@ -36,12 +36,12 @@ LS_CONF_DIR=/etc/logstash/conf.d
 LS_OPEN_FILES=16384
 LS_NICE=19
 LS_OPTS=""
-
+LS_PROG=/opt/logstash/bin/logstash
 
 [ -r /etc/default/$name ] && . /etc/default/$name
 [ -r /etc/sysconfig/$name ] && . /etc/sysconfig/$name
 
-program=/opt/logstash/bin/logstash
+program="$LS_PROG"
 args="agent -f ${LS_CONF_DIR} -l ${LS_LOG_FILE} ${LS_OPTS}"
 
 quiet() {
