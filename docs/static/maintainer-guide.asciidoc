@@ -114,7 +114,7 @@ Please see following annotated example and see a concrete example in https://raw
 
 ----
 <1> Latest version is the first line of CHANGELOG.md
-<2> Each version identifier should be a level-1 section title using `##`
+<2> Each version identifier should be a level-2 header using `##`
 <3> One change description is described as a list item using a dash `-` aligned under the version identifier
 <4> One change can be tagged by a word and suffixed by `:`. +
     Common tags are `bugfix`, `feature`, `doc`, `test` or `internal`.
