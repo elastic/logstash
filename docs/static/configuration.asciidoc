@@ -387,7 +387,7 @@ For example, the following conditional uses the mutate filter to remove the fiel
 ----------------------------------
 filter {
   if [action] == "login" {
-    mutate { remove => "secret" }
+    mutate { remove_field => "secret" }
   }
 }
 ----------------------------------
