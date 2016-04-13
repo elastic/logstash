@@ -124,9 +124,15 @@ module LogStash
         value.join(",")
       when Hash
         LogStash::Json.dump(value)
+      when Numeric
+        value
+      when TrueClass
+        value
+      when FalseClass
+        value
       else
-        # Make sure we dont work on the refence of the value
-        # The Java Event implementation was always returning a string.
+        # If we dont know how to deal with the type we return a string
+        # to make sure we don't return a reference.
         "#{value}"
       end
     end
