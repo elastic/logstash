@@ -82,12 +82,40 @@ describe LogStash::Event do
         expect(event["reference_test"]).not_to eq(data)
       end
 
-      it "should not return a Fixnum reference" do
+      # TODO: This was a bug and should only be true in the context of 2.3.X
+      # see https://github.com/elastic/logstash/issues/5114 for more details.
+      it "should return a Fixnum" do
         data = 1
         event = LogStash::Event.new({ "reference" => data })
         LogStash::Util::Decorators.add_fields({"reference_test" => "%{reference}"}, event, "dummy-plugin")
-        data += 41
-        expect(event["reference_test"]).to eq("1")
+        expect(event["reference_test"]).to eq(1)
+      end
+
+      # TODO: This was a bug and should only be true in the context of 2.3.X
+      # see https://github.com/elastic/logstash/issues/5114 for more details.
+      it "should return a Float" do
+        data = 1.999
+        event = LogStash::Event.new({ "reference" => data })
+        LogStash::Util::Decorators.add_fields({"reference_test" => "%{reference}"}, event, "dummy-plugin")
+        expect(event["reference_test"]).to eq(1.999)
+      end
+
+      # TODO: This was a bug and should only be true in the context of 2.3.X
+      # see https://github.com/elastic/logstash/issues/5114 for more details.
+      it "should return true" do
+        data = true
+        event = LogStash::Event.new({ "reference" => data })
+        LogStash::Util::Decorators.add_fields({"reference_test" => "%{reference}"}, event, "dummy-plugin")
+        expect(event["reference_test"]).to be_kind_of(TrueClass)
+      end
+
+      # TODO: This was a bug and should only be true in the context of 2.3.X
+      # see https://github.com/elastic/logstash/issues/5114 for more details.
+      it "should return false" do
+        data = false
+        event = LogStash::Event.new({ "reference" => data })
+        LogStash::Util::Decorators.add_fields({"reference_test" => "%{reference}"}, event, "dummy-plugin")
+        expect(event["reference_test"]).to be_kind_of(FalseClass)
       end
 
       it "should report a unix timestamp for %{+%s}" do
