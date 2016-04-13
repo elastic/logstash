@@ -25,10 +25,10 @@ describe LogStash::Registry do
     end
 
     it "should raise an error if can not find the plugin class" do
-      expect(LogStash::Registry::Plugin).to receive(:new).with("input", "elasticsearch").and_return(plugin)
-      expect(plugin).to receive(:path).and_return("logstash/input/elasticsearch").twice
+      expect(LogStash::Registry::Plugin).to receive(:new).with("input", "elastic").and_return(plugin)
+      expect(plugin).to receive(:path).and_return("logstash/input/elastic").twice
       expect(plugin).to receive(:installed?).and_return(true)
-      expect { registry.lookup("input", "elasticsearch") }.to raise_error(LoadError)
+      expect { registry.lookup("input", "elastic") }.to raise_error(LoadError)
     end
 
     it "should load from registry is already load" do
@@ -49,7 +49,7 @@ describe LogStash::Registry do
 
   context "when plugin is not installed and not defined" do
     it "should raise an error" do
-      expect { registry.lookup("input", "elasticsearch") }.to raise_error(LoadError)
+      expect { registry.lookup("input", "elastic") }.to raise_error(LoadError)
     end
   end
 
