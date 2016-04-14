@@ -28,3 +28,4 @@ rspec.xml
 .vendor
 integration_run
 .mvn/
+vagrant/.vagrant/

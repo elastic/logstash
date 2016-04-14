@@ -1,0 +1,48 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+Vagrant.configure(2) do |config|
+
+  config.vm.define "logstash_test_ubuntu", primary: true do |ls|
+    ls.vm.box = "ubuntu/trusty64"
+
+    ls.vm.provider "virtualbox" do |v|
+      v.memory = 4096
+      v.cpus = 4
+    end
+
+    ls.vm.provision :shell do |sh|
+      sh.path = "sys/ubuntu/bootstrap.sh"
+      sh.privileged = true
+    end
+
+    ls.vm.provision :shell do |sh|
+      sh.path = "sys/ubuntu/user_bootstrap.sh"
+      sh.privileged = false
+    end
+
+    ls.vm.network "forwarded_port", guest: 9600, host: 9600
+  end
+
+  config.vm.define "logstash_test_centos" do |ls|
+    ls.vm.box = "elastic/centos-6-x86_64"
+
+    ls.vm.provider "virtualbox" do |v|
+      v.memory = 4096
+      v.cpus = 4
+    end
+
+    ls.vm.provision :shell do |sh|
+      sh.path = "sys/centos/bootstrap.sh"
+      sh.privileged = true
+    end
+
+    ls.vm.provision :shell do |sh|
+      sh.path = "sys/centos/user_bootstrap.sh"
+      sh.privileged = false
+    end
+
+    ls.vm.network "forwarded_port", guest: 9600, host: 9601
+  end
+
+end
