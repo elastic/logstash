@@ -40,7 +40,7 @@ module LogStash; module Config; class Loader
       when "file" then
         local_config(uri.path)
       else
-        fail(I18n.t("logstash.runner.configuration.scheme-not-supported", :path => path))
+        fail(I18n.t("logstash.agent.configuration.scheme-not-supported", :path => path))
       end
     rescue URI::InvalidURIError
       # fallback for windows.
