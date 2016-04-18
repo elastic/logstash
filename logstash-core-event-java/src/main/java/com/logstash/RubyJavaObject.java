@@ -10,7 +10,7 @@ import java.io.Serializable;
 public class RubyJavaObject implements Serializable {
     private IRubyObject rubyValue;
     private Object javaValue;
-    private boolean is_ruby_nil;
+    private boolean isRubyNil;
 
     public RubyJavaObject(Object javaValue) {
         this.javaValue = javaValue;
@@ -19,7 +19,7 @@ public class RubyJavaObject implements Serializable {
 
     public RubyJavaObject(IRubyObject rubyValue) {
         this.rubyValue = rubyValue;
-        is_ruby_nil = (this.rubyValue instanceof RubyNil);
+        isRubyNil = (this.rubyValue instanceof RubyNil);
         this.javaValue = null;
     }
 
@@ -32,7 +32,7 @@ public class RubyJavaObject implements Serializable {
 
     @JsonValue
     public Object getJavaValue() {
-        if (is_ruby_nil) {
+        if (isRubyNil) {
             return null;
         }
         if (javaValue == null) {
@@ -66,12 +66,12 @@ public class RubyJavaObject implements Serializable {
         return null != javaValue;
     }
 
-    public boolean isRubyNil() {  return is_ruby_nil; }
+    public boolean isRubyNil() {  return isRubyNil; }
 
     @Override
     public String toString() {
         final StringBuffer sb = new StringBuffer("RubyJavaObject{");
-        sb.append("rubyValue=").append(is_ruby_nil ? "nil" : rubyValue);
+        sb.append("rubyValue=").append(isRubyNil ? "nil" : rubyValue);
         sb.append(", javaValue=").append(javaValue);
         sb.append('}');
         return sb.toString();
