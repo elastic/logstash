@@ -16,7 +16,7 @@
 * Fixed a bug where new pipeline might break plugins by calling the `register` method twice causing 
   undesired behavior ({lsissue}4851[Issue 4851])).
 * Made `JAVA_OPTS` and `LS_JAVA_OPTS` work consistently on Windows ({lsissue}4758[Issue 4758]).
-* Fixed bug where specifying JMX parameters in `LS_JAVA_OPTS` caused Logstash not to restart properly
+* Fixed a bug where specifying JMX parameters in `LS_JAVA_OPTS` caused Logstash not to restart properly
   ({lsissue}4319[Issue 4319]).
 * Fixed a bug where upgrading plugins with Manticore threw an error and sometimes corrupted installation ({lsissue}4818[Issue 4818]).
 * Removed milestone warning that was displayed when the `--pluginpath` option was used to load plugins ({lsissue}4562[Issue 4562]).
@@ -30,7 +30,7 @@
 
 * Enhanced to verify client certificates against CA (https://github.com/logstash-plugins/logstash-input-beats/issues/8[Issue 8]).
 
-*'RabbitMQ`*:
+*`RabbitMQ`*:
 
 * Breaking Change: Metadata is now disabled by default because it was regressing performance.
 * Improved performance by using an internal queue and bulk ACKs.
