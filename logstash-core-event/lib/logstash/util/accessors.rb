@@ -95,7 +95,14 @@ module LogStash::Util
     # @param field_reference [String] the field referece
     # @return [[Object, String]] the  [target, key] tuple associated with this field reference
     def lookup_or_create(field_reference)
-      @lut[field_reference] ||= find_or_create_target(field_reference)
+      # flush the @lut to prevent stale cached fieldref which may point to an old target
+      # which was overwritten with a new value. for example, if "[a][b]" is cached and we
+      # set a new value for "[a]" then reading again "[a][b]" would point in a stale target.
+      # flushing the complete @lut is suboptimal, but a hierarchical lut would be required
+      # to be able to invalidate fieldrefs from a common root.
+      # see https://github.com/elastic/logstash/pull/5132
+      @lut.clear
+      @lut[field_reference] = find_or_create_target(field_reference)
     end
 
     # find the target container object in store for this field reference
