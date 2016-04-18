@@ -39,7 +39,7 @@ public class Accessors {
                 }
                 return ((List<Object>) target).remove(i);
             } else {
-                throw new ClassCastException("expecting List or Map");
+                throw newCollectionException(target);
             }
         }
         return null;
@@ -67,7 +67,7 @@ public class Accessors {
         target = this.data;
         for (String key : field.getPath()) {
             target = fetch(target, key);
-            if (target == null) {
+            if (! isCollection(target)) {
                 return null;
             }
         }
@@ -80,9 +80,13 @@ public class Accessors {
     private Object findCreateTarget(FieldReference field) {
         Object target;
 
-        if ((target = this.lut.get(field.getReference())) != null) {
-            return target;
-        }
+        // flush the @lut to prevent stale cached fieldref which may point to an old target
+        // which was overwritten with a new value. for example, if "[a][b]" is cached and we
+        // set a new value for "[a]" then reading again "[a][b]" would point in a stale target.
+        // flushing the complete @lut is suboptimal, but a hierarchical lut would be required
+        // to be able to invalidate fieldrefs from a common root.
+        // see https://github.com/elastic/logstash/pull/5132
+        this.lut.clear();
 
         target = this.data;
         for (String key : field.getPath()) {
@@ -95,10 +99,8 @@ public class Accessors {
                     int i = Integer.parseInt(key);
                     // TODO: what about index out of bound?
                     ((List<Object>)target).set(i, result);
-                } else if (target == null) {
-                    // do nothing
-                } else {
-                    throw new ClassCastException("expecting List or Map");
+                } else if (target != null) {
+                    throw newCollectionException(target);
                 }
             }
             target = result;
@@ -133,8 +135,8 @@ public class Accessors {
             return result;
         } else if (target == null) {
             return null;
-        } {
-            throw new ClassCastException("expecting List or Map");
+        } else {
+            throw newCollectionException(target);
         }
     }
 
@@ -157,8 +159,19 @@ public class Accessors {
                 ((List<Object>) target).set(i, value);
             }
         } else {
-            throw new ClassCastException("expecting List or Map");
+            throw newCollectionException(target);
         }
         return value;
+    }
+
+    private boolean isCollection(Object target) {
+        if (target == null) {
+            return false;
+        }
+        return (target instanceof Map || target instanceof List);
+    }
+
+    private ClassCastException newCollectionException(Object target) {
+        return new ClassCastException("expecting List or Map, found "  + target.getClass());
     }
 }

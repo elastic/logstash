@@ -182,4 +182,28 @@ public class AccessorsTest {
 
         assertEquals(accessors.includes("nilfield"), true);
     }
+
+    @Test
+    public void testInvalidPath() throws Exception {
+        Map data = new HashMap();
+        Accessors accessors = new Accessors(data);
+
+        assertEquals(accessors.set("[foo]", 1), 1);
+        assertEquals(accessors.get("[foo][bar]"), null);
+    }
+
+    @Test
+    public void testStaleTargetCache() throws Exception {
+        Map data = new HashMap();
+
+        Accessors accessors = new Accessors(data);
+
+        assertEquals(accessors.get("[foo][bar]"), null);
+        assertEquals(accessors.set("[foo][bar]", "baz"), "baz");
+        assertEquals(accessors.get("[foo][bar]"), "baz");
+
+        assertEquals(accessors.set("[foo]", "boom"), "boom");
+        assertEquals(accessors.get("[foo][bar]"), null);
+        assertEquals(accessors.get("[foo]"), "boom");
+    }
 }

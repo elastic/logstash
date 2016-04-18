@@ -602,4 +602,33 @@ describe LogStash::Event do
       expect(event1.to_s).to eq("#{timestamp.to_iso8601} #{event1["host"]} #{event1["message"]}")
     end
   end
+
+  describe "Event accessors" do
+    let(:event) { LogStash::Event.new({ "message" => "foo" }) }
+
+    it "should invalidate target caching" do
+      expect(event["[a][0]"]).to be_nil
+
+      expect(event["[a][0]"] = 42).to eq(42)
+      expect(event["[a][0]"]).to eq(42)
+      expect(event["[a]"]).to eq({"0" => 42})
+
+      expect(event["[a]"] = [42, 24]).to eq([42, 24])
+      expect(event["[a]"]).to eq([42, 24])
+
+      expect(event["[a][0]"]).to eq(42)
+
+      expect(event["[a]"] = [24, 42]).to eq([24, 42])
+      expect(event["[a][0]"]).to eq(24)
+
+      expect(event["[a][0]"] = {"a "=> 99, "b" => 98}).to eq({"a "=> 99, "b" => 98})
+      expect(event["[a][0]"]).to eq({"a "=> 99, "b" => 98})
+
+      expect(event["[a]"]).to eq([{"a "=> 99, "b" => 98}, 42])
+      expect(event["[a][0]"]).to eq({"a "=> 99, "b" => 98})
+      expect(event["[a][1]"]).to eq(42)
+      expect(event["[a][0][b]"]).to eq(98)
+    end
+  end
 end
+
