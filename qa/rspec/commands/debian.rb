@@ -15,7 +15,7 @@ module ServiceTester
     end
 
     def package_for(version, base=ServiceTester::Base::LOCATION)
-      File.join(base, "logstash-#{version}_all.deb")
+      File.join(base, "logstash-#{version}.deb")
     end
 
     def install(package, host=nil)
@@ -60,6 +60,5 @@ module ServiceTester
         sudo_exec!("service #{service} #{action}")
       end
     end
-
   end
 end

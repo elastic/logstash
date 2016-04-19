@@ -53,6 +53,30 @@ module ServiceTester
       client.uninstall(name, host)
     end
 
+    def run_command_in_path(cmd)
+      client.run_command_in_path(cmd, host)
+    end
+
+    def run_command(cmd)
+      client.run_command(cmd, host)
+    end
+
+    def plugin_installed?(name, version = nil)
+      client.plugin_installed?(host, name, version)
+    end
+
+    def download(from, to)
+      client.download(from, to , host)
+    end
+    
+    def replace_in_gemfile(pattern, replace)
+      client.replace_in_gemfile(pattern, replace, host)
+    end
+
+    def delete_file(path)
+      client.delete_file(path, host)
+    end
+
     def to_s
       "Artifact #{name}@#{host}"
     end

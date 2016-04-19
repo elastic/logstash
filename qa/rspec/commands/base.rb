@@ -4,8 +4,8 @@ require_relative "../../vagrant/helpers"
 module ServiceTester
 
   class Base
-
     LOCATION="/logstash-build".freeze
+    LOGSTASH_PATH="/opt/logstash/".freeze
 
     def snapshot(host)
       LogStash::VagrantHelpers.save_snapshot(host)
@@ -23,5 +23,44 @@ module ServiceTester
       service_manager(service, "stop", host)
     end
 
+    def run_command(cmd, host)
+      hosts = (host.nil? ? servers : Array(host))
+
+      response = nil
+      at(hosts, {in: :serial}) do |_host|
+        response = sudo_exec!(cmd)
+      end
+      response
+    end
+
+    def replace_in_gemfile(pattern, replace, host)
+      cmd = "/bin/env sed -i.sedbak 's/#{pattern}/#{replace}/' /opt/logstash/Gemfile"
+      run_command(cmd, host)
+    end
+
+    def run_command_in_path(cmd, host)
+      run_command("#{File.join(LOGSTASH_PATH, cmd)}", host)
+    end
+
+    def plugin_installed?(host, plugin_name, version = nil)
+      if version.nil?
+        cmd = run_command_in_path("bin/logstash-plugin list", host)
+        search_token = plugin_name
+      else
+        cmd = run_command_in_path("bin/logstash-plugin list --verbose", host)
+        search_token ="#{plugin_name} (#{version})"
+      end
+
+      plugins_list = cmd.stdout.split("\n")
+      plugins_list.include?(search_token)
+    end
+
+    def download(from, to, host)
+      run_command("wget #{from} -O #{to}", host)
+    end
+
+    def delete_file(path, host)
+      run_command("rm -rf #{path}", host)
+    end
   end
 end

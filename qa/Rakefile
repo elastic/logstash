@@ -28,7 +28,6 @@ namespace :qa do
 
       message  = "bootstraping all VM's defined in acceptance/Vagrantfile"
       message  = "#{message} for #{args[:platform]}: #{machines}" if !args[:platform].nil?
-      puts message
 
       LogStash::VagrantHelpers.destroy(machines)
       LogStash::VagrantHelpers.bootstrap(machines)
@@ -49,7 +48,7 @@ namespace :qa do
   namespace :acceptance do
     desc "Run all acceptance"
     task :all do
-      exit(RSpec::Core::Runner.run([Rake::FileList["acceptance/spec/lib/*_spec.rb"]]))
+      exit(RSpec::Core::Runner.run([Rake::FileList["acceptance/spec/lib/**/*_spec.rb"]]))
     end
 
     platforms.types.each do |type|
@@ -63,7 +62,7 @@ namespace :qa do
     desc "Run one single machine acceptance test"
     task :single, :machine do |t, args|
       ENV['LS_VAGRANT_HOST']  = args[:machine]
-      exit(RSpec::Core::Runner.run([Rake::FileList["acceptance/spec/lib/*_spec.rb"]]))
+      exit(RSpec::Core::Runner.run([Rake::FileList["acceptance/spec/lib/**/**/*_spec.rb"]]))
     end
   end
 end
