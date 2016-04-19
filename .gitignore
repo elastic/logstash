@@ -28,3 +28,8 @@ rspec.xml
 .vendor
 integration_run
 .mvn/
+qa/.vm_ssh_config
+qa/.vagrant
+qa/.rspec
+qa/acceptance/.vagrant
+qa/Gemfile.lock
