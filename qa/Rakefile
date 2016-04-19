@@ -1,0 +1,53 @@
+require "rspec"
+require "rspec/core/runner"
+require "rspec/core/rake_task"
+require_relative "vagrant-helpers"
+
+task :spec    => 'spec:all'
+task :default => :spec
+
+namespace :test do
+
+  desc "Generate a valid ssh-config"
+  task :ssh_config do
+    require "json"
+    cd "acceptance" do
+      raw_ssh_config    = LogStash::VagrantHelpers.fetch_config[:stdout].split("\n");
+      parsed_ssh_config = LogStash::VagrantHelpers.parse(raw_ssh_config)
+      File.write("../.vm_ssh_config", parsed_ssh_config.to_json)
+    end
+  end
+
+  desc "Bootstrap all the VM's used for this tests"
+  task "setup" do
+    puts "bootstraping all VM's defined in acceptance/Vagrantfile"
+    cd "acceptance" do
+      LogStash::VagrantHelpers.bootstrap
+    end
+  end
+
+  namespace :acceptance do
+
+    desc "Run all acceptance"
+    task :all do
+      exit(RSpec::Core::Runner.run([Rake::FileList["acceptance/spec/**/*_spec.rb"]]))
+    end
+
+    desc "Run acceptance test in debian machines"
+    task :debian do
+      exit(RSpec::Core::Runner.run([Rake::FileList["acceptance/spec/debian/**/*_spec.rb"]]))
+    end
+
+    desc "Run acceptance test in centos machines"
+    task :centos do
+      exit(RSpec::Core::Runner.run([Rake::FileList["acceptance/spec/centos/**/*_spec.rb"]]))
+    end
+
+    desc "Run one single machine acceptance test"
+    task :single, :machine do  |t, args|
+      ENV['LS_VAGRANT_HOST'] = args[:machine]
+      platform = LogStash::VagrantHelpers.translate(args[:machine])
+      exit(RSpec::Core::Runner.run([Rake::FileList["acceptance/spec/**/*_spec.rb"]]))
+    end
+  end
+end
