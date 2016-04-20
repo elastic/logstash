@@ -5,12 +5,17 @@ import org.jruby.Ruby;
 import org.jruby.RubyNil;
 import org.jruby.runtime.builtin.IRubyObject;
 
+import java.io.InvalidObjectException;
+import java.io.ObjectStreamException;
 import java.io.Serializable;
+import java.io.ObjectInputStream;
 
-public class RubyJavaObject implements Serializable {
-    private IRubyObject rubyValue;
+public final class RubyJavaObject implements Serializable {
+    private static final long serialVersionUID = 4358368393114318978L;
+
+    private transient IRubyObject rubyValue;
+    private transient boolean isRubyNil;
     private Object javaValue;
-    private boolean isRubyNil;
 
     public RubyJavaObject(Object javaValue) {
         this.javaValue = javaValue;
@@ -32,25 +37,12 @@ public class RubyJavaObject implements Serializable {
 
     @JsonValue
     public Object getJavaValue() {
-        if (isRubyNil) {
+        if (hasRubyValue() && isRubyNil) {
             return null;
         }
         if (javaValue == null) {
             javaValue = Javafier.deep(rubyValue);
         }
-        return javaValue;
-    }
-
-    public void update(final RubyJavaObject other) {
-        this.rubyValue = other.getRawRubyValue();
-        this.javaValue = other.getRawJavaValue();
-    }
-
-    protected IRubyObject getRawRubyValue() {
-        return rubyValue;
-    }
-
-    protected Object getRawJavaValue() {
         return javaValue;
     }
 
@@ -65,8 +57,6 @@ public class RubyJavaObject implements Serializable {
     public boolean hasJavaValue() {
         return null != javaValue;
     }
-
-    public boolean isRubyNil() {  return isRubyNil; }
 
     @Override
     public String toString() {
@@ -94,5 +84,41 @@ public class RubyJavaObject implements Serializable {
             return javaValue.hashCode();
         }
         return 0;
+    }
+
+    private static class SerializationProxy implements Serializable {
+        private final Object javaValue;
+
+        public SerializationProxy(RubyJavaObject o) {
+            // ensure the javaValue is converted from a ruby one if it exists
+            this.javaValue = o.getJavaValue();
+        }
+
+        /**
+         * Called when object has been deserialized from a stream.
+         *
+         * @return {@code this}, or a replacement for {@code this}.
+         * @throws ObjectStreamException if the object cannot be restored.
+         * @see <a href="http://download.oracle.com/javase/1.3/docs/guide/serialization/spec/input.doc6.html">The Java Object Serialization Specification</a>
+         */
+        private Object readResolve() throws ObjectStreamException {
+            return new RubyJavaObject(javaValue);
+        }
+    }
+
+    /**
+     * Called when object is to be serialized on a stream to allow the object to substitute a proxy for itself.
+     *
+     * @return {@code this}, or the proxy for {@code this}.
+     * @throws ObjectStreamException if the object cannot be proxied.
+     * @see <a href="http://download.oracle.com/javase/1.3/docs/guide/serialization/spec/output.doc5.html">The Java Object Serialization Specification</a>
+     */
+    private Object writeReplace() throws ObjectStreamException {
+        return new SerializationProxy(this);
+    }
+
+    private void readObject(ObjectInputStream stream)
+            throws InvalidObjectException {
+        throw new InvalidObjectException("Proxy required");
     }
 }

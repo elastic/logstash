@@ -127,7 +127,7 @@ public class JrubyEventExtLibrary implements Library {
         @JRubyMethod(name = "get", required = 1)
         public IRubyObject ruby_get_field(ThreadContext context, RubyString reference)
         {
-            Object value = this.event.getFieldForRuby(reference.asJavaString());
+            Object value = this.event.getUnconvertedField(reference.asJavaString());
             return Rubyfier.deep(context.runtime, value);
         }
 

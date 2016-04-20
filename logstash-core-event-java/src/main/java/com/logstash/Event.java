@@ -124,16 +124,12 @@ public class Event implements Cloneable, Serializable {
         this.data.put(TIMESTAMP, this.timestamp);
     }
 
-    public Object getFieldForRuby(String reference) {
-        return _getField(reference);
-    }
-
-    public Object getField(String reference) {
-        Object val = _getField(reference);
+     public Object getField(String reference) {
+        Object val = getUnconvertedField(reference);
         return Valuefier.unconvert(val);
     }
 
-    private Object _getField(String reference) {
+    public Object getUnconvertedField(String reference) {
         if (reference.equals(METADATA)) {
             return this.metadata;
         } else if (reference.startsWith(METADATA_BRACKETS)) {
