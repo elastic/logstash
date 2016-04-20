@@ -2,11 +2,18 @@
 == Getting Started with Logstash
 
 This section guides you through the process of installing Logstash and verifying that everything is running properly.
-Later sections deal with increasingly complex configurations to address selected use cases.
+Later sections deal with increasingly complex configurations to address selected use cases. This section includes the
+following topics:
 
-[float]
+* <<installing-logstash>>
+* <<first-event>>
+* <<advanced-pipeline>>
+* <<stalled-shutdown>>
+* <<pipeline>>
+
+
 [[installing-logstash]]
-=== Install Logstash
+=== Installing Logstash
 
 NOTE: Logstash requires Java 7 or later. Use the
 http://www.oracle.com/technetwork/java/javase/downloads/index.html[official Oracle distribution] or an open-source
@@ -26,11 +33,99 @@ Java HotSpot(TM) 64-Bit Server VM (build 24.45-b08, mixed mode)
 
 [float]
 [[installing-binary]]
-==== Installing from a downloaded binary
+=== Installing from a Downloaded Binary
 
 Download the https://www.elastic.co/downloads/logstash[Logstash installation file] that matches your host environment.
 Unpack the file. On supported Linux operating systems, you can <<package-repositories,use a package manager>> to
 install Logstash.
+
+[float]
+[[package-repositories]]
+=== Installing from Package Repositories
+
+We also have repositories available for APT and YUM based distributions. Note
+that we only provide binary packages, but no source packages, as the packages
+are created as part of the Logstash build.
+
+We have split the Logstash package repositories by version into separate urls
+to avoid accidental upgrades across major or minor versions. For all 1.5.x
+releases use 1.5 as version number, for 1.4.x use 1.4, etc.
+
+We use the PGP key
+http://pgp.mit.edu/pks/lookup?op=vindex&search=0xD27D666CD88E42B4[D88E42B4],
+Elastic's Signing Key, with fingerprint
+
+    4609 5ACC 8548 582C 1A26 99A9 D27D 666C D88E 42B4
+
+to sign all our packages. It is available from http://pgp.mit.edu.
+
+[float]
+==== APT
+
+Download and install the Public Signing Key:
+
+[source,sh]
+--------------------------------------------------
+wget -qO - https://packages.elastic.co/GPG-KEY-elasticsearch | sudo apt-key add -
+--------------------------------------------------
+
+Add the repository definition to your `/etc/apt/sources.list` file:
+
+["source","sh",subs="attributes,callouts"]
+--------------------------------------------------
+echo "deb http://packages.elastic.co/logstash/{branch}/debian stable main" | sudo tee -a /etc/apt/sources.list
+--------------------------------------------------
+
+[WARNING]
+==================================================
+Use the `echo` method described above to add the Logstash repository.  Do not
+use `add-apt-repository` as it will add a `deb-src` entry as well, but we do not
+provide a source package. If you have added the `deb-src` entry, you will see an
+error like the following:
+
+    Unable to find expected entry 'main/source/Sources' in Release file (Wrong sources.list entry or malformed file)
+
+Just delete the `deb-src` entry from the `/etc/apt/sources.list` file and the
+installation should work as expected.
+==================================================
+
+Run `sudo apt-get update` and the repository is ready for use. You can install
+it with:
+
+[source,sh]
+--------------------------------------------------
+sudo apt-get update && sudo apt-get install logstash
+--------------------------------------------------
+
+[float]
+==== YUM
+
+Download and install the public signing key:
+
+[source,sh]
+--------------------------------------------------
+rpm --import https://packages.elastic.co/GPG-KEY-elasticsearch
+--------------------------------------------------
+
+Add the following in your `/etc/yum.repos.d/` directory
+in a file with a `.repo` suffix, for example `logstash.repo`
+
+["source","sh",subs="attributes,callouts"]
+--------------------------------------------------
+[logstash-{branch}]
+name=Logstash repository for {branch}.x packages
+baseurl=http://packages.elastic.co/logstash/{branch}/centos
+gpgcheck=1
+gpgkey=http://packages.elastic.co/GPG-KEY-elasticsearch
+enabled=1
+--------------------------------------------------
+
+And your repository is ready for use. You can install it with:
+
+[source,sh]
+--------------------------------------------------
+yum install logstash
+--------------------------------------------------
 
 [[first-event]]
 === Stashing Your First Event: Basic Logstash Example
