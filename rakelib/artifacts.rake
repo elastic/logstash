@@ -244,6 +244,7 @@ namespace "artifact" do
         out.attributes[:rpm_use_file_permissions] = true
         out.attributes[:rpm_user] = "root"
         out.attributes[:rpm_group] = "root"
+        out.attributes[:rpm_os] = "linux"
         out.config_files << "etc/sysconfig/logstash"
         out.config_files << "etc/logrotate.d/logstash"
         out.config_files << "/etc/init.d/logstash"
