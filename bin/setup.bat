@@ -15,13 +15,11 @@ goto finally
 
 :setup_jruby
 REM setup_java()
-set JAVA_FROM_SYMLINK=
 if not defined JAVA_HOME IF EXIST %ProgramData%\Oracle\java\javapath\java.exe (
-    for /f "tokens=2 delims=[]" %%a in ('dir %ProgramData%\Oracle\java\javapath\java.exe') do @set JAVA_HOME=%%a
-    set JAVA_FROM_SYMLINK=1
+    for /f "tokens=2 delims=[]" %%a in ('dir %ProgramData%\Oracle\java\javapath\java.exe') do @set JAVA_EXE=%%a
 )
-if defined JAVA_HOME set JAVA_HOME=%JAVA_HOME:\bin\java.exe=%
-if "%JAVA_FROM_SYMLINK%" == "1" (
+if defined JAVA_EXE set JAVA_HOME=%JAVA_EXE:\bin\java.exe=%
+if defined JAVA_EXE (
     echo Using JAVA_HOME=%JAVA_HOME% retrieved from %ProgramData%\Oracle\java\javapath\java.exe
 )
 if not defined JAVA_HOME goto missing_java_home
