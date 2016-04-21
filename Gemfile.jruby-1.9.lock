@@ -157,7 +157,7 @@ GEM
     logstash-codec-rubydebug (2.0.7)
       awesome_print
       logstash-core-plugin-api (~> 1.0)
-    logstash-core (2.3.1-java)
+    logstash-core (2.3.2.snapshot1-java)
       cabin (~> 0.8.0)
       clamp (~> 0.6.5)
       concurrent-ruby (= 0.9.2)
@@ -166,16 +166,16 @@ GEM
       i18n (= 0.6.9)
       jrjackson (~> 0.3.7)
       jruby-openssl (= 0.9.13)
-      logstash-core-event (= 2.3.1)
+      logstash-core-event (= 2.3.2.snapshot1)
       minitar (~> 0.5.4)
       pry (~> 0.10.1)
       rubyzip (~> 1.1.7)
       stud (~> 0.0.19)
       thread_safe (~> 0.3.5)
       treetop (< 1.5.0)
-    logstash-core-event (2.3.1-java)
-    logstash-core-plugin-api (1.8.0-java)
-      logstash-core (>= 2.0.0, <= 2.3.1)
+    logstash-core-event (2.3.2.snapshot1-java)
+    logstash-core-plugin-api (1.9.0-java)
+      logstash-core (>= 2.0.0, <= 2.3.2.snapshot1)
     logstash-devutils (0.0.19-java)
       fivemat
       gem_publisher
@@ -431,7 +431,7 @@ GEM
       logstash-filter-json
       logstash-input-generator
       logstash-output-file
-    logstash-output-elasticsearch (2.6.1-java)
+    logstash-output-elasticsearch (2.6.2-java)
       cabin (~> 0.6)
       concurrent-ruby
       elasticsearch (~> 1.0, >= 1.0.13)
@@ -664,9 +664,9 @@ DEPENDENCIES
   logstash-codec-oldlogstashjson
   logstash-codec-plain
   logstash-codec-rubydebug
-  logstash-core (= 2.3.1)
-  logstash-core-event (= 2.3.1)
-  logstash-core-plugin-api (= 1.8.0)
+  logstash-core (= 2.3.2.snapshot1)
+  logstash-core-event (= 2.3.2.snapshot1)
+  logstash-core-plugin-api (= 1.9.0)
   logstash-devutils (~> 0.0.15)
   logstash-filter-anonymize
   logstash-filter-checksum
