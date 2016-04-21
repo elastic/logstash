@@ -2,6 +2,7 @@
 require 'runner-tool'
 require_relative '../../rspec/helpers'
 require_relative '../../rspec/matchers'
+require_relative '../../vagrant-helpers'
 require_relative 'config_helper'
 
 ROOT = File.expand_path(File.join(File.dirname(__FILE__), '..', '..', '..'))

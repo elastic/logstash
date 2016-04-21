@@ -1,14 +1,7 @@
 # encoding: utf-8
 require_relative '../spec_helper'
 
-def default_vagrant_boxes
-  [
-    "ubuntu-1204",
-    "ubuntu-1404"
-  ]
-end
-
-selected_boxes = SpecsHelper.find_selected_boxes(default_vagrant_boxes)
+selected_boxes = SpecsHelper.find_selected_boxes(LogStash::VagrantHelpers::DEFAULT_DEBIAN_BOXES)
 
 SpecsHelper.configure(selected_boxes)
 

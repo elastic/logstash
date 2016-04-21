@@ -1,14 +1,8 @@
 # encoding: utf-8
 require_relative '../spec_helper'
 
-def default_vagrant_boxes
-  [
-    "centos-6",
-    "centos-7"
-  ]
-end
 
-selected_boxes = SpecsHelper.find_selected_boxes(default_vagrant_boxes)
+selected_boxes = SpecsHelper.find_selected_boxes(LogStash::VagrantHelpers::DEFAULT_CENTOS_BOXES)
 
 SpecsHelper.configure(selected_boxes)
 

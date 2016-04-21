@@ -27,8 +27,8 @@ end
 
 def common_config(machine, type)
   machine.vm.provider "virtualbox" do |v|
-    v.memory = 4096
-    v.cpus = 4
+    v.memory = 2048
+    v.cpus = 3
   end
   machine.vm.synced_folder "../../build", "/logstash-build", create: true
   machine.vm.provision :shell do |sh|
