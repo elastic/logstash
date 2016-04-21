@@ -97,7 +97,7 @@ stop() {
       sleep 1
     done
     if status ; then
-      if [ $LS_KILL_ON_STOP_TIMEOUT -eq 1 ] ; then
+      if [ "$LS_KILL_ON_STOP_TIMEOUT" == 1 ] ; then
         echo "Timeout reached. Killing $name (pid $pid) with SIGKILL. This may result in data loss."
         kill -KILL $pid
         echo "$name killed with SIGKILL."
