@@ -279,7 +279,7 @@ describe LogStash::Pipeline do
       CONFIG
 
       sample("hello") do
-        expect(subject["message"]).to eq("hello")
+        expect(subject.get("message")).to eq("hello")
       end
     end
 
@@ -299,10 +299,10 @@ describe LogStash::Pipeline do
       sample(["foo", "bar"]) do
         expect(subject.size).to eq(2)
 
-        expect(subject[0]["message"]).to eq("foo\nbar")
-        expect(subject[0]["type"]).to be_nil
-        expect(subject[1]["message"]).to eq("foo\nbar")
-        expect(subject[1]["type"]).to eq("clone1")
+        expect(subject[0].get("message")).to eq("foo\nbar")
+        expect(subject[0].get("type")).to be_nil
+        expect(subject[1].get("message")).to eq("foo\nbar")
+        expect(subject[1].get("type")).to eq("clone1")
       end
     end
   end
@@ -354,17 +354,17 @@ describe LogStash::Pipeline do
       sample("hello") do
         expect(subject.size).to eq(3)
 
-        expect(subject[0]["message"]).to eq("hello")
-        expect(subject[0]["type"]).to be_nil
-        expect(subject[0]["foo"]).to eq("bar")
+        expect(subject[0].get("message")).to eq("hello")
+        expect(subject[0].get("type")).to be_nil
+        expect(subject[0].get("foo")).to eq("bar")
 
-        expect(subject[1]["message"]).to eq("hello")
-        expect(subject[1]["type"]).to eq("clone1")
-        expect(subject[1]["foo"]).to eq("bar")
+        expect(subject[1].get("message")).to eq("hello")
+        expect(subject[1].get("type")).to eq("clone1")
+        expect(subject[1].get("foo")).to eq("bar")
 
-        expect(subject[2]["message"]).to eq("hello")
-        expect(subject[2]["type"]).to eq("clone2")
-        expect(subject[2]["foo"]).to eq("bar")
+        expect(subject[2].get("message")).to eq("hello")
+        expect(subject[2].get("type")).to eq("clone2")
+        expect(subject[2].get("foo")).to eq("bar")
       end
     end
   end
@@ -441,7 +441,7 @@ describe LogStash::Pipeline do
       # give us a bit of time to flush the events
       wait(5).for do
         next unless output && output.events && output.events.first
-        output.events.first["message"].split("\n").count
+        output.events.first.get("message").split("\n").count
       end.to eq(number_of_events)
       pipeline.shutdown
     end

@@ -512,7 +512,7 @@ module LogStash; module Config; module AST
   end
   class Selector < RValue
     def compile
-      return "event[#{text_value.inspect}]"
+      return "event.get(#{text_value.inspect})"
     end
   end
   class SelectorElement < Node; end

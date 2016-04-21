@@ -97,7 +97,7 @@ class LogStash::Inputs::Base < LogStash::Plugin
   protected
   def decorate(event)
     # Only set 'type' if not already set. This is backwards-compatible behavior
-    event["type"] = @type if @type && !event.include?("type")
+    event.set("type", @type) if @type && !event.include?("type")
 
     LogStash::Util::Decorators.add_fields(@add_field,event,"inputs/#{self.class.name}")
     LogStash::Util::Decorators.add_tags(@tags,event,"inputs/#{self.class.name}")

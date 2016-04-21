@@ -8,68 +8,68 @@ describe LogStash::Event do
   shared_examples "all event tests" do
     context "[]=" do
       it "should raise an exception if you attempt to set @timestamp to a value type other than a Time object" do
-        expect{subject["@timestamp"] = "crash!"}.to raise_error(TypeError)
+        expect{subject.set("@timestamp", "crash!")}.to raise_error(TypeError)
       end
 
       it "should assign simple fields" do
-        expect(subject["foo"]).to be_nil
-        expect(subject["foo"] = "bar").to eq("bar")
-        expect(subject["foo"]).to eq("bar")
+        expect(subject.get("foo")).to be_nil
+        expect(subject.set("foo", "bar")).to eq("bar")
+        expect(subject.get("foo")).to eq("bar")
       end
 
       it "should overwrite simple fields" do
-        expect(subject["foo"]).to be_nil
-        expect(subject["foo"] = "bar").to eq("bar")
-        expect(subject["foo"]).to eq("bar")
+        expect(subject.get("foo")).to be_nil
+        expect(subject.set("foo", "bar")).to eq("bar")
+        expect(subject.get("foo")).to eq("bar")
 
-        expect(subject["foo"] = "baz").to eq("baz")
-        expect(subject["foo"]).to eq("baz")
+        expect(subject.set("foo", "baz")).to eq("baz")
+        expect(subject.get("foo")).to eq("baz")
       end
 
       it "should assign deep fields" do
-        expect(subject["[foo][bar]"]).to be_nil
-        expect(subject["[foo][bar]"] = "baz").to eq("baz")
-        expect(subject["[foo][bar]"]).to eq("baz")
+        expect(subject.get("[foo][bar]")).to be_nil
+        expect(subject.set("[foo][bar]", "baz")).to eq("baz")
+        expect(subject.get("[foo][bar]")).to eq("baz")
       end
 
       it "should overwrite deep fields" do
-        expect(subject["[foo][bar]"]).to be_nil
-        expect(subject["[foo][bar]"] = "baz").to eq("baz")
-        expect(subject["[foo][bar]"]).to eq("baz")
+        expect(subject.get("[foo][bar]")).to be_nil
+        expect(subject.set("[foo][bar]", "baz")).to eq("baz")
+        expect(subject.get("[foo][bar]")).to eq("baz")
 
-        expect(subject["[foo][bar]"] = "zab").to eq("zab")
-        expect(subject["[foo][bar]"]).to eq("zab")
+        expect(subject.set("[foo][bar]", "zab")).to eq("zab")
+        expect(subject.get("[foo][bar]")).to eq("zab")
       end
 
       it "allow to set the @metadata key to a hash" do
-        subject["@metadata"] = { "action" => "index" }
-        expect(subject["[@metadata][action]"]).to eq("index")
+        subject.set("@metadata", { "action" => "index" })
+        expect(subject.get("[@metadata][action]")).to eq("index")
       end
 
       it "should add key when setting nil value" do
-        subject["[baz]"] = nil
+        subject.set("[baz]", nil)
         expect(subject.to_hash).to include("baz" => nil)
       end
 
       it "should set nil element within existing array value" do
-        subject["[foo]"] = ["bar", "baz"]
+        subject.set("[foo]", ["bar", "baz"])
 
-        expect(subject["[foo][0]"] = nil).to eq(nil)
-        expect(subject["[foo]"]).to eq([nil, "baz"])
+        expect(subject.set("[foo][0]", nil)).to eq(nil)
+        expect(subject.get("[foo]")).to eq([nil, "baz"])
       end
 
       it "should set nil in first element within empty array" do
-        subject["[foo]"] = []
+        subject.set("[foo]", [])
 
-        expect(subject["[foo][0]"] = nil).to eq(nil)
-        expect(subject["[foo]"]).to eq([nil])
+        expect(subject.set("[foo][0]", nil)).to eq(nil)
+        expect(subject.get("[foo]")).to eq([nil])
       end
 
       it "should set nil in second element within empty array" do
-        subject["[foo]"] = []
+        subject.set("[foo]", [])
 
-        expect(subject["[foo][1]"] = nil).to eq(nil)
-        expect(subject["[foo]"]).to eq([nil, nil])
+        expect(subject.set("[foo][1]", nil)).to eq(nil)
+        expect(subject.get("[foo]")).to eq([nil, nil])
       end
     end
 
@@ -79,7 +79,7 @@ describe LogStash::Event do
         event = LogStash::Event.new({ "reference" => data })
         LogStash::Util::Decorators.add_fields({"reference_test" => "%{reference}"}, event, "dummy-plugin")
         data.downcase!
-        expect(event["reference_test"]).not_to eq(data)
+        expect(event.get("reference_test")).not_to eq(data)
       end
 
       it "should not return a Fixnum reference" do
@@ -87,7 +87,7 @@ describe LogStash::Event do
         event = LogStash::Event.new({ "reference" => data })
         LogStash::Util::Decorators.add_fields({"reference_test" => "%{reference}"}, event, "dummy-plugin")
         data += 41
-        expect(event["reference_test"]).to eq("1")
+        expect(event.get("reference_test")).to eq("1")
       end
 
       it "should report a unix timestamp for %{+%s}" do
@@ -124,7 +124,7 @@ describe LogStash::Event do
 
       it "should report fields with %{field} syntax" do
         expect(subject.sprintf("%{type}")).to eq("sprintf")
-        expect(subject.sprintf("%{message}")).to eq(subject["message"])
+        expect(subject.sprintf("%{message}")).to eq(subject.get("message"))
       end
 
       it "should print deep fields" do
@@ -153,35 +153,35 @@ describe LogStash::Event do
       end
 
       it "should render nil array values as leading empty string" do
-        expect(subject["foo"] = [nil, "baz"]).to eq([nil, "baz"])
+        expect(subject.set("foo", [nil, "baz"])).to eq([nil, "baz"])
 
-        expect(subject["[foo][0]"]).to be_nil
-        expect(subject["[foo][1]"]).to eq("baz")
+        expect(subject.get("[foo][0]")).to be_nil
+        expect(subject.get("[foo][1]")).to eq("baz")
 
         expect(subject.sprintf("%{[foo]}")).to eq(",baz")
       end
 
       it "should render nil array values as middle empty string" do
-        expect(subject["foo"] = ["bar", nil, "baz"]).to eq(["bar", nil, "baz"])
+        expect(subject.set("foo", ["bar", nil, "baz"])).to eq(["bar", nil, "baz"])
 
-        expect(subject["[foo][0]"]).to eq("bar")
-        expect(subject["[foo][1]"]).to be_nil
-        expect(subject["[foo][2]"]).to eq("baz")
+        expect(subject.get("[foo][0]")).to eq("bar")
+        expect(subject.get("[foo][1]")).to be_nil
+        expect(subject.get("[foo][2]")).to eq("baz")
 
         expect(subject.sprintf("%{[foo]}")).to eq("bar,,baz")
       end
 
      it "should render nil array values as trailing empty string" do
-        expect(subject["foo"] = ["bar", nil]).to eq(["bar", nil])
+        expect(subject.set("foo", ["bar", nil])).to eq(["bar", nil])
 
-        expect(subject["[foo][0]"]).to eq("bar")
-        expect(subject["[foo][1]"]).to be_nil
+        expect(subject.get("[foo][0]")).to eq("bar")
+        expect(subject.get("[foo][1]")).to be_nil
 
         expect(subject.sprintf("%{[foo]}")).to eq("bar,")
      end
 
       it "should render deep arrays with nil value" do
-        subject["[foo]"] = [[12, nil], 56]
+        subject.set("[foo]", [[12, nil], 56])
         expect(subject.sprintf("%{[foo]}")).to eq("12,,56")
       end
 
@@ -198,18 +198,18 @@ describe LogStash::Event do
 
     context "#[]" do
       it "should fetch data" do
-        expect(subject["type"]).to eq("sprintf")
+        expect(subject.get("type")).to eq("sprintf")
       end
       it "should fetch fields" do
-        expect(subject["a"]).to eq("b")
-        expect(subject['c']['d']).to eq("f")
+        expect(subject.get("a")).to eq("b")
+        expect(subject.get('c')['d']).to eq("f")
       end
       it "should fetch deep fields" do
-        expect(subject["[j][k1]"]).to eq("v")
-        expect(subject["[c][d]"]).to eq("f")
-        expect(subject['[f][g][h]']).to eq("i")
-        expect(subject['[j][k3][4]']).to eq("m")
-        expect(subject['[j][5]']).to eq(7)
+        expect(subject.get("[j][k1]")).to eq("v")
+        expect(subject.get("[c][d]")).to eq("f")
+        expect(subject.get('[f][g][h]')).to eq("i")
+        expect(subject.get('[j][k3][4]')).to eq("m")
+        expect(subject.get('[j][5]')).to eq(7)
 
       end
 
@@ -217,7 +217,7 @@ describe LogStash::Event do
         count = 1000000
         2.times do
           start = Time.now
-          count.times { subject["[j][k1]"] }
+          count.times { subject.get("[j][k1]") }
           duration = Time.now - start
           puts "event #[] rate: #{"%02.0f/sec" % (count / duration)}, elapsed: #{duration}s"
         end
@@ -263,11 +263,11 @@ describe LogStash::Event do
         )
         subject.overwrite(new_event)
 
-        expect(subject["message"]).to eq("foo bar")
-        expect(subject["type"]).to eq("new")
+        expect(subject.get("message")).to eq("foo bar")
+        expect(subject.get("type")).to eq("new")
 
         ["tags", "source", "a", "c", "f", "j"].each do |field|
-          expect(subject[field]).to be_nil
+          expect(subject.get(field)).to be_nil
         end
       end
     end
@@ -275,7 +275,7 @@ describe LogStash::Event do
     context "#append" do
       it "should append strings to an array" do
         subject.append(LogStash::Event.new("message" => "another thing"))
-        expect(subject["message"]).to eq([ "hello world", "another thing" ])
+        expect(subject.get("message")).to eq([ "hello world", "another thing" ])
       end
 
       it "should concatenate tags" do
@@ -283,54 +283,54 @@ describe LogStash::Event do
         # added to_a for when array is a Java Collection when produced from json input
         # TODO: we have to find a better way to handle this in tests. maybe override
         # rspec eq or == to do an explicit to_a when comparing arrays?
-        expect(subject["tags"].to_a).to eq([ "tag1", "tag2" ])
+        expect(subject.get("tags").to_a).to eq([ "tag1", "tag2" ])
       end
 
       context "when event field is nil" do
         it "should add single value as string" do
           subject.append(LogStash::Event.new({"field1" => "append1"}))
-          expect(subject[ "field1" ]).to eq("append1")
+          expect(subject.get("field1")).to eq("append1")
         end
         it "should add multi values as array" do
           subject.append(LogStash::Event.new({"field1" => [ "append1","append2" ]}))
-          expect(subject[ "field1" ]).to eq([ "append1","append2" ])
+          expect(subject.get("field1")).to eq([ "append1","append2" ])
         end
       end
 
       context "when event field is a string" do
-        before { subject[ "field1" ] = "original1" }
+        before { subject.set("field1", "original1") }
 
         it "should append string to values, if different from current" do
           subject.append(LogStash::Event.new({"field1" => "append1"}))
-          expect(subject[ "field1" ]).to eq([ "original1", "append1" ])
+          expect(subject.get("field1")).to eq([ "original1", "append1" ])
         end
         it "should not change value, if appended value is equal current" do
           subject.append(LogStash::Event.new({"field1" => "original1"}))
-          expect(subject[ "field1" ]).to eq("original1")
+          expect(subject.get("field1")).to eq("original1")
         end
         it "should concatenate values in an array" do
           subject.append(LogStash::Event.new({"field1" => [ "append1" ]}))
-          expect(subject[ "field1" ]).to eq([ "original1", "append1" ])
+          expect(subject.get("field1")).to eq([ "original1", "append1" ])
         end
         it "should join array, removing duplicates" do
           subject.append(LogStash::Event.new({"field1" => [ "append1","original1" ]}))
-          expect(subject[ "field1" ]).to eq([ "original1", "append1" ])
+          expect(subject.get("field1")).to eq([ "original1", "append1" ])
         end
       end
       context "when event field is an array" do
-        before { subject[ "field1" ] = [ "original1", "original2" ] }
+        before { subject.set("field1", [ "original1", "original2" ] )}
 
         it "should append string values to array, if not present in array" do
           subject.append(LogStash::Event.new({"field1" => "append1"}))
-          expect(subject[ "field1" ]).to eq([ "original1", "original2", "append1" ])
+          expect(subject.get("field1")).to eq([ "original1", "original2", "append1" ])
         end
         it "should not append string values, if the array already contains it" do
           subject.append(LogStash::Event.new({"field1" => "original1"}))
-          expect(subject[ "field1" ]).to eq([ "original1", "original2" ])
+          expect(subject.get("field1")).to eq([ "original1", "original2" ])
         end
         it "should join array, removing duplicates" do
           subject.append(LogStash::Event.new({"field1" => [ "append1","original1" ]}))
-          expect(subject[ "field1" ]).to eq([ "original1", "original2", "append1" ])
+          expect(subject.get("field1")).to eq([ "original1", "original2", "append1" ])
         end
       end
 
@@ -342,7 +342,7 @@ describe LogStash::Event do
 
       data = { "@timestamp" => "2013-12-21T07:25:06.605Z" }
       event = LogStash::Event.new(data)
-      expect(event["@timestamp"]).to be_a(LogStash::Timestamp)
+      expect(event.get("@timestamp")).to be_a(LogStash::Timestamp)
 
       duration = 0
       [warmup, count].each do |i|
@@ -411,13 +411,13 @@ describe LogStash::Event do
       it "should tag for invalid value" do
         event = LogStash::Event.new("@timestamp" => "foo")
         expect(event.timestamp.to_i).to be_within(1).of Time.now.to_i
-        expect(event["tags"]).to eq([LogStash::Event::TIMESTAMP_FAILURE_TAG])
-        expect(event[LogStash::Event::TIMESTAMP_FAILURE_FIELD]).to eq("foo")
+        expect(event.get("tags")).to eq([LogStash::Event::TIMESTAMP_FAILURE_TAG])
+        expect(event.get(LogStash::Event::TIMESTAMP_FAILURE_FIELD)).to eq("foo")
 
         event = LogStash::Event.new("@timestamp" => 666)
         expect(event.timestamp.to_i).to be_within(1).of Time.now.to_i
-        expect(event["tags"]).to eq([LogStash::Event::TIMESTAMP_FAILURE_TAG])
-        expect(event[LogStash::Event::TIMESTAMP_FAILURE_FIELD]).to eq(666)
+        expect(event.get("tags")).to eq([LogStash::Event::TIMESTAMP_FAILURE_TAG])
+        expect(event.get(LogStash::Event::TIMESTAMP_FAILURE_FIELD)).to eq(666)
       end
 
       it "should warn for invalid value" do
@@ -432,8 +432,8 @@ describe LogStash::Event do
       it "should tag for invalid string format" do
         event = LogStash::Event.new("@timestamp" => "foo")
         expect(event.timestamp.to_i).to be_within(1).of Time.now.to_i
-        expect(event["tags"]).to eq([LogStash::Event::TIMESTAMP_FAILURE_TAG])
-        expect(event[LogStash::Event::TIMESTAMP_FAILURE_FIELD]).to eq("foo")
+        expect(event.get("tags")).to eq([LogStash::Event::TIMESTAMP_FAILURE_TAG])
+        expect(event.get(LogStash::Event::TIMESTAMP_FAILURE_FIELD)).to eq("foo")
       end
 
       it "should warn for invalid string format" do
@@ -478,7 +478,7 @@ describe LogStash::Event do
         end
 
         it "should still allow normal field access" do
-          expect(subject["hello"]).to eq("world")
+          expect(subject.get("hello")).to eq("world")
         end
       end
 
@@ -491,15 +491,15 @@ describe LogStash::Event do
           expect(fieldref).to start_with("[@metadata]")
 
           # Set it.
-          subject[fieldref] = value
+          subject.set(fieldref, value)
         end
 
         it "should still allow normal field access" do
-          expect(subject["normal"]).to eq("normal")
+          expect(subject.get("normal")).to eq("normal")
         end
 
         it "should allow getting" do
-          expect(subject[fieldref]).to eq(value)
+          expect(subject.get(fieldref)).to eq(value)
         end
 
         it "should be hidden from .to_json" do
@@ -522,10 +522,10 @@ describe LogStash::Event do
       context "with no metadata" do
         subject { LogStash::Event.new("foo" => "bar") }
         it "should have no metadata" do
-          expect(subject["@metadata"]).to be_empty
+          expect(subject.get("@metadata")).to be_empty
         end
         it "should still allow normal field access" do
-          expect(subject["foo"]).to eq("bar")
+          expect(subject.get("foo")).to eq("bar")
         end
 
         it "should not include the @metadata key" do
@@ -599,7 +599,7 @@ describe LogStash::Event do
     end
 
     it "return the string containing the timestamp, the host and the message" do
-      expect(event1.to_s).to eq("#{timestamp.to_iso8601} #{event1["host"]} #{event1["message"]}")
+      expect(event1.to_s).to eq("#{timestamp.to_iso8601} #{event1.get("host")} #{event1.get("message")}")
     end
   end
 
@@ -607,27 +607,27 @@ describe LogStash::Event do
     let(:event) { LogStash::Event.new({ "message" => "foo" }) }
 
     it "should invalidate target caching" do
-      expect(event["[a][0]"]).to be_nil
+      expect(event.get("[a][0]")).to be_nil
 
-      expect(event["[a][0]"] = 42).to eq(42)
-      expect(event["[a][0]"]).to eq(42)
-      expect(event["[a]"]).to eq({"0" => 42})
+      expect(event.set("[a][0]", 42)).to eq(42)
+      expect(event.get("[a][0]")).to eq(42)
+      expect(event.get("[a]")).to eq({"0" => 42})
 
-      expect(event["[a]"] = [42, 24]).to eq([42, 24])
-      expect(event["[a]"]).to eq([42, 24])
+      expect(event.set("[a]", [42, 24])).to eq([42, 24])
+      expect(event.get("[a]")).to eq([42, 24])
 
-      expect(event["[a][0]"]).to eq(42)
+      expect(event.get("[a][0]")).to eq(42)
 
-      expect(event["[a]"] = [24, 42]).to eq([24, 42])
-      expect(event["[a][0]"]).to eq(24)
+      expect(event.set("[a]", [24, 42])).to eq([24, 42])
+      expect(event.get("[a][0]")).to eq(24)
 
-      expect(event["[a][0]"] = {"a "=> 99, "b" => 98}).to eq({"a "=> 99, "b" => 98})
-      expect(event["[a][0]"]).to eq({"a "=> 99, "b" => 98})
+      expect(event.set("[a][0]", {"a "=> 99, "b" => 98})).to eq({"a "=> 99, "b" => 98})
+      expect(event.get("[a][0]")).to eq({"a "=> 99, "b" => 98})
 
-      expect(event["[a]"]).to eq([{"a "=> 99, "b" => 98}, 42])
-      expect(event["[a][0]"]).to eq({"a "=> 99, "b" => 98})
-      expect(event["[a][1]"]).to eq(42)
-      expect(event["[a][0][b]"]).to eq(98)
+      expect(event.get("[a]")).to eq([{"a "=> 99, "b" => 98}, 42])
+      expect(event.get("[a][0]")).to eq({"a "=> 99, "b" => 98})
+      expect(event.get("[a][1]")).to eq(42)
+      expect(event.get("[a][0][b]")).to eq(98)
     end
   end
 end

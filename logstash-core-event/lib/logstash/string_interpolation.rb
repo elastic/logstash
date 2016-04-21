@@ -115,7 +115,7 @@ module LogStash
     end
 
     def evaluate(event)
-      value = event[@key]
+      value = event.get(@key)
 
       case value
       when nil
