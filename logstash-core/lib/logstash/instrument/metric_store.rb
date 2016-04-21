@@ -2,6 +2,7 @@
 require "concurrent"
 require "logstash/event"
 require "logstash/instrument/metric_type"
+require "thread"
 
 module LogStash module Instrument
   # The Metric store the data structure that make sure the data is
@@ -25,6 +26,12 @@ module LogStash module Instrument
       # This hash has only one dimension
       # and allow fast retrieval of the metrics
       @fast_lookup = Concurrent::Map.new
+
+      # This Mutex block the critical section for the
+      # structured hash, it block the zone when we first insert a metric
+      # in the structured hash or when we query it for search or to make
+      # the result available in the API.
+      @structured_lookup_mutex = Mutex.new
     end
 
     # This method use the namespace and key to search the corresponding value of
@@ -46,16 +53,13 @@ module LogStash module Instrument
       # BUT. If the value is not present in the `@fast_lookup` the value will be inserted and
       # `#puf_if_absent` will return nil. With this returned value of nil we assume that we don't
       # have it in the `@metric_store` for structured search so we add it there too.
-      #
-      # The problem with only using the `@metric_store` directly all the time would require us
-      # to use the mutex around the structure since its a multi-level hash, without that it wont
-      # return a consistent value of the metric and this would slow down the code and would
-      # complixity the code.
       if found_value = @fast_lookup.put_if_absent([namespaces, key], provided_value)
         return found_value
       else
-        # If we cannot find the value this mean we need to save it in the store.
-        fetch_or_store_namespaces(namespaces).fetch_or_store(key, provided_value)
+        @structured_lookup_mutex.synchronize do
+          # If we cannot find the value this mean we need to save it in the store.
+          fetch_or_store_namespaces(namespaces).fetch_or_store(key, provided_value)
+        end
         return provided_value
       end
     end
@@ -89,7 +93,9 @@ module LogStash module Instrument
       key_paths.map(&:to_sym)
       new_hash = Hash.new
 
-      get_recursively(key_paths, @store, new_hash)
+      @structured_lookup_mutex.synchronize do
+        get_recursively(key_paths, @store, new_hash)
+      end
 
       new_hash
     end

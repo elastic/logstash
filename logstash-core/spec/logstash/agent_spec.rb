@@ -357,7 +357,7 @@ describe LogStash::Agent do
     end
 
     it "resets the metric collector" do
-      # We know that the store has more events that the next expect
+      # We know that the store has more events coming in.
       sleep(0.01) while dummy_output.events.size < new_config_generator_counter
       snapshot = LogStash::Instrument::Collector.instance.snapshot_metric
       expect(snapshot.metric_store.get_with_path("/stats/events")[:stats][:events][:in].value).to be > new_config_generator_counter
@@ -367,11 +367,13 @@ describe LogStash::Agent do
 
       sleep(interval * 3) # Give time to reload the config
       
-      # Since thre is multiple threads involved and with the configuration reload, 
-      # It can take some time to the states be visible in the store
+      # Since there is multiple threads involved with the configuration reload, 
+      # It can take some time to the stats be visible in the store but it will
+      # be eventually consistent.
       sleep(0.01) while dummy_output.events.size < new_config_generator_counter
-      snapshot = LogStash::Instrument::Collector.instance.snapshot_metric
-      expect(snapshot.metric_store.get_with_path("/stats/events")[:stats][:events][:in].value).to eq(new_config_generator_counter)
+
+      value = LogStash::Instrument::Collector.instance.snapshot_metric.metric_store.get_with_path("/stats/events")[:stats][:events][:in].value
+      expect(value).to eq(new_config_generator_counter)
     end
   end
 end
