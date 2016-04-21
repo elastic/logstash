@@ -1,15 +1,17 @@
 [[community-maintainer]]
-== Logstash Plugins Community Maintainer Guide
+=== Logstash Plugins Community Maintainer Guide
 
 This document, to be read by new Maintainers, should explain their responsibilities.  It was inspired by the
 http://rfc.zeromq.org/spec:22[C4] document from the ZeroMQ project.  This document is subject to change and suggestions
 through Pull Requests and issues are strongly encouraged.
 
+[float]
 === Contribution Guidelines
 
 For general guidance around contributing to Logstash Plugins, see the
 https://www.elastic.co/guide/en/logstash/current/contributing-to-logstash.html[_Contributing to Logstash_] section.
 
+[float]
 === Document Goals
 
 To help make the Logstash plugins community participation easy with positive feedback.
@@ -24,6 +26,7 @@ To support the natural life cycle of a plugin.
 To codify the roles and responsibilities of: Maintainers and Contributors with specific focus on patch testing, code
 review, merging and release.
 
+[float]
 === Development Workflow
 
 All Issues and Pull Requests must be tracked using the Github issue tracker.
@@ -32,6 +35,7 @@ The plugin uses the http://www.apache.org/licenses/LICENSE-2.0[Apache 2.0 licens
 patch introduces code which has an incompatible license. Patch ownership and copyright is defined in the Elastic
 https://www.elastic.co/contributor-agreement[Contributor License Agreement] (CLA).
 
+[float]
 ==== Terminology
 
 A "Contributor" is a role a person assumes when providing a patch. Contributors will not have commit access to the
@@ -41,6 +45,7 @@ before a patch can be reviewed. Contributors can add themselves to the plugin Co
 A "Maintainer" is a role a person assumes when maintaining a plugin and keeping it healthy, including triaging issues, and
 reviewing and merging patches.
 
+[float]
 ==== Patch Requirements
 
 A patch is a minimal and accurate answer to exactly one identified and agreed upon problem. It must conform to the
@@ -57,6 +62,7 @@ and any additional lines as necessary for change explanation and rationale.
 A patch is mergeable when it satisfies the above requirements and has been reviewed positively by at least one other
 person.
 
+[float]
 ==== Development Process
 
 A user will log an issue on the issue tracker describing the problem they face or observe with as much detail as possible.
@@ -79,11 +85,13 @@ Maintainers should involve the core team if help is needed to reach consensus.
 
 Review non-source changes such as documentation in the same way as source code changes.
 
+[float]
 ==== Branch Management
 
 The plugin has a master branch that always holds the latest in-progress version and should always build.  Topic branches
 should kept to the minimum.
 
+[float]
 ==== Changelog Management
 
 Every plugin should have a changelog (CHANGELOG.md).  If not, please create one.  When changes are made to a plugin, make sure to include a changelog entry under the respective version to document the change.  The changelog should be easily understood from a user point of view.  As we iterate and release plugins rapidly, users use the changelog as a mechanism for deciding whether to update.
@@ -94,6 +102,7 @@ Changes that are not user facing should be tagged as `internal:`.  For example:
  - internal: Refactored specs for better testing
  - config: Default timeout configuration changed from 10s to 5s
 
+[float]
 ===== Detailed format of CHANGELOG.md
 
 Sharing a similar format of CHANGELOG.md in plugins ease readability for users.
@@ -123,12 +132,14 @@ Please see following annotated example and see a concrete example in https://raw
 <7> Please take care to *separate versions with an empty line*
 <8> Previous version identifier
 
+[float]
 ==== Continuous Integration
 
 Plugins are setup with automated continuous integration (CI) environments and there should be a corresponding badge on each Github page.  If it’s missing, please contact the Logstash core team.
 
 Every Pull Request opened automatically triggers a CI run.  To conduct a manual run, comment “Jenkins, please test this.” on the Pull Request.
 
+[float]
 === Versioning Plugins
 
 Logstash core and its plugins have separate product development lifecycles. Hence the versioning and release strategy for
@@ -145,11 +156,13 @@ Plugin releases follows a three-placed numbering scheme X.Y.Z. where X denotes a
 compatibility with existing configuration or functionality. Y denotes releases which includes features which are backward
 compatible. Z denotes releases which includes bug fixes and patches.
 
+[float]
 ==== Changing the version
 
 Version can be changed in the Gemspec, which needs to be associated with a changelog entry. Following this, we can publish
 the gem to RubyGem.org manually. At this point only the core developers can publish a gem.
 
+[float]
 ==== Labeling
 
 Labeling is a critical aspect of maintaining plugins. All issues in GitHub should be labeled correctly so it can:
@@ -169,6 +182,7 @@ details.
 * `needs tests`: Patch has no tests, and cannot be accepted without unit/integration tests
 * `docs`: Documentation related issue/PR
 
+[float]
 === Logging
 
 Although it’s important not to bog down performance with excessive logging, debug level logs can be immensely helpful when
@@ -178,6 +192,7 @@ as users will be forever gracious.
 [source,shell]
 @logger.debug("Logstash loves debug logs!", :actions => actions)
 
+[float]
 === Contributor License Agreement (CLA) Guidance
 
 [qanda]
@@ -191,10 +206,12 @@ Please make sure the CLA is signed by every Contributor prior to reviewing PRs a
      signs the CLA after a PR is submitted, they can refresh the automated CLA checker by pushing another
      comment on the PR after 5 minutes of signing.
 
+[float]
 === Need Help?
 
 Ping @logstash-core on Github to get the attention of the Logstash core team.
 
+[float]
 === Community Administration
 
 The core team is there to support the plugin Maintainers and overall ecosystem.
