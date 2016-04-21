@@ -7,7 +7,7 @@ module LogStash::Util
   # Decorators provides common manipulation on the event data.
   module Decorators
     extend self
-    
+
     @logger = Cabin::Channel.get(LogStash)
 
     # fields is a hash of field => value
@@ -22,11 +22,11 @@ module LogStash::Util
             # note below that the array field needs to be updated then reassigned to the event.
             # this is important because a construct like event[field] << v will not work
             # in the current Java event implementation. see https://github.com/elastic/logstash/issues/4140
-            a = Array(event[field])
+            a = Array(event.get(field))
             a << v
-            event[field] = a
+            event.set(field, a)
           else
-            event[field] = v
+            event.set(field, v)
           end
           @logger.debug? and @logger.debug("#{pluginname}: adding value to field", :field => field, :value => value)
         end
@@ -41,9 +41,9 @@ module LogStash::Util
         # note below that the tags array field needs to be updated then reassigned to the event.
         # this is important because a construct like event["tags"] << tag will not work
         # in the current Java event implementation. see https://github.com/elastic/logstash/issues/4140
-        tags = event["tags"] || []
+        tags = event.get("tags") || []
         tags << tag
-        event["tags"] = tags
+        event.set("tags", tags)
       end
     end
 

@@ -2,19 +2,19 @@
 # If you modify this file manually all comments and formatting will be lost.
 
 source "https://rubygems.org"
-gem "logstash-core", "5.0.0.alpha2"
-gem "logstash-core-event-java", "5.0.0.alpha2"
-gem "logstash-core-plugin-api", "1.13.0"
+gem "logstash-core", "5.0.0.beta1-snapshot1"
+gem "logstash-core-event-java", "5.0.0.beta1-snapshot1"
+gem "logstash-core-plugin-api", "2.0.0"
 gem "file-dependencies", "0.1.6"
 gem "ci_reporter_rspec", "1.0.0", :group => :development
 gem "simplecov", :group => :development
 gem "coveralls", :group => :development
 gem "tins", "1.6", :group => :development
 gem "rspec", "~> 3.1.0", :group => :development
-gem "logstash-devutils", "~> 0.0.15", :group => :development
+gem "logstash-devutils", :group => :development
 gem "benchmark-ips", :group => :development
 gem "octokit", "3.8.0", :group => :build
-gem "stud", "~> 0.0.21", :group => :build
+gem "stud", "~> 0.0.22", :group => :build
 gem "fpm", "~> 1.3.3", :group => :build
 gem "rubyzip", "~> 1.1.7", :group => :build
 gem "gems", "~> 0.8.3", :group => :build
@@ -47,7 +47,7 @@ gem "logstash-filter-date"
 gem "logstash-filter-dns"
 gem "logstash-filter-drop"
 gem "logstash-filter-fingerprint"
-gem "logstash-filter-geoip", "3.0.0.beta3"
+gem "logstash-filter-geoip"
 gem "logstash-filter-grok"
 gem "logstash-filter-json"
 gem "logstash-filter-kv"
@@ -92,7 +92,7 @@ gem "logstash-input-udp"
 gem "logstash-input-unix"
 gem "logstash-input-xmpp"
 gem "logstash-input-zeromq"
-gem "logstash-input-kafka", "3.0.0.beta7"
+gem "logstash-input-kafka"
 gem "logstash-input-beats"
 gem "logstash-output-cloudwatch"
 gem "logstash-output-csv"
@@ -123,5 +123,5 @@ gem "logstash-output-statsd"
 gem "logstash-output-stdout"
 gem "logstash-output-tcp"
 gem "logstash-output-udp"
-gem "logstash-output-kafka", "3.0.0.beta4"
+gem "logstash-output-kafka"
 gem "logstash-input-http_poller"

@@ -187,12 +187,12 @@ class LogStash::Filters::Base < LogStash::Plugin
     # this is important because a construct like event["tags"].delete(tag) will not work
     # in the current Java event implementation. see https://github.com/elastic/logstash/issues/4140
     @remove_tag.each do |tag|
-      tags = event["tags"]
+      tags = event.get("tags")
       break if tags.nil? || tags.empty?
       tag = event.sprintf(tag)
       @logger.debug? and @logger.debug("filters/#{self.class.name}: removing tag", :tag => tag)
       tags.delete(tag)
-      event["tags"] = tags
+      event.set("tags", tags)
     end
   end # def filter_matched
 

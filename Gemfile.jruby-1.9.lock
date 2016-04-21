@@ -777,5 +777,5 @@ DEPENDENCIES
   rspec (~> 3.1.0)
   rubyzip (~> 1.1.7)
   simplecov
-  stud (~> 0.0.21)
+  stud (~> 0.0.22)
   tins (= 1.6)

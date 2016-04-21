@@ -54,6 +54,7 @@ class LogStash::Event
   VERSION_ONE = "1"
   TIMESTAMP_FAILURE_TAG = "_timestampparsefailure"
   TIMESTAMP_FAILURE_FIELD = "_@timestamp"
+  TAGS = "tags".freeze
 
   METADATA = "@metadata".freeze
   METADATA_BRACKETS = "[#{METADATA}]".freeze
@@ -113,7 +114,7 @@ class LogStash::Event
     @data[TIMESTAMP] = val
   end
 
-  def [](fieldref)
+  def get(fieldref)
     if fieldref.start_with?(METADATA_BRACKETS)
       @metadata_accessors.get(fieldref[METADATA_BRACKETS.length .. -1])
     elsif fieldref == METADATA
@@ -123,7 +124,7 @@ class LogStash::Event
     end
   end
 
-  def []=(fieldref, value)
+  def set(fieldref, value)
     if fieldref == TIMESTAMP && !value.is_a?(LogStash::Timestamp)
       raise TypeError, "The field '@timestamp' must be a (LogStash::Timestamp, not a #{value.class} (#{value})"
     end
@@ -201,8 +202,9 @@ class LogStash::Event
 
   def tag(value)
     # Generalize this method for more usability
-    self["tags"] ||= []
-    self["tags"] << value unless self["tags"].include?(value)
+    tags = @accessors.get(TAGS) || []
+    tags << value unless tags.include?(value)
+    @accessors.set(TAGS, tags)
   end
 
   def to_hash_with_metadata
@@ -269,9 +271,8 @@ class LogStash::Event
       logger.warn("Error parsing #{TIMESTAMP} string, setting current time to #{TIMESTAMP}, original in #{TIMESTAMP_FAILURE_FIELD} field", :value => o.inspect, :exception => e.message)
     end
 
-    @data["tags"] ||= []
-    @data["tags"] << TIMESTAMP_FAILURE_TAG unless @data["tags"].include?(TIMESTAMP_FAILURE_TAG)
-    @data[TIMESTAMP_FAILURE_FIELD] = o
+    tag(TIMESTAMP_FAILURE_TAG)
+    @accessors.set(TIMESTAMP_FAILURE_FIELD, o)
 
     LogStash::Timestamp.now
   end
