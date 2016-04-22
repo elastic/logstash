@@ -14,7 +14,6 @@ import org.jruby.runtime.builtin.IRubyObject;
 import org.jruby.runtime.load.Library;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.Map;
 
 
