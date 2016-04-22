@@ -14,7 +14,7 @@ namespace :test do
   task :ssh_config do
     require "json"
     cd "acceptance" do
-      raw_ssh_config    = LogStash::VagrantHelpers.fetch_config[:stdout].split("\n");
+      raw_ssh_config    = LogStash::VagrantHelpers.fetch_config.stdout.split("\n");
       parsed_ssh_config = LogStash::VagrantHelpers.parse(raw_ssh_config)
       File.write("../.vm_ssh_config", parsed_ssh_config.to_json)
     end
@@ -27,7 +27,6 @@ namespace :test do
   end
 
   namespace :acceptance do
-
     desc "Run all acceptance"
     task :all do
       exit(RSpec::Core::Runner.run([Rake::FileList["acceptance/spec/**/*_spec.rb"]]))
