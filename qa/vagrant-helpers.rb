@@ -3,13 +3,29 @@ require "open3"
 
 module LogStash
   class VagrantHelpers
+    class CommandError < StandardError; end
+
+    class ExecuteResponse
+      attr_reader :stdin, :stdout, :stderr, :exitstatus
+
+      def initialize(stdin, stdout, stderr, exitstatus)
+        @stdin = stdin, 
+        @stdout = stdout
+        @stderr = stderr
+        @exitstatus = exitstatus
+      end
+
+      def success?
+        exitstatus == 0
+      end
+    end
 
     def self.bootstrap
-      execute("vagrant up")
+      execute_successfully("vagrant up")
     end
 
     def self.fetch_config
-      execute("vagrant ssh-config")
+      execute_successfully("vagrant ssh-config")
     end
 
     def self.parse(lines)
@@ -34,10 +50,17 @@ module LogStash
 
     def self.execute(cmd)
       Open3.popen3(cmd) do |stdin, stdout, stderr, wait_thr|
-        { :stdout => stdout.read.chomp, :stderr => stderr.read.chomp,
-          :exit_status => wait_thr.value.exitstatus }
+        ExecuteResponse.new(stdin, stdout.read.chomp, stderr.read.chomp, wait_thr.value.exitstatus)
       end
     end
 
+    def self.execute_successfully(cmd)
+      response = execute(cmd)
+    
+      unless response.success?
+        raise CommandError, "CMD: #{cmd} STDERR: #{response.stderr}"
+      end
+      response
+    end
   end
 end
