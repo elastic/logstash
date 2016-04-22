@@ -60,7 +60,7 @@ public final class RubyJavaObject implements Serializable {
 
     @Override
     public String toString() {
-        final StringBuffer sb = new StringBuffer("RubyJavaObject{");
+        final StringBuilder sb = new StringBuilder("RubyJavaObject{");
         sb.append("rubyValue=").append(isRubyNil ? "nil" : rubyValue);
         sb.append(", javaValue=").append(javaValue);
         sb.append('}');
