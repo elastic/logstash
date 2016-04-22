@@ -82,7 +82,7 @@ describe LogStash::Agent do
         context "with a config that contains reload incompatible plugins" do
           let(:second_pipeline_config) { "input { stdin {} } filter { } output { }" }
 
-          it "does not reload if new config contains reload incompatible plugins" do
+          it "does not upgrade the new config" do
             t = Thread.new { subject.execute }
             sleep 0.01 until subject.running_pipelines? && subject.pipelines.values.first.ready?
             expect(subject).to_not receive(:upgrade_pipeline)
@@ -97,10 +97,10 @@ describe LogStash::Agent do
         context "with a config that does not contain reload incompatible plugins" do
           let(:second_pipeline_config) { "input { generator { } } filter { } output { }" }
 
-          it "does not reload if new config contains reload incompatible plugins" do
+          it "does upgrade the new config" do
             t = Thread.new { subject.execute }
             sleep 0.01 until subject.running_pipelines? && subject.pipelines.values.first.ready?
-            expect(subject).to receive(:upgrade_pipeline)
+            expect(subject).to receive(:upgrade_pipeline).once.and_call_original
             File.open(config_file, "w") { |f| f.puts second_pipeline_config }
             subject.send(:reload_state!)
             sleep 0.1
@@ -136,7 +136,7 @@ describe LogStash::Agent do
         context "with a config that contains reload incompatible plugins" do
           let(:second_pipeline_config) { "input { stdin {} } filter { } output { }" }
 
-          it "does not reload if new config contains reload incompatible plugins" do
+          it "does not upgrade the new config" do
             t = Thread.new { subject.execute }
             sleep 0.01 until subject.running_pipelines? && subject.pipelines.values.first.ready?
             expect(subject).to_not receive(:upgrade_pipeline)
@@ -150,10 +150,10 @@ describe LogStash::Agent do
         context "with a config that does not contain reload incompatible plugins" do
           let(:second_pipeline_config) { "input { generator { } } filter { } output { }" }
 
-          it "does not reload if new config contains reload incompatible plugins" do
+          it "does upgrade the new config" do
             t = Thread.new { subject.execute }
             sleep 0.01 until subject.running_pipelines? && subject.pipelines.values.first.ready?
-            expect(subject).to receive(:upgrade_pipeline).at_least(2).times
+            expect(subject).to receive(:upgrade_pipeline).once.and_call_original
             File.open(config_file, "w") { |f| f.puts second_pipeline_config }
             sleep 0.1
             Stud.stop!(t)
