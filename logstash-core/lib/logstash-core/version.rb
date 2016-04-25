@@ -5,4 +5,4 @@
 # Note to authors: this should not include dashes because 'gem' barfs if
 # you include a dash in the version string.
 
-LOGSTASH_CORE_VERSION = "2.3.2.snapshot1"
+LOGSTASH_CORE_VERSION = "2.3.2"

@@ -1,3 +1,32 @@
+## 2.3.2 (Apr 25, 2016)
+### general
+ - Added reload support to the init script so you can do `service logstash reload`
+ - The original intent of `"%{foo}"` syntax was to always produce a string, but the 
+   previous 2.x and 1.5.x versions returned float (underlying value) and starting in release 2.3.0, 
+   Logstash returned the underlying value type for field references. In 2.3.2 we are returning back 
+   to the 2.x and 1.5.x behavior of returning float since this behavior breaks compatibility 
+   in a minor release ([#5114](https://github.com/elastic/logstash/issues/5114)).
+ - Fixed use of `KILL_ON_STOP_TIMEOUT` variable in init scripts which allows Logstash to force
+   stop ([#4991](https://github.com/elastic/logstash/issues/4991)).
+   
+### Input
+ - Beats
+   - Fixed an issue when time based flush feature was used with multiline codec ([#73](https://github.com/logstash-plugins/logstash-input-beats/issues/73)).
+ - HTTP Poller
+   - Fix 'ssl_certificate_validation' option to actually let you disable cert validation ([#48](https://github.com/logstash-plugins/logstash-input-http_poller/issues/48)).
+ - Kafka
+   - Added support for reading LZ4 compressed topics. 
+
+### Filter
+ - XML
+   - Added setting to disable forcing single values to be added in arrays ([#27](https://github.com/logstash-plugins/logstash-filter-xml/issues/27))
+
+### Output
+ - Kafka
+   - Added support for reading LZ4 compressed topics.
+ - Redis
+   - Fixed a flood of runtime warnings which was logged when this output was used ((#26)[https://github.com/logstash-plugins/logstash-output-redis/issues/26]).
+
 ## 2.3.1 (Apr 4, 2016)
 ### general
  - Fix a JRuby thread safety issue when using regular expression under multiple workers ([#4977](https://github.com/elastic/logstash/issues/4977)).
