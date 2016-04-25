@@ -2,6 +2,9 @@ require "rspec"
 require "rspec/core/runner"
 require "rspec/core/rake_task"
 require_relative "vagrant-helpers"
+require_relative "platform_config"
+
+platforms = PlatformConfig.new
 
 task :spec    => 'spec:all'
 task :default => :spec
@@ -30,14 +33,11 @@ namespace :test do
       exit(RSpec::Core::Runner.run([Rake::FileList["acceptance/spec/**/*_spec.rb"]]))
     end
 
-    desc "Run acceptance test in debian machines"
-    task :debian do
-      exit(RSpec::Core::Runner.run([Rake::FileList["acceptance/spec/debian/**/*_spec.rb"]]))
-    end
-
-    desc "Run acceptance test in centos machines"
-    task :centos do
-      exit(RSpec::Core::Runner.run([Rake::FileList["acceptance/spec/centos/**/*_spec.rb"]]))
+    platforms.types.each do |type|
+      desc "Run acceptance test in #{type} machines"
+      task type do
+        exit(RSpec::Core::Runner.run([Rake::FileList["acceptance/spec/#{type}/**/*_spec.rb"]]))
+      end
     end
 
     desc "Run one single machine acceptance test"

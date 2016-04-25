@@ -1,43 +1,27 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
+require_relative "./platform_config.rb"
 
 Vagrant.configure(2) do |config|
+  platforms = PlatformConfig.new
 
-  config.vm.define "ubuntu-1204" do |machine|
-    machine.vm.box = "elastic/ubuntu-12.04-x86_64"
-    common_config(machine, "ubuntu")
-  end
+  platforms.each do |platform|
+    config.vm.define platform.name do |machine|
+      machine.vm.box = platform.box
+      machine.vm.provider "virtualbox" do |v|
+        v.memory = 2096
+        v.cpus = 4
+      end
+      machine.vm.synced_folder "../../build", "/logstash-build", create: true
+      machine.vm.provision :shell do |sh|
+        sh.path = "sys/#{platform.type}/bootstrap.sh"
+        sh.privileged = true
+      end
 
-  config.vm.define "ubuntu-1404" do |machine|
-    machine.vm.box = "elastic/ubuntu-14.04-x86_64"
-    common_config(machine, "ubuntu")
-  end
-
-  config.vm.define "centos-6" do |machine|
-    machine.vm.box = "elastic/centos-6-x86_64"
-    common_config(machine, "centos")
-  end
-
-  config.vm.define "centos-7" do |machine|
-    machine.vm.box = "elastic/centos-7-x86_64"
-    common_config(machine, "centos")
-  end
-
-end
-
-def common_config(machine, type)
-  machine.vm.provider "virtualbox" do |v|
-    v.memory = 4096
-    v.cpus = 4
-  end
-  machine.vm.synced_folder "../../build", "/logstash-build", create: true
-  machine.vm.provision :shell do |sh|
-    sh.path = "sys/#{type}/bootstrap.sh"
-    sh.privileged = true
-  end
-
-  machine.vm.provision :shell do |sh|
-    sh.path = "sys/#{type}/user_bootstrap.sh"
-    sh.privileged = false
+      machine.vm.provision :shell do |sh|
+        sh.path = "sys/#{platform.type}/user_bootstrap.sh"
+        sh.privileged = false
+      end
+    end
   end
 end
