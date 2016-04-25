@@ -7,7 +7,6 @@ task :spec    => 'spec:all'
 task :default => :spec
 
 namespace :test do
-
   desc "Generate a valid ssh-config"
   task :ssh_config do
     require "json"
@@ -21,9 +20,7 @@ namespace :test do
   desc "Bootstrap all the VM's used for this tests"
   task "setup" do
     puts "bootstraping all VM's defined in acceptance/Vagrantfile"
-    cd "acceptance" do
-      LogStash::VagrantHelpers.bootstrap
-    end
+    LogStash::VagrantHelpers.bootstrap
   end
 
   namespace :acceptance do
