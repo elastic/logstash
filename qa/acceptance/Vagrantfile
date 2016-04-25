@@ -15,12 +15,12 @@ Vagrant.configure(2) do |config|
 
   config.vm.define "centos-6" do |machine|
     machine.vm.box = "elastic/centos-6-x86_64"
-    common_config(machine, "ubuntu")
+    common_config(machine, "centos")
   end
 
   config.vm.define "centos-7" do |machine|
     machine.vm.box = "elastic/centos-7-x86_64"
-    common_config(machine, "ubuntu")
+    common_config(machine, "centos")
   end
 
 end
