@@ -32,7 +32,7 @@ if ENV['USE_RUBY'] != '1'
     # if required at this point system gems can be installed using the system_gem task, for example:
     # Rake::Task["vendor:system_gem"].invoke(jruby, "ffi", "1.9.6")
 
-    exec(jruby, "-J-Xmx1024m", "-S", rake, *ARGV)
+    exec(jruby, "-J-Xmx1g", "-S", rake, *ARGV)
   end
 end
 
