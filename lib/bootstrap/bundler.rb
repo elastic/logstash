@@ -104,13 +104,22 @@ module LogStash
       ::Bundler.settings[:gemfile] = LogStash::Environment::GEMFILE_PATH
       ::Bundler.settings[:without] = options[:without].join(":")
 
+      if !debug?
+        # Will deal with transient network errors
+        execute_bundler_with_retry(options)
+      else
+        options[:verbose] = true
+        execute_bundler(options)
+      end
+    end
+
+    def execute_bundler_with_retry(options)
       try = 0
       # capture_stdout also traps any raised exception and pass them back as the function return [output, exception]
       output, exception = capture_stdout do
         loop do
           begin
-            ::Bundler.reset!
-            ::Bundler::CLI.start(bundler_arguments(options))
+            execute_bundler(options)
             break
           rescue ::Bundler::VersionConflict => e
             $stderr.puts("Plugin version conflict, aborting")
@@ -132,10 +141,18 @@ module LogStash
           end
         end
       end
-
       raise exception if exception
 
       return output
+    end
+
+    def execute_bundler(options)
+      ::Bundler.reset!
+      ::Bundler::CLI.start(bundler_arguments(options))
+    end
+
+    def debug?
+      ENV["DEBUG"]
     end
 
     # build Bundler::CLI.start arguments array from the given options hash
@@ -161,6 +178,8 @@ module LogStash
         arguments << "package"
         arguments << "--all" if options[:all]
       end
+
+      arguments << "--verbose" if options[:verbose]
 
       arguments.flatten
     end
