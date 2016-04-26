@@ -18,36 +18,47 @@ namespace :test do
     end
   end
 
-  desc "Bootstrap all the VM's used for this tests"
-  task "setup" do
-    puts "bootstraping all VM's defined in acceptance/Vagrantfile"
-    cd "acceptance" do
-      LogStash::VagrantHelpers.bootstrap
-    end
-  end
-
   namespace :acceptance do
 
     desc "Run all acceptance"
     task :all do
-      exit(RSpec::Core::Runner.run([Rake::FileList["acceptance/spec/**/*_spec.rb"]]))
+      all_boxes = LogStash::VagrantHelpers::DEFAULT_CENTOS_BOXES + LogStash::VagrantHelpers::DEFAULT_DEBIAN_BOXES 
+      for box in all_boxes do
+        LogStash::VagrantHelpers.bootstrap(box)
+        exit(RSpec::Core::Runner.run([Rake::FileList["acceptance/spec/**/*_spec.rb"]]))
+        LogStash::VagrantHelpers.destroy(box)
+      end
     end
 
     desc "Run acceptance test in debian machines"
     task :debian do
-      exit(RSpec::Core::Runner.run([Rake::FileList["acceptance/spec/debian/**/*_spec.rb"]]))
+      for box in LogStash::VagrantHelpers::DEFAULT_DEBIAN_BOXES do
+        LogStash::VagrantHelpers.bootstrap(box)
+        exit(RSpec::Core::Runner.run([Rake::FileList["acceptance/spec/debian/**/*_spec.rb"]]))
+        LogStash::VagrantHelpers.destroy(box)
+      end
     end
 
     desc "Run acceptance test in centos machines"
     task :centos do
-      exit(RSpec::Core::Runner.run([Rake::FileList["acceptance/spec/centos/**/*_spec.rb"]]))
+      for box in LogStash::VagrantHelpers::DEFAULT_CENTOS_BOXES do
+        LogStash::VagrantHelpers.bootstrap(box)
+        exit(RSpec::Core::Runner.run([Rake::FileList["acceptance/spec/centos/**/*_spec.rb"]]))
+        LogStash::VagrantHelpers.destroy(box)
+      end
     end
 
     desc "Run one single machine acceptance test"
     task :single, :machine do  |t, args|
-      ENV['LS_VAGRANT_HOST'] = args[:machine]
-      platform = LogStash::VagrantHelpers.translate(args[:machine])
-      exit(RSpec::Core::Runner.run([Rake::FileList["acceptance/spec/**/*_spec.rb"]]))
+      machine = args[:machine]
+      ENV['LS_VAGRANT_HOST'] = machine
+      LogStash::VagrantHelpers.bootstrap(machine)
+      if LogStash::VagrantHelpers::DEFAULT_DEBIAN_BOXES.include? machine 
+        platform = "debian"
+      elsif LogStash::VagrantHelpers::DEFAULT_CENTOS_BOXES.include? machine
+        platform = "centos"
+      end
+      exit(RSpec::Core::Runner.run([Rake::FileList["acceptance/spec/#{platform}/**/*_spec.rb"]]))
     end
   end
 end
