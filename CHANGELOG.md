@@ -14,16 +14,12 @@
    - Fixed an issue when time based flush feature was used with multiline codec ([#73](https://github.com/logstash-plugins/logstash-input-beats/issues/73)).
  - HTTP Poller
    - Fix 'ssl_certificate_validation' option to actually let you disable cert validation ([#48](https://github.com/logstash-plugins/logstash-input-http_poller/issues/48)).
- - Kafka
-   - Added support for reading LZ4 compressed topics. 
 
 ### Filter
  - XML
    - Added setting to disable forcing single values to be added in arrays ([#27](https://github.com/logstash-plugins/logstash-filter-xml/issues/27))
 
 ### Output
- - Kafka
-   - Added support for reading LZ4 compressed topics.
  - Redis
    - Fixed a flood of runtime warnings which was logged when this output was used ((#26)[https://github.com/logstash-plugins/logstash-output-redis/issues/26]).
 
