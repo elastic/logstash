@@ -36,8 +36,9 @@ Java HotSpot(TM) 64-Bit Server VM (build 24.45-b08, mixed mode)
 === Installing from a Downloaded Binary
 
 Download the https://www.elastic.co/downloads/logstash[Logstash installation file] that matches your host environment.
-Unpack the file. On supported Linux operating systems, you can <<package-repositories,use a package manager>> to
-install Logstash.
+Unpack the file. Do not install Logstash into a directory path that contains colon (:) characters. 
+
+On supported Linux operating systems, you can use a package manager to install Logstash.
 
 [float]
 [[package-repositories]]
