@@ -1,7 +1,7 @@
 [[multiline]]
 === Managing Multiline Events
 
-Several use cases generate events that span multiple lines of text. In order to correctly handle these multline events,
+Several use cases generate events that span multiple lines of text. In order to correctly handle these multiline events,
 Logstash needs to know how to tell which lines are part of a single event.
 
 Multiline event processing is complex and relies on proper event ordering. The best way to guarantee ordered log
