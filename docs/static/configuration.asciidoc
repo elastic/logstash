@@ -366,7 +366,7 @@ What's an expression? Comparison tests, boolean logic, and so on!
 You can use the following comparison operators:
 
 * equality: `==`,  `!=`,  `<`,  `>`,  `<=`, `>=`
-* regexp: `=~`, `!~`
+* regexp: `=~`, `!~` (checks a pattern on the right against a string value on the left)
 * inclusion: `in`, `not in`
 
 The supported boolean operators are:
@@ -406,7 +406,7 @@ output {
 }
 ----------------------------------
 
-The `in` conditional enables you to compare against the value of a field:
+You can use the `in` operator to test whether a field contains a specific string, key, or (for lists) element:
 
 [source,js]
 ----------------------------------
@@ -433,7 +433,7 @@ filter {
 ----------------------------------
 
 You use the `not in` conditional the same way. For example,
-you could use `not in` to only route events to elasticsearch
+you could use `not in` to only route events to Elasticsearch
 when `grok` is successful:
 
 [source,js]
@@ -445,13 +445,20 @@ output {
 }
 ----------------------------------
 
+You can check for the existence of a specific field, but there's currently no way to differentiate between a field that
+doesn't exist versus a field that's simply false. The expression `if [foo]` returns `false` when:
+
+* `[foo]` doesn't exist in the event,
+* `[foo]` exists in the event, but is false, or
+* `[foo]` exists in the event, but is nil
+
 For more complex examples, see <<using-conditionals, Using Conditionals>>.
 
 [float]
 [[metadata]]
 ==== The @metadata field
 
-In Logstash 1.5 there is a new, special field, called `@metadata`.  The contents
+In Logstash 1.5 and later, there is a special field called `@metadata`.  The contents
 of `@metadata` will not be part of any of your events at output time, which
 makes it great to use for conditionals, or extending and building event fields
 with field reference and sprintf formatting.
@@ -929,7 +936,7 @@ This example labels all events using the `type` field, but doesn't actually pars
 Similarly, you can use conditionals to direct events to particular outputs. For example, you could:
 
 * alert nagios of any apache events with status 5xx
-* record any 4xx status to elasticsearch
+* record any 4xx status to Elasticsearch
 * record all status code hits via statsd
 
 To tell nagios about any http event that has a 5xx status code, you
