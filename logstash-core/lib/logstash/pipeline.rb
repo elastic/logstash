@@ -438,7 +438,7 @@ module LogStash; class Pipeline
   def shutdown_workers
     # Each worker thread will receive this exactly once!
     @worker_threads.each do |t|
-      @logger.debug("Pushing shutdown", :thread => t)
+      @logger.debug("Pushing shutdown", :thread => t.inspect)
       @input_queue.push(LogStash::SHUTDOWN)
     end
 

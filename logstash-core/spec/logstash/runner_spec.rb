@@ -179,14 +179,14 @@ describe LogStash::Runner do
       it "should set 'debug_config' to false by default" do
         expect(LogStash::Config::Loader).to receive(:new).with(anything, false).and_call_original
         expect(LogStash::Pipeline).to receive(:new).with(pipeline_string, hash_including(:debug_config => false)).and_return(pipeline)
-        args = ["--debug", "-e", pipeline_string]
+        args = ["--debug", "-e", pipeline_string, "-l", "/dev/null", "--log-in-json"]
         subject.run("bin/logstash", args)
       end
 
       it "should allow overriding debug_config" do
         expect(LogStash::Config::Loader).to receive(:new).with(anything, true).and_call_original
         expect(LogStash::Pipeline).to receive(:new).with(pipeline_string, hash_including(:debug_config => true)).and_return(pipeline)
-        args = ["--debug", "--debug-config",  "-e", pipeline_string]
+        args = ["--debug", "--debug-config",  "-e", pipeline_string, "-l", "/dev/null", "--log-in-json"]
         subject.run("bin/logstash", args)
       end
     end
