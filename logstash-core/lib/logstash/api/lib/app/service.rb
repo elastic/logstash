@@ -28,7 +28,7 @@ class LogStash::Api::Service
   end
 
   def update(snapshot)
-    logger.debug("[api-service] snapshot received", :snapshot => snapshot) if logger.debug?
+    logger.debug("[api-service] snapshot received", :snapshot_time => snapshot.created_at) if logger.debug?
     if @snapshot_rotation_mutex.try_lock
       @snapshot = snapshot
       @snapshot_rotation_mutex.unlock

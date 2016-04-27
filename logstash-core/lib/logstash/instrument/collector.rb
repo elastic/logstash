@@ -75,7 +75,7 @@ module LogStash module Instrument
       logger.error("Collector: Something went wrong went sending data to the observers",
                    :execution_time => time_of_execution,
                    :result => result,
-                   :exception => exception)
+                   :exception => exception.class.name)
     end
 
     # Snapshot the current Metric Store and return it immediately,

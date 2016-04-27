@@ -8,12 +8,12 @@ require "logstash/filters/base"
 
 describe LogStash::Plugin do
   it "should fail lookup on inexisting type" do
-    expect_any_instance_of(Cabin::Channel).to receive(:debug).once
+    #expect_any_instance_of(Cabin::Channel).to receive(:debug).once
     expect { LogStash::Plugin.lookup("badbadtype", "badname") }.to raise_error(LogStash::PluginLoadingError)
   end
 
   it "should fail lookup on inexisting name" do
-    expect_any_instance_of(Cabin::Channel).to receive(:debug).once
+    #expect_any_instance_of(Cabin::Channel).to receive(:debug).once
     expect { LogStash::Plugin.lookup("filter", "badname") }.to raise_error(LogStash::PluginLoadingError)
   end
 
