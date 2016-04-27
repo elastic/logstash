@@ -1,6 +1,6 @@
 { 
-  "ubuntu-1204": { "box": "elastic/ubuntu-12.04-x86_64", "type": "ubuntu" },
-  "ubuntu-1404": { "box": "elastic/ubuntu-14.04-x86_64", "type": "ubuntu" },
+  "ubuntu-1204": { "box": "elastic/ubuntu-12.04-x86_64", "type": "debian" },
+  "ubuntu-1404": { "box": "elastic/ubuntu-14.04-x86_64", "type": "debian" },
   "centos-6": { "box": "elastic/centos-6-x86_64", "type": "centos" },
   "centos-7": { "box": "elastic/centos-7-x86_64", "type": "centos" }
 }
