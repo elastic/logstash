@@ -12,15 +12,10 @@ Vagrant.configure(2) do |config|
         v.memory = 2096
         v.cpus = 4
       end
-      machine.vm.synced_folder "../../build", "/logstash-build", create: true
+      machine.vm.synced_folder "../build", "/logstash-build", create: true
       machine.vm.provision :shell do |sh|
         sh.path = "sys/#{platform.type}/bootstrap.sh"
         sh.privileged = true
-      end
-
-      machine.vm.provision :shell do |sh|
-        sh.path = "sys/#{platform.type}/user_bootstrap.sh"
-        sh.privileged = false
       end
     end
   end
