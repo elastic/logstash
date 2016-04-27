@@ -7,7 +7,7 @@ describe "artifacts", :platform => :debian do
   shared_examples "installable" do |host, name|
 
     before(:each) do
-      install("/logstash-build/logstash-#{LOGSTASH_VERSION}_all.deb", host)
+      install("/home/vagrant/logstash-latest-SNAPSHOT.deb", host)
     end
 
     it "is installed on #{name}" do
