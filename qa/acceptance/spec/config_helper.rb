@@ -12,7 +12,8 @@ module SpecsHelper
   end
 
   def self.configure(vagrant_boxes)
-    setup_config = JSON.parse(File.read(".vm_ssh_config"))
+    setup_config = JSON.parse(File.read(File.join(File.dirname(__FILE__), "..", "..", ".vm_ssh_config")))
+
     ServiceTester.configure do |config|
       config.servers = []
       config.lookup  = {}
@@ -24,5 +25,4 @@ module SpecsHelper
       end
     end
   end
-
 end
