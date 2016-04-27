@@ -7,7 +7,7 @@ describe "artifacts", :platform => :centos do
   shared_examples "installable" do |host, name|
 
     before(:each) do
-      install("/logstash-build/logstash-#{LOGSTASH_VERSION}.noarch.rpm", host)
+      install("/home/vagrant/logstash-latest-SNAPSHOT.rpm", host)
     end
 
     it "is installed on #{name}" do
