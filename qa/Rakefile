@@ -13,11 +13,9 @@ namespace :test do
   desc "Generate a valid ssh-config"
   task :ssh_config do
     require "json"
-    cd "acceptance" do
-      raw_ssh_config    = LogStash::VagrantHelpers.fetch_config.stdout.split("\n");
-      parsed_ssh_config = LogStash::VagrantHelpers.parse(raw_ssh_config)
-      File.write("../.vm_ssh_config", parsed_ssh_config.to_json)
-    end
+    raw_ssh_config    = LogStash::VagrantHelpers.fetch_config.stdout.split("\n");
+    parsed_ssh_config = LogStash::VagrantHelpers.parse(raw_ssh_config)
+    File.write(".vm_ssh_config", parsed_ssh_config.to_json)
   end
 
   desc "Bootstrap all the VM's used for this tests"
