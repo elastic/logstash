@@ -1,6 +1,6 @@
-ROOT = File.expand_path(File.dirname(__FILE__))
-$LOAD_PATH.unshift File.join(ROOT, 'lib')
-Dir.glob('lib/**').each{ |d| $LOAD_PATH.unshift(File.join(ROOT, d)) }
+api_root = File.expand_path(File.dirname(__FILE__))
+$LOAD_PATH.unshift File.join(api_root, 'lib')
+Dir.glob('lib/**').each{ |d| $LOAD_PATH.unshift(File.join(api_root, d)) }
 
 require 'sinatra'
 require 'app/root'
