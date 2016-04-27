@@ -70,15 +70,14 @@ REM setup_vendored_jruby()
 set JRUBY_BIN="%LS_HOME%\vendor\jruby\bin\jruby"
 if exist "%JRUBY_BIN%" (
   set VENDORED_JRUBY=1
-goto finally
+  goto finally
 ) else (
-goto missing_jruby
+  goto missing_jruby
 )
 
 :missing_java_home
 echo JAVA_HOME environment variable must be set!
 exit /b
-echo Done
 
 :missing_jruby
 echo Unable to find JRuby.
