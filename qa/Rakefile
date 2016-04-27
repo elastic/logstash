@@ -15,7 +15,7 @@ namespace :test do
     require "json"
     raw_ssh_config    = LogStash::VagrantHelpers.fetch_config.stdout.split("\n");
     parsed_ssh_config = LogStash::VagrantHelpers.parse(raw_ssh_config)
-    File.write(".vm_ssh_config", parsed_ssh_config.to_json)
+    File.write(File.join(File.dirname(__FILE__), ".vm_ssh_config"), parsed_ssh_config.to_json)
   end
 
   desc "Bootstrap all the VM's used for this tests"
