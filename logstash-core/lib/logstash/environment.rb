@@ -1,26 +1,37 @@
 # encoding: utf-8
 require "logstash/errors"
 require "logstash/config/cpu_core_strategy"
+require "logstash/settings"
 
 module LogStash
 
-  DEFAULT_SETTINGS = {
-    "node.name" => Socket.gethostname,
-    "config.path" => nil,
-    "config.string" => nil,
-    "config.test" => false,
-    "pipeline.workers" => LogStash::Config::CpuCoreStrategy.maximum,
-    "pipeline.batch.size" => 125,
-    "pipeline.batch.delay" => 5, # in milliseconds
-    "pipeline.flush_interval" => 5, # in seconds
-    "pipeline.flush_timeout_interval" => 60, # in seconds
-    "pipeline.unsafe_shutdown" => false,
-    "plugin.paths" => [],
-    "log" => nil,
-    "debug" => false,
-    "verbose" => false,
-    "quiet" => false,
-  }
+  [
+                  Setting.new("node.name", String, Socket.gethostname),
+  ExistingFilePathSetting.new("config.path", nil, false),
+                  Setting.new("config.string", String, nil, false),
+           BooleanSetting.new("config.test", false),
+           BooleanSetting.new("config.auto_reload", false),
+                  Setting.new("config.reload_interval", Numeric, 3),
+           BooleanSetting.new("metric.collect", false),
+                  Setting.new("pipeline.workers", Numeric, LogStash::Config::CpuCoreStrategy.maximum),
+                  Setting.new("pipeline.output.workers", Numeric, 1),
+                  Setting.new("pipeline.batch.size", Numeric, 125),
+                  Setting.new("pipeline.batch.delay", Numeric, 5), # in milliseconds
+                  Setting.new("pipeline.flush.interval", Numeric, 5), # in seconds
+                  Setting.new("pipeline.flush.timeout_interval", Numeric, 60), # in seconds
+           BooleanSetting.new("pipeline.unsafe_shutdown", false),
+                  Setting.new("plugin.paths", Array, []),
+                  Setting.new("ruby_shell", String, nil, false),
+           BooleanSetting.new("debug", false),
+           BooleanSetting.new("debug.config", false),
+           BooleanSetting.new("verbose", false),
+           BooleanSetting.new("quiet", false),
+           BooleanSetting.new("version", false),
+           BooleanSetting.new("help", false),
+                  Setting.new("log.path", String, nil, false),
+                  Setting.new("web_api.http.host", String, "127.0.0.1"),
+                  Setting.new("web_api.http.port", Numeric, 9600),
+  ].each {|setting| SETTINGS.register(setting) }
 
   module Environment
     extend self

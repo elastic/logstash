@@ -1,9 +1,9 @@
 require "logstash/config/defaults"
 
 module LogStash; module Config; class Loader
-  def initialize(logger, debug_config=false)
+  def initialize(logger)
     @logger = logger
-    @debug_config = debug_config
+    @debug_config = LogStash::SETTINGS.get_value("debug.config")
   end
 
   def format_config(config_path, config_string)

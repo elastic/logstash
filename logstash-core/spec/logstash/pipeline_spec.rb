@@ -223,7 +223,7 @@ describe LogStash::Pipeline do
         pipeline.run
 
         expect(pipeline.outputs.size ).to eq(1)
-        expect(pipeline.outputs.first.workers.size ).to eq(::LogStash::Pipeline::DEFAULT_OUTPUT_WORKERS)
+        expect(pipeline.outputs.first.workers.size ).to eq(::LogStash::DEFAULT_SETTINGS["pipeline.output.workers"])
         expect(pipeline.outputs.first.workers.first.num_closes ).to eq(1)
       end
 

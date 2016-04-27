@@ -20,7 +20,7 @@ require "logstash/output_delegator"
 require "logstash/filter_delegator"
 
 module LogStash; class Pipeline
- attr_reader :inputs,
+  attr_reader :inputs,
     :filters,
     :outputs,
     :worker_threads,
@@ -35,28 +35,17 @@ module LogStash; class Pipeline
     :config_str,
     :original_settings
 
-  DEFAULT_SETTINGS = {
-    :default_pipeline_workers => LogStash::Config::CpuCoreStrategy.maximum,
-    :default_output_workers => 1,
-    :pipeline_batch_size => 125,
-    :pipeline_batch_delay => 5, # in milliseconds
-    :flush_interval => 5, # in seconds
-    :flush_timeout_interval => 60, # in seconds
-    :debug_config => false
-  }
-
   MAX_INFLIGHT_WARN_THRESHOLD = 10_000
 
   RELOAD_INCOMPATIBLE_PLUGINS = [
     "LogStash::Inputs::Stdin"
   ]
 
-  def initialize(config_str, settings = {})
+  def initialize(config_str, settings)
     @config_str = config_str
-    @original_settings = settings
     @logger = Cabin::Channel.get(LogStash)
-    @pipeline_id = settings[:pipeline_id] || self.object_id
-    @settings = LogStash::DEFAULT_SETTINGS.merge(settings)
+    @settings = settings
+    @pipeline_id = @settings.get_value("pipeline.id") || self.object_id
     @reporter = LogStash::PipelineReporter.new(@logger, self)
 
     @inputs = nil
@@ -449,16 +438,12 @@ module LogStash; class Pipeline
     klass = LogStash::Plugin.lookup(plugin_type, name)
 
     if plugin_type == "output"
-      LogStash::OutputDelegator.new(@logger, klass, DEFAULT_SETTINGS[:default_output_workers], pipeline_scoped_metric.namespace(:outputs), *args)
+      LogStash::OutputDelegator.new(@logger, klass, @settings["pipeline.output.workers"], pipeline_scoped_metric.namespace(:outputs), *args)
     elsif plugin_type == "filter"
       LogStash::FilterDelegator.new(@logger, klass, pipeline_scoped_metric.namespace(:filters), *args)
     else
       klass.new(*args)
     end
-  end
-
-  def default_output_workers
-    @settings["pipeline.workers"] || LogStash::DEFAULT_SETTINGS["pipeline.workers"]
   end
 
   # for backward compatibility in devutils for the rspec helpers, this method is not used

@@ -57,33 +57,6 @@ module LogStash
   end
 end
 
-<<<<<<< bc6d34ae24eb4e07c68f3447d4da3f3223d4d231
-def flatten_hash(h,f="",g={})
-  return g.update({ f => h }) unless h.is_a? Hash
-  if f.empty?
-    h.each { |k,r| flatten_hash(r,k,g) }
-  else
-    h.each { |k,r| flatten_hash(r,"#{f}.#{k}",g) }
-  end
-  g
-end
-
-def flatten_arguments(hash)
-  args = []
-  hash.each do |key, value|
-    next if value.nil?
-    if value == true
-      args << "--#{key}"
-    elsif value == false
-      args << "--no-#{key}"
-    else
-      args << "--#{key}"
-      args << value
-    end
-  end
-  args
-end
-
 def fetch_yml_settings(settings_path)
   if settings = YAML.parse(IO.read(settings_path))
     settings = settings.to_ruby
