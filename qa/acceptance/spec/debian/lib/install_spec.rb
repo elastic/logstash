@@ -1,13 +1,13 @@
 # encoding: utf-8
-require_relative '../spec_helper'
-require          'logstash/version'
+require_relative "../spec_helper"
+require "logstash/version"
 
 describe "artifacts", :platform => :debian do
 
   shared_examples "installable" do |host, name|
 
     before(:each) do
-      install("/home/vagrant/logstash-latest-SNAPSHOT.deb", host)
+      install("/logstash-build/logstash-#{LOGSTASH_VERSION}_all.deb", host)
     end
 
     it "is installed on #{name}" do
