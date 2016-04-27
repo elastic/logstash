@@ -12,6 +12,8 @@ export JRUBY_OPTS="-J-Xmx1g"
 
 SELECTED_TEST_SUITE=$1
 
+export SPEC_OPTS="--order rand --format documentation --format CI::Reporter::RSpecFormatter"
+
 if [[ $SELECTED_TEST_SUITE == $"core-fail-fast" ]]; then
   echo "Running core-fail-fast tests"
   rake test:install-core    # Install core dependencies for testing.

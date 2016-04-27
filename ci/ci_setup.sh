@@ -21,7 +21,5 @@ export JRUBY_OPTS="-J-Xmx1g"
 # Setup the environment
 rake bootstrap # Bootstrap your logstash instance
 
-# Set up some general options for the rspec runner
-echo "--order rand" > .rspec
-echo "--format progress" >> .rspec
-echo "--format CI::Reporter::RSpecFormatter" >> .rspec
+
+# RSpec options are set in ci_test.sh
