@@ -19,9 +19,8 @@ if not defined JAVA_HOME IF EXIST %ProgramData%\Oracle\java\javapath\java.exe (
     for /f "tokens=2 delims=[]" %%a in ('dir %ProgramData%\Oracle\java\javapath\java.exe') do @set JAVA_EXE=%%a
 )
 if defined JAVA_EXE set JAVA_HOME=%JAVA_EXE:\bin\java.exe=%
-if defined JAVA_EXE (
-    echo Using JAVA_HOME=%JAVA_HOME% retrieved from %ProgramData%\Oracle\java\javapath\java.exe
-)
+if defined JAVA_EXE echo Using JAVA_HOME=%JAVA_HOME% retrieved from %ProgramData%\Oracle\java\javapath\java.exe
+
 if not defined JAVA_HOME goto missing_java_home
 REM ***** JAVA options *****
 
@@ -31,7 +30,9 @@ if "%LS_HEAP_SIZE%" == "" (
 
 IF NOT "%JAVA_OPTS%" == "" (
     ECHO JAVA_OPTS was set to [%JAVA_OPTS%]. Logstash will trust these options, and not set any defaults that it might usually set
-) ELSE (
+    goto opts_defined
+)
+
     SET JAVA_OPTS=%JAVA_OPTS% -Xmx%LS_HEAP_SIZE%
 
     REM Enable aggressive optimizations in the JVM
@@ -59,7 +60,8 @@ IF NOT "%JAVA_OPTS%" == "" (
     REM The path to the heap dump location, note directory must exists and have enough
     REM space for a full heap dump.
     SET JAVA_OPTS=%JAVA_OPTS% -XX:HeapDumpPath="$LS_HOME/heapdump.hprof"
-)
+:opts_defined
+
 
 IF NOT "%LS_JAVA_OPTS%" == "" (
     ECHO LS_JAVA_OPTS was set to [%LS_JAVA_OPTS%]. This will be appended to the JAVA_OPTS [%JAVA_OPTS%]
