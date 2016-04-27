@@ -53,6 +53,20 @@ namespace "artifact" do
     end.flatten.uniq
   end
 
+  task "all" => ["prepare"] do
+    Rake::Task["artifact:deb"].invoke
+    Rake::Task["artifact:rpm"].invoke
+    Rake::Task["artifact:zip"].invoke
+    Rake::Task["artifact:tar"].invoke
+  end
+
+  task "all-all-plugins" => ["prepare-all"] do
+    Rake::Task["artifact:deb"].invoke
+    Rake::Task["artifact:rpm"].invoke
+    Rake::Task["artifact:zip"].invoke
+    Rake::Task["artifact:tar"].invoke
+  end
+
   # We create an empty bundle config file
   # This will allow the deb and rpm to create a file
   # with the correct user group and permission.
@@ -120,6 +134,7 @@ namespace "artifact" do
   end
 
   task "prepare" => ["bootstrap", "plugin:install-default", "install-logstash-core", "install-logstash-core-event", "install-logstash-core-plugin-api", "clean-bundle-config"]
+
   task "prepare-all" => ["bootstrap", "plugin:install-all", "install-logstash-core", "install-logstash-core-event", "install-logstash-core-plugin-api", "clean-bundle-config"]
 
   desc "Build a tar.gz of default logstash plugins with all dependencies"

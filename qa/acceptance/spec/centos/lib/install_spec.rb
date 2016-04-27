@@ -1,13 +1,13 @@
 # encoding: utf-8
-require_relative '../spec_helper'
-require          'logstash/version'
+require_relative "../spec_helper"
+require "logstash/version"
 
 describe "artifacts", :platform => :centos do
 
   shared_examples "installable" do |host, name|
 
     before(:each) do
-      install("/home/vagrant/logstash-latest-SNAPSHOT.rpm", host)
+      install("/logstash-build/logstash-#{LOGSTASH_VERSION}.noarch.rpm", host)
     end
 
     it "is installed on #{name}" do

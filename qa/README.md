@@ -6,6 +6,11 @@ follow to setup your environment.
 
 ### Environment setup and Running Tests
 
+It is possible to run the full suite of the acceptance test with the codebase by 
+running the command `ci/ci_acceptance.sh`, this command will generate the artefacts, bootstrap
+the VM and run the tests.
+
+
 This test are based on a collection of Vagrant defined VM's where the
 different test are going to be executed, so first setup necessary is to
 have vagrant properly available, see https://www.vagrantup.com/ for
