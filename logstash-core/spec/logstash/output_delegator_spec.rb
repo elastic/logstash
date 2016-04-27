@@ -13,10 +13,12 @@ describe LogStash::OutputDelegator do
     let(:out_klass) { double("output klass") }
     let(:out_inst) { double("output instance") }
 
+
     before(:each) do
       allow(out_klass).to receive(:new).with(any_args).and_return(out_inst)
       allow(out_klass).to receive(:threadsafe?).and_return(false)
       allow(out_klass).to receive(:workers_not_supported?).and_return(false)
+      allow(out_klass).to receive(:name).and_return("example")
       allow(out_inst).to receive(:register)
       allow(out_inst).to receive(:multi_receive)
       allow(out_inst).to receive(:metric=).with(any_args)
