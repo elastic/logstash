@@ -59,7 +59,7 @@ class LogStash::Agent < Clamp::Command
   option "--debug", :flag, I18n.t("logstash.agent.flag.debug")
 
   option ["--debug-config"], :flag,
-         I18n.t("logstash.runner.flag.debug_config"),
+         I18n.t("logstash.agent.flag.debug_config"),
          :attribute_name => :debug_config, :default => false
 
   option ["-V", "--version"], :flag,
