@@ -55,7 +55,7 @@ module LogStash; module Config; class Loader
     path = ::File.join(path, "*") if ::File.directory?(path)
 
     if Dir.glob(path).length == 0
-      fail(I18n.t("logstash.runner.configuration.file-not-found", :path => path))
+      fail(I18n.t("logstash.agent.configuration.file-not-found", :path => path))
     end
 
     config = ""
@@ -91,7 +91,7 @@ module LogStash; module Config; class Loader
     begin
       Net::HTTP.get(uri) + "\n"
     rescue Exception => e
-      fail(I18n.t("logstash.runner.configuration.fetch-failed", :path => uri.to_s, :message => e.message))
+      fail(I18n.t("logstash.agent.configuration.fetch-failed", :path => uri.to_s, :message => e.message))
     end
   end
 end end end
