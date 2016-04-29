@@ -8,6 +8,6 @@ describe "artifacts operation" do
   config.servers.each do |address|
     logstash = ServiceTester::Artifact.new(address, config.lookup[address])
     it_behaves_like "installable", logstash
-    it_behaves_like "runnable", logstash
+    it_behaves_like "runnable",    logstash
   end
 end
