@@ -5,6 +5,6 @@ require_relative '../helpers'
 RSpec::Matchers.define :be_running do
 
   match do |subject|
-    subject.client.running?(subject.hosts, subject.name)
+    subject.running?(subject.hosts, subject.name)
   end
 end
