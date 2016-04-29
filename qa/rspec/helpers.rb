@@ -9,6 +9,10 @@ module ServiceTester
       @servers  = []
       @lookup   = {}
     end
+
+    def hosts
+      lookup.values.map { |val| val["host"] }
+    end
   end
 
   class << self
@@ -22,22 +26,6 @@ module ServiceTester
 
   def servers
     ServiceTester.configuration.servers
-  end
-
-  def install(package, host=nil)
-    select_client.install(package, host)
-  end
-
-  def uninstall(package, host=nil)
-    select_client.uninstall(package, host)
-  end
-
-  def start_service(service, host=nil)
-    select_client.service_manager(service, "start", host)
-  end
-
-  def stop_service(service, host=nil)
-    select_client.service_manager(service, "stop", host)
   end
 
   def select_client
