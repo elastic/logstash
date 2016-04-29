@@ -1,6 +1,8 @@
 # encoding: utf-8
+require_relative "base"
+
 module ServiceTester
-  class CentosCommands
+  class CentosCommands < Base
 
     def installed?(hosts, package)
       stdout = ""
@@ -10,6 +12,10 @@ module ServiceTester
       end
       stdout.match(/^Installed Packages$/)
       stdout.match(/^logstash.noarch/)
+    end
+
+    def package_for(version)
+      File.join(ServiceTester::Base::LOCATION, "logstash-#{version}.noarch.rpm")
     end
 
     def install(package, host=nil)
@@ -49,7 +55,7 @@ module ServiceTester
 
     def service_manager(service, action, host=nil)
       hosts = (host.nil? ? servers : Array(host))
-      at(hosts, {in: :serial}) do |host|
+      at(hosts, {in: :serial}) do |_|
         sudo_exec!("service #{service} #{action}")
       end
     end

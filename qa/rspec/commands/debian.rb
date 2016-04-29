@@ -1,6 +1,8 @@
 # encoding: utf-8
+require_relative "base"
+
 module ServiceTester
-  class DebianCommands
+  class DebianCommands < Base
 
     def installed?(hosts, package)
       stdout = ""
@@ -10,6 +12,10 @@ module ServiceTester
       end
       stdout.match(/^Package: #{package}$/)
       stdout.match(/^Status: install ok installed$/)
+    end
+
+    def package_for(version)
+      File.join(ServiceTester::Base::LOCATION, "logstash-#{version}_all.deb")
     end
 
     def install(package, host=nil)
