@@ -41,11 +41,18 @@ module LogStash
       @gemset.add_gem(Gem.parse(name, *requirements))
     end
 
-    # update existing or add new
+    # update existing or add new and merge passed options with current gem options if it exists
     # @param name [String] gem name
     # @param *requirements params following name use the same notation as the Gemfile gem DSL statement
     def update(name, *requirements)
       @gemset.update_gem(Gem.parse(name, *requirements))
+    end
+
+    # overwrite existing or add new
+    # @param name [String] gem name
+    # @param *requirements params following name use the same notation as the Gemfile gem DSL statement
+    def overwrite(name, *requirements)
+      @gemset.overwrite_gem(Gem.parse(name, *requirements))
     end
 
     # @return [Gem] removed gem or nil if not found
@@ -100,6 +107,19 @@ module LogStash
     # update existing or add new
     def update_gem(_gem)
       if old = find_gem(_gem.name)
+        # always overwrite requirements if specified
+        old.requirements = _gem.requirements unless no_constrains?(_gem.requirements)
+        # but merge options
+        old.options = old.options.merge(_gem.options)
+      else
+        @gems << _gem
+        @gems_by_name[_gem.name.downcase] = _gem
+      end
+    end
+
+    # update existing or add new
+    def overwrite_gem(_gem)
+      if old = find_gem(_gem.name)
         @gems[@gems.index(old)] = _gem
       else
         @gems << _gem
@@ -119,7 +139,18 @@ module LogStash
     def copy
       Marshal.load(Marshal.dump(self))
     end
+
     private
+
+    def no_constrains?(requirements)
+      return true if requirements.nil? || requirements.empty?
+
+      # check for the dummy ">= 0" version constrain or any variations thereof
+      # which is in fact a "no constrain" constrain which we should discard
+      return true if requirements.size == 1 && requirements.first.to_s.gsub(/\s+/, "") == ">=0"
+
+      false
+    end
 
     def sources_to_s
       return "" if @sources.empty?
