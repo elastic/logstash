@@ -212,7 +212,7 @@ GEM
     logstash-filter-fingerprint (2.0.5)
       logstash-core-plugin-api (~> 1.0)
       murmurhash3
-    logstash-filter-geoip (3.0.0.beta2-java)
+    logstash-filter-geoip (3.0.0.beta3-java)
       logstash-core-plugin-api (~> 1.0)
     logstash-filter-grok (2.0.5)
       jls-grok (~> 0.11.1)
