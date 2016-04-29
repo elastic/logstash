@@ -2,7 +2,7 @@
 require_relative "base"
 
 module ServiceTester
-  class CentosCommands < Base
+  class RedhatCommands < Base
 
     def installed?(hosts, package)
       stdout = ""
