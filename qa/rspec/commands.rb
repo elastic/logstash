@@ -51,7 +51,7 @@ module ServiceTester
       when "debian"
         return DebianCommands.new
       when "redhat"
-        return CentosCommands.new
+        return RedhatCommands.new
       else
         return
       end
