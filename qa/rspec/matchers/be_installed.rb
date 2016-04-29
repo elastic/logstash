@@ -4,22 +4,13 @@ require_relative '../helpers'
 
 RSpec::Matchers.define :be_installed do
 
-  match do |actual|
-    select_client.installed?([@host], actual)
-  end
-
-  chain :on do |host|
-    @host = host
+  match do |subject|
+    subject.client.installed?(subject.hosts, subject.name)
   end
 end
 
 RSpec::Matchers.define :be_removed do
-
-  match do |actual|
-    select_client.removed?([@host], actual)
-  end
-
-  chain :on do |host|
-    @host = host
+  match do |subject|
+    subject.client.removed?(subject.hosts, subject.name)
   end
 end
