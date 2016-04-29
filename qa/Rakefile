@@ -27,21 +27,21 @@ namespace :test do
   namespace :acceptance do
     desc "Run all acceptance"
     task :all do
-      exit(RSpec::Core::Runner.run([Rake::FileList["acceptance/spec/**/*_spec.rb"]]))
+      exit(RSpec::Core::Runner.run([Rake::FileList["acceptance/spec/lib/*_spec.rb"]]))
     end
 
     platforms.types.each do |type|
       desc "Run acceptance test in #{type} machines"
       task type do
-        exit(RSpec::Core::Runner.run([Rake::FileList["acceptance/spec/#{type}/**/*_spec.rb"]]))
+        ENV['LS_TEST_PLATFORM']=type
+        exit(RSpec::Core::Runner.run([Rake::FileList["acceptance/spec/lib/*_spec.rb"]]))
       end
     end
 
     desc "Run one single machine acceptance test"
     task :single, :machine do  |t, args|
-      ENV['LS_VAGRANT_HOST'] = args[:machine]
-      platform = LogStash::VagrantHelpers.translate(args[:machine])
-      exit(RSpec::Core::Runner.run([Rake::FileList["acceptance/spec/**/*_spec.rb"]]))
+      ENV['LS_VAGRANT_HOST']  = args[:machine]
+      exit(RSpec::Core::Runner.run([Rake::FileList["acceptance/spec/lib/*_spec.rb"]]))
     end
   end
 end
