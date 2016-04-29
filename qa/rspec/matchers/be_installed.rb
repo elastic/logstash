@@ -5,12 +5,12 @@ require_relative '../helpers'
 RSpec::Matchers.define :be_installed do
 
   match do |subject|
-    subject.client.installed?(subject.hosts, subject.name)
+    subject.installed?(subject.hosts, subject.name)
   end
 end
 
 RSpec::Matchers.define :be_removed do
   match do |subject|
-    subject.client.removed?(subject.hosts, subject.name)
+    subject.removed?(subject.hosts, subject.name)
   end
 end
