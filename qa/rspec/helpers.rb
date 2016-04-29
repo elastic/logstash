@@ -9,6 +9,10 @@ module ServiceTester
       @servers  = []
       @lookup   = {}
     end
+
+    def hosts
+      lookup.values.map { |val| val["host"] }
+    end
   end
 
   class << self
@@ -22,6 +26,18 @@ module ServiceTester
 
   def servers
     ServiceTester.configuration.servers
+  end
+
+  def package_for(type, version)
+     package_name = "/logstash-build/logstash-#{LOGSTASH_VERSION}"
+     if type == "debian"
+       package_name = "#{package_name}_all.deb"
+     elsif type == "redhat"
+       package_name = "#{package_name}.noarch.rpm"
+     else
+       raise Exception.new("Unknown package type=#{type}")
+     end
+     package_name
   end
 
   def install(package, host=nil)
