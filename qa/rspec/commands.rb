@@ -1,12 +1,16 @@
 # encoding: utf-8
 require_relative "./commands/debian"
 require_relative "./commands/redhat"
+require "forwardable"
 
 module ServiceTester
 
   class Artifact
 
-    attr_reader :client, :host
+    extend Forwardable
+    def_delegators :@client, :installed?, :removed?, :running?
+
+    attr_reader :host, :client
 
     def initialize(host, options={})
       @host     = host
