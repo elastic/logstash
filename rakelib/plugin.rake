@@ -9,7 +9,7 @@ namespace "plugin" do
 
   task "install-development-dependencies" do
     puts("[plugin:install-development-dependencies] Installing development dependencies of all installed plugins")
-    install_plugins("--development")
+    install_plugins("--development",  "--preserve")
 
     task.reenable # Allow this task to be run again
   end
@@ -17,35 +17,35 @@ namespace "plugin" do
   task "install", :name do |task, args|
     name = args[:name]
     puts("[plugin:install] Installing plugin: #{name}")
-    install_plugins("--no-verify", name)
+    install_plugins("--no-verify", "--preserve", name)
 
     task.reenable # Allow this task to be run again
   end # task "install"
 
   task "install-default" do
     puts("[plugin:install-default] Installing default plugins")
-    install_plugins("--no-verify", *LogStash::RakeLib::DEFAULT_PLUGINS)
+    install_plugins("--no-verify", "--preserve", *LogStash::RakeLib::DEFAULT_PLUGINS)
 
     task.reenable # Allow this task to be run again
   end
 
   task "install-core" do
     puts("[plugin:install-core] Installing core plugins")
-    install_plugins("--no-verify", *LogStash::RakeLib::CORE_SPECS_PLUGINS)
+    install_plugins("--no-verify", "--preserve", *LogStash::RakeLib::CORE_SPECS_PLUGINS)
 
     task.reenable # Allow this task to be run again
   end
 
   task "install-jar-dependencies" do
     puts("[plugin:install-jar-dependencies] Installing jar_dependencies plugins for testing")
-    install_plugins("--no-verify", *LogStash::RakeLib::TEST_JAR_DEPENDENCIES_PLUGINS)
+    install_plugins("--no-verify", "--preserve", *LogStash::RakeLib::TEST_JAR_DEPENDENCIES_PLUGINS)
 
     task.reenable # Allow this task to be run again
   end
 
   task "install-vendor" do
     puts("[plugin:install-jar-dependencies] Installing vendor plugins for testing")
-    install_plugins("--no-verify", *LogStash::RakeLib::TEST_VENDOR_PLUGINS)
+    install_plugins("--no-verify", "--preserve", *LogStash::RakeLib::TEST_VENDOR_PLUGINS)
 
     task.reenable # Allow this task to be run again
   end
@@ -58,7 +58,7 @@ namespace "plugin" do
     # TODO Push this downstream to #install_plugins
     p.each do |plugin|
       begin
-        install_plugins("--no-verify", plugin)
+        install_plugins("--no-verify", "--preserve", plugin)
       rescue
         puts "Unable to install #{plugin}. Skipping"
         next

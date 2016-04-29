@@ -9,6 +9,7 @@ class LogStash::PluginManager::Install < LogStash::PluginManager::Command
   parameter "[PLUGIN] ...", "plugin name(s) or file", :attribute_name => :plugins_arg
   option "--version", "VERSION", "version of the plugin to install"
   option "--[no-]verify", :flag, "verify plugin validity before installation", :default => true
+  option "--preserve", :flag, "preserve current gem options", :default => false
   option "--development", :flag, "install all development dependencies of currently installed plugins", :default => false
   option "--local", :flag, "force local-only plugin installation. see bin/plugin package|unpack", :default => false
 
@@ -90,7 +91,15 @@ class LogStash::PluginManager::Install < LogStash::PluginManager::Command
 
     # Add plugins/gems to the current gemfile
     puts("Installing" + (install_list.empty? ? "..." : " " + install_list.collect(&:first).join(", ")))
-    install_list.each { |plugin, version, options| gemfile.update(plugin, version, options) }
+    install_list.each do |plugin, version, options|
+      if preserve?
+        plugin_gem = gemfile.find(plugin)
+        puts("Preserving Gemfile gem options for plugin #{plugin}") if plugin_gem && !plugin_gem.options.empty?
+        gemfile.update(plugin, version, options)
+      else
+        gemfile.overwrite(plugin, version, options)
+      end
+    end
 
     # Sync gemfiles changes to disk to make them available to the `bundler install`'s API
     gemfile.save
