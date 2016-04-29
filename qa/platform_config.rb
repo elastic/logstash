@@ -2,9 +2,12 @@
 require "json"
 
 class PlatformConfig
+
   Platform = Struct.new(:name, :box, :type)
 
-  DEFAULT_CONFIG_LOCATION = File.join(File.dirname(__FILE__), "platforms.json")
+  DEFAULT_CONFIG_LOCATION = File.join(File.dirname(__FILE__), "platforms.json").freeze
+
+  attr_reader :platforms
 
   def initialize(config_path = DEFAULT_CONFIG_LOCATION)
     @config_path = config_path

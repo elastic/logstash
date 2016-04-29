@@ -1,15 +1,15 @@
 # encoding: utf-8
 require_relative "./debian/commands"
-require_relative "./centos/commands"
+require_relative "./redhat/commands"
 
 module ServiceTester
   class CommandsFactory
 
     def self.fetch(type)
       case type
-      when :debian
+      when "debian"
         return DebianCommands.new
-      when :centos
+      when "redhat"
         return CentosCommands.new
       else
         return
