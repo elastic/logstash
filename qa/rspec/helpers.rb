@@ -28,34 +28,6 @@ module ServiceTester
     ServiceTester.configuration.servers
   end
 
-  def package_for(type, version)
-     package_name = "/logstash-build/logstash-#{LOGSTASH_VERSION}"
-     if type == "debian"
-       package_name = "#{package_name}_all.deb"
-     elsif type == "redhat"
-       package_name = "#{package_name}.noarch.rpm"
-     else
-       raise Exception.new("Unknown package type=#{type}")
-     end
-     package_name
-  end
-
-  def install(package, host=nil)
-    select_client.install(package, host)
-  end
-
-  def uninstall(package, host=nil)
-    select_client.uninstall(package, host)
-  end
-
-  def start_service(service, host=nil)
-    select_client.service_manager(service, "start", host)
-  end
-
-  def stop_service(service, host=nil)
-    select_client.service_manager(service, "stop", host)
-  end
-
   def select_client
     CommandsFactory.fetch(current_example.metadata[:platform])
   end
