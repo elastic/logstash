@@ -1,22 +1,27 @@
 # encoding: utf-8
+require_relative "base"
+
 module ServiceTester
-  class CentosCommands
+  class SuseCommands < Base
 
     def installed?(hosts, package)
       stdout = ""
       at(hosts, {in: :serial}) do |host|
-        cmd = exec!("yum list installed  #{package}")
+        cmd = exec!("zypper search #{package}")
         stdout = cmd.stdout
       end
-      stdout.match(/^Installed Packages$/)
-      stdout.match(/^logstash.noarch/)
+      stdout.match(/^i | logstash | An extensible logging pipeline | package$/)
+    end
+
+    def package_for(version)
+      File.join(ServiceTester::Base::LOCATION, "logstash-#{version}.noarch.rpm")
     end
 
     def install(package, host=nil)
       hosts  = (host.nil? ? servers : Array(host))
       errors = {}
       at(hosts, {in: :serial}) do |_host|
-        cmd = sudo_exec!("yum install -y  #{package}")
+        cmd = sudo_exec!("zypper --no-gpg-checks --non-interactive install  #{package}")
         errors[_host] = cmd.stderr unless cmd.stderr.empty?
       end
       errors
@@ -25,17 +30,17 @@ module ServiceTester
     def uninstall(package, host=nil)
       hosts = (host.nil? ? servers : Array(host))
       at(hosts, {in: :serial}) do |_|
-        sudo_exec!("yum remove -y #{package}")
+        cmd = sudo_exec!("zypper --no-gpg-checks --non-interactive remove #{package}")
       end
     end
 
     def removed?(hosts, package)
       stdout = ""
       at(hosts, {in: :serial}) do |host|
-        cmd = sudo_exec!("yum list installed #{package}")
-        stdout = cmd.stderr
+        cmd    = exec!("zypper search #{package}")
+        stdout = cmd.stdout
       end
-      stdout.match(/^Error: No matching Packages to list$/)
+      stdout.match(/No packages found/)
     end
 
     def running?(hosts, package)
@@ -44,12 +49,12 @@ module ServiceTester
         cmd = sudo_exec!("service #{package} status")
         stdout = cmd.stdout
       end
-      stdout.match(/^#{package} is running$/)
+      stdout.match(/#{package} started.$/)
     end
 
     def service_manager(service, action, host=nil)
       hosts = (host.nil? ? servers : Array(host))
-      at(hosts, {in: :serial}) do |host|
+      at(hosts, {in: :serial}) do |_|
         sudo_exec!("service #{service} #{action}")
       end
     end

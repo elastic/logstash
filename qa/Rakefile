@@ -9,39 +9,61 @@ platforms = PlatformConfig.new
 task :spec    => 'spec:all'
 task :default => :spec
 
-namespace :test do
-  desc "Generate a valid ssh-config"
-  task :ssh_config do
-    require "json"
-    raw_ssh_config    = LogStash::VagrantHelpers.fetch_config.stdout.split("\n");
-    parsed_ssh_config = LogStash::VagrantHelpers.parse(raw_ssh_config)
-    File.write(File.join(File.dirname(__FILE__), ".vm_ssh_config"), parsed_ssh_config.to_json)
-  end
+namespace :qa do
 
-  desc "Bootstrap all the VM's used for this tests"
-  task "setup" do
-    puts "bootstraping all VM's defined in acceptance/Vagrantfile"
-    LogStash::VagrantHelpers.bootstrap
+  namespace :vm do
+
+    desc "Generate a valid ssh-config"
+    task :ssh_config do
+      require "json"
+      raw_ssh_config    = LogStash::VagrantHelpers.fetch_config.stdout.split("\n");
+      parsed_ssh_config = LogStash::VagrantHelpers.parse(raw_ssh_config)
+      File.write(".vm_ssh_config", parsed_ssh_config.to_json)
+    end
+
+    desc "Bootstrap all the VM's used for this tests"
+    task :setup, :platform do |t, args|
+      config   = PlatformConfig.new
+      machines = config.select_names_for(args[:platform])
+
+      message  = "bootstraping all VM's defined in acceptance/Vagrantfile"
+      message  = "#{message} for #{args[:platform]}: #{machines}" if !args[:platform].nil?
+      puts message
+
+      LogStash::VagrantHelpers.destroy(machines)
+      LogStash::VagrantHelpers.bootstrap(machines)
+    end
+
+    desc "Halt all VM's involved in the acceptance test round"
+    task :halt, :platform do |t, args|
+      config   = PlatformConfig.new
+      machines = config.select_names_for(args[:platform])
+      message = "halting all VM's defined inside Vagrantfile"
+      message  = "#{message} for #{args[:platform]}: #{machines}" if !args[:platform].nil?
+      puts message
+
+      LogStash::VagrantHelpers.halt(machines)
+    end
   end
 
   namespace :acceptance do
     desc "Run all acceptance"
     task :all do
-      exit(RSpec::Core::Runner.run([Rake::FileList["acceptance/spec/**/*_spec.rb"]]))
+      exit(RSpec::Core::Runner.run([Rake::FileList["acceptance/spec/lib/*_spec.rb"]]))
     end
 
     platforms.types.each do |type|
       desc "Run acceptance test in #{type} machines"
       task type do
-        exit(RSpec::Core::Runner.run([Rake::FileList["acceptance/spec/#{type}/**/*_spec.rb"]]))
+        ENV['LS_TEST_PLATFORM']=type
+        exit(RSpec::Core::Runner.run([Rake::FileList["acceptance/spec/lib/*_spec.rb"]]))
       end
     end
 
     desc "Run one single machine acceptance test"
-    task :single, :machine do  |t, args|
-      ENV['LS_VAGRANT_HOST'] = args[:machine]
-      platform = LogStash::VagrantHelpers.translate(args[:machine])
-      exit(RSpec::Core::Runner.run([Rake::FileList["acceptance/spec/**/*_spec.rb"]]))
+    task :single, :machine do |t, args|
+      ENV['LS_VAGRANT_HOST']  = args[:machine]
+      exit(RSpec::Core::Runner.run([Rake::FileList["acceptance/spec/lib/*_spec.rb"]]))
     end
   end
 end

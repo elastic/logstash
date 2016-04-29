@@ -2,9 +2,12 @@
 require "json"
 
 class PlatformConfig
+
   Platform = Struct.new(:name, :box, :type)
 
-  DEFAULT_CONFIG_LOCATION = File.join(File.dirname(__FILE__), "platforms.json")
+  DEFAULT_CONFIG_LOCATION = File.join(File.dirname(__FILE__), "platforms.json").freeze
+
+  attr_reader :platforms
 
   def initialize(config_path = DEFAULT_CONFIG_LOCATION)
     @config_path = config_path
@@ -33,6 +36,10 @@ class PlatformConfig
 
   def filter_type(type_name)
     @platforms.select { |platform| platform.type == type_name }
+  end
+
+  def select_names_for(platform=nil)
+    !platform.nil? ? filter_type(platform).map{ |p| p.name } : ""
   end
 
   def types
