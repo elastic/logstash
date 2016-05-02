@@ -15,6 +15,9 @@ require "logstash/agent"
 require "logstash/config/defaults"
 require "logstash/shutdown_watcher"
 
+#puts "defining writer for #{option.attribute_name}"
+#puts "setting #{value}(class #{value.class}) for #{option.attribute_name}"
+#puts "getting value for #{option.attribute_name}"
 module Clamp
   module Option
 
@@ -23,18 +26,15 @@ module Clamp
       include Clamp::Attribute::Declaration
 
       def define_simple_writer_for(option, &block)
-        puts "defining writer for #{option.attribute_name}"
         LogStash::SETTINGS.get(option.attribute_name)
         define_method(option.write_method) do |value|
           value = instance_exec(value, &block) if block
-          puts "setting #{value}(class #{value.class}) for #{option.attribute_name}"
           LogStash::SETTINGS.set_value(option.attribute_name, value)
         end
       end
 
       def define_reader_for(option)
         define_method(option.read_method) do
-          puts "getting value for #{option.attribute_name}"
           LogStash::SETTINGS.get_value(option.attribute_name)
         end
       end
@@ -230,9 +230,9 @@ class LogStash::Runner < Clamp::Command
       end
     end
 
-    @agent = create_agent("logger" => @logger)
+    @agent = create_agent(@settings)
 
-    @agent.register_pipeline("main", @settings.subset(".*"))
+    @agent.register_pipeline("main", @settings)
 
     # enable sigint/sigterm before starting the agent
     # to properly handle a stalled agent
@@ -409,20 +409,6 @@ class LogStash::Runner < Clamp::Command
         @agent_task.stop!
       end
     end
-  end
-
-  def build_settings_hash
-    hash = {}
-    self.class.declared_options.each do |opt|
-      option_name = opt.long_switch.sub("--", "").sub("[no-]", "")
-      value = self.send(opt.read_method)
-      if opt.flag?
-        hash[option_name] = value ? value : false
-      elsif value
-        hash[option_name] = value
-      end
-    end
-    hash
   end
 
   def setting(key)

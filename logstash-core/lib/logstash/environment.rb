@@ -13,6 +13,7 @@ module LogStash
            BooleanSetting.new("config.auto_reload", false),
                   Setting.new("config.reload_interval", Numeric, 3),
            BooleanSetting.new("metric.collect", false),
+                  Setting.new("pipeline.id", String, "main"),
                   Setting.new("pipeline.workers", Numeric, LogStash::Config::CpuCoreStrategy.maximum),
                   Setting.new("pipeline.output.workers", Numeric, 1),
                   Setting.new("pipeline.batch.size", Numeric, 125),

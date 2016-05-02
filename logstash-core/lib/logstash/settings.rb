@@ -15,13 +15,13 @@ module LogStash
       end
     end
 
-    def get(setting_name)
+    def get_setting(setting_name)
       setting = @settings[setting_name]
       raise ArgumentError.new("Setting \"#{setting_name}\" hasn't been registered") if setting.nil?
       setting
     end
 
-    def subset(setting_regexp)
+    def get_subset(setting_regexp)
       regexp = setting_regexp.is_a?(Regexp) ? setting_regexp : Regexp.new(setting_regexp)
       settings = self.class.new
       @settings.each do |setting_name, setting|
@@ -31,17 +31,23 @@ module LogStash
       settings
     end
 
+    def clone
+      get_subset(".*")
+    end
+
     def get_default(setting_name)
-      get(setting_name).default
+      get_setting(setting_name).default
     end
 
     def get_value(setting_name)
-      get(setting_name).value
+      get_setting(setting_name).value
     end
+    alias_method :get, :get_value
 
     def set_value(setting_name, value)
-      get(setting_name).set(value)
+      get_setting(setting_name).set(value)
     end
+    alias_method :set, :set_value
 
     def format_settings
       output = []
@@ -61,6 +67,10 @@ module LogStash
       end
       output << "--------------- Logstash Settings -------------------"
       output
+    end
+
+    def reset!
+      @settings.each(&:reset)
     end
   end
 
@@ -90,6 +100,11 @@ module LogStash
       @value = value
       @value_is_set = true unless @value_is_set
       @value
+    end
+
+    def reset
+      @value = nil
+      @value_is_set = false
     end
 
     private
