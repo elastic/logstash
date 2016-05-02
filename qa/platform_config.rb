@@ -38,6 +38,10 @@ class PlatformConfig
     @platforms.select { |platform| platform.type == type_name }
   end
 
+  def select_names_for(platform=nil)
+    !platform.nil? ? filter_type(platform).map{ |p| p.name } : ""
+  end
+
   def types
     @platforms.collect(&:type).uniq.sort
   end
