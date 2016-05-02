@@ -35,7 +35,7 @@ module LogStash
     # was not run successfully and will display the content of STDERR
     def self.run!(cmd)
       response = run(cmd)
-    
+
       unless response.success?
         raise CommandError, "CMD: #{cmd} STDERR: #{response.stderr}"
       end
@@ -45,8 +45,16 @@ module LogStash
 
   class VagrantHelpers
 
-    def self.bootstrap
-      CommandExecutor.run!("vagrant up")
+    def self.halt(machines="")
+      CommandExecutor.run!("vagrant halt #{machines.join(' ')}")
+    end
+
+    def self.destroy(machines="")
+      CommandExecutor.run!("vagrant destroy --force #{machines.join(' ')}") 
+    end
+
+    def self.bootstrap(machines="")
+      CommandExecutor.run!("vagrant up #{machines.join(' ')}")
     end
 
     def self.fetch_config

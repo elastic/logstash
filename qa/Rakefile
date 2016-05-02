@@ -9,19 +9,41 @@ platforms = PlatformConfig.new
 task :spec    => 'spec:all'
 task :default => :spec
 
-namespace :test do
-  desc "Generate a valid ssh-config"
-  task :ssh_config do
-    require "json"
-    raw_ssh_config    = LogStash::VagrantHelpers.fetch_config.stdout.split("\n");
-    parsed_ssh_config = LogStash::VagrantHelpers.parse(raw_ssh_config)
-    File.write(File.join(File.dirname(__FILE__), ".vm_ssh_config"), parsed_ssh_config.to_json)
-  end
+namespace :qa do
 
-  desc "Bootstrap all the VM's used for this tests"
-  task "setup" do
-    puts "bootstraping all VM's defined in acceptance/Vagrantfile"
-    LogStash::VagrantHelpers.bootstrap
+  namespace :vm do
+
+    desc "Generate a valid ssh-config"
+    task :ssh_config do
+      require "json"
+      raw_ssh_config    = LogStash::VagrantHelpers.fetch_config.stdout.split("\n");
+      parsed_ssh_config = LogStash::VagrantHelpers.parse(raw_ssh_config)
+      File.write(".vm_ssh_config", parsed_ssh_config.to_json)
+    end
+
+    desc "Bootstrap all the VM's used for this tests"
+    task :setup, :platform do |t, args|
+      config   = PlatformConfig.new
+      machines = config.select_names_for(args[:platform])
+
+      message  = "bootstraping all VM's defined in acceptance/Vagrantfile"
+      message  = "#{message} for #{args[:platform]}: #{machines}" if !args[:platform].nil?
+      puts message
+
+      LogStash::VagrantHelpers.destroy(machines)
+      LogStash::VagrantHelpers.bootstrap(machines)
+    end
+
+    desc "Halt all VM's involved in the acceptance test round"
+    task :halt, :platform do |t, args|
+      config   = PlatformConfig.new
+      machines = config.select_names_for(args[:platform])
+      message = "halting all VM's defined inside Vagrantfile"
+      message  = "#{message} for #{args[:platform]}: #{machines}" if !args[:platform].nil?
+      puts message
+
+      LogStash::VagrantHelpers.halt(machines)
+    end
   end
 
   namespace :acceptance do
