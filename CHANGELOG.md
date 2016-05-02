@@ -1,3 +1,27 @@
+## 5.0.0-alpha2 (May 3, 2016)
+### general
+ - Added `--preserve` option to `bin/logstash-plugin` install command. This allows us to preserve gem options 
+   which are already specified in `Gemfile`, which would have been previously overwritten.
+ - When running any plugin related commands you can now use DEBUG=1, to give the user a bit more 
+   information about what bundler is doing.
+ - Added reload support to the init script so you can do `service logstash reload`
+ - Fixed use of KILL_ON_STOP_TIMEOUT variable in init scripts which allows Logstash to force stop (#4991).
+ - Upgrade to JRuby 1.7.25.
+ - Filenames for Debian and RPM artifacts have been renamed to match Elasticsearch's naming scheme. The metadata 
+   is still the same, so upgrades will not be affected. If you have automated downloads for Logstash, please make
+   sure you have the updated URLs with the new names ([#5100](https://github.com/elastic/logstash/issues/5100)).  
+
+### Input
+ - Kafka: Fixed an issue where Snappy and LZ4 compression were not working.
+
+### Filter
+ - GeoIP: Added support for GeoIP2 city database and support for IPv6 lookups ([#23](https://github.com/logstash-plugins/logstash-filter-geoip/issues/23))
+
+### Output
+ - Elasticsearch: Added support for specifying ingest pipelines ([#410](https://github.com/logstash-plugins/logstash-output-elasticsearch/issues/410))
+ - Kafka: Fixed an issue where Snappy and LZ4 compression were not working ([#50](https://github.com/logstash-plugins/logstash-output-kafka/issues/50)).  
+
+
 ## 5.0.0-alpha1 (April 5, 2016)
 ### general
  - Added APIs to monitor the Logstash pipeline. You can now query information/stats about event 

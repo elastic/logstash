@@ -61,8 +61,8 @@ GEM
     ffi (1.9.10-java)
     ffi-rzmq (2.0.4)
       ffi-rzmq-core (>= 1.0.1)
-    ffi-rzmq-core (1.0.4)
-      ffi (~> 1.9)
+    ffi-rzmq-core (1.0.5)
+      ffi
     file-dependencies (0.1.6)
       minitar
     filesize (0.0.4)
@@ -101,7 +101,7 @@ GEM
       multi_xml (>= 0.5.2)
     i18n (0.6.9)
     insist (1.0.0)
-    jar-dependencies (0.3.2)
+    jar-dependencies (0.3.3)
     jls-grok (0.11.2)
       cabin (>= 0.6.0)
     jls-lumberjack (0.0.26)
@@ -113,7 +113,7 @@ GEM
     jruby-openssl (0.9.16-java)
     json (1.8.3-java)
     json_pure (1.8.3)
-    kramdown (1.10.0)
+    kramdown (1.11.1)
     logstash-codec-collectd (2.0.4)
       logstash-core-plugin-api (~> 1.0)
     logstash-codec-dots (2.0.4)
@@ -158,7 +158,7 @@ GEM
     logstash-codec-rubydebug (2.0.7)
       awesome_print
       logstash-core-plugin-api (~> 1.0)
-    logstash-core (5.0.0.alpha2.snapshot2-java)
+    logstash-core (5.0.0.alpha2-java)
       cabin (~> 0.8.0)
       chronic_duration (= 0.10.6)
       clamp (~> 0.6.5)
@@ -169,7 +169,7 @@ GEM
       jrjackson (~> 0.3.7)
       jruby-monitoring (~> 0.3.1)
       jruby-openssl (= 0.9.16)
-      logstash-core-event-java (~> 5.0.0.alpha2.snapshot2)
+      logstash-core-event-java (~> 5.0.0.alpha2)
       minitar (~> 0.5.4)
       pry (~> 0.10.1)
       puma (~> 2.16, >= 2.16.0)
@@ -178,11 +178,11 @@ GEM
       stud (~> 0.0.19)
       thread_safe (~> 0.3.5)
       treetop (< 1.5.0)
-    logstash-core-event-java (5.0.0.alpha2.snapshot2-java)
+    logstash-core-event-java (5.0.0.alpha2-java)
       jar-dependencies
       ruby-maven (~> 3.3.9)
-    logstash-core-plugin-api (1.12.0-java)
-      logstash-core (= 5.0.0.alpha2.snapshot2)
+    logstash-core-plugin-api (1.13.0-java)
+      logstash-core (= 5.0.0.alpha2)
     logstash-devutils (0.0.19-java)
       fivemat
       gem_publisher
@@ -334,7 +334,7 @@ GEM
       sequel
       tzinfo
       tzinfo-data
-    logstash-input-kafka (3.0.0.beta6)
+    logstash-input-kafka (3.0.0.beta7)
       logstash-codec-json
       logstash-codec-plain
       logstash-core-plugin-api (~> 1.0)
@@ -475,7 +475,7 @@ GEM
     logstash-output-juggernaut (2.0.4)
       logstash-core-plugin-api (~> 1.0)
       redis
-    logstash-output-kafka (3.0.0.beta3)
+    logstash-output-kafka (3.0.0.beta4)
       logstash-codec-json
       logstash-codec-plain
       logstash-core-plugin-api (~> 1.0)
@@ -595,16 +595,16 @@ GEM
     rspec-support (3.1.2)
     rspec-wait (0.0.8)
       rspec (>= 2.11, < 3.5)
-    ruby-maven (3.3.10)
-      ruby-maven-libs (~> 3.3.1)
-    ruby-maven-libs (3.3.3)
+    ruby-maven (3.3.11)
+      ruby-maven-libs (~> 3.3.9)
+    ruby-maven-libs (3.3.9)
     rubyzip (1.1.7)
     rufus-scheduler (3.0.9)
       tzinfo
     sawyer (0.6.0)
       addressable (~> 2.3.5)
       faraday (~> 0.8, < 0.10)
-    sequel (4.33.0)
+    sequel (4.34.0)
     simple_oauth (0.3.1)
     simplecov (0.11.2)
       docile (~> 1.1.0)
@@ -679,9 +679,9 @@ DEPENDENCIES
   logstash-codec-oldlogstashjson
   logstash-codec-plain
   logstash-codec-rubydebug
-  logstash-core (= 5.0.0.alpha2.snapshot2)
-  logstash-core-event-java (= 5.0.0.alpha2.snapshot2)
-  logstash-core-plugin-api (= 1.12.0)
+  logstash-core (= 5.0.0.alpha2)
+  logstash-core-event-java (= 5.0.0.alpha2)
+  logstash-core-plugin-api (= 1.13.0)
   logstash-devutils (~> 0.0.15)
   logstash-filter-anonymize
   logstash-filter-checksum
@@ -691,7 +691,7 @@ DEPENDENCIES
   logstash-filter-dns
   logstash-filter-drop
   logstash-filter-fingerprint
-  logstash-filter-geoip
+  logstash-filter-geoip (= 3.0.0.beta3)
   logstash-filter-grok
   logstash-filter-json
   logstash-filter-kv
@@ -723,7 +723,7 @@ DEPENDENCIES
   logstash-input-imap
   logstash-input-irc
   logstash-input-jdbc
-  logstash-input-kafka
+  logstash-input-kafka (= 3.0.0.beta7)
   logstash-input-log4j
   logstash-input-lumberjack
   logstash-input-pipe
@@ -753,7 +753,7 @@ DEPENDENCIES
   logstash-output-http
   logstash-output-irc
   logstash-output-juggernaut
-  logstash-output-kafka
+  logstash-output-kafka (= 3.0.0.beta4)
   logstash-output-lumberjack
   logstash-output-nagios
   logstash-output-nagios_nsca
