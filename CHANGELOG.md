@@ -6,7 +6,10 @@
    information about what bundler is doing.
  - Added reload support to the init script so you can do `service logstash reload`
  - Fixed use of KILL_ON_STOP_TIMEOUT variable in init scripts which allows Logstash to force stop (#4991).
- - Upgrade to JRuby 1.7.25.  
+ - Upgrade to JRuby 1.7.25.
+ - Filenames for Debian and RPM artifacts have been renamed to match Elasticsearch's naming scheme. The metadata 
+   is still the same, so upgrades will not be affected. If you have automated downloads for Logstash, please make
+   sure you have the updated URLs with the new names ([#5100](https://github.com/elastic/logstash/issues/5100)).  
 
 ### Input
  - Kafka: Fixed an issue where Snappy and LZ4 compression were not working.
