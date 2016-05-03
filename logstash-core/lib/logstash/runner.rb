@@ -74,7 +74,7 @@ class LogStash::Runner < Clamp::Command
   option ["-w", "--pipeline.workers"], "COUNT",
     I18n.t("logstash.runner.flag.pipeline-workers"),
     :attribute_name => "pipeline.workers",
-    :default => LogStash::SETTINGS.get_default("pipeline.workers")
+    :default => LogStash::SETTINGS.get_default("pipeline.workers"), &:to_i
 
   option ["-b", "--pipeline.batch.size"], "SIZE",
     I18n.t("logstash.runner.flag.pipeline-batch-size"),
