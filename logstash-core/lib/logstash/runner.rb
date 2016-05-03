@@ -19,6 +19,14 @@ require "logstash/shutdown_watcher"
 #puts "setting #{value}(class #{value.class}) for #{option.attribute_name}"
 #puts "getting value for #{option.attribute_name}"
 module Clamp
+  module Attribute
+    class Instance
+      def default_from_environment
+        # we don want uncontrolled var injection from the environment
+      end
+    end
+  end
+
   module Option
 
     module Declaration
