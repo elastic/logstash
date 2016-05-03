@@ -18,7 +18,12 @@ platform = ENV['LS_TEST_PLATFORM'] || 'all'
 
 config   = PlatformConfig.new
 default_vagrant_boxes = ( platform == 'all' ? config.platforms : config.filter_type(platform) )
-selected_boxes = SpecsHelper.find_selected_boxes(default_vagrant_boxes)
+
+selected_boxes = if ENV.include?('LS_VAGRANT_HOST') then
+                   config.platforms.select { |p| p.name  == ENV['LS_VAGRANT_HOST'] }
+                 else
+                   default_vagrant_boxes
+                 end
 
 SpecsHelper.configure(selected_boxes)
 
