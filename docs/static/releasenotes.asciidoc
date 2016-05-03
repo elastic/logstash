@@ -1,5 +1,48 @@
 [[releasenotes]]
-== Logstash 5.0-alpha1 Release Notes
+== Release Notes
+
+This section summarizes the changes in each release.
+
+* <<alpha2,Logstash 5.0-alpha2>>
+* <<alpha1,Logstash 5.0-alpha1>>
+
+[[alpha2]]
+=== Logstash 5.0-alpha2 Release Notes
+
+* Added the `--preserve` option to the `bin/logstash-plugin` install command. This option allows you to preserve gem options that are already specified in the `Gemfile`. Previously, these options were overwritten.
+* Added support for `DEBUG=1` when running any plugin-related commands. This option gives you a bit more information about what the bundler is doing.
+* Added reload support to the init script so you can do `service logstash reload`.
+* Fixed use of the `KILL_ON_STOP_TIMEOUT` variable in the init script to allow Logstash to force stop ({lsissue}4991[Issue 4991]).
+* Upgraded to JRuby 1.7.25.
+* Renamed filenames for Debian and RPM artifacts to match Elasticsearch's naming scheme. The metadata is still the same, so upgrades will not be affected. If you have automated downloads for Logstash, please make sure you use the updated URLs ({lsissue}5100[Issue 5100]). 
+
+[float]
+==== Input Plugins
+
+*`Kafka`*:
+
+* Fixed an issue where Snappy and LZ4 compression were not working.
+
+[float]
+==== Filter Plugins
+
+*`GeoIP`*:
+
+* Added support for the GeoIP2 city database and support for IPv6 lookups (https://github.com/logstash-plugins/logstash-filter-geoip/issues/23[Issue 23]).
+
+[float]
+==== Output Plugins
+
+*`Elasticsearch`*:
+
+* Added support for specifying ingest pipelines (https://github.com/logstash-plugins/logstash-output-elasticsearch/issues/410[Issue 410]).
+
+*`Kafka`*:
+
+* Fixed an issue where Snappy and LZ4 compression were not working (https://github.com/logstash-plugins/logstash-output-kafka/issues/50[Issue 50]).  
+
+[[alpha1]]
+=== Logstash 5.0-alpha1 Release Notes
 
 * Added APIs to monitor the Logstash pipeline. You can now query information/stats about event flow, JVM, 
   and hot_threads.
@@ -30,7 +73,7 @@
 * Reverted default output workers to 1. Previously we had made output workers the same as number of pipeline workers (#4877). 
 
 [float]
-== Input Plugins
+==== Input Plugins
 
 *`Kafka`*:
 
@@ -57,7 +100,7 @@
 * Added retry connection feature (https://github.com/logstash-plugins/logstash-input-http/issues/33[Issue 33])
 
 [float]
-== Filter Plugins
+==== Filter Plugins
 
 *`DNS`*:
 
@@ -66,7 +109,7 @@
 * Lowered the default value of timeout from 2 to 0.5 seconds.
 
 [float]
-== Output Plugins
+==== Output Plugins
 
 *`Elasticsearch`*:
 
