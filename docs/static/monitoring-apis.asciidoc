@@ -26,7 +26,7 @@ to set `?format=yaml` which will cause the result to be returned in the
 [float]
 ==== Human-Readable Output
 
-NOTE: For Alpha 1, the `human` option is supported for the <<hot-threads-api>>
+NOTE: For Logstash {logstash_version}, the `human` option is supported for the <<hot-threads-api>>
 only. When you specify `human=true`, the results are returned in plain text instead of
 JSON format. The default is false.
 
