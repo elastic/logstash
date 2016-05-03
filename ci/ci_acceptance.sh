@@ -8,7 +8,7 @@ export JRUBY_OPTS="-J-Xmx1g"
 
 SELECTED_TEST_SUITE=$1
 
-if [[ $SELECTED_TEST_SUITE == $"centos" ]]; then
+if [[ $SELECTED_TEST_SUITE == $"redhat" ]]; then
   echo "Generating the RPM, make sure you start with a clean environment before generating other packages."
   rake artifact:rpm
   echo "Acceptance: Installing dependencies"
@@ -16,10 +16,10 @@ if [[ $SELECTED_TEST_SUITE == $"centos" ]]; then
   bundle install
 
   echo "Acceptance: Running the tests"
-  bundle exec rake qa:vm:setup["centos"]
+  bundle exec rake qa:vm:setup["redhat"]
   bundle exec rake qa:vm:ssh_config
-  bundle exec rake qa:acceptance:centos
-  bundle exec rake qa:vm:halt["centos"]
+  bundle exec rake qa:acceptance:redhat
+  bundle exec rake qa:vm:halt["redhat"]
 elif [[ $SELECTED_TEST_SUITE == $"debian" ]]; then
   echo "Generating the DEB, make sure you start with a clean environment before generating other packages."
   rake artifact:deb
