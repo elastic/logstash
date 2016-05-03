@@ -3,14 +3,6 @@ require "json"
 
 module SpecsHelper
 
-  def self.find_selected_boxes(default_boxes=[])
-    if ENV.include?('LS_VAGRANT_HOST') then
-      default_boxes.include?(ENV['LS_VAGRANT_HOST']) ? ENV['LS_VAGRANT_HOST'] : []
-    else
-      default_boxes
-    end
-  end
-
   def self.configure(vagrant_boxes)
     setup_config = JSON.parse(File.read(File.join(File.dirname(__FILE__), "..", "..", ".vm_ssh_config")))
     boxes        = vagrant_boxes.inject({}) do |acc, v|
