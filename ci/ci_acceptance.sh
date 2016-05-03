@@ -16,9 +16,10 @@ if [[ $SELECTED_TEST_SUITE == $"centos" ]]; then
   bundle install
 
   echo "Acceptance: Running the tests"
-  bundle exec rake test:setup
-  bundle exec rake test:ssh_config
-  bundle exec rake test:acceptance:centos
+  bundle exec rake qa:vm:setup["centos"]
+  bundle exec rake qa:vm:ssh_config
+  bundle exec rake qa:acceptance:centos
+  bundle exec rake qa:vm:halt["centos"]
 elif [[ $SELECTED_TEST_SUITE == $"debian" ]]; then
   echo "Generating the DEB, make sure you start with a clean environment before generating other packages."
   rake artifact:deb
@@ -27,9 +28,10 @@ elif [[ $SELECTED_TEST_SUITE == $"debian" ]]; then
   bundle install
 
   echo "Acceptance: Running the tests"
-  bundle exec rake test:setup
-  bundle exec rake test:ssh_config
-  bundle exec rake test:acceptance:debian
+  bundle exec rake qa:vm:setup["debian"]
+  bundle exec rake qa:vm:ssh_config
+  bundle exec rake qa:acceptance:debian
+  bundle exec rake qa:vm:halt["debian"]
 elif [[ $SELECTED_TEST_SUITE == $"all" ]]; then
   echo "Building Logstash artifacts"
   rake artifact:all
@@ -39,8 +41,9 @@ elif [[ $SELECTED_TEST_SUITE == $"all" ]]; then
   bundle install
 
   echo "Acceptance: Running the tests"
-  bundle exec rake test:setup
-  bundle exec rake test:ssh_config
-  bundle exec rake test:acceptance:all
+  bundle exec rake qa:vm:setup
+  bundle exec rake qa:vm:ssh_config
+  bundle exec rake qa:acceptance:all
+  bundle exec rake qa:vm:halt
   cd ..
 fi
