@@ -28,12 +28,12 @@ module LogStash; class Pipeline
     :events_filtered,
     :reporter,
     :pipeline_id,
-    :metric,
     :logger,
     :started_at,
     :thread,
     :config_str,
     :original_settings
+  attr_accessor :metric
 
   MAX_INFLIGHT_WARN_THRESHOLD = 10_000
 
@@ -62,7 +62,7 @@ module LogStash; class Pipeline
     #
     # This need to be configured before we evaluate the code to make
     # sure the metric instance is correctly send to the plugin.
-    @metric = settings.fetch(:metric, Instrument::NullMetric.new)
+    @metric = Instrument::NullMetric.new
 
     grammar = LogStashConfigParser.new
     @config = grammar.parse(config_str)
@@ -78,7 +78,7 @@ module LogStash; class Pipeline
     # The config code is hard to represent as a log message...
     # So just print it.
 
-    if @settings[:debug_config] && logger.debug?
+    if @settings.get("debug.config") && logger.debug?
       logger.debug("Compiled pipeline code", :code => code)
     end
 
@@ -108,8 +108,8 @@ module LogStash; class Pipeline
   end
 
   def safe_pipeline_worker_count
-    default = @settings["pipeline.workers"]
-    thread_count = @original_settings["pipeline.workers"] #override from args "-w 8" or config
+    default = @settings.get("pipeline.workers")
+    thread_count = @settings.get_default("pipeline.workers") #override from args "-w 8" or config
     safe_filters, unsafe_filters = @filters.partition(&:threadsafe?)
 
     if unsafe_filters.any?
@@ -196,8 +196,8 @@ module LogStash; class Pipeline
       @filters.each {|f| f.register }
 
       pipeline_workers = safe_pipeline_worker_count
-      batch_size = @settings["pipeline.batch.size"]
-      batch_delay = @settings["pipeline.batch.delay"]
+      batch_size = @settings.get("pipeline.batch.size")
+      batch_delay = @settings.get("pipeline.batch.delay")
       max_inflight = batch_size * pipeline_workers
       @logger.info("Starting pipeline",
                    "id" => self.pipeline_id,
@@ -438,7 +438,7 @@ module LogStash; class Pipeline
     klass = LogStash::Plugin.lookup(plugin_type, name)
 
     if plugin_type == "output"
-      LogStash::OutputDelegator.new(@logger, klass, @settings["pipeline.output.workers"], pipeline_scoped_metric.namespace(:outputs), *args)
+      LogStash::OutputDelegator.new(@logger, klass, @settings.get("pipeline.output.workers"), pipeline_scoped_metric.namespace(:outputs), *args)
     elsif plugin_type == "filter"
       LogStash::FilterDelegator.new(@logger, klass, pipeline_scoped_metric.namespace(:filters), *args)
     else

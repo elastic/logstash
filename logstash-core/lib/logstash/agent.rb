@@ -189,7 +189,7 @@ class LogStash::Agent
   end
 
   def fetch_config(settings)
-    @config_loader.format_config(settings[:config_path], settings[:config_string])
+    @config_loader.format_config(settings.get("config.path"), settings.get("config.string"))
   end
 
   # since this method modifies the @pipelines hash it is
