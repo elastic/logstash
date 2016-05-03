@@ -39,7 +39,7 @@ namespace :test do
     end
 
     desc "Run one single machine acceptance test"
-    task :single, :machine do  |t, args|
+    task :single, :machine do |t, args|
       ENV['LS_VAGRANT_HOST']  = args[:machine]
       exit(RSpec::Core::Runner.run([Rake::FileList["acceptance/spec/lib/*_spec.rb"]]))
     end
