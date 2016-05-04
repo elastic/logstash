@@ -16,7 +16,9 @@ end
 
 platform = ENV['LS_TEST_PLATFORM'] || 'all'
 
-config   = PlatformConfig.new
+config                  = PlatformConfig.new
+LOGSTASH_LATEST_VERSION = config.latest
+
 default_vagrant_boxes = ( platform == 'all' ? config.platforms : config.filter_type(platform) )
 
 selected_boxes = if ENV.include?('LS_VAGRANT_HOST') then
