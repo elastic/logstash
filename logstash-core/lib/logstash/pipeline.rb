@@ -32,7 +32,7 @@ module LogStash; class Pipeline
     :started_at,
     :thread,
     :config_str,
-    :original_settings
+    :settings
   attr_accessor :metric
 
   MAX_INFLIGHT_WARN_THRESHOLD = 10_000
@@ -41,7 +41,7 @@ module LogStash; class Pipeline
     "LogStash::Inputs::Stdin"
   ]
 
-  def initialize(config_str, settings)
+  def initialize(config_str, settings = LogStash::SETTINGS)
     @config_str = config_str
     @logger = Cabin::Channel.get(LogStash)
     @settings = settings

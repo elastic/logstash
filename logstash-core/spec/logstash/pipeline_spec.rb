@@ -84,7 +84,7 @@ class TestPipeline < LogStash::Pipeline
 end
 
 describe LogStash::Pipeline do
-  let(:worker_thread_count)     { LogStash::DEFAULT_SETTINGS["pipeline.workers"] }
+  let(:worker_thread_count)     { LogStash::SETTINGS.get("pipeline.workers") }
   let(:safe_thread_count)       { 1 }
   let(:override_thread_count)   { 42 }
 
@@ -223,7 +223,7 @@ describe LogStash::Pipeline do
         pipeline.run
 
         expect(pipeline.outputs.size ).to eq(1)
-        expect(pipeline.outputs.first.workers.size ).to eq(::LogStash::DEFAULT_SETTINGS["pipeline.output.workers"])
+        expect(pipeline.outputs.first.workers.size ).to eq(::LogStash::SETTINGS.get("pipeline.output.workers"))
         expect(pipeline.outputs.first.workers.first.num_closes ).to eq(1)
       end
 

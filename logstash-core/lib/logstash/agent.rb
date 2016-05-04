@@ -20,7 +20,8 @@ LogStash::Environment.load_locale!
 class LogStash::Agent
   STARTED_AT = Time.now.freeze
 
-  attr_reader :metric, :node_name, :pipelines, :logger
+  attr_reader :metric, :node_name, :pipelines, :settings
+  attr_accessor :logger
 
   # initialize method for LogStash::Agent
   # @param params [Hash] potential parameters are:
@@ -28,7 +29,7 @@ class LogStash::Agent
   #   :auto_reload [Boolean] - enable reloading of pipelines
   #   :reload_interval [Integer] - reload pipelines every X seconds
   #   :logger [Cabin::Channel] - logger instance
-  def initialize(settings)
+  def initialize(settings = LogStash::SETTINGS)
     @settings = settings
     @logger = Cabin::Channel.get(LogStash)
     @auto_reload = setting("config.auto_reload")
@@ -81,8 +82,8 @@ class LogStash::Agent
     pipeline_settings.set("pipeline.id", pipeline_id)
 
     pipeline = create_pipeline(pipeline_settings)
-    pipeline.metric = @metric
     return unless pipeline.is_a?(LogStash::Pipeline)
+    pipeline.metric = @metric
     if @auto_reload && pipeline.non_reloadable_plugins.any?
       @logger.error(I18n.t("logstash.agent.non_reloadable_config_register"),
                     :pipeline_id => pipeline_id,
@@ -196,14 +197,15 @@ class LogStash::Agent
   # wrapped in @upgrade_mutex in the parent call `reload_state!`
   def reload_pipeline!(id)
     old_pipeline = @pipelines[id]
-    new_config = fetch_config(old_pipeline.original_settings)
+    new_config = fetch_config(old_pipeline.settings)
     if old_pipeline.config_str == new_config
       @logger.debug("no configuration change for pipeline",
                     :pipeline => id, :config => new_config)
       return
     end
 
-    new_pipeline = create_pipeline(old_pipeline.original_settings, new_config)
+    new_pipeline = create_pipeline(old_pipeline.settings, new_config)
+
     return if new_pipeline.nil?
 
     if new_pipeline.non_reloadable_plugins.any?

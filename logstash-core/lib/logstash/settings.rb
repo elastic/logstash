@@ -49,6 +49,14 @@ module LogStash
     end
     alias_method :set, :set_value
 
+    def to_hash
+      hash = {}
+      @settings.each do |name, setting|
+        hash[name] = setting.value
+      end
+      hash
+    end
+
     def format_settings
       output = []
       output << "-------- Logstash Settings (* means modified) ---------"
@@ -69,8 +77,8 @@ module LogStash
       output
     end
 
-    def reset!
-      @settings.each(&:reset)
+    def reset
+      @settings.values.each(&:reset)
     end
   end
 
@@ -105,6 +113,21 @@ module LogStash
     def reset
       @value = nil
       @value_is_set = false
+    end
+
+    def to_hash
+      {
+        "name" => @name,
+        "klass" => @klass,
+        "value" => @value,
+        "value_is_set" => @value_is_set,
+        "default" => @default,
+        #"validator_proc" => @validator_proc
+      }
+    end
+
+    def ==(other)
+      self.to_hash == other.to_hash
     end
 
     private
