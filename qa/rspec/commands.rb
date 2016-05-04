@@ -28,6 +28,14 @@ module ServiceTester
       [@host]
     end
 
+    def snapshot
+      client.snapshot(@options["host"])
+    end
+
+    def restore
+      client.restore(@options["host"])
+    end
+
     def start_service
       client.start_service(name, host)
     end
@@ -36,8 +44,8 @@ module ServiceTester
       client.stop_service(name, host)
     end
 
-    def install(version)
-      package = client.package_for(version)
+    def install(version, base=ServiceTester::Base::LOCATION)
+      package = client.package_for(version, base)
       client.install(package, host)
     end
 

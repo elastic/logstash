@@ -5,20 +5,20 @@ class PlatformConfig
 
   Platform = Struct.new(:name, :box, :type)
 
-  DEFAULT_CONFIG_LOCATION = File.join(File.dirname(__FILE__), "platforms.json").freeze
+  DEFAULT_CONFIG_LOCATION = File.join(File.dirname(__FILE__), "config", "platforms.json").freeze
 
-  attr_reader :platforms
+  attr_reader :platforms, :latest
 
   def initialize(config_path = DEFAULT_CONFIG_LOCATION)
     @config_path = config_path
     @platforms = []
 
     data = JSON.parse(File.read(@config_path))
-    data.each do |k, v|
+    data["platforms"].each do |k, v|
       @platforms << Platform.new(k, v["box"], v["type"])
     end
-
     @platforms.sort! { |a, b| a.name <=> b.name }
+    @latest = data["latest"]
   end
 
   def find!(platform_name)
