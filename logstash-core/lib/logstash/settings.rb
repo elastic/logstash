@@ -31,6 +31,10 @@ module LogStash
       settings
     end
 
+    def set?(setting_name)
+      get_setting(setting_name).set?
+    end
+
     def clone
       get_subset(".*")
     end
@@ -100,7 +104,11 @@ module LogStash
     end
 
     def value
-      @value_is_set ? @value : @default
+      @value_is_set ? @value : default
+    end
+
+    def set?
+      @value_is_set
     end
 
     def set(value)

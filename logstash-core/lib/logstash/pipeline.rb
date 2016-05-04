@@ -108,33 +108,28 @@ module LogStash; class Pipeline
   end
 
   def safe_pipeline_worker_count
-    default = @settings.get("pipeline.workers")
-    thread_count = @settings.get_default("pipeline.workers") #override from args "-w 8" or config
+    default = @settings.get_default("pipeline.workers")
+    pipeline_workers = @settings.get("pipeline.workers") #override from args "-w 8" or config
     safe_filters, unsafe_filters = @filters.partition(&:threadsafe?)
+    plugins = unsafe_filters.collect { |f| f.config_name }
 
-    if unsafe_filters.any?
-      plugins = unsafe_filters.collect { |f| f.config_name }
-      case thread_count
-      when nil
-        # user did not specify a worker thread count
-        # warn if the default is multiple
+    return pipeline_workers if unsafe_filters.empty?
 
-        if default > 1
-          @logger.warn("Defaulting pipeline worker threads to 1 because there are some filters that might not work with multiple worker threads",
-                       :count_was => default, :filters => plugins)
-        end
-
-        1 # can't allow the default value to propagate if there are unsafe filters
-      when 0, 1
-        1
-      else
+    if @settings.set?("pipeline.workers")
+      if pipeline_workers > 1
         @logger.warn("Warning: Manual override - there are filters that might not work with multiple worker threads",
-                     :worker_threads => thread_count, :filters => plugins)
-        thread_count # allow user to force this even if there are unsafe filters
+                     :worker_threads => pipeline_workers, :filters => plugins)
       end
     else
-      thread_count || default
+      # user did not specify a worker thread count
+      # warn if the default is multiple
+      if default > 1
+        @logger.warn("Defaulting pipeline worker threads to 1 because there are some filters that might not work with multiple worker threads",
+                     :count_was => default, :filters => plugins)
+        return 1 # can't allow the default value to propagate if there are unsafe filters
+      end
     end
+    pipeline_workers
   end
 
   def filters?

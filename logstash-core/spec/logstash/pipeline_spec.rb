@@ -84,9 +84,21 @@ class TestPipeline < LogStash::Pipeline
 end
 
 describe LogStash::Pipeline do
-  let(:worker_thread_count)     { LogStash::SETTINGS.get("pipeline.workers") }
+  let(:worker_thread_count)     { 5 }
   let(:safe_thread_count)       { 1 }
   let(:override_thread_count)   { 42 }
+  let(:pipeline_settings_obj) { LogStash::SETTINGS }
+  let(:pipeline_settings) { {} }
+
+  before :each do
+    pipeline_workers_setting = LogStash::SETTINGS.get_setting("pipeline.workers")
+    allow(pipeline_workers_setting).to receive(:default).and_return(worker_thread_count)
+    pipeline_settings.each {|k, v| pipeline_settings_obj.set(k, v) }
+  end
+
+  after :each do
+    pipeline_settings_obj.reset
+  end
 
   describe "defaulting the pipeline workers based on thread safety" do
     before(:each) do
@@ -123,13 +135,15 @@ describe LogStash::Pipeline do
         end
 
         it "should not receive a debug message with the compiled code" do
+          pipeline_settings_obj.set("debug.config", false)
           expect(logger).not_to receive(:debug).with(/Compiled pipeline/, anything)
           pipeline = TestPipeline.new(test_config_with_filters)
         end
 
         it "should print the compiled code if debug_config is set to true" do
+          pipeline_settings_obj.set("debug.config", true)
           expect(logger).to receive(:debug).with(/Compiled pipeline/, anything)
-          pipeline = TestPipeline.new(test_config_with_filters, :debug_config => true)
+          pipeline = TestPipeline.new(test_config_with_filters, pipeline_settings_obj)
         end
       end
 
@@ -149,7 +163,7 @@ describe LogStash::Pipeline do
         it "starts multiple filter thread" do
           msg = "Warning: Manual override - there are filters that might" +
                 " not work with multiple worker threads"
-          pipeline = TestPipeline.new(test_config_with_filters, pipeline_settings)
+          pipeline = TestPipeline.new(test_config_with_filters, pipeline_settings_obj)
           expect(pipeline.logger).to receive(:warn).with(msg,
             {:worker_threads=> override_thread_count, :filters=>["dummyfilter"]})
           pipeline.run
@@ -311,7 +325,8 @@ describe LogStash::Pipeline do
   describe "max inflight warning" do
     let(:config) { "input { dummyinput {} } output { dummyoutput {} }" }
     let(:batch_size) { 1 }
-    let(:pipeline) { LogStash::Pipeline.new(config, "pipeline.batch.size" => batch_size, "pipeline.workers" => 1) }
+    let(:pipeline_settings) { { "pipeline.batch.size" => batch_size, "pipeline.workers" => 1 } }
+    let(:pipeline) { LogStash::Pipeline.new(config, pipeline_settings_obj) }
     let(:logger) { pipeline.logger }
     let(:warning_prefix) { /CAUTION: Recommended inflight events max exceeded!/ }
 
@@ -432,11 +447,12 @@ describe LogStash::Pipeline do
       allow(LogStash::Plugin).to receive(:lookup).with("codec", "plain").and_return(LogStash::Codecs::Plain)
       allow(LogStash::Plugin).to receive(:lookup).with("filter", "multiline").and_return(LogStash::Filters::Multiline)
       allow(LogStash::Plugin).to receive(:lookup).with("output", "dummyoutput").and_return(DummyOutput)
+      pipeline_settings_obj.set("pipeline.flush.interval", 1)
     end
 
     it "flushes the buffered contents of the filter" do
       Thread.abort_on_exception = true
-      pipeline = LogStash::Pipeline.new(config, { :flush_interval => 1 })
+      pipeline = LogStash::Pipeline.new(config, pipeline_settings_obj)
       Thread.new { pipeline.run }
       sleep 0.1 while !pipeline.ready?
       # give us a bit of time to flush the events
@@ -527,8 +543,9 @@ describe LogStash::Pipeline do
   end
 
   context "when collecting metrics in the pipeline" do
-    subject { described_class.new(config, { :metric => metric, :pipeline_id => pipeline_id }) }
-    let(:pipeline_id) { :main }
+    let(:pipeline_settings) { { "pipeline.id" => pipeline_id } }
+    subject { described_class.new(config, pipeline_settings_obj) }
+    let(:pipeline_id) { "main" }
     let(:metric) { LogStash::Instrument::Metric.new }
     let(:number_of_events) { 1000 }
     let(:multiline_id) { "my-multiline" }
@@ -574,6 +591,7 @@ describe LogStash::Pipeline do
       # Reset the metric store
       LogStash::Instrument::Collector.instance.clear
 
+      subject.metric = metric
       Thread.new { subject.run }
       # make sure we have received all the generated events
       sleep 1 while dummyoutput.events.size < number_of_events
