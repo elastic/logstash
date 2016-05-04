@@ -19,7 +19,6 @@ module LogStash
       logstash-codec-msgpack
       logstash-codec-multiline
       logstash-codec-netflow
-      logstash-codec-oldlogstashjson
       logstash-codec-plain
       logstash-codec-rubydebug
       logstash-filter-anonymize
