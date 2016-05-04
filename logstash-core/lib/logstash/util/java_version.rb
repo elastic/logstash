@@ -5,16 +5,7 @@ module LogStash::Util::JavaVersion
   def self.logger
     @logger ||= Cabin::Channel.get(LogStash)
   end
-
-  # Print a warning if we're on a bad version of java
-  def self.warn_on_bad_java_version
-    if self.bad_java_version?(self.version)
-      msg = "!!! Please upgrade your java version, the current version '#{self.version}' is not supported. We recommend a minimum version of Java 8"
-      STDERR.puts(msg)
-      logger.warn(msg)
-    end
-  end
-
+  
   # Return the current java version string. Returns nil if this is a non-java platform (e.g. MRI).
   def self.version
     return nil unless LogStash::Environment.jruby?
