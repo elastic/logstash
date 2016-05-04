@@ -14,8 +14,8 @@ module ServiceTester
       stdout.match(/^Status: install ok installed$/)
     end
 
-    def package_for(version)
-      File.join(ServiceTester::Base::LOCATION, "logstash-#{version}_all.deb")
+    def package_for(version, base=ServiceTester::Base::LOCATION)
+      File.join(base, "logstash-#{version}_all.deb")
     end
 
     def install(package, host=nil)
