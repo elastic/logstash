@@ -149,8 +149,12 @@ class LogStash::Runner < Clamp::Command
       return 1
     end
 
-    # Print a warning to STDERR for bad java versions
-    LogStash::Util::JavaVersion.warn_on_bad_java_version
+    # Exit on bad java versions
+    java_version = LogStash::Util::JavaVersion.version
+    if LogStash::Util::JavaVersion.bad_java_version?(java_version)
+      $stderr.puts "Java version 1.8.0 or later is required. (You are running: #{java_version})"
+      return 1
+    end  
 
     LogStash::ShutdownWatcher.unsafe_shutdown = unsafe_shutdown?
     LogStash::ShutdownWatcher.logger = @logger
