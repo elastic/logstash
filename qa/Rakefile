@@ -1,7 +1,7 @@
 require "rspec"
 require "rspec/core/runner"
 require "rspec/core/rake_task"
-require_relative "vagrant-helpers"
+require_relative "vagrant/helpers"
 require_relative "platform_config"
 
 platforms = PlatformConfig.new
