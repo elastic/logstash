@@ -45,8 +45,7 @@ describe LogStash::Runner do
       let(:agent) { double("agent") }
 
       before(:each) do
-        allow(LogStash::Agent).to receive(:new).and_return(agent)
-        allow(LogStash::Util::JavaVersion).to receive(:warn_on_bad_java_version)
+        allow(LogStash::Agent).to receive(:new).and_return(agent)        
       end
 
       it "should show help" do
