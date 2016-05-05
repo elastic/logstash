@@ -137,7 +137,10 @@ module LogStash; module Config; module AST
   class PluginSection < Node
     # Global plugin numbering for the janky instance variable naming we use
     # like @filter_<name>_1
-    @@i = 0
+    def initialize(*args)
+      super(*args)
+      @i = 0
+    end
 
     # Generate ruby code to initialize all the plugins.
     def compile_initializer
@@ -192,9 +195,9 @@ module LogStash; module Config; module AST
 
       plugins.each do |plugin|
         # Unique number for every plugin.
-        @@i += 1
+        @i += 1
         # store things as ivars, like @filter_grok_3
-        var = "@#{plugin.plugin_type}_#{plugin.plugin_name}_#{@@i}"
+        var = "@#{plugin.plugin_type}_#{plugin.plugin_name}_#{@i}"
         @variables[plugin] = var
       end
       return @variables
