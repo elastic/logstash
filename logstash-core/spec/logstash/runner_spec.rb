@@ -24,6 +24,10 @@ describe LogStash::Runner do
     allow(LogStash::ShutdownWatcher).to receive(:logger).and_return(channel)
   end
 
+  after :each do
+    LogStash::SETTINGS.reset
+  end
+
   after :all do
     LogStash::ShutdownWatcher.logger = nil
   end
@@ -34,8 +38,10 @@ describe LogStash::Runner do
     let(:settings_yml) { ["--pipeline.workers", 2] }
 
     it "favors the last occurence of an option" do
-      expect(LogStash::Pipeline).to receive(:new).
-        with(config, hash_including("pipeline.workers" => 20)).and_call_original
+      expect(LogStash::Agent).to receive(:new) do |settings|
+        expect(settings.get("config.string")).to eq(config)
+        expect(settings.get("pipeline.workers")).to eq(20)
+      end
       subject.run("bin/logstash", settings_yml + cli_args)
     end
   end
@@ -49,7 +55,6 @@ describe LogStash::Runner do
 
       let(:args) { ["-e", "input {} output {}"] }
       let(:agent) { double("agent") }
-      let(:agent_logger) { double("agent logger") }
 
       before do
         allow(agent).to receive(:logger=).with(anything)
@@ -66,10 +71,9 @@ describe LogStash::Runner do
 
     context "with no arguments" do
       let(:args) { [] }
-      let(:agent) { double("agent") }
 
       before(:each) do
-        allow(LogStash::Agent).to receive(:new).and_return(agent)        
+        allow(LogStash::Util::JavaVersion).to receive(:warn_on_bad_java_version)
       end
 
       it "should show help" do
@@ -179,8 +183,9 @@ describe LogStash::Runner do
 
     context "when :pipeline_workers is not defined by the user" do
       it "should not pass the value to the pipeline" do
-        expect(LogStash::Pipeline).to receive(:new).once.with(pipeline_string, hash_excluding(:pipeline_workers)).and_return(pipeline)
-
+        expect(LogStash::Agent).to receive(:new) do |settings|
+	  expect(settings.set?("pipeline.workers")).to be(false)
+        end
         args = ["-e", pipeline_string]
         subject.run("bin/logstash", args)
       end
@@ -188,8 +193,10 @@ describe LogStash::Runner do
 
     context "when :pipeline_workers is defined by the user" do
       it "should pass the value to the pipeline" do
-        main_pipeline_settings["pipeline.workers"] = 2
-        expect(LogStash::Pipeline).to receive(:new).with(pipeline_string, hash_including(main_pipeline_settings)).and_return(pipeline)
+        expect(LogStash::Agent).to receive(:new) do |settings|
+	  expect(settings.set?("pipeline.workers")).to be(true)
+	  expect(settings.get("pipeline.workers")).to be(2)
+        end
 
         args = ["-w", "2", "-e", pipeline_string]
         subject.run("bin/logstash", args)
@@ -197,17 +204,19 @@ describe LogStash::Runner do
     end
 
     describe "debug_config" do
-      it "should set 'debug_config' to false by default" do
-        expect(LogStash::Config::Loader).to receive(:new).with(anything, false).and_call_original
-        expect(LogStash::Pipeline).to receive(:new).with(pipeline_string, hash_including(:debug_config => false)).and_return(pipeline)
-        args = ["--debug", "-e", pipeline_string, "-l", "/dev/null", "--log-in-json"]
+      it "should set 'debug.config' to false by default" do
+        expect(LogStash::Agent).to receive(:new) do |settings|
+          expect(settings.get("debug.config")).to eq(false)
+        end
+        args = ["--debug", "-e", pipeline_string]
         subject.run("bin/logstash", args)
       end
 
-      it "should allow overriding debug_config" do
-        expect(LogStash::Config::Loader).to receive(:new).with(anything, true).and_call_original
-        expect(LogStash::Pipeline).to receive(:new).with(pipeline_string, hash_including(:debug_config => true)).and_return(pipeline)
-        args = ["--debug", "--debug-config",  "-e", pipeline_string, "-l", "/dev/null", "--log-in-json"]
+      it "should allow overriding debug.config" do
+        expect(LogStash::Agent).to receive(:new) do |settings|
+          expect(settings.get("debug.config")).to eq(true)
+        end
+        args = ["--debug", "--debug.config",  "-e", pipeline_string]
         subject.run("bin/logstash", args)
       end
     end
