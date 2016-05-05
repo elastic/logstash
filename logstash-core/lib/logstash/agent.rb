@@ -376,22 +376,6 @@ class LogStash::Agent < Clamp::Command
     end
   end
 
-  def create_pipeline(settings)
-    begin
-      config = fetch_config(settings)
-    rescue => e
-      @logger.error("failed to fetch pipeline configuration", :message => e.message)
-      return
-    end
-
-    begin
-      LogStash::Pipeline.new(config, settings)
-    rescue => e
-      @logger.error("fetched an invalid config", :config => config, :reason => e.message)
-      return
-    end
-  end
-
   def start_pipelines
     @pipelines.each { |id, _| start_pipeline(id) }
   end
@@ -429,6 +413,25 @@ class LogStash::Agent < Clamp::Command
     start_pipeline(pipeline_id)
   end
 
+  def create_pipeline(settings, config=nil)
+
+    if config.nil?
+      begin
+        config = fetch_config(settings)
+      rescue => e
+        @logger.error("failed to fetch pipeline configuration", :message => e.message)
+        return
+      end
+    end
+
+    begin
+      LogStash::Pipeline.new(config, settings)
+    rescue => e
+      @logger.error("fetched an invalid config", :config => config, :reason => e.message)
+      return
+    end
+  end
+
   def clean_state?
     @pipelines.empty?
   end
@@ -437,16 +440,21 @@ class LogStash::Agent < Clamp::Command
   # wrapped in @upgrade_mutex in the parent call `reload_state!`
   def reload_pipeline!(id)
     old_pipeline = @pipelines[id]
-    new_pipeline = create_pipeline(old_pipeline.original_settings)
+    new_config = fetch_config(old_pipeline.original_settings)
+    if old_pipeline.config_str == new_config
+      @logger.debug("no configuration change for pipeline",
+                    :pipeline => id, :config => new_config)
+      return
+    end
+
+    new_pipeline = create_pipeline(old_pipeline.original_settings, new_config)
     return if new_pipeline.nil?
 
-    if old_pipeline.config_str == new_pipeline.config_str
-      @logger.debug("no configuration change for pipeline",
-                    :pipeline => id, :config => old_pipeline.config_str)
-    elsif new_pipeline.non_reloadable_plugins.any?
+    if new_pipeline.non_reloadable_plugins.any?
       @logger.error(I18n.t("logstash.agent.non_reloadable_config_reload"),
                     :pipeline_id => id,
                     :plugins => new_pipeline.non_reloadable_plugins.map(&:class))
+      return
     else
       @logger.log("fetched new config for pipeline. upgrading..",
                    :pipeline => id, :config => new_pipeline.config_str)
