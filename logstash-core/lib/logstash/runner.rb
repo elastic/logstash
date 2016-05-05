@@ -109,7 +109,7 @@ class LogStash::Runner < Clamp::Command
   option "--[no-]verbose", :flag, I18n.t("logstash.runner.flag.verbose"),
     :default => LogStash::SETTINGS.get_default("verbose")
 
-  option "--debug-config", :flag,
+  option "--debug.config", :flag,
     I18n.t("logstash.runner.flag.debug_config"),
     :default => LogStash::SETTINGS.get_default("debug.config"),
     :attribute_name => "debug.config"
