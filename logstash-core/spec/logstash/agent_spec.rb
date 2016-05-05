@@ -179,7 +179,7 @@ describe LogStash::Agent do
 
     context "when fetching a new state" do
       it "upgrades the state" do
-        expect(subject).to receive(:fetch_config).and_return(second_pipeline_config)
+        expect(subject).to receive(:fetch_config).twice.and_return(second_pipeline_config)
         expect(subject).to receive(:upgrade_pipeline).with(pipeline_id, kind_of(LogStash::Pipeline))
         subject.send(:reload_state!)
       end
