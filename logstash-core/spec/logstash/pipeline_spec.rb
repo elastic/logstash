@@ -452,4 +452,20 @@ describe LogStash::Pipeline do
       expect(pipeline1.filter_func(LogStash::Event.new)).not_to include(nil)
     end
   end
+
+  context "Pipeline object" do
+    before do
+      allow(LogStash::Plugin).to receive(:lookup).with("input", "generator").and_return(LogStash::Inputs::Generator)
+      allow(LogStash::Plugin).to receive(:lookup).with("codec", "plain").and_return(DummyCodec)
+      allow(LogStash::Plugin).to receive(:lookup).with("filter", "dummyfilter").and_return(DummyFilter)
+      allow(LogStash::Plugin).to receive(:lookup).with("output", "dummyoutput").and_return(DummyOutput)
+    end
+
+    let(:pipeline1) { LogStash::Pipeline.new("input { generator {} } filter { dummyfilter {} } output { dummyoutput {}}") }
+    let(:pipeline2) { LogStash::Pipeline.new("input { generator {} } filter { dummyfilter {} } output { dummyoutput {}}") }
+
+    it "should not add ivars" do
+       expect(pipeline1.instance_variables).to eq(pipeline2.instance_variables)
+    end
+  end
 end
