@@ -189,16 +189,20 @@ class LogStash::Agent
   # wrapped in @upgrade_mutex in the parent call `reload_state!`
   def reload_pipeline!(id)
     old_pipeline = @pipelines[id]
+    if old_pipeline.config_str == fetch_config(old_pipeline.original_settings)
+      @logger.debug("no configuration change for pipeline",
+                    :pipeline => id, :config => old_pipeline.config_str)
+      return
+    end
+
     new_pipeline = create_pipeline(old_pipeline.original_settings)
     return if new_pipeline.nil?
 
-    if old_pipeline.config_str == new_pipeline.config_str
-      @logger.debug("no configuration change for pipeline",
-                    :pipeline => id, :config => old_pipeline.config_str)
-    elsif new_pipeline.non_reloadable_plugins.any?
+    if new_pipeline.non_reloadable_plugins.any?
       @logger.error(I18n.t("logstash.agent.non_reloadable_config_reload"),
                     :pipeline_id => id,
                     :plugins => new_pipeline.non_reloadable_plugins.map(&:class))
+      return
     else
       @logger.warn("fetched new config for pipeline. upgrading..",
                    :pipeline => id, :config => new_pipeline.config_str)
