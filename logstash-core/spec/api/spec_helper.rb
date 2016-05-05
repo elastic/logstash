@@ -3,6 +3,7 @@ API_ROOT = File.expand_path(File.join(File.dirname(__FILE__), "..", "..", "lib",
 
 require "logstash/devutils/rspec/spec_helper"
 
+require "logstash/settings"
 require 'rack/test'
 require 'rspec'
 require "json"
@@ -37,26 +38,25 @@ class LogStashRunner
   attr_reader :config_str, :agent, :pipeline_settings
 
   def initialize
-    args = [
-      :logger => Cabin::Channel.get(LogStash),
-      :auto_reload => false,
-      :collect_metric => true,
-      :debug => false,
-      :node_name => "test_agent",
-      :web_api_http_port => rand(9600..9700)
-    ]
-
     @config_str   = "input { generator {count => 0} } output { }"
-    @agent = LogStash::DummyAgent.new(*args)
-    @pipeline_settings ||= { :pipeline_id => "main",
-                             :config_str => config_str,
-                            :pipeline_batch_size => 1,
-                            :flush_interval => 1,
-                            :pipeline_workers => 1 }
+    args = {
+      "config.auto_reload" => false,
+      "metric.collect" => true,
+      "debug" => false,
+      "node.name" => "test_agent",
+      "web_api.http.port" => rand(9600..9700),
+      "config.string" => @config_str,
+      "pipeline.batch.size" => 1,
+      "pipeline.flush.interval" => 1,
+      "pipeline.workers" => 1
+    }
+    @settings = ::LogStash::SETTINGS.clone.merge(args)
+
+    @agent = LogStash::DummyAgent.new(@settings)
   end
 
   def start
-    agent.register_pipeline("main", pipeline_settings)
+    agent.register_pipeline("main", @settings)
     @runner = Thread.new(agent) do |_agent|
       _agent.execute
     end

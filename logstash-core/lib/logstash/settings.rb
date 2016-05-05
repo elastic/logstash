@@ -61,6 +61,11 @@ module LogStash
       hash
     end
 
+    def merge(hash)
+      hash.each {|key, value| set_value(key, value) }
+      self
+    end
+
     def format_settings
       output = []
       output << "-------- Logstash Settings (* means modified) ---------"
