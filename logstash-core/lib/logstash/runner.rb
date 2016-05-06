@@ -16,8 +16,6 @@ require "logstash/config/defaults"
 require "logstash/shutdown_watcher"
 
 #puts "defining writer for #{option.attribute_name}"
-#puts "setting #{value}(class #{value.class}) for #{option.attribute_name}"
-#puts "getting value for #{option.attribute_name}"
 module Clamp
   module Attribute
     class Instance
@@ -29,7 +27,7 @@ module Clamp
 
   module Option
 
-    module Declaration
+    module StrictDeclaration
 
       include Clamp::Attribute::Declaration
 
@@ -48,9 +46,14 @@ module Clamp
       end
     end
   end
+  class StrictCommand < Command
+    class << self
+      include ::Clamp::Option::StrictDeclaration
+    end
+  end
 end
 
-class LogStash::Runner < Clamp::Command
+class LogStash::Runner < Clamp::StrictCommand
 
   # Node Settings
   option ["-n", "--node.name"], "NAME",
