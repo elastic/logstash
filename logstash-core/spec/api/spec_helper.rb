@@ -47,7 +47,6 @@ class LogStashRunner
       "web_api.http.port" => rand(9600..9700),
       "config.string" => @config_str,
       "pipeline.batch.size" => 1,
-      "pipeline.flush.interval" => 1,
       "pipeline.workers" => 1
     }
     @settings = ::LogStash::SETTINGS.clone.merge(args)

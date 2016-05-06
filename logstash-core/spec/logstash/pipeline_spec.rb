@@ -447,7 +447,6 @@ describe LogStash::Pipeline do
       allow(LogStash::Plugin).to receive(:lookup).with("codec", "plain").and_return(LogStash::Codecs::Plain)
       allow(LogStash::Plugin).to receive(:lookup).with("filter", "multiline").and_return(LogStash::Filters::Multiline)
       allow(LogStash::Plugin).to receive(:lookup).with("output", "dummyoutput").and_return(DummyOutput)
-      pipeline_settings_obj.set("pipeline.flush.interval", 1)
     end
 
     it "flushes the buffered contents of the filter" do

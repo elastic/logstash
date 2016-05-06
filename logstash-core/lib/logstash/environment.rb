@@ -18,8 +18,6 @@ module LogStash
                   Setting.new("pipeline.output.workers", Numeric, 1),
                   Setting.new("pipeline.batch.size", Numeric, 125),
                   Setting.new("pipeline.batch.delay", Numeric, 5), # in milliseconds
-                  Setting.new("pipeline.flush.interval", Numeric, 5), # in seconds
-                  Setting.new("pipeline.flush.timeout_interval", Numeric, 60), # in seconds
            BooleanSetting.new("pipeline.unsafe_shutdown", false),
                   Setting.new("plugin.paths", Array, []),
                   Setting.new("ruby_shell", String, nil, false),
