@@ -4,7 +4,6 @@ module LogStash
     # plugins included by default in the logstash distribution
     DEFAULT_PLUGINS = %w(
       logstash-input-heartbeat
-      logstash-output-zeromq
       logstash-codec-collectd
       logstash-output-xmpp
       logstash-codec-dots
@@ -18,10 +17,8 @@ module LogStash
       logstash-codec-line
       logstash-codec-msgpack
       logstash-codec-multiline
-      logstash-codec-netflow
       logstash-codec-plain
       logstash-codec-rubydebug
-      logstash-filter-anonymize
       logstash-filter-checksum
       logstash-filter-clone
       logstash-filter-csv
@@ -34,7 +31,6 @@ module LogStash
       logstash-filter-json
       logstash-filter-kv
       logstash-filter-metrics
-      logstash-filter-multiline
       logstash-filter-mutate
       logstash-filter-ruby
       logstash-filter-sleep
@@ -47,7 +43,6 @@ module LogStash
       logstash-filter-xml
       logstash-input-couchdb_changes
       logstash-input-elasticsearch
-      logstash-input-eventlog
       logstash-input-exec
       logstash-input-file
       logstash-input-ganglia
@@ -74,7 +69,6 @@ module LogStash
       logstash-input-udp
       logstash-input-unix
       logstash-input-xmpp
-      logstash-input-zeromq
       logstash-input-kafka
       logstash-input-beats
       logstash-output-cloudwatch
@@ -86,15 +80,11 @@ module LogStash
       logstash-output-ganglia
       logstash-output-gelf
       logstash-output-graphite
-      logstash-output-hipchat
       logstash-output-http
       logstash-output-irc
-      logstash-output-juggernaut
-      logstash-output-lumberjack
       logstash-output-nagios
       logstash-output-nagios_nsca
       logstash-output-null
-      logstash-output-opentsdb
       logstash-output-pagerduty
       logstash-output-pipe
       logstash-output-rabbitmq
