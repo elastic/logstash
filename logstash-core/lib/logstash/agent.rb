@@ -165,12 +165,15 @@ class LogStash::Agent
     @collect_metric
   end
 
-  def create_pipeline(settings)
-    begin
-      config = fetch_config(settings)
-    rescue => e
-      @logger.error("failed to fetch pipeline configuration", :message => e.message)
-      return
+  def create_pipeline(settings, config=nil)
+
+    if config.nil?
+      begin
+        config = fetch_config(settings)
+      rescue => e
+        @logger.error("failed to fetch pipeline configuration", :message => e.message)
+        return
+      end
     end
 
     begin
@@ -189,13 +192,14 @@ class LogStash::Agent
   # wrapped in @upgrade_mutex in the parent call `reload_state!`
   def reload_pipeline!(id)
     old_pipeline = @pipelines[id]
-    if old_pipeline.config_str == fetch_config(old_pipeline.original_settings)
+    new_config = fetch_config(old_pipeline.original_settings)
+    if old_pipeline.config_str == new_config
       @logger.debug("no configuration change for pipeline",
-                    :pipeline => id, :config => old_pipeline.config_str)
+                    :pipeline => id, :config => new_config)
       return
     end
 
-    new_pipeline = create_pipeline(old_pipeline.original_settings)
+    new_pipeline = create_pipeline(old_pipeline.original_settings, new_config)
     return if new_pipeline.nil?
 
     if new_pipeline.non_reloadable_plugins.any?
