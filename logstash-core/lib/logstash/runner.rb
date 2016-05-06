@@ -14,44 +14,7 @@ require "logstash/namespace"
 require "logstash/agent"
 require "logstash/config/defaults"
 require "logstash/shutdown_watcher"
-
-#puts "defining writer for #{option.attribute_name}"
-module Clamp
-  module Attribute
-    class Instance
-      def default_from_environment
-        # we don want uncontrolled var injection from the environment
-      end
-    end
-  end
-
-  module Option
-
-    module StrictDeclaration
-
-      include Clamp::Attribute::Declaration
-
-      def define_simple_writer_for(option, &block)
-        LogStash::SETTINGS.get(option.attribute_name)
-        define_method(option.write_method) do |value|
-          value = instance_exec(value, &block) if block
-          LogStash::SETTINGS.set_value(option.attribute_name, value)
-        end
-      end
-
-      def define_reader_for(option)
-        define_method(option.read_method) do
-          LogStash::SETTINGS.get_value(option.attribute_name)
-        end
-      end
-    end
-  end
-  class StrictCommand < Command
-    class << self
-      include ::Clamp::Option::StrictDeclaration
-    end
-  end
-end
+require "logstash/patches/clamp"
 
 class LogStash::Runner < Clamp::StrictCommand
 
