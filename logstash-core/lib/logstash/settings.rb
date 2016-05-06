@@ -135,6 +135,10 @@ module LogStash
         "value" => @value,
         "value_is_set" => @value_is_set,
         "default" => @default,
+        # Proc#== will only return true if it's the same obj
+        # so no there's no point in comparing it
+        # also thereś no use case atm to return the proc
+        # so let's not expose it
         #"validator_proc" => @validator_proc
       }
     end
