@@ -29,6 +29,10 @@
 #
 # pipeline.workers: 2
 #
+# How many workers should be used per output plugin instance
+#
+# pipeline.output.workers: 1
+#
 # How many events to retrieve from inputs before sending to filters+workers
 #
 # pipeline.batch.size: 125
@@ -45,3 +49,57 @@
 # WARNING: enabling this can lead to data loss during shutdown
 #
 # pipeline.unsafe_shutdown: false
+#
+# ------------ Pipeline Configuration Settings --------------
+#
+# Allow the pipeline configuration to be injected with environment variables
+#
+# config.allow_env: false
+#
+# Where to fetch the pipeline configuration for the main pipeline
+#
+# config.path:
+#
+# PIpeline configuration string for the main pipeline
+#
+# config.string:
+#
+# At startup, test if the configuration is valid and exit (dry run)
+#
+# config.test: false
+#
+# Periodically check if the configuration has changed and reload the pipeline
+# This can also be triggered manually through the SIGHUP signal
+#
+# config.auto_reload: false
+#
+# How often to check if the pipeline configuration has changed (in seconds)
+#
+# config.reload_interval", Numeric, 3),
+#
+# ------------ Metrics Settings --------------
+#
+# Collect metrics?
+# WARNING: Enabling this has a performance impact
+#
+# metric.collect: false
+#
+# Bind address for the metrics REST endpoint
+#
+# web_api.http.host: "127.0.0.1"
+#
+# Bind port for the metrics REST endpoint
+# web_api.http.port: 9600
+#
+# ------------ Debugging Settings --------------
+#
+# debug: false
+# quiet: false
+# verbose: false
+# debug.config: false
+# log.path:
+#
+# ------------ Other Settings --------------
+#
+# Where to find custom plugins
+# plugin.paths: []
