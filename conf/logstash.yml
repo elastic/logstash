@@ -79,16 +79,12 @@
 #
 # ------------ Metrics Settings --------------
 #
-# Collect metrics?
-# WARNING: Enabling this has a performance impact
-#
-# metric.collect: false
-#
 # Bind address for the metrics REST endpoint
 #
 # web_api.http.host: "127.0.0.1"
 #
 # Bind port for the metrics REST endpoint
+#
 # web_api.http.port: 9600
 #
 # ------------ Debugging Settings --------------
