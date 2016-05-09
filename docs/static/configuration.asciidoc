@@ -609,8 +609,6 @@ output {
 [[environment-variables]]
 === Using Environment Variables in Configuration
 
-This feature is _experimental_, to enable it you will need to run logstash with the `--allow-env` flag.
-
 ==== Overview
 
 * You can set environment variable references into Logstash plugins configuration using `${var}`.
