@@ -1,6 +1,8 @@
 # encoding: utf-8
 require_relative "./commands/debian"
+require_relative "./commands/ubuntu"
 require_relative "./commands/redhat"
+require_relative "./commands/suse"
 require "forwardable"
 
 module ServiceTester
@@ -13,9 +15,9 @@ module ServiceTester
     attr_reader :host, :client
 
     def initialize(host, options={})
-      @host     = host
-      @options  = options
-      @client = CommandsFactory.fetch(options["type"])
+      @host    = host
+      @options = options
+      @client  = CommandsFactory.fetch(options["type"], options["host"])
     end
 
     def name
@@ -50,10 +52,16 @@ module ServiceTester
 
   class CommandsFactory
 
-    def self.fetch(type)
+    def self.fetch(type, host)
       case type
       when "debian"
-        return DebianCommands.new
+        if host.start_with?("ubuntu")
+          return UbuntuCommands.new
+        else
+          return DebianCommands.new
+        end
+      when "suse"
+        return SuseCommands.new
       when "redhat"
         return RedhatCommands.new
       else
