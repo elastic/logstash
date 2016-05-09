@@ -9,7 +9,7 @@
 # See 'bin/logstash help' for a list of commands.
 #
 # Supported environment variables:
-#   LS_HEAP_SIZE="xxx" size for the -Xmx${LS_HEAP_SIZE} maximum Java heap size option, default is "1g"
+#   LS_JVM_OPTS="xxx" path to file with JVM options
 #   LS_JAVA_OPTS="xxx" to append extra options to the defaults JAVA_OPTS provided by logstash
 #   JAVA_OPTS="xxx" to *completely override* the defauls set of JAVA_OPTS provided by logstash
 #

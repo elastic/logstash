@@ -7,6 +7,6 @@ fi
 
 # create logstash user
 if ! getent passwd logstash >/dev/null; then
-  useradd -M -r -g logstash -d /var/lib/logstash \
+  useradd -M -r -g logstash -d /usr/share/logstash \
     -s /usr/sbin/nologin -c "LogStash Service User" logstash
 fi
