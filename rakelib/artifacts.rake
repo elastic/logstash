@@ -9,11 +9,12 @@ namespace "artifact" do
       "NOTICE.TXT",
       "CONTRIBUTORS",
       "bin/**/*",
+      "config/**/*",
       "lib/bootstrap/**/*",
       "lib/pluginmanager/**/*",
+      "lib/systeminstall/**/*",
       "patterns/**/*",
       "vendor/??*/**/*",
-      "config/logstash.yml",
       # To include ruby-maven's hidden ".mvn" directory, we need to
       # do add the line below. This directory contains a file called
       # "extensions.xml", which loads the ruby DSL for POMs.
@@ -207,7 +208,10 @@ namespace "artifact" do
 
     files.each do |path|
       next if File.directory?(path)
-      dir.input("#{path}=/opt/logstash/#{path}")
+      # Omit any config dir from /usr/share/logstash for packages, since we're
+      # using /etc/logstash below
+      next if path.start_with?("config/")
+      dir.input("#{path}=/usr/share/logstash/#{path}")
     end
 
     basedir = File.join(File.dirname(__FILE__), "..")
@@ -231,15 +235,17 @@ namespace "artifact" do
 
     case platform
       when "redhat", "centos"
-
         File.join(basedir, "pkg", "logrotate.conf").tap do |path|
           dir.input("#{path}=/etc/logrotate.d/logstash")
         end
-        File.join(basedir, "pkg", "logstash.default").tap do |path|
-          dir.input("#{path}=/etc/sysconfig/logstash")
+        File.join(basedir, "pkg", "startup.options").tap do |path|
+          dir.input("#{path}=/etc/logstash")
         end
-        File.join(basedir, "pkg", "logstash.sysv").tap do |path|
-          dir.input("#{path}=/etc/init.d/logstash")
+        File.join(basedir, "pkg", "jvm.options").tap do |path|
+          dir.input("#{path}=/etc/logstash")
+        end
+        File.join(basedir, "pkg", "logstash.yml").tap do |path|
+          dir.input("#{path}=/etc/logstash")
         end
         require "fpm/package/rpm"
         out = dir.convert(FPM::Package::RPM)
@@ -248,15 +254,19 @@ namespace "artifact" do
         out.attributes[:rpm_user] = "root"
         out.attributes[:rpm_group] = "root"
         out.attributes[:rpm_os] = "linux"
-        out.config_files << "etc/sysconfig/logstash"
         out.config_files << "etc/logrotate.d/logstash"
-        out.config_files << "/etc/init.d/logstash"
+        out.config_files << "/etc/logstash/startup.options"
+        out.config_files << "/etc/logstash/jvm.options"
+        out.config_files << "/etc/logstash/logstash.yml"
       when "debian", "ubuntu"
-        File.join(basedir, "pkg", "logstash.default").tap do |path|
-          dir.input("#{path}=/etc/default/logstash")
+        File.join(basedir, "pkg", "startup.options").tap do |path|
+          dir.input("#{path}=/etc/logstash")
         end
-        File.join(basedir, "pkg", "logstash.sysv").tap do |path|
-          dir.input("#{path}=/etc/init.d/logstash")
+        File.join(basedir, "pkg", "jvm.options").tap do |path|
+          dir.input("#{path}=/etc/logstash")
+        end
+        File.join(basedir, "pkg", "logstash.yml").tap do |path|
+          dir.input("#{path}=/etc/logstash")
         end
         require "fpm/package/deb"
         out = dir.convert(FPM::Package::Deb)
@@ -264,9 +274,10 @@ namespace "artifact" do
         out.attributes[:deb_user] = "root"
         out.attributes[:deb_group] = "root"
         out.attributes[:deb_suggests] = "java8-runtime-headless"
-        out.config_files << "/etc/default/logstash"
         out.config_files << "/etc/logrotate.d/logstash"
-        out.config_files << "/etc/init.d/logstash"
+        out.config_files << "/etc/logstash/startup.options"
+        out.config_files << "/etc/logstash/jvm.options"
+        out.config_files << "/etc/logstash/logstash.yml"
     end
 
     # Packaging install/removal scripts

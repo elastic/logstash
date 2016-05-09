@@ -1,0 +1,41 @@
+#!/bin/bash
+
+unset CDPATH
+. "$(cd `dirname $0`/..; pwd)/bin/logstash.lib.sh"
+setup
+
+if [ -z "$1" ]; then
+  [ -r ${LOGSTASH_HOME}/config/startup.options ] && . ${LOGSTASH_HOME}/config/startup.options
+  [ -r /etc/logstash/startup.options ] && . /etc/logstash/startup.options
+else
+  if [ -r $1 ]; then
+    echo "Using provided startup.options file: ${1}"
+    . $1
+  else
+    echo "$1 is not a file path"
+  fi
+fi
+
+# bin/logstash-plugin is a short lived ruby script thus we can use aggressive "faster starting JRuby options"
+# see https://github.com/jruby/jruby/wiki/Improving-startup-time
+export JRUBY_OPTS="$JRUBY_OPTS -J-XX:+TieredCompilation -J-XX:TieredStopAtLevel=1 -J-noverify -X-C -Xcompile.invokedynamic=false"
+
+tempfile=$(mktemp)
+if [ "x${PRESTART}" == "x" ]; then
+  opts=("--log" "$tempfile" "--overwrite" "--install" "--name" "${SERVICE_NAME}" "--user" "${LS_USER}" "--group" "${LS_GROUP}" "--description" "${SERVICE_DESCRIPTION}" "--nice" "${LS_NICE}" "--limit-open-files" "${LS_OPEN_FILES}")
+else
+  opts=("--log" "$tempfile" "--overwrite" "--install" "--name" "${SERVICE_NAME}" "--user" "${LS_USER}" "--group" "${LS_GROUP}" "--description" "${SERVICE_DESCRIPTION}" "--nice" "${LS_NICE}" "--limit-open-files" "${LS_OPEN_FILES}" "--prestart" "${PRESTART}")
+fi
+
+program="$(cd `dirname $0`/..; pwd)/bin/logstash"
+
+$(ruby_exec "${LOGSTASH_HOME}/lib/systeminstall/pleasewrap.rb" "${opts[@]}" ${program} ${LS_OPTS})
+exit_code=$?
+
+if [ $exit_code -ne 0 ]; then
+  cat $tempfile
+  echo "Unable to install system startup script for Logstash."
+else
+  echo "Successfully created system startup script for Logstash"
+fi
+rm $tempfile
