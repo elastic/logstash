@@ -26,8 +26,11 @@ fi
 LOGSTASH_HOME=$(cd `dirname $SOURCEPATH`/..; pwd)
 export LOGSTASH_HOME
 
-# Defaults you can override with environment variables
-LS_HEAP_SIZE="${LS_HEAP_SIZE:=1g}"
+parse_jvm_options() {
+  if [ -f "$1" ]; then
+    echo "$(grep "^-" "$1" | tr '\n' ' ')"
+  fi
+}
 
 setup_java() {
   if [ -z "$JAVACMD" ] ; then
@@ -50,43 +53,32 @@ setup_java() {
 
   if [ "$JAVA_OPTS" ] ; then
     echo "WARNING: Default JAVA_OPTS will be overridden by the JAVA_OPTS defined in the environment. Environment JAVA_OPTS are $JAVA_OPTS"  1>&2
-  else
-    # There are no JAVA_OPTS set from the client, we set a predefined
-    # set of options that think are good in general
-    JAVA_OPTS="-XX:+UseParNewGC"
-    JAVA_OPTS="$JAVA_OPTS -XX:+UseConcMarkSweepGC"
-    JAVA_OPTS="$JAVA_OPTS -Djava.awt.headless=true"
-
-    JAVA_OPTS="$JAVA_OPTS -XX:CMSInitiatingOccupancyFraction=75"
-    JAVA_OPTS="$JAVA_OPTS -XX:+UseCMSInitiatingOccupancyOnly"
-    # Causes the JVM to dump its heap on OutOfMemory.
-    JAVA_OPTS="$JAVA_OPTS -XX:+HeapDumpOnOutOfMemoryError"
-    # The path to the heap dump location
-    # This variable needs to be isolated since it may contain spaces
-    HEAP_DUMP_PATH="-XX:HeapDumpPath=${LOGSTASH_HOME}/heapdump.hprof"
   fi
+
+  # Set a default GC log file for use by jvm.options _before_ it's called.
+  if [ -z "$LS_GC_LOG_FILE" ] ; then
+    LS_GC_LOG_FILE="./logstash-gc.log"
+  fi
+
+  # Set the initial JVM options from the jvm.options file.  Look in
+  # /etc/logstash first, and break if that file is found readable there.
+  if [ -z "$LS_JVM_OPTS" ]; then
+      for jvm_options in /etc/logstash/jvm.options \
+                        "$LOGSTASH_HOME"/config/jvm.options;
+                         do
+          if [ -r "$jvm_options" ]; then
+              LS_JVM_OPTS=$jvm_options
+              break
+          fi
+      done
+  fi
+  # use the defaults, first, then override with anything provided
+  LS_JAVA_OPTS="$(parse_jvm_options "$LS_JVM_OPTS") $LS_JAVA_OPTS"
 
   if [ "$LS_JAVA_OPTS" ] ; then
     # The client set the variable LS_JAVA_OPTS, choosing his own
     # set of java opts.
     JAVA_OPTS="$JAVA_OPTS $LS_JAVA_OPTS"
-  fi
-
-  if [ "$LS_HEAP_SIZE" ] ; then
-    JAVA_OPTS="$JAVA_OPTS -Xmx${LS_HEAP_SIZE}"
-  fi
-
-  if [ "$LS_USE_GC_LOGGING" ] ; then
-    if [ -z "$LS_GC_LOG_FILE" ] ; then
-      LS_GC_LOG_FILE="./logstash-gc.log"
-    fi
-    JAVA_OPTS="$JAVA_OPTS -XX:+PrintGCDetails"
-    JAVA_OPTS="$JAVA_OPTS -XX:+PrintGCTimeStamps"
-    JAVA_OPTS="$JAVA_OPTS -XX:+PrintClassHistogram"
-    JAVA_OPTS="$JAVA_OPTS -XX:+PrintTenuringDistribution"
-    JAVA_OPTS="$JAVA_OPTS -XX:+PrintGCApplicationStoppedTime"
-    JAVA_OPTS="$JAVA_OPTS -Xloggc:${LS_GC_LOG_FILE}"
-    echo "Writing garbage collection logs to ${LS_GC_LOG_FILE}"
   fi
 
   export JAVACMD
@@ -140,7 +132,9 @@ setup_ruby() {
 jruby_opts() {
   printf "%s" "--1.9"
   for i in $JAVA_OPTS ; do
-    printf "%s" " -J$i"
+    if [ -z "$i" ]; then
+      printf "%s" " -J$i"
+    fi
   done
 }
 
@@ -179,8 +173,8 @@ ruby_exec() {
     # $VENDORED_JRUBY is non-empty so use the vendored JRuby
 
     if [ "$DEBUG" ] ; then
-      echo "DEBUG: exec ${JRUBY_BIN} $(jruby_opts) "-J$HEAP_DUMP_PATH" $@"
+      echo "DEBUG: exec ${JRUBY_BIN} $(jruby_opts) $@"
     fi
-    exec "${JRUBY_BIN}" $(jruby_opts) "-J$HEAP_DUMP_PATH" "$@"
+    exec "${JRUBY_BIN}" $(jruby_opts) "$@"
   fi
 }
