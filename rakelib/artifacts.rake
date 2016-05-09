@@ -224,10 +224,12 @@ namespace "artifact" do
       dir.input("#{empty}/=/etc/logstash/conf.d")
     end
 
+    # produce: logstash-5.0.0-alpha1.deb"
+    # produce: logstash-5.0.0-alpha1.rpm
+    package_filename = "logstash-#{LOGSTASH_VERSION}.TYPE"
+
     case platform
       when "redhat", "centos"
-        # produce: logstash-5.0.0-alpha1.noarch.rpm
-        package_filename = "logstash-#{LOGSTASH_VERSION}.ARCH.TYPE"
 
         File.join(basedir, "pkg", "logrotate.conf").tap do |path|
           dir.input("#{path}=/etc/logrotate.d/logstash")
@@ -249,9 +251,6 @@ namespace "artifact" do
         out.config_files << "etc/logrotate.d/logstash"
         out.config_files << "/etc/init.d/logstash"
       when "debian", "ubuntu"
-        # produce: logstash-5.0.0-alpha1_all.deb"
-        package_filename = "logstash-#{LOGSTASH_VERSION}_ARCH.TYPE"
-
         File.join(basedir, "pkg", "logstash.default").tap do |path|
           dir.input("#{path}=/etc/default/logstash")
         end
