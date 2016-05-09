@@ -45,8 +45,7 @@ module LogStash; class Pipeline
     :pipeline_batch_delay => 5, # in milliseconds
     :flush_interval => 5, # in seconds
     :flush_timeout_interval => 60, # in seconds
-    :debug_config => false,
-    :allow_env => false
+    :debug_config => false
   }
   MAX_INFLIGHT_WARN_THRESHOLD = 10_000
 
@@ -62,7 +61,6 @@ module LogStash; class Pipeline
     @settings = DEFAULT_SETTINGS.clone
     settings.each {|setting, value| configure(setting, value) }
     @reporter = LogStash::PipelineReporter.new(@logger, self)
-    @allow_env = settings[:allow_env]
 
     @inputs = nil
     @filters = nil
@@ -453,7 +451,6 @@ module LogStash; class Pipeline
 
   def plugin(plugin_type, name, *args)
     args << {} if args.empty?
-    args.first.merge!(LogStash::Config::Mixin::ALLOW_ENV_FLAG => @allow_env)
 
     pipeline_scoped_metric = metric.namespace([:stats, :pipelines, pipeline_id.to_s.to_sym, :plugins])
 

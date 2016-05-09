@@ -39,7 +39,6 @@ module LogStash::Config::Mixin
   PLUGIN_VERSION_1_0_0 = LogStash::Util::PluginVersion.new(1, 0, 0)
   PLUGIN_VERSION_0_9_0 = LogStash::Util::PluginVersion.new(0, 9, 0)
 
-  ALLOW_ENV_FLAG = "__ALLOW_ENV__"
   ENV_PLACEHOLDER_REGEX = /\$\{(?<name>\w+)(\:(?<default>[^}]*))?\}/
 
   # This method is called when someone does 'include LogStash::Config'
@@ -49,14 +48,6 @@ module LogStash::Config::Mixin
   end
 
   def config_init(params)
-    # HACK(talevy): https://github.com/elastic/logstash/issues/4958
-    # Currently, the regular plugins params argument is hijacked
-    # to pass along the `allow_env` configuration variable. This was done as to 
-    # not change the method signature of Plugin. This also makes it difficul to 
-    # reason about at the same time. ALLOW_ENV_FLAG is a special param that users 
-    # are now forbidden to set in their configuration definitions.
-    allow_env = params.delete(LogStash::Config::Mixin::ALLOW_ENV_FLAG) { false }
-
     # Validation will modify the values inside params if necessary.
     # For example: converting a string to a number, etc.
     
@@ -112,20 +103,18 @@ module LogStash::Config::Mixin
     end
 
     # Resolve environment variables references
-    if allow_env
-        params.each do |name, value|
-        if (value.is_a?(Hash))
-          value.each do |valueHashKey, valueHashValue|
-            value[valueHashKey.to_s] = replace_env_placeholders(valueHashValue)
+    params.each do |name, value|
+      if (value.is_a?(Hash))
+        value.each do |valueHashKey, valueHashValue|
+          value[valueHashKey.to_s] = replace_env_placeholders(valueHashValue)
+        end
+      else
+        if (value.is_a?(Array))
+          value.each_index do |valueArrayIndex|
+            value[valueArrayIndex] = replace_env_placeholders(value[valueArrayIndex])
           end
         else
-          if (value.is_a?(Array))
-            value.each_index do |valueArrayIndex|
-              value[valueArrayIndex] = replace_env_placeholders(value[valueArrayIndex])
-            end
-          else
-            params[name.to_s] = replace_env_placeholders(value)
-          end
+          params[name.to_s] = replace_env_placeholders(value)
         end
       end
     end

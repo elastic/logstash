@@ -98,10 +98,6 @@ class LogStash::Runner < Clamp::Command
     I18n.t("logstash.web_api.flag.http_port"),
     :attribute_name => :web_api_http_port, :default => 9600
 
-  option ["--allow-env"], :flag,
-    I18n.t("logstash.runner.flag.allow-env"),
-    :attribute_name => :allow_env, :default => false
-
   option ["--[no-]log-in-json"], :flag,
     I18n.t("logstash.runner.flag.log-in-json"),
     :default => false
@@ -207,8 +203,7 @@ class LogStash::Runner < Clamp::Command
     @agent.register_pipeline("main", @pipeline_settings.merge({
                           :config_string => config_string,
                           :config_path => config_path,
-                          :debug_config => debug_config?,
-                          :allow_env => allow_env?
+                          :debug_config => debug_config?
                           }))
 
     # enable sigint/sigterm before starting the agent
