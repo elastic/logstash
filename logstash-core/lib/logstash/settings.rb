@@ -89,6 +89,26 @@ module LogStash
     def reset
       @settings.values.each(&:reset)
     end
+
+    def from_yaml(yaml_path)
+      puts ::File.join(yaml_path, "logstash.yml")
+      if settings = YAML.parse(IO.read(::File.join(yaml_path, "logstash.yml")))
+        settings = settings.to_ruby
+        flatten_hash(settings)
+      else
+        {}
+      end
+    end
+
+    def flatten_hash(h,f="",g={})
+      return g.update({ f => h }) unless h.is_a? Hash
+      if f.empty?
+        h.each { |k,r| flatten_hash(r,k,g) }
+      else
+        h.each { |k,r| flatten_hash(r,"#{f}.#{k}",g) }
+      end
+      g
+    end
   end
 
   class Setting
@@ -155,39 +175,66 @@ module LogStash
         raise ArgumentError.new("Failed to validate setting \"#{@name}\" with value: #{value}")
       end
     end
-  end
 
-  class BooleanSetting < Setting
-    def initialize(name, default=nil, strict=true)
-      # Ruby doesn't have a single class to represent booleans
-      # so let's use the proc validator instead
-      super(name, Object, default, strict) {|value| [true, false].include?(value) }
-    end
-  end
+    ### Specific settings #####
 
-  class ValidatorSetting < Setting
-    def initialize(name, default=nil, strict=true, validator_class=nil)
-      @validator_class = validator_class
-      # Ruby doesn't have a single class to represent booleans
-      # so let's use the proc validator instead
-      super(name, Object, default, strict)
+    class Boolean < Setting
+      def initialize(name, default=nil, strict=true)
+        # Ruby doesn't have a single class to represent booleans
+        # so let's use the proc validator instead
+        super(name, ::Object, default, strict) {|value| [true, false].include?(value) }
+      end
     end
 
-    def validate(value)
-      @validator_class.validate(value)
+    class String < Setting
+      def initialize(name, default=nil, strict=true)
+        # Ruby doesn't have a single class to represent booleans
+        # so let's use the proc validator instead
+        super(name, ::String, default, strict)
+      end
     end
-  end
 
-  class ExistingFilePathSetting < Setting
-    def initialize(name, default=nil, strict=true)
-      super(name, String, default, strict) do |file_path|
-        if !::File.exists?(file_path)
-          raise ArgumentError.new("File \"#{file_path}\" must exist but was not found.")
-        else
-          true
+    class Numeric < Setting
+      def initialize(name, default=nil, strict=true)
+        # Ruby doesn't have a single class to represent booleans
+        # so let's use the proc validator instead
+        super(name, ::Numeric, default, strict)
+      end
+    end
+
+    class Port < Setting
+      def initialize(name, default=nil, strict=true)
+        # Ruby doesn't have a single class to represent booleans
+        # so let's use the proc validator instead
+        super(name, ::Numeric, default, strict) {|value| value > 1 && value < 65535 }
+      end
+    end
+
+    class Validator < Setting
+      def initialize(name, default=nil, strict=true, validator_class=nil)
+        @validator_class = validator_class
+        # Ruby doesn't have a single class to represent booleans
+        # so let's use the proc validator instead
+        super(name, ::Object, default, strict)
+      end
+
+      def validate(value)
+        @validator_class.validate(value)
+      end
+    end
+
+    class ExistingFilePath < Setting
+      def initialize(name, default=nil, strict=true)
+        super(name, ::String, default, strict) do |file_path|
+          if !::File.exists?(file_path)
+            raise ::ArgumentError.new("File \"#{file_path}\" must exist but was not found.")
+          else
+            true
+          end
         end
       end
     end
+
   end
 
   SETTINGS = Settings.new

@@ -143,6 +143,23 @@ class LogStash::Runner < Clamp::StrictCommand
     super(*args)
   end
 
+  def run(args)
+    if i=args.find_index("--settings.path")
+      settings_path = args[i+1]
+    elsif settings_arg = args.find {|v| v.match(/--settings.path=/) }
+      match = settings_arg.match(/--settings.path=(.*)/)
+      settings_path = match[1]
+    elsif ENV['LS_SETTINGS_DIR']
+      settings_path = ENV['LS_SETTINGS_DIR']
+    else
+      settings_path = nil
+    end
+
+    LogStash::SETTINGS.set("settings.path", settings_path) if settings_path
+    LogStash::SETTINGS.from_yaml(LogStash::SETTINGS.get("settings.path"))
+    super(*[args])
+  end
+
   def execute
     require "logstash/util"
     require "logstash/util/java_version"
@@ -166,7 +183,7 @@ class LogStash::Runner < Clamp::StrictCommand
     if LogStash::Util::JavaVersion.bad_java_version?(java_version)
       $stderr.puts "Java version 1.8.0 or later is required. (You are running: #{java_version})"
       return 1
-    end  
+    end
 
     LogStash::ShutdownWatcher.unsafe_shutdown = setting("pipeline.unsafe_shutdown")
     LogStash::ShutdownWatcher.logger = @logger

@@ -5,7 +5,7 @@ module Clamp
   module Attribute
     class Instance
       def default_from_environment
-        # we don want uncontrolled var injection from the environment
+        # we don't want uncontrolled var injection from the environment
       end
     end
   end
