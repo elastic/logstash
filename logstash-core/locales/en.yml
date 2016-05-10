@@ -71,8 +71,7 @@ en:
       non_reloadable_config_reload: >-
         Unable to reload configuration because it does not support dynamic reloading
       non_reloadable_config_register: |-
-        Logstash was not able to load configuration since it does not support
-        dynamic reloading and -r or --auto-reload flag was enabled
+        Logstash is not able to start since configuration auto reloading was enabled but the configuration contains plugins that don't support it. Quitting...
     web_api:
       flag:
         http_host: Web API binding host
