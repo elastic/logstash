@@ -480,7 +480,7 @@ class LogStash::Agent < Clamp::Command
       begin
         pipeline.run
       rescue => e
-        @logger.error("Pipeline aborted due to error", :exception => e, :backtrace => e.backtrace)
+        @logger.error("Pipeline aborted due to error", :exception => e.class.name, :backtrace => e.backtrace)
       end
     end
     sleep 0.01 until pipeline.ready?
