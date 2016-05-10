@@ -16,6 +16,7 @@ describe LogStash::OutputDelegator do
       allow(out_klass).to receive(:new).with(any_args).and_return(out_inst)
       allow(out_klass).to receive(:threadsafe?).and_return(false)
       allow(out_klass).to receive(:workers_not_supported?).and_return(false)
+      allow(out_klass).to receive(:name).and_return("example")
       allow(out_inst).to receive(:register)
       allow(out_inst).to receive(:multi_receive)
       allow(logger).to receive(:debug).with(any_args)

@@ -91,6 +91,10 @@ class LogStash::Agent < Clamp::Command
     I18n.t("logstash.agent.flag.allow-env"),
     :attribute_name => :allow_env, :default => false
 
+  option ["--[no-]log-in-json"], :flag,
+    I18n.t("logstash.agent.flag.log-in-json"),
+    :default => false
+
   def initialize(*params)
     super(*params)
     @logger = Cabin::Channel.get(LogStash)
@@ -142,6 +146,7 @@ class LogStash::Agent < Clamp::Command
     require "logstash/pipeline"
     require "cabin" # gem 'cabin'
     require "logstash/plugin"
+    require "logstash/logging/json"
 
     LogStash::ShutdownWatcher.unsafe_shutdown = unsafe_shutdown?
     LogStash::ShutdownWatcher.logger = @logger
@@ -294,10 +299,21 @@ class LogStash::Agent < Clamp::Command
 
       puts "Sending logstash logs to #{path}."
       @logger.unsubscribe(@logger_subscription) if @logger_subscription
-      @logger_subscription = @logger.subscribe(@log_fd)
+      if log_in_json?
+        @logger_subscription = @logger.subscribe(LogStash::Logging::JSON.new(@log_fd))
+        @logger.subscribe(LogStash::Logging::JSON.new(STDOUT), :level => :fatal)
+      else
+        @logger_subscription = @logger.subscribe(@log_fd)
+        @logger.subscribe(STDOUT, :level => :fatal)
+      end
     else
-      @logger.subscribe(STDOUT)
+      if log_in_json?
+        @logger.subscribe(LogStash::Logging::JSON.new(STDOUT))
+      else
+        @logger.subscribe(STDOUT)
+      end
     end
+
 
     # TODO(sissel): redirect stdout/stderr to the log as well
     # http://jira.codehaus.org/browse/JRUBY-7003

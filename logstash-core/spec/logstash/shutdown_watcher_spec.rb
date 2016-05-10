@@ -20,6 +20,7 @@ describe LogStash::ShutdownWatcher do
     allow(pipeline).to receive(:thread).and_return(Thread.current)
     allow(reporter).to receive(:snapshot).and_return(reporter_snapshot)
     allow(reporter_snapshot).to receive(:o_simple_hash).and_return({})
+    allow(reporter_snapshot).to receive(:to_json_data).and_return("reporter-double")
 
     allow(subject).to receive(:pipeline_report_snapshot).and_wrap_original do |m, *args|
       report_count += 1
