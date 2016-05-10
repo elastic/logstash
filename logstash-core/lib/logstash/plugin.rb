@@ -32,7 +32,7 @@ class LogStash::Plugin
   # main task terminates
   public
   def do_close
-    @logger.debug("closing", :plugin => self)
+    @logger.debug("closing", :plugin => self.class.name)
     close
   end
 

@@ -3,6 +3,7 @@ require "spec_helper"
 require "logstash/runner"
 require "stud/task"
 require "stud/trap"
+require "stud/temporary"
 
 class NullRunner
   def run(args); end
@@ -14,6 +15,7 @@ describe LogStash::Runner do
 
   before :each do
     allow(Cabin::Channel).to receive(:get).with(LogStash).and_return(channel)
+    allow(channel).to receive(:subscribe).with(any_args).and_call_original
   end
 
   context "argument parsing" do
@@ -51,6 +53,31 @@ describe LogStash::Runner do
 
       it "should exit immediately" do
         expect(subject.run(args).wait).to eq(1)
+      end
+    end
+  end
+
+  context "--log-in-json" do
+    let(:logfile) { Stud::Temporary.file }
+    let(:args) { [ "agent", "--log-in-json", "-l", logfile.path, "-e", "some-invalid-config" ] }
+
+    after do
+      logfile.close
+      File.unlink(logfile.path)
+    end
+
+    before do
+      expect(channel).to receive(:subscribe).with(kind_of(LogStash::Logging::JSON)).and_call_original
+      subject.run(args).wait
+
+      # Log file should have stuff in it.
+      expect(logfile.stat.size).to be > 0
+    end
+
+    it "should log in valid json. One object per line." do
+      logfile.each_line do |line|
+        expect(line).not_to be_empty
+        expect { LogStash::Json.load(line) }.not_to raise_error
       end
     end
   end
