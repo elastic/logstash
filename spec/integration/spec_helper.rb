@@ -1,6 +1,6 @@
 # encoding: utf-8
 require_relative "support/integration_test_helpers"
-require_relative "../logstash-core/lib/logstash/environment"
+require_relative "../../logstash-core/lib/logstash/environment"
 require "fileutils"
 
 if LogStash::Environment.windows?
@@ -9,7 +9,7 @@ if LogStash::Environment.windows?
 end
 
 # Configure the test environment
-source = File.expand_path(File.join(File.dirname(__FILE__), ".."))
+source = File.expand_path(File.join(File.dirname(__FILE__), "..", ".."))
 integration_path = File.join(source, "integration_run")
 
 puts "[integration_spec] configure environment"
