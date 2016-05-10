@@ -1,0 +1,4 @@
+Gemfile.lock
+acceptance/.vagrant
+.vagrant
+.vm_ssh_config
