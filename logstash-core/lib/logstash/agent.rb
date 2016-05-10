@@ -32,7 +32,7 @@ class LogStash::Agent
   def initialize(settings = LogStash::SETTINGS)
     @settings = settings
     @logger = Cabin::Channel.get(LogStash)
-    @auto_reload = setting("config.auto_reload")
+    @auto_reload = setting("config.reload.auto")
 
     @pipelines = {}
     @node_name = setting("node.name")
@@ -40,7 +40,7 @@ class LogStash::Agent
     @web_api_http_port = setting("web_api.http.port")
 
     @config_loader = LogStash::Config::Loader.new(@logger)
-    @reload_interval = setting("config.reload_interval")
+    @reload_interval = setting("config.reload.interval")
     @upgrade_mutex = Mutex.new
 
     @collect_metric = setting("metric.collect")

@@ -40,7 +40,7 @@ class LogStashRunner
   def initialize
     @config_str   = "input { generator {count => 0} } output { }"
     args = {
-      "config.auto_reload" => false,
+      "config.reload.auto" => false,
       "metric.collect" => true,
       "debug" => false,
       "node.name" => "test_agent",

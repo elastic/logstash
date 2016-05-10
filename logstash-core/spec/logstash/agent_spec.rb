@@ -49,8 +49,8 @@ describe LogStash::Agent do
     let(:agent_args) do
       { 
         "config.string" => config_string,
-        "config.auto_reload" => true,
-        "config.reload_interval" => 0.01,
+        "config.reload.auto" => true,
+        "config.reload.interval" => 0.01,
 	"pipeline.workers" => 4,
       }
     end
@@ -75,7 +75,7 @@ describe LogStash::Agent do
     context "when auto_reload is false" do
       let(:agent_args) do
         {
-          "config.auto_reload" => false,
+          "config.reload.auto" => false,
           "config.path" => config_file
         }
       end
@@ -137,8 +137,8 @@ describe LogStash::Agent do
     context "when auto_reload is true" do
       let(:agent_args) do
         {
-          "config.auto_reload" => true,
-          "config.reload_interval" => 0.01,
+          "config.reload.auto" => true,
+          "config.reload.interval" => 0.01,
           "config.path" => config_file,
         }
       end
@@ -224,8 +224,8 @@ describe LogStash::Agent do
   describe "Environment Variables In Configs" do
     let(:pipeline_config) { "input { generator { message => '${FOO}-bar' } } filter { } output { }" }
     let(:agent_args) { {
-      "config.auto_reload" => false,
-      "config.reload_interval" => 0.01,
+      "config.reload.auto" => false,
+      "config.reload.interval" => 0.01,
       "config.string" => pipeline_config
     } }
     let(:pipeline_id) { "main" }
@@ -341,8 +341,8 @@ describe LogStash::Agent do
     end
 
     let(:agent_args) do
-      super.merge({ "config.auto_reload" => true,
-                    "config.reload_interval" => interval,
+      super.merge({ "config.reload.auto" => true,
+                    "config.reload.interval" => interval,
                     "metric.collect" => true })
     end 
 

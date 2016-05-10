@@ -83,7 +83,7 @@ class LogStash::Runner < Clamp::StrictCommand
   # Other settings
   option ["-i", "--interactive"], "SHELL",
     I18n.t("logstash.runner.flag.rubyshell"),
-    :attribute_name => "ruby_shell"
+    :attribute_name => "interactive"
 
   option ["-V", "--version"], :flag,
     I18n.t("logstash.runner.flag.version")
@@ -93,47 +93,30 @@ class LogStash::Runner < Clamp::StrictCommand
     :attribute_name => "config.test",
     :default => LogStash::SETTINGS.get_default("config.test")
 
-  option ["-r", "--[no-]auto.reload"], :flag,
+  option ["-r", "--[no-]config.reload.auto"], :flag,
     I18n.t("logstash.runner.flag.auto_reload"),
-    :attribute_name => "config.auto_reload", :default => false
+    :attribute_name => "config.reload.auto",
+    :default => LogStash::SETTINGS.get_default("config.reload.auto")
 
-  option ["--reload.interval"], "RELOAD_INTERVAL",
+  option ["--config.reload.interval"], "RELOAD_INTERVAL",
     I18n.t("logstash.runner.flag.reload_interval"),
-    :attribute_name => "config.reload_interval", :default => 3, &:to_i
+    :attribute_name => "config.reload.interval",
+    :default => LogStash::SETTINGS.get_default("config.reload.interval"), &:to_i
 
-  option ["--http-host"], "WEB_API_HTTP_HOST",
+  option ["--web_api.http.host"], "WEB_API_HTTP_HOST",
     I18n.t("logstash.web_api.flag.http_host"),
-    :attribute_name => "web_api.http.host", :default => "127.0.0.1"
+    :attribute_name => "web_api.http.host",
+    :default => LogStash::SETTINGS.get_default("web_api.http.host")
 
-  option ["--http-port"], "WEB_API_HTTP_PORT",
+  option ["--web_api.http.port"], "WEB_API_HTTP_PORT",
     I18n.t("logstash.web_api.flag.http_port"),
-    :attribute_name => "web_api.http.port", :default => 9600, &:to_i
+    :attribute_name => "web_api.http.port",
+    :default => LogStash::SETTINGS.get_default("web_api.http.port"), &:to_i
 
-  option ["--[no-]log-in-json"], :flag,
+  option ["--log.json"], :flag,
     I18n.t("logstash.runner.flag.log-in-json"),
-    :default => false
-
-  def pipeline_workers=(pipeline_workers_value)
-    @pipeline_settings["pipeline.workers"] = validate_positive_integer(pipeline_workers_value)
-  end
-
-  def pipeline_batch_size=(pipeline_batch_size_value)
-    @pipeline_settings["pipeline.batch.size"] = validate_positive_integer(pipeline_batch_size_value)
-  end
-
-  def pipeline_batch_delay=(pipeline_batch_delay_value)
-    @pipeline_settings["pipeline.batch.delay"] = validate_positive_integer(pipeline_batch_delay_value)
-  end
-
-  def validate_positive_integer(arg)
-    int_arg = arg.to_i
-    str_arg = arg.to_s
-    if str_arg !~ /^\d+$/ || int_arg < 1
-      raise ArgumentError, "Expected a positive integer, got '#{arg}'"
-    end
-
-    int_arg
-  end
+    :attribute_name => "log.json",
+    :default => LogStash::SETTINGS.get_default("log.json")
 
   attr_reader :agent
 
@@ -195,7 +178,7 @@ class LogStash::Runner < Clamp::StrictCommand
       return 0
     end
 
-    return start_shell(setting("ruby_shell"), binding) if setting("ruby_shell")
+    return start_shell(setting("interactive"), binding) if setting("interactive")
 
     @settings.format_settings.each {|line| @logger.log(line) }
 
@@ -203,7 +186,7 @@ class LogStash::Runner < Clamp::StrictCommand
       fail(I18n.t("logstash.runner.missing-configuration"))
     end
 
-    if setting("config.auto_reload") && setting("config.path").nil?
+    if setting("config.reload.auto") && setting("config.path").nil?
       # there's nothing to reload
       signal_usage_error(I18n.t("logstash.runner.reload-without-config-path"))
     end
@@ -325,7 +308,7 @@ class LogStash::Runner < Clamp::StrictCommand
                     :path => path, :error => e))
       end
 
-      if log_in_json?
+      if setting("log.json")
         @logger.subscribe(LogStash::Logging::JSON.new(STDOUT), :level => :fatal)
         @logger.subscribe(LogStash::Logging::JSON.new(@log_fd))
       else
@@ -334,7 +317,7 @@ class LogStash::Runner < Clamp::StrictCommand
       end
       @logger.terminal "Sending logstash logs to #{path}."
     else
-      if log_in_json?
+      if setting("log.json")
         @logger.subscribe(LogStash::Logging::JSON.new(STDOUT))
       else
         @logger.subscribe(STDOUT)
