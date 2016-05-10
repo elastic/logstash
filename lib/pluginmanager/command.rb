@@ -4,6 +4,10 @@ class LogStash::PluginManager::Command < Clamp::Command
     @gemfile ||= LogStash::Gemfile.new(File.new(LogStash::Environment::GEMFILE_PATH, 'r+')).load
   end
 
+  def gemfilelock
+    @gemfilelock ||= LogStash::GemfileLock.parse(Bundler.default_lockfile)
+  end
+
   # If set in debug mode we will raise an exception and display the stacktrace
   def report_exception(readable_message, exception)
     if ENV["DEBUG"]

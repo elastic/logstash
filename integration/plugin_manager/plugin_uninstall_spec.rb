@@ -20,5 +20,12 @@ describe "bin/logstash-plugin uninstall" do
       expect(result.stdout).to match(/^Uninstalling logstash-filter-ruby/)
       expect(result.exit_status).to eq(0)
     end
+
+    it "fails if has dependencies" do
+      result  = command("bin/plugin uninstall logstash-input-tcp")
+      message = "logstash-input-tcp is a dependency of logstash-input-graphite."
+      expect(result.stderr).to match(/ERROR: Uninstall Aborted, message: #{message}/)
+      expect(result.exit_status).to eq(1)
+    end
   end
 end
