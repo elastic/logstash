@@ -34,15 +34,23 @@ describe LogStash::Runner do
 
   describe "argument precedence" do
     let(:config) { "input {} output {}" }
-    let(:cli_args) { ["-e", config, "-w", 20] }
-    let(:settings_yml) { ["--pipeline.workers", 2] }
+    let(:cli_args) { ["-e", config, "-w", "20"] }
+    let(:settings_yml_hash) { { "pipeline.workers" => 2 } }
+
+    before :each do
+      allow(LogStash::SETTINGS).to receive(:read_yaml).and_return(settings_yml_hash)
+    end
+
+    after :each do
+      LogStash::SETTINGS.reset
+    end
 
     it "favors the last occurence of an option" do
       expect(LogStash::Agent).to receive(:new) do |settings|
         expect(settings.get("config.string")).to eq(config)
         expect(settings.get("pipeline.workers")).to eq(20)
       end
-      subject.run("bin/logstash", settings_yml + cli_args)
+      subject.run("bin/logstash", cli_args)
     end
   end
 
@@ -123,10 +131,10 @@ describe LogStash::Runner do
     end
   end
 
-  context "--log-in-json" do
+  context "--log.json" do
     subject { LogStash::Runner.new("") }
     let(:logfile) { Stud::Temporary.file }
-    let(:args) { [ "--log-in-json", "-l", logfile.path, "-e", "input {} output{}" ] }
+    let(:args) { [ "--log.json", "-l", logfile.path, "-e", "input {} output{}" ] }
 
     after do
       logfile.close

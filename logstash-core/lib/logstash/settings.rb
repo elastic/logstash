@@ -91,13 +91,14 @@ module LogStash
     end
 
     def from_yaml(yaml_path)
-      settings_hash = if settings = YAML.parse(IO.read(::File.join(yaml_path, "logstash.yml")))
-        settings = settings.to_ruby
-        flatten_hash(settings)
-      else
-        {}
-      end
-      self.merge(settings_hash)
+      settings = read_yaml(::File.join(yaml_path, "logstash.yml"))
+      flatten_hash(settings)
+      self.merge(settings)
+    end
+
+    private
+    def read_yaml(path)
+      YAML.safe_load(IO.read(path)) || {}
     end
 
     def flatten_hash(h,f="",g={})
