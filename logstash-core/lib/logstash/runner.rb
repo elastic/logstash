@@ -118,6 +118,11 @@ class LogStash::Runner < Clamp::StrictCommand
     :attribute_name => "log.json",
     :default => LogStash::SETTINGS.get_default("log.json")
 
+  option ["--settings.dir"], "SETTINGS_DIR",
+    I18n.t("logstash.runner.flag.settings-dir"),
+    :attribute_name => "settings.dir",
+    :default => LogStash::SETTINGS.get_default("settings.dir")
+
   attr_reader :agent
 
   def initialize(*args)
@@ -127,10 +132,10 @@ class LogStash::Runner < Clamp::StrictCommand
   end
 
   def run(args)
-    if i=args.find_index("--settings.path")
+    if i=args.find_index("--settings.dir")
       settings_path = args[i+1]
-    elsif settings_arg = args.find {|v| v.match(/--settings.path=/) }
-      match = settings_arg.match(/--settings.path=(.*)/)
+    elsif settings_arg = args.find {|v| v.match(/--settings.dir=/) }
+      match = settings_arg.match(/--settings.dir=(.*)/)
       settings_path = match[1]
     elsif ENV['LS_SETTINGS_DIR']
       settings_path = ENV['LS_SETTINGS_DIR']
@@ -138,8 +143,8 @@ class LogStash::Runner < Clamp::StrictCommand
       settings_path = nil
     end
 
-    LogStash::SETTINGS.set("settings.path", settings_path) if settings_path
-    LogStash::SETTINGS.from_yaml(LogStash::SETTINGS.get("settings.path"))
+    LogStash::SETTINGS.set("settings.dir", settings_path) if settings_path
+    LogStash::SETTINGS.from_yaml(LogStash::SETTINGS.get("settings.dir"))
     super(*[args])
   end
 
