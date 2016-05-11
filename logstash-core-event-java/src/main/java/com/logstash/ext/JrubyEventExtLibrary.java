@@ -245,19 +245,13 @@ public class JrubyEventExtLibrary implements Library {
         @JRubyMethod(name = "to_hash")
         public IRubyObject ruby_to_hash(ThreadContext context) throws IOException
         {
-            return Rubyfier.deep(context.runtime, this.event.toMap());
+            return Rubyfier.deep(context.runtime, this.event.getData());
         }
 
         @JRubyMethod(name = "to_hash_with_metadata")
         public IRubyObject ruby_to_hash_with_metadata(ThreadContext context) throws IOException
         {
-            Map data = this.event.toMap();
-            Map metadata = this.event.getMetadata();
-
-            if (!metadata.isEmpty()) {
-                data.put(Event.METADATA, metadata);
-            }
-            return Rubyfier.deep(context.runtime, data);
+            return Rubyfier.deep(context.runtime, this.event.toMapWithMetadata());
         }
 
         @JRubyMethod(name = "to_java")
@@ -271,6 +265,15 @@ public class JrubyEventExtLibrary implements Library {
         {
             try {
                 return RubyString.newString(context.runtime, event.toJson());
+            } catch (Exception e) {
+                throw new RaiseException(context.runtime, GENERATOR_ERROR, e.getMessage(), true);
+            }
+        }
+
+        @JRubyMethod(name = "to_json_with_metadata")
+        public IRubyObject ruby_to_json_with_metadata(ThreadContext context, IRubyObject[] args) {
+            try {
+                return RubyString.newString(context.runtime, event.toJsonWithMetadata());
             } catch (Exception e) {
                 throw new RaiseException(context.runtime, GENERATOR_ERROR, e.getMessage(), true);
             }
