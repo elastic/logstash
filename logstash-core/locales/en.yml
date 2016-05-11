@@ -188,6 +188,9 @@ en:
         pipeline-batch-delay: |+
           When creating pipeline batches, how long to wait while polling
           for the next event.
+        settings-dir: |+
+          Directory containing logstash.yml file. This can also be
+          set through the LS_SETTINGS_DIR environment variable.
         auto_reload: |+
           Monitor configuration changes and reload
           whenever it is changed.
