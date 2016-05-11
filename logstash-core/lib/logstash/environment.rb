@@ -7,7 +7,7 @@ module LogStash
 
   [
             Setting::String.new("node.name", Socket.gethostname),
-  Setting::ExistingFilePath.new("config.path", nil, false),
+            Setting::String.new("config.path", nil, false),
             Setting::String.new("config.string", nil, false),
            Setting::Boolean.new("config.test", false),
            Setting::Boolean.new("config.reload.auto", false),
