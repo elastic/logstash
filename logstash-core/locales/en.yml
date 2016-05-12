@@ -1,6 +1,6 @@
 # YAML notes
 #   |- means 'scalar block' useful for formatted text
-#   > means 'scalar block' but it chomps all newlines. Useful 
+#   > means 'scalar block' but it chomps all newlines. Useful
 #     for unformatted text.
 en:
   oops: |-
@@ -76,7 +76,7 @@ en:
       hot_threads:
         title: |-
           ::: {%{hostname}}
-            Hot threads at %{time}, busiestThreads=%{top_count}:
+          Hot threads at %{time}, busiestThreads=%{top_count}:
         thread_title: |-
             %{percent_of_cpu_time} % of cpu usage by %{thread_state} thread named '%{thread_name}'
     runner:
@@ -141,18 +141,18 @@ en:
           after %{after}
         invalid_plugin_register: >-
           Cannot register %{plugin} %{type} plugin.
-          The error reported is: 
+          The error reported is:
             %{error}
         plugin_path_missing: >-
           You specified a plugin path that does not exist: %{path}
         no_plugins_found: |-
           Could not find any plugins in "%{path}"
-          I tried to find files matching the following, but found none: 
+          I tried to find files matching the following, but found none:
             %{plugin_glob}
         log_file_failed: |-
           Failed to open %{path} for writing: %{error}
 
-          This is often a permissions issue, or the wrong 
+          This is often a permissions issue, or the wrong
           path was specified?
       flag:
         # Note: Wrap these at 55 chars so they display nicely when clamp emits

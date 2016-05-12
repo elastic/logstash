@@ -1,10 +1,10 @@
 # encoding: utf-8
 require_relative "../../spec_helper"
 require "sinatra"
-require "app/modules/node"
+require "logstash/api/modules/node"
 require "logstash/json"
 
-describe LogStash::Api::Node do
+describe LogStash::Api::Modules::Node do
 
   include Rack::Test::Methods
 

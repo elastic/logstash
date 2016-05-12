@@ -86,7 +86,7 @@ module LogStash module Instrument
 
     # Similar to `get_with_path` but use symbols instead of string
     #
-    # @param [Array<Symbol>
+    # @param [Array<Symbol>]
     # @return [Hash]
     def get(*key_paths)
       # Normalize the symbols access
@@ -98,6 +98,16 @@ module LogStash module Instrument
       end
 
       new_hash
+    end
+
+    # Retrieve values like `get`, but don't return them fully nested.
+    # This means that if you call `get_shallow(:foo, :bar)` the result will not
+    # be nested inside of `{:foo {:bar => values}`.
+    #
+    # @param [Array<Symbol>]
+    # @return [Hash]
+    def get_shallow(*key_paths)
+      key_paths.reduce(get(*key_paths)) {|acc, p| acc[p]}
     end
 
     # Return all the individuals Metric,

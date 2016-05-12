@@ -1,6 +1,15 @@
+
 # encoding: utf-8
 require "logstash/instrument/periodic_poller/base"
-require 'monitoring'
+require 'jrmonitor'
+
+java_import 'java.lang.management.ManagementFactory'
+java_import 'java.lang.management.OperatingSystemMXBean'
+java_import 'com.sun.management.UnixOperatingSystemMXBean'
+java_import 'javax.management.MBeanServer'
+java_import 'javax.management.ObjectName'
+java_import 'javax.management.AttributeList'
+java_import 'javax.naming.directory.Attribute'
 
 module LogStash module Instrument module PeriodicPoller
   class JVM < Base
@@ -13,13 +22,49 @@ module LogStash module Instrument module PeriodicPoller
     end
 
     def collect
-      raw = JRMonitor.memory.generate
+      raw = JRMonitor.memory.generate      
       collect_heap_metrics(raw)
       collect_non_heap_metrics(raw)
       collect_pools_metrics(raw)
+      collect_threads_metrics
+      collect_process_metrics
     end
 
     private
+
+    def collect_threads_metrics      
+      threads = JRMonitor.threads.generate
+      
+      current = threads.count
+      if @peak_threads.nil? || @peak_threads < current
+        @peak_threads = current
+      end      
+      
+      metric.gauge([:jvm, :threads], :count, threads.count)     
+      metric.gauge([:jvm, :threads], :peak_count, @peak_threads)
+    end
+
+    def collect_process_metrics
+      process_metrics = JRMonitor.process.generate
+      
+      path = [:jvm, :process]
+
+
+      open_fds = process_metrics["open_file_descriptors"]
+      if @peak_open_fds.nil? || open_fds > @peak_open_fds
+        @peak_open_fds = open_fds
+      end
+      metric.gauge(path, :open_file_descriptors, open_fds)
+      metric.gauge(path, :peak_open_file_descriptors, @peak_open_fds)
+      metric.gauge(path, :max_file_descriptors, process_metrics["max_file_descriptors"])
+
+      cpu_path = path + [:cpu]
+      cpu_metrics = process_metrics["cpu"]
+      metric.gauge(cpu_path, :percent, cpu_metrics["process_percent"])
+      metric.gauge(cpu_path, :total_in_millis, cpu_metrics["total_in_millis"])
+
+      metric.gauge(path + [:mem], :total_virtual_in_bytes, process_metrics["mem"]["total_virtual_in_bytes"])
+    end
 
     def collect_heap_metrics(data)
       heap = aggregate_information_for(data["heap"].values)
