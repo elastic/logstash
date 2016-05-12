@@ -1,68 +1,43 @@
 # encoding: utf-8
 require_relative "../../spec_helper"
 require "sinatra"
-require "app/modules/node_stats"
+require "logstash/api/modules/node_stats"
 require "logstash/json"
 
-describe LogStash::Api::NodeStats do
-
+describe LogStash::Api::Modules::NodeStats do
   include Rack::Test::Methods
+  extend ResourceDSLMethods
 
-  def app()
+  def app() # Used by Rack::Test::Methods
     described_class
   end
 
-  let(:payload) { LogStash::Json.load(last_response.body) }
+  # DSL describing response structure
+  root_structure = {
+    "events"=>{
+      "in"=>Numeric,
+      "filtered"=>Numeric,
+      "out"=>Numeric
+    },
+    "jvm"=>{
+      "threads"=>{
+        "count"=>Numeric,
+        "peak_count"=>Numeric
+      }
+    },
+    "process"=>{
+      "peak_open_file_descriptors"=>Numeric,
+      "max_file_descriptors"=>Numeric,
+      "open_file_descriptors"=>Numeric,
+      "mem"=>{
+        "total_virtual_in_bytes"=>Numeric
+      },
+      "cpu"=>{
+        "total_in_millis"=>Numeric,
+        "percent"=>Numeric
+      }
+    }
+  }
 
-  context "#root" do
-
-    before(:all) do
-      do_request { get "/" }
-    end
-
-    it "respond OK" do
-      expect(last_response).to be_ok
-    end
-
-    ["events", "jvm"].each do |key|
-      it "contains #{key} information" do
-        expect(payload).to include(key)
-      end
-    end
-  end
-
-  context "#events" do
-
-    let(:payload) { LogStash::Json.load(last_response.body) }
-
-    before(:all) do
-      do_request { get "/events" }
-    end
-
-    it "respond OK" do
-      expect(last_response).to be_ok
-    end
-
-    it "contains events information" do
-      expect(payload).to include("events")
-    end
-  end
-
-  context "#jvm" do
-
-    let(:payload) { LogStash::Json.load(last_response.body) }
-
-    before(:all) do
-      do_request { get "/jvm" }
-    end
-
-    it "respond OK" do
-      expect(last_response).to be_ok
-    end
-
-    it "contains memory information" do
-      expect(payload).to include("mem")
-    end
-  end
-
+  test_api_and_resources(root_structure)
 end

@@ -1,16 +1,15 @@
 # encoding: utf-8
 require "puma"
-require "puma/single"
-require "puma/binder"
-require "puma/configuration"
-require "puma/commonlogger"
+require "puma/server"
+require "sinatra"
+require "rack"
+require "logstash/api/rack_app"
 
 module LogStash 
   class WebServer
-
     extend Forwardable
 
-    attr_reader :logger, :status, :config, :options, :cli_options, :runner, :binder, :events
+    attr_reader :logger, :status, :config, :options, :cli_options, :runner, :binder, :events, :http_host, :http_port
 
     def_delegator :@runner, :stats
 
@@ -19,8 +18,8 @@ module LogStash
 
     def initialize(logger, options={})
       @logger      = logger
-      http_host    = options[:http_host] || DEFAULT_HOST
-      http_port    = options[:http_port] || DEFAULT_PORT
+      @http_host    = options[:http_host] || DEFAULT_HOST
+      @http_port    = options[:http_port] || DEFAULT_PORT
       @options     = {}
       @cli_options = options.merge({ :rackup => ::File.join(::File.dirname(__FILE__), "api", "init.ru"),
                                      :binds => ["tcp://#{http_host}:#{http_port}"],
@@ -31,24 +30,17 @@ module LogStash
                                      :queue_requests => false
       })
       @status      = nil
-
-      parse_options
-
-      @runner  = nil
-      @events  = ::Puma::Events.strings
-      @binder  = ::Puma::Binder.new(@events)
-      @binder.import_from_env
-
-      set_environment
     end
 
     def run
       log "=== puma start: #{Time.now} ==="
 
-      @runner = Puma::Single.new(self)
-      @status = :run
-      @runner.run
-      stop(:graceful => true)
+      stop # Just in case
+
+      @server = ::Puma::Server.new(LogStash::Api::RackApp.app)
+      @server.add_tcp_listener(http_host, http_port)
+
+      @server.run.join
     end
 
     def log(str)
@@ -58,7 +50,7 @@ module LogStash
     def error(str)
       logger.error(str)
     end
-
+    
     # Empty method, this method is required because of the puma usage we make through
     # the Single interface, https://github.com/puma/puma/blob/master/lib/puma/single.rb#L82
     # for more details. This can always be implemented when we want to keep track of this
@@ -66,33 +58,7 @@ module LogStash
     def write_state; end
 
     def stop(options={})
-      graceful = options.fetch(:graceful, true)
-
-      if graceful
-        @runner.stop_blocked
-      else
-        @runner.stop
-      end rescue nil
-
-      @status = :stop
-      log "=== puma shutdown: #{Time.now} ==="
-    end
-
-    private
-
-    def env
-      @options[:debug] ? "development" : "production"
-    end
-
-    def set_environment
-      @options[:environment] = env
-      ENV['RACK_ENV']        = env
-    end
-
-    def parse_options
-      @config  = ::Puma::Configuration.new(cli_options)
-      @config.load
-      @options = @config.options
+      @server.stop(true) if @server
     end
   end
 end
