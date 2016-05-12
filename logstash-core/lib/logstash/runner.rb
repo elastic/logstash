@@ -132,17 +132,7 @@ class LogStash::Runner < Clamp::StrictCommand
   end
 
   def run(args)
-    if i=args.find_index("--settings.dir")
-      settings_path = args[i+1]
-    elsif settings_arg = args.find {|v| v.match(/--settings.dir=/) }
-      match = settings_arg.match(/--settings.dir=(.*)/)
-      settings_path = match[1]
-    elsif ENV['LS_SETTINGS_DIR']
-      settings_path = ENV['LS_SETTINGS_DIR']
-    else
-      settings_path = nil
-    end
-
+    settings_path = fetch_settings_path(args)
     LogStash::SETTINGS.set("settings.dir", settings_path) if settings_path
     LogStash::SETTINGS.from_yaml(LogStash::SETTINGS.get("settings.dir"))
     super(*[args])
@@ -393,4 +383,23 @@ class LogStash::Runner < Clamp::StrictCommand
   def setting(key)
     @settings.get_value(key)
   end
+
+  # where can I find the logstash.yml file?
+  # 1. look for a "--setings.dir path"
+  # 2. look for a "--setings.dir=path"
+  # 3. check if the LS_SETTINGS_DIR environment variable is set
+  # 4. return nil if not found
+  def fetch_settings_path(cli_args)
+    if i=cli_args.find_index("--settings.dir")
+      cli_args[i+1]
+    elsif settings_arg = cli_args.find {|v| v.match(/--settings.dir=/) }
+      match = settings_arg.match(/--settings.dir=(.*)/)
+      match[1]
+    elsif ENV['LS_SETTINGS_DIR']
+      ENV['LS_SETTINGS_DIR']
+    else
+      nil
+    end
+  end
+
 end

@@ -60,8 +60,10 @@ module LogStash; class Pipeline
     # We also do this to make the changes backward compatible with previous testing of the
     # pipeline.
     #
-    # This need to be configured before we evaluate the code to make
+    # This needs to be configured before we evaluate the code to make
     # sure the metric instance is correctly send to the plugin.
+    # NOTE: It is the responsibility of the Agent to set this externally with a setter
+    # if there's an intent of this not being a NullMetric
     @metric = Instrument::NullMetric.new
 
     grammar = LogStashConfigParser.new

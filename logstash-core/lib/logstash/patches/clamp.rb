@@ -6,6 +6,10 @@ module Clamp
     class Instance
       def default_from_environment
         # we don't want uncontrolled var injection from the environment
+        # since we're establishing that settings can be pulled from only three places:
+        # 1. default settings
+        # 2. yaml file
+        # 3. cli arguments
       end
     end
   end
@@ -16,7 +20,7 @@ module Clamp
 
       include Clamp::Attribute::Declaration
 
-      # Instead of letting Clamp set up accessers for the options
+      # Instead of letting Clamp set up accessors for the options
       # weŕe going to tightly controlling them through
       # LogStash::SETTINGS
       def define_simple_writer_for(option, &block)
