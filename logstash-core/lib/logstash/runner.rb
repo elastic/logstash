@@ -50,7 +50,7 @@ class LogStash::Runner < Clamp::StrictCommand
   option ["-u", "--pipeline.batch.delay"], "DELAY_IN_MS",
     I18n.t("logstash.runner.flag.pipeline-batch-delay"),
     :attribute_name => "pipeline.batch.delay",
-    :default => LogStash::SETTINGS.get_default("pipeline.batch.delay")
+    :default => LogStash::SETTINGS.get_default("pipeline.batch.delay"), &:to_i
 
   option ["--[no-]pipeline.unsafe_shutdown"], :flag,
     I18n.t("logstash.runner.flag.unsafe_shutdown"),
