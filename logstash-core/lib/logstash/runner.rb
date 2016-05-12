@@ -246,10 +246,10 @@ class LogStash::Runner < Clamp::StrictCommand
   def show_version
     show_version_logstash
 
-    if [:info, :debug].include?(verbosity?) || debug? || verbose?
+    if debug? || verbose?
       show_version_ruby
       show_version_java if LogStash::Environment.jruby?
-      show_gems if [:debug].include?(verbosity?) || debug?
+      show_gems if debug? && verbose?
     end
   end # def show_version
 
