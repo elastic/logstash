@@ -4,6 +4,9 @@ import org.junit.Test;
 
 import java.io.IOException;
 import java.util.*;
+
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.junit.Assert.*;
 import static net.javacrumbs.jsonunit.JsonAssert.assertJsonEquals;
 
@@ -57,6 +60,35 @@ public class EventTest {
         e = new Event();
         e.setField("[foo][0][baz]", 1);
         assertJsonEquals("{\"@timestamp\":\"" + e.getTimestamp().toIso8601() + "\",\"foo\":{\"0\":{\"baz\":1}},\"@version\":\"1\"}", e.toJson());
+    }
+
+    @Test
+    public void testToJsonWithMetadata() throws Exception {
+        Event e = new Event();
+        e.setField("[foo]", 123);
+        e.setField("[@metadata][bar]", 321);
+        assertJsonEquals("{\"@metadata\":{\"bar\": 321},\"@timestamp\":\"" + e.getTimestamp().toIso8601() + "\",\"foo\": 123,\"@version\":\"1\"}", e.toJsonWithMetadata());
+        // and assert that the original Event was not affected
+        assertJsonEquals("{\"@timestamp\":\"" + e.getTimestamp().toIso8601() + "\",\"foo\": 123,\"@version\":\"1\"}", e.toJson());
+    }
+
+    @Test
+    public void testToMap() throws Exception {
+        Event e = new Event();
+        Map original = e.getData();
+        Map clone = e.toMap();
+        assertThat(original, not(sameInstance(clone)));
+        assertEquals(original, clone);
+    }
+
+    @Test
+    public void testToMapWithMetadata() throws Exception {
+        Event e = new Event();
+        e.setField("[@metadata][foo]", "bar");
+        Map mapWithMetadata = e.toMapWithMetadata();
+        assertEquals(Collections.singletonMap("foo", "bar"), mapWithMetadata.get(Event.METADATA));
+        assertEquals(e.getTimestamp(), mapWithMetadata.get(Event.TIMESTAMP));
+        assertEquals(Event.VERSION_ONE, mapWithMetadata.get(Event.VERSION));
     }
 
     @Test

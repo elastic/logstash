@@ -34,6 +34,18 @@ describe LogStash::Event do
     end
   end
 
+  context "to_json_with_metadata" do
+    it "should serialize metadata" do
+      e = LogStash::Event.new({TIMESTAMP => "2015-05-28T23:02:05.350Z"})
+      e.set("foo", "bar")
+      e.set("bar", 1)
+      e.set("baz", 1.0)
+      e.set("[fancy][pants][socks]", "shoes")
+      e.set("[@metadata][foo", "bar")
+      expect(JSON.parse(e.to_json_with_metadata)).to eq(JSON.parse("{\"@metadata\":{\"foo\":\"bar\"},\"@timestamp\":\"2015-05-28T23:02:05.350Z\",\"@version\":\"1\",\"foo\":\"bar\",\"bar\":1,\"baz\":1.0,\"fancy\":{\"pants\":{\"socks\":\"shoes\"}}}"))
+    end
+  end
+
   context "[]" do
     it "should get simple values" do
       e = LogStash::Event.new({"foo" => "bar", "bar" => 1, "baz" => 1.0, TIMESTAMP => "2015-05-28T23:02:05.350Z"})

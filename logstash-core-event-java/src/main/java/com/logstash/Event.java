@@ -153,10 +153,12 @@ public class Event implements Cloneable, Serializable {
         }
     }
 
-    public String toJson()
-            throws IOException
-    {
-        return mapper.writeValueAsString((Map<String, Object>)this.data);
+    public String toJson() throws IOException {
+        return mapper.writeValueAsString(this.data);
+    }
+
+    public String toJsonWithMetadata() throws IOException {
+        return mapper.writeValueAsString(this.toMapWithMetadata());
     }
 
     public static Event[] fromJson(String json)
@@ -189,7 +191,16 @@ public class Event implements Cloneable, Serializable {
     }
 
     public Map toMap() {
-        return this.data;
+        return Cloner.deep(this.data);
+    }
+
+    @SuppressWarnings("unchecked")
+    public Map toMapWithMetadata() {
+        Map data = toMap();
+        if (!this.metadata.isEmpty()) {
+            data.put(Event.METADATA, Cloner.deep(this.metadata));
+        }
+        return data;
     }
 
     public Event overwrite(Event e) {
