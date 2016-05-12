@@ -17,9 +17,9 @@ module LogStash
       logstash-codec-line
       logstash-codec-msgpack
       logstash-codec-multiline
+      logstash-codec-netflow
       logstash-codec-plain
       logstash-codec-rubydebug
-      logstash-filter-checksum
       logstash-filter-clone
       logstash-filter-csv
       logstash-filter-date
@@ -74,16 +74,12 @@ module LogStash
       logstash-output-cloudwatch
       logstash-output-csv
       logstash-output-elasticsearch
-      logstash-output-email
-      logstash-output-exec
       logstash-output-file
-      logstash-output-ganglia
-      logstash-output-gelf
       logstash-output-graphite
       logstash-output-http
       logstash-output-irc
+      logstash-output-kafka
       logstash-output-nagios
-      logstash-output-nagios_nsca
       logstash-output-null
       logstash-output-pagerduty
       logstash-output-pipe
@@ -96,7 +92,7 @@ module LogStash
       logstash-output-stdout
       logstash-output-tcp
       logstash-output-udp
-      logstash-output-kafka
+      logstash-output-webhdfs
     )
 
     # plugins required to run the logstash core specs
