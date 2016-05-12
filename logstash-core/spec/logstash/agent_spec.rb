@@ -205,19 +205,10 @@ describe LogStash::Agent do
       :config_string => pipeline_config,
     } }
 
-    context "when allow_env is false" do
-      it "does not interpolate environment variables" do
-        expect(subject).to receive(:fetch_config).and_return(pipeline_config)
-        subject.register_pipeline(pipeline_id, pipeline_settings)
-        expect(subject.pipelines[pipeline_id].inputs.first.message).to eq("${FOO}-bar")
-      end
-    end
-
-    context "when allow_env is true" do
+    context "environment variable templating" do
       before :each do
         @foo_content = ENV["FOO"]
         ENV["FOO"] = "foo"
-        pipeline_settings.merge!(:allow_env => true)
       end
 
       after :each do

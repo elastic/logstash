@@ -181,10 +181,6 @@ en:
           the empty string for the '-e' flag.
         configtest: |+
           Check configuration for valid syntax and then exit.
-        allow-env: |+
-          EXPERIMENTAL. Enables templating of environment variable
-          values. Instances of "${VAR}" in strings will be replaced
-          with the respective environment variable value named "VAR".
         pipeline-workers: |+
           Sets the number of pipeline workers to run.
         pipeline-batch-size: |+

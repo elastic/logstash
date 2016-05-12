@@ -160,14 +160,14 @@ describe LogStash::Config::Mixin do
     let(:plugin_class) do
       Class.new(LogStash::Filters::Base)  do
         config_name "one_plugin"
-        config :oneString, :validate => :string
-        config :oneBoolean, :validate => :boolean
-        config :oneNumber, :validate => :number
-        config :oneArray, :validate => :array
-        config :oneHash, :validate => :hash
+        config :oneString, :validate => :string, :required => false
+        config :oneBoolean, :validate => :boolean, :required => false
+        config :oneNumber, :validate => :number, :required => false
+        config :oneArray, :validate => :array, :required => false
+        config :oneHash, :validate => :hash, :required => false
 
         def initialize(params)
-          super(params.merge(LogStash::Config::Mixin::ALLOW_ENV_FLAG => true))
+          super(params)
         end
       end
     end
@@ -231,8 +231,34 @@ describe LogStash::Config::Mixin do
         expect(subject.oneArray).to(be == [ "first array value", "fancy" ])
         expect(subject.oneHash).to(be == { "key1" => "fancy", "key2" => "fancy is true", "key3" => "true or false" })
       end
+    end
 
+    context "should support $ in values" do
+      before do
+        ENV["bar"] = "foo"
+        ENV["f$$"] = "bar"
+      end
+
+      after do
+        ENV.delete("bar")
+        ENV.delete("f$$")
+      end
+
+      subject do
+        plugin_class.new(
+          "oneString" => "${f$$:val}",
+          "oneArray" => ["foo$bar", "${bar:my$val}"]
+          # "dollar_in_env" => "${f$$:final}"
+        )
+      end
+
+      it "should support $ in values" do
+        expect(subject.oneArray).to(be == ["foo$bar", "foo"])
+      end
+
+      it "should not support $ in environment variable name" do
+        expect(subject.oneString).to(be == "${f$$:val}")
+      end
     end
   end
-
 end

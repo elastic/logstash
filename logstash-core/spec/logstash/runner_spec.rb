@@ -190,19 +190,5 @@ describe LogStash::Runner do
         subject.run("bin/logstash", args)
       end
     end
-
-    context "when configuring environment variable support" do
-      it "should set 'allow_env' to false by default" do
-        args = ["-e", pipeline_string]
-        expect(LogStash::Pipeline).to receive(:new).with(pipeline_string, hash_including(:allow_env => false)).and_return(pipeline)
-        subject.run("bin/logstash", args)
-      end
-
-      it "should support templating environment variables" do
-        args = ["-e", pipeline_string, "--allow-env"]
-        expect(LogStash::Pipeline).to receive(:new).with(pipeline_string, hash_including(:allow_env => true)).and_return(pipeline)
-        subject.run("bin/logstash", args)
-      end
-    end
   end
 end
