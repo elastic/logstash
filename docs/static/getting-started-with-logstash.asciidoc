@@ -15,7 +15,7 @@ following topics:
 [[installing-logstash]]
 === Installing Logstash
 
-NOTE: Logstash requires Java 7 or later. Use the
+NOTE: Logstash requires Java 8 or later. Use the
 http://www.oracle.com/technetwork/java/javase/downloads/index.html[official Oracle distribution] or an open-source
 distribution such as http://openjdk.java.net/[OpenJDK].
 
@@ -27,9 +27,9 @@ java -version
 On systems with Java installed, this command produces output similar to the following:
 
 [source,shell]
-java version "1.7.0_45"
-Java(TM) SE Runtime Environment (build 1.7.0_45-b18)
-Java HotSpot(TM) 64-Bit Server VM (build 24.45-b08, mixed mode)
+java version "1.8.0_65"
+Java(TM) SE Runtime Environment (build 1.8.0_65-b17)
+Java HotSpot(TM) 64-Bit Server VM (build 25.65-b01, mixed mode)
 
 [float]
 [[installing-binary]]
@@ -49,8 +49,8 @@ that we only provide binary packages, but no source packages, as the packages
 are created as part of the Logstash build.
 
 We have split the Logstash package repositories by version into separate urls
-to avoid accidental upgrades across major or minor versions. For all 1.5.x
-releases use 1.5 as version number, for 1.4.x use 1.4, etc.
+to avoid accidental upgrades across major or minor versions. For all 2.3.x
+releases use 2.3 as version number, for 2.2.x use 2.2, etc.
 
 We use the PGP key
 https://pgp.mit.edu/pks/lookup?op=vindex&search=0xD27D666CD88E42B4[D88E42B4],
