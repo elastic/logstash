@@ -245,7 +245,7 @@ public class JrubyEventExtLibrary implements Library {
         @JRubyMethod(name = "to_hash")
         public IRubyObject ruby_to_hash(ThreadContext context) throws IOException
         {
-            return Rubyfier.deep(context.runtime, this.event.toMap());
+            return Rubyfier.deep(context.runtime, this.event.getData());
         }
 
         @JRubyMethod(name = "to_hash_with_metadata")

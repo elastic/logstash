@@ -189,7 +189,7 @@ public class Event implements Cloneable, Serializable {
     }
 
     public Map toMap() {
-        return this.data;
+        return Cloner.deep(this.data);
     }
 
     public Event overwrite(Event e) {

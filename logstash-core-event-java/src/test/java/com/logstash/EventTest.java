@@ -4,6 +4,7 @@ import org.junit.Test;
 
 import java.io.IOException;
 import java.util.*;
+
 import static org.junit.Assert.*;
 import static net.javacrumbs.jsonunit.JsonAssert.assertJsonEquals;
 
@@ -102,6 +103,15 @@ public class EventTest {
 
         assertJsonEquals("{\"bar\":\"bar\",\"@timestamp\":\"" + e.getTimestamp().toIso8601() + "\",\"array\":[{\"foo\":\"bar\"}],\"foo\":1.0,\"@version\":\"1\",\"baz\":1}", f.toJson());
         assertJsonEquals(f.toJson(), e.toJson());
+    }
+
+    @Test
+    public void testToMap() throws Exception {
+        Event e = new Event();
+        Map original = e.getData();
+        Map clone = e.toMap();
+        assertFalse(original == clone);
+        assertEquals(original, clone);
     }
 
     @Test
