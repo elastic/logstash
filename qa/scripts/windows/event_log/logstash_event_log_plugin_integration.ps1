@@ -8,7 +8,7 @@
 #
 # - Powershell 4
 # - Windows 7 or newer
-# - Java 7 or newer
+# - Java 8 or newer
 
 Add-Type -assembly "system.io.compression.filesystem"
 
