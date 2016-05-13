@@ -6,7 +6,7 @@
 #
 # - Powershell 4
 # - Windows 7 or newer
-# - Java 7 or newer
+# - Java 8 or newer
 # - Ruby 7 or newer
 
 $ruby = $env:RUBY_HOME  + "\jruby.exe"
