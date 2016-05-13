@@ -6,7 +6,7 @@
 #
 # - Powershell 4
 # - Windows 7 or newer
-# - Java 7 or newer
+# - Java 8 or newer
 
 $LS_CONFIG="test.conf"
 $LS_BRANCH=$env:LS_BRANCH
