@@ -139,7 +139,7 @@ module LogStash
     def set(value)
       validate(value)
       @value = value
-      @value_is_set = true unless @value_is_set
+      @value_is_set = true
       @value
     end
 
@@ -188,33 +188,25 @@ module LogStash
 
     class String < Setting
       def initialize(name, default=nil, strict=true)
-        # Ruby doesn't have a single class to represent booleans
-        # so let's use the proc validator instead
         super(name, ::String, default, strict)
       end
     end
 
     class Numeric < Setting
       def initialize(name, default=nil, strict=true)
-        # Ruby doesn't have a single class to represent booleans
-        # so let's use the proc validator instead
         super(name, ::Numeric, default, strict)
       end
     end
 
     class Port < Setting
       def initialize(name, default=nil, strict=true)
-        # Ruby doesn't have a single class to represent booleans
-        # so let's use the proc validator instead
-        super(name, ::Numeric, default, strict) {|value| value > 1 && value < 65535 }
+        super(name, ::Numeric, default, strict) {|value| value >= 1 && value <= 65535 }
       end
     end
 
     class Validator < Setting
       def initialize(name, default=nil, strict=true, validator_class=nil)
         @validator_class = validator_class
-        # Ruby doesn't have a single class to represent booleans
-        # so let's use the proc validator instead
         super(name, ::Object, default, strict)
       end
 

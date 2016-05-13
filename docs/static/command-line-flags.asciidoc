@@ -62,16 +62,16 @@ Logstash has the following flags. You can use the `--help` flag to display this 
   flag with `--debug`, Logstash will log the combined config file, annotating the
   individual config blocks with the source file it came from.
   
--r, --auto.reload
+-r, --config.reload.auto
   Monitor configuration changes and reload the configuration whenever it is changed.
 
---reload.interval RELOAD_INTERVAL
+--config.reload.interval RELOAD_INTERVAL
   Specifies how often Logstash checks the config files for changes. The default is every 3 seconds.
 
---http.host WEB_API_HTTP_HOST
+--web_api.http.host WEB_API_HTTP_HOST
   Web API binding host (default: "127.0.0.1")
 
---http.port WEB_API_HTTP_PORT
+--web_api.http.port WEB_API_HTTP_PORT
   Web API http port (default: 9600)
 
 --pipeline.unsafe_shutdown

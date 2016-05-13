@@ -64,7 +64,7 @@ class LogStash::Runner < Clamp::StrictCommand
     :default => LogStash::SETTINGS.get_default("plugin.paths")
 
   # Logging Settings
-  option ["-l", "--log"], "FILE",
+  option ["-l", "--log.path"], "FILE",
     I18n.t("logstash.runner.flag.log"),
     :attribute_name => "log.path"
 
@@ -133,7 +133,7 @@ class LogStash::Runner < Clamp::StrictCommand
 
   def run(args)
     settings_path = fetch_settings_path(args)
-    LogStash::SETTINGS.set("settings.dir", settings_path) if settings_path
+    @settings.set("settings.dir", settings_path) if settings_path
     LogStash::SETTINGS.from_yaml(LogStash::SETTINGS.get("settings.dir"))
     super(*[args])
   end
@@ -175,7 +175,7 @@ class LogStash::Runner < Clamp::StrictCommand
 
     return start_shell(setting("interactive"), binding) if setting("interactive")
 
-    @settings.format_settings.each {|line| @logger.log(line) }
+    @settings.format_settings.each {|line| @logger.info(line) }
 
     if setting("config.string").nil? && setting("config.path").nil?
       fail(I18n.t("logstash.runner.missing-configuration"))
@@ -239,7 +239,7 @@ class LogStash::Runner < Clamp::StrictCommand
     if debug? || verbose?
       show_version_ruby
       show_version_java if LogStash::Environment.jruby?
-      show_gems if debug? && verbose?
+      show_gems if debug?
     end
   end # def show_version
 
@@ -385,8 +385,8 @@ class LogStash::Runner < Clamp::StrictCommand
   end
 
   # where can I find the logstash.yml file?
-  # 1. look for a "--setings.dir path"
-  # 2. look for a "--setings.dir=path"
+  # 1. look for a "--settings.dir path"
+  # 2. look for a "--settings.dir=path"
   # 3. check if the LS_SETTINGS_DIR environment variable is set
   # 4. return nil if not found
   def fetch_settings_path(cli_args)
