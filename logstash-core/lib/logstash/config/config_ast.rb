@@ -94,6 +94,7 @@ module LogStash; module Config; module AST
         @outputs = []
         @periodic_flushers = []
         @shutdown_flushers = []
+        @closures = {}
       CODE
 
       sections = recursive_select(LogStash::Config::AST::PluginSection)
@@ -147,31 +148,31 @@ module LogStash; module Config; module AST
 
 
         code << <<-CODE
-          #{name} = #{plugin.compile_initializer}
-          @#{plugin.plugin_type}s << #{name}
+          @closures[:#{name}] = #{plugin.compile_initializer}
+          @#{plugin.plugin_type}s << @closures[:#{name}]
         CODE
 
         # The flush method for this filter.
         if plugin.plugin_type == "filter"
 
           code << <<-CODE
-            #{name}_flush = lambda do |options, &block|
-              @logger.debug? && @logger.debug(\"Flushing\", :plugin => #{name})
+            @closures[:#{name}_flush] = lambda do |options, &block|
+              @logger.debug? && @logger.debug(\"Flushing\", :plugin => @closures[:#{name}])
 
-              events = #{name}.flush(options)
+              events = @closures[:#{name}].flush(options)
 
               return if events.nil? || events.empty?
 
-              @logger.debug? && @logger.debug(\"Flushing\", :plugin => #{name}, :events => events)
+              @logger.debug? && @logger.debug(\"Flushing\", :plugin => @closures[:#{name}], :events => events)
 
               #{plugin.compile_starting_here.gsub(/^/, "  ")}
 
               events.each{|e| block.call(e)}
             end
 
-            if #{name}.respond_to?(:flush)
-              @periodic_flushers << #{name}_flush if #{name}.periodic_flush
-              @shutdown_flushers << #{name}_flush
+            if @closures[:#{name}].respond_to?(:flush)
+              @periodic_flushers << @closures[:#{name}_flush] if @closures[:#{name}].periodic_flush
+              @shutdown_flushers << @closures[:#{name}_flush]
             end
           CODE
 
@@ -194,7 +195,8 @@ module LogStash; module Config; module AST
         # Unique number for every plugin.
         @@i += 1
         # store things as ivars, like @filter_grok_3
-        var = "@#{plugin.plugin_type}_#{plugin.plugin_name}_#{@@i}"
+        var = :"#{plugin.plugin_type}_#{plugin.plugin_name}_#{@@i}"
+        # puts("var=#{var.inspect}")
         @variables[plugin] = var
       end
       return @variables
@@ -236,13 +238,13 @@ module LogStash; module Config; module AST
     def compile
       case plugin_type
       when "input"
-        return "start_input(#{variable_name})"
+        return "start_input(@closures[:#{variable_name}])"
       when "filter"
         return <<-CODE
-          events = #{variable_name}.multi_filter(events)
+          events = @closures[:#{variable_name}].multi_filter(events)
         CODE
       when "output"
-        return "targeted_outputs << #{variable_name}\n"
+        return "targeted_outputs << @closures[:#{variable_name}]\n"
       when "codec"
         settings = attributes.recursive_select(Attribute).collect(&:compile).reject(&:empty?)
         attributes_code = "LogStash::Util.hash_merge_many(#{settings.map { |c| "{ #{c} }" }.join(", ")})"
