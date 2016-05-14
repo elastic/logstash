@@ -1,13 +1,35 @@
 [[monitoring]]
 == Monitoring APIs
 
+experimental[]
+
 Logstash provides the following monitoring APIs to retrieve runtime metrics
 about Logstash:
 
-* <<root-resource-api>>
+* <<plugins-api>>
 * <<stats-info-api>>
 * <<hot-threads-api>>
-* <<plugins-api>>
+
+
+You can use the root resource to retrieve general information about the Logstash instance, including
+the host name and version information.
+
+[source,js]
+--------------------------------------------------
+GET /
+--------------------------------------------------
+
+Example response:
+
+[source,js]
+--------------------------------------------------
+{
+   "hostname": "skywalker",
+    "version" : {
+        "number" : "2.1.0",       
+    }
+  }
+--------------------------------------------------
 
 [float]
 [[monitoring-common-options]]
@@ -71,35 +93,6 @@ Example response:
 ....
 ] 
 --------------------------------------------------
-
-[[root-resource-api]]
-=== Root Resource API
-
-experimental[]
-
-The root resource API retrieves general information about the Logstash instance, including
-the host name and version information.
-
-[source,js]
---------------------------------------------------
-GET /
---------------------------------------------------
-
-Example response:
-
-[source,js]
---------------------------------------------------
-{
-   "hostname": "skywalker",
-    "version" : {
-        "number" : "2.1.0",       
-    }
-  }
---------------------------------------------------
-
-
-See <<monitoring-common-options, Common Options>> for a list of options that can be applied to all
-Logstash monitoring APIs.
 
 [[stats-info-api]]
 === Stats Info API
