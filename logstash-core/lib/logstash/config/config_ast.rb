@@ -396,7 +396,7 @@ module LogStash; module Config; module AST
       if type == "filter"
         i = LogStash::Config::AST.defered_conditionals_index += 1
         source = <<-CODE
-          define_singleton_method :cond_func_#{i} do |input_events|
+          @generated_objects[:cond_func_#{i}] = lambda do |input_events|
             result = []
             input_events.each do |event|
               events = [event]
@@ -410,7 +410,7 @@ module LogStash; module Config; module AST
         LogStash::Config::AST.defered_conditionals << source
 
         <<-CODE
-          events = cond_func_#{i}(events)
+          events = @generated_objects[:cond_func_#{i}].call(events)
         CODE
       else # Output
         <<-CODE
