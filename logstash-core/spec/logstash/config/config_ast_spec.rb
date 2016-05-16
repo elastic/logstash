@@ -169,10 +169,12 @@ describe LogStashConfigParser do
     end
 
     describe "generated conditional functionals" do
-      it "should be defined at instance level" do
+      it "should be created per instance" do
         instance_1 = pipeline_klass.new(config_string)
         instance_2 = pipeline_klass.new(config_string)
-        expect(instance_1.method(:cond_func_1).owner).to_not be(instance_2.method(:cond_func_1).owner)
+        generated_method_1 = instance_1.instance_variable_get("@generated_objects")[:cond_func_1]
+        generated_method_2 = instance_2.instance_variable_get("@generated_objects")[:cond_func_1]
+        expect(generated_method_1).to_not be(generated_method_2)
       end
     end
   end
