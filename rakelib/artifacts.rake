@@ -13,6 +13,7 @@ namespace "artifact" do
       "lib/pluginmanager/**/*",
       "patterns/**/*",
       "vendor/??*/**/*",
+      "conf/logstash.yml",
       # To include ruby-maven's hidden ".mvn" directory, we need to
       # do add the line below. This directory contains a file called
       # "extensions.xml", which loads the ruby DSL for POMs.
