@@ -124,7 +124,7 @@ public class Event implements Cloneable, Serializable {
         this.data.put(TIMESTAMP, this.timestamp);
     }
 
-     public Object getField(String reference) {
+    public Object getField(String reference) {
         Object val = getUnconvertedField(reference);
         return Valuefier.unconvert(val);
     }
@@ -149,11 +149,11 @@ public class Event implements Cloneable, Serializable {
         } else if (reference.startsWith(METADATA_BRACKETS)) {
             this.metadata_accessors.set(reference.substring(METADATA_BRACKETS.length()), value);
         } else {
-            this.accessors.set(reference, setableValue(value));
+            this.accessors.set(reference, wrapRubyJavaObject(value));
         }
     }
 
-    private Object setableValue(Object value) {
+    private Object wrapRubyJavaObject(Object value) {
         if (value instanceof List || value instanceof Map || value instanceof RubyJavaObject) {
             return value;
         }

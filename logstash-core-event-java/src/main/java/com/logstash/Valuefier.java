@@ -66,7 +66,7 @@ public class Valuefier {
         final HashMap<String, Object> result = new HashMap<>();
 
         for (Map.Entry<String, Object> entry : map.entrySet()) {
-            result.put(entry.getKey(), convert(entry.getValue()));
+            result.put(entry.getKey(), unconvert(entry.getValue()));
         }
 
         return result;
