@@ -36,6 +36,24 @@ module Clamp
           LogStash::SETTINGS.get_value(option.attribute_name)
         end
       end
+
+    end
+
+    class Definition
+      # Allow boolean flags to optionally receive a true/false argument
+      # to explicitly set them, i.e.
+      # --long.flag.name       => sets flag to true
+      # --long.flag.name true  => sets flag to true
+      # --long.flag.name false => sets flag to false
+      # --long.flag.name=true  => sets flag to true
+      # --long.flag.name=false => sets flag to false
+      def extract_value(switch, arguments)
+        if flag? && (arguments.first.nil? || arguments.first.match("^-"))
+          flag_value(switch)
+        else
+          arguments.shift
+        end
+      end
     end
   end
 

@@ -179,10 +179,29 @@ module LogStash
     ### Specific settings #####
 
     class Boolean < Setting
-      def initialize(name, default=nil, strict=true)
-        # Ruby doesn't have a single class to represent booleans
-        # so let's use the proc validator instead
-        super(name, ::Object, default, strict) {|value| [true, false].include?(value) }
+      def initialize(name, default)
+        @name = name
+        @klass = Object
+        @value = nil
+        @value_is_set = false
+        @default = coerce(default)
+      end
+
+      def coerce(value)
+        case value
+        when TrueClass, "true"
+          true
+        when FalseClass, "false"
+          false
+        else
+          raise ArgumentError.new("could not coerce #{value} into a boolean")
+        end
+      end
+
+      def set(value)
+        @value = coerce(value)
+        @value_is_set = true
+        @value
       end
     end
 

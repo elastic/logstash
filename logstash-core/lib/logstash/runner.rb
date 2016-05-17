@@ -52,7 +52,7 @@ class LogStash::Runner < Clamp::StrictCommand
     :attribute_name => "pipeline.batch.delay",
     :default => LogStash::SETTINGS.get_default("pipeline.batch.delay"), &:to_i
 
-  option ["--[no-]pipeline.unsafe_shutdown"], :flag,
+  option ["--pipeline.unsafe_shutdown"], :flag,
     I18n.t("logstash.runner.flag.unsafe_shutdown"),
     :attribute_name => "pipeline.unsafe_shutdown",
     :default => LogStash::SETTINGS.get_default("pipeline.unsafe_shutdown")
@@ -68,11 +68,11 @@ class LogStash::Runner < Clamp::StrictCommand
     I18n.t("logstash.runner.flag.log"),
     :attribute_name => "log.path"
 
-  option "--[no-]debug", :flag, I18n.t("logstash.runner.flag.debug"),
+  option "--debug", :flag, I18n.t("logstash.runner.flag.debug"),
     :default => LogStash::SETTINGS.get_default("debug")
-  option "--[no-]quiet", :flag, I18n.t("logstash.runner.flag.quiet"),
+  option "--quiet", :flag, I18n.t("logstash.runner.flag.quiet"),
     :default => LogStash::SETTINGS.get_default("quiet")
-  option "--[no-]verbose", :flag, I18n.t("logstash.runner.flag.verbose"),
+  option "--verbose", :flag, I18n.t("logstash.runner.flag.verbose"),
     :default => LogStash::SETTINGS.get_default("verbose")
 
   option "--debug.config", :flag,
@@ -88,12 +88,12 @@ class LogStash::Runner < Clamp::StrictCommand
   option ["-V", "--version"], :flag,
     I18n.t("logstash.runner.flag.version")
 
-  option ["-t", "--[no-]config.test"], :flag,
+  option ["-t", "--config.test"], :flag,
     I18n.t("logstash.runner.flag.configtest"),
     :attribute_name => "config.test",
     :default => LogStash::SETTINGS.get_default("config.test")
 
-  option ["-r", "--[no-]config.reload.auto"], :flag,
+  option ["-r", "--config.reload.auto"], :flag,
     I18n.t("logstash.runner.flag.auto_reload"),
     :attribute_name => "config.reload.auto",
     :default => LogStash::SETTINGS.get_default("config.reload.auto")
