@@ -19,16 +19,50 @@ describe LogStash::Runner do
 
   before :each do
     allow(Cabin::Channel).to receive(:get).with(LogStash).and_return(channel)
-    allow(channel).to receive(:subscribe).with(any_args).and_call_original
+    allow(channel).to receive(:subscribe).with(any_args)
+    allow(channel).to receive(:log) {}
+    allow(LogStash::ShutdownWatcher).to receive(:logger).and_return(channel)
+  end
+
+  after :each do
+    LogStash::SETTINGS.reset
+  end
+
+  after :all do
+    LogStash::ShutdownWatcher.logger = nil
+  end
+
+  describe "argument precedence" do
+    let(:config) { "input {} output {}" }
+    let(:cli_args) { ["-e", config, "-w", "20"] }
+    let(:settings_yml_hash) { { "pipeline.workers" => 2 } }
+
+    before :each do
+      allow(LogStash::SETTINGS).to receive(:read_yaml).and_return(settings_yml_hash)
+    end
+
+    after :each do
+      LogStash::SETTINGS.reset
+    end
+
+    it "favors the last occurence of an option" do
+      expect(LogStash::Agent).to receive(:new) do |settings|
+        expect(settings.get("config.string")).to eq(config)
+        expect(settings.get("pipeline.workers")).to eq(20)
+      end
+      subject.run("bin/logstash", cli_args)
+    end
   end
 
   describe "argument parsing" do
     subject { LogStash::Runner.new("") }
+    before :each do
+      allow(Cabin::Channel.get(LogStash)).to receive(:terminal)
+    end
     context "when -e is given" do
 
       let(:args) { ["-e", "input {} output {}"] }
       let(:agent) { double("agent") }
-      let(:agent_logger) { double("agent logger") }
 
       before do
         allow(agent).to receive(:logger=).with(anything)
@@ -45,10 +79,9 @@ describe LogStash::Runner do
 
     context "with no arguments" do
       let(:args) { [] }
-      let(:agent) { double("agent") }
 
       before(:each) do
-        allow(LogStash::Agent).to receive(:new).and_return(agent)        
+        allow(LogStash::Util::JavaVersion).to receive(:warn_on_bad_java_version)
       end
 
       it "should show help" do
@@ -98,10 +131,10 @@ describe LogStash::Runner do
     end
   end
 
-  context "--log-in-json" do
+  context "--log.json" do
     subject { LogStash::Runner.new("") }
     let(:logfile) { Stud::Temporary.file }
-    let(:args) { [ "--log-in-json", "-l", logfile.path, "-e", "input {} output{}" ] }
+    let(:args) { [ "--log.json", "-l", logfile.path, "-e", "input {} output{}" ] }
 
     after do
       logfile.close
@@ -158,8 +191,9 @@ describe LogStash::Runner do
 
     context "when :pipeline_workers is not defined by the user" do
       it "should not pass the value to the pipeline" do
-        expect(LogStash::Pipeline).to receive(:new).once.with(pipeline_string, hash_excluding(:pipeline_workers)).and_return(pipeline)
-
+        expect(LogStash::Agent).to receive(:new) do |settings|
+	  expect(settings.set?("pipeline.workers")).to be(false)
+        end
         args = ["-e", pipeline_string]
         subject.run("bin/logstash", args)
       end
@@ -167,8 +201,10 @@ describe LogStash::Runner do
 
     context "when :pipeline_workers is defined by the user" do
       it "should pass the value to the pipeline" do
-        main_pipeline_settings[:pipeline_workers] = 2
-        expect(LogStash::Pipeline).to receive(:new).with(pipeline_string, hash_including(main_pipeline_settings)).and_return(pipeline)
+        expect(LogStash::Agent).to receive(:new) do |settings|
+	  expect(settings.set?("pipeline.workers")).to be(true)
+	  expect(settings.get("pipeline.workers")).to be(2)
+        end
 
         args = ["-w", "2", "-e", pipeline_string]
         subject.run("bin/logstash", args)
@@ -176,17 +212,19 @@ describe LogStash::Runner do
     end
 
     describe "debug_config" do
-      it "should set 'debug_config' to false by default" do
-        expect(LogStash::Config::Loader).to receive(:new).with(anything, false).and_call_original
-        expect(LogStash::Pipeline).to receive(:new).with(pipeline_string, hash_including(:debug_config => false)).and_return(pipeline)
-        args = ["--debug", "-e", pipeline_string, "-l", "/dev/null", "--log-in-json"]
+      it "should set 'debug.config' to false by default" do
+        expect(LogStash::Agent).to receive(:new) do |settings|
+          expect(settings.get("debug.config")).to eq(false)
+        end
+        args = ["--debug", "-e", pipeline_string]
         subject.run("bin/logstash", args)
       end
 
-      it "should allow overriding debug_config" do
-        expect(LogStash::Config::Loader).to receive(:new).with(anything, true).and_call_original
-        expect(LogStash::Pipeline).to receive(:new).with(pipeline_string, hash_including(:debug_config => true)).and_return(pipeline)
-        args = ["--debug", "--debug-config",  "-e", pipeline_string, "-l", "/dev/null", "--log-in-json"]
+      it "should allow overriding debug.config" do
+        expect(LogStash::Agent).to receive(:new) do |settings|
+          expect(settings.get("debug.config")).to eq(true)
+        end
+        args = ["--debug", "--debug.config",  "-e", pipeline_string]
         subject.run("bin/logstash", args)
       end
     end
