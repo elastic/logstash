@@ -13,7 +13,7 @@ module LogStash
            Setting::Boolean.new("config.reload.auto", false),
            Setting::Numeric.new("config.reload.interval", 3),
            Setting::Boolean.new("metric.collect", true) {|v| v == true }, # metric collection cannot be disabled
-            Setting::String.new("settings.dir", ::File.join(Environment::LOGSTASH_HOME, "conf")),
+            Setting::String.new("settings.dir", ::File.join(Environment::LOGSTASH_HOME, "config")),
             Setting::String.new("pipeline.id", "main"),
            Setting::Numeric.new("pipeline.workers", LogStash::Config::CpuCoreStrategy.maximum),
            Setting::Numeric.new("pipeline.output.workers", 1),
