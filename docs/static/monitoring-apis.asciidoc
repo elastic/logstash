@@ -97,7 +97,7 @@ Example response:
 [[node-info-api]]
 === Node Info API
 
-coming[5.0.0-beta1]
+coming[5.0.0-alpha3]
 
 experimental[]
 
@@ -199,7 +199,7 @@ Example response:
 [[stats-info-api]]
 === Node Stats API
 
-coming[5.0.0-beta1,Replaces the Stats Info API]
+coming[5.0.0-beta3,Replaces the Stats Info API]
 
 experimental[]
 
@@ -229,9 +229,9 @@ By default, all stats are returned. You can limit this by combining any of the f
 `events`::
 	Gets event information since startup. 
 `jvm`::
-	Gets JVM stats, including stats about garbage collection and threads. coming[5.0.0-beta1,Adds thread count]
+	Gets JVM stats, including stats about garbage collection and threads. coming[5.0.0-alpha3,Adds thread count]
 `process`::
-	Gets process stats, memory consumption, CPU usage, and open file descriptors. coming[5.0.0-beta1]   
+	Gets process stats, memory consumption, CPU usage, and open file descriptors. coming[5.0.0-alpha3]   
 
 For example, the following request returns a JSON document that shows the number and size in bytes of events
 that were input, filtered, and output by Logstash since startup:
