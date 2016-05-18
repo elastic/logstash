@@ -25,7 +25,7 @@ module LogStash::Api
       @factory = CommandFactory.new(settings.service)
     end
 
-    get "/_directory" do
+    get "/_meta/api" do
       data = {}
       ROUTES.each_pair do |namespace, _routes|
         routes = {}
