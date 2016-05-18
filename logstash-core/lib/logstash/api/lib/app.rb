@@ -31,7 +31,7 @@ module LogStash::Api
         routes = {}
         _routes.each_pair do |verb, methods|
           next if "HEAD" == verb
-          routes[verb] = methods.map { |m| "http://localhost:9600#{namespace}/#{m[0].source.gsub("\\A/","").gsub("\\z", "")}" }
+          routes[verb] = methods.map { |m| "http://#{request.host}:#{request.port}#{namespace}/#{m[0].source.gsub("\\A/","").gsub("\\z", "")}" }
         end
         data[namespace] = routes
       end
