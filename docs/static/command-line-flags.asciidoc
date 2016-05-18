@@ -16,8 +16,7 @@ Logstash has the following flags. You can use the `--help` flag to display this 
  is specified, 'stdout { codec => rubydebug }}' is default.
 
 -w, --filterworkers COUNT
- Sets the number of pipeline workers (threads) to run for filter and output
- processing (default: number of cores).
+ Sets the number of pipeline workers (threads) to run for filter processing (default: number of cores).
  If you find that events are backing up, or that the CPU is not saturated, consider increasing
  this number to better utilize machine processing power.
 
