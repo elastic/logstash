@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -e
 
 ##
 # Note this setup needs a system ruby to be available, this can not

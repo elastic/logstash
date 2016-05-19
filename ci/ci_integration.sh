@@ -1,4 +1,5 @@
 #!/bin/sh
+set -e
 
 # Since we are using the system jruby, we need to make sure our jvm process
 # uses at least 1g of memory, If we don't do this we can get OOM issues when
