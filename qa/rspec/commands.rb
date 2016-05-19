@@ -20,6 +20,10 @@ module ServiceTester
       @client  = CommandsFactory.fetch(options["type"], options["host"])
     end
 
+    def hostname
+      @options["host"]
+    end
+
     def name
       "logstash"
     end
