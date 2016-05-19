@@ -10,7 +10,7 @@ That said, some basic guidelines, which you are free to ignore :)
 
 ## Want to learn?
 
-Want to lurk about and see what others are doing with Logstash? 
+Want to lurk about and see what others are doing with Logstash?
 
 * The irc channel (#logstash on irc.freenode.org) is a good place for this
 * The [forum](https://discuss.elastic.co/c/logstash) is also
@@ -18,7 +18,7 @@ Want to lurk about and see what others are doing with Logstash?
 
 ## Got Questions?
 
-Have a problem you want Logstash to solve for you? 
+Have a problem you want Logstash to solve for you?
 
 * You can ask a question in the [forum](https://discuss.elastic.co/c/logstash)
 * Alternately, you are welcome to join the IRC channel #logstash on
@@ -61,5 +61,3 @@ Check our [documentation](https://www.elastic.co/guide/en/logstash/current/contr
    request](https://help.github.com/articles/using-pull-requests). In the pull
    request, describe what your changes do and mention any bugs/issues related
    to the pull request.
-
-
