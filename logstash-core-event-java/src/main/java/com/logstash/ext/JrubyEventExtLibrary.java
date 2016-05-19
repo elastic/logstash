@@ -20,6 +20,7 @@ import org.jruby.RubyInteger;
 import org.jruby.anno.JRubyClass;
 import org.jruby.anno.JRubyMethod;
 import org.jruby.exceptions.RaiseException;
+import org.jruby.java.proxies.MapJavaProxy;
 import org.jruby.javasupport.JavaUtil;
 import org.jruby.runtime.Arity;
 import org.jruby.runtime.ObjectAllocator;
@@ -127,12 +128,9 @@ public class JrubyEventExtLibrary implements Library {
             if (data == null || data.isNil()) {
                 this.event = new Event();
             } else if (data instanceof RubyHash) {
-                HashMap<String, Object>  newObj = Javafier.deep((RubyHash) data);
-                this.event = new Event(newObj);
-            } else if (data instanceof Map) {
-                this.event = new Event((Map) data);
-            } else if (Map.class.isAssignableFrom(data.getJavaClass())) {
-                this.event = new Event((Map)data.toJava(Map.class));
+                this.event = new Event(Javafier.deep((RubyHash) data));
+            } else if (data instanceof MapJavaProxy) {
+                this.event = new Event((Map)((MapJavaProxy)data).getObject());
             } else {
                 throw context.runtime.newTypeError("wrong argument type " + data.getMetaClass() + " (expected Hash)");
             }
