@@ -36,12 +36,32 @@ If you think you found a bug, it probably is a bug.
 * If it is specific to a plugin, please file it in the respective repository under [logstash-plugins](https://github.com/logstash-plugins)
 * or ask the [forum](https://discuss.elastic.co/c/logstash).
 
+## Issue Prioritization
+The Logstash team takes time to digest, consider solutions, and weigh applicability of issues to both the broad
+Logstash user base and our own goals for the project. Through this process, we assign issues a priority using GitHub
+labels. Below is a description of priority labels.
+
+* P1: A high priority issue that affects almost all Logstash users. Bugs that would cause data loss, security
+issues, and features that would vastly improve the user experience for everyone. Workarounds for P1s
+generally don’t exist without a code change.
+* P2: A broadly applicable, high visibility issue that enhances Logstash usability for a majority of users.
+* P3: Nice-to-have bug fixes or functionality.  Workarounds for P3s generally exist.
+* P4: Anything not in above, catch-all label.
+
 # Contributing Documentation and Code Changes
 
-If you have a bugfix or new feature that you would like to contribute to
-logstash, and you think it will take more than a few minutes to produce the fix
-(ie; write code), it is worth discussing the change with the Logstash users and developers first! You can reach us via [GitHub](https://github.com/elastic/logstash/issues), the [forum](https://discuss.elastic.co/c/logstash), or via IRC (#logstash on freenode irc)
-Please note that Pull Requests without tests will not be merged. If you would like to contribute but do not have experience with writing tests, please ping us on IRC/forum or create a PR and ask our help.
+If you have a bugfix or new feature that you would like to contribute to Logstash, and you think it will take
+more than a few minutes to produce the fix (ie; write code), it is worth discussing the change with the Logstash
+users and developers first! You can reach us via [GitHub](https://github.com/elastic/logstash/issues), the [forum](https://discuss.elastic.co/c/logstash), or via IRC (#logstash on freenode irc)
+Please note that Pull Requests without tests will not be merged. If you would like to contribute but do not have
+experience with writing tests, please ping us on IRC/forum or create a PR and ask our help.
+
+If you would like to contribute to Logstash, but don't know where to start, you can use the GitHub labels "adoptme"
+and "low hanging fruit". Issues marked with these labels are relatively easy, and provides a good starting
+point to contribute to Logstash.
+
+See: https://github.com/elastic/logstash/labels/adoptme
+https://github.com/elastic/logstash/labels/low%20hanging%20fruit
 
 ## Contributing to plugins
 
