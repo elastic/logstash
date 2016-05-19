@@ -4,6 +4,7 @@ require "spec_helper"
 require "logstash/util"
 require "logstash/event"
 require "json"
+require "java"
 
 TIMESTAMP = "@timestamp"
 
@@ -285,5 +286,25 @@ describe LogStash::Event do
         expect{LogStash::Event.new(LogStash::Json.load(s))}.to raise_error LogStash::Json::ParserError
        end
     end
+  end
+
+  context "initialize" do
+
+    it "should accept Ruby Hash" do
+      e = LogStash::Event.new({"foo" => 1, TIMESTAMP => "2015-05-28T23:02:05.350Z"})
+      expect(e.get("foo")).to eq(1)
+      expect(e.timestamp.to_iso8601).to eq("2015-05-28T23:02:05.350Z")
+    end
+
+    it "should accept Java Map" do
+      h = Java::JavaUtil::HashMap.new
+      h.put("foo", 2);
+      h.put(TIMESTAMP, "2016-05-28T23:02:05.350Z");
+      e = LogStash::Event.new(h)
+
+      expect(e.get("foo")).to eq(2)
+      expect(e.timestamp.to_iso8601).to eq("2016-05-28T23:02:05.350Z")
+    end
+
   end
 end
