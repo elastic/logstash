@@ -52,10 +52,6 @@
 #
 # ------------ Pipeline Configuration Settings --------------
 #
-# Allow the pipeline configuration to be injected with environment variables
-#
-# config.allow_env: false
-#
 # Where to fetch the pipeline configuration for the main pipeline
 #
 # path.config:
