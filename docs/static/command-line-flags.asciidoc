@@ -48,7 +48,7 @@ Logstash has the following flags. You can use the `--help` flag to display this 
 -V, --version
   Display the version of Logstash.
 
--p, --plugin.path
+-p, --path.plugins
   A path of where to find plugins. This flag can be given multiple times to include
   multiple paths. Plugins are expected to be in a specific directory hierarchy:
   'PATH/logstash/TYPE/NAME.rb' where TYPE is 'inputs' 'filters', 'outputs' or 'codecs'
