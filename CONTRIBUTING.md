@@ -42,8 +42,8 @@ Logstash user base and our own goals for the project. Through this process, we a
 labels. Below is a description of priority labels.
 
 * P1: A high priority issue that affects almost all Logstash users. Bugs that would cause data loss, security
-issues, and features that would vastly improve the user experience for everyone. Workarounds for P1s
-generally don’t exist without a code change.
+issues and test failures. Workarounds for P1s generally don’t exist without a code change. A P1 issue is usually
+stop the world kinda scenario, so we need to make sure P1s are properly triaged and being worked upon.
 * P2: A broadly applicable, high visibility issue that enhances Logstash usability for a majority of users.
 * P3: Nice-to-have bug fixes or functionality.  Workarounds for P3s generally exist.
 * P4: Anything not in above, catch-all label.
