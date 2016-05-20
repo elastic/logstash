@@ -1,11 +1,9 @@
 [[command-line-flags]]
-=== Command-line flags
+=== Command-Line Flags
 
 Logstash has the following flags. You can use the `--help` flag to display this information.
 
-As an alternative to setting command-line flags, you can specify options in the Logstash settings file,
-`logstash.yml`, located in `LOGSTASH_HOME/config`. Any flags that you set at the command line override the corresponding
-options in the `logstash.yml` file. 
+You can also control Logstash execution by specifying options in the Logstash settings file. For more info, see <<logstash-settings-file>>.  
 
 coming[5.0.0-alpha3, Command-line flags have dots instead of dashes in their names]
 
@@ -20,13 +18,10 @@ coming[5.0.0-alpha3, Command-line flags have dots instead of dashes in their nam
  is specified, `stdout { codec => rubydebug }}` is default.
 
 *`-w, --pipeline.workers COUNT`*::
- Sets the number of pipeline workers (threads) to run for filter processing (default: half the number of cores).
+ Sets the number of pipeline workers (threads) to run for filter processing (default: number of cores).
  If you find that events are backing up, or that the CPU is not saturated, consider increasing
  this number to better utilize machine processing power.
  
-*`--pipeline.output.workers COUNT`*::
- Sets the number of pipeline workers (threads) to run for each output plugin instance.
-
 *`-b, --pipeline.batch.size SIZE`*::
  This parameter defines the maximum number of events an individual worker thread will collect
  before attempting to execute its filters and outputs. Default is 125 events.
@@ -84,8 +79,8 @@ coming[5.0.0-alpha3, Command-line flags have dots instead of dashes in their nam
   Web API http port (default: 9600)
 
 *`--pipeline.unsafe_shutdown`*::
-  Force logstash to exit during shutdown even if there are still inflight events
-  in memory. By default, logstash will refuse to quit until all received events
+  Force Logstash to exit during shutdown even if there are still inflight events
+  in memory. By default, Logstash will refuse to quit until all received events
   have been pushed to the outputs.
 
 *`-h, --help`*::

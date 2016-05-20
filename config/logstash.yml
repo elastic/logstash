@@ -25,7 +25,7 @@
 # Set the number of workers that will, in parallel, execute the filters+outputs
 # stage of the pipeline.
 #
-# This defaults to half the number of the host's CPU cores.
+# This defaults to the number of the host's CPU cores.
 #
 # pipeline.workers: 2
 #
