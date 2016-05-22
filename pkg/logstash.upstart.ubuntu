@@ -26,7 +26,7 @@ script
   LS_LOG_FILE=/var/log/logstash/logstash.log
   LS_USE_GC_LOGGING=""
   LS_GC_LOG_FILE=""
-  LS_CONF_DIR=/etc/logstash/conf.d
+  LS_CONF_DIR="/etc/logstash/conf.d/*.conf"
   LS_OPEN_FILES=16384
   LS_NICE=19
   LS_OPTS=""
