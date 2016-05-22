@@ -153,15 +153,17 @@ setup() {
       USE_DRIP=1
     fi
   fi
-  if [ "$USE_DRIP" = "1" ] ; then
-    setup_drip
-  fi
 
   if [ "$USE_RUBY" = "1" ] ; then
     setup_ruby
   else
     setup_java
     setup_vendored_jruby
+  fi
+
+  # drip extends current JAVA_OPTS and therefore needs to run after setup_java
+  if [ "$USE_DRIP" = "1" ] ; then
+    setup_drip
   fi
 }
 
@@ -178,9 +180,15 @@ ruby_exec() {
 
     # $VENDORED_JRUBY is non-empty so use the vendored JRuby
 
-    if [ "$DEBUG" ] ; then
-      echo "DEBUG: exec ${JRUBY_BIN} $(jruby_opts) "-J$HEAP_DUMP_PATH" $@"
+    if [ -z "$HEAP_DUMP_PATH" ] ; then
+        HEAP_DUMP_PATH_OPT=''
+    else
+        HEAP_DUMP_PATH_OPT="-J$HEAP_DUMP_PATH"
     fi
-    exec "${JRUBY_BIN}" $(jruby_opts) "-J$HEAP_DUMP_PATH" "$@"
+
+    if [ "$DEBUG" ] ; then
+      echo "DEBUG: exec ${JRUBY_BIN} $(jruby_opts) "$HEAP_DUMP_PATH_OPT" $@"
+    fi
+    exec "${JRUBY_BIN}" $(jruby_opts) "$HEAP_DUMP_PATH_OPT" "$@"
   fi
 }
