@@ -153,15 +153,17 @@ setup() {
       USE_DRIP=1
     fi
   fi
-  if [ "$USE_DRIP" = "1" ] ; then
-    setup_drip
-  fi
 
   if [ "$USE_RUBY" = "1" ] ; then
     setup_ruby
   else
     setup_java
     setup_vendored_jruby
+  fi
+
+  # drip extends current JAVA_OPTS and therefore needs to run after setup_java
+  if [ "$USE_DRIP" = "1" ] ; then
+    setup_drip
   fi
 }
 
