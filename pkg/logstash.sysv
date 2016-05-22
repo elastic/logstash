@@ -108,6 +108,7 @@ stop() {
     else
       echo "$name stopped."
     fi
+    rm -f $pidfile
   fi
 }
 
@@ -122,7 +123,9 @@ status() {
       # so it makes it quite awkward to use in this case.
       return 0
     else
-      return 2 # program is dead but pid file exists
+      # program is dead but pid file exists
+      rm -f $pidfile
+      return 2 
     fi
   else
     return 3 # program is not running
