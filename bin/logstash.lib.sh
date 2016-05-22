@@ -180,9 +180,15 @@ ruby_exec() {
 
     # $VENDORED_JRUBY is non-empty so use the vendored JRuby
 
-    if [ "$DEBUG" ] ; then
-      echo "DEBUG: exec ${JRUBY_BIN} $(jruby_opts) "-J$HEAP_DUMP_PATH" $@"
+    if [ -z "$HEAP_DUMP_PATH" ] ; then
+        HEAP_DUMP_PATH_OPT=''
+    else
+        HEAP_DUMP_PATH_OPT="-J$HEAP_DUMP_PATH"
     fi
-    exec "${JRUBY_BIN}" $(jruby_opts) "-J$HEAP_DUMP_PATH" "$@"
+
+    if [ "$DEBUG" ] ; then
+      echo "DEBUG: exec ${JRUBY_BIN} $(jruby_opts) "$HEAP_DUMP_PATH_OPT" $@"
+    fi
+    exec "${JRUBY_BIN}" $(jruby_opts) "$HEAP_DUMP_PATH_OPT" "$@"
   fi
 }
