@@ -1,9 +1,34 @@
 # encoding: utf-8
 require "json"
+require "ostruct"
 
 class PlatformConfig
 
-  Platform = Struct.new(:name, :box, :type)
+
+  class Platform
+
+    attr_reader :name, :box, :type, :bootstrap
+
+    def initialize(name, data)
+      @name = name
+      @box  = data["box"]
+      @type = data["type"]
+      configure_bootstrap_scripts(data)
+    end
+
+    private
+
+    def configure_bootstrap_scripts(data)
+      @bootstrap = OpenStruct.new(:privileged     => "sys/#{type}/bootstrap.sh",
+                                  :non_privileged => "sys/#{type}/user_bootstrap.sh")
+      ##
+      # for now the only specific boostrap scripts are ones need
+      # with privileged access level, whenever others are also
+      # required we can update this section as well with the same pattern.
+      ##
+      @bootstrap.privileged = "sys/#{type}/#{name}/bootstrap.sh" if data["specific"]
+    end
+  end
 
   DEFAULT_CONFIG_LOCATION = File.join(File.dirname(__FILE__), "config", "platforms.json").freeze
 
@@ -15,7 +40,7 @@ class PlatformConfig
 
     data = JSON.parse(File.read(@config_path))
     data["platforms"].each do |k, v|
-      @platforms << Platform.new(k, v["box"], v["type"])
+      @platforms << Platform.new(k, v)
     end
     @platforms.sort! { |a, b| a.name <=> b.name }
     @latest = data["latest"]

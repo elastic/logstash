@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env bash
 set -e
 
 # Since we are using the system jruby, we need to make sure our jvm process
