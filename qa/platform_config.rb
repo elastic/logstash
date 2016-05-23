@@ -13,12 +13,12 @@ class PlatformConfig
       @name = name
       @box  = data["box"]
       @type = data["type"]
-      initialize_bootstrap_scripts(data)
+      configure_bootstrap_scripts(data)
     end
 
     private
 
-    def initialize_bootstrap_scripts(data)
+    def configure_bootstrap_scripts(data)
       @bootstrap = OpenStruct.new(:privileged     => "sys/#{type}/bootstrap.sh",
                                   :non_privileged => "sys/#{type}/user_bootstrap.sh")
       ##
