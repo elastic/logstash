@@ -13,10 +13,20 @@ Vagrant.configure(2) do |config|
         v.cpus = 4
       end
       machine.vm.synced_folder "../build", "/logstash-build", create: true
+      if platform.specific
+        script_path = "sys/#{platform.type}/#{platform.name}/bootstrap.sh"
+      else
+        script_path = "sys/#{platform.type}/bootstrap.sh"
+      end
       machine.vm.provision :shell do |sh|
-        sh.path = "sys/#{platform.type}/bootstrap.sh"
+        sh.path = script_path
         sh.privileged = true
       end
+      ##
+      # for now the only specific boostrap scripts are ones need
+      # with privileged access level, whenever others are also
+      # required we can update this section as well with the same pattern.
+      ##
       machine.vm.provision :shell do |sh|
         sh.path = "sys/#{platform.type}/user_bootstrap.sh"
         sh.privileged = false
