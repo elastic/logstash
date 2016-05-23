@@ -3,7 +3,7 @@ require "json"
 
 class PlatformConfig
 
-  Platform = Struct.new(:name, :box, :type)
+  Platform = Struct.new(:name, :box, :type, :bootstrap)
 
   DEFAULT_CONFIG_LOCATION = File.join(File.dirname(__FILE__), "config", "platforms.json").freeze
 
@@ -15,7 +15,7 @@ class PlatformConfig
 
     data = JSON.parse(File.read(@config_path))
     data["platforms"].each do |k, v|
-      @platforms << Platform.new(k, v["box"], v["type"])
+      @platforms << Platform.new(k, v["box"], v["type"], v["bootstrap"])
     end
     @platforms.sort! { |a, b| a.name <=> b.name }
     @latest = data["latest"]
