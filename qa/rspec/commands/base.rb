@@ -5,7 +5,7 @@ module ServiceTester
 
   class Base
     LOCATION="/logstash-build".freeze
-    LOGSTASH_PATH="/opt/logstash/".freeze
+    LOGSTASH_PATH="/usr/share/logstash/".freeze
 
     def snapshot(host)
       LogStash::VagrantHelpers.save_snapshot(host)
@@ -34,7 +34,8 @@ module ServiceTester
     end
 
     def replace_in_gemfile(pattern, replace, host)
-      cmd = "/bin/env sed -i.sedbak 's/#{pattern}/#{replace}/' /opt/logstash/Gemfile"
+      gemfile = File.join(LOGSTASH_PATH, "Gemfile")
+      cmd = "/bin/env sed -i.sedbak 's/#{pattern}/#{replace}/' #{gemfile}"
       run_command(cmd, host)
     end
 
