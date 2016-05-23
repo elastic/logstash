@@ -2,7 +2,6 @@
 require_relative "../../../spec_helper"
 require "logstash/version"
 require "fileutils"
-require "logstash/devutils/rake"
 
 shared_examples "logstash install" do |logstash|
   before(:each) do

@@ -3,6 +3,9 @@ require_relative "./commands/debian"
 require_relative "./commands/ubuntu"
 require_relative "./commands/redhat"
 require_relative "./commands/suse"
+require_relative "./commands/centos/centos-6"
+require_relative "./commands/oel/oel-6"
+
 require "forwardable"
 
 module ServiceTester
@@ -99,7 +102,13 @@ module ServiceTester
       when "suse"
         return SuseCommands.new
       when "redhat"
-        return RedhatCommands.new
+        if host == "centos-6"
+          return Centos6Commands.new
+        elsif host == "oel-6"
+          return Oel6Commands.new
+        else
+          return RedhatCommands.new
+        end
       else
         return
       end
