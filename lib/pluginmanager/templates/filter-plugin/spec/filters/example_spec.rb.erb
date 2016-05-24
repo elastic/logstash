@@ -15,7 +15,7 @@ describe LogStash::Filters::<%= classify(plugin_name) %> do
 
     sample("message" => "some text") do
       expect(subject).to include("message")
-      expect(subject['message']).to eq('Hello World')
+      expect(subject.get('message')).to eq('Hello World')
     end
   end
 end
