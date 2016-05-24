@@ -34,7 +34,7 @@ class LogStash::Filters::<%= classify(plugin_name) %> < LogStash::Filters::Base
     if @message
       # Replace the event message with our message as configured in the
       # config file.
-      event["message"] = @message
+      event.set("message", @message)
     end
 
     # filter_matched should go in the last line of our successful code
