@@ -14,7 +14,7 @@ class LogStash::PluginManager::Generate < LogStash::PluginManager::Command
     arg
   end
 
-  option "--name", "PLUGIN", "Name of the new plugin"
+  option "--name", "PLUGIN", "Name of the new plugin", :required => true
   option "--path", "PATH", "Location where the plugin skeleton will be created", :default => Dir.pwd
 
   def execute
