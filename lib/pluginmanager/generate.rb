@@ -4,6 +4,7 @@ require "pluginmanager/templates/render_context"
 require "erb"
 require "ostruct"
 require "fileutils"
+require "pathname"
 
 class LogStash::PluginManager::Generate < LogStash::PluginManager::Command
 
@@ -19,12 +20,12 @@ class LogStash::PluginManager::Generate < LogStash::PluginManager::Command
 
   def execute
     source = File.join(File.dirname(__FILE__), "templates", "#{type}-plugin")
-    target_path = File.join(path, full_plugin_name)
-    FileUtils.mkdir(target_path)
-    puts " Creating #{target_path}"
+    @target_path = File.join(path, full_plugin_name)
+    FileUtils.mkdir(@target_path)
+    puts " Creating #{@target_path}"
 
     begin
-      create_scaffold(source, target_path)
+      create_scaffold(source, @target_path)
     rescue Errno::EACCES => exception
       report_exception("Permission denied when executing the plugin manager", exception)
     rescue => exception
@@ -55,7 +56,7 @@ class LogStash::PluginManager::Generate < LogStash::PluginManager::Command
         else
           FileUtils.cp(source_entry, target_entry)
         end
-        puts "\t create #{File.join(full_plugin_name, File.basename(target_entry))}"
+        puts "\t create #{File.join(full_plugin_name, Pathname.new(target_entry).relative_path_from(Pathname.new(@target_path)))}"
       end
     end
   end
