@@ -8,19 +8,20 @@ require "puma/commonlogger"
 module LogStash 
   class WebServer
 
+    class HostBindingError < StandardError; end
+
     extend Forwardable
 
     attr_reader :logger, :status, :config, :options, :cli_options, :runner, :binder, :events
 
     def_delegator :@runner, :stats
 
-    DEFAULT_HOST = "127.0.0.1".freeze
-    DEFAULT_PORT = 9600.freeze
+    DEFAULT_PORT_RANGE=(9600...9700).freeze
 
     def initialize(logger, options={})
       @logger      = logger
-      http_host    = options[:http_host] || DEFAULT_HOST
-      http_port    = options[:http_port] || DEFAULT_PORT
+      http_host    = options[:http_host]
+      http_port    = options[:http_port] || pick_default_port(http_host, DEFAULT_PORT_RANGE)
       @options     = {}
       @cli_options = options.merge({ :rackup => ::File.join(::File.dirname(__FILE__), "api", "init.ru"),
                                      :binds => ["tcp://#{http_host}:#{http_port}"],
@@ -30,8 +31,10 @@ module LogStash
                                      # https://github.com/puma/puma/pull/640 for mode internal details in PUMA.
                                      :queue_requests => false
       })
-      @status      = nil
 
+      logger.terminal("Binding Logstash WebAPI to tcp://#{http_host}:#{http_port}")
+
+      @status      = nil
       parse_options
 
       @runner  = nil
@@ -79,6 +82,17 @@ module LogStash
     end
 
     private
+
+    def pick_default_port(http_host, range=(9600...9700))
+      range.step(1) do |current_port|
+        begin
+          TCPServer.new(http_host, current_port)
+          return current_port
+        rescue Errno::EADDRINUSE
+        end
+      end
+      raise HostBindingError.new("Range #{range} is full")
+    end
 
     def env
       @options[:debug] ? "development" : "production"
