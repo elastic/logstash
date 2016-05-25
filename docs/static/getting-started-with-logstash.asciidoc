@@ -2,15 +2,15 @@
 == Getting Started with Logstash
 
 This section guides you through the process of installing Logstash and verifying that everything is running properly.
-Later sections deal with increasingly complex configurations to address selected use cases. This section includes the
-following topics:
+After learning how to stash your first event, you go on to create a more advanced pipeline that takes Apache web logs as
+input, parses the logs, and writes the parsed data to an Elasticsearch cluster. Then you learn how to stitch together multiple input and output plugins to unify data from a variety of disparate sources.
+
+This section includes the following topics:
 
 * <<installing-logstash>>
 * <<first-event>>
 * <<advanced-pipeline>>
-* <<stalled-shutdown>>
-* <<pipeline>>
-
+* <<multiple-input-output-plugins>>
 
 [[installing-logstash]]
 === Installing Logstash
@@ -129,7 +129,17 @@ yum install logstash
 --------------------------------------------------
 
 [[first-event]]
-=== Stashing Your First Event: Basic Logstash Example
+=== Stashing Your First Event
+
+First, let's test your Logstash installation by running the most basic _Logstash pipeline_.
+
+A Logstash pipeline has two required elements, `input` and `output`, and one optional element, `filter`. The input
+plugins consume data from a source, the filter plugins modify the data as you specify, and the output plugins write
+the data to a destination.
+
+//TODO: REPLACE WITH NEW IMAGE
+
+image::static/images/basic_logstash_pipeline.png[]
 
 To test your Logstash installation, run the most basic Logstash pipeline:
 
@@ -141,10 +151,10 @@ bin/logstash -e 'input { stdin { } } output { stdout {} }'
 
 The `-e` flag enables you to specify a configuration directly from the command line. Specifying configurations at the
 command line lets you quickly test configurations without having to edit a file between iterations.
-This pipeline takes input from the standard input, `stdin`, and moves that input to the standard output, `stdout`, in a
-structured format.
+The pipeline in the example takes input from the standard input, `stdin`, and moves that input to the standard output,
+`stdout`, in a structured format.
 
-Once "Logstash startup completed" is displayed, type hello world at the command prompt to see Logstash respond:
+After starting Logstash, wait until you see "Pipeline main started" and then enter `hello world` at the command prompt:
 
 [source,shell]
 hello world
@@ -153,5 +163,5 @@ hello world
 Logstash adds timestamp and IP address information to the message. Exit Logstash by issuing a *CTRL-D* command in the
 shell where Logstash is running.
 
-The <<advanced-pipeline,Advanced Tutorial>> expands the capabilities of your Logstash instance to cover broader
-use cases.
+Congratulations! You've created and run a basic Logstash pipeline. Next, you learn how to create a more realistic pipeline.
+
