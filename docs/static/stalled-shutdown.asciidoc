@@ -1,0 +1,63 @@
+[[stalled-shutdown]]
+=== Stalled Shutdown Detection
+
+When you attempt to shut down a running Logstash instance, Logstash performs several steps before it can safely shut down. It must:
+
+* Stop all input, filter and output plugins
+* Process all in-flight events
+* Terminate the Logstash process
+
+The following conditions affect the shutdown process:
+
+* An input plugin receiving data at a slow pace.
+* A slow filter, like a Ruby filter executing `sleep(10000)` or an Elasticsearch filter that is executing a very heavy
+query.
+* A disconnected output plugin that is waiting to reconnect to flush in-flight events.
+
+These situations make the duration and success of the shutdown process unpredictable.
+
+Logstash has a stall detection mechanism that analyzes the behavior of the pipeline and plugins during shutdown.
+This mechanism produces periodic information about the count of inflight events in internal queues and a list of busy
+worker threads.
+
+To enable Logstash to forcibly terminate in the case of a stalled shutdown, use the `--allow-unsafe-shutdown` flag when
+you start Logstash.
+
+[[shutdown-stall-example]]
+==== Stall Detection Example
+
+In this example, slow filter execution prevents the pipeline from clean shutdown. By starting Logstash with the
+`--allow-unsafe-shutdown` flag, quitting with *Ctrl+C* results in an eventual shutdown that loses 20 events.
+
+========
+[source,shell]
+% bin/logstash -e 'input { generator { } } filter { ruby { code => "sleep 10000" } } \
+                     output { stdout { codec => dots } }' -w 1 --allow-unsafe-shutdown
+Default settings used: Filter workers: 1
+Logstash startup completed
+^CSIGINT received. Shutting down the pipeline. {:level=>:warn}
+Received shutdown signal, but pipeline is still waiting for in-flight events
+to be processed. Sending another ^C will force quit Logstash, but this may cause
+data loss. {:level=>:warn}
+ {:level=>:warn, "INFLIGHT_EVENT_COUNT"=>{"input_to_filter"=>20, "total"=>20},
+ "STALLING_THREADS"=>
+ {["LogStash::Filters::Ruby", {"code"=>"sleep 10000"}]=>[{"thread_id"=>15,
+ "name"=>"|filterworker.0", "current_call"=>"
+ (ruby filter code):1:in `sleep'"}]}}
+The shutdown process appears to be stalled due to busy or blocked plugins. Check
+    the logs for more information.
+{:level=>:error}
+ {:level=>:warn, "INFLIGHT_EVENT_COUNT"=>{"input_to_filter"=>20, "total"=>20},
+ "STALLING_THREADS"=>
+ {["LogStash::Filters::Ruby", {"code"=>"sleep 10000"}]=>[{"thread_id"=>15,
+ "name"=>"|filterworker.0", "current_call"=>"
+ (ruby filter code):1:in `sleep'"}]}}
+ {:level=>:warn, "INFLIGHT_EVENT_COUNT"=>{"input_to_filter"=>20, "total"=>20},
+ "STALLING_THREADS"=>
+ {["LogStash::Filters::Ruby", {"code"=>"sleep 10000"}]=>[{"thread_id"=>15,
+ "name"=>"|filterworker.0", "current_call"=>"
+ (ruby filter code):1:in `sleep'"}]}}
+Forcefully quitting logstash.. {:level=>:fatal}
+========
+
+When `--allow-unsafe-shutdown` isn't enabled, Logstash continues to run and produce these reports periodically.

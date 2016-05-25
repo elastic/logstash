@@ -1,5 +1,5 @@
 [[pipeline]]
-=== Logstash Processing Pipeline
+== How Logstash Works
 
 The Logstash event processing pipeline has three stages: inputs -> filters ->
 outputs. Inputs generate events, filters modify them, and outputs ship them
@@ -8,7 +8,7 @@ the data as it enters or exits the pipeline without having to use a separate
 filter.
 
 [float]
-==== Inputs
+=== Inputs
 You use inputs to get data into Logstash. Some of the more commonly-used inputs
 are:
 
@@ -25,7 +25,7 @@ For more information about the available inputs, see
 <<input-plugins,Input Plugins>>.
 
 [float]
-==== Filters
+=== Filters
 Filters are intermediary processing devices in the Logstash pipeline. You can
 combine filters with conditionals to perform an action on an event if it meets
 certain criteria. Some useful filters include:
@@ -45,7 +45,7 @@ For more information about the available filters, see
 <<filter-plugins,Filter Plugins>>.
 
 [float]
-==== Outputs
+=== Outputs
 Outputs are the final phase of the Logstash pipeline. An event can pass through
 multiple outputs, but once all output processing is complete, the event has
 finished its execution. Some commonly used outputs include:
@@ -65,7 +65,7 @@ For more information about the available outputs, see
 <<output-plugins,Output Plugins>>.
 
 [float]
-==== Codecs
+=== Codecs
 Codecs are basically stream filters that can operate as part of an input or
 output. Codecs enable you to easily separate the transport of your messages from
 the serialization process. Popular codecs include `json`, `msgpack`, and `plain`
@@ -78,7 +78,7 @@ stacktrace messages into a single event.
 For more information about the available codecs, see
 <<codec-plugins,Codec Plugins>>.
 
-[float]
+[[fault-tolerance]]
 === Fault Tolerance
 
 Logstash keeps all events in main memory during processing. Logstash responds to a SIGTERM by attempting to halt inputs and waiting for pending events to finish processing before shutting down. When the pipeline cannot be flushed due to a stuck output or filter, Logstash waits indefinitely. For example, when a pipeline sends output to a database that is unreachable by the Logstash instance, the instance waits indefinitely after receiving a SIGTERM.
@@ -87,7 +87,7 @@ To enable Logstash to detect these situations and terminate with a stalled pipel
 
 WARNING: Unsafe shutdowns, force-kills of the Logstash process, or crashes of the Logstash process for any other reason result in data loss. Shut down Logstash safely whenever possible.
 
-[float]
+[[execution-model]]
 ==== Execution Model
 
 The Logstash pipeline coordinates the execution of inputs, filters, and outputs. The following schematic sketches the data flow of a pipeline:
@@ -156,3 +156,4 @@ Examining the in-depth GC statistics with a tool similar to the excellent https:
 
 NOTE: As long as the GC pattern is acceptable, heap sizes that occasionally increase to the maximum are acceptable. Such heap size spikes happen in response to a burst of large events passing through the pipeline. In general practice, maintain a gap between the used amount of heap memory and the maximum.
 This document is not a comprehensive guide to JVM GC tuning. Read the official http://www.oracle.com/webfolder/technetwork/tutorials/obe/java/gc01/index.html[Oracle guide] for more information on the topic. We also recommend reading http://www.semicomplete.com/blog/geekery/debugging-java-performance.html[Debugging Java Performance].
+
