@@ -1,8 +1,6 @@
 [[setup-logstash]]
 == Setting Up and Running Logstash
 
-coming[5.0.0-alpha3, Includes breaking changes to the Logstash directory structure]
-
 Before reading this section, see <<installing-logstash>> for basic installation instructions to get you started. 
 
 This section includes additional information on how to set up and run Logstash, including:
@@ -15,6 +13,8 @@ This section includes additional information on how to set up and run Logstash, 
 === Logstash Directory Layout
 
 This section describes the default directory structure that is created when you unpack the Logstash installation packages.
+
+coming[5.0.0-alpha3, Includes breaking changes to the Logstash directory structure]
 
 [[zip-targz-layout]]
 ==== Directory Layout of `.zip` and `.tar.gz` Archives
@@ -116,6 +116,8 @@ See <<configuration>> for more info.
 
 ==== Settings Files
 
+coming[5.0.0-alpha3]
+
 The settings files are already defined in the Logstash installation. Logstash includes the following settings files:
 
 *`logstash.yml`*:: 
@@ -135,6 +137,8 @@ The settings files are already defined in the Logstash installation. Logstash in
 
 [[running-logstash]]
 === Running Logstash as a Service on Debian or RPM
+
+coming[5.0.0-alpha3]
 
 Logstash is not started automatically after installation. How to start and stop Logstash depends on whether your system
 uses systemd, upstart, or SysV. You can tell what your system using by running this command:
