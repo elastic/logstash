@@ -155,6 +155,7 @@ describe LogStash::Pipeline do
             {:count_was=>worker_thread_count, :filters=>["dummyfilter"]})
           pipeline.run
           expect(pipeline.worker_threads.size).to eq(safe_thread_count)
+          pipeline.shutdown
         end
       end
 
@@ -168,6 +169,7 @@ describe LogStash::Pipeline do
             {:worker_threads=> override_thread_count, :filters=>["dummyfilter"]})
           pipeline.run
           expect(pipeline.worker_threads.size).to eq(override_thread_count)
+          pipeline.shutdown
         end
       end
     end
@@ -193,6 +195,7 @@ describe LogStash::Pipeline do
         pipeline = TestPipeline.new(test_config_with_filters)
         pipeline.run
         expect(pipeline.worker_threads.size).to eq(worker_thread_count)
+        pipeline.shutdown
       end
     end
   end
@@ -239,6 +242,7 @@ describe LogStash::Pipeline do
         expect(pipeline.outputs.size ).to eq(1)
         expect(pipeline.outputs.first.workers.size ).to eq(::LogStash::SETTINGS.get("pipeline.output.workers"))
         expect(pipeline.outputs.first.workers.first.num_closes ).to eq(1)
+        pipeline.shutdown
       end
 
       it "should call output close correctly with output workers" do
@@ -255,6 +259,7 @@ describe LogStash::Pipeline do
         output_delegator.workers.each do |plugin|
           expect(plugin.num_closes ).to eq(1)
         end
+        pipeline.shutdown
       end
     end
   end
@@ -276,6 +281,7 @@ describe LogStash::Pipeline do
         expect(pipeline).to receive(:start_flusher).ordered.and_call_original
 
         pipeline.run
+        pipeline.shutdown
       end
     end
 
@@ -392,8 +398,14 @@ describe LogStash::Pipeline do
     output { }
     CONFIG
 
-    it "uses a `NullMetric` object if no metric is given" do
-      pipeline = LogStash::Pipeline.new(config)
+    it "uses a `NullMetric` object if `metric.collect` is set to false" do
+      settings = double("LogStash::SETTINGS")
+
+      allow(settings).to receive(:get_value).with("pipeline.id").and_return("main")
+      allow(settings).to receive(:get_value).with("metric.collect").and_return(false)
+      allow(settings).to receive(:get_value).with("config.debug").and_return(false)
+
+      pipeline = LogStash::Pipeline.new(config, settings)
       expect(pipeline.metric).to be_kind_of(LogStash::Instrument::NullMetric)
     end
   end
@@ -511,7 +523,7 @@ describe LogStash::Pipeline do
       t = Thread.new { subject.run }
       sleep(0.1)
       expect(subject.started_at).to be < Time.now
-      t.kill rescue nil
+      subject.shutdown
     end
   end
 
@@ -536,7 +548,7 @@ describe LogStash::Pipeline do
         t = Thread.new { subject.run }
         sleep(0.1)
         expect(subject.uptime).to be > 0
-        t.kill rescue nil
+        subject.shutdown
       end
     end
   end
@@ -590,7 +602,6 @@ describe LogStash::Pipeline do
       # Reset the metric store
       LogStash::Instrument::Collector.instance.clear
 
-      subject.metric = metric
       Thread.new { subject.run }
       # make sure we have received all the generated events
       sleep 1 while dummyoutput.events.size < number_of_events
