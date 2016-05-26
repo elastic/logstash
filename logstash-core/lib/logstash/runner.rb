@@ -15,8 +15,14 @@ require "logstash/agent"
 require "logstash/config/defaults"
 require "logstash/shutdown_watcher"
 require "logstash/patches/clamp"
+require "logstash/settings"
 
 class LogStash::Runner < Clamp::StrictCommand
+  # The `path.settings` need to be defined in the runner instead of the `logstash-core/lib/logstash/environment.r`
+  # because the `Environment::LOGSTASH_HOME` doesn't exist in the context of the `logstash-core` gem.
+  # 
+  # See issues https://github.com/elastic/logstash/issues/5361
+  LogStash::SETTINGS.register(LogStash::Setting::String.new("path.settings", ::File.join(LogStash::Environment::LOGSTASH_HOME, "config")))
 
   # Node Settings
   option ["-n", "--node.name"], "NAME",
@@ -129,7 +135,9 @@ class LogStash::Runner < Clamp::StrictCommand
 
   def run(args)
     settings_path = fetch_settings_path(args)
+
     @settings.set("path.settings", settings_path) if settings_path
+
     LogStash::SETTINGS.from_yaml(LogStash::SETTINGS.get("path.settings"))
     super(*[args])
   end
