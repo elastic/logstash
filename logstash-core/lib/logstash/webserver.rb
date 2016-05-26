@@ -16,7 +16,7 @@ module LogStash
 
     def_delegator :@runner, :stats
 
-    DEFAULT_PORT_RANGE=(9600...9700).freeze
+    DEFAULT_PORT_RANGE=(9600..9700).freeze
 
     def initialize(logger, options={})
       @logger      = logger
@@ -83,10 +83,10 @@ module LogStash
 
     private
 
-    def pick_default_port(http_host, range=(9600...9700))
+    def pick_default_port(http_host, range=(9600..9700))
       range.step(1) do |current_port|
         begin
-          TCPServer.new(http_host, current_port)
+          TCPServer.new(http_host, current_port).close
           return current_port
         rescue Errno::EADDRINUSE
         end
