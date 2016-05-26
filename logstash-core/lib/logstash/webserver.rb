@@ -32,7 +32,7 @@ module LogStash
                                      :queue_requests => false
       })
 
-      logger.terminal("Binding Logstash WebAPI to tcp://#{http_host}:#{http_port}")
+      logger.terminal("Binding Logstash HTTP server to #{http_host}:#{http_port}")
 
       @status      = nil
       parse_options
@@ -89,9 +89,10 @@ module LogStash
           TCPServer.new(http_host, current_port).close
           return current_port
         rescue Errno::EADDRINUSE
+          log("Address #{http_host}:#{current_port} in use")
         end
       end
-      raise HostBindingError.new("Range #{range} is full")
+      raise HostBindingError.new("Unable to bind to the specified port range (#{range}) for HTTP server")
     end
 
     def env
