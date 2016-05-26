@@ -98,6 +98,7 @@ describe LogStash::Agent do
           sleep 0.1
           Stud.stop!(t)
           t.join
+          subject.shutdown
         end
       end
 
@@ -114,6 +115,7 @@ describe LogStash::Agent do
             sleep 0.1
             Stud.stop!(t)
             t.join
+            subject.shutdown
           end
         end
 
@@ -129,6 +131,8 @@ describe LogStash::Agent do
             sleep 0.1
             Stud.stop!(t)
             t.join
+
+            subject.shutdown
           end
         end
       end
@@ -157,6 +161,7 @@ describe LogStash::Agent do
           sleep 0.1
           Stud.stop!(t)
           t.join
+          subject.shutdown
         end
       end
 
@@ -172,6 +177,7 @@ describe LogStash::Agent do
             sleep 0.1
             Stud.stop!(t)
             t.join
+            subject.shutdown
           end
         end
 
@@ -186,6 +192,7 @@ describe LogStash::Agent do
             sleep 0.1
             Stud.stop!(t)
             t.join
+            subject.shutdown
           end
         end
       end
@@ -361,6 +368,7 @@ describe LogStash::Agent do
     end
 
     after :each do
+      subject.shutdown
       Stud.stop!(@t)
       @t.join
     end

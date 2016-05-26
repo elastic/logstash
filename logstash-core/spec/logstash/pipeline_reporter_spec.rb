@@ -47,6 +47,10 @@ describe LogStash::PipelineReporter do
     @post_snapshot = reporter.snapshot
   end
 
+  after do
+    pipeline.shutdown
+  end
+
   describe "events filtered" do
     it "should start at zero" do
       expect(@pre_snapshot.events_filtered).to eql(0)

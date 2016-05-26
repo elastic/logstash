@@ -45,7 +45,7 @@ class LogStash::Agent
 
     @collect_metric = setting("metric.collect")
     @metric = create_metric_collector
-    @periodic_pollers = LogStash::Instrument::PeriodicPollers.new(metric)
+    @periodic_pollers = LogStash::Instrument::PeriodicPollers.new(create_metric_collector)
   end
 
   def execute
@@ -83,7 +83,6 @@ class LogStash::Agent
 
     pipeline = create_pipeline(pipeline_settings)
     return unless pipeline.is_a?(LogStash::Pipeline)
-    pipeline.metric = @metric
     if @auto_reload && pipeline.non_reloadable_plugins.any?
       @logger.error(I18n.t("logstash.agent.non_reloadable_config_register"),
                     :pipeline_id => pipeline_id,
