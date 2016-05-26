@@ -54,17 +54,9 @@ module LogStash; class Pipeline
 
     @worker_threads = []
 
-    # Metric object should be passed upstream, multiple pipeline share the same metric
-    # and collector only the namespace will changes.
-    # If no metric is given, we use a `NullMetric` for all internal calls.
-    # We also do this to make the changes backward compatible with previous testing of the
-    # pipeline.
-    #
     # This needs to be configured before we evaluate the code to make
-    # sure the metric instance is correctly send to the plugin.
-    # NOTE: It is the responsibility of the Agent to set this externally with a setter
-    # if there's an intent of this not being a NullMetric
-    @metric = Instrument::NullMetric.new
+    # sure the metric instance is correctly send to the plugins to make the namespace scoping work
+    @metric = settings.get_value("metric.collect") ? Instrument::Metric.new : Instrument::NullMetric.new 
 
     grammar = LogStashConfigParser.new
     @config = grammar.parse(config_str)
@@ -80,7 +72,7 @@ module LogStash; class Pipeline
     # The config code is hard to represent as a log message...
     # So just print it.
 
-    if @settings.get("config.debug") && logger.debug?
+    if @settings.get_value("config.debug") && logger.debug?
       logger.debug("Compiled pipeline code", :code => code)
     end
 
