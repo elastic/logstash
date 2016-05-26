@@ -25,7 +25,11 @@ describe "Project licenses" do
     [
       # Skipped because of already included and bundled within JRuby so checking here is redundant.
       # Need to take action about jruby licenses to enable again or keep skeeping.
-      "jruby-openssl"
+      "jruby-openssl",
+      # Skipped because version 2.6.2 which we use has multiple licenses: MIT, ARTISTIC 2.0, GPL-2
+      # See https://rubygems.org/gems/mime-types/versions/2.6.2
+      # version 3.0 of mime-types (which is only compatible with Ruby 2.0) is MIT licensed
+      "mime-types"
     ]
   end
 
@@ -48,7 +52,8 @@ describe "Project licenses" do
         next unless runtime_spec
         next if skipped_dependencies.include?(runtime_spec.name)
         runtime_spec.licenses.each do |license|
-          expect(license.downcase).to match(expected_licenses)
+          expect(license.downcase).to match(expected_licenses), 
+            lambda { "Runtime license check failed for gem #{runtime_spec.name} with version #{runtime_spec.version}" }
         end
       end
     end
