@@ -1,0 +1,231 @@
+[[configuring-security-logstash]]
+=== Configuring Security
+
+The Logstash Elasticsearch https://www.elastic.co/guide/en/logstash/current/plugins-outputs-elasticsearch.html[output],
+https://www.elastic.co/guide/en/logstash/current/plugins-inputs-elasticsearch.html[input], 
+and https://www.elastic.co/guide/en/logstash/current/plugins-filters-elasticsearch.html[filter] 
+plugins support authentication and encryption over HTTP.
+
+To use the Elasticsearch plugins with a cluster secured by X-Pack, you need to
+assign the `logstash` role to a user and configure the plugins to provide that
+user's credentials with each request.
+
+[float]
+[[ls-user]]
+==== Creating a User
+
+By default, X-Pack Security ships with a dedicated `logstash` role that
+allows a user to create indices with names that match the `logstash-*` 
+index pattern, and read, index, update, and delete documents in those indices:
+
+[source,yaml]
+---------------------------------------------------------------
+logstash:
+  cluster:
+    - manage_index_templates
+  indices:
+    - names: 'logstash-*'
+      privileges:
+        - write
+        - read
+        - create_index
+---------------------------------------------------------------
+
+To set up user credentials for the Logstash Elasticsearh plugins, create
+an X-Pack security user that has the `logstash` role:
+
+[source,js]
+--------------------------------------------------
+POST /_xpack/security/user/logstash-user
+{
+  "password" : "changeme", 
+  "roles" : [ "logstash" ], 
+  "full_name" : "Logstash User"
+}
+--------------------------------------------------
+//CONSOLE
+
+
+[float]
+[[ls-http]]
+==== Connecting with HTTP/HTTPS
+
+Logstash communicates with the Elasticsearch cluster through the REST APIs over HTTP.
+
+[float]
+[[ls-http-auth]]
+===== Authentication for HTTP protocol
+
+HTTP protocol supports both basic auth and client-certificate authentication
+through the use of Public Key Infrastructure (PKI).
+
+[float]
+[[ls-http-auth-basic]]
+===== Basic Authentication
+
+The  input, filter, and output plugins all support HTTP Basic Authentication.
+To use basic authentication when connecting to an instance of Elasticsearch with
+{security}, you configure the plugins to include username and password credentials
+with each request. For example, the following snippet configures credentials for
+the output plugin. The credentials are configured the same way for each plugin type.
+
+[source,js]
+--------------------------------------------------
+input { ... }
+output {
+  elasticsearch {
+    protocol => "http"
+    ...
+    user => logstash-user
+    password => changeme 
+  }
+}
+--------------------------------------------------
+
+[float]
+[[ls-http-auth-pki]]
+===== PKI Authentication
+
+Elasticsearch Output supports the use of X.509 client-certificate to authenticate
+Logstash requests. To enable this you need to set up the following configuration
+parameters:
+
+[source,js]
+--------------------------------------------------
+input { ... }
+output {
+  elasticsearch {
+    ...
+    keystore => logstash-user
+    keystore_password => changeme
+  }
+}
+--------------------------------------------------
+
+[float]
+[[ls-http-ssl]]
+===== SSL/TLS Configuration for HTTPS
+
+To enable SSL/TLS encryption for HTTPS, use the following configuration block:
+
+[source,js]
+--------------------------------------------------
+input { ... }
+output {
+  elasticsearch {
+    ...
+    ssl => true
+    cacert => '/path/to/cert.pem' <1>
+  }
+}
+--------------------------------------------------
+<1> The path to the `.pem` file in your filesystem that contains the Certificate
+    Authority's certificate.
+
+[float]
+[[ls-transport]]
+==== Sending Logstash Data with the Transport Protocol
+We strongly recommend using the regular `logstash-output-elasticsearch` output, 
+which uses the HTTP protocol. However, it is still possible to send data
+using the transport protocol by installing the `elasticsearch_java` plugin 
+in Logstash. When you use the `transport` protocol, Logstash communicates with
+the Elasticsearch cluster through the same protocol nodes use to communicate
+with each other.
+
+NOTE: To use the transport protocol, the `logstash` user must also
+      be assigned the predefined `transport_client` role.
+      
+To install the `elasticsearch_java` plugin and required {security} add-on,
+run:
+
+[source,shell]
+--------------------------------------------------
+bin/logstash-plugin install logstash-output-elasticsearch_java
+bin/logstash-plugin install logstash-output-elasticsearch_java_shield
+--------------------------------------------------
+
+[float]
+[[ls-transport-auth]]
+===== Authentication for Transport protocol
+
+Transport protocol supports both basic auth and client-certificate authentication
+through the use of Public Key Infrastructure (PKI).
+
+[float]
+[[ls-transport-auth-basic]]
+===== Basic Authentication
+
+To connect to an instance of Elasticsearch with Security using basic auth, set
+up the username and password credentials with the following configuration parameters:
+
+[source,js]
+--------------------------------------------------
+input { ... }
+output {
+  elasticsearch_java {
+    protocol => "transport"
+    ...
+    user => logstash-user 
+    password => changeme 
+  }
+}
+--------------------------------------------------
+
+[float]
+[[ls-transport-auth-pki]]
+===== PKI Authentication
+
+To connect to an instance of Elasticsearch with {security} using client-certificate
+authentication you need to setup the keystore path which contain the client's
+certificate and the keystore password in the configuration:
+
+[source,js]
+--------------------------------------------------
+input { ... }
+output {
+  elasticsearch_java {
+    protocol => "transport"
+    ...
+    ssl => true
+    keystore => ... # string
+    keystore_password => ... # string
+  }
+}
+--------------------------------------------------
+
+[float]
+[[ls-transport-conf]]
+===== SSL Configuration for Transport protocols
+
+Specify the paths to the keystore and truststore `.jks` files with the following
+configuration parameters:
+
+[source,js]
+--------------------------------------------------
+input { ... }
+output {
+  elasticsearch_java {
+    protocol => "transport"
+    host => ... # string (optional)
+    cluster => ... # string (optional)
+    ...
+    ssl => true
+    keystore =>  ... # string
+    keystore_password =>  ... # string
+    truststore =>  ... # string
+    truststore_password =>  ... # string
+  }
+}
+--------------------------------------------------
+
+For more information on encryption and certificates, see 
+{xpack-ref}/encrypting-communications.html[Encrypting Communications]
+in the X-Pack Reference. 
+
+[float]
+[[ls-failure]]
+==== Failures
+
+Logstash raises an exception that halts the processing pipeline when the server's
+certificate does not validate over SSL on any of the protocols discussed in this
+section. Same for the invalid user credentials.
