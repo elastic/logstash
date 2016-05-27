@@ -1,8 +1,12 @@
 # encoding: utf-8
 API_ROOT = File.expand_path(File.join(File.dirname(__FILE__), "..", "..", "lib", "logstash", "api"))
 
+
+
 require "logstash/devutils/rspec/spec_helper"
-require "api/lib/api/support/resource_dsl_methods"
+
+$LOAD_PATH.unshift(File.expand_path(File.dirname(__FILE__)))
+require "lib/api/support/resource_dsl_methods"
 
 require "logstash/settings"
 require 'rack/test'

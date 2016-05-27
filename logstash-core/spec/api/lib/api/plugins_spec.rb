@@ -23,7 +23,7 @@ describe LogStash::Api::Modules::Plugins do
   end
 
   it "return valid json content type" do
-    expect(last_response.content_type).to eq("application/json")
+    expect(last_response.content_type).to eq("application/json"), "Did not get json, got #{last_response.content_type} / #{last_response.body}"
   end
 
   context "#schema" do
