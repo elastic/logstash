@@ -188,6 +188,12 @@ module LogStash; class Pipeline
       batch_size = @settings.get("pipeline.batch.size")
       batch_delay = @settings.get("pipeline.batch.delay")
       max_inflight = batch_size * pipeline_workers
+
+      config_metric = metric.namespace([:stats, :pipelines, pipeline_id.to_s.to_sym, :config])   
+      config_metric.gauge(:workers, pipeline_workers)
+      config_metric.gauge(:batch_size, batch_size)
+      config_metric.gauge(:batch_delay, batch_delay)
+      
       @logger.info("Starting pipeline",
                    "id" => self.pipeline_id,
                    "pipeline.workers" => pipeline_workers,

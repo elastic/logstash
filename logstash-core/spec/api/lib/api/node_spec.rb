@@ -34,7 +34,7 @@ describe LogStash::Api::Modules::Node do
       end
 
       it "should return information for <= # requested threads" do
-        expect(payload["threads"].count).to be <= 5
+        expect(payload["hot_threads"]["threads"].count).to be <= 5
       end
     end
 
@@ -55,5 +55,44 @@ describe LogStash::Api::Modules::Node do
       end
     end
 
+    describe "Generic JSON testing" do
+      extend ResourceDSLMethods
+      
+      root_structure = {
+        "pipeline" => {
+          "workers" => Numeric,
+          "batch_size" => Numeric,
+          "batch_delay" => Numeric
+        },
+        "os" => {
+          "name" => String,
+          "arch" => String,
+          "version" => String,
+          "available_processors" => Numeric
+        },
+        "jvm" => {
+          "pid" => Numeric,
+          "version" => String,
+          "vm_name" => String,
+          "vm_version" => String,
+          "vm_vendor" => String,
+          "start_time_in_millis" => Numeric,
+          "mem" => {
+            "heap_init_in_bytes" => Numeric,
+            "heap_max_in_bytes" => Numeric,
+            "non_heap_init_in_bytes" => Numeric,
+            "non_heap_max_in_bytes" => Numeric
+          }
+        },
+        "hot_threads"=> {
+          "hostname" => String,
+          "time" => String,
+          "busiest_threads" => Numeric,
+          "threads" => Array
+        }
+      }
+      
+      test_api_and_resources(root_structure)
+    end   
   end
 end
