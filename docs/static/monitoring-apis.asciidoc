@@ -233,7 +233,7 @@ By default, all stats are returned. You can limit this by combining any of the f
 `process`::
 	Gets process stats, memory consumption, CPU usage, and open file descriptors. coming[5.0.0-alpha3]   
 
-For example, the following request returns a JSON document that shows the number and size in bytes of events
+For example, the following request returns a JSON document that shows the number of events
 that were input, filtered, and output by Logstash since startup:
 
 [source,js]
@@ -248,11 +248,8 @@ Example response:
 {
     "events": {
         "in": 91,
-        "bytes_in": 900000
         "filtered": 91,
-        "bytes_filtered": 900000
         "out": 91
-        "bytes_out": 900000
     }
 }
 --------------------------------------------------
