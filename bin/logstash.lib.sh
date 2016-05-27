@@ -25,6 +25,8 @@ fi
 
 LOGSTASH_HOME=$(cd `dirname $SOURCEPATH`/..; pwd)
 export LOGSTASH_HOME
+SINCEDB_DIR=${LOGSTASH_HOME}
+export SINCEDB_DIR
 
 parse_jvm_options() {
   if [ -f "$1" ]; then
