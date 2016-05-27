@@ -10,7 +10,7 @@ module ServiceTester
         cmd = sudo_exec!("service #{package} status")
         stdout = cmd.stdout
       end
-      stdout.match(/^#{package} is running$/)
+      stdout.match(/^#{package} start\/running/)
     end
 
   end

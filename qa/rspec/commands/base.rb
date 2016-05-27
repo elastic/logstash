@@ -5,7 +5,7 @@ module ServiceTester
 
   class Base
     LOCATION="/logstash-build".freeze
-    LOGSTASH_PATH="/opt/logstash/".freeze
+    LOGSTASH_PATH="/usr/share/logstash/".freeze
 
     def snapshot(host)
       LogStash::VagrantHelpers.save_snapshot(host)
