@@ -7,6 +7,8 @@ module LogStash
       class Base < ::Sinatra::Base
         helpers AppHelpers
 
+        set :environment, :production
+
         attr_reader :factory
 
         if settings.environment != :production
