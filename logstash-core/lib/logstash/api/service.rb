@@ -26,14 +26,8 @@ module LogStash
         snapshot.metric_store.get_shallow(*path)
       end
 
-      def get(key)
-        metric_store = @snapshot_rotation_mutex.synchronize { @snapshot.metric_store }
-        if key == :jvm_memory_stats
-          data = metric_store.get_shallow(:jvm, :memory)
-        else
-          data = metric_store.get_with_path("stats/events")
-        end
-        LogStash::Json.dump(data)
+      def extract_metrics(path, *keys)
+        snapshot.metric_store.extract_metrics(path, *keys)
       end
     end
   end
