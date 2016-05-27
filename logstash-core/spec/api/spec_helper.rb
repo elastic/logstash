@@ -2,15 +2,12 @@
 API_ROOT = File.expand_path(File.join(File.dirname(__FILE__), "..", "..", "lib", "logstash", "api"))
 
 require "logstash/devutils/rspec/spec_helper"
+require "api/lib/api/support/resource_dsl_methods"
 
 require "logstash/settings"
 require 'rack/test'
 require 'rspec'
 require "json"
-
-ENV['RACK_ENV'] = 'test'
-
-Rack::Builder.parse_file(File.join(API_ROOT, 'init.ru'))
 
 def read_fixture(name)
   path = File.join(File.dirname(__FILE__), "fixtures", name)
@@ -80,7 +77,7 @@ end
 
 ##
 # Method used to wrap up a request in between of a running
-# pipeline, this makes the hole execution model easier and
+# pipeline, this makes the whole execution model easier and
 # more contained as some threads might go wild.
 ##
 def do_request(&block)

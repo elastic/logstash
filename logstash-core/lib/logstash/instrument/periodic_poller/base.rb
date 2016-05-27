@@ -37,6 +37,8 @@ module LogStash module Instrument module PeriodicPoller
       logger.debug("PeriodicPoller: Starting",
                    :polling_interval => @options[:polling_interval],
                    :polling_timeout => @options[:polling_timeout]) if logger.debug?
+      
+      collect # Collect data right away if possible
       @task.execute
     end
 
