@@ -21,7 +21,7 @@ module LogStash
           end
 
           def find_plugins_gem_specs
-            @specs ||= Gem::Specification.find_all.select{|spec| logstash_plugin_gem_spec?(spec)}
+            @specs ||= ::Gem::Specification.find_all.select{|spec| logstash_plugin_gem_spec?(spec)}
           end
 
           def logstash_plugin_gem_spec?(spec)
