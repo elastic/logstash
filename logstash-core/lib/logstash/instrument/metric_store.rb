@@ -110,6 +110,54 @@ module LogStash module Instrument
       key_paths.reduce(get(*key_paths)) {|acc, p| acc[p]}
     end
 
+
+    # Return a hash including the values of the keys given at the path given
+    # 
+    # Example Usage:
+    # extract_metrics(
+    #   [:jvm, :process],
+    #   :open_file_descriptors,
+    #   [:cpu, [:total_in_millis, :percent]]
+    # )
+    # 
+    # Returns:
+    # # From the jvm.process metrics namespace
+    # {
+    #   :open_file_descriptors => 123
+    #   :cpu => { :total_in_millis => 456, :percent => 789 }
+    # }
+    def extract_metrics(path, *keys)
+      metrics = get_shallow(*path)
+      
+      keys.reduce({}) do |acc,k|
+        # Get the value of this key, recurse as needed
+        # to get deeply nested paths
+        v = if k.is_a?(Array)
+              # We have a nested hash, time to recurse
+              res = extract_metrics(path + k[0..-2], *k.last)
+              # We're only going one level deep into the array in this frame
+              # so make the key that one. Otherwise we get the full path
+              # as an array as the key, which makes no sense
+              k = k.first 
+              res
+            else # Scalar value
+              metrics[k]
+            end
+
+        if v.is_a?(Hash)
+          # This is a nested structure, simple assignment
+          acc[k] = v
+        else
+          # This is a Metric object, we need to extract its value
+          # If the metric didn't exist it might be nil, but we still want its key
+          # to exist with a nil value
+          acc[k] = v ? v.value : nil; acc
+        end
+        
+        acc
+      end
+    end    
+
     # Return all the individuals Metric,
     # This call mimic a Enum's each if a block is provided
     #

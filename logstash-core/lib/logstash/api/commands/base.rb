@@ -19,6 +19,10 @@ module LogStash
         def started_at
           (LogStash::Agent::STARTED_AT.to_f * 1000.0).to_i
         end
+
+        def extract_metrics(path, *keys)
+          service.extract_metrics(path, *keys)
+        end
       end
     end
   end

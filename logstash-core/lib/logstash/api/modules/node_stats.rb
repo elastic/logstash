@@ -3,6 +3,11 @@ module LogStash
   module Api
     module Modules
       class NodeStats < ::LogStash::Api::Modules::Base
+        #set :environment, :test
+        #set :dump_errors, true
+        #set :raise_errors, true
+        #set :logging, Logger.new(STDERR)
+        
         
         before do
           @stats = factory.build(:stats)
@@ -14,7 +19,8 @@ module LogStash
           payload = {
             :events => events_payload,
             :jvm => jvm_payload,
-            :process => process_payload
+            :process => process_payload,
+            :mem => mem_payload
           }
 
           respond_with payload
@@ -40,6 +46,10 @@ module LogStash
           respond_with :process => process_payload
         end
 
+        get "/mem" do
+          respond_with :mem => mem_payload
+        end
+
         private
 
         def events_payload
@@ -52,6 +62,10 @@ module LogStash
 
         def process_payload
           @stats.process
+        end
+
+        def mem_payload
+          @stats.memory
         end
       end
     end

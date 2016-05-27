@@ -46,7 +46,6 @@ class LogStash::Agent
 
     @collect_metric = setting("metric.collect")
 
-
     # Create the collectors and configured it with the library
     configure_metrics_collectors
   end

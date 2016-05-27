@@ -5,7 +5,26 @@ module LogStash
   module Api
     module Modules
       class Node < ::LogStash::Api::Modules::Base
-        # return hot threads information
+        def node
+          factory.build(:node)
+        end
+        
+        get "/" do
+          respond_with node.all
+        end
+
+        get "/os" do
+          respond_with :os => node.os
+        end
+
+        get "/jvm" do
+          respond_with :jvm => node.jvm          
+        end
+
+        get "/pipeline" do
+          respond_with :pipeline => node.pipeline
+        end
+        
         get "/hot_threads" do
           ignore_idle_threads = params["ignore_idle_threads"] || true
 
@@ -15,10 +34,9 @@ module LogStash
           }
           options[:threads] = params["threads"].to_i if params.has_key?("threads")
 
-          stats = factory.build(:stats)
-          as    = options[:human] ? :string : :json
-          respond_with(stats.hot_threads(options), {:as => as})
-        end
+          as = options[:human] ? :string : :json
+          respond_with({:hot_threads => node.hot_threads(options)}, {:as => as})
+        end       
       end
     end
   end

@@ -24,12 +24,16 @@ module ResourceDSLMethods
         expect(last_response).to be_ok
       end
       
-      hash_to_mapping(expected).each do |path,klass|
-        dotted = path.join(".")
+      hash_to_mapping(expected).each do |resource_path,klass|
+        dotted = resource_path.join(".")
         
-        it "should set '#{dotted}' to be a '#{klass}'" do
-          path_value = path.reduce(payload) {|acc,v| acc[v]}
-          expect(path_value).to be_a(klass), "could not find '#{dotted}' in #{payload}"
+        it "should set '#{dotted}' at '#{path}' to be a '#{klass}'" do
+          expect(last_response).to be_ok # fail early if need be
+          resource_path_value = resource_path.reduce(payload) do |acc,v|
+            expect(acc.has_key?(v)).to eql(true), "Expected to find value '#{v}' in structure '#{acc}', but could not. Payload was '#{payload}'"
+            acc[v]
+          end
+          expect(resource_path_value).to be_a(klass), "could not find '#{dotted}' in #{payload}"
         end
       end
     end
