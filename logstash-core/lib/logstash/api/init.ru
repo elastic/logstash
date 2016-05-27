@@ -24,7 +24,9 @@ namespaces = { "/_node" => LogStash::Api::Node,
                "/_stats" => LogStash::Api::Stats,
                "/_plugins" => LogStash::Api::Plugins }
 
+ROUTES={ "" => LogStash::Api::Root::routes }
 namespaces.each_pair do |namespace, app|
+  ROUTES[namespace] = app::routes
   map(namespace) do
     run app
   end

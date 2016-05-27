@@ -25,6 +25,19 @@ module LogStash::Api
       @factory = CommandFactory.new(settings.service)
     end
 
+    get "/_meta/api" do
+      data = {}
+      ROUTES.each_pair do |namespace, _routes|
+        routes = {}
+        _routes.each_pair do |verb, methods|
+          next if "HEAD" == verb
+          routes[verb] = methods.map { |m| "http://#{request.host}:#{request.port}#{namespace}/#{m[0].source.gsub("\\A/","").gsub("\\z", "")}" }
+        end
+        data[namespace] = routes
+      end
+      respond_with data
+    end
+
     not_found do
       status 404
       as   = params.has_key?("human") ? :string : :json
