@@ -50,7 +50,10 @@ module ServiceTester
         cmd = sudo_exec!("service #{package} status")
         stdout = cmd.stdout
       end
-      stdout.match(/^#{package} is running$/)
+      (
+        stdout.match(/Active: active \(running\)/) &&
+        stdout.match(/#{package}.service - #{package}/)
+      )
     end
 
     def service_manager(service, action, host=nil)
