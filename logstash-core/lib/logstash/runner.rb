@@ -138,7 +138,12 @@ class LogStash::Runner < Clamp::StrictCommand
 
     @settings.set("path.settings", settings_path) if settings_path
 
+    begin
     LogStash::SETTINGS.from_yaml(LogStash::SETTINGS.get("path.settings"))
+    rescue => e
+      puts "Warning: Could not find logstash.yml in 'path.settings' (value: \"#{LogStash::SETTINGS.get("path.settings")}\"), using internal defaults."
+    end
+
     super(*[args])
   end
 
