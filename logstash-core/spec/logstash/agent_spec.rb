@@ -373,7 +373,7 @@ describe LogStash::Agent do
       @t.join
     end
 
-    xit "resets the metric collector" do
+    it "resets the metric collector" do
       # We know that the store has more events coming in.
       sleep(0.01) while dummy_output.events.size < new_config_generator_counter
       snapshot = LogStash::Instrument::Collector.instance.snapshot_metric
