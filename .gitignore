@@ -1,5 +1,6 @@
 .*.swp
 *.gem
+*.lock
 pkg/*.deb
 pkg/*.rpm
 *.class
