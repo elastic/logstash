@@ -1,6 +1,7 @@
 package com.logstash;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.logstash.json.TimestampSerializer;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.LocalDateTime;
@@ -73,6 +74,11 @@ public class Timestamp implements Cloneable {
         // JodaTime only supports milliseconds precision we can only return usec at millisec precision.
         // note that getMillis() return millis since epoch
         return (new Duration(JAN_1_1970.toDateTime(DateTimeZone.UTC), this.time).getMillis() % 1000) * 1000;
+    }
+    public long msec() {
+        // used for serialization to bytes
+        // note that getMillis() return millis since epoch
+        return new Duration(JAN_1_1970.toDateTime(DateTimeZone.UTC), this.time).getMillis();
     }
 
     @Override

@@ -1,9 +1,10 @@
 package com.logstash;
 
+import com.esotericsoftware.kryo.Kryo;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.logstash.ext.JrubyTimestampExtLibrary;
+import com.logstash.kyro.KryoInputOutput;
+import com.logstash.kyro.KryoInstances;
 import org.joda.time.DateTime;
-import org.jruby.RubySymbol;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -132,7 +133,8 @@ public class Event implements Cloneable, Serializable {
     public void setField(String reference, Object value) {
         if (reference.equals(TIMESTAMP)) {
             // TODO(talevy): check type of timestamp
-            this.accessors.set(reference, value);
+            // can we use initTimestamp to force type?
+            this.accessors.set(reference, initTimestamp(value));
         } else if (reference.equals(METADATA_BRACKETS) || reference.equals(METADATA)) {
             this.metadata = (HashMap<String, Object>) value;
             this.metadata_accessors = new Accessors(this.metadata);
@@ -192,6 +194,49 @@ public class Event implements Cloneable, Serializable {
         return Cloner.deep(this.data);
     }
 
+    public static Event byteDeserialize(byte[] bytes) {
+        Kryo kryo = null;
+        try {
+            kryo = KryoInstances.get();
+            KryoInputOutput kio = (KryoInputOutput) kryo.getContext().get("kio");
+            kio.getInput().setBuffer(bytes);
+            Map map = (Map) kryo.readClassAndObject(kio.getInput());
+            Object cancelled = map.remove("cancelled");
+            Event event = new Event(map);
+            if (Boolean.TRUE.equals(cancelled)) {
+                event.cancel();
+            }
+            return event;
+        }
+        finally {
+            if (kryo != null)
+                KryoInstances.release(kryo);
+        }
+    }
+
+    public byte[] byteSerialize() {
+        Map<String, Object> map = getData();
+        if (!map.containsKey(METADATA)) {
+            map.put(METADATA, this.metadata);
+        }
+        if (!map.containsKey(TIMESTAMP)) {
+            map.put(TIMESTAMP, this.timestamp);
+        }
+        map.put("cancelled", this.cancelled);
+        Kryo kryo = null;
+        try {
+            kryo = KryoInstances.get();
+            KryoInputOutput kio = (KryoInputOutput) kryo.getContext().get("kio");
+            kio.getOutput().clear();
+            kryo.writeClassAndObject(kio.getOutput(), map);
+            return kio.getOutput().toBytes();
+        }
+        finally {
+            if (kryo != null)
+                KryoInstances.release(kryo);
+        }
+    }
+
     public Event overwrite(Event e) {
         this.data = e.getData();
         this.accessors = e.getAccessors();
@@ -204,7 +249,6 @@ public class Event implements Cloneable, Serializable {
 
         return this;
     }
-
 
     public Event append(Event e) {
         Util.mapMerge(this.data, e.data);
@@ -253,16 +297,16 @@ public class Event implements Cloneable, Serializable {
             } else if (o instanceof String) {
                 // second most frequent
                 return new Timestamp((String) o);
-            } else if (o instanceof JrubyTimestampExtLibrary.RubyTimestamp) {
-                return new Timestamp(((JrubyTimestampExtLibrary.RubyTimestamp) o).getTimestamp());
+//            } else if (o instanceof JrubyTimestampExtLibrary.RubyTimestamp) {
+//                return new Timestamp(((JrubyTimestampExtLibrary.RubyTimestamp) o).getTimestamp());
             } else if (o instanceof Timestamp) {
                 return new Timestamp((Timestamp) o);
             } else if (o instanceof DateTime) {
                 return new Timestamp((DateTime) o);
             } else if (o instanceof Date) {
                 return new Timestamp((Date) o);
-            } else if (o instanceof RubySymbol) {
-                return new Timestamp(((RubySymbol) o).asJavaString());
+//            } else if (o instanceof RubySymbol) {
+//                return new Timestamp(((RubySymbol) o).asJavaString());
             } else {
                 Event.logger.warn("Unrecognized " + TIMESTAMP + " value type=" + o.getClass().toString());
             }
@@ -293,4 +337,6 @@ public class Event implements Cloneable, Serializable {
     public static void setLogger(Logger logger) {
         Event.logger = logger;
     }
+
+
 }

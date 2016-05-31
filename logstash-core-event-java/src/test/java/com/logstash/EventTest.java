@@ -3,6 +3,8 @@ package com.logstash;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.*;
 
 import static org.junit.Assert.*;
@@ -195,5 +197,49 @@ public class EventTest {
     @Test(expected=IOException.class)
     public void testFromJsonWithPartialInvalidJsonArray() throws Exception {
         Event.fromJson("[{\"foo\":\"bar\"}, 1]");
+    }
+
+    @Test
+    public void testByteSerializeRoundTrip() throws Exception {
+        String pangramDe = "Victor jagt zwölf Boxkämpfer quer über den großen Sylter Deich";
+        String pangramEn = "Jived fox nymph grabs quick waltz";
+        long num = 87654321;
+        BigDecimal bd = BigDecimal.valueOf(123456789.99);
+        BigInteger bi = BigInteger.valueOf(num);
+        Timestamp t = new Timestamp("2014-09-23T08:00:00.000Z");
+
+        Map data = new HashMap();
+        data.put("a", 1);
+        data.put("b", "bar");
+        data.put("c", 1.0);
+
+        Map meta = new HashMap();
+        meta.put("g", pangramDe);
+
+        data.put(Event.METADATA, meta);
+        Event e = new Event(data);
+
+        e.setField("[d]", num);
+        e.setField("[e]", bd);
+        e.setField("[f]", bi);
+        e.setField("[@metadata][h]", pangramEn);
+        e.setField(Event.TIMESTAMP, t);
+        e.cancel();
+
+        byte[] oneWay = e.byteSerialize();
+        Event returnTrip = Event.byteDeserialize(oneWay);
+
+        assertEquals(272, oneWay.length);
+        assertNotEquals(t, returnTrip.getTimestamp());
+        assertEquals(t.toIso8601(), returnTrip.getTimestamp().toIso8601());
+        assertEquals(1, returnTrip.getField("[a]"));
+        assertEquals("bar", returnTrip.getField("[b]"));
+        assertEquals(1.0, returnTrip.getField("[c]"));
+        assertEquals(num, returnTrip.getField("[d]"));
+        assertEquals(bd, returnTrip.getField("[e]"));
+        assertEquals(bi, returnTrip.getField("[f]"));
+        assertEquals(pangramDe, returnTrip.getField("[@metadata][g]"));
+        assertEquals(pangramEn, returnTrip.getField("[@metadata][h]"));
+        assertTrue(returnTrip.isCancelled());
     }
 }
