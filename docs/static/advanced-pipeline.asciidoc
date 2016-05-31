@@ -378,7 +378,7 @@ sends the information to an Elasticsearch cluster as well as writing the informa
 [[twitter-configuration]]
 ==== Reading from a Twitter Feed
 
-To add a Twitter feed, you use the {logstash}plugins-inputs-twitter-oauth_token.html[`twitter`] input plugin. To
+To add a Twitter feed, you use the {logstash}plugins-inputs-twitter.html[`twitter`] input plugin. To
 configure the plugin, you need several pieces of information:
 
 * A _consumer_ key, which uniquely identifies your Twitter app.
@@ -388,7 +388,7 @@ configure the plugin, you need several pieces of information:
 * An _oauth token secret_, which serves as the password of the Twitter account.
 
 Visit https://dev.twitter.com/apps[https://dev.twitter.com/apps] to set up a Twitter account and generate your consumer
-key and secret, as well as your access token and secret. See the docs for the {logstash}plugins-inputs-twitter-oauth_token.html[`twitter`] input plugin if you're not sure how to generate these keys. 
+key and secret, as well as your access token and secret. See the docs for the {logstash}plugins-inputs-twitter.html[`twitter`] input plugin if you're not sure how to generate these keys. 
 
 Like you did earlier when you worked on <<advanced-pipeline>>, create a config file (called `second-pipeline.conf`) that
 contains the skeleton of a configuration pipeline. If you want, you can reuse the file you created earlier, but make
