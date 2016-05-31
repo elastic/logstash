@@ -5,10 +5,10 @@
 
 Application Settings: Introduced a new way to configure application settings for Logstash through a settings.yml file. This file 
 is typically located in `LS_HOME/config`, or `/etc/logstash` when installed via packages. Logstash will not be able 
-to start without this file, so please make sure to pass in path.settings if you are starting Logstash manually 
+to start without this file, so please make sure to pass in `--path.settings` if you are starting Logstash manually 
 after installing it via a package (RPM, DEB).
 
-Release Packages: When Logstash is installed via DEB, RPM packages, it uses `/usr/share` and `/var` to install binaries and config files 
+Release Packages: When Logstash is installed via DEB, RPM packages, it uses `/usr/share/logstash` and `/var/lib/logstash` to install binaries and config files 
 respectively. Previously it used to install in `/opt` directory. This change was done to make the user experience 
 consistent with other Elastic products. Full directory layout is described https://www.elastic.co/guide/en/logstash/5.0/dir-layout.html[here].
 
