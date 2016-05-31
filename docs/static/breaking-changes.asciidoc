@@ -3,17 +3,23 @@
 
 This section discusses the changes that you need to be aware of when migrating your application to Logstash {version}.
 
-[float]
-=== Plugin Manager Renamed
+Application Settings: Introduced a new way to configure application settings for Logstash through a settings.yml file. This file 
+is typically located in `LS_HOME/config`, or `/etc/logstash` when installed via packages. Logstash will not be able 
+to start without this file, so please make sure to pass in `--path.settings` if you are starting Logstash manually 
+after installing it via a package (RPM, DEB).
 
-`bin/plugin` has been renamed to `bin/logstash-plugin`. This change was to mainly prevent `PATH` being polluted when 
+Release Packages: When Logstash is installed via DEB, RPM packages, it uses `/usr/share/logstash` and `/var/lib/logstash` to install binaries and config files 
+respectively. Previously it used to install in `/opt` directory. This change was done to make the user experience 
+consistent with other Elastic products. Full directory layout is described https://www.elastic.co/guide/en/logstash/5.0/dir-layout.html[here].
+
+Command Line Interface: Most of the long form https://www.elastic.co/guide/en/logstash/5.0/command-line-flags.html[options] have been renamed 
+to adhere to the yml dot notation to be used in the settings file. Short form options have not been changed.
+
+Plugin Manager Renamed: `bin/plugin` has been renamed to `bin/logstash-plugin`. This change was to mainly prevent `PATH` being polluted when 
 other components of the Elastic stack are installed on the same instance. Also, this provides a foundation 
 for future change which will allow Elastic Stack packs to be installed via this script.
 
-[float]
-=== Kafka Input/Output Configuration Changes
-
-This release added support for the new 0.9 consumer/producer API which supports security features introduced by Kafka. 
+Kafka Input/Output Configuration Changes: This release added support for the new 0.9 consumer/producer API which supports security features introduced by Kafka. 
 A few Configuration options were renamed to make it consistent with Kafka consumer and producer settings. 
 Also, this plugin version will not work with Kafka 0.8 broker.
 
@@ -22,13 +28,11 @@ Please see the following specific plugin documentation for new configuration opt
 * https://www.elastic.co/guide/en/logstash/{branch}/plugins-inputs-kafka.html[Kafka Input]
 * https://www.elastic.co/guide/en/logstash/{branch}/plugins-outputs-kafka.html[Kafka Output]
 
-[float]
-=== Ruby Filter and Custom Plugin Developers
-
-With the migration to the Java Event (https://github.com/elastic/logstash/issues/4191[Issue 4191]), we have changed 
+Ruby Filter and Custom Plugin Developers: With the migration to the Java Event (https://github.com/elastic/logstash/issues/4191[Issue 4191]), we have changed 
 how you can access internal data. The Event object no longer returns a reference to the data. Instead, it returns a
 copy. This might change how you do manipulation of your data, especially when working with nested hashes.
 When working with nested hashes, it’s recommended that you use the `fieldref` syntax instead of using multiple brackets.
+Also n
 
 **Examples:**
 
@@ -36,7 +40,7 @@ When working with nested hashes, it’s recommended that you use the `fieldref` 
 ----------------------------------
 filter { 
   ruby {
-    codec => "event['uuid'] = event['uuid'].gsub(/b/, '')" # instead of using event['uuid'].gsub!(/b/, '')
+    codec => "event.set('uuid', event.get('uuid').gsub(/b/, ''))" # instead of using event['uuid'].gsub!(/b/, '')
   }
 }
 ----------------------------------
@@ -45,7 +49,7 @@ filter {
 ----------------------------------
 filter { 
   ruby {
-    codec => "event['[product][price]'] = 10 # instead of using event['product']['price'] = 10
+    codec => "event.set('[product][price]', 10) # instead of using event['product']['price'] = 10
   }
 }
 ----------------------------------
