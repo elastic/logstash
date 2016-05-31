@@ -139,9 +139,12 @@ class LogStash::Runner < Clamp::StrictCommand
     @settings.set("path.settings", settings_path) if settings_path
 
     begin
-    LogStash::SETTINGS.from_yaml(LogStash::SETTINGS.get("path.settings"))
+      LogStash::SETTINGS.from_yaml(LogStash::SETTINGS.get("path.settings"))
     rescue => e
-      puts "Warning: Could not find logstash.yml in 'path.settings' (value: \"#{LogStash::SETTINGS.get("path.settings")}\"), using internal defaults."
+      @logger.subscribe(STDOUT)
+      @logger.warn("Logstash has a new settings file which defines start up time settings. This file is typically located in $LS_HOME/config or /etc/logstash. If you installed Logstash through a package and are starting it manually please specify the location to this settings file by passing in \"--path.settings=/path/..\" in the command line options")
+      @logger.fatal("Failed to load settings file from \"path.settings\". Aborting...", "path.settings" => LogStash::SETTINGS.get("path.settings"), "exception" => e.class, "message" => e.message)
+      exit(-1)
     end
 
     super(*[args])
