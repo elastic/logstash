@@ -32,7 +32,7 @@ Please see the following specific plugin documentation for new configuration opt
 how you can access internal data. The Event object no longer returns a reference to the data. Instead, it returns a
 copy. This might change how you do manipulation of your data, especially when working with nested hashes.
 When working with nested hashes, it’s recommended that you use the `fieldref` syntax instead of using multiple brackets.
-Also n
+Also note that we have introduced new Getter/Setter APIs for accessing information in the Event object.
 
 **Examples:**
 
@@ -49,7 +49,7 @@ filter {
 ----------------------------------
 filter { 
   ruby {
-    codec => "event.set('[product][price]', 10) # instead of using event['product']['price'] = 10"
+    codec => "event.set('[product][price]', 10)" # instead of using event['product']['price'] = 10
   }
 }
 ----------------------------------
