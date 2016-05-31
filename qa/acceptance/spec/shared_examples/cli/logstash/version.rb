@@ -14,7 +14,7 @@ shared_examples "logstash version" do |logstash|
 
     context "on #{logstash.hostname}" do
       it "returns the right logstash version" do
-        result = logstash.run_command_in_path("bin/logstash --version")
+        result = logstash.run_command_in_path("bin/logstash --path.settings=/etc/logstash --version")
         expect(result).to run_successfully_and_output(/#{LOGSTASH_VERSION}/)
       end
     end
