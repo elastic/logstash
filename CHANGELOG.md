@@ -10,7 +10,8 @@
    config files respectively. Previously it used to install in /opt directory. This change was done to make the user experience 
    consistent with other Elastic products ([#5101](https://github.com/elastic/logstash/issues/5101)).
  - Breaking Change: For plugin developers, the Event class has a [new API](https://github.com/elastic/logstash/issues/5141) 
-   to access its data. You will no longer be able to directly use the Event class through the ruby hash paradigm.
+   to access its data. You will no longer be able to directly use the Event class through the ruby hash paradigm. All the 
+   plugins packaged with Logstash has been updated to use the new API and their versions bumped to the next major.
  - Added support for systemd so you can now manage Logstash as a service on most Linux distributions ([#5012](https://github.com/elastic/logstash/issues/5012)).
  - Added new subcommand `generate` to `logstash-plugins` script that bootstraps a new plugin with the right directory structure
    and all the required files.
