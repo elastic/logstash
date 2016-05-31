@@ -2,9 +2,9 @@
 # If you modify this file manually all comments and formatting will be lost.
 
 source "https://rubygems.org"
-gem "logstash-core", "5.0.0.alpha3.snapshot8"
-gem "logstash-core-event-java", "5.0.0.alpha3.snapshot8"
-gem "logstash-core-plugin-api", "2.1.5"
+gem "logstash-core", "5.0.0.alpha3"
+gem "logstash-core-event-java", "5.0.0.alpha3"
+gem "logstash-core-plugin-api", "2.1.6"
 gem "file-dependencies", "0.1.6"
 gem "ci_reporter_rspec", "1.0.0", :group => :development
 gem "simplecov", :group => :development
