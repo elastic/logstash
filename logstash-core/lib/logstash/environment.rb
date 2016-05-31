@@ -29,6 +29,7 @@ module LogStash
             Setting::String.new("log.format", "plain", true, ["json", "plain"]),
             Setting::String.new("http.host", "127.0.0.1"),
               Setting::Port.new("http.port", 9600),
+            Setting::String.new("http.environment", "production"),
   ].each {|setting| SETTINGS.register(setting) }
 
   module Environment

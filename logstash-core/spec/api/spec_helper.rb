@@ -46,6 +46,7 @@ class LogStashRunner
       "log.level" => "debug",
       "node.name" => "test_agent",
       "http.port" => rand(9600..9700),
+      "http.environment" => "test",      
       "config.string" => @config_str,
       "pipeline.batch.size" => 1,
       "pipeline.workers" => 1
@@ -60,7 +61,8 @@ class LogStashRunner
     @runner = Thread.new(agent) do |_agent|
       _agent.execute
     end
-    wait_until_snapshot_received
+
+    wait_until_ready
   end
 
   def stop
@@ -71,8 +73,9 @@ class LogStashRunner
 
   private
 
-  def wait_until_snapshot_received
-    while !LogStash::Api::Service.instance.started? do
+  def wait_until_ready
+    # Wait until the service and pipeline have started
+    while !(LogStash::Api::Service.instance.started? && agent.pipelines["main"].running?) do
       sleep 0.5
     end
   end

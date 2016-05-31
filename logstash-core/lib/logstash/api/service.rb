@@ -26,7 +26,7 @@ module LogStash
       end
 
       def started?
-        !@snapshot.nil? && has_counters?
+        !@snapshot.nil? && has_counters?        
       end
 
       def update(snapshot)

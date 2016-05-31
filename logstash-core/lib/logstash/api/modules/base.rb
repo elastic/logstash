@@ -7,14 +7,15 @@ module LogStash
       class Base < ::Sinatra::Base
         helpers AppHelpers
 
+        # These options never change
+        # Sinatra isn't good at letting you change internal settings at runtime
+        # which is a requirement. We always propagate errors up and catch them
+        # in a custom rack handler in the RackApp class
         set :environment, :production
+        set :raise_errors, true
+        set :show_exceptions, false
 
         attr_reader :factory
-
-        if settings.environment != :production
-          set :raise_errors, true
-          set :show_exceptions, :after_handler
-        end
 
         include LogStash::Util::Loggable
 
@@ -31,12 +32,6 @@ module LogStash
           text = as == :string ? "" : {}
           respond_with(text, :as => as)
         end
-
-        error do
-          e = env['sinatra.error']
-          logger.error(e.message, :url => request.url, :ip => request.ip, :params => request.params, :class => e.class.name, :backtrace => e.backtrace)
-        end
-
       end
     end
   end

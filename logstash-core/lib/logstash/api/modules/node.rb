@@ -1,4 +1,6 @@
 # encoding: utf-8
+require "logstash/api/modules/base"
+
 module LogStash
   module Api
     module Modules

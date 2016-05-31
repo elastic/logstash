@@ -1,25 +1,25 @@
 # encoding: utf-8
 require "puma"
 require "puma/server"
-require "sinatra"
-require "rack"
 require "logstash/api/rack_app"
 
 module LogStash 
   class WebServer
     extend Forwardable
 
-    attr_reader :logger, :status, :config, :options, :cli_options, :runner, :binder, :events, :http_host, :http_port
+    attr_reader :logger, :status, :config, :options, :cli_options, :runner, :binder, :events, :http_host, :http_port, :http_environment
 
     def_delegator :@runner, :stats
 
     DEFAULT_HOST = "127.0.0.1".freeze
     DEFAULT_PORT = 9600.freeze
+    DEFAULT_ENVIRONMENT = 'production'.freeze
 
     def initialize(logger, options={})
       @logger      = logger
       @http_host    = options[:http_host] || DEFAULT_HOST
       @http_port    = options[:http_port] || DEFAULT_PORT
+      @http_environment = options[:http_environment] || DEFAULT_ENVIRONMENT
       @options     = {}
       @cli_options = options.merge({ :rackup => ::File.join(::File.dirname(__FILE__), "api", "init.ru"),
                                      :binds => ["tcp://#{http_host}:#{http_port}"],
@@ -37,7 +37,8 @@ module LogStash
 
       stop # Just in case
 
-      @server = ::Puma::Server.new(LogStash::Api::RackApp.app)
+      app = LogStash::Api::RackApp.app(logger, http_environment)
+      @server = ::Puma::Server.new(app)
       @server.add_tcp_listener(http_host, http_port)
 
       @server.run.join
