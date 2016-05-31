@@ -3,8 +3,63 @@
 
 This section summarizes the changes in each release.
 
+* <<alpha3,Logstash 5.0-alpha3>>
 * <<alpha2,Logstash 5.0-alpha2>>
 * <<alpha1,Logstash 5.0-alpha1>>
+
+[[alpha3]]
+=== Logstash 5.0-alpha3 Release Notes
+
+* Breaking Change: Introduced a new way to configure application settings for Logstash through a `settings.yml` file. This
+file is typically located in `LS_HOME/config` or `/etc/logstash` when installed via packages. Logstash will
+not be able to start without this file, so please make sure to pass in `path.settings` if you are starting
+Logstash manually after installing it via a package (RPM or DEB) ({lsissue}4401[Issue 4401]).
+* Breaking Change: Most of the long form options (https://www.elastic.co/guide/en/logstash/5.0/command-line-flags.html) have
+been renamed to adhere to the YAML dot notation used in the settings file. Short form options have not been
+changed ({lsissue}4401[Issue 4401]).
+* Breaking Change: When Logstash is installed via DEB or RPM packages, it uses `/usr/share` and `/var` to install binaries
+and config files respectively. Previously it used the `/opt` directory. This change was done to
+make the user experience consistent with other Elastic products ({lsissue}5101[Issue 5101]).
+* Breaking Change: For plugin developers, the Event class has a new API to access its data. You will no longer be able to
+directly use the Event class through the Ruby hash paradigm. All the plugins packaged with Logstash have
+been updated to use the new API, and their versions have been bumped to the next major. ({lsissue}5141[Issue 5141])
+* Added support for systemd so you can now manage Logstash as a service on most Linux distributions ({lsissue}5012[Issue 5012]).
+* Added a new subcommand called `generate` to the `logstash-plugins` script that bootstraps a new plugin with
+the correct directory structure and all the required files.
+* Logstash can now emit its log in structured, JSON format. Specify `--log.format=json` in the settings file
+or via the command line ({lsissue}1569[Issue 1569]).
+* Added more operational information to help run Logstash in production. The `_node/stats` endpoint now 
+shows file descriptors and CPU information.
+* Fixed a bug where Logstash would not shutdown if CTRL-C was used while using stdin input in the 
+configuration ({lsissue}1769[Issue 1769]).
+
+[float]
+==== Input Plugins
+
+*`RabbitMQ`*:
+
+* Removed `verify_ssl` option, which was never used previously. To validate SSL certs, use the `ssl_certificate_path` and `ssl_certificate_password` config options (https://github.com/logstash-plugins/logstash-input-rabbitmq/issues/82[Issue 82]).
+
+*`Stdin`*: 
+
+* This plugin is now non-blocking, so you can use CTRL-C to stop Logstash.
+
+*`JDBC`*: 
+
+* Added the `jdbc_password_filepath` parameter for reading passwords from an external file
+(https://github.com/logstash-plugins/logstash-input-jdbc/issues/120[Issue 120]).
+
+[float]
+==== Filter Plugins
+
+*`XML`*:
+
+* Breaking Change: Added a new configuration called `suppress_empty`, which defaults to true. This changes the
+default behaviour of the plugin in favor of avoiding mapping conflicts when reaching Elasticsearch (https://github.com/logstash-plugins/logstash-filter-xml/issues/24[Issue 24]).
+* Added a new configuration called `force_content`. By default, the filter expands attributes differently
+from content in XML elements. This option allows you to force text content and attributes to always parse to
+a hash value (https://github.com/logstash-plugins/logstash-filter-xml/issues/16[Issue 16]).
+* Fixed a bug that ensures that a `target` is set when storing XML content in the event (`store_xml => true`).
 
 [[alpha2]]
 === Logstash 5.0-alpha2 Release Notes
@@ -77,7 +132,7 @@ This section summarizes the changes in each release.
 
 *`Kafka`*:
 
-* Breaking: Added support for 0.9 consumer API. This plugin now supports SSL based encryption. 
+* Breaking Change: Added support for 0.9 consumer API. This plugin now supports SSL based encryption. 
   This release changed a lot of configuration, so it is not backward compatible. Also, this version will not 
   work with Kafka 0.8 broker
 
@@ -121,7 +176,7 @@ This section summarizes the changes in each release.
 
 *`Kafka`*:
 
-Breaking: Added support for 0.9 API. This plugin now supports SSL based encryption. This release 
+Breaking Change: Added support for 0.9 API. This plugin now supports SSL based encryption. This release 
 changed a lot of configuration, so it is not backward compatible. Also, this version will not work 
 with Kafka 0.8 broker
 
