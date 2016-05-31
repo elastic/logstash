@@ -35,8 +35,6 @@ download the sample data set used in this example. Unpack the file.
 [[configuring-file-input]]
 ==== Configuring Logstash for File Input
 
-//ALVIN: I know you would like to see Filebeat used here instead, but that's going to make the tutorial significantly more complicated because users will need to go out and correctly install/configure Filebeat before they can do these steps. It's better for users to understand Logstash concpetually before we introduce more complexity.
-
 NOTE: This example uses the file input plugin for convenience. To tail files in the real world, you'll use
 Filebeat to ship log events to Logstash. You learn how to <<configuring-lsf,configure the Filebeat input plugin>> later
 when you build a more sophisticated pipeline.
@@ -101,8 +99,6 @@ Bytes served:: `bytes`
 Referrer URL:: `referrer`
 User agent:: `agent`
 
-//QUESTION: The name/value pairs above are backwards. Is this really how grok parses the data, or is this a mistake?
-
 Edit the `first-pipeline.conf` file and replace the entire `filter` section with the following text:
 
 [source,json]
@@ -153,8 +149,9 @@ of the `first-pipeline.conf` file:
 
 The `geoip` plugin configuration requires you to specify the name of the source field that contains the IP address to look up. In this example, the `clientip` field contains the IP address.
 
-Make sure that the `geoip` section is after the `grok` section of the configuration file and that both the `grok` and
-`geoip` sections are nested within the `filter` section like this:
+Since filters are evaluated in sequence, make sure that the `geoip` section is after the `grok` section of 
+the configuration file and that both the `grok` and `geoip` sections are nested within the `filter` section 
+like this:
 
 [source,json]
 --------------------------------------------------------------------------------
@@ -180,7 +177,7 @@ text:
 --------------------------------------------------------------------------------
 output {
     elasticsearch {
-        hosts => "localhost:9200"
+        hosts => [ "localhost:9200" ]
     }
 }
 --------------------------------------------------------------------------------
@@ -370,8 +367,6 @@ A few log entries come from Buffalo, so the query produces the following respons
 [[multiple-input-output-plugins]]
 === Stitching Together Multiple Input and Output Plugins
 
-//NOTE: EITHER NEED A COMPREHENSIVE EXAMPLE HERE THAT MAKES SENSE, OR THESE SHOULD BE SEPARATE SECTIONS WHERE USERS GET TO TEST EACH SECTION ONE AT A TIME.
-
 The information you need to manage often comes from several disparate sources, and use cases can require multiple
 destinations for your data. Your Logstash pipeline can use multiple input and output plugins to handle these
 requirements.
@@ -452,8 +447,6 @@ Save your changes.
 
 To keep the example configuration simple, you won't specify TLS/SSL settings as you would in a real world
 scenario.
-
-//NOTE: I'VE REMOVED THE CA SETTINGES BECAUSE SETTING UP A CA AND GENERATING CERTIFICATES IS TOO COMPLEX FOR A GETTING STARTED GUIDE. A SIMPLE CONFIG IS BETTER FOR TEACHING CONCEPTS.
 
 Configure your Logstash instance to use the Filebeat input plugin by adding the following lines to the `input` section
 of the `second-pipeline.conf` file:
