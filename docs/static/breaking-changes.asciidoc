@@ -2,6 +2,23 @@
 == Breaking changes
 
 **Breaking changes in 5.0**
+
+Application Settings: Introduced a new way to configure application settings for Logstash through a settings.yml file. This file 
+is typically located in `LS_HOME/config`, or `/etc/logstash` when installed via packages. Logstash will not be able 
+to start without this file, so please make sure to pass in path.settings if you are starting Logstash manually 
+after installing it via a package (RPM, DEB).
+
+Release Packages: When Logstash is installed via DEB, RPM packages, it uses `/usr/share` and `/var` to install binaries and config files 
+respectively. Previously it used to install in `/opt` directory. This change was done to make the user experience 
+consistent with other Elastic products. Full directory layout is described https://www.elastic.co/guide/en/logstash/5.0/dir-layout.html[here].
+
+Command Line Interface: Most of the long form https://www.elastic.co/guide/en/logstash/5.0/command-line-flags.html[options] have been renamed 
+to adhere to the yml dot notation to be used in the settings file. Short form options have not been changed.
+
+Plugin Developers: The Event class has a https://github.com/elastic/logstash/issues/5141[new API] to access its data. You will no longer be able to directly use 
+the Event class through the ruby hash paradigm. All the plugins packaged with Logstash has been updated 
+to use the new API and their versions bumped to the next major.
+
 The command `bin/plugin` has been renamed to `bin/logstash-plugin`. `bin/plugin <plugin>`` which is the current 
 way of install packs/plugins is problematic because it pollutes the global namespace if it is put in the path. 
 This command can now install both plugins and "Packs" - a single zip that contains 0 or 1 plugin for each system 
