@@ -1,4 +1,41 @@
-## 5.0.0-alpha2 (May 3, 2016)
+## 5.0.0-alpha3 (May 31, 2016)
+ - Breaking Change: Introduced a new way to configure application settings for Logstash through a settings.yml file.
+   This file is typically located in `LS_HOME/config`, or `/etc/logstash` when installed via packages. Logstash will not be 
+   able to start without this file, so please make sure to pass in `path.settings` if you are starting Logstash manually after 
+   installing it via a package (RPM, DEB) ([#4401](https://github.com/elastic/logstash/issues/4401)).
+ - Breaking Change: Most of the long form options (https://www.elastic.co/guide/en/logstash/5.0/command-line-flags.html) 
+   have been renamed to adhere to the yml dot notation to be used in the settings file. Short form options have not been
+   changed ([#4401](https://github.com/elastic/logstash/issues/4401)).
+ - Breaking Change: When Logstash is installed via DEB, RPM packages, it uses /usr/share and /var to install binaries and 
+   config files respectively. Previously it used to install in /opt directory. This change was done to make the user experience 
+   consistent with other Elastic products ([#5101](https://github.com/elastic/logstash/issues/5101)).
+ - Breaking Change: For plugin developers, the Event class has a [new API](https://github.com/elastic/logstash/issues/5141) 
+   to access its data. You will no longer be able to directly use the Event class through the ruby hash paradigm. All the 
+   plugins packaged with Logstash has been updated to use the new API and their versions bumped to the next major.
+ - Added support for systemd so you can now manage Logstash as a service on most Linux distributions ([#5012](https://github.com/elastic/logstash/issues/5012)).
+ - Added new subcommand `generate` to `logstash-plugins` script that bootstraps a new plugin with the right directory structure
+   and all the required files.
+ - Logstash can now emit its log in structured, json format. Specify `--log.format=json` in the settings file or via 
+   the command line ([#1569](https://github.com/elastic/logstash/issues/1569)).
+ - Added more operational information to help run Logstash in production. `_node/stats` now shows file descriptors 
+   and cpu information.
+ - Fixed a bug where Logstash would not shutdown when CTRL-C was used, when using stdin input in configuration ([#1769](https://github.com/elastic/logstash/issues/1769)).
+   
+### Input
+ - RabbitMQ: Removed `verify_ssl` option which was never used previously. To validate SSL certs use the 
+   `ssl_certificate_path` and `ssl_certificate_password` config options ([#82](https://github.com/logstash-plugins/logstash-input-rabbitmq/issues/82)).
+ - Stdin: This plugin is now non-blocking so you can use CTRL-C to stop Logstash.
+ - JDBC: Added `jdbc_password_filepath` parameter for reading password from an external file ([#120](https://github.com/logstash-plugins/logstash-input-jdbc/issues/120)).
+ 
+### Filter
+ - XML:
+   - Breaking: New configuration `suppress_empty` which defaults to `true`. Changed default behaviour of the plugin 
+     in favor of avoiding mapping conflicts when reaching elasticsearch ([#24](https://github.com/logstash-plugins/logstash-filter-xml/issues/24)).
+   - New configuration `force_content`. By default the filter expands attributes differently from content in xml 
+     elements. This option allows you to force text content and attributes to always parse to a hash value ([#16](https://github.com/logstash-plugins/logstash-filter-xml/issues/16)).
+   - Fixed a bug that ensure `target` is set when storing xml content in the event (`store_xml => true`).
+
+## 5.0.0-alpha2 (May 3, 2016
 ### general
  - Added `--preserve` option to `bin/logstash-plugin` install command. This allows us to preserve gem options 
    which are already specified in `Gemfile`, which would have been previously overwritten.
