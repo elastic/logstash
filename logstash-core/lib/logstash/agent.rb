@@ -38,6 +38,7 @@ class LogStash::Agent
     @node_name = setting("node.name")
     @http_host = setting("http.host")
     @http_port = setting("http.port")
+    @http_environment = setting("http.environment")
 
     @config_loader = LogStash::Config::Loader.new(@logger)
     @reload_interval = setting("config.reload.interval")
@@ -129,7 +130,7 @@ class LogStash::Agent
 
   private
   def start_webserver
-    options = {:http_host => @http_host, :http_port => @http_port }
+    options = {:http_host => @http_host, :http_port => @http_port, :http_environment => @http_environment }
     @webserver = LogStash::WebServer.new(@logger, options)
     Thread.new(@webserver) do |webserver|
       LogStash::Util.set_thread_name("Api Webserver")
