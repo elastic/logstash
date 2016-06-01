@@ -7,9 +7,9 @@ Logstash provides the following monitoring APIs to retrieve runtime metrics
 about Logstash:
 
 * <<plugins-api>>
+* <<node-info-api>>
 * <<stats-info-api>>
 * <<hot-threads-api>>
-
 
 You can use the root resource to retrieve general information about the Logstash instance, including
 the host name and version information.
@@ -98,12 +98,116 @@ Example response:
 ] 
 --------------------------------------------------
 
-[[stats-info-api]]
-=== Stats Info API
+[[node-info-api]]
+=== Node Info API
+
+coming[5.0.0-alpha3]
 
 experimental[]
 
-The stats info API retrieves runtime stats about Logstash. 
+The node info API retrieves node information about Logstash. 
+
+[source,js]
+--------------------------------------------------
+GET /_node/<types>
+--------------------------------------------------
+
+Where `<types>` is optional and specifies the types of node info you want to return.
+
+By default, all node info is returned. You can limit this by combining any of the following types: 
+
+[horizontal]
+`pipeline`::
+	Gets the number of pipeline workers, the pipeline batch size, and the pipeline batch delay. 
+`os`::
+	Gets operating system stats, including the OS name, architecture, version, available processors, and allocated processors.
+`process`::
+	Gets the process ID.    
+`jvm`::
+	Gets JVM information, including the JVM process ID and version, JVM VM info, JVM start time, and JVM memory usage.
+    
+//QUESTION: Are there any flags that are supported here?
+    
+For example, the following request returns a JSON document that contains information about the pipeline:
+
+[source,js]
+--------------------------------------------------
+GET /_node/pipeline
+--------------------------------------------------
+
+Example response:
+
+[source,js]
+--------------------------------------------------
+{
+    "pipeline": {
+        "workers": 12,
+        "batch_size": 125,
+        "batch_delay": 50
+    }
+}
+--------------------------------------------------
+
+The following request returns info about the OS:
+
+[source,js]
+--------------------------------------------------
+GET /_node/os
+--------------------------------------------------
+
+Example response:
+
+[source,js]
+--------------------------------------------------
+{
+    "os": {
+        "name": "Mac OS X",
+        "arch": "x86_64",
+        "version": "10.11.2",
+        "available_processors": 4,
+        "allocated_processors": 4
+    }
+ }
+--------------------------------------------------
+
+The following request returns info about the process and JVM:
+
+[source,js]
+--------------------------------------------------
+GET /_node/process,jvm
+--------------------------------------------------
+
+Example response:
+
+[source,js]
+--------------------------------------------------
+{
+    "process": {
+        "id": 8667
+    },
+    "jvm": {
+        "version": "1.8.0_45",
+        "vm_name": "Java HotSpot(TM) 64-Bit Server VM",
+        "vm_version": "25.45-b02",
+        "vm_vendor": "Oracle Corporation",
+        "start_time_in_millis": 1456775585344,
+        "mem": {
+          "heap_init_in_bytes": 268435456,
+          "heap_max_in_bytes": 1038876672,
+          "direct_max_in_bytes": 1038876672
+        }
+    }
+}
+--------------------------------------------------
+
+[[stats-info-api]]
+=== Node Stats API
+
+coming[5.0.0-beta3,Replaces the Stats Info API]
+
+experimental[]
+
+The node stats API retrieves runtime stats about Logstash. 
 
 // COMMENTED OUT until Logstash supports multiple pipelines: To retrieve all stats for the Logstash instance, use the `_node/stats` endpoint:
 
@@ -129,7 +233,9 @@ By default, all stats are returned. You can limit this by combining any of the f
 `events`::
 	Gets event information since startup. 
 `jvm`::
-	Gets JVM stats, including stats about garbage collection. 
+	Gets JVM stats, including stats about garbage collection and threads. coming[5.0.0-alpha3,Adds thread count]
+`process`::
+	Gets process stats, memory consumption, CPU usage, and open file descriptors. coming[5.0.0-alpha3]   
 
 For example, the following request returns a JSON document that shows the number of events
 that were input, filtered, and output by Logstash since startup:
@@ -193,7 +299,39 @@ Example response:
             "peak_max_in_bytes":715849728
          }
       }
+   "threads": { 
+      "count": 12,
+      "peak_count": 12
    }
+}
+--------------------------------------------------
+
+//NOTE: Need to test the above endpoint to verify the example output.
+
+The following request returns a JSON document containing process stats: 
+
+[source,js]
+--------------------------------------------------
+GET /_node/stats/process
+--------------------------------------------------
+
+Example response:
+
+[source,js]
+--------------------------------------------------
+{
+    "process": {
+        "open_file_descriptors": 200,
+        "max_file_descriptors": 400,
+        "cpu": {
+            "percent": 20,
+            "total_in_millis": 30081091
+        },
+        "mem": {
+            "total_virtual_in_bytes": 5621555200
+        }
+    }
+}
 --------------------------------------------------
 
 See <<monitoring-common-options, Common Options>> for a list of options that can be applied to all
