@@ -11,4 +11,4 @@
 #       eventually this file should be in the root logstash lib fir and dependencies in logstash-core should be
 #       fixed.
 
-LOGSTASH_VERSION = "5.0.0.dev"
+LOGSTASH_VERSION = "5.0.0"

@@ -2,6 +2,9 @@ require "logstash/version"
 
 namespace "artifact" do
 
+  SNAPSHOT_BUILD = ENV["RELEASE"] != "1"
+  PACKAGE_SUFFIX = SNAPSHOT_BUILD ? "-SNAPSHOT" : ""
+
   def package_files
     [
       "LICENSE",
@@ -13,6 +16,13 @@ namespace "artifact" do
       "lib/bootstrap/**/*",
       "lib/pluginmanager/**/*",
       "lib/systeminstall/**/*",
+      "logstash-core/lib/**/*",
+      "logstash-core/locales/**/*",
+      "logstash-core/*.gemspec",
+      "logstash-core-event-java/lib/**/*",
+      "logstash-core-event-java/*.gemspec",
+      "logstash-core-plugin-api/lib/**/*",
+      "logstash-core-plugin-api/*.gemspec",
       "patterns/**/*",
       "vendor/??*/**/*",
       # To include ruby-maven's hidden ".mvn" directory, we need to
@@ -55,18 +65,75 @@ namespace "artifact" do
     end.flatten.uniq
   end
 
-  task "all" => ["prepare"] do
+  desc "Generate rpm, deb, tar and zip artifacts"
+  task "all" => ["prepare", "build"]
+
+  desc "Build a tar.gz of default logstash plugins with all dependencies"
+  task "tar" => ["prepare", "generate_build_metadata"] do
+    puts("[artifact:tar] Building tar.gz of default plugins")
+    build_tar
+  end
+
+  desc "Build a zip of default logstash plugins with all dependencies"
+  task "zip" => ["prepare", "generate_build_metadata"] do
+    puts("[artifact:zip] Building zip of default plugins")
+    build_zip
+  end
+
+  desc "Build an RPM of logstash with all dependencies"
+  task "rpm" => ["prepare", "generate_build_metadata"] do
+    puts("[artifact:rpm] building rpm package")
+    package("centos", "5")
+  end
+
+  desc "Build a DEB of logstash with all dependencies"
+  task "deb" => ["prepare", "generate_build_metadata"] do
+    puts("[artifact:deb] building deb package")
+    package("ubuntu", "12.04")
+  end
+
+  desc "Generate logstash core gems"
+  task "gems" => ["prepare"] do
+    Rake::Task["artifact:build-logstash-core"].invoke
+    Rake::Task["artifact:build-logstash-core-event"].invoke
+    Rake::Task["artifact:build-logstash-core-plugin-api"].invoke
+  end
+
+  # "all-plugins" version of tasks
+  desc "Generate rpm, deb, tar and zip artifacts (\"all-plugins\" version)"
+  task "all-all-plugins" => ["prepare-all", "build"]
+
+  desc "Build a zip of all logstash plugins from logstash-plugins github repo"
+  task "zip-all-plugins" => ["prepare-all", "generate_build_metadata"] do
+    puts("[artifact:zip] Building zip of all plugins")
+    build_zip "-all-plugins"
+  end
+
+  desc "Build a tar.gz of all logstash plugins from logstash-plugins github repo"
+  task "tar-all-plugins" => ["prepare-all", "generate_build_metadata"] do
+    puts("[artifact:tar] Building tar.gz of all plugins")
+    build_tar "-all-plugins"
+  end
+
+  # Auxiliary tasks
+  task "build" => [:generate_build_metadata] do
+    Rake::Task["artifact:gems"].invoke unless SNAPSHOT_BUILD
     Rake::Task["artifact:deb"].invoke
     Rake::Task["artifact:rpm"].invoke
     Rake::Task["artifact:zip"].invoke
     Rake::Task["artifact:tar"].invoke
   end
 
-  task "all-all-plugins" => ["prepare-all"] do
-    Rake::Task["artifact:deb"].invoke
-    Rake::Task["artifact:rpm"].invoke
-    Rake::Task["artifact:zip"].invoke
-    Rake::Task["artifact:tar"].invoke
+  task "generate_build_metadata" do
+    return if defined?(BUILD_METADATA_FILE)
+    BUILD_METADATA_FILE = Tempfile.new('build.rb')
+    build_info = {
+      "build_date" => Time.now.iso8601,
+      "build_sha" => `git rev-parse HEAD`.chomp,
+      "build_snapshot" => SNAPSHOT_BUILD
+    }
+    metadata = [ "# encoding: utf-8", "BUILD_INFO = #{build_info}" ]
+    IO.write(BUILD_METADATA_FILE.path, metadata.join("\n"))
   end
 
   # We create an empty bundle config file
@@ -78,8 +145,8 @@ namespace "artifact" do
   end
 
   # locate the "gem "logstash-core" ..." line in Gemfile, and if the :path => "..." option if specified
-  # build and install the local logstash-core gem otherwise just do nothing, bundler will deal with it.
-  task "install-logstash-core" do
+  # build the local logstash-core gem otherwise just do nothing, bundler will deal with it.
+  task "build-logstash-core" do
     # regex which matches a Gemfile gem definition for the logstash-core gem and captures the :path option
     gem_line_regex = /^\s*gem\s+["']logstash-core["'](?:\s*,\s*["'][^"^']+["'])?(?:\s*,\s*:path\s*=>\s*["']([^"^']+)["'])?/i
 
@@ -90,15 +157,16 @@ namespace "artifact" do
     path = matches.first[gem_line_regex, 1]
 
     if path
-      Rake::Task["plugin:install-local-core-gem"].invoke("logstash-core", path)
+      Rake::Task["plugin:build-local-core-gem"].invoke("logstash-core", path)
     else
-      puts("[artifact:install-logstash-core] using logstash-core from Rubygems")
+      puts "The Gemfile should reference \"logstash-core\" gem locally through :path, but found instead: #{matches}"
+      exit(1)
     end
   end
 
   # # locate the "gem "logstash-core-event*" ..." line in Gemfile, and if the :path => "." option if specified
-  # # build and install the local logstash-core-event* gem otherwise just do nothing, bundler will deal with it.
-  task "install-logstash-core-event" do
+  # # build the local logstash-core-event* gem otherwise just do nothing, bundler will deal with it.
+  task "build-logstash-core-event" do
     # regex which matches a Gemfile gem definition for the logstash-core-event* gem and captures the gem name and :path option
     gem_line_regex = /^\s*gem\s+["'](logstash-core-event[^"^']*)["'](?:\s*,\s*["'][^"^']+["'])?(?:\s*,\s*:path\s*=>\s*["']([^"^']+)["'])?/i
 
@@ -110,15 +178,16 @@ namespace "artifact" do
     path = matches.first[gem_line_regex, 2]
 
     if path
-      Rake::Task["plugin:install-local-core-gem"].invoke(name, path)
+      Rake::Task["plugin:build-local-core-gem"].invoke(name, path)
     else
-      puts("[artifact:install-logstash-core] using #{name} from Rubygems")
+      puts "The Gemfile should reference \"logstash-core-event\" gem locally through :path, but found instead: #{matches}"
+      exit(1)
     end
   end
 
   # locate the "gem "logstash-core-plugin-api" ..." line in Gemfile, and if the :path => "..." option if specified
-  # build and install the local logstash-core-plugin-api gem otherwise just do nothing, bundler will deal with it.
-  task "install-logstash-core-plugin-api" do
+  # build the local logstash-core-plugin-api gem otherwise just do nothing, bundler will deal with it.
+  task "build-logstash-core-plugin-api" do
     # regex which matches a Gemfile gem definition for the logstash-core gem and captures the :path option
     gem_line_regex = /^\s*gem\s+["']logstash-core-plugin-api["'](?:\s*,\s*["'][^"^']+["'])?(?:\s*,\s*:path\s*=>\s*["']([^"^']+)["'])?/i
 
@@ -129,86 +198,87 @@ namespace "artifact" do
     path = matches.first[gem_line_regex, 1]
 
     if path
-      Rake::Task["plugin:install-local-core-gem"].invoke("logstash-core-plugin-api", path)
+      Rake::Task["plugin:build-local-core-gem"].invoke("logstash-core-plugin-api", path)
     else
-      puts("[artifact:install-logstash-core-plugin-api] using logstash-core from Rubygems")
+      puts "The Gemfile should reference \"logstash-core-plugin-api\" gem locally through :path, but found instead: #{matches}"
+      exit(1)
     end
   end
 
-  task "prepare" => ["bootstrap", "plugin:install-default", "install-logstash-core", "install-logstash-core-event", "install-logstash-core-plugin-api", "clean-bundle-config"]
-
-  task "prepare-all" => ["bootstrap", "plugin:install-all", "install-logstash-core", "install-logstash-core-event", "install-logstash-core-plugin-api", "clean-bundle-config"]
-
-  desc "Build a tar.gz of default logstash plugins with all dependencies"
-  task "tar" => ["prepare"] do
-    puts("[artifact:tar] Building tar.gz of default plugins")
-    build_tar
+  task "prepare" do
+    if ENV['SKIP_PREPARE'] != "1"
+      ["bootstrap", "plugin:install-default", "artifact:clean-bundle-config"].each {|task| Rake::Task[task].invoke }
+    end
   end
 
-  desc "Build a tar.gz of all logstash plugins from logstash-plugins github repo"
-  task "tar-all-plugins" => ["prepare-all"] do
-    puts("[artifact:tar] Building tar.gz of all plugins")
-    build_tar "-all-plugins"
+  task "prepare-all" do
+    if ENV['SKIP_PREPARE'] != "1"
+      ["bootstrap", "plugin:install-all", "artifact:clean-bundle-config"].each {|task| Rake::Task[task].invoke }
+    end
   end
 
   def build_tar(tar_suffix = nil)
     require "zlib"
     require "archive/tar/minitar"
     require "logstash/version"
-    tarpath = "build/logstash#{tar_suffix}-#{LOGSTASH_VERSION}.tar.gz"
+    tarpath = "build/logstash#{tar_suffix}-#{LOGSTASH_VERSION}#{PACKAGE_SUFFIX}.tar.gz"
     puts("[artifact:tar] building #{tarpath}")
     gz = Zlib::GzipWriter.new(File.new(tarpath, "wb"), Zlib::BEST_COMPRESSION)
     tar = Archive::Tar::Minitar::Output.new(gz)
     files.each do |path|
-      stat = File.lstat(path)
-      path_in_tar = "logstash-#{LOGSTASH_VERSION}/#{path}"
-      opts = {
-        :size => stat.size,
-        :mode => stat.mode,
-        :mtime => stat.mtime
-      }
-      if stat.directory?
-        tar.tar.mkdir(path_in_tar, opts)
-      else
-        tar.tar.add_file_simple(path_in_tar, opts) do |io|
-          File.open(path,'rb') do |fd|
-            chunk = nil
-            size = 0
-            size += io.write(chunk) while chunk = fd.read(16384)
-            if stat.size != size
-              raise "Failure to write the entire file (#{path}) to the tarball. Expected to write #{stat.size} bytes; actually write #{size}"
-            end
-          end
-        end
-      end
+      write_to_tar(tar, path, "logstash-#{LOGSTASH_VERSION}#{PACKAGE_SUFFIX}/#{path}")
     end
+
+    # add build.rb to tar
+    metadata_file_path_in_tar = File.join("logstash-core", "lib", "logstash", "build.rb")
+    path_in_tar = File.join("logstash-#{LOGSTASH_VERSION}#{PACKAGE_SUFFIX}", metadata_file_path_in_tar)
+    write_to_tar(tar, BUILD_METADATA_FILE.path, path_in_tar)
+
     tar.close
     gz.close
     puts "Complete: #{tarpath}"
   end
 
-  desc "Build a zip of default logstash plugins with all dependencies"
-  task "zip" => ["prepare"] do
-    puts("[artifact:zip] Building zip of default plugins")
-    build_zip
-  end
-
-  desc "Build a zip of all logstash plugins from logstash-plugins github repo"
-  task "zip-all-plugins" => ["prepare-all"] do
-    puts("[artifact:zip] Building zip of all plugins")
-    build_zip "-all-plugins"
+  def write_to_tar(tar, path, path_in_tar)
+    stat = File.lstat(path)
+    opts = {
+      :size => stat.size,
+      :mode => stat.mode,
+      :mtime => stat.mtime
+    }
+    if stat.directory?
+      tar.tar.mkdir(path_in_tar, opts)
+    else
+      tar.tar.add_file_simple(path_in_tar, opts) do |io|
+        File.open(path,'rb') do |fd|
+          chunk = nil
+          size = 0
+          size += io.write(chunk) while chunk = fd.read(16384)
+          if stat.size != size
+            raise "Failure to write the entire file (#{path}) to the tarball. Expected to write #{stat.size} bytes; actually write #{size}"
+          end
+        end
+      end
+    end
   end
 
   def build_zip(zip_suffix = "")
     require 'zip'
-    zippath = "build/logstash#{zip_suffix}-#{LOGSTASH_VERSION}.zip"
+    zippath = "build/logstash#{zip_suffix}-#{LOGSTASH_VERSION}#{PACKAGE_SUFFIX}.zip"
     puts("[artifact:zip] building #{zippath}")
     File.unlink(zippath) if File.exists?(zippath)
     Zip::File.open(zippath, Zip::File::CREATE) do |zipfile|
       files.each do |path|
-        path_in_zip = "logstash-#{LOGSTASH_VERSION}/#{path}"
+        path_in_zip = "logstash-#{LOGSTASH_VERSION}#{PACKAGE_SUFFIX}/#{path}"
         zipfile.add(path_in_zip, path)
       end
+
+      # add build.rb to zip
+      metadata_file_path_in_zip = File.join("logstash-core", "lib", "logstash", "build.rb")
+      path_in_zip = File.join("logstash-#{LOGSTASH_VERSION}#{PACKAGE_SUFFIX}", metadata_file_path_in_zip)
+      path = BUILD_METADATA_FILE.path
+      Zip.continue_on_exists_proc = true
+      zipfile.add(path_in_zip, path)
     end
     puts "Complete: #{zippath}"
   end
@@ -220,6 +290,10 @@ namespace "artifact" do
     require "fpm/package/gem" # TODO(sissel): fix this in fpm; rpm needs it.
 
     dir = FPM::Package::Dir.new
+
+    metadata_file_path = File.join("logstash-core", "lib", "logstash", "build.rb")
+    metadata_source_file_path = BUILD_METADATA_FILE.path
+    dir.input("#{metadata_source_file_path}=/usr/share/logstash/#{metadata_file_path}")
 
     files.each do |path|
       next if File.directory?(path)
@@ -246,7 +320,7 @@ namespace "artifact" do
 
     # produce: logstash-5.0.0-alpha1.deb"
     # produce: logstash-5.0.0-alpha1.rpm
-    package_filename = "logstash-#{LOGSTASH_VERSION}.TYPE"
+    package_filename = "logstash-#{LOGSTASH_VERSION}#{PACKAGE_SUFFIX}.TYPE"
 
     case platform
       when "redhat", "centos"
@@ -350,15 +424,4 @@ namespace "artifact" do
     end
   end # def package
 
-  desc "Build an RPM of logstash with all dependencies"
-  task "rpm" => ["prepare"] do
-    puts("[artifact:rpm] building rpm package")
-    package("centos", "5")
-  end
-
-  desc "Build a DEB of logstash with all dependencies"
-  task "deb" => ["prepare"] do
-    puts("[artifact:deb] building deb package")
-    package("ubuntu", "12.04")
-  end
 end

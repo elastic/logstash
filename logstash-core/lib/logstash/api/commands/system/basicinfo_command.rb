@@ -1,6 +1,7 @@
 # encoding: utf-8
 require 'logstash/api/commands/base'
 require "logstash/util/duration_formatter"
+require 'logstash/build'
 
 module LogStash
   module Api
@@ -11,9 +12,7 @@ module LogStash
           def run
             {
               "hostname" => hostname,
-              "version" => {
-                "number" => LOGSTASH_VERSION
-              }
+              "version" => { "number" => LOGSTASH_VERSION }.merge(BUILD_INFO)
             }
           end
         end

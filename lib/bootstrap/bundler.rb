@@ -78,7 +78,7 @@ module LogStash
     # @return [String, Exception] the installation captured output and any raised exception or nil if none
     def invoke!(options = {})
       options = {:max_tries => 10, :clean => false, :install => false, :update => false, :local => false,
-                 :all => false, :package => false, :without => [:development]}.merge(options)
+                 :jobs => 12, :all => false, :package => false, :without => [:development]}.merge(options)
       options[:without] = Array(options[:without])
       options[:update] = Array(options[:update]) if options[:update]
 
