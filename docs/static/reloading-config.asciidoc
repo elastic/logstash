@@ -4,19 +4,19 @@
 Starting with Logstash 2.3, you can set Logstash to detect and reload configuration
 changes automatically.
 
-To enable automatic config reloading, start Logstash with the `--auto-reload` (or `-r`)
+To enable automatic config reloading, start Logstash with the `--config.reload.automatic` (or `-r`)
 command-line option specified. For example:
 
 [source,shell]
 ----------------------------------
-bin/logstash –f apache.config --auto-reload
+bin/logstash –f apache.config --config.reload.automatic
 ----------------------------------
 
-NOTE: The `--auto-reload` option is not available when you specify the `-e` flag to pass
+NOTE: The `--config.reload.automatic` option is not available when you specify the `-e` flag to pass
 in  configuration settings from the command-line.
 
 By default, Logstash checks for configuration changes every 3 seconds. To change this interval,
-use the `--reload-interval <seconds>` option,  where `seconds` specifies how often Logstash
+use the `----config.reload.interval <seconds>` option,  where `seconds` specifies how often Logstash
 checks the config files for changes. 
 
 If Logstash is already running without auto-reload enabled, you can force Logstash to
