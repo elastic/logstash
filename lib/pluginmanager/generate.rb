@@ -10,15 +10,12 @@ class LogStash::PluginManager::Generate < LogStash::PluginManager::Command
 
   TYPES = [ "input", "filter", "output" ]
 
-  option "--type", "TYPE", "Type of the plugin {input, filter, output}s" do |arg|
-    raise(ArgumentError, "should be one of: input, output or filter") unless TYPES.include?(arg)
-    arg
-  end
-
+  option "--type", "TYPE", "Type of the plugin {input, filter, output}s", :required => true
   option "--name", "PLUGIN", "Name of the new plugin", :required => true
   option "--path", "PATH", "Location where the plugin skeleton will be created", :default => Dir.pwd
 
   def execute
+    validate_params
     source = File.join(File.dirname(__FILE__), "templates", "#{type}-plugin")
     @target_path = File.join(path, full_plugin_name)
     FileUtils.mkdir(@target_path)
@@ -34,6 +31,10 @@ class LogStash::PluginManager::Generate < LogStash::PluginManager::Command
   end
 
   private
+
+  def validate_params
+    raise(ArgumentError, "should be one of: input, output or filter") unless TYPES.include?(type)
+  end
 
   def create_scaffold(source, target)
     transform_r(source, target)
