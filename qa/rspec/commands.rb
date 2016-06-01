@@ -56,8 +56,9 @@ module ServiceTester
       client.stop_service(name, host)
     end
 
-    def install(version, base=ServiceTester::Base::LOCATION)
-      package = client.package_for(version, base)
+    def install(options={})
+      base      = options.fetch(:base, ServiceTester::Base::LOCATION)
+      package   = client.package_for(filename(options), base)
       client.install(package, host)
     end
 
@@ -91,6 +92,13 @@ module ServiceTester
 
     def to_s
       "Artifact #{name}@#{host}"
+    end
+
+    private
+
+    def filename(options={})
+      snapshot  = options.fetch(:snapshot, true)
+      "logstash-#{options[:version]}#{(snapshot ?  "-SNAPSHOT" : "")}"
     end
   end
 

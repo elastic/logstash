@@ -5,7 +5,7 @@ require          'logstash/version'
 RSpec.shared_examples "installable" do |logstash|
 
   before(:each) do
-    logstash.install(LOGSTASH_VERSION)
+    logstash.install({:version => LOGSTASH_VERSION})
   end
 
   it "is installed on #{logstash.hostname}" do

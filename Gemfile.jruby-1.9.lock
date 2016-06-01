@@ -1,3 +1,40 @@
+PATH
+  remote: ./logstash-core
+  specs:
+    logstash-core (5.0.0.pre.alpha4-java)
+      cabin (~> 0.8.0)
+      chronic_duration (= 0.10.6)
+      clamp (~> 0.6.5)
+      concurrent-ruby (= 1.0.0)
+      filesize (= 0.0.4)
+      gems (~> 0.8.3)
+      i18n (= 0.6.9)
+      jrjackson (~> 0.3.7)
+      jrmonitor (~> 0.4.2)
+      jruby-openssl (= 0.9.16)
+      logstash-core-event-java (= 5.0.0.pre.alpha4)
+      minitar (~> 0.5.4)
+      pry (~> 0.10.1)
+      puma (~> 2.16)
+      rubyzip (~> 1.1.7)
+      sinatra (~> 1.4, >= 1.4.6)
+      stud (~> 0.0.19)
+      thread_safe (~> 0.3.5)
+      treetop (< 1.5.0)
+
+PATH
+  remote: ./logstash-core-event-java
+  specs:
+    logstash-core-event-java (5.0.0.pre.alpha4-java)
+      jar-dependencies
+      ruby-maven (~> 3.3.9)
+
+PATH
+  remote: ./logstash-core-plugin-api
+  specs:
+    logstash-core-plugin-api (2.1.9-java)
+      logstash-core (= 5.0.0.pre.alpha4)
+
 GEM
   remote: https://rubygems.org/
   specs:
@@ -47,12 +84,12 @@ GEM
     domain_name (0.5.20160615)
       unf (>= 0.0.5, < 1.0.0)
     edn (1.1.1)
-    elasticsearch (1.0.17)
-      elasticsearch-api (= 1.0.17)
-      elasticsearch-transport (= 1.0.17)
-    elasticsearch-api (1.0.17)
+    elasticsearch (1.0.18)
+      elasticsearch-api (= 1.0.18)
+      elasticsearch-transport (= 1.0.18)
+    elasticsearch-api (1.0.18)
       multi_json
-    elasticsearch-transport (1.0.17)
+    elasticsearch-transport (1.0.18)
       faraday
       multi_json
     equalizer (0.0.10)
@@ -144,31 +181,6 @@ GEM
     logstash-codec-rubydebug (3.0.1)
       awesome_print
       logstash-core-plugin-api (~> 2.0)
-    logstash-core (5.0.0.alpha4.snapshot3-java)
-      cabin (~> 0.8.0)
-      chronic_duration (= 0.10.6)
-      clamp (~> 0.6.5)
-      concurrent-ruby (= 1.0.0)
-      filesize (= 0.0.4)
-      gems (~> 0.8.3)
-      i18n (= 0.6.9)
-      jrjackson (~> 0.3.7)
-      jrmonitor (~> 0.4.2)
-      jruby-openssl (= 0.9.16)
-      logstash-core-event-java (= 5.0.0.alpha4.snapshot3)
-      minitar (~> 0.5.4)
-      pry (~> 0.10.1)
-      puma (~> 2.16)
-      rubyzip (~> 1.1.7)
-      sinatra (~> 1.4, >= 1.4.6)
-      stud (~> 0.0.19)
-      thread_safe (~> 0.3.5)
-      treetop (< 1.5.0)
-    logstash-core-event-java (5.0.0.alpha4.snapshot3-java)
-      jar-dependencies
-      ruby-maven (~> 3.3.9)
-    logstash-core-plugin-api (2.1.9-java)
-      logstash-core (= 5.0.0.alpha4.snapshot3)
     logstash-devutils (1.0.2-java)
       fivemat
       gem_publisher
@@ -621,9 +633,9 @@ DEPENDENCIES
   logstash-codec-netflow
   logstash-codec-plain
   logstash-codec-rubydebug
-  logstash-core (= 5.0.0.alpha4.snapshot3)
-  logstash-core-event-java (= 5.0.0.alpha4.snapshot3)
-  logstash-core-plugin-api (= 2.1.9)
+  logstash-core!
+  logstash-core-event-java!
+  logstash-core-plugin-api!
   logstash-devutils
   logstash-filter-clone
   logstash-filter-csv

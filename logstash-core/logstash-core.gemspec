@@ -15,7 +15,7 @@ Gem::Specification.new do |gem|
   gem.test_files    = gem.files.grep(%r{^(test|spec|features)/})
   gem.name          = "logstash-core"
   gem.require_paths = ["lib"]
-  gem.version       = LOGSTASH_CORE_VERSION.gsub(/-/, '.')
+  gem.version       = LOGSTASH_CORE_VERSION
 
   gem.add_runtime_dependency "logstash-core-event-java", "5.0.0.alpha4.snapshot3"
 

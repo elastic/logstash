@@ -15,7 +15,7 @@ Gem::Specification.new do |gem|
   gem.test_files    = gem.files.grep(%r{^(test|spec|features)/})
   gem.name          = "logstash-core-event"
   gem.require_paths = ["lib"]
-  gem.version       = LOGSTASH_CORE_EVENT_VERSION.gsub(/-/, '.')
+  gem.version       = LOGSTASH_CORE_EVENT_VERSION
 
   if RUBY_PLATFORM == 'java'
     gem.platform = RUBY_PLATFORM

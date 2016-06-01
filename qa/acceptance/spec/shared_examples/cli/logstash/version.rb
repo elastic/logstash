@@ -5,7 +5,7 @@ require "logstash/version"
 shared_examples "logstash version" do |logstash|
   describe "logstash --version" do
     before :all do
-      logstash.install(LOGSTASH_VERSION)
+      logstash.install({:version => LOGSTASH_VERSION})
     end
 
     after :all do

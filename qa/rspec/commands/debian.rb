@@ -16,14 +16,14 @@ module ServiceTester
       stdout.match(/^Status: install ok installed$/)
     end
 
-    def package_for(version, base=ServiceTester::Base::LOCATION)
-      File.join(base, "logstash-#{version}.deb")
+    def package_for(filename, base=ServiceTester::Base::LOCATION)
+      File.join(base, "#{filename}.deb")
     end
 
     def install(package, host=nil)
       hosts = (host.nil? ? servers : Array(host))
       at(hosts, {in: :serial}) do |_|
-        sudo_exec!("dpkg -i  #{package}")
+        cmd = sudo_exec!("dpkg -i  #{package}")
       end
     end
 
