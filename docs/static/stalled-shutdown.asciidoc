@@ -20,19 +20,19 @@ Logstash has a stall detection mechanism that analyzes the behavior of the pipel
 This mechanism produces periodic information about the count of inflight events in internal queues and a list of busy
 worker threads.
 
-To enable Logstash to forcibly terminate in the case of a stalled shutdown, use the `--allow-unsafe-shutdown` flag when
+To enable Logstash to forcibly terminate in the case of a stalled shutdown, use the `--pipeline.unsafe_shutdown` flag when
 you start Logstash.
 
 [[shutdown-stall-example]]
 ==== Stall Detection Example
 
 In this example, slow filter execution prevents the pipeline from clean shutdown. By starting Logstash with the
-`--allow-unsafe-shutdown` flag, quitting with *Ctrl+C* results in an eventual shutdown that loses 20 events.
+`--pipeline.unsafe_shutdown` flag, quitting with *Ctrl+C* results in an eventual shutdown that loses 20 events.
 
 ========
 [source,shell]
 % bin/logstash -e 'input { generator { } } filter { ruby { code => "sleep 10000" } } \
-                     output { stdout { codec => dots } }' -w 1 --allow-unsafe-shutdown
+                     output { stdout { codec => dots } }' -w 1 --pipeline.unsafe_shutdown
 Default settings used: Filter workers: 1
 Logstash startup completed
 ^CSIGINT received. Shutting down the pipeline. {:level=>:warn}
@@ -60,4 +60,4 @@ The shutdown process appears to be stalled due to busy or blocked plugins. Check
 Forcefully quitting logstash.. {:level=>:fatal}
 ========
 
-When `--allow-unsafe-shutdown` isn't enabled, Logstash continues to run and produce these reports periodically.
+When `--pipeline.unsafe_shutdown` isn't enabled, Logstash continues to run and produce these reports periodically.
