@@ -8,9 +8,9 @@ require "pathname"
 
 class LogStash::PluginManager::Generate < LogStash::PluginManager::Command
 
-  TYPES = [ "input", "filter", "output" ]
+  TYPES = [ "input", "filter", "output", "codec" ]
 
-  option "--type", "TYPE", "Type of the plugin {input, filter, output}s", :required => true
+  option "--type", "TYPE", "Type of the plugin {input, filter, codec, output}s", :required => true
   option "--name", "PLUGIN", "Name of the new plugin", :required => true
   option "--path", "PATH", "Location where the plugin skeleton will be created", :default => Dir.pwd
 
@@ -33,7 +33,7 @@ class LogStash::PluginManager::Generate < LogStash::PluginManager::Command
   private
 
   def validate_params
-    raise(ArgumentError, "should be one of: input, output or filter") unless TYPES.include?(type)
+    raise(ArgumentError, "should be one of: input, filter, codec or output") unless TYPES.include?(type)
   end
 
   def create_scaffold(source, target)
