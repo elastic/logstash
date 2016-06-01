@@ -7,7 +7,7 @@ follow to setup your environment.
 ### Environment setup and Running Tests
 
 It is possible to run the full suite of the acceptance test with the codebase by 
-running the command `ci/ci_acceptance.sh`, this command will generate the artefacts, bootstrap
+running the command `ci/ci_acceptance.sh`, this command will generate the artifacts, bootstrap
 the VM and run the tests.
 
 
