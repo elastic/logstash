@@ -14,7 +14,7 @@ Since plugins can now be developed and deployed independently of the Logstash
 core, there are documents which guide you through the process of coding and
 deploying your own plugins:
 
-
+* <<plugin-generator,Generating a New Plugin>>
 * http://www.elasticsearch.org/guide/en/logstash/current/_how_to_write_a_logstash_input_plugin.html[How to write a Logstash input plugin]
 * http://www.elasticsearch.org/guide/en/logstash/current/_how_to_write_a_logstash_codec_plugin.html[How to write a Logstash codec plugin]
 * http://www.elasticsearch.org/guide/en/logstash/current/_how_to_write_a_logstash_filter_plugin.html[How to write a Logstash filter plugin]
