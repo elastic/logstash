@@ -1,13 +1,13 @@
 ## Acceptance test Framework
 
 Welcome to the acceptance test framework for logstash, in this small
-readme we're going to describe it's features and the the necessary steps you will need to
+README we're going to describe it's features and the necessary steps you will need to
 follow to setup your environment.
 
 ### Environment setup and Running Tests
 
 It is possible to run the full suite of the acceptance test with the codebase by 
-running the command `ci/ci_acceptance.sh`, this command will generate the artefacts, bootstrap
+running the command `ci/ci_acceptance.sh`, this command will generate the artifacts, bootstrap
 the VM and run the tests.
 
 
