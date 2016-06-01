@@ -1,5 +1,6 @@
 # encoding: utf-8
 require_relative "../../vagrant/helpers"
+require_relative "system_helpers"
 
 module ServiceTester
 
