@@ -17,7 +17,7 @@ This procedure uses <<package-repositories,package managers>> to upgrade Logstas
 2. Using the directions in the _Package Repositories_ section, update your repository links to point to the 2.0 repositories
 instead of the previous version.
 3. Run the `apt-get upgrade logstash` or `yum update logstash` command as appropriate for your operating system.
-4. Test your configuration file with the `logstash --configtest -f <configuration-file>` command. Configuration options for
+4. Test your configuration file with the `logstash --config.test_and_exit -f <configuration-file>` command. Configuration options for
 some Logstash plugins have changed in the 2.0 release.
 5. Restart your Logstash pipeline after updating your configuration file.
 
@@ -28,7 +28,7 @@ This procedure downloads the relevant Logstash binaries directly from Elastic.
 1. Shut down your Logstash pipeline, including any inputs that send events to Logstash.
 2. Download the https://www.elastic.co/downloads/logstash[Logstash installation file] that matches your host environment.
 3. Unpack the installation file into your Logstash directory.
-4. Test your configuration file with the `logstash --configtest -f <configuration-file>` command. Configuration options for
+4. Test your configuration file with the `logstash --config.test_and_exit -f <configuration-file>` command. Configuration options for
 some Logstash plugins have changed in the 2.0 release.
 5. Restart your Logstash pipeline after updating your configuration file.
 
@@ -91,8 +91,8 @@ The default batch size of the pipeline is 125 events per worker. This will by de
 used for the elasticsearch output. The Elasticsearch output's `flush_size` now acts only as a maximum bulk
 size (still defaulting to 500). For example, if your pipeline batch size is 3000 events, Elasticsearch
 Output will send 500 events at a time, in 6 separate bulk requests. In other words, for Elasticsearch output,
-bulk request size is chunked based on `flush_size` and `--pipeline-batch-size`. If `flush_size` is set greater
-than `--pipeline-batch-size`, it is ignored and `--pipeline-batch-size` will be used.
+bulk request size is chunked based on `flush_size` and `--pipeline.batch.size`. If `flush_size` is set greater
+than `--pipeline.batch.size`, it is ignored and `--pipeline.batch.size` will be used.
 
 The default number of output workers in Logstash 2.2 is now equal to the number of pipeline workers (`-w`)
 unless overridden in the Logstash config file. This can be problematic for some users as the
