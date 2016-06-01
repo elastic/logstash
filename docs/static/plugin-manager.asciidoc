@@ -111,6 +111,8 @@ bin/logstash-plugin install logstash-output-kafka
 
 Once set, plugin commands install, update can be used through this proxy.
 
+include::plugin-generator.asciidoc[]
+
 include::offline-plugins.asciidoc[]
 
 include::private-gem-repo.asciidoc[]
