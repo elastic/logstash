@@ -13,7 +13,7 @@ module LogStash module Instrument
   class Metric
     attr_reader :collector
 
-    def initialize(collector = LogStash::Instrument::Collector.instance)
+    def initialize(collector)
       @collector = collector
     end
 
