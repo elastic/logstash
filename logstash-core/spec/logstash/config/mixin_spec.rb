@@ -102,6 +102,76 @@ describe LogStash::Config::Mixin do
     end
   end
 
+  context "when validating :uri" do
+    let(:klass) do
+      Class.new(LogStash::Filters::Base)  do
+        config_name "fakeuri"
+        config :uri, :validate => :uri
+      end
+    end
+
+    shared_examples("safe URI") do            
+      subject { klass.new("uri" => uri_str) }
+
+      it "should be a SafeURI object" do
+        expect(subject.uri).to(be_a(LogStash::Util::SafeURI))
+      end
+
+      it "should make password values hidden with #to_s" do
+        expect(subject.uri.to_s).to eql(uri_hidden)
+      end
+
+      it "should make password values hidden with #inspect" do
+        expect(subject.uri.inspect).to eql(uri_hidden)
+      end
+
+      it "should correctly copy URI types" do
+        clone = subject.class.new(subject.params)
+        expect(clone.uri.to_s).to eql(uri_hidden)
+      end
+
+      it "should make the real URI object availale under #uri" do
+        expect(subject.uri.uri).to be_a(::URI)
+      end
+
+      it "should obfuscate original_params" do
+        expect(subject.original_params['uri']).to(be_a(LogStash::Util::SafeURI))
+      end
+
+      context "attributes" do
+        [:scheme, :user, :password, :hostname, :path].each do |attr|
+          it "should make #{attr} available" do
+            expect(subject.uri.send(attr)).to eql(self.send(attr))
+          end
+        end
+      end
+    end
+
+    context "with a username / password" do
+      let(:scheme) { "myscheme" }
+      let(:user) { "myuser" }
+      let(:password) { "fancypants" }
+      let(:hostname) { "myhostname" }
+      let(:path) { "/my/path" }
+      let(:uri_str) { "#{scheme}://#{user}:#{password}@#{hostname}#{path}" }
+      let(:uri_hidden) { "#{scheme}://#{user}:#{LogStash::Util::SafeURI::PASS_PLACEHOLDER}@#{hostname}#{path}" }
+
+      include_examples("safe URI")
+    end
+
+    context "without a username / password" do
+      let(:scheme) { "myscheme" }
+      let(:user) { nil }
+      let(:password) { nil }
+      let(:hostname) { "myhostname" }
+      let(:path) { "/my/path" }
+      let(:uri_str) { "#{scheme}://#{hostname}#{path}" }
+      let(:uri_hidden) { "#{scheme}://#{hostname}#{path}" }
+
+      include_examples("safe URI")
+    end
+  end
+
   describe "obsolete settings" do
     let(:plugin_class) do
       Class.new(LogStash::Inputs::Base) do
