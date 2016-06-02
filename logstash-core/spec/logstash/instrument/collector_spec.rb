@@ -3,7 +3,7 @@ require "logstash/instrument/collector"
 require "spec_helper"
 
 describe LogStash::Instrument::Collector do
-  subject { LogStash::Instrument::Collector.instance }
+  subject { LogStash::Instrument::Collector.new }
   describe "#push" do
     let(:namespaces_path) { [:root, :pipelines, :pipelines01] }
     let(:key) { :my_key }
