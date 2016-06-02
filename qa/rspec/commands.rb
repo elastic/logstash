@@ -12,6 +12,9 @@ require "forwardable"
 
 module ServiceTester
 
+  # An artifact is the component being tested, it's able to interact with
+  # a destination machine by holding a client and is basically provides all 
+  # necessary abstractions to make the test simple.
   class Artifact
 
     extend Forwardable
@@ -91,6 +94,8 @@ module ServiceTester
     end
   end
 
+  # Factory of commands used to select the right clients for a given type of OS and host name,
+  # this give you as much granularity as required.
   class CommandsFactory
 
     def self.fetch(type, host)

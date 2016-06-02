@@ -1,6 +1,7 @@
 require_relative '../spec_helper'
 require          'logstash/version'
 
+# This test checks if the current package could used to update from the latest version released.
 RSpec.shared_examples "updated" do |logstash|
 
   before (:all) { logstash.snapshot }

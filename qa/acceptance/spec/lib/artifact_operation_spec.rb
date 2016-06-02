@@ -4,6 +4,7 @@ require_relative '../shared_examples/installed'
 require_relative '../shared_examples/running'
 require_relative '../shared_examples/updated'
 
+# This tests verify that the generated artifacts could be used properly in a relase, implements https://github.com/elastic/logstash/issues/5070
 describe "artifacts operation" do
   config = ServiceTester.configuration
   config.servers.each do |address|
