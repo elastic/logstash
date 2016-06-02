@@ -3,6 +3,7 @@ require "logstash/namespace"
 require "logstash/config/registry"
 require "logstash/logging"
 require "logstash/util/password"
+require "logstash/util/safe_uri"
 require "logstash/version"
 require "logstash/environment"
 require "logstash/util/plugin_version"
@@ -519,6 +520,12 @@ module LogStash::Config::Mixin
             end
 
             result = value.first.is_a?(::LogStash::Util::Password) ? value.first : ::LogStash::Util::Password.new(value.first)
+          when :uri
+            if value.size > 1
+              return false, "Expected uri (one value), got #{value.size} values?"
+            end
+            
+            result = value.first.is_a?(::LogStash::Util::SafeURI) ? value.first : ::LogStash::Util::SafeURI.new(value.first)
           when :path
             if value.size > 1 # Only 1 value wanted
               return false, "Expected path (one value), got #{value.size} values?"
@@ -556,6 +563,10 @@ module LogStash::Config::Mixin
       params.each do |key, value|
         if @config[key][:validate] == :password && !value.is_a?(::LogStash::Util::Password)
           params[key] = ::LogStash::Util::Password.new(value)
+        end
+
+        if @config[key][:validate] == :uri && !value.is_a?(::LogStash::Util::SafeURI)
+          params[key] = ::LogStash::Util::SafeURI.new(value)
         end
       end
     end

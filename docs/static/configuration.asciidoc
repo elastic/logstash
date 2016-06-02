@@ -203,6 +203,21 @@ Example:
   my_password => "password"
 ----------------------------------
 
+[[uri]]
+[float]
+==== URI
+
+A URI can be anything from a full URL like 'http://elastic.co/' to a simple identifier
+like 'foobar'. If the URI contains a password such as 'http://user:pass@example.net' the password
+portion of the URI will not be logged or printed.
+
+Example:
+[source,js]
+----------------------------------
+  my_uri => "http://foo:bar@example.net"
+----------------------------------
+
+
 [[path]]
 [float]
 ==== Path
