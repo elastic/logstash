@@ -8,7 +8,7 @@ require "singleton"
 require "thread"
 
 module LogStash module Instrument
-  # The Collector singleton is the single point of reference for all
+  # The Collector is the single point of reference for all
   # the metrics collection inside logstash, the metrics library will make
   # direct calls to this class.
   #
@@ -89,6 +89,10 @@ module LogStash module Instrument
       @snapshot_task.timeout_interval = SNAPSHOT_ROTATION_TIMEOUT_INTERVAL_SECS
       @snapshot_task.add_observer(self)
       @snapshot_task.execute
+    end
+
+    def stop
+      @snapshot_task.shutdown
     end
 
     # Create a snapshot of the MetricStore and send it to to the registered observers

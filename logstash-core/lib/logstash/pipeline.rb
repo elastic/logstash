@@ -32,8 +32,8 @@ module LogStash; class Pipeline
     :started_at,
     :thread,
     :config_str,
-    :settings
-  attr_accessor :metric
+    :settings,
+    :metric
 
   MAX_INFLIGHT_WARN_THRESHOLD = 10_000
 
@@ -41,7 +41,7 @@ module LogStash; class Pipeline
     "LogStash::Inputs::Stdin"
   ]
 
-  def initialize(config_str, settings = LogStash::SETTINGS)
+  def initialize(config_str, settings = LogStash::SETTINGS, provided_metric = nil)
     @config_str = config_str
     @logger = Cabin::Channel.get(LogStash)
     @settings = settings
@@ -56,7 +56,7 @@ module LogStash; class Pipeline
 
     # This needs to be configured before we evaluate the code to make
     # sure the metric instance is correctly send to the plugins to make the namespace scoping work
-    @metric = settings.get_value("metric.collect") ? Instrument::Metric.new : Instrument::NullMetric.new 
+    @metric = provided_metric.nil? ? LogStash::Instrument::NullMetric.new : provided_metric
 
     grammar = LogStashConfigParser.new
     @config = grammar.parse(config_str)
