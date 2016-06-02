@@ -554,10 +554,12 @@ describe LogStash::Pipeline do
   end
 
   context "when collecting metrics in the pipeline" do
+    let(:metric) { LogStash::Instrument::Metric.new(LogStash::Instrument::Collector.new) }
+
+    subject { described_class.new(config, pipeline_settings_obj, metric) }
+
     let(:pipeline_settings) { { "pipeline.id" => pipeline_id } }
-    subject { described_class.new(config, pipeline_settings_obj) }
     let(:pipeline_id) { "main" }
-    let(:metric) { LogStash::Instrument::Metric.new }
     let(:number_of_events) { 1000 }
     let(:multiline_id) { "my-multiline" }
     let(:multiline_id_other) { "my-multiline_other" }
@@ -591,6 +593,7 @@ describe LogStash::Pipeline do
       EOS
     end
     let(:dummyoutput) { DummyOutput.new({ "id" => dummy_output_id }) }
+    let(:metric_store) { subject.metric.collector.snapshot_metric.metric_store }
 
     before :each do
       allow(DummyOutput).to receive(:new).with(any_args).and_return(dummyoutput)
@@ -598,9 +601,6 @@ describe LogStash::Pipeline do
       allow(LogStash::Plugin).to receive(:lookup).with("codec", "plain").and_return(LogStash::Codecs::Plain)
       allow(LogStash::Plugin).to receive(:lookup).with("filter", "multiline").and_return(LogStash::Filters::Multiline)
       allow(LogStash::Plugin).to receive(:lookup).with("output", "dummyoutput").and_return(DummyOutput)
-
-      # Reset the metric store
-      LogStash::Instrument::Collector.instance.clear
 
       Thread.new { subject.run }
       # make sure we have received all the generated events
@@ -612,7 +612,7 @@ describe LogStash::Pipeline do
     end
 
     context "global metric" do
-      let(:collected_metric) { LogStash::Instrument::Collector.instance.snapshot_metric.metric_store.get_with_path("stats/events") }
+      let(:collected_metric) { metric_store.get_with_path("stats/events") }
 
       it "populates the differents" do
         expect(collected_metric[:stats][:events][:in].value).to eq(number_of_events)
@@ -622,7 +622,7 @@ describe LogStash::Pipeline do
     end
 
     context "pipelines" do
-      let(:collected_metric) { LogStash::Instrument::Collector.instance.snapshot_metric.metric_store.get_with_path("stats/pipelines/") }
+      let(:collected_metric) { metric_store.get_with_path("stats/pipelines/") }
 
       it "populates the pipelines core metrics" do
         expect(collected_metric[:stats][:pipelines][:main][:events][:in].value).to eq(number_of_events)

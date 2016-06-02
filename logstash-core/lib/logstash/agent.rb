@@ -45,8 +45,10 @@ class LogStash::Agent
     @upgrade_mutex = Mutex.new
 
     @collect_metric = setting("metric.collect")
-    @metric = create_metric_collector
-    @periodic_pollers = LogStash::Instrument::PeriodicPollers.new(create_metric_collector)
+
+
+    # Create the collectors and configured it with the library
+    configure_metrics_collectors
   end
 
   def execute
@@ -156,14 +158,25 @@ class LogStash::Agent
     end
   end
 
-  def create_metric_collector
-    if collect_metrics?
-      @logger.debug("Agent: Configuring metric collection")
-      LogStash::Instrument::Collector.instance.agent = self
-      LogStash::Instrument::Metric.new
-    else
-      LogStash::Instrument::NullMetric.new
-    end
+  def configure_metrics_collectors
+    @collector = LogStash::Instrument::Collector.new
+
+    @metric = if collect_metrics?
+                @logger.debug("Agent: Configuring metric collection")
+                LogStash::Instrument::Metric.new(@collector)
+              else
+                LogStash::Instrument::NullMetric.new
+              end
+
+
+    @periodic_pollers = LogStash::Instrument::PeriodicPollers.new(@metric)
+  end
+
+  def reset_metrics_collectors
+    @periodic_pollers.stop
+    @collector.stop
+    configure_metrics_collectors
+    @periodic_pollers.start
   end
 
   def collect_metrics?
@@ -171,7 +184,6 @@ class LogStash::Agent
   end
 
   def create_pipeline(settings, config=nil)
-
     if config.nil?
       begin
         config = fetch_config(settings)
@@ -182,7 +194,7 @@ class LogStash::Agent
     end
 
     begin
-      LogStash::Pipeline.new(config, settings)
+      LogStash::Pipeline.new(config, settings, metric)
     rescue => e
       @logger.error("fetched an invalid config", :config => config, :reason => e.message)
       return
@@ -203,6 +215,11 @@ class LogStash::Agent
                     :pipeline => id, :config => new_config)
       return
     end
+
+    # Reset the current collected stats,
+    # starting a pipeline with a new configuration should be the same as restarting
+    # logstash.
+    reset_metrics_collectors
 
     new_pipeline = create_pipeline(old_pipeline.settings, new_config)
 
@@ -225,12 +242,6 @@ class LogStash::Agent
     return unless pipeline.is_a?(LogStash::Pipeline)
     return if pipeline.ready?
     @logger.info("starting pipeline", :id => id)
-
-    # Reset the current collected stats,
-    # starting a pipeline with a new configuration should be the same as restarting
-    # logstash.
-    reset_collector
-
     Thread.new do
       LogStash::Util.set_thread_name("pipeline.#{id}")
       begin
@@ -266,15 +277,13 @@ class LogStash::Agent
   def upgrade_pipeline(pipeline_id, new_pipeline)
     stop_pipeline(pipeline_id)
     @pipelines[pipeline_id] = new_pipeline
+
+    new_pipeline = metric
     start_pipeline(pipeline_id)
   end
 
   def clean_state?
     @pipelines.empty?
-  end
-
-  def reset_collector
-    LogStash::Instrument::Collector.instance.clear
   end
 
   def setting(key)

@@ -1,5 +1,6 @@
 # encoding: utf-8
 require "logstash/outputs/base"
+require "thread"
 
 class DummyOutput < LogStash::Outputs::Base
   config_name "dummyoutput"
@@ -10,7 +11,7 @@ class DummyOutput < LogStash::Outputs::Base
   def initialize(params={})
     super
     @num_closes = 0
-    @events = []
+    @events = Queue.new
   end
 
   def register
