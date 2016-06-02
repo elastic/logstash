@@ -1,8 +1,10 @@
-require 'spec_helper'
-require 'logstash/instrument/periodic_poller/jvm'
+# encoding: utf-8
+require "spec_helper"
+require "logstash/instrument/periodic_poller/jvm"
+require "logstash/instrument/collector"
 
 describe LogStash::Instrument::PeriodicPoller::JVM do
-  let(:metric) { LogStash::Instrument::Metric.new }
+  let(:metric) { LogStash::Instrument::Metric.new(LogStash::Instrument::Collector.new) }
   let(:options) { {} }
   subject(:jvm) { described_class.new(metric, options) }
   
@@ -18,6 +20,7 @@ describe LogStash::Instrument::PeriodicPoller::JVM do
     end
 
     describe "metrics" do
+      before(:each) { jvm.collect }
       let(:snapshot_store) { metric.collector.snapshot_metric.metric_store }
       subject(:jvm_metrics) { snapshot_store.get_shallow(:jvm, :process) }
 
