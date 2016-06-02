@@ -57,8 +57,8 @@ configuration ({lsissue}1769[Issue 1769]).
 * Breaking Change: Added a new configuration called `suppress_empty`, which defaults to true. This changes the
 default behaviour of the plugin in favor of avoiding mapping conflicts when reaching Elasticsearch (https://github.com/logstash-plugins/logstash-filter-xml/issues/24[Issue 24]).
 * Added a new configuration called `force_content`. By default, the filter expands attributes differently
-from content in XML elements. This option allows you to force text content and attributes to always parse to
-a hash value (https://github.com/logstash-plugins/logstash-filter-xml/issues/16[Issue 16]).
+for content in XML elements. This option allows you to force text content and attributes to always parse to
+a hash value (https://github.com/logstash-plugins/logstash-filter-xml/issues/14[Issue 14]).
 * Fixed a bug that ensures that a `target` is set when storing XML content in the event (`store_xml => true`).
 
 [[alpha2]]
