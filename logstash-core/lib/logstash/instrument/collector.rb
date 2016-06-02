@@ -17,7 +17,6 @@ module LogStash module Instrument
   class Collector
     include LogStash::Util::Loggable
     include Observable
-    include Singleton
 
     SNAPSHOT_ROTATION_TIME_SECS = 1 # seconds
     SNAPSHOT_ROTATION_TIMEOUT_INTERVAL_SECS = 10 * 60 # seconds
@@ -57,10 +56,6 @@ module LogStash module Instrument
                      :exception => e,
                      :stacktrace => e.backtrace)
       end
-    end
-
-    def clear
-      @metric_store = MetricStore.new
     end
 
     # Monitor the `Concurrent::TimerTask` this update is triggered on every successful or not
