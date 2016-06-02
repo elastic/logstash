@@ -6,6 +6,8 @@ require_relative "../shared_examples/cli/logstash-plugin/list"
 require_relative "../shared_examples/cli/logstash-plugin/uninstall"
 require_relative "../shared_examples/cli/logstash-plugin/update"
 
+# This is the collection of test for the CLI interface, this include the plugin manager behaviour, 
+# it also include the checks for other CLI options.
 describe "CLI operation" do
   config = ServiceTester.configuration
   config.servers.each do |address|

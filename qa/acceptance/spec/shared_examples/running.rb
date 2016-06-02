@@ -1,6 +1,7 @@
 require_relative '../spec_helper'
 require          'logstash/version'
 
+# Test if an installed package can actually be started and runs OK.
 RSpec.shared_examples "runnable" do |logstash|
 
   before(:each) do
