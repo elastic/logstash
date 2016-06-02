@@ -450,7 +450,7 @@ doesn't exist versus a field that's simply false. The expression `if [foo]` retu
 
 * `[foo]` doesn't exist in the event,
 * `[foo]` exists in the event, but is false, or
-* `[foo]` exists in the event, but is nil
+* `[foo]` exists in the event, but is null
 
 For more complex examples, see <<using-conditionals, Using Conditionals>>.
 
