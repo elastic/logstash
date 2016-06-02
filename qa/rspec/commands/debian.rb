@@ -4,6 +4,8 @@ require_relative "base"
 module ServiceTester
   class DebianCommands < Base
 
+    include ::ServiceTester::SystemD
+
     def installed?(hosts, package)
       stdout = ""
       at(hosts, {in: :serial}) do |host|
@@ -43,25 +45,6 @@ module ServiceTester
         stdout.match(/^Package `#{package}' is not installed and no info is available.$/) ||
         stdout.match(/^dpkg-query: package '#{package}' is not installed and no information is available$/)
       )
-    end
-
-    def running?(hosts, package)
-      stdout = ""
-      at(hosts, {in: :serial}) do |host|
-        cmd = sudo_exec!("service #{package} status")
-        stdout = cmd.stdout
-      end
-      (
-        stdout.match(/Active: active \(running\)/) &&
-        stdout.match(/#{package}.service - #{package}/)
-      )
-    end
-
-    def service_manager(service, action, host=nil)
-      hosts = (host.nil? ? servers : Array(host))
-      at(hosts, {in: :serial}) do |_|
-        sudo_exec!("service #{service} #{action}")
-      end
     end
   end
 end
