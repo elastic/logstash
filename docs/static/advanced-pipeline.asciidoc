@@ -184,7 +184,7 @@ output {
 
 With this configuration, Logstash uses http protocol to connect to Elasticsearch. The above example assumes that
 Logstash and Elasticsearch are running on the same instance. You can specify a remote Elasticsearch instance by using
-the `hosts` configuration to specify something like `hosts => "es-machine:9092"`.
+the `hosts` configuration to specify something like `hosts => [ "es-machine:9092" ]`.
 
 [float]
 [[testing-initial-pipeline]]
@@ -212,7 +212,7 @@ filter {
 }
 output {
     elasticsearch {
-        hosts => "localhost:9200"
+        hosts => [ "localhost:9200" ]
     }
 }
 --------------------------------------------------------------------------------
@@ -422,7 +422,7 @@ NOTE: In a typical use case, Filebeat runs on a separate machine from the machin
 Logstash instance. For the purposes of this tutorial, Logstash and Filebeat are running on the
 same machine.
 
-The default Logstash configuration includes the {logstash}plugins-inputs-beats.html[`Beats input`] plugin. To install
+The default Logstash installation includes the {logstash}plugins-inputs-beats.html[`Beats input`] plugin. To install
 Filebeat on your data source machine, download the appropriate package from the Filebeat https://www.elastic.co/downloads/beats/filebeat[product page].
 
 After installing Filebeat, you need to configure it. Open the `filebeat.yml` file located in your Filebeat installation
@@ -445,7 +445,7 @@ output.logstash:
 
 Save your changes. 
 
-To keep the example configuration simple, you won't specify TLS/SSL settings as you would in a real world
+To keep the configuration simple, you won't specify TLS/SSL settings as you would in a real world
 scenario.
 
 Configure your Logstash instance to use the Filebeat input plugin by adding the following lines to the `input` section
@@ -453,9 +453,9 @@ of the `second-pipeline.conf` file:
 
 [source,json]
 --------------------------------------------------------------------------------
-beats {
-    port => "5043"
-}
+    beats {
+        port => "5043"
+    }
 --------------------------------------------------------------------------------
 
 [float]
@@ -470,14 +470,14 @@ of the `second-pipeline.conf` file:
 
 [source,json]
 --------------------------------------------------------------------------------
-file {
-    path => /path/to/target/file
-}
+    file {
+        path => "/path/to/target/file"
+    }
 --------------------------------------------------------------------------------
 
 [float]
 [[multiple-es-nodes]]
-==== Writing to multiple Elasticsearch nodes
+==== Writing to Multiple Elasticsearch Nodes
 
 Writing to multiple Elasticsearch nodes lightens the resource demands on a given Elasticsearch node, as well as
 providing redundant points of entry into the cluster when a particular node is unavailable.
@@ -495,7 +495,7 @@ output {
 
 Use the IP addresses of three non-master nodes in your Elasticsearch cluster in the host line. When the `hosts`
 parameter lists multiple IP addresses, Logstash load-balances requests across the list of addresses. Also note that
-default port for Elasticsearch is `9200` and can be omitted in the configuration above.
+the default port for Elasticsearch is `9200` and can be omitted in the configuration above.
 
 [float]
 [[testing-second-pipeline]]
