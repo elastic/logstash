@@ -5,12 +5,7 @@ require "logstash/api/modules/node"
 require "logstash/json"
 
 describe LogStash::Api::Modules::Node do
-
-  include Rack::Test::Methods
-
-  def app()
-    described_class
-  end
+  include_context "api setup"
 
   describe "#hot threads" do
 

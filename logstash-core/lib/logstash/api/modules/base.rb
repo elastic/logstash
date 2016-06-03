@@ -21,9 +21,9 @@ module LogStash
 
         helpers AppHelpers
 
-        def initialize(app=nil)
+        def initialize(app=nil, agent)
           super(app)
-          @factory = ::LogStash::Api::CommandFactory.new(LogStash::Api::Service.instance)
+          @factory = ::LogStash::Api::CommandFactory.new(LogStash::Api::Service.new(agent))
         end
 
         not_found do

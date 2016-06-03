@@ -21,7 +21,7 @@ module LogStash module Inputs
       @queue = queue
 
       # we register to the collector after receiving the pipeline queue
-      LogStash::Instrument::Collector.instance.add_observer(self)
+      metric.collector.add_observer(self)
 
       # Keep this plugin thread alive,
       # until we shutdown the metric pipeline
@@ -30,7 +30,7 @@ module LogStash module Inputs
 
     def stop
       @logger.debug("Metrics input: stopped")
-      LogStash::Instrument::Collector.instance.delete_observer(self)
+      metric.collector.delete_observer(self)
     end
 
     def update(snapshot)

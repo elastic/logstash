@@ -73,8 +73,9 @@ module LogStash
         end
       end
       
-      def self.app(logger, environment)
-        namespaces = rack_namespaces 
+      def self.app(logger, agent, environment)
+        namespaces = rack_namespaces(agent)
+
         Rack::Builder.new do
           # Custom logger object. Rack CommonLogger does not work with cabin
           use ApiLogger, logger
@@ -87,21 +88,23 @@ module LogStash
             use ApiErrorHandler, logger
           end
           
-          run LogStash::Api::Modules::Root
+          run LogStash::Api::Modules::Root.new(nil, agent)
           namespaces.each_pair do |namespace, app|
             map(namespace) do
-              run app
+              # Pass down a reference to the current agent
+              # This allow the API to have direct access to the collector
+              run app.new(nil, agent)
             end
           end
         end
       end
 
-      def self.rack_namespaces
+      def self.rack_namespaces(agent)
         {
           "/_node" => LogStash::Api::Modules::Node,
           "/_stats" => LogStash::Api::Modules::Stats,
           "/_node/stats" => LogStash::Api::Modules::NodeStats,
-          "/_plugins" => LogStash::Api::Modules::Plugins
+          "/_plugins" => LogStash::Api::Modules::Plugins,
         }
       end
     end

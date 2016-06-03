@@ -5,12 +5,9 @@ require "logstash/api/modules/node_stats"
 require "logstash/json"
 
 describe LogStash::Api::Modules::NodeStats do
-  include Rack::Test::Methods
-  extend ResourceDSLMethods
+  include_context "api setup"
 
-  def app() # Used by Rack::Test::Methods
-    described_class
-  end
+  extend ResourceDSLMethods
 
   # DSL describing response structure
   root_structure = {
