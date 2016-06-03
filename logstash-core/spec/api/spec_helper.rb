@@ -17,10 +17,6 @@ end
 
 module LogStash
   class DummyAgent < Agent
-    def fetch_config(settings)
-      "input { generator {count => 0} } output { }"
-    end
-
     def start_webserver; end
     def stop_webserver; end
   end
@@ -36,7 +32,8 @@ class LogStashRunner
   attr_reader :config_str, :agent, :pipeline_settings
 
   def initialize
-    @config_str   = "input { generator {count => 0} } output { }"
+    @config_str   = "input { generator {count => 100 } } output { dummyoutput {} }"
+
     args = {
       "config.reload.automatic" => false,
       "metric.collect" => true,
@@ -54,27 +51,15 @@ class LogStashRunner
   end
 
   def start
+    # We start a pipeline that will generate a finite number of events
+    # before starting the expectations
     agent.register_pipeline("main", @settings)
-    @runner = Thread.new(agent) do |_agent|
-      _agent.execute
-    end
-
-    wait_until_ready
+    @agent_task = Stud::Task.new { agent.execute }
+    @agent_task.wait
   end
 
   def stop
     agent.shutdown
-    Thread.kill(@runner)
-    sleep 0.1 while !@runner.stop?
-  end
-
-  private
-
-  def wait_until_ready
-    # # Wait until the service and pipeline have started
-    # while !(LogStash::Api::Service.instance.started? && agent.pipelines["main"].running?) do
-    #   sleep 0.5
-    # end
   end
 end
 
