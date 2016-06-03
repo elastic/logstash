@@ -46,7 +46,7 @@ GEM
     docile (1.1.5)
     domain_name (0.5.20160310)
       unf (>= 0.0.5, < 1.0.0)
-    edn (1.1.0)
+    edn (1.1.1)
     elasticsearch (1.0.17)
       elasticsearch-api (= 1.0.17)
       elasticsearch-transport (= 1.0.17)
@@ -144,7 +144,7 @@ GEM
     logstash-codec-rubydebug (3.0.1)
       awesome_print
       logstash-core-plugin-api (~> 2.0)
-    logstash-core (5.0.0.alpha3-java)
+    logstash-core (5.0.0.alpha4.snapshot1-java)
       cabin (~> 0.8.0)
       chronic_duration (= 0.10.6)
       clamp (~> 0.6.5)
@@ -155,7 +155,7 @@ GEM
       jrjackson (~> 0.3.7)
       jrmonitor (~> 0.4.2)
       jruby-openssl (= 0.9.16)
-      logstash-core-event-java (= 5.0.0.alpha3)
+      logstash-core-event-java (= 5.0.0.alpha4.snapshot1)
       minitar (~> 0.5.4)
       pry (~> 0.10.1)
       puma (~> 2.16)
@@ -164,11 +164,11 @@ GEM
       stud (~> 0.0.19)
       thread_safe (~> 0.3.5)
       treetop (< 1.5.0)
-    logstash-core-event-java (5.0.0.alpha3-java)
+    logstash-core-event-java (5.0.0.alpha4.snapshot1-java)
       jar-dependencies
       ruby-maven (~> 3.3.9)
-    logstash-core-plugin-api (2.1.6-java)
-      logstash-core (= 5.0.0.alpha3)
+    logstash-core-plugin-api (2.1.7-java)
+      logstash-core (= 5.0.0.alpha4.snapshot1)
     logstash-devutils (1.0.1-java)
       fivemat
       gem_publisher
@@ -544,7 +544,7 @@ GEM
     sawyer (0.6.0)
       addressable (~> 2.3.5)
       faraday (~> 0.8, < 0.10)
-    sequel (4.34.0)
+    sequel (4.35.0)
     simple_oauth (0.3.1)
     simplecov (0.11.2)
       docile (~> 1.1.0)
@@ -568,7 +568,7 @@ GEM
       tins (~> 1.0)
     thor (0.19.1)
     thread_safe (0.3.5-java)
-    tilt (2.0.4)
+    tilt (2.0.5)
     tins (1.6.0)
     treetop (1.4.15)
       polyglot
@@ -621,9 +621,9 @@ DEPENDENCIES
   logstash-codec-netflow
   logstash-codec-plain
   logstash-codec-rubydebug
-  logstash-core (= 5.0.0.alpha3)
-  logstash-core-event-java (= 5.0.0.alpha3)
-  logstash-core-plugin-api (= 2.1.6)
+  logstash-core (= 5.0.0.alpha4.snapshot1)
+  logstash-core-event-java (= 5.0.0.alpha4.snapshot1)
+  logstash-core-plugin-api (= 2.1.7)
   logstash-devutils
   logstash-filter-clone
   logstash-filter-csv
