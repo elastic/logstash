@@ -5,40 +5,21 @@ require "logstash/util/loggable"
 module LogStash
   module Api
     class Service
-
-      include Singleton
       include LogStash::Util::Loggable
 
-      def initialize
-        @snapshot_rotation_mutex = Mutex.new
-        @snapshot = nil
+      attr_reader :agent
+
+      def initialize(agent)
+        @agent = agent
         logger.debug("[api-service] start") if logger.debug?
-        LogStash::Instrument::Collector.instance.add_observer(self)
-      end
-
-      def stop
-        logger.debug("[api-service] stop") if logger.debug?
-        LogStash::Instrument::Collector.instance.delete_observer(self)
-      end
-
-      def agent
-        LogStash::Instrument::Collector.instance.agent
       end
 
       def started?
-        !@snapshot.nil? && has_counters?        
-      end
-
-      def update(snapshot)
-        logger.debug("[api-service] snapshot received", :snapshot_time => snapshot.created_at) if logger.debug?
-
-        @snapshot_rotation_mutex.synchronize do
-          @snapshot = snapshot
-        end
+        true
       end
 
       def snapshot
-        @snapshot_rotation_mutex.synchronize { @snapshot }
+        agent.metric.collector.snapshot_metric
       end
 
       def get_shallow(*path)
@@ -58,15 +39,7 @@ module LogStash
       private
 
       def has_counters?
-        (["LogStash::Instrument::MetricType::Counter", "LogStash::Instrument::MetricType::Gauge"] - metric_types).empty?
-      end
-
-      def metric_types
-        types = []
-        @snapshot_rotation_mutex.synchronize do
-          types = @snapshot.metric_store.all.map { |t| t.class.to_s }
-        end
-        return types
+        true
       end
     end
   end

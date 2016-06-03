@@ -55,7 +55,6 @@ class LogStash::Agent
     @thread = Thread.current # this var is implicilty used by Stud.stop?
     @logger.info("starting agent")
 
-    start_background_services
     start_pipelines
     start_webserver
 
@@ -114,8 +113,13 @@ class LogStash::Agent
     ((Time.now.to_f - STARTED_AT.to_f) * 1000.0).to_i
   end
 
+  def stop_collecting_metric
+    @collector.stop
+    @periodic_pollers.stop
+  end
+
   def shutdown
-    stop_background_services
+    stop_collecting_metric
     stop_webserver
     shutdown_pipelines
   end
@@ -133,7 +137,7 @@ class LogStash::Agent
   private
   def start_webserver
     options = {:http_host => @http_host, :http_port => @http_port, :http_environment => @http_environment }
-    @webserver = LogStash::WebServer.new(@logger, options)
+    @webserver = LogStash::WebServer.new(@logger, self, options)
     Thread.new(@webserver) do |webserver|
       LogStash::Util.set_thread_name("Api Webserver")
       webserver.run
@@ -142,20 +146,6 @@ class LogStash::Agent
 
   def stop_webserver
     @webserver.stop if @webserver
-  end
-
-  def start_background_services
-    if collect_metrics?
-      @logger.debug("Agent: Starting metric periodic pollers")
-      @periodic_pollers.start
-    end
-  end
-
-  def stop_background_services
-    if collect_metrics?
-      @logger.debug("Agent: Stopping metric periodic pollers")
-      @periodic_pollers.stop
-    end
   end
 
   def configure_metrics_collectors
@@ -170,13 +160,12 @@ class LogStash::Agent
 
 
     @periodic_pollers = LogStash::Instrument::PeriodicPollers.new(@metric)
+    @periodic_pollers.start
   end
 
   def reset_metrics_collectors
-    @periodic_pollers.stop
-    @collector.stop
+    stop_collecting_metric
     configure_metrics_collectors
-    @periodic_pollers.start
   end
 
   def collect_metrics?

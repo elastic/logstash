@@ -1,13 +1,10 @@
 # encoding: utf-8
 API_ROOT = File.expand_path(File.join(File.dirname(__FILE__), "..", "..", "lib", "logstash", "api"))
 
-
-
 require "logstash/devutils/rspec/spec_helper"
-
 $LOAD_PATH.unshift(File.expand_path(File.dirname(__FILE__)))
 require "lib/api/support/resource_dsl_methods"
-
+require 'rspec/expectations'
 require "logstash/settings"
 require 'rack/test'
 require 'rspec'
@@ -74,13 +71,12 @@ class LogStashRunner
   private
 
   def wait_until_ready
-    # Wait until the service and pipeline have started
-    while !(LogStash::Api::Service.instance.started? && agent.pipelines["main"].running?) do
-      sleep 0.5
-    end
+    # # Wait until the service and pipeline have started
+    # while !(LogStash::Api::Service.instance.started? && agent.pipelines["main"].running?) do
+    #   sleep 0.5
+    # end
   end
 end
-
 
 ##
 # Method used to wrap up a request in between of a running
@@ -95,30 +91,6 @@ def do_request(&block)
   ret_val
 end
 
-##
-# Helper module that setups necessary mocks when doing the requests,
-# this could be just included in the test and the runner will be
-# started managed for all tests.
-##
-module LogStash; module RSpec; module RunnerConfig
-  def self.included(klass)
-    klass.before(:all) do
-      LogStashRunner.instance.start
-    end
-
-    klass.before(:each) do
-      runner = LogStashRunner.instance
-      allow(LogStash::Instrument::Collector.instance).to receive(:agent).and_return(runner.agent)
-    end
-
-    klass.after(:all) do
-      LogStashRunner.instance.stop
-    end
-  end
-end; end; end
-
-require 'rspec/expectations'
-
 RSpec::Matchers.define :be_available? do
   match do |plugin|
     begin
@@ -127,5 +99,22 @@ RSpec::Matchers.define :be_available? do
     rescue
       false
     end
+  end
+end
+
+shared_context "api setup" do
+  before :all do
+    @runner = LogStashRunner.new
+    @runner.start
+  end
+
+  after :all do
+    @runner.stop
+  end
+
+  include Rack::Test::Methods
+
+  def app()
+    described_class.new(nil, @runner.agent)
   end
 end

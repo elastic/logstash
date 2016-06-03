@@ -7,7 +7,7 @@ module LogStash
   class WebServer
     extend Forwardable
 
-    attr_reader :logger, :status, :config, :options, :cli_options, :runner, :binder, :events, :http_host, :http_port, :http_environment
+    attr_reader :logger, :status, :config, :options, :cli_options, :runner, :binder, :events, :http_host, :http_port, :http_environment, :agent
 
     def_delegator :@runner, :stats
 
@@ -15,12 +15,13 @@ module LogStash
     DEFAULT_PORT = 9600.freeze
     DEFAULT_ENVIRONMENT = 'production'.freeze
 
-    def initialize(logger, options={})
-      @logger      = logger
-      @http_host    = options[:http_host] || DEFAULT_HOST
-      @http_port    = options[:http_port] || DEFAULT_PORT
+    def initialize(logger, agent, options={})
+      @logger = logger
+      @agent = agent
+      @http_host = options[:http_host] || DEFAULT_HOST
+      @http_port = options[:http_port] || DEFAULT_PORT
       @http_environment = options[:http_environment] || DEFAULT_ENVIRONMENT
-      @options     = {}
+      @options = {}
       @cli_options = options.merge({ :rackup => ::File.join(::File.dirname(__FILE__), "api", "init.ru"),
                                      :binds => ["tcp://#{http_host}:#{http_port}"],
                                      :debug => logger.debug?,
@@ -37,7 +38,7 @@ module LogStash
 
       stop # Just in case
 
-      app = LogStash::Api::RackApp.app(logger, http_environment)
+      app = LogStash::Api::RackApp.app(logger, agent, http_environment)
       @server = ::Puma::Server.new(app)
       @server.add_tcp_listener(http_host, http_port)
 
