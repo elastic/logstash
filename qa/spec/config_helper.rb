@@ -4,7 +4,7 @@ require "json"
 module SpecsHelper
 
   def self.configure(vagrant_boxes)
-    setup_config = JSON.parse(File.read(File.join(File.dirname(__FILE__), "..", "..", ".vm_ssh_config")))
+    setup_config = JSON.parse(File.read(File.join(File.dirname(__FILE__), "..", ".vm_ssh_config")))
     boxes        = vagrant_boxes.inject({}) do |acc, v|
       acc[v.name] = v.type
       acc

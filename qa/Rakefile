@@ -26,7 +26,7 @@ namespace :qa do
       config   = PlatformConfig.new
       machines = config.select_names_for(args[:platform])
 
-      message  = "bootstraping all VM's defined in acceptance/Vagrantfile"
+      message  = "bootstraping all VM's defined in qa/Vagrantfile"
       message  = "#{message} for #{args[:platform]}: #{machines}" if !args[:platform].nil?
 
       LogStash::VagrantHelpers.destroy(machines)
@@ -37,7 +37,7 @@ namespace :qa do
     task :halt, :platform do |t, args|
       config   = PlatformConfig.new
       machines = config.select_names_for(args[:platform])
-      message = "halting all VM's defined inside Vagrantfile"
+      message = "halting all VM's defined inside qa/Vagrantfile"
       message  = "#{message} for #{args[:platform]}: #{machines}" if !args[:platform].nil?
       puts message
 
@@ -48,21 +48,21 @@ namespace :qa do
   namespace :acceptance do
     desc "Run all acceptance"
     task :all do
-      exit(RSpec::Core::Runner.run([Rake::FileList["acceptance/spec/lib/**/*_spec.rb"]]))
+      exit(RSpec::Core::Runner.run([Rake::FileList["spec/lib/**/*_spec.rb"]]))
     end
 
     platforms.types.each do |type|
       desc "Run acceptance test in #{type} machines"
       task type do
         ENV['LS_TEST_PLATFORM']=type
-        exit(RSpec::Core::Runner.run([Rake::FileList["acceptance/spec/lib/*_spec.rb"]]))
+        exit(RSpec::Core::Runner.run([Rake::FileList["spec/lib/*_spec.rb"]]))
       end
     end
 
     desc "Run one single machine acceptance test"
     task :single, :machine do |t, args|
       ENV['LS_VAGRANT_HOST']  = args[:machine]
-      exit(RSpec::Core::Runner.run([Rake::FileList["acceptance/spec/lib/**/**/*_spec.rb"]]))
+      exit(RSpec::Core::Runner.run([Rake::FileList["spec/lib/**/**/*_spec.rb"]]))
     end
   end
 end
