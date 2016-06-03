@@ -5,12 +5,7 @@ require "logstash/api/modules/plugins"
 require "logstash/json"
 
 describe LogStash::Api::Modules::Plugins do
-
-  include Rack::Test::Methods
-
-  def app()
-    described_class
-  end
+  include_context "api setup"
 
   before(:all) do
     get "/"
@@ -52,6 +47,5 @@ describe LogStash::Api::Modules::Plugins do
         expect(plugin["version"]).not_to be_empty
       end
     end
-
   end
 end

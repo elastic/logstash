@@ -19,7 +19,6 @@ module LogStash
           as    = options[:human] ? :string : :json
           respond_with(stats.hot_threads(options), {:as => as})
         end
-
       end
     end
   end

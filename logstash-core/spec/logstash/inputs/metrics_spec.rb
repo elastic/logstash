@@ -3,15 +3,17 @@ require "logstash/inputs/metrics"
 require "spec_helper"
 
 describe LogStash::Inputs::Metrics do
-  before :each do
-    LogStash::Instrument::Collector.instance.clear
-  end
-
+  let(:collector) { LogStash::Instrument::Collector.new }
+  let(:metric) { LogStash::Instrument::Metric.new(collector) }
   let(:queue) { [] }
+
+  before :each do
+    allow(subject).to receive(:metric).and_return(metric)
+  end
 
   describe "#run" do
     it "should register itself to the collector observer" do
-      expect(LogStash::Instrument::Collector.instance).to receive(:add_observer).with(subject)
+      expect(collector).to receive(:add_observer).with(subject)
       t = Thread.new { subject.run(queue) }
       sleep(0.1) # give a bit of time to the thread to start
       subject.stop
@@ -19,24 +21,21 @@ describe LogStash::Inputs::Metrics do
   end
 
   describe "#update" do
-    let(:namespaces)  { [:root, :base] }
-    let(:key)        { :foo }
-    let(:metric_store) { LogStash::Instrument::MetricStore.new }
-
     it "should fill up the queue with received events" do
       Thread.new { subject.run(queue) }
       sleep(0.1)
       subject.stop
 
-      metric_store.fetch_or_store(namespaces, key, LogStash::Instrument::MetricType::Counter.new(namespaces, key))
-      subject.update(LogStash::Instrument::Snapshot.new(metric_store))
+      metric.increment([:root, :test], :plugin)
+
+      subject.update(collector.snapshot_metric)
       expect(queue.count).to eq(1)
     end
   end
 
   describe "#stop" do
     it "should remove itself from the the collector observer" do
-      expect(LogStash::Instrument::Collector.instance).to receive(:delete_observer).with(subject)
+      expect(collector).to receive(:delete_observer).with(subject)
       t = Thread.new { subject.run(queue) }
       sleep(0.1) # give a bit of time to the thread to start
       subject.stop
