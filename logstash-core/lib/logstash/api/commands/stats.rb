@@ -33,6 +33,10 @@ module LogStash
           )
         end
 
+        def pipeline
+          service.get_shallow(:stats, :pipelines)
+        end
+
         def memory
           memory = service.get_shallow(:jvm, :memory)
           {
