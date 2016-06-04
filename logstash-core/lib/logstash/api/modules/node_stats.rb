@@ -50,6 +50,10 @@ module LogStash
           respond_with :mem => mem_payload
         end
 
+        get "/pipeline" do
+          respond_with :pipeline => pipeline_payload
+        end
+
         private
 
         def events_payload
@@ -66,6 +70,10 @@ module LogStash
 
         def mem_payload
           @stats.memory
+        end
+
+        def pipeline_payload
+          @stats.pipeline
         end
       end
     end
