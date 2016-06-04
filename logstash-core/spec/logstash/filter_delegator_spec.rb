@@ -68,8 +68,9 @@ describe LogStash::FilterDelegator do
 
     context "when the filter buffer events" do
       it "doesn't increment out" do
+        allow(metric).to receive(:increment).with(:time_ms, anything)
         expect(metric).to receive(:increment).with(:in, events.size)
-        expect(metric).not_to receive(:increment)
+        expect(metric).not_to receive(:increment).with(:out, anything)
 
         subject.multi_filter(events)
       end
@@ -92,6 +93,7 @@ describe LogStash::FilterDelegator do
       end
 
       it "increments the in/out of the metric" do
+        allow(metric).to receive(:increment).with(:time_ms, anything)
         expect(metric).to receive(:increment).with(:in, events.size)
         expect(metric).to receive(:increment).with(:out, events.size * 2)
 
@@ -117,6 +119,7 @@ describe LogStash::FilterDelegator do
     end
 
     it "increments the in/out of the metric" do
+      allow(metric).to receive(:increment).with(:time_ms, anything)
       expect(metric).to receive(:increment).with(:in, events.size)
       expect(metric).to receive(:increment).with(:out, events.size)
 
