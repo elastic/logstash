@@ -67,11 +67,17 @@ describe LogStash::FilterDelegator do
     end
 
     context "when the filter buffer events" do
-      it "doesn't increment out" do
-        allow(metric).to receive(:increment).with(:time_ms, anything)
-        expect(metric).to receive(:increment).with(:in, events.size)
-        expect(metric).not_to receive(:increment).with(:out, anything)
+      before do
+        allow(metric).to receive(:increment).with(anything, anything)
+      end
 
+      it "has incremented :in" do
+        expect(metric).to receive(:increment).with(:in, events.size)
+        subject.multi_filter(events)
+      end
+
+      it "has not incremented :out" do
+        expect(metric).not_to receive(:increment).with(:out, anything)
         subject.multi_filter(events)
       end
     end
@@ -92,8 +98,11 @@ describe LogStash::FilterDelegator do
         end
       end
 
+      before do
+        allow(metric).to receive(:increment).with(anything, anything)
+      end
+
       it "increments the in/out of the metric" do
-        allow(metric).to receive(:increment).with(:time_ms, anything)
         expect(metric).to receive(:increment).with(:in, events.size)
         expect(metric).to receive(:increment).with(:out, events.size * 2)
 
@@ -114,12 +123,15 @@ describe LogStash::FilterDelegator do
       end
     end
 
+    before do
+      allow(metric).to receive(:increment).with(anything, anything)
+    end
+
     it "doesnt define a flush method" do
       expect(subject.respond_to?(:flush)).to be_falsey
     end
 
     it "increments the in/out of the metric" do
-      allow(metric).to receive(:increment).with(:time_ms, anything)
       expect(metric).to receive(:increment).with(:in, events.size)
       expect(metric).to receive(:increment).with(:out, events.size)
 
