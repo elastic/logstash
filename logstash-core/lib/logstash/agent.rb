@@ -113,13 +113,13 @@ class LogStash::Agent
     ((Time.now.to_f - STARTED_AT.to_f) * 1000.0).to_i
   end
 
-  def stop_collecting_metric
+  def stop_collecting_metrics
     @collector.stop
     @periodic_pollers.stop
   end
 
   def shutdown
-    stop_collecting_metric
+    stop_collecting_metrics
     stop_webserver
     shutdown_pipelines
   end
@@ -164,7 +164,7 @@ class LogStash::Agent
   end
 
   def reset_metrics_collectors
-    stop_collecting_metric
+    stop_collecting_metrics
     configure_metrics_collectors
   end
 
@@ -266,8 +266,6 @@ class LogStash::Agent
   def upgrade_pipeline(pipeline_id, new_pipeline)
     stop_pipeline(pipeline_id)
     @pipelines[pipeline_id] = new_pipeline
-
-    new_pipeline = metric
     start_pipeline(pipeline_id)
   end
 

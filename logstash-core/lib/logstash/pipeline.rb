@@ -41,7 +41,7 @@ module LogStash; class Pipeline
     "LogStash::Inputs::Stdin"
   ]
 
-  def initialize(config_str, settings = LogStash::SETTINGS, provided_metric = nil)
+  def initialize(config_str, settings = LogStash::SETTINGS, namespaced_metric = nil)
     @config_str = config_str
     @logger = Cabin::Channel.get(LogStash)
     @settings = settings
@@ -56,7 +56,7 @@ module LogStash; class Pipeline
 
     # This needs to be configured before we evaluate the code to make
     # sure the metric instance is correctly send to the plugins to make the namespace scoping work
-    @metric = provided_metric.nil? ? LogStash::Instrument::NullMetric.new : provided_metric
+    @metric = namespaced_metric.nil? ? LogStash::Instrument::NullMetric.new : namespaced_metric
 
     grammar = LogStashConfigParser.new
     @config = grammar.parse(config_str)
