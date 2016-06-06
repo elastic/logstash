@@ -35,12 +35,6 @@ module LogStash
         end
         LogStash::Json.dump(data)
       end
-
-      private
-
-      def has_counters?
-        true
-      end
     end
   end
 end
