@@ -104,7 +104,7 @@ module LogStash
           "/_node" => LogStash::Api::Modules::Node,
           "/_stats" => LogStash::Api::Modules::Stats,
           "/_node/stats" => LogStash::Api::Modules::NodeStats,
-          "/_plugins" => LogStash::Api::Modules::Plugins,
+          "/_plugins" => LogStash::Api::Modules::Plugins
         }
       end
     end

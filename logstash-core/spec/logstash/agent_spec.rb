@@ -381,10 +381,13 @@ describe LogStash::Agent do
     end
 
     after :each do
-      subject.shutdown
-      Stud.stop!(@t)
-      @t.join
-      Thread.abort_on_exception = @abort_on_exception
+      begin
+        subject.shutdown
+        Stud.stop!(@t)
+        @t.join
+      ensure
+        Thread.abort_on_exception = @abort_on_exception
+      end
     end
 
     it "resets the metric collector" do
