@@ -83,25 +83,38 @@ The settings you can configure vary according to the plugin type. For informatio
 === Value Types
 
 A plugin can require that the value for a setting be a
-certain type, such as boolean or hash. The following value
+certain type, such as boolean, list, or hash. The following value
 types are supported.
 
 [[array]]
-[float]
 ==== Array
 
-An array can be a single string value or multiple values. If you specify the same
-setting multiple times, it appends to the array.
+This type is now mostly deprecated in favor of using a standard type like `string` with the plugin defining the `:list => true` property for better type checking. It is still needed to handle lists of hashes or mixed types where type checking is not desired.
+
+Example:
+
+[source,js]
+----------------------------------
+  users => [ {id => 1, name => bob}, {id => 2, name => jane} ]
+----------------------------------
+
+[[list]]
+[float]
+==== Lists
+
+Not a type in and of itself, but a property types can have.
+This makes it possible to type check multiple values.
+Plugin authors can enable list checking by specifying `:list => true` when declaring an argument.
 
 Example:
 
 [source,js]
 ----------------------------------
   path => [ "/var/log/messages", "/var/log/*.log" ]
-  path => "/data/mysql/mysql.log"
+  uris => [ "http://elastic.co", "http://example.net" ]
 ----------------------------------
 
-This example configures `path` to be an array that contains an element for each of the three strings.
+This example configures `path`, which is a `string` to be a list that contains an element for each of the three strings. It also will configure the `uris` parameter to be a list of URIs, failing if any of the URIs provided are not valid.
 
 
 [[boolean]]
