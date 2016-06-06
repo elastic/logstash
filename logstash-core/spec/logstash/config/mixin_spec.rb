@@ -68,6 +68,74 @@ describe LogStash::Config::Mixin do
     end
   end
 
+  context "when validating lists of items" do
+    let(:klass) do
+      Class.new(LogStash::Filters::Base)  do
+        config_name "multiuri"
+        config :uris, :validate => :uri, :list => true
+        config :strings, :validate => :string, :list => true
+        config :required_strings, :validate => :string, :list => true, :required => true
+      end
+    end
+
+    let(:uris) { ["http://example.net/1", "http://example.net/2"] }
+    let(:safe_uris) { uris.map {|str| ::LogStash::Util::SafeURI.new(str) } }
+    let(:strings) { ["I am a", "modern major general"] }
+    let(:required_strings) { ["required", "strings"] }
+
+    subject { klass.new("uris" => uris, "strings" => strings, "required_strings" => required_strings) }
+
+    it "a URI list should return an array of URIs" do
+      expect(subject.uris).to match_array(safe_uris)
+    end
+
+    it "a string list should return an array of strings" do
+      expect(subject.strings).to match_array(strings)
+    end
+
+    context "with a scalar value" do
+      let(:strings) { "foo" }
+
+      it "should return the scalar value as a single element array" do
+        expect(subject.strings).to match_array([strings])
+      end
+    end
+
+    context "with an empty list" do
+      let(:strings) { [] }
+
+      it "should return nil" do
+        expect(subject.strings).to be_nil
+      end
+    end
+
+    describe "with required => true" do
+      context "and a single element" do
+        let(:required_strings) { ["foo"] }
+
+        it "should return the single value" do
+          expect(subject.required_strings).to eql(required_strings)
+        end
+      end
+
+      context "with an empty list" do
+        let (:required_strings) { [] }
+
+        it "should raise a configuration error" do
+          expect { subject.required_strings }.to raise_error(LogStash::ConfigurationError)
+        end        
+      end
+
+      context "with no value specified" do
+        let (:required_strings) { nil }
+
+        it "should raise a configuration error" do
+          expect { subject.required_strings }.to raise_error(LogStash::ConfigurationError)
+        end
+      end          
+    end
+  end
+
   context "when validating :password" do
     let(:klass) do
       Class.new(LogStash::Filters::Base)  do
