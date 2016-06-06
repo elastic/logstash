@@ -40,5 +40,9 @@ class LogStash::Util::SafeURI
     safe.password = PASS_PLACEHOLDER
     safe
   end
+
+  def ==(other)
+    other.is_a?(::LogStash::Util::SafeURI) ? @uri == other.uri : false
+  end
 end
 

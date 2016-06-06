@@ -474,13 +474,14 @@ There are several configuration attributes:
 
 * `:validate` - allows you to enforce passing a particular data type to Logstash
 for this configuration option, such as `:string`, `:password`, `:boolean`,
-`:number`, `:array`, `:hash`, `:path` (a file-system path), `:codec` (since
+`:number`, `:array`, `:hash`, `:path` (a file-system path), `uri`, `:codec` (since
 1.2.0), `:bytes` (starting in 1.5.0).  Note that this also works as a coercion
 in that if I specify "true" for boolean (even though technically a string), it
 will become a valid boolean in the config.  This coercion works for the
 `:number` type as well where "1.2" becomes a float and "22" is an integer.
 * `:default` - lets you specify a default value for a parameter
 * `:required` - whether or not this parameter is mandatory (a Boolean `true` or
+* `:list` - whether or not this value should be a list of values. Will typecheck the list members, and convert scalars to one element lists. Note that this mostly obviates the array type, though if you need lists of complex objects that will be more suitable.
 `false`)
 * `:deprecated` - informational (also a Boolean `true` or `false`)
 * `:obsolete` - used to declare that a given setting has been removed and is no longer functioning. The idea is to provide an informed upgrade path to users who are still using a now-removed setting.

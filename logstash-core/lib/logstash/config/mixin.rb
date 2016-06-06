@@ -334,58 +334,89 @@ module LogStash::Config::Mixin
       return true
     end # def validate_check_invalid_parameter_names
 
+    def validate_check_required_parameter(config_key, config_opts, k, v)
+      if config_key.is_a?(Regexp)
+        (k =~ config_key && v)
+      elsif config_key.is_a?(String)
+        k && v
+      end
+    end
+
     def validate_check_required_parameter_names(params)
       is_valid = true
 
       @config.each do |config_key, config|
         next unless config[:required]
 
-        if config_key.is_a?(Regexp)
-          next if params.keys.select { |k| k =~ config_key }.length > 0
-        elsif config_key.is_a?(String)
-          next if params.keys.member?(config_key)
+        value = params[config_key]
+
+        if config_key.is_a?(Regexp) && !params.keys.any? { |k| k =~ config_key }
+          is_valid = false
         end
-        @logger.error(I18n.t("logstash.agent.configuration.setting_missing",
-                             :setting => config_key, :plugin => @plugin_name,
-                             :type => @plugin_type))
-        is_valid = false
+        
+        if value.nil? || (config[:list] && Array(value).empty?)
+          @logger.error(I18n.t("logstash.agent.configuration.setting_missing",
+                               :setting => config_key, :plugin => @plugin_name,
+                               :type => @plugin_type))
+          is_valid = false
+        end
       end
 
       return is_valid
+    end
+
+    def process_parameter_value(value, config_settings)
+      config_val = config_settings[:validate]
+      
+      if config_settings[:list]
+        value = Array(value) # coerce scalars to lists
+        # Empty lists are converted to nils
+        return true, nil if value.empty?
+          
+        validated_items = value.map {|v| validate_value(v, config_val)}
+        is_valid = validated_items.all? {|sr| sr[0] }
+        processed_value = validated_items.map {|sr| sr[1]}
+      else
+        is_valid, processed_value = validate_value(value, config_val)
+      end
+      
+      return [is_valid, processed_value]
     end
 
     def validate_check_parameter_values(params)
       # Filter out parametrs that match regexp keys.
       # These are defined in plugins like this:
       #   config /foo.*/ => ... 
-      is_valid = true
+      all_params_valid = true
 
       params.each do |key, value|
         @config.keys.each do |config_key|
           next unless (config_key.is_a?(Regexp) && key =~ config_key) \
                       || (config_key.is_a?(String) && key == config_key)
-          config_val = @config[config_key][:validate]
-          #puts "  Key matches."
-          success, result = validate_value(value, config_val)
-          if success 
-            # Accept coerced value if success
+
+          config_settings = @config[config_key]          
+
+          is_valid, processed_value = process_parameter_value(value, config_settings)
+          
+          if is_valid
+            # Accept coerced value if valid
             # Used for converting values in the config to proper objects.
-            params[key] = result if !result.nil?
+            params[key] = processed_value
           else
             @logger.error(I18n.t("logstash.agent.configuration.setting_invalid",
                                  :plugin => @plugin_name, :type => @plugin_type,
                                  :setting => key, :value => value.inspect,
-                                 :value_type => config_val,
-                                 :note => result))
+                                 :value_type => config_settings[:validate],
+                                 :note => processed_value))
           end
-          #puts "Result: #{key} / #{result.inspect} / #{success}"
-          is_valid &&= success
+          
+          all_params_valid &&= is_valid
 
           break # done with this param key
         end # config.each
       end # params.each
 
-      return is_valid
+      return all_params_valid
     end # def validate_check_parameter_values
 
     def validator_find(key)
@@ -561,12 +592,9 @@ module LogStash::Config::Mixin
 
     def secure_params!(params)
       params.each do |key, value|
-        if @config[key][:validate] == :password && !value.is_a?(::LogStash::Util::Password)
-          params[key] = ::LogStash::Util::Password.new(value)
-        end
-
-        if @config[key][:validate] == :uri && !value.is_a?(::LogStash::Util::SafeURI)
-          params[key] = ::LogStash::Util::SafeURI.new(value)
+        if [:uri, :password].include? @config[key][:validate]
+          is_valid, processed_value = process_parameter_value(value, @config[key])
+          params[key] = processed_value
         end
       end
     end
