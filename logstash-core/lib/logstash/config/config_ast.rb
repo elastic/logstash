@@ -76,6 +76,14 @@ module LogStash; module Config; module AST
     @defered_conditionals_index = val
   end
 
+  def self.plugin_instance_index
+    @plugin_instance_index
+  end
+
+  def self.plugin_instance_index=(val)
+    @plugin_instance_index = val
+  end
+
   class Node < Treetop::Runtime::SyntaxNode
     def text_value_for_comments
       text_value.gsub(/[\r\n]/, " ")
@@ -86,6 +94,7 @@ module LogStash; module Config; module AST
     def compile
       LogStash::Config::AST.defered_conditionals = []
       LogStash::Config::AST.defered_conditionals_index = 0
+      LogStash::Config::AST.plugin_instance_index = 0
       code = []
 
       code << <<-CODE
@@ -140,7 +149,6 @@ module LogStash; module Config; module AST
     # like @filter_<name>_1
     def initialize(*args)
       super(*args)
-      @i = 0
     end
 
     # Generate ruby code to initialize all the plugins.
@@ -196,9 +204,9 @@ module LogStash; module Config; module AST
 
       plugins.each do |plugin|
         # Unique number for every plugin.
-        @i += 1
+        LogStash::Config::AST.plugin_instance_index += 1
         # store things as ivars, like @filter_grok_3
-        var = :"#{plugin.plugin_type}_#{plugin.plugin_name}_#{@i}"
+        var = :"#{plugin.plugin_type}_#{plugin.plugin_name}_#{LogStash::Config::AST.plugin_instance_index}"
         # puts("var=#{var.inspect}")
         @variables[plugin] = var
       end
