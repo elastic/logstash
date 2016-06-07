@@ -22,7 +22,7 @@ class DummyCodec < LogStash::Codecs::Base
   milestone 2
 
   def decode(data)
-    data
+    event = @event_pool.obtain(data)
   end
 
   def encode(event)
@@ -47,7 +47,7 @@ class DummyOutput < LogStash::Outputs::Base
 
   def register
   end
-  
+
   def receive(event)
     @events << event
   end
@@ -81,6 +81,25 @@ class DummySafeFilter < LogStash::Filters::Base
   def threadsafe?() true; end
 
   def close() end
+end
+
+class DummyInputGenerator < DummyInput
+  config_name = "dummy_generator"
+
+  config :message, :validate => :string, :default => "Hello world!"
+  config :count, :validate => :number, :default => 1
+
+  def run(queue)
+    for i in 1..count
+      puts "#{i}/#{count}"
+      @codec.decode(message) do |event|
+        decorate(event)
+        event["sequence"] = i
+        queue << event
+      end
+    end
+    queue << LogStash::ShutdownEvent.new
+  end
 end
 
 class TestPipeline < LogStash::Pipeline
@@ -389,7 +408,7 @@ describe LogStash::Pipeline do
         }
       }
       filter {
-        multiline { 
+        multiline {
           pattern => "^NeverMatch"
           negate => true
           what => "previous"
@@ -401,7 +420,7 @@ describe LogStash::Pipeline do
       EOS
     end
     let(:output) { DummyOutput.new }
-    
+
     before do
       allow(DummyOutput).to receive(:new).with(any_args).and_return(output)
       allow(LogStash::Plugin).to receive(:lookup).with("input", "generator").and_return(LogStash::Inputs::Generator)
@@ -466,6 +485,49 @@ describe LogStash::Pipeline do
 
     it "should not add ivars" do
        expect(pipeline1.instance_variables).to eq(pipeline2.instance_variables)
+    end
+  end
+
+  context "Event Pool" do
+    let(:event) { LogStash::Event.new }
+
+    let(:number_of_events) { 2 }
+    let(:config) do
+      <<-EOS
+      input {
+        dummy_generator {
+          message => ["message"]
+          count => #{number_of_events}
+        }
+      }
+      filter {
+        dummyfilter {}
+      }
+      output {
+        dummyoutput {}
+      }
+      EOS
+    end
+
+    let(:pipeline) { LogStash::Pipeline.new(config, { :debug_config => true }) }
+
+    before do
+      allow(LogStash::Util::EventPool).to receive(:obtain)
+      allow(LogStash::Util::EventPool).to receive(:release)
+
+      allow(LogStash::Util::WrappedConcurrentLinkedQueue).to receive(:pop)
+      allow(LogStash::Util::WrappedConcurrentLinkedQueue).to receive(:push)
+
+      allow(LogStash::Plugin).to receive(:lookup).with("input", "dummy_generator").and_return(DummyInputGenerator)
+      allow(LogStash::Plugin).to receive(:lookup).with("codec", "plain").and_return(DummyCodec)
+      allow(LogStash::Plugin).to receive(:lookup).with("filter", "dummyfilter").and_return(DummyFilter)
+      allow(LogStash::Plugin).to receive(:lookup).with("output", "dummyoutput").and_return(DummyOutput)
+    end
+
+    it "reuses existing event" do
+      expect(pipeline.event_pool).to receive(:obtain).and_call_original
+      thread = Thread.new { pipeline.run }
+      thread.join
     end
   end
 end
