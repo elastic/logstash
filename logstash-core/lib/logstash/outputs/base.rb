@@ -26,6 +26,7 @@ class LogStash::Outputs::Base < LogStash::Plugin
   config :workers, :validate => :number, :default => 1
 
   attr_reader :worker_plugins, :available_workers, :workers, :worker_plugins, :workers_not_supported
+  attr_accessor :event_pool
 
   def self.declare_threadsafe!
     declare_workers_not_supported!
@@ -59,6 +60,7 @@ class LogStash::Outputs::Base < LogStash::Plugin
 
   public
   def initialize(params={})
+    @event_pool = params.delete(:event_pool)
     super
     config_init(@params)
 
@@ -80,7 +82,7 @@ class LogStash::Outputs::Base < LogStash::Plugin
   public
   # To be overriden in implementations
   def multi_receive(events)
-    events.each {|event| receive(event) }
+    events.each {|event| receive(event); @event_pool.release(event) if !@event_pool.nil? }
   end
 
   private

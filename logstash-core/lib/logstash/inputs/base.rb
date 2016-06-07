@@ -47,9 +47,11 @@ class LogStash::Inputs::Base < LogStash::Plugin
 
   attr_accessor :params
   attr_accessor :threadable
+  attr_accessor :event_pool
 
   public
   def initialize(params={})
+    @event_pool = params.delete(:event_pool)
     super
     @threadable = false
     @stop_called = Concurrent::AtomicBoolean.new(false)
@@ -57,7 +59,6 @@ class LogStash::Inputs::Base < LogStash::Plugin
     @tags ||= []
   end # def initialize
 
-  public
   def register
     raise "#{self.class}#register must be overidden"
   end # def register
@@ -96,6 +97,15 @@ class LogStash::Inputs::Base < LogStash::Plugin
 
     LogStash::Util::Decorators.add_fields(@add_field,event,"inputs/#{self.class.name}")
     LogStash::Util::Decorators.add_tags(@tags,event,"inputs/#{self.class.name}")
+  end
+
+  def obtain_event
+    if @event_pool.nil?
+      event = Event.new
+    else
+      event = @event_pool.obtain
+    end
+    event
   end
 
   protected
