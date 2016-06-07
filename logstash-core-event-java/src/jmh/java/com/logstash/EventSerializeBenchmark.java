@@ -20,7 +20,6 @@ import java.util.concurrent.TimeUnit;
 @OutputTimeUnit(TimeUnit.MICROSECONDS)
 @Warmup(iterations = 10, time = 5, timeUnit = TimeUnit.SECONDS)
 @Measurement(iterations = 2, time = 500, timeUnit = TimeUnit.MILLISECONDS)
-
 @Fork(2)
 public class EventSerializeBenchmark {
     public static void main(String[] args) throws RunnerException {

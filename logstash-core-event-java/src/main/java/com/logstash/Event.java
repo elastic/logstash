@@ -2,9 +2,11 @@ package com.logstash;
 
 import com.esotericsoftware.kryo.Kryo;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.logstash.ext.JrubyTimestampExtLibrary;
 import com.logstash.kyro.KryoInputOutput;
 import com.logstash.kyro.KryoInstances;
 import org.joda.time.DateTime;
+import org.jruby.RubySymbol;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -297,16 +299,16 @@ public class Event implements Cloneable, Serializable {
             } else if (o instanceof String) {
                 // second most frequent
                 return new Timestamp((String) o);
-//            } else if (o instanceof JrubyTimestampExtLibrary.RubyTimestamp) {
-//                return new Timestamp(((JrubyTimestampExtLibrary.RubyTimestamp) o).getTimestamp());
+            } else if (o instanceof JrubyTimestampExtLibrary.RubyTimestamp) {
+                return new Timestamp(((JrubyTimestampExtLibrary.RubyTimestamp) o).getTimestamp());
             } else if (o instanceof Timestamp) {
                 return new Timestamp((Timestamp) o);
             } else if (o instanceof DateTime) {
                 return new Timestamp((DateTime) o);
             } else if (o instanceof Date) {
                 return new Timestamp((Date) o);
-//            } else if (o instanceof RubySymbol) {
-//                return new Timestamp(((RubySymbol) o).asJavaString());
+            } else if (o instanceof RubySymbol) {
+                return new Timestamp(((RubySymbol) o).asJavaString());
             } else {
                 Event.logger.warn("Unrecognized " + TIMESTAMP + " value type=" + o.getClass().toString());
             }

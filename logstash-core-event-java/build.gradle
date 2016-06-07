@@ -109,7 +109,7 @@ dependencies {
 
     runtime 'com.fasterxml.jackson.core:jackson-databind:2.7.4'
     runtime 'org.jruby:jruby-complete:1.7.22'
-    jmh 'org.jruby:jruby-complete:1.7.22'
+    jmh compile('org.jruby:jruby-complete:1.7.22')
 }
 
 // See http://www.gradle.org/docs/current/userguide/gradle_wrapper.html
