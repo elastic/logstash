@@ -13,11 +13,13 @@ require "logstash/config/cpu_core_strategy"
 require "logstash/util/defaults_printer"
 require "logstash/shutdown_watcher"
 require "logstash/util/wrapped_synchronous_queue"
+require "logstash/util/event_pool"
 require "logstash/pipeline_reporter"
 require "logstash/output_delegator"
 
 module LogStash; class Pipeline
   attr_reader :inputs, :filters, :outputs, :worker_threads, :events_consumed, :events_filtered, :reporter, :pipeline_id, :logger, :thread, :config_str, :original_settings
+  attr_reader :inputs, :filters, :outputs, :worker_threads, :events_consumed, :events_filtered, :reporter, :pipeline_id, :logger, :thread, :config_str, :original_settings, :event_pool
 
   DEFAULT_OUTPUT_WORKERS = 1
 
@@ -51,6 +53,8 @@ module LogStash; class Pipeline
     @outputs = nil
 
     @worker_threads = []
+
+    @event_pool = LogStash::Util::EventPool.new(@settings[:pipeline_batch_size] * ( @settings[:pipeline_workers] || DEFAULT_SETTINGS[:default_pipeline_workers] ) )
 
     grammar = LogStashConfigParser.new
     @config = grammar.parse(config_str)
@@ -407,7 +411,7 @@ module LogStash; class Pipeline
 
   def plugin(plugin_type, name, *args)
     args << {} if args.empty?
-    args.first.merge!(LogStash::Config::Mixin::ALLOW_ENV_FLAG => @allow_env)
+    args.first.merge!(LogStash::Config::Mixin::ALLOW_ENV_FLAG => @allow_env, :event_pool => @event_pool)
 
     klass = LogStash::Plugin.lookup(plugin_type, name)
 
