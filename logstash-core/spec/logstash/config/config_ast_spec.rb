@@ -144,6 +144,49 @@ describe LogStashConfigParser do
     end
   end
 
+  context "when using two plugin sections of the same type" do
+    let(:pipeline_klass) do
+      Class.new do
+        def initialize(config)
+          grammar = LogStashConfigParser.new
+          @config = grammar.parse(config)
+          @code = @config.compile
+          eval(@code)
+        end
+        def plugin(*args);end
+      end
+    end
+    context "(filters)" do
+      let(:config_string) {
+        "input { generator { } }
+         filter { filter1 { } }
+         filter { filter1 { } }
+         output { output1 { } }"
+      }
+
+
+      it "should create a pipeline with both sections" do
+        generated_objects = pipeline_klass.new(config_string).instance_variable_get("@generated_objects")
+        filters = generated_objects.keys.map(&:to_s).select {|obj_name| obj_name.match(/^filter.+?_\d+$/) }
+        expect(filters.size).to eq(2)
+      end
+    end
+
+    context "(filters)" do
+      let(:config_string) {
+        "input { generator { } }
+         output { output1 { } }
+         output { output1 { } }"
+      }
+
+
+      it "should create a pipeline with both sections" do
+        generated_objects = pipeline_klass.new(config_string).instance_variable_get("@generated_objects")
+        outputs = generated_objects.keys.map(&:to_s).select {|obj_name| obj_name.match(/^output.+?_\d+$/) }
+        expect(outputs.size).to eq(2)
+      end
+    end
+  end
   context "when creating two instances of the same configuration" do
 
     let(:config_string) {
