@@ -2,6 +2,7 @@ package com.logstash;
 
 import org.openjdk.jmh.annotations.*;
 import org.openjdk.jmh.infra.Blackhole;
+import org.openjdk.jmh.profile.GCProfiler;
 import org.openjdk.jmh.runner.Runner;
 import org.openjdk.jmh.runner.RunnerException;
 import org.openjdk.jmh.runner.options.Options;
@@ -16,16 +17,17 @@ import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
-@BenchmarkMode(Mode.SampleTime)
+@BenchmarkMode(Mode.AverageTime)
 @OutputTimeUnit(TimeUnit.MICROSECONDS)
-@Warmup(iterations = 10, time = 5, timeUnit = TimeUnit.SECONDS)
-@Measurement(iterations = 2, time = 500, timeUnit = TimeUnit.MILLISECONDS)
+@Warmup(iterations = 20, time = 2, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 16, time = 250, timeUnit = TimeUnit.MILLISECONDS)
 @Fork(2)
 public class EventSerializeBenchmark {
     public static void main(String[] args) throws RunnerException {
         Options opt = new OptionsBuilder()
                 .include(EventSerializeBenchmark.class.getSimpleName())
                 .threads(4)
+                .addProfiler( GCProfiler.class )
                 .build();
 
         new Runner(opt).run();
