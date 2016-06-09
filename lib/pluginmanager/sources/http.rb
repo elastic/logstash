@@ -56,7 +56,7 @@ module LogStash::PluginManager::Sources
       Net::HTTP.start(*http_start_args(uri)) do |http|
         response = http.get(uri.request_uri, header_options)
         status   = response.code
-        break unless status == "200"
+        break unless status == "200" # break unless the file is properly download
         write_to_file(path, response.body)
       end
       [path, status]

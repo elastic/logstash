@@ -33,8 +33,12 @@ class LogStash::PluginManager::Install < LogStash::PluginManager::InstallCommand
     end
 
     pack_plugins = fetch_and_copy_packs(packs) do |pack, temp_dir|
-      pack_file = fetch_pack(pack, temp_dir)
-      extract_pack(pack_file)
+      begin
+        pack_file = fetch_pack(pack, temp_dir)
+        extract_pack(pack_file)
+      rescue
+        signal_error("Something happened during the process of the requested #{pack} pack")
+      end
     end
 
     merge_into_plugin_list(pack_plugins)

@@ -37,11 +37,12 @@ class LogStash::PluginManager::InstallCommand < LogStash::PluginManager::Command
   # @param [String] A temporary directy used to store the fetched package.
   # @return [String] The location of the fetched package.
   def fetch_pack(source, temp_dir)
-    file, _ =  source.fetch(temp_dir)
+    file, status = source.fetch(temp_dir)
+    raise StandardError.new("Error happen when fetching") if status.to_i >= 500
     return file
   end
 
-  # Extract a package of plugins
+  # Extract a package of plugins, the check for existance is done beforehand
   # @param [String] The package location
   # @return [String] The location of the extracted content
   def extract_pack(file)
