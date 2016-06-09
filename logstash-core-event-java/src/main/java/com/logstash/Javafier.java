@@ -1,38 +1,45 @@
 package com.logstash;
 
-import org.jruby.RubyArray;
-import org.jruby.RubyHash;
-import org.jruby.RubyString;
-import org.jruby.RubyObject;
-import org.jruby.RubyBoolean;
-import org.jruby.RubyArray;
-import org.jruby.RubyFloat;
-import org.jruby.RubyInteger;
-import org.jruby.RubyNil;
-import org.jruby.RubyBoolean;
-import org.jruby.RubyFixnum;
-import org.jruby.RubyTime;
-import org.jruby.RubySymbol;
-import org.jruby.RubyBignum;
-import org.jruby.ext.bigdecimal.RubyBigDecimal;
 import com.logstash.ext.JrubyTimestampExtLibrary;
-import org.jruby.runtime.builtin.IRubyObject;
-import java.math.BigDecimal;
 import org.joda.time.DateTime;
+import org.jruby.*;
+import org.jruby.ext.bigdecimal.RubyBigDecimal;
+import org.jruby.java.proxies.MapJavaProxy;
+import org.jruby.javasupport.JavaUtil;
+import org.jruby.runtime.builtin.IRubyObject;
 
+import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 
 public class Javafier {
 
     private Javafier(){}
 
-    public static List<Object> deep(RubyArray a) {
+    public static List<Object> deep(IRubyObject[] a) {
         final ArrayList<Object> result = new ArrayList();
 
-        // TODO: (colin) investagate why .toJavaArrayUnsafe() which should be faster by avoiding copying produces nil values spec errors in arrays
-        for (IRubyObject o : a.toJavaArray()) {
+        for (IRubyObject o : a) {
             result.add(deep(o));
+        }
+        return result;
+    }
+
+    public static List<Object> deep(RubyArray a) {
+        return deep( a.toJavaArray());
+    }
+
+    public static List<Object> deepList(List<Object> a) {
+        final ArrayList<Object> result = new ArrayList();
+
+        for (Object o : a) {
+            if (o instanceof IRubyObject) {
+                result.add(deep((IRubyObject)o));
+            } else {
+                result.add(o);
+            }
         }
         return result;
     }
@@ -127,6 +134,16 @@ public class Javafier {
             case RubyNil: return deep((RubyNil)o);
             case True: return deep((RubyBoolean.True)o);
             case False: return deep((RubyBoolean.False)o);
+            case MapJavaProxy: return deep(((MapJavaProxy) o).to_hash());
+            case ArrayJavaProxy:
+            case ConcreteJavaProxy:
+                Object obj = JavaUtil.unwrapJavaObject(o);
+                if (obj instanceof IRubyObject[]) {
+                    return deep((IRubyObject[])obj);
+                }
+                if (obj instanceof List) {
+                    return deepList((List<Object>) obj);
+                }
         }
 
         if (o.isNil()) {
@@ -150,12 +167,14 @@ public class Javafier {
         RubyBoolean,
         RubyFixnum,
         RubyBignum,
-        RubyObject,
         RubyNil,
         RubyTime,
         RubySymbol,
         True,
-        False;
+        False,
+        MapJavaProxy,
+        ArrayJavaProxy,
+        ConcreteJavaProxy
     }
 }
 

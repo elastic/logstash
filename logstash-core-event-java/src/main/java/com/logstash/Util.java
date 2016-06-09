@@ -1,12 +1,25 @@
 package com.logstash;
 
-import java.util.ArrayList;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import java.io.IOException;
+import java.util.*;
 
 public class Util {
     private Util() {}
+
+    public static Object getMapFixture() throws IOException {
+        StringBuilder json = new StringBuilder();
+        json.append("{");
+        json.append("\"string\": \"foo\", ");
+        json.append("\"int\": 42, ");
+        json.append("\"float\": 42.42, ");
+        json.append("\"array\": [\"bar\",\"baz\"], ");
+        json.append("\"hash\": {\"string\":\"quux\"} }");
+
+        ObjectMapper mapper = new ObjectMapper();
+        return mapper.readValue(json.toString(), Object.class);
+    }
 
     public static void mapMerge(Map<String, Object> target, Map<String, Object> add) {
         for (Map.Entry<String, Object> e : add.entrySet()) {
