@@ -1,6 +1,6 @@
 # Encoding: utf-8
 require_relative "../spec_helper"
-require_relative "../../lib/logstash/version"
+require_relative "../../../lib/logstash/version"
 
 describe "bin/logstash" do
   it "returns the logstash version" do
