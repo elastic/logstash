@@ -113,7 +113,7 @@ class LogStash::Event
     @data[TIMESTAMP] = val
   end
 
-  def [](fieldref)
+  def get(fieldref)
     if fieldref.start_with?(METADATA_BRACKETS)
       @metadata_accessors.get(fieldref[METADATA_BRACKETS.length .. -1])
     elsif fieldref == METADATA
@@ -123,7 +123,7 @@ class LogStash::Event
     end
   end
 
-  def []=(fieldref, value)
+  def set(fieldref, value)
     if fieldref == TIMESTAMP && !value.is_a?(LogStash::Timestamp)
       raise TypeError, "The field '@timestamp' must be a (LogStash::Timestamp, not a #{value.class} (#{value})"
     end
@@ -136,6 +136,9 @@ class LogStash::Event
       @accessors.set(fieldref, value)
     end
   end
+
+  alias_method :[], :get
+  alias_method :[]=, :set
 
   def to_json(*args)
     # ignore arguments to respect accepted to_json method signature
