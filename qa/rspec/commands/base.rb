@@ -36,7 +36,7 @@ module ServiceTester
 
     def replace_in_gemfile(pattern, replace, host)
       gemfile = File.join(LOGSTASH_PATH, "Gemfile")
-      cmd = "/bin/env sed -i.sedbak 's/#{pattern}/#{replace}/' #{gemfile}"
+      cmd = "sed -i.sedbak 's/#{pattern}/#{replace}/' #{gemfile}"
       run_command(cmd, host)
     end
 
