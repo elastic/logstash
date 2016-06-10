@@ -35,7 +35,7 @@ LS_LOG_FILE="${LS_LOG_DIR}/$name.log"
 LS_CONF_DIR=/etc/logstash/conf.d
 LS_OPEN_FILES=16384
 LS_NICE=19
-KILL_ON_STOP_TIMEOUT=0
+KILL_ON_STOP_TIMEOUT=${KILL_ON_STOP_TIMEOUT-0} #default value is zero to this variable but could be updated by user request
 LS_OPTS=""
 
 
@@ -97,7 +97,7 @@ stop() {
       sleep 1
     done
     if status ; then
-      if [ "$KILL_ON_STOP_TIMEOUT" = 1 ] ; then
+      if [ $KILL_ON_STOP_TIMEOUT -eq 1 ] ; then
         echo "Timeout reached. Killing $name (pid $pid) with SIGKILL. This may result in data loss."
         kill -KILL $pid
         echo "$name killed with SIGKILL."
