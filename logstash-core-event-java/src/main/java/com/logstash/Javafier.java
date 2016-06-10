@@ -119,6 +119,25 @@ public class Javafier {
         return false;
     }
 
+    private static Object deepJavaProxy(JavaProxy jp) {
+        Object obj = JavaUtil.unwrapJavaObject(jp);
+        if (obj instanceof IRubyObject[]) {
+            return deep((IRubyObject[])obj);
+        }
+        if (obj instanceof List) {
+            return deepList((List<Object>) obj);
+        }
+        StringBuilder sb = new StringBuilder();
+        sb.append("Missing Ruby class handling for full class name=");
+        sb.append(jp.getClass().getName());
+        sb.append(", simple name=");
+        sb.append(jp.getClass().getSimpleName());
+        sb.append(", wrapped object=");
+        sb.append(obj.getClass());
+
+        throw new IllegalArgumentException(sb.toString());
+    }
+
     public static Object deep(IRubyObject o) {
         // TODO: (colin) this enum strategy is cleaner but I am hoping that is not slower than using a instanceof cascade
 
@@ -146,15 +165,8 @@ public class Javafier {
             case True: return deep((RubyBoolean.True)o);
             case False: return deep((RubyBoolean.False)o);
             case MapJavaProxy: return deep(((MapJavaProxy) o).to_hash());
-            case ArrayJavaProxy:
-            case ConcreteJavaProxy:
-                Object obj = JavaUtil.unwrapJavaObject(o);
-                if (obj instanceof IRubyObject[]) {
-                    return deep((IRubyObject[])obj);
-                }
-                if (obj instanceof List) {
-                    return deepList((List<Object>) obj);
-                }
+            case ArrayJavaProxy:  return deepJavaProxy((JavaProxy) o);
+            case ConcreteJavaProxy: return deepJavaProxy((JavaProxy) o);
         }
 
         if (o.isNil()) {
@@ -183,6 +195,7 @@ public class Javafier {
         RubySymbol,
         True,
         False,
+        // these proxies may wrap a java collection of IRubyObject types
         MapJavaProxy,
         ArrayJavaProxy,
         ConcreteJavaProxy
