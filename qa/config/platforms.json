@@ -1,5 +1,5 @@
 { 
-  "latest": "5.0.0-alpha2",
+  "latest": "5.0.0-alpha3",
   "platforms" : {
     "ubuntu-1204": { "box": "elastic/ubuntu-12.04-x86_64", "type": "debian" },
     "ubuntu-1404": { "box": "elastic/ubuntu-14.04-x86_64", "type": "debian", "specific": true },
