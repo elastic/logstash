@@ -39,7 +39,7 @@ module LogStash
 
       start = Time.now
       new_events = @filter.multi_filter(events)
-      @filter.metric.increment(:time_ms, ((Time.now - start)*1000).to_i)
+      @filter.metric.increment(:duration_in_millis, ((Time.now - start)*1000).to_i)
 
       # There is no garantee in the context of filter
       # that EVENTS_INT == EVENTS_OUT, see the aggregates and
