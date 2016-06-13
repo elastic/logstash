@@ -7,7 +7,7 @@ GEM
     atomic (1.1.99-java)
     avl_tree (1.2.1)
       atomic (~> 1.1)
-    awesome_print (1.6.1)
+    awesome_print (1.7.0)
     aws-sdk (2.1.36)
       aws-sdk-resources (= 2.1.36)
     aws-sdk-core (2.1.36)
@@ -154,7 +154,7 @@ GEM
     logstash-codec-rubydebug (2.0.7)
       awesome_print
       logstash-core-plugin-api (~> 1.0)
-    logstash-core (2.3.3.snapshot1-java)
+    logstash-core (2.3.3.snapshot2-java)
       cabin (~> 0.8.0)
       clamp (~> 0.6.5)
       concurrent-ruby (= 0.9.2)
@@ -163,16 +163,16 @@ GEM
       i18n (= 0.6.9)
       jrjackson (~> 0.3.7)
       jruby-openssl (= 0.9.13)
-      logstash-core-event (= 2.3.3.snapshot1)
+      logstash-core-event (= 2.3.3.snapshot2)
       minitar (~> 0.5.4)
       pry (~> 0.10.1)
       rubyzip (~> 1.1.7)
       stud (~> 0.0.19)
       thread_safe (~> 0.3.5)
       treetop (< 1.5.0)
-    logstash-core-event (2.3.3.snapshot1-java)
-    logstash-core-plugin-api (1.16.0-java)
-      logstash-core (>= 2.0.0, <= 2.3.3.snapshot1)
+    logstash-core-event (2.3.3.snapshot2-java)
+    logstash-core-plugin-api (1.17.0-java)
+      logstash-core (>= 2.0.0, <= 2.3.3.snapshot2)
     logstash-devutils (0.0.22-java)
       fivemat
       gem_publisher
@@ -202,7 +202,7 @@ GEM
     logstash-filter-fingerprint (2.0.5)
       logstash-core-plugin-api (~> 1.0)
       murmurhash3
-    logstash-filter-geoip (3.0.0-java)
+    logstash-filter-geoip (3.0.1-java)
       logstash-core-plugin-api (~> 1.0)
     logstash-filter-grok (2.0.5)
       jls-grok (~> 0.11.1)
@@ -296,7 +296,7 @@ GEM
       logstash-codec-plain
       logstash-core-plugin-api (~> 1.0)
       stud
-    logstash-input-http (2.2.2)
+    logstash-input-http (2.2.3)
       logstash-codec-plain
       logstash-core-plugin-api (~> 1.0)
       puma (~> 2.16, >= 2.16.0)
@@ -324,7 +324,7 @@ GEM
       sequel
       tzinfo
       tzinfo-data
-    logstash-input-kafka (3.0.2)
+    logstash-input-kafka (3.0.3)
       logstash-codec-json
       logstash-codec-plain
       logstash-core-plugin-api (~> 1.0)
@@ -556,7 +556,7 @@ GEM
     multipart-post (2.0.0)
     murmurhash3 (0.1.6-java)
     naught (1.1.0)
-    nokogiri (1.6.7.2-java)
+    nokogiri (1.6.8-java)
     octokit (3.8.0)
       sawyer (~> 0.6.0, >= 0.5.3)
     polyglot (0.3.5)
@@ -567,7 +567,7 @@ GEM
       spoon (~> 0.0)
     puma (2.16.0-java)
     rack (1.6.4)
-    rake (11.1.2)
+    rake (11.2.2)
     redis (3.3.0)
     rspec (3.1.0)
       rspec-core (~> 3.1.0)
@@ -659,9 +659,9 @@ DEPENDENCIES
   logstash-codec-oldlogstashjson
   logstash-codec-plain
   logstash-codec-rubydebug
-  logstash-core (= 2.3.3.snapshot1)
-  logstash-core-event (= 2.3.3.snapshot1)
-  logstash-core-plugin-api (= 1.16.0)
+  logstash-core (= 2.3.3.snapshot2)
+  logstash-core-event (= 2.3.3.snapshot2)
+  logstash-core-plugin-api (= 1.17.0)
   logstash-devutils (~> 0.0.15)
   logstash-filter-anonymize
   logstash-filter-checksum
