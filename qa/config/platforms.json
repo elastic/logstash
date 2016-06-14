@@ -8,8 +8,6 @@
     "centos-7": { "box": "elastic/centos-7-x86_64", "type": "redhat" },
     "oel-6": { "box": "elastic/oraclelinux-6-x86_64", "type": "redhat" },
     "oel-7": { "box": "elastic/oraclelinux-7-x86_64", "type": "redhat" },
-    "fedora-22": { "box": "elastic/fedora-22-x86_64", "type": "redhat" },
-    "fedora-23": { "box": "elastic/fedora-23-x86_64", "type": "redhat" },
     "debian-8": { "box": "elastic/debian-8-x86_64", "type": "debian", "specific":  true },
     "opensuse-13": { "box": "elastic/opensuse-13-x86_64", "type": "suse" },
     "sles-11": { "box": "elastic/sles-11-x86_64", "type": "suse", "specific": true },
