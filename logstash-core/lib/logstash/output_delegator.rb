@@ -28,6 +28,7 @@ module LogStash class OutputDelegator
     # Scope the metrics to the plugin
     namespaced_metric = metric.namespace(output.plugin_unique_name.to_sym)
     @metric_events = namespaced_metric.namespace(:events)
+    namespaced_metric.gauge(:name, config_name)
 
     @events_received = Concurrent::AtomicFixnum.new(0)
   end
@@ -129,7 +130,9 @@ module LogStash class OutputDelegator
     @events_received.increment(events.length)
     @metric_events.increment(:in, events.length)
 
+    clock = @metric_events.time(:duration_in_millis)
     @threadsafe_worker.multi_receive(events)
+    clock.stop
     @metric_events.increment(:out, events.length)
   end
 
@@ -139,7 +142,9 @@ module LogStash class OutputDelegator
 
     worker = @worker_queue.pop
     begin
+      clock = @metric_events.time(:duration_in_millis)
       worker.multi_receive(events)
+      clock.stop
       @metric_events.increment(:out, events.length)
     ensure
       @worker_queue.push(worker)
