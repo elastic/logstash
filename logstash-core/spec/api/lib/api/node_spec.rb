@@ -92,7 +92,7 @@ describe LogStash::Api::Modules::Node do
         }
       }
       
-      test_api_and_resources(root_structure)
+      test_api_and_resources(root_structure, :exclude_from_root => ["hot_threads"])
     end   
   end
 end
