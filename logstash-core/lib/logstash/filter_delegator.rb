@@ -24,6 +24,7 @@ module LogStash
       namespaced_metric = metric.namespace(@filter.plugin_unique_name.to_sym)
       @filter.metric = metric
 
+      namespaced_metric.gauge(:name, config_name)
       @metric_events = namespaced_metric.namespace(:events)
 
       # Not all the filters will do bufferings
