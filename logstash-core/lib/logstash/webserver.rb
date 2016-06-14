@@ -43,6 +43,9 @@ module LogStash
       @server.add_tcp_listener(http_host, http_port)
 
       @server.run.join
+    rescue Errno::EADDRINUSE
+      message = "Logstash tried to bind to port #{@http_port}, but the port is already in use. You can specify a new port by launching logtash with the --http-port option."
+      raise Errno::EADDRINUSE.new(message)
     end
 
     def log(str)
