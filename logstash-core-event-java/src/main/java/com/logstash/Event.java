@@ -80,7 +80,7 @@ public class Event implements Cloneable, Serializable {
     }
 
     public void setData(Map<String, Object> data) {
-        this.data = data;
+        this.data = Valuefier.javaConvert(data);
     }
 
     public Accessors getAccessors() {
@@ -126,7 +126,7 @@ public class Event implements Cloneable, Serializable {
 
     public Object getField(String reference) {
         Object val = getUnconvertedField(reference);
-        return Valuefier.unconvert(val);
+        return Javafier.deep(val);
     }
 
     public Object getUnconvertedField(String reference) {
@@ -149,15 +149,8 @@ public class Event implements Cloneable, Serializable {
         } else if (reference.startsWith(METADATA_BRACKETS)) {
             this.metadata_accessors.set(reference.substring(METADATA_BRACKETS.length()), value);
         } else {
-            this.accessors.set(reference, wrapRubyJavaObject(value));
+            this.accessors.set(reference, Valuefier.convert(value));
         }
-    }
-
-    private Object wrapRubyJavaObject(Object value) {
-        if (value instanceof List || value instanceof Map || value instanceof RubyJavaObject) {
-            return value;
-        }
-        return new RubyJavaObject(value);
     }
 
     public boolean includes(String reference) {
@@ -173,7 +166,7 @@ public class Event implements Cloneable, Serializable {
     public String toJson()
             throws IOException
     {
-        return mapper.writeValueAsString((Map<String, Object>)this.data);
+        return mapper.writeValueAsString(this.data);
     }
 
     public static Event[] fromJson(String json)
@@ -221,7 +214,6 @@ public class Event implements Cloneable, Serializable {
 
         return this;
     }
-
 
     public Event append(Event e) {
         Util.mapMerge(this.data, e.data);

@@ -1,6 +1,11 @@
 package com.logstash;
 
-import org.jruby.*;
+import org.jruby.RubyArray;
+import org.jruby.RubyBignum;
+import org.jruby.RubyFixnum;
+import org.jruby.RubyFloat;
+import org.jruby.RubyHash;
+import org.jruby.RubyString;
 import org.jruby.ext.bigdecimal.RubyBigDecimal;
 import org.jruby.javasupport.JavaUtil;
 import org.jruby.runtime.builtin.IRubyObject;
@@ -14,13 +19,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.junit.Assert.*;
-
-public class RubyfierTest {
+public class RubyfierTest extends TestBase {
 
     @Test
     public void testDeepWithString() {
-        Object result = Rubyfier.deep(Ruby.getGlobalRuntime(), "foo");
+        Object result = Rubyfier.deep(ruby, "foo");
         assertEquals(RubyString.class, result.getClass());
         assertEquals("foo", result.toString());
     }
@@ -31,14 +34,14 @@ public class RubyfierTest {
     {
         Map data = new HashMap();
         data.put("foo", "bar");
-        RubyHash rubyHash = ((RubyHash)Rubyfier.deep(Ruby.getGlobalRuntime(), data));
+        RubyHash rubyHash = ((RubyHash)Rubyfier.deep(ruby, data));
 
         // Hack to be able to retrieve the original, unconverted Ruby object from Map
         // it seems the only method providing this is internalGet but it is declared protected.
         // I know this is bad practice but I think this is practically acceptable.
         Method internalGet = RubyHash.class.getDeclaredMethod("internalGet", IRubyObject.class);
         internalGet.setAccessible(true);
-        Object result = internalGet.invoke(rubyHash, JavaUtil.convertJavaToUsableRubyObject(Ruby.getGlobalRuntime(), "foo"));
+        Object result = internalGet.invoke(rubyHash, JavaUtil.convertJavaToUsableRubyObject(ruby, "foo"));
 
         assertEquals(RubyString.class, result.getClass());
         assertEquals("bar", result.toString());
@@ -51,7 +54,7 @@ public class RubyfierTest {
         List data = new ArrayList();
         data.add("foo");
 
-        RubyArray rubyArray = ((RubyArray)Rubyfier.deep(Ruby.getGlobalRuntime(), data));
+        RubyArray rubyArray = ((RubyArray)Rubyfier.deep(ruby, data));
 
         // toJavaArray does not convert inner elemenst to Java types \o/
         assertEquals(RubyString.class, rubyArray.toJavaArray()[0].getClass());
@@ -60,7 +63,7 @@ public class RubyfierTest {
 
     @Test
     public void testDeepWithInteger() {
-        Object result = Rubyfier.deep(Ruby.getGlobalRuntime(), 1);
+        Object result = Rubyfier.deep(ruby, 1);
         assertEquals(RubyFixnum.class, result.getClass());
         assertEquals(1L, ((RubyFixnum)result).getLongValue());
     }
@@ -71,14 +74,14 @@ public class RubyfierTest {
     {
         Map data = new HashMap();
         data.put("foo", 1);
-        RubyHash rubyHash = ((RubyHash)Rubyfier.deep(Ruby.getGlobalRuntime(), data));
+        RubyHash rubyHash = ((RubyHash)Rubyfier.deep(ruby, data));
 
         // Hack to be able to retrieve the original, unconverted Ruby object from Map
         // it seems the only method providing this is internalGet but it is declared protected.
         // I know this is bad practice but I think this is practically acceptable.
         Method internalGet = RubyHash.class.getDeclaredMethod("internalGet", IRubyObject.class);
         internalGet.setAccessible(true);
-        Object result = internalGet.invoke(rubyHash, JavaUtil.convertJavaToUsableRubyObject(Ruby.getGlobalRuntime(), "foo"));
+        Object result = internalGet.invoke(rubyHash, JavaUtil.convertJavaToUsableRubyObject(ruby, "foo"));
 
         assertEquals(RubyFixnum.class, result.getClass());
         assertEquals(1L, ((RubyFixnum)result).getLongValue());
@@ -91,7 +94,7 @@ public class RubyfierTest {
         List data = new ArrayList();
         data.add(1);
 
-        RubyArray rubyArray = ((RubyArray)Rubyfier.deep(Ruby.getGlobalRuntime(), data));
+        RubyArray rubyArray = ((RubyArray)Rubyfier.deep(ruby, data));
 
         // toJavaArray does not convert inner elemenst to Java types \o/
         assertEquals(RubyFixnum.class, rubyArray.toJavaArray()[0].getClass());
@@ -100,7 +103,7 @@ public class RubyfierTest {
 
     @Test
     public void testDeepWithFloat() {
-        Object result = Rubyfier.deep(Ruby.getGlobalRuntime(), 1.0F);
+        Object result = Rubyfier.deep(ruby, 1.0F);
         assertEquals(RubyFloat.class, result.getClass());
         assertEquals(1.0D, ((RubyFloat)result).getDoubleValue(), 0);
     }
@@ -111,14 +114,14 @@ public class RubyfierTest {
     {
         Map data = new HashMap();
         data.put("foo", 1.0F);
-        RubyHash rubyHash = ((RubyHash)Rubyfier.deep(Ruby.getGlobalRuntime(), data));
+        RubyHash rubyHash = ((RubyHash)Rubyfier.deep(ruby, data));
 
         // Hack to be able to retrieve the original, unconverted Ruby object from Map
         // it seems the only method providing this is internalGet but it is declared protected.
         // I know this is bad practice but I think this is practically acceptable.
         Method internalGet = RubyHash.class.getDeclaredMethod("internalGet", IRubyObject.class);
         internalGet.setAccessible(true);
-        Object result = internalGet.invoke(rubyHash, JavaUtil.convertJavaToUsableRubyObject(Ruby.getGlobalRuntime(), "foo"));
+        Object result = internalGet.invoke(rubyHash, JavaUtil.convertJavaToUsableRubyObject(ruby, "foo"));
 
         assertEquals(RubyFloat.class, result.getClass());
         assertEquals(1.0D, ((RubyFloat)result).getDoubleValue(), 0);
@@ -131,7 +134,7 @@ public class RubyfierTest {
         List data = new ArrayList();
         data.add(1.0F);
 
-        RubyArray rubyArray = ((RubyArray)Rubyfier.deep(Ruby.getGlobalRuntime(), data));
+        RubyArray rubyArray = ((RubyArray)Rubyfier.deep(ruby, data));
 
         // toJavaArray does not convert inner elemenst to Java types \o/
         assertEquals(RubyFloat.class, rubyArray.toJavaArray()[0].getClass());
@@ -140,7 +143,7 @@ public class RubyfierTest {
 
     @Test
     public void testDeepWithDouble() {
-        Object result = Rubyfier.deep(Ruby.getGlobalRuntime(), 1.0D);
+        Object result = Rubyfier.deep(ruby, 1.0D);
         assertEquals(RubyFloat.class, result.getClass());
         assertEquals(1.0D, ((RubyFloat)result).getDoubleValue(), 0);
     }
@@ -151,14 +154,14 @@ public class RubyfierTest {
     {
         Map data = new HashMap();
         data.put("foo", 1.0D);
-        RubyHash rubyHash = ((RubyHash)Rubyfier.deep(Ruby.getGlobalRuntime(), data));
+        RubyHash rubyHash = ((RubyHash)Rubyfier.deep(ruby, data));
 
         // Hack to be able to retrieve the original, unconverted Ruby object from Map
         // it seems the only method providing this is internalGet but it is declared protected.
         // I know this is bad practice but I think this is practically acceptable.
         Method internalGet = RubyHash.class.getDeclaredMethod("internalGet", IRubyObject.class);
         internalGet.setAccessible(true);
-        Object result = internalGet.invoke(rubyHash, JavaUtil.convertJavaToUsableRubyObject(Ruby.getGlobalRuntime(), "foo"));
+        Object result = internalGet.invoke(rubyHash, JavaUtil.convertJavaToUsableRubyObject(ruby, "foo"));
 
         assertEquals(RubyFloat.class, result.getClass());
         assertEquals(1.0D, ((RubyFloat)result).getDoubleValue(), 0);
@@ -171,7 +174,7 @@ public class RubyfierTest {
         List data = new ArrayList();
         data.add(1.0D);
 
-        RubyArray rubyArray = ((RubyArray)Rubyfier.deep(Ruby.getGlobalRuntime(), data));
+        RubyArray rubyArray = ((RubyArray)Rubyfier.deep(ruby, data));
 
         // toJavaArray does not convert inner elemenst to Java types \o/
         assertEquals(RubyFloat.class, rubyArray.toJavaArray()[0].getClass());
@@ -180,7 +183,7 @@ public class RubyfierTest {
 
     @Test
     public void testDeepWithBigDecimal() {
-        Object result = Rubyfier.deep(Ruby.getGlobalRuntime(), new BigDecimal(1));
+        Object result = Rubyfier.deep(ruby, new BigDecimal(1));
         assertEquals(RubyBigDecimal.class, result.getClass());
         assertEquals(1.0D, ((RubyBigDecimal)result).getDoubleValue(), 0);
     }
@@ -192,14 +195,14 @@ public class RubyfierTest {
         Map data = new HashMap();
         data.put("foo", new BigDecimal(1));
 
-        RubyHash rubyHash = ((RubyHash)Rubyfier.deep(Ruby.getGlobalRuntime(), data));
+        RubyHash rubyHash = ((RubyHash)Rubyfier.deep(ruby, data));
 
         // Hack to be able to retrieve the original, unconverted Ruby object from Map
         // it seems the only method providing this is internalGet but it is declared protected.
         // I know this is bad practice but I think this is practically acceptable.
         Method internalGet = RubyHash.class.getDeclaredMethod("internalGet", IRubyObject.class);
         internalGet.setAccessible(true);
-        Object result = internalGet.invoke(rubyHash, JavaUtil.convertJavaToUsableRubyObject(Ruby.getGlobalRuntime(), "foo"));
+        Object result = internalGet.invoke(rubyHash, JavaUtil.convertJavaToUsableRubyObject(ruby, "foo"));
 
         assertEquals(RubyBigDecimal.class, result.getClass());
         assertEquals(1.0D, ((RubyBigDecimal)result).getDoubleValue(), 0);
@@ -212,7 +215,7 @@ public class RubyfierTest {
         List data = new ArrayList();
         data.add(new BigDecimal(1));
 
-        RubyArray rubyArray = ((RubyArray)Rubyfier.deep(Ruby.getGlobalRuntime(), data));
+        RubyArray rubyArray = ((RubyArray)Rubyfier.deep(ruby, data));
 
         // toJavaArray does not convert inner elemenst to Java types \o/
         assertEquals(RubyBigDecimal.class, rubyArray.toJavaArray()[0].getClass());
@@ -222,7 +225,7 @@ public class RubyfierTest {
 
     @Test
     public void testDeepWithBigInteger() {
-        Object result = Rubyfier.deep(Ruby.getGlobalRuntime(), new BigInteger("1"));
+        Object result = Rubyfier.deep(ruby, new BigInteger("1"));
         assertEquals(RubyBignum.class, result.getClass());
         assertEquals(1L, ((RubyBignum)result).getLongValue());
     }

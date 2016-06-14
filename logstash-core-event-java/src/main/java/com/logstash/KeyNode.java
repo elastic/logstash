@@ -1,6 +1,7 @@
 package com.logstash;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.logstash.bivalues.BiValue;
 
 import java.io.IOException;
 import java.util.List;
@@ -58,6 +59,7 @@ public class KeyNode implements TemplateNode {
     private static String toString(Object value, String delim) {
         if (value == null) return "";
         if (value instanceof List) return join((List)value, delim);
+        if (value instanceof BiValue) return ((BiValue) value).javaValue().toString();
         return value.toString();
     }
 }

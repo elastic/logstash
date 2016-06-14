@@ -113,7 +113,7 @@ public class JrubyEventExtLibrary implements Library {
             if (data == null || data.isNil()) {
                 this.event = new Event();
             } else if (data instanceof RubyHash) {
-                this.event = new Event(Javafier.deep((RubyHash) data));
+                this.event = new Event(Valuefier.rubyConvert((RubyHash) data));
             } else if (data instanceof MapJavaProxy) {
                 this.event = new Event((Map)((MapJavaProxy)data).getObject());
             } else {

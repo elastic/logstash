@@ -1,6 +1,5 @@
 package com.logstash;
 
-import org.jruby.Ruby;
 import org.jruby.RubyBignum;
 import org.junit.Test;
 
@@ -9,13 +8,10 @@ import java.io.ByteArrayOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-
-public class RubyJavaObjectTest {
+public class RubyJavaObjectTest extends TestBase {
     @Test
     public void testSerialization() throws Exception {
-        RubyBignum v = RubyBignum.newBignum(Ruby.getGlobalRuntime(), "-9223372036854776000");
+        RubyBignum v = RubyBignum.newBignum(ruby, "-9223372036854776000");
         RubyJavaObject original = new RubyJavaObject(v);
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();

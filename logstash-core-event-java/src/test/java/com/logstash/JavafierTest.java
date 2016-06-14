@@ -1,6 +1,5 @@
 package com.logstash;
 
-import org.jruby.Ruby;
 import org.jruby.RubyBignum;
 import org.jruby.RubyClass;
 import org.jruby.RubyMatchData;
@@ -21,13 +20,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
-import static org.junit.Assert.assertEquals;
-
-public class JavafierTest {
-    public static final Ruby ruby;
-    static {
-        ruby = Ruby.getGlobalRuntime();
-    }
+public class JavafierTest extends TestBase {
 
     @Test
     public void testRubyBignum() {
