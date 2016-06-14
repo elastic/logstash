@@ -118,6 +118,7 @@ module LogStash module Instrument
     #   [:jvm, :process],
     #   :open_file_descriptors,
     #   [:cpu, [:total_in_millis, :percent]]
+    #   [:pipelines, [:one, :two], :size]
     # )
     # 
     # Returns:
@@ -125,33 +126,38 @@ module LogStash module Instrument
     # {
     #   :open_file_descriptors => 123
     #   :cpu => { :total_in_millis => 456, :percent => 789 }
+    #   :pipelines => {
+    #                   :one => {:size => 90210},
+    #                   :two => {:size => 8675309}
+    #                 }
     # }
     def extract_metrics(path, *keys)
-      metrics = get_shallow(*path)
-      
       keys.reduce({}) do |acc,k|
-        # Get the value of this key, recurse as needed
-        # to get deeply nested paths
-        v = if k.is_a?(Array)
-              # We have a nested hash, time to recurse
-              res = extract_metrics(path + k[0..-2], *k.last)
-              # We're only going one level deep into the array in this frame
-              # so make the key that one. Otherwise we get the full path
-              # as an array as the key, which makes no sense
-              k = k.first 
-              res
-            else # Scalar value
-              metrics[k]
-            end
+        # Simplifiy 1-length keys
+        k = k.first if k.is_a?(Array) && k.size == 1
 
-        if v.is_a?(Hash)
-          # This is a nested structure, simple assignment
-          acc[k] = v
-        else
-          # This is a Metric object, we need to extract its value
-          # If the metric didn't exist it might be nil, but we still want its key
-          # to exist with a nil value
-          acc[k] = v ? v.value : nil; acc
+        # If we have array values here we need to recurse
+        # There are two levels of looping here, one for the paths we might pass in
+        # one for the upcoming keys we might pass in
+        if k.is_a?(Array)
+          # We need to build up future executions to extract_metrics
+          # which means building up the path and keys arguments.
+          # We need a nested loop her to execute all permutations of these in case we hit
+          # something like [[:a,:b],[:c,:d]] which produces 4 different metrics
+          next_paths = Array(k.first)
+          next_keys = Array(k[1])
+          rest = k[2..-1]
+          next_paths.each do |next_path|
+            # If there already is a hash at this location use that so we don't overwrite it
+            np_hash = acc[next_path] || {}
+            
+            acc[next_path] = next_keys.reduce(np_hash) do |a,next_key|
+              a.merge! extract_metrics(path + [next_path], [next_key, *rest])
+            end
+          end
+        else # Scalar value
+          res = get_shallow(*path)[k]
+          acc[k] = res ? res.value : nil
         end
         
         acc
