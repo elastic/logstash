@@ -8,8 +8,7 @@ module LogStash
           {
             :pipeline => pipeline,
             :os => os,
-            :jvm => jvm,
-            :hot_threads => hot_threads
+            :jvm => jvm
           }           
         end
         

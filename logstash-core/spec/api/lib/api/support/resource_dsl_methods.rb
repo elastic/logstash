@@ -41,8 +41,11 @@ module ResourceDSLMethods
     yield if block_given? # Add custom expectations
   end
 
-  def test_api_and_resources(expected)
-    test_api(expected, "/")
+  def test_api_and_resources(expected, xopts={})
+    xopts[:exclude_from_root] ||= []
+    root_expectation = expected.clone
+    xopts[:exclude_from_root].each {|k| root_expectation.delete(k)}
+    test_api(root_expectation, "/")
 
     expected.keys.each do |key|
       test_api({key => expected[key]}, "/#{key}")
