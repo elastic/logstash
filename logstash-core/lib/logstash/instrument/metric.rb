@@ -46,7 +46,7 @@ module LogStash module Instrument
     end
 
     def report_time(namespace, key, duration)
-      collector.push(namespace, key, :mean, :increment, duration)
+      collector.push(namespace, key, :counter, :increment, duration)
     end
 
     # This method return a metric instance tied to a specific namespace
@@ -81,7 +81,7 @@ module LogStash module Instrument
     #
     # @see LogStash::Instrument::Metric#time
     class TimedExecution
-      MILLISECONDS = 1_000_000.0.freeze
+      MILLISECONDS = 1_000.0.freeze
 
       def initialize(metric, namespace, key)
         @metric = metric
