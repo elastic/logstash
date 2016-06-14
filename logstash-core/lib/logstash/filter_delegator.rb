@@ -24,8 +24,8 @@ module LogStash
       namespaced_metric = metric.namespace(@filter.plugin_unique_name.to_sym)
       @filter.metric = metric
 
-      namespaced_metric.gauge(:name, config_name)
       @metric_events = namespaced_metric.namespace(:events)
+      namespaced_metric.gauge(:name, config_name)
 
       # Not all the filters will do bufferings
       define_flush_method if @filter.respond_to?(:flush)
@@ -38,7 +38,7 @@ module LogStash
     def multi_filter(events)
       @metric_events.increment(:in, events.size)
 
-      clock = @filter.metric.time(:duration_in_millis)
+      clock = @metric_events.time(:duration_in_millis)
       new_events = @filter.multi_filter(events)
       clock.stop
 
