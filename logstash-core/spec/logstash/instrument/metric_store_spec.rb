@@ -142,6 +142,67 @@ describe LogStash::Instrument::MetricStore do
       end
     end
 
+    describe "get_shallow" do
+      it "should retrieve a path as a single value" do
+        r = subject.get_shallow(:node, :sashimi, :pipelines, :pipeline01, :processed_events_in)
+        expect(r.value).to eql(1)
+      end
+    end
+
+    describe "extract_metrics" do
+      it "should retrieve non-nested values correctly" do
+        r = subject.extract_metrics(
+          [:node, :sashimi, :pipelines, :pipeline01],
+          :processed_events_in,
+          :processed_events_out,
+        )
+        expect(r[:processed_events_in]).to eql(1)
+        expect(r[:processed_events_out]).to eql(1)
+      end
+
+      it "should retrieve nested values correctly alongside non-nested ones" do
+        r = subject.extract_metrics(
+          [:node, :sashimi, :pipelines, :pipeline01],
+          :processed_events_in,
+          [:plugins, :"logstash-output-elasticsearch", :event_in]
+        )
+       expect(r[:processed_events_in]).to eql(1)
+        expect(r[:plugins][:"logstash-output-elasticsearch"][:event_in]).to eql(1)
+      end
+
+      it "should retrieve multiple nested keys at a given location" do
+        r = subject.extract_metrics(
+          [:node, :sashimi, :pipelines],
+          [:pipeline01, [:processed_events_in, :processed_events_out]]
+        )
+
+        expect(r[:pipeline01][:processed_events_in]).to eql(1)
+        expect(r[:pipeline01][:processed_events_out]).to eql(1)
+      end
+
+      it "should retrieve a single key nested in multiple places" do
+        r = subject.extract_metrics(
+          [:node, :sashimi, :pipelines],
+          [[:pipeline01, :pipeline02], :processed_events_out]
+        )
+
+        expect(r[:pipeline01][:processed_events_out]).to eql(1)
+        expect(r[:pipeline02][:processed_events_out]).to eql(1)
+      end
+
+      it "handle overlaps of paths" do
+        r = subject.extract_metrics(
+          [:node, :sashimi, :pipelines],
+          [:pipeline01, :processed_events_in],
+          [[:pipeline01, :pipeline02], :processed_events_out]
+        )
+
+        expect(r[:pipeline01][:processed_events_in]).to eql(1)
+        expect(r[:pipeline01][:processed_events_out]).to eql(1)
+        expect(r[:pipeline02][:processed_events_out]).to eql(1)
+      end
+    end
+
     describe "#each" do
       it "retrieves all the metric" do
         expect(subject.each.size).to eq(metric_events.size)
