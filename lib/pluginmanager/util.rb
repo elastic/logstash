@@ -50,9 +50,8 @@ module LogStash::PluginManager
   # @option options [Boolean] :pre Include pre release versions in the search (default: false)
   # @return [Hash] The plugin version information as returned by rubygems
   def self.fetch_latest_version_info(plugin, options={})
-    require "gems"
     exclude_prereleases =  options.fetch(:pre, false)
-    versions = Gems.versions(plugin)
+    versions = LogStash::Rubygems.versions(plugin)
     raise ValidationError.new("Something went wrong with the validation. You can skip the validation with the --no-verify option") if !versions.is_a?(Array) || versions.empty?
     versions = versions.select { |version| !version["prerelease"] } if !exclude_prereleases
     versions.first
