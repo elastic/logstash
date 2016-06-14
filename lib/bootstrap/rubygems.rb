@@ -43,6 +43,16 @@ module LogStash
       end
     end
 
+    ##
+    # Take a plugin name and get the latest versions available in the gem repository.
+    # @param [String] The plugin name
+    # @return [Hash] The collection of registered versions
+    ##
+    def versions(plugin)
+      require "gems"
+      require_relative "patches/gems"
+      Gems.versions(plugin)
+    end
     # Take a gem package and extract it to a specific target
     # @param [String] Gem file, this must be a path
     # @param [String, String] Return a Gem::Package and the installed path
