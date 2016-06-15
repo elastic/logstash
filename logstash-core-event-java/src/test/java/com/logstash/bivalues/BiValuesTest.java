@@ -11,6 +11,7 @@ import org.jruby.RubyFloat;
 import org.jruby.RubyInteger;
 import org.jruby.RubyNil;
 import org.jruby.RubyString;
+import org.jruby.RubySymbol;
 import org.jruby.RubyTime;
 import org.jruby.ext.bigdecimal.RubyBigDecimal;
 import org.jruby.javasupport.JavaUtil;
@@ -43,6 +44,18 @@ public class BiValuesTest extends TestBase {
         assertEquals(String.class, subject.javaValue().getClass());
         assertEquals(rs, subject.rubyValue(ruby));
         assertEquals(rs.getClass(), subject.rubyValue(ruby).getClass());
+    }
+
+    @Test
+    public void testBiValuesSymbolRuby() {
+        String js = "double";
+        RubySymbol rs = RubySymbol.newSymbol(ruby, js);
+        BiValue subject = BiValues.newBiValue(rs);
+
+        assertEquals(rs, subject.rubyValueUnconverted());
+        assertEquals(rs.getClass(), subject.rubyValue(ruby).getClass());
+        assertEquals(js, subject.javaValue());
+        assertEquals(String.class, subject.javaValue().getClass());
     }
 
     @Test

@@ -2,6 +2,8 @@ package com.logstash;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.logstash.bivalues.StringBiValue;
+import com.logstash.bivalues.TimeBiValue;
+import com.logstash.bivalues.TimestampBiValue;
 import com.logstash.ext.JrubyTimestampExtLibrary;
 import org.joda.time.DateTime;
 import org.jruby.RubySymbol;
@@ -145,7 +147,7 @@ public class Event implements Cloneable, Serializable {
             // TODO(talevy): check type of timestamp
             this.accessors.set(reference, value);
         } else if (reference.equals(METADATA_BRACKETS) || reference.equals(METADATA)) {
-            this.metadata = (HashMap<String, Object>) value;
+            this.metadata = (Map<String, Object>) value;
             this.metadata_accessors = new Accessors(this.metadata);
         } else if (reference.startsWith(METADATA_BRACKETS)) {
             this.metadata_accessors.set(reference.substring(METADATA_BRACKETS.length()), value);
@@ -265,10 +267,14 @@ public class Event implements Cloneable, Serializable {
                 return new Timestamp((String) o);
             } else if (o instanceof StringBiValue) {
                 return new Timestamp(((StringBiValue) o).javaValue());
+            }else if (o instanceof TimeBiValue) {
+                return new Timestamp(((TimeBiValue) o).javaValue());
             } else if (o instanceof JrubyTimestampExtLibrary.RubyTimestamp) {
                 return new Timestamp(((JrubyTimestampExtLibrary.RubyTimestamp) o).getTimestamp());
             } else if (o instanceof Timestamp) {
                 return new Timestamp((Timestamp) o);
+            } else if (o instanceof TimestampBiValue) {
+                return new Timestamp(((TimestampBiValue) o).javaValue());
             } else if (o instanceof DateTime) {
                 return new Timestamp((DateTime) o);
             } else if (o instanceof Date) {

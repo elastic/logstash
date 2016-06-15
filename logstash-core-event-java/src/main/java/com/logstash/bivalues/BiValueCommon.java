@@ -77,11 +77,13 @@ public abstract class BiValueCommon<R extends IRubyObject, J> implements Seriali
 
     @Override
     public String toString() {
-        final StringBuffer sb = new StringBuffer(this.getClass().getSimpleName());
-        sb.append("{rubyValue=").append(rubyValue);
-        sb.append(", javaValue=").append(javaValue);
-        sb.append('}');
-        return sb.toString();
+        if (hasRubyValue()) {
+            javaValue();
+        }
+        if (javaValue == null) {
+            return "";
+        }
+        return String.valueOf(javaValue);
     }
 
     protected static Object newProxy(BiValue instance) {

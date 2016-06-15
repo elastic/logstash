@@ -9,6 +9,7 @@ import org.jruby.RubyFloat;
 import org.jruby.RubyInteger;
 import org.jruby.RubyNil;
 import org.jruby.RubyString;
+import org.jruby.RubySymbol;
 import org.jruby.RubyTime;
 import org.jruby.ext.bigdecimal.RubyBigDecimal;
 import org.jruby.runtime.builtin.IRubyObject;
@@ -39,7 +40,7 @@ public enum BiValues {
     ORG_JRUBY_RUBYINTEGER(BiValueType.LONG),
     ORG_JRUBY_RUBYNIL(BiValueType.NULL),
     ORG_JRUBY_RUBYSTRING(BiValueType.STRING),
-    ORG_JRUBY_RUBYSYMBOL(BiValueType.STRING), // one way conversion
+    ORG_JRUBY_RUBYSYMBOL(BiValueType.SYMBOL), // one way conversion, a Java string will use STRING
     ORG_JRUBY_RUBYTIME(BiValueType.TIME),
     NULL(BiValueType.NULL);
 
@@ -109,6 +110,14 @@ public enum BiValues {
                     return new StringBiValue((RubyString) value);
                 }
                 return new StringBiValue((String) value);
+            }
+        },
+        SYMBOL {
+            BiValue build(Object value) {
+                if (value instanceof IRubyObject) {
+                    return new SymbolBiValue((RubySymbol) value);
+                }
+                return new SymbolBiValue((String) value);
             }
         },
         LONG {

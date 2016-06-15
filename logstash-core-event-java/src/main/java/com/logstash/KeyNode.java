@@ -59,7 +59,9 @@ public class KeyNode implements TemplateNode {
     private static String toString(Object value, String delim) {
         if (value == null) return "";
         if (value instanceof List) return join((List)value, delim);
-        if (value instanceof BiValue) return ((BiValue) value).javaValue().toString();
+        if (value instanceof BiValue) {
+            return ((BiValue) value).toString();
+        }
         return value.toString();
     }
 }

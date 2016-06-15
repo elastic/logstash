@@ -33,7 +33,7 @@ public class Valuefier {
         h.visitAll(new RubyHash.Visitor() {
             @Override
             public void visit(IRubyObject key, IRubyObject value) {
-                String k = (String) BiValues.newBiValue(key).javaValue();
+                String k = String.valueOf(BiValues.newBiValue(key).javaValue()) ;
                 result.put(k, convert(value));
             }
         });

@@ -9,6 +9,7 @@ import org.jruby.RubyFloat;
 import org.jruby.RubyInteger;
 import org.jruby.RubyNil;
 import org.jruby.RubyString;
+import org.jruby.RubySymbol;
 import org.jruby.RubyTime;
 import org.jruby.ext.bigdecimal.RubyBigDecimal;
 import org.jruby.javasupport.JavaUtil;
@@ -39,6 +40,15 @@ public class BiValueTest extends TestBase {
         assertFalse(subject.hasRubyValue());
         assertTrue(subject.hasJavaValue());
         assertEquals(v, subject.rubyValue(ruby));
+    }
+
+    @Test
+    public void testSymbolBiValueFromRuby() {
+        String s = "foo";
+        SymbolBiValue subject = new SymbolBiValue(RubySymbol.newSymbol(ruby, s));
+        assertTrue(subject.hasRubyValue());
+        assertFalse(subject.hasJavaValue());
+        assertEquals(s, subject.javaValue());
     }
 
     @Test
