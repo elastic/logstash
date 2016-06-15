@@ -1,3 +1,32 @@
+## 2.3.3 (June 14, 2016)
+### general
+ - Fixed a bug where dynamic config reload feature could use excess memory, leading to a crash ([#5235](https://github.com/elastic/logstash/issues/5235)).
+ - Fixed a bug where Logstash would not stop even when `KILL_ON_STOP_TIMEOUT` was specified ([#5427](https://github.com/elastic/logstash/issues/5427)).
+
+### Input
+ - TCP
+   - Change the log level of the SSLError for the handshake from error to debug.
+ - RabbitMQ
+   - Fix SSL option to be boolean once again ([#82](https://github.com/logstash-plugins/logstash-input-rabbitmq/issues/82)).
+   - Add separate `ssl_version` parameter.
+   - Mark `verify_ssl` parameter as obsolete since it never worked.
+   - Better checks for SSL argument consistency
+
+### Filter
+ - KV 
+   - Adds `:transform_value` and `:transform_key` options to lowercase/upcase or capitalize all keys/values
+ - XML
+   - New configuration `suppress_empty`. By default the filter creates empty hash from empty xml 
+     elements (`suppress_empty => false`). This can now be configured, `supress_empty => true` will not create 
+     event fields from empty xml elements.
+   - New configuration `force_content`. By default the filter expands attributes differently from content in
+     xml elements. This option allows you to force text content and attributes to always parse to a hash value.
+   - Ensure that target is set when storing xml content in the event (store_xml => true)
+
+### Output
+ - Elasticsearch
+   - Add pipeline configuration option for setting an ingest pipeline to run upon indexing
+ 
 ## 2.3.2 (Apr 25, 2016)
 ### general
  - Added reload support to the init script so you can do `service logstash reload`
