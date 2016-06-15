@@ -1,6 +1,7 @@
 package com.logstash;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.logstash.bivalues.StringBiValue;
 import com.logstash.ext.JrubyTimestampExtLibrary;
 import org.joda.time.DateTime;
 import org.jruby.RubySymbol;
@@ -59,7 +60,7 @@ public class Event implements Cloneable, Serializable {
         }
 
         if (this.data.containsKey(METADATA)) {
-            this.metadata = (HashMap<String, Object>) this.data.remove(METADATA);
+            this.metadata = (Map<String, Object>) this.data.remove(METADATA);
         } else {
             this.metadata = new HashMap<String, Object>();
         }
@@ -262,6 +263,8 @@ public class Event implements Cloneable, Serializable {
             } else if (o instanceof String) {
                 // second most frequent
                 return new Timestamp((String) o);
+            } else if (o instanceof StringBiValue) {
+                return new Timestamp(((StringBiValue) o).javaValue());
             } else if (o instanceof JrubyTimestampExtLibrary.RubyTimestamp) {
                 return new Timestamp(((JrubyTimestampExtLibrary.RubyTimestamp) o).getTimestamp());
             } else if (o instanceof Timestamp) {

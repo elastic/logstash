@@ -3,6 +3,8 @@ package com.logstash.bivalues;
 import org.jruby.Ruby;
 import org.jruby.RubyBoolean;
 
+import java.io.ObjectStreamException;
+
 
 public class BooleanBiValue extends BiValueCommon<RubyBoolean, Boolean> implements BiValue<RubyBoolean, Boolean> {
 
@@ -25,5 +27,10 @@ public class BooleanBiValue extends BiValueCommon<RubyBoolean, Boolean> implemen
 
     protected void addJava() {
         javaValue = rubyValue.isTrue();
+    }
+
+    // Called when object is to be serialized on a stream to allow the object to substitute a proxy for itself.
+    private Object writeReplace() throws ObjectStreamException {
+        return newProxy(this);
     }
 }

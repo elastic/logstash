@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import org.jruby.Ruby;
 import org.jruby.RubyNil;
 
+import java.io.ObjectStreamException;
+
 public class NullBiValue extends BiValueCommon<RubyNil, Object> implements BiValue<RubyNil, Object> {
     public static NullBiValue newNullBiValue() {
         return new NullBiValue();
@@ -35,4 +37,9 @@ public class NullBiValue extends BiValueCommon<RubyNil, Object> implements BiVal
     }
 
     protected void addJava() {}
+
+    // Called when object is to be serialized on a stream to allow the object to substitute a proxy for itself.
+    private Object writeReplace() throws ObjectStreamException {
+        return newProxy(this);
+    }
 }

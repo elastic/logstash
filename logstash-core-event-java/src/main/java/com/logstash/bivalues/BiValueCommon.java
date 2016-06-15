@@ -4,7 +4,12 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import org.jruby.Ruby;
 import org.jruby.runtime.builtin.IRubyObject;
 
-public abstract class BiValueCommon<R extends IRubyObject, J> {
+import java.io.InvalidObjectException;
+import java.io.ObjectInputStream;
+import java.io.ObjectStreamException;
+import java.io.Serializable;
+
+public abstract class BiValueCommon<R extends IRubyObject, J> implements Serializable {
     protected transient R rubyValue;
     protected J javaValue;
 
@@ -28,7 +33,7 @@ public abstract class BiValueCommon<R extends IRubyObject, J> {
     public boolean equals(Object o) {
         if (this == o) return true;
 
-        if (javaValue.getClass().isAssignableFrom(o.getClass())){
+        if (hasJavaValue() && javaValue.getClass().isAssignableFrom(o.getClass())){
             return javaValue.equals(o);
         }
 
@@ -77,5 +82,27 @@ public abstract class BiValueCommon<R extends IRubyObject, J> {
         sb.append(", javaValue=").append(javaValue);
         sb.append('}');
         return sb.toString();
+    }
+
+    protected static Object newProxy(BiValue instance) {
+        return new SerializationProxy(instance);
+    }
+
+    private static class SerializationProxy implements Serializable {
+        private static final long serialVersionUID = -1749700725129586973L;
+
+        private final Object javaValue;
+
+        public SerializationProxy(BiValue o) {
+            javaValue = o.javaValue(); // ensure the javaValue is converted from a ruby one if it exists
+        }
+
+        private Object readResolve() throws ObjectStreamException {
+            return BiValues.newBiValue(javaValue);
+        }
+    }
+
+    private void readObject(ObjectInputStream stream) throws InvalidObjectException {
+        throw new InvalidObjectException("Proxy required");
     }
 }

@@ -15,6 +15,10 @@ import org.jruby.javasupport.JavaUtil;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.junit.Test;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
@@ -197,5 +201,22 @@ public class BiValueTest extends TestBase {
         assertFalse(subject.hasRubyValue());
         assertTrue(subject.hasJavaValue());
         assertEquals(v, subject.rubyValue(ruby));
+    }
+
+    @Test
+    public void testSerialization() throws Exception {
+        RubyBignum v = RubyBignum.newBignum(ruby, "-9223372036854776000");
+        BiValue original = BiValues.newBiValue(v);
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        ObjectOutputStream oos = new ObjectOutputStream(baos);
+        oos.writeObject(original);
+        oos.close();
+
+        ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
+        ObjectInputStream ois = new ObjectInputStream(bais);
+        BiValue copy = (BiValue) ois.readObject();
+        assertEquals(original, copy);
+        assertFalse(copy.hasRubyValue());
     }
 }

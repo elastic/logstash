@@ -18,39 +18,65 @@ import java.math.BigInteger;
 import java.util.HashMap;
 
 public enum BiValues {
-    // Ruby types
-    ORG_JRUBY_RUBYSTRING(BiValueType.STRING),
-    ORG_JRUBY_RUBYINTEGER(BiValueType.LONG),
-    ORG_JRUBY_RUBYFIXNUM(BiValueType.LONG),
-    ORG_JRUBY_RUBYFLOAT(BiValueType.DOUBLE),
+    COM_LOGSTASH_EXT_JRUBYTIMESTAMPEXTLIBRARY$RUBYTIMESTAMP(BiValueType.TIMESTAMP),
+    COM_LOGSTASH_TIMESTAMP(BiValueType.TIMESTAMP),
+    JAVA_LANG_BOOLEAN(BiValueType.BOOLEAN),
+    JAVA_LANG_DOUBLE(BiValueType.DOUBLE),
+    JAVA_LANG_FLOAT(BiValueType.FLOAT),
+    JAVA_LANG_INTEGER(BiValueType.INT),
+    JAVA_LANG_LONG(BiValueType.LONG),
+    JAVA_LANG_STRING(BiValueType.STRING),
+    JAVA_MATH_BIGDECIMAL(BiValueType.DECIMAL),
+    JAVA_MATH_BIGINTEGER(BiValueType.BIGINT),
+    ORG_JODA_TIME_DATETIME(BiValueType.TIME),
     ORG_JRUBY_EXT_BIGDECIMAL_RUBYBIGDECIMAL(BiValueType.DECIMAL),
+    ORG_JRUBY_RUBYBIGNUM(BiValueType.BIGINT),
     ORG_JRUBY_RUBYBOOLEAN$FALSE(BiValueType.BOOLEAN),
     ORG_JRUBY_RUBYBOOLEAN$TRUE(BiValueType.BOOLEAN),
     ORG_JRUBY_RUBYBOOLEAN(BiValueType.BOOLEAN),
-    COM_LOGSTASH_EXT_JRUBYTIMESTAMPEXTLIBRARY$RUBYTIMESTAMP(BiValueType.TIMESTAMP),
-    ORG_JRUBY_RUBYTIME(BiValueType.TIME),
-    ORG_JRUBY_RUBYSYMBOL(BiValueType.STRING), // one way conversion
+    ORG_JRUBY_RUBYFIXNUM(BiValueType.LONG),
+    ORG_JRUBY_RUBYFLOAT(BiValueType.DOUBLE),
+    ORG_JRUBY_RUBYINTEGER(BiValueType.LONG),
     ORG_JRUBY_RUBYNIL(BiValueType.NULL),
-    ORG_JRUBY_RUBYBIGNUM(BiValueType.BIGINT),
-    // Java types
-    JAVA_LANG_STRING(BiValueType.STRING),
-    JAVA_LANG_INTEGER(BiValueType.INT),
-    JAVA_LANG_LONG(BiValueType.LONG),
-    JAVA_LANG_DOUBLE(BiValueType.DOUBLE),
-    JAVA_LANG_FLOAT(BiValueType.FLOAT),
-    JAVA_MATH_BIGDECIMAL(BiValueType.DECIMAL),
-    JAVA_LANG_BOOLEAN(BiValueType.BOOLEAN),
-    COM_LOGSTASH_TIMESTAMP(BiValueType.TIMESTAMP),
-    ORG_JODA_TIME_DATETIME(BiValueType.TIME),
-    NULL(BiValueType.NULL),
-    JAVA_MATH_BIGINTEGER(BiValueType.BIGINT)
-    ;
+    ORG_JRUBY_RUBYSTRING(BiValueType.STRING),
+    ORG_JRUBY_RUBYSYMBOL(BiValueType.STRING), // one way conversion
+    ORG_JRUBY_RUBYTIME(BiValueType.TIME),
+    NULL(BiValueType.NULL);
+
+    private static HashMap<String, String> initCache() {
+        HashMap<String, String> hm = new HashMap<>();
+        hm.put("com.logstash.Timestamp", "COM_LOGSTASH_TIMESTAMP");
+        hm.put("com.logstash.ext.JrubyTimestampExtLibrary$RubyTimestamp", "COM_LOGSTASH_EXT_JRUBYTIMESTAMPEXTLIBRARY$RUBYTIMESTAMP");
+        hm.put("java.lang.Boolean", "JAVA_LANG_BOOLEAN");
+        hm.put("java.lang.Double", "JAVA_LANG_DOUBLE");
+        hm.put("java.lang.Float", "JAVA_LANG_FLOAT");
+        hm.put("java.lang.Integer", "JAVA_LANG_INTEGER");
+        hm.put("java.lang.Long", "JAVA_LANG_LONG");
+        hm.put("java.lang.String", "JAVA_LANG_STRING");
+        hm.put("java.math.BigDecimal", "JAVA_MATH_BIGDECIMAL");
+        hm.put("java.math.BigInteger", "JAVA_MATH_BIGINTEGER");
+        hm.put("org.joda.time.DateTime", "ORG_JODA_TIME_DATETIME");
+        hm.put("org.jruby.RubyBignum", "ORG_JRUBY_RUBYBIGNUM");
+        hm.put("org.jruby.RubyBoolean", "ORG_JRUBY_RUBYBOOLEAN");
+        hm.put("org.jruby.RubyBoolean$False", "ORG_JRUBY_RUBYBOOLEAN$FALSE");
+        hm.put("org.jruby.RubyBoolean$True", "ORG_JRUBY_RUBYBOOLEAN$TRUE");
+        hm.put("org.jruby.RubyFixnum", "ORG_JRUBY_RUBYFIXNUM");
+        hm.put("org.jruby.RubyFloat", "ORG_JRUBY_RUBYFLOAT");
+        hm.put("org.jruby.RubyInteger", "ORG_JRUBY_RUBYINTEGER");
+        hm.put("org.jruby.RubyNil", "ORG_JRUBY_RUBYNIL");
+        hm.put("org.jruby.RubyString", "ORG_JRUBY_RUBYSTRING");
+        hm.put("org.jruby.RubySymbol", "ORG_JRUBY_RUBYSYMBOL");
+        hm.put("org.jruby.RubyTime", "ORG_JRUBY_RUBYTIME");
+        hm.put("org.jruby.ext.bigdecimal.RubyBigDecimal", "ORG_JRUBY_EXT_BIGDECIMAL_RUBYBIGDECIMAL");
+        return hm;
+    }
+
+    private final BiValueType biValueType;
 
     BiValues(BiValueType biValueType) {
         this.biValueType = biValueType;
     }
 
-    private final BiValueType biValueType;
     private static final HashMap<String, String> nameCache = initCache();
 
     private BiValue build(Object value) {
@@ -71,33 +97,9 @@ public enum BiValues {
             return nameCache.get(cls);
         }
         String toCache = cls.toUpperCase().replace('.', '_');
+        // TODO[Guy] log warn that we are seeing a uncached value
         nameCache.put(cls, toCache);
         return toCache;
-    }
-
-    private static HashMap<String, String> initCache() {
-        HashMap<String, String> hm = new HashMap<>();
-        hm.put("org.jruby.RubyNil", "ORG_JRUBY_RUBYNIL");
-        hm.put("java.lang.Boolean", "JAVA_LANG_BOOLEAN");
-        hm.put("java.math.BigDecimal", "JAVA_MATH_BIGDECIMAL");
-        hm.put("org.jruby.ext.bigdecimal.RubyBigDecimal", "ORG_JRUBY_EXT_BIGDECIMAL_RUBYBIGDECIMAL");
-        hm.put("java.lang.Integer", "JAVA_LANG_INTEGER");
-        hm.put("org.jruby.RubyFixnum", "ORG_JRUBY_RUBYFIXNUM");
-        hm.put("org.joda.time.DateTime", "ORG_JODA_TIME_DATETIME");
-        hm.put("org.jruby.RubyTime", "ORG_JRUBY_RUBYTIME");
-        hm.put("java.lang.Long", "JAVA_LANG_LONG");
-        hm.put("java.lang.String", "JAVA_LANG_STRING");
-        hm.put("org.jruby.RubyString", "ORG_JRUBY_RUBYSTRING");
-        hm.put("com.logstash.Timestamp", "COM_LOGSTASH_TIMESTAMP");
-        hm.put("com.logstash.ext.JrubyTimestampExtLibrary$RubyTimestamp", "COM_LOGSTASH_EXT_JRUBYTIMESTAMPEXTLIBRARY$RUBYTIMESTAMP");
-        hm.put("java.lang.Double", "JAVA_LANG_DOUBLE");
-        hm.put("java.lang.Float", "JAVA_LANG_FLOAT");
-        hm.put("org.jruby.RubyFloat", "ORG_JRUBY_RUBYFLOAT");
-        hm.put("org.jruby.RubyBoolean$True", "ORG_JRUBY_RUBYBOOLEAN$TRUE");
-        hm.put("java.math.BigInteger", "JAVA_MATH_BIGINTEGER");
-        hm.put("org.jruby.RubyBignum", "ORG_JRUBY_RUBYBIGNUM");
-        hm.put("org.jruby.RubyBoolean$False", "ORG_JRUBY_RUBYBOOLEAN$FALSE");
-        return hm;
     }
 
     private enum BiValueType {

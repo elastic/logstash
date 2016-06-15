@@ -4,6 +4,8 @@ import org.jruby.Ruby;
 import org.jruby.RubyInteger;
 import org.jruby.javasupport.JavaUtil;
 
+import java.io.ObjectStreamException;
+
 public class LongBiValue extends BiValueCommon<RubyInteger, Long> implements BiValue<RubyInteger, Long> {
 
     public LongBiValue(RubyInteger rubyValue) {
@@ -25,5 +27,10 @@ public class LongBiValue extends BiValueCommon<RubyInteger, Long> implements BiV
 
     protected void addJava() {
         javaValue = rubyValue.getLongValue();
+    }
+
+    // Called when object is to be serialized on a stream to allow the object to substitute a proxy for itself.
+    private Object writeReplace() throws ObjectStreamException {
+        return newProxy(this);
     }
 }

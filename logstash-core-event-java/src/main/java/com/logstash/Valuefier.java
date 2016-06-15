@@ -114,6 +114,9 @@ public class Valuefier {
         if (o instanceof ConvertedList) {
             return o;
         }
+        if (o instanceof BiValue) {
+            return o;
+        }
         if (o instanceof RubyHash) {
             return rubyConvert((RubyHash) o);
         }
@@ -125,9 +128,6 @@ public class Valuefier {
         }
         if (o instanceof List) {
             return javaConvert((List<Object>) o);
-        }
-        if (o instanceof BiValue) {
-            return o;
         }
         return convertNonCollection(o);
     }

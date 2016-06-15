@@ -4,6 +4,8 @@ import org.joda.time.DateTime;
 import org.jruby.Ruby;
 import org.jruby.RubyTime;
 
+import java.io.ObjectStreamException;
+
 
 public class TimeBiValue extends BiValueCommon<RubyTime, DateTime> implements BiValue<RubyTime, DateTime> {
 
@@ -26,5 +28,10 @@ public class TimeBiValue extends BiValueCommon<RubyTime, DateTime> implements Bi
 
     protected void addJava() {
         javaValue = rubyValue.getDateTime();
+    }
+
+    // Called when object is to be serialized on a stream to allow the object to substitute a proxy for itself.
+    private Object writeReplace() throws ObjectStreamException {
+        return newProxy(this);
     }
 }

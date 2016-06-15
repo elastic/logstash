@@ -3,6 +3,7 @@ package com.logstash.bivalues;
 import org.jruby.Ruby;
 import org.jruby.ext.bigdecimal.RubyBigDecimal;
 
+import java.io.ObjectStreamException;
 import java.math.BigDecimal;
 
 public class BigDecimalBiValue extends BiValueCommon<RubyBigDecimal, BigDecimal> implements BiValue<RubyBigDecimal, BigDecimal> {
@@ -26,5 +27,10 @@ public class BigDecimalBiValue extends BiValueCommon<RubyBigDecimal, BigDecimal>
 
     protected void addJava() {
         javaValue = rubyValue.getBigDecimalValue();
+    }
+
+    // Called when object is to be serialized on a stream to allow the object to substitute a proxy for itself.
+    private Object writeReplace() throws ObjectStreamException {
+        return newProxy(this);
     }
 }

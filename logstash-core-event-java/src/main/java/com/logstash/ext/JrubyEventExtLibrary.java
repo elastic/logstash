@@ -115,7 +115,8 @@ public class JrubyEventExtLibrary implements Library {
             } else if (data instanceof RubyHash) {
                 this.event = new Event(Valuefier.rubyConvert((RubyHash) data));
             } else if (data instanceof MapJavaProxy) {
-                this.event = new Event((Map)((MapJavaProxy)data).getObject());
+                Map<String, Object> m = (Map)((MapJavaProxy)data).getObject();
+                this.event = new Event(Valuefier.javaConvert(m));
             } else {
                 throw context.runtime.newTypeError("wrong argument type " + data.getMetaClass() + " (expected Hash)");
             }
