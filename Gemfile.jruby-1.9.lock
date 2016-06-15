@@ -7,7 +7,7 @@ GEM
     atomic (1.1.99-java)
     avl_tree (1.2.1)
       atomic (~> 1.1)
-    awesome_print (1.6.1)
+    awesome_print (1.7.0)
     aws-sdk (2.1.36)
       aws-sdk-resources (= 2.1.36)
     aws-sdk-core (2.1.36)
@@ -144,7 +144,7 @@ GEM
     logstash-codec-rubydebug (3.0.1)
       awesome_print
       logstash-core-plugin-api (~> 2.0)
-    logstash-core (5.0.0.alpha4.snapshot1-java)
+    logstash-core (5.0.0.alpha4.snapshot2-java)
       cabin (~> 0.8.0)
       chronic_duration (= 0.10.6)
       clamp (~> 0.6.5)
@@ -155,7 +155,7 @@ GEM
       jrjackson (~> 0.3.7)
       jrmonitor (~> 0.4.2)
       jruby-openssl (= 0.9.16)
-      logstash-core-event-java (= 5.0.0.alpha4.snapshot1)
+      logstash-core-event-java (= 5.0.0.alpha4.snapshot2)
       minitar (~> 0.5.4)
       pry (~> 0.10.1)
       puma (~> 2.16)
@@ -164,12 +164,12 @@ GEM
       stud (~> 0.0.19)
       thread_safe (~> 0.3.5)
       treetop (< 1.5.0)
-    logstash-core-event-java (5.0.0.alpha4.snapshot1-java)
+    logstash-core-event-java (5.0.0.alpha4.snapshot2-java)
       jar-dependencies
       ruby-maven (~> 3.3.9)
-    logstash-core-plugin-api (2.1.7-java)
-      logstash-core (= 5.0.0.alpha4.snapshot1)
-    logstash-devutils (1.0.1-java)
+    logstash-core-plugin-api (2.1.8-java)
+      logstash-core (= 5.0.0.alpha4.snapshot2)
+    logstash-devutils (1.0.2-java)
       fivemat
       gem_publisher
       insist (= 1.0.0)
@@ -357,7 +357,7 @@ GEM
       logstash-filter-grok
       stud (>= 0.0.22, < 0.1.0)
       thread_safe
-    logstash-input-tcp (4.0.1)
+    logstash-input-tcp (4.0.2)
       logstash-codec-json
       logstash-codec-json_lines
       logstash-codec-line
@@ -468,7 +468,7 @@ GEM
     logstash-output-udp (3.0.1)
       logstash-codec-json
       logstash-core-plugin-api (~> 2.0)
-    logstash-output-webhdfs (3.0.0)
+    logstash-output-webhdfs (3.0.1)
       logstash-core-plugin-api (~> 2.0)
       snappy (= 0.0.12)
       webhdfs
@@ -497,7 +497,7 @@ GEM
     murmurhash3 (0.1.6-java)
     mustache (0.99.8)
     naught (1.1.0)
-    nokogiri (1.6.7.2-java)
+    nokogiri (1.6.8-java)
     numerizer (0.1.1)
     octokit (3.8.0)
       sawyer (~> 0.6.0, >= 0.5.3)
@@ -519,7 +519,7 @@ GEM
       rack
     rack-test (0.6.3)
       rack (>= 1.0)
-    rake (11.1.2)
+    rake (11.2.2)
     redis (3.3.0)
     rspec (3.1.0)
       rspec-core (~> 3.1.0)
@@ -535,7 +535,7 @@ GEM
     rspec-support (3.1.2)
     rspec-wait (0.0.8)
       rspec (>= 2.11, < 3.5)
-    ruby-maven (3.3.11)
+    ruby-maven (3.3.12)
       ruby-maven-libs (~> 3.3.9)
     ruby-maven-libs (3.3.9)
     rubyzip (1.1.7)
@@ -586,7 +586,7 @@ GEM
       simple_oauth (~> 0.3.0)
     tzinfo (1.2.2)
       thread_safe (~> 0.1)
-    tzinfo-data (1.2016.4)
+    tzinfo-data (1.2016.5)
       tzinfo (>= 1.0.0)
     unf (0.1.4-java)
     user_agent_parser (2.3.0)
@@ -621,9 +621,9 @@ DEPENDENCIES
   logstash-codec-netflow
   logstash-codec-plain
   logstash-codec-rubydebug
-  logstash-core (= 5.0.0.alpha4.snapshot1)
-  logstash-core-event-java (= 5.0.0.alpha4.snapshot1)
-  logstash-core-plugin-api (= 2.1.7)
+  logstash-core (= 5.0.0.alpha4.snapshot2)
+  logstash-core-event-java (= 5.0.0.alpha4.snapshot2)
+  logstash-core-plugin-api (= 2.1.8)
   logstash-devutils
   logstash-filter-clone
   logstash-filter-csv
