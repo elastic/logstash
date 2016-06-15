@@ -342,6 +342,10 @@ module LogStash::Config::Mixin
       @config.each do |config_key, config|
         next unless config[:required]
 
+        if config_key.is_a?(Regexp) && !params.keys.any? { |k| k =~ config_key }
+          is_valid = false
+        end
+
         value = params[config_key]
         if value.nil? || (config[:list] && Array(value).empty?)
           @logger.error(I18n.t("logstash.runner.configuration.setting_missing",
