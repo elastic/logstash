@@ -13,6 +13,12 @@ namespace :qa do
 
   namespace :vm do
 
+    def user_feedback_string_for(action, platform, machines, options={})
+      experimental_string = options["experimental"] ? "experimental" : "non experimental"
+      message  = "#{action} all #{experimental_string} VM's defined in acceptance/Vagrantfile"
+      "#{message} for #{platform}: #{machines}" if !platform.nil?
+    end
+
     desc "Generate a valid ssh-config"
     task :ssh_config do
       require "json"
@@ -24,10 +30,10 @@ namespace :qa do
     desc "Bootstrap all the VM's used for this tests"
     task :setup, :platform do |t, args|
       config   = PlatformConfig.new
-      machines = config.select_names_for(args[:platform])
+      experimental = (ENV['LS_QA_EXPERIMENTAL'].to_s.downcase || "false") == "true"
+      machines = config.select_names_for(args[:platform], {"experimental" => experimental})
 
-      message  = "bootstraping all VM's defined in acceptance/Vagrantfile"
-      message  = "#{message} for #{args[:platform]}: #{machines}" if !args[:platform].nil?
+      puts user_feedback_string_for("bootstraping", args[:platform], machines, {"experimental" => experimental})
 
       LogStash::VagrantHelpers.destroy(machines)
       LogStash::VagrantHelpers.bootstrap(machines)
@@ -36,10 +42,10 @@ namespace :qa do
     desc "Halt all VM's involved in the acceptance test round"
     task :halt, :platform do |t, args|
       config   = PlatformConfig.new
-      machines = config.select_names_for(args[:platform])
-      message = "halting all VM's defined inside Vagrantfile"
-      message  = "#{message} for #{args[:platform]}: #{machines}" if !args[:platform].nil?
-      puts message
+      experimental = (ENV['LS_QA_EXPERIMENTAL'].to_s.downcase || "false") == "true"
+      machines = config.select_names_for(args[:platform], {"experimental" => experimental})
+
+      puts user_feedback_string_for("halting", args[:platform], machines, {"experimental" => experimental})
 
       LogStash::VagrantHelpers.halt(machines)
     end
