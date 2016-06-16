@@ -22,4 +22,11 @@ describe LogStash::Instrument::NamespacedMetric do
   it "returns the value of the block" do
     expect(subject.time(:duration_ms) { "hello" }).to eq("hello")
   end
+
+  it "its doesnt change the original `namespace` when creating a subnamespace" do
+    new_namespace = subject.namespace(:wally)
+
+    expect(subject.namespace_name).to eq([namespace])
+    expect(new_namespace.namespace_name).to eq([:stats, :wally])
+  end
 end
