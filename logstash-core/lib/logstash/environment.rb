@@ -2,6 +2,7 @@
 require "logstash/errors"
 require "logstash/config/cpu_core_strategy"
 require "logstash/settings"
+require "socket"
 
 module LogStash
 
