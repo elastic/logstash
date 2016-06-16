@@ -23,4 +23,5 @@ gem "rubyzip", "~> 1.1.7", :group => :build
 gem "gems", "~> 0.8.3", :group => :build
 gem "rack-test", :require => "rack/test", :group => :development
 gem "flores", "~> 0.0.6", :group => :development
+gem "webmock", "~> 1.22", ">= 1.22.6", :group => :development
 gem "pleaserun"
