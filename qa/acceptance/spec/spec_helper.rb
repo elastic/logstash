@@ -15,11 +15,12 @@ RSpec.configure do |c|
 end
 
 platform = ENV['LS_TEST_PLATFORM'] || 'all'
+experimental = (ENV['LS_QA_EXPERIMENTAL'].to_s.downcase || "false") == "true"
 
 config                  = PlatformConfig.new
 LOGSTASH_LATEST_VERSION = config.latest
 
-default_vagrant_boxes = ( platform == 'all' ? config.platforms : config.filter_type(platform) )
+default_vagrant_boxes = ( platform == 'all' ? config.platforms : config.filter_type(platform, {"experimental" => experimental}) )
 
 selected_boxes = if ENV.include?('LS_VAGRANT_HOST') then
                    config.platforms.select { |p| p.name  == ENV['LS_VAGRANT_HOST'] }
