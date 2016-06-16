@@ -430,7 +430,7 @@ module LogStash::Config::Mixin
       result = nil
 
       if validator.nil?
-        return true
+        return true, value
       elsif validator.is_a?(Array)
         value = [*value]
         if value.size > 1
