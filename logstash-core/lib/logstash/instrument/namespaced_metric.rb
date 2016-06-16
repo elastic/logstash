@@ -45,7 +45,7 @@ module LogStash module Instrument
     end
 
     def namespace(name)
-      NamespacedMetric.new(metric, namespace_name.concat(Array(name)))
+      NamespacedMetric.new(metric, namespace_name + Array(name))
     end
 
     private
