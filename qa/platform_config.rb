@@ -11,12 +11,13 @@ class PlatformConfig
   # Abstract the idea of a platform, aka an OS
   class Platform
 
-    attr_reader :name, :box, :type, :bootstrap
+    attr_reader :name, :box, :type, :bootstrap, :experimental
 
     def initialize(name, data)
       @name = name
       @box  = data["box"]
       @type = data["type"]
+      @experimental = data["experimental"] || false
       configure_bootstrap_scripts(data)
     end
 
@@ -63,12 +64,14 @@ class PlatformConfig
     @platforms.each(&block)
   end
 
-  def filter_type(type_name)
-    @platforms.select { |platform| platform.type == type_name }
+  def filter_type(type_name, options={})
+    experimental = options.fetch("experimental", false)
+    @platforms.select { |platform| platform.type == type_name && platform.experimental == experimental }
   end
 
-  def select_names_for(platform=nil)
-    !platform.nil? ? filter_type(platform).map{ |p| p.name } : ""
+  def select_names_for(platform, options={})
+    filter_options = { "experimental" => options.fetch("experimental", false) }
+    !platform.nil? ? filter_type(platform, filter_options).map{ |p| p.name } : ""
   end
 
   def types
