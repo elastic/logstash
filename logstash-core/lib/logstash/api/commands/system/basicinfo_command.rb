@@ -10,10 +10,8 @@ module LogStash
         class BasicInfo < Commands::Base
 
           def run
-            {
-              "hostname" => hostname,
-              "version" => { "number" => LOGSTASH_VERSION }.merge(BUILD_INFO)
-            }
+            # Just merge this stuff with the defaults
+            BUILD_INFO
           end
         end
       end

@@ -23,6 +23,21 @@ module ResourceDSLMethods
       it "should respond OK" do
         expect(last_response).to be_ok
       end
+
+      
+      describe "the default metadata" do
+        it "should include the host" do
+          expect(payload["host"]).to eql(Socket.gethostname)
+        end
+
+        it "should include the version" do
+          expect(payload["version"]).to eql(LOGSTASH_CORE_VERSION)
+        end
+
+        it "should include the http address" do
+          expect(payload["http_address"]).to eql("#{Socket.gethostname}:#{::LogStash::WebServer::DEFAULT_PORT}")
+        end
+      end
       
       hash_to_mapping(expected).each do |resource_path,klass|
         dotted = resource_path.join(".")

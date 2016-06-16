@@ -85,7 +85,6 @@ describe LogStash::Api::Modules::Node do
           }
         },
         "hot_threads"=> {
-          "hostname" => String,
           "time" => String,
           "busiest_threads" => Numeric,
           "threads" => Array

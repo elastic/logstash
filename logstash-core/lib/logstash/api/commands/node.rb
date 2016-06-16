@@ -9,7 +9,7 @@ module LogStash
             :pipeline => pipeline,
             :os => os,
             :jvm => jvm
-          }           
+          }
         end
         
         def pipeline
@@ -83,7 +83,7 @@ module LogStash
           end
 
           def to_hash
-            hash = { :hostname => @cmd.hostname, :time => Time.now.iso8601, :busiest_threads => @thread_dump.top_count, :threads => [] }
+            hash = { :time => Time.now.iso8601, :busiest_threads => @thread_dump.top_count, :threads => [] }
             @thread_dump.each do |thread_name, _hash|
               thread_name, thread_path = _hash["thread.name"].split(": ")
               thread = { :name => thread_name,

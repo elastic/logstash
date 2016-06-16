@@ -16,6 +16,7 @@ require "logstash/config/defaults"
 require "logstash/shutdown_watcher"
 require "logstash/patches/clamp"
 require "logstash/settings"
+require "logstash/version"
 
 class LogStash::Runner < Clamp::StrictCommand
   # The `path.settings` need to be defined in the runner instead of the `logstash-core/lib/logstash/environment.rb`
@@ -256,7 +257,6 @@ class LogStash::Runner < Clamp::StrictCommand
   end # def show_version
 
   def show_version_logstash
-    require "logstash/version"
     puts "logstash #{LOGSTASH_VERSION}"
   end # def show_version_logstash
 

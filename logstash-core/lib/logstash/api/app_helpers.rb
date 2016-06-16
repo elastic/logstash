@@ -6,6 +6,11 @@ module LogStash::Api::AppHelpers
   def respond_with(data, options={})
     as     = options.fetch(:as, :json)
     pretty = params.has_key?("pretty")
+
+    unless options.include?(:exclude_default_metadata)
+      data = default_metadata.merge(data)
+    end
+    
     if as == :json
       content_type "application/json"
       LogStash::Json.dump(data, {:pretty => pretty})
@@ -19,5 +24,9 @@ module LogStash::Api::AppHelpers
     return true   if string == true   || string =~ (/(true|t|yes|y|1)$/i)
     return false  if string == false  || string.blank? || string =~ (/(false|f|no|n|0)$/i)
     raise ArgumentError.new("invalid value for Boolean: \"#{string}\"")
+  end
+
+  def default_metadata
+    @factory.build(:default_metadata).all
   end
 end
