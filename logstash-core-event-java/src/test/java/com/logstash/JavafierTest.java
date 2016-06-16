@@ -3,17 +3,21 @@ package com.logstash;
 import org.jruby.Ruby;
 import org.jruby.RubyBignum;
 import org.jruby.RubyClass;
+import org.jruby.RubyMatchData;
 import org.jruby.RubyString;
 import org.jruby.java.proxies.ArrayJavaProxy;
 import org.jruby.java.proxies.ConcreteJavaProxy;
 import org.jruby.java.proxies.MapJavaProxy;
 import org.jruby.javasupport.Java;
 import org.jruby.runtime.builtin.IRubyObject;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -70,5 +74,27 @@ public class JavafierTest {
         assertEquals(ArrayList.class, result.getClass());
         List<Object> a = (ArrayList) result;
         assertEquals("foo", a.get(0));
+    }
+
+    @Rule
+    public ExpectedException exception = ExpectedException.none();
+
+    @Test
+    public void testUnhandledObject() {
+        RubyMatchData md = new RubyMatchData(ruby);
+        exception.expect(IllegalArgumentException.class);
+        exception.expectMessage("Missing Ruby class handling for full class name=org.jruby.RubyMatchData, simple name=RubyMatchData");
+        Javafier.deep(md);
+    }
+
+    @Test
+    public void testUnhandledProxyObject() {
+        HashSet<Integer> hs = new HashSet<>();
+        hs.add(42);
+        RubyClass proxyClass = (RubyClass) Java.getProxyClass(ruby, HashSet.class);
+        ConcreteJavaProxy cjp = new ConcreteJavaProxy(ruby, proxyClass, hs);
+        exception.expect(IllegalArgumentException.class);
+        exception.expectMessage("Missing Ruby class handling for full class name=org.jruby.java.proxies.ConcreteJavaProxy, simple name=ConcreteJavaProxy, wrapped object=java.util.HashSet");
+        Javafier.deep(cjp);
     }
 }

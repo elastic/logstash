@@ -24,8 +24,11 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class Javafier {
+    private static final String ERR_TEMPLATE = "Missing Ruby class handling for full class name=%s, simple name=%s";
+    private static final String PROXY_ERR_TEMPLATE = "Missing Ruby class handling for full class name=%s, simple name=%s, wrapped object=%s";
 
     private Javafier(){}
 
@@ -39,24 +42,35 @@ public class Javafier {
     }
 
     public static List<Object> deep(RubyArray a) {
-        return deep( a.toJavaArray());
+        return deep(a.toJavaArray());
     }
 
-    public static List<Object> deepList(List<Object> a) {
+    private static HashMap<String, Object> deepMap(final Map<?, ?> map) {
+        final HashMap<String, Object> result = new HashMap();
+
+        for (Map.Entry<?, ?> entry : map.entrySet()) {
+            String k;
+            if (entry.getKey() instanceof IRubyObject) {
+                k = ((IRubyObject) entry.getKey()).asJavaString();
+            } else {
+                k = String.valueOf(entry.getKey());
+            }
+            result.put(k, deepAnything(entry.getValue()));
+        }
+        return result;
+    }
+
+    private static List<Object> deepList(List<Object> a) {
         final ArrayList<Object> result = new ArrayList();
 
         for (Object o : a) {
-            if (o instanceof IRubyObject) {
-                result.add(deep((IRubyObject)o));
-            } else {
-                result.add(o);
-            }
+            result.add(deepAnything(o));
         }
         return result;
     }
 
     public static HashMap<String, Object> deep(RubyHash h) {
-        final HashMap result = new HashMap();
+        final HashMap<String, Object> result = new HashMap();
 
         h.visitAll(new RubyHash.Visitor() {
             @Override
@@ -65,6 +79,20 @@ public class Javafier {
             }
         });
         return result;
+    }
+
+    private static Object deepAnything(Object o) {
+        // because, although we have a Java object (from a JavaProxy??), it may have IRubyObjects inside
+        if (o instanceof IRubyObject) {
+            return deep((IRubyObject) o);
+        }
+        if (o instanceof Map) {
+            return deepMap((Map) o);
+        }
+        if (o instanceof List) {
+            return deepList((List) o);
+        }
+        return o;
     }
 
     public static String deep(RubyString s) {
@@ -127,25 +155,18 @@ public class Javafier {
         if (obj instanceof List) {
             return deepList((List<Object>) obj);
         }
-        StringBuilder sb = new StringBuilder();
-        sb.append("Missing Ruby class handling for full class name=");
-        sb.append(jp.getClass().getName());
-        sb.append(", simple name=");
-        sb.append(jp.getClass().getSimpleName());
-        sb.append(", wrapped object=");
-        sb.append(obj.getClass());
-
-        throw new IllegalArgumentException(sb.toString());
+        Class cls = jp.getClass();
+        throw new IllegalArgumentException(missingHandlerString(PROXY_ERR_TEMPLATE, cls.getName(), cls.getSimpleName(), obj.getClass().getName()));
     }
 
     public static Object deep(IRubyObject o) {
         // TODO: (colin) this enum strategy is cleaner but I am hoping that is not slower than using a instanceof cascade
-
+        Class cls = o.getClass();
         RUBYCLASS clazz;
         try {
-            clazz = RUBYCLASS.valueOf(o.getClass().getSimpleName());
+            clazz = RUBYCLASS.valueOf(cls.getSimpleName());
         } catch (IllegalArgumentException e) {
-            throw new IllegalArgumentException("Missing Ruby class handling for full class name=" + o.getClass().getName() + ", simple name=" + o.getClass().getSimpleName());
+            throw new IllegalArgumentException(missingHandlerString(ERR_TEMPLATE, cls.getName(), cls.getSimpleName()));
         }
 
         switch(clazz) {
@@ -164,7 +185,7 @@ public class Javafier {
             case RubyNil: return deep((RubyNil)o);
             case True: return deep((RubyBoolean.True)o);
             case False: return deep((RubyBoolean.False)o);
-            case MapJavaProxy: return deep(((MapJavaProxy) o).to_hash());
+            case MapJavaProxy: return deepMap((Map)((MapJavaProxy) o).getObject());
             case ArrayJavaProxy:  return deepJavaProxy((JavaProxy) o);
             case ConcreteJavaProxy: return deepJavaProxy((JavaProxy) o);
         }
@@ -174,7 +195,12 @@ public class Javafier {
         }
 
         // TODO: (colin) temporary trace to spot any unhandled types
-        System.out.println("***** WARN: UNHANDLED IRubyObject full class name=" + o.getMetaClass().getRealClass().getName() + ", simple name=" + o.getClass().getSimpleName() + " java class=" + o.getJavaClass().toString() + " toString=" + o.toString());
+        System.out.println(String.format(
+                "***** WARN: UNHANDLED IRubyObject full class name=%s, simple name=%s java class=%s toString=%s",
+                o.getMetaClass().getRealClass().getName(),
+                o.getClass().getSimpleName(),
+                o.getJavaClass().toString(),
+                o.toString()));
 
         return o.toJava(o.getJavaClass());
     }
@@ -199,6 +225,10 @@ public class Javafier {
         MapJavaProxy,
         ArrayJavaProxy,
         ConcreteJavaProxy
+    }
+
+    private static String missingHandlerString(String fmt, String... subs) {
+        return String.format(fmt, subs);
     }
 }
 
