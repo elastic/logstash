@@ -30,7 +30,7 @@ namespace :qa do
     desc "Bootstrap all the VM's used for this tests"
     task :setup, :platform do |t, args|
       config   = PlatformConfig.new
-      experimental = (ENV['LS_QA_EXPERIMENTAL'].to_s.downcase || "false") == "true"
+      experimental = (ENV['LS_QA_EXPERIMENTAL_OS'].to_s.downcase || "false") == "true"
       machines = config.select_names_for(args[:platform], {"experimental" => experimental})
 
       puts user_feedback_string_for("bootstraping", args[:platform], machines, {"experimental" => experimental})
@@ -42,7 +42,7 @@ namespace :qa do
     desc "Halt all VM's involved in the acceptance test round"
     task :halt, :platform do |t, args|
       config   = PlatformConfig.new
-      experimental = (ENV['LS_QA_EXPERIMENTAL'].to_s.downcase || "false") == "true"
+      experimental = (ENV['LS_QA_EXPERIMENTAL_OS'].to_s.downcase || "false") == "true"
       machines = config.select_names_for(args[:platform], {"experimental" => experimental})
 
       puts user_feedback_string_for("halting", args[:platform], machines, {"experimental" => experimental})
