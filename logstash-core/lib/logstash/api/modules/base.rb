@@ -15,7 +15,7 @@ module LogStash
         set :raise_errors, true
         set :show_exceptions, false
 
-        attr_reader :factory
+        attr_reader :factory, :agent
 
         include LogStash::Util::Loggable
 
@@ -23,6 +23,7 @@ module LogStash
 
         def initialize(app=nil, agent)
           super(app)
+          @agent = agent
           @factory = ::LogStash::Api::CommandFactory.new(LogStash::Api::Service.new(agent))
         end
 

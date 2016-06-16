@@ -17,7 +17,9 @@ end
 
 module LogStash
   class DummyAgent < Agent
-    def start_webserver; end
+    def start_webserver
+      @webserver = Struct.new(:address).new("#{Socket.gethostname}:#{::LogStash::WebServer::DEFAULT_PORT}")
+    end
     def stop_webserver; end
   end
 end
@@ -92,7 +94,7 @@ shared_context "api setup" do
     @runner = LogStashRunner.new
     @runner.start
   end
-
+  
   after :all do
     @runner.stop
   end

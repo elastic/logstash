@@ -9,12 +9,7 @@ module LogStash
         class BasicInfo < Commands::Base
 
           def run
-            {
-              "hostname" => hostname,
-              "version" => {
-                "number" => LOGSTASH_VERSION
-              }
-            }
+	    {} # Just return the defaults
           end
         end
       end
