@@ -15,7 +15,7 @@ RSpec.configure do |c|
 end
 
 platform = ENV['LS_TEST_PLATFORM'] || 'all'
-experimental = (ENV['LS_QA_EXPERIMENTAL'].to_s.downcase || "false") == "true"
+experimental = (ENV['LS_QA_EXPERIMENTAL_OS'].to_s.downcase || "false") == "true"
 
 config                  = PlatformConfig.new
 LOGSTASH_LATEST_VERSION = config.latest
