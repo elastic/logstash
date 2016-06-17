@@ -82,7 +82,7 @@ describe LogStash::FilterDelegator do
       end
     end
 
-    context "when the fitler create more events" do
+    context "when the filter create more events" do
       let(:plugin_klass) do
         Class.new(LogStash::Filters::Base) do
           config_name "super_plugin"
