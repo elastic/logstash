@@ -46,11 +46,4 @@ fi
 . "$(cd `dirname $SOURCEPATH`/..; pwd)/bin/logstash.lib.sh"
 setup
 
-if [ "$1" = "-V" ] || [ "$1" = "--version" ];
-then
-  LOGSTASH_VERSION_FILE="${LOGSTASH_HOME}/logstash-core/lib/logstash/version.rb"
-  LOGSTASH_VERSION="$(sed -ne 's/^LOGSTASH_VERSION = "\([^*]*\)"$/\1/p' $LOGSTASH_VERSION_FILE)"
-  echo "logstash $LOGSTASH_VERSION"
-else
-  ruby_exec "${LOGSTASH_HOME}/lib/bootstrap/environment.rb" "logstash/runner.rb" "$@"
-fi
+ruby_exec "${LOGSTASH_HOME}/lib/bootstrap/environment.rb" "logstash/runner.rb" "$@"
