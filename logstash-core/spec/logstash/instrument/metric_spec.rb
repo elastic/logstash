@@ -67,15 +67,15 @@ describe LogStash::Instrument::Metric do
 
   context "#time" do
     let(:sleep_time) { 2 }
-    let(:sleep_time_ms) { sleep_time * 1_000_000 }
+    let(:sleep_time_ms) { sleep_time * 1_000 }
 
     it "records the duration" do
       subject.time(:root, :duration_ms) { sleep(sleep_time) }
 
-      expect(collector.last).to be_within(sleep_time_ms).of(sleep_time_ms + 5000)
+      expect(collector.last).to be_within(sleep_time_ms).of(sleep_time_ms + 5)
       expect(collector[0]).to match(:root)
       expect(collector[1]).to be(:duration_ms)
-      expect(collector[2]).to be(:mean)
+      expect(collector[2]).to be(:counter)
     end
 
     it "returns the value of the executed block" do
@@ -90,7 +90,7 @@ describe LogStash::Instrument::Metric do
       expect(collector.last).to be_within(sleep_time_ms).of(sleep_time_ms + 0.1)
       expect(collector[0]).to match(:root)
       expect(collector[1]).to be(:duration_ms)
-      expect(collector[2]).to be(:mean)
+      expect(collector[2]).to be(:counter)
     end
   end
 
