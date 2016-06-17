@@ -5,6 +5,7 @@ require "logstash/util"
 require "logstash/event"
 require "json"
 require "java"
+# java_import 'com.logstash.Util'
 
 TIMESTAMP = "@timestamp"
 
@@ -111,6 +112,32 @@ describe LogStash::Event do
       e.set("[foo]", -9223372036854776000)
       expect(e.get("foo")).to be_kind_of(Bignum)
       expect(e.get("foo")).to eq(-9223372036854776000)
+    end
+
+    it "should set XXJavaProxy Jackson crafted" do
+      proxy = com.logstash.Util.getMapFixtureJackson()
+      # proxy is {"string": "foo", "int": 42, "float": 42.42, "array": ["bar","baz"], "hash": {"string":"quux"} }
+      e = LogStash::Event.new()
+      e.set("[proxy]", proxy)
+      expect(e.get("[proxy][string]")).to eql("foo")
+      expect(e.get("[proxy][int]")).to eql(42)
+      expect(e.get("[proxy][float]")).to eql(42.42)
+      expect(e.get("[proxy][array][0]")).to eql("bar")
+      expect(e.get("[proxy][array][1]")).to eql("baz")
+      expect(e.get("[proxy][hash][string]")).to eql("quux")
+    end
+
+    it "should set XXJavaProxy hand crafted" do
+      proxy = com.logstash.Util.getMapFixtureHandcrafted()
+      # proxy is {"string": "foo", "int": 42, "float": 42.42, "array": ["bar","baz"], "hash": {"string":"quux"} }
+      e = LogStash::Event.new()
+      e.set("[proxy]", proxy)
+      expect(e.get("[proxy][string]")).to eql("foo")
+      expect(e.get("[proxy][int]")).to eql(42)
+      expect(e.get("[proxy][float]")).to eql(42.42)
+      expect(e.get("[proxy][array][0]")).to eql("bar")
+      expect(e.get("[proxy][array][1]")).to eql("baz")
+      expect(e.get("[proxy][hash][string]")).to eql("quux")
     end
   end
 
