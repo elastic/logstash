@@ -1,14 +1,13 @@
 package com.logstash;
 
 import com.logstash.ext.JrubyTimestampExtLibrary;
-import junit.framework.TestCase;
 import org.jruby.CompatVersion;
 import org.jruby.Ruby;
 import org.jruby.RubyInstanceConfig;
 import org.jruby.ext.bigdecimal.RubyBigDecimal;
 import org.junit.Before;
 
-public abstract class TestBase extends TestCase {
+public abstract class TestBase {
     private static boolean setupDone = false;
     public static Ruby ruby;
 

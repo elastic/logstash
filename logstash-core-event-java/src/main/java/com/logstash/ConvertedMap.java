@@ -1,5 +1,9 @@
 package com.logstash;
 
+import com.logstash.bivalues.BiValues;
+import org.jruby.RubyHash;
+import org.jruby.runtime.builtin.IRubyObject;
+
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -8,7 +12,7 @@ import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
-class ConvertedMap<K, V> implements Map<K, V> {
+public class ConvertedMap<K, V> implements Map<K, V> {
 
     private final Map<K, V> delegate;
 
@@ -20,6 +24,37 @@ class ConvertedMap<K, V> implements Map<K, V> {
         this.delegate = new HashMap<>();
     }
 
+    public static ConvertedMap<String, Object> newFromMap(Map<String, Object> o) {
+        ConvertedMap<String, Object> cm = new ConvertedMap<>();
+        for (Map.Entry<String, Object> entry : o.entrySet()) {
+            String k = String.valueOf(BiValues.newBiValue(entry.getKey()).javaValue());
+            cm.put(k, Valuefier.convert(entry.getValue()));
+        }
+        return cm;
+    }
+
+    public static ConvertedMap<String, Object> newFromRubyHash(RubyHash o) {
+        final ConvertedMap<String, Object> result = new ConvertedMap<>();
+
+        o.visitAll(new RubyHash.Visitor() {
+            @Override
+            public void visit(IRubyObject key, IRubyObject value) {
+                String k = String.valueOf(BiValues.newBiValue(key).javaValue()) ;
+                result.put(k, Valuefier.convert(value));
+            }
+        });
+        return result;
+    }
+
+    public Object unconvert() {
+        final HashMap<K, V> result = new HashMap<>();
+        for (Map.Entry<K, V> entry : entrySet()) {
+            result.put(entry.getKey(), (V) Javafier.deep(entry.getValue()));
+        }
+        return result;
+    }
+
+    // Delegate methods
     @Override
     public int size() {
         return delegate.size();

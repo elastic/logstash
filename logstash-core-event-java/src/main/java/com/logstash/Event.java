@@ -83,7 +83,7 @@ public class Event implements Cloneable, Serializable {
     }
 
     public void setData(Map<String, Object> data) {
-        this.data = Valuefier.javaConvert(data);
+        this.data = ConvertedMap.newFromMap(data);
     }
 
     public Accessors getAccessors() {

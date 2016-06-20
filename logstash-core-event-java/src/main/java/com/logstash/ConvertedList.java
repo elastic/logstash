@@ -1,5 +1,8 @@
 package com.logstash;
 
+import org.jruby.RubyArray;
+import org.jruby.runtime.builtin.IRubyObject;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
@@ -12,7 +15,9 @@ import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
-class ConvertedList<T> implements List<T>, Collection<T>, Iterable<T> {
+import static com.logstash.Valuefier.convert;
+
+public class ConvertedList<T> implements List<T>, Collection<T>, Iterable<T> {
     private final List<T> delegate;
 
     public ConvertedList(List<T> delegate) {
@@ -22,6 +27,33 @@ class ConvertedList<T> implements List<T>, Collection<T>, Iterable<T> {
         this.delegate = new ArrayList<>();
     }
 
+    public static List<Object> newFromList(List<Object> list) {
+        ConvertedList<Object> array = new ConvertedList<>();
+
+        for (Object item : list) {
+            array.add(convert(item));
+        }
+        return array;
+    }
+
+    public static List<Object> newFromRubyArray(RubyArray a) {
+        final ConvertedList<Object> result = new ConvertedList<>();
+
+        for (IRubyObject o : a.toJavaArray()) {
+            result.add(convert(o));
+        }
+        return result;
+    }
+
+    public Object unconvert() {
+        final ArrayList<Object> result = new ArrayList<>();
+        for (Object obj : delegate) {
+            result.add(Javafier.deep(obj));
+        }
+        return result;
+    }
+
+    // delegate methods
     @Override
     public int size() {
         return delegate.size();

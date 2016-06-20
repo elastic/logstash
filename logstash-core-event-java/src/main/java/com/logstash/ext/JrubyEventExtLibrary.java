@@ -16,7 +16,6 @@ import org.jruby.runtime.load.Library;
 import java.io.IOException;
 import java.util.Map;
 
-
 public class JrubyEventExtLibrary implements Library {
 
     private static RubyClass PARSER_ERROR = null;
@@ -113,10 +112,10 @@ public class JrubyEventExtLibrary implements Library {
             if (data == null || data.isNil()) {
                 this.event = new Event();
             } else if (data instanceof RubyHash) {
-                this.event = new Event(Valuefier.rubyConvert((RubyHash) data));
+                this.event = new Event(ConvertedMap.newFromRubyHash((RubyHash) data));
             } else if (data instanceof MapJavaProxy) {
                 Map<String, Object> m = (Map)((MapJavaProxy)data).getObject();
-                this.event = new Event(Valuefier.javaConvert(m));
+                this.event = new Event(ConvertedMap.newFromMap(m));
             } else {
                 throw context.runtime.newTypeError("wrong argument type " + data.getMetaClass() + " (expected Hash)");
             }
@@ -260,8 +259,8 @@ public class JrubyEventExtLibrary implements Library {
             }
         }
 
-        // @param value [String] the json string. A json object/map will convert to an array containing a single Event.
-        // and a json array will convert each element into individual Event
+        // @param value [String] the json string. A json object/map will newFromRubyArray to an array containing a single Event.
+        // and a json array will newFromRubyArray each element into individual Event
         // @return Array<Event> array of events
         @JRubyMethod(name = "from_json", required = 1, meta = true)
         public static IRubyObject ruby_from_json(ThreadContext context, IRubyObject recv, RubyString value)

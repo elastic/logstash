@@ -19,6 +19,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static org.junit.Assert.assertEquals;
+
 public class RubyfierTest extends TestBase {
 
     @Test
@@ -56,7 +58,7 @@ public class RubyfierTest extends TestBase {
 
         RubyArray rubyArray = ((RubyArray)Rubyfier.deep(ruby, data));
 
-        // toJavaArray does not convert inner elemenst to Java types \o/
+        // toJavaArray does not newFromRubyArray inner elemenst to Java types \o/
         assertEquals(RubyString.class, rubyArray.toJavaArray()[0].getClass());
         assertEquals("foo", rubyArray.toJavaArray()[0].toString());
     }
@@ -96,7 +98,7 @@ public class RubyfierTest extends TestBase {
 
         RubyArray rubyArray = ((RubyArray)Rubyfier.deep(ruby, data));
 
-        // toJavaArray does not convert inner elemenst to Java types \o/
+        // toJavaArray does not newFromRubyArray inner elemenst to Java types \o/
         assertEquals(RubyFixnum.class, rubyArray.toJavaArray()[0].getClass());
         assertEquals(1L, ((RubyFixnum)rubyArray.toJavaArray()[0]).getLongValue());
     }
@@ -136,7 +138,7 @@ public class RubyfierTest extends TestBase {
 
         RubyArray rubyArray = ((RubyArray)Rubyfier.deep(ruby, data));
 
-        // toJavaArray does not convert inner elemenst to Java types \o/
+        // toJavaArray does not newFromRubyArray inner elemenst to Java types \o/
         assertEquals(RubyFloat.class, rubyArray.toJavaArray()[0].getClass());
         assertEquals(1.0D, ((RubyFloat)rubyArray.toJavaArray()[0]).getDoubleValue(), 0);
     }
@@ -176,7 +178,7 @@ public class RubyfierTest extends TestBase {
 
         RubyArray rubyArray = ((RubyArray)Rubyfier.deep(ruby, data));
 
-        // toJavaArray does not convert inner elemenst to Java types \o/
+        // toJavaArray does not newFromRubyArray inner elemenst to Java types \o/
         assertEquals(RubyFloat.class, rubyArray.toJavaArray()[0].getClass());
         assertEquals(1.0D, ((RubyFloat)rubyArray.toJavaArray()[0]).getDoubleValue(), 0);
     }
@@ -217,7 +219,7 @@ public class RubyfierTest extends TestBase {
 
         RubyArray rubyArray = ((RubyArray)Rubyfier.deep(ruby, data));
 
-        // toJavaArray does not convert inner elemenst to Java types \o/
+        // toJavaArray does not newFromRubyArray inner elemenst to Java types \o/
         assertEquals(RubyBigDecimal.class, rubyArray.toJavaArray()[0].getClass());
         assertEquals(1.0D, ((RubyBigDecimal)rubyArray.toJavaArray()[0]).getDoubleValue(), 0);
     }

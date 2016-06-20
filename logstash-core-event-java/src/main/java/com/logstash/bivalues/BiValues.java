@@ -12,6 +12,7 @@ import org.jruby.RubyString;
 import org.jruby.RubySymbol;
 import org.jruby.RubyTime;
 import org.jruby.ext.bigdecimal.RubyBigDecimal;
+import org.jruby.java.proxies.JavaProxy;
 import org.jruby.runtime.builtin.IRubyObject;
 
 import java.math.BigDecimal;
@@ -31,6 +32,7 @@ public enum BiValues {
     JAVA_MATH_BIGINTEGER(BiValueType.BIGINT),
     ORG_JODA_TIME_DATETIME(BiValueType.TIME),
     ORG_JRUBY_EXT_BIGDECIMAL_RUBYBIGDECIMAL(BiValueType.DECIMAL),
+    ORG_JRUBY_JAVA_PROXIES_CONCRETEJAVAPROXY(BiValueType.JAVAPROXY),
     ORG_JRUBY_RUBYBIGNUM(BiValueType.BIGINT),
     ORG_JRUBY_RUBYBOOLEAN$FALSE(BiValueType.BOOLEAN),
     ORG_JRUBY_RUBYBOOLEAN$TRUE(BiValueType.BOOLEAN),
@@ -69,6 +71,7 @@ public enum BiValues {
         hm.put("org.jruby.RubySymbol", "ORG_JRUBY_RUBYSYMBOL");
         hm.put("org.jruby.RubyTime", "ORG_JRUBY_RUBYTIME");
         hm.put("org.jruby.ext.bigdecimal.RubyBigDecimal", "ORG_JRUBY_EXT_BIGDECIMAL_RUBYBIGDECIMAL");
+        hm.put("org.jruby.java.proxies.ConcreteJavaProxy", "ORG_JRUBY_JAVA_PROXIES_CONCRETEJAVAPROXY");
         return hm;
     }
 
@@ -198,6 +201,14 @@ public enum BiValues {
                     return new BigIntegerBiValue((RubyBignum) value);
                 }
                 return new BigIntegerBiValue((BigInteger) value);
+            }
+        },
+        JAVAPROXY {
+            BiValue build(Object value) {
+                if (value instanceof IRubyObject) {
+                    return new JavaProxyBiValue((JavaProxy) value);
+                }
+                return new JavaProxyBiValue(value);
             }
         };
         abstract BiValue build(Object value);
