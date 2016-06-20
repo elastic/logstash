@@ -20,7 +20,7 @@ LogStash::Environment.load_locale!
 class LogStash::Agent
   STARTED_AT = Time.now.freeze
 
-  attr_reader :metric, :node_name, :pipelines, :settings
+  attr_reader :metric, :node_name, :pipelines, :settings, :webserver
   attr_accessor :logger
 
   # initialize method for LogStash::Agent

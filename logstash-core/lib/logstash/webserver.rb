@@ -55,6 +55,10 @@ module LogStash
     def error(str)
       logger.error(str)
     end
+
+    def address
+      "#{http_host}:#{http_port}"
+    end
     
     # Empty method, this method is required because of the puma usage we make through
     # the Single interface, https://github.com/puma/puma/blob/master/lib/puma/single.rb#L82
