@@ -17,7 +17,7 @@ module ServiceTester
     end
 
     def package_for(version, base=ServiceTester::Base::LOCATION)
-      File.join(base, "logstash-#{version}.rpm")
+      File.join(base, "logstash-#{version}-SNAPSHOT.rpm")
     end
 
     def install(package, host=nil)
