@@ -6,7 +6,7 @@ require "fileutils"
 shared_examples "logstash list" do |logstash|
   describe "logstash-plugin list on #{logstash.hostname}" do
     before(:all) do
-      logstash.install(LOGSTASH_VERSION)
+      logstash.install({:version => LOGSTASH_VERSION})
     end
 
     after(:all) do

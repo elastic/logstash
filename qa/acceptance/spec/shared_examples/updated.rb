@@ -11,12 +11,14 @@ RSpec.shared_examples "updated" do |logstash|
   end
 
   before(:each) do
-    logstash.install(LOGSTASH_LATEST_VERSION, "./") # make sure latest version is installed
+    options={:version => LOGSTASH_LATEST_VERSION, :snapshot => false, :base => "./" }
+    logstash.install(options) # make sure latest version is installed
   end
 
   it "can be updated an run on #{logstash.hostname}" do
+    expect(logstash).to be_installed
     # Performing the update
-    logstash.install(LOGSTASH_VERSION)
+    logstash.install({:version => LOGSTASH_VERSION})
     expect(logstash).to be_installed
     # starts the service to be sure it runs after the upgrade
     logstash.start_service
