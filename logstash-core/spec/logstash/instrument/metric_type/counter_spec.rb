@@ -28,12 +28,7 @@ describe LogStash::Instrument::MetricType::Counter do
 
   context "When creating a hash " do
     it "creates the hash from all the values" do
-      metric_hash = {
-        "key" => key,
-        "namespaces" => namespaces,
-        "value" => 0,
-        "type" => "counter"
-      }
+      metric_hash = { key => 0 }
       expect(subject.to_hash).to match(metric_hash)
     end
   end
