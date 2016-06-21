@@ -16,7 +16,7 @@ shared_examples "logstash update" do |logstash|
     let(:previous_version) { "0.1.0" }
 
     before do
-      logstash.run_command_in_path("bin/logstash-plugin install --version #{previous_version} #{plugin_name}")
+      logstash.run_command_in_path("bin/logstash-plugin install --no-verify --version #{previous_version} #{plugin_name}")
       # Logstash wont update when we have a pinned versionin the gemfile so we remove them
       logstash.replace_in_gemfile(',\s"0.1.0"', "")
       expect(logstash).to have_installed?(plugin_name, previous_version)
@@ -24,7 +24,7 @@ shared_examples "logstash update" do |logstash|
 
     context "update a specific plugin" do
       it "has executed succesfully" do
-        cmd = logstash.run_command_in_path("bin/logstash-plugin update #{plugin_name}")
+        cmd = logstash.run_command_in_path("bin/logstash-plugin update --no-verify #{plugin_name}")
         expect(cmd.stdout).to match(/Updating #{plugin_name}/)
         expect(logstash).not_to have_installed?(plugin_name, previous_version)
       end
@@ -32,7 +32,7 @@ shared_examples "logstash update" do |logstash|
 
     context "update all the plugins" do
       it "has executed succesfully" do
-        logstash.run_command_in_path("bin/logstash-plugin update")
+        logstash.run_command_in_path("bin/logstash-plugin update --no-verify")
         expect(logstash).to have_installed?(plugin_name, "0.1.1")
       end
     end
