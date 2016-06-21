@@ -16,8 +16,8 @@ module ServiceTester
       stdout.match(/^logstash.noarch/)
     end
 
-    def package_for(version, base=ServiceTester::Base::LOCATION)
-      File.join(base, "logstash-#{version}-SNAPSHOT.rpm")
+    def package_for(filename, base=ServiceTester::Base::LOCATION)
+      File.join(base, "#{filename}.rpm")
     end
 
     def install(package, host=nil)

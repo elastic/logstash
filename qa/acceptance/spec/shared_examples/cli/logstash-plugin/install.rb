@@ -5,7 +5,7 @@ require "fileutils"
 
 shared_examples "logstash install" do |logstash|
   before(:each) do
-    logstash.install(LOGSTASH_VERSION)
+    logstash.install({:version => LOGSTASH_VERSION})
   end
 
   after(:each) do

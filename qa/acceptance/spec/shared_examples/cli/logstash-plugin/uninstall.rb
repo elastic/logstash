@@ -6,7 +6,7 @@ require "fileutils"
 shared_examples "logstash uninstall" do |logstash|
   describe "logstash uninstall on #{logstash.hostname}" do
     before :each do
-      logstash.install(LOGSTASH_VERSION)
+      logstash.install({:version => LOGSTASH_VERSION})
     end
 
     after :each do
