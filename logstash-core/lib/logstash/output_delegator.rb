@@ -27,6 +27,8 @@ module LogStash class OutputDelegator
 
     # Scope the metrics to the plugin
     namespaced_metric = metric.namespace(output.plugin_unique_name.to_sym)
+    output.metric = namespaced_metric
+
     @metric_events = namespaced_metric.namespace(:events)
     namespaced_metric.gauge(:name, config_name)
 

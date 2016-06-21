@@ -17,10 +17,7 @@ module LogStash module Instrument module MetricType
 
     def to_hash
       {
-        "namespaces" => namespaces,
-        "key" => key,
-        "type" => type,
-        "value" => value
+        key => value
       }
     end
 

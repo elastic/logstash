@@ -22,7 +22,7 @@ module LogStash
 
       # Scope the metrics to the plugin
       namespaced_metric = metric.namespace(@filter.plugin_unique_name.to_sym)
-      @filter.metric = metric
+      @filter.metric = namespaced_metric
 
       @metric_events = namespaced_metric.namespace(:events)
       namespaced_metric.gauge(:name, config_name)
