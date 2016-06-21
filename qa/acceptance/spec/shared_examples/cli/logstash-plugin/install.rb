@@ -33,13 +33,13 @@ shared_examples "logstash install" do |logstash|
 
         context "when fetching a gem from rubygems" do
           it "successfully install the plugin" do
-            command = logstash.run_command_in_path("bin/logstash-plugin install logstash-filter-qatest")
+            command = logstash.run_command_in_path("bin/logstash-plugin install --no-verify logstash-filter-qatest")
             expect(command).to install_successfully
             expect(logstash).to have_installed?("logstash-filter-qatest")
           end
 
           it "allow to install a specific version" do
-            command = logstash.run_command_in_path("bin/logstash-plugin install --version 0.1.0 logstash-filter-qatest")
+            command = logstash.run_command_in_path("bin/logstash-plugin install --no-verify --version 0.1.0 logstash-filter-qatest")
             expect(command).to install_successfully
             expect(logstash).to have_installed?("logstash-filter-qatest", "0.1.0")
           end
