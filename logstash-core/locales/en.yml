@@ -210,6 +210,10 @@ en:
         version: |+
           Emit the version of logstash and its friends,
           then exit.
+        datapath: |+
+          This should point to a writable directory. Logstash
+          will use this directory whenever it needs to store
+          data. Plugins will also have access to this path.
         pluginpath: |+
           A path of where to find plugins. This flag
           can be given multiple times to include

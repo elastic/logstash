@@ -13,6 +13,7 @@ namespace "artifact" do
       "CONTRIBUTORS",
       "bin/**/*",
       "config/**/*",
+      "data",
       "lib/bootstrap/**/*",
       "lib/pluginmanager/**/*",
       "lib/systeminstall/**/*",
@@ -313,6 +314,7 @@ namespace "artifact" do
     # This is a bit obtuse, I suppose, but it is necessary until
     # we find a better way to do this with fpm.
     Stud::Temporary.directory do |empty|
+      dir.input("#{empty}/=/usr/share/logstash/data")
       dir.input("#{empty}/=/var/log/logstash")
       dir.input("#{empty}/=/var/lib/logstash")
       dir.input("#{empty}/=/etc/logstash/conf.d")

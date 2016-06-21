@@ -64,6 +64,12 @@ class LogStash::Runner < Clamp::StrictCommand
     :attribute_name => "pipeline.unsafe_shutdown",
     :default => LogStash::SETTINGS.get_default("pipeline.unsafe_shutdown")
 
+  # Data Path Setting
+  option ["--path.data"] , "PATH",
+    I18n.t("logstash.runner.flag.datapath"),
+    :attribute_name => "path.data",
+    :default => LogStash::SETTINGS.get_default("path.data")
+
   # Plugins Settings
   option ["-p", "--path.plugins"] , "PATH",
     I18n.t("logstash.runner.flag.pluginpath"),

@@ -261,6 +261,18 @@ module LogStash
       end
     end
 
+    class WritableDirectory < Setting
+      def initialize(name, default=nil, strict=true)
+        super(name, ::String, default, strict) do |path|
+          if ::File.directory?(path) && ::File.writable?(path)
+            true
+          else
+            raise ::ArgumentError.new("Path \"#{path}\" is not a directory or not writable.")
+          end
+        end
+      end
+    end
+
   end
 
   SETTINGS = Settings.new
