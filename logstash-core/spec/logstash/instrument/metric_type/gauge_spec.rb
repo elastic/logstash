@@ -29,10 +29,7 @@ describe LogStash::Instrument::MetricType::Gauge do
   context "When creating a hash " do
     it "creates the hash from all the values" do
       metric_hash = {
-        "key" => key,
-        "namespaces" => namespaces,
-        "value" => value,
-        "type" => "gauge"
+        key => value
       }
       expect(subject.to_hash).to match(metric_hash)
     end
