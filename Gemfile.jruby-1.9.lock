@@ -616,100 +616,104 @@ DEPENDENCIES
   flores (~> 0.0.6)
   fpm (~> 1.3.3)
   gems (~> 0.8.3)
-  logstash-codec-collectd
-  logstash-codec-dots
-  logstash-codec-edn
-  logstash-codec-edn_lines
-  logstash-codec-es_bulk
-  logstash-codec-fluent
-  logstash-codec-graphite
-  logstash-codec-json
-  logstash-codec-json_lines
-  logstash-codec-line
-  logstash-codec-msgpack
-  logstash-codec-multiline
-  logstash-codec-netflow
-  logstash-codec-plain
-  logstash-codec-rubydebug
+  logstash-codec-collectd (~> 3)
+  logstash-codec-dots (~> 3)
+  logstash-codec-edn (~> 3)
+  logstash-codec-edn_lines (~> 3)
+  logstash-codec-es_bulk (~> 3)
+  logstash-codec-fluent (~> 3)
+  logstash-codec-graphite (~> 3)
+  logstash-codec-json (~> 3)
+  logstash-codec-json_lines (~> 3)
+  logstash-codec-line (~> 3)
+  logstash-codec-msgpack (~> 3)
+  logstash-codec-multiline (~> 3)
+  logstash-codec-netflow (~> 3)
+  logstash-codec-plain (~> 3)
+  logstash-codec-rubydebug (~> 3)
   logstash-core!
   logstash-core-event-java!
   logstash-core-plugin-api!
   logstash-devutils
-  logstash-filter-clone
-  logstash-filter-csv
-  logstash-filter-date
-  logstash-filter-dns
-  logstash-filter-drop
-  logstash-filter-fingerprint
-  logstash-filter-geoip
-  logstash-filter-grok
-  logstash-filter-json
-  logstash-filter-kv
-  logstash-filter-metrics
-  logstash-filter-mutate
-  logstash-filter-ruby
-  logstash-filter-sleep
-  logstash-filter-split
-  logstash-filter-syslog_pri
-  logstash-filter-throttle
-  logstash-filter-urldecode
-  logstash-filter-useragent
-  logstash-filter-uuid
-  logstash-filter-xml
-  logstash-input-beats
-  logstash-input-couchdb_changes
-  logstash-input-elasticsearch
-  logstash-input-exec
-  logstash-input-file
-  logstash-input-ganglia
-  logstash-input-gelf
-  logstash-input-generator
-  logstash-input-graphite
-  logstash-input-heartbeat
-  logstash-input-http
-  logstash-input-http_poller
-  logstash-input-imap
-  logstash-input-irc
-  logstash-input-jdbc
-  logstash-input-kafka
-  logstash-input-log4j
-  logstash-input-lumberjack
-  logstash-input-pipe
-  logstash-input-rabbitmq
-  logstash-input-redis
-  logstash-input-s3
-  logstash-input-snmptrap
-  logstash-input-sqs
-  logstash-input-stdin
-  logstash-input-syslog
-  logstash-input-tcp
-  logstash-input-twitter
-  logstash-input-udp
-  logstash-input-unix
-  logstash-input-xmpp
-  logstash-output-cloudwatch
-  logstash-output-csv
-  logstash-output-elasticsearch
-  logstash-output-file
-  logstash-output-graphite
-  logstash-output-http
-  logstash-output-irc
-  logstash-output-kafka
-  logstash-output-nagios
-  logstash-output-null
-  logstash-output-pagerduty
-  logstash-output-pipe
-  logstash-output-rabbitmq
-  logstash-output-redis
-  logstash-output-s3
-  logstash-output-sns
-  logstash-output-sqs
-  logstash-output-statsd
-  logstash-output-stdout
-  logstash-output-tcp
-  logstash-output-udp
-  logstash-output-webhdfs
-  logstash-output-xmpp
+  logstash-filter-clone (~> 3)
+  logstash-filter-csv (~> 3)
+  logstash-filter-date (~> 3)
+  logstash-filter-dns (~> 3)
+  logstash-filter-drop (~> 3)
+  logstash-filter-fingerprint (~> 3)
+  logstash-filter-geoip (~> 4)
+  logstash-filter-grok (~> 3)
+  logstash-filter-json (~> 3)
+  logstash-filter-kv (~> 3)
+  logstash-filter-metrics (~> 4)
+  logstash-filter-mutate (~> 3)
+  logstash-filter-ruby (~> 3)
+  logstash-filter-sleep (~> 3)
+  logstash-filter-split (~> 3)
+  logstash-filter-syslog_pri (~> 3)
+  logstash-filter-throttle (~> 3)
+  logstash-filter-urldecode (~> 3)
+  logstash-filter-useragent (~> 3)
+  logstash-filter-uuid (~> 3)
+  logstash-filter-xml (~> 4)
+  logstash-input-beats (~> 3)
+  logstash-input-couchdb_changes (~> 3)
+  logstash-input-elasticsearch (~> 3)
+  logstash-input-exec (~> 3)
+  logstash-input-file (~> 3)
+  logstash-input-ganglia (~> 3)
+  logstash-input-gelf (~> 3)
+  logstash-input-generator (~> 3)
+  logstash-input-graphite (~> 3)
+  logstash-input-heartbeat (~> 3)
+  logstash-input-http (~> 3)
+  logstash-input-http_poller (~> 3)
+  logstash-input-imap (~> 3)
+  logstash-input-irc (~> 3)
+  logstash-input-jdbc (~> 4)
+  logstash-input-kafka (~> 4)
+  logstash-input-log4j (~> 3)
+  logstash-input-lumberjack (~> 3)
+  logstash-input-pipe (~> 3)
+  logstash-input-rabbitmq (~> 5)
+  logstash-input-redis (~> 3)
+  logstash-input-s3 (~> 3)
+  logstash-input-snmptrap (~> 3)
+  logstash-input-sqs (~> 3)
+  logstash-input-stdin (~> 3)
+  logstash-input-syslog (~> 3)
+  logstash-input-tcp (~> 4)
+  logstash-input-twitter (~> 3)
+  logstash-input-udp (~> 3)
+  logstash-input-unix (~> 3)
+  logstash-input-xmpp (~> 3)
+  logstash-mixin-aws (~> 4)
+  logstash-mixin-http_client (~> 4)
+  logstash-mixin-rabbitmq_connection (~> 4)
+  logstash-output-cloudwatch (~> 3)
+  logstash-output-csv (~> 3)
+  logstash-output-elasticsearch (~> 4)
+  logstash-output-file (~> 3)
+  logstash-output-graphite (~> 3)
+  logstash-output-http (~> 3)
+  logstash-output-irc (~> 3)
+  logstash-output-kafka (~> 4)
+  logstash-output-nagios (~> 3)
+  logstash-output-null (~> 3)
+  logstash-output-pagerduty (~> 3)
+  logstash-output-pipe (~> 3)
+  logstash-output-rabbitmq (~> 4)
+  logstash-output-redis (~> 3)
+  logstash-output-s3 (~> 3)
+  logstash-output-sns (~> 4)
+  logstash-output-sqs (~> 3)
+  logstash-output-statsd (~> 3)
+  logstash-output-stdout (~> 3)
+  logstash-output-tcp (~> 3)
+  logstash-output-udp (~> 3)
+  logstash-output-webhdfs (~> 3)
+  logstash-output-xmpp (~> 3)
+  logstash-patterns-core (~> 4)
   octokit (= 3.8.0)
   pleaserun
   rack-test
