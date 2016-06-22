@@ -105,9 +105,17 @@ class LogStash::Plugin
   end
 
   def metric
-    @metric_plugin ||= enable_metric ? @metric : LogStash::Instrument::NullMetric.new
+    @metric_plugin ||= begin
+                         # We can disable metric per plugin if we want in the configuration
+                         # we will use the NullMetric in this case.
+                         if @enable_metric
+                           # Fallback when testing plugin and no metric collector are correctly configured.
+                           @metric.nil? ? LogStash::Instrument::NullMetric.new : @metric
+                         else
+                           LogStash::Instrument::NullMetric.new
+                         end
+                       end
   end
-
   # return the configured name of this plugin
   # @return [String] The name of the plugin defined by `config_name`
   def config_name

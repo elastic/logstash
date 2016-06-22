@@ -270,4 +270,77 @@ describe LogStash::Plugin do
       end
     end
   end
+
+
+  context "When the plugin record a metric" do
+    let(:config) { {} }
+
+    [LogStash::Inputs::Base, LogStash::Filters::Base, LogStash::Outputs::Base].each do |base|
+      let(:plugin) do
+        Class.new(base) do
+          config_name "testing"
+
+          def register
+            metric.gauge("power_level", 9000)
+          end
+        end
+      end
+
+      subject { plugin.new(config) } 
+
+      context "when no metric is set to the plugin" do
+        context "when `enable_metric` is TRUE" do
+          it "recording metric should not raise an exception" do
+            expect { subject.register }.not_to raise_error
+          end
+
+          it "should use a `NullMetric`" do
+            expect(subject.metric).to be_kind_of(LogStash::Instrument::NullMetric)
+          end
+        end
+
+        context "when `enable_metric` is FALSE" do
+          let(:config) { { "enable_metric" => false } }
+
+          it "recording metric should not raise an exception" do
+            expect { subject.register }.not_to raise_error
+          end
+
+          it "should use a `NullMetric`" do
+            expect(subject.metric).to be_kind_of(LogStash::Instrument::NullMetric)
+          end
+        end
+      end
+
+      context "When a specific metric collector is configured" do
+        context "when `enable_metric` is TRUE" do
+          let(:metric) { LogStash::Instrument::Metric.new(LogStash::Instrument::Collector.new).namespace("dbz") }
+
+          before :each do
+            subject.metric = metric
+          end
+
+          it "recording metric should not raise an exception" do
+            expect { subject.register }.not_to raise_error
+          end
+
+          it "should use the configured metric" do
+            expect(subject.metric).to eq(metric)
+          end
+        end
+
+        context "when `enable_metric` is FALSE" do
+          let(:config) { { "enable_metric" => false } }
+
+          it "recording metric should not raise an exception" do
+            expect { subject.register }.not_to raise_error
+          end
+
+          it "should use a `NullMetric`" do
+            expect(subject.metric).to be_kind_of(LogStash::Instrument::NullMetric)
+          end
+        end
+      end
+    end
+  end
 end
