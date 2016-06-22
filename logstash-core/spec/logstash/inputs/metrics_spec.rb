@@ -8,7 +8,7 @@ describe LogStash::Inputs::Metrics do
   let(:queue) { [] }
 
   before :each do
-    allow(subject).to receive(:metric).and_return(metric)
+    subject.metric = metric
   end
 
   describe "#run" do
