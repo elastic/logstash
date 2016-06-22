@@ -333,7 +333,7 @@ namespace "artifact" do
         File.join(basedir, "pkg", "jvm.options").tap do |path|
           dir.input("#{path}=/etc/logstash")
         end
-        File.join(basedir, "pkg", "logstash.yml").tap do |path|
+        File.join(basedir, "config", "logstash.yml").tap do |path|
           dir.input("#{path}=/etc/logstash")
         end
         require "fpm/package/rpm"
@@ -354,7 +354,7 @@ namespace "artifact" do
         File.join(basedir, "pkg", "jvm.options").tap do |path|
           dir.input("#{path}=/etc/logstash")
         end
-        File.join(basedir, "pkg", "logstash.yml").tap do |path|
+        File.join(basedir, "config", "logstash.yml").tap do |path|
           dir.input("#{path}=/etc/logstash")
         end
         require "fpm/package/deb"
