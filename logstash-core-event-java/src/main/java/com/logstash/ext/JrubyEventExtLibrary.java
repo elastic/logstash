@@ -295,7 +295,7 @@ public class JrubyEventExtLibrary implements Library {
         @JRubyMethod(name = "tag", required = 1)
         public IRubyObject ruby_tag(ThreadContext context, RubyString value)
         {
-            //TODO(guy) should these tags be RubyJavaObjects?
+            //TODO(guy) should these tags be BiValues?
             this.event.tag(((RubyString) value).asJavaString());
             return context.nil;
         }
