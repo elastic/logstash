@@ -437,7 +437,9 @@ module LogStash; class Pipeline
     elsif plugin_type == "filter"
       LogStash::FilterDelegator.new(@logger, klass, pipeline_scoped_metric.namespace(:filters), *args)
     else
-      klass.new(*args)
+      new_plugin = klass.new(*args)
+      new_plugin.metric = pipeline_scoped_metric.namespace(:inputs)
+      new_plugin
     end
   end
 
