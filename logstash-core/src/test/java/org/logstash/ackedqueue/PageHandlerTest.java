@@ -123,8 +123,6 @@ public class PageHandlerTest {
         assertEquals(1 , result.size());
     }
 
-    // acking
-
     @Test
     public void testMultipleWriteReadResetRead() throws FileNotFoundException {
         PageHandler ph = new PageHandler("/tmp", A_BYTES_16.length + Page.OVERHEAD_BYTES);
@@ -140,5 +138,58 @@ public class PageHandlerTest {
         assertEquals(2, result.size());
     }
 
+    // acking
+
+    @Test
+    public void testMultipleWriteReadAckResetRead() throws FileNotFoundException {
+        PageHandler ph = new PageHandler("/tmp", A_BYTES_16.length + Page.OVERHEAD_BYTES);
+        ph.open();
+        ph.write(A_BYTES_16);
+        ph.write(B_BYTES_16);
+        List<Element> result = ph.read(2);
+        assertEquals(2, result.size());
+
+        ph.ack(result);
+        ph.resetUnused();
+
+        result = ph.read(2);
+        assertEquals(0, result.size());
+    }
+
+    @Test
+    public void testWritePartialAckRead()  throws FileNotFoundException {
+        PageHandler ph = new PageHandler("/tmp", A_BYTES_16.length + Page.OVERHEAD_BYTES);
+        ph.open();
+        ph.write(A_BYTES_16);
+        ph.write(B_BYTES_16);
+
+        List<Element> result = ph.read(1);
+        assertArrayEquals(A_BYTES_16, result.get(0).getData());
+        ph.resetUnused();
+
+        ph.ack(result);
+
+        result = ph.read(2);
+        assertEquals(1, result.size());
+        assertArrayEquals(B_BYTES_16, result.get(0).getData());
+    }
+
+    @Test
+    public void testWriteFulllAckRead()  throws FileNotFoundException {
+        PageHandler ph = new PageHandler("/tmp", A_BYTES_16.length + Page.OVERHEAD_BYTES);
+        ph.open();
+        ph.write(A_BYTES_16);
+        ph.write(B_BYTES_16);
+
+        List<Element> result = ph.read(2);
+        assertArrayEquals(A_BYTES_16, result.get(0).getData());
+        assertArrayEquals(B_BYTES_16, result.get(1).getData());
+        ph.resetUnused();
+
+        ph.ack(result);
+
+        result = ph.read(2);
+        assertEquals(0, result.size());
+    }
 }
 

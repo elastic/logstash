@@ -55,6 +55,9 @@ public interface Page extends Closeable {
     // @return this page head offset
     int getHead();
 
+    // @return this page index
+    long getIndex();
+
     // @return this page unacked state bitmap
     RoaringBitmap getUnacked();
 

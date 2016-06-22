@@ -97,7 +97,7 @@ public class MemoryPage implements Page {
             this.data.get(payload);
 
             // TODO: how/where should we track page index?
-            result.add(new Element(payload, 0, offset));
+            result.add(new Element(payload, this.index, offset));
 
             // set this item as in-use (unset unused bit)
             unused.remove(offset);
@@ -160,6 +160,11 @@ public class MemoryPage implements Page {
     @Override
     public RoaringBitmap getUnacked() {
         return this.unacked;
+    }
+
+    @Override
+    public long getIndex() {
+        return this.index;
     }
 
     @Override
