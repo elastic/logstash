@@ -24,7 +24,7 @@ module LogStash module Instrument
       @metric.increment(namespace_name, key, value)
     end
 
-    def decrement(namespace, key, value = 1)
+    def decrement(key, value = 1)
       @metric.decrement(namespace_name, key, value)
     end
 
