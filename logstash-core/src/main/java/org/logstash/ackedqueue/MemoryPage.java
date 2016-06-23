@@ -17,8 +17,8 @@ public class MemoryPage implements Page {
     private int head;     // this page head offset
     private long index;    // this page index number
 
-    private RoaringBitmap unused;
-    private RoaringBitmap unacked;
+    private PageState ackingState;
+
 
     // @param capacity page byte size
     public MemoryPage(int capacity) {
@@ -28,21 +28,20 @@ public class MemoryPage implements Page {
     // @param capacity page byte size
     // @param index the page index number
     public MemoryPage(int capacity, long index) {
-        this(capacity, index, ByteBuffer.allocate(capacity), EMPTY_PAGE_HEAD, new RoaringBitmap());
+        this(capacity, index, ByteBuffer.allocate(capacity), EMPTY_PAGE_HEAD, new PageState());
     }
 
     // @param capacity page byte size
     // @param index the page index number
     // @param data initial data for this page
     // @param head the page head offset, @see MemoryPage.findHead() if it needs to be resolved
-    // @param unacked initial unacked state bitmap for this page
-    public MemoryPage(int capacity, long index, ByteBuffer data, int head, RoaringBitmap unacked) {
-        this.data = data;
-        this.index = index;
+    // @param ackingState initial page acking state state
+    public MemoryPage(int capacity, long index, ByteBuffer data, int head, PageState ackingState) {
         this.capacity = capacity;
-        this.unused = unacked;
-        this.unacked = new RoaringBitmap(unacked.toMutableRoaringBitmap());
+        this.index = index;
+        this.data = data;
         this.head = head;
+        this.ackingState = ackingState;
     }
 
     // @return then new head position or 0 if not enough space left for data
@@ -59,9 +58,7 @@ public class MemoryPage implements Page {
         this.data.put(data);
         this.data.putInt(0);
 
-        // set bitmaps
-        this.unused.add(this.head);
-        this.unacked.add(this.head);
+        this.ackingState.add(this.head);
 
         this.head += totalBytes(data.length);
 
@@ -75,16 +72,15 @@ public class MemoryPage implements Page {
 
     @Override
     public List<Element> read(int n) {
-        RoaringBitmap readable = readable();
 
         // empty result optimization
-        if (readable.getCardinality() <= 0) {
+        if (this.ackingState.unusedCount() <= 0) {
             return EMPTY_RESULT;
         }
 
         List<Element> result = new ArrayList<>();
 
-        Iterator i = new BatchedIterator(readable.iterator(), n);
+        Iterator i = this.ackingState.batch(n);
         while (i.hasNext()) {
             int offset = (int) i.next();
 
@@ -99,8 +95,7 @@ public class MemoryPage implements Page {
             // TODO: how/where should we track page index?
             result.add(new Element(payload, this.index, offset));
 
-            // set this item as in-use (unset unused bit)
-            unused.remove(offset);
+            this.ackingState.setInuse(offset);
          }
 
         return result;
@@ -119,27 +114,7 @@ public class MemoryPage implements Page {
 
     @Override
     public void ack(int offset) {
-        this.unacked.remove(offset);
-    }
-
-    @Override
-    public int unusedCount() {
-        return readable().getCardinality();
-    }
-
-    @Override
-    public int unackedCount() {
-        return this.unacked.getCardinality();
-    }
-
-    @Override
-    public boolean allUsed() {
-        return readable().isEmpty();
-    }
-
-    @Override
-    public boolean allAcked() {
-        return this.unacked.isEmpty();
+        this.ackingState.setAcked(offset);
     }
 
     @Override
@@ -158,13 +133,13 @@ public class MemoryPage implements Page {
     }
 
     @Override
-    public RoaringBitmap getUnacked() {
-        return this.unacked;
+    public long getIndex() {
+        return this.index;
     }
 
     @Override
-    public long getIndex() {
-        return this.index;
+    public PageState getAckingState() {
+        return this.ackingState;
     }
 
     @Override
@@ -172,18 +147,8 @@ public class MemoryPage implements Page {
         // TBD
     }
 
-    public void resetUnused() {
-        // reset unused bits to the state of the unacked bits
-        this.unused = new RoaringBitmap(this.unacked.toMutableRoaringBitmap());
-    }
-
     private int availableBytes() {
         return this.capacity - this.head;
-    }
-
-    private RoaringBitmap readable() {
-        // select items that are both marked as unused and unacked
-        return RoaringBitmap.and(this.unused, this.unacked);
     }
 
     private int totalBytes(int dataSize)
@@ -191,9 +156,9 @@ public class MemoryPage implements Page {
         return OVERHEAD_BYTES + dataSize;
     }
 
-    private int maxReadOffset() {
-        return (this.head - (INT_BYTE_SIZE + 2));
-    }
+//    private int maxReadOffset() {
+//        return (this.head - (INT_BYTE_SIZE + 2));
+//    }
 
     // find the head of an existing byte buffer by looking from the beginning and skipping over items
     // until the last one
