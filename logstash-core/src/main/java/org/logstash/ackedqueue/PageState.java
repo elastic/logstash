@@ -3,7 +3,9 @@ package org.logstash.ackedqueue;
 
 import org.roaringbitmap.RoaringBitmap;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.Iterator;
@@ -18,6 +20,11 @@ public class PageState {
     public PageState() {
         this.unused = new RoaringBitmap();
         this.unacked = new RoaringBitmap();
+    }
+
+    public PageState(RoaringBitmap unacked) {
+        this.unacked = unacked;
+        resetUnused();
     }
 
     // add a new unused & unacked state for this offset
@@ -68,9 +75,12 @@ public class PageState {
         return bao.toByteArray();
     }
 
-    public static PageState deserialize(byte[] bytes) {
-        // TBD
-        return new PageState();
+    public static PageState deserialize(byte[] bytes) throws IOException {
+        RoaringBitmap rbm = new RoaringBitmap();
+        ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
+        DataInputStream dis = new DataInputStream(bais);
+        rbm.deserialize(dis);
+        return new PageState(rbm);
     }
 
     public void resetUnused() {
