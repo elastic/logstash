@@ -1,8 +1,5 @@
 package org.logstash.ackedqueue;
 
-
-import org.roaringbitmap.RoaringBitmap;
-
 import java.io.Closeable;
 import java.io.FileNotFoundException;
 import java.io.IOException;

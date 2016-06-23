@@ -1,7 +1,6 @@
 package org.logstash.ackedqueue;
 
 
-import com.sun.org.apache.regexp.internal.RE;
 import org.roaringbitmap.RoaringBitmap;
 
 import java.io.ByteArrayOutputStream;

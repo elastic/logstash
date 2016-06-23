@@ -1,7 +1,5 @@
 package org.logstash.ackedqueue;
 
-import org.roaringbitmap.RoaringBitmap;
-
 import java.io.Closeable;
 import java.util.List;
 

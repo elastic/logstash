@@ -1,7 +1,5 @@
 package org.logstash.ackedqueue;
 
-import org.roaringbitmap.RoaringBitmap;
-
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
