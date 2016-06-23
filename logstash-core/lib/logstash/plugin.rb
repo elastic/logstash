@@ -2,6 +2,7 @@
 require "logstash/namespace"
 require "logstash/logging"
 require "logstash/config/mixin"
+require "logstash/instrument/null_metric"
 require "cabin"
 require "concurrent"
 
@@ -26,6 +27,7 @@ class LogStash::Plugin
   def initialize(params=nil)
     @params = LogStash::Util.deep_clone(params)
     @logger = Cabin::Channel.get(LogStash)
+    @metric_plugin = LogStash::Instrument::NullMetric.new
   end
 
   # close is called during shutdown, after the plugin worker
@@ -45,6 +47,14 @@ class LogStash::Plugin
 
   def to_s
     return "#{self.class.name}: #{@params}"
+  end
+
+  # This is a shim to make sure that plugin
+  # that record metric still work with 2.4
+  #
+  # https://github.com/elastic/logstash/issues/5539
+  def metric
+    @metric_plugin
   end
 
   public

@@ -1,6 +1,9 @@
 # encoding: utf-8
-require "spec_helper"
 require "logstash/plugin"
+require "logstash/inputs/base"
+require "logstash/filters/base"
+require "logstash/outputs/base"
+require "spec_helper"
 
 describe LogStash::Plugin do
   it "should fail lookup on inexisting type" do
@@ -164,6 +167,29 @@ describe LogStash::Plugin do
         LogStash::Plugin.new(args)
       end
 
+    end
+  end
+  context "Collecting Metric in the plugin" do
+    [LogStash::Inputs::Base, LogStash::Filters::Base, LogStash::Outputs::Base].each do |type|
+      let(:plugin) do
+        Class.new(type) do
+          config_name "goku"
+
+          def register
+            metric.gauge("power-level", 9000)
+          end
+        end
+      end
+
+      subject { plugin.new }
+
+      it "should not raise an exception when recoding a metric" do
+        expect { subject.register }.not_to raise_error
+      end
+
+      it "should use a `NullMetric`" do
+        expect(subject.metric).to be_kind_of(LogStash::Instrument::NullMetric)
+      end
     end
   end
 end
