@@ -95,6 +95,29 @@ public class PageHandler implements Closeable {
         }
     }
 
+    // non-blocking read next unusued item and mark it as in-use.
+    // @return read Element, or null no items are read
+    Element read() {
+        // optimization from read(n) to avoid extra List creation
+
+        long unusedTail = this.meta.getUnusedTailPageIndex();
+
+        Element result;
+
+        for (;;) {
+            Page p = page(unusedTail);
+            result = p.read();
+
+            // if successufully read return it, otherwise if this is the last page, return null
+            if (result != null || lastPage(unusedTail)) {
+                return result;
+            }
+
+            unusedTail++;
+            this.meta.setUnusedTailPageIndex(unusedTail);
+        }
+     }
+
     // blocking timed-out read of next n unusued item and mark them as in-use. if less than n items are available
     // this call will block and wait up to timeout ms and return an empty list if n items were not available.
     // @return List of read Element, or empty list if timeout is reached

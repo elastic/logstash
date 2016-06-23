@@ -19,7 +19,6 @@ public class MemoryPage implements Page {
 
     private PageState ackingState;
 
-
     // @param capacity page byte size
     public MemoryPage(int capacity) {
         this(capacity, 0);
@@ -70,6 +69,30 @@ public class MemoryPage implements Page {
         return (availableBytes() >= totalBytes(bytes));
     }
 
+    @Override
+    public Element read() {
+        int offset = this.ackingState.next();
+        if (offset == PageState.EMPTY) {
+            return null;
+        }
+
+        this.data.position(offset);
+
+        int dataSize = this.data.getInt();
+        assert dataSize > 0;
+
+        byte[] payload = new byte[dataSize];;
+        this.data.get(payload);
+
+        this.ackingState.setInuse(offset);
+
+        return new Element(payload, this.index, offset);
+    }
+
+    // non-blocking read up to next n unusued item and mark them as in-use. if less than n items are available
+    // these will be read and returned immediately.
+    // @param n the requested number of items
+    // @return List of read Element, or empty list if no items are read
     @Override
     public List<Element> read(int n) {
 

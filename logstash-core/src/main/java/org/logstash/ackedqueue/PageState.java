@@ -1,6 +1,7 @@
 package org.logstash.ackedqueue;
 
 
+import com.sun.org.apache.regexp.internal.RE;
 import org.roaringbitmap.RoaringBitmap;
 
 import java.io.ByteArrayOutputStream;
@@ -9,6 +10,8 @@ import java.io.IOException;
 import java.util.Iterator;
 
 public class PageState {
+
+    public static int EMPTY = -1;
 
     private RoaringBitmap unused;
     private RoaringBitmap unacked;
@@ -76,8 +79,16 @@ public class PageState {
         this.unused = new RoaringBitmap(this.unacked.toMutableRoaringBitmap());
     }
 
+    // @param batchSize the required batch size
+    // @return iterator over the next batch
     public Iterator batch(int batchSize) {
         return new BatchedIterator(readable().iterator(), batchSize);
+    }
+
+    // @return next unused offset or null if none
+    public int next() {
+        RoaringBitmap readable = readable();
+        return readable.getCardinality() <= 0 ? EMPTY : readable.select(0);
     }
 
     private RoaringBitmap readable() {

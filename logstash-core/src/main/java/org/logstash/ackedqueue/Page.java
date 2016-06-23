@@ -18,8 +18,13 @@ public interface Page extends Closeable {
     // @return true if the number of bytes is writable in this queue page
     boolean writable(int bytes);
 
+    // non-blocking read nextunusued item and mark it as in-use
+    // @return read Element, or null if no element is availabe
+    Element read();
+
     // non-blocking read up to next n unusued item and mark them as in-use. if less than n items are available
     // these will be read and returned immediately.
+    // @param n the requested number of items
     // @return List of read Element, or empty list if no items are read
     List<Element> read(int n);
 
