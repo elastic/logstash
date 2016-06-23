@@ -43,6 +43,10 @@ describe LogStash::Instrument::NullMetric do
       end.not_to raise_error
     end
 
+    it "when using a block it return the generated value" do
+      expect(subject.time(key) { 1+1 }).to eq(2)
+    end
+
     it "allow to record time with no block given" do
       expect do
         clock = subject.time(key)
