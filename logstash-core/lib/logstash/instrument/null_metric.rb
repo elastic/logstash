@@ -9,20 +9,25 @@ module LogStash module Instrument
    attr_reader :namespace_name, :collector
 
    def increment(key, value = 1)
+     Metric.validate_key!(key)
    end
 
-   def decrement(namespace, key, value = 1)
+   def decrement(key, value = 1)
+     Metric.validate_key!(key)
    end
 
    def gauge(key, value)
+     Metric.validate_key!(key)
    end
 
    def report_time(key, duration)
+     Metric.validate_key!(key)
    end
 
    # We have to manually redefine this method since it can return an
    # object this object also has to be implemented as a NullObject
    def time(key)
+     Metric.validate_key!(key)
      if block_given?
        yield
      else

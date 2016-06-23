@@ -18,22 +18,22 @@ module LogStash module Instrument
     end
 
     def increment(namespace, key, value = 1)
-      validate_key!(key)
+      self.class.validate_key!(key)
       collector.push(namespace, key, :counter, :increment, value)
     end
 
     def decrement(namespace, key, value = 1)
-      validate_key!(key)
+      self.class.validate_key!(key)
       collector.push(namespace, key, :counter, :decrement, value)
     end
 
     def gauge(namespace, key, value)
-      validate_key!(key)
+      self.class.validate_key!(key)
       collector.push(namespace, key, :gauge, :set, value)
     end
 
     def time(namespace, key)
-      validate_key!(key)
+      self.class.validate_key!(key)
 
       if block_given?
         timer = TimedExecution.new(self, namespace, key)
@@ -46,6 +46,7 @@ module LogStash module Instrument
     end
 
     def report_time(namespace, key, duration)
+      self.class.validate_key!(key)
       collector.push(namespace, key, :counter, :increment, duration)
     end
 
@@ -69,11 +70,11 @@ module LogStash module Instrument
       NamespacedMetric.new(self, name)
     end
 
-    private
-    def validate_key!(key)
+    def self.validate_key!(key)
       raise MetricNoKeyProvided if key.nil? || key.empty?
     end
 
+    private
     # Allow to calculate the execution of a block of code.
     # This class support 2 differents syntax a block or the return of
     # the object itself, but in the later case the metric wont be recorded
