@@ -1,59 +1,62 @@
 package org.logstash.ackedqueue;
 
 import java.io.Closeable;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.List;
 
 public class Queue implements Closeable {
 
-    /**
-     * Adds an item at the queue tail
-     *
-     * @param data to be pushed data
-     * @throws IOException if any IO error in push operation
-     */
-    public void push(byte[] data) throws IOException
-    {
+    private PageHandler ph;
 
+    public Queue(String dirPath, int pageSize) {
+        this.ph = new PageHandler(dirPath, pageSize);
     }
 
-    public Element use() throws IOException
-    {
-        return null;
+    public void open() throws FileNotFoundException {
+        this.ph.open();
     }
 
-    public List<Element> use(int batchSize) throws IOException
+    // add data to the queue
+    // @param data to be pushed data
+    public synchronized void push(byte[] data)
     {
-        return null;
+        this.ph.write(data);
     }
 
-    public void ack(Element item)
+    public synchronized Element use()
     {
-
+        return this.ph.read();
     }
 
-    public void ack(List<Element> items)
+    public synchronized List<Element> use(int batchSize)
     {
-
+        return this.ph.read(batchSize);
     }
 
-    public long size()
+    public synchronized void ack(Element e)
     {
-        return 0L;
+        this.ack(e);
     }
+
+    public synchronized void ack(List<Element> batch)
+    {
+        this.ack(batch);
+    }
+
 
     public void purge() throws IOException
     {
-
+        // TBD
     }
 
     public void clear() throws IOException
     {
-
+        // TBD
     }
 
     @Override
     public void close() throws IOException {
-
+        // TBD
     }
 }
