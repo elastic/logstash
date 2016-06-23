@@ -3,6 +3,8 @@ package org.logstash.ackedqueue;
 import java.io.Closeable;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class Queue implements Closeable {
@@ -36,22 +38,25 @@ public class Queue implements Closeable {
 
     public synchronized void ack(Element e)
     {
-        this.ack(e);
+        // TODO: implement single item acking without intermediate List usage
+        this.ack(Arrays.asList(e));
     }
 
     public synchronized void ack(List<Element> batch)
     {
-        this.ack(batch);
+        this.ph.ack(batch);
     }
 
+    // reset the in-use state of all queued items
+    public synchronized void resetUsed() {
+        this.ph.resetUnused();
+    }
 
-    public void purge() throws IOException
-    {
+    public void purge() throws IOException {
         // TBD
     }
 
-    public void clear() throws IOException
-    {
+    public void clear() throws IOException {
         // TBD
     }
 
