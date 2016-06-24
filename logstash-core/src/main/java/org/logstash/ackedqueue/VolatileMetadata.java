@@ -7,7 +7,7 @@ import java.io.IOException;
 // TODO: add iterators for pages with unused/unacked bits? this would need to tie-in with the pagehandler
 // TODO: page method strategy, or simply just provide a simple page number interator
 
-public class VolatileMetadata implements Closeable {
+public class VolatileMetadata implements Metadata {
     // head tracking for writes
     private long headPageIndex;
     private int headPageOffset;
@@ -23,44 +23,54 @@ public class VolatileMetadata implements Closeable {
         // TBD
     }
 
+    @Override
     public long getHeadPageIndex() {
         return headPageIndex;
     }
 
-    public void setHeadPageIndex(long headPageIndex) {
-        this.headPageIndex = headPageIndex;
+    @Override
+    public void setHeadPageIndex(long index) {
+        this.headPageIndex = index;
     }
 
+    @Override
     public int getHeadPageOffset() {
         return headPageOffset;
     }
 
-    public void setHeadPageOffset(int headPageOffset) {
-        this.headPageOffset = headPageOffset;
+    @Override
+    public void setHeadPageOffset(int offset) {
+        this.headPageOffset = offset;
     }
 
+    @Override
     public long getUnackedTailPageIndex() {
         return unackedTailPageIndex;
     }
 
-    public void setUnackedTailPageIndex(long unackedTailPageIndex) {
-        this.unackedTailPageIndex = unackedTailPageIndex;
+    @Override
+    public void setUnackedTailPageIndex(long index) {
+        this.unackedTailPageIndex = index;
     }
 
+    @Override
     public long getUnusedTailPageIndex() {
         return unusedTailPageIndex;
     }
 
-    public void setUnusedTailPageIndex(long unusedTailPageIndex) {
-        this.unusedTailPageIndex = unusedTailPageIndex;
+    @Override
+    public void setUnusedTailPageIndex(long index) {
+        this.unusedTailPageIndex = index;
     }
 
+    @Override
     public int getPageSize() {
         return pageSize;
     }
 
-    public void setPageSize(int pageSize) {
-        this.pageSize = pageSize;
+    @Override
+    public void setPageSize(int size) {
+        this.pageSize = size;
     }
 
     @Override

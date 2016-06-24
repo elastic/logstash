@@ -1,51 +1,24 @@
 package org.logstash.ackedqueue;
 
 import java.io.Closeable;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.nio.file.*;
 import java.util.*;
 
-public class PageHandler implements Closeable {
+public abstract class PageHandler implements Closeable {
 
-    private final static List<Element> EMPTY_RESULT = new ArrayList<>(0);
+    protected final static List<Element> EMPTY_RESULT = new ArrayList<>(0);
 
-    private String dirPath;
-    private int pageSize;
-    private VolatileMetadata meta;
-    private Map<Long, Page> livePages;
+    protected int pageSize;
+    protected Metadata meta;
 
-    // @param dirPath directory path where all queue data files will be written
     // @param pageSize the pageSize when creating a new queue, if the queue already exists, its configured page size will be used
-    public PageHandler(String dirPath, int pageSize) {
-        this.dirPath = dirPath;
+    public PageHandler(int pageSize) {
         this.pageSize = pageSize;
-        this.meta = null;
-        this.livePages = new HashMap<>();
     }
-
-    public void open() throws FileNotFoundException {
-        Path p = FileSystems.getDefault().getPath(this.dirPath);
-
-        if (Files.notExists(p, LinkOption.NOFOLLOW_LINKS)) {
-            throw new FileNotFoundException(this.dirPath);
-        }
-
-        // TODO: ajust when meta will be persisted & retrieved
-        this.meta = new VolatileMetadata();
-        this.meta.setPageSize(this.pageSize);
-        this.meta.setHeadPageIndex(0);
-        this.meta.setHeadPageOffset(0);
-        this.meta.setUnackedTailPageIndex(0);
-        this.meta.setUnusedTailPageIndex(0);
-
-        this.livePages = new HashMap<>();
-    }
-
 
     // write at the queue head
     // @return ?
-    int write(byte[] data) {
+    public int write(byte[] data) {
         // TODO: check for data bigger that page capacity exception prior to any per page availibility attempt
 
         long headPageIndex = this.meta.getHeadPageIndex();
@@ -72,7 +45,7 @@ public class PageHandler implements Closeable {
     // non-blocking read up to next n unusued item and mark them as in-use. if less than n items are available
     // these will be read and returned immediately.
     // @return List of read Element, or empty list if no items are read
-    List<Element> read(int n) {
+    public List<Element> read(int n) {
         long unusedTail = this.meta.getUnusedTailPageIndex();
 
         int remaining = n;
@@ -94,7 +67,7 @@ public class PageHandler implements Closeable {
 
     // non-blocking read next unusued item and mark it as in-use.
     // @return read Element, or null no items are read
-    Element read() {
+    public Element read() {
         // optimization from read(n) to avoid extra List creation
 
         long unusedTail = this.meta.getUnusedTailPageIndex();
@@ -118,13 +91,13 @@ public class PageHandler implements Closeable {
     // blocking timed-out read of next n unusued item and mark them as in-use. if less than n items are available
     // this call will block and wait up to timeout ms and return an empty list if n items were not available.
     // @return List of read Element, or empty list if timeout is reached
-    List<Element> read(int n, int timeout) {
+    public List<Element> read(int n, int timeout) {
         // TBD
         return EMPTY_RESULT;
     }
 
     // mark a list of Element as acknowledged
-    void ack(List<Element> items) {
+    public void ack(List<Element> items) {
         SortedMap<Long, List<Element>> partitions = partitionByPage(items);
 
         // TODO: prioritize partition by pages that are already live/cached?
@@ -149,7 +122,7 @@ public class PageHandler implements Closeable {
     public void resetUnused() {
         // TODO: we could create an interator for pages with unused bits, see Metadata comments
 
-        // we have to start from the unacked tail and not the unused tail which moved up via the read
+        // we have to start from the unacked tail and not the unused tail which moved up via the read.
         // resetting the usused bits means putting them as the unacked bit.
         for (long i = this.meta.getUnackedTailPageIndex(); i <= this.meta.getHeadPageIndex(); i++) {
             Page p = page(i);
@@ -165,30 +138,16 @@ public class PageHandler implements Closeable {
         // TBD
     }
 
-    // page is basically the byte buffer pages opening/caching strategy
-    // TODO: it should probably be extracted into its own class where
-    // alternate strategies could be implemented.
+    // pages opening/caching strategy
     // @param index the page index to retrieve
-    private Page page(long index) {
-        // TODO: adjust implementation for correct live pages handling
-        // TODO: extract page caching in a separate class?
+    abstract protected Page page(long index);
 
-        Page p = this.livePages.get(index);
-        if (p != null) {
-            return p;
-        }
-
-        p = new MemoryPage(this.pageSize, index);
-        this.livePages.put(index, p);
-        return p;
-    }
-
-    private boolean lastPage(long index) {
+    protected boolean lastPage(long index) {
         return index >= this.meta.getHeadPageIndex();
     }
 
     // @return a SortedMap of elements partitioned by page index
-    private SortedMap<Long, List<Element>> partitionByPage(List<Element> elements) {
+    protected SortedMap<Long, List<Element>> partitionByPage(List<Element> elements) {
         TreeMap<Long, List<Element>> partitions = new TreeMap<>();
 
         for (Element e : elements) {

@@ -11,11 +11,7 @@ public class Queue implements Closeable {
     private PageHandler ph;
 
     public Queue(String dirPath, int pageSize) {
-        this.ph = new PageHandler(dirPath, pageSize);
-    }
-
-    public void open() throws FileNotFoundException {
-        this.ph.open();
+        this.ph = new VolatilePageHandler(pageSize);
     }
 
     // add data to the queue

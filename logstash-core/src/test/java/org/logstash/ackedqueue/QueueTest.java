@@ -47,7 +47,6 @@ public class QueueTest {
     @Test
     public void testPushPopUseBatch() throws FileNotFoundException {
         Queue q = new Queue("/tmp", 27); // somewhere a bit bigger than twice the data size (4 bytes here)
-        q.open();
 
         for (String s : items) {
             q.push(s.getBytes());
@@ -61,8 +60,7 @@ public class QueueTest {
 
     @Test
     public void testPushPopUseBatchResetPop() throws FileNotFoundException {
-        Queue q = new Queue("/tmp", 27); // somewhere a bit bigger than twice the data size (4 bytes here)
-        q.open();
+        Queue q = new Queue("/tmp", 27); // somewhere a bit bigger than twice the data size (4 bytes here)q.open();
 
         for (String s : items) {
             q.push(s.getBytes());
@@ -85,7 +83,6 @@ public class QueueTest {
     @Test
     public void testPushPopUseSingle() throws FileNotFoundException {
         Queue q = new Queue("/tmp", 27); // somewhere a bit bigger than twice the data size (4 bytes here)
-        q.open();
 
         for (String s : items) {
             q.push(s.getBytes());
@@ -107,7 +104,6 @@ public class QueueTest {
     @Test
     public void testPushPopUseSingleResetPop() throws FileNotFoundException {
         Queue q = new Queue("/tmp", 27); // somewhere a bit bigger than twice the data size (4 bytes here)
-        q.open();
 
         for (String s : items) {
             q.push(s.getBytes());
@@ -140,7 +136,6 @@ public class QueueTest {
     @Test
     public void testPushPopUseBatchAckResetPop() throws FileNotFoundException {
         Queue q = new Queue("/tmp", 27); // somewhere a bit bigger than twice the data size (4 bytes here)
-        q.open();
 
         for (String s : items) {
             q.push(s.getBytes());
@@ -158,7 +153,6 @@ public class QueueTest {
     @Test
     public void testPushPopUseBatchPartialAckResetPop() throws FileNotFoundException {
         Queue q = new Queue("/tmp", 27); // somewhere a bit bigger than twice the data size (4 bytes here)
-        q.open();
 
         for (String s : items) {
             q.push(s.getBytes());
