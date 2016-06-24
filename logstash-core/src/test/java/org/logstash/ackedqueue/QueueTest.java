@@ -5,7 +5,6 @@ import org.junit.Test;
 
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -46,7 +45,7 @@ public class QueueTest {
 
     @Test
     public void testPushPopUseBatch() throws FileNotFoundException {
-        Queue q = new Queue("/tmp", 27); // somewhere a bit bigger than twice the data size (4 bytes here)
+        Queue q = new VolatileQueue(27); // somewhere a bit bigger than twice the data size (4 bytes here)
 
         for (String s : items) {
             q.push(s.getBytes());
@@ -60,7 +59,7 @@ public class QueueTest {
 
     @Test
     public void testPushPopUseBatchResetPop() throws FileNotFoundException {
-        Queue q = new Queue("/tmp", 27); // somewhere a bit bigger than twice the data size (4 bytes here)q.open();
+        Queue q = new VolatileQueue(27); // somewhere a bit bigger than twice the data size (4 bytes here)q.open();
 
         for (String s : items) {
             q.push(s.getBytes());
@@ -82,7 +81,7 @@ public class QueueTest {
 
     @Test
     public void testPushPopUseSingle() throws FileNotFoundException {
-        Queue q = new Queue("/tmp", 27); // somewhere a bit bigger than twice the data size (4 bytes here)
+        Queue q = new VolatileQueue(27); // somewhere a bit bigger than twice the data size (4 bytes here)
 
         for (String s : items) {
             q.push(s.getBytes());
@@ -103,7 +102,7 @@ public class QueueTest {
 
     @Test
     public void testPushPopUseSingleResetPop() throws FileNotFoundException {
-        Queue q = new Queue("/tmp", 27); // somewhere a bit bigger than twice the data size (4 bytes here)
+        Queue q = new VolatileQueue(27); // somewhere a bit bigger than twice the data size (4 bytes here)
 
         for (String s : items) {
             q.push(s.getBytes());
@@ -135,7 +134,7 @@ public class QueueTest {
 
     @Test
     public void testPushPopUseBatchAckResetPop() throws FileNotFoundException {
-        Queue q = new Queue("/tmp", 27); // somewhere a bit bigger than twice the data size (4 bytes here)
+        Queue q = new VolatileQueue(27); // somewhere a bit bigger than twice the data size (4 bytes here)
 
         for (String s : items) {
             q.push(s.getBytes());
@@ -152,7 +151,7 @@ public class QueueTest {
 
     @Test
     public void testPushPopUseBatchPartialAckResetPop() throws FileNotFoundException {
-        Queue q = new Queue("/tmp", 27); // somewhere a bit bigger than twice the data size (4 bytes here)
+        Queue q = new VolatileQueue(27); // somewhere a bit bigger than twice the data size (4 bytes here)
 
         for (String s : items) {
             q.push(s.getBytes());
