@@ -4,7 +4,7 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.util.*;
 
-public abstract class PageHandler implements Closeable {
+public abstract class PagedQueue implements Closeable {
 
     protected final static List<Element> EMPTY_RESULT = new ArrayList<>(0);
 
@@ -12,7 +12,7 @@ public abstract class PageHandler implements Closeable {
     protected QueueState queueState;
 
     // @param pageSize the pageSize when creating a new queue, if the queue already exists, its configured page size will be used
-    public PageHandler(int pageSize) {
+    public PagedQueue(int pageSize) {
         this.pageSize = pageSize;
     }
 

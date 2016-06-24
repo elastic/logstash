@@ -3,10 +3,10 @@ package org.logstash.ackedqueue;
 import java.util.HashMap;
 import java.util.Map;
 
-public class VolatilePageHandler extends PageHandler {
+public class VolatilePagedQueue extends PagedQueue {
     private Map<Long, Page> livePages;
 
-    public VolatilePageHandler(int pageSize) {
+    public VolatilePagedQueue(int pageSize) {
         super(pageSize);
 
         // TODO: ajust when meta will be persisted & retrieved

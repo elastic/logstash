@@ -6,10 +6,10 @@ import java.util.List;
 
 public class VolatileQueue implements Queue {
 
-    private PageHandler ph;
+    private PagedQueue ph;
 
     public VolatileQueue(int pageSize) {
-        this.ph = new VolatilePageHandler(pageSize);
+        this.ph = new VolatilePagedQueue(pageSize);
     }
 
     // add data to the queue

@@ -7,25 +7,25 @@ import java.io.FileNotFoundException;
 import java.util.List;
 
 
-public class PageHandlerTest {
+public class PagedQueueTest {
 
     private static byte[] A_BYTES_16 = "aaaaaaaaaaaaaaaa".getBytes();
     private static byte[] B_BYTES_16 = "bbbbbbbbbbbbbbbb".getBytes();
 
 //    @Test(expected = FileNotFoundException.class)
 //    public void testOpenInvalidPath() throws FileNotFoundException {
-//        PageHandler ph = new VolatilePageHandler(1024);
+//        PagedQueue ph = new VolatilePagedQueue(1024);
 //    }
 
     @Test
     public void testOpenValidPath() throws FileNotFoundException {
-        PageHandler ph = new VolatilePageHandler(1024);
+        PagedQueue ph = new VolatilePagedQueue(1024);
     }
 
 
     @Test
     public void testSingleWriteRead() throws FileNotFoundException {
-        PageHandler ph = new VolatilePageHandler(A_BYTES_16.length + Page.OVERHEAD_BYTES);
+        PagedQueue ph = new VolatilePagedQueue(A_BYTES_16.length + Page.OVERHEAD_BYTES);
         ph.write(A_BYTES_16);
         List<Element> result = ph.read(1);
         assertEquals(1 , result.size());
@@ -36,7 +36,7 @@ public class PageHandlerTest {
 
     @Test
     public void testSingleWriteBiggerRead() throws FileNotFoundException {
-        PageHandler ph = new VolatilePageHandler(A_BYTES_16.length + Page.OVERHEAD_BYTES);
+        PagedQueue ph = new VolatilePagedQueue(A_BYTES_16.length + Page.OVERHEAD_BYTES);
         ph.write(A_BYTES_16);
         List<Element> result = ph.read(2);
         assertEquals(1 , result.size());
@@ -47,7 +47,7 @@ public class PageHandlerTest {
 
     @Test
     public void testSingleWriteDualRead() throws FileNotFoundException {
-        PageHandler ph = new VolatilePageHandler(A_BYTES_16.length + Page.OVERHEAD_BYTES);
+        PagedQueue ph = new VolatilePagedQueue(A_BYTES_16.length + Page.OVERHEAD_BYTES);
         ph.write(A_BYTES_16);
         List<Element> result = ph.read(1);
         assertEquals(1 , result.size());
@@ -57,7 +57,7 @@ public class PageHandlerTest {
 
     @Test
     public void testMultipleWriteSingleRead() throws FileNotFoundException {
-        PageHandler ph = new VolatilePageHandler(A_BYTES_16.length + Page.OVERHEAD_BYTES);
+        PagedQueue ph = new VolatilePagedQueue(A_BYTES_16.length + Page.OVERHEAD_BYTES);
         ph.write(A_BYTES_16);
         ph.write(B_BYTES_16);
         List<Element> result = ph.read(2);
@@ -72,7 +72,7 @@ public class PageHandlerTest {
 
     @Test
     public void testMultipleWriteRead() throws FileNotFoundException {
-        PageHandler ph = new VolatilePageHandler(A_BYTES_16.length + Page.OVERHEAD_BYTES);
+        PagedQueue ph = new VolatilePagedQueue(A_BYTES_16.length + Page.OVERHEAD_BYTES);
         ph.write(A_BYTES_16);
         ph.write(B_BYTES_16);
         List<Element> result = ph.read(1);
@@ -89,7 +89,7 @@ public class PageHandlerTest {
 
     @Test
     public void testMultipleWriteBiggerRead() throws FileNotFoundException {
-        PageHandler ph = new VolatilePageHandler(A_BYTES_16.length + Page.OVERHEAD_BYTES);
+        PagedQueue ph = new VolatilePagedQueue(A_BYTES_16.length + Page.OVERHEAD_BYTES);
         ph.write(A_BYTES_16);
         ph.write(B_BYTES_16);
         List<Element> result = ph.read(3);
@@ -103,7 +103,7 @@ public class PageHandlerTest {
 
     @Test
     public void testSingleWriteReadResetRead() throws FileNotFoundException {
-        PageHandler ph = new VolatilePageHandler(A_BYTES_16.length + Page.OVERHEAD_BYTES);
+        PagedQueue ph = new VolatilePagedQueue(A_BYTES_16.length + Page.OVERHEAD_BYTES);
         ph.write(A_BYTES_16);
         List<Element> result = ph.read(1);
         assertEquals(1 , result.size());
@@ -116,7 +116,7 @@ public class PageHandlerTest {
 
     @Test
     public void testMultipleWriteReadResetRead() throws FileNotFoundException {
-        PageHandler ph = new VolatilePageHandler(A_BYTES_16.length + Page.OVERHEAD_BYTES);
+        PagedQueue ph = new VolatilePagedQueue(A_BYTES_16.length + Page.OVERHEAD_BYTES);
         ph.write(A_BYTES_16);
         ph.write(B_BYTES_16);
         List<Element> result = ph.read(2);
@@ -132,7 +132,7 @@ public class PageHandlerTest {
 
     @Test
     public void testMultipleWriteReadAckResetRead() throws FileNotFoundException {
-        PageHandler ph = new VolatilePageHandler(A_BYTES_16.length + Page.OVERHEAD_BYTES);
+        PagedQueue ph = new VolatilePagedQueue(A_BYTES_16.length + Page.OVERHEAD_BYTES);
         ph.write(A_BYTES_16);
         ph.write(B_BYTES_16);
         List<Element> result = ph.read(2);
@@ -147,7 +147,7 @@ public class PageHandlerTest {
 
     @Test
     public void testWritePartialAckRead()  throws FileNotFoundException {
-        PageHandler ph = new VolatilePageHandler(A_BYTES_16.length + Page.OVERHEAD_BYTES);
+        PagedQueue ph = new VolatilePagedQueue(A_BYTES_16.length + Page.OVERHEAD_BYTES);
         ph.write(A_BYTES_16);
         ph.write(B_BYTES_16);
 
@@ -164,7 +164,7 @@ public class PageHandlerTest {
 
     @Test
     public void testWriteFulllAckRead()  throws FileNotFoundException {
-        PageHandler ph = new VolatilePageHandler(A_BYTES_16.length + Page.OVERHEAD_BYTES);
+        PagedQueue ph = new VolatilePagedQueue(A_BYTES_16.length + Page.OVERHEAD_BYTES);
         ph.write(A_BYTES_16);
         ph.write(B_BYTES_16);
 

@@ -7,12 +7,12 @@ import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
 
-public class PersistentPageHandler extends PageHandler {
+public class PersistentPagedQueue extends PagedQueue {
     private String dirPath;
 
     // @param dirPath directory path where all queue data files will be written
     // @param pageSize the pageSize when creating a new queue, if the queue already exists, its configured page size will be used
-    public PersistentPageHandler(String dirPath, int pageSize) throws FileNotFoundException {
+    public PersistentPagedQueue(String dirPath, int pageSize) throws FileNotFoundException {
         super(pageSize);
         this.dirPath = dirPath;
 
