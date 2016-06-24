@@ -9,6 +9,8 @@
  - Moved  `_plugins` api to `_node/plugins` endpoint.
  - Moved `hot_thread` API report to `_node/hot_thread` endpoint.
  - Add new `:list` property to configuration parameters. This will allow the user to specify one or more values.
+ - Add new URI config validator/type. This allows plugin like the Elasticsearch output to safely URIs for 
+   their configuration. Any password information in the URI will be masked when logged.
  
 ### Input
  - Kafka
