@@ -107,7 +107,7 @@ public abstract class PageHandler implements Closeable {
             Page p = page(pageIndex);
             p.ack(partitions.get(pageIndex));
 
-            if (p.getAckingState().allAcked()) {
+            if (p.getPageState().allAcked()) {
                 // TODO: purge this page?
                 // TODO: bookkeeping for which are all acked so we can adjust unackedTailPageIndex at the end?
             }
@@ -126,7 +126,7 @@ public abstract class PageHandler implements Closeable {
         // resetting the usused bits means putting them as the unacked bit.
         for (long i = this.meta.getUnackedTailPageIndex(); i <= this.meta.getHeadPageIndex(); i++) {
             Page p = page(i);
-            p.getAckingState().resetUnused();
+            p.getPageState().resetUnused();
         }
 
         // finally set back unusedTailPageIndex to that of unackedTailPageIndex

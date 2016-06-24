@@ -15,7 +15,7 @@ public class MemoryPage implements Page {
     private int head;     // this page head offset
     private long index;    // this page index number
 
-    private PageState ackingState;
+    private PageState pageState;
 
     // @param capacity page byte size
     public MemoryPage(int capacity) {
@@ -32,13 +32,13 @@ public class MemoryPage implements Page {
     // @param index the page index number
     // @param data initial data for this page
     // @param head the page head offset, @see MemoryPage.findHead() if it needs to be resolved
-    // @param ackingState initial page acking state state
-    public MemoryPage(int capacity, long index, ByteBuffer data, int head, PageState ackingState) {
+    // @param pageState initial page acking state state
+    public MemoryPage(int capacity, long index, ByteBuffer data, int head, PageState pageState) {
         this.capacity = capacity;
         this.index = index;
         this.data = data;
         this.head = head;
-        this.ackingState = ackingState;
+        this.pageState = pageState;
     }
 
     // @return then new head position or 0 if not enough space left for data
@@ -55,7 +55,7 @@ public class MemoryPage implements Page {
         this.data.put(data);
         this.data.putInt(0);
 
-        this.ackingState.add(this.head);
+        this.pageState.add(this.head);
 
         this.head += totalBytes(data.length);
 
@@ -69,7 +69,7 @@ public class MemoryPage implements Page {
 
     @Override
     public Element read() {
-        int offset = this.ackingState.next();
+        int offset = this.pageState.next();
         if (offset == PageState.EMPTY) {
             return null;
         }
@@ -82,7 +82,7 @@ public class MemoryPage implements Page {
         byte[] payload = new byte[dataSize];;
         this.data.get(payload);
 
-        this.ackingState.setInuse(offset);
+        this.pageState.setInuse(offset);
 
         return new Element(payload, this.index, offset);
     }
@@ -95,13 +95,13 @@ public class MemoryPage implements Page {
     public List<Element> read(int n) {
 
         // empty result optimization
-        if (this.ackingState.unusedCount() <= 0) {
+        if (this.pageState.unusedCount() <= 0) {
             return EMPTY_RESULT;
         }
 
         List<Element> result = new ArrayList<>();
 
-        Iterator i = this.ackingState.batch(n);
+        Iterator i = this.pageState.batch(n);
         while (i.hasNext()) {
             int offset = (int) i.next();
 
@@ -116,7 +116,7 @@ public class MemoryPage implements Page {
             // TODO: how/where should we track page index?
             result.add(new Element(payload, this.index, offset));
 
-            this.ackingState.setInuse(offset);
+            this.pageState.setInuse(offset);
          }
 
         return result;
@@ -135,7 +135,7 @@ public class MemoryPage implements Page {
 
     @Override
     public void ack(int offset) {
-        this.ackingState.setAcked(offset);
+        this.pageState.setAcked(offset);
     }
 
     @Override
@@ -159,8 +159,8 @@ public class MemoryPage implements Page {
     }
 
     @Override
-    public PageState getAckingState() {
-        return this.ackingState;
+    public PageState getPageState() {
+        return this.pageState;
     }
 
     @Override

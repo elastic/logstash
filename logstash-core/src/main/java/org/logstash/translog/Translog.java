@@ -69,7 +69,7 @@ public class Translog {
 
         public ActivePage(Page page) {
             this.index = page.getIndex();
-            this.state = page.getAckingState();
+            this.state = page.getPageState();
         }
 
         public ActivePage(PageState state) {

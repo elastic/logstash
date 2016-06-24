@@ -49,5 +49,5 @@ public interface Page extends Closeable {
     // @return this page index
     long getIndex();
 
-    PageState getAckingState();
+    PageState getPageState();
  }
