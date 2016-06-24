@@ -7,7 +7,7 @@ import java.io.IOException;
 // TODO: add iterators for pages with unused/unacked bits? this would need to tie-in with the pagehandler
 // TODO: page method strategy, or simply just provide a simple page number interator
 
-public class Metadata implements Closeable {
+public class VolatileMetadata implements Closeable {
     // head tracking for writes
     private long headPageIndex;
     private int headPageOffset;
@@ -19,7 +19,7 @@ public class Metadata implements Closeable {
     // in use page byte size
     private int pageSize;
 
-    public Metadata() {
+    public VolatileMetadata() {
         // TBD
     }
 

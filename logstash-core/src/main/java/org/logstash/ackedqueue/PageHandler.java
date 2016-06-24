@@ -12,7 +12,7 @@ public class PageHandler implements Closeable {
 
     private String dirPath;
     private int pageSize;
-    private Metadata meta;
+    private VolatileMetadata meta;
     private Map<Long, Page> livePages;
 
     // @param dirPath directory path where all queue data files will be written
@@ -32,7 +32,7 @@ public class PageHandler implements Closeable {
         }
 
         // TODO: ajust when meta will be persisted & retrieved
-        this.meta = new Metadata();
+        this.meta = new VolatileMetadata();
         this.meta.setPageSize(this.pageSize);
         this.meta.setHeadPageIndex(0);
         this.meta.setHeadPageOffset(0);
