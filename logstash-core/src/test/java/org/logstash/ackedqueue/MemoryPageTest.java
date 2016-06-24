@@ -16,39 +16,39 @@ public class MemoryPageTest {
 
     @Test
     public void testSingleWriteRead() {
-        MemoryPage qp = new MemoryPage(1024);
-        int head = qp.write(A_BYTES_16);
+        MemoryPage mp = new MemoryPage(1024);
+        int head = mp.write(A_BYTES_16);
         assertEquals(A_BYTES_16.length + MemoryPage.OVERHEAD_BYTES, head);
-        assertEquals(1, qp.getPageState().unusedCount());
-        List<Element> items = qp.read(2);
+        assertEquals(1, mp.getPageState().unusedCount());
+        List<Element> items = mp.read(2);
         assertEquals(1, items.size());
         assertArrayEquals(A_BYTES_16, items.get(0).getData());
-        assertEquals(0, qp.getPageState().unusedCount());
+        assertEquals(0, mp.getPageState().unusedCount());
     }
 
     @Test
     public void testOverflow() {
-        MemoryPage qp = new MemoryPage(15);
-        assertFalse(qp.writable(16));
-        assertEquals(0, qp.write(A_BYTES_16));
+        MemoryPage mp = new MemoryPage(15);
+        assertFalse(mp.writable(16));
+        assertEquals(0, mp.write(A_BYTES_16));
 
-        assertTrue(qp.writable(15 - MemoryPage.OVERHEAD_BYTES));
-        assertFalse(qp.writable(15 - MemoryPage.OVERHEAD_BYTES + 1));
+        assertTrue(mp.writable(15 - MemoryPage.OVERHEAD_BYTES));
+        assertFalse(mp.writable(15 - MemoryPage.OVERHEAD_BYTES + 1));
     }
 
     @Test
     public void testDoubleWriteRead() {
-        MemoryPage qp = new MemoryPage(1024);
-        int head = qp.write(A_BYTES_16);
+        MemoryPage mp = new MemoryPage(1024);
+        int head = mp.write(A_BYTES_16);
         assertEquals(A_BYTES_16.length + MemoryPage.OVERHEAD_BYTES, head);
-        assertEquals(1, qp.getPageState().unusedCount());
+        assertEquals(1, mp.getPageState().unusedCount());
 
-        head = qp.write(B_BYTES_16);
+        head = mp.write(B_BYTES_16);
         assertEquals((B_BYTES_16.length + MemoryPage.OVERHEAD_BYTES) * 2, head);
-        assertEquals(2, qp.getPageState().unusedCount());
+        assertEquals(2, mp.getPageState().unusedCount());
 
-        List<Element> items = qp.read(2);
-        assertEquals(0, qp.getPageState().unusedCount());
+        List<Element> items = mp.read(2);
+        assertEquals(0, mp.getPageState().unusedCount());
 
         assertEquals(2, items.size());
         assertArrayEquals(A_BYTES_16, items.get(0).getData());
@@ -57,23 +57,23 @@ public class MemoryPageTest {
 
     @Test
     public void testDoubleWriteSingleRead() {
-        MemoryPage qp = new MemoryPage(1024);
-        int head = qp.write(A_BYTES_16);
+        MemoryPage mp = new MemoryPage(1024);
+        int head = mp.write(A_BYTES_16);
         assertEquals(A_BYTES_16.length + MemoryPage.OVERHEAD_BYTES, head);
-        assertEquals(1, qp.getPageState().unusedCount());
+        assertEquals(1, mp.getPageState().unusedCount());
 
-        head = qp.write(B_BYTES_16);
+        head = mp.write(B_BYTES_16);
         assertEquals((B_BYTES_16.length + MemoryPage.OVERHEAD_BYTES) * 2, head);
-        assertEquals(2, qp.getPageState().unusedCount());
+        assertEquals(2, mp.getPageState().unusedCount());
 
-        List<Element> items = qp.read(1);
-        assertEquals(1, qp.getPageState().unusedCount());
+        List<Element> items = mp.read(1);
+        assertEquals(1, mp.getPageState().unusedCount());
 
         assertEquals(1, items.size());
         assertArrayEquals(A_BYTES_16, items.get(0).getData());
 
-        items = qp.read(1);
-        assertEquals(0, qp.getPageState().unusedCount());
+        items = mp.read(1);
+        assertEquals(0, mp.getPageState().unusedCount());
 
         assertEquals(1, items.size());
         assertArrayEquals(B_BYTES_16, items.get(0).getData());
@@ -81,131 +81,131 @@ public class MemoryPageTest {
 
     @Test
     public void testLargerRead() {
-        MemoryPage qp = new MemoryPage(1024);
-        qp.write(A_BYTES_16);
-        qp.write(B_BYTES_16);
-        assertEquals(2, qp.getPageState().unusedCount());
+        MemoryPage mp = new MemoryPage(1024);
+        mp.write(A_BYTES_16);
+        mp.write(B_BYTES_16);
+        assertEquals(2, mp.getPageState().unusedCount());
 
-        List<Element> items = qp.read(3);
-        assertEquals(0, qp.getPageState().unusedCount());
+        List<Element> items = mp.read(3);
+        assertEquals(0, mp.getPageState().unusedCount());
         assertEquals(2, items.size());
     }
 
     @Test
     public void testEmptyRead() {
-        MemoryPage qp = new MemoryPage(1024);
-        qp.write(A_BYTES_16);
-        qp.write(B_BYTES_16);
-        assertEquals(2, qp.getPageState().unusedCount());
+        MemoryPage mp = new MemoryPage(1024);
+        mp.write(A_BYTES_16);
+        mp.write(B_BYTES_16);
+        assertEquals(2, mp.getPageState().unusedCount());
 
-        List<Element> items = qp.read(2);
-        assertEquals(0, qp.getPageState().unusedCount());
+        List<Element> items = mp.read(2);
+        assertEquals(0, mp.getPageState().unusedCount());
         assertEquals(2, items.size());
 
-        items = qp.read(2);
-        assertEquals(0, qp.getPageState().unusedCount());
+        items = mp.read(2);
+        assertEquals(0, mp.getPageState().unusedCount());
         assertEquals(0, items.size());
     }
 
     @Test
     public void testWriteReadReset() {
-        MemoryPage qp = new MemoryPage(1024);
-        qp.write(A_BYTES_16);
-        qp.write(B_BYTES_16);
+        MemoryPage mp = new MemoryPage(1024);
+        mp.write(A_BYTES_16);
+        mp.write(B_BYTES_16);
 
-        List<Element> items = qp.read(1);
+        List<Element> items = mp.read(1);
         assertEquals(1, items.size());
-        items = qp.read(1);
+        items = mp.read(1);
         assertEquals(1, items.size());
 
-        assertEquals(0, qp.getPageState().unusedCount());
+        assertEquals(0, mp.getPageState().unusedCount());
 
-        qp.getPageState().resetUnused();
+        mp.getPageState().resetUnused();
 
         // all items are now maked as unused, we should be able to re-read all items
-        assertEquals(2, qp.getPageState().unusedCount());
+        assertEquals(2, mp.getPageState().unusedCount());
 
-        items = qp.read(1);
+        items = mp.read(1);
         assertEquals(1, items.size());
-        items = qp.read(1);
+        items = mp.read(1);
         assertEquals(1, items.size());
 
-        assertEquals(0, qp.getPageState().unusedCount());
+        assertEquals(0, mp.getPageState().unusedCount());
     }
 
     // with acks
 
     @Test
     public void testWriteReadAckReset() {
-        MemoryPage qp = new MemoryPage(1024);
-        qp.write(A_BYTES_16);
-        qp.write(B_BYTES_16);
+        MemoryPage mp = new MemoryPage(1024);
+        mp.write(A_BYTES_16);
+        mp.write(B_BYTES_16);
 
-        List<Element> items = qp.read(1);
+        List<Element> items = mp.read(1);
         assertEquals(1, items.size());
-        qp.ack(items);
+        mp.ack(items);
 
-        items = qp.read(1);
+        items = mp.read(1);
         assertEquals(1, items.size());
-        qp.ack(items);
+        mp.ack(items);
 
-        assertEquals(0, qp.getPageState().unusedCount());
+        assertEquals(0, mp.getPageState().unusedCount());
 
-        qp.getPageState().resetUnused();
+        mp.getPageState().resetUnused();
 
-        assertEquals(0, qp.getPageState().unusedCount());
+        assertEquals(0, mp.getPageState().unusedCount());
     }
 
     @Test
     public void testWriteReadPartialAckReset() {
-        MemoryPage qp = new MemoryPage(1024);
-        qp.write(A_BYTES_16);
-        qp.write(B_BYTES_16);
+        MemoryPage mp = new MemoryPage(1024);
+        mp.write(A_BYTES_16);
+        mp.write(B_BYTES_16);
 
-        List<Element> items = qp.read(1);
+        List<Element> items = mp.read(1);
         assertEquals(1, items.size());
 
-        assertEquals(1, qp.getPageState().unusedCount());
+        assertEquals(1, mp.getPageState().unusedCount());
 
-        qp.ack(items);
+        mp.ack(items);
 
-        assertEquals(1, qp.getPageState().unusedCount());
+        assertEquals(1, mp.getPageState().unusedCount());
 
-        qp.getPageState().resetUnused();
+        mp.getPageState().resetUnused();
 
-        assertEquals(1, qp.getPageState().unusedCount());
+        assertEquals(1, mp.getPageState().unusedCount());
     }
 
     @Test
     public void testWritePartialAckReset() {
-        MemoryPage qp = new MemoryPage(1024);
-        qp.write(A_BYTES_16);
-        qp.write(B_BYTES_16);
+        MemoryPage mp = new MemoryPage(1024);
+        mp.write(A_BYTES_16);
+        mp.write(B_BYTES_16);
 
-        List<Element> items = qp.read(1);
-        qp.getPageState().resetUnused();
+        List<Element> items = mp.read(1);
+        mp.getPageState().resetUnused();
 
-        assertEquals(2, qp.getPageState().unusedCount());
+        assertEquals(2, mp.getPageState().unusedCount());
 
-        qp.ack(items);
+        mp.ack(items);
 
-        assertEquals(1, qp.getPageState().unusedCount());
+        assertEquals(1, mp.getPageState().unusedCount());
     }
 
     @Test
     public void testWritePartialAckRead() {
-        MemoryPage qp = new MemoryPage(1024);
-        qp.write(A_BYTES_16);
-        qp.write(B_BYTES_16);
+        MemoryPage mp = new MemoryPage(1024);
+        mp.write(A_BYTES_16);
+        mp.write(B_BYTES_16);
 
-        List<Element> items = qp.read(1);
-        qp.getPageState().resetUnused();
+        List<Element> items = mp.read(1);
+        mp.getPageState().resetUnused();
 
-        assertEquals(2, qp.getPageState().unusedCount());
+        assertEquals(2, mp.getPageState().unusedCount());
 
-        qp.ack(items);
+        mp.ack(items);
 
-        items = qp.read(2);
+        items = mp.read(2);
         assertEquals(1, items.size());
     }
 }

@@ -27,7 +27,7 @@ public abstract class PagedQueue implements Closeable {
         Page headPage = page(headPageIndex);
 
         if (!headPage.writable(data.length)) {
-            // just increment head page since we know the head is the last page and record new head index in metadata
+            // just increment head page since we know the head is the last page and record new head index in queueState
             headPageIndex++;
             this.queueState.setHeadPageIndex(headPageIndex);
             headPage = page(headPageIndex);
@@ -35,7 +35,7 @@ public abstract class PagedQueue implements Closeable {
 
         headPage.write(data);
 
-        // record the new head page offset in metadata
+        // record the new head page offset in queueState
         // TODO: do we really need to track the head page offset?
         this.queueState.setHeadPageOffset(headPage.getHead());
 

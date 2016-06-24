@@ -6,7 +6,6 @@ import static org.junit.Assert.*;
 import java.io.FileNotFoundException;
 import java.util.List;
 
-
 public class PagedQueueTest {
 
     private static byte[] A_BYTES_16 = "aaaaaaaaaaaaaaaa".getBytes();
@@ -14,20 +13,20 @@ public class PagedQueueTest {
 
 //    @Test(expected = FileNotFoundException.class)
 //    public void testOpenInvalidPath() throws FileNotFoundException {
-//        PagedQueue ph = new VolatilePagedQueue(1024);
+//        PagedQueue pq = new VolatilePagedQueue(1024);
 //    }
 
     @Test
     public void testOpenValidPath() throws FileNotFoundException {
-        PagedQueue ph = new VolatilePagedQueue(1024);
+        PagedQueue pq = new VolatilePagedQueue(1024);
     }
 
 
     @Test
     public void testSingleWriteRead() throws FileNotFoundException {
-        PagedQueue ph = new VolatilePagedQueue(A_BYTES_16.length + Page.OVERHEAD_BYTES);
-        ph.write(A_BYTES_16);
-        List<Element> result = ph.read(1);
+        PagedQueue pq = new VolatilePagedQueue(A_BYTES_16.length + Page.OVERHEAD_BYTES);
+        pq.write(A_BYTES_16);
+        List<Element> result = pq.read(1);
         assertEquals(1 , result.size());
         assertArrayEquals(A_BYTES_16, result.get(0).getData());
         assertEquals(0, result.get(0).getPageIndex());
@@ -36,9 +35,9 @@ public class PagedQueueTest {
 
     @Test
     public void testSingleWriteBiggerRead() throws FileNotFoundException {
-        PagedQueue ph = new VolatilePagedQueue(A_BYTES_16.length + Page.OVERHEAD_BYTES);
-        ph.write(A_BYTES_16);
-        List<Element> result = ph.read(2);
+        PagedQueue pq = new VolatilePagedQueue(A_BYTES_16.length + Page.OVERHEAD_BYTES);
+        pq.write(A_BYTES_16);
+        List<Element> result = pq.read(2);
         assertEquals(1 , result.size());
         assertArrayEquals(A_BYTES_16, result.get(0).getData());
         assertEquals(0, result.get(0).getPageIndex());
@@ -47,84 +46,84 @@ public class PagedQueueTest {
 
     @Test
     public void testSingleWriteDualRead() throws FileNotFoundException {
-        PagedQueue ph = new VolatilePagedQueue(A_BYTES_16.length + Page.OVERHEAD_BYTES);
-        ph.write(A_BYTES_16);
-        List<Element> result = ph.read(1);
+        PagedQueue pq = new VolatilePagedQueue(A_BYTES_16.length + Page.OVERHEAD_BYTES);
+        pq.write(A_BYTES_16);
+        List<Element> result = pq.read(1);
         assertEquals(1 , result.size());
-        result = ph.read(1);
+        result = pq.read(1);
         assertEquals(0, result.size());
     }
 
     @Test
     public void testMultipleWriteSingleRead() throws FileNotFoundException {
-        PagedQueue ph = new VolatilePagedQueue(A_BYTES_16.length + Page.OVERHEAD_BYTES);
-        ph.write(A_BYTES_16);
-        ph.write(B_BYTES_16);
-        List<Element> result = ph.read(2);
+        PagedQueue pq = new VolatilePagedQueue(A_BYTES_16.length + Page.OVERHEAD_BYTES);
+        pq.write(A_BYTES_16);
+        pq.write(B_BYTES_16);
+        List<Element> result = pq.read(2);
         assertEquals(2 , result.size());
 
         assertArrayEquals(A_BYTES_16, result.get(0).getData());
         assertArrayEquals(B_BYTES_16, result.get(1).getData());
 
-        result = ph.read(1);
+        result = pq.read(1);
         assertEquals(0, result.size());
     }
 
     @Test
     public void testMultipleWriteRead() throws FileNotFoundException {
-        PagedQueue ph = new VolatilePagedQueue(A_BYTES_16.length + Page.OVERHEAD_BYTES);
-        ph.write(A_BYTES_16);
-        ph.write(B_BYTES_16);
-        List<Element> result = ph.read(1);
+        PagedQueue pq = new VolatilePagedQueue(A_BYTES_16.length + Page.OVERHEAD_BYTES);
+        pq.write(A_BYTES_16);
+        pq.write(B_BYTES_16);
+        List<Element> result = pq.read(1);
         assertEquals(1, result.size());
         assertArrayEquals(A_BYTES_16, result.get(0).getData());
 
-        result = ph.read(1);
+        result = pq.read(1);
         assertEquals(1, result.size());
         assertArrayEquals(B_BYTES_16, result.get(0).getData());
 
-        result = ph.read(1);
+        result = pq.read(1);
         assertEquals(0 , result.size());
     }
 
     @Test
     public void testMultipleWriteBiggerRead() throws FileNotFoundException {
-        PagedQueue ph = new VolatilePagedQueue(A_BYTES_16.length + Page.OVERHEAD_BYTES);
-        ph.write(A_BYTES_16);
-        ph.write(B_BYTES_16);
-        List<Element> result = ph.read(3);
+        PagedQueue pq = new VolatilePagedQueue(A_BYTES_16.length + Page.OVERHEAD_BYTES);
+        pq.write(A_BYTES_16);
+        pq.write(B_BYTES_16);
+        List<Element> result = pq.read(3);
         assertEquals(2, result.size());
         assertArrayEquals(A_BYTES_16, result.get(0).getData());
         assertArrayEquals(B_BYTES_16, result.get(1).getData());
 
-        result = ph.read(1);
+        result = pq.read(1);
         assertEquals(0 , result.size());
     }
 
     @Test
     public void testSingleWriteReadResetRead() throws FileNotFoundException {
-        PagedQueue ph = new VolatilePagedQueue(A_BYTES_16.length + Page.OVERHEAD_BYTES);
-        ph.write(A_BYTES_16);
-        List<Element> result = ph.read(1);
+        PagedQueue pq = new VolatilePagedQueue(A_BYTES_16.length + Page.OVERHEAD_BYTES);
+        pq.write(A_BYTES_16);
+        List<Element> result = pq.read(1);
         assertEquals(1 , result.size());
 
-        ph.resetUnused();
+        pq.resetUnused();
 
-        result = ph.read(1);
+        result = pq.read(1);
         assertEquals(1 , result.size());
     }
 
     @Test
     public void testMultipleWriteReadResetRead() throws FileNotFoundException {
-        PagedQueue ph = new VolatilePagedQueue(A_BYTES_16.length + Page.OVERHEAD_BYTES);
-        ph.write(A_BYTES_16);
-        ph.write(B_BYTES_16);
-        List<Element> result = ph.read(2);
+        PagedQueue pq = new VolatilePagedQueue(A_BYTES_16.length + Page.OVERHEAD_BYTES);
+        pq.write(A_BYTES_16);
+        pq.write(B_BYTES_16);
+        List<Element> result = pq.read(2);
         assertEquals(2, result.size());
 
-        ph.resetUnused();
+        pq.resetUnused();
 
-        result = ph.read(2);
+        result = pq.read(2);
         assertEquals(2, result.size());
     }
 
@@ -132,50 +131,50 @@ public class PagedQueueTest {
 
     @Test
     public void testMultipleWriteReadAckResetRead() throws FileNotFoundException {
-        PagedQueue ph = new VolatilePagedQueue(A_BYTES_16.length + Page.OVERHEAD_BYTES);
-        ph.write(A_BYTES_16);
-        ph.write(B_BYTES_16);
-        List<Element> result = ph.read(2);
+        PagedQueue pq = new VolatilePagedQueue(A_BYTES_16.length + Page.OVERHEAD_BYTES);
+        pq.write(A_BYTES_16);
+        pq.write(B_BYTES_16);
+        List<Element> result = pq.read(2);
         assertEquals(2, result.size());
 
-        ph.ack(result);
-        ph.resetUnused();
+        pq.ack(result);
+        pq.resetUnused();
 
-        result = ph.read(2);
+        result = pq.read(2);
         assertEquals(0, result.size());
     }
 
     @Test
     public void testWritePartialAckRead()  throws FileNotFoundException {
-        PagedQueue ph = new VolatilePagedQueue(A_BYTES_16.length + Page.OVERHEAD_BYTES);
-        ph.write(A_BYTES_16);
-        ph.write(B_BYTES_16);
+        PagedQueue pq = new VolatilePagedQueue(A_BYTES_16.length + Page.OVERHEAD_BYTES);
+        pq.write(A_BYTES_16);
+        pq.write(B_BYTES_16);
 
-        List<Element> result = ph.read(1);
+        List<Element> result = pq.read(1);
         assertArrayEquals(A_BYTES_16, result.get(0).getData());
-        ph.resetUnused();
+        pq.resetUnused();
 
-        ph.ack(result);
+        pq.ack(result);
 
-        result = ph.read(2);
+        result = pq.read(2);
         assertEquals(1, result.size());
         assertArrayEquals(B_BYTES_16, result.get(0).getData());
     }
 
     @Test
     public void testWriteFulllAckRead()  throws FileNotFoundException {
-        PagedQueue ph = new VolatilePagedQueue(A_BYTES_16.length + Page.OVERHEAD_BYTES);
-        ph.write(A_BYTES_16);
-        ph.write(B_BYTES_16);
+        PagedQueue pq = new VolatilePagedQueue(A_BYTES_16.length + Page.OVERHEAD_BYTES);
+        pq.write(A_BYTES_16);
+        pq.write(B_BYTES_16);
 
-        List<Element> result = ph.read(2);
+        List<Element> result = pq.read(2);
         assertArrayEquals(A_BYTES_16, result.get(0).getData());
         assertArrayEquals(B_BYTES_16, result.get(1).getData());
-        ph.resetUnused();
+        pq.resetUnused();
 
-        ph.ack(result);
+        pq.ack(result);
 
-        result = ph.read(2);
+        result = pq.read(2);
         assertEquals(0, result.size());
     }
 }

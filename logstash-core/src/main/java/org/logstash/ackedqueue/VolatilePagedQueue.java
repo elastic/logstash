@@ -9,7 +9,6 @@ public class VolatilePagedQueue extends PagedQueue {
     public VolatilePagedQueue(int pageSize) {
         super(pageSize);
 
-        // TODO: ajust when meta will be persisted & retrieved
         this.queueState = new VolatileQueueState();
         this.queueState.setPageSize(this.pageSize);
         this.queueState.setHeadPageIndex(0);
