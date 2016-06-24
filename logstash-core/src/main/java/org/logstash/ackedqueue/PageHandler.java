@@ -9,7 +9,7 @@ public abstract class PageHandler implements Closeable {
     protected final static List<Element> EMPTY_RESULT = new ArrayList<>(0);
 
     protected int pageSize;
-    protected Metadata meta;
+    protected QueueState queueState;
 
     // @param pageSize the pageSize when creating a new queue, if the queue already exists, its configured page size will be used
     public PageHandler(int pageSize) {
@@ -21,7 +21,7 @@ public abstract class PageHandler implements Closeable {
     public int write(byte[] data) {
         // TODO: check for data bigger that page capacity exception prior to any per page availibility attempt
 
-        long headPageIndex = this.meta.getHeadPageIndex();
+        long headPageIndex = this.queueState.getHeadPageIndex();
 
         // grab the head page, if there is not enough space left to write our data, just create a new head page
         Page headPage = page(headPageIndex);
@@ -29,7 +29,7 @@ public abstract class PageHandler implements Closeable {
         if (!headPage.writable(data.length)) {
             // just increment head page since we know the head is the last page and record new head index in metadata
             headPageIndex++;
-            this.meta.setHeadPageIndex(headPageIndex);
+            this.queueState.setHeadPageIndex(headPageIndex);
             headPage = page(headPageIndex);
         }
 
@@ -37,7 +37,7 @@ public abstract class PageHandler implements Closeable {
 
         // record the new head page offset in metadata
         // TODO: do we really need to track the head page offset?
-        this.meta.setHeadPageOffset(headPage.getHead());
+        this.queueState.setHeadPageOffset(headPage.getHead());
 
         return 0;
     }
@@ -46,7 +46,7 @@ public abstract class PageHandler implements Closeable {
     // these will be read and returned immediately.
     // @return List of read Element, or empty list if no items are read
     public List<Element> read(int n) {
-        long unusedTail = this.meta.getUnusedTailPageIndex();
+        long unusedTail = this.queueState.getUnusedTailPageIndex();
 
         int remaining = n;
         List<Element> result = new ArrayList<>();
@@ -61,7 +61,7 @@ public abstract class PageHandler implements Closeable {
             }
 
             unusedTail++;
-            this.meta.setUnusedTailPageIndex(unusedTail);
+            this.queueState.setUnusedTailPageIndex(unusedTail);
         }
     }
 
@@ -70,7 +70,7 @@ public abstract class PageHandler implements Closeable {
     public Element read() {
         // optimization from read(n) to avoid extra List creation
 
-        long unusedTail = this.meta.getUnusedTailPageIndex();
+        long unusedTail = this.queueState.getUnusedTailPageIndex();
 
         Element result;
 
@@ -84,7 +84,7 @@ public abstract class PageHandler implements Closeable {
             }
 
             unusedTail++;
-            this.meta.setUnusedTailPageIndex(unusedTail);
+            this.queueState.setUnusedTailPageIndex(unusedTail);
         }
      }
 
@@ -120,17 +120,17 @@ public abstract class PageHandler implements Closeable {
 
     // reset all pages unused bits to the state of the unacked bits
     public void resetUnused() {
-        // TODO: we could create an interator for pages with unused bits, see Metadata comments
+        // TODO: we could create an interator for pages with unused bits, see QueueState comments
 
         // we have to start from the unacked tail and not the unused tail which moved up via the read.
         // resetting the usused bits means putting them as the unacked bit.
-        for (long i = this.meta.getUnackedTailPageIndex(); i <= this.meta.getHeadPageIndex(); i++) {
+        for (long i = this.queueState.getUnackedTailPageIndex(); i <= this.queueState.getHeadPageIndex(); i++) {
             Page p = page(i);
             p.getPageState().resetUnused();
         }
 
         // finally set back unusedTailPageIndex to that of unackedTailPageIndex
-        this.meta.setUnusedTailPageIndex(this.meta.getUnackedTailPageIndex());
+        this.queueState.setUnusedTailPageIndex(this.queueState.getUnackedTailPageIndex());
     }
 
     @Override
@@ -143,7 +143,7 @@ public abstract class PageHandler implements Closeable {
     abstract protected Page page(long index);
 
     protected boolean lastPage(long index) {
-        return index >= this.meta.getHeadPageIndex();
+        return index >= this.queueState.getHeadPageIndex();
     }
 
     // @return a SortedMap of elements partitioned by page index

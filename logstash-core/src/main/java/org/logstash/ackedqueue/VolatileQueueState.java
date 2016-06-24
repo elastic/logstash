@@ -1,13 +1,12 @@
 package org.logstash.ackedqueue;
 
 
-import java.io.Closeable;
 import java.io.IOException;
 
 // TODO: add iterators for pages with unused/unacked bits? this would need to tie-in with the pagehandler
 // TODO: page method strategy, or simply just provide a simple page number interator
 
-public class VolatileMetadata implements Metadata {
+public class VolatileQueueState implements QueueState {
     // head tracking for writes
     private long headPageIndex;
     private int headPageOffset;
@@ -19,7 +18,7 @@ public class VolatileMetadata implements Metadata {
     // in use page byte size
     private int pageSize;
 
-    public VolatileMetadata() {
+    public VolatileQueueState() {
         // TBD
     }
 

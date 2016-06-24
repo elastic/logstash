@@ -2,10 +2,7 @@ package org.logstash.ackedqueue;
 
 import java.io.Closeable;
 
-/**
- * Created by colin on 2016-06-24.
- */
-public interface Metadata extends Closeable {
+public interface QueueState extends Closeable {
     long getHeadPageIndex();
 
     void setHeadPageIndex(long index);

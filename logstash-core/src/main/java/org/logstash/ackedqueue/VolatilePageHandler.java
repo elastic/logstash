@@ -10,12 +10,12 @@ public class VolatilePageHandler extends PageHandler {
         super(pageSize);
 
         // TODO: ajust when meta will be persisted & retrieved
-        this.meta = new VolatileMetadata();
-        this.meta.setPageSize(this.pageSize);
-        this.meta.setHeadPageIndex(0);
-        this.meta.setHeadPageOffset(0);
-        this.meta.setUnackedTailPageIndex(0);
-        this.meta.setUnusedTailPageIndex(0);
+        this.queueState = new VolatileQueueState();
+        this.queueState.setPageSize(this.pageSize);
+        this.queueState.setHeadPageIndex(0);
+        this.queueState.setHeadPageOffset(0);
+        this.queueState.setUnackedTailPageIndex(0);
+        this.queueState.setUnusedTailPageIndex(0);
 
         this.livePages = new HashMap<>();
     }
