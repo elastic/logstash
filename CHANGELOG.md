@@ -1,3 +1,42 @@
+## 5.0.0-alpha4 (June 28, 2016)
+ - Created a new `LS_HOME/data` directory to store plugin states, Logstash instance UUID and more. This directory 
+   location is configurable via `path.data` ([#5404](https://github.com/elastic/logstash/issues/5404)).
+ - Made `bin/logstash -V/--version` fast on Unix platforms.
+ - Monitoring API: Added hostname, http_address, version as static fields for all APIs ([#5450](https://github.com/elastic/logstash/issues/5450)).
+ - Added time tracking (wall-clock) to all individual filter and output instances. The goal is to help identify 
+   what plugin configurations are consuming the most time. Exposed via `/_node/stats/pipeline`.
+ - Added ` /_node` API which provides static information for OS, JVM and pipeline settings.  
+ - Moved  `_plugins` api to `_node/plugins` endpoint.
+ - Moved `hot_thread` API report to `_node/hot_thread` endpoint.
+ - Add new `:list` property to configuration parameters. This will allow the user to specify one or more values.
+ - Add new URI config validator/type. This allows plugin like the Elasticsearch output to safely URIs for 
+   their configuration. Any password information in the URI will be masked when logged.
+ 
+### Input
+ - Kafka
+   - Added support for Kafka broker 0.10.
+ - HTTP
+   - Fixed a bug where HTTP input plugin blocked stats API ([#51](https://github.com/logstash-plugins/logstash-input-http/issues/51)). 
+ 
+### Output
+ - Elasticsearch
+   - ES output is now fully threadsafe. This means internal resources can be shared among multiple 
+     `output { elasticsearch {} }` instances.
+   - Sniffing improvements so any current connections don't have to be closed/reopened after a sniff round.
+   - Introduced a connection pool to efficiently reuse connections to ES backends.
+   - Added exponential backoff to connection retries with a ceiling of `retry_max_interval` which is the most time to 
+     wait between retries, and `retry_initial_interval` which is the initial amount of time to wait. 
+     `retry_initial_interval` will be increased exponentially between retries until a request succeeds.
+     
+ - Kafka
+   - Added support for Kafka broker 0.10
+   
+### Filter
+ - Grok
+   - Added stats counter on grok matches and failures. This is exposed in `_node/stats/pipeline`
+ - Date
+   - Added stats counter on grok matches and failures. This is exposed in `_node/stats/pipeline`  
+
 ## 5.0.0-alpha3 (May 31, 2016)
  - Breaking Change: Introduced a new way to configure application settings for Logstash through a settings.yml file.
    This file is typically located in `LS_HOME/config`, or `/etc/logstash` when installed via packages. Logstash will not be 
