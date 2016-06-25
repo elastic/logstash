@@ -6,13 +6,14 @@ experimental[]
 Logstash provides the following monitoring APIs to retrieve runtime metrics
 about Logstash:
 
+* <<node-info-api>>
 * <<plugins-api>>
 * <<stats-info-api>>
 * <<hot-threads-api>>
 
 
 You can use the root resource to retrieve general information about the Logstash instance, including
-the host name and version information.
+the hostname and version.
 
 [source,js]
 --------------------------------------------------
@@ -21,14 +22,13 @@ GET /
 
 Example response:
 
-[source,js]
+["source","js",subs="attributes"]
 --------------------------------------------------
 {
    "hostname": "skywalker",
-    "version" : {
-        "number" : "2.1.0",       
-    }
-  }
+   "version": "{logstash_version}",
+   "http_address": "127.0.0.1:9600"
+}
 --------------------------------------------------
 
 NOTE: By default, the monitoring API attempts to bind to `tcp:9600`. If this port is already in use by another Logstash
@@ -65,6 +65,110 @@ being consumed by a monitoring tool, rather than intended for human
 consumption.  The default for the `human` flag is
 `false`.
 
+[[node-info-api]]
+=== Node Info API
+
+coming[5.0.0-alpha4]
+
+experimental[]
+
+The node info API retrieves information about the node.
+
+[source,js]
+--------------------------------------------------
+GET /_node/<types>
+--------------------------------------------------
+
+Where `<types>` is optional and specifies the types of node info you want to return.
+
+You can limit the info that's returned by combining any of the following types: 
+
+//REVIEWERS: It looks like you cannot combine types in a comma-spearated list like you can for the Elasticsearch cluster APIs. Is this intentional/correct behavior? If so, I need to change this to say "<type>".
+
+[horizontal]
+`pipeline`::
+Gets pipeline-specific information and settings.
+`os`::
+Gets node-level info about the OS.
+`jvm`::
+Gets node-level JVM info, including info about threads.
+
+==== Pipeline Info
+
+The following request returns a JSON document that shows pipeline info, such as the number of workers,
+batch size, and batch delay:
+
+[source,js]
+--------------------------------------------------
+GET /_node/pipeline
+--------------------------------------------------
+
+Example response:
+
+["source","js",subs="attributes"]
+--------------------------------------------------
+{
+  "pipeline": {
+    "workers": 8,
+    "batch_size": 125,
+    "batch_delay": 5
+  }
+--------------------------------------------------
+
+==== OS Info
+
+The following request returns a JSON document that shows the OS name, architecture, version, and
+available processors:
+
+[source,js]
+--------------------------------------------------
+GET /_node/os
+--------------------------------------------------
+
+Example response:
+
+[source,js]
+--------------------------------------------------
+{
+  "os": {
+    "name": "Mac OS X",
+    "arch": "x86_64",
+    "version": "10.11.2",
+    "available_processors": 8
+  }
+--------------------------------------------------
+
+==== JVM Info
+
+The following request returns a JSON document that shows node-level JVM stats, such as the JVM process id, version,
+VM info, and memory usage:
+
+[source,js]
+--------------------------------------------------
+GET /_node/jvm
+--------------------------------------------------
+
+Example response:
+
+[source,js]
+--------------------------------------------------
+{
+  "jvm": {
+    "pid": 31580,
+    "version": "1.8.0_65",
+    "vm_name": "Java HotSpot(TM) 64-Bit Server VM",
+    "vm_version": "1.8.0_65",
+    "vm_vendor": "Oracle Corporation",
+    "start_time_in_millis": 1466799661753,
+    "mem": {
+      "heap_init_in_bytes": 268435456,
+      "heap_max_in_bytes": 1037959168,
+      "non_heap_init_in_bytes": 2555904,
+      "non_heap_max_in_bytes": 0
+    }
+  }
+--------------------------------------------------
+
 [[plugins-api]]
 === Plugins API
 
@@ -75,33 +179,39 @@ This API basically returns the output of running the `bin/logstash-plugin list -
 
 [source,js]
 --------------------------------------------------
-GET /_plugins
+GET /_node/plugins
 --------------------------------------------------
 
 The output is a JSON document.
 
 Example response:
 
-[source,js]
+["source","js",subs="attributes"]
 --------------------------------------------------
-"total": 102
-"plugins" : [
-  {
-      "name": "logstash-output-pagerduty"
-      "version": "2.0.2"
-  },
-  {
-      "name": "logstash-output-elasticsearch"
-      "version": "2.1.2"
-  }
-....
-] 
+{
+  "plugins": [
+    {
+      "name": "logstash-codec-collectd",
+      "version": "3.0.1"
+    },
+    {
+      "name": "logstash-codec-dots",
+      "version": "3.0.1"
+    },
+    {
+      "name": "logstash-codec-edn",
+      "version": "3.0.1"
+    },
+    .
+    .
+    .
+  ]
 --------------------------------------------------
 
 [[stats-info-api]]
 === Node Stats API
 
-coming[5.0.0-beta3,Replaces the Stats Info API]
+added[5.0.0-beta3,Replaces the Stats Info API]
 
 experimental[]
 
@@ -114,28 +224,27 @@ The node stats API retrieves runtime stats about Logstash.
 GET /_node/stats/<types>
 --------------------------------------------------
 
-////
-COMMENTED OUT until Logstash supports multiple pipelines: To retrieve all stats per pipeline, use the `_pipelines/stats` endpoint:
-
-[source,js]
---------------------------------------------------
-GET /_pipelines/stats/<types>
---------------------------------------------------
-////
-
 Where `<types>` is optional and specifies the types of stats you want to return.
 
 By default, all stats are returned. You can limit this by combining any of the following types: 
 
 [horizontal]
 `events`::
-Gets event information since startup. 
+Gets event information since startup.
 `jvm`::
-Gets JVM stats, including stats about threads. coming[5.0.0-alpha3,Adds thread count]
+Gets JVM stats, including stats about threads. added[5.0.0-alpha3,Adds thread count]
 `process`::
-Gets process stats, including stats about file descriptors, memory consumption, and CPU usage. coming[5.0.0-alpha3]   
+Gets process stats, including stats about file descriptors, memory consumption, and CPU usage. added[5.0.0-alpha3] 
+`mem`::
+Gets memory usage stats. coming[5.0.0-alpha4] 
+`pipeline`::
+Gets stats for a pipeline, including stats about each configured input, filter, or output stage. coming[5.0.0-alpha4,Stats for input stages are not yet available] 
 
-For example, the following request returns a JSON document that shows the number of events
+//REVIEWERS: In the latest Logstash build available on June 24, the APIs did not behave exactly as they are documented in https://github.com/elastic/logstash/issues/5475. /_node/stats/pipeline returns the expected results, but I couldn't specify anything below that (such as /_node/stats/pipeline/events). So I've documented the end points accordingly. I also noticed that mem appears in the returned JSON doc. Can you help me by suggesting a better/more complete description>? 
+
+==== Event Stats
+
+The following request returns a JSON document that shows the number of events
 that were input, filtered, and output by Logstash since startup:
 
 [source,js]
@@ -154,6 +263,8 @@ Example response:
     "out" : 59685
   }
 --------------------------------------------------
+
+==== JVM Stats
 
 The following request returns a JSON document containing JVM stats:
 
@@ -174,6 +285,8 @@ Example response:
     }
   }
 --------------------------------------------------
+
+==== Process Stats
 
 The following request returns a JSON document containing process stats: 
 
@@ -201,6 +314,117 @@ Example response:
   }
 --------------------------------------------------
 
+==== Mem Stats
+
+The following request returns a JSON document containing memory stats: 
+
+[source,js]
+--------------------------------------------------
+GET /_node/stats/mem
+--------------------------------------------------
+
+Example response:
+
+[source,js]
+--------------------------------------------------
+{
+  "mem": {
+    "heap_used_in_bytes": 262641008,
+    "heap_used_percent": 12,
+    "heap_committed_in_bytes": 519045120,
+    "heap_max_in_bytes": 2075918336,
+    "non_heap_used_in_bytes": 184060512,
+    "non_heap_committed_in_bytes": 195870720,
+    "pools": {
+      "survivor": {
+        "peak_used_in_bytes": 8912896,
+        "used_in_bytes": 9280256,
+        "peak_max_in_bytes": 35782656,
+        "max_in_bytes": 71565312,
+        "committed_in_bytes": 17825792
+      },
+      "old": {
+        "peak_used_in_bytes": 112649208,
+        "used_in_bytes": 170055984,
+        "peak_max_in_bytes": 715849728,
+        "max_in_bytes": 1431699456,
+        "committed_in_bytes": 357957632
+      },
+      "young": {
+        "peak_used_in_bytes": 71630848,
+        "used_in_bytes": 83304768,
+        "peak_max_in_bytes": 286326784,
+        "max_in_bytes": 572653568,
+        "committed_in_bytes": 143261696
+      }
+    }
+  }
+--------------------------------------------------
+
+==== Pipeline Stats
+
+The following request returns a JSON document containing pipeline stats, including the number of events that were
+input, filtered, or output by the pipeline. The request also returns stats for each configured input, filter, or
+output stage. coming[5.0.0-alpha4,Stats for input stages are not yet available]
+
+[source,js]
+--------------------------------------------------
+GET /_node/stats/pipeline
+--------------------------------------------------
+
+//REVIEWERS: Note that when you call /_node/stats, it does not return the pipeline stats. You need to specify /_node/stats/pipeline specifically. This makes me wonder if it shouldn't be its own API topic. WDYT?
+
+Example response:
+
+[source,js]
+--------------------------------------------------
+  "pipeline": {
+    "events": {
+      "in": 100,
+      "filtered": 100,
+      "out": 100
+    },
+    "pipeline": {
+      "inputs": [],
+      "filters": [
+        {
+          "id": "geoip_6aea6f9a-c100-4c39-ab00-e34d54d6e573",
+          "events": {
+            "duration_in_millis": 145,
+            "in": 100,
+            "out": 100
+          },
+          "name": "geoip"
+        },
+        {
+          "id": "grok_4000f2bf-4baf-4258-b72f-56e0b6f15fc1",
+          "events": {
+            "duration_in_millis": 48,
+            "in": 100,
+            "out": 100
+          },
+          "matches": 100,
+          "patterns_per_field": {
+            "message": 1
+          },
+          "name": "grok"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "elasticsearch_db05752c-2e30-4f77-a3d7-167e915d470f",
+          "events": {
+            "duration_in_millis": 232,
+            "in": 100,
+            "out": 100
+          },
+          "name": "elasticsearch"
+        }
+      ]
+    }
+  }
+--------------------------------------------------
+
 See <<monitoring-common-options, Common Options>> for a list of options that can be applied to all
 Logstash monitoring APIs.
 
@@ -220,39 +444,68 @@ GET /_node/hot_threads
 --------------------------------------------------
 
 The output is a JSON document that contains a breakdown of the top hot threads for
-Logstash. The parameters allowed are:
-
-[horizontal]
-`threads`:: 	        The number of hot threads to return. The default is 3. 
-`human`:: 	            If true, returns plain text instead of JSON format. The default is false. 
-`ignore_idle_threads`:: If true, does not return idle threads. The default is true.
+Logstash. 
 
 Example response:
 
 [source,js]
 --------------------------------------------------
 {
-  "hostname" : "Example-MBP-2",
-  "time" : "2016-03-08T17:58:18-08:00",
-  "busiest_threads" : 3,
-  "threads" : [ {
-    "name" : "LogStash::Runner",
-    "percent_of_cpu_time" : 16.93,
-    "state" : "timed_waiting",
-    "traces" : "\t\tjava.lang.Object.wait(Native Method)\n\t\tjava.lang.Thread.join(Thread.java:1253)\n\t\torg.jruby.internal.runtime.NativeThread.join(NativeThread.java:75)\n\t\torg.jruby.RubyThread.join(RubyThread.java:697)\n\t\torg.jruby.RubyThread$INVOKER$i$0$1$join.call(RubyThread$INVOKER$i$0$1$join.gen)\n\t\torg.jruby.internal.runtime.methods.JavaMethod$JavaMethodN.call(JavaMethod.java:663)\n\t\torg.jruby.internal.runtime.methods.DynamicMethod.call(DynamicMethod.java:198)\n\t\torg.jruby.runtime.callsite.CachingCallSite.cacheAndCall(CachingCallSite.java:306)\n\t\torg.jruby.runtime.callsite.CachingCallSite.call(CachingCallSite.java:136)\n\t\torg.jruby.ast.CallNoArgNode.interpret(CallNoArgNode.java:60)\n"
-  }, {
-    "name" : "Api Webserver",
-    "percent_of_cpu_time" : 0.39,
-    "state" : "timed_waiting",
-    "traces" : "\t\tjava.lang.Object.wait(Native Method)\n\t\tjava.lang.Thread.join(Thread.java:1253)\n\t\torg.jruby.internal.runtime.NativeThread.join(NativeThread.java:75)\n\t\torg.jruby.RubyThread.join(RubyThread.java:697)\n\t\torg.jruby.RubyThread$INVOKER$i$0$1$join.call(RubyThread$INVOKER$i$0$1$join.gen)\n\t\torg.jruby.internal.runtime.methods.JavaMethod$JavaMethodN.call(JavaMethod.java:663)\n\t\torg.jruby.internal.runtime.methods.DynamicMethod.call(DynamicMethod.java:198)\n\t\torg.jruby.runtime.callsite.CachingCallSite.cacheAndCall(CachingCallSite.java:306)\n\t\torg.jruby.runtime.callsite.CachingCallSite.call(CachingCallSite.java:136)\n\t\torg.jruby.ast.CallNoArgNode.interpret(CallNoArgNode.java:60)\n"
-  }, {
-    "name" : "Ruby-0-Thread-13",
-    "percent_of_cpu_time" : 0.15,
-    "state" : "timed_waiting",
-    "path" : "/Users/suyog/ws/elastic/logstash/build/logstash-3.0.0.dev/vendor/local_gems/f5685da5/logstash-core-3.0.0.dev-java/lib/logstash/pipeline.rb:496",
-    "traces" : "\t\tjava.lang.Object.wait(Native Method)\n\t\torg.jruby.RubyThread.sleep(RubyThread.java:1002)\n\t\torg.jruby.RubyKernel.sleep(RubyKernel.java:803)\n\t\torg.jruby.RubyKernel$INVOKER$s$0$1$sleep.call(RubyKernel$INVOKER$s$0$1$sleep.gen)\n\t\torg.jruby.internal.runtime.methods.JavaMethod$JavaMethodN.call(JavaMethod.java:667)\n\t\torg.jruby.internal.runtime.methods.DynamicMethod.call(DynamicMethod.java:206)\n\t\torg.jruby.runtime.callsite.CachingCallSite.call(CachingCallSite.java:168)\n\t\torg.jruby.ast.FCallOneArgNode.interpret(FCallOneArgNode.java:36)\n\t\torg.jruby.ast.NewlineNode.interpret(NewlineNode.java:105)\n\t\torg.jruby.ast.BlockNode.interpret(BlockNode.java:71)\n"
-  } ]
+  "host": "skywalker",
+  "version": "5.0.0-alpha4",
+  "http_address": "127.0.0.1:9600",
+  "hot_threads": {
+    "time": "2016-06-24T18:19:48-07:00",
+    "busiest_threads": 3,
+    "threads": [
+      {
+        "name": "LogStash::Runner",
+        "percent_of_cpu_time": 0.09,
+        "state": "timed_waiting",
+        "traces": [
+          "java.lang.Object.wait(Native Method)",
+          "java.lang.Thread.join(Thread.java:1253)",
+          "org.jruby.internal.runtime.NativeThread.join(NativeThread.java:75)",
+          "org.jruby.RubyThread.join(RubyThread.java:697)",
+          "org.jruby.RubyThread$INVOKER$i$0$1$join.call(RubyThread$INVOKER$i$0$1$join.gen)",
+          "org.jruby.internal.runtime.methods.JavaMethod$JavaMethodN.call(JavaMethod.java:663)",
+          "org.jruby.internal.runtime.methods.DynamicMethod.call(DynamicMethod.java:198)",
+          "org.jruby.runtime.callsite.CachingCallSite.cacheAndCall(CachingCallSite.java:306)",
+          "org.jruby.runtime.callsite.CachingCallSite.call(CachingCallSite.java:136)",
+          "org.jruby.ast.CallNoArgNode.interpret(CallNoArgNode.java:60)"
+        ]
+      },
+      {
+        "name": "Ruby-0-Thread-17",
+        "percent_of_cpu_time": 0.05,
+        "state": "timed_waiting",
+        "path": "/Users/dedemorton/BuildTesting/5.0.0-alpha4/logstash-5.0.0-alpha4/logstash-core/lib/logstash/pipeline.rb:467",
+        "traces": [
+          "java.lang.Object.wait(Native Method)",
+          "org.jruby.RubyThread.sleep(RubyThread.java:1002)",
+          "org.jruby.RubyKernel.sleep(RubyKernel.java:803)",
+          "org.jruby.RubyKernel$INVOKER$s$0$1$sleep.call(RubyKernel$INVOKER$s$0$1$sleep.gen)",
+          "org.jruby.internal.runtime.methods.JavaMethod$JavaMethodN.call(JavaMethod.java:667)",
+          "org.jruby.internal.runtime.methods.DynamicMethod.call(DynamicMethod.java:206)",
+          "org.jruby.runtime.callsite.CachingCallSite.call(CachingCallSite.java:168)",
+          "rubyjit.Module$$stoppable_sleep_c19c1639527ca7d373b5093f339d26538f1c21ef1028566121.__file__(/Users/dedemorton/BuildTesting/5.0.0-alpha4/logstash-5.0.0-alpha4/vendor/bundle/jruby/1.9/gems/stud-0.0.22/lib/stud/interval.rb:84)",
+          "rubyjit.Module$$stoppable_sleep_c19c1639527ca7d373b5093f339d26538f1c21ef1028566121.__file__(/Users/dedemorton/BuildTesting/5.0.0-alpha4/logstash-5.0.0-alpha4/vendor/bundle/jruby/1.9/gems/stud-0.0.22/lib/stud/interval.rb)",
+          "org.jruby.ast.executable.AbstractScript.__file__(AbstractScript.java:46)"
+        ]
+      }
+    ]
+  }
+}
 --------------------------------------------------
+
+//REVIEWERS: Curious why the hot threads API is the only one that (appears) to accept parameters. Am I missing parameters in the other APIs?
+
+The parameters allowed are:
+
+[horizontal]
+`threads`:: 	        The number of hot threads to return. The default is 3. 
+`human`:: 	            If true, returns plain text instead of JSON format. The default is false. 
+`ignore_idle_threads`:: If true, does not return idle threads. The default is true.
 
 You can use the `?human` parameter to return the document in a human-readable format.
 
@@ -260,6 +513,8 @@ You can use the `?human` parameter to return the document in a human-readable fo
 --------------------------------------------------
 GET /_node/hot_threads?human=true
 --------------------------------------------------
+
+//REVIEWERS: Does the ?human parameter still work? It didn't work in the build that I used.
 
 Example of a human-readable response: 
 
