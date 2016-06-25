@@ -3,21 +3,21 @@ package org.logstash.ackedqueue;
 import java.io.Closeable;
 
 public interface QueueState extends Closeable {
-    long getHeadPageIndex();
+    int getHeadPageIndex();
 
-    void setHeadPageIndex(long index);
+    void setHeadPageIndex(int index);
 
     int getHeadPageOffset();
 
     void setHeadPageOffset(int offset);
 
-    long getUnackedTailPageIndex();
+    int getUnackedTailPageIndex();
 
-    void setUnackedTailPageIndex(long index);
+    void setUnackedTailPageIndex(int index);
 
-    long getUnusedTailPageIndex();
+    int getUnusedTailPageIndex();
 
-    void setUnusedTailPageIndex(long index);
+    void setUnusedTailPageIndex(int index);
 
     int getPageSize();
 

@@ -13,7 +13,8 @@ public class PersistentPagedQueue extends PagedQueue {
     // @param dirPath directory path where all queue data files will be written
     // @param pageSize the pageSize when creating a new queue, if the queue already exists, its configured page size will be used
     public PersistentPagedQueue(String dirPath, int pageSize) throws FileNotFoundException {
-        super(pageSize);
+        // TODO: PersistentQueueState?
+        super(new VolatileQueueState(pageSize));
         this.dirPath = dirPath;
 
         Path p = FileSystems.getDefault().getPath(this.dirPath);
@@ -25,7 +26,7 @@ public class PersistentPagedQueue extends PagedQueue {
 
     // page is basically the byte buffer
     // @param index the page index to retrieve
-    protected Page page(long index) {
+    protected Page page(int index) {
         return null;
     }
 }

@@ -4,6 +4,8 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.util.List;
 
+// TODO: maybe turn this into a Generic Queue and use a/the proper interface for the generic objects to provide byte[] serialization
+
 public interface Queue extends Closeable {
     // add data to the queue
     // @param data to be pushed data

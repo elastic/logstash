@@ -8,12 +8,11 @@ public abstract class PagedQueue implements Closeable {
 
     protected final static List<Element> EMPTY_RESULT = new ArrayList<>(0);
 
-    protected int pageSize;
     protected QueueState queueState;
 
-    // @param pageSize the pageSize when creating a new queue, if the queue already exists, its configured page size will be used
-    public PagedQueue(int pageSize) {
-        this.pageSize = pageSize;
+    // @param queueState initial queue state
+    public PagedQueue(QueueState queueState) {
+        this.queueState = queueState;
     }
 
     // write at the queue head
@@ -21,7 +20,7 @@ public abstract class PagedQueue implements Closeable {
     public int write(byte[] data) {
         // TODO: check for data bigger that page capacity exception prior to any per page availibility attempt
 
-        long headPageIndex = this.queueState.getHeadPageIndex();
+        int headPageIndex = this.queueState.getHeadPageIndex();
 
         // grab the head page, if there is not enough space left to write our data, just create a new head page
         Page headPage = page(headPageIndex);
@@ -46,7 +45,7 @@ public abstract class PagedQueue implements Closeable {
     // these will be read and returned immediately.
     // @return List of read Element, or empty list if no items are read
     public List<Element> read(int n) {
-        long unusedTail = this.queueState.getUnusedTailPageIndex();
+        int unusedTail = this.queueState.getUnusedTailPageIndex();
 
         int remaining = n;
         List<Element> result = new ArrayList<>();
@@ -70,7 +69,7 @@ public abstract class PagedQueue implements Closeable {
     public Element read() {
         // optimization from read(n) to avoid extra List creation
 
-        long unusedTail = this.queueState.getUnusedTailPageIndex();
+        int unusedTail = this.queueState.getUnusedTailPageIndex();
 
         Element result;
 
@@ -98,11 +97,11 @@ public abstract class PagedQueue implements Closeable {
 
     // mark a list of Element as acknowledged
     public void ack(List<Element> items) {
-        SortedMap<Long, List<Element>> partitions = partitionByPage(items);
+        SortedMap<Integer, List<Element>> partitions = partitionByPage(items);
 
         // TODO: prioritize partition by pages that are already live/cached?
 
-        for (Long pageIndex : partitions.keySet()) {
+        for (Integer pageIndex : partitions.keySet()) {
 
             Page p = page(pageIndex);
             p.ack(partitions.get(pageIndex));
@@ -124,7 +123,7 @@ public abstract class PagedQueue implements Closeable {
 
         // we have to start from the unacked tail and not the unused tail which moved up via the read.
         // resetting the usused bits means putting them as the unacked bit.
-        for (long i = this.queueState.getUnackedTailPageIndex(); i <= this.queueState.getHeadPageIndex(); i++) {
+        for (int i = this.queueState.getUnackedTailPageIndex(); i <= this.queueState.getHeadPageIndex(); i++) {
             Page p = page(i);
             p.getPageState().resetUnused();
         }
@@ -140,15 +139,15 @@ public abstract class PagedQueue implements Closeable {
 
     // pages opening/caching strategy
     // @param index the page index to retrieve
-    abstract protected Page page(long index);
+    abstract protected Page page(int index);
 
-    protected boolean lastPage(long index) {
+    protected boolean lastPage(int index) {
         return index >= this.queueState.getHeadPageIndex();
     }
 
     // @return a SortedMap of elements partitioned by page index
-    protected SortedMap<Long, List<Element>> partitionByPage(List<Element> elements) {
-        TreeMap<Long, List<Element>> partitions = new TreeMap<>();
+    protected SortedMap<Integer, List<Element>> partitionByPage(List<Element> elements) {
+        TreeMap<Integer, List<Element>> partitions = new TreeMap<>();
 
         for (Element e : elements) {
             List<Element> partition = partitions.get(e.getPageIndex());

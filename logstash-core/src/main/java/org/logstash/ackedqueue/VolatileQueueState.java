@@ -1,34 +1,50 @@
 package org.logstash.ackedqueue;
 
 
+import org.roaringbitmap.RoaringBitmap;
+
 import java.io.IOException;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
 // TODO: add iterators for pages with unused/unacked bits? this would need to tie-in with the pagehandler
 // TODO: page method strategy, or simply just provide a simple page number interator
 
 public class VolatileQueueState implements QueueState {
     // head tracking for writes
-    private long headPageIndex;
+    private int headPageIndex;
     private int headPageOffset;
 
     // tail tracking, offset tracking is not necessary since it uses the per-page bitsets
-    private long unackedTailPageIndex; // tail page with the oldest unacked bits
-    private long unusedTailPageIndex;  // tail page with the oldest unused bits
+    private int unackedTailPageIndex; // tail page with the oldest unacked bits
+    private int unusedTailPageIndex;  // tail page with the oldest unused bits
 
     // in use page byte size
     private int pageSize;
 
-    public VolatileQueueState() {
-        // TBD
+    private SortedMap<Long, Page> activePageStates; // active pages PageState
+    private RoaringBitmap validPages; // all non fully acked pages
+
+
+    // @param pageSize the queue page pageSize
+    public VolatileQueueState(int pageSize) {
+        this.pageSize = pageSize;
+        this.headPageIndex = 0;
+        this.headPageOffset = 0;
+        this.unackedTailPageIndex = 0;
+        this.unusedTailPageIndex = 0;
+
+        this.activePageStates = new TreeMap<>();
+        this.validPages = new RoaringBitmap();
     }
 
     @Override
-    public long getHeadPageIndex() {
+    public int getHeadPageIndex() {
         return headPageIndex;
     }
 
     @Override
-    public void setHeadPageIndex(long index) {
+    public void setHeadPageIndex(int index) {
         this.headPageIndex = index;
     }
 
@@ -43,22 +59,22 @@ public class VolatileQueueState implements QueueState {
     }
 
     @Override
-    public long getUnackedTailPageIndex() {
+    public int getUnackedTailPageIndex() {
         return unackedTailPageIndex;
     }
 
     @Override
-    public void setUnackedTailPageIndex(long index) {
+    public void setUnackedTailPageIndex(int index) {
         this.unackedTailPageIndex = index;
     }
 
     @Override
-    public long getUnusedTailPageIndex() {
+    public int getUnusedTailPageIndex() {
         return unusedTailPageIndex;
     }
 
     @Override
-    public void setUnusedTailPageIndex(long index) {
+    public void setUnusedTailPageIndex(int index) {
         this.unusedTailPageIndex = index;
     }
 
@@ -71,6 +87,15 @@ public class VolatileQueueState implements QueueState {
     public void setPageSize(int size) {
         this.pageSize = size;
     }
+
+    public void addValidPage(int index) {
+        validPages.add(index);
+    }
+
+    public void removeValidPage(int index) {
+
+    }
+
 
     @Override
     public void close() throws IOException {

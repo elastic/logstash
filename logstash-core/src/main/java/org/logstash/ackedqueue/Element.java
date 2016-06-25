@@ -5,10 +5,10 @@ import java.io.Serializable;
 public class Element implements Serializable {
 
     private final byte[] data;
-    private final long pageIndex;
+    private final int pageIndex;
     private final int pageOffet;
 
-    public Element(byte[] data, long pageIndex, int pageOffset) {
+    public Element(byte[] data, int pageIndex, int pageOffset) {
         this.data = data;
         this.pageIndex = pageIndex;
         this.pageOffet = pageOffset;
@@ -18,7 +18,7 @@ public class Element implements Serializable {
         return data;
     }
 
-    public long getPageIndex() {
+    public int getPageIndex() {
         return pageIndex;
     }
 

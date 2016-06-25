@@ -47,7 +47,7 @@ public interface Page extends Closeable {
     int getHead();
 
     // @return this page index
-    long getIndex();
+    int getIndex();
 
     PageState getPageState();
  }

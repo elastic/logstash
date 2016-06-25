@@ -13,7 +13,7 @@ public class MemoryPage implements Page {
     private ByteBuffer data;
     private int capacity; // this page bytes capacity
     private int head;     // this page head offset
-    private long index;    // this page index number
+    private int index;    // this page index number
 
     private PageState pageState;
 
@@ -24,7 +24,7 @@ public class MemoryPage implements Page {
 
     // @param capacity page byte size
     // @param index the page index number
-    public MemoryPage(int capacity, long index) {
+    public MemoryPage(int capacity, int index) {
         this(capacity, index, ByteBuffer.allocate(capacity), EMPTY_PAGE_HEAD, new PageState());
     }
 
@@ -33,7 +33,7 @@ public class MemoryPage implements Page {
     // @param data initial data for this page
     // @param head the page head offset, @see MemoryPage.findHead() if it needs to be resolved
     // @param pageState initial page acking state state
-    public MemoryPage(int capacity, long index, ByteBuffer data, int head, PageState pageState) {
+    public MemoryPage(int capacity, int index, ByteBuffer data, int head, PageState pageState) {
         this.capacity = capacity;
         this.index = index;
         this.data = data;
@@ -154,7 +154,7 @@ public class MemoryPage implements Page {
     }
 
     @Override
-    public long getIndex() {
+    public int getIndex() {
         return this.index;
     }
 

@@ -4,34 +4,32 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class VolatilePagedQueue extends PagedQueue {
-    private Map<Long, Page> livePages;
+    private Map<Integer, Page> pages;
 
     public VolatilePagedQueue(int pageSize) {
-        super(pageSize);
+        super(new VolatileQueueState(pageSize));
 
-        this.queueState = new VolatileQueueState();
-        this.queueState.setPageSize(this.pageSize);
-        this.queueState.setHeadPageIndex(0);
-        this.queueState.setHeadPageOffset(0);
-        this.queueState.setUnackedTailPageIndex(0);
-        this.queueState.setUnusedTailPageIndex(0);
+        this.pages = new HashMap<>();
 
-        this.livePages = new HashMap<>();
+        // warm head and tail pages and set initial active pages
+        // this is obviously not very useful in a volatile implementation but it illustrate the logic
+        page(this.queueState.getHeadPageIndex());
+        if (this.queueState.getHeadPageIndex() != this.queueState.getUnackedTailPageIndex()) {
+            page(this.queueState.getUnackedTailPageIndex());
+        }
+
     }
 
     // pages opening/caching strategy
     // @param index the page index to retrieve
-    protected Page page(long index) {
-        // TODO: adjust implementation for correct live pages handling
-        // TODO: extract page caching in a separate class?
-
-        Page p = this.livePages.get(index);
+    protected Page page(int index) {
+        Page p = this.pages.get(index);
         if (p != null) {
             return p;
         }
 
-        p = new MemoryPage(this.pageSize, index);
-        this.livePages.put(index, p);
+        p = new MemoryPage(this.queueState.getPageSize(), index);
+        this.pages.put(index, p);
         return p;
     }
 }
