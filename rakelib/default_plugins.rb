@@ -116,7 +116,6 @@ module LogStash
 
     ALL_PLUGINS_SKIP_LIST = Regexp.union([
       /^logstash-filter-yaml$/,
-      /jms$/,
       /example$/,
       /drupal/i,
       /^logstash-output-logentries$/,
