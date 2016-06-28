@@ -468,9 +468,10 @@ describe LogStash::Pipeline do
       sleep 0.1 while !pipeline.ready?
       # give us a bit of time to flush the events
       wait(5).for do
-        next unless output && output.events && !(event = output.events.pop).nil?
-        event.get("message").split("\n").count
-      end.to eq(number_of_events)
+        output.events.empty?
+      end.to be_falsey
+      event = output.events.pop
+      expect(event.get("message").count("\n")).to eq(99)
       pipeline.shutdown
     end
   end
@@ -560,7 +561,7 @@ describe LogStash::Pipeline do
 
     let(:pipeline_settings) { { "pipeline.id" => pipeline_id } }
     let(:pipeline_id) { "main" }
-    let(:number_of_events) { 1000 }
+    let(:number_of_events) { 20 } #1000
     let(:multiline_id) { "my-multiline" }
     let(:multiline_id_other) { "my-multiline_other" }
     let(:dummy_output_id) { "my-dummyoutput" }
@@ -604,7 +605,7 @@ describe LogStash::Pipeline do
 
       Thread.new { subject.run }
       # make sure we have received all the generated events
-      sleep 1 while dummyoutput.events.size < number_of_events
+      sleep 0.25 until dummyoutput.events.size == number_of_events
     end
 
     after :each do
@@ -614,7 +615,7 @@ describe LogStash::Pipeline do
     context "global metric" do
       let(:collected_metric) { metric_store.get_with_path("stats/events") }
 
-      it "populates the differents" do
+      it "populates the different metrics" do
         expect(collected_metric[:stats][:events][:in].value).to eq(number_of_events)
         expect(collected_metric[:stats][:events][:filtered].value).to eq(number_of_events)
         expect(collected_metric[:stats][:events][:out].value).to eq(number_of_events)
