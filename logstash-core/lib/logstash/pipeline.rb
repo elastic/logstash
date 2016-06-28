@@ -33,7 +33,9 @@ module LogStash; class Pipeline
     :thread,
     :config_str,
     :settings,
-    :metric
+    :metric,
+    :namespace_events,
+    :namespace_pipeline
 
   MAX_INFLIGHT_WARN_THRESHOLD = 10_000
 
@@ -47,6 +49,7 @@ module LogStash; class Pipeline
     @settings = settings
     @pipeline_id = @settings.get_value("pipeline.id") || self.object_id
     @reporter = LogStash::PipelineReporter.new(@logger, self)
+    @continue_on_error = LogStash::SETTINGS.get("pipeline.continue_on_error")
 
     @inputs = nil
     @filters = nil
@@ -58,6 +61,15 @@ module LogStash; class Pipeline
     # sure the metric instance is correctly send to the plugins to make the namespace scoping work
     @metric = namespaced_metric.nil? ? LogStash::Instrument::NullMetric.new : namespaced_metric
 
+    @namespace_events = metric.namespace([:stats, :events])
+    @namespace_pipeline = metric.namespace([:stats, :pipelines, pipeline_id.to_s.to_sym, :events])
+
+    # Zero out these counters
+    [:in, :filtered, :out, :errored].each do |name|
+      @namespace_events.increment(name, 0)
+      @namespace_pipeline.increment(name, 0)
+    end
+    
     grammar = LogStashConfigParser.new
     @config = grammar.parse(config_str)
     if @config.nil?
@@ -221,10 +233,7 @@ module LogStash; class Pipeline
   # Repeatedly takes batches off the queue, filters, then outputs them
   def worker_loop(batch_size, batch_delay)
     running = true
-
-    namespace_events = metric.namespace([:stats, :events])
-    namespace_pipeline = metric.namespace([:stats, :pipelines, pipeline_id.to_s.to_sym, :events])
-
+    
     while running
       # To understand the purpose behind this synchronize please read the body of take_batch
       input_batch, signal = @input_queue_pop_mutex.synchronize { take_batch(batch_size, batch_delay) }
@@ -284,21 +293,12 @@ module LogStash; class Pipeline
   def filter_batch(batch)
     batch.reduce([]) do |acc,e|
       if e.is_a?(LogStash::Event)
-        filtered = filter_func(e)
+        filtered = with_pipeline_rescue(e) { filter_func(e) }
+        next acc if filtered.nil? # with_pipeline_rescue may return nil!
         filtered.each {|fe| acc << fe unless fe.cancelled?}
       end
       acc
     end
-  rescue Exception => e
-    # Plugins authors should manage their own exceptions in the plugin code
-    # but if an exception is raised up to the worker thread they are considered
-    # fatal and logstash will not recover from this situation.
-    #
-    # Users need to check their configuration or see if there is a bug in the
-    # plugin.
-    @logger.error("Exception in pipelineworker, the pipeline stopped processing new events, please check your filter configuration and restart Logstash.",
-                  "exception" => e, "backtrace" => e.backtrace)
-    raise
   end
 
   # Take an array of events and send them to the correct output
@@ -310,7 +310,7 @@ module LogStash; class Pipeline
 
       # output_func should never return anything other than an Array but we have lots of legacy specs
       # that monkeypatch it and return nil. We can deprecate  "|| []" after fixing these specs
-      outputs_for_event = output_func(event) || []
+      outputs_for_event = with_pipeline_rescue(event) { output_func(event) } || []
 
       outputs_for_event.each { |output| acc[output] << event }
       acc
@@ -318,7 +318,31 @@ module LogStash; class Pipeline
 
     # Now that we have our output to event mapping we can just invoke each output
     # once with its list of events
-    outputs_events.each { |output, events| output.multi_receive(events) }
+    outputs_events.each do |output, events|
+      with_pipeline_rescue(events) do
+        output.multi_receive(events)
+      end
+    end
+  end
+
+  def with_pipeline_rescue(event_or_events)
+    yield
+  rescue Exception => e
+    events = Array(event_or_events)
+    namespace_events.increment(:errored, events.size)
+    namespace_pipeline.increment(:errored, events.size)
+    
+    logger_opts = {:message => e.message, :class => e.class.name}
+    logger_message = "Exception in pipelineworker!"
+
+    if @logger.info?
+      logger_opts[:events] = events.map(&:to_hash)
+    end
+    
+    logger_message << "Enable info logging to see failed events" if !@logger.info?
+    
+    raise unless @continue_on_error
+    nil
   end
 
   def set_current_thread_inflight_batch(batch)

@@ -14,7 +14,8 @@ describe LogStash::Api::Modules::NodeStats do
     "events"=>{
       "in"=>Numeric,
       "filtered"=>Numeric,
-      "out"=>Numeric
+      "out"=>Numeric,
+      "errored"=>Numeric
     },
     "jvm"=>{
       "threads"=>{
