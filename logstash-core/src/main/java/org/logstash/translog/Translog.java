@@ -1,7 +1,7 @@
 package org.logstash.translog;
 
-import org.logstash.ackedqueue.Page;
-import org.logstash.ackedqueue.PageState;
+import org.logstash.previous_ackedqueue.Page;
+import org.logstash.previous_ackedqueue.PageState;
 
 import java.io.IOException;
 

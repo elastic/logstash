@@ -1,4 +1,4 @@
-package org.logstash.ackedqueue;
+package org.logstash.previous_ackedqueue;
 
 import org.junit.Before;
 import org.junit.Test;

@@ -1,4 +1,4 @@
-package org.logstash.ackedqueue;
+package org.logstash.previous_ackedqueue;
 
 import java.util.HashMap;
 import java.util.Map;
