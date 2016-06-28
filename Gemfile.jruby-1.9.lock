@@ -196,7 +196,7 @@ GEM
       logstash-core-plugin-api (~> 2.0)
     logstash-filter-csv (3.0.1)
       logstash-core-plugin-api (~> 2.0)
-    logstash-filter-date (3.0.1)
+    logstash-filter-date (3.0.2)
       logstash-core-plugin-api (~> 2.0)
     logstash-filter-dns (3.0.1)
       logstash-core-plugin-api (~> 2.0)
@@ -208,7 +208,7 @@ GEM
       murmurhash3
     logstash-filter-geoip (4.0.0-java)
       logstash-core-plugin-api (~> 2.0)
-    logstash-filter-grok (3.0.1)
+    logstash-filter-grok (3.1.1)
       jls-grok (~> 0.11.1)
       logstash-core-plugin-api (~> 2.0)
       logstash-patterns-core
@@ -318,7 +318,7 @@ GEM
       sequel
       tzinfo
       tzinfo-data
-    logstash-input-kafka (4.0.0)
+    logstash-input-kafka (5.0.0)
       logstash-codec-json
       logstash-codec-plain
       logstash-core-plugin-api (~> 2.0)
@@ -411,10 +411,8 @@ GEM
       logstash-filter-json
       logstash-input-generator
       logstash-output-file
-    logstash-output-elasticsearch (3.0.2-java)
+    logstash-output-elasticsearch (4.1.1-java)
       cabin (~> 0.6)
-      concurrent-ruby
-      elasticsearch (~> 1.0, >= 1.0.13)
       logstash-core-plugin-api (~> 2.0)
       manticore (>= 0.5.4, < 1.0.0)
       stud (~> 0.0, >= 0.0.17)
@@ -431,7 +429,7 @@ GEM
       cinch
       logstash-codec-plain
       logstash-core-plugin-api (~> 2.0)
-    logstash-output-kafka (4.0.1)
+    logstash-output-kafka (5.0.0)
       logstash-codec-json
       logstash-codec-plain
       logstash-core-plugin-api (~> 2.0)
