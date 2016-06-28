@@ -28,11 +28,4 @@ if [ $1 = "remove" ]; then
       rm /etc/systemd/system/logstash.service
     fi
   fi
-  if getent passwd logstash >/dev/null ; then
-    userdel logstash
-  fi
-
-  if getent group logstash > /dev/null ; then
-    groupdel logstash
-  fi
 fi
