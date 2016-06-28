@@ -8,7 +8,8 @@ about Logstash:
 
 * <<node-info-api>>
 * <<plugins-api>>
-* <<stats-info-api>>
+* <<node-stats-api>>
+* <<pipeline-stats-api>>
 * <<hot-threads-api>>
 
 
@@ -81,9 +82,9 @@ GET /_node/<types>
 
 Where `<types>` is optional and specifies the types of node info you want to return.
 
-You can limit the info that's returned by combining any of the following types: 
+You can limit the info that's returned by specifying one of the following types: 
 
-//REVIEWERS: It looks like you cannot combine types in a comma-spearated list like you can for the Elasticsearch cluster APIs. Is this intentional/correct behavior? If so, I need to change this to say "<type>".
+//TODO: For 5.0.0 Alpha4, this endpoint does not support specifying a comma-separated list like you can for the Elasticsearch cluster APIs. When this issue is fixed, we need to change the wording above to say: "You can limit the info that's returned by combining any of the following types"
 
 [horizontal]
 `pipeline`::
@@ -102,6 +103,9 @@ batch size, and batch delay:
 --------------------------------------------------
 GET /_node/pipeline
 --------------------------------------------------
+
+See <<pipeline-stats-api>> if you want to view additional information, such as stats for each configured input, filter,
+or output stage.
 
 Example response:
 
@@ -208,7 +212,7 @@ Example response:
   ]
 --------------------------------------------------
 
-[[stats-info-api]]
+[[node-stats-api]]
 === Node Stats API
 
 added[5.0.0-beta3,Replaces the Stats Info API]
@@ -217,8 +221,6 @@ experimental[]
 
 The node stats API retrieves runtime stats about Logstash. 
 
-// COMMENTED OUT until Logstash supports multiple pipelines: To retrieve all stats for the Logstash instance, use the `_node/stats` endpoint:
-
 [source,js]
 --------------------------------------------------
 GET /_node/stats/<types>
@@ -226,7 +228,9 @@ GET /_node/stats/<types>
 
 Where `<types>` is optional and specifies the types of stats you want to return.
 
-By default, all stats are returned. You can limit this by combining any of the following types: 
+By default, all stats are returned. You can limit this by specifying one of the following types: 
+
+//TODO: Update the above description when support for specifying a comma-separated list of types is added back in. See above comment.
 
 [horizontal]
 `events`::
@@ -237,10 +241,6 @@ Gets JVM stats, including stats about threads. added[5.0.0-alpha3,Adds thread co
 Gets process stats, including stats about file descriptors, memory consumption, and CPU usage. added[5.0.0-alpha3] 
 `mem`::
 Gets memory usage stats. coming[5.0.0-alpha4] 
-`pipeline`::
-Gets stats for a pipeline, including stats about each configured input, filter, or output stage. coming[5.0.0-alpha4,Stats for input stages are not yet available] 
-
-//REVIEWERS: In the latest Logstash build available on June 24, the APIs did not behave exactly as they are documented in https://github.com/elastic/logstash/issues/5475. /_node/stats/pipeline returns the expected results, but I couldn't specify anything below that (such as /_node/stats/pipeline/events). So I've documented the end points accordingly. I also noticed that mem appears in the returned JSON doc. Can you help me by suggesting a better/more complete description>? 
 
 ==== Event Stats
 
@@ -361,23 +361,32 @@ Example response:
   }
 --------------------------------------------------
 
-==== Pipeline Stats
+See <<monitoring-common-options, Common Options>> for a list of options that can be applied to all
+Logstash monitoring APIs.
+
+[[pipeline-stats-api]]
+=== Pipeline Stats API
+
+coming[5.0.0-alpha4,Stats for input stages are not yet available]
+
+experimental[]
+
+The pipeline stats API retrieves runtime stats about the Logstash pipeline.
 
 The following request returns a JSON document containing pipeline stats, including the number of events that were
 input, filtered, or output by the pipeline. The request also returns stats for each configured input, filter, or
-output stage. coming[5.0.0-alpha4,Stats for input stages are not yet available]
+output stage. 
 
 [source,js]
 --------------------------------------------------
 GET /_node/stats/pipeline
 --------------------------------------------------
 
-//REVIEWERS: Note that when you call /_node/stats, it does not return the pipeline stats. You need to specify /_node/stats/pipeline specifically. This makes me wonder if it shouldn't be its own API topic. WDYT?
-
 Example response:
 
 [source,js]
 --------------------------------------------------
+{
   "pipeline": {
     "events": {
       "in": 100,
@@ -498,8 +507,6 @@ Example response:
 }
 --------------------------------------------------
 
-//REVIEWERS: Curious why the hot threads API is the only one that (appears) to accept parameters. Am I missing parameters in the other APIs?
-
 The parameters allowed are:
 
 [horizontal]
@@ -513,8 +520,6 @@ You can use the `?human` parameter to return the document in a human-readable fo
 --------------------------------------------------
 GET /_node/hot_threads?human=true
 --------------------------------------------------
-
-//REVIEWERS: Does the ?human parameter still work? It didn't work in the build that I used.
 
 Example of a human-readable response: 
 
