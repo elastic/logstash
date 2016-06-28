@@ -11,8 +11,8 @@ describe LogStash::Api::Modules::NodeStats do
 
   # DSL describing response structure
   root_structure = {
-    "jvm"=>{
-      "threads"=>{
+    "jvm"=> {
+      "threads"=> {
         "count"=>Numeric,
         "peak_count"=>Numeric
       },
@@ -45,26 +45,26 @@ describe LogStash::Api::Modules::NodeStats do
         }
       }
     },
-    "process"=>{
+    "process"=> {
       "peak_open_file_descriptors"=>Numeric,
       "max_file_descriptors"=>Numeric,
       "open_file_descriptors"=>Numeric,
-      "mem"=>{
+      "mem"=> {
         "total_virtual_in_bytes"=>Numeric
       },
-      "cpu"=>{
+      "cpu"=> {
         "total_in_millis"=>Numeric,
         "percent"=>Numeric
       }
     },
-   "pipeline" => {
-     "events" => {
+    "pipeline" => {
+      "events" => {
         "in" => Numeric,
         "filtered" => Numeric,
-        "out" => Numeric
-     } 
-    } 
+        "out" => Numeric,
+        "errored"=>Numeric
+      }
+    }
   }
-  
   test_api_and_resources(root_structure)
 end
