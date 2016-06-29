@@ -3,9 +3,64 @@
 
 This section summarizes the changes in each release.
 
+* <<alpha4,Logstash 5.0-alpha4>>
 * <<alpha3,Logstash 5.0-alpha3>>
 * <<alpha2,Logstash 5.0-alpha2>>
 * <<alpha1,Logstash 5.0-alpha1>>
+
+[[alpha4]]
+=== Logstash 5.0-alpha4 Release Notes
+
+* Created a new `LS_HOME/data` directory to store plugin states, Logstash instance UUID, and more. This directory 
+location is configurable via the `path.data` setting in the `logstash.yml` <<logstash-settings-file,settings file>> ({lsissue}5404[Issue 5404]).
+* Made `bin/logstash -V/--version` run faster on Unix platforms.
+* Ehanced the <<monitoring,monitoring APIs>> by adding `hostname`, `http_address`, and `version` as static fields for all APIs ({lsissue}5450[Issue 5450]).
+* Added time tracking (wall-clock) to all individual filter and output instances. The goal is to help identify 
+which plugin configurations are consuming the most time. These statics are exposed by the `/_node/stats/pipeline` endpoint. See the <<pipeline-stats-api, pipeline stats API>>.
+* Added the `/_node` endpoint, which provides static information for OS, JVM, and pipeline settings. See the <<node-info-api,node info API>>.
+* Moved the <<plugins-api,plugins API>> to the `_node/plugins` endpoint.
+* Moved the <<hot-threads-api,hot threads API>> to the `_node/hot_threads` endpoint.
+* Added a new `:list` property to the configuration parameters. This will allow the user to specify one or more values. 
+* Added a new URI config validator/type. This type allows plugins like the Elasticsearch output to safely log URIs for configuration. Any password information in the URI will be masked when the URI is logged.
+
+[float]
+==== Input Plugins
+
+*`Kafka`*:
+
+* Added support for Kafka broker 0.10.
+
+*`HTTP`*:
+
+* Fixed a bug where the HTTP input plugin blocked the node stats API (https://github.com/logstash-plugins/logstash-input-http/issues/51[Issue 51]). 
+
+[float]
+==== Output Plugins
+
+*`Elasticsearch`*:
+
+* Elasticserach output is now fully threadsafe. This means internal resources can be shared among multiple
+`output { elasticsearch {} }` instances.
+* Added sniffing improvements so any current connections don't have to be closed/reopened after a sniff round.
+* Introduced a connection pool to efficiently reuse connections to Elasticsearch backends.
+* Added exponential backoff to connection retries with a ceiling of `retry_max_interval`, which is the most time to 
+wait between retries, and `retry_initial_interval`,  which is the initial amount of time to wait. The value of
+`retry_initial_interval` increases exponentially between retries until a request succeeds.
+     
+*`Kafka`*:
+
+* Added support for Kafka broker 0.10.
+   
+[float]
+==== Filter Plugins
+
+*`Grok`*:
+
+* Added a stats counter on grok matches and failures. This is exposed in the `_node/stats/pipeline` endpoint.
+
+*`Date`*:
+
+* Added a stats counter on grok matches and failures. This is exposed in the `_node/stats/pipeline` endpoint.
 
 [[alpha3]]
 === Logstash 5.0-alpha3 Release Notes

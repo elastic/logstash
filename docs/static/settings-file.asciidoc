@@ -1,10 +1,10 @@
 [[logstash-settings-file]]
 === Settings File
 
-coming[5.0.0-alpha3]
+added[5.0.0-alpha3]
 
-You can set options in the Logstash settings file, `logstash.yml`, to control Logstash execution. Each setting in the
-`logstash.yml` file corresponds to a <<command-line-flags,command-line flag>>. 
+You can set options in the Logstash settings file, `logstash.yml`, to control Logstash execution. Most of the settings in the
+`logstash.yml` file correspond to a <<command-line-flags,command-line flag>>. 
 
 Any flags that you set at the command line override the corresponding settings in the `logstash.yml` file. 
 

@@ -69,7 +69,7 @@ consumption.  The default for the `human` flag is
 [[node-info-api]]
 === Node Info API
 
-coming[5.0.0-alpha4]
+added[5.0.0-alpha4]
 
 experimental[]
 
@@ -240,7 +240,7 @@ Gets JVM stats, including stats about threads. added[5.0.0-alpha3,Adds thread co
 `process`::
 Gets process stats, including stats about file descriptors, memory consumption, and CPU usage. added[5.0.0-alpha3] 
 `mem`::
-Gets memory usage stats. coming[5.0.0-alpha4] 
+Gets memory usage stats. added[5.0.0-alpha4] 
 
 ==== Event Stats
 
@@ -367,7 +367,7 @@ Logstash monitoring APIs.
 [[pipeline-stats-api]]
 === Pipeline Stats API
 
-coming[5.0.0-alpha4,Stats for input stages are not yet available]
+added[5.0.0-alpha4,Stats for input stages are not yet available]
 
 experimental[]
 
