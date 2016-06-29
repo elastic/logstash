@@ -35,8 +35,9 @@ namespace :qa do
 
       puts user_feedback_string_for("bootstraping", args[:platform], machines, {"experimental" => experimental})
 
-      LogStash::VagrantHelpers.destroy(machines)
-      LogStash::VagrantHelpers.bootstrap(machines)
+      options = {:debug => ENV['LS_QA_DEBUG']}
+      LogStash::VagrantHelpers.destroy(machines, options)
+      LogStash::VagrantHelpers.bootstrap(machines, options)
     end
 
     desc "Halt all VM's involved in the acceptance test round"
@@ -46,8 +47,9 @@ namespace :qa do
       machines = config.select_names_for(args[:platform], {"experimental" => experimental})
 
       puts user_feedback_string_for("halting", args[:platform], machines, {"experimental" => experimental})
+      options = {:debug => ENV['LS_QA_DEBUG']}
 
-      LogStash::VagrantHelpers.halt(machines)
+      LogStash::VagrantHelpers.halt(machines, options)
     end
   end
 
