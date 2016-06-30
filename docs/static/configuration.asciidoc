@@ -491,12 +491,13 @@ Let's see what comes out:
 ----------------------------------
 
 $ bin/logstash -f ../test.conf
-Logstash startup completed
+Settings: Default pipeline workers: 8
+Pipeline main started
 asdf
 {
        "message" => "asdf",
       "@version" => "1",
-    "@timestamp" => "2015-03-18T23:09:29.595Z",
+    "@timestamp" => "2016-06-30T02:08:03.148Z",
           "host" => "example.com",
           "show" => "This data will be in the output"
 }
@@ -520,12 +521,13 @@ Let's see what the output looks like with this change:
 [source,ruby]
 ----------------------------------
 $ bin/logstash -f ../test.conf
-Logstash startup completed
+Settings: Default pipeline workers: 8
+Pipeline main started
 asdf
 {
        "message" => "asdf",
       "@version" => "1",
-    "@timestamp" => "2015-03-18T23:10:19.859Z",
+    "@timestamp" => "2016-06-30T02:10:25.044Z",
           "host" => "example.com",
           "show" => "This data will be in the output",
      "@metadata" => {
@@ -572,8 +574,8 @@ configuration a sample date string and see what comes out:
 [source,ruby]
 ----------------------------------
 $ bin/logstash -f ../test.conf
-Logstash startup completed
-02/Mar/2014:15:36:43 +0100
+Settings: Default pipeline workers: 8
+Pipeline main started
 {
        "message" => "02/Mar/2014:15:36:43 +0100",
       "@version" => "1",
