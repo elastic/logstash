@@ -523,15 +523,16 @@ Let's see what comes out:
 ----------------------------------
 
 $ bin/logstash -f ../test.conf
-Logstash startup completed
+Pipeline main started
 asdf
 {
-       "message" => "asdf",
+    "@timestamp" => 2016-06-30T02:42:51.496Z,
       "@version" => "1",
-    "@timestamp" => "2015-03-18T23:09:29.595Z",
           "host" => "example.com",
-          "show" => "This data will be in the output"
+          "show" => "This data will be in the output",
+       "message" => "asdf"
 }
+
 ----------------------------------
 
 The "asdf" typed in became the `message` field contents, and the conditional
@@ -552,18 +553,18 @@ Let's see what the output looks like with this change:
 [source,ruby]
 ----------------------------------
 $ bin/logstash -f ../test.conf
-Logstash startup completed
+Pipeline main started
 asdf
 {
-       "message" => "asdf",
-      "@version" => "1",
-    "@timestamp" => "2015-03-18T23:10:19.859Z",
-          "host" => "example.com",
-          "show" => "This data will be in the output",
+    "@timestamp" => 2016-06-30T02:46:48.565Z,
      "@metadata" => {
            "test" => "Hello",
         "no_show" => "This data will not be in the output"
-    }
+    },
+      "@version" => "1",
+          "host" => "example.com",
+          "show" => "This data will be in the output",
+       "message" => "asdf"
 }
 ----------------------------------
 
@@ -604,13 +605,13 @@ configuration a sample date string and see what comes out:
 [source,ruby]
 ----------------------------------
 $ bin/logstash -f ../test.conf
-Logstash startup completed
+Pipeline main started
 02/Mar/2014:15:36:43 +0100
 {
-       "message" => "02/Mar/2014:15:36:43 +0100",
+    "@timestamp" => 2014-03-02T14:36:43.000Z,
       "@version" => "1",
-    "@timestamp" => "2014-03-02T14:36:43.000Z",
-          "host" => "example.com"
+          "host" => "example.com",
+       "message" => "02/Mar/2014:15:36:43 +0100"
 }
 ----------------------------------
 
