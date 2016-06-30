@@ -9,8 +9,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class Batch implements Closeable {
 
     private List<Event> liveEvents;
-    // TBD private List<Event> canceledEvents
-    // TBD private List<Event> newEvents
+
+    // TODO: figure cancelled & new events structure & handling
+    // private List<Event> canceledEvents
+    // private List<Event> newEvents
     private long[] ackableEvents; // from initial read events seqNum
     private Queue queue;
     private AtomicBoolean closed;
@@ -18,8 +20,7 @@ public class Batch implements Closeable {
     Batch(List<Event> events, Queue q) {
         this.liveEvents = events;
         this.queue = q;
-        // TBD
-        // ackEvents = build array of seqNum from events
+        // TODO: ackableEvents = build array of seqNum from events
     }
 
     // close acks the batch ackable events
@@ -27,7 +28,7 @@ public class Batch implements Closeable {
         if (closed.getAndSet(true) == false) {
             this.queue.ack(this.ackableEvents);
         } else {
-            // TBD on double close
+            // TODO: double close hnalding
             // throw?
         }
     }

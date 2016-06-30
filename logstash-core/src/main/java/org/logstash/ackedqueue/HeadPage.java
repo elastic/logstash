@@ -4,26 +4,37 @@ import com.logstash.Event;
 
 public class HeadPage extends Page {
 
-    // TBD the HeadPage will checkpoints to checkpoint.head
-
-    public HeadPage() {
-        // TBD
+    public HeadPage(int pageNum) {
+        // TODO:
         // create new page file
         // write a version number as first byte(s)
         // write header? (some debugging info, logstash version?, queue version, etc)
     }
 
     public boolean hasSpace(int byteSize) {
-        // TBD
+        // TODO:
         return true;
     }
 
     public void write(byte[] bytes, Event event) {
-        // TBD
+        // TODO: write to file, will return an offset
+
+        long offset = 0; // will be file offset
+
+        long seqNum = 0; // will be event.getSeqNum
+        this.offsetMap.add((int)(seqNum - this.minSeqNum), offset);
+        this.eventCount++;
     }
 
-    BeheadedPage behead() {
-        // TBD
+    public void ensurePersistedUpto(long seqNum) {
+        if (this.lastCheckpoint.eventCount >= seqNum - this.minSeqNum) {
+            checkpoint(lastCheckpoint.firstUnackedPageNum);
+        }
+    }
+
+
+    public BeheadedPage behead() {
+        // TODO:
         // closes this page
         // creates a new BeheadedPage, passing its own structure
         // calls BeheadedPage.checkpoint
@@ -31,4 +42,13 @@ public class HeadPage extends Page {
 
         return null;
     }
+
+    public void checkpoint(int firstUnackedPageNum) {
+        // not concurrent for first iteration:
+
+        // TODO:
+        // fsync();
+        // Checkpoint.write("checkpoint.head", ... )
+    }
+
 }
