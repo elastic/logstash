@@ -1,9 +1,9 @@
 [[plugin-generator]]
-== Generating Plugins
+=== Generating Plugins
 
 You can now create your own Logstash plugin in seconds! The generate subcommand of `bin/logstash-plugin` creates the foundation 
-for a new Logstash plugin with templatized files. It creates the right directory structure, gemspec files and dependencies so you 
-can start adding custom code process data with Logstash.
+for a new Logstash plugin with templatized files. It creates the correct directory structure, gemspec files, and dependencies so you 
+can start adding custom code to process data with Logstash.
 
 **Example Usage**
 
@@ -12,8 +12,8 @@ can start adding custom code process data with Logstash.
 bin/logstash-plugin generate --type input --name xkcd --path ~/ws/elastic/plugins
 -------------------------------------------
 
-* `--type`: Type of plugin - input, filter, output and codec
+* `--type`: Type of plugin - input, filter, output, or codec
 * `--name`: Name for the new plugin
-* `--path`: Directory path where the new plugin structure will be created. If not specified, it will be '
+* `--path`: Directory path where the new plugin structure will be created. If not specified, it will be
 created in the current directory.
 
