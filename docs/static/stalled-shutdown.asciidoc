@@ -31,32 +31,25 @@ In this example, slow filter execution prevents the pipeline from clean shutdown
 
 ========
 [source,shell]
-% bin/logstash -e 'input { generator { } } filter { ruby { code => "sleep 10000" } } \
-                     output { stdout { codec => dots } }' -w 1 --pipeline.unsafe_shutdown
-Default settings used: Filter workers: 1
-Logstash startup completed
-^CSIGINT received. Shutting down the pipeline. {:level=>:warn}
+bin/logstash -e 'input { generator { } } filter { ruby { code => "sleep 10000" } } 
+  output { stdout { codec => dots } }' -w 1 --pipeline.unsafe_shutdown
+Pipeline main started
+^CSIGINT received. Shutting down the agent. {:level=>:warn}
+stopping pipeline {:id=>"main", :level=>:warn}
 Received shutdown signal, but pipeline is still waiting for in-flight events
 to be processed. Sending another ^C will force quit Logstash, but this may cause
 data loss. {:level=>:warn}
- {:level=>:warn, "INFLIGHT_EVENT_COUNT"=>{"input_to_filter"=>20, "total"=>20},
- "STALLING_THREADS"=>
- {["LogStash::Filters::Ruby", {"code"=>"sleep 10000"}]=>[{"thread_id"=>15,
- "name"=>"|filterworker.0", "current_call"=>"
- (ruby filter code):1:in `sleep'"}]}}
-The shutdown process appears to be stalled due to busy or blocked plugins. Check
-    the logs for more information.
-{:level=>:error}
- {:level=>:warn, "INFLIGHT_EVENT_COUNT"=>{"input_to_filter"=>20, "total"=>20},
- "STALLING_THREADS"=>
- {["LogStash::Filters::Ruby", {"code"=>"sleep 10000"}]=>[{"thread_id"=>15,
- "name"=>"|filterworker.0", "current_call"=>"
- (ruby filter code):1:in `sleep'"}]}}
- {:level=>:warn, "INFLIGHT_EVENT_COUNT"=>{"input_to_filter"=>20, "total"=>20},
- "STALLING_THREADS"=>
- {["LogStash::Filters::Ruby", {"code"=>"sleep 10000"}]=>[{"thread_id"=>15,
- "name"=>"|filterworker.0", "current_call"=>"
- (ruby filter code):1:in `sleep'"}]}}
+{"inflight_count"=>125, "stalling_thread_info"=>{["LogStash::Filters::Ruby", 
+{"code"=>"sleep 10000"}]=>[{"thread_id"=>19, "name"=>"[main]>worker0", 
+"current_call"=>"(ruby filter code):1:in `sleep'"}]}} {:level=>:warn}
+The shutdown process appears to be stalled due to busy or blocked plugins. 
+Check the logs for more information. {:level=>:error}
+{"inflight_count"=>125, "stalling_thread_info"=>{["LogStash::Filters::Ruby", 
+{"code"=>"sleep 10000"}]=>[{"thread_id"=>19, "name"=>"[main]>worker0", 
+"current_call"=>"(ruby filter code):1:in `sleep'"}]}} {:level=>:warn}
+{"inflight_count"=>125, "stalling_thread_info"=>{["LogStash::Filters::Ruby", 
+{"code"=>"sleep 10000"}]=>[{"thread_id"=>19, "name"=>"[main]>worker0", 
+"current_call"=>"(ruby filter code):1:in `sleep'"}]}} {:level=>:warn}
 Forcefully quitting logstash.. {:level=>:fatal}
 ========
 
