@@ -93,12 +93,12 @@ public class Queue {
 
         for (Page p : this.tailPages) {
             if (! p.isFullyRead()) {
-                return p.readBatch(limit);
+                return p.readBatch(limit, this.elementClass);
             }
         }
 
         if (! headPage.isFullyRead()) {
-            return headPage.readBatch(limit);
+            return headPage.readBatch(limit, this.elementClass);
         }
 
         // at this point there is no new data to read

@@ -26,9 +26,17 @@ public abstract class Page {
         this.ackedSeqNums = new BitSet();
     }
 
+    // NOTE:
+    // we have a page concern inconsistency where readBatch() takes care of the
+    // deserialization and returns a Batch object which contains the deserialized
+    // elements objects of the proper elementClass but HeadPage.write() deals with
+    // a serialized element byte[] and serialization is done at the Queue level to
+    // be able to use the Page.hasSpace() method with the serialized element byte size.
+    //
     // @param limit the batch size limit
+    // @param elementClass the concrete element class for deserialization
     // @return Batch batch of elements read when the number of elements can be <= limit
-    Batch readBatch(int limit) {
+    Batch readBatch(int limit, Class elementClass) {
         // TODO:
         // read upto limit elements for this page
         // starting at firstUnreadSeqNum offset

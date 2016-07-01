@@ -14,13 +14,19 @@ public class HeadPage extends Page {
         return true;
     }
 
+    // NOTE:
+    // we have a page concern inconsistency where readBatch() takes care of the
+    // deserialization and returns a Batch object which contains the deserialized
+    // elements objects of the proper elementClass but HeadPage.write() deals with
+    // a serialized element byte[] and serialization is done at the Queue level to
+    // be able to use the Page.hasSpace() method with the serialized element byte size.
+    //
     public void write(byte[] bytes, Queueable element) {
         // TODO: write to file, will return an offset
 
         long offset = 0; // will be file offset
 
-        long seqNum = element.getSeqNum();
-        this.offsetMap.add((int)(seqNum - this.minSeqNum), offset);
+        this.offsetMap.add((int)(element.getSeqNum() - this.minSeqNum), offset);
         this.elementCount++;
     }
 
