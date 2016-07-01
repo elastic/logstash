@@ -19,6 +19,7 @@ public class Queue {
     private long seqNum;
     private HeadPage headPage;
     private final List<BeheadedPage> tailPages;
+
     private final Class elementClass;
     private final String dirPath;
 
@@ -144,6 +145,10 @@ public class Queue {
 
     public long nextSeqNum() {
         return seqNum += 1;
+    }
+
+    public Class getElementClass() {
+        return elementClass;
     }
 
     private int firstUnackedPageNum() {
