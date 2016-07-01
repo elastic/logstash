@@ -1,7 +1,5 @@
 package org.logstash.ackedqueue;
 
-import com.logstash.Event;
-
 public class HeadPage extends Page {
 
     public HeadPage(int pageNum) {
@@ -16,18 +14,18 @@ public class HeadPage extends Page {
         return true;
     }
 
-    public void write(byte[] bytes, Event event) {
+    public void write(byte[] bytes, Queueable element) {
         // TODO: write to file, will return an offset
 
         long offset = 0; // will be file offset
 
-        long seqNum = 0; // will be event.getSeqNum
+        long seqNum = element.getSeqNum();
         this.offsetMap.add((int)(seqNum - this.minSeqNum), offset);
-        this.eventCount++;
+        this.elementCount++;
     }
 
     public void ensurePersistedUpto(long seqNum) {
-        if (this.lastCheckpoint.getEventCount() >= seqNum - this.minSeqNum) {
+        if (this.lastCheckpoint.getElementCount() >= seqNum - this.minSeqNum) {
             checkpoint(lastCheckpoint.getFirstUnackedPageNum());
         }
     }

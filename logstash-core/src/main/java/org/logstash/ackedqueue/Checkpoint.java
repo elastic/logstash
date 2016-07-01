@@ -23,7 +23,7 @@ public class Checkpoint {
 //    int pageNum;
 //    int firstUnackedPageNum;
 //    long minSeqNum;
-//    int eventCount;
+//    int elementCount;
 
     static final int BUFFER_SIZE = 1 // version
             + Integer.BYTES  // pageNum
@@ -34,7 +34,7 @@ public class Checkpoint {
     private int pageNum;
     private int firstUnackedPageNum; // only valid in the head checkpoint
     private long minSeqNum;     // per page
-    private int eventCount;     // per page
+    private int elementCount;     // per page
 
     public static final byte VERSION = 0;
 
@@ -42,14 +42,14 @@ public class Checkpoint {
         this.pageNum = pageNum;
         this.firstUnackedPageNum = firstUnackedPageNum;
         this.minSeqNum = minSeqNum;
-        this.eventCount = eventCount;
+        this.elementCount = eventCount;
     }
 
     public Checkpoint(StreamInput in) throws IOException {
         pageNum = in.readInt();
         firstUnackedPageNum = in.readInt();
         minSeqNum = in.readLong();
-        eventCount = in.readInt();
+        elementCount = in.readInt();
     }
 
     public void write(String filename) {
@@ -79,7 +79,7 @@ public class Checkpoint {
         out.writeInt(pageNum);
         out.writeInt(firstUnackedPageNum);
         out.writeLong(minSeqNum);
-        out.writeInt(eventCount);
+        out.writeInt(elementCount);
     }
 
     static Checkpoint read(byte[] bytes) throws IOException {
@@ -118,8 +118,8 @@ public class Checkpoint {
         return minSeqNum;
     }
 
-    public int getEventCount() {
-        return eventCount;
+    public int getElementCount() {
+        return elementCount;
     }
 
 }

@@ -25,7 +25,7 @@ public class CheckpointTest {
         assertThat(ckp.getPageNum(), is(equalTo(8)));
         assertThat(ckp.getFirstUnackedPageNum(), is(equalTo(7)));
         assertThat(ckp.getMinSeqNum(), is(equalTo(6L)));
-        assertThat(ckp.getEventCount(), is(equalTo(5)));
+        assertThat(ckp.getElementCount(), is(equalTo(5)));
     }
 
     @Test
@@ -38,7 +38,7 @@ public class CheckpointTest {
         assertThat(toRead.getPageNum(), is(equalTo(toWrite.getPageNum())));
         assertThat(toRead.getFirstUnackedPageNum(), is(equalTo(toWrite.getFirstUnackedPageNum())));
         assertThat(toRead.getMinSeqNum(), is(equalTo(toWrite.getMinSeqNum())));
-        assertThat(toRead.getEventCount(), is(equalTo(toWrite.getEventCount())));
+        assertThat(toRead.getElementCount(), is(equalTo(toWrite.getElementCount())));
     }
 
 }

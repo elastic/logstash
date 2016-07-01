@@ -8,7 +8,7 @@ public abstract class Page {
     protected final int pageNum;
     protected final List<Long> offsetMap; // has to be extendable
     protected final long minSeqNum;
-    protected int eventCount;
+    protected int elementCount;
     protected long firstUnreadSeqNum;
 
     // bit 0 is minSeqNum
@@ -27,10 +27,10 @@ public abstract class Page {
     }
 
     // @param limit the batch size limit
-    // @return Batch batch of events read when the number of events can be <= limit
+    // @return Batch batch of elements read when the number of elements can be <= limit
     Batch readBatch(int limit) {
         // TODO:
-        // read upto limit events for this page
+        // read upto limit elements for this page
         // starting at firstUnreadSeqNum offset
         // fill batch
 
@@ -48,10 +48,10 @@ public abstract class Page {
     boolean isFullyAcked() {
 
         // TODO: it should be something similar to this when we use a proper bitset class like ES
-        // this.ackedSeqNum.firstUnackedBit >= this.eventCount;
+        // this.ackedSeqNum.firstUnackedBit >= this.elementCount;
 
         // TODO: for now use a naive & inneficient mechanism with a simple Bitset
-        return this.ackedSeqNums.cardinality() >= this.eventCount;
+        return this.ackedSeqNums.cardinality() >= this.elementCount;
     }
 
     void ack(long[] seqNums) {
@@ -73,7 +73,7 @@ public abstract class Page {
 
 
     long maxSeqNum() {
-        return this.minSeqNum + this.eventCount;
+        return this.minSeqNum + this.elementCount;
     }
 
     public int getPageNum() {
