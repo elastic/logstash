@@ -3,6 +3,7 @@ package org.logstash.ackedqueue;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public abstract class Page {
     protected final int pageNum;
@@ -10,6 +11,7 @@ public abstract class Page {
     protected final long minSeqNum;
     protected int elementCount;
     protected long firstUnreadSeqNum;
+    protected final Queue queue;
 
     // bit 0 is minSeqNum
     // TODO: go steal LocalCheckpointService in feature/seq_no from ES
@@ -18,12 +20,16 @@ public abstract class Page {
 
     protected Checkpoint lastCheckpoint;
 
-    public Page() {
-        // TODO: contructor
-        this.pageNum = 0;
+    public Page(int pageNum, Queue queue) {
+        this.pageNum = pageNum;
+        this.queue = queue;
+
         this.offsetMap = new ArrayList<>();
         this.minSeqNum = 0;
+        this.elementCount = 0;
+        this.firstUnreadSeqNum = 0;
         this.ackedSeqNums = new BitSet();
+        this.lastCheckpoint = null;
     }
 
     // NOTE:
@@ -36,21 +42,18 @@ public abstract class Page {
     // @param limit the batch size limit
     // @param elementClass the concrete element class for deserialization
     // @return Batch batch of elements read when the number of elements can be <= limit
-    Batch readBatch(int limit, Class elementClass) {
-        // TODO:
-        // read upto limit elements for this page
-        // starting at firstUnreadSeqNum offset
-        // fill batch
+    Batch readBatch(int limit) {
+        List<byte[]> serializedElements = this.queue.getStream().read(this.offsetMap.get((int)(this.firstUnreadSeqNum - this.minSeqNum)), limit);
+        List<Queueable> elements = serializedElements.stream().map(bytes -> ElementFactory.deserialize(bytes)).collect(Collectors.toList());
+        Batch batch = new Batch(elements, this.queue);
 
-        // update readPage firstUnreadSeqNum
+        this.firstUnreadSeqNum += elements.size();
 
-        // return batch
-
-        return null;
+        return batch;
     }
 
     boolean isFullyRead() {
-        return this.firstUnreadSeqNum != maxSeqNum();
+        return this.firstUnreadSeqNum > maxSeqNum();
     }
 
     boolean isFullyAcked() {
@@ -86,6 +89,10 @@ public abstract class Page {
 
     public int getPageNum() {
         return pageNum;
+    }
+
+    public Queue getQueue() {
+        return queue;
     }
 
     private long firstUnackedSeqNum() {

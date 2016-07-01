@@ -2,7 +2,9 @@ package org.logstash.ackedqueue;
 
 public class HeadPage extends Page {
 
-    public HeadPage(int pageNum) {
+    public HeadPage(int pageNum, Queue queue) {
+        super(pageNum, queue);
+
         // TODO:
         // create new page file
         // write a version number as first byte(s)

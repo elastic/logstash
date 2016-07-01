@@ -20,11 +20,11 @@ public class Queue {
     private HeadPage headPage;
     private final List<BeheadedPage> tailPages;
 
-    private final Class elementClass;
+    private final MemoryElementStream stream;
     private final String dirPath;
 
-    public Queue(String dirPath, Class elementClass) throws IOException {
-        this.elementClass = elementClass;
+    public Queue(String dirPath, MemoryElementStream stream) throws IOException {
+        this.stream = stream;
         this.dirPath = dirPath;
         this.tailPages = new ArrayList<>();
 
@@ -40,20 +40,20 @@ public class Queue {
                 // TODO: add directory path handling
                 Checkpoint tailCheckpoint = Checkpoint.read("checkpoint." + pageNum);
 
-                BeheadedPage tailPage = new BeheadedPage(tailCheckpoint);
+                BeheadedPage tailPage = new BeheadedPage(tailCheckpoint, this);
                 this.tailPages.add(tailPage);
             }
 
             // handle the head page
             // transform the head page into a beheaded tail page
-            BeheadedPage beheadedHeadPage = new BeheadedPage(headCheckpoint);
+            BeheadedPage beheadedHeadPage = new BeheadedPage(headCheckpoint, this);
             this.tailPages.add(beheadedHeadPage);
 
             beheadedHeadPage.checkpoint(headCheckpoint.getFirstUnackedPageNum());
             headPageNum = headCheckpoint.getPageNum() + 1;
         }
 
-        headPage = new HeadPage(headPageNum);
+        headPage = new HeadPage(headPageNum, this);
         headPage.checkpoint(headCheckpoint.getFirstUnackedPageNum());
 
         // TODO: do directory traversal and cleanup lingering pages
@@ -94,12 +94,12 @@ public class Queue {
 
         for (Page p : this.tailPages) {
             if (! p.isFullyRead()) {
-                return p.readBatch(limit, this.elementClass);
+                return p.readBatch(limit);
             }
         }
 
         if (! headPage.isFullyRead()) {
-            return headPage.readBatch(limit, this.elementClass);
+            return headPage.readBatch(limit);
         }
 
         // at this point there is no new data to read
@@ -147,8 +147,8 @@ public class Queue {
         return seqNum += 1;
     }
 
-    public Class getElementClass() {
-        return elementClass;
+    public MemoryElementStream getStream() {
+        return stream;
     }
 
     private int firstUnackedPageNum() {
