@@ -2,6 +2,7 @@ package org.logstash.ackedqueue;
 
 import com.logstash.Event;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -21,7 +22,7 @@ public class Queue {
     private HeadPage headPage;
     private List<BeheadedPage> tailPages;
 
-    public Queue(String dirPath) {
+    public Queue(String dirPath) throws IOException {
         this.tailPages = new ArrayList<>();
 
         final int headPageNum;
@@ -32,7 +33,7 @@ public class Queue {
             headPageNum = 0;
         } else {
             // handle all tail pages upto but excluding the head page
-            for (int pageNum = headCheckpoint.firstUnackedPageNum; pageNum < headCheckpoint.pageNum; pageNum++) {
+            for (int pageNum = headCheckpoint.getFirstUnackedPageNum(); pageNum < headCheckpoint.getPageNum(); pageNum++) {
                 // TODO: add directory path handling
                 Checkpoint tailCheckpoint = Checkpoint.read("checkpoint." + pageNum);
 
@@ -45,12 +46,12 @@ public class Queue {
             BeheadedPage beheadedHeadPage = new BeheadedPage(headCheckpoint);
             this.tailPages.add(beheadedHeadPage);
 
-            beheadedHeadPage.checkpoint(headCheckpoint.firstUnackedPageNum);
-            headPageNum = headCheckpoint.pageNum + 1;
+            beheadedHeadPage.checkpoint(headCheckpoint.getFirstUnackedPageNum());
+            headPageNum = headCheckpoint.getPageNum() + 1;
         }
 
         headPage = new HeadPage(headPageNum);
-        headPage.checkpoint(headCheckpoint.firstUnackedPageNum);
+        headPage.checkpoint(headCheckpoint.getFirstUnackedPageNum());
 
         // TODO: do directory traversal and cleanup lingering pages
     }
