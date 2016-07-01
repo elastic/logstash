@@ -31,8 +31,8 @@ public class HeadPage extends Page {
     }
 
     public void ensurePersistedUpto(long seqNum) {
-        if (this.lastCheckpoint.elementCount >= seqNum - this.minSeqNum) {
-            checkpoint(lastCheckpoint.firstUnackedPageNum);
+        if (this.lastCheckpoint.getElementCount() >= seqNum - this.minSeqNum) {
+            checkpoint(lastCheckpoint.getFirstUnackedPageNum());
         }
     }
 

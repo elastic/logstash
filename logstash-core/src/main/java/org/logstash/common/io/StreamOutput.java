@@ -1,4 +1,4 @@
-package org.logstash.translog;
+package org.logstash.common.io;
 
 import java.io.IOException;
 import java.io.OutputStream;
