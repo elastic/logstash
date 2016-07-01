@@ -8,14 +8,14 @@ public class Checkpoint {
 //    int pageNum;
 //    int firstUnackedPageNum;
 //    long minSeqNum;
-//    int eventCount;
+//    int elementCount;
 
 
     // TODO: change to provate fields + getter/setters below
     public int pageNum;
     public int firstUnackedPageNum; // only valid in the head checkpoint
     public long minSeqNum;     // per page
-    public int eventCount;     // per page
+    public int elementCount;     // per page
 
     public byte VERSION = 0;
 

@@ -1,7 +1,5 @@
 package org.logstash.ackedqueue;
 
-import com.logstash.Event;
-
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -19,9 +17,14 @@ import java.util.List;
 public class Queue {
     private long seqNum;
     private HeadPage headPage;
-    private List<BeheadedPage> tailPages;
+    private final List<BeheadedPage> tailPages;
+    private final Class elementClass;
+    private final String dirPath;
 
-    public Queue(String dirPath) {
+    public Queue(String dirPath, Class elementClass) {
+        this.elementClass = elementClass;
+        this.dirPath = dirPath;
+
         this.tailPages = new ArrayList<>();
 
         final int headPageNum;
@@ -55,15 +58,15 @@ public class Queue {
         // TODO: do directory traversal and cleanup lingering pages
     }
 
-    // @param event the Event to write to the queue
+    // @param element the Queueable object to write to the queue
     // @return long written sequence number
-    public long write(Event event) {
+    public long write(Queueable element) {
 
-        // TODO: assign next seqNum to Event
+        // TODO: assign next seqNum to element
 
-        // TODO: serialize Event to byte[]
+        // TODO: serialize element to byte[]
 
-        byte[] data = {};  // placeholder for serialized event
+        byte[] data = element.serialize();
 
         if (! headPage.hasSpace(data.length)) {
             // TODO:
@@ -74,12 +77,12 @@ public class Queue {
             // checkpoint new head page
         }
 
-        headPage.write(data, event);
+        headPage.write(data, element);
 
-        return 0; // will return event assigned seqNum
+        return 0; // will return element assigned seqNum
     }
 
-    // @param seqNum the event sequence number upper bound for which persistence should be garanteed (by fsync'int)
+    // @param seqNum the element sequence number upper bound for which persistence should be garanteed (by fsync'int)
     public void ensurePersistedUpto(long seqNum) {
          headPage.ensurePersistedUpto(seqNum);
     }
