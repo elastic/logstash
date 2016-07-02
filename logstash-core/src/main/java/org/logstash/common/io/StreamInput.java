@@ -66,7 +66,7 @@ public abstract class StreamInput extends InputStream {
     }
 
     public byte[] readByteArray() throws IOException {
-        int length = readVInt();
+        int length = readInt();
         byte[] values = new byte[length];
         for (int i = 0; i < length; i++) {
             values[i] = readByte();

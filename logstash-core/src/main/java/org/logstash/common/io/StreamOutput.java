@@ -60,7 +60,7 @@ public abstract class StreamOutput extends OutputStream {
      * @param b the bytes to write
      */
     public void writeByteArray(byte[] b) throws IOException {
-        writeVInt(b.length);
+        writeInt(b.length);
         writeBytes(b, 0, b.length);
     }
 }
