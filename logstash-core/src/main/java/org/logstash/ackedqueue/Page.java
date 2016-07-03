@@ -1,5 +1,7 @@
 package org.logstash.ackedqueue;
 
+import org.logstash.common.io.ReadElementValue;
+
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.List;
@@ -43,8 +45,8 @@ public abstract class Page {
     // @param elementClass the concrete element class for deserialization
     // @return Batch batch of elements read when the number of elements can be <= limit
     Batch readBatch(int limit) {
-        List<byte[]> serializedElements = this.queue.getStream().read(this.offsetMap.get((int)(this.firstUnreadSeqNum - this.minSeqNum)), limit);
-        List<Queueable> elements = serializedElements.stream().map(bytes -> ElementFactory.deserialize(bytes)).collect(Collectors.toList());
+        List<ReadElementValue> serializedElements = this.queue.getStream().read(this.offsetMap.get((int)(this.firstUnreadSeqNum - this.minSeqNum)), limit);
+        List<Queueable> elements = serializedElements.stream().map(readElement -> ElementFactory.deserialize(readElement.getBinaryValue())).collect(Collectors.toList());
         Batch batch = new Batch(elements, this.queue);
 
         this.firstUnreadSeqNum += elements.size();

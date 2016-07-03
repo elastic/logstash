@@ -20,10 +20,10 @@ public class Queue {
     private HeadPage headPage;
     private final List<BeheadedPage> tailPages;
 
-    private final MemoryElementStream stream;
+    private final ElementIO stream;
     private final String dirPath;
 
-    public Queue(String dirPath, MemoryElementStream stream) throws IOException {
+    public Queue(String dirPath, ElementIO stream) throws IOException {
         this.stream = stream;
         this.dirPath = dirPath;
         this.tailPages = new ArrayList<>();
@@ -147,7 +147,7 @@ public class Queue {
         return seqNum += 1;
     }
 
-    public MemoryElementStream getStream() {
+    public ElementIO getStream() {
         return stream;
     }
 

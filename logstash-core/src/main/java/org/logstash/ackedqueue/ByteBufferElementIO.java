@@ -11,7 +11,7 @@ import java.util.List;
 // TODO: we could change this and support non-continuous seqNums but I am not sure we should.
 // TODO: checksum is not currently computed.
 
-public class ByteBufferElementIO {
+public class ByteBufferElementIO implements ElementIO {
     static final int CHECKSUM_SIZE = Integer.BYTES;
     static final int LENGTH_SIZE = Integer.BYTES;
     static final int SEQNUM_SIZE = Long.BYTES;
@@ -22,7 +22,7 @@ public class ByteBufferElementIO {
     private final int capacity;
     private final List<Integer> offsetMap; // has to be extendable
     private final ByteBuffer buffer;
-    private long minSeqNum;
+    private long minSeqNum; // TODO: to make minSeqNum final we have to pass in the minSeqNum in the constructor and not set it on first write
     private int elementCount;
     private int head;
     private final byte version;
@@ -52,6 +52,8 @@ public class ByteBufferElementIO {
         this.head = 1;
 
         if (this.elementCount > 0) {
+
+            // TODO: refactor the read logic below to DRY with the read() method.
 
             // set head by skipping over all elements
             for (int i = 0; i < this.elementCount; i++) {
