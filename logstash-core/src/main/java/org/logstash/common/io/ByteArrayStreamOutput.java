@@ -24,6 +24,11 @@ public class ByteArrayStreamOutput extends StreamOutput {
         limit = offset + len;
     }
 
+    public void setWriteWindow(int offset, int len) {
+        pos = offset;
+        limit = offset + len;
+    }
+
     public void reset() {
     }
 

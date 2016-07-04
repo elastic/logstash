@@ -17,6 +17,10 @@ public class MemoryElementIOStreamTest {
         return new MemoryElementIOStream(100);
     }
 
+    private MemoryElementIOStream subject(int size) {
+        return new MemoryElementIOStream(size);
+    }
+
     private MemoryElementIOStream subject(byte[] bytes, Checkpoint ckp) {
         return new MemoryElementIOStream(bytes, ckp);
     }
@@ -69,6 +73,27 @@ public class MemoryElementIOStreamTest {
     }
 
     @Test
+    public void writeUntilFull() throws Exception {
+        Queueable element = new StringElement("foobarbaz");
+        element.setSeqNum(42L);
+        byte[] data = element.serialize();
+        int bufferSize = 100;
+        MemoryElementIOStream subj = subject(bufferSize);
+        long seqno = 42L;
+        while (subj.hasSpace(data.length)) {
+            subj.write(data, seqno);
+            seqno++;
+        }
+        int recordSize = subj.recordSize(data.length);
+        int remains = bufferSize - subj.getWritePosition();
+        assertThat(recordSize, is(equalTo(25)));
+        assertThat(remains, is(equalTo(24)));
+        assertThat(subj.getElementCount(), is(equalTo(3)));
+        boolean noSpaceLeft = remains < recordSize;
+        assertThat(noSpaceLeft, is(true));
+    }
+
+    @Test
     public void read() throws Exception {
         MemoryElementIOStream subj = subject();
         List<ReadElementValue> result = subj.read(1);
@@ -84,6 +109,19 @@ public class MemoryElementIOStreamTest {
         assertThat(result.size(), is(equalTo(1)));
         ReadElementValue rev = result.get(0);
         assertThat(rev.getSeqNum(), is(equalTo(42L)));
+        Queueable readElement = StringElement.deserialize(rev.getBinaryValue());
+        assertThat(readElement.toString(), is(equalTo(element.toString())));
+    }
+
+    @Test
+    public void writeReadEmptyElement() throws Exception {
+        Queueable element = buildStringElement("", 1L);
+        MemoryElementIOStream subj = subject();
+        subj.write(element);
+        List<ReadElementValue> result = subj.read(1);
+        assertThat(result.size(), is(equalTo(1)));
+        ReadElementValue rev = result.get(0);
+        assertThat(rev.getSeqNum(), is(equalTo(1L)));
         Queueable readElement = StringElement.deserialize(rev.getBinaryValue());
         assertThat(readElement.toString(), is(equalTo(element.toString())));
     }
