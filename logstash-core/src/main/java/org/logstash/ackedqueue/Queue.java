@@ -45,26 +45,32 @@ public class Queue {
             this.seqNum = 0;
             headPageNum = 0;
         } else {
-            // handle all tail pages upto but excluding the head page
-            for (int pageNum = headCheckpoint.getFirstUnackedPageNum(); pageNum < headCheckpoint.getPageNum(); pageNum++) {
+            // handle all tail pages from head downto the page containing the firstUnackedSeqNum
+            for (int pageNum = headCheckpoint.getPageNum() - 1; pageNum > 0; pageNum--) {
                 // TODO: add directory path handling
                 Checkpoint tailCheckpoint = Checkpoint.read("checkpoint." + pageNum);
 
                 BeheadedPage tailPage = new BeheadedPage(tailCheckpoint, this);
-                this.tailPages.add(tailPage);
+                this.tailPages.add(0, tailPage);
+
+                if (headCheckpoint.getFirstUnackedSeqNum() >= tailPage.getMinSeqNum()) {
+                    break;
+                }
             }
+            assert headCheckpoint.getFirstUnackedSeqNum() >= tailPages.get(0).getMinSeqNum() :
+                    String.format("firstUnackedSeqNum=%d < page pageNum=%d, minSeqNum=%d", headCheckpoint.getFirstUnackedSeqNum(), this.tailPages.get(0).getPageNum(), this.tailPages.get(0).getMinSeqNum());
 
             // handle the head page
             // transform the head page into a beheaded tail page
             BeheadedPage beheadedHeadPage = new BeheadedPage(headCheckpoint, this);
             this.tailPages.add(beheadedHeadPage);
 
-            beheadedHeadPage.checkpoint(headCheckpoint.getFirstUnackedPageNum());
+            beheadedHeadPage.checkpoint(headCheckpoint.getFirstUnackedSeqNum());
             headPageNum = headCheckpoint.getPageNum() + 1;
         }
 
         headPage = new HeadPage(headPageNum, this);
-        headPage.checkpoint(headCheckpoint.getFirstUnackedPageNum());
+        headPage.checkpoint(headCheckpoint.getFirstUnackedSeqNum());
 
         // TODO: do directory traversal and cleanup lingering pages
     }

@@ -33,7 +33,7 @@ public class HeadPage extends Page {
 
     public void ensurePersistedUpto(long seqNum) {
         if (this.lastCheckpoint.getElementCount() >= seqNum - this.minSeqNum) {
-            checkpoint(lastCheckpoint.getFirstUnackedPageNum());
+            checkpoint(lastCheckpoint.getFirstUnackedSeqNum());
         }
     }
 
@@ -48,7 +48,7 @@ public class HeadPage extends Page {
         return null;
     }
 
-    public void checkpoint(int firstUnackedPageNum) {
+    public void checkpoint(long firstUnackedSeqNum) {
         // not concurrent for first iteration:
 
         // TODO:

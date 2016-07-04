@@ -67,7 +67,7 @@ public abstract class Page {
 
     void ack(long[] seqNums) {
 
-        for(long seqNum : seqNums) {
+        for (long seqNum : seqNums) {
             // TODO: eventually refactor to use new bit handling class
             this.ackedSeqNums.set((int)(seqNum - this.minSeqNum));
         }
@@ -80,7 +80,7 @@ public abstract class Page {
 //        }
     }
 
-    abstract void checkpoint(int firstUnackedPageNum);
+    abstract void checkpoint(long firstUnackedSeqNum);
 
 
     long maxSeqNum() {
@@ -89,6 +89,10 @@ public abstract class Page {
 
     public int getPageNum() {
         return pageNum;
+    }
+
+    public long getMinSeqNum() {
+        return this.minSeqNum;
     }
 
     public Queue getQueue() {

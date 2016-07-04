@@ -21,33 +21,33 @@ public class Checkpoint {
 //
 //    byte version;
 //    int pageNum;
-//    int firstUnackedPageNum;
+//    long firstUnackedSeqNum;
 //    long minSeqNum;
 //    int elementCount;
 
     static final int BUFFER_SIZE = 1 // version
             + Integer.BYTES  // pageNum
-            + Integer.BYTES  // firstUnackedPageNum
+            + Long.BYTES  // firstUnackedSeqNum
             + Long.BYTES     // minSeqNum
             + Integer.BYTES; // eventCount
 
     private int pageNum;
-    private int firstUnackedPageNum; // only valid in the head checkpoint
-    private long minSeqNum;     // per page
-    private int elementCount;     // per page
+    private long firstUnackedSeqNum; // only valid in the head checkpoint
+    private long minSeqNum;          // per page
+    private int elementCount;        // per page
 
     public static final byte VERSION = 0;
 
-    public Checkpoint(int pageNum, int firstUnackedPageNum, long minSeqNum, int eventCount) {
+    public Checkpoint(int pageNum, long firstUnackedSeqNum, long minSeqNum, int eventCount) {
         this.pageNum = pageNum;
-        this.firstUnackedPageNum = firstUnackedPageNum;
+        this.firstUnackedSeqNum = firstUnackedSeqNum;
         this.minSeqNum = minSeqNum;
         this.elementCount = eventCount;
     }
 
     public Checkpoint(StreamInput in) throws IOException {
         pageNum = in.readInt();
-        firstUnackedPageNum = in.readInt();
+        firstUnackedSeqNum = in.readLong();
         minSeqNum = in.readLong();
         elementCount = in.readInt();
     }
@@ -77,7 +77,7 @@ public class Checkpoint {
     public void write(StreamOutput out) throws IOException {
         out.writeByte(VERSION);
         out.writeInt(pageNum);
-        out.writeInt(firstUnackedPageNum);
+        out.writeLong(firstUnackedSeqNum);
         out.writeLong(minSeqNum);
         out.writeInt(elementCount);
     }
@@ -110,8 +110,8 @@ public class Checkpoint {
         return pageNum;
     }
 
-    public int getFirstUnackedPageNum() {
-        return firstUnackedPageNum;
+    public long getFirstUnackedSeqNum() {
+        return firstUnackedSeqNum;
     }
 
     public long getMinSeqNum() {

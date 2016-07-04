@@ -14,7 +14,7 @@ public class BeheadedPage extends Page {
         // TODO:
     }
 
-    void checkpoint(int firstUnackedPageNum) {
+    void checkpoint(long firstUnackedSeqNum) {
         // TODO:
         // Checkpoint.write("checkpoint." + this.pageNum, ... );
     }

@@ -15,15 +15,15 @@ public class CheckpointTest {
         ByteArrayStreamOutput baso = new ByteArrayStreamOutput(bytes);
         Checkpoint ckp = new Checkpoint(4, 3, 2, 1);
         ckp.write(baso);
-        Assert.assertArrayEquals(bytes, new byte[]{0,0,0,0,4,0,0,0,3,0,0,0,0,0,0,0,2,0,0,0,1});
+        Assert.assertArrayEquals(bytes, new byte[]{0, 0,0,0,4, 0,0,0,0,0,0,0,3, 0,0,0,0,0,0,0,2, 0,0,0,1});
     }
 
     @Test
     public void read() throws Exception {
-        byte[] bytes = new byte[]{0, 0, 0, 0, 8, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 6, 0, 0, 0, 5};
+        byte[] bytes = new byte[]{0, 0,0,0,8, 0,0,0,0,0,0,0,7, 0,0,0,0,0,0,0,6, 0,0,0,5};
         Checkpoint ckp = Checkpoint.read(bytes);
         assertThat(ckp.getPageNum(), is(equalTo(8)));
-        assertThat(ckp.getFirstUnackedPageNum(), is(equalTo(7)));
+        assertThat(ckp.getFirstUnackedSeqNum(), is(equalTo(7L)));
         assertThat(ckp.getMinSeqNum(), is(equalTo(6L)));
         assertThat(ckp.getElementCount(), is(equalTo(5)));
     }
@@ -36,7 +36,7 @@ public class CheckpointTest {
         toWrite.write(baso);
         Checkpoint toRead = Checkpoint.read(bytes);
         assertThat(toRead.getPageNum(), is(equalTo(toWrite.getPageNum())));
-        assertThat(toRead.getFirstUnackedPageNum(), is(equalTo(toWrite.getFirstUnackedPageNum())));
+        assertThat(toRead.getFirstUnackedSeqNum(), is(equalTo(toWrite.getFirstUnackedSeqNum())));
         assertThat(toRead.getMinSeqNum(), is(equalTo(toWrite.getMinSeqNum())));
         assertThat(toRead.getElementCount(), is(equalTo(toWrite.getElementCount())));
     }
