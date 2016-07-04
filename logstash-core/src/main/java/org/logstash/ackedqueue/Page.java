@@ -1,5 +1,6 @@
 package org.logstash.ackedqueue;
 
+import org.logstash.common.io.ElementIO;
 import org.logstash.common.io.ReadElementValue;
 
 import java.util.BitSet;

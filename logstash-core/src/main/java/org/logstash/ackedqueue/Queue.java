@@ -1,5 +1,7 @@
 package org.logstash.ackedqueue;
 
+import org.logstash.common.io.ElementIO;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;

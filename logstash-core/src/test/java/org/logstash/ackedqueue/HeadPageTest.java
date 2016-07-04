@@ -1,6 +1,7 @@
 package org.logstash.ackedqueue;
 
 import org.junit.Test;
+import org.logstash.common.io.ByteBufferElementIO;
 
 import java.io.IOException;
 

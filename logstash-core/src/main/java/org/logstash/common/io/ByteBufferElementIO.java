@@ -1,6 +1,6 @@
-package org.logstash.ackedqueue;
+package org.logstash.common.io;
 
-import org.logstash.common.io.ReadElementValue;
+import org.logstash.ackedqueue.Queueable;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -12,11 +12,11 @@ import java.util.List;
 // TODO: checksum is not currently computed.
 
 public class ByteBufferElementIO implements ElementIO {
-    static final int CHECKSUM_SIZE = Integer.BYTES;
-    static final int LENGTH_SIZE = Integer.BYTES;
-    static final int SEQNUM_SIZE = Long.BYTES;
-    static final int MIN_RECORD_SIZE = SEQNUM_SIZE + CHECKSUM_SIZE;
-    static final int HEADER_SIZE = 1;     // version byte
+    public static final int CHECKSUM_SIZE = Integer.BYTES;
+    public static final int LENGTH_SIZE = Integer.BYTES;
+    public static final int SEQNUM_SIZE = Long.BYTES;
+    public static final int MIN_RECORD_SIZE = SEQNUM_SIZE + CHECKSUM_SIZE;
+    public static final int HEADER_SIZE = 1;     // version byte
     static final List<ReadElementValue> EMPTY_READ = new ArrayList<>(0);
 
     private final int capacity;
