@@ -1,19 +1,17 @@
 package org.logstash.ackedqueue;
 
+import java.io.IOException;
+
 public class HeadPage extends Page {
 
-    public HeadPage(int pageNum, Queue queue) {
+    public HeadPage(int pageNum, Queue queue) throws IOException {
         super(pageNum, queue);
-
-        // TODO:
-        // create new page file
-        // write a version number as first byte(s)
-        // write header? (some debugging info, logstash version?, queue version, etc)
+        String fullPagePath = this.queue.getDirPath() + "/page." + pageNum; // TODO: refactor for proper path + separator
+        this.io = queue.getIo().create(queue.getIo().getCapacity(), fullPagePath);
     }
 
     public boolean hasSpace(int byteSize) {
-        // TODO:
-        return true;
+        return this.io.hasSpace((byteSize));
     }
 
     // NOTE:
@@ -24,11 +22,12 @@ public class HeadPage extends Page {
     // be able to use the Page.hasSpace() method with the serialized element byte size.
     //
     public void write(byte[] bytes, Queueable element) {
-        // TODO: write to file, will return an offset
+        this.io.write(bytes, element);
 
-        long offset = 0; // will be file offset
-
-        this.offsetMap.add((int)(element.getSeqNum() - this.minSeqNum), offset);
+        if (this.minSeqNum <= 0) {
+            this.minSeqNum = element.getSeqNum();
+            this.firstUnreadSeqNum = element.getSeqNum();
+        }
         this.elementCount++;
     }
 

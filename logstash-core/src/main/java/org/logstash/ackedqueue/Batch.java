@@ -3,29 +3,40 @@ package org.logstash.ackedqueue;
 import java.io.Closeable;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
 
 public class Batch implements Closeable {
 
-    private List<Queueable> elements;
+    private final List<Queueable> elements;
 
-    private long[] ackableSeqNums; // from initial read events seqNum
-    private Queue queue;
-    private AtomicBoolean closed;
+    private final List<Long> ackableSeqNums; // from initial read events seqNum
+    private final Queue queue;
+    private final AtomicBoolean closed;
 
     public Batch(List<Queueable> elements, Queue q) {
         this.elements = elements;
         this.queue = q;
         this.closed = new AtomicBoolean(false);
-        // TODO: ackableSeqNums = build array of seqNum from elements
+        this.ackableSeqNums = elements.stream().map(e -> e.getSeqNum()).collect(Collectors.toList());
     }
 
     // close acks the batch ackable events
     public void close() {
         if (closed.getAndSet(true) == false) {
-            this.queue.ack(this.ackableSeqNums);
+//            Long[] seqNums = new Long[this.ackableSeqNums.size()];
+//            seqNums = this.ackableSeqNums.toArray(seqNums);
+//            this.queue.ack(seqNums);
         } else {
             // TODO: double close hnalding
             // throw?
         }
+    }
+
+    public List<Queueable> getElements() {
+        return elements;
+    }
+
+    public Queue getQueue() {
+        return queue;
     }
 }

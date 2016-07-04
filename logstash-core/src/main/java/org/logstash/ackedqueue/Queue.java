@@ -20,14 +20,22 @@ public class Queue {
     private HeadPage headPage;
     private final List<BeheadedPage> tailPages;
 
-    private final ElementIO stream;
+    private final ElementIO io;
     private final String dirPath;
 
-    public Queue(String dirPath, ElementIO stream) throws IOException {
-        this.stream = stream;
+    // TODO: I really don't like the idea of passing a dummy ElementIO object for the sake of holding a reference to the
+    // concrete class for later invoking open() and create() in the Page
+    public Queue(String dirPath, ElementIO io) {
+        this.io = io;
         this.dirPath = dirPath;
-        this.tailPages = new ArrayList<>();
 
+        this.tailPages = new ArrayList<>();
+    }
+
+    // moved queue opening logic in open() method until wehave something in place to used in-memory checkpoints for testing
+    // because for now we need to pass a Queue instance to the Page and we don't want to trigger a Queue recovery when
+    // testing Page
+    public void open() throws IOException {
         final int headPageNum;
         Checkpoint headCheckpoint = Checkpoint.read("checkpoint.head");
 
@@ -147,8 +155,12 @@ public class Queue {
         return seqNum += 1;
     }
 
-    public ElementIO getStream() {
-        return stream;
+    public ElementIO getIo() {
+        return io;
+    }
+
+    public String getDirPath() {
+        return dirPath;
     }
 
     private int firstUnackedPageNum() {

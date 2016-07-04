@@ -27,7 +27,7 @@ public class ByteBufferElementIOTest {
     }
 
     private ByteBufferElementIO subject(byte[] bytes, Checkpoint ckp) throws IOException {
-        return new ByteBufferElementIO(CAPACITY, bytes, ckp);
+        return new ByteBufferElementIO(CAPACITY, bytes, ckp.getMinSeqNum(), ckp.getElementCount());
     }
 
     private ByteBufferElementIO subject(byte[] bytes, long seqNum, int count) throws IOException {

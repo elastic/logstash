@@ -27,13 +27,34 @@ public class ByteBufferElementIO implements ElementIO {
     private int head;
     private final byte version;
 
+    public ByteBufferElementIO() {
+        // dummy noarg constructor
+        this.capacity = 0;
+        this.offsetMap = null;
+        this.buffer = null;
+        this.version = 0;
+    }
+
+    public ElementIO open(int capacity, String path, long minSeqNum, int elementCount) throws IOException {
+        return new ByteBufferElementIO(capacity, new byte[0], minSeqNum, elementCount);
+    }
+
+    public ElementIO create(int capacity, String path) throws IOException {
+        return new ByteBufferElementIO(capacity);
+    }
+
+    public int getCapacity() {
+        return this.capacity;
+    }
+
+    public long getMinSeqNum() {
+        return this.minSeqNum;
+    }
+
     public ByteBufferElementIO(int capacity) throws IOException {
         this(capacity, new byte[0], 1L, 0);
     }
 
-    public ByteBufferElementIO(int capacity, byte[] initialBytes, Checkpoint checkpoint) throws IOException {
-        this(capacity, initialBytes, checkpoint.getMinSeqNum(), checkpoint.getElementCount());
-    }
 
     public ByteBufferElementIO(int capacity, byte[] initialBytes, long minSeqNum, int elementCount) throws IOException {
         this.capacity = capacity;

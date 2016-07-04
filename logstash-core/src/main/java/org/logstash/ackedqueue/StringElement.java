@@ -2,10 +2,16 @@ package org.logstash.ackedqueue;
 
 public class StringElement implements Queueable {
     private final String content;
-
     private long seqNum;
+
     public StringElement(String content) {
         this.content = content;
+    }
+
+    public StringElement(String content, long seqNum)
+    {
+        this.content = content;
+        this.seqNum = seqNum;
     }
 
     @Override

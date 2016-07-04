@@ -2,18 +2,17 @@ package org.logstash.ackedqueue;
 
 import org.logstash.common.io.ReadElementValue;
 
-import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.List;
 import java.util.stream.Collectors;
 
 public abstract class Page {
     protected final int pageNum;
-    protected final List<Long> offsetMap; // has to be extendable
-    protected final long minSeqNum;
+    protected long minSeqNum; // TODO: see if we can meke it final?
     protected int elementCount;
     protected long firstUnreadSeqNum;
     protected final Queue queue;
+    protected ElementIO io;
 
     // bit 0 is minSeqNum
     // TODO: go steal LocalCheckpointService in feature/seq_no from ES
@@ -26,7 +25,6 @@ public abstract class Page {
         this.pageNum = pageNum;
         this.queue = queue;
 
-        this.offsetMap = new ArrayList<>();
         this.minSeqNum = 0;
         this.elementCount = 0;
         this.firstUnreadSeqNum = 0;
@@ -45,7 +43,7 @@ public abstract class Page {
     // @param elementClass the concrete element class for deserialization
     // @return Batch batch of elements read when the number of elements can be <= limit
     Batch readBatch(int limit) {
-        List<ReadElementValue> serializedElements = this.queue.getStream().read(this.offsetMap.get((int)(this.firstUnreadSeqNum - this.minSeqNum)), limit);
+        List<ReadElementValue> serializedElements = this.io.read(this.firstUnreadSeqNum, limit);
         List<Queueable> elements = serializedElements.stream().map(readElement -> ElementFactory.deserialize(readElement.getBinaryValue())).collect(Collectors.toList());
         Batch batch = new Batch(elements, this.queue);
 
@@ -55,16 +53,15 @@ public abstract class Page {
     }
 
     boolean isFullyRead() {
-        return this.firstUnreadSeqNum > maxSeqNum();
+        return this.elementCount <= 0 || this.firstUnreadSeqNum > maxSeqNum();
     }
 
     boolean isFullyAcked() {
 
         // TODO: it should be something similar to this when we use a proper bitset class like ES
         // this.ackedSeqNum.firstUnackedBit >= this.elementCount;
-
         // TODO: for now use a naive & inneficient mechanism with a simple Bitset
-        return this.ackedSeqNums.cardinality() >= this.elementCount;
+        return this.elementCount > 0 && this.ackedSeqNums.cardinality() >= this.elementCount;
     }
 
     void ack(long[] seqNums) {
@@ -86,7 +83,7 @@ public abstract class Page {
 
 
     long maxSeqNum() {
-        return this.minSeqNum + this.elementCount;
+        return this.minSeqNum + this.elementCount - 1;
     }
 
     public int getPageNum() {
