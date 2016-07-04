@@ -89,6 +89,19 @@ public class MemoryElementIOStreamTest {
     }
 
     @Test
+    public void writeReadEmptyElement() throws Exception {
+        Queueable element = buildStringElement("", 1L);
+        MemoryElementIOStream subj = subject();
+        subj.write(element);
+        List<ReadElementValue> result = subj.read(1);
+        assertThat(result.size(), is(equalTo(1)));
+        ReadElementValue rev = result.get(0);
+        assertThat(rev.getSeqNum(), is(equalTo(1L)));
+        Queueable readElement = StringElement.deserialize(rev.getBinaryValue());
+        assertThat(readElement.toString(), is(equalTo(element.toString())));
+    }
+
+    @Test
     public void writeReadMulti() throws Exception {
         Queueable element1 = buildStringElement("foo", 40L);
         Queueable element2 = buildStringElement("bar", 42L);
