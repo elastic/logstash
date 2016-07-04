@@ -17,6 +17,10 @@ public class MemoryElementIOStreamTest {
         return new MemoryElementIOStream(100);
     }
 
+    private MemoryElementIOStream subject(int size) {
+        return new MemoryElementIOStream(size);
+    }
+
     private MemoryElementIOStream subject(byte[] bytes, Checkpoint ckp) {
         return new MemoryElementIOStream(bytes, ckp);
     }
@@ -66,6 +70,27 @@ public class MemoryElementIOStreamTest {
         assertThat(subj.getWritePosition(), is(equalTo(26)));
         assertThat(subj.getElementCount(), is(equalTo(1)));
         assertThat(subj.getStartSeqNum(), is(equalTo(42L)));
+    }
+
+    @Test
+    public void writeUntilFull() throws Exception {
+        Queueable element = new StringElement("foobarbaz");
+        element.setSeqNum(42L);
+        byte[] data = element.serialize();
+        int bufferSize = 100;
+        MemoryElementIOStream subj = subject(bufferSize);
+        long seqno = 42L;
+        while (subj.hasSpace(data.length)) {
+            subj.write(data, seqno);
+            seqno++;
+        }
+        int recordSize = subj.recordSize(data.length);
+        int remains = bufferSize - subj.getWritePosition();
+        assertThat(recordSize, is(equalTo(25)));
+        assertThat(remains, is(equalTo(24)));
+        assertThat(subj.getElementCount(), is(equalTo(3)));
+        boolean noSpaceLeft = remains < recordSize;
+        assertThat(noSpaceLeft, is(true));
     }
 
     @Test
