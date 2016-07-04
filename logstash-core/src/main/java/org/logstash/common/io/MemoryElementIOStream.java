@@ -18,7 +18,9 @@ public class MemoryElementIOStream {
     private int writePosition;
     private int elementCount;
     private long startSeqNum;
-    private ByteBufferStreamInput bbsi;
+    private ByteBufferStreamInput streamedInput;
+    private ByteArrayStreamOutput streamedOutput;
+    private BufferedChecksumStreamOutput crcWrappedOutput;
 
     public MemoryElementIOStream(int byteSize) {
         this(new byte[byteSize], 1L, 0); // empty array, first seqNum, no elements written yet
@@ -32,21 +34,23 @@ public class MemoryElementIOStream {
         startSeqNum = minSeqNum;
         this.elementCount = elementCount;
         writePosition = HEADER_SIZE; //skip header bytes
-        bbsi = new ByteBufferStreamInput(ByteBuffer.wrap(buffer));
+        streamedInput = new ByteBufferStreamInput(ByteBuffer.wrap(buffer));
+        streamedOutput = new ByteArrayStreamOutput(buffer);
+        crcWrappedOutput = new BufferedChecksumStreamOutput(streamedOutput);
         if (this.elementCount == 0) {
             addHeader();
             try {
-                bbsi.skip(HEADER_SIZE);
+                streamedInput.skip(HEADER_SIZE);
             } catch (IOException e) {
                 e.printStackTrace();
             }
         } else {
             long readSeqNum;
             try {
-                BufferedChecksumStreamInput in = new BufferedChecksumStreamInput(bbsi);
-                //verify that the buffer starts with the min sequence number
+                BufferedChecksumStreamInput in = new BufferedChecksumStreamInput(streamedInput);
                 in.skip(HEADER_SIZE);
                 readSeqNum = in.readLong();
+                //verify that the buffer starts with the min sequence number
                 if (readSeqNum != this.startSeqNum) {
                     // throw tragic error
                 }
@@ -55,8 +59,8 @@ public class MemoryElementIOStream {
                     in.skip(SEQNUM_SIZE);
                     verifyChecksum(in);
                 }
-                bbsi.reset();
-                bbsi.skip(HEADER_SIZE);
+                streamedInput.reset();
+                streamedInput.skip(HEADER_SIZE);
             } catch (IOException e) {
                 e.printStackTrace();
                 // throw tragic error
@@ -129,14 +133,14 @@ public class MemoryElementIOStream {
     }
 
     private void writeRecordToBuffer(long seqNum, byte[] data, int len) throws IOException {
-        BufferedChecksumStreamOutput out = new BufferedChecksumStreamOutput(new ByteArrayStreamOutput(buffer, writePosition, len));
-        out.writeLong(seqNum);
-        out.resetDigest();
-        out.writeByteArray(data);
-        long checksum = out.getChecksum();
-        out.writeInt((int) checksum);
-        out.flush();
-        out.close();
+        streamedOutput.setWriteWindow(writePosition, len);
+        crcWrappedOutput.writeLong(seqNum);
+        crcWrappedOutput.resetDigest();
+        crcWrappedOutput.writeByteArray(data);
+        long checksum = crcWrappedOutput.getChecksum();
+        crcWrappedOutput.writeInt((int) checksum);
+        crcWrappedOutput.flush();
+        crcWrappedOutput.close();
     }
 
     public List<ReadElementValue> read(long seqNum, int limit) throws IOException {
@@ -156,15 +160,15 @@ public class MemoryElementIOStream {
     }
 
     private long readSeqNum() throws IOException {
-        return bbsi.readLong();
+        return streamedInput.readLong();
     }
 
     private byte[] readData() throws IOException {
-        return bbsi.readByteArray();
+        return streamedInput.readByteArray();
     }
 
     private void skipChecksum() throws IOException {
-        bbsi.skip(CHECKSUM_SIZE);
+        streamedInput.skip(CHECKSUM_SIZE);
     }
 
     private int available(int sought) {
