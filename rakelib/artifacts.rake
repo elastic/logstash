@@ -46,6 +46,9 @@ namespace "artifact" do
     @exclude_paths << "**/test/files/slow-xpath.xml"
     @exclude_paths << "**/logstash-*/spec"
     @exclude_paths << "bin/bundle"
+    @exclude_paths << "vendor/jruby/lib/ruby/maven-home/**"
+    @exclude_paths << "vendor/jruby/lib/ruby/gems/shared/gems/ruby-maven*"
+    @exclude_paths << "vendor/jruby/lib/ruby/gems/shared/specifications/default/ruby-maven*"
 
     @exclude_paths
   end
