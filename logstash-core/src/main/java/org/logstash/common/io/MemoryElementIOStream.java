@@ -10,8 +10,9 @@ import java.util.List;
 
 public class MemoryElementIOStream {
     static final int CHECKSUM_SIZE = Integer.BYTES;
+    static final int LENGTH_SIZE = Integer.BYTES;
     static final int SEQNUM_SIZE = Long.BYTES;
-    static final int MIN_RECORD_SIZE = SEQNUM_SIZE + CHECKSUM_SIZE;
+    static final int MIN_RECORD_SIZE = SEQNUM_SIZE + LENGTH_SIZE + CHECKSUM_SIZE;
     static final int HEADER_SIZE = 1;     // version byte
     private final byte[] buffer;
     private final int byteSize;
@@ -94,16 +95,12 @@ public class MemoryElementIOStream {
         }
     }
 
-    private int recordSize(byte[] data) {
-        return MIN_RECORD_SIZE
-                + Integer.BYTES // length of byte array
-                + data.length;
+    public static int recordSize(byte[] data) {
+        return MIN_RECORD_SIZE + data.length;
     }
 
-    private int recordSize(int length) {
-        return MIN_RECORD_SIZE
-                + Integer.BYTES // length of byte array
-                + length;
+    public static int recordSize(int length) {
+        return MIN_RECORD_SIZE + length;
     }
 
     public boolean hasSpace(int byteSize) {
