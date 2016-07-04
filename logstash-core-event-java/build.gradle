@@ -6,6 +6,7 @@ buildscript {
     }
     dependencies {
         classpath 'net.saliman:gradle-cobertura-plugin:2.2.8'
+        classpath 'com.bmuschko:gradle-nexus-plugin:2.3.1'
     }
 }
 
@@ -24,8 +25,11 @@ gradle.projectsEvaluated {
 
 apply plugin: 'java'
 apply plugin: 'idea'
+apply plugin: 'maven'
+apply plugin: 'com.bmuschko.nexus'
 
 group = 'org.logstash'
+version = '5.0.0.dev'
 
 project.sourceCompatibility = 1.7
 
@@ -94,9 +98,35 @@ idea {
 dependencies {
     compile 'com.fasterxml.jackson.core:jackson-core:2.7.1'
     compile 'com.fasterxml.jackson.core:jackson-databind:2.7.1-1'
+    compile 'joda-time:joda-time:2.9.3'
     provided 'org.jruby:jruby-core:1.7.22'
     testCompile 'junit:junit:4.12'
     testCompile 'net.javacrumbs.json-unit:json-unit:1.9.0'
+}
+
+modifyPom {
+    project {
+        name 'Logstash Core Event Java'
+        url 'https://www.elastic.co/products/logstash'
+
+        scm {
+            url 'https://github.com/elastic/logstash'
+        }
+
+        licenses {
+            license {
+                name 'The Apache Software License, Version 2.0'
+                url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                distribution 'repo'
+            }
+        }
+    }
+}
+
+extraArchive {
+    sources = false
+    tests = true
+    javadoc = false
 }
 
 // See http://www.gradle.org/docs/current/userguide/gradle_wrapper.html
@@ -104,4 +134,3 @@ task wrapper(type: Wrapper) {
     description = 'Install Gradle wrapper'
     gradleVersion = '2.8'
 }
-
