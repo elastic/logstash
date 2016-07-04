@@ -83,7 +83,6 @@ class LogStash::Inputs::RabbitMQ < LogStash::Inputs::Threadable
   config :passive, :validate => :boolean, :default => false
 
 
-
   #
   # (Optional) Exchange binding
   #
@@ -101,6 +100,9 @@ class LogStash::Inputs::RabbitMQ < LogStash::Inputs::Threadable
   # * Routing keys are ignored on fanout exchanges.
   # * Wildcards are not valid on direct exchanges.
   config :key, :validate => :string, :default => "logstash"
+
+  # If declare the queue or Use the existed queue without declaration
+  config :declare, :validate => :boolean, :default => true
 
 
   def initialize(params)
