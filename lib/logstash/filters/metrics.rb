@@ -74,14 +74,16 @@ require "logstash/namespace"
 #       # only emit events with the 'metric' tag
 #       if "metric" in [tags] {
 #         stdout {
-#           message => "rate: %{events.rate_1m}"
+#           codec => line {
+#             format => "rate: %{events.rate_1m}"
+#           }
 #         }
 #       }
 #     }
 #
 # Running the above:
 #
-#     % java -jar logstash.jar agent -f example.conf
+#     % ./logstash-1.4.1/bin/logstash agent -f example.conf
 #     rate: 23721.983566819246
 #     rate: 24811.395722536377
 #     rate: 25875.892745934525
