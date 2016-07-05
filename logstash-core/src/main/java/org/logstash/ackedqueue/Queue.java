@@ -45,20 +45,13 @@ public class Queue {
             this.seqNum = 0;
             headPageNum = 0;
         } else {
-            // handle all tail pages from head downto the page containing the firstUnackedSeqNum
-            for (int pageNum = headCheckpoint.getPageNum() - 1; pageNum > 0; pageNum--) {
-                // TODO: add directory path handling
-                Checkpoint tailCheckpoint = Checkpoint.read("checkpoint." + pageNum);
+            // handle all tail pages upto but excluding the head page
+            for (int pageNum = headCheckpoint.getFirstUnackedPageNum(); pageNum < headCheckpoint.getPageNum(); pageNum++) {
+                Checkpoint tailCheckpoint = Checkpoint.read("checkpoint." + pageNum); // TODO: add directory path handling
 
                 BeheadedPage tailPage = new BeheadedPage(tailCheckpoint, this);
-                this.tailPages.add(0, tailPage);
-
-                if (headCheckpoint.getFirstUnackedSeqNum() >= tailPage.getMinSeqNum()) {
-                    break;
-                }
+                this.tailPages.add(tailPage);
             }
-            assert headCheckpoint.getFirstUnackedSeqNum() >= tailPages.get(0).getMinSeqNum() :
-                    String.format("firstUnackedSeqNum=%d < page pageNum=%d, minSeqNum=%d", headCheckpoint.getFirstUnackedSeqNum(), this.tailPages.get(0).getPageNum(), this.tailPages.get(0).getMinSeqNum());
 
             // handle the head page
             // transform the head page into a beheaded tail page
