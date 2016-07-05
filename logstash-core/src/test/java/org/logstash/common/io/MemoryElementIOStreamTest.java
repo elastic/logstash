@@ -39,21 +39,21 @@ public class MemoryElementIOStreamTest {
     public void getWritePosition() throws Exception {
         assertThat(subject().getWritePosition(), is(equalTo(1)));
         assertThat(subject(new byte[100], 1L, 0).getWritePosition(), is(equalTo(1)));
-        assertThat(subject(new byte[100], new Checkpoint(4, 3, 1, 0)).getWritePosition(), is(equalTo(1)));
+        assertThat(subject(new byte[100], new Checkpoint(5, 4, 3, 1, 0)).getWritePosition(), is(equalTo(1)));
     }
 
     @Test
     public void getElementCount() throws Exception {
         assertThat(subject().getElementCount(), is(equalTo(0)));
         assertThat(subject(new byte[100], 1L, 0).getElementCount(), is(equalTo(0)));
-        assertThat(subject(new byte[100], new Checkpoint(4, 3, 1, 0)).getElementCount(), is(equalTo(0)));
+        assertThat(subject(new byte[100], new Checkpoint(5, 4, 3, 1, 0)).getElementCount(), is(equalTo(0)));
     }
 
     @Test
     public void getStartSeqNum() throws Exception {
         assertThat(subject().getStartSeqNum(), is(equalTo(1L)));
         assertThat(subject(new byte[100], 1L, 0).getStartSeqNum(), is(equalTo(1L)));
-        assertThat(subject(new byte[100], new Checkpoint(4, 3, 1, 0)).getStartSeqNum(), is(equalTo(1L)));
+        assertThat(subject(new byte[100], new Checkpoint(5, 4, 3, 1, 0)).getStartSeqNum(), is(equalTo(1L)));
     }
 
     @Test
