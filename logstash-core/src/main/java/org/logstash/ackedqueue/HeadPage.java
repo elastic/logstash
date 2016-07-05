@@ -1,5 +1,7 @@
 package org.logstash.ackedqueue;
 
+import org.logstash.common.io.ElementIO;
+
 import java.io.IOException;
 
 public class HeadPage extends Page {
@@ -39,13 +41,15 @@ public class HeadPage extends Page {
 
 
     public BeheadedPage behead() {
-        // TODO:
-        // closes this page
-        // creates a new BeheadedPage, passing its own structure
-        // calls BeheadedPage.checkpoint
-        // return this new BeheadedPage
+        // TODO: should we have a deactivation strategy to avoid a immediate reactivation scenario?
+        this.io.deactivate();
 
-        return null;
+        BeheadedPage tailPage = new BeheadedPage(this);
+
+        // first thing that must be done after beheading is to create a new checkpoint for that new tail page
+        tailPage.checkpoint(this.firstUnackedSeqNum());
+
+        return tailPage;
     }
 
     public void checkpoint(long firstUnackedSeqNum) {

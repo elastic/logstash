@@ -137,7 +137,6 @@ public class ByteBufferElementIO implements ElementIO {
     }
 
     public List<ReadElementValue> read(long seqNum, int limit) {
-//        return new ArrayList<>();
         assert seqNum >= this.minSeqNum :
                 String.format("seqNum=%d < minSeqNum=%d", seqNum, this.minSeqNum);
         assert seqNum <= maxSeqNum() :
@@ -177,6 +176,10 @@ public class ByteBufferElementIO implements ElementIO {
     }
 
     public void activate() {
+        // nothing to do
+    }
+
+    public void ensurePersisted() {
         // nothing to do
     }
 

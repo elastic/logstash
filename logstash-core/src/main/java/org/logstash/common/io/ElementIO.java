@@ -33,4 +33,7 @@ public interface ElementIO {
 
     // signal that this data page is active will be read or written to
     void activate();
+
+    // issue the proper data container "fsync" sematic
+    void ensurePersisted();
 }

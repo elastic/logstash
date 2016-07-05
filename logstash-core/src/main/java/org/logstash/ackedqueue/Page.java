@@ -18,19 +18,23 @@ public abstract class Page {
     // bit 0 is minSeqNum
     // TODO: go steal LocalCheckpointService in feature/seq_no from ES
     // TODO: https://github.com/elastic/elasticsearch/blob/feature/seq_no/core/src/main/java/org/elasticsearch/index/seqno/LocalCheckpointService.java
-    private final BitSet ackedSeqNums;
-
+    protected BitSet ackedSeqNums;
     protected Checkpoint lastCheckpoint;
 
-    public Page(int pageNum, Queue queue) {
+    public Page(int pageNum, Queue queue, long minSeqNum, int elementCount, long firstUnreadSeqNum, BitSet ackedSeqNums, ElementIO io) {
         this.pageNum = pageNum;
         this.queue = queue;
 
-        this.minSeqNum = 0;
-        this.elementCount = 0;
-        this.firstUnreadSeqNum = 0;
-        this.ackedSeqNums = new BitSet();
+        this.minSeqNum = minSeqNum;
+        this.elementCount = elementCount;
+        this.firstUnreadSeqNum = firstUnreadSeqNum;
+        this.ackedSeqNums = ackedSeqNums;
         this.lastCheckpoint = null;
+        this.io = io;
+    }
+
+    public Page(int pageNum, Queue queue) {
+        this(pageNum, queue, 0, 0, 0, new BitSet(), null);
     }
 
     // NOTE:
@@ -43,7 +47,7 @@ public abstract class Page {
     // @param limit the batch size limit
     // @param elementClass the concrete element class for deserialization
     // @return Batch batch of elements read when the number of elements can be <= limit
-    Batch readBatch(int limit) {
+    public Batch readBatch(int limit) {
         List<ReadElementValue> serializedElements = this.io.read(this.firstUnreadSeqNum, limit);
         List<Queueable> elements = serializedElements.stream().map(readElement -> ElementFactory.deserialize(readElement.getBinaryValue())).collect(Collectors.toList());
         Batch batch = new Batch(elements, this.queue);
@@ -53,39 +57,39 @@ public abstract class Page {
         return batch;
     }
 
-    boolean isFullyRead() {
+    public boolean isFullyRead() {
         return this.elementCount <= 0 || this.firstUnreadSeqNum > maxSeqNum();
     }
 
-    boolean isFullyAcked() {
-
+    public boolean isFullyAcked() {
         // TODO: it should be something similar to this when we use a proper bitset class like ES
         // this.ackedSeqNum.firstUnackedBit >= this.elementCount;
         // TODO: for now use a naive & inneficient mechanism with a simple Bitset
         return this.elementCount > 0 && this.ackedSeqNums.cardinality() >= this.elementCount;
     }
 
-    void ack(long[] seqNums) {
 
+    public void ack(long[] seqNums) {
         for (long seqNum : seqNums) {
             // TODO: eventually refactor to use new bit handling class
             this.ackedSeqNums.set((int)(seqNum - this.minSeqNum));
         }
 
-        // TODO: verify logic below
+        // checkpoint if totally acked or we acked more than 1024 elements in this page since last checkpoint
+        long firstUnackedSeqNum = firstUnackedSeqNum();
 
-//        if (firstUnackedSeqNum() > this.lastCheckpoint.firstUnackedPageNum + 1024) {
-//            checkpoint(this.lastCheckpoint.firstUnackedPageNum);
-//
-//        }
+        if (isFullyAcked()) {
+            checkpoint(firstUnackedSeqNum);
+
+            assert firstUnackedSeqNum >= this.minSeqNum + this.elementCount :
+                    String.format("invalid firstUnackedSeqNum=%d for minSeqNum=%d and elementCount=%d", firstUnackedSeqNum, this.minSeqNum, this.elementCount);
+        } else if (firstUnackedSeqNum > this.lastCheckpoint.getFirstUnackedSeqNum() + 1024) {
+            checkpoint(firstUnackedSeqNum);
+        }
     }
 
     abstract void checkpoint(long firstUnackedSeqNum);
 
-
-    long maxSeqNum() {
-        return this.minSeqNum + this.elementCount - 1;
-    }
 
     public int getPageNum() {
         return pageNum;
@@ -99,13 +103,12 @@ public abstract class Page {
         return queue;
     }
 
-    private long firstUnackedSeqNum() {
+    protected long maxSeqNum() {
+        return this.minSeqNum + this.elementCount - 1;
+    }
+
+    protected long firstUnackedSeqNum() {
         // TODO: eventually refactor to use new bithandling class
-
-
-        // TODO: find first unacked bit in ackedSeqNum
-        int bitPos = 0;
-
-        return bitPos + this.minSeqNum;
+        return this.ackedSeqNums.nextClearBit(0) + this.minSeqNum;
     }
 }
