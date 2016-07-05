@@ -133,11 +133,12 @@ class LogStash::Agent < Clamp::Command
   # Emit a warning message.
   def warn(message)
     # For now, all warnings are fatal.
-    raise LogStash::ConfigurationError, message
+#    raise LogStash::ConfigurationError.new(message)
+    signal_usage_error(message)
   end # def warn
 
   def fail(message)
-    raise LogStash::ConfigurationError, message
+    signal_usage_error(message)
   end # def fail
 
   # Run the agent. This method is invoked after clamp parses the
@@ -242,7 +243,10 @@ class LogStash::Agent < Clamp::Command
     end
     return 1
   rescue => e
-    @logger.unsubscribe(stdout_logs) if show_startup_errors
+    if show_startup_errors
+      @logger.terminal(e.message)
+      @logger.unsubscribe(stdout_logs)
+    end
     @logger.warn(I18n.t("oops"), :error => e, :class => e.class.name, :backtrace => e.backtrace)
     return 1
   ensure
