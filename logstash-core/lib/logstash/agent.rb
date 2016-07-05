@@ -133,7 +133,6 @@ class LogStash::Agent < Clamp::Command
   # Emit a warning message.
   def warn(message)
     # For now, all warnings are fatal.
-#    raise LogStash::ConfigurationError.new(message)
     signal_usage_error(message)
   end # def warn
 
