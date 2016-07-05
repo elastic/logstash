@@ -8,7 +8,7 @@ module LogStash::Util
   module Decorators
     extend self
 
-    @logger = Cabin::Channel.get(LogStash)
+    @logger = org.apache.logging.log4j.LogManager.getLogger("LogStash")
 
     # fields is a hash of field => value
     # where both `field` and `value` can use sprintf syntax.
@@ -28,7 +28,7 @@ module LogStash::Util
           else
             event.set(field, v)
           end
-          @logger.debug? and @logger.debug("#{pluginname}: adding value to field", :field => field, :value => value)
+          @logger.is_debug_enabled and @logger.debug("#{pluginname}: adding value to field", "field" => field, "value" => value)
         end
       end
     end
@@ -37,7 +37,7 @@ module LogStash::Util
     def add_tags(tags, event, pluginname)
       tags.each do |tag|
         tag = event.sprintf(tag)
-        @logger.debug? and @logger.debug("#{pluginname}: adding tag", :tag => tag)
+        @logger.is_debug_enabled and @logger.debug("#{pluginname}: adding tag", "tag" => tag)
         # note below that the tags array field needs to be updated then reassigned to the event.
         # this is important because a construct like event["tags"] << tag will not work
         # in the current Java event implementation. see https://github.com/elastic/logstash/issues/4140

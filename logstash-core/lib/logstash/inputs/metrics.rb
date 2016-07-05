@@ -34,7 +34,7 @@ module LogStash module Inputs
     end
 
     def update(snapshot)
-      @logger.debug("Metrics input: received a new snapshot", :created_at => snapshot.created_at, :snapshot => snapshot, :event => snapshot.metric_store.to_event) if @logger.debug?
+      @logger.debug("Metrics input: received a new snapshot", "created_at" => snapshot.created_at, "snapshot" => snapshot, "event" => snapshot.metric_store.to_event) if @logger.is_debug_enabled
 
       # The back pressure is handled in the collector's
       # scheduled task (running into his own thread) if something append to one of the listener it will

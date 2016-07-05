@@ -13,8 +13,8 @@ module LogStash
       # Cabin is not compatible with CommonLogger, and this gives us more control anyway
       METADATA_FIELDS = [:request_method, :path_info, :query_string, :http_version, :http_accept].freeze
       def self.log_metadata(status, env)
-        METADATA_FIELDS.reduce({:status => status}) do |acc, field|
-          acc[field] = env[field.to_s.upcase]
+        METADATA_FIELDS.reduce({"status" => status}) do |acc, field|
+          acc[field.to_s] = env[field.to_s.upcase]
           acc
         end        
       end
@@ -58,10 +58,10 @@ module LogStash
         rescue => e
           body = RackApp.log_metadata(500, env).
                    merge({
-                           :error => "Unexpected Internal Error",
-                           :class => e.class.name,
-                           :message => e.message,
-                           :backtrace => e.backtrace
+                           "error" => "Unexpected Internal Error",
+                           "class" => e.class.name,
+                           "message" => e.message,
+                           "backtrace" => e.backtrace
                          })
 
           @logger.error(LOG_MESSAGE, body)

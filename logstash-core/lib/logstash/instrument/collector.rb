@@ -46,15 +46,15 @@ module LogStash module Instrument
 
         changed # we had changes coming in so we can notify the observers
       rescue MetricStore::NamespacesExpectedError => e
-        logger.error("Collector: Cannot record metric", :exception => e)
+        logger.error("Collector: Cannot record metric", "exception" => e)
       rescue NameError => e
         logger.error("Collector: Cannot create concrete class for this metric type",
-                     :type => type,
-                     :namespaces_path => namespaces_path,
-                     :key => key,
-                     :metrics_params => metric_type_params,
-                     :exception => e,
-                     :stacktrace => e.backtrace)
+                     "type" => type,
+                     "namespaces_path" => namespaces_path,
+                     "key" => key,
+                     "metrics_params" => metric_type_params,
+                     "exception" => e,
+                     "stacktrace" => e.backtrace)
       end
     end
 
@@ -68,9 +68,9 @@ module LogStash module Instrument
     def update(time_of_execution, result, exception)
       return true if exception.nil?
       logger.error("Collector: Something went wrong went sending data to the observers",
-                   :execution_time => time_of_execution,
-                   :result => result,
-                   :exception => exception.class.name)
+                   "execution_time" => time_of_execution,
+                   "result" => result,
+                   "exception" => exception.class.name)
     end
 
     # Snapshot the current Metric Store and return it immediately,
@@ -101,7 +101,7 @@ module LogStash module Instrument
     # `#update(created_at, metric_store)`
     def publish_snapshot
       created_at = Time.now
-      logger.debug("Collector: Sending snapshot to observers", :created_at => created_at) if logger.debug?
+      logger.debug("Collector: Sending snapshot to observers", "created_at" => created_at) if logger.is_debug_enabled
       notify_observers(snapshot_metric)
     end
   end

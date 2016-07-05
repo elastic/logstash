@@ -1,0 +1,52 @@
+import java.nio.file.Files
+import static java.nio.file.StandardCopyOption.REPLACE_EXISTING
+
+apply plugin: 'java'
+apply plugin: 'idea'
+
+group = 'org.logstash.core'
+version = '1.0.0-SNAPSHOT'
+
+description = """Logstash Core Java"""
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+repositories {
+  mavenCentral()
+}
+
+dependencies {
+  compile 'org.apache.logging.log4j:log4j-api:2.6.1'
+  compile 'org.apache.logging.log4j:log4j-core:2.6.1'
+  compile 'com.fasterxml.jackson.core:jackson-core:2.7.4'
+  compile 'com.fasterxml.jackson.core:jackson-databind:2.7.4'
+}
+
+task generateGemJarRequiresFile {
+  File jars_file = file('lib/jars.rb')
+  jars_file.newWriter().withWriter { w ->
+    w << "require \'jar_dependencies\'\n"
+    configurations.runtime.allDependencies.each {
+      w << "require_jar(\'${it.group}\', \'${it.name}\', \'${it.version}\')\n"
+    }
+    w << "require_jar(\'${project.group}\', \'${project.name}\', \'${project.version}\')\n"
+  }
+}
+
+task vendor {
+    String vendorPathPrefix = "vendor/jars"
+    configurations.runtime.allDependencies.each { dep ->
+      File f = configurations.runtime.filter { it.absolutePath.contains("${dep.group}/${dep.name}/${dep.version}") }.singleFile
+      String groupPath = dep.group.replaceAll('\\.', '/')
+      File newJarFile = file("${vendorPathPrefix}/${groupPath}/${dep.name}/${dep.version}/${dep.name}-${dep.version}.jar")
+      newJarFile.mkdirs()
+      Files.copy(f.toPath(), newJarFile.toPath(), REPLACE_EXISTING)
+    }
+    String projectGroupPath = project.group.replaceAll('\\.', '/')
+    File projectJarFile = file("${vendorPathPrefix}/${projectGroupPath}/${project.name}/${project.version}/${project.name}-${project.version}.jar")
+    projectJarFile.mkdirs()
+    Files.copy(file("$buildDir/libs/${project.name}-${project.version}.jar").toPath(), projectJarFile.toPath(), REPLACE_EXISTING)
+}
+
+vendor.dependsOn(jar, generateGemJarRequiresFile)

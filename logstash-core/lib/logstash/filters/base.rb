@@ -176,8 +176,8 @@ class LogStash::Filters::Base < LogStash::Plugin
 
     @remove_field.each do |field|
       field = event.sprintf(field)
-      @logger.debug? and @logger.debug("filters/#{self.class.name}: removing field",
-                                       :field => field)
+      @logger.is_debug_enabled and @logger.debug("filters/#{self.class.name}: removing field",
+                                       "field" => field)
       event.remove(field)
     end
 
@@ -190,7 +190,7 @@ class LogStash::Filters::Base < LogStash::Plugin
       tags = event.get("tags")
       break if tags.nil? || tags.empty?
       tag = event.sprintf(tag)
-      @logger.debug? and @logger.debug("filters/#{self.class.name}: removing tag", :tag => tag)
+      @logger.is_debug_enabled and @logger.debug("filters/#{self.class.name}: removing tag", "tag" => tag)
       tags.delete(tag)
       event.set("tags", tags)
     end

@@ -4,7 +4,6 @@ Encoding.default_external = Encoding::UTF_8
 $DEBUGLIST = (ENV["DEBUG"] || "").split(",")
 
 require "clamp"
-require "cabin"
 require "net/http"
 require "logstash/environment"
 
@@ -148,7 +147,7 @@ class LogStash::Runner < Clamp::StrictCommand
   attr_reader :agent
 
   def initialize(*args)
-    @logger = Cabin::Channel.get(LogStash)
+    @logger = org.apache.logging.log4j.LogManager.getLogger("LogStash")
     @settings = LogStash::SETTINGS
     super(*args)
   end
@@ -177,8 +176,6 @@ class LogStash::Runner < Clamp::StrictCommand
     require "logstash/util"
     require "logstash/util/java_version"
     require "stud/task"
-    require "cabin" # gem 'cabin'
-    require "logstash/logging/json"
 
     # Configure Logstash logging facility, this need to be done before everything else to
     # make sure the logger has the correct settings and the log level is correctly defined.
@@ -226,10 +223,11 @@ class LogStash::Runner < Clamp::StrictCommand
       config_str = config_loader.format_config(setting("path.config"), setting("config.string"))
       begin
         LogStash::Pipeline.new(config_str)
-        @logger.terminal "Configuration OK"
+        # TODO(make equivalent to terminal)
+        #@logger.terminal "Configuration OK"
         return 0
       rescue => e
-        @logger.fatal I18n.t("logstash.runner.invalid-configuration", :error => e.message)
+        @logger.fatal I18n.t("logstash.runner.invalid-configuration", "error" => e.message)
         return 1
       end
     end
@@ -259,7 +257,7 @@ class LogStash::Runner < Clamp::StrictCommand
     show_short_help
     return 1
   rescue => e
-    @logger.fatal(I18n.t("oops"), :error => e, :backtrace => e.backtrace)
+    @logger.fatal(I18n.t("oops"), "error" => e, "backtrace" => e.backtrace)
     return 1
   ensure
     Stud::untrap("INT", sigint_id) unless sigint_id.nil?
@@ -271,10 +269,10 @@ class LogStash::Runner < Clamp::StrictCommand
   def show_version
     show_version_logstash
 
-    if @logger.debug? || @logger.info?
+    if @logger.is_info_enabled
       show_version_ruby
       show_version_java if LogStash::Environment.jruby?
-      show_gems if @logger.debug?
+      show_gems if @logger.is_debug_enabled
     end
   end # def show_version
 
@@ -314,47 +312,11 @@ class LogStash::Runner < Clamp::StrictCommand
 
   # Point logging at a specific path.
   def configure_logging(path, level)
-    @logger = Cabin::Channel.get(LogStash)
-    # Set with the -v (or -vv...) flag
-    case level
-    when "quiet"
-      @logger.level = :error
-    when "verbose"
-      @logger.level = :info
-    when "debug"
-      @logger.level = :debug
-    else
-      @logger.level = :warn
-    end
+    logging_ctx = org.apache.logging.log4j.LogManager.getContext(false)
+    logging_ctx.getRootLogger().setLevel(org.apache.logging.log4j.Level.getLevel(level))
+    logging_ctx.updateLoggers()
 
-    if path
-      # TODO(sissel): Implement file output/rotation in Cabin.
-      # TODO(sissel): Catch exceptions, report sane errors.
-      begin
-        @log_fd.close if @log_fd
-        @log_fd = File.new(path, "a")
-      rescue => e
-        fail(I18n.t("logstash.runner.configuration.log_file_failed",
-                    :path => path, :error => e))
-      end
-
-      if setting("log.format") == "json"
-        @logger.subscribe(LogStash::Logging::JSON.new(STDOUT), :level => :fatal)
-        @logger.subscribe(LogStash::Logging::JSON.new(@log_fd))
-      else
-        @logger.subscribe(STDOUT, :level => :fatal)
-        @logger.subscribe(@log_fd)
-      end
-      @logger.terminal "Sending logstash logs to #{path}."
-    else
-      if setting("log.format") == "json"
-        @logger.subscribe(LogStash::Logging::JSON.new(STDOUT))
-      else
-        @logger.subscribe(STDOUT)
-      end
-    end
-
-    if setting("config.debug") && @logger.level != :debug
+    if setting("config.debug") && @logger.is_debug_enabled
       @logger.warn("--config.debug was specified, but log.level was not set to \'debug\'! No config info will be logged.")
     end
 

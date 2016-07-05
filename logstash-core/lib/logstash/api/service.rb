@@ -11,7 +11,7 @@ module LogStash
 
       def initialize(agent)
         @agent = agent
-        logger.debug("[api-service] start") if logger.debug?
+        logger.debug("[api-service] start") if logger.is_debug_enabled
       end
 
       def started?

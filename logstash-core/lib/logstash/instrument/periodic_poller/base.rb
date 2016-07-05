@@ -23,10 +23,10 @@ module LogStash module Instrument module PeriodicPoller
       return unless exception
 
       logger.error("PeriodicPoller: exception",
-                   :poller => self,
-                   :result => result,
-                   :exception => exception,
-                   :executed_at => time)
+                   "poller" => self,
+                   "result" => result,
+                   "exception" => exception,
+                   "executed_at" => time)
     end
 
     def collect
@@ -35,8 +35,8 @@ module LogStash module Instrument module PeriodicPoller
 
     def start
       logger.debug("PeriodicPoller: Starting",
-                   :polling_interval => @options[:polling_interval],
-                   :polling_timeout => @options[:polling_timeout]) if logger.debug?
+                   "polling_interval" => @options[:polling_interval],
+                   "polling_timeout" => @options[:polling_timeout]) if logger.is_debug_enabled
       
       collect # Collect data right away if possible
       @task.execute

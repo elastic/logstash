@@ -3,7 +3,6 @@ require "logstash/namespace"
 require "logstash/logging"
 require "logstash/config/mixin"
 require "logstash/instrument/null_metric"
-require "cabin"
 require "concurrent"
 require "securerandom"
 require "logstash/plugins/registry"
@@ -50,7 +49,7 @@ class LogStash::Plugin
     # The id should always be defined normally, but in tests that might not be the case
     # In the future we may make this more strict in the Plugin API
     @params["id"] ||= "#{self.class.config_name}_#{SecureRandom.uuid}"
-    @logger = Cabin::Channel.get(LogStash)
+    @logger = org.apache.logging.log4j.LogManager.getLogger("LogStash")
   end
 
   # Return a uniq ID for this plugin configuration, by default
@@ -164,7 +163,7 @@ class LogStash::Plugin
 
   # @return [Cabin::Channel] logger channel for class methods
   def self.logger
-    @logger ||= Cabin::Channel.get(LogStash)
+    @logger ||= org.apache.logging.log4j.LogManager.getLogger("LogStash")
   end
 
 end # class LogStash::Plugin

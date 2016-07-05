@@ -72,7 +72,7 @@ module LogStash::Config::Mixin
                      "but are scheduled for removal from logstash " +
                      "in the future. #{extra} If you have any questions " +
                      "about this, please visit the #logstash channel " +
-                     "on freenode irc.", :name => name, :plugin => self)
+                     "on freenode irc.", "name" => name, "plugin" => self)
       end
       if opts && opts[:obsolete]
         extra = opts[:obsolete].is_a?(String) ? opts[:obsolete] : ""
@@ -198,7 +198,7 @@ module LogStash::Config::Mixin
     # Deprecated: Declare the version of the plugin
     # inside the gemspec.
     def milestone(m = nil)
-      @logger = Cabin::Channel.get(LogStash)
+      @logger = org.apache.logging.log4j.LogManager.getLogger("LogStash")
       @logger.debug(I18n.t('logstash.plugin.deprecated_milestone', :plugin => config_name))
     end
 
@@ -262,7 +262,7 @@ module LogStash::Config::Mixin
     def validate(params)
       @plugin_name = config_name
       @plugin_type = ancestors.find { |a| a.name =~ /::Base$/ }.config_name
-      @logger = Cabin::Channel.get(LogStash)
+      @logger = org.apache.logging.log4j.LogManager.getLogger("LogStash")
       is_valid = true
 
       print_version_notice
@@ -298,9 +298,9 @@ module LogStash::Config::Mixin
         # will display this message. This could happen in the test, if you 
         # create an anonymous class to test a plugin.
         @logger.warn(I18n.t("logstash.plugin.no_version",
-                                :type => @plugin_type,
-                                :name => @config_name,
-                                :LOGSTASH_VERSION => LOGSTASH_VERSION))
+                                "type" => @plugin_type,
+                                "name" => @config_name,
+                                "LOGSTASH_VERSION" => LOGSTASH_VERSION))
       ensure 
         @@version_notice_given = true
       end

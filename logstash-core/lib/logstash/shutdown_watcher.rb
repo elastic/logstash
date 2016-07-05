@@ -30,7 +30,7 @@ module LogStash
     end
 
     def self.logger
-      @logger ||= Cabin::Channel.get(LogStash)
+      @logger ||= org.apache.logging.log4j.LogManager.getLogger("LogStash")
     end
 
     def self.start(pipeline, cycle_period=CHECK_EVERY, report_every=REPORT_EVERY, abort_threshold=ABORT_AFTER)

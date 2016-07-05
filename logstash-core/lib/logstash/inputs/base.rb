@@ -83,7 +83,7 @@ class LogStash::Inputs::Base < LogStash::Plugin
 
   public
   def do_stop
-    @logger.debug("stopping", :plugin => self.class.name)
+    @logger.debug("stopping", "plugin" => self.class.name)
     @stop_called.make_true
     stop
   end
@@ -111,10 +111,10 @@ class LogStash::Inputs::Base < LogStash::Plugin
     require "logstash/codecs/json_lines"
     case @codec
       when LogStash::Codecs::Plain
-        @logger.info("Automatically switching from #{@codec.class.config_name} to line codec", :plugin => self.class.config_name)
+        @logger.info("Automatically switching from #{@codec.class.config_name} to line codec", "plugin" => self.class.config_name)
         @codec = LogStash::Codecs::Line.new("charset" => @codec.charset)
       when LogStash::Codecs::JSON
-        @logger.info("Automatically switching from #{@codec.class.config_name} to json_lines codec", :plugin => self.class.config_name)
+        @logger.info("Automatically switching from #{@codec.class.config_name} to json_lines codec", "plugin" => self.class.config_name)
         @codec = LogStash::Codecs::JSONLines.new("charset" => @codec.charset)
     end
   end

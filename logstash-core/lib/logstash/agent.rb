@@ -31,7 +31,7 @@ class LogStash::Agent
   #   :logger [Cabin::Channel] - logger instance
   def initialize(settings = LogStash::SETTINGS)
     @settings = settings
-    @logger = Cabin::Channel.get(LogStash)
+    @logger = org.apache.logging.log4j.LogManager.getLogger("LogStash")
     @auto_reload = setting("config.reload.automatic")
 
     @pipelines = {}
@@ -99,7 +99,7 @@ class LogStash::Agent
         begin
           reload_pipeline!(pipeline_id)
         rescue => e
-          @logger.error(I18n.t("oops"), :message => e.message, :class => e.class.name, :backtrace => e.backtrace)
+          @logger.error(I18n.t("oops"), "message" => e.message, "class" => e.class.name, "backtrace" => e.backtrace)
         end
       end
     end
@@ -176,7 +176,7 @@ class LogStash::Agent
       begin
         config = fetch_config(settings)
       rescue => e
-        @logger.error("failed to fetch pipeline configuration", :message => e.message)
+        @logger.error("failed to fetch pipeline configuration", "message" => e.message)
         return
       end
     end
@@ -184,10 +184,10 @@ class LogStash::Agent
     begin
       LogStash::Pipeline.new(config, settings, metric)
     rescue => e
-      if @logger.debug?
-        @logger.error("fetched an invalid config", :config => config, :reason => e.message, :backtrace => e.backtrace)
+      if @logger.is_debug_enabled
+        @logger.error("fetched an invalid config", "config" => config, "reason" => e.message, "backtrace" => e.backtrace)
       else
-        @logger.error("fetched an invalid config", :config => config, :reason => e.message)
+        @logger.error("fetched an invalid config", "config" => config, "reason" => e.message)
       end
       return
     end
@@ -204,7 +204,7 @@ class LogStash::Agent
     new_config = fetch_config(old_pipeline.settings)
     if old_pipeline.config_str == new_config
       @logger.debug("no configuration change for pipeline",
-                    :pipeline => id, :config => new_config)
+                    "pipeline" => id, "config" => new_config)
       return
     end
 
@@ -219,12 +219,12 @@ class LogStash::Agent
 
     if new_pipeline.non_reloadable_plugins.any?
       @logger.error(I18n.t("logstash.agent.non_reloadable_config_reload"),
-                    :pipeline_id => id,
-                    :plugins => new_pipeline.non_reloadable_plugins.map(&:class))
+                    "pipeline_id" => id,
+                    "plugins" => new_pipeline.non_reloadable_plugins.map(&:class))
       return
     else
       @logger.warn("fetched new config for pipeline. upgrading..",
-                   :pipeline => id, :config => new_pipeline.config_str)
+                   "pipeline" => id, "config" => new_pipeline.config_str)
       upgrade_pipeline(id, new_pipeline)
     end
   end
@@ -233,13 +233,13 @@ class LogStash::Agent
     pipeline = @pipelines[id]
     return unless pipeline.is_a?(LogStash::Pipeline)
     return if pipeline.ready?
-    @logger.info("starting pipeline", :id => id)
+    @logger.info("starting pipeline", "id" => id)
     Thread.new do
       LogStash::Util.set_thread_name("pipeline.#{id}")
       begin
         pipeline.run
       rescue => e
-        @logger.error("Pipeline aborted due to error", :exception => e, :backtrace => e.backtrace)
+        @logger.error("Pipeline aborted due to error", "exception" => e, "backtrace" => e.backtrace)
       end
     end
     sleep 0.01 until pipeline.ready?
@@ -248,7 +248,7 @@ class LogStash::Agent
   def stop_pipeline(id)
     pipeline = @pipelines[id]
     return unless pipeline
-    @logger.warn("stopping pipeline", :id => id)
+    @logger.warn("stopping pipeline", "id" => id)
     pipeline.shutdown { LogStash::ShutdownWatcher.start(pipeline) }
     @pipelines[id].thread.join
   end

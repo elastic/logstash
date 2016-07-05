@@ -12,7 +12,7 @@ class LogStash::Config::File
 
   public
   def initialize(text)
-    @logger = Cabin::Channel.get(LogStash)
+    @logger = org.apache.logging.log4j.LogManager.getLogger("LogStash::Config::File")
     @text = text
     @config = parse(text)
   end # def initialize

@@ -10,7 +10,7 @@ module LogStash module Util
       end
 
       def logger
-        @logger ||= Cabin::Channel.get(LogStash)
+        @logger ||= org.apache.logging.log4j.LogManager.getLogger("LogStash")
       end
     end
 
