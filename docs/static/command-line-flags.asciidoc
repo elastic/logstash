@@ -5,7 +5,7 @@ Logstash has the following flags. You can use the `--help` flag to display this 
 
 You can also control Logstash execution by specifying options in the Logstash settings file. For more info, see <<logstash-settings-file>>.  
 
-coming[5.0.0-alpha3, Command-line flags have dots instead of dashes in their names]
+added[5.0.0-alpha3, Command-line flags have dots instead of dashes in their names]
 
 *`-f, --path.config CONFIGFILE`*::
  Load the Logstash config from a specific file or directory, or a wildcard. If
