@@ -172,6 +172,14 @@ public class ByteBufferElementIO implements ElementIO {
         return result;
     }
 
+    public void deactivate() {
+        // nothing to do
+    }
+
+    public void activate() {
+        // nothing to do
+    }
+
     private int checksum(byte[] bytes) {
         return 0;
     }
