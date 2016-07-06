@@ -63,6 +63,10 @@ public class ByteBufferStreamInput extends StreamInput {
         buffer.reset();
     }
 
+    public void rewind() throws IOException {
+        buffer.rewind();
+    }
+
     @Override
     public int available() throws IOException {
         return buffer.remaining();
