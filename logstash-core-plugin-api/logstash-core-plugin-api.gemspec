@@ -17,7 +17,7 @@ Gem::Specification.new do |gem|
   gem.require_paths = ["lib"]
   gem.version       = LOGSTASH_CORE_PLUGIN_API
 
-  gem.add_runtime_dependency "logstash-core", ">= 2.0.0", "<= 2.3.4.snapshot1"
+  gem.add_runtime_dependency "logstash-core", ">= 2.0.0", "<= 2.3.4"
 
   # Make sure we dont build this gem from a non jruby
   # environment.

@@ -1,3 +1,8 @@
+## 2.3.4 (July 7, 2016)
+### Output
+ - Elasticsearch
+   - Fixed an issue where unnecessary information from HTTP headers were being logged. 
+
 ## 2.3.3 (June 14, 2016)
 ### general
  - Fixed a bug where dynamic config reload feature could use excess memory, leading to a crash ([#5235](https://github.com/elastic/logstash/issues/5235)).
