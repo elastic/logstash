@@ -3,6 +3,7 @@ package org.logstash.ackedqueue;
 import org.logstash.common.io.ElementIO;
 import org.logstash.common.io.ReadElementValue;
 
+import java.io.IOException;
 import java.util.BitSet;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -14,6 +15,8 @@ public abstract class Page {
     protected long firstUnreadSeqNum;
     protected final Queue queue;
     protected ElementIO io;
+
+    protected Settings settings;
 
     // bit 0 is minSeqNum
     // TODO: go steal LocalCheckpointService in feature/seq_no from ES
@@ -35,6 +38,22 @@ public abstract class Page {
 
     public Page(int pageNum, Queue queue) {
         this(pageNum, queue, 0, 0, 0, new BitSet(), null);
+    }
+
+    public Page(int pageNum, Queue queue, Settings settings) {
+        this(pageNum, queue, settings, 0, 0, 0, new BitSet(), null);
+    }
+
+    public Page(int pageNum, Queue queue, Settings settings, long minSeqNum, int elementCount, long firstUnreadSeqNum, BitSet ackedSeqNums, ElementIO io) {
+        this.pageNum = pageNum;
+        this.queue = queue;
+        this.settings = settings;
+        this.minSeqNum = minSeqNum;
+        this.elementCount = elementCount;
+        this.firstUnreadSeqNum = firstUnreadSeqNum;
+        this.ackedSeqNums = ackedSeqNums;
+        this.lastCheckpoint = null;
+        this.io = io;
     }
 
     // NOTE:
@@ -68,8 +87,7 @@ public abstract class Page {
         return this.elementCount > 0 && this.ackedSeqNums.cardinality() >= this.elementCount;
     }
 
-
-    public void ack(long[] seqNums) {
+    public void ack(long[] seqNums) throws IOException {
         for (long seqNum : seqNums) {
             // TODO: eventually refactor to use new bit handling class
             this.ackedSeqNums.set((int)(seqNum - this.minSeqNum));
@@ -79,17 +97,16 @@ public abstract class Page {
         long firstUnackedSeqNum = firstUnackedSeqNum();
 
         if (isFullyAcked()) {
-            checkpoint(firstUnackedSeqNum);
+            checkpoint();
 
             assert firstUnackedSeqNum >= this.minSeqNum + this.elementCount :
                     String.format("invalid firstUnackedSeqNum=%d for minSeqNum=%d and elementCount=%d", firstUnackedSeqNum, this.minSeqNum, this.elementCount);
         } else if (firstUnackedSeqNum > this.lastCheckpoint.getFirstUnackedSeqNum() + 1024) {
-            checkpoint(firstUnackedSeqNum);
+            checkpoint();
         }
     }
 
-    abstract void checkpoint(long firstUnackedSeqNum);
-
+    abstract void checkpoint() throws IOException;
 
     public int getPageNum() {
         return pageNum;
@@ -110,5 +127,9 @@ public abstract class Page {
     protected long firstUnackedSeqNum() {
         // TODO: eventually refactor to use new bithandling class
         return this.ackedSeqNums.nextClearBit(0) + this.minSeqNum;
+    }
+
+    protected int firstUnackedPageNumFromQueue() {
+        return queue.firstUnackedPageNum();
     }
 }

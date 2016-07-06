@@ -51,6 +51,10 @@ public class ByteBufferElementIO implements ElementIO {
         return this.minSeqNum;
     }
 
+    public ByteBufferElementIO(int capacity, String path) throws IOException {
+        this(capacity, new byte[0], 1L, 0);
+    }
+
     public ByteBufferElementIO(int capacity) throws IOException {
         this(capacity, new byte[0], 1L, 0);
     }

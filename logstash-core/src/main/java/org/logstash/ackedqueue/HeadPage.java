@@ -1,15 +1,13 @@
 package org.logstash.ackedqueue;
 
-import org.logstash.common.io.ElementIO;
-
 import java.io.IOException;
 
 public class HeadPage extends Page {
 
-    public HeadPage(int pageNum, Queue queue) throws IOException {
-        super(pageNum, queue);
-        String fullPagePath = this.queue.getDirPath() + "/page." + pageNum; // TODO: refactor for proper path + separator
-        this.io = queue.getIo().create(queue.getIo().getCapacity(), fullPagePath);
+    public HeadPage(int pageNum, Queue queue, Settings settings) throws IOException {
+        super(pageNum, queue, settings);
+        String fullPagePath = this.settings.getDirPath() + "/page." + pageNum;
+        this.io = settings.getElementIOFactory().create(settings.getCapacity(), fullPagePath);
     }
 
     public boolean hasSpace(int byteSize) {
@@ -33,31 +31,36 @@ public class HeadPage extends Page {
         this.elementCount++;
     }
 
-    public void ensurePersistedUpto(long seqNum) {
+    public void ensurePersistedUpto(long seqNum) throws IOException {
         if (this.lastCheckpoint.getElementCount() >= seqNum - this.minSeqNum) {
-            checkpoint(lastCheckpoint.getFirstUnackedSeqNum());
+            checkpoint();
         }
     }
 
 
-    public BeheadedPage behead() {
+    public BeheadedPage behead() throws IOException {
         // TODO: should we have a deactivation strategy to avoid a immediate reactivation scenario?
         this.io.deactivate();
 
         BeheadedPage tailPage = new BeheadedPage(this);
 
         // first thing that must be done after beheading is to create a new checkpoint for that new tail page
-        tailPage.checkpoint(this.firstUnackedSeqNum());
+        tailPage.checkpoint();
 
         return tailPage;
     }
 
-    public void checkpoint(long firstUnackedSeqNum) {
+    public void checkpoint() throws IOException {
         // not concurrent for first iteration:
 
         // TODO:
         // fsync();
-        // Checkpoint.write("checkpoint.head", ... )
+        Checkpoint.write(
+                settings.getCheckpointIOFactory().build(
+                        settings.getCheckpointSourceFor("checkpoint.head")),
+                this.firstUnackedPageNumFromQueue(),
+                this.firstUnackedSeqNum(),
+                this.elementCount);
     }
 
 }

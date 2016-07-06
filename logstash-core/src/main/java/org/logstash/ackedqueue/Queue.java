@@ -1,6 +1,6 @@
 package org.logstash.ackedqueue;
 
-import org.logstash.common.io.ElementIO;
+import org.logstash.common.io.CheckpointIOFactory;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -22,48 +22,52 @@ public class Queue {
     private HeadPage headPage;
     private final List<BeheadedPage> tailPages;
 
-    private final ElementIO io;
-    private final String dirPath;
+    private final Settings settings;
+
+    private final CheckpointIOFactory checkpointIOFactory;
 
     // TODO: I really don't like the idea of passing a dummy ElementIO object for the sake of holding a reference to the
     // concrete class for later invoking open() and create() in the Page
-    public Queue(String dirPath, ElementIO io) {
-        this.io = io;
-        this.dirPath = dirPath;
-
+    public Queue(Settings settings) {
+        this.settings = settings;
+        this.checkpointIOFactory = settings.getCheckpointIOFactory();
         this.tailPages = new ArrayList<>();
     }
 
-    // moved queue opening logic in open() method until wehave something in place to used in-memory checkpoints for testing
+    // moved queue opening logic in open() method until we have something in place to used in-memory checkpoints for testing
     // because for now we need to pass a Queue instance to the Page and we don't want to trigger a Queue recovery when
     // testing Page
     public void open() throws IOException {
         final int headPageNum;
-        Checkpoint headCheckpoint = Checkpoint.read("checkpoint.head");
+        Checkpoint headCheckpoint = new Checkpoint(checkpointIOFactory.build(settings.getCheckpointSourceFor("checkpoint.head")));
 
         if (headCheckpoint == null) {
             this.seqNum = 0;
             headPageNum = 0;
         } else {
+            headCheckpoint.read();
             // handle all tail pages upto but excluding the head page
             for (int pageNum = headCheckpoint.getFirstUnackedPageNum(); pageNum < headCheckpoint.getPageNum(); pageNum++) {
-                Checkpoint tailCheckpoint = Checkpoint.read("checkpoint." + pageNum); // TODO: add directory path handling
-
-                BeheadedPage tailPage = new BeheadedPage(tailCheckpoint, this);
-                this.tailPages.add(tailPage);
+                Checkpoint tailCheckpoint = new Checkpoint(checkpointIOFactory.build(settings.getCheckpointSourceFor("checkpoint." + pageNum)));
+                if (tailCheckpoint != null) {
+                    tailCheckpoint.read();
+                    BeheadedPage tailPage = new BeheadedPage(tailCheckpoint, this, this.settings);
+                    this.tailPages.add(tailPage);
+                }
             }
 
             // handle the head page
             // transform the head page into a beheaded tail page
-            BeheadedPage beheadedHeadPage = new BeheadedPage(headCheckpoint, this);
+            BeheadedPage beheadedHeadPage = new BeheadedPage(headCheckpoint, this, this.settings);
             this.tailPages.add(beheadedHeadPage);
 
-            beheadedHeadPage.checkpoint(headCheckpoint.getFirstUnackedSeqNum());
+            beheadedHeadPage.checkpoint();
             headPageNum = headCheckpoint.getPageNum() + 1;
         }
 
-        headPage = new HeadPage(headPageNum, this);
-        headPage.checkpoint(headCheckpoint.getFirstUnackedSeqNum());
+        headPage = new HeadPage(headPageNum, this, this.settings);
+        // we can let the headPage get its first unacked page num via the tailPages
+        headPage.checkpoint();
 
         // TODO: do directory traversal and cleanup lingering pages
     }
@@ -93,7 +97,7 @@ public class Queue {
     }
 
     // @param seqNum the element sequence number upper bound for which persistence should be garanteed (by fsync'int)
-    public void ensurePersistedUpto(long seqNum) {
+    public void ensurePersistedUpto(long seqNum) throws IOException{
          headPage.ensurePersistedUpto(seqNum);
     }
 
@@ -120,10 +124,11 @@ public class Queue {
         return null;
     }
 
-    public void ack(long[] seqNums) {
+    public void ack(long[] seqNums) throws IOException {
         // as a first implementation we assume that all batches are created from the same page
         // so we will avoid multi pages acking here for now
 
+        // remove 'throws IOException'
         // TODO: find page containing seqNums
         //   - check the count/empty pages
         Page ackPage = null;
@@ -147,7 +152,7 @@ public class Queue {
         }
 
         if (changed) {
-            headPage.checkpoint(firstUnackedPageNum());
+            headPage.checkpoint();
             // TODO: delete/purge using toDelete list
         }
     }
@@ -156,15 +161,17 @@ public class Queue {
         return seqNum += 1;
     }
 
-    public ElementIO getIo() {
-        return io;
-    }
 
-    public String getDirPath() {
-        return dirPath;
-    }
 
-    private int firstUnackedPageNum() {
+//    public ElementIO getIo() {
+//        return io;
+//    }
+//
+//    public String getDirPath() {
+//        return dirPath;
+//    }
+
+    protected int firstUnackedPageNum() {
         if (this.tailPages.isEmpty()) {
             return headPage.getPageNum();
         }

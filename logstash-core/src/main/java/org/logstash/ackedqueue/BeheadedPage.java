@@ -1,7 +1,5 @@
 package org.logstash.ackedqueue;
 
-import org.logstash.common.io.ElementIO;
-
 import java.io.IOException;
 import java.util.BitSet;
 
@@ -13,9 +11,10 @@ public class BeheadedPage extends Page {
         super(page.pageNum, page.queue, page.minSeqNum, page.elementCount, page.firstUnreadSeqNum, (BitSet) page.ackedSeqNums.clone(), page.io);
     }
 
-    public BeheadedPage(Checkpoint checkpoint, Queue queue) throws IOException {
+    public BeheadedPage(Checkpoint checkpoint, Queue queue, Settings settings) throws IOException {
         super(checkpoint.getPageNum(), queue, checkpoint.getMinSeqNum(), checkpoint.getElementCount(), checkpoint.getFirstUnackedSeqNum(), null, null);
-        this.io = queue.getIo().open(queue.getIo().getCapacity(), "", checkpoint.getMinSeqNum(), checkpoint.getElementCount());
+        String fullPagePath = this.settings.getDirPath() + "/page." + pageNum;
+        this.io = settings.getElementIOFactory().create(settings.getCapacity(), fullPagePath);
 
         BitSet bs = new BitSet();
 
@@ -26,7 +25,20 @@ public class BeheadedPage extends Page {
         this.ackedSeqNums = bs;
     }
 
-    void checkpoint(long firstUnackedSeqNum) {
+    public void checkpoint() throws IOException {
+        // not concurrent for first iteration:
+
+        // TODO:
+        // fsync();
+        Checkpoint.write(
+                settings.getCheckpointIOFactory().build(
+                        settings.getCheckpointSourceFor("checkpoint." + pageNum)),
+                this.firstUnackedPageNumFromQueue(),
+                this.firstUnackedSeqNum(),
+                this.elementCount);
+    }
+
+    void checkpoint(int firstUnackedPageNum) {
         // TODO:
         // Checkpoint.write("checkpoint." + this.pageNum, ... );
     }

@@ -2,6 +2,9 @@ package org.logstash.ackedqueue;
 
 import org.junit.Test;
 import org.logstash.common.io.ByteBufferElementIO;
+import org.logstash.common.io.CheckpointIOFactory;
+import org.logstash.common.io.ElementIOFactory;
+import org.logstash.common.io.MemoryCheckpointIO;
 
 import java.io.IOException;
 
@@ -12,10 +15,21 @@ import static org.hamcrest.MatcherAssert.assertThat;
 
 public class HeadPageTest {
 
+    private Settings getSettings(int capacity) {
+        Settings s = new MemorySettings();
+        ElementIOFactory ef = (size, path) -> new ByteBufferElementIO(size, path);
+        CheckpointIOFactory ckpf = (source) -> new MemoryCheckpointIO(source);
+        s.setCapacity(capacity);
+        s.setElementIOFactory(ef);
+        s.setCheckpointIOFactory(ckpf);
+        return s;
+    }
+
     @Test
     public void newHeadPage() throws IOException {
-        Queue q = new Queue("dummy_path", new ByteBufferElementIO(100));
-        HeadPage p = new HeadPage(0, q);
+        Settings s = getSettings(100);
+        Queue q = new Queue(s);
+        HeadPage p = new HeadPage(0, q, s);
 
         assertThat(p.getPageNum(), is(equalTo(0)));
         assertThat(p.isFullyRead(), is(true));
@@ -25,12 +39,13 @@ public class HeadPageTest {
     }
 
     @Test
-    public void PageWrite() throws IOException {
+    public void pageWrite() throws IOException {
         Queueable element = new StringElement("foobarbaz");
         int singleElementCapacity = ByteBufferElementIO.HEADER_SIZE + ByteBufferElementIO.persistedByteCount(element.serialize().length);
 
-        Queue q = new Queue("dummy_path", new ByteBufferElementIO(singleElementCapacity));
-        HeadPage p = new HeadPage(0, q);
+        Settings s = getSettings(singleElementCapacity);
+        Queue q = new Queue(s);
+        HeadPage p = new HeadPage(0, q, s);
 
         assertThat(p.hasSpace(element.serialize().length), is(true));
         p.write(element.serialize(), element);
@@ -41,12 +56,13 @@ public class HeadPageTest {
     }
 
     @Test
-    public void PageWriteAndReadSingle() throws IOException {
+    public void pageWriteAndReadSingle() throws IOException {
         Queueable element = new StringElement("foobarbaz", 1);
         int singleElementCapacity = ByteBufferElementIO.HEADER_SIZE + ByteBufferElementIO.persistedByteCount(element.serialize().length);
 
-        Queue q = new Queue("dummy_path", new ByteBufferElementIO(singleElementCapacity));
-        HeadPage p = new HeadPage(0, q);
+        Settings s = getSettings(singleElementCapacity);
+        Queue q = new Queue(s);
+        HeadPage p = new HeadPage(0, q, s);
 
         assertThat(p.hasSpace(element.serialize().length), is(true));
         p.write(element.serialize(), element);
@@ -61,12 +77,14 @@ public class HeadPageTest {
         assertThat(p.isFullyAcked(), is(false));
     }
 
-    public void PageWriteAndReadMulti() throws IOException {
+    @Test
+    public void pageWriteAndReadMulti() throws IOException {
         Queueable element = new StringElement("foobarbaz", 1);
         int singleElementCapacity = ByteBufferElementIO.HEADER_SIZE + ByteBufferElementIO.persistedByteCount(element.serialize().length);
 
-        Queue q = new Queue("dummy_path", new ByteBufferElementIO(singleElementCapacity));
-        HeadPage p = new HeadPage(0, q);
+        Settings s = getSettings(singleElementCapacity);
+        Queue q = new Queue(s);
+        HeadPage p = new HeadPage(0, q, s);
 
         assertThat(p.hasSpace(element.serialize().length), is(true));
         p.write(element.serialize(), element);
