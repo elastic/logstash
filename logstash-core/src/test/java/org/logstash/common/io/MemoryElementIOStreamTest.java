@@ -2,6 +2,7 @@ package org.logstash.common.io;
 
 import org.junit.Test;
 import org.logstash.ackedqueue.Checkpoint;
+import org.logstash.ackedqueue.ElementFactory;
 import org.logstash.ackedqueue.Queueable;
 import org.logstash.ackedqueue.StringElement;
 
@@ -25,8 +26,8 @@ public class MemoryElementIOStreamTest {
         return new MemoryElementIOStream(bytes, ckp);
     }
 
-    private MemoryElementIOStream subject(byte[] bytes, long seqNum, int count) {
-        return new MemoryElementIOStream(bytes, seqNum, count);
+    private MemoryElementIOStream subject(byte[] bytes, long seqNum, int count, long firstUnackedSeqNum) {
+        return new MemoryElementIOStream(bytes, seqNum, count, firstUnackedSeqNum);
     }
 
     private Queueable buildStringElement(String str, long seq) {
@@ -38,21 +39,22 @@ public class MemoryElementIOStreamTest {
     @Test
     public void getWritePosition() throws Exception {
         assertThat(subject().getWritePosition(), is(equalTo(1)));
-        assertThat(subject(new byte[100], 1L, 0).getWritePosition(), is(equalTo(1)));
+        assertThat(subject(new byte[100], 1L, 0, 1L).getWritePosition(), is(equalTo(1)));
         assertThat(subject(new byte[100], new Checkpoint(5, 4, 3, 1, 0)).getWritePosition(), is(equalTo(1)));
+
     }
 
     @Test
     public void getElementCount() throws Exception {
         assertThat(subject().getElementCount(), is(equalTo(0)));
-        assertThat(subject(new byte[100], 1L, 0).getElementCount(), is(equalTo(0)));
+        assertThat(subject(new byte[100], 1L, 0, 1L).getElementCount(), is(equalTo(0)));
         assertThat(subject(new byte[100], new Checkpoint(5, 4, 3, 1, 0)).getElementCount(), is(equalTo(0)));
     }
 
     @Test
     public void getStartSeqNum() throws Exception {
         assertThat(subject().getStartSeqNum(), is(equalTo(1L)));
-        assertThat(subject(new byte[100], 1L, 0).getStartSeqNum(), is(equalTo(1L)));
+        assertThat(subject(new byte[100], 1L, 0, 1L).getStartSeqNum(), is(equalTo(1L)));
         assertThat(subject(new byte[100], new Checkpoint(5, 4, 3, 1, 0)).getStartSeqNum(), is(equalTo(1L)));
     }
 
@@ -84,7 +86,7 @@ public class MemoryElementIOStreamTest {
             subj.write(data, seqno);
             seqno++;
         }
-        int recordSize = subj.recordSize(data.length);
+        int recordSize = MemoryElementIOStream.recordSize(data.length);
         int remains = bufferSize - subj.getWritePosition();
         assertThat(recordSize, is(equalTo(25)));
         assertThat(remains, is(equalTo(24)));
@@ -151,4 +153,24 @@ public class MemoryElementIOStreamTest {
         assertThat(StringElement.deserialize(result.get(3).getBinaryValue()).toString(), is(equalTo(element4.toString())));
     }
 
+    @Test
+    public void readFromFirstUnackedSeqNum() throws Exception {
+        long seqno = 10L;
+        String[] values = new String[]{"aaa", "bbb", "ccc", "ddd", "eee", "fff", "ggg", "hhh", "iii", "jjj"};
+        MemoryElementIOStream stream = subject(200);
+        for (String val : values) {
+            stream.write(buildStringElement(val, seqno));
+            seqno++;
+        }
+        Checkpoint ckp = new Checkpoint(1, 1, 13, 10, values.length);
+        MemoryElementIOStream subj = subject(stream.getBuffer(), ckp);
+        int batchSize = 3;
+        seqno = 13L;
+        List<ReadElementValue> result = subj.read(batchSize);
+        for (int i = 0; i < 3; i++) {
+            Queueable ele = ElementFactory.build(result.get(i));
+            assertThat(ele.getSeqNum(), is(equalTo(seqno + i)));
+            assertThat(ele.toString(), is(equalTo(values[i + 3])));
+        }
+    }
 }
