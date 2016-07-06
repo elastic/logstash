@@ -17,29 +17,33 @@ public class MemoryElementIOStream {
     private final byte[] buffer;
     private final int byteSize;
     private int writePosition;
+    private int readPosition;
     private int elementCount;
     private long startSeqNum;
     private ByteBufferStreamInput streamedInput;
     private ByteArrayStreamOutput streamedOutput;
     private BufferedChecksumStreamOutput crcWrappedOutput;
-
+    private final List<Integer> offsetMap;
     public MemoryElementIOStream(int byteSize) {
-        this(new byte[byteSize], 1L, 0); // empty array, first seqNum, no elements written yet
+        this(new byte[byteSize], 1L, 0, 1L); // empty array, first seqNum, no elements written yet, firstUnacked is first seqNum
     }
     public MemoryElementIOStream(byte[] initialBytes, Checkpoint ckp) {
-        this(initialBytes, ckp.getMinSeqNum(), ckp.getElementCount());
+        this(initialBytes, ckp.getMinSeqNum(), ckp.getElementCount(), ckp.getFirstUnackedSeqNum());
     }
-    public MemoryElementIOStream(byte[] initialBytes, long minSeqNum, int elementCount) {
+    public MemoryElementIOStream(byte[] initialBytes, long minSeqNum, int elementCount, long firstUnackedSeqNum) {
         buffer = initialBytes;
         byteSize = initialBytes.length;
         startSeqNum = minSeqNum;
         this.elementCount = elementCount;
         writePosition = HEADER_SIZE; //skip header bytes
+        offsetMap = new ArrayList<>();
         streamedInput = new ByteBufferStreamInput(ByteBuffer.wrap(buffer));
         streamedOutput = new ByteArrayStreamOutput(buffer);
         crcWrappedOutput = new BufferedChecksumStreamOutput(streamedOutput);
         if (this.elementCount == 0) {
             addHeader();
+            readPosition = HEADER_SIZE; //skip header bytes
+            offsetMap.add(0, readPosition);
             try {
                 streamedInput.skip(HEADER_SIZE);
             } catch (IOException e) {
@@ -50,23 +54,39 @@ public class MemoryElementIOStream {
             try {
                 BufferedChecksumStreamInput in = new BufferedChecksumStreamInput(streamedInput);
                 in.skip(HEADER_SIZE);
+                readPosition = HEADER_SIZE; //skip header bytes
                 readSeqNum = in.readLong();
                 //verify that the buffer starts with the min sequence number
                 if (readSeqNum != this.startSeqNum) {
                     // throw tragic error
                 }
-                verifyChecksum(in);
+                readVerifyRecord(in, calcRelativeSeqNum(readSeqNum));
                 for (int i = 1; i < this.elementCount; i++) {
-                    in.skip(SEQNUM_SIZE);
-                    verifyChecksum(in);
+                    readVerifyRecord(in, calcRelativeSeqNum(in.readLong()));
                 }
-                streamedInput.reset();
-                streamedInput.skip(HEADER_SIZE);
+                setInputStreamPosition(firstUnackedSeqNum);
             } catch (IOException e) {
                 e.printStackTrace();
                 // throw tragic error
             }
         }
+    }
+
+    private void setInputStreamPosition(long seqNum) throws IOException {
+        streamedInput.rewind();
+        int relativeUnackedSeqNum = calcRelativeSeqNum(seqNum);
+        try {
+            int toSkip = offsetMap.get(relativeUnackedSeqNum);
+            streamedInput.skip(toSkip);
+            readPosition = toSkip;
+        } catch (IndexOutOfBoundsException e) {
+            e.printStackTrace();
+            // throw tragic error
+        }
+    }
+
+    private int calcRelativeSeqNum(long seqNum) {
+        return (int) (seqNum - startSeqNum);
     }
 
     public int getWritePosition() {
@@ -81,18 +101,25 @@ public class MemoryElementIOStream {
         return startSeqNum;
     }
 
+    // used in tests
+    public byte[] getBuffer() {
+        return buffer;
+    }
+
     private void addHeader() {
         buffer[0] = Checkpoint.VERSION;
     }
 
-    private void verifyChecksum(BufferedChecksumStreamInput in) throws IOException {
+    private void readVerifyRecord(BufferedChecksumStreamInput in, int relativeSeqNum) throws IOException {
         in.resetDigest();
-        in.readByteArray();
+        byte[] bytes = in.readByteArray();
         int actualChecksum = (int) in.getChecksum();
         int expectedChecksum = in.readInt();
         if (actualChecksum != expectedChecksum) {
             // explode with tragic error
         }
+        offsetMap.add(relativeSeqNum, readPosition);
+        readPosition += recordSize(bytes);
     }
 
     public static int recordSize(byte[] data) {
@@ -141,6 +168,7 @@ public class MemoryElementIOStream {
     }
 
     public List<ReadElementValue> read(long seqNum, int limit) throws IOException {
+        setInputStreamPosition(seqNum);
         return read(limit);
     }
 
