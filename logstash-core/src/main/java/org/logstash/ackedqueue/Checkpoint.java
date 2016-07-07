@@ -25,9 +25,9 @@ public class Checkpoint {
 
     public static final byte VERSION = 0;
 
-    public static void write(CheckpointIO io, int firstUnackedPageNum, long firstUnackedSeqNum, int elementCount)  throws IOException {
+    public static void write(CheckpointIO io, int pageNum, int firstUnackedPageNum, long firstUnackedSeqNum, long minSeqNum, int elementCount)  throws IOException {
         Checkpoint ckp = new Checkpoint(io);
-        ckp.write(firstUnackedPageNum, firstUnackedSeqNum, elementCount);
+        ckp.write(pageNum, firstUnackedPageNum, firstUnackedSeqNum, minSeqNum, elementCount);
     }
 
     public Checkpoint(CheckpointIO io) {
@@ -38,8 +38,8 @@ public class Checkpoint {
         io.read();
     }
 
-    public void write(int firstUnackedPageNum, long firstUnackedSeqNum, int elementCount) throws IOException {
-        io.write(firstUnackedPageNum, firstUnackedSeqNum, elementCount);
+    public void write(int pageNum, int firstUnackedPageNum, long firstUnackedSeqNum, long minSeqNum, int elementCount) throws IOException {
+        io.write(pageNum, firstUnackedPageNum, firstUnackedSeqNum, minSeqNum, elementCount);
     }
 
     public int getPageNum() {

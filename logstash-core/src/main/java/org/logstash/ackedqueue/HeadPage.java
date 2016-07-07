@@ -56,11 +56,13 @@ public class HeadPage extends Page {
         // TODO:
         // fsync();
         Checkpoint.write(
-                settings.getCheckpointIOFactory().build(
-                        settings.getCheckpointSourceFor("checkpoint.head")),
-                this.firstUnackedPageNumFromQueue(),
-                this.firstUnackedSeqNum(),
-                this.elementCount);
+                settings.getCheckpointIOFactory().build(settings.getCheckpointSourceFor("checkpoint.head")),
+                this.pageNum,
+                firstUnackedPageNumFromQueue(),
+                firstUnackedSeqNum(),
+                this.minSeqNum,
+                this.elementCount
+        );
     }
 
 }

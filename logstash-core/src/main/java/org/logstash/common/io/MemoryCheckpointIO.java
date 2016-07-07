@@ -37,9 +37,11 @@ public class MemoryCheckpointIO implements CheckpointIO {
     }
 
     @Override
-    public void write(int firstUnackedPageNum, long firstUnackedSeqNum, int elementCount)  throws IOException{
+    public void write(int pageNum, int firstUnackedPageNum, long firstUnackedSeqNum, long minSeqNum, int elementCount) throws IOException {
+        this.pageNum = pageNum;
         this.firstUnackedPageNum = firstUnackedPageNum;
         this.firstUnackedSeqNum = firstUnackedSeqNum;
+        this.minSeqNum = minSeqNum;
         this.elementCount = elementCount;
     }
 

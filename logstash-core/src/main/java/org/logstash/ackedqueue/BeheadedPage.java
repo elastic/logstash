@@ -31,11 +31,13 @@ public class BeheadedPage extends Page {
         // TODO:
         // fsync();
         Checkpoint.write(
-                settings.getCheckpointIOFactory().build(
-                        settings.getCheckpointSourceFor("checkpoint." + pageNum)),
-                this.firstUnackedPageNumFromQueue(),
-                this.firstUnackedSeqNum(),
-                this.elementCount);
+                settings.getCheckpointIOFactory().build(settings.getCheckpointSourceFor("checkpoint." + pageNum)),
+                this.pageNum,
+                firstUnackedPageNumFromQueue(),
+                firstUnackedSeqNum(),
+                this.minSeqNum,
+                this.elementCount
+        );
     }
 
     void checkpoint(int firstUnackedPageNum) {
