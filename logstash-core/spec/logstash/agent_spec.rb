@@ -255,7 +255,7 @@ describe LogStash::Agent do
     it "should fail with single invalid dir path" do
       expect(File).to receive(:directory?).and_return(false)
       expect(LogStash::Environment).not_to receive(:add_plugin_path)
-      expect{subject.configure_plugin_paths(single_path)}.to raise_error(LogStash::ConfigurationError)
+      expect{subject.configure_plugin_paths(single_path)}.to raise_error(Clamp::UsageError)
     end
 
     it "should add multiple valid dir path to the environment" do
@@ -293,7 +293,7 @@ describe LogStash::Agent do
     it "should fail with single invalid dir path" do
       expect(File).to receive(:directory?).and_return(false)
       expect(LogStash::Environment).not_to receive(:add_plugin_path)
-      expect{subject.configure_plugin_paths(single_path)}.to raise_error(LogStash::ConfigurationError)
+      expect{subject.configure_plugin_paths(single_path)}.to raise_error(Clamp::UsageError)
     end
   end
 
