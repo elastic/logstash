@@ -10,17 +10,11 @@ public interface Settings {
 
     Settings setElementIOFactory(ElementIOFactory factory);
 
-    Settings setCheckpointSources(Map<String, String> sources);
-
     Settings setCapacity(int capacity);
 
     CheckpointIOFactory getCheckpointIOFactory();
 
     ElementIOFactory getElementIOFactory();
-
-    Map<String, String> getSources();
-
-    String getCheckpointSourceFor(String checkpointFileName);
 
     String getDirPath();
 

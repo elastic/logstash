@@ -1,5 +1,6 @@
 package org.logstash.ackedqueue;
 
+import org.logstash.common.io.CheckpointIO;
 import org.logstash.common.io.ElementIO;
 import org.logstash.common.io.ReadElementValue;
 
@@ -14,7 +15,8 @@ public abstract class Page {
     protected int elementCount;
     protected long firstUnreadSeqNum;
     protected final Queue queue;
-    protected ElementIO io;
+    protected ElementIO elementIO;
+    protected CheckpointIO checkpointIO;
 
     protected Settings settings;
 
@@ -24,7 +26,7 @@ public abstract class Page {
     protected BitSet ackedSeqNums;
     protected Checkpoint lastCheckpoint;
 
-    public Page(int pageNum, Queue queue, long minSeqNum, int elementCount, long firstUnreadSeqNum, BitSet ackedSeqNums, ElementIO io) {
+    public Page(int pageNum, Queue queue, long minSeqNum, int elementCount, long firstUnreadSeqNum, BitSet ackedSeqNums, ElementIO elementIO, CheckpointIO checkpointIO) {
         this.pageNum = pageNum;
         this.queue = queue;
 
@@ -33,18 +35,19 @@ public abstract class Page {
         this.firstUnreadSeqNum = firstUnreadSeqNum;
         this.ackedSeqNums = ackedSeqNums;
         this.lastCheckpoint = null;
-        this.io = io;
+        this.elementIO = elementIO;
+        this.checkpointIO = checkpointIO;
     }
 
     public Page(int pageNum, Queue queue) {
-        this(pageNum, queue, 0, 0, 0, new BitSet(), null);
+        this(pageNum, queue, 0, 0, 0, new BitSet(), null, null);
     }
 
     public Page(int pageNum, Queue queue, Settings settings) {
-        this(pageNum, queue, settings, 0, 0, 0, new BitSet(), null);
+        this(pageNum, queue, settings, 0, 0, 0, new BitSet(), null, null);
     }
 
-    public Page(int pageNum, Queue queue, Settings settings, long minSeqNum, int elementCount, long firstUnreadSeqNum, BitSet ackedSeqNums, ElementIO io) {
+    public Page(int pageNum, Queue queue, Settings settings, long minSeqNum, int elementCount, long firstUnreadSeqNum, BitSet ackedSeqNums, ElementIO elementIO, CheckpointIO checkpointIO) {
         this.pageNum = pageNum;
         this.queue = queue;
         this.settings = settings;
@@ -53,7 +56,8 @@ public abstract class Page {
         this.firstUnreadSeqNum = firstUnreadSeqNum;
         this.ackedSeqNums = ackedSeqNums;
         this.lastCheckpoint = null;
-        this.io = io;
+        this.elementIO = elementIO;
+        this.checkpointIO = checkpointIO;
     }
 
     // NOTE:
@@ -67,7 +71,7 @@ public abstract class Page {
     // @param elementClass the concrete element class for deserialization
     // @return Batch batch of elements read when the number of elements can be <= limit
     public Batch readBatch(int limit) {
-        List<ReadElementValue> serializedElements = this.io.read(this.firstUnreadSeqNum, limit);
+        List<ReadElementValue> serializedElements = this.elementIO.read(this.firstUnreadSeqNum, limit);
         List<Queueable> elements = serializedElements.stream().map(readElement -> ElementFactory.deserialize(readElement.getBinaryValue())).collect(Collectors.toList());
         Batch batch = new Batch(elements, this.queue);
 

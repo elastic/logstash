@@ -33,12 +33,6 @@ public class FileSettings implements Settings {
     }
 
     @Override
-    public Settings setCheckpointSources(Map<String, String> sources) {
-        this.sources = sources;
-        return this;
-    }
-
-    @Override
     public Settings setCapacity(int capacity) {
         this.capacity = capacity;
         return this;
@@ -52,16 +46,6 @@ public class FileSettings implements Settings {
     @Override
     public ElementIOFactory getElementIOFactory() {
         return elementIOFactory;
-    }
-
-    @Override
-    public Map<String, String> getSources() {
-        return sources;
-    }
-
-    @Override
-    public String getCheckpointSourceFor(String checkpointFileName) {
-        return Paths.get(dirForFiles, checkpointFileName).toString();
     }
 
     @Override

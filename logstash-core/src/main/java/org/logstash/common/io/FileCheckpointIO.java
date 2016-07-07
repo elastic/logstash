@@ -11,49 +11,50 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 public class FileCheckpointIO  implements CheckpointIO {
-//    Checkpoint file structure see Checkpoint
 
-    private int pageNum;       // local per-page page number
-    private long minSeqNum;    // local per-page minimum seqNum
-    private int elementCount;        // local per-page element count
-    private long firstUnackedSeqNum; // local per-page unacknowledged tracking
-    private int firstUnackedPageNum; // queue-wide global pointer, only valid in the head checkpoint
+//    Checkpoint file structure as handled by CheckpointIO
+//
+//    byte version;
+//    int pageNum;
+//    int firstUnackedPageNum;
+//    long firstUnackedSeqNum;
+//    long minSeqNum;
+//    int elementCount;
 
-    private final String filePath;
 
-    public static final byte VERSION = 0;
+    private final String dirPath;
 
-    public FileCheckpointIO(String source) throws IOException{
-        this.filePath = source;
+    public FileCheckpointIO(String dirPath) throws IOException {
+        this.dirPath = dirPath;
     }
 
     @Override
-    public void read() throws IOException {
-        Path path  = Paths.get(this.filePath);
+    public Checkpoint read(String fileName) throws IOException {
+        Path path  = Paths.get(fileName); // TODO: integrate dirPath
+
         StreamInput si = new InputStreamStreamInput(Files.newInputStream(path));
         byte version = si.readByte();
         // TODO - build reader for this version
-        if (version != VERSION) {
+        if (version != Checkpoint.VERSION) {
             throw new IOException("Unknown file format version: " + version);
         }
-        this.pageNum = si.readInt();
-        this.firstUnackedPageNum = si.readInt();
-        this.firstUnackedSeqNum = si.readLong();
-        this.minSeqNum = si.readLong();
-        this.elementCount = si.readInt();
+
+        int pageNum = si.readInt();
+        int firstUnackedPageNum = si.readInt();
+        long firstUnackedSeqNum = si.readLong();
+        long minSeqNum = si.readLong();
+        int elementCount = si.readInt();
+
+        return new Checkpoint(pageNum, firstUnackedPageNum, firstUnackedSeqNum, minSeqNum, elementCount);
     }
 
     @Override
-    public void write(int pageNum, int firstUnackedPageNum, long firstUnackedSeqNum, long minSeqNum, int elementCount) throws IOException {
-        this.pageNum = pageNum;
-        this.firstUnackedPageNum = firstUnackedPageNum;
-        this.firstUnackedSeqNum = firstUnackedSeqNum;
-        this.minSeqNum = minSeqNum;
-        this.elementCount = elementCount;
+    public void write(String fileName, int pageNum, int firstUnackedPageNum, long firstUnackedSeqNum, long minSeqNum, int elementCount) throws IOException {
+        Checkpoint checkpoint = new Checkpoint(pageNum, firstUnackedPageNum, firstUnackedSeqNum, minSeqNum, elementCount);
 
         try {
-            FileOutputStream fos = new FileOutputStream(filePath, false);
-            write(fos.getChannel());
+            FileOutputStream fos = new FileOutputStream(fileName, false);
+            write(checkpoint, fos.getChannel());
             fos.flush();
             fos.getFD().sync();
             fos.close();
@@ -62,43 +63,22 @@ public class FileCheckpointIO  implements CheckpointIO {
         }
     }
 
-    private void write(FileChannel channel) throws IOException {
+    private void write(Checkpoint checkpoint, FileChannel channel) throws IOException {
         byte[] buffer = new byte[Checkpoint.BUFFER_SIZE];
         final ByteArrayStreamOutput out = new ByteArrayStreamOutput(buffer);
-        write(out);
+        write(checkpoint, out);
         ByteBuffer buf = ByteBuffer.wrap(buffer);
         while(buf.hasRemaining()) {
             channel.write(buf);
         }
     }
 
-    private void write(StreamOutput out) throws IOException {
-        out.writeByte(VERSION);
-        out.writeInt(this.pageNum);
-        out.writeInt(this.firstUnackedPageNum);
-        out.writeLong(this.firstUnackedSeqNum);
-        out.writeLong(this.minSeqNum);
-        out.writeInt(this.elementCount);
+    private void write(Checkpoint checkpoint, StreamOutput out) throws IOException {
+        out.writeByte(Checkpoint.VERSION);
+        out.writeInt(checkpoint.getPageNum());
+        out.writeInt(checkpoint.getFirstUnackedPageNum());
+        out.writeLong(checkpoint.getFirstUnackedSeqNum());
+        out.writeLong(checkpoint.getMinSeqNum());
+        out.writeInt(checkpoint.getElementCount());
     }
-
-    public int getPageNum() {
-        return this.pageNum;
-    }
-
-    public long getMinSeqNum() {
-        return this.minSeqNum;
-    }
-
-    public long getFirstUnackedSeqNum() {
-        return this.firstUnackedSeqNum;
-    }
-
-    public int getElementCount() {
-        return this.elementCount;
-    }
-
-    public int getFirstUnackedPageNum() {
-        return this.firstUnackedPageNum;
-    }
-
 }

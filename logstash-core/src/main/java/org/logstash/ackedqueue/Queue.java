@@ -1,5 +1,6 @@
 package org.logstash.ackedqueue;
 
+import org.logstash.common.io.CheckpointIO;
 import org.logstash.common.io.CheckpointIOFactory;
 
 import java.io.IOException;
@@ -24,14 +25,14 @@ public class Queue {
 
     private final Settings settings;
 
-    private final CheckpointIOFactory checkpointIOFactory;
+    private final CheckpointIO checkpointIO;
 
     // TODO: I really don't like the idea of passing a dummy ElementIO object for the sake of holding a reference to the
     // concrete class for later invoking open() and create() in the Page
     public Queue(Settings settings) {
         this.settings = settings;
-        this.checkpointIOFactory = settings.getCheckpointIOFactory();
         this.tailPages = new ArrayList<>();
+        this.checkpointIO = settings.getCheckpointIOFactory().build(settings.getDirPath());
     }
 
     // moved queue opening logic in open() method until we have something in place to used in-memory checkpoints for testing
@@ -39,18 +40,17 @@ public class Queue {
     // testing Page
     public void open() throws IOException {
         final int headPageNum;
-        Checkpoint headCheckpoint = new Checkpoint(checkpointIOFactory.build(settings.getCheckpointSourceFor("checkpoint.head")));
+
+        Checkpoint headCheckpoint = checkpointIO.read("checkpoint.head");
 
         if (headCheckpoint == null) {
             this.seqNum = 0;
             headPageNum = 0;
         } else {
-            headCheckpoint.read();
             // handle all tail pages upto but excluding the head page
             for (int pageNum = headCheckpoint.getFirstUnackedPageNum(); pageNum < headCheckpoint.getPageNum(); pageNum++) {
-                Checkpoint tailCheckpoint = new Checkpoint(checkpointIOFactory.build(settings.getCheckpointSourceFor("checkpoint." + pageNum)));
+                Checkpoint tailCheckpoint = checkpointIO.read("checkpoint." + pageNum);
                 if (tailCheckpoint != null) {
-                    tailCheckpoint.read();
                     BeheadedPage tailPage = new BeheadedPage(tailCheckpoint, this, this.settings);
                     this.tailPages.add(tailPage);
                 }
@@ -161,7 +161,9 @@ public class Queue {
         return seqNum += 1;
     }
 
-
+    public CheckpointIO getCheckpointIO() {
+        return checkpointIO;
+    }
 
 //    public ElementIO getIo() {
 //        return io;

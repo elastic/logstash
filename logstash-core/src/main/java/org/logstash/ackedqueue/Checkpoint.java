@@ -21,45 +21,41 @@ public class Checkpoint {
             + Long.BYTES     // minSeqNum
             + Integer.BYTES; // eventCount
 
-    private final CheckpointIO io;
-
     public static final byte VERSION = 0;
 
-    public static void write(CheckpointIO io, int pageNum, int firstUnackedPageNum, long firstUnackedSeqNum, long minSeqNum, int elementCount)  throws IOException {
-        Checkpoint ckp = new Checkpoint(io);
-        ckp.write(pageNum, firstUnackedPageNum, firstUnackedSeqNum, minSeqNum, elementCount);
-    }
+    private final int pageNum;             // local per-page page number
+    private final int firstUnackedPageNum; // queue-wide global pointer, only valid in the head checkpoint
+    private final long firstUnackedSeqNum; // local per-page unacknowledged tracking
+    private final long minSeqNum;          // local per-page minimum seqNum
+    private final int elementCount;        // local per-page element count
 
-    public Checkpoint(CheckpointIO io) {
-        this.io = io;
-    }
 
-    public void read() throws IOException {
-        io.read();
-    }
-
-    public void write(int pageNum, int firstUnackedPageNum, long firstUnackedSeqNum, long minSeqNum, int elementCount) throws IOException {
-        io.write(pageNum, firstUnackedPageNum, firstUnackedSeqNum, minSeqNum, elementCount);
+    public Checkpoint(int pageNum, int firstUnackedPageNum, long firstUnackedSeqNum, long minSeqNum, int elementCount) {
+        this.pageNum = pageNum;
+        this.firstUnackedPageNum = firstUnackedPageNum;
+        this.firstUnackedSeqNum = firstUnackedSeqNum;
+        this.minSeqNum = minSeqNum;
+        this.elementCount = elementCount;
     }
 
     public int getPageNum() {
-        return io.getPageNum();
-    }
-
-    public long getFirstUnackedSeqNum() {
-        return io.getFirstUnackedSeqNum();
-    }
-
-    public long getMinSeqNum() {
-        return io.getMinSeqNum();
-    }
-
-    public int getElementCount() {
-        return io.getElementCount();
+        return this.pageNum;
     }
 
     public int getFirstUnackedPageNum() {
-        return io.getFirstUnackedPageNum();
+        return this.firstUnackedPageNum;
+    }
+
+    public long getFirstUnackedSeqNum() {
+        return this.firstUnackedSeqNum;
+    }
+
+    public long getMinSeqNum() {
+        return this.minSeqNum;
+    }
+
+    public int getElementCount() {
+        return this.elementCount;
     }
 
 }

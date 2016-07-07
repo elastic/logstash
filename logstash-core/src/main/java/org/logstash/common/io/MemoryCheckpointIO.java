@@ -1,68 +1,29 @@
 package org.logstash.common.io;
 
+import org.logstash.ackedqueue.Checkpoint;
+
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 public class MemoryCheckpointIO implements CheckpointIO {
-//    Checkpoint file structure
-//
-//    byte version;
-//    int pageNum;
-//    int firstUnackedPageNum;
-//    long firstUnackedSeqNum;
-//    long minSeqNum;
-//    int elementCount;
 
-    private int pageNum;       // local per-page page number
-    private long minSeqNum;    // local per-page minimum seqNum
-    private int elementCount;        // local per-page element count
-    private long firstUnackedSeqNum; // local per-page unacknowledged tracking
-    private int firstUnackedPageNum; // queue-wide global pointer, only valid in the head checkpoint
+    private static final Map<String, Checkpoint> sources = new HashMap<>();
 
-    private final String source;
+    private final String dirPath;
 
-    public static final byte VERSION = 0;
-
-    public MemoryCheckpointIO(String source) {
-        this.source = source;
+    public MemoryCheckpointIO(String dirPath) {
+        this.dirPath = dirPath;
     }
 
     @Override
-    public void read() throws IOException {
-        String[] parts = source.split("|");
-        this.pageNum = Integer.valueOf(parts[0]);
-        this.firstUnackedPageNum = Integer.valueOf(parts[2]);
-        this.firstUnackedSeqNum = Long.valueOf(parts[3]);
-        this.minSeqNum = Long.valueOf(parts[4]);
-        this.elementCount = Integer.valueOf(parts[5]);
+    public Checkpoint read(String fileName) throws IOException {
+        return this.sources.get(fileName);
     }
 
     @Override
-    public void write(int pageNum, int firstUnackedPageNum, long firstUnackedSeqNum, long minSeqNum, int elementCount) throws IOException {
-        this.pageNum = pageNum;
-        this.firstUnackedPageNum = firstUnackedPageNum;
-        this.firstUnackedSeqNum = firstUnackedSeqNum;
-        this.minSeqNum = minSeqNum;
-        this.elementCount = elementCount;
+    public void write(String fileName, int pageNum, int firstUnackedPageNum, long firstUnackedSeqNum, long minSeqNum, int elementCount) throws IOException {
+        Checkpoint checkpoint = new Checkpoint(pageNum, firstUnackedPageNum, firstUnackedSeqNum, minSeqNum, elementCount);
+        this.sources.put(fileName, checkpoint);
     }
-
-    public int getPageNum() {
-        return this.pageNum;
-    }
-
-    public long getMinSeqNum() {
-        return this.minSeqNum;
-    }
-
-    public long getFirstUnackedSeqNum() {
-        return this.firstUnackedSeqNum;
-    }
-
-    public int getElementCount() {
-        return this.elementCount;
-    }
-
-    public int getFirstUnackedPageNum() {
-        return this.firstUnackedPageNum;
-    }
-
 }

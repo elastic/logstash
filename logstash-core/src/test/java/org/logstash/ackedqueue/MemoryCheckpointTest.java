@@ -1,10 +1,11 @@
 package org.logstash.ackedqueue;
 
-import org.junit.Test;
 import org.logstash.common.io.*;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
+
+import org.junit.Before;
+import org.junit.Test;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
@@ -12,22 +13,21 @@ import static org.hamcrest.MatcherAssert.assertThat;
 
 public class MemoryCheckpointTest {
 
-    private Settings getSettings() {
-        Settings s = new MemorySettings();
-        CheckpointIOFactory ckpf = (source) -> new MemoryCheckpointIO2(source);
-        s.setCheckpointIOFactory(ckpf);
-        return s;
+    private CheckpointIO io;
+
+    @Before
+    public void setUp() {
+        Settings settings = new MemorySettings();
+        CheckpointIOFactory factory = (dirPath) -> new MemoryCheckpointIO(dirPath);
+        settings.setCheckpointIOFactory(factory);
+        this.io = settings.getCheckpointIOFactory().build(settings.getDirPath());
     }
 
     @Test
     public void writeNewReadExisting() throws IOException {
-        Settings s = getSettings();
-        CheckpointIO io = s.getCheckpointIOFactory().build("checkpoint.head");
+        io.write("checkpoint.head", 1, 2, 3, 4, 5);
 
-        Checkpoint.write(io, 1, 2, 3, 4, 5);
-
-        Checkpoint checkpoint = new Checkpoint(io);
-        checkpoint.read();
+        Checkpoint checkpoint = io.read("checkpoint.head");
 
         assertThat(checkpoint.getPageNum(), is(equalTo(1)));
         assertThat(checkpoint.getFirstUnackedPageNum(), is(equalTo(2)));
@@ -36,12 +36,9 @@ public class MemoryCheckpointTest {
         assertThat(checkpoint.getElementCount(), is(equalTo(5)));
     }
 
-    @Test(expected = FileNotFoundException.class)
+    @Test
     public void readInnexisting() throws IOException {
-        Settings s = getSettings();
-        CheckpointIO io = s.getCheckpointIOFactory().build("checkpoint.bad");
-
-        Checkpoint checkpoint = new Checkpoint(io);
-        checkpoint.read();
+        Checkpoint checkpoint = io.read("checkpoint.invalid");
+        assertThat(checkpoint, is(equalTo(null)));
     }
 }
