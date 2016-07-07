@@ -1,9 +1,9 @@
 package org.logstash.ackedqueue;
 
 import org.junit.Test;
-import org.logstash.common.io.ByteBufferElementIO;
+import org.logstash.common.io.ByteBufferPageIO;
 import org.logstash.common.io.CheckpointIOFactory;
-import org.logstash.common.io.ElementIOFactory;
+import org.logstash.common.io.PageIOFactory;
 import org.logstash.common.io.MemoryCheckpointIO;
 
 import java.io.IOException;
@@ -17,7 +17,7 @@ public class HeadPageTest {
 
     private Settings getSettings(int capacity) {
         Settings s = new MemorySettings();
-        ElementIOFactory ef = (size, path) -> new ByteBufferElementIO(size, path);
+        PageIOFactory ef = (size, path) -> new ByteBufferPageIO(size, path);
         CheckpointIOFactory ckpf = (source) -> new MemoryCheckpointIO(source);
         s.setCapacity(capacity);
         s.setElementIOFactory(ef);
@@ -41,7 +41,7 @@ public class HeadPageTest {
     @Test
     public void pageWrite() throws IOException {
         Queueable element = new StringElement("foobarbaz");
-        int singleElementCapacity = ByteBufferElementIO.HEADER_SIZE + ByteBufferElementIO.persistedByteCount(element.serialize().length);
+        int singleElementCapacity = ByteBufferPageIO.HEADER_SIZE + ByteBufferPageIO.persistedByteCount(element.serialize().length);
 
         Settings s = getSettings(singleElementCapacity);
         Queue q = new Queue(s);
@@ -58,7 +58,7 @@ public class HeadPageTest {
     @Test
     public void pageWriteAndReadSingle() throws IOException {
         Queueable element = new StringElement("foobarbaz", 1);
-        int singleElementCapacity = ByteBufferElementIO.HEADER_SIZE + ByteBufferElementIO.persistedByteCount(element.serialize().length);
+        int singleElementCapacity = ByteBufferPageIO.HEADER_SIZE + ByteBufferPageIO.persistedByteCount(element.serialize().length);
 
         Settings s = getSettings(singleElementCapacity);
         Queue q = new Queue(s);
@@ -80,7 +80,7 @@ public class HeadPageTest {
     @Test
     public void pageWriteAndReadMulti() throws IOException {
         Queueable element = new StringElement("foobarbaz", 1);
-        int singleElementCapacity = ByteBufferElementIO.HEADER_SIZE + ByteBufferElementIO.persistedByteCount(element.serialize().length);
+        int singleElementCapacity = ByteBufferPageIO.HEADER_SIZE + ByteBufferPageIO.persistedByteCount(element.serialize().length);
 
         Settings s = getSettings(singleElementCapacity);
         Queue q = new Queue(s);

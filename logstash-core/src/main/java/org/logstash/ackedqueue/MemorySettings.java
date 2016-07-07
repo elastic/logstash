@@ -1,13 +1,13 @@
 package org.logstash.ackedqueue;
 
 import org.logstash.common.io.CheckpointIOFactory;
-import org.logstash.common.io.ElementIOFactory;
+import org.logstash.common.io.PageIOFactory;
 
 import java.util.Map;
 
 public class MemorySettings implements Settings {
     private CheckpointIOFactory checkpointIOFactory;
-    private ElementIOFactory elementIOFactory;
+    private PageIOFactory pageIOFactory;
     private Map<String, String> sources;
     private int capacity;
 
@@ -20,8 +20,8 @@ public class MemorySettings implements Settings {
     }
 
     @Override
-    public Settings setElementIOFactory(ElementIOFactory factory) {
-        this.elementIOFactory = factory;
+    public Settings setElementIOFactory(PageIOFactory factory) {
+        this.pageIOFactory = factory;
         return this;
     }
 
@@ -36,9 +36,8 @@ public class MemorySettings implements Settings {
         return checkpointIOFactory;
     }
 
-    @Override
-    public ElementIOFactory getElementIOFactory() {
-        return elementIOFactory;
+    public PageIOFactory getPageIOFactory() {
+        return pageIOFactory;
     }
 
     @Override

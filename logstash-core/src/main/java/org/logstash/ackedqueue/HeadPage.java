@@ -7,11 +7,11 @@ public class HeadPage extends Page {
     public HeadPage(int pageNum, Queue queue, Settings settings) throws IOException {
         super(pageNum, queue, settings);
         String fullPagePath = this.settings.getDirPath() + "/page." + pageNum;
-        this.elementIO = settings.getElementIOFactory().create(settings.getCapacity(), fullPagePath);
+        this.pageIO = settings.getPageIOFactory().create(settings.getCapacity(), fullPagePath);
     }
 
     public boolean hasSpace(int byteSize) {
-        return this.elementIO.hasSpace((byteSize));
+        return this.pageIO.hasSpace((byteSize));
     }
 
     // NOTE:
@@ -22,7 +22,7 @@ public class HeadPage extends Page {
     // be able to use the Page.hasSpace() method with the serialized element byte size.
     //
     public void write(byte[] bytes, Queueable element) {
-        this.elementIO.write(bytes, element);
+        this.pageIO.write(bytes, element);
 
         if (this.minSeqNum <= 0) {
             this.minSeqNum = element.getSeqNum();
@@ -40,7 +40,7 @@ public class HeadPage extends Page {
 
     public BeheadedPage behead() throws IOException {
         // TODO: should we have a deactivation strategy to avoid a immediate reactivation scenario?
-        this.elementIO.deactivate();
+        this.pageIO.deactivate();
 
         BeheadedPage tailPage = new BeheadedPage(this);
 

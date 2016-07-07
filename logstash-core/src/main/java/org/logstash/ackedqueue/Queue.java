@@ -27,7 +27,7 @@ public class Queue {
 
     private final CheckpointIO checkpointIO;
 
-    // TODO: I really don't like the idea of passing a dummy ElementIO object for the sake of holding a reference to the
+    // TODO: I really don't like the idea of passing a dummy PageIO object for the sake of holding a reference to the
     // concrete class for later invoking open() and create() in the Page
     public Queue(Settings settings) {
         this.settings = settings;
@@ -165,7 +165,7 @@ public class Queue {
         return checkpointIO;
     }
 
-//    public ElementIO getIo() {
+//    public PageIO getIo() {
 //        return io;
 //    }
 //

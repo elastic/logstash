@@ -1,15 +1,14 @@
 package org.logstash.ackedqueue;
 
 import org.logstash.common.io.CheckpointIOFactory;
-import org.logstash.common.io.ElementIOFactory;
+import org.logstash.common.io.PageIOFactory;
 
-import java.nio.file.Paths;
 import java.util.Map;
 
 public class FileSettings implements Settings {
     private String dirForFiles;
     private CheckpointIOFactory checkpointIOFactory;
-    private ElementIOFactory elementIOFactory;
+    private PageIOFactory pageIOFactory;
     private Map<String, String> sources;
     private int capacity;
 
@@ -27,8 +26,8 @@ public class FileSettings implements Settings {
     }
 
     @Override
-    public Settings setElementIOFactory(ElementIOFactory factory) {
-        this.elementIOFactory = factory;
+    public Settings setElementIOFactory(PageIOFactory factory) {
+        this.pageIOFactory = factory;
         return this;
     }
 
@@ -43,9 +42,8 @@ public class FileSettings implements Settings {
         return checkpointIOFactory;
     }
 
-    @Override
-    public ElementIOFactory getElementIOFactory() {
-        return elementIOFactory;
+    public PageIOFactory getPageIOFactory() {
+        return pageIOFactory;
     }
 
     @Override

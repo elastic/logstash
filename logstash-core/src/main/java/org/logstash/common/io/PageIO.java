@@ -5,16 +5,16 @@ import org.logstash.ackedqueue.Queueable;
 import java.io.IOException;
 import java.util.List;
 
-public interface ElementIO {
+public interface PageIO {
 
-    // for now ElementIO concrete objects should always be create through open() or create()
+    // for now PageIO concrete objects should always be create through open() or create()
     // TODO: refactor interface + concrete class runtime wiring
 
     // open an existing data container and reconstruct internal state if required
-    ElementIO open(int capacity, String path, long minSeqNum, int elementCount) throws IOException;
+    PageIO open(int capacity, String path, long minSeqNum, int elementCount) throws IOException;
 
     // create a new empty data file
-    ElementIO create(int capacity, String path) throws IOException;
+    PageIO create(int capacity, String path) throws IOException;
 
     // verify if the data container has space for the given number of bytes
     boolean hasSpace(int bytes);

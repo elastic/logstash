@@ -11,7 +11,7 @@ import java.util.List;
 // TODO: we could change this and support non-continuous seqNums but I am not sure we should.
 // TODO: checksum is not currently computed.
 
-public class ByteBufferElementIO implements ElementIO {
+public class ByteBufferPageIO implements PageIO {
     public static final int CHECKSUM_SIZE = Integer.BYTES;
     public static final int LENGTH_SIZE = Integer.BYTES;
     public static final int SEQNUM_SIZE = Long.BYTES;
@@ -27,7 +27,7 @@ public class ByteBufferElementIO implements ElementIO {
     private int head;
     private final byte version;
 
-    public ByteBufferElementIO() {
+    public ByteBufferPageIO() {
         // dummy noarg constructor
         this.capacity = 0;
         this.offsetMap = null;
@@ -35,12 +35,12 @@ public class ByteBufferElementIO implements ElementIO {
         this.version = 0;
     }
 
-    public ElementIO open(int capacity, String path, long minSeqNum, int elementCount) throws IOException {
-        return new ByteBufferElementIO(capacity, new byte[0], minSeqNum, elementCount);
+    public PageIO open(int capacity, String path, long minSeqNum, int elementCount) throws IOException {
+        return new ByteBufferPageIO(capacity, new byte[0], minSeqNum, elementCount);
     }
 
-    public ElementIO create(int capacity, String path) throws IOException {
-        return new ByteBufferElementIO(capacity);
+    public PageIO create(int capacity, String path) throws IOException {
+        return new ByteBufferPageIO(capacity);
     }
 
     public int getCapacity() {
@@ -51,16 +51,16 @@ public class ByteBufferElementIO implements ElementIO {
         return this.minSeqNum;
     }
 
-    public ByteBufferElementIO(int capacity, String path) throws IOException {
+    public ByteBufferPageIO(int capacity, String path) throws IOException {
         this(capacity, new byte[0], 1L, 0);
     }
 
-    public ByteBufferElementIO(int capacity) throws IOException {
+    public ByteBufferPageIO(int capacity) throws IOException {
         this(capacity, new byte[0], 1L, 0);
     }
 
 
-    public ByteBufferElementIO(int capacity, byte[] initialBytes, long minSeqNum, int elementCount) throws IOException {
+    public ByteBufferPageIO(int capacity, byte[] initialBytes, long minSeqNum, int elementCount) throws IOException {
         this.capacity = capacity;
         if (initialBytes.length > capacity) {
             throw new IOException("initial bytes greater than capacity");
