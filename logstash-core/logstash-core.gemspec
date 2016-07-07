@@ -17,8 +17,8 @@ Gem::Specification.new do |gem|
   gem.require_paths = ["lib"]
   gem.version       = LOGSTASH_CORE_VERSION
 
-  gem.add_runtime_dependency "logstash-core-event", "3.0.0.dev"
-  # gem.add_runtime_dependency "logstash-core-event-java", "3.0.0.dev"
+  gem.add_runtime_dependency "logstash-core-event", "2.4.0.dev"
+  # gem.add_runtime_dependency "logstash-core-event-java", "2.4.0.dev"
 
   gem.add_runtime_dependency "cabin", "~> 0.8.0" #(Apache 2.0 license)
   gem.add_runtime_dependency "pry", "~> 0.10.1"  #(Ruby license)
