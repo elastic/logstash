@@ -1,6 +1,5 @@
 package org.logstash.ackedqueue;
 
-import org.logstash.common.io.CheckpointIO;
 import org.logstash.common.io.PageIO;
 import org.logstash.common.io.ReadElementValue;
 
@@ -16,9 +15,6 @@ public abstract class Page {
     protected long firstUnreadSeqNum;
     protected final Queue queue;
     protected PageIO pageIO;
-    protected CheckpointIO checkpointIO;
-
-    protected Settings settings;
 
     // bit 0 is minSeqNum
     // TODO: go steal LocalCheckpointService in feature/seq_no from ES
@@ -26,7 +22,7 @@ public abstract class Page {
     protected BitSet ackedSeqNums;
     protected Checkpoint lastCheckpoint;
 
-    public Page(int pageNum, Queue queue, long minSeqNum, int elementCount, long firstUnreadSeqNum, BitSet ackedSeqNums, PageIO pageIO, CheckpointIO checkpointIO) {
+    public Page(int pageNum, Queue queue, long minSeqNum, int elementCount, long firstUnreadSeqNum, BitSet ackedSeqNums, PageIO pageIO) {
         this.pageNum = pageNum;
         this.queue = queue;
 
@@ -36,28 +32,6 @@ public abstract class Page {
         this.ackedSeqNums = ackedSeqNums;
         this.lastCheckpoint = null;
         this.pageIO = pageIO;
-        this.checkpointIO = checkpointIO;
-    }
-
-//    public Page(int pageNum, Queue queue) {
-//        this(pageNum, queue, 0, 0, 0, new BitSet(), null, null);
-//    }
-
-    public Page(int pageNum, Queue queue, PageIO pageIO) {
-        this(pageNum, queue, 0, 0, 0, new BitSet(), pageIO, queue.getCheckpointIO());
-    }
-
-    public Page(int pageNum, Queue queue, Settings settings, long minSeqNum, int elementCount, long firstUnreadSeqNum, BitSet ackedSeqNums, PageIO pageIO, CheckpointIO checkpointIO) {
-        this.pageNum = pageNum;
-        this.queue = queue;
-        this.settings = settings;
-        this.minSeqNum = minSeqNum;
-        this.elementCount = elementCount;
-        this.firstUnreadSeqNum = firstUnreadSeqNum;
-        this.ackedSeqNums = ackedSeqNums;
-        this.lastCheckpoint = null;
-        this.pageIO = pageIO;
-        this.checkpointIO = checkpointIO;
     }
 
     // NOTE:
@@ -71,6 +45,10 @@ public abstract class Page {
     // @param elementClass the concrete element class for deserialization
     // @return Batch batch of elements read when the number of elements can be <= limit
     public Batch readBatch(int limit) {
+
+        // first make sure this page is activated, activating previously activated is harmless
+        this.pageIO.activate();
+
         List<ReadElementValue> serializedElements = this.pageIO.read(this.firstUnreadSeqNum, limit);
         List<Queueable> elements = serializedElements.stream().map(readElement -> ElementFactory.deserialize(readElement.getBinaryValue())).collect(Collectors.toList());
         Batch batch = new Batch(elements, this.queue);
@@ -101,11 +79,14 @@ public abstract class Page {
         long firstUnackedSeqNum = firstUnackedSeqNum();
 
         if (isFullyAcked()) {
+            // TODO: here if consumer is faster than producer, the head page may be always fully acked and we may end up fsync'ing too ofter?
             checkpoint();
 
             assert firstUnackedSeqNum >= this.minSeqNum + this.elementCount :
                     String.format("invalid firstUnackedSeqNum=%d for minSeqNum=%d and elementCount=%d", firstUnackedSeqNum, this.minSeqNum, this.elementCount);
+
         } else if (firstUnackedSeqNum > this.lastCheckpoint.getFirstUnackedSeqNum() + 1024) {
+            // did we acked more that 1024 elements? if so we should checkpoint now
             checkpoint();
         }
     }
@@ -122,6 +103,10 @@ public abstract class Page {
 
     public Queue getQueue() {
         return queue;
+    }
+
+    public PageIO getPageIO() {
+        return pageIO;
     }
 
     protected long maxSeqNum() {

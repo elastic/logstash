@@ -31,8 +31,12 @@ public interface PageIO {
     void deactivate();
 
     // signal that this data page is active will be read or written to
+    // should do nothing if page is aready active
     void activate();
 
     // issue the proper data container "fsync" sematic
     void ensurePersisted();
+
+    // delete, unlike, remove data file
+    void purge() throws IOException;
 }

@@ -9,30 +9,32 @@ public class BeheadedPage extends Page {
 
     // create a new BeheadedPage object from a HeadPage object
     public BeheadedPage(HeadPage page) {
-        super(page.pageNum, page.queue, page.minSeqNum, page.elementCount, page.firstUnreadSeqNum, page.ackedSeqNums, page.pageIO, page.checkpointIO);
+        super(page.pageNum, page.queue, page.minSeqNum, page.elementCount, page.firstUnreadSeqNum, page.ackedSeqNums, page.pageIO);
     }
 
+    // create a new BeheadedPage object for an exiting Checkpoint and data file
     public BeheadedPage(Checkpoint checkpoint, Queue queue, PageIO pageIO) throws IOException {
-        super(checkpoint.getPageNum(), queue, checkpoint.getMinSeqNum(), checkpoint.getElementCount(), checkpoint.getFirstUnackedSeqNum(), new BitSet(), pageIO, queue.getCheckpointIO());
+        super(checkpoint.getPageNum(), queue, checkpoint.getMinSeqNum(), checkpoint.getElementCount(), checkpoint.getFirstUnackedSeqNum(), new BitSet(), pageIO);
+
+        // open the data file and reconstruct the IO object internal state
         pageIO.open(checkpoint.getMinSeqNum(), checkpoint.getElementCount());
 
-        // if we have some acked elements, set them in the bitset
+        // this page ackedSeqNums bitset is a new empty bitset, if we have some acked elements, set them in the bitset
         if (checkpoint.getFirstUnackedSeqNum() > checkpoint.getMinSeqNum()) {
             this.ackedSeqNums.flip(0, (int) (checkpoint.getFirstUnackedSeqNum() - checkpoint.getMinSeqNum()));
         }
     }
 
     public void checkpoint() throws IOException {
-        // not concurrent for first iteration:
+        // TODO: not concurrent for first iteration:
 
-        // TODO:
-        // fsync();
-        this.checkpointIO.write("checkpoint." + pageNum, this.pageNum, firstUnackedPageNumFromQueue(), firstUnackedSeqNum(), this.minSeqNum, this.elementCount);
+        // since this is a tail page and no write can happen in this page, there is no point in performing a fsync on this page, just stamp checkpoint
+        this.queue.getCheckpointIO().write("checkpoint." + this.pageNum, this.pageNum, this.queue.firstUnackedPageNum(), firstUnackedSeqNum(), this.minSeqNum, this.elementCount);
     }
 
-    void checkpoint(int firstUnackedPageNum) {
-        // TODO:
-        // Checkpoint.write("checkpoint." + this.pageNum, ... );
+    // delete all IO files associated with this page
+    public void purge() throws IOException {
+        this.pageIO.purge();
+        this.queue.getCheckpointIO().purge("checkpoint." + this.pageNum);
     }
-
 }

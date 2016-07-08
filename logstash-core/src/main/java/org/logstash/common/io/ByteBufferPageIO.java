@@ -184,6 +184,11 @@ public class ByteBufferPageIO implements PageIO {
         // nothing to do
     }
 
+    @Override
+    public void purge() throws IOException {
+        // do nothing
+    }
+
     private int checksum(byte[] bytes) {
         return 0;
     }

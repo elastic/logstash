@@ -8,4 +8,6 @@ public interface CheckpointIO {
     void write(String fileName, int pageNum, int firstUnackedPageNum, long firstUnackedSeqNum, long minSeqNum, int elementCount) throws IOException;
 
     Checkpoint read(String fileName) throws IOException;
+
+    void purge(String fileName) throws IOException;
 }

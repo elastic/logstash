@@ -26,4 +26,9 @@ public class MemoryCheckpointIO implements CheckpointIO {
         Checkpoint checkpoint = new Checkpoint(pageNum, firstUnackedPageNum, firstUnackedSeqNum, minSeqNum, elementCount);
         this.sources.put(fileName, checkpoint);
     }
+
+    @Override
+    public void purge(String fileName) {
+        // do nothing
+    }
 }

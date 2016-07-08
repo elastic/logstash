@@ -63,6 +63,13 @@ public class FileCheckpointIO  implements CheckpointIO {
         }
     }
 
+    @Override
+    public void purge(String fileName) throws IOException {
+        Path path = Paths.get(fileName);
+        Files.delete(path);
+    }
+
+
     private void write(Checkpoint checkpoint, FileChannel channel) throws IOException {
         byte[] buffer = new byte[Checkpoint.BUFFER_SIZE];
         final ByteArrayStreamOutput out = new ByteArrayStreamOutput(buffer);
