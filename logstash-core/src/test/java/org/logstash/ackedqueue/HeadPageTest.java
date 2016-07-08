@@ -11,22 +11,10 @@ import static org.hamcrest.MatcherAssert.assertThat;
 
 
 public class HeadPageTest {
-
-    private Settings getSettings(int capacity) {
-        Settings s = new MemorySettings();
-        PageIOFactory ef = (size, path) -> new ByteBufferPageIO(size, path);
-        CheckpointIOFactory ckpf = (source) -> new MemoryCheckpointIO(source);
-        s.setCapacity(capacity);
-        s.setElementIOFactory(ef);
-        s.setCheckpointIOFactory(ckpf);
-        return s;
-    }
-
-
-
+    
     @Test
     public void newHeadPage() throws IOException {
-        Settings s = getSettings(100);
+        Settings s = TestSettings.getSettings(100);
         Queue q = new Queue(s);
         PageIO pageIO = s.getPageIOFactory().build(100, "dummy");
         HeadPage p = new HeadPage(0, q, pageIO);
@@ -43,7 +31,7 @@ public class HeadPageTest {
         Queueable element = new StringElement("foobarbaz");
         int singleElementCapacity = ByteBufferPageIO.HEADER_SIZE + ByteBufferPageIO.persistedByteCount(element.serialize().length);
 
-        Settings s = getSettings(singleElementCapacity);
+        Settings s = TestSettings.getSettings(singleElementCapacity);
         Queue q = new Queue(s);
         PageIO pageIO = s.getPageIOFactory().build(singleElementCapacity, "dummy");
         HeadPage p = new HeadPage(0, q, pageIO);
@@ -61,7 +49,7 @@ public class HeadPageTest {
         Queueable element = new StringElement("foobarbaz", 1);
         int singleElementCapacity = ByteBufferPageIO.HEADER_SIZE + ByteBufferPageIO.persistedByteCount(element.serialize().length);
 
-        Settings s = getSettings(singleElementCapacity);
+        Settings s = TestSettings.getSettings(singleElementCapacity);
         Queue q = new Queue(s);
         PageIO pageIO = s.getPageIOFactory().build(singleElementCapacity, "dummy");
         HeadPage p = new HeadPage(0, q, pageIO);
@@ -84,7 +72,7 @@ public class HeadPageTest {
         Queueable element = new StringElement("foobarbaz", 1);
         int singleElementCapacity = ByteBufferPageIO.HEADER_SIZE + ByteBufferPageIO.persistedByteCount(element.serialize().length);
 
-        Settings s = getSettings(singleElementCapacity);
+        Settings s = TestSettings.getSettings(singleElementCapacity);
         Queue q = new Queue(s);
         PageIO pageIO = s.getPageIOFactory().build(singleElementCapacity, "dummy");
         HeadPage p = new HeadPage(0, q, pageIO);

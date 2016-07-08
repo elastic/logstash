@@ -30,7 +30,7 @@ public abstract class Page {
         this.elementCount = elementCount;
         this.firstUnreadSeqNum = firstUnreadSeqNum;
         this.ackedSeqNums = ackedSeqNums;
-        this.lastCheckpoint = null;
+        this.lastCheckpoint = new Checkpoint(0, 0, 0, 0, 0);
         this.pageIO = pageIO;
     }
 

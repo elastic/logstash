@@ -19,9 +19,9 @@ import java.util.List;
 
 
 public class Queue {
-    private long seqNum;
-    private HeadPage headPage;
-    private final List<BeheadedPage> tailPages;
+    protected long seqNum;
+    protected HeadPage headPage;
+    protected final List<BeheadedPage> tailPages;
 
     private final Settings settings;
 
@@ -191,7 +191,7 @@ public class Queue {
         }
     }
 
-    public long nextSeqNum() {
+    private long nextSeqNum() {
         return seqNum += 1;
     }
 
