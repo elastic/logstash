@@ -8,7 +8,7 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MemoryElementIOStream {
+public class MemoryPageIOStream {
     static final int CHECKSUM_SIZE = Integer.BYTES;
     static final int LENGTH_SIZE = Integer.BYTES;
     static final int SEQNUM_SIZE = Long.BYTES;
@@ -24,13 +24,13 @@ public class MemoryElementIOStream {
     private ByteArrayStreamOutput streamedOutput;
     private BufferedChecksumStreamOutput crcWrappedOutput;
     private final List<Integer> offsetMap;
-    public MemoryElementIOStream(int byteSize) {
+    public MemoryPageIOStream(int byteSize) {
         this(new byte[byteSize], 1L, 0, 1L); // empty array, first seqNum, no elements written yet, firstUnacked is first seqNum
     }
-    public MemoryElementIOStream(byte[] initialBytes, Checkpoint ckp) {
+    public MemoryPageIOStream(byte[] initialBytes, Checkpoint ckp) {
         this(initialBytes, ckp.getMinSeqNum(), ckp.getElementCount(), ckp.getFirstUnackedSeqNum());
     }
-    public MemoryElementIOStream(byte[] initialBytes, long minSeqNum, int elementCount, long firstUnackedSeqNum) {
+    public MemoryPageIOStream(byte[] initialBytes, long minSeqNum, int elementCount, long firstUnackedSeqNum) {
         buffer = initialBytes;
         byteSize = initialBytes.length;
         startSeqNum = minSeqNum;
