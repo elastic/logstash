@@ -1,11 +1,12 @@
 package org.logstash.ackedqueue;
 
-import org.logstash.common.io.*;
-
-import java.io.IOException;
-
 import org.junit.Before;
 import org.junit.Test;
+import org.logstash.common.io.CheckpointIO;
+import org.logstash.common.io.CheckpointIOFactory;
+import org.logstash.common.io.MemoryCheckpointIO;
+
+import java.io.IOException;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;

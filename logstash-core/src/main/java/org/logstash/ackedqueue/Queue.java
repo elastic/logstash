@@ -1,7 +1,6 @@
 package org.logstash.ackedqueue;
 
 import org.logstash.common.io.CheckpointIO;
-import org.logstash.common.io.CheckpointIOFactory;
 import org.logstash.common.io.PageIO;
 
 import java.io.IOException;
