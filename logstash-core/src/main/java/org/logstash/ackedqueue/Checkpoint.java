@@ -1,9 +1,5 @@
 package org.logstash.ackedqueue;
 
-import org.logstash.common.io.CheckpointIO;
-
-import java.io.IOException;
-
 public class Checkpoint {
 //    Checkpoint file structure as handled by CheckpointIO
 //
