@@ -1,10 +1,7 @@
 package org.logstash.ackedqueue;
 
 import org.junit.Test;
-import org.logstash.common.io.ByteBufferPageIO;
-import org.logstash.common.io.CheckpointIOFactory;
-import org.logstash.common.io.PageIOFactory;
-import org.logstash.common.io.MemoryCheckpointIO;
+import org.logstash.common.io.*;
 
 import java.io.IOException;
 
@@ -25,11 +22,14 @@ public class HeadPageTest {
         return s;
     }
 
+
+
     @Test
     public void newHeadPage() throws IOException {
         Settings s = getSettings(100);
         Queue q = new Queue(s);
-        HeadPage p = new HeadPage(0, q, s);
+        PageIO pageIO = s.getPageIOFactory().build(100, "dummy");
+        HeadPage p = new HeadPage(0, q, pageIO);
 
         assertThat(p.getPageNum(), is(equalTo(0)));
         assertThat(p.isFullyRead(), is(true));
@@ -45,7 +45,8 @@ public class HeadPageTest {
 
         Settings s = getSettings(singleElementCapacity);
         Queue q = new Queue(s);
-        HeadPage p = new HeadPage(0, q, s);
+        PageIO pageIO = s.getPageIOFactory().build(singleElementCapacity, "dummy");
+        HeadPage p = new HeadPage(0, q, pageIO);
 
         assertThat(p.hasSpace(element.serialize().length), is(true));
         p.write(element.serialize(), element);
@@ -62,7 +63,8 @@ public class HeadPageTest {
 
         Settings s = getSettings(singleElementCapacity);
         Queue q = new Queue(s);
-        HeadPage p = new HeadPage(0, q, s);
+        PageIO pageIO = s.getPageIOFactory().build(singleElementCapacity, "dummy");
+        HeadPage p = new HeadPage(0, q, pageIO);
 
         assertThat(p.hasSpace(element.serialize().length), is(true));
         p.write(element.serialize(), element);
@@ -84,7 +86,8 @@ public class HeadPageTest {
 
         Settings s = getSettings(singleElementCapacity);
         Queue q = new Queue(s);
-        HeadPage p = new HeadPage(0, q, s);
+        PageIO pageIO = s.getPageIOFactory().build(singleElementCapacity, "dummy");
+        HeadPage p = new HeadPage(0, q, pageIO);
 
         assertThat(p.hasSpace(element.serialize().length), is(true));
         p.write(element.serialize(), element);

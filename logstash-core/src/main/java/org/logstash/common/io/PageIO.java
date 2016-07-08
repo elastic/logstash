@@ -7,14 +7,13 @@ import java.util.List;
 
 public interface PageIO {
 
-    // for now PageIO concrete objects should always be create through open() or create()
-    // TODO: refactor interface + concrete class runtime wiring
+    // the concrete class should be constructed with the capacity and dirPath attributes
 
     // open an existing data container and reconstruct internal state if required
-    PageIO open(int capacity, String path, long minSeqNum, int elementCount) throws IOException;
+    void open(long minSeqNum, int elementCount) throws IOException;
 
     // create a new empty data file
-    PageIO create(int capacity, String path) throws IOException;
+    void create() throws IOException;
 
     // verify if the data container has space for the given number of bytes
     boolean hasSpace(int bytes);

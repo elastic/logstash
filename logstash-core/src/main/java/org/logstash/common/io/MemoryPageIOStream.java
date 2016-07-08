@@ -24,12 +24,15 @@ public class MemoryPageIOStream {
     private ByteArrayStreamOutput streamedOutput;
     private BufferedChecksumStreamOutput crcWrappedOutput;
     private final List<Integer> offsetMap;
+
     public MemoryPageIOStream(int byteSize) {
         this(new byte[byteSize], 1L, 0, 1L); // empty array, first seqNum, no elements written yet, firstUnacked is first seqNum
     }
+
     public MemoryPageIOStream(byte[] initialBytes, Checkpoint ckp) {
         this(initialBytes, ckp.getMinSeqNum(), ckp.getElementCount(), ckp.getFirstUnackedSeqNum());
     }
+
     public MemoryPageIOStream(byte[] initialBytes, long minSeqNum, int elementCount, long firstUnackedSeqNum) {
         buffer = initialBytes;
         byteSize = initialBytes.length;

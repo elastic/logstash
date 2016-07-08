@@ -1,13 +1,14 @@
 package org.logstash.ackedqueue;
 
+import org.logstash.common.io.PageIO;
+
 import java.io.IOException;
 
 public class HeadPage extends Page {
 
-    public HeadPage(int pageNum, Queue queue, Settings settings) throws IOException {
-        super(pageNum, queue, settings);
-        String fullPagePath = this.settings.getDirPath() + "/page." + pageNum;
-        this.pageIO = settings.getPageIOFactory().create(settings.getCapacity(), fullPagePath);
+    public HeadPage(int pageNum, Queue queue, PageIO pageIO) throws IOException {
+        super(pageNum, queue, pageIO);
+        pageIO.create();
     }
 
     public boolean hasSpace(int byteSize) {

@@ -39,12 +39,12 @@ public abstract class Page {
         this.checkpointIO = checkpointIO;
     }
 
-    public Page(int pageNum, Queue queue) {
-        this(pageNum, queue, 0, 0, 0, new BitSet(), null, null);
-    }
+//    public Page(int pageNum, Queue queue) {
+//        this(pageNum, queue, 0, 0, 0, new BitSet(), null, null);
+//    }
 
-    public Page(int pageNum, Queue queue, Settings settings) {
-        this(pageNum, queue, settings, 0, 0, 0, new BitSet(), null, null);
+    public Page(int pageNum, Queue queue, PageIO pageIO) {
+        this(pageNum, queue, 0, 0, 0, new BitSet(), pageIO, queue.getCheckpointIO());
     }
 
     public Page(int pageNum, Queue queue, Settings settings, long minSeqNum, int elementCount, long firstUnreadSeqNum, BitSet ackedSeqNums, PageIO pageIO, CheckpointIO checkpointIO) {

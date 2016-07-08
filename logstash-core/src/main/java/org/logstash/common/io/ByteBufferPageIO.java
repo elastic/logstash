@@ -12,6 +12,7 @@ import java.util.List;
 // TODO: checksum is not currently computed.
 
 public class ByteBufferPageIO implements PageIO {
+    public static final byte VERSION = 1;
     public static final int CHECKSUM_SIZE = Integer.BYTES;
     public static final int LENGTH_SIZE = Integer.BYTES;
     public static final int SEQNUM_SIZE = Long.BYTES;
@@ -25,42 +26,17 @@ public class ByteBufferPageIO implements PageIO {
     private long minSeqNum; // TODO: to make minSeqNum final we have to pass in the minSeqNum in the constructor and not set it on first write
     private int elementCount;
     private int head;
-    private final byte version;
-
-    public ByteBufferPageIO() {
-        // dummy noarg constructor
-        this.capacity = 0;
-        this.offsetMap = null;
-        this.buffer = null;
-        this.version = 0;
-    }
-
-    public PageIO open(int capacity, String path, long minSeqNum, int elementCount) throws IOException {
-        return new ByteBufferPageIO(capacity, new byte[0], minSeqNum, elementCount);
-    }
-
-    public PageIO create(int capacity, String path) throws IOException {
-        return new ByteBufferPageIO(capacity);
-    }
-
-    public int getCapacity() {
-        return this.capacity;
-    }
-
-    public long getMinSeqNum() {
-        return this.minSeqNum;
-    }
+    private byte version;
 
     public ByteBufferPageIO(int capacity, String path) throws IOException {
-        this(capacity, new byte[0], 1L, 0);
+        this(capacity, new byte[0]);
     }
 
     public ByteBufferPageIO(int capacity) throws IOException {
-        this(capacity, new byte[0], 1L, 0);
+        this(capacity, new byte[0]);
     }
 
-
-    public ByteBufferPageIO(int capacity, byte[] initialBytes, long minSeqNum, int elementCount) throws IOException {
+    public ByteBufferPageIO(int capacity, byte[] initialBytes) throws IOException {
         this.capacity = capacity;
         if (initialBytes.length > capacity) {
             throw new IOException("initial bytes greater than capacity");
@@ -68,9 +44,14 @@ public class ByteBufferPageIO implements PageIO {
 
         this.buffer = ByteBuffer.allocate(capacity);
         this.buffer.put(initialBytes);
+
+        this.offsetMap = new ArrayList<>();
+    }
+
+    public void open(long minSeqNum, int elementCount) throws IOException {
+        // TODO: do we need to do something there?
         this.minSeqNum = minSeqNum;
         this.elementCount = elementCount;
-        this.offsetMap = new ArrayList<>();
 
         this.buffer.position(0);
         this.version = this.buffer.get();
@@ -110,6 +91,22 @@ public class ByteBufferPageIO implements PageIO {
                 this.buffer.position(head);
             }
         }
+    }
+
+    public void create() throws IOException {
+        this.buffer.position(0);
+        this.buffer.put(VERSION);
+        this.head = 1;
+        this.minSeqNum = 0;
+        this.elementCount = 0;
+    }
+
+    public int getCapacity() {
+        return this.capacity;
+    }
+
+    public long getMinSeqNum() {
+        return this.minSeqNum;
     }
 
     public boolean hasSpace(int bytes) {
@@ -209,10 +206,6 @@ public class ByteBufferPageIO implements PageIO {
 
     public int getElementCount() {
         return this.elementCount;
-    }
-
-    public long getStartSeqNum() {
-        return this.minSeqNum;
     }
 
     public byte[] dump() {

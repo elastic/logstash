@@ -2,6 +2,7 @@ package org.logstash.ackedqueue;
 
 import org.logstash.common.io.CheckpointIO;
 import org.logstash.common.io.CheckpointIOFactory;
+import org.logstash.common.io.PageIO;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -51,21 +52,25 @@ public class Queue {
             for (int pageNum = headCheckpoint.getFirstUnackedPageNum(); pageNum < headCheckpoint.getPageNum(); pageNum++) {
                 Checkpoint tailCheckpoint = checkpointIO.read("checkpoint." + pageNum);
                 if (tailCheckpoint != null) {
-                    BeheadedPage tailPage = new BeheadedPage(tailCheckpoint, this, this.settings);
+                    PageIO pageIO = settings.getPageIOFactory().build(this.settings.getCapacity(), this.settings.getDirPath());
+                    BeheadedPage tailPage = new BeheadedPage(tailCheckpoint, this, pageIO);
                     this.tailPages.add(tailPage);
                 }
             }
 
             // handle the head page
             // transform the head page into a beheaded tail page
-            BeheadedPage beheadedHeadPage = new BeheadedPage(headCheckpoint, this, this.settings);
+            PageIO pageIO = settings.getPageIOFactory().build(this.settings.getCapacity(), this.settings.getDirPath());
+            BeheadedPage beheadedHeadPage = new BeheadedPage(headCheckpoint, this, pageIO);
             this.tailPages.add(beheadedHeadPage);
 
             beheadedHeadPage.checkpoint();
             headPageNum = headCheckpoint.getPageNum() + 1;
         }
 
-        headPage = new HeadPage(headPageNum, this, this.settings);
+        PageIO pageIO = settings.getPageIOFactory().build(this.settings.getCapacity(), this.settings.getDirPath());
+        headPage = new HeadPage(headPageNum, this, pageIO);
+
         // we can let the headPage get its first unacked page num via the tailPages
         headPage.checkpoint();
 
