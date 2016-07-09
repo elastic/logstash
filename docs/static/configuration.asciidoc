@@ -640,62 +640,59 @@ output {
 ----------------------------------
 
 [[environment-variables]]
-=== Using Environment Variables in Configuration
+=== Using Environment Variables in the Configuration
 
 ==== Overview
 
-* You can set environment variable references into Logstash plugins configuration using `${var}`.
-* Each reference will be replaced by environment variable value at Logstash startup.
+* You can set environment variable references in the configuration for Logstash plugins by using `${var}`.
+* At Logstash startup, each reference will be replaced by the value of the environment variable.
 * The replacement is case-sensitive.
 * References to undefined variables raise a Logstash configuration error.
-* A default value can be given by using the form `${var:default value}`.
-* You can add environment variable references in any plugin option type : string, number, boolean, array or hash.
-* Environment variables are immutable. If you update the environment variable, you'll have to restart Logstash to pick the updated value.
+* You can give a default value by using the form `${var:default value}`. Logstash uses the default value if the
+environment variable is undefined.
+* You can add environment variable references in any plugin option type : string, number, boolean, array, or hash.
+* Environment variables are immutable. If you update the environment variable, you'll have to restart Logstash to pick up the updated value.
 
 ==== Examples
 
-[cols="a,a,a"]
-|==================================
-|Logstash config source	|Environment 	|Logstash config result
-|
+The following examples show you how to use environment variables to set the values of some commonly used
+configuration options.
+
+===== Setting the TCP Port 
+
+Here's an example that uses an environment variable to set the TCP port:
+
 [source,ruby]
-----
+----------------------------------
 input {
   tcp {
     port => "${TCP_PORT}"
   }
 }
-----
+----------------------------------
 
-|
+Now let's set the value of `TCP_PORT`:
+
 [source,shell]
 ----
 export TCP_PORT=12345
 ----
-|
+
+At startup, Logstash uses the following configuration: 
+
 [source,ruby]
-----
+----------------------------------
 input {
   tcp {
     port => 12345
   }
 }
-----
-|
-[source,ruby]
-----
-input {
-  tcp {
-    port => "${TCP_PORT}"
-  }
-}
-----
+----------------------------------
 
-|
-No TCP_PORT defined
-|
-Raise a logstash configuration error
-|
+If the `TCP_PORT` environment variable is not set, Logstash returns a configuration error.
+
+You can fix this problem by specifying a default value: 
+
 [source,ruby]
 ----
 input {
@@ -705,9 +702,8 @@ input {
 }
 ----
 
-|
-No TCP_PORT defined
-|
+Now, instead of returning a configuration error if the variable is undefined, Logstash uses the default:
+
 [source,ruby]
 ----
 input {
@@ -716,31 +712,13 @@ input {
   }
 }
 ----
-|
-[source,ruby]
-----
-input {
-  tcp {
-    port => "${TCP_PORT:54321}"
-  }
-}
-----
 
-|
-[source,shell]
-----
-export TCP_PORT=12345
-----
-|
-[source,ruby]
-----
-input {
-  tcp {
-    port => 12345
-  }
-}
-----
-|
+If the environment variable is defined, Logstash uses the value specified for the variable instead of the default. 
+
+===== Setting the Value of a Tag
+
+Here's an example that uses an environment variable to set the value of a tag:
+
 [source,ruby]
 ----
 filter {
@@ -750,12 +728,15 @@ filter {
 }
 ----
 
-|
+Let's set the value of `ENV_TAG`:
+
 [source,shell]
 ----
 export ENV_TAG="tag2"
 ----
-|
+
+At startup, Logstash uses the following configuration: 
+
 [source,ruby]
 ----
 filter {
@@ -764,7 +745,11 @@ filter {
   }
 }
 ----
-|
+
+===== Setting a File Path
+
+Here's an example that uses an environment variable to set the path to a log file:
+
 [source,ruby]
 ----
 filter {
@@ -775,12 +760,16 @@ filter {
   }
 }
 ----
-|
+
+Let's set the value of `HOME`:
+
 [source,shell]
 ----
 export HOME="/path"
 ----
-|
+
+At startup, Logstash uses the following configuration: 
+
 [source,ruby]
 ----
 filter {
@@ -791,7 +780,7 @@ filter {
   }
 }
 ----
-|==================================
+
 
 [[config-examples]]
 === Logstash Configuration Examples
