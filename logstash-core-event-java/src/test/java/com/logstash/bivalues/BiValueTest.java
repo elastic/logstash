@@ -12,8 +12,6 @@ import org.jruby.RubyString;
 import org.jruby.RubySymbol;
 import org.jruby.RubyTime;
 import org.jruby.ext.bigdecimal.RubyBigDecimal;
-import org.jruby.javasupport.JavaUtil;
-import org.jruby.runtime.builtin.IRubyObject;
 import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
@@ -22,6 +20,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -177,25 +176,6 @@ public class BiValueTest extends TestBase {
         assertFalse(subject.hasRubyValue());
         assertTrue(subject.hasJavaValue());
         assertEquals(RubyTime.newTime(ruby, t), subject.rubyValue(ruby));
-    }
-
-    @Test
-    public void testObjectBiValueFromRuby() {
-        SomeJavaObject<String> sjo = new SomeJavaObject<>("foo");
-        IRubyObject iro = JavaUtil.convertJavaToUsableRubyObject(ruby, sjo);
-        ObjectBiValue subject = new ObjectBiValue(iro);
-        assertTrue(subject.hasRubyValue());
-        assertFalse(subject.hasJavaValue());
-        assertEquals(sjo, subject.javaValue());
-    }
-
-    @Test
-    public void testObjectBiValueFromJava() {
-        SomeJavaObject<String> sjo = new SomeJavaObject<>("foo");
-        ObjectBiValue subject = new ObjectBiValue(sjo);
-        assertFalse(subject.hasRubyValue());
-        assertTrue(subject.hasJavaValue());
-        assertEquals(sjo, subject.rubyValue(ruby).toJava(Object.class));
     }
 
     @Test

@@ -27,7 +27,7 @@ public class ConvertedList<T> implements List<T>, Collection<T>, Iterable<T> {
         this.delegate = new ArrayList<>();
     }
 
-    public static List<Object> newFromList(List<Object> list) {
+    public static ConvertedList<Object> newFromList(List<Object> list) {
         ConvertedList<Object> array = new ConvertedList<>();
 
         for (Object item : list) {
@@ -36,7 +36,7 @@ public class ConvertedList<T> implements List<T>, Collection<T>, Iterable<T> {
         return array;
     }
 
-    public static List<Object> newFromRubyArray(RubyArray a) {
+    public static ConvertedList<Object> newFromRubyArray(RubyArray a) {
         final ConvertedList<Object> result = new ConvertedList<>();
 
         for (IRubyObject o : a.toJavaArray()) {

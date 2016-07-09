@@ -27,7 +27,7 @@ apply plugin: 'idea'
 
 group = 'org.logstash'
 
-project.sourceCompatibility = 1.7
+project.sourceCompatibility = 1.8
 
 task sourcesJar(type: Jar, dependsOn: classes) {
     from sourceSets.main.allSource

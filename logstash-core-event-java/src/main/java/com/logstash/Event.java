@@ -267,7 +267,7 @@ public class Event implements Cloneable, Serializable {
                 return new Timestamp((String) o);
             } else if (o instanceof StringBiValue) {
                 return new Timestamp(((StringBiValue) o).javaValue());
-            }else if (o instanceof TimeBiValue) {
+            } else if (o instanceof TimeBiValue) {
                 return new Timestamp(((TimeBiValue) o).javaValue());
             } else if (o instanceof JrubyTimestampExtLibrary.RubyTimestamp) {
                 return new Timestamp(((JrubyTimestampExtLibrary.RubyTimestamp) o).getTimestamp());
