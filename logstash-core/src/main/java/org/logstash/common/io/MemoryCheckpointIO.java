@@ -12,6 +12,10 @@ public class MemoryCheckpointIO implements CheckpointIO {
 
     private final String dirPath;
 
+    public static void clearSources() {
+        sources.clear();
+    }
+
     public MemoryCheckpointIO(String dirPath) {
         this.dirPath = dirPath;
     }

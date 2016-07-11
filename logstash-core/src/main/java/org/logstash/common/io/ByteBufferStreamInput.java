@@ -63,6 +63,10 @@ public class ByteBufferStreamInput extends StreamInput {
         buffer.reset();
     }
 
+    public void movePosition(int position) {
+        buffer.position(position);
+    }
+
     public void rewind() throws IOException {
         buffer.rewind();
     }

@@ -11,7 +11,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 public class FileCheckpointIO  implements CheckpointIO {
-
 //    Checkpoint file structure as handled by CheckpointIO
 //
 //    byte version;
@@ -21,29 +20,40 @@ public class FileCheckpointIO  implements CheckpointIO {
 //    long minSeqNum;
 //    int elementCount;
 
+    public static final int BUFFER_SIZE = 1 // version
+            + Integer.BYTES  // pageNum
+            + Integer.BYTES  // firstUnackedPageNum
+            + Long.BYTES     // firstUnackedSeqNum
+            + Long.BYTES     // minSeqNum
+            + Integer.BYTES  // eventCount
+            + Long.BYTES;    // checksum
 
     private final String dirPath;
 
-    public FileCheckpointIO(String dirPath) throws IOException {
+    public FileCheckpointIO(String dirPath) {
         this.dirPath = dirPath;
     }
 
     @Override
     public Checkpoint read(String fileName) throws IOException {
         Path path  = Paths.get(fileName); // TODO: integrate dirPath
-
-        StreamInput si = new InputStreamStreamInput(Files.newInputStream(path));
-        byte version = si.readByte();
+        StreamInput issi = new InputStreamStreamInput(Files.newInputStream(path));
+        BufferedChecksumStreamInput crcsi = new BufferedChecksumStreamInput(issi);
+        byte version = crcsi.readByte();
         // TODO - build reader for this version
+        int pageNum = crcsi.readInt();
+        int firstUnackedPageNum = crcsi.readInt();
+        long firstUnackedSeqNum = crcsi.readLong();
+        long minSeqNum = crcsi.readLong();
+        int elementCount = crcsi.readInt();
+        long readCrc32 = crcsi.readLong();
+        long calcCrc32 = crcsi.getChecksum();
+        if (readCrc32 != calcCrc32) {
+            throw new IOException(String.format("Checkpoint checksum mismatch, expected: %d, actual: %d", calcCrc32, readCrc32));
+        }
         if (version != Checkpoint.VERSION) {
             throw new IOException("Unknown file format version: " + version);
         }
-
-        int pageNum = si.readInt();
-        int firstUnackedPageNum = si.readInt();
-        long firstUnackedSeqNum = si.readLong();
-        long minSeqNum = si.readLong();
-        int elementCount = si.readInt();
 
         return new Checkpoint(pageNum, firstUnackedPageNum, firstUnackedSeqNum, minSeqNum, elementCount);
     }
@@ -51,16 +61,11 @@ public class FileCheckpointIO  implements CheckpointIO {
     @Override
     public void write(String fileName, int pageNum, int firstUnackedPageNum, long firstUnackedSeqNum, long minSeqNum, int elementCount) throws IOException {
         Checkpoint checkpoint = new Checkpoint(pageNum, firstUnackedPageNum, firstUnackedSeqNum, minSeqNum, elementCount);
-
-        try {
-            FileOutputStream fos = new FileOutputStream(fileName, false);
-            write(checkpoint, fos.getChannel());
-            fos.flush();
-            fos.getFD().sync();
-            fos.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        FileOutputStream fos = new FileOutputStream(fileName, false);
+        write(checkpoint, fos.getChannel());
+        fos.flush();
+        fos.getFD().sync();
+        fos.close();
     }
 
     @Override
@@ -69,23 +74,24 @@ public class FileCheckpointIO  implements CheckpointIO {
         Files.delete(path);
     }
 
-
     private void write(Checkpoint checkpoint, FileChannel channel) throws IOException {
-        byte[] buffer = new byte[Checkpoint.BUFFER_SIZE];
-        final ByteArrayStreamOutput out = new ByteArrayStreamOutput(buffer);
-        write(checkpoint, out);
+        byte[] buffer = new byte[BUFFER_SIZE];
+        final ByteArrayStreamOutput baso = new ByteArrayStreamOutput(buffer);
+        write(checkpoint, baso);
         ByteBuffer buf = ByteBuffer.wrap(buffer);
         while(buf.hasRemaining()) {
             channel.write(buf);
         }
     }
 
-    private void write(Checkpoint checkpoint, StreamOutput out) throws IOException {
+    private void write(Checkpoint checkpoint, StreamOutput so) throws IOException {
+        final BufferedChecksumStreamOutput out = new BufferedChecksumStreamOutput(so);
         out.writeByte(Checkpoint.VERSION);
         out.writeInt(checkpoint.getPageNum());
         out.writeInt(checkpoint.getFirstUnackedPageNum());
         out.writeLong(checkpoint.getFirstUnackedSeqNum());
         out.writeLong(checkpoint.getMinSeqNum());
         out.writeInt(checkpoint.getElementCount());
+        out.writeLong(out.getChecksum());
     }
 }

@@ -15,9 +15,10 @@ public class Checkpoint {
             + Integer.BYTES  // firstUnackedPageNum
             + Long.BYTES     // firstUnackedSeqNum
             + Long.BYTES     // minSeqNum
-            + Integer.BYTES; // eventCount
+            + Integer.BYTES  // eventCount
+            + Long.BYTES;    // checksum
 
-    public static final byte VERSION = 0;
+    public static final byte VERSION = 1;
 
     private final int pageNum;             // local per-page page number
     private final int firstUnackedPageNum; // queue-wide global pointer, only valid in the head checkpoint

@@ -129,7 +129,7 @@ public class Queue {
          this.headPage.ensurePersistedUpto(seqNum);
     }
 
-    public Batch readBatch(int limit) {
+    public Batch readBatch(int limit) throws IOException {
         Page p = firstUnreadPage();
         if (p == null) {
             // TODO: add blocking + signaling with the write side for a blocking read

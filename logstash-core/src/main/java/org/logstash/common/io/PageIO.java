@@ -19,10 +19,10 @@ public interface PageIO {
     boolean hasSpace(int bytes);
 
     // write the given bytes to the data container
-    void write(byte[] bytes, Queueable element);
+    void write(byte[] bytes, Queueable element) throws IOException;
 
     // read up to limit number of items starting at give seqNum
-    List<ReadElementValue> read(long seqNum, int limit);
+    List<ReadElementValue> read(long seqNum, int limit) throws IOException;
 
     // @return the data container total capacity in bytes
     int getCapacity();
@@ -39,4 +39,7 @@ public interface PageIO {
 
     // delete, unlike, remove data file
     void purge() throws IOException;
+
+    // add debugging details, to be added when creating a new page
+    // void setPageHeaderDetails(String details);
 }

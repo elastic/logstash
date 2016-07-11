@@ -1,6 +1,13 @@
 package org.logstash.ackedqueue;
 
 public class QueueRuntimeException extends RuntimeException {
+
+    public static QueueRuntimeException newFormatMessage(String fmt, Object... args) {
+        return new QueueRuntimeException(
+                String.format(fmt, args)
+        );
+    }
+
     public QueueRuntimeException() {
     }
 

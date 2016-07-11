@@ -44,7 +44,7 @@ public abstract class Page {
     // @param limit the batch size limit
     // @param elementClass the concrete element class for deserialization
     // @return Batch batch of elements read when the number of elements can be <= limit
-    public Batch readBatch(int limit) {
+    public Batch readBatch(int limit) throws IOException {
 
         // first make sure this page is activated, activating previously activated is harmless
         this.pageIO.activate();

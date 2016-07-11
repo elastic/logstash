@@ -1,10 +1,10 @@
-package org.logstash.ackedqueue;
+package org.logstash.common.io;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.logstash.common.io.CheckpointIO;
-import org.logstash.common.io.CheckpointIOFactory;
-import org.logstash.common.io.MemoryCheckpointIO;
+import org.logstash.ackedqueue.Checkpoint;
+import org.logstash.ackedqueue.MemorySettings;
+import org.logstash.ackedqueue.Settings;
 
 import java.io.IOException;
 

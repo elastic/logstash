@@ -2,10 +2,6 @@ package org.logstash.ackedqueue;
 
 import org.junit.Test;
 import org.logstash.common.io.ByteBufferPageIO;
-import org.logstash.common.io.CheckpointIOFactory;
-import org.logstash.common.io.MemoryCheckpointIO;
-import org.logstash.common.io.PageIOFactory;
-
 
 import java.io.IOException;
 import java.util.Arrays;

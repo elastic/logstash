@@ -8,6 +8,7 @@ import org.logstash.common.io.PageIOFactory;
 public class TestSettings {
 
     public static Settings getSettings(int capacity) {
+        MemoryCheckpointIO.clearSources();
         Settings s = new MemorySettings();
         PageIOFactory ef = (size, path) -> new ByteBufferPageIO(size, path);
         CheckpointIOFactory ckpf = (source) -> new MemoryCheckpointIO(source);

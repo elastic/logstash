@@ -8,88 +8,149 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MemoryPageIOStream {
+public class MemoryPageIOStream implements PageIO {
     static final int CHECKSUM_SIZE = Integer.BYTES;
     static final int LENGTH_SIZE = Integer.BYTES;
     static final int SEQNUM_SIZE = Long.BYTES;
     static final int MIN_RECORD_SIZE = SEQNUM_SIZE + LENGTH_SIZE + CHECKSUM_SIZE;
-    static final int HEADER_SIZE = 1;     // version byte
+    static final int VERSION_SIZE = 1;     // one byte
+
     private final byte[] buffer;
-    private final int byteSize;
+    private final int capacity;
     private int writePosition;
     private int readPosition;
     private int elementCount;
-    private long startSeqNum;
+    private long minSeqNum;
     private ByteBufferStreamInput streamedInput;
     private ByteArrayStreamOutput streamedOutput;
     private BufferedChecksumStreamOutput crcWrappedOutput;
     private final List<Integer> offsetMap;
+    private String path = "";
+    private String headerDetails = "";
 
-    public MemoryPageIOStream(int byteSize) {
-        this(new byte[byteSize], 1L, 0, 1L); // empty array, first seqNum, no elements written yet, firstUnacked is first seqNum
+    public static int persistedByteCount(byte[] data) {
+        return persistedByteCount(data.length);
     }
 
-    public MemoryPageIOStream(byte[] initialBytes, Checkpoint ckp) {
-        this(initialBytes, ckp.getMinSeqNum(), ckp.getElementCount(), ckp.getFirstUnackedSeqNum());
+    public static int persistedByteCount(int length) {
+        return MIN_RECORD_SIZE + length;
     }
 
-    public MemoryPageIOStream(byte[] initialBytes, long minSeqNum, int elementCount, long firstUnackedSeqNum) {
+    public MemoryPageIOStream(int capacity, String path) throws IOException {
+        this(capacity, new byte[capacity]);
+        this.path = path;
+    }
+
+    public MemoryPageIOStream(int capacity) throws IOException {
+        this(capacity, new byte[capacity]);
+    }
+
+    public MemoryPageIOStream(int capacity, byte[] initialBytes) throws IOException {
+        this.capacity = capacity;
+        if (initialBytes.length > capacity) {
+            throw new IOException("initial bytes greater than capacity");
+        }
         buffer = initialBytes;
-        byteSize = initialBytes.length;
-        startSeqNum = minSeqNum;
-        this.elementCount = elementCount;
-        writePosition = HEADER_SIZE; //skip header bytes
         offsetMap = new ArrayList<>();
         streamedInput = new ByteBufferStreamInput(ByteBuffer.wrap(buffer));
         streamedOutput = new ByteArrayStreamOutput(buffer);
         crcWrappedOutput = new BufferedChecksumStreamOutput(streamedOutput);
-        if (this.elementCount == 0) {
-            addHeader();
-            readPosition = HEADER_SIZE; //skip header bytes
-            offsetMap.add(0, readPosition);
-            try {
-                streamedInput.skip(HEADER_SIZE);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        } else {
-            long readSeqNum;
-            try {
-                BufferedChecksumStreamInput in = new BufferedChecksumStreamInput(streamedInput);
-                in.skip(HEADER_SIZE);
-                readPosition = HEADER_SIZE; //skip header bytes
-                readSeqNum = in.readLong();
+    }
+
+    @Override
+    public void open(long minSeqNum, int elementCount) throws IOException {
+        this.minSeqNum = minSeqNum;
+        this.elementCount = elementCount;
+        writePosition = verifyHeader();
+        readPosition = writePosition;
+        if (elementCount > 0) {
+            long seqNumRead;
+            BufferedChecksumStreamInput in = new BufferedChecksumStreamInput(streamedInput);
+            for (int i = 0; i < this.elementCount; i++) {
+                if (writePosition + SEQNUM_SIZE + LENGTH_SIZE > capacity) {
+                    throw new IOException(String.format("cannot read seqNum and length bytes past buffer capacity"));
+                }
+
+                seqNumRead = in.readLong();
+
                 //verify that the buffer starts with the min sequence number
-                if (readSeqNum != this.startSeqNum) {
-                    // throw tragic error
+                if (i == 0 && seqNumRead != this.minSeqNum) {
+                    String msg = String.format("Page minSeqNum mismatch, expected: %d, actual: %d", this.minSeqNum, seqNumRead);
+                    throw new IOException(msg);
                 }
-                readVerifyRecord(in, calcRelativeSeqNum(readSeqNum));
-                for (int i = 1; i < this.elementCount; i++) {
-                    readVerifyRecord(in, calcRelativeSeqNum(in.readLong()));
+
+                in.resetDigest();
+                byte[] bytes = in.readByteArray();
+                int actualChecksum = (int) in.getChecksum();
+                int expectedChecksum = in.readInt();
+
+                if (actualChecksum != expectedChecksum) {
+                    // explode with tragic error
                 }
-                setInputStreamPosition(firstUnackedSeqNum);
-            } catch (IOException e) {
-                e.printStackTrace();
-                // throw tragic error
+
+                offsetMap.add(writePosition);
+                writePosition += persistedByteCount(bytes);
             }
+            setReadPoint(this.minSeqNum);
         }
     }
 
-    private void setInputStreamPosition(long seqNum) throws IOException {
-        streamedInput.rewind();
-        int relativeUnackedSeqNum = calcRelativeSeqNum(seqNum);
-        try {
-            int toSkip = offsetMap.get(relativeUnackedSeqNum);
-            streamedInput.skip(toSkip);
-            readPosition = toSkip;
-        } catch (IndexOutOfBoundsException e) {
-            e.printStackTrace();
-            // throw tragic error
-        }
+    @Override
+    public void create() throws IOException {
+        writePosition = addHeader();
+        readPosition = writePosition;
+        this.minSeqNum = 1L;
+        this.elementCount = 0;
     }
 
-    private int calcRelativeSeqNum(long seqNum) {
-        return (int) (seqNum - startSeqNum);
+    @Override
+    public boolean hasSpace(int byteSize) {
+        return this.capacity >= writePosition + persistedByteCount(byteSize);
+    }
+
+    @Override
+    public void write(byte[] bytes, Queueable element) throws IOException {
+        long seqNum = element.getSeqNum();
+        write(bytes, seqNum);
+    }
+
+    @Override
+    public List<ReadElementValue> read(long seqNum, int limit) throws IOException {
+        if (elementCount == 0) {
+            return new ArrayList<>();
+        }
+        setReadPoint(seqNum);
+        return read(limit);
+    }
+
+    @Override
+    public int getCapacity() {
+        return capacity;
+    }
+
+    @Override
+    public void deactivate() {
+        // do nothing
+    }
+
+    @Override
+    public void activate() {
+        // do nothing
+    }
+
+    @Override
+    public void ensurePersisted() {
+        // do nothing
+    }
+
+    @Override
+    public void purge() throws IOException {
+        // do nothing
+    }
+
+    //@Override
+    public void setPageHeaderDetails(String details) {
+        headerDetails = details;
     }
 
     public int getWritePosition() {
@@ -100,8 +161,8 @@ public class MemoryPageIOStream {
         return elementCount;
     }
 
-    public long getStartSeqNum() {
-        return startSeqNum;
+    public long getMinSeqNum() {
+        return minSeqNum;
     }
 
     // used in tests
@@ -109,57 +170,66 @@ public class MemoryPageIOStream {
         return buffer;
     }
 
-    private void addHeader() {
-        buffer[0] = Checkpoint.VERSION;
+    // used in tests
+    public String readHeaderDetails() throws IOException {
+        int tempPosition = readPosition;
+        streamedInput.movePosition(0);
+        byte ver = streamedInput.readByte();
+        String details = new String(streamedInput.readByteArray());
+        streamedInput.movePosition(tempPosition);
+        return details;
     }
 
-    private void readVerifyRecord(BufferedChecksumStreamInput in, int relativeSeqNum) throws IOException {
-        in.resetDigest();
-        byte[] bytes = in.readByteArray();
-        int actualChecksum = (int) in.getChecksum();
-        int expectedChecksum = in.readInt();
-        if (actualChecksum != expectedChecksum) {
-            // explode with tragic error
-        }
-        offsetMap.add(relativeSeqNum, readPosition);
-        readPosition += recordSize(bytes);
-    }
-
-    public static int recordSize(byte[] data) {
-        return MIN_RECORD_SIZE + data.length;
-    }
-
-    public static int recordSize(int length) {
-        return MIN_RECORD_SIZE + length;
-    }
-
-    public boolean hasSpace(int byteSize) {
-        return this.byteSize >= writePosition + recordSize(byteSize);
-    }
-
-    public long write(Queueable element) throws IOException {
+    // Optional write method, remove if only used in tests
+    public void write(Queueable element) throws IOException {
         byte[] bytes = element.serialize();
         long seqNum = element.getSeqNum();
-        return write(bytes, seqNum);
+        write(bytes, seqNum);
     }
 
-    public long write(byte[] bytes, Queueable element) throws IOException {
-        long seqNum = element.getSeqNum();
-        return write(bytes, seqNum);
-    }
-
-    public long write(byte[] bytes, long seqNum) throws IOException {
-        int writeLength = recordSize(bytes);
-        writeRecordToBuffer(seqNum, bytes, writeLength);
+    // Optional write method, remove if only used in tests
+    public void write(byte[] bytes, long seqNum) throws IOException {
+        int pos = this.writePosition;
+        int writeLength = persistedByteCount(bytes);
+        writeToBuffer(seqNum, bytes, writeLength);
         writePosition += writeLength;
-        if (elementCount == 0) {
-            this.startSeqNum = seqNum;
+        assert writePosition == streamedOutput.getPosition() :
+                String.format("writePosition=%d != streamedOutput position=%d", writePosition, streamedOutput.getPosition());
+        if (elementCount <= 0) {
+            this.minSeqNum = seqNum;
         }
+        this.offsetMap.add(pos);
         elementCount++;
-        return seqNum;
     }
 
-    private void writeRecordToBuffer(long seqNum, byte[] data, int len) throws IOException {
+    private void setReadPoint(long seqNum) throws IOException {
+        int readPosition = offsetMap.get(calcRelativeSeqNum(seqNum));
+        streamedInput.movePosition(readPosition);
+    }
+
+    private int calcRelativeSeqNum(long seqNum) {
+        return (int) (seqNum - minSeqNum);
+    }
+
+    private int addHeader() throws IOException {
+        streamedOutput.writeByte(Checkpoint.VERSION);
+        byte[] details = headerDetails.getBytes();
+        streamedOutput.writeByteArray(details);
+        return VERSION_SIZE + LENGTH_SIZE + details.length;
+    }
+
+    private int verifyHeader() throws IOException {
+        byte ver = streamedInput.readByte();
+        if (ver != Checkpoint.VERSION) {
+            String msg = String.format("Page version mismatch, expecting: %d, this version: %d", Checkpoint.VERSION, ver);
+            throw new IOException(msg);
+        }
+        int len = streamedInput.readInt();
+        streamedInput.skip(len);
+        return VERSION_SIZE + LENGTH_SIZE + len;
+    }
+
+    private void writeToBuffer(long seqNum, byte[] data, int len) throws IOException {
         streamedOutput.setWriteWindow(writePosition, len);
         crcWrappedOutput.writeLong(seqNum);
         crcWrappedOutput.resetDigest();
@@ -170,12 +240,7 @@ public class MemoryPageIOStream {
         crcWrappedOutput.close();
     }
 
-    public List<ReadElementValue> read(long seqNum, int limit) throws IOException {
-        setInputStreamPosition(seqNum);
-        return read(limit);
-    }
-
-    public List<ReadElementValue> read(int limit) throws IOException {
+    private List<ReadElementValue> read(int limit) throws IOException {
         ArrayList<ReadElementValue> result = new ArrayList<>();
         int upto = available(limit);
         for (int i = 0; i < upto; i++) {

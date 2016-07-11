@@ -114,7 +114,7 @@ public class ByteBufferPageIO implements PageIO {
         return persistedByteCount(bytes) <= bytesLeft;
     }
 
-    public void write(byte[] bytes, Queueable element) {
+    public void write(byte[] bytes, Queueable element) throws IOException {
         // since writes always happen at head, we can just append head to the offsetMap
         assert this.offsetMap.size() == this.elementCount :
                 String.format("offsetMap size=%d != elementCount=%d", this.offsetMap.size(), this.elementCount);
@@ -137,7 +137,7 @@ public class ByteBufferPageIO implements PageIO {
         this.elementCount++;
     }
 
-    public List<ReadElementValue> read(long seqNum, int limit) {
+    public List<ReadElementValue> read(long seqNum, int limit) throws IOException {
         assert seqNum >= this.minSeqNum :
                 String.format("seqNum=%d < minSeqNum=%d", seqNum, this.minSeqNum);
         assert seqNum <= maxSeqNum() :

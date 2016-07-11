@@ -24,7 +24,7 @@ public class HeadPage extends Page {
     // a serialized element byte[] and serialization is done at the Queue level to
     // be able to use the Page.hasSpace() method with the serialized element byte size.
     //
-    public void write(byte[] bytes, Queueable element) {
+    public void write(byte[] bytes, Queueable element) throws IOException {
         this.pageIO.write(bytes, element);
 
         if (this.minSeqNum <= 0) {
