@@ -1,6 +1,6 @@
 # encoding: utf-8
 require 'spec_helper'
-require 'rakelib/default_plugins'
+require File.expand_path(File.join(__FILE__, '..', '..', '..', 'rakelib','default_plugins'))
 
 describe "Project licenses" do
 
