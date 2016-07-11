@@ -178,19 +178,13 @@ describe LogStash::Config::Mixin do
       end
     end
 
-    shared_examples("safe URI") do            
+    shared_examples("safe URI") do |options|
+      options ||= {}
+      
       subject { klass.new("uri" => uri_str) }
 
       it "should be a SafeURI object" do
         expect(subject.uri).to(be_a(LogStash::Util::SafeURI))
-      end
-
-      it "should make password values hidden with #to_s" do
-        expect(subject.uri.to_s).to eql(uri_hidden)
-      end
-
-      it "should make password values hidden with #inspect" do
-        expect(subject.uri.inspect).to eql(uri_hidden)
       end
 
       it "should correctly copy URI types" do
@@ -206,6 +200,18 @@ describe LogStash::Config::Mixin do
         expect(subject.original_params['uri']).to(be_a(LogStash::Util::SafeURI))
       end
 
+      if !options[:exclude_password_specs]
+        describe "passwords" do
+          it "should make password values hidden with #to_s" do
+            expect(subject.uri.to_s).to eql(uri_hidden)
+          end
+
+          it "should make password values hidden with #inspect" do
+            expect(subject.uri.inspect).to eql(uri_hidden)
+          end
+        end
+      end
+
       context "attributes" do
         [:scheme, :user, :password, :hostname, :path].each do |attr|
           it "should make #{attr} available" do
@@ -213,6 +219,19 @@ describe LogStash::Config::Mixin do
           end
         end
       end
+    end
+
+    context "with a host:port combination" do
+      let(:scheme) { nil }
+      let(:user) { nil }
+      let(:password) { nil }
+      let(:hostname) { "myhostname" }
+      let(:port) { 1234 }
+      let(:path) { "" }
+      let(:uri_str) { "#{hostname}:#{port}" }
+      let(:uri_hidden) { "//#{hostname}:#{port}" }
+
+      include_examples("safe URI", :exclude_password_specs => true)
     end
 
     context "with a username / password" do
