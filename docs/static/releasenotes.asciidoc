@@ -3,188 +3,29 @@
 
 This section summarizes the changes in each release.
 
-* <<logstash-2-3-4,Logstash 2.3.4>>
-* <<logstash-2-3-3,Logstash 2.3.3>>
-* <<logstash-2-3-2,Logstash 2.3.2>>
-* <<logstash-2-3-1,Logstash 2.3.1>>
-* <<logstash-2-3,Logstash 2.3>>
+* <<logstash-2-4,Logstash 2.4>>
 
-[[logstash-2-3-4]]
-=== Logstash 2.3.4 Release Notes
-
-[float]
-==== Output Plugins
-
-*`Elasticsearch`*:
-
-* Fixed an issue where unnecessary information from HTTP headers was being logged. 
-
-[[logstash-2-3-3]]
-=== Logstash 2.3.3 Release Notes
-
-* Fixed a bug where the dynamic config reload feature could use excessive amounts of memory, leading to a crash ({lsissue}5235[Issue 5235]).
-* Fixed a bug where Logstash would not stop even when `KILL_ON_STOP_TIMEOUT` was specified ({lsissue}5427[Issue 5427]).
+[[logstash-2-4]]
+=== Logstash 2.4 Release Notes
 
 [float]
 ==== Input Plugins
 
-*`TCP`*:
+*`Plugin`*:
 
-* Changed the log level of the SSLError for the handshake from `error` to `debug`.
-
-*`RabbitMQ`*:
-
-* Fixed the `ssl` option to be boolean again (https://github.com/logstash-plugins/logstash-input-rabbitmq/issues/82[Issue 82]).
-* Added a separate `ssl_version` parameter.
-* Marked the `verify_ssl` parameter as obsolete because it never worked.
-* Added better checks for SSL argument consistency.
+* Description of change (link to issue).
 
 [float]
 ==== Filter Plugins
 
-*`KV`*:
+*`Plugin`*:
 
-* Added `:transform_value` and `:transform_key` options to lowercase/uppercase or capitalize all keys/values.
-
-*`XML`*:
-
-* Added a new configuration option called `suppress_empty`. By default the filter creates an empty hash from empty
-XML elements (`suppress_empty => false`). You can now set `supress_empty => true` so that the filter does not create
-event fields from empty XML elements.
-* Added a new configuration option called `force_content`. By default, the filter expands attributes differently for content in XML elements. This option allows you to force text content and attributes to always parse to a hash value.
-* Fixed a bug that ensures that a target is set when storing XML content in the event (`store_xml => true`).
+* Description of change (link to issue).
 
 [float]
 ==== Output Plugins
 
-*`Elasticsearch`*:
+*`Plugin`*:
 
-* Added a pipeline configuration option for setting an ingest pipeline to run upon indexing.
-
-[[logstash-2-3-2]]
-=== Logstash 2.3.2 Release Notes
-
-* Added reload support to the init script so you can do `service logstash reload`.
-* The original intent of `"%{foo}"` syntax was to always produce a string, but the previous 2.x and 1.5.x versions
-returned a float (underlying value). Starting in release 2.3.0, Logstash returned the underlying value type for
-field references. In 2.3.2 we are returning back to the 2.x and 1.5.x behavior of returning a float because changing
-the behavior broke compatibility in a minor release ({lsissue}5114[Issue 5114]).
-* Fixed use of the `KILL_ON_STOP_TIMEOUT` variable in init scripts, which allows Logstash to force stop ({lsissue}4991[Issue 4991]).
-   
-[float]
-==== Input Plugins
-
-*`Beats`*:
-
-* Fixed an issue encountered when the time-based flush feature was used with the multiline codec
-(https://github.com/logstash-plugins/logstash-input-beats/issues/73[Issue 73]).
-
-*`HTTP Poller`*:
-
-* Fixed the `ssl_certificate_validation` option so that it actually lets you disable cert validation 
-(https://github.com/logstash-plugins/logstash-input-http_poller/issues/48[Issue 48]).
-
-[float]
-==== Filter Plugins
-
-*`XML`*:
-
-* Added a setting called `force_array` that when set to false prevents storing single elements in arrays
-(https://github.com/logstash-plugins/logstash-filter-xml/issues/27[Issue 27]).
-
-[float]
-==== Output Plugins
-
-*`Redis`*:
-
-* Fixed a flood of runtime warnings that were logged when the Redis output was used (https://github.com/logstash-plugins/logstash-output-redis/issues/26[Issue 26]).
-
-[[logstash-2-3-1]]
-=== Logstash 2.3.1 Release Notes
-
-* Fixed a JRuby thread safety issue that was encountered when using regular expressions under multiple workers
-({lsissue}4977[Issue 4977]).
-* Disabled environment variables interpolation by default. This feature is experimental in Logstash 2.3.1. To turn it on use the `--allow-env` flag ({lsissue}4958[Issue 4958]). 
-* Changed the Logstash shutdown process to hide sensitive data from the log when shutting down a stale Logstash
-({lsissue}4952[Issue 4952]).
-* Disabled the default behavior of outputting the Configuration AST when running Logstash in debug mode. Introduced the `--debug-config` flag to display the AST ({lsissue}4965[Issue 4965]).
-* Fixed an error encountered when running Logstash with the `--config-test` flag ({lsissue}4933[Issue 4933]).
-* Made filter conditionals work when running Logstash with automatic configuration reloading ({lsissue}4968[Issue 4968]).
-* Fixed the stop command of the Ubuntu init script ({lsissue}4940[Issue 4940]).
-
-[float]
-==== Input Plugins
-
-*`Beats`*:
-
-* Changed when the identity map is used. Now it's only used when the configuration specifies the multiline codec 
-(https://github.com/logstash-plugins/logstash-input-beats/pull/70[Issue 70]).
-
-
-[[logstash-2-3]]
-=== Logstash 2.3 Release Notes
-
-* Added dynamic config, a new feature to track config file for changes and restart the 
-  pipeline (same process) with updated config changes. This feature can be enabled in two 
-  ways: Passing a CLI long-form option `--auto-reload` or with short-form `-r`. Another 
-  option, `--reload-interval <seconds>` controls how often LS should check the config files 
-  for changes. Alternatively, if you don't start with the CLI option, you can send SIGHUP 
-  or `kill -1` signal to LS to reload the config file, and restart the pipeline ({lsissue}4513[Issue 4513]).
-* Added support to evaluate environment variables inside the Logstash config. You can also specify a 
-  default if the variable is not defined. The syntax is `${myVar:default}` ({lsissue}3944[Issue 3944]).
-* Added ability to configure custom garbage collection log file using `$LS_LOG_DIR`.
-* Deprecated `bin/plugin` in favor of `bin/logstash-plugin`. In the next major version `bin/plugin` will 
-  be removed to prevent `PATH` being polluted when other components of the Elastic stack are installed on 
-  the same instance ({lsissue}4891[Issue 4891]).
-* Fixed a bug where new pipeline might break plugins by calling the `register` method twice causing 
-  undesired behavior ({lsissue}4851[Issue 4851]).
-* Made `JAVA_OPTS` and `LS_JAVA_OPTS` work consistently on Windows ({lsissue}4758[Issue 4758]).
-* Fixed a bug where specifying JMX parameters in `LS_JAVA_OPTS` caused Logstash not to restart properly
-  ({lsissue}4319[Issue 4319]).
-* Fixed a bug where upgrading plugins with Manticore threw an error and sometimes corrupted installation ({lsissue}4818[Issue 4818]).
-* Removed milestone warning that was displayed when the `--pluginpath` option was used to load plugins ({lsissue}4562[Issue 4562]).
-* Upgraded to JRuby 1.7.24.
-* Reverted default output workers to 1. Previously we had made output workers the same as number of pipeline workers ({lsissue}4877[Issue 4877]). 
-
-[float]
-==== Input Plugins
-
-*`Beats`*:
-
-* Enhanced to verify client certificates against CA (https://github.com/logstash-plugins/logstash-input-beats/issues/8[Issue 8]).
-
-*`RabbitMQ`*:
-
-* Breaking Change: Metadata is now disabled by default because it was regressing performance.
-* Improved performance by using an internal queue and bulk ACKs.
-
-*`Redis`*:
-
-* Increased the batch_size to 100 by default. This provides a big jump in throughput and 
-  reduction in CPU utilization (https://github.com/logstash-plugins/logstash-input-redis/issues/25[Issue 25]).
-
-*`JDBC`*:
-
-* Added retry connection feature (https://github.com/logstash-plugins/logstash-input-http/issues/33[Issue 33]).
-
-[float]
-==== Filter Plugins
-
-*`DNS`*:
-
-* Improved performance by adding caches to both successful and failed requests.
-* Added support for retrying with the `:max_retries` setting.
-* Lowered the default value of timeout from 2 to 0.5 seconds.
-
-[float]
-==== Output Plugins
-
-*`Elasticsearch`*:
-
-* Bumped minimum Manticore version to 0.5.4 which fixes a memory leak when sniffing 
-  is used (https://github.com/logstash-plugins/logstash-output-elasticsearch/issues/392[Issue 392]).
-* Fixed bug when updating documents with doc_as_upsert and scripting.   
-* Made error messages more verbose and easier to parse by humans.
-* Retryable failures are now logged at the info level instead of warning.
-
+* Description of change (link to issue).
 
