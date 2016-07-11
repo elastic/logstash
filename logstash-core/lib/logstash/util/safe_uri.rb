@@ -6,6 +6,7 @@ require "logstash/util"
 # logged, you don't accidentally print the password itself.
 class LogStash::Util::SafeURI
   PASS_PLACEHOLDER = "xxxxxx".freeze
+  HOSTNAME_PORT_REGEX=/\A(?<hostname>([A-Za-z0-9\.\-]+)|\[[0-9A-Fa-f\:]+\])(:(?<port>\d+))?\Z/
   
   extend Forwardable
   
@@ -17,6 +18,7 @@ class LogStash::Util::SafeURI
   def initialize(arg)    
     @uri = case arg
            when String
+             arg = "//#{arg}" if HOSTNAME_PORT_REGEX.match(arg)
              URI.parse(arg)
            when URI
              arg
