@@ -20,7 +20,6 @@ module LogStash
             :events => events_payload,
             :jvm => jvm_payload,
             :process => process_payload,
-            :mem => mem_payload,
             :pipeline => pipeline_payload
           }
 
@@ -45,10 +44,6 @@ module LogStash
 
         get "/process" do
           respond_with :process => process_payload
-        end
-
-        get "/mem" do
-          respond_with :mem => mem_payload
         end
 
         get "/pipeline" do

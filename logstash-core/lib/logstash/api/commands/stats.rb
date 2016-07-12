@@ -11,7 +11,8 @@ module LogStash
               [:jvm, :threads],
               :count,
               :peak_count
-            )
+            ),
+            :mem => memory
           }
         end
 
