@@ -1,7 +1,7 @@
 package org.logstash.common.io;
 
 import org.junit.Test;
-import org.logstash.ackedqueue.ElementFactory;
+import org.logstash.ackedqueue.ElementDeserialiser;
 import org.logstash.ackedqueue.Queueable;
 import org.logstash.ackedqueue.StringElement;
 
@@ -172,7 +172,7 @@ public class MemoryPageIOStreamTest {
     public void readFromFirstUnackedSeqNum() throws Exception {
         long sequenceNumber = 10L;
         String[] values = new String[]{"aaa", "bbb", "ccc", "ddd", "eee", "fff", "ggg", "hhh", "iii", "jjj"};
-        MemoryPageIOStream stream = subject(200);
+        MemoryPageIOStream stream = subject(300);
         for (String val : values) {
             stream.write(buildStringElement(val, sequenceNumber));
             sequenceNumber++;
@@ -182,7 +182,7 @@ public class MemoryPageIOStreamTest {
         sequenceNumber = 13L;
         List<ReadElementValue> result = subj.read(sequenceNumber, batchSize);
         for (int i = 0; i < 3; i++) {
-            Queueable ele = ElementFactory.build(result.get(i));
+            Queueable ele = StringElement.deserialize(result.get(i).getBinaryValue());
             assertThat(ele.getSeqNum(), is(equalTo(sequenceNumber + i)));
             assertThat(ele.toString(), is(equalTo(values[i + 3])));
         }

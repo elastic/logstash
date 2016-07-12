@@ -50,7 +50,7 @@ public abstract class Page {
         this.pageIO.activate();
 
         List<ReadElementValue> serializedElements = this.pageIO.read(this.firstUnreadSeqNum, limit);
-        List<Queueable> elements = serializedElements.stream().map(readElement -> ElementFactory.deserialize(readElement.getBinaryValue())).collect(Collectors.toList());
+        List<Queueable> elements = serializedElements.stream().map(readElement -> this.queue.getDeserialiser().deserialize(readElement.getBinaryValue())).collect(Collectors.toList());
         Batch batch = new Batch(elements, this.queue);
 
         this.firstUnreadSeqNum += elements.size();

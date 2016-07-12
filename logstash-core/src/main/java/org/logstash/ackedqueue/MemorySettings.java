@@ -8,7 +8,7 @@ import java.util.Map;
 public class MemorySettings implements Settings {
     private CheckpointIOFactory checkpointIOFactory;
     private PageIOFactory pageIOFactory;
-    private Map<String, String> sources;
+    private ElementDeserialiser elementDeserialiser;
     private int capacity;
 
     public MemorySettings() {}
@@ -26,6 +26,12 @@ public class MemorySettings implements Settings {
     }
 
     @Override
+    public Settings setElementDeserialiser(ElementDeserialiser factory) {
+        this.elementDeserialiser = factory;
+        return this;
+    }
+
+    @Override
     public Settings setCapacity(int capacity) {
         this.capacity = capacity;
         return this;
@@ -38,6 +44,11 @@ public class MemorySettings implements Settings {
 
     public PageIOFactory getPageIOFactory() {
         return pageIOFactory;
+    }
+
+    @Override
+    public ElementDeserialiser getElementDeserialiser() {
+        return this.elementDeserialiser;
     }
 
     @Override

@@ -10,11 +10,12 @@ public class TestSettings {
     public static Settings getSettings(int capacity) {
         MemoryCheckpointIO.clearSources();
         Settings s = new MemorySettings();
-        PageIOFactory ef = (size, path) -> new ByteBufferPageIO(size, path);
-        CheckpointIOFactory ckpf = (source) -> new MemoryCheckpointIO(source);
+        PageIOFactory pageIOFactory = (size, path) -> new ByteBufferPageIO(size, path);
+        CheckpointIOFactory checkpointIOFactory = (source) -> new MemoryCheckpointIO(source);
         s.setCapacity(capacity);
-        s.setElementIOFactory(ef);
-        s.setCheckpointIOFactory(ckpf);
+        s.setElementIOFactory(pageIOFactory);
+        s.setCheckpointIOFactory(checkpointIOFactory);
+        s.setElementDeserialiser(new ElementDeserialiser(StringElement.class));
         return s;
     }
 }

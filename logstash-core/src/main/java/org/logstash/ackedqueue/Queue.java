@@ -26,6 +26,7 @@ public class Queue {
     private final Settings settings;
 
     private final CheckpointIO checkpointIO;
+    private final ElementDeserialiser deserialiser;
 
     // TODO: I really don't like the idea of passing a dummy PageIO object for the sake of holding a reference to the
     // concrete class for later invoking open() and create() in the Page
@@ -33,6 +34,7 @@ public class Queue {
         this.settings = settings;
         this.tailPages = new ArrayList<>();
         this.checkpointIO = settings.getCheckpointIOFactory().build(settings.getDirPath());
+        this.deserialiser = settings.getElementDeserialiser();
     }
 
     // moved queue opening logic in open() method until we have something in place to used in-memory checkpoints for testing
@@ -198,6 +200,10 @@ public class Queue {
 
     public CheckpointIO getCheckpointIO() {
         return this.checkpointIO;
+    }
+
+    public ElementDeserialiser getDeserialiser() {
+        return this.deserialiser;
     }
 
     public Page firstUnreadPage() {
