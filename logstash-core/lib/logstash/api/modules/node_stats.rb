@@ -17,25 +17,12 @@ module LogStash
         # retrieved and show
         get "/" do          
           payload = {
-            :events => events_payload,
             :jvm => jvm_payload,
             :process => process_payload,
             :pipeline => pipeline_payload
           }
 
           respond_with payload
-        end
-
-        # Show all events stats information
-        # (for ingested, emitted, dropped)
-        # - #events since startup
-        # - #data (bytes) since startup
-        # - events/s
-        # - bytes/s
-        # - dropped events/s
-        # - events in the pipeline
-        get "/events" do
-          respond_with({ :events => events_payload })
         end
 
         get "/jvm" do
