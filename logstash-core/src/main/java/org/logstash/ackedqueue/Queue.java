@@ -139,15 +139,16 @@ public class Queue {
         return p.readBatch(limit);
     }
 
-    public void ack(long[] seqNums) throws IOException {
+    public void ack(List<Long> seqNums) throws IOException {
         // as a first implementation we assume that all batches are created from the same page
         // so we will avoid multi pages acking here for now
 
         Page ackPage = null;
 
         // first the page to ack by travesing from oldest tail page
+        long firstAckSeqNum = seqNums.get(0);
         for (Page p : this.tailPages) {
-            if (p.getMinSeqNum() > 0 && seqNums[0] >= p.getMinSeqNum()) {
+            if (p.getMinSeqNum() > 0 && firstAckSeqNum >= p.getMinSeqNum()) {
                 ackPage = p;
                 break;
             }
@@ -157,8 +158,8 @@ public class Queue {
         if (ackPage == null) {
             ackPage = this.headPage;
 
-            assert this.headPage.getMinSeqNum() > 0 && seqNums[0] >= this.headPage.getMinSeqNum() :
-                    String.format("seqNum=%d is not in any page", seqNums[0]);
+            assert this.headPage.getMinSeqNum() > 0 && firstAckSeqNum >= this.headPage.getMinSeqNum() :
+                    String.format("seqNum=%d is not in head page with minSeqNum=%d", firstAckSeqNum, this.headPage.getMinSeqNum());
         }
 
         ackPage.ack(seqNums);
@@ -172,7 +173,7 @@ public class Queue {
         // TODO: since acking is within a single page, we don't really need to traverse whole tail pages, we can optimize this
 
         while (i.hasNext()) {
-            BeheadedPage p = (BeheadedPage)i.next();
+            BeheadedPage p = i.next();
             if (p.isFullyAcked()) {
                 i.remove();
                 changed = true;
@@ -192,11 +193,11 @@ public class Queue {
     }
 
     private long nextSeqNum() {
-        return seqNum += 1;
+        return this.seqNum += 1;
     }
 
     public CheckpointIO getCheckpointIO() {
-        return checkpointIO;
+        return this.checkpointIO;
     }
 
     public Page firstUnreadPage() {

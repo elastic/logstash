@@ -1,6 +1,7 @@
 package org.logstash.ackedqueue;
 
 import java.io.Closeable;
+import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
@@ -21,14 +22,12 @@ public class Batch implements Closeable {
     }
 
     // close acks the batch ackable events
-    public void close() {
+    public void close() throws IOException {
         if (closed.getAndSet(true) == false) {
-//            Long[] seqNums = new Long[this.ackableSeqNums.size()];
-//            seqNums = this.ackableSeqNums.toArray(seqNums);
-//            this.queue.ack(seqNums);
+              this.queue.ack(this.ackableSeqNums);
         } else {
-            // TODO: double close hnalding
-            // throw?
+            // TODO: how should we handle double-closing?
+            throw new IOException("double closing batch");
         }
     }
 

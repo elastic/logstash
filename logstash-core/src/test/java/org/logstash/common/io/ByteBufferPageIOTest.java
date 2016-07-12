@@ -82,7 +82,7 @@ public class ByteBufferPageIOTest {
         ByteBufferPageIO subj = subject();
         subj.create();
         subj.write(element.serialize(), element);
-        assertThat(subj.getWritePosition(), is(equalTo(26)));
+        assertThat(subj.getWritePosition(), is(equalTo(ByteBufferPageIO.HEADER_SIZE +  ByteBufferPageIO.persistedByteCount(element.serialize().length))));
         assertThat(subj.getElementCount(), is(equalTo(1)));
         assertThat(subj.getMinSeqNum(), is(equalTo(42L)));
     }

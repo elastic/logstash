@@ -69,7 +69,7 @@ public abstract class Page {
         return this.elementCount > 0 && this.ackedSeqNums.cardinality() >= this.elementCount;
     }
 
-    public void ack(long[] seqNums) throws IOException {
+    public void ack(List<Long> seqNums) throws IOException {
         for (long seqNum : seqNums) {
             // TODO: eventually refactor to use new bit handling class
             this.ackedSeqNums.set((int)(seqNum - this.minSeqNum));

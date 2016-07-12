@@ -1,5 +1,7 @@
 package org.logstash.ackedqueue;
 
+import java.nio.ByteBuffer;
+
 public class StringElement implements Queueable {
     private final String content;
     private long seqNum;
@@ -16,11 +18,22 @@ public class StringElement implements Queueable {
 
     @Override
     public byte[] serialize() {
-        return this.content.getBytes();
+        byte[] contentBytes = this.content.getBytes();
+        ByteBuffer buffer = ByteBuffer.allocate(Long.BYTES + contentBytes.length);
+        buffer.putLong(this.seqNum);
+        buffer.put(contentBytes);
+        return buffer.array();
     }
 
     public static StringElement deserialize(byte[] bytes) {
-        return new StringElement(new String(bytes));
+        ByteBuffer buffer = ByteBuffer.allocate(bytes.length);
+        buffer.put(bytes);
+
+        buffer.position(0);
+        long seqNum = buffer.getLong();
+        byte[] content = new byte[bytes.length - Long.BYTES];
+        buffer.get(content);
+        return new StringElement(new String(content), seqNum);
     }
 
     @Override

@@ -93,23 +93,71 @@ public class QueueTest {
         List<Queueable> elements = Arrays.asList(new StringElement("foobarbaz1"), new StringElement("foobarbaz2"), new StringElement("foobarbaz3"), new StringElement("foobarbaz4"));
         int singleElementCapacity = ByteBufferPageIO.HEADER_SIZE + ByteBufferPageIO.persistedByteCount(elements.get(0).serialize().length);
 
-        Queue q = new TestQueue(TestSettings.getSettings(2 * singleElementCapacity));
+        TestQueue q = new TestQueue(TestSettings.getSettings(2 * singleElementCapacity));
         q.open();
 
         for (Queueable e : elements) {
             q.write(e);
         }
 
-        assertThat(q.tailPages.size(), is(equalTo(1)));
+        // total of 2 pages: 1 head and 1 tail
+        assertThat(q.getTailPages().size(), is(equalTo(1)));
+
+        assertThat(q.getTailPages().get(0).isFullyRead(), is(equalTo(false)));
+        assertThat(q.getTailPages().get(0).isFullyAcked(), is(equalTo(false)));
+        assertThat(q.getHeadPage().isFullyRead(), is(equalTo(false)));
+        assertThat(q.getHeadPage().isFullyAcked(), is(equalTo(false)));
 
         Batch b = q.readBatch(10);
         assertThat(b.getElements().size(), is(equalTo(2)));
 
+        assertThat(q.getTailPages().size(), is(equalTo(1)));
+
+        assertThat(q.getTailPages().get(0).isFullyRead(), is(equalTo(true)));
+        assertThat(q.getTailPages().get(0).isFullyAcked(), is(equalTo(false)));
+        assertThat(q.getHeadPage().isFullyRead(), is(equalTo(false)));
+        assertThat(q.getHeadPage().isFullyAcked(), is(equalTo(false)));
+
         b = q.readBatch(10);
         assertThat(b.getElements().size(), is(equalTo(2)));
 
+        assertThat(q.getTailPages().get(0).isFullyRead(), is(equalTo(true)));
+        assertThat(q.getTailPages().get(0).isFullyAcked(), is(equalTo(false)));
+        assertThat(q.getHeadPage().isFullyRead(), is(equalTo(true)));
+        assertThat(q.getHeadPage().isFullyAcked(), is(equalTo(false)));
+
         b = q.readBatch(10);
         assertThat(b, is(equalTo(null)));
+    }
 
+
+    @Test
+    public void writeMultiPageWithInOrderAcking() throws IOException {
+        List<Queueable> elements = Arrays.asList(new StringElement("foobarbaz1"), new StringElement("foobarbaz2"), new StringElement("foobarbaz3"), new StringElement("foobarbaz4"));
+        int singleElementCapacity = ByteBufferPageIO.HEADER_SIZE + ByteBufferPageIO.persistedByteCount(elements.get(0).serialize().length);
+
+        TestQueue q = new TestQueue(TestSettings.getSettings(2 * singleElementCapacity));
+        q.open();
+
+        for (Queueable e : elements) {
+            q.write(e);
+        }
+
+        Batch b = q.readBatch(10);
+
+        assertThat(b.getElements().size(), is(equalTo(2)));
+        assertThat(q.getTailPages().size(), is(equalTo(1)));
+
+        // lets keep a ref to that tail page before acking
+        BeheadedPage tailPage = q.getTailPages().get(0);
+
+        assertThat(tailPage.isFullyRead(), is(equalTo(true)));
+
+        // ack first batch which includes all elements from tailpage
+        b.close();
+
+        assertThat(q.getTailPages().size(), is(equalTo(0)));
+        assertThat(tailPage.isFullyRead(), is(equalTo(true)));
+        assertThat(tailPage.isFullyAcked(), is(equalTo(true)));
     }
 }

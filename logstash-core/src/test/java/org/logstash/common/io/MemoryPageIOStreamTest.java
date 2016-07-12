@@ -95,7 +95,7 @@ public class MemoryPageIOStreamTest {
         Queueable element = new StringElement("foobarbaz");
         element.setSeqNum(42L);
         byte[] data = element.serialize();
-        int bufferSize = 100;
+        int bufferSize = 120;
         MemoryPageIOStream subj = subject(bufferSize);
         long seqno = 42L;
         while (subj.hasSpace(data.length)) {
@@ -104,7 +104,7 @@ public class MemoryPageIOStreamTest {
         }
         int recordSize = MemoryPageIOStream.persistedByteCount(data.length);
         int remains = bufferSize - subj.getWritePosition();
-        assertThat(recordSize, is(equalTo(25)));
+        assertThat(recordSize, is(equalTo(33))); // (element is 9 + 8) + seqnum=8 + length=4 + crc=4
         assertThat(subj.getElementCount(), is(equalTo(3)));
         boolean noSpaceLeft = remains < recordSize;
         assertThat(noSpaceLeft, is(true));
