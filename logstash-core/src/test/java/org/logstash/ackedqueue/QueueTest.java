@@ -2,6 +2,7 @@ package org.logstash.ackedqueue;
 
 import org.junit.Test;
 import org.logstash.common.io.ByteBufferPageIO;
+import org.logstash.common.io.CheckpointIO;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -9,6 +10,7 @@ import java.util.List;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 public class QueueTest {
@@ -159,5 +161,94 @@ public class QueueTest {
         assertThat(q.getTailPages().size(), is(equalTo(0)));
         assertThat(tailPage.isFullyRead(), is(equalTo(true)));
         assertThat(tailPage.isFullyAcked(), is(equalTo(true)));
+
+        b = q.readBatch(10);
+
+        assertThat(b.getElements().size(), is(equalTo(2)));
+        assertThat(q.getHeadPage().isFullyRead(), is(equalTo(true)));
+        assertThat(q.getHeadPage().isFullyAcked(), is(equalTo(false)));
+
+        b.close();
+
+        assertThat(q.getHeadPage().isFullyAcked(), is(equalTo(true)));
+    }
+
+    @Test
+    public void writeMultiPageWithInOrderAckingCheckpoints() throws IOException {
+        List<Queueable> elements1 = Arrays.asList(new StringElement("foobarbaz1"), new StringElement("foobarbaz2"));
+        List<Queueable> elements2 = Arrays.asList(new StringElement("foobarbaz3"), new StringElement("foobarbaz4"));
+        int singleElementCapacity = ByteBufferPageIO.HEADER_SIZE + ByteBufferPageIO.persistedByteCount(elements1.get(0).serialize().length);
+
+        Settings settings = TestSettings.getSettings(2 * singleElementCapacity);
+        TestQueue q = new TestQueue(settings);
+        q.open();
+
+        assertThat(q.getHeadPage().getPageNum(), is(equalTo(0)));
+        Checkpoint c = q.getCheckpointIO().read("checkpoint.head");
+        assertThat(c.getPageNum(), is(equalTo(0)));
+        assertThat(c.getElementCount(), is(equalTo(0)));
+        assertThat(c.getMinSeqNum(), is(equalTo(0L)));
+        assertThat(c.getFirstUnackedSeqNum(), is(equalTo(0L)));
+        assertThat(c.getFirstUnackedPageNum(), is(equalTo(0)));
+
+        for (Queueable e : elements1) {
+            q.write(e);
+        }
+
+        c = q.getCheckpointIO().read("checkpoint.head");
+        assertThat(c.getPageNum(), is(equalTo(0)));
+        assertThat(c.getElementCount(), is(equalTo(0)));
+        assertThat(c.getMinSeqNum(), is(equalTo(0L)));
+        assertThat(c.getFirstUnackedSeqNum(), is(equalTo(0L)));
+        assertThat(c.getFirstUnackedPageNum(), is(equalTo(0)));
+
+        assertThat(elements1.get(1).getSeqNum(), is(equalTo(2L)));
+        q.ensurePersistedUpto(2);
+
+        c = q.getCheckpointIO().read("checkpoint.head");
+        assertThat(c.getPageNum(), is(equalTo(0)));
+        assertThat(c.getElementCount(), is(equalTo(2)));
+        assertThat(c.getMinSeqNum(), is(equalTo(1L)));
+        assertThat(c.getFirstUnackedSeqNum(), is(equalTo(1L)));
+        assertThat(c.getFirstUnackedPageNum(), is(equalTo(0)));
+
+        for (Queueable e : elements2) {
+            q.write(e);
+        }
+
+        c = q.getCheckpointIO().read("checkpoint.head");
+        assertThat(c.getPageNum(), is(equalTo(1)));
+        assertThat(c.getElementCount(), is(equalTo(0)));
+        assertThat(c.getMinSeqNum(), is(equalTo(0L)));
+        assertThat(c.getFirstUnackedSeqNum(), is(equalTo(0L)));
+        assertThat(c.getFirstUnackedPageNum(), is(equalTo(0)));
+
+        c = q.getCheckpointIO().read("checkpoint.0");
+        assertThat(c.getPageNum(), is(equalTo(0)));
+        assertThat(c.getElementCount(), is(equalTo(2)));
+        assertThat(c.getMinSeqNum(), is(equalTo(1L)));
+        assertThat(c.getFirstUnackedSeqNum(), is(equalTo(1L)));
+
+        Batch b = q.readBatch(10);
+        b.close();
+
+        assertThat(q.getCheckpointIO().read("checkpoint.0"), is(nullValue()));
+
+        c = q.getCheckpointIO().read("checkpoint.head");
+        assertThat(c.getPageNum(), is(equalTo(1)));
+        assertThat(c.getElementCount(), is(equalTo(2)));
+        assertThat(c.getMinSeqNum(), is(equalTo(3L)));
+        assertThat(c.getFirstUnackedSeqNum(), is(equalTo(3L)));
+        assertThat(c.getFirstUnackedPageNum(), is(equalTo(1)));
+
+        b = q.readBatch(10);
+        b.close();
+
+        c = q.getCheckpointIO().read("checkpoint.head");
+        assertThat(c.getPageNum(), is(equalTo(1)));
+        assertThat(c.getElementCount(), is(equalTo(2)));
+        assertThat(c.getMinSeqNum(), is(equalTo(3L)));
+        assertThat(c.getFirstUnackedSeqNum(), is(equalTo(5L)));
+        assertThat(c.getFirstUnackedPageNum(), is(equalTo(1)));
     }
 }
