@@ -62,7 +62,7 @@ module LogStash
           end
           
           def to_s
-            hash = to_hash
+            hash = to_hash[:hot_threads]
             report =  "#{I18n.t("logstash.web_api.hot_threads.title", :hostname => hash[:hostname], :time => hash[:time], :top_count => @thread_dump.top_count )} \n"
             report << '=' * 80
             report << "\n"
@@ -98,7 +98,7 @@ module LogStash
               thread[:traces] = traces unless traces.empty?
               hash[:threads] << thread
             end
-            hash
+            { :hot_threads => hash }
           end
 
           def cpu_time_as_percent(hash)
