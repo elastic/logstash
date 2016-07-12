@@ -139,7 +139,7 @@ module LogStash
 
             {
               :events => stats[:events],
-              :pipeline => {
+              :plugins => {
                 :inputs => plugin_stats(stats, :inputs),
                 :filters => plugin_stats(stats, :filters),
                 :outputs => plugin_stats(stats, :outputs)
