@@ -16,13 +16,13 @@ import static org.hamcrest.MatcherAssert.assertThat;
 public class MemoryPageIOStreamTest {
 
     private final int CAPACITY = 1024;
-    private final int EMPTY_HEADER_SIZE = 1 + Integer.BYTES;
+    private final int EMPTY_HEADER_SIZE = 2 + Integer.BYTES;
 
 
     private byte[] empty_page_with_header() {
         byte[] result = new byte[CAPACITY];
         // version = 1, details = ABC
-        ByteBuffer.wrap(result).put(new byte[]{1, 0, 0, 0, 3,65, 66, 67});
+        ByteBuffer.wrap(result).put(new byte[]{0, 1, 0, 0, 0, 3, 65, 66, 67});
         return result;
     }
 
@@ -51,7 +51,7 @@ public class MemoryPageIOStreamTest {
     @Test
     public void getWritePosition() throws Exception {
         assertThat(subject().getWritePosition(), is(equalTo(EMPTY_HEADER_SIZE)));
-        assertThat(subject(empty_page_with_header(), 1L, 0).getWritePosition(), is(equalTo(8)));
+        assertThat(subject(empty_page_with_header(), 1L, 0).getWritePosition(), is(equalTo(EMPTY_HEADER_SIZE + 3)));
     }
 
     @Test
@@ -72,7 +72,7 @@ public class MemoryPageIOStreamTest {
         io.setPageHeaderDetails("ABC");
         io.create();
         assertThat(io.readHeaderDetails(), is(equalTo("ABC")));
-        assertThat(io.getWritePosition(), is(equalTo(8)));
+        assertThat(io.getWritePosition(), is(equalTo(EMPTY_HEADER_SIZE + 3)));
     }
 
     @Test
@@ -86,7 +86,6 @@ public class MemoryPageIOStreamTest {
         element.setSeqNum(42L);
         MemoryPageIOStream subj = subject();
         subj.write(element.serialize(), element);
-        assertThat(subj.getWritePosition(), is(equalTo(30)));
         assertThat(subj.getElementCount(), is(equalTo(1)));
         assertThat(subj.getMinSeqNum(), is(equalTo(42L)));
     }
@@ -106,7 +105,6 @@ public class MemoryPageIOStreamTest {
         int recordSize = MemoryPageIOStream.persistedByteCount(data.length);
         int remains = bufferSize - subj.getWritePosition();
         assertThat(recordSize, is(equalTo(25)));
-        assertThat(remains, is(equalTo(20)));
         assertThat(subj.getElementCount(), is(equalTo(3)));
         boolean noSpaceLeft = remains < recordSize;
         assertThat(noSpaceLeft, is(true));
