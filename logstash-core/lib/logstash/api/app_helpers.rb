@@ -7,11 +7,10 @@ module LogStash::Api::AppHelpers
     as     = options.fetch(:as, :json)
     pretty = params.has_key?("pretty")
 
-    unless options.include?(:exclude_default_metadata)
-      data = default_metadata.merge(data)
-    end
-    
     if as == :json
+      unless options.include?(:exclude_default_metadata)
+        data = default_metadata.merge(data)
+      end
       content_type "application/json"
       LogStash::Json.dump(data, {:pretty => pretty})
     else

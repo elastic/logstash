@@ -35,7 +35,7 @@ module LogStash
           options[:threads] = params["threads"].to_i if params.has_key?("threads")
 
           as = options[:human] ? :string : :json
-          respond_with({:hot_threads => node.hot_threads(options)}, {:as => as})
+          respond_with(node.hot_threads(options), {:as => as})
         end       
       end
     end
