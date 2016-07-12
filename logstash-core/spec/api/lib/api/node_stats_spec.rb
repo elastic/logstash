@@ -11,15 +11,38 @@ describe LogStash::Api::Modules::NodeStats do
 
   # DSL describing response structure
   root_structure = {
-    "events"=>{
-      "in"=>Numeric,
-      "filtered"=>Numeric,
-      "out"=>Numeric
-    },
     "jvm"=>{
       "threads"=>{
         "count"=>Numeric,
         "peak_count"=>Numeric
+      },
+      "mem" => {
+        "heap_used_in_bytes" => Numeric,
+        "heap_used_percent" => Numeric,
+        "heap_committed_in_bytes" => Numeric,
+        "heap_max_in_bytes" => Numeric,
+        "non_heap_used_in_bytes" => Numeric,
+        "non_heap_committed_in_bytes" => Numeric,
+        "pools" => {
+          "survivor" => {
+            "peak_used_in_bytes" => Numeric,
+            "used_in_bytes" => Numeric,
+            "peak_max_in_bytes" => Numeric,
+            "max_in_bytes" => Numeric
+          },
+          "old" => {
+            "peak_used_in_bytes" => Numeric,
+            "used_in_bytes" => Numeric,
+            "peak_max_in_bytes" => Numeric,
+            "max_in_bytes" => Numeric
+          },
+          "young" => {
+            "peak_used_in_bytes" => Numeric,
+            "used_in_bytes" => Numeric,
+            "peak_max_in_bytes" => Numeric,
+            "max_in_bytes" => Numeric
+          }
+        }
       }
     },
     "process"=>{
@@ -33,35 +56,14 @@ describe LogStash::Api::Modules::NodeStats do
         "total_in_millis"=>Numeric,
         "percent"=>Numeric
       }
-    },    
-    "mem" => {
-      "heap_used_in_bytes" => Numeric,
-      "heap_used_percent" => Numeric,
-      "heap_committed_in_bytes" => Numeric,
-      "heap_max_in_bytes" => Numeric,
-      "non_heap_used_in_bytes" => Numeric,
-      "non_heap_committed_in_bytes" => Numeric,
-      "pools" => {
-        "survivor" => {
-          "peak_used_in_bytes" => Numeric,
-          "used_in_bytes" => Numeric,
-          "peak_max_in_bytes" => Numeric,
-          "max_in_bytes" => Numeric
-        },
-        "old" => {
-          "peak_used_in_bytes" => Numeric,
-          "used_in_bytes" => Numeric,
-          "peak_max_in_bytes" => Numeric,
-          "max_in_bytes" => Numeric
-        },
-        "young" => {
-          "peak_used_in_bytes" => Numeric,
-          "used_in_bytes" => Numeric,
-          "peak_max_in_bytes" => Numeric,
-          "max_in_bytes" => Numeric
-        }
-      }
-    }
+    },
+   "pipeline" => {
+     "events" => {
+        "in" => Numeric,
+        "filtered" => Numeric,
+        "out" => Numeric
+     } 
+    } 
   }
   
   test_api_and_resources(root_structure)
