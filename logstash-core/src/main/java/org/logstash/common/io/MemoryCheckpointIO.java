@@ -33,6 +33,6 @@ public class MemoryCheckpointIO implements CheckpointIO {
 
     @Override
     public void purge(String fileName) {
-        // do nothing
+        this.sources.remove(fileName);
     }
 }
