@@ -29,7 +29,7 @@ public class BeheadedPage extends Page {
         // TODO: not concurrent for first iteration:
 
         // since this is a tail page and no write can happen in this page, there is no point in performing a fsync on this page, just stamp checkpoint
-        this.queue.getCheckpointIO().write("checkpoint." + this.pageNum, this.pageNum, this.queue.firstUnackedPageNum(), firstUnackedSeqNum(), this.minSeqNum, this.elementCount);
+        this.lastCheckpoint = queue.getCheckpointIO().write("checkpoint." + this.pageNum, this.pageNum, this.queue.firstUnackedPageNum(), firstUnackedSeqNum(), this.minSeqNum, this.elementCount);
     }
 
     // delete all IO files associated with this page

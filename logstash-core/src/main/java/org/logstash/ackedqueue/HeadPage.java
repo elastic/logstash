@@ -1,5 +1,6 @@
 package org.logstash.ackedqueue;
 
+import com.sun.tools.javac.comp.Check;
 import org.logstash.common.io.PageIO;
 
 import java.io.IOException;
@@ -71,8 +72,9 @@ public class HeadPage extends Page {
 
         // first fsync data file
         this.pageIO.ensurePersisted();
+
         // then write new checkpoint
-        this.queue.getCheckpointIO().write("checkpoint.head", this.pageNum, this.queue.firstUnackedPageNum(), firstUnackedSeqNum(), this.minSeqNum, this.elementCount);
+        this.lastCheckpoint = queue.getCheckpointIO().write("checkpoint.head", this.pageNum, this.queue.firstUnackedPageNum(), firstUnackedSeqNum(), this.minSeqNum, this.elementCount);
      }
 
 }

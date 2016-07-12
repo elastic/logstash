@@ -40,12 +40,13 @@ public class FileCheckpointIO  implements CheckpointIO {
     }
 
     @Override
-    public void write(String fileName, int pageNum, int firstUnackedPageNum, long firstUnackedSeqNum, long minSeqNum, int elementCount) throws IOException {
+    public Checkpoint write(String fileName, int pageNum, int firstUnackedPageNum, long firstUnackedSeqNum, long minSeqNum, int elementCount) throws IOException {
         Path path = Paths.get(dirPath, fileName);
         Checkpoint checkpoint = new Checkpoint(pageNum, firstUnackedPageNum, firstUnackedSeqNum, minSeqNum, elementCount);
         final byte[] buffer = new byte[BUFFER_SIZE];
         write(checkpoint, buffer);
         Files.write(path, buffer);
+        return checkpoint;
     }
 
     @Override
