@@ -1,24 +1,9 @@
 package org.logstash.ackedqueue;
 
 public class Checkpoint {
-//    Checkpoint file structure as handled by CheckpointIO
-//
-//    byte version;
-//    int pageNum;
-//    int firstUnackedPageNum;
-//    long firstUnackedSeqNum;
-//    long minSeqNum;
-//    int elementCount;
+//    Checkpoint file structure see FileCheckpointIO
 
-    public static final int BUFFER_SIZE = 1 // version
-            + Integer.BYTES  // pageNum
-            + Integer.BYTES  // firstUnackedPageNum
-            + Long.BYTES     // firstUnackedSeqNum
-            + Long.BYTES     // minSeqNum
-            + Integer.BYTES  // eventCount
-            + Long.BYTES;    // checksum
-
-    public static final byte VERSION = 1;
+    public static final int VERSION = 1;
 
     private final int pageNum;             // local per-page page number
     private final int firstUnackedPageNum; // queue-wide global pointer, only valid in the head checkpoint

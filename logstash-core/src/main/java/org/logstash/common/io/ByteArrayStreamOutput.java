@@ -42,13 +42,17 @@ public class ByteArrayStreamOutput extends StreamOutput {
     public void reset() {
     }
 
+    public void reset(int offset) {
+        pos = offset;
+    }
+
     public int getPosition() {
         return pos;
     }
 
     @Override
     public void writeByte(byte b) {
-        assert pos < limit;
+        assert pos < limit :  String.format("ByteArrayStreamOutput#writeByte pos=%d !< limit=%d", pos, limit);
         bytes[pos++] = b;
     }
 

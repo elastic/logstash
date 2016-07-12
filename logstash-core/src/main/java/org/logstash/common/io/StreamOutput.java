@@ -30,6 +30,14 @@ public abstract class StreamOutput extends OutputStream {
     }
 
     /**
+     * Writes a short as two bytes.
+     */
+    public void writeShort(short i) throws IOException {
+        writeByte((byte)(i >>  8));
+        writeByte((byte) i);
+    }
+
+    /**
      * Writes an int as four bytes.
      */
     public void writeInt(int i) throws IOException {

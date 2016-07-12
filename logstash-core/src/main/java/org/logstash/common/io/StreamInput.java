@@ -25,7 +25,7 @@ public abstract class StreamInput extends InputStream {
         return ((readByte() & 0xFF) << 24) | ((readByte() & 0xFF) << 16)
                 | ((readByte() & 0xFF) << 8) | (readByte() & 0xFF);
     }
-
+    
     /**
      * Reads an int stored in variable-length format.  Reads between one and
      * five bytes.  Smaller values take fewer bytes.  Negative numbers
@@ -56,6 +56,15 @@ public abstract class StreamInput extends InputStream {
         b = readByte();
         assert (b & 0x80) == 0;
         return i | ((b & 0x7F) << 28);
+    }
+
+    /**
+     * Reads two bytes and returns a short.
+     */
+    public short readShort() throws IOException {
+        int i = ((readByte() & 0xFF) <<  8);
+        int j = (readByte() & 0xFF);
+        return (short) (i | j);
     }
 
     /**
