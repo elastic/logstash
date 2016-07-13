@@ -19,6 +19,10 @@ module LogStash::Api::AppHelpers
     end
   end
 
+  def extract_fields(filter_string)
+    (filter_string.empty? ? [] : filter_string.split(",").map { |s| s.strip.to_sym })
+  end
+
   def as_boolean(string)
     return true   if string == true   || string =~ (/(true|t|yes|y|1)$/i)
     return false  if string == false  || string.blank? || string =~ (/(false|f|no|n|0)$/i)
