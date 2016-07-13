@@ -1,3 +1,4 @@
+# encoding: utf-8
 require "logstash/api/app_helpers"
 require "logstash/api/command_factory"
 
