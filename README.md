@@ -2,9 +2,10 @@
 
 ### Build status
 
-| Test | master | 5.0 | 2.3 |
+| Test | master | 5.0 | 2.4 |
 |---|---|---|---|
-| core | [![Build Status](https://travis-ci.org/elastic/logstash.svg?branch=master)](https://travis-ci.org/elastic/logstash) | [![Build Status](https://travis-ci.org/elastic/logstash.svg?branch=2.4)](https://travis-ci.org/elastic/logstash) |
+| core | [![Build Status](https://travis-ci.org/elastic/logstash.svg?branch=master)](https://travis-ci.org/elastic/logstash) | [![Build Status](https://travis-ci.org/elastic/logstash.svg?branch=5.0)](https://travis-ci.org/elastic/logstash) |
+[![Build Status](https://travis-ci.org/elastic/logstash.svg?branch=2.4)](https://travis-ci.org/elastic/logstash) |
 
 Logstash is a tool for managing events and logs. You can use it to collect
 logs, parse them, and store them for later use (like, for searching).  If you
