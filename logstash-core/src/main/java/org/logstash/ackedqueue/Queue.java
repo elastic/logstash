@@ -103,7 +103,7 @@ public class Queue {
 
     // @param element the Queueable object to write to the queue
     // @return long written sequence number
-    public long write(Queueable element) throws IOException {
+    public synchronized long write(Queueable element) throws IOException {
         element.setSeqNum(nextSeqNum());
         byte[] data = element.serialize();
 
@@ -127,11 +127,11 @@ public class Queue {
     }
 
     // @param seqNum the element sequence number upper bound for which persistence should be garanteed (by fsync'int)
-    public void ensurePersistedUpto(long seqNum) throws IOException{
+    public synchronized void ensurePersistedUpto(long seqNum) throws IOException{
          this.headPage.ensurePersistedUpto(seqNum);
     }
 
-    public Batch readBatch(int limit) throws IOException {
+    public synchronized Batch readBatch(int limit) throws IOException {
         Page p = firstUnreadPage();
         if (p == null) {
             // TODO: add blocking + signaling with the write side for a blocking read
@@ -141,7 +141,7 @@ public class Queue {
         return p.readBatch(limit);
     }
 
-    public void ack(List<Long> seqNums) throws IOException {
+    public synchronized void ack(List<Long> seqNums) throws IOException {
         // as a first implementation we assume that all batches are created from the same page
         // so we will avoid multi pages acking here for now
 
@@ -194,7 +194,7 @@ public class Queue {
         }
     }
 
-    private long nextSeqNum() {
+    private synchronized long nextSeqNum() {
         return this.seqNum += 1;
     }
 
@@ -206,7 +206,7 @@ public class Queue {
         return this.deserialiser;
     }
 
-    public Page firstUnreadPage() {
+    public synchronized Page firstUnreadPage() {
         // TODO: avoid tailPages traversal below by keeping tab of the last read tail page
 
         for (Page p : this.tailPages) {
@@ -225,7 +225,7 @@ public class Queue {
         return null;
     }
 
-    protected int firstUnackedPageNum() {
+    protected synchronized int firstUnackedPageNum() {
         if (this.tailPages.isEmpty()) {
             return this.headPage.getPageNum();
         }
