@@ -3,38 +3,21 @@ module LogStash
   module Api
     module Modules
       class NodeStats < ::LogStash::Api::Modules::Base
-        #set :environment, :test
-        #set :dump_errors, true
-        #set :raise_errors, true
-        #set :logging, Logger.new(STDERR)
-        
-        
+
         before do
           @stats = factory.build(:stats)
         end
 
-        # Global _stats resource where all information is
-        # retrieved and show
-        get "/" do          
+        get "/?:filter?" do
+          selected_fields = extract_fields(params["filter"].to_s.strip)
           payload = {
             :jvm => jvm_payload,
             :process => process_payload,
+            :mem => mem_payload,
             :pipeline => pipeline_payload
           }
-
+          payload.select! { |k,v| selected_fields.include?(k) } unless selected_fields.empty?
           respond_with payload
-        end
-
-        get "/jvm" do
-          respond_with :jvm => jvm_payload
-        end
-
-        get "/process" do
-          respond_with :process => process_payload
-        end
-
-        get "/pipeline" do
-          respond_with :pipeline => pipeline_payload
         end
 
         private
