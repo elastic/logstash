@@ -8,23 +8,7 @@ module LogStash
         def node
           factory.build(:node)
         end
-        
-        get "/" do
-          respond_with node.all
-        end
 
-        get "/os" do
-          respond_with :os => node.os
-        end
-
-        get "/jvm" do
-          respond_with :jvm => node.jvm          
-        end
-
-        get "/pipeline" do
-          respond_with :pipeline => node.pipeline
-        end
-        
         get "/hot_threads" do
           ignore_idle_threads = params["ignore_idle_threads"] || true
 
@@ -36,7 +20,13 @@ module LogStash
 
           as = options[:human] ? :string : :json
           respond_with(node.hot_threads(options), {:as => as})
-        end       
+        end
+
+        get "/?:filter?" do
+          selected_fields = extract_fields(params["filter"].to_s.strip)
+          respond_with node.all(selected_fields)
+        end
+
       end
     end
   end
