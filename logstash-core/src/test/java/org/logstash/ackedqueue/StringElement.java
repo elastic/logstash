@@ -50,4 +50,32 @@ public class StringElement implements Queueable {
     public String toString() {
         return content;
     }
+
+
+    @Override
+    public boolean equals(Object other) {
+        if (other == null) {
+            return false;
+        }
+        if (!StringElement.class.isAssignableFrom(other.getClass())) {
+            return false;
+        }
+
+        final StringElement element = (StringElement)other;
+        if ((this.content == null) ? (element.content != null) : !this.content.equals(element.content)) {
+            return false;
+        }
+        if (this.seqNum != element.seqNum) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 13;
+        hash = 53 * hash + (this.content != null ? this.content.hashCode() : 0);
+        hash = 53 * hash + (int)(this.seqNum >> 32) + (int)(this.seqNum);
+        return hash;
+    }
 }
