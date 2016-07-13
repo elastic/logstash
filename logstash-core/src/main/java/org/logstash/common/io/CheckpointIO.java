@@ -11,4 +11,6 @@ public interface CheckpointIO {
     Checkpoint read(String fileName) throws IOException;
 
     void purge(String fileName) throws IOException;
+
+    void purge() throws IOException;
 }

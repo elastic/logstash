@@ -55,6 +55,12 @@ public class FileCheckpointIO  implements CheckpointIO {
         Files.delete(path);
     }
 
+    @Override
+    public void purge() throws IOException {
+        // TODO: dir traversal and delete all checkpoints?
+    }
+
+
     private Checkpoint read(BufferedChecksumStreamInput crcsi) throws IOException {
         int version = (int) crcsi.readShort();
         // TODO - build reader for this version

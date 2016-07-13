@@ -72,6 +72,13 @@ public abstract class Page {
     public void ack(List<Long> seqNums) throws IOException {
         for (long seqNum : seqNums) {
             // TODO: eventually refactor to use new bit handling class
+
+            assert seqNum >= this.minSeqNum :
+                    String.format("seqNum=%d is smaller than minSeqnum=%d", seqNum, this.minSeqNum);
+
+            assert seqNum < this.minSeqNum + this.elementCount:
+                    String.format("seqNum=%d is greater than minSeqnum=%d + elementCount=%d = %d", seqNum, this.minSeqNum, this.elementCount, this.minSeqNum + this.elementCount);
+
             this.ackedSeqNums.set((int)(seqNum - this.minSeqNum));
         }
 
@@ -82,8 +89,8 @@ public abstract class Page {
             // TODO: here if consumer is faster than producer, the head page may be always fully acked and we may end up fsync'ing too ofter?
             checkpoint();
 
-            assert firstUnackedSeqNum >= this.minSeqNum + this.elementCount :
-                    String.format("invalid firstUnackedSeqNum=%d for minSeqNum=%d and elementCount=%d", firstUnackedSeqNum, this.minSeqNum, this.elementCount);
+            assert firstUnackedSeqNum >= this.minSeqNum + this.elementCount - 1:
+                    String.format("invalid firstUnackedSeqNum=%d for minSeqNum=%d and elementCount=%d and cardinality=%d", firstUnackedSeqNum, this.minSeqNum, this.elementCount, this.ackedSeqNums.cardinality());
 
         } else if (firstUnackedSeqNum > this.lastCheckpoint.getFirstUnackedSeqNum() + 1024) {
             // did we acked more that 1024 elements? if so we should checkpoint now
@@ -99,6 +106,10 @@ public abstract class Page {
 
     public long getMinSeqNum() {
         return this.minSeqNum;
+    }
+
+    public int getElementCount() {
+        return elementCount;
     }
 
     public Queue getQueue() {

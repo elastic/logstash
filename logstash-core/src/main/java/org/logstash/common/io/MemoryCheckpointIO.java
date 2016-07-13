@@ -36,4 +36,8 @@ public class MemoryCheckpointIO implements CheckpointIO {
     public void purge(String fileName) {
         this.sources.remove(fileName);
     }
+
+    public void purge() {
+        this.sources.clear();
+    }
 }

@@ -150,7 +150,7 @@ public class Queue {
         // first the page to ack by travesing from oldest tail page
         long firstAckSeqNum = seqNums.get(0);
         for (Page p : this.tailPages) {
-            if (p.getMinSeqNum() > 0 && firstAckSeqNum >= p.getMinSeqNum()) {
+            if (p.getMinSeqNum() > 0 && firstAckSeqNum >= p.getMinSeqNum() && firstAckSeqNum < p.getMinSeqNum() + p.getElementCount()) {
                 ackPage = p;
                 break;
             }
@@ -160,7 +160,7 @@ public class Queue {
         if (ackPage == null) {
             ackPage = this.headPage;
 
-            assert this.headPage.getMinSeqNum() > 0 && firstAckSeqNum >= this.headPage.getMinSeqNum() :
+            assert this.headPage.getMinSeqNum() > 0 && firstAckSeqNum >= this.headPage.getMinSeqNum() && firstAckSeqNum < this.headPage.getMinSeqNum() + this.headPage.getElementCount():
                     String.format("seqNum=%d is not in head page with minSeqNum=%d", firstAckSeqNum, this.headPage.getMinSeqNum());
         }
 
@@ -194,7 +194,7 @@ public class Queue {
         }
     }
 
-    private synchronized long nextSeqNum() {
+    private long nextSeqNum() {
         return this.seqNum += 1;
     }
 
@@ -206,7 +206,7 @@ public class Queue {
         return this.deserialiser;
     }
 
-    public synchronized Page firstUnreadPage() {
+    public Page firstUnreadPage() {
         // TODO: avoid tailPages traversal below by keeping tab of the last read tail page
 
         for (Page p : this.tailPages) {
@@ -225,7 +225,7 @@ public class Queue {
         return null;
     }
 
-    protected synchronized int firstUnackedPageNum() {
+    protected int firstUnackedPageNum() {
         if (this.tailPages.isEmpty()) {
             return this.headPage.getPageNum();
         }
