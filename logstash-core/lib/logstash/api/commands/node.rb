@@ -4,12 +4,15 @@ module LogStash
   module Api
     module Commands
       class Node < Commands::Base
-        def all
-          {
+       
+        def all(selected_fields=[])
+          payload = {
             :pipeline => pipeline,
             :os => os,
             :jvm => jvm
           }
+          payload.select! { |k,v| selected_fields.include?(k) } unless selected_fields.empty?
+          payload
         end
         
         def pipeline
