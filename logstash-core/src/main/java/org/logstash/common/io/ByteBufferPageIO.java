@@ -48,6 +48,7 @@ public class ByteBufferPageIO implements PageIO {
         this.offsetMap = new ArrayList<>();
     }
 
+    @Override
     public void open(long minSeqNum, int elementCount) throws IOException {
         // TODO: do we need to do something there?
         this.minSeqNum = minSeqNum;
@@ -93,6 +94,7 @@ public class ByteBufferPageIO implements PageIO {
         }
     }
 
+    @Override
     public void create() throws IOException {
         this.buffer.position(0);
         this.buffer.put(VERSION);
@@ -101,6 +103,7 @@ public class ByteBufferPageIO implements PageIO {
         this.elementCount = 0;
     }
 
+    @Override
     public int getCapacity() {
         return this.capacity;
     }
@@ -109,11 +112,13 @@ public class ByteBufferPageIO implements PageIO {
         return this.minSeqNum;
     }
 
+    @Override
     public boolean hasSpace(int bytes) {
         int bytesLeft = this.capacity - this.head;
         return persistedByteCount(bytes) <= bytesLeft;
     }
 
+    @Override
     public void write(byte[] bytes, Queueable element) throws IOException {
         // since writes always happen at head, we can just append head to the offsetMap
         assert this.offsetMap.size() == this.elementCount :
@@ -137,6 +142,7 @@ public class ByteBufferPageIO implements PageIO {
         this.elementCount++;
     }
 
+    @Override
     public List<ReadElementValue> read(long seqNum, int limit) throws IOException {
         assert seqNum >= this.minSeqNum :
                 String.format("seqNum=%d < minSeqNum=%d", seqNum, this.minSeqNum);
@@ -172,14 +178,17 @@ public class ByteBufferPageIO implements PageIO {
         return result;
     }
 
+    @Override
     public void deactivate() {
         // nothing to do
     }
 
+    @Override
     public void activate() {
         // nothing to do
     }
 
+    @Override
     public void ensurePersisted() {
         // nothing to do
     }
@@ -187,6 +196,11 @@ public class ByteBufferPageIO implements PageIO {
     @Override
     public void purge() throws IOException {
         // do nothing
+    }
+
+    @Override
+    public void close() throws IOException {
+        // TBD
     }
 
     private int checksum(byte[] bytes) {

@@ -148,6 +148,11 @@ public class MemoryPageIOStream implements PageIO {
         // do nothing
     }
 
+    @Override
+    public void close() throws IOException {
+        // TBD
+    }
+
     //@Override
     public void setPageHeaderDetails(String details) {
         headerDetails = details;

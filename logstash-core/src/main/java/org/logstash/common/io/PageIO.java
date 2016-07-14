@@ -2,10 +2,11 @@ package org.logstash.common.io;
 
 import org.logstash.ackedqueue.Queueable;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.util.List;
 
-public interface PageIO {
+public interface PageIO extends Closeable {
 
     // the concrete class should be constructed with the pageNum, capacity and dirPath attributes
 
@@ -37,7 +38,7 @@ public interface PageIO {
     // issue the proper data container "fsync" sematic
     void ensurePersisted();
 
-    // delete, unlike, remove data file
+    // delete/unlink/remove data file
     void purge() throws IOException;
 
     // add debugging details, to be added when creating a new page
