@@ -1,12 +1,11 @@
 package org.logstash.stress;
 
 import org.logstash.ackedqueue.*;
-import org.logstash.common.io.ByteBufferPageIO;
-import org.logstash.common.io.CheckpointIOFactory;
-import org.logstash.common.io.MemoryCheckpointIO;
-import org.logstash.common.io.PageIOFactory;
+import org.logstash.common.io.*;
 
 import java.io.IOException;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -15,14 +14,25 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.stream.Collectors;
 
 public class Concurent {
-    final static int ELEMENT_COUNT = 1000000;
-    final static int PAGE_SIZE = 100 * 1024; // 100k?
+    final static int ELEMENT_COUNT = 2000000;
     final static int BATCH_SIZE = 1000;
+    static Settings settings;
 
-    public static Settings getSettings(int capacity) {
+    public static Settings memorySettings(int capacity) {
         Settings s = new MemorySettings();
         PageIOFactory pageIOFactory = (pageNum, size, path) -> new ByteBufferPageIO(pageNum, size, path);
         CheckpointIOFactory checkpointIOFactory = (source) -> new MemoryCheckpointIO(source);
+        s.setCapacity(capacity);
+        s.setElementIOFactory(pageIOFactory);
+        s.setCheckpointIOFactory(checkpointIOFactory);
+        s.setElementDeserialiser(new ElementDeserialiser(StringElement.class));
+        return s;
+    }
+
+    public static Settings fileSettings(int capacity) {
+        Settings s = new MemorySettings("/tmp/queue");
+        PageIOFactory pageIOFactory = (pageNum, size, path) -> new MmapPageIO(pageNum, size, path);
+        CheckpointIOFactory checkpointIOFactory = (source) -> new FileCheckpointIO(source);
         s.setCapacity(capacity);
         s.setElementIOFactory(pageIOFactory);
         s.setCheckpointIOFactory(checkpointIOFactory);
@@ -47,11 +57,13 @@ public class Concurent {
         List<StringElement> input = new ArrayList<>();
         List<StringElement> output = new ArrayList<>();
 
-        Queue q = new Queue(getSettings(PAGE_SIZE));
+        Instant start = Instant.now();
+
+        Queue q = new Queue(settings);
         q.getCheckpointIO().purge();
         q.open();
 
-        System.out.println("stating single producers and single consumers stress test"); // Display the string.
+        System.out.print("stating single producers and single consumers stress test... ");
 
         for (int i = 0; i < ELEMENT_COUNT; i++) {
             input.add(new StringElement("element-" + i, i));
@@ -64,10 +76,10 @@ public class Concurent {
                 while (consumedCount < ELEMENT_COUNT) {
                     Batch b = q.readBatch(BATCH_SIZE);
                     if (b == null) {
-                        System.out.println("read batch sleep");
+//                        System.out.println("read batch sleep");
                         Thread.sleep(100);
                     } else {
-                        System.out.println("read batch size=" + b.getElements().size());
+//                        System.out.println("read batch size=" + b.getElements().size());
                         output.addAll((List<StringElement>) b.getElements());
                         b.close();
                         consumedCount += b.getElements().size();
@@ -85,10 +97,12 @@ public class Concurent {
 
         consumer.join();
 
+        Instant end = Instant.now();
+
         if (! input.equals(output)) {
             System.out.println("ERROR: input and output are not equal");
         } else {
-            System.out.println("SUCCESS, result size=" + output.size());
+            System.out.println("SUCCESS, result size=" + output.size() + ", elapsed=" + Duration.between(start, end));
         }
     }
 
@@ -98,11 +112,13 @@ public class Concurent {
         final int CONSUMERS = 5;
         List<Thread> consumers = new ArrayList<>();
 
-        Queue q = new Queue(getSettings(PAGE_SIZE));
+        Instant start = Instant.now();
+
+        Queue q = new Queue(settings);
         q.getCheckpointIO().purge();
         q.open();
 
-        System.out.println("stating single producers and multiple consumers stress test"); // Display the string.
+        System.out.print("stating single producers and multiple consumers stress test... ");
 
         for (int i = 0; i < ELEMENT_COUNT; i++) {
             input.add(new StringElement("element-" + i, i));
@@ -114,10 +130,10 @@ public class Concurent {
                     while (output.size() < ELEMENT_COUNT) {
                         Batch b = q.readBatch(BATCH_SIZE);
                         if (b == null) {
-                            System.out.println("read batch sleep");
+//                            System.out.println("read batch sleep");
                             Thread.sleep(100);
                         } else {
-                            System.out.println("read batch size=" + b.getElements().size());
+//                            System.out.println("read batch size=" + b.getElements().size());
                             output.addAll((List<StringElement>) b.getElements());
                             b.close();
                         }
@@ -134,8 +150,10 @@ public class Concurent {
         Thread producer = producer(q, input);
         producer.start();
 
+        // gotta hate exception handling in lambdas
         consumers.forEach(c -> {try{c.join();} catch(InterruptedException e) {throw new RuntimeException(e);}});
 
+        Instant end = Instant.now();
 
         List<StringElement> result = output.stream().collect(Collectors.toList());
         Collections.sort(result, (p1, p2) -> new Long(p1.getSeqNum()).compareTo(new Long(p2.getSeqNum())));
@@ -143,12 +161,22 @@ public class Concurent {
         if (! input.equals(result)) {
             System.out.println("ERROR: input and output are not equal");
         } else {
-            System.out.println("SUCCESS, result size=" + output.size());
+            System.out.println("SUCCESS, result size=" + output.size() + ", elapsed=" + Duration.between(start, end));
         }
     }
 
 
     public static void main(String[] args) throws IOException, InterruptedException {
+        System.out.println(">>> starting in-memory stress test");
+
+        settings = memorySettings(1024 * 1024); // 1MB
+        oneProducersOneConsumer();
+        oneProducersOneMultipleConsumer();
+
+        System.out.println("\n>>> starting file-based stress test in /tmp/queue");
+
+        settings = fileSettings(1024 * 1024); // 1MB
+
         oneProducersOneConsumer();
         oneProducersOneMultipleConsumer();
     }
