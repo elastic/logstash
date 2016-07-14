@@ -29,11 +29,11 @@ public interface PageIO extends Closeable {
     int getCapacity();
 
     // signal that this data page is not active and resources can be released
-    void deactivate();
+    void deactivate() throws IOException;
 
     // signal that this data page is active will be read or written to
     // should do nothing if page is aready active
-    void activate();
+    void activate() throws IOException;
 
     // issue the proper data container "fsync" sematic
     void ensurePersisted();

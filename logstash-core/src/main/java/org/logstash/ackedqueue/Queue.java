@@ -207,7 +207,7 @@ public class Queue {
         return this.deserialiser;
     }
 
-    public Page firstUnreadPage() {
+    public Page firstUnreadPage() throws IOException {
         // TODO: avoid tailPages traversal below by keeping tab of the last read tail page
 
         for (Page p : this.tailPages) {
