@@ -10,8 +10,15 @@ public class MemorySettings implements Settings {
     private PageIOFactory pageIOFactory;
     private ElementDeserialiser elementDeserialiser;
     private int capacity;
+    private final String dirPath;
 
-    public MemorySettings() {}
+    public MemorySettings() {
+        this("");
+    }
+
+    public MemorySettings(String dirPath) {
+        this.dirPath = dirPath;
+    }
 
     @Override
     public Settings setCheckpointIOFactory(CheckpointIOFactory factory) {
@@ -53,11 +60,11 @@ public class MemorySettings implements Settings {
 
     @Override
     public String getDirPath() {
-        return "";
+        return this.dirPath;
     }
 
     @Override
     public int getCapacity() {
-        return capacity;
+        return this.capacity;
     }
 }
