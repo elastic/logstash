@@ -21,7 +21,7 @@ public class Concurent {
 
     public static Settings getSettings(int capacity) {
         Settings s = new MemorySettings();
-        PageIOFactory pageIOFactory = (size, path) -> new ByteBufferPageIO(size, path);
+        PageIOFactory pageIOFactory = (pageNum, size, path) -> new ByteBufferPageIO(pageNum, size, path);
         CheckpointIOFactory checkpointIOFactory = (source) -> new MemoryCheckpointIO(source);
         s.setCapacity(capacity);
         s.setElementIOFactory(pageIOFactory);

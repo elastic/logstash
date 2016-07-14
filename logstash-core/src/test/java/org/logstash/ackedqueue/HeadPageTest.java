@@ -16,7 +16,7 @@ public class HeadPageTest {
     public void newHeadPage() throws IOException {
         Settings s = TestSettings.getSettings(100);
         Queue q = new Queue(s);
-        PageIO pageIO = s.getPageIOFactory().build(100, "dummy");
+        PageIO pageIO = s.getPageIOFactory().build(0, 100, "dummy");
         HeadPage p = new HeadPage(0, q, pageIO);
 
         assertThat(p.getPageNum(), is(equalTo(0)));
@@ -33,7 +33,7 @@ public class HeadPageTest {
 
         Settings s = TestSettings.getSettings(singleElementCapacity);
         Queue q = new Queue(s);
-        PageIO pageIO = s.getPageIOFactory().build(singleElementCapacity, "dummy");
+        PageIO pageIO = s.getPageIOFactory().build(0, singleElementCapacity, "dummy");
         HeadPage p = new HeadPage(0, q, pageIO);
 
         assertThat(p.hasSpace(element.serialize().length), is(true));
@@ -51,7 +51,7 @@ public class HeadPageTest {
 
         Settings s = TestSettings.getSettings(singleElementCapacity);
         Queue q = new Queue(s);
-        PageIO pageIO = s.getPageIOFactory().build(singleElementCapacity, "dummy");
+        PageIO pageIO = s.getPageIOFactory().build(0, singleElementCapacity, "dummy");
         HeadPage p = new HeadPage(0, q, pageIO);
 
         assertThat(p.hasSpace(element.serialize().length), is(true));
@@ -74,7 +74,7 @@ public class HeadPageTest {
 
         Settings s = TestSettings.getSettings(singleElementCapacity);
         Queue q = new Queue(s);
-        PageIO pageIO = s.getPageIOFactory().build(singleElementCapacity, "dummy");
+        PageIO pageIO = s.getPageIOFactory().build(0, singleElementCapacity, "dummy");
         HeadPage p = new HeadPage(0, q, pageIO);
 
         assertThat(p.hasSpace(element.serialize().length), is(true));

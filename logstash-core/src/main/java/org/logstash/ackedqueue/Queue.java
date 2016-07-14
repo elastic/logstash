@@ -57,7 +57,7 @@ public class Queue {
                     throw new IOException(String.format("checkpoint.%d not found", pageNum));
                 }
 
-                PageIO pageIO = settings.getPageIOFactory().build(this.settings.getCapacity(), this.settings.getDirPath());
+                PageIO pageIO = settings.getPageIOFactory().build(pageNum, this.settings.getCapacity(), this.settings.getDirPath());
                 BeheadedPage tailPage = new BeheadedPage(tailCheckpoint, this, pageIO);
 
                 // if this page is not the first tail page, deactivate it
@@ -77,7 +77,7 @@ public class Queue {
 
             // handle the head page
             // transform the head page into a beheaded tail page
-            PageIO pageIO = settings.getPageIOFactory().build(this.settings.getCapacity(), this.settings.getDirPath());
+            PageIO pageIO = settings.getPageIOFactory().build(headCheckpoint.getPageNum(), this.settings.getCapacity(), this.settings.getDirPath());
             BeheadedPage beheadedHeadPage = new BeheadedPage(headCheckpoint, this, pageIO);
 
             // track the seqNum as we rebuild tail pages
@@ -92,7 +92,7 @@ public class Queue {
             headPageNum = headCheckpoint.getPageNum() + 1;
         }
 
-        PageIO pageIO = settings.getPageIOFactory().build(this.settings.getCapacity(), this.settings.getDirPath());
+        PageIO pageIO = settings.getPageIOFactory().build(headPageNum, this.settings.getCapacity(), this.settings.getDirPath());
         this.headPage = new HeadPage(headPageNum, this, pageIO);
 
         // we can let the headPage get its first unacked page num via the tailPages
@@ -114,8 +114,9 @@ public class Queue {
             this.tailPages.add(tailPage);
 
             // create new head page
-            PageIO pageIO = this.settings.getPageIOFactory().build(this.settings.getCapacity(), this.settings.getDirPath());
-            this.headPage = new HeadPage(tailPage.pageNum + 1, this, pageIO);
+            int headPageNum = tailPage.pageNum + 1;
+            PageIO pageIO = this.settings.getPageIOFactory().build(headPageNum, this.settings.getCapacity(), this.settings.getDirPath());
+            this.headPage = new HeadPage(headPageNum, this, pageIO);
             this.headPage.checkpoint();
 
             // TODO: redo this.headPage.hasSpace(data.length) to make sure data is not greater than page size?

@@ -7,7 +7,7 @@ import java.util.List;
 
 public interface PageIO {
 
-    // the concrete class should be constructed with the capacity and dirPath attributes
+    // the concrete class should be constructed with the pageNum, capacity and dirPath attributes
 
     // open an existing data container and reconstruct internal state if required
     void open(long minSeqNum, int elementCount) throws IOException;

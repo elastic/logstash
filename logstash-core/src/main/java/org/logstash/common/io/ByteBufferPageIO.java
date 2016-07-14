@@ -28,7 +28,7 @@ public class ByteBufferPageIO implements PageIO {
     private int head;
     private byte version;
 
-    public ByteBufferPageIO(int capacity, String path) throws IOException {
+    public ByteBufferPageIO(int pageNum, int capacity, String path) throws IOException {
         this(capacity, new byte[0]);
     }
 
