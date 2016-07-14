@@ -102,7 +102,7 @@ public class Concurent {
         if (! input.equals(output)) {
             System.out.println("ERROR: input and output are not equal");
         } else {
-            System.out.println("SUCCESS, result size=" + output.size() + ", elapsed=" + Duration.between(start, end));
+            System.out.println("SUCCESS, result size=" + output.size() + ", elapsed=" + Duration.between(start, end) + ", rate=" + (new Float(ELEMENT_COUNT) / Duration.between(start, end).toMillis()) * 1000);
         }
     }
 
@@ -161,7 +161,7 @@ public class Concurent {
         if (! input.equals(result)) {
             System.out.println("ERROR: input and output are not equal");
         } else {
-            System.out.println("SUCCESS, result size=" + output.size() + ", elapsed=" + Duration.between(start, end));
+            System.out.println("SUCCESS, result size=" + output.size() + ", elapsed=" + Duration.between(start, end) + ", rate=" + (new Float(ELEMENT_COUNT) / Duration.between(start, end).toMillis()) * 1000);
         }
     }
 
