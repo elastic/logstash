@@ -25,7 +25,7 @@ public class MemoryPageIOStream implements PageIO {
     private ByteArrayStreamOutput streamedOutput;
     private BufferedChecksumStreamOutput crcWrappedOutput;
     private final List<Integer> offsetMap;
-    private String path = "";
+    private String dirPath = "";
     private String headerDetails = "";
 
     public static int persistedByteCount(byte[] data) {
@@ -36,9 +36,9 @@ public class MemoryPageIOStream implements PageIO {
         return MIN_RECORD_SIZE + length;
     }
 
-    public MemoryPageIOStream(int capacity, String path) throws IOException {
+    public MemoryPageIOStream(int capacity, String dirPath) throws IOException {
         this(capacity, new byte[capacity]);
-        this.path = path;
+        this.dirPath = dirPath;
     }
 
     public MemoryPageIOStream(int capacity) throws IOException {
