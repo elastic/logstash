@@ -4,6 +4,7 @@ import org.logstash.common.io.CheckpointIO;
 import org.logstash.common.io.PageIO;
 
 import java.io.IOException;
+import java.nio.file.NoSuchFileException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -43,7 +44,12 @@ public class Queue {
     public void open() throws IOException {
         final int headPageNum;
 
-        Checkpoint headCheckpoint = checkpointIO.read("checkpoint.head");
+        Checkpoint headCheckpoint;
+        try {
+            headCheckpoint = checkpointIO.read("checkpoint.head");
+        } catch (NoSuchFileException e) {
+            headCheckpoint = null;
+        }
 
         if (headCheckpoint == null) {
             this.seqNum = 0;
