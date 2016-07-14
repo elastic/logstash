@@ -1,6 +1,5 @@
 package org.logstash.ackedqueue;
 
-import com.sun.tools.javac.comp.Check;
 import org.logstash.common.io.PageIO;
 
 import java.io.IOException;
