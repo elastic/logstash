@@ -51,7 +51,7 @@ public class FileCheckpointIO  implements CheckpointIO {
 
     @Override
     public void purge(String fileName) throws IOException {
-        Path path = Paths.get(fileName);
+        Path path = Paths.get(dirPath, fileName);
         Files.delete(path);
     }
 
