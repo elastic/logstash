@@ -360,7 +360,6 @@ describe LogStash::Pipeline do
   end
 
   context "compiled filter funtions" do
-
     context "new events should propagate down the filters" do
       config <<-CONFIG
         filter {
@@ -561,7 +560,7 @@ describe LogStash::Pipeline do
 
     let(:pipeline_settings) { { "pipeline.id" => pipeline_id } }
     let(:pipeline_id) { "main" }
-    let(:number_of_events) { 20 } #1000
+    let(:number_of_events) { 1000 }
     let(:multiline_id) { "my-multiline" }
     let(:multiline_id_other) { "my-multiline_other" }
     let(:dummy_output_id) { "my-dummyoutput" }
@@ -605,7 +604,7 @@ describe LogStash::Pipeline do
 
       Thread.new { subject.run }
       # make sure we have received all the generated events
-      sleep 0.25 until dummyoutput.events.size == number_of_events
+      sleep 0.25 while dummyoutput.events.size < number_of_events
     end
 
     after :each do

@@ -39,14 +39,14 @@ describe LogStash::Util::WrappedSynchronousQueue do
       end
     end
 
-    class Que < Array
+    class DummyQueue < Array
       def take() shift(); end
       def poll(*) shift(); end
     end
 
     describe "WriteClient | ReadClient" do
       context "when writing to the queue" do
-        let(:queue) { Que.new }
+        let(:queue) { DummyQueue.new }
         let(:write_client) { LogStash::Util::WrappedSynchronousQueue::WriteClient.new(queue)}
         let(:read_client)  { LogStash::Util::WrappedSynchronousQueue::ReadClient.new(queue)}
         it "appends batches to the queue" do

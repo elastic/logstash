@@ -33,12 +33,14 @@ module LogStash; class Pipeline
       :thread,
       :config_str,
       :settings,
-      :metric
+      :metric,
+      :filter_queue_client,
+      :input_queue_client
 
   MAX_INFLIGHT_WARN_THRESHOLD = 10_000
 
   RELOAD_INCOMPATIBLE_PLUGINS = [
-      "LogStash::Inputs::Stdin"
+    "LogStash::Inputs::Stdin"
   ]
 
   def initialize(config_str, settings = LogStash::SETTINGS, namespaced_metric = nil)
@@ -85,7 +87,10 @@ module LogStash; class Pipeline
     queue = LogStash::Util::WrappedSynchronousQueue.new
     @input_queue_client = queue.write_client
     @filter_queue_client = queue.read_client
-
+    @filter_queue_client.set_events_metric(metric.namespace([:stats, :events]))
+    @filter_queue_client.set_pipeline_metric(
+        metric.namespace([:stats, :pipelines, pipeline_id.to_s.to_sym, :events])
+    )
     @events_filtered = Concurrent::AtomicFixnum.new(0)
     @events_consumed = Concurrent::AtomicFixnum.new(0)
 
@@ -100,10 +105,6 @@ module LogStash; class Pipeline
     @ready.value
   end
 
-  def filter_queue_client
-    @filter_queue_client
-  end
-
   def safe_pipeline_worker_count
     default = @settings.get_default("pipeline.workers")
     pipeline_workers = @settings.get("pipeline.workers") #override from args "-w 8" or config
@@ -115,7 +116,7 @@ module LogStash; class Pipeline
     if @settings.set?("pipeline.workers")
       if pipeline_workers > 1
         @logger.warn("Warning: Manual override - there are filters that might not work with multiple worker threads",
-            :worker_threads => pipeline_workers, :filters => plugins)
+                     :worker_threads => pipeline_workers, :filters => plugins)
       end
     else
       # user did not specify a worker thread count
@@ -179,10 +180,6 @@ module LogStash; class Pipeline
   end
 
   def start_workers
-    @filter_queue_client.set_events_metric(metric.namespace([:stats, :events]))
-    @filter_queue_client.set_pipeline_metric(
-        metric.namespace([:stats, :pipelines, pipeline_id.to_s.to_sym, :events])
-    )
     @worker_threads.clear # In case we're restarting the pipeline
     begin
       start_inputs
@@ -201,11 +198,11 @@ module LogStash; class Pipeline
       config_metric.gauge(:batch_delay, batch_delay)
 
       @logger.info("Starting pipeline",
-          "id" => self.pipeline_id,
-          "pipeline.workers" => pipeline_workers,
-          "pipeline.batch.size" => batch_size,
-          "pipeline.batch.delay" => batch_delay,
-          "pipeline.max_inflight" => max_inflight)
+                   "id" => self.pipeline_id,
+                   "pipeline.workers" => pipeline_workers,
+                   "pipeline.batch.size" => batch_size,
+                   "pipeline.batch.delay" => batch_delay,
+                   "pipeline.max_inflight" => max_inflight)
       if max_inflight > MAX_INFLIGHT_WARN_THRESHOLD
         @logger.warn "CAUTION: Recommended inflight events max exceeded! Logstash will run with up to #{max_inflight} events in memory in your current configuration. If your message sizes are large this may cause instability with the default heap size. Please consider setting a non-standard heap size, changing the batch size (currently #{batch_size}), or changing the number of pipeline workers (currently #{pipeline_workers})"
       end
@@ -242,10 +239,6 @@ module LogStash; class Pipeline
       end
 
       output_batch(batch)
-
-      # @filter_queue_client.ack(batch)
-      # @dlq_client.add(batch)
-
       @filter_queue_client.close_batch(batch)
     end
   end
@@ -273,7 +266,7 @@ module LogStash; class Pipeline
     # Users need to check their configuration or see if there is a bug in the
     # plugin.
     @logger.error("Exception in pipelineworker, the pipeline stopped processing new events, please check your filter configuration and restart Logstash.",
-        "exception" => e, "backtrace" => e.backtrace)
+                  "exception" => e, "backtrace" => e.backtrace)
     raise
   end
 
@@ -314,7 +307,6 @@ module LogStash; class Pipeline
 
     @inputs.each do |input|
       input.register
-
       start_input(input)
     end
   end
