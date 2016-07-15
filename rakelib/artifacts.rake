@@ -196,7 +196,7 @@ namespace "artifact" do
     puts "Complete: #{zippath}"
   end
 
-  def package(platform, version)
+  def package(platform, version, package_name)
     require "stud/temporary"
     require "fpm/errors" # TODO(sissel): fix this in fpm
     require "fpm/package/dir"
@@ -283,7 +283,7 @@ namespace "artifact" do
 
     # TODO(sissel): Invoke Pleaserun to generate the init scripts/whatever
 
-    out.name = "logstash"
+    out.name = package_name
     out.version = LOGSTASH_VERSION.gsub(/[.-]([[:alpha:]])/, '~\1')
     out.architecture = "all"
     # TODO(sissel): Include the git commit hash?
@@ -327,12 +327,25 @@ namespace "artifact" do
   desc "Build an RPM of logstash with all dependencies"
   task "rpm" => ["prepare"] do
     puts("[artifact:rpm] building rpm package")
-    package("centos", "5")
+    package("centos", "5", "logstash")
   end
 
   desc "Build a DEB of logstash with all dependencies"
   task "deb" => ["prepare"] do
     puts("[artifact:deb] building deb package")
-    package("ubuntu", "12.04")
+    package("ubuntu", "12.04", "logstash")
   end
+  
+  desc "Build an RPM of logstash with all dependencies"
+  task "rpm-all-plugins" => ["prepare-all"] do
+    puts("[artifact:rpm-all-plugins] building rpm package")
+    package("centos", "5", "logstash-all-plugins")
+  end
+
+  desc "Build a DEB of logstash with all dependencies"
+  task "deb-all-plugins" => ["prepare-all"] do
+    puts("[artifact:deb-all-plugins] building deb package")
+    package("ubuntu", "12.04", "logstash-all-plugins")
+  end
+  
 end
