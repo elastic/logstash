@@ -294,7 +294,6 @@ module LogStash; class Pipeline
     batch.reduce([]) do |acc,e|
       if e.is_a?(LogStash::Event)
         filtered = with_pipeline_rescue(e) { filter_func(e) }
-        next acc if filtered.nil? # with_pipeline_rescue may return nil!
         filtered.each {|fe| acc << fe unless fe.cancelled?}
       end
       acc
@@ -307,11 +306,7 @@ module LogStash; class Pipeline
     outputs_events = batch.reduce(Hash.new { |h, k| h[k] = [] }) do |acc, event|
       # We ask the AST to tell us which outputs to send each event to
       # Then, we stick it in the correct bin
-
-      # output_func should never return anything other than an Array but we have lots of legacy specs
-      # that monkeypatch it and return nil. We can deprecate  "|| []" after fixing these specs
-      outputs_for_event = with_pipeline_rescue(event) { output_func(event) } || []
-
+      outputs_for_event = with_pipeline_rescue(event) { output_func(event) }
       outputs_for_event.each { |output| acc[output] << event }
       acc
     end
@@ -331,18 +326,17 @@ module LogStash; class Pipeline
     events = Array(event_or_events)
     namespace_events.increment(:errored, events.size)
     namespace_pipeline.increment(:errored, events.size)
-    
-    logger_opts = {:message => e.message, :class => e.class.name}
-    logger_message = "Exception in pipelineworker!"
 
-    if @logger.info?
-      logger_opts[:events] = events.map(&:to_hash)
-    end
-    
-    logger_message << "Enable info logging to see failed events" if !@logger.info?
-    
+    # if @continue_on_error is enabled this will be handled
+    # and logged by the pipeline higher in the stack.
     raise unless @continue_on_error
-    nil
+
+    logger_opts = {:exception_message => e.message, :class => e.class.name}
+    logger_opts[:events] = events.map(&:to_hash) if @logger.info?
+    logger_opts[:backtrace] = e.backtrace if @logger.debug?
+
+    @logger.error("Exception in pipelineworker!", logger_opts)
+    []
   end
 
   def set_current_thread_inflight_batch(batch)
