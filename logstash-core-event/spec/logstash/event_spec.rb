@@ -669,7 +669,7 @@ describe LogStash::Event do
     it "should clone metadata fields with multiple keys" do
       cloned = event5.clone
       expect(cloned.get(fieldref)).to eq("pants")
-      expect(cloned.get("[@metadata][smarty]").to eq("pants2")
+      expect(cloned.get("[@metadata][smarty]")).to eq("pants2")
       expect(cloned.to_hash_with_metadata).to include("@metadata")
     end
   end
