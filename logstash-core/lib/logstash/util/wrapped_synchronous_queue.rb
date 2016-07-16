@@ -54,6 +54,8 @@ module LogStash; module Util
       def initialize(queue)
         @queue = queue
         @mutex = Mutex.new
+        # Note that @infilght_batches as a central mechanism for tracking inflight
+        # batches will fail if we have multiple read clients in the pipeline.
         @inflight_batches = {}
         @batch_size = 125
         @wait_for = 5

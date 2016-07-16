@@ -87,6 +87,8 @@ module LogStash; class Pipeline
     queue = LogStash::Util::WrappedSynchronousQueue.new
     @input_queue_client = queue.write_client
     @filter_queue_client = queue.read_client
+    # Note that @infilght_batches as a central mechanism for tracking inflight
+    # batches will fail if we have multiple read clients here.
     @filter_queue_client.set_events_metric(metric.namespace([:stats, :events]))
     @filter_queue_client.set_pipeline_metric(
         metric.namespace([:stats, :pipelines, pipeline_id.to_s.to_sym, :events])
@@ -456,11 +458,11 @@ module LogStash; class Pipeline
   end
 
   # perform filters flush into the output queue
+  # @param batch [ReadClient::ReadBatch]
   # @param options [Hash]
   # @option options [Boolean] :final => true to signal a final shutdown flush
   def flush_filters_to_batch(batch, options = {})
     flush_filters(options) do |event|
-      event.set("flushed", true)
       unless event.cancelled?
         @logger.debug? and @logger.debug("Pushing flushed events", :event => event)
         batch.add(event)
