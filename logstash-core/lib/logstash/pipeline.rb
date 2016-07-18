@@ -21,21 +21,21 @@ require "logstash/filter_delegator"
 
 module LogStash; class Pipeline
   attr_reader :inputs,
-      :filters,
-      :outputs,
-      :worker_threads,
-      :events_consumed,
-      :events_filtered,
-      :reporter,
-      :pipeline_id,
-      :logger,
-      :started_at,
-      :thread,
-      :config_str,
-      :settings,
-      :metric,
-      :filter_queue_client,
-      :input_queue_client
+    :filters,
+    :outputs,
+    :worker_threads,
+    :events_consumed,
+    :events_filtered,
+    :reporter,
+    :pipeline_id,
+    :logger,
+    :started_at,
+    :thread,
+    :config_str,
+    :settings,
+    :metric,
+    :filter_queue_client,
+    :input_queue_client
 
   MAX_INFLIGHT_WARN_THRESHOLD = 10_000
 

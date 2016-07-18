@@ -58,14 +58,14 @@ module LogStash; class PipelineReporter
       inflight_count = worker_states_snap.map {|s| s[:inflight_count] }.reduce(0, :+)
 
       {
-          :events_filtered => events_filtered,
-          :events_consumed => events_consumed,
-          :worker_count => pipeline.worker_threads.size,
-          :inflight_count => inflight_count,
-          :worker_states => worker_states_snap,
-          :output_info => output_info,
-          :thread_info => pipeline.plugin_threads_info,
-          :stalling_threads_info => pipeline.stalling_threads_info
+        :events_filtered => events_filtered,
+        :events_consumed => events_consumed,
+        :worker_count => pipeline.worker_threads.size,
+        :inflight_count => inflight_count,
+        :worker_states => worker_states_snap,
+        :output_info => output_info,
+        :thread_info => pipeline.plugin_threads_info,
+        :stalling_threads_info => pipeline.stalling_threads_info
       }
     end
   end
@@ -90,10 +90,10 @@ module LogStash; class PipelineReporter
       status = thread.status || "dead"
       inflight_count = batch_map[thread] ? batch_map[thread].size : 0
       {
-          :status => status,
-          :alive => thread.alive?,
-          :index => idx,
-          :inflight_count => inflight_count
+        :status => status,
+        :alive => thread.alive?,
+        :index => idx,
+        :inflight_count => inflight_count
       }
     end
   end
@@ -103,12 +103,12 @@ module LogStash; class PipelineReporter
       is_multi_worker = output_delegator.worker_count > 1
 
       {
-          :type => output_delegator.config_name,
-          :config => output_delegator.config,
-          :is_multi_worker => is_multi_worker,
-          :events_received => output_delegator.events_received,
-          :workers => output_delegator.workers,
-          :busy_workers => output_delegator.busy_workers
+        :type => output_delegator.config_name,
+        :config => output_delegator.config,
+        :is_multi_worker => is_multi_worker,
+        :events_received => output_delegator.events_received,
+        :workers => output_delegator.workers,
+        :busy_workers => output_delegator.busy_workers
       }
     end
   end
