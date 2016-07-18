@@ -5,7 +5,6 @@ import com.logstash.bivalues.BiValues;
 import org.jruby.Ruby;
 import org.jruby.RubyArray;
 import org.jruby.RubyHash;
-import org.jruby.javasupport.JavaUtil;
 import org.jruby.runtime.builtin.IRubyObject;
 
 import java.util.Collection;
@@ -52,8 +51,8 @@ public final class Rubyfier {
     private static RubyHash deepMap(Ruby runtime, final Map<?, ?> map) {
         RubyHash hash = RubyHash.newHash(runtime);
         for (Map.Entry entry : map.entrySet()) {
-            IRubyObject k = JavaUtil.convertJavaToUsableRubyObject(runtime, entry.getKey());
-            hash.put(k, deep(runtime, entry.getValue()));
+            // Note: RubyHash.put calls JavaUtil.convertJavaToUsableRubyObject on keys and values
+            hash.put(entry.getKey(), deep(runtime, entry.getValue()));
         }
         return hash;
     }
