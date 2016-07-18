@@ -209,7 +209,7 @@ public class MmapPageIO implements PageIO {
 
     @Override
     public void ensurePersisted() {
-        // TODO: add this.buffer.force();
+        this.buffer.force();
     }
 
     @Override
