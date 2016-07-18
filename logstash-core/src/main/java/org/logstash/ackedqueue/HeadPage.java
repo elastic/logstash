@@ -58,7 +58,8 @@ public class HeadPage extends Page {
         tailPage.checkpoint();
 
         // TODO: should we have a better deactivation strategy to avoid too rapid reactivation scenario?
-        if (tailPage.getPageNum() > queue.firstUnreadPage().getPageNum()) {
+        Page firstUnreadPage = queue.firstUnreadPage();
+        if (firstUnreadPage == null || (tailPage.getPageNum() > firstUnreadPage.getPageNum())) {
             // deactivate if this new tailpage is not where the read is occuring
             tailPage.getPageIO().deactivate();
         }
