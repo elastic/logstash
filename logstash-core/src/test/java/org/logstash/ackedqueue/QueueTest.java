@@ -2,7 +2,6 @@ package org.logstash.ackedqueue;
 
 import org.junit.Test;
 import org.logstash.common.io.ByteBufferPageIO;
-import org.logstash.common.io.CheckpointIO;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -34,7 +33,7 @@ public class QueueTest {
         Queue q = new TestQueue(TestSettings.getSettings(10));
         q.open();
 
-        assertThat(q.readBatch(1), is(equalTo(null)));
+        assertThat(q.nonBlockReadBatch(1), is(equalTo(null)));
     }
 
     @Test
@@ -45,11 +44,11 @@ public class QueueTest {
         Queueable element = new StringElement("foobarbaz");
         q.write(element);
 
-        Batch b = q.readBatch(1);
+        Batch b = q.nonBlockReadBatch(1);
 
         assertThat(b.getElements().size(), is(equalTo(1)));
         assertThat(b.getElements().get(0).toString(), is(equalTo(element.toString())));
-        assertThat(q.readBatch(1), is(equalTo(null)));
+        assertThat(q.nonBlockReadBatch(1), is(equalTo(null)));
     }
 
     @Test
@@ -60,11 +59,11 @@ public class QueueTest {
         Queueable element = new StringElement("foobarbaz");
         q.write(element);
 
-        Batch b = q.readBatch(2);
+        Batch b = q.nonBlockReadBatch(2);
 
         assertThat(b.getElements().size(), is(equalTo(1)));
         assertThat(b.getElements().get(0).toString(), is(equalTo(element.toString())));
-        assertThat(q.readBatch(2), is(equalTo(null)));
+        assertThat(q.nonBlockReadBatch(2), is(equalTo(null)));
     }
 
     @Test
@@ -78,13 +77,13 @@ public class QueueTest {
             q.write(e);
         }
 
-        Batch b = q.readBatch(2);
+        Batch b = q.nonBlockReadBatch(2);
 
         assertThat(b.getElements().size(), is(equalTo(2)));
         assertThat(b.getElements().get(0).toString(), is(equalTo(elements.get(0).toString())));
         assertThat(b.getElements().get(1).toString(), is(equalTo(elements.get(1).toString())));
 
-        b = q.readBatch(2);
+        b = q.nonBlockReadBatch(2);
 
         assertThat(b.getElements().size(), is(equalTo(1)));
         assertThat(b.getElements().get(0).toString(), is(equalTo(elements.get(2).toString())));
@@ -110,7 +109,7 @@ public class QueueTest {
         assertThat(q.getHeadPage().isFullyRead(), is(equalTo(false)));
         assertThat(q.getHeadPage().isFullyAcked(), is(equalTo(false)));
 
-        Batch b = q.readBatch(10);
+        Batch b = q.nonBlockReadBatch(10);
         assertThat(b.getElements().size(), is(equalTo(2)));
 
         assertThat(q.getTailPages().size(), is(equalTo(1)));
@@ -120,7 +119,7 @@ public class QueueTest {
         assertThat(q.getHeadPage().isFullyRead(), is(equalTo(false)));
         assertThat(q.getHeadPage().isFullyAcked(), is(equalTo(false)));
 
-        b = q.readBatch(10);
+        b = q.nonBlockReadBatch(10);
         assertThat(b.getElements().size(), is(equalTo(2)));
 
         assertThat(q.getTailPages().get(0).isFullyRead(), is(equalTo(true)));
@@ -128,7 +127,7 @@ public class QueueTest {
         assertThat(q.getHeadPage().isFullyRead(), is(equalTo(true)));
         assertThat(q.getHeadPage().isFullyAcked(), is(equalTo(false)));
 
-        b = q.readBatch(10);
+        b = q.nonBlockReadBatch(10);
         assertThat(b, is(equalTo(null)));
     }
 
@@ -145,7 +144,7 @@ public class QueueTest {
             q.write(e);
         }
 
-        Batch b = q.readBatch(10);
+        Batch b = q.nonBlockReadBatch(10);
 
         assertThat(b.getElements().size(), is(equalTo(2)));
         assertThat(q.getTailPages().size(), is(equalTo(1)));
@@ -162,7 +161,7 @@ public class QueueTest {
         assertThat(tailPage.isFullyRead(), is(equalTo(true)));
         assertThat(tailPage.isFullyAcked(), is(equalTo(true)));
 
-        b = q.readBatch(10);
+        b = q.nonBlockReadBatch(10);
 
         assertThat(b.getElements().size(), is(equalTo(2)));
         assertThat(q.getHeadPage().isFullyRead(), is(equalTo(true)));
@@ -229,7 +228,7 @@ public class QueueTest {
         assertThat(c.getMinSeqNum(), is(equalTo(1L)));
         assertThat(c.getFirstUnackedSeqNum(), is(equalTo(1L)));
 
-        Batch b = q.readBatch(10);
+        Batch b = q.nonBlockReadBatch(10);
         b.close();
 
         assertThat(q.getCheckpointIO().read("checkpoint.0"), is(nullValue()));
@@ -241,7 +240,7 @@ public class QueueTest {
         assertThat(c.getFirstUnackedSeqNum(), is(equalTo(3L)));
         assertThat(c.getFirstUnackedPageNum(), is(equalTo(1)));
 
-        b = q.readBatch(10);
+        b = q.nonBlockReadBatch(10);
         b.close();
 
         c = q.getCheckpointIO().read("checkpoint.head");

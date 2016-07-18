@@ -3,6 +3,7 @@ package org.logstash.ackedqueue;
 import org.logstash.common.io.CheckpointIO;
 import org.logstash.common.io.PageIO;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.nio.file.NoSuchFileException;
 import java.util.ArrayList;
@@ -19,7 +20,7 @@ import java.util.List;
 //   - where to put try/catch for these errors
 
 
-public class Queue {
+public class Queue implements Closeable {
     protected long seqNum;
     protected HeadPage headPage;
     protected final List<BeheadedPage> tailPages;
@@ -113,6 +114,8 @@ public class Queue {
         element.setSeqNum(nextSeqNum());
         byte[] data = element.serialize();
 
+        boolean wasEmpty = (firstUnreadPage() == null);
+
         if (! this.headPage.hasSpace(data.length)) {
             // beheading includes checkpoint+fsync if required
             BeheadedPage tailPage = this.headPage.behead();
@@ -130,6 +133,11 @@ public class Queue {
 
         this.headPage.write(data, element);
 
+        // if the queue was empty before write, notifyAll blocking reachBatch threads that queue is now non-empty
+        if (wasEmpty) {
+            notifyAll();
+        }
+
         return element.getSeqNum();
     }
 
@@ -138,11 +146,32 @@ public class Queue {
          this.headPage.ensurePersistedUpto(seqNum);
     }
 
-    public synchronized Batch readBatch(int limit) throws IOException {
+    // non-blockin queue read
+    // @param limit read the next bach of size up to this limit. the returned batch size can be smaller than than the requested limit if fewer elements are available
+    // @return Batch the batch containing 1 or more element up to the required limit or null of no elements were available
+    public synchronized Batch nonBlockReadBatch(int limit) throws IOException {
         Page p = firstUnreadPage();
         if (p == null) {
-            // TODO: add blocking + signaling with the write side for a blocking read
             return null;
+        }
+
+        return p.readBatch(limit);
+     }
+
+    // blockin queue read until elements are available for read
+    // @param limit read the next bach of size up to this limit. the returned batch size can be smaller than than the requested limit if fewer elements are available
+    // @return Batch the batch containing 1 or more element up to the required limit or null if no elements were available
+    public synchronized Batch readBatch(int limit) throws IOException {
+        Page p;
+
+        while ((p = firstUnreadPage()) == null) {
+            try {
+                wait();
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                // TODO: what should we do with an InterruptedException here?
+                throw new RuntimeException("blocking readBatch InterruptedException", e);
+            }
         }
 
         return p.readBatch(limit);
@@ -201,10 +230,6 @@ public class Queue {
         }
     }
 
-    private long nextSeqNum() {
-        return this.seqNum += 1;
-    }
-
     public CheckpointIO getCheckpointIO() {
         return this.checkpointIO;
     }
@@ -213,7 +238,19 @@ public class Queue {
         return this.deserialiser;
     }
 
-    public Page firstUnreadPage() throws IOException {
+    public synchronized void close() throws IOException {
+        // TODO: review close strategy and exception handling
+
+        ensurePersistedUpto(this.seqNum);
+        for (BeheadedPage p : this.tailPages) {
+            p.getPageIO().close();
+        }
+        this.headPage.getPageIO().close();
+
+        notifyAll();
+    }
+
+    protected Page firstUnreadPage() throws IOException {
         // TODO: avoid tailPages traversal below by keeping tab of the last read tail page
 
         for (Page p : this.tailPages) {
@@ -237,6 +274,10 @@ public class Queue {
             return this.headPage.getPageNum();
         }
         return this.tailPages.get(0).getPageNum();
+    }
+
+    protected long nextSeqNum() {
+        return this.seqNum += 1;
     }
 
 }
