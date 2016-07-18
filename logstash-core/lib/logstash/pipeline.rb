@@ -125,7 +125,7 @@ module LogStash; class Pipeline
       # warn if the default is multiple
       if default > 1
         @logger.warn("Defaulting pipeline worker threads to 1 because there are some filters that might not work with multiple worker threads",
-            :count_was => default, :filters => plugins)
+                     :count_was => default, :filters => plugins)
         return 1 # can't allow the default value to propagate if there are unsafe filters
       end
     end
@@ -324,20 +324,20 @@ module LogStash; class Pipeline
     rescue => e
       if plugin.stop?
         @logger.debug("Input plugin raised exception during shutdown, ignoring it.",
-            :plugin => plugin.class.config_name, :exception => e,
-            :backtrace => e.backtrace)
+                      :plugin => plugin.class.config_name, :exception => e,
+                      :backtrace => e.backtrace)
         return
       end
 
       # otherwise, report error and restart
       if @logger.debug?
         @logger.error(I18n.t("logstash.pipeline.worker-error-debug",
-            :plugin => plugin.inspect, :error => e.to_s,
-            :exception => e.class,
-            :stacktrace => e.backtrace.join("\n")))
+                             :plugin => plugin.inspect, :error => e.to_s,
+                             :exception => e.class,
+                             :stacktrace => e.backtrace.join("\n")))
       else
         @logger.error(I18n.t("logstash.pipeline.worker-error",
-            :plugin => plugin.inspect, :error => e))
+                             :plugin => plugin.inspect, :error => e))
       end
 
       # Assuming the failure that caused this exception is transient,
@@ -480,10 +480,10 @@ module LogStash; class Pipeline
 
   def stalling_threads_info
     plugin_threads_info
-        .reject {|t| t["blocked_on"] } # known benign blocking statuses
-        .each {|t| t.delete("backtrace") }
-        .each {|t| t.delete("blocked_on") }
-        .each {|t| t.delete("status") }
+      .reject {|t| t["blocked_on"] } # known benign blocking statuses
+      .each {|t| t.delete("backtrace") }
+      .each {|t| t.delete("blocked_on") }
+      .each {|t| t.delete("status") }
   end
 
   def non_reloadable_plugins
@@ -497,11 +497,11 @@ module LogStash; class Pipeline
   # We want to hide most of what's in here
   def inspect
     {
-        :pipeline_id => @pipeline_id,
-        :settings => @settings.inspect,
-        :ready => @ready,
-        :running => @running,
-        :flushing => @flushing
+      :pipeline_id => @pipeline_id,
+      :settings => @settings.inspect,
+      :ready => @ready,
+      :running => @running,
+      :flushing => @flushing
     }
   end
 
