@@ -75,18 +75,16 @@ public class Concurent {
             try {
                 while (consumedCount < ELEMENT_COUNT) {
                     Batch b = q.readBatch(BATCH_SIZE);
-                    if (b == null) {
-//                        System.out.println("read batch sleep");
-                        Thread.sleep(100);
-                    } else {
+//                    if (b.getElements().size() < BATCH_SIZE) {
+//                        System.out.println("read small batch=" + b.getElements().size());
+//                    } else {
 //                        System.out.println("read batch size=" + b.getElements().size());
-                        output.addAll((List<StringElement>) b.getElements());
-                        b.close();
-                        consumedCount += b.getElements().size();
-                    }
+//                    }
+                    output.addAll((List<StringElement>) b.getElements());
+                    b.close();
+                    consumedCount += b.getElements().size();
                 }
-            } catch (IOException|InterruptedException e) {
-                Thread.currentThread().interrupt();
+            } catch (IOException e) {
                 throw new RuntimeException(e);
             }
         });
@@ -96,6 +94,7 @@ public class Concurent {
         producer.start();
 
         consumer.join();
+        q.close();
 
         Instant end = Instant.now();
 
@@ -129,17 +128,17 @@ public class Concurent {
                 try {
                     while (output.size() < ELEMENT_COUNT) {
                         Batch b = q.readBatch(BATCH_SIZE);
-                        if (b == null) {
-//                            System.out.println("read batch sleep");
-                            Thread.sleep(100);
-                        } else {
+//                        if (b.getElements().size() < BATCH_SIZE) {
+//                            System.out.println("read small batch=" + b.getElements().size());
+//                        } else {
 //                            System.out.println("read batch size=" + b.getElements().size());
-                            output.addAll((List<StringElement>) b.getElements());
-                            b.close();
-                        }
+//                        }
+                        output.addAll((List<StringElement>) b.getElements());
+                        b.close();
                     }
-                } catch (IOException | InterruptedException e) {
-                    Thread.currentThread().interrupt();
+                    // everything is read, close queue here since other consumers might be blocked trying to get next batch
+                    q.close();
+                } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
             }));
