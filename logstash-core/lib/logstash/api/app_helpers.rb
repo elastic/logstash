@@ -5,9 +5,12 @@ module LogStash::Api::AppHelpers
 
   def respond_with(data, options={})
     as     = options.fetch(:as, :json)
+    filter = options.fetch(:filter, "")
     pretty = params.has_key?("pretty")
 
     if as == :json
+      selected_fields = extract_fields(filter.to_s.strip)
+      data.select! { |k,v| selected_fields.include?(k) } unless selected_fields.empty?
       unless options.include?(:exclude_default_metadata)
         data = default_metadata.merge(data)
       end
