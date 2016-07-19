@@ -26,7 +26,6 @@ module LogStash
         end
 
         get "/?:filter?" do
-          selected_fields = extract_fields(params["filter"].to_s.strip)
           payload = {
             :events => stats_command.events,
             :jvm => {
@@ -35,8 +34,7 @@ module LogStash
               :memory => stats_command.memory
             }
           }
-          payload.select! { |k,v| selected_fields.include?(k) } unless selected_fields.empty?
-          respond_with payload
+          respond_with(payload, {:filter => params["filter"]})
         end
 
       end

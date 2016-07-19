@@ -9,15 +9,13 @@ module LogStash
         end
 
         get "/?:filter?" do
-          selected_fields = extract_fields(params["filter"].to_s.strip)
           payload = {
             :jvm => jvm_payload,
             :process => process_payload,
             :mem => mem_payload,
             :pipeline => pipeline_payload
           }
-          payload.select! { |k,v| selected_fields.include?(k) } unless selected_fields.empty?
-          respond_with payload
+          respond_with(payload, {:filter => params["filter"]})
         end
 
         private
