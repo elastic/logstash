@@ -9,6 +9,7 @@ import java.nio.file.NoSuchFileException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 
 // TODO: Notes
@@ -29,6 +30,7 @@ public class Queue implements Closeable {
 
     private final CheckpointIO checkpointIO;
     private final ElementDeserialiser deserialiser;
+    private final AtomicBoolean closed;
 
     // TODO: I really don't like the idea of passing a dummy PageIO object for the sake of holding a reference to the
     // concrete class for later invoking open() and create() in the Page
@@ -37,6 +39,7 @@ public class Queue implements Closeable {
         this.tailPages = new ArrayList<>();
         this.checkpointIO = settings.getCheckpointIOFactory().build(settings.getDirPath());
         this.deserialiser = settings.getElementDeserialiser();
+        this.closed = new AtomicBoolean(true); // since not yes opened
     }
 
     // moved queue opening logic in open() method until we have something in place to used in-memory checkpoints for testing
@@ -105,7 +108,9 @@ public class Queue implements Closeable {
         // we can let the headPage get its first unacked page num via the tailPages
         this.headPage.checkpoint();
 
-        // TODO: do directory traversal and cleanup lingering pages? could be a background operations to not delay queue start?
+        // TODO: here do directory traversal and cleanup lingering pages? could be a background operations to not delay queue start?
+
+        this.closed.set(false);
     }
 
     // @param element the Queueable object to write to the queue
@@ -239,15 +244,21 @@ public class Queue implements Closeable {
     }
 
     public synchronized void close() throws IOException {
-        // TODO: review close strategy and exception handling
+        // TODO: review close strategy and exception handling and resiliency of first closing tail pages if crash in the middle
 
-        ensurePersistedUpto(this.seqNum);
-        for (BeheadedPage p : this.tailPages) {
-            p.getPageIO().close();
+        // for now the AtomicBoolean close is not necessary since the close() method is synchronized but
+        // this may change and it'll be future proof
+        if (closed.getAndSet(true) == false) {
+            // TODO: not sure if we need to do this here since the headpage close will also call ensurePersited
+            ensurePersistedUpto(this.seqNum);
+
+            for (BeheadedPage p : this.tailPages) {
+                p.close();
+            }
+            this.headPage.close();
+
+            notifyAll();
         }
-        this.headPage.getPageIO().close();
-
-        notifyAll();
     }
 
     protected Page firstUnreadPage() throws IOException {

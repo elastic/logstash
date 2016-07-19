@@ -37,4 +37,9 @@ public class BeheadedPage extends Page {
         this.pageIO.purge();
         this.queue.getCheckpointIO().purge("checkpoint." + this.pageNum);
     }
+
+    public void close() throws IOException {
+        checkpoint();
+        this.pageIO.close();
+    }
 }

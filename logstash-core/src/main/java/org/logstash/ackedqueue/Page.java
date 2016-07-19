@@ -3,12 +3,13 @@ package org.logstash.ackedqueue;
 import org.logstash.common.io.PageIO;
 import org.logstash.common.io.ReadElementValue;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.util.BitSet;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public abstract class Page {
+public abstract class Page implements Closeable {
     protected final int pageNum;
     protected long minSeqNum; // TODO: see if we can meke it final?
     protected int elementCount;
@@ -98,7 +99,9 @@ public abstract class Page {
         }
     }
 
-    abstract void checkpoint() throws IOException;
+    public abstract void checkpoint() throws IOException;
+
+    public abstract void close() throws IOException;
 
     public int getPageNum() {
         return pageNum;

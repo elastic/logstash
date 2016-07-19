@@ -77,4 +77,9 @@ public class HeadPage extends Page {
         this.lastCheckpoint = queue.getCheckpointIO().write("checkpoint.head", this.pageNum, this.queue.firstUnackedPageNum(), firstUnackedSeqNum(), this.minSeqNum, this.elementCount);
      }
 
+    public void close() throws IOException {
+        checkpoint();
+        this.pageIO.close();
+    }
+
 }
