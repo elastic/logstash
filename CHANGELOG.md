@@ -59,6 +59,8 @@
 
 ## 2.3.1 (Apr 4, 2016)
 ### general
+ - Reverted the new Java Event which shipped in 2.3.0.The new pure Java implementation of the Event class Logstash 2.3.1   lightning fast, but unfortunately not as compatible as we’d have liked for a minor release. In particular, it could 
+   cause problems with some custom Ruby filter scripts and custom plugins from the community. We take our commitment to compatibility, and versioning semantics, seriously. Though we have reverted to the prior Ruby Event implementation, the Java version remains the correct technical direction and we will most likely be reintroducing in Logstash 5.0.
  - Fix a JRuby thread safety issue when using regular expression under multiple workers ([#4977](https://github.com/elastic/logstash/issues/4977)).
  - Disable environment variables interpolation by default, this feature is now experimental to turn it on use the `--allow-env` flag ([#4958](https://github.com/elastic/logstash/issues/4958)).
  - Hide sensitive data from from the log when shutting down a stale Logstash ([#4952](https://github.com/elastic/logstash/pull/4952)).
