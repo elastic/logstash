@@ -1,6 +1,7 @@
 package com.logstash;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.logstash.bivalues.NullBiValue;
 import com.logstash.bivalues.StringBiValue;
 import com.logstash.bivalues.TimeBiValue;
 import com.logstash.bivalues.TimestampBiValue;
@@ -259,7 +260,7 @@ public class Event implements Cloneable, Serializable {
 
     private Timestamp initTimestamp(Object o) {
         try {
-            if (o == null) {
+            if (o == null || o instanceof NullBiValue) {
                 // most frequent
                 return new Timestamp();
             } else if (o instanceof String) {
