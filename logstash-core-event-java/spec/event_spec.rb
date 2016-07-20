@@ -114,6 +114,14 @@ describe LogStash::Event do
       expect(e.get("foo")).to eq(-9223372036854776000)
     end
 
+    it "should convert Time to Timestamp" do
+      e = LogStash::Event.new()
+      time = Time.now
+      e.set("[foo]", Time.at(time.to_f))
+      expect(e.get("foo")).to be_kind_of(LogStash::Timestamp)
+      expect(e.get("foo").to_f).to be_within(0.1).of(time.to_f)
+    end
+
     it "should set XXJavaProxy Jackson crafted" do
       proxy = com.logstash.Util.getMapFixtureJackson()
       # proxy is {"string": "foo", "int": 42, "float": 42.42, "array": ["bar","baz"], "hash": {"string":"quux"} }
