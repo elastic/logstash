@@ -658,4 +658,47 @@ describe LogStash::Event do
       expect(event.get("[a][0][b]")).to eq(98)
     end
   end
+
+  describe "#clone" do
+    let(:fieldref) { "[@metadata][fancy]" }
+    let(:event1) { LogStash::Event.new("hello" => "world", "@metadata" => { "fancy" => "pants" }) }
+    let(:event2) { LogStash::Event.new("hello" => "world", "@metadata" => { "fancy" => {"fancy2" => "pants2"} }) }
+    let(:event3) { LogStash::Event.new("hello" => "world", "@metadata" => { "fancy" => {"fancy2" => {"fancy3" => "pants2"}} }) }
+    let(:event4) { LogStash::Event.new("hello" => "world", "@metadata" => { "fancy" => {"fancy2" => ["pants1", "pants2"]} }) }
+    let(:event5) { LogStash::Event.new("hello" => "world", "@metadata" => { "fancy" => "pants", "smarty" => "pants2" }) }
+
+    it "should clone metadata fields" do
+      cloned = event1.clone
+      expect(cloned.get(fieldref)).to eq("pants")
+      expect(cloned.to_hash_with_metadata).to include("@metadata")
+    end
+
+    it "should clone metadata fields with nested json" do
+      cloned = event2.clone
+      expect(cloned.get(fieldref)).to eq({"fancy2" => "pants2"})
+      expect(cloned.get("hello")).to eq("world")
+      expect(cloned.to_hash).not_to include("@metadata")
+      expect(cloned.to_hash_with_metadata).to include("@metadata")
+    end
+
+    it "should clone metadata fields with 2-level nested json" do
+      cloned = event3.clone
+      expect(cloned.get(fieldref)).to eq({"fancy2" => {"fancy3" => "pants2"}})
+      expect(cloned.to_hash).not_to include("@metadata")
+      expect(cloned.to_hash_with_metadata).to include("@metadata")
+    end
+
+    it "should clone metadata fields with nested json and array value" do
+      cloned = event4.clone
+      expect(cloned.get(fieldref)).to eq({"fancy2" => ["pants1", "pants2"]})
+      expect(cloned.to_hash_with_metadata).to include("@metadata")
+    end
+
+    it "should clone metadata fields with multiple keys" do
+      cloned = event5.clone
+      expect(cloned.get(fieldref)).to eq("pants")
+      expect(cloned.get("[@metadata][smarty]")).to eq("pants2")
+      expect(cloned.to_hash_with_metadata).to include("@metadata")
+    end
+  end
 end
