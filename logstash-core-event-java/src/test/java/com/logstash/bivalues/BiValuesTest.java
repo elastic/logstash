@@ -3,7 +3,6 @@ package com.logstash.bivalues;
 import com.logstash.TestBase;
 import com.logstash.Timestamp;
 import com.logstash.ext.JrubyTimestampExtLibrary.RubyTimestamp;
-import org.joda.time.DateTime;
 import org.jruby.RubyBignum;
 import org.jruby.RubyBoolean;
 import org.jruby.RubyFixnum;
@@ -12,13 +11,13 @@ import org.jruby.RubyInteger;
 import org.jruby.RubyNil;
 import org.jruby.RubyString;
 import org.jruby.RubySymbol;
-import org.jruby.RubyTime;
 import org.jruby.ext.bigdecimal.RubyBigDecimal;
 import org.jruby.javasupport.JavaUtil;
 import org.junit.Test;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
@@ -203,30 +202,6 @@ public class BiValuesTest extends TestBase {
         assertEquals(jo, subject.javaValue());
         assertEquals(Timestamp.class, subject.javaValue().getClass());
         assertEquals(ro.toString(), subject.rubyValue(ruby).toString());
-        assertEquals(ro.getClass(), subject.rubyValue(ruby).getClass());
-    }
-
-    @Test
-    public void testBiValuesTimeRuby() {
-        DateTime jo = DateTime.now();
-        RubyTime ro = RubyTime.newTime(ruby, jo);
-        BiValue subject = BiValues.newBiValue(ro);
-
-        assertEquals(ro, subject.rubyValueUnconverted());
-        assertEquals(ro.getClass(), subject.rubyValue(ruby).getClass());
-        assertEquals(jo, subject.javaValue());
-        assertEquals(DateTime.class, subject.javaValue().getClass());
-    }
-
-    @Test
-    public void testBiValuesTimeJava() {
-        DateTime jo = DateTime.now();
-        RubyTime ro = RubyTime.newTime(ruby, jo);
-        BiValue subject = BiValues.newBiValue(jo);
-
-        assertEquals(jo, subject.javaValue());
-        assertEquals(DateTime.class, subject.javaValue().getClass());
-        assertEquals(ro, subject.rubyValue(ruby));
         assertEquals(ro.getClass(), subject.rubyValue(ruby).getClass());
     }
 

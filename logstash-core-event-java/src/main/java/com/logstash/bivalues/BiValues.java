@@ -2,7 +2,6 @@ package com.logstash.bivalues;
 
 import com.logstash.Timestamp;
 import com.logstash.ext.JrubyTimestampExtLibrary.RubyTimestamp;
-import org.joda.time.DateTime;
 import org.jruby.RubyBignum;
 import org.jruby.RubyBoolean;
 import org.jruby.RubyFloat;
@@ -10,7 +9,6 @@ import org.jruby.RubyInteger;
 import org.jruby.RubyNil;
 import org.jruby.RubyString;
 import org.jruby.RubySymbol;
-import org.jruby.RubyTime;
 import org.jruby.ext.bigdecimal.RubyBigDecimal;
 import org.jruby.java.proxies.JavaProxy;
 import org.jruby.runtime.builtin.IRubyObject;
@@ -30,7 +28,6 @@ public enum BiValues {
     JAVA_LANG_STRING(BiValueType.STRING),
     JAVA_MATH_BIGDECIMAL(BiValueType.DECIMAL),
     JAVA_MATH_BIGINTEGER(BiValueType.BIGINT),
-    ORG_JODA_TIME_DATETIME(BiValueType.TIME),
     ORG_JRUBY_EXT_BIGDECIMAL_RUBYBIGDECIMAL(BiValueType.DECIMAL),
     ORG_JRUBY_JAVA_PROXIES_CONCRETEJAVAPROXY(BiValueType.JAVAPROXY),
     ORG_JRUBY_RUBYBIGNUM(BiValueType.BIGINT),
@@ -43,7 +40,6 @@ public enum BiValues {
     ORG_JRUBY_RUBYNIL(BiValueType.NULL),
     ORG_JRUBY_RUBYSTRING(BiValueType.STRING),
     ORG_JRUBY_RUBYSYMBOL(BiValueType.SYMBOL), // one way conversion, a Java string will use STRING
-    ORG_JRUBY_RUBYTIME(BiValueType.TIME),
     NULL(BiValueType.NULL);
 
     private static HashMap<String, String> initCache() {
@@ -58,7 +54,6 @@ public enum BiValues {
         hm.put("java.lang.String", "JAVA_LANG_STRING");
         hm.put("java.math.BigDecimal", "JAVA_MATH_BIGDECIMAL");
         hm.put("java.math.BigInteger", "JAVA_MATH_BIGINTEGER");
-        hm.put("org.joda.time.DateTime", "ORG_JODA_TIME_DATETIME");
         hm.put("org.jruby.RubyBignum", "ORG_JRUBY_RUBYBIGNUM");
         hm.put("org.jruby.RubyBoolean", "ORG_JRUBY_RUBYBOOLEAN");
         hm.put("org.jruby.RubyBoolean$False", "ORG_JRUBY_RUBYBOOLEAN$FALSE");
@@ -69,7 +64,6 @@ public enum BiValues {
         hm.put("org.jruby.RubyNil", "ORG_JRUBY_RUBYNIL");
         hm.put("org.jruby.RubyString", "ORG_JRUBY_RUBYSTRING");
         hm.put("org.jruby.RubySymbol", "ORG_JRUBY_RUBYSYMBOL");
-        hm.put("org.jruby.RubyTime", "ORG_JRUBY_RUBYTIME");
         hm.put("org.jruby.ext.bigdecimal.RubyBigDecimal", "ORG_JRUBY_EXT_BIGDECIMAL_RUBYBIGDECIMAL");
         hm.put("org.jruby.java.proxies.ConcreteJavaProxy", "ORG_JRUBY_JAVA_PROXIES_CONCRETEJAVAPROXY");
         return hm;
@@ -177,14 +171,6 @@ public enum BiValues {
                     return new TimestampBiValue((RubyTimestamp) value);
                 }
                 return new TimestampBiValue((Timestamp) value);
-            }
-        },
-        TIME {
-            BiValue build(Object value) {
-                if (value instanceof IRubyObject) {
-                    return new TimeBiValue((RubyTime) value);
-                }
-                return new TimeBiValue((DateTime) value);
             }
         },
         NULL {

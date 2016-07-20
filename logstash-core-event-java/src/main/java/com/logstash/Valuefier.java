@@ -2,8 +2,11 @@ package com.logstash;
 
 import com.logstash.bivalues.BiValue;
 import com.logstash.bivalues.BiValues;
+import com.logstash.ext.JrubyTimestampExtLibrary;
+import org.joda.time.DateTime;
 import org.jruby.RubyArray;
 import org.jruby.RubyHash;
+import org.jruby.RubyTime;
 import org.jruby.java.proxies.ArrayJavaProxy;
 import org.jruby.java.proxies.ConcreteJavaProxy;
 import org.jruby.java.proxies.JavaProxy;
@@ -73,6 +76,16 @@ public class Valuefier {
         }
         if (o instanceof ArrayJavaProxy || o instanceof ConcreteJavaProxy){
             return convertJavaProxy((JavaProxy) o);
+        }
+        if (o instanceof RubyTime) {
+            RubyTime time = (RubyTime) o;
+            Timestamp ts = new Timestamp(time.getDateTime());
+            JrubyTimestampExtLibrary.RubyTimestamp rts = JrubyTimestampExtLibrary.RubyTimestamp.newRubyTimestamp(time.getRuntime(), ts);
+            return convertNonCollection(rts);
+        }
+        if (o instanceof DateTime) {
+            Timestamp ts = new Timestamp((DateTime) o);
+            return convertNonCollection(ts);
         }
         return convertNonCollection(o);
     }

@@ -2,9 +2,12 @@ package com.logstash;
 
 import com.logstash.bivalues.BiValue;
 import com.logstash.bivalues.BiValues;
+import com.logstash.bivalues.TimestampBiValue;
+import org.joda.time.DateTime;
 import org.jruby.RubyClass;
 import org.jruby.RubyMatchData;
 import org.jruby.RubyString;
+import org.jruby.RubyTime;
 import org.jruby.java.proxies.ArrayJavaProxy;
 import org.jruby.java.proxies.ConcreteJavaProxy;
 import org.jruby.java.proxies.MapJavaProxy;
@@ -64,6 +67,22 @@ public class ValuefierTest extends TestBase {
         assertEquals(bv.javaValue(), ((BiValue) a.get(0)).javaValue());
     }
 
+    @Test
+    public void testRubyTime() {
+        RubyTime ro = RubyTime.newTime(ruby, DateTime.now());
+        Object result = Valuefier.convert(ro);
+
+        assertEquals(TimestampBiValue.class, result.getClass());
+    }
+
+    @Test
+    public void testJodaDateTIme() {
+        DateTime jo = DateTime.now();
+        Object result = Valuefier.convert(jo);
+
+        assertEquals(TimestampBiValue.class, result.getClass());
+    }
+
     @Rule
     public ExpectedException exception = ExpectedException.none();
 
@@ -83,5 +102,12 @@ public class ValuefierTest extends TestBase {
         ConcreteJavaProxy cjp = new ConcreteJavaProxy(ruby, proxyClass, hs);
         BiValue result = (BiValue) Valuefier.convert(cjp);
         assertEquals(hs, result.javaValue());
+    }
+
+    @Test
+    public void scratch() {
+        String[] parts = "foo/1_4".split("\\W|_");
+        int ord = Integer.valueOf(parts[1]);
+        assertEquals(ord, 1);
     }
 }
