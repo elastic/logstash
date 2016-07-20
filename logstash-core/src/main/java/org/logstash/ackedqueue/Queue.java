@@ -163,19 +163,53 @@ public class Queue implements Closeable {
         return p.readBatch(limit);
      }
 
-    // blockin queue read until elements are available for read
+
+    // blocking readBatch notes:
+    //
+    // the queue close() notifies all pending blocking read so that they unblock if the queue is being closed.
+    // this means that all blocking read methods need to verify for the queue close condition.
+
+
+    // blocking queue read until elements are available for read
     // @param limit read the next bach of size up to this limit. the returned batch size can be smaller than than the requested limit if fewer elements are available
     // @return Batch the batch containing 1 or more element up to the required limit or null if no elements were available
     public synchronized Batch readBatch(int limit) throws IOException {
         Page p;
 
-        while ((p = firstUnreadPage()) == null) {
+        while ((p = firstUnreadPage()) == null && !isClosed()) {
             try {
                 wait();
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 // TODO: what should we do with an InterruptedException here?
                 throw new RuntimeException("blocking readBatch InterruptedException", e);
+            }
+        }
+
+        // need to check for close since it is a condition for exiting the while loop
+        return isClosed() ? null : p.readBatch(limit);
+    }
+
+    // blocking queue read until elements are available for read or the given timeout is reached.
+    // @param limit read the next bach of size up to this limit. the returned batch size can be smaller than than the requested limit if fewer elements are available
+    // @param timeout the maximum time to wait in milliseconds
+    // @return Batch the batch containing 1 or more element up to the required limit or null if no elements were available
+    public synchronized Batch readBatch(int limit, long timeout) throws IOException {
+        Page p;
+
+        // wait only if queue is empty
+        if ((p = firstUnreadPage()) == null) {
+            try {
+                wait(timeout);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                // TODO: what should we do with an InterruptedException here?
+                throw new RuntimeException("blocking readBatch InterruptedException", e);
+            }
+
+            // if after returnining from wait queue is still empty, or the queue was closed return null
+            if ((p = firstUnreadPage()) == null || isClosed()) {
+                return null;
             }
         }
 
@@ -291,4 +325,7 @@ public class Queue implements Closeable {
         return this.seqNum += 1;
     }
 
+    protected boolean isClosed() {
+        return this.closed.get();
+    }
 }
