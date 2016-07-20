@@ -3,7 +3,7 @@ PATH
   specs:
     logstash-core (2.4.0.dev-java)
       cabin (~> 0.8.0)
-      clamp (~> 0.6.5)
+      clamp (~> 1)
       concurrent-ruby (= 0.9.2)
       filesize (= 0.0.4)
       gems (~> 0.8.3)
@@ -27,12 +27,13 @@ PATH
   remote: ./logstash-core-plugin-api
   specs:
     logstash-core-plugin-api (1.60.0-java)
-      logstash-core (>= 2.4.0.alpha, < 3)
+      logstash-core (>= 2.4.0.alpha, <= 2.4.99)
 
 GEM
   remote: https://rubygems.org/
   specs:
     addressable (2.3.8)
+    archive-tar-minitar (0.5.2)
     arr-pm (0.0.10)
       cabin (> 0)
     backports (3.6.8)
@@ -46,7 +47,7 @@ GEM
     ci_reporter_rspec (1.0.0)
       ci_reporter (~> 2.0)
       rspec (>= 2.14, < 4)
-    clamp (0.6.5)
+    clamp (1.0.0)
     coderay (1.1.1)
     concurrent-ruby (0.9.2-java)
     coveralls (0.8.14)
@@ -59,27 +60,31 @@ GEM
     docile (1.1.5)
     faraday (0.9.2)
       multipart-post (>= 1.2, < 3)
-    ffi (1.9.13)
+    ffi (1.9.14-java)
     file-dependencies (0.1.6)
       minitar
     filesize (0.0.4)
     fivemat (1.3.2)
     flores (0.0.6)
-    fpm (1.3.3)
-      arr-pm (~> 0.0.9)
+    fpm (1.6.2)
+      archive-tar-minitar
+      arr-pm (~> 0.0.10)
       backports (>= 2.6.2)
       cabin (>= 0.6.0)
       childprocess
-      clamp (~> 0.6)
+      clamp (~> 1.0.0)
       ffi
-      json (>= 1.7.7)
+      json (>= 1.7.7, < 2.0)
+      pleaserun (~> 0.0.24)
+      ruby-xz
     gem_publisher (1.5.0)
     gems (0.8.3)
     i18n (0.6.9)
     insist (1.0.0)
+    io-like (0.3.0)
     jrjackson (0.3.9-java)
     jruby-openssl (0.9.16-java)
-    json (2.0.1-java)
+    json (1.8.3-java)
     kramdown (1.11.1)
     logstash-devutils (0.0.22-java)
       fivemat
@@ -94,10 +99,17 @@ GEM
     method_source (0.8.2)
     minitar (0.5.4)
     multipart-post (2.0.0)
+    mustache (0.99.8)
     octokit (3.8.0)
       sawyer (~> 0.6.0, >= 0.5.3)
+    pleaserun (0.0.24)
+      cabin (> 0)
+      clamp
+      insist
+      mustache (= 0.99.8)
+      stud
     polyglot (0.3.5)
-    pry (0.10.3-java)
+    pry (0.10.4-java)
       coderay (~> 1.1.0)
       method_source (~> 0.8.1)
       slop (~> 3.4)
@@ -115,8 +127,11 @@ GEM
     rspec-mocks (3.1.3)
       rspec-support (~> 3.1.0)
     rspec-support (3.1.2)
-    rspec-wait (0.0.8)
-      rspec (>= 2.11, < 3.5)
+    rspec-wait (0.0.9)
+      rspec (>= 3, < 4)
+    ruby-xz (0.2.3)
+      ffi (~> 1.9)
+      io-like (~> 0.3)
     rubyzip (1.1.7)
     sawyer (0.6.0)
       addressable (~> 2.3.5)
@@ -148,7 +163,7 @@ DEPENDENCIES
   coveralls
   file-dependencies (= 0.1.6)
   flores (~> 0.0.6)
-  fpm (~> 1.3.3)
+  fpm (~> 1.6.2)
   gems (~> 0.8.3)
   logstash-core (= 2.4.0.dev)!
   logstash-core-event (= 2.4.0.dev)!
