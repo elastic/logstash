@@ -8,6 +8,7 @@ import com.logstash.bivalues.TimestampBiValue;
 import com.logstash.ext.JrubyTimestampExtLibrary;
 import org.joda.time.DateTime;
 import org.jruby.RubySymbol;
+import org.logstash.ackedqueue.Queueable;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -18,7 +19,7 @@ import java.util.List;
 import java.util.Map;
 
 
-public class Event implements Cloneable, Serializable {
+public class Event implements Cloneable, Serializable, Queueable {
 
     private boolean cancelled;
     private Map<String, Object> data;
@@ -26,6 +27,8 @@ public class Event implements Cloneable, Serializable {
     private Timestamp timestamp;
     private Accessors accessors;
     private Accessors metadata_accessors;
+
+    private long seqNum; // for the Queueable interface
 
     public static final String METADATA = "@metadata";
     public static final String METADATA_BRACKETS = "[" + METADATA + "]";
@@ -311,5 +314,34 @@ public class Event implements Cloneable, Serializable {
     // for other reasons than in tests/specs.
     public static void setLogger(Logger logger) {
         Event.logger = logger;
+    }
+
+
+    // Queueable inteface implementations below
+
+    public void setSeqNum(long seqNum) {
+        this.seqNum = seqNum;
+    }
+
+    public long getSeqNum() {
+        return this.seqNum;
+    }
+
+    public byte[] serialize() throws IOException {
+        this.data.put("__seqnum", seqNum);
+        this.data.put("__metadata", this.metadata);
+        byte[] data = toJson().getBytes();
+        this.data.remove("__seqnum");
+        this.data.remove("__metadata");
+
+        return data;
+    }
+
+    public static Event deserialize(byte[] data) throws IOException {
+        Event e = Event.fromJson(new String(data))[0];
+        e.seqNum = (long)e.data.remove("__seqnum");
+        e.metadata = (Map<String, Object>)e.data.remove("__metadata");
+
+        return e;
     }
 }
