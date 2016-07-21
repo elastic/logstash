@@ -21,7 +21,7 @@ module LogStash
            Setting::Numeric.new("pipeline.batch.size", 125),
            Setting::Numeric.new("pipeline.batch.delay", 5), # in milliseconds
            Setting::Boolean.new("pipeline.unsafe_shutdown", false),
-           Setting::Boolean.new("pipeline.continue_on_error", false),
+           Setting::Boolean.new("pipeline.abort_on_error", true),
                     Setting.new("path.plugins", Array, []),
             Setting::String.new("interactive", nil, false),
            Setting::Boolean.new("config.debug", false),

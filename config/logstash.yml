@@ -57,15 +57,18 @@
 #
 # pipeline.unsafe_shutdown: false
 #
-# Catch all unexpected errors in the pipeline without terminating logstash.
+# By default, logstash will immediately exit when presented with an unexcepted
+# exception. This is due to the fact that an unknown exception can have an
+# unpredictable effect on filter/output state and data flow.
+#
+# Disabling abort_on_error makes Logstash catch all unexpected errors in the
+# pipeline without terminating logstash.
 # Logstash will do all of the following: drop the erroring event,
 # log an error-level message, and continue processing. This will also increment
 # the 'errored' count in the pipeline stats API at /_node/pipeline/events.
 #
-# If set to false logstash will immediately exit with an error in these
-# conditions, which may be more safe since potentially fewer events would be dropped.
 #
-# pipeline.continue_on_error: false
+# pipeline.abort_on_error: true
 #
 #
 # ------------ Pipeline Configuration Settings --------------

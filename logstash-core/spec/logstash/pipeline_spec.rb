@@ -131,11 +131,11 @@ describe LogStash::Pipeline do
 
     let(:pipeline) { TestPipeline.new(config, pipeline_settings_obj) }
 
-    context "when pipeline.continue_on_error is false" do
+    context "when pipeline.abort_on_error is true" do
       before(:each) do
-        pipeline_settings_obj.set("pipeline.continue_on_error", false)
+        pipeline_settings_obj.set("pipeline.abort_on_error", true)
       end
-      
+
       it "should raise an exception when filtering bad events" do
         expect do
           pipeline.filter_batch([LogStash::Event.new])
@@ -149,11 +149,11 @@ describe LogStash::Pipeline do
       end
     end
 
-    context "when pipeline.continue_on_error is true" do
+    context "when pipeline.abort_on_error is false" do
       before(:each) do
-        pipeline_settings_obj.set("pipeline.continue_on_error", true)
+        pipeline_settings_obj.set("pipeline.abort_on_error", false)
       end
-      
+
       it "should raise an exception when filtering bad events" do
         expect do
           pipeline.filter_batch([LogStash::Event.new])

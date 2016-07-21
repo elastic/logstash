@@ -49,7 +49,7 @@ module LogStash; class Pipeline
     @settings = settings
     @pipeline_id = @settings.get_value("pipeline.id") || self.object_id
     @reporter = LogStash::PipelineReporter.new(@logger, self)
-    @continue_on_error = LogStash::SETTINGS.get("pipeline.continue_on_error")
+    @abort_on_error = LogStash::SETTINGS.get("pipeline.abort_on_error")
 
     @inputs = nil
     @filters = nil
@@ -327,9 +327,9 @@ module LogStash; class Pipeline
     namespace_events.increment(:errored, events.size)
     namespace_pipeline.increment(:errored, events.size)
 
-    # if @continue_on_error is enabled this will be handled
+    # if @abort_on_error is disabled this exception is handled
     # and logged by the pipeline higher in the stack.
-    raise unless @continue_on_error
+    raise if @abort_on_error
 
     logger_opts = {:exception_message => e.message, :class => e.class.name}
     logger_opts[:events] = events.map(&:to_hash) if @logger.info?
