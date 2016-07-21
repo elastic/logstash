@@ -19,6 +19,8 @@ require "logstash/instrument/collector"
 require "logstash/output_delegator"
 require "logstash/filter_delegator"
 
+require "logstash/acked_queue"
+
 module LogStash; class Pipeline
   attr_reader :inputs,
     :filters,
@@ -82,7 +84,11 @@ module LogStash; class Pipeline
       raise
     end
 
-    @input_queue = LogStash::Util::WrappedSynchronousQueue.new
+    # @input_queue = LogStash::Util::WrappedSynchronousQueue.new
+    @input_queue = LogStash::AckedQueue.new("./lsqueue", 100 * 1024 * 1024)
+    @input_queue.open
+    @signal_queue = Queue.new
+
     @events_filtered = Concurrent::AtomicFixnum.new(0)
     @events_consumed = Concurrent::AtomicFixnum.new(0)
 
@@ -230,11 +236,14 @@ module LogStash; class Pipeline
       input_batch, signal = @input_queue_pop_mutex.synchronize { take_batch(batch_size, batch_delay) }
       running = false if signal == LogStash::SHUTDOWN
 
-      @events_consumed.increment(input_batch.size)
-      namespace_events.increment(:in, input_batch.size)
-      namespace_pipeline.increment(:in, input_batch.size)
+      # input_batch is a AckedBatch object
+      events = input_batch.get_elements
 
-      filtered_batch = filter_batch(input_batch)
+      @events_consumed.increment(events.size)
+      namespace_events.increment(:in, events.size)
+      namespace_pipeline.increment(:in, events.size)
+
+      filtered_batch = filter_batch(events)
 
       if signal # Flush on SHUTDOWN or FLUSH
         flush_options = (signal == LogStash::SHUTDOWN) ? {:final => true} : {}
@@ -252,33 +261,50 @@ module LogStash; class Pipeline
       namespace_pipeline.increment(:out, filtered_batch.size)
 
       inflight_batches_synchronize { set_current_thread_inflight_batch(nil) }
+
+      # closing the AckedBatch object will take care of the acknoledgement
+      input_batch.close
     end
   end
 
   def take_batch(batch_size, batch_delay)
-    batch = []
-    # Since this is externally synchronized in `worker_look` wec can guarantee that the visibility of an insight batch
-    # guaranteed to be a full batch not a partial batch
-    set_current_thread_inflight_batch(batch)
+    while(true) do
+      # blocking read up to batch_delay timeout
+      batch = @input_queue.read_batch(batch_size, batch_delay)
 
-    signal = false
-    batch_size.times do |t|
-      event = (t == 0) ? @input_queue.take : @input_queue.poll(batch_delay)
-
-      if event.nil?
-        next
-      elsif event == LogStash::SHUTDOWN || event == LogStash::FLUSH
-        # We MUST break here. If a batch consumes two SHUTDOWN events
-        # then another worker may have its SHUTDOWN 'stolen', thus blocking
-        # the pipeline. We should stop doing work after flush as well.
-        signal = event
-        break
-      else
-        batch << event
+      signal = false
+      if !@signal_queue.empty?
+        signal = @signal_queue.pop
       end
+
+      break if signal || batch
     end
 
     [batch, signal]
+
+    # batch = []
+    # # Since this is externally synchronized in `worker_look` wec can guarantee that the visibility of an insight batch
+    # # guaranteed to be a full batch not a partial batch
+    # set_current_thread_inflight_batch(batch)
+    #
+    # signal = false
+    # batch_size.times do |t|
+    #   event = (t == 0) ? @input_queue.take : @input_queue.poll(batch_delay)
+    #
+    #   if event.nil?
+    #     next
+    #   elsif event == LogStash::SHUTDOWN || event == LogStash::FLUSH
+    #     # We MUST break here. If a batch consumes two SHUTDOWN events
+    #     # then another worker may have its SHUTDOWN 'stolen', thus blocking
+    #     # the pipeline. We should stop doing work after flush as well.
+    #     signal = event
+    #     break
+    #   else
+    #     batch << event
+    #   end
+    # end
+    #
+    # [batch, signal]
   end
 
   def filter_batch(batch)
@@ -413,7 +439,7 @@ module LogStash; class Pipeline
     # Each worker thread will receive this exactly once!
     @worker_threads.each do |t|
       @logger.debug("Pushing shutdown", :thread => t.inspect)
-      @input_queue.push(LogStash::SHUTDOWN)
+      @signal_queue.push(LogStash::SHUTDOWN)
     end
 
     @worker_threads.each do |t|
@@ -483,7 +509,7 @@ module LogStash; class Pipeline
   def flush
     if @flushing.compare_and_set(false, true)
       @logger.debug? && @logger.debug("Pushing flush onto pipeline")
-      @input_queue.push(LogStash::FLUSH)
+      @signal_queue.push(LogStash::FLUSH)
     end
   end
 
