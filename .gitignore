@@ -33,3 +33,4 @@ qa/.vagrant
 qa/.rspec
 qa/acceptance/.vagrant
 qa/Gemfile.lock
+

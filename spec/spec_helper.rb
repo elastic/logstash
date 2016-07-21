@@ -7,6 +7,9 @@ CoverageHelper.eager_load if ENV['COVERAGE']
 require "logstash/devutils/rspec/spec_helper"
 require "logstash/logging/json"
 
+require "flores/rspec"
+require "flores/random"
+
 class JSONIOThingy < IO
   def initialize; end
   def flush; end
@@ -18,6 +21,7 @@ class JSONIOThingy < IO
 end
 
 RSpec.configure do |c|
+  Flores::RSpec.configure(c)
   c.before do
     # Force Cabin to always have a JSON subscriber.  The main purpose of this
     # is to catch crashes in json serialization for our logs. JSONIOThingy

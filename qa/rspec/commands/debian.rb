@@ -23,7 +23,7 @@ module ServiceTester
     def install(package, host=nil)
       hosts = (host.nil? ? servers : Array(host))
       at(hosts, {in: :serial}) do |_|
-        cmd = sudo_exec!("dpkg -i  #{package}")
+        sudo_exec!("dpkg -i --force-confnew #{package}")
       end
     end
 

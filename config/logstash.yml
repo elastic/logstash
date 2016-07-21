@@ -20,6 +20,13 @@
 #
 # If omitted the node name will default to the machine's host name
 #
+# ------------ Data path ------------------
+#
+# Which directory should be used by logstash and its plugins
+# for any persistent needs. Defaults to LOGSTASH_HOME/data
+#
+# path.data:
+#
 # ------------ Pipeline Settings --------------
 #
 # Set the number of workers that will, in parallel, execute the filters+outputs

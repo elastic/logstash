@@ -1,65 +1,59 @@
 package com.logstash;
 
-import com.logstash.ext.JrubyTimestampExtLibrary;
+import com.logstash.bivalues.BiValue;
+import com.logstash.bivalues.BiValues;
 import org.jruby.Ruby;
 import org.jruby.RubyArray;
 import org.jruby.RubyHash;
-import org.jruby.ext.bigdecimal.RubyBigDecimal;
-import org.jruby.javasupport.JavaUtil;
 import org.jruby.runtime.builtin.IRubyObject;
 
-import java.math.BigDecimal;
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 
 public final class Rubyfier {
-
-    private Rubyfier(){}
-
-    public static IRubyObject deep(Ruby runtime, final Object input) {
-        if (input instanceof IRubyObject) return (IRubyObject)input;
-        if (input instanceof Map) return deepMap(runtime, (Map) input);
-        if (input instanceof List) return deepList(runtime, (List) input);
-        if (input instanceof Timestamp) return JrubyTimestampExtLibrary.RubyTimestamp.newRubyTimestamp(runtime, (Timestamp)input);
-        if (input instanceof Collection) throw new ClassCastException("unexpected Collection type " + input.getClass());
-
-        // BigDecimal is not currenly handled by JRuby and this is the type Jackson uses for floats
-        if (input instanceof BigDecimal) return new RubyBigDecimal(runtime, runtime.getClass("BigDecimal"), (BigDecimal)input);
-
-        return JavaUtil.convertJavaToUsableRubyObject(runtime, input);
+    private static final String ERR_TEMPLATE = "Missing Java class handling for full class name=%s, simple name=%s";
+    /*
+    Rubyfier.deep() is called by JrubyEventExtLibrary RubyEvent ruby_get_field,
+    ruby_remove, ruby_to_hash and ruby_to_hash_with_metadata.
+    When any value is added to the Event it should pass through Valuefier.convert.
+    Rubyfier.deep is the mechanism to pluck the Ruby value from a BiValue or convert a
+    ConvertedList and ConvertedMap back to RubyArray or RubyHash.
+    However, IRubyObjects and the RUby runtime do not belong in ConvertedMap or ConvertedList
+    so they are unconverted here.
+    */
+    private Rubyfier() {
     }
 
-    public static Object deepOnly(Ruby runtime, final Object input) {
+    public static IRubyObject deep(Ruby runtime, final Object input) {
+        if (input instanceof BiValue) return ((BiValue) input).rubyValue(runtime);
         if (input instanceof Map) return deepMap(runtime, (Map) input);
         if (input instanceof List) return deepList(runtime, (List) input);
-        if (input instanceof Timestamp) return JrubyTimestampExtLibrary.RubyTimestamp.newRubyTimestamp(runtime, (Timestamp)input);
-        if (input instanceof Collection) throw new ClassCastException("unexpected Collection type " + input.getClass());
+        if (input instanceof Collection) throw new ClassCastException("Unexpected Collection type " + input.getClass());
 
-        // BigDecimal is not currenly handled by JRuby and this is the type Jackson uses for floats
-        if (input instanceof BigDecimal) return new RubyBigDecimal(runtime, runtime.getClass("BigDecimal"), (BigDecimal)input);
-
-        return input;
+        try {
+            return BiValues.newBiValue(input).rubyValue(runtime);
+        } catch (IllegalArgumentException e) {
+            Class cls = input.getClass();
+            throw new IllegalArgumentException(String.format(ERR_TEMPLATE, cls.getName(), cls.getSimpleName()));
+        }
     }
 
     private static RubyArray deepList(Ruby runtime, final List list) {
         final int length = list.size();
         final RubyArray array = runtime.newArray(length);
-
         for (Object item : list) {
-            // use deepOnly because RubyArray.add already calls JavaUtil.convertJavaToUsableRubyObject on item
-            array.add(deepOnly(runtime, item));
+            array.add(deep(runtime, item));
         }
-
         return array;
     }
 
     private static RubyHash deepMap(Ruby runtime, final Map<?, ?> map) {
         RubyHash hash = RubyHash.newHash(runtime);
-
-        for (Map.Entry<?, ?> entry : map.entrySet()) {
-            // use deepOnly on value because RubyHash.put already calls JavaUtil.convertJavaToUsableRubyObject on items
-            hash.put(entry.getKey(), deepOnly(runtime, entry.getValue()));
+        for (Map.Entry entry : map.entrySet()) {
+            // Note: RubyHash.put calls JavaUtil.convertJavaToUsableRubyObject on keys and values
+            hash.put(entry.getKey(), deep(runtime, entry.getValue()));
         }
-
         return hash;
     }
 }

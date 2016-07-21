@@ -29,7 +29,7 @@ module ServiceTester
 
       response = nil
       at(hosts, {in: :serial}) do |_host|
-        response = sudo_exec!(cmd)
+        response = sudo_exec!("JARS_SKIP='true' #{cmd}")
       end
       response
     end

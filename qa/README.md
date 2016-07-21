@@ -28,7 +28,6 @@ It is possible to run the full suite of the acceptance test with the codebase by
 running the command `ci/ci_acceptance.sh`, this command will generate the artifacts, bootstrap
 the VM and run the tests.
 
-
 This test are based on a collection of Vagrant defined VM's where the
 different test are going to be executed, so first setup necessary is to
 have vagrant properly available, see https://www.vagrantup.com/ for
@@ -60,20 +59,24 @@ rake qa:acceptance:redhat           # Run acceptance test in redhat machines
 rake qa:acceptance:suse             # Run acceptance test in suse machines
 ```
 
-will bootstrap all selected machines. If you're willing to run on single
-platform you should use
+before you *will have to bootstrap* all selected machines, you can do
+that using the `rake qa:vm:setup[platform]` task. This is done like this
+as bootstrap imply setting up the VM'S and this might take some time and
+you might only want to this once.
+
+In the feature we might add new rake tasks to do all at once, but for now you can use the script under
+`ci/ci_acceptance.sh` to do all at once.
+
+For local testing puroposes, is recommended to not run all together, pick your target and run with the single machine command, If you're willing to run on single one, you should use:
 
 ```
 rake qa:acceptance:single[machine]  # Run one single machine acceptance test
 ```
 
-this will not do any bootstrap, so you are required to previously
-boostrap the VM yourself by doing `vagrant up`. This is like this
-because this command is only here for developers, not for automated
-CI's.
-
-
 ### How to run tests
+
+If you are *running this test for first time*, you will need to setup
+your VM's first, you can do that using either `vagrant up` or `rake qa:vm:setup[platform]`. 
 
 In this framework we're using ssh to connect to a collection of Vagrant
 machines, so first and most important is to generate a valid ssh config

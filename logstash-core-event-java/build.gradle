@@ -27,7 +27,7 @@ apply plugin: 'idea'
 
 group = 'org.logstash'
 
-project.sourceCompatibility = 1.7
+project.sourceCompatibility = 1.8
 
 task sourcesJar(type: Jar, dependsOn: classes) {
     from sourceSets.main.allSource
@@ -94,7 +94,7 @@ idea {
 dependencies {
     compile 'com.fasterxml.jackson.core:jackson-core:2.7.1'
     compile 'com.fasterxml.jackson.core:jackson-databind:2.7.1-1'
-    provided 'org.jruby:jruby-core:1.7.22'
+    provided 'org.jruby:jruby-core:1.7.25'
     testCompile 'junit:junit:4.12'
     testCompile 'net.javacrumbs.json-unit:json-unit:1.9.0'
 }

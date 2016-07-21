@@ -519,15 +519,16 @@ Let's see what comes out:
 ----------------------------------
 
 $ bin/logstash -f ../test.conf
-Logstash startup completed
+Pipeline main started
 asdf
 {
-       "message" => "asdf",
+    "@timestamp" => 2016-06-30T02:42:51.496Z,
       "@version" => "1",
-    "@timestamp" => "2015-03-18T23:09:29.595Z",
           "host" => "example.com",
-          "show" => "This data will be in the output"
+          "show" => "This data will be in the output",
+       "message" => "asdf"
 }
+
 ----------------------------------
 
 The "asdf" typed in became the `message` field contents, and the conditional
@@ -548,18 +549,18 @@ Let's see what the output looks like with this change:
 [source,ruby]
 ----------------------------------
 $ bin/logstash -f ../test.conf
-Logstash startup completed
+Pipeline main started
 asdf
 {
-       "message" => "asdf",
-      "@version" => "1",
-    "@timestamp" => "2015-03-18T23:10:19.859Z",
-          "host" => "example.com",
-          "show" => "This data will be in the output",
+    "@timestamp" => 2016-06-30T02:46:48.565Z,
      "@metadata" => {
            "test" => "Hello",
         "no_show" => "This data will not be in the output"
-    }
+    },
+      "@version" => "1",
+          "host" => "example.com",
+          "show" => "This data will be in the output",
+       "message" => "asdf"
 }
 ----------------------------------
 
@@ -600,13 +601,13 @@ configuration a sample date string and see what comes out:
 [source,ruby]
 ----------------------------------
 $ bin/logstash -f ../test.conf
-Logstash startup completed
+Pipeline main started
 02/Mar/2014:15:36:43 +0100
 {
-       "message" => "02/Mar/2014:15:36:43 +0100",
+    "@timestamp" => 2014-03-02T14:36:43.000Z,
       "@version" => "1",
-    "@timestamp" => "2014-03-02T14:36:43.000Z",
-          "host" => "example.com"
+          "host" => "example.com",
+       "message" => "02/Mar/2014:15:36:43 +0100"
 }
 ----------------------------------
 
@@ -635,62 +636,59 @@ output {
 ----------------------------------
 
 [[environment-variables]]
-=== Using Environment Variables in Configuration
+=== Using Environment Variables in the Configuration
 
 ==== Overview
 
-* You can set environment variable references into Logstash plugins configuration using `${var}`.
-* Each reference will be replaced by environment variable value at Logstash startup.
+* You can set environment variable references in the configuration for Logstash plugins by using `${var}`.
+* At Logstash startup, each reference will be replaced by the value of the environment variable.
 * The replacement is case-sensitive.
 * References to undefined variables raise a Logstash configuration error.
-* A default value can be given by using the form `${var:default value}`.
-* You can add environment variable references in any plugin option type : string, number, boolean, array or hash.
-* Environment variables are immutable. If you update the environment variable, you'll have to restart Logstash to pick the updated value.
+* You can give a default value by using the form `${var:default value}`. Logstash uses the default value if the
+environment variable is undefined.
+* You can add environment variable references in any plugin option type : string, number, boolean, array, or hash.
+* Environment variables are immutable. If you update the environment variable, you'll have to restart Logstash to pick up the updated value.
 
 ==== Examples
 
-[cols="a,a,a"]
-|==================================
-|Logstash config source	|Environment 	|Logstash config result
-|
+The following examples show you how to use environment variables to set the values of some commonly used
+configuration options.
+
+===== Setting the TCP Port 
+
+Here's an example that uses an environment variable to set the TCP port:
+
 [source,ruby]
-----
+----------------------------------
 input {
   tcp {
     port => "${TCP_PORT}"
   }
 }
-----
+----------------------------------
 
-|
+Now let's set the value of `TCP_PORT`:
+
 [source,shell]
 ----
 export TCP_PORT=12345
 ----
-|
+
+At startup, Logstash uses the following configuration: 
+
 [source,ruby]
-----
+----------------------------------
 input {
   tcp {
     port => 12345
   }
 }
-----
-|
-[source,ruby]
-----
-input {
-  tcp {
-    port => "${TCP_PORT}"
-  }
-}
-----
+----------------------------------
 
-|
-No TCP_PORT defined
-|
-Raise a logstash configuration error
-|
+If the `TCP_PORT` environment variable is not set, Logstash returns a configuration error.
+
+You can fix this problem by specifying a default value: 
+
 [source,ruby]
 ----
 input {
@@ -700,9 +698,8 @@ input {
 }
 ----
 
-|
-No TCP_PORT defined
-|
+Now, instead of returning a configuration error if the variable is undefined, Logstash uses the default:
+
 [source,ruby]
 ----
 input {
@@ -711,31 +708,13 @@ input {
   }
 }
 ----
-|
-[source,ruby]
-----
-input {
-  tcp {
-    port => "${TCP_PORT:54321}"
-  }
-}
-----
 
-|
-[source,shell]
-----
-export TCP_PORT=12345
-----
-|
-[source,ruby]
-----
-input {
-  tcp {
-    port => 12345
-  }
-}
-----
-|
+If the environment variable is defined, Logstash uses the value specified for the variable instead of the default. 
+
+===== Setting the Value of a Tag
+
+Here's an example that uses an environment variable to set the value of a tag:
+
 [source,ruby]
 ----
 filter {
@@ -745,12 +724,15 @@ filter {
 }
 ----
 
-|
+Let's set the value of `ENV_TAG`:
+
 [source,shell]
 ----
 export ENV_TAG="tag2"
 ----
-|
+
+At startup, Logstash uses the following configuration: 
+
 [source,ruby]
 ----
 filter {
@@ -759,7 +741,11 @@ filter {
   }
 }
 ----
-|
+
+===== Setting a File Path
+
+Here's an example that uses an environment variable to set the path to a log file:
+
 [source,ruby]
 ----
 filter {
@@ -770,12 +756,16 @@ filter {
   }
 }
 ----
-|
+
+Let's set the value of `HOME`:
+
 [source,shell]
 ----
 export HOME="/path"
 ----
-|
+
+At startup, Logstash uses the following configuration: 
+
 [source,ruby]
 ----
 filter {
@@ -786,7 +776,7 @@ filter {
   }
 }
 ----
-|==================================
+
 
 [[config-examples]]
 === Logstash Configuration Examples

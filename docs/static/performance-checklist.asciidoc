@@ -1,0 +1,43 @@
+[[performance-troubleshooting]]
+
+== Performance Troubleshooting Guide
+
+You can use this troubleshooting guide to quickly diagnose and resolve Logstash performance problems. Advanced knowledge of pipeline internals is not required to understand this guide. However, the https://www.elastic.co/guide/en/logstash/current/pipeline.html[pipeline documentation] is recommended reading if you want to go beyond this guide.
+
+You may be tempted to jump ahead and change settings like `-w` as a first attempt to improve performance. In our experience, changing this setting makes it more difficult to troubleshoot performance problems because you increase the number of variables in play. Instead, make one change at a time and measure the results. Starting at the end of this list is a sure-fire way to create a confusing situation.
+
+[float]
+=== Performance Checklist
+
+. *Check the performance of input sources and output destinations:*
++
+* Logstash is only as fast as the services it connects to. Logstash can only consume and produce data as fast as its input and output destinations can!
+
+. *Check system statistics:*
++
+* CPU
+** Note whether the CPU is being heavily used. On Linux/Unix, you can run `top -H` to see process statistics broken out by thread, as well as total CPU statistics.
+** If CPU usage is high, skip forward to the section about checking the JVM heap and then read the section about tuning Logstash worker settings.
+* Memory
+** Be aware of the fact that Logstash runs on the Java VM. This means that Logstash will always use the maximum amount of memory you allocate to it. 
+** Look for other applications that use large amounts of memory and may be causing Logstash to swap to disk. This can happen if the total memory used by applications exceeds physical memory.
+* I/O Utilization
+** Monitor disk I/O to check for disk saturation. 
+*** Disk saturation can happen if you’re using Logstash plugins (such as the file output) that may saturate your storage. 
+*** Disk saturation can also happen if you're encountering a lot of errors that force Logstash to generate large error logs.
+*** On Linux, you can use iostat, dstat, or something similar to monitor disk I/O.
+** Monitor network I/O for network saturation.
+*** Network saturation can happen if you’re using inputs/outputs that perform a lot of network operations. 
+*** On Linux, you can use a tool like dstat or iftop to monitor your network.
+
+. *Check the JVM heap:*
++
+* Often times CPU utilization can go through the roof if the heap size is too low, resulting in the JVM constantly garbage collecting.
+* A quick way to check for this issue is to double the heap size and see if performance improves. Do not increase the heap size past the amount of physical memory. Leave at least 1GB free for the OS and other processes.
+* You can make more accurate measurements of the JVM heap by using either the `jmap` command line utility distributed with Java or by using VisualVM.
+
+. *Tune Logstash worker settings:*
++
+* Begin by scaling up the number of pipeline workers by using the `-w` flag. This will increase the number of threads available for filters and outputs. It is safe to scale this up to a multiple of CPU cores, if need be, as the threads can become idle on I/O.
+* Each output can only be active in a single pipeline worker thread by default. You can increase this by changing the `workers` setting in the configuration block for each output. Never make this value larger than the number of pipeline workers.
+* You may also tune the output batch size. For many outputs, such as the Elasticsearch output, this setting will correspond to the size of I/O operations. In the case of the Elasticsearch output, this setting corresponds to the batch size.

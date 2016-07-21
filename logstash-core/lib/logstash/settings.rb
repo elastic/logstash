@@ -210,12 +210,6 @@ module LogStash
       end
     end
 
-    class String < Setting
-      def initialize(name, default=nil, strict=true)
-        super(name, ::String, default, strict)
-      end
-    end
-
     class Numeric < Setting
       def initialize(name, default=nil, strict=true)
         super(name, ::Numeric, default, strict)
@@ -241,11 +235,15 @@ module LogStash
 
     class String < Setting
       def initialize(name, default=nil, strict=true, possible_strings=[])
+        @possible_strings = possible_strings
         super(name, ::String, default, strict)
       end
 
       def validate(value)
-        super(value) && possible_strings.include?(value)
+        super(value)
+        unless @possible_strings.empty? || @possible_strings.include?(value)
+          raise ArgumentError.new("invalid value \"#{value}\". Options are: #{@possible_strings.inspect}")
+        end
       end
     end
 
@@ -256,6 +254,18 @@ module LogStash
             raise ::ArgumentError.new("File \"#{file_path}\" must exist but was not found.")
           else
             true
+          end
+        end
+      end
+    end
+
+    class WritableDirectory < Setting
+      def initialize(name, default=nil, strict=true)
+        super(name, ::String, default, strict) do |path|
+          if ::File.directory?(path) && ::File.writable?(path)
+            true
+          else
+            raise ::ArgumentError.new("Path \"#{path}\" is not a directory or not writable.")
           end
         end
       end

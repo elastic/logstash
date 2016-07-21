@@ -24,7 +24,7 @@ deploying your own plugins:
 * <<submitting-plugin,Submitting a Plugin>>
 
 [float]
-==== Plugin API Changes added[2.0]
+==== Plugin API Changes
 
 The 2.0 release of Logstash changes how input plugins shut down to increase shutdown reliability. There are three methods
 for plugin shutdown: `stop`, `stop?`, and `close`.

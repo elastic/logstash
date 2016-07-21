@@ -16,14 +16,22 @@ import org.jruby.runtime.load.Library;
 import java.io.IOException;
 
 public class JrubyTimestampExtLibrary implements Library {
+
+    private static final ObjectAllocator ALLOCATOR = new ObjectAllocator() {
+        public RubyTimestamp allocate(Ruby runtime, RubyClass rubyClass) {
+            return new RubyTimestamp(runtime, rubyClass);
+        }
+    };
+
     public void load(Ruby runtime, boolean wrap) throws IOException {
+        createTimestamp(runtime);
+    }
+
+    public static RubyClass createTimestamp(Ruby runtime) {
         RubyModule module = runtime.defineModule("LogStash");
-        RubyClass clazz = runtime.defineClassUnder("Timestamp", runtime.getObject(), new ObjectAllocator() {
-            public IRubyObject allocate(Ruby runtime, RubyClass rubyClass) {
-                return new RubyTimestamp(runtime, rubyClass);
-            }
-        }, module);
+        RubyClass clazz = runtime.defineClassUnder("Timestamp", runtime.getObject(), ALLOCATOR, module);
         clazz.defineAnnotatedMethods(RubyTimestamp.class);
+        return clazz;
     }
 
     @JRubyClass(name = "Timestamp", parent = "Object")

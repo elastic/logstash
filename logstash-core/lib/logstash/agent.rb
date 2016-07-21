@@ -184,7 +184,11 @@ class LogStash::Agent
     begin
       LogStash::Pipeline.new(config, settings, metric)
     rescue => e
-      @logger.error("fetched an invalid config", :config => config, :reason => e.message)
+      if @logger.debug?
+        @logger.error("fetched an invalid config", :config => config, :reason => e.message, :backtrace => e.backtrace)
+      else
+        @logger.error("fetched an invalid config", :config => config, :reason => e.message)
+      end
       return
     end
   end

@@ -8,39 +8,6 @@ module LogStash
           factory.build(:stats)
         end
 
-        # Global _stats resource where all information is 
-        # retrieved and show
-        get "/" do
-          payload = {
-            :events => stats_command.events,
-            :jvm => { :memory => stats_command.memory }
-          }
-          respond_with payload
-        end
-
-
-        # return hot threads information
-        get "/jvm" do
-          jvm_payload = {
-            :timestamp => stats_command.started_at,
-            :uptime_in_millis => stats_command.uptime,
-            :mem => stats_command.memory
-          }
-          respond_with({:jvm => jvm_payload})
-        end
-
-        # Show all events stats information
-        # (for ingested, emitted, dropped)
-        # - #events since startup
-        # - #data (bytes) since startup
-        # - events/s
-        # - bytes/s
-        # - dropped events/s
-        # - events in the pipeline
-        get "/events" do
-          respond_with({ :events => stats_command.events })
-        end
-
         # return hot threads information
         get "/jvm/hot_threads" do
           top_threads_count = params["threads"] || 3
@@ -57,6 +24,19 @@ module LogStash
         get "/jvm/memory" do
           respond_with({ :memory => stats_command.memory })
         end
+
+        get "/?:filter?" do
+          payload = {
+            :events => stats_command.events,
+            :jvm => {
+              :timestamp => stats_command.started_at,
+              :uptime_in_millis => stats_command.uptime,
+              :memory => stats_command.memory
+            }
+          }
+          respond_with(payload, {:filter => params["filter"]})
+        end
+
       end
     end
   end
