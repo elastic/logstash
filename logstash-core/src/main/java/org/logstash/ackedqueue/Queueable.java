@@ -1,8 +1,10 @@
 package org.logstash.ackedqueue;
 
+import java.io.IOException;
+
 public interface Queueable {
 
-    byte[] serialize();
+    byte[] serialize() throws IOException;
 
     static Object deserialize(byte[] bytes) { return null; };
 
