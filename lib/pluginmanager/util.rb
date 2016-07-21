@@ -4,6 +4,7 @@ require "rubygems/package"
 module LogStash::PluginManager
 
   class ValidationError < StandardError; end
+  DEFAULT_GEM_REQUIREMENTS = Gem::Requirement.new([">= 0.a"])
 
   # check for valid logstash plugin gem name & version or .gem file, logs errors to $stdout
   # uses Rubygems API and will remotely validated agains the current Gem.sources
@@ -63,7 +64,8 @@ module LogStash::PluginManager
   def self.update_to_major_version?(plugin_name)
     plugin_version  = fetch_latest_version_info(plugin_name)
     latest_version  = plugin_version['number'].split(".")
-    current_version = Gem::Specification.find_by_name(plugin_name).version.version.split(".")
+
+    current_version = Gem::Specification.find_by_name(plugin_name, DEFAULT_GEM_REQUIREMENTS).version.version.split(".")
     if (latest_version[0].to_i > current_version[0].to_i)
       ## warn if users want to continue
       puts("You are updating #{plugin_name} to a new version #{latest_version.join('.')}, which may not be compatible with #{current_version.join('.')}. are you sure you want to proceed (Y/N)?")
