@@ -1,5 +1,5 @@
 group 'org.logstash'
-version '1.0-SNAPSHOT'
+//version '1.0-SNAPSHOT'
 
 apply plugin: 'java'
 apply plugin: 'idea'
@@ -8,8 +8,73 @@ repositories {
     mavenCentral()
 }
 
+project.sourceCompatibility = 1.8
+
+task sourcesJar(type: org.gradle.api.tasks.bundling.Jar, dependsOn: classes) {
+    from sourceSets.main.allSource
+    classifier 'sources'
+    extension 'jar'
+}
+
+task javadocJar(type: org.gradle.api.tasks.bundling.Jar, dependsOn: javadoc) {
+    from javadoc.destinationDir
+    classifier 'javadoc'
+    extension 'jar'
+}
+
+task copyGemjar(type: org.gradle.api.tasks.Copy, dependsOn: sourcesJar) {
+    from project.jar
+    into project.file('lib/logstash-core/')
+}
+
+task cleanGemjar {
+    delete fileTree(project.file('lib/logstash-core/')) {
+        include '*.jar'
+    }
+}
+
+clean.dependsOn(cleanGemjar)
+jar.finalizedBy(copyGemjar)
+
+configurations.create('sources')
+configurations.create('javadoc')
+configurations.archives {
+    extendsFrom configurations.sources
+    extendsFrom configurations.javadoc
+}
+
+artifacts {
+    sources(sourcesJar) {
+        // Weird Gradle quirk where type will be used for the extension, but only for sources
+        type 'jar'
+    }
+
+    javadoc(javadocJar) {
+        type 'javadoc'
+    }
+}
+
+configurations {
+    provided
+}
+
+project.sourceSets {
+    main.compileClasspath += project.configurations.provided
+    main.runtimeClasspath += project.configurations.provided
+    test.compileClasspath += project.configurations.provided
+    test.runtimeClasspath += project.configurations.provided
+}
+project.javadoc.classpath += project.configurations.provided
+
+idea {
+    module {
+        scopes.PROVIDED.plus += [project.configurations.provided]
+    }
+}
+
 dependencies {
     compile group: 'org.roaringbitmap', name: 'RoaringBitmap', version: '0.6.18'
-    testCompile group: 'junit', name: 'junit', version: '4.11'
+    testCompile group: 'junit', name: 'junit', version: '4.12'
+    provided group: 'org.jruby', name: 'jruby-core', version: '1.7.25'
 }
 
