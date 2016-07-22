@@ -318,6 +318,7 @@ public class Event implements Cloneable, Serializable, Queueable {
 
 
     // Queueable inteface implementations below
+    // temporaty quick & dirty json serialization to prototype
 
     public void setSeqNum(long seqNum) {
         this.seqNum = seqNum;
@@ -329,18 +330,19 @@ public class Event implements Cloneable, Serializable, Queueable {
 
     public byte[] serialize() throws IOException {
         this.data.put("__seqnum", seqNum);
-        this.data.put("__metadata", this.metadata);
-        byte[] data = toJson().getBytes();
+        this.data.put(METADATA, this.metadata);
+        byte[] bytes = toJson().getBytes();
         this.data.remove("__seqnum");
-        this.data.remove("__metadata");
+        this.data.remove(METADATA);
 
-        return data;
+        return bytes;
     }
 
     public static Event deserialize(byte[] data) throws IOException {
-        Event e = Event.fromJson(new String(data))[0];
-        e.seqNum = (long)e.data.remove("__seqnum");
-        e.metadata = (Map<String, Object>)e.data.remove("__metadata");
+        Map m = mapper.readValue(new String(data), Map.class);
+        long seqNum = new Long((Integer)m.remove("__seqnum"));
+        Event e =  new Event(m);
+        e.seqNum = seqNum;
 
         return e;
     }

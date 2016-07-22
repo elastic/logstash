@@ -1,3 +1,6 @@
+group = 'org.logstash'
+//version '1.0-SNAPSHOT'
+
 buildscript {
     repositories {
         mavenLocal()
@@ -24,8 +27,6 @@ gradle.projectsEvaluated {
 
 apply plugin: 'java'
 apply plugin: 'idea'
-
-group = 'org.logstash'
 
 project.sourceCompatibility = 1.8
 
@@ -97,7 +98,9 @@ dependencies {
     provided 'org.jruby:jruby-core:1.7.25'
     testCompile 'junit:junit:4.12'
     testCompile 'net.javacrumbs.json-unit:json-unit:1.9.0'
+    compile files('../logstash-core/build/libs/logstash-core.jar')
 }
+
 
 // See http://www.gradle.org/docs/current/userguide/gradle_wrapper.html
 task wrapper(type: Wrapper) {
