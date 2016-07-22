@@ -465,8 +465,8 @@ describe LogStash::Pipeline do
       pipeline = LogStash::Pipeline.new(config, pipeline_settings_obj)
       Thread.new { pipeline.run }
       sleep 0.1 while !pipeline.ready?
-      # give us a bit of time to flush the events
       wait(5).for do
+        # give us a bit of time to flush the events
         output.events.empty?
       end.to be_falsey
       event = output.events.pop

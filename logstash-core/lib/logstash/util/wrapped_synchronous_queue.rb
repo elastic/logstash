@@ -86,8 +86,6 @@ module LogStash; module Util
 
       def take_batch
         @mutex.synchronize do
-          # guaranteed to be a full batch not a partial batch
-          signal = false
           batch = ReadBatch.new(@queue, @batch_size, @wait_for)
           add_starting_metrics(batch)
           set_current_thread_inflight_batch(batch)
@@ -127,9 +125,78 @@ module LogStash; module Util
         @shutdown_signal_received = false
         @flush_signal_received = false
         @originals = Hash.new
-        @cancelled = []
-        @failed = []
+        @cancelled = Hash.new
         @generated = Hash.new
+        @iterating_temp = Hash.new
+        @iterating = false # Atomic Boolean maybe? Although batches are not shared across threads
+        take_originals_from_queue(queue, size, wait)
+      end
+
+      def merge(event)
+        return if event.nil? || @originals.key?(event)
+        # take care not to cause @generated to change during iteration
+        # @iterating_temp is merged after the iteration
+        if iterating?
+          @iterating_temp[event] = true
+        else
+          # the periodic flush could generate events outside of an each iteration
+          @generated[event] = true
+        end
+      end
+
+      def cancel(event)
+        @cancelled[event] = true
+      end
+
+      def each(&blk)
+        # take care not to cause @originals or @generated to change during iteration
+        @iterating = true
+        @originals.each do |e, _|
+          blk.call(e) unless @cancelled.include?(e)
+        end
+        @generated.each do |e, _|
+          blk.call(e) unless @cancelled.include?(e)
+        end
+        @iterating = false
+        update_generated
+      end
+
+      def size
+        filtered_size
+      end
+
+      def starting_size
+        @originals.size
+      end
+
+      def filtered_size
+        @originals.size + @generated.size
+      end
+
+      def cancelled_size
+        @cancelled.size
+      end
+
+      def shutdown_signal_received?
+        @shutdown_signal_received
+      end
+
+      def flush_signal_received?
+        @flush_signal_received
+      end
+
+      private
+
+      def iterating?
+        @iterating
+      end
+
+      def update_generated
+        @generated.update(@iterating_temp)
+        @iterating_temp.clear
+      end
+
+      def take_originals_from_queue(queue, size, wait)
         size.times do |t|
           event = (t == 0) ? queue.take : queue.poll(wait)
           if event.nil?
@@ -150,59 +217,6 @@ module LogStash; module Util
             @originals[event] = true
           end
         end
-      end
-
-      def merge(event)
-        return if event.nil? || @originals.include?(event)
-        @generated[event] = true
-      end
-
-      def cancel(event)
-        @originals.delete(event)
-        @generated.delete(event)
-        @cancelled.push(event)
-      end
-
-      def each(&blk)
-        active_events.each do |e|
-          blk.call(e)
-        end
-      end
-
-      def size
-        active_events.size
-      end
-
-      def starting_size
-        @originals.size
-      end
-
-      def filtered_size
-        starting_size + @generated.size
-      end
-
-      def cancelled_size
-        @cancelled.size
-      end
-
-      def failed_size
-        @failed.size
-      end
-
-      def shutdown_signal_received?
-        @shutdown_signal_received
-      end
-
-      def flush_signal_received?
-        @flush_signal_received
-      end
-
-      private
-
-      def active_events
-        # returns a snapshot of the contents of
-        # both sets of events.
-        @originals.keys + @generated.keys
       end
     end
 

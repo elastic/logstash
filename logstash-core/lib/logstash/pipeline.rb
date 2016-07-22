@@ -247,8 +247,9 @@ module LogStash; class Pipeline
   def filter_batch(batch)
     batch.each do |event|
       if event.is_a?(LogStash::Event)
-        filter_func(event).each do |e|
-          #these are both dequeued and generated events
+        filtered = filter_func(event)
+        filtered.each do |e|
+          #these are both original and generated events
           if e.cancelled?
             batch.cancel(e)
           else

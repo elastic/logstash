@@ -53,11 +53,20 @@ describe LogStash::Util::WrappedSynchronousQueue do
           batch = write_client.get_new_batch
           5.times {|i| batch.push("value-#{i}")}
           write_client.push_batch(batch)
-          read_batch, signal = read_client.take_batch
+          read_batch = read_client.take_batch
           expect(read_batch.size).to eq(5)
           i = 0
           read_batch.each do |data|
             expect(data).to eq("value-#{i}")
+            read_batch.cancel("value-#{i}") if i > 2
+            read_batch.merge("generated-#{i}") if i > 2
+            i += 1
+          end
+          expect(read_batch.cancelled_size).to eq(2)
+          i = 0
+          read_batch.each do |data|
+            expect(data).to eq("value-#{i}") if i < 3
+            expect(data).to eq("generated-#{i}") if i > 2
             i += 1
           end
         end
