@@ -14,9 +14,11 @@ if File.directory?(classes_dir)
 else
   # otherwise use included jar
   begin
-    raise("no jar")
-    # require "logstash-core-event-java/logstash-core-event-java.jar"
+    require "logstash-core-queue-jruby/logstash-core-queue-jruby.jar"
   rescue Exception => e
-    raise("Error loading logstash-core java, cause: #{e.message}")
+    raise("Error loading logstash-core-queue-jruby/logstash-core-queue-jruby.jar file, cause: #{e.message}")
   end
 end
+
+require "jruby_acked_queue_ext"
+require "jruby_acked_batch_ext"

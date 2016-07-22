@@ -5,6 +5,7 @@ import com.logstash.ext.JrubyEventExtLibrary;
 import org.jruby.*;
 import org.jruby.anno.JRubyClass;
 import org.jruby.anno.JRubyMethod;
+import org.jruby.runtime.Arity;
 import org.jruby.runtime.ObjectAllocator;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
@@ -28,33 +29,35 @@ public class JrubyAckedQueueExtLibrary implements Library {
             }
         }, module);
 
+        clazz.defineAnnotatedMethods(RubyAckedQueue.class);
     }
 
     // TODO:
-    // as a simplified first implementation, the Settings class will not be exposed and the queue elements
-    // will be assumed to be logstash Event.
+    // as a simplified first prototyping implementation, the Settings class is not exposed and the queue elements
+    // are assumed to be logstash Event.
 
 
     @JRubyClass(name = "AckedQueue", parent = "Object")
     public static class RubyAckedQueue extends RubyObject {
-        Queue queue;
+        private Queue queue;
 
         public RubyAckedQueue(Ruby runtime, RubyClass klass) {
             super(runtime, klass);
         }
 
-        Queue getQueue() {
+        public Queue getQueue() {
             return this.queue;
         }
 
-        // def initialize(data = {})
-        @JRubyMethod(name = "initialize", required = 2)
-        public IRubyObject ruby_initialize(ThreadContext context, RubyString dirPath, RubyNumeric rubyCapacity)
+        // def initialize
+        @JRubyMethod(name = "initialize", optional = 2)
+        public IRubyObject ruby_initialize(ThreadContext context, IRubyObject[] args)
         {
+            args = Arity.scanArgs(context.runtime, args, 2, 0);
 
-            int capacity = RubyNumeric.num2int(rubyCapacity);
+            int capacity = RubyFixnum.num2int(args[1]);
 
-            Settings s = new MemorySettings(dirPath.asJavaString());
+            Settings s = new MemorySettings(args[0].asJavaString());
             PageIOFactory pageIOFactory = (pageNum, size, path) -> new MmapPageIO(pageNum, size, path);
             CheckpointIOFactory checkpointIOFactory = (source) -> new FileCheckpointIO(source);
             s.setCapacity(capacity);
@@ -79,8 +82,8 @@ public class JrubyAckedQueueExtLibrary implements Library {
             return context.nil;
         }
 
-        @JRubyMethod(name = "write", required = 1)
-        public IRubyObject ruby_append(ThreadContext context, IRubyObject event)
+        @JRubyMethod(name = {"write", "<<"}, required = 1)
+        public IRubyObject ruby_write(ThreadContext context, IRubyObject event)
         {
             if (!(event instanceof JrubyEventExtLibrary.RubyEvent)) {
                 throw context.runtime.newTypeError("wrong argument type " + event.getMetaClass() + " (expected LogStash::Event)");
@@ -97,12 +100,12 @@ public class JrubyAckedQueueExtLibrary implements Library {
         }
 
         @JRubyMethod(name = "read_batch", required = 2)
-        public IRubyObject ruby_read_batch(ThreadContext context, RubyNumeric limit, RubyNumeric timeout)
+        public IRubyObject ruby_read_batch(ThreadContext context, IRubyObject limit, IRubyObject timeout)
         {
             Batch b;
 
             try {
-                b = this.queue.readBatch(RubyNumeric.num2int(limit), RubyNumeric.num2int(timeout));
+                b = this.queue.readBatch(RubyFixnum.num2int(limit), RubyFixnum.num2int(timeout));
             } catch (IOException e) {
                 throw context.runtime.newIOErrorFromException(e);
             }

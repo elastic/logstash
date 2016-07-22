@@ -1,5 +1,3 @@
-package org.logstash.ackedqueue;
-
 import org.jruby.Ruby;
 import org.jruby.runtime.load.BasicLibraryService;
 import org.logstash.ackedqueue.ext.JrubyAckedBatchExtLibrary;

@@ -10,6 +10,7 @@ import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.jruby.runtime.load.Library;
 import org.logstash.ackedqueue.Batch;
+import org.logstash.ackedqueue.Queueable;
 
 import java.io.IOException;
 
@@ -23,6 +24,8 @@ public class JrubyAckedBatchExtLibrary implements Library {
                 return new RubyAckedBatch(runtime, rubyClass);
             }
         }, module);
+
+        clazz.defineAnnotatedMethods(RubyAckedBatch.class);
     }
 
     @JRubyClass(name = "AckedBatch", parent = "Object")
@@ -44,9 +47,17 @@ public class JrubyAckedBatchExtLibrary implements Library {
 
         // def initialize(data = {})
         @JRubyMethod(name = "initialize", required = 2)
-        public IRubyObject ruby_initialize(ThreadContext context, RubyArray events, JrubyAckedQueueExtLibrary.RubyAckedQueue queue)
+        public IRubyObject ruby_initialize(ThreadContext context, IRubyObject events,  IRubyObject queue)
         {
-            this.batch = new Batch(events.getList(), queue.getQueue());
+            if (! (events instanceof RubyArray)) {
+                context.runtime.newArgumentError("expected events array");
+            }
+            if (! (queue instanceof JrubyAckedQueueExtLibrary.RubyAckedQueue)) {
+                context.runtime.newArgumentError("expected queue AckedQueue");
+            }
+
+
+            this.batch = new Batch(((RubyArray)events).getList(), ((JrubyAckedQueueExtLibrary.RubyAckedQueue)queue).getQueue());
 
             return context.nil;
         }
