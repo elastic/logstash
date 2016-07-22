@@ -132,6 +132,11 @@ class LogStash::Runner < Clamp::StrictCommand
     :attribute_name => "path.settings",
     :default => LogStash::SETTINGS.get_default("path.settings")
 
+  option ["--config.simulate"], :flag,
+    I18n.t("logstash.runner.flag.config_simulate"),
+    :attribute_name => "config.simulate",
+    :default => LogStash::SETTINGS.get_default("config.simulate")
+
   attr_reader :agent
 
   def initialize(*args)
