@@ -42,7 +42,7 @@ module LogStash; module Util
       WriteClient.new(self)
     end
 
-    def read_client
+    def read_client()
       ReadClient.new(self)
     end
 
@@ -51,17 +51,17 @@ module LogStash; module Util
       # from this queue. We also depend on this to be able to block consumers while we snapshot
       # in-flight buffers
 
-      def initialize(queue)
+      def initialize(queue, batch_size = 125, wait_for = 5)
         @queue = queue
         @mutex = Mutex.new
         # Note that @infilght_batches as a central mechanism for tracking inflight
         # batches will fail if we have multiple read clients in the pipeline.
         @inflight_batches = {}
-        @batch_size = 125
-        @wait_for = 5
+        @batch_size = batch_size
+        @wait_for = wait_for
       end
 
-      def set_batch_details(batch_size, wait_for)
+      def set_batch_dimensions(batch_size, wait_for)
         @batch_size = batch_size
         @wait_for = wait_for
       end
@@ -86,27 +86,12 @@ module LogStash; module Util
 
       def take_batch
         @mutex.synchronize do
-          batch = ReadBatch.new
           # guaranteed to be a full batch not a partial batch
-          set_current_thread_inflight_batch(batch)
           signal = false
-          @batch_size.times do |t|
-            event = (t == 0) ? @queue.take : @queue.poll(@wait_for)
-
-            if event.nil?
-              next
-            elsif event == LogStash::SHUTDOWN || event == LogStash::FLUSH
-              # We MUST break here. If a batch consumes two SHUTDOWN events
-              # then another worker may have its SHUTDOWN 'stolen', thus blocking
-              # the pipeline. We should stop doing work after flush as well.
-              signal = event
-              break
-            else
-              batch.dequeue(event)
-            end
-          end
-          add_dequeued_metrics(batch)
-          [batch, signal]
+          batch = ReadBatch.new(@queue, @batch_size, @wait_for)
+          add_starting_metrics(batch)
+          set_current_thread_inflight_batch(batch)
+          batch
         end
       end
 
@@ -120,10 +105,10 @@ module LogStash; module Util
         end
       end
 
-      def add_dequeued_metrics(batch)
+      def add_starting_metrics(batch)
         return if @event_metric.nil? || @pipeline_metric.nil?
-        @event_metric.increment(:in, batch.dequeued_size)
-        @pipeline_metric.increment(:in, batch.dequeued_size)
+        @event_metric.increment(:in, batch.starting_size)
+        @pipeline_metric.increment(:in, batch.starting_size)
       end
 
       def add_filtered_metrics(batch)
@@ -138,46 +123,45 @@ module LogStash; module Util
     end
 
     class ReadBatch
-      # in the future, when cancel and fail are implemented
-      # this would what the constructor might look like
-      # def initialize(size)
-      #   @buffer = []
-      #   @dequeued = RoaringBitSet.new
-      #   @cancelled = RoaringBitSet.new
-      #   @failed = RoaringBitSet.new
-      #   @generated = RoaringBitSet.new
-      # end
-
-      def initialize
-        @dequeued = {}
+      def initialize(queue, size, wait)
+        @shutdown_signal_received = false
+        @flush_signal_received = false
+        @originals = Hash.new
         @cancelled = []
         @failed = []
-        @filtered = {}
+        @generated = Hash.new
+        size.times do |t|
+          event = (t == 0) ? queue.take : queue.poll(wait)
+          if event.nil?
+            # queue poll timed out
+            next
+          elsif event == LogStash::SHUTDOWN
+            # We MUST break here. If a batch consumes two SHUTDOWN events
+            # then another worker may have its SHUTDOWN 'stolen', thus blocking
+            # the pipeline.
+            @shutdown_signal_received = true
+            break
+          elsif event == LogStash::FLUSH
+            # See comment above
+            # We should stop doing work after flush as well.
+            @flush_signal_received = true
+            break
+          else
+            @originals[event] = true
+          end
+        end
       end
 
-      def dequeue(event)
-        return if event.nil?
-        @dequeued[event] = 0
-      end
-
-      def add(event)
-        @dequeued.delete(event)
-        @filtered[event] = 0
+      def merge(event)
+        return if event.nil? || @originals.include?(event)
+        @generated[event] = true
       end
 
       def cancel(event)
-        @dequeued.delete(event)
-        @filtered.delete(event)
+        @originals.delete(event)
+        @generated.delete(event)
         @cancelled.push(event)
       end
-
-      # def fail(event)
-      #   # unused - requires plugin rework (schedule with DLQ support?)
-      #   @dequeued.delete(event)
-      #   @generated.delete(event)
-      #   @cancelled.delete(event)
-      #   @failed.push(event)
-      # end
 
       def each(&blk)
         active_events.each do |e|
@@ -185,24 +169,16 @@ module LogStash; module Util
         end
       end
 
-      # def each(&blk)
-      #   # using bitsets
-      #   active = active_events
-      #   @buffer.each_with_index do |e, i|
-      #     blk.call(e) if active.unset(i)
-      #   end
-      # end
-
       def size
         active_events.size
       end
 
-      def dequeued_size
-        @dequeued.size
+      def starting_size
+        @originals.size
       end
 
       def filtered_size
-        @filtered.size
+        starting_size + @generated.size
       end
 
       def cancelled_size
@@ -213,18 +189,20 @@ module LogStash; module Util
         @failed.size
       end
 
+      def shutdown_signal_received?
+        @shutdown_signal_received
+      end
+
+      def flush_signal_received?
+        @flush_signal_received
+      end
+
       private
 
-      # def active_events
-      #   # use the bitsets to mask out
-      #   # the events we do not want to iterate over
-      #   # the returned bitset is new - meaning the the iterator
-      #   # should be immune to @batch changes [add|cancel|fail] during iteration
-      #   (@dequeued & @generated) & (@cancelled | @failed)
-      # end
-
       def active_events
-        @dequeued.keys + @filtered.keys
+        # returns a snapshot of the contents of
+        # both sets of events.
+        @originals.keys + @generated.keys
       end
     end
 

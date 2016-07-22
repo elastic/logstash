@@ -216,7 +216,7 @@ module LogStash; class Pipeline
         end
       end
     ensure
-      # it is important to garantee @ready to be true after the startup sequence has been completed
+      # it is important to guarantee @ready to be true after the startup sequence has been completed
       # to potentially unblock the shutdown method which may be waiting on @ready to proceed
       @ready.make_true
     end
@@ -227,17 +227,16 @@ module LogStash; class Pipeline
   def worker_loop(batch_size, batch_delay)
     running = true
 
-    @filter_queue_client.set_batch_details(batch_size, batch_delay)
+    @filter_queue_client.set_batch_dimensions(batch_size, batch_delay)
 
     while running
-      batch, signal = @filter_queue_client.take_batch
+      batch = @filter_queue_client.take_batch
       @events_consumed.increment(batch.size)
-      running = false if signal == LogStash::SHUTDOWN
+      running = false if batch.shutdown_signal_received?
       filter_batch(batch)
 
-      if signal # Flush on SHUTDOWN or FLUSH
-        flush_options = (signal == LogStash::SHUTDOWN) ? {:final => true} : {}
-        flush_filters_to_batch(batch, flush_options)
+      if batch.shutdown_signal_received? || batch.flush_signal_received?
+        flush_filters_to_batch(batch)
       end
 
       output_batch(batch)
@@ -253,7 +252,7 @@ module LogStash; class Pipeline
           if e.cancelled?
             batch.cancel(e)
           else
-            batch.add(e)
+            batch.merge(e)
           end
         end
       end
@@ -414,7 +413,7 @@ module LogStash; class Pipeline
   end
 
 
-  # perform filters flush and yeild flushed event to the passed block
+  # perform filters flush and yield flushed event to the passed block
   # @param options [Hash]
   # @option options [Boolean] :final => true to signal a final shutdown flush
   def flush_filters(options = {}, &block)
@@ -458,19 +457,22 @@ module LogStash; class Pipeline
   end
 
   # perform filters flush into the output queue
+  #
   # @param batch [ReadClient::ReadBatch]
   # @param options [Hash]
-  # @option options [Boolean] :final => true to signal a final shutdown flush
   def flush_filters_to_batch(batch, options = {})
+    options[:final] = batch.shutdown_signal_received?
     flush_filters(options) do |event|
-      unless event.cancelled?
+      if event.cancelled?
+        batch.cancel(event)
+      else
         @logger.debug? and @logger.debug("Pushing flushed events", :event => event)
-        batch.add(event)
+        batch.merge(event)
       end
     end
 
     @flushing.set(false)
-  end # flush_filters_to_output!
+  end # flush_filters_to_batch
 
   def plugin_threads_info
     input_threads = @input_threads.select {|t| t.alive? }
