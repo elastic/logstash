@@ -11,6 +11,8 @@ require "logstash/environment"
 LogStash::Environment.load_locale!
 
 require "logstash/namespace"
+require "logstash-core/logstash-core"
+
 require "logstash/agent"
 require "logstash/config/defaults"
 require "logstash/shutdown_watcher"

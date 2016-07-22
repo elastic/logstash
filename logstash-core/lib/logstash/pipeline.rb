@@ -19,7 +19,7 @@ require "logstash/instrument/collector"
 require "logstash/output_delegator"
 require "logstash/filter_delegator"
 
-require "logstash/acked_queue"
+require "logstash-core-queue-jruby/logstash-core-queue-jruby"
 
 module LogStash; class Pipeline
   attr_reader :inputs,
@@ -87,6 +87,7 @@ module LogStash; class Pipeline
     # @input_queue = LogStash::Util::WrappedSynchronousQueue.new
     @input_queue = LogStash::AckedQueue.new("./lsqueue", 100 * 1024 * 1024)
     @input_queue.open
+
     @signal_queue = Queue.new
 
     @events_filtered = Concurrent::AtomicFixnum.new(0)
@@ -237,6 +238,17 @@ module LogStash; class Pipeline
       running = false if signal == LogStash::SHUTDOWN
 
       # input_batch is a AckedBatch object
+
+      # this is the special case where we returned from a timeout and input_batch is nil
+      unless input_batch
+        if signal # Flush on SHUTDOWN or FLUSH
+          flush_options = (signal == LogStash::SHUTDOWN) ? {:final => true} : {}
+          flush_filters_to_batch([], flush_options)
+        end
+
+        next
+      end
+
       events = input_batch.get_elements
 
       @events_consumed.increment(events.size)
@@ -271,40 +283,12 @@ module LogStash; class Pipeline
     while(true) do
       # blocking read up to batch_delay timeout
       batch = @input_queue.read_batch(batch_size, batch_delay)
-
-      signal = false
-      if !@signal_queue.empty?
-        signal = @signal_queue.pop
-      end
+      signal = @signal_queue.empty? ? false : @signal_queue.pop
 
       break if signal || batch
     end
 
     [batch, signal]
-
-    # batch = []
-    # # Since this is externally synchronized in `worker_look` wec can guarantee that the visibility of an insight batch
-    # # guaranteed to be a full batch not a partial batch
-    # set_current_thread_inflight_batch(batch)
-    #
-    # signal = false
-    # batch_size.times do |t|
-    #   event = (t == 0) ? @input_queue.take : @input_queue.poll(batch_delay)
-    #
-    #   if event.nil?
-    #     next
-    #   elsif event == LogStash::SHUTDOWN || event == LogStash::FLUSH
-    #     # We MUST break here. If a batch consumes two SHUTDOWN events
-    #     # then another worker may have its SHUTDOWN 'stolen', thus blocking
-    #     # the pipeline. We should stop doing work after flush as well.
-    #     signal = event
-    #     break
-    #   else
-    #     batch << event
-    #   end
-    # end
-    #
-    # [batch, signal]
   end
 
   def filter_batch(batch)

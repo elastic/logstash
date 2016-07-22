@@ -5,6 +5,7 @@ source "https://rubygems.org"
 gem "logstash-core", :path => "./logstash-core"
 gem "logstash-core-event-java", :path => "./logstash-core-event-java"
 gem "logstash-core-plugin-api", :path => "./logstash-core-plugin-api"
+gem "logstash-core-queue-jruby", :path => "./logstash-core-queue-jruby"
 gem "file-dependencies", "0.1.6"
 gem "ci_reporter_rspec", "1.0.0", :group => :development
 gem "simplecov", :group => :development
