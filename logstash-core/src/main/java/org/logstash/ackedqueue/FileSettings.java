@@ -3,8 +3,6 @@ package org.logstash.ackedqueue;
 import org.logstash.common.io.CheckpointIOFactory;
 import org.logstash.common.io.PageIOFactory;
 
-import java.util.Map;
-
 public class FileSettings implements Settings {
     private String dirForFiles;
     private CheckpointIOFactory checkpointIOFactory;
@@ -12,11 +10,10 @@ public class FileSettings implements Settings {
     private ElementDeserialiser elementDeserialiser;
     private int capacity;
 
-    public FileSettings() {}
+    private FileSettings() { this(""); }
 
-    public Settings setDirForFiles(String dir) {
-        this.dirForFiles = dir;
-        return this;
+    public FileSettings(String dirPath) {
+        this.dirForFiles = dirPath;
     }
 
     @Override
