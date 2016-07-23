@@ -3,8 +3,6 @@ package org.logstash.ackedqueue;
 import org.logstash.common.io.CheckpointIOFactory;
 import org.logstash.common.io.PageIOFactory;
 
-import java.util.Map;
-
 public class MemorySettings implements Settings {
     private CheckpointIOFactory checkpointIOFactory;
     private PageIOFactory pageIOFactory;
