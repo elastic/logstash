@@ -14,20 +14,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 
 public class QueueTest {
 
-    public class TestQueue extends Queue {
-        public TestQueue(Settings settings) {
-            super(settings);
-        }
-
-        public HeadPage getHeadPage() {
-            return this.headPage;
-        }
-
-        public List<BeheadedPage> getTailPages() {
-            return this.tailPages;
-        }
-    }
-
     @Test
     public void newQueue() throws IOException {
         Queue q = new TestQueue(TestSettings.getSettings(10));
