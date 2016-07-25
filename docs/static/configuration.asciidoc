@@ -49,7 +49,7 @@ output {
 ----------------------------------
 
 Each section contains the configuration options for one or more plugins. If you specify
-multiple filters, they are applied in the order of their appearance in the configuration file.
+multiple plugins, they are applied in the order of their appearance in the configuration file.
 
 
 [float]
