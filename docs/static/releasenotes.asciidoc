@@ -102,7 +102,7 @@ the behavior broke compatibility in a minor release ({lsissue}5114[Issue 5114]).
 [[logstash-2-3-1]]
 === Logstash 2.3.1 Release Notes
 
-* Reverted the new Java Event which shipped in 2.3.0. The new pure Java implementation of the Event class Logstash 2.3.1 lightning fast, but unfortunately not as compatible as we’d have liked for a minor release. In particular, it could cause problems with some custom Ruby filter scripts and custom plugins from the community. We take our commitment to compatibility, and versioning semantics, seriously. Though we have reverted to the prior Ruby Event implementation, the Java version remains the correct technical direction and we will most likely be reintroducing in Logstash 5.0.
+* Reverted the new Java Event that shipped in 2.3.0. The new pure Java implementation of the Event class was lightning fast, but unfortunately not as compatible as we’d have liked for a minor release. In particular, it could cause problems with some custom Ruby filter scripts and custom plugins from the community. We take our commitment to compatibility, and versioning semantics, seriously. Though we have reverted to the prior Ruby Event implementation, the Java version remains the correct technical direction, and we will most likely be reintroducing it in Logstash 5.0.
 * Fixed a JRuby thread safety issue that was encountered when using regular expressions under multiple workers
 ({lsissue}4977[Issue 4977]).
 * Disabled environment variables interpolation by default. This feature is experimental in Logstash 2.3.1. To turn it on use the `--allow-env` flag ({lsissue}4958[Issue 4958]). 
