@@ -46,6 +46,8 @@ namespace "artifact" do
     @exclude_paths << "**/test/files/slow-xpath.xml"
     @exclude_paths << "**/logstash-*/spec"
     @exclude_paths << "bin/bundle"
+    @exclude_paths << "bin/rspec"
+    @exclude_paths << "bin/rspec.bat"
 
     @exclude_paths
   end
