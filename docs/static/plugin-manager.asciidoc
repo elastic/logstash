@@ -62,9 +62,12 @@ bin/logstash-plugin install /path/to/logstash-output-kafka-1.0.0.gem
 Using the Logstash `--path.plugins` flag, you can load a plugin source code located on your file system. Typically this is used by
 developers who are iterating on a custom plugin and want to test it before creating a ruby gem.
 
+The path needs to be in a  specific directory hierarchy: `PATH/logstash/TYPE/NAME.rb`, where TYPE is 'inputs' 'filters', 'outputs' or 'codecs' and NAME is the name of the plugin.
+
 [source,shell]
 ----------------------------------
-bin/logstash --path.plugins /opt/shared/lib/logstash/input/my-custom-plugin-code.rb
+# supposing the code is in /opt/shared/lib/logstash/inputs/my-custom-plugin-code.rb
+bin/logstash --path.plugins /opt/shared/lib
 ----------------------------------
 
 [[updating-plugins]]
