@@ -76,7 +76,7 @@ you will get an error. Make sure to explicitly set the number of filter workers 
 of workers by passing a command line flag such as:
 
 [source,shell]
-bin/logstash `-w 1`
+bin/logstash -w 1
 
 [[upgrading-logstash-2.2]]
 === Upgrading Logstash to 2.2
