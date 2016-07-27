@@ -100,6 +100,90 @@ describe LogStash::Pipeline do
     pipeline_settings_obj.reset
   end
 
+  describe "rescuing pipeline exceptions" do
+    before(:each) do
+      allow(LogStash::Plugin).to receive(:lookup).with("input", "dummyinput").and_return(DummyInput)
+      allow(LogStash::Plugin).to receive(:lookup).with("codec", "plain").and_return(DummyCodec)
+      allow(LogStash::Plugin).to receive(:lookup).with("output", "dummyoutput").and_return(DummyOutput)
+      allow(LogStash::Plugin).to receive(:lookup).with("filter", "dummyfilter").and_return(DummyFilter)
+      allow(LogStash::Plugin).to receive(:lookup).with("filter", "dummysafefilter").and_return(DummySafeFilter)
+    end
+
+    let(:config) do
+      <<-eos
+        input {
+          dummyinput {}
+        }
+
+        filter {
+          if [foo] > 2 { # Intentionally omit nil check
+            dummyfilter {}
+          }
+        }
+
+        output {
+          if [foo] > 2 {
+             dummyoutput {}
+          }
+        }
+        eos
+    end
+
+    let(:pipeline) { TestPipeline.new(config, pipeline_settings_obj) }
+
+    context "when pipeline.abort_on_error is true" do
+      before(:each) do
+        pipeline_settings_obj.set("pipeline.abort_on_error", true)
+      end
+
+      it "should raise an exception when filtering bad events" do
+        expect do
+          pipeline.filter_batch([LogStash::Event.new])
+        end.to raise_error(NoMethodError)
+      end
+
+      it "should raise an exception when outputting bad events" do
+        expect do
+          pipeline.output_batch([LogStash::Event.new])
+        end.to raise_error(NoMethodError)
+      end
+    end
+
+    context "when pipeline.abort_on_error is false" do
+      before(:each) do
+        pipeline_settings_obj.set("pipeline.abort_on_error", false)
+      end
+
+      it "should raise an exception when filtering bad events" do
+        expect do
+          pipeline.filter_batch([LogStash::Event.new])
+        end.not_to raise_error
+      end
+
+      it "should raise an exception when outputting bad events" do
+        expect do
+          pipeline.output_batch([LogStash::Event.new])
+        end.not_to raise_error
+      end
+
+      describe "metrics" do
+        before(:each) do
+          allow(pipeline.namespace_events).to receive(:increment).with(any_args)
+          allow(pipeline.namespace_pipeline).to receive(:increment).with(any_args)
+          pipeline.output_batch([LogStash::Event.new])
+        end
+        
+        it "should increment the global errored count for metrics" do
+          expect(pipeline.namespace_events).to have_received(:increment).with(:errored, 1)
+        end
+
+        it "should increment the pipeline specific errored count for metrics" do
+          expect(pipeline.namespace_pipeline).to have_received(:increment).with(:errored, 1)
+        end
+      end
+    end
+  end
+
   describe "defaulting the pipeline workers based on thread safety" do
     before(:each) do
       allow(LogStash::Plugin).to receive(:lookup).with("input", "dummyinput").and_return(DummyInput)
