@@ -33,7 +33,9 @@ module LogStash; class Pipeline
     :thread,
     :config_str,
     :settings,
-    :metric
+    :metric,
+    :filter_queue_client,
+    :input_queue_client
 
   MAX_INFLIGHT_WARN_THRESHOLD = 10_000
 
@@ -82,14 +84,18 @@ module LogStash; class Pipeline
       raise
     end
 
-    @input_queue = LogStash::Util::WrappedSynchronousQueue.new
+    queue = LogStash::Util::WrappedSynchronousQueue.new
+    @input_queue_client = queue.write_client
+    @filter_queue_client = queue.read_client
+    # Note that @infilght_batches as a central mechanism for tracking inflight
+    # batches will fail if we have multiple read clients here.
+    @filter_queue_client.set_events_metric(metric.namespace([:stats, :events]))
+    @filter_queue_client.set_pipeline_metric(
+        metric.namespace([:stats, :pipelines, pipeline_id.to_s.to_sym, :events])
+    )
     @events_filtered = Concurrent::AtomicFixnum.new(0)
     @events_consumed = Concurrent::AtomicFixnum.new(0)
 
-    # We generally only want one thread at a time able to access pop/take/poll operations
-    # from this queue. We also depend on this to be able to block consumers while we snapshot
-    # in-flight buffers
-    @input_queue_pop_mutex = Mutex.new
     @input_threads = []
     # @ready requires thread safety since it is typically polled from outside the pipeline thread
     @ready = Concurrent::AtomicBoolean.new(false)
@@ -176,8 +182,6 @@ module LogStash; class Pipeline
   end
 
   def start_workers
-    @inflight_batches = {}
-
     @worker_threads.clear # In case we're restarting the pipeline
     begin
       start_inputs
@@ -187,13 +191,14 @@ module LogStash; class Pipeline
       pipeline_workers = safe_pipeline_worker_count
       batch_size = @settings.get("pipeline.batch.size")
       batch_delay = @settings.get("pipeline.batch.delay")
+
       max_inflight = batch_size * pipeline_workers
 
-      config_metric = metric.namespace([:stats, :pipelines, pipeline_id.to_s.to_sym, :config])   
+      config_metric = metric.namespace([:stats, :pipelines, pipeline_id.to_s.to_sym, :config])
       config_metric.gauge(:workers, pipeline_workers)
       config_metric.gauge(:batch_size, batch_size)
       config_metric.gauge(:batch_delay, batch_delay)
-      
+
       @logger.info("Starting pipeline",
                    "id" => self.pipeline_id,
                    "pipeline.workers" => pipeline_workers,
@@ -211,7 +216,7 @@ module LogStash; class Pipeline
         end
       end
     ensure
-      # it is important to garantee @ready to be true after the startup sequence has been completed
+      # it is important to guarantee @ready to be true after the startup sequence has been completed
       # to potentially unblock the shutdown method which may be waiting on @ready to proceed
       @ready.make_true
     end
@@ -222,73 +227,39 @@ module LogStash; class Pipeline
   def worker_loop(batch_size, batch_delay)
     running = true
 
-    namespace_events = metric.namespace([:stats, :events])
-    namespace_pipeline = metric.namespace([:stats, :pipelines, pipeline_id.to_s.to_sym, :events])
+    @filter_queue_client.set_batch_dimensions(batch_size, batch_delay)
 
     while running
-      # To understand the purpose behind this synchronize please read the body of take_batch
-      input_batch, signal = @input_queue_pop_mutex.synchronize { take_batch(batch_size, batch_delay) }
-      running = false if signal == LogStash::SHUTDOWN
+      batch = @filter_queue_client.take_batch
+      @events_consumed.increment(batch.size)
+      running = false if batch.shutdown_signal_received?
+      filter_batch(batch)
 
-      @events_consumed.increment(input_batch.size)
-      namespace_events.increment(:in, input_batch.size)
-      namespace_pipeline.increment(:in, input_batch.size)
-
-      filtered_batch = filter_batch(input_batch)
-
-      if signal # Flush on SHUTDOWN or FLUSH
-        flush_options = (signal == LogStash::SHUTDOWN) ? {:final => true} : {}
-        flush_filters_to_batch(filtered_batch, flush_options)
+      if batch.shutdown_signal_received? || batch.flush_signal_received?
+        flush_filters_to_batch(batch)
       end
 
-      @events_filtered.increment(filtered_batch.size)
-
-      namespace_events.increment(:filtered, filtered_batch.size)
-      namespace_pipeline.increment(:filtered, filtered_batch.size)
-
-      output_batch(filtered_batch)
-
-      namespace_events.increment(:out, filtered_batch.size)
-      namespace_pipeline.increment(:out, filtered_batch.size)
-
-      inflight_batches_synchronize { set_current_thread_inflight_batch(nil) }
+      output_batch(batch)
+      @filter_queue_client.close_batch(batch)
     end
-  end
-
-  def take_batch(batch_size, batch_delay)
-    batch = []
-    # Since this is externally synchronized in `worker_look` wec can guarantee that the visibility of an insight batch
-    # guaranteed to be a full batch not a partial batch
-    set_current_thread_inflight_batch(batch)
-
-    signal = false
-    batch_size.times do |t|
-      event = (t == 0) ? @input_queue.take : @input_queue.poll(batch_delay)
-
-      if event.nil?
-        next
-      elsif event == LogStash::SHUTDOWN || event == LogStash::FLUSH
-        # We MUST break here. If a batch consumes two SHUTDOWN events
-        # then another worker may have its SHUTDOWN 'stolen', thus blocking
-        # the pipeline. We should stop doing work after flush as well.
-        signal = event
-        break
-      else
-        batch << event
-      end
-    end
-
-    [batch, signal]
   end
 
   def filter_batch(batch)
-    batch.reduce([]) do |acc,e|
-      if e.is_a?(LogStash::Event)
-        filtered = filter_func(e)
-        filtered.each {|fe| acc << fe unless fe.cancelled?}
+    batch.each do |event|
+      if event.is_a?(LogStash::Event)
+        filtered = filter_func(event)
+        filtered.each do |e|
+          #these are both original and generated events
+          if e.cancelled?
+            batch.cancel(e)
+          else
+            batch.merge(e)
+          end
+        end
       end
-      acc
     end
+    @filter_queue_client.add_filtered_metrics(batch)
+    @events_filtered.increment(batch.size)
   rescue Exception => e
     # Plugins authors should manage their own exceptions in the plugin code
     # but if an exception is raised up to the worker thread they are considered
@@ -304,31 +275,21 @@ module LogStash; class Pipeline
   # Take an array of events and send them to the correct output
   def output_batch(batch)
     # Build a mapping of { output_plugin => [events...]}
-    outputs_events = batch.reduce(Hash.new { |h, k| h[k] = [] }) do |acc, event|
+    output_events_map = Hash.new { |h, k| h[k] = [] }
+    batch.each do |event|
       # We ask the AST to tell us which outputs to send each event to
       # Then, we stick it in the correct bin
 
       # output_func should never return anything other than an Array but we have lots of legacy specs
       # that monkeypatch it and return nil. We can deprecate  "|| []" after fixing these specs
-      outputs_for_event = output_func(event) || []
-
-      outputs_for_event.each { |output| acc[output] << event }
-      acc
+      (output_func(event) || []).each do |output|
+        output_events_map[output].push(event)
+      end
     end
-
     # Now that we have our output to event mapping we can just invoke each output
     # once with its list of events
-    outputs_events.each { |output, events| output.multi_receive(events) }
-  end
-
-  def set_current_thread_inflight_batch(batch)
-    @inflight_batches[Thread.current] = batch
-  end
-
-  def inflight_batches_synchronize
-    @input_queue_pop_mutex.synchronize do
-      yield(@inflight_batches)
-    end
+    output_events_map.each { |output, events| output.multi_receive(events) }
+    @filter_queue_client.add_output_metrics(batch)
   end
 
   def wait_inputs
@@ -359,7 +320,7 @@ module LogStash; class Pipeline
   def inputworker(plugin)
     LogStash::Util::set_thread_name("[#{pipeline_id}]<#{plugin.class.config_name}")
     begin
-      plugin.run(@input_queue)
+      plugin.run(@input_queue_client)
     rescue => e
       if plugin.stop?
         @logger.debug("Input plugin raised exception during shutdown, ignoring it.",
@@ -413,7 +374,7 @@ module LogStash; class Pipeline
     # Each worker thread will receive this exactly once!
     @worker_threads.each do |t|
       @logger.debug("Pushing shutdown", :thread => t.inspect)
-      @input_queue.push(LogStash::SHUTDOWN)
+      @input_queue_client.push(LogStash::SHUTDOWN)
     end
 
     @worker_threads.each do |t|
@@ -453,7 +414,7 @@ module LogStash; class Pipeline
   end
 
 
-  # perform filters flush and yeild flushed event to the passed block
+  # perform filters flush and yield flushed event to the passed block
   # @param options [Hash]
   # @option options [Boolean] :final => true to signal a final shutdown flush
   def flush_filters(options = {}, &block)
@@ -483,7 +444,7 @@ module LogStash; class Pipeline
   def flush
     if @flushing.compare_and_set(false, true)
       @logger.debug? && @logger.debug("Pushing flush onto pipeline")
-      @input_queue.push(LogStash::FLUSH)
+      @input_queue_client.push(LogStash::FLUSH)
     end
   end
 
@@ -497,18 +458,22 @@ module LogStash; class Pipeline
   end
 
   # perform filters flush into the output queue
+  #
+  # @param batch [ReadClient::ReadBatch]
   # @param options [Hash]
-  # @option options [Boolean] :final => true to signal a final shutdown flush
   def flush_filters_to_batch(batch, options = {})
+    options[:final] = batch.shutdown_signal_received?
     flush_filters(options) do |event|
-      unless event.cancelled?
+      if event.cancelled?
+        batch.cancel(event)
+      else
         @logger.debug? and @logger.debug("Pushing flushed events", :event => event)
-        batch << event
+        batch.merge(event)
       end
     end
 
     @flushing.set(false)
-  end # flush_filters_to_output!
+  end # flush_filters_to_batch
 
   def plugin_threads_info
     input_threads = @input_threads.select {|t| t.alive? }
