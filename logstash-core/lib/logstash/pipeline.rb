@@ -20,6 +20,8 @@ require "logstash/output_delegator"
 require "logstash/filter_delegator"
 
 module LogStash; class Pipeline
+  include LogStash::Util::Loggable
+
   attr_reader :inputs,
     :filters,
     :outputs,
@@ -28,7 +30,6 @@ module LogStash; class Pipeline
     :events_filtered,
     :reporter,
     :pipeline_id,
-    :logger,
     :started_at,
     :thread,
     :config_str,
@@ -45,13 +46,12 @@ module LogStash; class Pipeline
   ]
 
   def initialize(config_str, settings = SETTINGS, namespaced_metric = nil)
+    @logger = self.logger
     @config_str = config_str
     @config_hash = Digest::SHA1.hexdigest(@config_str)
     # Every time #plugin is invoked this is incremented to give each plugin
     # a unique id when auto-generating plugin ids
-    @plugin_counter ||= 0 
-    
-    @logger = org.apache.logging.log4j.LogManager.getLogger("LogStash")
+    @plugin_counter ||= 0
     @settings = settings
     @pipeline_id = @settings.get_value("pipeline.id") || self.object_id
     @reporter = PipelineReporter.new(@logger, self)
@@ -82,8 +82,8 @@ module LogStash; class Pipeline
     # The config code is hard to represent as a log message...
     # So just print it.
 
-    if @settings.get_value("config.debug") && logger.is_debug_enabled
-      logger.debug("Compiled pipeline code", "code" => code)
+    if @settings.get_value("config.debug") && @logger.debug?
+      @logger.debug("Compiled pipeline code", "code" => code)
     end
 
     begin
@@ -126,14 +126,14 @@ module LogStash; class Pipeline
     if @settings.set?("pipeline.workers")
       if pipeline_workers > 1
         @logger.warn("Warning: Manual override - there are filters that might not work with multiple worker threads",
-                     "worker_threads" => pipeline_workers, "filters" => plugins)
+                     :worker_threads => pipeline_workers, :filters => plugins)
       end
     else
       # user did not specify a worker thread count
       # warn if the default is multiple
       if default > 1
         @logger.warn("Defaulting pipeline worker threads to 1 because there are some filters that might not work with multiple worker threads",
-                     "count_was" => default, "filters" => plugins)
+                     :count_was => default, :filters => plugins)
         return 1 # can't allow the default value to propagate if there are unsafe filters
       end
     end
@@ -345,7 +345,7 @@ module LogStash; class Pipeline
       end
 
       # otherwise, report error and restart
-      if @logger.is_debug_enabled
+      if @logger.debug?
         @logger.error(I18n.t("logstash.pipeline.worker-error-debug",
                              "plugin" => plugin.inspect, "error" => e.to_s,
                              "exception" => e.class,

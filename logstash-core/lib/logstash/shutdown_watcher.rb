@@ -2,6 +2,7 @@
 
 module LogStash
   class ShutdownWatcher
+    include LogStash::Util::Loggable
 
     CHECK_EVERY = 1 # second
     REPORT_EVERY = 5 # checks
@@ -23,14 +24,6 @@ module LogStash
 
     def self.unsafe_shutdown?
       @unsafe_shutdown
-    end
-
-    def self.logger=(logger)
-      @logger = logger
-    end
-
-    def self.logger
-      @logger ||= org.apache.logging.log4j.LogManager.getLogger("LogStash")
     end
 
     def self.start(pipeline, cycle_period=CHECK_EVERY, report_every=REPORT_EVERY, abort_threshold=ABORT_AFTER)

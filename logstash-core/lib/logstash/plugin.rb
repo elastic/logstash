@@ -8,8 +8,8 @@ require "securerandom"
 require "logstash/plugins/registry"
 
 class LogStash::Plugin
+  include LogStash::Util::Loggable
   attr_accessor :params
-  attr_accessor :logger
 
   NL = "\n"
 
@@ -44,12 +44,12 @@ class LogStash::Plugin
     self.class.name == other.class.name && @params == other.params
   end
 
-  def initialize(params=nil)    
+  def initialize(params=nil)
+    @logger = self.class.logger
     @params = LogStash::Util.deep_clone(params)
     # The id should always be defined normally, but in tests that might not be the case
     # In the future we may make this more strict in the Plugin API
     @params["id"] ||= "#{self.class.config_name}_#{SecureRandom.uuid}"
-    @logger = org.apache.logging.log4j.LogManager.getLogger("LogStash")
   end
 
   # Return a uniq ID for this plugin configuration, by default
@@ -160,10 +160,4 @@ class LogStash::Plugin
   def self.is_a_plugin?(klass, name)
     klass.ancestors.include?(LogStash::Plugin) && klass.respond_to?(:config_name) && klass.config_name == name
   end
-
-  # @return [Cabin::Channel] logger channel for class methods
-  def self.logger
-    @logger ||= org.apache.logging.log4j.LogManager.getLogger("LogStash")
-  end
-
 end # class LogStash::Plugin

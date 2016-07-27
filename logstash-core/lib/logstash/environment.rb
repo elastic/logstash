@@ -4,6 +4,7 @@ require "logstash/config/cpu_core_strategy"
 require "logstash/settings"
 require "socket"
 require "stud/temporary"
+require "logstash/java_integration"
 
 module LogStash
   # In the event that we're requiring this file without bootstrap/environment.rb

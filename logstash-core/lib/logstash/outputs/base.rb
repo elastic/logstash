@@ -8,6 +8,7 @@ require "logstash/util/wrapped_synchronous_queue"
 require "concurrent/atomic/atomic_fixnum"
 
 class LogStash::Outputs::Base < LogStash::Plugin
+  include LogStash::Util::Loggable
   include LogStash::Config::Mixin
 
   config_name "output"

@@ -80,7 +80,7 @@ class DummySafeFilter < LogStash::Filters::Base
 end
 
 class TestPipeline < LogStash::Pipeline
-  attr_reader :outputs, :settings, :logger
+  attr_reader :outputs, :settings
 end
 
 describe LogStash::Pipeline do
@@ -130,7 +130,7 @@ describe LogStash::Pipeline do
         let(:logger) { double("pipeline logger").as_null_object }
 
         before do
-          expect(Cabin::Channel).to receive(:get).with(LogStash).and_return(logger).at_least(:once)
+          expect(TestPipeline).to receive(:logger).and_return(logger)
           allow(logger).to receive(:debug?).and_return(true)
         end
 

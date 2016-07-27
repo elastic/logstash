@@ -18,6 +18,7 @@ require "securerandom"
 LogStash::Environment.load_locale!
 
 class LogStash::Agent
+  include LogStash::Util::Loggable
   STARTED_AT = Time.now.freeze
 
   attr_reader :metric, :node_name, :pipelines, :settings, :webserver
@@ -31,7 +32,6 @@ class LogStash::Agent
   #   :logger [Cabin::Channel] - logger instance
   def initialize(settings = LogStash::SETTINGS)
     @settings = settings
-    @logger = org.apache.logging.log4j.LogManager.getLogger("LogStash")
     @auto_reload = setting("config.reload.automatic")
 
     @pipelines = {}
@@ -184,7 +184,7 @@ class LogStash::Agent
     begin
       LogStash::Pipeline.new(config, settings, metric)
     rescue => e
-      if @logger.is_debug_enabled
+      if @logger.debug?
         @logger.error("fetched an invalid config", "config" => config, "reason" => e.message, "backtrace" => e.backtrace)
       else
         @logger.error("fetched an invalid config", "config" => config, "reason" => e.message)
@@ -219,12 +219,12 @@ class LogStash::Agent
 
     if new_pipeline.non_reloadable_plugins.any?
       @logger.error(I18n.t("logstash.agent.non_reloadable_config_reload"),
-                    "pipeline_id" => id,
-                    "plugins" => new_pipeline.non_reloadable_plugins.map(&:class))
+                    :pipeline_id => id,
+                    :plugins => new_pipeline.non_reloadable_plugins.map(&:class))
       return
     else
       @logger.warn("fetched new config for pipeline. upgrading..",
-                   "pipeline" => id, "config" => new_pipeline.config_str)
+                   :pipeline => id, :config => new_pipeline.config_str)
       upgrade_pipeline(id, new_pipeline)
     end
   end
@@ -233,7 +233,7 @@ class LogStash::Agent
     pipeline = @pipelines[id]
     return unless pipeline.is_a?(LogStash::Pipeline)
     return if pipeline.ready?
-    @logger.info("starting pipeline", "id" => id)
+    @logger.info("starting pipeline", :id => id)
     Thread.new do
       LogStash::Util.set_thread_name("pipeline.#{id}")
       begin
@@ -248,7 +248,7 @@ class LogStash::Agent
   def stop_pipeline(id)
     pipeline = @pipelines[id]
     return unless pipeline
-    @logger.warn("stopping pipeline", "id" => id)
+    @logger.warn("stopping pipeline", :id => id)
     pipeline.shutdown { LogStash::ShutdownWatcher.start(pipeline) }
     @pipelines[id].thread.join
   end

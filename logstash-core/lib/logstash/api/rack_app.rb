@@ -58,10 +58,10 @@ module LogStash
         rescue => e
           body = RackApp.log_metadata(500, env).
                    merge({
-                           "error" => "Unexpected Internal Error",
-                           "class" => e.class.name,
-                           "message" => e.message,
-                           "backtrace" => e.backtrace
+                           :error => "Unexpected Internal Error",
+                           :class => e.class.name,
+                           :message => e.message,
+                           :backtrace => e.backtrace
                          })
 
           @logger.error(LOG_MESSAGE, body)

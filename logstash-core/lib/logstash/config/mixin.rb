@@ -66,13 +66,13 @@ module LogStash::Config::Mixin
       if opts && opts[:deprecated]
         extra = opts[:deprecated].is_a?(String) ? opts[:deprecated] : ""
         extra.gsub!("%PLUGIN%", self.class.config_name)
-        @logger.warn("You are using a deprecated config setting " +
+        self.logger.warn("You are using a deprecated config setting " +
                      "#{name.inspect} set in #{self.class.config_name}. " +
                      "Deprecated settings will continue to work, " +
                      "but are scheduled for removal from logstash " +
                      "in the future. #{extra} If you have any questions " +
                      "about this, please visit the #logstash channel " +
-                     "on freenode irc.", "name" => name, "plugin" => self)
+                     "on freenode irc.", :name => name, :plugin => self)
       end
       if opts && opts[:obsolete]
         extra = opts[:obsolete].is_a?(String) ? opts[:obsolete] : ""
@@ -141,7 +141,7 @@ module LogStash::Config::Mixin
       next if key[0, 1] == "@"
 
       # Set this key as an instance variable only if it doesn't start with an '@'
-      @logger.debug("config #{self.class.name}/@#{key} = #{value.inspect}")
+      self.logger.debug("config #{self.class.name}/@#{key} = #{value.inspect}")
       instance_variable_set("@#{key}", value)
     end
 
@@ -198,8 +198,7 @@ module LogStash::Config::Mixin
     # Deprecated: Declare the version of the plugin
     # inside the gemspec.
     def milestone(m = nil)
-      @logger = org.apache.logging.log4j.LogManager.getLogger("LogStash")
-      @logger.debug(I18n.t('logstash.plugin.deprecated_milestone', :plugin => config_name))
+      self.logger.debug(I18n.t('logstash.plugin.deprecated_milestone', :plugin => config_name))
     end
 
     # Define a new configuration setting
@@ -262,7 +261,6 @@ module LogStash::Config::Mixin
     def validate(params)
       @plugin_name = config_name
       @plugin_type = ancestors.find { |a| a.name =~ /::Base$/ }.config_name
-      @logger = org.apache.logging.log4j.LogManager.getLogger("LogStash")
       is_valid = true
 
       print_version_notice
@@ -282,12 +280,12 @@ module LogStash::Config::Mixin
 
         if plugin_version < PLUGIN_VERSION_1_0_0
           if plugin_version < PLUGIN_VERSION_0_9_0
-            @logger.info(I18n.t("logstash.plugin.version.0-1-x", 
+            self.logger.info(I18n.t("logstash.plugin.version.0-1-x",
                                 :type => @plugin_type,
                                 :name => @config_name,
                                 :LOGSTASH_VERSION => LOGSTASH_VERSION))
           else
-            @logger.info(I18n.t("logstash.plugin.version.0-9-x", 
+            self.logger.info(I18n.t("logstash.plugin.version.0-9-x",
                                 :type => @plugin_type,
                                 :name => @config_name,
                                 :LOGSTASH_VERSION => LOGSTASH_VERSION))
@@ -297,10 +295,10 @@ module LogStash::Config::Mixin
         # If we cannot find a version in the currently installed gems we
         # will display this message. This could happen in the test, if you 
         # create an anonymous class to test a plugin.
-        @logger.warn(I18n.t("logstash.plugin.no_version",
-                                "type" => @plugin_type,
-                                "name" => @config_name,
-                                "LOGSTASH_VERSION" => LOGSTASH_VERSION))
+        self.logger.warn(I18n.t("logstash.plugin.no_version",
+                                :type => @plugin_type,
+                                :name => @config_name,
+                                :LOGSTASH_VERSION => LOGSTASH_VERSION))
       ensure 
         @@version_notice_given = true
       end
@@ -321,7 +319,7 @@ module LogStash::Config::Mixin
 
       if invalid_params.size > 0
         invalid_params.each do |name|
-          @logger.error("Unknown setting '#{name}' for #{@plugin_name}")
+          self.logger.error("Unknown setting '#{name}' for #{@plugin_name}")
         end
         return false
       end # if invalid_params.size > 0
@@ -348,7 +346,7 @@ module LogStash::Config::Mixin
 
         value = params[config_key]
         if value.nil? || (config[:list] && Array(value).empty?)
-          @logger.error(I18n.t("logstash.runner.configuration.setting_missing",
+          self.logger.error(I18n.t("logstash.runner.configuration.setting_missing",
                                :setting => config_key, :plugin => @plugin_name,
                                :type => @plugin_type))
           is_valid = false
@@ -396,7 +394,7 @@ module LogStash::Config::Mixin
             # Used for converting values in the config to proper objects.
             params[key] = processed_value
           else
-            @logger.error(I18n.t("logstash.runner.configuration.setting_invalid",
+            self.logger.error(I18n.t("logstash.runner.configuration.setting_invalid",
                                  :plugin => @plugin_name, :type => @plugin_type,
                                  :setting => key, :value => value.inspect,
                                  :value_type => config_settings[:validate],

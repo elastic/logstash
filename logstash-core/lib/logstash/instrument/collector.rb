@@ -101,7 +101,7 @@ module LogStash module Instrument
     # `#update(created_at, metric_store)`
     def publish_snapshot
       created_at = Time.now
-      logger.debug("Collector: Sending snapshot to observers", "created_at" => created_at) if logger.is_debug_enabled
+      logger.debug("Collector: Sending snapshot to observers", "created_at" => created_at) if logger.debug?
       notify_observers(snapshot_metric)
     end
   end

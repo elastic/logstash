@@ -71,16 +71,16 @@ module LogStash; module Config; class Loader
       end
       config << cfg + "\n"
       if @config_debug
-        @logger.is_debug_enabled && @logger.debug("\nThe following is the content of a file", "config_file" => file.to_s)
-        @logger.is_debug_enabled && @logger.debug("\n" + cfg + "\n\n")
+        @logger.debug? && @logger.debug("\nThe following is the content of a file", "config_file" => file.to_s)
+        @logger.debug? && @logger.debug("\n" + cfg + "\n\n")
       end
     end
     if encoding_issue_files.any?
       fail("The following config files contains non-ascii characters but are not UTF-8 encoded #{encoding_issue_files}")
     end
     if @config_debug
-      @logger.is_debug_enabled && @logger.debug("\nThe following is the merged configuration")
-      @logger.is_debug_enabled && @logger.debug("\n" + config + "\n\n")
+      @logger.debug? && @logger.debug("\nThe following is the merged configuration")
+      @logger.debug? && @logger.debug("\n" + config + "\n\n")
     end
     return config
   end # def load_config

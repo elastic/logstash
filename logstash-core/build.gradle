@@ -4,7 +4,7 @@ import static java.nio.file.StandardCopyOption.REPLACE_EXISTING
 apply plugin: 'java'
 apply plugin: 'idea'
 
-group = 'org.logstash.core'
+group = 'org.logstash'
 version = '1.0.0-SNAPSHOT'
 
 description = """Logstash Core Java"""

@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Configuration status="INFO">
+<Configuration status="ERROR">
   <Appenders>
     <Console name="Console" target="SYSTEM_OUT">
       <JSONLayout compact="true" eventEol="true" />
     </Console>
   </Appenders>
   <Loggers>
-    <Root level="info">
+    <Root level="error">
       <AppenderRef ref="Console"/>
     </Root>
   </Loggers>

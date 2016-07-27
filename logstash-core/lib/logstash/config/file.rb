@@ -8,11 +8,10 @@ require "logger"
 
 class LogStash::Config::File
   include Enumerable
-  attr_accessor :logger
+  include LogStash::Util::Loggable
 
   public
   def initialize(text)
-    @logger = org.apache.logging.log4j.LogManager.getLogger("LogStash::Config::File")
     @text = text
     @config = parse(text)
   end # def initialize

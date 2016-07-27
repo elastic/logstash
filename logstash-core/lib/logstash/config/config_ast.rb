@@ -123,7 +123,7 @@ module LogStash; module Config; module AST
         definitions << "define_singleton_method :#{type}_func do |event|"
         definitions << "  targeted_outputs = []" if type == "output"
         definitions << "  events = [event]" if type == "filter"
-        definitions << "  @logger.is_debug_enabled && @logger.debug(\"#{type} received\", \"event\" => event.to_hash)"
+        definitions << "  @logger.debug? && @logger.debug(\"#{type} received\", \"event\" => event.to_hash)"
 
         sections.select { |s| s.plugin_type.text_value == type }.each do |s|
           definitions << s.compile.split("\n", -1).map { |e| "  #{e}" }
@@ -168,13 +168,13 @@ module LogStash; module Config; module AST
 
           code << <<-CODE
             @generated_objects[:#{name}_flush] = lambda do |options, &block|
-              @logger.is_debug_enabled && @logger.debug(\"Flushing\", \"plugin\" => @generated_objects[:#{name}])
+              @logger.debug? && @logger.debug(\"Flushing\", \"plugin\" => @generated_objects[:#{name}])
 
               events = @generated_objects[:#{name}].flush(options)
 
               return if events.nil? || events.empty?
 
-              @logger.is_debug_enabled && @logger.debug(\"Flushing\", \"plugin\" => @generated_objects[:#{name}], \"events\" => events.map { |x| x.to_hash  })
+              @logger.debug? && @logger.debug(\"Flushing\", \"plugin\" => @generated_objects[:#{name}], \"events\" => events.map { |x| x.to_hash  })
 
               #{plugin.compile_starting_here.gsub(/^/, "  ")}
 
