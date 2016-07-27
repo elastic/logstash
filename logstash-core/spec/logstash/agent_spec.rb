@@ -392,7 +392,10 @@ describe LogStash::Agent do
 
     it "resets the metric collector" do
       # We know that the store has more events coming in.
+      i = 0
       while dummy_output.events.size <= new_config_generator_counter
+        i += 1
+        raise "Waiting too long!" if i > 20
         sleep(0.1)
       end
 

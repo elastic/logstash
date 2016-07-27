@@ -275,40 +275,31 @@ require "logstash/namespace"
 class LogStash::{pluginclass}::{pluginnamecap} < LogStash::{pluginclass}::Base
   config_name "example"
 
-  # If declared logstash will only allow a single instance of this plugin
-  # to exist, regardless of how many CPU cores logstash detects. This is best
-  # used in cases like the File output, where separate threads writing to a single
-  # File would only cause problems.
+  # This sets the concurrency behavior of this plugin. By default it is :legacy, which was the standard
+  # way concurrency worked before Logstash 2.4
+  # 
+  # You should explicitly set it to either :single or :shared as :legacy will be removed in Logstash 6.0
+  # 
+  # When configured as :single a single instance of the Output will be shared among the
+  # pipeline worker threads. Access to the `#multi_receive/#multi_receive_encoded/#receive` method will be synchronized
+  # i.e. only one thread will be active at a time making threadsafety much simpler.
+  # 
+  # You can set this to :shared if your output is threadsafe. This will maximize
+  # concurrency but you will need to make appropriate uses of mutexes in `#multi_receive/#receive`.
   #
-  # respond_to? check needed for backwards compatibility with < 2.2 Logstashes
-  declare_workers_not_supported! if self.respond_to?(:declare_workers_not_supported!)
-
-  # If declared threadsafe logstash will only ever create one
-  # instance of this plugin per pipeline.
-  # That instance will be shared across all workers
-  # It is up to the plugin author to correctly write concurrent code!
-  #
-  # respond_to? check needed for backwards compatibility with < 2.2 Logstashes
-  declare_threadsafe! if self.respond_to?(:declare_threadsafe!)
-
+  # Only the `#multi_receive/#multi_receive_encoded` methods need to actually be threadsafe, the other methods
+  # will only be executed in a single thread
+  concurrency :single
+  
   public
-  def register
-    # Does the same thing as declare_workers_not_supported!
-    # But works in < 2.2 logstashes
-    # workers_not_supported
+  def register    
   end # def register
 
   public
   # Takes an array of events
+  # Must be threadsafe if `concurrency :shared` is set
   def multi_receive(events)
   end # def multi_receive
-
-  public
-  # Needed for logstash < 2.2 compatibility
-  # Takes events one at a time
-  def receive(event)
-  end # def receive
-
 end # class LogStash::{pluginclass}::{pluginnamecap}
 ----------------------------------
 endif::multi_receive_method[]
