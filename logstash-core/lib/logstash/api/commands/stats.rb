@@ -70,7 +70,7 @@ module LogStash
             # Turn the `plugins` stats hash into an array of [ {}, {}, ... ]
             # This is to produce an array of data points, one point for each
             # plugin instance.
-            return [] unless stats[:plugins].include?(plugin_type)
+            return [] unless stats[:plugins] && stats[:plugins].include?(plugin_type)
             stats[:plugins][plugin_type].collect do |id, data|
               { :id => id }.merge(data)
             end

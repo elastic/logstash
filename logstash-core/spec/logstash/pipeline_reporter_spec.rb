@@ -43,6 +43,7 @@ describe LogStash::PipelineReporter do
     allow(LogStash::Plugin).to receive(:lookup).with("codec", "plain").and_call_original
 
     @pre_snapshot = reporter.snapshot
+    
     pipeline.run
     @post_snapshot = reporter.snapshot
   end
@@ -78,12 +79,6 @@ describe LogStash::PipelineReporter do
 
     it "should be zero after running" do
       expect(@post_snapshot.inflight_count).to eql(0)
-    end
-  end
-
-  describe "output states" do
-    it "should include the count of received events" do
-      expect(@post_snapshot.output_info.first[:events_received]).to eql(generator_count)
     end
   end
 end
