@@ -1,18 +1,15 @@
 package org.logstash.common.io;
 
 import org.junit.Test;
+import org.logstash.ackedqueue.Queueable;
+import org.logstash.ackedqueue.StringElement;
+
+import java.io.IOException;
+import java.util.List;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
-
-import org.logstash.ackedqueue.Queueable;
-import org.logstash.ackedqueue.StringElement;
-import org.logstash.common.io.ByteBufferPageIO;
-import org.logstash.common.io.ReadElementValue;
-
-import java.io.IOException;
-import java.util.List;
 
 
 public class ByteBufferPageIOTest {

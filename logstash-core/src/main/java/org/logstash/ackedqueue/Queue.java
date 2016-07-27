@@ -32,8 +32,6 @@ public class Queue implements Closeable {
     private final ElementDeserialiser deserialiser;
     private final AtomicBoolean closed;
 
-    // TODO: I really don't like the idea of passing a dummy PageIO object for the sake of holding a reference to the
-    // concrete class for later invoking open() and create() in the Page
     public Queue(Settings settings) {
         this.settings = settings;
         this.tailPages = new ArrayList<>();

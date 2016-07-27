@@ -5,15 +5,15 @@ import org.logstash.ackedqueue.Queueable;
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
-import java.nio.ByteBuffer;
 import java.nio.MappedByteBuffer;
-import java.nio.channels.Channel;
 import java.nio.channels.FileChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.zip.CRC32;
+import java.util.zip.Checksum;
 
 // TODO: this essentially a copy of ByteBufferPageIO and should be DRY'ed - temp impl to test file based stress test
 
@@ -39,6 +39,7 @@ public class MmapPageIO implements PageIO {
     private int elementCount;
     private int head;
     private byte version;
+    private Checksum checkSummer = new CRC32();
 
     public MmapPageIO(int pageNum, int capacity, String dirPath) throws IOException {
         this.pageNum = pageNum;
@@ -175,6 +176,10 @@ public class MmapPageIO implements PageIO {
             byte[] readBytes = new byte[readLength];
             this.buffer.get(readBytes);
             int checksum = this.buffer.getInt();
+            int computedChecksum = checksum(readBytes);
+            if (computedChecksum != checksum) {
+                throw new IOException(String.format("computed checksum=%d != checksum for file=%d", computedChecksum, checksum));
+            }
 
             result.add(new ReadElementValue(readSeqNum, readBytes));
 
@@ -228,7 +233,9 @@ public class MmapPageIO implements PageIO {
     }
 
     private int checksum(byte[] bytes) {
-        return 0;
+        checkSummer.reset();
+        checkSummer.update(bytes, 0, bytes.length);
+        return (int) checkSummer.getValue();
     }
 
     // made public only for tests

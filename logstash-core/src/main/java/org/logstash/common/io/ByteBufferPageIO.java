@@ -6,6 +6,8 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.zip.CRC32;
+import java.util.zip.Checksum;
 
 // TODO: currently assuming continuous seqNum is the byte buffer where we can deduct the maxSeqNum from the min + count.
 // TODO: we could change this and support non-continuous seqNums but I am not sure we should.
@@ -27,6 +29,7 @@ public class ByteBufferPageIO implements PageIO {
     private int elementCount;
     private int head;
     private byte version;
+    private Checksum checkSummer = new CRC32();
 
     public ByteBufferPageIO(int pageNum, int capacity, String path) throws IOException {
         this(capacity, new byte[0]);
@@ -164,6 +167,10 @@ public class ByteBufferPageIO implements PageIO {
             byte[] readBytes = new byte[readLength];
             this.buffer.get(readBytes);
             int checksum = this.buffer.getInt();
+            int computedChecksum = checksum(readBytes);
+            if (computedChecksum != checksum) {
+                throw new IOException(String.format("computed checksum=%d != checksum for file=%d", computedChecksum, checksum));
+            }
 
             result.add(new ReadElementValue(readSeqNum, readBytes));
 
@@ -204,7 +211,9 @@ public class ByteBufferPageIO implements PageIO {
     }
 
     private int checksum(byte[] bytes) {
-        return 0;
+        checkSummer.reset();
+        checkSummer.update(bytes, 0, bytes.length);
+        return (int) checkSummer.getValue();
     }
 
     // made public only for tests
