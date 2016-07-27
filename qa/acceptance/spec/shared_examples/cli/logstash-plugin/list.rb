@@ -27,7 +27,7 @@ shared_examples "logstash list" do |logstash|
       it "list the plugins with their versions" do
         result = logstash.run_command_in_path("bin/logstash-plugin list --verbose")
         result.stdout.split("\n").each do |plugin|
-          expect(plugin).to match(/^logstash-\w+-\w+\s\(\d+\.\d+.\d+\)/)
+          expect(plugin).to match(/^logstash-\w+-\w+\s\(\d+\.\d+.\d+(.\w+)?\)/)
         end
       end
     end
