@@ -60,7 +60,6 @@ module LogStash; class PipelineReporter
       {
         :events_filtered => events_filtered,
         :events_consumed => events_consumed,
-        :worker_count => pipeline.worker_threads.size,
         :inflight_count => inflight_count,
         :worker_states => worker_states_snap,
         :output_info => output_info,
@@ -100,15 +99,10 @@ module LogStash; class PipelineReporter
 
   def output_info
     pipeline.outputs.map do |output_delegator|
-      is_multi_worker = output_delegator.worker_count > 1
-
       {
         :type => output_delegator.config_name,
-        :config => output_delegator.config,
-        :is_multi_worker => is_multi_worker,
-        :events_received => output_delegator.events_received,
-        :workers => output_delegator.workers,
-        :busy_workers => output_delegator.busy_workers
+        :plugin_args => output_delegator.plugin_args,
+        :concurrency => output_delegator.concurrency,        
       }
     end
   end

@@ -5,26 +5,25 @@ require 'spec_helper'
 describe LogStash::OutputDelegator do
   let(:logger) { double("logger") }
   let(:events) { 7.times.map { LogStash::Event.new }}
-  let(:default_worker_count) { 1 }
 
-  subject { described_class.new(logger, out_klass, default_worker_count, LogStash::Instrument::NullMetric.new) }
+  subject { described_class.new(logger, out_klass, LogStash::Instrument::NullMetric.new, {}, "id" => "foo") }
 
   context "with a plain output plugin" do
     let(:out_klass) { double("output klass") }
     let(:out_inst) { double("output instance") }
-
+    let(:concurrency) { :single }
 
     before(:each) do
       allow(out_klass).to receive(:new).with(any_args).and_return(out_inst)
-      allow(out_klass).to receive(:threadsafe?).and_return(false)
-      allow(out_klass).to receive(:workers_not_supported?).and_return(false)
       allow(out_klass).to receive(:name).and_return("example")
+      allow(out_klass).to receive(:concurrency).with(any_args).and_return concurrency
       allow(out_klass).to receive(:config_name)
       allow(out_inst).to receive(:register)
       allow(out_inst).to receive(:multi_receive)
       allow(out_inst).to receive(:metric=).with(any_args)
       allow(out_inst).to receive(:id).and_return("a-simple-plugin")
-      allow(out_inst).to receive(:plugin_unique_name).and_return("hello-123")
+
+      allow(subject.metric_events).to receive(:increment).with(any_args)
       allow(logger).to receive(:debug).with(any_args)
     end
 
@@ -43,109 +42,80 @@ describe LogStash::OutputDelegator do
       end
 
       it "should increment the number of events received" do
-        expect(subject.events_received).to eql(events.length)
+        expect(subject.metric_events).to have_received(:increment).with(:in, events.length)
+        expect(subject.metric_events).to have_received(:increment).with(:out, events.length)
       end
     end
-
 
     describe "closing" do
       before do
         subject.register
       end
 
-      it "should register all workers on register" do
+      it "should register the output plugin instance on register" do
         expect(out_inst).to have_received(:register)
       end
 
-      it "should close all workers when closing" do
+      it "should close the output plugin instance when closing" do
         expect(out_inst).to receive(:do_close)
         subject.do_close
       end
     end
 
-    describe "concurrency and worker support" do
-      before do
-        allow(out_inst).to receive(:id).and_return("a-simple-plugin")
-        allow(out_inst).to receive(:metric=).with(any_args)
-        allow(out_klass).to receive(:workers_not_supported?).and_return(false)
+    describe "concurrency strategies" do
+      it "should have :single as the default" do
+        expect(subject.concurrency).to eq :single
       end
 
-      describe "non-threadsafe outputs that allow workers" do
-        let(:default_worker_count) { 3 }
+      [
+        [:shared, ::LogStash::OutputDelegatorStrategies::Shared],
+        [:single, ::LogStash::OutputDelegatorStrategies::Single],
+        [:legacy, ::LogStash::OutputDelegatorStrategies::Legacy],
+      ].each do |strategy_concurrency,klass|
+        context "with strategy #{strategy_concurrency}" do
+          let(:concurrency) { strategy_concurrency }
 
-        before do
-          allow(out_klass).to receive(:threadsafe?).and_return(false)
-          subject.register
-        end
+          it "should find the correct concurrency type for the output" do
+            expect(subject.concurrency).to eq(strategy_concurrency)
+          end
+          
+          it "should find the correct Strategy class for the worker" do
+            expect(subject.strategy).to be_a(klass)
+          end
 
-        it "should instantiate multiple workers" do
-          expect(subject.workers.length).to eql(default_worker_count)
-        end
+          [[:register], [:do_close], [:multi_receive, [[]] ] ].each do |method, args|
+            context "strategy objects" do
+              before do
+                allow(subject.strategy).to receive(method)
+              end
+              
+              it "should delegate #{method} to the strategy" do
+                subject.send(method, *args)
+                if args
+                  expect(subject.strategy).to have_received(method).with(*args)
+                else
+                  expect(subject.strategy).to have_received(method).with(no_args)
+                end
+              end
+            end
 
-        it "should send received events to the worker" do
-          expect(out_inst).to receive(:multi_receive).with(events)
-          subject.multi_receive(events)
-        end
-      end
-
-      describe "threadsafe outputs" do
-        before do
-          allow(out_klass).to receive(:threadsafe?).and_return(true)
-          subject.register
-        end
-
-        it "should return true when threadsafe? is invoked" do
-          expect(subject.threadsafe?).to eql(true)
-        end
-
-        it "should define a threadsafe_worker" do
-          expect(subject.send(:threadsafe_worker)).to eql(out_inst)
-        end
-
-        it "should utilize threadsafe_multi_receive" do
-          expect(subject.send(:threadsafe_worker)).to receive(:multi_receive).with(events)
-          subject.multi_receive(events)
-        end
-
-        it "should not utilize the worker queue" do
-          expect(subject.send(:worker_queue)).to be_nil
-        end
-
-        it "should send received events to the worker" do
-          expect(out_inst).to receive(:multi_receive).with(events)
-          subject.multi_receive(events)
-        end
-
-        it "should close all workers when closing" do
-          expect(out_inst).to receive(:do_close)
-          subject.do_close
+            context "strategy output instances" do
+              before do
+                allow(out_inst).to receive(method)
+              end
+              
+              it "should delegate #{method} to the strategy" do
+                subject.send(method, *args)
+                if args
+                  expect(out_inst).to have_received(method).with(*args)
+                else
+                  expect(out_inst).to have_received(method).with(no_args)
+                end
+              end
+            end
+          end
         end
       end
-    end
-  end
-
-  # This may seem suspiciously similar to the class in outputs/base_spec
-  # but, in fact, we need a whole new class because using this even once
-  # will immutably modify the base class
-  class LogStash::Outputs::NOOPDelLegacyNoWorkers < ::LogStash::Outputs::Base
-    LEGACY_WORKERS_NOT_SUPPORTED_REASON = "legacy reason"
-
-    def register
-      workers_not_supported(LEGACY_WORKERS_NOT_SUPPORTED_REASON)
-    end
-  end
-
-  describe "legacy output workers_not_supported" do
-    let(:default_worker_count) { 2 }
-    let(:out_klass) { LogStash::Outputs::NOOPDelLegacyNoWorkers }
-
-    before(:each) do
-      allow(logger).to receive(:debug).with(any_args)
-    end
-
-    it "should only setup one worker" do
-      subject.register
-      expect(subject.worker_count).to eql(1)
     end
   end
 end

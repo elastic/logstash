@@ -2,9 +2,9 @@
 require "spec_helper"
 
 # use a dummy NOOP output to test Outputs::Base
-class LogStash::Outputs::NOOP < LogStash::Outputs::Base
+class LogStash::Outputs::NOOPSingle < LogStash::Outputs::Base
   config_name "noop"
-  milestone 2
+  concurrency :single
 
   config :dummy_option, :validate => :string
 
@@ -15,26 +15,57 @@ class LogStash::Outputs::NOOP < LogStash::Outputs::Base
   end
 end
 
-class LogStash::Outputs::NOOPLegacyNoWorkers < ::LogStash::Outputs::Base
-  LEGACY_WORKERS_NOT_SUPPORTED_REASON = "legacy reason"
-
-  def register
-    workers_not_supported(LEGACY_WORKERS_NOT_SUPPORTED_REASON)
-  end
+class LogStash::Outputs::NOOPShared < ::LogStash::Outputs::Base
+  concurrency :shared
+  
+  def register; end
 end
 
-describe "LogStash::Outputs::Base#new" do
-  it "should instantiate cleanly" do
-    params = { "dummy_option" => "potatoes", "codec" => "json", "workers" => 2 }
-    worker_params = params.dup; worker_params["workers"] = 1
+class LogStash::Outputs::NOOPLegacy < ::LogStash::Outputs::Base
+  def register; end
+end
 
-    expect do
-      LogStash::Outputs::NOOP.new(params.dup)
-    end.not_to raise_error
+
+describe "LogStash::Outputs::Base#new" do
+  let(:params) { {} }  
+  subject(:instance) { klass.new(params.dup) }
+
+  context "single" do
+    let(:klass) { LogStash::Outputs::NOOPSingle }
+    
+    it "should instantiate cleanly" do
+      params = { "dummy_option" => "potatoes", "codec" => "json", "workers" => 2 }
+      worker_params = params.dup; worker_params["workers"] = 1
+
+      expect{ subject }.not_to raise_error
+    end
+
+    it "should set concurrency correctly" do
+      expect(subject.concurrency).to eq(:single)
+    end
   end
 
-  it "should move workers_not_supported declarations up to the class level" do
-    LogStash::Outputs::NOOPLegacyNoWorkers.new.register
-    expect(LogStash::Outputs::NOOPLegacyNoWorkers.workers_not_supported?).to eql(true)
+  context "shared" do
+    let(:klass) { LogStash::Outputs::NOOPShared }
+    
+    it "should set concurrency correctly" do
+      expect(subject.concurrency).to eq(:shared)
+    end
+  end
+
+  context "legacy" do
+    let(:klass) { LogStash::Outputs::NOOPLegacy }
+    
+    it "should set concurrency correctly" do
+      expect(subject.concurrency).to eq(:legacy)
+    end
+
+    it "should default the # of workers to 1" do
+      expect(subject.workers).to eq(1)
+    end
+
+    it "should default concurrency to :legacy" do
+      expect(subject.concurrency).to eq(:legacy)
+    end
   end
 end

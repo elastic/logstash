@@ -20,42 +20,37 @@ class LogStash::Outputs::Base < LogStash::Plugin
 
   # The codec used for output data. Output codecs are a convenient method for encoding your data before it leaves the output, without needing a separate filter in your Logstash pipeline.
   config :codec, :validate => :codec, :default => "plain"
+  # TODO remove this in Logstash 6.0
+  # when we no longer support the :legacy type
+  # This is hacky, but it can only be herne
+  config :workers, :type => :number, :default => 1
+  
+  # Set or return concurrency type
+  def self.concurrency(type=nil)
+    if type
+      @concurrency = type
+    else
+      @concurrency || :legacy # default is :legacyo
+    end
+  end
 
-  # The number of workers to use for this output.
-  # Note that this setting may not be useful for all outputs.
-  config :workers, :validate => :number, :default => 1
-
-  attr_reader :worker_plugins, :available_workers, :workers, :worker_plugins, :workers_not_supported
-
+  # Deprecated: Favor `concurrency :shared`
   def self.declare_threadsafe!
-    declare_workers_not_supported!
-    @threadsafe = true
+    concurrency :shared
   end
 
+  # Deprecated: Favor `#concurrency`
   def self.threadsafe?
-    @threadsafe == true
+    concurrency == :shared
   end
 
+  # Deprecated: Favor `concurrency :single`
+  # Remove in Logstash 6.0.0
   def self.declare_workers_not_supported!(message=nil)
-    @workers_not_supported_message = message
-    @workers_not_supported = true
-  end
-
-  def self.workers_not_supported_message
-    @workers_not_supported_message
-  end
-
-  def self.workers_not_supported?
-    !!@workers_not_supported
+    concurrency :single
   end
 
   public
-  # TODO: Remove this in the next major version after Logstash 2.x
-  # Post 2.x it should raise an error and tell people to use the class level
-  # declaration
-  def workers_not_supported(message=nil)
-    self.class.declare_workers_not_supported!(message)
-  end
 
   def self.plugin_type
     "output"
@@ -65,6 +60,10 @@ class LogStash::Outputs::Base < LogStash::Plugin
   def initialize(params={})
     super
     config_init(@params)
+
+    if self.workers != 1
+      raise LogStash::ConfigurationError, "You are using a plugin that doesn't support workers but have set the workers value explicitly! This plugin uses the #{concurrency} and doesn't need this option"
+    end
 
     # If we're running with a single thread we must enforce single-threaded concurrency by default
     # Maybe in a future version we'll assume output plugins are threadsafe
@@ -85,6 +84,10 @@ class LogStash::Outputs::Base < LogStash::Plugin
   # To be overriden in implementations
   def multi_receive(events)
     events.each {|event| receive(event) }
+  end
+
+  def concurrency
+    self.class.concurrency
   end
 
   private

@@ -209,7 +209,7 @@ module LogStash::Config::Mixin
 
       name = name.to_s if name.is_a?(Symbol)
       @config[name] = opts  # ok if this is empty
-
+      
       if name.is_a?(String)
         define_method(name) { instance_variable_get("@#{name}") }
         define_method("#{name}=") { |v| instance_variable_set("@#{name}", v) }
