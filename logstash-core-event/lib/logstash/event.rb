@@ -69,8 +69,8 @@ class LogStash::Event
 
   def initialize(data = {})
     @cancelled = false
-    @data = data
-    @accessors = LogStash::Util::Accessors.new(data)
+    @data = {TIMESTAMP => nil, VERSION => nil}.merge!(data)
+    @accessors = LogStash::Util::Accessors.new(@data)
     @data[VERSION] ||= VERSION_ONE
     ts = @data[TIMESTAMP]
     @data[TIMESTAMP] = ts ? init_timestamp(ts) : LogStash::Timestamp.now
