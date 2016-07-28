@@ -9,7 +9,6 @@ about Logstash:
 * <<node-info-api>>
 * <<plugins-api>>
 * <<node-stats-api>>
-* <<pipeline-stats-api>>
 * <<hot-threads-api>>
 
 
@@ -46,9 +45,7 @@ The following options can be applied to all of the Logstash monitoring APIs.
 ==== Pretty Results
 
 When appending `?pretty=true` to any request made, the JSON returned
-will be pretty formatted (use it for debugging only!). Another option is
-to set `?format=yaml` which will cause the result to be returned in the
-(sometimes) more readable yaml format.
+will be pretty formatted (use it for debugging only!).
 
 [float]
 ==== Human-Readable Output
@@ -82,7 +79,7 @@ GET /_node/<types>
 
 Where `<types>` is optional and specifies the types of node info you want to return.
 
-You can limit the info that's returned by combining any of the following types: added[5.0.0-alpha5,Support for specifying a comma-separated list of types]
+You can limit the info that's returned by combining any of the following types in a comma-separated list: added[5.0.0-alpha5,Support for specifying a comma-separated list of types]
 
 [horizontal]
 `pipeline`::
@@ -102,8 +99,8 @@ batch size, and batch delay:
 GET /_node/pipeline
 --------------------------------------------------
 
-See <<pipeline-stats-api>> if you want to view additional information, such as stats for each configured input, filter,
-or output stage.
+If you want to view additional information about the pipeline, such as stats for each configured input, filter,
+or output stage, see the <<pipeline-stats>> section under the <<node-stats-api>>.
 
 Example response:
 
@@ -227,7 +224,7 @@ GET /_node/stats/<types>
 
 Where `<types>` is optional and specifies the types of stats you want to return.
 
-By default, all stats are returned. You can limit the info that's returned by combining any of the following types: added[5.0.0-alpha5,Support for specifying a comma-separated list of types]
+By default, all stats are returned. You can limit the info that's returned by combining any of the following types in a comma-separated list: added[5.0.0-alpha5,Support for specifying a comma-separated list of types]
 
 [horizontal]
 `jvm`::
@@ -237,7 +234,7 @@ Gets process stats, including stats about file descriptors, memory consumption, 
 `mem`::
 Gets memory usage stats. added[5.0.0-alpha4] 
 `pipeline`::
-Gets pipeline stats. See <<pipeline-stats-api>> for examples.
+Gets runtime stats about the Logstash pipeline.
 
 ==== JVM Stats
 
@@ -320,17 +317,10 @@ Example response:
   }
 --------------------------------------------------
 
-See <<monitoring-common-options, Common Options>> for a list of options that can be applied to all
-Logstash monitoring APIs.
-
-[[pipeline-stats-api]]
-=== Pipeline Stats API
+[[pipeline-stats]]
+==== Pipeline Stats 
 
 added[5.0.0-alpha4,Stats for input stages are not yet available]
-
-experimental[]
-
-The pipeline stats API retrieves runtime stats about the Logstash pipeline.
 
 The following request returns a JSON document containing pipeline stats, including the number of events that were
 input, filtered, or output by the pipeline. The request also returns stats for each configured input, filter, or
