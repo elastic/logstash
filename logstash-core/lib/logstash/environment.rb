@@ -3,8 +3,16 @@ require "logstash/errors"
 require "logstash/config/cpu_core_strategy"
 require "logstash/settings"
 require "socket"
+require "stud/temporary"
 
 module LogStash
+  # In the event that we're requiring this file without bootstrap/environment.rb
+  if !defined?(LogStash::Environment::LOGSTASH_HOME)
+    module Environment
+      LOGSTASH_HOME = Stud::Temporary.directory("logstash-home")
+      Dir.mkdir(::File.join(LOGSTASH_HOME, "data"))
+    end
+  end
 
   [
             Setting::String.new("node.name", Socket.gethostname),
