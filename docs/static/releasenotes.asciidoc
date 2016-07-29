@@ -16,7 +16,7 @@ location is configurable via the `path.data` setting in the `logstash.yml` <<log
 * Made `bin/logstash -V/--version` run faster on Unix platforms.
 * Ehanced the <<monitoring,monitoring APIs>> by adding `hostname`, `http_address`, and `version` as static fields for all APIs ({lsissue}5450[Issue 5450]).
 * Added time tracking (wall-clock) to all individual filter and output instances. The goal is to help identify 
-which plugin configurations are consuming the most time. These statics are exposed by the `/_node/stats/pipeline` endpoint. See the <<pipeline-stats-api, pipeline stats API>>.
+which plugin configurations are consuming the most time. These statics are exposed by the `/_node/stats/pipeline` endpoint. See the <<pipeline-stats>> section under the <<node-stats-api>>.
 * Added the `/_node` endpoint, which provides static information for OS, JVM, and pipeline settings. See the <<node-info-api,node info API>>.
 * Moved the <<plugins-api,plugins API>> to the `_node/plugins` endpoint.
 * Moved the <<hot-threads-api,hot threads API>> to the `_node/hot_threads` endpoint.
