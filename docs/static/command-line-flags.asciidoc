@@ -3,61 +3,68 @@
 
 Logstash has the following flags. You can use the `--help` flag to display this information.
 
-You can also control Logstash execution by specifying options in the Logstash settings file. For more info, see <<logstash-settings-file>>.  
+Instead of specifying options at the command line, we recommend that you control Logstash execution
+by specifying options in the Logstash <<logstash-settings-file,settings file>>. Using a settings file
+makes it easier for you to specify mutliple options, and it provides you with a single, versionable
+file that you can use to start up Logstash consistently for each run. 
+
+Any flags that you set at the command line override the corresponding settings in the Logstash
+<<logstash-settings-file,settings file>>. 
 
 added[5.0.0-alpha3, Command-line flags have dots instead of dashes in their names]
 
 *`-f, --path.config CONFIGFILE`*::
- Load the Logstash config from a specific file or directory, or a wildcard. If
- given a directory or wildcard, config files will be read from the directory in
+ Load the Logstash config from a specific file or directory. If
+ you specify a directory or wildcard, config files are read from the directory in
  alphabetical order.
 
 *`-e, --config.string CONFIGSTRING`*::
- Use the given string as the configuration data. Same syntax as the config file.
- If no input is specified, `stdin { type => stdin }` is default. If no output
- is specified, `stdout { codec => rubydebug }}` is default.
+ Use the given string as the configuration data. Use the same syntax as the config file.
+ If no input is specified, `stdin { type => stdin }` is used by default. If no output
+ is specified, `stdout { codec => rubydebug }}` is used by default.
 
 *`-w, --pipeline.workers COUNT`*::
- Sets the number of pipeline workers (threads) to run for filter processing (default: number of cores).
- If you find that events are backing up, or that the CPU is not saturated, consider increasing
- this number to better utilize machine processing power.
+ Set the number of workers that will, in parallel, execute the filter and output stages of the pipeline.  
+ This defaults to the number of the host's CPU cores. If you find that events are backing up, or that
+ the CPU is not saturated, consider increasing this number to better utilize machine processing power.
  
 *`-b, --pipeline.batch.size SIZE`*::
- This parameter defines the maximum number of events an individual worker thread will collect
- before attempting to execute its filters and outputs. Default is 125 events.
+ Define the maximum number of events an individual worker thread will collect from inputs
+ before attempting to execute its filters and outputs. The default is 125 events.
  Larger batch sizes are generally more efficient, but come at the cost of increased memory
  overhead. You may have to increase the JVM heap size by setting the `LS_HEAP_SIZE`
  variable to effectively use the option.
 
 *`-u, --pipeline.batch.delay DELAY_IN_MS`*::
- When creating pipeline event batches, how long to wait while polling for the next event.
- Default is 5ms.
+ When creating pipeline event batches, how long in milliseconds to wait before dispatching an undersized
+  batch to filters and workers.
+ The default is 5ms.
 
 *`-l, --path.log FILE`*::
- Log to a given path. Default is to log to stdout
+ Log to a given file. The default is to log to stdout
 
 *`--log.level`*::
- Set the log level to "quiet", "verbose", "warn" (default), or "debug".
+ Set the log level to "warn" (default), "quiet", "verbose", or "debug".
 
 *`--log.format FORMAT`*::
  Set to "json" to log in JSON format, or "plain" (default) to use `Object#.inspect`.
  
 *`--path.settings SETTINGS_DIR`*::
- Directory containing the `logstash.yml` <<logstash-settings-file,settings file>>.
+ Set the directory containing the `logstash.yml` <<logstash-settings-file,settings file>>.
  
 *`--node.name NAME`*::
- Set a descriptive name for the node. If no value is specified, defaults to the current hostname. 
+ Set a descriptive name for the node. If no value is specified, defaults to the machine's hostname. 
 
 *`--config.debug`*::
- Print the compiled config ruby code out as a debug log (you must also have `--log.level=debug` enabled).
- WARNING: This will include any 'password' options passed to plugin configs as plaintext, and may result
+ Show the fully compiled configuration as a debug log message (you must also have `--log.level=debug` enabled).
+ WARNING: The log message will include any 'password' options passed to plugin configs as plaintext, and may result
  in plaintext passwords appearing in your logs!
 
 *`-V, --version`*::
   Display the version of Logstash.
 
 *`-p, --path.plugins`*::
-  A path of where to find plugins. This flag can be given multiple times to include
+  Where to find custom plugins. This flag can be given multiple times to include
   multiple paths. Plugins are expected to be in a specific directory hierarchy:
   `PATH/logstash/TYPE/NAME.rb` where `TYPE` is `inputs`, `filters`, `outputs`, or `codecs`,
   and `NAME` is the name of the plugin.
@@ -70,21 +77,21 @@ added[5.0.0-alpha3, Command-line flags have dots instead of dashes in their name
   each config block with the source file it came from.
   
 *`-r, --config.reload.automatic`*::
-  Monitor configuration changes and reload the configuration whenever it is changed.
+  Periodically check if the configuration has changed and reload the configuration whenever it is changed.
 
 *`--config.reload.interval RELOAD_INTERVAL`*::
-  Specifies how often Logstash checks the config files for changes. The default is every 3 seconds.
+  Set how often in seconds Logstash checks the config files for changes. The default is every 3 seconds.
 
 *`--http.host HTTP_HOST`*::
-  Web API binding host (default: "127.0.0.1")
+  The bind address for the metrics REST endpoint. The default is "127.0.0.1".
 
 *`--http.port HTTP_PORT`*::
-  Web API http port (default: 9600)
+  The bind port for the metrics REST endpoint. The default is 9600.
 
 *`--pipeline.unsafe_shutdown`*::
   Force Logstash to exit during shutdown even if there are still inflight events
   in memory. By default, Logstash will refuse to quit until all received events
-  have been pushed to the outputs.
+  have been pushed to the outputs. Enabling this option can lead to data loss during shutdown.
 
 *`-h, --help`*::
   Print help
