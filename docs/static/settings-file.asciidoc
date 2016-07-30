@@ -3,10 +3,11 @@
 
 added[5.0.0-alpha3]
 
-You can set options in the Logstash settings file, `logstash.yml`, to control Logstash execution. Each setting in the
-`logstash.yml` file corresponds to a <<command-line-flags,command-line flag>>. 
-
-Any flags that you set at the command line override the corresponding settings in the `logstash.yml` file. 
+You can set options in the Logstash settings file, `logstash.yml`, to control Logstash execution. For example,
+you can specify pipeline settings, the location of configuration files, logging options, and other settings.
+Most of the settings in the `logstash.yml` file are also available as <<command-line-flags,command-line flags>>
+when you run Logstash. Any flags that you set at the command line override the corresponding settings in the
+`logstash.yml` file. 
 
 The `logstash.yml` file, which is written in http://http://yaml.org/[YAML], is located in `LOGSTASH_HOME/config`. You can
 specify settings in hierarchical form or use flat keys. For example, to use hierarchical form to set the pipeline batch
@@ -28,4 +29,82 @@ pipeline.batch.size: 125
 pipeline.batch.delay: 5
 -------------------------------------------------------------------------------------
 
-See <<command-line-flags>> for a description of the available options.
+The `logstash.yml` file includes the following settings:
+
+ *`node.name`*::
+  A descriptive name for the node. If no value is specified, the default is the machine's hostname.
+ 
+ *`path.data`*::
+  The directory that Logstash and its plugins use for any persistent needs. The default is `LOGSTASH_HOME/data`.
+ 
+ *`pipeline.workers`*::
+  The number of workers that will, in parallel, execute the filter and output stages of the pipeline. 
+  This defaults to the number of the host's CPU cores. If you find that events are backing up, or that the
+  CPU is not saturated, consider increasing this number to better utilize machine processing power.
+ 
+ *`pipeline.output.workers`*::
+  The number of workers to use per output plugin instance.
+ 
+ *`pipeline.batch.size`*::
+  The maximum number of events an individual worker thread will collect from inputs
+  before attempting to execute its filters and outputs. The default is 125 events.
+  Larger batch sizes are generally more efficient, but come at the cost of increased memory
+  overhead. You may have to increase the JVM heap size by setting the `LS_HEAP_SIZE`
+  variable to effectively use the option.
+ 
+ *`pipeline.batch.delay`*::
+  When creating pipeline event batches, how long in milliseconds to wait before dispatching an undersized
+  batch to filters and workers. The default is 5ms.
+ 
+ *`pipeline.unsafe_shutdown`*::
+  When set to true, forces Logstash to exit during shutdown even if there are still inflight events
+  in memory. By default, Logstash will refuse to quit until all received events
+  have been pushed to the outputs. Enabling this option can lead to data loss during shutdown.
+  
+ *`path.config`*::
+  The path to the Logstash config for the main pipeline. If you specify a directory or wildcard,
+  config files are read from the directory in alphabetical order.
+ 
+ *`config.string`*::
+  A string that contains the pipeline configuration to use for the main pipeline. Use the same syntax as
+  the config file. 
+ 
+ *`config.test_and_exit`*::
+  When set to true, checks that the configuration is valid and then exits. Note that grok patterns are not checked for
+  correctness with this setting. Logstash can read multiple config files from a directory. If you combine this
+  setting with `log.level: debug`, Logstash will log the combined config file, annotating
+  each config block with the source file it came from.
+  
+ *`config.reload.automatic`*::
+  When set to true, periodically checks if the configuration has changed and reloads the configuration whenever it is changed. 
+  This can also be triggered manually through the SIGHUP signal. 
+  
+*`config.reload.interval`*::
+  How often in seconds Logstash checks the config files for changes. The default is every 3 seconds.
+
+*`config.debug`*::
+  When set to true, shows the fully compiled configuration as a debug log message. You must also set `log.level: debug`.
+  WARNING: The log message will include any 'password' options passed to plugin configs as plaintext, and may result
+  in plaintext passwords appearing in your logs! 
+ 
+*`http.host`*::
+  The bind address for the metrics REST endpoint. The default is "127.0.0.1".
+
+*`http.port`*::
+  The bind port for the metrics REST endpoint. The default is 9600.
+  
+*`log.level`*::
+  The log level. Valid options are `warn` (default), `quiet`, `verbose`, or `debug`.
+ 
+*`log.format`*::
+  The log format. Set to `json` to log in JSON format, or `plain` (default) to use `Object#.inspect`.
+
+*`path.log`*::
+  The file to log to. The default is to log to stdout.
+ 
+*`path.plugins`*::
+  Where to find custom plugins. You can specify this setting multiple times to include
+  multiple paths. Plugins are expected to be in a specific directory hierarchy:
+  `PATH/logstash/TYPE/NAME.rb` where `TYPE` is `inputs`, `filters`, `outputs`, or `codecs`,
+  and `NAME` is the name of the plugin.
+
