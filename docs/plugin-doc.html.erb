@@ -77,4 +77,8 @@ input {
 
 <hr>
 
-This is documentation from <a href="https://github.com/logstash/logstash/blob/v<%= LOGSTASH_VERSION %>/<%= file %>"><%= file %></a>
+<% if is_contrib_plugin -%>
+This is documentation from <a href="https://github.com/elasticsearch/logstash-contrib/blob/v<%= LOGSTASH_VERSION %>/<%= file %>"><%= file %></a>
+<% else -%>
+This is documentation from <a href="https://github.com/elasticsearch/logstash/blob/v<%= LOGSTASH_VERSION %>/<%= file %>"><%= file %></a>
+<% end -%>
