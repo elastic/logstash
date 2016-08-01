@@ -1,0 +1,35 @@
+UPDOWN (?:[Uu][Pp]|[Dd](OWN|own))
+BROCADE_LOGLEVEL (?:A|C|D|M|E|I|N|W)
+BROCADE_PORT1 (?:%{POSINT:unitid}/)?%{POSINT:slotid}/%{POSINT:portid}
+BROCADE_PORT (?:[Pp]ort|Interface ethernet) %{BROCADE_PORT1}
+BROCADE_VLAN VLAN %{POSINT:vlanid}
+BROCADE_STACK [Ss]tack unit %{POSINT:unitid}
+BROCADE_PS Power supply %{POSINT:psid}
+
+
+BROCADE_STPBASE %{BROCADE_VLAN} %{BROCADE_PORT}
+BROCADE_STP1 %{BROCADE_STPBASE} STP State \-\> %{WORD:stpstate} \(%{WORD:stpcause}\)
+BROCADE_STP2 %{BROCADE_STPBASE} Bridge %{GREEDYDATA:bridgeevent} \(%{WORD:stpcause}\)
+BROCADE_STP3 %{BROCADE_VLAN} New(?: RootBridge: %{WORD:stprootbridge})? RootPort: %{BROCADE_PORT1:stprootport} \(%{WORD:stprootcause}\)
+BROCADE_STP4 %{BROCADE_VLAN} Bridge is RootBridge: %{WORD:stprootbridge} \(%{WORD:stprootcause}\)
+BROCADE_STP (?:%{BROCADE_STP1}|%{BROCADE_STP2}|%{BROCADE_STP3}|%{BROCADE_STP4})
+
+BROCADE_INTF %{BROCADE_PORT}, state %{UPDOWN:portstate}
+BROCADE_FAN %{BROCADE_STACK} Fan speed changed automatically to %{POSINT:fanspeed}
+
+BROCADE_TELNET1 telnet %{WORD:action} by line password from src IP %{IP:srcip}, src MAC %{CISCOMAC:srcmac}(?: to %{DATA:loginmode} mode)?
+BROCADE_TELNET2 telnet access from src IP %{IP:srcip}, src MAC %{CISCOMAC:srcmac} %{WORD:action}, %{POSINT:attempts} attempt\(s\)
+BROCADE_TELNET (?:%{BROCADE_TELNET1}|%{BROCADE_TELNET2})
+
+BROCADE_POWER %{BROCADE_STACK} POE\s*%{BROCADE_PS}\s*with %{POSINT:psmwatts} mwatts capacity is %{UPDOWN:psstate}
+
+BROCADE_POE1 PoE: Power %{WORD:poeaction} on %{BROCADE_PORT}(?: because of %{GREEDYDATA:poecause})?\.
+BROCADE_POE2 PoE: %{WORD:poeaction}(?: complete)? power of %{POSINT:poemwatts} mwatts on %{BROCADE_PORT}\.
+BROCADE_POE (?:%{BROCADE_POE1}|%{BROCADE_POE2})
+
+BROCADE_CONF %{GREEDYDATA:config} was %{WORD:action} by\s*from %{WORD:source} client %{IP:srcip}
+
+BROCADE_BASE %{SYSLOGTIMESTAMP:timestamp}:%{BROCADE_LOGLEVEL:loglevel}:(%{WORD:program}:)?
+
+BROCADE_ALL (?:%{BROCADE_STP}|%{BROCADE_INTF}|%{BROCADE_FAN}|%{BROCADE_TELNET}|%{BROCADE_POWER}|%{BROCADE_POE}|%{BROCADE_CONF})
+
