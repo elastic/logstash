@@ -1,0 +1,20 @@
+[[output-plugins]]
+== Output plugins
+
+An output plugin sends event data to a particular destination. Outputs are the final stage in the event pipeline.
+
+The following output plugins are available:
+
+|=======================================================================
+| Plugin | Description | Github repository
+<% plugins.each do |plugin| %>
+  | <<<%=plugin.full_name%>,<%=plugin.name%>>> | <%=plugin.description%> | <%=plugin.github_url%>[<%=plugin.full_name%>]
+<% end %>
+|=======================================================================
+
+<% plugins.each do |plugin| %>
+pass::[<?edit_url <%=plugin.edit_url%> ?>]
+include::<%=plugin.type%>/<%=plugin.name%>.asciidoc[]
+<% end %>
+
+pass::[<?edit_url?>]

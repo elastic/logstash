@@ -1,0 +1,21 @@
+[[filter-plugins]]
+== Filter plugins
+
+A filter plugin performs intermediary processing on an event. Filters are often applied conditionally depending on the 
+characteristics of the event.
+
+The following filter plugins are available:
+
+|=======================================================================
+| Plugin | Description | Github repository
+<% plugins.each do |plugin| %>
+  | <<<%=plugin.full_name%>,<%=plugin.name%>>> | <%=plugin.description%> | <%=plugin.github_url%>[<%=plugin.full_name%>]
+<% end %>
+|=======================================================================
+
+<% plugins.each do |plugin| %>
+pass::[<?edit_url <%=plugin.edit_url%> ?>]
+include::<%=plugin.type%>/<%=plugin.name%>.asciidoc[]
+<% end %>
+
+pass::[<?edit_url?>]
