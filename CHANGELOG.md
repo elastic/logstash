@@ -1,4 +1,4 @@
-## 5.0.0-alpha4 (Aug 2, 2016)
+## 5.0.0-alpha5 (Aug 2, 2016)
  - Introduced a performance optimization called bi-values to store both JRuby and Java object types which will
    benefit plugins written in Ruby.
  - Added support for specifying a comma-separated list of resources to monitoring APIs. This can be used to 
@@ -19,7 +19,7 @@
 
 ### Filter
  - CSV
-    - Added `autodetect_column_names` option to read column names from header.
+   - Added `autodetect_column_names` option to read column names from header.
  - Throttle
    - Reimplemented plugin to work with multiple threads, support asynchronous input and properly 
      tracks past events ([#4](https://github.com/logstash-plugins/logstash-filter-throttle/issues/4))
