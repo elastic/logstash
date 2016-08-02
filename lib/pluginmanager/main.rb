@@ -6,6 +6,8 @@ require "bootstrap/environment"
 ENV["GEM_HOME"] = ENV["GEM_PATH"] = LogStash::Environment.logstash_gem_home
 Gem.use_paths(LogStash::Environment.logstash_gem_home)
 
+LogStash::Bundler.setup!({:without => [:build, :development]})
+
 module LogStash
   module PluginManager
   end
