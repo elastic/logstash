@@ -9,11 +9,11 @@
  
 ### Input
  - Beats
-   - Re-implemented input in Java and to use asynchronous IO library Netty. These changes resulted in 
+   - Reimplemented input in Java and to use asynchronous IO library Netty. These changes resulted in 
      up to 50% gains in throughput performance while preserving the original functionality ([#92](https://github.com/logstash-plugins/logstash-input-beats/issues/92)).
  - JDBC
-   - Added support for providing encoding charset for strings not in UTF-8 formatted. `columns_charset` allows 
-   you to override this encoding setting per-column ([#143](https://github.com/logstash-plugins/logstash-input-jdbc/issues/143))
+   - Added support for providing encoding charset for strings not in UTF-8 format. `columns_charset` allows 
+     you to override this encoding setting per-column ([#143](https://github.com/logstash-plugins/logstash-input-jdbc/issues/143))
  - HTTP Poller
    - Added meaningful error messages on missing trust/key-store password. Document the creation of a custom keystore.
 
@@ -30,7 +30,7 @@
  - Kafka
    - Input is a shareable instance across multiple pipeline workers. This ensures efficient use of resources like 
      broker TCP connections, internal producer buffers, etc ([#79](https://github.com/logstash-plugins/logstash-output-kafka/pull/79))
-   - Added feature to allow regex patterns in topics so you can subscribe to multiple ones ([]())
+   - Added feature to allow regex patterns in topics so you can subscribe to multiple ones.
 
 ## 5.0.0-alpha4 (June 28, 2016)
  - Created a new `LS_HOME/data` directory to store plugin states, Logstash instance UUID and more. This directory 
