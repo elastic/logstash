@@ -1,0 +1,125 @@
+[[plugins-<%= section %>s-<%= name %>]]
+=== <%= name %>
+
+Version: <%=version%>
+Released on: <%=release_date%>
+<%=changelog_url%>[Changelog]
+Compatible: <%= supported_logstash %>
+
+<% unless default_plugin? %>
+NOTE: This is a community-maintained plugin! It does not ship with Logstash by default, but it is easy to install by running `bin/logstash-plugin install logstash-<%= section %>-<%= name %>`.
+<% end %>
+
+<%= description %>
+
+&nbsp;
+
+==== Synopsis
+
+<% if sorted_attributes.count > 0 -%>
+This plugin supports the following configuration options:
+<% else -%>
+This plugin has no configuration options.
+<% end -%>
+
+<% if sorted_attributes.count > 0 -%>
+Required configuration options:
+<% else -%>
+Complete configuration example:
+<% end -%>
+
+[source,json]
+--------------------------
+<%= name %> {
+<% if sorted_attributes.count > 0 -%>
+<% sorted_attributes.each do |name, config|
+   next if config[:deprecated]
+   next if !config[:required]
+-%>
+<%= "  " if section == "codec" %>    <%= name %> => ...
+<% end -%>
+<%= "  " if section == "codec" %><% ; end -%>}
+--------------------------
+
+<% if sorted_attributes.count > 0 %>
+
+Available configuration options:
+
+[cols="<,<,<,<m",options="header",]
+|=======================================================================
+|Setting |Input type|Required|Default value
+<% sorted_attributes.each do |name, config|
+   next if config[:obsolete]
+   next if config[:deprecated]
+   if config[:validate].is_a?(Array)
+     annotation = "|<<string,string>>, one of `#{config[:validate].inspect}`"
+   elsif config[:validate] == :path
+     annotation = "|a valid filesystem path"
+   else
+     annotation = "|<<#{config[:validate]},#{config[:validate]}>>"
+   end
+
+   if name.is_a?(Regexp)
+     name = "/" + name.to_s.gsub(/^\(\?-mix:/, "").gsub(/\)$/, "") + "/"
+   end
+   if config[:required]
+     annotation += "|Yes"
+   else
+     annotation += "|No"
+   end
+   if config.include?(:default)
+     annotation += "|`#{config[:default].inspect}`"
+   else
+     annotation += "|"
+   end
+-%>
+| <<plugins-<%= section %>s-<%=config_name%>-<%=name%>>> <%= annotation %>
+<% end -%>
+|=======================================================================
+<% end %>
+<% if sorted_attributes.count > 0 -%>
+
+==== Details
+
+&nbsp;
+
+<% sorted_attributes.each do |name, config| -%>
+<%
+     next if config[:obsolete]
+     if name.is_a?(Regexp)
+       name = "/" + name.to_s.gsub(/^\(\?-mix:/, "").gsub(/\)$/, "") + "/"
+       is_regexp = true
+     else
+       is_regexp = false
+     end
+-%>
+[[plugins-<%= section%>s-<%=config_name%>-<%= name%>]]
+===== `<%= name %>` <%= " (DEPRECATED)" if config[:deprecated] %>
+
+<% if config[:required] -%>
+  * This is a required setting.
+<% end -%>
+<% if config[:deprecated] -%>
+  * DEPRECATED WARNING: This configuration item is deprecated and may not be available in future versions.
+<% end -%>
+<% if is_regexp -%>
+  * The configuration attribute name here is anything that matches the above regular expression.
+<% end -%>
+<% if config[:validate].is_a?(Symbol) -%>
+  * Value type is <<<%= config[:validate] %>,<%= config[:validate] %>>>
+<% elsif config[:validate].nil? -%>
+  * Value type is <<string,string>>
+<% elsif config[:validate].is_a?(Array) -%>
+  * Value can be any of: `<%= config[:validate].join('`, `') %>`
+<% end -%>
+<% if config.include?(:default) -%>
+  * Default value is `<%= config[:default].inspect %>`
+<% else -%>
+  * There is no default value for this setting.
+<% end -%>
+
+<%= config[:description] %>
+
+<% end -%>
+
+<% end -%>

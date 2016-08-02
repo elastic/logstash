@@ -1,25 +1,26 @@
-namespace "docs" do
+# encoding: utf-8
+require "fileutils"
 
+DEFAULT_DOC_DIRECTORY = ::File.join(::File.dirname(__FILE__), "..", "build", "docs")
+
+namespace "docs" do
   desc "Generate documentation for all plugins"
   task "generate" do
     Rake::Task['plugin:install-all'].invoke
-    Rake::Task['docs:generate-docs'].invoke
-    Rake::Task['docs:generate-index'].invoke
+    Rake::Task['docs:generate-plugins'].invoke
   end
 
-  task "generate-docs" do
+  desc "Generate the doc for all the currently installed plugins"
+  task "generate-plugins", [:output] do |t, args|
+    args.with_defaults(:output => DEFAULT_DOC_DIRECTORY)
+
     require "bootstrap/environment"
-    pattern = "#{LogStash::Environment.logstash_gem_home}/gems/logstash-*/lib/logstash/{input,output,filter,codec}s/*.rb"
-    list    = Dir.glob(pattern).join(" ")
-    cmd     = "bin/bundle exec ruby docs/asciidocgen.rb -o asciidoc_generated #{list}"
-    system(cmd)
-  end
+    require "logstash-core/logstash-core"
+    LogStash::Bundler.setup!({:without => [:build]})
 
-  task "generate-index" do
-    list = [ 'inputs', 'outputs', 'filters', 'codecs' ]
-    list.each do |type|
-      cmd = "bin/bundle exec ruby docs/asciidoc_index.rb asciidoc_generated #{type}"
-      system(cmd)
-    end
+    require "logstash/docgen/logstash_generator"
+
+    FileUtils.mkdir_p(args[:output])
+    exit(LogStash::Docgen::LogStashGenerator.new(args[:output]).generate_plugins_docs)
   end
 end
