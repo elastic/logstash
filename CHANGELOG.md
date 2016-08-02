@@ -1,3 +1,37 @@
+## 5.0.0-alpha4 (Aug 2, 2016)
+ - Introduced a performance optimization called bi-values to store both JRuby and Java object types which will
+   benefit plugins written in Ruby.
+ - Added support for specifying a comma-separated list of resources to monitoring APIs. This can be used to 
+   filter API response ([#5609](https://github.com/elastic/logstash/issues/5609))
+ - `/_node/hot_threads?human=true` human option now returns a human readable format, not JSON.
+ - Pipeline stats from `/_node/stats/pipeline` is also included in the parent `/_node/stats` 
+   resource for completeness.
+ 
+### Input
+ - Beats
+   - Re-implemented input in Java and to use asynchronous IO library Netty. These changes resulted in 
+     up to 50% gains in throughput performance while preserving the original functionality ([#92](https://github.com/logstash-plugins/logstash-input-beats/issues/92)).
+ - JDBC
+   - Added support for providing encoding charset for strings not in UTF-8 formatted. `columns_charset` allows 
+   you to override this encoding setting per-column ([#143](https://github.com/logstash-plugins/logstash-input-jdbc/issues/143))
+ - HTTP Poller
+   - Added meaningful error messages on missing trust/key-store password. Document the creation of a custom keystore.
+
+### Filter
+ - CSV
+    - Added `autodetect_column_names` option to read column names from header.
+ - Throttle
+   - Reimplemented plugin to work with multiple threads, support asynchronous input and properly 
+     tracks past events ([#4](https://github.com/logstash-plugins/logstash-filter-throttle/issues/4))
+
+### Output
+ - Elasticsearch
+   - Added ability to choose different default template based on ES versions ([#401](https://github.com/logstash-plugins/logstash-output-elasticsearch/issues/401))
+ - Kafka
+   - Input is a shareable instance across multiple pipeline workers. This ensures efficient use of resources like 
+     broker TCP connections, internal producer buffers, etc ([#79](https://github.com/logstash-plugins/logstash-output-kafka/pull/79))
+   - Added feature to allow regex patterns in topics so you can subscribe to multiple ones ([]())
+
 ## 5.0.0-alpha4 (June 28, 2016)
  - Created a new `LS_HOME/data` directory to store plugin states, Logstash instance UUID and more. This directory 
    location is configurable via `path.data` ([#5404](https://github.com/elastic/logstash/issues/5404)).
