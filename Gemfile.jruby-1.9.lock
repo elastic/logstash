@@ -126,7 +126,7 @@ GEM
     i18n (0.6.9)
     insist (1.0.0)
     jar-dependencies (0.3.4)
-    jls-grok (0.11.2)
+    jls-grok (0.11.3)
       cabin (>= 0.6.0)
     jls-lumberjack (0.0.26)
       concurrent-ruby
@@ -229,8 +229,10 @@ GEM
       logstash-core-plugin-api (>= 1.60, <= 2.99)
     logstash-filter-syslog_pri (3.0.2)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
-    logstash-filter-throttle (3.0.2)
+    logstash-filter-throttle (4.0.0)
+      atomic
       logstash-core-plugin-api (>= 1.60, <= 2.99)
+      thread_safe
     logstash-filter-urldecode (3.0.2)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
     logstash-filter-useragent (3.0.2)
@@ -444,9 +446,9 @@ GEM
     logstash-output-pipe (3.0.2)
       logstash-codec-plain
       logstash-core-plugin-api (>= 1.60, <= 2.99)
-    logstash-output-rabbitmq (4.0.3-java)
+    logstash-output-rabbitmq (4.0.4-java)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
-      logstash-mixin-rabbitmq_connection (>= 4.1.0, < 5.0.0)
+      logstash-mixin-rabbitmq_connection (>= 4.1.1, < 5.0.0)
     logstash-output-redis (3.0.2)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       redis
@@ -553,7 +555,7 @@ GEM
     sawyer (0.6.0)
       addressable (~> 2.3.5)
       faraday (~> 0.8, < 0.10)
-    sequel (4.36.0)
+    sequel (4.37.0)
     simple_oauth (0.3.1)
     simplecov (0.12.0)
       docile (~> 1.1.0)
