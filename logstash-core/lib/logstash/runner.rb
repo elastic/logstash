@@ -148,6 +148,7 @@ class LogStash::Runner < Clamp::StrictCommand
   attr_reader :agent
 
   def initialize(*args)
+    @logger = self.class.logger
     @settings = LogStash::SETTINGS
     super(*args)
   end
@@ -162,9 +163,8 @@ class LogStash::Runner < Clamp::StrictCommand
     rescue => e
       # abort unless we're just looking for the help
       if (["--help", "-h"] & args).empty?
-        @logger.subscribe(STDOUT)
-        @logger.warn("Logstash has a new settings file which defines start up time settings. This file is typically located in $LS_HOME/config or /etc/logstash. If you installed Logstash through a package and are starting it manually please specify the location to this settings file by passing in \"--path.settings=/path/..\" in the command line options")
-        @logger.fatal("Failed to load settings file from \"path.settings\". Aborting...", "path.settings" => LogStash::SETTINGS.get("path.settings"), "exception" => e.class, "message" => e.message)
+        $stderr.puts "INFO: Logstash has a new settings file which defines start up time settings. This file is typically located in $LS_HOME/config or /etc/logstash. If you installed Logstash through a package and are starting it manually please specify the location to this settings file by passing in \"--path.settings=/path/..\" in the command line options"
+        $stderr.puts "ERROR: Failed to load settings file from \"path.settings\". Aborting... path.setting=#{LogStash::SETTINGS.get("path.settings")}, exception=#{e.class}, message=>#{e.message}"
         return 1
       end
     end
@@ -179,7 +179,11 @@ class LogStash::Runner < Clamp::StrictCommand
 
     # Configure Logstash logging facility, this need to be done before everything else to
     # make sure the logger has the correct settings and the log level is correctly defined.
-    configure_logging(setting("path.log"), setting("log.level"))
+    LogStash::Logging::Logger::configure_logging(setting("path.log"), setting("log.level"))
+
+    if setting("config.debug") && @logger.debug?
+      @logger.warn("--config.debug was specified, but log.level was not set to \'debug\'! No config info will be logged.")
+    end
 
     LogStash::Util::set_thread_name(self.class.name)
 
@@ -196,7 +200,7 @@ class LogStash::Runner < Clamp::StrictCommand
     end
 
     LogStash::ShutdownWatcher.unsafe_shutdown = setting("pipeline.unsafe_shutdown")
-    LogStash::ShutdownWatcher.logger = @logger
+    # LogStash::ShutdownWatcher.logger = @logger
 
     configure_plugin_paths(setting("path.plugins"))
 
@@ -257,7 +261,7 @@ class LogStash::Runner < Clamp::StrictCommand
     show_short_help
     return 1
   rescue => e
-    @logger.fatal(I18n.t("oops"), "error" => e, "backtrace" => e.backtrace)
+    @logger.fatal(I18n.t("oops"), :error => e, :backtrace => e.backtrace)
     return 1
   ensure
     Stud::untrap("INT", sigint_id) unless sigint_id.nil?
@@ -310,19 +314,6 @@ class LogStash::Runner < Clamp::StrictCommand
     LogStash::Agent.new(*args)
   end
 
-  # Point logging at a specific path.
-  def configure_logging(path, level)
-    logging_ctx = org.apache.logging.log4j.LogManager.getContext(false)
-    logging_ctx.getRootLogger().setLevel(org.apache.logging.log4j.Level.getLevel(level))
-    logging_ctx.updateLoggers()
-
-    if setting("config.debug") && @logger.debug?
-      @logger.warn("--config.debug was specified, but log.level was not set to \'debug\'! No config info will be logged.")
-    end
-
-    # TODO(sissel): redirect stdout/stderr to the log as well
-    # http://jira.codehaus.org/browse/JRUBY-7003
-  end # def configure_logging
 
   # Emit a failure message and abort.
   def fail(message)

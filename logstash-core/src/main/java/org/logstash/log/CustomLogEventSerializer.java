@@ -1,18 +1,16 @@
 package org.logstash.log;
 
-import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
-import org.apache.logging.log4j.core.impl.Log4jLogEvent;
 
 import java.io.IOException;
-import java.lang.reflect.Field;
 import java.util.Map;
 
 public class CustomLogEventSerializer extends JsonSerializer<CustomLogEvent> {
     @Override
-    public void serialize(CustomLogEvent event, JsonGenerator generator, SerializerProvider provider) throws JsonGenerationException, IOException {
+    public void serialize(CustomLogEvent event, JsonGenerator generator, SerializerProvider provider) throws IOException {
         generator.writeStartObject();
         generator.writeObjectField("level", event.getLevel());
         generator.writeObjectField("loggerName", event.getLoggerName());
@@ -26,8 +24,13 @@ public class CustomLogEventSerializer extends JsonSerializer<CustomLogEvent> {
             StructuredMessage message = (StructuredMessage) event.getMessage();
             generator.writeStringField("message", message.getMessage());
             if (message.getParams() != null) {
-                for (Map.Entry<String, Object> entry : message.getParams().entrySet()) {
-                    generator.writeObjectField(entry.getKey(), entry.getValue());
+                for (Map.Entry<Object, Object> entry : message.getParams().entrySet()) {
+                    Object value = entry.getValue();
+                    try {
+                        generator.writeObjectField(entry.getKey().toString(), value);
+                    } catch (JsonMappingException e) {
+                        generator.writeObjectField(entry.getKey().toString(), value.toString());
+                    }
                 }
             }
 

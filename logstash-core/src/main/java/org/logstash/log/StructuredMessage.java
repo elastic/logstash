@@ -10,21 +10,21 @@ import java.util.Map;
 @JsonSerialize(using = CustomLogEventSerializer.class)
 public class StructuredMessage implements Message {
     private final String message;
-    private final Map<String, Object> params;
+    private final Map<Object, Object> params;
 
     public StructuredMessage(String message) {
         this(message, Collections.emptyMap());
     }
 
     public StructuredMessage(String message, Object... params) {
-        final Map<String, Object> paramsMap;
+        final Map<Object, Object> paramsMap;
         if (params.length == 1 && params[0] instanceof Map) {
             paramsMap = (Map) params[0];
         } else {
             paramsMap = new HashMap<>();
             try {
                 for (int i = 0; i < params.length; i += 2) {
-                    paramsMap.put((String) params[i], params[i + 1]);
+                    paramsMap.put(params[i].toString(), params[i + 1]);
                 }
             } catch (IndexOutOfBoundsException e) {
                 throw new IllegalArgumentException("must log key-value pairs");
@@ -34,7 +34,7 @@ public class StructuredMessage implements Message {
         this.params = paramsMap;
     }
 
-    public StructuredMessage(String message, Map<String, Object> params) {
+    public StructuredMessage(String message, Map<Object, Object> params) {
         this.message = message;
         this.params = params;
     }
@@ -43,7 +43,7 @@ public class StructuredMessage implements Message {
         return message;
     }
 
-    public Map<String, Object> getParams() {
+    public Map<Object, Object> getParams() {
         return params;
     }
 
