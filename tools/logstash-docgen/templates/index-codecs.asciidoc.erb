@@ -1,0 +1,21 @@
+[[codec-plugins]]
+== Codec plugins
+
+A codec plugin changes the data representation of an event. Codecs are essentially stream filters that can operate as part 
+of an input or output.
+
+The following codec plugins are available:
+
+|=======================================================================
+| Plugin | Description | Github repository
+<% plugins.each do |plugin| %>
+  | <<<%=plugin.full_name%>,<%=plugin.name%>>> | <%=plugin.description%> | <%=plugin.github_url%>[<%=plugin.full_name%>]
+<% end %>
+|=======================================================================
+
+<% plugins.each do |plugin| %>
+pass::[<?edit_url <%=plugin.edit_url%> ?>]
+include::<%=plugin.type%>/<%=plugin.name%>.asciidoc[]
+<% end %>
+
+pass::[<?edit_url?>]

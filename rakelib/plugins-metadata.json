@@ -1,0 +1,786 @@
+{
+	"logstash-input-heartbeat": {
+		"default-plugins": true,
+		"core-specs": false,
+		"test-jar-dependencies": false,
+		"test-vendor-plugins": false,
+		"skip-list": false
+	},
+	"logstash-codec-collectd": {
+		"default-plugins": true,
+		"core-specs": false,
+		"test-jar-dependencies": false,
+		"test-vendor-plugins": true,
+		"skip-list": false
+	},
+	"logstash-output-xmpp": {
+		"default-plugins": true,
+		"core-specs": false,
+		"test-jar-dependencies": false,
+		"test-vendor-plugins": false,
+		"skip-list": false
+	},
+	"logstash-codec-dots": {
+		"default-plugins": true,
+		"core-specs": false,
+		"test-jar-dependencies": false,
+		"test-vendor-plugins": false,
+		"skip-list": false
+	},
+	"logstash-codec-edn": {
+		"default-plugins": true,
+		"core-specs": false,
+		"test-jar-dependencies": false,
+		"test-vendor-plugins": false,
+		"skip-list": false
+	},
+	"logstash-codec-edn_lines": {
+		"default-plugins": true,
+		"core-specs": false,
+		"test-jar-dependencies": false,
+		"test-vendor-plugins": false,
+		"skip-list": false
+	},
+	"logstash-codec-fluent": {
+		"default-plugins": true,
+		"core-specs": false,
+		"test-jar-dependencies": false,
+		"test-vendor-plugins": false,
+		"skip-list": false
+	},
+	"logstash-codec-es_bulk": {
+		"default-plugins": true,
+		"core-specs": false,
+		"test-jar-dependencies": false,
+		"test-vendor-plugins": false,
+		"skip-list": false
+	},
+	"logstash-codec-graphite": {
+		"default-plugins": true,
+		"core-specs": false,
+		"test-jar-dependencies": false,
+		"test-vendor-plugins": false,
+		"skip-list": false
+	},
+	"logstash-codec-json": {
+		"default-plugins": true,
+		"core-specs": false,
+		"test-jar-dependencies": false,
+		"test-vendor-plugins": false,
+		"skip-list": false
+	},
+	"logstash-codec-json_lines": {
+		"default-plugins": true,
+		"core-specs": false,
+		"test-jar-dependencies": false,
+		"test-vendor-plugins": false,
+		"skip-list": false
+	},
+	"logstash-codec-line": {
+		"default-plugins": true,
+		"core-specs": false,
+		"test-jar-dependencies": false,
+		"test-vendor-plugins": false,
+		"skip-list": false
+	},
+	"logstash-codec-msgpack": {
+		"default-plugins": true,
+		"core-specs": false,
+		"test-jar-dependencies": false,
+		"test-vendor-plugins": false,
+		"skip-list": false
+	},
+	"logstash-codec-multiline": {
+		"default-plugins": true,
+		"core-specs": false,
+		"test-jar-dependencies": false,
+		"test-vendor-plugins": false,
+		"skip-list": false
+	},
+	"logstash-codec-netflow": {
+		"default-plugins": true,
+		"core-specs": false,
+		"test-jar-dependencies": false,
+		"test-vendor-plugins": false,
+		"skip-list": false
+	},
+	"logstash-codec-plain": {
+		"default-plugins": true,
+		"core-specs": false,
+		"test-jar-dependencies": false,
+		"test-vendor-plugins": false,
+		"skip-list": false
+	},
+	"logstash-codec-rubydebug": {
+		"default-plugins": true,
+		"core-specs": false,
+		"test-jar-dependencies": false,
+		"test-vendor-plugins": false,
+		"skip-list": false
+	},
+	"logstash-filter-clone": {
+		"default-plugins": true,
+		"core-specs": true,
+		"test-jar-dependencies": false,
+		"test-vendor-plugins": false,
+		"skip-list": false
+	},
+	"logstash-filter-csv": {
+		"default-plugins": true,
+		"core-specs": false,
+		"test-jar-dependencies": false,
+		"test-vendor-plugins": false,
+		"skip-list": false
+	},
+	"logstash-filter-date": {
+		"default-plugins": true,
+		"core-specs": false,
+		"test-jar-dependencies": false,
+		"test-vendor-plugins": false,
+		"skip-list": false
+	},
+	"logstash-filter-dns": {
+		"default-plugins": true,
+		"core-specs": false,
+		"test-jar-dependencies": false,
+		"test-vendor-plugins": false,
+		"skip-list": false
+	},
+	"logstash-filter-drop": {
+		"default-plugins": true,
+		"core-specs": false,
+		"test-jar-dependencies": false,
+		"test-vendor-plugins": false,
+		"skip-list": false
+	},
+	"logstash-filter-fingerprint": {
+		"default-plugins": true,
+		"core-specs": false,
+		"test-jar-dependencies": false,
+		"test-vendor-plugins": false,
+		"skip-list": false
+	},
+	"logstash-filter-geoip": {
+		"default-plugins": true,
+		"core-specs": false,
+		"test-jar-dependencies": false,
+		"test-vendor-plugins": false,
+		"skip-list": false
+	},
+	"logstash-filter-grok": {
+		"default-plugins": true,
+		"core-specs": false,
+		"test-jar-dependencies": false,
+		"test-vendor-plugins": false,
+		"skip-list": false
+	},
+	"logstash-filter-json": {
+		"default-plugins": true,
+		"core-specs": false,
+		"test-jar-dependencies": false,
+		"test-vendor-plugins": false,
+		"skip-list": false
+	},
+	"logstash-filter-kv": {
+		"default-plugins": true,
+		"core-specs": false,
+		"test-jar-dependencies": false,
+		"test-vendor-plugins": false,
+		"skip-list": false
+	},
+	"logstash-filter-metrics": {
+		"default-plugins": true,
+		"core-specs": false,
+		"test-jar-dependencies": false,
+		"test-vendor-plugins": false,
+		"skip-list": false
+	},
+	"logstash-filter-mutate": {
+		"default-plugins": true,
+		"core-specs": true,
+		"test-jar-dependencies": false,
+		"test-vendor-plugins": false,
+		"skip-list": false
+	},
+	"logstash-filter-ruby": {
+		"default-plugins": true,
+		"core-specs": false,
+		"test-jar-dependencies": false,
+		"test-vendor-plugins": false,
+		"skip-list": false
+	},
+	"logstash-filter-sleep": {
+		"default-plugins": true,
+		"core-specs": false,
+		"test-jar-dependencies": false,
+		"test-vendor-plugins": false,
+		"skip-list": false
+	},
+	"logstash-filter-split": {
+		"default-plugins": true,
+		"core-specs": false,
+		"test-jar-dependencies": false,
+		"test-vendor-plugins": false,
+		"skip-list": false
+	},
+	"logstash-filter-syslog_pri": {
+		"default-plugins": true,
+		"core-specs": false,
+		"test-jar-dependencies": false,
+		"test-vendor-plugins": false,
+		"skip-list": false
+	},
+	"logstash-filter-throttle": {
+		"default-plugins": true,
+		"core-specs": false,
+		"test-jar-dependencies": false,
+		"test-vendor-plugins": false,
+		"skip-list": false
+	},
+	"logstash-filter-urldecode": {
+		"default-plugins": true,
+		"core-specs": false,
+		"test-jar-dependencies": false,
+		"test-vendor-plugins": false,
+		"skip-list": false
+	},
+	"logstash-filter-useragent": {
+		"default-plugins": true,
+		"core-specs": false,
+		"test-jar-dependencies": false,
+		"test-vendor-plugins": false,
+		"skip-list": false
+	},
+	"logstash-filter-uuid": {
+		"default-plugins": true,
+		"core-specs": false,
+		"test-jar-dependencies": false,
+		"test-vendor-plugins": false,
+		"skip-list": false
+	},
+	"logstash-filter-xml": {
+		"default-plugins": true,
+		"core-specs": false,
+		"test-jar-dependencies": false,
+		"test-vendor-plugins": false,
+		"skip-list": false
+	},
+	"logstash-input-couchdb_changes": {
+		"default-plugins": true,
+		"core-specs": false,
+		"test-jar-dependencies": false,
+		"test-vendor-plugins": false,
+		"skip-list": false
+	},
+	"logstash-input-elasticsearch": {
+		"default-plugins": true,
+		"core-specs": false,
+		"test-jar-dependencies": false,
+		"test-vendor-plugins": false,
+		"skip-list": false
+	},
+	"logstash-input-exec": {
+		"default-plugins": true,
+		"core-specs": false,
+		"test-jar-dependencies": false,
+		"test-vendor-plugins": false,
+		"skip-list": false
+	},
+	"logstash-input-file": {
+		"default-plugins": true,
+		"core-specs": false,
+		"test-jar-dependencies": false,
+		"test-vendor-plugins": false,
+		"skip-list": false
+	},
+	"logstash-input-ganglia": {
+		"default-plugins": true,
+		"core-specs": false,
+		"test-jar-dependencies": false,
+		"test-vendor-plugins": false,
+		"skip-list": false
+	},
+	"logstash-input-gelf": {
+		"default-plugins": true,
+		"core-specs": false,
+		"test-jar-dependencies": false,
+		"test-vendor-plugins": false,
+		"skip-list": false
+	},
+	"logstash-input-generator": {
+		"default-plugins": true,
+		"core-specs": true,
+		"test-jar-dependencies": false,
+		"test-vendor-plugins": false,
+		"skip-list": false
+	},
+	"logstash-input-graphite": {
+		"default-plugins": true,
+		"core-specs": false,
+		"test-jar-dependencies": false,
+		"test-vendor-plugins": false,
+		"skip-list": false
+	},
+	"logstash-input-http": {
+		"default-plugins": true,
+		"core-specs": false,
+		"test-jar-dependencies": false,
+		"test-vendor-plugins": false,
+		"skip-list": false
+	},
+	"logstash-input-http_poller": {
+		"default-plugins": true,
+		"core-specs": false,
+		"test-jar-dependencies": false,
+		"test-vendor-plugins": false,
+		"skip-list": false
+	},
+	"logstash-input-imap": {
+		"default-plugins": true,
+		"core-specs": false,
+		"test-jar-dependencies": false,
+		"test-vendor-plugins": false,
+		"skip-list": false
+	},
+	"logstash-input-irc": {
+		"default-plugins": true,
+		"core-specs": false,
+		"test-jar-dependencies": false,
+		"test-vendor-plugins": false,
+		"skip-list": false
+	},
+	"logstash-input-jdbc": {
+		"default-plugins": true,
+		"core-specs": false,
+		"test-jar-dependencies": false,
+		"test-vendor-plugins": false,
+		"skip-list": true
+	},
+	"logstash-input-log4j": {
+		"default-plugins": true,
+		"core-specs": false,
+		"test-jar-dependencies": false,
+		"test-vendor-plugins": false,
+		"skip-list": false
+	},
+	"logstash-input-lumberjack": {
+		"default-plugins": true,
+		"core-specs": false,
+		"test-jar-dependencies": false,
+		"test-vendor-plugins": false,
+		"skip-list": false
+	},
+	"logstash-input-pipe": {
+		"default-plugins": true,
+		"core-specs": false,
+		"test-jar-dependencies": false,
+		"test-vendor-plugins": false,
+		"skip-list": false
+	},
+	"logstash-input-rabbitmq": {
+		"default-plugins": true,
+		"core-specs": false,
+		"test-jar-dependencies": false,
+		"test-vendor-plugins": false,
+		"skip-list": false
+	},
+	"logstash-input-redis": {
+		"default-plugins": true,
+		"core-specs": false,
+		"test-jar-dependencies": false,
+		"test-vendor-plugins": false,
+		"skip-list": false
+	},
+	"logstash-input-s3": {
+		"default-plugins": true,
+		"core-specs": false,
+		"test-jar-dependencies": false,
+		"test-vendor-plugins": false,
+		"skip-list": false
+	},
+	"logstash-input-snmptrap": {
+		"default-plugins": true,
+		"core-specs": false,
+		"test-jar-dependencies": false,
+		"test-vendor-plugins": false,
+		"skip-list": false
+	},
+	"logstash-input-sqs": {
+		"default-plugins": true,
+		"core-specs": false,
+		"test-jar-dependencies": false,
+		"test-vendor-plugins": false,
+		"skip-list": false
+	},
+	"logstash-input-stdin": {
+		"default-plugins": true,
+		"core-specs": true,
+		"test-jar-dependencies": false,
+		"test-vendor-plugins": false,
+		"skip-list": false
+	},
+	"logstash-input-syslog": {
+		"default-plugins": true,
+		"core-specs": false,
+		"test-jar-dependencies": false,
+		"test-vendor-plugins": false,
+		"skip-list": false
+	},
+	"logstash-input-tcp": {
+		"default-plugins": true,
+		"core-specs": true,
+		"test-jar-dependencies": false,
+		"test-vendor-plugins": false,
+		"skip-list": false
+	},
+	"logstash-input-twitter": {
+		"default-plugins": true,
+		"core-specs": false,
+		"test-jar-dependencies": false,
+		"test-vendor-plugins": false,
+		"skip-list": false
+	},
+	"logstash-input-udp": {
+		"default-plugins": true,
+		"core-specs": false,
+		"test-jar-dependencies": false,
+		"test-vendor-plugins": false,
+		"skip-list": false
+	},
+	"logstash-input-unix": {
+		"default-plugins": true,
+		"core-specs": false,
+		"test-jar-dependencies": false,
+		"test-vendor-plugins": false,
+		"skip-list": false
+	},
+	"logstash-input-xmpp": {
+		"default-plugins": true,
+		"core-specs": false,
+		"test-jar-dependencies": false,
+		"test-vendor-plugins": false,
+		"skip-list": false
+	},
+	"logstash-input-kafka": {
+		"default-plugins": true,
+		"core-specs": false,
+		"test-jar-dependencies": true,
+		"test-vendor-plugins": false,
+		"skip-list": false
+	},
+	"logstash-input-beats": {
+		"default-plugins": true,
+		"core-specs": false,
+		"test-jar-dependencies": false,
+		"test-vendor-plugins": false,
+		"skip-list": false
+	},
+	"logstash-output-cloudwatch": {
+		"default-plugins": true,
+		"core-specs": false,
+		"test-jar-dependencies": false,
+		"test-vendor-plugins": false,
+		"skip-list": false
+	},
+	"logstash-output-csv": {
+		"default-plugins": true,
+		"core-specs": false,
+		"test-jar-dependencies": false,
+		"test-vendor-plugins": false,
+		"skip-list": false
+	},
+	"logstash-output-elasticsearch": {
+		"default-plugins": true,
+		"core-specs": false,
+		"test-jar-dependencies": false,
+		"test-vendor-plugins": false,
+		"skip-list": false
+	},
+	"logstash-output-file": {
+		"default-plugins": true,
+		"core-specs": false,
+		"test-jar-dependencies": false,
+		"test-vendor-plugins": false,
+		"skip-list": false
+	},
+	"logstash-output-graphite": {
+		"default-plugins": true,
+		"core-specs": false,
+		"test-jar-dependencies": false,
+		"test-vendor-plugins": false,
+		"skip-list": false
+	},
+	"logstash-output-http": {
+		"default-plugins": true,
+		"core-specs": false,
+		"test-jar-dependencies": false,
+		"test-vendor-plugins": false,
+		"skip-list": false
+	},
+	"logstash-output-irc": {
+		"default-plugins": true,
+		"core-specs": false,
+		"test-jar-dependencies": false,
+		"test-vendor-plugins": false,
+		"skip-list": false
+	},
+	"logstash-output-kafka": {
+		"default-plugins": true,
+		"core-specs": false,
+		"test-jar-dependencies": false,
+		"test-vendor-plugins": false,
+		"skip-list": false
+	},
+	"logstash-output-nagios": {
+		"default-plugins": true,
+		"core-specs": false,
+		"test-jar-dependencies": false,
+		"test-vendor-plugins": false,
+		"skip-list": false
+	},
+	"logstash-output-null": {
+		"default-plugins": true,
+		"core-specs": false,
+		"test-jar-dependencies": false,
+		"test-vendor-plugins": false,
+		"skip-list": false
+	},
+	"logstash-output-pagerduty": {
+		"default-plugins": true,
+		"core-specs": false,
+		"test-jar-dependencies": false,
+		"test-vendor-plugins": false,
+		"skip-list": false
+	},
+	"logstash-output-pipe": {
+		"default-plugins": true,
+		"core-specs": false,
+		"test-jar-dependencies": false,
+		"test-vendor-plugins": false,
+		"skip-list": false
+	},
+	"logstash-output-rabbitmq": {
+		"default-plugins": true,
+		"core-specs": false,
+		"test-jar-dependencies": false,
+		"test-vendor-plugins": false,
+		"skip-list": false
+	},
+	"logstash-output-redis": {
+		"default-plugins": true,
+		"core-specs": false,
+		"test-jar-dependencies": false,
+		"test-vendor-plugins": false,
+		"skip-list": false
+	},
+	"logstash-output-s3": {
+		"default-plugins": true,
+		"core-specs": false,
+		"test-jar-dependencies": false,
+		"test-vendor-plugins": false,
+		"skip-list": false
+	},
+	"logstash-output-sns": {
+		"default-plugins": true,
+		"core-specs": false,
+		"test-jar-dependencies": false,
+		"test-vendor-plugins": false,
+		"skip-list": false
+	},
+	"logstash-output-sqs": {
+		"default-plugins": true,
+		"core-specs": false,
+		"test-jar-dependencies": false,
+		"test-vendor-plugins": false,
+		"skip-list": false
+	},
+	"logstash-output-statsd": {
+		"default-plugins": true,
+		"core-specs": false,
+		"test-jar-dependencies": false,
+		"test-vendor-plugins": false,
+		"skip-list": false
+	},
+	"logstash-output-stdout": {
+		"default-plugins": true,
+		"core-specs": true,
+		"test-jar-dependencies": false,
+		"test-vendor-plugins": false,
+		"skip-list": false
+	},
+	"logstash-output-tcp": {
+		"default-plugins": true,
+		"core-specs": false,
+		"test-jar-dependencies": false,
+		"test-vendor-plugins": false,
+		"skip-list": false
+	},
+	"logstash-output-udp": {
+		"default-plugins": true,
+		"core-specs": false,
+		"test-jar-dependencies": false,
+		"test-vendor-plugins": false,
+		"skip-list": false
+	},
+	"logstash-output-webhdfs": {
+		"default-plugins": true,
+		"core-specs": false,
+		"test-jar-dependencies": false,
+		"test-vendor-plugins": false,
+		"skip-list": true
+	},
+	"logstash-filter-multiline": {
+		"default-plugins": false,
+		"core-specs": true,
+		"test-jar-dependencies": false,
+		"test-vendor-plugins": false,
+		"skip-list": false
+	},
+	"logstash-filter-yaml": {
+		"default-plugins": false,
+		"core-specs": false,
+		"test-jar-dependencies": false,
+		"test-vendor-plugins": false,
+		"skip-list": true
+	},
+	"logstash-input-example": {
+		"default-plugins": false,
+		"core-specs": false,
+		"test-jar-dependencies": false,
+		"test-vendor-plugins": false,
+		"skip-list": true
+	},
+	"logstash-codec-example": {
+		"default-plugins": false,
+		"core-specs": false,
+		"test-jar-dependencies": false,
+		"test-vendor-plugins": false,
+		"skip-list": true
+	},
+	"logstash-filter-example": {
+		"default-plugins": false,
+		"core-specs": false,
+		"test-jar-dependencies": false,
+		"test-vendor-plugins": false,
+		"skip-list": true
+	},
+	"logstash-output-example": {
+		"default-plugins": false,
+		"core-specs": false,
+		"test-jar-dependencies": false,
+		"test-vendor-plugins": false,
+		"skip-list": true
+	},
+	"logstash-input-drupal_dblog": {
+		"default-plugins": false,
+		"core-specs": false,
+		"test-jar-dependencies": false,
+		"test-vendor-plugins": false,
+		"skip-list": true
+	},
+	"logstash-output-logentries": {
+		"default-plugins": false,
+		"core-specs": false,
+		"test-jar-dependencies": false,
+		"test-vendor-plugins": false,
+		"skip-list": true
+	},
+	"logstash-output-newrelic": {
+		"default-plugins": false,
+		"core-specs": false,
+		"test-jar-dependencies": false,
+		"test-vendor-plugins": false,
+		"skip-list": true
+	},
+	"logstash-output-slack": {
+		"default-plugins": false,
+		"core-specs": false,
+		"test-jar-dependencies": false,
+		"test-vendor-plugins": false,
+		"skip-list": true
+	},
+	"logstash-input-neo4j": {
+		"default-plugins": false,
+		"core-specs": false,
+		"test-jar-dependencies": false,
+		"test-vendor-plugins": false,
+		"skip-list": true
+	},
+	"logstash-output-neo4j": {
+		"default-plugins": false,
+		"core-specs": false,
+		"test-jar-dependencies": false,
+		"test-vendor-plugins": false,
+		"skip-list": true
+	},
+	"logstash-input-perfmon": {
+		"default-plugins": false,
+		"core-specs": false,
+		"test-jar-dependencies": false,
+		"test-vendor-plugins": false,
+		"skip-list": true
+	},
+	"logstash-input-rackspace": {
+		"default-plugins": false,
+		"core-specs": false,
+		"test-jar-dependencies": false,
+		"test-vendor-plugins": false,
+		"skip-list": true
+	},
+	"logstash-output-rackspace": {
+		"default-plugins": false,
+		"core-specs": false,
+		"test-jar-dependencies": false,
+		"test-vendor-plugins": false,
+		"skip-list": true
+	},
+	"logstash-input-dynamodb": {
+		"default-plugins": false,
+		"core-specs": false,
+		"test-jar-dependencies": false,
+		"test-vendor-plugins": false,
+		"skip-list": true
+	},
+	"logstash-filter-language": {
+		"default-plugins": false,
+		"core-specs": false,
+		"test-jar-dependencies": false,
+		"test-vendor-plugins": false,
+		"skip-list": true
+	},
+	"logstash-input-heroku": {
+		"default-plugins": false,
+		"core-specs": false,
+		"test-jar-dependencies": false,
+		"test-vendor-plugins": false,
+		"skip-list": true
+	},
+	"logstash-output-google_cloud_storage": {
+		"default-plugins": false,
+		"core-specs": false,
+		"test-jar-dependencies": false,
+		"test-vendor-plugins": false,
+		"skip-list": true
+	},
+	"logstash-input-journald": {
+		"default-plugins": false,
+		"core-specs": false,
+		"test-jar-dependencies": false,
+		"test-vendor-plugins": false,
+		"skip-list": true
+	},
+	"logstash-input-log4j2": {
+		"default-plugins": false,
+		"core-specs": false,
+		"test-jar-dependencies": false,
+		"test-vendor-plugins": false,
+		"skip-list": true
+	},
+	"logstash-codec-cloudtrail": {
+		"default-plugins": false,
+		"core-specs": false,
+		"test-jar-dependencies": false,
+		"test-vendor-plugins": false,
+		"skip-list": true
+	}
+}
