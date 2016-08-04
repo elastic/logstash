@@ -47,7 +47,7 @@ class LogStash::PluginManager::Update < LogStash::PluginManager::Command
     filtered_plugins = plugins.map { |plugin| gemfile.find(plugin) }
       .compact
       .reject { |plugin| REJECTED_OPTIONS.any? { |key| plugin.options.has_key?(key) } }
-      .select { |plugin| local? || (verify? ? validates_version(plugin.name) : true) }
+      .select { |plugin| local? }
       .each   { |plugin| gemfile.update(plugin.name) }
 
     # force a disk sync before running bundler
@@ -67,12 +67,6 @@ class LogStash::PluginManager::Update < LogStash::PluginManager::Command
     report_exception("Updated Aborted", exception)
   ensure
     display_bundler_output(output)
-  end
-
-  # validate if there is any major version update so then we can ask the user if he is
-  # sure to update or not.
-  def validates_version(plugin)
-    LogStash::PluginManager.update_to_major_version?(plugin)
   end
 
   # create list of plugins to update
