@@ -58,21 +58,6 @@ module LogStash::PluginManager
     versions.first
   end
 
-  # Let's you decide to update to the last version of a plugin if this is a major version
-  # @param [String] A plugin name
-  # @return [Boolean] True in case the update is moving forward, false otherwise
-  def self.update_to_major_version?(plugin_name)
-    plugin_version  = fetch_latest_version_info(plugin_name)
-    latest_version  = plugin_version['number'].split(".")
-    current_version = Gem::Specification.find_by_name(plugin_name).version.version.split(".")
-    if (latest_version[0].to_i > current_version[0].to_i)
-      ## warn if users want to continue
-      puts("You are updating #{plugin_name} to a new version #{latest_version.join('.')}, which may not be compatible with #{current_version.join('.')}. are you sure you want to proceed (Y/N)?")
-      return ( "y" == STDIN.gets.strip.downcase ? true : false)
-    end
-    true
-  end
-
   # @param spec [Gem::Specification] plugin gem specification
   # @return [Boolean] true if this spec is for an installable logstash plugin
   def self.logstash_plugin_gem_spec?(spec)
