@@ -700,5 +700,19 @@ describe LogStash::Event do
       expect(cloned.get("[@metadata][smarty]")).to eq("pants2")
       expect(cloned.to_hash_with_metadata).to include("@metadata")
     end
+
+    it "mutating cloned event should not affect the original event" do
+      cloned = event1.clone
+      cloned["hello"] = "foobar"
+      expect(cloned.get("hello")).to eq("foobar")
+      expect(event1.get("hello")).to eq("world")
+    end
+
+    it "mutating cloned event's metadata should not affect the original event metadata" do
+      cloned = event1.clone
+      cloned["[@metadata][fancy]"] = "foobar"
+      expect(cloned.get("[@metadata][fancy]")).to eq("foobar")
+      expect(event1.get("[@metadata][fancy]")).to eq("pants")
+    end
   end
 end

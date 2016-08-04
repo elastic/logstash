@@ -93,7 +93,7 @@ class LogStash::Event
   # Create a deep-ish copy of this event.
   def clone
     copy = LogStash::Util.deep_clone(@data)
-    self.class.new(copy.merge({ "@metadata" => LogStash::Util.deep_clone(@metadata.clone) }))
+    self.class.new(copy.merge({ "@metadata" => LogStash::Util.deep_clone(@metadata) }))
   end
 
   def to_s
