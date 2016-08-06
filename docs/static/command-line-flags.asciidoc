@@ -43,8 +43,12 @@ added[5.0.0-alpha3, Command-line flags have dots instead of dashes in their name
 *`-l, --path.log FILE`*::
  Log to a given file. The default is to log to stdout
 
-*`--log.level`*::
- Set the log level to "warn" (default), "quiet", "verbose", or "debug".
+*`--log.level LEVEL`*::
+ Valid levels are:
+* `warn`: log warnings
+* `quiet`: log errors
+* `verbose`: log verbose info (for users)
+* `debug`: log debugging info (for developers)
 
 *`--log.format FORMAT`*::
  Set to "json" to log in JSON format, or "plain" (default) to use `Object#.inspect`.
