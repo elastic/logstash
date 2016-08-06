@@ -31,80 +31,112 @@ pipeline.batch.delay: 5
 
 The `logstash.yml` file includes the following settings:
 
- *`node.name`*::
-  A descriptive name for the node. If no value is specified, the default is the machine's hostname.
- 
- *`path.data`*::
-  The directory that Logstash and its plugins use for any persistent needs. The default is `LOGSTASH_HOME/data`.
- 
- *`pipeline.workers`*::
-  The number of workers that will, in parallel, execute the filter and output stages of the pipeline. 
-  This defaults to the number of the host's CPU cores. If you find that events are backing up, or that the
+[options="header"]
+|=======================================================================
+| Setting | Description | Default value
+
+| `node.name`
+| A descriptive name for the node.
+| Machine's hostname
+
+| `path.data`
+| The directory that Logstash and its plugins use for any persistent needs.
+|`LOGSTASH_HOME/data`
+
+| `pipeline.workers`
+| The number of workers that will, in parallel, execute the filter and output stages of the pipeline. 
+  If you find that events are backing up, or that the
   CPU is not saturated, consider increasing this number to better utilize machine processing power.
- 
- *`pipeline.output.workers`*::
-  The number of workers to use per output plugin instance.
- 
- *`pipeline.batch.size`*::
-  The maximum number of events an individual worker thread will collect from inputs
-  before attempting to execute its filters and outputs. The default is 125 events.
+| Number of the host's CPU cores
+
+| `pipeline.output.workers`
+| The number of workers to use per output plugin instance.
+| `1`
+
+| `pipeline.batch.size`
+| The maximum number of events an individual worker thread will collect from inputs
+  before attempting to execute its filters and outputs. 
   Larger batch sizes are generally more efficient, but come at the cost of increased memory
   overhead. You may have to increase the JVM heap size by setting the `LS_HEAP_SIZE`
   variable to effectively use the option.
+| `125`
  
- *`pipeline.batch.delay`*::
-  When creating pipeline event batches, how long in milliseconds to wait before dispatching an undersized
-  batch to filters and workers. The default is 5ms.
+| `pipeline.batch.delay`
+| When creating pipeline event batches, how long in milliseconds to wait before dispatching an undersized
+  batch to filters and workers.
+| `5`
  
- *`pipeline.unsafe_shutdown`*::
-  When set to true, forces Logstash to exit during shutdown even if there are still inflight events
+| `pipeline.unsafe_shutdown`
+| When set to `true`, forces Logstash to exit during shutdown even if there are still inflight events
   in memory. By default, Logstash will refuse to quit until all received events
   have been pushed to the outputs. Enabling this option can lead to data loss during shutdown.
+| `false`
   
- *`path.config`*::
-  The path to the Logstash config for the main pipeline. If you specify a directory or wildcard,
+| `path.config`
+| The path to the Logstash config for the main pipeline. If you specify a directory or wildcard,
   config files are read from the directory in alphabetical order.
+| Platform-specific. See <<dir-layout>>.
+
+| `config.string`
+| A string that contains the pipeline configuration to use for the main pipeline. Use the same syntax as
+  the config file.
+| None
  
- *`config.string`*::
-  A string that contains the pipeline configuration to use for the main pipeline. Use the same syntax as
-  the config file. 
- 
- *`config.test_and_exit`*::
-  When set to true, checks that the configuration is valid and then exits. Note that grok patterns are not checked for
+| `config.test_and_exit`
+| When set to `true`, checks that the configuration is valid and then exits. Note that grok patterns are not checked for
   correctness with this setting. Logstash can read multiple config files from a directory. If you combine this
   setting with `log.level: debug`, Logstash will log the combined config file, annotating
   each config block with the source file it came from.
+| `false`
   
- *`config.reload.automatic`*::
-  When set to true, periodically checks if the configuration has changed and reloads the configuration whenever it is changed. 
-  This can also be triggered manually through the SIGHUP signal. 
+| `config.reload.automatic`
+| When set to `true`, periodically checks if the configuration has changed and reloads the configuration whenever it is changed. 
+  This can also be triggered manually through the SIGHUP signal.
+| `false`
   
-*`config.reload.interval`*::
-  How often in seconds Logstash checks the config files for changes. The default is every 3 seconds.
+| `config.reload.interval`
+| How often in seconds Logstash checks the config files for changes.
+| `3`
 
-*`config.debug`*::
-  When set to true, shows the fully compiled configuration as a debug log message. You must also set `log.level: debug`.
+| `config.debug`
+| When set to `true`, shows the fully compiled configuration as a debug log message. You must also set `log.level: debug`.
   WARNING: The log message will include any 'password' options passed to plugin configs as plaintext, and may result
-  in plaintext passwords appearing in your logs! 
+  in plaintext passwords appearing in your logs!
+| `false`
  
-*`http.host`*::
-  The bind address for the metrics REST endpoint. The default is "127.0.0.1".
+| `http.host`
+| The bind address for the metrics REST endpoint.
+| `"127.0.0.1"`
 
-*`http.port`*::
-  The bind port for the metrics REST endpoint. The default is 9600.
+| `http.port`
+| The bind port for the metrics REST endpoint. 
+| `9600`
   
-*`log.level`*::
-  The log level. Valid options are `warn` (default), `quiet`, `verbose`, or `debug`.
- 
-*`log.format`*::
-  The log format. Set to `json` to log in JSON format, or `plain` (default) to use `Object#.inspect`.
+| `log.level`
+a|
+The log level. Valid options are:
 
-*`path.log`*::
-  The file to log to. The default is to log to stdout.
+* `warn`: log warnings
+* `quiet`: log errors
+* `verbose`: log verbose info (for users)
+* `debug`: log debugging info (for developers)
+
+| `warn`
  
-*`path.plugins`*::
-  Where to find custom plugins. You can specify this setting multiple times to include
+| `log.format`
+| The log format. Set to `json` to log in JSON format, or `plain` to use `Object#.inspect`.
+| `plain`
+
+| `path.log`
+| The file to log to.
+| Logs to stdout
+ 
+| `path.plugins`
+| Where to find custom plugins. You can specify this setting multiple times to include
   multiple paths. Plugins are expected to be in a specific directory hierarchy:
   `PATH/logstash/TYPE/NAME.rb` where `TYPE` is `inputs`, `filters`, `outputs`, or `codecs`,
   and `NAME` is the name of the plugin.
+| Platform-specific. See <<dir-layout>>.
+  
+|=======================================================================
 
