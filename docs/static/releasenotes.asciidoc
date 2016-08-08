@@ -49,9 +49,15 @@ You can use the `columns_charset` option to override this encoding setting for i
 
 * Added the `autodetect_column_names` option to read column names from the header.
 
+*`Grok`*:
+
+* Added support to cancel long-running execution. Many times users write runaway regular expressions that lead to a
+stalled Logstash. You can configure `timeout_millis` to cancel the current execution and continue processing the event
+downstream (https://github.com/logstash-plugins/logstash-filter-grok/issues/82[Issue 82]).
+
 *`Throttle`*:
 
-* Reimplemented the plugin to work with multiple threads, support asynchronous input, and properly track past events (https://github.com/logstash-plugins/logstash-filter-throttle/issues/4[Issue 4])
+* Reimplemented the plugin to work with multiple threads, support asynchronous input, and properly track past events (https://github.com/logstash-plugins/logstash-filter-throttle/issues/4[Issue 4]).
 
 [float]
 ==== Output Plugins
@@ -64,6 +70,10 @@ You can use the `columns_charset` option to override this encoding setting for i
 
 * Made this output a shareable instance across multiple pipeline workers. This ensures efficient use of resources like broker
 TCP connections, internal producer buffers, and so on.
+
+*`Tcp`*:
+
+* Added SSL/TLS support for certificate-based encryption.
 
 
 [[alpha4]]
