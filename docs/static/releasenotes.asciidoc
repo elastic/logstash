@@ -3,10 +3,68 @@
 
 This section summarizes the changes in each release.
 
+* <<alpha5,Logstash 5.0-alpha5>>
 * <<alpha4,Logstash 5.0-alpha4>>
 * <<alpha3,Logstash 5.0-alpha3>>
 * <<alpha2,Logstash 5.0-alpha2>>
 * <<alpha1,Logstash 5.0-alpha1>>
+
+[[alpha5]]
+=== Logstash 5.0-alpha5 Release Notes
+
+* Introduced a performance optimization called bi-values to store both JRuby and Java object types. This optimization
+benefits plugins written in Ruby.
+* Added support for specifying a comma-separated list of resources when calling the monitoring APIs. This can be used
+to filter the API response ({lsissue}5609[Issue 5609]).
+* Fixed the `/_node/hot_threads?human=true` human option so that it now returns a human-readable format, not JSON.
+* Added the pipeline stats from `/_node/stats/pipeline` to the parent `/_node/stats` resource for completeness.
+
+[float]
+==== Input Plugins
+
+*`Beats`*:
+
+* Improved throughput performance by reimplementing the beats input plugin in Java and using Netty, an asynchronous I/O
+library. These changes resulted in up to 50% gains in throughput performance while preserving the original plugin
+functionality (https://github.com/logstash-plugins/logstash-input-beats/issues/92[Issue 92]).
+
+*`Kafka`*:
+
+* Added feature to allow regex patterns in topics so you can subscribe to multiple topics.
+
+*`JDBC`*:
+
+* Added the `charset` config option to support setting the character encoding for strings that are not in UTF-8 format.
+You can use the `columns_charset` option to override this encoding setting for individual columns 
+(https://github.com/logstash-plugins/logstash-input-jdbc/issues/143[Issue 143]).
+
+*`HTTP Poller`*:
+
+* Added meaningful error messages for missing trust store/keystore passwords. Also documented the creation of a custom keystore.
+
+[float]
+==== Filter Plugins
+
+*`CSV`*:
+
+* Added the `autodetect_column_names` option to read column names from the header.
+
+*`Throttle`*:
+
+* Reimplemented the plugin to work with multiple threads, support asynchronous input, and properly track past events (https://github.com/logstash-plugins/logstash-filter-throttle/issues/4[Issue 4])
+
+[float]
+==== Output Plugins
+
+*`Elasticsearch`*:
+
+* Added the ability for the plugin to choose which default template to use based on the Elasticsearch version (https://github.com/logstash-plugins/logstash-output-elasticsearch/issues/401[Issue 401]).
+
+*`Kafka`*:
+
+* Made this output a shareable instance across multiple pipeline workers. This ensures efficient use of resources like broker
+TCP connections, internal producer buffers, and so on.
+
 
 [[alpha4]]
 === Logstash 5.0-alpha4 Release Notes
