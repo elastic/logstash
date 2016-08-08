@@ -19,9 +19,9 @@ class LogStash::PluginManager::Update < LogStash::PluginManager::Command
 
     if local_gems.size > 0
       if update_all?
-        plugins_with_path = local_gems.map(&:name)
+        plugins_with_path = local_gems
       else
-        plugins_with_path = plugins_arg & local_gems.map(&:name)
+        plugins_with_path = plugins_arg & local_gems
       end
 
       warn_local_gems(plugins_with_path) if plugins_with_path.size > 0
