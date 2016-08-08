@@ -19,13 +19,16 @@ describe LogStash::Runner do
 
   before :each do
     allow(LogStash::Runner).to receive(:logger).and_return(logger)
-    allow(logger).to receive(:level).and_return(:debug)
     allow(logger).to receive(:debug?).and_return(true)
     allow(logger).to receive(:subscribe).with(any_args)
     allow(logger).to receive(:log) {}
+    allow(logger).to receive(:info) {}
     allow(logger).to receive(:fatal) {}
     allow(logger).to receive(:warn) {}
     allow(LogStash::ShutdownWatcher).to receive(:logger).and_return(logger)
+    allow(LogStash::Logging::Logger).to receive(:configure_logging) do |path, level|
+      allow(logger).to receive(:level).and_return(level.to_sym)
+    end
   end
 
   after :each do
@@ -33,7 +36,6 @@ describe LogStash::Runner do
   end
 
   after :all do
-    #LogStash::ShutdownWatcher.logger = nil
   end
 
   describe "argument precedence" do
@@ -131,32 +133,6 @@ describe LogStash::Runner do
         expect(subject).to receive(:signal_usage_error).and_call_original
         expect(subject).to receive(:show_short_help)
         expect(subject.run(args)).to eq(1)
-      end
-    end
-  end
-
-  describe "--log.format=json" do
-    subject { LogStash::Runner.new("") }
-    let(:logfile) { Stud::Temporary.file }
-    let(:args) { [ "--log.format", "json", "-l", logfile.path, "-e", "input {} output{}" ] }
-
-    after do
-      logfile.close
-      File.unlink(logfile.path)
-    end
-
-    before do
-      # TODO(talevy): expect(logger).to receive(:subscribe).with(kind_of(LogStash::Logging::JSON)).and_call_original
-      subject.run(args)
-
-      # Log file should have stuff in it.
-      expect(logfile.stat.size).to be > 0
-    end
-
-    it "should log in valid json. One object per line." do
-      logfile.each_line do |line|
-        expect(line).not_to be_empty
-        expect { JSON.parse(line) }.not_to raise_error
       end
     end
   end
@@ -319,14 +295,14 @@ describe LogStash::Runner do
     end
     context "when setting to verbose" do
       it "should set log level to info" do
-        args = ["--log.level", "verbose",  "--version"]
+        args = ["--log.level", "info",  "--version"]
         subject.run("bin/logstash", args)
         expect(logger.level).to eq(:info)
       end
     end
     context "when setting to quiet" do
       it "should set log level to error" do
-        args = ["--log.level", "quiet",  "--version"]
+        args = ["--log.level", "error",  "--version"]
         subject.run("bin/logstash", args)
         expect(logger.level).to eq(:error)
       end

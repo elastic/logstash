@@ -17,7 +17,6 @@ namespace "vendor" do
     require "archive/tar/minitar"
     tgz = Zlib::GzipReader.new(File.open(tarball,"rb"))
     tar = Archive::Tar::Minitar::Input.open(tgz)
-    p tar
     tar.each do |entry|
       path = block.call(entry)
       next if path.nil?
