@@ -6,13 +6,16 @@ require "file-dependencies/gem"
 
 class LogStash::PluginManager::Update < LogStash::PluginManager::Command
   REJECTED_OPTIONS = [:path, :git, :github]
+  # These are local gems used by LS and needs to be filtered out of other plugin gems
+  NON_PLUGIN_LOCAL_GEMS = ["logstash-core", "logstash-core-event-java", "logstash-core-plugin-api"]
 
   parameter "[PLUGIN] ...", "Plugin name(s) to upgrade to latest version", :attribute_name => :plugins_arg
   option "--[no-]verify", :flag, "verify plugin validity before installation", :default => true
   option "--local", :flag, "force local-only plugin update. see bin/logstash-plugin package|unpack", :default => false
 
   def execute
-    local_gems = gemfile.locally_installed_gems
+    # remove "system" local gems used by LS
+    local_gems = gemfile.locally_installed_gems.map(&:name) - NON_PLUGIN_LOCAL_GEMS
 
     if local_gems.size > 0
       if update_all?
@@ -21,7 +24,7 @@ class LogStash::PluginManager::Update < LogStash::PluginManager::Command
         plugins_with_path = plugins_arg & local_gems.map(&:name)
       end
 
-      warn_local_gems(plugins_with_path)
+      warn_local_gems(plugins_with_path) if plugins_with_path.size > 0
     end
     update_gems!
   end
@@ -47,7 +50,6 @@ class LogStash::PluginManager::Update < LogStash::PluginManager::Command
     filtered_plugins = plugins.map { |plugin| gemfile.find(plugin) }
       .compact
       .reject { |plugin| REJECTED_OPTIONS.any? { |key| plugin.options.has_key?(key) } }
-      .select { |plugin| local? }
       .each   { |plugin| gemfile.update(plugin.name) }
 
     # force a disk sync before running bundler
