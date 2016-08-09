@@ -6,8 +6,9 @@ module LogStash module Util
   module Loggable
     def self.included(klass)
       def klass.logger
-        name = self.class.name.gsub('::', '.').downcase
-        @logger ||= LogStash::Logging::Logger.new(name)
+        ruby_name = self.is_a?(Module) ? self.name : self.class.name
+        log4j_name = ruby_name.gsub('::', '.').downcase
+        @logger ||= LogStash::Logging::Logger.new(log4j_name)
       end
 
       def logger

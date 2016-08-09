@@ -99,13 +99,12 @@
 # ------------ Debugging Settings --------------
 #
 # Options for log.level:
-#   * warn => warn (default)
-#   * quiet => error
-#   * verbose => info
-#   * debug => debug
+#   * warn (default)
+#   * error
+#   * info
+#   * debug
 #
 # log.level: warn
-# log.format: plain (or 'json')
 # path.log:
 #
 # ------------ Other Settings --------------

@@ -86,9 +86,9 @@ en:
     runner:
       short-help: |-
         usage:
-          bin/logstash -f CONFIG_PATH [-t] [-r] [--quiet|verbose|debug] [-w COUNT] [-l LOG]
-          bin/logstash -e CONFIG_STR [-t] [--quiet|verbose|debug] [-w COUNT] [-l LOG]
-          bin/logstash -i SHELL [--quiet|verbose|debug]
+          bin/logstash -f CONFIG_PATH [-t] [-r] [--error|info|debug|warn] [-w COUNT] [-l LOG]
+          bin/logstash -e CONFIG_STR [-t] [--error|info|debug|warn] [-w COUNT] [-l LOG]
+          bin/logstash -i SHELL [--error|info|debug|warn]
           bin/logstash -V [--verbose|debug]
           bin/logstash --help
       invalid-configuration: >-
