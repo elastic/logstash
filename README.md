@@ -64,7 +64,7 @@ or bootstrap & install the core plugins required to run the tests
 
 To verify your environment, run `bin/logstash version` which should look like this
 
-    $ bin/logstash version
+    $ bin/logstash --version
     logstash 2.0.0.dev
 
 If you are seeing errors that look like
