@@ -48,11 +48,6 @@ config and the logs directories so that you do not delete important data later o
   | `{extract.path}/config`
   | `path.settings`
 
-| logs
-  | Log files
-  | `{extract.path}/logs`
-  | `path.logs`
-
 | plugins
   | Local, non Ruby-Gem plugin files. Each plugin is contained in a subdirectory. Recommended for development only.
   | `{extract.path}/plugins`
