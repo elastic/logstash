@@ -9,7 +9,6 @@ describe LogStash::Config::Mixin do
       Class.new(LogStash::Filters::Base) do
         include LogStash::Config::Mixin
         config_name "test"
-        milestone 1
         config :size_bytes, :validate => :bytes
         config :size_default, :validate => :bytes, :default => "#{local_num_bytes}"
         config :size_upcase, :validate => :bytes
@@ -50,7 +49,6 @@ describe LogStash::Config::Mixin do
         Class.new(LogStash::Filters::Base) do
           include LogStash::Config::Mixin
           config_name "test"
-          milestone 1
           config :size_file, :validate => :bytes
         end.new({"size_file" => "10 yolobytes"})
       }.to raise_error(LogStash::ConfigurationError)
@@ -61,7 +59,6 @@ describe LogStash::Config::Mixin do
         Class.new(LogStash::Filters::Base) do
           include LogStash::Config::Mixin
           config_name "test"
-          milestone 1
           config :size_file, :validate => :bytes
         end.new({"size_file" => "10  kib"})
       }.to raise_error(LogStash::ConfigurationError)
@@ -180,7 +177,7 @@ describe LogStash::Config::Mixin do
 
     shared_examples("safe URI") do |options|
       options ||= {}
-      
+
       subject { klass.new("uri" => uri_str) }
 
       it "should be a SafeURI object" do
@@ -418,4 +415,138 @@ describe LogStash::Config::Mixin do
       end
     end
   end
+
+  context "when using Proc as validator" do
+
+    it "should validate without an error" do
+      plugin = Class.new(LogStash::Inputs::Base) do
+        include LogStash::Config::Mixin
+        config_name "testing"
+        config :size,     :validate =>  Proc.new { |value| true }, :required => true
+        config :charset,  :validate => :string, :default => "UTF-8"
+      end
+      expect {  plugin.new("size" => "100") }.not_to raise_error
+    end
+
+    it "should raise an error if the validation fails" do
+      plugin = Class.new(LogStash::Inputs::Base) do
+        include LogStash::Config::Mixin
+        config_name "testing"
+        config :size,     :validate =>  Proc.new { |value| false }, :required => true
+        config :charset,  :validate => :string, :default => "UTF-8"
+      end
+      expect {  plugin.new("size" => "100") }.to raise_error(LogStash::ConfigurationError)
+    end
+
+    context "when doing cross validation" do
+
+      it "should validate without an error" do
+        plugin = Class.new(LogStash::Inputs::Base) do
+          include LogStash::Config::Mixin
+          config_name "testing"
+          config :size,     :validate =>  Proc.new { |value, params| params["charset"] == "UTF-8" }, :required => true
+          config :charset,  :validate => :string, :default => "UTF-8"
+        end
+        expect {  plugin.new("size" => "100") }.not_to raise_error
+      end
+
+      it "should raise an error" do
+        plugin = Class.new(LogStash::Inputs::Base) do
+          include LogStash::Config::Mixin
+          config_name "testing"
+          config :size,     :validate =>  Proc.new { |value, params| params["charset"] == "UTF-8" }, :required => true
+          config :charset,  :validate => :string, :default => "UTF-8"
+        end
+        expect {  plugin.new("size" => "100", "charset" => "foo") }.to raise_error(LogStash::ConfigurationError)
+      end
+
+    end
+  end
+
+  context "when using custom validators" do
+
+    it "should use the class as validator" do
+      module LogStash::Config
+        module TypeValidators
+          class NumberTrueValidator < Abstract
+            def valid?(value)
+              return true
+            end
+          end
+        end
+      end
+
+      plugin = Class.new(LogStash::Inputs::Base) do
+        include LogStash::Config::Mixin
+        config_name "testing"
+        config :size,     :validate => "NumberTrueValidator", :required => true
+        config :charset,  :validate => :string, :default => "UTF-8"
+      end
+
+      expect {  plugin.new("size" => "100") }.not_to raise_error
+    end
+
+    it "should raise an error if the validator used is not properly scoped" do
+      module LogStash::Config
+        module TypeValidator
+          class NumberWrongScopeValidator
+            def valid?(value)
+              return true
+            end
+          end
+        end
+      end
+
+      plugin = Class.new(LogStash::Inputs::Base) do
+        include LogStash::Config::Mixin
+        config_name "testing"
+        config :size,     :validate => "NumberWrongScopeValidator", :required => true
+        config :charset,  :validate => :string, :default => "UTF-8"
+      end
+
+      expect {  plugin.new("size" => "100") }.to raise_error
+    end
+
+    context "when doing cross validaton of properties" do
+
+      let(:plugin) do
+        Class.new(LogStash::Inputs::Base) do
+          include LogStash::Config::Mixin
+          config_name "testing"
+          config :size,     :validate => "NumberValidator", :required => true
+          config :charset,  :validate => :string, :default => "UTF-8"
+        end
+      end
+
+      it "should not raise an error if cross criteria is meet" do
+        module LogStash::Config
+          module TypeValidators
+            class NumberValidator < Abstract
+              def valid?(value)
+                return params["charset"] == "UTF-16" && value == "100"
+              end
+            end
+          end
+        end
+
+        expect {  plugin.new("size" => "100", "charset" => "UTF-16") }.not_to raise_error
+      end
+
+      it "should raise an error if cross criteria is not meet" do
+        module LogStash::Config
+          module TypeValidators
+            class NumberValidator < Abstract
+              def valid?(value)
+                return params["charset"] == "UTF-16" && value == "100"
+              end
+            end
+          end
+        end
+
+        expect {  plugin.new("size" => "100") }.to raise_error(LogStash::ConfigurationError)
+      end
+    end
+
+  end
+
 end
