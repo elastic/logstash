@@ -180,15 +180,18 @@ public class Event implements Cloneable, Serializable {
             return new Event();
         }
         Object o = CBOR_MAPPER.readValue(source, HashMap.class);
-        if (o == null) {
-            throw new IOException("The binary source deserialized to null");
-        }
-        try {
-            HashMap<String, Map<String, Object>> hashMap = (HashMap<String, Map<String, Object>>) o;
-            HashMap<String, Object> dataMap = (HashMap<String, Object>) hashMap.get("DATA");
+        if (o instanceof Map) {
+            Map<String, Map<String, Object>> hashMap = (HashMap<String, Map<String, Object>>) o;
+            if (!hashMap.containsKey("DATA")) {
+                throw new IOException("The deserialized Map must contain the \"DATA\" key");
+            }
+            if (!hashMap.containsKey("META")) {
+                throw new IOException("The deserialized Map must contain the \"META\" key");
+            }
+            Map<String, Object> dataMap = hashMap.get("DATA");
             dataMap.put(METADATA, hashMap.get("META"));
             return new Event(dataMap);
-        } catch (ClassCastException e) {
+        } else {
             throw new IOException("incompatible from binary object type=" + o.getClass().getName() + " , only HashMap is supported");
         }
     }
