@@ -1,6 +1,5 @@
 package com.logstash;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.logstash.bivalues.NullBiValue;
 import com.logstash.bivalues.StringBiValue;
 import com.logstash.bivalues.TimeBiValue;
@@ -16,6 +15,9 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import static com.logstash.ObjectMappers.CBOR_MAPPER;
+import static com.logstash.ObjectMappers.JSON_MAPPER;
 
 
 public class Event implements Cloneable, Serializable {
@@ -36,7 +38,6 @@ public class Event implements Cloneable, Serializable {
     public static final String VERSION_ONE = "1";
 
     private static final Logger DEFAULT_LOGGER = new StdioLogger();
-    private static final ObjectMapper mapper = new ObjectMapper();
 
     // logger is static since once set there is no point in changing it at runtime
     // for other reasons than in tests/specs.
@@ -167,10 +168,38 @@ public class Event implements Cloneable, Serializable {
         }
     }
 
+    public byte[] toBinary() throws IOException {
+        HashMap<String, Map<String, Object>> hashMap = new HashMap<>();
+        hashMap.put("DATA", this.data);
+        hashMap.put("META", this.metadata);
+        return CBOR_MAPPER.writeValueAsBytes(hashMap);
+    }
+
+    public static Event fromBinary(byte[] source) throws IOException {
+        if (source == null || source.length == 0) {
+            return new Event();
+        }
+        Object o = CBOR_MAPPER.readValue(source, HashMap.class);
+        if (o instanceof Map) {
+            Map<String, Map<String, Object>> hashMap = (HashMap<String, Map<String, Object>>) o;
+            if (!hashMap.containsKey("DATA")) {
+                throw new IOException("The deserialized Map must contain the \"DATA\" key");
+            }
+            if (!hashMap.containsKey("META")) {
+                throw new IOException("The deserialized Map must contain the \"META\" key");
+            }
+            Map<String, Object> dataMap = hashMap.get("DATA");
+            dataMap.put(METADATA, hashMap.get("META"));
+            return new Event(dataMap);
+        } else {
+            throw new IOException("incompatible from binary object type=" + o.getClass().getName() + " , only HashMap is supported");
+        }
+    }
+
     public String toJson()
             throws IOException
     {
-        return mapper.writeValueAsString(this.data);
+        return JSON_MAPPER.writeValueAsString(this.data);
     }
 
     public static Event[] fromJson(String json)
@@ -182,7 +211,7 @@ public class Event implements Cloneable, Serializable {
         }
 
         Event[] result;
-        Object o = mapper.readValue(json, Object.class);
+        Object o = JSON_MAPPER.readValue(json, Object.class);
         // we currently only support Map or Array json objects
         if (o instanceof Map) {
             result = new Event[]{ new Event((Map)o) };

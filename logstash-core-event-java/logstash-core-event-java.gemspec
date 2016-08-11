@@ -28,4 +28,6 @@ Gem::Specification.new do |gem|
 
   gem.requirements << "jar com.fasterxml.jackson.core:jackson-core, 2.7.3"
   gem.requirements << "jar com.fasterxml.jackson.core:jackson-databind, 2.7.3"
+  gem.requirements << "jar com.fasterxml.jackson.module:jackson-module-afterburner, 2.7.3"
+  gem.requirements << "jar com.fasterxml.jackson.dataformat:jackson-dataformat-cbor, 2.7.3"
 end

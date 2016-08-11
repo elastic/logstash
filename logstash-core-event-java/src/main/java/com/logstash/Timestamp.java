@@ -1,6 +1,7 @@
 package com.logstash;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.logstash.json.TimestampSerializer;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.LocalDateTime;
