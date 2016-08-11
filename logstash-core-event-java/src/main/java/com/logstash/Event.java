@@ -1,6 +1,5 @@
 package com.logstash;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.logstash.bivalues.NullBiValue;
 import com.logstash.bivalues.StringBiValue;
 import com.logstash.bivalues.TimeBiValue;
@@ -42,7 +41,6 @@ public class Event implements Cloneable, Serializable, Queueable {
     public static final String VERSION_ONE = "1";
 
     private static final Logger DEFAULT_LOGGER = new StdioLogger();
-    private static final ObjectMapper mapper = new ObjectMapper();
 
     // logger is static since once set there is no point in changing it at runtime
     // for other reasons than in tests/specs.
