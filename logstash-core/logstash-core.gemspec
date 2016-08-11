@@ -17,7 +17,7 @@ Gem::Specification.new do |gem|
   gem.require_paths = ["lib"]
   gem.version       = LOGSTASH_CORE_VERSION
 
-  gem.add_runtime_dependency "logstash-core-event-java", "5.0.0-alpha5"
+  gem.add_runtime_dependency "logstash-core-event-java", "5.0.0-alpha6"
   gem.add_runtime_dependency "logstash-core-queue-jruby"
 
   gem.add_runtime_dependency "cabin", "~> 0.8.0" #(Apache 2.0 license)
@@ -47,7 +47,7 @@ Gem::Specification.new do |gem|
 
   if RUBY_PLATFORM == 'java'
     gem.platform = RUBY_PLATFORM
-    gem.add_runtime_dependency "jrjackson", "~> 0.3.7" #(Apache 2.0 license)
+    gem.add_runtime_dependency "jrjackson", "~> 0.4.0" #(Apache 2.0 license)
   else
     gem.add_runtime_dependency "oj" #(MIT-style license)
   end

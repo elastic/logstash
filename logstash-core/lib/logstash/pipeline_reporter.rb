@@ -39,7 +39,7 @@ module LogStash; class PipelineReporter
     end
   end
 
-  def initialize(logger,pipeline)
+  def initialize(logger, pipeline)
     @logger = logger
     @pipeline = pipeline
   end
@@ -52,7 +52,8 @@ module LogStash; class PipelineReporter
   end
 
   def to_hash
-    pipeline.inflight_batches_synchronize do |batch_map|
+    # pipeline.filter_queue_client.inflight_batches is synchronized
+    pipeline.filter_queue_client.inflight_batches do |batch_map|
       worker_states_snap = worker_states(batch_map) # We only want to run this once
       inflight_count = worker_states_snap.map {|s| s[:inflight_count] }.reduce(0, :+)
 
@@ -83,17 +84,17 @@ module LogStash; class PipelineReporter
     pipeline.plugin_threads
   end
 
-  # Not threadsafe! must be called within an `inflight_batches_synchronize` block
+  # Not threadsafe! ensure synchronization
   def worker_states(batch_map)
-      pipeline.worker_threads.map.with_index do |thread,idx|
-        status = thread.status || "dead"
-        inflight_count = batch_map[thread] ? batch_map[thread].size : 0
-        {
-          :status => status,
-          :alive => thread.alive?,
-          :index => idx,
-          :inflight_count => inflight_count
-        }
+    pipeline.worker_threads.map.with_index do |thread, idx|
+      status = thread.status || "dead"
+      inflight_count = batch_map[thread] ? batch_map[thread].size : 0
+      {
+        :status => status,
+        :alive => thread.alive?,
+        :index => idx,
+        :inflight_count => inflight_count
+      }
     end
   end
 

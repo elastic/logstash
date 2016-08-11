@@ -45,7 +45,7 @@
 # pipeline.batch.size: 125
 #
 # How long to wait before dispatching an undersized batch to filters+workers
-# Value is in seconds.
+# Value is in milliseconds.
 #
 # pipeline.batch.delay: 5
 #
