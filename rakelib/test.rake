@@ -104,29 +104,6 @@ namespace "test" do
     end
     task.reenable
   end
-
-  task "integration" => ["setup"] do
-    require "fileutils" 
-
-    source = File.expand_path(File.join(File.dirname(__FILE__), ".."))
-    integration_path = File.join(source, "integration_run")
-    FileUtils.rm_rf(integration_path)
-
-    exit(RSpec::Core::Runner.run([Rake::FileList["spec/integration/**/*_spec.rb"]]))
-  end
-
-  namespace "integration" do
-    task "local" => ["setup"] do
-      require "fileutils"
-
-      source = File.expand_path(File.join(File.dirname(__FILE__), ".."))
-      integration_path = File.join(source, "integration_run")
-      FileUtils.mkdir_p(integration_path)
-
-      puts "[integration_spec] configuring local environment for running test in #{integration_path}, if you want to change this behavior delete the directory."
-      exit(RSpec::Core::Runner.run([Rake::FileList["spec/integration/**/*_spec.rb"]]))
-    end
-  end
 end
 
 task "test" => [ "test:core" ]
