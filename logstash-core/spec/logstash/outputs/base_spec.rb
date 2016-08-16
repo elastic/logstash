@@ -25,6 +25,15 @@ class LogStash::Outputs::NOOPLegacy < ::LogStash::Outputs::Base
   def register; end
 end
 
+class LogStash::Outputs::NOOPMultiReceiveEncoded < ::LogStash::Outputs::Base
+  concurrency :single
+  
+  def register; end
+
+  def multi_receive_encoded(events_and_encoded)
+  end
+end
+
 
 describe "LogStash::Outputs::Base#new" do
   let(:params) { {} }  
@@ -66,6 +75,42 @@ describe "LogStash::Outputs::Base#new" do
 
     it "should default concurrency to :legacy" do
       expect(subject.concurrency).to eq(:legacy)
+    end
+  end
+
+  describe "dispatching multi_receive" do
+    let(:event) { double("event") }
+    let(:events) { [event] }
+    
+    context "with multi_receive_encoded" do
+      let(:klass) { LogStash::Outputs::NOOPMultiReceiveEncoded }
+      let(:codec) { double("codec") }
+      let(:encoded) { double("encoded") }
+      
+      before do
+        allow(codec).to receive(:multi_encode).with(events).and_return(encoded)
+        allow(instance).to receive(:codec).and_return(codec)
+        allow(instance).to receive(:multi_receive_encoded)        
+        instance.multi_receive(events)
+      end
+
+      it "should invoke multi_receive_encoded if it exists" do
+        expect(instance).to have_received(:multi_receive_encoded).with(encoded)
+      end
+    end
+
+    context "with plain #receive" do
+      let(:klass) { LogStash::Outputs::NOOPSingle }
+
+      before do
+        allow(instance).to receive(:multi_receive).and_call_original
+        allow(instance).to receive(:receive).with(event)
+        instance.multi_receive(events)
+      end
+
+      it "should receive the event by itself" do
+        expect(instance).to have_received(:receive).with(event)
+      end
     end
   end
 end
