@@ -34,6 +34,11 @@ module LogStash
           text = as == :string ? "" : {}
           respond_with(text, :as => as)
         end
+
+        protected
+        def human?
+          params.has_key?("human") && (params["human"].nil? || as_boolean(params["human"]) == true)
+        end
       end
     end
   end
