@@ -1,7 +1,7 @@
 # encoding: utf-8
 
 class HotThreadsReport
-  STRING_SEPARATOR_LENGHT = 80.freeze
+  STRING_SEPARATOR_LENGTH = 80.freeze
   HOT_THREADS_STACK_TRACES_SIZE_DEFAULT = 10.freeze
 
   def initialize(cmd, options)
@@ -14,7 +14,7 @@ class HotThreadsReport
   def to_s
     hash = to_hash[:hot_threads]
     report =  "#{I18n.t("logstash.web_api.hot_threads.title", :hostname => hash[:hostname], :time => hash[:time], :top_count => @thread_dump.top_count )} \n"
-    report << '=' * STRING_SEPARATOR_LENGHT
+    report << '=' * STRING_SEPARATOR_LENGTH
     report << "\n"
     hash[:threads].each do |thread|
       thread_report = "#{I18n.t("logstash.web_api.hot_threads.thread_title", :percent_of_cpu_time => thread[:percent_of_cpu_time], :thread_state => thread[:state], :thread_name => thread[:name])} \n"
@@ -23,7 +23,7 @@ class HotThreadsReport
         thread_report << "\t#{trace}\n"
       end
       report << thread_report
-      report << '-' * STRING_SEPARATOR_LENGHT
+      report << '-' * STRING_SEPARATOR_LENGTH
       report << "\n"
     end
     report
