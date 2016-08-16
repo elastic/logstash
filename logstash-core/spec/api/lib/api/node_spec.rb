@@ -39,25 +39,66 @@ describe LogStash::Api::Modules::Node do
     end
 
     context "when asking for human output" do
+      [
+        "/hot_threads?human",
+        "/hot_threads?human=true",
+        "/hot_threads?human=1",
+        "/hot_threads?human=t",
+      ].each do |path|
 
+        before(:all) do
+          do_request { get path }
+        end
+
+        let(:payload) { last_response.body }
+
+        it "should return a text/plain content type" do
+          expect(last_response.content_type).to eq("text/plain;charset=utf-8")
+        end
+
+        it "should return a plain text payload" do
+          expect{ JSON.parse(payload) }.to raise_error
+        end
+      end
+    end
+
+    context "When asking for human output and threads count" do
       before(:all) do
-        do_request { get "/hot_threads?human" }
+        do_request { get "/hot_threads?human=t&threads=2"}
       end
 
       let(:payload) { last_response.body }
 
-      it "should return a text/plain content type" do
-        expect(last_response.content_type).to eq("text/plain;charset=utf-8")
+      it "should return information for <= # requested threads" do
+        expect(payload.scan(/thread name/).size).to eq(2)
       end
+    end
 
-      it "should return a plain text payload" do
-        expect{ JSON.parse(payload) }.to raise_error
+    context "when not asking for human output" do
+      [
+        "/hot_threads?human=false",
+        "/hot_threads?human=0",
+        "/hot_threads?human=f",
+      ].each do |path|
+        before(:all) do
+          do_request { get path }
+        end
+
+        it "should return a json payload content type" do
+          expect(last_response.content_type).to eq("application/json")
+        end
+
+        let(:payload) { last_response.body }
+
+        it "should return a json payload" do
+          expect{ JSON.parse(payload) }.not_to raise_error
+        end
       end
     end
 
     describe "Generic JSON testing" do
       extend ResourceDSLMethods
-      
+
       root_structure = {
         "pipeline" => {
           "workers" => Numeric,

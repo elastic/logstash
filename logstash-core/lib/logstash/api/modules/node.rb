@@ -14,7 +14,7 @@ module LogStash
 
           options = {
             :ignore_idle_threads => as_boolean(ignore_idle_threads),
-            :human => params.has_key?("human")
+            :human => human?
           }
           options[:threads] = params["threads"].to_i if params.has_key?("threads")
 
@@ -25,6 +25,11 @@ module LogStash
         get "/?:filter?" do
           selected_fields = extract_fields(params["filter"].to_s.strip)
           respond_with node.all(selected_fields)
+        end
+
+        protected
+        def human?
+          params.has_key?("human") && (params["human"].nil? || as_boolean(params["human"]) == true)
         end
       end
     end
