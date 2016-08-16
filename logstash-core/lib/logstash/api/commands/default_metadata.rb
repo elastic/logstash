@@ -9,7 +9,7 @@ module LogStash
         def all
           {:host => host, :version => version, :http_address => http_address}
         end
-        
+
         def host
           Socket.gethostname
         end

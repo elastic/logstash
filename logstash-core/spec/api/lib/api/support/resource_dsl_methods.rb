@@ -35,7 +35,7 @@ module ResourceDSLMethods
         end
 
         it "should include the http address" do
-          expect(payload["http_address"]).to eql("#{Socket.gethostname}:#{::LogStash::WebServer::DEFAULT_PORT}")
+          expect(payload["http_address"]).to eql("#{Socket.gethostname}:#{::LogStash::WebServer::DEFAULT_PORTS.first}")
         end
       end
       
