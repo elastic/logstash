@@ -189,6 +189,64 @@ describe LogStash::Runner do
       allow(pipeline).to receive(:shutdown)
     end
 
+    context "when :http.host is defined by the user" do
+      it "should pass the value to the webserver" do
+        expect(LogStash::Agent).to receive(:new) do |settings|
+          expect(settings.set?("http.host")).to be(true)
+          expect(settings.get("http.host")).to eq("localhost")
+        end
+
+        args = ["--http.host", "localhost", "-e", pipeline_string]
+        subject.run("bin/logstash", args)
+      end
+    end
+
+    context "when :http.host is not defined by the user" do
+      it "should pass the value to the webserver" do
+        expect(LogStash::Agent).to receive(:new) do |settings|
+          expect(settings.set?("http.host")).to be_falsey
+          expect(settings.get("http.host")).to eq("127.0.0.1")
+        end
+
+        args = ["-e", pipeline_string]
+        subject.run("bin/logstash", args)
+      end
+    end
+
+    context "when :http.port is defined by the user" do
+      it "should pass a single value to the webserver" do
+        expect(LogStash::Agent).to receive(:new) do |settings|
+          expect(settings.set?("http.port")).to be(true)
+          expect(settings.get("http.port")).to eq(10000..10000)
+        end
+
+        args = ["--http.port", "10000", "-e", pipeline_string]
+        subject.run("bin/logstash", args)
+      end
+
+      it "should pass a range value to the webserver" do
+        expect(LogStash::Agent).to receive(:new) do |settings|
+          expect(settings.set?("http.port")).to be(true)
+          expect(settings.get("http.port")).to eq(10000..20000)
+        end
+
+        args = ["--http.port", "10000-20000", "-e", pipeline_string]
+        subject.run("bin/logstash", args)
+      end
+    end
+
+    context "when no :http.port is not defined by the user" do
+      it "should use the default settings" do
+        expect(LogStash::Agent).to receive(:new) do |settings|
+          expect(settings.set?("http.port")).to be_falsey
+          expect(settings.get("http.port")).to eq(9600..9700)
+        end
+
+        args = ["-e", pipeline_string]
+        subject.run("bin/logstash", args)
+      end
+    end
+
     context "when :pipeline_workers is not defined by the user" do
       it "should not pass the value to the pipeline" do
         expect(LogStash::Agent).to receive(:new) do |settings|
@@ -270,5 +328,4 @@ describe LogStash::Runner do
       end
     end
   end
-
 end
