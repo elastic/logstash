@@ -26,11 +26,6 @@ module LogStash
           selected_fields = extract_fields(params["filter"].to_s.strip)
           respond_with node.all(selected_fields)
         end
-
-        protected
-        def human?
-          params.has_key?("human") && (params["human"].nil? || as_boolean(params["human"]) == true)
-        end
       end
     end
   end
