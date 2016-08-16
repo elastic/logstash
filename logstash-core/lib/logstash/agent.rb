@@ -135,7 +135,7 @@ class LogStash::Agent
 
   private
   def start_webserver
-    options = {:http_host => @http_host, :http_port => @http_port, :http_environment => @http_environment }
+    options = {:http_host => @http_host, :http_ports => @http_port, :http_environment => @http_environment }
     @webserver = LogStash::WebServer.new(@logger, self, options)
     Thread.new(@webserver) do |webserver|
       LogStash::Util.set_thread_name("Api Webserver")

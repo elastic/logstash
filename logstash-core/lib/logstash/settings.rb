@@ -278,8 +278,51 @@ module LogStash
     end
 
     class Port < Integer
+      VALID_PORT_RANGE = 1..65535
+
       def initialize(name, default=nil, strict=true)
-        super(name, default, strict) {|value| value >= 1 && value <= 65535 }
+        super(name, default, strict) { |value| valid?(value) }
+      end
+
+      def valid?(port)
+        VALID_PORT_RANGE.cover?(port)
+      end
+    end
+
+    class PortRange < Coercible
+      PORT_SEPARATOR = "-"
+
+      def initialize(name, default=nil, strict=true)
+        super(name, ::Range, default, strict=true) { |value| valid?(value) }
+      end
+
+      def valid?(range)
+        Port::VALID_PORT_RANGE.first <= range.first && Port::VALID_PORT_RANGE.last >= range.last
+      end
+
+      def coerce(value)
+        case value
+        when ::Range
+          value
+        when ::Fixnum
+          value..value
+        when ::String
+          first, last = value.split(PORT_SEPARATOR)
+          last = first if last.nil?
+          begin
+            (Integer(first))..(Integer(last))
+          rescue ArgumentError # Trap and reraise a more human error
+            raise ArgumentError.new("Could not coerce #{value} into a port range")
+          end
+        else
+          raise ArgumentError.new("Could not coerce #{value} into a port range")
+        end
+      end
+
+      def validate(value)
+        unless valid?(value)
+          raise ArgumentError.new("Invalid value \"#{value}, valid options are within the range of #{Port::VALID_PORT_RANGE.first}-#{Port::VALID_PORT_RANGE.last}")
+        end
       end
     end
 
@@ -331,7 +374,6 @@ module LogStash
         end
       end
     end
-
   end
 
   SETTINGS = Settings.new

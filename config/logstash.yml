@@ -91,9 +91,10 @@
 #
 # http.host: "127.0.0.1"
 #
-# Bind port for the metrics REST endpoint
+# Bind port for the metrics REST endpoint, this option also accept a range
+# (9600-9700) and logstash will pick up the first available ports.
 #
-# http.port: 9600
+# http.port: 9600-9700
 #
 # ------------ Debugging Settings --------------
 #
