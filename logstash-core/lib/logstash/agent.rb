@@ -182,8 +182,7 @@ class LogStash::Agent < Clamp::Command
     end
 
     if config_test?
-      config_loader = LogStash::Config::Loader.new(@logger)
-      config_str = config_loader.format_config(config_path, config_string)
+      config_str = @config_loader.format_config(config_path, config_string)
       begin
         # currently the best strategy to validate the configuration
         # is creating a pipeline instance and checking for exceptions

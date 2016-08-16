@@ -299,9 +299,9 @@ describe LogStash::Agent do
 
   describe "--config-test" do
     let(:cli_args) { ["-t", "-e", pipeline_string] }
+    let(:pipeline_string) { "input { } filter { } output { }" }
 
     context "with a good configuration" do
-      let(:pipeline_string) { "input { } filter { } output { }" }
       it "should exit successfuly" do
         expect(subject.run(cli_args)).to eq(0)
       end
@@ -312,6 +312,11 @@ describe LogStash::Agent do
       it "should fail by returning a bad exit code" do
         expect(subject.run(cli_args)).to eq(1)
       end
+    end
+
+    it "requests the config loader to format_config" do
+      expect(subject.config_loader).to receive(:format_config)
+      subject.run(cli_args)
     end
   end
 
