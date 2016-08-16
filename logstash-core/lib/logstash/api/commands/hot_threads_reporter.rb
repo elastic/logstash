@@ -1,6 +1,7 @@
 # encoding: utf-8
 
 class HotThreadsReport
+  STRING_SEPARATOR_LENGHT = 80.freeze
   HOT_THREADS_STACK_TRACES_SIZE_DEFAULT = 10.freeze
 
   def initialize(cmd, options)
@@ -13,19 +14,16 @@ class HotThreadsReport
   def to_s
     hash = to_hash[:hot_threads]
     report =  "#{I18n.t("logstash.web_api.hot_threads.title", :hostname => hash[:hostname], :time => hash[:time], :top_count => @thread_dump.top_count )} \n"
-    report << '=' * 80
+    report << '=' * STRING_SEPARATOR_LENGHT
     report << "\n"
     hash[:threads].each do |thread|
-      thread_report = ""
-      thread_report = "#{I18n.t("logstash.web_api.
-                                hot_threads.thread_title", :percent_of_cpu_time => thread[:percent_of_cpu_time], :thread_state => thread[:state], :thread_name => thread[:name])} \n"
-      thread_report = "#{thread[:percent_of_cpu_time]} % of of cpu usage by #{thread[:state]} thread named '#{thread[:name]}'\n"
+      thread_report = "#{I18n.t("logstash.web_api.hot_threads.thread_title", :percent_of_cpu_time => thread[:percent_of_cpu_time], :thread_state => thread[:state], :thread_name => thread[:name])} \n"
       thread_report << "#{thread[:path]}\n" if thread[:path]
       thread[:traces].each do |trace|
         thread_report << "\t#{trace}\n"
       end
       report << thread_report
-      report << '-' * 80
+      report << '-' * STRING_SEPARATOR_LENGHT
       report << "\n"
     end
     report
@@ -57,5 +55,4 @@ class HotThreadsReport
   def cpu_time(hash)
     hash["cpu.time"] / 1000000.0
   end
-
 end
