@@ -298,7 +298,10 @@ module LogStash; class Pipeline
     end
     # Now that we have our output to event mapping we can just invoke each output
     # once with its list of events
-    output_events_map.each { |output, events| output.multi_receive(events) }
+    output_events_map.each do |output, events|
+      output.multi_receive(events)
+    end
+    
     @filter_queue_client.add_output_metrics(batch)
   end
 
