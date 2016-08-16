@@ -64,7 +64,15 @@ describe LogStash::Api::Modules::Node do
 
     context "When asking for human output and threads count" do
       before(:all) do
+        # Make sure we have enough threads for this to work.
+        @threads = []
+        5.times { @threads << Thread.new { loop {} } }
+
         do_request { get "/hot_threads?human=t&threads=2"}
+      end
+
+      after(:all) do
+        @threads.each { |t| t.kill } rescue nil
       end
 
       let(:payload) { last_response.body }
