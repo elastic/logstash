@@ -48,6 +48,15 @@ class LogStash::Outputs::NOOPLegacyNoWorkers < ::LogStash::Outputs::Base
   end
 end
 
+class LogStash::Outputs::NOOPMultiReceiveEncoded < ::LogStash::Outputs::Base
+  concurrency :single
+  
+  def register; end
+
+  def multi_receive_encoded(events_and_encoded)
+  end
+end
+
 describe "LogStash::Outputs::Base#new" do
   describe "concurrency" do
     subject { klass.new({}) }
@@ -97,5 +106,42 @@ describe "LogStash::Outputs::Base#new" do
   it "should move workers_not_supported declarations up to the class level" do
     LogStash::Outputs::NOOPLegacyNoWorkers.new.register
     expect(LogStash::Outputs::NOOPLegacyNoWorkers.workers_not_supported?).to eql(true)
+  end
+
+  describe "dispatching multi_receive" do
+    let(:event) { double("event") }
+    let(:events) { [event] }
+    subject { klass.new({}) }
+    
+    context "with multi_receive_encoded" do
+      let(:klass) { LogStash::Outputs::NOOPMultiReceiveEncoded }
+      let(:codec) { double("codec") }
+      let(:encoded) { double("encoded") }
+      
+      before do
+        allow(codec).to receive(:multi_encode).with(events).and_return(encoded)
+        allow(subject).to receive(:codec).and_return(codec)
+        allow(subject).to receive(:multi_receive_encoded)
+        subject.multi_receive(events)
+      end
+
+      it "should invoke multi_receive_encoded if it exists" do
+        expect(subject).to have_received(:multi_receive_encoded).with(encoded)
+      end
+    end
+
+    context "with plain #receive" do
+      let(:klass) { LogStash::Outputs::NOOPSingle }
+
+      before do
+        allow(subject).to receive(:multi_receive).and_call_original
+        allow(subject).to receive(:receive).with(event)
+        subject.multi_receive(events)
+      end
+
+      it "should receive the event by itself" do
+        expect(subject).to have_received(:receive).with(event)
+      end
+    end
   end
 end
