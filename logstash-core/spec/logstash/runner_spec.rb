@@ -192,18 +192,25 @@ describe LogStash::Runner do
     context "when :pipeline_workers is not defined by the user" do
       it "should not pass the value to the pipeline" do
         expect(LogStash::Agent).to receive(:new) do |settings|
-	  expect(settings.set?("pipeline.workers")).to be(false)
+          expect(settings.set?("pipeline.workers")).to be(false)
         end
         args = ["-e", pipeline_string]
         subject.run("bin/logstash", args)
       end
     end
 
+    context "when :pipeline_workers flag is passed without a value" do
+      it "should raise an error" do
+        args = ["-e", pipeline_string, "-w"]
+        expect { subject.run("bin/logstash", args) }.to raise_error
+      end
+    end
+
     context "when :pipeline_workers is defined by the user" do
       it "should pass the value to the pipeline" do
         expect(LogStash::Agent).to receive(:new) do |settings|
-	  expect(settings.set?("pipeline.workers")).to be(true)
-	  expect(settings.get("pipeline.workers")).to be(2)
+          expect(settings.set?("pipeline.workers")).to be(true)
+          expect(settings.get("pipeline.workers")).to be(2)
         end
 
         args = ["-w", "2", "-e", pipeline_string]

@@ -176,18 +176,43 @@ module LogStash
       end
     end
 
-    ### Specific settings #####
-
-    class Boolean < Setting
-      def initialize(name, default, strict=true, &validator_proc)
+    class Coercible < Setting
+      def initialize(name, klass, default=nil, strict=true, &validator_proc)
         @name = name
-        @klass = Object
+        unless klass.is_a?(Class)
+          raise ArgumentError.new("Setting \"#{@name}\" must be initialized with a class (received #{klass})")
+        end
+        @klass = klass
+        @validator_proc = validator_proc
         @value = nil
         @value_is_set = false
-        @validator_proc = validator_proc
-        coerced_default = coerce(default)
-        validate(coerced_default)
-        @default = coerced_default
+
+        if strict
+          coerced_default = coerce(default)
+          validate(coerced_default)
+          @default = coerced_default
+        else
+          @default = default
+        end
+      end
+
+      def set(value)
+        coerced_value = coerce(value)
+        validate(coerced_value)
+        @value = coerce(coerced_value)
+        @value_is_set = true
+        @value
+      end
+
+      def coerce(value)
+        raise NotImplementedError.new("Please implement #coerce for #{self.class}")
+      end
+    end
+    ### Specific settings #####
+
+    class Boolean < Coercible
+      def initialize(name, default, strict=true, &validator_proc)
+        super(name, Object, default, strict, &validator_proc)
       end
 
       def coerce(value)
@@ -200,25 +225,61 @@ module LogStash
           raise ArgumentError.new("could not coerce #{value} into a boolean")
         end
       end
-
-      def set(value)
-        coerced_value = coerce(value)
-        validate(coerced_value)
-        @value = coerce(coerced_value)
-        @value_is_set = true
-        @value
-      end
     end
 
-    class Numeric < Setting
+    class Numeric < Coercible
       def initialize(name, default=nil, strict=true)
         super(name, ::Numeric, default, strict)
       end
+
+      def coerce(v)
+        return v if v.is_a?(::Numeric)
+
+        # I hate these "exceptions as control flow" idioms
+        # but Ruby's `"a".to_i => 0` makes it hard to do anything else.
+        coerced_value = (Integer(v) rescue nil) || (Float(v) rescue nil)
+
+        if coerced_value.nil?
+          raise ArgumentError.new("Failed to coerce value to Numeric. Received #{v} (#{v.class})")
+        else
+          coerced_value
+        end
+      end
     end
 
-    class Port < Setting
+    class Integer < Coercible
       def initialize(name, default=nil, strict=true)
-        super(name, ::Numeric, default, strict) {|value| value >= 1 && value <= 65535 }
+        super(name, ::Integer, default, strict)
+      end
+
+      def coerce(value)
+        return value unless value.is_a?(::String)
+
+        coerced_value = Integer(value) rescue nil
+
+        if coerced_value.nil?
+          raise ArgumentError.new("Failed to coerce value to Integer. Received #{value} (#{value.class})")
+        else
+          coerced_value
+        end
+      end
+    end
+
+    class PositiveInteger < Integer
+      def initialize(name, default=nil, strict=true)
+        super(name, default, strict) do |v|
+          if v > 0
+            true
+          else
+            raise ArgumentError.new("Number must be bigger than 0. Received: #{v}")
+          end
+        end
+      end
+    end
+
+    class Port < Integer
+      def initialize(name, default=nil, strict=true)
+        super(name, default, strict) {|value| value >= 1 && value <= 65535 }
       end
     end
 
@@ -242,7 +303,7 @@ module LogStash
       def validate(value)
         super(value)
         unless @possible_strings.empty? || @possible_strings.include?(value)
-          raise ArgumentError.new("invalid value \"#{value}\". Options are: #{@possible_strings.inspect}")
+          raise ArgumentError.new("Invalid value \"#{value}\". Options are: #{@possible_strings.inspect}")
         end
       end
     end
