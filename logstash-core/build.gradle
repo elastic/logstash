@@ -5,7 +5,7 @@ apply plugin: 'java'
 apply plugin: 'idea'
 
 group = 'org.logstash'
-version = '1.0.0-SNAPSHOT'
+version = '5.0.0-alpha5'
 
 description = """Logstash Core Java"""
 
@@ -21,9 +21,8 @@ dependencies {
   compile 'org.apache.logging.log4j:log4j-core:2.6.2'
   compile 'com.fasterxml.jackson.core:jackson-core:2.7.4'
   compile 'com.fasterxml.jackson.core:jackson-databind:2.7.4'
-  provided 'org.jruby:jruby-core:1.7.25'
-
   testCompile 'org.apache.logging.log4j:log4j-core:2.6.2:tests'
+  provided 'org.jruby:jruby-core:1.7.25'
 }
 
 task generateGemJarRequiresFile {
