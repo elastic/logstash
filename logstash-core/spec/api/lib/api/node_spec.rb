@@ -82,7 +82,8 @@ describe LogStash::Api::Modules::Node do
             "heap_max_in_bytes" => Numeric,
             "non_heap_init_in_bytes" => Numeric,
             "non_heap_max_in_bytes" => Numeric
-          }
+        },
+        "gc_collectors" => Array
         },
         "hot_threads"=> {
           "time" => String,
