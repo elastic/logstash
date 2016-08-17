@@ -63,6 +63,12 @@ module Clamp
     class << self
       include ::Clamp::Option::StrictDeclaration
     end
+
+    def handle_remaining_arguments
+      unless remaining_arguments.empty?
+        signal_usage_error "Unknown command '#{remaining_arguments.first}'"
+      end
+    end
   end
 end
 
