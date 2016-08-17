@@ -1,6 +1,5 @@
 package org.logstash.log;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Marker;

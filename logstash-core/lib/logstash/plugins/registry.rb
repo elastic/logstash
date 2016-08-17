@@ -67,7 +67,7 @@ module LogStash
         raise LoadError
       end
     rescue => e
-      @logger.debug("Problems loading a plugin with", "type" => type, "name" => plugin, "path" => plugin.path, "error" => e) if @logger.debug?
+      @logger.debug("Problems loading a plugin with", :type => type, :name => plugin, :path => plugin.path, :error => e) if @logger.debug?
       raise LoadError, "Problems loading the requested plugin named #{plugin_name} of type #{type}."
     end
 

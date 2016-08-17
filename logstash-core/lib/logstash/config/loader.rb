@@ -61,17 +61,17 @@ module LogStash; module Config; class Loader
     Dir.glob(path).sort.each do |file|
       next unless ::File.file?(file)
       if file.match(/~$/)
-        @logger.debug("NOT reading config file because it is a temp file", "config_file" => file)
+        @logger.debug("NOT reading config file because it is a temp file", :config_file => file)
         next
       end
-      @logger.debug("Reading config file", "config_file" => file)
+      @logger.debug("Reading config file", :config_file => file)
       cfg = ::File.read(file)
       if !cfg.ascii_only? && !cfg.valid_encoding?
         encoding_issue_files << file
       end
       config << cfg + "\n"
       if @config_debug
-        @logger.debug? && @logger.debug("\nThe following is the content of a file", "config_file" => file.to_s)
+        @logger.debug? && @logger.debug("\nThe following is the content of a file", :config_file => file.to_s)
         @logger.debug? && @logger.debug("\n" + cfg + "\n\n")
       end
     end

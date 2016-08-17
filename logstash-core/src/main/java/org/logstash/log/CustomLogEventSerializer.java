@@ -16,8 +16,6 @@ public class CustomLogEventSerializer extends JsonSerializer<CustomLogEvent> {
         generator.writeObjectField("loggerName", event.getLoggerName());
         generator.writeObjectField("timeMillis", event.getTimeMillis());
         generator.writeObjectField("thread", event.getThreadName());
-        generator.writeObjectField("endOfBatch", event.isEndOfBatch());
-        generator.writeObjectField("loggerFqcn", event.getLoggerFqcn());
         generator.writeFieldName("logEvent");
         generator.writeStartObject();
         if (event.getMessage() instanceof StructuredMessage) {

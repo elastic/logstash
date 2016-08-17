@@ -26,7 +26,7 @@ describe LogStash::Runner do
     allow(logger).to receive(:fatal) {}
     allow(logger).to receive(:warn) {}
     allow(LogStash::ShutdownWatcher).to receive(:logger).and_return(logger)
-    allow(LogStash::Logging::Logger).to receive(:configure_logging) do |path, level|
+    allow(LogStash::Logging::Logger).to receive(:configure_logging) do |level, path|
       allow(logger).to receive(:level).and_return(level.to_sym)
     end
   end

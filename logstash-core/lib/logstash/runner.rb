@@ -179,7 +179,7 @@ class LogStash::Runner < Clamp::StrictCommand
 
     # Configure Logstash logging facility, this need to be done before everything else to
     # make sure the logger has the correct settings and the log level is correctly defined.
-    LogStash::Logging::Logger::configure_logging(setting("path.log"), setting("log.level"))
+    LogStash::Logging::Logger::configure_logging(setting("log.level"), setting("path.log"))
 
     if setting("config.debug") && @logger.debug?
       @logger.warn("--config.debug was specified, but log.level was not set to \'debug\'! No config info will be logged.")
@@ -200,7 +200,6 @@ class LogStash::Runner < Clamp::StrictCommand
     end
 
     LogStash::ShutdownWatcher.unsafe_shutdown = setting("pipeline.unsafe_shutdown")
-    # LogStash::ShutdownWatcher.logger = @logger
 
     configure_plugin_paths(setting("path.plugins"))
 
@@ -231,7 +230,7 @@ class LogStash::Runner < Clamp::StrictCommand
         #@logger.terminal "Configuration OK"
         return 0
       rescue => e
-        @logger.fatal I18n.t("logstash.runner.invalid-configuration", "error" => e.message)
+        @logger.fatal I18n.t("logstash.runner.invalid-configuration", :error => e.message)
         return 1
       end
     end

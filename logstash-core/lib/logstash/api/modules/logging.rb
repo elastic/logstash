@@ -11,7 +11,7 @@ module LogStash
             status 400
             respond_with({"error" => "[log.level] must be specified"})
           else
-            LogStash::Logging::Logger::configure_logging(path, level)
+            LogStash::Logging::Logger::configure_logging(level, path)
             respond_with({"acknowledged" => true})
           end
         end

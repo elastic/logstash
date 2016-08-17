@@ -99,10 +99,11 @@
 # ------------ Debugging Settings --------------
 #
 # Options for log.level:
-#   * warn (default)
 #   * error
+#   * warn (default)
 #   * info
 #   * debug
+#   * trace
 #
 # log.level: warn
 # path.log:

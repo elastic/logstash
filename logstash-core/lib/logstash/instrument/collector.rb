@@ -68,9 +68,9 @@ module LogStash module Instrument
     def update(time_of_execution, result, exception)
       return true if exception.nil?
       logger.error("Collector: Something went wrong went sending data to the observers",
-                   "execution_time" => time_of_execution,
-                   "result" => result,
-                   "exception" => exception.class.name)
+                   :execution_time => time_of_execution,
+                   :result => result,
+                   :exception => exception.class.name)
     end
 
     # Snapshot the current Metric Store and return it immediately,
@@ -101,7 +101,7 @@ module LogStash module Instrument
     # `#update(created_at, metric_store)`
     def publish_snapshot
       created_at = Time.now
-      logger.debug("Collector: Sending snapshot to observers", "created_at" => created_at) if logger.debug?
+      logger.debug("Collector: Sending snapshot to observers", :created_at => created_at) if logger.debug?
       notify_observers(snapshot_metric)
     end
   end

@@ -17,10 +17,13 @@ repositories {
 }
 
 dependencies {
-  compile 'org.apache.logging.log4j:log4j-api:2.6.1'
-  compile 'org.apache.logging.log4j:log4j-core:2.6.1'
+  compile 'org.apache.logging.log4j:log4j-api:2.6.2'
+  compile 'org.apache.logging.log4j:log4j-core:2.6.2'
   compile 'com.fasterxml.jackson.core:jackson-core:2.7.4'
   compile 'com.fasterxml.jackson.core:jackson-databind:2.7.4'
+  provided 'org.jruby:jruby-core:1.7.25'
+
+  testCompile 'org.apache.logging.log4j:log4j-core:2.6.2:tests'
 }
 
 task generateGemJarRequiresFile {

@@ -168,13 +168,13 @@ module LogStash; module Config; module AST
 
           code << <<-CODE
             @generated_objects[:#{name}_flush] = lambda do |options, &block|
-              @logger.debug? && @logger.debug(\"Flushing\", \"plugin\" => @generated_objects[:#{name}])
+              @logger.debug? && @logger.debug(\"Flushing\", :plugin => @generated_objects[:#{name}])
 
               events = @generated_objects[:#{name}].flush(options)
 
               return if events.nil? || events.empty?
 
-              @logger.debug? && @logger.debug(\"Flushing\", \"plugin\" => @generated_objects[:#{name}], \"events\" => events.map { |x| x.to_hash  })
+              @logger.debug? && @logger.debug(\"Flushing\", :plugin => @generated_objects[:#{name}], :events => events.map { |x| x.to_hash  })
 
               #{plugin.compile_starting_here.gsub(/^/, "  ")}
 

@@ -83,7 +83,7 @@ module LogStash; class Pipeline
     # So just print it.
 
     if @settings.get_value("config.debug") && @logger.debug?
-      @logger.debug("Compiled pipeline code", "code" => code)
+      @logger.debug("Compiled pipeline code", :code => code)
     end
 
     begin
@@ -152,8 +152,7 @@ module LogStash; class Pipeline
 
     start_workers
 
-    # TODO(talevy): figure out other way to do this
-    # @logger.log("Pipeline #{@pipeline_id} started")
+    puts "Pipeline #{@pipeline_id} started"
 
     # Block until all inputs have stopped
     # Generally this happens if SIGINT is sent and `shutdown` is called from an external thread
@@ -339,20 +338,20 @@ module LogStash; class Pipeline
     rescue => e
       if plugin.stop?
         @logger.debug("Input plugin raised exception during shutdown, ignoring it.",
-                      "plugin" => plugin.class.config_name, "exception" => e,
-                      "backtrace" => e.backtrace)
+                      :plugin => plugin.class.config_name, :exception => e,
+                      :backtrace => e.backtrace)
         return
       end
 
       # otherwise, report error and restart
       if @logger.debug?
         @logger.error(I18n.t("logstash.pipeline.worker-error-debug",
-                             "plugin" => plugin.inspect, "error" => e.to_s,
-                             "exception" => e.class,
-                             "stacktrace" => e.backtrace.join("\n")))
+                             :plugin => plugin.inspect, :error => e.to_s,
+                             :exception => e.class,
+                             :stacktrace => e.backtrace.join("\n")))
       else
         @logger.error(I18n.t("logstash.pipeline.worker-error",
-                             "plugin" => plugin.inspect, "error" => e))
+                             :plugin => plugin.inspect, :error => e))
       end
 
       # Assuming the failure that caused this exception is transient,
