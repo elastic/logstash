@@ -19,6 +19,7 @@ namespace "artifact" do
       "lib/systeminstall/**/*",
       "logstash-core/lib/**/*",
       "logstash-core/locales/**/*",
+      "logstash-core/vendor/**/*",
       "logstash-core/*.gemspec",
       "logstash-core-event-java/lib/**/*",
       "logstash-core-event-java/*.gemspec",

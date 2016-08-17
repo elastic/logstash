@@ -4,6 +4,7 @@ module LogStash
   module Logging
     class Logger
       java_import org.apache.logging.log4j.Level
+      java_import org.apache.logging.log4j.LogManager
       java_import org.apache.logging.log4j.core.config.Configurator
 
       def initialize(name)
