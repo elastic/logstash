@@ -35,6 +35,7 @@ module LogStash
 
         def jvm
           memory_bean = ManagementFactory.getMemoryMXBean()
+
           {
             :pid =>  ManagementFactory.getRuntimeMXBean().getName().split("@").first.to_i,
             :version => java.lang.System.getProperty("java.version"),
@@ -48,14 +49,14 @@ module LogStash
               :heap_max_in_bytes => (memory_bean.getHeapMemoryUsage().getMax() < 0 ? 0 : memory_bean.getHeapMemoryUsage().getMax()),
               :non_heap_init_in_bytes => (memory_bean.getNonHeapMemoryUsage().getInit() < 0 ? 0 : memory_bean.getNonHeapMemoryUsage().getInit()),
               :non_heap_max_in_bytes => (memory_bean.getNonHeapMemoryUsage().getMax() < 0 ? 0 : memory_bean.getNonHeapMemoryUsage().getMax())
-            }
+            },
+            :gc_collectors => ManagementFactory.getGarbageCollectorMXBeans().collect(&:getName)
           }
         end
 
         def hot_threads(options={})
           HotThreadsReport.new(self, options)
         end
-
       end
     end
   end
