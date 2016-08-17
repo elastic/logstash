@@ -47,17 +47,17 @@ class LogStash::Runner < Clamp::StrictCommand
   option ["-w", "--pipeline.workers"], "COUNT",
     I18n.t("logstash.runner.flag.pipeline-workers"),
     :attribute_name => "pipeline.workers",
-    :default => LogStash::SETTINGS.get_default("pipeline.workers"), &:to_i
+    :default => LogStash::SETTINGS.get_default("pipeline.workers")
 
   option ["-b", "--pipeline.batch.size"], "SIZE",
     I18n.t("logstash.runner.flag.pipeline-batch-size"),
     :attribute_name => "pipeline.batch.size",
-    :default => LogStash::SETTINGS.get_default("pipeline.batch.size"), &:to_i
+    :default => LogStash::SETTINGS.get_default("pipeline.batch.size")
 
   option ["-u", "--pipeline.batch.delay"], "DELAY_IN_MS",
     I18n.t("logstash.runner.flag.pipeline-batch-delay"),
     :attribute_name => "pipeline.batch.delay",
-    :default => LogStash::SETTINGS.get_default("pipeline.batch.delay"), &:to_i
+    :default => LogStash::SETTINGS.get_default("pipeline.batch.delay")
 
   option ["--pipeline.unsafe_shutdown"], :flag,
     I18n.t("logstash.runner.flag.unsafe_shutdown"),
@@ -110,7 +110,7 @@ class LogStash::Runner < Clamp::StrictCommand
   option ["--config.reload.interval"], "RELOAD_INTERVAL",
     I18n.t("logstash.runner.flag.reload_interval"),
     :attribute_name => "config.reload.interval",
-    :default => LogStash::SETTINGS.get_default("config.reload.interval"), &:to_i
+    :default => LogStash::SETTINGS.get_default("config.reload.interval")
 
   option ["--http.host"], "HTTP_HOST",
     I18n.t("logstash.runner.flag.http_host"),
@@ -120,7 +120,7 @@ class LogStash::Runner < Clamp::StrictCommand
   option ["--http.port"], "HTTP_PORT",
     I18n.t("logstash.runner.flag.http_port"),
     :attribute_name => "http.port",
-    :default => LogStash::SETTINGS.get_default("http.port"), &:to_i
+    :default => LogStash::SETTINGS.get_default("http.port")
 
   option ["--log.format"], "FORMAT",
     I18n.t("logstash.runner.flag.log_format"),
