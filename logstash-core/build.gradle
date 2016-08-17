@@ -5,7 +5,7 @@ apply plugin: 'java'
 apply plugin: 'idea'
 
 group = 'org.logstash'
-version = '5.0.0-alpha5'
+version = '5.0.0-alpha6'
 
 description = """Logstash Core Java"""
 
