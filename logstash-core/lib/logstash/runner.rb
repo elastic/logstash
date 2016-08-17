@@ -169,6 +169,10 @@ class LogStash::Runner < Clamp::StrictCommand
       end
     end
 
+    # initialize logging
+    logging_ctx = org.apache.logging.log4j.LogManager.getContext(false)
+    logging_ctx.setConfigLocation(java.io.File.new(setting("path.settings") + "/log4j.properties").toURI)
+
     super(*[args])
   end
 

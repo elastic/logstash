@@ -134,7 +134,6 @@ setup_ruby() {
 logging_opts() {
     printf "%s" " -J-DLog4jLogEventFactory=org.logstash.log.CustomLogEventFactory"
     printf "%s" " -J-DLog4jContextSelector=org.logstash.log.StructuredMessageContextSelector"
-    printf "%s" " -J-Dlog4j.configurationFile=${LOGSTASH_HOME}/config/log4j2.properties"
 }
 
 jruby_opts() {
