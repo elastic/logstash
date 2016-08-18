@@ -16,6 +16,18 @@ describe LogStash::Api::Modules::NodeStats do
         "count"=>Numeric,
         "peak_count"=>Numeric
       },
+      "gc" => {
+        "collectors" => {
+          "young" => {
+            "collection_count" => Numeric,
+            "collection_time_in_millis" => Numeric
+          },
+          "old" => {
+            "collection_count" => Numeric,
+            "collection_time_in_millis" => Numeric
+          }
+        }
+      },
       "mem" => {
         "heap_used_in_bytes" => Numeric,
         "heap_used_percent" => Numeric,

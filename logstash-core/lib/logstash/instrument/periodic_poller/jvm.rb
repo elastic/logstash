@@ -1,18 +1,36 @@
 
 # encoding: utf-8
 require "logstash/instrument/periodic_poller/base"
-require 'jrmonitor'
+require "jrmonitor"
+require "set"
 
 java_import 'java.lang.management.ManagementFactory'
 java_import 'java.lang.management.OperatingSystemMXBean'
+java_import 'java.lang.management.GarbageCollectorMXBean'
 java_import 'com.sun.management.UnixOperatingSystemMXBean'
 java_import 'javax.management.MBeanServer'
 java_import 'javax.management.ObjectName'
 java_import 'javax.management.AttributeList'
 java_import 'javax.naming.directory.Attribute'
 
+
 module LogStash module Instrument module PeriodicPoller
   class JVM < Base
+    class GarbageCollectorName
+      YOUNG_GC_NAMES = Set.new(["Copy", "PS Scavenge", "ParNew", "G1 Young Generation"])
+      OLD_GC_NAMES = Set.new(["MarkSweepCompact", "PS MarkSweep", "ConcurrentMarkSweep", "G1 Old Generation"])
+
+      YOUNG = :young
+      OLD = :old
+
+      def self.get(gc_name)
+        if YOUNG_GC_NAMES.include?(gc_name)
+          YOUNG
+        elsif(OLD_GC_NAMES.include?(gc_name))
+          OLD
+        end
+      end
+    end
 
     attr_reader :metric
 
@@ -22,31 +40,46 @@ module LogStash module Instrument module PeriodicPoller
     end
 
     def collect
-      raw = JRMonitor.memory.generate      
+      raw = JRMonitor.memory.generate
       collect_heap_metrics(raw)
       collect_non_heap_metrics(raw)
       collect_pools_metrics(raw)
       collect_threads_metrics
       collect_process_metrics
+      collect_gc_stats
     end
 
     private
 
-    def collect_threads_metrics      
+    def collect_gc_stats
+      garbage_collectors = ManagementFactory.getGarbageCollectorMXBeans()
+
+      garbage_collectors.each do |collector|
+        name = GarbageCollectorName.get(collector.getName())
+        if name.nil?
+          logger.error("Unknown garbage collector name", :name => name)
+        else
+          metric.gauge([:jvm, :gc, :collectors, name], :collection_count, collector.getCollectionCount())
+          metric.gauge([:jvm, :gc, :collectors, name], :collection_time_in_millis, collector.getCollectionTime())
+        end
+      end
+    end
+
+    def collect_threads_metrics
       threads = JRMonitor.threads.generate
-      
+
       current = threads.count
       if @peak_threads.nil? || @peak_threads < current
         @peak_threads = current
-      end      
-      
-      metric.gauge([:jvm, :threads], :count, threads.count)     
+      end
+
+      metric.gauge([:jvm, :threads], :count, threads.count)
       metric.gauge([:jvm, :threads], :peak_count, @peak_threads)
     end
 
     def collect_process_metrics
       process_metrics = JRMonitor.process.generate
-      
+
       path = [:jvm, :process]
 
 
@@ -91,6 +124,7 @@ module LogStash module Instrument module PeriodicPoller
       end
     end
 
+
     def build_pools_metrics(data)
       heap = data["heap"]
       old  = {}
@@ -129,9 +163,8 @@ module LogStash module Instrument module PeriodicPoller
         :committed_in_bytes => 0,
         :max_in_bytes => 0,
         :peak_used_in_bytes => 0,
-        :peak_max_in_bytes  => 0
+        :peak_max_in_bytes => 0
       }
     end
-
   end
 end; end; end
