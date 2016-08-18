@@ -20,7 +20,7 @@ module LogStash
         def pipeline
           extract_metrics(
             [:stats, :pipelines, :main, :config],
-            :workers, :batch_size, :batch_delay
+            :workers, :batch_size, :batch_delay, :config_reload_automatic, :config_reload_interval
           )
         end
 
@@ -42,7 +42,7 @@ module LogStash
             :vm_name => java.lang.System.getProperty("java.vm.name"),
             :vm_version => java.lang.System.getProperty("java.version"),
             :vm_vendor => java.lang.System.getProperty("java.vendor"),
-            :vm_name => java.lang.System.getProperty("java.vm.name"),            
+            :vm_name => java.lang.System.getProperty("java.vm.name"),
             :start_time_in_millis => started_at,
             :mem => {
               :heap_init_in_bytes => (memory_bean.getHeapMemoryUsage().getInit() < 0 ? 0 : memory_bean.getHeapMemoryUsage().getInit()),
