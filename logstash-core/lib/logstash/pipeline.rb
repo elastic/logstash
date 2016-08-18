@@ -95,7 +95,7 @@ module LogStash; class Pipeline
     queue = LogStash::Util::WrappedSynchronousQueue.new
     @input_queue_client = queue.write_client
     @filter_queue_client = queue.read_client
-    # Note that @infilght_batches as a central mechanism for tracking inflight
+    # Note that @inflight_batches as a central mechanism for tracking inflight
     # batches will fail if we have multiple read clients here.
     @filter_queue_client.set_events_metric(metric.namespace([:stats, :events]))
     @filter_queue_client.set_pipeline_metric(
@@ -206,6 +206,8 @@ module LogStash; class Pipeline
       config_metric.gauge(:workers, pipeline_workers)
       config_metric.gauge(:batch_size, batch_size)
       config_metric.gauge(:batch_delay, batch_delay)
+      config_metric.gauge(:config_reload_automatic, @settings.get("config.reload.automatic"))
+      config_metric.gauge(:config_reload_interval, @settings.get("config.reload.interval"))
 
       @logger.info("Starting pipeline",
                    "id" => self.pipeline_id,

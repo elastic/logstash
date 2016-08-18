@@ -111,7 +111,9 @@ describe LogStash::Api::Modules::Node do
         "pipeline" => {
           "workers" => Numeric,
           "batch_size" => Numeric,
-          "batch_delay" => Numeric
+          "batch_delay" => Numeric,
+          "config_reload_automatic" => Boolean,
+          "config_reload_interval" => Numeric
         },
         "os" => {
           "name" => String,
@@ -140,8 +142,8 @@ describe LogStash::Api::Modules::Node do
           "threads" => Array
         }
       }
-      
+
       test_api_and_resources(root_structure, :exclude_from_root => ["hot_threads"])
-    end   
+    end
   end
 end
