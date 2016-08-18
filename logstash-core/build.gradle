@@ -17,6 +17,7 @@ repositories {
 }
 
 dependencies {
+  runtime 'org.apache.logging.log4j:log4j-1.2-api:2.6.2'
   compile 'org.apache.logging.log4j:log4j-api:2.6.2'
   compile 'org.apache.logging.log4j:log4j-core:2.6.2'
   compile 'com.fasterxml.jackson.core:jackson-core:2.7.4'
