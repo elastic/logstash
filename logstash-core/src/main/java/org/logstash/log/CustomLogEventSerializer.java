@@ -42,6 +42,7 @@ public class CustomLogEventSerializer extends JsonSerializer<CustomLogEvent> {
 
     @Override
     public Class<CustomLogEvent> handledType() {
+
         return CustomLogEvent.class;
     }
 }

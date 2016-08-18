@@ -6,7 +6,7 @@ module LogStash
 
         put "/" do
           level = params["log.level"]
-          path = params["module"] || ""
+          path = params["module"]
           if level.nil?
             status 400
             respond_with({"error" => "[log.level] must be specified"})

@@ -60,9 +60,13 @@ module LogStash
       end
 
       # Point logging at a specific path.
-      def self.configure_logging(level, path = "")
+      def self.configure_logging(level, path = LogManager::ROOT_LOGGER_NAME)
         Configurator.setLevel(path, Level.toLevel(level))
       end # def configure_logging
+
+      def self.initialize(config_location)
+        Configurator.initialize(nil, config_location)
+      end
     end
   end
 end

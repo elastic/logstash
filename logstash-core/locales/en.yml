@@ -86,10 +86,10 @@ en:
     runner:
       short-help: |-
         usage:
-          bin/logstash -f CONFIG_PATH [-t] [-r] [--error|info|debug|warn] [-w COUNT] [-l LOG]
-          bin/logstash -e CONFIG_STR [-t] [--error|info|debug|warn] [-w COUNT] [-l LOG]
-          bin/logstash -i SHELL [--error|info|debug|warn]
-          bin/logstash -V [--verbose|debug]
+          bin/logstash -f CONFIG_PATH [-t] [-r] [] [-w COUNT] [-l LOG]
+          bin/logstash -e CONFIG_STR [-t] [--log.level fatal|error|warn|info|debug] [-w COUNT] [-l LOG]
+          bin/logstash -i SHELL [--log.level fatal|error|warn|info|debug]
+          bin/logstash -V [--log.level fatal|error|warn|info|debug]
           bin/logstash --help
       invalid-configuration: >-
         The given configuration is invalid. Reason: %{error}
@@ -228,10 +228,12 @@ en:
           and NAME is the name of the plugin.
         log_level: |+
           Set the log level for logstash. Possible values are:
-            - quiet => :error
-            - verbose => :info
-            - debug => :debug
-            - warn => :warn
+            - fatal
+            - error
+            - warn
+            - info
+            - debug
+            - trace
         unsafe_shutdown: |+
           Force logstash to exit during shutdown even
           if there are still inflight events in memory.

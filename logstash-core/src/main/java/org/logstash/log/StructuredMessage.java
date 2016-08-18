@@ -12,11 +12,12 @@ public class StructuredMessage implements Message {
     private final String message;
     private final Map<Object, Object> params;
 
+    @SuppressWarnings("unchecked")
     public StructuredMessage(String message) {
-        this(message, Collections.emptyMap());
+        this(message, (Map) null);
     }
 
-    public StructuredMessage(String message, Object... params) {
+    public StructuredMessage(String message, Object[] params) {
         final Map<Object, Object> paramsMap;
         if (params.length == 1 && params[0] instanceof Map) {
             paramsMap = (Map) params[0];
@@ -70,24 +71,5 @@ public class StructuredMessage implements Message {
     @Override
     public Throwable getThrowable() {
         return null;
-    }
-
-    static class Builder {
-        private final String message;
-        private final Map<String, Object> params;
-
-        public Builder(String message) {
-            this.message = message;
-            this.params = new HashMap<>();
-        }
-
-        public Builder setParam(String name, Object value) {
-            this.params.put(name, value);
-            return this;
-        }
-
-        public StructuredMessage build() {
-            return new StructuredMessage(message, params);
-        }
     }
 }
