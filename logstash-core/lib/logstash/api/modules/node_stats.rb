@@ -12,7 +12,7 @@ module LogStash
           payload = {
             :jvm => jvm_payload,
             :process => process_payload,
-            :pipeline => pipeline_payload
+            :pipeline => pipeline_payload,
           }
           respond_with(payload, {:filter => params["filter"]})
         end

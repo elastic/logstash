@@ -14,7 +14,8 @@ module LogStash
               :count,
               :peak_count
             ),
-            :mem => memory
+            :mem => memory,
+            :gc => gc
           }
         end
 
@@ -57,6 +58,10 @@ module LogStash
               acc
             end
           }
+        end
+
+        def gc
+          service.get_shallow(:jvm, :gc)
         end
 
         def hot_threads(options={})
