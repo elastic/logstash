@@ -132,6 +132,19 @@ class LogStash::Runner < Clamp::StrictCommand
     :attribute_name => "path.settings",
     :default => LogStash::SETTINGS.get_default("path.settings")
 
+  ### DEPRECATED FLAGS ###
+  deprecated_option ["--verbose"], :flag,
+    I18n.t("logstash.runner.flag.verbose"),
+    :new_flag => "log.level", :new_value => "verbose"
+
+  deprecated_option ["--debug"], :flag,
+    I18n.t("logstash.runner.flag.debug"),
+    :new_flag => "log.level", :new_value => "debug"
+
+  deprecated_option ["--quiet"], :flag,
+    I18n.t("logstash.runner.flag.quiet"),
+    :new_flag => "log.level", :new_value => "quiet"
+
   attr_reader :agent
 
   def initialize(*args)
