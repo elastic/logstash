@@ -57,6 +57,9 @@ module LogStash; module Util
         # Note that @infilght_batches as a central mechanism for tracking inflight
         # batches will fail if we have multiple read clients in the pipeline.
         @inflight_batches = {}
+
+        # allow the worker thread to report the execution time of the filter + output
+        @inflight_clocks = {}
         @batch_size = batch_size
         @wait_for = wait_for
       end
@@ -89,6 +92,7 @@ module LogStash; module Util
           batch = ReadBatch.new(@queue, @batch_size, @wait_for)
           add_starting_metrics(batch)
           set_current_thread_inflight_batch(batch)
+          start_clock
           batch
         end
       end
@@ -100,11 +104,22 @@ module LogStash; module Util
       def close_batch(batch)
         @mutex.synchronize do
           @inflight_batches.delete(Thread.current)
+          stop_clock
         end
       end
 
+      def start_clock
+        @inflight_clocks[Thread.current] = [
+          @event_metric.time(:duration_in_millis),
+          @pipeline_metric.time(:duration_in_millis)
+        ]
+      end
+
+      def stop_clock
+        @inflight_clocks[Thread.current].each(&:stop)
+      end
+
       def add_starting_metrics(batch)
-        return if @event_metric.nil? || @pipeline_metric.nil?
         @event_metric.increment(:in, batch.starting_size)
         @pipeline_metric.increment(:in, batch.starting_size)
       end

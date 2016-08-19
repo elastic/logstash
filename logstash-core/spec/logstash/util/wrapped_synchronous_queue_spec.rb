@@ -49,6 +49,12 @@ describe LogStash::Util::WrappedSynchronousQueue do
         let(:queue) { DummyQueue.new }
         let(:write_client) { LogStash::Util::WrappedSynchronousQueue::WriteClient.new(queue)}
         let(:read_client)  { LogStash::Util::WrappedSynchronousQueue::ReadClient.new(queue)}
+
+        before :each do
+          read_client.set_events_metric(LogStash::Instrument::NullMetric.new)
+          read_client.set_pipeline_metric(LogStash::Instrument::NullMetric.new)
+        end
+
         it "appends batches to the queue" do
           batch = write_client.get_new_batch
           5.times {|i| batch.push("value-#{i}")}

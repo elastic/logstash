@@ -59,12 +59,13 @@ describe LogStash::Api::Modules::NodeStats do
     },
    "pipeline" => {
      "events" => {
+        "duration_in_millis" => Numeric,
         "in" => Numeric,
         "filtered" => Numeric,
         "out" => Numeric
-     } 
-    } 
+     }
+    }
   }
-  
+
   test_api_and_resources(root_structure)
 end
