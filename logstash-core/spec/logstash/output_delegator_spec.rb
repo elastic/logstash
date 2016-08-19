@@ -5,8 +5,9 @@ require 'spec_helper'
 describe LogStash::OutputDelegator do
   let(:logger) { double("logger") }
   let(:events) { 7.times.map { LogStash::Event.new }}
+  let(:plugin_args) { {"id" => "foo", "arg1" => "val1"} }
 
-  subject { described_class.new(logger, out_klass, LogStash::Instrument::NullMetric.new, {}, "id" => "foo") }
+  subject { described_class.new(logger, out_klass, LogStash::Instrument::NullMetric.new, ::LogStash::OutputDelegatorStrategyRegistry.instance, plugin_args) }
 
   context "with a plain output plugin" do
     let(:out_klass) { double("output klass") }
@@ -81,6 +82,10 @@ describe LogStash::OutputDelegator do
           
           it "should find the correct Strategy class for the worker" do
             expect(subject.strategy).to be_a(klass)
+          end
+
+          it "should set the correct parameters on the instance" do
+            expect(out_klass).to have_received(:new).with(plugin_args)
           end
 
           [[:register], [:do_close], [:multi_receive, [[]] ] ].each do |method, args|
