@@ -328,4 +328,23 @@ describe LogStash::Runner do
       end
     end
   end
+
+  describe "path.settings" do
+    subject { LogStash::Runner.new("") }
+    context "if does not exist" do
+      let(:args) { ["--path.settings", "/tmp/a/a/a/a", "-e", "input {} output {}"] }
+
+      it "should terminate logstash" do
+        expect(subject.run(args)).to eq(1)
+      end
+
+      context "but --help is passed" do
+        let(:args) { ["--path.settings", "/tmp/a/a/a/a", "--help"] }
+
+        it "should show help" do
+          expect { subject.run(args) }.to raise_error(Clamp::HelpWanted)
+        end
+      end
+    end
+  end
 end

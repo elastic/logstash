@@ -151,7 +151,9 @@ class LogStash::Runner < Clamp::StrictCommand
       @logger.subscribe(STDOUT)
       @logger.warn("Logstash has a new settings file which defines start up time settings. This file is typically located in $LS_HOME/config or /etc/logstash. If you installed Logstash through a package and are starting it manually please specify the location to this settings file by passing in \"--path.settings=/path/..\" in the command line options")
       @logger.fatal("Failed to load settings file from \"path.settings\". Aborting...", "path.settings" => LogStash::SETTINGS.get("path.settings"), "exception" => e.class, "message" => e.message)
-      exit(-1)
+
+      # abort unless we're just looking for the help
+      return(1) if (["--help", "-h"] & args).empty?
     end
 
     super(*[args])
