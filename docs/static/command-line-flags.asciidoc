@@ -91,7 +91,7 @@ added[5.0.0-alpha3, Command-line flags have dots instead of dashes in their name
 
 *`--http.port HTTP_PORT`*::
   The bind port for the metrics REST endpoint. The default is 9600-9700.
-  This settings accept a range of the format 9600-9700 and Logstash will pick up the first available port.
+  This setting accepts a range of the format 9600-9700. Logstash will pick up the first available port.
 
 *`--pipeline.unsafe_shutdown`*::
   Force Logstash to exit during shutdown even if there are still inflight events
