@@ -611,6 +611,7 @@ describe LogStash::Pipeline do
       let(:collected_metric) { metric_store.get_with_path("stats/events") }
 
       it "populates the different metrics" do
+        expect(collected_metric[:stats][:events][:duration_in_millis].value).not_to be_nil
         expect(collected_metric[:stats][:events][:in].value).to eq(number_of_events)
         expect(collected_metric[:stats][:events][:filtered].value).to eq(number_of_events)
         expect(collected_metric[:stats][:events][:out].value).to eq(number_of_events)
@@ -621,6 +622,7 @@ describe LogStash::Pipeline do
       let(:collected_metric) { metric_store.get_with_path("stats/pipelines/") }
 
       it "populates the pipelines core metrics" do
+        expect(collected_metric[:stats][:pipelines][:main][:events][:duration_in_millis].value).not_to be_nil
         expect(collected_metric[:stats][:pipelines][:main][:events][:in].value).to eq(number_of_events)
         expect(collected_metric[:stats][:pipelines][:main][:events][:filtered].value).to eq(number_of_events)
         expect(collected_metric[:stats][:pipelines][:main][:events][:out].value).to eq(number_of_events)

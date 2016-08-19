@@ -32,7 +32,7 @@ module LogStash
         def events
           extract_metrics(
             [:stats, :events],
-            :in, :filtered, :out
+            :in, :filtered, :out, :duration_in_millis
           )
         end
 
