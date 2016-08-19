@@ -20,16 +20,11 @@
 package org.logstash.log;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.type.TypeFactory;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.core.config.LoggerConfig;
 import org.apache.logging.log4j.junit.LoggerContextRule;
 import org.apache.logging.log4j.test.appender.ListAppender;
-import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.ClassRule;
-import org.junit.Rule;
 import org.junit.Test;
 
 import java.util.Collections;
@@ -45,7 +40,7 @@ public class CustomLogEventTests {
     private ListAppender appender;
 
     @ClassRule
-    public static LoggerContextRule CTX = new LogEventFactoryRule(CONFIG, StructuredMessageContextSelector.class);
+    public static LoggerContextRule CTX = new LoggerContextRule(CONFIG, StructuredMessageContextSelector.class);
 
 
     @Test
@@ -62,8 +57,6 @@ public class CustomLogEventTests {
     @Test
     @SuppressWarnings("unchecked")
     public void testJSONLayout() throws Exception {
-        LoggerConfig
-
         appender = CTX.getListAppender("JSONEventLogger").clear();
         Logger logger = LogManager.getLogger("JSONEventLogger");
         logger.info("simple message");

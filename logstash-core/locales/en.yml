@@ -87,9 +87,9 @@ en:
       short-help: |-
         usage:
           bin/logstash -f CONFIG_PATH [-t] [-r] [] [-w COUNT] [-l LOG]
-          bin/logstash -e CONFIG_STR [-t] [--log.level fatal|error|warn|info|debug] [-w COUNT] [-l LOG]
-          bin/logstash -i SHELL [--log.level fatal|error|warn|info|debug]
-          bin/logstash -V [--log.level fatal|error|warn|info|debug]
+          bin/logstash -e CONFIG_STR [-t] [--log.level fatal|error|warn|info|debug|trace] [-w COUNT] [-l LOG]
+          bin/logstash -i SHELL [--log.level fatal|error|warn|info|debug|trace]
+          bin/logstash -V [--log.level fatal|error|warn|info|debug|trace]
           bin/logstash --help
       invalid-configuration: >-
         The given configuration is invalid. Reason: %{error}

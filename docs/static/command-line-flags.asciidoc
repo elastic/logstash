@@ -45,8 +45,8 @@ added[5.0.0-alpha3, Command-line flags have dots instead of dashes in their name
 
 *`--log.level LEVEL`*::
  Valid levels are:
-* `error`: log errors
 * `fatal`: log very severe error messages that will usually be followed by the application aborting
+* `error`: log errors
 * `warn`: log warnings
 * `info`: log verbose info (for users)
 * `debug`: log debugging info (for developers)

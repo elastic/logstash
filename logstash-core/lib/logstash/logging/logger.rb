@@ -31,7 +31,7 @@ module LogStash
         @logger.is_fatal_enabled
       end
 
-      def fatal?
+      def trace?
         @logger.is_trace_enabled
       end
 
