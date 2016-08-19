@@ -252,3 +252,12 @@ en:
         log_format: |+
           Specify if Logstash should write its own logs in JSON form (one
           event per line) or in plain text (using Ruby's Object#inspect)
+        debug: |+
+          Set the log level to debug.
+          DEPRECATED: use --log.level=debug instead.
+        verbose: |+
+          Set the log level to info.
+          DEPRECATED: use --log.level=verbose instead.
+        quiet: |+
+          Set the log level to info.
+          DEPRECATED: use --log.level=quiet instead.
