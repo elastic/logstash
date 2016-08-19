@@ -338,7 +338,7 @@ describe LogStash::Runner do
         expect(subject.run(args)).to eq(1)
       end
 
-      context "but --help is passed" do
+      context "but if --help is passed" do
         let(:args) { ["--path.settings", "/tmp/a/a/a/a", "--help"] }
 
         it "should show help" do
