@@ -416,7 +416,7 @@ module LogStash; class Pipeline
     type_scoped_metric = pipeline_scoped_metric.namespace("#{plugin_type}s".to_sym)
     plugin = if plugin_type == "output"
                OutputDelegator.new(@logger, klass, type_scoped_metric,
-                                   {:strategy_registry => ::LogStash::OutputDelegatorStrategyRegistry.instance},
+                                   ::LogStash::OutputDelegatorStrategyRegistry.instance,
                                    args)
              elsif plugin_type == "filter"
                LogStash::FilterDelegator.new(@logger, klass, type_scoped_metric, args)

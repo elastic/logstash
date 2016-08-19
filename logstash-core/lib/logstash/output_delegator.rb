@@ -12,7 +12,8 @@ module LogStash class OutputDelegator
     @output_class = output_class
     @metric = metric
     @plugin_args = plugin_args
-    @strategy_registry ||= ::LogStash::OutputDelegatorStrategyRegistry.instance
+    @strategy_registry = strategy_registry
+    raise ArgumentError, "No strategy registry specified" unless strategy_registry
     raise ArgumentError, "No ID specified! Got args #{plugin_args}" unless id
     
     build_strategy!

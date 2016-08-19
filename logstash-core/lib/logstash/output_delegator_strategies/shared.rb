@@ -1,5 +1,5 @@
 module LogStash module OutputDelegatorStrategies class Shared
-  def initialize(logger, klass, metric, xopts={}, plugin_args={})
+  def initialize(logger, klass, metric, plugin_args)
     @output = klass.new(plugin_args)
   end
   
