@@ -8,8 +8,9 @@ rvm:
   - jruby-1.7.25
 jdk:
   - oraclejdk8
-before_script:
+install:
   - rake test:install-core
+before_script:
   - echo "--order rand" > .rspec
   - echo "--format documentation" >> .rspec
 script: rake test:core
