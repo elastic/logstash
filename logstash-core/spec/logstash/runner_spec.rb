@@ -327,6 +327,48 @@ describe LogStash::Runner do
         expect(channel.level).to eq(:error)
       end
     end
+
+    context "deprecated flags" do
+      context "when using --quiet" do
+        it "should warn about the deprecated flag" do
+          expect(channel).to receive(:warn).with(/DEPRECATION WARNING/)
+          args = ["--quiet", "--version"]
+          subject.run("bin/logstash", args)
+        end
+
+        it "should still set the log level accordingly" do
+          args = ["--quiet", "--version"]
+          subject.run("bin/logstash", args)
+          expect(channel.level).to eq(:error)
+        end
+      end
+      context "when using --debug" do
+        it "should warn about the deprecated flag" do
+          expect(channel).to receive(:warn).with(/DEPRECATION WARNING/)
+          args = ["--debug", "--version"]
+          subject.run("bin/logstash", args)
+        end
+
+        it "should still set the log level accordingly" do
+          args = ["--debug", "--version"]
+          subject.run("bin/logstash", args)
+          expect(channel.level).to eq(:debug)
+        end
+      end
+      context "when using --verbose" do
+        it "should warn about the deprecated flag" do
+          expect(channel).to receive(:warn).with(/DEPRECATION WARNING/)
+          args = ["--verbose", "--version"]
+          subject.run("bin/logstash", args)
+        end
+
+        it "should still set the log level accordingly" do
+          args = ["--verbose", "--version"]
+          subject.run("bin/logstash", args)
+          expect(channel.level).to eq(:info)
+        end
+      end
+    end
   end
 
   describe "path.settings" do
