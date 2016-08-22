@@ -155,13 +155,26 @@ module LogStash; module Config; module AST
     def compile_initializer
       generate_variables
       code = []
+
+      if LogStash::SETTINGS.get_value("config.simulate")
+        code << <<-CODE
+          @inputs << plugin("input", "stdin")
+          @generated_objects[:stdout_simulate] = plugin("output", "stdout")
+          @outputs << @generated_objects[:stdout_simulate]
+        CODE
+      end
+
       @variables.each do |plugin, name|
 
 
-        code << <<-CODE
+        plugin_declare_code = <<-CODE
           @generated_objects[:#{name}] = #{plugin.compile_initializer}
           @#{plugin.plugin_type}s << @generated_objects[:#{name}]
         CODE
+
+        unless LogStash::SETTINGS.get_value("config.simulate") && plugin.plugin_type == "input"
+          code << plugin_declare_code
+        end
 
         # The flush method for this filter.
         if plugin.plugin_type == "filter"
@@ -255,6 +268,9 @@ module LogStash; module Config; module AST
           events = @generated_objects[:#{variable_name}].multi_filter(events)
         CODE
       when "output"
+        if LogStash::SETTINGS.get_value("config.simulate")
+          variable_name = "stdout_simulate"
+        end
         return "targeted_outputs << @generated_objects[:#{variable_name}]\n"
       when "codec"
         settings = attributes.recursive_select(Attribute).collect(&:compile).reject(&:empty?)

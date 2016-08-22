@@ -32,6 +32,7 @@ module LogStash
                     Setting.new("path.plugins", Array, []),
             Setting::String.new("interactive", nil, false),
            Setting::Boolean.new("config.debug", false),
+           Setting::Boolean.new("config.simulate", false),
             Setting::String.new("log.level", "warn", true, ["quiet", "verbose", "warn", "debug"]),
            Setting::Boolean.new("version", false),
            Setting::Boolean.new("help", false),
