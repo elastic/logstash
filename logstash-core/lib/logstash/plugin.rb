@@ -45,7 +45,7 @@ class LogStash::Plugin
   end
 
   def initialize(params=nil)
-    @logger = self.class.logger
+    @logger = self.logger
     @params = LogStash::Util.deep_clone(params)
     # The id should always be defined normally, but in tests that might not be the case
     # In the future we may make this more strict in the Plugin API
