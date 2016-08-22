@@ -15,12 +15,12 @@ module LogStash class OutputDelegator
     @strategy_registry = strategy_registry
     raise ArgumentError, "No strategy registry specified" unless strategy_registry
     raise ArgumentError, "No ID specified! Got args #{plugin_args}" unless id
-    
+
     build_strategy!
 
     @namespaced_metric = metric.namespace(id.to_sym)
+    @namespaced_metric.gauge(:name, config_name)
     @metric_events = @namespaced_metric.namespace(:events)
-    @namespaced_metric.gauge(:name, id)
   end
 
   def config_name
