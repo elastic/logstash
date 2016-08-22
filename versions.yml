@@ -1,3 +1,4 @@
+---
 logstash: 5.0.0-alpha6
 logstash-core: 5.0.0-alpha6
 logstash-core-event: 5.0.0-alpha6
