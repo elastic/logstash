@@ -6,8 +6,9 @@ describe LogStash::OutputDelegator do
   let(:logger) { double("logger") }
   let(:events) { 7.times.map { LogStash::Event.new }}
   let(:plugin_args) { {"id" => "foo", "arg1" => "val1"} }
+  let(:metric) { LogStash::Instrument::NullMetric.new }
 
-  subject { described_class.new(logger, out_klass, LogStash::Instrument::NullMetric.new, ::LogStash::OutputDelegatorStrategyRegistry.instance, plugin_args) }
+  subject { described_class.new(logger, out_klass, metric, ::LogStash::OutputDelegatorStrategyRegistry.instance, plugin_args) }
 
   context "with a plain output plugin" do
     let(:out_klass) { double("output klass") }
@@ -15,10 +16,13 @@ describe LogStash::OutputDelegator do
     let(:concurrency) { :single }
 
     before(:each) do
+      # use the same metric instance
+      allow(metric).to receive(:namespace).with(any_args).and_return(metric)
+
       allow(out_klass).to receive(:new).with(any_args).and_return(out_inst)
       allow(out_klass).to receive(:name).and_return("example")
       allow(out_klass).to receive(:concurrency).with(any_args).and_return concurrency
-      allow(out_klass).to receive(:config_name)
+      allow(out_klass).to receive(:config_name).and_return("dummy_plugin")
       allow(out_inst).to receive(:register)
       allow(out_inst).to receive(:multi_receive)
       allow(out_inst).to receive(:metric=).with(any_args)
@@ -30,6 +34,11 @@ describe LogStash::OutputDelegator do
 
     it "should initialize cleanly" do
       expect { subject }.not_to raise_error
+    end
+
+    it "should push the name of the plugin to the metric" do
+      expect(metric).to receive(:gauge).with(:name, out_klass.config_name)
+      described_class.new(logger, out_klass, metric, ::LogStash::OutputDelegatorStrategyRegistry.instance, plugin_args)
     end
 
     context "after having received a batch of events" do
