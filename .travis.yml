@@ -9,6 +9,7 @@ rvm:
 jdk:
   - oraclejdk8
 install:
+  - rake --version
   - rake test:install-core
 before_script:
   - echo "--order rand" > .rspec
