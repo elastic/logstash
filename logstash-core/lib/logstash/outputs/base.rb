@@ -27,6 +27,22 @@ class LogStash::Outputs::Base < LogStash::Plugin
 
   attr_reader :worker_plugins, :available_workers, :workers, :worker_plugins, :workers_not_supported
 
+    # Set or return concurrency type
+  def self.concurrency(type=nil)
+    if type
+      @concurrency = type
+      
+      if type == :shared
+        declare_threadsafe!
+      elsif type == :single
+        declare_workers_not_supported!("This plugin only supports one worker!")
+      end
+      
+    else
+      @concurrency || :legacy # default is :legacyo
+    end
+  end
+
   def self.declare_threadsafe!
     declare_workers_not_supported!
     @threadsafe = true
@@ -76,6 +92,11 @@ class LogStash::Outputs::Base < LogStash::Plugin
   def receive(event)
     raise "#{self.class}#receive must be overidden"
   end # def receive
+
+  public
+  def concurrency
+    self.class.concurrency
+  end
 
   public
   # To be overriden in implementations
