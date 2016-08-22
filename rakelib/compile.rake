@@ -22,5 +22,5 @@ namespace "compile" do
   end
 
   desc "Build everything"
-  task "all" => ["grammar", "logstash-core", "logstash-core-event-java"]
+  task "all" => ["grammar", "logstash-core-java", "logstash-core-event-java"]
 end

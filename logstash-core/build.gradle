@@ -12,6 +12,18 @@ description = """Logstash Core Java"""
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
+configurations {
+  provided
+}
+
+project.sourceSets {
+    main.compileClasspath += project.configurations.provided
+    main.runtimeClasspath += project.configurations.provided
+    test.compileClasspath += project.configurations.provided
+    test.runtimeClasspath += project.configurations.provided
+}
+project.javadoc.classpath += project.configurations.provided
+
 repositories {
   mavenCentral()
 }
@@ -28,7 +40,13 @@ dependencies {
   provided 'org.jruby:jruby-core:1.7.25'
 }
 
-task generateGemJarRequiresFile {
+idea {
+    module {
+        scopes.PROVIDED.plus += [project.configurations.provided]
+    }
+}
+
+task generateGemJarRequiresFile << {
   File jars_file = file('lib/jars.rb')
   jars_file.newWriter().withWriter { w ->
     w << "require \'jar_dependencies\'\n"
@@ -39,7 +57,7 @@ task generateGemJarRequiresFile {
   }
 }
 
-task vendor {
+task vendor << {
     String vendorPathPrefix = "vendor/jars"
     configurations.runtime.allDependencies.each { dep ->
       File f = configurations.runtime.filter { it.absolutePath.contains("${dep.group}/${dep.name}/${dep.version}") }.singleFile
