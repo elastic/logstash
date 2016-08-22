@@ -110,7 +110,10 @@ Example response:
   "pipeline": {
     "workers": 8,
     "batch_size": 125,
-    "batch_delay": 5
+    "batch_delay": 5,
+    "config_reload_automatic": true,
+    "config_reload_interval": 3
+
   }
 --------------------------------------------------
 
@@ -491,7 +494,7 @@ Example of a human-readable response:
 ::: {}
 Hot threads at 2016-07-26T18:46:18-07:00, busiestThreads=3: 
 ================================================================================
- 0.15 % of of cpu usage by timed_waiting thread named 'LogStash::Runner'
+ 0.15 % of cpu usage by timed_waiting thread named 'LogStash::Runner'
 	java.lang.Object.wait(Native Method)
 	java.lang.Thread.join(Thread.java:1253)
 	org.jruby.internal.runtime.NativeThread.join(NativeThread.java:75)
@@ -503,7 +506,7 @@ Hot threads at 2016-07-26T18:46:18-07:00, busiestThreads=3:
 	org.jruby.runtime.callsite.CachingCallSite.call(CachingCallSite.java:136)
 	org.jruby.ast.CallNoArgNode.interpret(CallNoArgNode.java:60)
  --------------------------------------------------------------------------------
- 0.11 % of of cpu usage by timed_waiting thread named 'Ruby-0-Thread-17'
+ 0.11 % of cpu usage by timed_waiting thread named 'Ruby-0-Thread-17'
  /Users/username/BuildTesting/logstash-5.0.0logstash-core/lib/logstash/pipeline.rb:471
 	java.lang.Object.wait(Native Method)
 	org.jruby.RubyThread.sleep(RubyThread.java:1002)
@@ -516,7 +519,7 @@ Hot threads at 2016-07-26T18:46:18-07:00, busiestThreads=3:
 	rubyjit.Module$$stoppable_sleep_c19c1639527ca7d373b5093f339d26538f1c21ef1028566121.__file__(/Users/username/BuildTesting/logstash-5.0.0/vendor/bundle/jruby/1.9/gems/stud-0.0.22/lib/stud/interval.rb)
 	org.jruby.ast.executable.AbstractScript.__file__(AbstractScript.java:46)
  --------------------------------------------------------------------------------
- 0.04 % of of cpu usage by timed_waiting thread named '[main]-pipeline-manager'
+ 0.04 % of cpu usage by timed_waiting thread named '[main]-pipeline-manager'
 	java.lang.Object.wait(Native Method)
 	java.lang.Thread.join(Thread.java:1253)
 	org.jruby.internal.runtime.NativeThread.join(NativeThread.java:75)
