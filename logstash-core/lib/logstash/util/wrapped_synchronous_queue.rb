@@ -117,6 +117,7 @@ module LogStash; module Util
 
       def stop_clock
         @inflight_clocks[Thread.current].each(&:stop)
+        @inflight_clocks.delete(Thread.current)
       end
 
       def add_starting_metrics(batch)
