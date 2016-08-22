@@ -81,6 +81,8 @@ class LogStash::Outputs::Base < LogStash::Plugin
     # If we're running with a single thread we must enforce single-threaded concurrency by default
     # Maybe in a future version we'll assume output plugins are threadsafe
     @single_worker_mutex = Mutex.new
+    
+    @receives_encoded = self.methods.include?(:multi_receive_encoded)
   end
 
   public
@@ -101,7 +103,15 @@ class LogStash::Outputs::Base < LogStash::Plugin
   public
   # To be overriden in implementations
   def multi_receive(events)
-    events.each {|event| receive(event) }
+    if @receives_encoded
+      self.multi_receive_encoded(codec.multi_encode(events))
+    else
+      events.each {|event| receive(event) }
+    end
+  end
+
+  def codec
+    params["codec"]
   end
 
   private
