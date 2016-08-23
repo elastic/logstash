@@ -29,7 +29,6 @@ public class Event implements Cloneable, Serializable, Queueable {
     private Timestamp timestamp;
     private Accessors accessors;
     private Accessors metadata_accessors;
-
     private long seqNum; // for the Queueable interface
 
     public static final String METADATA = "@metadata";
@@ -39,6 +38,10 @@ public class Event implements Cloneable, Serializable, Queueable {
     public static final String TIMESTAMP_FAILURE_FIELD = "_@timestamp";
     public static final String VERSION = "@version";
     public static final String VERSION_ONE = "1";
+    private static final String DATA_MAP_KEY = "DATA";
+    private static final String META_MAP_KEY = "META";
+    private static final String SEQNUM_MAP_KEY = "SEQUENCE_NUMBER";
+
 
     private static final Logger DEFAULT_LOGGER = new StdioLogger();
 
@@ -172,28 +175,43 @@ public class Event implements Cloneable, Serializable, Queueable {
     }
 
     public byte[] toBinary() throws IOException {
+        return toBinaryFromMap(toSerializableMap());
+    }
+
+    private Map<String, Map<String, Object>> toSerializableMap() {
         HashMap<String, Map<String, Object>> hashMap = new HashMap<>();
-        hashMap.put("DATA", this.data);
-        hashMap.put("META", this.metadata);
-        return CBOR_MAPPER.writeValueAsBytes(hashMap);
+        hashMap.put(DATA_MAP_KEY, this.data);
+        hashMap.put(META_MAP_KEY, this.metadata);
+        return hashMap;
+    }
+
+    private byte[] toBinaryFromMap(Map<String, Map<String, Object>> representation) throws IOException {
+        return CBOR_MAPPER.writeValueAsBytes(representation);
+    }
+
+    private static Event fromSerializableMap(Map<String, Map<String, Object>> representation) throws IOException{
+        if (!representation.containsKey(DATA_MAP_KEY)) {
+            throw new IOException("The deserialized Map must contain the \"DATA\" key");
+        }
+        if (!representation.containsKey(META_MAP_KEY)) {
+            throw new IOException("The deserialized Map must contain the \"META\" key");
+        }
+        Map<String, Object> dataMap = representation.get(DATA_MAP_KEY);
+        dataMap.put(METADATA, representation.get(META_MAP_KEY));
+        return new Event(dataMap);
     }
 
     public static Event fromBinary(byte[] source) throws IOException {
         if (source == null || source.length == 0) {
             return new Event();
         }
+        return fromSerializableMap(fromBinaryToMap(source));
+    }
+
+    private static Map<String, Map<String, Object>> fromBinaryToMap(byte[] source) throws IOException {
         Object o = CBOR_MAPPER.readValue(source, HashMap.class);
         if (o instanceof Map) {
-            Map<String, Map<String, Object>> hashMap = (HashMap<String, Map<String, Object>>) o;
-            if (!hashMap.containsKey("DATA")) {
-                throw new IOException("The deserialized Map must contain the \"DATA\" key");
-            }
-            if (!hashMap.containsKey("META")) {
-                throw new IOException("The deserialized Map must contain the \"META\" key");
-            }
-            Map<String, Object> dataMap = hashMap.get("DATA");
-            dataMap.put(METADATA, hashMap.get("META"));
-            return new Event(dataMap);
+            return (HashMap<String, Map<String, Object>>) o;
         } else {
             throw new IOException("incompatible from binary object type=" + o.getClass().getName() + " , only HashMap is supported");
         }
@@ -345,10 +363,7 @@ public class Event implements Cloneable, Serializable, Queueable {
         Event.logger = logger;
     }
 
-
-    // Queueable inteface implementations below
-    // temporaty quick & dirty json serialization to prototype
-
+    // Queueable interface implementations below
     public void setSeqNum(long seqNum) {
         this.seqNum = seqNum;
     }
@@ -358,21 +373,23 @@ public class Event implements Cloneable, Serializable, Queueable {
     }
 
     public byte[] serialize() throws IOException {
-        this.data.put("__seqnum", seqNum);
-        this.data.put(METADATA, this.metadata);
-        byte[] bytes = toJson().getBytes();
-        this.data.remove("__seqnum");
-        this.data.remove(METADATA);
+        Map<String, Map<String, Object>> dataMap = toSerializableMap();
+        dataMap.get(META_MAP_KEY).put(SEQNUM_MAP_KEY, seqNum);
+        return toBinaryFromMap(dataMap);
+    }
 
-        return bytes;
+    @Override
+    public byte[] serializeWithoutSeqNum() throws IOException {
+        return toBinary();
     }
 
     public static Event deserialize(byte[] data) throws IOException {
-        Map m = mapper.readValue(new String(data), Map.class);
-        long seqNum = new Long((Integer)m.remove("__seqnum"));
-        Event e =  new Event(m);
-        e.seqNum = seqNum;
-
+        Map<String, Map<String, Object>> dataMap = fromBinaryToMap(data);
+        Object seqNumMapValue = dataMap.get(META_MAP_KEY).remove(SEQNUM_MAP_KEY);
+        Event e =  fromSerializableMap(dataMap);
+        if (seqNumMapValue != null) {
+            e.seqNum = (Long)seqNumMapValue;
+        }
         return e;
     }
 }

@@ -4,13 +4,14 @@ require "stud/interval"
 require "concurrent"
 require "logstash/namespace"
 require "logstash/errors"
+require "logstash-core/logstash-core"
+require "logstash/util/wrapped_acked_queue"
 require "logstash/event"
 require "logstash/config/file"
 require "logstash/filters/base"
 require "logstash/inputs/base"
 require "logstash/outputs/base"
 require "logstash/shutdown_watcher"
-require "logstash/util/wrapped_synchronous_queue"
 require "logstash/pipeline_reporter"
 require "logstash/instrument/metric"
 require "logstash/instrument/namespaced_metric"
@@ -18,8 +19,6 @@ require "logstash/instrument/null_metric"
 require "logstash/instrument/collector"
 require "logstash/output_delegator"
 require "logstash/filter_delegator"
-
-require "logstash-core-queue-jruby/logstash-core-queue-jruby"
 
 module LogStash; class Pipeline
   attr_reader :inputs,
@@ -85,25 +84,17 @@ module LogStash; class Pipeline
     rescue => e
       raise
     end
-
-# <<<<<<< HEAD
-#     # @input_queue = LogStash::Util::WrappedSynchronousQueue.new
-#     @input_queue = LogStash::AckedQueue.new("./lsqueue", 100 * 1024 * 1024)
-#     @input_queue.open
-#
-#     @signal_queue = Queue.new
-#
-# =======
-    queue = LogStash::Util::WrappedSynchronousQueue.new
+    queue = LogStash::Util::WrappedAckedQueue.new("#{LogStash::Environment::LOGSTASH_HOME}/lsqueue", 100 * 1024 * 1024)
     @input_queue_client = queue.write_client
     @filter_queue_client = queue.read_client
+    @signal_queue = Queue.new
     # Note that @infilght_batches as a central mechanism for tracking inflight
     # batches will fail if we have multiple read clients here.
     @filter_queue_client.set_events_metric(metric.namespace([:stats, :events]))
     @filter_queue_client.set_pipeline_metric(
         metric.namespace([:stats, :pipelines, pipeline_id.to_s.to_sym, :events])
     )
-# >>>>>>> master
+
     @events_filtered = Concurrent::AtomicFixnum.new(0)
     @events_consumed = Concurrent::AtomicFixnum.new(0)
 
@@ -241,72 +232,13 @@ module LogStash; class Pipeline
     @filter_queue_client.set_batch_dimensions(batch_size, batch_delay)
 
     while running
-# <<<<<<< HEAD
-#       # To understand the purpose behind this synchronize please read the body of take_batch
-#       input_batch, signal = @input_queue_pop_mutex.synchronize { take_batch(batch_size, batch_delay) }
-#       running = false if signal == LogStash::SHUTDOWN
-#
-#       # input_batch is a AckedBatch object
-#
-#       # this is the special case where we returned from a timeout and input_batch is nil
-#       unless input_batch
-#         if signal # Flush on SHUTDOWN or FLUSH
-#           flush_options = (signal == LogStash::SHUTDOWN) ? {:final => true} : {}
-#           flush_filters_to_batch([], flush_options)
-#         end
-#
-#         next
-#       end
-#
-#       events = input_batch.get_elements
-#
-#       @events_consumed.increment(events.size)
-#       namespace_events.increment(:in, events.size)
-#       namespace_pipeline.increment(:in, events.size)
-#
-#       filtered_batch = filter_batch(events)
-#
-#       if signal # Flush on SHUTDOWN or FLUSH
-#         flush_options = (signal == LogStash::SHUTDOWN) ? {:final => true} : {}
-#         flush_filters_to_batch(filtered_batch, flush_options)
-#       end
-#
-#       @events_filtered.increment(filtered_batch.size)
-#
-#       namespace_events.increment(:filtered, filtered_batch.size)
-#       namespace_pipeline.increment(:filtered, filtered_batch.size)
-#
-#       output_batch(filtered_batch)
-#
-#       namespace_events.increment(:out, filtered_batch.size)
-#       namespace_pipeline.increment(:out, filtered_batch.size)
-#
-#       inflight_batches_synchronize { set_current_thread_inflight_batch(nil) }
-#
-#       # closing the AckedBatch object will take care of the acknoledgement
-#       input_batch.close
-#     end
-#   end
-#
-#   def take_batch(batch_size, batch_delay)
-#     while(true) do
-#       # blocking read up to batch_delay timeout
-#       batch = @input_queue.read_batch(batch_size, batch_delay)
-#       signal = @signal_queue.empty? ? false : @signal_queue.pop
-#
-#       break if signal || batch
-#     end
-#
-#     [batch, signal]
-#   end
-#
-# =======
       batch = @filter_queue_client.take_batch
+      signal = @signal_queue.empty? ? false : @signal_queue.pop
       @events_consumed.increment(batch.size)
-      running = false if batch.shutdown_signal_received?
+      running = false if shutdown_signaled?(signal)
       filter_batch(batch)
 
-      if batch.shutdown_signal_received? || batch.flush_signal_received?
+      if flush_signaled?(signal)
         flush_filters_to_batch(batch)
       end
 
@@ -315,18 +247,23 @@ module LogStash; class Pipeline
     end
   end
 
-# >>>>>>> master
+  def shutdown_signaled?(signal)
+    signal.is_a?(::LogStash::SHUTDOWN)
+  end
+
+  def flush_signaled?(signal)
+    signal.is_a?(::LogStash::FLUSH) || shutdown_signaled?(signal)
+  end
+
   def filter_batch(batch)
     batch.each do |event|
-      if event.is_a?(LogStash::Event)
-        filtered = filter_func(event)
-        filtered.each do |e|
-          #these are both original and generated events
-          if e.cancelled?
-            batch.cancel(e)
-          else
-            batch.merge(e)
-          end
+      filtered = filter_func(event)
+      filtered.each do |e|
+        #these are both original and generated events
+        if e.cancelled?
+          batch.cancel(e)
+        else
+          batch.merge(e)
         end
       end
     end
@@ -446,11 +383,7 @@ module LogStash; class Pipeline
     # Each worker thread will receive this exactly once!
     @worker_threads.each do |t|
       @logger.debug("Pushing shutdown", :thread => t.inspect)
-# <<<<<<< HEAD
-#       @signal_queue.push(LogStash::SHUTDOWN)
-# =======
-      @input_queue_client.push(LogStash::SHUTDOWN)
-# >>>>>>> master
+      @signal_queue.push(LogStash::SHUTDOWN)
     end
 
     @worker_threads.each do |t|
@@ -520,11 +453,7 @@ module LogStash; class Pipeline
   def flush
     if @flushing.compare_and_set(false, true)
       @logger.debug? && @logger.debug("Pushing flush onto pipeline")
-# <<<<<<< HEAD
-#       @signal_queue.push(LogStash::FLUSH)
-# =======
-      @input_queue_client.push(LogStash::FLUSH)
-# >>>>>>> master
+      @signal_queue.push(LogStash::FLUSH)
     end
   end
 

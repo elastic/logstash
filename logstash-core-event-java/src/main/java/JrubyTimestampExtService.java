@@ -1,4 +1,3 @@
-import com.logstash.ext.JrubyEventExtLibrary;
 import com.logstash.ext.JrubyTimestampExtLibrary;
 import org.jruby.Ruby;
 import org.jruby.runtime.load.BasicLibraryService;

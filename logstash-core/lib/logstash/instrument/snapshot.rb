@@ -1,6 +1,6 @@
 # encoding: utf-8
 require "logstash/util/loggable"
-require "logstash/event"
+# require "logstash/event"
 
 module LogStash module Instrument
   class Snapshot

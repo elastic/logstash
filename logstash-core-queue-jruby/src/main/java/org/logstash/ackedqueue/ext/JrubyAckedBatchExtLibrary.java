@@ -10,7 +10,6 @@ import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.jruby.runtime.load.Library;
 import org.logstash.ackedqueue.Batch;
-import org.logstash.ackedqueue.Queueable;
 
 import java.io.IOException;
 
