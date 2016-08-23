@@ -62,16 +62,13 @@ describe LogStash::Runner do
 
   describe "argument parsing" do
     subject { LogStash::Runner.new("") }
-    before :each do
-      allow(Cabin::Channel.get(LogStash)).to receive(:terminal)
-    end
+
     context "when -e is given" do
 
       let(:args) { ["-e", "input {} output {}"] }
       let(:agent) { double("agent") }
 
       before do
-        allow(agent).to receive(:logger=).with(anything)
         allow(agent).to receive(:shutdown)
         allow(agent).to receive(:register_pipeline)
       end
