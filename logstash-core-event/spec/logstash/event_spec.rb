@@ -394,7 +394,7 @@ describe LogStash::Event do
       let(:logger_mock) { double("logger") }
 
       after(:each) do
-        LogStash::Event.logger = LogStash::Event::DEFAULT_LOGGER
+        allow(LogStash::Event).to receive(:logger).and_return(logger_mock)
       end
 
       it "should coerce timestamp" do
@@ -421,8 +421,6 @@ describe LogStash::Event do
       end
 
       it "should warn for invalid value" do
-        LogStash::Event.logger = logger_mock
-
         expect(logger_mock).to receive(:warn).twice
 
         LogStash::Event.new("@timestamp" => :foo)
@@ -437,8 +435,6 @@ describe LogStash::Event do
       end
 
       it "should warn for invalid string format" do
-        LogStash::Event.logger = logger_mock
-
         expect(logger_mock).to receive(:warn)
         LogStash::Event.new("@timestamp" => "foo")
       end

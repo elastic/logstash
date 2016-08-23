@@ -6,6 +6,8 @@ import com.logstash.bivalues.StringBiValue;
 import com.logstash.bivalues.TimeBiValue;
 import com.logstash.bivalues.TimestampBiValue;
 import com.logstash.ext.JrubyTimestampExtLibrary;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.joda.time.DateTime;
 import org.jruby.RubySymbol;
 
@@ -35,12 +37,8 @@ public class Event implements Cloneable, Serializable {
     public static final String VERSION = "@version";
     public static final String VERSION_ONE = "1";
 
-    private static final Logger DEFAULT_LOGGER = new StdioLogger();
+    private static final Logger logger = LogManager.getLogger(Event.class);
     private static final ObjectMapper mapper = new ObjectMapper();
-
-    // logger is static since once set there is no point in changing it at runtime
-    // for other reasons than in tests/specs.
-    private transient static Logger logger = DEFAULT_LOGGER;
 
     public Event()
     {
@@ -283,10 +281,10 @@ public class Event implements Cloneable, Serializable {
             } else if (o instanceof RubySymbol) {
                 return new Timestamp(((RubySymbol) o).asJavaString());
             } else {
-                Event.logger.warn("Unrecognized " + TIMESTAMP + " value type=" + o.getClass().toString());
+                logger.warn("Unrecognized " + TIMESTAMP + " value type=" + o.getClass().toString());
             }
         } catch (IllegalArgumentException e) {
-            Event.logger.warn("Error parsing " + TIMESTAMP + " string value=" + o.toString());
+            logger.warn("Error parsing " + TIMESTAMP + " string value=" + o.toString());
         }
 
         tag(TIMESTAMP_FAILURE_TAG);
@@ -305,11 +303,5 @@ public class Event implements Cloneable, Serializable {
         if (!tags.contains(tag)) {
             tags.add(tag);
         }
-    }
-
-    // Event.logger is static since once set there is no point in changing it at runtime
-    // for other reasons than in tests/specs.
-    public static void setLogger(Logger logger) {
-        Event.logger = logger;
     }
 }

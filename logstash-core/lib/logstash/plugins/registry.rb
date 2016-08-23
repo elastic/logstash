@@ -1,9 +1,11 @@
 # encoding: utf-8
 require 'singleton'
 require "rubygems/package"
+require "logstash/util/loggable"
 
 module LogStash
   class Registry
+    include LogStash::Util::Loggable
 
     ##
     # Placeholder class for registered plugins
@@ -45,7 +47,7 @@ module LogStash
 
     def initialize
       @registry = {}
-      @logger = Cabin::Channel.get(LogStash)
+      @logger = self.logger
     end
 
     def lookup(type, plugin_name, &block)
