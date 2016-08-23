@@ -535,11 +535,26 @@ describe LogStash::Event do
     end
 
     context "signal events" do
-      it "should define the shutdown event" do
+      it "should define the shutdown and flush event constants" do
         # the SHUTDOWN and FLUSH constants are part of the plugin API contract
         # if they are changed, all plugins must be updated
         expect(LogStash::SHUTDOWN).to be_a(LogStash::ShutdownEvent)
         expect(LogStash::FLUSH).to be_a(LogStash::FlushEvent)
+      end
+
+      it "should define the shutdown event with SignalEvent as parent class" do
+        expect(LogStash::SHUTDOWN).to be_a(LogStash::SignalEvent)
+        expect(LogStash::FLUSH).to be_a(LogStash::SignalEvent)
+      end
+
+      it "should define the flush? method" do
+        expect(LogStash::SHUTDOWN.flush?).to be_falsey
+        expect(LogStash::FLUSH.flush?).to be_truthy
+      end
+
+      it "should define the shutdown? method" do
+        expect(LogStash::SHUTDOWN.shutdown?).to be_truthy
+        expect(LogStash::FLUSH.shutdown?).to be_falsey
       end
     end
   end
