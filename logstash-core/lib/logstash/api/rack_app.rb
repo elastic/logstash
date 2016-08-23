@@ -11,7 +11,6 @@ require "logstash/api/modules/logging"
 module LogStash
   module Api
     module RackApp
-      # Cabin is not compatible with CommonLogger, and this gives us more control anyway
       METADATA_FIELDS = [:request_method, :path_info, :query_string, :http_version, :http_accept].freeze
       def self.log_metadata(status, env)
         METADATA_FIELDS.reduce({:status => status}) do |acc, field|

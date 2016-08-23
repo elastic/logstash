@@ -141,7 +141,6 @@ describe LogStash::Runner do
     context "with a good configuration" do
       let(:pipeline_string) { "input { } filter { } output { }" }
       it "should exit successfuly" do
-        # TODO(talevy) expect(channel).to receive(:terminal)
         expect(subject.run(args)).to eq(0)
       end
     end
@@ -149,7 +148,7 @@ describe LogStash::Runner do
     context "with a bad configuration" do
       let(:pipeline_string) { "rlwekjhrewlqrkjh" }
       it "should fail by returning a bad exit code" do
-        # TODO(talevy): expect(channel).to receive(:fatal)
+        expect(logger).to receive(:fatal)
         expect(subject.run(args)).to eq(1)
       end
     end
@@ -308,7 +307,7 @@ describe LogStash::Runner do
     context "deprecated flags" do
       context "when using --quiet" do
         it "should warn about the deprecated flag" do
-          expect(channel).to receive(:warn).with(/DEPRECATION WARNING/)
+          expect(logger).to receive(:warn).with(/DEPRECATION WARNING/)
           args = ["--quiet", "--version"]
           subject.run("bin/logstash", args)
         end
@@ -316,12 +315,12 @@ describe LogStash::Runner do
         it "should still set the log level accordingly" do
           args = ["--quiet", "--version"]
           subject.run("bin/logstash", args)
-          expect(channel.level).to eq(:error)
+          expect(logger.level).to eq(:error)
         end
       end
       context "when using --debug" do
         it "should warn about the deprecated flag" do
-          expect(channel).to receive(:warn).with(/DEPRECATION WARNING/)
+          expect(logger).to receive(:warn).with(/DEPRECATION WARNING/)
           args = ["--debug", "--version"]
           subject.run("bin/logstash", args)
         end
@@ -329,12 +328,12 @@ describe LogStash::Runner do
         it "should still set the log level accordingly" do
           args = ["--debug", "--version"]
           subject.run("bin/logstash", args)
-          expect(channel.level).to eq(:debug)
+          expect(logger.level).to eq(:debug)
         end
       end
       context "when using --verbose" do
         it "should warn about the deprecated flag" do
-          expect(channel).to receive(:warn).with(/DEPRECATION WARNING/)
+          expect(logger).to receive(:warn).with(/DEPRECATION WARNING/)
           args = ["--verbose", "--version"]
           subject.run("bin/logstash", args)
         end
@@ -342,7 +341,7 @@ describe LogStash::Runner do
         it "should still set the log level accordingly" do
           args = ["--verbose", "--version"]
           subject.run("bin/logstash", args)
-          expect(channel.level).to eq(:info)
+          expect(logger.level).to eq(:info)
         end
       end
     end

@@ -136,7 +136,7 @@ class LogStash::Runner < Clamp::StrictCommand
   ### DEPRECATED FLAGS ###
   deprecated_option ["--verbose"], :flag,
     I18n.t("logstash.runner.flag.verbose"),
-    :new_flag => "log.level", :new_value => "verbose"
+    :new_flag => "log.level", :new_value => "info"
 
   deprecated_option ["--debug"], :flag,
     I18n.t("logstash.runner.flag.debug"),
@@ -144,7 +144,7 @@ class LogStash::Runner < Clamp::StrictCommand
 
   deprecated_option ["--quiet"], :flag,
     I18n.t("logstash.runner.flag.quiet"),
-    :new_flag => "log.level", :new_value => "quiet"
+    :new_flag => "log.level", :new_value => "error"
 
   attr_reader :agent
 

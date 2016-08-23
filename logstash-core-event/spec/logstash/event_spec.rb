@@ -390,14 +390,7 @@ describe LogStash::Event do
       end
     end
 
-    # TODO(talevy): fix event logging test strategy
     context "timestamp initialization" do
-      #let(:logger_mock) { double("logger") }
-
-      # after(:each) do
-      #   allow(LogStash::Event).to receive(:logger).and_return(logger_mock)
-      # end
-
       it "should coerce timestamp" do
         t = Time.iso8601("2014-06-12T00:12:17.114Z")
         expect(LogStash::Event.new("@timestamp" => t).timestamp.to_i).to eq(t.to_i)
@@ -422,8 +415,6 @@ describe LogStash::Event do
       end
 
       it "should warn for invalid value" do
-        # expect(logger_mock).to receive(:warn).twice
-
         LogStash::Event.new("@timestamp" => :foo)
         LogStash::Event.new("@timestamp" => 666)
       end
@@ -436,7 +427,6 @@ describe LogStash::Event do
       end
 
       it "should warn for invalid string format" do
-        # expect(logger_mock).to receive(:warn)
         LogStash::Event.new("@timestamp" => "foo")
       end
     end
