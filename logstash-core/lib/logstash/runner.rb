@@ -172,8 +172,8 @@ class LogStash::Runner < Clamp::StrictCommand
     # Configure Logstash logging facility, this need to be done before everything else to
     # make sure the logger has the correct settings and the log level is correctly defined.
     # TODO(talevy): cleanly support `path.logs` setting in log4j
-    log4j_config_location = setting("path.settings") + "/log4j2.properties"
     unless java.lang.System.getProperty("log4j.configurationFile")
+      log4j_config_location = setting("path.settings") + "/log4j2.properties"
       LogStash::Logging::Logger::initialize(log4j_config_location)
     end
 
