@@ -243,26 +243,20 @@ module LogStash; class Pipeline
 
     while running
       batch = @filter_queue_client.take_batch
-      signal = @signal_queue.empty? ? false : @signal_queue.pop
+      signal = @signal_queue.empty? ? NO_SIGNAL : @signal_queue.pop
+      running = !signal.shutdown?
+
       @events_consumed.increment(batch.size)
-      running = false if shutdown_signaled?(signal)
+
       filter_batch(batch)
 
-      if flush_signaled?(signal)
-        flush_filters_to_batch(batch)
+      if signal.flush? || signal.shutdown?
+        flush_filters_to_batch(batch, :final => signal.shutdown?)
       end
 
       output_batch(batch)
       @filter_queue_client.close_batch(batch)
     end
-  end
-
-  def shutdown_signaled?(signal)
-    signal.is_a?(::LogStash::SHUTDOWN)
-  end
-
-  def flush_signaled?(signal)
-    signal.is_a?(::LogStash::FLUSH) || shutdown_signaled?(signal)
   end
 
   def filter_batch(batch)
@@ -499,7 +493,6 @@ module LogStash; class Pipeline
   # @param batch [ReadClient::ReadBatch]
   # @param options [Hash]
   def flush_filters_to_batch(batch, options = {})
-    options[:final] = batch.shutdown_signal_received?
     flush_filters(options) do |event|
       if event.cancelled?
         batch.cancel(event)

@@ -26,10 +26,14 @@ module LogStash
     def shutdown?; false; end;
   end
 
-  FLUSH = FlushEvent.new
+  class NoSignal < SignalEvent
+    def flush?; false; end;
+    def shutdown?; false; end;
+  end
 
-  # LogStash::SHUTDOWN is used by plugins
+  FLUSH = FlushEvent.new
   SHUTDOWN = ShutdownEvent.new
+  NO_SIGNAL = NoSignal.new
 end
 
 # for backward compatibility, require "logstash/event" is used a lots of places so let's bootstrap the
