@@ -14,8 +14,8 @@ describe "Monitoring API", :integration => true do
   it "can retrieve event stats" do
     logstash_service = @fixture.get_service("logstash")
     logstash_service.start_with_stdin
-    # TODO: get rid of this sleep, or loop
     5.times { logstash_service.write_to_stdin("Hello world") }
+    # TODO: get rid of this sleep, or loop
     sleep 3
     # check metrics
     result = logstash_service.monitoring_api.event_stats

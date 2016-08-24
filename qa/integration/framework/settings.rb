@@ -19,7 +19,6 @@ class TestSettings
       config_string = get("config").gsub('\n','').split.join(" ")
       @test_settings["config"] = config_string
     end
-    print "#{@test_settings}"
   end
 
   def get(key)
