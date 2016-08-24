@@ -162,9 +162,8 @@ class LogStash::Agent
     @periodic_pollers.start
   end
 
-  def reset_metrics_collectors
-    stop_collecting_metrics
-    configure_metrics_collectors
+  def reset_pipeline_metrics(id)
+    @collector.clear("stats/pipelines/#{id}")
   end
 
   def collect_metrics?
@@ -207,11 +206,6 @@ class LogStash::Agent
                     :pipeline => id, :config => new_config)
       return
     end
-
-    # Reset the current collected stats,
-    # starting a pipeline with a new configuration should be the same as restarting
-    # logstash.
-    reset_metrics_collectors
 
     new_pipeline = create_pipeline(old_pipeline.settings, new_config)
 
@@ -268,6 +262,7 @@ class LogStash::Agent
 
   def upgrade_pipeline(pipeline_id, new_pipeline)
     stop_pipeline(pipeline_id)
+    reset_pipeline_metrics(pipeline_id)
     @pipelines[pipeline_id] = new_pipeline
     start_pipeline(pipeline_id)
   end
