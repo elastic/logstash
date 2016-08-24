@@ -49,17 +49,17 @@ class LogStash::Runner < Clamp::StrictCommand
   option ["-w", "--pipeline.workers"], "COUNT",
     I18n.t("logstash.runner.flag.pipeline-workers"),
     :attribute_name => "pipeline.workers",
-    :default => LogStash::SETTINGS.get_default("pipeline.workers"), &:to_i
+    :default => LogStash::SETTINGS.get_default("pipeline.workers")
 
   option ["-b", "--pipeline.batch.size"], "SIZE",
     I18n.t("logstash.runner.flag.pipeline-batch-size"),
     :attribute_name => "pipeline.batch.size",
-    :default => LogStash::SETTINGS.get_default("pipeline.batch.size"), &:to_i
+    :default => LogStash::SETTINGS.get_default("pipeline.batch.size")
 
   option ["-u", "--pipeline.batch.delay"], "DELAY_IN_MS",
     I18n.t("logstash.runner.flag.pipeline-batch-delay"),
     :attribute_name => "pipeline.batch.delay",
-    :default => LogStash::SETTINGS.get_default("pipeline.batch.delay"), &:to_i
+    :default => LogStash::SETTINGS.get_default("pipeline.batch.delay")
 
   option ["--pipeline.unsafe_shutdown"], :flag,
     I18n.t("logstash.runner.flag.unsafe_shutdown"),
@@ -112,7 +112,7 @@ class LogStash::Runner < Clamp::StrictCommand
   option ["--config.reload.interval"], "RELOAD_INTERVAL",
     I18n.t("logstash.runner.flag.reload_interval"),
     :attribute_name => "config.reload.interval",
-    :default => LogStash::SETTINGS.get_default("config.reload.interval"), &:to_i
+    :default => LogStash::SETTINGS.get_default("config.reload.interval")
 
   option ["--http.host"], "HTTP_HOST",
     I18n.t("logstash.runner.flag.http_host"),
@@ -122,7 +122,7 @@ class LogStash::Runner < Clamp::StrictCommand
   option ["--http.port"], "HTTP_PORT",
     I18n.t("logstash.runner.flag.http_port"),
     :attribute_name => "http.port",
-    :default => LogStash::SETTINGS.get_default("http.port"), &:to_i
+    :default => LogStash::SETTINGS.get_default("http.port")
 
   option ["--log.format"], "FORMAT",
     I18n.t("logstash.runner.flag.log_format"),
@@ -133,6 +133,19 @@ class LogStash::Runner < Clamp::StrictCommand
     I18n.t("logstash.runner.flag.path_settings"),
     :attribute_name => "path.settings",
     :default => LogStash::SETTINGS.get_default("path.settings")
+
+  ### DEPRECATED FLAGS ###
+  deprecated_option ["--verbose"], :flag,
+    I18n.t("logstash.runner.flag.verbose"),
+    :new_flag => "log.level", :new_value => "verbose"
+
+  deprecated_option ["--debug"], :flag,
+    I18n.t("logstash.runner.flag.debug"),
+    :new_flag => "log.level", :new_value => "debug"
+
+  deprecated_option ["--quiet"], :flag,
+    I18n.t("logstash.runner.flag.quiet"),
+    :new_flag => "log.level", :new_value => "quiet"
 
   attr_reader :agent
 
@@ -150,10 +163,13 @@ class LogStash::Runner < Clamp::StrictCommand
     begin
       LogStash::SETTINGS.from_yaml(LogStash::SETTINGS.get("path.settings"))
     rescue => e
-      @logger.subscribe(STDOUT)
-      @logger.warn("Logstash has a new settings file which defines start up time settings. This file is typically located in $LS_HOME/config or /etc/logstash. If you installed Logstash through a package and are starting it manually please specify the location to this settings file by passing in \"--path.settings=/path/..\" in the command line options")
-      @logger.fatal("Failed to load settings file from \"path.settings\". Aborting...", "path.settings" => LogStash::SETTINGS.get("path.settings"), "exception" => e.class, "message" => e.message)
-      exit(-1)
+      # abort unless we're just looking for the help
+      if (["--help", "-h"] & args).empty?
+        @logger.subscribe(STDOUT)
+        @logger.warn("Logstash has a new settings file which defines start up time settings. This file is typically located in $LS_HOME/config or /etc/logstash. If you installed Logstash through a package and are starting it manually please specify the location to this settings file by passing in \"--path.settings=/path/..\" in the command line options")
+        @logger.fatal("Failed to load settings file from \"path.settings\". Aborting...", "path.settings" => LogStash::SETTINGS.get("path.settings"), "exception" => e.class, "message" => e.message)
+        return 1
+      end
     end
 
     super(*[args])

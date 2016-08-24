@@ -37,8 +37,9 @@ class LogStash::Codecs::<%= classify(plugin_name) %> < LogStash::Codecs::Base
     end
   end # def decode
 
-  def encode(event)
-    @on_event.call(event, event.get("message").to_s + @append + NL)
-  end # def encode
+  # Encode a single event, this returns the raw data to be returned as a String
+  def encode_sync(event)
+    event.get("message").to_s + @append + NL
+  end # def encode_sync
 
 end # class LogStash::Codecs::<%= classify(plugin_name) %>

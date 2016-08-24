@@ -33,6 +33,7 @@ module LogStash; class Pipeline
     :started_at,
     :thread,
     :config_str,
+    :config_hash,
     :settings,
     :metric,
     :filter_queue_client,
@@ -46,11 +47,18 @@ module LogStash; class Pipeline
 
   def initialize(config_str, settings = LogStash::SETTINGS, namespaced_metric = nil)
     @config_str = config_str
+    @config_hash = Digest::SHA1.hexdigest(@config_str)
+    # Every time #plugin is invoked this is incremented to give each plugin
+    # a unique id when auto-generating plugin ids
+    @plugin_counter ||= 0 
+    
     @logger = Cabin::Channel.get(LogStash)
     @settings = settings
     @pipeline_id = @settings.get_value("pipeline.id") || self.object_id
     @reporter = LogStash::PipelineReporter.new(@logger, self)
 
+    # A list of plugins indexed by id
+    @plugins_by_id = {}
     @inputs = nil
     @filters = nil
     @outputs = nil
@@ -200,6 +208,8 @@ module LogStash; class Pipeline
       config_metric.gauge(:workers, pipeline_workers)
       config_metric.gauge(:batch_size, batch_size)
       config_metric.gauge(:batch_delay, batch_delay)
+      config_metric.gauge(:config_reload_automatic, @settings.get("config.reload.automatic"))
+      config_metric.gauge(:config_reload_interval, @settings.get("config.reload.interval"))
 
       @logger.info("Starting pipeline",
                    "id" => self.pipeline_id,
@@ -297,7 +307,10 @@ module LogStash; class Pipeline
     end
     # Now that we have our output to event mapping we can just invoke each output
     # once with its list of events
-    output_events_map.each { |output, events| output.multi_receive(events) }
+    output_events_map.each do |output, events|
+      output.multi_receive(events)
+    end
+    
     @filter_queue_client.add_output_metrics(batch)
   end
 
@@ -396,23 +409,38 @@ module LogStash; class Pipeline
   end
 
   def plugin(plugin_type, name, *args)
-    args << {} if args.empty?
+    @plugin_counter += 1
 
+    # Collapse the array of arguments into a single merged hash
+    args = args.reduce({}, &:merge)
+
+    id = if args["id"].nil? || args["id"].empty?
+           args["id"] = "#{@config_hash}-#{@plugin_counter}"
+         else
+           args["id"]
+         end
+
+    raise LogStash::ConfigurationError, "Two plugins have the id '#{id}', please fix this conflict" if @plugins_by_id[id]
+    
     pipeline_scoped_metric = metric.namespace([:stats, :pipelines, pipeline_id.to_s.to_sym, :plugins])
 
     klass = LogStash::Plugin.lookup(plugin_type, name)
 
-    if plugin_type == "output"
-      LogStash::OutputDelegator.new(@logger, klass, @settings.get("pipeline.output.workers"), pipeline_scoped_metric.namespace(:outputs), *args)
-    elsif plugin_type == "filter"
-      LogStash::FilterDelegator.new(@logger, klass, pipeline_scoped_metric.namespace(:filters), *args)
-    else
-      new_plugin = klass.new(*args)
-      inputs_metric = pipeline_scoped_metric.namespace(:inputs)
-      namespaced_metric = inputs_metric.namespace(new_plugin.plugin_unique_name.to_sym)
-      new_plugin.metric = namespaced_metric
-      new_plugin
-    end
+    # Scope plugins of type 'input' to 'inputs'
+    type_scoped_metric = pipeline_scoped_metric.namespace("#{plugin_type}s".to_sym)
+    plugin = if plugin_type == "output"
+               OutputDelegator.new(@logger, klass, type_scoped_metric,
+                                   ::LogStash::OutputDelegatorStrategyRegistry.instance,
+                                   args)
+             elsif plugin_type == "filter"
+               LogStash::FilterDelegator.new(@logger, klass, type_scoped_metric, args)
+             else # input
+               input_plugin = klass.new(args)
+               input_plugin.metric = type_scoped_metric.namespace(id)
+               input_plugin
+             end
+    
+    @plugins_by_id[id] = plugin
   end
 
   # for backward compatibility in devutils for the rspec helpers, this method is not used

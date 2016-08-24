@@ -1,73 +1,84 @@
 # encoding: utf-8
+require "logstash/api/rack_app"
 require "puma"
 require "puma/server"
-require "logstash/api/rack_app"
+require "concurrent"
 
-module LogStash 
+module LogStash
   class WebServer
     extend Forwardable
 
-    attr_reader :logger, :status, :config, :options, :cli_options, :runner, :binder, :events, :http_host, :http_port, :http_environment, :agent
+    attr_reader :logger, :status, :config, :options, :runner, :binder, :events, :http_host, :http_ports, :http_environment, :agent
 
     def_delegator :@runner, :stats
 
     DEFAULT_HOST = "127.0.0.1".freeze
-    DEFAULT_PORT = 9600.freeze
+    DEFAULT_PORTS = (9600..9700).freeze
     DEFAULT_ENVIRONMENT = 'production'.freeze
 
     def initialize(logger, agent, options={})
       @logger = logger
       @agent = agent
       @http_host = options[:http_host] || DEFAULT_HOST
-      @http_port = options[:http_port] || DEFAULT_PORT
+      @http_ports = options[:http_ports] || DEFAULT_PORTS
       @http_environment = options[:http_environment] || DEFAULT_ENVIRONMENT
       @options = {}
-      @cli_options = options.merge({ :rackup => ::File.join(::File.dirname(__FILE__), "api", "init.ru"),
-                                     :binds => ["tcp://#{http_host}:#{http_port}"],
-                                     :debug => logger.debug?,
-                                     # Prevent puma from queueing request when not able to properly handling them,
-                                     # fixed https://github.com/elastic/logstash/issues/4674. See
-                                     # https://github.com/puma/puma/pull/640 for mode internal details in PUMA.
-                                     :queue_requests => false
-      })
-      @status      = nil
+      @status = nil
+      @running = Concurrent::AtomicBoolean.new(false)
     end
 
     def run
-      log "=== puma start: #{Time.now} ==="
+      logger.debug("Starting puma")
 
       stop # Just in case
 
-      app = LogStash::Api::RackApp.app(logger, agent, http_environment)
-      @server = ::Puma::Server.new(app)
-      @server.add_tcp_listener(http_host, http_port)
+      running!
 
-      @server.run.join
-    rescue Errno::EADDRINUSE
-      message = "Logstash tried to bind to port #{@http_port}, but the port is already in use. You can specify a new port by launching logtash with the --http-port option."
-      raise Errno::EADDRINUSE.new(message)
+      http_ports.each_with_index do |port, idx|
+        begin
+          if running?
+            @port = port
+            logger.debug("Trying to start WebServer", :port => @port)
+            start_webserver(@port)
+          else
+            break # we are closing down the server so just get out of the loop
+          end
+        rescue Errno::EADDRINUSE
+          if http_ports.count == 1
+            raise Errno::EADDRINUSE.new(I18n.t("logstash.web_api.cant_bind_to_port", :port => http_ports.first))
+          elsif idx == http_ports.count-1
+            raise Errno::EADDRINUSE.new(I18n.t("logstash.web_api.cant_bind_to_port_in_range", :http_ports => http_ports))
+          end
+        end
+      end
     end
 
-    def log(str)
-      logger.debug(str)
+    def running!
+      @running.make_true
     end
 
-    def error(str)
-      logger.error(str)
+    def running?
+      @running.value
     end
 
     def address
-      "#{http_host}:#{http_port}"
+      "#{http_host}:#{@port}"
     end
-    
-    # Empty method, this method is required because of the puma usage we make through
-    # the Single interface, https://github.com/puma/puma/blob/master/lib/puma/single.rb#L82
-    # for more details. This can always be implemented when we want to keep track of this
-    # bit of data.
-    def write_state; end
 
     def stop(options={})
+      @running.make_false
       @server.stop(true) if @server
+    end
+
+    def start_webserver(port)
+      app = LogStash::Api::RackApp.app(logger, agent, http_environment)
+
+      @server = ::Puma::Server.new(app)
+      @server.add_tcp_listener(http_host, port)
+
+      logger.info("Succesfully started Logstash API", :port => @port)
+
+      @server.run.join
     end
   end
 end

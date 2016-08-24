@@ -235,31 +235,21 @@ describe LogStash::Pipeline do
     }
 
     context "output close" do
-      it "should call close of output without output-workers" do
-        pipeline = TestPipeline.new(test_config_without_output_workers)
-        pipeline.run
+      let(:pipeline) { TestPipeline.new(test_config_without_output_workers) }
+      let(:output) { pipeline.outputs.first }
 
-        expect(pipeline.outputs.size ).to eq(1)
-        expect(pipeline.outputs.first.workers.size ).to eq(::LogStash::SETTINGS.get("pipeline.output.workers"))
-        expect(pipeline.outputs.first.workers.first.num_closes ).to eq(1)
-        pipeline.shutdown
+      before do
+        allow(output).to receive(:do_close)
       end
 
-      it "should call output close correctly with output workers" do
-        pipeline = TestPipeline.new(test_config_with_output_workers)
+      after do
+        pipeline.shutdown
+      end
+      
+      it "should call close of output without output-workers" do
         pipeline.run
 
-        expect(pipeline.outputs.size ).to eq(1)
-        # We even close the parent output worker, even though it doesn't receive messages
-
-        output_delegator = pipeline.outputs.first
-        output = output_delegator.workers.first
-
-        expect(output.num_closes).to eq(1)
-        output_delegator.workers.each do |plugin|
-          expect(plugin.num_closes ).to eq(1)
-        end
-        pipeline.shutdown
+        expect(output).to have_received(:do_close).once
       end
     end
   end
@@ -604,7 +594,13 @@ describe LogStash::Pipeline do
 
       Thread.new { subject.run }
       # make sure we have received all the generated events
-      sleep 0.25 while dummyoutput.events.size < number_of_events
+
+      times = 0
+      while dummyoutput.events.size < number_of_events
+        times += 1
+        sleep 0.25
+        raise "Waited too long" if times > 4
+      end
     end
 
     after :each do
@@ -615,6 +611,7 @@ describe LogStash::Pipeline do
       let(:collected_metric) { metric_store.get_with_path("stats/events") }
 
       it "populates the different metrics" do
+        expect(collected_metric[:stats][:events][:duration_in_millis].value).not_to be_nil
         expect(collected_metric[:stats][:events][:in].value).to eq(number_of_events)
         expect(collected_metric[:stats][:events][:filtered].value).to eq(number_of_events)
         expect(collected_metric[:stats][:events][:out].value).to eq(number_of_events)
@@ -625,6 +622,7 @@ describe LogStash::Pipeline do
       let(:collected_metric) { metric_store.get_with_path("stats/pipelines/") }
 
       it "populates the pipelines core metrics" do
+        expect(collected_metric[:stats][:pipelines][:main][:events][:duration_in_millis].value).not_to be_nil
         expect(collected_metric[:stats][:pipelines][:main][:events][:in].value).to eq(number_of_events)
         expect(collected_metric[:stats][:pipelines][:main][:events][:filtered].value).to eq(number_of_events)
         expect(collected_metric[:stats][:pipelines][:main][:events][:out].value).to eq(number_of_events)
@@ -640,8 +638,20 @@ describe LogStash::Pipeline do
       end
 
       it "populates the output metrics" do
-        plugin_name = "dummyoutput_#{dummy_output_id}".to_sym
+        plugin_name = dummy_output_id.to_sym
         expect(collected_metric[:stats][:pipelines][:main][:plugins][:outputs][plugin_name][:events][:out].value).to eq(number_of_events)
+      end
+
+      it "populates the name of the output plugin" do
+        plugin_name = dummy_output_id.to_sym
+        expect(collected_metric[:stats][:pipelines][:main][:plugins][:outputs][plugin_name][:name].value).to eq(DummyOutput.config_name)
+      end
+
+      it "populates the name of the filter plugin" do
+        [multiline_id, multiline_id_other].map(&:to_sym).each do |id|
+          plugin_name = "multiline_#{id}".to_sym
+          expect(collected_metric[:stats][:pipelines][:main][:plugins][:filters][plugin_name][:name].value).to eq(LogStash::Filters::Multiline.config_name)
+        end
       end
     end
   end

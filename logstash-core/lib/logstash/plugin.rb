@@ -45,8 +45,11 @@ class LogStash::Plugin
     self.class.name == other.class.name && @params == other.params
   end
 
-  def initialize(params=nil)
+  def initialize(params=nil)    
     @params = LogStash::Util.deep_clone(params)
+    # The id should always be defined normally, but in tests that might not be the case
+    # In the future we may make this more strict in the Plugin API
+    @params["id"] ||= "#{self.class.config_name}_#{SecureRandom.uuid}"
     @logger = Cabin::Channel.get(LogStash)
   end
 
@@ -57,15 +60,7 @@ class LogStash::Plugin
   #
   # @return [String] A plugin ID
   def id
-    (@params["id"].nil? || @params["id"].empty?) ? SecureRandom.uuid : @params["id"]
-  end
-
-  # Return a unique_name, This is composed by the name of
-  # the plugin and the generated ID (of the configured one)
-  #
-  # @return [String] a unique name
-  def plugin_unique_name
-    "#{config_name}_#{id}"
+    @params["id"]
   end
 
   # close is called during shutdown, after the plugin worker
@@ -127,6 +122,7 @@ class LogStash::Plugin
     LogStash::Registry.instance.lookup(type ,name) do |plugin_klass, plugin_name|
       is_a_plugin?(plugin_klass, plugin_name)
     end
+    
   rescue LoadError, NameError => e
     logger.debug("Problems loading the plugin with", :type => type, :name => name, :path => path)
     raise(LogStash::PluginLoadingError, I18n.t("logstash.pipeline.plugin-loading-error", :type => type, :name => name, :path => path, :error => e.to_s))

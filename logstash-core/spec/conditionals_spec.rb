@@ -25,6 +25,17 @@ end
 describe "conditionals in output" do
   extend ConditionalFanciness
 
+  class DummyNullOutput < LogStash::Outputs::Base
+    def register
+    end
+    def multi_receive(events)
+    end
+  end
+
+  before do
+    LogStash::Registry.instance.register("logstash/outputs/dummynull", DummyNullOutput)
+  end
+
   describe "simple" do
     config <<-CONFIG
       input {
@@ -35,7 +46,7 @@ describe "conditionals in output" do
       }
       output {
         if [foo] == "bar" {
-          stdout { }
+          dummynull { }
         }
       }
     CONFIG

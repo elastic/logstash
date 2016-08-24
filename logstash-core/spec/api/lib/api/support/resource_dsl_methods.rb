@@ -1,3 +1,13 @@
+# Ruby doesn't have common class for boolean,
+# And to simplify the ResourceDSLMethods check it make sense to have it.
+module Boolean; end
+class TrueClass
+  include Boolean
+end
+class FalseClass
+  include Boolean
+end
+
 module ResourceDSLMethods
   # Convert a nested hash to a mapping of key paths to expected classes
   def hash_to_mapping(h, path=[], mapping={})
@@ -35,7 +45,7 @@ module ResourceDSLMethods
         end
 
         it "should include the http address" do
-          expect(payload["http_address"]).to eql("#{Socket.gethostname}:#{::LogStash::WebServer::DEFAULT_PORT}")
+          expect(payload["http_address"]).to eql("#{Socket.gethostname}:#{::LogStash::WebServer::DEFAULT_PORTS.first}")
         end
       end
       

@@ -14,7 +14,8 @@ module LogStash
               :count,
               :peak_count
             ),
-            :mem => memory
+            :mem => memory,
+            :gc => gc
           }
         end
 
@@ -32,7 +33,7 @@ module LogStash
         def events
           extract_metrics(
             [:stats, :events],
-            :in, :filtered, :out
+            :in, :filtered, :out, :duration_in_millis
           )
         end
 
@@ -59,6 +60,10 @@ module LogStash
           }
         end
 
+        def gc
+          service.get_shallow(:jvm, :gc)
+        end
+
         def hot_threads(options={})
           HotThreadsReport.new(self, options)
         end
@@ -70,7 +75,7 @@ module LogStash
             # Turn the `plugins` stats hash into an array of [ {}, {}, ... ]
             # This is to produce an array of data points, one point for each
             # plugin instance.
-            return [] unless stats[:plugins].include?(plugin_type)
+            return [] unless stats[:plugins] && stats[:plugins].include?(plugin_type)
             stats[:plugins][plugin_type].collect do |id, data|
               { :id => id }.merge(data)
             end

@@ -19,7 +19,7 @@ end
 module LogStash
   class DummyAgent < Agent
     def start_webserver
-      @webserver = Struct.new(:address).new("#{Socket.gethostname}:#{::LogStash::WebServer::DEFAULT_PORT}")
+      @webserver = Struct.new(:address).new("#{Socket.gethostname}:#{::LogStash::WebServer::DEFAULT_PORTS.first}")
     end
     def stop_webserver; end
   end

@@ -189,21 +189,86 @@ describe LogStash::Runner do
       allow(pipeline).to receive(:shutdown)
     end
 
+    context "when :http.host is defined by the user" do
+      it "should pass the value to the webserver" do
+        expect(LogStash::Agent).to receive(:new) do |settings|
+          expect(settings.set?("http.host")).to be(true)
+          expect(settings.get("http.host")).to eq("localhost")
+        end
+
+        args = ["--http.host", "localhost", "-e", pipeline_string]
+        subject.run("bin/logstash", args)
+      end
+    end
+
+    context "when :http.host is not defined by the user" do
+      it "should pass the value to the webserver" do
+        expect(LogStash::Agent).to receive(:new) do |settings|
+          expect(settings.set?("http.host")).to be_falsey
+          expect(settings.get("http.host")).to eq("127.0.0.1")
+        end
+
+        args = ["-e", pipeline_string]
+        subject.run("bin/logstash", args)
+      end
+    end
+
+    context "when :http.port is defined by the user" do
+      it "should pass a single value to the webserver" do
+        expect(LogStash::Agent).to receive(:new) do |settings|
+          expect(settings.set?("http.port")).to be(true)
+          expect(settings.get("http.port")).to eq(10000..10000)
+        end
+
+        args = ["--http.port", "10000", "-e", pipeline_string]
+        subject.run("bin/logstash", args)
+      end
+
+      it "should pass a range value to the webserver" do
+        expect(LogStash::Agent).to receive(:new) do |settings|
+          expect(settings.set?("http.port")).to be(true)
+          expect(settings.get("http.port")).to eq(10000..20000)
+        end
+
+        args = ["--http.port", "10000-20000", "-e", pipeline_string]
+        subject.run("bin/logstash", args)
+      end
+    end
+
+    context "when no :http.port is not defined by the user" do
+      it "should use the default settings" do
+        expect(LogStash::Agent).to receive(:new) do |settings|
+          expect(settings.set?("http.port")).to be_falsey
+          expect(settings.get("http.port")).to eq(9600..9700)
+        end
+
+        args = ["-e", pipeline_string]
+        subject.run("bin/logstash", args)
+      end
+    end
+
     context "when :pipeline_workers is not defined by the user" do
       it "should not pass the value to the pipeline" do
         expect(LogStash::Agent).to receive(:new) do |settings|
-	  expect(settings.set?("pipeline.workers")).to be(false)
+          expect(settings.set?("pipeline.workers")).to be(false)
         end
         args = ["-e", pipeline_string]
         subject.run("bin/logstash", args)
       end
     end
 
+    context "when :pipeline_workers flag is passed without a value" do
+      it "should raise an error" do
+        args = ["-e", pipeline_string, "-w"]
+        expect { subject.run("bin/logstash", args) }.to raise_error
+      end
+    end
+
     context "when :pipeline_workers is defined by the user" do
       it "should pass the value to the pipeline" do
         expect(LogStash::Agent).to receive(:new) do |settings|
-	  expect(settings.set?("pipeline.workers")).to be(true)
-	  expect(settings.get("pipeline.workers")).to be(2)
+          expect(settings.set?("pipeline.workers")).to be(true)
+          expect(settings.get("pipeline.workers")).to be(2)
         end
 
         args = ["-w", "2", "-e", pipeline_string]
@@ -262,6 +327,66 @@ describe LogStash::Runner do
         expect(channel.level).to eq(:error)
       end
     end
+
+    context "deprecated flags" do
+      context "when using --quiet" do
+        it "should warn about the deprecated flag" do
+          expect(channel).to receive(:warn).with(/DEPRECATION WARNING/)
+          args = ["--quiet", "--version"]
+          subject.run("bin/logstash", args)
+        end
+
+        it "should still set the log level accordingly" do
+          args = ["--quiet", "--version"]
+          subject.run("bin/logstash", args)
+          expect(channel.level).to eq(:error)
+        end
+      end
+      context "when using --debug" do
+        it "should warn about the deprecated flag" do
+          expect(channel).to receive(:warn).with(/DEPRECATION WARNING/)
+          args = ["--debug", "--version"]
+          subject.run("bin/logstash", args)
+        end
+
+        it "should still set the log level accordingly" do
+          args = ["--debug", "--version"]
+          subject.run("bin/logstash", args)
+          expect(channel.level).to eq(:debug)
+        end
+      end
+      context "when using --verbose" do
+        it "should warn about the deprecated flag" do
+          expect(channel).to receive(:warn).with(/DEPRECATION WARNING/)
+          args = ["--verbose", "--version"]
+          subject.run("bin/logstash", args)
+        end
+
+        it "should still set the log level accordingly" do
+          args = ["--verbose", "--version"]
+          subject.run("bin/logstash", args)
+          expect(channel.level).to eq(:info)
+        end
+      end
+    end
   end
 
+  describe "path.settings" do
+    subject { LogStash::Runner.new("") }
+    context "if does not exist" do
+      let(:args) { ["--path.settings", "/tmp/a/a/a/a", "-e", "input {} output {}"] }
+
+      it "should terminate logstash" do
+        expect(subject.run(args)).to eq(1)
+      end
+
+      context "but if --help is passed" do
+        let(:args) { ["--path.settings", "/tmp/a/a/a/a", "--help"] }
+
+        it "should show help" do
+          expect { subject.run(args) }.to raise_error(Clamp::HelpWanted)
+        end
+      end
+    end
+  end
 end

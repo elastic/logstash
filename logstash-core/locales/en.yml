@@ -73,12 +73,16 @@ en:
       non_reloadable_config_register: |-
         Logstash is not able to start since configuration auto reloading was enabled but the configuration contains plugins that don't support it. Quitting...
     web_api:
+      cant_bind_to_port: |-
+        Logstash tried to bind to port %{port}, but the port is already in use. You can specify a new port by launching logtash with the --http-port option."
+      cant_bind_to_port_in_range: |-
+        Logstash tried to bind to port range %{http_ports}, but all the ports are already in use. You can specify a new port by launching logtash with the --http-port option."
       hot_threads:
         title: |-
           ::: {%{hostname}}
           Hot threads at %{time}, busiestThreads=%{top_count}:
         thread_title: |-
-            %{percent_of_cpu_time} % of cpu usage by %{thread_state} thread named '%{thread_name}'
+          %{percent_of_cpu_time} % of cpu usage, state: %{thread_state}, thread name: '%{thread_name}'
     runner:
       short-help: |-
         usage:
@@ -248,3 +252,12 @@ en:
         log_format: |+
           Specify if Logstash should write its own logs in JSON form (one
           event per line) or in plain text (using Ruby's Object#inspect)
+        debug: |+
+          Set the log level to debug.
+          DEPRECATED: use --log.level=debug instead.
+        verbose: |+
+          Set the log level to info.
+          DEPRECATED: use --log.level=verbose instead.
+        quiet: |+
+          Set the log level to info.
+          DEPRECATED: use --log.level=quiet instead.

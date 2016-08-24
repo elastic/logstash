@@ -16,6 +16,16 @@ module Clamp
 
   module Option
 
+    module Declaration
+      def deprecated_option(switches, type, description, opts = {})
+        Option::Definition.new(switches, type, description, opts).tap do |option|
+          declared_options << option
+          block ||= option.default_conversion_block
+          define_deprecated_accessors_for(option, opts, &block)
+        end
+      end
+    end
+
     module StrictDeclaration
 
       include Clamp::Attribute::Declaration
@@ -37,6 +47,17 @@ module Clamp
         end
       end
 
+      def define_deprecated_accessors_for(option, opts, &block)
+        define_deprecated_writer_for(option, opts, &block)
+      end
+
+      def define_deprecated_writer_for(option, opts, &block)
+        define_method(option.write_method) do |value|
+          logger = Cabin::Channel.get(LogStash)
+          logger.warn "DEPRECATION WARNING: The flag #{option.switches} has been deprecated, please use \"--#{opts[:new_flag]}=#{opts[:new_value]}\" instead."
+          LogStash::SETTINGS.set(opts[:new_flag], opts[:new_value])
+        end
+      end
     end
 
     class Definition
@@ -62,6 +83,12 @@ module Clamp
   class StrictCommand < Command
     class << self
       include ::Clamp::Option::StrictDeclaration
+    end
+
+    def handle_remaining_arguments
+      unless remaining_arguments.empty?
+        signal_usage_error "Unknown command '#{remaining_arguments.first}'"
+      end
     end
   end
 end

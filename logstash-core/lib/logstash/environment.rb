@@ -21,12 +21,12 @@ module LogStash
             Setting::String.new("config.string", nil, false),
            Setting::Boolean.new("config.test_and_exit", false),
            Setting::Boolean.new("config.reload.automatic", false),
-           Setting::Numeric.new("config.reload.interval", 3),
+           Setting::Numeric.new("config.reload.interval", 3), # in seconds
            Setting::Boolean.new("metric.collect", true) {|v| v == true }, # metric collection cannot be disabled
             Setting::String.new("pipeline.id", "main"),
-           Setting::Numeric.new("pipeline.workers", LogStash::Config::CpuCoreStrategy.maximum),
-           Setting::Numeric.new("pipeline.output.workers", 1),
-           Setting::Numeric.new("pipeline.batch.size", 125),
+   Setting::PositiveInteger.new("pipeline.workers", LogStash::Config::CpuCoreStrategy.maximum),
+   Setting::PositiveInteger.new("pipeline.output.workers", 1),
+   Setting::PositiveInteger.new("pipeline.batch.size", 125),
            Setting::Numeric.new("pipeline.batch.delay", 5), # in milliseconds
            Setting::Boolean.new("pipeline.unsafe_shutdown", false),
                     Setting.new("path.plugins", Array, []),
@@ -38,7 +38,7 @@ module LogStash
             Setting::String.new("path.log", nil, false),
             Setting::String.new("log.format", "plain", true, ["json", "plain"]),
             Setting::String.new("http.host", "127.0.0.1"),
-              Setting::Port.new("http.port", 9600),
+            Setting::PortRange.new("http.port", 9600..9700),
             Setting::String.new("http.environment", "production"),
   ].each {|setting| SETTINGS.register(setting) }
 

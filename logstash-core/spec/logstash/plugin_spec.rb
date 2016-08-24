@@ -236,7 +236,7 @@ describe LogStash::Plugin do
     end
   end
 
-  describe "#plugin_unique_name" do
+  describe "#id" do
     let(:plugin) do
       Class.new(LogStash::Filters::Base,) do
         config_name "simple_plugin"
@@ -258,7 +258,7 @@ describe LogStash::Plugin do
       subject { plugin.new(config) }
 
       it "return a human readable ID" do
-        expect(subject.plugin_unique_name).to eq("simple_plugin_#{my_id}")
+        expect(subject.id).to eq(my_id)
       end
     end
 
@@ -266,7 +266,7 @@ describe LogStash::Plugin do
       subject { plugin.new(config) }
 
       it "return a human readable ID" do
-        expect(subject.plugin_unique_name).to match(/^simple_plugin_/)
+        expect(subject.id).to match(/^simple_plugin_/)
       end
     end
   end
