@@ -218,16 +218,16 @@ module LogStash; module Util
           if event.nil?
             # queue poll timed out
             next
-          elsif event == LogStash::SHUTDOWN
+          elsif event.is_a?(LogStash::SignalEvent)
             # We MUST break here. If a batch consumes two SHUTDOWN events
             # then another worker may have its SHUTDOWN 'stolen', thus blocking
             # the pipeline.
-            @shutdown_signal_received = true
-            break
-          elsif event == LogStash::FLUSH
+            @shutdown_signal_received = event.shutdown?
+
             # See comment above
             # We should stop doing work after flush as well.
-            @flush_signal_received = true
+            @flush_signal_received = event.flush?
+
             break
           else
             @originals[event] = true

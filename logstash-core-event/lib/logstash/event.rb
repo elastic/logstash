@@ -13,14 +13,27 @@ require "logstash/string_interpolation"
 # in the future it might be necessary to refactor using like a BaseEvent
 # class to have a common interface for all pileline events to support
 # eventual queueing persistence for example, TBD.
-class LogStash::ShutdownEvent; end
-class LogStash::FlushEvent; end
 
 module LogStash
-  FLUSH = LogStash::FlushEvent.new
+  class SignalEvent
+    def flush?; raise "abstract method"; end;
+    def shutdown?; raise "abstract method"; end;
+  end
+
+  class ShutdownEvent < SignalEvent
+    def flush?; false; end;
+    def shutdown?; true; end;
+  end
+
+  class FlushEvent < SignalEvent
+    def flush?; true; end;
+    def shutdown?; false; end;
+  end
+
+  FLUSH = FlushEvent.new
 
   # LogStash::SHUTDOWN is used by plugins
-  SHUTDOWN = LogStash::ShutdownEvent.new
+  SHUTDOWN = ShutdownEvent.new
 end
 
 # the logstash event object.

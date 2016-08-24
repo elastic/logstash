@@ -45,7 +45,7 @@ module LogStash; class Pipeline
     "LogStash::Inputs::Stdin"
   ]
 
-  def initialize(config_str, settings = LogStash::SETTINGS, namespaced_metric = nil)
+  def initialize(config_str, settings = SETTINGS, namespaced_metric = nil)
     @config_str = config_str
     @config_hash = Digest::SHA1.hexdigest(@config_str)
     # Every time #plugin is invoked this is incremented to give each plugin
@@ -55,7 +55,7 @@ module LogStash; class Pipeline
     @logger = Cabin::Channel.get(LogStash)
     @settings = settings
     @pipeline_id = @settings.get_value("pipeline.id") || self.object_id
-    @reporter = LogStash::PipelineReporter.new(@logger, self)
+    @reporter = PipelineReporter.new(@logger, self)
 
     # A list of plugins indexed by id
     @plugins_by_id = {}
@@ -67,12 +67,12 @@ module LogStash; class Pipeline
 
     # This needs to be configured before we evaluate the code to make
     # sure the metric instance is correctly send to the plugins to make the namespace scoping work
-    @metric = namespaced_metric.nil? ? LogStash::Instrument::NullMetric.new : namespaced_metric
+    @metric = namespaced_metric.nil? ? Instrument::NullMetric.new : namespaced_metric
 
     grammar = LogStashConfigParser.new
     @config = grammar.parse(config_str)
     if @config.nil?
-      raise LogStash::ConfigurationError, grammar.failure_reason
+      raise ConfigurationError, grammar.failure_reason
     end
     # This will compile the config to ruby and evaluate the resulting code.
     # The code will initialize all the plugins and define the
@@ -92,7 +92,7 @@ module LogStash; class Pipeline
     rescue => e
       raise
     end
-    queue = LogStash::Util::WrappedAckedQueue.new("#{LogStash::Environment::LOGSTASH_HOME}/lsqueue", 100 * 1024 * 1024)
+    queue = Util::WrappedAckedQueue.new("#{Environment::LOGSTASH_HOME}/lsqueue", 100 * 1024 * 1024)
     @input_queue_client = queue.write_client
     @filter_queue_client = queue.read_client
     @signal_queue = Queue.new
@@ -150,7 +150,7 @@ module LogStash; class Pipeline
     @started_at = Time.now
 
     @thread = Thread.current
-    LogStash::Util.set_thread_name("[#{pipeline_id}]-pipeline-manager")
+    Util.set_thread_name("[#{pipeline_id}]-pipeline-manager")
 
     start_workers
 
@@ -223,7 +223,7 @@ module LogStash; class Pipeline
 
       pipeline_workers.times do |t|
         @worker_threads << Thread.new do
-          LogStash::Util.set_thread_name("[#{pipeline_id}]>worker#{t}")
+          Util.set_thread_name("[#{pipeline_id}]>worker#{t}")
           worker_loop(batch_size, batch_delay)
         end
       end
@@ -340,7 +340,7 @@ module LogStash; class Pipeline
   end
 
   def inputworker(plugin)
-    LogStash::Util::set_thread_name("[#{pipeline_id}]<#{plugin.class.config_name}")
+    Util::set_thread_name("[#{pipeline_id}]<#{plugin.class.config_name}")
     begin
       plugin.run(@input_queue_client)
     rescue => e
@@ -396,7 +396,7 @@ module LogStash; class Pipeline
     # Each worker thread will receive this exactly once!
     @worker_threads.each do |t|
       @logger.debug("Pushing shutdown", :thread => t.inspect)
-      @signal_queue.push(LogStash::SHUTDOWN)
+      @signal_queue.push(SHUTDOWN)
     end
 
     @worker_threads.each do |t|
@@ -420,20 +420,20 @@ module LogStash; class Pipeline
            args["id"]
          end
 
-    raise LogStash::ConfigurationError, "Two plugins have the id '#{id}', please fix this conflict" if @plugins_by_id[id]
+    raise ConfigurationError, "Two plugins have the id '#{id}', please fix this conflict" if @plugins_by_id[id]
     
     pipeline_scoped_metric = metric.namespace([:stats, :pipelines, pipeline_id.to_s.to_sym, :plugins])
 
-    klass = LogStash::Plugin.lookup(plugin_type, name)
+    klass = Plugin.lookup(plugin_type, name)
 
     # Scope plugins of type 'input' to 'inputs'
     type_scoped_metric = pipeline_scoped_metric.namespace("#{plugin_type}s".to_sym)
     plugin = if plugin_type == "output"
                OutputDelegator.new(@logger, klass, type_scoped_metric,
-                                   ::LogStash::OutputDelegatorStrategyRegistry.instance,
+                                   OutputDelegatorStrategyRegistry.instance,
                                    args)
              elsif plugin_type == "filter"
-               LogStash::FilterDelegator.new(@logger, klass, type_scoped_metric, args)
+               FilterDelegator.new(@logger, klass, type_scoped_metric, args)
              else # input
                input_plugin = klass.new(args)
                input_plugin.metric = type_scoped_metric.namespace(id)
@@ -481,7 +481,7 @@ module LogStash; class Pipeline
   def flush
     if @flushing.compare_and_set(false, true)
       @logger.debug? && @logger.debug("Pushing flush onto pipeline")
-      @signal_queue.push(LogStash::FLUSH)
+      @signal_queue.push(FLUSH)
     end
   end
 
@@ -515,7 +515,7 @@ module LogStash; class Pipeline
   def plugin_threads_info
     input_threads = @input_threads.select {|t| t.alive? }
     worker_threads = @worker_threads.select {|t| t.alive? }
-    (input_threads + worker_threads).map {|t| LogStash::Util.thread_info(t) }
+    (input_threads + worker_threads).map {|t| Util.thread_info(t) }
   end
 
   def stalling_threads_info
