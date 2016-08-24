@@ -104,5 +104,9 @@ module LogStash module Instrument
       logger.debug("Collector: Sending snapshot to observers", :created_at => created_at) if logger.debug?
       notify_observers(snapshot_metric)
     end
+
+    def clear(keypath)
+      @metric_store.prune(keypath)
+    end
   end
 end; end
