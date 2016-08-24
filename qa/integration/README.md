@@ -7,7 +7,7 @@ These set of tests are full integration tests as in they start LS from a binary,
 * From LS_HOME source directory, run `rake artifact:tar`
 * `cd build`
 * Unzip the recently built file: `tar xvf logstash-<version>.tar.gz`
-
+* `cd LS_HOME/qa/integration`
 * `bundle install`
 This will install test specific dependency gems.
 * You are ready to run any tests
