@@ -34,7 +34,6 @@ class LogStash::Outputs::NOOPMultiReceiveEncoded < ::LogStash::Outputs::Base
   end
 end
 
-
 describe "LogStash::Outputs::Base#new" do
   let(:params) { {} }  
   subject(:instance) { klass.new(params.dup) }
