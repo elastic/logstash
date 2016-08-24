@@ -78,7 +78,7 @@ public class QueueTest {
     @Test
     public void writeMultiPage() throws IOException {
         List<Queueable> elements = Arrays.asList(new StringElement("foobarbaz1"), new StringElement("foobarbaz2"), new StringElement("foobarbaz3"), new StringElement("foobarbaz4"));
-        int singleElementCapacity = ByteBufferPageIO.HEADER_SIZE + ByteBufferPageIO.persistedByteCount(elements.get(0).serialize().length);
+        int singleElementCapacity = ByteBufferPageIO.HEADER_SIZE + ByteBufferPageIO._persistedByteCount(elements.get(0).serialize().length);
 
         TestQueue q = new TestQueue(TestSettings.getSettings(2 * singleElementCapacity));
         q.open();
@@ -121,7 +121,7 @@ public class QueueTest {
     @Test
     public void writeMultiPageWithInOrderAcking() throws IOException {
         List<Queueable> elements = Arrays.asList(new StringElement("foobarbaz1"), new StringElement("foobarbaz2"), new StringElement("foobarbaz3"), new StringElement("foobarbaz4"));
-        int singleElementCapacity = ByteBufferPageIO.HEADER_SIZE + ByteBufferPageIO.persistedByteCount(elements.get(0).serialize().length);
+        int singleElementCapacity = ByteBufferPageIO.HEADER_SIZE + ByteBufferPageIO._persistedByteCount(elements.get(0).serialize().length);
 
         TestQueue q = new TestQueue(TestSettings.getSettings(2 * singleElementCapacity));
         q.open();
@@ -162,7 +162,7 @@ public class QueueTest {
     public void writeMultiPageWithInOrderAckingCheckpoints() throws IOException {
         List<Queueable> elements1 = Arrays.asList(new StringElement("foobarbaz1"), new StringElement("foobarbaz2"));
         List<Queueable> elements2 = Arrays.asList(new StringElement("foobarbaz3"), new StringElement("foobarbaz4"));
-        int singleElementCapacity = ByteBufferPageIO.HEADER_SIZE + ByteBufferPageIO.persistedByteCount(elements1.get(0).serialize().length);
+        int singleElementCapacity = ByteBufferPageIO.HEADER_SIZE + ByteBufferPageIO._persistedByteCount(elements1.get(0).serialize().length);
 
         Settings settings = TestSettings.getSettings(2 * singleElementCapacity);
         TestQueue q = new TestQueue(settings);

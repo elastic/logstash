@@ -28,11 +28,12 @@ public class MemoryPageIOStream implements PageIO {
     private String dirPath = "";
     private String headerDetails = "";
 
-    public static int persistedByteCount(byte[] data) {
+    public int persistedByteCount(byte[] data) {
         return persistedByteCount(data.length);
     }
 
-    public static int persistedByteCount(int length) {
+    @Override
+    public int persistedByteCount(int length) {
         return MIN_RECORD_SIZE + length;
     }
 

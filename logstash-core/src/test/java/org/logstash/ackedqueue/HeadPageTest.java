@@ -34,7 +34,7 @@ public class HeadPageTest {
     @Test
     public void pageWrite() throws IOException {
         Queueable element = new StringElement("foobarbaz");
-        int singleElementCapacity = ByteBufferPageIO.HEADER_SIZE + ByteBufferPageIO.persistedByteCount(element.serialize().length);
+        int singleElementCapacity = ByteBufferPageIO.HEADER_SIZE + ByteBufferPageIO._persistedByteCount(element.serialize().length);
 
         Settings s = TestSettings.getSettings(singleElementCapacity);
         Queue q = new Queue(s);
@@ -52,7 +52,7 @@ public class HeadPageTest {
     @Test
     public void pageWriteAndReadSingle() throws IOException {
         Queueable element = new StringElement("foobarbaz", 1);
-        int singleElementCapacity = ByteBufferPageIO.HEADER_SIZE + ByteBufferPageIO.persistedByteCount(element.serialize().length);
+        int singleElementCapacity = ByteBufferPageIO.HEADER_SIZE + ByteBufferPageIO._persistedByteCount(element.serialize().length);
 
         Settings s = TestSettings.getSettings(singleElementCapacity);
         Queue q = new Queue(s);
@@ -75,7 +75,7 @@ public class HeadPageTest {
     @Test
     public void pageWriteAndReadMulti() throws IOException {
         Queueable element = new StringElement("foobarbaz", 1);
-        int singleElementCapacity = ByteBufferPageIO.HEADER_SIZE + ByteBufferPageIO.persistedByteCount(element.serialize().length);
+        int singleElementCapacity = ByteBufferPageIO.HEADER_SIZE + ByteBufferPageIO._persistedByteCount(element.serialize().length);
 
         Settings s = TestSettings.getSettings(singleElementCapacity);
         Queue q = new Queue(s);
@@ -100,7 +100,7 @@ public class HeadPageTest {
         URL url = FileCheckpointIOTest.class.getResource("checkpoint.head");
         String dirPath = Paths.get(url.toURI()).getParent().toString();
         Queueable element = new StringElement("foobarbaz", 1);
-        int singleElementCapacity = ByteBufferPageIO.HEADER_SIZE + ByteBufferPageIO.persistedByteCount(element.serialize().length);
+        int singleElementCapacity = ByteBufferPageIO.HEADER_SIZE + ByteBufferPageIO._persistedByteCount(element.serialize().length);
         Settings s = TestSettings.getSettingsCheckpointFilePageMemory(singleElementCapacity, dirPath);
         TestQueue q = new TestQueue(s);
         try {

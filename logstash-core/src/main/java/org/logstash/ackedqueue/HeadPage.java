@@ -13,6 +13,11 @@ public class HeadPage extends Page {
         pageIO.create();
     }
 
+    // verify if data size plus overhead is not greater than the page capacity
+    public boolean hasCapacity(int byteSize) {
+        return this.pageIO.persistedByteCount(byteSize) <= this.pageIO.getCapacity();
+    }
+
     public boolean hasSpace(int byteSize) {
         return this.pageIO.hasSpace((byteSize));
     }

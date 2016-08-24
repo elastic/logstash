@@ -102,7 +102,7 @@ public class MemoryPageIOStreamTest {
             subj.write(data, seqno);
             seqno++;
         }
-        int recordSize = MemoryPageIOStream.persistedByteCount(data.length);
+        int recordSize = subj.persistedByteCount(data.length);
         int remains = bufferSize - subj.getWritePosition();
         assertThat(recordSize, is(equalTo(33))); // (element is 9 + 8) + seqnum=8 + length=4 + crc=4
         assertThat(subj.getElementCount(), is(equalTo(3)));

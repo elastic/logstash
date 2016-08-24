@@ -238,8 +238,8 @@ public class MmapPageIO implements PageIO {
         return (int) checkSummer.getValue();
     }
 
-    // made public only for tests
-    public static int persistedByteCount(int byteCount) {
+    @Override
+    public int persistedByteCount(int byteCount) {
         return SEQNUM_SIZE + LENGTH_SIZE + byteCount + CHECKSUM_SIZE;
     }
 

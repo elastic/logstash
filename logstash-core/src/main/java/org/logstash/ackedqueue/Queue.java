@@ -117,6 +117,10 @@ public class Queue implements Closeable {
         element.setSeqNum(nextSeqNum());
         byte[] data = element.serialize();
 
+        if (! this.headPage.hasCapacity(data.length)) {
+            throw new IOException("data to be written is bigger that page capacity");
+        }
+
         boolean wasEmpty = (firstUnreadPage() == null);
 
         if (! this.headPage.hasSpace(data.length)) {

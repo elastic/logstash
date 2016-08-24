@@ -15,7 +15,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 public class ByteBufferPageIOTest {
 
     private final int CAPACITY = 1024;
-    private int MIN_CAPACITY = ByteBufferPageIO.HEADER_SIZE + ByteBufferPageIO.persistedByteCount(0);
+    private int MIN_CAPACITY = ByteBufferPageIO.HEADER_SIZE + ByteBufferPageIO._persistedByteCount(0);
 
     private ByteBufferPageIO subject() throws IOException {
         return subject(CAPACITY);
@@ -61,7 +61,7 @@ public class ByteBufferPageIOTest {
     @Test
     public void hasSpaceAfterWrite() throws IOException {
         Queueable element = new StringElement("foobarbaz");
-        int singleElementCapacity = ByteBufferPageIO.HEADER_SIZE + ByteBufferPageIO.persistedByteCount(element.serialize().length);
+        int singleElementCapacity = ByteBufferPageIO.HEADER_SIZE + ByteBufferPageIO._persistedByteCount(element.serialize().length);
 
         element.setSeqNum(1L);
         ByteBufferPageIO subject = subject(singleElementCapacity);
@@ -79,7 +79,7 @@ public class ByteBufferPageIOTest {
         ByteBufferPageIO subj = subject();
         subj.create();
         subj.write(element.serialize(), element);
-        assertThat(subj.getWritePosition(), is(equalTo(ByteBufferPageIO.HEADER_SIZE +  ByteBufferPageIO.persistedByteCount(element.serialize().length))));
+        assertThat(subj.getWritePosition(), is(equalTo(ByteBufferPageIO.HEADER_SIZE +  ByteBufferPageIO._persistedByteCount(element.serialize().length))));
         assertThat(subj.getElementCount(), is(equalTo(1)));
         assertThat(subj.getMinSeqNum(), is(equalTo(42L)));
     }

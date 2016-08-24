@@ -28,6 +28,9 @@ public interface PageIO extends Closeable {
     // @return the data container total capacity in bytes
     int getCapacity();
 
+    // @return the actual persisted byte count (with overhead) for the given data bytes
+    int persistedByteCount(int bytes);
+
     // signal that this data page is not active and resources can be released
     void deactivate() throws IOException;
 

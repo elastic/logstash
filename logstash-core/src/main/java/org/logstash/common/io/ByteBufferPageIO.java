@@ -216,9 +216,14 @@ public class ByteBufferPageIO implements PageIO {
         return (int) checkSummer.getValue();
     }
 
-    // made public only for tests
-    public static int persistedByteCount(int byteCount) {
+    // TODO: static method for tests - should refactor
+    public static int _persistedByteCount(int byteCount) {
         return SEQNUM_SIZE + LENGTH_SIZE + byteCount + CHECKSUM_SIZE;
+    }
+
+    @Override
+    public int persistedByteCount(int byteCount) {
+        return ByteBufferPageIO._persistedByteCount(byteCount);
     }
 
     private long maxSeqNum() {
