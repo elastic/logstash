@@ -1,0 +1,4 @@
+---
+ls_version: 5.0.0-alpha6
+snapshot: true  
+#ls_home_abs_path: /tmp/logstash-5.0.0-alpha6 
