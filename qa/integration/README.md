@@ -31,9 +31,10 @@ You are now ready to run any tests from `qa/integration`.
 
 ### Adding a new test
 
-1. Creating a new test -- lets call it "test_file_input". This brings up LS to read from a file and assert if file contents were as expected.
+1. Creating a new test -- lets use as example. Call it "test_file_input" which brings up LS to read from a file and assert file contents (file output) were as expected.
 2. You'll have to create a yml file in `fixtures` called `test_file_input_spec.yml`. Here you define any external services you need and any LS config.
-3. Create a corresponding `test_file_input_spec.rb` in `specs` folder and use the `fixtures` object to get all services, config etc. You can start LS, and assume all external services have already been started. Write rspec code to validate.
+3. Create a corresponding `test_file_input_spec.rb` in `specs` folder and use the `fixtures` object to get all services, config etc. The `.yml` and rspec file has to be the same name for the settings to be picked up. You can start LS inside the tests and assume all external services have already been started.
+4. Write rspec code to validate.
 
 ## Future Improvements
 
