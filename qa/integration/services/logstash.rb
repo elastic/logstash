@@ -48,7 +48,6 @@ class Logstash < Service
 
   # Given an input this pipes it to LS. Expects a stdin input in LS
   def start_with_input(config, input)
-    puts "`cat #{input} | #{@logstash_bin} -e \'#{config}\'`"
     Bundler.with_clean_env do
       `cat #{input} | #{@logstash_bin} -e \'#{config}\'`
     end
@@ -64,7 +63,6 @@ class Logstash < Service
     puts "Starting Logstash #{@logstash_bin} -e #{STDIN_CONFIG}"
     Bundler.with_clean_env do
       out = Tempfile.new("duplex")
-      puts out.path
       out.sync = true
       @process = ChildProcess.build(@logstash_bin, "-e", STDIN_CONFIG)
       # pipe STDOUT and STDERR to a file
