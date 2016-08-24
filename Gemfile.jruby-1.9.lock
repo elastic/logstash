@@ -251,11 +251,12 @@ GEM
       logstash-core-plugin-api (~> 1.0)
       nokogiri
       xml-simple
-    logstash-input-beats (2.2.9)
+    logstash-input-beats (3.1.0-java)
       concurrent-ruby (>= 0.9.2, <= 1.0.0)
-      logstash-codec-multiline (~> 2.0.5)
+      jar-dependencies (~> 0.3.4)
+      logstash-codec-multiline (>= 2.0.5)
       logstash-codec-plain
-      logstash-core-plugin-api (~> 1.0)
+      logstash-core-plugin-api (>= 1.60, <= 2.99)
       thread_safe (~> 0.3.5)
     logstash-input-couchdb_changes (2.0.4)
       json
@@ -696,7 +697,7 @@ DEPENDENCIES
   logstash-filter-useragent (< 3.0.0)
   logstash-filter-uuid (< 3.0.0)
   logstash-filter-xml (< 3.0.0)
-  logstash-input-beats (< 3.0.0)
+  logstash-input-beats (~> 3.1.0)
   logstash-input-couchdb_changes (< 3.0.0)
   logstash-input-elasticsearch (< 3.0.0)
   logstash-input-eventlog (< 4.0.0)
