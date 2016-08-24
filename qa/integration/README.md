@@ -2,10 +2,11 @@
 
 These set of tests are full integration tests as in: they can start LS from a binary, run configs using `-e` and can use any external services like Kafka, ES and S3. This framework is hybrid -- a combination of bash scripts (to mainly setup services), Ruby service files, and RSpec. All test assertions are done in RSpec.
 
+No VMs, all tests run locally.
+
 ## Dependencies
 * An existing Logstash binary, defaults to `LS_HOME/build/logstash-<version>`
 * `rspec`
-* Not a VM in sight
 
 ## Preparing a test run
 
