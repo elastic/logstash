@@ -13,4 +13,10 @@ public interface CheckpointIO {
     void purge(String fileName) throws IOException;
 
     void purge() throws IOException;
+
+    // @return the head page checkpoint file name
+    String headFileName();
+
+    // @return the tail page checkpoint file name for given page number
+    String tailFileName(int pageNum);
 }

@@ -1,5 +1,6 @@
 package org.logstash.ackedqueue;
 
+import org.logstash.common.io.CheckpointIO;
 import org.logstash.common.io.PageIO;
 
 import java.io.IOException;
@@ -29,13 +30,15 @@ public class BeheadedPage extends Page {
         // TODO: not concurrent for first iteration:
 
         // since this is a tail page and no write can happen in this page, there is no point in performing a fsync on this page, just stamp checkpoint
-        this.lastCheckpoint = queue.getCheckpointIO().write("checkpoint." + this.pageNum, this.pageNum, this.queue.firstUnackedPageNum(), firstUnackedSeqNum(), this.minSeqNum, this.elementCount);
+        CheckpointIO io = queue.getCheckpointIO();
+        this.lastCheckpoint = io.write(io.tailFileName(this.pageNum), this.pageNum, this.queue.firstUnackedPageNum(), firstUnackedSeqNum(), this.minSeqNum, this.elementCount);
     }
 
     // delete all IO files associated with this page
     public void purge() throws IOException {
         this.pageIO.purge();
-        this.queue.getCheckpointIO().purge("checkpoint." + this.pageNum);
+        CheckpointIO io = queue.getCheckpointIO();
+        io.purge(io.tailFileName(this.pageNum));
     }
 
     public void close() throws IOException {

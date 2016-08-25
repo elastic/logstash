@@ -48,7 +48,7 @@ public class Queue implements Closeable {
 
         Checkpoint headCheckpoint;
         try {
-            headCheckpoint = checkpointIO.read("checkpoint.head");
+            headCheckpoint = checkpointIO.read(checkpointIO.headFileName());
         } catch (NoSuchFileException e) {
             headCheckpoint = null;
         }
@@ -59,10 +59,10 @@ public class Queue implements Closeable {
         } else {
             // handle all tail pages upto but excluding the head page
             for (int pageNum = headCheckpoint.getFirstUnackedPageNum(); pageNum < headCheckpoint.getPageNum(); pageNum++) {
-                Checkpoint tailCheckpoint = checkpointIO.read("checkpoint." + pageNum);
+                Checkpoint tailCheckpoint = checkpointIO.read(checkpointIO.tailFileName(pageNum));
 
                 if (tailCheckpoint == null) {
-                    throw new IOException(String.format("checkpoint.%d not found", pageNum));
+                    throw new IOException(checkpointIO.tailFileName(pageNum) + " not found");
                 }
 
                 PageIO pageIO = settings.getPageIOFactory().build(pageNum, this.settings.getCapacity(), this.settings.getDirPath());

@@ -1,5 +1,6 @@
 package org.logstash.ackedqueue;
 
+import org.logstash.common.io.CheckpointIO;
 import org.logstash.common.io.PageIO;
 
 import java.io.IOException;
@@ -79,7 +80,9 @@ public class HeadPage extends Page {
         this.pageIO.ensurePersisted();
 
         // then write new checkpoint
-        this.lastCheckpoint = queue.getCheckpointIO().write("checkpoint.head", this.pageNum, this.queue.firstUnackedPageNum(), firstUnackedSeqNum(), this.minSeqNum, this.elementCount);
+
+        CheckpointIO io = queue.getCheckpointIO();
+        this.lastCheckpoint = io.write(io.headFileName(), this.pageNum, this.queue.firstUnackedPageNum(), firstUnackedSeqNum(), this.minSeqNum, this.elementCount);
      }
 
     public void close() throws IOException {

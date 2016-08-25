@@ -27,6 +27,8 @@ public class FileCheckpointIO  implements CheckpointIO {
             + Integer.BYTES;    // checksum
 
     private final String dirPath;
+    private final String HEAD_CHECKPOINT = "checkpoint.head";
+    private final String TAIL_CHECKPOINT = "checkpoint.";
 
     public FileCheckpointIO(String dirPath) {
         this.dirPath = dirPath;
@@ -60,6 +62,17 @@ public class FileCheckpointIO  implements CheckpointIO {
         // TODO: dir traversal and delete all checkpoints?
     }
 
+    // @return the head page checkpoint file name
+    @Override
+    public String headFileName() {
+         return HEAD_CHECKPOINT;
+    }
+
+    // @return the tail page checkpoint file name for given page number
+    @Override
+    public String tailFileName(int pageNum) {
+        return TAIL_CHECKPOINT + pageNum;
+    }
 
     private Checkpoint read(BufferedChecksumStreamInput crcsi) throws IOException {
         int version = (int) crcsi.readShort();
