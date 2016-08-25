@@ -7,6 +7,7 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.nio.file.NoSuchFileException;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -37,7 +38,7 @@ public class Queue implements Closeable {
         this.tailPages = new ArrayList<>();
         this.checkpointIO = settings.getCheckpointIOFactory().build(settings.getDirPath());
         this.deserialiser = settings.getElementDeserialiser();
-        this.closed = new AtomicBoolean(true); // since not yes opened
+        this.closed = new AtomicBoolean(true); // not yet opened
     }
 
     // moved queue opening logic in open() method until we have something in place to used in-memory checkpoints for testing
@@ -57,7 +58,8 @@ public class Queue implements Closeable {
             this.seqNum = 0;
             headPageNum = 0;
         } else {
-            // handle all tail pages upto but excluding the head page
+
+            // reconstruct all tail pages state upto but excluding the head page
             for (int pageNum = headCheckpoint.getFirstUnackedPageNum(); pageNum < headCheckpoint.getPageNum(); pageNum++) {
                 Checkpoint tailCheckpoint = checkpointIO.read(checkpointIO.tailFileName(pageNum));
 
@@ -83,7 +85,6 @@ public class Queue implements Closeable {
                 this.tailPages.add(tailPage);
             }
 
-            // handle the head page
             // transform the head page into a beheaded tail page
             PageIO pageIO = settings.getPageIOFactory().build(headCheckpoint.getPageNum(), this.settings.getCapacity(), this.settings.getDirPath());
             BeheadedPage beheadedHeadPage = new BeheadedPage(headCheckpoint, this, pageIO);
@@ -100,10 +101,9 @@ public class Queue implements Closeable {
             headPageNum = headCheckpoint.getPageNum() + 1;
         }
 
+        // create new head page
         PageIO pageIO = settings.getPageIOFactory().build(headPageNum, this.settings.getCapacity(), this.settings.getDirPath());
         this.headPage = new HeadPage(headPageNum, this, pageIO);
-
-        // we can let the headPage get its first unacked page num via the tailPages
         this.headPage.checkpoint();
 
         // TODO: here do directory traversal and cleanup lingering pages? could be a background operations to not delay queue start?
@@ -118,11 +118,12 @@ public class Queue implements Closeable {
         byte[] data = element.serialize();
 
         if (! this.headPage.hasCapacity(data.length)) {
-            throw new IOException("data to be written is bigger that page capacity");
+            throw new IOException("data to be written is bigger than page capacity");
         }
 
         boolean wasEmpty = (firstUnreadPage() == null);
 
+        // create a new head page if the current does not have suffient space left for data to be written
         if (! this.headPage.hasSpace(data.length)) {
             // beheading includes checkpoint+fsync if required
             BeheadedPage tailPage = this.headPage.behead();
@@ -134,8 +135,6 @@ public class Queue implements Closeable {
             PageIO pageIO = this.settings.getPageIOFactory().build(headPageNum, this.settings.getCapacity(), this.settings.getDirPath());
             this.headPage = new HeadPage(headPageNum, this, pageIO);
             this.headPage.checkpoint();
-
-            // TODO: redo this.headPage.hasSpace(data.length) to make sure data is not greater than page size?
         }
 
         this.headPage.write(data, element);
@@ -148,7 +147,7 @@ public class Queue implements Closeable {
         return element.getSeqNum();
     }
 
-    // @param seqNum the element sequence number upper bound for which persistence should be garanteed (by fsync'int)
+    // @param seqNum the element sequence number upper bound for which persistence should be garanteed (by fsync'ing)
     public synchronized void ensurePersistedUpto(long seqNum) throws IOException{
          this.headPage.ensurePersistedUpto(seqNum);
     }
@@ -167,11 +166,9 @@ public class Queue implements Closeable {
 
 
     // blocking readBatch notes:
+    //   the queue close() notifies all pending blocking read so that they unblock if the queue is being closed.
+    //   this means that all blocking read methods need to verify for the queue close condition.
     //
-    // the queue close() notifies all pending blocking read so that they unblock if the queue is being closed.
-    // this means that all blocking read methods need to verify for the queue close condition.
-
-
     // blocking queue read until elements are available for read
     // @param limit read the next bach of size up to this limit. the returned batch size can be smaller than than the requested limit if fewer elements are available
     // @return Batch the batch containing 1 or more element up to the required limit or null if no elements were available
@@ -206,7 +203,7 @@ public class Queue implements Closeable {
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 // TODO: what should we do with an InterruptedException here?
-                throw new RuntimeException("blocking readBatch InterruptedException", e);
+                throw new RuntimeException("timeout blocking readBatch InterruptedException", e);
             }
 
             // if after returnining from wait queue is still empty, or the queue was closed return null
@@ -217,59 +214,73 @@ public class Queue implements Closeable {
 
         return p.readBatch(limit);
     }
+    
+    private static class TailPageResult {
+        public BeheadedPage page;
+        public int index;
+
+        public TailPageResult(BeheadedPage page, int index) {
+            this.page = page;
+            this.index = index;
+        }
+    }
+
+    // perform a binary search through tail pages to find in which page this seqNum falls into
+    private TailPageResult binaryFindPageForSeqnum(long seqNum) {
+        int lo = 0;
+        int hi = this.tailPages.size() - 1;
+        while (lo <= hi) {
+            int mid = lo + (hi - lo) / 2;
+            BeheadedPage p = this.tailPages.get(mid);
+
+            if (seqNum < p.getMinSeqNum()) {
+                hi = mid - 1;
+            } else if (seqNum >= (p.getMinSeqNum() + p.getElementCount())) {
+                lo = mid + 1;
+            } else {
+                return new TailPageResult(p, mid);
+            }
+        }
+        return null;
+    }
+
+    // perform a linear search through tail pages to find in which page this seqNum falls into
+    private TailPageResult linearFindPageForSeqnum(long seqNum) {
+        for (int i = 0; i < this.tailPages.size(); i++) {
+            BeheadedPage p = this.tailPages.get(i);
+            if (p.getMinSeqNum() > 0 && seqNum >= p.getMinSeqNum() && seqNum < p.getMinSeqNum() + p.getElementCount()) {
+                return new TailPageResult(p, i);
+            }
+        }
+        return null;
+    }
 
     public synchronized void ack(List<Long> seqNums) throws IOException {
         // as a first implementation we assume that all batches are created from the same page
         // so we will avoid multi pages acking here for now
 
-        Page ackPage = null;
-
-        // first the page to ack by travesing from oldest tail page
+        // find the page to ack by travesing from oldest tail page
         long firstAckSeqNum = seqNums.get(0);
-        for (Page p : this.tailPages) {
-            if (p.getMinSeqNum() > 0 && firstAckSeqNum >= p.getMinSeqNum() && firstAckSeqNum < p.getMinSeqNum() + p.getElementCount()) {
-                ackPage = p;
-                break;
-            }
-        }
 
-        // if not found it must be in head
-        if (ackPage == null) {
-            ackPage = this.headPage;
+        // dual search strategy: if few tail pages search linearily otherwise perform binary search
+        TailPageResult result = (this.tailPages.size() > 3) ? binaryFindPageForSeqnum(firstAckSeqNum) : linearFindPageForSeqnum(firstAckSeqNum);
 
+        if (result == null) {
+            // if not found then it is in head page
             assert this.headPage.getMinSeqNum() > 0 && firstAckSeqNum >= this.headPage.getMinSeqNum() && firstAckSeqNum < this.headPage.getMinSeqNum() + this.headPage.getElementCount():
                     String.format("seqNum=%d is not in head page with minSeqNum=%d", firstAckSeqNum, this.headPage.getMinSeqNum());
-        }
+            this.headPage.ack(seqNums);
+        } else {
+            result.page.ack(seqNums);
 
-        ackPage.ack(seqNums);
-
-        // cleanup fully acked pages
-
-        Iterator<BeheadedPage> i = this.tailPages.iterator();
-        boolean changed = false;
-        List<BeheadedPage> toDelete = new ArrayList<>();
-
-        // TODO: since acking is within a single page, we don't really need to traverse whole tail pages, we can optimize this
-
-        while (i.hasNext()) {
-            BeheadedPage p = i.next();
-            if (p.isFullyAcked()) {
-                i.remove();
-                changed = true;
-                toDelete.add(p);
-            } else {
-                break;
+            // cleanup fully acked tail page
+            if (result.page.isFullyAcked()) {
+                this.tailPages.remove(result.index);
+                this.headPage.checkpoint();
+                result.page.purge();
             }
         }
-
-        if (changed) {
-            this.headPage.checkpoint();
-
-            for (BeheadedPage p : toDelete) {
-                p.purge();
-            }
-        }
-    }
+     }
 
     public CheckpointIO getCheckpointIO() {
         return this.checkpointIO;

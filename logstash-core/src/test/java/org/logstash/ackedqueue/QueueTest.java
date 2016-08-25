@@ -4,8 +4,7 @@ import org.junit.Test;
 import org.logstash.common.io.ByteBufferPageIO;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
@@ -236,4 +235,47 @@ public class QueueTest {
         assertThat(c.getFirstUnackedSeqNum(), is(equalTo(5L)));
         assertThat(c.getFirstUnackedPageNum(), is(equalTo(1)));
     }
+
+    @Test
+    public void randomAcking() throws IOException {
+        Random random = new Random();
+
+        // 10 tests of random queue sizes
+        for (int loop = 0; loop < 10; loop++) {
+            int page_count = random.nextInt(10000) + 1;
+            int digits = new Double(Math.ceil(Math.log10(page_count))).intValue();
+
+            // create a queue with a single element per page
+            List<Queueable> elements = new ArrayList<>();
+            for (int i = 0; i < page_count; i++) {
+                elements.add(new StringElement(String.format("%0" + digits + "d", i)));
+            }
+            int singleElementCapacity = ByteBufferPageIO.HEADER_SIZE + ByteBufferPageIO._persistedByteCount(elements.get(0).serialize().length);
+
+            TestQueue q = new TestQueue(TestSettings.getSettings(singleElementCapacity));
+            q.open();
+
+            for (Queueable e : elements) {
+                q.write(e);
+            }
+
+            assertThat(q.getTailPages().size(), is(equalTo(page_count - 1)));
+
+            // first read all elements
+            List<Batch> batches = new ArrayList<>();
+            for (Batch b = q.nonBlockReadBatch(1); b != null; b = q.nonBlockReadBatch(1)) {
+                batches.add(b);
+            }
+            assertThat(batches.size(), is(equalTo(page_count)));
+
+            // then ack randomly
+            Collections.shuffle(batches);
+            for (Batch b : batches) {
+                b.close();
+            }
+
+            assertThat(q.getTailPages().size(), is(equalTo(0)));
+        }
+    }
+
 }
