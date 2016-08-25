@@ -101,7 +101,7 @@ module LogStash; class PipelineReporter
     pipeline.outputs.map do |output_delegator|
       {
         :type => output_delegator.config_name,
-        :plugin_args => output_delegator.plugin_args,
+        :id => output_delegator.id,
         :concurrency => output_delegator.concurrency,        
       }
     end
