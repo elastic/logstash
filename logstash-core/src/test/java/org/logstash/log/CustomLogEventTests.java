@@ -47,11 +47,18 @@ public class CustomLogEventTests {
     public void testPatternLayout() {
         appender = CTX.getListAppender("EventLogger").clear();
         Logger logger = LogManager.getLogger("EventLogger");
-        logger.info("cool");
-        logger.warn("hello");
+        logger.info("simple message");
+        logger.warn("complex message", Collections.singletonMap("foo", "bar"));
+        logger.error("my name is: {}", "foo");
+        logger.error("here is a map: {}. ok?", Collections.singletonMap(2, 5));
+        logger.warn("ignored params {}", 4, 6);
         List<String> messages = appender.getMessages();
-        assertEquals("[INFO][EventLogger] cool", messages.get(0));
-        assertEquals("[WARN][EventLogger] hello", messages.get(1));
+        assertEquals(5, messages.size());
+        assertEquals("[INFO][EventLogger] simple message", messages.get(0));
+        assertEquals("[WARN][EventLogger] complex message {foo=bar}", messages.get(1));
+        assertEquals("[ERROR][EventLogger] my name is: foo", messages.get(2));
+        assertEquals("[ERROR][EventLogger] here is a map: {}. ok? {2=5}", messages.get(3));
+        assertEquals("[WARN][EventLogger] ignored params 4", messages.get(4));
     }
 
     @Test
@@ -61,6 +68,9 @@ public class CustomLogEventTests {
         Logger logger = LogManager.getLogger("JSONEventLogger");
         logger.info("simple message");
         logger.warn("complex message", Collections.singletonMap("foo", "bar"));
+        logger.error("my name is: {}", "foo");
+        logger.error("here is a map: {}", Collections.singletonMap(2, 5));
+        logger.warn("ignored params {}", 4, 6, 8);
 
         List<String> messages = appender.getMessages();
 
@@ -82,5 +92,22 @@ public class CustomLogEventTests {
         logEvent.put("message", "complex message");
         logEvent.put("foo", "bar");
         assertEquals(logEvent, secondMessage.get("logEvent"));
+
+        Map<String, Object> thirdMessage = mapper.readValue(messages.get(2), Map.class);
+        assertEquals(5, thirdMessage.size());
+        logEvent = Collections.singletonMap("message", "my name is: foo");
+        assertEquals(logEvent, thirdMessage.get("logEvent"));
+
+        Map<String, Object> fourthMessage = mapper.readValue(messages.get(3), Map.class);
+        assertEquals(5, fourthMessage.size());
+        logEvent = new HashMap<>();
+        logEvent.put("message", "here is a map: {}");
+        logEvent.put("2", 5);
+        assertEquals(logEvent, fourthMessage.get("logEvent"));
+
+        Map<String, Object> fifthMessage = mapper.readValue(messages.get(4), Map.class);
+        assertEquals(5, fifthMessage.size());
+        logEvent = Collections.singletonMap("message", "ignored params 4");
+        assertEquals(logEvent, fifthMessage.get("logEvent"));
     }
 }
