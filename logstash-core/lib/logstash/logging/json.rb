@@ -3,7 +3,7 @@ require "logstash/namespace"
 require "logstash/logging"
 require "logstash/json"
 
-module LogStash; class Logging; class JSON
+module LogStash; module Logging; class JSON
   def initialize(io)
     raise ArgumentError, "Expected IO, got #{io.class.name}" unless io.is_a?(IO)
 

@@ -1,11 +1,6 @@
 # encoding: utf-8
-require 'cabin'
 
 module LogStash::Util::JavaVersion
-  def self.logger
-    @logger ||= Cabin::Channel.get(LogStash)
-  end
-  
   # Return the current java version string. Returns nil if this is a non-java platform (e.g. MRI).
   def self.version
     return nil unless LogStash::Environment.jruby?

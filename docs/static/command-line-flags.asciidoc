@@ -45,17 +45,17 @@ added[5.0.0-alpha3, Command-line flags have dots instead of dashes in their name
 
 *`--log.level LEVEL`*::
  Valid levels are:
+* `fatal`: log very severe error messages that will usually be followed by the application aborting
+* `error`: log errors
 * `warn`: log warnings
-* `quiet`: log errors
-* `verbose`: log verbose info (for users)
+* `info`: log verbose info (for users)
 * `debug`: log debugging info (for developers)
+* `trace`: finer-grained messages beyond debug
 
-*`--log.format FORMAT`*::
- Set to "json" to log in JSON format, or "plain" (default) to use `Object#.inspect`.
- 
 *`--path.settings SETTINGS_DIR`*::
- Set the directory containing the `logstash.yml` <<logstash-settings-file,settings file>>.
- 
+ Set the directory containing the `logstash.yml` <<logstash-settings-file,settings file>> as well
+ as the log4j logging configuration.
+
 *`--node.name NAME`*::
  Set a descriptive name for the node. If no value is specified, defaults to the machine's hostname. 
 

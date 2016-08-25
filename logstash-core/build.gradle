@@ -1,0 +1,75 @@
+import java.nio.file.Files
+import static java.nio.file.StandardCopyOption.REPLACE_EXISTING
+
+apply plugin: 'java'
+apply plugin: 'idea'
+
+group = 'org.logstash'
+version = '5.0.0-alpha6'
+
+description = """Logstash Core Java"""
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+configurations {
+  provided
+}
+
+project.sourceSets {
+    main.compileClasspath += project.configurations.provided
+    main.runtimeClasspath += project.configurations.provided
+    test.compileClasspath += project.configurations.provided
+    test.runtimeClasspath += project.configurations.provided
+}
+project.javadoc.classpath += project.configurations.provided
+
+repositories {
+  mavenCentral()
+}
+
+dependencies {
+  runtime 'org.apache.logging.log4j:log4j-1.2-api:2.6.2'
+  compile 'org.apache.logging.log4j:log4j-api:2.6.2'
+  compile 'org.apache.logging.log4j:log4j-core:2.6.2'
+  compile 'com.fasterxml.jackson.core:jackson-core:2.7.4'
+  compile 'com.fasterxml.jackson.core:jackson-databind:2.7.4'
+  testCompile 'org.apache.logging.log4j:log4j-core:2.6.2:tests'
+  testCompile 'org.apache.logging.log4j:log4j-api:2.6.2:tests'
+  testCompile 'junit:junit:4.12'
+  provided 'org.jruby:jruby-core:1.7.25'
+}
+
+idea {
+    module {
+        scopes.PROVIDED.plus += [project.configurations.provided]
+    }
+}
+
+task generateGemJarRequiresFile << {
+  File jars_file = file('lib/jars.rb')
+  jars_file.newWriter().withWriter { w ->
+    w << "require \'jar_dependencies\'\n"
+    configurations.runtime.allDependencies.each {
+      w << "require_jar(\'${it.group}\', \'${it.name}\', \'${it.version}\')\n"
+    }
+    w << "require_jar(\'${project.group}\', \'${project.name}\', \'${project.version}\')\n"
+  }
+}
+
+task vendor << {
+    String vendorPathPrefix = "vendor/jars"
+    configurations.runtime.allDependencies.each { dep ->
+      File f = configurations.runtime.filter { it.absolutePath.contains("${dep.group}/${dep.name}/${dep.version}") }.singleFile
+      String groupPath = dep.group.replaceAll('\\.', '/')
+      File newJarFile = file("${vendorPathPrefix}/${groupPath}/${dep.name}/${dep.version}/${dep.name}-${dep.version}.jar")
+      newJarFile.mkdirs()
+      Files.copy(f.toPath(), newJarFile.toPath(), REPLACE_EXISTING)
+    }
+    String projectGroupPath = project.group.replaceAll('\\.', '/')
+    File projectJarFile = file("${vendorPathPrefix}/${projectGroupPath}/${project.name}/${project.version}/${project.name}-${project.version}.jar")
+    projectJarFile.mkdirs()
+    Files.copy(file("$buildDir/libs/${project.name}-${project.version}.jar").toPath(), projectJarFile.toPath(), REPLACE_EXISTING)
+}
+
+vendor.dependsOn(jar, generateGemJarRequiresFile)

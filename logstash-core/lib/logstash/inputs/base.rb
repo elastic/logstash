@@ -9,6 +9,7 @@ require "logstash/util/decorators"
 
 # This is the base class for Logstash inputs.
 class LogStash::Inputs::Base < LogStash::Plugin
+  include LogStash::Util::Loggable
   include LogStash::Config::Mixin
 
   config_name "input"

@@ -15,13 +15,20 @@ end
 describe LogStash::Runner do
 
   subject { LogStash::Runner }
-  let(:channel) { Cabin::Channel.new }
+  let(:logger) { double("logger") }
 
   before :each do
-    allow(Cabin::Channel).to receive(:get).with(LogStash).and_return(channel)
-    allow(channel).to receive(:subscribe).with(any_args)
-    allow(channel).to receive(:log) {}
-    allow(LogStash::ShutdownWatcher).to receive(:logger).and_return(channel)
+    allow(LogStash::Runner).to receive(:logger).and_return(logger)
+    allow(logger).to receive(:debug?).and_return(true)
+    allow(logger).to receive(:subscribe).with(any_args)
+    allow(logger).to receive(:log) {}
+    allow(logger).to receive(:info) {}
+    allow(logger).to receive(:fatal) {}
+    allow(logger).to receive(:warn) {}
+    allow(LogStash::ShutdownWatcher).to receive(:logger).and_return(logger)
+    allow(LogStash::Logging::Logger).to receive(:configure_logging) do |level, path|
+      allow(logger).to receive(:level).and_return(level.to_sym)
+    end
   end
 
   after :each do
@@ -29,7 +36,6 @@ describe LogStash::Runner do
   end
 
   after :all do
-    LogStash::ShutdownWatcher.logger = nil
   end
 
   describe "argument precedence" do
@@ -56,16 +62,13 @@ describe LogStash::Runner do
 
   describe "argument parsing" do
     subject { LogStash::Runner.new("") }
-    before :each do
-      allow(Cabin::Channel.get(LogStash)).to receive(:terminal)
-    end
+
     context "when -e is given" do
 
       let(:args) { ["-e", "input {} output {}"] }
       let(:agent) { double("agent") }
 
       before do
-        allow(agent).to receive(:logger=).with(anything)
         allow(agent).to receive(:shutdown)
         allow(agent).to receive(:register_pipeline)
       end
@@ -131,32 +134,6 @@ describe LogStash::Runner do
     end
   end
 
-  describe "--log.format=json" do
-    subject { LogStash::Runner.new("") }
-    let(:logfile) { Stud::Temporary.file }
-    let(:args) { [ "--log.format", "json", "-l", logfile.path, "-e", "input {} output{}" ] }
-
-    after do
-      logfile.close
-      File.unlink(logfile.path)
-    end
-
-    before do
-      expect(channel).to receive(:subscribe).with(kind_of(LogStash::Logging::JSON)).and_call_original
-      subject.run(args)
-
-      # Log file should have stuff in it.
-      expect(logfile.stat.size).to be > 0
-    end
-
-    it "should log in valid json. One object per line." do
-      logfile.each_line do |line|
-        expect(line).not_to be_empty
-        expect { JSON.parse(line) }.not_to raise_error
-      end
-    end
-  end
-
   describe "--config.test_and_exit" do
     subject { LogStash::Runner.new("") }
     let(:args) { ["-t", "-e", pipeline_string] }
@@ -164,7 +141,6 @@ describe LogStash::Runner do
     context "with a good configuration" do
       let(:pipeline_string) { "input { } filter { } output { }" }
       it "should exit successfuly" do
-        expect(channel).to receive(:terminal)
         expect(subject.run(args)).to eq(0)
       end
     end
@@ -172,7 +148,7 @@ describe LogStash::Runner do
     context "with a bad configuration" do
       let(:pipeline_string) { "rlwekjhrewlqrkjh" }
       it "should fail by returning a bad exit code" do
-        expect(channel).to receive(:fatal)
+        expect(logger).to receive(:fatal)
         expect(subject.run(args)).to eq(1)
       end
     end
@@ -303,35 +279,35 @@ describe LogStash::Runner do
       it "should set log level to warn" do
         args = ["--version"]
         subject.run("bin/logstash", args)
-        expect(channel.level).to eq(:warn)
+        expect(logger.level).to eq(:warn)
       end
     end
     context "when setting to debug" do
       it "should set log level to debug" do
         args = ["--log.level", "debug",  "--version"]
         subject.run("bin/logstash", args)
-        expect(channel.level).to eq(:debug)
+        expect(logger.level).to eq(:debug)
       end
     end
     context "when setting to verbose" do
       it "should set log level to info" do
-        args = ["--log.level", "verbose",  "--version"]
+        args = ["--log.level", "info",  "--version"]
         subject.run("bin/logstash", args)
-        expect(channel.level).to eq(:info)
+        expect(logger.level).to eq(:info)
       end
     end
     context "when setting to quiet" do
       it "should set log level to error" do
-        args = ["--log.level", "quiet",  "--version"]
+        args = ["--log.level", "error",  "--version"]
         subject.run("bin/logstash", args)
-        expect(channel.level).to eq(:error)
+        expect(logger.level).to eq(:error)
       end
     end
 
     context "deprecated flags" do
       context "when using --quiet" do
         it "should warn about the deprecated flag" do
-          expect(channel).to receive(:warn).with(/DEPRECATION WARNING/)
+          expect(logger).to receive(:warn).with(/DEPRECATION WARNING/)
           args = ["--quiet", "--version"]
           subject.run("bin/logstash", args)
         end
@@ -339,12 +315,12 @@ describe LogStash::Runner do
         it "should still set the log level accordingly" do
           args = ["--quiet", "--version"]
           subject.run("bin/logstash", args)
-          expect(channel.level).to eq(:error)
+          expect(logger.level).to eq(:error)
         end
       end
       context "when using --debug" do
         it "should warn about the deprecated flag" do
-          expect(channel).to receive(:warn).with(/DEPRECATION WARNING/)
+          expect(logger).to receive(:warn).with(/DEPRECATION WARNING/)
           args = ["--debug", "--version"]
           subject.run("bin/logstash", args)
         end
@@ -352,12 +328,12 @@ describe LogStash::Runner do
         it "should still set the log level accordingly" do
           args = ["--debug", "--version"]
           subject.run("bin/logstash", args)
-          expect(channel.level).to eq(:debug)
+          expect(logger.level).to eq(:debug)
         end
       end
       context "when using --verbose" do
         it "should warn about the deprecated flag" do
-          expect(channel).to receive(:warn).with(/DEPRECATION WARNING/)
+          expect(logger).to receive(:warn).with(/DEPRECATION WARNING/)
           args = ["--verbose", "--version"]
           subject.run("bin/logstash", args)
         end
@@ -365,7 +341,7 @@ describe LogStash::Runner do
         it "should still set the log level accordingly" do
           args = ["--verbose", "--version"]
           subject.run("bin/logstash", args)
-          expect(channel.level).to eq(:info)
+          expect(logger.level).to eq(:info)
         end
       end
     end

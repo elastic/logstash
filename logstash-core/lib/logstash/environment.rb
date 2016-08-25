@@ -1,5 +1,6 @@
 # encoding: utf-8
 require "logstash/errors"
+require "logstash/java_integration"
 require "logstash/config/cpu_core_strategy"
 require "logstash/settings"
 require "socket"
@@ -32,7 +33,7 @@ module LogStash
                     Setting.new("path.plugins", Array, []),
             Setting::String.new("interactive", nil, false),
            Setting::Boolean.new("config.debug", false),
-            Setting::String.new("log.level", "warn", true, ["quiet", "verbose", "warn", "debug"]),
+            Setting::String.new("log.level", "warn", true, ["fatal", "error", "warn", "debug", "info", "trace"]),
            Setting::Boolean.new("version", false),
            Setting::Boolean.new("help", false),
             Setting::String.new("path.log", nil, false),

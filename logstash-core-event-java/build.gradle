@@ -94,6 +94,7 @@ idea {
 dependencies {
     compile 'com.fasterxml.jackson.core:jackson-core:2.7.3'
     compile 'com.fasterxml.jackson.core:jackson-databind:2.7.3'
+    compile 'org.apache.logging.log4j:log4j-api:2.6.2'
     provided 'org.jruby:jruby-core:1.7.25'
     testCompile 'junit:junit:4.12'
     testCompile 'net.javacrumbs.json-unit:json-unit:1.9.0'

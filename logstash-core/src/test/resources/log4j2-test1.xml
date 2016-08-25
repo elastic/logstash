@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="OFF" name="LoggerTest">
+    <properties>
+        <property name="filename">target/test.log</property>
+    </properties>
+    <ThresholdFilter level="trace"/>
+
+    <Appenders>
+        <List name="EventLogger">
+            <PatternLayout pattern="[%p][%c] %m"/>
+        </List>
+        <List name="JSONEventLogger">
+            <JSONLayout compact="true" eventEol="true" />
+        </List>
+    </Appenders>
+
+    <Loggers>
+        <Logger name="EventLogger" level="debug" additivity="false">
+            <AppenderRef ref="EventLogger"/>
+        </Logger>>
+
+        <Logger name="JSONEventLogger" level="debug" additivity="false">
+            <AppenderRef ref="JSONEventLogger"/>
+        </Logger>>
+
+        <Root level="trace">
+            <AppenderRef ref="EventLogger"/>
+        </Root>
+    </Loggers>
+
+</Configuration>

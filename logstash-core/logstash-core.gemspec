@@ -14,12 +14,11 @@ Gem::Specification.new do |gem|
   gem.files         = Dir.glob(["logstash-core.gemspec", "lib/**/*.rb", "spec/**/*.rb", "locales/*", "lib/logstash/api/init.ru"])
   gem.test_files    = gem.files.grep(%r{^(test|spec|features)/})
   gem.name          = "logstash-core"
-  gem.require_paths = ["lib"]
+  gem.require_paths = ["lib", "vendor/jars"]
   gem.version       = LOGSTASH_CORE_VERSION
 
   gem.add_runtime_dependency "logstash-core-event-java", "5.0.0-alpha6"
 
-  gem.add_runtime_dependency "cabin", "~> 0.8.0" #(Apache 2.0 license)
   gem.add_runtime_dependency "pry", "~> 0.10.1"  #(Ruby license)
   gem.add_runtime_dependency "stud", "~> 0.0.19" #(Apache 2.0 license)
   gem.add_runtime_dependency "clamp", "~> 0.6.5" #(MIT license) for command line args/flags
@@ -59,4 +58,6 @@ Gem::Specification.new do |gem|
     # https://github.com/rubinius/rubinius/issues/2632#issuecomment-26954565
     gem.add_runtime_dependency "racc"
   end
+
+  gem.add_runtime_dependency 'jar-dependencies', '~> 0.3.4'
 end

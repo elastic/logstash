@@ -875,7 +875,7 @@ time.
 
 **Version messaging from Logstash**
 
-If you start Logstash with the `--log.level verbose` flag, you will see messages like
+If you start Logstash with the `--log.level info` flag, you will see messages like
 these to indicate the relative maturity indicated by the plugin version number:
 
 ** **0.1.x**
