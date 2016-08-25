@@ -56,7 +56,7 @@ public class StructuredMessage implements Message {
     @Override
     public String getFormattedMessage() {
         String formatted = message;
-        if (params != null) {
+        if (params != null && !params.isEmpty()) {
             formatted += " " + params;
         }
         return formatted;

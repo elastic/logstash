@@ -9,7 +9,7 @@ import org.apache.logging.log4j.message.Message;
 
 import java.util.List;
 
-public class CustomLogEventFactory implements LogEventFactory {
+public class LogstashLogEventFactory implements LogEventFactory {
     @Override
     public LogEvent createEvent(String loggerName, Marker marker, String fqcn, Level level, Message data, List<Property> properties, Throwable t) {
         return new CustomLogEvent(loggerName, marker, fqcn, level, data, properties, t);

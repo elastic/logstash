@@ -7,7 +7,7 @@ import org.apache.logging.log4j.message.MessageFactory;
 
 import java.net.URI;
 
-public class StructuredMessageContextSelector extends ClassLoaderContextSelector {
+public class LogstashMessageContextSelector extends ClassLoaderContextSelector {
 
     @Override
     protected LoggerContext createContext(String name, URI configuration) {
@@ -24,7 +24,7 @@ public class StructuredMessageContextSelector extends ClassLoaderContextSelector
         protected Logger newInstance(final LoggerContext ctx, final String name, MessageFactory messageFactory)
         {
             if (null == messageFactory)
-                messageFactory = StructuredMessageFactory.INSTANCE;
+                messageFactory = LogstashMessageFactory.INSTANCE;
 
             return super.newInstance(ctx, name, messageFactory);
         }
