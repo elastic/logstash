@@ -6,7 +6,7 @@ describe LogStash::Api::RackApp do
 
   class DummyApp
     class RaisedError < StandardError; end
-    
+
     def call(env)
       case env["PATH_INFO"]
       when "/good-page"
@@ -21,7 +21,7 @@ describe LogStash::Api::RackApp do
     end
   end
 
-  let(:logger) { Cabin::Channel.get }
+  let(:logger) { double("logger") }
 
   describe LogStash::Api::RackApp::ApiErrorHandler do
     let(:app) do
@@ -49,7 +49,7 @@ describe LogStash::Api::RackApp do
         allow(logger).to receive(:error).with(any_args)
         get "/raise-error"
       end
-      
+
       it "should return a 500 error" do
         expect(last_response.status).to eql(500)
       end
@@ -74,13 +74,15 @@ describe LogStash::Api::RackApp do
         run DummyApp.new
       end
     end
-    
+
     it "should log good requests as info" do
+      expect(logger).to receive(:info?).and_return(true)
       expect(logger).to receive(:info).with(LogStash::Api::RackApp::ApiLogger::LOG_MESSAGE, anything).once
       get "/good-page"
     end
 
     it "should log 5xx requests as warnings" do
+      expect(logger).to receive(:warn?).and_return(true)
       expect(logger).to receive(:warn).with(LogStash::Api::RackApp::ApiLogger::LOG_MESSAGE, anything).once
       get "/service-unavailable"
     end

@@ -18,6 +18,7 @@ require "securerandom"
 LogStash::Environment.load_locale!
 
 class LogStash::Agent
+  include LogStash::Util::Loggable
   STARTED_AT = Time.now.freeze
 
   attr_reader :metric, :node_name, :pipelines, :settings, :webserver
@@ -28,10 +29,9 @@ class LogStash::Agent
   #   :node_name [String] - identifier for the agent
   #   :auto_reload [Boolean] - enable reloading of pipelines
   #   :reload_interval [Integer] - reload pipelines every X seconds
-  #   :logger [Cabin::Channel] - logger instance
   def initialize(settings = LogStash::SETTINGS)
+    @logger = self.class.logger
     @settings = settings
-    @logger = Cabin::Channel.get(LogStash)
     @auto_reload = setting("config.reload.automatic")
 
     @pipelines = {}

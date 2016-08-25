@@ -5,7 +5,6 @@ require_relative 'coverage_helper'
 CoverageHelper.eager_load if ENV['COVERAGE']
 
 require "logstash/devutils/rspec/spec_helper"
-require "logstash/logging/json"
 
 require "flores/rspec"
 require "flores/random"
@@ -22,21 +21,6 @@ end
 
 RSpec.configure do |c|
   Flores::RSpec.configure(c)
-  c.before do
-    # Force Cabin to always have a JSON subscriber.  The main purpose of this
-    # is to catch crashes in json serialization for our logs. JSONIOThingy
-    # exists to validate taht what LogStash::Logging::JSON emits is always
-    # valid JSON.
-    jsonvalidator = JSONIOThingy.new
-    allow(Cabin::Channel).to receive(:new).and_wrap_original do |m, *args|
-      logger = m.call(*args)
-      logger.level = :debug
-      logger.subscribe(LogStash::Logging::JSON.new(jsonvalidator))
-
-      logger
-    end
-  end
-
 end
 
 def installed_plugins

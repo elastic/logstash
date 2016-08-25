@@ -38,7 +38,6 @@ public class JrubyEventExtLibrary implements Library {
         clazz.setConstant("TIMESTAMP", runtime.newString(Event.TIMESTAMP));
         clazz.setConstant("TIMESTAMP_FAILURE_TAG", runtime.newString(Event.TIMESTAMP_FAILURE_TAG));
         clazz.setConstant("TIMESTAMP_FAILURE_FIELD", runtime.newString(Event.TIMESTAMP_FAILURE_FIELD));
-        clazz.setConstant("DEFAULT_LOGGER", runtime.getModule("Cabin").getClass("Channel").callMethod("get", runtime.getModule("LogStash")));
         clazz.setConstant("VERSION", runtime.newString(Event.VERSION));
         clazz.setConstant("VERSION_ONE", runtime.newString(Event.VERSION_ONE));
         clazz.defineAnnotatedMethods(RubyEvent.class);
@@ -58,24 +57,9 @@ public class JrubyEventExtLibrary implements Library {
         }
     }
 
-    public static class ProxyLogger implements Logger {
-        private RubyObject logger;
-
-        public ProxyLogger(RubyObject logger) {
-             this.logger = logger;
-        }
-
-        // TODO: (colin) complete implementation beyond warn when needed
-
-        public void warn(String message) {
-            logger.callMethod("warn", RubyString.newString(logger.getRuntime(), message));
-        }
-    }
-
     @JRubyClass(name = "Event", parent = "Object")
     public static class RubyEvent extends RubyObject {
         private Event event;
-        private static RubyObject logger;
 
         public RubyEvent(Ruby runtime, RubyClass klass) {
             super(runtime, klass);
@@ -312,15 +296,6 @@ public class JrubyEventExtLibrary implements Library {
                 throw context.runtime.newTypeError("wrong argument type " + value.getMetaClass() + " (expected LogStash::Timestamp)");
             }
             this.event.setTimestamp(((JrubyTimestampExtLibrary.RubyTimestamp)value).getTimestamp());
-            return value;
-        }
-
-        // set a new logger for all Event instances
-        // there is no point in changing it at runtime for other reasons than in tests/specs.
-        @JRubyMethod(name = "logger=", required = 1, meta = true)
-        public static IRubyObject ruby_set_logger(ThreadContext context, IRubyObject recv, IRubyObject value)
-        {
-            Event.setLogger(new ProxyLogger((RubyObject)value));
             return value;
         }
     }

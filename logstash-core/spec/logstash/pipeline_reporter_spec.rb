@@ -4,6 +4,7 @@ require "logstash/pipeline"
 require "logstash/pipeline_reporter"
 
 class DummyOutput < LogStash::Outputs::Base
+
   config_name "dummyoutput"
   milestone 2
 
