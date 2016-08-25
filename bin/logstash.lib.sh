@@ -131,15 +131,6 @@ setup_ruby() {
   VENDORED_JRUBY=
 }
 
-jruby_opts() {
-  printf "%s" "--1.9"
-  for i in $JAVA_OPTS ; do
-    if [ -z "$i" ]; then
-      printf "%s" " -J$i"
-    fi
-  done
-}
-
 setup() {
   # first check if we want to use drip, which can be used in vendored jruby mode
   # and also when setting USE_RUBY=1 if the ruby interpretor is in fact jruby
@@ -175,8 +166,8 @@ ruby_exec() {
     # $VENDORED_JRUBY is non-empty so use the vendored JRuby
 
     if [ "$DEBUG" ] ; then
-      echo "DEBUG: exec ${JRUBY_BIN} $(jruby_opts) $@"
+      echo "DEBUG: exec ${JRUBY_BIN} $@"
     fi
-    exec "${JRUBY_BIN}" $(jruby_opts) "$@"
+    exec "${JRUBY_BIN}" "$@"
   fi
 }
