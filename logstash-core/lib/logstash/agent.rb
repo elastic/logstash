@@ -202,6 +202,8 @@ class LogStash::Agent < Clamp::Command
                           :allow_env => allow_env?
                           }))
 
+    @thread = Thread.current # this var is implicilty used by Stud.stop?
+
     sigint_id = trap_sigint()
     sigterm_id = trap_sigterm()
     sighup_id = trap_sighup()
@@ -213,8 +215,6 @@ class LogStash::Agent < Clamp::Command
     start_pipelines
 
     return 1 if clean_state?
-
-    @thread = Thread.current # this var is implicilty used by Stud.stop?
 
     Stud.stoppable_sleep(reload_interval) # sleep before looping
 
