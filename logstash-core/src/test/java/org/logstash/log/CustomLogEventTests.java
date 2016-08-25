@@ -40,8 +40,7 @@ public class CustomLogEventTests {
     private ListAppender appender;
 
     @ClassRule
-    public static LoggerContextRule CTX = new LoggerContextRule(CONFIG, LogstashMessageContextSelector.class);
-
+    public static LoggerContextRule CTX = new LoggerContextRule(CONFIG);
 
     @Test
     public void testPatternLayout() {
