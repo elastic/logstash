@@ -75,7 +75,7 @@ class LogStash::PluginManager::Generate < LogStash::PluginManager::Command
       :plugin_name => name,
       :author => git_data.author,
       :email  => git_data.email,
-      :min_version => "2.0",
+      :plugin_api_dependency => '">= 1.60", "<= 2.99"',
     }
   end
 
