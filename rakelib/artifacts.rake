@@ -120,7 +120,7 @@ namespace "artifact" do
   end
 
   task "prepare" => ["bootstrap", "plugin:install-default", "install-logstash-core", "install-logstash-core-event", "install-logstash-core-plugin-api", "clean-bundle-config"]
-  task "prepare-all" => ["bootstrap", "plugin:install-all", "install-logstash-core", "install-logstash-core-event", "install-logstash-core-plugin-api", "clean-bundle-config"]
+  task "prepare-all" => ["bootstrap", "install-logstash-core", "install-logstash-core-event", "install-logstash-core-plugin-api", "clean-bundle-config"]
 
   desc "Build a tar.gz of default logstash plugins with all dependencies"
   task "tar" => ["prepare"] do
