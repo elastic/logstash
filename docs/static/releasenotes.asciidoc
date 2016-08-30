@@ -8,24 +8,19 @@ This section summarizes the changes in each release.
 [[logstash-2-4]]
 === Logstash 2.4 Release Notes
 
+* Backported the Event get/set API. These changes enable Logstash 2.4 to install plugins 
+  that use the 5.0 API ({lsissue}5449[Issue 5449]).
+* Added support for writing Logstash's logs in JSON format. You can use the command-line flag 
+  `--log-in-json` to specify that Logstash write its own logs in JSON ({lsissue}1569[Issue 1569]).
+* Plugin Generator: Added a subcommand `generate` to `bin/logstash-plugin`. This 
+  bootstraps a new plugin with the correct directory structure and all the required files (templates).
+
 [float]
 ==== Input Plugins
 
-*`Plugin`*:
+*`Beats`*:
 
-* Description of change (link to issue).
-
-[float]
-==== Filter Plugins
-
-*`Plugin`*:
-
-* Description of change (link to issue).
-
-[float]
-==== Output Plugins
-
-*`Plugin`*:
-
-* Description of change (link to issue).
+* Beats input has been reimplemented using Netty, an asynchronous IO framework for Java. 
+  This rewrite for performance brings the plugin in line with the Logstash Forwarder + LS combination 
+  (https://github.com/logstash-plugins/logstash-input-beats/issues/92[Issue 92]).
 
