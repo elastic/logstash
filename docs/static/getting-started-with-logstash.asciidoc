@@ -49,8 +49,8 @@ that we only provide binary packages, but no source packages, as the packages
 are created as part of the Logstash build.
 
 We have split the Logstash package repositories by version into separate urls
-to avoid accidental upgrades across major or minor versions. For all 1.5.x
-releases use 1.5 as version number, for 1.4.x use 1.4, etc.
+to avoid accidental upgrades across major or minor versions. For all 2.4.x releases
+use 2.4 as version number, for 2.3.x use 2.3, and so on.
 
 We use the PGP key
 https://pgp.mit.edu/pks/lookup?op=vindex&search=0xD27D666CD88E42B4[D88E42B4],
@@ -153,5 +153,4 @@ hello world
 Logstash adds timestamp and IP address information to the message. Exit Logstash by issuing a *CTRL-D* command in the
 shell where Logstash is running.
 
-The <<advanced-pipeline,Advanced Tutorial>> expands the capabilities of your Logstash instance to cover broader
-use cases.
+You’ve created and run a basic Logstash pipeline. Next, you learn how to create a more realistic pipeline.
