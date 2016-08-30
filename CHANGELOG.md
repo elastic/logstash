@@ -1,4 +1,4 @@
-## 2.4.0 (Aug 30, 2016)
+## 2.4.0 (Aug 31, 2016)
 ### general
  - Backported Event get/set API. These changes enable Logstash 2.4 to install plugins 
    that use the 5.0 API ([#5449](https://github.com/elastic/logstash/issues/5449)) 
@@ -14,7 +14,8 @@
    - Beats input has been reimplemented using Netty, an asynchronous IO framework 
      for Java. This rewrite for performance brings it in line with Logstash 
      Forwarder + LS combination ([#92](https://github.com/logstash-plugins/logstash-input-beats/issues/92)).
-
+     NOTE: This plugin only supports private key in the PKCS8 format, you can use OpenSSL to convert them.
+     See https://www.openssl.org/docs/manmaster/apps/pkcs8.html for more details.
 
 
 ## 2.3.1 (Apr 4, 2016)
