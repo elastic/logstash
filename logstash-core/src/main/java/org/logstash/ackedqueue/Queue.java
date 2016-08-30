@@ -27,6 +27,9 @@ public class Queue implements Closeable {
     protected HeadPage headPage;
     protected final List<BeheadedPage> tailPages;
 
+    // first non-fully-read tail page num
+    private int firstUnreadTailPageNum;
+
     private final Settings settings;
 
     private final CheckpointIO checkpointIO;
@@ -36,6 +39,7 @@ public class Queue implements Closeable {
     public Queue(Settings settings) {
         this.settings = settings;
         this.tailPages = new ArrayList<>();
+        this.firstUnreadTailPageNum = 0;
         this.checkpointIO = settings.getCheckpointIOFactory().build(settings.getDirPath());
         this.deserialiser = settings.getElementDeserialiser();
         this.closed = new AtomicBoolean(true); // not yet opened
@@ -99,6 +103,9 @@ public class Queue implements Closeable {
 
             beheadedHeadPage.checkpoint();
             headPageNum = headCheckpoint.getPageNum() + 1;
+
+            // at this point the first page with elements to read from is necessarily the first tail page.
+            this.firstUnreadTailPageNum = this.tailPages.get(0).getPageNum();
         }
 
         // create new head page
@@ -214,7 +221,7 @@ public class Queue implements Closeable {
 
         return p.readBatch(limit);
     }
-    
+
     private static class TailPageResult {
         public BeheadedPage page;
         public int index;
@@ -309,23 +316,39 @@ public class Queue implements Closeable {
     }
 
     protected Page firstUnreadPage() throws IOException {
-        // TODO: avoid tailPages traversal below by keeping tab of the last read tail page
+        BeheadedPage firstUnreadTailPage = getTailPage(firstUnreadTailPageNum);
 
-        for (Page p : this.tailPages) {
-            if (! p.isFullyRead()) {
-                return p;
-            }
-
+        while (firstUnreadTailPage != null && firstUnreadTailPage.isFullyRead()) {
             // deactivate all fully read page. calling deactivate on a deactivated page is harmless
-            p.getPageIO().deactivate();
+            firstUnreadTailPage.getPageIO().deactivate();
+
+            // advance to next tail page
+            firstUnreadTailPageNum++;
+            firstUnreadTailPage = getTailPage(firstUnreadTailPageNum);
         }
 
+        if (firstUnreadTailPage != null) {
+            return firstUnreadTailPage;
+        }
+
+        // at this point either there are no tail pages or all tail pages are fully read, look in the head page
         if (! this.headPage.isFullyRead()) {
             return this.headPage;
         }
 
         return null;
     }
+
+    // @return the TailPage for the given pageNum or null if pageNum is out of bound or there are no tail pages
+    private BeheadedPage getTailPage(int pageNum) {
+        if (this.tailPages.isEmpty()) {
+            return null;
+        }
+
+        int firstPageNum = this.tailPages.get(0).getPageNum();
+        int i = pageNum - firstPageNum;
+        return (i >= this.tailPages.size()) ? null : this.tailPages.get(i);
+     }
 
     protected int firstUnackedPageNum() {
         if (this.tailPages.isEmpty()) {
