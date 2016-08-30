@@ -71,6 +71,10 @@ Logstash has the following flags. You can use the `--help` flag to display this 
   
 --reload-interval RELOAD_INTERVAL
   Specifies how often Logstash checks the config files for changes. The default is every 3 seconds.
+  
+--[no-]log-in-json
+  Specifies that Logstash should write its own logs in JSON form - one event per line. If false, 
+  Logstash will log using Ruby's Object#inspect (which is not easy to machine-parse).
 
 -h, --help
   Print help
