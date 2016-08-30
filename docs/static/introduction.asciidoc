@@ -27,7 +27,7 @@ Collect more, so you can know more. Logstash welcomes data of all shapes and siz
 Where it all started.
 
 * Handle all types of logging data
-** Easily ingest a multitude of web logs like <<parsing-into-es,Apache>>, and application
+** Easily ingest a multitude of web logs like <<advanced-pipeline,Apache>>, and application
 logs like <<plugins-inputs-log4j,log4j>> for Java
 ** Capture many other log formats like <<plugins-inputs-syslog,syslog>>,
 <<plugins-inputs-eventlog,Windows event logs>>, networking and firewall logs, and more
