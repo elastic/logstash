@@ -48,6 +48,8 @@ class LogStash::Agent
 
     # Create the collectors and configured it with the library
     configure_metrics_collectors
+
+    @reload_metric = metric.namespace([:stats, :pipelines])
   end
 
   def execute
@@ -99,6 +101,10 @@ class LogStash::Agent
         begin
           reload_pipeline!(pipeline_id)
         rescue => e
+          reload_metric_namespace = @reload_metric.namespace([pipeline_id.to_sym, :reloads])
+          reload_metric_namespace.increment(:failures)
+          reload_metric_namespace.gauge(:last_error, { :message => e.message, :backtrace => e.backtrace})
+          reload_metric_namespace.gauge(:last_failure_timestamp, LogStash::Timestamp.now)
           @logger.error(I18n.t("oops"), :message => e.message, :class => e.class.name, :backtrace => e.backtrace)
         end
       end
@@ -163,7 +169,11 @@ class LogStash::Agent
   end
 
   def reset_pipeline_metrics(id)
-    @collector.clear("stats/pipelines/#{id}")
+    # selectively reset metrics we don't wish to keep after reloading
+    # these include metrics about the plugins and number of processed events
+    # we want to keep other metrics like reload counts and error messages
+    @collector.clear("stats/pipelines/#{id}/plugins")
+    @collector.clear("stats/pipelines/#{id}/events")
   end
 
   def collect_metrics?
@@ -183,6 +193,10 @@ class LogStash::Agent
     begin
       LogStash::Pipeline.new(config, settings, metric)
     rescue => e
+      reload_metric_namespace = @reload_metric.namespace([settings.get("pipeline.id").to_sym, :reloads])
+      reload_metric_namespace.increment(:failures)
+      reload_metric_namespace.gauge(:last_error, { :message => e.message, :backtrace => e.backtrace})
+      reload_metric_namespace.gauge(:last_failure_timestamp, LogStash::Timestamp.now)
       if @logger.debug?
         @logger.error("fetched an invalid config", :config => config, :reason => e.message, :backtrace => e.backtrace)
       else
@@ -233,6 +247,10 @@ class LogStash::Agent
       begin
         pipeline.run
       rescue => e
+        reload_metric_namespace = @reload_metric.namespace([id.to_sym, :reloads])
+        reload_metric_namespace.increment(:failures)
+        reload_metric_namespace.gauge(:last_error, { :message => e.message, :backtrace => e.backtrace})
+        reload_metric_namespace.gauge(:last_failure_timestamp, LogStash::Timestamp.now)
         @logger.error("Pipeline aborted due to error", :exception => e, :backtrace => e.backtrace)
       end
     end
@@ -248,7 +266,11 @@ class LogStash::Agent
   end
 
   def start_pipelines
-    @pipelines.each { |id, _| start_pipeline(id) }
+    @pipelines.each do |id, _|
+      start_pipeline(id)
+      # no reloads yet, initalize all the reload metrics
+      init_pipeline_reload_metrics(id)
+    end
   end
 
   def shutdown_pipelines
@@ -265,6 +287,8 @@ class LogStash::Agent
     reset_pipeline_metrics(pipeline_id)
     @pipelines[pipeline_id] = new_pipeline
     start_pipeline(pipeline_id)
+    @reload_metric.namespace([pipeline_id.to_sym, :reloads]).increment(:successes)
+    @reload_metric.namespace([pipeline_id.to_sym, :reloads]).gauge(:last_success_timestamp, LogStash::Timestamp.now)
   end
 
   def clean_state?
@@ -273,5 +297,14 @@ class LogStash::Agent
 
   def setting(key)
     @settings.get(key)
+  end
+
+  def init_pipeline_reload_metrics(id)
+    namespace = @reload_metric.namespace([id.to_sym, :reloads])
+    namespace.increment(:successes, 0)
+    namespace.increment(:failures, 0)
+    namespace.gauge(:last_error, nil)
+    namespace.gauge(:last_success_timestamp, nil)
+    namespace.gauge(:last_failure_timestamp, nil)
   end
 end # class LogStash::Agent
