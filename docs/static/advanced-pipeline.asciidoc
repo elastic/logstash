@@ -67,7 +67,8 @@ input {
 <1> The default behavior of the file input plugin is to monitor a file for new information, in a manner similar to the
 UNIX `tail -f` command. To change this default behavior and process the entire file, we need to specify the position
 where Logstash starts processing the file.
-<2> The default behavior of the file input plugin is to ignore files whose last modification is greater than 86400s. To change this default behavior and process the tutorial file (which is probably much older than a day), we need to configure Logstash so that it does not ignore old files.
+<2> Setting `ignore_older` to 0 disables file age checking so that the tutorial file is processed even though
+it's older than a day.
 
 Replace `/path/to/file` with the absolute path to the location of `logstash-tutorial.log` in your file system.
 
