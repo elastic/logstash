@@ -3,79 +3,138 @@
 
 Logstash has the following flags. You can use the `--help` flag to display this information.
 
-[source,shell]
-----------------------------------
--f, --config CONFIGFILE
- Load the Logstash config from a specific file, directory, or a wildcard. If
- given a directory or wildcard, config files will be read from the directory in
- alphabetical order.
+*`-f, --config CONFIG_PATH`*::
+  Load the Logstash config from a specific file
+  or directory.  If a directory is given, all
+  files in that directory will be concatenated
+  in lexicographical order and then parsed as a
+  single config file. You can also specify
+  wildcards (globs) and any matched files will
+  be loaded in the order described above.
 
--e CONFIGSTRING
- Use the given string as the configuration data. Same syntax as the config file.
- If not input is specified, 'stdin { type => stdin }' is default. If no output
- is specified, 'stdout { codec => rubydebug }}' is default.
+*`-e CONFIG_STRING`*::
+  Use the given string as the configuration
+  data. Same syntax as the config file. If no
+  input is specified, then the following is
+  used as the default input:
+  `input { stdin { type => stdin } }`
+  and if no output is specified, then the
+  following is used as the default output:
+  `output { stdout { codec => rubydebug } }`.
+  If you wish to use both defaults, please use
+  the empty string for the `-e` flag.
+  The default is "".
 
--w, --filterworkers COUNT
- Sets the number of pipeline workers (threads) to run for filter and output
- processing (default: number of cores).
- If you find that events are backing up, or that the CPU is not saturated, consider increasing
- this number to better utilize machine processing power.
- NOTE: --filterworkers is deprecated. Please use --pipeline-workers or -w
+*`-w, --pipeline-workers COUNT`*::
+  Sets the number of pipeline workers to run.
+  The default is 8.
+ 
+*`-b, --pipeline-batch-size SIZE`*::
+  Size of batches the pipeline is to work in.
+  The default is 125.
+  This parameter defines the maximum number of
+  events an individual worker thread will collect
+  before attempting to execute its filters and
+  outputs. Larger batch sizes are generally more
+  efficient, but come at the cost of increased
+  memory  overhead. You may have to increase the
+  JVM heap size by setting the `LS_HEAP_SIZE`
+  variable to effectively use the option.
+   
+*`-u, --pipeline-batch-delay DELAY_IN_MS`*::
+  When creating pipeline event batches, how long
+  to wait while polling for the next event.
+  The default is 5ms.
 
--b, --pipeline-batch-size SIZE
- This parameter defines the maximum number of events an individual worker thread will collect
- before attempting to execute its filters and outputs. Default is 125 events.
- Larger batch sizes are generally more efficient, but come at the cost of increased memory
- overhead. You may have to increase the JVM heap size by setting the `LS_HEAP_SIZE`
- variable to effectively use the option.
+*`-w, --filterworkers COUNT`*::
+  DEPRECATED. Now an alias for `--pipeline-workers`
+  and `-w`.
 
--u, --pipeline-batch-delay DELAY_IN_MS
- When creating pipeline event batches, how long to wait while polling for the next event.
- Default is 5ms.
+*`-l, --log FILE`*::
+  Write Logstash internal logs to the given
+  file. Without this flag, Logstash will emit
+  logs to standard output.
 
--l, --log FILE
- Log to a given path. Default is to log to stdout
+*`-v`*::
+  DEPRECATED. Increase verbosity of Logstash internal logs.
+  Specifying once will show 'informational'
+  logs. Specifying twice will show 'debug'
+  logs. This flag is deprecated. You should use
+  `--verbose` or `--debug` instead.
 
---verbose
- Increase verbosity to the first level (info), less verbose.
+*`--quiet`*::
+  Quieter Logstash logging. This causes only 
+  errors to be emitted.
+ 
+*`--verbose`*::
+  More verbose logging. This causes 'info' 
+  level logs to be emitted.
 
---debug
- Increase verbosity to the last level (trace), more verbose.
+*`--debug`*::
+  Most verbose logging. This causes 'debug'
+  level logs to be emitted.
 
---debug-config
- Print the compiled config ruby code out as a debug log (you must also have --debug enabled).
- WARNING: This will include any 'password' options passed to plugin configs as plaintext, and may result
- in plaintext passwords appearing in your logs!
+*`--debug-config`*::
+  Print the compiled config ruby code out as
+  a debug log (you must also have `--debug` enabled).
+  WARNING: This will include any 'password' options
+  passed to plugin configs as plaintext, and may result
+  in plaintext passwords appearing in your logs!
+  The default is false.
 
--V, --version
-  Display the version of Logstash.
+*`-V, --version`*::
+  Emit the version of Logstash and its friends,
+  then exit.
 
--p, --pluginpath
-  A path of where to find plugins. This flag can be given multiple times to include
-  multiple paths. Plugins are expected to be in a specific directory hierarchy:
-  'PATH/logstash/TYPE/NAME.rb' where TYPE is 'inputs' 'filters', 'outputs' or 'codecs'
-  and NAME is the name of the plugin.
+*`-p, --pluginpath PATH`*::
+  A path of where to find plugins. This flag
+  can be given multiple times to include
+  multiple paths. Plugins are expected to be
+  in a specific directory hierarchy:
+  `PATH/logstash/TYPE/NAME.rb` where `TYPE` is
+  `inputs`, `filters`, `outputs`, or `codecs`
+  and `NAME` is the name of the plugin.
 
--t, --configtest
-  Checks configuration and then exit. Note that grok patterns are not checked for
-  correctness with this flag.
-  Logstash can read multiple config files from a directory. If you combine this
-  flag with `--debug`, Logstash will log the combined config file, annotating the
-  individual config blocks with the source file it came from.
+*`-t, --configtest`*::
+  Check configuration for valid syntax and then exit. 
+  Note that grok patterns are not checked for
+  correctness with this flag. Logstash can read multiple
+  config files from a directory. If you combine this
+  flag with `--debug`, Logstash will log the combined
+  config file, annotating the individual config blocks
+  with the source file it came from.
+
+*`--[no-]allow-unsafe-shutdown`*::
+  Force Logstash to exit during shutdown even
+  if there are still inflight events in memory.
+  By default, Logstash will refuse to quit until all
+  received events have been pushed to the outputs.
+  The default is false.
   
--r, --[no-]auto-reload
-  Monitor configuration changes and reload the configuration whenever it is changed.
+*`-r, --[no-]auto-reload`*::
+  Monitor configuration changes and reload
+  whenever the configuration is changed.
+  NOTE: Use SIGHUP to manually reload the config
+  The default is false.
 
---allow-env
-  EXPERIMENTAL: Enable environment variable templating within configuration parameters.
+*`--reload-interval RELOAD_INTERVAL`*::
+  How frequently to poll the configuration location
+  for changes, in seconds.
+  The default is 3 seconds.
   
---reload-interval RELOAD_INTERVAL
-  Specifies how often Logstash checks the config files for changes. The default is every 3 seconds.
+*`--allow-env`*::
+  experimental[]
+  Enables templating of environment variable
+  values. Instances of `${VAR}` in strings will be replaced
+  with the respective environment variable value named "VAR".
+  The default is false.
   
---[no-]log-in-json
-  Specifies that Logstash should write its own logs in JSON form - one event per line. If false, 
-  Logstash will log using Ruby's Object#inspect (which is not easy to machine-parse).
+*`--[no-]log-in-json`*::
+  Specify that Logstash should write its own logs in JSON form - one
+  event per line. If false, Logstash will log using Ruby's
+  Object#inspect (not easy to machine-parse).
+  The default is false.
 
--h, --help
+*`-h, --help`*::
   Print help
-----------------------------------
+
