@@ -51,7 +51,7 @@ describe LogStash::Agent do
         "config.string" => config_string,
         "config.reload.automatic" => true,
         "config.reload.interval" => 0.01,
-	"pipeline.workers" => 4,
+        "pipeline.workers" => 4,
       }
     end
 
@@ -331,8 +331,6 @@ describe LogStash::Agent do
 
   context "metrics after config reloading" do
     let(:config) { "input { generator { } } output { dummyoutput { } }" }
-    let(:new_config_generator_counter) { 500 }
-    let(:new_config) { "input { generator { count => #{new_config_generator_counter} } } output { dummyoutput2 {} }" }
     let(:config_path) do
       f = Stud::Temporary.file
       f.write(config)
@@ -390,61 +388,120 @@ describe LogStash::Agent do
       end
     end
 
-    it "resets the pipeline metric collector" do
-      # We know that the store has more events coming in.
-      i = 0
-      while dummy_output.events.size <= new_config_generator_counter
-        i += 1
-        raise "Waiting too long!" if i > 20
-        sleep(0.1)
+    context "when reloading a good config" do
+      let(:new_config_generator_counter) { 500 }
+      let(:new_config) { "input { generator { count => #{new_config_generator_counter} } } output { dummyoutput2 {} }" }
+      before :each do
+        # We know that the store has more events coming in.
+        i = 0
+        while dummy_output.events.size <= new_config_generator_counter
+          i += 1
+          raise "Waiting too long!" if i > 20
+          sleep(0.1)
+        end
+
+
+        # Also force a flush to disk to make sure ruby reload it.
+        File.open(config_path, "w") do |f|
+          f.write(new_config)
+          f.fsync
+        end
+
+        sleep(interval * 3) # Give time to reload the config
+
+        # be eventually consistent.
+        sleep(0.01) while dummy_output2.events.size < new_config_generator_counter
       end
 
-      snapshot = subject.metric.collector.snapshot_metric
-      expect(snapshot.metric_store.get_with_path("/stats/pipelines")[:stats][:pipelines][:main][:events][:in].value).to be > new_config_generator_counter
-
-      # update the configuration and give some time to logstash to pick it up and do the work
-      # Also force a flush to disk to make sure ruby reload it.
-      File.open(config_path, "w") do |f|
-        f.write(new_config)
-        f.fsync
+      it "resets the pipeline metric collector" do
+        snapshot = subject.metric.collector.snapshot_metric
+        value = snapshot.metric_store.get_with_path("/stats/pipelines")[:stats][:pipelines][:main][:events][:in].value
+        expect(value).to eq(new_config_generator_counter)
       end
 
-      sleep(interval * 3) # Give time to reload the config
+      it "does not reset the global event count" do
+        snapshot = subject.metric.collector.snapshot_metric
+        value = snapshot.metric_store.get_with_path("/stats/events")[:stats][:events][:in].value
+        expect(value).to be > new_config_generator_counter
+      end
 
-      # be eventually consistent.
-      sleep(0.01) while dummy_output2.events.size < new_config_generator_counter
+      it "increases the successful reload count" do
+        snapshot = subject.metric.collector.snapshot_metric
+        value = snapshot.metric_store.get_with_path("/stats/pipelines")[:stats][:pipelines][:main][:reloads][:successes].value
+        expect(value).to be(1)
+      end
 
-      snapshot = subject.metric.collector.snapshot_metric
-      value = snapshot.metric_store.get_with_path("/stats/pipelines")[:stats][:pipelines][:main][:events][:in].value
-      expect(value).to eq(new_config_generator_counter)
+      it "does not set the failure reload timestamp" do
+        snapshot = subject.metric.collector.snapshot_metric
+        value = snapshot.metric_store.get_with_path("/stats/pipelines")[:stats][:pipelines][:main][:reloads][:last_failure_timestamp].value
+        expect(value).to be(nil)
+      end
+
+      it "sets the success reload timestamp" do
+        snapshot = subject.metric.collector.snapshot_metric
+        value = snapshot.metric_store.get_with_path("/stats/pipelines")[:stats][:pipelines][:main][:reloads][:last_success_timestamp].value
+        expect(value).to_not be(nil)
+      end
+
+      it "does not set the last reload error" do
+        snapshot = subject.metric.collector.snapshot_metric
+        value = snapshot.metric_store.get_with_path("/stats/pipelines")[:stats][:pipelines][:main][:reloads][:last_error].value
+        expect(value).to be(nil)
+      end
+
     end
-    it "does not reset the global event count" do
-      # We know that the store has more events coming in.
-      i = 0
-      while dummy_output.events.size <= new_config_generator_counter
-        i += 1
-        raise "Waiting too long!" if i > 20
-        sleep(0.1)
+
+    context "when reloading a bad config" do
+      let(:new_config) { "input { generator { count => " }
+      let(:new_config_generator_counter) { 500 }
+      before :each do
+        # We know that the store has more events coming in.
+        i = 0
+        while dummy_output.events.size <= new_config_generator_counter
+          i += 1
+          raise "Waiting too long!" if i > 20
+          sleep(0.1)
+        end
+
+
+        # Also force a flush to disk to make sure ruby reload it.
+        File.open(config_path, "w") do |f|
+          f.write(new_config)
+          f.fsync
+        end
+
+        sleep(interval * 3) # Give time to reload the config
       end
 
-      snapshot = subject.metric.collector.snapshot_metric
-      expect(snapshot.metric_store.get_with_path("/stats/events")[:stats][:events][:in].value).to be > new_config_generator_counter
-
-      # update the configuration and give some time to logstash to pick it up and do the work
-      # Also force a flush to disk to make sure ruby reload it.
-      File.open(config_path, "w") do |f|
-        f.write(new_config)
-        f.fsync
+      it "does not increase the successful reload count" do
+        snapshot = subject.metric.collector.snapshot_metric
+        value = snapshot.metric_store.get_with_path("/stats/pipelines")[:stats][:pipelines][:main][:reloads][:successes].value
+        expect(value).to be(0)
       end
 
-      sleep(interval * 3) # Give time to reload the config
+      it "does not set the successful reload timestamp" do
+        snapshot = subject.metric.collector.snapshot_metric
+        value = snapshot.metric_store.get_with_path("/stats/pipelines")[:stats][:pipelines][:main][:reloads][:last_success_timestamp].value
+        expect(value).to be(nil)
+      end
 
-      # be eventually consistent.
-      sleep(0.01) while dummy_output2.events.size < new_config_generator_counter
+      it "sets the failure reload timestamp" do
+        snapshot = subject.metric.collector.snapshot_metric
+        value = snapshot.metric_store.get_with_path("/stats/pipelines")[:stats][:pipelines][:main][:reloads][:last_failure_timestamp].value
+        expect(value).to_not be(nil)
+      end
 
-      snapshot = subject.metric.collector.snapshot_metric
-      value = snapshot.metric_store.get_with_path("/stats/events")[:stats][:events][:in].value
-      expect(value).to be > new_config_generator_counter
+      it "sets the last reload error" do
+        snapshot = subject.metric.collector.snapshot_metric
+        value = snapshot.metric_store.get_with_path("/stats/pipelines")[:stats][:pipelines][:main][:reloads][:last_error].value
+        expect(value).to_not be(nil)
+      end
+
+      it "increases the failed reload count" do
+        snapshot = subject.metric.collector.snapshot_metric
+        value = snapshot.metric_store.get_with_path("/stats/pipelines")[:stats][:pipelines][:main][:reloads][:failures].value
+        expect(value).to be > 1
+      end
     end
   end
 end
