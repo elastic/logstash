@@ -40,6 +40,10 @@ module LogStash
             Setting::String.new("http.host", "127.0.0.1"),
             Setting::PortRange.new("http.port", 9600..9700),
             Setting::String.new("http.environment", "production"),
+            Setting::String.new("queue.type", "persisted", true, ["persisted", "memory", "synchronous"]),
+            Setting::Numeric.new("queue.page_capacity", 250 * 1024 * 1024),
+            Setting::WritableDirectory.new("path.queue", ::File.join(LogStash::Environment::LOGSTASH_HOME, "lsqueue")),
+
   ].each {|setting| SETTINGS.register(setting) }
 
   module Environment

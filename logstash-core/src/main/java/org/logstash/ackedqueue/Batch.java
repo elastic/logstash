@@ -31,6 +31,10 @@ public class Batch implements Closeable {
         }
     }
 
+    public int size() {
+        return elements.size();
+    }
+
     public List<? extends Queueable> getElements() {
         return elements;
     }

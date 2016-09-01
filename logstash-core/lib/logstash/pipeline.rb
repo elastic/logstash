@@ -6,6 +6,7 @@ require "logstash/namespace"
 require "logstash/errors"
 require "logstash-core/logstash-core"
 require "logstash/util/wrapped_acked_queue"
+require "logstash/util/wrapped_synchronous_queue"
 require "logstash/event"
 require "logstash/config/file"
 require "logstash/filters/base"
@@ -92,7 +93,7 @@ module LogStash; class Pipeline
     rescue => e
       raise
     end
-    queue = Util::WrappedAckedQueue.new("#{Environment::LOGSTASH_HOME}/lsqueue", 100 * 1024 * 1024)
+    queue = build_queue_from_settings
     @input_queue_client = queue.write_client
     @filter_queue_client = queue.read_client
     @signal_queue = Queue.new
@@ -112,6 +113,26 @@ module LogStash; class Pipeline
     @running = Concurrent::AtomicBoolean.new(false)
     @flushing = Concurrent::AtomicReference.new(false)
   end # def initialize
+
+  def build_queue_from_settings
+    # returns a queue instance
+    queue_page_capacity = settings.get("queue.page_capacity")
+    queue_type = settings.get("queue.type")
+    if queue_type == "memory"
+      STDERR.puts "-----------> memory queue", caller.grep(/pipeline_spec/)
+      LogStash::Util::WrappedAckedQueue.create_memory_based("", queue_page_capacity)
+    elsif queue_type == "synchronous"
+      STDERR.puts "-----------> sync queue"
+      LogStash::Util::WrappedSynchronousQueue.new()
+    else
+      STDERR.puts "-----------> file queue"
+      # default to a persistent queue
+      queue_path = settings.get("path.queue")
+      LogStash::Util::WrappedAckedQueue.create_file_based(queue_path, queue_page_capacity)
+    end
+  end
+
+  private :build_queue_from_settings
 
   def ready?
     @ready.value
@@ -168,6 +189,8 @@ module LogStash; class Pipeline
 
     shutdown_flusher
     shutdown_workers
+
+    @filter_queue_client.close
 
     @logger.log("Pipeline #{@pipeline_id} has been shutdown")
 

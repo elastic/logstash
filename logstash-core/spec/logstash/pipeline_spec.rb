@@ -455,7 +455,7 @@ describe LogStash::Pipeline do
       pipeline = LogStash::Pipeline.new(config, pipeline_settings_obj)
       Thread.new { pipeline.run }
       sleep 0.1 while !pipeline.ready?
-      wait(5).for do
+      wait(3).for do
         # give us a bit of time to flush the events
         output.events.empty?
       end.to be_falsey
@@ -546,11 +546,12 @@ describe LogStash::Pipeline do
   context "when collecting metrics in the pipeline" do
     let(:metric) { LogStash::Instrument::Metric.new(LogStash::Instrument::Collector.new) }
 
+    # subject { described_class.new(config, pipeline_settings_obj.tap{|o| STDERR.puts o.inspect}, metric) }
     subject { described_class.new(config, pipeline_settings_obj, metric) }
 
     let(:pipeline_settings) { { "pipeline.id" => pipeline_id } }
     let(:pipeline_id) { "main" }
-    let(:number_of_events) { 1000 }
+    let(:number_of_events) { 420 }
     let(:multiline_id) { "my-multiline" }
     let(:multiline_id_other) { "my-multiline_other" }
     let(:dummy_output_id) { "my-dummyoutput" }
@@ -594,16 +595,15 @@ describe LogStash::Pipeline do
 
       Thread.new { subject.run }
       # make sure we have received all the generated events
-
-      times = 0
-      while dummyoutput.events.size < number_of_events
-        times += 1
-        sleep 0.25
-        raise "Waited too long" if times > 4
-      end
+      wait(3).for do
+        # give us a bit of time to flush the events
+        STDERR.puts number_of_events, dummyoutput.events.size
+        dummyoutput.events.size < number_of_events
+      end.to be_falsey
     end
 
     after :each do
+      STDERR.puts "----------------------> after each: shutdown"
       subject.shutdown
     end
 

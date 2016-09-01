@@ -11,13 +11,15 @@ class DummyOutput < LogStash::Outputs::Base
   def initialize(params={})
     super
     @num_closes = 0
-    @events = Queue.new
+    # @events = Queue.new
+    @events = Array.new
   end
 
   def register
   end
 
   def receive(event)
+    STDERR.puts "DummyOutput got an event"
     @events << event
   end
 

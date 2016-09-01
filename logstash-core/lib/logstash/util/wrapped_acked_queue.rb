@@ -1,15 +1,47 @@
 # encoding: utf-8
 
 require "logstash-core-queue-jruby/logstash-core-queue-jruby"
-
+require "concurrent"
 # This is an adapted copy of the wrapped_synchronous_queue file
 # ideally this should be moved to Java/JRuby
 
 module LogStash; module Util
+  # Some specialized constructors. The calling code does need to know what kind it creates but
+  # not the internal implementation e.g. LogStash::AckedMemoryQueue etc.
+  # Note the use of allocate - this is what new does before it calls initialize.
+  # Note that the new method has been made private this is because there is no
+  # default queue implementation.
+  # It would be expensive to create a persistent queue in the new method
+  # to then throw it away in favor of a memory based one directly after.
+  # Especially in terms of (mmap) memory allocation and proper close sequencing.
+
   class WrappedAckedQueue
-    def initialize(path, size)
-      @queue = LogStash::AckedQueue.new(path, size)
+    class QueueClosedError < ::StandardError; end
+    class NotImplementedError < ::StandardError; end
+
+    def self.create_memory_based(path, size)
+      self.allocate.with_queue(
+        LogStash::AckedMemoryQueue.new(path, size)
+      )
+    end
+
+    def self.create_file_based(path, size)
+      self.allocate.with_queue(
+        LogStash::AckedQueue.new(path, size)
+      )
+    end
+
+    private_class_method :new
+
+    def with_queue(queue)
+      @queue = queue
       @queue.open
+      @closed = Concurrent::AtomicBoolean.new(false)
+      self
+    end
+
+    def closed?
+      @closed.true?
     end
 
     # Push an object to the queue if the queue is full
@@ -17,6 +49,7 @@ module LogStash; module Util
     #
     # @param [Object] Object to add to the queue
     def push(obj)
+      check_closed("write")
       @queue.write(obj)
     end
     alias_method(:<<, :push)
@@ -29,30 +62,44 @@ module LogStash; module Util
     # @param [Integer] Time in milliseconds to wait before giving up
     # @return [Boolean] True if adding was successfull if not it return false
     def offer(obj, timeout_ms)
-      false
+      raise NotImplementedError.new("The offer method is not implemented. There is no non blocking write operation yet.")
     end
 
     # Blocking
     def take
+      check_closed("read a batch")
       # TODO - determine better arbitrary timeout millis
       @queue.read_batch(1, 200).get_elements.first
     end
 
     # Block for X millis
     def poll(millis)
+      check_closed("read")
       @queue.read_batch(1, millis).get_elements.first
     end
 
+    def read_batch(size, wait)
+      check_closed("read a batch")
+      @queue.read_batch(size, wait)
+    end
+
     def write_client
-      WriteClient.new(@queue)
+      WriteClient.new(self)
     end
 
     def read_client()
-      ReadClient.new(@queue)
+      ReadClient.new(self)
+    end
+
+    def check_closed(action)
+      if closed?
+        raise QueueClosedError.new("Attempted to #{action} on a closed AckedQueue")
+      end
     end
 
     def close
       @queue.close
+      @closed.make_true
     end
 
     class ReadClient
@@ -68,6 +115,10 @@ module LogStash; module Util
         @inflight_batches = {}
         @batch_size = batch_size
         @wait_for = wait_for
+      end
+
+      def close
+        @queue.close
       end
 
       def set_batch_dimensions(batch_size, wait_for)
@@ -94,6 +145,9 @@ module LogStash; module Util
       end
 
       def take_batch
+        if @queue.closed?
+          raise QueueClosedError.new("Attempt to take a batch from a closed AckedQueue")
+        end
         @mutex.synchronize do
           batch = ReadBatch.new(@queue, @batch_size, @wait_for)
           add_starting_metrics(batch)
@@ -230,11 +284,17 @@ module LogStash; module Util
       end
 
       def push(event)
-        @queue.write(event)
+        if @queue.closed?
+          raise QueueClosedError.new("Attempted to write an event to a closed AckedQueue")
+        end
+        @queue.push(event)
       end
       alias_method(:<<, :push)
 
       def push_batch(batch)
+        if @queue.closed?
+          raise QueueClosedError.new("Attempted to write a batch to a closed AckedQueue")
+        end
         batch.each do |event|
           push(event)
         end

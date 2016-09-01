@@ -378,7 +378,6 @@ public class Event implements Cloneable, Serializable, Queueable {
         return toBinaryFromMap(dataMap);
     }
 
-    @Override
     public byte[] serializeWithoutSeqNum() throws IOException {
         return toBinary();
     }

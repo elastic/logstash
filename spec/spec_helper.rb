@@ -35,8 +35,9 @@ RSpec.configure do |c|
 
       logger
     end
-  end
 
+    LogStash::SETTINGS.set("queue.type", "memory")
+  end
 end
 
 def installed_plugins

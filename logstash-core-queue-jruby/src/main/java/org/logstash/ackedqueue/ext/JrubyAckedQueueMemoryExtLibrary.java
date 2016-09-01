@@ -16,28 +16,28 @@ import org.jruby.runtime.builtin.IRubyObject;
 import org.jruby.runtime.load.Library;
 import org.logstash.ackedqueue.Batch;
 import org.logstash.ackedqueue.ElementDeserialiser;
-import org.logstash.ackedqueue.FileSettings;
+import org.logstash.ackedqueue.MemorySettings;
 import org.logstash.ackedqueue.Queue;
 import org.logstash.ackedqueue.Settings;
+import org.logstash.common.io.ByteBufferPageIO;
 import org.logstash.common.io.CheckpointIOFactory;
-import org.logstash.common.io.FileCheckpointIO;
-import org.logstash.common.io.MmapPageIO;
+import org.logstash.common.io.MemoryCheckpointIO;
 import org.logstash.common.io.PageIOFactory;
 
 import java.io.IOException;
 
-public class JrubyAckedQueueExtLibrary implements Library {
+public class JrubyAckedQueueMemoryExtLibrary implements Library {
 
     public void load(Ruby runtime, boolean wrap) throws IOException {
         RubyModule module = runtime.defineModule("LogStash");
 
-        RubyClass clazz = runtime.defineClassUnder("AckedQueue", runtime.getObject(), new ObjectAllocator() {
+        RubyClass clazz = runtime.defineClassUnder("AckedMemoryQueue", runtime.getObject(), new ObjectAllocator() {
             public IRubyObject allocate(Ruby runtime, RubyClass rubyClass) {
-                return new RubyAckedQueue(runtime, rubyClass);
+                return new RubyAckedMemoryQueue(runtime, rubyClass);
             }
         }, module);
 
-        clazz.defineAnnotatedMethods(RubyAckedQueue.class);
+        clazz.defineAnnotatedMethods(RubyAckedMemoryQueue.class);
     }
 
     // TODO:
@@ -45,11 +45,11 @@ public class JrubyAckedQueueExtLibrary implements Library {
     // are assumed to be logstash Event.
 
 
-    @JRubyClass(name = "AckedQueue", parent = "Object")
-    public static class RubyAckedQueue extends RubyObject {
+    @JRubyClass(name = "AckedMemoryQueue", parent = "Object")
+    public static class RubyAckedMemoryQueue extends RubyObject {
         private Queue queue;
 
-        public RubyAckedQueue(Ruby runtime, RubyClass klass) {
+        public RubyAckedMemoryQueue(Ruby runtime, RubyClass klass) {
             super(runtime, klass);
         }
 
@@ -65,9 +65,9 @@ public class JrubyAckedQueueExtLibrary implements Library {
 
             int capacity = RubyFixnum.num2int(args[1]);
 
-            Settings s = new FileSettings(args[0].asJavaString());
-            PageIOFactory pageIOFactory = (pageNum, size, path) -> new MmapPageIO(pageNum, size, path);
-            CheckpointIOFactory checkpointIOFactory = (source) -> new FileCheckpointIO(source);
+            Settings s = new MemorySettings(args[0].asJavaString());
+            PageIOFactory pageIOFactory = (pageNum, size, path) -> new ByteBufferPageIO(pageNum, size, path);
+            CheckpointIOFactory checkpointIOFactory = (source) -> new MemoryCheckpointIO(source);
             s.setCapacity(capacity);
             s.setElementIOFactory(pageIOFactory);
             s.setCheckpointIOFactory(checkpointIOFactory);
