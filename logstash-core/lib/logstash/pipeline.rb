@@ -18,6 +18,7 @@ require "logstash/instrument/null_metric"
 require "logstash/instrument/collector"
 require "logstash/output_delegator"
 require "logstash/filter_delegator"
+require "logstash/compiler"
 
 module LogStash; class Pipeline
   include LogStash::Util::Loggable
@@ -68,6 +69,9 @@ module LogStash; class Pipeline
     # sure the metric instance is correctly send to the plugins to make the namespace scoping work
     @metric = namespaced_metric.nil? ? Instrument::NullMetric.new : namespaced_metric
 
+    x = LogStash::Compiler.compile(config_str)
+    require 'pry'; binding.pry
+
     grammar = LogStashConfigParser.new
     @config = grammar.parse(config_str)
     if @config.nil?
@@ -76,6 +80,9 @@ module LogStash; class Pipeline
     # This will compile the config to ruby and evaluate the resulting code.
     # The code will initialize all the plugins and define the
     # filter and output methods.
+
+    
+    
     code = @config.compile
     @code = code
 
@@ -524,7 +531,7 @@ module LogStash; class Pipeline
   end
 
   # Sometimes we log stuff that will dump the pipeline which may contain
-  # sensitive information (like the raw syntax tree which can contain passwords)
+  # sensitive information (like the raw sourceComponent tree which can contain passwords)
   # We want to hide most of what's in here
   def inspect
     {

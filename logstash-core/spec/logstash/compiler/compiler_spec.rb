@@ -1,0 +1,472 @@
+require "spec_helper"
+java_import Java::OrgLogstashConfigIr::DSL
+
+describe LogStash::Compiler do
+  def j
+    Java::OrgLogstashConfigIr::DSL
+  end
+
+  describe "compiling" do
+    subject(:compiled) { described_class.compile(source) }
+
+    describe "an empty file" do
+      let(:source) { "input {} output {}" }
+
+      it "should have an empty input block" do
+        expect(compiled[:input]).to ir_eql(j.noop)
+      end
+      
+      it "should have an empty filter block" do
+        expect(compiled[:filter]).to ir_eql(j.noop)
+      end
+
+      it "should have an empty output block" do
+        expect(compiled[:output]).to ir_eql(j.noop)
+      end
+    end
+
+    describe "SourceMetadata" do
+      let(:source) { "input { generator {} } output { }" }
+      
+      it "should attach correct source text for components" do
+        expect(compiled[:input].get_meta.getSourceText).to eql("generator {}")
+      end
+    end
+
+    context "plugins" do
+      subject(:c_plugin) { compiled[:input] }
+      let(:source) { "input { #{plugin_source} } " }
+
+      describe "a simple plugin" do
+        let(:plugin_source) { "generator {}" }
+
+        it "should contain the plugin" do
+          expect(c_plugin).to ir_eql(j.iPlugin("generator"))
+        end
+      end
+
+      describe "a plugin with mixed parameter types" do
+        let(:plugin_source) { "generator { aarg => [1] hasharg => {foo => bar} iarg => 123 farg => 123.123 sarg => 'hello'}" }
+
+        it "should contain the plugin" do
+          expect(c_plugin).to ir_eql(j.iPlugin("generator", {"aarg" => [1],
+                                                                "hasharg" => {"foo" => "bar"},
+                                                                "iarg" => 123,
+                                                                "farg" => 123.123,
+                                                                "sarg" => 'hello'}))
+        end
+      end
+    end
+
+    context "inputs" do
+      subject(:input) { compiled[:input] }
+      
+      describe "a single input" do
+        let(:source) { "input { generator {} }" }
+
+        it "should contain the single input" do
+          expect(input).to ir_eql(j.iPlugin("generator"))
+        end
+      end
+
+      describe "two inputs" do
+        let(:source) { "input { generator { count => 1 } generator { count => 2 } } output { }" }
+        
+        it "should contain both inputs" do
+          expect(input).to ir_eql(j.iCompose(
+                                j.iPlugin("generator", {"count" => 1}),
+                                j.iPlugin("generator", {"count" => 2})
+                              ))
+        end
+      end
+    end
+
+    shared_examples_for "complex grammar" do |section|
+      let (:c_section) { compiled[section] }
+      
+      describe "two plugins" do
+        let(:source) { "#{section} { aplugin { count => 1 } aplugin { count => 2 } }" }
+        
+        it "should contain both inputs" do
+          expect(c_section).to ir_eql(j.iCompose(
+                                    j.iPlugin("aplugin", {"count" => 1}),
+                                    j.iPlugin("aplugin", {"count" => 2})
+                                  ))
+        end
+      end
+      
+      describe "if conditions" do
+        describe "conditional expressions" do
+          let(:source) { "#{section} { if (#{expression}) { aplugin {} } }" }
+          let(:c_expression) { c_section.getBooleanExpression }
+
+          describe "logical expressions" do
+            describe "simple and" do
+              let(:expression) { "2 > 1 and 1 < 2" }
+
+              it "should compile correctly" do
+                expect(c_expression).to ir_eql(
+                                          j.eAnd(
+                                            j.eGt(j.eValue(2), j.eValue(1)),
+                                            j.eLt(j.eValue(1), j.eValue(2))
+                                          ))
+              end
+            end
+
+            describe "'in' array" do
+              let(:expression) { "'foo' in ['foo', 'bar']" }
+
+              it "should compile correctly" do
+                expect(c_expression).to ir_eql(
+                                          j.eIn(
+                                            j.eValue('foo'),
+                                            j.eValue(['foo', 'bar'])
+                                          ))
+              end
+            end
+
+            describe "'not in' array" do
+              let(:expression) { "'foo' not in ['foo', 'bar']" }
+
+              it "should compile correctly" do
+                expect(c_expression).to ir_eql(
+                                          j.eNot(
+                                            j.eIn(
+                                              j.eValue('foo'),
+                                              j.eValue(['foo', 'bar'])
+                                            )))
+              end
+            end
+
+            describe "'not'" do
+              let(:expression) { "!(1 > 2)" }
+
+              it "should compile correctly" do
+                expect(c_expression).to ir_eql(j.eNot(j.eGt(j.eValue(1), j.eValue(2))))
+              end
+            end
+
+            describe "and or precedence" do
+              let(:expression) { "2 > 1 and 1 < 2 or 3 < 2" }
+
+              it "should compile correctly" do
+                expect(c_expression).to ir_eql(
+                                          j.eOr(
+                                            j.eAnd(
+                                              j.eGt(j.eValue(2), j.eValue(1)),
+                                              j.eLt(j.eValue(1), j.eValue(2))
+                                            ),
+                                            j.eLt(j.eValue(3), j.eValue(2))
+                                          )
+                                        )
+              end
+
+              describe "multiple or" do
+                let(:expression) { "2 > 1 or 1 < 2 or 3 < 2" }
+
+                it "should compile correctly" do
+                  expect(c_expression).to ir_eql(
+                                            j.eOr(
+                                              j.eGt(j.eValue(2), j.eValue(1)),
+                                              j.eOr(
+                                                j.eLt(j.eValue(1), j.eValue(2)),
+                                                j.eLt(j.eValue(3), j.eValue(2))
+                                              )
+                                            )
+                                          )
+                end
+              end
+
+              describe "a complex expression" do
+                let(:expression) { "1 > 2 and 3 > 4 or 6 > 7 and 8 > 9" }
+                false and false or true and true
+
+                it "should compile correctly" do
+                  expect(c_expression).to ir_eql(
+                                            j.eOr(
+                                              j.eAnd(
+                                                j.eGt(j.eValue(1), j.eValue(2)),
+                                                j.eGt(j.eValue(3), j.eValue(4))
+                                              ),
+                                              j.eAnd(
+                                                j.eGt(j.eValue(6), j.eValue(7)),
+                                                j.eGt(j.eValue(8), j.eValue(9))
+                                              )
+                                            )
+                                          )
+                end
+              end
+              
+              describe "a complex nested expression" do
+                let(:expression) { "1 > 2 and (1 > 2 and 3 > 4 or 6 > 7 and 8 > 9) or 6 > 7 and 8 > 9" }
+                false and false or true and true
+
+                it "should compile correctly" do
+                  expect(c_expression).to ir_eql(
+                                            j.eOr(
+                                              j.eAnd(
+                                                j.eGt(j.eValue(1), j.eValue(2)),
+                                                j.eOr(
+                                                  j.eAnd(
+                                                    j.eGt(j.eValue(1), j.eValue(2)),
+                                                    j.eGt(j.eValue(3), j.eValue(4))
+                                                  ),
+                                                  j.eAnd(
+                                                    j.eGt(j.eValue(6), j.eValue(7)),
+                                                    j.eGt(j.eValue(8), j.eValue(9))
+                                                  )
+                                                )
+                                              ),
+                                              j.eAnd(
+                                                j.eGt(j.eValue(6), j.eValue(7)),
+                                                j.eGt(j.eValue(8), j.eValue(9))
+                                              )
+                                            )
+                                          )
+                end
+              end
+            end
+          end
+
+          describe "comparisons" do
+            describe "field not null" do
+              let(:expression) { "[foo]"}
+
+              it "should compile correctly" do
+                expect(c_expression).to ir_eql(j.eNotNull(j.eEventValue("[foo]")))
+              end
+            end
+
+            describe "'=='" do
+              let(:expression) { "[foo] == 5"}
+
+              it "should compile correctly" do
+                expect(c_expression).to ir_eql(j.eEq(j.eEventValue("[foo]"), j.eValue(5.to_java)))
+              end
+            end
+
+            describe "'!='" do
+              let(:expression) { "[foo] != 5"}
+
+              it "should compile correctly" do
+                expect(c_expression).to ir_eql(j.eNeq(j.eEventValue("[foo]"), j.eValue(5.to_java)))
+              end
+            end
+
+            describe "'>'" do
+              let(:expression) { "[foo] > 5"}
+
+              it "should compile correctly" do
+                expect(c_expression).to ir_eql(j.eGt(j.eEventValue("[foo]"), j.eValue(5.to_java)))
+              end
+            end
+
+            describe "'<'" do
+              let(:expression) { "[foo] < 5"}
+
+              it "should compile correctly" do
+                expect(c_expression).to ir_eql(j.eLt(j.eEventValue("[foo]"), j.eValue(5.to_java)))
+              end
+            end
+            
+            describe "'>='" do
+              let(:expression) { "[foo] >= 5"}
+
+              it "should compile correctly" do
+                expect(c_expression).to ir_eql(j.eGte(j.eEventValue("[foo]"), j.eValue(5.to_java)))
+              end
+            end
+            
+            describe "'<='" do
+              let(:expression) { "[foo] <= 5"}
+
+              it "should compile correctly" do                
+                expect(c_expression).to ir_eql(j.eLte(j.eEventValue("[foo]"), j.eValue(5.to_java)))
+              end
+            end
+
+            describe "'=~'" do
+              let(:expression) { "[foo] =~ /^abc$/"}
+
+              it "should compile correctly" do
+                expect(c_expression).to ir_eql(j.eRegexEq(j.eEventValue("[foo]"), j.eRegex('^abc$')))
+              end
+            end
+
+            describe "'!~'" do
+              let(:expression) { "[foo] !~ /^abc$/"}
+
+              it "should compile correctly" do
+                expect(c_expression).to ir_eql(j.eRegexNeq(j.eEventValue("[foo]"), j.eRegex('^abc$')))
+              end
+            end
+          end
+        end
+        
+        describe "only true branch" do
+          let (:source) { "#{section} { if [foo] == [bar] { grok {} } }" }
+          
+          it "should compile correctly" do
+            expect(c_section).to ir_eql(j.iIf(
+                                            j.eEq(j.eEventValue("[foo]"), j.eEventValue("[bar]")),
+                                            j.iPlugin("grok")
+                                          )
+                                       )
+          end
+        end
+
+        describe "only false branch" do
+          let (:source) { "#{section} { if [foo] == [bar] { } else { fplugin {} } }" }
+          
+          it "should compile correctly" do
+            expect(c_section).to ir_eql(j.iIf(
+                                          j.eEq(j.eEventValue("[foo]"), j.eEventValue("[bar]")),
+                                          j.noop,
+                                          j.iPlugin("fplugin"),
+                                        )
+                                       )
+          end
+        end
+
+        describe "empty if statement" do
+          let (:source) { "#{section} { if [foo] == [bar] { } }" }
+          
+          it "should compile correctly" do
+            expect(c_section).to ir_eql(j.iIf(
+                                          j.eEq(j.eEventValue("[foo]"), j.eEventValue("[bar]")),
+                                          j.noop,
+                                          j.noop
+                                        )
+                                       )
+          end
+        end
+
+        describe "if else" do
+          let (:source) { "#{section} { if [foo] == [bar] { tplugin {} } else { fplugin {} } }" }
+          
+          it "should compile correctly" do
+            expect(c_section).to ir_eql(j.iIf(
+                                          j.eEq(j.eEventValue("[foo]"), j.eEventValue("[bar]")),
+                                          j.iPlugin("tplugin"),
+                                          j.iPlugin("fplugin")
+                                        )
+                                       )
+          end
+        end
+
+        describe "if elsif else" do
+          let (:source) { "#{section} { if [foo] == [bar] { tplugin {} } else if [bar] == [baz] { eifplugin {} } else { fplugin {} } }" }
+          
+          it "should compile correctly" do
+            expect(c_section).to ir_eql(j.iIf(
+                                          j.eEq(j.eEventValue("[foo]"), j.eEventValue("[bar]")),
+                                          j.iPlugin("tplugin"),
+                                          j.iIf(
+                                            j.eEq(j.eEventValue("[bar]"), j.eEventValue("[baz]")),
+                                            j.iPlugin("eifplugin"),
+                                            j.iPlugin("fplugin")
+                                          )
+                                        )
+                                       )
+          end
+        end
+
+        describe "if elsif elsif else" do
+          let (:source) do
+            <<-EOS
+              #{section} { 
+                if [foo] == [bar] { tplugin {} } 
+                else if [bar] == [baz] { eifplugin {} } 
+                else if [baz] == [bot] { eeifplugin {} } 
+                else { fplugin {} } 
+              }
+            EOS
+            
+          end
+          
+          it "should compile correctly" do
+            expect(c_section).to ir_eql(j.iIf(
+                                          j.eEq(j.eEventValue("[foo]"), j.eEventValue("[bar]")),
+                                          j.iPlugin("tplugin"),
+                                          j.iIf(
+                                            j.eEq(j.eEventValue("[bar]"), j.eEventValue("[baz]")),
+                                            j.iPlugin("eifplugin"),
+                                            j.iIf(
+                                              j.eEq(j.eEventValue("[baz]"), j.eEventValue("[bot]")),
+                                              j.iPlugin("eeifplugin"),
+                                              j.iPlugin("fplugin")
+                                            )
+                                          )
+                                        )
+                                       )
+          end
+
+          describe "nested ifs" do
+let (:source) do
+            <<-EOS
+              #{section} { 
+                if [foo] == [bar] { 
+                  if [bar] == [baz] { aplugin {} }
+                } else {
+                  if [bar] == [baz] { bplugin {} } 
+                  else if [baz] == [bot] { cplugin {} } 
+                  else { dplugin {} } 
+                }
+              }
+            EOS
+            
+          end
+          
+          it "should compile correctly" do
+            expect(c_section).to ir_eql(j.iIf(
+                                          j.eEq(j.eEventValue("[foo]"), j.eEventValue("[bar]")),
+                                          j.iIf(j.eEq(j.eEventValue("[bar]"), j.eEventValue("[baz]")),
+                                                   j.iPlugin("aplugin"),
+                                                   j.noop
+                                                  ),
+                                          j.iIf(
+                                            j.eEq(j.eEventValue("[bar]"), j.eEventValue("[baz]")),
+                                            j.iPlugin("bplugin"),
+                                            j.iIf(
+                                              j.eEq(j.eEventValue("[baz]"), j.eEventValue("[bot]")),
+                                              j.iPlugin("cplugin"),
+                                              j.iPlugin("dplugin")
+                                            )
+                                          )
+                                        )
+                                       )
+          end
+          end
+        end
+      end
+    end
+
+    context "filters" do
+      subject(:filter) { compiled[:filter] }
+      
+      describe "a single filter" do
+        let(:source) { "input { } filter { grok {} } output { }" }
+
+        it "should contain the single input" do
+          expect(filter).to ir_eql(j.iPlugin("grok"))
+        end
+      end
+      
+      it_should_behave_like "complex grammar", :filter
+    end
+
+    context "outputs" do
+      subject(:output) { compiled[:output] }
+      
+      describe "a single output" do
+        let(:source) { "input { } output { stdout {} }" }
+
+        it "should contain the single input" do
+          expect(output).to ir_eql(j.iPlugin("stdout"))
+        end
+      end
+
+      it_should_behave_like "complex grammar", :output
+    end
+  end
+end
