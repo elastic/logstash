@@ -1,15 +1,54 @@
 # encoding: utf-8
 require 'logstash/errors'
 require "treetop"
+java_import Java::OrgLogstashConfigIr::DSL
+java_import Java::OrgLogstashConfigIr::SourceMetadata
+
+module LogStash; module Config; module AST
+  module JDSL
+    attr_writer :source_file
+    def source_meta
+      line, column = line_and_column
+      Java::OrgLogstashConfigIr::SourceMetadata.new(source_file, line, column, self.text_value)
+    end
+
+    def source_file
+      return @source_file if @source_file
+      return self.parent.source_file if self.parent
+      nil
+    end
+
+    def compose(*statements)
+      compose_for(section_type.to_sym).call(source_meta, *statements)
+    end
+
+    def compose_for(section_sym)
+      if section_sym == :filter
+        jdsl.method(:iComposeSequence)
+      else
+        jdsl.method(:iComposeParallel)
+      end
+    end
+
+    def line_and_column
+      start = self.interval.first
+      [self.input.line_of(start), self.input.column_of(start)]
+    end
+
+    def empty_source_meta()
+      Java::OrgLogstashConfigIr::SourceMetadata.new()
+    end
+
+    def jdsl
+      Java::OrgLogstashConfigIr::DSL
+    end
+  end
+end; end; end
 
 class Treetop::Runtime::SyntaxNode
+  include LogStash::Config::AST::JDSL
 
-  def compile
-    return "" if elements.nil?
-    return elements.collect(&:compile).reject(&:empty?).join("")
-  end
-
-  # Traverse the syntax tree recursively.
+  # Traverse the sourceComponent tree recursively.
   # The order should respect the order of the configuration file as it is read
   # and written by humans (and the order in which it is parsed).
   def recurse(e, depth=0, &block)
@@ -37,8 +76,8 @@ class Treetop::Runtime::SyntaxNode
   # Some of theses node will point to our concrete class.
   # To fetch a specific types of object we need to follow each branch
   # and ignore the empty nodes.
-  def recursive_select(klass)
-    return recursive_inject { |e| e.is_a?(klass) }
+  def recursive_select(*klasses)
+    return recursive_inject { |e| klasses.any? {|k| e.is_a?(k)} }
   end
 
   def recursive_inject_parent(results=[], &block)
@@ -59,171 +98,88 @@ end
 
 
 module LogStash; module Config; module AST
-
-  def self.defered_conditionals=(val)
-    @defered_conditionals = val
-  end
-
-  def self.defered_conditionals
-    @defered_conditionals
-  end
-
-  def self.defered_conditionals_index
-    @defered_conditionals_index
-  end
-
-  def self.defered_conditionals_index=(val)
-    @defered_conditionals_index = val
-  end
-
-  def self.plugin_instance_index
-    @plugin_instance_index
-  end
-
-  def self.plugin_instance_index=(val)
-    @plugin_instance_index = val
-  end
-
   class Node < Treetop::Runtime::SyntaxNode
-    def text_value_for_comments
-      text_value.gsub(/[\r\n]/, " ")
+    def section_type
+      if recursive_select_parent(Plugin).any?
+        return "codec"
+      else
+        section = recursive_select_parent(PluginSection)
+        return section.first.plugin_type.text_value
+      end
     end
   end
 
   class Config < Node
-    def compile
-      LogStash::Config::AST.defered_conditionals = []
-      LogStash::Config::AST.defered_conditionals_index = 0
-      LogStash::Config::AST.plugin_instance_index = 0
-      code = []
-
-      code << <<-CODE
-        @inputs = []
-        @filters = []
-        @outputs = []
-        @periodic_flushers = []
-        @shutdown_flushers = []
-        @generated_objects = {}
-      CODE
+    def compile(source_file=nil)
+      # There is no way to move vars across nodes in treetop :(
+      self.source_file = source_file
 
       sections = recursive_select(LogStash::Config::AST::PluginSection)
-      sections.each do |s|
-        code << s.compile_initializer
-      end
 
-      # start inputs
-      definitions = []
+      section_map = {
+        :input  => [],
+        :filter => [],
+        :output => []
+      }
 
-      ["filter", "output"].each do |type|
-        # defines @filter_func and @output_func
-
-        # This need to be defined as a singleton method
-        # so each instance of the pipeline has his own implementation
-        # of the output/filter function
-        definitions << "define_singleton_method :#{type}_func do |event|"
-        definitions << "  targeted_outputs = []" if type == "output"
-        definitions << "  events = [event]" if type == "filter"
-        definitions << "  @logger.debug? && @logger.debug(\"#{type} received\", \"event\" => event.to_hash)"
-
-        sections.select { |s| s.plugin_type.text_value == type }.each do |s|
-          definitions << s.compile.split("\n", -1).map { |e| "  #{e}" }
+      sections.each do |section|
+        section_name = section.plugin_type.text_value.to_sym
+        section_expr = section.expr
+        raise "Unknown section name #{section_name}!" if ![:input, :output, :filter].include?(section_name)
+        # Don't include nil section exprs!
+        ::Array[section_expr].each do |se|
+          section_map[section_name].concat se
         end
-
-        definitions << "  events" if type == "filter"
-        definitions << "  targeted_outputs" if type == "output"
-        definitions << "end"
       end
 
-      code += definitions.join("\n").split("\n", -1).collect { |l| "  #{l}" }
+      # Represent filter / output blocks as a single composed statement
+      section_map.keys.each do |key|
+        section_map[key] = compose_for(key).call(empty_source_meta, *section_map[key])
+      end
 
-      code += LogStash::Config::AST.defered_conditionals
-
-      return code.join("\n")
+      section_map
     end
   end
 
-  class Comment < Node; end
-  class Whitespace < Node; end
+  class Comment < Node
+    def significant
+      false
+    end
+
+  end
+
+  class Whitespace < Node
+    def significant
+      false
+    end
+  end
   class PluginSection < Node
     # Global plugin numbering for the janky instance variable naming we use
     # like @filter_<name>_1
-    def initialize(*args)
-      super(*args)
+    def expr
+      [*recursive_select(Branch, Plugin).map(&:expr)]
     end
-
-    # Generate ruby code to initialize all the plugins.
-    def compile_initializer
-      generate_variables
-      code = []
-      @variables.each do |plugin, name|
-
-
-        code << <<-CODE
-          @generated_objects[:#{name}] = #{plugin.compile_initializer}
-          @#{plugin.plugin_type}s << @generated_objects[:#{name}]
-        CODE
-
-        # The flush method for this filter.
-        if plugin.plugin_type == "filter"
-
-          code << <<-CODE
-            @generated_objects[:#{name}_flush] = lambda do |options, &block|
-              @logger.debug? && @logger.debug(\"Flushing\", :plugin => @generated_objects[:#{name}])
-
-              events = @generated_objects[:#{name}].flush(options)
-
-              return if events.nil? || events.empty?
-
-              @logger.debug? && @logger.debug(\"Flushing\", :plugin => @generated_objects[:#{name}], :events => events.map { |x| x.to_hash  })
-
-              #{plugin.compile_starting_here.gsub(/^/, "  ")}
-
-              events.each{|e| block.call(e)}
-            end
-
-            if @generated_objects[:#{name}].respond_to?(:flush)
-              @periodic_flushers << @generated_objects[:#{name}_flush] if @generated_objects[:#{name}].periodic_flush
-              @shutdown_flushers << @generated_objects[:#{name}_flush]
-            end
-          CODE
-
-        end
-      end
-      return code.join("\n")
-    end
-
-    def variable(object)
-      generate_variables
-      return @variables[object]
-    end
-
-    def generate_variables
-      return if !@variables.nil?
-      @variables = {}
-      plugins = recursive_select(Plugin)
-
-      plugins.each do |plugin|
-        # Unique number for every plugin.
-        LogStash::Config::AST.plugin_instance_index += 1
-        # store things as ivars, like @filter_grok_3
-        var = :"#{plugin.plugin_type}_#{plugin.plugin_name}_#{LogStash::Config::AST.plugin_instance_index}"
-        # puts("var=#{var.inspect}")
-        @variables[plugin] = var
-      end
-      return @variables
-    end
-
   end
 
   class Plugins < Node; end
   class Plugin < Node
-    def plugin_type
-      if recursive_select_parent(Plugin).any?
-        return "codec"
-      else
-        return recursive_select_parent(PluginSection).first.plugin_type.text_value
+    def expr
+      jdsl.iPlugin(source_meta, plugin_type_enum, self.plugin_name, self.expr_attributes)
+    end
+
+    def plugin_type_enum
+      case section_type
+      when "input"
+        Java::OrgLogstashConfigIr::PluginDefinition::Type::INPUT
+      when "codec"
+        Java::OrgLogstashConfigIr::PluginDefinition::Type::CODEC
+      when "filter"
+        Java::OrgLogstashConfigIr::PluginDefinition::Type::FILTER
+      when "output"
+        Java::OrgLogstashConfigIr::PluginDefinition::Type::OUTPUT
       end
     end
+
 
     def plugin_name
       return name.text_value
@@ -233,122 +189,59 @@ module LogStash; module Config; module AST
       return recursive_select_parent(PluginSection).first.variable(self)
     end
 
-    def compile_initializer
-      # If any parent is a Plugin, this must be a codec.
-
-      if attributes.elements.nil?
-        return "plugin(#{plugin_type.inspect}, #{plugin_name.inspect})" << (plugin_type == "codec" ? "" : "\n")
-      else
-        settings = attributes.recursive_select(Attribute).collect(&:compile).reject(&:empty?)
-
-        attributes_code = "LogStash::Util.hash_merge_many(#{settings.map { |c| "{ #{c} }" }.join(", ")})"
-        return "plugin(#{plugin_type.inspect}, #{plugin_name.inspect}, #{attributes_code})" << (plugin_type == "codec" ? "" : "\n")
-      end
-    end
-
-    def compile
-      case plugin_type
-      when "input"
-        return "start_input(@generated_objects[:#{variable_name}])"
-      when "filter"
-        return <<-CODE
-          events = @generated_objects[:#{variable_name}].multi_filter(events)
-        CODE
-      when "output"
-        return "targeted_outputs << @generated_objects[:#{variable_name}]\n"
-      when "codec"
-        settings = attributes.recursive_select(Attribute).collect(&:compile).reject(&:empty?)
-        attributes_code = "LogStash::Util.hash_merge_many(#{settings.map { |c| "{ #{c} }" }.join(", ")})"
-        return "plugin(#{plugin_type.inspect}, #{plugin_name.inspect}, #{attributes_code})"
-      end
-    end
-
-    def compile_starting_here
-      return unless plugin_type == "filter" # only filter supported.
-
-      expressions = [
-        LogStash::Config::AST::Branch,
-        LogStash::Config::AST::Plugin
-      ]
-      code = []
-
-      # Find the branch we are in, if any (the 'if' statement, etc)
-      self_branch = recursive_select_parent(LogStash::Config::AST::BranchEntry).first
-
-      # Find any siblings to our branch so we can skip them later.  For example,
-      # if we are in an 'else if' we want to skip any sibling 'else if' or
-      # 'else' blocks.
-      branch_siblings = []
-      if self_branch
-        branch_siblings = recursive_select_parent(LogStash::Config::AST::Branch).first \
-          .recursive_select(LogStash::Config::AST::BranchEntry) \
-          .reject { |b| b == self_branch }
-      end
-
-      #ast = recursive_select_parent(LogStash::Config::AST::PluginSection).first
-      ast = recursive_select_parent(LogStash::Config::AST::Config).first
-
-      found = false
-      recurse(ast) do |element, depth|
-        next false if element.is_a?(LogStash::Config::AST::PluginSection) && element.plugin_type.text_value != "filter"
-        if element == self
-          found = true
-          next false
+    def expr_attributes
+      # Turn attributes into a hash map
+      self.attributes.recursive_select(Attribute).map(&:expr).map {|k,v|
+        if v.java_kind_of?(Java::OrgLogstashConfigIrExpression::ValueExpression)
+          [k, v.get]
+        else
+          [k,v]
         end
-        if found && expressions.include?(element.class)
-          code << element.compile
-          next false
-        end
-        next false if branch_siblings.include?(element)
-        next true
+      }.reduce({}) do |hash,kv|
+        k,v = kv
+        hash[k] = v
+        hash
       end
 
-      return code.collect { |l| "#{l}\n" }.join("")
-    end # def compile_starting_here
+    end
   end
 
   class Name < Node
-    def compile
-      return text_value.inspect
+    def expr
+      return text_value
     end
   end
   class Attribute < Node
-    def compile
-      return %Q(#{name.compile} => #{value.compile})
+    def expr
+      [name.text_value, value.expr]
     end
   end
   class RValue < Node; end
   class Value < RValue; end
 
-  module Unicode
-    def self.wrap(text)
-      return "(" + text.force_encoding(Encoding::UTF_8).inspect + ")"
-    end
-  end
-
   class Bareword < Value
-    def compile
-      return Unicode.wrap(text_value)
+    def expr
+      jdsl.eValue(source_meta, text_value)
     end
   end
   class String < Value
-    def compile
-      return Unicode.wrap(text_value[1...-1])
+    def expr
+      jdsl.eValue(source_meta, text_value[1...-1])
     end
   end
   class RegExp < Value
-    def compile
-      return "Regexp.new(" + Unicode.wrap(text_value[1...-1]) + ")"
+    def expr
+      jdsl.eRegex(text_value[1..-2])
     end
   end
   class Number < Value
-    def compile
-      return text_value
+    def expr
+      jdsl.eValue(source_meta, text_value.include?(".") ? text_value.to_f : text_value.to_i)
     end
   end
   class Array < Value
-    def compile
-      return "[" << recursive_select(Value).collect(&:compile).reject(&:empty?).join(", ") << "]"
+    def expr
+      jdsl.eValue(source_meta, recursive_select(Value).map(&:expr).map(&:get))
     end
   end
   class Hash < Value
@@ -373,9 +266,9 @@ module LogStash; module Config; module AST
       values.find_all { |v| values.count(v) > 1 }.uniq
     end
 
-    def compile
+    def expr
       validate!
-      return "{" << recursive_select(HashEntry).collect(&:compile).reject(&:empty?).join(", ") << "}"
+      ::Hash[recursive_select(HashEntry).map(&:expr)]
     end
   end
 
@@ -383,111 +276,229 @@ module LogStash; module Config; module AST
   end
 
   class HashEntry < Node
-    def compile
-      return %Q(#{name.compile} => #{value.compile})
+    def expr
+      return [name.expr.get, value.expr.get()]
     end
   end
 
-  class BranchOrPlugin < Node; end
-
   class Branch < Node
-    def compile
+    def expr
+      # Build this stuff as s-expressions for convenience at first (they're mutable)
 
-      # this construct is non obvious. we need to loop through each event and apply the conditional.
-      # each branch of a conditional will contain a construct (a filter for example) that also loops through
-      # the events variable so we have to initialize it to [event] for the branch code.
-      # at the end, events is returned to handle the case where no branch match and no branch code is executed
-      # so we must make sure to return the current event.
+      exprs = []
+      else_stack = [] # For turning if / elsif / else into nested ifs
 
-      type = recursive_select_parent(PluginSection).first.plugin_type.text_value
+      self.recursive_select(Plugin, If, Elsif, Else).each do |node|
+        if node.is_a?(If)
+          exprs << :if
+          exprs << expr_cond(node)
+          exprs << expr_body(node)
+        elsif node.is_a?(Elsif)
+          condition = expr_cond(node)
+          body = expr_body(node)
 
-      if type == "filter"
-        i = LogStash::Config::AST.defered_conditionals_index += 1
-        source = <<-CODE
-          @generated_objects[:cond_func_#{i}] = lambda do |input_events|
-            result = []
-            input_events.each do |event|
-              events = [event]
-              #{super}
-              end
-              result += events
-            end
-            result
+          else_stack << [:if, condition, body]
+        elsif node.is_a?(Else)
+          body = expr_body(node)
+          if else_stack.size >= 1
+            else_stack.last << body
+          else
+            exprs << body
           end
-        CODE
-        LogStash::Config::AST.defered_conditionals << source
-
-        <<-CODE
-          events = @generated_objects[:cond_func_#{i}].call(events)
-        CODE
-      else # Output
-        <<-CODE
-          #{super}
-          end
-        CODE
+        end
       end
+
+      else_stack.reverse.each_cons(2) do |cons|
+        later,earlier = cons
+        earlier << later
+      end
+      exprs << else_stack.first
+
+      # Then convert to the imperative java IR
+      javaify_sexpr(exprs)
+    end
+
+    def javaify_sexpr(sexpr)
+      return nil if sexpr.nil?
+
+      head, tail = sexpr.first
+      tail = sexpr[1..-1]
+
+      if head == :if
+        condition, t_branch, f_branch = tail
+
+        java_t_branch = t_branch && javaify_sexpr(t_branch)
+        java_f_branch = f_branch && javaify_sexpr(f_branch)
+
+        if java_t_branch || java_f_branch
+          # Invert the expression and make the f_branch the t_branch
+
+          jdsl.iIf(condition, java_t_branch || jdsl.noop, java_f_branch || jdsl.noop)
+        else
+          jdsl.noop()
+        end
+      elsif head == :compose
+        tail && tail.size > 0 ? compose(*tail) : jdsl.noop
+      else
+        raise "Unknown expression #{head}!"
+      end
+    end
+
+    def expr_cond(node)
+      node.elements.find {|e| e.is_a?(Condition)}.expr
+    end
+
+    def expr_body(node)
+      [:compose, *node.recursive_select(Plugin, Branch).map(&:expr)]
     end
   end
 
   class BranchEntry < Node; end
 
   class If < BranchEntry
-    def compile
-      children = recursive_inject { |e| e.is_a?(Branch) || e.is_a?(Plugin) }
-      return "if #{condition.compile} # if #{condition.text_value_for_comments}\n" \
-        << children.collect(&:compile).map { |s| s.split("\n", -1).map { |l| "  " + l }.join("\n") }.join("") << "\n"
-    end
   end
   class Elsif < BranchEntry
-    def compile
-      children = recursive_inject { |e| e.is_a?(Branch) || e.is_a?(Plugin) }
-      return "elsif #{condition.compile} # else if #{condition.text_value_for_comments}\n" \
-        << children.collect(&:compile).map { |s| s.split("\n", -1).map { |l| "  " + l }.join("\n") }.join("") << "\n"
-    end
   end
   class Else < BranchEntry
-    def compile
-      children = recursive_inject { |e| e.is_a?(Branch) || e.is_a?(Plugin) }
-      return "else\n" \
-        << children.collect(&:compile).map { |s| s.split("\n", -1).map { |l| "  " + l }.join("\n") }.join("") << "\n"
-    end
   end
 
   class Condition < Node
-    def compile
-      return "(#{super})"
+    def expr
+      first_element = elements.first
+      rest_elements = elements.size > 1 ? elements[1].recursive_select(BooleanOperator, Expression, SelectorElement) : []
+
+      all_elements = [first_element, *rest_elements]
+
+      if all_elements.size == 1
+        elem = all_elements.first
+        if elem.is_a?(Selector)
+          eventValue = elem.recursive_select(SelectorElement).first.expr
+          jdsl.eTruthy(eventValue)
+        elsif elem.is_a?(RegexpExpression)
+          elem.value
+        else
+          join_conditions(all_elements)
+        end
+      else
+
+        join_conditions(all_elements) # Is this necessary?
+      end
+    end
+
+    def precedence(op)
+      #  Believe this is right for logstash?
+      case op
+      when :and
+        2
+      when :or
+        1
+      else
+        raise ArgumentError, "Unexpected operator #{op}"
+      end
+    end
+
+    def jconvert(sexpr)
+      return sexpr if sexpr.java_kind_of?(Java::OrgLogstashConfigIrExpression::BooleanExpression)
+
+      op, left, right = sexpr
+
+      left_c = jconvert(left)
+      right_c = jconvert(right)
+
+       case op
+       when :and
+         return jdsl.eAnd(left, right);
+       when :or
+         return jdsl.eOr(left, right);
+       else
+         raise "Unknown op #{jop}"
+       end
+    end
+
+    def join_conditions(all_elements)
+      # Use Dijkstra's shunting yard algorithm
+      out = []
+      operators = []
+
+      all_elements.each do |e|
+        e_exp = e.expr
+
+        if e.is_a?(BooleanOperator)
+          if operators.last && precedence(operators.last) > precedence(e_exp)
+            out << operators.pop
+          end
+          operators << e_exp
+        else
+          out << e_exp
+        end
+      end
+      operators.reverse.each {|o| out << o}
+
+      stack = []
+      expr = []
+      x = false
+      out.each do |e|
+        if e.is_a?(Symbol)
+          x = 1
+          rval, lval = stack.pop, stack.pop
+          stack << jconvert([e, lval, rval])
+        else
+          stack << e
+        end
+      end
+
+      if stack.size > 1
+        raise "Stack size should never be > than 1!"
+      end
+      return stack.first
     end
   end
 
   module Expression
-    def compile
-      return "(#{super})"
+    def expr
+      return self.value if self.respond_to?(:value)
+
+      self.recursive_select(Condition, Expression).map {|e| e.respond_to?(:value) ? e.value : e.expr }.first
     end
   end
 
   module NegativeExpression
-    def compile
-      return "!(#{super})"
+    include JDSL
+
+    def value
+      jdsl.eNot(source_meta, self.recursive_select(Condition).map(&:expr).first)
     end
   end
 
-  module ComparisonExpression; end
+  module ComparisonExpression
+    include JDSL
+
+    def value
+      lval, comparison_method, rval = self.recursive_select(Selector, ComparisonOperator, Number, String).map(&:expr)
+      comparison_method.call(source_meta, lval, rval)
+    end
+  end
 
   module InExpression
-    def compile
+    include JDSL
+
+    def value # Because this is somehow higher up the inheritance chain than Expression
       item, list = recursive_select(LogStash::Config::AST::RValue)
-      return "(x = #{list.compile}; x.respond_to?(:include?) && x.include?(#{item.compile}))"
+      jdsl.eIn(source_meta, item.expr, list.expr)
     end
   end
 
   module NotInExpression
-    def compile
+    include JDSL
+
+    def value
       item, list = recursive_select(LogStash::Config::AST::RValue)
-      return "(x = #{list.compile}; !x.respond_to?(:include?) || !x.include?(#{item.compile}))"
+      jdsl.eNot(source_meta, jdsl.eIn(item.expr, list.expr))
     end
   end
 
   class MethodCall < Node
+    # TBD: Can we delete this? Who uses the method call syntax?
     def compile
       arguments = recursive_inject { |e| [String, Number, Selector, Array, MethodCall].any? { |c| e.is_a?(c) } }
       return "#{method.text_value}(" << arguments.collect(&:compile).join(", ") << ")"
@@ -495,40 +506,67 @@ module LogStash; module Config; module AST
   end
 
   class RegexpExpression < Node
-    def compile
-      operator = recursive_select(LogStash::Config::AST::RegExpOperator).first.text_value
-      item, regexp = recursive_select(LogStash::Config::AST::RValue)
-      # Compile strings to regexp's
-      if regexp.is_a?(LogStash::Config::AST::String)
-        regexp = "/#{regexp.text_value[1..-2]}/"
-      else
-        regexp = regexp.compile
-      end
-      return "(#{item.compile} #{operator} #{regexp})"
+    def value
+      selector, operator_method, regexp = recursive_select(Selector, LogStash::Config::AST::RegExpOperator, LogStash::Config::AST::RegExp).map(&:expr)
+
+      raise "Expected a selector #{text_value}!" unless selector
+      raise "Expected a regexp #{text_value}!" unless regexp
+
+
+      operator_method.call(source_meta, selector, regexp);
     end
   end
 
+  module BranchOrPlugin; end
+
   module ComparisonOperator
-    def compile
-      return " #{text_value} "
+    include JDSL
+
+    def expr
+      case self.text_value
+      when "=="
+        jdsl.method(:eEq)
+      when "!="
+        jdsl.method(:eNeq)
+      when ">"
+        jdsl.method(:eGt)
+      when "<"
+        jdsl.method(:eLt)
+      when ">="
+        jdsl.method(:eGte)
+      when "<="
+        jdsl.method(:eLte)
+      else
+        raise "Unknown operator #{self.text_value}"
+      end
     end
   end
   module RegExpOperator
-    def compile
-      return " #{text_value} "
+    def expr
+      if self.text_value == '!~'
+        jdsl.method(:eRegexNeq)
+      elsif self.text_value == '=~'
+        jdsl.method(:eRegexEq)
+      else
+        raise "Unknown regex operator #{self.text_value}"
+      end
     end
   end
   module BooleanOperator
-    def compile
-      return " #{text_value} "
+    def expr
+      self.text_value.to_sym
     end
   end
   class Selector < RValue
-    def compile
-      return "event.get(#{text_value.inspect})"
+    def expr
+      jdsl.eEventValue(source_meta, text_value)
     end
   end
-  class SelectorElement < Node; end
+  class SelectorElement < Node;
+    def expr
+      jdsl.eEventValue(source_meta, text_value)
+    end
+  end
 end; end; end
 
 

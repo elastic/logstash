@@ -119,6 +119,7 @@ dependencies {
     testCompile 'org.apache.logging.log4j:log4j-api:2.6.2:tests'
     testCompile 'junit:junit:4.12'
     provided 'org.jruby:jruby-core:1.7.25'
+    //provided files('../logstash-core-event-java/build/libs/logstash-core-event-java.jar')
 }
 
 // See http://www.gradle.org/docs/current/userguide/gradle_wrapper.html
@@ -126,4 +127,3 @@ task wrapper(type: Wrapper) {
     description = 'Install Gradle wrapper'
     gradleVersion = '2.8'
 }
-
