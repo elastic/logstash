@@ -21,6 +21,7 @@ require "logstash/instrument/namespaced_null_metric"
 require "logstash/instrument/collector"
 require "logstash/output_delegator"
 require "logstash/filter_delegator"
+require "logstash/compiler"
 
 module LogStash; class Pipeline
   include LogStash::Util::Loggable
@@ -325,7 +326,7 @@ module LogStash; class Pipeline
     output_events_map.each do |output, events|
       output.multi_receive(events)
     end
-    
+
     @filter_queue_client.add_output_metrics(batch)
   end
 
@@ -436,7 +437,7 @@ module LogStash; class Pipeline
          end
 
     raise ConfigurationError, "Two plugins have the id '#{id}', please fix this conflict" if @plugins_by_id[id]
-    
+
     pipeline_scoped_metric = metric.namespace([:stats, :pipelines, pipeline_id.to_s.to_sym, :plugins])
 
     klass = Plugin.lookup(plugin_type, name)
@@ -454,7 +455,7 @@ module LogStash; class Pipeline
                input_plugin.metric = type_scoped_metric.namespace(id)
                input_plugin
              end
-    
+
     @plugins_by_id[id] = plugin
   end
 

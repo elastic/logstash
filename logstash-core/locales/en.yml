@@ -187,7 +187,7 @@ en:
         http_host: Web API binding host
         http_port: Web API http port
         pipeline-workers: |+
-          Sets the number of pipeline workers to run.
+          Sets the number of pipeline workers to start.
         pipeline-batch-size: |+
           Size of batches the pipeline is to work in.
         pipeline-batch-delay: |+
@@ -256,7 +256,7 @@ en:
           WARNING: This will include any 'password' options passed to plugin configs as plaintext, and may result
           in plaintext passwords appearing in your logs!
         log_format: |+
-          Specify if Logstash should write its own logs in JSON form (one
+          Specify if Logstash should emit its own logs in JSON form (one
           event per line) or in plain text (using Ruby's Object#inspect)
         debug: |+
           Set the log level to debug.
