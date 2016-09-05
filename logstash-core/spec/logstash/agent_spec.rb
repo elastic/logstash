@@ -440,7 +440,7 @@ describe LogStash::Agent do
       it "sets the success reload timestamp" do
         snapshot = subject.metric.collector.snapshot_metric
         value = snapshot.metric_store.get_with_path("/stats/pipelines")[:stats][:pipelines][:main][:reloads][:last_success_timestamp].value
-        expect(value).to_not be(nil)
+        expect(value).to be_a(LogStash::Timestamp)
       end
 
       it "does not set the last reload error" do
@@ -488,13 +488,14 @@ describe LogStash::Agent do
       it "sets the failure reload timestamp" do
         snapshot = subject.metric.collector.snapshot_metric
         value = snapshot.metric_store.get_with_path("/stats/pipelines")[:stats][:pipelines][:main][:reloads][:last_failure_timestamp].value
-        expect(value).to_not be(nil)
+        expect(value).to be_a(LogStash::Timestamp)
       end
 
       it "sets the last reload error" do
         snapshot = subject.metric.collector.snapshot_metric
         value = snapshot.metric_store.get_with_path("/stats/pipelines")[:stats][:pipelines][:main][:reloads][:last_error].value
-        expect(value).to_not be(nil)
+        expect(value).to be_a(Hash)
+        expect(value).to include(:message, :backtrace)
       end
 
       it "increases the failed reload count" do
