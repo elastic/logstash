@@ -22,9 +22,14 @@ module ServiceTester
 
     def install(package, host=nil)
       hosts = (host.nil? ? servers : Array(host))
+      errors = []
       at(hosts, {in: :serial}) do |_|
-        sudo_exec!("dpkg -i --force-confnew #{package}")
+        cmd = sudo_exec!("dpkg -i --force-confnew #{package}")
+        if cmd.exit_status != 0
+          errors << cmd.stderr.to_s
+        end
       end
+      raise InstallException.new(errors.join("\n")) unless errors.empty?
     end
 
     def uninstall(package, host=nil)
