@@ -4,6 +4,8 @@ require_relative "system_helpers"
 
 module ServiceTester
 
+  class InstallException < Exception; end
+
   class Base
     LOCATION="/logstash-build".freeze
     LOGSTASH_PATH="/usr/share/logstash/".freeze
