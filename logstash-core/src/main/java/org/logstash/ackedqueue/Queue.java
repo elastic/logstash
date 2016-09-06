@@ -2,6 +2,7 @@ package org.logstash.ackedqueue;
 
 import org.logstash.common.io.CheckpointIO;
 import org.logstash.common.io.PageIO;
+import org.logstash.common.io.PageIOFactory;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -30,8 +31,11 @@ public class Queue implements Closeable {
     // first non-fully-read tail page num
     private int firstUnreadTailPageNum;
 
-    private final Settings settings;
     private final CheckpointIO checkpointIO;
+    private final PageIOFactory pageIOFactory;
+    private final int capacity;
+    private final String dirPath;
+
     private final AtomicBoolean closed;
 
     // deserialization
@@ -39,21 +43,26 @@ public class Queue implements Closeable {
     private final Method deserializeMethod;
 
     public Queue(Settings settings) {
-        this.settings = settings;
+        this(settings.getDirPath(), settings.getCapacity(), settings.getCheckpointIOFactory().build(settings.getDirPath()), settings.getPageIOFactory(), settings.getElementClass());
+    }
+
+    public Queue(String dirPath, int capacity, CheckpointIO checkpointIO, PageIOFactory pageIOFactory, Class elementClass) {
+        this.dirPath = dirPath;
+        this.capacity = capacity;
+        this.checkpointIO = checkpointIO;
+        this.pageIOFactory = pageIOFactory;
+        this.elementClass = elementClass;
         this.tailPages = new ArrayList<>();
         this.firstUnreadTailPageNum = 0;
-        this.checkpointIO = settings.getCheckpointIOFactory().build(settings.getDirPath());
         this.closed = new AtomicBoolean(true); // not yet opened
 
         // retrieve the deserialize method
-
-        this.elementClass = settings.getElementClass();
         try {
             Class[] cArg = new Class[1];
             cArg[0] = byte[].class;
             this.deserializeMethod = this.elementClass.getDeclaredMethod("deserialize", cArg);
         } catch (NoSuchMethodException e) {
-            throw new QueueRuntimeException("cannot find deserialize method on class " + elementClass.getName(), e);
+            throw new QueueRuntimeException("cannot find deserialize method on class " + this.elementClass.getName(), e);
         }
     }
 
@@ -83,7 +92,7 @@ public class Queue implements Closeable {
                     throw new IOException(checkpointIO.tailFileName(pageNum) + " not found");
                 }
 
-                PageIO pageIO = settings.getPageIOFactory().build(pageNum, this.settings.getCapacity(), this.settings.getDirPath());
+                PageIO pageIO = this.pageIOFactory.build(pageNum, this.capacity, this.dirPath);
                 BeheadedPage tailPage = new BeheadedPage(tailCheckpoint, this, pageIO);
 
                 // if this page is not the first tail page, deactivate it
@@ -102,7 +111,7 @@ public class Queue implements Closeable {
             }
 
             // transform the head page into a beheaded tail page
-            PageIO pageIO = settings.getPageIOFactory().build(headCheckpoint.getPageNum(), this.settings.getCapacity(), this.settings.getDirPath());
+            PageIO pageIO = this.pageIOFactory.build(headCheckpoint.getPageNum(), this.capacity, this.dirPath);
             BeheadedPage beheadedHeadPage = new BeheadedPage(headCheckpoint, this, pageIO);
 
             // track the seqNum as we rebuild tail pages
@@ -121,7 +130,7 @@ public class Queue implements Closeable {
         }
 
         // create new head page
-        PageIO pageIO = settings.getPageIOFactory().build(headPageNum, this.settings.getCapacity(), this.settings.getDirPath());
+        PageIO pageIO = this.pageIOFactory.build(headPageNum, this.capacity, this.dirPath);
         this.headPage = new HeadPage(headPageNum, this, pageIO);
         this.headPage.checkpoint();
 
@@ -151,7 +160,7 @@ public class Queue implements Closeable {
 
             // create new head page
             int headPageNum = tailPage.pageNum + 1;
-            PageIO pageIO = this.settings.getPageIOFactory().build(headPageNum, this.settings.getCapacity(), this.settings.getDirPath());
+            PageIO pageIO = this.pageIOFactory.build(headPageNum, this.capacity, this.dirPath);
             this.headPage = new HeadPage(headPageNum, this, pageIO);
             this.headPage.checkpoint();
         }
