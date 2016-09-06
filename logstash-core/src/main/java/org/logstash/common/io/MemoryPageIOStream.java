@@ -121,7 +121,7 @@ public class MemoryPageIOStream implements PageIO {
     }
 
     @Override
-    public List<ReadElementValue> read(long seqNum, int limit) throws IOException {
+    public List<byte[]> read(long seqNum, int limit) throws IOException {
         if (elementCount == 0) {
             return new ArrayList<>();
         }
@@ -251,14 +251,14 @@ public class MemoryPageIOStream implements PageIO {
         crcWrappedOutput.close();
     }
 
-    private List<ReadElementValue> read(int limit) throws IOException {
-        ArrayList<ReadElementValue> result = new ArrayList<>();
+    private List<byte[]> read(int limit) throws IOException {
+        ArrayList<byte[]> result = new ArrayList<>();
         int upto = available(limit);
         for (int i = 0; i < upto; i++) {
             long seqnum = readSeqNum();
             byte[] data = readData();
             skipChecksum();
-            result.add(new ReadElementValue(seqnum, data));
+            result.add(data);
         }
         return result;
     }

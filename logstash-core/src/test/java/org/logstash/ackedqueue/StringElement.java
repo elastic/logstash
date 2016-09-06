@@ -25,14 +25,6 @@ public class StringElement implements Queueable {
         return buffer.array();
     }
 
-    @Override
-    public byte[] serializeWithoutSeqNum() {
-        byte[] contentBytes = this.content.getBytes();
-        ByteBuffer buffer = ByteBuffer.allocate(contentBytes.length);
-        buffer.put(contentBytes);
-        return buffer.array();
-    }
-
     public static StringElement deserialize(byte[] bytes) {
         ByteBuffer buffer = ByteBuffer.allocate(bytes.length);
         buffer.put(bytes);
@@ -40,15 +32,6 @@ public class StringElement implements Queueable {
         buffer.position(0);
         long seqNum = buffer.getLong();
         byte[] content = new byte[bytes.length - Long.BYTES];
-        buffer.get(content);
-        return new StringElement(new String(content), seqNum);
-    }
-
-    public static StringElement deserializeWithoutSeqNum(byte[] bytes, long seqNum) {
-        ByteBuffer buffer = ByteBuffer.allocate(bytes.length);
-        buffer.put(bytes);
-        buffer.position(0);
-        byte[] content = new byte[bytes.length];
         buffer.get(content);
         return new StringElement(new String(content), seqNum);
     }

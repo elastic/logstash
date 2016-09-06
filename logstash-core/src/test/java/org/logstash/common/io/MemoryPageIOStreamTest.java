@@ -111,7 +111,7 @@ public class MemoryPageIOStreamTest {
     @Test
     public void read() throws Exception {
         MemoryPageIOStream subj = subject();
-        List<ReadElementValue> result = subj.read(1L, 1);
+        List<byte[]> result = subj.read(1L, 1);
         assertThat(result.isEmpty(), is(true));
     }
 
@@ -120,11 +120,10 @@ public class MemoryPageIOStreamTest {
         Queueable element = buildStringElement("foobarbaz", 42L);
         MemoryPageIOStream subj = subject();
         subj.write(element);
-        List<ReadElementValue> result = subj.read(42L, 1);
+        List<byte[]> result = subj.read(42L, 1);
         assertThat(result.size(), is(equalTo(1)));
-        ReadElementValue rev = result.get(0);
-        assertThat(rev.getSeqNum(), is(equalTo(42L)));
-        Queueable readElement = StringElement.deserialize(rev.getBinaryValue());
+        Queueable readElement = StringElement.deserialize(result.get(0));
+        assertThat(readElement.getSeqNum(), is(equalTo(42L)));
         assertThat(readElement.toString(), is(equalTo(element.toString())));
     }
 
@@ -133,11 +132,10 @@ public class MemoryPageIOStreamTest {
         Queueable element = buildStringElement("", 1L);
         MemoryPageIOStream subj = subject();
         subj.write(element);
-        List<ReadElementValue> result = subj.read(1L, 1);
+        List<byte[]> result = subj.read(1L, 1);
         assertThat(result.size(), is(equalTo(1)));
-        ReadElementValue rev = result.get(0);
-        assertThat(rev.getSeqNum(), is(equalTo(1L)));
-        Queueable readElement = StringElement.deserialize(rev.getBinaryValue());
+        Queueable readElement = StringElement.deserialize(result.get(0));
+        assertThat(readElement.getSeqNum(), is(equalTo(1L)));
         assertThat(readElement.toString(), is(equalTo(element.toString())));
     }
 
@@ -153,17 +151,18 @@ public class MemoryPageIOStreamTest {
         subj.write(element3);
         subj.write(element4);
         int batchSize = 11;
-        List<ReadElementValue> result = subj.read(40L, batchSize);
+        List<byte[]> result = subj.read(40L, batchSize);
         assertThat(result.size(), is(equalTo(4)));
-        assertThat(result.get(0).getSeqNum(), is(equalTo(element1.getSeqNum())));
-        assertThat(result.get(1).getSeqNum(), is(equalTo(element2.getSeqNum())));
-        assertThat(result.get(2).getSeqNum(), is(equalTo(element3.getSeqNum())));
-        assertThat(result.get(3).getSeqNum(), is(equalTo(element4.getSeqNum())));
 
-        assertThat(StringElement.deserialize(result.get(0).getBinaryValue()).toString(), is(equalTo(element1.toString())));
-        assertThat(StringElement.deserialize(result.get(1).getBinaryValue()).toString(), is(equalTo(element2.toString())));
-        assertThat(StringElement.deserialize(result.get(2).getBinaryValue()).toString(), is(equalTo(element3.toString())));
-        assertThat(StringElement.deserialize(result.get(3).getBinaryValue()).toString(), is(equalTo(element4.toString())));
+        assertThat(StringElement.deserialize(result.get(0)).getSeqNum(), is(equalTo(element1.getSeqNum())));
+        assertThat(StringElement.deserialize(result.get(1)).getSeqNum(), is(equalTo(element2.getSeqNum())));
+        assertThat(StringElement.deserialize(result.get(2)).getSeqNum(), is(equalTo(element3.getSeqNum())));
+        assertThat(StringElement.deserialize(result.get(3)).getSeqNum(), is(equalTo(element4.getSeqNum())));
+
+        assertThat(StringElement.deserialize(result.get(0)).toString(), is(equalTo(element1.toString())));
+        assertThat(StringElement.deserialize(result.get(1)).toString(), is(equalTo(element2.toString())));
+        assertThat(StringElement.deserialize(result.get(2)).toString(), is(equalTo(element3.toString())));
+        assertThat(StringElement.deserialize(result.get(3)).toString(), is(equalTo(element4.toString())));
     }
 
     @Test
@@ -178,9 +177,9 @@ public class MemoryPageIOStreamTest {
         MemoryPageIOStream subj = subject(stream.getBuffer(), 10L, 10);
         int batchSize = 3;
         sequenceNumber = 13L;
-        List<ReadElementValue> result = subj.read(sequenceNumber, batchSize);
+        List<byte[]> result = subj.read(sequenceNumber, batchSize);
         for (int i = 0; i < 3; i++) {
-            Queueable ele = StringElement.deserialize(result.get(i).getBinaryValue());
+            Queueable ele = StringElement.deserialize(result.get(i));
             assertThat(ele.getSeqNum(), is(equalTo(sequenceNumber + i)));
             assertThat(ele.toString(), is(equalTo(values[i + 3])));
         }

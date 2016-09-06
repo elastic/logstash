@@ -114,27 +114,16 @@ public class ByteBufferPageIOTest {
 
     // TODO: add other invalid initial states
 
-// I am not sure we should return an empty list if there is nothing to read or if seqNum is not is the proper range
-// and/or throw exception?
-//
-//    @Test
-//    public void read() throws Exception {
-//        ByteBufferPageIO subj = subject();
-//        List<ReadElementValue> result = subj.read(1, 1);
-//        assertThat(result.isEmpty(), is(true));
-//    }
-
     @Test
     public void writeRead() throws IOException {
         Queueable element = buildStringElement("foobarbaz", 42L);
         ByteBufferPageIO subj = subject();
         subj.create();
         subj.write(element.serialize(), element);
-        List<ReadElementValue> result = subj.read(42L, 1);
+        List<byte[]> result = subj.read(42L, 1);
         assertThat(result.size(), is(equalTo(1)));
-        ReadElementValue rev = result.get(0);
-        assertThat(rev.getSeqNum(), is(equalTo(42L)));
-        Queueable readElement = StringElement.deserialize(rev.getBinaryValue());
+        Queueable readElement = StringElement.deserialize(result.get(0));
+        assertThat(readElement.getSeqNum(), is(equalTo(42L)));
         assertThat(readElement.toString(), is(equalTo(element.toString())));
     }
 
@@ -151,17 +140,18 @@ public class ByteBufferPageIOTest {
         subj.write(element3.serialize(), element3);
         subj.write(element4.serialize(), element4);
         int batchSize = 11;
-        List<ReadElementValue> result = subj.read(40L, batchSize);
+        List<byte[]> result = subj.read(40L, batchSize);
         assertThat(result.size(), is(equalTo(4)));
-        assertThat(result.get(0).getSeqNum(), is(equalTo(element1.getSeqNum())));
-        assertThat(result.get(1).getSeqNum(), is(equalTo(element2.getSeqNum())));
-        assertThat(result.get(2).getSeqNum(), is(equalTo(element3.getSeqNum())));
-        assertThat(result.get(3).getSeqNum(), is(equalTo(element4.getSeqNum())));
 
-        assertThat(StringElement.deserialize(result.get(0).getBinaryValue()).toString(), is(equalTo(element1.toString())));
-        assertThat(StringElement.deserialize(result.get(1).getBinaryValue()).toString(), is(equalTo(element2.toString())));
-        assertThat(StringElement.deserialize(result.get(2).getBinaryValue()).toString(), is(equalTo(element3.toString())));
-        assertThat(StringElement.deserialize(result.get(3).getBinaryValue()).toString(), is(equalTo(element4.toString())));
+        assertThat(StringElement.deserialize(result.get(0)).getSeqNum(), is(equalTo(element1.getSeqNum())));
+        assertThat(StringElement.deserialize(result.get(1)).getSeqNum(), is(equalTo(element2.getSeqNum())));
+        assertThat(StringElement.deserialize(result.get(2)).getSeqNum(), is(equalTo(element3.getSeqNum())));
+        assertThat(StringElement.deserialize(result.get(3)).getSeqNum(), is(equalTo(element4.getSeqNum())));
+
+        assertThat(StringElement.deserialize(result.get(0)).toString(), is(equalTo(element1.toString())));
+        assertThat(StringElement.deserialize(result.get(1)).toString(), is(equalTo(element2.toString())));
+        assertThat(StringElement.deserialize(result.get(2)).toString(), is(equalTo(element3.toString())));
+        assertThat(StringElement.deserialize(result.get(3)).toString(), is(equalTo(element4.toString())));
     }
 
 }

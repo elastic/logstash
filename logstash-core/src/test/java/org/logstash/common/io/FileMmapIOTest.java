@@ -40,13 +40,13 @@ public class FileMmapIOTest {
         for (int i = 1; i < 17; i++) {
             StringElement input = new StringElement("element-" + i, i);
             list.add(input);
-            writeIo.write(input.serializeWithoutSeqNum(), input);
+            writeIo.write(input.serialize(), input);
         }
         writeIo.close();
         readIo.open(1, 16);
-        List<ReadElementValue> result = readIo.read(1, 16);
-        for (ReadElementValue v : result) {
-            StringElement element = StringElement.deserializeWithoutSeqNum(v.getBinaryValue(), v.getSeqNum());
+        List<byte[]> result = readIo.read(1, 16);
+        for (byte[] bytes : result) {
+            StringElement element = StringElement.deserialize(bytes);
             readList.add(element);
         }
         assertThat(readList, is(equalTo(list)));

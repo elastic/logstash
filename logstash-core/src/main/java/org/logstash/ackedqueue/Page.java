@@ -1,7 +1,6 @@
 package org.logstash.ackedqueue;
 
 import org.logstash.common.io.PageIO;
-import org.logstash.common.io.ReadElementValue;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -50,8 +49,12 @@ public abstract class Page implements Closeable {
         // first make sure this page is activated, activating previously activated is harmless
         this.pageIO.activate();
 
-        List<ReadElementValue> serializedElements = this.pageIO.read(this.firstUnreadSeqNum, limit);
-        List<Queueable> elements = serializedElements.stream().map(readElement -> this.queue.deserialize(readElement.getBinaryValue())).collect(Collectors.toList());
+        List<byte[]> serializedElements = this.pageIO.read(this.firstUnreadSeqNum, limit);
+        List<Queueable> elements = serializedElements.stream().map(e -> this.queue.deserialize(e)).collect(Collectors.toList());
+
+        assert elements.get(0).getSeqNum() == this.firstUnreadSeqNum :
+            String.format("firstUnreadSeqNum=%d != first result seqNum=%d", this.firstUnreadSeqNum, elements.get(0).getSeqNum());
+
         Batch batch = new Batch(elements, this.queue);
 
         this.firstUnreadSeqNum += elements.size();

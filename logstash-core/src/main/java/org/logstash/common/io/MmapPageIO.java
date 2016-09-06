@@ -24,7 +24,7 @@ public class MmapPageIO implements PageIO {
     public static final int SEQNUM_SIZE = Long.BYTES;
     public static final int MIN_RECORD_SIZE = SEQNUM_SIZE + CHECKSUM_SIZE;
     public static final int HEADER_SIZE = 1;     // version byte
-    static final List<ReadElementValue> EMPTY_READ = new ArrayList<>(0);
+    static final List<byte[]> EMPTY_READ = new ArrayList<>(0);
 
     private final int capacity;
     private final String dirPath;
@@ -155,13 +155,13 @@ public class MmapPageIO implements PageIO {
     }
 
     @Override
-    public List<ReadElementValue> read(long seqNum, int limit) throws IOException {
+    public List<byte[]> read(long seqNum, int limit) throws IOException {
         assert seqNum >= this.minSeqNum :
                 String.format("seqNum=%d < minSeqNum=%d", seqNum, this.minSeqNum);
         assert seqNum <= maxSeqNum() :
                 String.format("seqNum=%d is > maxSeqNum=%d", seqNum, maxSeqNum());
 
-        List<ReadElementValue> result = new ArrayList<>();
+        List<byte[]> result = new ArrayList<>();
         int offset = this.offsetMap.get((int)(seqNum - this.minSeqNum));
 
         this.buffer.position(offset);
@@ -181,15 +181,12 @@ public class MmapPageIO implements PageIO {
                 throw new IOException(String.format("computed checksum=%d != checksum for file=%d", computedChecksum, checksum));
             }
 
-            result.add(new ReadElementValue(readSeqNum, readBytes));
+            result.add(readBytes);
 
             if (seqNum + i >= maxSeqNum()) {
                 break;
             }
         }
-
-        assert result.get(0).getSeqNum() == seqNum :
-                String.format("seqNum=%d != first result seqNum=%d");
 
         return result;
     }
