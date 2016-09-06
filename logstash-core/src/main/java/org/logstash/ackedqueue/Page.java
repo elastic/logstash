@@ -51,7 +51,7 @@ public abstract class Page implements Closeable {
         this.pageIO.activate();
 
         List<ReadElementValue> serializedElements = this.pageIO.read(this.firstUnreadSeqNum, limit);
-        List<Queueable> elements = serializedElements.stream().map(readElement -> this.queue.getDeserialiser().deserialize(readElement.getBinaryValue())).collect(Collectors.toList());
+        List<Queueable> elements = serializedElements.stream().map(readElement -> this.queue.deserialize(readElement.getBinaryValue())).collect(Collectors.toList());
         Batch batch = new Batch(elements, this.queue);
 
         this.firstUnreadSeqNum += elements.size();

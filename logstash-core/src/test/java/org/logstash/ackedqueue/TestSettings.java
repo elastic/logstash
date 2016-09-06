@@ -16,7 +16,7 @@ public class TestSettings {
         s.setCapacity(capacity);
         s.setElementIOFactory(pageIOFactory);
         s.setCheckpointIOFactory(checkpointIOFactory);
-        s.setElementDeserialiser(new ElementDeserialiser(StringElement.class));
+        s.setElementClass(StringElement.class);
         return s;
     }
 
@@ -27,7 +27,7 @@ public class TestSettings {
         s.setCapacity(capacity);
         s.setElementIOFactory(pageIOFactory);
         s.setCheckpointIOFactory(checkpointIOFactory);
-        s.setElementDeserialiser(new ElementDeserialiser(StringElement.class));
+        s.setElementClass(StringElement.class);
         return s;
     }
 }

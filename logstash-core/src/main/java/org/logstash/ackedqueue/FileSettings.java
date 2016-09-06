@@ -7,7 +7,7 @@ public class FileSettings implements Settings {
     private String dirForFiles;
     private CheckpointIOFactory checkpointIOFactory;
     private PageIOFactory pageIOFactory;
-    private ElementDeserialiser elementDeserialiser;
+    private Class elementClass;
     private int capacity;
 
     private FileSettings() { this(""); }
@@ -29,8 +29,8 @@ public class FileSettings implements Settings {
     }
 
     @Override
-    public Settings setElementDeserialiser(ElementDeserialiser factory) {
-        this.elementDeserialiser = factory;
+    public Settings setElementClass(Class elementClass) {
+        this.elementClass = elementClass;
         return this;
     }
 
@@ -50,8 +50,8 @@ public class FileSettings implements Settings {
     }
 
     @Override
-    public ElementDeserialiser getElementDeserialiser() {
-        return this.elementDeserialiser;
+    public Class getElementClass()  {
+        return this.elementClass;
     }
 
     @Override

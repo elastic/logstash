@@ -6,7 +6,7 @@ import org.logstash.common.io.PageIOFactory;
 public class MemorySettings implements Settings {
     private CheckpointIOFactory checkpointIOFactory;
     private PageIOFactory pageIOFactory;
-    private ElementDeserialiser elementDeserialiser;
+    private Class elementClass;
     private int capacity;
     private final String dirPath;
 
@@ -31,8 +31,8 @@ public class MemorySettings implements Settings {
     }
 
     @Override
-    public Settings setElementDeserialiser(ElementDeserialiser factory) {
-        this.elementDeserialiser = factory;
+    public Settings setElementClass(Class elementClass) {
+        this.elementClass = elementClass;
         return this;
     }
 
@@ -52,8 +52,8 @@ public class MemorySettings implements Settings {
     }
 
     @Override
-    public ElementDeserialiser getElementDeserialiser() {
-        return this.elementDeserialiser;
+    public Class getElementClass()  {
+        return this.elementClass;
     }
 
     @Override

@@ -15,7 +15,6 @@ import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.jruby.runtime.load.Library;
 import org.logstash.ackedqueue.Batch;
-import org.logstash.ackedqueue.ElementDeserialiser;
 import org.logstash.ackedqueue.MemorySettings;
 import org.logstash.ackedqueue.Queue;
 import org.logstash.ackedqueue.Settings;
@@ -71,7 +70,7 @@ public class JrubyAckedQueueMemoryExtLibrary implements Library {
             s.setCapacity(capacity);
             s.setElementIOFactory(pageIOFactory);
             s.setCheckpointIOFactory(checkpointIOFactory);
-            s.setElementDeserialiser(new ElementDeserialiser(Event.class));
+            s.setElementClass(Event.class);
 
             this.queue = new Queue(s);
 

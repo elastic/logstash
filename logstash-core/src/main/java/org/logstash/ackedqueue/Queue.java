@@ -5,6 +5,8 @@ import org.logstash.common.io.PageIO;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.nio.file.NoSuchFileException;
 import java.util.ArrayList;
 import java.util.List;
@@ -29,18 +31,30 @@ public class Queue implements Closeable {
     private int firstUnreadTailPageNum;
 
     private final Settings settings;
-
     private final CheckpointIO checkpointIO;
-    private final ElementDeserialiser deserialiser;
     private final AtomicBoolean closed;
+
+    // deserialization
+    private final Class elementClass;
+    private final Method deserializeMethod;
 
     public Queue(Settings settings) {
         this.settings = settings;
         this.tailPages = new ArrayList<>();
         this.firstUnreadTailPageNum = 0;
         this.checkpointIO = settings.getCheckpointIOFactory().build(settings.getDirPath());
-        this.deserialiser = settings.getElementDeserialiser();
         this.closed = new AtomicBoolean(true); // not yet opened
+
+        // retrieve the deserialize method
+
+        this.elementClass = settings.getElementClass();
+        try {
+            Class[] cArg = new Class[1];
+            cArg[0] = byte[].class;
+            this.deserializeMethod = this.elementClass.getDeclaredMethod("deserialize", cArg);
+        } catch (NoSuchMethodException e) {
+            throw new QueueRuntimeException("cannot find deserialize method on class " + elementClass.getName(), e);
+        }
     }
 
     // moved queue opening logic in open() method until we have something in place to used in-memory checkpoints for testing
@@ -291,8 +305,15 @@ public class Queue implements Closeable {
         return this.checkpointIO;
     }
 
-    public ElementDeserialiser getDeserialiser() {
-        return this.deserialiser;
+    // deserialize a byte array into the required element class.
+    // @param bytes the byte array to deserialize
+    // @return Queueable the deserialized byte array into the required Queuable interface implementation concrete class
+    public Queueable deserialize(byte[] bytes) {
+        try {
+            return (Queueable)this.deserializeMethod.invoke(this.elementClass, bytes);
+        } catch (IllegalAccessException|InvocationTargetException e) {
+            throw new QueueRuntimeException("deserialize invocation error", e);
+        }
     }
 
     public synchronized void close() throws IOException {

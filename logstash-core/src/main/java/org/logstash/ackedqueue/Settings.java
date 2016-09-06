@@ -8,7 +8,7 @@ public interface Settings {
 
     Settings setElementIOFactory(PageIOFactory factory);
 
-    Settings setElementDeserialiser(ElementDeserialiser factory);
+    Settings setElementClass(Class elementClass);
 
     Settings setCapacity(int capacity);
 
@@ -16,7 +16,7 @@ public interface Settings {
 
     PageIOFactory getPageIOFactory();
 
-    ElementDeserialiser getElementDeserialiser();
+    Class getElementClass();
 
     String getDirPath();
 
