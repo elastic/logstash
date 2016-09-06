@@ -1,7 +1,6 @@
 package org.logstash.common.io;
 
 import org.junit.Test;
-import org.logstash.ackedqueue.ElementDeserialiser;
 import org.logstash.ackedqueue.Queueable;
 import org.logstash.ackedqueue.StringElement;
 
@@ -16,13 +15,12 @@ import static org.hamcrest.MatcherAssert.assertThat;
 public class MemoryPageIOStreamTest {
 
     private final int CAPACITY = 1024;
-    private final int EMPTY_HEADER_SIZE = 2 + Integer.BYTES;
-
+    private final int EMPTY_HEADER_SIZE = Integer.BYTES + Integer.BYTES;
 
     private byte[] empty_page_with_header() {
         byte[] result = new byte[CAPACITY];
         // version = 1, details = ABC
-        ByteBuffer.wrap(result).put(new byte[]{0, 1, 0, 0, 0, 3, 65, 66, 67});
+        ByteBuffer.wrap(result).put(new byte[]{0, 0, 0, 1, 0, 0, 0, 3, 65, 66, 67});
         return result;
     }
 

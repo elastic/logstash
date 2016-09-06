@@ -15,7 +15,7 @@ public class ElementDeserialiser {
             cArg[0] = byte[].class;
             this.deserializeMethod = elementClass.getDeclaredMethod("deserialize", cArg);
         } catch (NoSuchMethodException e) {
-            throw new QueueRuntimeException("cannong find deserialize method on class " + elementClass.getName(), e);
+            throw new QueueRuntimeException("cannot find deserialize method on class " + elementClass.getName(), e);
         }
     }
 
@@ -23,7 +23,7 @@ public class ElementDeserialiser {
         try {
             return (Queueable)deserializeMethod.invoke(this.elementClass, bytes);
         } catch (IllegalAccessException|InvocationTargetException e) {
-            throw new QueueRuntimeException("ElementDeserialiser desirialize invokation error", e);
+            throw new QueueRuntimeException("ElementDeserialiser deserialize invocation error", e);
         }
     }
 }

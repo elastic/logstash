@@ -7,8 +7,6 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.nio.file.NoSuchFileException;
 import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -197,7 +195,7 @@ public class Queue implements Closeable {
     }
 
     // blocking queue read until elements are available for read or the given timeout is reached.
-    // @param limit read the next bach of size up to this limit. the returned batch size can be smaller than than the requested limit if fewer elements are available
+    // @param limit read the next batch of size up to this limit. the returned batch size can be smaller than than the requested limit if fewer elements are available
     // @param timeout the maximum time to wait in milliseconds
     // @return Batch the batch containing 1 or more element up to the required limit or null if no elements were available
     public synchronized Batch readBatch(int limit, long timeout) throws IOException {

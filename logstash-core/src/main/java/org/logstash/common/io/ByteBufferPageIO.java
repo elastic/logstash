@@ -102,7 +102,7 @@ public class ByteBufferPageIO implements PageIO {
         this.buffer.position(0);
         this.buffer.put(VERSION);
         this.head = 1;
-        this.minSeqNum = 0;
+        this.minSeqNum = 0L;
         this.elementCount = 0;
     }
 

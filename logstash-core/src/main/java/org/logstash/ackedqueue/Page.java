@@ -79,8 +79,9 @@ public abstract class Page implements Closeable {
 
             assert seqNum < this.minSeqNum + this.elementCount:
                     String.format("seqNum=%d is greater than minSeqnum=%d + elementCount=%d = %d", seqNum, this.minSeqNum, this.elementCount, this.minSeqNum + this.elementCount);
+            int index = (int)(seqNum - this.minSeqNum);
 
-            this.ackedSeqNums.set((int)(seqNum - this.minSeqNum));
+            this.ackedSeqNums.set(index);
         }
 
         // checkpoint if totally acked or we acked more than 1024 elements in this page since last checkpoint

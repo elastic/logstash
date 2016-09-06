@@ -6,7 +6,7 @@ require "concurrent"
 # ideally this should be moved to Java/JRuby
 
 module LogStash; module Util
-  # Some specialized constructors. The calling code does need to know what kind it creates but
+  # Some specialized constructors. The calling code *does* need to know what kind it creates but
   # not the internal implementation e.g. LogStash::AckedMemoryQueue etc.
   # Note the use of allocate - this is what new does before it calls initialize.
   # Note that the new method has been made private this is because there is no
@@ -110,9 +110,11 @@ module LogStash; module Util
       def initialize(queue, batch_size = 125, wait_for = 5)
         @queue = queue
         @mutex = Mutex.new
-        # Note that @infilght_batches as a central mechanism for tracking inflight
+        # Note that @inflight_batches as a central mechanism for tracking inflight
         # batches will fail if we have multiple read clients in the pipeline.
         @inflight_batches = {}
+        # allow the worker thread to report the execution time of the filter + output
+        @inflight_clocks = {}
         @batch_size = batch_size
         @wait_for = wait_for
       end
@@ -152,6 +154,7 @@ module LogStash; module Util
           batch = ReadBatch.new(@queue, @batch_size, @wait_for)
           add_starting_metrics(batch)
           set_current_thread_inflight_batch(batch)
+          start_clock
           batch
         end
       end
@@ -164,7 +167,20 @@ module LogStash; module Util
         @mutex.synchronize do
           batch.close
           @inflight_batches.delete(Thread.current)
+          stop_clock
         end
+      end
+
+      def start_clock
+        @inflight_clocks[Thread.current] = [
+        @event_metric.time(:duration_in_millis),
+        @pipeline_metric.time(:duration_in_millis)
+        ]
+      end
+
+      def stop_clock
+        @inflight_clocks[Thread.current].each(&:stop)
+        @inflight_clocks.delete(Thread.current)
       end
 
       def add_starting_metrics(batch)

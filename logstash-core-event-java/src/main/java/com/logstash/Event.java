@@ -383,6 +383,9 @@ public class Event implements Cloneable, Serializable, Queueable {
     }
 
     public static Event deserialize(byte[] data) throws IOException {
+        if (data == null || data.length == 0) {
+            return new Event();
+        }
         Map<String, Map<String, Object>> dataMap = fromBinaryToMap(data);
         Object seqNumMapValue = dataMap.get(META_MAP_KEY).remove(SEQNUM_MAP_KEY);
         Event e =  fromSerializableMap(dataMap);

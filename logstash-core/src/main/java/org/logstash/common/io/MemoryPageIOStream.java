@@ -13,7 +13,7 @@ public class MemoryPageIOStream implements PageIO {
     static final int LENGTH_SIZE = Integer.BYTES;
     static final int SEQNUM_SIZE = Long.BYTES;
     static final int MIN_RECORD_SIZE = SEQNUM_SIZE + LENGTH_SIZE + CHECKSUM_SIZE;
-    static final int VERSION_SIZE = Short.BYTES;
+    static final int VERSION_SIZE = Integer.BYTES;
 
     private final byte[] buffer;
     private final int capacity;
@@ -35,6 +35,11 @@ public class MemoryPageIOStream implements PageIO {
     @Override
     public int persistedByteCount(int length) {
         return MIN_RECORD_SIZE + length;
+    }
+
+    public MemoryPageIOStream(int pageNum, int capacity, String dirPath) throws IOException {
+        this(capacity, new byte[capacity]);
+        this.dirPath = dirPath;
     }
 
     public MemoryPageIOStream(int capacity, String dirPath) throws IOException {
@@ -180,7 +185,7 @@ public class MemoryPageIOStream implements PageIO {
     public String readHeaderDetails() throws IOException {
         int tempPosition = readPosition;
         streamedInput.movePosition(0);
-        int ver = (int) streamedInput.readShort();
+        int ver = streamedInput.readInt();
         String details = new String(streamedInput.readByteArray());
         streamedInput.movePosition(tempPosition);
         return details;
@@ -218,14 +223,14 @@ public class MemoryPageIOStream implements PageIO {
     }
 
     private int addHeader() throws IOException {
-        streamedOutput.writeShort((short) Checkpoint.VERSION);
+        streamedOutput.writeInt(Checkpoint.VERSION);
         byte[] details = headerDetails.getBytes();
         streamedOutput.writeByteArray(details);
         return VERSION_SIZE + LENGTH_SIZE + details.length;
     }
 
     private int verifyHeader() throws IOException {
-        int ver = (int) streamedInput.readShort();
+        int ver = streamedInput.readInt();
         if (ver != Checkpoint.VERSION) {
             String msg = String.format("Page version mismatch, expecting: %d, this version: %d", Checkpoint.VERSION, ver);
             throw new IOException(msg);

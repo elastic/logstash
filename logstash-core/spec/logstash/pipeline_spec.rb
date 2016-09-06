@@ -495,10 +495,11 @@ describe LogStash::Pipeline do
   end
 
   context "#started_at" do
+    # use a run limiting count to shutdown the pipeline automatically
     let(:config) do
       <<-EOS
       input {
-        generator {}
+        generator { count => 10 }
       }
       EOS
     end
@@ -510,8 +511,7 @@ describe LogStash::Pipeline do
     end
 
     it "return when the pipeline started working" do
-      t = Thread.new { subject.run }
-      sleep(0.1)
+      subject.run
       expect(subject.started_at).to be < Time.now
       subject.shutdown
     end
@@ -546,7 +546,6 @@ describe LogStash::Pipeline do
   context "when collecting metrics in the pipeline" do
     let(:metric) { LogStash::Instrument::Metric.new(LogStash::Instrument::Collector.new) }
 
-    # subject { described_class.new(config, pipeline_settings_obj.tap{|o| STDERR.puts o.inspect}, metric) }
     subject { described_class.new(config, pipeline_settings_obj, metric) }
 
     let(:pipeline_settings) { { "pipeline.id" => pipeline_id } }
@@ -597,13 +596,11 @@ describe LogStash::Pipeline do
       # make sure we have received all the generated events
       wait(3).for do
         # give us a bit of time to flush the events
-        STDERR.puts number_of_events, dummyoutput.events.size
         dummyoutput.events.size < number_of_events
       end.to be_falsey
     end
 
     after :each do
-      STDERR.puts "----------------------> after each: shutdown"
       subject.shutdown
     end
 

@@ -82,6 +82,7 @@ public class JrubyAckedQueueMemoryExtLibrary implements Library {
         public IRubyObject ruby_open(ThreadContext context)
         {
             try {
+                this.queue.getCheckpointIO().purge();
                 this.queue.open();
             } catch (IOException e) {
                 throw context.runtime.newIOErrorFromException(e);
