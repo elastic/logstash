@@ -6,6 +6,7 @@ require "logstash/event"
 
 describe LogStash::FilterDelegator do
   let(:logger) { double(:logger) }
+  let(:slow_logger) { double("slowlogger") }
   let(:filter_id) { "my-filter" }
   let(:config) do
     { "host" => "127.0.0.1", "id" => filter_id }
@@ -25,11 +26,11 @@ describe LogStash::FilterDelegator do
     end
   end
 
-  subject { described_class.new(logger, plugin_klass, metric, config) }
+  subject { described_class.new(logger, slow_logger, plugin_klass, metric, config) }
 
   it "create a plugin with the passed options" do
     expect(plugin_klass).to receive(:new).with(config).and_return(plugin_klass.new(config))
-    described_class.new(logger, plugin_klass, metric, config)
+    described_class.new(logger, slow_logger, plugin_klass, metric, config)
   end
 
   context "when the plugin support flush" do

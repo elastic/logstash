@@ -18,6 +18,10 @@ module LogStash
         true
       end
 
+      def slowlog
+       agent.slowlog_manager
+      end
+
       def snapshot
         agent.metric.collector.snapshot_metric
       end

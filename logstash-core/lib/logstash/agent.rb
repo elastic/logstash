@@ -21,7 +21,7 @@ class LogStash::Agent
   include LogStash::Util::Loggable
   STARTED_AT = Time.now.freeze
 
-  attr_reader :metric, :node_name, :pipelines, :settings, :webserver
+  attr_reader :metric, :node_name, :pipelines, :settings, :webserver, :slowlog_manager
   attr_accessor :logger
 
   # initialize method for LogStash::Agent
@@ -50,6 +50,7 @@ class LogStash::Agent
     configure_metrics_collectors
 
     @reload_metric = metric.namespace([:stats, :pipelines])
+    configure_slowlog_managers
   end
 
   def execute
@@ -154,6 +155,10 @@ class LogStash::Agent
     @webserver.stop if @webserver
   end
 
+  def configure_slowlog_managers
+    @slowlog_manager = LogStash::Logging::SlowLogManager.new
+  end
+
   def configure_metrics_collectors
     @collector = LogStash::Instrument::Collector.new
 
@@ -192,7 +197,7 @@ class LogStash::Agent
     end
 
     begin
-      LogStash::Pipeline.new(config, settings, metric)
+      LogStash::Pipeline.new(config, settings, metric, slowlog_manager)
     rescue => e
       @reload_metric.namespace([settings.get("pipeline.id").to_sym, :reloads]).tap do |n|
         n.increment(:failures)

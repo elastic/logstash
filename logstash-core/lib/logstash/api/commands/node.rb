@@ -17,6 +17,11 @@ module LogStash
           payload
         end
 
+        def slowlog
+          slowlog    = service.slowlog
+          { :top_items => slowlog.top_items, :freq_items => freq_items(slowlog) }
+        end
+
         def pipeline
           extract_metrics(
             [:stats, :pipelines, :main, :config],
@@ -56,6 +61,12 @@ module LogStash
 
         def hot_threads(options={})
           HotThreadsReport.new(self, options)
+        end
+
+        private
+
+        def freq_items(slowlog)
+          slowlog.freq_items
         end
       end
     end

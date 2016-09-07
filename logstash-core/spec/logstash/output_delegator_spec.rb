@@ -8,7 +8,9 @@ describe LogStash::OutputDelegator do
   let(:plugin_args) { {"id" => "foo", "arg1" => "val1"} }
   let(:metric) { LogStash::Instrument::NullMetric.new }
 
-  subject { described_class.new(logger, out_klass, metric, ::LogStash::OutputDelegatorStrategyRegistry.instance, plugin_args) }
+  let(:slow_logger) { double("slow.logger") }
+
+  subject { described_class.new(logger, slow_logger, out_klass, metric, ::LogStash::OutputDelegatorStrategyRegistry.instance, plugin_args) }
 
   context "with a plain output plugin" do
     let(:out_klass) { double("output klass") }
@@ -26,6 +28,7 @@ describe LogStash::OutputDelegator do
       allow(out_inst).to receive(:register)
       allow(out_inst).to receive(:multi_receive)
       allow(out_inst).to receive(:metric=).with(any_args)
+      allow(out_inst).to receive(:slow_logger=).with(any_args)
       allow(out_inst).to receive(:id).and_return("a-simple-plugin")
 
       allow(subject.metric_events).to receive(:increment).with(any_args)
@@ -38,7 +41,7 @@ describe LogStash::OutputDelegator do
 
     it "should push the name of the plugin to the metric" do
       expect(metric).to receive(:gauge).with(:name, out_klass.config_name)
-      described_class.new(logger, out_klass, metric, ::LogStash::OutputDelegatorStrategyRegistry.instance, plugin_args)
+      described_class.new(logger, slow_logger, out_klass, metric, ::LogStash::OutputDelegatorStrategyRegistry.instance, plugin_args)
     end
 
     context "after having received a batch of events" do
