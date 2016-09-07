@@ -1,6 +1,7 @@
 # encoding: utf-8
 # require "logstash/json"
 require "logstash/webserver"
+require_relative "../support/helpers"
 require "socket"
 require "spec_helper"
 require "open-uri"
@@ -9,11 +10,15 @@ def block_ports(range)
   servers = []
 
   range.each do |port|
-    server = TCPServer.new("localhost", port)
-    Thread.new do
-      client = server.accept rescue nil
+    begin
+      server = TCPServer.new("localhost", port)
+      Thread.new do
+        client = server.accept rescue nil
+      end
+      servers << server
+    rescue => e
+      # The port can already be taken
     end
-    servers << server
   end
 
   sleep(1)
@@ -36,29 +41,56 @@ describe LogStash::WebServer do
     Thread.abort_on_exception = @abort
   end
 
-  let(:logger) { double("logger") }
+  let(:logger) { LogStash::Logging::Logger.new("testing") }
   let(:agent) { double("agent") }
   let(:webserver) { double("webserver") }
 
   before :each do
-    [:info, :warn, :error, :fatal, :debug].each do |level|
-      allow(logger).to receive(level)
-    end
-    [:info?, :warn?, :error?, :fatal?, :debug?].each do |level|
-      allow(logger).to receive(level)
-    end
-
     allow(webserver).to receive(:address).and_return("127.0.0.1")
     allow(agent).to receive(:webserver).and_return(webserver)
   end
 
-  context "when the port is already in use and a range is provided" do
-    subject { LogStash::WebServer.new(logger,
-                                      agent,
-                                      { :http_host => "localhost", :http_ports => port_range
-                                      })}
+  subject { LogStash::WebServer.new(logger,
+                                    agent,
+                                    { :http_host => "localhost", :http_ports => port_range })}
 
-    let(:port_range) { 10000..10010 }
+  let(:port_range) { 10000..10010 }
+
+  context "when an exception occur in the server thread" do
+    let(:spy_output) { spy("stderr").as_null_object }
+
+    it "should not log to STDERR" do
+      backup_stderr = STDERR
+      backup_stdout = STDOUT
+
+      # We are redefining constants, so lets silence the warning
+      silence_warnings do
+        STDOUT = STDERR = spy_output
+      end
+
+      expect(spy_output).not_to receive(:puts).with(any_args)
+      expect(spy_output).not_to receive(:write).with(any_args)
+
+      # This trigger an infinite loop in the reactor
+      expect(IO).to receive(:select).and_raise(IOError).at_least(:once)
+
+      t = Thread.new do
+        subject.run
+      end
+
+      sleep(1)
+
+      # We cannot use stop here, since the code is stuck in an infinite loop
+      t.kill rescue nil
+
+      silence_warnings do
+        STDERR = backup_stderr
+        STDOUT = backup_stdout
+      end
+    end
+  end
+
+  context "when the port is already in use and a range is provided" do
     after(:each) { free_ports(@servers) }
 
     context "when we have available ports" do
@@ -91,5 +123,31 @@ describe LogStash::WebServer do
         expect { subject.run }.to raise_error(Errno::EADDRINUSE, /Logstash tried to bind to port range/)
       end
     end
+  end
+end
+
+describe LogStash::WebServer::IOWrappedLogger do
+  let(:logger)  { spy("logger") }
+  let(:message) { "foobar" }
+
+  subject { described_class.new(logger) }
+
+  it "responds to puts" do
+    subject.puts(message)
+    expect(logger).to have_received(:debug).with(message)
+  end
+
+  it "responds to write" do
+    subject.write(message)
+    expect(logger).to have_received(:debug).with(message)
+  end
+
+  it "reponds to <<" do
+    subject << message
+    expect(logger).to have_received(:debug).with(message)
+  end
+
+  it "responds to sync=(v)" do
+    expect{ subject.sync = true }.not_to raise_error
   end
 end
