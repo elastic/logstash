@@ -5,6 +5,7 @@ require "logstash/api/modules/node"
 require "logstash/api/modules/node_stats"
 require "logstash/api/modules/plugins"
 require "logstash/api/modules/root"
+require "logstash/api/modules/logging"
 require "logstash/api/modules/stats"
 
 module LogStash
@@ -103,7 +104,8 @@ module LogStash
           "/_node" => LogStash::Api::Modules::Node,
           "/_stats" => LogStash::Api::Modules::Stats,
           "/_node/stats" => LogStash::Api::Modules::NodeStats,
-          "/_node/plugins" => LogStash::Api::Modules::Plugins
+          "/_node/plugins" => LogStash::Api::Modules::Plugins,
+          "/_node/logging" => LogStash::Api::Modules::Logging
         }
       end
     end
