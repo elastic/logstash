@@ -27,6 +27,7 @@ public class Queue implements Closeable {
     protected long seqNum;
     protected HeadPage headPage;
     protected final List<BeheadedPage> tailPages;
+    protected long unreadCount;
 
     // first non-fully-read tail page num
     private int firstUnreadTailPageNum;
@@ -37,6 +38,7 @@ public class Queue implements Closeable {
     private final String dirPath;
 
     private final AtomicBoolean closed;
+
 
     // deserialization
     private final Class elementClass;
@@ -55,6 +57,7 @@ public class Queue implements Closeable {
         this.tailPages = new ArrayList<>();
         this.firstUnreadTailPageNum = 0;
         this.closed = new AtomicBoolean(true); // not yet opened
+        this.unreadCount = 0;
 
         // retrieve the deserialize method
         try {
@@ -108,6 +111,7 @@ public class Queue implements Closeable {
                 }
 
                 this.tailPages.add(tailPage);
+                this.unreadCount += tailPage.unreadCount();
             }
 
             // transform the head page into a beheaded tail page
@@ -121,6 +125,7 @@ public class Queue implements Closeable {
             }
 
             this.tailPages.add(beheadedHeadPage);
+            this.unreadCount += beheadedHeadPage.unreadCount();
 
             beheadedHeadPage.checkpoint();
             headPageNum = headCheckpoint.getPageNum() + 1;
@@ -166,6 +171,7 @@ public class Queue implements Closeable {
         }
 
         this.headPage.write(data, element);
+        this.unreadCount++;
 
         // if the queue was empty before write, notifyAll blocking reachBatch threads that queue is now non-empty
         if (wasEmpty) {
@@ -189,7 +195,9 @@ public class Queue implements Closeable {
             return null;
         }
 
-        return p.readBatch(limit);
+        Batch b = p.readBatch(limit);
+        this.unreadCount -= b.size();
+        return b;
      }
 
 
@@ -214,7 +222,11 @@ public class Queue implements Closeable {
         }
 
         // need to check for close since it is a condition for exiting the while loop
-        return isClosed() ? null : p.readBatch(limit);
+        if (isClosed()) { return null; }
+
+        Batch b = p.readBatch(limit);
+        this.unreadCount -= b.size();
+        return b;
     }
 
     // blocking queue read until elements are available for read or the given timeout is reached.
@@ -235,12 +247,12 @@ public class Queue implements Closeable {
             }
 
             // if after returnining from wait queue is still empty, or the queue was closed return null
-            if ((p = firstUnreadPage()) == null || isClosed()) {
-                return null;
-            }
+            if ((p = firstUnreadPage()) == null || isClosed()) { return null; }
         }
 
-        return p.readBatch(limit);
+        Batch b = p.readBatch(limit);
+        this.unreadCount -= b.size();
+        return b;
     }
 
     private static class TailPageResult {

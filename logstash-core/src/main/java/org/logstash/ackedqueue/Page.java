@@ -63,7 +63,8 @@ public abstract class Page implements Closeable {
     }
 
     public boolean isFullyRead() {
-        return this.elementCount <= 0 || this.firstUnreadSeqNum > maxSeqNum();
+        return unreadCount() <= 0;
+//        return this.elementCount <= 0 || this.firstUnreadSeqNum > maxSeqNum();
     }
 
     public boolean isFullyAcked() {
@@ -71,6 +72,10 @@ public abstract class Page implements Closeable {
         // this.ackedSeqNum.firstUnackedBit >= this.elementCount;
         // TODO: for now use a naive & inneficient mechanism with a simple Bitset
         return this.elementCount > 0 && this.ackedSeqNums.cardinality() >= this.elementCount;
+    }
+
+    public long unreadCount() {
+        return this.elementCount <= 0 ? 0 : Math.max(0, (maxSeqNum() - this.firstUnreadSeqNum) + 1);
     }
 
     public void ack(List<Long> seqNums) throws IOException {
