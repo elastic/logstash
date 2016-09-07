@@ -83,6 +83,9 @@ en:
           Hot threads at %{time}, busiestThreads=%{top_count}:
         thread_title: |-
           %{percent_of_cpu_time} % of cpu usage, state: %{thread_state}, thread name: '%{thread_name}'
+      logging:
+        unrecognized_option: |-
+          unrecognized option [%{option}]
     runner:
       short-help: |-
         usage:
