@@ -2,12 +2,13 @@
 == Breaking Changes
 
 **Changes in 2.4**
-=== Beats Output config change
+
+[float]
+== Beats Input Config Change
 
 The Beats input has been reimplemented using Netty, an asynchronous IO framework for Java.
-This rewrite for performance brings it in line with Logstash Forwarder + LS combination.
-As part of the Beats refactor we now only supports private keys in the PKCS8, your existing key can be easily converted, refer to the
-https://www.openssl.org/docs/manmaster/apps/pkcs8.html[OpenSSL] documentation.
+This rewrite for performance brings the plugin in line with the Logstash Forwarder + LS combination.
+As part of the Beats refactor, we now only support private keys in PKCS#8 format. You can easily convert existing keys to use the PKCS#8 format by using the OpenSSL Toolkit. See the https://www.openssl.org/docs/manmaster/apps/pkcs8.html[OpenSSL] documentation.
 
 **Breaking changes in 2.2**
 Although 2.2 is fully compatible with configurations from older versions, there are some architectural 
