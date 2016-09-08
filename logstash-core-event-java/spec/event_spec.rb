@@ -5,7 +5,6 @@ require "logstash/util"
 require "logstash/event"
 require "json"
 require "java"
-# java_import 'com.logstash.Util'
 
 TIMESTAMP = "@timestamp"
 
@@ -123,7 +122,7 @@ describe LogStash::Event do
     end
 
     it "should set XXJavaProxy Jackson crafted" do
-      proxy = com.logstash.Util.getMapFixtureJackson()
+      proxy = org.logstash.Util.getMapFixtureJackson()
       # proxy is {"string": "foo", "int": 42, "float": 42.42, "array": ["bar","baz"], "hash": {"string":"quux"} }
       e = LogStash::Event.new()
       e.set("[proxy]", proxy)
@@ -136,7 +135,7 @@ describe LogStash::Event do
     end
 
     it "should set XXJavaProxy hand crafted" do
-      proxy = com.logstash.Util.getMapFixtureHandcrafted()
+      proxy = org.logstash.Util.getMapFixtureHandcrafted()
       # proxy is {"string": "foo", "int": 42, "float": 42.42, "array": ["bar","baz"], "hash": {"string":"quux"} }
       e = LogStash::Event.new()
       e.set("[proxy]", proxy)
@@ -159,12 +158,12 @@ describe LogStash::Event do
     it "to_hash should inject a Ruby LogStash::Timestamp" do
       e = LogStash::Event.new()
 
-      expect(e.to_java).to be_kind_of(Java::ComLogstash::Event)
-      expect(e.to_java.get_field(TIMESTAMP)).to be_kind_of(Java::ComLogstash::Timestamp)
+      expect(e.to_java).to be_kind_of(Java::OrgLogstash::Event)
+      expect(e.to_java.get_field(TIMESTAMP)).to be_kind_of(Java::OrgLogstash::Timestamp)
 
       expect(e.to_hash[TIMESTAMP]).to be_kind_of(LogStash::Timestamp)
       # now make sure the original map was not touched
-      expect(e.to_java.get_field(TIMESTAMP)).to be_kind_of(Java::ComLogstash::Timestamp)
+      expect(e.to_java.get_field(TIMESTAMP)).to be_kind_of(Java::OrgLogstash::Timestamp)
     end
 
     it "should set timestamp" do

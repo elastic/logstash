@@ -1,4 +1,4 @@
-import com.logstash.ext.JrubyEventExtLibrary;
+import org.logstash.ext.JrubyEventExtLibrary;
 import org.jruby.Ruby;
 import org.jruby.runtime.load.BasicLibraryService;
 
