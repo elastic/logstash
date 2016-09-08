@@ -19,6 +19,6 @@ config: |-
     #}
   }
 
-input: kafka_input.input
+input: how_sample.input
 setup_script: download_input.sh
 teardown_script:

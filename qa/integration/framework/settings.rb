@@ -15,9 +15,18 @@ class TestSettings
     @suite_settings = YAML.load_file(@suite_settings_file)
     # Per test settings, where one can override stuff and define test specific config
     @test_settings = YAML.load_file(@tests_settings_file)
+
     if is_set?("config")
-      config_string = get("config").gsub('\n','').split.join(" ")
-      @test_settings["config"] = config_string
+      if get("config").is_a?(Hash)
+        tmp = {}
+        get("config").each do |k, v|
+          tmp[k] = get("config")[k].gsub('\n','').split.join(" ")
+        end
+        @test_settings["config"] = tmp
+      else
+        config_string = get("config").gsub('\n','').split.join(" ")
+        @test_settings["config"] = config_string
+      end
     end
   end
 
