@@ -31,15 +31,16 @@ public class Queue implements Closeable {
     protected long seqNum;
     protected HeadPage headPage;
     protected final List<BeheadedPage> tailPages;
-    protected long unreadCount;
+    protected volatile long unreadCount;
 
     // first non-fully-read tail page num
     private int firstUnreadTailPageNum;
 
     private final CheckpointIO checkpointIO;
     private final PageIOFactory pageIOFactory;
-    private final int capacity;
+    private final int pageCapacity;
     private final String dirPath;
+    private final int maxUnread;
 
     private final AtomicBoolean closed;
 
@@ -53,18 +54,19 @@ public class Queue implements Closeable {
     final Condition notEmpty = lock.newCondition();
 
     public Queue(Settings settings) {
-        this(settings.getDirPath(), settings.getCapacity(), settings.getCheckpointIOFactory().build(settings.getDirPath()), settings.getPageIOFactory(), settings.getElementClass());
+        this(settings.getDirPath(), settings.getCapacity(), settings.getCheckpointIOFactory().build(settings.getDirPath()), settings.getPageIOFactory(), settings.getElementClass(), settings.getMaxUnread());
     }
 
-    public Queue(String dirPath, int capacity, CheckpointIO checkpointIO, PageIOFactory pageIOFactory, Class elementClass) {
+    public Queue(String dirPath, int pageCapacity, CheckpointIO checkpointIO, PageIOFactory pageIOFactory, Class elementClass, int maxUnread) {
         this.dirPath = dirPath;
-        this.capacity = capacity;
+        this.pageCapacity = pageCapacity;
         this.checkpointIO = checkpointIO;
         this.pageIOFactory = pageIOFactory;
         this.elementClass = elementClass;
         this.tailPages = new ArrayList<>();
         this.firstUnreadTailPageNum = 0;
         this.closed = new AtomicBoolean(true); // not yet opened
+        this.maxUnread = maxUnread;
         this.unreadCount = 0;
 
         // retrieve the deserialize method
@@ -103,7 +105,7 @@ public class Queue implements Closeable {
                     throw new IOException(checkpointIO.tailFileName(pageNum) + " not found");
                 }
 
-                PageIO pageIO = this.pageIOFactory.build(pageNum, this.capacity, this.dirPath);
+                PageIO pageIO = this.pageIOFactory.build(pageNum, this.pageCapacity, this.dirPath);
                 BeheadedPage tailPage = new BeheadedPage(tailCheckpoint, this, pageIO);
 
                 // if this page is not the first tail page, deactivate it
@@ -123,7 +125,7 @@ public class Queue implements Closeable {
             }
 
             // transform the head page into a beheaded tail page
-            PageIO pageIO = this.pageIOFactory.build(headCheckpoint.getPageNum(), this.capacity, this.dirPath);
+            PageIO pageIO = this.pageIOFactory.build(headCheckpoint.getPageNum(), this.pageCapacity, this.dirPath);
             BeheadedPage beheadedHeadPage = new BeheadedPage(headCheckpoint, this, pageIO);
 
             // track the seqNum as we rebuild tail pages
@@ -143,7 +145,7 @@ public class Queue implements Closeable {
         }
 
         // create new head page
-        PageIO pageIO = this.pageIOFactory.build(headPageNum, this.capacity, this.dirPath);
+        PageIO pageIO = this.pageIOFactory.build(headPageNum, this.pageCapacity, this.dirPath);
         this.headPage = new HeadPage(headPageNum, this, pageIO);
         this.headPage.checkpoint();
 
@@ -182,7 +184,7 @@ public class Queue implements Closeable {
 
                 // create new head page
                 int headPageNum = tailPage.pageNum + 1;
-                PageIO pageIO = this.pageIOFactory.build(headPageNum, this.capacity, this.dirPath);
+                PageIO pageIO = this.pageIOFactory.build(headPageNum, this.pageCapacity, this.dirPath);
                 this.headPage = new HeadPage(headPageNum, this, pageIO);
                 this.headPage.checkpoint();
             }
@@ -213,7 +215,9 @@ public class Queue implements Closeable {
 
     // @return true if the queue is deemed at full capacity
     public boolean isFull() {
-        return false;
+        // TODO: I am not sure if having unreadCount as volatile is sufficient here. all unreadCount updates are done inside syncronized
+        // TODO: sections, I believe that to only read the value here, having it as volatile is sufficient?
+        return (this.maxUnread > 0) ? this.unreadCount >= this.maxUnread : false;
     }
 
     // @param seqNum the element sequence number upper bound for which persistence should be garanteed (by fsync'ing)

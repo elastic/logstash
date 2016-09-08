@@ -9,11 +9,13 @@ public class FileSettings implements Settings {
     private PageIOFactory pageIOFactory;
     private Class elementClass;
     private int capacity;
+    private int maxUnread;
 
     private FileSettings() { this(""); }
 
     public FileSettings(String dirPath) {
         this.dirForFiles = dirPath;
+        this.maxUnread = 0;
     }
 
     @Override
@@ -41,6 +43,12 @@ public class FileSettings implements Settings {
     }
 
     @Override
+    public Settings setMaxUnread(int maxUnread) {
+        this.maxUnread = maxUnread;
+        return this;
+    }
+
+    @Override
     public CheckpointIOFactory getCheckpointIOFactory() {
         return checkpointIOFactory;
     }
@@ -62,5 +70,10 @@ public class FileSettings implements Settings {
     @Override
     public int getCapacity() {
         return capacity;
+    }
+
+    @Override
+    public int getMaxUnread() {
+        return this.maxUnread;
     }
 }

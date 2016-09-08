@@ -9,6 +9,7 @@ public class MemorySettings implements Settings {
     private Class elementClass;
     private int capacity;
     private final String dirPath;
+    private int maxUnread;
 
     public MemorySettings() {
         this("");
@@ -16,6 +17,7 @@ public class MemorySettings implements Settings {
 
     public MemorySettings(String dirPath) {
         this.dirPath = dirPath;
+        this.maxUnread = 0;
     }
 
     @Override
@@ -43,6 +45,12 @@ public class MemorySettings implements Settings {
     }
 
     @Override
+    public Settings setMaxUnread(int maxUnread) {
+        this.maxUnread = maxUnread;
+        return this;
+    }
+
+    @Override
     public CheckpointIOFactory getCheckpointIOFactory() {
         return checkpointIOFactory;
     }
@@ -64,5 +72,10 @@ public class MemorySettings implements Settings {
     @Override
     public int getCapacity() {
         return this.capacity;
+    }
+
+    @Override
+    public int getMaxUnread() {
+        return this.maxUnread;
     }
 }

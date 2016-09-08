@@ -12,6 +12,8 @@ public interface Settings {
 
     Settings setCapacity(int capacity);
 
+    Settings setMaxUnread(int maxUnread);
+
     CheckpointIOFactory getCheckpointIOFactory();
 
     PageIOFactory getPageIOFactory();
@@ -21,4 +23,6 @@ public interface Settings {
     String getDirPath();
 
     int getCapacity();
+
+    int getMaxUnread();
 }
