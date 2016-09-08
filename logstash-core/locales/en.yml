@@ -194,6 +194,8 @@ en:
         path_settings: |+
           Directory containing logstash.yml file. This can also be
           set through the LS_SETTINGS_DIR environment variable.
+        path_logs: |+
+            Directory to Write Logstash internal logs to.
         auto_reload: |+
           Monitor configuration changes and reload
           whenever it is changed.
