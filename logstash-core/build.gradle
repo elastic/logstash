@@ -1,16 +1,29 @@
 import java.nio.file.Files
+import org.yaml.snakeyaml.Yaml
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING
 
 apply plugin: 'java'
 apply plugin: 'idea'
 
 group = 'org.logstash'
-version = '6.0.0-alpha1'
-
 description = """Logstash Core Java"""
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
+
+// fetch version from Logstash's master versions.yml file
+def versionMap = (Map) (new Yaml()).load(new File("$projectDir/../versions.yml").text)
+version = versionMap['logstash-core']
+
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+
+    dependencies {
+        classpath 'org.yaml:snakeyaml:1.17'
+    }
+}
 
 configurations {
   provided
