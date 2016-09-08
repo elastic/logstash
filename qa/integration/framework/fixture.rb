@@ -4,9 +4,20 @@ require_relative "../services/service_locator"
 # bootstrapping services, dealing with config files, inputs etc
 class Fixture
   attr_reader :input
-  attr_reader :config
   attr_reader :actual_output
   attr_reader :test_dir
+
+  class TemplateContext
+    attr_reader :options
+
+    def initialize(options)
+      @options = options
+    end
+
+    def get_binding
+      binding
+    end
+  end
 
   def initialize(test_file_location)
     @test_file_location = test_file_location
@@ -14,11 +25,24 @@ class Fixture
     @settings = TestSettings.new(@test_file_location)
     @service_locator = ServiceLocator.new(@settings)
     setup_services
-    @config = @settings.get("config")
     @input = File.join(@fixtures_dir, @settings.get("input")) if @settings.is_set?("input")
     # this assumes current PWD.
     # TODO: Remove this when we have an erb template for LS config so you can inject such stuff
     @actual_output = @settings.get("actual_output")
+  end
+
+  def config(node = "root", options = nil)
+    if node == "root"
+      config = @settings.get("config")
+    else
+      config = @settings.get("config")[node]
+    end
+
+    if options != nil
+       ERB.new(config, nil, "-").result(TemplateContext.new(options).get_binding)
+    else
+      config
+    end
   end
 
   def get_service(name)
@@ -54,5 +78,4 @@ class Fixture
       `#{script}`
     end
   end
-
 end
