@@ -6,12 +6,12 @@ module LogStash
 
     # clear the global compiled templates cache
     def clear_cache
-      Java::ComLogstash::StringInterpolation.get_instance.clear_cache;
+      Java::OrgLogstash::StringInterpolation.get_instance.clear_cache;
     end
 
     # @return [Fixnum] the compiled templates cache size
     def cache_size
-      Java::ComLogstash::StringInterpolation.get_instance.cache_size;
+      Java::OrgLogstash::StringInterpolation.get_instance.cache_size;
     end
   end
 end
