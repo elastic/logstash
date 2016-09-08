@@ -1,0 +1,4 @@
+/services/filebeat
+/fixtures/how.input
+/services/elasticsearch
+/services/kafka
