@@ -323,8 +323,6 @@ namespace "artifact" do
       dir.input("#{empty}/=/etc/logstash/conf.d")
     end
 
-    # produce: logstash-5.0.0-alpha1.deb"
-    # produce: logstash-5.0.0-alpha1.rpm
     package_filename = "logstash-#{LOGSTASH_VERSION}#{PACKAGE_SUFFIX}.TYPE"
 
     case platform
