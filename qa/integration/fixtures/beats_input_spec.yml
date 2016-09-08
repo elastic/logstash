@@ -1,0 +1,33 @@
+---
+services:
+  - filebeat
+  - logstash
+config:
+  without_tls: |-
+    input {
+      beats {
+        port => 5044
+      }
+    }
+  tls_server_auth: |-
+    input {
+      beats {
+        ssl => true
+        port => 5044
+        ssl_certificate => '<%=options[:ssl_certificate]%>'
+        ssl_key => '<%=options[:ssl_key]%>'
+      }
+    }
+  tls_mutual_auth: |-
+    input {
+      beats {
+        ssl => true
+        port => 5044
+        ssl_certificate => '<%=options[:ssl_certificate]%>'
+        ssl_key => '<%=options[:ssl_key]%>'
+        ssl_verify_mode => "peer"
+      }
+    }
+input: how_sample.input
+setup_script: download_input.sh
+teardown_script:
