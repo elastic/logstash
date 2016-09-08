@@ -1,29 +1,35 @@
 [[breaking-changes]]
 == Breaking Changes
 
-**Changes in 2.4**
+This section discusses the changes that you need to be aware of when migrating your application from one version of Logstash to another.
 
 [float]
-== Beats Input Config Change
+=== Changes in 2.4
+
+[float]
+==== Beats Input Config Change
 
 The Beats input has been reimplemented using Netty, an asynchronous IO framework for Java.
 This rewrite for performance brings the plugin in line with the Logstash Forwarder + LS combination.
 As part of the Beats refactor, we now only support private keys in PKCS#8 format. You can easily convert existing keys to use the PKCS#8 format by using the OpenSSL Toolkit. See the https://www.openssl.org/docs/manmaster/apps/pkcs8.html[OpenSSL] documentation.
 
-**Breaking changes in 2.2**
+[float]
+=== Changes in 2.2
+
 Although 2.2 is fully compatible with configurations from older versions, there are some architectural 
 changes to the pipeline that users need to take into consideration before deploying in production. 
 These changes are not strictly "breaking" in the semantic versioning sense, but they make Logstash behave differently 
 in runtime, and can also affect performance. We have compiled such a list in the <<upgrading-logstash-2.2>> section. 
 Please review it before deploying 2.2 version.
 
-**Changes in 2.0**
+[float]
+=== Changes in 2.0
 
 Version 2.0 of Logstash has some changes that are incompatible with previous versions of Logstash. This section discusses
 what you need to be aware of when migrating to this version.
 
 [float]
-== Elasticsearch Output Default
+==== Elasticsearch Output Default
 
 Starting with the 2.0 release of Logstash, the default Logstash output for Elasticsearch is HTTP. To use the `node` or
 `transport` protocols, download the https://www.elastic.co/guide/en/logstash/2.0/plugins-outputs-elasticsearch_java.html[Elasticsearch Java plugin]. The
@@ -37,7 +43,7 @@ Be sure to specify the correct value for the `--version` option during installat
 `bin/plugin install --version 2.0.0 logstash-output-elasticsearch_java`
 
 [float]
-=== Configuration Changes
+==== Elasticsearch Output Configuration Changes
 
 The Elasticsearch output plugin configuration has the following changes:
 
@@ -48,6 +54,9 @@ The Elasticsearch output plugin configuration has the following changes:
 * Since the `hosts` option allows specification of ports for the hosts, the redundant `port` option is now removed
 * The `node_name` and `protocol` options have been moved to the `elasticsearch_java` plugin
 
+[float]
+==== Removed Plugin Configuration Settings
+
 The following deprecated configuration settings are removed in this release:
 
 * input plugin configuration settings: `debug`, `format`, `charset`, `message_format`
@@ -57,7 +66,7 @@ The following deprecated configuration settings are removed in this release:
 Configuration files with these settings present are invalid and prevent Logstash from starting.
 
 [float]
-=== Kafka Output Configuration Changes
+==== Kafka Output Configuration Changes
 
 The 2.0 release of Logstash includes a new version of the Kafka output plugin with significant configuration changes.
 Please compare the documentation pages for the
@@ -66,14 +75,14 @@ https://www.elastic.co/guide/en/logstash/2.0/plugins-outputs-kafka.html[Logstash
 and update your configuration files accordingly.
 
 [float]
-=== Metrics Filter Changes
+==== Metrics Filter Changes
+
 Prior implementations of the metrics filter plugin used dotted field names. Elasticsearch does not allow field names to
 have dots, beginning with version 2.0, so a change was made to use sub-fields instead of dots in this plugin. Please note
 that these changes make version 3.0.0 of the metrics filter plugin incompatible with previous releases.
 
-
 [float]
-=== Filter Worker Default Change
+==== Filter Worker Default Change
 
 Starting with the 2.0 release of Logstash, the default value of the `filter_workers` configuration option for filter
 plugins is half of the available CPU cores, instead of 1. This change increases parallelism in filter execution for
