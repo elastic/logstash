@@ -5,7 +5,7 @@ require "bundler"
 require "tempfile"
 
 # A locally started Logstash service
-class Logstash < Service
+class LogstashService < Service
 
   STDIN_CONFIG = "input {stdin {}} output { }"
   RETRY_ATTEMPTS = 10
@@ -95,7 +95,7 @@ class Logstash < Service
   def teardown
     if !@process.nil?
       # todo: put this in a sleep-wait loop to kill it force kill
-      @process.io.stdin.close
+      @process.io.stdin.close rescue nil
       @process.stop
       @process = nil
     end

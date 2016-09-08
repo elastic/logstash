@@ -1,6 +1,6 @@
 require_relative "service"
 
-class Kafka < Service
+class KafkaService < Service
   def initialize(settings)
     super("kafka", settings)
   end
