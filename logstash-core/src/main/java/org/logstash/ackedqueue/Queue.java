@@ -158,12 +158,19 @@ public class Queue implements Closeable {
         element.setSeqNum(nextSeqNum());
         byte[] data = element.serialize();
 
+        if (! this.headPage.hasCapacity(data.length)) {
+            throw new IOException("data to be written is bigger than page capacity");
+        }
+
+        // the write strategy with regard to the isFull() state is to assume there is space for this element
+        // and write it, then after write verify if we just filled the queue and wait on the notFull condition
+        // *after* the write which is both safer for a crash condition, and the queue closing sequence. In the former case
+        // holding an element in memory while wainting for the notFull condition would mean always having the current write
+        // element at risk in the always-full queue state. In the later, when closing a full queue, it would be impossible
+        // to write the current element.
+
         lock.lock();
         try {
-            if (! this.headPage.hasCapacity(data.length)) {
-                throw new IOException("data to be written is bigger than page capacity");
-            }
-
             boolean wasEmpty = (firstUnreadPage() == null);
 
             // create a new head page if the current does not have suffient space left for data to be written
@@ -185,18 +192,35 @@ public class Queue implements Closeable {
 
             // if the queue was empty before write, signal non emptiness
             if (wasEmpty) { notEmpty.signal(); }
+
+            // now check if we reached a queue full state and block here until it is not full
+            // for the next write or the queue was closed.
+            while (isFull() && !isClosed()) {
+                try {
+                    notFull.await();
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    // TODO: what should we do with an InterruptedException here?
+                    throw new RuntimeException("write InterruptedException", e);
+                }
+            }
+
+            return element.getSeqNum();
         } finally {
             lock.unlock();
         }
+    }
 
-        return element.getSeqNum();
+    // @return true if the queue is deemed at full capacity
+    public boolean isFull() {
+        return false;
     }
 
     // @param seqNum the element sequence number upper bound for which persistence should be garanteed (by fsync'ing)
     public void ensurePersistedUpto(long seqNum) throws IOException{
         lock.lock();
         try {
-             this.headPage.ensurePersistedUpto(seqNum);
+            this.headPage.ensurePersistedUpto(seqNum);
         } finally {
             lock.unlock();
         }
@@ -213,8 +237,13 @@ public class Queue implements Closeable {
                 return null;
             }
 
+            boolean wasFull = isFull();
+
             Batch b = p.readBatch(limit);
             this.unreadCount -= b.size();
+
+            if (wasFull) { notFull.signal(); }
+
             return b;
         } finally {
             lock.unlock();
@@ -247,8 +276,13 @@ public class Queue implements Closeable {
             // need to check for close since it is a condition for exiting the while loop
             if (isClosed()) { return null; }
 
+            boolean wasFull = isFull();
+
             Batch b = p.readBatch(limit);
             this.unreadCount -= b.size();
+
+            if (wasFull) { notFull.signal(); }
+
             return b;
         } finally {
             lock.unlock();
@@ -278,8 +312,13 @@ public class Queue implements Closeable {
                 if ((p = firstUnreadPage()) == null || isClosed()) { return null; }
             }
 
+            boolean wasFull = isFull();
+
             Batch b = p.readBatch(limit);
             this.unreadCount -= b.size();
+
+            if (wasFull) { notFull.signal(); }
+
             return b;
         } finally {
             lock.unlock();
@@ -386,6 +425,7 @@ public class Queue implements Closeable {
                 this.headPage.close();
 
                 notEmpty.signalAll();
+                notFull.signalAll();
             } finally {
                 lock.unlock();
             }
