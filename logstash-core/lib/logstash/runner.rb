@@ -19,11 +19,12 @@ require "logstash/version"
 
 class LogStash::Runner < Clamp::StrictCommand
   include LogStash::Util::Loggable
-  # The `path.settings` need to be defined in the runner instead of the `logstash-core/lib/logstash/environment.rb`
+  # The `path.settings` and `path.logs` need to be defined in the runner instead of the `logstash-core/lib/logstash/environment.rb`
   # because the `Environment::LOGSTASH_HOME` doesn't exist in the context of the `logstash-core` gem.
   #
   # See issue https://github.com/elastic/logstash/issues/5361
   LogStash::SETTINGS.register(LogStash::Setting::String.new("path.settings", ::File.join(LogStash::Environment::LOGSTASH_HOME, "config")))
+  LogStash::SETTINGS.register(LogStash::Setting::String.new("path.logs", ::File.join(LogStash::Environment::LOGSTASH_HOME, "logs")))
 
   # Node Settings
   option ["-n", "--node.name"], "NAME",
@@ -77,9 +78,10 @@ class LogStash::Runner < Clamp::StrictCommand
     :default => LogStash::SETTINGS.get_default("path.plugins")
 
   # Logging Settings
-  option ["-l", "--path.log"], "FILE",
+  option ["-l", "--path.logs"], "PATH",
     I18n.t("logstash.runner.flag.log"),
-    :attribute_name => "path.log"
+    :attribute_name => "path.logs",
+    :default => LogStash::SETTINGS.get_default("path.logs")
 
   option "--log.level", "LEVEL", I18n.t("logstash.runner.flag.log_level"),
     :default => LogStash::SETTINGS.get_default("log.level"),
@@ -172,8 +174,9 @@ class LogStash::Runner < Clamp::StrictCommand
     # Configure Logstash logging facility, this need to be done before everything else to
     # make sure the logger has the correct settings and the log level is correctly defined.
     # TODO(talevy): cleanly support `path.logs` setting in log4j
+    java.lang.System.setProperty("ls.logs", setting("path.logs"))
     unless java.lang.System.getProperty("log4j.configurationFile")
-      log4j_config_location = setting("path.settings") + "/log4j2.properties"
+      log4j_config_location = ::File.join(setting("path.settings"), "log4j2.properties")
       LogStash::Logging::Logger::initialize(log4j_config_location)
     end
 

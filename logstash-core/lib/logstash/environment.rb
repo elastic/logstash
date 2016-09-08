@@ -36,7 +36,6 @@ module LogStash
             Setting::String.new("log.level", "warn", true, ["fatal", "error", "warn", "debug", "info", "trace"]),
            Setting::Boolean.new("version", false),
            Setting::Boolean.new("help", false),
-            Setting::String.new("path.log", nil, false),
             Setting::String.new("log.format", "plain", true, ["json", "plain"]),
             Setting::String.new("http.host", "127.0.0.1"),
             Setting::PortRange.new("http.port", 9600..9700),
