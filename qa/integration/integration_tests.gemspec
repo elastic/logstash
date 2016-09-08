@@ -10,9 +10,12 @@ Gem::Specification.new do |s|
 
   # Files
   s.test_files = s.files.grep(%r{^(test|spec|features)/})
+
   # Gem dependencies
   s.add_development_dependency 'elasticsearch'
   s.add_development_dependency 'childprocess'
   s.add_development_dependency 'rspec-wait'
   s.add_development_dependency 'manticore'
+  s.add_development_dependency 'stud'
+  s.add_development_dependency 'pry'
 end
