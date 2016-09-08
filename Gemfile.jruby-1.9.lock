@@ -1,18 +1,18 @@
 PATH
   remote: ./logstash-core
   specs:
-    logstash-core (5.0.0.pre.alpha6-java)
-      cabin (~> 0.8.0)
+    logstash-core (5.0.0.pre.beta1-java)
       chronic_duration (= 0.10.6)
       clamp (~> 0.6.5)
       concurrent-ruby (= 1.0.0)
       filesize (= 0.0.4)
       gems (~> 0.8.3)
       i18n (= 0.6.9)
+      jar-dependencies (~> 0.3.4)
       jrjackson (~> 0.4.0)
       jrmonitor (~> 0.4.2)
       jruby-openssl (= 0.9.16)
-      logstash-core-event-java (= 5.0.0.pre.alpha6)
+      logstash-core-event-java (= 5.0.0.pre.beta1)
       minitar (~> 0.5.4)
       pry (~> 0.10.1)
       puma (~> 2.16)
@@ -25,7 +25,7 @@ PATH
 PATH
   remote: ./logstash-core-event-java
   specs:
-    logstash-core-event-java (5.0.0.pre.alpha6-java)
+    logstash-core-event-java (5.0.0.pre.beta1-java)
       jar-dependencies
       ruby-maven (~> 3.3.9)
 
@@ -33,7 +33,7 @@ PATH
   remote: ./logstash-core-plugin-api
   specs:
     logstash-core-plugin-api (2.1.12-java)
-      logstash-core (= 5.0.0.pre.alpha6)
+      logstash-core (= 5.0.0.pre.beta1)
 
 GEM
   remote: https://rubygems.org/
@@ -572,7 +572,7 @@ GEM
       snappy-jars (~> 1.1.0)
     snappy-jars (1.1.0.1.2-java)
     snmp (1.2.0)
-    spoon (0.0.4)
+    spoon (0.0.6)
       ffi
     statsd-ruby (1.2.0)
     stud (0.0.22)
