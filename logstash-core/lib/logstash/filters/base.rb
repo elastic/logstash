@@ -7,6 +7,7 @@ require "logstash/config/mixin"
 require "logstash/util/decorators"
 
 class LogStash::Filters::Base < LogStash::Plugin
+  include LogStash::Util::Loggable
   include LogStash::Config::Mixin
 
   config_name "filter"

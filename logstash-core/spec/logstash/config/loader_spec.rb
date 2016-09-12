@@ -3,7 +3,9 @@ require "spec_helper"
 require "logstash/config/loader"
 
 describe LogStash::Config::Loader do
-  subject { described_class.new(Cabin::Channel.get) }
+  let(:logger) { double("logger") }
+  subject { described_class.new(logger) }
+
   context "when local" do
     before { expect(subject).to receive(:local_config).with(path) }
 

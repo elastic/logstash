@@ -8,6 +8,7 @@ require "logstash/util/wrapped_synchronous_queue"
 require "concurrent/atomic/atomic_fixnum"
 
 class LogStash::Outputs::Base < LogStash::Plugin
+  include LogStash::Util::Loggable
   include LogStash::Config::Mixin
 
   config_name "output"
@@ -90,6 +91,10 @@ class LogStash::Outputs::Base < LogStash::Plugin
     else
       events.each {|event| receive(event) }
     end
+  end
+
+  def workers_not_supported(message=nil)
+    raise "This plugin (#{self.class.name}) is using the obsolete '#workers_not_supported' method. If you installed this plugin specifically on this Logstash version, it is not compatible. If you are a plugin author, please see https://www.elastic.co/guide/en/logstash/current/_how_to_write_a_logstash_output_plugin.html for more info"
   end
 
   def codec

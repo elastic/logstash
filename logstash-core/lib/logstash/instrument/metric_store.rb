@@ -80,8 +80,7 @@ module LogStash module Instrument
     # @param [Array] The path where values should be located
     # @return [Hash]
     def get_with_path(path)
-      key_paths = path.gsub(/^#{KEY_PATH_SEPARATOR}+/, "").split(KEY_PATH_SEPARATOR)
-      get(*key_paths)
+      get(*key_paths(path))
     end
 
     # Similar to `get_with_path` but use symbols instead of string
@@ -180,9 +179,22 @@ module LogStash module Instrument
     end
     alias_method :all, :each
 
+    def prune(path)
+      key_paths = key_paths(path).map {|k| k.to_sym }
+      @structured_lookup_mutex.synchronize do
+        keys_to_delete = @fast_lookup.keys.select {|namespace, _| (key_paths - namespace).empty? }
+        keys_to_delete.each {|k| @fast_lookup.delete(k) }
+        delete_from_map(@store, key_paths)
+      end
+    end
+
     private
     def get_all
       @fast_lookup.values
+    end
+
+    def key_paths(path)
+      path.gsub(/^#{KEY_PATH_SEPARATOR}+/, "").split(KEY_PATH_SEPARATOR)
     end
 
     # This method take an array of keys and recursively search the metric store structure
@@ -293,6 +305,15 @@ module LogStash module Instrument
 
       new_map = map.fetch_or_store(current) { Concurrent::Map.new }
       return fetch_or_store_namespace_recursively(new_map, namespaces_path, idx + 1)
+    end
+
+    def delete_from_map(map, keys)
+      key = keys.first
+      if keys.size == 1
+        map.delete(key)
+      else
+        delete_from_map(map[key], keys[1..-1]) unless map[key].nil?
+      end
     end
   end
 end; end

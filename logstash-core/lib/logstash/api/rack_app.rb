@@ -10,18 +10,17 @@ require "logstash/api/modules/stats"
 module LogStash
   module Api
     module RackApp
-      # Cabin is not compatible with CommonLogger, and this gives us more control anyway
       METADATA_FIELDS = [:request_method, :path_info, :query_string, :http_version, :http_accept].freeze
       def self.log_metadata(status, env)
         METADATA_FIELDS.reduce({:status => status}) do |acc, field|
           acc[field] = env[field.to_s.upcase]
           acc
-        end        
+        end
       end
-      
+
       class ApiLogger
         LOG_MESSAGE = "API HTTP Request".freeze
-        
+
         def initialize(app, logger)
           @app = app
           @logger = logger
@@ -30,24 +29,24 @@ module LogStash
         def call(env)
           res = @app.call(env)
           status, headers, body = res
-          
+
           if fatal_error?(status)
-            @logger.warn? && @logger.warn(LOG_MESSAGE, RackApp.log_metadata(status, env))                      
-          else          
-            @logger.info? && @logger.info(LOG_MESSAGE, RackApp.log_metadata(status, env))                      
+            @logger.warn? && @logger.warn(LOG_MESSAGE, RackApp.log_metadata(status, env))
+          else
+            @logger.info? && @logger.info(LOG_MESSAGE, RackApp.log_metadata(status, env))
           end
 
-          res          
+          res
         end
 
         def fatal_error?(status)
           status >= 500 && status < 600
         end
       end
-      
+
       class ApiErrorHandler
         LOG_MESSAGE = "Internal API server error".freeze
-        
+
         def initialize(app, logger)
           @app = app
           @logger = logger
@@ -65,21 +64,21 @@ module LogStash
                          })
 
           @logger.error(LOG_MESSAGE, body)
-          
+
           [500,
            {'Content-Type' => 'application/json'},
            [LogStash::Json.dump(body)]
           ]
         end
       end
-      
+
       def self.app(logger, agent, environment)
         namespaces = rack_namespaces(agent)
 
         Rack::Builder.new do
           # Custom logger object. Rack CommonLogger does not work with cabin
           use ApiLogger, logger
-          
+
           # In test env we want errors to propogate up the chain
           # so we get easy to understand test failures.
           # In production / dev we don't want a bad API endpoint
@@ -87,7 +86,7 @@ module LogStash
           if environment != "test"
             use ApiErrorHandler, logger
           end
-          
+
           run LogStash::Api::Modules::Root.new(nil, agent)
           namespaces.each_pair do |namespace, app|
             map(namespace) do

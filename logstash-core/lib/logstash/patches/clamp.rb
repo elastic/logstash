@@ -29,6 +29,7 @@ module Clamp
     module StrictDeclaration
 
       include Clamp::Attribute::Declaration
+      include LogStash::Util::Loggable
 
       # Instead of letting Clamp set up accessors for the options
       # weŕe going to tightly controlling them through
@@ -53,8 +54,7 @@ module Clamp
 
       def define_deprecated_writer_for(option, opts, &block)
         define_method(option.write_method) do |value|
-          logger = Cabin::Channel.get(LogStash)
-          logger.warn "DEPRECATION WARNING: The flag #{option.switches} has been deprecated, please use \"--#{opts[:new_flag]}=#{opts[:new_value]}\" instead."
+          self.class.logger.warn "DEPRECATION WARNING: The flag #{option.switches} has been deprecated, please use \"--#{opts[:new_flag]}=#{opts[:new_value]}\" instead."
           LogStash::SETTINGS.set(opts[:new_flag], opts[:new_value])
         end
       end

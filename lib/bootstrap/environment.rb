@@ -62,6 +62,8 @@ end
 # currently lib/logstash/runner.rb and lib/pluginmanager/main.rb are called using this.
 if $0 == __FILE__
   LogStash::Bundler.setup!({:without => [:build, :development]})
+  require_relative "patches/jar_dependencies"
+
   require ARGV.shift
   exit_status = LogStash::Runner.run("bin/logstash", ARGV)
   exit(exit_status || 0)

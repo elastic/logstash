@@ -16,7 +16,7 @@ available in your deployment:
 [source,shell]
 ----------------------------------
 bin/logstash-plugin list <1>
-bin/logstash-plugin list --verbose <2>
+bin/logstash-plugin list --info <2>
 bin/logstash-plugin list '*namefragment*' <3>
 bin/logstash-plugin list --group output <4>
 ----------------------------------

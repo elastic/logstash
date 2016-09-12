@@ -18,6 +18,7 @@ require "securerandom"
 LogStash::Environment.load_locale!
 
 class LogStash::Agent
+  include LogStash::Util::Loggable
   STARTED_AT = Time.now.freeze
 
   attr_reader :metric, :node_name, :pipelines, :settings, :webserver
@@ -28,10 +29,9 @@ class LogStash::Agent
   #   :node_name [String] - identifier for the agent
   #   :auto_reload [Boolean] - enable reloading of pipelines
   #   :reload_interval [Integer] - reload pipelines every X seconds
-  #   :logger [Cabin::Channel] - logger instance
   def initialize(settings = LogStash::SETTINGS)
+    @logger = self.class.logger
     @settings = settings
-    @logger = Cabin::Channel.get(LogStash)
     @auto_reload = setting("config.reload.automatic")
 
     @pipelines = {}
@@ -48,6 +48,8 @@ class LogStash::Agent
 
     # Create the collectors and configured it with the library
     configure_metrics_collectors
+
+    @reload_metric = metric.namespace([:stats, :pipelines])
   end
 
   def execute
@@ -99,6 +101,11 @@ class LogStash::Agent
         begin
           reload_pipeline!(pipeline_id)
         rescue => e
+          @reload_metric.namespace([pipeline_id.to_sym, :reloads]).tap do |n|
+            n.increment(:failures)
+            n.gauge(:last_error, { :message => e.message, :backtrace => e.backtrace})
+            n.gauge(:last_failure_timestamp, LogStash::Timestamp.now)
+          end
           @logger.error(I18n.t("oops"), :message => e.message, :class => e.class.name, :backtrace => e.backtrace)
         end
       end
@@ -162,9 +169,12 @@ class LogStash::Agent
     @periodic_pollers.start
   end
 
-  def reset_metrics_collectors
-    stop_collecting_metrics
-    configure_metrics_collectors
+  def reset_pipeline_metrics(id)
+    # selectively reset metrics we don't wish to keep after reloading
+    # these include metrics about the plugins and number of processed events
+    # we want to keep other metrics like reload counts and error messages
+    @collector.clear("stats/pipelines/#{id}/plugins")
+    @collector.clear("stats/pipelines/#{id}/events")
   end
 
   def collect_metrics?
@@ -184,6 +194,11 @@ class LogStash::Agent
     begin
       LogStash::Pipeline.new(config, settings, metric)
     rescue => e
+      @reload_metric.namespace([settings.get("pipeline.id").to_sym, :reloads]).tap do |n|
+        n.increment(:failures)
+        n.gauge(:last_error, { :message => e.message, :backtrace => e.backtrace})
+        n.gauge(:last_failure_timestamp, LogStash::Timestamp.now)
+      end
       if @logger.debug?
         @logger.error("fetched an invalid config", :config => config, :reason => e.message, :backtrace => e.backtrace)
       else
@@ -207,11 +222,6 @@ class LogStash::Agent
                     :pipeline => id, :config => new_config)
       return
     end
-
-    # Reset the current collected stats,
-    # starting a pipeline with a new configuration should be the same as restarting
-    # logstash.
-    reset_metrics_collectors
 
     new_pipeline = create_pipeline(old_pipeline.settings, new_config)
 
@@ -239,6 +249,11 @@ class LogStash::Agent
       begin
         pipeline.run
       rescue => e
+        @reload_metric.namespace([id.to_sym, :reloads]) do |n|
+          n.increment(:failures)
+          n.gauge(:last_error, { :message => e.message, :backtrace => e.backtrace})
+          n.gauge(:last_failure_timestamp, LogStash::Timestamp.now)
+        end
         @logger.error("Pipeline aborted due to error", :exception => e, :backtrace => e.backtrace)
       end
     end
@@ -254,7 +269,11 @@ class LogStash::Agent
   end
 
   def start_pipelines
-    @pipelines.each { |id, _| start_pipeline(id) }
+    @pipelines.each do |id, _|
+      start_pipeline(id)
+      # no reloads yet, initalize all the reload metrics
+      init_pipeline_reload_metrics(id)
+    end
   end
 
   def shutdown_pipelines
@@ -268,8 +287,13 @@ class LogStash::Agent
 
   def upgrade_pipeline(pipeline_id, new_pipeline)
     stop_pipeline(pipeline_id)
+    reset_pipeline_metrics(pipeline_id)
     @pipelines[pipeline_id] = new_pipeline
     start_pipeline(pipeline_id)
+    @reload_metric.namespace([pipeline_id.to_sym, :reloads]).tap do |n|
+      n.increment(:successes)
+      n.gauge(:last_success_timestamp, LogStash::Timestamp.now)
+    end
   end
 
   def clean_state?
@@ -278,5 +302,15 @@ class LogStash::Agent
 
   def setting(key)
     @settings.get(key)
+  end
+
+  def init_pipeline_reload_metrics(id)
+    @reload_metric.namespace([id.to_sym, :reloads]).tap do |n|
+      n.increment(:successes, 0)
+      n.increment(:failures, 0)
+      n.gauge(:last_error, nil)
+      n.gauge(:last_success_timestamp, nil)
+      n.gauge(:last_failure_timestamp, nil)
+    end
   end
 end # class LogStash::Agent

@@ -4,7 +4,6 @@ Encoding.default_external = Encoding::UTF_8
 $DEBUGLIST = (ENV["DEBUG"] || "").split(",")
 
 require "clamp"
-require "cabin"
 require "net/http"
 require "logstash/environment"
 
@@ -21,11 +20,13 @@ require "logstash/settings"
 require "logstash/version"
 
 class LogStash::Runner < Clamp::StrictCommand
-  # The `path.settings` need to be defined in the runner instead of the `logstash-core/lib/logstash/environment.rb`
+  include LogStash::Util::Loggable
+  # The `path.settings` and `path.logs` need to be defined in the runner instead of the `logstash-core/lib/logstash/environment.rb`
   # because the `Environment::LOGSTASH_HOME` doesn't exist in the context of the `logstash-core` gem.
-  # 
+  #
   # See issue https://github.com/elastic/logstash/issues/5361
   LogStash::SETTINGS.register(LogStash::Setting::String.new("path.settings", ::File.join(LogStash::Environment::LOGSTASH_HOME, "config")))
+  LogStash::SETTINGS.register(LogStash::Setting::String.new("path.logs", ::File.join(LogStash::Environment::LOGSTASH_HOME, "logs")))
 
   # Node Settings
   option ["-n", "--node.name"], "NAME",
@@ -79,12 +80,14 @@ class LogStash::Runner < Clamp::StrictCommand
     :default => LogStash::SETTINGS.get_default("path.plugins")
 
   # Logging Settings
-  option ["-l", "--path.log"], "FILE",
+  option ["-l", "--path.logs"], "PATH",
     I18n.t("logstash.runner.flag.log"),
-    :attribute_name => "path.log"
+    :attribute_name => "path.logs",
+    :default => LogStash::SETTINGS.get_default("path.logs")
 
   option "--log.level", "LEVEL", I18n.t("logstash.runner.flag.log_level"),
-    :default => LogStash::SETTINGS.get_default("log.level")
+    :default => LogStash::SETTINGS.get_default("log.level"),
+    :attribute_name => "log.level"
 
   option "--config.debug", :flag,
     I18n.t("logstash.runner.flag.config_debug"),
@@ -137,7 +140,7 @@ class LogStash::Runner < Clamp::StrictCommand
   ### DEPRECATED FLAGS ###
   deprecated_option ["--verbose"], :flag,
     I18n.t("logstash.runner.flag.verbose"),
-    :new_flag => "log.level", :new_value => "verbose"
+    :new_flag => "log.level", :new_value => "info"
 
   deprecated_option ["--debug"], :flag,
     I18n.t("logstash.runner.flag.debug"),
@@ -145,12 +148,11 @@ class LogStash::Runner < Clamp::StrictCommand
 
   deprecated_option ["--quiet"], :flag,
     I18n.t("logstash.runner.flag.quiet"),
-    :new_flag => "log.level", :new_value => "quiet"
+    :new_flag => "log.level", :new_value => "error"
 
   attr_reader :agent
 
   def initialize(*args)
-    @logger = Cabin::Channel.get(LogStash)
     @settings = LogStash::SETTINGS
     super(*args)
   end
@@ -165,11 +167,19 @@ class LogStash::Runner < Clamp::StrictCommand
     rescue => e
       # abort unless we're just looking for the help
       if (["--help", "-h"] & args).empty?
-        @logger.subscribe(STDOUT)
-        @logger.warn("Logstash has a new settings file which defines start up time settings. This file is typically located in $LS_HOME/config or /etc/logstash. If you installed Logstash through a package and are starting it manually please specify the location to this settings file by passing in \"--path.settings=/path/..\" in the command line options")
-        @logger.fatal("Failed to load settings file from \"path.settings\". Aborting...", "path.settings" => LogStash::SETTINGS.get("path.settings"), "exception" => e.class, "message" => e.message)
+        $stderr.puts "INFO: Logstash has a new settings file which defines start up time settings. This file is typically located in $LS_HOME/config or /etc/logstash. If you installed Logstash through a package and are starting it manually please specify the location to this settings file by passing in \"--path.settings=/path/..\" in the command line options"
+        $stderr.puts "ERROR: Failed to load settings file from \"path.settings\". Aborting... path.setting=#{LogStash::SETTINGS.get("path.settings")}, exception=#{e.class}, message=>#{e.message}"
         return 1
       end
+    end
+
+    # Configure Logstash logging facility, this need to be done before everything else to
+    # make sure the logger has the correct settings and the log level is correctly defined.
+    # TODO(talevy): cleanly support `path.logs` setting in log4j
+    java.lang.System.setProperty("ls.logs", setting("path.logs"))
+    unless java.lang.System.getProperty("log4j.configurationFile")
+      log4j_config_location = ::File.join(setting("path.settings"), "log4j2.properties")
+      LogStash::Logging::Logger::initialize(log4j_config_location)
     end
 
     super(*[args])
@@ -179,12 +189,12 @@ class LogStash::Runner < Clamp::StrictCommand
     require "logstash/util"
     require "logstash/util/java_version"
     require "stud/task"
-    require "cabin" # gem 'cabin'
-    require "logstash/logging/json"
 
-    # Configure Logstash logging facility, this need to be done before everything else to
-    # make sure the logger has the correct settings and the log level is correctly defined.
-    configure_logging(setting("path.log"), setting("log.level"))
+    LogStash::Logging::Logger::configure_logging(setting("log.level"))
+
+    if setting("config.debug") && logger.debug?
+      logger.warn("--config.debug was specified, but log.level was not set to \'debug\'! No config info will be logged.")
+    end
 
     LogStash::Util::set_thread_name(self.class.name)
 
@@ -201,7 +211,6 @@ class LogStash::Runner < Clamp::StrictCommand
     end
 
     LogStash::ShutdownWatcher.unsafe_shutdown = setting("pipeline.unsafe_shutdown")
-    LogStash::ShutdownWatcher.logger = @logger
 
     configure_plugin_paths(setting("path.plugins"))
 
@@ -212,7 +221,7 @@ class LogStash::Runner < Clamp::StrictCommand
 
     return start_shell(setting("interactive"), binding) if setting("interactive")
 
-    @settings.format_settings.each {|line| @logger.info(line) }
+    @settings.format_settings.each {|line| logger.info(line) }
 
     if setting("config.string").nil? && setting("path.config").nil?
       fail(I18n.t("logstash.runner.missing-configuration"))
@@ -224,14 +233,14 @@ class LogStash::Runner < Clamp::StrictCommand
     end
 
     if setting("config.test_and_exit")
-      config_loader = LogStash::Config::Loader.new(@logger)
+      config_loader = LogStash::Config::Loader.new(logger)
       config_str = config_loader.format_config(setting("path.config"), setting("config.string"))
       begin
         LogStash::Pipeline.new(config_str)
-        @logger.terminal "Configuration OK"
+        puts "Configuration OK"
         return 0
       rescue => e
-        @logger.fatal I18n.t("logstash.runner.invalid-configuration", :error => e.message)
+        logger.fatal I18n.t("logstash.runner.invalid-configuration", :error => e.message)
         return 1
       end
     end
@@ -254,6 +263,9 @@ class LogStash::Runner < Clamp::StrictCommand
 
     @agent.shutdown
 
+    # flush any outstanding log messages during shutdown
+    org.apache.logging.log4j.LogManager.shutdown
+
     agent_return
 
   rescue Clamp::UsageError => e
@@ -261,7 +273,7 @@ class LogStash::Runner < Clamp::StrictCommand
     show_short_help
     return 1
   rescue => e
-    @logger.fatal(I18n.t("oops"), :error => e, :backtrace => e.backtrace)
+    logger.fatal(I18n.t("oops"), :error => e, :backtrace => e.backtrace)
     return 1
   ensure
     Stud::untrap("INT", sigint_id) unless sigint_id.nil?
@@ -273,10 +285,10 @@ class LogStash::Runner < Clamp::StrictCommand
   def show_version
     show_version_logstash
 
-    if @logger.debug? || @logger.info?
+    if logger.is_info_enabled
       show_version_ruby
       show_version_java if LogStash::Environment.jruby?
-      show_gems if @logger.debug?
+      show_gems if logger.debug?
     end
   end # def show_version
 
@@ -314,55 +326,6 @@ class LogStash::Runner < Clamp::StrictCommand
     LogStash::Agent.new(*args)
   end
 
-  # Point logging at a specific path.
-  def configure_logging(path, level)
-    @logger = Cabin::Channel.get(LogStash)
-    # Set with the -v (or -vv...) flag
-    case level
-    when "quiet"
-      @logger.level = :error
-    when "verbose"
-      @logger.level = :info
-    when "debug"
-      @logger.level = :debug
-    else
-      @logger.level = :warn
-    end
-
-    if path
-      # TODO(sissel): Implement file output/rotation in Cabin.
-      # TODO(sissel): Catch exceptions, report sane errors.
-      begin
-        @log_fd.close if @log_fd
-        @log_fd = File.new(path, "a")
-      rescue => e
-        fail(I18n.t("logstash.runner.configuration.log_file_failed",
-                    :path => path, :error => e))
-      end
-
-      if setting("log.format") == "json"
-        @logger.subscribe(LogStash::Logging::JSON.new(STDOUT), :level => :fatal)
-        @logger.subscribe(LogStash::Logging::JSON.new(@log_fd))
-      else
-        @logger.subscribe(STDOUT, :level => :fatal)
-        @logger.subscribe(@log_fd)
-      end
-      @logger.terminal "Sending logstash logs to #{path}."
-    else
-      if setting("log.format") == "json"
-        @logger.subscribe(LogStash::Logging::JSON.new(STDOUT))
-      else
-        @logger.subscribe(STDOUT)
-      end
-    end
-
-    if setting("config.debug") && @logger.level != :debug
-      @logger.warn("--config.debug was specified, but log.level was not set to \'debug\'! No config info will be logged.")
-    end
-
-    # TODO(sissel): redirect stdout/stderr to the log as well
-    # http://jira.codehaus.org/browse/JRUBY-7003
-  end # def configure_logging
 
   # Emit a failure message and abort.
   def fail(message)
@@ -391,14 +354,14 @@ class LogStash::Runner < Clamp::StrictCommand
 
   def trap_sighup
     Stud::trap("HUP") do
-      @logger.warn(I18n.t("logstash.agent.sighup"))
+      logger.warn(I18n.t("logstash.agent.sighup"))
       @agent.reload_state!
     end
   end
 
   def trap_sigterm
     Stud::trap("TERM") do
-      @logger.warn(I18n.t("logstash.agent.sigterm"))
+      logger.warn(I18n.t("logstash.agent.sigterm"))
       @agent_task.stop!
     end
   end
@@ -406,11 +369,11 @@ class LogStash::Runner < Clamp::StrictCommand
   def trap_sigint
     Stud::trap("INT") do
       if @interrupted_once
-        @logger.fatal(I18n.t("logstash.agent.forced_sigint"))
+        logger.fatal(I18n.t("logstash.agent.forced_sigint"))
         exit
       else
-        @logger.warn(I18n.t("logstash.agent.sigint"))
-        Thread.new(@logger) {|logger| sleep 5; logger.warn(I18n.t("logstash.agent.slow_shutdown")) }
+        logger.warn(I18n.t("logstash.agent.sigint"))
+        Thread.new(logger) {|lg| sleep 5; lg.warn(I18n.t("logstash.agent.slow_shutdown")) }
         @interrupted_once = true
         @agent_task.stop!
       end

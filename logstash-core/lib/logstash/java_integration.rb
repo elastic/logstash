@@ -1,5 +1,6 @@
 # encoding: utf-8
 require "java"
+require "jars"
 
 # this is mainly for usage with JrJackson json parsing in :raw mode which genenerates
 # Java::JavaUtil::ArrayList and Java::JavaUtil::LinkedHashMap native objects for speed.

@@ -5,7 +5,6 @@ require "logstash/util"
 require "logstash/event"
 require "json"
 require "java"
-# java_import 'com.logstash.Util'
 
 TIMESTAMP = "@timestamp"
 
@@ -123,7 +122,7 @@ describe LogStash::Event do
     end
 
     it "should set XXJavaProxy Jackson crafted" do
-      proxy = com.logstash.Util.getMapFixtureJackson()
+      proxy = org.logstash.Util.getMapFixtureJackson()
       # proxy is {"string": "foo", "int": 42, "float": 42.42, "array": ["bar","baz"], "hash": {"string":"quux"} }
       e = LogStash::Event.new()
       e.set("[proxy]", proxy)
@@ -136,7 +135,7 @@ describe LogStash::Event do
     end
 
     it "should set XXJavaProxy hand crafted" do
-      proxy = com.logstash.Util.getMapFixtureHandcrafted()
+      proxy = org.logstash.Util.getMapFixtureHandcrafted()
       # proxy is {"string": "foo", "int": 42, "float": 42.42, "array": ["bar","baz"], "hash": {"string":"quux"} }
       e = LogStash::Event.new()
       e.set("[proxy]", proxy)
@@ -159,12 +158,12 @@ describe LogStash::Event do
     it "to_hash should inject a Ruby LogStash::Timestamp" do
       e = LogStash::Event.new()
 
-      expect(e.to_java).to be_kind_of(Java::ComLogstash::Event)
-      expect(e.to_java.get_field(TIMESTAMP)).to be_kind_of(Java::ComLogstash::Timestamp)
+      expect(e.to_java).to be_kind_of(Java::OrgLogstash::Event)
+      expect(e.to_java.get_field(TIMESTAMP)).to be_kind_of(Java::OrgLogstash::Timestamp)
 
       expect(e.to_hash[TIMESTAMP]).to be_kind_of(LogStash::Timestamp)
       # now make sure the original map was not touched
-      expect(e.to_java.get_field(TIMESTAMP)).to be_kind_of(Java::ComLogstash::Timestamp)
+      expect(e.to_java.get_field(TIMESTAMP)).to be_kind_of(Java::OrgLogstash::Timestamp)
     end
 
     it "should set timestamp" do
@@ -194,62 +193,27 @@ describe LogStash::Event do
   end
 
 
-  # noop logger used to test the injectable logger in Event
-  # this implementation is not complete because only the warn
-  # method is used in Event.
-  module DummyLogger
-    def self.warn(message)
-      # do nothing
-    end
-  end
+  # TODO(talevy): migrate tests to Java. no reason to test logging logic in ruby when it is being
+  #               done in java land.
 
-  context "logger" do
+  # context "logger" do
 
-    let(:logger) { double("Logger") }
-    after(:each) {  LogStash::Event.logger = LogStash::Event::DEFAULT_LOGGER }
+  #   let(:logger) { double("Logger") }
 
-    # the following 2 specs are using both a real module (DummyLogger)
-    # and a mock. both tests are needed to make sure the implementation
-    # supports both types of objects.
+  #   before(:each) do
+  #     allow(LogStash::Event).to receive(:logger).and_return(logger)
+  #   end
 
-    it "should set logger using a module" do
-      LogStash::Event.logger = DummyLogger
-      expect(DummyLogger).to receive(:warn).once
-      LogStash::Event.new(TIMESTAMP => "invalid timestamp")
-    end
+  #   it "should set logger using a module" do
+  #     expect(logger).to receive(:warn).once
+  #     LogStash::Event.new(TIMESTAMP => "invalid timestamp")
+  #   end
 
-    it "should set logger using a mock" do
-      LogStash::Event.logger = logger
-      expect(logger).to receive(:warn).once
-      LogStash::Event.new(TIMESTAMP => "invalid timestamp")
-    end
-
-    it "should unset logger" do
-      # first set
-      LogStash::Event.logger = logger
-      expect(logger).to receive(:warn).once
-      LogStash::Event.new(TIMESTAMP => "invalid timestamp")
-
-      # then unset
-      LogStash::Event.logger = LogStash::Event::DEFAULT_LOGGER
-      expect(logger).to receive(:warn).never
-      # this will produce a log line in stdout by the Java Event
-      LogStash::Event.new(TIMESTAMP => "ignore this log")
-    end
-
-
-    it "should warn on parsing error" do
-      LogStash::Event.logger = logger
-      expect(logger).to receive(:warn).once.with(/^Error parsing/)
-      LogStash::Event.new(TIMESTAMP => "invalid timestamp")
-    end
-
-    it "should warn on invalid timestamp object" do
-      LogStash::Event.logger = logger
-      expect(logger).to receive(:warn).once.with(/^Unrecognized/)
-      LogStash::Event.new(TIMESTAMP => Array.new)
-    end
-  end
+  #   it "should warn on invalid timestamp object" do
+  #     expect(logger).to receive(:warn).once.with(/^Unrecognized/)
+  #     LogStash::Event.new(TIMESTAMP => Array.new)
+  #   end
+  # end
 
   context "to_hash" do
     let (:source_hash) {  {"a" => 1, "b" => [1, 2, 3, {"h" => 1, "i" => "baz"}], "c" => {"d" => "foo", "e" => "bar", "f" => [4, 5, "six"]}} }

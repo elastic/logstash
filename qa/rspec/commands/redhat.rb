@@ -22,12 +22,12 @@ module ServiceTester
 
     def install(package, host=nil)
       hosts  = (host.nil? ? servers : Array(host))
-      errors = {}
+      errors = []
       at(hosts, {in: :serial}) do |_host|
         cmd = sudo_exec!("yum install -y  #{package}")
-        errors[_host] = cmd.stderr unless cmd.stderr.empty?
+        errors << cmd.stderr unless cmd.stderr.empty?
       end
-      errors
+      raise InstallException.new(errors.join("\n")) unless errors.empty?
     end
 
     def uninstall(package, host=nil)

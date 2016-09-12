@@ -1,29 +1,19 @@
 # encoding: utf-8
+require "logstash/logging/logger"
 require "logstash/namespace"
-require "cabin"
 
 module LogStash module Util
   module Loggable
-    class << self
-      def logger=(new_logger)
-        @logger = new_logger
+    def self.included(klass)
+      def klass.logger
+        ruby_name = self.name || self.class.name || self.class.to_s
+        log4j_name = ruby_name.gsub('::', '.').downcase
+        @logger ||= LogStash::Logging::Logger.new(log4j_name)
       end
 
       def logger
-        @logger ||= Cabin::Channel.get(LogStash)
+        self.class.logger
       end
-    end
-
-    def self.included(base)
-      class << base
-        def logger
-          Loggable.logger
-        end
-      end
-    end
-
-    def logger
-      Loggable.logger
     end
   end
 end; end

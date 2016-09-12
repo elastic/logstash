@@ -91,7 +91,8 @@ module LogStash
                 :inputs => plugin_stats(stats, :inputs),
                 :filters => plugin_stats(stats, :filters),
                 :outputs => plugin_stats(stats, :outputs)
-              }
+              },
+              :reloads => stats[:reloads],
             }
           end
         end # module PluginsStats

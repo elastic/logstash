@@ -97,6 +97,10 @@ describe LogStash::OutputDelegator do
             expect(out_klass).to have_received(:new).with(plugin_args)
           end
 
+          it "should set the metric on the instance" do
+            expect(out_inst).to have_received(:metric=).with(metric)
+          end
+
           [[:register], [:do_close], [:multi_receive, [[]] ] ].each do |method, args|
             context "strategy objects" do
               before do

@@ -3,7 +3,6 @@
 require "logstash/namespace"
 require "logstash/json"
 require "logstash/string_interpolation"
-require "cabin"
 
 # transcient pipeline events for normal in-flow signaling as opposed to
 # flow altering exceptions. for now having base classes is adequate and

@@ -76,7 +76,7 @@ describe LogStash::Plugin do
         .with(plugin_name)
         .and_return(double(:version => Gem::Version.new('1.0.0')))
 
-      expect_any_instance_of(Cabin::Channel).not_to receive(:info)
+      expect_any_instance_of(LogStash::Logging::Logger).not_to receive(:info)
       subject.validate({})
     end
 
@@ -85,7 +85,7 @@ describe LogStash::Plugin do
         .with(plugin_name)
         .and_return(double(:version => Gem::Version.new('0.9.1')))
 
-      expect_any_instance_of(Cabin::Channel).to receive(:info)
+      expect_any_instance_of(LogStash::Logging::Logger).to receive(:info)
         .with(/Using version 0.9.x/)
 
       subject.validate({})
@@ -96,7 +96,7 @@ describe LogStash::Plugin do
         .with(plugin_name)
         .and_return(double(:version => Gem::Version.new('0.1.1')))
 
-      expect_any_instance_of(Cabin::Channel).to receive(:info)
+      expect_any_instance_of(LogStash::Logging::Logger).to receive(:info)
         .with(/Using version 0.1.x/)
       subject.validate({})
     end
@@ -110,7 +110,7 @@ describe LogStash::Plugin do
         .with(plugin_name)
         .and_return(double(:version => Gem::Version.new('0.1.1')))
 
-      expect_any_instance_of(Cabin::Channel).to receive(:info)
+      expect_any_instance_of(LogStash::Logging::Logger).to receive(:info)
         .once
         .with(/Using version 0.1.x/)
 
@@ -119,7 +119,7 @@ describe LogStash::Plugin do
     end
 
     it "warns the user if we can't find a defined version" do
-      expect_any_instance_of(Cabin::Channel).to receive(:warn)
+      expect_any_instance_of(LogStash::Logging::Logger).to receive(:warn)
         .once
         .with(/plugin doesn't have a version/)
 
@@ -128,7 +128,7 @@ describe LogStash::Plugin do
 
 
     it 'logs a warning if the plugin use the milestone option' do
-      expect_any_instance_of(Cabin::Channel).to receive(:debug)
+      expect_any_instance_of(LogStash::Logging::Logger).to receive(:debug)
         .with(/stromae plugin is using the 'milestone' method/)
 
       class LogStash::Filters::Stromae < LogStash::Filters::Base
@@ -278,6 +278,7 @@ describe LogStash::Plugin do
     [LogStash::Inputs::Base, LogStash::Filters::Base, LogStash::Outputs::Base].each do |base|
       let(:plugin) do
         Class.new(base) do
+          #include LogStash::Util::Loggable
           config_name "testing"
 
           def register

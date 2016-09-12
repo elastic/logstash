@@ -22,6 +22,8 @@ require "logstash/output_delegator"
 require "logstash/filter_delegator"
 
 module LogStash; class Pipeline
+  include LogStash::Util::Loggable
+
   attr_reader :inputs,
     :filters,
     :outputs,
@@ -30,7 +32,6 @@ module LogStash; class Pipeline
     :events_filtered,
     :reporter,
     :pipeline_id,
-    :logger,
     :started_at,
     :thread,
     :config_str,
@@ -47,13 +48,12 @@ module LogStash; class Pipeline
   ]
 
   def initialize(config_str, settings = SETTINGS, namespaced_metric = nil)
+    @logger = self.logger
     @config_str = config_str
     @config_hash = Digest::SHA1.hexdigest(@config_str)
     # Every time #plugin is invoked this is incremented to give each plugin
     # a unique id when auto-generating plugin ids
-    @plugin_counter ||= 0 
-    
-    @logger = Cabin::Channel.get(LogStash)
+    @plugin_counter ||= 0
     @settings = settings
     @pipeline_id = @settings.get_value("pipeline.id") || self.object_id
     @reporter = PipelineReporter.new(@logger, self)
@@ -84,8 +84,8 @@ module LogStash; class Pipeline
     # The config code is hard to represent as a log message...
     # So just print it.
 
-    if @settings.get_value("config.debug") && logger.debug?
-      logger.debug("Compiled pipeline code", :code => code)
+    if @settings.get_value("config.debug") && @logger.debug?
+      @logger.debug("Compiled pipeline code", :code => code)
     end
 
     begin
@@ -174,7 +174,7 @@ module LogStash; class Pipeline
 
     start_workers
 
-    @logger.log("Pipeline #{@pipeline_id} started")
+    @logger.info("Pipeline #{@pipeline_id} started")
 
     # Block until all inputs have stopped
     # Generally this happens if SIGINT is sent and `shutdown` is called from an external thread
@@ -191,7 +191,7 @@ module LogStash; class Pipeline
 
     @filter_queue_client.close
 
-    @logger.log("Pipeline #{@pipeline_id} has been shutdown")
+    @logger.info("Pipeline #{@pipeline_id} has been shutdown")
 
     # exit code
     return 0

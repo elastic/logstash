@@ -19,6 +19,7 @@ namespace "artifact" do
       "lib/systeminstall/**/*",
       "logstash-core/lib/**/*",
       "logstash-core/locales/**/*",
+      "logstash-core/vendor/**/*",
       "logstash-core/*.gemspec",
       "logstash-core-event-java/lib/**/*",
       "logstash-core-event-java/*.gemspec",
@@ -322,8 +323,6 @@ namespace "artifact" do
       dir.input("#{empty}/=/etc/logstash/conf.d")
     end
 
-    # produce: logstash-5.0.0-alpha1.deb"
-    # produce: logstash-5.0.0-alpha1.rpm
     package_filename = "logstash-#{LOGSTASH_VERSION}#{PACKAGE_SUFFIX}.TYPE"
 
     case platform

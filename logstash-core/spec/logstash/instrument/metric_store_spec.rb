@@ -221,4 +221,35 @@ describe LogStash::Instrument::MetricStore do
       end
     end
   end
+
+  describe "#prune" do
+    let(:metric_events) {
+      [
+        [[:node, :sashimi, :pipelines, :pipeline01, :plugins, :"logstash-output-elasticsearch"], :event_in, :increment],
+        [[:node, :sashimi, :pipelines, :pipeline01], :processed_events_in, :increment],
+        [[:node, :sashimi, :pipelines, :pipeline01], :processed_events_out, :increment],
+        [[:node, :sashimi, :pipelines, :pipeline02], :processed_events_out, :increment],
+      ]
+    }
+
+    before :each do
+      # Lets add a few metrics in the store before trying to find them
+      metric_events.each do |namespaces, metric_key, action|
+        metric = subject.fetch_or_store(namespaces, metric_key, LogStash::Instrument::MetricType::Counter.new(namespaces, metric_key))
+        metric.execute(action)
+      end
+    end
+
+    it "should remove all keys with the same starting path as the argument" do
+      expect(subject.get(:node, :sashimi, :pipelines, :pipeline01)).to be_a(Hash)
+      subject.prune("/node/sashimi/pipelines/pipeline01")
+      expect { subject.get(:node, :sashimi, :pipelines, :pipeline01) }.to raise_error LogStash::Instrument::MetricStore::MetricNotFound
+    end
+
+    it "should keep other metrics on different path branches" do
+      expect(subject.get(:node, :sashimi, :pipelines, :pipeline02)).to be_a(Hash)
+      subject.prune("/node/sashimi/pipelines/pipeline01")
+      expect { subject.get(:node, :sashimi, :pipelines, :pipeline02) }.to_not raise_error
+    end
+  end
 end
