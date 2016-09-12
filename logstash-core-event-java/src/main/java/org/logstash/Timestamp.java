@@ -10,7 +10,7 @@ import org.joda.time.format.ISODateTimeFormat;
 
 import java.util.Date;
 
-@JsonSerialize(using = com.logstash.json.TimestampSerializer.class)
+@JsonSerialize(using = org.logstash.json.TimestampSerializer.class)
 public class Timestamp implements Cloneable {
 
     // all methods setting the time object must set it in the UTC timezone

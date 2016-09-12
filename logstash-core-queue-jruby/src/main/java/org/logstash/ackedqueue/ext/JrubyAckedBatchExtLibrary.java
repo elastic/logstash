@@ -1,7 +1,5 @@
 package org.logstash.ackedqueue.ext;
 
-import com.logstash.Event;
-import com.logstash.ext.JrubyEventExtLibrary;
 import org.jruby.*;
 import org.jruby.anno.JRubyClass;
 import org.jruby.anno.JRubyMethod;
@@ -10,6 +8,8 @@ import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.jruby.runtime.load.Library;
 import org.logstash.ackedqueue.Batch;
+import org.logstash.Event;
+import org.logstash.ext.JrubyEventExtLibrary;
 
 import java.io.IOException;
 

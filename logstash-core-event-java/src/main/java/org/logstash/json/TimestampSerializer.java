@@ -1,9 +1,9 @@
-package com.logstash.json;
+package org.logstash.json;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
-import com.logstash.Timestamp;
+import org.logstash.Timestamp;
 
 import java.io.IOException;
 

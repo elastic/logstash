@@ -1,7 +1,7 @@
 package org.logstash.ackedqueue.ext;
 
-import com.logstash.Event;
-import com.logstash.ext.JrubyEventExtLibrary;
+import org.logstash.Event;
+import org.logstash.ext.JrubyEventExtLibrary;
 import org.jruby.Ruby;
 import org.jruby.RubyClass;
 import org.jruby.RubyFixnum;

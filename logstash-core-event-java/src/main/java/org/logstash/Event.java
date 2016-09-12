@@ -20,8 +20,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.logstash.ObjectMappers.CBOR_MAPPER;
-import static com.logstash.ObjectMappers.JSON_MAPPER;
+import static org.logstash.ObjectMappers.CBOR_MAPPER;
+import static org.logstash.ObjectMappers.JSON_MAPPER;
 
 
 public class Event implements Cloneable, Serializable, Queueable {

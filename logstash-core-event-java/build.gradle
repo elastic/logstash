@@ -1,5 +1,6 @@
 group = 'org.logstash'
-//version '1.0-SNAPSHOT'
+//version commented out because we have to figure the jar generation and usage with version in filename
+//version = '6.0.0-alpha1'
 
 buildscript {
     repositories {
