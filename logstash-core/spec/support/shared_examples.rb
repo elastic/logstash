@@ -95,4 +95,14 @@ shared_examples "metrics commons operations" do
   end
 end
 
+shared_examples "not found" do
+  it "should return a 404 to unknown request" do
+    do_request { get "/i_want_to_believe-#{Time.now.to_i}" }
+    expect(last_response.content_type).to eq("application/json")
+    expect(last_response).not_to be_ok
+    expect(last_response.status).to eq(404)
+    expect(LogStash::Json.load(last_response.body)).to include("status" => 404)
+    expect(LogStash::Json.load(last_response.body)["path"]).not_to be_nil
+  end
+end
 
