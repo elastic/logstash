@@ -1,11 +1,13 @@
 # encoding: utf-8
 require "logstash/api/app_helpers"
 require "logstash/api/command_factory"
+require "logstash/api/errors"
 
 module LogStash
   module Api
     module Modules
       class Base < ::Sinatra::Base
+
         helpers AppHelpers
 
         # These options never change
@@ -29,15 +31,15 @@ module LogStash
         end
 
         not_found do
-          status 404
-          as   = params.has_key?("human") ? :string : :json
-          text = as == :string ? "" : {}
-          respond_with(text, :as => as)
+          # We cannot raise here because it wont be catched by the `error` handler.
+          # So we manually create a new instance of NotFound and just pass it down.
+          respond_with(NotFoundError.new)
         end
 
-        protected
-        def human?
-          params.has_key?("human") && (params["human"].nil? || as_boolean(params["human"]) == true)
+        # This allow to have custom exception but keep a consistent
+        # format to report them.
+        error ApiError do |error|
+          respond_with(error)
         end
       end
     end
