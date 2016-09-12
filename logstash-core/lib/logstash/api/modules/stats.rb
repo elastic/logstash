@@ -3,7 +3,6 @@ module LogStash
   module Api
     module Modules
       class Stats < ::LogStash::Api::Modules::Base
-
         def stats_command
           factory.build(:stats)
         end
@@ -36,7 +35,6 @@ module LogStash
           }
           respond_with(payload, {:filter => params["filter"]})
         end
-
       end
     end
   end
