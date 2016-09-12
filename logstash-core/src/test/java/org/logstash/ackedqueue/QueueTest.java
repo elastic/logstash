@@ -1,10 +1,16 @@
 package org.logstash.ackedqueue;
 
+import org.jruby.runtime.callsite.EqCallSite;
 import org.junit.Test;
 import org.logstash.common.io.ByteBufferPageIO;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
@@ -277,5 +283,41 @@ public class QueueTest {
             assertThat(q.getTailPages().size(), is(equalTo(0)));
         }
     }
+
+    @Test(timeout = 1000)
+    public void reachMaxUnread() throws IOException, InterruptedException, ExecutionException {
+        Settings settings = TestSettings.getSettings(128); // 128 is abritrary, just bigger thant larger serialized test object
+        settings.setMaxUnread(2); // 2 so we know the first write should not block and the second should
+        TestQueue q = new TestQueue(settings);
+        q.open();
+
+        Queueable element = new StringElement("foobarbaz");
+
+        long seqNum = q.write(element);
+        assertThat(seqNum, is(equalTo(1L)));
+        assertThat(q.isFull(), is(false));
+
+        // we expect the next write call to block so let's wrap it in a Future
+
+        Callable<Long> write = () -> {
+            return q.write(element);
+        };
+
+        ExecutorService executor = Executors.newFixedThreadPool(1);
+        Future<Long> future = executor.submit(write);
+
+        while (!q.isFull()) { Thread.sleep(100); }
+        assertThat(q.unreadCount, is(equalTo(2L)));
+        assertThat(future.isDone(), is(false));
+
+        // read one element, which will unblock the last write
+        Batch b = q.nonBlockReadBatch(1);
+        assertThat(b.getElements().size(), is(equalTo(1)));
+
+        // future result is the blocked write seqNum for the second element
+        assertThat(future.get(), is(equalTo(2L)));
+        assertThat(q.isFull(), is(false));
+    }
+
 
 }
