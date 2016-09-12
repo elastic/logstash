@@ -117,18 +117,17 @@ module LogStash; class Pipeline
   def build_queue_from_settings
     # returns a queue instance
     queue_page_capacity = settings.get("queue.page_capacity")
+    queue_capacity = settings.get("queue.queue_capacity")
     queue_type = settings.get("queue.type")
     if queue_type == "memory"
-      STDERR.puts "-----------> memory queue"
-      LogStash::Util::WrappedAckedQueue.create_memory_based("", queue_page_capacity)
+      LogStash::Util::WrappedAckedQueue.create_memory_based("", queue_page_capacity, queue_capacity)
     elsif queue_type == "synchronous"
-      STDERR.puts "-----------> sync queue"
       LogStash::Util::WrappedSynchronousQueue.new()
     else
-      STDERR.puts "-----------> file queue", caller.grep(/pipeline_spec/)
+      STDERR.puts "-----------> file queue", caller.grep(/_spec/)
       # default to a persistent queue
       queue_path = settings.get("path.queue")
-      LogStash::Util::WrappedAckedQueue.create_file_based(queue_path, queue_page_capacity)
+      LogStash::Util::WrappedAckedQueue.create_file_based(queue_path, queue_page_capacity, queue_capacity)
     end
   end
 

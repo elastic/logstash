@@ -22,7 +22,7 @@ module LogStash
            Setting::Boolean.new("config.test_and_exit", false),
            Setting::Boolean.new("config.reload.automatic", false),
            Setting::Numeric.new("config.reload.interval", 3), # in seconds
-           Setting::Boolean.new("metric.collect", true) {|v| v == true }, # metric collection cannot be disabled
+           Setting::Boolean.new("metric.collect", true), #{|v| v == true }, # metric collection cannot be disabled
             Setting::String.new("pipeline.id", "main"),
    Setting::PositiveInteger.new("pipeline.workers", LogStash::Config::CpuCoreStrategy.maximum),
    Setting::PositiveInteger.new("pipeline.output.workers", 1),
@@ -42,6 +42,7 @@ module LogStash
             Setting::String.new("http.environment", "production"),
             Setting::String.new("queue.type", "persisted", true, ["persisted", "memory", "synchronous"]),
             Setting::Numeric.new("queue.page_capacity", 250 * 1024 * 1024),
+            Setting::Numeric.new("queue.queue_capacity", 250 * 1024 * 1024),
             Setting::WritableDirectory.new("path.queue", ::File.join(LogStash::Environment::LOGSTASH_HOME, "lsqueue")),
 
   ].each {|setting| SETTINGS.register(setting) }
