@@ -284,7 +284,7 @@ public class QueueTest {
         }
     }
 
-    @Test(timeout = 1000)
+    @Test(timeout = 5000)
     public void reachMaxUnread() throws IOException, InterruptedException, ExecutionException {
         Settings settings = TestSettings.getSettings(128); // 128 is abritrary, just bigger thant larger serialized test object
         settings.setMaxUnread(2); // 2 so we know the first write should not block and the second should
@@ -297,26 +297,33 @@ public class QueueTest {
         assertThat(seqNum, is(equalTo(1L)));
         assertThat(q.isFull(), is(false));
 
-        // we expect the next write call to block so let's wrap it in a Future
+        for (int i = 0; i < 1000; i++) {
 
-        Callable<Long> write = () -> {
-            return q.write(element);
-        };
+            // we expect the next write call to block so let's wrap it in a Future
+            Callable<Long> write = () -> {
+                return q.write(element);
+            };
 
-        ExecutorService executor = Executors.newFixedThreadPool(1);
-        Future<Long> future = executor.submit(write);
+            ExecutorService executor = Executors.newFixedThreadPool(1);
+            Future<Long> future = executor.submit(write);
 
-        while (!q.isFull()) { Thread.sleep(100); }
-        assertThat(q.unreadCount, is(equalTo(2L)));
-        assertThat(future.isDone(), is(false));
+            while (!q.isFull()) {
+                // spin wait until data is written and write blocks
+                Thread.sleep(1);
+            }
+            assertThat(q.unreadCount, is(equalTo(2L)));
+            assertThat(future.isDone(), is(false));
 
-        // read one element, which will unblock the last write
-        Batch b = q.nonBlockReadBatch(1);
-        assertThat(b.getElements().size(), is(equalTo(1)));
+            // read one element, which will unblock the last write
+            Batch b = q.nonBlockReadBatch(1);
+            assertThat(b.getElements().size(), is(equalTo(1)));
 
-        // future result is the blocked write seqNum for the second element
-        assertThat(future.get(), is(equalTo(2L)));
-        assertThat(q.isFull(), is(false));
+            // future result is the blocked write seqNum for the second element
+            assertThat(future.get(), is(equalTo(2L + i)));
+            assertThat(q.isFull(), is(false));
+
+            executor.shutdown();
+        }
     }
 
 
