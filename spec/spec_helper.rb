@@ -37,6 +37,8 @@ RSpec.configure do |c|
     end
 
     LogStash::SETTINGS.set("queue.type", "memory")
+    LogStash::SETTINGS.set("queue.page_capacity", 1024 * 1024)
+    LogStash::SETTINGS.set("queue.queue_capacity", 250)
   end
 end
 

@@ -19,15 +19,15 @@ module LogStash; module Util
     class QueueClosedError < ::StandardError; end
     class NotImplementedError < ::StandardError; end
 
-    def self.create_memory_based(path, size)
+    def self.create_memory_based(path, capacity, size)
       self.allocate.with_queue(
-        LogStash::AckedMemoryQueue.new(path, size)
+        LogStash::AckedMemoryQueue.new(path, capacity, size)
       )
     end
 
-    def self.create_file_based(path, size)
+    def self.create_file_based(path, capacity, size)
       self.allocate.with_queue(
-        LogStash::AckedQueue.new(path, size)
+        LogStash::AckedQueue.new(path, capacity, size)
       )
     end
 

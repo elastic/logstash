@@ -428,6 +428,9 @@ public class Queue implements Closeable {
                 for (BeheadedPage p : this.tailPages) { p.close(); }
                 this.headPage.close();
 
+//                this.tailPages.clear();
+//                this.headPage = null;
+
                 notEmpty.signalAll();
                 notFull.signalAll();
             } finally {
