@@ -16,12 +16,12 @@ class LogStash::Plugin
       @timer = 0
     end
 
-    def start
-      @timer = Time.now
+    def start(now=::Time.now)
+      @timer = now
     end
 
-    def stop
-      Time.now - @timer
+    def stop(now=::Time.now)
+      now - @timer
     end
   end
 
