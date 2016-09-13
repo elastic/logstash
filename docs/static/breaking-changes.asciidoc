@@ -10,9 +10,9 @@ after installing it via a package (RPM, DEB).
 
 **Release Packages:** When Logstash is installed via DEB, RPM packages, it uses `/usr/share/logstash` and `/var/lib/logstash` to install binaries and config files 
 respectively. Previously it used to install in `/opt` directory. This change was done to make the user experience 
-consistent with other Elastic products. Full directory layout is described https://www.elastic.co/guide/en/logstash/5.0/dir-layout.html[here].
+consistent with other Elastic products. Full directory layout is described in <<dir-layout>>.
 
-**Command Line Interface:** Most of the long form https://www.elastic.co/guide/en/logstash/5.0/command-line-flags.html[options] have been renamed 
+**Command Line Interface:** Most of the long form <<command-line-flags,options>> have been renamed 
 to adhere to the yml dot notation to be used in the settings file. Short form options have not been changed.
 
 **Plugin Manager Renamed:** `bin/plugin` has been renamed to `bin/logstash-plugin`. This change was to mainly prevent `PATH` being polluted when 
