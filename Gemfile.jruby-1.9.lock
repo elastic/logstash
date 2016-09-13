@@ -179,7 +179,7 @@ GEM
     logstash-codec-rubydebug (3.0.2)
       awesome_print
       logstash-core-plugin-api (>= 1.60, <= 2.99)
-    logstash-devutils (1.0.2-java)
+    logstash-devutils (1.1.0-java)
       fivemat
       gem_publisher
       insist (= 1.0.0)
@@ -473,7 +473,7 @@ GEM
     logstash-output-stdout (3.1.0)
       logstash-codec-line
       logstash-core-plugin-api (>= 1.60.1, < 2.99)
-    logstash-output-tcp (3.2.0)
+    logstash-output-tcp (4.0.0)
       logstash-codec-json
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       stud
@@ -636,7 +636,7 @@ DEPENDENCIES
   logstash-core!
   logstash-core-event-java!
   logstash-core-plugin-api!
-  logstash-devutils
+  logstash-devutils (~> 1.1)
   logstash-filter-clone
   logstash-filter-csv
   logstash-filter-date
