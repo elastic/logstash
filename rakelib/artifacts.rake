@@ -309,10 +309,6 @@ namespace "artifact" do
 
     basedir = File.join(File.dirname(__FILE__), "..")
 
-    File.join(basedir, "pkg", "log4j2.properties").tap do |path|
-      dir.input("#{path}=/etc/logstash")
-    end
-
     # Create an empty /var/log/logstash/ directory in the package
     # This is a bit obtuse, I suppose, but it is necessary until
     # we find a better way to do this with fpm.
@@ -323,13 +319,14 @@ namespace "artifact" do
       dir.input("#{empty}/=/etc/logstash/conf.d")
     end
 
+    File.join(basedir, "pkg", "log4j2.properties").tap do |path|
+      dir.input("#{path}=/etc/logstash")
+    end
+    
     package_filename = "logstash-#{LOGSTASH_VERSION}#{PACKAGE_SUFFIX}.TYPE"
 
     case platform
       when "redhat", "centos"
-        File.join(basedir, "pkg", "logrotate.conf").tap do |path|
-          dir.input("#{path}=/etc/logrotate.d/logstash")
-        end
         File.join(basedir, "pkg", "startup.options").tap do |path|
           dir.input("#{path}=/etc/logstash")
         end
@@ -346,7 +343,6 @@ namespace "artifact" do
         out.attributes[:rpm_user] = "root"
         out.attributes[:rpm_group] = "root"
         out.attributes[:rpm_os] = "linux"
-        out.config_files << "etc/logrotate.d/logstash"
         out.config_files << "/etc/logstash/startup.options"
         out.config_files << "/etc/logstash/jvm.options"
         out.config_files << "/etc/logstash/logstash.yml"
@@ -366,7 +362,6 @@ namespace "artifact" do
         out.attributes[:deb_user] = "root"
         out.attributes[:deb_group] = "root"
         out.attributes[:deb_suggests] = "java8-runtime-headless"
-        out.config_files << "/etc/logrotate.d/logstash"
         out.config_files << "/etc/logstash/startup.options"
         out.config_files << "/etc/logstash/jvm.options"
         out.config_files << "/etc/logstash/logstash.yml"
@@ -394,7 +389,6 @@ namespace "artifact" do
     out.url = "http://www.elasticsearch.org/overview/logstash/"
     out.description = "An extensible logging pipeline"
     out.vendor = "Elasticsearch"
-    out.dependencies << "logrotate"
 
     # Because we made a mistake in naming the RC version numbers, both rpm and deb view
     # "1.5.0.rc1" higher than "1.5.0". Setting the epoch to 1 ensures that we get a kind
