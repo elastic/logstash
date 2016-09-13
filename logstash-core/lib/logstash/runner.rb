@@ -171,15 +171,6 @@ class LogStash::Runner < Clamp::StrictCommand
       end
     end
 
-    # Configure Logstash logging facility, this need to be done before everything else to
-    # make sure the logger has the correct settings and the log level is correctly defined.
-    # TODO(talevy): cleanly support `path.logs` setting in log4j
-    java.lang.System.setProperty("ls.logs", setting("path.logs"))
-    unless java.lang.System.getProperty("log4j.configurationFile")
-      log4j_config_location = ::File.join(setting("path.settings"), "log4j2.properties")
-      LogStash::Logging::Logger::initialize(log4j_config_location)
-    end
-
     super(*[args])
   end
 
@@ -188,7 +179,15 @@ class LogStash::Runner < Clamp::StrictCommand
     require "logstash/util/java_version"
     require "stud/task"
 
-    LogStash::Logging::Logger::configure_logging(setting("log.level"))
+    # Configure Logstash logging facility, this need to be done before everything else to
+    # make sure the logger has the correct settings and the log level is correctly defined.
+    java.lang.System.setProperty("ls.logs", setting("path.logs"))
+    java.lang.System.setProperty("ls.log.format", setting("log.format"))
+    java.lang.System.setProperty("ls.log.level", setting("log.level"))
+    unless java.lang.System.getProperty("log4j.configurationFile")
+      log4j_config_location = ::File.join(setting("path.settings"), "log4j2.properties")
+      LogStash::Logging::Logger::initialize(log4j_config_location)
+    end
 
     if setting("config.debug") && logger.debug?
       logger.warn("--config.debug was specified, but log.level was not set to \'debug\'! No config info will be logged.")
