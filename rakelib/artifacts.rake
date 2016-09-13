@@ -309,7 +309,7 @@ namespace "artifact" do
 
     basedir = File.join(File.dirname(__FILE__), "..")
 
-    File.join(basedir, "pkg", "log4j2.conf").tap do |path|
+    File.join(basedir, "pkg", "log4j2.properties").tap do |path|
       dir.input("#{path}=/etc/logstash")
     end
 
