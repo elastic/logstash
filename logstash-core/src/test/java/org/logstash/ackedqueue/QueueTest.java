@@ -15,6 +15,7 @@ import java.util.concurrent.Future;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 public class QueueTest {
@@ -286,18 +287,21 @@ public class QueueTest {
 
     @Test(timeout = 5000)
     public void reachMaxUnread() throws IOException, InterruptedException, ExecutionException {
-        Settings settings = TestSettings.getSettings(128); // 128 is abritrary, just bigger thant larger serialized test object
+        Queueable element = new StringElement("foobarbaz");
+        int singleElementCapacity = ByteBufferPageIO.HEADER_SIZE + ByteBufferPageIO._persistedByteCount(element.serialize().length);
+
+        Settings settings = TestSettings.getSettings(singleElementCapacity);
         settings.setMaxUnread(2); // 2 so we know the first write should not block and the second should
         TestQueue q = new TestQueue(settings);
         q.open();
 
-        Queueable element = new StringElement("foobarbaz");
 
         long seqNum = q.write(element);
         assertThat(seqNum, is(equalTo(1L)));
         assertThat(q.isFull(), is(false));
 
-        for (int i = 0; i < 1000; i++) {
+        int ELEMENT_COUNT = 1000;
+        for (int i = 0; i < ELEMENT_COUNT; i++) {
 
             // we expect the next write call to block so let's wrap it in a Future
             Callable<Long> write = () -> {
@@ -324,7 +328,61 @@ public class QueueTest {
 
             executor.shutdown();
         }
+
+        // since we did not ack and pages hold a single item
+        assertThat(q.getTailPages().size(), is(equalTo(ELEMENT_COUNT)));
     }
 
+    @Test
+    public void reachMaxUnreadWithAcking() throws IOException, InterruptedException, ExecutionException {
+        Queueable element = new StringElement("foobarbaz");
+
+        Settings settings = TestSettings.getSettings(256); // 256 is arbitrary, large enough to hold a few elements
+        settings.setMaxUnread(2); // 2 so we know the first write should not block and the second should
+        TestQueue q = new TestQueue(settings);
+        q.open();
+
+
+        long seqNum = q.write(element);
+        assertThat(seqNum, is(equalTo(1L)));
+        assertThat(q.isFull(), is(false));
+
+        int ELEMENT_COUNT = 1000;
+        for (int i = 0; i < ELEMENT_COUNT; i++) {
+
+            // we expect the next write call to block so let's wrap it in a Future
+            Callable<Long> write = () -> {
+                return q.write(element);
+            };
+
+            ExecutorService executor = Executors.newFixedThreadPool(1);
+            Future<Long> future = executor.submit(write);
+
+            while (!q.isFull()) {
+                // spin wait until data is written and write blocks
+                Thread.sleep(1);
+            }
+
+            // read one element, which will unblock the last write
+            Batch b = q.nonBlockReadBatch(1);
+            assertThat(b, is(notNullValue()));
+            b.close();
+
+            // future result is the blocked write seqNum for the second element
+            assertThat(future.get(), is(equalTo(2L + i)));
+            assertThat(q.isFull(), is(false));
+
+            executor.shutdown();
+        }
+
+        // all batches are acked, no tail pages should exist
+        assertThat(q.getTailPages().size(), is(equalTo(0)));
+
+        // the last read unblocked the last write so some elements (1 unread and some acked) should be in the head page
+        assertThat(q.getHeadPage().getElementCount() > 1L, is(true));
+        assertThat(q.getHeadPage().unreadCount(), is(equalTo(1L)));
+        assertThat(q.unreadCount, is(equalTo(1L)));
+
+    }
 
 }
