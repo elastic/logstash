@@ -32,4 +32,8 @@ qa/.vm_ssh_config
 qa/.vagrant
 qa/acceptance/.vagrant
 qa/Gemfile.lock
-
+*.ipr
+*.iws
+*.iml
+.gradle
+.idea

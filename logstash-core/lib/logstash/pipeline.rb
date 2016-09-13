@@ -184,14 +184,14 @@ module LogStash; class Pipeline
     wait_inputs
     transition_to_stopped
 
-    @logger.info("Input plugins stopped! Will shutdown filter/output workers.")
+    @logger.debug("Input plugins stopped! Will shutdown filter/output workers.")
 
     shutdown_flusher
     shutdown_workers
 
     @filter_queue_client.close
 
-    @logger.info("Pipeline #{@pipeline_id} has been shutdown")
+    @logger.debug("Pipeline #{@pipeline_id} has been shutdown")
 
     # exit code
     return 0
@@ -400,9 +400,9 @@ module LogStash; class Pipeline
 
     before_stop.call if block_given?
 
-    @logger.info "Closing inputs"
+    @logger.debug "Closing inputs"
     @inputs.each(&:do_stop)
-    @logger.info "Closed inputs"
+    @logger.debug "Closed inputs"
   end # def shutdown
 
   # After `shutdown` is called from an external thread this is called from the main thread to

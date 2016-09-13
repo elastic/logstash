@@ -54,7 +54,7 @@ class LogStash::Agent
 
   def execute
     @thread = Thread.current # this var is implicilty used by Stud.stop?
-    @logger.info("starting agent")
+    @logger.debug("starting agent")
 
     start_pipelines
     start_webserver
@@ -243,7 +243,7 @@ class LogStash::Agent
     pipeline = @pipelines[id]
     return unless pipeline.is_a?(LogStash::Pipeline)
     return if pipeline.ready?
-    @logger.info("starting pipeline", :id => id)
+    @logger.debug("starting pipeline", :id => id)
     Thread.new do
       LogStash::Util.set_thread_name("pipeline.#{id}")
       begin

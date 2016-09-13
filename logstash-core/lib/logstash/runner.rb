@@ -173,15 +173,6 @@ class LogStash::Runner < Clamp::StrictCommand
       end
     end
 
-    # Configure Logstash logging facility, this need to be done before everything else to
-    # make sure the logger has the correct settings and the log level is correctly defined.
-    # TODO(talevy): cleanly support `path.logs` setting in log4j
-    java.lang.System.setProperty("ls.logs", setting("path.logs"))
-    unless java.lang.System.getProperty("log4j.configurationFile")
-      log4j_config_location = ::File.join(setting("path.settings"), "log4j2.properties")
-      LogStash::Logging::Logger::initialize(log4j_config_location)
-    end
-
     super(*[args])
   end
 
@@ -190,6 +181,16 @@ class LogStash::Runner < Clamp::StrictCommand
     require "logstash/util/java_version"
     require "stud/task"
 
+    # Configure Logstash logging facility, this need to be done before everything else to
+    # make sure the logger has the correct settings and the log level is correctly defined.
+    java.lang.System.setProperty("ls.logs", setting("path.logs"))
+    java.lang.System.setProperty("ls.log.format", setting("log.format"))
+    java.lang.System.setProperty("ls.log.level", setting("log.level"))
+    unless java.lang.System.getProperty("log4j.configurationFile")
+      log4j_config_location = ::File.join(setting("path.settings"), "log4j2.properties")
+      LogStash::Logging::Logger::initialize(log4j_config_location)
+    end
+    # override log level that may have been introduced from a custom log4j config file
     LogStash::Logging::Logger::configure_logging(setting("log.level"))
 
     if setting("config.debug") && logger.debug?
@@ -221,7 +222,7 @@ class LogStash::Runner < Clamp::StrictCommand
 
     return start_shell(setting("interactive"), binding) if setting("interactive")
 
-    @settings.format_settings.each {|line| logger.info(line) }
+    @settings.format_settings.each {|line| logger.debug(line) }
 
     if setting("config.string").nil? && setting("path.config").nil?
       fail(I18n.t("logstash.runner.missing-configuration"))

@@ -6,6 +6,8 @@ module LogStash
       java_import org.apache.logging.log4j.Level
       java_import org.apache.logging.log4j.LogManager
       java_import org.apache.logging.log4j.core.config.Configurator
+      @@config_mutex = Mutex.new
+      @@logging_context = nil
 
       def initialize(name)
         @logger = LogManager.getLogger(name)
@@ -59,13 +61,22 @@ module LogStash
         @logger.trace(message, data)
       end
 
-      # Point logging at a specific path.
       def self.configure_logging(level, path = LogManager::ROOT_LOGGER_NAME)
-        Configurator.setLevel(path, Level.toLevel(level))
-      end # def configure_logging
+        @@config_mutex.synchronize { Configurator.setLevel(path, Level.valueOf(level)) }
+      rescue Exception => e
+        raise ArgumentError, "invalid level[#{level}] for logger[#{path}]"
+      end
 
       def self.initialize(config_location)
-        Configurator.initialize(nil, config_location)
+        @@config_mutex.synchronize do
+          if @@logging_context.nil?
+            @@logging_context = Configurator.initialize(nil, config_location)
+          end
+        end
+      end
+
+      def self.get_logging_context
+        return @@logging_context
       end
     end
   end

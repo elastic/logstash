@@ -1,11 +1,13 @@
 # encoding: utf-8
 require_relative "../../spec_helper"
+require_relative "../../../support/shared_examples"
 require "sinatra"
 require "logstash/api/modules/node"
 require "logstash/json"
 
 describe LogStash::Api::Modules::Node do
   include_context "api setup"
+  include_examples "not found"
 
   describe "#hot threads" do
 

@@ -5,6 +5,7 @@ require "logstash/api/modules/node"
 require "logstash/api/modules/node_stats"
 require "logstash/api/modules/plugins"
 require "logstash/api/modules/root"
+require "logstash/api/modules/logging"
 require "logstash/api/modules/stats"
 
 module LogStash
@@ -31,9 +32,9 @@ module LogStash
           status, headers, body = res
 
           if fatal_error?(status)
-            @logger.warn? && @logger.warn(LOG_MESSAGE, RackApp.log_metadata(status, env))
+            @logger.error? && @logger.error(LOG_MESSAGE, RackApp.log_metadata(status, env))
           else
-            @logger.info? && @logger.info(LOG_MESSAGE, RackApp.log_metadata(status, env))
+            @logger.debug? && @logger.debug(LOG_MESSAGE, RackApp.log_metadata(status, env))
           end
 
           res
@@ -103,7 +104,8 @@ module LogStash
           "/_node" => LogStash::Api::Modules::Node,
           "/_stats" => LogStash::Api::Modules::Stats,
           "/_node/stats" => LogStash::Api::Modules::NodeStats,
-          "/_node/plugins" => LogStash::Api::Modules::Plugins
+          "/_node/plugins" => LogStash::Api::Modules::Plugins,
+          "/_node/logging" => LogStash::Api::Modules::Logging
         }
       end
     end

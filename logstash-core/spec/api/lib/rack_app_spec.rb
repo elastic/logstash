@@ -76,14 +76,14 @@ describe LogStash::Api::RackApp do
     end
 
     it "should log good requests as info" do
-      expect(logger).to receive(:info?).and_return(true)
-      expect(logger).to receive(:info).with(LogStash::Api::RackApp::ApiLogger::LOG_MESSAGE, anything).once
+      expect(logger).to receive(:debug?).and_return(true)
+      expect(logger).to receive(:debug).with(LogStash::Api::RackApp::ApiLogger::LOG_MESSAGE, anything).once
       get "/good-page"
     end
 
     it "should log 5xx requests as warnings" do
-      expect(logger).to receive(:warn?).and_return(true)
-      expect(logger).to receive(:warn).with(LogStash::Api::RackApp::ApiLogger::LOG_MESSAGE, anything).once
+      expect(logger).to receive(:error?).and_return(true)
+      expect(logger).to receive(:error).with(LogStash::Api::RackApp::ApiLogger::LOG_MESSAGE, anything).once
       get "/service-unavailable"
     end
   end

@@ -101,12 +101,12 @@
 # Options for log.level:
 #   * fatal
 #   * error
-#   * warn (default)
-#   * info
+#   * warn
+#   * info (default)
 #   * debug
 #   * trace
 #
-# log.level: warn
+# log.level: info
 # path.logs: LOGSTASH_HOME/logs
 #
 # ------------ Other Settings --------------
