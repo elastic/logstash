@@ -309,8 +309,8 @@ namespace "artifact" do
 
     basedir = File.join(File.dirname(__FILE__), "..")
 
-    File.join(basedir, "pkg", "logrotate.conf").tap do |path|
-      dir.input("#{path}=/etc/logrotate.d/logstash")
+    File.join(basedir, "pkg", "log4j2.conf").tap do |path|
+      dir.input("#{path}=/etc/logstash")
     end
 
     # Create an empty /var/log/logstash/ directory in the package
