@@ -107,7 +107,7 @@
 #   * trace
 #
 # log.level: info
-# path.logs: LOGSTASH_HOME/logs
+# path.logs:
 #
 # ------------ Other Settings --------------
 #
