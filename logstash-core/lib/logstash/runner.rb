@@ -219,7 +219,7 @@ class LogStash::Runner < Clamp::StrictCommand
 
     return start_shell(setting("interactive"), binding) if setting("interactive")
 
-    @settings.format_settings.each {|line| logger.info(line) }
+    @settings.format_settings.each {|line| logger.debug(line) }
 
     if setting("config.string").nil? && setting("path.config").nil?
       fail(I18n.t("logstash.runner.missing-configuration"))
