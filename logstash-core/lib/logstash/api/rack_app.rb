@@ -32,9 +32,9 @@ module LogStash
           status, headers, body = res
 
           if fatal_error?(status)
-            @logger.warn? && @logger.warn(LOG_MESSAGE, RackApp.log_metadata(status, env))
+            @logger.error? && @logger.error(LOG_MESSAGE, RackApp.log_metadata(status, env))
           else
-            @logger.info? && @logger.info(LOG_MESSAGE, RackApp.log_metadata(status, env))
+            @logger.debug? && @logger.debug(LOG_MESSAGE, RackApp.log_metadata(status, env))
           end
 
           res

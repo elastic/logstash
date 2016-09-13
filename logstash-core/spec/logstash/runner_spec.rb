@@ -21,6 +21,7 @@ describe LogStash::Runner do
     allow(LogStash::Runner).to receive(:logger).and_return(logger)
     allow(logger).to receive(:debug?).and_return(true)
     allow(logger).to receive(:subscribe).with(any_args)
+    allow(logger).to receive(:debug) {}
     allow(logger).to receive(:log) {}
     allow(logger).to receive(:info) {}
     allow(logger).to receive(:fatal) {}
@@ -279,7 +280,7 @@ describe LogStash::Runner do
       it "should set log level to warn" do
         args = ["--version"]
         subject.run("bin/logstash", args)
-        expect(logger.level).to eq(:warn)
+        expect(logger.level).to eq(:info)
       end
     end
     context "when setting to debug" do
