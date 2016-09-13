@@ -104,7 +104,7 @@ module LogStash
       @server = ::Puma::Server.new(app, events)
       @server.add_tcp_listener(http_host, port)
 
-      logger.info("Succesfully started Logstash API", :port => @port)
+      logger.info("Successfully started Logstash API endpoint", :port => @port)
 
       @server.run.join
     end
