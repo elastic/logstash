@@ -1,6 +1,5 @@
 group 'org.logstash'
-//version commented out because we have to figure the jar generation and usage with version in filename
-//version = '6.0.0-alpha1'
+version = '6.0.0-alpha1'
 
 apply plugin: 'java'
 apply plugin: 'idea'
@@ -26,6 +25,7 @@ task javadocJar(type: org.gradle.api.tasks.bundling.Jar, dependsOn: javadoc) {
 task copyGemjar(type: org.gradle.api.tasks.Copy, dependsOn: sourcesJar) {
     from project.jar
     into project.file('lib/logstash-core-queue-jruby/')
+    rename(/(.+)-${project.version}.jar/, '$1.jar')
 }
 
 task cleanGemjar {
@@ -76,7 +76,7 @@ idea {
 dependencies {
     testCompile group: 'junit', name: 'junit', version: '4.12'
     provided group: 'org.jruby', name: 'jruby-core', version: '1.7.25'
-    compile files('../logstash-core-event-java/build/libs/logstash-core-event-java.jar')
-    compile files('../logstash-core/build/libs/logstash-core.jar')
+    compile files('../logstash-core-event-java/lib/logstash-core-event-java/logstash-core-event-java.jar')
+    compile files('../logstash-core/lib/logstash-core/logstash-core.jar')
 }
 

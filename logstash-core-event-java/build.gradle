@@ -1,6 +1,5 @@
 group = 'org.logstash'
-//version commented out because we have to figure the jar generation and usage with version in filename
-//version = '6.0.0-alpha1'
+version = '6.0.0-alpha1'
 
 buildscript {
     repositories {
@@ -46,6 +45,7 @@ task javadocJar(type: Jar, dependsOn: javadoc) {
 task copyGemjar(type: Copy, dependsOn: sourcesJar) {
     from project.jar
     into project.file('lib/logstash-core-event-java/')
+    rename(/(.+)-${project.version}.jar/, '$1.jar')
 }
 
 task cleanGemjar {
@@ -102,7 +102,7 @@ dependencies {
     provided 'org.jruby:jruby-core:1.7.25'
     testCompile 'junit:junit:4.12'
     testCompile 'net.javacrumbs.json-unit:json-unit:1.9.0'
-    compile files('../logstash-core/build/libs/logstash-core.jar')
+    compile files('../logstash-core/lib/logstash-core/logstash-core.jar')
 }
 
 

@@ -1,6 +1,5 @@
 group = 'org.logstash'
-//version commented out because we have to figure the jar generation and usage with version in filename
-//version = '6.0.0-alpha1'
+version = '6.0.0-alpha1'
 
 description = """Logstash Core Java"""
 
@@ -32,6 +31,7 @@ task javadocJar(type: org.gradle.api.tasks.bundling.Jar, dependsOn: javadoc) {
 task copyGemjar(type: org.gradle.api.tasks.Copy, dependsOn: sourcesJar) {
     from project.jar
     into project.file('lib/logstash-core/')
+    rename(/(.+)-${project.version}.jar/, '$1.jar')
 }
 
 task cleanGemjar {
