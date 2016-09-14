@@ -358,7 +358,7 @@ GEM
       logstash-codec-json
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       logstash-mixin-aws (>= 1.0.0)
-    logstash-input-stdin (3.1.1)
+    logstash-input-stdin (3.2.0)
       concurrent-ruby
       jruby-stdin-channel
       logstash-codec-line
@@ -413,7 +413,7 @@ GEM
       logstash-filter-json
       logstash-input-generator
       logstash-output-file
-    logstash-output-elasticsearch (5.1.0-java)
+    logstash-output-elasticsearch (5.1.1-java)
       cabin (~> 0.6)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       manticore (>= 0.5.4, < 1.0.0)
