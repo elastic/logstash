@@ -1,9 +1,9 @@
 [[logging]]
-== Logstash's Internal Logging
+== Logging
 
-Logstash emits internal logs during it's operation, which are placed in `LS_HOME`/logs. The default logging level is `INFO`. 
-Logstash's logging framework is based on http://logging.apache.org/log4j/2.x/[Log4j2 framework], and many of it's functionality are exposed directly 
-to users.
+Logstash emits internal logs during its operation, which are placed in `LS_HOME/logs`. The default logging level is `INFO`. 
+Logstash's logging framework is based on http://logging.apache.org/log4j/2.x/[Log4j2 framework], and many of its functionality 
+are exposed directly to users.
 
 When debugging problems, particularly problems with plugins, it can be helpful to increase the logging level to `DEBUG` 
 to emit more verbose messages. Previously, you could only set a log level which applied to the entire Logstash product. 
@@ -13,7 +13,7 @@ you can reduce noise due to excessive logging and focus on the problem area effe
 
 === Log file location
 
-You can specify log file location using `--path.logs` setting.
+You can specify the log file location using `--path.logs` setting.
 
 === Log4j2 Configuration
 
@@ -24,8 +24,8 @@ Any change made to this file is only effective after a process restart.
 === Logging APIs
 
 You could modify the `log4j2.properties` file and restart your Logstash, but that is both tedious and leads to unnecessary 
-downtime. Instead, you can dynamically update logging levels through the a settings API. These settings are effective 
-immediately and does not need a restart. To do so, take the susbystem/module you are interested in and prepend 
+downtime. Instead, you can dynamically update logging levels through the settings API. These settings are effective 
+immediately and do not need a restart. To do so, take the subsystem/module you are interested in and prepend 
 `logger.` to it. For example:
 
 [source,js]
