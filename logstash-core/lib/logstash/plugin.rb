@@ -138,7 +138,7 @@ class LogStash::Plugin
   end
 
   def slow_logger(threshold, time, message="")
-    @slow_logger ||= LogStash::Logging::PluginSlowLog.new
+    @slow_logger ||= LogStash::Logging::NullLogger.new
     max_time = @params["thresholds"].include?(threshold) ? @params["thresholds"][threshold] : setting(threshold).to_i
     if max_time > 0 && time > max_time
       message = "[#{self.class}] Threshold #{threshold} has been overcome with #{time}" if message.empty?
