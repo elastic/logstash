@@ -25,8 +25,8 @@ Also, this plugin version will not work with Kafka 0.8 broker.
 
 Please see the following specific plugin documentation for new configuration options:
 
-* https://www.elastic.co/guide/en/logstash/{branch}/plugins-inputs-kafka.html[Kafka Input]
-* https://www.elastic.co/guide/en/logstash/{branch}/plugins-outputs-kafka.html[Kafka Output]
+* <<plugins-inputs-kafka,Kafka Input>>
+* <<plugins-outputs-kafka,Kafka Output>>
 
 **Ruby Filter and Custom Plugin Developers:** With the migration to the Java Event (https://github.com/elastic/logstash/issues/4191[Issue 4191]), we have changed 
 how you can access internal data. The Event object no longer returns a reference to the data. Instead, it returns a
