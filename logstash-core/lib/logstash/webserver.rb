@@ -2,7 +2,9 @@
 require "logstash/api/rack_app"
 require "puma"
 require "puma/server"
+require "logstash/patches/puma"
 require "concurrent"
+require "thread"
 
 module LogStash
   class WebServer
@@ -70,32 +72,13 @@ module LogStash
       @server.stop(true) if @server
     end
 
-    # Puma uses by default the STDERR an the STDOUT for all his error
-    # handling, the server class accept custom a events object that can accept custom io object,
-    # so I just wrap the logger into an IO like object.
-    class IOWrappedLogger
-      def initialize(logger)
-        @logger = logger
-      end
-
-      def sync=(v)
-      end
-
-      def puts(str)
-        # The logger only accept a str as the first argument
-        @logger.debug(str.to_s)
-      end
-      alias_method :write, :puts
-      alias_method :<<, :puts
-    end
-
     def start_webserver(port)
       # wrap any output that puma could generate into a wrapped logger
       # use the puma namespace to override STDERR, STDOUT in that scope.
-      io_wrapped_logger = IOWrappedLogger.new(@logger)
+      Puma::STDERR.logger = logger
+      Puma::STDOUT.logger = logger
 
-      ::Puma.const_set("STDERR", io_wrapped_logger) unless ::Puma.const_defined?("STDERR")
-      ::Puma.const_set("STDOUT", io_wrapped_logger) unless ::Puma.const_defined?("STDOUT")
+      io_wrapped_logger = LogStash::IOWrappedLogger.new(logger)
 
       app = LogStash::Api::RackApp.app(logger, agent, http_environment)
 
