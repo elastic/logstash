@@ -18,4 +18,6 @@ Gem::Specification.new do |gem|
   gem.version       = LOGSTASH_CORE_QUEUE_JRUBY_VERSION
 
   gem.platform = "java"
- end
+
+  eval(File.read(File.expand_path("../gemspec_jars.rb", __FILE__)))
+end

@@ -18,6 +18,7 @@ namespace "test" do
 
     require "bootstrap/environment"
     LogStash::Bundler.setup!({:without => [:build]})
+    require "logstash-core"
 
     require "rspec/core/runner"
     require "rspec"

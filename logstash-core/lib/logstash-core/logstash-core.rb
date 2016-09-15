@@ -5,6 +5,8 @@ require "java"
 module LogStash
 end
 
+require "logstash-core_jars"
+
 # local dev setup
 classes_dir = File.expand_path("../../../build/classes/main", __FILE__)
 
