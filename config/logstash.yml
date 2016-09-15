@@ -101,12 +101,12 @@
 # Options for log.level:
 #   * fatal
 #   * error
-#   * warn
-#   * info (default)
+#   * warn (default)
+#   * info
 #   * debug
 #   * trace
 #
-# log.level: info
+# log.level: warn
 # path.logs:
 #
 # ------------ Other Settings --------------

@@ -33,7 +33,7 @@ module LogStash
                     Setting.new("path.plugins", Array, []),
             Setting::String.new("interactive", nil, false),
            Setting::Boolean.new("config.debug", false),
-            Setting::String.new("log.level", "info", true, ["fatal", "error", "warn", "debug", "info", "trace"]),
+            Setting::String.new("log.level", "warn", true, ["fatal", "error", "warn", "debug", "info", "trace"]),
            Setting::Boolean.new("version", false),
            Setting::Boolean.new("help", false),
             Setting::String.new("log.format", "plain", true, ["json", "plain"]),

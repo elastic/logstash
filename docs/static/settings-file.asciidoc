@@ -116,12 +116,12 @@ The `logstash.yml` file includes the following settings:
 a|
 The log level. Valid options are:
 
+* `info`: log info messages
 * `warn`: log warnings
 * `quiet`: log errors
-* `verbose`: log verbose info (for users)
 * `debug`: log debugging info (for developers)
-
-| `warn`
+* `trace`: log trace info (for developers)
+* `fatal`: log fatal messages
  
 | `log.format`
 | The log format. Set to `json` to log in JSON format, or `plain` to use `Object#.inspect`.

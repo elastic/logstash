@@ -61,6 +61,10 @@ module LogStash
         @logger.trace(message, data)
       end
 
+      def log(level, message, data = {})
+        @logger.log(level, message, data)
+      end
+
       def self.configure_logging(level, path = LogManager::ROOT_LOGGER_NAME)
         @@config_mutex.synchronize { Configurator.setLevel(path, Level.valueOf(level)) }
       rescue Exception => e
