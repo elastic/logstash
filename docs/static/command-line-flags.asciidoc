@@ -72,8 +72,8 @@ added[5.0.0-alpha3, Command-line flags have dots instead of dashes in their name
  Set the log level for Logstash. Possible values are:
 * `fatal`: log very severe error messages that will usually be followed by the application aborting
 * `error`: log errors
-* `warn`: log warnings
-* `info`: log verbose info (this is the default)
+* `warn`: log warnings (this is the default)
+* `info`: log verbose info
 * `debug`: log debugging info (for developers)
 * `trace`: log finer-grained messages beyond debugging info
 

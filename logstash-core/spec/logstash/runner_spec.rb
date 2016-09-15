@@ -280,7 +280,7 @@ describe LogStash::Runner do
       it "should set log level to warn" do
         args = ["--version"]
         subject.run("bin/logstash", args)
-        expect(logger.level).to eq(:info)
+        expect(logger.level).to eq(:warn)
       end
     end
     context "when setting to debug" do

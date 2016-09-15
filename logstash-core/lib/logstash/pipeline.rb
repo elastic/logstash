@@ -152,7 +152,7 @@ module LogStash; class Pipeline
 
     start_workers
 
-    @logger.info("Pipeline #{@pipeline_id} started")
+    @logger.log(org.apache.logging.log4j.Level.forName("DIAG", 250), "Pipeline #{@pipeline_id} started")
 
     # Block until all inputs have stopped
     # Generally this happens if SIGINT is sent and `shutdown` is called from an external thread
