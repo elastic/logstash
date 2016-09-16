@@ -23,17 +23,22 @@ module ServiceTester
     def install(package, host=nil)
       hosts  = (host.nil? ? servers : Array(host))
       errors = []
+      exit_status = 0
       at(hosts, {in: :serial}) do |_host|
         cmd = sudo_exec!("yum install -y  #{package}")
+        exit_status += cmd.exit_status
         errors << cmd.stderr unless cmd.stderr.empty?
       end
-      raise InstallException.new(errors.join("\n")) unless errors.empty?
+      if exit_status > 0 
+        raise InstallException.new(errors.join("\n"))
+      end
     end
 
     def uninstall(package, host=nil)
       hosts = (host.nil? ? servers : Array(host))
       at(hosts, {in: :serial}) do |_|
         sudo_exec!("yum remove -y #{package}")
+        sudo_exec!("rm -rf /etc/logstash")
       end
     end
 
