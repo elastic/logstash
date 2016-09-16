@@ -5,6 +5,7 @@ require          'logstash/version'
 RSpec.shared_examples "installable" do |logstash|
 
   before(:each) do
+    logstash.uninstall
     logstash.install({:version => LOGSTASH_VERSION})
   end
 
