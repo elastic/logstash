@@ -38,7 +38,6 @@ module ServiceTester
       hosts = (host.nil? ? servers : Array(host))
       at(hosts, {in: :serial}) do |_|
         sudo_exec!("yum remove -y #{package}")
-        sudo_exec!("rm -rf /etc/logstash")
       end
     end
 
