@@ -52,18 +52,6 @@ class LogStash::Plugin
   # If you don't explicitly set this variable Logstash will generate a unique name.
   config :id, :validate => :string
 
-  # Add a set of specific operation timing thresholds for the plugin, they are used in the context
-  # of reporting slow operations.
-  #
-  # ```
-  #  thresholds => {
-  #    filter.grok.runtime => 12
-  #  }
-  # ```
-  #
-  # The values defined here takes precedence over the ones defined in the logstash config file. (default => {})
-  config :thresholds, :validate => :hash, :default => {}
-
   def hash
     params.hash ^
     self.class.name.hash
@@ -139,7 +127,7 @@ class LogStash::Plugin
 
   def slow_logger(threshold, time, message="")
     @slow_logger ||= LogStash::Logging::NullLogger.new
-    max_time = @params["thresholds"].include?(threshold) ? @params["thresholds"][threshold] : setting(threshold).to_i
+    max_time = setting(threshold).to_i
     if max_time > 0 && time > max_time
       message = "[#{self.class}] Threshold #{threshold} has been overcome with #{time}" if message.empty?
       @slow_logger.log(threshold, time, { :message => message })

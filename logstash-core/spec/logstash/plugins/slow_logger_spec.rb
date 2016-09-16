@@ -28,10 +28,6 @@ describe "slowlog interface" do
 
       let(:slow_logger) { double("slow_logger") }
 
-      let(:config) do
-        { "thresholds" => { "my.op" => 10 } }
-      end
-
       before(:each) do
         allow(slow_logger).to receive(:log)
         plugin.slow_logger = slow_logger
@@ -46,49 +42,20 @@ describe "slowlog interface" do
 
       context "when the threshold is defined" do
 
-        context "in the plugin" do
-          before(:each) do
-            expect(plugin).not_to receive(:setting).with("my.op")
-          end
-
-          it "should not report to the logger if not overcome" do
-            expect(slow_logger).not_to receive(:log)
-            plugin.slow_logger("my.op", 9)
-          end
-
-          it "should report to the logger if overcome" do
-            expect(slow_logger).to receive(:log)
-            plugin.slow_logger("my.op", 11)
-          end
+        before(:each) do
+          expect(plugin).to receive(:setting).with("your.op").and_return(15)
         end
 
-        context "in settings" do
-          before(:each) do
-            expect(plugin).to receive(:setting).with("your.op").and_return(15)
-          end
-
-          it "should not report to the logger if not overcome" do
-            expect(slow_logger).not_to receive(:log)
-            plugin.slow_logger("your.op", 14)
-          end
-
-          it "should report to the logger if overcome" do
-            expect(slow_logger).to receive(:log)
-            plugin.slow_logger("your.op", 16)
-          end
+        it "should not report to the logger if not overcome" do
+          expect(slow_logger).not_to receive(:log)
+          plugin.slow_logger("your.op", 14)
         end
 
-        context "in the plugin and settings" do
-
-          it "should use the value defined in plugin" do
-            expect(plugin).not_to receive(:setting).with("my.op")
-            expect(slow_logger).not_to receive(:log)
-            plugin.slow_logger("my.op", 9)
-          end
-
+        it "should report to the logger if overcome" do
+          expect(slow_logger).to receive(:log)
+          plugin.slow_logger("your.op", 16)
         end
       end
-
     end
 
     describe LogStash::Plugin::Timer do
