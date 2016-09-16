@@ -26,3 +26,17 @@ end
 def installed_plugins
   Gem::Specification.find_all.select { |spec| spec.metadata["logstash_plugin"] }.map { |plugin| plugin.name }
 end
+
+RSpec::Matchers.define :ir_eql do |expected|
+  match do |actual|
+    if expected.java_kind_of?(org.logstash.config.ir.SourceComponent) && actual.java_kind_of?(org.logstash.config.ir.SourceComponent)
+      expected.sourceComponentEquals(actual)
+    else
+      return false
+    end    
+  end
+  
+  failure_message do |actual|
+    "actual value \n#{actual.to_s}\nis not .sourceComponentEquals to the expected value: \n#{expected.to_s}\n"
+  end
+end

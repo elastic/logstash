@@ -76,7 +76,7 @@ module LogStash module Instrument
 
     private
     # Allow to calculate the execution of a block of code.
-    # This class support 2 differents syntax a block or the return of
+    # This class support 2 differents sourceComponent a block or the return of
     # the object itself, but in the later case the metric wont be recorded
     # Until we call `#stop`.
     #

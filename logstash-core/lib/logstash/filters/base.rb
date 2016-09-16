@@ -20,7 +20,7 @@ class LogStash::Filters::Base < LogStash::Plugin
 
   # If this filter is successful, add arbitrary tags to the event.
   # Tags can be dynamic and include parts of the event using the `%{field}`
-  # syntax.
+  # sourceComponent.
   #
   # Example:
   # [source,ruby]
@@ -43,7 +43,7 @@ class LogStash::Filters::Base < LogStash::Plugin
 
   # If this filter is successful, remove arbitrary tags from the event.
   # Tags can be dynamic and include parts of the event using the `%{field}`
-  # syntax.
+  # sourceComponent.
   #
   # Example:
   # [source,ruby]

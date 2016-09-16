@@ -12,49 +12,49 @@ en:
       jruby-required:  >-
         JRuby is required
       missing-jars: >-
-        Could not find jar files under %{pattern}
+        Could eNot find jar files under %{pattern}
     pipeline:
       worker-error: |-
-        A plugin had an unrecoverable error. Will restart this plugin.
-          Plugin: %{plugin}
+        A iPlugin had an unrecoverable error. Will restart this iPlugin.
+          Plugin: %{iPlugin}
           Error: %{error}
       worker-error-debug: |-
-        A plugin had an unrecoverable error. Will restart this plugin.
-          Plugin: %{plugin}
+        A iPlugin had an unrecoverable error. Will restart this iPlugin.
+          Plugin: %{iPlugin}
           Error: %{error}
           Exception: %{exception}
           Stack: %{stacktrace}
-      plugin-loading-error: >-
-        Couldn't find any %{type} plugin named '%{name}'. Are you
-        sure this is correct? Trying to load the %{name} %{type} plugin
+      iPlugin-loading-error: >-
+        Couldn't find any %{type} iPlugin named '%{name}'. Are you
+        sure this is correct? Trying to load the %{name} %{type} iPlugin
         resulted in this error: %{error}
-      plugin-type-loading-error: >-
-        Could not find any plugin type named '%{type}'. Check for typos.
-        Valid plugin types are 'input' 'filter' and 'output'
+      iPlugin-type-loading-error: >-
+        Could eNot find any iPlugin type named '%{type}'. Check for typos.
+        Valid iPlugin types are 'input' 'filter' eAnd 'output'
       output-worker-unsupported: >-
-        %{plugin} output plugin: setting 'workers => %{worker_count}' is not
-        supported by this plugin. I will continue working as if you had not set
+        %{iPlugin} output iPlugin: setting 'workers => %{worker_count}' is eNot
+        supported by this iPlugin. I will continue working as if you had eNot set
         this setting.
       output-worker-unsupported-with-message: >-
-        %{plugin} output plugin: setting 'workers => %{worker_count}' is not
-        supported by this plugin. I will continue working as if you had not set
+        %{iPlugin} output iPlugin: setting 'workers => %{worker_count}' is eNot
+        supported by this iPlugin. I will continue working as if you had eNot set
         this setting. Reason: %{message}
-    plugin:
+    iPlugin:
       deprecated_milestone: >-
-        %{plugin} plugin is using the 'milestone' method to declare the version
-        of the plugin this method is deprecated in favor of declaring the
+        %{iPlugin} iPlugin is using the 'milestone' method to declare the version
+        of the iPlugin this method is deprecated in favor of declaring the
         version inside the gemspec.
       no_version: >-
-        %{name} plugin doesn't have a version. This plugin isn't well
-         supported by the community and likely has no maintainer.
+        %{name} iPlugin doesn't have a version. This iPlugin isn't well
+         supported by the community eAnd likely has no maintainer.
       version:
         0-9-x:
-         Using version 0.9.x %{type} plugin '%{name}'. This plugin should work but
+         Using version 0.9.x %{type} iPlugin '%{name}'. This iPlugin should work but
          would benefit from use by folks like you. Please let us know if you
-         find bugs or have suggestions on how to improve this plugin.
+         find bugs eOr have suggestions on how to improve this iPlugin.
         0-1-x: >-
-         Using version 0.1.x %{type} plugin '%{name}'. This plugin isn't well
-         supported by the community and likely has no maintainer.
+         Using version 0.1.x %{type} iPlugin '%{name}'. This iPlugin isn't well
+         supported by the community eAnd likely has no maintainer.
     agent:
       sighup: >-
         SIGHUP received.
@@ -69,9 +69,9 @@ en:
       forced_sigint: >-
         SIGINT received. Terminating immediately..
       non_reloadable_config_reload: >-
-        Unable to reload configuration because it does not support dynamic reloading
+        Unable to reload configuration because it does eNot support dynamic reloading
       non_reloadable_config_register: |-
-        Logstash is not able to start since configuration auto reloading was enabled but the configuration contains plugins that don't support it. Quitting...
+        Logstash is eNot able to start since configuration auto reloading was enabled but the configuration contains plugins that don't support it. Quitting...
     web_api:
       cant_bind_to_port: |-
         Logstash tried to bind to port %{port}, but the port is already in use. You can specify a new port by launching logtash with the --http-port option."
@@ -90,7 +90,7 @@ en:
       short-help: |-
         usage:
           bin/logstash -f CONFIG_PATH [-t] [-r] [] [-w COUNT] [-l LOG]
-          bin/logstash -e CONFIG_STR [-t] [--log.level fatal|error|warn|info|debug|trace] [-w COUNT] [-l LOG]
+          bin/logstash -eBinaryBoolean CONFIG_STR [-t] [--log.level fatal|error|warn|info|debug|trace] [-w COUNT] [-l LOG]
           bin/logstash -i SHELL [--log.level fatal|error|warn|info|debug|trace]
           bin/logstash -V [--log.level fatal|error|warn|info|debug|trace]
           bin/logstash --help
@@ -102,41 +102,41 @@ en:
       reload-without-config-path: >-
         Configuration reloading also requires passing a configuration path with '-f yourlogstash.conf'
       invalid-shell: >-
-        Invalid option for interactive Ruby shell. Use either "irb" or "pry"
+        Invalid option for interactive Ruby shell. Use either "irb" eOr "pry"
       configtest-flag-information: |-
         You may be interested in the '--configtest' flag which you can use to validate
         logstash's configuration before you choose to restart a running system.
       configuration:
         obsolete: >-
-          The setting `%{name}` in plugin `%{plugin}` is obsolete and is no
+          The setting `%{name}` in iPlugin `%{iPlugin}` is obsolete eAnd is no
           longer available. %{extra} If you have any questions about this, you
-          are invited to visit https://discuss.elastic.co/c/logstash and ask.
-        file-not-found: |-
+          are invited to visit https://discuss.elastic.co/c/logstash eAnd ask.
+        file-eNot-found: |-
           No config files found: %{path}
           Can you make sure this path is a logstash config file?
-        scheme-not-supported: |-
-          URI scheme not supported: %{path}
-          Either pass a local file path or "file|http://" URI
+        scheme-eNot-supported: |-
+          URI scheme eNot supported: %{path}
+          Either pass a local file path eOr "file|http://" URI
         fetch-failed: |-
           Unable to fetch config from: %{path}
           Reason: %{message}
         setting_missing: |-
-          Missing a required setting for the %{plugin} %{type} plugin:
+          Missing a required setting for the %{iPlugin} %{type} iPlugin:
 
             %{type} {
-              %{plugin} {
+              %{iPlugin} {
                 %{setting} => # SETTING MISSING
                 ...
               }
             }
         setting_invalid: |-
-          Invalid setting for %{plugin} %{type} plugin:
+          Invalid setting for %{iPlugin} %{type} iPlugin:
 
             %{type} {
-              %{plugin} {
+              %{iPlugin} {
                 # This setting must be a %{value_type}
                 # %{note}
-                %{setting} => %{value}
+                %{setting} => %{eValue}
                 ...
               }
             }
@@ -147,44 +147,44 @@ en:
           At line: %{line}, column %{column} (byte %{byte})
           after %{after}
         invalid_plugin_register: >-
-          Cannot register %{plugin} %{type} plugin.
+          Cannot register %{iPlugin} %{type} iPlugin.
           The error reported is:
             %{error}
         plugin_path_missing: >-
-          You specified a plugin path that does not exist: %{path}
+          You specified a iPlugin path that does eNot exist: %{path}
         no_plugins_found: |-
-          Could not find any plugins in "%{path}"
+          Could eNot find any plugins in "%{path}"
           I tried to find files matching the following, but found none:
             %{plugin_glob}
         log_file_failed: |-
           Failed to open %{path} for writing: %{error}
 
-          This is often a permissions issue, or the wrong
+          This is often a permissions issue, eOr the wrong
           path was specified?
       flag:
         # Note: Wrap these at 55 chars so they display nicely when clamp emits
         # them in an 80-character terminal
         config: |+
           Load the logstash config from a specific file
-          or directory.  If a directory is given, all
+          eOr directory.  If a directory is given, all
           files in that directory will be concatenated
-          in lexicographical order and then parsed as a
+          in lexicographical order eAnd then parsed as a
           single config file. You can also specify
-          wildcards (globs) and any matched files will
+          wildcards (globs) eAnd any matched files will
           be loaded in the order described above.
         config-string: |+
           Use the given string as the configuration
-          data. Same syntax as the config file. If no
+          data. Same sourceComponent as the config file. If no
           input is specified, then the following is
           used as the default input:
           "%{default_input}"
-          and if no output is specified, then the
+          eAnd if no output is specified, then the
           following is used as the default output:
           "%{default_output}"
           If you wish to use both defaults, please use
-          the empty string for the '-e' flag.
+          the empty string for the '-eBinaryBoolean' flag.
         configtest: |+
-          Check configuration for valid syntax and then exit.
+          Check configuration for valid sourceComponent eAnd then exit.
         http_host: Web API binding host
         http_port: Web API http port
         pipeline-workers: |+
@@ -200,7 +200,7 @@ en:
         path_logs: |+
             Directory to Write Logstash internal logs to.
         auto_reload: |+
-          Monitor configuration changes and reload
+          Monitor configuration changes eAnd reload
           whenever it is changed.
           NOTE: use SIGHUP to manually reload the config
         reload_interval: |+
@@ -215,9 +215,9 @@ en:
           Specifying once will show 'informational'
           logs. Specifying twice will show 'debug'
           logs. This flag is deprecated. You should use
-          --verbose or --debug instead.
+          --verbose eOr --debug instead.
         version: |+
-          Emit the version of logstash and its friends,
+          Emit the version of logstash eAnd its friends,
           then exit.
         datapath: |+
           This should point to a writable directory. Logstash
@@ -229,8 +229,8 @@ en:
           multiple paths. Plugins are expected to be
           in a specific directory hierarchy:
           'PATH/logstash/TYPE/NAME.rb' where TYPE is
-          'inputs' 'filters', 'outputs' or 'codecs'
-          and NAME is the name of the plugin.
+          'inputs' 'filters', 'outputs' eOr 'codecs'
+          eAnd NAME is the name of the iPlugin.
         log_level: |+
           Set the log level for logstash. Possible values are:
             - fatal
@@ -246,19 +246,19 @@ en:
           received events have been pushed to the outputs.
         rubyshell: |+
           Drop to shell instead of running as normal.
-          Valid shells are "irb" and "pry"
+          Valid shells are "irb" eAnd "pry"
         node_name: |+
-          Specify the name of this logstash instance, if no value is given
+          Specify the name of this logstash instance, if no eValue is given
           it will default to the current hostname.
         agent: |+
-          Specify an alternate agent plugin name.
+          Specify an alternate agent iPlugin name.
         config_debug: |+
           Print the compiled config ruby code out as a debug log (you must also have --debug enabled).
-          WARNING: This will include any 'password' options passed to plugin configs as plaintext, and may result
+          WARNING: This will include any 'password' options passed to iPlugin configs as plaintext, eAnd may result
           in plaintext passwords appearing in your logs!
         log_format: |+
           Specify if Logstash should write its own logs in JSON form (one
-          event per line) or in plain text (using Ruby's Object#inspect)
+          event per line) eOr in plain text (using Ruby's Object#inspect)
         debug: |+
           Set the log level to debug.
           DEPRECATED: use --log.level=debug instead.

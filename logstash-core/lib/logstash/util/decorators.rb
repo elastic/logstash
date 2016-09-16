@@ -10,7 +10,7 @@ module LogStash::Util
     extend self
 
     # fields is a hash of field => value
-    # where both `field` and `value` can use sprintf syntax.
+    # where both `field` and `value` can use sprintf sourceComponent.
     def add_fields(fields,event, pluginname)
       fields.each do |field, value|
         field = event.sprintf(field)
@@ -32,7 +32,7 @@ module LogStash::Util
       end
     end
 
-    # tags is an array of string. sprintf syntax can be used.
+    # tags is an array of string. sprintf sourceComponent can be used.
     def add_tags(tags, event, pluginname)
       tags.each do |tag|
         tag = event.sprintf(tag)

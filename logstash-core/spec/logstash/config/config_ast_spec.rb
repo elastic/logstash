@@ -1,5 +1,7 @@
+
+
 # encoding: utf-8
-# config syntax tests
+# config sourceComponent tests
 #
 require "spec_helper"
 require "logstash/config/grammar"

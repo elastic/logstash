@@ -29,7 +29,7 @@ public class StructuredMessage implements Message {
                     paramsMap.put(params[i].toString(), params[i + 1]);
                 }
             } catch (IndexOutOfBoundsException e) {
-                throw new IllegalArgumentException("must log key-value pairs");
+                throw new IllegalArgumentException("must log key-eValue pairs");
             }
         }
         this.message = message;

@@ -37,3 +37,4 @@ qa/Gemfile.lock
 *.iml
 .gradle
 .idea
+**/.gradle
