@@ -9,7 +9,7 @@ module LogStash; module Logging
   # Slow log null logger, this logger does
   # nothing when used.
   class NullLogger
-    def log(threshold, time, data={})
+    def log(event, threshold, time, data={})
     end
     alias_method :warn, :log
   end
@@ -26,8 +26,9 @@ module LogStash; module Logging
       @freq_items = LogStash::Logging::Util::FreqItems.new
     end
 
-    def log(threshold, time, data={})
+    def log(event, threshold, time, data={})
       message          = data.delete(:message)
+      data[:event]     = event
       data[:threshold] = threshold
       data[:time]      = time
 

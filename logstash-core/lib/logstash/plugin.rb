@@ -125,12 +125,12 @@ class LogStash::Plugin
     @timer ||= Timer.new
   end
 
-  def slow_logger(threshold, time, message="")
+  def slow_logger(event, threshold, time, data={})
     @slow_logger ||= LogStash::Logging::NullLogger.new
     max_time = setting(threshold).to_i
     if max_time > 0 && time > max_time
-      message = "[#{self.class}] Threshold #{threshold} has been overcome with #{time}" if message.empty?
-      @slow_logger.log(threshold, time, { :message => message })
+      data[:message] = "[#{self.class}] Threshold #{threshold} has been overcome with #{time}"
+      @slow_logger.log(event, threshold, time, data)
     end
   end
 

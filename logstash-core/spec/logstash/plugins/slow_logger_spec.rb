@@ -19,6 +19,8 @@ describe "slowlog interface" do
       end.new(config)
     end
 
+    let(:event) { LogStash::Event.new }
+
     it "should respond to slow_logger" do
       expect(plugin.respond_to?(:slow_logger=)).to eq(true)
       expect(plugin.respond_to?(:slow_logger)).to  eq(true)
@@ -36,7 +38,7 @@ describe "slowlog interface" do
       context "when the threshold is not defined" do
         it "should not report" do
           expect(slow_logger).not_to receive(:log)
-          plugin.slow_logger("not.defined.op", 9)
+          plugin.slow_logger(event, "not.defined.op", 9)
         end
       end
 
@@ -48,12 +50,12 @@ describe "slowlog interface" do
 
         it "should not report to the logger if not overcome" do
           expect(slow_logger).not_to receive(:log)
-          plugin.slow_logger("your.op", 14)
+          plugin.slow_logger(event, "your.op", 14)
         end
 
         it "should report to the logger if overcome" do
           expect(slow_logger).to receive(:log)
-          plugin.slow_logger("your.op", 16)
+          plugin.slow_logger(event, "your.op", 16)
         end
       end
     end
