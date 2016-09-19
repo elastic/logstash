@@ -6,17 +6,15 @@ Logstash has the following flags. You can use the `--help` flag to display this 
 Instead of specifying options at the command line, we recommend that you control Logstash execution
 by specifying options in the Logstash <<logstash-settings-file,settings file>>. Using a settings file
 makes it easier for you to specify mutliple options, and it provides you with a single, versionable
-file that you can use to start up Logstash consistently for each run. 
+file that you can use to start up Logstash consistently for each run.
 
 Any flags that you set at the command line override the corresponding settings in the Logstash
-<<logstash-settings-file,settings file>>. 
-
-added[5.0.0-alpha3, Command-line flags have dots instead of dashes in their names]
+<<logstash-settings-file,settings file>>.
 
 *`--node.name NAME`*::
   Specify the name of this Logstash instance. If no value is given it will default to the current
   hostname.
- 
+
 *`-f, --path.config CONFIG_PATH`*::
   Load the Logstash config from a specific file or directory. If a directory is given, all
   files in that directory will be concatenated in lexicographical order and then parsed as a
@@ -36,7 +34,7 @@ added[5.0.0-alpha3, Command-line flags have dots instead of dashes in their name
   in parallel, execute the filter and output stages of the pipeline. If you find that events are
   backing up, or that  the CPU is not saturated, consider increasing this number to better utilize
   machine processing power. The default is 8.
- 
+
 *`-b, --pipeline.batch.size SIZE`*::
   Size of batches the pipeline is to work in. This option defines the maximum number of events an
   individual worker thread will collect from inputs before attempting to execute its filters and outputs.
@@ -48,7 +46,7 @@ added[5.0.0-alpha3, Command-line flags have dots instead of dashes in their name
   When creating pipeline batches, how long to wait while polling for the next event. This option defines
   how long in milliseconds to wait before dispatching an undersized batch to filters and workers.
   The default is 5ms.
-  
+
 *`--pipeline.unsafe_shutdown`*::
   Force Logstash to exit during shutdown even if there are still inflight events
   in memory. By default, Logstash will refuse to quit until all received events
@@ -57,8 +55,8 @@ added[5.0.0-alpha3, Command-line flags have dots instead of dashes in their name
 *`--path.data PATH`*::
   This should point to a writable directory. Logstash will use this directory whenever it needs to store
   data. Plugins will also have access to this path. The default is the `data` directory under
-  Logstash home. 
-  
+  Logstash home.
+
 *`-p, --path.plugins PATH`*::
   A path of where to find custom plugins. This flag can be given multiple times to include
   multiple paths. Plugins are expected to be in a specific directory hierarchy:
@@ -81,7 +79,7 @@ added[5.0.0-alpha3, Command-line flags have dots instead of dashes in their name
   Show the fully compiled configuration as a debug log message (you must also have `--log.level=debug` enabled).
   WARNING: The log message will include any 'password' options passed to plugin configs as plaintext, and may result
   in plaintext passwords appearing in your logs!
-  
+
 *`-i, --interactive SHELL`*::
   Drop to shell instead of running as normal. Valid shells are "irb" and "pry".
 
@@ -93,7 +91,7 @@ added[5.0.0-alpha3, Command-line flags have dots instead of dashes in their name
   correctness with this flag. Logstash can read multiple config files from a directory. If you combine this
   flag with `--log.level=debug`, Logstash will log the combined config file, annotating
   each config block with the source file it came from.
-  
+
 *`-r, --config.reload.automatic`*::
   Monitor configuration changes and reload whenever the configuration is changed.
   NOTE: Use SIGHUP to manually reload the config. The default is false.
@@ -107,7 +105,7 @@ added[5.0.0-alpha3, Command-line flags have dots instead of dashes in their name
 *`--http.port HTTP_PORT`*::
   Web API http port. This option specifies the bind port for the metrics REST endpoint. The default is 9600-9700.
   This setting accepts a range of the format 9600-9700. Logstash will pick up the first available port.
-  
+
 *`--log.format FORMAT`*::
    Specify if Logstash should write its own logs in JSON form (one event per line) or in plain text
    (using Ruby's Object#inspect). The default is "plain".
@@ -115,8 +113,8 @@ added[5.0.0-alpha3, Command-line flags have dots instead of dashes in their name
 *`--path.settings SETTINGS_DIR`*::
   Set the directory containing the `logstash.yml` <<logstash-settings-file,settings file>> as well
   as the log4j logging configuration. This can also be set through the LS_SETTINGS_DIR environment variable.
-  The default is the `config` directory under Logstash home. 
-                                   
+  The default is the `config` directory under Logstash home.
+
 *`-h, --help`*::
   Print help
 
