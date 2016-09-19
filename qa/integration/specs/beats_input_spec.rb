@@ -97,6 +97,9 @@ describe "Beat Input", :integration => true do
               "hosts" => ["localhost:5044"],
               "tls" => {
                 "certificate_authorities" => certificate_authorities
+              },
+              "ssl" => {
+                "certificate_authorities" => certificate_authorities
               }
             },
             "logging" => { "level" => "debug" }
@@ -123,6 +126,11 @@ describe "Beat Input", :integration => true do
                 "certificate_authorities" => certificate_authorities,
                 "certificate" => certificate,
                 "certificate_key" => ssl_key
+              },
+              "ssl" => {
+                "certificate_authorities" => certificate_authorities,
+                "certificate" => certificate,
+                "key" => ssl_key
               }
             },
             "logging" => { "level" => "debug" }
