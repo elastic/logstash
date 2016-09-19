@@ -231,7 +231,7 @@ By default, all stats are returned. You can limit the info that's returned by co
 
 [horizontal]
 `jvm`::
-Gets JVM stats, including stats about threads, memory usage, and garage collectors.
+Gets JVM stats, including stats about threads, memory usage, and garbage collectors.
 `process`::
 Gets process stats, including stats about file descriptors, memory consumption, and CPU usage.
 `mem`::
