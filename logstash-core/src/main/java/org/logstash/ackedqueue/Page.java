@@ -34,6 +34,10 @@ public abstract class Page implements Closeable {
         this.pageIO = pageIO;
     }
 
+    public String toString() {
+        return "pageNum=" + this.pageNum + ", minSeqNum=" + this.minSeqNum + ", elementCount=" + this.elementCount + ", firstUnreadSeqNum=" + this.firstUnreadSeqNum;
+    }
+
     // NOTE:
     // we have a page concern inconsistency where readBatch() takes care of the
     // deserialization and returns a Batch object which contains the deserialized

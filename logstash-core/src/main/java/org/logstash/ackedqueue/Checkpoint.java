@@ -40,4 +40,8 @@ public class Checkpoint {
         return this.elementCount;
     }
 
+    public String toString() {
+        return "pageNum=" + this.pageNum + ", firstUnackedPageNum=" + this.firstUnackedPageNum + ", firstUnackedSeqNum=" + this.firstUnackedSeqNum + ", minSeqNum=" + this.minSeqNum + ", elementCount=" + this.elementCount;
+    }
+
 }

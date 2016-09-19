@@ -90,6 +90,10 @@ public class Queue implements Closeable {
     public void open() throws IOException {
         final int headPageNum;
 
+        if (!this.closed.get()) {
+            throw new IOException("queue already opened");
+        }
+
         Checkpoint headCheckpoint;
         try {
             headCheckpoint = checkpointIO.read(checkpointIO.headFileName());
@@ -125,9 +129,15 @@ public class Queue implements Closeable {
                     this.seqNum = tailPage.maxSeqNum();
                 }
 
-                this.tailPages.add(tailPage);
-                this.unreadTailPages.add(tailPage);
-                this.unreadCount += tailPage.unreadCount();
+                // the systematic beheading on open below can create empty/fully acked tail pages
+                // TODO: add test harness for this and see if/how we should purge empty/fully acked pages
+                if (!tailPage.isFullyAcked()) {
+                    this.tailPages.add(tailPage);
+                    if (! tailPage.isFullyRead()) {
+                        this.unreadTailPages.add(tailPage);
+                        this.unreadCount += tailPage.unreadCount();
+                    }
+                }
             }
 
             // transform the head page into a beheaded tail page
@@ -140,11 +150,18 @@ public class Queue implements Closeable {
                 this.seqNum = beheadedHeadPage.maxSeqNum();
             }
 
-            this.tailPages.add(beheadedHeadPage);
-            this.unreadTailPages.add(beheadedHeadPage);
-            this.unreadCount += beheadedHeadPage.unreadCount();
+            // the systematic beheading on open above can create empty/fully acked tail pages
+            // TODO: add test harness for this and see if/how we should purge empty/fully acked pages
+            if (beheadedHeadPage.isFullyAcked()) {
+                this.tailPages.add(beheadedHeadPage);
+                if (! beheadedHeadPage.isFullyRead()) {
+                    this.unreadTailPages.add(beheadedHeadPage);
+                    this.unreadCount += beheadedHeadPage.unreadCount();
+                }
 
-            beheadedHeadPage.checkpoint();
+                beheadedHeadPage.checkpoint();
+            }
+
             headPageNum = headCheckpoint.getPageNum() + 1;
         }
 
@@ -428,9 +445,12 @@ public class Queue implements Closeable {
                 for (BeheadedPage p : this.tailPages) { p.close(); }
                 this.headPage.close();
 
-//                this.tailPages.clear();
-//                this.headPage = null;
+                // release all referenced objects
+                this.tailPages.clear();
+                this.unreadTailPages.clear();
+                this.headPage = null;
 
+                // unblock any blocking calls
                 notEmpty.signalAll();
                 notFull.signalAll();
             } finally {
