@@ -26,40 +26,6 @@ describe "slowlog interface" do
       expect(plugin.respond_to?(:slow_logger)).to  eq(true)
     end
 
-    describe "notify slow operations" do
-
-      let(:slow_logger) { double("slow_logger") }
-
-      before(:each) do
-        allow(slow_logger).to receive(:log)
-        plugin.slow_logger = slow_logger
-      end
-
-      context "when the threshold is not defined" do
-        it "should not report" do
-          expect(slow_logger).not_to receive(:log)
-          plugin.slow_logger(event, "not.defined.op", 9)
-        end
-      end
-
-      context "when the threshold is defined" do
-
-        before(:each) do
-          expect(plugin).to receive(:setting).with("your.op").and_return(15)
-        end
-
-        it "should not report to the logger if not overcome" do
-          expect(slow_logger).not_to receive(:log)
-          plugin.slow_logger(event, "your.op", 14)
-        end
-
-        it "should report to the logger if overcome" do
-          expect(slow_logger).to receive(:log)
-          plugin.slow_logger(event, "your.op", 16)
-        end
-      end
-    end
-
     describe LogStash::Plugin::Timer do
 
       it "should respond to timer" do
@@ -78,9 +44,43 @@ describe "slowlog interface" do
   describe LogStash::Logging::SlowLogger do
 
     subject { described_class.new }
+    let(:event) { LogStash::Event.new }
 
     it "should respond to log" do
       expect(subject.respond_to?(:log)).to eq(true)
+    end
+
+    describe "notify slow operations" do
+      let(:logger) { double("logger") }
+
+      before(:each) do
+        allow(logger).to receive(:warn)
+        subject.logger = logger
+      end
+
+      context "when the threshold is not defined" do
+        it "should not report" do
+          expect(logger).not_to receive(:warn)
+          subject.log(event, "not.defined.op", 9)
+        end
+      end
+
+      context "when the threshold is defined" do
+
+        before(:each) do
+          expect(subject).to receive(:setting).with("your.op").and_return(15)
+        end
+
+        it "should not report to the logger if not overcome" do
+          expect(logger).not_to receive(:warn)
+          subject.log(event, "your.op", 14)
+        end
+
+        it "should report to the logger if overcome" do
+          expect(logger).to receive(:warn)
+          subject.log(event, "your.op", 16)
+        end
+      end
     end
 
   end
