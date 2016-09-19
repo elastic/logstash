@@ -32,7 +32,7 @@ Example response:
 --------------------------------------------------
 
 NOTE: By default, the monitoring API attempts to bind to `tcp:9600`. If this port is already in use by another Logstash
-instance, you need to launch Logstash with the `--http.port` flag specified to bind to a different port. See 
+instance, you need to launch Logstash with the `--http.port` flag specified to bind to a different port. See
 <<command-line-flags>> for more information.
 
 [float]
@@ -66,8 +66,6 @@ consumption.  The default for the `human` flag is
 [[node-info-api]]
 === Node Info API
 
-added[5.0.0-alpha4]
-
 experimental[]
 
 The node info API retrieves information about the node.
@@ -79,7 +77,7 @@ GET /_node/<types>
 
 Where `<types>` is optional and specifies the types of node info you want to return.
 
-You can limit the info that's returned by combining any of the following types in a comma-separated list: added[5.0.0-alpha5,Support for specifying a comma-separated list of types]
+You can limit the info that's returned by combining any of the following types in a comma-separated list:
 
 [horizontal]
 `pipeline`::
@@ -143,7 +141,7 @@ Example response:
 ==== JVM Info
 
 The following request returns a JSON document that shows node-level JVM stats, such as the JVM process id, version,
-VM info, and memory usage:
+VM info, memory usage, and info about garbage collectors:
 
 [source,js]
 --------------------------------------------------
@@ -156,18 +154,22 @@ Example response:
 --------------------------------------------------
 {
   "jvm": {
-    "pid": 31580,
+    "pid": 8187,
     "version": "1.8.0_65",
     "vm_name": "Java HotSpot(TM) 64-Bit Server VM",
     "vm_version": "1.8.0_65",
     "vm_vendor": "Oracle Corporation",
-    "start_time_in_millis": 1466799661753,
+    "start_time_in_millis": 1474305161631,
     "mem": {
       "heap_init_in_bytes": 268435456,
       "heap_max_in_bytes": 1037959168,
       "non_heap_init_in_bytes": 2555904,
       "non_heap_max_in_bytes": 0
-    }
+    },
+    "gc_collectors": [
+      "ParNew",
+      "ConcurrentMarkSweep"
+    ]
   }
 --------------------------------------------------
 
@@ -214,11 +216,9 @@ Example response:
 [[node-stats-api]]
 === Node Stats API
 
-added[5.0.0-beta3,Replaces the Stats Info API]
-
 experimental[]
 
-The node stats API retrieves runtime stats about Logstash. 
+The node stats API retrieves runtime stats about Logstash.
 
 [source,js]
 --------------------------------------------------
@@ -227,65 +227,77 @@ GET /_node/stats/<types>
 
 Where `<types>` is optional and specifies the types of stats you want to return.
 
-By default, all stats are returned. You can limit the info that's returned by combining any of the following types in a comma-separated list: added[5.0.0-alpha5,Support for specifying a comma-separated list of types]
+By default, all stats are returned. You can limit the info that's returned by combining any of the following types in a comma-separated list:
 
 [horizontal]
 `jvm`::
-Gets JVM stats, including stats about threads. added[5.0.0-alpha3,Adds thread count]
+Gets JVM stats, including stats about threads, memory usage, and garage collectors.
 `process`::
-Gets process stats, including stats about file descriptors, memory consumption, and CPU usage. added[5.0.0-alpha3] 
+Gets process stats, including stats about file descriptors, memory consumption, and CPU usage.
 `mem`::
-Gets memory usage stats. added[5.0.0-alpha4] 
+Gets memory usage stats.
 `pipeline`::
 Gets runtime stats about the Logstash pipeline.
 
 ==== JVM Stats
 
-The following request returns a JSON document containing JVM stats: 
+The following request returns a JSON document containing JVM stats:
 
 [source,js]
 --------------------------------------------------
 GET /_node/stats/jvm
 --------------------------------------------------
 
-Example response: added[5.0.0-alpha5,JVM stats now include memory stats that were previously returned by `/_node/stats/mem`]
+Example response:
 
 [source,js]
 --------------------------------------------------
 {
   "jvm": {
     "threads": {
-      "count": 32,
-      "peak_count": 33
+      "count": 33,
+      "peak_count": 34
     },
     "mem": {
-      "heap_used_in_bytes": 290715552,
-      "heap_used_percent": 14,
+      "heap_used_in_bytes": 276974824,
+      "heap_used_percent": 13,
       "heap_committed_in_bytes": 519045120,
       "heap_max_in_bytes": 2075918336,
-      "non_heap_used_in_bytes": 181911616,
-      "non_heap_committed_in_bytes": 193249280,
+      "non_heap_used_in_bytes": 182122272,
+      "non_heap_committed_in_bytes": 193372160,
       "pools": {
         "survivor": {
           "peak_used_in_bytes": 8912896,
-          "used_in_bytes": 9358024,
+          "used_in_bytes": 11182152,
           "peak_max_in_bytes": 35782656,
           "max_in_bytes": 71565312,
           "committed_in_bytes": 17825792
         },
         "old": {
-          "peak_used_in_bytes": 106400040,
-          "used_in_bytes": 164247880,
+          "peak_used_in_bytes": 111736080,
+          "used_in_bytes": 171282544,
           "peak_max_in_bytes": 715849728,
           "max_in_bytes": 1431699456,
           "committed_in_bytes": 357957632
         },
         "young": {
           "peak_used_in_bytes": 71630848,
-          "used_in_bytes": 117109648,
+          "used_in_bytes": 94510128,
           "peak_max_in_bytes": 286326784,
           "max_in_bytes": 572653568,
           "committed_in_bytes": 143261696
+        }
+      }
+    },
+    "gc": {
+      "collectors": {
+        "old": {
+          "collection_time_in_millis": 48,
+          "collection_count": 2
+        },
+        "young": {
+          "collection_time_in_millis": 316,
+          "collection_count": 23
         }
       }
     }
@@ -294,7 +306,7 @@ Example response: added[5.0.0-alpha5,JVM stats now include memory stats that wer
 
 ==== Process Stats
 
-The following request returns a JSON document containing process stats: 
+The following request returns a JSON document containing process stats:
 
 [source,js]
 --------------------------------------------------
@@ -321,13 +333,11 @@ Example response:
 --------------------------------------------------
 
 [[pipeline-stats]]
-==== Pipeline Stats 
-
-added[5.0.0-alpha4,Stats for input stages are not yet available]
+==== Pipeline Stats
 
 The following request returns a JSON document containing pipeline stats, including the number of events that were
 input, filtered, or output by the pipeline. The request also returns stats for each configured input, filter, or
-output stage. 
+output stage, and info about whether config reload (if configured) failed or succeeded.
 
 [source,js]
 --------------------------------------------------
@@ -341,6 +351,7 @@ Example response:
 {
   "pipeline": {
     "events": {
+      "duration_in_millis": 7863504,
       "in": 100,
       "filtered": 100,
       "out": 100
@@ -349,9 +360,9 @@ Example response:
       "inputs": [],
       "filters": [
         {
-          "id": "grok_c4900bd0-29ef-44a5-b44c-f6ffef3ddf8c",
+          "id": "grok_20e5cb7f7c9e712ef9750edf94aefb465e3e361b-2",
           "events": {
-            "duration_in_millis": 43,
+            "duration_in_millis": 48,
             "in": 100,
             "out": 100
           },
@@ -362,9 +373,9 @@ Example response:
           "name": "grok"
         },
         {
-          "id": "geoip_130740d3-cad0-4ae5-96dd-7ef8f0eb1adb",
+          "id": "geoip_20e5cb7f7c9e712ef9750edf94aefb465e3e361b-3",
           "events": {
-            "duration_in_millis": 116,
+            "duration_in_millis": 141,
             "in": 100,
             "out": 100
           },
@@ -373,15 +384,21 @@ Example response:
       ],
       "outputs": [
         {
-          "id": "elasticsearch_2f22c8b5-3d63-426e-a4cf-08e48af29538",
+          "id": "20e5cb7f7c9e712ef9750edf94aefb465e3e361b-4",
           "events": {
-            "duration_in_millis": 533,
             "in": 100,
             "out": 100
           },
           "name": "elasticsearch"
         }
       ]
+    },
+    "reloads": {
+      "last_error": null,
+      "successes": 0,
+      "last_success_timestamp": null,
+      "last_failure_timestamp": null,
+      "failures": 0
     }
   }
 --------------------------------------------------
@@ -405,7 +422,7 @@ GET /_node/hot_threads
 --------------------------------------------------
 
 The output is a JSON document that contains a breakdown of the top hot threads for
-Logstash. 
+Logstash.
 
 Example response:
 
@@ -413,7 +430,7 @@ Example response:
 --------------------------------------------------
 {
   "hot_threads": {
-    "time": "2016-07-26T18:39:08-07:00",
+    "time": "2016-09-19T10:44:13-07:00",
     "busiest_threads": 3,
     "threads": [
       {
@@ -476,8 +493,8 @@ Example response:
 The parameters allowed are:
 
 [horizontal]
-`threads`:: 	        The number of hot threads to return. The default is 3. 
-`human`:: 	            If true, returns plain text instead of JSON format. The default is false. 
+`threads`:: 	        The number of hot threads to return. The default is 3.
+`human`:: 	            If true, returns plain text instead of JSON format. The default is false.
 `ignore_idle_threads`:: If true, does not return idle threads. The default is true.
 
 You can use the `?human` parameter to return the document in a human-readable format.
@@ -487,12 +504,12 @@ You can use the `?human` parameter to return the document in a human-readable fo
 GET /_node/hot_threads?human=true
 --------------------------------------------------
 
-Example of a human-readable response: 
+Example of a human-readable response:
 
 [source,js]
 --------------------------------------------------
 ::: {}
-Hot threads at 2016-07-26T18:46:18-07:00, busiestThreads=3: 
+Hot threads at 2016-07-26T18:46:18-07:00, busiestThreads=3:
 ================================================================================
  0.15 % of cpu usage by timed_waiting thread named 'LogStash::Runner'
 	java.lang.Object.wait(Native Method)
