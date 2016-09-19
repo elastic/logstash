@@ -2,6 +2,8 @@
 require "logstash/namespace"
 require "logstash/logging/slow_logger/freq_items"
 
+# This module contains necessary classes to handle slow log
+# operations.
 module LogStash; module Logging
 
   # Slow log null logger, this logger does

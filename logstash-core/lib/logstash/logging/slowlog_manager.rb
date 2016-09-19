@@ -3,6 +3,9 @@ require "logstash/namespace"
 require "logstash/logging/slow_logger"
 
 module LogStash; module Logging
+
+  # The slow log manager is he central component for
+  # the rest of logstash to manage slow log instances
   class SlowLogManager
 
     attr_reader :loggers
@@ -11,6 +14,8 @@ module LogStash; module Logging
       @loggers = {}
     end
 
+    # Return the frequent items for the given slow log, data is
+    # aggregated per each logger.
     def freq_items
       items = {}
       @loggers.each do |key, logger|
@@ -28,6 +33,7 @@ module LogStash; module Logging
       items
     end
 
+    # Return the top itema by ime
     def top_items
       items = {}
       @loggers.each do |key, logger|
@@ -36,6 +42,8 @@ module LogStash; module Logging
       items
     end
 
+    # Builder method that setup specific slowlogger instances
+    # per each kind of component.
     def build(type)
       key = nil
       case type
