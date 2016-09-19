@@ -113,3 +113,10 @@
 #
 # Where to find custom plugins
 # path.plugins: []
+#
+# ------------ Slow log thresholds ---------
+#
+# An slow log threshold is a time limit for an operation that when is overcome it will
+# be reported at the related log file. Time is seconds.
+#
+# filters.dns.getaddress: 5
