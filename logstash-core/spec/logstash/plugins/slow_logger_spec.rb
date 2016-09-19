@@ -1,5 +1,6 @@
 # encoding: utf-8
 require "spec_helper"
+require "logstash/logging/slowlog_manager"
 require "logstash/plugin"
 require "logstash/outputs/base"
 require "logstash/codecs/base"
@@ -8,7 +9,6 @@ require "logstash/filters/base"
 
 describe "slowlog interface" do
 
-  let(:logger) { double("logger") }
   let(:config) { {} }
 
   [LogStash::Inputs::Base, LogStash::Filters::Base, LogStash::Outputs::Base].each do |plugin_base|
@@ -19,11 +19,46 @@ describe "slowlog interface" do
       end.new(config)
     end
 
+    let(:slowlog_manager) { LogStash::Logging::SlowLogManager.new }
+    let(:slow_logger) { slowlog_manager.build(:plugin) }
+    let(:logger) { double("logger") }
     let(:event) { LogStash::Event.new }
 
     it "should respond to slow_logger" do
       expect(plugin.respond_to?(:slow_logger=)).to eq(true)
       expect(plugin.respond_to?(:slow_logger)).to  eq(true)
+    end
+
+    describe "notify slow operations" do
+
+      before(:each) do
+        slow_logger.logger = logger
+        plugin.slow_logger = slow_logger
+      end
+
+      context "when threshold is not overcome"do
+        it "should not report to the logger" do
+          expect(slow_logger).to receive(:setting).with("your.op").and_return(15)
+          expect(logger).not_to receive(:warn)
+          plugin.slow_logger(event, "your.op", 10)
+        end
+      end
+
+      context "when threshold is overcome"do
+        it "should not report to the logger" do
+          expect(slow_logger).to receive(:setting).with("your.op").and_return(15)
+          expect(logger).to receive(:warn)
+          plugin.slow_logger(event, "your.op", 20)
+        end
+      end
+
+      context "when threshold is not defined"do
+        it "should not report to the logger" do
+          expect(slow_logger).to receive(:setting).with("your.op").and_return(nil)
+          expect(logger).not_to receive(:warn)
+          plugin.slow_logger(event, "your.op", 10)
+        end
+      end
     end
 
     describe LogStash::Plugin::Timer do
