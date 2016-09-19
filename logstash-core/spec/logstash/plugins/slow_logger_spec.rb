@@ -32,33 +32,52 @@ describe "slowlog interface" do
     describe "notify slow operations" do
 
       before(:each) do
+        allow(logger).to receive(:respond_to?).with(:info).and_return(true)
+        allow(logger).to receive(:respond_to?).with(:warn).and_return(true)
         slow_logger.logger = logger
         plugin.slow_logger = slow_logger
       end
 
       context "when threshold is not overcome"do
         it "should not report to the logger" do
-          expect(slow_logger).to receive(:setting).with("your.op").and_return(15)
+          expect(slow_logger).to receive(:setting).with("your.op.warn").and_return(15)
           expect(logger).not_to receive(:warn)
-          plugin.slow_logger(event, "your.op", 10)
+          plugin.slow_logger(event, "your.op.warn", 10)
         end
       end
 
       context "when threshold is overcome"do
         it "should not report to the logger" do
-          expect(slow_logger).to receive(:setting).with("your.op").and_return(15)
+          expect(slow_logger).to receive(:setting).with("your.op.warn").and_return(15)
           expect(logger).to receive(:warn)
-          plugin.slow_logger(event, "your.op", 20)
+          plugin.slow_logger(event, "your.op.warn", 20)
         end
       end
 
       context "when threshold is not defined"do
         it "should not report to the logger" do
-          expect(slow_logger).to receive(:setting).with("your.op").and_return(nil)
+          expect(slow_logger).to receive(:setting).with("your.op.warn").and_return(nil)
           expect(logger).not_to receive(:warn)
-          plugin.slow_logger(event, "your.op", 10)
+          plugin.slow_logger(event, "your.op.warn", 10)
         end
       end
+
+      context "when using a custom level" do
+
+        it "should log as the level if valid" do
+          expect(slow_logger).to receive(:setting).with("your.op.info").and_return(15)
+          expect(logger).to receive(:info)
+          plugin.slow_logger(event, "your.op.info", 20)
+        end
+
+        it "should log as the default level (warn) if not valid" do
+          allow(logger).to receive(:respond_to?).with(:foobar).and_return(false)
+          expect(slow_logger).to receive(:setting).with("your.op.foobar").and_return(15)
+          expect(logger).to receive(:warn)
+          plugin.slow_logger(event, "your.op.foobar", 20)
+        end
+      end
+
     end
 
     describe LogStash::Plugin::Timer do
@@ -96,24 +115,24 @@ describe "slowlog interface" do
       context "when the threshold is not defined" do
         it "should not report" do
           expect(logger).not_to receive(:warn)
-          subject.log(event, "not.defined.op", 9)
+          subject.log(event, "not.defined.op.warn", 9)
         end
       end
 
       context "when the threshold is defined" do
 
         before(:each) do
-          expect(subject).to receive(:setting).with("your.op").and_return(15)
+          expect(subject).to receive(:setting).with("your.op.warn").and_return(15)
         end
 
         it "should not report to the logger if not overcome" do
           expect(logger).not_to receive(:warn)
-          subject.log(event, "your.op", 14)
+          subject.log(event, "your.op.warn", 14)
         end
 
         it "should report to the logger if overcome" do
           expect(logger).to receive(:warn)
-          subject.log(event, "your.op", 16)
+          subject.log(event, "your.op.warn", 16)
         end
       end
     end

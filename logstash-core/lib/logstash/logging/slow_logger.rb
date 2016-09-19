@@ -31,13 +31,15 @@ module LogStash; module Logging
       max_time = setting(threshold).to_i
       return if max_time == 0 || took_in_seconds <= max_time
 
+      level, operation_namespace = split_fields(threshold)
+
       data[:event] = event
-      data[:threshold] = threshold
+      data[:threshold] = operation_namespace
       data[:took_in_seconds] = took_in_seconds
       message = "Threshold #{threshold} has been overcome with #{took_in_seconds}"
 
       freq_items.add(threshold, took_in_seconds)
-      logger.warn(message, data)
+      to_logger(level.to_sym, message, data)
     end
     alias_method :warn, :log
 
@@ -46,6 +48,16 @@ module LogStash; module Logging
     end
 
     private
+
+    def to_logger(level, message, data)
+      level = :warn if !logger.respond_to?(level)
+      logger.send(level, message, data)
+    end
+
+    def split_fields(threshold)
+      parts = threshold.split('.')
+      [parts[-1], parts[0..-2]]
+    end
 
     def setting(key)
       @settings.get_value(key) rescue nil
