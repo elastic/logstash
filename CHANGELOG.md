@@ -18,7 +18,7 @@
    - Added JVM GC strategy info under `/_node/jvm`
    - Ensure `?human` option works correctly for `hot_threads` API.
    - Make sure a non-existing API endpoint correctly returns 404 and a structured error message.
-  - Plugin Developers: Improved nomenclature and methods for 'threadsafe' outputs. Removed `workers_not_supported` 
+ - Plugin Developers: Improved nomenclature and methods for 'threadsafe' outputs. Removed `workers_not_supported` 
     method ([#5662](https://github.com/elastic/logstash/issues/5662))
 
 ### Output
