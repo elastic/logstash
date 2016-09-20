@@ -90,9 +90,14 @@ module LogStash; module Util
       def take_batch
         @mutex.synchronize do
           batch = ReadBatch.new(@queue, @batch_size, @wait_for)
-          add_starting_metrics(batch)
           set_current_thread_inflight_batch(batch)
-          start_clock
+
+          # We dont actually have any events to work on so lets
+          # not bother with recording metrics for them
+          if batch.size > 0
+            add_starting_metrics(batch)
+            start_clock
+          end
           batch
         end
       end
@@ -116,8 +121,10 @@ module LogStash; module Util
       end
 
       def stop_clock
-        @inflight_clocks[Thread.current].each(&:stop)
-        @inflight_clocks.delete(Thread.current)
+        unless @inflight_clocks[Thread.current].nil?
+          @inflight_clocks[Thread.current].each(&:stop)
+          @inflight_clocks.delete(Thread.current)
+        end
       end
 
       def add_starting_metrics(batch)
