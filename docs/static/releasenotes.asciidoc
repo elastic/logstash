@@ -3,11 +3,45 @@
 
 This section summarizes the changes in each release.
 
+* <<beta1, Logstash 5.0-beta1>>
 * <<alpha5,Logstash 5.0-alpha5>>
 * <<alpha4,Logstash 5.0-alpha4>>
 * <<alpha3,Logstash 5.0-alpha3>>
 * <<alpha2,Logstash 5.0-alpha2>>
 * <<alpha1,Logstash 5.0-alpha1>>
+
+[[beta1]]
+=== Logstash 5.0-beta1 Release Notes
+
+* Migrated Logstash's internal logging framework to Log4j2. This enhancement provides the following features:
+** Support for changing the <<logging>> level dynamically at runtime through REST endpoints. New APIs have been exposed
+under `_node/logging` to update log levels. Also a new endpoint `_node/logging` was added to return all existing loggers.
+** Configurable file rotation policy for logs. The default is per-day.
+** Support for component-level or plugin-level log settings.
+** Unified logging across Logstash's Java and Ruby code.
+** Logs are now placed in the `LS_HOME/logs` directory, which is configurable via the `path.logs` setting.
+* Breaking Change: Changed the default log severity level to `INFO` instead of `WARN` to match Elasticsearch.
+* Show meaningful error messages for unknown CLI commands ({lsissue}5748[Issue 5748]).
+* Added monitoring API enhancements:
+** Added `duration_in_millis` metric under `/_node/stats/pipeline/events`.
+** Added JVM GC stats under `/_node/stats/jvm`.
+** Removed the `/_node/mem` resource because it's been properly moved under `/_node/jvm/mem`.
+** Added config reload stats under new resource type `_node/stats/pipeline/reloads`.
+** Added config reload enabled/disabled info to `/_node/pipeline`.
+** Added the JVM GC strategy info under `/_node/jvm`.
+** Fixed the `?human` option to work correctly for the `hot_threads` API.
+** Made sure a non-existing API endpoint correctly returns 404 and a structured error message.
+* Plugin Developers: Improved nomenclature and methods for 'threadsafe' outputs. Removed the `workers_not_supported` method ({lsissue}5662[Issue 5662]).
+
+[float]
+==== Output Plugins
+
+*`Elasticsearch`*:
+
+* Breaking Change: The index template for 5.0 has been changed to reflect Elasticsearch's mapping changes. Most importantly,
+the subfield for string multi-fields has changed from `.raw` to `.keyword` to match Elasticsearch's default behavior
+(https://github.com/logstash-plugins/logstash-output-elasticsearch/issues/386[Issue 386]). See <<breaking-changes>> for details about how this change affects new and existing users.
+* Added `check_connection_timeout` parameter, which has a default of 10m.
 
 [[alpha5]]
 === Logstash 5.0-alpha5 Release Notes

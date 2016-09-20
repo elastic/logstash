@@ -1,3 +1,38 @@
+## 5.0.0-beta1 (Sep 21, 2016)
+ - Migrated Logstash's internal logging framework to Log4j2. This enhancement provides the following features:
+   - Support changing logging level dynamically at runtime through REST endpoints. New APIs have been exposed 
+     under `_node/logging` to update log levels. Also a new endpoint `_node/logging` was added to return all 
+     existing loggers.
+   - Configurable file rotation policy for logs. Default is per-day.
+   - Support component-level or plugin level log settings.
+   - Unify logging across Logstash's Java and Ruby code.
+   - Logs are now placed in `LS_HOME/logs` dir configurable via `path.logs` setting.
+ - Breaking change: Set default log severity level to `INFO` instead of `WARN` to match Elasticsearch.
+ - Show meaningful error message with an unknown CLI command ([#5748](https://github.com/elastic/logstash/issues/5748))
+ - Monitoring API enhancements
+   - Added `duration_in_millis` metric under `/_node/stats/pipeline/events`
+   - Added JVM GC stats under `/_node/stats/jvm`
+   - Removed the `/_node/mem` resource as it's been properly moved under `/_node/jvm/mem`
+   - Added config reload stats under new resource type `_node/stats/pipeline/reloads`
+   - Added config reload enabled/disabled info to `/_node/pipeline`
+   - Added JVM GC strategy info under `/_node/jvm`
+   - Ensure `?human` option works correctly for `hot_threads` API.
+   - Make sure a non-existing API endpoint correctly returns 404 and a structured error message.
+ - Plugin Developers: Improved nomenclature and methods for 'threadsafe' outputs. Removed `workers_not_supported` 
+    method ([#5662](https://github.com/elastic/logstash/issues/5662))
+
+### Output
+  - Elasticsearch
+    - Breaking Change: Index template for 5.0 has been changed to reflect Elasticsearch's mapping 
+      changes. Most importantly, the subfield for string multi-fields has changed from `.raw` to `.keyword` 
+      to match ES default behavior ([#386](https://github.com/logstash-plugins/logstash-output-elasticsearch/issues/386))
+    - Users installing ES 5.x and LS 5.x This change will not affect you and you will continue to use 
+      the ES defaults. Users upgrading from LS 2.x to LS 5.x with ES 5.x LS will not force upgrade the template, 
+      if logstash template already exists. This means you will still use .raw for sub-fields coming from 2.x. 
+      If you choose to use the new template, you will have to reindex your data after the new template is 
+      installed.
+    - Added `check_connection_timeout` parameter which has a default of 10m
+
 ## 5.0.0-alpha5 (Aug 2, 2016)
  - Introduced a performance optimization called bi-values to store both JRuby and Java object types which will
    benefit plugins written in Ruby.
