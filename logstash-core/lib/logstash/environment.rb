@@ -42,10 +42,11 @@ module LogStash
             Setting::String.new("http.environment", "production"),
             Setting::String.new("queue.type", "persisted", true, ["persisted", "memory", "synchronous"]),
             Setting::Numeric.new("queue.page_capacity", 250 * 1024 * 1024),
-            Setting::Numeric.new("queue.queue_capacity", 250 * 1024 * 1024),
-            Setting::WritableDirectory.new("path.queue", ::File.join(LogStash::Environment::LOGSTASH_HOME, "lsqueue")),
+            Setting::Numeric.new("queue.queue_capacity", 250 * 1024 * 1024)
 
   ].each {|setting| SETTINGS.register(setting) }
+
+  SETTINGS.register Setting::WritableDirectory.new("path.queue", ::File.join(SETTINGS.get("path.data"), "queue"))
 
   module Environment
     extend self
