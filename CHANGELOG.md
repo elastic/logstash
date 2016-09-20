@@ -1,4 +1,4 @@
-## 5.0.0-alpha5 (Sep 21, 2016)
+## 5.0.0-beta1 (Sep 21, 2016)
  - Migrated Logstash's internal logging framework to Log4j2. This enhancement provides the following features:
    - Support changing logging level dynamically at runtime through REST endpoints. New APIs have been exposed 
      under `_node/settings` to update log levels. Also a new endpoint `_node/logging` was added to return all 
