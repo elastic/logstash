@@ -57,7 +57,7 @@ class Fixture
   end
 
   def teardown
-    File.delete(@actual_output) if @settings.is_set?(@actual_output) && output_exists?
+    File.delete(@actual_output) if @settings.is_set?("actual_output") && output_exists?
     puts "Tearing down services"
     services = @settings.get("services")
     services.each do |name|

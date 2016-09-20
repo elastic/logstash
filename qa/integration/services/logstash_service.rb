@@ -8,7 +8,7 @@ require 'yaml'
 # A locally started Logstash service
 class LogstashService < Service
 
-  LS_VERSION_FILE = File.expand_path(File.join("../../../",versions.yml), __FILE__)
+  LS_VERSION_FILE = File.expand_path(File.join("../../../../", "versions.yml"), __FILE__)
   LS_BIN = "bin/logstash"
 
   STDIN_CONFIG = "input {stdin {}} output { }"
