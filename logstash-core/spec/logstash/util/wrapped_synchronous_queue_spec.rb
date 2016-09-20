@@ -1,6 +1,7 @@
 # encoding: utf-8
 require "spec_helper"
 require "logstash/util/wrapped_synchronous_queue"
+require "logstash/instrument/collector"
 
 describe LogStash::Util::WrappedSynchronousQueue do
   context "#offer" do
@@ -45,11 +46,47 @@ describe LogStash::Util::WrappedSynchronousQueue do
     end
 
     describe "WriteClient | ReadClient" do
-      context "when writing to the queue" do
-        let(:queue) { DummyQueue.new }
-        let(:write_client) { LogStash::Util::WrappedSynchronousQueue::WriteClient.new(queue)}
-        let(:read_client)  { LogStash::Util::WrappedSynchronousQueue::ReadClient.new(queue)}
+      let(:queue) { DummyQueue.new }
+      let(:write_client) { LogStash::Util::WrappedSynchronousQueue::WriteClient.new(queue)}
+      let(:read_client)  { LogStash::Util::WrappedSynchronousQueue::ReadClient.new(queue)}
 
+      context "when reading from the queue" do
+        let(:collector) { LogStash::Instrument::Collector.new }
+
+        before do
+          read_client.set_events_metric(LogStash::Instrument::Metric.new(collector).namespace(:events))
+          read_client.set_pipeline_metric(LogStash::Instrument::Metric.new(collector).namespace(:pipeline))
+        end
+
+        context "when the queue is empty" do
+          it "doesnt record the `duration_in_millis`" do
+            batch = read_client.take_batch
+            read_client.close_batch(batch)
+            store = collector.snapshot_metric.metric_store
+            expect(store.size).to eq(0)
+          end
+        end
+
+        context "when we have item in the queue" do
+          it "records the `duration_in_millis`" do
+            batch = write_client.get_new_batch
+            5.times {|i| batch.push("value-#{i}")}
+            write_client.push_batch(batch)
+            read_batch = read_client.take_batch
+            sleep(0.1) # simulate some work?
+            read_client.close_batch(batch)
+            store = collector.snapshot_metric.metric_store
+
+            expect(store.size).to eq(4)
+            expect(store.get_shallow(:events, :in).value).to eq(5)
+            expect(store.get_shallow(:events, :duration_in_millis).value).to be > 0
+            expect(store.get_shallow(:pipeline, :in).value).to eq(5)
+            expect(store.get_shallow(:pipeline, :duration_in_millis).value).to be > 0
+          end
+        end
+      end
+
+      context "when writing to the queue" do
         before :each do
           read_client.set_events_metric(LogStash::Instrument::NullMetric.new)
           read_client.set_pipeline_metric(LogStash::Instrument::NullMetric.new)
