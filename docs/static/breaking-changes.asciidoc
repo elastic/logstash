@@ -16,7 +16,7 @@ consistent with other Elastic products. Full directory layout is described in <<
 (in core and plugins) were too noisy at INFO level, so we had to audit log messages and switch some of them to DEBUG
 level.
 
-**Index Template:** The index template for 5.0 has been changed to reflect Elasticsearch's mapping changes. Most
+**Index Template:** The index template for 5.0 has been changed to reflect {ref}/breaking_50_mapping_changes.html[Elasticsearch's mapping changes]. Most
 importantly, the subfield for string multi-fields has changed from `.raw` to `.keyword` to match Elasticsearch's default
 behavior. The impact of this change to various user groups is detailed below:
 
@@ -25,7 +25,7 @@ behavior. The impact of this change to various user groups is detailed below:
 * Existing users with custom templates - most of you won't be impacted because you use a custom template.
 * Existing users with default template - Logstash does not force you to upgrade templates if one already exists. If you
 intend to move to the new template and want to use `.keyword`, you'll have to reindex existing data. Elasticsearch's
-reindexing API can help move your data from using `.raw` subfields to `.keyword`.
+ {ref}/docs-reindex.html[reindexing API] can help move your data from using `.raw` subfields to `.keyword`.
 
 **Command Line Interface:** Most of the long form <<command-line-flags,options>> have been renamed 
 to adhere to the yml dot notation to be used in the settings file. Short form options have not been changed.
