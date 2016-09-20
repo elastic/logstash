@@ -2,7 +2,7 @@ require_relative '../framework/fixture'
 require_relative '../framework/settings'
 require_relative '../services/logstash_service'
 
-describe "a config which indexes data into Elasticsearch", :integration => true do
+describe "a config which indexes data into Elasticsearch" do
 
   before(:all) {
     @fixture = Fixture.new(__FILE__)

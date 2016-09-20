@@ -6,5 +6,9 @@ set -e
 # installing gems. See https://github.com/elastic/logstash/issues/5179
 export JRUBY_OPTS="-J-Xmx1g"
 
-rake test:install-default
-rake test:integration
+rm -rf build/*
+rake artifact:tar
+cd build
+tar xvf *.tar.gz
+cd ../qa/integration
+rspec

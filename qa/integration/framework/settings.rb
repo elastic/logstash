@@ -15,6 +15,11 @@ class TestSettings
     @suite_settings = YAML.load_file(SUITE_SETTINGS_FILE)
     # Per test settings, where one can override stuff and define test specific config
     @test_settings = YAML.load_file(@tests_settings_file)
+    
+    if verbose_mode?
+      puts "Test settings file: #{@tests_settings_file}"
+      puts "Suite settings file: #{SUITE_SETTINGS_FILE}"
+    end  
 
     if is_set?("config")
       if get("config").is_a?(Hash)
@@ -37,6 +42,10 @@ class TestSettings
       @suite_settings[key]
     end
   end
+  
+  def verbose_mode?
+    @suite_settings["verbose_mode"]
+  end  
 
   def is_set?(key)
     @suite_settings.key?(key) || @test_settings.key?(key)
