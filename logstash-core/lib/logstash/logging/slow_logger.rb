@@ -11,7 +11,6 @@ module LogStash; module Logging
   class NullLogger
     def log(event, threshold, time, data={})
     end
-    alias_method :warn, :log
   end
 
   # Generic slow logger, this class is responsible of
@@ -41,7 +40,6 @@ module LogStash; module Logging
       freq_items.add(threshold, took_in_seconds)
       to_logger(level.to_sym, message, data)
     end
-    alias_method :warn, :log
 
     def logger=(logger)
       @logger = logger

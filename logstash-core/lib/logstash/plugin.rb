@@ -125,9 +125,9 @@ class LogStash::Plugin
     @timer ||= Timer.new
   end
 
-  def slow_logger(event, threshold, time, data={})
+  def slowlog(event, threshold, end_time, start_time=0, data={})
     @slow_logger ||= LogStash::Logging::NullLogger.new
-    @slow_logger.log(event, threshold, time, data)
+    @slow_logger.log(event, threshold, end_time-start_time, data)
   end
 
   def setting(key)

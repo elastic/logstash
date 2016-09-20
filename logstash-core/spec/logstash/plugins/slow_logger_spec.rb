@@ -26,7 +26,7 @@ describe "slowlog interface" do
 
     it "should respond to slow_logger" do
       expect(plugin.respond_to?(:slow_logger=)).to eq(true)
-      expect(plugin.respond_to?(:slow_logger)).to  eq(true)
+      expect(plugin.respond_to?(:slowlog)).to  eq(true)
     end
 
     describe "notify slow operations" do
@@ -42,7 +42,7 @@ describe "slowlog interface" do
         it "should not report to the logger" do
           expect(slow_logger).to receive(:setting).with("your.op.warn").and_return(15)
           expect(logger).not_to receive(:warn)
-          plugin.slow_logger(event, "your.op.warn", 10)
+          plugin.slowlog(event, "your.op.warn",20,10)
         end
       end
 
@@ -50,7 +50,7 @@ describe "slowlog interface" do
         it "should not report to the logger" do
           expect(slow_logger).to receive(:setting).with("your.op.warn").and_return(15)
           expect(logger).to receive(:warn)
-          plugin.slow_logger(event, "your.op.warn", 20)
+          plugin.slowlog(event, "your.op.warn",20,0)
         end
       end
 
@@ -58,7 +58,7 @@ describe "slowlog interface" do
         it "should not report to the logger" do
           expect(slow_logger).to receive(:setting).with("your.op.warn").and_return(nil)
           expect(logger).not_to receive(:warn)
-          plugin.slow_logger(event, "your.op.warn", 10)
+          plugin.slowlog(event, "your.op.warn",10,0)
         end
       end
 
@@ -67,14 +67,14 @@ describe "slowlog interface" do
         it "should log as the level if valid" do
           expect(slow_logger).to receive(:setting).with("your.op.info").and_return(15)
           expect(logger).to receive(:info)
-          plugin.slow_logger(event, "your.op.info", 20)
+          plugin.slowlog(event, "your.op.info",20,0)
         end
 
         it "should log as the default level (warn) if not valid" do
           allow(logger).to receive(:respond_to?).with(:foobar).and_return(false)
           expect(slow_logger).to receive(:setting).with("your.op.foobar").and_return(15)
           expect(logger).to receive(:warn)
-          plugin.slow_logger(event, "your.op.foobar", 20)
+          plugin.slowlog(event, "your.op.foobar",20,3)
         end
       end
 
