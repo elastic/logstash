@@ -3,9 +3,13 @@ require_relative "monitoring_api"
 require "childprocess"
 require "bundler"
 require "tempfile"
+require 'yaml'
 
 # A locally started Logstash service
 class LogstashService < Service
+
+  LS_VERSION_FILE = File.expand_path(File.join("../../../",versions.yml), __FILE__)
+  LS_BIN = "bin/logstash"
 
   STDIN_CONFIG = "input {stdin {}} output { }"
   RETRY_ATTEMPTS = 10
@@ -20,12 +24,14 @@ class LogstashService < Service
       @logstash_home = @settings.get("ls_home_abs_path")
     else
       # use the LS which was just built in source repo
-      ls_file = "logstash-" + @settings.get("ls_version")
-      ls_file += "-SNAPSHOT" if @settings.get("snapshot")
-      @logstash_home = File.expand_path(File.join("../../../../build",ls_file), __FILE__)
+      ls_version_file = YAML.load_file(LS_VERSION_FILE)
+      ls_file = "logstash-" + ls_version_file["logstash"]
+      # First try without the snapshot if it's there
+      @logstash_home = File.expand_path(File.join("../../../../build", ls_file), __FILE__)
+      @logstash_home += "-SNAPSHOT" unless Dir.exists?(@logstash_home)
 
       puts "Using #{@logstash_home} as LS_HOME"
-      @logstash_bin = File.join("#{@logstash_home}", "bin/logstash")
+      @logstash_bin = File.join("#{@logstash_home}", LS_BIN)
       raise "Logstash binary not found in path #{@logstash_home}" unless File.file? @logstash_bin
     end
 

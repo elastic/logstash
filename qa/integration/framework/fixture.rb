@@ -3,6 +3,8 @@ require_relative "../services/service_locator"
 # A class that holds all fixtures for a given test file. This deals with
 # bootstrapping services, dealing with config files, inputs etc
 class Fixture
+  FIXTURES_DIR = File.expand_path(File.join("..", "..", "fixtures"), __FILE__)
+
   attr_reader :input
   attr_reader :actual_output
   attr_reader :test_dir
@@ -21,13 +23,10 @@ class Fixture
 
   def initialize(test_file_location)
     @test_file_location = test_file_location
-    @fixtures_dir = File.expand_path(File.join("..", "..", "fixtures"), __FILE__)
     @settings = TestSettings.new(@test_file_location)
     @service_locator = ServiceLocator.new(@settings)
     setup_services
-    @input = File.join(@fixtures_dir, @settings.get("input")) if @settings.is_set?("input")
-    # this assumes current PWD.
-    # TODO: Remove this when we have an erb template for LS config so you can inject such stuff
+    @input = File.join(FIXTURES_DIR, @settings.get("input")) if @settings.is_set?("input")
     @actual_output = @settings.get("actual_output")
   end
 
@@ -74,7 +73,7 @@ class Fixture
     end
     if @settings.is_set?("setup_script")
       puts "Setting up test specific fixtures"
-      script = File.join(@fixtures_dir, @settings.get("setup_script"))
+      script = File.join(FIXTURES_DIR, @settings.get("setup_script"))
       `#{script}`
     end
   end
