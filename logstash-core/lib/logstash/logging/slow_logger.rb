@@ -31,8 +31,9 @@ module LogStash; module Logging
       return if max_time == 0 || took_in_seconds <= max_time
 
       level, operation_namespace = split_fields(threshold)
-
-      data[:event] = event
+      if setting("slowlog.plugins.context")
+        data[:event] = event
+      end
       data[:threshold] = operation_namespace
       data[:took_in_seconds] = took_in_seconds
       message = "Threshold #{threshold} has been overcome with #{took_in_seconds}"

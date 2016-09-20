@@ -48,6 +48,7 @@ describe "slowlog interface" do
 
       context "when threshold is overcome"do
         it "should not report to the logger" do
+          expect(slow_logger).to receive(:setting).with("slowlog.plugins.context").and_return(true)
           expect(slow_logger).to receive(:setting).with("your.op.warn").and_return(15)
           expect(logger).to receive(:warn)
           plugin.slowlog(event, "your.op.warn",20,0)
@@ -65,6 +66,7 @@ describe "slowlog interface" do
       context "when using a custom level" do
 
         it "should log as the level if valid" do
+          expect(slow_logger).to receive(:setting).with("slowlog.plugins.context").and_return(true)
           expect(slow_logger).to receive(:setting).with("your.op.info").and_return(15)
           expect(logger).to receive(:info)
           plugin.slowlog(event, "your.op.info",20,0)
@@ -72,6 +74,7 @@ describe "slowlog interface" do
 
         it "should log as the default level (warn) if not valid" do
           allow(logger).to receive(:respond_to?).with(:foobar).and_return(false)
+          expect(slow_logger).to receive(:setting).with("slowlog.plugins.context").and_return(true)
           expect(slow_logger).to receive(:setting).with("your.op.foobar").and_return(15)
           expect(logger).to receive(:warn)
           plugin.slowlog(event, "your.op.foobar",20,3)
@@ -131,9 +134,22 @@ describe "slowlog interface" do
         end
 
         it "should report to the logger if overcome" do
+          expect(subject).to receive(:setting).with("slowlog.plugins.context").and_return(true)
           expect(logger).to receive(:warn)
           subject.log(event, "your.op.warn", 16)
         end
+      end
+
+      context "when no context is requested" do
+        before(:each) do
+          expect(subject).to receive(:setting).with("slowlog.plugins.context").and_return(false)
+          expect(subject).to receive(:setting).with("your.op.warn").and_return(15)
+        end
+
+        it "should not attach the event to the payload" do
+          expect(subject).not_to receive(:to_logger).with(:warn, kind_of(String), hash_including(:event => event))
+          subject.log(event, "your.op.warn", 20)
+        end 
       end
     end
 

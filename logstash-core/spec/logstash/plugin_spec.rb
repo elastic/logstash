@@ -271,6 +271,19 @@ describe LogStash::Plugin do
     end
   end
 
+  context "When the plugin record an slow operation" do
+    let(:base) { LogStash::Inputs::Base }
+    let(:plugin) do
+      Class.new(base) do
+        #include LogStash::Util::Loggable
+        config_name "testing"
+
+        def register
+          metric.gauge("power_level", 9000)
+        end
+      end
+    end
+  end
 
   context "When the plugin record a metric" do
     let(:config) { {} }
