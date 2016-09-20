@@ -12,13 +12,13 @@ config: |-
     }
   }
   output {
-    #file {
-    #  path => "kafka_input.output"
-    #  flush_interval => 0
-    #  codec => line { format => "%{message}" }
-    #}
+    file {
+       path => "kafka_input.output"
+       flush_interval => 0
+       codec => line { format => "%{message}" }
+    }
   }
 
 input: how_sample.input
-setup_script: download_input.sh
+actual_output: kafka_input.output 
 teardown_script:
