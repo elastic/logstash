@@ -1,7 +1,15 @@
 #!/bin/bash
 set -ex
 current_dir="$(dirname "$0")"
-source "${current_dir}/helpers.sh"
+
+stop_kafka() {
+    echo "Stopping Kafka broker"
+    $current_dir/kafka/bin/kafka-server-stop.sh
+    sleep 2
+    echo "Stopping zookeeper"
+    $current_dir/kafka/bin/zookeeper-server-stop.sh
+    sleep 2
+}
 
 # delete test topic
 echo "Deleting test topic in Kafka"
