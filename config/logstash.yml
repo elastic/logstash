@@ -114,6 +114,12 @@
 # Where to find custom plugins
 # path.plugins: []
 #
+#
+# ------------ Slow log Settings -----------
+# 
+# Show the context information, event, plugin, etc for the plugins slow log.
+# slowlog.plugins.context: true
+#
 # ------------ Slow log thresholds ---------
 #
 # An slow log threshold is a time limit for an operation that when is overcome it will
@@ -121,4 +127,4 @@
 #
 # The last building block of the component is the log level (default: warn)
 #
-# filters.dns.getaddress.warn: 5
+# slowlog.filters.dns.warn: 10

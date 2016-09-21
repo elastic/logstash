@@ -43,6 +43,14 @@ module LogStash
             Setting::Boolean.new("slowlog.plugins.context", true),
   ].each {|setting| SETTINGS.register(setting) }
 
+
+  default_values = { "slowlog.filters.dns" => 10 }
+  default_values.each_pair do |key, value|
+    ["debug", "info", "error", "warn", "fatal", "trace" ].each do |log_level|
+      setting = Setting::Numeric.new("#{key}.#{log_level}", value)
+      SETTINGS.register(setting)
+    end
+  end
   module Environment
     extend self
 
