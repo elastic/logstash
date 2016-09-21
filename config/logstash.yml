@@ -125,6 +125,8 @@
 # An slow log threshold is a time limit for an operation that when is overcome it will
 # be reported at the related log file. Time is seconds.
 #
-# The last building block of the component is the log level (default: warn)
+# Attach the context information in every log message (default: true)
+# slowlog.plugins.context: true
 #
+# The last building block of the component is the log level (default: warn)
 # slowlog.filters.dns.warn: 10
