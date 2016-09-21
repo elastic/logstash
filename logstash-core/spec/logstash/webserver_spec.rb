@@ -126,7 +126,7 @@ describe LogStash::WebServer do
   end
 end
 
-describe LogStash::WebServer::IOWrappedLogger do
+describe LogStash::IOWrappedLogger do
   let(:logger)  { spy("logger") }
   let(:message) { "foobar" }
 

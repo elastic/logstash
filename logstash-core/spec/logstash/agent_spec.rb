@@ -501,7 +501,7 @@ describe LogStash::Agent do
       it "increases the failed reload count" do
         snapshot = subject.metric.collector.snapshot_metric
         value = snapshot.metric_store.get_with_path("/stats/pipelines")[:stats][:pipelines][:main][:reloads][:failures].value
-        expect(value).to be > 1
+        expect(value).to be > 0
       end
     end
   end

@@ -203,6 +203,12 @@ describe LogStash::Instrument::MetricStore do
       end
     end
 
+    describe "#size" do
+      it "returns the number of unique metrics" do
+        expect(subject.size).to eq(metric_events.size)
+      end
+    end
+
     describe "#each" do
       it "retrieves all the metric" do
         expect(subject.each.size).to eq(metric_events.size)

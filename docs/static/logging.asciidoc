@@ -1,0 +1,69 @@
+[[logging]]
+=== Logging
+
+Logstash emits internal logs during its operation, which are placed in `LS_HOME/logs`. The default logging level is `INFO`. 
+Logstash's logging framework is based on http://logging.apache.org/log4j/2.x/[Log4j2 framework], and much of its functionality 
+is exposed directly to users.
+
+When debugging problems, particularly problems with plugins, it can be helpful to increase the logging level to `DEBUG` 
+to emit more verbose messages. Previously, you could only set a log level that applied to the entire Logstash product. 
+Starting with 5.0, you can configure logging for a particular subsystem in Logstash. For example, if you are 
+debugging issues with Elasticsearch Output, you can increase log levels just for that component. This way 
+you can reduce noise due to excessive logging and focus on the problem area effectively.
+
+==== Log file location
+
+You can specify the log file location using `--path.logs` setting.
+
+==== Log4j2 Configuration
+
+Logstash ships with a `log4j2.properties` file with out-of-the-box settings. You  can modify this file directly to change the 
+rotation policy, type, and other https://logging.apache.org/log4j/2.x/manual/configuration.html#Loggers[log4j2 configuration]. 
+You must restart Lostash to apply any changes that you make to this file.
+
+==== Logging APIs
+
+You could modify the `log4j2.properties` file and restart your Logstash, but that is both tedious and leads to unnecessary 
+downtime. Instead, you can dynamically update logging levels through the logging API. These settings are effective 
+immediately and do not need a restart. To update logging levels, take the subsystem/module you are interested in and prepend 
+`logger.` to it. For example:
+
+[source,js]
+--------------------------------------------------
+PUT /_node/logging
+{
+    "logger.logstash.outputs.elasticsearch" : "DEBUG"
+}
+--------------------------------------------------
+
+While this setting is in effect, Logstash will begin to emit DEBUG-level logs for __all__ the Elasticsearch outputs 
+specified in your configuration. Please note this new setting is transient and will not survive a restart.
+
+To retrieve a list of logging subsystems available at runtime, you can do a `GET` request to `_node/logging`
+
+[source,js]
+--------------------------------------------------
+GET /_node/logging?pretty
+--------------------------------------------------
+
+Example response:
+
+["source","js"]
+--------------------------------------------------
+{
+...
+"loggers" : {
+   "logstash.registry" : "WARN",
+   "logstash.instrument.periodicpoller.os" : "WARN",
+   "logstash.instrument.collector" : "WARN",
+   "logstash.runner" : "WARN",
+   "logstash.inputs.stdin" : "WARN",
+   "logstash.outputs.stdout" : "WARN",
+   "logstash.agent" : "WARN",
+   "logstash.api.service" : "WARN",
+   "logstash.instrument.periodicpoller.jvm" : "WARN",
+   "logstash.pipeline" : "WARN",
+   "logstash.codecs.line" : "WARN"
+   }
+}
+--------------------------------------------------

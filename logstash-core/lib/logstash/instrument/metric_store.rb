@@ -188,6 +188,10 @@ module LogStash module Instrument
       end
     end
 
+    def size
+      @fast_lookup.size
+    end
+
     private
     def get_all
       @fast_lookup.values
