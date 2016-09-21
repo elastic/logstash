@@ -7,9 +7,10 @@ namespace "test" do
 
   task "setup" do
 
-    # make sure we have a ./lsqueue dir here
+    # make sure we have a ./data/queue dir here
     # temporary wiring until we figure proper queue initialization sequence and in test context etc.
-    mkdir "lsqueue" unless File.directory?("lsqueue")
+    mkdir "data" unless File.directory?("data")
+    mkdir "data/queue" unless File.directory?("data/queue")
 
     # Need to be run here as because if run aftewarse (after the bundler.setup task) then the report got wrong
     # numbers and misses files. There is an issue with our setup! method as this does not happen with the regular
