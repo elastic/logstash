@@ -32,9 +32,8 @@ module LogStash; module Logging
 
       level, operation_namespace = split_fields(threshold)
       if setting("slowlog.plugins.context")
-        data[:event] = event
+        data[:context] = { :event => event, :threshold => operation_namespace }
       end
-      data[:threshold] = operation_namespace
       data[:took_in_seconds] = took_in_seconds
       message = "Threshold #{threshold} has been overcome with #{took_in_seconds}"
 
@@ -55,7 +54,7 @@ module LogStash; module Logging
 
     def split_fields(threshold)
       parts = threshold.split('.')
-      [parts[-1], parts[0..-2]]
+      [parts[-1], parts[0..-2].join('.')]
     end
 
     def setting(key)

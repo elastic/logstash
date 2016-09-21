@@ -147,7 +147,7 @@ describe "slowlog interface" do
         end
 
         it "should not attach the event to the payload" do
-          expect(subject).not_to receive(:to_logger).with(:warn, kind_of(String), hash_including(:event => event))
+          expect(subject).not_to receive(:to_logger).with(:warn, kind_of(String), hash_including(:context => { :event => event, :threshold => "your.op" } ))
           subject.log(event, "your.op.warn", 20)
         end 
       end
