@@ -51,7 +51,7 @@ module LogStash; module Util
       # from this queue. We also depend on this to be able to block consumers while we snapshot
       # in-flight buffers
 
-      def initialize(queue, batch_size = 125, wait_for = 5)
+      def initialize(queue, batch_size = 125, wait_for = 50)
         @queue = queue
         @mutex = Mutex.new
         # Note that @infilght_batches as a central mechanism for tracking inflight
@@ -211,8 +211,8 @@ module LogStash; module Util
 
       def take_originals_from_queue(queue, size, wait)
         size.times do |t|
-          event = (t == 0) ? queue.take : queue.poll(wait)
-          next if event.nil? # queue poll timed out
+          event = queue.poll(wait)
+          return if event.nil? # queue poll timed out
 
           @originals[event] = true
         end
