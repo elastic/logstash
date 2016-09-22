@@ -1,18 +1,18 @@
 #!/bin/bash
-set -ex
+set -e
 current_dir="$(dirname "$0")"
 
 if [ -n "${ES_VERSION+1}" ]; then
   echo "Elasticsearch version is $ES_VERSION"
   version=$ES_VERSION
 else
-   version=5.0.0-alpha5
+   version=5.0.0-beta1
 fi
 
 setup_es() {
   if [ ! -d $current_dir/elasticsearch ]; then
       local version=$1
-      download_url=https://download.elastic.co/elasticsearch/release/org/elasticsearch/distribution/tar/elasticsearch/$version/elasticsearch-$version.tar.gz
+      download_url=https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-$version.tar.gz
       curl -sL $download_url > $current_dir/elasticsearch.tar.gz
       mkdir $current_dir/elasticsearch
       tar -xzf $current_dir/elasticsearch.tar.gz --strip-components=1 -C $current_dir/elasticsearch/.

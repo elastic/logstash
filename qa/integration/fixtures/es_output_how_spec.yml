@@ -30,6 +30,5 @@ config: |-
     elasticsearch {}
   }
 
-input: how.input
-setup_script: download_input.sh
+input: how_sample.input
 teardown_script:

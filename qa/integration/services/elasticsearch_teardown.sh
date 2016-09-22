@@ -1,5 +1,5 @@
 #!/bin/bash
-set -ex
+set -e
 current_dir="$(dirname "$0")"
 
 stop_es() {
