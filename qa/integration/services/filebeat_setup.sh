@@ -6,7 +6,7 @@ if [ -n "${FILEBEAT_VERSION}" ]; then
   echo "Filebeat version is $FILEBEAT_VERSION"
   version=$FILEBEAT_VERSION
 else
-   version=5.0.0-alpha6
+   version=5.0.0-alpha5
 fi
 
 setup_fb() {
