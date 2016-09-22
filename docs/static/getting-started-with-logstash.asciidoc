@@ -67,14 +67,21 @@ Download and install the Public Signing Key:
 
 [source,sh]
 --------------------------------------------------
-wget -qO - https://packages.elastic.co/GPG-KEY-elasticsearch | sudo apt-key add -
+wget -qO - https://artifacts.elastic.co/GPG-KEY-elasticsearch | sudo apt-key add -
 --------------------------------------------------
 
-Add the repository definition to your `/etc/apt/sources.list` file:
+You may need to install the `apt-transport-https` package on Debian before proceeding:
+
+[source,sh]
+--------------------------------------------------
+sudo apt-get install apt-transport-https
+--------------------------------------------------
+
+Save the repository definition to  +/etc/apt/sources.list.d/elastic-{major-version}.list+:
 
 ["source","sh",subs="attributes,callouts"]
 --------------------------------------------------
-echo "deb https://packages.elastic.co/logstash/{branch}/debian stable main" | sudo tee -a /etc/apt/sources.list
+echo "deb https://artifacts.elastic.co/packages/{major-version}-prerelease/apt stable main" | sudo tee -a /etc/apt/sources.list.d/elastic-{major-version}.list
 --------------------------------------------------
 
 [WARNING]
@@ -105,7 +112,7 @@ Download and install the public signing key:
 
 [source,sh]
 --------------------------------------------------
-rpm --import https://packages.elastic.co/GPG-KEY-elasticsearch
+rpm --import https://artifacts.elastic.co/GPG-KEY-elasticsearch
 --------------------------------------------------
 
 Add the following in your `/etc/yum.repos.d/` directory
@@ -113,19 +120,21 @@ in a file with a `.repo` suffix, for example `logstash.repo`
 
 ["source","sh",subs="attributes,callouts"]
 --------------------------------------------------
-[logstash-{branch}]
-name=Logstash repository for {branch}.x packages
-baseurl=https://packages.elastic.co/logstash/{branch}/centos
+[logstash-{major-version}]
+name=Elastic repository for {major-version} packages
+baseurl=https://artifacts.elastic.co/packages/{major-version}-prerelease/yum
 gpgcheck=1
-gpgkey=https://packages.elastic.co/GPG-KEY-elasticsearch
+gpgkey=https://artifacts.elastic.co/GPG-KEY-elasticsearch
 enabled=1
+autorefresh=1
+type=rpm-md
 --------------------------------------------------
 
 And your repository is ready for use. You can install it with:
 
 [source,sh]
 --------------------------------------------------
-yum install logstash
+sudo yum install logstash
 --------------------------------------------------
 
 [[first-event]]
