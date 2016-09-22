@@ -1,12 +1,12 @@
 #!/bin/bash
-set -ex
+set -e
 current_dir="$(dirname "$0")"
 
 if [ -n "${KAFKA_VERSION+1}" ]; then
     echo "KAFKA_VERSION is $KAFKA_VERSION"
     version=$KAFKA_VERSION
 else
-    version=0.10.0.0
+    version=0.10.0.1
 fi
 
 setup_kafka() {
@@ -30,8 +30,10 @@ start_kafka() {
 
 setup_kafka $version
 start_kafka
-
+sleep 3
 # Set up topics
 $current_dir/kafka/bin/kafka-topics.sh --create --partitions 1 --replication-factor 1 --topic logstash_topic_plain --zookeeper localhost:2181
+sleep 1
 cat $current_dir/../fixtures/how_sample.input | $current_dir/kafka/bin/kafka-console-producer.sh --topic logstash_topic_plain --broker-list localhost:9092
+sleep 1
 echo "Kafka Setup complete"
