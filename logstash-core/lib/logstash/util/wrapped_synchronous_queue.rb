@@ -64,6 +64,10 @@ module LogStash; module Util
         @wait_for = wait_for
       end
 
+      def close
+        # noop, compat with acked queue read client
+      end
+
       def set_batch_dimensions(batch_size, wait_for)
         @batch_size = batch_size
         @wait_for = wait_for
