@@ -4,7 +4,7 @@ require_relative '../services/logstash_service'
 require "rspec/wait"
 
 describe "Kafka Input" do
-  let(:timeout_seconds) { 5 }
+  let(:timeout_seconds) { 30 }
   before(:all) {
     @fixture = Fixture.new(__FILE__)
   }
