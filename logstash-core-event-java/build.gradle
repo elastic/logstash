@@ -6,15 +6,6 @@ description = "Logstash Core Event Java"
 apply plugin: 'java'
 apply plugin: 'idea'
 
-//buildscript {
-//    repositories {
-//        mavenCentral()
-//    }
-//    dependencies {
-//        classpath 'net.saliman:gradle-cobertura-plugin:2.2.8'
-//    }
-//}
-
 repositories {
     mavenCentral()
 }
