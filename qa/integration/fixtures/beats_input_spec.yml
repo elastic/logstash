@@ -9,6 +9,7 @@ config:
         port => 5044
       }
     }
+    output {}
   tls_server_auth: |-
     input {
       beats {
@@ -18,6 +19,7 @@ config:
         ssl_key => '<%=options[:ssl_key]%>'
       }
     }
+    output {}
   tls_mutual_auth: |-
     input {
       beats {
@@ -28,5 +30,6 @@ config:
         ssl_verify_mode => "peer"
       }
     }
+    output {}
 input: how_sample.input
 teardown_script:

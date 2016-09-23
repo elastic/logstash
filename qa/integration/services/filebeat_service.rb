@@ -1,6 +1,6 @@
 # encoding: utf-8
 class FilebeatService < Service
-  FILEBEAT_CMD = [File.join(File.dirname(__FILE__), "filebeat", "filebeat"), "-c"]
+  FILEBEAT_CMD = [File.join(File.dirname(__FILE__), "installed", "filebeat", "filebeat"), "-c"]
 
   class BackgroundProcess
     def initialize(cmd)
