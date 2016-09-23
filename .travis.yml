@@ -19,7 +19,6 @@ install:
   - ci/travis_integration_install.sh
 before_script:
   - echo "--order rand" > .rspec
-  - echo "--format documentation" >> .rspec
 script:
   - rake test:core
   - ci/travis_integration_run.sh
