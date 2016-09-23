@@ -371,22 +371,36 @@ module LogStash
             if !::File.writable?(path)
               raise ::ArgumentError.new("Path \"#{path}\" must be a writable directory. It is not writable.")
             end
+          elsif ::File.symlink?(path)
+            # TODO(sissel): I'm OK if we relax this restriction. My experience
+            # is that it's usually easier and safer to just reject symlinks.
+            raise ::ArgumentError.new("Path \"#{path}\" must be a writable directory. It cannot be a symlink.")
           elsif ::File.exist?(path)
             raise ::ArgumentError.new("Path \"#{path}\" must be a writable directory. It is not a directory.")
           else
-            begin
-              # TODO(sissel): It would be ideal if this creation only happened
-              # on the first `get` call of this setting. Otherwise, we'll try
-              # to create a directory on any validation attempt (initialize, set, etc)
-              # TODO(sissel): Log the fact that we are creating this directory.
-              ::FileUtils.mkdir_p(path)
-            rescue => e
-              raise ::ArgumentError.new("Path \"#{path}\" must be a writable directory. I tried to create it, but failed: #{e.class.name} - #{e}")
+            parent = ::File.dirname(path)
+            if !::File.writable?(parent)
+              raise ::ArgumentError.new("Path \"#{path}\" does not exist and I cannot create it because the parent path \"#{parent}\" is not writable.")
             end
           end
 
           # If we get here, the directory exists and is writable.
           true
+        end
+      end
+
+      def value
+        super.tap do |path|
+          if !::File.directory?(path)
+            # Create the directory if it doesn't exist.
+            begin
+              # TODO(sissel): Log the fact that we are creating this directory.
+              ::FileUtils.mkdir_p(path)
+            rescue => e
+              # TODO(sissel): Catch only specific exceptions?
+              raise ::ArgumentError.new("Path \"#{path}\" does not exist, and I failed trying to create it: #{e.class.name} - #{e}")
+            end
+          end
         end
       end
     end
