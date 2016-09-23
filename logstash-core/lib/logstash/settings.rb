@@ -1,4 +1,5 @@
 # encoding: utf-8
+require "fileutils"
 
 module LogStash
   class Settings
@@ -366,11 +367,26 @@ module LogStash
     class WritableDirectory < Setting
       def initialize(name, default=nil, strict=true)
         super(name, ::String, default, strict) do |path|
-          if ::File.directory?(path) && ::File.writable?(path)
-            true
+          if ::File.directory?(path)
+            if !::File.writable?(path)
+              raise ::ArgumentError.new("Path \"#{path}\" must be a writable directory. It is not writable.")
+            end
+          elsif ::File.exist?(path)
+            raise ::ArgumentError.new("Path \"#{path}\" must be a writable directory. It is not a directory.")
           else
-            raise ::ArgumentError.new("Path \"#{path}\" is not a directory or not writable.")
+            begin
+              # TODO(sissel): It would be ideal if this creation only happened
+              # on the first `get` call of this setting. Otherwise, we'll try
+              # to create a directory on any validation attempt (initialize, set, etc)
+              # TODO(sissel): Log the fact that we are creating this directory.
+              ::FileUtils.mkdir_p(path)
+            rescue => e
+              raise ::ArgumentError.new("Path \"#{path}\" must be a writable directory. I tried to create it, but failed: #{e.class.name} - #{e}")
+            end
           end
+
+          # If we get here, the directory exists and is writable.
+          true
         end
       end
     end

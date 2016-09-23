@@ -46,11 +46,9 @@ module LogStash
 
   ].each {|setting| SETTINGS.register(setting) }
 
-  queue_file_path = ::File.join(SETTINGS.get("path.data"), "queue")
-  # Here we have to create the directory even though it might be overridden by settings.yml
-  # We should consider a Setting::LazyDirectory class that creates the directory on first 'get'
-  FileUtils.mkdir_p([queue_file_path])
-  SETTINGS.register Setting::WritableDirectory.new("path.queue", queue_file_path)
+  # Compute the default queue path based on `path.data`
+  default_queue_file_path = ::File.join(SETTINGS.get("path.data"), "queue")
+  SETTINGS.register Setting::WritableDirectory.new("path.queue", default_queue_file_path)
 
   module Environment
     extend self
