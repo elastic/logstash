@@ -611,7 +611,7 @@ output {
 [[environment-variables]]
 === Using Environment Variables in the Configuration
 
-This feature is _experimental_, to enable it you will need to run logstash with the `--allow-env` flag.
+**Note: This feature is _experimental_, to enable it you will need to run logstash with the `--allow-env` flag.**
 
 ==== Overview
 
