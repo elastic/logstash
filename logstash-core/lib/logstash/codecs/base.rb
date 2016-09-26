@@ -9,7 +9,10 @@ module LogStash::Codecs; class Base < LogStash::Plugin
   include LogStash::Config::Mixin
   config_name "codec"
 
+  attr_accessor :event_pool
+
   def initialize(params={})
+    @event_pool = params.delete(:event_pool)
     super
     config_init(@params)
     register if respond_to?(:register)

@@ -119,6 +119,7 @@ class LogStash::Filters::Base < LogStash::Plugin
 
   public
   def initialize(params)
+    @event_pool = params.delete(:event_pool)
     super
     config_init(@params)
     @threadsafe = true

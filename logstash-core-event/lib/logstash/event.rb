@@ -67,6 +67,10 @@ class LogStash::Event
   @@logger = DEFAULT_LOGGER
 
   def initialize(data = {})
+    reset(data)
+  end
+
+  def reset(data = {})
     @cancelled = false
     @data = data
     @accessors = LogStash::Util::Accessors.new(data)
