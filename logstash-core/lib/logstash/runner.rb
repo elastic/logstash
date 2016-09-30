@@ -240,23 +240,40 @@ class LogStash::Runner < Clamp::StrictCommand
       signal_usage_error(I18n.t("logstash.runner.reload-without-config-path"))
     end
 
+    pipelines = []
+
+    if setting("config.multi_pipeline") && setting("path.config")
+      Dir.glob(setting("path.config")).each do |path|
+        settings = @settings.clone
+        settings.set("pipeline.id", path)
+        settings.set("path.config", path)
+        pipelines << settings
+      end
+    else
+      pipelines << @settings
+    end
+
     if setting("config.test_and_exit")
       config_loader = LogStash::Config::Loader.new(logger)
-      config_str = config_loader.format_config(setting("path.config"), setting("config.string"))
-      begin
-        LogStash::Pipeline.new(config_str)
-        puts "Configuration OK"
-        logger.info "Using config.test_and_exit mode. Config Validation Result: OK. Exiting Logstash"
-        return 0
-      rescue => e
-        logger.fatal I18n.t("logstash.runner.invalid-configuration", :error => e.message)
-        return 1
+      pipelines.each do |settings|
+        config_str = config_loader.format_config(settings.get("path.config"), settings.get("config.string"))
+        begin
+          LogStash::Pipeline.new(config_str, settings)
+          puts "Configuration OK"
+          logger.info "Using config.test_and_exit mode. Config Validation Result: OK. Exiting Logstash"
+          return 0
+        rescue => e
+          logger.fatal I18n.t("logstash.runner.invalid-configuration", :error => e.message)
+          return 1
+        end
       end
     end
 
     @agent = create_agent(@settings)
 
-    @agent.register_pipeline("main", @settings)
+    pipelines.each do |settings|
+      @agent.register_pipeline(settings.get("pipeline.id"), settings)
+    end
 
     # enable sigint/sigterm before starting the agent
     # to properly handle a stalled agent

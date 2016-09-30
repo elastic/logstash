@@ -159,3 +159,4 @@
 #
 # Where to find custom plugins
 # path.plugins: []
+config.multi_pipeline: true

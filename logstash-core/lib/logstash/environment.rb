@@ -21,6 +21,7 @@ module LogStash
  Setting::WritableDirectory.new("path.data", ::File.join(LogStash::Environment::LOGSTASH_HOME, "data")),
     Setting::NullableString.new("config.string", nil, false),
            Setting::Boolean.new("config.test_and_exit", false),
+           Setting::Boolean.new("config.multi_pipeline", false),
            Setting::Boolean.new("config.reload.automatic", false),
            Setting::Numeric.new("config.reload.interval", 3), # in seconds
            Setting::Boolean.new("metric.collect", true),
