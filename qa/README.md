@@ -196,6 +196,6 @@ Check https://relishapp.com/rspec/rspec-core/v/3-4/docs/command-line for more de
 
 *  bundle exec rspec acceptance/spec -e "is installed" 
 
-# Run the example desfined at line 11
+# Run the example defined at line 11
 
 *  bundle exec rspec acceptance/spec/lib/artifact_operation_spec.rb:11
