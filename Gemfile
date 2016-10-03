@@ -19,6 +19,8 @@ gem "rubyzip", "~> 1.1.7", :group => :build
 gem "gems", "~> 0.8.3", :group => :build
 gem "rack-test", :require => "rack/test", :group => :development
 gem "flores", "~> 0.0.6", :group => :development
+gem "term-ansicolor", "~> 1.3.2", :group => :development # 1.4.0 uses ruby 2.0
+gem "docker-api", "1.31.0", :group => :development # 1.32.0 uses ruby 2.0
 gem "pleaserun"
 gem "logstash-input-heartbeat"
 gem "logstash-codec-collectd"
