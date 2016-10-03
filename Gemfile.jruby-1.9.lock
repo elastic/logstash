@@ -407,7 +407,7 @@ GEM
       logstash-filter-json
       logstash-input-generator
       logstash-output-file
-    logstash-output-elasticsearch (5.1.1-java)
+    logstash-output-elasticsearch (5.1.2-java)
       cabin (~> 0.6)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       manticore (>= 0.5.4, < 1.0.0)
@@ -503,7 +503,7 @@ GEM
     murmurhash3 (0.1.6-java)
     mustache (0.99.8)
     naught (1.1.0)
-    nokogiri (1.6.8-java)
+    nokogiri (1.6.8.1-java)
     numerizer (0.1.1)
     octokit (3.8.0)
       sawyer (~> 0.6.0, >= 0.5.3)
@@ -570,6 +570,8 @@ GEM
       ffi
     statsd-ruby (1.2.0)
     stud (0.0.22)
+    term-ansicolor (1.3.2)
+      tins (~> 1.0)
     thread_safe (0.3.5-java)
     tilt (2.0.5)
     tins (1.6.0)
@@ -709,4 +711,5 @@ DEPENDENCIES
   rubyzip (~> 1.1.7)
   simplecov
   stud (~> 0.0.22)
+  term-ansicolor (~> 1.3.2)
   tins (= 1.6)
