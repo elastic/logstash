@@ -1,0 +1,34 @@
+---
+services:
+  - logstash
+  - elasticsearch
+config: |-
+  input {
+    stdin { }
+  }
+
+  filter {
+    grok {
+      match => {
+        "message" => "%{IPORHOST:clientip} %{USER:ident} %{USER:auth} \[%{HTTPDATE:timestamp}\] \"%{WORD:verb} %{DATA:request} HTTP/%{NUMBER:httpversion}\" %{NUMBER:response:int} (?:-|%{NUMBER:bytes:int}) %{QS:referrer} %{QS:agent}"
+      }
+    }
+
+    date {
+      match => [ "timestamp", "dd/MMM/YYYY:HH:mm:ss Z" ]
+      locale => en
+    }
+    geoip {
+      source => "clientip"
+    }
+    useragent {
+      source => "agent"
+      target => "useragent"
+    }
+  }
+  output {
+    elasticsearch {}
+  }
+
+input: how_sample.input
+teardown_script:

@@ -6,5 +6,18 @@ set -e
 # installing gems. See https://github.com/elastic/logstash/issues/5179
 export JRUBY_OPTS="-J-Xmx1g"
 
-rake test:install-default
-rake test:integration
+echo "Running integration tests from qa/integration"
+if [[ ! -d "build" ]]; then
+  mkdir build
+fi  
+rm -rf build/*  
+echo "Building logstash tar file in build/"
+rake artifact:tar
+cd build
+echo "Extracting logstash tar file in build/"
+tar xf *.tar.gz
+cd ../qa/integration
+# to install test dependencies
+bundle install
+# runs all tests
+rspec

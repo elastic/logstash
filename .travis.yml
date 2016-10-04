@@ -8,9 +8,18 @@ rvm:
   - jruby-1.7.25
 jdk:
   - oraclejdk8
+env:
+  - INTEGRATION=true  
+before_install:
+  # Force bundler 1.12.5 because version 1.13 has issues, see https://github.com/fastlane/fastlane/issues/6065#issuecomment-246044617
+  - gem uninstall -i /home/travis/.rvm/gems/jruby-1.7.25@global bundler
+  - gem install bundler -v 1.12.5 --no-rdoc --no-ri --no-document --quiet   
 install:
   - rake test:install-core
+  - ci/travis_integration_install.sh
 before_script:
   - echo "--order rand" > .rspec
   - echo "--format documentation" >> .rspec
-script: rake test:core
+script:
+  - rake test:core
+  - ci/travis_integration_run.sh
