@@ -51,7 +51,7 @@ module LogStash; module Util
       # from this queue. We also depend on this to be able to block consumers while we snapshot
       # in-flight buffers
 
-      def initialize(queue, batch_size = 125, wait_for = 50)
+      def initialize(queue, batch_size = 125, wait_for = 250)
         @queue = queue
         @mutex = Mutex.new
         # Note that @infilght_batches as a central mechanism for tracking inflight
