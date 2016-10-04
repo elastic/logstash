@@ -8,6 +8,7 @@ class Fixture
   attr_reader :input
   attr_reader :actual_output
   attr_reader :test_dir
+  attr_reader :settings
 
   class TemplateContext
     attr_reader :options
