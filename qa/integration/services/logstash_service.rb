@@ -87,10 +87,10 @@ class LogstashService < Service
   end
 
   # Spawn LS as a child process
-  def spawn_logstash(cli_arg, value)
-    puts "Starting Logstash #{@logstash_bin} #{cli_arg} #{value}"
+  def spawn_logstash(*args)
+    puts "Starting Logstash #{@logstash_bin} #{args}"
     Bundler.with_clean_env do
-      @process = ChildProcess.build(@logstash_bin, cli_arg, value)
+      @process = ChildProcess.build(@logstash_bin, *args)
       @process.io.inherit!
       @process.start
       wait_for_logstash
@@ -134,6 +134,25 @@ class LogstashService < Service
       end
       tries -= 1
     end
+  end
+  
+  # this method only overwrites existing config with new config
+  # it does not assume that LS pipeline is fully reloaded after a 
+  # config change. It is up to the caller to validate that.
+  def reload_config(initial_config_file, reload_config_file)
+    FileUtils.cp(reload_config_file, initial_config_file)
+  end  
+  
+  def get_version
+    `#{@logstash_bin} --version`
+  end
+  
+  def get_version_yml
+    LS_VERSION_FILE
+  end   
+  
+  def process_id
+    @process.pid
   end
 
 end
