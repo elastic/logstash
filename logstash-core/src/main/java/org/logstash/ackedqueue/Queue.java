@@ -225,9 +225,18 @@ public class Queue implements Closeable {
                 try {
                     notFull.await();
                 } catch (InterruptedException e) {
+                    // the thread interrupt() has been called while in the await() blocking call.
+                    // at this point the interrupted flag is reset and Thread.interrupted() will return false
+                    // to any upstream calls on it. for now our choice is to return normally and set back
+                    // the Thread.interrupted() flag so it can be checked upstream.
+
+                    // this is a bit tricky in the case of the queue full condition blocking state.
+                    // TODO: we will want to avoid initiating a new write operation if Thread.interrupted() was called.
+
+                    // set back the interrupted flag
                     Thread.currentThread().interrupt();
-                    // TODO: what should we do with an InterruptedException here?
-                    throw new RuntimeException("write InterruptedException", e);
+
+                    return element.getSeqNum();
                 }
             }
 
@@ -277,7 +286,7 @@ public class Queue implements Closeable {
     //
     // blocking queue read until elements are available for read
     // @param limit read the next bach of size up to this limit. the returned batch size can be smaller than than the requested limit if fewer elements are available
-    // @return Batch the batch containing 1 or more element up to the required limit or null if no elements were available
+    // @return Batch the batch containing 1 or more element up to the required limit or null if no elements were available or the blocking call was interrupted
     public Batch readBatch(int limit) throws IOException {
         Page p;
 
@@ -287,9 +296,15 @@ public class Queue implements Closeable {
                 try {
                     notEmpty.await();
                 } catch (InterruptedException e) {
+                    // the thread interrupt() has been called while in the await() blocking call.
+                    // at this point the interrupted flag is reset and Thread.interrupted() will return false
+                    // to any upstream calls on it. for now our choice is to simply return null and set back
+                    // the Thread.interrupted() flag so it can be checked upstream.
+
+                    // set back the interrupted flag
                     Thread.currentThread().interrupt();
-                    // TODO: what should we do with an InterruptedException here?
-                    throw new RuntimeException("blocking readBatch InterruptedException", e);
+
+                    return null;
                 }
             }
 
@@ -305,7 +320,7 @@ public class Queue implements Closeable {
     // blocking queue read until elements are available for read or the given timeout is reached.
     // @param limit read the next batch of size up to this limit. the returned batch size can be smaller than than the requested limit if fewer elements are available
     // @param timeout the maximum time to wait in milliseconds
-    // @return Batch the batch containing 1 or more element up to the required limit or null if no elements were available
+    // @return Batch the batch containing 1 or more element up to the required limit or null if no elements were available or the blocking call was interrupted
     public Batch readBatch(int limit, long timeout) throws IOException {
         Page p;
 
@@ -316,9 +331,15 @@ public class Queue implements Closeable {
                 try {
                     notEmpty.await(timeout, TimeUnit.MILLISECONDS);
                 } catch (InterruptedException e) {
+                    // the thread interrupt() has been called while in the await() blocking call.
+                    // at this point the interrupted flag is reset and Thread.interrupted() will return false
+                    // to any upstream calls on it. for now our choice is to simply return null and set back
+                    // the Thread.interrupted() flag so it can be checked upstream.
+
+                    // set back the interrupted flag
                     Thread.currentThread().interrupt();
-                    // TODO: what should we do with an InterruptedException here?
-                    throw new RuntimeException("timeout blocking readBatch InterruptedException", e);
+
+                    return null;
                 }
 
                 // if after returnining from wait queue is still empty, or the queue was closed return null
