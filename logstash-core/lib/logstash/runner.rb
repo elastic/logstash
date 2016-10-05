@@ -165,10 +165,7 @@ class LogStash::Runner < Clamp::StrictCommand
     rescue => e
       # abort unless we're just looking for the help
       if (["--help", "-h"] & args).empty?
-        $stderr.puts "INFO: Logstash requires a settings file, typically located in $LS_HOME/config or /etc/logstash. "\ 
-          "If you installed Logstash through a package and are starting it manually please specify the location to this settings "\
-          "file by passing in \"--path.settings=/path/..\""
-
+        $stderr.puts "INFO: Logstash requires a setting file which is typically located in $LS_HOME/config or /etc/logstash. If you installed Logstash through a package and are starting it manually please specify the location to this settings file by passing in \"--path.settings=/path/..\""
         $stderr.puts "ERROR: Failed to load settings file from \"path.settings\". Aborting... path.setting=#{LogStash::SETTINGS.get("path.settings")}, exception=#{e.class}, message=>#{e.message}"
         return 1
       end
@@ -193,7 +190,7 @@ class LogStash::Runner < Clamp::StrictCommand
     end
     # override log level that may have been introduced from a custom log4j config file
     LogStash::Logging::Logger::configure_logging(setting("log.level"))
-
+    
     # Adding this here because a ton of LS users install LS via packages and try to manually 
     # start Logstash using bin/logstash. See #5986. I think not logging to console is good for 
     # services, but until LS users re-learn that logs end up in path.logs, we should keep this 
