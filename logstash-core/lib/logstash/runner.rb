@@ -226,6 +226,8 @@ class LogStash::Runner < Clamp::StrictCommand
 
     return start_shell(setting("interactive"), binding) if setting("interactive")
 
+    @settings.validate_all
+
     @settings.format_settings.each {|line| logger.debug(line) }
 
     if setting("config.string").nil? && setting("path.config").nil?

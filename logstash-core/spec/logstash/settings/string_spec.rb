@@ -4,7 +4,7 @@ require "logstash/settings"
 
 describe LogStash::Setting::String do
   let(:possible_values) { ["a", "b", "c"] }
-  subject { described_class.new("mytext", nil, false, possible_values) }
+  subject { described_class.new("mytext", possible_values.first, true, possible_values) }
   describe "#set" do
     context "when a value is given outside of possible_values" do
       it "should raise an ArgumentError" do
