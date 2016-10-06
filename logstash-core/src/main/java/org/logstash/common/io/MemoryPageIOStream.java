@@ -115,9 +115,18 @@ public class MemoryPageIOStream implements PageIO {
     }
 
     @Override
-    public void write(byte[] bytes, Queueable element) throws IOException {
-        long seqNum = element.getSeqNum();
-        write(bytes, seqNum);
+    public void write(byte[] bytes, long seqNum) throws IOException {
+        int pos = this.writePosition;
+        int writeLength = persistedByteCount(bytes);
+        writeToBuffer(seqNum, bytes, writeLength);
+        writePosition += writeLength;
+        assert writePosition == streamedOutput.getPosition() :
+                String.format("writePosition=%d != streamedOutput position=%d", writePosition, streamedOutput.getPosition());
+        if (elementCount <= 0) {
+            this.minSeqNum = seqNum;
+        }
+        this.offsetMap.add(pos);
+        elementCount++;
     }
 
     @Override
@@ -189,28 +198,6 @@ public class MemoryPageIOStream implements PageIO {
         String details = new String(streamedInput.readByteArray());
         streamedInput.movePosition(tempPosition);
         return details;
-    }
-
-    // Optional write method, remove if only used in tests
-    public void write(Queueable element) throws IOException {
-        byte[] bytes = element.serialize();
-        long seqNum = element.getSeqNum();
-        write(bytes, seqNum);
-    }
-
-    // Optional write method, remove if only used in tests
-    public void write(byte[] bytes, long seqNum) throws IOException {
-        int pos = this.writePosition;
-        int writeLength = persistedByteCount(bytes);
-        writeToBuffer(seqNum, bytes, writeLength);
-        writePosition += writeLength;
-        assert writePosition == streamedOutput.getPosition() :
-                String.format("writePosition=%d != streamedOutput position=%d", writePosition, streamedOutput.getPosition());
-        if (elementCount <= 0) {
-            this.minSeqNum = seqNum;
-        }
-        this.offsetMap.add(pos);
-        elementCount++;
     }
 
     private void setReadPoint(long seqNum) throws IOException {

@@ -80,25 +80,26 @@ public class MemoryPageIOStreamTest {
 
     @Test
     public void write() throws Exception {
+        long seqNum = 42L;
         Queueable element = new StringElement("foobarbaz");
-        element.setSeqNum(42L);
+        element.setSeqNum(seqNum);
         MemoryPageIOStream subj = subject();
-        subj.write(element.serialize(), element);
+        subj.write(element.serialize(), seqNum);
         assertThat(subj.getElementCount(), is(equalTo(1)));
-        assertThat(subj.getMinSeqNum(), is(equalTo(42L)));
+        assertThat(subj.getMinSeqNum(), is(equalTo(seqNum)));
     }
 
     @Test
     public void writeUntilFull() throws Exception {
+        long seqNum = 42L;
         Queueable element = new StringElement("foobarbaz");
-        element.setSeqNum(42L);
+        element.setSeqNum(seqNum);
         byte[] data = element.serialize();
         int bufferSize = 120;
         MemoryPageIOStream subj = subject(bufferSize);
-        long seqno = 42L;
         while (subj.hasSpace(data.length)) {
-            subj.write(data, seqno);
-            seqno++;
+            subj.write(data, seqNum);
+            seqNum++;
         }
         int recordSize = subj.persistedByteCount(data.length);
         int remains = bufferSize - subj.getWritePosition();
@@ -117,25 +118,27 @@ public class MemoryPageIOStreamTest {
 
     @Test
     public void writeRead() throws Exception {
-        Queueable element = buildStringElement("foobarbaz", 42L);
+        long seqNum = 42L;
+        Queueable element = buildStringElement("foobarbaz", seqNum);
         MemoryPageIOStream subj = subject();
-        subj.write(element);
-        List<byte[]> result = subj.read(42L, 1);
+        subj.write(element.serialize(), seqNum);
+        List<byte[]> result = subj.read(seqNum, 1);
         assertThat(result.size(), is(equalTo(1)));
         Queueable readElement = StringElement.deserialize(result.get(0));
-        assertThat(readElement.getSeqNum(), is(equalTo(42L)));
+        assertThat(readElement.getSeqNum(), is(equalTo(seqNum)));
         assertThat(readElement.toString(), is(equalTo(element.toString())));
     }
 
     @Test
     public void writeReadEmptyElement() throws Exception {
-        Queueable element = buildStringElement("", 1L);
+        long seqNum = 1L;
+        Queueable element = buildStringElement("", seqNum);
         MemoryPageIOStream subj = subject();
-        subj.write(element);
-        List<byte[]> result = subj.read(1L, 1);
+        subj.write(element.serialize(), seqNum);
+        List<byte[]> result = subj.read(seqNum, 1);
         assertThat(result.size(), is(equalTo(1)));
         Queueable readElement = StringElement.deserialize(result.get(0));
-        assertThat(readElement.getSeqNum(), is(equalTo(1L)));
+        assertThat(readElement.getSeqNum(), is(equalTo(seqNum)));
         assertThat(readElement.toString(), is(equalTo(element.toString())));
     }
 
@@ -146,10 +149,10 @@ public class MemoryPageIOStreamTest {
         Queueable element3 = buildStringElement("baz", 44L);
         Queueable element4 = buildStringElement("quux", 46L);
         MemoryPageIOStream subj = subject();
-        subj.write(element1);
-        subj.write(element2);
-        subj.write(element3);
-        subj.write(element4);
+        subj.write(element1.serialize(), 40L);
+        subj.write(element2.serialize(), 42L);
+        subj.write(element3.serialize(), 44L);
+        subj.write(element4.serialize(), 46L);
         int batchSize = 11;
         List<byte[]> result = subj.read(40L, batchSize);
         assertThat(result.size(), is(equalTo(4)));
@@ -167,20 +170,21 @@ public class MemoryPageIOStreamTest {
 
     @Test
     public void readFromFirstUnackedSeqNum() throws Exception {
-        long sequenceNumber = 10L;
+        long seqNum = 10L;
         String[] values = new String[]{"aaa", "bbb", "ccc", "ddd", "eee", "fff", "ggg", "hhh", "iii", "jjj"};
         MemoryPageIOStream stream = subject(300);
         for (String val : values) {
-            stream.write(buildStringElement(val, sequenceNumber));
-            sequenceNumber++;
+            Queueable element = buildStringElement(val, seqNum);
+            stream.write(element.serialize(), seqNum);
+            seqNum++;
         }
         MemoryPageIOStream subj = subject(stream.getBuffer(), 10L, 10);
         int batchSize = 3;
-        sequenceNumber = 13L;
-        List<byte[]> result = subj.read(sequenceNumber, batchSize);
+        seqNum = 13L;
+        List<byte[]> result = subj.read(seqNum, batchSize);
         for (int i = 0; i < 3; i++) {
             Queueable ele = StringElement.deserialize(result.get(i));
-            assertThat(ele.getSeqNum(), is(equalTo(sequenceNumber + i)));
+            assertThat(ele.getSeqNum(), is(equalTo(seqNum + i)));
             assertThat(ele.toString(), is(equalTo(values[i + 3])));
         }
     }

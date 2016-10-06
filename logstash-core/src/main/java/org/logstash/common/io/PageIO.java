@@ -20,7 +20,7 @@ public interface PageIO extends Closeable {
     boolean hasSpace(int bytes);
 
     // write the given bytes to the data container
-    void write(byte[] bytes, Queueable element) throws IOException;
+    void write(byte[] bytes, long seqNum) throws IOException;
 
     // read up to limit number of items starting at give seqNum
     List<byte[]> read(long seqNum, int limit) throws IOException;

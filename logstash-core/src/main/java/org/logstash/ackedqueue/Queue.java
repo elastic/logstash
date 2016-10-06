@@ -178,7 +178,8 @@ public class Queue implements Closeable {
     // @param element the Queueable object to write to the queue
     // @return long written sequence number
     public long write(Queueable element) throws IOException {
-        element.setSeqNum(nextSeqNum());
+        long seqNum = nextSeqNum();
+        element.setSeqNum(seqNum);
         byte[] data = element.serialize();
 
         if (! this.headPage.hasCapacity(data.length)) {
@@ -213,7 +214,7 @@ public class Queue implements Closeable {
                 this.headPage.checkpoint();
             }
 
-            this.headPage.write(data, element);
+            this.headPage.write(data, seqNum);
             this.unreadCount++;
 
             // if the queue was empty before write, signal non emptiness
@@ -236,11 +237,11 @@ public class Queue implements Closeable {
                     // set back the interrupted flag
                     Thread.currentThread().interrupt();
 
-                    return element.getSeqNum();
+                    return seqNum;
                 }
             }
 
-            return element.getSeqNum();
+            return seqNum;
         } finally {
             lock.unlock();
         }

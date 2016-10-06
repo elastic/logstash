@@ -40,7 +40,7 @@ public class FileMmapIOTest {
         for (int i = 1; i < 17; i++) {
             StringElement input = new StringElement("element-" + i, i);
             list.add(input);
-            writeIo.write(input.serialize(), input);
+            writeIo.write(input.serialize(), i);
         }
         writeIo.close();
         readIo.open(1, 16);

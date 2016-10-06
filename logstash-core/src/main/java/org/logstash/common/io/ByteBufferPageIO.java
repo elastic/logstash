@@ -122,7 +122,7 @@ public class ByteBufferPageIO implements PageIO {
     }
 
     @Override
-    public void write(byte[] bytes, Queueable element) throws IOException {
+    public void write(byte[] bytes, long seqNum) throws IOException {
         // since writes always happen at head, we can just append head to the offsetMap
         assert this.offsetMap.size() == this.elementCount :
                 String.format("offsetMap size=%d != elementCount=%d", this.offsetMap.size(), this.elementCount);
@@ -130,7 +130,7 @@ public class ByteBufferPageIO implements PageIO {
         int initialHead = this.head;
 
         this.buffer.position(this.head);
-        this.buffer.putLong(element.getSeqNum());
+        this.buffer.putLong(seqNum);
         this.buffer.putInt(bytes.length);
         this.buffer.put(bytes);
         this.buffer.putInt(checksum(bytes));
@@ -139,7 +139,7 @@ public class ByteBufferPageIO implements PageIO {
                 String.format("head=%d != buffer position=%d", this.head, this.buffer.position());
 
         if (this.elementCount <= 0) {
-            this.minSeqNum = element.getSeqNum();
+            this.minSeqNum = seqNum;
         }
         this.offsetMap.add(initialHead);
         this.elementCount++;

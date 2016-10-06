@@ -42,7 +42,7 @@ public class HeadPageTest {
         HeadPage p = new HeadPage(0, q, pageIO);
 
         assertThat(p.hasSpace(element.serialize().length), is(true));
-        p.write(element.serialize(), element);
+        p.write(element.serialize(), 0);
 
         assertThat(p.hasSpace(element.serialize().length), is(false));
         assertThat(p.isFullyRead(), is(false));
@@ -51,7 +51,8 @@ public class HeadPageTest {
 
     @Test
     public void pageWriteAndReadSingle() throws IOException {
-        Queueable element = new StringElement("foobarbaz", 1);
+        long seqNum = 1L;
+        Queueable element = new StringElement("foobarbaz", seqNum);
         int singleElementCapacity = ByteBufferPageIO.HEADER_SIZE + ByteBufferPageIO._persistedByteCount(element.serialize().length);
 
         Settings s = TestSettings.getSettings(singleElementCapacity);
@@ -60,7 +61,7 @@ public class HeadPageTest {
         HeadPage p = new HeadPage(0, q, pageIO);
 
         assertThat(p.hasSpace(element.serialize().length), is(true));
-        p.write(element.serialize(), element);
+        p.write(element.serialize(), seqNum);
 
         Batch b = p.readBatch(1);
 
@@ -74,7 +75,8 @@ public class HeadPageTest {
 
     @Test
     public void pageWriteAndReadMulti() throws IOException {
-        Queueable element = new StringElement("foobarbaz", 1);
+        long seqNum = 1L;
+        Queueable element = new StringElement("foobarbaz", seqNum);
         int singleElementCapacity = ByteBufferPageIO.HEADER_SIZE + ByteBufferPageIO._persistedByteCount(element.serialize().length);
 
         Settings s = TestSettings.getSettings(singleElementCapacity);
@@ -83,7 +85,7 @@ public class HeadPageTest {
         HeadPage p = new HeadPage(0, q, pageIO);
 
         assertThat(p.hasSpace(element.serialize().length), is(true));
-        p.write(element.serialize(), element);
+        p.write(element.serialize(), seqNum);
 
         Batch b = p.readBatch(10);
 
