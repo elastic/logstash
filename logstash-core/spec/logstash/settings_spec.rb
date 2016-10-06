@@ -59,4 +59,31 @@ describe LogStash::Settings do
       expect(subset.get("num.2")).to eq(1000)
     end
   end
+
+  describe "#validate_all" do
+    subject { described_class.new }
+    let(:numeric_setting_name) { "example" }
+    let(:numeric_setting) { LogStash::Setting.new(numeric_setting_name, Numeric, 1, false) }
+
+    before do
+      subject.register(numeric_setting)
+      subject.set_value(numeric_setting_name, value)
+    end
+
+    context "when any setting is invalid" do
+      let(:value) { "some string" }
+
+      it "should fail" do
+        expect { subject.validate_all }.to raise_error
+      end
+    end
+
+    context "when all settings are valid" do
+      let(:value) { 123 }
+
+      it "should succeed" do
+        expect { subject.validate_all }.not_to raise_error
+      end
+    end
+  end
 end
