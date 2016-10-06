@@ -263,7 +263,8 @@ class LogStash::Runner < Clamp::StrictCommand
     @agent_task = Stud::Task.new { @agent.execute }
 
     # no point in enabling config reloading before the agent starts
-    sighup_id = trap_sighup()
+    # also windows doesn't have SIGHUP. we can skip it
+    sighup_id = LogStash::Environment.windows? ? nil : trap_sighup()
 
     agent_return = @agent_task.wait
 
