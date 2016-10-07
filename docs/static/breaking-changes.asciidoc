@@ -16,7 +16,7 @@ consistent with other Elastic products. Full directory layout is described in <<
 (in core and plugins) were too noisy at INFO level, so we had to audit log messages and switch some of them to DEBUG
 level.
 
-**Index Template:** The index template for 5.0 has been changed to reflect {ref}/breaking_50_mapping_changes.html[Elasticsearch's mapping changes]. Most
+**Index Template:** The index template for 5.0 has been changed to reflect {ref}breaking_50_mapping_changes.html[Elasticsearch's mapping changes]. Most
 importantly, the subfield for string multi-fields has changed from `.raw` to `.keyword` to match Elasticsearch's default
 behavior. The impact of this change to various user groups is detailed below:
 
