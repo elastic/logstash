@@ -2,6 +2,8 @@
 set -e
 current_dir="$(dirname "$0")"
 
+source "$current_dir/helpers.sh"
+
 if [ -n "${ES_VERSION+1}" ]; then
   echo "Elasticsearch version is $ES_VERSION"
   version=$ES_VERSION
@@ -9,20 +11,22 @@ else
    version=5.0.0-beta1
 fi
 
+ES_HOME=$INSTALL_DIR/elasticsearch
+
 setup_es() {
-  if [ ! -d $current_dir/elasticsearch ]; then
+  if [ ! -d $ES_HOME ]; then
       local version=$1
       download_url=https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-$version.tar.gz
-      curl -sL $download_url > $current_dir/elasticsearch.tar.gz
-      mkdir $current_dir/elasticsearch
-      tar -xzf $current_dir/elasticsearch.tar.gz --strip-components=1 -C $current_dir/elasticsearch/.
-      rm $current_dir/elasticsearch.tar.gz
+      curl -sL $download_url > $INSTALL_DIR/elasticsearch.tar.gz
+      mkdir $ES_HOME
+      tar -xzf $INSTALL_DIR/elasticsearch.tar.gz --strip-components=1 -C $ES_HOME/.
+      rm $INSTALL_DIR/elasticsearch.tar.gz
   fi
 }
 
 start_es() {
   es_args=$@
-  $current_dir/elasticsearch/bin/elasticsearch $es_args -p $current_dir/elasticsearch/elasticsearch.pid > /tmp/elasticsearch.log 2>/dev/null &
+  $ES_HOME/bin/elasticsearch $es_args -p $ES_HOME/elasticsearch.pid > /tmp/elasticsearch.log 2>/dev/null &
   count=120
   echo "Waiting for elasticsearch to respond..."
   while ! curl --silent localhost:9200 && [[ $count -ne 0 ]]; do
@@ -34,5 +38,6 @@ start_es() {
   return 0
 }
 
+setup_install_dir
 setup_es $version
 start_es
