@@ -4,6 +4,7 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+import org.logstash.ackedqueue.SequencedList;
 import org.logstash.ackedqueue.StringElement;
 
 import java.util.ArrayList;
@@ -38,14 +39,14 @@ public class FileMmapIOTest {
         List<StringElement> readList = new ArrayList<>();
         writeIo.create();
         for (int i = 1; i < 17; i++) {
-            StringElement input = new StringElement("element-" + i, i);
+            StringElement input = new StringElement("element-" + i);
             list.add(input);
             writeIo.write(input.serialize(), i);
         }
         writeIo.close();
         readIo.open(1, 16);
-        List<byte[]> result = readIo.read(1, 16);
-        for (byte[] bytes : result) {
+        SequencedList<byte[]> result = readIo.read(1, 16);
+        for (byte[] bytes : result.getElements()) {
             StringElement element = StringElement.deserialize(bytes);
             readList.add(element);
         }

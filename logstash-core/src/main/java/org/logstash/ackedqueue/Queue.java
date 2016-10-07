@@ -179,7 +179,6 @@ public class Queue implements Closeable {
     // @return long written sequence number
     public long write(Queueable element) throws IOException {
         long seqNum = nextSeqNum();
-        element.setSeqNum(seqNum);
         byte[] data = element.serialize();
 
         if (! this.headPage.hasCapacity(data.length)) {

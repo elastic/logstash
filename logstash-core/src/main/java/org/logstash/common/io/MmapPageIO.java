@@ -1,6 +1,7 @@
 package org.logstash.common.io;
 
 import org.logstash.ackedqueue.Queueable;
+import org.logstash.ackedqueue.SequencedList;
 
 import java.io.File;
 import java.io.IOException;
@@ -155,13 +156,15 @@ public class MmapPageIO implements PageIO {
     }
 
     @Override
-    public List<byte[]> read(long seqNum, int limit) throws IOException {
+    public SequencedList<byte[]> read(long seqNum, int limit) throws IOException {
         assert seqNum >= this.minSeqNum :
                 String.format("seqNum=%d < minSeqNum=%d", seqNum, this.minSeqNum);
         assert seqNum <= maxSeqNum() :
                 String.format("seqNum=%d is > maxSeqNum=%d", seqNum, maxSeqNum());
 
-        List<byte[]> result = new ArrayList<>();
+        List<byte[]> elements = new ArrayList<>();
+        List<Long> seqNums = new ArrayList<>();
+
         int offset = this.offsetMap.get((int)(seqNum - this.minSeqNum));
 
         this.buffer.position(offset);
@@ -181,14 +184,15 @@ public class MmapPageIO implements PageIO {
                 throw new IOException(String.format("computed checksum=%d != checksum for file=%d", computedChecksum, checksum));
             }
 
-            result.add(readBytes);
+            elements.add(readBytes);
+            seqNums.add(readSeqNum);
 
             if (seqNum + i >= maxSeqNum()) {
                 break;
             }
         }
 
-        return result;
+        return new SequencedList<byte[]>(elements, seqNums);
     }
 
     @Override

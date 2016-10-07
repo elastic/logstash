@@ -66,7 +66,7 @@ public class Concurent {
         System.out.print("stating single producers and single consumers stress test... ");
 
         for (int i = 0; i < ELEMENT_COUNT; i++) {
-            input.add(new StringElement("element-" + i, i));
+            input.add(new StringElement(new Integer(i).toString()));
         }
 
         Thread consumer = new Thread(() -> {
@@ -120,7 +120,7 @@ public class Concurent {
         System.out.print("stating single producers and multiple consumers stress test... ");
 
         for (int i = 0; i < ELEMENT_COUNT; i++) {
-            input.add(new StringElement("element-" + i, i));
+            input.add(new StringElement(new Integer(i).toString()));
         }
 
         for (int i = 0; i < CONSUMERS; i++) {
@@ -155,7 +155,7 @@ public class Concurent {
         Instant end = Instant.now();
 
         List<StringElement> result = output.stream().collect(Collectors.toList());
-        Collections.sort(result, (p1, p2) -> new Long(p1.getSeqNum()).compareTo(new Long(p2.getSeqNum())));
+        Collections.sort(result, (p1, p2) -> Integer.valueOf(p1.toString()).compareTo(Integer.valueOf(p2.toString())));
 
         if (! input.equals(result)) {
             System.out.println("ERROR: input and output are not equal");

@@ -2,6 +2,7 @@ package org.logstash.common.io;
 
 import org.junit.Test;
 import org.logstash.ackedqueue.Queueable;
+import org.logstash.ackedqueue.SequencedList;
 import org.logstash.ackedqueue.StringElement;
 
 import java.io.IOException;
@@ -31,10 +32,8 @@ public class ByteBufferPageIOTest {
         return new ByteBufferPageIO(capacity, bytes);
     }
 
-    private Queueable buildStringElement(String str, long seq) {
-        Queueable element = new StringElement(str);
-        element.setSeqNum(seq);
-        return element;
+    private Queueable buildStringElement(String str) {
+        return new StringElement(str);
     }
 
     @Test
@@ -64,7 +63,6 @@ public class ByteBufferPageIOTest {
         int singleElementCapacity = ByteBufferPageIO.HEADER_SIZE + ByteBufferPageIO._persistedByteCount(element.serialize().length);
         long seqNum = 1L;
 
-        element.setSeqNum(seqNum);
         ByteBufferPageIO subject = subject(singleElementCapacity);
 
         assertThat(subject.hasSpace(element.serialize().length), is(true));
@@ -77,7 +75,6 @@ public class ByteBufferPageIOTest {
     public void write() throws IOException {
         Queueable element = new StringElement("foobarbaz");
         long seqNum = 42L;
-        element.setSeqNum(seqNum);
         ByteBufferPageIO subj = subject();
         subj.create();
         subj.write(element.serialize(), seqNum);
@@ -90,7 +87,6 @@ public class ByteBufferPageIOTest {
     public void recoversValidState() throws IOException {
         Queueable element = new StringElement("foobarbaz");
         long seqNum = 42L;
-        element.setSeqNum(seqNum);
         ByteBufferPageIO subject = subject();
         subject.create();
         subject.write(element.serialize(), seqNum);
@@ -106,7 +102,6 @@ public class ByteBufferPageIOTest {
     public void recoversInvalidState() throws IOException {
         Queueable element = new StringElement("foobarbaz");
         long seqNum = 42L;
-        element.setSeqNum(seqNum);
         ByteBufferPageIO subject = subject();
         subject.create();
         subject.write(element.serialize(), seqNum);
@@ -121,23 +116,23 @@ public class ByteBufferPageIOTest {
     @Test
     public void writeRead() throws IOException {
         long seqNum = 42L;
-        Queueable element = buildStringElement("foobarbaz", seqNum);
+        Queueable element = buildStringElement("foobarbaz");
         ByteBufferPageIO subj = subject();
         subj.create();
         subj.write(element.serialize(), seqNum);
-        List<byte[]> result = subj.read(seqNum, 1);
-        assertThat(result.size(), is(equalTo(1)));
-        Queueable readElement = StringElement.deserialize(result.get(0));
-        assertThat(readElement.getSeqNum(), is(equalTo(seqNum)));
+        SequencedList<byte[]> result = subj.read(seqNum, 1);
+        assertThat(result.getElements().size(), is(equalTo(1)));
+        Queueable readElement = StringElement.deserialize(result.getElements().get(0));
+        assertThat(result.getSeqNums().get(0), is(equalTo(seqNum)));
         assertThat(readElement.toString(), is(equalTo(element.toString())));
     }
 
     @Test
     public void writeReadMulti() throws IOException {
-        Queueable element1 = buildStringElement("foo", 40L);
-        Queueable element2 = buildStringElement("bar", 41L);
-        Queueable element3 = buildStringElement("baz", 42L);
-        Queueable element4 = buildStringElement("quux", 43L);
+        Queueable element1 = buildStringElement("foo");
+        Queueable element2 = buildStringElement("bar");
+        Queueable element3 = buildStringElement("baz");
+        Queueable element4 = buildStringElement("quux");
         ByteBufferPageIO subj = subject();
         subj.create();
         subj.write(element1.serialize(), 40L);
@@ -145,18 +140,18 @@ public class ByteBufferPageIOTest {
         subj.write(element3.serialize(), 42L);
         subj.write(element4.serialize(), 43L);
         int batchSize = 11;
-        List<byte[]> result = subj.read(40L, batchSize);
-        assertThat(result.size(), is(equalTo(4)));
+        SequencedList<byte[]> result = subj.read(40L, batchSize);
+        assertThat(result.getElements().size(), is(equalTo(4)));
 
-        assertThat(StringElement.deserialize(result.get(0)).getSeqNum(), is(equalTo(element1.getSeqNum())));
-        assertThat(StringElement.deserialize(result.get(1)).getSeqNum(), is(equalTo(element2.getSeqNum())));
-        assertThat(StringElement.deserialize(result.get(2)).getSeqNum(), is(equalTo(element3.getSeqNum())));
-        assertThat(StringElement.deserialize(result.get(3)).getSeqNum(), is(equalTo(element4.getSeqNum())));
+        assertThat(result.getSeqNums().get(0), is(equalTo(40L)));
+        assertThat(result.getSeqNums().get(1), is(equalTo(41L)));
+        assertThat(result.getSeqNums().get(2), is(equalTo(42L)));
+        assertThat(result.getSeqNums().get(3), is(equalTo(43L)));
 
-        assertThat(StringElement.deserialize(result.get(0)).toString(), is(equalTo(element1.toString())));
-        assertThat(StringElement.deserialize(result.get(1)).toString(), is(equalTo(element2.toString())));
-        assertThat(StringElement.deserialize(result.get(2)).toString(), is(equalTo(element3.toString())));
-        assertThat(StringElement.deserialize(result.get(3)).toString(), is(equalTo(element4.toString())));
+        assertThat(StringElement.deserialize(result.getElements().get(0)).toString(), is(equalTo(element1.toString())));
+        assertThat(StringElement.deserialize(result.getElements().get(1)).toString(), is(equalTo(element2.toString())));
+        assertThat(StringElement.deserialize(result.getElements().get(2)).toString(), is(equalTo(element3.toString())));
+        assertThat(StringElement.deserialize(result.getElements().get(3)).toString(), is(equalTo(element4.toString())));
     }
 
 }

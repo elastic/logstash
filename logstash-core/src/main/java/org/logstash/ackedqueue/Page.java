@@ -53,15 +53,15 @@ public abstract class Page implements Closeable {
         // first make sure this page is activated, activating previously activated is harmless
         this.pageIO.activate();
 
-        List<byte[]> serializedElements = this.pageIO.read(this.firstUnreadSeqNum, limit);
-        List<Queueable> elements = serializedElements.stream().map(e -> this.queue.deserialize(e)).collect(Collectors.toList());
+        SequencedList<byte[]> serialized = this.pageIO.read(this.firstUnreadSeqNum, limit);
+        List<Queueable> deserialized = serialized.getElements().stream().map(e -> this.queue.deserialize(e)).collect(Collectors.toList());
 
-        assert elements.get(0).getSeqNum() == this.firstUnreadSeqNum :
-            String.format("firstUnreadSeqNum=%d != first result seqNum=%d", this.firstUnreadSeqNum, elements.get(0).getSeqNum());
+        assert serialized.getSeqNums().get(0) == this.firstUnreadSeqNum :
+            String.format("firstUnreadSeqNum=%d != first result seqNum=%d", this.firstUnreadSeqNum, serialized.getSeqNums().get(0));
 
-        Batch batch = new Batch(elements, this.queue);
+        Batch batch = new Batch(deserialized, serialized.getSeqNums(), this.queue);
 
-        this.firstUnreadSeqNum += elements.size();
+        this.firstUnreadSeqNum += deserialized.size();
 
         return batch;
     }

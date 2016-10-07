@@ -32,8 +32,6 @@ public class EventTest {
         assertEquals(42.42, er.getField("[baz][innerQuux]"));
         assertEquals(42L, er.getField("[@metadata][foo]"));
 
-        assertEquals(0L, er.getSeqNum());
-
         assertEquals(e.getTimestamp().toIso8601(), er.getTimestamp().toIso8601());
     }
 
@@ -47,7 +45,6 @@ public class EventTest {
         inner.put("innerQuux", 42.42);
         e.setField("baz", inner);
         e.setField("[@metadata][foo]", 42L);
-        e.setSeqNum(424242L);
         byte[] binary = e.serialize();
         Event er = Event.deserialize(binary);
         assertEquals(42L, er.getField("foo"));
@@ -55,7 +52,6 @@ public class EventTest {
         assertEquals(42L, er.getField("[baz][innerFoo]"));
         assertEquals(42.42, er.getField("[baz][innerQuux]"));
         assertEquals(42L, er.getField("[@metadata][foo]"));
-        assertEquals(424242L, er.getSeqNum());
 
         assertEquals(e.getTimestamp().toIso8601(), er.getTimestamp().toIso8601());
     }

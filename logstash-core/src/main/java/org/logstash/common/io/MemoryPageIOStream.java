@@ -2,6 +2,7 @@ package org.logstash.common.io;
 
 import org.logstash.ackedqueue.Checkpoint;
 import org.logstash.ackedqueue.Queueable;
+import org.logstash.ackedqueue.SequencedList;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -130,9 +131,9 @@ public class MemoryPageIOStream implements PageIO {
     }
 
     @Override
-    public List<byte[]> read(long seqNum, int limit) throws IOException {
+    public SequencedList<byte[]> read(long seqNum, int limit) throws IOException {
         if (elementCount == 0) {
-            return new ArrayList<>();
+            return new SequencedList<>(new ArrayList<>(), new ArrayList<>());
         }
         setReadPoint(seqNum);
         return read(limit);
@@ -238,16 +239,19 @@ public class MemoryPageIOStream implements PageIO {
         crcWrappedOutput.close();
     }
 
-    private List<byte[]> read(int limit) throws IOException {
-        ArrayList<byte[]> result = new ArrayList<>();
+    private SequencedList<byte[]> read(int limit) throws IOException {
+        List<byte[]> elements = new ArrayList<>();
+        List<Long> seqNums = new ArrayList<>();
+
         int upto = available(limit);
         for (int i = 0; i < upto; i++) {
-            long seqnum = readSeqNum();
+            long seqNum = readSeqNum();
             byte[] data = readData();
             skipChecksum();
-            result.add(data);
+            elements.add(data);
+            seqNums.add(seqNum);
         }
-        return result;
+        return new SequencedList<>(elements, seqNums);
     }
 
     private long readSeqNum() throws IOException {

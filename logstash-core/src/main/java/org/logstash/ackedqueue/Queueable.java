@@ -6,9 +6,5 @@ public interface Queueable {
 
     byte[] serialize() throws IOException;
 
-    static Object deserialize(byte[] bytes) { return null; };
-
-    void setSeqNum(long seqNum);
-
-    long getSeqNum();
+    static Object deserialize(byte[] bytes) { throw new RuntimeException("please implement deserialize"); };
 }

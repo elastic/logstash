@@ -32,7 +32,6 @@ public class Event implements Cloneable, Serializable, Queueable {
     private Timestamp timestamp;
     private Accessors accessors;
     private Accessors metadata_accessors;
-    private long seqNum; // for the Queueable interface
 
     public static final String METADATA = "@metadata";
     public static final String METADATA_BRACKETS = "[" + METADATA + "]";
@@ -357,18 +356,8 @@ public class Event implements Cloneable, Serializable, Queueable {
         }
     }
 
-    // Queueable interface implementations below
-    public void setSeqNum(long seqNum) {
-        this.seqNum = seqNum;
-    }
-
-    public long getSeqNum() {
-        return this.seqNum;
-    }
-
     public byte[] serialize() throws IOException {
         Map<String, Map<String, Object>> dataMap = toSerializableMap();
-        dataMap.get(META_MAP_KEY).put(SEQNUM_MAP_KEY, seqNum);
         return toBinaryFromMap(dataMap);
     }
 
@@ -381,11 +370,6 @@ public class Event implements Cloneable, Serializable, Queueable {
             return new Event();
         }
         Map<String, Map<String, Object>> dataMap = fromBinaryToMap(data);
-        Object seqNumMapValue = dataMap.get(META_MAP_KEY).remove(SEQNUM_MAP_KEY);
-        Event e =  fromSerializableMap(dataMap);
-        if (seqNumMapValue != null) {
-            e.seqNum = (Long)seqNumMapValue;
-        }
-        return e;
+        return fromSerializableMap(dataMap);
     }
 }

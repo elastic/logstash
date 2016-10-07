@@ -45,18 +45,21 @@ public class JrubyAckedBatchExtLibrary implements Library {
         }
 
         // def initialize(data = {})
-        @JRubyMethod(name = "initialize", required = 2)
-        public IRubyObject ruby_initialize(ThreadContext context, IRubyObject events,  IRubyObject queue)
+        @JRubyMethod(name = "initialize", required = 3)
+        public IRubyObject ruby_initialize(ThreadContext context, IRubyObject events,  IRubyObject seqNums,  IRubyObject queue)
         {
             if (! (events instanceof RubyArray)) {
                 context.runtime.newArgumentError("expected events array");
+            }
+            if (! (seqNums instanceof RubyArray)) {
+                context.runtime.newArgumentError("expected seqNums array");
             }
             if (! (queue instanceof JrubyAckedQueueExtLibrary.RubyAckedQueue)) {
                 context.runtime.newArgumentError("expected queue AckedQueue");
             }
 
 
-            this.batch = new Batch(((RubyArray)events).getList(), ((JrubyAckedQueueExtLibrary.RubyAckedQueue)queue).getQueue());
+            this.batch = new Batch(((RubyArray)events).getList(), ((RubyArray)seqNums).getList(), ((JrubyAckedQueueExtLibrary.RubyAckedQueue)queue).getQueue());
 
             return context.nil;
         }

@@ -4,23 +4,15 @@ import java.nio.ByteBuffer;
 
 public class StringElement implements Queueable {
     private final String content;
-    private long seqNum;
 
     public StringElement(String content) {
         this.content = content;
     }
 
-    public StringElement(String content, long seqNum)
-    {
-        this.content = content;
-        this.seqNum = seqNum;
-    }
-
     @Override
     public byte[] serialize() {
         byte[] contentBytes = this.content.getBytes();
-        ByteBuffer buffer = ByteBuffer.allocate(Long.BYTES + contentBytes.length);
-        buffer.putLong(this.seqNum);
+        ByteBuffer buffer = ByteBuffer.allocate(contentBytes.length);
         buffer.put(contentBytes);
         return buffer.array();
     }
@@ -30,20 +22,9 @@ public class StringElement implements Queueable {
         buffer.put(bytes);
 
         buffer.position(0);
-        long seqNum = buffer.getLong();
-        byte[] content = new byte[bytes.length - Long.BYTES];
+        byte[] content = new byte[bytes.length];
         buffer.get(content);
-        return new StringElement(new String(content), seqNum);
-    }
-
-    @Override
-    public void setSeqNum(long seqNum) {
-        this.seqNum = seqNum;
-    }
-
-    @Override
-    public long getSeqNum() {
-        return this.seqNum;
+        return new StringElement(new String(content));
     }
 
     @Override
@@ -65,9 +46,6 @@ public class StringElement implements Queueable {
         if ((this.content == null) ? (element.content != null) : !this.content.equals(element.content)) {
             return false;
         }
-        if (this.seqNum != element.seqNum) {
-            return false;
-        }
         return true;
     }
 
@@ -75,7 +53,6 @@ public class StringElement implements Queueable {
     public int hashCode() {
         int hash = 13;
         hash = 53 * hash + (this.content != null ? this.content.hashCode() : 0);
-        hash = 53 * hash + (int)(this.seqNum >> 32) + (int)(this.seqNum);
         return hash;
     }
 }

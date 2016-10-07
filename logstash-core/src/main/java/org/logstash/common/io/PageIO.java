@@ -1,6 +1,7 @@
 package org.logstash.common.io;
 
 import org.logstash.ackedqueue.Queueable;
+import org.logstash.ackedqueue.SequencedList;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -23,7 +24,7 @@ public interface PageIO extends Closeable {
     void write(byte[] bytes, long seqNum) throws IOException;
 
     // read up to limit number of items starting at give seqNum
-    List<byte[]> read(long seqNum, int limit) throws IOException;
+    SequencedList<byte[]> read(long seqNum, int limit) throws IOException;
 
     // @return the data container total capacity in bytes
     int getCapacity();

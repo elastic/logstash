@@ -52,7 +52,7 @@ public class HeadPageTest {
     @Test
     public void pageWriteAndReadSingle() throws IOException {
         long seqNum = 1L;
-        Queueable element = new StringElement("foobarbaz", seqNum);
+        Queueable element = new StringElement("foobarbaz");
         int singleElementCapacity = ByteBufferPageIO.HEADER_SIZE + ByteBufferPageIO._persistedByteCount(element.serialize().length);
 
         Settings s = TestSettings.getSettings(singleElementCapacity);
@@ -76,7 +76,7 @@ public class HeadPageTest {
     @Test
     public void pageWriteAndReadMulti() throws IOException {
         long seqNum = 1L;
-        Queueable element = new StringElement("foobarbaz", seqNum);
+        Queueable element = new StringElement("foobarbaz");
         int singleElementCapacity = ByteBufferPageIO.HEADER_SIZE + ByteBufferPageIO._persistedByteCount(element.serialize().length);
 
         Settings s = TestSettings.getSettings(singleElementCapacity);
@@ -101,7 +101,7 @@ public class HeadPageTest {
     public void pageViaQueueOpenForHeadCheckpointWithoutSupportingPageFiles() throws Exception {
         URL url = FileCheckpointIOTest.class.getResource("checkpoint.head");
         String dirPath = Paths.get(url.toURI()).getParent().toString();
-        Queueable element = new StringElement("foobarbaz", 1);
+        Queueable element = new StringElement("foobarbaz");
         int singleElementCapacity = ByteBufferPageIO.HEADER_SIZE + ByteBufferPageIO._persistedByteCount(element.serialize().length);
         Settings s = TestSettings.getSettingsCheckpointFilePageMemory(singleElementCapacity, dirPath);
         TestQueue q = new TestQueue(s);
