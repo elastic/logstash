@@ -245,7 +245,7 @@ class LogStash::Agent < Clamp::Command
       @logger.terminal(e.message)
       @logger.unsubscribe(stdout_logs)
     end
-    @logger.warn(I18n.t("oops"), :error => e, :class => e.class.name, :backtrace => e.backtrace)
+    @logger.warn(I18n.t("oops"), :error => e.message, :class => e.class.name, :backtrace => e.backtrace)
     return 1
   ensure
     @log_fd.close if @log_fd
@@ -490,7 +490,7 @@ class LogStash::Agent < Clamp::Command
       begin
         pipeline.run
       rescue => e
-        @logger.error("Pipeline aborted due to error", :exception => e.class.name, :backtrace => e.backtrace)
+        @logger.error("Pipeline aborted due to error", :exception => e.class.name, :error => e.message, :backtrace => e.backtrace)
       end
     end
     sleep 0.01 until pipeline.ready?
