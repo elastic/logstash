@@ -11,7 +11,7 @@ public class TestQueue extends Queue {
         return this.headPage;
     }
 
-    public List<BeheadedPage> getTailPages() {
-        return this.tailPages;
+    public List<BeheadedPage> getBeheadedPages() {
+        return this.beheadedPages;
     }
 }

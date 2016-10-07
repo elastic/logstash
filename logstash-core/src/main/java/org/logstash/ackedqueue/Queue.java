@@ -33,11 +33,11 @@ public class Queue implements Closeable {
 
     // complete list of all non fully acked pages. note that exact sequenciality by pageNum cannot be assumed
     // because any fully acked page will be removed from this list potentially creating pageNum gaps in the list.
-    protected final List<BeheadedPage> tailPages;
+    protected final List<BeheadedPage> beheadedPages;
 
     // this list serves the only purpose of quickly retrieving the first unread page, operation necessary on every read
     // reads will simply remove the first page from the list when fully read and writes will append new pages upon beheading
-    protected final List<BeheadedPage> unreadTailPages;
+    protected final List<BeheadedPage> unreadBeheadedPages;
 
     protected volatile long unreadCount;
 
@@ -68,8 +68,8 @@ public class Queue implements Closeable {
         this.checkpointIO = checkpointIO;
         this.pageIOFactory = pageIOFactory;
         this.elementClass = elementClass;
-        this.tailPages = new ArrayList<>();
-        this.unreadTailPages = new ArrayList<>();
+        this.beheadedPages = new ArrayList<>();
+        this.unreadBeheadedPages = new ArrayList<>();
         this.closed = new AtomicBoolean(true); // not yet opened
         this.maxUnread = maxUnread;
         this.unreadCount = 0;
@@ -115,7 +115,7 @@ public class Queue implements Closeable {
                 }
 
                 PageIO pageIO = this.pageIOFactory.build(pageNum, this.pageCapacity, this.dirPath);
-                BeheadedPage tailPage = new BeheadedPage(tailCheckpoint, this, pageIO);
+                BeheadedPage beheadedPage = new BeheadedPage(tailCheckpoint, this, pageIO);
 
                 // if this page is not the first tail page, deactivate it
                 // we keep the first tail page activated since we know the next read operation will be in that one
@@ -124,18 +124,18 @@ public class Queue implements Closeable {
                 }
 
                 // track the seqNum as we rebuild tail pages
-                if (tailPage.maxSeqNum() > this.seqNum) {
+                if (beheadedPage.maxSeqNum() > this.seqNum) {
                     // prevent empty pages with a minSeqNum of 0 to reset seqNum
-                    this.seqNum = tailPage.maxSeqNum();
+                    this.seqNum = beheadedPage.maxSeqNum();
                 }
 
                 // the systematic beheading on open below can create empty/fully acked tail pages
                 // TODO: add test harness for this and see if/how we should purge empty/fully acked pages
-                if (!tailPage.isFullyAcked()) {
-                    this.tailPages.add(tailPage);
-                    if (! tailPage.isFullyRead()) {
-                        this.unreadTailPages.add(tailPage);
-                        this.unreadCount += tailPage.unreadCount();
+                if (!beheadedPage.isFullyAcked()) {
+                    this.beheadedPages.add(beheadedPage);
+                    if (! beheadedPage.isFullyRead()) {
+                        this.unreadBeheadedPages.add(beheadedPage);
+                        this.unreadCount += beheadedPage.unreadCount();
                     }
                 }
             }
@@ -153,9 +153,9 @@ public class Queue implements Closeable {
             // the systematic beheading on open above can create empty/fully acked tail pages
             // TODO: add test harness for this and see if/how we should purge empty/fully acked pages
             if (beheadedHeadPage.isFullyAcked()) {
-                this.tailPages.add(beheadedHeadPage);
+                this.beheadedPages.add(beheadedHeadPage);
                 if (! beheadedHeadPage.isFullyRead()) {
-                    this.unreadTailPages.add(beheadedHeadPage);
+                    this.unreadBeheadedPages.add(beheadedHeadPage);
                     this.unreadCount += beheadedHeadPage.unreadCount();
                 }
 
@@ -199,15 +199,15 @@ public class Queue implements Closeable {
             // create a new head page if the current does not have suffient space left for data to be written
             if (! this.headPage.hasSpace(data.length)) {
                 // beheading includes checkpoint+fsync if required
-                BeheadedPage tailPage = this.headPage.behead();
+                BeheadedPage beheadedPage = this.headPage.behead();
 
-                this.tailPages.add(tailPage);
-                if (! tailPage.isFullyRead()) {
-                    this.unreadTailPages.add(tailPage);
+                this.beheadedPages.add(beheadedPage);
+                if (! beheadedPage.isFullyRead()) {
+                    this.unreadBeheadedPages.add(beheadedPage);
                 }
 
                 // create new head page
-                int headPageNum = tailPage.pageNum + 1;
+                int headPageNum = beheadedPage.pageNum + 1;
                 PageIO pageIO = this.pageIOFactory.build(headPageNum, this.pageCapacity, this.dirPath);
                 this.headPage = new HeadPage(headPageNum, this, pageIO);
                 this.headPage.checkpoint();
@@ -367,41 +367,41 @@ public class Queue implements Closeable {
         return b;
     }
 
-    private static class TailPageResult {
+    private static class BeheadedPageResult {
         public BeheadedPage page;
         public int index;
 
-        public TailPageResult(BeheadedPage page, int index) {
+        public BeheadedPageResult(BeheadedPage page, int index) {
             this.page = page;
             this.index = index;
         }
     }
 
     // perform a binary search through tail pages to find in which page this seqNum falls into
-    private TailPageResult binaryFindPageForSeqnum(long seqNum) {
+    private BeheadedPageResult binaryFindPageForSeqnum(long seqNum) {
         int lo = 0;
-        int hi = this.tailPages.size() - 1;
+        int hi = this.beheadedPages.size() - 1;
         while (lo <= hi) {
             int mid = lo + (hi - lo) / 2;
-            BeheadedPage p = this.tailPages.get(mid);
+            BeheadedPage p = this.beheadedPages.get(mid);
 
             if (seqNum < p.getMinSeqNum()) {
                 hi = mid - 1;
             } else if (seqNum >= (p.getMinSeqNum() + p.getElementCount())) {
                 lo = mid + 1;
             } else {
-                return new TailPageResult(p, mid);
+                return new BeheadedPageResult(p, mid);
             }
         }
         return null;
     }
 
     // perform a linear search through tail pages to find in which page this seqNum falls into
-    private TailPageResult linearFindPageForSeqnum(long seqNum) {
-        for (int i = 0; i < this.tailPages.size(); i++) {
-            BeheadedPage p = this.tailPages.get(i);
+    private BeheadedPageResult linearFindPageForSeqnum(long seqNum) {
+        for (int i = 0; i < this.beheadedPages.size(); i++) {
+            BeheadedPage p = this.beheadedPages.get(i);
             if (p.getMinSeqNum() > 0 && seqNum >= p.getMinSeqNum() && seqNum < p.getMinSeqNum() + p.getElementCount()) {
-                return new TailPageResult(p, i);
+                return new BeheadedPageResult(p, i);
             }
         }
         return null;
@@ -417,7 +417,7 @@ public class Queue implements Closeable {
         lock.lock();
         try {
             // dual search strategy: if few tail pages search linearily otherwise perform binary search
-            TailPageResult result = (this.tailPages.size() > 3) ? binaryFindPageForSeqnum(firstAckSeqNum) : linearFindPageForSeqnum(firstAckSeqNum);
+            BeheadedPageResult result = (this.beheadedPages.size() > 3) ? binaryFindPageForSeqnum(firstAckSeqNum) : linearFindPageForSeqnum(firstAckSeqNum);
 
             if (result == null) {
                 // if not found then it is in head page
@@ -429,7 +429,7 @@ public class Queue implements Closeable {
 
                 // cleanup fully acked tail page
                 if (result.page.isFullyAcked()) {
-                    this.tailPages.remove(result.index);
+                    this.beheadedPages.remove(result.index);
                     this.headPage.checkpoint();
                     result.page.purge();
                 }
@@ -463,12 +463,12 @@ public class Queue implements Closeable {
                 // TODO: not sure if we need to do this here since the headpage close will also call ensurePersited
                 ensurePersistedUpto(this.seqNum);
 
-                for (BeheadedPage p : this.tailPages) { p.close(); }
+                for (BeheadedPage p : this.beheadedPages) { p.close(); }
                 this.headPage.close();
 
                 // release all referenced objects
-                this.tailPages.clear();
-                this.unreadTailPages.clear();
+                this.beheadedPages.clear();
+                this.unreadBeheadedPages.clear();
                 this.headPage = null;
 
                 // unblock any blocking calls
@@ -481,24 +481,24 @@ public class Queue implements Closeable {
     }
 
     protected Page firstUnreadPage() throws IOException {
-        // look at head page if no unreadTailPages
-        return (this.unreadTailPages.isEmpty()) ? (this.headPage.isFullyRead() ? null : this.headPage) : this.unreadTailPages.get(0);
+        // look at head page if no unreadBeheadedPages
+        return (this.unreadBeheadedPages.isEmpty()) ? (this.headPage.isFullyRead() ? null : this.headPage) : this.unreadBeheadedPages.get(0);
     }
 
     private void removeUnreadPage(Page p) {
-        // HeadPage is not part of the unreadTailPages, just ignore
+        // HeadPage is not part of the unreadBeheadedPages, just ignore
         if (p instanceof BeheadedPage){
             // the page to remove should always be the first one
-            assert this.unreadTailPages.get(0) == p : String.format("unread page is not first in unreadTailPages list");
-            this.unreadTailPages.remove(0);
+            assert this.unreadBeheadedPages.get(0) == p : String.format("unread page is not first in unreadBeheadedPages list");
+            this.unreadBeheadedPages.remove(0);
         }
     }
 
     protected int firstUnackedPageNum() {
-        if (this.tailPages.isEmpty()) {
+        if (this.beheadedPages.isEmpty()) {
             return this.headPage.getPageNum();
         }
-        return this.tailPages.get(0).getPageNum();
+        return this.beheadedPages.get(0).getPageNum();
     }
 
     protected long nextSeqNum() {

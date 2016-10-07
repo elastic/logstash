@@ -57,20 +57,20 @@ public class HeadPage extends Page {
             checkpoint();
         }
 
-        BeheadedPage tailPage = new BeheadedPage(this);
+        BeheadedPage beheadedPage = new BeheadedPage(this);
 
         // first thing that must be done after beheading is to create a new checkpoint for that new tail page
         // tail page checkpoint does NOT includes a fsync
-        tailPage.checkpoint();
+        beheadedPage.checkpoint();
 
         // TODO: should we have a better deactivation strategy to avoid too rapid reactivation scenario?
         Page firstUnreadPage = queue.firstUnreadPage();
-        if (firstUnreadPage == null || (tailPage.getPageNum() > firstUnreadPage.getPageNum())) {
-            // deactivate if this new tailpage is not where the read is occuring
-            tailPage.getPageIO().deactivate();
+        if (firstUnreadPage == null || (beheadedPage.getPageNum() > firstUnreadPage.getPageNum())) {
+            // deactivate if this new beheadedPage is not where the read is occuring
+            beheadedPage.getPageIO().deactivate();
         }
 
-        return tailPage;
+        return beheadedPage;
     }
 
     public void checkpoint() throws IOException {
