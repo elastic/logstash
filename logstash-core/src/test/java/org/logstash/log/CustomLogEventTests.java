@@ -33,6 +33,7 @@ import java.util.List;
 import java.util.Map;
 
 import static junit.framework.TestCase.assertEquals;
+import static junit.framework.TestCase.assertNotNull;
 
 public class CustomLogEventTests {
     private static final ObjectMapper mapper = new ObjectMapper();
@@ -78,7 +79,7 @@ public class CustomLogEventTests {
         assertEquals(5, firstMessage.size());
         assertEquals("INFO", firstMessage.get("level"));
         assertEquals("JSONEventLogger", firstMessage.get("loggerName"));
-        assertEquals("main", firstMessage.get("thread"));
+        assertNotNull(firstMessage.get("thread"));
         assertEquals(Collections.singletonMap("message", "simple message"), firstMessage.get("logEvent"));
 
         Map<String, Object> secondMessage = mapper.readValue(messages.get(1), Map.class);
@@ -86,7 +87,7 @@ public class CustomLogEventTests {
         assertEquals(5, secondMessage.size());
         assertEquals("WARN", secondMessage.get("level"));
         assertEquals("JSONEventLogger", secondMessage.get("loggerName"));
-        assertEquals("main", secondMessage.get("thread"));
+        assertNotNull(secondMessage.get("thread"));
         Map<String, Object> logEvent = new HashMap<>();
         logEvent.put("message", "complex message");
         logEvent.put("foo", "bar");
