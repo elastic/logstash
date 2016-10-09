@@ -3,12 +3,28 @@
 
 This section summarizes the changes in each release.
 
-* <<beta1, Logstash 5.0-beta1>>
-* <<alpha5,Logstash 5.0-alpha5>>
-* <<alpha4,Logstash 5.0-alpha4>>
-* <<alpha3,Logstash 5.0-alpha3>>
-* <<alpha2,Logstash 5.0-alpha2>>
-* <<alpha1,Logstash 5.0-alpha1>>
+* <<RC1, Logstash 5.0.0-rc1>>
+* <<beta1, Logstash 5.0.0-beta1>>
+* <<alpha5,Logstash 5.0.0-alpha5>>
+* <<alpha4,Logstash 5.0.0-alpha4>>
+* <<alpha3,Logstash 5.0.0-alpha3>>
+* <<alpha2,Logstash 5.0.0-alpha2>>
+* <<alpha1,Logstash 5.0.0-alpha1>>
+
+[[RC1]]
+=== Logstash 5.0.0-rc1 Release Notes
+
+* Windows: Fixed signal HUP warnings on startup ({lsissue}5239[Issue 5239]).
+* Windows: Enabled logging on Windows by fixing log4j config location ({lsissue}5971[Issue 5971]).
+* Configuration errors are now logged to file, not printed to stderr ({lsissue}5975[Issue 5975]).
+* Correctly calculate pipeline `duration_in_millis` metric ({lsissue}5952[Issue 5952]).
+
+[float]
+==== Output Plugins
+
+*`Elasticsearch`*:
+
+* Passwords in Logstash logs partially visible when connection to Elasticsearch fails (https://github.com/logstash-plugins/logstash-output-elasticsearch/issues/482[Issue 482]).
 
 [[beta1]]
 === Logstash 5.0-beta1 Release Notes
