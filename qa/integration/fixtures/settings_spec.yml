@@ -1,0 +1,9 @@
+---
+services:
+  - logstash
+config: |-
+ input {
+    tcp {
+      port => '<%=options[:port]%>'
+    }
+  }  
