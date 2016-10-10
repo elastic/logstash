@@ -6,7 +6,7 @@ require "logstash/devutils/rspec/spec_helper"
 require "socket"
 require "json"
 
-describe "Config reload" do
+describe "Test Logstash service when config reload is enabled" do
   before(:all) {
     @fixture = Fixture.new(__FILE__)
   }
@@ -25,16 +25,8 @@ describe "Config reload" do
   
   let(:initial_config_file) { config_to_temp_file(@fixture.config("initial", { :port => initial_port, :file => output_file1 })) }
   let(:reload_config_file) { config_to_temp_file(@fixture.config("reload", { :port => reload_port, :file => output_file2 })) }
-  
-  
-  def send_data(port, data)
-    socket = TCPSocket.new("127.0.0.1", port)
-    socket.puts(data)
-    socket.flush
-    socket.close
-  end
 
-  it "can reload config with new TCP port and grok pattern" do
+  it "can reload when changes are made to TCP port and grok pattern" do
     logstash_service = @fixture.get_service("logstash")
     logstash_service.spawn_logstash("-f", "#{initial_config_file}", "--config.reload.automatic", "true")
     logstash_service.wait_for_logstash
