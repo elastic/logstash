@@ -1,5 +1,4 @@
 ---
-name: Metrics test
 services:
   - logstash
 config: |-

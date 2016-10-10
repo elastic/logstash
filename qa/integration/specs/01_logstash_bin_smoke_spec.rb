@@ -5,7 +5,7 @@ require_relative '../framework/helpers'
 require "logstash/devutils/rspec/spec_helper"
 require "yaml"
 
-describe "Monitoring API" do
+describe "Test Logstash instance" do
   before(:all) {
     @fixture = Fixture.new(__FILE__)
   }
@@ -18,7 +18,7 @@ describe "Monitoring API" do
   let(:config1) { config_to_temp_file(@fixture.config("root", { :port => '9980' })) }
   let(:config2) { config_to_temp_file(@fixture.config("root", { :port => '9981' })) }
 
-  it "a single instance can start with http server and port 9600" do
+  it "can start the embedded http server on default port 9600" do
     logstash_service = @fixture.get_service("logstash")
     logstash_service.start_with_stdin
     Stud.try(retry_attempts.times, RSpec::Expectations::ExpectationNotMetError) do
@@ -27,7 +27,7 @@ describe "Monitoring API" do
     logstash_service.teardown
   end
   
-  it "multiple instances can be started on the same box" do
+  it "multiple of them can be started on the same box with automatically trying different ports for HTTP server" do
     ls1 = @fixture.get_service("logstash")
     ls1.spawn_logstash("-f", config1)
     Stud.try(retry_attempts.times, RSpec::Expectations::ExpectationNotMetError) do
@@ -44,9 +44,12 @@ describe "Monitoring API" do
     expect(ls1.process_id).not_to eq(ls2.process_id)
   end
   
-  it "gets the right version" do
+  it "gets the right version when asked" do
     ls = @fixture.get_service("logstash")
     expected = YAML.load_file(LogstashService::LS_VERSION_FILE)
     expect(ls.get_version.strip).to eq("logstash #{expected['logstash']}")
   end
+  
+  
+
 end    
