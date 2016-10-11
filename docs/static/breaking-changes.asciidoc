@@ -29,7 +29,7 @@ for future change which will allow Elastic Stack packs to be installed via this 
 [float]
 === Breaking Changes in Plugins
 
-* **Elasticsearch Output Index Template:** The index template for 5.0 has been changed to reflect {ref}breaking_50_mapping_changes.html[Elasticsearch's mapping changes]. Most
+* **Elasticsearch Output Index Template:** The index template for 5.0 has been changed to reflect  https://www.elastic.co/guide/en/elasticsearch/reference/5.0/breaking_50_mapping_changes.html[Elasticsearch's mapping changes]. Most
 importantly, the subfield for string multi-fields has changed from `.raw` to `.keyword` to match Elasticsearch's default
 behavior. The impact of this change to various user groups is detailed below:
 
