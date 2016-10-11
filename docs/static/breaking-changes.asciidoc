@@ -1,71 +1,87 @@
 [[breaking-changes]]
-== Breaking Changes
+== Breaking changes
 
 This section discusses the changes that you need to be aware of when migrating your application to Logstash {version}.
 
-**Application Settings:** Introduced a new way to configure application settings for Logstash through a settings.yml file. This file 
-is typically located in `LS_HOME/config`, or `/etc/logstash` when installed via packages. Logstash will not be able 
-to start without this file, so please make sure to pass in `--path.settings` if you are starting Logstash manually 
+[float]
+=== Changes in Logstash Core
+
+* **Application Settings:** Introduced a new way to configure application settings for Logstash through a settings.yml file. This file
+is typically located in `LS_HOME/config`, or `/etc/logstash` when installed via packages. Logstash will not be able
+to start without this file, so please make sure to pass in `--path.settings` if you are starting Logstash manually
 after installing it via a package (RPM, DEB).
 
-**Release Packages:** When Logstash is installed via DEB, RPM packages, it uses `/usr/share/logstash` and `/var/lib/logstash` to install binaries and config files 
-respectively. Previously it used to install in `/opt` directory. This change was done to make the user experience 
+* **Release Packages:** When Logstash is installed via DEB, RPM packages, it uses `/usr/share/logstash` and `/var/lib/logstash` to install binaries. 
+Previously it used to install in `/opt/logstash` directory. This change was done to make the user experience
 consistent with other Elastic products. Full directory layout is described in <<dir-layout>>.
 
-**Default Logging Level:** Changed the default log severity level to INFO instead of WARN to match Elasticsearch. Existing logs
+* **Default Logging Level:** Changed the default log severity level to INFO instead of WARN to match Elasticsearch. Existing logs
 (in core and plugins) were too noisy at INFO level, so we had to audit log messages and switch some of them to DEBUG
 level.
 
-**Index Template:** The index template for 5.0 has been changed to reflect {ref}breaking_50_mapping_changes.html[Elasticsearch's mapping changes]. Most
+* **Command Line Interface:** Most of the long form <<command-line-flags,options>> have been renamed
+to adhere to the yml dot notation to be used in the settings file. Short form options have not been changed.
+
+* **Plugin Manager Renamed:** `bin/plugin` has been renamed to `bin/logstash-plugin`. This change was to mainly prevent `PATH` being polluted when
+other components of the Elastic stack are installed on the same instance. Also, this provides a foundation
+for future change which will allow Elastic Stack packs to be installed via this script.
+
+[float]
+=== Breaking Changes in Plugins
+
+* **Elasticsearch Output Index Template:** The index template for 5.0 has been changed to reflect {ref}breaking_50_mapping_changes.html[Elasticsearch's mapping changes]. Most
 importantly, the subfield for string multi-fields has changed from `.raw` to `.keyword` to match Elasticsearch's default
 behavior. The impact of this change to various user groups is detailed below:
 
-* New Logstash 5.0 and Elasticsearch 5.0 users - subfields use `.keyword` from the outset. In Kibana, you can use
+** New Logstash 5.0 and Elasticsearch 5.0 users - subfields use `.keyword` from the outset. In Kibana, you can use
 `field.keyword` to perform aggregations.
-* Existing users with custom templates - most of you won't be impacted because you use a custom template.
-* Existing users with default template - Logstash does not force you to upgrade templates if one already exists. If you
+** Existing users with custom templates - most of you won't be impacted because you use a custom template.
+** Existing users with default template - Logstash does not force you to upgrade templates if one already exists. If you
 intend to move to the new template and want to use `.keyword`, you'll have to reindex existing data. Elasticsearch's
- {ref}/docs-reindex.html[reindexing API] can help move your data from using `.raw` subfields to `.keyword`.
+ {ref}docs-reindex.html[reindexing API] can help move your data from using `.raw` subfields to `.keyword`.
 
-**Command Line Interface:** Most of the long form <<command-line-flags,options>> have been renamed 
-to adhere to the yml dot notation to be used in the settings file. Short form options have not been changed.
-
-**Plugin Manager Renamed:** `bin/plugin` has been renamed to `bin/logstash-plugin`. This change was to mainly prevent `PATH` being polluted when 
-other components of the Elastic stack are installed on the same instance. Also, this provides a foundation 
-for future change which will allow Elastic Stack packs to be installed via this script.
-
-**Kafka Input/Output Configuration Changes:** This release added support for the new 0.9 consumer/producer API which supports security features introduced by Kafka. 
-A few Configuration options were renamed to make it consistent with Kafka consumer and producer settings. 
+* **Kafka Input/Output Configuration Changes:** This release added support for the new 0.10 consumer/producer API which supports security features introduced by Kafka.
+A few Configuration options were renamed to make it consistent with Kafka consumer and producer settings.
 Also, this plugin version will not work with Kafka 0.8 broker.
 
 Please see the following specific plugin documentation for new configuration options:
 
-* <<plugins-inputs-kafka,Kafka Input>>
-* <<plugins-outputs-kafka,Kafka Output>>
+* <<plugins-inputs-kafka, Kafka Input>>
+* <<plugins-outputs-kafka, Kafka Output>>
 
-**Ruby Filter and Custom Plugin Developers:** With the migration to the Java Event (https://github.com/elastic/logstash/issues/4191[Issue 4191]), we have changed 
-how you can access internal data. The Event object no longer returns a reference to the data. Instead, it returns a
-copy. This might change how you do manipulation of your data, especially when working with nested hashes.
-When working with nested hashes, it’s recommended that you use the `fieldref` syntax instead of using multiple brackets.
-Also note that we have introduced new Getter/Setter APIs for accessing information in the Event object.
+* **File Input:** SinceDB file is now saved in `<path.data>/plugins/inputs/file` location, not user's home. If you have manually specified `sincedb_path` 
+configuration, this change will not affect you. If you are moving from 2.x to 5.x, and would like to use the existing SinceDB file, it 
+has to be copied over to `path.data` manually to use the save state.
+
+[float]
+=== Ruby Filter and Custom Plugin Developers
+
+With the migration to the new <<event-api>>, we have changed how you can access internal data compared to previous release. 
+The Event object no longer returns a reference to the data. Instead, it returns a copy. This might change how you do manipulation of 
+your data, especially when working with nested hashes. When working with nested hashes, it’s recommended that you 
+use the `fieldref` syntax instead of using multiple brackets. Also note that we have introduced new Getter/Setter APIs
+for accessing information in the Event object. Refer <<event-api>> for details.
 
 **Examples:**
 
 [source, js]
 ----------------------------------
-filter { 
+filter {
   ruby {
-    codec => "event.set('uuid', event.get('uuid').gsub(/b/, ''))" # instead of using event['uuid'].gsub!(/b/, '')
+    codec => "event.set('[product][price]', 10)"
   }
 }
 ----------------------------------
+
+Instead of:
 
 [source, js]
 ----------------------------------
-filter { 
+filter {
   ruby {
-    codec => "event.set('[product][price]', 10)" # instead of using event['product']['price'] = 10
+    codec => "event['product']['price'] = 10"
   }
 }
 ----------------------------------
 
+The above syntax is not supported, and will produce an error at run-time.
