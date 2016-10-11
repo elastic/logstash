@@ -1,7 +1,7 @@
 # encoding: utf-8
 # Helper module for all tests
 
-#require "flores/random"
+require "flores/random"
 
 def wait_for_port(port, retry_attempts)
   tries = retry_attempts
@@ -40,5 +40,6 @@ def config_to_temp_file(config)
 end
 
 def random_port
-  Flores::Random.number(9701..15000)
+  # 9600-9700 is reserved in Logstash HTTP server, so we don't want that
+  Flores::Random.integer(9701..15000)
 end  
