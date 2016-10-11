@@ -19,4 +19,5 @@ Gem::Specification.new do |s|
   s.add_development_dependency 'stud'
   s.add_development_dependency 'pry'
   s.add_development_dependency 'logstash-devutils'
+  s.add_development_dependency 'flores'
 end

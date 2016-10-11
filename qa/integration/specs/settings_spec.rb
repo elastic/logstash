@@ -27,7 +27,7 @@ describe "Test Logstash instance whose default settings are overridden" do
   }
   
   let(:retry_attempts) { 10 }
-  let(:test_port) { 9999 }
+  let(:test_port) { random_port }
   let(:temp_dir) { Stud::Temporary.directory("logstash-settings-test") }
   let(:tcp_config) { @fixture.config("root", { :port => test_port }) }
   
@@ -119,7 +119,7 @@ describe "Test Logstash instance whose default settings are overridden" do
   
   it "start on a different HTTP port" do
     # default in 9600
-    http_port = 9610
+    http_port = random_port
     change_setting("http.port", http_port)
     @logstash_service.spawn_logstash("-e", tcp_config)
     
