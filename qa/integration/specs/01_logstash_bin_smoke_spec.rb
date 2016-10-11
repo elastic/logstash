@@ -15,8 +15,8 @@ describe "Test Logstash instance" do
   }
   
   let(:retry_attempts) { 10 }
-  let(:config1) { config_to_temp_file(@fixture.config("root", { :port => '9980' })) }
-  let(:config2) { config_to_temp_file(@fixture.config("root", { :port => '9981' })) }
+  let(:config1) { config_to_temp_file(@fixture.config("root", { :port => random_port })) }
+  let(:config2) { config_to_temp_file(@fixture.config("root", { :port => random_port })) }
 
   it "can start the embedded http server on default port 9600" do
     logstash_service = @fixture.get_service("logstash")
@@ -49,7 +49,4 @@ describe "Test Logstash instance" do
     expected = YAML.load_file(LogstashService::LS_VERSION_FILE)
     expect(ls.get_version.strip).to eq("logstash #{expected['logstash']}")
   end
-  
-  
-
 end    
