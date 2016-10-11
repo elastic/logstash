@@ -14,7 +14,7 @@ describe "Test Logstash configuration" do
   }
   
   let(:retry_attempts) { 10 }
-  let(:test_tcp_port) { "9999" }
+  let(:test_tcp_port) { random_port }
   let(:test_tag) { "environment_variables_are_evil" }
   let(:test_path) { Stud::Temporary.directory }
   let(:sample_data) { '74.125.176.147 - - [11/Sep/2014:21:50:37 +0000] "GET /?flav=rss20 HTTP/1.1" 200 29941 "-" "FeedBurner/1.0 (http://www.FeedBurner.com)"' }

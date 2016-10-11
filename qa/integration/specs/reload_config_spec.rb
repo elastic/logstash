@@ -16,8 +16,8 @@ describe "Test Logstash service when config reload is enabled" do
   }
   
   let(:timeout_seconds) { 5 }
-  let(:initial_port) { 9198 }
-  let(:reload_port) { 9199 }
+  let(:initial_port) { random_port }
+  let(:reload_port) { random_port }
   let(:retry_attempts) { 10 }
   let(:output_file1) { Stud::Temporary.file.path }
   let(:output_file2) { Stud::Temporary.file.path }
