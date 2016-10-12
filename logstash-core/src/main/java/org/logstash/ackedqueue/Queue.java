@@ -471,8 +471,13 @@ public class Queue implements Closeable {
                 this.unreadBeheadedPages.clear();
                 this.headPage = null;
 
-                // unblock any blocking calls
+                // unblock blocked reads which will return null by checking of isClosed()
+                // no data will be lost because the actual read has not been performed
                 notEmpty.signalAll();
+
+
+                // unblock blocked writes. a write is blocked *after* the write has been performed so
+                // unblocking is safe and will return from the write call
                 notFull.signalAll();
             } finally {
                 lock.unlock();
