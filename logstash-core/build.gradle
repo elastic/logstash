@@ -1,13 +1,26 @@
-group = 'org.logstash'
-version = '6.0.0-alpha1'
-
-description = "Logstash Core Java"
+import org.yaml.snakeyaml.Yaml
 
 apply plugin: 'java'
 apply plugin: 'idea'
 
+// fetch version from Logstash's master versions.yml file
+def versionMap = (Map) (new Yaml()).load(new File("$projectDir/../versions.yml").text)
+
+group = 'org.logstash'
+description = """Logstash Core Java"""
+version = versionMap['logstash-core']
+
 repositories {
     mavenCentral()
+}
+
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'org.yaml:snakeyaml:1.17'
+    }
 }
 
 gradle.projectsEvaluated {
@@ -73,7 +86,6 @@ artifacts {
         // Weird Gradle quirk where type will be used for the extension, but only for sources
         type 'jar'
     }
-
     javadoc(javadocJar) {
         type 'javadoc'
     }

@@ -188,7 +188,7 @@ class LogStash::Runner < Clamp::StrictCommand
     java.lang.System.setProperty("ls.log.level", setting("log.level"))
     unless java.lang.System.getProperty("log4j.configurationFile")
       log4j_config_location = ::File.join(setting("path.settings"), "log4j2.properties")
-      LogStash::Logging::Logger::initialize(log4j_config_location)
+      LogStash::Logging::Logger::initialize("file://" + log4j_config_location)
     end
     # override log level that may have been introduced from a custom log4j config file
     LogStash::Logging::Logger::configure_logging(setting("log.level"))
@@ -228,6 +228,8 @@ class LogStash::Runner < Clamp::StrictCommand
 
     return start_shell(setting("interactive"), binding) if setting("interactive")
 
+    @settings.validate_all
+
     @settings.format_settings.each {|line| logger.debug(line) }
 
     if setting("config.string").nil? && setting("path.config").nil?
@@ -265,7 +267,8 @@ class LogStash::Runner < Clamp::StrictCommand
     @agent_task = Stud::Task.new { @agent.execute }
 
     # no point in enabling config reloading before the agent starts
-    sighup_id = trap_sighup()
+    # also windows doesn't have SIGHUP. we can skip it
+    sighup_id = LogStash::Environment.windows? ? nil : trap_sighup()
 
     agent_return = @agent_task.wait
 

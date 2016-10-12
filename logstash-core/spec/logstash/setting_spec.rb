@@ -63,6 +63,7 @@ describe LogStash::Setting do
       end
     end
   end
+
   describe "#set" do
     subject { described_class.new("number", Numeric, 1) }
     it "should change the value of a setting" do
@@ -77,10 +78,31 @@ describe LogStash::Setting do
         expect(subject.set?).to eq(true)
       end
     end
-
     context "when the argument's class does not match @klass" do
       it "should throw an exception" do
         expect { subject.set("not a number") }.to raise_error
+      end
+    end
+    context "when strict=false" do
+      let(:strict) { false }
+      subject { described_class.new("number", Numeric, 1, strict) }
+      before do
+        expect(subject).not_to receive(:validate)
+      end
+
+      it "should not call #validate" do
+        subject.set(123)
+      end
+    end
+    context "when strict=true" do
+      let(:strict) { true }
+      subject { described_class.new("number", Numeric, 1, strict) }
+      before do
+        expect(subject).to receive(:validate)
+      end
+
+      it "should call #validate" do
+        subject.set(123)
       end
     end
   end
