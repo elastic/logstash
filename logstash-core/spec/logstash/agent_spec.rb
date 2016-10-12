@@ -6,7 +6,6 @@ require_relative "../support/mocks_classes"
 
 describe LogStash::Agent do
 
-  let(:logger) { double("logger") }
   let(:agent_settings) { LogStash::SETTINGS }
   let(:agent_args) { {} }
   let(:pipeline_settings) { agent_settings.clone }
@@ -17,12 +16,6 @@ describe LogStash::Agent do
   subject { LogStash::Agent.new(agent_settings) }
 
   before :each do
-    [:info, :warn, :error, :fatal, :debug].each do |level|
-      allow(logger).to receive(level)
-    end
-    [:info?, :warn?, :error?, :fatal?, :debug?].each do |level|
-      allow(logger).to receive(level)
-    end
     File.open(config_file, "w") { |f| f.puts config_file_txt }
     agent_args.each do |key, value|
       agent_settings.set(key, value)
@@ -31,7 +24,6 @@ describe LogStash::Agent do
     pipeline_args.each do |key, value|
       pipeline_settings.set(key, value)
     end
-    #subject.logger = logger
   end
 
   after :each do
@@ -58,7 +50,7 @@ describe LogStash::Agent do
     it "should delegate settings to new pipeline" do
       expect(LogStash::Pipeline).to receive(:new) do |arg1, arg2|
         expect(arg1).to eq(config_string)
-	expect(arg2.to_hash).to include(agent_args)
+        expect(arg2.to_hash).to include(agent_args)
       end
       subject.register_pipeline(pipeline_id, agent_settings)
     end
@@ -111,7 +103,7 @@ describe LogStash::Agent do
             sleep 0.01 until subject.running_pipelines? && subject.pipelines.values.first.ready?
             expect(subject).to_not receive(:upgrade_pipeline)
             File.open(config_file, "w") { |f| f.puts second_pipeline_config }
-            subject.send(:reload_state!)
+            subject.reload_state!
             sleep 0.1
             Stud.stop!(t)
             t.join
@@ -127,7 +119,7 @@ describe LogStash::Agent do
             sleep 0.01 until subject.running_pipelines? && subject.pipelines.values.first.ready?
             expect(subject).to receive(:upgrade_pipeline).once.and_call_original
             File.open(config_file, "w") { |f| f.puts second_pipeline_config }
-            subject.send(:reload_state!)
+            subject.reload_state!
             sleep 0.1
             Stud.stop!(t)
             t.join
@@ -155,9 +147,9 @@ describe LogStash::Agent do
       context "if state is clean" do
         it "should periodically reload_state" do
           allow(subject).to receive(:clean_state?).and_return(false)
-          expect(subject).to receive(:reload_state!).at_least(3).times
           t = Thread.new { subject.execute }
           sleep 0.01 until subject.running_pipelines? && subject.pipelines.values.first.ready?
+          expect(subject).to receive(:reload_state!).at_least(2).times
           sleep 0.1
           Stud.stop!(t)
           t.join
@@ -216,14 +208,14 @@ describe LogStash::Agent do
       it "upgrades the state" do
         expect(subject).to receive(:fetch_config).and_return(second_pipeline_config)
         expect(subject).to receive(:upgrade_pipeline).with(pipeline_id, kind_of(LogStash::Pipeline))
-        subject.send(:reload_state!)
+        subject.reload_state!
       end
     end
     context "when fetching the same state" do
       it "doesn't upgrade the state" do
         expect(subject).to receive(:fetch_config).and_return(first_pipeline_config)
         expect(subject).to_not receive(:upgrade_pipeline)
-        subject.send(:reload_state!)
+        subject.reload_state!
       end
     end
   end
@@ -268,6 +260,10 @@ describe LogStash::Agent do
       subject.register_pipeline(pipeline_id, pipeline_settings)
     end
 
+    after(:each) do
+      subject.shutdown
+    end
+
     context "when the upgrade fails" do
       before :each do
         allow(subject).to receive(:fetch_config).and_return(new_pipeline_config)
@@ -276,14 +272,14 @@ describe LogStash::Agent do
       end
 
       it "leaves the state untouched" do
-        subject.send(:reload_state!)
+        subject.reload_state!
         expect(subject.pipelines[pipeline_id].config_str).to eq(pipeline_config)
       end
 
       context "and current state is empty" do
         it "should not start a pipeline" do
           expect(subject).to_not receive(:start_pipeline)
-          subject.send(:reload_state!)
+          subject.reload_state!
         end
       end
     end
@@ -293,15 +289,16 @@ describe LogStash::Agent do
       before :each do
         allow(subject).to receive(:fetch_config).and_return(new_config)
         allow(subject).to receive(:stop_pipeline)
+        allow(subject).to receive(:start_pipeline)
       end
       it "updates the state" do
-        subject.send(:reload_state!)
+        subject.reload_state!
         expect(subject.pipelines[pipeline_id].config_str).to eq(new_config)
       end
       it "starts the pipeline" do
         expect(subject).to receive(:stop_pipeline)
         expect(subject).to receive(:start_pipeline)
-        subject.send(:reload_state!)
+        subject.reload_state!
       end
     end
   end
@@ -330,33 +327,36 @@ describe LogStash::Agent do
 
 
   context "metrics after config reloading" do
-    let(:config) { "input { generator { } } output { dummyoutput { } }" }
-    let(:config_path) do
+    let!(:config) { "input { generator { } } output { dummyoutput { } }" }
+    let!(:config_path) do
       f = Stud::Temporary.file
       f.write(config)
+      f.fsync
       f.close
       f.path
     end
-    let(:interval) { 0.2 }
     let(:pipeline_args) do
       {
-        "pipeline.workers" => 4,
+        "pipeline.workers" => 2,
         "path.config" => config_path
       }
     end
 
     let(:agent_args) do
-      super.merge({ "config.reload.automatic" => true,
-                    "config.reload.interval" => interval,
-                    "metric.collect" => true })
+      {
+        "config.reload.automatic" => false,
+        "pipeline.batch.size" => 1,
+        "metric.collect" => true
+      }
     end
 
     # We need to create theses dummy classes to know how many
     # events where actually generated by the pipeline and successfully send to the output.
     # Theses values are compared with what we store in the metric store.
+    class DummyOutput2 < DummyOutput; end
+
     let!(:dummy_output) { DummyOutput.new }
-    let!(:dummy_output2) { DummyOutput.new }
-    class DummyOutput2 < LogStash::Outputs::Base; end
+    let!(:dummy_output2) { DummyOutput2.new }
 
     before :each do
       allow(DummyOutput).to receive(:new).at_least(:once).with(anything).and_return(dummy_output)
@@ -375,7 +375,7 @@ describe LogStash::Agent do
         subject.execute
       end
 
-      sleep(2)
+      sleep(0.01) until dummy_output.events.size > 1
     end
 
     after :each do
@@ -400,14 +400,16 @@ describe LogStash::Agent do
           sleep(0.1)
         end
 
-
         # Also force a flush to disk to make sure ruby reload it.
         File.open(config_path, "w") do |f|
           f.write(new_config)
           f.fsync
         end
 
-        sleep(interval * 3) # Give time to reload the config
+        subject.reload_state!
+
+        # wait until pipeline restarts
+        sleep(0.01) until dummy_output2.events.size > 0
 
         # be eventually consistent.
         sleep(0.01) while dummy_output2.events.size < new_config_generator_counter
@@ -428,7 +430,7 @@ describe LogStash::Agent do
       it "increases the successful reload count" do
         snapshot = subject.metric.collector.snapshot_metric
         value = snapshot.metric_store.get_with_path("/stats/pipelines")[:stats][:pipelines][:main][:reloads][:successes].value
-        expect(value).to be(1)
+        expect(value).to eq(1)
       end
 
       it "does not set the failure reload timestamp" do
@@ -463,20 +465,19 @@ describe LogStash::Agent do
           sleep(0.1)
         end
 
-
         # Also force a flush to disk to make sure ruby reload it.
         File.open(config_path, "w") do |f|
           f.write(new_config)
           f.fsync
         end
 
-        sleep(interval * 3) # Give time to reload the config
+        subject.reload_state!
       end
 
       it "does not increase the successful reload count" do
         snapshot = subject.metric.collector.snapshot_metric
         value = snapshot.metric_store.get_with_path("/stats/pipelines")[:stats][:pipelines][:main][:reloads][:successes].value
-        expect(value).to be(0)
+        expect(value).to eq(0)
       end
 
       it "does not set the successful reload timestamp" do
