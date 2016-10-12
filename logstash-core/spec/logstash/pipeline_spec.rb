@@ -398,7 +398,7 @@ describe LogStash::Pipeline do
       # allow(settings).to receive(:get_value).with("metric.collect").and_return(false)
       # allow(settings).to receive(:get_value).with("config.debug").and_return(false)
       # allow(settings).to receive(:get_value).with("queue.page_capacity").and_return(1024 * 1024)
-      # allow(settings).to receive(:get_value).with("queue.queue_capacity").and_return(250)
+      # allow(settings).to receive(:get_value).with("queue.max_events").and_return(250)
 
       pipeline = LogStash::Pipeline.new(config, pipeline_settings_obj)
       expect(pipeline.metric).to be_kind_of(LogStash::Instrument::NullMetric)

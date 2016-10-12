@@ -42,7 +42,7 @@ module LogStash
             Setting::String.new("http.environment", "production"),
             Setting::String.new("queue.type", "persisted", true, ["persisted", "memory", "synchronous"]),
             Setting::Bytes.new("queue.page_capacity", "250mb"),
-            Setting::Numeric.new("queue.queue_capacity", 0), # max number of events, 0 is unlimited
+            Setting::Numeric.new("queue.max_events", 0), # max number of events, 0 is unlimited
   ].each {|setting| SETTINGS.register(setting) }
 
   # Compute the default queue path based on `path.data`
