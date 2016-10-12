@@ -40,9 +40,9 @@ module LogStash
             Setting::String.new("http.host", "127.0.0.1"),
             Setting::PortRange.new("http.port", 9600..9700),
             Setting::String.new("http.environment", "production"),
-            Setting::String.new("queue.type", "persisted", true, ["persisted", "memory", "synchronous"]),
+            Setting::String.new("queue.type", "memory", true, ["persisted", "memory", "memory_acked"]),
             Setting::Bytes.new("queue.page_capacity", "250mb"),
-            Setting::Numeric.new("queue.max_events", 0), # max number of events, 0 is unlimited
+            Setting::Numeric.new("queue.max_events", 0), # 0 is unlimited
   ].each {|setting| SETTINGS.register(setting) }
 
   # Compute the default queue path based on `path.data`

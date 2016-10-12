@@ -78,7 +78,7 @@ describe LogStash::Pipeline do
   let(:worker_thread_count) { 8 } # 1 4 8
   let(:number_of_events) { 100_000 }
   let(:page_capacity) { 1 * 1024 * 512 } # 1 128
-  let(:queue_type) { "persisted" } #  "memory" "synchronous"
+  let(:queue_type) { "persisted" } #  "memory" "memory_acked"
   let(:times) { [] }
 
   before :each do

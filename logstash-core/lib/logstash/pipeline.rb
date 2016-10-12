@@ -119,14 +119,18 @@ module LogStash; class Pipeline
     queue_page_capacity = settings.get("queue.page_capacity")
     max_events = settings.get("queue.max_events")
 
-    if queue_type == "memory"
+    if queue_type == "memory_acked"
+      # memory_acked is used in tests/specs
       LogStash::Util::WrappedAckedQueue.create_memory_based("", queue_page_capacity, max_events)
-    elsif queue_type == "synchronous"
+    elsif queue_type == "memory"
+      # memory is the legacy and default setting
       LogStash::Util::WrappedSynchronousQueue.new()
-    else
-      # default to a persistent queue
+    elsif queue_type == "persisted"
+      # persisted is the disk based acked queue
       queue_path = settings.get("path.queue")
       LogStash::Util::WrappedAckedQueue.create_file_based(queue_path, queue_page_capacity, max_events)
+    else
+      raise(ConfigurationError, "invalid queue.type setting")
     end
   end
 
