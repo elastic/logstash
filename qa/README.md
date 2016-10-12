@@ -67,7 +67,7 @@ you might only want to this once.
 In the feature we might add new rake tasks to do all at once, but for now you can use the script under
 `ci/ci_acceptance.sh` to do all at once.
 
-For local testing puroposes, is recommended to not run all together, pick your target and run with the single machine command, If you're willing to run on single one, you should use:
+For local testing purposes, is recommended to not run all together, pick your target and run with the single machine command, If you're willing to run on single one, you should use:
 
 ```
 rake qa:acceptance:single[machine]  # Run one single machine acceptance test
@@ -93,7 +93,7 @@ Now is time to run your test and to do that we have different options:
 * rake qa:acceptance:single[machine]  # Run one single machine acceptance test
 
 Generally speaking this are complex tests so they take a long time to
-finish completly, if you look for faster feedback see at the end of this
+finish completely, if you look for faster feedback see at the end of this
 README how to run fewer tests.
 
 ## Architecture of the Framework
@@ -126,7 +126,7 @@ in the platform definition).
 This file is the one that you will use to know about differnt OS's
 testes, add new ones, etc..
 
-### I want to add a test, whad should I do?
+### I want to add a test, what should I do?
 
 To add a test you basically should start by the acceptance directory,
 here you will find an already created tests, most important locations
