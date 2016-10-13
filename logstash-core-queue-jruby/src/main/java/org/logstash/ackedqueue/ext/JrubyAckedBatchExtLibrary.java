@@ -33,18 +33,15 @@ public class JrubyAckedBatchExtLibrary implements Library {
 
     @JRubyClass(name = "AckedBatch", parent = "Object")
     public static class RubyAckedBatch extends RubyObject {
-        Batch batch;
+        private Batch batch;
 
         public RubyAckedBatch(Ruby runtime, RubyClass klass) {
             super(runtime, klass);
-        }
-
-        public RubyAckedBatch(Ruby runtime) {
-            this(runtime, runtime.getModule("LogStash").getClass("AckedBatch"));
+            this.batch = null;
         }
 
         public RubyAckedBatch(Ruby runtime, Batch batch) {
-            this(runtime);
+            super(runtime, runtime.getModule("LogStash").getClass("AckedBatch"));
             this.batch = batch;
         }
 
