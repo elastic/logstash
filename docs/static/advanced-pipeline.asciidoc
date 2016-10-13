@@ -382,7 +382,7 @@ sends the information to an Elasticsearch cluster as well as writing the informa
 To add a Twitter feed, you use the {logstash}plugins-inputs-twitter.html[`twitter`] input plugin. To
 configure the plugin, you need several pieces of information:
 
-* A _consumer_ key, which uniquely identifies your Twitter app.
+* A _consumer key_, which uniquely identifies your Twitter app.
 * A _consumer secret_, which serves as the password for your Twitter app.
 * One or more _keywords_ to search in the incoming feed. The example shows using "cloud" as a keyword, but you can use whatever you want.
 * An _oauth token_, which identifies the Twitter account using this app.
