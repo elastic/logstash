@@ -44,7 +44,7 @@ public class JrubyAckedBatchExtLibrary implements Library {
             this.batch = batch;
         }
 
-        // def initialize(data = {})
+        @SuppressWarnings("unchecked") // for the getList() calls
         @JRubyMethod(name = "initialize", required = 3)
         public IRubyObject ruby_initialize(ThreadContext context, IRubyObject events,  IRubyObject seqNums,  IRubyObject queue)
         {
@@ -57,7 +57,6 @@ public class JrubyAckedBatchExtLibrary implements Library {
             if (! (queue instanceof JrubyAckedQueueExtLibrary.RubyAckedQueue)) {
                 context.runtime.newArgumentError("expected queue AckedQueue");
             }
-
 
             this.batch = new Batch(((RubyArray)events).getList(), ((RubyArray)seqNums).getList(), ((JrubyAckedQueueExtLibrary.RubyAckedQueue)queue).getQueue());
 
