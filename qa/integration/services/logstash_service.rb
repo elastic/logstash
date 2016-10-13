@@ -42,7 +42,7 @@ class LogstashService < Service
       raise "Logstash binary not found in path #{@logstash_home}" unless File.file? @logstash_bin
     end
     
-    @application_settings_file = File.join("#{@logstash_home}", LS_CONFIG_FILE)
+    @application_settings_file = File.join(@logstash_home, LS_CONFIG_FILE)
     @monitoring_api = MonitoringAPI.new
   end
 
