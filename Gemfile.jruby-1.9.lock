@@ -1,7 +1,7 @@
 PATH
   remote: ./logstash-core
   specs:
-    logstash-core (5.0.0.pre.rc2-java)
+    logstash-core (5.0.0-java)
       chronic_duration (= 0.10.6)
       clamp (~> 0.6.5)
       concurrent-ruby (= 1.0.0)
@@ -12,7 +12,7 @@ PATH
       jrjackson (~> 0.4.0)
       jrmonitor (~> 0.4.2)
       jruby-openssl (= 0.9.16)
-      logstash-core-event-java (= 5.0.0.pre.rc2)
+      logstash-core-event-java (= 5.0.0)
       minitar (~> 0.5.4)
       pry (~> 0.10.1)
       puma (~> 2.16)
@@ -25,7 +25,7 @@ PATH
 PATH
   remote: ./logstash-core-event-java
   specs:
-    logstash-core-event-java (5.0.0.pre.rc2-java)
+    logstash-core-event-java (5.0.0-java)
       jar-dependencies
       ruby-maven (~> 3.3.9)
 
@@ -33,7 +33,7 @@ PATH
   remote: ./logstash-core-plugin-api
   specs:
     logstash-core-plugin-api (2.1.16-java)
-      logstash-core (= 5.0.0.pre.rc2)
+      logstash-core (= 5.0.0)
 
 GEM
   remote: https://rubygems.org/
@@ -250,12 +250,12 @@ GEM
       logstash-codec-plain
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       thread_safe (~> 0.3.5)
-    logstash-input-couchdb_changes (3.0.2)
+    logstash-input-couchdb_changes (3.1.0)
       json
       logstash-codec-plain
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       stud (>= 0.0.22)
-    logstash-input-elasticsearch (3.0.2)
+    logstash-input-elasticsearch (4.0.0)
       elasticsearch (~> 1.0, >= 1.0.6)
       logstash-codec-json
       logstash-core-plugin-api (>= 1.60, <= 2.99)
@@ -375,11 +375,11 @@ GEM
       logstash-codec-line
       logstash-codec-plain
       logstash-core-plugin-api (>= 1.60, <= 2.99)
-    logstash-input-twitter (3.0.2)
+    logstash-input-twitter (3.0.3)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       stud (>= 0.0.22, < 0.1)
       twitter (= 5.15.0)
-    logstash-input-udp (3.0.2)
+    logstash-input-udp (3.0.3)
       logstash-codec-plain
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       stud (~> 0.0.22)
@@ -448,7 +448,7 @@ GEM
     logstash-output-rabbitmq (4.0.4-java)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       logstash-mixin-rabbitmq_connection (>= 4.1.1, < 5.0.0)
-    logstash-output-redis (3.0.2)
+    logstash-output-redis (3.0.3)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       redis
       stud
