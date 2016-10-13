@@ -5,7 +5,6 @@ module LogStash
     DEFAULT_PLUGINS = %w(
       logstash-input-heartbeat
       logstash-codec-collectd
-      logstash-output-xmpp
       logstash-codec-dots
       logstash-codec-edn
       logstash-codec-avro
@@ -21,7 +20,6 @@ module LogStash
       logstash-codec-netflow
       logstash-codec-plain
       logstash-codec-rubydebug
-      logstash-filter-aggregate
       logstash-filter-csv
       logstash-filter-date
       logstash-filter-dns
@@ -54,7 +52,6 @@ module LogStash
       logstash-input-http
       logstash-input-http_poller
       logstash-input-jdbc
-      logstash-input-log4j
       logstash-input-rabbitmq
       logstash-input-redis
       logstash-input-s3
