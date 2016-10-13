@@ -38,6 +38,7 @@ module LogStash
       logstash-filter-split
       logstash-filter-syslog_pri
       logstash-filter-throttle
+      logstash-filter-uuid
       logstash-filter-urldecode
       logstash-filter-useragent
       logstash-filter-xml
