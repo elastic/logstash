@@ -18,6 +18,7 @@ require "logstash/shutdown_watcher"
 require "logstash/patches/clamp"
 require "logstash/settings"
 require "logstash/version"
+require "logstash/plugins/registry"
 
 class LogStash::Runner < Clamp::StrictCommand
   include LogStash::Util::Loggable
@@ -198,6 +199,9 @@ class LogStash::Runner < Clamp::StrictCommand
       logger.warn("--config.debug was specified, but log.level was not set to \'debug\'! No config info will be logged.")
     end
 
+    LogStash::PluginRegistry.setup!
+    @settings.validate_all
+
     LogStash::Util::set_thread_name(self.class.name)
 
     if RUBY_VERSION < "1.9.2"
@@ -223,7 +227,7 @@ class LogStash::Runner < Clamp::StrictCommand
 
     return start_shell(setting("interactive"), binding) if setting("interactive")
 
-    @settings.validate_all
+
 
     @settings.format_settings.each {|line| logger.debug(line) }
 
@@ -334,9 +338,9 @@ class LogStash::Runner < Clamp::StrictCommand
   end
 
   def create_agent(*args)
-    LogStash::Agent.new(*args)
+    agent = LogStash::Agent.new(*args)
+    agent
   end
-
 
   # Emit a failure message and abort.
   def fail(message)

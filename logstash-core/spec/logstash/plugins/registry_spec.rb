@@ -8,15 +8,12 @@ class LogStash::Inputs::Dummy < LogStash::Inputs::Base
   config_name "dummy"
 
   def register; end
-
 end
 
-describe LogStash::Registry do
-
-  let(:registry) { described_class.instance }
+describe LogStash::Plugins::Registry do
+  let(:registry) { described_class.new }
 
   context "when loading installed plugins" do
-
     let(:plugin) { double("plugin") }
 
     it "should return the expected class" do
@@ -52,6 +49,4 @@ describe LogStash::Registry do
       expect { registry.lookup("input", "elastic") }.to raise_error(LoadError)
     end
   end
-
 end
-

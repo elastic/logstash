@@ -9,7 +9,7 @@ class LogStash::PluginManager::List < LogStash::PluginManager::Command
   option "--installed", :flag, "List only explicitly installed plugins using bin/logstash-plugin install ...", :default => false
   option "--verbose", :flag, "Also show plugin version number", :default => false
   option "--group", "NAME", "Filter plugins per group: input, output, filter or codec" do |arg|
-    raise(ArgumentError, "should be one of: input, output, filter or codec") unless ['input', 'output', 'filter', 'codec'].include?(arg)
+    raise(ArgumentError, "should be one of: input, output, filter or codec") unless ['input', 'output', 'filter', 'codec', 'pack'].include?(arg)
     arg
   end
 
