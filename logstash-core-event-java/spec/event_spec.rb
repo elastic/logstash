@@ -35,7 +35,7 @@ describe LogStash::Event do
     end
   end
 
-  context "[]" do
+  context "#get" do
     it "should get simple values" do
       e = LogStash::Event.new({"foo" => "bar", "bar" => 1, "baz" => 1.0, TIMESTAMP => "2015-05-28T23:02:05.350Z"})
       expect(e.get("foo")).to eq("bar")
@@ -63,7 +63,7 @@ describe LogStash::Event do
     end
   end
 
-  context "[]=" do
+  context "#set" do
     it "should set simple values" do
       e = LogStash::Event.new()
       expect(e.set("foo", "bar")).to eq("bar")
@@ -305,5 +305,21 @@ describe LogStash::Event do
       expect(e.timestamp.to_iso8601).to eq("2016-05-28T23:02:05.350Z")
     end
 
+  end
+
+  context "method missing exception messages" do
+    subject { LogStash::Event.new({"foo" => "bar"}) }
+
+    it "#[] method raises a better exception message" do
+      expect { subject["foo"] }.to raise_error(NoMethodError, /Direct event field references \(i\.e\. event\['field'\]\)/)
+    end
+
+    it "#[]= method raises a better exception message" do
+      expect { subject["foo"] = "baz" }.to raise_error(NoMethodError, /Direct event field references \(i\.e\. event\['field'\] = 'value'\)/)
+    end
+
+    it "other missing method raises normal exception message" do
+      expect { subject.baz() }.to raise_error(NoMethodError, /undefined method `baz' for/)
+    end
   end
 end
