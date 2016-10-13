@@ -36,14 +36,13 @@ describe LogStash::Plugin do
 
   describe "plugin signup in the registry" do
 
-    let(:registry) { LogStash::Registry.instance }
+    let(:registry) { LogStash::PluginRegistry }
 
     it "should be present in the registry" do
       class LogStash::Filters::MyPlugin < LogStash::Filters::Base
         config_name "my_plugin"
       end
-      path     = "logstash/filters/my_plugin"
-      expect(registry.registered?(path)).to eq(true)
+      expect(registry.exists?(:filter, "my_plugin")).to eq(true)
     end
   end
 
