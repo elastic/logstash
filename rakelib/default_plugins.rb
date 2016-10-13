@@ -22,7 +22,6 @@ module LogStash
       logstash-codec-plain
       logstash-codec-rubydebug
       logstash-filter-aggregate
-      logstash-filter-clone
       logstash-filter-csv
       logstash-filter-date
       logstash-filter-dns
