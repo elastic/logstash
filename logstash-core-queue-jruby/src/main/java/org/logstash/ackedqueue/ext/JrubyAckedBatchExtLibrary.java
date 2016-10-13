@@ -1,6 +1,10 @@
 package org.logstash.ackedqueue.ext;
 
-import org.jruby.*;
+import org.jruby.Ruby;
+import org.jruby.RubyClass;
+import org.jruby.RubyModule;
+import org.jruby.RubyObject;
+import org.jruby.RubyArray;
 import org.jruby.anno.JRubyClass;
 import org.jruby.anno.JRubyMethod;
 import org.jruby.runtime.ObjectAllocator;
