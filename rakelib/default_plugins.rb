@@ -32,6 +32,7 @@ module LogStash
       logstash-filter-grok
       logstash-filter-json
       logstash-filter-kv
+      logstash-filter-metrics
       logstash-filter-mutate
       logstash-filter-ruby
       logstash-filter-sleep
