@@ -23,7 +23,7 @@ module LogStash
            Setting::Boolean.new("config.test_and_exit", false),
            Setting::Boolean.new("config.reload.automatic", false),
            Setting::Numeric.new("config.reload.interval", 3), # in seconds
-           Setting::Boolean.new("metric.collect", true), #{|v| v == true }, # metric collection cannot be disabled
+           Setting::Boolean.new("metric.collect", true) {|v| v == true }, # metric collection cannot be disabled
             Setting::String.new("pipeline.id", "main"),
    Setting::PositiveInteger.new("pipeline.workers", LogStash::Config::CpuCoreStrategy.maximum),
    Setting::PositiveInteger.new("pipeline.output.workers", 1),
