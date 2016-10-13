@@ -68,7 +68,7 @@
  
 [[glossary-plugin-manager]]plugin manager::
   Accessed via the `bin/logstash-plugin` script, the plugin manager enables you to manage the lifecycle of
-  <<glossary-plugin,plugins>> in your Logstash deployment. You can install, uninstall, and upgrade plugins by using the
+  <<glossary-plugin,plugins>> in your Logstash deployment. You can install, remove, and upgrade plugins by using the
   plugin manager Command Line Interface (CLI).
 
 [[shipper]]shipper::
