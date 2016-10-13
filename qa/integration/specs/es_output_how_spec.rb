@@ -24,7 +24,7 @@ describe "Test Elasticsearch output" do
     result = es_client.search(index: 'logstash-*', size: 0, q: '*')
     expect(result["hits"]["total"]).to eq(37)
     
-    # random;y checked for results and structured fields
+    # randomly checked for results and structured fields
     result = es_client.search(index: 'logstash-*', size: 1, q: 'dynamic')
     expect(result["hits"]["total"]).to eq(1)
     s = result["hits"]["hits"][0]["_source"]
