@@ -3,8 +3,8 @@ require_relative "../../../spec_helper"
 require "logstash/version"
 require "fileutils"
 
-shared_examples "logstash uninstall" do |logstash|
-  describe "logstash uninstall on #{logstash.hostname}" do
+shared_examples "logstash remove" do |logstash|
+  describe "logstash-plugin remove on #{logstash.hostname}" do
     before :each do
       logstash.install({:version => LOGSTASH_VERSION})
     end
