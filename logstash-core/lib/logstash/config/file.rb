@@ -2,7 +2,6 @@
 require "logstash/namespace"
 require "logstash/config/grammar"
 require "logstash/config/config_ast"
-require "logstash/config/registry"
 require "logstash/errors"
 require "logger"
 

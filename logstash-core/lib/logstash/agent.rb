@@ -9,6 +9,7 @@ require "logstash/instrument/collector"
 require "logstash/instrument/metric"
 require "logstash/pipeline"
 require "logstash/webserver"
+require "logstash/event_dispatcher"
 require "stud/trap"
 require "logstash/config/loader"
 require "uri"
@@ -52,6 +53,10 @@ class LogStash::Agent
     configure_metrics_collectors
 
     @reload_metric = metric.namespace([:stats, :pipelines])
+
+    @dispatcher = LogStash::EventDispatcher.new(self)
+    LogStash::PluginRegistry.hooks.register_emitter(self.class, dispatcher)
+    dispatcher.fire(:after_initialize)
   end
 
   def execute

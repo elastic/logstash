@@ -1,6 +1,5 @@
 # encoding: utf-8
 require "logstash/namespace"
-require "logstash/config/registry"
 require "logstash/plugins/registry"
 require "logstash/logging"
 require "logstash/util/password"
@@ -73,6 +72,7 @@ module LogStash::Config::Mixin
                      "in the future. #{extra} If you have any questions " +
                      "about this, please visit the #logstash channel " +
                      "on freenode irc.", :name => name, :plugin => self)
+
       end
       if opts && opts[:obsolete]
         extra = opts[:obsolete].is_a?(String) ? opts[:obsolete] : ""
@@ -181,11 +181,7 @@ module LogStash::Config::Mixin
     # If no name given (nil), return the current name.
     def config_name(name = nil)
       @config_name = name if !name.nil?
-      LogStash::Config::Registry.registry[@config_name] = self
-      if self.respond_to?("plugin_type")
-        declare_plugin(self.plugin_type, @config_name)
-      end
-      return @config_name
+      @config_name
     end
     alias_method :config_plugin, :config_name
 
