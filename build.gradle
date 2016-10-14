@@ -20,7 +20,7 @@ dependencies {
   testCompile group: 'org.jruby', name: 'jruby-complete', version: "1.7.26"
 }
 
-task x << {
+task bootstrap << {
   description "Try bundler"
   def jruby = new org.jruby.embed.ScriptingContainer()
   def paths = jruby.getLoadPaths()
@@ -33,5 +33,5 @@ task x << {
   jruby.runScriptlet("bundler()")
 }
 
-x.dependsOn(":logstash-core-event-java:copyGemjar")
-x.dependsOn(":logstash-core:jar")
+bootstrap.dependsOn(":logstash-core-event-java:copyGemjar")
+bootstrap.dependsOn(":logstash-core:jar")
