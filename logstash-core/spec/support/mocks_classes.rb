@@ -25,3 +25,25 @@ class DummyOutput < LogStash::Outputs::Base
     @num_closes = 1
   end
 end
+
+class DummyOutputWithEventsArray < LogStash::Outputs::Base
+  config_name "dummyoutput2"
+  milestone 2
+
+  attr_reader :events
+
+  def initialize(params={})
+    super
+    @events = []
+  end
+
+  def register
+  end
+
+  def receive(event)
+    @events << event
+  end
+
+  def close
+  end
+end
