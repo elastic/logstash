@@ -26,6 +26,7 @@ describe "Test Logstash instance whose default settings are overridden" do
     FileUtils.mv("#{@logstash_service.application_settings_file}.original", @logstash_service.application_settings_file)
   }
 
+  let(:num_retries) { 15 }
   let(:test_port) { random_port }
   let(:temp_dir) { Stud::Temporary.directory("logstash-settings-test") }
   let(:tcp_config) { @fixture.config("root", { :port => test_port }) }
@@ -44,7 +45,7 @@ describe "Test Logstash instance whose default settings are overridden" do
     change_setting("path.data", temp_dir)
     @logstash_service.spawn_logstash("-e", tcp_config)
     # check LS is up and running with new data path
-    try do
+    try(num_retries) do
       expect(is_port_open?(test_port)).to be true
     end
   end
@@ -53,7 +54,7 @@ describe "Test Logstash instance whose default settings are overridden" do
     change_setting("path.logs", temp_dir)
     @logstash_service.spawn_logstash("-e", tcp_config)
     # check LS is up and running with new data path
-    try do
+    try(num_retries) do
       expect(is_port_open?(test_port)).to be true
     end
     expect(File.exists?("#{temp_dir}/logstash-plain.log")).to be true
@@ -66,7 +67,7 @@ describe "Test Logstash instance whose default settings are overridden" do
     expect(File.exists?(test_config_path)).to be true
     @logstash_service.spawn_logstash
     # check LS is up and running with new data path
-    try do
+    try(num_retries) do
       expect(is_port_open?(test_port)).to be true
     end
   end
@@ -81,7 +82,7 @@ describe "Test Logstash instance whose default settings are overridden" do
     IO.write(test_config_path, "#{tcp_config}")
     expect(File.exists?(test_config_path)).to be true
     @logstash_service.spawn_logstash
-    try do
+    try(num_retries) do
       expect(@logstash_service.exited?).to be true
     end
     expect(@logstash_service.exit_code).to eq(0)
@@ -90,7 +91,7 @@ describe "Test Logstash instance whose default settings are overridden" do
     IO.write(test_config_path, "#{tcp_config} filters {} ")
     expect(File.exists?(test_config_path)).to be true
     @logstash_service.spawn_logstash
-    try do
+    try(num_retries) do
       expect(@logstash_service.exited?).to be true
     end
     expect(@logstash_service.exit_code).to eq(1)
@@ -122,11 +123,11 @@ describe "Test Logstash instance whose default settings are overridden" do
     change_setting("http.port", http_port)
     @logstash_service.spawn_logstash("-e", tcp_config)
     
-    try do
+    try(num_retries) do
       expect(is_port_open?(http_port)).to be true
     end
     # check LS is up and running with new data path
-    try do
+    try(num_retries) do
       expect(is_port_open?(test_port)).to be true
     end
     

@@ -18,14 +18,15 @@ describe "Test Logstash instance" do
     ls = @fixture.get_service("logstash")
     ls.teardown
   }
-
+  
+  let(:num_retries) { 10 }
   let(:config1) { config_to_temp_file(@fixture.config("root", { :port => random_port })) }
   let(:config2) { config_to_temp_file(@fixture.config("root", { :port => random_port })) }
 
   it "can start the embedded http server on default port 9600" do
     logstash_service = @fixture.get_service("logstash")
     logstash_service.start_with_stdin
-    try do
+    try(num_retries) do
       expect(is_port_open?(9600)).to be true
     end
     logstash_service.teardown
@@ -34,7 +35,7 @@ describe "Test Logstash instance" do
   it "multiple of them can be started on the same box with automatically trying different ports for HTTP server" do
     ls1 = @fixture.get_service("logstash")
     ls1.spawn_logstash("-f", config1)
-    try do
+    try(num_retries) do
       expect(is_port_open?(9600)).to be true
     end
 
