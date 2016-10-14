@@ -1,0 +1,2 @@
+include 'logstash-core-event-java'
+include 'logstash-core'

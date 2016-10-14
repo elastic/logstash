@@ -1,0 +1,35 @@
+apply plugin: "java"
+
+buildscript {
+  repositories {
+    mavenCentral()
+  }
+
+  dependencies {
+    classpath group: 'org.jruby', name: 'jruby-complete', version: "1.7.26"
+  }
+}
+
+repositories {
+  mavenCentral()
+}
+
+dependencies {
+  compile group: 'org.jruby', name: 'jruby-complete', version: "1.7.26"
+  runtime group: 'org.jruby', name: 'jruby-complete', version: "1.7.26"
+  testCompile group: 'org.jruby', name: 'jruby-complete', version: "1.7.26"
+}
+
+task x << {
+  description "Try bundler"
+  def jruby = new org.jruby.embed.ScriptingContainer()
+  def paths = jruby.getLoadPaths()
+  paths.add("${projectDir}/lib".getStrings()[0])
+  jruby.setLoadPaths(paths)
+  jruby.getEnvironment().put("GEM_HOME", "${projectDir}/vendor/bundle".toString())
+  jruby.runScriptlet(org.jruby.embed.PathType.ABSOLUTE, "${projectDir}/buildSrc/src/main/ruby/bootstrap.rb")
+  jruby.runScriptlet("bundler()")
+}
+
+x.dependsOn(":logstash-core-event-java:copyGemjar")
+x.dependsOn(":logstash-core:jar")
