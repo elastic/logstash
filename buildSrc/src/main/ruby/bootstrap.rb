@@ -1,10 +1,9 @@
 #!/usr/bin/env ruby
 
-require "rubygems/specification"
-require "rubygems/commands/install_command"
 $: << File.join(Dir.pwd, "lib")
 
 def install_gem(name, requirement)
+  require "rubygems/commands/install_command"
   installer = Gem::Commands::InstallCommand.new
   installer.options[:generate_rdoc] = false
   installer.options[:generate_ri] = false
@@ -23,7 +22,7 @@ def install_gem(name, requirement)
 end
 
 def bundler()
-  install_gem("bundler", ">0")
+  install_gem("bundler", "~> 1.9.4")
   require "bootstrap/environment"
   puts("Invoking bundler install...")
   output, exception = LogStash::Bundler.invoke!(:install => true)

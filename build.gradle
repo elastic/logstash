@@ -26,7 +26,9 @@ task x << {
   def paths = jruby.getLoadPaths()
   paths.add("${projectDir}/lib".getStrings()[0])
   jruby.setLoadPaths(paths)
-  jruby.getEnvironment().put("GEM_HOME", "${projectDir}/vendor/bundle".toString())
+  jruby.getEnvironment().put("GEM_HOME", "${projectDir}/vendor/bundle/jruby/1.9".toString())
+  jruby.getEnvironment().put("GEM_SPEC_CACHE", "${projectDir}/vendor/bundle/jruby/1.9/specifications".toString())
+  jruby.getEnvironment().put("GEM_PATH", "${projectDir}/vendor/bundle/jruby/1.9".toString())
   jruby.runScriptlet(org.jruby.embed.PathType.ABSOLUTE, "${projectDir}/buildSrc/src/main/ruby/bootstrap.rb")
   jruby.runScriptlet("bundler()")
 }
