@@ -40,13 +40,14 @@ public class MmapPageIO implements PageIO {
     private int elementCount;
     private int head;
     private byte version;
-    private Checksum checkSummer = new CRC32();
+    private Checksum checkSummer;
 
     public MmapPageIO(int pageNum, int capacity, String dirPath) throws IOException {
         this.pageNum = pageNum;
         this.capacity = capacity;
         this.dirPath = dirPath;
         this.offsetMap = new ArrayList<>();
+        this.checkSummer = new CRC32();
     }
 
     @Override
