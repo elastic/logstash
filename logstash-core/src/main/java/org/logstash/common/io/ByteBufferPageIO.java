@@ -30,7 +30,7 @@ public class ByteBufferPageIO implements PageIO {
     private int elementCount;
     private int head;
     private byte version;
-    private Checksum checkSummer = new CRC32();
+    private Checksum checkSummer;
 
     public ByteBufferPageIO(int pageNum, int capacity, String path) throws IOException {
         this(capacity, new byte[0]);
@@ -50,11 +50,11 @@ public class ByteBufferPageIO implements PageIO {
         this.buffer.put(initialBytes);
 
         this.offsetMap = new ArrayList<>();
+        this.checkSummer = new CRC32();
     }
 
     @Override
     public void open(long minSeqNum, int elementCount) throws IOException {
-        // TODO: do we need to do something there?
         this.minSeqNum = minSeqNum;
         this.elementCount = elementCount;
 
