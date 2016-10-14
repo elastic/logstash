@@ -104,31 +104,22 @@ setup_drip() {
 
   # faster JRuby startup options https://github.com/jruby/jruby/wiki/Improving-startup-time
   # since we are using drip to speed up, we may as well throw these in also
-  if [ "$USE_RUBY" = "1" ] ; then
-    export JRUBY_OPTS="$JRUBY_OPTS -J-XX:+TieredCompilation -J-XX:TieredStopAtLevel=1 -J-noverify"
-  else
-    JAVA_OPTS="$JAVA_OPTS -XX:+TieredCompilation -XX:TieredStopAtLevel=1 -noverify"
-  fi
+  JAVA_OPTS="$JAVA_OPTS -XX:+TieredCompilation -XX:TieredStopAtLevel=1 -noverify"
   export JAVACMD
   export DRIP_INIT_CLASS="org.jruby.main.DripMain"
   export DRIP_INIT=""
 }
 
 setup_vendored_jruby() {
-  JRUBY_BIN="${LOGSTASH_HOME}/vendor/jruby/bin/jruby"
+  JRUBY_JAR="${LOGSTASH_HOME}/vendor/jars/jruby-complete-1.7.26.jar"
 
-  if [ ! -f "${JRUBY_BIN}" ] ; then
+  if [ ! -f "${JRUBY_JAR}" ] ; then
     echo "Unable to find JRuby."
     echo "If you are a user, this is a bug."
-    echo "If you are a developer, please run 'rake bootstrap'. Running 'rake' requires the 'ruby' program be available."
+    echo "If you are a developer, please run './gradlew bootstrap'. Running 'gradlew' requires the 'java' program be available."
     exit 1
   fi
   VENDORED_JRUBY=1
-}
-
-setup_ruby() {
-  RUBYCMD="ruby"
-  VENDORED_JRUBY=
 }
 
 jruby_opts() {
@@ -153,30 +144,13 @@ setup() {
     setup_drip
   fi
 
-  if [ "$USE_RUBY" = "1" ] ; then
-    setup_ruby
-  else
-    setup_java
-    setup_vendored_jruby
-  fi
+  setup_java
+  setup_vendored_jruby
 }
 
 ruby_exec() {
-  if [ -z "$VENDORED_JRUBY" ] ; then
-
-    # $VENDORED_JRUBY is empty so use the local "ruby" command
-
-    if [ "$DEBUG" ] ; then
-      echo "DEBUG: exec ${RUBYCMD} $@"
-    fi
-    exec "${RUBYCMD}" "$@"
-  else
-
-    # $VENDORED_JRUBY is non-empty so use the vendored JRuby
-
-    if [ "$DEBUG" ] ; then
-      echo "DEBUG: exec ${JRUBY_BIN} $(jruby_opts) $@"
-    fi
-    exec "${JRUBY_BIN}" $(jruby_opts) "$@"
+  if [ "$DEBUG" ] ; then
+    echo "DEBUG: exec java -jar JRUBY_JAR $(jruby_opts) $@"
   fi
+  exec java -jar "${JRUBY_JAR}" $(jruby_opts) "$@"
 }

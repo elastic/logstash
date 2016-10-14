@@ -35,3 +35,9 @@ task bootstrap << {
 
 bootstrap.dependsOn(":logstash-core-event-java:copyGemjar")
 bootstrap.dependsOn(":logstash-core:jar")
+bootstrap.dependsOn("copyDependencyJars")
+
+task copyDependencyJars(type: Copy) {
+  into "${projectDir}/vendor/jars"
+  from configurations.runtime
+}
