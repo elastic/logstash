@@ -43,7 +43,7 @@ describe "Test Logstash instance" do
 
     # bring up new LS instance
     @ls2.spawn_logstash("-f", config2)
-    try(num_retries) do
+    try(20) do
       expect(is_port_open?(9601)).to be true
     end
 
