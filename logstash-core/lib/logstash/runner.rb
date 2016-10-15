@@ -162,10 +162,14 @@ class LogStash::Runner < Clamp::StrictCommand
 
     begin
       LogStash::SETTINGS.from_yaml(LogStash::SETTINGS.get("path.settings"))
+    rescue Errno::ENOENT 
+      unless cli_help?(args)
+        $stderr.puts "ERROR: Logstash requires a setting file which is typically located in $LS_HOME/config or /etc/logstash. If you installed Logstash through a package and are starting it manually, please specify the location to this settings file by passing --path.settings /etc/logstash"
+        return 1
+      end   
     rescue => e
       # abort unless we're just looking for the help
-      if (["--help", "-h"] & args).empty?
-        $stderr.puts "INFO: Logstash requires a setting file which is typically located in $LS_HOME/config or /etc/logstash. If you installed Logstash through a package and are starting it manually please specify the location to this settings file by passing in \"--path.settings=/path/..\""
+      unless cli_help?(args)
         $stderr.puts "ERROR: Failed to load settings file from \"path.settings\". Aborting... path.setting=#{LogStash::SETTINGS.get("path.settings")}, exception=#{e.class}, message=>#{e.message}"
         return 1
       end
@@ -410,5 +414,11 @@ class LogStash::Runner < Clamp::StrictCommand
       nil
     end
   end
+  
+  # is the user asking for CLI help subcommand?
+  def cli_help?(args)
+    # I know, double negative
+    !(["--help", "-h"] & args).empty?
+  end  
 
 end
