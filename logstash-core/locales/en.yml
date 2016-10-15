@@ -112,8 +112,7 @@ en:
           longer available. %{extra} If you have any questions about this, you
           are invited to visit https://discuss.elastic.co/c/logstash and ask.
         file-not-found: |-
-          No config files found: %{path}
-          Can you make sure this path is a logstash config file?
+          No config files found: %{path}. Can you make sure this path is a logstash config file?
         scheme-not-supported: |-
           URI scheme not supported: %{path}
           Either pass a local file path or "file|http://" URI
