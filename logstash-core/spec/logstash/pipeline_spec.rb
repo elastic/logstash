@@ -387,20 +387,17 @@ describe LogStash::Pipeline do
     output { }
     CONFIG
 
-    let(:pipeline_settings) do
-      { "pipeline.id" => "MAIN", "metric.collect" => false }
-    end
-
     it "uses a `NullMetric` object if `metric.collect` is set to false" do
-      # settings = double("LogStash::SETTINGS")
-      #
-      # allow(settings).to receive(:get_value).with("pipeline.id").and_return("main")
-      # allow(settings).to receive(:get_value).with("metric.collect").and_return(false)
-      # allow(settings).to receive(:get_value).with("config.debug").and_return(false)
-      # allow(settings).to receive(:get_value).with("queue.page_capacity").and_return(1024 * 1024)
-      # allow(settings).to receive(:get_value).with("queue.max_events").and_return(250)
+      settings = double("LogStash::SETTINGS")
 
-      pipeline = LogStash::Pipeline.new(config, pipeline_settings_obj)
+      allow(settings).to receive(:get_value).with("pipeline.id").and_return("main")
+      allow(settings).to receive(:get_value).with("metric.collect").and_return(false)
+      allow(settings).to receive(:get_value).with("config.debug").and_return(false)
+      allow(settings).to receive(:get).with("queue.type").and_return("memory")
+      allow(settings).to receive(:get).with("queue.page_capacity").and_return(1024 * 1024)
+      allow(settings).to receive(:get).with("queue.max_events").and_return(250)
+
+      pipeline = LogStash::Pipeline.new(config, settings)
       expect(pipeline.metric).to be_kind_of(LogStash::Instrument::NullMetric)
     end
   end
