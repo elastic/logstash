@@ -150,7 +150,10 @@ module LogStash; module Util
     class ReadBatch
       def initialize(queue, size, wait)
         @originals = Hash.new
-        @cancelled = Hash.new
+
+        # TODO: disabled for https://github.com/elastic/logstash/issues/6055 - will have to properly refactor
+        # @cancelled = Hash.new
+
         @generated = Hash.new
         @iterating_temp = Hash.new
         @iterating = false # Atomic Boolean maybe? Although batches are not shared across threads
@@ -170,17 +173,22 @@ module LogStash; module Util
       end
 
       def cancel(event)
-        @cancelled[event] = true
+        # TODO: disabled for https://github.com/elastic/logstash/issues/6055 - will have to properly refactor
+        raise("cancel is unsupported")
+        # @cancelled[event] = true
       end
 
       def each(&blk)
         # take care not to cause @originals or @generated to change during iteration
         @iterating = true
+
+        # below the checks for @cancelled.include?(e) have been replaced by e.cancelled?
+        # TODO: for https://github.com/elastic/logstash/issues/6055 = will have to properly refactor
         @originals.each do |e, _|
-          blk.call(e) unless @cancelled.include?(e)
+          blk.call(e) unless e.cancelled?
         end
         @generated.each do |e, _|
-          blk.call(e) unless @cancelled.include?(e)
+          blk.call(e) unless e.cancelled?
         end
         @iterating = false
         update_generated
@@ -199,7 +207,9 @@ module LogStash; module Util
       end
 
       def cancelled_size
-        @cancelled.size
+      # TODO: disabled for https://github.com/elastic/logstash/issues/6055 = will have to properly refactor
+      raise("cancelled_size is unsupported ")
+        # @cancelled.size
       end
 
       private

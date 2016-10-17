@@ -100,6 +100,60 @@ describe LogStash::Pipeline do
     pipeline_settings_obj.reset
   end
 
+
+  describe "event cancellation" do
+    # test harness for https://github.com/elastic/logstash/issues/6055
+
+    let(:output) { DummyOutputWithEventsArray.new }
+
+    before do
+      allow(LogStash::Plugin).to receive(:lookup).with("input", "generator").and_return(LogStash::Inputs::Generator)
+      allow(LogStash::Plugin).to receive(:lookup).with("output", "dummyoutputwitheventsarray").and_return(DummyOutputWithEventsArray)
+      allow(LogStash::Plugin).to receive(:lookup).with("filter", "drop").and_call_original
+      allow(LogStash::Plugin).to receive(:lookup).with("filter", "mutate").and_call_original
+      allow(LogStash::Plugin).to receive(:lookup).with("codec", "plain").and_call_original
+      allow(DummyOutputWithEventsArray).to receive(:new).with(any_args).and_return(output)
+    end
+
+    let(:config) do
+      <<-CONFIG
+        input {
+          generator {
+            lines => ["1", "2", "END"]
+            count => 1
+          }
+        }
+        filter {
+          if [message] == "1" {
+            drop {}
+          }
+          mutate { add_tag => ["notdropped"] }
+        }
+        output { dummyoutputwitheventsarray {} }
+      CONFIG
+    end
+
+    it "should not propage cancelled events from filter to output" do
+      abort_on_exception_state = Thread.abort_on_exception
+      Thread.abort_on_exception = true
+
+      pipeline = LogStash::Pipeline.new(config, pipeline_settings_obj)
+      Thread.new { pipeline.run }
+      sleep 0.1 while !pipeline.ready?
+      wait(3).for do
+        # give us a bit of time to flush the events
+        # puts("*****" + output.events.map{|e| e.message}.to_s)
+        output.events.map{|e| e.get("message")}.include?("END")
+      end.to be_truthy
+      expect(output.events.size).to eq(2)
+      expect(output.events[0].get("tags")).to eq(["notdropped"])
+      expect(output.events[1].get("tags")).to eq(["notdropped"])
+      pipeline.shutdown
+
+      Thread.abort_on_exception = abort_on_exception_state
+    end
+  end
+
   describe "defaulting the pipeline workers based on thread safety" do
     before(:each) do
       allow(LogStash::Plugin).to receive(:lookup).with("input", "dummyinput").and_return(DummyInput)

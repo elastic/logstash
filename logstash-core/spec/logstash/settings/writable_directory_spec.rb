@@ -10,11 +10,13 @@ describe LogStash::Setting::WritableDirectory do
   let(:path) { File.join(parent, "fancy") }
 
   before { Dir.mkdir(parent) }
+  after { Dir.exist?(path) && Dir.unlink(path) rescue nil }
   after { Dir.unlink(parent) }
 
   shared_examples "failure" do
+    before { subject.set(path) }
     it "should fail" do
-      expect { subject.set(path) }.to raise_error
+      expect { subject.validate_value }.to raise_error
     end
   end
 
@@ -48,15 +50,16 @@ describe LogStash::Setting::WritableDirectory do
     end
   end
 
-  describe "#set" do
+  describe "#set and #validate_value" do
     context "when the directory exists" do
       before { Dir.mkdir(path) }
       after { Dir.unlink(path) }
 
       context "and is writable" do
+        before { subject.set(path) }
         # assume this spec already created a directory that's writable... fair? :)
         it "should return true" do
-          expect(subject.set(path)).to be_truthy
+          expect(subject.validate_value).to be_truthy
         end
       end
 
@@ -94,10 +97,15 @@ describe LogStash::Setting::WritableDirectory do
           # If the path doesn't exist, we want to try creating it, so let's be
           # extra careful and make sure the path doesn't exist yet.
           expect(File.directory?(path)).to be_falsey
+          subject.set(path)
+        end
+
+        after do
+          Dir.unlink(path)
         end
 
         it "should return true" do
-          expect(subject.set(path)).to be_truthy
+          expect(subject.validate_value).to be_truthy
         end
       end
 

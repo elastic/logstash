@@ -1,0 +1,37 @@
+---
+services:
+  - logstash
+config:
+  initial: |-
+    input {
+      tcp {
+        port => '<%=options[:port]%>'
+      }
+    }
+    output {
+      file {
+         path => '<%=options[:file]%>'
+         flush_interval => 0
+         codec => line { format => "%{message}" }
+      }
+    }
+  reload: |-
+    input {
+      tcp {
+        port => '<%=options[:port]%>'
+      }
+    }
+    filter {
+      grok {
+        match => {
+          "message" => "%{IPORHOST:clientip} %{USER:ident} %{USER:auth} \[%{HTTPDATE:timestamp}\] \"%{WORD:verb} %{DATA:request} HTTP/%{NUMBER:httpversion}\" %{NUMBER:response:int} (?:-|%{NUMBER:bytes:int}) %{QS:referrer} %{QS:agent}"
+        }
+      }
+    }
+    output {
+      file {
+         path => '<%=options[:file]%>'
+         flush_interval => 0
+         codec => json
+      }
+    }

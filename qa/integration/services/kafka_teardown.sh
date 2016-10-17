@@ -1,5 +1,5 @@
 #!/bin/bash
-set -e
+set -ex
 current_dir="$(dirname "$0")"
 
 source "$current_dir/helpers.sh"

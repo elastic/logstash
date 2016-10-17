@@ -3,7 +3,7 @@ require_relative '../framework/settings'
 require_relative '../services/logstash_service'
 require "logstash/devutils/rspec/spec_helper"
 
-describe "Monitoring API" do
+describe "Test Monitoring API" do
   before(:all) {
     @fixture = Fixture.new(__FILE__)
   }

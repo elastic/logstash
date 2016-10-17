@@ -8,13 +8,20 @@ require 'yaml'
 # A locally started Logstash service
 class LogstashService < Service
 
-  LS_VERSION_FILE = File.expand_path(File.join("../../../../", "versions.yml"), __FILE__)
-  LS_BIN = "bin/logstash"
+  LS_ROOT_DIR = File.join("..", "..", "..", "..")
+  LS_VERSION_FILE = File.expand_path(File.join(LS_ROOT_DIR, "versions.yml"), __FILE__)
+  LS_BUILD_DIR = File.join(LS_ROOT_DIR, "build")
+  LS_BIN = File.join("bin", "logstash")
+  LS_CONFIG_FILE = File.join("config", "logstash.yml")
 
   STDIN_CONFIG = "input {stdin {}} output { }"
   RETRY_ATTEMPTS = 10
 
   @process = nil
+  
+  attr_reader :logstash_home
+  attr_reader :application_settings_file
+  attr_writer :env_variables
 
   def initialize(settings)
     super("logstash", settings)
@@ -27,14 +34,15 @@ class LogstashService < Service
       ls_version_file = YAML.load_file(LS_VERSION_FILE)
       ls_file = "logstash-" + ls_version_file["logstash"]
       # First try without the snapshot if it's there
-      @logstash_home = File.expand_path(File.join("../../../../build", ls_file), __FILE__)
+      @logstash_home = File.expand_path(File.join(LS_BUILD_DIR, ls_file), __FILE__)
       @logstash_home += "-SNAPSHOT" unless Dir.exists?(@logstash_home)
 
       puts "Using #{@logstash_home} as LS_HOME"
       @logstash_bin = File.join("#{@logstash_home}", LS_BIN)
       raise "Logstash binary not found in path #{@logstash_home}" unless File.file? @logstash_bin
     end
-
+    
+    @application_settings_file = File.join(@logstash_home, LS_CONFIG_FILE)
     @monitoring_api = MonitoringAPI.new
   end
 
@@ -45,6 +53,14 @@ class LogstashService < Service
       @process.alive?
     end
   end
+  
+  def exited?
+    @process.exited?
+  end
+  
+  def exit_code
+    @process.exit_code
+  end  
 
   # Starts a LS process in background with a given config file
   # and shuts it down after input is completely processed
@@ -87,10 +103,11 @@ class LogstashService < Service
   end
 
   # Spawn LS as a child process
-  def spawn_logstash(cli_arg, value)
-    puts "Starting Logstash #{@logstash_bin} #{cli_arg} #{value}"
+  def spawn_logstash(*args)
+    puts "Starting Logstash #{@logstash_bin} #{args}" 
     Bundler.with_clean_env do
-      @process = ChildProcess.build(@logstash_bin, cli_arg, value)
+      @process = ChildProcess.build(@logstash_bin, *args)
+      @env_variables.map { |k, v|  @process.environment[k] = v} unless @env_variables.nil?
       @process.io.inherit!
       @process.start
       wait_for_logstash
@@ -135,5 +152,23 @@ class LogstashService < Service
       tries -= 1
     end
   end
-
+  
+  # this method only overwrites existing config with new config
+  # it does not assume that LS pipeline is fully reloaded after a 
+  # config change. It is up to the caller to validate that.
+  def reload_config(initial_config_file, reload_config_file)
+    FileUtils.cp(reload_config_file, initial_config_file)
+  end  
+  
+  def get_version
+    `#{@logstash_bin} --version`
+  end
+  
+  def get_version_yml
+    LS_VERSION_FILE
+  end   
+  
+  def process_id
+    @process.pid
+  end
 end

@@ -105,6 +105,22 @@ it with:
 sudo apt-get update && sudo apt-get install logstash
 --------------------------------------------------
 
+Configure Logstash to automatically start during bootup. If your
+distribution is using SysV init, then you will need to run:
+
+[source,sh]
+--------------------------------------------------
+sudo update-rc.d logstash defaults 95 10
+--------------------------------------------------
+
+Otherwise if your distribution is using systemd:
+
+[source,sh]
+--------------------------------------------------
+sudo /bin/systemctl daemon-reload
+sudo /bin/systemctl enable logstash.service
+--------------------------------------------------
+
 [float]
 ==== YUM
 
@@ -135,6 +151,25 @@ And your repository is ready for use. You can install it with:
 [source,sh]
 --------------------------------------------------
 sudo yum install logstash
+--------------------------------------------------
+
+Configure Logstash to automatically start during bootup. If your
+distribution is using SysV `init` (check with `ps -p 1`), then you will need to run:
+
+WARNING: The repositories do not work with older rpm based distributions
+         that still use RPM v3, like CentOS5.
+
+[source,sh]
+--------------------------------------------------
+chkconfig --add logstash
+--------------------------------------------------
+
+Otherwise if your distribution is using `systemd`:
+
+[source,sh]
+--------------------------------------------------
+sudo /bin/systemctl daemon-reload
+sudo /bin/systemctl enable logstash.service
 --------------------------------------------------
 
 [[first-event]]

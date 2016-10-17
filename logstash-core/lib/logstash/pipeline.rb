@@ -286,14 +286,9 @@ module LogStash; class Pipeline
 
   def filter_batch(batch)
     batch.each do |event|
-      filtered = filter_func(event)
-      filtered.each do |e|
+      filter_func(event).each do |e|
         #these are both original and generated events
-        if e.cancelled?
-          batch.cancel(e)
-        else
-          batch.merge(e)
-        end
+        batch.merge(e) unless e.cancelled?
       end
     end
     @filter_queue_client.add_filtered_metrics(batch)
@@ -519,9 +514,7 @@ module LogStash; class Pipeline
   # @param options [Hash]
   def flush_filters_to_batch(batch, options = {})
     flush_filters(options) do |event|
-      if event.cancelled?
-        batch.cancel(event)
-      else
+      unless event.cancelled?
         @logger.debug? and @logger.debug("Pushing flushed events", :event => event)
         batch.merge(event)
       end
