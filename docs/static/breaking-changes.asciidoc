@@ -7,11 +7,13 @@ This section discusses the changes that you need to be aware of when migrating y
 === Changes in Logstash Core
 
 * **Application Settings:** Introduced a new way to configure application settings for Logstash through a settings.yml file. This file
-is typically located in `LS_HOME/config`, or `/etc/logstash` when installed via packages. Logstash will not be able
-to start without this file, so please make sure to pass in `--path.settings` if you are starting Logstash manually
+is typically located in `LS_HOME/config`, or `/etc/logstash` when installed via packages. +
+[IMPORTANT]
+Logstash will not be able to start without this file, so please make sure to
+pass in `--path.settings /etc/logstash` if you are starting Logstash manually
 after installing it via a package (RPM, DEB).
 
-* **Release Packages:** When Logstash is installed via DEB, RPM packages, it uses `/usr/share/logstash` and `/var/lib/logstash` to install binaries. 
+* **Release Packages:** When Logstash is installed via DEB, RPM packages, it uses `/usr/share/logstash` and `/var/lib/logstash` to install binaries.
 Previously it used to install in `/opt/logstash` directory. This change was done to make the user experience
 consistent with other Elastic products. Full directory layout is described in <<dir-layout>>.
 
@@ -49,16 +51,16 @@ Please see the following specific plugin documentation for new configuration opt
 * <<plugins-inputs-kafka, Kafka Input>>
 * <<plugins-outputs-kafka, Kafka Output>>
 
-* **File Input:** SinceDB file is now saved in `<path.data>/plugins/inputs/file` location, not user's home. If you have manually specified `sincedb_path` 
-configuration, this change will not affect you. If you are moving from 2.x to 5.x, and would like to use the existing SinceDB file, it 
+* **File Input:** SinceDB file is now saved in `<path.data>/plugins/inputs/file` location, not user's home. If you have manually specified `sincedb_path`
+configuration, this change will not affect you. If you are moving from 2.x to 5.x, and would like to use the existing SinceDB file, it
 has to be copied over to `path.data` manually to use the save state.
 
 [float]
 === Ruby Filter and Custom Plugin Developers
 
-With the migration to the new <<event-api>>, we have changed how you can access internal data compared to previous release. 
-The Event object no longer returns a reference to the data. Instead, it returns a copy. This might change how you do manipulation of 
-your data, especially when working with nested hashes. When working with nested hashes, it’s recommended that you 
+With the migration to the new <<event-api>>, we have changed how you can access internal data compared to previous release.
+The Event object no longer returns a reference to the data. Instead, it returns a copy. This might change how you do manipulation of
+your data, especially when working with nested hashes. When working with nested hashes, it’s recommended that you
 use the `fieldref` syntax instead of using multiple brackets. Also note that we have introduced new Getter/Setter APIs
 for accessing information in the Event object. Refer <<event-api>> for details.
 
@@ -85,4 +87,3 @@ filter {
 ----------------------------------
 
 The above syntax is not supported, and will produce an error at run-time.
-
