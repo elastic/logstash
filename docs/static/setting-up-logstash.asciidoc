@@ -86,7 +86,7 @@ locations for the system:
 | logs
   | Log files
   | `/var/log/logstash`
-  | `path.log`
+  | `path.logs`
 
 | plugins
   | Local, non Ruby-Gem plugin files. Each plugin is contained in a subdirectory. Recommended for development only.
