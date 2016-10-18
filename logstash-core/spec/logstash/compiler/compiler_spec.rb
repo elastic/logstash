@@ -15,10 +15,10 @@ describe LogStash::Compiler do
 
   describe "compiling to a PipelineRunner" do
     subject(:source_file) { "fake_sourcefile" }
-    subject(:compiled) { described_class.compile(source, source_file) }
+    subject(:compiled) { described_class.compile(producer, source_file) }
 
     describe "a simple config" do
-      let(:source) do
+      let(:producer) do
         <<-EOC
           input {
             stdin {}
@@ -42,10 +42,10 @@ describe LogStash::Compiler do
 
   describe "compiling to Pipeline" do
     subject(:source_file) { "fake_sourcefile" }
-    subject(:compiled) { described_class.compile_graph(source, source_file) }
+    subject(:compiled) { described_class.compile_graph(producer, source_file) }
 
     describe "a complex config" do
-      let(:source) do
+      let(:producer) do
         <<-EOC
         input {
           foo {a => 'b'}
@@ -91,14 +91,14 @@ describe LogStash::Compiler do
 
       it "should compile" do
         puts "\n!!!SOURCE!!!"
-        puts source
+        puts producer
         puts "\n!!!AST!!!"
-        puts described_class.compile_ast(source).inspect
+        puts described_class.compile_ast(producer).inspect
         puts "\n!!!IMPERATIVE!!!"
-        imp = described_class.compile_imperative(source)
+        imp = described_class.compile_imperative(producer)
         imp.each {|s,v| puts "\n!#{s}\n"; puts v.to_s}
         puts "\n!!!GRAPH!!!\n"
-        puts g = described_class.compile_graph(source)
+        puts g = described_class.compile_graph(producer)
         g.each {|s,v| puts "\n!#{s}\n"; puts v.to_s}
         puts "\n!!!PIPELINE!!!"
         puts compiled.to_s
@@ -108,10 +108,10 @@ describe LogStash::Compiler do
 
   describe "compiling imperative" do
     subject(:source_file) { "fake_sourcefile" }
-    subject(:compiled) { described_class.compile_imperative(source, source_file) }
+    subject(:compiled) { described_class.compile_imperative(producer, source_file) }
 
     describe "an empty file" do
-      let(:source) { "input {} output {}" }
+      let(:producer) { "input {} output {}" }
 
       it "should have an empty input block" do
         expect(compiled[:input]).to ir_eql(j.noop)
@@ -127,16 +127,16 @@ describe LogStash::Compiler do
     end
 
     describe "SourceMetadata" do
-      let(:source) { "input { generator {} } output { }" }
+      let(:producer) { "input { generator {} } output { }" }
 
-      it "should attach correct source text for components" do
+      it "should attach correct producer text for components" do
         expect(compiled[:input].get_meta.getSourceText).to eql("generator {}")
       end
     end
 
     context "plugins" do
       subject(:c_plugin) { compiled[:input] }
-      let(:source) { "input { #{plugin_source} } " }
+      let(:producer) { "input { #{plugin_source} } " }
 
       describe "a simple plugin" do
         let(:plugin_source) { "generator {}" }
@@ -163,7 +163,7 @@ describe LogStash::Compiler do
       subject(:input) { compiled[:input] }
 
       describe "a single input" do
-        let(:source) { "input { generator {} }" }
+        let(:producer) { "input { generator {} }" }
 
         it "should contain the single input" do
           expect(input).to ir_eql(j.iPlugin(INPUT, "generator"))
@@ -171,7 +171,7 @@ describe LogStash::Compiler do
       end
 
       describe "two inputs" do
-        let(:source) { "input { generator { count => 1 } generator { count => 2 } } output { }" }
+        let(:producer) { "input { generator { count => 1 } generator { count => 2 } } output { }" }
 
         it "should contain both inputs" do
           expect(input).to ir_eql(j.iComposeParallel(
@@ -212,7 +212,7 @@ describe LogStash::Compiler do
       end
 
       describe "two plugins" do
-        let(:source) do
+        let(:producer) do
           # We care about line/column for this test, hence the indentation
           <<-EOS
           #{section} {
@@ -242,7 +242,7 @@ describe LogStash::Compiler do
 
       describe "if conditions" do
         describe "conditional expressions" do
-          let(:source) { "#{section} { if (#{expression}) { aplugin {} } }" }
+          let(:producer) { "#{section} { if (#{expression}) { aplugin {} } }" }
           let(:c_expression) { c_section.getBooleanExpression }
 
           describe "logical expressions" do
@@ -449,7 +449,7 @@ describe LogStash::Compiler do
         end
 
         describe "only true branch" do
-          let (:source) { "#{section} { if [foo] == [bar] { grok {} } }" }
+          let (:producer) { "#{section} { if [foo] == [bar] { grok {} } }" }
 
           it "should compile correctly" do
             expect(c_section).to ir_eql(j.iIf(
@@ -461,7 +461,7 @@ describe LogStash::Compiler do
         end
 
         describe "only false branch" do
-          let (:source) { "#{section} { if [foo] == [bar] { } else { fplugin {} } }" }
+          let (:producer) { "#{section} { if [foo] == [bar] { } else { fplugin {} } }" }
 
           it "should compile correctly" do
             expect(c_section).to ir_eql(j.iIf(
@@ -474,7 +474,7 @@ describe LogStash::Compiler do
         end
 
         describe "empty if statement" do
-          let (:source) { "#{section} { if [foo] == [bar] { } }" }
+          let (:producer) { "#{section} { if [foo] == [bar] { } }" }
 
           it "should compile correctly" do
             expect(c_section).to ir_eql(j.iIf(
@@ -487,7 +487,7 @@ describe LogStash::Compiler do
         end
 
         describe "if else" do
-          let (:source) { "#{section} { if [foo] == [bar] { tplugin {} } else { fplugin {} } }" }
+          let (:producer) { "#{section} { if [foo] == [bar] { tplugin {} } else { fplugin {} } }" }
 
           it "should compile correctly" do
             expect(c_section).to ir_eql(j.iIf(
@@ -500,7 +500,7 @@ describe LogStash::Compiler do
         end
 
         describe "if elsif else" do
-          let (:source) { "#{section} { if [foo] == [bar] { tplugin {} } else if [bar] == [baz] { eifplugin {} } else { fplugin {} } }" }
+          let (:producer) { "#{section} { if [foo] == [bar] { tplugin {} } else if [bar] == [baz] { eifplugin {} } else { fplugin {} } }" }
 
           it "should compile correctly" do
             expect(c_section).to ir_eql(j.iIf(
@@ -517,7 +517,7 @@ describe LogStash::Compiler do
         end
 
         describe "if elsif elsif else" do
-          let (:source) do
+          let (:producer) do
             <<-EOS
               #{section} {
                 if [foo] == [bar] { tplugin {} }
@@ -546,7 +546,7 @@ describe LogStash::Compiler do
           end
 
           describe "nested ifs" do
-let (:source) do
+let (:producer) do
             <<-EOS
               #{section} {
                 if [foo] == [bar] {
@@ -589,7 +589,7 @@ let (:source) do
       subject(:filter) { compiled[:filter] }
 
       describe "a single filter" do
-        let(:source) { "input { } filter { grok {} } output { }" }
+        let(:producer) { "input { } filter { grok {} } output { }" }
 
         it "should contain the single input" do
           expect(filter).to ir_eql(j.iPlugin(FILTER, "grok"))
@@ -603,7 +603,7 @@ let (:source) do
       subject(:output) { compiled[:output] }
 
       describe "a single output" do
-        let(:source) { "input { } output { stdout {} }" }
+        let(:producer) { "input { } output { stdout {} }" }
 
         it "should contain the single input" do
           expect(output).to ir_eql(j.iPlugin(OUTPUT, "stdout"))

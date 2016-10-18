@@ -10,8 +10,8 @@ import java.util.List;
  * Created by andrewvc on 9/30/16.
  */
 public class Pipette {
-    public final IPipetteSource source;
-    public final IPipetteProcessor processor;
+    public final IPipetteProducer producer;
+    public final IPipetteConsumer consumer;
     private final String name;
     private final PipelineRunnerObserver observer;
 
@@ -23,30 +23,30 @@ public class Pipette {
         }
     }
 
-    public Pipette(String name, IPipetteSource source, IPipetteProcessor processor, PipelineRunnerObserver observer) {
+    public Pipette(String name, IPipetteProducer producer, IPipetteConsumer consumer, PipelineRunnerObserver observer) {
         this.name = name;
-        this.source = source;
-        this.processor = processor;
+        this.producer = producer;
+        this.consumer = consumer;
         this.observer = observer;
-        this.source.onEvents(new OnWriteEmitter());
+        this.producer.onEvents(new OnWriteEmitter());
     }
 
 
-    public Pipette(String name, IPipetteSource source, IPipetteProcessor processor) {
-        this(name, source, processor, null);
+    public Pipette(String name, IPipetteProducer producer, IPipetteConsumer consumer) {
+        this(name, producer, consumer, null);
     }
 
     public void start() throws PipetteExecutionException {
-        source.start();
+        producer.start();
     }
 
     private void process(List<Event> events) throws PipetteExecutionException {
-        processor.process(events);
+        consumer.process(events);
     }
 
     public void stop() throws PipetteExecutionException {
-        source.stop();
-        processor.stop();
+        producer.stop();
+        consumer.stop();
     }
 
     public String toString() {

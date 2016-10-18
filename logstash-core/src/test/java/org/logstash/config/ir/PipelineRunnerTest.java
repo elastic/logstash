@@ -3,12 +3,12 @@ package org.logstash.config.ir;
 import org.junit.Test;
 import org.logstash.Event;
 import org.logstash.config.pipeline.PassthroughProcessor;
+import org.logstash.config.pipeline.Pipeline;
 import org.logstash.config.pipeline.PipelineRunner;
 import org.logstash.config.compiler.*;
 import org.logstash.config.compiler.compiled.ICompiledInputPlugin;
 import org.logstash.config.compiler.compiled.ICompiledProcessor;
-import org.logstash.config.pipeline.pipette.PipetteExecutionException;
-import org.logstash.config.pipeline.pipette.PipetteSourceEmitter;
+import org.logstash.config.pipeline.pipette.*;
 import org.logstash.config.ir.graph.Graph;
 import org.logstash.config.ir.graph.PluginVertex;
 
@@ -103,8 +103,56 @@ public class PipelineRunnerTest {
             }
         };
 
-        PipelineRunner runner = new PipelineRunner(pipeline, queue, expressionCompiler, pluginCompiler, null);
-        runner.start(1);
-        runner.join();
+        IPipetteConsumerFactory queueWriterFactory = () -> new IPipetteConsumer() {
+            @Override
+            public void process(List<Event> events) throws PipetteExecutionException {
+                try {
+                    System.out.println("WRITEQ");
+                    queue.put(events);
+                } catch (InterruptedException e) {
+                    throw new PipetteExecutionException(e.getMessage(), e);
+                }
+            }
+
+            @Override
+            public void stop() throws PipetteExecutionException {
+
+            }
+        };
+
+        IPipetteProducerFactory queueReaderFactory = new IPipetteProducerFactory() {
+            @Override
+            public IPipetteProducer make() {
+                return new IPipetteProducer() {
+                    public PipetteSourceEmitter sourceEmitter;
+
+                    @Override
+                    public void start() throws PipetteExecutionException {
+                        while (true) {
+                            try {
+                                List<Event> events = queue.take();
+                                System.out.println("READQ" + events);
+                                sourceEmitter.emit(events);
+                            } catch (InterruptedException e) {
+                                throw new PipetteExecutionException(e.getMessage(), e);
+                            }
+                        }
+                    }
+
+                    @Override
+                    public void stop() {
+                    }
+
+                    @Override
+                    public void onEvents(PipetteSourceEmitter sourceEmitter) {
+                        this.sourceEmitter = sourceEmitter;
+                    }
+                };
+            }
+        };
+
+        //PipelineRunner runner = new PipelineRunner(pipeline, queueWriterFactory, queueReaderFactory, expressionCompiler, pluginCompiler, null);
+        //runner.start(1);
+        //runner.join();
     }
 }

@@ -8,12 +8,11 @@ import org.logstash.config.ir.graph.SpecialVertex;
 import org.logstash.config.ir.graph.Vertex;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * Created by andrewvc on 10/11/16.
  */
-public class OrderedVertexPipetteProcessor implements IPipetteProcessor {
+public class OrderedVertexPipetteConsumer implements IPipetteConsumer {
     private final List<Vertex> orderedVertices;
     private final Map<Edge,List<Event>> edgesToEvents;
     private final Map<Vertex, ICompiledProcessor> verticesToCompiled;
@@ -56,7 +55,7 @@ public class OrderedVertexPipetteProcessor implements IPipetteProcessor {
         }
     }
 
-    public OrderedVertexPipetteProcessor(List<Vertex> orderedVertices, Map<Vertex, ICompiledProcessor> processorVerticesToCompiled, SpecialVertex queueVertex, PipelineRunnerObserver observer) {
+    public OrderedVertexPipetteConsumer(List<Vertex> orderedVertices, Map<Vertex, ICompiledProcessor> processorVerticesToCompiled, SpecialVertex queueVertex, PipelineRunnerObserver observer) {
         this.orderedVertices = orderedVertices;
         this.verticesToCompiled = processorVerticesToCompiled;
         this.executionSteps = new ArrayList<>(this.orderedVertices.size());
@@ -88,7 +87,6 @@ public class OrderedVertexPipetteProcessor implements IPipetteProcessor {
             if (incomingEvents.isEmpty()) {
                 continue;
             }
-
 
             Map<Edge, List<Event>> outgoingEvents = executionStep.getCompiledProcessor().process(incomingEvents);
             observer.postExecutionStep(executionStep, incomingEvents, outgoingEvents);

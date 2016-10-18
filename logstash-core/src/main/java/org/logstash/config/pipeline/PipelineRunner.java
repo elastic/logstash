@@ -6,7 +6,6 @@ import org.logstash.config.compiler.compiled.ICompiledInputPlugin;
 import org.logstash.config.compiler.compiled.ICompiledProcessor;
 import org.logstash.config.pipeline.pipette.*;
 import org.logstash.config.ir.InvalidIRException;
-import org.logstash.config.ir.Pipeline;
 import org.logstash.config.ir.PluginDefinition;
 import org.logstash.config.ir.graph.IfVertex;
 import org.logstash.config.ir.graph.PluginVertex;
@@ -14,7 +13,6 @@ import org.logstash.config.ir.graph.SpecialVertex;
 import org.logstash.config.ir.graph.Vertex;
 
 import java.util.*;
-import java.util.concurrent.BlockingQueue;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -31,22 +29,18 @@ public class PipelineRunner {
     private final Map<Vertex, ICompiledProcessor> processorVerticesToCompiled;
     private final List<Vertex> orderedPostQueue;
     private final Collection<Pipette> processorPipettes;
-    private final BlockingQueue<List<Event>> queue;
-    private final QueueReadSource queueReadSource;
-    private final QueueWriteProcessor queueWriteProcessor;
     private final IfCompiler ifCompiler;
     private final PipelineRunnerObserver observer;
+    private final IPipelineTransferer pipelineTransferer;
 
-    public PipelineRunner(Pipeline pipeline, BlockingQueue<List<Event>> queue, IExpressionCompiler expressionCompiler, IPluginCompiler pluginCompiler, PipelineRunnerObserver observer) throws CompilationError, InvalidIRException {
+    public PipelineRunner(Pipeline pipeline, IPipelineTransferer pipelineTransferer, IExpressionCompiler expressionCompiler, IPluginCompiler pluginCompiler, PipelineRunnerObserver observer) throws CompilationError, InvalidIRException {
         this.pipeline = pipeline;
         this.expressionCompiler = expressionCompiler;
         this.observer = observer != null ? observer : new PipelineRunnerObserver();
         this.ifCompiler = new IfCompiler(expressionCompiler);
         this.pluginCompiler = pluginCompiler;
-        this.pipettesThreads = new HashMap<Pipette, Thread>();
-        this.queue = queue;
-        this.queueWriteProcessor = new QueueWriteProcessor(queue);
-        this.queueReadSource = new QueueReadSource(queue);
+        this.pipettesThreads = new HashMap<>();
+        this.pipelineTransferer = pipelineTransferer;
 
         // Handle stuff before the queue, e.g. inputs
         this.inputVerticesToCompiled = compileInputs();
@@ -60,6 +54,7 @@ public class PipelineRunner {
     }
 
     public void start(int workers) throws PipetteExecutionException, CompilationError {
+        pipelineTransferer.start();
         observer.beforeStart(this);
         startInputs();
         startProcessors(workers);
@@ -71,10 +66,6 @@ public class PipelineRunner {
         for (Map.Entry<Pipette,Thread> entry : pipettesThreads(inputPipettes).entrySet()) {
             entry.getValue().join();
             System.out.println("Input thread finished: " + entry.getKey());
-        }
-
-        while (queue.peek() != null) {
-            System.out.println("Waiting for queue to shutdown");
         }
 
         // Join on processors / close them out
@@ -98,13 +89,16 @@ public class PipelineRunner {
         observer.beforeStop(this);
         stopInputs();
         observer.inputsStopped(this);
+
+        pipelineTransferer.stop();
+
         stopProcessors();
         observer.afterStop(this);
     }
 
     private Pipette createProcessorPipette(String name) {
-        OrderedVertexPipetteProcessor processor = new OrderedVertexPipetteProcessor(this.orderedPostQueue, this.processorVerticesToCompiled, pipeline.getQueue(), observer);
-        return new Pipette(name, queueReadSource, processor);
+        OrderedVertexPipetteConsumer consumer = new OrderedVertexPipetteConsumer(this.orderedPostQueue, this.processorVerticesToCompiled, pipeline.getQueue(), observer);
+        return new Pipette(name, pipelineTransferer.makeProducer(), consumer);
     }
 
     private Map<Vertex, ICompiledProcessor> compileProcessors() throws CompilationError {
@@ -154,11 +148,11 @@ public class PipelineRunner {
         return compiled;
     }
 
-    private Collection<Pipette> createInputPipettes(Queue<List<Event>> queue) throws CompilationError {
+    private Collection<Pipette> createInputPipettes() throws CompilationError {
         List<Pipette> inputPipettes = new ArrayList<>(this.inputVerticesToCompiled.size());
         for (Map.Entry<PluginVertex, ICompiledInputPlugin> entry : this.inputVerticesToCompiled.entrySet()) {
             String name = "Input[" + entry.getKey().getId() + "]";
-            Pipette inputPipette = new Pipette(name, entry.getValue(), queueWriteProcessor, observer);
+            Pipette inputPipette = new Pipette(name, entry.getValue(), pipelineTransferer.makeConsumer(), observer);
             inputPipettes.add(inputPipette);
         }
         return inputPipettes;
@@ -168,7 +162,7 @@ public class PipelineRunner {
         observer.beforeInputsStart(this);
         stopInputs();
         this.inputPipettes.clear();
-        Collection<Pipette> newPipettes = createInputPipettes(this.queue);
+        Collection<Pipette> newPipettes = createInputPipettes();
         this.inputPipettes.addAll(newPipettes);
         startPipettes(inputPipettes);
         observer.afterInputsStart(this);

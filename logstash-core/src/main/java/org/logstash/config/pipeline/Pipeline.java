@@ -1,5 +1,8 @@
-package org.logstash.config.ir;
+package org.logstash.config.pipeline;
 
+import org.logstash.config.ir.DSL;
+import org.logstash.config.ir.InvalidIRException;
+import org.logstash.config.ir.PluginDefinition;
 import org.logstash.config.ir.graph.Graph;
 import org.logstash.config.ir.graph.PluginVertex;
 import org.logstash.config.ir.graph.SpecialVertex;
@@ -57,8 +60,8 @@ public class Pipeline {
     }
 
     public List<Vertex> getPostQueue() throws InvalidIRException {
-       return graph.getSortedVerticesAfter(queue);
-    }
+    return graph.getSortedVerticesAfter(queue);
+}
 
     public List<PluginVertex> getInputPluginVertices() {
         return graph.getPluginVertices(PluginDefinition.Type.INPUT);

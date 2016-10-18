@@ -1,7 +1,7 @@
 package org.logstash.config.pipeline;
 
 import org.logstash.Event;
-import org.logstash.config.pipeline.pipette.OrderedVertexPipetteProcessor;
+import org.logstash.config.pipeline.pipette.OrderedVertexPipetteConsumer;
 import org.logstash.config.ir.graph.Edge;
 
 import java.util.List;
@@ -13,7 +13,7 @@ import java.util.Map;
  * By default this class is a noop, override any methods you want to implement
  */
 public class PipelineRunnerObserver {
-    public void postExecutionStep(OrderedVertexPipetteProcessor.ExecutionStep executionStep, List<Event> incomingEvents, Map<Edge, List<Event>> outgoingEvents) {
+    public void postExecutionStep(OrderedVertexPipetteConsumer.ExecutionStep executionStep, List<Event> incomingEvents, Map<Edge, List<Event>> outgoingEvents) {
 
     }
 

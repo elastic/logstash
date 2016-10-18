@@ -58,5 +58,19 @@
         <SOURCES />
       </library>
     </orderEntry>
+    <orderEntry type="module-library">
+      <library>
+        <CLASSES>
+          <root url="file://$MODULE_DIR$/../logstash-core-event-java" />
+        </CLASSES>
+        <JAVADOC>
+          <root url="file://$MODULE_DIR$/../logstash-core-event-java/build/docs/javadoc" />
+        </JAVADOC>
+        <SOURCES>
+          <root url="file://$MODULE_DIR$/../logstash-core-event-java/src/main/java" />
+          <root url="file://$MODULE_DIR$/../logstash-core-event-java/src/test/java" />
+        </SOURCES>
+      </library>
+    </orderEntry>
   </component>
 </module>

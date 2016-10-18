@@ -22,17 +22,17 @@ if ($DEBUGLIST || []).include?("require")
       # Only print require() calls that did actual work.
       # require() returns true on load, false if already loaded.
       if result
-        source = caller[0]
-        #p source.include?("/lib/polyglot.rb:63:in `require'") => source
-        if source.include?("/lib/polyglot.rb:63:in `require'")
-          source = caller[1]
+        producer = caller[0]
+        #p producer.include?("/lib/polyglot.rb:63:in `require'") => producer
+        if producer.include?("/lib/polyglot.rb:63:in `require'")
+          producer = caller[1]
         end
 
         #target = $LOADED_FEATURES.grep(/#{path}/).first
         #puts path
         #puts caller.map { |c| "  #{c}" }.join("\n")
         #fontsize = [10, duration * 48].max
-        puts "#{duration},#{path},#{source}"
+        puts "#{duration},#{path},#{producer}"
       end
       #puts caller.map { |c| " => #{c}" }.join("\n")
     end

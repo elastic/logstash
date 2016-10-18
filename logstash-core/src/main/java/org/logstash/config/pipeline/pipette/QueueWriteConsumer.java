@@ -8,10 +8,10 @@ import java.util.concurrent.BlockingQueue;
 /**
  * Created by andrewvc on 10/11/16.
  */
-public class QueueWriteProcessor implements IPipetteProcessor {
+public class QueueWriteConsumer implements IPipetteConsumer {
     private final BlockingQueue<List<Event>> queue;
 
-    public QueueWriteProcessor(BlockingQueue<List<Event>> queue) {
+    public QueueWriteConsumer(BlockingQueue<List<Event>> queue) {
         this.queue = queue;
     }
 

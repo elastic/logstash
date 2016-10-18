@@ -16,7 +16,7 @@
 # Distributed under the Ruby license (http://www.ruby-lang.org/en/LICENSE.txt)
 
 # BufferedTokenizer takes a delimiter upon instantiation, or acts line-based
-# by default.  It allows input to be spoon-fed from some outside source which
+# by default.  It allows input to be spoon-fed from some outside producer which
 # receives arbitrary length datagrams which may-or-may-not contain the token
 # by which entities are delimited.
 #

@@ -2,6 +2,8 @@ package org.logstash.config.ir;
 
 import org.junit.Test;
 import org.logstash.config.ir.graph.Graph;
+import org.logstash.config.pipeline.Pipeline;
+
 import static org.logstash.config.ir.DSL.*;
 import static org.logstash.config.ir.PluginDefinition.Type.*;
 

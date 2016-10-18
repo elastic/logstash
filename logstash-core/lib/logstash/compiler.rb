@@ -1,7 +1,7 @@
 require 'logstash/util/loggable'
 require 'logstash/output_delegator_strategy_registry'
 
-java_import org.logstash.config.ir.Pipeline
+java_import org.logstash.config.pipeline.Pipeline
 java_import org.logstash.config.pipeline.PipelineRunner;
 java_import org.logstash.config.pipeline.pipette.PipetteExecutionException;
 java_import org.logstash.config.pipeline.pipette.PipetteSourceEmitter;
@@ -147,7 +147,6 @@ module LogStash; class Compiler
     end
   end
 
-
   def self.compile(config_str, source_file=nil, pipeline_id=nil, metric=nil)
     pipeline_id ||= :main
     metric ||= LogStash::Instrument::NullMetric.new
@@ -163,7 +162,7 @@ module LogStash; class Compiler
 
   def self.compile_pipeline(config_str, source_file=nil)
     graph_sections = self.compile_graph(config_str, source_file)
-    pipeline = org.logstash.config.ir.Pipeline.new(
+    pipeline = org.logstash.config.pipeline.Pipeline.new(
       graph_sections[:input],
       graph_sections[:filter],
       graph_sections[:output]
