@@ -19,6 +19,8 @@ wait_for_port() {
         [[ $count -eq 0 ]] && return 1
         sleep 0.5
     done
+    # just in case, one more time
+    nc -z localhost $port
 }
 
 clean_install_dir() {
