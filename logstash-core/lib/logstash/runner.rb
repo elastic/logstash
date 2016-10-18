@@ -5,12 +5,12 @@ $DEBUGLIST = (ENV["DEBUG"] || "").split(",")
 
 require "clamp"
 require "net/http"
-require "logstash/environment"
-
-LogStash::Environment.load_locale!
 
 require "logstash/namespace"
 require "logstash-core/logstash-core"
+require "logstash/environment"
+
+LogStash::Environment.load_locale!
 
 require "logstash/agent"
 require "logstash/config/defaults"
