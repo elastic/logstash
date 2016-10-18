@@ -16,7 +16,7 @@ stop_kafka() {
 # delete test topic
 echo "Deleting test topic in Kafka"
 $KAFKA_HOME/bin/kafka-topics.sh --delete --topic logstash_topic_plain --zookeeper localhost:2181 --if-exists
-stop_kafka
+# stop_kafka
 rm -rf /tmp/ls_integration/kafka-logs
 rm -rf /tmp/zookeeper
 

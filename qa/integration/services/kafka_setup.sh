@@ -14,6 +14,7 @@ fi
 KAFKA_HOME=$INSTALL_DIR/kafka
 KAFKA_TOPIC=logstash_topic_plain
 KAFKA_MESSAGES=37
+KAFKA_LOGS_DIR=/tmp/ls_integration/kafka-logs
 
 setup_kafka() {
     local version=$1
@@ -30,26 +31,42 @@ start_kafka() {
     $KAFKA_HOME/bin/zookeeper-server-start.sh -daemon $KAFKA_HOME/config/zookeeper.properties
     wait_for_port 2181
     echo "Starting Kafka broker"
-    $KAFKA_HOME/bin/kafka-server-start.sh -daemon $KAFKA_HOME/config/server.properties --override delete.topic.enable=true --override log.dirs=/tmp/ls_integration/kafka-logs
+    $KAFKA_HOME/bin/kafka-server-start.sh -daemon $KAFKA_HOME/config/server.properties --override delete.topic.enable=true --override log.dirs=$KAFKA_LOGS_DIR
     wait_for_port 9092
 }
 
 wait_for_messages() {
     local count=10
     local read_lines=0
+    
+    # wait for non empty topic file first
+    while [[ ! -s $KAFKA_LOGS_DIR/$KAFKA_TOPIC-0/00000000000000000000.log ]] && [[ $count -ne 0 ]]; do
+      count=$(( $count - 1 ))
+      [[ $count -eq 0 ]] && return 1
+      sleep 0.5
+    done
+    
+    echo "Kafka topic file has been crated"
+    # reset
+    count=10
+
     while [[ $read_lines -ne $KAFKA_MESSAGES ]] && [[ $count -ne 0 ]]; do
-        read_lines=`$KAFKA_HOME/bin/kafka-console-consumer.sh --topic $KAFKA_TOPIC --new-consumer --bootstrap-server localhost:9092 --from-beginning --max-messages $KAFKA_MESSAGES | wc -l`
+        read_lines=`$KAFKA_HOME/bin/kafka-console-consumer.sh --topic $KAFKA_TOPIC --new-consumer --bootstrap-server localhost:9092 --from-beginning --max-messages $KAFKA_MESSAGES --timeout-ms 2000 | wc -l`
         count=$(( $count - 1 ))
         [[ $count -eq 0 ]] && return 1
         sleep 0.5
     done
+    echo "Kafka topic has been populated with test data"
 }
 
 setup_install_dir
 setup_kafka $version
 start_kafka
 # Set up topics
-$KAFKA_HOME/bin/kafka-topics.sh --create --partitions 1 --replication-factor 1 --topic logstash_topic_plain --zookeeper localhost:2181
+$KAFKA_HOME/bin/kafka-topics.sh --create --partitions 1 --replication-factor 1 --topic $KAFKA_TOPIC --zookeeper localhost:2181
+# check topic got created
+num_topic=`$KAFKA_HOME/bin/kafka-topics.sh --list --zookeeper localhost:2181 | grep $KAFKA_TOPIC | wc -l`
+[[ $num_topic -eq 1 ]]
 # Add test messages to the newly created topic
 cat $current_dir/../fixtures/how_sample.input | $KAFKA_HOME/bin/kafka-console-producer.sh --topic $KAFKA_TOPIC --broker-list localhost:9092
 # Wait until broker has all messages
