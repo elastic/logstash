@@ -10,6 +10,8 @@ require "logstash/environment"
 LogStash::Environment.load_locale!
 
 require "logstash/namespace"
+require "logstash-core/logstash-core"
+
 require "logstash/agent"
 require "logstash/config/defaults"
 require "logstash/shutdown_watcher"
@@ -165,7 +167,7 @@ class LogStash::Runner < Clamp::StrictCommand
     rescue => e
       # abort unless we're just looking for the help
       if (["--help", "-h"] & args).empty?
-        $stderr.puts "INFO: Logstash has a new settings file which defines start up time settings. This file is typically located in $LS_HOME/config or /etc/logstash. If you installed Logstash through a package and are starting it manually please specify the location to this settings file by passing in \"--path.settings=/path/..\" in the command line options"
+        $stderr.puts "INFO: Logstash requires a setting file which is typically located in $LS_HOME/config or /etc/logstash. If you installed Logstash through a package and are starting it manually please specify the location to this settings file by passing in \"--path.settings=/path/..\""
         $stderr.puts "ERROR: Failed to load settings file from \"path.settings\". Aborting... path.setting=#{LogStash::SETTINGS.get("path.settings")}, exception=#{e.class}, message=>#{e.message}"
         return 1
       end
@@ -186,10 +188,16 @@ class LogStash::Runner < Clamp::StrictCommand
     java.lang.System.setProperty("ls.log.level", setting("log.level"))
     unless java.lang.System.getProperty("log4j.configurationFile")
       log4j_config_location = ::File.join(setting("path.settings"), "log4j2.properties")
-      LogStash::Logging::Logger::initialize(log4j_config_location)
+      LogStash::Logging::Logger::initialize("file://" + log4j_config_location)
     end
     # override log level that may have been introduced from a custom log4j config file
     LogStash::Logging::Logger::configure_logging(setting("log.level"))
+    
+    # Adding this here because a ton of LS users install LS via packages and try to manually 
+    # start Logstash using bin/logstash. See #5986. I think not logging to console is good for 
+    # services, but until LS users re-learn that logs end up in path.logs, we should keep this 
+    # message. Otherwise we'll be answering the same question again and again.
+    puts "Sending Logstash logs to #{setting("path.logs")} which is now configured via log4j2.properties."
 
     if setting("config.debug") && logger.debug?
       logger.warn("--config.debug was specified, but log.level was not set to \'debug\'! No config info will be logged.")
@@ -198,14 +206,14 @@ class LogStash::Runner < Clamp::StrictCommand
     LogStash::Util::set_thread_name(self.class.name)
 
     if RUBY_VERSION < "1.9.2"
-      $stderr.puts "Ruby 1.9.2 or later is required. (You are running: " + RUBY_VERSION + ")"
+      logger.fatal "Ruby 1.9.2 or later is required. (You are running: " + RUBY_VERSION + ")"
       return 1
     end
 
     # Exit on bad java versions
     java_version = LogStash::Util::JavaVersion.version
     if LogStash::Util::JavaVersion.bad_java_version?(java_version)
-      $stderr.puts "Java version 1.8.0 or later is required. (You are running: #{java_version})"
+      logger.fatal "Java version 1.8.0 or later is required. (You are running: #{java_version})"
       return 1
     end
 
@@ -219,6 +227,8 @@ class LogStash::Runner < Clamp::StrictCommand
     end
 
     return start_shell(setting("interactive"), binding) if setting("interactive")
+
+    @settings.validate_all
 
     @settings.format_settings.each {|line| logger.debug(line) }
 
@@ -237,6 +247,7 @@ class LogStash::Runner < Clamp::StrictCommand
       begin
         LogStash::Pipeline.new(config_str)
         puts "Configuration OK"
+        logger.info "Using config.test_and_exit mode. Config Validation Result: OK. Exiting Logstash"
         return 0
       rescue => e
         logger.fatal I18n.t("logstash.runner.invalid-configuration", :error => e.message)
@@ -256,7 +267,8 @@ class LogStash::Runner < Clamp::StrictCommand
     @agent_task = Stud::Task.new { @agent.execute }
 
     # no point in enabling config reloading before the agent starts
-    sighup_id = trap_sighup()
+    # also windows doesn't have SIGHUP. we can skip it
+    sighup_id = LogStash::Environment.windows? ? nil : trap_sighup()
 
     agent_return = @agent_task.wait
 

@@ -1,0 +1,24 @@
+---
+services:
+  - logstash
+  - kafka
+config: |-
+  input {
+    kafka {
+      topics => "logstash_topic_plain"
+      auto_offset_reset => "earliest"
+      codec => "plain"
+      group_id => "ls10"
+    }
+  }
+  output {
+    file {
+       path => "kafka_input.output"
+       flush_interval => 0
+       codec => line { format => "%{message}" }
+    }
+  }
+
+input: how_sample.input
+actual_output: kafka_input.output 
+teardown_script:

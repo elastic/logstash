@@ -1,6 +1,7 @@
 # encoding: utf-8
 require "logstash/namespace"
 require "logstash/util"
+require "forwardable"
 
 # This class exists to quietly wrap a password string so that, when printed or
 # logged, you don't accidentally print the password itself.

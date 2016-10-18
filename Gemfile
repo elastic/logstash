@@ -3,6 +3,7 @@
 
 source "https://rubygems.org"
 gem "logstash-core", :path => "./logstash-core"
+gem "logstash-core-queue-jruby", :path => "./logstash-core-queue-jruby"
 gem "logstash-core-event-java", :path => "./logstash-core-event-java"
 gem "logstash-core-plugin-api", :path => "./logstash-core-plugin-api"
 gem "file-dependencies", "0.1.6"
@@ -20,6 +21,8 @@ gem "rubyzip", "~> 1.1.7", :group => :build
 gem "gems", "~> 0.8.3", :group => :build
 gem "rack-test", :require => "rack/test", :group => :development
 gem "flores", "~> 0.0.6", :group => :development
+gem "term-ansicolor", "~> 1.3.2", :group => :development
+gem "docker-api", "1.31.0", :group => :development
 gem "pleaserun"
 gem "logstash-input-heartbeat"
 gem "logstash-codec-collectd"
@@ -111,3 +114,4 @@ gem "logstash-output-stdout"
 gem "logstash-output-tcp"
 gem "logstash-output-udp"
 gem "logstash-output-webhdfs"
+gem "logstash-filter-multiline"

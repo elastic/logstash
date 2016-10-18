@@ -1,13 +1,16 @@
 # encoding: utf-8
 require "pluginmanager/command"
 
+# TODO: SR: Delete this file in 6.0, as we deprecated uninstall in favar of remove to be consistent with the stack
+
 class LogStash::PluginManager::Uninstall < LogStash::PluginManager::Command
 
   parameter "PLUGIN", "plugin name"
 
   def execute
-    signal_error("File #{LogStash::Environment::GEMFILE_PATH} does not exist or is not writable, aborting") unless File.writable?(LogStash::Environment::GEMFILE_PATH)
+    puts "uninstall subcommand is deprecated and will be removed in the next major version. Please use logstash-plugin remove instead."
 
+    signal_error("File #{LogStash::Environment::GEMFILE_PATH} does not exist or is not writable, aborting") unless File.writable?(LogStash::Environment::GEMFILE_PATH)
     ##
     # Need to setup the bundler status to enable uninstall of plugins
     # installed as local_gems, otherwise gem:specification is not

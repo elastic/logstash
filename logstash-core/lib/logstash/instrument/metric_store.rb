@@ -1,6 +1,6 @@
 # encoding: utf-8
 require "concurrent"
-require "logstash/event"
+# require "logstash/event"
 require "logstash/instrument/metric_type"
 require "thread"
 

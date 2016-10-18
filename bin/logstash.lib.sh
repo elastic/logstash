@@ -107,7 +107,11 @@ setup_drip() {
   if [ "$USE_RUBY" = "1" ] ; then
     export JRUBY_OPTS="$JRUBY_OPTS -J-XX:+TieredCompilation -J-XX:TieredStopAtLevel=1 -J-noverify"
   else
-    JAVA_OPTS="$JAVA_OPTS -XX:+TieredCompilation -XX:TieredStopAtLevel=1 -noverify"
+    if [ -z "$JAVA_OPTS" ] ; then
+      LS_JAVA_OPTS="$LS_JAVA_OPTS -XX:+TieredCompilation -XX:TieredStopAtLevel=1 -noverify"
+    else
+      JAVA_OPTS="$JAVA_OPTS -XX:+TieredCompilation -XX:TieredStopAtLevel=1 -noverify"
+    fi
   fi
   export JAVACMD
   export DRIP_INIT_CLASS="org.jruby.main.DripMain"

@@ -17,9 +17,9 @@ module LogStash
 
   [
             Setting::String.new("node.name", Socket.gethostname),
-            Setting::String.new("path.config", nil, false),
+    Setting::NullableString.new("path.config", nil, false),
  Setting::WritableDirectory.new("path.data", ::File.join(LogStash::Environment::LOGSTASH_HOME, "data")),
-            Setting::String.new("config.string", nil, false),
+    Setting::NullableString.new("config.string", nil, false),
            Setting::Boolean.new("config.test_and_exit", false),
            Setting::Boolean.new("config.reload.automatic", false),
            Setting::Numeric.new("config.reload.interval", 3), # in seconds
@@ -31,7 +31,7 @@ module LogStash
            Setting::Numeric.new("pipeline.batch.delay", 5), # in milliseconds
            Setting::Boolean.new("pipeline.unsafe_shutdown", false),
                     Setting.new("path.plugins", Array, []),
-            Setting::String.new("interactive", nil, false),
+    Setting::NullableString.new("interactive", nil, false),
            Setting::Boolean.new("config.debug", false),
             Setting::String.new("log.level", "info", true, ["fatal", "error", "warn", "debug", "info", "trace"]),
            Setting::Boolean.new("version", false),
@@ -40,7 +40,14 @@ module LogStash
             Setting::String.new("http.host", "127.0.0.1"),
             Setting::PortRange.new("http.port", 9600..9700),
             Setting::String.new("http.environment", "production"),
+            Setting::String.new("queue.type", "memory", true, ["persisted", "memory", "memory_acked"]),
+            Setting::Bytes.new("queue.page_capacity", "250mb"),
+            Setting::Numeric.new("queue.max_events", 0), # 0 is unlimited
   ].each {|setting| SETTINGS.register(setting) }
+
+  # Compute the default queue path based on `path.data`
+  default_queue_file_path = ::File.join(SETTINGS.get("path.data"), "queue")
+  SETTINGS.register Setting::WritableDirectory.new("path.queue", default_queue_file_path)
 
   module Environment
     extend self

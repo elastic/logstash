@@ -35,7 +35,7 @@ describe LogStash::Event do
     end
   end
 
-  context "[]" do
+  context "#get" do
     it "should get simple values" do
       e = LogStash::Event.new({"foo" => "bar", "bar" => 1, "baz" => 1.0, TIMESTAMP => "2015-05-28T23:02:05.350Z"})
       expect(e.get("foo")).to eq("bar")
@@ -63,7 +63,7 @@ describe LogStash::Event do
     end
   end
 
-  context "[]=" do
+  context "#set" do
     it "should set simple values" do
       e = LogStash::Event.new()
       expect(e.set("foo", "bar")).to eq("bar")
@@ -145,6 +145,17 @@ describe LogStash::Event do
       expect(e.get("[proxy][array][0]")).to eql("bar")
       expect(e.get("[proxy][array][1]")).to eql("baz")
       expect(e.get("[proxy][hash][string]")).to eql("quux")
+    end
+
+    it "should fail on non UTF-8 encoding" do
+      # e = LogStash::Event.new
+      # s1 = "\xE0 Montr\xE9al".force_encoding("ISO-8859-1")
+      # expect(s1.encoding.name).to eq("ISO-8859-1")
+      # expect(s1.valid_encoding?).to eq(true)
+      # e.set("test", s1)
+      # s2 = e.get("test")
+      # expect(s2.encoding.name).to eq("UTF-8")
+      # expect(s2.valid_encoding?).to eq(true)
     end
   end
 
@@ -305,5 +316,21 @@ describe LogStash::Event do
       expect(e.timestamp.to_iso8601).to eq("2016-05-28T23:02:05.350Z")
     end
 
+  end
+
+  context "method missing exception messages" do
+    subject { LogStash::Event.new({"foo" => "bar"}) }
+
+    it "#[] method raises a better exception message" do
+      expect { subject["foo"] }.to raise_error(NoMethodError, /Direct event field references \(i\.e\. event\['field'\]\)/)
+    end
+
+    it "#[]= method raises a better exception message" do
+      expect { subject["foo"] = "baz" }.to raise_error(NoMethodError, /Direct event field references \(i\.e\. event\['field'\] = 'value'\)/)
+    end
+
+    it "other missing method raises normal exception message" do
+      expect { subject.baz() }.to raise_error(NoMethodError, /undefined method `baz' for/)
+    end
   end
 end

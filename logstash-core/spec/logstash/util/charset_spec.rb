@@ -5,7 +5,7 @@ require "logstash/util/charset"
 describe LogStash::Util::Charset do
   let(:logger) { double("logger") }
 
-  context "with valid UTF-8 source encoding" do
+  context "with valid UTF-8 producer encoding" do
     subject {LogStash::Util::Charset.new("UTF-8")}
 
     it "should return untouched data" do
@@ -17,7 +17,7 @@ describe LogStash::Util::Charset do
     end
   end
 
-  context "with invalid UTF-8 source encoding" do
+  context "with invalid UTF-8 producer encoding" do
     subject do
       LogStash::Util::Charset.new("UTF-8").tap do |charset|
         charset.logger = logger
@@ -37,7 +37,7 @@ describe LogStash::Util::Charset do
 
   end
 
-  context "with valid non UTF-8 source encoding" do
+  context "with valid non UTF-8 producer encoding" do
     subject {LogStash::Util::Charset.new("ISO-8859-1")}
 
     it "should encode to UTF-8" do
@@ -55,7 +55,7 @@ describe LogStash::Util::Charset do
     end
   end
 
-  context "with invalid non UTF-8 source encoding" do
+  context "with invalid non UTF-8 producer encoding" do
     subject {LogStash::Util::Charset.new("ASCII-8BIT")}
 
     it "should encode to UTF-8 and replace invalid chars" do

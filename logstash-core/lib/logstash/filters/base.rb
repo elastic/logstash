@@ -23,13 +23,13 @@ class LogStash::Filters::Base < LogStash::Plugin
   # syntax.
   #
   # Example:
-  # [source,ruby]
+  # [producer,ruby]
   #     filter {
   #       %PLUGIN% {
   #         add_tag => [ "foo_%{somefield}" ]
   #       }
   #     }
-  # [source,ruby]
+  # [producer,ruby]
   #     # You can also add multiple tags at once:
   #     filter {
   #       %PLUGIN% {
@@ -46,13 +46,13 @@ class LogStash::Filters::Base < LogStash::Plugin
   # syntax.
   #
   # Example:
-  # [source,ruby]
+  # [producer,ruby]
   #     filter {
   #       %PLUGIN% {
   #         remove_tag => [ "foo_%{somefield}" ]
   #       }
   #     }
-  # [source,ruby]
+  # [producer,ruby]
   #     # You can also remove multiple tags at once:
   #     filter {
   #       %PLUGIN% {
@@ -69,13 +69,13 @@ class LogStash::Filters::Base < LogStash::Plugin
   # Field names can be dynamic and include parts of the event using the `%{field}`.
   #
   # Example:
-  # [source,ruby]
+  # [producer,ruby]
   #     filter {
   #       %PLUGIN% {
   #         add_field => { "foo_%{somefield}" => "Hello world, from %{host}" }
   #       }
   #     }
-  # [source,ruby]
+  # [producer,ruby]
   #     # You can also add multiple fields at once:
   #     filter {
   #       %PLUGIN% {
@@ -95,13 +95,13 @@ class LogStash::Filters::Base < LogStash::Plugin
   # If this filter is successful, remove arbitrary fields from this event.
   # Fields names can be dynamic and include parts of the event using the %{field}
   # Example:
-  # [source,ruby]
+  # [producer,ruby]
   #     filter {
   #       %PLUGIN% {
   #         remove_field => [ "foo_%{somefield}" ]
   #       }
   #     }
-  # [source,ruby]
+  # [producer,ruby]
   #     # You can also remove multiple fields at once:
   #     filter {
   #       %PLUGIN% {

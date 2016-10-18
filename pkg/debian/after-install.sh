@@ -4,7 +4,6 @@ chown -R logstash:logstash /usr/share/logstash
 chown -R logstash /var/log/logstash
 chown logstash:logstash /var/lib/logstash
 chmod 755 /etc/logstash
-chmod 0644 /etc/logrotate.d/logstash
 sed -i \
   -e 's|# path.config:|path.config: /etc/logstash/conf.d|' \
   -e 's|# path.logs:|path.logs: /var/log/logstash|' \

@@ -1,4 +1,7 @@
 # encoding: utf-8
+require "logstash/util/loggable"
+require "fileutils"
+require "logstash/util/byte_value"
 
 module LogStash
   class Settings
@@ -95,6 +98,12 @@ module LogStash
       self.merge(flatten_hash(settings))
     end
 
+    def validate_all
+      @settings.each do |name, setting|
+        setting.validate_value
+      end
+    end
+
     private
     def read_yaml(path)
       YAML.safe_load(IO.read(path)) || {}
@@ -112,6 +121,8 @@ module LogStash
   end
 
   class Setting
+    include LogStash::Util::Loggable
+
     attr_reader :name, :default
 
     def initialize(name, klass, default=nil, strict=true, &validator_proc)
@@ -123,8 +134,9 @@ module LogStash
       @validator_proc = validator_proc
       @value = nil
       @value_is_set = false
+      @strict = strict
 
-      validate(default) if strict
+      validate(default) if @strict
       @default = default
     end
 
@@ -136,8 +148,12 @@ module LogStash
       @value_is_set
     end
 
+    def strict?
+      @strict
+    end
+
     def set(value)
-      validate(value)
+      validate(value) if @strict
       @value = value
       @value_is_set = true
       @value
@@ -167,12 +183,18 @@ module LogStash
       self.to_hash == other.to_hash
     end
 
-    private
-    def validate(value)
-      if !value.is_a?(@klass)
-        raise ArgumentError.new("Setting \"#{@name}\" must be a #{@klass}. Received: #{value} (#{value.class})")
-      elsif @validator_proc && !@validator_proc.call(value)
-        raise ArgumentError.new("Failed to validate setting \"#{@name}\" with value: #{value}")
+    def validate_value
+      validate(value)
+    end
+
+    protected
+    def validate(input)
+      if !input.is_a?(@klass)
+        raise ArgumentError.new("Setting \"#{@name}\" must be a #{@klass}. Received: #{input} (#{input.class})")
+      end
+
+      if @validator_proc && !@validator_proc.call(input)
+        raise ArgumentError.new("Failed to validate setting \"#{@name}\" with value: #{input}")
       end
     end
 
@@ -351,6 +373,13 @@ module LogStash
       end
     end
 
+    class NullableString < String
+      def validate(value)
+        return if value.nil?
+        super(value)
+      end
+    end
+
     class ExistingFilePath < Setting
       def initialize(name, default=nil, strict=true)
         super(name, ::String, default, strict) do |file_path|
@@ -364,13 +393,73 @@ module LogStash
     end
 
     class WritableDirectory < Setting
-      def initialize(name, default=nil, strict=true)
-        super(name, ::String, default, strict) do |path|
-          if ::File.directory?(path) && ::File.writable?(path)
-            true
-          else
-            raise ::ArgumentError.new("Path \"#{path}\" is not a directory or not writable.")
+      def initialize(name, default=nil, strict=false)
+        super(name, ::String, default, strict)
+      end
+      
+      def validate(path)
+        super(path)
+
+        if ::File.directory?(path)
+          if !::File.writable?(path)
+            raise ::ArgumentError.new("Path \"#{path}\" must be a writable directory. It is not writable.")
           end
+        elsif ::File.symlink?(path)
+          # TODO(sissel): I'm OK if we relax this restriction. My experience
+          # is that it's usually easier and safer to just reject symlinks.
+          raise ::ArgumentError.new("Path \"#{path}\" must be a writable directory. It cannot be a symlink.")
+        elsif ::File.exist?(path)
+          raise ::ArgumentError.new("Path \"#{path}\" must be a writable directory. It is not a directory.")
+        else
+          parent = ::File.dirname(path)
+          if !::File.writable?(parent)
+            raise ::ArgumentError.new("Path \"#{path}\" does not exist and I cannot create it because the parent path \"#{parent}\" is not writable.")
+          end
+        end
+
+        # If we get here, the directory exists and is writable.
+        true
+      end
+
+      def value
+        super.tap do |path|
+          if !::File.directory?(path)
+            # Create the directory if it doesn't exist.
+            begin
+              logger.info("Creating directory", setting: name, path: path)
+              ::FileUtils.mkdir_p(path)
+            rescue => e
+              # TODO(sissel): Catch only specific exceptions?
+              raise ::ArgumentError.new("Path \"#{path}\" does not exist, and I failed trying to create it: #{e.class.name} - #{e}")
+            end
+          end
+        end
+      end
+    end
+
+    class Bytes < Coercible
+      def initialize(name, default=nil, strict=true)
+        super(name, ::Fixnum, default, strict=true) { |value| valid?(value) }
+      end
+
+      def valid?(value)
+        value.is_a?(Fixnum) && value >= 0
+      end
+
+      def coerce(value)
+        case value
+        when ::Numeric
+          value
+        when ::String
+          LogStash::Util::ByteValue.parse(value)
+        else
+          raise ArgumentError.new("Could not coerce '#{value}' into a bytes value")
+        end
+      end
+
+      def validate(value)
+        unless valid?(value)
+          raise ArgumentError.new("Invalid byte value \"#{value}\".")
         end
       end
     end
@@ -378,3 +467,4 @@ module LogStash
 
   SETTINGS = Settings.new
 end
+

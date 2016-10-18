@@ -16,6 +16,7 @@ require "pluginmanager/util"
 require "pluginmanager/gemfile"
 require "pluginmanager/install"
 require "pluginmanager/uninstall"
+require "pluginmanager/remove"
 require "pluginmanager/list"
 require "pluginmanager/update"
 require "pluginmanager/pack"
@@ -27,13 +28,15 @@ module LogStash
     class Error < StandardError; end
 
     class Main < Clamp::Command
-      subcommand "install", "Install a plugin", LogStash::PluginManager::Install
-      subcommand "uninstall", "Uninstall a plugin", LogStash::PluginManager::Uninstall
+      subcommand "list", "List all installed Logstash plugins", LogStash::PluginManager::List
+      subcommand "install", "Install a Logstash plugin", LogStash::PluginManager::Install
+      subcommand "remove", "Remove a Logstash plugin", LogStash::PluginManager::Remove
       subcommand "update", "Update a plugin", LogStash::PluginManager::Update
       subcommand "pack", "Package currently installed plugins", LogStash::PluginManager::Pack
       subcommand "unpack", "Unpack packaged plugins", LogStash::PluginManager::Unpack
       subcommand "list", "List all installed plugins", LogStash::PluginManager::List
       subcommand "generate", "Create the foundation for a new plugin", LogStash::PluginManager::Generate
+      subcommand "uninstall", "Uninstall a plugin. Deprecated: Please use remove instead", LogStash::PluginManager::Uninstall
     end
   end
 end

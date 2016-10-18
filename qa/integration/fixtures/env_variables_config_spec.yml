@@ -1,0 +1,21 @@
+---
+services:
+  - logstash
+config: |-
+ input {
+    tcp {
+      port => "${TEST_ENV_TCP_PORT}"
+    }
+  }
+  filter {
+    mutate {
+      add_tag => [ "blah", "${TEST_ENV_TAG}" ]
+    }
+  }
+  output {
+    file {
+      path => "${TEST_ENV_PATH}/logstash_env_test.log"
+      flush_interval => 0
+      codec => line { format => "%{message} %{tags}" }
+    }
+  }

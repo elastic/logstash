@@ -37,3 +37,6 @@ qa/Gemfile.lock
 *.iml
 .gradle
 .idea
+logs
+qa/integration/services/installed/
+**/.gradle

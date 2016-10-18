@@ -1,0 +1,6 @@
+---
+# Use this to output more debug-level information  
+verbose_mode: false  
+# Typically we use the binaries in LS_HOME/build. If you want to QA a LS in different location, 
+# use the absolute path below  
+#ls_home_abs_path: /tmp/logstash-5.0.0-alpha6

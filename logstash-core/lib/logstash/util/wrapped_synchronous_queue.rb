@@ -5,8 +5,8 @@ module LogStash; module Util
     java_import java.util.concurrent.SynchronousQueue
     java_import java.util.concurrent.TimeUnit
 
-    def initialize()
-      @queue = java.util.concurrent.SynchronousQueue.new()
+    def initialize
+      @queue = java.util.concurrent.SynchronousQueue.new
     end
 
     # Push an object to the queue if the queue is full
@@ -30,7 +30,7 @@ module LogStash; module Util
 
     # Blocking
     def take
-      @queue.take()
+      @queue.take
     end
 
     # Block for X millis
@@ -42,7 +42,7 @@ module LogStash; module Util
       WriteClient.new(self)
     end
 
-    def read_client()
+    def read_client
       ReadClient.new(self)
     end
 
@@ -51,7 +51,7 @@ module LogStash; module Util
       # from this queue. We also depend on this to be able to block consumers while we snapshot
       # in-flight buffers
 
-      def initialize(queue, batch_size = 125, wait_for = 5)
+      def initialize(queue, batch_size = 125, wait_for = 250)
         @queue = queue
         @mutex = Mutex.new
         # Note that @infilght_batches as a central mechanism for tracking inflight
@@ -62,6 +62,10 @@ module LogStash; module Util
         @inflight_clocks = {}
         @batch_size = batch_size
         @wait_for = wait_for
+      end
+
+      def close
+        # noop, compat with acked queue read client
       end
 
       def set_batch_dimensions(batch_size, wait_for)
@@ -145,10 +149,11 @@ module LogStash; module Util
 
     class ReadBatch
       def initialize(queue, size, wait)
-        @shutdown_signal_received = false
-        @flush_signal_received = false
         @originals = Hash.new
-        @cancelled = Hash.new
+
+        # TODO: disabled for https://github.com/elastic/logstash/issues/6055 - will have to properly refactor
+        # @cancelled = Hash.new
+
         @generated = Hash.new
         @iterating_temp = Hash.new
         @iterating = false # Atomic Boolean maybe? Although batches are not shared across threads
@@ -168,17 +173,22 @@ module LogStash; module Util
       end
 
       def cancel(event)
-        @cancelled[event] = true
+        # TODO: disabled for https://github.com/elastic/logstash/issues/6055 - will have to properly refactor
+        raise("cancel is unsupported")
+        # @cancelled[event] = true
       end
 
       def each(&blk)
         # take care not to cause @originals or @generated to change during iteration
         @iterating = true
+
+        # below the checks for @cancelled.include?(e) have been replaced by e.cancelled?
+        # TODO: for https://github.com/elastic/logstash/issues/6055 = will have to properly refactor
         @originals.each do |e, _|
-          blk.call(e) unless @cancelled.include?(e)
+          blk.call(e) unless e.cancelled?
         end
         @generated.each do |e, _|
-          blk.call(e) unless @cancelled.include?(e)
+          blk.call(e) unless e.cancelled?
         end
         @iterating = false
         update_generated
@@ -197,15 +207,9 @@ module LogStash; module Util
       end
 
       def cancelled_size
-        @cancelled.size
-      end
-
-      def shutdown_signal_received?
-        @shutdown_signal_received
-      end
-
-      def flush_signal_received?
-        @flush_signal_received
+      # TODO: disabled for https://github.com/elastic/logstash/issues/6055 = will have to properly refactor
+      raise("cancelled_size is unsupported ")
+        # @cancelled.size
       end
 
       private
@@ -221,24 +225,10 @@ module LogStash; module Util
 
       def take_originals_from_queue(queue, size, wait)
         size.times do |t|
-          event = (t == 0) ? queue.take : queue.poll(wait)
-          if event.nil?
-            # queue poll timed out
-            next
-          elsif event.is_a?(LogStash::SignalEvent)
-            # We MUST break here. If a batch consumes two SHUTDOWN events
-            # then another worker may have its SHUTDOWN 'stolen', thus blocking
-            # the pipeline.
-            @shutdown_signal_received = event.shutdown?
+          event = queue.poll(wait)
+          return if event.nil? # queue poll timed out
 
-            # See comment above
-            # We should stop doing work after flush as well.
-            @flush_signal_received = event.flush?
-
-            break
-          else
-            @originals[event] = true
-          end
+          @originals[event] = true
         end
       end
     end

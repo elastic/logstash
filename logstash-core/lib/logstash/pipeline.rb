@@ -4,13 +4,15 @@ require "stud/interval"
 require "concurrent"
 require "logstash/namespace"
 require "logstash/errors"
+require "logstash-core/logstash-core"
+require "logstash/util/wrapped_acked_queue"
+require "logstash/util/wrapped_synchronous_queue"
 require "logstash/event"
 require "logstash/config/file"
 require "logstash/filters/base"
 require "logstash/inputs/base"
 require "logstash/outputs/base"
 require "logstash/shutdown_watcher"
-require "logstash/util/wrapped_synchronous_queue"
 require "logstash/pipeline_reporter"
 require "logstash/instrument/metric"
 require "logstash/instrument/namespaced_metric"
@@ -18,6 +20,7 @@ require "logstash/instrument/null_metric"
 require "logstash/instrument/collector"
 require "logstash/output_delegator"
 require "logstash/filter_delegator"
+require "logstash/compiler"
 
 module LogStash; class Pipeline
   include LogStash::Util::Loggable
@@ -91,16 +94,17 @@ module LogStash; class Pipeline
     rescue => e
       raise
     end
-
-    queue = Util::WrappedSynchronousQueue.new
+    queue = build_queue_from_settings
     @input_queue_client = queue.write_client
     @filter_queue_client = queue.read_client
-    # Note that @inflight_batches as a central mechanism for tracking inflight
+    @signal_queue = Queue.new
+    # Note that @infilght_batches as a central mechanism for tracking inflight
     # batches will fail if we have multiple read clients here.
     @filter_queue_client.set_events_metric(metric.namespace([:stats, :events]))
     @filter_queue_client.set_pipeline_metric(
         metric.namespace([:stats, :pipelines, pipeline_id.to_s.to_sym, :events])
     )
+
     @events_filtered = Concurrent::AtomicFixnum.new(0)
     @events_consumed = Concurrent::AtomicFixnum.new(0)
 
@@ -110,6 +114,28 @@ module LogStash; class Pipeline
     @running = Concurrent::AtomicBoolean.new(false)
     @flushing = Concurrent::AtomicReference.new(false)
   end # def initialize
+
+  def build_queue_from_settings
+    queue_type = settings.get("queue.type")
+    queue_page_capacity = settings.get("queue.page_capacity")
+    max_events = settings.get("queue.max_events")
+
+    if queue_type == "memory_acked"
+      # memory_acked is used in tests/specs
+      LogStash::Util::WrappedAckedQueue.create_memory_based("", queue_page_capacity, max_events)
+    elsif queue_type == "memory"
+      # memory is the legacy and default setting
+      LogStash::Util::WrappedSynchronousQueue.new()
+    elsif queue_type == "persisted"
+      # persisted is the disk based acked queue
+      queue_path = settings.get("path.queue")
+      LogStash::Util::WrappedAckedQueue.create_file_based(queue_path, queue_page_capacity, max_events)
+    else
+      raise(ConfigurationError, "invalid queue.type setting")
+    end
+  end
+
+  private :build_queue_from_settings
 
   def ready?
     @ready.value
@@ -166,6 +192,8 @@ module LogStash; class Pipeline
 
     shutdown_flusher
     shutdown_workers
+
+    @filter_queue_client.close
 
     @logger.debug("Pipeline #{@pipeline_id} has been shutdown")
 
@@ -241,12 +269,15 @@ module LogStash; class Pipeline
 
     while running
       batch = @filter_queue_client.take_batch
+      signal = @signal_queue.empty? ? NO_SIGNAL : @signal_queue.pop
+      running = !signal.shutdown?
+
       @events_consumed.increment(batch.size)
-      running = false if batch.shutdown_signal_received?
+
       filter_batch(batch)
 
-      if batch.shutdown_signal_received? || batch.flush_signal_received?
-        flush_filters_to_batch(batch)
+      if signal.flush? || signal.shutdown?
+        flush_filters_to_batch(batch, :final => signal.shutdown?)
       end
 
       output_batch(batch)
@@ -256,16 +287,9 @@ module LogStash; class Pipeline
 
   def filter_batch(batch)
     batch.each do |event|
-      if event.is_a?(Event)
-        filtered = filter_func(event)
-        filtered.each do |e|
-          #these are both original and generated events
-          if e.cancelled?
-            batch.cancel(e)
-          else
-            batch.merge(e)
-          end
-        end
+      filter_func(event).each do |e|
+        #these are both original and generated events
+        batch.merge(e) unless e.cancelled?
       end
     end
     @filter_queue_client.add_filtered_metrics(batch)
@@ -301,7 +325,7 @@ module LogStash; class Pipeline
     output_events_map.each do |output, events|
       output.multi_receive(events)
     end
-    
+
     @filter_queue_client.add_output_metrics(batch)
   end
 
@@ -387,7 +411,7 @@ module LogStash; class Pipeline
     # Each worker thread will receive this exactly once!
     @worker_threads.each do |t|
       @logger.debug("Pushing shutdown", :thread => t.inspect)
-      @input_queue_client.push(SHUTDOWN)
+      @signal_queue.push(SHUTDOWN)
     end
 
     @worker_threads.each do |t|
@@ -412,7 +436,7 @@ module LogStash; class Pipeline
          end
 
     raise ConfigurationError, "Two plugins have the id '#{id}', please fix this conflict" if @plugins_by_id[id]
-    
+
     pipeline_scoped_metric = metric.namespace([:stats, :pipelines, pipeline_id.to_s.to_sym, :plugins])
 
     klass = Plugin.lookup(plugin_type, name)
@@ -430,7 +454,7 @@ module LogStash; class Pipeline
                input_plugin.metric = type_scoped_metric.namespace(id)
                input_plugin
              end
-    
+
     @plugins_by_id[id] = plugin
   end
 
@@ -472,7 +496,7 @@ module LogStash; class Pipeline
   def flush
     if @flushing.compare_and_set(false, true)
       @logger.debug? && @logger.debug("Pushing flush onto pipeline")
-      @input_queue_client.push(FLUSH)
+      @signal_queue.push(FLUSH)
     end
   end
 
@@ -490,11 +514,8 @@ module LogStash; class Pipeline
   # @param batch [ReadClient::ReadBatch]
   # @param options [Hash]
   def flush_filters_to_batch(batch, options = {})
-    options[:final] = batch.shutdown_signal_received?
     flush_filters(options) do |event|
-      if event.cancelled?
-        batch.cancel(event)
-      else
+      unless event.cancelled?
         @logger.debug? and @logger.debug("Pushing flushed events", :event => event)
         batch.merge(event)
       end
