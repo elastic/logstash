@@ -65,6 +65,8 @@ module LogStash
       else
         # The plugin was defined directly in the code, so there is no need to use the
         # require way of loading classes
+        @logger.info("Plugin doesn't appear to be installed with the plugin manager. I will try to load it the old and deprecated way.", :path => plugin.path, :type => type, :name => plugin_name)
+        require plugin.path
         return @registry[plugin.path] if registered?(plugin.path)
         raise LoadError
       end
