@@ -1,14 +1,16 @@
 [[releasenotes]]
 == Release Notes
 
-This section summarizes the changes in {version} release.
+This section summarizes the changes in 5.0.0 release.
+
+List of <<breaking-changes, breaking changes>>
 
 [float]
 ==== General
 
 * A new monitoring feature provides runtime visibility into the Logstash pipeline and its plugins. This component 
 collects various kinds of operational metrics while Logstash processes your data, and all of this information 
-can be queried using simple APIs. Please refer <<monitoring>> for details.
+can be queried using simple APIs. Please refer to <<monitoring>> for details.
 * Improved throughput performance across the board (up by 2x in some configs) by implementing Event 
 representation in Java. Event is the main object that encapsulates data as it flows through 
 Logstash and provides APIs for the plugins to perform processing. This change also enables 
@@ -16,31 +18,32 @@ faster serialization for future persistence work ({lsissue}4191[Issue 4191]).
 * Breaking Change: Renamed filenames for Debian and RPM artifacts to match Elasticsearch's naming scheme. The metadata is 
 still the same, so upgrades will not be affected. Please refer to the new <<deb-layout, directory structure>>. If you have 
 automated downloads for Logstash, please make sure you use the updated URLs ({lsissue}5100[Issue 5100]).
-* Breaking Change: Introduced a new way to configure application settings for Logstash through a `logstash.yml` file. This
+* Introduced a new way to configure application settings for Logstash through a `logstash.yml` file. This
 file is typically located in `LS_HOME/config` or `/etc/logstash` when installed via packages. Logstash will
 not be able to start without this file, so please make sure to pass in `path.settings` if you are starting
 Logstash manually after installing it via a package (RPM or DEB) ({lsissue}4401[Issue 4401]).
-* Breaking Change: Most of the long form CLI options have been renamed to match the settings defined in `logstash.yml`
+* Breaking Change: Most of the long form CLI options have been renamed to match the settings defined in `logstash.yml`.
 * Breaking Change: For plugin developers, the Event class has a new API to access its data. You will no longer be able to
 directly use the Event class through the Ruby hash paradigm. All the plugins packaged with Logstash have
-been updated to use the new API, and their versions have been bumped to the next major. Please refer <<event-api>> for details.({lsissue}5141[Issue 5141])
-* Breaking Change: Environment variables inside the Logstash config are evaluated by default. There is no need to specify 
-`--allow-en` feature flag.
+been updated to use the new API, and their versions have been bumped to the next major. Please refer to <<event-api>> for details ({lsissue}5141[Issue 5141]).
+* Breaking Change: Environment variables inside the Logstash config are evaluated by default. There is no need to specify the
+`--allow-env` feature flag.
 * Breaking Change: Renamed `bin/plugin` to `bin/logstash-plugin`. This is to prevent `PATH` being polluted when other 
-components of the Elastic stack are installed on the same instance ({lsissue}4891[Issue 4891]).
-* Added support for `DEBUG=1` when running any plugin-related commands. This option gives you a bit more information 
-about what the bundler is doing.
+components of the Elastic Stack are installed on the same instance ({lsissue}4891[Issue 4891]).
+* Added support for `DEBUG=1` when running any plugin-related commands. This option gives more information that is useful when debugging 
+unexpected behavior in `bin/logstash-plugin`
 * Logging Changes: Migrated Logstash's internal logging framework to Log4j2. This enhancement provides the following features:
 ** Support for changing the <<logging>> level dynamically at runtime through REST endpoints. New APIs have been exposed
-under `_node/logging` to update log levels. Also a new endpoint `_node/logging` was added to return all existing loggers.
+under `_node/logging` to update log levels. You can also list all existing loggers by sending a `GET` request to this API.
 ** Configurable file rotation policy for logs. The default is per-day.
 ** Support for component-level or plugin-level log settings.
 ** Unified logging across Logstash's Java and Ruby code.
-** Logs are now placed in the `LS_HOME/logs` directory, which is configurable via the `path.logs` setting.
+** Logs are now placed in the `LS_HOME/logs` directory, which is configurable via the `path.logs` setting. For deb/rpm packages 
+logs are placed in `/var/log/logstash/` by default.
 ** Changed the default log severity level to `INFO` instead of `WARN` to match Elasticsearch.
-** Logstash can now emit its log in structured, JSON format. Specify `--log.format=json` in the settings file
-or via the command line ({lsissue}1569[Issue 1569])
-* Added support for systemd so you can now manage Logstash as a service on most Linux distributions ({lsissue}5012[Issue 5012]).
+** Logstash can now emit its log in structured, JSON format. Specify log.format=json` in the settings file 
+or via the command line ({lsissue}1569[Issue 1569]).
+* Added support for systemd and upstart so you can now manage Logstash as a service on most Linux distributions ({lsissue}5012[Issue 5012]).
 * Fixed a bug where Logstash would not shutdown if CTRL-C was used while using stdin input in the 
 configuration ({lsissue}1769[Issue 1769]).
 * Created a new `LS_HOME/data` directory to store plugin states, Logstash instance UUID, and more. This directory 
@@ -71,7 +74,7 @@ You can use the `columns_charset` option to override this encoding setting for i
 
 * Added support for Kafka broker 0.10. This plugin now supports SSL based encryption. This release 
 changed a lot of configuration, so it is not backward compatible. Also, this version will not work 
-with older Kafka brokers
+with older Kafka brokers.
 
 *`HTTP`*:
 
@@ -143,7 +146,7 @@ the subfield for string multi-fields has changed from `.raw` to `.keyword` to ma
 * Elasticserach output is now fully threadsafe. This means internal resources can be shared among multiple
 `output { elasticsearch {} }` instances.
 * Added sniffing improvements so any current connections don't have to be closed/reopened after a sniff round.
-* Introduced a connection pool to efficiently reuse connections to Elasticsearch backends.
+* Introduced a connection pool to reuse connections to Elasticsearch backends.
 * Added exponential backoff to connection retries with a ceiling of `retry_max_interval`, which is the most time to 
 wait between retries, and `retry_initial_interval`,  which is the initial amount of time to wait. The value of
 `retry_initial_interval` increases exponentially between retries until a request succeeds.
