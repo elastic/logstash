@@ -208,7 +208,7 @@ public class ByteBufferPageIO implements PageIO {
 
     @Override
     public void close() throws IOException {
-        // TBD
+        // TODO: not sure if we need to do something here since in-memory pages are ephemeral
     }
 
     private int checksum(byte[] bytes) {
