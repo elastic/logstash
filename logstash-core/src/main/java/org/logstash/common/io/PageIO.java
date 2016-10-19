@@ -44,7 +44,4 @@ public interface PageIO extends Closeable {
 
     // delete/unlink/remove data file
     void purge() throws IOException;
-
-    // add debugging details, to be added when creating a new page
-    // void setPageHeaderDetails(String details);
 }
