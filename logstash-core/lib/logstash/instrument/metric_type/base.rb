@@ -1,5 +1,4 @@
 # encoding: utf-8
-# require "logstash/event"
 require "logstash/util"
 
 module LogStash module Instrument module MetricType
