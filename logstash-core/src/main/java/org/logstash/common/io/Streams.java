@@ -1,5 +1,3 @@
-package org.logstash.common.io;
-
 /*
  * Licensed to Elasticsearch under one or more contributor
  * license agreements. See the NOTICE file distributed with
@@ -19,11 +17,12 @@ package org.logstash.common.io;
  * under the License.
  */
 
+package org.logstash.common.io;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
-/**
- */
+
 public abstract class Streams {
 
     public static int readFully(Reader reader, char[] dest) throws IOException {
