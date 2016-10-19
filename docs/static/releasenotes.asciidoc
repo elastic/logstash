@@ -41,7 +41,7 @@ under `_node/logging` to update log levels. You can also list all existing logge
 ** Logs are now placed in the `LS_HOME/logs` directory, which is configurable via the `path.logs` setting. For deb/rpm packages 
 logs are placed in `/var/log/logstash/` by default.
 ** Changed the default log severity level to `INFO` instead of `WARN` to match Elasticsearch.
-** Logstash can now emit its log in structured, JSON format. Specify log.format=json` in the settings file 
+** Logstash can now emit its log in structured, JSON format. Specify `log.format=json` in the settings file 
 or via the command line ({lsissue}1569[Issue 1569]).
 * Added support for systemd and upstart so you can now manage Logstash as a service on most Linux distributions ({lsissue}5012[Issue 5012]).
 * Fixed a bug where Logstash would not shutdown if CTRL-C was used while using stdin input in the 
@@ -95,6 +95,10 @@ with older Kafka brokers.
 *`Elasticsearch`*:
 
 * This plugin is now compatible with Elasticsearch 5.0.0. Scan search type has been replaced by scroll.
+
+*`UDP`*:
+
+* Fixed performance regression due to `IO.select` being called for every packet (https://github.com/logstash-plugins/logstash-input-udp/issues/21[Issue 21]).
 
 [float]
 ==== Filter Plugins
