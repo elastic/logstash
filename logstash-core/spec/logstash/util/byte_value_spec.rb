@@ -18,7 +18,8 @@ describe LogStash::Util::ByteValue do
   let(:text) { "#{number}#{unit}" }
 
   describe "#parse" do
-    let(:expected) { number * multipliers[unit] }
+    # Expect a whole-unit byte value. Fractions of a byte don't make sense here. :)
+    let(:expected) { (number * multipliers[unit]).to_i }
     subject { described_class.parse(text) }
 
     it "should return a Numeric" do
