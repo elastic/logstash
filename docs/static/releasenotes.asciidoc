@@ -1,73 +1,59 @@
 [[releasenotes]]
 == Release Notes
 
-This section summarizes the changes in each release.
+This section summarizes the changes in 5.0.0 release.
 
-* <<RC1, Logstash 5.0.0-rc1>>
-* <<beta1, Logstash 5.0.0-beta1>>
-* <<alpha5,Logstash 5.0.0-alpha5>>
-* <<alpha4,Logstash 5.0.0-alpha4>>
-* <<alpha3,Logstash 5.0.0-alpha3>>
-* <<alpha2,Logstash 5.0.0-alpha2>>
-* <<alpha1,Logstash 5.0.0-alpha1>>
-
-[[RC1]]
-=== Logstash 5.0.0-rc1 Release Notes
-
-* Windows: Fixed signal HUP warnings on startup ({lsissue}5239[Issue 5239]).
-* Windows: Enabled logging on Windows by fixing log4j config location ({lsissue}5971[Issue 5971]).
-* Configuration errors are now logged to file, not printed to stderr ({lsissue}5975[Issue 5975]).
-* Correctly calculate pipeline `duration_in_millis` metric ({lsissue}5952[Issue 5952]).
+List of <<breaking-changes, breaking changes>>
 
 [float]
-==== Output Plugins
+==== General
 
-*`Elasticsearch`*:
-
-* Passwords in Logstash logs partially visible when connection to Elasticsearch fails (https://github.com/logstash-plugins/logstash-output-elasticsearch/issues/482[Issue 482]).
-
-[[beta1]]
-=== Logstash 5.0-beta1 Release Notes
-
-* Migrated Logstash's internal logging framework to Log4j2. This enhancement provides the following features:
+* A new monitoring feature provides runtime visibility into the Logstash pipeline and its plugins. This component 
+collects various kinds of operational metrics while Logstash processes your data, and all of this information 
+can be queried using simple APIs. Please refer to <<monitoring>> for details.
+* Improved throughput performance across the board (up by 2x in some configs) by implementing Event 
+representation in Java. Event is the main object that encapsulates data as it flows through 
+Logstash and provides APIs for the plugins to perform processing. This change also enables 
+faster serialization for future persistence work ({lsissue}4191[Issue 4191]).
+* Breaking Change: Renamed filenames for Debian and RPM artifacts to match Elasticsearch's naming scheme. The metadata is 
+still the same, so upgrades will not be affected. Please refer to the new <<deb-layout, directory structure>>. If you have 
+automated downloads for Logstash, please make sure you use the updated URLs ({lsissue}5100[Issue 5100]).
+* Introduced a new way to configure application settings for Logstash through a `logstash.yml` file. This
+file is typically located in `LS_HOME/config` or `/etc/logstash` when installed via packages. Logstash will
+not be able to start without this file, so please make sure to pass in `path.settings` if you are starting
+Logstash manually after installing it via a package (RPM or DEB) ({lsissue}4401[Issue 4401]).
+* Breaking Change: Most of the long form CLI options have been renamed to match the settings defined in `logstash.yml`.
+* Breaking Change: For plugin developers, the Event class has a new API to access its data. You will no longer be able to
+directly use the Event class through the Ruby hash paradigm. All the plugins packaged with Logstash have
+been updated to use the new API, and their versions have been bumped to the next major. Please refer to <<event-api>> for details ({lsissue}5141[Issue 5141]).
+* Breaking Change: Environment variables inside the Logstash config are evaluated by default. There is no need to specify the
+`--allow-env` feature flag.
+* Breaking Change: Renamed `bin/plugin` to `bin/logstash-plugin`. This is to prevent `PATH` being polluted when other 
+components of the Elastic Stack are installed on the same instance ({lsissue}4891[Issue 4891]).
+* Added support for `DEBUG=1` when running any plugin-related commands. This option gives more information that is useful when debugging 
+unexpected behavior in `bin/logstash-plugin`
+* Logging Changes: Migrated Logstash's internal logging framework to Log4j2. This enhancement provides the following features:
 ** Support for changing the <<logging>> level dynamically at runtime through REST endpoints. New APIs have been exposed
-under `_node/logging` to update log levels. Also a new endpoint `_node/logging` was added to return all existing loggers.
+under `_node/logging` to update log levels. You can also list all existing loggers by sending a `GET` request to this API.
 ** Configurable file rotation policy for logs. The default is per-day.
 ** Support for component-level or plugin-level log settings.
 ** Unified logging across Logstash's Java and Ruby code.
-** Logs are now placed in the `LS_HOME/logs` directory, which is configurable via the `path.logs` setting.
-* Breaking Change: Changed the default log severity level to `INFO` instead of `WARN` to match Elasticsearch.
-* Show meaningful error messages for unknown CLI commands ({lsissue}5748[Issue 5748]).
-* Added monitoring API enhancements:
-** Added `duration_in_millis` metric under `/_node/stats/pipeline/events`.
-** Added JVM GC stats under `/_node/stats/jvm`.
-** Removed the `/_node/mem` resource because it's been properly moved under `/_node/jvm/mem`.
-** Added config reload stats under new resource type `_node/stats/pipeline/reloads`.
-** Added config reload enabled/disabled info to `/_node/pipeline`.
-** Added the JVM GC strategy info under `/_node/jvm`.
-** Fixed the `?human` option to work correctly for the `hot_threads` API.
-** Made sure a non-existing API endpoint correctly returns 404 and a structured error message.
-* Plugin Developers: Improved nomenclature and methods for 'threadsafe' outputs. Removed the `workers_not_supported` method ({lsissue}5662[Issue 5662]).
-
-[float]
-==== Output Plugins
-
-*`Elasticsearch`*:
-
-* Breaking Change: The index template for 5.0 has been changed to reflect Elasticsearch's mapping changes. Most importantly,
-the subfield for string multi-fields has changed from `.raw` to `.keyword` to match Elasticsearch's default behavior
-(https://github.com/logstash-plugins/logstash-output-elasticsearch/issues/386[Issue 386]). See <<breaking-changes>> for details about how this change affects new and existing users.
-* Added `check_connection_timeout` parameter, which has a default of 10m.
-
-[[alpha5]]
-=== Logstash 5.0-alpha5 Release Notes
-
+** Logs are now placed in the `LS_HOME/logs` directory, which is configurable via the `path.logs` setting. For deb/rpm packages 
+logs are placed in `/var/log/logstash/` by default.
+** Changed the default log severity level to `INFO` instead of `WARN` to match Elasticsearch.
+** Logstash can now emit its log in structured, JSON format. Specify log.format=json` in the settings file 
+or via the command line ({lsissue}1569[Issue 1569]).
+* Added support for systemd and upstart so you can now manage Logstash as a service on most Linux distributions ({lsissue}5012[Issue 5012]).
+* Fixed a bug where Logstash would not shutdown if CTRL-C was used while using stdin input in the 
+configuration ({lsissue}1769[Issue 1769]).
+* Created a new `LS_HOME/data` directory to store plugin states, Logstash instance UUID, and more. This directory 
+location is configurable via the `path.data` setting in the `logstash.yml` <<logstash-settings-file,settings file>> ({lsissue}5404[Issue 5404]).
+* Made `bin/logstash -V/--version` run faster on Unix platforms.
 * Introduced a performance optimization called bi-values to store both JRuby and Java object types. This optimization
 benefits plugins written in Ruby.
-* Added support for specifying a comma-separated list of resources when calling the monitoring APIs. This can be used
-to filter the API response ({lsissue}5609[Issue 5609]).
-* Fixed the `/_node/hot_threads?human=true` human option so that it now returns a human-readable format, not JSON.
-* Added the pipeline stats from `/_node/stats/pipeline` to the parent `/_node/stats` resource for completeness.
+* Show meaningful error messages for unknown CLI commands ({lsissue}5748[Issue 5748]).
+* Added ability to configure custom garbage collection log file using `$LS_LOG_DIR`.
+* Plugin Developers: Improved nomenclature and methods for 'threadsafe' outputs. Removed the `workers_not_supported` method ({lsissue}5662[Issue 5662]).
 
 [float]
 ==== Input Plugins
@@ -78,136 +64,25 @@ to filter the API response ({lsissue}5609[Issue 5609]).
 library. These changes resulted in up to 50% gains in throughput performance while preserving the original plugin
 functionality (https://github.com/logstash-plugins/logstash-input-beats/issues/92[Issue 92]).
 
-*`Kafka`*:
-
-* Added feature to allow regex patterns in topics so you can subscribe to multiple topics.
-
 *`JDBC`*:
 
 * Added the `charset` config option to support setting the character encoding for strings that are not in UTF-8 format.
 You can use the `columns_charset` option to override this encoding setting for individual columns 
 (https://github.com/logstash-plugins/logstash-input-jdbc/issues/143[Issue 143]).
 
-*`HTTP Poller`*:
-
-* Added meaningful error messages for missing trust store/keystore passwords. Also documented the creation of a custom keystore.
-
-[float]
-==== Filter Plugins
-
-*`CSV`*:
-
-* Added the `autodetect_column_names` option to read column names from the header.
-
-*`Grok`*:
-
-* Added support to cancel long-running execution. Many times users write runaway regular expressions that lead to a
-stalled Logstash. You can configure `timeout_millis` to cancel the current execution and continue processing the event
-downstream (https://github.com/logstash-plugins/logstash-filter-grok/issues/82[Issue 82]).
-
-*`Throttle`*:
-
-* Reimplemented the plugin to work with multiple threads, support asynchronous input, and properly track past events (https://github.com/logstash-plugins/logstash-filter-throttle/issues/4[Issue 4]).
-
-[float]
-==== Output Plugins
-
-*`Elasticsearch`*:
-
-* Added the ability for the plugin to choose which default template to use based on the Elasticsearch version (https://github.com/logstash-plugins/logstash-output-elasticsearch/issues/401[Issue 401]).
-
 *`Kafka`*:
 
-* Made this output a shareable instance across multiple pipeline workers. This ensures efficient use of resources like broker
-TCP connections, internal producer buffers, and so on.
-
-*`Tcp`*:
-
-* Added SSL/TLS support for certificate-based encryption.
-
-
-[[alpha4]]
-=== Logstash 5.0-alpha4 Release Notes
-
-* Created a new `LS_HOME/data` directory to store plugin states, Logstash instance UUID, and more. This directory 
-location is configurable via the `path.data` setting in the `logstash.yml` <<logstash-settings-file,settings file>> ({lsissue}5404[Issue 5404]).
-* Made `bin/logstash -V/--version` run faster on Unix platforms.
-* Ehanced the <<monitoring,monitoring APIs>> by adding `hostname`, `http_address`, and `version` as static fields for all APIs ({lsissue}5450[Issue 5450]).
-* Added time tracking (wall-clock) to all individual filter and output instances. The goal is to help identify 
-which plugin configurations are consuming the most time. These statics are exposed by the `/_node/stats/pipeline` endpoint. See the <<pipeline-stats>> section under the <<node-stats-api>>.
-* Added the `/_node` endpoint, which provides static information for OS, JVM, and pipeline settings. See the <<node-info-api,node info API>>.
-* Moved the <<plugins-api,plugins API>> to the `_node/plugins` endpoint.
-* Moved the <<hot-threads-api,hot threads API>> to the `_node/hot_threads` endpoint.
-* Added a new `:list` property to the configuration parameters. This will allow the user to specify one or more values. 
-* Added a new URI config validator/type. This type allows plugins like the Elasticsearch output to safely log URIs for configuration. Any password information in the URI will be masked when the URI is logged.
-
-[float]
-==== Input Plugins
-
-*`Kafka`*:
-
-* Added support for Kafka broker 0.10.
+* Added support for Kafka broker 0.10. This plugin now supports SSL based encryption. This release 
+changed a lot of configuration, so it is not backward compatible. Also, this version will not work 
+with older Kafka brokers.
 
 *`HTTP`*:
 
 * Fixed a bug where the HTTP input plugin blocked the node stats API (https://github.com/logstash-plugins/logstash-input-http/issues/51[Issue 51]). 
 
-[float]
-==== Output Plugins
+*`HTTP Poller`*:
 
-*`Elasticsearch`*:
-
-* Elasticserach output is now fully threadsafe. This means internal resources can be shared among multiple
-`output { elasticsearch {} }` instances.
-* Added sniffing improvements so any current connections don't have to be closed/reopened after a sniff round.
-* Introduced a connection pool to efficiently reuse connections to Elasticsearch backends.
-* Added exponential backoff to connection retries with a ceiling of `retry_max_interval`, which is the most time to 
-wait between retries, and `retry_initial_interval`,  which is the initial amount of time to wait. The value of
-`retry_initial_interval` increases exponentially between retries until a request succeeds.
-     
-*`Kafka`*:
-
-* Added support for Kafka broker 0.10.
-   
-[float]
-==== Filter Plugins
-
-*`Grok`*:
-
-* Added a stats counter on grok matches and failures. This is exposed in the `_node/stats/pipeline` endpoint.
-
-*`Date`*:
-
-* Added a stats counter on grok matches and failures. This is exposed in the `_node/stats/pipeline` endpoint.
-
-[[alpha3]]
-=== Logstash 5.0-alpha3 Release Notes
-
-* Breaking Change: Introduced a new way to configure application settings for Logstash through a `settings.yml` file. This
-file is typically located in `LS_HOME/config` or `/etc/logstash` when installed via packages. Logstash will
-not be able to start without this file, so please make sure to pass in `path.settings` if you are starting
-Logstash manually after installing it via a package (RPM or DEB) ({lsissue}4401[Issue 4401]).
-* Breaking Change: Most of the long form options (https://www.elastic.co/guide/en/logstash/5.0/command-line-flags.html) have
-been renamed to adhere to the YAML dot notation used in the settings file. Short form options have not been
-changed ({lsissue}4401[Issue 4401]).
-* Breaking Change: When Logstash is installed via DEB or RPM packages, it uses `/usr/share` and `/var` to install binaries
-and config files respectively. Previously it used the `/opt` directory. This change was done to
-make the user experience consistent with other Elastic products ({lsissue}5101[Issue 5101]).
-* Breaking Change: For plugin developers, the Event class has a new API to access its data. You will no longer be able to
-directly use the Event class through the Ruby hash paradigm. All the plugins packaged with Logstash have
-been updated to use the new API, and their versions have been bumped to the next major. ({lsissue}5141[Issue 5141])
-* Added support for systemd so you can now manage Logstash as a service on most Linux distributions ({lsissue}5012[Issue 5012]).
-* Added a new subcommand called `generate` to the `logstash-plugins` script that bootstraps a new plugin with
-the correct directory structure and all the required files.
-* Logstash can now emit its log in structured, JSON format. Specify `--log.format=json` in the settings file
-or via the command line ({lsissue}1569[Issue 1569]).
-* Added more operational information to help run Logstash in production. The `_node/stats` endpoint now 
-shows file descriptors and CPU information.
-* Fixed a bug where Logstash would not shutdown if CTRL-C was used while using stdin input in the 
-configuration ({lsissue}1769[Issue 1769]).
-
-[float]
-==== Input Plugins
+* Added meaningful error messages for missing trust store/keystore passwords. Also documented the creation of a custom keystore.
 
 *`RabbitMQ`*:
 
@@ -217,13 +92,37 @@ configuration ({lsissue}1769[Issue 1769]).
 
 * This plugin is now non-blocking, so you can use CTRL-C to stop Logstash.
 
-*`JDBC`*: 
+*`Elasticsearch`*:
 
-* Added the `jdbc_password_filepath` parameter for reading passwords from an external file
-(https://github.com/logstash-plugins/logstash-input-jdbc/issues/120[Issue 120]).
+* This plugin is now compatible with Elasticsearch 5.0.0. Scan search type has been replaced by scroll.
 
 [float]
 ==== Filter Plugins
+
+*`Grok`*:
+
+* Added support to cancel long-running execution. Many times users write runaway regular expressions that lead to a
+stalled Logstash. You can configure `timeout_millis` to cancel the current execution and continue processing the event
+downstream (https://github.com/logstash-plugins/logstash-filter-grok/issues/82[Issue 82]).
+* Added a stats counter on grok matches and failures. This is exposed in the `_node/stats/pipeline` endpoint.
+
+*`Date`*:
+
+* Added a stats counter on grok matches and failures. This is exposed in the `_node/stats/pipeline` endpoint.
+
+*`GeoIP`*:
+
+* Added support for the GeoIP2 city database and support for IPv6 lookups (https://github.com/logstash-plugins/logstash-filter-geoip/issues/23[Issue 23]).
+
+*`DNS`*:
+
+* Improved performance by adding caches to both successful and failed requests.
+* Added support for retrying with the `:max_retries` setting.
+* Lowered the default value of timeout from 2 to 0.5 seconds.
+
+*`CSV`*:
+
+* Added the `autodetect_column_names` option to read column names from the header.
 
 *`XML`*:
 
@@ -234,122 +133,30 @@ for content in XML elements. This option allows you to force text content and at
 a hash value (https://github.com/logstash-plugins/logstash-filter-xml/issues/14[Issue 14]).
 * Fixed a bug that ensures that a `target` is set when storing XML content in the event (`store_xml => true`).
 
-[[alpha2]]
-=== Logstash 5.0-alpha2 Release Notes
-
-* Added the `--preserve` option to the `bin/logstash-plugin` install command. This option allows you to preserve gem options that are already specified in the `Gemfile`. Previously, these options were overwritten.
-* Added support for `DEBUG=1` when running any plugin-related commands. This option gives you a bit more information about what the bundler is doing.
-* Added reload support to the init script so you can do `service logstash reload`.
-* Fixed use of the `KILL_ON_STOP_TIMEOUT` variable in the init script to allow Logstash to force stop ({lsissue}4991[Issue 4991]).
-* Upgraded to JRuby 1.7.25.
-* Renamed filenames for Debian and RPM artifacts to match Elasticsearch's naming scheme. The metadata is still the same, so upgrades will not be affected. If you have automated downloads for Logstash, please make sure you use the updated URLs ({lsissue}5100[Issue 5100]). 
-
-[float]
-==== Input Plugins
-
-*`Kafka`*:
-
-* Fixed an issue where Snappy and LZ4 compression were not working.
-
-[float]
-==== Filter Plugins
-
-*`GeoIP`*:
-
-* Added support for the GeoIP2 city database and support for IPv6 lookups (https://github.com/logstash-plugins/logstash-filter-geoip/issues/23[Issue 23]).
-
 [float]
 ==== Output Plugins
 
 *`Elasticsearch`*:
 
+* Breaking Change: The index template for 5.0 has been changed to reflect Elasticsearch's mapping changes. Most importantly,
+the subfield for string multi-fields has changed from `.raw` to `.keyword` to match Elasticsearch's default behavior
+(https://github.com/logstash-plugins/logstash-output-elasticsearch/issues/386[Issue 386]). See <<breaking-changes>> for details about how this change affects new and existing users.
+* Added `check_connection_timeout` parameter, which has a default of 10m.
+* Added the ability for the plugin to choose which default template to use based on the Elasticsearch version (https://github.com/logstash-plugins/logstash-output-elasticsearch/issues/401[Issue 401]).
+* Elasticserach output is now fully threadsafe. This means internal resources can be shared among multiple
+`output { elasticsearch {} }` instances.
+* Added sniffing improvements so any current connections don't have to be closed/reopened after a sniff round.
+* Introduced a connection pool to reuse connections to Elasticsearch backends.
+* Added exponential backoff to connection retries with a ceiling of `retry_max_interval`, which is the most time to 
+wait between retries, and `retry_initial_interval`,  which is the initial amount of time to wait. The value of
+`retry_initial_interval` increases exponentially between retries until a request succeeds.
 * Added support for specifying ingest pipelines (https://github.com/logstash-plugins/logstash-output-elasticsearch/issues/410[Issue 410]).
 
-*`Kafka`*:
+*`Tcp`*:
 
-* Fixed an issue where Snappy and LZ4 compression were not working (https://github.com/logstash-plugins/logstash-output-kafka/issues/50[Issue 50]).  
-
-[[alpha1]]
-=== Logstash 5.0-alpha1 Release Notes
-
-* Added APIs to monitor the Logstash pipeline. You can now query information/stats about event flow, JVM, 
-  and hot_threads.
-* Added dynamic config, a new feature to track config file for changes and restart the 
-  pipeline (same process) with updated config changes. This feature can be enabled in two 
-  ways: Passing a CLI long-form option `--auto-reload` or with short-form `-r`. Another 
-  option, `--reload-interval <seconds>` controls how often LS should check the config files 
-  for changes. Alternatively, if you don't start with the CLI option, you can send SIGHUP 
-  or `kill -1` signal to LS to reload the config file, and restart the pipeline ({lsissue}4513[Issue 4513]).
-* Added support to evaluate environment variables inside the Logstash config. You can also specify a 
-  default if the variable is not defined. The syntax is `${myVar:default}` ({lsissue}3944[Issue 3944]).
-* Improved throughput performance across the board (up by 2x in some configs) by implementing Event 
-  representation in Java. Event is the main object that encapsulates data as it flows through 
-  Logstash and provides APIs for the plugins to perform processing. This change also enables 
-  faster serialization for future persistence work ({lsissue}4191[Issue 4191]).
-* Added ability to configure custom garbage collection log file using `$LS_LOG_DIR`.
-* Deprecated `bin/plugin` in favor of `bin/logstash-plugin`. In the next major version `bin/plugin` will 
-  be removed to prevent `PATH` being polluted when other components of the Elastic stack are installed on 
-  the same instance ({lsissue}4891[Issue 4891]).
-* Fixed a bug where new pipeline might break plugins by calling the `register` method twice causing 
-  undesired behavior ({lsissue}4851[Issue 4851])).
-* Made `JAVA_OPTS` and `LS_JAVA_OPTS` work consistently on Windows ({lsissue}4758[Issue 4758]).
-* Fixed a bug where specifying JMX parameters in `LS_JAVA_OPTS` caused Logstash not to restart properly
-  ({lsissue}4319[Issue 4319]).
-* Fixed a bug where upgrading plugins with Manticore threw an error and sometimes corrupted installation ({lsissue}4818[Issue 4818]).
-* Removed milestone warning that was displayed when the `--pluginpath` option was used to load plugins ({lsissue}4562[Issue 4562]).
-* Upgraded to JRuby 1.7.24.
-* Reverted default output workers to 1. Previously we had made output workers the same as number of pipeline workers (#4877). 
-
-[float]
-==== Input Plugins
+* Added SSL/TLS support for certificate-based encryption.
 
 *`Kafka`*:
 
-* Breaking Change: Added support for 0.9 consumer API. This plugin now supports SSL based encryption. 
-  This release changed a lot of configuration, so it is not backward compatible. Also, this version will not 
-  work with Kafka 0.8 broker
-
-*`Beats`*:
-
-* Enhanced to verify client certificates against CA (https://github.com/logstash-plugins/logstash-input-beats/issues/8[Issue 8]).
-
-*`RabbitMQ`*:
-
-* Breaking Change: Metadata is now disabled by default because it was regressing performance.
-* Improved performance by using an internal queue and bulk ACKs.
-
-*`Redis`*:
-
-* Increased the batch_size to 100 by default. This provides a big jump in throughput and 
-  reduction in CPU utilization (https://github.com/logstash-plugins/logstash-input-redis/issues/25[Issue 25])
-
-*`JDBC`*:
-
-* Added retry connection feature (https://github.com/logstash-plugins/logstash-input-http/issues/33[Issue 33])
-
-[float]
-==== Filter Plugins
-
-*`DNS`*:
-
-* Improved performance by adding caches to both successful and failed requests.
-* Added support for retrying with the `:max_retries` setting.
-* Lowered the default value of timeout from 2 to 0.5 seconds.
-
-[float]
-==== Output Plugins
-
-*`Elasticsearch`*:
-
-* Bumped minimum manticore version to 0.5.4 which fixes a memory leak when sniffing 
-  is used (https://github.com/logstash-plugins/logstash-output-elasticsearch/issues/392[Issue 392]).
-* Fixed bug when updating documents with doc_as_upsert and scripting.   
-* Made error messages more verbose and easier to parse by humans.
-* Retryable failures are now logged at the info level instead of warning.
-
-*`Kafka`*:
-
-Breaking Change: Added support for 0.9 API. This plugin now supports SSL based encryption. This release 
-changed a lot of configuration, so it is not backward compatible. Also, this version will not work 
-with Kafka 0.8 broker
-
+* Made this output a shareable instance across multiple pipeline workers. This ensures efficient use of resources like broker
+TCP connections, internal producer buffers, and so on.
