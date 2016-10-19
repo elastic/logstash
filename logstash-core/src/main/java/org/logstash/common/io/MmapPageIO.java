@@ -209,9 +209,8 @@ public class MmapPageIO implements PageIO {
             this.buffer = this.channel.map(FileChannel.MapMode.READ_WRITE, 0, this.capacity);
             raf.close();
             this.buffer.load();
-        } else {
-//            assert this.channel.isOpen() : String.format("closed channel");
         }
+        // TODO: do we need to check is the channel is still open? not sure how it could be closed
     }
 
     @Override
