@@ -357,6 +357,7 @@ describe LogStash::Agent do
 
     let!(:dummy_output) { DummyOutput.new }
     let!(:dummy_output2) { DummyOutput2.new }
+    let(:initial_generator_threshold) { 1000 }
 
     before :each do
       allow(DummyOutput).to receive(:new).at_least(:once).with(anything).and_return(dummy_output)
@@ -375,7 +376,8 @@ describe LogStash::Agent do
         subject.execute
       end
 
-      sleep(0.01) until dummy_output.events.size > 1
+      # wait for some events to reach the dummy_output
+      sleep(0.01) until dummy_output.events.size > initial_generator_threshold
     end
 
     after :each do
@@ -392,15 +394,7 @@ describe LogStash::Agent do
       let(:new_config_generator_counter) { 500 }
       let(:new_config) { "input { generator { count => #{new_config_generator_counter} } } output { dummyoutput2 {} }" }
       before :each do
-        # We know that the store has more events coming in.
-        i = 0
-        while dummy_output.events.size <= new_config_generator_counter
-          i += 1
-          raise "Waiting too long!" if i > 20
-          sleep(0.1)
-        end
 
-        # Also force a flush to disk to make sure ruby reload it.
         File.open(config_path, "w") do |f|
           f.write(new_config)
           f.fsync
@@ -410,21 +404,18 @@ describe LogStash::Agent do
 
         # wait until pipeline restarts
         sleep(0.01) until dummy_output2.events.size > 0
-
-        # be eventually consistent.
-        sleep(0.01) while dummy_output2.events.size < new_config_generator_counter
       end
 
       it "resets the pipeline metric collector" do
         snapshot = subject.metric.collector.snapshot_metric
         value = snapshot.metric_store.get_with_path("/stats/pipelines")[:stats][:pipelines][:main][:events][:in].value
-        expect(value).to eq(new_config_generator_counter)
+        expect(value).to be <= new_config_generator_counter
       end
 
       it "does not reset the global event count" do
         snapshot = subject.metric.collector.snapshot_metric
         value = snapshot.metric_store.get_with_path("/stats/events")[:stats][:events][:in].value
-        expect(value).to be > new_config_generator_counter
+        expect(value).to be > initial_generator_threshold
       end
 
       it "increases the successful reload count" do
@@ -457,15 +448,7 @@ describe LogStash::Agent do
       let(:new_config) { "input { generator { count => " }
       let(:new_config_generator_counter) { 500 }
       before :each do
-        # We know that the store has more events coming in.
-        i = 0
-        while dummy_output.events.size <= new_config_generator_counter
-          i += 1
-          raise "Waiting too long!" if i > 20
-          sleep(0.1)
-        end
 
-        # Also force a flush to disk to make sure ruby reload it.
         File.open(config_path, "w") do |f|
           f.write(new_config)
           f.fsync
