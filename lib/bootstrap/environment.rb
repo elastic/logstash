@@ -5,6 +5,7 @@
 
 require_relative "bundler"
 require_relative "rubygems"
+require "pathname"
 
 module LogStash
   module Environment
@@ -16,7 +17,9 @@ module LogStash
     BUNDLE_DIR = ::File.join(LOGSTASH_HOME, "vendor", "bundle")
     GEMFILE_PATH = ::File.join(LOGSTASH_HOME, "Gemfile")
     LOCAL_GEM_PATH = ::File.join(LOGSTASH_HOME, 'vendor', 'local_gems')
-    CACHE_PATH = File.join(LOGSTASH_HOME, "vendor", "cache")
+    CACHE_PATH = ::File.join(LOGSTASH_HOME, "vendor", "cache")
+    LOCKFILE = Pathname.new(::File.join(LOGSTASH_HOME, "Gemfile.jruby-1.9.lock"))
+    GEMFILE = Pathname.new(::File.join(LOGSTASH_HOME, "Gemfile"))
 
     # @return [String] the ruby version string bundler uses to craft its gem path
     def gem_ruby_version

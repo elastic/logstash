@@ -15,7 +15,6 @@ require "clamp"
 require "pluginmanager/util"
 require "pluginmanager/gemfile"
 require "pluginmanager/install"
-require "pluginmanager/uninstall"
 require "pluginmanager/remove"
 require "pluginmanager/list"
 require "pluginmanager/update"
@@ -35,7 +34,7 @@ module LogStash
       subcommand "pack", "Package currently installed plugins", LogStash::PluginManager::Pack
       subcommand "unpack", "Unpack packaged plugins", LogStash::PluginManager::Unpack
       subcommand "generate", "Create the foundation for a new plugin", LogStash::PluginManager::Generate
-      subcommand "uninstall", "Uninstall a plugin. Deprecated: Please use remove instead", LogStash::PluginManager::Uninstall
+      subcommand "uninstall", "Uninstall a plugin. Deprecated: Please use remove instead", LogStash::PluginManager::Remove
     end
   end
 end

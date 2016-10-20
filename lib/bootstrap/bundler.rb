@@ -103,6 +103,7 @@ module LogStash
       ::Bundler.settings[:path] = LogStash::Environment::BUNDLE_DIR
       ::Bundler.settings[:gemfile] = LogStash::Environment::GEMFILE_PATH
       ::Bundler.settings[:without] = options[:without].join(":")
+      ::Bundler.settings[:force] = options[:force]
 
       if !debug?
         # Will deal with transient network errors

@@ -6,10 +6,11 @@ gem "logstash-core", :path => "./logstash-core"
 gem "logstash-core-queue-jruby", :path => "./logstash-core-queue-jruby"
 gem "logstash-core-event-java", :path => "./logstash-core-event-java"
 gem "logstash-core-plugin-api", :path => "./logstash-core-plugin-api"
+gem "ruby-progressbar", "~> 1.8.1"
+gem "builder", "~> 3.2.2"
 gem "file-dependencies", "0.1.6"
 gem "ci_reporter_rspec", "1.0.0", :group => :development
 gem "simplecov", :group => :development
-gem "coveralls", :group => :development
 gem "tins", "1.6", :group => :development
 gem "rspec", "~> 3.1.0", :group => :development
 gem "logstash-devutils", "~> 1.1", :group => :development
@@ -115,4 +116,3 @@ gem "logstash-output-stdout"
 gem "logstash-output-tcp"
 gem "logstash-output-udp"
 gem "logstash-output-webhdfs"
-gem "logstash-filter-multiline"

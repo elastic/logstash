@@ -5,6 +5,7 @@ require_relative "../support/helpers"
 require "socket"
 require "spec_helper"
 require "open-uri"
+require "webmock/rspec"
 
 def block_ports(range)
   servers = []
@@ -35,6 +36,7 @@ describe LogStash::WebServer do
   before :all do
     @abort = Thread.abort_on_exception
     Thread.abort_on_exception = true
+    WebMock.allow_net_connect!
   end
 
   after :all do

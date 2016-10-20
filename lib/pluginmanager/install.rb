@@ -1,5 +1,8 @@
 # encoding: utf-8
 require "pluginmanager/command"
+require "pluginmanager/install_strategy_factory"
+require "pluginmanager/ui"
+require "pluginmanager/errors"
 require "jar-dependencies"
 require "jar_install_post_install_hook"
 require "file-dependencies/gem"
@@ -17,6 +20,30 @@ class LogStash::PluginManager::Install < LogStash::PluginManager::Command
   # but the argument parsing does not support it for now so currently if specifying --version only
   # one plugin name can be also specified.
   def execute
+    # This is a special flow for PACK related plugins,
+    # if we dont detect an pack we will just use the normal `Bundle install` Strategy`
+    # this could be refactored into his own strategy
+    begin
+      if strategy = LogStash::PluginManager::InstallStrategyFactory.create(plugins_arg)
+        LogStash::PluginManager.ui.debug("Installing with strategy: #{strategy.class}")
+        strategy.execute
+        return
+      end
+    rescue LogStash::PluginManager::InstallError => e
+      report_exception("An error occured when installing the: #{plugins_args_human}, to have more information about the error add a DEBUG=1 before running the command.", e.original_exception)
+      return
+    rescue LogStash::PluginManager::FileNotFoundError => e
+      report_exception("File not found for: #{plugins_args_human}", e)
+      return
+    rescue LogStash::PluginManager::InvalidPackError => e
+      report_exception("Invalid pack for: #{plugins_args_human}, reason: #{e.message}", e)
+      return
+    rescue => e
+      report_exception("Something went wrong when installing #{plugins_args_human}", e)
+      return
+    end
+
+    # TODO(ph): refactor this into his own strategy
     validate_cli_options!
 
     if local_gems?
@@ -151,5 +178,9 @@ class LogStash::PluginManager::Install < LogStash::PluginManager::Command
     else
       signal_usage_error("Mixed source of plugins, you can't mix local `.gem` and remote gems")
     end
+  end
+
+  def plugins_args_human
+    plugins_arg.join(", ")
   end
 end # class Logstash::PluginManager

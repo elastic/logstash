@@ -1,8 +1,8 @@
 # encoding: utf-8
+require "pluginmanager/bundler/logstash_uninstall"
 require "pluginmanager/command"
 
 class LogStash::PluginManager::Remove < LogStash::PluginManager::Command
-
   parameter "PLUGIN", "plugin name"
 
   def execute
@@ -19,23 +19,10 @@ class LogStash::PluginManager::Remove < LogStash::PluginManager::Command
     # it is not possible to uninstall a dependency not listed in the Gemfile, for example a dependent codec
     signal_error("This plugin has not been previously installed, aborting") unless LogStash::PluginManager.installed_plugin?(plugin, gemfile)
 
-    # since we previously did a gemfile.find(plugin) there is no reason why
-    # remove would not work (return nil) here
-    if gemfile.remove(plugin)
-      gemfile.save
+    exit(1) unless ::Bundler::LogstashUninstall.uninstall!(plugin)
 
-      puts("Removing #{plugin}")
-
-      # any errors will be logged to $stderr by invoke!
-      # output, exception = LogStash::Bundler.invoke!(:install => true, :clean => true)
-      output = LogStash::Bundler.invoke!(:install => true, :clean => true)
-
-      remove_unused_locally_installed_gems!
-    end
+    remove_unused_locally_installed_gems!
   rescue => exception
-    gemfile.restore!
-    report_exception("Remove Aborted", exception)
-  ensure
-    display_bundler_output(output)
+    report_exception("Operation aborted, cannot remove plugin.", exception)
   end
 end
