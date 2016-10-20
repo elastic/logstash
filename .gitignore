@@ -1,5 +1,6 @@
 .*.swp
-*.gem
+/*.gem
+logstash*/*.gem
 pkg/*.deb
 pkg/*.rpm
 *.class

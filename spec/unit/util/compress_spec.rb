@@ -2,6 +2,40 @@
 require "spec_helper"
 require 'ostruct'
 require "bootstrap/util/compress"
+require "stud/temporary"
+require "fileutils"
+
+def build_zip_file(structure)
+  source = Stud::Temporary.pathname
+  FileUtils.mkdir_p(source)
+
+  structure.each do |p|
+    file = ::File.basename(p)
+    path = ::File.join(source, ::File.dirname(p))
+    full_path = ::File.join(path, file)
+
+    FileUtils.mkdir_p(path)
+    ::File.open(full_path, "a") do |f|
+      f.write("Hello - #{Time.now.to_i.to_s}")
+    end
+  end
+
+  target = Stud::Temporary.pathname
+  FileUtils.mkdir_p(target)
+  target_file = ::File.join(target, "mystructure.zip")
+
+  LogStash::Util::Zip.compress(source, target_file)
+  target_file
+rescue => e
+  FileUtils.rm_rf(target) if target
+  raise e
+ensure
+  FileUtils.rm_rf(source)
+end
+
+def list_files(target)
+  Dir.glob(::File.join(target, "**", "*")).select { |f| ::File.file?(f) }.size
+end
 
 describe LogStash::Util::Zip do
 
@@ -30,10 +64,53 @@ describe LogStash::Util::Zip do
       expect(zip_file).to receive(:extract).exactly(3).times
       subject.extract(source, target)
     end
+
+    context "patterns" do
+      # Theses tests sound duplicated but they are actually better than the other one
+      # since they do not involve any mocks.
+      subject { described_class }
+
+      let(:zip_structure) {
+        [
+          "logstash/logstash-output-secret/logstash-output-monitoring.gem",
+          "logstash/logs/more/log.log",
+          "kibana/package.json",
+          "elasticsearch/jars.jar",
+          "elasticsearch/README.md"
+        ]
+      }
+
+      let(:zip_file) { build_zip_file(zip_structure) }
+      let(:target) { Stud::Temporary.pathname }
+
+      context "when no matching pattern is supplied" do
+        it "extracts all the file" do
+          subject.extract(zip_file, target)
+
+          expect(list_files(target)).to eq(zip_structure.size)
+
+          zip_structure.each do |full_path|
+            expect(::File.exist?(::File.join(target, full_path))).to be_truthy
+          end
+        end
+      end
+
+      context "when a matching pattern is supplied" do
+        it "extracts only the relevant files" do
+          subject.extract(zip_file, target, /logstash\/?/)
+
+          expect(list_files(target)).to eq(2)
+
+          ["logstash/logstash-output-secret/logstash-output-monitoring.gem",
+           "logstash/logs/more/log.log"].each do |full_path|
+            expect(::File.exist?(::File.join(target, full_path))).to be_truthy
+          end
+        end
+      end
+    end
   end
 
   context "#compression" do
-
     let(:target) { File.join(File.expand_path("."), "target_file.zip") }
     let(:source) { File.expand_path("source_dir") }
 
@@ -62,7 +139,6 @@ describe LogStash::Util::Tar do
   subject { Class.new { extend LogStash::Util::Tar } }
 
   context "#extraction" do
-
     let(:source) { File.join(File.expand_path("."), "source_file.tar.gz") }
     let(:target) { File.expand_path("target_dir") }
 
