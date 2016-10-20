@@ -6,7 +6,8 @@ describe LogStash::OutputDelegator do
   let(:logger) { double("logger") }
   let(:events) { 7.times.map { LogStash::Event.new }}
   let(:plugin_args) { {"id" => "foo", "arg1" => "val1"} }
-  let(:metric) { LogStash::Instrument::NullMetric.new }
+  let(:collector) { [] }
+  let(:metric) { LogStash::Instrument::NamespacedNullMetric.new(collector, :null) }
 
   subject { described_class.new(logger, out_klass, metric, ::LogStash::OutputDelegatorStrategyRegistry.instance, plugin_args) }
 
