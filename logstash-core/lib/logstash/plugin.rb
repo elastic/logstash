@@ -103,9 +103,9 @@ class LogStash::Plugin
     # we will use the NullMetric in this case.
     @metric_plugin ||= if @enable_metric
                          # Fallback when testing plugin and no metric collector are correctly configured.
-                         @metric.nil? ? LogStash::Instrument::NullMetric.new : @metric
+                         @metric.nil? ? LogStash::Instrument::NamespacedNullMetric.new : @metric
                        else
-                         LogStash::Instrument::NullMetric.new
+                         LogStash::Instrument::NamespacedNullMetric.new(@metric, :null)
                        end
   end
   # return the configured name of this plugin

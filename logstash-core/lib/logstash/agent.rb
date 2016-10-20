@@ -162,7 +162,7 @@ class LogStash::Agent
                 @logger.debug("Agent: Configuring metric collection")
                 LogStash::Instrument::Metric.new(@collector)
               else
-                LogStash::Instrument::NullMetric.new
+                LogStash::Instrument::NullMetric.new(@collector)
               end
 
 
