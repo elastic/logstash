@@ -15,9 +15,9 @@ module LogStash
       @gemset = nil
     end
 
-    def load
+    def load(with_backup = true)
       @gemset ||= DSL.parse(@io.read)
-      backup
+      backup if with_backup
       self
     end
 
@@ -25,9 +25,12 @@ module LogStash
       raise(GemfileError, "a Gemfile must first be loaded") unless @gemset
       @io.truncate(0)
       @io.rewind
-      @io.write(HEADER)
-      @io.write(@gemset.to_s)
+      @io.write(generate)
       @io.flush
+    end
+
+    def generate
+      "#{HEADER}#{gemset.to_s}"
     end
 
     def find(name)

@@ -18,13 +18,13 @@ module LogStash
       # @param source [String] The location of the file to extract
       # @param target [String] Where you do want the file to be extracted
       # @raise [IOError] If the target directory already exist
-      def extract(source, target)
+      def extract(source, target, pattern = nil)
         raise CompressError.new("Directory #{target} exist") if ::File.exist?(target)
         ::Zip::File.open(source) do |zip_file|
           zip_file.each do |file|
             path = ::File.join(target, file.name)
             FileUtils.mkdir_p(::File.dirname(path))
-            zip_file.extract(file, path)
+            zip_file.extract(file, path) if pattern.nil? || pattern =~ file.name
           end
         end
       end
