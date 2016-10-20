@@ -10,7 +10,8 @@ describe LogStash::FilterDelegator do
   let(:config) do
     { "host" => "127.0.0.1", "id" => filter_id }
   end
-  let(:metric) { LogStash::Instrument::NullMetric.new }
+  let(:collector) { [] }
+  let(:metric) { LogStash::Instrument::NamespacedNullMetric.new(collector, :null) }
   let(:events) { [LogStash::Event.new, LogStash::Event.new] }
 
   before :each do

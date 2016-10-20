@@ -296,7 +296,7 @@ describe LogStash::Plugin do
           end
 
           it "should use a `NullMetric`" do
-            expect(subject.metric).to be_kind_of(LogStash::Instrument::NullMetric)
+            expect(subject.metric).to be_kind_of(LogStash::Instrument::NamespacedNullMetric)
           end
         end
 
@@ -308,7 +308,7 @@ describe LogStash::Plugin do
           end
 
           it "should use a `NullMetric`" do
-            expect(subject.metric).to be_kind_of(LogStash::Instrument::NullMetric)
+            expect(subject.metric).to be_kind_of(LogStash::Instrument::NamespacedNullMetric)
           end
         end
       end
@@ -338,7 +338,7 @@ describe LogStash::Plugin do
           end
 
           it "should use a `NullMetric`" do
-            expect(subject.metric).to be_kind_of(LogStash::Instrument::NullMetric)
+            expect(subject.metric).to be_kind_of(LogStash::Instrument::NamespacedNullMetric)
           end
         end
       end
