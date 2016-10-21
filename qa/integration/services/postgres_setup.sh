@@ -10,7 +10,7 @@ POSTGRES_USER=postgres
 source "$current_dir/helpers.sh"
 
 curl -s -o $INSTALL_DIR/postgres-driver.jar "https://jdbc.postgresql.org/download/postgresql-9.4.1211.jar"
-psql -c 'create database travis_logstash_db;' -U $POSTGRES_USER
+#psql -c 'create database travis_logstash_db;' -U $POSTGRES_USER
 psql -U $POSTGRES_USER -d travis_logstash_db -a -f $current_dir/../fixtures/travis_postgres.sql
 
 setup_install_dir

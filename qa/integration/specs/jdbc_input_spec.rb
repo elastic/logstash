@@ -30,7 +30,7 @@ describe "Test JDBC Input" do
     logstash_service = @fixture.get_service("logstash")
     logstash_service.start_background(config)
     
-    try do
+    try(20) do
       expect(@fixture.output_exists?).to be true
     end
     
