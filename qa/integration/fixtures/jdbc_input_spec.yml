@@ -9,7 +9,7 @@ config: |-
       jdbc_driver_library => '<%=options[:driver_path]%>'
       jdbc_driver_class => "org.postgresql.Driver"
       jdbc_connection_string => "jdbc:postgresql://localhost:5432/travis_logstash_db"
-      jdbc_user => "suyog"
+      jdbc_user => "postgres"
       jdbc_paging_enabled => true
       jdbc_page_size => 10000
       statement => "SELECT * from EMPLOYEES"
