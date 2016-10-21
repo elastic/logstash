@@ -10,6 +10,13 @@ class LogStash::Inputs::Dummy < LogStash::Inputs::Base
   def register; end
 end
 
+
+class LogStash::Inputs::NewPlugin < LogStash::Inputs::Base
+  config_name "new_plugin"
+
+  def register; end
+end
+
 describe LogStash::Plugins::Registry do
   let(:registry) { described_class.new }
 
@@ -22,18 +29,13 @@ describe LogStash::Plugins::Registry do
     end
 
     it "should raise an error if can not find the plugin class" do
-      expect(LogStash::Registry::Plugin).to receive(:new).with("input", "elastic").and_return(plugin)
-      expect(plugin).to receive(:path).and_return("logstash/input/elastic").twice
-      expect(plugin).to receive(:installed?).and_return(true)
-      expect { registry.lookup("input", "elastic") }.to raise_error(LoadError)
+      expect { registry.lookup("input", "do-not-exist-elastic") }.to raise_error(LoadError)
     end
 
     it "should load from registry is already load" do
-      registry.lookup("input", "stdin")
-      expect(registry).to receive(:registered?).and_return(true).once
-      registry.lookup("input", "stdin")
-      internal_registry = registry.instance_variable_get("@registry")
-      expect(internal_registry).to include("logstash/inputs/stdin" => LogStash::Inputs::Stdin)
+      expect(registry.exists?(:input, "stdin")).to be_falsey
+      expect { registry.lookup("input", "new_plugin") }.to change { registry.size }.by(1)
+      expect { registry.lookup("input", "new_plugin") }.not_to change { registry.size }
     end
   end
 
@@ -47,6 +49,17 @@ describe LogStash::Plugins::Registry do
   context "when plugin is not installed and not defined" do
     it "should raise an error" do
       expect { registry.lookup("input", "elastic") }.to raise_error(LoadError)
+    end
+  end
+
+  context "when loading plugin manually configured" do
+    it "should return the plugin" do
+      class SimplePlugin
+      end
+
+      expect { registry.lookup("filter", "simple_plugin") }.to raise_error(LoadError)
+      registry.add(:filter, "simple_plugin", SimplePlugin)
+      expect(registry.lookup("filter", "simple_plugin")).to eq(SimplePlugin)
     end
   end
 end
