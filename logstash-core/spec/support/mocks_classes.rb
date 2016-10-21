@@ -2,6 +2,7 @@
 require "logstash/outputs/base"
 require "thread"
 
+module LogStash module Outputs
 class DummyOutput < LogStash::Outputs::Base
   config_name "dummyoutput"
   milestone 2
@@ -47,3 +48,4 @@ class DummyOutputWithEventsArray < LogStash::Outputs::Base
   def close
   end
 end
+end end
