@@ -30,12 +30,12 @@ describe "Test JDBC Input" do
     logstash_service = @fixture.get_service("logstash")
     logstash_service.start_background(@fixture.config)
     
-    try(20) do
+    try(40) do
       expect(@fixture.output_exists?).to be true
     end
     
     lines = []
-    try do
+    try(20) do
       lines = File.readlines(@fixture.actual_output)
       expect(lines.size).to eq(number_of_events)
     end
