@@ -13,7 +13,7 @@ describe "Test JDBC Input" do
     @fixture.teardown
   }
   
-  let(:config) { @fixture.config("root", { :driver_path => @driver_path }) }
+  #let(:config) { @fixture.config("root", { :driver_path => '/tmp/postgres-driver.jar' }) }
   let(:number_of_events) { 3 }
   let(:row1) { {"city"=>"San Francisco", "join_date"=>"2014-02-10T08:00:00.000Z", "name"=>"John", "id"=>1, "title"=>"Engineer", "age"=>100} }
   let(:row2) { {"city"=>"San Jose", "join_date"=>"2015-02-10T08:00:00.000Z", "name"=>"Jane", "id"=>2, "title"=>"CTO", "age"=>101} }
@@ -28,7 +28,7 @@ describe "Test JDBC Input" do
   it "can retrieve events from table" do
     puts @driver_path
     logstash_service = @fixture.get_service("logstash")
-    logstash_service.start_background(config)
+    logstash_service.start_background(@fixture.config)
     
     try(20) do
       expect(@fixture.output_exists?).to be true
