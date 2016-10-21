@@ -132,12 +132,18 @@ module LogStash module Plugins
 
     def lookup(type, plugin_name, &block)
       plugin = get(type, plugin_name)
-
       # Assume that we have a legacy plugin
       if plugin.nil?
         begin
           path = "logstash/#{type}s/#{plugin_name}"
-          require path rescue LoadError # Plugin might be already defined in the current scope
+
+          begin
+            require path
+          rescue LoadError
+            # Plugin might be already defined in the current scope
+            # This scenario often happen in test when we write an adhoc class
+          end
+
           klass = namespace_lookup(type, plugin_name)
           plugin = lazy_add(type, plugin_name, klass)
         rescue => e
