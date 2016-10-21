@@ -31,19 +31,8 @@ describe LogStash::Plugin do
     class LogStash::Filters::LadyGaga < LogStash::Filters::Base
       config_name "lady_gaga"
     end
+
     expect(LogStash::Plugin.lookup("filter", "lady_gaga")).to eq(LogStash::Filters::LadyGaga)
-  end
-
-  describe "plugin signup in the registry" do
-
-    let(:registry) { LogStash::PluginRegistry }
-
-    it "should be present in the registry" do
-      class LogStash::Filters::MyPlugin < LogStash::Filters::Base
-        config_name "my_plugin"
-      end
-      expect(registry.exists?(:filter, "my_plugin")).to eq(true)
-    end
   end
 
   describe "#inspect" do
