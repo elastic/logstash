@@ -137,7 +137,7 @@ module LogStash module Plugins
       if plugin.nil?
         begin
           path = "logstash/#{type}s/#{plugin_name}"
-          require path
+          require path rescue LoadError # Plugin might be already defined in the current scope
           klass = namespace_lookup(type, plugin_name)
           plugin = lazy_add(type, plugin_name, klass)
         rescue => e
@@ -170,7 +170,7 @@ module LogStash module Plugins
     end
 
     def lazy_add(type, name, klass)
-      logger.error("Lazy Adding plugin to the registry", :name => name, :type => type, :class => klass)
+      logger.error("On demand adding plugin to the registry", :name => name, :type => type, :class => klass)
       add_plugin(type, name, klass)
     end
 
