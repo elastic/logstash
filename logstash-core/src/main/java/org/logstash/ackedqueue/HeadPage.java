@@ -14,6 +14,19 @@ public class HeadPage extends Page {
         pageIO.create();
     }
 
+    // create a new HeadPage object from an existing checkpoint and open page.{pageNum} empty valid data file
+    public HeadPage(Checkpoint checkpoint, Queue queue, PageIO pageIO) throws IOException {
+        super(checkpoint.getPageNum(), queue, checkpoint.getMinSeqNum(), checkpoint.getElementCount(), checkpoint.getFirstUnackedSeqNum(), new BitSet(), pageIO);
+
+        // open the data file and reconstruct the IO object internal state
+        pageIO.open(checkpoint.getMinSeqNum(), checkpoint.getElementCount());
+
+        // this page ackedSeqNums bitset is a new empty bitset, if we have some acked elements, set them in the bitset
+        if (checkpoint.getFirstUnackedSeqNum() > checkpoint.getMinSeqNum()) {
+            this.ackedSeqNums.flip(0, (int) (checkpoint.getFirstUnackedSeqNum() - checkpoint.getMinSeqNum()));
+        }
+    }
+
     // verify if data size plus overhead is not greater than the page capacity
     public boolean hasCapacity(int byteSize) {
         return this.pageIO.persistedByteCount(byteSize) <= this.pageIO.getCapacity();

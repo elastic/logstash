@@ -90,9 +90,7 @@ public class Queue implements Closeable {
     public void open() throws IOException {
         final int headPageNum;
 
-        if (!this.closed.get()) {
-            throw new IOException("queue already opened");
-        }
+        if (!this.closed.get()) { throw new IOException("queue already opened"); }
 
         Checkpoint headCheckpoint;
         try {
@@ -101,78 +99,83 @@ public class Queue implements Closeable {
             headCheckpoint = null;
         }
 
+        // if there is no head checkpoint, create a new headpage and checkpoint it and exit method
         if (headCheckpoint == null) {
             this.seqNum = 0;
             headPageNum = 0;
-        } else {
 
-            // reconstruct all tail pages state upto but excluding the head page
-            for (int pageNum = headCheckpoint.getFirstUnackedPageNum(); pageNum < headCheckpoint.getPageNum(); pageNum++) {
-                Checkpoint tailCheckpoint = checkpointIO.read(checkpointIO.tailFileName(pageNum));
+            newCheckpointedHeadpage(headPageNum);
+            this.closed.set(false);
 
-                if (tailCheckpoint == null) {
-                    throw new IOException(checkpointIO.tailFileName(pageNum) + " not found");
-                }
-
-                PageIO pageIO = this.pageIOFactory.build(pageNum, this.pageCapacity, this.dirPath);
-                BeheadedPage beheadedPage = new BeheadedPage(tailCheckpoint, this, pageIO);
-
-                // if this page is not the first tail page, deactivate it
-                // we keep the first tail page activated since we know the next read operation will be in that one
-                if (pageNum > headCheckpoint.getFirstUnackedPageNum()) {
-                    pageIO.deactivate();
-                }
-
-                // track the seqNum as we rebuild tail pages
-                if (beheadedPage.maxSeqNum() > this.seqNum) {
-                    // prevent empty pages with a minSeqNum of 0 to reset seqNum
-                    this.seqNum = beheadedPage.maxSeqNum();
-                }
-
-                // the systematic beheading on open below can create empty/fully acked tail pages
-                // TODO: add test harness for this and see if/how we should purge empty/fully acked pages
-                if (!beheadedPage.isFullyAcked()) {
-                    this.beheadedPages.add(beheadedPage);
-                    if (! beheadedPage.isFullyRead()) {
-                        this.unreadBeheadedPages.add(beheadedPage);
-                        this.unreadCount += beheadedPage.unreadCount();
-                    }
-                }
-            }
-
-            // transform the head page into a beheaded tail page
-            PageIO pageIO = this.pageIOFactory.build(headCheckpoint.getPageNum(), this.pageCapacity, this.dirPath);
-            BeheadedPage beheadedHeadPage = new BeheadedPage(headCheckpoint, this, pageIO);
-
-            // track the seqNum as we rebuild tail pages
-            if (beheadedHeadPage.maxSeqNum() > this.seqNum) {
-                // prevent empty beheadedHeadPage with a minSeqNum of 0 to reset seqNum
-                this.seqNum = beheadedHeadPage.maxSeqNum();
-            }
-
-            // the systematic beheading on open above can create empty/fully acked tail pages
-            // TODO: add test harness for this and see if/how we should purge empty/fully acked pages
-            if (beheadedHeadPage.isFullyAcked()) {
-                this.beheadedPages.add(beheadedHeadPage);
-                if (! beheadedHeadPage.isFullyRead()) {
-                    this.unreadBeheadedPages.add(beheadedHeadPage);
-                    this.unreadCount += beheadedHeadPage.unreadCount();
-                }
-
-                beheadedHeadPage.checkpoint();
-            }
-
-            headPageNum = headCheckpoint.getPageNum() + 1;
+            return;
         }
 
-        // create new head page
-        PageIO pageIO = this.pageIOFactory.build(headPageNum, this.pageCapacity, this.dirPath);
-        this.headPage = new HeadPage(headPageNum, this, pageIO);
-        this.headPage.checkpoint();
+        // at this point we have a head checkpoint to figure queue recovery
+
+        // reconstruct all tail pages state upto but excluding the head page
+        for (int pageNum = headCheckpoint.getFirstUnackedPageNum(); pageNum < headCheckpoint.getPageNum(); pageNum++) {
+            Checkpoint tailCheckpoint = checkpointIO.read(checkpointIO.tailFileName(pageNum));
+
+            if (tailCheckpoint == null) { throw new IOException(checkpointIO.tailFileName(pageNum) + " not found"); }
+
+            PageIO pageIO = this.pageIOFactory.build(pageNum, this.pageCapacity, this.dirPath);
+            BeheadedPage beheadedPage = new BeheadedPage(tailCheckpoint, this, pageIO);
+
+            // if this page is not the first tail page, deactivate it
+            // we keep the first tail page activated since we know the next read operation will be in that one
+            if (pageNum > headCheckpoint.getFirstUnackedPageNum()) { pageIO.deactivate(); }
+
+            // track the seqNum as we rebuild tail pages, prevent empty pages with a minSeqNum of 0 to reset seqNum
+            if (beheadedPage.maxSeqNum() > this.seqNum) { this.seqNum = beheadedPage.maxSeqNum(); }
+
+            insertBeheadedPage(beheadedPage);
+        }
+
+        // transform the head page into a beheaded tail page only if the headpage is non-empty
+
+        if (headCheckpoint.getMinSeqNum() <= 0 && headCheckpoint.getElementCount() <= 0) {
+            PageIO headPageIO = this.pageIOFactory.build(headCheckpoint.getPageNum(), this.pageCapacity, this.dirPath);
+            this.headPage = new HeadPage(headCheckpoint, this, headPageIO);
+        } else {
+            PageIO beheadedPageIO = this.pageIOFactory.build(headCheckpoint.getPageNum(), this.pageCapacity, this.dirPath);
+            BeheadedPage beheadedHeadPage = new BeheadedPage(headCheckpoint, this, beheadedPageIO);
+
+            // track the seqNum as we add this new tail page, prevent empty beheadedHeadPage with a minSeqNum of 0 to reset seqNum
+            if (beheadedHeadPage.maxSeqNum() > this.seqNum) { this.seqNum = beheadedHeadPage.maxSeqNum(); }
+
+            insertBeheadedPage(beheadedHeadPage);
+
+            headPageNum = headCheckpoint.getPageNum() + 1;
+            newCheckpointedHeadpage(headPageNum);
+        }
 
         // TODO: here do directory traversal and cleanup lingering pages? could be a background operations to not delay queue start?
 
         this.closed.set(false);
+    }
+
+    // insert a recovered beheaded page into the beheaded pages state tracking
+    // and purge it if it is found to be fully acked
+    private void insertBeheadedPage(BeheadedPage p) throws IOException {
+        if (!p.isFullyAcked()) {
+            this.beheadedPages.add(p);
+            if (!p.isFullyRead()) {
+                this.unreadBeheadedPages.add(p);
+                this.unreadCount += p.unreadCount();
+            }
+        } else {
+            // for some reason we found a fully acked page, let's purge it.
+            p.purge();
+        }
+    }
+
+    // create a new empty headpage for the given pageNum and imidiately checkpoint it
+    // @param pageNum the page number of the new head page
+    private void newCheckpointedHeadpage(int pageNum) throws IOException {
+        PageIO headPageIO = this.pageIOFactory.build(pageNum, this.pageCapacity, this.dirPath);
+        this.headPage = new HeadPage(pageNum, this, headPageIO);
+        this.headPage.checkpoint();
+
     }
 
     // @param element the Queueable object to write to the queue
