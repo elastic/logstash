@@ -21,6 +21,7 @@ install:
   - ci/travis_integration_install.sh
 before_script:
   - echo "--order rand" > .rspec
+  - curl -s -o /tmp/postgres-driver.jar "https://jdbc.postgresql.org/download/postgresql-9.4.1211.jar"
   - psql -c 'create database travis_logstash_db;' -U postgres
   - psql -U postgres -d travis_logstash_db -a -f qa/integration/fixtures/travis_postgres.sql
 script:
