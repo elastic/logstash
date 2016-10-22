@@ -119,3 +119,5 @@ include::plugin-generator.asciidoc[]
 include::offline-plugins.asciidoc[]
 
 include::private-gem-repo.asciidoc[]
+
+include::event-api.asciidoc[]
