@@ -15,9 +15,9 @@ describe "Test JDBC Input" do
   
   #let(:config) { @fixture.config("root", { :driver_path => '/tmp/postgres-driver.jar' }) }
   let(:number_of_events) { 3 }
-  let(:row1) { {"city"=>"San Francisco", "join_date"=>"2014-02-10T08:00:00.000Z", "name"=>"John", "id"=>1, "title"=>"Engineer", "age"=>100} }
-  let(:row2) { {"city"=>"San Jose", "join_date"=>"2015-02-10T08:00:00.000Z", "name"=>"Jane", "id"=>2, "title"=>"CTO", "age"=>101} }
-  let(:row3) { {"city"=>"Mobile", "join_date"=>"2016-02-10T08:00:00.000Z", "name"=>"Jack", "id"=>3, "title"=>"Engineer", "age"=>102} }
+  let(:row1) { {"city"=>"San Francisco", "join_date"=>"2014-02-10T00:00:00.000Z", "name"=>"John", "id"=>1, "title"=>"Engineer", "age"=>100} }
+  let(:row2) { {"city"=>"San Jose", "join_date"=>"2015-02-10T00:00:00.000Z", "name"=>"Jane", "id"=>2, "title"=>"CTO", "age"=>101} }
+  let(:row3) { {"city"=>"Mobile", "join_date"=>"2016-02-10T00:00:00.000Z", "name"=>"Jack", "id"=>3, "title"=>"Engineer", "age"=>102} }
   
   def remove_meta_fields(line)
     line.delete("@version")
