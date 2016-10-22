@@ -20,7 +20,7 @@ class Service
 
   def teardown
     puts "Tearing down #{@name} service"
-    if File.exists?(@setup_script)
+    if File.exists?(@teardown_script)
       `#{@teardown_script}`
     else
       puts "Teardown script not found for #{@name}"

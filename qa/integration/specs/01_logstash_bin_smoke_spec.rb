@@ -22,7 +22,7 @@ describe "Test Logstash instance" do
     @ls2.teardown
   }
   
-  let(:num_retries) { 10 }
+  let(:num_retries) { 30 }
   let(:config1) { config_to_temp_file(@fixture.config("root", { :port => random_port })) }
   let(:config2) { config_to_temp_file(@fixture.config("root", { :port => random_port })) }
 
