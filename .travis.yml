@@ -21,7 +21,8 @@ install:
   - ci/travis_integration_install.sh
 before_script:
   - echo "--order rand" > .rspec
-  - qa/integration/services/postgres_setup.sh
+  - psql -c 'create database travis_logstash_db;' -U postgres
+  - psql -U postgres -d travis_logstash_db -a -f qa/integration/fixtures/travis_postgres.sql
 script:
   - rake test:core
   - ci/travis_integration_run.sh
