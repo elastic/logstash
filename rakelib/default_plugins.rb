@@ -5,9 +5,9 @@ module LogStash
     DEFAULT_PLUGINS = %w(
       logstash-input-heartbeat
       logstash-codec-collectd
-      logstash-output-xmpp
       logstash-codec-dots
       logstash-codec-edn
+      logstash-codec-avro
       logstash-codec-edn_lines
       logstash-codec-fluent
       logstash-codec-es_bulk
@@ -20,7 +20,6 @@ module LogStash
       logstash-codec-netflow
       logstash-codec-plain
       logstash-codec-rubydebug
-      logstash-filter-clone
       logstash-filter-csv
       logstash-filter-date
       logstash-filter-dns
@@ -37,26 +36,22 @@ module LogStash
       logstash-filter-split
       logstash-filter-syslog_pri
       logstash-filter-throttle
+      logstash-filter-uuid
       logstash-filter-urldecode
       logstash-filter-useragent
-      logstash-filter-uuid
       logstash-filter-xml
       logstash-input-couchdb_changes
       logstash-input-elasticsearch
       logstash-input-exec
       logstash-input-file
+      logstash-input-imap
       logstash-input-ganglia
       logstash-input-gelf
       logstash-input-generator
       logstash-input-graphite
       logstash-input-http
       logstash-input-http_poller
-      logstash-input-imap
-      logstash-input-irc
       logstash-input-jdbc
-      logstash-input-log4j
-      logstash-input-lumberjack
-      logstash-input-pipe
       logstash-input-rabbitmq
       logstash-input-redis
       logstash-input-s3
@@ -67,28 +62,20 @@ module LogStash
       logstash-input-tcp
       logstash-input-twitter
       logstash-input-udp
-      logstash-input-unix
-      logstash-input-xmpp
       logstash-input-kafka
       logstash-input-beats
-      logstash-output-cloudwatch
       logstash-output-csv
       logstash-output-elasticsearch
       logstash-output-file
       logstash-output-graphite
       logstash-output-http
-      logstash-output-irc
       logstash-output-kafka
       logstash-output-nagios
       logstash-output-null
       logstash-output-pagerduty
-      logstash-output-pipe
       logstash-output-rabbitmq
       logstash-output-redis
       logstash-output-s3
-      logstash-output-sns
-      logstash-output-sqs
-      logstash-output-statsd
       logstash-output-stdout
       logstash-output-tcp
       logstash-output-udp
@@ -119,7 +106,6 @@ module LogStash
       /example$/,
       /drupal/i,
       /^logstash-output-logentries$/,
-      /^logstash-input-jdbc$/,
       /^logstash-output-newrelic$/,
       /^logstash-output-slack$/,
       /^logstash-input-neo4j$/,
