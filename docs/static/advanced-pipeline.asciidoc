@@ -15,18 +15,22 @@ download the sample data set used in this example. Unpack the file.
 [[configuring-filebeat]]
 ==== Configuring Filebeat to Send Log Lines to Logstash
 
-Before you create the Logstash pipeline, you'll configure Filebeat to send log lines to Logstash.  https://github.com/elastic/beats/tree/master/filebeat[Filebeat] is a lightweight, resource-friendly tool that
-collects logs from files on the server and forwards these logs to your Logstash instance for processing. Filebeat is 
-designed for reliability and low latency. Filebeat uses the computing resources of the machine hosting the source data,
-and the {logstash}plugins-inputs-beats.html[`Beats input`] plugin minimizes the
-resource demands on the Logstash instance.
+Before you create the Logstash pipeline, you'll configure Filebeat to send log lines to Logstash.  
+The https://github.com/elastic/beats/tree/master/filebeat[Filebeat] client is a lightweight, resource-friendly tool
+that collects logs from files on the server and forwards these logs to your Logstash instance for processing.
+Filebeat is designed for reliability and low latency. Filebeat has a light resource footprint on the host machine,
+and the {logstash}plugins-inputs-beats.html[`Beats input`] plugin minimizes the resource demands on the Logstash
+instance.
 
 NOTE: In a typical use case, Filebeat runs on a separate machine from the machine running your
 Logstash instance. For the purposes of this tutorial, Logstash and Filebeat are running on the
 same machine.
 
-The default Logstash installation includes the {logstash}plugins-inputs-beats.html[`Beats input`] plugin. To install
-Filebeat on your data source machine, download the appropriate package from the Filebeat https://www.elastic.co/downloads/beats/filebeat[product page]. You can also refer to
+The default Logstash installation includes the {logstash}plugins-inputs-beats.html[`Beats input`] plugin. The Beats
+input plugin enables Logstash to receive events from the Elastic Beats framework, which means that any Beat written
+to work with the Beats framework, such as Packetbeat and Metricbeat, can also send event data to Logstash. 
+
+To install Filebeat on your data source machine, download the appropriate package from the Filebeat https://www.elastic.co/downloads/beats/filebeat[product page]. You can also refer to
 {filebeat}filebeat-getting-started.html[Getting Started with Filebeat] in the Beats documentation for additional
 installation instructions.
 
@@ -609,6 +613,13 @@ A few log entries come from Buffalo, so the query produces the following respons
      
 --------------------------------------------------------------------------------
 
+If you are using Kibana to visualize your data, you can also explore the Filebeat data in Kibana:
+
+image::static/images/kibana-filebeat-data.png[Discovering Filebeat data in Kibana]
+
+See the {filebeat}filebeat-getting-started.html[Filebeat getting started docs] for info about loading the Kibana
+index pattern for Filebeat.
+
 You've successfully created a pipeline that uses Filebeat to take Apache web logs as input, parses those logs to
 create specific, named fields from the logs, and writes the parsed data to an Elasticsearch cluster. Next, you
 learn how to create a pipeline that uses multiple input and output plugins.
@@ -659,20 +670,11 @@ placeholder values shown here:
 
 [float]
 [[configuring-lsf]]
-==== The Filebeat Client
+==== Configuring Filebeat to Send Log Lines to Logstash
 
-The https://github.com/elastic/beats/tree/master/filebeat[Filebeat] client is a lightweight, resource-friendly tool that
-collects logs from files on the server and forwards these logs to your Logstash instance for processing. Filebeat is 
-designed for reliability and low latency. Filebeat uses the computing resources of the machine hosting the source data,
-and the {logstash}plugins-inputs-beats.html[`Beats input`] plugin minimizes the
-resource demands on the Logstash instance.
-
-NOTE: In a typical use case, Filebeat runs on a separate machine from the machine running your
-Logstash instance. For the purposes of this tutorial, Logstash and Filebeat are running on the
-same machine.
-
-The default Logstash installation includes the {logstash}plugins-inputs-beats.html[`Beats input`] plugin. To install
-Filebeat on your data source machine, download the appropriate package from the Filebeat https://www.elastic.co/downloads/beats/filebeat[product page].
+As you learned earlier in <<configuring-filebeat>>, the https://github.com/elastic/beats/tree/master/filebeat[Filebeat]
+client is a lightweight, resource-friendly tool that collects logs from files on the server and forwards these logs to your
+Logstash instance for processing.
 
 After installing Filebeat, you need to configure it. Open the `filebeat.yml` file located in your Filebeat installation
 directory, and replace the contents with the following lines. Make sure `paths` points to your syslog: 
