@@ -104,15 +104,15 @@ describe LogStash::Pipeline do
   describe "event cancellation" do
     # test harness for https://github.com/elastic/logstash/issues/6055
 
-    let(:output) { DummyOutputWithEventsArray.new }
+    let(:output) { LogStash::Outputs::DummyOutputWithEventsArray.new }
 
     before do
       allow(LogStash::Plugin).to receive(:lookup).with("input", "generator").and_return(LogStash::Inputs::Generator)
-      allow(LogStash::Plugin).to receive(:lookup).with("output", "dummyoutputwitheventsarray").and_return(DummyOutputWithEventsArray)
+      allow(LogStash::Plugin).to receive(:lookup).with("output", "dummyoutputwitheventsarray").and_return(LogStash::Outputs::DummyOutputWithEventsArray)
       allow(LogStash::Plugin).to receive(:lookup).with("filter", "drop").and_call_original
       allow(LogStash::Plugin).to receive(:lookup).with("filter", "mutate").and_call_original
       allow(LogStash::Plugin).to receive(:lookup).with("codec", "plain").and_call_original
-      allow(DummyOutputWithEventsArray).to receive(:new).with(any_args).and_return(output)
+      allow(LogStash::Outputs::DummyOutputWithEventsArray).to receive(:new).with(any_args).and_return(output)
     end
 
     let(:config) do
