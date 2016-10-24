@@ -4,9 +4,6 @@ require "logstash/settings"
 require "tmpdir"
 require "socket" # for UNIXSocket
 
-
-
-
 describe LogStash::Setting::WritableDirectory do
   let(:mode_rx) { 0555 }
   # linux is 108, Macos is 104, so use a safe value
