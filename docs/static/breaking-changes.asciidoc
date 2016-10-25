@@ -26,6 +26,30 @@ to adhere to the yml dot notation to be used in the settings file. Short form op
 other components of the Elastic stack are installed on the same instance. Also, this provides a foundation
 for future change which will allow Elastic Stack packs to be installed via this script.
 
+* The Logstash All Plugins download option has been removed. For users previously using this option as a convenience for 
+offline plugin management purposes (air-gapped environments), please see the <<offline-plugins>> documentation page.
+
+* There are 18 plugins removed from 5.0 default bundle. These plugins can still be installed manually for use.
+** logstash-codec-oldlogstashjson
+** logstash-filter-anonymize
+** logstash-filter-checksum
+** logstash-filter-multiline
+** logstash-input-elasticsearch
+** logstash-input-eventlog
+** logstash-input-log4j
+** logstash-input-zeromq
+** logstash-output-email
+** logstash-output-exec
+** logstash-output-ganglia
+** logstash-output-gelf
+** logstash-output-hipchat
+** logstash-output-juggernaut
+** logstash-output-lumberjack
+** logstash-output-nagios_nsca
+** logstash-output-opentsdb
+** logstash-output-zeromq
+
+
 [float]
 === Breaking Changes in Plugins
 
