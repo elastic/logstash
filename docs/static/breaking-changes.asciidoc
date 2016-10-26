@@ -1,48 +1,17 @@
 [[breaking-changes]]
 == Breaking changes
 
-This section discusses the changes that you need to be aware of when migrating your application to Logstash {version} from the previous major release of Logstash (2.x).
-
-[float]
-=== When to Upgrade
-
-Fresh installations can and should start with the same version across the Elastic Stack.
-
-Elasticsearch 5.0 does not require Logstash {version}. An Elasticsearch 5.0 cluster will happily receive data from a
-Logstash 2.x instance via the default HTTP communication layer. This provides some flexibility to decide when to upgrade
-Logstash relative to an Elasticsearch upgrade. It may or may not be convenient for you to upgrade them together, and it is
-not required to be done at the same time as long as Elasticsearch is upgraded first.
-
-You should upgrade in a timely manner to get the performance improvements that come with Logstash {version}, but do so in
-the way that makes the most sense for your environment.
-
-[float]
-=== When Not to Upgrade
-
-If any Logstash plugin that you require is not compatible with Logstash {version}, then you should wait until it is ready
-before upgrading.
-
-////
-BEFORE 5.0 is released, we need to add the link to the Elastic Stack upgrade page.
-////
-
-Although we make great efforts to ensure compatibility, Logstash {version} is not completely backwards compatible. As noted
-in the overall upgrade guide, Logstash {version} should not be upgraded before Elasticsearch 5.0. This is both
-practical and because some Logstash {version} plugins may attempt to use features of Elasticsearch 5.0 that did not exist
-in earlier versions. For example, if you attempt to send the 5.x template to a cluster before Elasticsearch 5.0, then it
-will not be able to use it and all indexing will fail likely fail. If you use your own, custom template with Logstash, then
-this issue can be ignored.
-
-Note the Elasticsearch Output Template change below for further insight into this change and how it impacts operations.
+This section discusses the changes that you need to be aware of when migrating your application to Logstash 5.0 from the previous major release of Logstash (2.x).
 
 [float]
 === Changes in Logstash Core
 
-These changes can impact any instance of Logstash are plugin agnostic, but only if you are using the features that are impacted.
+These changes can impact any instance of Logstash and are plugin agnostic, but only if you are using the features that are impacted.
 
 Application Settings::
 
-Logstash {version} introduces a new way to <<logstash-settings-file, configure application settings>> for Logstash through a
+[IMPORTANT]
+Logstash 5.0 introduces a new way to <<logstash-settings-file, configure application settings>> for Logstash through a
 `settings.yml` file.
 
 This file is typically located in `${LS_HOME}/config`, or `/etc/logstash` when installed via packages. Logstash will not be 
@@ -56,7 +25,7 @@ bin/logstash --path.settings /path/to/settings.yml
 
 Release Packages::
 
-When Logstash {version} is installed via DEB or RPM packages, it now uses `/usr/share/logstash` and `/var/lib/logstash` to
+When Logstash 5.0 is installed via DEB or RPM packages, it now uses `/usr/share/logstash` and `/var/lib/logstash` to
 install binaries. Previously it used to install in `/opt/logstash` directory. This change was done to make the user experience consistent with other products in the Elastic Stack.
 
 [cols="3", options="header"]
@@ -65,7 +34,7 @@ install binaries. Previously it used to install in `/opt/logstash` directory. Th
 |Logstash 2.x
 |`/opt/logstash`
 |`/opt/logstash`
-|Logstash {version}
+|Logstash 5.0 
 |`/user/share/logstash`
 |`/var/lib/logstash`
 |===
@@ -93,30 +62,7 @@ Plugin Manager Renamed::
 polluted when other components of the Elastic Stack are installed on the same machine. Also, this provides a foundation
 for future change which will allow Elastic Stack packs to be installed via this script.
 
-<<<<<<< HEAD
-* The Logstash All Plugins download option has been removed. For users previously using this option as a convenience for 
-offline plugin management purposes (air-gapped environments), please see the <<offline-plugins>> documentation page.
-
-* There are 17 plugins removed from 5.0 default bundle. These plugins can still be installed manually for use.
-** logstash-codec-oldlogstashjson
-** logstash-filter-anonymize
-** logstash-filter-checksum
-** logstash-filter-multiline
-** logstash-input-eventlog
-** logstash-input-log4j
-** logstash-input-zeromq
-** logstash-output-email
-** logstash-output-exec
-** logstash-output-ganglia
-** logstash-output-gelf
-** logstash-output-hipchat
-** logstash-output-juggernaut
-** logstash-output-lumberjack
-** logstash-output-nagios_nsca
-** logstash-output-opentsdb
-** logstash-output-zeromq
-
-Logstash {version} also adds a `remove` option, which is an alias for the now-deprecated `uninstall` option.
+Logstash 5.0 also adds a `remove` option, which is an alias for the now-deprecated `uninstall` option.
 
 As with earlier releases, the updated script allows both online and offline plugin installation. For example, to install a
 plugin named “my-plugin”, it’s as simple as running:
@@ -160,7 +106,7 @@ There were 17 plugins removed from 5.0 default bundle. These plugins can still b
 
 Command Line Interface::
 
-Some CLI Options changed in Logstash {version}. If you were using the “long form” of the <<command-line-flags,options>>,
+Some CLI Options changed in Logstash 5.0. If you were using the “long form” of the <<command-line-flags,options>>,
 then this will impact the way that you launch Logstash. They were changed to match the `settings.yml` format used to
 simplify future setup, as well as behave in the same way as other products in the Elastic Stack. For example, here’s two
 before-and-after examples. In Logstash 2.x, you may have run something:
@@ -173,7 +119,7 @@ bin/logstash -f my.conf -w 8 <2>
 1. Long form options `config` and `pipeline-workers` are used here.
 2. Short form options `f` and `w` (aliases for the former` are used here.
 
-But, in Logstash {version}, this becomes:
+But, in Logstash 5.0, this becomes:
 
 [source,bash]
 ----------------------------------
@@ -190,12 +136,12 @@ NOTE: None of the short form options have changed!
 
 Elasticsearch Output Index Template::
 
-The index template for Elasticsearch {version} has been changed to reflect
+The index template for Elasticsearch 5.0 has been changed to reflect
 https://www.elastic.co/guide/en/elasticsearch/reference/5.0/breaking_50_mapping_changes.html[Elasticsearch's mapping changes]. Most
 importantly, the subfield for string multi-fields has changed from `.raw` to `.keyword` to match Elasticsearch's default
 behavior. The impact of this change to various user groups is detailed below:
 
-** New Logstash {version} and Elasticsearch {version} users: Multi-fields (often called sub-fields) use `.keyword` from the
+** New Logstash 5.0 and Elasticsearch 5.0 users: Multi-fields (often called sub-fields) use `.keyword` from the
 outset. In Kibana, you can use `my_field.keyword` to perform aggregations against text-based fields, in the same way that it 
 used to be `my_field.raw`.
 ** Existing users with custom templates: Using a custom template means that you control the template completely, and our 
@@ -226,7 +172,7 @@ of your architecture incompatible. You should always test your Logstash configur
 deploying to production, which would catch these kinds of issues. If you do face such an issue, then you should also check
 the specific plugin’s page to see how to get a compatible, older plugin version if necessary.
 
-For example, if you upgrade to Logstash {version}, but you want to run against Kafka 0.9, then you need to remove the
+For example, if you upgrade to Logstash 5.0, but you want to run against Kafka 0.9, then you need to remove the
 bundled plugin(s) that only work with Kafka 0.10 and replace them:
 
 [source,bash]
@@ -249,12 +195,12 @@ where `path.data` is the path defined in the new `settings.yml` file.
 | |Default `sincedb_path`
 |Logstash 2.x
 |`$HOME/.sincedb*`
-|Logstash {version}
+|Logstash 5.0 
 |`<path.data>/plugins/inputs/file`
 |===
 
 If you have manually specified `sincedb_path` as part of the configuration, this change will not affect you.
-If you are moving from Logstash 2.x to Logstash {version}, and you would like to use the existing SinceDB file,
+If you are moving from Logstash 2.x to Logstash 5.0, and you would like to use the existing SinceDB file,
 then it must be copied over to `path.data` manually to use the save state (or the path needs to be changed to point to it).
 
 [float]
@@ -269,7 +215,7 @@ As part of this change, Logstash has introduced new Getter/Setter APIs for acces
 
 **Examples:**
 
-Prior to Logstash {version}, you may have used Ruby filters like so:
+Prior to Logstash 5.0, you may have used Ruby filters like so:
 
 [source, js]
 ----------------------------------
@@ -284,7 +230,7 @@ filter {
 ----------------------------------
 
 The above syntax, which uses the `event` object as a reference, is no longer supported in
-Logstash {version}. Fortunately, the change to make it work is very simple:
+Logstash 5.0. Fortunately, the change to make it work is very simple:
 
 [source, js]
 ----------------------------------
