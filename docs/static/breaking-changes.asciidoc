@@ -35,12 +35,11 @@ for future change which will allow Elastic Stack packs to be installed via this 
 * The Logstash All Plugins download option has been removed. For users previously using this option as a convenience for 
 offline plugin management purposes (air-gapped environments), please see the <<offline-plugins>> documentation page.
 
-* There are 18 plugins removed from 5.0 default bundle. These plugins can still be installed manually for use.
+* There are 17 plugins removed from 5.0 default bundle. These plugins can still be installed manually for use.
 ** logstash-codec-oldlogstashjson
 ** logstash-filter-anonymize
 ** logstash-filter-checksum
 ** logstash-filter-multiline
-** logstash-input-elasticsearch
 ** logstash-input-eventlog
 ** logstash-input-log4j
 ** logstash-input-zeromq
