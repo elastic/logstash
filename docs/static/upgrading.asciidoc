@@ -34,14 +34,15 @@ BEFORE 5.0 is released, we need to add the link to the Elastic Stack upgrade pag
 ////
 
 Although we make great efforts to ensure compatibility, Logstash 5.0 is not completely backwards compatible. As noted
-in the overall upgrade guide, Logstash 5.0 should not be upgraded before Elasticsearch 5.0. This is both
+in the Elastic Stack upgrade guide, Logstash 5.0 should not be upgraded before Elasticsearch 5.0. This is both
 practical and because some Logstash 5.0 plugins may attempt to use features of Elasticsearch 5.0 that did not exist
 in earlier versions. For example, if you attempt to send the 5.x template to a cluster before Elasticsearch 5.0, then it
 will not be able to use it and all indexing will fail likely fail. If you use your own, custom template with Logstash, t
 hen
 this issue can be ignored.
 
-Note the Elasticsearch Output Template change below for further insight into this change and how it impacts operations.
+Note the Elasticsearch Output Index Template change in the <<breaking-changes>> documentation for further insight into
+this change and how it impacts operations.
 
 === Upgrading Using Package Managers
 
