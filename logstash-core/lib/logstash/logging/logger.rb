@@ -3,11 +3,12 @@ require "uri"
 
 module LogStash
   module Logging
+    java_import org.apache.logging.log4j.Level
+    java_import org.apache.logging.log4j.LogManager
+    java_import org.apache.logging.log4j.core.config.Configurator
+    java_import org.apache.logging.log4j.core.config.DefaultConfiguration
+
     class Logger
-      java_import org.apache.logging.log4j.Level
-      java_import org.apache.logging.log4j.LogManager
-      java_import org.apache.logging.log4j.core.config.Configurator
-      java_import org.apache.logging.log4j.core.config.DefaultConfiguration
       @@config_mutex = Mutex.new
       @@logging_context = nil
 
@@ -88,6 +89,38 @@ module LogStash
 
       def self.get_logging_context
         return @@logging_context
+      end
+    end
+
+    class SlowLogger
+      def initialize(name, warn_threshold, info_threshold, debug_threshold, trace_threshold)
+        slowlog_name = ["slowlog", name].join('.')
+        @slowlogger = LogManager.getLogger(slowlog_name)
+        @warn_threshold = warn_threshold
+        @info_threshold = info_threshold
+        @debug_threshold = debug_threshold
+        @trace_threshold = trace_threshold
+      end
+
+      def as_data(plugin_params, event, took_in_nanos)
+        {
+          :plugin_params => plugin_params,
+          :took_in_nanos => took_in_nanos,
+          :took_in_millis => took_in_nanos / 1000,
+          :event => event.to_json
+        }
+      end
+
+      def on_event(message, plugin_params, event, took_in_nanos)
+        if @warn_threshold >= 0 and took_in_nanos > @warn_threshold
+          @slowlogger.warn(message, as_data(plugin_params, event, took_in_nanos))
+        elsif @info_threshold >= 0 and took_in_nanos > @info_threshold
+          @slowlogger.info(message, as_data(plugin_params, event, took_in_nanos))
+        elsif @debug_threshold >= 0 and took_in_nanos > @debug_threshold
+          @slowlogger.debug(message, as_data(plugin_params, event, took_in_nanos))
+        elsif @trace_threshold >= 0 and took_in_nanos > @trace_threshold
+          @slowlogger.trace(message, as_data(plugin_params, event, took_in_nanos))
+        end
       end
     end
   end
