@@ -43,6 +43,10 @@ module LogStash
             Setting::String.new("queue.type", "memory", true, ["persisted", "memory", "memory_acked"]),
             Setting::Bytes.new("queue.page_capacity", "250mb"),
             Setting::Numeric.new("queue.max_events", 0), # 0 is unlimited
+            Setting::TimeValue.new("slowlog.threshold.warn", "-1"),
+            Setting::TimeValue.new("slowlog.threshold.info", "-1"),
+            Setting::TimeValue.new("slowlog.threshold.debug", "-1"),
+            Setting::TimeValue.new("slowlog.threshold.trace", "-1")
   ].each {|setting| SETTINGS.register(setting) }
 
   # Compute the default queue path based on `path.data`

@@ -46,6 +46,12 @@ class LogStash::Plugin
 
   def initialize(params=nil)
     @logger = self.logger
+    # need to access settings statically because plugins are initialized in config_ast with no context.
+    settings = LogStash::SETTINGS
+    @slow_logger = self.slow_logger(settings.get("slowlog.threshold.warn"),
+                                    settings.get("slowlog.threshold.info"),
+                                    settings.get("slowlog.threshold.debug"),
+                                    settings.get("slowlog.threshold.trace"))
     @params = LogStash::Util.deep_clone(params)
     # The id should always be defined normally, but in tests that might not be the case
     # In the future we may make this more strict in the Plugin API
