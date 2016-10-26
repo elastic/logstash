@@ -8,7 +8,8 @@ This section discusses the changes that you need to be aware of when migrating y
 
 These changes can impact any instance of Logstash and are plugin agnostic, but only if you are using the features that are impacted.
 
-Application Settings::
+[float]
+==== Application Settings
 
 [IMPORTANT]
 Logstash 5.0 introduces a new way to <<logstash-settings-file, configure application settings>> for Logstash through a
@@ -23,7 +24,8 @@ after installing it via a package (RPM, DEB).
 bin/logstash --path.settings /path/to/settings.yml
 ----------------------------------
 
-Release Packages::
+[float]
+==== Release Packages
 
 When Logstash 5.0 is installed via DEB or RPM packages, it now uses `/usr/share/logstash` and `/var/lib/logstash` to
 install binaries. Previously it used to install in `/opt/logstash` directory. This change was done to make the user experience consistent with other products in the Elastic Stack.
@@ -42,7 +44,8 @@ install binaries. Previously it used to install in `/opt/logstash` directory. Th
 A complete directory layout is described in <<dir-layout>>. This will likely impact any scripts that you may have written
 to support installing or manipulating Logstash, such as via Puppet.
 
-Default Logging Level::
+[float]
+==== Default Logging Level
 
 The default log severity level changed to `INFO` instead of `WARN` to match Elasticsearch. Existing logs
 (in core and plugins) were too noisy at the `INFO` level, so we auditted our log messages and switched some of them to
@@ -56,7 +59,8 @@ You can use the new `settings.yml` file to configure the `log.level` setting or 
 bin/logstash --log.level warn
 ----------------------------------
 
-Plugin Manager Renamed::
+[float]
+==== Plugin Manager Renamed
 
 `bin/plugin` has been renamed to `bin/logstash-plugin`. This occurred in Logstash 2.3 and it was mainly prevent `PATH` being
 polluted when other components of the Elastic Stack are installed on the same machine. Also, this provides a foundation
@@ -79,7 +83,8 @@ Like earlier releases of Logstash, most plugins are bundled directly with Logsta
 while upgrading from earlier Logstash releases. However, if you are attempting to install a non-bundled plugin, then make
 sure that it supports Logstash 5.0 before upgrading!
 
-Logstash with All Plugins Download::
+[float]
+==== Logstash with All Plugins Download
 
 The Logstash All Plugins download option has been removed. For users previously using this option as a convenience for
 offline plugin management purposes (air-gapped environments), please see the <<offline-plugins>> documentation page.
@@ -104,7 +109,8 @@ There were 17 plugins removed from 5.0 default bundle. These plugins can still b
 * logstash-output-opentsdb
 * logstash-output-zeromq
 
-Command Line Interface::
+[float]
+==== Command Line Interface
 
 Some CLI Options changed in Logstash 5.0. If you were using the “long form” of the <<command-line-flags,options>>,
 then this will impact the way that you launch Logstash. They were changed to match the `settings.yml` format used to
@@ -134,7 +140,8 @@ NOTE: None of the short form options have changed!
 [float]
 === Breaking Changes in Plugins
 
-Elasticsearch Output Index Template::
+[float]
+==== Elasticsearch Output Index Template
 
 The index template for Elasticsearch 5.0 has been changed to reflect
 https://www.elastic.co/guide/en/elasticsearch/reference/5.0/breaking_50_mapping_changes.html[Elasticsearch's mapping changes]. Most
@@ -153,8 +160,9 @@ also uses the `.keyword` field, unless you are able to transition from `.raw` to
 transition time. You _can_ use a custom template to get both `.raw` and `.keyword` so that you can wait until all `.raw` data
 has stopped existing before transitioning to only using `.keyword`; this will waste some storage space and memory, but it does
 help users to avoid having to relearn operations.
- 
-Plugin Versions::
+
+[float]
+==== Plugin Versions
 
 Logstash is unique amongst the Elastic Stack with respect to its plugins. Unlike Elasticsearch and Kibana, which both 
 require plugins to be targeted to a specific release, Logstash’s plugin ecosystem provides more flexibility so that it can
@@ -185,7 +193,8 @@ bin/logstash-plugin install --version 4.0.1 logstash-output-kafka
 
 The version numbers were found by checking the compatibility matrix for the individual plugins.
 
-File Input::
+[float]
+==== File Input
 
 The <<plugins-inputs-file, File Input>> `SinceDB` file is now saved at `<path.data>/plugins/inputs/file` location,
 where `path.data` is the path defined in the new `settings.yml` file.
