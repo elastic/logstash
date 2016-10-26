@@ -2,6 +2,7 @@
 require "logstash/util/loggable"
 require "fileutils"
 require "logstash/util/byte_value"
+require "logstash/util/time_value"
 
 module LogStash
   class Settings
@@ -463,7 +464,19 @@ module LogStash
         end
       end
     end
+
+    class TimeValue < Coercible
+      def initialize(name, default, strict=true, &validator_proc)
+        super(name, ::Fixnum, default, strict, &validator_proc)
+      end
+
+      def coerce(value)
+        return value if value.is_a?(::Fixnum)
+        Util::TimeValue.from_value(value).to_nanos
+      end
+    end
   end
+
 
   SETTINGS = Settings.new
 end
