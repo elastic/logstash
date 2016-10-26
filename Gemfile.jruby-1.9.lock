@@ -1,7 +1,7 @@
 PATH
   remote: ./logstash-core
   specs:
-    logstash-core (5.0.0-java)
+    logstash-core (5.0.1-java)
       chronic_duration (= 0.10.6)
       clamp (~> 0.6.5)
       concurrent-ruby (= 1.0.0)
@@ -12,7 +12,7 @@ PATH
       jrjackson (~> 0.4.0)
       jrmonitor (~> 0.4.2)
       jruby-openssl (= 0.9.16)
-      logstash-core-event-java (= 5.0.0)
+      logstash-core-event-java (= 5.0.1)
       minitar (~> 0.5.4)
       pry (~> 0.10.1)
       puma (~> 2.16)
@@ -25,7 +25,7 @@ PATH
 PATH
   remote: ./logstash-core-event-java
   specs:
-    logstash-core-event-java (5.0.0-java)
+    logstash-core-event-java (5.0.1-java)
       jar-dependencies
       ruby-maven (~> 3.3.9)
 
@@ -33,7 +33,7 @@ PATH
   remote: ./logstash-core-plugin-api
   specs:
     logstash-core-plugin-api (2.1.16-java)
-      logstash-core (= 5.0.0)
+      logstash-core (= 5.0.1)
 
 GEM
   remote: https://rubygems.org/
@@ -80,6 +80,7 @@ GEM
       json
     domain_name (0.5.20160826)
       unf (>= 0.0.5, < 1.0.0)
+    dotenv (2.1.1)
     edn (1.1.1)
     elasticsearch (1.1.0)
       elasticsearch-api (= 1.1.0)
@@ -336,10 +337,10 @@ GEM
       logstash-codec-plain
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       stud (~> 0.0.22)
-    logstash-input-rabbitmq (5.1.1)
+    logstash-input-rabbitmq (5.2.0)
       logstash-codec-json
       logstash-core-plugin-api (>= 1.60, <= 2.99)
-      logstash-mixin-rabbitmq_connection (>= 4.1.1, < 5.0.0)
+      logstash-mixin-rabbitmq_connection (>= 4.2.0, < 5.0.0)
     logstash-input-redis (3.1.1)
       logstash-codec-json
       logstash-core-plugin-api (>= 1.60, <= 2.99)
@@ -399,8 +400,8 @@ GEM
       logstash-codec-plain
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       manticore (>= 0.5.2, < 1.0.0)
-    logstash-mixin-rabbitmq_connection (4.1.2-java)
-      march_hare (~> 2.15.0)
+    logstash-mixin-rabbitmq_connection (4.2.0-java)
+      march_hare (~> 2.19.0)
       stud (~> 0.0.22)
     logstash-output-cloudwatch (3.0.3)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
@@ -491,7 +492,7 @@ GEM
     mail (2.6.4)
       mime-types (>= 1.16, < 4)
     manticore (0.6.0-java)
-    march_hare (2.15.0-java)
+    march_hare (2.19.0-java)
     memoizable (0.4.2)
       thread_safe (~> 0.3, >= 0.3.1)
     method_source (0.8.2)
@@ -511,9 +512,10 @@ GEM
     numerizer (0.1.1)
     octokit (3.8.0)
       sawyer (~> 0.6.0, >= 0.5.3)
-    pleaserun (0.0.24)
+    pleaserun (0.0.26)
       cabin (> 0)
       clamp
+      dotenv
       insist
       mustache (= 0.99.8)
       stud
@@ -595,7 +597,7 @@ GEM
       simple_oauth (~> 0.3.0)
     tzinfo (1.2.2)
       thread_safe (~> 0.1)
-    tzinfo-data (1.2016.7)
+    tzinfo-data (1.2016.8)
       tzinfo (>= 1.0.0)
     unf (0.1.4-java)
     user_agent_parser (2.3.0)
