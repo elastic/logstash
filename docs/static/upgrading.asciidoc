@@ -9,41 +9,6 @@ Before upgrading Logstash:
 * Test upgrades in a development environment before upgrading your production cluster.
 ===========================================
 
-[float]
-=== When to Upgrade
-
-Fresh installations can and should start with the same version across the Elastic Stack.
-
-Elasticsearch 5.0 does not require Logstash 5.0. An Elasticsearch 5.0 cluster will happily receive data from a
-Logstash 2.x instance via the default HTTP communication layer. This provides some flexibility to decide when to upgrade
-Logstash relative to an Elasticsearch upgrade. It may or may not be convenient for you to upgrade them together, and it
-is
-not required to be done at the same time as long as Elasticsearch is upgraded first.
-
-You should upgrade in a timely manner to get the performance improvements that come with Logstash 5.0, but do so in
-the way that makes the most sense for your environment.
-
-[float]
-=== When Not to Upgrade
-
-If any Logstash plugin that you require is not compatible with Logstash 5.0, then you should wait until it is ready
-before upgrading.
-
-////
-BEFORE 5.0 is released, we need to add the link to the Elastic Stack upgrade page.
-////
-
-Although we make great efforts to ensure compatibility, Logstash 5.0 is not completely backwards compatible. As noted
-in the Elastic Stack upgrade guide, Logstash 5.0 should not be upgraded before Elasticsearch 5.0. This is both
-practical and because some Logstash 5.0 plugins may attempt to use features of Elasticsearch 5.0 that did not exist
-in earlier versions. For example, if you attempt to send the 5.x template to a cluster before Elasticsearch 5.0, then it
-will not be able to use it and all indexing will fail likely fail. If you use your own, custom template with Logstash, t
-hen
-this issue can be ignored.
-
-Note the Elasticsearch Output Index Template change in the <<breaking-changes>> documentation for further insight into
-this change and how it impacts operations.
-
 === Upgrading Using Package Managers
 
 This procedure uses <<package-repositories,package managers>> to upgrade Logstash.
@@ -66,52 +31,6 @@ This procedure downloads the relevant Logstash binaries directly from Elastic.
 4. Test your configuration file with the `logstash --config.test_and_exit -f <configuration-file>` command. Configuration options for
 some Logstash plugins have changed in the 2.0 release.
 5. Restart your Logstash pipeline after updating your configuration file.
-
-=== Upgrading Logstash and Elasticsearch to 2.0
-
-If you are using Elasticsearch as an output, and wish to upgrade to Elasticsearch 2.0, please be
-aware of https://www.elastic.co/guide/en/elasticsearch/reference/2.0/breaking-changes-2.0.html[breaking changes]
-before you upgrade. In addition, the following steps needs to be performed after upgrading to Elasticsearch 2.0:
-
-**Mapping changes:** Users may have custom template changes, so by default a Logstash upgrade will
-leave the template as is. Even if you don't have a custom template, Logstash will not overwrite an existing
-template by default.
-
-There is one known issue (removal of https://www.elastic.co/guide/en/elasticsearch/reference/1.4/mapping-object-type.html#_path_3[path]) with using GeoIP filter that needs a manual update to the template.
-
-Note: If you have custom template changes, please make sure to save it and merge any changes. You can
-get the existing template by running:
-
-[source,shell]
-curl -XGET localhost:9200/_template/logstash
-
-
-Add the following option to your Logstash config:
-
-[source,json]
-output {
-	elasticsearch {
-		template_overwrite => true
-	}
-}
-
-Restart Logstash.
-
-**Dots in fields:** Elasticsearch 2.0 does not allow field names to contain the `.` character.
-Further details about this change https://www.elastic.co/guide/en/elasticsearch/reference/2.0/breaking_20_mapping_changes.html#_field_names_may_not_contain_dots[here]. Some plugins already have been updated to compensate
-for this breaking change, including logstash-filter-metrics and logstash-filter-elapsed.
-These plugin updates are available for Logstash 2.0. To upgrade to the latest version of these
-plugins, the command is:
-
-[source,shell]
-bin/logstash-plugin update <plugin_name>
-
-**Multiline Filter:** If you are using the Multiline Filter in your configuration and upgrade to Logstash 2.0,
-you will get an error. Make sure to explicitly set the number of filter workers (`-w`) to `1`. You can set the number
-of workers by passing a command line flag such as:
-
-[source,shell]
-bin/logstash -w 1
 
 [[upgrading-logstash-2.2]]
 === Upgrading Logstash to 2.2
@@ -141,5 +60,42 @@ Thus, in 2.2, you can safely set `-w` to a number which is a multiple of the num
 A common way to tune performance is keep increasing the `-w` beyond the # of cores until performance no longer
 improves. A note of caution - make sure you also keep heapsize in mind, because the number of in-flight events
 are `#workers * batch_size * average_event size`. More in-flight events could add to memory pressure, eventually
-leading to Out of Memory errors. You can change the heapsize in Logstash by setting `LS_HEAP_SIZE`
+leading to Out of Memory errors. You can change the heapsize in Logstash by setting `LS_HEAP_SIZE`.
+
+[[upgrading-logstash-5.0]]
+=== Upgrading Logstash to 5.0
+
+Before upgrading Logstash, remember to read the <<breaking-changes,breaking changes>>.
+
+If you are installing Logstash with other components in the Elastic Stack, also see the
+{stack}index.html[Elastic Stack installation and upgrade documentation].
+
+==== When to Upgrade
+
+Fresh installations can and should start with the same version across the Elastic Stack. 
+
+Elasticsearch 5.0 does not require Logstash 5.0. An Elasticsearch 5.0 cluster will happily receive data from a
+Logstash 2.x instance via the default HTTP communication layer. This provides some flexibility to decide when to upgrade
+Logstash relative to an Elasticsearch upgrade. It may or may not be convenient for you to upgrade them together, and it
+is
+not required to be done at the same time as long as Elasticsearch is upgraded first.
+
+You should upgrade in a timely manner to get the performance improvements that come with Logstash 5.0, but do so in
+the way that makes the most sense for your environment.
+
+==== When Not to Upgrade
+
+If any Logstash plugin that you require is not compatible with Logstash 5.0, then you should wait until it is ready
+before upgrading.
+
+Although we make great efforts to ensure compatibility, Logstash 5.0 is not completely backwards compatible. As noted
+in the Elastic Stack upgrade guide, Logstash 5.0 should not be upgraded before Elasticsearch 5.0. This is both
+practical and because some Logstash 5.0 plugins may attempt to use features of Elasticsearch 5.0 that did not exist
+in earlier versions. For example, if you attempt to send the 5.x template to a cluster before Elasticsearch 5.0, then it
+will not be able to use it and all indexing will fail likely fail. If you use your own, custom template with Logstash,
+then this issue can be ignored.
+
+Note the Elasticsearch Output Index Template change in the <<breaking-changes>> documentation for further insight into
+this change and how it impacts operations.
+
 
