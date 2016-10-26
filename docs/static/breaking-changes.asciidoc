@@ -215,6 +215,7 @@ then it must be copied over to `path.data` manually to use the save state (or th
 [float]
 === Ruby Filter and Custom Plugin Developers
 
+With the migration to the new <<event-api>>, we have changed how you can access internal data compared to previous release. 
 The `event` object no longer returns a reference to the data. Instead, it returns a copy. This might change how you perform
 manipulation of your data, especially when working with nested hashes. When working with nested hashes, it’s recommended that 
 you use the <<logstash-config-field-references, `field reference` syntax>> instead of using multiple square brackets.
