@@ -37,8 +37,8 @@ install binaries. Previously it used to install in `/opt/logstash` directory. Th
 |`/opt/logstash`
 |`/opt/logstash`
 |Logstash 5.0 
-|`/user/share/logstash`
-|`/user/share/logstash`
+|`/usr/share/logstash`
+|`/usr/share/logstash`
 |===
 
 A complete directory layout is described in <<dir-layout>>. This will likely impact any scripts that you may have written
