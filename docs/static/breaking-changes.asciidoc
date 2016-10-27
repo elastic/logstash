@@ -13,7 +13,7 @@ These changes can impact any instance of Logstash and are plugin agnostic, but o
 
 [IMPORTANT]
 Logstash 5.0 introduces a new way to <<logstash-settings-file, configure application settings>> for Logstash through a
-`settings.yml` file.
+`logstash.yml` file.
 
 This file is typically located in `${LS_HOME}/config`, or `/etc/logstash` when installed via packages. Logstash will not be 
 able to start without this file, so please make sure to pass in `--path.settings` if you are starting Logstash manually
@@ -21,13 +21,13 @@ after installing it via a package (RPM, DEB).
 
 [source,bash]
 ----------------------------------
-bin/logstash --path.settings /path/to/settings.yml
+bin/logstash --path.settings /path/to/logstash.yml
 ----------------------------------
 
 [float]
 ==== Release Packages
 
-When Logstash 5.0 is installed via DEB or RPM packages, it now uses `/usr/share/logstash` and `/var/lib/logstash` to
+When Logstash 5.0 is installed via DEB or RPM packages, it now uses `/usr/share/logstash` to
 install binaries. Previously it used to install in `/opt/logstash` directory. This change was done to make the user experience consistent with other products in the Elastic Stack.
 
 [cols="3", options="header"]
@@ -38,7 +38,7 @@ install binaries. Previously it used to install in `/opt/logstash` directory. Th
 |`/opt/logstash`
 |Logstash 5.0 
 |`/user/share/logstash`
-|`/var/lib/logstash`
+|`/user/share/logstash`
 |===
 
 A complete directory layout is described in <<dir-layout>>. This will likely impact any scripts that you may have written
@@ -51,7 +51,7 @@ The default log severity level changed to `INFO` instead of `WARN` to match Elas
 (in core and plugins) were too noisy at the `INFO` level, so we auditted our log messages and switched some of them to
 `DEBUG` level.
 
-You can use the new `settings.yml` file to configure the `log.level` setting or continue to pass the new
+You can use the new `logstash.yml` file to configure the `log.level` setting or continue to pass the new
 `--log.level` command line flag.
 
 [source,bash]
@@ -113,7 +113,7 @@ There were 17 plugins removed from 5.0 default bundle. These plugins can still b
 ==== Command Line Interface
 
 Some CLI Options changed in Logstash 5.0. If you were using the “long form” of the <<command-line-flags,options>>,
-then this will impact the way that you launch Logstash. They were changed to match the `settings.yml` format used to
+then this will impact the way that you launch Logstash. They were changed to match the `logstash.yml` format used to
 simplify future setup, as well as behave in the same way as other products in the Elastic Stack. For example, here’s two
 before-and-after examples. In Logstash 2.x, you may have run something:
 
@@ -197,7 +197,7 @@ The version numbers were found by checking the compatibility matrix for the indi
 ==== File Input
 
 The <<plugins-inputs-file, File Input>> `SinceDB` file is now saved at `<path.data>/plugins/inputs/file` location,
-where `path.data` is the path defined in the new `settings.yml` file.
+where `path.data` is the path defined in the new `logstash.yml` file.
 
 [cols="2", options="header"]
 |===
