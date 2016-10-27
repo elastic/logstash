@@ -141,6 +141,15 @@ NOTE: None of the short form options have changed!
 === Breaking Changes in Plugins
 
 [float]
+==== Elasticsearch Output `workers` Setting Removed
+
+Starting with Logstash 5.0, the `workers` setting in the Elasticsearch output
+plugin is no longer supported. Pipelines that specify this setting will no
+longer start up. You need to specify the `pipeline.workers` setting at the
+pipeline level instead. For more information about setting
+`pipeline.workers`, see <<logstash-settings-file>>.
+
+[float]
 ==== Elasticsearch Output Index Template
 
 The index template for Elasticsearch 5.0 has been changed to reflect
