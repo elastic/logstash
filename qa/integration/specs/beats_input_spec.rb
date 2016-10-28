@@ -10,6 +10,10 @@ describe "Beat Input" do
   before(:all) do
     @fixture = Fixture.new(__FILE__)
   end
+  
+  after(:all) do
+    @fixture.teardown
+  end
 
   after :each do
     logstash_service.teardown

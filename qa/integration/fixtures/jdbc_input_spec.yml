@@ -1,0 +1,24 @@
+---
+name: JDBC test
+services:
+  - logstash
+config: |-
+ input {
+   jdbc {
+      jdbc_driver_library => "/tmp/postgres-driver.jar"
+      jdbc_driver_class => "org.postgresql.Driver"
+      jdbc_connection_string => "jdbc:postgresql://localhost:5432/travis_logstash_db"
+      jdbc_user => "postgres"
+      jdbc_paging_enabled => true
+      jdbc_page_size => 10000
+      statement => "SELECT * from EMPLOYEES"
+   }
+ }
+ output {
+   file {
+      path => "jdbc_input.output"
+      flush_interval => 0
+      codec => json_lines
+   }
+ }
+actual_output: jdbc_input.output 
