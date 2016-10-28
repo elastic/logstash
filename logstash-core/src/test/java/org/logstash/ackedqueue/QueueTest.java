@@ -97,28 +97,28 @@ public class QueueTest {
         }
 
         // total of 2 pages: 1 head and 1 tail
-        assertThat(q.getBeheadedPages().size(), is(equalTo(1)));
+        assertThat(q.getTailPages().size(), is(equalTo(1)));
 
-        assertThat(q.getBeheadedPages().get(0).isFullyRead(), is(equalTo(false)));
-        assertThat(q.getBeheadedPages().get(0).isFullyAcked(), is(equalTo(false)));
+        assertThat(q.getTailPages().get(0).isFullyRead(), is(equalTo(false)));
+        assertThat(q.getTailPages().get(0).isFullyAcked(), is(equalTo(false)));
         assertThat(q.getHeadPage().isFullyRead(), is(equalTo(false)));
         assertThat(q.getHeadPage().isFullyAcked(), is(equalTo(false)));
 
         Batch b = q.nonBlockReadBatch(10);
         assertThat(b.getElements().size(), is(equalTo(2)));
 
-        assertThat(q.getBeheadedPages().size(), is(equalTo(1)));
+        assertThat(q.getTailPages().size(), is(equalTo(1)));
 
-        assertThat(q.getBeheadedPages().get(0).isFullyRead(), is(equalTo(true)));
-        assertThat(q.getBeheadedPages().get(0).isFullyAcked(), is(equalTo(false)));
+        assertThat(q.getTailPages().get(0).isFullyRead(), is(equalTo(true)));
+        assertThat(q.getTailPages().get(0).isFullyAcked(), is(equalTo(false)));
         assertThat(q.getHeadPage().isFullyRead(), is(equalTo(false)));
         assertThat(q.getHeadPage().isFullyAcked(), is(equalTo(false)));
 
         b = q.nonBlockReadBatch(10);
         assertThat(b.getElements().size(), is(equalTo(2)));
 
-        assertThat(q.getBeheadedPages().get(0).isFullyRead(), is(equalTo(true)));
-        assertThat(q.getBeheadedPages().get(0).isFullyAcked(), is(equalTo(false)));
+        assertThat(q.getTailPages().get(0).isFullyRead(), is(equalTo(true)));
+        assertThat(q.getTailPages().get(0).isFullyAcked(), is(equalTo(false)));
         assertThat(q.getHeadPage().isFullyRead(), is(equalTo(true)));
         assertThat(q.getHeadPage().isFullyAcked(), is(equalTo(false)));
 
@@ -142,19 +142,19 @@ public class QueueTest {
         Batch b = q.nonBlockReadBatch(10);
 
         assertThat(b.getElements().size(), is(equalTo(2)));
-        assertThat(q.getBeheadedPages().size(), is(equalTo(1)));
+        assertThat(q.getTailPages().size(), is(equalTo(1)));
 
         // lets keep a ref to that tail page before acking
-        BeheadedPage beheadedPage = q.getBeheadedPages().get(0);
+        TailPage tailPage = q.getTailPages().get(0);
 
-        assertThat(beheadedPage.isFullyRead(), is(equalTo(true)));
+        assertThat(tailPage.isFullyRead(), is(equalTo(true)));
 
-        // ack first batch which includes all elements from beheadedPages
+        // ack first batch which includes all elements from tailPages
         b.close();
 
-        assertThat(q.getBeheadedPages().size(), is(equalTo(0)));
-        assertThat(beheadedPage.isFullyRead(), is(equalTo(true)));
-        assertThat(beheadedPage.isFullyAcked(), is(equalTo(true)));
+        assertThat(q.getTailPages().size(), is(equalTo(0)));
+        assertThat(tailPage.isFullyRead(), is(equalTo(true)));
+        assertThat(tailPage.isFullyAcked(), is(equalTo(true)));
 
         b = q.nonBlockReadBatch(10);
 
@@ -269,7 +269,7 @@ public class QueueTest {
                 q.write(e);
             }
 
-            assertThat(q.getBeheadedPages().size(), is(equalTo(page_count - 1)));
+            assertThat(q.getTailPages().size(), is(equalTo(page_count - 1)));
 
             // first read all elements
             List<Batch> batches = new ArrayList<>();
@@ -284,7 +284,7 @@ public class QueueTest {
                 b.close();
             }
 
-            assertThat(q.getBeheadedPages().size(), is(equalTo(0)));
+            assertThat(q.getTailPages().size(), is(equalTo(0)));
         }
     }
 
@@ -333,7 +333,7 @@ public class QueueTest {
         }
 
         // since we did not ack and pages hold a single item
-        assertThat(q.getBeheadedPages().size(), is(equalTo(ELEMENT_COUNT)));
+        assertThat(q.getTailPages().size(), is(equalTo(ELEMENT_COUNT)));
     }
 
     @Test
@@ -381,7 +381,7 @@ public class QueueTest {
         }
 
         // all batches are acked, no tail pages should exist
-        assertThat(q.getBeheadedPages().size(), is(equalTo(0)));
+        assertThat(q.getTailPages().size(), is(equalTo(0)));
 
         // the last read unblocked the last write so some elements (1 unread and maybe some acked) should be in the head page
         assertThat(q.getHeadPage().getElementCount() > 0L, is(true));

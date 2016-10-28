@@ -6,15 +6,15 @@ import org.logstash.common.io.PageIO;
 import java.io.IOException;
 import java.util.BitSet;
 
-public class BeheadedPage extends Page {
+public class TailPage extends Page {
 
-    // create a new BeheadedPage object from a HeadPage object
-    public BeheadedPage(HeadPage page) {
+    // create a new TailPage object from a HeadPage object
+    public TailPage(HeadPage page) {
         super(page.pageNum, page.queue, page.minSeqNum, page.elementCount, page.firstUnreadSeqNum, page.ackedSeqNums, page.pageIO);
     }
 
-    // create a new BeheadedPage object for an exiting Checkpoint and data file
-    public BeheadedPage(Checkpoint checkpoint, Queue queue, PageIO pageIO) throws IOException {
+    // create a new TailPage object for an exiting Checkpoint and data file
+    public TailPage(Checkpoint checkpoint, Queue queue, PageIO pageIO) throws IOException {
         super(checkpoint.getPageNum(), queue, checkpoint.getMinSeqNum(), checkpoint.getElementCount(), checkpoint.getFirstUnackedSeqNum(), new BitSet(), pageIO);
 
         // open the data file and reconstruct the IO object internal state
