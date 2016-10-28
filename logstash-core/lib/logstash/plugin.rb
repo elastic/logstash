@@ -8,8 +8,26 @@ require "securerandom"
 require "logstash/plugins/registry"
 
 class LogStash::Plugin
+
+
+  class Timer
+
+    def initialize
+      @timer = 0
+    end
+
+    def start(now=::Time.now)
+      @timer = now
+    end
+
+    def stop(now=::Time.now)
+      now - @timer
+    end
+  end
+
   include LogStash::Util::Loggable
   attr_accessor :params
+  attr_reader :settings
 
   NL = "\n"
 
@@ -31,7 +49,7 @@ class LogStash::Plugin
   # }
   # ```
   #
-  # If you don't explicitely set this variable Logstash will generate a unique name.
+  # If you don't explicitly set this variable Logstash will generate a unique name.
   config :id, :validate => :string
 
   def hash
@@ -44,12 +62,13 @@ class LogStash::Plugin
     self.class.name == other.class.name && @params == other.params
   end
 
-  def initialize(params=nil)
+  def initialize(params=nil, settings=LogStash::SETTINGS)
     @logger = self.logger
     @params = LogStash::Util.deep_clone(params)
     # The id should always be defined normally, but in tests that might not be the case
     # In the future we may make this more strict in the Plugin API
     @params["id"] ||= "#{self.class.config_name}_#{SecureRandom.uuid}"
+    @settings = settings
   end
 
   # Return a uniq ID for this plugin configuration, by default
@@ -96,6 +115,23 @@ class LogStash::Plugin
 
   def metric=(new_metric)
     @metric = new_metric
+  end
+
+  def slow_logger=(slow_logger)
+    @slow_logger = slow_logger
+  end
+
+  def timer
+    @timer ||= Timer.new
+  end
+
+  def slowlog(event, threshold, end_time, start_time=0, data={})
+    @slow_logger ||= LogStash::Logging::NullLogger.new
+    @slow_logger.log(event, threshold, end_time-start_time, data)
+  end
+
+  def setting(key)
+    @settings.get_value(key) rescue nil
   end
 
   def metric

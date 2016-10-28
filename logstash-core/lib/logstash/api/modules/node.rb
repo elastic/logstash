@@ -10,6 +10,11 @@ module LogStash
           factory.build(:node)
         end
 
+        get "/slowlog" do
+          slowlog = node.slowlog
+          respond_with slowlog
+        end
+
         get "/hot_threads" do
           ignore_idle_threads = params["ignore_idle_threads"] || true
 

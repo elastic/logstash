@@ -113,3 +113,20 @@
 #
 # Where to find custom plugins
 # path.plugins: []
+#
+#
+# ------------ Slow log Settings -----------
+# 
+# Show the context information, event, plugin, etc for the plugins slow log.
+# slowlog.plugins.context: true
+#
+# ------------ Slow log thresholds ---------
+#
+# An slow log threshold is a time limit for an operation that when is overcome it will
+# be reported at the related log file. Time is seconds.
+#
+# Attach the context information in every log message (default: true)
+# slowlog.plugins.context: true
+#
+# The last building block of the component is the log level (default: warn)
+# slowlog.filters.dns.warn: 10

@@ -13,8 +13,9 @@ module LogStash
     ]
     def_delegators :@filter, *DELEGATED_METHODS
 
-    def initialize(logger, klass, metric, plugin_args)
+    def initialize(logger, slow_logger, klass, metric, plugin_args)
       @logger = logger
+      @slow_logger = slow_logger
       @klass = klass
       @id = plugin_args["id"]
       @filter = klass.new(plugin_args)
@@ -22,6 +23,7 @@ module LogStash
       # Scope the metrics to the plugin
       namespaced_metric = metric.namespace("#{@klass.config_name}_#{@id}".to_sym)
       @filter.metric = namespaced_metric
+      @filter.slow_logger = slow_logger
 
       @metric_events = namespaced_metric.namespace(:events)
       namespaced_metric.gauge(:name, config_name)

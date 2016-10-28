@@ -19,6 +19,7 @@ require "logstash/instrument/namespaced_null_metric"
 require "logstash/instrument/collector"
 require "logstash/output_delegator"
 require "logstash/filter_delegator"
+require "logstash/logging/slow_logger"
 
 module LogStash; class Pipeline
   include LogStash::Util::Loggable
@@ -46,8 +47,9 @@ module LogStash; class Pipeline
     "LogStash::Inputs::Stdin"
   ]
 
-  def initialize(config_str, settings = SETTINGS, namespaced_metric = nil)
+  def initialize(config_str, settings = SETTINGS, namespaced_metric = nil, slowlog_manager = nil)
     @logger = self.logger
+    @slow_logger = slowlog_manager.nil? ? LogStash::Logging::NullLogger.new : slowlog_manager.build(:plugin)
     @config_str = config_str
     @config_hash = Digest::SHA1.hexdigest(@config_str)
     # Every time #plugin is invoked this is incremented to give each plugin
@@ -416,14 +418,15 @@ module LogStash; class Pipeline
     # Scope plugins of type 'input' to 'inputs'
     type_scoped_metric = pipeline_scoped_metric.namespace("#{plugin_type}s".to_sym)
     plugin = if plugin_type == "output"
-               OutputDelegator.new(@logger, klass, type_scoped_metric,
+               OutputDelegator.new(@logger, @slow_logger, klass, type_scoped_metric,
                                    OutputDelegatorStrategyRegistry.instance,
                                    args)
              elsif plugin_type == "filter"
-               FilterDelegator.new(@logger, klass, type_scoped_metric, args)
+               FilterDelegator.new(@logger, @slow_logger, klass, type_scoped_metric, args)
              else # input
                input_plugin = klass.new(args)
-               input_plugin.metric = type_scoped_metric.namespace(id)
+               input_plugin.metric      = type_scoped_metric.namespace(id)
+               input_plugin.slow_logger = @slow_logger
                input_plugin
              end
     

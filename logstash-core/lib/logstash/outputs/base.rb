@@ -58,7 +58,7 @@ class LogStash::Outputs::Base < LogStash::Plugin
   end
 
   public
-  def initialize(params={})
+  def initialize(params={}, settings=LogStash::SETTINGS)
     super
     config_init(@params)
 

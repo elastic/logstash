@@ -55,7 +55,7 @@ class LogStash::Inputs::Base < LogStash::Plugin
   end
 
   public
-  def initialize(params={})
+  def initialize(params={}, settings=LogStash::SETTINGS)
     super
     @threadable = false
     @stop_called = Concurrent::AtomicBoolean.new(false)
