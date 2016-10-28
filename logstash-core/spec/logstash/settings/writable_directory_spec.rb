@@ -1,12 +1,14 @@
 # encoding: utf-8
 require "spec_helper"
 require "logstash/settings"
-require "stud/temporary"
+require "tmpdir"
 require "socket" # for UNIXSocket
 
 describe LogStash::Setting::WritableDirectory do
   let(:mode_rx) { 0555 }
-  let(:parent) { Stud::Temporary.pathname }
+  # linux is 108, Macos is 104, so use a safe value
+  # Stud::Temporary.pathname, will exceed that size without adding anything
+  let(:parent) { File.join(Dir.tmpdir, Time.now.to_f.to_s) }
   let(:path) { File.join(parent, "fancy") }
 
   before { Dir.mkdir(parent) }

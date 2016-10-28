@@ -88,8 +88,8 @@ describe LogStash::Util::WrappedSynchronousQueue do
 
       context "when writing to the queue" do
         before :each do
-          read_client.set_events_metric(LogStash::Instrument::NullMetric.new)
-          read_client.set_pipeline_metric(LogStash::Instrument::NullMetric.new)
+          read_client.set_events_metric(LogStash::Instrument::NamespacedNullMetric.new([], :null))
+          read_client.set_pipeline_metric(LogStash::Instrument::NamespacedNullMetric.new([], :null))
         end
 
         it "appends batches to the queue" do

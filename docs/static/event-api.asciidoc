@@ -1,5 +1,5 @@
 [[event-api]]
-== Event API
+=== Event API
 
 This section is targeted for plugin developers and users of Logstash's Ruby filter. Below we document recent 
 changes (starting with version 5.0) in the way users have been accessing Logstash's event based data in 
@@ -8,7 +8,7 @@ data flow in Logstash's config files -- using <<logstash-config-field-references
 not affected by this change, and will continue to use existing syntax.
 
 [float]
-=== Event Object
+==== Event Object
 
 Event is the main object that encapsulates data flow internally in Logstash and provides an API for the plugin 
 developers to interact with the event's content. Typically, this API is used in plugins and in a Ruby filter to 
@@ -102,7 +102,7 @@ event.set("[foo][bar][c]", [3, 4])
 --------------------------------------------------
 
 [float]
-=== Ruby Filter
+==== Ruby Filter
 
 The <<plugins-filters-ruby,Ruby Filter>> can be used to execute any ruby code and manipulate event data using the 
 API described above. For example, using the new API:

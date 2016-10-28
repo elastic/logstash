@@ -97,7 +97,8 @@ class LogStash::Agent
 
   def reload_state!
     @upgrade_mutex.synchronize do
-      @pipelines.each do |pipeline_id, _|
+      @pipelines.each do |pipeline_id, pipeline|
+        next if pipeline.settings.get("config.reload.automatic") == false
         begin
           reload_pipeline!(pipeline_id)
         rescue => e
@@ -161,7 +162,7 @@ class LogStash::Agent
                 @logger.debug("Agent: Configuring metric collection")
                 LogStash::Instrument::Metric.new(@collector)
               else
-                LogStash::Instrument::NullMetric.new
+                LogStash::Instrument::NullMetric.new(@collector)
               end
 
 
