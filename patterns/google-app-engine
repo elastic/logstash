@@ -1,0 +1,9 @@
+# You can use this pattern if you run appcfg tool (https://developers.google.com/appengine/docs/appcfg)
+#
+# Google App Engine logs without the option '--include_all' (in the docs they are called 'Apache common log', but there are problems if you use %{COMBINEDAPACHELOG})
+GAELOG %{COMMONAPACHELOG} (?:%{QS:referrer}|-)(?:;)? (?:%{QS:agent}|-)
+
+# Google App Engine logs with the option '--include_all'
+GAERELEASE [0-9].[0-9].[0-9]
+GAEQUEUENAME [0-9a-zA-Z\-\_]+
+GAEFULLLOG %{GAELOG} %{QS:hostname} ms=%{NUMBER:ms:int} cpu_ms=%{NUMBER:cpu_ms:int} (exit_code=%{NUMBER:exit_code:int}\s)*(cpm_usd=%{NUMBER:cpm_usd:float}\s)*(queue_name=%{GAEQUEUENAME:queue_name}\s)*(task_name=%{WORD:task_name}\s)*(loading_request=%{NUMBER:loading_request:int}\s)*(pending_ms=%{USERNAME:pending_ms:int}\s)*(instance=%{WORD:instance}\s)*app_engine_release=%{GAERELEASE:app_engine_release} trace_id=%{WORD:trace_id}
