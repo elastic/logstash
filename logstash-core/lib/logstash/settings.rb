@@ -1,5 +1,7 @@
 # encoding: utf-8
 require "logstash/util/loggable"
+require "fileutils"
+require "logstash/util/byte_value"
 
 module LogStash
   class Settings
@@ -431,6 +433,33 @@ module LogStash
               raise ::ArgumentError.new("Path \"#{path}\" does not exist, and I failed trying to create it: #{e.class.name} - #{e}")
             end
           end
+        end
+      end
+    end
+
+    class Bytes < Coercible
+      def initialize(name, default=nil, strict=true)
+        super(name, ::Fixnum, default, strict=true) { |value| valid?(value) }
+      end
+
+      def valid?(value)
+        value.is_a?(Fixnum) && value >= 0
+      end
+
+      def coerce(value)
+        case value
+        when ::Numeric
+          value
+        when ::String
+          LogStash::Util::ByteValue.parse(value)
+        else
+          raise ArgumentError.new("Could not coerce '#{value}' into a bytes value")
+        end
+      end
+
+      def validate(value)
+        unless valid?(value)
+          raise ArgumentError.new("Invalid byte value \"#{value}\".")
         end
       end
     end
