@@ -9,10 +9,20 @@ namespace "docs" do
 
   task "generate-docs" do
     require "bootstrap/environment"
-    pattern = "#{LogStash::Environment.logstash_gem_home}/gems/logstash-*/lib/logstash/{input,output,filter,codec}s/*.rb"
-    list    = Dir.glob(pattern).join(" ")
-    cmd     = "bin/bundle exec ruby docs/asciidocgen.rb -o asciidoc_generated #{list}"
-    system(cmd)
+    pattern = "#{LogStash::Environment.logstash_gem_home}/gems/logstash-*/lib/logstash/{input,output,filter,codec}s/[!base]*.rb"
+    puts "Generated asciidoc is under dir LS_HOME/asciidoc_generated"
+    files = Dir.glob(pattern)
+    files.each do | file|
+      begin
+        cmd = "bin/logstash docgen -o asciidoc_generated #{file}"
+        # this is a bit slow, but is more resilient to failures
+        system(cmd)
+      rescue
+        # there are some plugins which will not load, so move on..
+        puts "Unable to generate docs for file #{file}"
+        next
+      end
+    end
   end
 
   task "generate-index" do

@@ -3,7 +3,7 @@ require "erb"
 require "optparse"
 
 $: << Dir.pwd
-$: << File.join(File.dirname(__FILE__), "..", "lib")
+$: << File.join(File.dirname(__FILE__), "..", "logstash-core/lib")
 $: << File.join(File.dirname(__FILE__), "..", "rakelib")
 
 require_relative "../lib/bootstrap/environment" #needed for LogStash::Environment constants LOGSTASH_HOME
