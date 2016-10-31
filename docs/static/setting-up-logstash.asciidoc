@@ -134,6 +134,19 @@ The settings files are already defined in the Logstash installation. Logstash in
 Logstash is not started automatically after installation. How to start and stop Logstash depends on whether your system
 uses systemd, upstart, or SysV.
 
+Here are some common operating systems and versions, and the corresponding
+startup styles they use.  This list is intended to be informative, not exhaustive.
+
+|=======================================================================
+| Distribution | Service System |
+| Ubuntu 16.04 and newer | <<running-logstash-systemd,systemd>> |
+| Ubuntu 12.04 through 15.10 | <<running-logstash-upstart,upstart>> |
+| Debian 8 "jessie" and newer | <<running-logstash-systemd,systemd>> |
+| Debian 7 "wheezy" and older | <<running-logstash-sysv,sysv>> |
+| CentOS (and RHEL) 7 and newer | <<running-logstash-systemd,systemd>> |
+| CentOS (and RHEL) 6 | <<running-logstash-upstart,upstart>> |
+|=======================================================================
+
 [[running-logstash-systemd]]
 ==== Running Logstash by Using Systemd
 
@@ -168,8 +181,3 @@ sudo /etc/init.d/logstash start
 -------------------------------------------
 
 The auto-generated configuration file for SysV systems is `/etc/init.d/logstash`.
-
-
-
-
-
