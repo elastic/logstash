@@ -1,0 +1,38 @@
+PATTERN FILE to put anywhere you want
+
+FORTIDATE %{YEAR:year}\-%{MONTHNUM:month}\-%{MONTHDAY:day}
+FORTIGATE_BASE %{NUMBER:syslog_index}>date=%{FORTIDATE:date} time=%{TIME:time} devname=%{HOST:hostname} devid=%{HOST:devid} logid=%{NUMBER:logid} type=%{WORD} subtype=%{WORD} level=%{WORD:Level} vd=%{WORD:vdom} srcip=%{IP:srcip} srcport=%{NUMBER:srcport} srcintf=%{QUOTEDSTRING:srcintf} dstip=%{IP:dstip} dstport=%{NUMBER:dstport} dstintf=%{QUOTEDSTRING:dstintf} sessionid=%{NUMBER} status=%{WORD:action} policyid=%{NUMBER:policyid} dstcountry=%{QUOTEDSTRING:dstcountry} srccountry=%{QUOTEDSTRING:srccountry} trandisp=%{WORD:trandisp}[ ]
+FORTIGATE_BASE_ALT %{NUMBER:syslog_index}>date=%{FORTIDATE:date} time=%{TIME:time} devname=%{HOST:hostname} devid=%{HOST:devid} logid=%{NUMBER:logid} type=%{WORD} subtype=%{WORD} level=%{WORD:Level}[ ]
+FORTIGATE_BYTE duration=%{NUMBER:duration}[ ]sentbyte=%{NUMBER:sentbyte}[ ]rcvdbyte=%{NUMBER:rcvdbyte}
+FORTIGATE_PKT sentpkt=%{NUMBER:sentpkt}[ ]rcvdpkt=%{NUMBER:rcvdpkt}
+FORTIGATE_BYTE_PKT %{FORTIGATE_BYTE}[ ]%{FORTIGATE_PKT}
+
+logstash.conf (there is probably a smarter way to do that, fork this)
+
+
+filter {
+	if [type] == "syslog" {
+	mutate {
+		gsub => [ "message", "\/" , "_"]
+		gsub => [ "message", "unknown-0" , "unkown"]
+		gsub => [ "message", "\+" , "_"]
+         }
+	grok {
+	patterns_dir => "/opt/logstash/patterns"
+	match => [ "message" , "%{FORTIGATE_BASE}tranip=%{IP:tranip} tranport=%{NUMBER:transport} service=%{WORD:service} proto=%{NUMBER:proto} %{FORTIGATE_BYTE_PKT}"]
+	match => [ "message" , "%{FORTIGATE_BASE}tranip=%{IP:tranip} tranport=%{NUMBER:tranport} transip=%{IP:transip} transport=%{NUMBER:transport} service=%{DATA:service} proto=%{NUMBER:proto} %{FORTIGATE_BYTE_PKT}"]
+	match => [ "message" , "%{FORTIGATE_BASE}service=%{WORD:service} proto=%{NUMBER:proto} app=%{QUOTEDSTRING:application} %{FORTIGATE_BYTE_PKT}"]
+	match => [ "message" , "%{FORTIGATE_BASE}service=%{WORD:service} proto=%{NUMBER:proto} app=%{WORD:application} %{FORTIGATE_BYTE_PKT}"]
+	match => [ "message" , "%{FORTIGATE_BASE}service=%{WORD:service} proto=%{NUMBER:proto} %{FORTIGATE_BYTE_PKT}"]
+	match => [ "message" , "%{FORTIGATE_BASE}service=%{WORD:service} proto=%{NUMBER:proto} app=%{QUOTEDSTRING:application} %{FORTIGATE_BYTE}"]
+	match => [ "message" , "%{FORTIGATE_BASE}service=%{WORD:service} proto=%{NUMBER:proto} app=%{WORD:application} %{FORTIGATE_BYTE}"]
+	match => [ "message" , "%{FORTIGATE_BASE_ALT}vd=%{WORD:vdom} srcip=%{IP:srcip} srcport=%{NUMBER:srcport} srcintf=%{QUOTEDSTRING:srcintf} dstip=%{IP:dstip} dstport=%{NUMBER:dstport} dstintf=%{QUOTEDSTRING:dstintf} sessionid=%{NUMBER} status=%{WORD:action} policyid=%{NUMBER:policyid} dstcountry=%{QUOTEDSTRING:dstcountry} srccountry=%{QUOTEDSTRING:srccountry} trandisp=%{WORD} transip=%{IP:transip} transport=%{NUMBER:transport} service=%{WORD:service}"]
+	match => [ "message" , "%{FORTIGATE_BASE_ALT}vd=%{WORD:vdom} srcip=%{IP:srcip} srcport=%{NUMBER:srcport} srcintf=%{QUOTEDSTRING:srcintf} dstip=%{IP:dstip} dstport=%{NUMBER:dstport} dstintf=%{WORD:dstintf} sessionid=%{NUMBER:sessionid} status=%{WORD:action} policyid=%{NUMBER:policyid} dstcountry=%{QUOTEDSTRING:dstcountry} srccountry=%{QUOTEDSTRING:srccountry} trandisp=%{WORD:trandisp} service=%{WORD:service} proto=%{NUMBER:proto} app=%{QUOTEDSTRING:application} %{FORTIGATE_BYTE}"]
+	match => [ "message" , "%{FORTIGATE_BASE_ALT}vd=%{WORD:vdom} srcip=%{IP:srcip} srcintf=%{QUOTEDSTRING:srcintf} dstip=%{IP:dstip} dstintf=%{QUOTEDSTRING:dstintf} sessionid=%{NUMBER} status=%{WORD:action} policyid=%{NUMBER:policyid} dstcountry=%{QUOTEDSTRING:dstcountry} srccountry=%{QUOTEDSTRING:srccountry} trandisp=%{WORD:trandisp} service=%{WORD:service} proto=%{NUMBER:proto} %{FORTIGATE_BYTE_PKT}"]
+	match => [ "message" , "%{FORTIGATE_BASE_ALT}vd=%{WORD:vdom} srcip=%{IP:srcip} srcintf=%{QUOTEDSTRING:srcintf} dstip=%{IP:dstip} dstintf=%{QUOTEDSTRING:dstintf} sessionid=%{NUMBER} status=%{WORD:action} policyid=%{NUMBER:policyid} dstcountry=%{QUOTEDSTRING:dstcountry} srccountry=%{QUOTEDSTRING:srccountry} trandisp=%{WORD:trandisp} service=%{WORD:service} proto=%{NUMBER:proto} app=%{WORD:app} %{FORTIGATE_BYTE_PKT}"]
+	match => [ "message" , "%{FORTIGATE_BASE_ALT}vd=%{WORD:vdom} action=%{WORD:action} tunneltype=%{WORD:tunneltype} tunnel_id=%{NUMBER:tunnel_id} remote_ip=%{IP:srcip} tunnel_ip=%{DATA:tunnel_ip} user=%{WORD:user} group=%{WORD:group} dst_host=%{WORD:dstip} reason=%{WORD:action} msg=%{WORD:msg}"]
+	match => [ "message" , "%{FORTIGATE_BASE_ALT}vd=%{QUOTEDSTRING:vdom} action=%{QUOTEDSTRING:action} tunneltype=%{QUOTEDSTRING:tunneltype} tunnel_id=%{NUMBER:tunnel_id} remote_ip=%{IP:srcip} tunnel_ip=%{DATA:tunnel_ip} user=%{QUOTEDSTRING:user} group=%{QUOTEDSTRING:group} dst_host=%{QUOTEDSTRING:dstip} reason=%{QUOTEDSTRING:action} msg=%{QUOTEDSTRING:msg}"]
+	match => [ "message" , "%{FORTIGATE_BASE_ALT}vd=%{QUOTEDSTRING:vdom} action=%{QUOTEDSTRING:action} tunneltype=%{QUOTEDSTRING:tunneltype} tunnel_id=%{NUMBER:tunnel_id} remote_ip=%{IP:srcip} tunnel_ip=%{IP:tunnel_ip} user=%{QUOTEDSTRING:user} group=%{QUOTEDSTRING:group} dst_host=%{QUOTEDSTRING:dstip} reason=%{QUOTEDSTRING:action} duration=%{NUMBER:duration} sent=%{NUMBER:sentbyte} rcvd=%{NUMBER:rcvdbyte} msg=%{QUOTEDSTRING:msg}"]
+      }
+                        }
+      }
