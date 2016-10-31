@@ -1,0 +1,1 @@
+TOMCAT ^%{MONTH:month}%{SPACE}%{MONTHDAY:day},%{SPACE}%{YEAR:year}%{SPACE}%{HOUR:hour}:%{MINUTE:minute}:%{SECOND:second}%{SPACE}%{WORD:meridiem}%{SPACE}%{DATA:threadEmitter}%{SPACE}%{SPACE}%{LOGLEVEL:logLevel}:%{SPACE}%{GREEDYDATA:logMessage}

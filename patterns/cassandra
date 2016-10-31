@@ -1,0 +1,1 @@
+CASSANDRA ^%{SPACE}%{LOGLEVEL:logLevel}%{SPACE}%{DATA:threadEmitter}%{SPACE}%{YEAR:year}-%{MONTHNUM:month}-%{MONTHDAY:day}%{SPACE}%{HOUR:hour}:%{MINUTE:minute}:%{SECOND:second},%{NUMBER:millisecond}%{SPACE}%{JAVAFILE:javaFile}%{SPACE}\(line %{NUMBER:lineNumber}\)%{SPACE}%{GREEDYDATA:logMessage}

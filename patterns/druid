@@ -1,0 +1,1 @@
+DRUID ^%{YEAR:year}-%{MONTHNUM:month}-%{MONTHDAY:day}%{SPACE}%{HOUR:hour}:%{MINUTE:minute}:%{SECOND:second},%{NUMBER:millisecond}%{GG_SPACE}%{LOGLEVEL:logLevel}%{SPACE}\[%{DATA:threadEmitter}\]%{SPACE}%{JAVACLASS:javaFile}%{SPACE}-%{SPACE}%{GREEDYDATA:logMessage}
