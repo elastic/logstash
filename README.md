@@ -62,7 +62,7 @@ or bootstrap & install the core plugins required to run the tests
 
     rake test:install-core
 
-To verify your environment, run `bin/logstash version` which should look like this
+To verify your environment, run `bin/logstash --version` which should look like this
 
     $ bin/logstash --version
     logstash 2.0.0.dev
