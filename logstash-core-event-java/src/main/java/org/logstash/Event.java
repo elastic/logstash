@@ -223,8 +223,17 @@ public class Event implements Cloneable, Serializable {
         return this;
     }
 
-    public Object remove(String path) {
-        return this.accessors.del(path);
+    public Object remove(String reference) {
+        if (reference.equals(METADATA)) {
+            metadata = this.metadata;
+            this.metadata = new HashMap<String, Object>();
+            this.metadata_accessors = new Accessors(this.metadata);
+            return metadata;
+        } else if (reference.startsWith(METADATA_BRACKETS)) {
+            return this.metadata_accessors.del(reference.substring(METADATA_BRACKETS.length()));
+        } else {
+            return this.accessors.del(reference);
+        }
     }
 
     public String sprintf(String s) throws IOException {

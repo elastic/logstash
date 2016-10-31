@@ -193,7 +193,16 @@ class LogStash::Event
 
   # Remove a field or field reference. Returns the value of that field when deleted
   def remove(fieldref)
-    @accessors.del(fieldref)
+    if fieldref == METADATA
+      metadata = @metadata
+      @metadata = {}
+      @metadata_accessors = LogStash::Util::Accessors.new(@metadata)
+      metadata
+    elsif fieldref.start_with?(METADATA_BRACKETS)
+      @metadata_accessors.del(fieldref[METADATA_BRACKETS.length .. -1])
+    else
+      @accessors.del(fieldref)
+    end
   end
 
   # sprintf. This could use a better method name.
