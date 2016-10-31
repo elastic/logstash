@@ -146,6 +146,17 @@ describe LogStash::Event do
       expect(e.get("[proxy][array][1]")).to eql("baz")
       expect(e.get("[proxy][hash][string]")).to eql("quux")
     end
+
+    it "should fail on non UTF-8 encoding" do
+      # e = LogStash::Event.new
+      # s1 = "\xE0 Montr\xE9al".force_encoding("ISO-8859-1")
+      # expect(s1.encoding.name).to eq("ISO-8859-1")
+      # expect(s1.valid_encoding?).to eq(true)
+      # e.set("test", s1)
+      # s2 = e.get("test")
+      # expect(s2.encoding.name).to eq("UTF-8")
+      # expect(s2.valid_encoding?).to eq(true)
+    end
   end
 
   context "timestamp" do

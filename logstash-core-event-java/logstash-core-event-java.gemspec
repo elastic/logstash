@@ -11,7 +11,7 @@ Gem::Specification.new do |gem|
   gem.homepage      = "http://www.elastic.co/guide/en/logstash/current/index.html"
   gem.license       = "Apache License (2.0)"
 
-  gem.files         = Dir.glob(["logstash-core-event-java.gemspec", "lib/**/*.jar", "lib/**/*.rb", "spec/**/*.rb"])
+  gem.files         = Dir.glob(["logstash-core-event-java.gemspec", "gemspec_jars.rb", "lib/**/*.jar", "lib/**/*.rb", "spec/**/*.rb"])
   gem.test_files    = gem.files.grep(%r{^(test|spec|features)/})
   gem.name          = "logstash-core-event-java"
   gem.require_paths = ["lib"]
@@ -26,6 +26,5 @@ Gem::Specification.new do |gem|
   # which does not have this problem.
   gem.add_runtime_dependency "ruby-maven", "~> 3.3.9"
 
-  gem.requirements << "jar com.fasterxml.jackson.core:jackson-core, 2.7.3"
-  gem.requirements << "jar com.fasterxml.jackson.core:jackson-databind, 2.7.3"
+  eval(File.read(File.expand_path("../gemspec_jars.rb", __FILE__)))
 end

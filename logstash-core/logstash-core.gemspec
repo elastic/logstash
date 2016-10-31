@@ -11,13 +11,16 @@ Gem::Specification.new do |gem|
   gem.homepage      = "http://www.elastic.co/guide/en/logstash/current/index.html"
   gem.license       = "Apache License (2.0)"
 
-  gem.files         = Dir.glob(["logstash-core.gemspec", "lib/**/*.rb", "spec/**/*.rb", "locales/*", "lib/logstash/api/init.ru", "vendor/jars/**/*.jar"])
+  gem.files         = Dir.glob(["logstash-core.gemspec", "gemspec_jars.rb", "lib/**/*.rb", "spec/**/*.rb", "locales/*", "lib/logstash/api/init.ru"])
   gem.test_files    = gem.files.grep(%r{^(test|spec|features)/})
   gem.name          = "logstash-core"
-  gem.require_paths = ["lib", "vendor/jars"]
+  gem.require_paths = ["lib"]
   gem.version       = LOGSTASH_CORE_VERSION
 
-  gem.add_runtime_dependency "logstash-core-event-java", "5.1.0"
+  gem.platform = "java"
+
+  gem.add_runtime_dependency "logstash-core-event-java"
+  gem.add_runtime_dependency "logstash-core-queue-jruby"
 
   gem.add_runtime_dependency "pry", "~> 0.10.1"  #(Ruby license)
   gem.add_runtime_dependency "stud", "~> 0.0.19" #(Apache 2.0 license)
@@ -43,21 +46,13 @@ Gem::Specification.new do |gem|
   gem.add_runtime_dependency "rubyzip", "~> 1.1.7"
   gem.add_runtime_dependency "thread_safe", "~> 0.3.5" #(Apache 2.0 license)
 
-  if RUBY_PLATFORM == 'java'
-    gem.platform = RUBY_PLATFORM
-    gem.add_runtime_dependency "jrjackson", "~> 0.4.0" #(Apache 2.0 license)
-  else
-    gem.add_runtime_dependency "oj" #(MIT-style license)
-  end
+  gem.add_runtime_dependency "jrjackson", "~> 0.4.0" #(Apache 2.0 license)
 
-  if RUBY_ENGINE == "rbx"
-    # rubinius puts the ruby stdlib into gems.
-    gem.add_runtime_dependency "rubysl"
+  gem.add_runtime_dependency "jar-dependencies"
+  # as of Feb 3rd 2016, the ruby-maven gem is resolved to version 3.3.3 and that version
+  # has an rdoc problem that causes a bundler exception. 3.3.9 is the current latest version
+  # which does not have this problem.
+  gem.add_runtime_dependency "ruby-maven", "~> 3.3.9"
 
-    # Include racc to make the xml tests pass.
-    # https://github.com/rubinius/rubinius/issues/2632#issuecomment-26954565
-    gem.add_runtime_dependency "racc"
-  end
-
-  gem.add_runtime_dependency 'jar-dependencies', '~> 0.3.4'
+  eval(File.read(File.expand_path("../gemspec_jars.rb", __FILE__)))
 end
