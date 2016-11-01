@@ -25,10 +25,14 @@ module LogStash
     def shutdown?; false; end;
   end
 
-  FLUSH = FlushEvent.new
+  class NoSignal < SignalEvent
+    def flush?; false; end;
+    def shutdown?; false; end;
+  end
 
-  # LogStash::SHUTDOWN is used by plugins
+  FLUSH = FlushEvent.new
   SHUTDOWN = ShutdownEvent.new
+  NO_SIGNAL = NoSignal.new
 
   class Event
     MSG_BRACKETS_METHOD_MISSING = "Direct event field references (i.e. event['field']) have been disabled in favor of using event get and set methods (e.g. event.get('field')). Please consult the Logstash 5.0 breaking changes documentation for more details.".freeze
