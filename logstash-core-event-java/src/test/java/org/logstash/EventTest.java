@@ -1,5 +1,6 @@
 package org.logstash;
 
+import org.junit.Assert;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -266,4 +267,28 @@ public class EventTest {
     public void testFromJsonWithPartialInvalidJsonArray() throws Exception {
         Event.fromJson("[{\"foo\":\"bar\"}, 1]");
     }
+
+    @Test
+    public void testTagOnEmptyTagsField() throws Exception {
+        Event e = new Event();
+        e.tag("foo");
+
+        List<String> tags = (List<String>)e.getField("tags");
+        assertEquals(tags.size(), 1);
+        assertEquals(tags.get(0), "foo");
+    }
+
+    @Test
+    public void testTagOnExistingTagsField() throws Exception {
+        Map data = new HashMap();
+        data.put("tags", "foo");
+        Event e = new Event(data);
+        e.tag("bar");
+
+        List<String> tags = (List<String>)e.getField("tags");
+        assertEquals(tags.size(), 2);
+        assertEquals(tags.get(0), "foo");
+        assertEquals(tags.get(1), "bar");
+      }
+
 }

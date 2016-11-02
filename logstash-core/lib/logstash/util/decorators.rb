@@ -33,17 +33,20 @@ module LogStash::Util
     end
 
     # tags is an array of string. sprintf syntax can be used.
-    def add_tags(tags, event, pluginname)
-      tags.each do |tag|
-        tag = event.sprintf(tag)
-        self.logger.debug? and self.logger.debug("#{pluginname}: adding tag", "tag" => tag)
+    def add_tags(new_tags, event, pluginname)
+      tags = event.get("tags")
+      tags = tags.nil? ? [] : Array(tags)
+
+      new_tags.each do |new_tag|
+        new_tag = event.sprintf(new_tag)
+        self.logger.debug? and self.logger.debug("#{pluginname}: adding tag", "tag" => new_tag)
         # note below that the tags array field needs to be updated then reassigned to the event.
         # this is important because a construct like event["tags"] << tag will not work
         # in the current Java event implementation. see https://github.com/elastic/logstash/issues/4140
-        tags = event.get("tags") || []
-        tags << tag
-        event.set("tags", tags)
+        tags << new_tag  #unless tags.include?(new_tag)
       end
+
+      event.set("tags", tags)
     end
 
   end # module LogStash::Util::Decorators
