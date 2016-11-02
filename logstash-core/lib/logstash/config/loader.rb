@@ -12,7 +12,18 @@ module LogStash; module Config; class Loader
       # Append the config string.
       # This allows users to provide both -f and -e flags. The combination
       # is rare, but useful for debugging.
-      config_string = config_string + load_config(config_path)
+      loaded_config = load_config(config_path)
+      if loaded_config.empty? && config_string.empty?
+        # If loaded config from `-f` is empty *and* if config string is empty we raise an error
+        fail(I18n.t("logstash.runner.configuration.file-not-found", :path => config_path))
+      end
+
+      # tell the user we are merging, otherwise it is very confusing
+      if !loaded_config.empty? && !config_string.empty?
+        @logger.info("Created final config by merging config string and config path", :path => config_path)
+      end
+
+      config_string = config_string + loaded_config
     else
       # include a default stdin input if no inputs given
       if config_string !~ /input *{/
@@ -52,11 +63,11 @@ module LogStash; module Config; class Loader
     path = ::File.expand_path(path)
     path = ::File.join(path, "*") if ::File.directory?(path)
 
+    config = ""
     if Dir.glob(path).length == 0
-      fail(I18n.t("logstash.runner.configuration.file-not-found", :path => path))
+      @logger.info("No config files found in path", :path => path)
     end
 
-    config = ""
     encoding_issue_files = []
     Dir.glob(path).sort.each do |file|
       next unless ::File.file?(file)

@@ -25,6 +25,9 @@ describe "Test Logstash instance" do
   let(:num_retries) { 10 }
   let(:config1) { config_to_temp_file(@fixture.config("root", { :port => random_port })) }
   let(:config2) { config_to_temp_file(@fixture.config("root", { :port => random_port })) }
+  let(:port1) { random_port }
+  let(:port2) { random_port }
+  let(:config3) { config_to_temp_file(@fixture.config("root", { :port => port2 })) }
 
   it "can start the embedded http server on default port 9600" do
     @ls1.start_with_stdin
@@ -32,7 +35,7 @@ describe "Test Logstash instance" do
       expect(is_port_open?(9600)).to be true
     end
   end
-  
+
   it "multiple of them can be started on the same box with automatically trying different ports for HTTP server" do
     @ls1.spawn_logstash("-f", config1)
     try(num_retries) do
@@ -54,4 +57,34 @@ describe "Test Logstash instance" do
     expected = YAML.load_file(LogstashService::LS_VERSION_FILE)
     expect(@ls1.get_version.strip).to eq("logstash #{expected['logstash']}")
   end
-end    
+
+  it "should still merge when -e is specified and -f has no valid config files" do
+    config_string = "input { tcp { port => #{port1} } }"
+    @ls1.spawn_logstash("-e", config_string, "-f" "/tmp/foobartest")
+    @ls1.wait_for_logstash
+
+    try(20) do
+      expect(is_port_open?(port1)).to be true
+    end
+  end
+
+  it "should not start when -e is not specified and -f has no valid config files" do
+    @ls1.spawn_logstash("-e", "", "-f" "/tmp/foobartest")
+    expect(is_port_open?(9600)).to be false
+  end
+
+  it "should merge config_string when both -f and -e is specified" do
+    config_string = "input { tcp { port => #{port1} } }"
+    @ls1.spawn_logstash("-e", config_string, "-f", config3)
+    @ls1.wait_for_logstash
+
+    # Both ports should be reachable
+    try(20) do
+      expect(is_port_open?(port1)).to be true
+    end
+
+    try(20) do
+      expect(is_port_open?(port2)).to be true
+    end
+  end
+end
