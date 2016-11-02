@@ -164,11 +164,8 @@ class LogStash::Runner < Clamp::StrictCommand
 
     begin
       LogStash::SETTINGS.from_yaml(LogStash::SETTINGS.get("path.settings"))
-    rescue Errno::ENOENT 
-      unless cli_help?(args)
-        $stderr.puts "ERROR: Logstash requires a setting file which is typically located in $LS_HOME/config or /etc/logstash. If you installed Logstash through a package and are starting it manually, please specify the location to this settings file by passing --path.settings /etc/logstash"
-        return 1
-      end   
+    rescue Errno::ENOENT
+      $stderr.puts "WARNING: Could not find logstash.yml which is typically located in $LS_HOME/config or /etc/logstash. You can specify the path using --path.settings. Continuing using the defaults"
     rescue => e
       # abort unless we're just looking for the help
       unless cli_help?(args)
@@ -196,12 +193,6 @@ class LogStash::Runner < Clamp::StrictCommand
     end
     # override log level that may have been introduced from a custom log4j config file
     LogStash::Logging::Logger::configure_logging(setting("log.level"))
-    
-    # Adding this here because a ton of LS users install LS via packages and try to manually 
-    # start Logstash using bin/logstash. See #5986. I think not logging to console is good for 
-    # services, but until LS users re-learn that logs end up in path.logs, we should keep this 
-    # message. Otherwise we'll be answering the same question again and again.
-    puts "Sending Logstash logs to #{setting("path.logs")} which is now configured via log4j2.properties."
 
     if setting("config.debug") && logger.debug?
       logger.warn("--config.debug was specified, but log.level was not set to \'debug\'! No config info will be logged.")
@@ -288,7 +279,12 @@ class LogStash::Runner < Clamp::StrictCommand
     show_short_help
     return 1
   rescue => e
-    logger.fatal(I18n.t("oops"), :error => e, :backtrace => e.backtrace)
+    # if logger itself is not initialized
+    if LogStash::Logging::Logger.get_logging_context.nil?
+      puts e
+    else
+      logger.fatal(I18n.t("oops"), :error => e, :backtrace => e.backtrace)
+    end
     return 1
   ensure
     Stud::untrap("INT", sigint_id) unless sigint_id.nil?
@@ -421,6 +417,6 @@ class LogStash::Runner < Clamp::StrictCommand
   def cli_help?(args)
     # I know, double negative
     !(["--help", "-h"] & args).empty?
-  end  
+  end
 
 end

@@ -1,4 +1,5 @@
 require "logstash/java_integration"
+require "uri"
 
 module LogStash
   module Logging
@@ -6,6 +7,7 @@ module LogStash
       java_import org.apache.logging.log4j.Level
       java_import org.apache.logging.log4j.LogManager
       java_import org.apache.logging.log4j.core.config.Configurator
+      java_import org.apache.logging.log4j.core.config.DefaultConfiguration
       @@config_mutex = Mutex.new
       @@logging_context = nil
 
@@ -70,7 +72,16 @@ module LogStash
       def self.initialize(config_location)
         @@config_mutex.synchronize do
           if @@logging_context.nil?
-            @@logging_context = Configurator.initialize(nil, config_location)
+            file_path = URI(config_location).path
+            if ::File.exists?(file_path)
+              logs_location = java.lang.System.getProperty("ls.logs")
+              puts "Sending Logstash's logs to #{logs_location} which is now configured via log4j2.properties"
+              @@logging_context = Configurator.initialize(nil, config_location)
+            else
+              # fall back to default config
+              puts "Could not find log4j2 configuration at path #{file_path}. Using default config which logs to console"
+              @@logging_context = Configurator.initialize(DefaultConfiguration.new)
+            end
           end
         end
       end

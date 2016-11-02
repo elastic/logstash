@@ -9,6 +9,7 @@ describe "Test Logstash instance whose default settings are overridden" do
   before(:all) {
     @fixture = Fixture.new(__FILE__)
     @logstash_service = @fixture.get_service("logstash")
+    @logstash_default_logs = File.join(@logstash_service.logstash_home, "logs", "logstash-plain.log")
   }
 
   after(:all) {
@@ -22,6 +23,7 @@ describe "Test Logstash instance whose default settings are overridden" do
   
   after(:each) {
     @logstash_service.teardown
+    FileUtils.rm(@logstash_default_logs) if File.exists?(@logstash_default_logs)
     # restore the application settings file -- logstash.yml
     FileUtils.mv("#{@logstash_service.application_settings_file}.original", @logstash_service.application_settings_file)
   }
@@ -39,7 +41,7 @@ describe "Test Logstash instance whose default settings are overridden" do
   
   def overwrite_settings(settings)
     IO.write(@logstash_service.application_settings_file, settings.to_yaml)
-  end  
+  end
   
   it "should start with a new data dir" do
     change_setting("path.data", temp_dir)
@@ -96,7 +98,7 @@ describe "Test Logstash instance whose default settings are overridden" do
     end
     expect(@logstash_service.exit_code).to eq(1)
   end
-  
+
   it "change pipeline settings" do
     s = {}
     workers = 31
@@ -110,13 +112,13 @@ describe "Test Logstash instance whose default settings are overridden" do
     try do
       expect(is_port_open?(test_port)).to be true
     end
-    
+
     # now check monitoring API to validate
     node_info = @logstash_service.monitoring_api.node_info
     expect(node_info["pipeline"]["workers"]).to eq(workers)
     expect(node_info["pipeline"]["batch_size"]).to eq(batch_size)
   end
-  
+
   it "start on a different HTTP port" do
     # default in 9600
     http_port = random_port
@@ -131,9 +133,30 @@ describe "Test Logstash instance whose default settings are overridden" do
       expect(is_port_open?(test_port)).to be true
     end
     
+    expect(File.exists?(@logstash_default_logs)).to be true
+
     resp = Manticore.get("http://localhost:#{http_port}/_node").body
     node_info = JSON.parse(resp)
     # should be default
     expect(node_info["http_address"]).to eq("127.0.0.1:#{http_port}")
   end
-end  
+
+  it "start even without a settings file specified" do
+    @logstash_service.spawn_logstash("-e", tcp_config, "--path.settings", "/tmp/fooooobbaaar")
+    http_port = 9600
+    try(num_retries) do
+      expect(is_port_open?(http_port)).to be true
+    end
+
+    try(num_retries) do
+      expect(is_port_open?(test_port)).to be true
+    end
+
+    resp = Manticore.get("http://localhost:#{http_port}/_node").body
+    node_info = JSON.parse(resp)
+    expect(node_info["http_address"]).to eq("127.0.0.1:#{http_port}")
+
+    # make sure we log to console and not to any file
+    expect(File.exists?(@logstash_default_logs)).to be false
+  end
+end
