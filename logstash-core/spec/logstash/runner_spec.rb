@@ -353,8 +353,8 @@ describe LogStash::Runner do
     context "if does not exist" do
       let(:args) { ["--path.settings", "/tmp/a/a/a/a", "-e", "input {} output {}"] }
 
-      it "should terminate logstash" do
-        expect(subject.run(args)).to eq(1)
+      it "should not terminate logstash" do
+        expect(subject.run(args)).to eq(nil)
       end
 
       context "but if --help is passed" do
