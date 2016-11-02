@@ -199,6 +199,8 @@ class LogStash::Runner < Clamp::StrictCommand
       logger.warn("--config.debug was specified, but log.level was not set to \'debug\'! No config info will be logged.")
     end
 
+    # We configure the registry and load any plugin that can register hooks
+    # with logstash, this need to be done before any operation.
     LogStash::PluginRegistry.setup!
     @settings.validate_all
 
@@ -226,8 +228,6 @@ class LogStash::Runner < Clamp::StrictCommand
     end
 
     return start_shell(setting("interactive"), binding) if setting("interactive")
-
-
 
     @settings.format_settings.each {|line| logger.debug(line) }
 
@@ -338,8 +338,7 @@ class LogStash::Runner < Clamp::StrictCommand
   end
 
   def create_agent(*args)
-    agent = LogStash::Agent.new(*args)
-    agent
+    LogStash::Agent.new(*args)
   end
 
   # Emit a failure message and abort.

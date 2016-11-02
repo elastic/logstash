@@ -15,12 +15,12 @@ module LogStash module Plugins
       LOGSTASH_METADATA_KEY = "logstash_plugin"
 
       class << self
-        def available_libraries
+        def installed_gems
           ::Gem::Specification
         end
 
         def logstash_plugins
-          available_libraries
+          installed_gems
             .select { |spec| spec.metadata && spec.metadata[LOGSTASH_METADATA_KEY] }
             .collect { |spec| PluginRawContext.new(spec) }
         end
@@ -65,11 +65,7 @@ module LogStash module Plugins
       end
 
       def execute_hooks!
-        if has_hooks?
-          require hooks_file
-        else
-          raise ArgumentError, "#execute_hooks! called but no hooks file where found for #{name} of type #{type}"
-        end
+        require hooks_file
       end
     end
 
@@ -98,8 +94,8 @@ module LogStash module Plugins
     attr_reader :hooks
 
     def initialize
-     @registry = {}
-     @hooks = HooksRegistry.new
+      @registry = {}
+      @hooks = HooksRegistry.new
     end
 
     def setup!
@@ -134,36 +130,45 @@ module LogStash module Plugins
       plugin = get(type, plugin_name)
       # Assume that we have a legacy plugin
       if plugin.nil?
-        begin
-          path = "logstash/#{type}s/#{plugin_name}"
-
-          begin
-            require path
-          rescue LoadError
-            # Plugin might be already defined in the current scope
-            # This scenario often happen in test when we write an adhoc class
-          end
-
-          klass = namespace_lookup(type, plugin_name)
-          plugin = lazy_add(type, plugin_name, klass)
-        rescue => e
-          logger.warn("Problems loading a plugin with",
-                      :type => type,
-                      :name => plugin_name,
-                      :path => path,
-                      :error_message => e.message,
-                      :error_class => e.class,
-                      :error_backtrace => e.backtrace)
-
-          raise LoadError, "Problems loading the requested plugin named #{plugin_name} of type #{type}. Error: #{e.class} #{e.message}"
-        end
+        plugin = legacy_lookup(type, plugin_name)
       end
 
       if block_given? # if provided pass a block to do validation
-        raise LoadError unless block.call(plugin.klass, plugin_name)
+        raise LoadError, "Block validation fails for plugin named #{plugin_name} of type #{type}," unless block.call(plugin.klass, plugin_name)
       end
 
       return plugin.klass
+    end
+
+    # The legacy_lookup method uses the 1.5->5.0 file structure to find and match
+    # a plugin and will do a lookup on the namespace of the required class to find a matching
+    # plugin with the appropriate type.
+    def legacy_lookup(type, plugin_name)
+      begin
+        path = "logstash/#{type}s/#{plugin_name}"
+
+        begin
+          require path
+        rescue LoadError
+          # Plugin might be already defined in the current scope
+          # This scenario often happen in test when we write an adhoc class
+        end
+
+        klass = namespace_lookup(type, plugin_name)
+        plugin = lazy_add(type, plugin_name, klass)
+      rescue => e
+        logger.error("Problems loading a plugin with",
+                    :type => type,
+                    :name => plugin_name,
+                    :path => path,
+                    :error_message => e.message,
+                    :error_class => e.class,
+                    :error_backtrace => e.backtrace)
+
+        raise LoadError, "Problems loading the requested plugin named #{plugin_name} of type #{type}. Error: #{e.class} #{e.message}"
+      end
+
+      plugin
     end
 
     def lookup_pipeline_plugin(type, name)
@@ -176,12 +181,12 @@ module LogStash module Plugins
     end
 
     def lazy_add(type, name, klass)
-      logger.error("On demand adding plugin to the registry", :name => name, :type => type, :class => klass)
+      logger.debug("On demand adding plugin to the registry", :name => name, :type => type, :class => klass)
       add_plugin(type, name, klass)
     end
 
     def add(type, name, klass)
-      logger.error("Adding plugin to the registry", :name => name, :type => type, :class => klass)
+      logger.debug("Adding plugin to the registry", :name => name, :type => type, :class => klass)
       add_plugin(type, name, klass)
     end
 
@@ -230,7 +235,7 @@ module LogStash module Plugins
         specification_klass = type == :universal ? UniversalPluginSpecification : PluginSpecification
         @registry[key_for(type, name)] = specification_klass.new(type, name, klass)
       else
-        logger.info("Ignoring, plugin already added to the registry", :name => name, :type => type, :klass => klass)
+        logger.debug("Ignoring, plugin already added to the registry", :name => name, :type => type, :klass => klass)
       end
     end
 

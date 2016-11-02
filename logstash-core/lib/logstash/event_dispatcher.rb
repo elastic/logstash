@@ -31,11 +31,7 @@ module LogStash
     def fire(method_name, *arguments)
       @listeners.each do |listener|
         if listener.respond_to?(method_name)
-          if arguments.size > 0
-            listener.send(method_name, emitter, *arguments)
-          else
-            listener.send(method_name, emitter)
-          end
+          listener.send(method_name, emitter, *arguments)
         end
       end
     end
