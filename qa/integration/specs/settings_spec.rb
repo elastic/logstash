@@ -17,13 +17,13 @@ describe "Test Logstash instance whose default settings are overridden" do
   }
   
   before(:each) {
+    FileUtils.rm(@logstash_default_logs) if File.exists?(@logstash_default_logs)
     # backup the application settings file -- logstash.yml
     FileUtils.cp(@logstash_service.application_settings_file, "#{@logstash_service.application_settings_file}.original")
   }
   
   after(:each) {
     @logstash_service.teardown
-    FileUtils.rm(@logstash_default_logs) if File.exists?(@logstash_default_logs)
     # restore the application settings file -- logstash.yml
     FileUtils.mv("#{@logstash_service.application_settings_file}.original", @logstash_service.application_settings_file)
   }
