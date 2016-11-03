@@ -15,7 +15,7 @@ This section includes the following topics:
 [[installing-logstash]]
 === Installing Logstash
 
-NOTE: Logstash requires Java 8 or later. Use the
+NOTE: Logstash requires Java 8. Java 9 is not supported. Use the
 http://www.oracle.com/technetwork/java/javase/downloads/index.html[official Oracle distribution] or an open-source
 distribution such as http://openjdk.java.net/[OpenJDK].
 
