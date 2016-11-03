@@ -222,6 +222,13 @@ If you are moving from Logstash 2.x to Logstash 5.0, and you would like to use t
 then it must be copied over to `path.data` manually to use the save state (or the path needs to be changed to point to it).
 
 [float]
+==== GeoIP Filter
+
+The GeoIP filter has been updated to use MaxMind's GeoIP2 database. Previous GeoIP version is now considered legacy 
+by MaxMind. As a result of this, `.dat` version files are no longer supported, and only `.mmdb` format is supported. 
+The new database will not include ASN data in the basic free database file.
+
+[float]
 === Ruby Filter and Custom Plugin Developers
 
 With the migration to the new <<event-api>>, we have changed how you can access internal data compared to previous release. 
