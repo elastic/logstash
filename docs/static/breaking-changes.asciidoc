@@ -202,6 +202,11 @@ bin/logstash-plugin install --version 4.0.1 logstash-output-kafka
 
 The version numbers were found by checking the compatibility matrix for the individual plugins.
 
+Specifically, for the Kafka input plugin, configs have changed a lot. Configuration `topic_id` 
+is replaced by `topics`. `zk_connect` is replaced by `bootstrap_servers` which are Kafka brokers. `consumer_id` is 
+replaced by `client_id`. Also, offsets are now stored in Kafka topics instead of Zookeeper. See <<plugins-inputs-kafka>> 
+for more information.
+
 [float]
 ==== File Input
 
