@@ -35,7 +35,7 @@ public class Accessors {
             } else if (target instanceof List) {
                 int i = Integer.parseInt(field.getKey());
                 try {
-                    int offset = listIndex(i, (List) target);
+                    int offset = listIndex(i, ((List) target).size());
                     return ((List)target).remove(offset);
                 } catch (IndexOutOfBoundsException e) {
                     return null;
@@ -115,7 +115,7 @@ public class Accessors {
 
     private boolean foundInList(List<Object> target, int index) {
         try {
-            int offset = listIndex(index, target);
+            int offset = listIndex(index, target.size());
             return target.get(offset) != null;
         } catch (IndexOutOfBoundsException e) {
             return false;
@@ -133,7 +133,7 @@ public class Accessors {
             return result;
         } else if (target instanceof List) {
             try {
-                int offset = listIndex(Integer.parseInt(key), (List) target);
+                int offset = listIndex(Integer.parseInt(key), ((List) target).size());
                 return ((List<Object>) target).get(offset);
             } catch (IndexOutOfBoundsException e) {
                 return null;
@@ -161,7 +161,7 @@ public class Accessors {
                 }
                 ((List<Object>) target).add(value);
             } else {
-                int offset = listIndex(i, (List) target);
+                int offset = listIndex(i, ((List) target).size());
                 ((List<Object>) target).set(offset, value);
             }
         } else {
@@ -181,9 +181,14 @@ public class Accessors {
         return new ClassCastException("expecting List or Map, found "  + target.getClass());
     }
 
-    private static int listIndex(int i, List list) {
-        int size = list.size();
-
+    /* 
+     * Returns a positive integer offset for a list of known size.
+     *
+     * @param i if positive, and offset from the start of the list. If negative, the offset from the end of the list, where -1 means the last element.
+     * @param size the size of the list.
+     * @return the positive integer offset for the list given by index i.
+     */
+    private static int listIndex(int i, int size) {
         if (i >= size || i < -size) {
             throw new IndexOutOfBoundsException("Index " + i + " is out of bounds for a list with size " + size);
         }
