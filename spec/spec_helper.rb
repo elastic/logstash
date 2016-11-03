@@ -21,6 +21,27 @@ end
 
 RSpec.configure do |c|
   Flores::RSpec.configure(c)
+  c.before do
+    # TODO: commented out on post-merged in master - the logger has moved to log4j
+    #
+    #
+    # Force Cabin to always have a JSON subscriber.  The main purpose of this
+    # is to catch crashes in json serialization for our logs. JSONIOThingy
+    # exists to validate taht what LogStash::Logging::JSON emits is always
+    # valid JSON.
+    # jsonvalidator = JSONIOThingy.new
+    # allow(Cabin::Channel).to receive(:new).and_wrap_original do |m, *args|
+    #   logger = m.call(*args)
+    #   logger.level = :debug
+    #   logger.subscribe(LogStash::Logging::JSON.new(jsonvalidator))
+    #
+    #   logger
+    # end
+
+    LogStash::SETTINGS.set("queue.type", "memory_acked")
+    LogStash::SETTINGS.set("queue.page_capacity", 1024 * 1024)
+    LogStash::SETTINGS.set("queue.max_events", 250)
+  end
 end
 
 def installed_plugins

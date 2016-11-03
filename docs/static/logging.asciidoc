@@ -21,6 +21,38 @@ Logstash ships with a `log4j2.properties` file with out-of-the-box settings. You
 rotation policy, type, and other https://logging.apache.org/log4j/2.x/manual/configuration.html#Loggers[log4j2 configuration]. 
 You must restart Lostash to apply any changes that you make to this file.
 
+==== Slowlog
+
+Slow-log for Logstash adds the ability to log when a specific event takes an abnormal amount of time to make its way
+through the pipeline. Just like the normal application log, you can find slow-logs in your `--path.logs` directory.
+Slowlog is configured in the `logstash.yml` settings file with the following options:
+
+------------------------------
+[source]
+slowlog.threshold.warn (default: -1)
+slowlog.threshold.info (default: -1)
+slowlog.threshold.debug (default: -1)
+slowlog.threshold.trace (default: -1)
+------------------------------
+
+By default, these values are set to `-1nanos` to represent an infinite threshold where no slowlog will be invoked. These `slowlog.threshold`
+fields are configured using a time-value format which enables a wide range of trigger intervals. The positive numeric ranges
+can be specified using the following time units: `nanos` (nanoseconds), `micros` (microseconds), `ms` (milliseconds), `s` (second), `m` (minute),
+`h` (hour), `d` (day).
+
+Here is an example:
+
+------------------------------
+[source]
+slowlog.threshold.warn: 2s
+slowlog.threshold.info 1s
+slowlog.threshold.debug 500ms
+slowlog.threshold.trace 100ms
+------------------------------
+
+In the above configuration, events that take longer than two seconds to be processed within a filter will be logged.
+The logs will include the full event and filter configuration that are responsible for the slowness.
+
 ==== Logging APIs
 
 You could modify the `log4j2.properties` file and restart your Logstash, but that is both tedious and leads to unnecessary 

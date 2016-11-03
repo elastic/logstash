@@ -1,5 +1,8 @@
 # encoding: utf-8
 require "logstash/util/loggable"
+require "fileutils"
+require "logstash/util/byte_value"
+require "logstash/util/time_value"
 
 module LogStash
   class Settings
@@ -434,7 +437,46 @@ module LogStash
         end
       end
     end
+
+    class Bytes < Coercible
+      def initialize(name, default=nil, strict=true)
+        super(name, ::Fixnum, default, strict=true) { |value| valid?(value) }
+      end
+
+      def valid?(value)
+        value.is_a?(Fixnum) && value >= 0
+      end
+
+      def coerce(value)
+        case value
+        when ::Numeric
+          value
+        when ::String
+          LogStash::Util::ByteValue.parse(value)
+        else
+          raise ArgumentError.new("Could not coerce '#{value}' into a bytes value")
+        end
+      end
+
+      def validate(value)
+        unless valid?(value)
+          raise ArgumentError.new("Invalid byte value \"#{value}\".")
+        end
+      end
+    end
+
+    class TimeValue < Coercible
+      def initialize(name, default, strict=true, &validator_proc)
+        super(name, ::Fixnum, default, strict, &validator_proc)
+      end
+
+      def coerce(value)
+        return value if value.is_a?(::Fixnum)
+        Util::TimeValue.from_value(value).to_nanos
+      end
+    end
   end
+
 
   SETTINGS = Settings.new
 end

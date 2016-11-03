@@ -13,7 +13,7 @@ namespace "compile" do
 
   task "logstash-core-java" do
     puts("Building logstash-core using gradle")
-    system("./gradlew", "vendor", "-p", "./logstash-core")
+    system("./gradlew", "jar", "-p", "./logstash-core")
   end
 
   task "logstash-core-event-java" do
@@ -21,6 +21,11 @@ namespace "compile" do
     system("./gradlew", "jar", "-p", "./logstash-core-event-java")
   end
 
+  task "logstash-core-queue-jruby" do
+    puts("Building logstash-core-queue-jruby using gradle")
+    system("./gradlew", "jar", "-p", "./logstash-core-queue-jruby")
+  end
+
   desc "Build everything"
-  task "all" => ["grammar", "logstash-core-java", "logstash-core-event-java"]
+  task "all" => ["grammar", "logstash-core-java", "logstash-core-event-java", "logstash-core-queue-jruby"]
 end

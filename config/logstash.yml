@@ -85,6 +85,28 @@
 #
 # config.debug: false
 #
+# ------------ Queuing Settings --------------
+#
+# Internal queuing model, "memory" for legacy in-memory based queuing and
+# "persisted" for disk-based acked queueing. Defaults is memory
+#
+# queue.type: memory
+#
+# If using queue.type: persisted, the directory path where the data files will be stored.
+# Default is path.data/queue
+#
+# path.queue:
+#
+# If using queue.type: persisted, the page data files size. The queue data consists of
+# append-only data files separated into pages. Default is 250mb
+#
+# queue.page_capacity: 250mb
+#
+# If using queue.type: persisted, the maximum number of unread events in the queue.
+# Default is 0 (unlimited)
+#
+# queue.max_events: 0
+#
 # ------------ Metrics Settings --------------
 #
 # Bind address for the metrics REST endpoint

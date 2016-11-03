@@ -3,14 +3,14 @@ package org.logstash;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
-import org.joda.time.LocalDateTime;
 import org.joda.time.Duration;
+import org.joda.time.LocalDateTime;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
 
 import java.util.Date;
 
-@JsonSerialize(using = TimestampSerializer.class)
+@JsonSerialize(using = org.logstash.json.TimestampSerializer.class)
 public class Timestamp implements Cloneable {
 
     // all methods setting the time object must set it in the UTC timezone

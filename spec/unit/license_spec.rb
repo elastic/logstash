@@ -14,7 +14,8 @@ describe "Project licenses" do
                    /bsd/,
                    /artistic 2.*/,
                    /ruby/,
-                   /lgpl/])
+                   /lgpl/,
+                   /epl/])
   }
 
   ##

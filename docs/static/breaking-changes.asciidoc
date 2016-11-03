@@ -141,6 +141,15 @@ NOTE: None of the short form options have changed!
 === Breaking Changes in Plugins
 
 [float]
+==== Elasticsearch Output `workers` Setting Removed
+
+Starting with Logstash 5.0, the `workers` setting in the Elasticsearch output
+plugin is no longer supported. Pipelines that specify this setting will no
+longer start up. You need to specify the `pipeline.workers` setting at the
+pipeline level instead. For more information about setting
+`pipeline.workers`, see <<logstash-settings-file>>.
+
+[float]
 ==== Elasticsearch Output Index Template
 
 The index template for Elasticsearch 5.0 has been changed to reflect
@@ -193,6 +202,11 @@ bin/logstash-plugin install --version 4.0.1 logstash-output-kafka
 
 The version numbers were found by checking the compatibility matrix for the individual plugins.
 
+Specifically, for the Kafka input plugin, configs have changed a lot. Configuration `topic_id` 
+is replaced by `topics`. `zk_connect` is replaced by `bootstrap_servers` which are Kafka brokers. `consumer_id` is 
+replaced by `client_id`. Also, offsets are now stored in Kafka topics instead of Zookeeper. See <<plugins-inputs-kafka>> 
+for more information.
+
 [float]
 ==== File Input
 
@@ -211,6 +225,13 @@ where `path.data` is the path defined in the new `logstash.yml` file.
 If you have manually specified `sincedb_path` as part of the configuration, this change will not affect you.
 If you are moving from Logstash 2.x to Logstash 5.0, and you would like to use the existing SinceDB file,
 then it must be copied over to `path.data` manually to use the save state (or the path needs to be changed to point to it).
+
+[float]
+==== GeoIP Filter
+
+The GeoIP filter has been updated to use MaxMind's GeoIP2 database. Previous GeoIP version is now considered legacy 
+by MaxMind. As a result of this, `.dat` version files are no longer supported, and only `.mmdb` format is supported. 
+The new database will not include ASN data in the basic free database file.
 
 [float]
 === Ruby Filter and Custom Plugin Developers

@@ -139,6 +139,14 @@ class LogStash::Filters::Base < LogStash::Plugin
     raise "#{self.class}#filter must be overidden"
   end # def filter
 
+  public
+  def do_filter(event, &block)
+    time = java.lang.System.nanoTime
+    filter(event, &block)
+    @slow_logger.on_event("event processing time", @original_params, event, java.lang.System.nanoTime - time)
+  end
+
+
   # in 1.5.0 multi_filter is meant to be used in the generated filter function in LogStash::Config::AST::Plugin only
   # and is temporary until we refactor the filter method interface to accept events list and return events list,
   # just list in multi_filter see https://github.com/elastic/logstash/issues/2872.
@@ -153,7 +161,7 @@ class LogStash::Filters::Base < LogStash::Plugin
     events.each do |event|
       unless event.cancelled?
         result << event
-        filter(event){|new_event| result << new_event}
+        do_filter(event){|new_event| result << new_event}
       end
     end
     result
@@ -161,7 +169,7 @@ class LogStash::Filters::Base < LogStash::Plugin
 
   public
   def execute(event, &block)
-    filter(event, &block)
+    do_filter(event, &block)
   end # def execute
 
   public
