@@ -1,0 +1,15 @@
+---
+services:
+  - logstash
+config: |-
+ input {
+    generator {
+      count => 4
+    }
+ }
+ filter {
+   sleep { time => 1 every => 2 }
+ }
+ output {
+   null {}
+ }

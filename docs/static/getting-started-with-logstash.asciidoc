@@ -15,7 +15,7 @@ This section includes the following topics:
 [[installing-logstash]]
 === Installing Logstash
 
-NOTE: Logstash requires Java 8 or later. Use the
+NOTE: Logstash requires Java 8. Java 9 is not supported. Use the
 http://www.oracle.com/technetwork/java/javase/downloads/index.html[official Oracle distribution] or an open-source
 distribution such as http://openjdk.java.net/[OpenJDK].
 
@@ -49,8 +49,8 @@ that we only provide binary packages, but no source packages, as the packages
 are created as part of the Logstash build.
 
 We have split the Logstash package repositories by version into separate urls
-to avoid accidental upgrades across major or minor versions. For all 2.3.x
-releases use 2.3 as version number, for 2.2.x use 2.2, etc.
+to avoid accidental upgrades across major versions. For all {major-version}.y
+releases use {major-version} as version number.
 
 We use the PGP key
 https://pgp.mit.edu/pks/lookup?op=vindex&search=0xD27D666CD88E42B4[D88E42B4],
@@ -105,21 +105,7 @@ it with:
 sudo apt-get update && sudo apt-get install logstash
 --------------------------------------------------
 
-Configure Logstash to automatically start during bootup. If your
-distribution is using SysV init, then you will need to run:
-
-[source,sh]
---------------------------------------------------
-sudo update-rc.d logstash defaults 95 10
---------------------------------------------------
-
-Otherwise if your distribution is using systemd:
-
-[source,sh]
---------------------------------------------------
-sudo /bin/systemctl daemon-reload
-sudo /bin/systemctl enable logstash.service
---------------------------------------------------
+See the <<running-logstash,Running Logstash>> document for managing Logstash as a system service.
 
 [float]
 ==== YUM
@@ -153,24 +139,10 @@ And your repository is ready for use. You can install it with:
 sudo yum install logstash
 --------------------------------------------------
 
-Configure Logstash to automatically start during bootup. If your
-distribution is using SysV `init` (check with `ps -p 1`), then you will need to run:
-
 WARNING: The repositories do not work with older rpm based distributions
          that still use RPM v3, like CentOS5.
 
-[source,sh]
---------------------------------------------------
-chkconfig --add logstash
---------------------------------------------------
-
-Otherwise if your distribution is using `systemd`:
-
-[source,sh]
---------------------------------------------------
-sudo /bin/systemctl daemon-reload
-sudo /bin/systemctl enable logstash.service
---------------------------------------------------
+See the <<running-logstash,Running Logstash>> document for managing Logstash as a system service.
 
 [[first-event]]
 === Stashing Your First Event

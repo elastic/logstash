@@ -8,8 +8,8 @@ module LogStash module Instrument module PeriodicPoller
     include LogStash::Util::Loggable
 
     DEFAULT_OPTIONS = {
-      :polling_interval => 1,
-      :polling_timeout => 60
+      :polling_interval => 5,
+      :polling_timeout => 120
     }
 
     public
@@ -22,11 +22,25 @@ module LogStash module Instrument module PeriodicPoller
     def update(time, result, exception)
       return unless exception
 
-      logger.error("PeriodicPoller: exception",
-                   :poller => self,
-                   :result => result,
-                   :exception => exception,
-                   :executed_at => time)
+      if exception.is_a?(Concurrent::TimeoutError)
+        # On a busy system this can happen, we just log it as a debug
+        # event instead of an error, Some of the JVM calls can take a long time or block.
+        logger.debug("PeriodicPoller: Timeout exception",
+                :poller => self,
+                :result => result,
+                :polling_timeout => @options[:polling_timeout],
+                :polling_interval => @options[:polling_interval],
+                :exception => exception.class,
+                :executed_at => time)
+      else
+        logger.error("PeriodicPoller: exception",
+                :poller => self,
+                :result => result,
+                :exception => exception.class,
+                :polling_timeout => @options[:polling_timeout],
+                :polling_interval => @options[:polling_interval],
+                :executed_at => time)
+      end
     end
 
     def collect
@@ -37,7 +51,7 @@ module LogStash module Instrument module PeriodicPoller
       logger.debug("PeriodicPoller: Starting",
                    :polling_interval => @options[:polling_interval],
                    :polling_timeout => @options[:polling_timeout]) if logger.debug?
-      
+
       collect # Collect data right away if possible
       @task.execute
     end

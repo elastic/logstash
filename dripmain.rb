@@ -3,6 +3,7 @@
 
 require_relative "lib/bootstrap/environment"
 LogStash::Bundler.setup!({:without => [:build]})
+require "logstash-core"
 
 # typical required gems and libs
 require "logstash/environment"

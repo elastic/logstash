@@ -40,7 +40,18 @@ module LogStash
             Setting::String.new("http.host", "127.0.0.1"),
             Setting::PortRange.new("http.port", 9600..9700),
             Setting::String.new("http.environment", "production"),
+            Setting::String.new("queue.type", "memory", true, ["persisted", "memory", "memory_acked"]),
+            Setting::Bytes.new("queue.page_capacity", "250mb"),
+            Setting::Numeric.new("queue.max_events", 0), # 0 is unlimited
+            Setting::TimeValue.new("slowlog.threshold.warn", "-1"),
+            Setting::TimeValue.new("slowlog.threshold.info", "-1"),
+            Setting::TimeValue.new("slowlog.threshold.debug", "-1"),
+            Setting::TimeValue.new("slowlog.threshold.trace", "-1")
   ].each {|setting| SETTINGS.register(setting) }
+
+  # Compute the default queue path based on `path.data`
+  default_queue_file_path = ::File.join(SETTINGS.get("path.data"), "queue")
+  SETTINGS.register Setting::WritableDirectory.new("path.queue", default_queue_file_path)
 
   module Environment
     extend self

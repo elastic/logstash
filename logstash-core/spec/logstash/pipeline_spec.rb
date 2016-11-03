@@ -447,6 +447,9 @@ describe LogStash::Pipeline do
       allow(settings).to receive(:get_value).with("pipeline.id").and_return("main")
       allow(settings).to receive(:get_value).with("metric.collect").and_return(false)
       allow(settings).to receive(:get_value).with("config.debug").and_return(false)
+      allow(settings).to receive(:get).with("queue.type").and_return("memory")
+      allow(settings).to receive(:get).with("queue.page_capacity").and_return(1024 * 1024)
+      allow(settings).to receive(:get).with("queue.max_events").and_return(250)
 
       pipeline = LogStash::Pipeline.new(config, settings)
       expect(pipeline.metric).to be_kind_of(LogStash::Instrument::NullMetric)
@@ -509,7 +512,7 @@ describe LogStash::Pipeline do
       pipeline = LogStash::Pipeline.new(config, pipeline_settings_obj)
       Thread.new { pipeline.run }
       sleep 0.1 while !pipeline.ready?
-      wait(5).for do
+      wait(3).for do
         # give us a bit of time to flush the events
         output.events.empty?
       end.to be_falsey
@@ -549,10 +552,11 @@ describe LogStash::Pipeline do
   end
 
   context "#started_at" do
+    # use a run limiting count to shutdown the pipeline automatically
     let(:config) do
       <<-EOS
       input {
-        generator {}
+        generator { count => 10 }
       }
       EOS
     end
@@ -564,8 +568,7 @@ describe LogStash::Pipeline do
     end
 
     it "return when the pipeline started working" do
-      t = Thread.new { subject.run }
-      sleep(0.1)
+      subject.run
       expect(subject.started_at).to be < Time.now
       subject.shutdown
     end
@@ -604,7 +607,7 @@ describe LogStash::Pipeline do
 
     let(:pipeline_settings) { { "pipeline.id" => pipeline_id } }
     let(:pipeline_id) { "main" }
-    let(:number_of_events) { 1000 }
+    let(:number_of_events) { 420 }
     let(:multiline_id) { "my-multiline" }
     let(:multiline_id_other) { "my-multiline_other" }
     let(:dummy_output_id) { "my-dummyoutput" }
@@ -648,13 +651,10 @@ describe LogStash::Pipeline do
 
       Thread.new { subject.run }
       # make sure we have received all the generated events
-
-      times = 0
-      while dummyoutput.events.size < number_of_events
-        times += 1
-        sleep 0.25
-        raise "Waited too long" if times > 4
-      end
+      wait(3).for do
+        # give us a bit of time to flush the events
+        dummyoutput.events.size < number_of_events
+      end.to be_falsey
     end
 
     after :each do
