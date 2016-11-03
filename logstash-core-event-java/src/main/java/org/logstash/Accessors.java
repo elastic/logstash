@@ -34,10 +34,15 @@ public class Accessors {
                 return ((Map<String, Object>) target).remove(field.getKey());
             } else if (target instanceof List) {
                 int i = Integer.parseInt(field.getKey());
-                if (i < 0 || i >= ((List) target).size()) {
-                    return null;
+                int size = ((List) target).size();
+                if (i >= size || i < -size) {
+                  return null;
+                } else if (i < 0) {
+                  // Offset from the end of the array.
+                  return ((List<Object>) target).remove(size + i);
+                } else {
+                  return ((List<Object>) target).remove(i);
                 }
-                return ((List<Object>) target).remove(i);
             } else {
                 throw newCollectionException(target);
             }
@@ -112,9 +117,15 @@ public class Accessors {
     }
 
     private boolean foundInList(List<Object> target, int index) {
-        if (index < 0 || index >= target.size()) {
+        int size = ((List) target).size();
+        if (index >= size || index < -size) {
             return false;
         }
+
+        if (index < 0) {
+            index = size + index;
+        }
+
         return target.get(index) != null;
     }
 
@@ -128,11 +139,15 @@ public class Accessors {
             return result;
         } else if (target instanceof List) {
             int i = Integer.parseInt(key);
-            if (i < 0 || i >= ((List) target).size()) {
+            int size = ((List) target).size();
+            if (i >= size || i < -size) {
                 return null;
+            } else if (i < 0) {
+                // Offset from the end of the array.
+                return ((List<Object>) target).get(size + i);
+            } else {
+                return ((List<Object>) target).get(i);
             }
-            Object result = ((List<Object>) target).get(i);
-            return result;
         } else if (target == null) {
             return null;
         } else {
