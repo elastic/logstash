@@ -27,7 +27,8 @@ config:
         port => 5044
         ssl_certificate => '<%=options[:ssl_certificate]%>'
         ssl_key => '<%=options[:ssl_key]%>'
-        ssl_verify_mode => "peer"
+        ssl_verify_mode => "force_peer"
+        ssl_certificate_authorities => '<%=options[:ssl_certificate]%>'
       }
     }
     output {}
