@@ -512,7 +512,7 @@ GEM
     numerizer (0.1.1)
     octokit (3.8.0)
       sawyer (~> 0.6.0, >= 0.5.3)
-    pleaserun (0.0.26)
+    pleaserun (0.0.27)
       cabin (> 0)
       clamp
       dotenv
