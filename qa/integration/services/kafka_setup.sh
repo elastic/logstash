@@ -33,6 +33,7 @@ start_kafka() {
     echo "Starting Kafka broker"
     $KAFKA_HOME/bin/kafka-server-start.sh -daemon $KAFKA_HOME/config/server.properties --override delete.topic.enable=true --override log.dirs=$KAFKA_LOGS_DIR --override log.flush.interval.ms=200
     wait_for_port 9092
+    wait_for_port 2181
 }
 
 wait_for_messages() {
