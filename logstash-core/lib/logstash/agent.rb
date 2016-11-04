@@ -281,12 +281,12 @@ class LogStash::Agent
     return unless pipeline.is_a?(LogStash::Pipeline)
     return if pipeline.ready?
     @logger.debug("starting pipeline", :id => id)
-    Thread.new do
+    t = Thread.new do
       LogStash::Util.set_thread_name("pipeline.#{id}")
       begin
         pipeline.run
       rescue => e
-        @reload_metric.namespace([id.to_sym, :reloads]) do |n|
+        @reload_metric.namespace([id.to_sym, :reloads]).tap do |n|
           n.increment(:failures)
           n.gauge(:last_error, { :message => e.message, :backtrace => e.backtrace})
           n.gauge(:last_failure_timestamp, LogStash::Timestamp.now)
@@ -294,7 +294,15 @@ class LogStash::Agent
         @logger.error("Pipeline aborted due to error", :exception => e, :backtrace => e.backtrace)
       end
     end
-    sleep 0.01 until pipeline.ready?
+    while true do
+      if !t.alive?
+        return false
+      elsif pipeline.ready?
+        return true
+      else
+        sleep 0.01
+      end
+    end
   end
 
   def stop_pipeline(id)
@@ -326,10 +334,11 @@ class LogStash::Agent
     stop_pipeline(pipeline_id)
     reset_pipeline_metrics(pipeline_id)
     @pipelines[pipeline_id] = new_pipeline
-    start_pipeline(pipeline_id)
-    @reload_metric.namespace([pipeline_id.to_sym, :reloads]).tap do |n|
-      n.increment(:successes)
-      n.gauge(:last_success_timestamp, LogStash::Timestamp.now)
+    if start_pipeline(pipeline_id) # pipeline started successfuly
+      @reload_metric.namespace([pipeline_id.to_sym, :reloads]).tap do |n|
+        n.increment(:successes)
+        n.gauge(:last_success_timestamp, LogStash::Timestamp.now)
+      end
     end
   end
 
