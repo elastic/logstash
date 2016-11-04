@@ -527,5 +527,43 @@ describe LogStash::Agent do
         expect(value).to be > 0
       end
     end
+
+    context "when reloading a config that raises exception on pipeline.run" do
+      let(:new_config) { "input { generator { count => 10000 } }" }
+      let(:new_config_generator_counter) { 500 }
+
+      class BrokenGenerator < LogStash::Inputs::Generator
+        def register
+          raise ArgumentError
+        end
+      end
+
+      before :each do
+
+        allow(LogStash::Plugin).to receive(:lookup).with("input", "generator").and_return(BrokenGenerator)
+
+        File.open(config_path, "w") do |f|
+          f.write(new_config)
+          f.fsync
+        end
+
+      end
+
+      it "does not increase the successful reload count" do
+        expect { subject.send(:"reload_pipeline!", "main") }.to_not change {
+          snapshot = subject.metric.collector.snapshot_metric
+          reload_metrics = snapshot.metric_store.get_with_path("/stats/pipelines")[:stats][:pipelines][:main][:reloads]
+          reload_metrics[:successes].value
+        }
+      end
+
+      it "increases the failured reload count" do
+        expect { subject.send(:"reload_pipeline!", "main") }.to change {
+          snapshot = subject.metric.collector.snapshot_metric
+          reload_metrics = snapshot.metric_store.get_with_path("/stats/pipelines")[:stats][:pipelines][:main][:reloads]
+          reload_metrics[:failures].value
+        }.by(1)
+      end
+    end
   end
 end
