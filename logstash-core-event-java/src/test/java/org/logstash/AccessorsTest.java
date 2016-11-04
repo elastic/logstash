@@ -1,5 +1,11 @@
 package org.logstash;
 
+import org.junit.experimental.theories.DataPoint;
+import org.junit.Rule;
+import org.junit.rules.ExpectedException;
+import org.junit.experimental.theories.Theories;
+import org.junit.experimental.theories.Theory;
+import org.junit.runner.RunWith;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -206,5 +212,39 @@ public class AccessorsTest {
         assertEquals(accessors.set("[foo]", "boom"), "boom");
         assertEquals(accessors.get("[foo][bar]"), null);
         assertEquals(accessors.get("[foo]"), "boom");
+    }
+
+    @RunWith(Theories.class)
+    public static class TestListIndexFailureCases {
+      private static final int size = 10;
+
+      @DataPoint
+      public static final int tooLarge = size;
+
+      @DataPoint
+      public static final int tooLarge1 = size+1;
+
+      @DataPoint
+      public static final int tooLargeNegative = -size - 1;
+
+      @Rule
+      public ExpectedException exception = ExpectedException.none();
+
+      @Theory
+      public void testListIndexOutOfBounds(int i) {
+        exception.expect(IndexOutOfBoundsException.class);
+        Accessors.listIndex(i, size);
+      }
+    }
+
+    public static class TestListIndex {
+      public void testListIndexOutOfBounds() {
+        assertEquals(Accessors.listIndex(0, 10), 0);
+        assertEquals(Accessors.listIndex(1, 10), 1);
+        assertEquals(Accessors.listIndex(9, 10), 9);
+        assertEquals(Accessors.listIndex(-1, 10), 9);
+        assertEquals(Accessors.listIndex(-9, 10), 1);
+        assertEquals(Accessors.listIndex(-10, 10), 0);
+      }
     }
 }

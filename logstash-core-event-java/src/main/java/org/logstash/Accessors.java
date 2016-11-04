@@ -188,7 +188,7 @@ public class Accessors {
      * @param size the size of the list.
      * @return the positive integer offset for the list given by index i.
      */
-    private static int listIndex(int i, int size) {
+    public static int listIndex(int i, int size) {
         if (i >= size || i < -size) {
             throw new IndexOutOfBoundsException("Index " + i + " is out of bounds for a list with size " + size);
         }
