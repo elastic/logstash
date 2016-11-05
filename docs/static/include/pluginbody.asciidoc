@@ -851,7 +851,7 @@ Gem::Specification.new do |s|
   s.metadata = { "logstash_plugin" => "true", "logstash_group" => "{plugintype}" }
 
   # Gem dependencies
-  s.add_runtime_dependency 'logstash-core', '>= 5.0.0', '< 6.0.0'
+  s.add_runtime_dependency "logstash-core-plugin-api", ">= 1.60", "<= 2.99"
   s.add_development_dependency 'logstash-devutils'
 end
 ----------------------------------
@@ -909,16 +909,15 @@ Logstash plugins:
 [subs="attributes"]
 ----------------------------------
   # Gem dependencies
-  s.add_runtime_dependency 'logstash-core', '>= 5.0.0', '< 6.0.0'
+  s.add_runtime_dependency "logstash-core-plugin-api", ">= 1.60", "<= 2.99"
   s.add_development_dependency 'logstash-devutils'
 ----------------------------------
-This gemspec has a runtime dependency on the core Logstash gem and requires that
-it have a version number greater than or equal to version 5.0.0 `'>= 5.0.0'`,
-and less than version 6.0 `'< 6.0.0'`.
+This gemspec has a runtime dependency on the logstash-core-plugin-api and requires that
+it have a version number greater than or equal to version 1.60 and less than or equal to version 2.99.
 =========================
 
 
-IMPORTANT: All plugins have a runtime dependency on the `logstash` core gem, and
+IMPORTANT: All plugins have a runtime dependency on the `logstash-core-plugin-api` gem, and
 a development dependency on `logstash-devutils`.
 
 ==== Jar dependencies
