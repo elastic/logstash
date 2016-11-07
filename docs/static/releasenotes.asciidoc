@@ -1,12 +1,55 @@
 [[releasenotes]]
 == Release Notes
 
-This section summarizes the changes in 5.0.0 release.
+This section summarizes the changes in the following releases:
+
+* <<logstash-5-0-1,Logstash 5.0.1>>
+* <<logstash-5-0-0,Logstash 5.0.0>>
 
 List of <<breaking-changes, breaking changes>>
 
+[[logstash-5-0-1]]
+=== Logstash 5.0.1 Release Notes
+
+* Logstash can now start without logstash.yml, even though this is not ideal and not recommended for production. 
+  Requiring `logstash.yml` in 5.0.0 caused confusion among existing users who install LS from a package and tried to start it 
+  manually via `bin/logstash` ({lsissue}6170[Issue 6170]).
+* Fixed a bug when incoming data already had a field called `tags` and Logstash errored trying to append more 
+  tags to it ({lsissue}6142[Issue 6142]).
+* Increased the current polling interval of a background thread that retrieves stats from JVM and OS layer from 1s to 5s ({lsissue}6160[Issue 6160]).
+* Merge config strings when both `-e` and `-f` was supplied even if `-f` does not yield in any config files ({lsissue}6164[Issue 6164]).
+* Improve user feedback message when starting Logstash manually after a package install ({lsissue}6061[Issue 6061]).
+
 [float]
-==== General
+==== Input Plugins
+
+*`Beats`*:
+
+* The plugin can now bind to a specific host using the `host` config (https://github.com/logstash-plugins/logstash-input-beats/issues/146[Issue 146]).
+* Fixed an issue where only the first certificate found in the CA chain were taken into consideration to verify clients (https://github.com/logstash-plugins/logstash-input-beats/issues/153[Issue 153]).
+* Validate the presence of `ssl_certificate_authorities` when `verify_mode` is set to `FORCE_PEER` or `PEER` (https://github.com/logstash-plugins/logstash-input-beats/issues/155[Issue 155]).
+* Fixed a typo in the default ciphers suite and added validations to catch such issues in the future (https://github.com/logstash-plugins/logstash-input-beats/issues/156[Issue 156]).
+
+*`RabbitMQ`*:
+
+* Fix reconnection issues when trying to connect to RabbitMQ when starting Logstash (https://github.com/logstash-plugins/logstash-input-rabbitmq/issues/91[Issue 91]).
+* To improve debugging, include URL of server when logging connection errors.
+
+==== Filter Plugins
+
+*`Grok`*:
+
+* When using the execution cancelation feature, Grok could crash Logstash under high concurrent loads. This has 
+  been fixed (https://github.com/logstash-plugins/logstash-filter-grok/issues/97[Issue 97]).
+
+*`XML`*:
+
+* Fix a bug that, when the plugin tried to report an invalid configuration, would report the following 
+  instead of the real error: `translation missing: en.logstash.agent.configuration.invalid_plugin_register`
+
+
+[[logstash-5-0-0]]
+=== Logstash 5.0.0 Release Notes
 
 * A new monitoring feature provides runtime visibility into the Logstash pipeline and its plugins. This component 
 collects various kinds of operational metrics while Logstash processes your data, and all of this information 
