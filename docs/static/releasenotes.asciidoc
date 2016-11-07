@@ -3,7 +3,36 @@
 
 This section summarizes the changes in each release.
 
+* <<logstash-2-4-1,Logstash 2.4.1>>
 * <<logstash-2-4,Logstash 2.4>>
+
+[[logstash-2-4-1]]
+=== Logstash 2.4.1 Release Notes
+
+* Logstash now provides information about the error message instead of just the class name and backtrace 
+  which was missing in 2.4 ({lsissue}5969[Issue 5969]).
+
+[float]
+==== Input Plugins
+
+*`Beats`*:
+
+* The plugin now accepts a specific host to bind to in the `host` config (https://github.com/logstash-plugins/logstash-input-beats/issues/146[Issue 146]).
+* Fix an issue when forcing a logstash shutdown that could result in an InterruptedException (https://github.com/logstash-plugins/logstash-input-beats/issues/145[Issue 145]).
+* Fix an issue when only the first CA found in the certificate authorities was taking into consideration to verify clients (https://github.com/logstash-plugins/logstash-input-beats/issues/153[Issue 153]).
+* Validate the presence of ssl_certificate_authorities when verify_mode is set to FORCE_PEER or peer (https://github.com/logstash-plugins/logstash-input-beats/issues/155[Issue 155]).
+* Fixed a typo in the default ciphers suite, added validations for the configured ciphers (https://github.com/logstash-plugins/logstash-input-beats/issues/156[Issue 156]).
+
+*`HTTP Poller`*:
+
+* Use rufus scheduler to support more flexible scheduling options to poll end-points (https://github.com/logstash-plugins/logstash-input-http_poller/issues/60[Issue 60]).
+
+*`RabbitMQ`*:
+
+* Fix reconnection issues
+* Include URL of server when logging errors
+* Add warning log when connection is severed
+* Retry the connection attempt if there is an IO Exception.
 
 [[logstash-2-4]]
 === Logstash 2.4 Release Notes

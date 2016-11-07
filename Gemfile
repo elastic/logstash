@@ -2,9 +2,9 @@
 # If you modify this file manually all comments and formatting will be lost.
 
 source "https://rubygems.org"
-gem "logstash-core", "2.4.0"
-gem "logstash-core-event", "2.4.0"
-gem "logstash-core-plugin-api", "1.60.4"
+gem "logstash-core", "2.4.1"
+gem "logstash-core-event", "2.4.1"
+gem "logstash-core-plugin-api", "1.60.5"
 gem "file-dependencies", "0.1.6"
 gem "ci_reporter_rspec", "1.0.0", :group => :development
 gem "simplecov", :group => :development
@@ -19,6 +19,8 @@ gem "fpm", "~> 1.3.3", :group => :build
 gem "rubyzip", "~> 1.1.7", :group => :build
 gem "gems", "~> 0.8.3", :group => :build
 gem "flores", "~> 0.0.6", :group => :development
+gem "term-ansicolor", "~> 1.3.2", :group => :development
+gem "docker-api", "1.31.0", :group => :development
 gem "logstash-input-heartbeat", "<3.0.0"
 gem "logstash-output-zeromq", "<3.0.0"
 gem "logstash-codec-collectd", "<3.0.0"
