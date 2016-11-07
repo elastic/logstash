@@ -98,6 +98,39 @@ describe LogStash::Filters::NOOP do
     end
   end
 
+  describe "tags parsing with one tag as string value" do
+    config <<-CONFIG
+    filter {
+      noop {
+        add_tag => ["bar"]
+      }
+    }
+    CONFIG
+
+    sample("type" => "noop") do
+      insist { subject.get("tags") } == ["bar"]
+    end
+
+    sample("type" => "noop", "tags" => "foo") do
+      insist { subject.get("tags") } == ["foo", "bar"]
+    end
+  end
+
+  describe "tags parsing with duplicate tags" do
+    config <<-CONFIG
+    filter {
+      noop {
+        add_tag => ["foo"]
+      }
+    }
+    CONFIG
+
+    sample("type" => "noop", "tags" => "foo") do
+      # this is completely weird but seems to be already expected in other specs
+      insist { subject.get("tags") } == ["foo", "foo"]
+    end
+  end
+
   describe "tags parsing with multiple tags" do
     config <<-CONFIG
     filter {
@@ -132,6 +165,18 @@ describe LogStash::Filters::NOOP do
       }
     }
     CONFIG
+
+    sample("type" => "noop", "tags" => "foo") do
+      insist { subject.get("tags") } == ["foo"]
+    end
+
+    sample("type" => "noop", "tags" => "t2") do
+      insist { subject.get("tags") } == []
+    end
+
+    sample("type" => "noop", "tags" => ["t2"]) do
+      insist { subject.get("tags") } == []
+    end
 
     sample("type" => "noop", "tags" => ["t4"]) do
       insist { subject.get("tags") } == ["t4"]

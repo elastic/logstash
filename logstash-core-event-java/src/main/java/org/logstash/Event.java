@@ -15,6 +15,7 @@ import org.logstash.ackedqueue.Queueable;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -76,9 +77,20 @@ public class Event implements Cloneable, Serializable, Queueable {
         this.metadata_accessors = new Accessors(this.metadata);
 
         this.cancelled = false;
-        this.timestamp = initTimestamp(data.get(TIMESTAMP));
+
+        Object providedTimestamp = data.get(TIMESTAMP);
+        // keep reference to the parsedTimestamp for tagging below
+        Timestamp parsedTimestamp = initTimestamp(providedTimestamp);
+        this.timestamp = (parsedTimestamp == null) ? Timestamp.now() : parsedTimestamp;
+
         this.data.put(TIMESTAMP, this.timestamp);
         this.accessors = new Accessors(this.data);
+
+        // the tag() method has to be called after the Accessors initialization
+        if (parsedTimestamp == null) {
+            tag(TIMESTAMP_FAILURE_TAG);
+            this.setField(TIMESTAMP_FAILURE_FIELD, providedTimestamp);
+        }
     }
 
     public Map<String, Object> getData() {
@@ -347,22 +359,36 @@ public class Event implements Cloneable, Serializable, Queueable {
             logger.warn("Error parsing " + TIMESTAMP + " string value=" + o.toString());
         }
 
-        tag(TIMESTAMP_FAILURE_TAG);
-        this.data.put(TIMESTAMP_FAILURE_FIELD, o);
-
-        return Timestamp.now();
+        return null;
     }
 
     public void tag(String tag) {
-        List<Object> tags = (List<Object>) this.data.get("tags");
-        if (tags == null) {
-            tags = new ArrayList<>();
-            this.data.put("tags", tags);
+        List<Object> tags;
+        Object _tags = this.getField("tags");
+
+        // short circuit the null case where we know we won't need deduplication step below at the end
+        if (_tags == null) {
+            setField("tags", Arrays.asList(tag));
+            return;
         }
 
+        // assign to tags var the proper List of either the existing _tags List or a new List containing whatever non-List item was in the tags field
+        if (_tags instanceof List) {
+            tags = (List<Object>) _tags;
+        } else {
+            // tags field has a value but not in a List, convert in into a List
+            tags = new ArrayList<>();
+            tags.add(_tags);
+        }
+
+        // now make sure the tags list does not already contain the tag
+        // TODO: we should eventually look into using alternate data structures to do more efficient dedup but that will require properly defining the tagging API too
         if (!tags.contains(tag)) {
             tags.add(tag);
         }
+
+        // set that back as a proper BiValue
+        this.setField("tags", tags);
     }
 
     public byte[] serialize() throws IOException {
