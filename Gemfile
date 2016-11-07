@@ -19,6 +19,8 @@ gem "fpm", "~> 1.3.3", :group => :build
 gem "rubyzip", "~> 1.1.7", :group => :build
 gem "gems", "~> 0.8.3", :group => :build
 gem "flores", "~> 0.0.6", :group => :development
+gem "term-ansicolor", "~> 1.3.2", :group => :development
+gem "docker-api", "1.31.0", :group => :development
 gem "logstash-input-heartbeat", "<3.0.0"
 gem "logstash-output-zeromq", "<3.0.0"
 gem "logstash-codec-collectd", "<3.0.0"
