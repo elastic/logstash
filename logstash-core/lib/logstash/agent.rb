@@ -55,7 +55,7 @@ class LogStash::Agent
     @reload_metric = metric.namespace([:stats, :pipelines])
 
     @dispatcher = LogStash::EventDispatcher.new(self)
-    LogStash::PluginRegistry.hooks.register_emitter(self.class, dispatcher)
+    LogStash::PLUGIN_REGISTRY.hooks.register_emitter(self.class, dispatcher)
     dispatcher.fire(:after_initialize)
   end
 

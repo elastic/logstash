@@ -201,7 +201,7 @@ class LogStash::Runner < Clamp::StrictCommand
 
     # We configure the registry and load any plugin that can register hooks
     # with logstash, this need to be done before any operation.
-    LogStash::PluginRegistry.setup!
+    LogStash::PLUGIN_REGISTRY.setup!
     @settings.validate_all
 
     LogStash::Util::set_thread_name(self.class.name)
