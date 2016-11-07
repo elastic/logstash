@@ -172,7 +172,7 @@ module LogStash module Plugins
     end
 
     def lookup_pipeline_plugin(type, name)
-      LogStash::PluginRegistry.lookup(type, name) do |plugin_klass, plugin_name|
+      LogStash::PLUGIN_REGISTRY.lookup(type, name) do |plugin_klass, plugin_name|
         is_a_plugin?(plugin_klass, plugin_name)
       end
     rescue LoadError, NameError => e
@@ -244,5 +244,5 @@ module LogStash module Plugins
     end
   end end
 
-  PluginRegistry = Plugins::Registry.new
+  PLUGIN_REGISTRY = Plugins::Registry.new
 end

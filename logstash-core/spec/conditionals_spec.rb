@@ -35,7 +35,7 @@ describe "conditionals in output" do
   end
 
   before do
-    LogStash::PluginRegistry.add(:output, "dummynull", DummyNullOutput)
+    LogStash::PLUGIN_REGISTRY.add(:output, "dummynull", DummyNullOutput)
   end
 
   describe "simple" do
