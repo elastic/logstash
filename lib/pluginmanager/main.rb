@@ -34,7 +34,6 @@ module LogStash
       subcommand "update", "Update a plugin", LogStash::PluginManager::Update
       subcommand "pack", "Package currently installed plugins", LogStash::PluginManager::Pack
       subcommand "unpack", "Unpack packaged plugins", LogStash::PluginManager::Unpack
-      subcommand "list", "List all installed plugins", LogStash::PluginManager::List
       subcommand "generate", "Create the foundation for a new plugin", LogStash::PluginManager::Generate
       subcommand "uninstall", "Uninstall a plugin. Deprecated: Please use remove instead", LogStash::PluginManager::Uninstall
     end
