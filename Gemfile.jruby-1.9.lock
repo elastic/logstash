@@ -319,7 +319,7 @@ GEM
       sequel
       tzinfo
       tzinfo-data
-    logstash-input-kafka (5.0.5)
+    logstash-input-kafka (5.0.6)
       logstash-codec-json
       logstash-codec-plain
       logstash-core-plugin-api (>= 1.60, <= 2.99)
@@ -690,12 +690,12 @@ DEPENDENCIES
   logstash-input-xmpp
   logstash-output-cloudwatch
   logstash-output-csv
-  logstash-output-elasticsearch
+  logstash-output-elasticsearch (<= 5.2.0)
   logstash-output-file
   logstash-output-graphite
   logstash-output-http
   logstash-output-irc
-  logstash-output-kafka
+  logstash-output-kafka (< 6.0.0)
   logstash-output-nagios
   logstash-output-null
   logstash-output-pagerduty
