@@ -7,7 +7,8 @@ module LogStash
     module Commands
       class DefaultMetadata < Commands::Base
         def all
-          {:host => host, :version => version, :http_address => http_address}
+          {:host => host, :version => version, :http_address => http_address,
+           :id => service.agent.id, :name => service.agent.name}
         end
 
         def host
