@@ -4,6 +4,8 @@ require_relative '../services/logstash_service'
 require_relative '../framework/helpers'
 require "logstash/devutils/rspec/spec_helper"
 require "yaml"
+require 'json'
+require 'open-uri'
 
 describe "Test Logstash instance" do
   before(:all) {
@@ -16,12 +18,12 @@ describe "Test Logstash instance" do
   after(:all) {
     @fixture.teardown
   }
-  
+
   after(:each) {
     @ls1.teardown
     @ls2.teardown
   }
-  
+
   let(:num_retries) { 10 }
   let(:config1) { config_to_temp_file(@fixture.config("root", { :port => random_port })) }
   let(:config2) { config_to_temp_file(@fixture.config("root", { :port => random_port })) }
@@ -35,7 +37,7 @@ describe "Test Logstash instance" do
       expect(is_port_open?(9600)).to be true
     end
   end
-  
+
   it "multiple of them can be started on the same box with automatically trying different ports for HTTP server" do
     @ls1.spawn_logstash("-f", config1)
     try(num_retries) do
@@ -52,7 +54,7 @@ describe "Test Logstash instance" do
 
     expect(@ls1.process_id).not_to eq(@ls2.process_id)
   end
-  
+
   it "gets the right version when asked" do
     expected = YAML.load_file(LogstashService::LS_VERSION_FILE)
     expect(@ls1.get_version.strip).to eq("logstash #{expected['logstash']}")
@@ -86,5 +88,24 @@ describe "Test Logstash instance" do
     try(20) do
       expect(is_port_open?(port2)).to be true
     end
+  end
+
+  def get_id
+    JSON.parse(open("http://localhost:9600/").read)["id"]
+  end
+
+  it "should keep the same id between restarts" do
+    config_string = "input { tcp { port => #{port1} } }"
+
+    start_ls = lambda {
+      @ls1.spawn_logstash("-e", config_string, "-f", config3)
+      @ls1.wait_for_logstash
+    }
+    start_ls.call()
+    first_id = get_id
+    @ls1.teardown
+    start_ls.call()
+    second_id = get_id
+    expect(first_id).to eq(second_id)
   end
 end

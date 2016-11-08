@@ -25,16 +25,16 @@ module ResourceDSLMethods
   def test_api(expected, path)
     context "GET #{path}" do
       let(:payload) { LogStash::Json.load(last_response.body) }
-      
+
       before(:all) do
         do_request { get path }
-      end      
-      
+      end
+
       it "should respond OK" do
         expect(last_response).to be_ok
       end
 
-      
+
       describe "the default metadata" do
         it "should include the host" do
           expect(payload["host"]).to eql(Socket.gethostname)
@@ -47,11 +47,19 @@ module ResourceDSLMethods
         it "should include the http address" do
           expect(payload["http_address"]).to eql("#{Socket.gethostname}:#{::LogStash::WebServer::DEFAULT_PORTS.first}")
         end
+
+        it "should include the node name" do
+          expect(payload["name"]).to eql(@runner.agent.name)
+        end
+
+        it "should include the node id" do
+          expect(payload["id"]).to eql(@runner.agent.id)
+        end
       end
-      
+
       hash_to_mapping(expected).each do |resource_path,klass|
         dotted = resource_path.join(".")
-        
+
         it "should set '#{dotted}' at '#{path}' to be a '#{klass}'" do
           expect(last_response).to be_ok # fail early if need be
           resource_path_value = resource_path.reduce(payload) do |acc,v|

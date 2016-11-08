@@ -30,7 +30,7 @@ class LogStash::Runner < Clamp::StrictCommand
 
   # Node Settings
   option ["-n", "--node.name"], "NAME",
-    I18n.t("logstash.runner.flag.node_name"),
+    I18n.t("logstash.runner.flag.name"),
     :attribute_name => "node.name",
     :default => LogStash::SETTINGS.get_default("node.name")
 

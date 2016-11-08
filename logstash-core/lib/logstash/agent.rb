@@ -21,12 +21,12 @@ class LogStash::Agent
   include LogStash::Util::Loggable
   STARTED_AT = Time.now.freeze
 
-  attr_reader :metric, :node_name, :pipelines, :settings, :webserver
+  attr_reader :metric, :name, :pipelines, :settings, :webserver
   attr_accessor :logger
 
   # initialize method for LogStash::Agent
   # @param params [Hash] potential parameters are:
-  #   :node_name [String] - identifier for the agent
+  #   :name [String] - identifier for the agent
   #   :auto_reload [Boolean] - enable reloading of pipelines
   #   :reload_interval [Integer] - reload pipelines every X seconds
   def initialize(settings = LogStash::SETTINGS)
@@ -35,10 +35,12 @@ class LogStash::Agent
     @auto_reload = setting("config.reload.automatic")
 
     @pipelines = {}
-    @node_name = setting("node.name")
+    @name = setting("node.name")
     @http_host = setting("http.host")
     @http_port = setting("http.port")
     @http_environment = setting("http.environment")
+    # Generate / load the persistent uuid
+    id
 
     @config_loader = LogStash::Config::Loader.new(@logger)
     @reload_interval = setting("config.reload.interval")
@@ -131,8 +133,42 @@ class LogStash::Agent
     shutdown_pipelines
   end
 
-  def node_uuid
-    @node_uuid ||= SecureRandom.uuid
+  def id
+    return @id if @id
+
+    uuid = nil
+    if ::File.exists?(id_path)
+      begin
+        uuid = ::File.open(id_path) {|f| f.each_line.first.chomp }
+      rescue => e
+        logger.warn("Could not open persistent UUID file!",
+                    :path => id_path,
+                    :error => e.message,
+                    :class => e.class.name)
+      end
+    end
+
+    if !uuid
+      uuid = SecureRandom.uuid
+      logger.info("No persistent UUID file found. Generating new UUID",
+                  :uuid => uuid,
+                  :path => id_path)
+      begin
+        ::File.open(id_path, 'w') {|f| f.write(uuid) }
+      rescue => e
+        logger.warn("Could not write persistent UUID file! Will use ephemeral UUID",
+                    :uuid => uuid,
+                    :path => id_path,
+                    :error => e.message,
+                    :class => e.class.name)
+      end
+    end
+
+    @id = uuid
+  end
+
+  def id_path
+    @id_path ||= ::File.join(settings.get("path.data"), "uuid")
   end
 
   def running_pipelines?
