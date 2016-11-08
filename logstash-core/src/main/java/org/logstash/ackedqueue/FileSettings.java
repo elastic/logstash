@@ -10,12 +10,18 @@ public class FileSettings implements Settings {
     private Class elementClass;
     private int capacity;
     private int maxUnread;
+    private int checkpointMaxAcks;
+    private int checkpointMaxWrites;
+    private int checkpointMaxInterval;
 
     private FileSettings() { this(""); }
 
     public FileSettings(String dirPath) {
         this.dirForFiles = dirPath;
         this.maxUnread = 0;
+        this.checkpointMaxAcks = 1024;
+        this.checkpointMaxWrites = 1024;
+        this.checkpointMaxInterval = 1000; // millisec
     }
 
     @Override
@@ -46,6 +52,39 @@ public class FileSettings implements Settings {
     public Settings setMaxUnread(int maxUnread) {
         this.maxUnread = maxUnread;
         return this;
+    }
+
+    @Override
+    public Settings setCheckpointMaxAcks(int checkpointMaxAcks) {
+        this.checkpointMaxAcks = checkpointMaxAcks;
+        return this;
+    }
+
+    @Override
+    public Settings setCheckpointMaxWrites(int checkpointMaxWrites) {
+        this.checkpointMaxWrites = checkpointMaxWrites;
+        return this;
+    }
+
+    @Override
+    public Settings setCheckpointMaxInterval(int checkpointMaxInterval) {
+        this.checkpointMaxInterval = checkpointMaxInterval;
+        return this;
+    }
+
+    @Override
+    public int getCheckpointMaxAcks() {
+        return checkpointMaxAcks;
+    }
+
+    @Override
+    public int getCheckpointMaxWrites() {
+        return checkpointMaxWrites;
+    }
+
+    @Override
+    public int getCheckpointMaxInterval() {
+        return checkpointMaxInterval;
     }
 
     @Override

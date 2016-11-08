@@ -107,6 +107,21 @@
 #
 # queue.max_events: 0
 #
+# If using queue.type: persisted, the maximum number of acked events before forcing a checkpoint
+# Default is 1024, 0 for unlimited
+#
+# queue.checkpoint.acks: 1024
+#
+# If using queue.type: persisted, the maximum number of written events before forcing a checkpoint
+# Default is 1024, 0 for unlimited
+#
+# queue.checkpoint.writes: 1024
+#
+# If using queue.type: persisted, the interval in milliseconds when a checkpoint is forced on the head page
+# Default is 1000, 0 for no periodic checkpoint.
+#
+# queue.checkpoint.interval: 1000
+#
 # ------------ Metrics Settings --------------
 #
 # Bind address for the metrics REST endpoint

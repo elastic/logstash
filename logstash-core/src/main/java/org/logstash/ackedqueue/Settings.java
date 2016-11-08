@@ -14,6 +14,12 @@ public interface Settings {
 
     Settings setMaxUnread(int maxUnread);
 
+    Settings setCheckpointMaxAcks(int checkpointMaxAcks);
+
+    Settings setCheckpointMaxWrites(int checkpointMaxWrites);
+
+    Settings setCheckpointMaxInterval(int checkpointMaxInterval);
+
     CheckpointIOFactory getCheckpointIOFactory();
 
     PageIOFactory getPageIOFactory();
@@ -25,4 +31,10 @@ public interface Settings {
     int getCapacity();
 
     int getMaxUnread();
+
+    int getCheckpointMaxAcks();
+
+    int getCheckpointMaxWrites();
+
+    int getCheckpointMaxInterval();
 }

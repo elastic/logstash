@@ -43,7 +43,7 @@ public class HeadPage extends Page {
     // a serialized element byte[] and serialization is done at the Queue level to
     // be able to use the Page.hasSpace() method with the serialized element byte size.
     //
-    public void write(byte[] bytes, long seqNum) throws IOException {
+    public void write(byte[] bytes, long seqNum, int checkpointMaxWrites) throws IOException {
         this.pageIO.write(bytes, seqNum);
 
         if (this.minSeqNum <= 0) {
@@ -51,6 +51,13 @@ public class HeadPage extends Page {
             this.firstUnreadSeqNum = seqNum;
         }
         this.elementCount++;
+
+        // force a checkpoint if we wrote checkpointMaxWrites elements since last checkpoint
+        // the initial condition of an "empty" checkpoint, maxSeqNum() will return -1
+        if (checkpointMaxWrites > 0 && (seqNum >= this.lastCheckpoint.maxSeqNum() + checkpointMaxWrites)) {
+            // did we write more than checkpointMaxWrites elements? if so checkpoint now
+            checkpoint();
+        }
     }
 
     public void ensurePersistedUpto(long seqNum) throws IOException {
@@ -63,12 +70,8 @@ public class HeadPage extends Page {
         }
     }
 
-
     public TailPage behead() throws IOException {
-        // first do we need to checkpoint+fsync the headpage a last time?
-        if (this.elementCount > this.lastCheckpoint.getElementCount()) {
-            checkpoint();
-        }
+        checkpoint();
 
         TailPage tailPage = new TailPage(this);
 
@@ -86,17 +89,35 @@ public class HeadPage extends Page {
         return tailPage;
     }
 
+    // head page checkpoint, fsync data page if writes occured since last checkpoint
+    // update checkpoint only if it changed since lastCheckpoint
     public void checkpoint() throws IOException {
-        // TODO: not concurrent for first iteration:
 
-        // first fsync data file
-        this.pageIO.ensurePersisted();
+         if (this.elementCount > this.lastCheckpoint.getElementCount()) {
+             // fsync & checkpoint if data written since last checkpoint
 
-        // then write new checkpoint
+             this.pageIO.ensurePersisted();
+             forceCheckpoint();
+        } else {
+             Checkpoint checkpoint = new Checkpoint(this.pageNum, this.queue.firstUnackedPageNum(), firstUnackedSeqNum(), this.minSeqNum, this.elementCount);
+             if (! checkpoint.equals(this.lastCheckpoint)) {
+                 // checkpoint only if it changed since last checkpoint
 
+                 // non-dry code with forceCheckpoint() to avoid unnecessary extra new Checkpoint object creation
+                 CheckpointIO io = queue.getCheckpointIO();
+                 io.write(io.headFileName(), checkpoint);
+                 this.lastCheckpoint = checkpoint;
+             }
+         }
+      }
+
+    // unconditionally update head checkpoint
+    public void forceCheckpoint() throws IOException {
+        Checkpoint checkpoint = new Checkpoint(this.pageNum, this.queue.firstUnackedPageNum(), firstUnackedSeqNum(), this.minSeqNum, this.elementCount);
         CheckpointIO io = queue.getCheckpointIO();
-        this.lastCheckpoint = io.write(io.headFileName(), this.pageNum, this.queue.firstUnackedPageNum(), firstUnackedSeqNum(), this.minSeqNum, this.elementCount);
-     }
+        io.write(io.headFileName(), checkpoint);
+        this.lastCheckpoint = checkpoint;
+    }
 
     public void close() throws IOException {
         checkpoint();

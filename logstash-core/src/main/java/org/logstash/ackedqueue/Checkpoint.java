@@ -40,8 +40,23 @@ public class Checkpoint {
         return this.elementCount;
     }
 
+    // @return true if this checkpoint indicates a fulle acked page
+    public boolean isFullyAcked() {
+        return this.elementCount > 0 && this.firstUnackedSeqNum >= this.minSeqNum + this.elementCount;
+    }
+
+    // @return the highest seqNum in this page or -1 for an initial checkpoint
+    public long maxSeqNum() {
+        return this.minSeqNum + this.elementCount - 1;
+    }
+
     public String toString() {
-        return "pageNum=" + this.pageNum + ", firstUnackedPageNum=" + this.firstUnackedPageNum + ", firstUnackedSeqNum=" + this.firstUnackedSeqNum + ", minSeqNum=" + this.minSeqNum + ", elementCount=" + this.elementCount;
+        return "pageNum=" + this.pageNum + ", firstUnackedPageNum=" + this.firstUnackedPageNum + ", firstUnackedSeqNum=" + this.firstUnackedSeqNum + ", minSeqNum=" + this.minSeqNum + ", elementCount=" + this.elementCount + ", isFullyAcked=" + (this.isFullyAcked() ? "yes" : "no");
+    }
+
+    public boolean equals(Checkpoint other) {
+        if (this == other ) { return true; }
+        return (this.pageNum == other.pageNum && this.firstUnackedPageNum == other.firstUnackedPageNum && this.firstUnackedSeqNum == other.firstUnackedSeqNum && this.minSeqNum == other.minSeqNum && this.elementCount == other.elementCount);
     }
 
 }

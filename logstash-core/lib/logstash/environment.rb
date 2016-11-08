@@ -43,6 +43,9 @@ module LogStash
             Setting::String.new("queue.type", "memory", true, ["persisted", "memory", "memory_acked"]),
             Setting::Bytes.new("queue.page_capacity", "250mb"),
             Setting::Numeric.new("queue.max_events", 0), # 0 is unlimited
+            Setting::Numeric.new("queue.checkpoint.acks", 1024), # 0 is unlimited
+            Setting::Numeric.new("queue.checkpoint.writes", 1024), # 0 is unlimited
+            Setting::Numeric.new("queue.checkpoint.interval", 1000), # 0 is no time-based checkpointing
             Setting::TimeValue.new("slowlog.threshold.warn", "-1"),
             Setting::TimeValue.new("slowlog.threshold.info", "-1"),
             Setting::TimeValue.new("slowlog.threshold.debug", "-1"),

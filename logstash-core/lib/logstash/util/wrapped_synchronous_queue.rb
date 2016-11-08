@@ -46,6 +46,10 @@ module LogStash; module Util
       ReadClient.new(self)
     end
 
+    def close
+      # ignore
+    end
+
     class ReadClient
       # We generally only want one thread at a time able to access pop/take/poll operations
       # from this queue. We also depend on this to be able to block consumers while we snapshot
