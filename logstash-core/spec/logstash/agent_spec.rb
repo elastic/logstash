@@ -3,6 +3,8 @@ require "spec_helper"
 require "stud/temporary"
 require "logstash/inputs/generator"
 require_relative "../support/mocks_classes"
+require "fileutils"
+require_relative "../support/helpers"
 
 describe LogStash::Agent do
 
@@ -13,9 +15,12 @@ describe LogStash::Agent do
   let(:config_file) { Stud::Temporary.pathname }
   let(:config_file_txt) { "input { generator { count => 100000 } } output { }" }
 
-  subject { LogStash::Agent.new(agent_settings) }
+    subject { LogStash::Agent.new(agent_settings) }
 
   before :each do
+    # This MUST run first, before `subject` is invoked to ensure clean state
+    clear_data_dir
+
     File.open(config_file, "w") { |f| f.puts config_file_txt }
     agent_args.each do |key, value|
       agent_settings.set(key, value)
@@ -32,7 +37,7 @@ describe LogStash::Agent do
   end
 
   it "fallback to hostname when no name is provided" do
-    expect(LogStash::Agent.new.node_name).to eq(Socket.gethostname)
+    expect(LogStash::Agent.new.name).to eq(Socket.gethostname)
   end
 
   describe "register_pipeline" do
@@ -56,7 +61,21 @@ describe LogStash::Agent do
     end
   end
 
-  describe "#execute" do
+  describe "#id" do
+    let(:config_file_txt) { "" }
+    let(:id_file_data) { File.open(subject.id_path) {|f| f.read } }
+
+    it "should return a UUID" do
+      expect(subject.id).to be_a(String)
+      expect(subject.id.size).to be > 0
+    end
+
+    it "should write out the persistent UUID" do
+      expect(id_file_data).to eql(subject.id)
+    end
+  end
+
+    describe "#execute" do
     let(:config_file_txt) { "input { generator { count => 100000 } } output { }" }
 
     before :each do

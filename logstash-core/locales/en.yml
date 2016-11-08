@@ -246,7 +246,7 @@ en:
         rubyshell: |+
           Drop to shell instead of running as normal.
           Valid shells are "irb" and "pry"
-        node_name: |+
+        name: |+
           Specify the name of this logstash instance, if no value is given
           it will default to the current hostname.
         agent: |+

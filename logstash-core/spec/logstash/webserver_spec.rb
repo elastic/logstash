@@ -42,13 +42,8 @@ describe LogStash::WebServer do
   end
 
   let(:logger) { LogStash::Logging::Logger.new("testing") }
-  let(:agent) { double("agent") }
-  let(:webserver) { double("webserver") }
-
-  before :each do
-    allow(webserver).to receive(:address).and_return("127.0.0.1")
-    allow(agent).to receive(:webserver).and_return(webserver)
-  end
+  let(:agent) { OpenStruct.new({:webserver => webserver, :http_address => "127.0.0.1", :id => "myid", :name => "myname"}) }
+  let(:webserver) { OpenStruct.new({}) }
 
   subject { LogStash::WebServer.new(logger,
                                     agent,
