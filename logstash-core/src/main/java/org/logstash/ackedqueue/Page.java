@@ -82,7 +82,15 @@ public abstract class Page implements Closeable {
         return this.elementCount <= 0 ? 0 : Math.max(0, (maxSeqNum() - this.firstUnreadSeqNum) + 1);
     }
 
-    public void ack(List<Long> seqNums) throws IOException {
+    // update the page acking bitset. trigger checkpoint on the page if it is fully acked or if we acked more than the
+    // configured threshold checkpointMaxAcks.
+    // note that if the fully acked tail page is the first unacked page, it is not really necessary to also checkpoint
+    // the head page to update firstUnackedPageNum because it will be updated in the next upcoming head page checkpoint
+    // and in a crash condition, the Queue open recovery will detect and purge fully acked pages
+    //
+    // @param seqNums the list of same-page seqNums to ack
+    // @param checkpointMaxAcks the number of acks that will trigger a page checkpoint
+    public void ack(List<Long> seqNums, int checkpointMaxAcks) throws IOException {
         for (long seqNum : seqNums) {
             // TODO: eventually refactor to use new bit handling class
 
@@ -96,18 +104,18 @@ public abstract class Page implements Closeable {
             this.ackedSeqNums.set(index);
         }
 
-        // checkpoint if totally acked or we acked more than 1024 elements in this page since last checkpoint
+        // checkpoint if totally acked or we acked more than checkpointMaxAcks elements in this page since last checkpoint
+        // note that fully acked pages cleanup is done at queue level in Queue.ack()
         long firstUnackedSeqNum = firstUnackedSeqNum();
 
         if (isFullyAcked()) {
-            // TODO: here if consumer is faster than producer, the head page may be always fully acked and we may end up fsync'ing too ofter?
             checkpoint();
 
             assert firstUnackedSeqNum >= this.minSeqNum + this.elementCount - 1:
                     String.format("invalid firstUnackedSeqNum=%d for minSeqNum=%d and elementCount=%d and cardinality=%d", firstUnackedSeqNum, this.minSeqNum, this.elementCount, this.ackedSeqNums.cardinality());
 
-        } else if (firstUnackedSeqNum > this.lastCheckpoint.getFirstUnackedSeqNum() + 1024) {
-            // did we acked more that 1024 elements? if so we should checkpoint now
+        } else if (checkpointMaxAcks > 0 && (firstUnackedSeqNum >= this.lastCheckpoint.getFirstUnackedSeqNum() + checkpointMaxAcks)) {
+            // did we acked more than checkpointMaxAcks elements? if so checkpoint now
             checkpoint();
         }
     }

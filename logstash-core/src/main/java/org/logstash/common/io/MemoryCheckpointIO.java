@@ -31,8 +31,13 @@ public class MemoryCheckpointIO implements CheckpointIO {
     @Override
     public Checkpoint write(String fileName, int pageNum, int firstUnackedPageNum, long firstUnackedSeqNum, long minSeqNum, int elementCount) throws IOException {
         Checkpoint checkpoint = new Checkpoint(pageNum, firstUnackedPageNum, firstUnackedSeqNum, minSeqNum, elementCount);
-        this.sources.put(fileName, checkpoint);
+        write(fileName, checkpoint);
         return checkpoint;
+    }
+
+    @Override
+    public void write(String fileName, Checkpoint checkpoint) throws IOException {
+        this.sources.put(fileName, checkpoint);
     }
 
     @Override

@@ -25,9 +25,9 @@ module LogStash; module Util
       )
     end
 
-    def self.create_file_based(path, capacity, size)
+    def self.create_file_based(path, capacity, size, checkpoint_max_writes, checkpoint_max_acks, checkpoint_max_interval)
       self.allocate.with_queue(
-        LogStash::AckedQueue.new(path, capacity, size)
+        LogStash::AckedQueue.new(path, capacity, size, checkpoint_max_writes, checkpoint_max_acks, checkpoint_max_interval)
       )
     end
 

@@ -1,0 +1,11 @@
+#!/usr/bin/env vendor/jruby/bin/jruby
+
+require_relative "../lib/bootstrap/environment"
+LogStash::Bundler.setup!({:without => [:build]})
+require "logstash-core"
+require "logstash/environment"
+require "logstash/settings"
+
+io = Java::OrgLogstashCommonIo::FileCheckpointIO.new(LogStash::SETTINGS.get_value("path.queue"))
+cp = io.read(ARGV[0])
+puts("checkpoint #{cp.toString}")

@@ -94,9 +94,9 @@ module LogStash; class Pipeline
     rescue => e
       raise
     end
-    queue = build_queue_from_settings
-    @input_queue_client = queue.write_client
-    @filter_queue_client = queue.read_client
+    @queue = build_queue_from_settings
+    @input_queue_client = @queue.write_client
+    @filter_queue_client = @queue.read_client
     @signal_queue = Queue.new
     # Note that @infilght_batches as a central mechanism for tracking inflight
     # batches will fail if we have multiple read clients here.
@@ -119,6 +119,9 @@ module LogStash; class Pipeline
     queue_type = settings.get("queue.type")
     queue_page_capacity = settings.get("queue.page_capacity")
     max_events = settings.get("queue.max_events")
+    checkpoint_max_acks = settings.get("queue.checkpoint.acks")
+    checkpoint_max_writes = settings.get("queue.checkpoint.writes")
+    checkpoint_max_interval = settings.get("queue.checkpoint.interval")
 
     if queue_type == "memory_acked"
       # memory_acked is used in tests/specs
@@ -129,7 +132,7 @@ module LogStash; class Pipeline
     elsif queue_type == "persisted"
       # persisted is the disk based acked queue
       queue_path = settings.get("path.queue")
-      LogStash::Util::WrappedAckedQueue.create_file_based(queue_path, queue_page_capacity, max_events)
+      LogStash::Util::WrappedAckedQueue.create_file_based(queue_path, queue_page_capacity, max_events, checkpoint_max_writes, checkpoint_max_acks, checkpoint_max_interval)
     else
       raise(ConfigurationError, "invalid queue.type setting")
     end
@@ -194,6 +197,7 @@ module LogStash; class Pipeline
     shutdown_workers
 
     @filter_queue_client.close
+    @queue.close
 
     @logger.debug("Pipeline #{@pipeline_id} has been shutdown")
 

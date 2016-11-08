@@ -17,13 +17,16 @@ public class TailPage extends Page {
     public TailPage(Checkpoint checkpoint, Queue queue, PageIO pageIO) throws IOException {
         super(checkpoint.getPageNum(), queue, checkpoint.getMinSeqNum(), checkpoint.getElementCount(), checkpoint.getFirstUnackedSeqNum(), new BitSet(), pageIO);
 
-        // open the data file and reconstruct the IO object internal state
-        pageIO.open(checkpoint.getMinSeqNum(), checkpoint.getElementCount());
-
         // this page ackedSeqNums bitset is a new empty bitset, if we have some acked elements, set them in the bitset
         if (checkpoint.getFirstUnackedSeqNum() > checkpoint.getMinSeqNum()) {
             this.ackedSeqNums.flip(0, (int) (checkpoint.getFirstUnackedSeqNum() - checkpoint.getMinSeqNum()));
         }
+
+        if (pageIO != null) {
+            // open the data file and reconstruct the IO object internal state
+            pageIO.open(checkpoint.getMinSeqNum(), checkpoint.getElementCount());
+        }
+
     }
 
     public void checkpoint() throws IOException {
@@ -31,18 +34,20 @@ public class TailPage extends Page {
 
         // since this is a tail page and no write can happen in this page, there is no point in performing a fsync on this page, just stamp checkpoint
         CheckpointIO io = queue.getCheckpointIO();
-        this.lastCheckpoint = io.write(io.tailFileName(this.pageNum), this.pageNum, this.queue.firstUnackedPageNum(), firstUnackedSeqNum(), this.minSeqNum, this.elementCount);
+        this.lastCheckpoint = io.write(io.tailFileName(this.pageNum), this.pageNum, 0, firstUnackedSeqNum(), this.minSeqNum, this.elementCount);
     }
 
     // delete all IO files associated with this page
     public void purge() throws IOException {
-        this.pageIO.purge();
-        CheckpointIO io = queue.getCheckpointIO();
-        io.purge(io.tailFileName(this.pageNum));
+        if (this.pageIO != null) {
+            this.pageIO.purge(); // page IO purge calls close
+        }
     }
 
     public void close() throws IOException {
         checkpoint();
-        this.pageIO.close();
+        if (this.pageIO != null) {
+            this.pageIO.close();
+        }
     }
 }
