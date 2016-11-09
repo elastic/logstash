@@ -25,6 +25,13 @@ bin/logstash --path.settings /path/to/logstash.yml
 ----------------------------------
 
 [float]
+==== URL Changes for DEB/RPM Packages
+
+The previous `packages.elastic.co` URL has been altered to `artifacts.elastic.co`. 
+Ensure you update your repository files before running the upgrade process, or 
+your operating system may not see the new packages.
+
+[float]
 ==== Release Packages
 
 When Logstash 5.0 is installed via DEB or RPM packages, it now uses `/usr/share/logstash` to
