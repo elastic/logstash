@@ -1,6 +1,7 @@
 # encoding: utf-8
 require "spec_helper"
 require "logstash/settings"
+require "fileutils"
 
 describe LogStash::Settings do
   let(:numeric_setting_name) { "number" }
@@ -83,6 +84,44 @@ describe LogStash::Settings do
 
       it "should succeed" do
         expect { subject.validate_all }.not_to raise_error
+      end
+    end
+  end
+
+  context "transient settings" do
+    subject do
+      settings = described_class.new
+      settings.register(LogStash::Setting::String.new("exist", "bonsoir"))
+      settings
+    end
+
+    let(:values) { { "do.not.exist.on.boot" => true, "exist" => "bonjour" } }
+    let(:yaml_path) do
+      p = Stud::Temporary.pathname
+      FileUtils.mkdir_p(p)
+
+      ::File.open(::File.join(p, "logstash.yml"), "w+") do |f|
+        f.write(YAML.dump(values))
+      end
+      p
+    end
+
+    it "allow to read yml file that contains unknown settings" do
+      expect { subject.from_yaml(yaml_path) }.not_to raise_error
+    end
+
+    context "when running #validate_all" do
+      it "merge and validate all the registered setting" do
+        subject.from_yaml(yaml_path)
+        subject.register(LogStash::Setting::Boolean.new("do.not.exist.on.boot", false))
+
+        expect { subject.validate_all }.not_to raise_error
+        expect(subject.get("do.not.exist.on.boot")).to be_truthy
+      end
+
+      it "raise an error when the settings doesn't exist" do
+        subject.from_yaml(yaml_path)
+        expect { subject.validate_all }.to raise_error(ArgumentError)
       end
     end
   end

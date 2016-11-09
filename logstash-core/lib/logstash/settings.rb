@@ -9,6 +9,11 @@ module LogStash
 
     def initialize
       @settings = {}
+      # Theses settings were loaded from the yaml file
+      # but we didn't find any settings to validate them,
+      # lets keep them around until we do `validate_all` at that
+      # time universal plugins could have added new settings.
+      @transient_settings = {}
     end
 
     def register(setting)
@@ -52,8 +57,14 @@ module LogStash
     end
     alias_method :get, :get_value
 
-    def set_value(setting_name, value)
+    def set_value(setting_name, value, graceful = false)
       get_setting(setting_name).set(value)
+    rescue ArgumentError => e
+      if graceful
+        @transient_settings[setting_name] = value
+      else
+        raise e
+      end
     end
     alias_method :set, :set_value
 
@@ -65,8 +76,8 @@ module LogStash
       hash
     end
 
-    def merge(hash)
-      hash.each {|key, value| set_value(key, value) }
+    def merge(hash, graceful = false)
+      hash.each {|key, value| set_value(key, value, graceful) }
       self
     end
 
@@ -96,10 +107,13 @@ module LogStash
 
     def from_yaml(yaml_path)
       settings = read_yaml(::File.join(yaml_path, "logstash.yml"))
-      self.merge(flatten_hash(settings))
+      self.merge(flatten_hash(settings), true)
     end
 
     def validate_all
+      # lets merge the transient_settings again to see if new setting were added.
+      self.merge(@transient_settings)
+
       @settings.each do |name, setting|
         setting.validate_value
       end
