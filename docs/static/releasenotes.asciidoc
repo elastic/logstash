@@ -18,7 +18,7 @@ Also see the list of <<breaking-changes, breaking changes>>.
   append more tags to it ({lsissue}6142[Issue 6142]).
 * Increased the current polling interval of a background thread that retrieves stats from the JVM and OS layer from 1s to 5s ({lsissue}6160[Issue 6160]).
 * Changed the behavior of how Logstash merges config strings when you start Logstash with the `-e` and `-f` options specified. 
-  Previously, Logstash required the config files specified by -f to be valid before merging. Logstash now reads the config specified by `-e `
+  Previously, Logstash required the config files specified by `-f` to be valid before merging. Logstash now reads the config specified by `-e`
   even if `-f` yields no config files ({lsissue}6164[Issue 6164]).
 * Improved the user feedback message that displays when Logstash is manually started after a package install ({lsissue}6061[Issue 6061]).
 
