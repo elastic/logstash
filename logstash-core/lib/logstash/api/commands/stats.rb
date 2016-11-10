@@ -8,8 +8,6 @@ module LogStash
     module Commands
       class Stats < Commands::Base
         def jvm
-          require "pry"
-          binding.pry
           {
             :threads => extract_metrics(
               [:jvm, :threads],

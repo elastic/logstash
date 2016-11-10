@@ -101,7 +101,7 @@ module LogStash module Instrument module PeriodicPoller
     
     def collect_jvm_metrics(data)
       runtime_mx_bean = ManagementFactory.getRuntimeMXBean()
-      metric.gauge(:jvm, :uptime_in_millis, runtime_mx_bean.getUptime())
+      metric.gauge([:jvm], :uptime_in_millis, runtime_mx_bean.getUptime())
       collect_heap_metrics(data)
       collect_non_heap_metrics(data)
     end  
