@@ -32,4 +32,15 @@ describe "Test Monitoring API" do
     end
   end
 
+  it "can retrieve JVM stats" do
+    logstash_service = @fixture.get_service("logstash")
+    logstash_service.start_with_stdin
+    logstash_service.wait_for_logstash
+
+    Stud.try(max_retry.times, RSpec::Expectations::ExpectationNotMetError) do
+       result = logstash_service.monitoring_api.node_stats
+       expect(result["jvm"]["uptime_in_millis"]).to be > 100
+    end
+  end
+
 end
