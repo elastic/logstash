@@ -7,6 +7,7 @@ require "set"
 java_import 'java.lang.management.ManagementFactory'
 java_import 'java.lang.management.OperatingSystemMXBean'
 java_import 'java.lang.management.GarbageCollectorMXBean'
+java_import 'java.lang.management.RuntimeMXBean'
 java_import 'com.sun.management.UnixOperatingSystemMXBean'
 java_import 'javax.management.MBeanServer'
 java_import 'javax.management.ObjectName'
@@ -41,12 +42,11 @@ module LogStash module Instrument module PeriodicPoller
 
     def collect
       raw = JRMonitor.memory.generate
-      collect_heap_metrics(raw)
-      collect_non_heap_metrics(raw)
+      collect_jvm_metrics(raw)      
       collect_pools_metrics(raw)
       collect_threads_metrics
       collect_process_metrics
-      collect_gc_stats
+      collect_gc_stats      
     end
 
     private
@@ -98,9 +98,16 @@ module LogStash module Instrument module PeriodicPoller
 
       metric.gauge(path + [:mem], :total_virtual_in_bytes, process_metrics["mem"]["total_virtual_in_bytes"])
     end
+    
+    def collect_jvm_metrics(data)
+      runtime_mx_bean = ManagementFactory.getRuntimeMXBean()
+      metric.gauge(:jvm, :uptime_in_millis, runtime_mx_bean.getUptime())
+      collect_heap_metrics(data)
+      collect_non_heap_metrics(data)
+    end  
 
     def collect_heap_metrics(data)
-      heap = aggregate_information_for(data["heap"].values)
+      heap = aggregate_information_for(data["heap"].values)      
       heap[:used_percent] = (heap[:used_in_bytes] / heap[:max_in_bytes].to_f)*100.0
 
       heap.each_pair do |key, value|

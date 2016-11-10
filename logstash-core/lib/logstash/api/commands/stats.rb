@@ -8,6 +8,8 @@ module LogStash
     module Commands
       class Stats < Commands::Base
         def jvm
+          require "pry"
+          binding.pry
           {
             :threads => extract_metrics(
               [:jvm, :threads],
@@ -15,7 +17,8 @@ module LogStash
               :peak_count
             ),
             :mem => memory,
-            :gc => gc
+            :gc => gc,
+            :uptime_in_millis => service.get_shallow(:jvm, :uptime_in_millis)
           }
         end
 
