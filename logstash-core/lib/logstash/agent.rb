@@ -22,7 +22,7 @@ class LogStash::Agent
   include LogStash::Util::Loggable
   STARTED_AT = Time.now.freeze
 
-  attr_reader :metric, :name, :pipelines, :settings, :webserver
+  attr_reader :metric, :name, :pipelines, :settings, :webserver, :dispatcher
   attr_accessor :logger
 
   # initialize method for LogStash::Agent
