@@ -3,7 +3,7 @@
 
 Logstash emits internal logs during its operation, which are placed in `LS_HOME/logs` (or `/var/log/logstash` for
 DEB/RPM). The default logging level is `INFO`. Logstash's logging framework is based on
-http://logging.apache.org/log4j/2.x/[Log4j2 framework], and much of its functionality is exposed directly to users.
+http://logging.apache.org/log4j/2.x/[Log4j 2 framework], and much of its functionality is exposed directly to users.
 
 When debugging problems, particularly problems with plugins, it can be helpful to increase the logging level to `DEBUG` 
 to emit more verbose messages. Previously, you could only set a log level that applied to the entire Logstash product. 
@@ -15,7 +15,7 @@ you can reduce noise due to excessive logging and focus on the problem area effe
 
 You can specify the log file location using `--path.logs` setting.
 
-==== Log4j2 Configuration
+==== Log4j 2 Configuration
 
 Logstash ships with a `log4j2.properties` file with out-of-the-box settings. You  can modify this file directly to change the 
 rotation policy, type, and other https://logging.apache.org/log4j/2.x/manual/configuration.html#Loggers[log4j2 configuration]. 
