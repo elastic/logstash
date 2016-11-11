@@ -12,6 +12,10 @@ describe "Test Monitoring API" do
     @fixture.teardown
   }
   
+  after(:each) {
+    @fixture.get_service("logstash").teardown
+  }
+  
   let(:number_of_events) { 5 }
   let(:max_retry) { 120 }
 
@@ -19,7 +23,7 @@ describe "Test Monitoring API" do
     logstash_service = @fixture.get_service("logstash")
     logstash_service.start_with_stdin
     number_of_events.times { logstash_service.write_to_stdin("Hello world") }
-    
+
     begin
       sleep(1) while (result = logstash_service.monitoring_api.event_stats).nil?
     rescue
