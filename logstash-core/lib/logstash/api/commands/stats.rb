@@ -27,7 +27,7 @@ module LogStash
             :peak_open_file_descriptors,
             :max_file_descriptors,
             [:mem, [:total_virtual_in_bytes]],
-            [:cpu, [:total_in_millis, :percent]]
+            [:cpu, [:total_in_millis, :percent, :load_average]]
           )
         end
 
