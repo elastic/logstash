@@ -53,4 +53,42 @@ describe LogStash::Environment do
       expect($LOAD_PATH).to include(path)
     end
   end
+
+
+  describe "OS detection" do
+    windows_host_os = %w(bccwin cygwin mingw mswin wince)
+    linux_host_os = %w(linux)
+
+    context "windows" do
+      windows_host_os.each do |host|
+        it "#{host} returns true" do
+          expect(RbConfig::CONFIG).to receive(:[]).with("host_os").and_return(host)
+          expect(LogStash::Environment.windows?).to be_truthy
+        end
+      end
+
+      linux_host_os.each do |host|
+        it "#{host} returns false" do
+          expect(RbConfig::CONFIG).to receive(:[]).with("host_os").and_return(host)
+          expect(LogStash::Environment.windows?).to be_falsey
+        end
+      end
+    end
+
+    context "Linux" do
+      windows_host_os.each do |host|
+        it "#{host} returns true" do
+          expect(RbConfig::CONFIG).to receive(:[]).with("host_os").and_return(host)
+          expect(LogStash::Environment.linux?).to be_falsey
+        end
+      end
+
+      linux_host_os.each do |host|
+        it "#{host} returns false" do
+          expect(RbConfig::CONFIG).to receive(:[]).with("host_os").and_return(host)
+          expect(LogStash::Environment.linux?).to be_truthy
+        end
+      end
+    end
+  end
 end

@@ -1,6 +1,6 @@
-
 # encoding: utf-8
 require "logstash/instrument/periodic_poller/base"
+require "logstash/environment"
 require "jrmonitor"
 require "set"
 
@@ -33,11 +33,57 @@ module LogStash module Instrument module PeriodicPoller
       end
     end
 
+    class LoadAverage
+      class Windows
+        def self.get
+          nil
+        end
+      end
+
+      class Linux
+        LOAD_AVG_FILE = "/proc/loadavg"
+        TOKEN_SEPARATOR = " "
+
+        def self.get
+          load_average = ::File.read(LOAD_AVG_FILE).chomp.split(TOKEN_SEPARATOR)
+
+          {
+            :"1m" => load_average[0].to_f,
+            :"5m" => load_average[1].to_f,
+            :"15m" => load_average[2].to_f
+          }
+        end
+      end
+
+      class Other
+        def self.get()
+          load_average_1m = ManagementFactory.getOperatingSystemMXBean().getSystemLoadAverage()
+
+          return nil if load_average_1m.nil?
+
+          {
+            :"1m" => load_average_1m
+          }
+        end
+      end
+
+      def self.create
+        if LogStash::Environment.windows?
+          Windows
+        elsif LogStash::Environment.linux?
+          Linux
+        else
+          Other
+        end
+      end
+    end
+
     attr_reader :metric
 
     def initialize(metric, options = {})
       super(metric, options)
       @metric = metric
+      @load_average = LoadAverage.create
     end
 
     def collect
@@ -47,6 +93,7 @@ module LogStash module Instrument module PeriodicPoller
       collect_threads_metrics
       collect_process_metrics
       collect_gc_stats
+      collect_load_average
     end
 
     private
@@ -97,6 +144,18 @@ module LogStash module Instrument module PeriodicPoller
       metric.gauge(cpu_path, :total_in_millis, cpu_metrics["total_in_millis"])
 
       metric.gauge(path + [:mem], :total_virtual_in_bytes, process_metrics["mem"]["total_virtual_in_bytes"])
+
+    end
+
+    def collect_load_average
+      begin
+        load_average = @load_average.get
+      rescue => e
+        logger.debug("Can't retrieve load average", :exception => e.class.name, :message => e.message)
+        load_average = nil
+      end
+
+      metric.gauge([:jvm, :process, :cpu], :load_average, load_average) unless load_average.nil?
     end
     
     def collect_jvm_metrics(data)

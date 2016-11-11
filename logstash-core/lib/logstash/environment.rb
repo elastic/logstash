@@ -59,6 +59,10 @@ module LogStash
     LOGSTASH_CORE = ::File.expand_path(::File.join(::File.dirname(__FILE__), "..", ".."))
     LOGSTASH_ENV = (ENV["LS_ENV"] || 'production').to_s.freeze
 
+    LINUX_OS_RE = /linux/
+    WINDOW_OS_RE = /mswin|msys|mingw|cygwin|bccwin|wince|emc/
+    MACOS_OS_RE = /darwin/
+
     def env
       LOGSTASH_ENV
     end
@@ -121,7 +125,11 @@ module LogStash
     end
 
     def windows?
-      ::Gem.win_platform?
+      RbConfig::CONFIG['host_os'] =~ WINDOW_OS_RE
+    end
+
+    def linux?
+      RbConfig::CONFIG['host_os'] =~ LINUX_OS_RE
     end
 
     def locales_path(path)
