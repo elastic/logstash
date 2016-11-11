@@ -46,7 +46,7 @@ module LogStash module Instrument module PeriodicPoller
       collect_pools_metrics(raw)
       collect_threads_metrics
       collect_process_metrics
-      collect_gc_stats      
+      collect_gc_stats
     end
 
     private
@@ -104,10 +104,10 @@ module LogStash module Instrument module PeriodicPoller
       metric.gauge([:jvm], :uptime_in_millis, runtime_mx_bean.getUptime())
       collect_heap_metrics(data)
       collect_non_heap_metrics(data)
-    end  
+    end
 
     def collect_heap_metrics(data)
-      heap = aggregate_information_for(data["heap"].values)      
+      heap = aggregate_information_for(data["heap"].values)
       heap[:used_percent] = (heap[:used_in_bytes] / heap[:max_in_bytes].to_f)*100.0
 
       heap.each_pair do |key, value|
