@@ -5,7 +5,9 @@ require "json"
 class MonitoringAPI
 
   def pipeline_stats
-    node_stats["pipeline"]
+    resp = Manticore.get("http://localhost:9600/_node/stats/pipeline").body
+    stats_response = JSON.parse(resp)
+    stats_response["pipeline"]
   end
 
   def event_stats
