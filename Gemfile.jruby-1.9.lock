@@ -205,7 +205,7 @@ GEM
       murmurhash3
     logstash-filter-geoip (4.0.3-java)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
-    logstash-filter-grok (3.2.4)
+    logstash-filter-grok (3.3.0)
       jls-grok (~> 0.11.3)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       logstash-patterns-core
@@ -412,7 +412,7 @@ GEM
       logstash-filter-json
       logstash-input-generator
       logstash-output-file
-    logstash-output-elasticsearch (5.2.0-java)
+    logstash-output-elasticsearch (5.2.1-java)
       cabin (~> 0.6)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       manticore (>= 0.5.4, < 1.0.0)
@@ -526,7 +526,7 @@ GEM
       slop (~> 3.4)
       spoon (~> 0.0)
     puma (2.16.0-java)
-    rack (1.6.4)
+    rack (1.6.5)
     rack-protection (1.5.3)
       rack
     rack-test (0.6.3)
@@ -690,7 +690,7 @@ DEPENDENCIES
   logstash-input-xmpp
   logstash-output-cloudwatch
   logstash-output-csv
-  logstash-output-elasticsearch (<= 5.2.0)
+  logstash-output-elasticsearch (~> 5.2.1)
   logstash-output-file
   logstash-output-graphite
   logstash-output-http
