@@ -69,7 +69,8 @@ describe LogStash::Api::Modules::NodeStats do
       },
       "cpu"=>{
         "total_in_millis"=>Numeric,
-        "percent"=>Numeric
+        "percent"=>Numeric,
+        "load_average" => { "1m" => Numeric }
       }
     },
    "pipeline" => {
