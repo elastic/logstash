@@ -9,10 +9,6 @@ implementation as a starting point. (If you're unfamiliar with
 Ruby, you can find an excellent quickstart guide at
 https://www.ruby-lang.org/en/documentation/quickstart/[].)
 
-NOTE: As of Logstash 1.5, all plugins are self-contained Ruby gems. This change
-makes it possible to develop and release plugins separately. In previous
-versions, plugins were part of the core Logstash distribution.
-
 ==== Get started
 
 {getstarted}
@@ -29,9 +25,17 @@ Each Logstash plugin lives in its own GitHub repository. To create a new reposit
 ** **Initialize this repository with a README** -- enables you to immediately clone the repository to your computer.
 . Click **Create Repository**.
 
+==== Use the plugin generator tool
+
+You can now create your own Logstash plugin in seconds! The `generate` subcommand of `bin/logstash-plugin` creates the foundation 
+for a new Logstash plugin with templatized files. It creates the correct directory structure, gemspec files, and dependencies so you 
+can start adding custom code to process data with Logstash.
+
+For more information, see <<plugin-generator>>
+
 ==== Copy the {plugintype} code
 
-Build your local repository:
+Alternatively, you can use the examples repo we host on github.com
 
 . **Clone your plugin.** Replace `GITUSERNAME` with your github username, and
 `MYPLUGINNAME` with your plugin name.
@@ -195,7 +199,7 @@ class LogStash::{pluginclass}::{pluginnamecap} < LogStash::{pluginclass}::Base
 
   public
   def encode(event)
-    @on_event.call(event, event["message"].to_s + @append + NL)
+    @on_event.call(event, event.get("message").to_s + @append + NL)
   end # def encode
 
 end # class LogStash::{pluginclass}::{pluginnamecap}
@@ -246,7 +250,7 @@ class LogStash::{pluginclass}::{pluginnamecap} < LogStash::{pluginclass}::Base
     if @message
       # Replace the event message with our message as configured in the
       # config file.
-      event["message"] = @message
+      event.set("message", @message)
     end
 
     # filter_matched should go in the last line of our successful code
@@ -466,7 +470,7 @@ There are several configuration attributes:
 * `:validate` - allows you to enforce passing a particular data type to Logstash
 for this configuration option, such as `:string`, `:password`, `:boolean`,
 `:number`, `:array`, `:hash`, `:path` (a file-system path), `uri`, `:codec` (since
-1.2.0), `:bytes` (starting in 1.5.0).  Note that this also works as a coercion
+1.2.0), `:bytes`.  Note that this also works as a coercion 
 in that if I specify "true" for boolean (even though technically a string), it
 will become a valid boolean in the config.  This coercion works for the
 `:number` type as well where "1.2" becomes a float and "22" is an integer.
@@ -650,7 +654,7 @@ Here's another example `run` method:
         data = $stdin.sysread(16384)
         @codec.decode(data) do |event|
           decorate(event)
-          event["host"] = @host if !event.include?("host")
+          event.set("host", @host) if !event.include?("host")
           queue << event
         end
       rescue IOError, EOFError, LogStash::ShutdownSignal
@@ -871,28 +875,7 @@ please make sure to have this line in your gemspec:
 * `s.licenses = ['Apache License (2.0)']`
 
 The gem version, designated by `s.version`, helps track changes to plugins over
-time.
-
-**Version messaging from Logstash**
-
-If you start Logstash with the `--log.level info` flag, you will see messages like
-these to indicate the relative maturity indicated by the plugin version number:
-
-** **0.1.x**
-+
------
-This plugin isn't well supported by the community and likely has no maintainer.
------
-
-** **0.9.x**
-+
------
-This plugin should work but would benefit from use by folks like you. Please let us know if you find bugs or have suggestions on how to improve this plugin.
------
-
-** **1.x.x**
-You will no longer see a message indicating potential code immaturity when a
-plugin reaches version 1.0.0
+time. You should use http://semver.org/[semver versioning] strategy for version numbers. 
 
 ==== Runtime & Development Dependencies
 
