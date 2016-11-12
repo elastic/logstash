@@ -1,4 +1,4 @@
-# Logstash [![Code Climate](https://codeclimate.com/github/elasticsearch/logstash/badges/gpa.svg)](https://codeclimate.com/github/elasticsearch/logstash)
+# Logstash
 
 ### Build status
 
@@ -6,29 +6,37 @@
 |---|---|---|---|
 | core | [![Build Status](https://travis-ci.org/elastic/logstash.svg?branch=master)](https://travis-ci.org/elastic/logstash) | [![Build Status](https://travis-ci.org/elastic/logstash.svg?branch=5.0)](https://travis-ci.org/elastic/logstash) | [![Build Status](https://travis-ci.org/elastic/logstash.svg?branch=2.4)](https://travis-ci.org/elastic/logstash) |
 
-Logstash is a tool for managing events and logs. You can use it to collect
-logs, parse them, and store them for later use (like, for searching).  If you
-store them in [Elasticsearch](https://www.elastic.co/guide/en/elasticsearch/reference/current/index.html),
-you can view and analyze them with [Kibana](https://www.elastic.co/guide/en/kibana/current/index.html).
+Logstash is part of the [https://www.elastic.co/products](Elastic Stack) along with Beats, Elasticsearch and Kibana. Logstash is an open source, server-side data processing pipeline that ingests data from a multitude of sources simultaneously, transforms it, and then sends it to your favorite "stash." (Ours is Elasticsearch, naturally.). Logstash has over 200 plugins, and you can write your own very easily as well.
 
-It is fully free and fully open source. The license is Apache 2.0, meaning you
-are pretty much free to use it however you want in whatever way.
+The license is Apache 2.0, meaning you are pretty much free to use it however you want in whatever way.
 
 For more info, see <https://www.elastic.co/products/logstash>
 
+## Documentation and Getting Started
+
+You can find the documentation and getting started guides for Logstash 
+on the [elastic.co site](https://www.elastic.co/guide/en/logstash/current/getting-started-with-logstash.html)
+
+## Downloads
+
+You can download Logstash binaries, as well as debian/rpm packages for the
+supported platforms, from [downloads page](https://www.elastic.co/downloads/logstash).
+
+## Need Help?
+
+- [Logstash Forum](https://discuss.elastic.co/c/logstash)
+- [Logstash Documentation](https://www.elastic.co/guide/en/logstash/current/index.html)
+- [#logstash on freenode IRC](https://webchat.freenode.net/?channels=logstash)
+- [Logstash Product Information](https://www.elastic.co/products/logstash)
+- [Elastic Support](https://www.elastic.co/subscriptions)
+
 ## Logstash Plugins
-### AKA "Where'd that plugin go??"
 
-Since version **1.5.0 beta1 (and current master)** of Logstash, *all* plugins have been separated into their own
-repositories under the [logstash-plugins](https://github.com/logstash-plugins) github organization. Each plugin is now a self-contained Ruby gem which
-gets published to RubyGems.org. Logstash has added plugin infrastructure to easily maintain the lifecyle of the plugin.
-For more details and rationale behind these changes, see our [blogpost](https://www.elastic.co/blog/plugin-ecosystem-changes/).
+Logstash plugins are hosted in separate repositories under under the [logstash-plugins](https://github.com/logstash-plugins) github organization. Each plugin is a self-contained Ruby gem which gets published to RubyGems.org.
 
-[Elasticsearch logstash-contrib repo](https://github.com/elastic/logstash-contrib) is deprecated. We
-have moved all of the plugins that existed there into their own repositories. We are migrating all of the pull requests
-and issues from logstash-contrib to the new repositories.
+### Writing your own Plugin
 
-For more info on developing and testing these plugins, please see the [README](https://github.com/logstash-plugins/logstash-output-elasticsearch/blob/master/README.md) on *any* plugin repository.
+Logstash is known for its extensibility. There are hundreds of plugins for Logstash and you can write your own very easily! For more info on developing and testing these plugins, please see the [working with plugins section](https://www.elastic.co/guide/en/logstash/current/contributing-to-logstash.html)
 
 ### Plugin Issues and Pull Requests
 
@@ -38,48 +46,62 @@ For example, if you have to report an issue/enhancement for the Elasticsearch ou
 
 Logstash core will continue to exist under this repository and all related issues and pull requests can be submitted here.
 
-## Need Help?
+## Developing Logstash Core
 
-- [#logstash on freenode IRC](https://webchat.freenode.net/?channels=logstash)
-- [logstash-users on Google Groups](https://groups.google.com/d/forum/logstash-users)
-- [Logstash Documentation](https://www.elastic.co/guide/en/logstash/current/index.html)
-- [Logstash Product Information](https://www.elastic.co/products/logstash)
-- [Elastic Support](https://www.elastic.co/subscriptions)
+### Prerequisites
 
-## Developing
-
-Logstash uses [JRuby](http://jruby.org/) which gets embedded in the `vendor/jruby/` directory. It is recommended but not mandatory that you also use JRuby as your local Ruby interpreter and for this you should consider using a Ruby version manager such as [RVM](https://rvm.io/) or [rbenv](https://github.com/sstephenson/rbenv). It is possible to run the rake tasks and the `bin/` commands without having JRuby locally installed in which case the embedded JRuby will be used automatically. If you have a local JRuby installed you can force logstash to use your local JRuby instead of the embedded JRuby with the `USE_RUBY=1` environment variable.
-
-To get started, make sure you have a local JRuby or Ruby version 1.9.x or above with the `rake` tool installed.
+* Install JDK version 8
+* Install JRuby 1.7.x.
+* Install `rake` and `bundler` tool using `gem install rake` and `gem install bundler` respectively.
 
 **On Windows** make sure to set the `JAVA_HOME` environment variable to the path to your JDK installation directory. For example `set JAVA_HOME=<JDK_PATH>`
 
-To run logstash from the repo you must bootstrap the environment
+**Vendored JRuby**: Logstash uses [JRuby](http://jruby.org/) which gets embedded in the `vendor/jruby/` directory. It is recommended to use a Ruby version manager such as [RVM](https://rvm.io/) or [rbenv](https://github.com/sstephenson/rbenv).
 
-    rake bootstrap
+* To run Logstash from the repo you must first bootstrap the environment:
 
-or bootstrap & install the core plugins required to run the tests
+```sh
+rake bootstrap
+```
+    
+* You can then use `bin/logstash` to start Logstash, but there are no plugins installed. Logstash ships with default plugins. To install those, you can run:
 
-    rake test:install-core
+```sh
+rake plugin:install-default
+```
 
-To verify your environment, run `bin/logstash version` which should look like this
+* Alternatively, you can only install the core plugins required to run the tests
 
-    $ bin/logstash --version
-    logstash 2.0.0.dev
+```sh
+rake test:install-core
+```
 
-If you are seeing errors that look like
+To verify your environment, run
 
-    $ rake bootstrap
-    Installing minitar >= 0 because the build process needs it.
-    [bootstrap] Fetching and installing gem: minitar (>= 0)
-    rake aborted!
-    LoadError: no such file to load -- archive/tar/minitar
-    /Users/<user>/projects/logstash/rakelib/vendor.rake:17:in `untar'
-    /Users/<user>/projects/logstash/rakelib/vendor.rake:86:in `(root)'
-    Tasks: TOP => bootstrap => vendor:all => vendor:jruby
-    (See full trace by running task with --trace)
+```sh
+bin/logstash -e 'input { stdin { } } output { stdout {} }'
+```
 
-then you may need to update your version of rubygems. Run `gem -v` to see the version of rubygems installed. Version 2.5.2 or higher should work. To update rubygems run `gem update --system` (you may need to run with `sudo` if you're using your system Ruby environment).
+This should start Logstash with stdin input waiting for you to enter an event
+
+```sh
+hello world
+2016-11-11T01:22:14.405+0000 0.0.0.0 hello world
+```
+
+**Drip Launcher**
+
+[Drip](https://github.com/ninjudd/drip) is a tool that solves the slow JVM startup problem while developing Logstash. The drip script is intended to be a drop-in replacement for the java command. We recommend using drip during development, in particular for running tests. Using drip, the first invocation of a command will not be faster but the subsequent commands will be swift.
+
+To tell logstash to use drip, either set the `USE_DRIP=1` environment variable or set `` JAVACMD=`which drip` ``.
+
+Example:
+
+    USE_DRIP=1 bin/rspec
+
+**Caveats**
+
+Drip does not work with STDIN. You cannot use drip for running configs which use the stdin plugin.
 
 ## Testing
 
@@ -115,43 +137,24 @@ You can install the default set of plugins included in the logstash package or a
 Note that if a plugin is installed using the plugin manager `bin/logstash-plugin install ...` do not forget to also install the plugins development dependencies using the following command after the plugin installation:
 
     bin/logstash-plugin install --development
+    
+## Building Artifacts
 
-## Developing plugins
+You can build a Logstash snapshot package as tarball or zip file
 
-The documentation for developing plugins can be found in the plugins README, see our example plugins:
+```sh
+rake artifact:tar
+rake artifact:zip
+```
 
-- <https://github.com/logstash-plugins/logstash-input-example>
-- <https://github.com/logstash-plugins/logstash-filter-example>
-- <https://github.com/logstash-plugins/logstash-output-example>
-- <https://github.com/logstash-plugins/logstash-codec-example>
-
-## Drip Launcher
-
-[Drip](https://github.com/ninjudd/drip) is a tool that solves the slow JVM startup problem. The drip script is intended to be a drop-in replacement for the java command. We recommend using drip during development, in particular for running tests. Using drip, the first invocation of a command will not be faster but the subsequent commands will be swift.
-
-To tell logstash to use drip, either set the `USE_DRIP=1` environment variable or set `` JAVACMD=`which drip` ``.
-
-Examples:
-
-    USE_DRIP=1 bin/rspec
-    USE_DRIP=1 bin/rspec
-
-**Caveats**
-
-Drip does not work with STDIN. You cannot use drip for running configs which use the stdin plugin.
-
-
-## Building
-
-You can build a logstash package as tarball or zip file
-
-    rake artifact:tar
-    rake artifact:zip
+This will create the artifact `LS_HOME/build` directory
 
 You can also build .rpm and .deb, but the [fpm](https://github.com/jordansissel/fpm) tool is required.
 
-    rake artifact:rpm
-    rake artifact:deb
+```sh
+rake artifact:rpm
+rake artifact:deb
+```
 
 ## Project Principles
 
