@@ -530,7 +530,7 @@ ifndef::blockfilter[]
     if @message
       # Replace the event message with our message as configured in the
       # config file.
-      event["message"] = @message
+      event.set("message", @message)
     end
 
   # filter_matched should go in the last line of our successful code
@@ -538,15 +538,27 @@ ifndef::blockfilter[]
 end # def filter
 ----------------------------------
 The plugin's `filter` method is where the actual filtering work takes place!
-Inside the `filter` method you can refer to the event data using the `event`
-hash. Configuration variables are now in scope as instance variables, like
+Inside the `filter` method you can refer to the event data using the `Event`
+object. Event is the main object that encapsulates data flow internally in Logstash 
+and provides an <<event-api, API>> for the plugin developers to interact with the 
+event's content.
+
+The `filter` method should also handle any <<event-dependent-configuration, event dependent configuration>> by 
+explicitly calling the `sprintf` method available in Event class. For example:
+
+[source,ruby]
+----------------------------------
+field_foo = event.sprintf(field)
+----------------------------------
+
+Note that configuration variables are now in scope as instance variables, like
 `@message`
 
 [source,ruby]
 ----------------------------------
   filter_matched(event)
 ----------------------------------
-Calling the `filter_matched` method upon succesful execution of the plugin will
+Calling the `filter_matched` method upon successful execution of the plugin will
 ensure that any fields or tags added through the Logstash configuration for this
 filter will be handled correctly. For example, any `add_field`, `remove_field`,
 `add_tag` and/or `remove_tag` actions will be performed at this time.
@@ -599,7 +611,7 @@ ifndef::blockcodec[]
 ----------------------------------
   public
   def encode(event)
-    @on_event.call(event, event["message"].to_s + @append + NL)
+    @on_event.call(event, event.get("message").to_s + @append + NL)
   end # def encode
 ----------------------------------
 The `encode` method takes an event and serializes it (_encodes_) into another
