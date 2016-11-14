@@ -6,7 +6,7 @@
 |---|---|---|---|
 | core | [![Build Status](https://travis-ci.org/elastic/logstash.svg?branch=master)](https://travis-ci.org/elastic/logstash) | [![Build Status](https://travis-ci.org/elastic/logstash.svg?branch=5.0)](https://travis-ci.org/elastic/logstash) | [![Build Status](https://travis-ci.org/elastic/logstash.svg?branch=2.4)](https://travis-ci.org/elastic/logstash) |
 
-Logstash is part of the [https://www.elastic.co/products](Elastic Stack) along with Beats, Elasticsearch and Kibana. Logstash is an open source, server-side data processing pipeline that ingests data from a multitude of sources simultaneously, transforms it, and then sends it to your favorite "stash." (Ours is Elasticsearch, naturally.). Logstash has over 200 plugins, and you can write your own very easily as well.
+Logstash is part of the [Elastic Stack](https://www.elastic.co/products) along with Beats, Elasticsearch and Kibana. Logstash is an open source, server-side data processing pipeline that ingests data from a multitude of sources simultaneously, transforms it, and then sends it to your favorite "stash." (Ours is Elasticsearch, naturally.). Logstash has over 200 plugins, and you can write your own very easily as well.
 
 The license is Apache 2.0, meaning you are pretty much free to use it however you want in whatever way.
 
