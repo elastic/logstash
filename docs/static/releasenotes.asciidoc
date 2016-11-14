@@ -38,6 +38,11 @@ Also see the list of <<breaking-changes, breaking changes>>.
   Logstash pipeline (https://github.com/logstash-plugins/logstash-input-rabbitmq/issues/91[Issue 91]). 
 * To improve debugging, we now include the URL of server when logging connection errors.
 
+*`Kafka`*:
+
+* Fixed high CPU usage issue when reading from Kafka topics. Previously, the consumer thread was polling very frequently for new 
+  messages from the broker (https://github.com/logstash-plugins/logstash-input-kafka/issues/124[Issue 124]).
+
 ==== Filter Plugins
 
 *`Grok`*:
@@ -50,6 +55,11 @@ Also see the list of <<breaking-changes, breaking changes>>.
 * Fixed a bug where the plugin would report the following error when really it should have reported an invalid 
   configuration: `translation missing: en.logstash.agent.configuration.invalid_plugin_register`.
 
+==== Output Plugins
+
+*`Elasticsearch`*:
+
+* Fixed log message that displayed password when basic authentication was setup in this plugin (https://github.com/logstash-plugins/logstash-input-kafka/issues/124[Issue 124]).
 
 [[logstash-5-0-0]]
 === Logstash 5.0.0 Release Notes
