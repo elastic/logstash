@@ -20,7 +20,7 @@ module LogStash
       @filter = klass.new(plugin_args)
 
       # Scope the metrics to the plugin
-      namespaced_metric = metric.namespace("#{@klass.config_name}_#{@id}".to_sym)
+      namespaced_metric = metric.namespace(@id.to_sym)
       @filter.metric = namespaced_metric
 
       @metric_events = namespaced_metric.namespace(:events)
