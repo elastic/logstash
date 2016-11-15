@@ -685,7 +685,7 @@ describe LogStash::Pipeline do
       it "populates the filter metrics" do
         [multiline_id, multiline_id_other].map(&:to_sym).each do |id|
           [:in, :out].each do |metric_key|
-            plugin_name = "multiline_#{id}".to_sym
+            plugin_name = id.to_sym
             expect(collected_metric[:stats][:pipelines][:main][:plugins][:filters][plugin_name][:events][metric_key].value).to eq(number_of_events)
           end
         end
@@ -703,7 +703,7 @@ describe LogStash::Pipeline do
 
       it "populates the name of the filter plugin" do
         [multiline_id, multiline_id_other].map(&:to_sym).each do |id|
-          plugin_name = "multiline_#{id}".to_sym
+          plugin_name = id.to_sym
           expect(collected_metric[:stats][:pipelines][:main][:plugins][:filters][plugin_name][:name].value).to eq(LogStash::Filters::Multiline.config_name)
         end
       end
