@@ -41,3 +41,6 @@ fail, the old pipeline continues to function, and the errors are propagated to t
 
 During automatic config reloading, the JVM is not restarted. The creating and swapping of
 pipelines all happens within the same process. 
+
+Changes to <<plugins-filters-grok,grok>> pattern files are also reloaded, but only when
+a change in the config file triggers a reload (or the pipeline is restarted).  
