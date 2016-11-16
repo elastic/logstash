@@ -1,7 +1,7 @@
 PATH
   remote: ./logstash-core
   specs:
-    logstash-core (5.0.1-java)
+    logstash-core (5.0.2-java)
       chronic_duration (= 0.10.6)
       clamp (~> 0.6.5)
       concurrent-ruby (= 1.0.0)
@@ -12,7 +12,7 @@ PATH
       jrjackson (~> 0.4.0)
       jrmonitor (~> 0.4.2)
       jruby-openssl (= 0.9.16)
-      logstash-core-event-java (= 5.0.1)
+      logstash-core-event-java (= 5.0.2)
       minitar (~> 0.5.4)
       pry (~> 0.10.1)
       puma (~> 2.16)
@@ -25,7 +25,7 @@ PATH
 PATH
   remote: ./logstash-core-event-java
   specs:
-    logstash-core-event-java (5.0.1-java)
+    logstash-core-event-java (5.0.2-java)
       jar-dependencies
       ruby-maven (~> 3.3.9)
 
@@ -33,7 +33,7 @@ PATH
   remote: ./logstash-core-plugin-api
   specs:
     logstash-core-plugin-api (2.1.16-java)
-      logstash-core (= 5.0.1)
+      logstash-core (= 5.0.2)
 
 GEM
   remote: https://rubygems.org/
@@ -69,7 +69,7 @@ GEM
     ci_reporter_rspec (1.0.0)
       ci_reporter (~> 2.0)
       rspec (>= 2.14, < 4)
-    cinch (2.3.2)
+    cinch (2.3.3)
     clamp (0.6.5)
     coderay (1.1.1)
     concurrent-ruby (1.0.0-java)
