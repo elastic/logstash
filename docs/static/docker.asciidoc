@@ -89,6 +89,11 @@ Alternatively, a single file can be mounted:
 docker run --rm -it -v ~/settings/logstash.yml:/usr/share/logstash/config/logstash.yml {docker-image}
 --------------------------------------------
 
+NOTE: Bind-mounted configuration files will retain the same permissions and
+ownership within the container that they have on the host system. Be sure
+to set persmissions such that the files will be readable and, ideally, not
+writeable by the container's +logstash+ user (UID 1000).
+
 ==== Custom Images
 
 Bind-mounted configuration is not the only option, naturally. If you
