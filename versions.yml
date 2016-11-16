@@ -1,6 +1,6 @@
 ---
-logstash: 5.0.1
-logstash-core: 5.0.1
-logstash-core-event: 5.0.1
-logstash-core-event-java: 5.0.1
+logstash: 5.0.2
+logstash-core: 5.0.2
+logstash-core-event: 5.0.2
+logstash-core-event-java: 5.0.2
 logstash-core-plugin-api: 2.1.16
