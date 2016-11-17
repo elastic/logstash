@@ -416,6 +416,7 @@ namespace "artifact" do
     #   correct version of OpenJDK is impossible because there is no guarantee that
     #   is impossible for the same reasons as the Red Hat section above.
     # References:
+    # - https://github.com/elastic/logstash/issues/6275
     # - http://www.elasticsearch.org/blog/java-1-7u55-safe-use-elasticsearch-lucene/
     # - deb: https://github.com/elasticsearch/logstash/pull/1008
     # - rpm: https://github.com/elasticsearch/logstash/pull/1290
