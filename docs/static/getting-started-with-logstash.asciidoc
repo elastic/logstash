@@ -144,7 +144,7 @@ WARNING: The repositories do not work with older rpm based distributions
 
 See the <<running-logstash,Running Logstash>> document for managing Logstash as a system service.
 
-=== Docker
+==== Docker
 
 An image is available for running Logstash as a Docker container. It is
 available from the Elastic Docker registry. See <<docker>> for
