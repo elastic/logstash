@@ -5,13 +5,14 @@ import org.logstash.config.ir.InvalidIRException;
 import org.logstash.config.ir.SourceMetadata;
 
 import java.util.*;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
  * Created by andrewvc on 9/15/16.
  */
 public abstract class Vertex implements ISourceComponent {
-    private final Collection<Edge> incoming = new HashSet<Edge>();
+    private final Collection<Edge> incomingEdges = new HashSet<Edge>();
     private final Collection<Edge> outgoingEdges = new HashSet<Edge>();
     private final SourceMetadata sourceMetadata;
 
@@ -25,13 +26,13 @@ public abstract class Vertex implements ISourceComponent {
 
     public Vertex(Collection<Edge> incoming, Collection<Edge> outgoingEdges, SourceMetadata sourceMetadata) {
         this.sourceMetadata = sourceMetadata;
-        this.incoming.addAll(incoming);
+        this.incomingEdges.addAll(incoming);
         this.outgoingEdges.addAll(outgoingEdges);
     }
 
     public Vertex addInEdge(Edge e) throws InvalidIRException {
-        if (!this.acceptsIncomingEdge(e)) throw new InvalidIRException("Invalid incoming edge!" + e + " for " + this);
-        this.incoming.add(e);
+        if (!this.acceptsIncomingEdge(e)) throw new InvalidIRException("Invalid incomingEdges edge!" + e + " for " + this);
+        this.incomingEdges.add(e);
         return this;
     }
 
@@ -47,7 +48,7 @@ public abstract class Vertex implements ISourceComponent {
     }
 
     public boolean isRoot() {
-        return incoming.size() == 0;
+        return incomingEdges.size() == 0;
     }
 
     public boolean isLeaf() {
@@ -55,7 +56,7 @@ public abstract class Vertex implements ISourceComponent {
     }
 
     public boolean hasIncomingEdges() {
-        return incoming.size() > 0;
+        return incomingEdges.size() > 0;
     }
 
     public boolean hasOutgoingEdges() {
@@ -63,11 +64,19 @@ public abstract class Vertex implements ISourceComponent {
     }
 
     public Collection<Edge> getIncomingEdges() {
-        return incoming;
+        return incomingEdges;
     }
 
     public Collection<Edge> getOutgoingEdges() {
         return outgoingEdges;
+    }
+
+    public Collection<Vertex> getOutgoingVertices() {
+        return outgoingEdges().map(Edge::getTo).collect(Collectors.toList());
+    }
+
+    public Collection<Vertex> getIncomingVertices() {
+        return incomingEdges().map(Edge::getFrom).collect(Collectors.toList());
     }
 
     public Stream<Edge> incomingEdges() {

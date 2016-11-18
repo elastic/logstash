@@ -45,28 +45,37 @@ public class Graph implements ISourceComponent {
       Attach another graph's nodes to this one by connection this graph's leaves to
       the other graph's root
     */
-    public Graph extendLeavesInto(Graph otherGraph) throws InvalidIRException {
+    public Graph threadLeavesInto(Graph otherGraph) throws InvalidIRException {
         if (otherGraph.getVertices().size() == 0) return this;
+
+        // Build these lists here since we do mutate the graph in place later
+        // This isn't strictly necessary, but makes things less confusing
+        Collection<Vertex> fromLeaves = getLeaves();
+        Collection<Vertex> toRoots = otherGraph.getRoots();
 
         if (this.isEmpty()) {
             this.merge(otherGraph);
             return this;
         }
 
-        for (Vertex otherRoot : otherGraph.getRoots()) {
-            extendLeavesInto(otherRoot);
-        }
+        threadLeavesInto(fromLeaves, toRoots);
 
         return this;
     }
 
-    public Graph extendLeavesInto(Vertex otherVertex) throws InvalidIRException {
-        for (Vertex leaf : this.getPartialLeaves()) {
+    public Graph threadLeavesInto(Vertex... otherVertex) throws InvalidIRException {
+        threadLeavesInto(this.getPartialLeaves(), Arrays.asList(otherVertex));
+        return this;
+    }
+
+    private void threadLeavesInto(Collection<Vertex> fromLeaves, Collection<Vertex> toVertices) throws InvalidIRException {
+        for (Vertex leaf : fromLeaves) {
             for (Edge.EdgeFactory unusedEf : leaf.getUnusedOutgoingEdgeFactories()) {
-                this.threadVertices(unusedEf, leaf, otherVertex);
+                for (Vertex toVertex : toVertices) {
+                    this.threadVertices(unusedEf, leaf, toVertex);
+                }
             }
         }
-        return this;
     }
 
     public Graph threadVertices(Edge.EdgeFactory edgeFactory, Vertex... argVertices) throws InvalidIRException {
@@ -85,8 +94,10 @@ public class Graph implements ISourceComponent {
         return threadVertices(new PlainEdge.PlainEdgeFactory(), vertices);
     }
 
-    private void addEdge(Edge e) throws InvalidIRException {
-        this.getEdges().add(e);
+    public void addEdge(Edge e) throws InvalidIRException {
+        e.getFrom().addOutEdge(e);
+        e.getTo().addInEdge(e);
+        this.edges.add(e);
         refresh();
     }
 

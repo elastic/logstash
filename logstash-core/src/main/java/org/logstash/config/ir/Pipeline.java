@@ -41,19 +41,19 @@ public class Pipeline {
 
         // Connect all the input vertices out to the queue
         queue = new SpecialVertex(SpecialVertex.Type.QUEUE);
-        graph.extendLeavesInto(queue);
+        graph.threadLeavesInto(queue);
 
         // Now we connect the queue to the root of the filter section
-        graph.extendLeavesInto(filterSection);
+        graph.threadLeavesInto(filterSection);
 
         // Now we connect the leaves (and partial leaves) of the graph
         // which should all be filters (unless no filters are defined)
         // to the special filterOut node
         filterOut = new SpecialVertex(SpecialVertex.Type.FILTER_OUT);
-        graph.extendLeavesInto(filterOut);
+        graph.threadLeavesInto(filterOut);
 
         // Finally, connect the filter out node to all the outputs
-        graph.extendLeavesInto(outputSection);
+        graph.threadLeavesInto(outputSection);
     }
 
     public List<Vertex> getPostQueue() throws InvalidIRException {
