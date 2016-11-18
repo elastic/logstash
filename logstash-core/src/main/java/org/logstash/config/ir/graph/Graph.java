@@ -30,15 +30,16 @@ public class Graph implements ISourceComponent {
         return new Graph();
     }
 
-    public Graph addVertex(Vertex v) {
+    public Graph addVertex(Vertex v) throws InvalidIRException {
         this.vertices.add(v);
+        this.refresh();
         return this;
     }
 
     public void merge(Graph otherGraph) throws InvalidIRException {
         this.vertices.addAll(otherGraph.getVertices());
         this.edges.addAll(otherGraph.edges);
-        refresh();
+        this.refresh();
     }
 
     /*
@@ -80,7 +81,14 @@ public class Graph implements ISourceComponent {
 
     public Graph threadVertices(Edge.EdgeFactory edgeFactory, Vertex... argVertices) throws InvalidIRException {
         Collection<Edge> newEdges = Edge.threadVertices(edgeFactory, argVertices);
-        addEdges(newEdges);
+
+        for (Edge edge : newEdges) {
+            this.vertices.add(edge.getFrom());
+            this.vertices.add(edge.getTo());
+            this.edges.add(edge);
+        }
+
+        refresh();
 
         return this;
     }
@@ -94,18 +102,22 @@ public class Graph implements ISourceComponent {
         return threadVertices(new PlainEdge.PlainEdgeFactory(), vertices);
     }
 
-    public void addEdge(Edge e) throws InvalidIRException {
-        e.getFrom().addOutEdge(e);
-        e.getTo().addInEdge(e);
-        this.edges.add(e);
-        refresh();
-    }
-
+    // Many of the operations we perform involve modifying one graph but adding vertices/edges
+    // from another. This method ensures that all the vertices/edges we know about having been pulled into
+    // this graph. Methods in this class that add or remove externally provided vertices/edges
+    // should call this method to ensure that the rest of the graph these items depend on are pulled
+    // in.
     public void refresh() throws InvalidIRException {
-        walk(e -> {
+        walkEdges(e -> {
             this.edges.add(e);
             this.vertices.add(e.getTo());
             this.vertices.add(e.getFrom());
+        });
+
+        walkVertices(v -> {
+            this.vertices.add(v);
+            this.edges.addAll(v.getIncomingEdges());
+            this.edges.addAll(v.getOutgoingEdges());
         });
 
         this.validate();
@@ -119,31 +131,34 @@ public class Graph implements ISourceComponent {
         this.getSortedVertices();
     }
 
-    public void walk(Consumer<Edge> consumer) {
-        // avoid stream interface to avoid concurrency issues if a new root is added
-        for (Vertex root : this.getRoots()) {
-            walk(consumer, root);
+    public void walkVertices(Consumer<Vertex> consumer) {
+        for (Vertex vertex : this.getRoots()) {
+            walkVertices(consumer, vertex);
         }
     }
 
-    private void walk(Consumer<Edge> consumer, Vertex vertex) {
-       vertex.outgoingEdges().forEach(e -> {
-           consumer.accept(e);
-           walk(consumer,e.getTo());
-       });
+    public void walkVertices(Consumer<Vertex> consumer, Vertex vertex) {
+        vertex.outgoingVertices().forEach(v -> {
+            consumer.accept(v);
+            walkVertices(consumer, v);
+        });
     }
 
-    public Graph addEdges(Collection<Edge> edges) throws InvalidIRException {
-        this.edges.addAll(edges);
+    // Walk the graph, visiting each edge on it with the provided Consumer<Edge>
+    public void walkEdges(Consumer<Edge> consumer) {
+        // Avoid stream interface to avoid concurrency issues if a new root is added
+        // since streams are lazy you can't mutate the graph while walking it with a
+        // stream. Using this iterative approach we can allow such operations.
+        for (Vertex root : this.getRoots()) {
+            walkEdges(consumer, root);
+        }
+    }
 
-        this.edges.stream().forEach(edge -> {
-            this.vertices.add(edge.getTo());
-            this.vertices.add(edge.getFrom());
-        });
-
-        refresh();
-
-        return this;
+    private void walkEdges(Consumer<Edge> consumer, Vertex vertex) {
+       vertex.outgoingEdges().forEach(e -> {
+           consumer.accept(e);
+           walkEdges(consumer,e.getTo());
+       });
     }
 
     public Stream<Vertex> roots() {

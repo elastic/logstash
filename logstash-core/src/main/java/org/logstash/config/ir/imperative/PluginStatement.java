@@ -1,6 +1,7 @@
 package org.logstash.config.ir.imperative;
 
 import org.logstash.config.ir.ISourceComponent;
+import org.logstash.config.ir.InvalidIRException;
 import org.logstash.config.ir.PluginDefinition;
 import org.logstash.config.ir.SourceMetadata;
 import org.logstash.config.ir.graph.Graph;
@@ -37,7 +38,7 @@ public class PluginStatement extends Statement {
     }
 
     @Override
-    public Graph toGraph() {
+    public Graph toGraph() throws InvalidIRException {
         Vertex pluginVertex = new PluginVertex(getMeta(), pluginDefinition);
         return Graph.empty().addVertex(pluginVertex);
     }

@@ -2,6 +2,9 @@ package org.logstash.config.ir;
 
 import org.junit.Test;
 import org.logstash.config.ir.graph.Graph;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.logstash.config.ir.DSL.*;
 import static org.logstash.config.ir.PluginDefinition.Type.*;
 
@@ -22,6 +25,8 @@ public class PipelineTest {
                                     iPlugin(OUTPUT, "stdout")).toGraph();
 
         Pipeline pipeline = new Pipeline(inputSection, filterSection, outputSection);
-        System.out.println(pipeline.toString());
+        assertEquals(2, pipeline.getInputPluginVertices().size());
+        assertEquals(2, pipeline.getFilterPluginVertices().size());
+        assertEquals(3, pipeline.getOutputPluginVertices().size());
     }
 }

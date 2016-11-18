@@ -72,11 +72,19 @@ public abstract class Vertex implements ISourceComponent {
     }
 
     public Collection<Vertex> getOutgoingVertices() {
-        return outgoingEdges().map(Edge::getTo).collect(Collectors.toList());
+        return outgoingVertices().collect(Collectors.toList());
+    }
+
+    public Stream<Vertex> outgoingVertices() {
+        return outgoingEdges().map(Edge::getTo);
     }
 
     public Collection<Vertex> getIncomingVertices() {
-        return incomingEdges().map(Edge::getFrom).collect(Collectors.toList());
+        return incomingVertices().collect(Collectors.toList());
+    }
+
+    public Stream<Vertex> incomingVertices() {
+        return incomingEdges().map(Edge::getFrom);
     }
 
     public Stream<Edge> incomingEdges() {
@@ -110,4 +118,6 @@ public abstract class Vertex implements ISourceComponent {
     public boolean acceptsOutgoingEdge(Edge e) {
         return true;
     }
+
+
 }

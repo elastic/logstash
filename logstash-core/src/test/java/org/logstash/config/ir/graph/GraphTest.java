@@ -4,8 +4,11 @@ import org.junit.Test;
 import org.logstash.config.ir.ISourceComponent;
 import org.logstash.config.ir.InvalidIRException;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.hasItems;
@@ -20,9 +23,8 @@ public class GraphTest {
         Graph g = Graph.empty();
         Vertex v1 = testVertex();
         Vertex v2 = testVertex();
-        g.addVertex(v1).addVertex(v2);
-        PlainEdge e = new PlainEdge(v1, v2);
-        g.addEdge(e);
+        g.threadVertices(v1, v2);
+        Edge e = v1.outgoingEdges().findFirst().get();
         assertEquals("Connects vertex edges correctly", v1.getOutgoingEdges(), v2.getIncomingEdges());
         assertEquals("Has one edge", g.getEdges(), Collections.singleton(e));
         assertTrue("Has v1", g.getVertices().contains(v1));
@@ -68,9 +70,20 @@ public class GraphTest {
 
         fromGraph.threadLeavesInto(toGraph);
         assertEquals(fromGraph.getEdges().size(), 4);
-        System.out.println(fromGraph);
         assertVerticesConnected(fromV2, toV1);
         assertVerticesConnected(fromV2, toV3);
+    }
+
+    @Test
+    public void testWalk() throws InvalidIRException {
+        Graph g = Graph.empty().
+                threadVertices(testVertex(), testVertex(), testVertex());
+        final AtomicInteger visitCount = new AtomicInteger();
+        final List<Vertex> visited = new ArrayList<>();
+        g.walkEdges(v -> {
+            visitCount.incrementAndGet();
+        });
+        assertEquals("It should visit each node once", visitCount.get(), 2);
     }
 
     public void assertVerticesConnected(Vertex from, Vertex to) {
