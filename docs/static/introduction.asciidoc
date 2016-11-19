@@ -31,7 +31,7 @@ Where it all started.
 logs like <<plugins-inputs-log4j,log4j>> for Java
 ** Capture many other log formats like <<plugins-inputs-syslog,syslog>>,
 <<plugins-inputs-eventlog,Windows event logs>>, networking and firewall logs, and more
-* Enjoy complementary secure log forwarding capabilities with https://github.com/elastic/beats/tree/master/filebeat[Filebeat]
+* Enjoy complementary secure log forwarding capabilities with https://www.elastic.co/products/beats/filebeat[Filebeat]
 * Collect metrics from <<plugins-inputs-ganglia,Ganglia>>, <<plugins-codecs-collectd,collectd>>,
 <<plugins-codecs-netflow,NetFlow>>, <<plugins-inputs-jmx,JMX>>, and many other infrastructure
 and application platforms over <<plugins-inputs-tcp,TCP>> and <<plugins-inputs-udp,UDP>>
@@ -42,12 +42,10 @@ and application platforms over <<plugins-inputs-tcp,TCP>> and <<plugins-inputs-u
 Unlock the World Wide Web.
 
 * Transform <<plugins-inputs-http,HTTP requests>> into events
-(https://www.elastic.co/blog/introducing-logstash-input-http-plugin[blog])
 ** Consume from web service firehoses like <<plugins-inputs-twitter,Twitter>> for social sentiment analysis
 ** Webhook support for GitHub, HipChat, JIRA, and countless other applications
-** Enables many https://www.elastic.co/guide/en/watcher/current/logstash-integration.html[Watcher] alerting use cases
+** Enables many https://www.elastic.co/products/x-pack/alerting[Watcher] alerting use cases
 * Create events by polling <<plugins-inputs-http_poller,HTTP endpoints>> on demand
-(https://www.elastic.co/blog/introducing-logstash-http-poller[blog])
 ** Universally capture health, performance, metrics, and other types of data from web application interfaces
 ** Perfect for scenarios where the control of polling is preferred over receiving
 
@@ -57,10 +55,9 @@ Unlock the World Wide Web.
 Discover more value from the data you already own.
 
 * Better understand your data from any relational database or NoSQL store with a
-<<plugins-inputs-jdbc,JDBC>> interface (https://www.elastic.co/blog/logstash-jdbc-input-plugin[blog])
-* Unify diverse data streams from messaging queues like Apache <<plugins-outputs-kafka,Kafka>>
-(https://www.elastic.co/blog/logstash-kafka-intro[blog]), <<plugins-outputs-rabbitmq,RabbitMQ>>,
-<<plugins-outputs-sqs,Amazon SQS>>, and <<plugins-outputs-zeromq,ZeroMQ>>
+<<plugins-inputs-jdbc,JDBC>> interface 
+* Unify diverse data streams from messaging queues like Apache <<plugins-outputs-kafka,Kafka>>,
+<<plugins-outputs-rabbitmq,RabbitMQ>>, <<plugins-outputs-sqs,Amazon SQS>>, and <<plugins-outputs-zeromq,ZeroMQ>>
 
 [float]
 === Sensors and IoT
@@ -71,9 +68,6 @@ Explore an expansive breadth of other data.
 harnessing data from connected sensors.
 * Logstash is the common event collection backbone for ingestion of data shipped from mobile devices to intelligent
 homes, connected vehicles, healthcare sensors, and many other industry specific applications.
-* https://www.elastic.co/elasticon/2015/sf/if-it-moves-measure-it-logging-iot-with-elk[Watch] as Logstash, in
-conjunction with the broader ELK stack, centralizes and enriches sensor data to gain deeper knowledge regarding a
-residential home.
 
 [float]
 == Easily Enrich Everything
