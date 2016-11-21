@@ -18,12 +18,11 @@ describe LogStash::Compiler do
     subject(:compiled) { described_class.compile_pipeline(source, source_file) }
 
     describe "complex configs" do
-      shared_examples_for "compilable LSCL files" do |filename|
-        describe "parsing #{filename}" do
+      shared_examples_for "compilable LSCL files" do |path|
+        describe "parsing #{path}" do
           let(:source) {
-            File.open(File.join(configs_dir, filename)) {|f| f.read }
+            File.open(path) {|f| f.read }
           }
-          let(:configs_dir) { File.join(File.dirname(__FILE__), "lscl_configs") }
           
           it "should compile" do
             expect(compiled).to be_java_kind_of(Java::OrgLogstashConfigIr::Pipeline)
@@ -31,15 +30,8 @@ describe LogStash::Compiler do
         end
       end
       
-      [
-        "apache_logstash.conf",
-        "nginx_json_logstash.conf",
-        "nginx_logstash.conf",
-        "nyc_collision_logstash.conf",
-        "twitter_logstash.conf",
-        "usfec_logstash.conf"
-      ].each do |file|
-          it_should_behave_like "compilable LSCL files", file
+      Dir.glob(File.join(SUPPORT_DIR, "lscl_configs", "*.conf")).each do |path|
+        it_should_behave_like "compilable LSCL files", path
       end
     end
   end
