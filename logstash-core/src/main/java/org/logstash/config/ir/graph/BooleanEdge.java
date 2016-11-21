@@ -23,14 +23,6 @@ public class BooleanEdge extends Edge {
     public static BooleanEdge.BooleanEdgeFactory trueFactory = new BooleanEdge.BooleanEdgeFactory(true);
     public static BooleanEdge.BooleanEdgeFactory falseFactory = new BooleanEdge.BooleanEdgeFactory(false);
 
-    public static Collection<Edge> trueThreadVertices(Vertex... vertices) throws InvalidIRException {
-        return threadVertices(new BooleanEdgeFactory(true), vertices);
-    }
-
-    public static Collection<Edge> falseThreadVertices(Vertex... vertices) throws InvalidIRException {
-        return threadVertices(new BooleanEdgeFactory(false), vertices);
-    }
-
     private final Boolean edgeType;
 
     public Boolean getEdgeType() {

@@ -94,12 +94,12 @@ public class Graph implements ISourceComponent {
     }
 
     public Graph threadVertices(boolean bool, Vertex... vertices) throws InvalidIRException {
-        Edge.EdgeFactory factory = new BooleanEdge.BooleanEdgeFactory(bool);
+        Edge.EdgeFactory factory = bool ? BooleanEdge.trueFactory : BooleanEdge.falseFactory;
         return threadVertices(factory, vertices);
     }
 
     public Graph threadVertices(Vertex... vertices) throws InvalidIRException {
-        return threadVertices(new PlainEdge.PlainEdgeFactory(), vertices);
+        return threadVertices(PlainEdge.factory, vertices);
     }
 
     // Many of the operations we perform involve modifying one graph but adding vertices/edges

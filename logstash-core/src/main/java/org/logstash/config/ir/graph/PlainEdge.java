@@ -14,6 +14,8 @@ public class PlainEdge extends Edge {
         }
     }
 
+    public static PlainEdgeFactory factory = new PlainEdgeFactory();
+
     public PlainEdge(Vertex from, Vertex to) throws InvalidIRException {
         super(from, to);
     }

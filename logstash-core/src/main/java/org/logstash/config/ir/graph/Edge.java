@@ -21,7 +21,7 @@ public abstract class Edge implements ISourceComponent {
     public static Edge threadVertices(Vertex v1, Vertex v2) throws InvalidIRException {
         Vertex[] args = { v1, v2 };
         // Only ever returns one edge
-        return threadVertices(new PlainEdge.PlainEdgeFactory(), args).stream().findFirst().get();
+        return threadVertices(PlainEdge.factory, args).stream().findFirst().get();
     }
 
     public static Edge threadVertices(EdgeFactory edgeFactory, Vertex v1, Vertex v2) throws InvalidIRException {
@@ -31,7 +31,7 @@ public abstract class Edge implements ISourceComponent {
     }
 
     public static Collection<Edge> threadVertices(Vertex... vertices) throws InvalidIRException {
-        return threadVertices(new PlainEdge.PlainEdgeFactory(), vertices);
+        return threadVertices(PlainEdge.factory, vertices);
     }
 
     public static Collection<Edge> threadVertices(EdgeFactory edgeFactory, Vertex... vertices) throws InvalidIRException {

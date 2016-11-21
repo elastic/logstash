@@ -56,7 +56,7 @@ public class EdgeTest {
     public void testThreadingTyped() throws InvalidIRException {
         Vertex if1 = new IfVertex(null, makeTestExpression());
         Vertex condT = makeTestVertex();
-        Edge tEdge = Edge.threadVertices(new BooleanEdge.BooleanEdgeFactory(true), if1, condT);
+        Edge tEdge = Edge.threadVertices(BooleanEdge.trueFactory, if1, condT);
         assertThat(tEdge, instanceOf(BooleanEdge.class));
         BooleanEdge tBooleanEdge = (BooleanEdge) tEdge;
         assertThat(tBooleanEdge.getEdgeType(), is(true));
