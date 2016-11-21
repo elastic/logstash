@@ -321,7 +321,7 @@ module LogStashCompilerLSCLGrammar; module LogStash; module Compiler; module LSC
         elem = all_elements.first
         if elem.is_a?(Selector)
           eventValue = elem.recursive_select(SelectorElement).first.expr
-          jdsl.eTruthy(eventValue)
+          jdsl.eTruthy(source_meta, eventValue)
         elsif elem.is_a?(RegexpExpression)
           elem.expr
         else

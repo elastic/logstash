@@ -352,10 +352,14 @@ public class Graph implements ISourceComponent {
     }
 
     // Return plugin vertices by type
+    public Stream<PluginVertex> pluginVertices(PluginDefinition.Type type) {
+        return pluginVertices()
+               .filter(v -> v.getPluginDefinition().getType().equals(type));
+    }
+
+    // Return plugin vertices by type
     public List<PluginVertex> getPluginVertices(PluginDefinition.Type type) {
-       return pluginVertices()
-               .filter(v -> v.getPluginDefinition().getType().equals(type))
-               .collect(Collectors.toList());
+               pluginVertices(type).collect(Collectors.toList());
     }
 
     public List<PluginVertex> getPluginVertices() {

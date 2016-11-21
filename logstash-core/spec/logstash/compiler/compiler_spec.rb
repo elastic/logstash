@@ -140,6 +140,28 @@ describe LogStash::Compiler do
           j.iComposeParallel(*statements)
         end
       end
+      
+      describe "multiple section declarations" do
+        let(:source) do
+          <<-EOS
+            #{section} {
+              aplugin { count => 1 }
+            }
+            
+            #{section} {
+              aplugin { count => 2 }
+            }
+          EOS
+        end
+        
+        
+        it "should contain both section declarations, in order" do
+          expect(c_section).to ir_eql(compose(
+                                      splugin("aplugin", {"count" => 1}),
+                                        splugin("aplugin", {"count" => 2})
+                                      ))
+                                    end
+      end
 
       describe "two plugins" do
         let(:source) do
@@ -476,8 +498,8 @@ describe LogStash::Compiler do
           end
 
           describe "nested ifs" do
-let (:source) do
-            <<-EOS
+            let (:source) do
+              <<-EOS
               #{section} {
                 if [foo] == [bar] {
                   if [bar] == [baz] { aplugin {} }
@@ -487,8 +509,7 @@ let (:source) do
                   else { dplugin {} }
                 }
               }
-            EOS
-
+              EOS
           end
 
           it "should compile correctly" do

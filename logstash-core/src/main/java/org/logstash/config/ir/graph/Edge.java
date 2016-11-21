@@ -39,7 +39,7 @@ public abstract class Edge implements ISourceComponent {
         this.to = to;
 
         if (this.from == this.to) {
-            throw new InvalidIRException("Cannot create a cyclic vertex!" + to);
+            throw new InvalidIRException("Cannot create a cyclic vertex! " + to);
         }
     }
 
