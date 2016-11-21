@@ -6,6 +6,8 @@ import org.logstash.config.ir.graph.SpecialVertex;
 import org.logstash.config.ir.graph.Vertex;
 
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Created by andrewvc on 9/20/16.
@@ -61,15 +63,15 @@ public class Pipeline {
     }
 
     public List<PluginVertex> getInputPluginVertices() {
-        return graph.getPluginVertices(PluginDefinition.Type.INPUT);
+        return getPluginVertices(PluginDefinition.Type.INPUT);
     }
 
     public List<PluginVertex> getFilterPluginVertices() {
-        return graph.getPluginVertices(PluginDefinition.Type.FILTER);
+        return getPluginVertices(PluginDefinition.Type.FILTER);
     }
 
     public List<PluginVertex> getOutputPluginVertices() {
-        return graph.getPluginVertices(PluginDefinition.Type.OUTPUT);
+        return getPluginVertices(PluginDefinition.Type.OUTPUT);
     }
 
     @Override
@@ -79,5 +81,27 @@ public class Pipeline {
                 getFilterPluginVertices().size(),
                 getOutputPluginVertices().size());
         return summary + "\n" + graph.toString();
+    }
+
+
+    // Return plugin vertices by type
+    public Stream<PluginVertex> pluginVertices(PluginDefinition.Type type) {
+        return pluginVertices()
+               .filter(v -> v.getPluginDefinition().getType().equals(type));
+    }
+
+    // Return plugin vertices by type
+    public List<PluginVertex> getPluginVertices(PluginDefinition.Type type) {
+        return pluginVertices(type).collect(Collectors.toList());
+    }
+
+    public List<PluginVertex> getPluginVertices() {
+        return pluginVertices().collect(Collectors.toList());
+    }
+
+    public Stream<PluginVertex> pluginVertices() {
+        return graph.vertices()
+               .filter(v -> v instanceof PluginVertex)
+               .map(v -> (PluginVertex) v);
     }
 }

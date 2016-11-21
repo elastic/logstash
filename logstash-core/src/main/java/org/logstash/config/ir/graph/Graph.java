@@ -351,25 +351,11 @@ public class Graph implements ISourceComponent {
         return this;
     }
 
-    // Return plugin vertices by type
-    public Stream<PluginVertex> pluginVertices(PluginDefinition.Type type) {
-        return pluginVertices()
-               .filter(v -> v.getPluginDefinition().getType().equals(type));
+    public Stream<Vertex> vertices() {
+        return this.vertices.stream();
     }
 
-    // Return plugin vertices by type
-    public List<PluginVertex> getPluginVertices(PluginDefinition.Type type) {
-               pluginVertices(type).collect(Collectors.toList());
+    public Stream<Edge> edges() {
+        return this.edges.stream();
     }
-
-    public List<PluginVertex> getPluginVertices() {
-        return pluginVertices().collect(Collectors.toList());
-    }
-
-    public Stream<PluginVertex> pluginVertices() {
-        return this.vertices.stream()
-               .filter(v -> v instanceof PluginVertex)
-               .map(v -> (PluginVertex) v);
-    }
-
 }

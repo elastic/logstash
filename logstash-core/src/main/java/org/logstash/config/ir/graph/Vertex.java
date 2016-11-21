@@ -48,19 +48,19 @@ public abstract class Vertex implements ISourceComponent {
     }
 
     public boolean isRoot() {
-        return incomingEdges.size() == 0;
+        return incomingEdges.isEmpty();
     }
 
     public boolean isLeaf() {
-        return outgoingEdges.size() == 0;
+        return outgoingEdges.isEmpty();
     }
 
     public boolean hasIncomingEdges() {
-        return incomingEdges.size() > 0;
+        return !incomingEdges.isEmpty();
     }
 
     public boolean hasOutgoingEdges() {
-        return outgoingEdges.size() > 0;
+        return !outgoingEdges.isEmpty();
     }
 
     public Collection<Edge> getIncomingEdges() {
@@ -100,6 +100,10 @@ public abstract class Vertex implements ISourceComponent {
         return null;
     }
 
+    // Can be overriden in subclasses to define multiple
+    // expected Edge classes this Vertex can take.
+    // If any EdgeFactory instances are returned this Vertex is considered
+    // a partial leaf.
     public Collection<Edge.EdgeFactory> getUnusedOutgoingEdgeFactories() {
        if (!this.hasOutgoingEdges()) {
            return Collections.singletonList(new PlainEdge.PlainEdgeFactory());

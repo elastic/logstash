@@ -18,6 +18,14 @@ public abstract class Edge implements ISourceComponent {
     private final Vertex to;
     private final Vertex from;
 
+    public static Edge threadVertices(Vertex v1, Vertex v2) throws InvalidIRException {
+        return threadVertices(new PlainEdge.PlainEdgeFactory(), v1, v2).stream().findFirst().get();
+    }
+
+    public static Collection<Edge> threadVertices(Vertex... vertices) throws InvalidIRException {
+        return threadVertices(new PlainEdge.PlainEdgeFactory(), vertices);
+    }
+
     public static Collection<Edge> threadVertices(EdgeFactory edgeFactory, Vertex... vertices) throws InvalidIRException {
         Collection<Edge> edges = new ArrayList<>();
 
