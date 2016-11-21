@@ -16,8 +16,12 @@ describe "Beat Input" do
     filebeat_service.stop
   end
 
+  before :each do
+    FileUtils.mkdir_p(File.dirname(registry_file))
+  end
+
   let(:max_retry) { 120 }
-  let(:registry_file) { Stud::Temporary.file.path }
+  let(:registry_file) { File.join(Stud::Temporary.pathname, "registry") }
   let(:logstash_service) { @fixture.get_service("logstash") }
   let(:filebeat_service) { @fixture.get_service("filebeat") }
   let(:log_path) do
