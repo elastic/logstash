@@ -4,9 +4,9 @@ import org.junit.Test;
 import org.logstash.config.ir.ISourceComponent;
 import org.logstash.config.ir.InvalidIRException;
 
-import java.util.Collection;
-
 import static org.junit.Assert.*;
+import static org.logstash.config.ir.IRHelpers.makeTestVertex;
+
 /**
  * Created by andrewvc on 11/21/16.
  */
@@ -55,12 +55,5 @@ public class VertexTest {
         assertFalse(v.isPartialLeaf());
     }
 
-    public Vertex makeTestVertex() {
-        return new Vertex() {
-            @Override
-            public boolean sourceComponentEquals(ISourceComponent sourceComponent) {
-                return this.equals(sourceComponent);
-            }
-        };
-    }
+
 }
