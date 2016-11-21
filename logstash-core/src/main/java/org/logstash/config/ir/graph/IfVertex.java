@@ -33,7 +33,8 @@ public class IfVertex extends Vertex {
         if (other == this) return true;
         if (other instanceof IfVertex) {
             IfVertex otherV = (IfVertex) other;
-            // We don't check the ID because that's randomly generated
+            // We don't check the id because we're comparing functional equality, not
+            // identity
             return otherV.booleanExpression.sourceComponentEquals(this.booleanExpression);
         }
         return false;
