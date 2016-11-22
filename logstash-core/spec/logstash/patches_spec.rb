@@ -2,17 +2,18 @@
 require "socket"
 require "logstash/patches"
 require "flores/pki"
+require "logstash/json"
 
 describe "OpenSSL defaults" do
   subject { OpenSSL::SSL::SSLContext.new }
 
-  # OpenSSL::SSL::SSLContext#ciphers returns an array of 
+  # OpenSSL::SSL::SSLContext#ciphers returns an array of
   # [ [ ciphername, version, bits, alg_bits ], [ ... ], ... ]
- 
+
   # List of cipher names
   let(:ciphers) { subject.ciphers.map(&:first) }
 
-  # List of cipher encryption bit strength. 
+  # List of cipher encryption bit strength.
   let(:encryption_bits) { subject.ciphers.map { |_, _, _, a| a } }
 
   it "should not include any export ciphers" do
@@ -35,7 +36,7 @@ describe "OpenSSL defaults" do
     # https://github.com/jordansissel/ruby-flores/blob/master/spec/flores/pki_integration_spec.rb
     # since these helpers were created to fix this particular issue
     let(:csr) { Flores::PKI::CertificateSigningRequest.new }
-    # Here, I use a 1024-bit key for faster tests. 
+    # Here, I use a 1024-bit key for faster tests.
     # Please do not use such small keys in production.
     let(:key_bits) { 1024 }
     let(:key) { OpenSSL::PKey::RSA.generate(key_bits, 65537) }
@@ -86,5 +87,15 @@ describe "OpenSSL defaults" do
         expect { ssl_client.connect }.not_to raise_error
       end
     end
+  end
+end
+
+describe "exceptions used json logging hashes" do
+  let(:exception) { ArgumentError.new("so you want an argument, huh?") }
+  let(:result) { [] }
+
+  it "should not raise errors" do
+    expect { result << LogStash::Json.dump({"error" => exception}) }.not_to raise_error
+    expect(result[0]).to match(/ArgumentError.*so you want an argument/)
   end
 end
