@@ -21,16 +21,20 @@ require "logstash/instrument/wrapped_write_client"
 require "logstash/output_delegator"
 require "logstash/filter_delegator"
 require "logstash/queue_factory"
+require 'logstash/compiler'
 
 module LogStash; class BasePipeline
   include LogStash::Util::Loggable
 
-  attr_reader :config_str, :config_hash, :inputs, :filters, :outputs, :pipeline_id
-
+  attr_reader :config_str, :config_hash, :inputs, :filters, :outputs, :pipeline_id, :lir
+  
   def initialize(config_str, settings = SETTINGS)
     @logger = self.logger
     @config_str = config_str
     @config_hash = Digest::SHA1.hexdigest(@config_str)
+    
+    @lir = compile_lir
+    
     # Every time #plugin is invoked this is incremented to give each plugin
     # a unique id when auto-generating plugin ids
     @plugin_counter ||= 0
@@ -62,6 +66,10 @@ module LogStash; class BasePipeline
     rescue => e
       raise e
     end
+  end
+  
+  def compile_lir
+    LogStash::Compiler.compile_pipeline(self.config_str)
   end
 
   def plugin(plugin_type, name, *args)
@@ -166,6 +174,8 @@ module LogStash; class Pipeline < BasePipeline
     @running = Concurrent::AtomicBoolean.new(false)
     @flushing = Concurrent::AtomicReference.new(false)
   end # def initialize
+  
+  
 
   def ready?
     @ready.value
@@ -538,7 +548,6 @@ module LogStash; class Pipeline < BasePipeline
       @signal_queue.push(FLUSH)
     end
   end
-
 
   # Calculate the uptime in milliseconds
   #
