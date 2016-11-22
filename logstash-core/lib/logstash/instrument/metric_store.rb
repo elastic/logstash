@@ -222,7 +222,7 @@ module LogStash module Instrument
       key_candidates = extract_filter_keys(key_paths.shift)
 
       key_candidates.each do |key_candidate|
-        raise MetricNotFound, "For path: #{key_candidate}" if map[key_candidate].nil?
+        raise MetricNotFound, "For path: #{key_candidate}. Map keys: #{map.keys}" if map[key_candidate].nil?
 
         if key_paths.empty? # End of the user requested path
           if map[key_candidate].is_a?(Concurrent::Map)
