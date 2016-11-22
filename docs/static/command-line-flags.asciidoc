@@ -16,10 +16,23 @@ Any flags that you set at the command line override the corresponding settings i
   hostname.
 
 *`-f, --path.config CONFIG_PATH`*::
-  Load the Logstash config from a specific file or directory. If a directory is given, all
-  files in that directory will be concatenated in lexicographical order and then parsed as a
-  single config file. You can also specify wildcards (globs) and any matched files will
-  be loaded in the order described above.
+Load the Logstash config from a specific file or directory. If a directory is given, all
+files in that directory will be concatenated in lexicographical order and then parsed as a
+single config file. Specifying this flag multiple times is not supported. If you specify
+this flag multiple times, Logstash uses the last occurrence (for example, `-f foo -f bar`
+is the same as `-f bar`).
++
+You can specify wildcards (<<glob-support,globs>>) and any matched files will
+be loaded in the order described above. For example, you can use the wildcard feature to
+load specific files by name: 
++
+[source,shell]
+---------------------------------------------
+bin/logstash --debug -f '/tmp/{one,two,three}'
+---------------------------------------------
++
+With this command, Logstash concatenates three config files, `/tmp/one`, `/tmp/two`, and
+`/tmp/three`, and parses them into a single config.
 
 *`-e, --config.string CONFIG_STRING`*::
   Use the given string as the configuration data. Same syntax as the config file. If no
