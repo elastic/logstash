@@ -1,5 +1,5 @@
 [[docker]]
-== Running Logstash on Docker
+=== Running Logstash on Docker
 Docker images for Logstash are available from the Elastic Docker
 registry.
 
@@ -25,12 +25,12 @@ docker pull {docker-image}
 
 endif::[]
 
-=== Configuring Logstash for Docker
+==== Configuring Logstash for Docker
 
 Logstash differentiates between two types of configuration:
 <<config-setting-files,Settings and Pipeline Configuration>>.
 
-==== Pipeline Configuration
+===== Pipeline Configuration
 
 It is essential to place your pipeline configuration where it can be
 found by Logstash. By default, the container will look in
@@ -69,7 +69,7 @@ behaviour that you are observing, ensure that your pipeline
 configuration is being picked up correctly, and that you are replacing
 either +logstash.conf+ or the entire +pipeline+ directory.
 
-==== Settings Files
+===== Settings Files
 
 Settings files can also be provided through bind-mounts. Logstash
 expects to find them at +/usr/share/logstash/config/+.
@@ -94,7 +94,7 @@ ownership within the container that they have on the host system. Be sure
 to set permissions such that the files will be readable and, ideally, not
 writeable by the container's +logstash+ user (UID 1000).
 
-==== Custom Images
+===== Custom Images
 
 Bind-mounted configuration is not the only option, naturally. If you
 prefer the _Immutable Infrastructure_ approach, you can prepare a
@@ -112,7 +112,7 @@ ADD config/ /usr/share/logstash/config/
 Be sure to replace or delete `logstash.conf` in your custom image, so
 that you don't retain the example config from the base image.
 
-=== Logging Configuration
+==== Logging Configuration
 
 Under Docker, Logstash logs go to standard output by default. To
 change this behaviour, use any of the techniques above to replace the
