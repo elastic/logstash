@@ -30,15 +30,21 @@ public abstract class Vertex implements ISourceComponent {
         this.outgoingEdges.addAll(outgoingEdges);
     }
 
-    public Vertex addInEdge(Edge e) throws InvalidIRException {
-        if (!this.acceptsIncomingEdge(e)) throw new InvalidIRException("Invalid incomingEdges edge!" + e + " for " + this);
+    public class InvalidEdgeTypeException extends InvalidIRException {
+        public InvalidEdgeTypeException(String s) {
+            super(s);
+        }
+    }
+
+    public Vertex addInEdge(Edge e) throws InvalidEdgeTypeException {
+        if (!this.acceptsIncomingEdge(e)) throw new InvalidEdgeTypeException("Invalid incomingEdges edge!" + e + " for " + this);
         this.incomingEdges.add(e);
         return this;
     }
 
-    public Vertex addOutEdge(Edge e) throws InvalidIRException {
+    public Vertex addOutEdge(Edge e) throws InvalidEdgeTypeException {
         if (!this.acceptsOutgoingEdge(e)) {
-            throw new InvalidIRException(
+            throw new InvalidEdgeTypeException(
                 "Invalid outgoing edge!" +
                 e + " for " + this +
                 " existing outgoing edges: " + this.getOutgoingEdges());

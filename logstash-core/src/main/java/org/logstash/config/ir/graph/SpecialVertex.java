@@ -20,10 +20,7 @@ public class SpecialVertex extends Vertex {
     }
 
     public enum Type {
-        FILTER_IN ("FILTER_IN"),
-        FILTER_OUT ("FILTER OUT"),
-        OUTPUT_IN ("OUTPUT IN"),
-        OUTPUT_OUT ("OUTPUT OUT"),
+        FILTER_OUT ("FILTER_OUT"),
         QUEUE ("QUEUE");
 
         private final String name;

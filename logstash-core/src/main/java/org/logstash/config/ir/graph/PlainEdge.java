@@ -9,7 +9,7 @@ import org.logstash.config.ir.InvalidIRException;
 public class PlainEdge extends Edge {
     public static class PlainEdgeFactory extends Edge.EdgeFactory {
         @Override
-        public Edge make(Vertex from, Vertex to) throws InvalidIRException {
+        public PlainEdge make(Vertex from, Vertex to) throws InvalidIRException {
            return new PlainEdge(from, to);
         }
     }

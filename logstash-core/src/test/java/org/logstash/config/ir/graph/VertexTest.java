@@ -1,11 +1,10 @@
 package org.logstash.config.ir.graph;
 
 import org.junit.Test;
-import org.logstash.config.ir.ISourceComponent;
 import org.logstash.config.ir.InvalidIRException;
 
 import static org.junit.Assert.*;
-import static org.logstash.config.ir.IRHelpers.makeTestVertex;
+import static org.logstash.config.ir.IRHelpers.testVertex;
 
 /**
  * Created by andrewvc on 11/21/16.
@@ -13,8 +12,8 @@ import static org.logstash.config.ir.IRHelpers.makeTestVertex;
 public class VertexTest {
     @Test
     public void TestVertexBasics() throws InvalidIRException {
-        Vertex v1 = makeTestVertex();
-        Vertex v2 = makeTestVertex();
+        Vertex v1 = testVertex();
+        Vertex v2 = testVertex();
         Edge e = Edge.threadVertices(v1, v2);
 
         assertTrue("v1 has v2 as an outgoing vertex", v1.outgoingVertices().anyMatch(v2::equals));
@@ -23,13 +22,13 @@ public class VertexTest {
 
     @Test
     public void testIsLeafAndRoot() throws InvalidIRException {
-        Vertex v = makeTestVertex();
+        Vertex v = testVertex();
 
         // Nodes should be leaves and roots if they are isolated
         assertTrue(v.isLeaf());
         assertTrue(v.isRoot());
 
-        Vertex otherV = makeTestVertex();
+        Vertex otherV = testVertex();
         Edge e = Edge.threadVertices(v, otherV);
 
         assertFalse(v.isLeaf());
@@ -40,15 +39,15 @@ public class VertexTest {
 
     @Test
     public void testPartialLeafOnUnconnectedVertex() {
-        Vertex v = makeTestVertex();
+        Vertex v = testVertex();
         assertEquals(v.getUnusedOutgoingEdgeFactories().size(), 1);
         assertTrue(v.isPartialLeaf());
     }
 
     @Test
     public void testPartialLeafOnConnectedVertex() throws InvalidIRException {
-        Vertex v = makeTestVertex();
-        Vertex otherV = makeTestVertex();
+        Vertex v = testVertex();
+        Vertex otherV = testVertex();
         Edge e = Edge.threadVertices(v, otherV);
 
         assertEquals(v.getUnusedOutgoingEdgeFactories().size(), 0);

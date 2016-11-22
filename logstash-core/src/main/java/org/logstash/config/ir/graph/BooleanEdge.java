@@ -10,6 +10,10 @@ import java.util.Collection;
  */
 public class BooleanEdge extends Edge {
     public static class BooleanEdgeFactory extends EdgeFactory {
+        public Boolean getEdgeType() {
+            return edgeType;
+        }
+
         private final Boolean edgeType;
 
         public BooleanEdgeFactory(Boolean edgeType) {
@@ -18,6 +22,18 @@ public class BooleanEdge extends Edge {
 
         public BooleanEdge make(Vertex in, Vertex out) throws InvalidIRException {
             return new BooleanEdge(edgeType, in, out);
+        }
+
+        public boolean equals(Object other) {
+            if (other == null) return false;
+            if (other instanceof BooleanEdgeFactory) {
+               return ((BooleanEdgeFactory) other).getEdgeType().equals(edgeType);
+            }
+            return false;
+        }
+
+        public String toString() {
+            return "BooleanEdge.BooleanEdgeFactory[" + edgeType + "]";
         }
     }
     public static BooleanEdge.BooleanEdgeFactory trueFactory = new BooleanEdge.BooleanEdgeFactory(true);

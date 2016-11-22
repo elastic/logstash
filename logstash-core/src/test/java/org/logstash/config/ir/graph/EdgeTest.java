@@ -1,20 +1,16 @@
 package org.logstash.config.ir.graph;
 
 import org.junit.Test;
-import org.logstash.config.ir.ISourceComponent;
+import org.logstash.config.ir.IRHelpers;
 import org.logstash.config.ir.InvalidIRException;
-import org.logstash.config.ir.expression.ValueExpression;
-import org.logstash.config.ir.expression.unary.Truthy;
 
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 
 import static org.junit.Assert.*;
 import static org.hamcrest.CoreMatchers.*;
-import static org.logstash.config.ir.IRHelpers.makeTestEdge;
-import static org.logstash.config.ir.IRHelpers.makeTestExpression;
-import static org.logstash.config.ir.IRHelpers.makeTestVertex;
+import static org.logstash.config.ir.IRHelpers.testExpression;
+import static org.logstash.config.ir.IRHelpers.testVertex;
 
 
 /**
@@ -23,15 +19,15 @@ import static org.logstash.config.ir.IRHelpers.makeTestVertex;
 public class EdgeTest {
     @Test
     public void testBasicEdge() throws InvalidIRException {
-        Edge e = makeTestEdge();
+        Edge e = IRHelpers.testEdge();
         assertThat("From is edge", e.getFrom(), notNullValue());
         assertThat("To is edge", e.getTo(), notNullValue());
     }
 
     @Test
     public void testThreading() throws InvalidIRException {
-        Vertex v1 = makeTestVertex();
-        Vertex v2 = makeTestVertex();
+        Vertex v1 = testVertex();
+        Vertex v2 = testVertex();
         Edge e = Edge.threadVertices(v1, v2);
         assertThat(v1.getOutgoingEdges().stream().findFirst().get(), is(e));
         assertThat(v2.getIncomingEdges().stream().findFirst().get(), is(e));
@@ -40,9 +36,9 @@ public class EdgeTest {
 
     @Test
     public void testThreadingMulti() throws InvalidIRException {
-        Vertex v1 = makeTestVertex();
-        Vertex v2 = makeTestVertex();
-        Vertex v3 = makeTestVertex();
+        Vertex v1 = testVertex();
+        Vertex v2 = testVertex();
+        Vertex v3 = testVertex();
         Collection<Edge> multiEdges = Edge.threadVertices(v1, v2, v3);
 
         assertThat(multiEdges.size(), is(2));
@@ -54,8 +50,8 @@ public class EdgeTest {
 
     @Test
     public void testThreadingTyped() throws InvalidIRException {
-        Vertex if1 = new IfVertex(null, makeTestExpression());
-        Vertex condT = makeTestVertex();
+        Vertex if1 = new IfVertex(null, testExpression());
+        Vertex condT = testVertex();
         Edge tEdge = Edge.threadVertices(BooleanEdge.trueFactory, if1, condT);
         assertThat(tEdge, instanceOf(BooleanEdge.class));
         BooleanEdge tBooleanEdge = (BooleanEdge) tEdge;

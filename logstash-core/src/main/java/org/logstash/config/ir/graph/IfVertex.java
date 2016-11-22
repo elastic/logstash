@@ -59,12 +59,12 @@ public class IfVertex extends Vertex {
         return (e instanceof BooleanEdge);
     }
 
-    public List<BooleanEdge> getOutgoingBooleanEdges() {
+    public Collection<BooleanEdge> getOutgoingBooleanEdges() {
         // Wish there was a way to do this as a java a cast without an operation
         return getOutgoingEdges().stream().map(e -> (BooleanEdge) e).collect(Collectors.toList());
     }
 
-    public List<BooleanEdge> getOutgoingBooleanEdgesByType(Boolean edgeType) {
+    public Collection<BooleanEdge> getOutgoingBooleanEdgesByType(Boolean edgeType) {
         return getOutgoingBooleanEdges().stream().filter(e -> e.getEdgeType().equals(edgeType)).collect(Collectors.toList());
     }
 }
