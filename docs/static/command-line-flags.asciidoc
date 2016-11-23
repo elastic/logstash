@@ -77,7 +77,7 @@ With this command, Logstash concatenates three config files, `/tmp/one`, `/tmp/t
   and `NAME` is the name of the plugin.
 
 *`-l, --path.logs PATH`*::
-  Directory to Write Logstash internal logs to.
+  Directory to write Logstash internal logs to.
 
 *`--log.level LEVEL`*::
  Set the log level for Logstash. Possible values are:
