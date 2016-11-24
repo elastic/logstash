@@ -20,7 +20,7 @@ public class TestSettings {
         return s;
     }
 
-    public static Settings getSettings(int capacity, int size) {
+    public static Settings getSettings(int capacity, long size) {
         MemoryCheckpointIO.clearSources();
         Settings s = new MemorySettings();
         PageIOFactory pageIOFactory = (pageNum, pageSize, path) -> new ByteBufferPageIO(pageNum, pageSize, path);

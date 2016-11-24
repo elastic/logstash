@@ -46,7 +46,7 @@ public class Queue implements Closeable {
     private final CheckpointIO checkpointIO;
     private final PageIOFactory pageIOFactory;
     private final int pageCapacity;
-    private final int maxSize;
+    private final long maxSizeInBytes;
     private final String dirPath;
     private final int maxUnread;
     private final int checkpointMaxAcks;
@@ -79,10 +79,10 @@ public class Queue implements Closeable {
         );
     }
 
-    public Queue(String dirPath, int pageCapacity, int maxSize, CheckpointIO checkpointIO, PageIOFactory pageIOFactory, Class elementClass, int maxUnread, int checkpointMaxWrites, int checkpointMaxAcks, int checkpointMaxInterval) {
+    public Queue(String dirPath, int pageCapacity, long maxSizeInBytes, CheckpointIO checkpointIO, PageIOFactory pageIOFactory, Class elementClass, int maxUnread, int checkpointMaxWrites, int checkpointMaxAcks, int checkpointMaxInterval) {
         this.dirPath = dirPath;
         this.pageCapacity = pageCapacity;
-        this.maxSize = maxSize;
+        this.maxSizeInBytes = maxSizeInBytes;
         this.checkpointIO = checkpointIO;
         this.pageIOFactory = pageIOFactory;
         this.elementClass = elementClass;
@@ -300,7 +300,7 @@ public class Queue implements Closeable {
     public boolean isFull() {
         // TODO: I am not sure if having unreadCount as volatile is sufficient here. all unreadCount updates are done inside syncronized
         // TODO: sections, I believe that to only read the value here, having it as volatile is sufficient?
-        return (((this.maxUnread > 0) ? this.unreadCount >= this.maxUnread : false) || (this.currentSize >= this.maxSize));
+        return (((this.maxUnread > 0) ? this.unreadCount >= this.maxUnread : false) || (this.currentSize >= this.maxSizeInBytes));
     }
 
     // @param seqNum the element sequence number upper bound for which persistence should be garanteed (by fsync'ing)
@@ -491,6 +491,7 @@ public class Queue implements Closeable {
 
                     // remove page data file regardless if it is the first or a middle tail page to free resources
                     result.page.purge();
+                    this.currentSize -= result.page.getPageIO().getCapacity();
 
                      if (result.index == 0) {
                         // if this is the first page also remove checkpoint file
