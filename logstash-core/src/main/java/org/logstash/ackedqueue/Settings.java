@@ -12,6 +12,8 @@ public interface Settings {
 
     Settings setCapacity(int capacity);
 
+    Settings setQueueMaxSizeInBytes(int size);
+
     Settings setMaxUnread(int maxUnread);
 
     Settings setCheckpointMaxAcks(int checkpointMaxAcks);
@@ -29,6 +31,8 @@ public interface Settings {
     String getDirPath();
 
     int getCapacity();
+
+    int getQueueMaxSizeInBytes();
 
     int getMaxUnread();
 
