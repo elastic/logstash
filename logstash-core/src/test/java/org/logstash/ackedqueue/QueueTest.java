@@ -399,7 +399,7 @@ public class QueueTest {
         TestQueue q = new TestQueue(settings);
         q.open();
 
-        int ELEMENT_COUNT = 99; // should be able to write 100 events before getting full
+        int ELEMENT_COUNT = 99; // should be able to write 99 events before getting full
         for (int i = 0; i < ELEMENT_COUNT; i++) {
             long seqNum = q.write(element);
         }
@@ -416,32 +416,8 @@ public class QueueTest {
 
         Thread.sleep(1);
         assertThat(q.isFull(), is(true));
-        // spin wait until data is written and write blocks
-        //while (!q.isFull()) { Thread.sleep(1); }
-            /*
 
-
-            // read one element, which will unblock the last write
-            Batch b = q.nonBlockReadBatch(1);
-            assertThat(b, is(notNullValue()));
-            assertThat(b.getElements().size(), is(equalTo(1)));
-            b.close();
-
-            // future result is the blocked write seqNum for the second element
-            assertThat(future.get(), is(equalTo(2L + i)));
-            assertThat(q.isFull(), is(false));
-
-            executor.shutdown();
-        }
-
-        // all batches are acked, no tail pages should exist
-        assertThat(q.getTailPages().size(), is(equalTo(0)));
-
-        // the last read unblocked the last write so some elements (1 unread and maybe some acked) should be in the head page
-        assertThat(q.getHeadPage().getElementCount() > 0L, is(true));
-        assertThat(q.getHeadPage().unreadCount(), is(equalTo(1L)));
-        assertThat(q.unreadCount, is(equalTo(1L)));
-        */
+        executor.shutdown();
     }
 
 }
