@@ -20,6 +20,19 @@ public class TestSettings {
         return s;
     }
 
+    public static Settings getSettings(int capacity, int size) {
+        MemoryCheckpointIO.clearSources();
+        Settings s = new MemorySettings();
+        PageIOFactory pageIOFactory = (pageNum, pageSize, path) -> new ByteBufferPageIO(pageNum, pageSize, path);
+        CheckpointIOFactory checkpointIOFactory = (source) -> new MemoryCheckpointIO(source);
+        s.setCapacity(capacity);
+        s.setQueueMaxSizeInBytes(size);
+        s.setElementIOFactory(pageIOFactory);
+        s.setCheckpointIOFactory(checkpointIOFactory);
+        s.setElementClass(StringElement.class);
+        return s;
+    }
+
     public static Settings getSettingsCheckpointFilePageMemory(int capacity, String folder) {
         Settings s = new FileSettings(folder);
         PageIOFactory pageIOFactory = (pageNum, size, path) -> new ByteBufferPageIO(pageNum, size, path);
