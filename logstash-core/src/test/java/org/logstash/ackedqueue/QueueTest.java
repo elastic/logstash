@@ -420,4 +420,43 @@ public class QueueTest {
         executor.shutdown();
     }
 
+    @Test(timeout = 5000)
+    public void resumeWriteOnNoLongerFullQueueTest() throws IOException, InterruptedException, ExecutionException {
+
+        Queueable element = new StringElement("0123456789"); // 10 bytes
+
+        Settings settings = TestSettings.getSettings(256, 1000); // allow 10 elements per page but only 1024 bytes in total
+
+        TestQueue q = new TestQueue(settings);
+        q.open();
+
+        int ELEMENT_COUNT = 99; // should be able to write 99 events before getting full
+        for (int i = 0; i < ELEMENT_COUNT; i++) {
+            long seqNum = q.write(element);
+        }
+
+        assertThat(q.isFull(), is(false));
+
+        // we expect this next write call to block so let's wrap it in a Future
+        Callable<Long> write = () -> {
+            return q.write(element);
+        };
+
+        ExecutorService executor = Executors.newFixedThreadPool(1);
+        Future<Long> future = executor.submit(write);
+
+        Thread.sleep(1);
+
+        assertThat(q.isFull(), is(true));
+
+        Batch b = q.readBatch(99);
+
+        // spin wait until data is written and write blocks
+        while (!q.isFull()) { Thread.sleep(1); }
+
+        assertThat(q.isFull(), is(false));
+
+        executor.shutdown();
+    }
+
 }
