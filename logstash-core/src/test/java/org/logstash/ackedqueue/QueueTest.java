@@ -456,7 +456,7 @@ public class QueueTest {
 
         assertThat(q.isFull(), is(true));
 
-        Batch b = q.readBatch(9); // read 1 page (10 events)
+        Batch b = q.readBatch(10); // read 1 page (10 events)
         b.close();  // purge 1 page
 
         // spin wait until data is written and write blocks
