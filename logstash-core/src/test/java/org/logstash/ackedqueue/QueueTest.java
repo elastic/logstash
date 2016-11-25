@@ -390,16 +390,19 @@ public class QueueTest {
         assertThat(q.unreadCount, is(equalTo(1L)));
     }
 
-    @Test
+    @Test(timeout = 5000)
     public void reachMaxSizeTest() throws IOException, InterruptedException, ExecutionException {
         Queueable element = new StringElement("0123456789"); // 10 bytes
 
-        Settings settings = TestSettings.getSettings(256, 1000); // allow 10 elements per page but only 1024 bytes in total
+        int singleElementCapacity = ByteBufferPageIO.HEADER_SIZE + ByteBufferPageIO._persistedByteCount(element.serialize().length);
+
+        // allow 10 elements per page but only 100 events in total
+        Settings settings = TestSettings.getSettings(singleElementCapacity * 10, singleElementCapacity * 100);
 
         TestQueue q = new TestQueue(settings);
         q.open();
 
-        int ELEMENT_COUNT = 99; // should be able to write 99 events before getting full
+        int ELEMENT_COUNT = 90; // should be able to write 99 events before getting full
         for (int i = 0; i < ELEMENT_COUNT; i++) {
             long seqNum = q.write(element);
         }
@@ -414,7 +417,8 @@ public class QueueTest {
         ExecutorService executor = Executors.newFixedThreadPool(1);
         Future<Long> future = executor.submit(write);
 
-        Thread.sleep(1);
+        while (!q.isFull()) { Thread.sleep(1); }
+
         assertThat(q.isFull(), is(true));
 
         executor.shutdown();
@@ -425,12 +429,15 @@ public class QueueTest {
 
         Queueable element = new StringElement("0123456789"); // 10 bytes
 
-        Settings settings = TestSettings.getSettings(256, 1000); // allow 10 elements per page but only 1024 bytes in total
+        int singleElementCapacity = ByteBufferPageIO.HEADER_SIZE + ByteBufferPageIO._persistedByteCount(element.serialize().length);
+
+        // allow 10 elements per page but only 100 events in total
+        Settings settings = TestSettings.getSettings(singleElementCapacity * 10, singleElementCapacity * 100);
 
         TestQueue q = new TestQueue(settings);
         q.open();
 
-        int ELEMENT_COUNT = 99; // should be able to write 99 events before getting full
+        int ELEMENT_COUNT = 90; // should be able to write 90 events (9 pages) before getting full
         for (int i = 0; i < ELEMENT_COUNT; i++) {
             long seqNum = q.write(element);
         }
@@ -445,16 +452,57 @@ public class QueueTest {
         ExecutorService executor = Executors.newFixedThreadPool(1);
         Future<Long> future = executor.submit(write);
 
-        Thread.sleep(1);
+        while (!q.isFull()) { Thread.sleep(1); }
 
         assertThat(q.isFull(), is(true));
 
-        Batch b = q.readBatch(99);
+        Batch b = q.readBatch(9); // read 1 page (10 events)
+        b.close();  // purge 1 page
 
         // spin wait until data is written and write blocks
-        while (!q.isFull()) { Thread.sleep(1); }
+        while (q.isFull()) { Thread.sleep(1); }
 
         assertThat(q.isFull(), is(false));
+
+        executor.shutdown();
+    }
+
+    @Test(timeout = 5000)
+    public void queueStillFullAfterPartialPageAckTest() throws IOException, InterruptedException, ExecutionException {
+
+        Queueable element = new StringElement("0123456789"); // 10 bytes
+
+        int singleElementCapacity = ByteBufferPageIO.HEADER_SIZE + ByteBufferPageIO._persistedByteCount(element.serialize().length);
+
+        // allow 10 elements per page but only 100 events in total
+        Settings settings = TestSettings.getSettings(singleElementCapacity * 10, singleElementCapacity * 100);
+
+        TestQueue q = new TestQueue(settings);
+        q.open();
+
+        int ELEMENT_COUNT = 90; // should be able to write 99 events before getting full
+        for (int i = 0; i < ELEMENT_COUNT; i++) {
+            long seqNum = q.write(element);
+        }
+
+        assertThat(q.isFull(), is(false));
+
+        // we expect this next write call to block so let's wrap it in a Future
+        Callable<Long> write = () -> {
+            return q.write(element);
+        };
+
+        ExecutorService executor = Executors.newFixedThreadPool(1);
+        Future<Long> future = executor.submit(write);
+
+        while (!q.isFull()) { Thread.sleep(1); }
+
+        assertThat(q.isFull(), is(true));
+
+        Batch b = q.readBatch(9); // read 90% of page (9 events)
+        b.close();  // this should not purge a page
+
+        assertThat(q.isFull(), is(true)); // queue should still be full
 
         executor.shutdown();
     }
