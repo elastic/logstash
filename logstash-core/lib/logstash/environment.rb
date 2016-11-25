@@ -42,6 +42,7 @@ module LogStash
             Setting::String.new("http.environment", "production"),
             Setting::String.new("queue.type", "memory", true, ["persisted", "memory", "memory_acked"]),
             Setting::Bytes.new("queue.page_capacity", "250mb"),
+            Setting::Bytes.new("queue.max_size", "1024mb"),
             Setting::Numeric.new("queue.max_events", 0), # 0 is unlimited
             Setting::Numeric.new("queue.checkpoint.acks", 1024), # 0 is unlimited
             Setting::Numeric.new("queue.checkpoint.writes", 1024), # 0 is unlimited
