@@ -153,6 +153,7 @@ public class Queue implements Closeable {
 
             PageIO headPageIO = this.pageIOFactory.build(headCheckpoint.getPageNum(), this.pageCapacity, this.dirPath);
             this.headPage = new HeadPage(headCheckpoint, this, headPageIO);
+            this.currentSize += headPageIO.getCapacity();
 
             // but checkpoint it to update the firstUnackedPageNum if it changed
             this.headPage.checkpoint();
@@ -224,7 +225,7 @@ public class Queue implements Closeable {
         PageIO headPageIO = this.pageIOFactory.build(pageNum, this.pageCapacity, this.dirPath);
         this.headPage = new HeadPage(pageNum, this, headPageIO);
         this.headPage.forceCheckpoint();
-
+        this.currentSize += headPageIO.getCapacity();
     }
 
     // @param element the Queueable object to write to the queue
@@ -264,7 +265,6 @@ public class Queue implements Closeable {
 
             this.headPage.write(data, seqNum, this.checkpointMaxWrites);
             this.unreadCount++;
-            this.currentSize += data.length;
 
             // if the queue was empty before write, signal non emptiness
             if (wasEmpty) { notEmpty.signal(); }
@@ -300,7 +300,11 @@ public class Queue implements Closeable {
     public boolean isFull() {
         // TODO: I am not sure if having unreadCount as volatile is sufficient here. all unreadCount updates are done inside syncronized
         // TODO: sections, I believe that to only read the value here, having it as volatile is sufficient?
-        return (((this.maxUnread > 0) ? this.unreadCount >= this.maxUnread : false) || (this.currentSize >= this.maxSizeInBytes));
+        if ((this.maxSizeInBytes > 0) && this.currentSize >= this.maxSizeInBytes) {
+            return true;
+        } else {
+            return ((this.maxUnread > 0) && this.unreadCount >= this.maxUnread);
+        }
     }
 
     // @param seqNum the element sequence number upper bound for which persistence should be garanteed (by fsync'ing)
