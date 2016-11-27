@@ -171,6 +171,10 @@ cd logstash-{logstash_version}
 bin/logstash -e 'input { stdin { } } output { stdout {} }'
 --------------------------------------------------
 
+If you've installed via the repo's, the binary may not be in your $PATH, try:
+--------------------------------------------------
+/usr/share/logstash/bin/logstash -e
+--------------------------------------------------
 The `-e` flag enables you to specify a configuration directly from the command line. Specifying configurations at the
 command line lets you quickly test configurations without having to edit a file between iterations.
 The pipeline in the example takes input from the standard input, `stdin`, and moves that input to the standard output,
