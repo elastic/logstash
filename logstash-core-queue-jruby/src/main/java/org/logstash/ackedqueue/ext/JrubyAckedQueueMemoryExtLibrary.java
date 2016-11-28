@@ -64,14 +64,14 @@ public class JrubyAckedQueueMemoryExtLibrary implements Library {
 
             int capacity = RubyFixnum.num2int(args[1]);
             int maxUnread = RubyFixnum.num2int(args[2]);
-            long queueMaxSizeInBytes = RubyFixnum.num2long(args[3]);
+            long queueMaxBytes = RubyFixnum.num2long(args[3]);
 
             Settings s = new MemorySettings(args[0].asJavaString());
             PageIOFactory pageIOFactory = (pageNum, size, path) -> new ByteBufferPageIO(pageNum, size, path);
             CheckpointIOFactory checkpointIOFactory = (source) -> new MemoryCheckpointIO(source);
             s.setCapacity(capacity);
             s.setMaxUnread(maxUnread);
-            s.setQueueMaxSizeInBytes(queueMaxSizeInBytes);
+            s.setQueueMaxBytes(queueMaxBytes);
             s.setElementIOFactory(pageIOFactory);
             s.setCheckpointIOFactory(checkpointIOFactory);
             s.setElementClass(Event.class);

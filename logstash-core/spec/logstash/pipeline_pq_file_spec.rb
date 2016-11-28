@@ -78,7 +78,7 @@ describe LogStash::Pipeline do
   let(:worker_thread_count) { 8 } # 1 4 8
   let(:number_of_events) { 100_000 }
   let(:page_capacity) { 1 * 1024 * 512 } # 1 128
-  let(:max_size) { 1024 * 1024 * 1024 } # 1 gb
+  let(:max_bytes) { 1024 * 1024 * 1024 } # 1 gb
   let(:queue_type) { "persisted" } #  "memory" "memory_acked"
   let(:times) { [] }
 
@@ -96,7 +96,7 @@ describe LogStash::Pipeline do
     allow(pipeline_workers_setting).to receive(:default).and_return(worker_thread_count)
     pipeline_settings.each {|k, v| pipeline_settings_obj.set(k, v) }
     pipeline_settings_obj.set("queue.page_capacity", page_capacity)
-    pipeline_settings_obj.set("queue.max_size", max_size)
+    pipeline_settings_obj.set("queue.max_bytes", max_bytes)
     Thread.new do
       # make sure we have received all the generated events
       while counting_output.event_count < number_of_events do
@@ -123,7 +123,7 @@ describe LogStash::Pipeline do
     expect(_metric[:out].value).to eq(number_of_events)
     STDOUT.puts "  queue.type: #{pipeline_settings_obj.get("queue.type")}"
     STDOUT.puts "  queue.page_capacity: #{pipeline_settings_obj.get("queue.page_capacity") / 1024}KB"
-    STDOUT.puts "  queue.max_size: #{pipeline_settings_obj.get("queue.max_size") / 1024}KB"
+    STDOUT.puts "  queue.max_bytes: #{pipeline_settings_obj.get("queue.max_bytes") / 1024}KB"
     STDOUT.puts "  workers: #{worker_thread_count}"
     STDOUT.puts "  events: #{number_of_events}"
     STDOUT.puts "  took: #{times.first}s"

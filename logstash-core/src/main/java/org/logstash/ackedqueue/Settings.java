@@ -12,7 +12,7 @@ public interface Settings {
 
     Settings setCapacity(int capacity);
 
-    Settings setQueueMaxSizeInBytes(long size);
+    Settings setQueueMaxBytes(long size);
 
     Settings setMaxUnread(int maxUnread);
 
@@ -32,7 +32,7 @@ public interface Settings {
 
     int getCapacity();
 
-    long getQueueMaxSizeInBytes();
+    long getQueueMaxBytes();
 
     int getMaxUnread();
 

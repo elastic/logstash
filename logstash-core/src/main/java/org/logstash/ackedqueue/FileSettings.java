@@ -9,7 +9,7 @@ public class FileSettings implements Settings {
     private PageIOFactory pageIOFactory;
     private Class elementClass;
     private int capacity;
-    private long queueMaxSizeInBytes;
+    private long queueMaxBytes;
     private int maxUnread;
     private int checkpointMaxAcks;
     private int checkpointMaxWrites;
@@ -44,8 +44,8 @@ public class FileSettings implements Settings {
     }
 
     @Override
-    public Settings setQueueMaxSizeInBytes(long size) {
-        this.queueMaxSizeInBytes = size;
+    public Settings setQueueMaxBytes(long size) {
+        this.queueMaxBytes = size;
         return this;
     }
 
@@ -114,7 +114,7 @@ public class FileSettings implements Settings {
     }
 
     @Override
-    public long getQueueMaxSizeInBytes() { return queueMaxSizeInBytes; }
+    public long getQueueMaxBytes() { return queueMaxBytes; }
 
     @Override
     public int getCapacity() {

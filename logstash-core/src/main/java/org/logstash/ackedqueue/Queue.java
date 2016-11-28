@@ -41,12 +41,12 @@ public class Queue implements Closeable {
 
     protected volatile long unreadCount;
 
-    protected volatile long currentSize;
+    protected volatile long currentByteSize;
 
     private final CheckpointIO checkpointIO;
     private final PageIOFactory pageIOFactory;
     private final int pageCapacity;
-    private final long maxSizeInBytes;
+    private final long maxBytes;
     private final String dirPath;
     private final int maxUnread;
     private final int checkpointMaxAcks;
@@ -68,7 +68,7 @@ public class Queue implements Closeable {
         this(
                 settings.getDirPath(),
                 settings.getCapacity(),
-                settings.getQueueMaxSizeInBytes(),
+                settings.getQueueMaxBytes(),
                 settings.getCheckpointIOFactory().build(settings.getDirPath()),
                 settings.getPageIOFactory(),
                 settings.getElementClass(),
@@ -79,10 +79,10 @@ public class Queue implements Closeable {
         );
     }
 
-    public Queue(String dirPath, int pageCapacity, long maxSizeInBytes, CheckpointIO checkpointIO, PageIOFactory pageIOFactory, Class elementClass, int maxUnread, int checkpointMaxWrites, int checkpointMaxAcks, int checkpointMaxInterval) {
+    public Queue(String dirPath, int pageCapacity, long maxBytes, CheckpointIO checkpointIO, PageIOFactory pageIOFactory, Class elementClass, int maxUnread, int checkpointMaxWrites, int checkpointMaxAcks, int checkpointMaxInterval) {
         this.dirPath = dirPath;
         this.pageCapacity = pageCapacity;
-        this.maxSizeInBytes = maxSizeInBytes;
+        this.maxBytes = maxBytes;
         this.checkpointIO = checkpointIO;
         this.pageIOFactory = pageIOFactory;
         this.elementClass = elementClass;
@@ -94,7 +94,7 @@ public class Queue implements Closeable {
         this.checkpointMaxWrites = checkpointMaxWrites;
         this.checkpointMaxInterval = checkpointMaxInterval;
         this.unreadCount = 0;
-        this.currentSize = 0;
+        this.currentByteSize = 0;
 
         // retrieve the deserialize method
         try {
@@ -153,7 +153,7 @@ public class Queue implements Closeable {
 
             PageIO headPageIO = this.pageIOFactory.build(headCheckpoint.getPageNum(), this.pageCapacity, this.dirPath);
             this.headPage = new HeadPage(headCheckpoint, this, headPageIO);
-            this.currentSize += headPageIO.getCapacity();
+            this.currentByteSize += headPageIO.getCapacity();
 
             // but checkpoint it to update the firstUnackedPageNum if it changed
             this.headPage.checkpoint();
@@ -206,7 +206,7 @@ public class Queue implements Closeable {
             this.tailPages.add(p);
             this.unreadTailPages.add(p);
             this.unreadCount += p.unreadCount();
-            this.currentSize += pageIO.getCapacity();
+            this.currentByteSize += pageIO.getCapacity();
 
             // for now deactivate all tail pages, we will only reactivate the first one at the end
             pageIO.deactivate();
@@ -225,7 +225,7 @@ public class Queue implements Closeable {
         PageIO headPageIO = this.pageIOFactory.build(pageNum, this.pageCapacity, this.dirPath);
         this.headPage = new HeadPage(pageNum, this, headPageIO);
         this.headPage.forceCheckpoint();
-        this.currentSize += headPageIO.getCapacity();
+        this.currentByteSize += headPageIO.getCapacity();
     }
 
     // @param element the Queueable object to write to the queue
@@ -300,7 +300,7 @@ public class Queue implements Closeable {
     public boolean isFull() {
         // TODO: I am not sure if having unreadCount as volatile is sufficient here. all unreadCount updates are done inside syncronized
         // TODO: sections, I believe that to only read the value here, having it as volatile is sufficient?
-        if ((this.maxSizeInBytes > 0) && this.currentSize >= this.maxSizeInBytes) {
+        if ((this.maxBytes > 0) && this.currentByteSize >= this.maxBytes) {
             return true;
         } else {
             return ((this.maxUnread > 0) && this.unreadCount >= this.maxUnread);
@@ -495,7 +495,7 @@ public class Queue implements Closeable {
 
                     // remove page data file regardless if it is the first or a middle tail page to free resources
                     result.page.purge();
-                    this.currentSize -= result.page.getPageIO().getCapacity();
+                    this.currentByteSize -= result.page.getPageIO().getCapacity();
 
                      if (result.index == 0) {
                         // if this is the first page also remove checkpoint file
