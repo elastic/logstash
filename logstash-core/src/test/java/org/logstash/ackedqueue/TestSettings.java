@@ -26,7 +26,7 @@ public class TestSettings {
         PageIOFactory pageIOFactory = (pageNum, pageSize, path) -> new ByteBufferPageIO(pageNum, pageSize, path);
         CheckpointIOFactory checkpointIOFactory = (source) -> new MemoryCheckpointIO(source);
         s.setCapacity(capacity);
-        s.setQueueMaxSizeInBytes(size);
+        s.setQueueMaxBytes(size);
         s.setElementIOFactory(pageIOFactory);
         s.setCheckpointIOFactory(checkpointIOFactory);
         s.setElementClass(StringElement.class);

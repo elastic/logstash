@@ -67,14 +67,14 @@ public class JrubyAckedQueueExtLibrary implements Library {
             int checkpointMaxAcks = RubyFixnum.num2int(args[3]);
             int checkpointMaxWrites = RubyFixnum.num2int(args[4]);
             int checkpointMaxInterval = RubyFixnum.num2int(args[5]);
-            long queueMaxSizeInBytes = RubyFixnum.num2long(args[6]);
+            long queueMaxBytes = RubyFixnum.num2long(args[6]);
 
             Settings s = new FileSettings(args[0].asJavaString());
             PageIOFactory pageIOFactory = (pageNum, size, path) -> new MmapPageIO(pageNum, size, path);
             CheckpointIOFactory checkpointIOFactory = (source) -> new FileCheckpointIO(source);
             s.setCapacity(capacity);
             s.setMaxUnread(maxUnread);
-            s.setQueueMaxSizeInBytes(queueMaxSizeInBytes);
+            s.setQueueMaxBytes(queueMaxBytes);
             s.setCheckpointMaxAcks(checkpointMaxAcks);
             s.setCheckpointMaxWrites(checkpointMaxWrites);
             s.setCheckpointMaxInterval(checkpointMaxInterval);
