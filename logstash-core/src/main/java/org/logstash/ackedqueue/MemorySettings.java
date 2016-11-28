@@ -115,7 +115,10 @@ public class MemorySettings implements Settings {
         return this.dirPath;
     }
 
-    public long getQueueMaxBytes() { return this.queueMaxBytes; }
+    @Override
+    public long getQueueMaxBytes() {
+        return this.queueMaxBytes;
+    }
 
     @Override
     public int getCapacity() {
