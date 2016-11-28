@@ -35,16 +35,16 @@ as part of a glob. The pattern `c:\foo*` will not work, so use `foo*` instead.
 
 Here are some common examples of glob patterns: 
 
-*`"/path/to/*.conf"`*::
+`"/path/to/*.conf"`::
 Matches config files ending in `.conf` in the specified path.
 
-*`"/var/log/*.log"`*::
+`"/var/log/*.log"`::
 Matches log files ending in `.log` in the specified path.
 
-*`"/var/log/**/*.log`*::
+`"/var/log/**/*.log`::
 Matches log files ending in `.log` in subdirectories under the specified path.
 
-*`"/path/to/logs/{app1,app2,app3}/data.log"`*::
+`"/path/to/logs/{app1,app2,app3}/data.log"`::
 Matches app log files in the `app1`, `app2`, and `app3` subdirectories under the
 specified path.
 
