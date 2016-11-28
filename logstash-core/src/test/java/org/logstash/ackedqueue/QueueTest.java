@@ -417,7 +417,7 @@ public class QueueTest {
         ExecutorService executor = Executors.newFixedThreadPool(1);
         Future<Long> future = executor.submit(write);
 
-        while (!q.isFull()) { Thread.sleep(1); }
+        while (!q.isFull()) { Thread.sleep(10); }
 
         assertThat(q.isFull(), is(true));
 
@@ -452,7 +452,7 @@ public class QueueTest {
         ExecutorService executor = Executors.newFixedThreadPool(1);
         Future<Long> future = executor.submit(write);
 
-        while (!q.isFull()) { Thread.sleep(1); }
+        while (!q.isFull()) { Thread.sleep(10); }
 
         assertThat(q.isFull(), is(true));
 
@@ -460,7 +460,7 @@ public class QueueTest {
         b.close();  // purge 1 page
 
         // spin wait until data is written and write blocks
-        while (q.isFull()) { Thread.sleep(1); }
+        while (q.isFull()) { Thread.sleep(10); }
 
         assertThat(q.isFull(), is(false));
 
@@ -495,7 +495,7 @@ public class QueueTest {
         ExecutorService executor = Executors.newFixedThreadPool(1);
         Future<Long> future = executor.submit(write);
 
-        while (!q.isFull()) { Thread.sleep(1); }
+        while (!q.isFull()) { Thread.sleep(10); }
 
         assertThat(q.isFull(), is(true));
 
