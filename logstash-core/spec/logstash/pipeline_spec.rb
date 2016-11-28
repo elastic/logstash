@@ -450,7 +450,7 @@ describe LogStash::Pipeline do
       allow(settings).to receive(:get).with("queue.type").and_return("memory")
       allow(settings).to receive(:get).with("queue.page_capacity").and_return(1024 * 1024)
       allow(settings).to receive(:get).with("queue.max_events").and_return(250)
-      allow(settings).to receive(:get).with("queue.max_size").and_return(1024 * 1024 * 1024)
+      allow(settings).to receive(:get).with("queue.max_bytes").and_return(1024 * 1024 * 1024)
       allow(settings).to receive(:get).with("queue.checkpoint.acks").and_return(1024)
       allow(settings).to receive(:get).with("queue.checkpoint.writes").and_return(1024)
       allow(settings).to receive(:get).with("queue.checkpoint.interval").and_return(1000)
