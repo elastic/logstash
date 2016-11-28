@@ -114,7 +114,9 @@ public class FileSettings implements Settings {
     }
 
     @Override
-    public long getQueueMaxBytes() { return queueMaxBytes; }
+    public long getQueueMaxBytes() {
+        return queueMaxBytes;
+    }
 
     @Override
     public int getCapacity() {
