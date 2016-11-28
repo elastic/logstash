@@ -57,19 +57,25 @@ public class JrubyAckedQueueExtLibrary implements Library {
         }
 
         // def initialize
-        @JRubyMethod(name = "initialize", optional = 3)
+        @JRubyMethod(name = "initialize", optional = 6)
         public IRubyObject ruby_initialize(ThreadContext context, IRubyObject[] args)
         {
-            args = Arity.scanArgs(context.runtime, args, 3, 0);
+            args = Arity.scanArgs(context.runtime, args, 6, 0);
 
             int capacity = RubyFixnum.num2int(args[1]);
             int maxUnread = RubyFixnum.num2int(args[2]);
+            int checkpointMaxAcks = RubyFixnum.num2int(args[3]);
+            int checkpointMaxWrites = RubyFixnum.num2int(args[4]);
+            int checkpointMaxInterval = RubyFixnum.num2int(args[5]);
 
             Settings s = new FileSettings(args[0].asJavaString());
             PageIOFactory pageIOFactory = (pageNum, size, path) -> new MmapPageIO(pageNum, size, path);
             CheckpointIOFactory checkpointIOFactory = (source) -> new FileCheckpointIO(source);
             s.setCapacity(capacity);
             s.setMaxUnread(maxUnread);
+            s.setCheckpointMaxAcks(checkpointMaxAcks);
+            s.setCheckpointMaxWrites(checkpointMaxWrites);
+            s.setCheckpointMaxInterval(checkpointMaxInterval);
             s.setElementIOFactory(pageIOFactory);
             s.setCheckpointIOFactory(checkpointIOFactory);
             s.setElementClass(Event.class);

@@ -45,6 +45,11 @@ config and the logs directories so that you do not delete important data later o
   | Configuration files, including `logstash.yml` and `jvm.options`
   | `{extract.path}/config`
   | `path.settings`
+  
+| logs
+  | Log files
+  | `{extract.path}/logs`
+  | `path.logs`
 
 | plugins
   | Local, non Ruby-Gem plugin files. Each plugin is contained in a subdirectory. Recommended for development only.
@@ -94,6 +99,46 @@ locations for the system:
   | `path.plugins`
 
 |=======================================================================
+
+[[docker-layout]]
+==== Directory Layout of Docker Images
+
+The Docker images are created from the `.tar.gz` packages, and follow a
+similar directory layout.
+
+[cols="<h,<,<m,<m",options="header",]
+|=======================================================================
+| Type | Description | Default Location | Setting
+| home
+  | Home directory of the Logstash installation.
+  | `/usr/share/logstash`
+ d|
+
+| bin
+  | Binary scripts, including `logstash` to start Logstash
+    and `logstash-plugin` to install plugins
+  | `/usr/share/logstash/bin`
+ d|
+
+| settings
+  | Configuration files, including `logstash.yml` and `jvm.options`
+  | `/usr/share/logstash/config`
+  | `path.settings`
+
+| conf
+  | Logstash pipeline configuration files
+  | `/usr/share/logstash/pipeline`
+  | `path.config`
+
+| plugins
+  | Local, non Ruby-Gem plugin files. Each plugin is contained in a subdirectory. Recommended for development only.
+  | `/usr/share/logstash/plugins`
+  | `path.plugins`
+
+|=======================================================================
+
+NOTE: Logstash Docker containers do not create log files by default. They log
+to standard output.
 
 [[config-setting-files]]
 === Logstash Configuration Files

@@ -25,6 +25,13 @@ bin/logstash --path.settings /path/to/logstash.yml
 ----------------------------------
 
 [float]
+==== URL Changes for DEB/RPM Packages
+
+The previous `packages.elastic.co` URL has been altered to `artifacts.elastic.co`. 
+Ensure you update your repository files before running the upgrade process, or 
+your operating system may not see the new packages.
+
+[float]
 ==== Release Packages
 
 When Logstash 5.0 is installed via DEB or RPM packages, it now uses `/usr/share/logstash` to
@@ -122,8 +129,8 @@ before-and-after examples. In Logstash 2.x, you may have run something:
 bin/logstash --config my.conf --pipeline-workers 8 <1>
 bin/logstash -f my.conf -w 8 <2>
 ----------------------------------
-1. Long form options `config` and `pipeline-workers` are used here.
-2. Short form options `f` and `w` (aliases for the former` are used here.
+<1> Long form options `config` and `pipeline-workers` are used here.
+<2> Short form options `f` and `w` (aliases for the former` are used here.
 
 But, in Logstash 5.0, this becomes:
 
@@ -132,8 +139,8 @@ But, in Logstash 5.0, this becomes:
 bin/logstash --path.config my.conf --pipeline.workers 8 <1>
 bin/logstash -f my.conf -w 8 <2>
 ----------------------------------
-1. Long form options are changed to reflect the new options.
-2. Short form options are unchanged.
+<1> Long form options are changed to reflect the new options.
+<2> Short form options are unchanged.
 
 NOTE: None of the short form options have changed!
 

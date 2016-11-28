@@ -26,6 +26,8 @@ describe "conditionals in output" do
   extend ConditionalFanciness
 
   class DummyNullOutput < LogStash::Outputs::Base
+    config_name "dummynull"
+
     def register
     end
     def multi_receive(events)
@@ -33,7 +35,7 @@ describe "conditionals in output" do
   end
 
   before do
-    LogStash::Registry.instance.register("logstash/outputs/dummynull", DummyNullOutput)
+    LogStash::PLUGIN_REGISTRY.add(:output, "dummynull", DummyNullOutput)
   end
 
   describe "simple" do
@@ -436,5 +438,4 @@ describe "conditionals in filter" do
       expect(subject[2].get("cond2")).to eq("true")
     end
   end
-
 end

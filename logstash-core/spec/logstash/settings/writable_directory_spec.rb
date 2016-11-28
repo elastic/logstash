@@ -79,9 +79,7 @@ describe LogStash::Setting::WritableDirectory do
         it_behaves_like "failure"
       end
 
-      # Skip this test due to a testing bug on OSX.
-      # `path` is rejected on OSX because it is too long (but passes on Linux)
-      xcontext "but is a socket" do
+      context "but is a socket" do
         let(:socket) { UNIXServer.new(path) }
         before { socket } # realize `socket` value
         after { socket.close }

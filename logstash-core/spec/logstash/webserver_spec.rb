@@ -5,6 +5,7 @@ require_relative "../support/helpers"
 require "socket"
 require "spec_helper"
 require "open-uri"
+require "webmock/rspec"
 
 def block_ports(range)
   servers = []
@@ -35,6 +36,7 @@ describe LogStash::WebServer do
   before :all do
     @abort = Thread.abort_on_exception
     Thread.abort_on_exception = true
+    WebMock.allow_net_connect!
   end
 
   after :all do
@@ -42,13 +44,8 @@ describe LogStash::WebServer do
   end
 
   let(:logger) { LogStash::Logging::Logger.new("testing") }
-  let(:agent) { double("agent") }
-  let(:webserver) { double("webserver") }
-
-  before :each do
-    allow(webserver).to receive(:address).and_return("127.0.0.1")
-    allow(agent).to receive(:webserver).and_return(webserver)
-  end
+  let(:agent) { OpenStruct.new({:webserver => webserver, :http_address => "127.0.0.1", :id => "myid", :name => "myname"}) }
+  let(:webserver) { OpenStruct.new({}) }
 
   subject { LogStash::WebServer.new(logger,
                                     agent,

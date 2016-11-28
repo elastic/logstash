@@ -2,6 +2,7 @@
 require "spec_helper"
 require "logstash/instrument/periodic_poller/jvm"
 require "logstash/instrument/collector"
+require "logstash/environment"
 
 describe LogStash::Instrument::PeriodicPoller::JVM::GarbageCollectorName do
   subject { LogStash::Instrument::PeriodicPoller::JVM::GarbageCollectorName }
@@ -27,6 +28,7 @@ describe LogStash::Instrument::PeriodicPoller::JVM::GarbageCollectorName do
   end
 end
 
+
 describe LogStash::Instrument::PeriodicPoller::JVM do
   let(:metric) { LogStash::Instrument::Metric.new(LogStash::Instrument::Collector.new) }
   let(:options) { {} }
@@ -34,6 +36,22 @@ describe LogStash::Instrument::PeriodicPoller::JVM do
 
   it "should initialize cleanly" do
     expect { jvm }.not_to raise_error
+  end
+
+  describe "load average" do
+    context "on linux" do
+      context "when an exception occur reading the file" do
+        before do
+          expect(LogStash::Environment).to receive(:windows?).and_return(false)
+          expect(LogStash::Environment).to receive(:linux?).and_return(true)
+          expect(::File).to receive(:read).with("/proc/loadavg").and_raise("Didnt work out so well")
+        end
+
+        it "doesn't raise an exception" do
+          expect { subject.collect }.not_to raise_error
+        end
+      end
+    end
   end
 
   describe "collections" do
@@ -68,6 +86,28 @@ describe LogStash::Instrument::PeriodicPoller::JVM do
         path = Array(path)
         it "should have a value for #{path} that is Numeric" do
           expect(mval(*path)).to be_a(Numeric)
+        end
+      end
+
+      context "real system" do
+        if LogStash::Environment.linux?
+          context "Linux" do
+            it "returns the load avg" do
+              expect(subject[:process][:cpu][:load_average].value).to include(:"1m" => a_kind_of(Numeric), :"5m" => a_kind_of(Numeric), :"15m" => a_kind_of(Numeric))
+            end
+          end
+        elsif LogStash::Environment.windows?
+          context "Window" do
+            it "returns nothing" do
+              expect(subject[:process][:cpu].has_key?(:load_average)).to be_falsey
+            end
+          end
+        else
+          context "Other" do
+            it "returns 1m only" do
+              expect(subject[:process][:cpu][:load_average].value).to include(:"1m" => a_kind_of(Numeric))
+            end
+          end
         end
       end
     end

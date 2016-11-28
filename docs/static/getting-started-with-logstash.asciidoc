@@ -105,7 +105,7 @@ it with:
 sudo apt-get update && sudo apt-get install logstash
 --------------------------------------------------
 
-See the <<running-logstash,Running Logstash>> document for managing Logstash as a system service.
+See <<running-logstash,Running Logstash>> for details about managing Logstash as a system service.
 
 [float]
 ==== YUM
@@ -143,6 +143,12 @@ WARNING: The repositories do not work with older rpm based distributions
          that still use RPM v3, like CentOS5.
 
 See the <<running-logstash,Running Logstash>> document for managing Logstash as a system service.
+
+==== Docker
+
+An image is available for running Logstash as a Docker container. It is
+available from the Elastic Docker registry. See <<docker>> for
+details on how to configure and run Logstash Docker containers.
 
 [[first-event]]
 === Stashing Your First Event

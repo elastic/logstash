@@ -46,6 +46,9 @@ public class Queue implements Closeable {
     private final int pageCapacity;
     private final String dirPath;
     private final int maxUnread;
+    private final int checkpointMaxAcks;
+    private final int checkpointMaxWrites;
+    private final int checkpointMaxInterval;
 
     private final AtomicBoolean closed;
 
@@ -59,10 +62,20 @@ public class Queue implements Closeable {
     final Condition notEmpty = lock.newCondition();
 
     public Queue(Settings settings) {
-        this(settings.getDirPath(), settings.getCapacity(), settings.getCheckpointIOFactory().build(settings.getDirPath()), settings.getPageIOFactory(), settings.getElementClass(), settings.getMaxUnread());
+        this(
+                settings.getDirPath(),
+                settings.getCapacity(),
+                settings.getCheckpointIOFactory().build(settings.getDirPath()),
+                settings.getPageIOFactory(),
+                settings.getElementClass(),
+                settings.getMaxUnread(),
+                settings.getCheckpointMaxWrites(),
+                settings.getCheckpointMaxAcks(),
+                settings.getCheckpointMaxInterval()
+        );
     }
 
-    public Queue(String dirPath, int pageCapacity, CheckpointIO checkpointIO, PageIOFactory pageIOFactory, Class elementClass, int maxUnread) {
+    public Queue(String dirPath, int pageCapacity, CheckpointIO checkpointIO, PageIOFactory pageIOFactory, Class elementClass, int maxUnread, int checkpointMaxWrites, int checkpointMaxAcks, int checkpointMaxInterval) {
         this.dirPath = dirPath;
         this.pageCapacity = pageCapacity;
         this.checkpointIO = checkpointIO;
@@ -72,6 +85,9 @@ public class Queue implements Closeable {
         this.unreadTailPages = new ArrayList<>();
         this.closed = new AtomicBoolean(true); // not yet opened
         this.maxUnread = maxUnread;
+        this.checkpointMaxAcks = checkpointMaxAcks;
+        this.checkpointMaxWrites = checkpointMaxWrites;
+        this.checkpointMaxInterval = checkpointMaxInterval;
         this.unreadCount = 0;
 
         // retrieve the deserialize method
@@ -94,7 +110,7 @@ public class Queue implements Closeable {
 
         Checkpoint headCheckpoint;
         try {
-            headCheckpoint = checkpointIO.read(checkpointIO.headFileName());
+            headCheckpoint = this.checkpointIO.read(checkpointIO.headFileName());
         } catch (NoSuchFileException e) {
             headCheckpoint = null;
         }
@@ -114,39 +130,43 @@ public class Queue implements Closeable {
 
         // reconstruct all tail pages state upto but excluding the head page
         for (int pageNum = headCheckpoint.getFirstUnackedPageNum(); pageNum < headCheckpoint.getPageNum(); pageNum++) {
-            Checkpoint tailCheckpoint = checkpointIO.read(checkpointIO.tailFileName(pageNum));
 
-            if (tailCheckpoint == null) { throw new IOException(checkpointIO.tailFileName(pageNum) + " not found"); }
+            // all tail checkpoints in the sequence should exist, if not abort mission with a NoSuchFileException
+            Checkpoint tailCheckpoint = this.checkpointIO.read(this.checkpointIO.tailFileName(pageNum));
 
             PageIO pageIO = this.pageIOFactory.build(pageNum, this.pageCapacity, this.dirPath);
-            TailPage tailPage = new TailPage(tailCheckpoint, this, pageIO);
-
-            // if this page is not the first tail page, deactivate it
-            // we keep the first tail page activated since we know the next read operation will be in that one
-            if (pageNum > headCheckpoint.getFirstUnackedPageNum()) { pageIO.deactivate(); }
-
-            // track the seqNum as we rebuild tail pages, prevent empty pages with a minSeqNum of 0 to reset seqNum
-            if (tailPage.maxSeqNum() > this.seqNum) { this.seqNum = tailPage.maxSeqNum(); }
-
-            insertTailPage(tailPage);
+            add(tailCheckpoint, pageIO);
         }
 
         // transform the head page into a tail page only if the headpage is non-empty
+        // in both cases it will be checkpointed to track any changes in the firstUnackedPageNum when reconstructing the tail pages
 
         if (headCheckpoint.getMinSeqNum() <= 0 && headCheckpoint.getElementCount() <= 0) {
+            // head page is empty, let's keep it as-is
+
             PageIO headPageIO = this.pageIOFactory.build(headCheckpoint.getPageNum(), this.pageCapacity, this.dirPath);
             this.headPage = new HeadPage(headCheckpoint, this, headPageIO);
+
+            // but checkpoint it to update the firstUnackedPageNum if it changed
+            this.headPage.checkpoint();
         } else {
-            PageIO tailPageIO = this.pageIOFactory.build(headCheckpoint.getPageNum(), this.pageCapacity, this.dirPath);
-            TailPage tailPage = new TailPage(headCheckpoint, this, tailPageIO);
+            // head page is non-empty, transform it into a tail page and create a new empty head page
 
-            // track the seqNum as we add this new tail page, prevent empty tailPage with a minSeqNum of 0 to reset seqNum
-            if (tailPage.maxSeqNum() > this.seqNum) { this.seqNum = tailPage.maxSeqNum(); }
-
-            insertTailPage(tailPage);
+            PageIO pageIO = this.pageIOFactory.build(headCheckpoint.getPageNum(), this.pageCapacity, this.dirPath);
+            TailPage p = new TailPage(headCheckpoint, this, pageIO);
+            p.checkpoint();
+            add(headCheckpoint, pageIO);
 
             headPageNum = headCheckpoint.getPageNum() + 1;
             newCheckpointedHeadpage(headPageNum);
+
+            // track the seqNum as we add this new tail page, prevent empty tailPage with a minSeqNum of 0 to reset seqNum
+            if (headCheckpoint.maxSeqNum() > this.seqNum) { this.seqNum = headCheckpoint.maxSeqNum(); }
+         }
+
+        // only activate the first tail page
+        if (tailPages.size() > 0) {
+            this.tailPages.get(0).getPageIO().activate();
         }
 
         // TODO: here do directory traversal and cleanup lingering pages? could be a background operations to not delay queue start?
@@ -154,19 +174,39 @@ public class Queue implements Closeable {
         this.closed.set(false);
     }
 
-    // insert a recovered tail page into the tail pages state tracking
-    // and purge it if it is found to be fully acked
-    private void insertTailPage(TailPage p) throws IOException {
-        if (!p.isFullyAcked()) {
-            this.tailPages.add(p);
-            if (!p.isFullyRead()) {
-                this.unreadTailPages.add(p);
-                this.unreadCount += p.unreadCount();
+    private void add(Checkpoint checkpoint, PageIO pageIO) throws IOException {
+        if (checkpoint.isFullyAcked()) {
+            // first make sure any fully acked page per the checkpoint is purged if not already
+            try { pageIO.purge(); } catch (NoSuchFileException e) { /* ignore */ }
+
+            // we want to keep all the "middle" checkpoints between the first unacked tail page and the head page
+            // to always have a contiguous sequence of checkpoints which helps figuring queue integrity. for this
+            // we will remove any prepended fully acked tail pages but keep all other checkpoints between the first
+            // unacked tail page and the head page. we did however purge the data file to free disk resources.
+
+            if (this.tailPages.size() == 0) {
+                // this is the first tail page and it is fully acked so just purge it
+                this.checkpointIO.purge(this.checkpointIO.tailFileName(checkpoint.getPageNum()));
+            } else {
+                // create a tail page with a null PageIO and add it to tail pages but not unreadTailPages
+                // since it is fully read because also fully acked
+                this.tailPages.add(new TailPage(checkpoint, this, null));
             }
         } else {
-            // for some reason we found a fully acked page, let's purge it.
-            p.purge();
+            TailPage p = new TailPage(checkpoint, this, pageIO);
+            this.tailPages.add(p);
+            this.unreadTailPages.add(p);
+            this.unreadCount += p.unreadCount();
+
+            // for now deactivate all tail pages, we will only reactivate the first one at the end
+            pageIO.deactivate();
         }
+
+        // track the seqNum as we rebuild tail pages, prevent empty pages with a minSeqNum of 0 to reset seqNum
+        if (checkpoint.maxSeqNum() > this.seqNum) {
+            this.seqNum = checkpoint.maxSeqNum();
+        }
+
     }
 
     // create a new empty headpage for the given pageNum and imidiately checkpoint it
@@ -174,7 +214,7 @@ public class Queue implements Closeable {
     private void newCheckpointedHeadpage(int pageNum) throws IOException {
         PageIO headPageIO = this.pageIOFactory.build(pageNum, this.pageCapacity, this.dirPath);
         this.headPage = new HeadPage(pageNum, this, headPageIO);
-        this.headPage.checkpoint();
+        this.headPage.forceCheckpoint();
 
     }
 
@@ -210,13 +250,10 @@ public class Queue implements Closeable {
                 }
 
                 // create new head page
-                int headPageNum = tailPage.pageNum + 1;
-                PageIO pageIO = this.pageIOFactory.build(headPageNum, this.pageCapacity, this.dirPath);
-                this.headPage = new HeadPage(headPageNum, this, pageIO);
-                this.headPage.checkpoint();
+                newCheckpointedHeadpage(tailPage.pageNum + 1);
             }
 
-            this.headPage.write(data, seqNum);
+            this.headPage.write(data, seqNum, this.checkpointMaxWrites);
             this.unreadCount++;
 
             // if the queue was empty before write, signal non emptiness
@@ -273,11 +310,7 @@ public class Queue implements Closeable {
         lock.lock();
         try {
             Page p = firstUnreadPage();
-            if (p == null) {
-                return null;
-            }
-
-            return _readPageBatch(p, limit);
+            return (p == null) ? null : _readPageBatch(p, limit);
         } finally {
             lock.unlock();
         }
@@ -312,9 +345,7 @@ public class Queue implements Closeable {
             }
 
             // need to check for close since it is a condition for exiting the while loop
-            if (isClosed()) { return null; }
-
-            return _readPageBatch(p, limit);
+            return (isClosed()) ? null : _readPageBatch(p, limit);
         } finally {
             lock.unlock();
         }
@@ -361,10 +392,7 @@ public class Queue implements Closeable {
         Batch b = p.readBatch(limit);
         this.unreadCount -= b.size();
 
-        if (p.isFullyRead()) {
-            removeUnreadPage(p);
-        }
-
+        if (p.isFullyRead()) { removeUnreadPage(p); }
         if (wasFull) { notFull.signal(); }
 
         return b;
@@ -410,6 +438,10 @@ public class Queue implements Closeable {
         return null;
     }
 
+    // ack a list of seqNums that are assumed to be all part of the same page, leveraging the fact that batches are also created from
+    // same-page elements. A fully acked page will trigger a checkpoint for that page. Also if a page has more than checkpointMaxAcks
+    // acks since last checkpoint it will also trigger a checkpoint.
+    // @param seqNums the list of same-page sequence numbers to ack
     public void ack(List<Long> seqNums) throws IOException {
         // as a first implementation we assume that all batches are created from the same page
         // so we will avoid multi pages acking here for now
@@ -419,23 +451,52 @@ public class Queue implements Closeable {
 
         lock.lock();
         try {
-            // dual search strategy: if few tail pages search linearily otherwise perform binary search
-            TailPageResult result = (this.tailPages.size() > 3) ? binaryFindPageForSeqnum(firstAckSeqNum) : linearFindPageForSeqnum(firstAckSeqNum);
+            TailPageResult result = null;
+
+            if (this.tailPages.size() > 0) {
+                // short-circuit: first check in the first tail page as it is the most likely page where acking will happen
+                TailPage p = this.tailPages.get(0);
+                if (p.getMinSeqNum() > 0 && firstAckSeqNum >= p.getMinSeqNum() && firstAckSeqNum < p.getMinSeqNum() + p.getElementCount()) {
+                    result = new TailPageResult(p, 0);
+                } else {
+                    // dual search strategy: if few tail pages search linearily otherwise perform binary search
+                    result = (this.tailPages.size() > 3) ? binaryFindPageForSeqnum(firstAckSeqNum) : linearFindPageForSeqnum(firstAckSeqNum);
+                }
+            }
 
             if (result == null) {
                 // if not found then it is in head page
                 assert this.headPage.getMinSeqNum() > 0 && firstAckSeqNum >= this.headPage.getMinSeqNum() && firstAckSeqNum < this.headPage.getMinSeqNum() + this.headPage.getElementCount():
                         String.format("seqNum=%d is not in head page with minSeqNum=%d", firstAckSeqNum, this.headPage.getMinSeqNum());
-                this.headPage.ack(seqNums);
+
+                // page acking checkpoints fully acked pages
+                this.headPage.ack(seqNums, this.checkpointMaxAcks);
             } else {
-                result.page.ack(seqNums);
+                // page acking also checkpoints fully acked pages or upon reaching the checkpointMaxAcks threshold
+                result.page.ack(seqNums, this.checkpointMaxAcks);
 
                 // cleanup fully acked tail page
                 if (result.page.isFullyAcked()) {
                     this.tailPages.remove(result.index);
-                    this.headPage.checkpoint();
+
+                    // remove page data file regardless if it is the first or a middle tail page to free resources
                     result.page.purge();
+
+                     if (result.index == 0) {
+                        // if this is the first page also remove checkpoint file
+                        this.checkpointIO.purge(this.checkpointIO.tailFileName(result.page.getPageNum()));
+
+                         // and see if next "first tail page" is also fully acked and remove checkpoint file
+                        while (this.tailPages.size() > 0) {
+                            TailPage p = this.tailPages.get(0);
+                            if (!p.isFullyAcked()) { break; }
+                            this.checkpointIO.purge(this.checkpointIO.tailFileName(p.getPageNum()));
+                            this.tailPages.remove(0);
+                        }
+                    }
                 }
+
+                this.headPage.checkpoint();
             }
         } finally {
             lock.unlock();

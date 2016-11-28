@@ -27,4 +27,9 @@ class MonitoringAPI
     JSON.parse(resp)
   end
 
+  def node_stats
+    resp = Manticore.get("http://localhost:9600/_node/stats").body
+    JSON.parse(resp)
+  end
+
 end

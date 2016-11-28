@@ -14,6 +14,7 @@ describe LogStash::Api::Modules::NodeStats do
   # DSL describing response structure
   root_structure = {
     "jvm"=>{
+      "uptime_in_millis" => Numeric,
       "threads"=>{
         "count"=>Numeric,
         "peak_count"=>Numeric
@@ -68,7 +69,8 @@ describe LogStash::Api::Modules::NodeStats do
       },
       "cpu"=>{
         "total_in_millis"=>Numeric,
-        "percent"=>Numeric
+        "percent"=>Numeric,
+        "load_average" => { "1m" => Numeric }
       }
     },
    "pipeline" => {

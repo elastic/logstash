@@ -6,6 +6,7 @@ module LogStash
       logstash-input-heartbeat
       logstash-codec-collectd
       logstash-output-xmpp
+      logstash-codec-cef
       logstash-codec-dots
       logstash-codec-edn
       logstash-codec-edn_lines

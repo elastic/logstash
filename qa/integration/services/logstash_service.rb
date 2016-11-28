@@ -171,4 +171,48 @@ class LogstashService < Service
   def process_id
     @process.pid
   end
+
+  def plugin_cli
+    PluginCli.new(@logstash_home)
+  end
+
+  class PluginCli
+    class ProcessStatus < Struct.new(:exit_code, :stderr_and_stdout); end
+
+    TIMEOUT_MAXIMUM = 60 * 10 # 10mins.
+    LOGSTASH_PLUGIN = File.join("bin", "logstash-plugin")
+
+    attr_reader :logstash_plugin
+
+    def initialize(logstash_home)
+      @logstash_plugin = File.join(logstash_home, LOGSTASH_PLUGIN)
+    end
+
+    def remove(plugin_name)
+      run("remove #{plugin_name}")
+    end
+
+    def list(plugin_name, verbose = false)
+      run("list #{plugin_name} #{verbose ? "--verbose" : ""}")
+    end
+
+    def install(plugin_name)
+      run("install #{plugin_name}")
+    end
+
+    def run(command)
+      out = Tempfile.new("content")
+      out.sync = true
+      process = ChildProcess.build(logstash_plugin,*command.split(" "))
+      process.io.stdout = process.io.stderr = out
+
+      Bundler.with_clean_env do
+        process.start
+      end
+
+      process.poll_for_exit(TIMEOUT_MAXIMUM)
+      out.rewind
+      ProcessStatus.new(process.exit_code, out.read)
+    end
+  end
 end

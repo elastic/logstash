@@ -62,7 +62,7 @@ At the data source machine, run Filebeat with the following command:
 sudo ./filebeat -e -c filebeat.yml -d "publish"
 --------------------------------------------------------------------------------
 
-Filebeat will attempt to connect on port 5403. Until Logstash starts with an active Beats plugin, there
+Filebeat will attempt to connect on port 5043. Until Logstash starts with an active Beats plugin, there
 won’t be any answer on that port, so any messages you see regarding failure to connect on that port are normal for now.
 
 ==== Configuring Logstash for Filebeat Input
@@ -788,7 +788,7 @@ At the data source machine, run Filebeat with the following command:
 sudo ./filebeat -e -c filebeat.yml -d "publish"
 --------------------------------------------------------------------------------
 
-Filebeat will attempt to connect on port 5403. Until Logstash starts with an active Beats plugin, there
+Filebeat will attempt to connect on port 5043. Until Logstash starts with an active Beats plugin, there
 won’t be any answer on that port, so any messages you see regarding failure to connect on that port are normal for now.
 
 To verify your configuration, run the following command:

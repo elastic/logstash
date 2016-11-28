@@ -9,6 +9,7 @@ require "logstash/instrument/collector"
 require "logstash/instrument/metric"
 require "logstash/pipeline"
 require "logstash/webserver"
+require "logstash/event_dispatcher"
 require "stud/trap"
 require "logstash/config/loader"
 require "uri"
@@ -21,12 +22,12 @@ class LogStash::Agent
   include LogStash::Util::Loggable
   STARTED_AT = Time.now.freeze
 
-  attr_reader :metric, :node_name, :pipelines, :settings, :webserver
+  attr_reader :metric, :name, :pipelines, :settings, :webserver, :dispatcher
   attr_accessor :logger
 
   # initialize method for LogStash::Agent
   # @param params [Hash] potential parameters are:
-  #   :node_name [String] - identifier for the agent
+  #   :name [String] - identifier for the agent
   #   :auto_reload [Boolean] - enable reloading of pipelines
   #   :reload_interval [Integer] - reload pipelines every X seconds
   def initialize(settings = LogStash::SETTINGS)
@@ -35,10 +36,12 @@ class LogStash::Agent
     @auto_reload = setting("config.reload.automatic")
 
     @pipelines = {}
-    @node_name = setting("node.name")
+    @name = setting("node.name")
     @http_host = setting("http.host")
     @http_port = setting("http.port")
     @http_environment = setting("http.environment")
+    # Generate / load the persistent uuid
+    id
 
     @config_loader = LogStash::Config::Loader.new(@logger)
     @reload_interval = setting("config.reload.interval")
@@ -50,6 +53,10 @@ class LogStash::Agent
     configure_metrics_collectors
 
     @reload_metric = metric.namespace([:stats, :pipelines])
+
+    @dispatcher = LogStash::EventDispatcher.new(self)
+    LogStash::PLUGIN_REGISTRY.hooks.register_emitter(self.class, dispatcher)
+    dispatcher.fire(:after_initialize)
   end
 
   def execute
@@ -131,8 +138,42 @@ class LogStash::Agent
     shutdown_pipelines
   end
 
-  def node_uuid
-    @node_uuid ||= SecureRandom.uuid
+  def id
+    return @id if @id
+
+    uuid = nil
+    if ::File.exists?(id_path)
+      begin
+        uuid = ::File.open(id_path) {|f| f.each_line.first.chomp }
+      rescue => e
+        logger.warn("Could not open persistent UUID file!",
+                    :path => id_path,
+                    :error => e.message,
+                    :class => e.class.name)
+      end
+    end
+
+    if !uuid
+      uuid = SecureRandom.uuid
+      logger.info("No persistent UUID file found. Generating new UUID",
+                  :uuid => uuid,
+                  :path => id_path)
+      begin
+        ::File.open(id_path, 'w') {|f| f.write(uuid) }
+      rescue => e
+        logger.warn("Could not write persistent UUID file! Will use ephemeral UUID",
+                    :uuid => uuid,
+                    :path => id_path,
+                    :error => e.message,
+                    :class => e.class.name)
+      end
+    end
+
+    @id = uuid
+  end
+
+  def id_path
+    @id_path ||= ::File.join(settings.get("path.data"), "uuid")
   end
 
   def running_pipelines?
@@ -245,12 +286,12 @@ class LogStash::Agent
     return unless pipeline.is_a?(LogStash::Pipeline)
     return if pipeline.ready?
     @logger.debug("starting pipeline", :id => id)
-    Thread.new do
+    t = Thread.new do
       LogStash::Util.set_thread_name("pipeline.#{id}")
       begin
         pipeline.run
       rescue => e
-        @reload_metric.namespace([id.to_sym, :reloads]) do |n|
+        @reload_metric.namespace([id.to_sym, :reloads]).tap do |n|
           n.increment(:failures)
           n.gauge(:last_error, { :message => e.message, :backtrace => e.backtrace})
           n.gauge(:last_failure_timestamp, LogStash::Timestamp.now)
@@ -258,7 +299,15 @@ class LogStash::Agent
         @logger.error("Pipeline aborted due to error", :exception => e, :backtrace => e.backtrace)
       end
     end
-    sleep 0.01 until pipeline.ready?
+    while true do
+      if !t.alive?
+        return false
+      elsif pipeline.ready?
+        return true
+      else
+        sleep 0.01
+      end
+    end
   end
 
   def stop_pipeline(id)
@@ -290,10 +339,11 @@ class LogStash::Agent
     stop_pipeline(pipeline_id)
     reset_pipeline_metrics(pipeline_id)
     @pipelines[pipeline_id] = new_pipeline
-    start_pipeline(pipeline_id)
-    @reload_metric.namespace([pipeline_id.to_sym, :reloads]).tap do |n|
-      n.increment(:successes)
-      n.gauge(:last_success_timestamp, LogStash::Timestamp.now)
+    if start_pipeline(pipeline_id) # pipeline started successfuly
+      @reload_metric.namespace([pipeline_id.to_sym, :reloads]).tap do |n|
+        n.increment(:successes)
+        n.gauge(:last_success_timestamp, LogStash::Timestamp.now)
+      end
     end
   end
 

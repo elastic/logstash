@@ -5,7 +5,6 @@ require "logstash/config/mixin"
 require "logstash/instrument/null_metric"
 require "concurrent"
 require "securerandom"
-require "logstash/plugins/registry"
 
 class LogStash::Plugin
   include LogStash::Util::Loggable
@@ -38,7 +37,6 @@ class LogStash::Plugin
     params.hash ^
     self.class.name.hash
   end
-
 
   def eql?(other)
     self.class.name == other.class.name && @params == other.params
@@ -120,50 +118,12 @@ class LogStash::Plugin
     self.class.config_name
   end
 
-
-  # Look up a plugin by type and name.
+  # This is keep for backward compatibility, the logic was moved into the registry class
+  # but some plugins use this method to return a specific instance on lookup
+  #
+  # Should I remove this now and make sure the pipeline invoke the Registry or I should wait for 6.0
+  # Its not really part of the public api but its used by the tests a lot to mock the plugins.
   def self.lookup(type, name)
-    path = "logstash/#{type}s/#{name}"
-    LogStash::Registry.instance.lookup(type ,name) do |plugin_klass, plugin_name|
-      is_a_plugin?(plugin_klass, plugin_name)
-    end
-    
-  rescue LoadError, NameError => e
-    logger.debug("Problems loading the plugin with", :type => type, :name => name, :path => path)
-    raise(LogStash::PluginLoadingError, I18n.t("logstash.pipeline.plugin-loading-error", :type => type, :name => name, :path => path, :error => e.to_s))
-  end
-
-  public
-  def self.declare_plugin(type, name)
-    path = "logstash/#{type}s/#{name}"
-    registry = LogStash::Registry.instance
-    registry.register(path, self)
-  end
-
-  private
-  # lookup a plugin by type and name in the existing LogStash module namespace
-  # ex.: namespace_lookup("filter", "grok") looks for LogStash::Filters::Grok
-  # @param type [String] plugin type, "input", "ouput", "filter"
-  # @param name [String] plugin name, ex.: "grok"
-  # @return [Class] the plugin class or raises NameError
-  # @raise NameError if plugin class does not exist or is invalid
-  def self.namespace_lookup(type, name)
-    type_const = "#{type.capitalize}s"
-    namespace = LogStash.const_get(type_const)
-    # the namespace can contain constants which are not for plugins classes (do not respond to :config_name)
-    # namespace.constants is the shallow collection of all constants symbols in namespace
-    # note that below namespace.const_get(c) should never result in a NameError since c is from the constants collection
-    klass_sym = namespace.constants.find { |c| is_a_plugin?(namespace.const_get(c), name) }
-    klass = klass_sym && namespace.const_get(klass_sym)
-    raise(NameError) unless klass
-    klass
-  end
-
-  # check if klass is a valid plugin for name
-  # @param klass [Class] plugin class
-  # @param name [String] plugin name
-  # @return [Boolean] true if klass is a valid plugin for name
-  def self.is_a_plugin?(klass, name)
-    klass.ancestors.include?(LogStash::Plugin) && klass.respond_to?(:config_name) && klass.config_name == name
+    LogStash::PLUGIN_REGISTRY.lookup_pipeline_plugin(type, name)
   end
 end # class LogStash::Plugin

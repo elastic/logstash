@@ -104,15 +104,15 @@ describe LogStash::Pipeline do
   describe "event cancellation" do
     # test harness for https://github.com/elastic/logstash/issues/6055
 
-    let(:output) { DummyOutputWithEventsArray.new }
+    let(:output) { LogStash::Outputs::DummyOutputWithEventsArray.new }
 
     before do
       allow(LogStash::Plugin).to receive(:lookup).with("input", "generator").and_return(LogStash::Inputs::Generator)
-      allow(LogStash::Plugin).to receive(:lookup).with("output", "dummyoutputwitheventsarray").and_return(DummyOutputWithEventsArray)
+      allow(LogStash::Plugin).to receive(:lookup).with("output", "dummyoutputwitheventsarray").and_return(LogStash::Outputs::DummyOutputWithEventsArray)
       allow(LogStash::Plugin).to receive(:lookup).with("filter", "drop").and_call_original
       allow(LogStash::Plugin).to receive(:lookup).with("filter", "mutate").and_call_original
       allow(LogStash::Plugin).to receive(:lookup).with("codec", "plain").and_call_original
-      allow(DummyOutputWithEventsArray).to receive(:new).with(any_args).and_return(output)
+      allow(LogStash::Outputs::DummyOutputWithEventsArray).to receive(:new).with(any_args).and_return(output)
     end
 
     let(:config) do
@@ -450,6 +450,9 @@ describe LogStash::Pipeline do
       allow(settings).to receive(:get).with("queue.type").and_return("memory")
       allow(settings).to receive(:get).with("queue.page_capacity").and_return(1024 * 1024)
       allow(settings).to receive(:get).with("queue.max_events").and_return(250)
+      allow(settings).to receive(:get).with("queue.checkpoint.acks").and_return(1024)
+      allow(settings).to receive(:get).with("queue.checkpoint.writes").and_return(1024)
+      allow(settings).to receive(:get).with("queue.checkpoint.interval").and_return(1000)
 
       pipeline = LogStash::Pipeline.new(config, settings)
       expect(pipeline.metric).to be_kind_of(LogStash::Instrument::NullMetric)
@@ -685,7 +688,7 @@ describe LogStash::Pipeline do
       it "populates the filter metrics" do
         [multiline_id, multiline_id_other].map(&:to_sym).each do |id|
           [:in, :out].each do |metric_key|
-            plugin_name = "multiline_#{id}".to_sym
+            plugin_name = id.to_sym
             expect(collected_metric[:stats][:pipelines][:main][:plugins][:filters][plugin_name][:events][metric_key].value).to eq(number_of_events)
           end
         end
@@ -703,7 +706,7 @@ describe LogStash::Pipeline do
 
       it "populates the name of the filter plugin" do
         [multiline_id, multiline_id_other].map(&:to_sym).each do |id|
-          plugin_name = "multiline_#{id}".to_sym
+          plugin_name = id.to_sym
           expect(collected_metric[:stats][:pipelines][:main][:plugins][:filters][plugin_name][:name].value).to eq(LogStash::Filters::Multiline.config_name)
         end
       end

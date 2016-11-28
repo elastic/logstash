@@ -1,12 +1,14 @@
-
 # encoding: utf-8
 require "logstash/instrument/periodic_poller/base"
+require "logstash/instrument/periodic_poller/load_average"
+require "logstash/environment"
 require "jrmonitor"
 require "set"
 
 java_import 'java.lang.management.ManagementFactory'
 java_import 'java.lang.management.OperatingSystemMXBean'
 java_import 'java.lang.management.GarbageCollectorMXBean'
+java_import 'java.lang.management.RuntimeMXBean'
 java_import 'com.sun.management.UnixOperatingSystemMXBean'
 java_import 'javax.management.MBeanServer'
 java_import 'javax.management.ObjectName'
@@ -32,21 +34,23 @@ module LogStash module Instrument module PeriodicPoller
       end
     end
 
+
     attr_reader :metric
 
     def initialize(metric, options = {})
       super(metric, options)
       @metric = metric
+      @load_average = LoadAverage.create
     end
 
     def collect
       raw = JRMonitor.memory.generate
-      collect_heap_metrics(raw)
-      collect_non_heap_metrics(raw)
+      collect_jvm_metrics(raw)      
       collect_pools_metrics(raw)
       collect_threads_metrics
       collect_process_metrics
       collect_gc_stats
+      collect_load_average
     end
 
     private
@@ -97,6 +101,25 @@ module LogStash module Instrument module PeriodicPoller
       metric.gauge(cpu_path, :total_in_millis, cpu_metrics["total_in_millis"])
 
       metric.gauge(path + [:mem], :total_virtual_in_bytes, process_metrics["mem"]["total_virtual_in_bytes"])
+
+    end
+
+    def collect_load_average
+      begin
+        load_average = @load_average.get
+      rescue => e
+        logger.debug("Can't retrieve load average", :exception => e.class.name, :message => e.message)
+        load_average = nil
+      end
+
+      metric.gauge([:jvm, :process, :cpu], :load_average, load_average) unless load_average.nil?
+    end
+    
+    def collect_jvm_metrics(data)
+      runtime_mx_bean = ManagementFactory.getRuntimeMXBean()
+      metric.gauge([:jvm], :uptime_in_millis, runtime_mx_bean.getUptime())
+      collect_heap_metrics(data)
+      collect_non_heap_metrics(data)
     end
 
     def collect_heap_metrics(data)

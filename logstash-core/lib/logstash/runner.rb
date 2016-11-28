@@ -18,6 +18,7 @@ require "logstash/shutdown_watcher"
 require "logstash/patches/clamp"
 require "logstash/settings"
 require "logstash/version"
+require "logstash/plugins/registry"
 
 class LogStash::Runner < Clamp::StrictCommand
   include LogStash::Util::Loggable
@@ -30,7 +31,7 @@ class LogStash::Runner < Clamp::StrictCommand
 
   # Node Settings
   option ["-n", "--node.name"], "NAME",
-    I18n.t("logstash.runner.flag.node_name"),
+    I18n.t("logstash.runner.flag.name"),
     :attribute_name => "node.name",
     :default => LogStash::SETTINGS.get_default("node.name")
 
@@ -198,6 +199,11 @@ class LogStash::Runner < Clamp::StrictCommand
       logger.warn("--config.debug was specified, but log.level was not set to \'debug\'! No config info will be logged.")
     end
 
+    # We configure the registry and load any plugin that can register hooks
+    # with logstash, this need to be done before any operation.
+    LogStash::PLUGIN_REGISTRY.setup!
+    @settings.validate_all
+
     LogStash::Util::set_thread_name(self.class.name)
 
     if RUBY_VERSION < "1.9.2"
@@ -222,8 +228,6 @@ class LogStash::Runner < Clamp::StrictCommand
     end
 
     return start_shell(setting("interactive"), binding) if setting("interactive")
-
-    @settings.validate_all
 
     @settings.format_settings.each {|line| logger.debug(line) }
 
@@ -336,7 +340,6 @@ class LogStash::Runner < Clamp::StrictCommand
   def create_agent(*args)
     LogStash::Agent.new(*args)
   end
-
 
   # Emit a failure message and abort.
   def fail(message)

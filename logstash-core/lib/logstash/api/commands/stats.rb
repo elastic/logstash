@@ -15,7 +15,8 @@ module LogStash
               :peak_count
             ),
             :mem => memory,
-            :gc => gc
+            :gc => gc,
+            :uptime_in_millis => service.get_shallow(:jvm, :uptime_in_millis)
           }
         end
 
@@ -26,7 +27,7 @@ module LogStash
             :peak_open_file_descriptors,
             :max_file_descriptors,
             [:mem, [:total_virtual_in_bytes]],
-            [:cpu, [:total_in_millis, :percent]]
+            [:cpu, [:total_in_millis, :percent, :load_average]]
           )
         end
 

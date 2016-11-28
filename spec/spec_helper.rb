@@ -8,6 +8,9 @@ require "logstash/devutils/rspec/spec_helper"
 
 require "flores/rspec"
 require "flores/random"
+require "pathname"
+
+SUPPORT_DIR = Pathname.new(::File.join(::File.dirname(__FILE__), "support"))
 
 class JSONIOThingy < IO
   def initialize; end

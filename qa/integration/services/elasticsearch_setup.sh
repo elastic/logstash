@@ -1,5 +1,5 @@
 #!/bin/bash
-set -e
+set -ex
 current_dir="$(dirname "$0")"
 
 source "$current_dir/helpers.sh"
@@ -8,7 +8,7 @@ if [ -n "${ES_VERSION+1}" ]; then
   echo "Elasticsearch version is $ES_VERSION"
   version=$ES_VERSION
 else
-   version=5.0.0-beta1
+   version=5.0.1
 fi
 
 ES_HOME=$INSTALL_DIR/elasticsearch

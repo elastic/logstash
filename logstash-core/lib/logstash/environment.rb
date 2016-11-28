@@ -43,6 +43,9 @@ module LogStash
             Setting::String.new("queue.type", "memory", true, ["persisted", "memory", "memory_acked"]),
             Setting::Bytes.new("queue.page_capacity", "250mb"),
             Setting::Numeric.new("queue.max_events", 0), # 0 is unlimited
+            Setting::Numeric.new("queue.checkpoint.acks", 1024), # 0 is unlimited
+            Setting::Numeric.new("queue.checkpoint.writes", 1024), # 0 is unlimited
+            Setting::Numeric.new("queue.checkpoint.interval", 1000), # 0 is no time-based checkpointing
             Setting::TimeValue.new("slowlog.threshold.warn", "-1"),
             Setting::TimeValue.new("slowlog.threshold.info", "-1"),
             Setting::TimeValue.new("slowlog.threshold.debug", "-1"),
@@ -58,6 +61,10 @@ module LogStash
 
     LOGSTASH_CORE = ::File.expand_path(::File.join(::File.dirname(__FILE__), "..", ".."))
     LOGSTASH_ENV = (ENV["LS_ENV"] || 'production').to_s.freeze
+
+    LINUX_OS_RE = /linux/
+    WINDOW_OS_RE = /mswin|msys|mingw|cygwin|bccwin|wince|emc/
+    MACOS_OS_RE = /darwin/
 
     def env
       LOGSTASH_ENV
@@ -121,7 +128,11 @@ module LogStash
     end
 
     def windows?
-      ::Gem.win_platform?
+      RbConfig::CONFIG['host_os'] =~ WINDOW_OS_RE
+    end
+
+    def linux?
+      RbConfig::CONFIG['host_os'] =~ LINUX_OS_RE
     end
 
     def locales_path(path)

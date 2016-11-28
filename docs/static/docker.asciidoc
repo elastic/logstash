@@ -1,0 +1,119 @@
+[[docker]]
+=== Running Logstash on Docker
+Docker images for Logstash are available from the Elastic Docker
+registry.
+
+Obtaining Logstash for Docker is as simple as issuing a +docker pull+
+command against the Elastic Docker registry.
+
+ifeval::["{release-state}"=="unreleased"]
+
+However, version {logstash_version} of Logstash has not yet been
+released, so no Docker image is currently available for this version.
+
+endif::[]
+
+ifeval::["{release-state}"!="unreleased"]
+
+The Docker image for Logstash {logstash_version} can be retrieved with
+the following command:
+
+["source","sh",subs="attributes"]
+--------------------------------------------
+docker pull {docker-image}
+--------------------------------------------
+
+endif::[]
+
+==== Configuring Logstash for Docker
+
+Logstash differentiates between two types of configuration:
+<<config-setting-files,Settings and Pipeline Configuration>>.
+
+===== Pipeline Configuration
+
+It is essential to place your pipeline configuration where it can be
+found by Logstash. By default, the container will look in
++/usr/share/logstash/pipeline/+ for pipeline configuration files.
+
+In this example we use a bind-mounted volume to provide the
+configuration via the +docker run+ command:
+
+["source","sh",subs="attributes"]
+--------------------------------------------
+docker run --rm -it -v ~/pipeline/:/usr/share/logstash/pipeline/ {docker-image}
+--------------------------------------------
+
+Every file in the host directory +~/pipeline/+ will then be parsed
+by Logstash as pipeline configuration.
+
+If you don't provide configuration to Logstash, it will run with a
+minimal config that listens for messages from the
+<<plugins-inputs-beats,Beats input plugin>> and echoes any that are
+received to `stdout`. In this case, the startup logs will be similar
+to the following:
+
+["source","text"]
+--------------------------------------------
+Sending Logstash logs to /usr/share/logstash/logs which is now configured via log4j2.properties.
+[2016-10-26T05:11:34,992][INFO ][logstash.inputs.beats    ] Beats inputs: Starting input listener {:address=>"0.0.0.0:5044"}
+[2016-10-26T05:11:35,068][INFO ][logstash.pipeline        ] Starting pipeline {"id"=>"main", "pipeline.workers"=>4, "pipeline.batch.size"=>125, "pipeline.batch.delay"=>5, "pipeline.max_inflight"=>500}
+[2016-10-26T05:11:35,078][INFO ][org.logstash.beats.Server] Starting server on port: 5044
+[2016-10-26T05:11:35,078][INFO ][logstash.pipeline        ] Pipeline main started
+[2016-10-26T05:11:35,105][INFO ][logstash.agent           ] Successfully started Logstash API endpoint {:port=>9600}
+--------------------------------------------
+
+This is the default configuration for the image, defined in
++/usr/share/logstash/pipeline/logstash.conf+.  If this is the
+behaviour that you are observing, ensure that your pipeline
+configuration is being picked up correctly, and that you are replacing
+either +logstash.conf+ or the entire +pipeline+ directory.
+
+===== Settings Files
+
+Settings files can also be provided through bind-mounts. Logstash
+expects to find them at +/usr/share/logstash/config/+.
+
+It's possible to provide an entire directory containing all needed
+files:
+
+["source","sh",subs="attributes"]
+--------------------------------------------
+docker run --rm -it -v ~/settings/:/usr/share/logstash/config/ {docker-image}
+--------------------------------------------
+
+Alternatively, a single file can be mounted:
+
+["source","sh",subs="attributes"]
+--------------------------------------------
+docker run --rm -it -v ~/settings/logstash.yml:/usr/share/logstash/config/logstash.yml {docker-image}
+--------------------------------------------
+
+NOTE: Bind-mounted configuration files will retain the same permissions and
+ownership within the container that they have on the host system. Be sure
+to set permissions such that the files will be readable and, ideally, not
+writeable by the container's +logstash+ user (UID 1000).
+
+===== Custom Images
+
+Bind-mounted configuration is not the only option, naturally. If you
+prefer the _Immutable Infrastructure_ approach, you can prepare a
+custom image containing your configuration by using a +Dockerfile+
+like this one:
+
+["source","dockerfile",subs="attributes"]
+--------------------------------------------
+FROM {docker-image}
+RUN rm -f /usr/share/logstash/pipeline/logstash.conf
+ADD pipeline/ /usr/share/logstash/pipeline/
+ADD config/ /usr/share/logstash/config/
+--------------------------------------------
+
+Be sure to replace or delete `logstash.conf` in your custom image, so
+that you don't retain the example config from the base image.
+
+==== Logging Configuration
+
+Under Docker, Logstash logs go to standard output by default. To
+change this behaviour, use any of the techniques above to replace the
+file at +/usr/share/logstash/config/log4j2.properties+.
