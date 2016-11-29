@@ -17,7 +17,7 @@ class LogStash::PluginManager::Remove < LogStash::PluginManager::Command
 
     # make sure this is an installed plugin and present in Gemfile.
     # it is not possible to uninstall a dependency not listed in the Gemfile, for example a dependent codec
-    signal_error("This plugin has not been previously installed, aborting") unless LogStash::PluginManager.installed_plugin?(plugin, gemfile)
+    signal_error("This plugin has not been previously installed") unless LogStash::PluginManager.installed_plugin?(plugin, gemfile)
 
     exit(1) unless ::Bundler::LogstashUninstall.uninstall!(plugin)
 
