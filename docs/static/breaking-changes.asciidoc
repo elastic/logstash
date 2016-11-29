@@ -258,10 +258,10 @@ Prior to Logstash 5.0, you may have used Ruby filters like so:
 ----------------------------------
 filter {
   ruby {
-    codec => "event['name'] = 'Logstash'"
+    code => "event['name'] = 'Logstash'"
   }
   ruby {
-    codec => "event['product']['version'] = event['major'] + '.' + event['minor']"
+    code => "event['product']['version'] = event['major'] + '.' + event['minor']"
   }
 }
 ----------------------------------
@@ -273,10 +273,10 @@ Logstash 5.0. Fortunately, the change to make it work is very simple:
 ----------------------------------
 filter {
   ruby {
-    codec => "event.set('name', 'Logstash')"
+    code => "event.set('name', 'Logstash')"
   }
   ruby {
-    codec => "event.set('[product][version]', event.get('major') + '.' + event.get('minor'))"
+    code => "event.set('[product][version]', event.get('major') + '.' + event.get('minor'))"
   }
 }
 ----------------------------------
