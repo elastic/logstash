@@ -9,7 +9,8 @@ rvm:
 jdk:
   - oraclejdk8
 env:
-  - INTEGRATION=true  
+  - INTEGRATION=true
+  - INTEGRATION=true FEATURE_FLAG=persistent_queues
 before_install:
   # Force bundler 1.12.5 because version 1.13 has issues, see https://github.com/fastlane/fastlane/issues/6065#issuecomment-246044617
   - gem uninstall -i /home/travis/.rvm/gems/jruby-1.7.25@global bundler
