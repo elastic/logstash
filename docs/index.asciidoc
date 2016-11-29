@@ -91,6 +91,9 @@ include::static/reloading-config.asciidoc[]
 pass::[<?edit_url https://github.com/elastic/logstash/edit/master/docs/static/managing-multiline-events.asciidoc ?>]
 include::static/managing-multiline-events.asciidoc[]
 
+pass::[<?edit_url https://github.com/elastic/logstash/edit/master/docs/static/glob-support.asciidoc ?>]
+include::static/glob-support.asciidoc[]
+
 // Deploying & Scaling
 pass::[<?edit_url https://github.com/elastic/logstash/edit/master/docs/static/deploying.asciidoc ?>]
 include::static/deploying.asciidoc[]
