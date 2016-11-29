@@ -16,7 +16,7 @@ shared_examples "logstash uninstall" do |logstash|
     context "when the plugin isn't installed" do
       it "fails to uninstall it" do
         result = logstash.run_command_in_path("bin/logstash-plugin uninstall logstash-filter-qatest")
-        expect(result.stderr).to match(/ERROR: Uninstall Aborted, message: This plugin has not been previously installed, aborting/)
+        expect(result.stderr).to match(/This plugin has not been previously installed/)
       end
     end
 
