@@ -2,7 +2,12 @@
 [[plugins-<%= section %>s-<%= name %>]]
 === <%= name %>
 
-<% unless default_plugin %>
+<% if default_plugin %>
+image:https://img.shields.io/gem/v/logstash-<%= section %>-<%= name %>.svg["Gem Version", link="https://rubygems.org/gems/logstash-<%= section %>-<%= name %>"]
+image:https://img.shields.io/badge/bundled%20in%20release%20-<%= bundled_version %>-brightgreen.svg["Gem Version"]
+<% else %>
+image:https://img.shields.io/gem/v/logstash-<%= section %>-<%= name %>.svg["Gem Version", link="https://rubygems.org/gems/logstash-<%= section %>-<%= name %>"]
+
 NOTE: This is a community-maintained plugin! It does not ship with Logstash by default, but it is easy to install by running `bin/logstash-plugin install logstash-<%= section %>-<%= plugin_name %>`.
 <% end %>
 
