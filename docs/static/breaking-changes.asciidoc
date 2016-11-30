@@ -240,6 +240,12 @@ The GeoIP filter has been updated to use MaxMind's GeoIP2 database. Previous Geo
 by MaxMind. As a result of this, `.dat` version files are no longer supported, and only `.mmdb` format is supported. 
 The new database will not include ASN data in the basic free database file.
 
+Previously, when the filter encountered an IP address for which there were no results in the database, the event
+would just pass through the filter without modification. It will now add a `_geoip_lookup_failure` tag to the
+event which will allow for some subsequent stage of the pipeline to identify those events and perform some other
+operation. To simply get the same behavior as the earlier versions, just add a filter conditional on that tag
+which then drops the tag from the event.
+
 [float]
 === Ruby Filter and Custom Plugin Developers
 
