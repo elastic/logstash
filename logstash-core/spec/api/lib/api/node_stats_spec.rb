@@ -84,6 +84,9 @@ describe LogStash::Api::Modules::NodeStats do
    "reloads" => {
      "successes" => Numeric,
      "failures" => Numeric
+   },
+   "queue" => {
+     "type" => String
    }
   }
 

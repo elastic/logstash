@@ -47,4 +47,18 @@ describe "Test Monitoring API" do
     end
   end
 
+  it "can retrieve queue stats" do
+    logstash_service = @fixture.get_service("logstash")
+    logstash_service.start_with_stdin
+    logstash_service.wait_for_logstash
+
+    Stud.try(max_retry.times, RSpec::Expectations::ExpectationNotMetError) do
+      result = logstash_service.monitoring_api.node_stats
+      if logstash_service.settings.feature_flag == "persistent_queues"
+        expect(result["queue"]["type"]).to eq "persisted"
+      else
+        expect(result["queue"]["type"]).to eq "memory"
+      end
+    end
+  end
 end

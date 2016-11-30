@@ -33,6 +33,8 @@ module LogStash; module Util
 
     private_class_method :new
 
+    attr_reader :queue
+
     def with_queue(queue)
       @queue = queue
       @queue.open

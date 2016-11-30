@@ -178,6 +178,12 @@ class LogStash::Agent
     @id_path ||= ::File.join(settings.get("path.data"), "uuid")
   end
 
+  def running_pipelines
+    @upgrade_mutex.synchronize do
+      @pipelines.select {|pipeline_id, _| running_pipeline?(pipeline_id) }
+    end
+  end
+
   def running_pipelines?
     @upgrade_mutex.synchronize do
       @pipelines.select {|pipeline_id, _| running_pipeline?(pipeline_id) }.any?

@@ -40,7 +40,8 @@ module LogStash; class Pipeline
     :settings,
     :metric,
     :filter_queue_client,
-    :input_queue_client
+    :input_queue_client,
+    :queue
 
   MAX_INFLIGHT_WARN_THRESHOLD = 10_000
 
