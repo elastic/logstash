@@ -70,8 +70,11 @@ include::static/command-line-flags.asciidoc[]
 pass::[<?edit_url https://github.com/elastic/logstash/edit/master/docs/static/logging.asciidoc ?>]
 include::static/logging.asciidoc[]
 
-pass::[<?edit_url https://github.com/elastic/logstash/edit/master/docs/static/stalled-shutdown.asciidoc ?>]
-include::static/stalled-shutdown.asciidoc[]
+pass::[<?edit_url https://github.com/elastic/logstash/edit/master/docs/static/persistent-queues.asciidoc ?>]
+include::static/persistent-queues.asciidoc[]
+
+pass::[<?edit_url https://github.com/elastic/logstash/edit/master/docs/static/shutdown.asciidoc ?>]
+include::static/shutdown.asciidoc[]
 
 // Breaking Changes
 pass::[<?edit_url https://github.com/elastic/logstash/edit/master/docs/static/breaking-changes.asciidoc ?>]
