@@ -65,6 +65,14 @@ module LogStash
           }
         end
 
+        def os
+          service.get_shallow(:os)
+        rescue
+          # The only currently fetch OS information is about the linux
+          # containers.
+          {}
+        end
+
         def gc
           service.get_shallow(:jvm, :gc)
         end
