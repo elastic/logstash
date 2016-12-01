@@ -1,5 +1,5 @@
-[[stalled-shutdown]]
-=== Stalled Shutdown Detection
+[[shutdown]]
+=== Shutting Down Logstash
 
 When you attempt to shut down a running Logstash instance, Logstash performs several steps before it can safely shut down. It must:
 
@@ -22,6 +22,10 @@ worker threads.
 
 To enable Logstash to forcibly terminate in the case of a stalled shutdown, use the `--pipeline.unsafe_shutdown` flag when
 you start Logstash.
+
+WARNING: Unsafe shutdowns, force-kills of the Logstash process, or crashes of the Logstash process for any other reason may result in data loss (unless you've
+enabled Logstash to use <<persistent-queues,persistent queues>>). Shut down
+Logstash safely whenever possible.
 
 [[shutdown-stall-example]]
 ==== Stall Detection Example
