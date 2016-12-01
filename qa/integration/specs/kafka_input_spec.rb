@@ -2,9 +2,12 @@ require_relative '../framework/fixture'
 require_relative '../framework/settings'
 require_relative '../services/logstash_service'
 require "rspec/wait"
+require "logstash/devutils/rspec/spec_helper"
 
 describe "Test Kafka Input" do
-  let(:timeout_seconds) { 30 }
+  let(:num_retries) { 60 }
+  let(:num_events) { 37 }
+
   before(:all) {
     @fixture = Fixture.new(__FILE__)
   }
@@ -17,9 +20,14 @@ describe "Test Kafka Input" do
     logstash_service = @fixture.get_service("logstash")
     logstash_service.start_background(@fixture.config)
 
-    wait(timeout_seconds).for { @fixture.output_exists? }.to be true
-    expect(@fixture.output_equals_expected?).to be true
-      lambda { "Expected File output to match what was ingested into Kafka." }
+    try(num_retries) do
+      expect(@fixture.output_exists?).to be true
+    end
+
+    try(num_retries) do
+      count = File.foreach(@fixture.actual_output).inject(0) {|c, line| c+1}
+      expect(count).to eq(num_events)
+    end
   end
 
 end

@@ -12,7 +12,7 @@ class TestSettings
     test_name = File.basename(test_file_path, ".*" )
     @tests_settings_file = File.join(FIXTURES_DIR, "#{test_name}.yml")
     # Global suite settings
-    @suite_settings = YAML.load_file(SUITE_SETTINGS_FILE)
+    @suite_settings = YAML.load(ERB.new(File.new(SUITE_SETTINGS_FILE).read).result)
     # Per test settings, where one can override stuff and define test specific config
     @test_settings = YAML.load_file(@tests_settings_file)
     
@@ -49,5 +49,13 @@ class TestSettings
 
   def is_set?(key)
     @suite_settings.key?(key) || @test_settings.key?(key)
+  end
+
+  def feature_flag
+    @suite_settings["feature_flag"].to_s.strip
+  end
+
+  def feature_config_dir
+    feature_flag.empty? ? nil: File.join(FIXTURES_DIR, feature)
   end
 end
