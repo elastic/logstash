@@ -62,7 +62,9 @@ class LogStash::PluginManager::Update < LogStash::PluginManager::Command
     options = {:update => plugins, :rubygems_source => gemfile.gemset.sources}
     options[:local] = true if local?
     output = LogStash::Bundler.invoke!(options)
-    output = LogStash::Bundler.invoke!(:clean => true)
+    # We currently dont removed unused gems from the logstash installation
+    # see: https://github.com/elastic/logstash/issues/6339
+    # output = LogStash::Bundler.invoke!(:clean => true)
     display_updated_plugins(previous_gem_specs_map)
   rescue => exception
     gemfile.restore!
