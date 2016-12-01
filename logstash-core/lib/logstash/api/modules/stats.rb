@@ -30,8 +30,9 @@ module LogStash
             :jvm => {
               :timestamp => stats_command.started_at,
               :uptime_in_millis => stats_command.uptime,
-              :memory => stats_command.memory
-            }
+              :memory => stats_command.memory,
+            },
+            :os => stats_command.os
           }
           respond_with(payload, {:filter => params["filter"]})
         end

@@ -12,6 +12,8 @@ module LogStash module Instrument module PeriodicPoller
       :polling_timeout => 120
     }
 
+    attr_reader :metric
+
     public
     def initialize(metric, options = {})
       @metric = metric
