@@ -39,7 +39,6 @@ module LogStash module Instrument module PeriodicPoller
 
     def initialize(metric, options = {})
       super(metric, options)
-      @metric = metric
       @load_average = LoadAverage.create
     end
 
@@ -114,7 +113,7 @@ module LogStash module Instrument module PeriodicPoller
 
       metric.gauge([:jvm, :process, :cpu], :load_average, load_average) unless load_average.nil?
     end
-    
+
     def collect_jvm_metrics(data)
       runtime_mx_bean = ManagementFactory.getRuntimeMXBean()
       metric.gauge([:jvm], :uptime_in_millis, runtime_mx_bean.getUptime())
