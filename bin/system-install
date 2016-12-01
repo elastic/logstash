@@ -7,12 +7,34 @@ setup
 if [ -z "$1" ]; then
   [ -r ${LOGSTASH_HOME}/config/startup.options ] && . ${LOGSTASH_HOME}/config/startup.options
   [ -r /etc/logstash/startup.options ] && . /etc/logstash/startup.options
+elif [ "$1" == "-h" ] || [ "$1" == "--help" ]; then
+  echo "Usage: system-install [OPTIONSFILE] [STARTUPTYPE] [VERSION]"
+  echo
+  echo "NOTE: These arguments are ordered, and co-dependent"
+  echo
+  echo "OPTIONSFILE: Full path to a startup.options file"
+  echo "OPTIONSFILE is required if STARTUPTYPE is specified, but otherwise looks first"
+  echo "in $LOGSTASH_HOME/config/startup.options and then /etc/logstash/startup.options"
+  echo "Last match wins"
+  echo
+  echo "STARTUPTYPE: e.g. sysv, upstart, systemd, etc."
+  echo "OPTIONSFILE is required to specify a STARTUPTYPE."
+  echo
+  echo "VERSION: The specified version of STARTUPTYPE to use.  The default is usually"
+  echo "preferred here, so it can safely be omitted."
+  echo "Both OPTIONSFILE & STARTUPTYPE are required to specify a VERSION."
+  echo
+  echo "For more information, see https://github.com/jordansissel/pleaserun"
+  exit 0
 else
   if [ -r $1 ]; then
     echo "Using provided startup.options file: ${1}"
     . $1
   else
     echo "$1 is not a file path"
+    echo "To manually specify a startup style, put the path to startup.options as the "
+    echo "first argument, followed by the startup style (sysv, upstart, systemd)"
+    exit 1
   fi
 fi
 
@@ -25,6 +47,18 @@ if [ "x${PRESTART}" == "x" ]; then
   opts=("--log" "$tempfile" "--overwrite" "--install" "--name" "${SERVICE_NAME}" "--user" "${LS_USER}" "--group" "${LS_GROUP}" "--description" "${SERVICE_DESCRIPTION}" "--nice" "${LS_NICE}" "--limit-open-files" "${LS_OPEN_FILES}")
 else
   opts=("--log" "$tempfile" "--overwrite" "--install" "--name" "${SERVICE_NAME}" "--user" "${LS_USER}" "--group" "${LS_GROUP}" "--description" "${SERVICE_DESCRIPTION}" "--nice" "${LS_NICE}" "--limit-open-files" "${LS_OPEN_FILES}" "--prestart" "${PRESTART}")
+fi
+
+if [[ $2 ]]; then
+  echo "Manually creating startup for specified platform: ${2}"
+  opts+=('--platform')
+  opts+=($2)
+fi
+
+if [[ $3 ]]; then
+  echo "Manually creating startup for specified platform (${2}) version: ${3}"
+  opts+=('--version')
+  opts+=($3)
 fi
 
 program="$(cd `dirname $0`/..; pwd)/bin/logstash"
