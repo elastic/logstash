@@ -120,7 +120,7 @@ class LogstashService < Service
     # if we are using a feature flag and special settings dir to enable it, use it
     # If some tests is explicitly using --path.settings, ignore doing this, because the tests
     # chose to overwrite it.
-    if !feature_config_dir.nil? && !args.include?(SETTINGS_CLI_FLAG)
+    if feature_config_dir && !args.include?(SETTINGS_CLI_FLAG)
       args << "--path.settings"
       args << feature_config_dir
       puts "Found feature flag. Starting LS using --path.settings #{feature_config_dir}"
@@ -188,11 +188,10 @@ class LogstashService < Service
 
   def application_settings_file
     feature_config_dir = @settings.feature_config_dir
-    if feature_config_dir.nil?
+    unless feature_config_dir
       @default_settings_file
     else
-      settings_file = File.join(feature_config_dir, "logstash.yml")
-      settings_file
+      File.join(feature_config_dir, "logstash.yml")
     end
   end
 

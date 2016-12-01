@@ -52,12 +52,10 @@ class TestSettings
   end
 
   def feature_flag
-    temp = @suite_settings["feature_flag"]
-    temp.nil? ? nil : temp.strip
+    @suite_settings["feature_flag"].to_s.strip
   end
 
   def feature_config_dir
-    feature = feature_flag
-    feature.nil? ? nil: File.join(FIXTURES_DIR, feature)
+    feature_flag.empty? ? nil: File.join(FIXTURES_DIR, feature)
   end
 end
