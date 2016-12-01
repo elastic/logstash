@@ -13,6 +13,7 @@ class LogstashService < Service
   LS_BUILD_DIR = File.join(LS_ROOT_DIR, "build")
   LS_BIN = File.join("bin", "logstash")
   LS_CONFIG_FILE = File.join("config", "logstash.yml")
+  SETTINGS_CLI_FLAG = "--path.settings"
 
   STDIN_CONFIG = "input {stdin {}} output { }"
   RETRY_ATTEMPTS = 10
@@ -20,7 +21,7 @@ class LogstashService < Service
   @process = nil
   
   attr_reader :logstash_home
-  attr_reader :application_settings_file
+  attr_reader :default_settings_file
   attr_writer :env_variables
 
   def initialize(settings)
@@ -42,7 +43,7 @@ class LogstashService < Service
       raise "Logstash binary not found in path #{@logstash_home}" unless File.file? @logstash_bin
     end
     
-    @application_settings_file = File.join(@logstash_home, LS_CONFIG_FILE)
+    @default_settings_file = File.join(@logstash_home, LS_CONFIG_FILE)
     @monitoring_api = MonitoringAPI.new
   end
 
@@ -86,7 +87,7 @@ class LogstashService < Service
     Bundler.with_clean_env do
       out = Tempfile.new("duplex")
       out.sync = true
-      @process = ChildProcess.build(@logstash_bin, "-e", STDIN_CONFIG)
+      @process = build_child_process("-e", STDIN_CONFIG)
       # pipe STDOUT and STDERR to a file
       @process.io.stdout = @process.io.stderr = out
       @process.duplex = true
@@ -104,15 +105,28 @@ class LogstashService < Service
 
   # Spawn LS as a child process
   def spawn_logstash(*args)
-    puts "Starting Logstash #{@logstash_bin} #{args}" 
     Bundler.with_clean_env do
-      @process = ChildProcess.build(@logstash_bin, *args)
+      @process = build_child_process(*args)
       @env_variables.map { |k, v|  @process.environment[k] = v} unless @env_variables.nil?
       @process.io.inherit!
       @process.start
       wait_for_logstash
       puts "Logstash started with PID #{@process.pid}" if @process.alive?
     end
+  end
+
+  def build_child_process(*args)
+    feature_config_dir = @settings.feature_config_dir
+    # if we are using a feature flag and special settings dir to enable it, use it
+    # If some tests is explicitly using --path.settings, ignore doing this, because the tests
+    # chose to overwrite it.
+    if feature_config_dir && !args.include?(SETTINGS_CLI_FLAG)
+      args << "--path.settings"
+      args << feature_config_dir
+      puts "Found feature flag. Starting LS using --path.settings #{feature_config_dir}"
+    end
+    puts "Starting Logstash: #{@logstash_bin} #{args}"
+    ChildProcess.build(@logstash_bin, *args)
   end
 
   def teardown
@@ -170,6 +184,15 @@ class LogstashService < Service
   
   def process_id
     @process.pid
+  end
+
+  def application_settings_file
+    feature_config_dir = @settings.feature_config_dir
+    unless feature_config_dir
+      @default_settings_file
+    else
+      File.join(feature_config_dir, "logstash.yml")
+    end
   end
 
   def plugin_cli
