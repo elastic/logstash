@@ -56,6 +56,7 @@ class TestSettings
   end
 
   def feature_config_dir
-    feature_flag.empty? ? nil: File.join(FIXTURES_DIR, feature)
+    feature = feature_flag
+    feature.empty? ? nil: File.join(FIXTURES_DIR, feature)
   end
 end
