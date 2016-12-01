@@ -59,7 +59,7 @@ IF NOT "%JAVA_OPTS%" == "" (
     SET JAVA_OPTS=%JAVA_OPTS% -XX:+HeapDumpOnOutOfMemoryError
     REM The path to the heap dump location, note directory must exists and have enough
     REM space for a full heap dump.
-    SET JAVA_OPTS=%JAVA_OPTS% -XX:HeapDumpPath="$LS_HOME/heapdump.hprof"
+    SET JAVA_OPTS=%JAVA_OPTS% -XX:HeapDumpPath="%LS_HOME%/heapdump.hprof"
 :opts_defined
 
 
