@@ -48,4 +48,32 @@ module LogStash module Outputs
     def close
     end
   end
+
+  class DroppingDummyOutput < LogStash::Outputs::Base
+    config_name "droppingdummyoutput"
+    milestone 2
+
+    attr_reader :num_closes
+
+    def initialize(params={})
+      super
+      @num_closes = 0
+      @events_received = Concurrent::AtomicFixnum.new(0)
+    end
+
+    def register
+    end
+
+    def receive(event)
+      @events_received.increment
+    end
+
+    def events_received
+      @events_received.value
+    end
+
+    def close
+      @num_closes = 1
+    end
+  end
 end end
