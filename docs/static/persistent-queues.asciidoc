@@ -10,7 +10,7 @@ either as the result of a software failure or the user forcing an unsafe
 shutdown, it's possible to lose queued events. 
 
 To prevent event loss in these scenarios, you can configure Logstash to use
-persisent queues. With persistent queues enabled, Logstash persists buffered
+persistent queues. With persistent queues enabled, Logstash persists buffered
 events to disk instead of storing them in memory. 
 
 Persistent queues are also useful for Logstash deployments that require high
@@ -19,7 +19,7 @@ broker, such as Redis, RabbitMQ, or Apache Kafka, to handle a mismatch in
 cadence between the shipping stage and the relatively expensive processing
 stage, you can enable persistent queues to buffer events on disk. The queue size
 is variable and configurable, which means that you have more control over
-managing situations that could result in back pressure to the source. 
+managing situations that can result in back pressure to the source. See <<backpressure-persistent-queues>>. 
 
 [[persistent-queues-advantages]]
 ==== Advantages of Persistent Queues
@@ -38,9 +38,10 @@ messages stored in the persistent queue may be duplicated, but not lost.
 
 The current implementation of persistent queues has the following limitations:
 
-* This version does not enable full end-to-end resiliency. Logstash only
-acknowledges delivery of messages in the filter and output stages, and not all
-the way back to the input or source.
+* This version does not enable full end-to-end resiliency, except for messages
+sent to the <<plugins-inputs-beats,beats>> input. For other inputs, Logstash
+only acknowledges delivery of messages in the filter and output stages, and not
+all the way back to the input or source.
 * It does not handle permanent disk or machine failures. The data persisted to disk is not replicated, so it is still a single point of failure.
 
 [[persistent-queues-architecture]]
@@ -76,34 +77,33 @@ written to the output.
 ==== Configuring Persistent Queues
 
 To configure persistent queues, you can specify the following options in the
-Logstash settings file:
+Logstash <<logstash-settings-file,settings file>>:
 
 * `queue.type`: Specify `persisted` to enable persistent queues. By default, persistent queues are disabled (`queue.type: memory`).
 * `path.queue`: The directory path where the data files will be stored. By default, the files are stored in `path.data/queue`. 
 * `queue.page_capacity`: The size of the page data file. The queue data consists of append-only data files separated into pages. The default size is 250mb. 
 * `queue.max_events`:  The maximum number of unread events that are allowed in the queue. The default is 0 (unlimited).
 * `queue.max_bytes`: The total capacity of the queue in number of bytes. The
-default is 1024mb (1g). Make sure the capacity of your disk drive is greater
+default is 1024mb (1gb). Make sure the capacity of your disk drive is greater
 than the value you specify here. If both `queue.max_events` and 
 `queue.max_bytes` are specified, Logstash uses whichever criteria is reached
 first. 
 
 You can also specify options that control when the checkpoint file gets updated (`queue.checkpoint.acks`, `queue.checkpoint.writes`, and
-`queue.checkpoint.interval`). See <<logstash-settings-file>> for more
-information about these options.
+`queue.checkpoint.interval`). See <<durability-persistent-queues>>.
 
 Example configuration:
 
 [source, yaml]
 queue.type: persisted
-queue.max_bytes: 4g 
+queue.max_bytes: 4gb 
 
 [[backpressure-persistent-queues]]
 ==== Handling Back Pressure
 
-Logstash has a built-in mechanism that adds back pressure to the data flow when
-the queue is full. This mechanism helps Logstash control the rate of data flow
-at the input stage without overwhelming downstream stages and outputs like
+Logstash has a built-in mechanism that exerts back pressure on the data flow 
+when the queue is full. This mechanism helps Logstash control the rate of data
+flow at the input stage without overwhelming downstream stages and outputs like
 Elasticsearch.
 
 You can control when back pressure happens by using the `queue.max_bytes` 
@@ -116,8 +116,7 @@ queue.max_bytes: 8gb
 
 With these settings specified, Logstash will buffer unACKed events on disk until 
 the size of the queue reaches 8gb. When the queue is full of unACKed events, and
-the size limit has been reached, Logstash will no longer accept new events. This
-process is called back pressure.
+the size limit has been reached, Logstash will no longer accept new events. 
 
 Each input handles back pressure independently. For example, when the
 <<plugins-inputs-beats,beats>> input encounters back pressure, it no longer
@@ -125,3 +124,28 @@ accepts new connections and waits until the persistent queue has space to accept
 more events. After the filter and output stages finish processing existing
 events in the queue and ACKs them, Logstash automatically starts accepting new
 events.
+
+[[durability-persistent-queues]]
+==== Controlling Durability
+
+When the persistent queue feature is enabled, Logstash will store events on
+disk. The persistent queue exposes the trade-off between performance and
+durability by providing the following configuration options:
+
+* `queue.checkpoint.writes`: The number of writes to the queue to trigger an
+fsync to disk. This configuration controls the durability from the producer
+side. Keep in mind that a disk flush is a relatively heavy operation that will
+affect throughput if performed after every write. For instance, if you want to
+ensure that all messages in Logstash's queue are durable, you can set
+`queue.checkpoint.writes: 1`. However, this setting can severely impact
+performance.
+
+* `queue.checkpoint.acks`: The number of ACKs to the queue to trigger an fsync to disk. This configuration controls the durability from the consumer side.
+
+The process of checkpointing is atomic, which means any update to the file is
+saved if successful.
+
+If Logstash is terminated, or if there is a hardware level failure, any data
+that is buffered in the persistent queue, but not yet checkpointed, is lost.
+To avoid this possibility, you can set `queue.checkpoint.writes: 1`, but keep in
+mind that this setting can severely impact performance.
