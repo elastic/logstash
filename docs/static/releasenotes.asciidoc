@@ -1,0 +1,84 @@
+[[releasenotes]]
+== Release Notes
+
+This section summarizes the changes in the following releases:
+
+* <<logstash-5-0-2,Logstash 5.1.1>>
+* <<logstash-5-0-1,Logstash 5.1.0>>
+
+[[logstash-5-1-1]]
+=== Logstash 5.1.1 Release Notes
+
+* Persistent Queues is a new beta feature that provides infrastructure in Logstash for buffering event data to disk. 
+  By default, Logstash still uses in-memory, bounded queue between the input and filter stages without any guarantees 
+  for data delivery. Users can now opt-in to enable disk-based persistence that can prevent event loss in certain 
+  scenarios. The setting `queue.type: persisted` enables this feature ({lsissue}2605[Issue 2605], {lsissue}2606[Issue 2606]).
+* Filters can be configured to log event data and related context when it exceeds a specified execution time. 
+  These slowlogs will be collected in a separate file called `logstash-slowlog-plain-YYYY-MM-dd.log` ({lsissue}5733[Issue 5733]).
+* Added two new fields 'id', and 'name' to the base metadata for API requests. The id field is the persisted 
+  UUID, the name field is the custom name the user has passed in (defaults to the hostname).
+* The _node/stats API will now report uptime in milliseconds ({lsissue}6214[Issue 6214]).
+* Enhanced the `/_node/stats` API to report the CPU load average information. Load average stats are not reported 
+  Windows ({lsissue}6215[Issue 6215]).
+* Fixed heap dump path for Windows installs.
+* When using the JSON logging format, exception messages are now handled correctly ({lsissue}6082[Issue 6082]).
+* We now log an error message when a plugin specified in the config is not found in the installed list ({lsissue}6020[Issue 6020]).
+
+[float]
+==== Input Plugins
+
+*`Beats`*:
+
+* `congestion_threshold` configuration is now deprecated as the new java implementation uses an alternate keep-alive 
+  mechanism
+* Fixed an issue where data shipped in intervals greater than five seconds could cause the connection between 
+  filebeat and logstash to be closed (https://github.com/logstash-plugins/logstash-input-beats/issues/163[Issue 163]).
+
+*`Kafka`*:
+
+* Added Kerberos authentication support (https://github.com/logstash-plugins/logstash-input-kafka/issues/124[Issue 124]).
+
+*`Syslog`*:
+
+* Added support for proxy protocol ({lsissue}4418[Issue 4418]).
+
+*`TCP`*:
+
+* Added support for proxy protocol ({lsissue}4418[Issue 4418]).
+
+*`UDP`*:
+
+* Added `receive_buffer_bytes` config setting to optionally set the socket receive buffer size. Allowing a user to set this 
+  can prevent data loss on uneven traffic flow (https://github.com/logstash-plugins/logstash-input-udp/issues/22[Issue 22]).
+
+*`RabbitMQ`*
+
+* A dropped connection between Logstash and RabbitMQ is now re-tried when intermediary proxy reports 
+  no live backends (https://github.com/logstash-plugins/logstash-input-rabbitmq/issues/76[#76])
+
+==== Filter Plugins
+
+*`Grok`*:
+
+* Allow timeout enforcer to be disabled by setting `timeout_millis` to nil (https://github.com/logstash-plugins/logstash-filter-grok/issues/99[Issue 99]).
+* Change default `timeout_millis` to 30s
+
+*`Date`*:
+
+* Improved performance: 2.8x faster for common case (first pattern matches), 14x faster for events where multiple patterns are 
+  attempted (https://github.com/logstash-plugins/logstash-filter-date/issues/74[Issue 74]).
+
+==== Output Plugins
+
+*`Elasticsearch`*:
+
+* Health check is now performed against Elasticsearch hosts right after startup and sniffing for the first 
+  time. Previously, a health check was issued after an error was received from a request (https://github.com/logstash-plugins/logstash-output-elasticsearch/issues/507[Issue 507]).
+* You can now specify event dependent configuration when configuring the ingest pipeline (https://github.com/logstash-plugins/logstash-output-elasticsearch/issues/491[Issue 491]).
+
+[[logstash-5-1-0]]
+=== Logstash 5.1.0 Release Notes (Skipped)
+
+* Version 5.1.0 doesn’t exist because, for a short period of time, the Elastic Yum and Apt repositories included 
+  unreleased binaries labeled 5.1.0. To avoid confusion and upgrade issues for the people that have installed 
+  these without realizing, we decided to skip the 5.1.0 version and release 5.1.1 instead.
