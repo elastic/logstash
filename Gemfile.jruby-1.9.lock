@@ -131,7 +131,7 @@ GEM
     http_parser.rb (0.6.0-java)
     i18n (0.6.9)
     insist (1.0.0)
-    jar-dependencies (0.3.5)
+    jar-dependencies (0.3.7)
     jls-grok (0.11.4)
       cabin (>= 0.6.0)
     jls-lumberjack (0.0.26)
@@ -143,7 +143,7 @@ GEM
     jruby-stdin-channel (0.2.0-java)
     json (1.8.3-java)
     kramdown (1.13.1)
-    logstash-codec-cef (4.0.0-java)
+    logstash-codec-cef (4.1.0-java)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
     logstash-codec-collectd (3.0.2)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
@@ -566,7 +566,7 @@ GEM
     sawyer (0.6.0)
       addressable (~> 2.3.5)
       faraday (~> 0.8, < 0.10)
-    sequel (4.40.0)
+    sequel (4.41.0)
     simple_oauth (0.3.1)
     simplecov (0.12.0)
       docile (~> 1.1.0)
@@ -648,7 +648,7 @@ DEPENDENCIES
   logstash-core-event-java!
   logstash-core-plugin-api!
   logstash-core-queue-jruby!
-  logstash-devutils (~> 1.1)
+  logstash-devutils
   logstash-filter-clone
   logstash-filter-csv
   logstash-filter-date
