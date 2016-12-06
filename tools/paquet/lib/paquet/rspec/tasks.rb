@@ -5,9 +5,37 @@ require "rake/tasklib"
 require "fileutils"
 require "net/http"
 
+# This class add new rake methods to a an existing ruby gem,
+# these methods allow developpers to create a Uber gem, a uber gem is
+# a tarball that contains the current gems and one or more of his dependencies.
 #
-# Uses bundler/fetcher to download stuff
+# This Tool will take care of looking at the current dependency tree defined in the Gemspec and the gemfile
+# and will traverse all graph and download the gem file into a specified directory.
+#
+# By default, the tool wont fetch everything and the developper need to declare what gems he want to download.
 module Paquet
+  class ShellUi
+    def debug(message)
+      report_message(:debug, message) if debug?
+    end
+
+    def info(message)
+      report_message(:info, message)
+    end
+
+    def report_message(level, message)
+      puts "[#{level}]: #{message}"
+    end
+
+    def debug?
+      ENV["DEBUG"]
+    end
+  end
+
+  def ui
+    @logger ||= ShellUi.new
+  end
+
   class Gem
     RUBYGEMS_URI = "https://rubygems.org/downloads"
 
@@ -28,12 +56,11 @@ module Paquet
     end
 
     def pack
+      ui.info("Cleaning existing target path: #{@target_path}")
       FileUtils.rm_rf(@target_path)
       FileUtils.mkdir_p(@target_path)
 
-      # need to get the current version and dependencies
-      required_gems = collect_required_gems
-      download_gems(required_gems)
+      download_gems(collect_required_gems)
     end
 
     def size
@@ -93,7 +120,7 @@ module Paquet
           source = "#{RUBYGEMS_URI}/#{name}"
           destination = File.join(@target_path, name)
 
-          puts "Vendoring: #{name}, downloading: #{source}"
+          ui.info("Vendoring: #{name}, downloading: #{source}")
           download_file(source, destination)
       end
     end
@@ -114,6 +141,8 @@ module Paquet
           f.write(response.body)
         when Net::HTTPRedirection
           download_file(response['location'], destination, counter)
+        else
+          raise "Response not handled: #{response.class}"
         end
 
       ensure
