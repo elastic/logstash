@@ -13,6 +13,7 @@ module LogStash
             :jvm => jvm_payload,
             :process => process_payload,
             :pipeline => pipeline_payload,
+            :reloads => reloads
           }
           respond_with(payload, {:filter => params["filter"]})
         end
@@ -25,6 +26,10 @@ module LogStash
 
         def jvm_payload
           @stats.jvm
+        end
+        
+        def reloads
+          @stats.reloads
         end
 
         def process_payload
