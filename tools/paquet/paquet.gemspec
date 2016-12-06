@@ -15,14 +15,9 @@ Gem::Specification.new do |spec|
   spec.homepage      = "https://github.com/elastic/paquet"
 
 
-  spec.files         = `git ls-files -z`.split("\x0").reject do |f|
-    f.match(%r{^(test|spec|features)/})
-  end
+  spec.files         = Dir.glob(File.join(File.dirname(__FILE__), "lib", "**", "*.rb"))
+
   spec.bindir        = "exe"
   spec.executables   = spec.files.grep(%r{^exe/}) { |f| File.basename(f) }
   spec.require_paths = ["lib"]
-
-  spec.add_development_dependency "bundler", "~> 1.13"
-  spec.add_development_dependency "rake", "~> 10.0"
-  spec.add_runtime_dependency "pry"
 end
