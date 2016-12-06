@@ -7,7 +7,7 @@ Released on: <%=release_date%>
 Compatible: <%= supported_logstash %>
 
 <% unless default_plugin? %>
-NOTE: This is a community-maintained plugin! It does not ship with Logstash by default, but it is easy to install by running `bin/logstash-plugin install logstash-<%= section %>-<%= name %>`.
+NOTE: This plugin does not ship with Logstash by default, but it is easy to install by running `bin/logstash-plugin install logstash-<%= section %>-<%= name %>`.
 <% end %>
 
 <%= description %>
