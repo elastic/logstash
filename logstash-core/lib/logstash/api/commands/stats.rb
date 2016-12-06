@@ -16,9 +16,13 @@ module LogStash
             ),
             :mem => memory,
             :gc => gc,
-            :uptime_in_millis => service.get_shallow(:jvm, :uptime_in_millis)
+            :uptime_in_millis => service.get_shallow(:jvm, :uptime_in_millis),
           }
         end
+        
+        def reloads
+          service.get_shallow(:stats, :reloads)
+        end  
 
         def process
           extract_metrics(
