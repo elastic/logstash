@@ -31,5 +31,5 @@ Gem::Specification.new do |spec|
 
   # Used for the dependency lookup code
   spec.add_development_dependency "vcr"
-  spec.add_development_dependency "webmock"
+  spec.add_development_dependency "webmock", "2.2.0"
 end
