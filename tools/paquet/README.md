@@ -1,8 +1,11 @@
 # Paquet
 
-Welcome to your new gem! In this directory, you'll find the files you need to be able to package up your Ruby library into a gem. Put your Ruby code in the file `lib/paquet`. To experiment with that code, run `bin/console` for an interactive prompt.
+This gem allow a developer to create a uber gem, a uber gem is a gem that content the current gem and his dependencies and is distributed as a tarball.
 
-TODO: Delete this and the text above, and describe your gem
+This tool allow to define what will be bundler and what should be ignored, it uses the dependencies defined in the gemspec and gemfile to know what to download.
+
+Note that by default no gems will be bundled.
+
 
 ## Installation
 
@@ -16,21 +19,53 @@ And then execute:
 
     $ bundle
 
-Or install it yourself as:
-
-    $ gem install paquet
-
 ## Usage
+Define the dependencies in your Rakefile
 
-TODO: Write usage instructions here
+```ruby
+# encoding: utf-8
+require "logstash/devutils/rake"
+require "paquet"
 
-## Development
+TARGET_DIRECTORY = File.join(File.dirname(__FILE__), "dependencies")
 
-After checking out the repo, run `bin/setup` to install dependencies. You can also run `bin/console` for an interactive prompt that will allow you to experiment.
+Paquet::Task.new(TARGET_DIRECTORY) do
+  pack "manticore"
+  pack "launchy"
+  pack "gemoji"
+  pack "logstash-output-elasticsearch"
 
-To install this gem onto your local machine, run `bundle exec rake install`. To release a new version, update the version number in `version.rb`, and then run `bundle exec rake release`, which will create a git tag for the version, push git commits and tags, and push the `.gem` file to [rubygems.org](https://rubygems.org).
+  # Everything not defined here will be assumed to be provided
+  # by the target installation
+  ignore "logstash-core-plugin-api"
+  ignore "logstash-core"
+end
+```
+
+And run
+
+```
+bundle exec rake paquet:vendor
+```
+
+The dependencies will be downloaded in your target directory.
+
+## Project Principles
+
+* Community: If a newbie has a bad time, it's a bug.
+* Software: Make it work, then make it right, then make it fast.
+* Technology: If it doesn't do a thing today, we can make it do it tomorrow.
 
 ## Contributing
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/[USERNAME]/paquet. This project is intended to be a safe, welcoming space for collaboration, and contributors are expected to adhere to the [Contributor Covenant](http://contributor-covenant.org) code of conduct.
+All contributions are welcome: ideas, patches, documentation, bug reports,
+complaints, and even something you drew up on a napkin.
 
+Programming is not a required skill. Whatever you've seen about open source and
+maintainers or community members  saying "send patches or die" - you will not
+see that here.
+
+It is more important to me that you are able to contribute.
+
+For more information about contributing, see the
+[CONTRIBUTING](../CONTRIBUTING.md) file.
