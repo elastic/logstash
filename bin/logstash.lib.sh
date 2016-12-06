@@ -136,7 +136,6 @@ setup_ruby() {
 }
 
 jruby_opts() {
-  printf "%s" "--1.9"
   for i in $JAVA_OPTS ; do
     if [ -z "$i" ]; then
       printf "%s" " -J$i"

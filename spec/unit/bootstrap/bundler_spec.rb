@@ -46,7 +46,7 @@ describe LogStash::Bundler do
       expect(::Bundler.settings[:gemfile]).to eq(LogStash::Environment::GEMFILE_PATH)
       expect(::Bundler.settings[:without]).to eq(options.fetch(:without, []).join(':'))
 
-      expect(ENV['GEM_PATH']).to eq(LogStash::Environment.logstash_gem_home)
+      expect(ENV['GEM_PATH']).to eq(LogStash::Environment.logstash_gem_paths)
 
       $stderr = original_stderr
     end
