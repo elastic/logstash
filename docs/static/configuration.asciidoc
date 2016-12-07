@@ -89,7 +89,7 @@ types are supported.
 [[array]]
 ==== Array
 
-This type is now mostly deprecated in favor of using a standard type like `string` with the plugin defining the `:list => true` property for better type checking. It is still needed to handle lists of hashes or mixed types where type checking is not desired. added[5.0.0-alpha4,The :list property is available for better type checking] 
+This type is now mostly deprecated in favor of using a standard type like `string` with the plugin defining the `:list => true` property for better type checking. It is still needed to handle lists of hashes or mixed types where type checking is not desired. 
 
 Example:
 
@@ -101,8 +101,6 @@ Example:
 [[list]]
 [float]
 ==== Lists
-
-added[5.0.0-alpha4,The :list property is available for better type checking]
 
 Not a type in and of itself, but a property types can have.
 This makes it possible to type check multiple values.
@@ -221,8 +219,6 @@ Example:
 [[uri]]
 [float]
 ==== URI
-
-added[5.0.0-alpha4]
 
 A URI can be anything from a full URL like 'http://elastic.co/' to a simple identifier
 like 'foobar'. If the URI contains a password such as 'http://user:pass@example.net' the password
