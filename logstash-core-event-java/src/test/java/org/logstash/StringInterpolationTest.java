@@ -47,7 +47,7 @@ public class StringInterpolationTest {
         String path = "/full/%{do-not-exist}";
         StringInterpolation si = StringInterpolation.getInstance();
 
-        assertEquals("/full/%{do-not-exist}", si.evaluate(event, path));
+        assertNull(si.evaluate(event, path));
     }
 
     @Test

@@ -22,10 +22,16 @@ public class Template implements TemplateNode {
 
     @Override
     public String evaluate(Event event) throws IOException {
+        String nodeResult;
         StringBuffer results = new StringBuffer();
 
         for (int i = 0; i < nodes.size(); i++) {
-            results.append(((TemplateNode) nodes.get(i)).evaluate(event));
+            nodeResult = ((TemplateNode) nodes.get(i)).evaluate(event);
+            if (nodeResult == null) {
+                return null; // if one node fails to evaluate, abort everything
+            } else {
+                results.append(nodeResult);
+            }
         }
         return results.toString();
     }

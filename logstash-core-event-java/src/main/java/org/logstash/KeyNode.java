@@ -25,18 +25,15 @@ public class KeyNode implements TemplateNode {
     public String evaluate(Event event) throws IOException {
         Object value = event.getField(this.key);
 
-        if (value != null) {
-            if (value instanceof List) {
-                return join((List)value, ",");
-            } else if (value instanceof Map) {
-                ObjectMapper mapper = new ObjectMapper();
-                return mapper.writeValueAsString((Map<String, Object>)value);
-            } else {
-                return event.getField(this.key).toString();
-            }
+        if (value == null) { return null; }
 
+        if (value instanceof List) {
+            return join((List)value, ",");
+        } else if (value instanceof Map) {
+            ObjectMapper mapper = new ObjectMapper();
+            return mapper.writeValueAsString((Map<String, Object>)value);
         } else {
-            return "%{" + this.key + "}";
+            return event.getField(this.key).toString();
         }
     }
 
