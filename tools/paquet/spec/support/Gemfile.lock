@@ -1,0 +1,37 @@
+PATH
+  remote: ../../
+  specs:
+    paquet (0.1.0)
+
+PATH
+  remote: .
+  specs:
+    paquet-test (0.0.0)
+      flores (= 0.0.6)
+      logstash-devutils (= 0.0.6)
+      stud
+
+GEM
+  remote: https://rubygems.org/
+  specs:
+    flores (0.0.6)
+    gem_publisher (1.5.0)
+    jar-dependencies (0.3.7)
+    logstash-devutils (0.0.6-java)
+      gem_publisher
+      jar-dependencies
+      minitar
+      rake
+    minitar (0.5.4)
+    rake (12.0.0)
+    stud (0.0.22)
+
+PLATFORMS
+  java
+
+DEPENDENCIES
+  paquet!
+  paquet-test!
+
+BUNDLED WITH
+   1.13.6
