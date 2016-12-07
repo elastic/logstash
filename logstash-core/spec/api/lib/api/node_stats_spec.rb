@@ -80,7 +80,11 @@ describe LogStash::Api::Modules::NodeStats do
         "filtered" => Numeric,
         "out" => Numeric
      }
-    }
+   },
+   "reloads" => {
+     "successes" => Numeric,
+     "failures" => Numeric
+   }
   }
 
   test_api_and_resources(root_structure)
