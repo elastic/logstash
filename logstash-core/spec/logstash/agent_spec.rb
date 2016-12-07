@@ -479,7 +479,9 @@ describe LogStash::Agent do
       it "increases the successful reload count" do
         snapshot = subject.metric.collector.snapshot_metric
         value = snapshot.metric_store.get_with_path("/stats/pipelines")[:stats][:pipelines][:main][:reloads][:successes].value
+        instance_value = snapshot.metric_store.get_with_path("/stats")[:stats][:reloads][:successes].value
         expect(value).to eq(1)
+        expect(instance_value).to eq(1)
       end
 
       it "does not set the failure reload timestamp" do
