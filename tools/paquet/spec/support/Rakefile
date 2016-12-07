@@ -1,0 +1,11 @@
+# encoding: utf-8
+require "paquet"
+
+TARGET_DIRECTORY = File.join(File.dirname(__FILE__), "dependencies")
+
+Paquet::Task.new(TARGET_DIRECTORY) do
+  pack "stud"
+  pack "flores"
+
+  ignore "logstash-devutils"
+end

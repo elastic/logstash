@@ -18,7 +18,7 @@ module Paquet
     end
   end
 
-  def ui
+  def self.ui
     @logger ||= ShellUi.new
   end
 end
