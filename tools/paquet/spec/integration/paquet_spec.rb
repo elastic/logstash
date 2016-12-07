@@ -27,7 +27,7 @@ describe "Pack the dependencies", :integration => true do
     downloaded_dependencies = Dir.glob(File.join(dependecies_path, "*.gem"))
 
     expect(downloaded_dependencies.size).to eq(2)
-    expect(downloaded_dependencies).to include(/flores/,/stud/)
+    expect(downloaded_dependencies).to include(/flores-0\.0\.6/,/stud/)
     expect(downloaded_dependencies).not_to include(/logstash-devutils/)
   end
 end
