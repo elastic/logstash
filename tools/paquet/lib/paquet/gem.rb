@@ -24,7 +24,7 @@ module Paquet
     end
 
     def pack
-      ui.info("Cleaning existing target path: #{@target_path}")
+      Paquet::ui.info("Cleaning existing target path: #{@target_path}")
 
       FileUtils.rm_rf(@target_path)
       FileUtils.mkdir_p(@target_path)
@@ -70,7 +70,7 @@ module Paquet
         source = "#{RUBYGEMS_URI}/#{name}"
         destination = File.join(@target_path, name)
 
-        ui.info("Vendoring: #{name}, downloading: #{source}")
+        Paquet::ui.info("Vendoring: #{name}, downloading: #{source}")
         Paquet::Utils::download_file(source, destination)
       end
     end
