@@ -90,7 +90,7 @@
 # Internal queuing model, "memory" for legacy in-memory based queuing and
 # "persisted" for disk-based acked queueing. Defaults is memory
 #
-# queue.type: memory
+queue.type: memory_batched
 #
 # If using queue.type: persisted, the directory path where the data files will be stored.
 # Default is path.data/queue
