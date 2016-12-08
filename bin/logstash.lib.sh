@@ -28,6 +28,26 @@ export LOGSTASH_HOME
 SINCEDB_DIR=${LOGSTASH_HOME}
 export SINCEDB_DIR
 
+# This block will iterate over the command-line args Logstash was started with
+# It will find the argument _after_ --path.settings and use that to attempt
+# to derive the location of an acceptable jvm.options file
+# It will do nothing if this is not found.
+# This fix is for #6379
+if [ -z "$LS_JVM_OPTS" ]; then
+  found=0
+  for i in "$@"; do
+     if [ $found -eq 1 ]; then
+       if [ -r "${i}/jvm.options" ]; then
+         export LS_JVM_OPTS="${i}/jvm.options"
+         break
+       fi
+     fi
+     if [ "$i" = "--path.settings" ]; then
+       found=1
+     fi
+  done
+fi
+
 parse_jvm_options() {
   if [ -f "$1" ]; then
     echo "$(grep "^-" "$1" | tr '\n' ' ')"
