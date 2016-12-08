@@ -1,6 +1,5 @@
 # encoding: utf-8
 require "logstash/namespace"
-require "logstash/util"
 
 module LogStash; module Util; module ByteValue
   module_function
