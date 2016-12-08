@@ -3,8 +3,8 @@
 
 :branch:                5.x
 :major-version:         5.x
-:logstash_version:      5.1.0
-:elasticsearch_version: 5.1.0
+:logstash_version:      5.1.1
+:elasticsearch_version: 5.1.1
 :docker-image:          docker.elastic.co/logstash/logstash:{logstash_version}
 
 //////////
