@@ -3,8 +3,8 @@
 
 This section summarizes the changes in the following releases:
 
-* <<logstash-5-0-2,Logstash 5.1.1>>
-* <<logstash-5-0-1,Logstash 5.1.0>>
+* <<logstash-5-1-1,Logstash 5.1.1>>
+* <<logstash-5-1-0,Logstash 5.1.0>>
 
 [[logstash-5-1-1]]
 === Logstash 5.1.1 Release Notes
