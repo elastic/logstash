@@ -23,6 +23,13 @@ def get_versions
       "yaml_version" => yaml_versions["logstash-core-event-java"],
       "current_version" => get_version(File.join("logstash-core-event-java", "lib", "logstash-core-event-java", "version.rb")),
     },
+
+    "logstash-core-queue-jruby" => {
+      "location" => File.join("logstash-core-queue-jruby", "lib", "logstash-core-queue-jruby", "version.rb"),
+      "yaml_version" => yaml_versions["logstash-core-queue-jruby"],
+      "current_version" => get_version(File.join("logstash-core-queue-jruby", "lib", "logstash-core-queue-jruby", "version.rb")),
+    },
+
     "logstash-core-plugin-api" => {
       "location" => File.join("logstash-core-plugin-api", "lib", "logstash-core-plugin-api", "version.rb"),
       "yaml_version" => yaml_versions["logstash-core-plugin-api"],

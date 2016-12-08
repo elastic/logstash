@@ -3,4 +3,5 @@ logstash: 5.1.1
 logstash-core: 5.1.1
 logstash-core-event: 5.1.1
 logstash-core-event-java: 5.1.1
-logstash-core-plugin-api: 2.1.12
+logstash-core-queue-jruby: 5.1.1
+logstash-core-plugin-api: 2.1.16
