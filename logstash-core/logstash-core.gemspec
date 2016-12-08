@@ -19,8 +19,8 @@ Gem::Specification.new do |gem|
 
   gem.platform = "java"
 
-  gem.add_runtime_dependency "logstash-core-event-java"
-  gem.add_runtime_dependency "logstash-core-queue-jruby"
+  gem.add_runtime_dependency "logstash-core-event-java", LOGSTASH_CORE_VERSION
+  gem.add_runtime_dependency "logstash-core-queue-jruby", LOGSTASH_CORE_VERSION
 
   gem.add_runtime_dependency "pry", "~> 0.10.1"  #(Ruby license)
   gem.add_runtime_dependency "stud", "~> 0.0.19" #(Apache 2.0 license)
