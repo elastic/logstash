@@ -1,7 +1,7 @@
 PATH
   remote: ./logstash-core
   specs:
-    logstash-core (5.1.1-java)
+    logstash-core (5.1.2-java)
       chronic_duration (= 0.10.6)
       clamp (~> 0.6.5)
       concurrent-ruby (= 1.0.0)
@@ -12,8 +12,8 @@ PATH
       jrjackson (~> 0.4.0)
       jrmonitor (~> 0.4.2)
       jruby-openssl (= 0.9.16)
-      logstash-core-event-java
-      logstash-core-queue-jruby
+      logstash-core-event-java (= 5.1.2)
+      logstash-core-queue-jruby (= 5.1.2)
       minitar (~> 0.5.4)
       pry (~> 0.10.1)
       puma (~> 2.16)
@@ -27,20 +27,20 @@ PATH
 PATH
   remote: ./logstash-core-event-java
   specs:
-    logstash-core-event-java (5.1.1-java)
+    logstash-core-event-java (5.1.2-java)
       jar-dependencies
       ruby-maven (~> 3.3.9)
 
 PATH
   remote: ./logstash-core-plugin-api
   specs:
-    logstash-core-plugin-api (2.1.12-java)
-      logstash-core (= 5.1.1)
+    logstash-core-plugin-api (2.1.20-java)
+      logstash-core (= 5.1.2)
 
 PATH
   remote: ./logstash-core-queue-jruby
   specs:
-    logstash-core-queue-jruby (5.1.1-java)
+    logstash-core-queue-jruby (5.1.2-java)
 
 GEM
   remote: https://rubygems.org/
@@ -187,12 +187,12 @@ GEM
     logstash-codec-rubydebug (3.0.2)
       awesome_print
       logstash-core-plugin-api (>= 1.60, <= 2.99)
-    logstash-devutils (1.1.0-java)
+    logstash-devutils (1.2.1-java)
       fivemat
       gem_publisher
       insist (= 1.0.0)
       kramdown
-      logstash-core-plugin-api (~> 2.0)
+      logstash-core-plugin-api (>= 2.0, <= 2.99)
       minitar
       rake
       rspec (~> 3.0)
@@ -540,7 +540,7 @@ GEM
       rack
     rack-test (0.6.3)
       rack (>= 1.0)
-    rake (11.3.0)
+    rake (12.0.0)
     redis (3.3.2)
     rspec (3.1.0)
       rspec-core (~> 3.1.0)
