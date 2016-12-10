@@ -47,32 +47,8 @@ module LogStash::Config::Mixin
     base.extend(LogStash::Config::Mixin::DSL)
   end
 
-
-  # Replace all environment variable references in 'value' param by environment variable value and return updated value
-  # Process following patterns : $VAR, ${VAR}, ${VAR:defaultValue}
-  def replace_env_placeholders(value)
-    return value unless value.is_a?(String)
-    #raise ArgumentError, "Cannot replace ENV placeholders on non-strings. Got #{value.class}" if !value.is_a?(String)
-    @logger.debug("replacing values!")
-    value.gsub(ENV_PLACEHOLDER_REGEX) do |placeholder|
-     # Note: Ruby docs claim[1] Regexp.last_match is thread-local and scoped to
-     # the call, so this should be thread-safe.
-     #
-     # [1] http://ruby-doc.org/core-2.1.1/Regexp.html#method-c-last_match
-     name = Regexp.last_match(:name)
-     default = Regexp.last_match(:default)
-
-     replacement = ENV.fetch(name, default)
-     if replacement.nil?
-       raise LogStash::ConfigurationError, "Cannot evaluate `#{placeholder}`. Environment variable `#{name}` is not set and there is no default value given."
-     end
-     @logger.info? && @logger.info("Evaluating environment variable placeholder", :placeholder => placeholder, :replacement => replacement)
-     replacement
-    end
-  end # def replace_env_placeholders
-
+  # Recursive method to replace environment variable references in parameters
   def deep_replace(value)
-    @logger.debug("entered deep_replace")
     if (value.is_a?(Hash))
       value.each do |valueHashKey, valueHashValue|
           value[valueHashKey.to_s] = deep_replace(valueHashValue)
@@ -144,7 +120,6 @@ module LogStash::Config::Mixin
       end
     end
 
-    @logger.debug('IS THIS EVALUATED?')
     # Resolve environment variables references
     params.each do |name, value|
       params[name.to_s] = deep_replace(value)
