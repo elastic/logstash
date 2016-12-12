@@ -2,6 +2,7 @@
 require "pluginmanager/ui"
 require "pathname"
 require "rubygems/package"
+require "fileutils"
 
 module LogStash module PluginManager
   # Install a physical gem package to the appropriate location inside logstash
@@ -12,11 +13,13 @@ module LogStash module PluginManager
     GEM_HOME = Pathname.new(::File.join(LogStash::Environment::BUNDLE_DIR, "jruby", "1.9"))
     SPECIFICATIONS_DIR = "specifications"
     GEMS_DIR = "gems"
+    CACHE_DIR = "cache"
 
     attr_reader :gem_home
 
     def initialize(gem_file, display_post_install_message = false, gem_home = GEM_HOME)
-      @gem = ::Gem::Package.new(gem_file)
+      @gem_file = gem_file
+      @gem = ::Gem::Package.new(@gem_file)
       @gem_home = Pathname.new(gem_home)
       @display_post_install_message = display_post_install_message
     end
@@ -26,6 +29,7 @@ module LogStash module PluginManager
       extract_files
       write_specification
       display_post_install_message
+      copy_gem_file_to_cache
     end
 
     def self.install(gem_file, display_post_install_message = false, gem_home = GEM_HOME)
@@ -39,6 +43,10 @@ module LogStash module PluginManager
 
     def spec_dir
       gem_home.join(SPECIFICATIONS_DIR)
+    end
+
+    def cache_dir
+      gem_home.join(CACHE_DIR)
     end
 
     def spec_file
@@ -69,10 +77,16 @@ module LogStash module PluginManager
       @display_post_install_message && !spec.post_install_message.nil?
     end
 
+    def copy_gem_file_to_cache
+      destination = ::File.join(cache_dir, ::File.basename(@gem_file))
+      FileUtils.cp(@gem_file, destination)
+    end
+
     def create_destination_folders
       FileUtils.mkdir_p(gem_home)
       FileUtils.mkdir_p(gem_dir)
       FileUtils.mkdir_p(spec_dir)
+      FileUtils.mkdir_p(cache_dir)
     end
   end
 end end

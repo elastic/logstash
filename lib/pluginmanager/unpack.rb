@@ -8,6 +8,8 @@ class LogStash::PluginManager::Unpack < LogStash::PluginManager::PackCommand
   parameter "file", "the package file name", :attribute_name => :package_file, :required => true
 
   def execute
+    signal_deprecation_warning_for_pack
+
     puts("Unpacking #{package_file}")
 
     FileUtils.rm_rf(LogStash::Environment::CACHE_PATH)
