@@ -158,6 +158,7 @@ class LogStash::PluginManager::Install < LogStash::PluginManager::Command
   # Bundler 2.0, will have support for plugins source we could create a .gem source
   # to support it.
   def extract_local_gems_plugins
+    FileUtils.mkdir_p(LogStash::Environment::CACHE_PATH)
     plugins_arg.collect do |plugin|
       # We do the verify before extracting the gem so we dont have to deal with unused path
       if verify?
@@ -165,6 +166,9 @@ class LogStash::PluginManager::Install < LogStash::PluginManager::Command
         signal_error("Installation aborted, verification failed for #{plugin}") unless LogStash::PluginManager.logstash_plugin?(plugin, version)
       end
 
+      # Make the original .gem available for the prepare-offline-pack,
+      # paquet will lookup in the cache directory before going to rubygems.
+      FileUtils.cp(plugin, ::File.join(LogStash::Environment::CACHE_PATH, ::File.basename(plugin)))
       package, path = LogStash::Rubygems.unpack(plugin, LogStash::Environment::LOCAL_GEM_PATH)
       [package.spec.name, package.spec.version, { :path => relative_path(path) }]
     end

@@ -199,6 +199,10 @@ class LogstashService < Service
     PluginCli.new(@logstash_home)
   end
 
+  def lock_file
+    File.join(@logstash_home, "Gemfile.jruby-1.9.lock")
+  end
+
   class PluginCli
     class ProcessStatus < Struct.new(:exit_code, :stderr_and_stdout); end
 
@@ -209,10 +213,21 @@ class LogstashService < Service
 
     def initialize(logstash_home)
       @logstash_plugin = File.join(logstash_home, LOGSTASH_PLUGIN)
+      @logstash_home = logstash_home
     end
 
     def remove(plugin_name)
       run("remove #{plugin_name}")
+    end
+
+    def prepare_offline_pack(plugins, output_zip = nil)
+      plugins = Array(plugins)
+
+      if output_zip.nil?
+        run("prepare-offline-pack #{plugins.join(" ")}")
+      else
+        run("prepare-offline-pack --output #{output_zip} #{plugins.join(" ")}")
+      end
     end
 
     def list(plugin_name, verbose = false)
@@ -223,19 +238,29 @@ class LogstashService < Service
       run("install #{plugin_name}")
     end
 
-    def run(command)
+    def run_raw(cmd_parameters)
       out = Tempfile.new("content")
       out.sync = true
-      process = ChildProcess.build(logstash_plugin,*command.split(" "))
+
+      parts = cmd_parameters.split(" ")
+      cmd = parts.shift
+
+      process = ChildProcess.build(cmd, *parts)
       process.io.stdout = process.io.stderr = out
 
-      Bundler.with_clean_env do
-        process.start
+      Dir.chdir(@logstash_home) do
+        Bundler.with_clean_env do
+          process.start
+        end
       end
 
       process.poll_for_exit(TIMEOUT_MAXIMUM)
       out.rewind
       ProcessStatus.new(process.exit_code, out.read)
+    end
+
+    def run(command)
+      run_raw("#{logstash_plugin} #{command}")
     end
   end
 end

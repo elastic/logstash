@@ -16,8 +16,8 @@ require "paquet/gem"
 # By default, the tool wont fetch everything and the developper need to declare what gems he want to download.
 module Paquet
   class Task < Rake::TaskLib
-    def initialize(target_path, &block)
-      @gem = Gem.new(target_path)
+    def initialize(target_path, cache_path = nil, &block)
+      @gem = Gem.new(target_path, cache_path)
 
       instance_eval(&block)
 

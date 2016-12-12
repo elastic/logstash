@@ -9,10 +9,11 @@ module Paquet
 
     attr_reader :gems, :ignores
 
-    def initialize(target_path)
+    def initialize(target_path, cache = nil)
       @target_path = target_path
       @gems = []
       @ignores = []
+      @cache = cache
     end
 
     def add(name)
@@ -29,7 +30,38 @@ module Paquet
       FileUtils.rm_rf(@target_path)
       FileUtils.mkdir_p(@target_path)
 
-      download_gems(collect_required_gems)
+      package_gems(collect_required_gems)
+    end
+
+    def package_gems(collect_required_gems)
+      gems_to_package = collect_required_gems
+        .collect { |gem| gem_full_name(gem) }
+        .uniq
+
+      if use_cache?
+        gems_to_package.each do |gem_name|
+          if gem_file = find_in_cache(gem_name)
+            destination = File.join(@target_path, File.basename(gem_file))
+            FileUtils.cp(gem_file, destination)
+            Paquet::ui.info("Vendoring: #{gem_name}, from cache: #{gem_file}")
+          else
+            download_gem(gem_name)
+          end
+        end
+      else
+        gems_to_package.each do |gem_name|
+          download_gem(gem_name)
+        end
+      end
+    end
+
+    def use_cache?
+      @cache
+    end
+
+    def find_in_cache(gem_name)
+      filename = File.join(@cache, gem_name)
+      File.exist?(filename) ? filename : nil
     end
 
     def size
@@ -62,17 +94,16 @@ module Paquet
       end
     end
 
-    def download_gems(required_gems)
-      required_gems
-        .collect { |gem| gem.ruby? ? "#{gem.name}-#{gem.version}.gem" : "#{gem.name}-#{gem.version}-#{gem.platform}.gem" }
-        .uniq
-        .each do |name|
-        source = "#{RUBYGEMS_URI}/#{name}"
-        destination = File.join(@target_path, name)
+    def gem_full_name(gem)
+      gem.ruby? ? "#{gem.name}-#{gem.version}.gem" : "#{gem.name}-#{gem.version}-#{gem.platform}.gem" 
+    end
 
-        Paquet::ui.info("Vendoring: #{name}, downloading: #{source}")
-        Paquet::Utils::download_file(source, destination)
-      end
+    def download_gem(gem_name)
+      source = "#{RUBYGEMS_URI}/#{gem_name}"
+      destination = File.join(@target_path, gem_name)
+
+      Paquet::ui.info("Vendoring: #{gem_name}, downloading: #{source}")
+      Paquet::Utils::download_file(source, destination)
     end
   end
 end
