@@ -18,6 +18,7 @@ rake artifact:tar
 cd build
 echo "Extracting logstash tar file in build/"
 tar xf *.tar.gz
+
 cd ../qa/integration
 pwd
 echo $BUNDLE_GEMFILE

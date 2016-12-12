@@ -71,6 +71,10 @@ module LogStash
       @gemset = @original_backup
     end
 
+    def defined_in_gemfile?(name)
+      @gemset.find_gem(name)
+    end
+
     def restore!
       restore
       save

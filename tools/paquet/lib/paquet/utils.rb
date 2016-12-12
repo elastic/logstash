@@ -27,7 +27,7 @@ module Paquet
           counter -= 1
           download_file(response['location'], destination, counter)
         else
-          raise "Response not handled: #{response.class}"
+          raise "Response not handled: #{response.class}, path: #{uri.path}"
         end
         f.path
       rescue => e

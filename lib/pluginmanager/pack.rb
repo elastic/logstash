@@ -8,6 +8,8 @@ class LogStash::PluginManager::Pack < LogStash::PluginManager::PackCommand
   option "--overwrite", :flag, "Overwrite a previously generated package file", :default => false
 
   def execute
+    signal_deprecation_warning_for_pack
+
     puts("Packaging plugins for offline usage")
 
     validate_target_file
