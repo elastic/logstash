@@ -20,7 +20,9 @@ end
 module LogStash
   class DummyAgent < Agent
     def start_webserver
-      @webserver = Struct.new(:address).new("#{Socket.gethostname}:#{::LogStash::WebServer::DEFAULT_PORTS.first}")
+      http_address = "#{Socket.gethostname}:#{::LogStash::WebServer::DEFAULT_PORTS.first}"
+      @webserver = Struct.new(:address).new(http_address)
+      self.metric.gauge([], :http_address, http_address)
     end
     def stop_webserver; end
   end
