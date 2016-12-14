@@ -215,7 +215,9 @@ class LogStash::Agent
               end
 
 
-    @periodic_pollers = LogStash::Instrument::PeriodicPollers.new(@metric)
+    @periodic_pollers = LogStash::Instrument::PeriodicPollers.new(@metric,
+                                                                  settings.get("queue.type"),
+                                                                  self)
     @periodic_pollers.start
   end
 
@@ -331,8 +333,9 @@ class LogStash::Agent
   def start_pipelines
     @instance_reload_metric.increment(:successes, 0)
     @instance_reload_metric.increment(:failures, 0)
-    @pipelines.each do |id, _|
+    @pipelines.each do |id, pipeline|
       start_pipeline(id)
+      pipeline.collect_stats
       # no reloads yet, initalize all the reload metrics
       init_pipeline_reload_metrics(id)
     end

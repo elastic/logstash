@@ -550,6 +550,35 @@ module LogStash; class Pipeline
     end
   end
 
+  def collect_stats
+    pipeline_metric = @metric.namespace([:stats, :pipelines, pipeline_id.to_s.to_sym, :queue])
+    pipeline_metric.gauge(:type, settings.get("queue.type"))
+
+    if @queue.is_a?(LogStash::Util::WrappedAckedQueue) && @queue.queue.is_a?(LogStash::AckedQueue)
+      queue = @queue.queue
+      dir_path = queue.dir_path
+      file_store = Files.get_file_store(Paths.get(dir_path))
+
+      pipeline_metric.namespace([:capacity]).tap do |n|
+        n.gauge(:page_capacity_in_bytes, queue.page_capacity)
+        n.gauge(:max_queue_size_in_bytes, queue.max_size_in_bytes)
+        n.gauge(:max_unread_events, queue.max_unread_events)
+      end
+      pipeline_metric.namespace([:data]).tap do |n|
+        n.gauge(:free_space_in_bytes, file_store.get_unallocated_space)
+        n.gauge(:current_size_in_bytes, queue.current_byte_size)
+        n.gauge(:storage_type, file_store.type)
+        n.gauge(:path, dir_path)
+      end
+
+      pipeline_metric.namespace([:events]).tap do |n|
+        n.gauge(:acked_count, queue.acked_count)
+        n.gauge(:unacked_count, queue.unacked_count)
+        n.gauge(:unread_count, queue.unread_count)
+      end
+    end
+  end
+
   # Sometimes we log stuff that will dump the pipeline which may contain
   # sensitive information (like the raw syntax tree which can contain passwords)
   # We want to hide most of what's in here

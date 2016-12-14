@@ -22,10 +22,10 @@ module LogStash
             :uptime_in_millis => service.get_shallow(:jvm, :uptime_in_millis),
           }
         end
-        
+
         def reloads
           service.get_shallow(:stats, :reloads)
-        end  
+        end
 
         def process
           extract_metrics(
@@ -48,39 +48,6 @@ module LogStash
         def pipeline
           stats = service.get_shallow(:stats, :pipelines)
           PluginsStats.report(stats)
-        end
-
-        def queue
-          queue_type = service.agent.settings.get("queue.type")
-          pipeline = service.agent.pipelines { |id, _| service.agent.running_pipeline?(id) }.values.first
-          if pipeline.nil?
-            { :type => queue_type }
-          elsif pipeline.queue.is_a?(LogStash::Util::WrappedAckedQueue) && pipeline.queue.queue.is_a?(LogStash::AckedQueue)
-            queue = pipeline.queue.queue
-            dir_path = queue.dir_path
-            file_store = Files.get_file_store(Paths.get(dir_path))
-            {
-              :type => queue_type,
-              :capacity => {
-                :page_capacity_in_bytes => queue.page_capacity,
-                :max_queue_size_in_bytes => queue.max_size_in_bytes,
-                :max_unread_events => queue.max_unread_events,
-              },
-              :data => {
-                :free_space_in_bytes => file_store.get_unallocated_space,
-                :current_size_in_bytes => queue.current_byte_size,
-                :storage_type => file_store.type,
-                :path => dir_path
-              },
-              :events => {
-                :acked_count => queue.acked_count,
-                :unread_count => queue.unread_count,
-                :unacked_count => queue.unacked_count
-              }
-            }
-          else
-            { :type => queue_type }
-          end
         end
 
         def memory
@@ -134,6 +101,7 @@ module LogStash
                 :outputs => plugin_stats(stats, :outputs)
               },
               :reloads => stats[:reloads],
+              :queue => stats[:queue]
             }
           end
         end # module PluginsStats
