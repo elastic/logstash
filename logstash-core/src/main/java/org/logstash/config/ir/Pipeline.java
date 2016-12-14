@@ -12,7 +12,7 @@ import java.util.stream.Stream;
 /**
  * Created by andrewvc on 9/20/16.
  */
-public class Pipeline {
+public class Pipeline implements IHashable {
     public Graph getGraph() {
         return graph;
     }
@@ -30,32 +30,23 @@ public class Pipeline {
     private final SpecialVertex filterOut;
 
     public Pipeline(Graph inputSection, Graph filterSection, Graph outputSection) throws InvalidIRException {
-        graph = DSL.graph();
-
-        // We don't really care about the edges in the input section, we just want the vertices as roots
-        for (Vertex inV : inputSection.getVertices()) {
-            if (inV instanceof PluginVertex) {
-                graph.addVertex(inV);
-            } else {
-                throw new InvalidIRException("Only plugin vertices are allowed in input sections!");
-            }
-        }
+        Graph tempGraph = inputSection.copy(); // The input section are our roots, so we can import that wholesale
 
         // Connect all the input vertices out to the queue
         queue = new SpecialVertex(SpecialVertex.Type.QUEUE);
-        graph.threadLeavesInto(queue);
+        tempGraph = tempGraph.chain(queue);
 
         // Now we connect the queue to the root of the filter section
-        graph.threadLeavesInto(filterSection);
+        tempGraph = tempGraph.chain(filterSection);
 
         // Now we connect the leaves (and partial leaves) of the graph
         // which should all be filters (unless no filters are defined)
         // to the special filterOut node
         filterOut = new SpecialVertex(SpecialVertex.Type.FILTER_OUT);
-        graph.threadLeavesInto(filterOut);
+        tempGraph = tempGraph.chain(filterOut);
 
         // Finally, connect the filter out node to all the outputs
-        graph.threadLeavesInto(outputSection);
+        this.graph = tempGraph.chain(outputSection);
     }
 
     public List<Vertex> getPostQueue() throws InvalidIRException {
@@ -103,5 +94,10 @@ public class Pipeline {
         return graph.vertices()
                .filter(v -> v instanceof PluginVertex)
                .map(v -> (PluginVertex) v);
+    }
+
+    @Override
+    public String hashSource() {
+        return this.graph.uniqueHash();
     }
 }

@@ -24,7 +24,7 @@ public class ComposedParallelStatement extends ComposedStatement {
         Graph g = Graph.empty();
 
         for (Statement s : getStatements()) {
-            g.merge(s.toGraph());
+            g = Graph.combine(g, s.toGraph()).graph;
         }
 
         return g;

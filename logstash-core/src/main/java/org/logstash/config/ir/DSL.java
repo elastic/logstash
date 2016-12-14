@@ -1,6 +1,5 @@
 package org.logstash.config.ir;
 
-import org.apache.logging.log4j.core.config.plugins.Plugin;
 import org.logstash.config.ir.expression.*;
 import org.logstash.config.ir.expression.binary.*;
 import org.logstash.config.ir.expression.unary.Not;

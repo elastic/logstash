@@ -4,50 +4,45 @@ import org.logstash.config.ir.ISourceComponent;
 import org.logstash.config.ir.InvalidIRException;
 import org.logstash.config.ir.SourceMetadata;
 
-import java.util.ArrayList;
-import java.util.Collection;
+import java.util.stream.Stream;
 
 /**
  * Created by andrewvc on 9/15/16.
  */
 public abstract class Edge implements ISourceComponent {
-    public static abstract class EdgeFactory {
-        public abstract Edge make(Vertex out, Vertex in) throws InvalidIRException;
-    }
+    private Graph graph;
 
-    private final Vertex to;
-    private final Vertex from;
-
-    public static Edge threadVertices(Vertex v1, Vertex v2) throws InvalidIRException {
-        Vertex[] args = { v1, v2 };
-        // Only ever returns one edge
-        return threadVertices(PlainEdge.factory, args).stream().findFirst().get();
-    }
-
-    public static Edge threadVertices(EdgeFactory edgeFactory, Vertex v1, Vertex v2) throws InvalidIRException {
-        Vertex[] args = { v1, v2 };
-        // Only ever returns one edge`
-        return threadVertices(edgeFactory, args).stream().findFirst().get();
-    }
-
-    public static Collection<Edge> threadVertices(Vertex... vertices) throws InvalidIRException {
-        return threadVertices(PlainEdge.factory, vertices);
-    }
-
-    public static Collection<Edge> threadVertices(EdgeFactory edgeFactory, Vertex... vertices) throws InvalidIRException {
-        Collection<Edge> edges = new ArrayList<>();
-
-        for (int i = 0; i < vertices.length-1; i++) {
-            Vertex from = vertices[i];
-            Vertex to = vertices[i+1];
-
-            Edge edge = edgeFactory.make(from, to);
-            to.addInEdge(edge);
-            from.addOutEdge(edge);
-            edges.add(edge);
+    public void setGraph(Graph graph) {
+        if (this.graph == graph) {
+            return;
+        } else if (this.graph == null) {
+            this.graph = graph;
+        } else {
+            throw new IllegalArgumentException("Attempted to set graph for edge that already has one!" + this);
         }
+    }
 
-        return edges;
+    public abstract Edge copy(Vertex from, Vertex to) throws InvalidIRException;
+
+    public static abstract class EdgeFactory {
+        public abstract Edge make(Vertex from, Vertex to) throws InvalidIRException;
+    }
+
+    private final Vertex from;
+    private final Vertex to;
+
+    public Stream<Edge> ancestors() {
+       // Without all the distinct calls this can be slow
+       return Stream.concat(this.from.incomingEdges(), this.from.incomingEdges().flatMap(Edge::ancestors).distinct()).distinct();
+    }
+
+    public Stream<Edge> descendants() {
+       // Without all the distinct calls this can be slow
+       return Stream.concat(this.to.outgoingEdges(), this.to.outgoingEdges().flatMap(Edge::ancestors).distinct()).distinct();
+    }
+
+    public Stream<Edge> lineage() {
+        return Stream.concat(Stream.concat(ancestors(), Stream.of(this)), descendants());
     }
 
     public Edge(Vertex from, Vertex to) throws InvalidIRException {
@@ -56,6 +51,14 @@ public abstract class Edge implements ISourceComponent {
 
         if (this.from == this.to) {
             throw new InvalidIRException("Cannot create a cyclic vertex! " + to);
+        }
+
+        if (!this.from.acceptsOutgoingEdge(this)) {
+            throw new Vertex.InvalidEdgeTypeException(String.format("Invalid outgoing edge %s for edge %s", this.from, this));
+        }
+
+        if (!this.to.acceptsIncomingEdge(this)) {
+            throw new Vertex.InvalidEdgeTypeException(String.format("Invalid incoming edge %s for edge %s", this.from, this));
         }
     }
 
@@ -75,7 +78,7 @@ public abstract class Edge implements ISourceComponent {
     public boolean sourceComponentEquals(ISourceComponent sourceComponent) {
         if (sourceComponent == null) return false;
         if (sourceComponent == this) return true;
-        if (sourceComponent.getClass() == sourceComponent.getClass()) {
+        if (sourceComponent.getClass() == this.getClass()) {
             Edge otherE = (Edge) sourceComponent;
 
             return this.getFrom().sourceComponentEquals(otherE.getFrom()) &&
@@ -84,6 +87,7 @@ public abstract class Edge implements ISourceComponent {
         return false;
     }
 
+    public abstract String individualHashSource();
 
     @Override
     public SourceMetadata getMeta() {

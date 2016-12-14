@@ -38,4 +38,9 @@ public class EventValueExpression extends Expression {
     public String toRubyString() {
         return "event.getField('" + fieldName + "')";
     }
+
+    @Override
+    public String hashSource() {
+        return this.getClass().getCanonicalName() + "|" + fieldName;
+    }
 }

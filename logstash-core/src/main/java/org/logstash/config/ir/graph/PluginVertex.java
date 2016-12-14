@@ -1,35 +1,34 @@
 package org.logstash.config.ir.graph;
 
+import org.logstash.common.Util;
 import org.logstash.config.ir.ISourceComponent;
 import org.logstash.config.ir.PluginDefinition;
 import org.logstash.config.ir.SourceMetadata;
-
-import java.util.Map;
-import java.util.Objects;
-import java.util.UUID;
 
 /**
  * Created by andrewvc on 9/15/16.
  */
 public class PluginVertex extends Vertex {
     private final SourceMetadata meta;
+    private final String id;
+    private final PluginDefinition pluginDefinition;
 
     public String getId() {
-        return id;
+        if (id != null) return id;
+        if (this.getGraph() == null) {
+            throw new RuntimeException("Attempted to get ID from PluginVertex before attaching it to a graph!");
+        }
+        return this.uniqueHash();
     }
 
+    public PluginDefinition getPluginDefinition() {
+        return pluginDefinition;
+    }
     @Override
     public SourceMetadata getMeta() {
         return meta;
     }
 
-    private final String id;
-
-    public PluginDefinition getPluginDefinition() {
-        return pluginDefinition;
-    }
-
-    private final PluginDefinition pluginDefinition;
 
     public PluginVertex(SourceMetadata meta, PluginDefinition pluginDefinition) {
         super(meta);
@@ -38,12 +37,27 @@ public class PluginVertex extends Vertex {
         this.pluginDefinition = pluginDefinition;
 
         Object argId = this.pluginDefinition.getArguments().get("id");
-        this.id = argId != null ? argId.toString() : UUID.randomUUID().toString();
-        this.pluginDefinition.getArguments().put("id", this.id);
+        this.id = argId != null ? argId.toString() : null;
     }
 
     public String toString() {
         return "P[" + pluginDefinition + "]";
+    }
+
+    @Override
+    public String individualHashSource() {
+        return Util.sha256(this.getClass().getCanonicalName() + "|" +
+                (this.id != null ? this.id : "NOID") + "|" +
+                this.getPluginDefinition().hashSource());
+    }
+
+    public String individualHash() {
+        return Util.sha256(individualHashSource());
+    }
+
+    @Override
+    public PluginVertex copy() {
+        return new PluginVertex(meta, getPluginDefinition());
     }
 
     @Override

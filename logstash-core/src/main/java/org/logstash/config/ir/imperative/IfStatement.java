@@ -1,12 +1,15 @@
 package org.logstash.config.ir.imperative;
+
 import org.logstash.config.ir.ISourceComponent;
+import org.logstash.config.ir.InvalidIRException;
 import org.logstash.config.ir.SourceMetadata;
 import org.logstash.config.ir.expression.BooleanExpression;
-import org.logstash.config.ir.InvalidIRException;
-import org.logstash.config.ir.graph.*;
+import org.logstash.config.ir.graph.BooleanEdge;
+import org.logstash.config.ir.graph.Graph;
+import org.logstash.config.ir.graph.IfVertex;
+import org.logstash.config.ir.graph.Vertex;
 
-import java.util.List;
-import java.util.Optional;
+import java.util.Collection;
 import java.util.stream.Collectors;
 
 /**
@@ -78,22 +81,25 @@ public class IfStatement extends Statement {
 
     @Override
     public Graph toGraph() throws InvalidIRException {
-        Graph graph = new Graph();
-        Vertex ifVertex = new IfVertex(this.getMeta(), this.booleanExpression);
-        graph.addVertex(ifVertex);
+        Graph trueGraph = getTrueStatement().toGraph();
+        Graph falseGraph = getFalseStatement().toGraph();
 
-        if (!(getTrueStatement() instanceof NoopStatement)) {
-            Statement ts = this.getTrueStatement();
-            Graph tsg = ts.toGraph();
-            graph.threadToGraph(BooleanEdge.trueFactory, ifVertex, tsg);
+        Graph.GraphCombinationResult combination = Graph.combine(trueGraph, falseGraph);
+        Graph newGraph = combination.graph;
+        Collection<Vertex> trueRoots = trueGraph.roots().map(combination.oldToNewVertices::get).collect(Collectors.toList());
+        Collection<Vertex> falseRoots = falseGraph.roots().map(combination.oldToNewVertices::get).collect(Collectors.toList());
+
+        IfVertex ifVertex = new IfVertex(this.getMeta(), this.booleanExpression);
+        newGraph.addVertex(ifVertex);
+
+        for (Vertex v : trueRoots) {
+            newGraph.threadVertices(BooleanEdge.trueFactory, ifVertex, v);
         }
 
-        if (!(getFalseStatement() instanceof NoopStatement)) {
-            Statement fs = this.getFalseStatement();
-            Graph fsg = fs.toGraph();
-            graph.threadToGraph(BooleanEdge.falseFactory, ifVertex, fsg);
+        for (Vertex v : falseRoots) {
+            newGraph.threadVertices(BooleanEdge.falseFactory, ifVertex, v);
         }
 
-        return graph;
+        return newGraph;
     }
 }

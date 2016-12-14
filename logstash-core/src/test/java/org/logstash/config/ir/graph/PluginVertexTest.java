@@ -1,6 +1,7 @@
 package org.logstash.config.ir.graph;
 
 import org.junit.Test;
+import org.logstash.config.ir.InvalidIRException;
 import org.logstash.config.ir.PluginDefinition;
 
 import java.util.HashMap;
@@ -15,11 +16,12 @@ import static org.logstash.config.ir.IRHelpers.*;
  */
 public class PluginVertexTest {
     @Test
-    public void testConstructionIdHandlingWhenNoExplicitId() {
+    public void testConstructionIdHandlingWhenNoExplicitId() throws InvalidIRException {
         PluginDefinition pluginDefinition = testPluginDefinition();
         PluginVertex pluginVertex = new PluginVertex(testMetadata(), pluginDefinition);
+        Graph graph = Graph.empty();
+        graph.addVertex(pluginVertex);
         assertThat(pluginVertex.getId(), notNullValue());
-        assertThat(pluginVertex.getId(), is(pluginVertex.getPluginDefinition().getArguments().get("id")));
     }
 
     @Test
