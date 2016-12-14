@@ -1,7 +1,6 @@
 package org.logstash.config.ir.expression;
 
 import org.logstash.config.ir.SourceMetadata;
-import org.logstash.config.ir.expression.Expression;
 
 /**
  * Created by andrewvc on 9/14/16.

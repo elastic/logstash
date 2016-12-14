@@ -20,22 +20,25 @@ public class IfVertexTest {
 
     @Test(expected = Vertex.InvalidEdgeTypeException.class)
     public void testDoesNotAcceptNonBooleanEdges() throws InvalidIRException {
+        Graph graph = Graph.empty();
         IfVertex ifV = testIfVertex();
         Vertex otherV = testVertex();
-
-        Edge.threadVertices(PlainEdge.factory, ifV, otherV);
+        graph.threadVertices(PlainEdge.factory, ifV, otherV);
     }
 
     @Test
     public void testEdgeTypeHandling() throws InvalidIRException {
+        Graph graph = Graph.empty();
         IfVertex ifV = testIfVertex();
+        graph.addVertex(ifV);
         Vertex trueV = testVertex();
+        graph.addVertex(trueV);
 
         assertThat(ifV.hasEdgeType(true), is(false));
         assertThat(ifV.hasEdgeType(false), is(false));
         assertThat(ifV.getUnusedOutgoingEdgeFactories().size(), is(2));
 
-        Edge.threadVertices(BooleanEdge.trueFactory, ifV, trueV);
+        graph.threadVertices(BooleanEdge.trueFactory, ifV, trueV);
 
         assertThat(ifV.hasEdgeType(true), is(true));
         assertThat(ifV.hasEdgeType(false), is(false));
@@ -46,7 +49,7 @@ public class IfVertexTest {
         );
 
         Vertex falseV = testVertex();
-        Edge.threadVertices(BooleanEdge.falseFactory, ifV, falseV);
+        graph.threadVertices(BooleanEdge.falseFactory, ifV, falseV);
 
         assertThat(ifV.hasEdgeType(false), is(true));
         assertThat(ifV.getUnusedOutgoingEdgeFactories().isEmpty(), is(true));

@@ -1,20 +1,27 @@
 package org.logstash.config.ir.graph;
 
+import org.logstash.common.Util;
+import org.logstash.config.ir.IHashable;
 import org.logstash.config.ir.ISourceComponent;
 import org.logstash.config.ir.InvalidIRException;
 import org.logstash.config.ir.SourceMetadata;
+import org.logstash.config.ir.graph.algorithms.DepthFirst;
 
-import java.util.*;
+import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
  * Created by andrewvc on 9/15/16.
  */
-public abstract class Vertex implements ISourceComponent {
-    private final Collection<Edge> incomingEdges = new HashSet<Edge>();
-    private final Collection<Edge> outgoingEdges = new HashSet<Edge>();
+public abstract class Vertex implements ISourceComponent, IHashable {
     private final SourceMetadata sourceMetadata;
+    private Graph graph = this.getGraph();
 
     public Vertex() {
         this.sourceMetadata = null;
@@ -24,57 +31,50 @@ public abstract class Vertex implements ISourceComponent {
         this.sourceMetadata = sourceMetadata;
     }
 
-    public Vertex(Collection<Edge> incoming, Collection<Edge> outgoingEdges, SourceMetadata sourceMetadata) {
-        this.sourceMetadata = sourceMetadata;
-        this.incomingEdges.addAll(incoming);
-        this.outgoingEdges.addAll(outgoingEdges);
-    }
+    public abstract Vertex copy();
 
-    public class InvalidEdgeTypeException extends InvalidIRException {
+    public static class InvalidEdgeTypeException extends InvalidIRException {
         public InvalidEdgeTypeException(String s) {
             super(s);
         }
     }
 
-    public Vertex addInEdge(Edge e) throws InvalidEdgeTypeException {
-        if (!this.acceptsIncomingEdge(e)) throw new InvalidEdgeTypeException("Invalid incomingEdges edge!" + e + " for " + this);
-        this.incomingEdges.add(e);
-        return this;
+    public Graph getGraph() {
+        return this.graph;
     }
 
-    public Vertex addOutEdge(Edge e) throws InvalidEdgeTypeException {
-        if (!this.acceptsOutgoingEdge(e)) {
-            throw new InvalidEdgeTypeException(
-                "Invalid outgoing edge!" +
-                e + " for " + this +
-                " existing outgoing edges: " + this.getOutgoingEdges());
+    public void setGraph(Graph graph) {
+        if (this.graph == graph) {
+            return;
+        } else if (this.graph == null) {
+            this.graph = graph;
+        } else {
+            throw new IllegalArgumentException("Cannot set graph property on Vertex that is already assigned to an existing graph!");
         }
-        this.outgoingEdges.add(e);
-        return this;
     }
 
     public boolean isRoot() {
-        return incomingEdges.isEmpty();
+        return getIncomingEdges().isEmpty();
     }
 
     public boolean isLeaf() {
-        return outgoingEdges.isEmpty();
+        return getOutgoingEdges().isEmpty();
     }
 
     public boolean hasIncomingEdges() {
-        return !incomingEdges.isEmpty();
+        return !getIncomingEdges().isEmpty();
     }
 
     public boolean hasOutgoingEdges() {
-        return !outgoingEdges.isEmpty();
+        return !getOutgoingEdges().isEmpty();
     }
 
     public Collection<Edge> getIncomingEdges() {
-        return incomingEdges;
+        return incomingEdges().collect(Collectors.toSet());
     }
 
     public Collection<Edge> getOutgoingEdges() {
-        return outgoingEdges;
+        return outgoingEdges().collect(Collectors.toSet());
     }
 
     public Collection<Vertex> getOutgoingVertices() {
@@ -94,12 +94,80 @@ public abstract class Vertex implements ISourceComponent {
     }
 
     public Stream<Edge> incomingEdges() {
-        return getIncomingEdges().stream();
+        return this.getGraph().getIncomingEdges(this).stream();
     }
 
     public Stream<Edge> outgoingEdges() {
-        return outgoingEdges.stream();
+        return this.getGraph().getOutgoingEdges(this).stream();
     }
+
+    public Stream<Vertex> ancestors() {
+        return DepthFirst.reverseDepthFirst(this).filter(v -> v != this);
+    }
+
+    public Stream<Vertex> roots() {
+        return ancestors().filter(Vertex::isRoot);
+    }
+
+    public Stream<Vertex> descendants() {
+        return DepthFirst.depthFirst(this).filter(v -> v != this);
+    }
+
+    public Stream<Vertex> lineage() {
+        return Stream.concat(Stream.concat(ancestors(), Stream.of(this)), descendants());
+    }
+
+    // Rank is the shortest distance to a root for this vertex
+    public int rank() {
+        return this.graph.rank(this);
+    }
+
+    @Override
+    public String hashSource() {
+        // Sort the lineage to ensure consistency. We prepend each item with a lexicographically sortable
+        // encoding of its rank (using hex notation) so that the sort order is identical to the traversal order.
+        // This is a required since there may be individually identical components in different locations in the graph.
+        // It is, however, illegal to have functionally identical vertices, that is to say two vertices with the same
+        // contents that have the same lineage.
+
+        try {
+            MessageDigest lineageDigest = MessageDigest.getInstance("SHA-256");
+
+            // The lineage can be quite long and we want to avoid the quadratic complexity of string concatenation
+            lineage().
+                    map(Vertex::contextualHashSource).
+                    sorted().
+                    forEachOrdered(v -> {
+                        byte[] bytes = v.getBytes(StandardCharsets.UTF_8);
+                        lineageDigest.update(bytes);
+                    });
+
+            return hashPrefix() + Util.bytesToHexString(lineageDigest.digest());
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public String hashPrefix() {
+        return String.format("Vertex[%08x]=", this.rank()) + this.individualHashSource() + "|";
+    }
+
+    public String contextualHashSource() {
+        // This string must be lexicographically sortable hence the ID at the front. It also must have the individualHashSource
+        // repeated at the front for the case of a graph with two nodes at the same rank
+        StringBuilder result = new StringBuilder();
+        result.append(hashPrefix());
+
+
+        result.append("INCOMING=");
+        this.incomingEdges().map(Edge::individualHashSource).sorted().forEachOrdered(result::append);
+        result.append("OUTGOING=");
+        this.outgoingEdges().map(Edge::individualHashSource).sorted().forEachOrdered(result::append);
+
+        return result.toString();
+    }
+
+    public abstract String individualHashSource();
 
     @Override
     public SourceMetadata getMeta() {
@@ -129,5 +197,5 @@ public abstract class Vertex implements ISourceComponent {
         return true;
     }
 
-
+    public abstract String getId();
 }

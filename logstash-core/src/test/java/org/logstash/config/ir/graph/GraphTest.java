@@ -1,16 +1,20 @@
 package org.logstash.config.ir.graph;
 
 import org.junit.Test;
-import org.logstash.config.ir.ISourceComponent;
+import org.logstash.config.ir.IRHelpers;
 import org.logstash.config.ir.InvalidIRException;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.*;
+import static org.logstash.config.ir.IRHelpers.testExpression;
+import static org.logstash.config.ir.IRHelpers.testVertex;
 
 /**
  * Created by andrewvc on 11/18/16.
@@ -40,70 +44,111 @@ public class GraphTest {
     }
 
     @Test
-    public void extendingLeavesIntoRoots() throws InvalidIRException {
-        Vertex fromV1 = testVertex();
-        Vertex fromV2 = testVertex();
-        Graph fromGraph = Graph.empty().threadVertices(fromV1, fromV2);
+    public void chaining() throws InvalidIRException {
+        Graph fromGraph = Graph.empty();
+        fromGraph.threadVertices(testVertex("fromV1"), testVertex("fromV2"));
 
-        Vertex toV1 = testVertex();
-        Vertex toV2 = testVertex();
-        Graph toGraph = Graph.empty().threadVertices(toV1, toV2);
+        Graph toGraph = Graph.empty();
+        toGraph.threadVertices(testVertex("toV1"), testVertex("toV2"));
 
-        fromGraph.threadLeavesInto(toGraph);
-        assertEquals(fromGraph.getEdges().size(), 3);
-        assertVerticesConnected(fromV2, toV1);
-        assertEquals(fromV2.getOutgoingEdges(), toV1.getIncomingEdges());
+        Graph result = fromGraph.chain(toGraph);
+        assertEquals(3, result.getEdges().size());
+        assertVerticesConnected(result, "fromV2", "toV1");
     }
 
     @Test
-    public void extendingLeavesIntoRootsMultiRoot() throws InvalidIRException {
-        Vertex fromV1 = testVertex("fromV1");
-        Vertex fromV2 = testVertex("fromV2");
-        Graph fromGraph = Graph.empty().threadVertices(fromV1, fromV2);
+    public void chainingIntoMultipleRoots() throws InvalidIRException {
+        Graph fromGraph = Graph.empty();
+        fromGraph.threadVertices(testVertex("fromV1"), testVertex("fromV2"));
 
-        Vertex toV1 = testVertex("toV1");
-        Vertex toV2 = testVertex("toV2");
-        Vertex toV3 = testVertex("toV3");
-        Graph toGraph = Graph.empty().threadVertices(toV1, toV2).addVertex(toV3);
+        Graph toGraph = Graph.empty();
+        toGraph.threadVertices(testVertex("toV1"), testVertex("toV2"));
+        toGraph.addVertex(testVertex("toV3"));
 
-        fromGraph.threadLeavesInto(toGraph);
-        assertEquals(fromGraph.getEdges().size(), 4);
-        assertVerticesConnected(fromV2, toV1);
-        assertVerticesConnected(fromV2, toV3);
+        Graph result = fromGraph.chain(toGraph);
+        assertEquals(4, result.getEdges().size());
+        assertVerticesConnected(result, "fromV2", "toV1");
+        assertVerticesConnected(result, "fromV2", "toV3");
     }
 
     @Test
-    public void testWalk() throws InvalidIRException {
-        Graph g = Graph.empty().
-                threadVertices(testVertex(), testVertex(), testVertex());
-        final AtomicInteger visitCount = new AtomicInteger();
-        final List<Vertex> visited = new ArrayList<>();
-        g.walkEdges(v -> {
-            visitCount.incrementAndGet();
-        });
-        assertEquals("It should visit each node once", visitCount.get(), 2);
+    public void SimpleConsistencyTest() throws InvalidIRException {
+        Graph g1 = Graph.empty();
+        g1.addVertex(testVertex("a"));
+        Graph g2 = Graph.empty();
+        g2.addVertex(testVertex("a"));
+
+        assertEquals(g1.uniqueHash(), g2.uniqueHash());
+    }
+
+    @Test
+    public void ComplexConsistencyTest() throws InvalidIRException {
+        Graph g1 = IRHelpers.samplePipeline().getGraph();
+        Graph g2 = IRHelpers.samplePipeline().getGraph();
+
+        assertEquals(g1.hashSource(), g2.hashSource());
+    }
+
+    @Test
+    public void testThreading() throws InvalidIRException {
+        Graph graph = Graph.empty();
+        Vertex v1 = testVertex();
+        Vertex v2 = testVertex();
+        graph.threadVertices(v1, v2);
+        assertVerticesConnected(v1, v2);
+        Edge v1Edge = v1.outgoingEdges().findFirst().get();
+        Edge v2Edge = v2.incomingEdges().findFirst().get();
+        assertThat(v1Edge, is(v2Edge));
+        assertThat(v1Edge, instanceOf(PlainEdge.class));
+    }
+
+    @Test
+    public void testThreadingMulti() throws InvalidIRException {
+        Graph graph = Graph.empty();
+        Vertex v1 = testVertex();
+        Vertex v2 = testVertex();
+        Vertex v3 = testVertex();
+        Collection<Edge> multiEdges = graph.threadVertices(v1, v2, v3);
+
+        assertThat(v1.getOutgoingVertices(), is(Collections.singletonList(v2)));
+        assertThat(v2.getIncomingVertices(), is(Collections.singletonList(v1)));
+        assertThat(v2.getOutgoingVertices(), is(Collections.singletonList(v3)));
+        assertThat(v3.getIncomingVertices(), is(Collections.singletonList(v2)));
+    }
+
+    @Test
+    public void testThreadingTyped() throws InvalidIRException {
+        Graph graph = Graph.empty();
+        Vertex if1 = new IfVertex(null, testExpression());
+        Vertex condT = testVertex();
+        Edge tEdge = graph.threadVertices(BooleanEdge.trueFactory, if1, condT).stream().findFirst().get();
+        assertThat(tEdge, instanceOf(BooleanEdge.class));
+        BooleanEdge tBooleanEdge = (BooleanEdge) tEdge;
+        assertThat(tBooleanEdge.getEdgeType(), is(true));
+    }
+
+    @Test
+    public void copyTest() throws InvalidIRException {
+        Graph left = Graph.empty();
+        left.addVertex(testVertex("t1"));
+        Graph right = left.copy();
+
+        Vertex lv = left.getVertexById("t1");
+        Vertex rv = right.getVertexById("t1");
+        assertTrue(lv.sourceComponentEquals(rv));
+        assertTrue(rv.sourceComponentEquals(lv));
+    }
+
+    private void assertVerticesConnected(Graph graph, String fromId, String toId) {
+        Vertex from = graph.getVertexById(fromId);
+        assertNotNull(from);
+        Vertex to = graph.getVertexById(toId);
+        assertNotNull(to);
+        assertVerticesConnected(from, to);
     }
 
     public void assertVerticesConnected(Vertex from, Vertex to) {
-        assertTrue(from.getOutgoingVertices().contains(to));
-        assertTrue(to.getIncomingVertices().contains(from));
-    }
-
-    public Vertex testVertex() {
-        return testVertex(UUID.randomUUID().toString());
-    }
-
-    public Vertex testVertex(String name) {
-        return new Vertex() {
-            public String toString() {
-                return "TestVertex-" + name;
-            }
-
-            @Override
-            public boolean sourceComponentEquals(ISourceComponent sourceComponent) {
-                // For testing purposes only object identity counts
-                return this == sourceComponent;
-            }
-        };
+        assertTrue("No connection: " + from + " -> " + to, from.getOutgoingVertices().contains(to));
+        assertTrue("No reverse connection: " + from + " -> " + to, to.getIncomingVertices().contains(from));
     }
 }

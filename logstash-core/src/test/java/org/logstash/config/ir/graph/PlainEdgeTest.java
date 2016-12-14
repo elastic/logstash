@@ -16,12 +16,12 @@ import static org.logstash.config.ir.IRHelpers.testVertex;
 public class PlainEdgeTest {
     @Test
     public void creationDoesNotRaiseException() throws InvalidIRException {
-        PlainEdge e = new PlainEdge(testVertex(), testVertex());
+        new PlainEdge(testVertex(), testVertex());
     }
 
     @Test
-    public void testFactoryCreationDoesNotRaiseException(Boolean edgeType) throws InvalidIRException {
+    public void testFactoryCreationDoesNotRaiseException() throws InvalidIRException {
         PlainEdge.PlainEdgeFactory factory = new PlainEdge.PlainEdgeFactory();
-        PlainEdge e = factory.make(testVertex(), testVertex());
+        factory.make(testVertex(), testVertex());
     }
 }

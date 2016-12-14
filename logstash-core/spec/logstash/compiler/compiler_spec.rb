@@ -27,6 +27,10 @@ describe LogStash::Compiler do
           it "should compile" do
             expect(compiled).to be_java_kind_of(Java::OrgLogstashConfigIr::Pipeline)
           end
+          
+          it "should have a hash" do
+            expect(compiled.uniqueHash)
+          end
         end
       end
       

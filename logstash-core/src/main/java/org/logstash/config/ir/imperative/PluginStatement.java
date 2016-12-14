@@ -8,8 +8,6 @@ import org.logstash.config.ir.graph.Graph;
 import org.logstash.config.ir.graph.PluginVertex;
 import org.logstash.config.ir.graph.Vertex;
 
-import java.util.Map;
-
 /**
  * Created by andrewvc on 9/6/16.
  */
@@ -40,6 +38,8 @@ public class PluginStatement extends Statement {
     @Override
     public Graph toGraph() throws InvalidIRException {
         Vertex pluginVertex = new PluginVertex(getMeta(), pluginDefinition);
-        return Graph.empty().addVertex(pluginVertex);
+        Graph g = Graph.empty();
+        g.addVertex(pluginVertex);
+        return g;
     }
 }

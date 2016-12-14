@@ -12,9 +12,10 @@ import static org.logstash.config.ir.IRHelpers.testVertex;
 public class VertexTest {
     @Test
     public void TestVertexBasics() throws InvalidIRException {
+        Graph graph = Graph.empty();
         Vertex v1 = testVertex();
         Vertex v2 = testVertex();
-        Edge e = Edge.threadVertices(v1, v2);
+        graph.threadVertices(v1, v2);
 
         assertTrue("v1 has v2 as an outgoing vertex", v1.outgoingVertices().anyMatch(v2::equals));
         assertTrue("v2 has v1 as an incoming vertex", v2.incomingVertices().anyMatch(v1::equals));
@@ -22,14 +23,17 @@ public class VertexTest {
 
     @Test
     public void testIsLeafAndRoot() throws InvalidIRException {
+        Graph graph = Graph.empty();
+
         Vertex v = testVertex();
+        graph.addVertex(v);
 
         // Nodes should be leaves and roots if they are isolated
         assertTrue(v.isLeaf());
         assertTrue(v.isRoot());
 
         Vertex otherV = testVertex();
-        Edge e = Edge.threadVertices(v, otherV);
+        graph.threadVertices(v, otherV);
 
         assertFalse(v.isLeaf());
         assertTrue(v.isRoot());
@@ -38,8 +42,10 @@ public class VertexTest {
     }
 
     @Test
-    public void testPartialLeafOnUnconnectedVertex() {
+    public void testPartialLeafOnUnconnectedVertex() throws InvalidIRException {
+        Graph g = Graph.empty();
         Vertex v = testVertex();
+        g.addVertex(v);
         assertEquals(v.getUnusedOutgoingEdgeFactories().size(), 1);
         assertTrue(v.isPartialLeaf());
     }
@@ -48,7 +54,8 @@ public class VertexTest {
     public void testPartialLeafOnConnectedVertex() throws InvalidIRException {
         Vertex v = testVertex();
         Vertex otherV = testVertex();
-        Edge e = Edge.threadVertices(v, otherV);
+        Graph graph = Graph.empty();
+        graph.threadVertices(v, otherV);
 
         assertEquals(v.getUnusedOutgoingEdgeFactories().size(), 0);
         assertFalse(v.isPartialLeaf());

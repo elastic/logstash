@@ -45,4 +45,9 @@ public abstract class BinaryBooleanExpression extends BooleanExpression {
     public String toRubyString() {
         return "(" + getLeft().toRubyString() + rubyOperator() + getRight().toRubyString() + ")";
     }
+
+    @Override
+    public String hashSource() {
+        return getLeft().hashSource() + this.getClass().getCanonicalName() + getRight().hashSource();
+    }
 }

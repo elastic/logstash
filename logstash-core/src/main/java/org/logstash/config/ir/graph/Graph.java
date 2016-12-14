@@ -1,75 +1,173 @@
 package org.logstash.config.ir.graph;
 
+import org.logstash.config.ir.IHashable;
 import org.logstash.config.ir.ISourceComponent;
 import org.logstash.config.ir.InvalidIRException;
-import org.logstash.config.ir.PluginDefinition;
 import org.logstash.config.ir.SourceMetadata;
+import org.logstash.config.ir.graph.algorithms.BreadthFirst;
+import org.logstash.config.ir.graph.algorithms.GraphDiff;
 
+import java.lang.reflect.Array;
 import java.util.*;
-import java.util.function.Consumer;
+import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
  * Created by andrewvc on 9/15/16.
  */
-public class Graph implements ISourceComponent {
+public class Graph implements ISourceComponent, IHashable {
     private final Set<Vertex> vertices = new HashSet<>();
     private final Set<Edge> edges = new HashSet<>();
+    private Map<Vertex, Integer> vertexRanks = new HashMap<>();
+    private final Map<Vertex,Set<Edge>> outgoingEdgeLookup = new HashMap<>();
+    private final Map<Vertex,Set<Edge>> incomingEdgeLookup = new HashMap<>();
+
 
     public Graph(Collection<Vertex> vertices, Collection<Edge> edges) throws InvalidIRException {
-        this.vertices.addAll(vertices);
-        this.edges.addAll(edges);
-        validate();
+        for (Vertex vertex : vertices) { this.addVertex(vertex, false); }
+        for (Edge edge : edges) { this.addEdge(edge, false); }
+        this.refresh();
     }
 
-    public Graph() {
-    }
+    public Graph() {}
 
     public static Graph empty() {
         return new Graph();
     }
 
-    public Graph addVertex(Vertex v) throws InvalidIRException {
+    public void addVertex(Vertex v) throws InvalidIRException {
+        addVertex(v, true);
+    }
+
+    private void addVertex(Vertex v, boolean doRefresh) throws InvalidIRException {
+        // If this belongs to another graph use a copy
+        if (v.getGraph() != null && v.getGraph() != this) {
+            throw new InvalidIRException("Attempted to add vertex already belonging to a graph!");
+        }
+
+        v.setGraph(this);
+
         this.vertices.add(v);
-        this.refresh();
+
+        if (doRefresh) this.refresh();
+    }
+
+    // Takes an arbitrary vertex from any graph and brings it into this one.
+    // It may have to copy it. The actual vertex that gets used is returned
+    public Vertex importVertex(Vertex v) throws InvalidIRException {
+        if (v.getGraph() != this) {
+            if (v.getGraph() == null) {
+                this.addVertex(v);
+                return v;
+            } else {
+                Vertex copy = v.copy();
+                this.addVertex(copy);
+                return copy;
+            }
+        } else {
+            return v;
+        }
+    }
+
+    public Vertex getVertexById(String id) {
+        return this.vertices().filter(v -> v.getId().equals(id)).findAny().get();
+    }
+
+    // Use threadVertices instead
+    private Graph addEdge(Edge e) throws InvalidIRException {
+        return addEdge(e, true);
+    }
+
+    private Graph addEdge(Edge e, boolean doRefresh) throws InvalidIRException {
+        if (!(this.getVertices().contains(e.getFrom()) && this.getVertices().contains(e.getTo()))) {
+            throw new InvalidIRException("Attempted to add edge referencing vertices not in this graph!");
+        }
+
+        this.edges.add(e);
+
+        BiFunction<Vertex, Set<Edge>, Set<Edge>> lookupComputeFunction = (vertex, edgeSet) -> {
+            if (edgeSet == null) edgeSet = new HashSet<>();
+            edgeSet.add(e);
+            return edgeSet;
+        };
+        this.outgoingEdgeLookup.compute(e.getFrom(), lookupComputeFunction);
+        this.incomingEdgeLookup.compute(e.getTo(), lookupComputeFunction);
+
+        e.setGraph(this);
+        if (doRefresh) this.refresh();
         return this;
     }
 
-    public void merge(Graph otherGraph) throws InvalidIRException {
-        this.vertices.addAll(otherGraph.getVertices());
-        this.edges.addAll(otherGraph.edges);
-        this.refresh();
+    protected Collection<Edge> getOutgoingEdges(Vertex v) {
+        return this.outgoingEdgeLookup.getOrDefault(v, Collections.emptySet());
+    }
+
+    protected Collection<Edge> getIncomingEdges(Vertex v) {
+        return this.incomingEdgeLookup.getOrDefault(v, Collections.emptySet());
+    }
+
+    // Returns a copy of this graph
+    public Graph copy() throws InvalidIRException {
+        return Graph.combine(this).graph;
+    }
+
+    // Returns a new graph that is the union of all provided graphs.
+    // If a single graph is passed in this will return a copy of it
+    public static GraphCombinationResult combine(Graph... graphs) throws InvalidIRException {
+        Map<Vertex, Vertex> oldToNewVertices = new HashMap<>();
+        Map<Edge,Edge> oldToNewEdges = new HashMap<>();
+
+        for (Graph graph : graphs) {
+            graph.vertices().forEach(v -> oldToNewVertices.put(v, v.copy()));
+
+            for (Edge e : graph.getEdges()) {
+                Edge copy = e.copy(oldToNewVertices.get(e.getFrom()), oldToNewVertices.get(e.getTo()));
+                oldToNewEdges.put(e, copy);
+            }
+        }
+
+        Graph newGraph = new Graph(oldToNewVertices.values(), oldToNewEdges.values());
+        return new GraphCombinationResult(newGraph, oldToNewVertices, oldToNewEdges);
+    }
+
+    public static final class GraphCombinationResult {
+        public final Graph graph;
+        public final Map<Vertex, Vertex> oldToNewVertices;
+        public final Map<Edge, Edge> oldToNewEdges;
+
+        GraphCombinationResult(Graph graph, Map<Vertex, Vertex> oldToNewVertices, Map<Edge, Edge> oldToNewEdges) {
+            this.graph = graph;
+            this.oldToNewVertices = oldToNewVertices;
+            this.oldToNewEdges = oldToNewEdges;
+        }
     }
 
     /*
-      Attach another graph's nodes to this one by connection this graph's leaves to
+      Return a copy of this graph with the other graph's nodes to this one by connection this graph's leaves to
       the other graph's root
     */
-    public Graph threadLeavesInto(Graph otherGraph) throws InvalidIRException {
-        if (otherGraph.getVertices().size() == 0) return this;
+    public Graph chain(Graph otherGraph) throws InvalidIRException {
+        if (otherGraph.getVertices().size() == 0) return this.copy();
+        if (this.isEmpty()) return otherGraph.copy();
+
+        GraphCombinationResult combineResult = Graph.combine(this, otherGraph);
 
         // Build these lists here since we do mutate the graph in place later
         // This isn't strictly necessary, but makes things less confusing
-        Collection<Vertex> fromLeaves = getLeaves();
-        Collection<Vertex> toRoots = otherGraph.getRoots();
+        Collection<Vertex> fromLeaves = allLeaves().map(combineResult.oldToNewVertices::get).collect(Collectors.toSet());
+        Collection<Vertex> toRoots = otherGraph.roots().map(combineResult.oldToNewVertices::get).collect(Collectors.toSet());
 
-        if (this.isEmpty()) {
-            this.merge(otherGraph);
-            return this;
-        }
+        return combineResult.graph.chain(fromLeaves, toRoots);
+    }
 
-        threadLeavesInto(fromLeaves, toRoots);
-
+    public Graph chain(Vertex... otherVertex) throws InvalidIRException {
+        chain(this.getAllLeaves(), Arrays.asList(otherVertex));
         return this;
     }
 
-    public Graph threadLeavesInto(Vertex... otherVertex) throws InvalidIRException {
-        threadLeavesInto(this.getPartialLeaves(), Arrays.asList(otherVertex));
-        return this;
-    }
-
-    private void threadLeavesInto(Collection<Vertex> fromLeaves, Collection<Vertex> toVertices) throws InvalidIRException {
+    // This does *not* return a copy for performance reasons
+    private Graph chain(Collection<Vertex> fromLeaves, Collection<Vertex> toVertices) throws InvalidIRException {
         for (Vertex leaf : fromLeaves) {
             for (Edge.EdgeFactory unusedEf : leaf.getUnusedOutgoingEdgeFactories()) {
                 for (Vertex toVertex : toVertices) {
@@ -77,50 +175,85 @@ public class Graph implements ISourceComponent {
                 }
             }
         }
-    }
-
-    public Graph threadVertices(Edge.EdgeFactory edgeFactory, Vertex... argVertices) throws InvalidIRException {
-        Collection<Edge> newEdges = Edge.threadVertices(edgeFactory, argVertices);
-
-        for (Edge edge : newEdges) {
-            this.vertices.add(edge.getFrom());
-            this.vertices.add(edge.getTo());
-            this.edges.add(edge);
-        }
-
-        refresh();
 
         return this;
     }
 
-    public Graph threadVertices(boolean bool, Vertex... vertices) throws InvalidIRException {
+    public Collection<Edge> threadVerticesById(String... vertexIds) throws InvalidIRException {
+        return threadVerticesById(PlainEdge.factory, vertexIds);
+    }
+
+    public Collection<Edge> threadVerticesById(Edge.EdgeFactory edgeFactory, String... vertexIds) throws InvalidIRException {
+        Vertex[] argVertices = new Vertex[vertexIds.length];
+        for (int i = 0; i < vertexIds.length; i ++) {
+            String id = vertexIds[i];
+            Vertex v = getVertexById(id);
+            if (v==null) throw new InvalidIRException("Could not thread vertex, id not found in graph: !" + id + "\n" + this);
+            argVertices[i] = v;
+        }
+        return threadVertices(edgeFactory, argVertices);
+    }
+
+    public Collection<Edge> threadVertices(Edge.EdgeFactory edgeFactory, Vertex... argVertices) throws InvalidIRException {
+        List<Vertex> importedVertices = new ArrayList<>(argVertices.length);
+        for (Vertex va : argVertices) {
+            importedVertices.add(this.importVertex(va));
+        }
+
+        List<Edge> newEdges = new ArrayList<>();
+        for (int i = 0; i < importedVertices.size()-1; i++) {
+            Vertex from = importedVertices.get(i);
+            Vertex to = importedVertices.get(i+1);
+
+            this.addVertex(from);
+            this.addVertex(to);
+
+            Edge edge = edgeFactory.make(from, to);
+            newEdges.add(edge);
+            this.addEdge(edge);
+        }
+
+        refresh();
+
+        return newEdges;
+    }
+
+    public Edge threadVertices(Vertex a, Vertex b) throws InvalidIRException {
+        return threadVertices(PlainEdge.factory, a, b).stream().findFirst().get();
+    }
+
+    public Collection<Edge> threadVertices(Vertex... vertices) throws InvalidIRException {
+        return threadVertices(PlainEdge.factory, vertices);
+    }
+
+    public Collection<Edge> threadVertices(boolean bool, Vertex... vertices) throws InvalidIRException {
         Edge.EdgeFactory factory = bool ? BooleanEdge.trueFactory : BooleanEdge.falseFactory;
         return threadVertices(factory, vertices);
     }
 
-    public Graph threadVertices(Vertex... vertices) throws InvalidIRException {
-        return threadVertices(PlainEdge.factory, vertices);
-    }
-
-    // Many of the operations we perform involve modifying one graph but adding vertices/edges
+    // Many of the operations we perform involve modifying one graph by adding vertices/edges
     // from another. This method ensures that all the vertices/edges we know about having been pulled into
     // this graph. Methods in this class that add or remove externally provided vertices/edges
     // should call this method to ensure that the rest of the graph these items depend on are pulled
     // in.
     public void refresh() throws InvalidIRException {
-        walkEdges(e -> {
-            this.edges.add(e);
-            this.vertices.add(e.getTo());
-            this.vertices.add(e.getFrom());
-        });
-
-        walkVertices(v -> {
-            this.vertices.add(v);
-            this.edges.addAll(v.getIncomingEdges());
-            this.edges.addAll(v.getOutgoingEdges());
-        });
-
+        this.calculateRanks();
         this.validate();
+    }
+
+    private void calculateRanks() {
+        vertexRanks = BreadthFirst.breadthFirst(this.getRoots()).vertexDistances;
+    }
+
+    public Integer rank(Vertex vertex) {
+        Integer rank = vertexRanks.get(vertex);
+        // This should never happen
+        if (rank == null) throw new RuntimeException("Attempted to get rank from vertex where it is not yet calculated: " + this);
+        return rank;
+    }
+
+    public Map<String, List<Vertex>> verticesByHash() {
+        return this.vertices().collect(Collectors.groupingBy(Vertex::uniqueHash));
     }
 
     public void validate() throws InvalidIRException {
@@ -128,55 +261,35 @@ public class Graph implements ISourceComponent {
             throw new InvalidIRException("Graph has no leaf vertices!" + this.toString());
         }
 
-        this.getSortedVertices();
-    }
+        List<List<Vertex>> duplicates = verticesByHash().values().stream().filter((group) -> group.size() > 1).collect(Collectors.toList());
+        if (!duplicates.isEmpty()) {
+            Stream<String> errorMessageGroups = duplicates.stream().
+                    map((group) -> group.stream().map(Object::toString).collect(Collectors.joining("===")));
 
-    public void walkVertices(Consumer<Vertex> consumer) {
-        for (Vertex vertex : this.getRoots()) {
-            walkVertices(consumer, vertex);
+            String joinedErrorMessageGroups = errorMessageGroups.collect(Collectors.joining("\n---\n"));
+
+            throw new InvalidIRException("Some nodes on the graph are fully redundant!\n" + joinedErrorMessageGroups);
         }
     }
 
-    public void walkVertices(Consumer<Vertex> consumer, Vertex vertex) {
-        vertex.outgoingVertices().forEach(v -> {
-            consumer.accept(v);
-            walkVertices(consumer, v);
-        });
-    }
-
-    // Walk the graph, visiting each edge on it with the provided Consumer<Edge>
-    public void walkEdges(Consumer<Edge> consumer) {
-        // Avoid stream interface to avoid concurrency issues if a new root is added
-        // since streams are lazy you can't mutate the graph while walking it with a
-        // stream. Using this iterative approach we can allow such operations.
-        for (Vertex root : this.getRoots()) {
-            walkEdges(consumer, root);
-        }
-    }
-
-    private void walkEdges(Consumer<Edge> consumer, Vertex vertex) {
-       vertex.outgoingEdges().forEach(e -> {
-           consumer.accept(e);
-           walkEdges(consumer,e.getTo());
-       });
-    }
 
     public Stream<Vertex> roots() {
         return vertices.stream().filter(Vertex::isRoot);
     }
 
-    public List<Vertex> getRoots() {
+    public Collection<Vertex> getRoots() {
         return roots().collect(Collectors.toList());
     }
 
     // Vertices which are partially leaves in that they support multiple
     // outgoing edge types but only have one or fewer attached
-    public Stream<Vertex> partialLeaves() {
+    public Stream<Vertex> allLeaves() {
         return vertices.stream().filter(Vertex::isPartialLeaf);
     }
 
-    public Collection<Vertex> getPartialLeaves() {
-        return partialLeaves().collect(Collectors.toList());
+    // Get all leaves whether partial or not
+    public Collection<Vertex> getAllLeaves() {
+        return allLeaves().collect(Collectors.toList());
     }
 
     public Stream<Vertex> leaves() {
@@ -280,17 +393,10 @@ public class Graph implements ISourceComponent {
     public boolean sourceComponentEquals(ISourceComponent sourceComponent) {
         if (sourceComponent == this) return true;
         if (sourceComponent instanceof Graph) {
-            Graph otherG = (Graph) sourceComponent;
-            if (otherG.getVertices().size() != this.getVertices().size()) return false;
+            Graph otherGraph = (Graph) sourceComponent;
+            GraphDiff.DiffResult diff = GraphDiff.diff(this, otherGraph);
+            return diff.isIdentical();
 
-            boolean edgesEqual = this.getEdges().stream().
-                    allMatch(e -> otherG.getEdges().stream().anyMatch(oe -> oe.sourceComponentEquals(e)));
-
-            // We need to check vertices separately because there may be unconnected vertices
-            boolean verticesEqual = this.getVertices().stream().
-                    allMatch(v -> otherG.getVertices().stream().anyMatch(ov -> ov.sourceComponentEquals(v)));
-
-            return edgesEqual && verticesEqual;
         }
         return false;
     }
@@ -300,36 +406,8 @@ public class Graph implements ISourceComponent {
         return this.getEdges().stream().anyMatch(e -> e.sourceComponentEquals(otherE));
     }
 
-
-    public class DiffResult {
-        public Collection<Edge> getRemovedEdges() {
-            return removedEdges;
-        }
-
-        public Collection<Edge> getAddedEdges() {
-            return addedEdges;
-        }
-
-        private final Collection<Edge> removedEdges;
-        private final Collection<Edge> addedEdges;
-
-        public DiffResult(Collection<Edge> removed, Collection<Edge> added) {
-            this.removedEdges = removed;
-            this.addedEdges = added;
-        }
-
-        public String toString() {
-            return "Diff Result (-" + removedEdges.size() + ",+" + addedEdges.size() + ")\n" +
-                    removedEdges.stream().map(e -> "-" + e.toString()).collect(Collectors.joining("\n")) +
-                    "\n" +
-                    addedEdges.stream().map(e -> "+" + e.toString()).collect(Collectors.joining("\n"));
-        }
-    }
-
-    public DiffResult diff(Graph o) {
-       List<Edge> removedEdges = this.getEdges().stream().filter(e -> !o.hasEquivalentEdge(e)).collect(Collectors.toList());
-       List<Edge> addedEdges = o.getEdges().stream().filter(e -> !this.hasEquivalentEdge(e)).collect(Collectors.toList());
-        return new DiffResult(removedEdges, addedEdges);
+    public boolean hasEquivalentVertex(Vertex otherV) {
+        return this.getVertices().stream().anyMatch(v -> v.sourceComponentEquals(otherV));
     }
 
     @Override
@@ -341,21 +419,16 @@ public class Graph implements ISourceComponent {
         return (this.getVertices().size() == 0);
     }
 
-    public Graph threadToGraph(BooleanEdge.BooleanEdgeFactory edgeFactory, Vertex v, Graph otherGraph) throws InvalidIRException {
-        if (otherGraph.getVertices().size() == 0) return this;
-
-        for (Vertex otherRoot : otherGraph.getRoots()) {
-            this.threadVertices(edgeFactory, v, otherRoot);
-        }
-
-        return this;
-    }
-
     public Stream<Vertex> vertices() {
         return this.vertices.stream();
     }
 
     public Stream<Edge> edges() {
         return this.edges.stream();
+    }
+
+    @Override
+    public String hashSource() {
+        return this.vertices.stream().map(Vertex::hashSource).sorted().collect(Collectors.joining("\n"));
     }
 }
