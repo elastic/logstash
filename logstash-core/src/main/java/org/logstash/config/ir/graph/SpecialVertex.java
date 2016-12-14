@@ -6,19 +6,6 @@ import org.logstash.config.ir.ISourceComponent;
  * Created by andrewvc on 9/15/16.
  */
 public class SpecialVertex extends Vertex {
-    private final Type type;
-
-    public SpecialVertex() {
-        super(null);
-        this.type = Type.QUEUE;
-    }
-
-    public SpecialVertex(Type type) {
-        super(null);
-        this.type = type;
-
-    }
-
     public enum Type {
         FILTER_OUT ("FILTER_OUT"),
         QUEUE ("QUEUE");
@@ -34,8 +21,39 @@ public class SpecialVertex extends Vertex {
         }
     }
 
+    private final Type type;
+    private final String id;
+
+    public SpecialVertex(Type type) {
+        super(null);
+        this.id = "special-" + type.toString();
+        this.type = type;
+
+    }
+
+    @Override
+    public String getId() {
+        // There can only be one of each special vertex!
+        return id;
+    }
+
+    @Override
+    public String individualHashSource() {
+        return this.getClass().getCanonicalName() + "|" + this.type;
+    }
+
+    public Type getType() {
+        return type;
+    }
+
+
     public String toString() {
         return "S[" + this.type + "]";
+    }
+
+    @Override
+    public SpecialVertex copy() {
+        return new SpecialVertex(this.type);
     }
 
     @Override

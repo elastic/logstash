@@ -25,7 +25,7 @@ public class ComposedSequenceStatement extends ComposedStatement {
 
         for (Statement statement : getStatements()) {
             Graph sg = statement.toGraph();
-            g.threadLeavesInto(sg);
+            g = g.chain(sg);
         }
 
         return g;

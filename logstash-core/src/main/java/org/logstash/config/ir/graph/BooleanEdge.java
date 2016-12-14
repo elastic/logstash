@@ -3,8 +3,6 @@ package org.logstash.config.ir.graph;
 import org.logstash.config.ir.ISourceComponent;
 import org.logstash.config.ir.InvalidIRException;
 
-import java.util.Collection;
-
 /**
  * Created by andrewvc on 9/15/16.
  */
@@ -50,6 +48,11 @@ public class BooleanEdge extends Edge {
         this.edgeType = edgeType;
     }
 
+    @Override
+    public String individualHashSource() {
+        return this.getClass().getCanonicalName() + "|" + this.getEdgeType();
+    }
+
     public String toString() {
         return getFrom() + " -|" + this.edgeType + "|-> " + getTo();
     }
@@ -66,6 +69,11 @@ public class BooleanEdge extends Edge {
                     this.getEdgeType().equals(otherE.getEdgeType());
         }
         return false;
+    }
+
+    @Override
+    public BooleanEdge copy(Vertex from, Vertex to) throws InvalidIRException {
+        return new BooleanEdge(this.edgeType, from, to);
     }
 
 }

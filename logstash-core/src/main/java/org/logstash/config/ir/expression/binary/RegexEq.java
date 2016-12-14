@@ -1,6 +1,5 @@
 package org.logstash.config.ir.expression.binary;
 
-import org.logstash.config.ir.ISourceComponent;
 import org.logstash.config.ir.InvalidIRException;
 import org.logstash.config.ir.SourceMetadata;
 import org.logstash.config.ir.expression.BinaryBooleanExpression;

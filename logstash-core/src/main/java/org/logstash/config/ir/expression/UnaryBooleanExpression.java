@@ -1,6 +1,5 @@
 package org.logstash.config.ir.expression;
 
-import org.logstash.config.ir.ISourceComponent;
 import org.logstash.config.ir.InvalidIRException;
 import org.logstash.config.ir.SourceMetadata;
 
@@ -19,5 +18,10 @@ public abstract class UnaryBooleanExpression extends BooleanExpression {
         super(meta);
         if (expression == null) throw new InvalidIRException("Unary expressions cannot operate on null!");
         this.expression = expression;
+    }
+
+    @Override
+    public String hashSource() {
+        return this.getClass().getCanonicalName() + this.expression.hashSource();
     }
 }

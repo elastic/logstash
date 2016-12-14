@@ -63,4 +63,9 @@ public class ValueExpression extends Expression {
 
         return get().toString();
     }
+
+    @Override
+    public String hashSource() {
+        return this.getClass().getCanonicalName() + "|" + value;
+    }
 }

@@ -1,12 +1,10 @@
 package org.logstash.config.ir.imperative;
 
 import org.logstash.config.ir.ISourceComponent;
-import org.logstash.config.ir.SourceMetadata;
 import org.logstash.config.ir.InvalidIRException;
-import org.logstash.config.ir.graph.Graph;
-import org.logstash.config.ir.graph.Vertex;
+import org.logstash.config.ir.SourceMetadata;
 
-import java.util.*;
+import java.util.List;
 import java.util.stream.Collectors;
 
 /**
