@@ -1,11 +1,15 @@
 package org.logstash.ackedqueue;
 
+import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 import org.logstash.common.io.ByteBufferPageIO;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
@@ -22,6 +26,13 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 public class QueueTest {
+    @Rule public TemporaryFolder temporaryFolder = new TemporaryFolder();
+    private String dataPath;
+
+    @Before
+    public void setUp() throws Exception {
+        dataPath = temporaryFolder.newFolder("data").getPath();
+    }
 
     @Test
     public void newQueue() throws IOException {
@@ -505,6 +516,55 @@ public class QueueTest {
         assertThat(q.isFull(), is(true)); // queue should still be full
 
         executor.shutdown();
+    }
+
+    @Test
+    public void testAckedCount() throws IOException {
+        Settings settings = TestSettings.getSettingsCheckpointFilePageMemory(100, dataPath);
+        Queue q = new Queue(settings);
+        q.open();
+
+        Queueable element1 = new StringElement("foobarbaz");
+        Queueable element2 = new StringElement("wowza");
+        Queueable element3 = new StringElement("third");
+        long firstSeqNum = q.write(element1);
+
+        Batch b = q.nonBlockReadBatch(1);
+        assertThat(b.getElements().size(), is(equalTo(1)));
+
+        q.close();
+
+        q = new Queue(settings);
+        q.open();
+
+        long secondSeqNum = q.write(element2);
+        long thirdSeqNum = q.write(element3);
+
+        b = q.nonBlockReadBatch(1);
+        assertThat(b.getElements().size(), is(equalTo(1)));
+        assertThat(b.getElements().get(0), is(equalTo(element1)));
+
+        b = q.nonBlockReadBatch(2);
+        assertThat(b.getElements().size(), is(equalTo(2)));
+        assertThat(b.getElements().get(0), is(equalTo(element2)));
+        assertThat(b.getElements().get(1), is(equalTo(element3)));
+
+        q.ack(Collections.singletonList(firstSeqNum));
+        q.close();
+
+        q = new Queue(settings);
+        q.open();
+
+        b = q.nonBlockReadBatch(2);
+        assertThat(b.getElements().size(), is(equalTo(2)));
+
+        q.ack(Arrays.asList(secondSeqNum, thirdSeqNum));
+
+
+        assertThat(q.getAckedCount(), equalTo(0L));
+        assertThat(q.getUnackedCount(), equalTo(0L));
+
+        q.close();
     }
 
 }

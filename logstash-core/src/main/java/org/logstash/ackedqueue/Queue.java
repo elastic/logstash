@@ -106,6 +106,30 @@ public class Queue implements Closeable {
         }
     }
 
+    public String getDirPath() {
+        return this.dirPath;
+    }
+
+    public long getMaxBytes() {
+        return this.maxBytes;
+    }
+
+    public long getMaxUnread() {
+        return this.maxUnread;
+    }
+
+    public long getCurrentByteSize() {
+        return this.currentByteSize;
+    }
+
+    public int getPageCapacity() {
+        return this.pageCapacity;
+    }
+
+    public long getUnreadCount() {
+        return this.unreadCount;
+    }
+
     // moved queue opening logic in open() method until we have something in place to used in-memory checkpoints for testing
     // because for now we need to pass a Queue instance to the Page and we don't want to trigger a Queue recovery when
     // testing Page
@@ -583,6 +607,19 @@ public class Queue implements Closeable {
             return this.headPage.getPageNum();
         }
         return this.tailPages.get(0).getPageNum();
+    }
+
+    public long getAckedCount() {
+        return headPage.ackedSeqNums.cardinality() + tailPages.stream()
+                .mapToLong(page -> page.ackedSeqNums.cardinality())
+                .sum();
+    }
+
+    public long getUnackedCount() {
+        long headPageCount = (headPage.getElementCount() - headPage.ackedSeqNums.cardinality());
+        long tailPagesCount = tailPages.stream()
+                .mapToLong(page -> (page.getElementCount() - page.ackedSeqNums.cardinality())).sum();
+        return headPageCount + tailPagesCount;
     }
 
     protected long nextSeqNum() {
