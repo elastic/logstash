@@ -7,6 +7,7 @@ import org.jruby.RubyClass;
 import org.jruby.RubyFixnum;
 import org.jruby.RubyModule;
 import org.jruby.RubyObject;
+import org.jruby.RubyBoolean;
 import org.jruby.anno.JRubyClass;
 import org.jruby.anno.JRubyMethod;
 import org.jruby.runtime.Arity;
@@ -42,7 +43,6 @@ public class JrubyAckedQueueExtLibrary implements Library {
     // TODO:
     // as a simplified first prototyping implementation, the Settings class is not exposed and the queue elements
     // are assumed to be logstash Event.
-
 
     @JRubyClass(name = "AckedQueue", parent = "Object")
     public static class RubyAckedQueue extends RubyObject {
@@ -171,6 +171,11 @@ public class JrubyAckedQueueExtLibrary implements Library {
             return (b == null) ? context.nil : new JrubyAckedBatchExtLibrary.RubyAckedBatch(context.runtime, b);
         }
 
+        @JRubyMethod(name = "is_fully_acked?")
+        public IRubyObject ruby_is_fully_acked(ThreadContext context)
+        {
+            return RubyBoolean.newBoolean(context.runtime, this.queue.isFullyAcked());
+        }
 
         @JRubyMethod(name = "close")
         public IRubyObject ruby_close(ThreadContext context)
@@ -183,6 +188,5 @@ public class JrubyAckedQueueExtLibrary implements Library {
 
             return context.nil;
         }
-
     }
 }

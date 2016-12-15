@@ -3,6 +3,7 @@ require "spec_helper"
 require "logstash/inputs/generator"
 require "logstash/filters/multiline"
 require_relative "../support/mocks_classes"
+require_relative "../logstash/pipeline_reporter_spec" # for DummyOutput class
 
 class DummyInput < LogStash::Inputs::Base
   config_name "dummyinput"

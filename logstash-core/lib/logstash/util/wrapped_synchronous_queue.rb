@@ -72,6 +72,10 @@ module LogStash; module Util
         # noop, compat with acked queue read client
       end
 
+      def empty?
+        true # synchronous queue is alway empty
+      end
+
       def set_batch_dimensions(batch_size, wait_for)
         @batch_size = batch_size
         @wait_for = wait_for
@@ -104,18 +108,25 @@ module LogStash; module Util
         @inflight_batches.fetch(Thread.current, [])
       end
 
-      def take_batch
-        @mutex.synchronize do
-          batch = ReadBatch.new(@queue, @batch_size, @wait_for)
-          set_current_thread_inflight_batch(batch)
+      # create a new empty batch
+      # @return [ReadBatch] a new empty read batch
+      def new_batch
+        ReadBatch.new(@queue, @batch_size, @wait_for)
+      end
 
-          # We dont actually have any events to work on so lets
-          # not bother with recording metrics for them
-          if batch.size > 0
-            add_starting_metrics(batch)
-            start_clock
-          end
-          batch
+      def read_batch
+        batch = new_batch
+        @mutex.synchronize { batch.read_next }
+        start_metrics(batch)
+        batch
+      end
+
+      def start_metrics(batch)
+        @mutex.synchronize do
+          # there seems to be concurrency issues with metrics, keep it in the mutex
+          add_starting_metrics(batch)
+          set_current_thread_inflight_batch(batch)
+          start_clock
         end
       end
 
@@ -125,8 +136,9 @@ module LogStash; module Util
 
       def close_batch(batch)
         @mutex.synchronize do
+          # there seems to be concurrency issues with metrics, keep it in the mutex
           @inflight_batches.delete(Thread.current)
-          stop_clock
+          stop_clock(batch)
         end
       end
 
@@ -137,9 +149,14 @@ module LogStash; module Util
         ]
       end
 
-      def stop_clock
+      def stop_clock(batch)
         unless @inflight_clocks[Thread.current].nil?
-          @inflight_clocks[Thread.current].each(&:stop)
+          if batch.size > 0
+            # only stop (which also records) the metrics if the batch is non-empty.
+            # start_clock is now called at empty batch creation and an empty batch could
+            # stay empty all the way down to the close_batch call.
+            @inflight_clocks[Thread.current].each(&:stop)
+          end
           @inflight_clocks.delete(Thread.current)
         end
       end
@@ -162,6 +179,10 @@ module LogStash; module Util
 
     class ReadBatch
       def initialize(queue, size, wait)
+        @queue = queue
+        @size = size
+        @wait = wait
+
         @originals = Hash.new
 
         # TODO: disabled for https://github.com/elastic/logstash/issues/6055 - will have to properly refactor
@@ -170,7 +191,16 @@ module LogStash; module Util
         @generated = Hash.new
         @iterating_temp = Hash.new
         @iterating = false # Atomic Boolean maybe? Although batches are not shared across threads
-        take_originals_from_queue(queue, size, wait)
+        @acked_batch = nil
+      end
+
+      def read_next
+        @size.times do |t|
+          event = @queue.poll(@wait)
+          return if event.nil? # queue poll timed out
+
+          @originals[event] = true
+        end
       end
 
       def merge(event)
@@ -234,15 +264,6 @@ module LogStash; module Util
       def update_generated
         @generated.update(@iterating_temp)
         @iterating_temp.clear
-      end
-
-      def take_originals_from_queue(queue, size, wait)
-        size.times do |t|
-          event = queue.poll(wait)
-          return if event.nil? # queue poll timed out
-
-          @originals[event] = true
-        end
       end
     end
 

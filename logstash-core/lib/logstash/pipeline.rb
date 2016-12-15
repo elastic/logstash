@@ -154,6 +154,7 @@ module LogStash; class Pipeline < BasePipeline
     @filter_queue_client.set_pipeline_metric(
         metric.namespace([:stats, :pipelines, pipeline_id.to_s.to_sym, :events])
     )
+    @drain_queue =  @settings.get_value("queue.drain")
 
     @events_filtered = Concurrent::AtomicFixnum.new(0)
     @events_consumed = Concurrent::AtomicFixnum.new(0)
@@ -326,26 +327,32 @@ module LogStash; class Pipeline < BasePipeline
   # Main body of what a worker thread does
   # Repeatedly takes batches off the queue, filters, then outputs them
   def worker_loop(batch_size, batch_delay)
-    running = true
+    shutdown_requested = false
 
     @filter_queue_client.set_batch_dimensions(batch_size, batch_delay)
 
-    while running
-      batch = @filter_queue_client.take_batch
+    while true
       signal = @signal_queue.empty? ? NO_SIGNAL : @signal_queue.pop
-      running = !signal.shutdown?
+      shutdown_requested |= signal.shutdown? # latch on shutdown signal
 
+      batch = @filter_queue_client.read_batch # metrics are started in read_batch
       @events_consumed.increment(batch.size)
-
       filter_batch(batch)
-
-      if signal.flush? || signal.shutdown?
-        flush_filters_to_batch(batch, :final => signal.shutdown?)
-      end
-
+      flush_filters_to_batch(batch, :final => false) if signal.flush?
       output_batch(batch)
       @filter_queue_client.close_batch(batch)
+
+      # keep break at end of loop, after the read_batch operation, some pipeline specs rely on this "final read_batch" before shutdown.
+      break if shutdown_requested && !draining_queue?
     end
+
+    # we are shutting down, queue is drained if it was required, now  perform a final flush.
+    # for this we need to create a new empty batch to contain the final flushed events
+    batch = @filter_queue_client.new_batch
+    @filter_queue_client.start_metrics(batch) # explicitly call start_metrics since we dont do a read_batch here
+    flush_filters_to_batch(batch, :final => true)
+    output_batch(batch)
+    @filter_queue_client.close_batch(batch)
   end
 
   def filter_batch(batch)
@@ -604,4 +611,10 @@ module LogStash; class Pipeline < BasePipeline
       :flushing => @flushing
     }
   end
-end end
+
+  private
+
+  def draining_queue?
+    @drain_queue ? !@filter_queue_client.empty? : false
+  end
+end; end

@@ -60,7 +60,7 @@ describe LogStash::Util::WrappedSynchronousQueue do
 
         context "when the queue is empty" do
           it "doesnt record the `duration_in_millis`" do
-            batch = read_client.take_batch
+            batch = read_client.read_batch
             read_client.close_batch(batch)
             store = collector.snapshot_metric.metric_store
 
@@ -95,7 +95,8 @@ describe LogStash::Util::WrappedSynchronousQueue do
             batch = write_client.get_new_batch
             5.times {|i| batch.push("value-#{i}")}
             write_client.push_batch(batch)
-            read_batch = read_client.take_batch
+
+            read_batch = read_client.read_batch
             sleep(0.1) # simulate some work for the `duration_in_millis`
             # TODO: this interaction should be cleaned in an upcoming PR,
             # This is what the current pipeline does.
@@ -126,7 +127,7 @@ describe LogStash::Util::WrappedSynchronousQueue do
           batch = write_client.get_new_batch
           5.times {|i| batch.push(LogStash::Event.new({"message" => "value-#{i}"}))}
           write_client.push_batch(batch)
-          read_batch = read_client.take_batch
+          read_batch = read_client.read_batch
           expect(read_batch.size).to eq(5)
           i = 0
           read_batch.each do |data|
