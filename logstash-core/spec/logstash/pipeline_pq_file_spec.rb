@@ -82,6 +82,13 @@ describe LogStash::Pipeline do
   let(:queue_type) { "persisted" } #  "memory" "memory_acked"
   let(:times) { [] }
 
+  let(:pipeline_thread) do
+    # subject has to be called for the first time outside the thread because it will create a race condition
+    # with the subject.ready? call since subject is lazily initialized
+    s = subject
+    Thread.new { s.run }
+  end
+
   before :each do
     FileUtils.mkdir_p(this_queue_folder)
 
@@ -97,19 +104,22 @@ describe LogStash::Pipeline do
     pipeline_settings.each {|k, v| pipeline_settings_obj.set(k, v) }
     pipeline_settings_obj.set("queue.page_capacity", page_capacity)
     pipeline_settings_obj.set("queue.max_bytes", max_bytes)
-    Thread.new do
-      # make sure we have received all the generated events
-      while counting_output.event_count < number_of_events do
-        sleep 1
-      end
-      subject.shutdown
-    end
     times.push(Time.now.to_f)
-    subject.run
+
+    pipeline_thread
+    sleep(0.1) until subject.ready?
+
+    # make sure we have received all the generated events
+    while counting_output.event_count < number_of_events do
+      sleep(0.5)
+    end
+
     times.unshift(Time.now.to_f - times.first)
   end
 
   after :each do
+    subject.shutdown
+    pipeline_thread.join
     # Dir.rm_rf(this_queue_folder)
   end
 

@@ -7,6 +7,7 @@ import org.jruby.RubyClass;
 import org.jruby.RubyFixnum;
 import org.jruby.RubyModule;
 import org.jruby.RubyObject;
+import org.jruby.RubyBoolean;
 import org.jruby.anno.JRubyClass;
 import org.jruby.anno.JRubyMethod;
 import org.jruby.runtime.Arity;
@@ -166,6 +167,11 @@ public class JrubyAckedQueueMemoryExtLibrary implements Library {
             return (b == null) ? context.nil : new JrubyAckedBatchExtLibrary.RubyAckedBatch(context.runtime, b);
         }
 
+        @JRubyMethod(name = "is_fully_acked?")
+        public IRubyObject ruby_is_fully_acked(ThreadContext context)
+        {
+            return RubyBoolean.newBoolean(context.runtime, this.queue.isFullyAcked());
+        }
 
         @JRubyMethod(name = "close")
         public IRubyObject ruby_close(ThreadContext context)
