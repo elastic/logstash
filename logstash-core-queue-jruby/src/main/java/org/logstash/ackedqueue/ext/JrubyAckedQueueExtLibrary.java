@@ -87,6 +87,46 @@ public class JrubyAckedQueueExtLibrary implements Library {
             return context.nil;
         }
 
+        @JRubyMethod(name = "max_unread_events")
+        public IRubyObject ruby_max_unread_events(ThreadContext context) {
+            return context.runtime.newFixnum(queue.getMaxUnread());
+        }
+
+        @JRubyMethod(name = "max_size_in_bytes")
+        public IRubyObject ruby_max_size_in_bytes(ThreadContext context) {
+            return context.runtime.newFixnum(queue.getMaxBytes());
+        }
+
+        @JRubyMethod(name = "page_capacity")
+        public IRubyObject ruby_page_capacity(ThreadContext context) {
+            return context.runtime.newFixnum(queue.getPageCapacity());
+        }
+
+        @JRubyMethod(name = "dir_path")
+        public IRubyObject ruby_dir_path(ThreadContext context) {
+            return context.runtime.newString(queue.getDirPath());
+        }
+
+        @JRubyMethod(name = "current_byte_size")
+        public IRubyObject ruby_current_byte_size(ThreadContext context) {
+            return context.runtime.newFixnum(queue.getCurrentByteSize());
+        }
+
+        @JRubyMethod(name = "acked_count")
+        public IRubyObject ruby_acked_count(ThreadContext context) {
+            return context.runtime.newFixnum(queue.getAckedCount());
+        }
+
+        @JRubyMethod(name = "unacked_count")
+        public IRubyObject ruby_unacked_count(ThreadContext context) {
+            return context.runtime.newFixnum(queue.getUnackedCount());
+        }
+
+        @JRubyMethod(name = "unread_count")
+        public IRubyObject ruby_unread_count(ThreadContext context) {
+            return context.runtime.newFixnum(queue.getUnreadCount());
+        }
+
         @JRubyMethod(name = "open")
         public IRubyObject ruby_open(ThreadContext context)
         {

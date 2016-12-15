@@ -31,7 +31,7 @@ module LogStash
         def jvm_payload
           @stats.jvm
         end
-        
+
         def reloads
           @stats.reloads
         end

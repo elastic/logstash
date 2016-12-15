@@ -3,6 +3,9 @@ require "logstash/api/commands/base"
 require 'logstash/util/thread_dump'
 require_relative "hot_threads_reporter"
 
+java_import java.nio.file.Files
+java_import java.nio.file.Paths
+
 module LogStash
   module Api
     module Commands
@@ -19,10 +22,10 @@ module LogStash
             :uptime_in_millis => service.get_shallow(:jvm, :uptime_in_millis),
           }
         end
-        
+
         def reloads
           service.get_shallow(:stats, :reloads)
-        end  
+        end
 
         def process
           extract_metrics(
@@ -106,6 +109,7 @@ module LogStash
                 :outputs => plugin_stats(stats, :outputs)
               },
               :reloads => stats[:reloads],
+              :queue => stats[:queue]
             }
           end
         end # module PluginsStats
