@@ -58,14 +58,15 @@ public class JrubyAckedQueueMemoryExtLibrary implements Library {
         }
 
         // def initialize
-        @JRubyMethod(name = "initialize", optional = 4)
+        @JRubyMethod(name = "initialize", optional = 5)
         public IRubyObject ruby_initialize(ThreadContext context, IRubyObject[] args)
         {
-            args = Arity.scanArgs(context.runtime, args, 4, 0);
+            args = Arity.scanArgs(context.runtime, args, 5, 0);
 
             int capacity = RubyFixnum.num2int(args[1]);
             int maxUnread = RubyFixnum.num2int(args[2]);
             long queueMaxBytes = RubyFixnum.num2long(args[3]);
+            String className = args[4].asJavaString();
 
             Settings s = new MemorySettings(args[0].asJavaString());
             PageIOFactory pageIOFactory = (pageNum, size, path) -> new ByteBufferPageIO(pageNum, size, path);
@@ -75,7 +76,12 @@ public class JrubyAckedQueueMemoryExtLibrary implements Library {
             s.setQueueMaxBytes(queueMaxBytes);
             s.setElementIOFactory(pageIOFactory);
             s.setCheckpointIOFactory(checkpointIOFactory);
-            s.setElementClass(Event.class);
+
+            try {
+                s.setElementClass(Class.forName(className));
+            } catch (ClassNotFoundException e) {
+                context.runtime.newArgumentError("[" + className + "] class not found");
+            }
 
             this.queue = new Queue(s);
 

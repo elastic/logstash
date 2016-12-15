@@ -123,7 +123,7 @@ class LogStash::Filters::Base < LogStash::Plugin
   end
 
   public
-  def initialize(params)
+  def initialize(params, dlq=nil)
     super
     config_init(@params)
     @threadsafe = true

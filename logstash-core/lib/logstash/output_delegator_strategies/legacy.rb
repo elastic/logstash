@@ -2,9 +2,9 @@
 module LogStash module OutputDelegatorStrategies class Legacy
   attr_reader :worker_count, :workers
   
-  def initialize(logger, klass, metric, plugin_args)
+  def initialize(logger, klass, metric, plugin_args, dlq)
     @worker_count = (plugin_args["workers"] || 1).to_i
-    @workers = @worker_count.times.map { klass.new(plugin_args) }
+    @workers = @worker_count.times.map { klass.new(plugin_args, dlq) }
     @workers.each {|w| w.metric = metric }
     @worker_queue = SizedQueue.new(@worker_count)
     @workers.each {|w| @worker_queue << w}

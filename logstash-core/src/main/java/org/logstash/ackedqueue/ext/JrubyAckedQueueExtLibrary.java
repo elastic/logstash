@@ -1,6 +1,9 @@
 package org.logstash.ackedqueue.ext;
 
+import org.logstash.DLQEntry;
 import org.logstash.Event;
+import org.logstash.ackedqueue.Queueable;
+import org.logstash.ext.JrubyDLQEntryExtLibrary;
 import org.logstash.ext.JrubyEventExtLibrary;
 import org.jruby.Ruby;
 import org.jruby.RubyClass;
@@ -57,10 +60,10 @@ public class JrubyAckedQueueExtLibrary implements Library {
         }
 
         // def initialize
-        @JRubyMethod(name = "initialize", optional = 7)
+        @JRubyMethod(name = "initialize", optional = 8)
         public IRubyObject ruby_initialize(ThreadContext context, IRubyObject[] args)
         {
-            args = Arity.scanArgs(context.runtime, args, 7, 0);
+            args = Arity.scanArgs(context.runtime, args, 8, 0);
 
             int capacity = RubyFixnum.num2int(args[1]);
             int maxUnread = RubyFixnum.num2int(args[2]);
@@ -68,6 +71,7 @@ public class JrubyAckedQueueExtLibrary implements Library {
             int checkpointMaxWrites = RubyFixnum.num2int(args[4]);
             int checkpointMaxInterval = RubyFixnum.num2int(args[5]);
             long queueMaxBytes = RubyFixnum.num2long(args[6]);
+            String className = args[7].asJavaString();
 
             Settings s = new FileSettings(args[0].asJavaString());
             PageIOFactory pageIOFactory = (pageNum, size, path) -> new MmapPageIO(pageNum, size, path);
@@ -80,7 +84,12 @@ public class JrubyAckedQueueExtLibrary implements Library {
             s.setCheckpointMaxInterval(checkpointMaxInterval);
             s.setElementIOFactory(pageIOFactory);
             s.setCheckpointIOFactory(checkpointIOFactory);
-            s.setElementClass(Event.class);
+
+            try {
+                s.setElementClass(Class.forName(className));
+            } catch (ClassNotFoundException e) {
+                context.runtime.newArgumentError("[" + className + "] class not found");
+            }
 
             this.queue = new Queue(s);
 
@@ -142,13 +151,22 @@ public class JrubyAckedQueueExtLibrary implements Library {
         @JRubyMethod(name = {"write", "<<"}, required = 1)
         public IRubyObject ruby_write(ThreadContext context, IRubyObject event)
         {
-            if (!(event instanceof JrubyEventExtLibrary.RubyEvent)) {
-                throw context.runtime.newTypeError("wrong argument type " + event.getMetaClass() + " (expected LogStash::Event)");
-            }
+            // TODO(talevy): what's the point of elementClass here?
+            //if (!(event instanceof JrubyEventExtLibrary.RubyEvent) || !(event instanceof JrubyDLQEntryExtLibrary.RubyDLQEntry)) {
+            //    throw context.runtime.newTypeError("wrong argument type " + event.getMetaClass() + " (expected LogStash::Event|DLQEntry)");
+           // }
+
+
 
             long seqNum;
             try {
-                seqNum = this.queue.write(((JrubyEventExtLibrary.RubyEvent) event).getEvent());
+                final Queueable object;
+                if (event instanceof JrubyEventExtLibrary.RubyEvent) {
+                    object = ((JrubyEventExtLibrary.RubyEvent) event).getEvent();
+                } else {
+                    object = ((JrubyDLQEntryExtLibrary.RubyDLQEntry) event).getEntry();
+                }
+                seqNum = this.queue.write(object);
             } catch (IOException e) {
                 throw context.runtime.newIOErrorFromException(e);
             }

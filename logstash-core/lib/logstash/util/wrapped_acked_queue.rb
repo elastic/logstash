@@ -1,4 +1,4 @@
-# encoding: utf-8
+# kncoding: utf-8
 
 require "jruby_acked_queue_ext"
 require "jruby_acked_batch_ext"
@@ -20,15 +20,15 @@ module LogStash; module Util
     class QueueClosedError < ::StandardError; end
     class NotImplementedError < ::StandardError; end
 
-    def self.create_memory_based(path, capacity, max_events, max_bytes)
+    def self.create_memory_based(path, capacity, max_events, max_bytes, element_class)
       self.allocate.with_queue(
-        LogStash::AckedMemoryQueue.new(path, capacity, max_events, max_bytes)
+        LogStash::AckedMemoryQueue.new(path, capacity, max_events, max_bytes, element_class)
       )
     end
 
-    def self.create_file_based(path, capacity, max_events, checkpoint_max_writes, checkpoint_max_acks, checkpoint_max_interval, max_bytes)
+    def self.create_file_based(path, capacity, max_events, checkpoint_max_writes, checkpoint_max_acks, checkpoint_max_interval, max_bytes, element_class)
       self.allocate.with_queue(
-        LogStash::AckedQueue.new(path, capacity, max_events, checkpoint_max_writes, checkpoint_max_acks, checkpoint_max_interval, max_bytes)
+        LogStash::AckedQueue.new(path, capacity, max_events, checkpoint_max_writes, checkpoint_max_acks, checkpoint_max_interval, max_bytes, element_class)
       )
     end
 
@@ -201,6 +201,7 @@ module LogStash; module Util
       end
 
       def start_clock
+        return if @event_metric.nil? || @pipeline_metric.nil?
         @inflight_clocks[Thread.current] = [
           @event_metric.time(:duration_in_millis),
           @pipeline_metric.time(:duration_in_millis)
@@ -226,11 +227,13 @@ module LogStash; module Util
       end
 
       def add_filtered_metrics(batch)
+        return if @event_metric.nil? || @pipeline_metric.nil?
         @event_metric.increment(:filtered, batch.filtered_size)
         @pipeline_metric.increment(:filtered, batch.filtered_size)
       end
 
       def add_output_metrics(batch)
+        return if @event_metric.nil? || @pipeline_metric.nil?
         @event_metric.increment(:out, batch.filtered_size)
         @pipeline_metric.increment(:out, batch.filtered_size)
       end
@@ -291,10 +294,10 @@ module LogStash; module Util
         # TODO: for https://github.com/elastic/logstash/issues/6055 = will have to properly refactor
         @iterating = true
         @originals.each do |e, _|
-          blk.call(e) unless e.cancelled?
+          blk.call(e) unless (e.respond_to?(:cancelled?) && e.cancelled?)
         end
         @generated.each do |e, _|
-          blk.call(e) unless e.cancelled?
+          blk.call(e) unless (e.respond_to?(:cancelled?) && e.cancelled?)
         end
         @iterating = false
         update_generated
