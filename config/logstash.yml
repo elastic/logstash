@@ -131,6 +131,16 @@
 #
 # queue.checkpoint.interval: 1000
 #
+# ------------ Dead-Letter Queue Settings --------------
+# Flag to turn on dead-letter queue.
+#
+dead_letter_queue.enable: true
+#
+# If using dead_letter_queue.enable: true, the directory path where the data files will be stored.
+# Default is path.data/dead_letter_queue
+#
+# path.dead_letter_queue: false
+#
 # ------------ Metrics Settings --------------
 #
 # Bind address for the metrics REST endpoint

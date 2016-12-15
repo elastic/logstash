@@ -14,11 +14,11 @@ module LogStash
     ]
     def_delegators :@filter, *DELEGATED_METHODS
 
-    def initialize(logger, klass, metric, plugin_args)
+    def initialize(logger, klass, metric, plugin_args, dlq)
       @logger = logger
       @klass = klass
       @id = plugin_args["id"]
-      @filter = klass.new(plugin_args)
+      @filter = klass.new(plugin_args, dlq)
 
       # Scope the metrics to the plugin
       namespaced_metric = metric.namespace(@id.to_sym)

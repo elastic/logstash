@@ -129,6 +129,7 @@ public class Event implements Cloneable, Serializable, Queueable {
         this.cancelled = false;
     }
 
+
     public boolean isCancelled() {
         return this.cancelled;
     }

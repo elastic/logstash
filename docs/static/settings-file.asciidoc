@@ -134,6 +134,14 @@ The `logstash.yml` file includes the following settings:
 | The interval in milliseconds when a checkpoint is forced on the head page when persistent queues are enabled (`queue.type: persisted`). Specify `queue.checkpoint.interval: 0` for no periodic checkpoint.
 | 1000
 
+| `dead_letter_queue.enable`
+| Flag to instruct Logstash to enable the DLQ feature supported by plugins.
+| `false`
+
+| `path.dql`
+| The directory path where the data files will be stored for the dead-letter queue.
+| `path.data/dlq`
+
 | `http.host`
 | The bind address for the metrics REST endpoint.
 | `"127.0.0.1"`

@@ -15,6 +15,7 @@ module LogStash
       checkpoint_max_acks = settings.get("queue.checkpoint.acks")
       checkpoint_max_writes = settings.get("queue.checkpoint.writes")
       checkpoint_max_interval = settings.get("queue.checkpoint.interval")
+      element_class = "org.logstash.Event"
 
       queue_path = ::File.join(settings.get("path.queue"), settings.get("pipeline.id"))
 
@@ -22,11 +23,11 @@ module LogStash
       when "memory_acked"
         # memory_acked is used in tests/specs
         FileUtils.mkdir_p(queue_path)
-        LogStash::Util::WrappedAckedQueue.create_memory_based(queue_path, queue_page_capacity, queue_max_events, queue_max_bytes)
+        LogStash::Util::WrappedAckedQueue.create_memory_based(queue_path, queue_page_capacity, queue_max_events, queue_max_bytes, element_class)
       when "persisted"
         # persisted is the disk based acked queue
         FileUtils.mkdir_p(queue_path)
-        LogStash::Util::WrappedAckedQueue.create_file_based(queue_path, queue_page_capacity, queue_max_events, checkpoint_max_writes, checkpoint_max_acks, checkpoint_max_interval, queue_max_bytes)
+        LogStash::Util::WrappedAckedQueue.create_file_based(queue_path, queue_page_capacity, queue_max_events, checkpoint_max_writes, checkpoint_max_acks, checkpoint_max_interval, queue_max_bytes, element_class)
       when "memory"
         # memory is the legacy and default setting
         LogStash::Util::WrappedSynchronousQueue.new

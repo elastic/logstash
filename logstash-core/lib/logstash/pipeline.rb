@@ -55,6 +55,12 @@ module LogStash; class BasePipeline
       @logger.debug("Compiled pipeline code", :code => config_code)
     end
 
+    @dlq = nil
+    if @settings.get_value("dead_letter_queue.enable")
+      @dlq = LogStash::Util::WrappedAckedQueue.create_file_based(@settings.get_value("path.dead_letter_queue"),
+                                                                 52428800, 0, 1, 1, 0, 0, "org.logstash.DLQEntry")
+    end
+
     # Evaluate the config compiled code that will initialize all the plugins and define the
     # filter and output methods.
     begin
@@ -89,11 +95,11 @@ module LogStash; class BasePipeline
     klass = Plugin.lookup(plugin_type, name)
 
     if plugin_type == "output"
-      OutputDelegator.new(@logger, klass, type_scoped_metric,  OutputDelegatorStrategyRegistry.instance, args)
+      OutputDelegator.new(@logger, klass, type_scoped_metric,  OutputDelegatorStrategyRegistry.instance, args, @dlq)
     elsif plugin_type == "filter"
-      FilterDelegator.new(@logger, klass, type_scoped_metric, args)
+      FilterDelegator.new(@logger, klass, type_scoped_metric, args, @dlq)
     else # input
-      input_plugin = klass.new(args)
+      input_plugin = klass.new(args, @dlq)
       input_plugin.metric = type_scoped_metric.namespace(id)
       input_plugin
     end
@@ -223,7 +229,6 @@ module LogStash; class Pipeline < BasePipeline
     shutdown_flusher
     shutdown_workers
 
-    close
 
     @logger.debug("Pipeline #{@pipeline_id} has been shutdown")
 
@@ -234,6 +239,7 @@ module LogStash; class Pipeline < BasePipeline
   def close
     @filter_queue_client.close
     @queue.close
+    @dlq.close unless @dlq.nil?
   end
 
   def transition_to_running
@@ -341,6 +347,7 @@ module LogStash; class Pipeline < BasePipeline
       filter_batch(batch)
       flush_filters_to_batch(batch, :final => false) if signal.flush?
       output_batch(batch)
+
       @filter_queue_client.close_batch(batch)
 
       # keep break at end of loop, after the read_batch operation, some pipeline specs rely on this "final read_batch" before shutdown.
@@ -397,7 +404,6 @@ module LogStash; class Pipeline < BasePipeline
     output_events_map.each do |output, events|
       output.multi_receive(events)
     end
-    
     @filter_queue_client.add_output_metrics(batch)
   end
 

@@ -14,7 +14,7 @@ import java.util.Map;
 public final class Rubyfier {
     private static final String ERR_TEMPLATE = "Missing Java class handling for full class name=%s, simple name=%s";
     /*
-    Rubyfier.deep() is called by JrubyEventExtLibrary RubyEvent ruby_get_field,
+    Rubyfier.deep() is called by JrubyEventExtLibrary RubyDLQEntry ruby_get_field,
     ruby_remove, ruby_to_hash and ruby_to_hash_with_metadata.
     When any value is added to the Event it should pass through Valuefier.convert.
     Rubyfier.deep is the mechanism to pluck the Ruby value from a BiValue or convert a

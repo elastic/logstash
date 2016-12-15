@@ -13,7 +13,7 @@ class PipelinePqFileOutput < LogStash::Outputs::Base
     @concurrency = :shared
   end
 
-  def initialize(params={})
+  def initialize(params, dlq=nil)
     super
     @num_closes = 0
     @event_count = 0
