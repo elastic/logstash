@@ -34,6 +34,7 @@ public class FileCheckpointIO  implements CheckpointIO {
     private final String dirPath;
     private final String HEAD_CHECKPOINT = "checkpoint.head";
     private final String TAIL_CHECKPOINT = "checkpoint.";
+    private final OpenOption[] WRITE_OPTIONS = new OpenOption[] { WRITE, CREATE, TRUNCATE_EXISTING, DSYNC };
 
     public FileCheckpointIO(String dirPath) {
         this.dirPath = dirPath;
@@ -55,11 +56,10 @@ public class FileCheckpointIO  implements CheckpointIO {
 
     @Override
     public void write(String fileName, Checkpoint checkpoint) throws IOException {
-        OpenOption[] options = new OpenOption[] { WRITE, CREATE, TRUNCATE_EXISTING, DSYNC };
         Path path = Paths.get(dirPath, fileName);
         final byte[] buffer = new byte[BUFFER_SIZE];
         write(checkpoint, buffer);
-        Files.write(path, buffer, options);
+        Files.write(path, buffer, WRITE_OPTIONS);
     }
 
     @Override
