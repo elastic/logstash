@@ -69,7 +69,7 @@ describe LogStash::Instrument::PeriodicPoller::Os do
     end
 
     [
-      [:cgroup, :cpuacct, :usage],
+      [:cgroup, :cpuacct, :usage_nanos],
       [:cgroup, :cpu, :cfs_period_micros],
       [:cgroup, :cpu, :cfs_quota_micros],
       [:cgroup, :cpu, :stat, :number_of_periods],

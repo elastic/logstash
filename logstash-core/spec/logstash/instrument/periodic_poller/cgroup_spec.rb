@@ -119,7 +119,7 @@ describe LogStash::Instrument::PeriodicPoller::Cgroup do
         expect(subject.get_all).to match(
           :cpuacct => {
             :control_group => cpuacct_control_group,
-            :usage => cpuacct_usage,
+            :usage_nanos => cpuacct_usage,
           },
           :cpu => {
             :control_group => cpu_control_group,

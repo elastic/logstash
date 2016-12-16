@@ -108,7 +108,7 @@ module LogStash module Instrument module PeriodicPoller
 
        cpuacct_group = groups[GROUP_CPUACCT]
        cgroups_stats[:cpuacct][:control_group] = cpuacct_group
-       cgroups_stats[:cpuacct][:usage] = cgroup_cpuacct_usage_nanos(cpuacct_group)
+       cgroups_stats[:cpuacct][:usage_nanos] = cgroup_cpuacct_usage_nanos(cpuacct_group)
 
        cpu_group = groups[GROUP_CPU]
        cgroups_stats[:cpu][:control_group] = cpu_group
