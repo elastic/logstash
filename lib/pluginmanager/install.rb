@@ -17,6 +17,9 @@ class LogStash::PluginManager::Install < LogStash::PluginManager::Command
   # but the argument parsing does not support it for now so currently if specifying --version only
   # one plugin name can be also specified.
   def execute
+    # Turn off any jar dependencies lookup when running with `--local`
+    ENV["JARS_SKIP"] = "true" if local?
+
     validate_cli_options!
 
     if local_gems?
