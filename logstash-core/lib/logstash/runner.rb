@@ -415,6 +415,7 @@ class LogStash::Runner < Clamp::StrictCommand
   # add the given paths for ungemified/bare plugins lookups
   # @param paths [String, Array<String>] plugins path string or list of path strings to add
   def configure_plugin_paths(paths)
+    logger.warn("The path.plugins setting is deprecated. It will be removed in the future.") if paths.any?
     Array(paths).each do |path|
       fail(I18n.t("logstash.runner.configuration.plugin_path_missing", :path => path)) unless File.directory?(path)
       LogStash::Environment.add_plugin_path(path)
