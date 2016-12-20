@@ -46,7 +46,7 @@ With this command, Logstash concatenates three config files, `/tmp/one`, `/tmp/t
   Sets the number of pipeline workers to run. This option sets the number of workers that will,
   in parallel, execute the filter and output stages of the pipeline. If you find that events are
   backing up, or that  the CPU is not saturated, consider increasing this number to better utilize
-  machine processing power. The default is 8.
+  machine processing power. The default is the number of the host's CPU cores.
 
 *`-b, --pipeline.batch.size SIZE`*::
   Size of batches the pipeline is to work in. This option defines the maximum number of events an
