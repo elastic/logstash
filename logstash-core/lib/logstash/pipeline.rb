@@ -70,7 +70,11 @@ module LogStash; class Pipeline
 
     # This needs to be configured before we evaluate the code to make
     # sure the metric instance is correctly send to the plugins to make the namespace scoping work
-    @metric = namespaced_metric.nil? ? Instrument::NullMetric.new : namespaced_metric
+    @metric = if namespaced_metric
+                settings.get("metric.collect") ? namespaced_metric : Instrument::NullMetric.new(namespaced_metric.collector)
+              else
+                Instrument::NullMetric.new
+              end
 
     grammar = LogStashConfigParser.new
     @config = grammar.parse(config_str)
