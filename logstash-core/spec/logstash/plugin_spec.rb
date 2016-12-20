@@ -106,12 +106,8 @@ describe LogStash::Plugin do
       one_notice.validate({})
     end
 
-    it "warns the user if we can't find a defined version" do
-      expect_any_instance_of(LogStash::Logging::Logger).to receive(:warn)
-        .once
-        .with(/plugin doesn't have a version/)
-
-      subject.validate({})
+    it "doesn't raise an exception if no version is found" do
+      expect { subject.validate({}) }.not_to raise_error
     end
 
 
