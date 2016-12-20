@@ -12,7 +12,7 @@ module LogStash module Outputs
     def initialize(params={})
       super
       @num_closes = 0
-      @events = Queue.new
+      @events = []
     end
 
     def register
@@ -23,7 +23,7 @@ module LogStash module Outputs
     end
 
     def close
-      @num_closes = 1
+      @num_closes += 1
     end
   end
 
