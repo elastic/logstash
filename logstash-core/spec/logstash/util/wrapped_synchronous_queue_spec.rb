@@ -63,7 +63,15 @@ describe LogStash::Util::WrappedSynchronousQueue do
             batch = read_client.take_batch
             read_client.close_batch(batch)
             store = collector.snapshot_metric.metric_store
-            expect(store.size).to eq(0)
+
+            expect(store.get_shallow(:events, :in).value).to eq(0)
+            expect(store.get_shallow(:events, :out).value).to eq(0)
+            expect(store.get_shallow(:events, :filtered).value).to eq(0)
+            expect(store.get_shallow(:events, :duration_in_millis).value).to eq(0)
+            expect(store.get_shallow(:pipeline, :in).value).to eq(0)
+            expect(store.get_shallow(:pipeline, :duration_in_millis).value).to eq(0)
+            expect(store.get_shallow(:pipeline, :out).value).to eq(0)
+            expect(store.get_shallow(:pipeline, :filtered).value).to eq(0)
           end
         end
 
@@ -73,15 +81,22 @@ describe LogStash::Util::WrappedSynchronousQueue do
             5.times {|i| batch.push("value-#{i}")}
             write_client.push_batch(batch)
             read_batch = read_client.take_batch
-            sleep(0.1) # simulate some work?
-            read_client.close_batch(batch)
+            sleep(0.1) # simulate some work for the `duration_in_millis`
+            # TODO: this interaction should be cleaned in an upcoming PR,
+            # This is what the current pipeline does.
+            read_client.add_filtered_metrics(read_batch)
+            read_client.add_output_metrics(read_batch)
+            read_client.close_batch(read_batch)
             store = collector.snapshot_metric.metric_store
 
-            expect(store.size).to eq(4)
             expect(store.get_shallow(:events, :in).value).to eq(5)
+            expect(store.get_shallow(:events, :out).value).to eq(5)
+            expect(store.get_shallow(:events, :filtered).value).to eq(5)
             expect(store.get_shallow(:events, :duration_in_millis).value).to be > 0
             expect(store.get_shallow(:pipeline, :in).value).to eq(5)
             expect(store.get_shallow(:pipeline, :duration_in_millis).value).to be > 0
+            expect(store.get_shallow(:pipeline, :out).value).to eq(5)
+            expect(store.get_shallow(:pipeline, :filtered).value).to eq(5)
           end
         end
       end
