@@ -130,7 +130,6 @@ class LogStash::Agent
   end
 
   def stop_collecting_metrics
-    @collector.stop
     @periodic_pollers.stop
   end
 
