@@ -45,16 +45,24 @@ describe LogStash::OutputDelegator do
     context "after having received a batch of events" do
       before do
         subject.register
-        subject.multi_receive(events)
       end
 
       it "should pass the events through" do
-        expect(out_inst).to have_received(:multi_receive).with(events)
+        expect(out_inst).to receive(:multi_receive).with(events)
+        subject.multi_receive(events)
       end
 
       it "should increment the number of events received" do
-        expect(subject.metric_events).to have_received(:increment).with(:in, events.length)
-        expect(subject.metric_events).to have_received(:increment).with(:out, events.length)
+        expect(subject.metric_events).to receive(:increment).with(:in, events.length)
+        expect(subject.metric_events).to receive(:increment).with(:out, events.length)
+        subject.multi_receive(events)
+      end
+
+      it "should record the `duration_in_millis`" do
+        clock = spy("clock")
+        expect(subject.metric_events).to receive(:time).with(:duration_in_millis).and_return(clock)
+        expect(clock).to receive(:stop)
+        subject.multi_receive(events)
       end
     end
 

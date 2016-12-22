@@ -756,7 +756,10 @@ describe LogStash::Pipeline do
 
       it "populates the output metrics" do
         plugin_name = dummy_output_id.to_sym
+
+        expect(collected_metric[:stats][:pipelines][:main][:plugins][:outputs][plugin_name][:events][:in].value).to eq(number_of_events)
         expect(collected_metric[:stats][:pipelines][:main][:plugins][:outputs][plugin_name][:events][:out].value).to eq(number_of_events)
+        expect(collected_metric[:stats][:pipelines][:main][:plugins][:outputs][plugin_name][:events][:duration_in_millis].value).not_to be_nil
       end
 
       it "populates the name of the output plugin" do
