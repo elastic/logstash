@@ -10,7 +10,7 @@ pipeline is the {logstash}plugins-codecs-multiline.html[multiline codec], which 
 a simple set of rules.
 
 
-The most important aspects of configuring either multiline plugin are the following:
+The most important aspects of configuring the multiline codec are the following:
 
 * The `pattern` option specifies a regular expression. Lines that match the specified regular expression are considered
 either continuations of a previous line or the start of a new multiline event. You can use
@@ -20,16 +20,10 @@ value in the `pattern` option are part of the previous line. The `next` value sp
 in the `pattern` option are part of the following line.* The `negate` option applies the multiline codec to lines that
 _do not_ match the regular expression specified in the `pattern` option.
 
-See the full documentation for the {logstash}plugins-codecs-multiline.html[multiline codec] or the
-{logstash}plugins-filters-multiline.html[multiline filter] plugin for more information on configuration options.
+See the full documentation for the {logstash}plugins-codecs-multiline.html[multiline codec] plugin for more information
+on configuration options.
 
-NOTE: For more complex needs, the {logstash}plugins-filters-multiline.html[multiline filter] performs a similar task at
-the filter stage of processing, where the Logstash instance aggregates multiple inputs.
-The multiline filter plugin is not thread-safe. Avoid using multiple filter workers with the multiline filter. You can
-track the progress of upgrades to the functionality of the multiline codec at
-https://github.com/logstash-plugins/logstash-codec-multiline/issues/10[this Github issue].
-
-==== Examples of Multiline Plugin Configuration
+==== Examples of Multiline Codec Configuration
 
 The examples in this section cover the following use cases:
 
