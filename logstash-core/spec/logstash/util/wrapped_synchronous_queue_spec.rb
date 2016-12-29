@@ -65,13 +65,28 @@ describe LogStash::Util::WrappedSynchronousQueue do
             store = collector.snapshot_metric.metric_store
 
             expect(store.get_shallow(:events, :in).value).to eq(0)
+            expect(store.get_shallow(:events, :in)).to be_kind_of(LogStash::Instrument::MetricType::Counter)
+
             expect(store.get_shallow(:events, :out).value).to eq(0)
+            expect(store.get_shallow(:events, :out)).to be_kind_of(LogStash::Instrument::MetricType::Counter)
+
             expect(store.get_shallow(:events, :filtered).value).to eq(0)
+            expect(store.get_shallow(:events, :filtered)).to be_kind_of(LogStash::Instrument::MetricType::Counter)
+
             expect(store.get_shallow(:events, :duration_in_millis).value).to eq(0)
+            expect(store.get_shallow(:events, :duration_in_millis)).to be_kind_of(LogStash::Instrument::MetricType::Counter)
+
             expect(store.get_shallow(:pipeline, :in).value).to eq(0)
+            expect(store.get_shallow(:pipeline, :in)).to be_kind_of(LogStash::Instrument::MetricType::Counter)
+
             expect(store.get_shallow(:pipeline, :duration_in_millis).value).to eq(0)
+            expect(store.get_shallow(:pipeline, :duration_in_millis)).to be_kind_of(LogStash::Instrument::MetricType::Counter)
+
             expect(store.get_shallow(:pipeline, :out).value).to eq(0)
+            expect(store.get_shallow(:pipeline, :out)).to be_kind_of(LogStash::Instrument::MetricType::Counter)
+
             expect(store.get_shallow(:pipeline, :filtered).value).to eq(0)
+            expect(store.get_shallow(:pipeline, :filtered)).to be_kind_of(LogStash::Instrument::MetricType::Counter)
           end
         end
 
