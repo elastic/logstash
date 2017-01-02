@@ -27,7 +27,7 @@ Slow-log for Logstash adds the ability to log when a specific event takes an abn
 through the pipeline. Just like the normal application log, you can find slow-logs in your `--path.logs` directory.
 Slowlog is configured in the `logstash.yml` settings file with the following options:
 
-[source]
+[source,yaml]
 ------------------------------
 slowlog.threshold.warn (default: -1)
 slowlog.threshold.info (default: -1)
