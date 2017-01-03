@@ -202,7 +202,7 @@ GEM
       logstash-core-plugin-api (>= 1.60, <= 2.99)
     logstash-filter-csv (3.0.2)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
-    logstash-filter-date (3.1.2)
+    logstash-filter-date (3.1.1)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
     logstash-filter-dns (3.0.3)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
@@ -522,6 +522,7 @@ GEM
     numerizer (0.1.1)
     octokit (3.8.0)
       sawyer (~> 0.6.0, >= 0.5.3)
+    paquet (0.2.0)
     pleaserun (0.0.27)
       cabin (> 0)
       clamp
@@ -726,6 +727,7 @@ DEPENDENCIES
   logstash-output-webhdfs
   logstash-output-xmpp
   octokit (= 3.8.0)
+  paquet (~> 0.2.0)
   pleaserun (~> 0.0.27)
   rack-test
   rspec (~> 3.1.0)
