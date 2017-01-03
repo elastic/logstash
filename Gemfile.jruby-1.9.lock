@@ -462,7 +462,7 @@ GEM
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       redis
       stud
-    logstash-output-s3 (4.0.0)
+    logstash-output-s3 (4.0.1)
       concurrent-ruby
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       logstash-mixin-aws
