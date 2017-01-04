@@ -1,7 +1,8 @@
 ################################################################################
 # These settings are ONLY used by $LS_HOME/bin/system-install to create a custom
-# startup script for Logstash.  It should automagically use the init system
-# (systemd, upstart, sysv, etc.) that your Linux distribution uses.
+# startup script for Logstash and is not used by Logstash itself. It should
+# automagically use the init system (systemd, upstart, sysv, etc.) that your
+# Linux distribution uses.
 #
 # After changing anything here, you need to re-run $LS_HOME/bin/system-install
 # as root to push the changes to the init script.
