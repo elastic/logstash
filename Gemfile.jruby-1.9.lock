@@ -1,7 +1,7 @@
 PATH
   remote: ./logstash-core
   specs:
-    logstash-core (5.2.0-java)
+    logstash-core (5.3.0-java)
       chronic_duration (= 0.10.6)
       clamp (~> 0.6.5)
       concurrent-ruby (= 1.0.0)
@@ -12,8 +12,8 @@ PATH
       jrjackson (~> 0.4.0)
       jrmonitor (~> 0.4.2)
       jruby-openssl (= 0.9.16)
-      logstash-core-event-java (= 5.2.0)
-      logstash-core-queue-jruby (= 5.2.0)
+      logstash-core-event-java (= 5.3.0)
+      logstash-core-queue-jruby (= 5.3.0)
       minitar (~> 0.5.4)
       pry (~> 0.10.1)
       puma (~> 2.16)
@@ -27,7 +27,7 @@ PATH
 PATH
   remote: ./logstash-core-event-java
   specs:
-    logstash-core-event-java (5.2.0-java)
+    logstash-core-event-java (5.3.0-java)
       jar-dependencies
       ruby-maven (~> 3.3.9)
 
@@ -35,12 +35,12 @@ PATH
   remote: ./logstash-core-plugin-api
   specs:
     logstash-core-plugin-api (2.1.12-java)
-      logstash-core (= 5.2.0)
+      logstash-core (= 5.3.0)
 
 PATH
   remote: ./logstash-core-queue-jruby
   specs:
-    logstash-core-queue-jruby (5.2.0-java)
+    logstash-core-queue-jruby (5.3.0-java)
 
 GEM
   remote: https://rubygems.org/
@@ -131,7 +131,7 @@ GEM
     http_parser.rb (0.6.0-java)
     i18n (0.6.9)
     insist (1.0.0)
-    jar-dependencies (0.3.8)
+    jar-dependencies (0.3.9)
     jls-grok (0.11.4)
       cabin (>= 0.6.0)
     jls-lumberjack (0.0.26)
@@ -462,7 +462,7 @@ GEM
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       redis
       stud
-    logstash-output-s3 (4.0.1)
+    logstash-output-s3 (4.0.2)
       concurrent-ruby
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       logstash-mixin-aws
@@ -518,7 +518,7 @@ GEM
     murmurhash3 (0.1.6-java)
     mustache (0.99.8)
     naught (1.1.0)
-    nokogiri (1.7.0-java)
+    nokogiri (1.7.0.1-java)
     numerizer (0.1.1)
     octokit (3.8.0)
       sawyer (~> 0.6.0, >= 0.5.3)
