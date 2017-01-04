@@ -106,7 +106,7 @@ module LogStash
         {
           :plugin_params => plugin_params,
           :took_in_nanos => took_in_nanos,
-          :took_in_millis => took_in_nanos / 1000,
+          :took_in_millis => took_in_nanos / 1000000,
           :event => event.to_json
         }
       end
