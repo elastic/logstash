@@ -293,11 +293,10 @@ class LogStash::Agent
 
   def start_pipeline(id)
     pipeline = @pipelines[id]
-    return unless pipeline.is_a?(LogStash::Pipeline)
     return if pipeline.ready?
     @logger.debug("starting pipeline", :id => id)
     t = Thread.new do
-      LogStash::Util.set_thread_name("pipeline.#{id}")
+      LogStash::Util.set_thread_name("[#{id}]-pipeline-manager")
       begin
         pipeline.run
       rescue => e

@@ -179,13 +179,6 @@ module LogStash; class Pipeline
     return @filters.any?
   end
 
-  def start
-    @thread = Thread.new do
-      Util.set_thread_name("[#{pipeline_id}]-pipeline-manager")
-      run
-    end
-  end
-
   def run
     @started_at = Time.now
     start_workers
