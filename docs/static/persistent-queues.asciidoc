@@ -97,7 +97,7 @@ Example configuration:
 queue.type: persisted
 queue.max_bytes: 4gb 
 
-[[backpressure-persistent-queues]]
+[[backpressure-persistent-queue]]
 ==== Handling Back Pressure
 
 When the queue is full, Logstash puts back pressure on the inputs to stall data
