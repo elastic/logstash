@@ -3,6 +3,7 @@ package org.logstash.common.io;
 import org.logstash.ackedqueue.Checkpoint;
 
 import java.io.IOException;
+import java.nio.file.NoSuchFileException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -25,7 +26,9 @@ public class MemoryCheckpointIO implements CheckpointIO {
 
     @Override
     public Checkpoint read(String fileName) throws IOException {
-        return this.sources.get(fileName);
+        Checkpoint cp = this.sources.get(fileName);
+        if (cp == null) { throw new NoSuchFileException("no memory checkpoint for " + fileName); }
+        return cp;
     }
 
     @Override

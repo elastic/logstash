@@ -3,13 +3,14 @@ package org.logstash.ackedqueue;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import static org.junit.Assert.fail;
 import org.junit.rules.TemporaryFolder;
 import org.logstash.common.io.ByteBufferPageIO;
 
 import java.io.IOException;
+import java.nio.file.NoSuchFileException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
@@ -27,6 +28,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 
 public class QueueTest {
     @Rule public TemporaryFolder temporaryFolder = new TemporaryFolder();
+
     private String dataPath;
 
     @Before
@@ -36,7 +38,7 @@ public class QueueTest {
 
     @Test
     public void newQueue() throws IOException {
-        Queue q = new TestQueue(TestSettings.getSettings(10));
+        Queue q = new TestQueue(TestSettings.volatileQueueSettings(10));
         q.open();
 
         assertThat(q.nonBlockReadBatch(1), is(equalTo(null)));
@@ -44,7 +46,7 @@ public class QueueTest {
 
     @Test
     public void singleWriteRead() throws IOException {
-        Queue q = new TestQueue(TestSettings.getSettings(100));
+        Queue q = new TestQueue(TestSettings.volatileQueueSettings(100));
         q.open();
 
         Queueable element = new StringElement("foobarbaz");
@@ -59,7 +61,7 @@ public class QueueTest {
 
     @Test
     public void singleWriteMultiRead() throws IOException {
-        Queue q = new TestQueue(TestSettings.getSettings(100));
+        Queue q = new TestQueue(TestSettings.volatileQueueSettings(100));
         q.open();
 
         Queueable element = new StringElement("foobarbaz");
@@ -74,7 +76,7 @@ public class QueueTest {
 
     @Test
     public void multiWriteSamePage() throws IOException {
-        Queue q = new TestQueue(TestSettings.getSettings(100));
+        Queue q = new TestQueue(TestSettings.volatileQueueSettings(100));
         q.open();
 
         List<Queueable> elements = Arrays.asList(new StringElement("foobarbaz1"), new StringElement("foobarbaz2"), new StringElement("foobarbaz3"));
@@ -100,7 +102,7 @@ public class QueueTest {
         List<Queueable> elements = Arrays.asList(new StringElement("foobarbaz1"), new StringElement("foobarbaz2"), new StringElement("foobarbaz3"), new StringElement("foobarbaz4"));
         int singleElementCapacity = ByteBufferPageIO.HEADER_SIZE + ByteBufferPageIO._persistedByteCount(elements.get(0).serialize().length);
 
-        TestQueue q = new TestQueue(TestSettings.getSettings(2 * singleElementCapacity));
+        TestQueue q = new TestQueue(TestSettings.volatileQueueSettings(2 * singleElementCapacity));
         q.open();
 
         for (Queueable e : elements) {
@@ -143,7 +145,7 @@ public class QueueTest {
         List<Queueable> elements = Arrays.asList(new StringElement("foobarbaz1"), new StringElement("foobarbaz2"), new StringElement("foobarbaz3"), new StringElement("foobarbaz4"));
         int singleElementCapacity = ByteBufferPageIO.HEADER_SIZE + ByteBufferPageIO._persistedByteCount(elements.get(0).serialize().length);
 
-        TestQueue q = new TestQueue(TestSettings.getSettings(2 * singleElementCapacity));
+        TestQueue q = new TestQueue(TestSettings.volatileQueueSettings(2 * singleElementCapacity));
         q.open();
 
         for (Queueable e : elements) {
@@ -184,7 +186,7 @@ public class QueueTest {
         List<Queueable> elements2 = Arrays.asList(new StringElement("foobarbaz3"), new StringElement("foobarbaz4"));
         int singleElementCapacity = ByteBufferPageIO.HEADER_SIZE + ByteBufferPageIO._persistedByteCount(elements1.get(0).serialize().length);
 
-        Settings settings = TestSettings.getSettings(2 * singleElementCapacity);
+        Settings settings = TestSettings.volatileQueueSettings(2 * singleElementCapacity);
         settings.setCheckpointMaxWrites(1024); // arbritary high enough threshold so that it's not reached (default for TestSettings is 1)
         TestQueue q = new TestQueue(settings);
         q.open();
@@ -238,7 +240,12 @@ public class QueueTest {
         Batch b = q.nonBlockReadBatch(10);
         b.close();
 
-        assertThat(q.getCheckpointIO().read("checkpoint.0"), is(nullValue()));
+        try {
+            q.getCheckpointIO().read("checkpoint.0");
+            fail("expected NoSuchFileException thrown");
+        } catch (NoSuchFileException e) {
+            // nothing
+        }
 
         c = q.getCheckpointIO().read("checkpoint.head");
         assertThat(c.getPageNum(), is(equalTo(1)));
@@ -274,7 +281,7 @@ public class QueueTest {
             }
             int singleElementCapacity = ByteBufferPageIO.HEADER_SIZE + ByteBufferPageIO._persistedByteCount(elements.get(0).serialize().length);
 
-            TestQueue q = new TestQueue(TestSettings.getSettings(singleElementCapacity));
+            TestQueue q = new TestQueue(TestSettings.volatileQueueSettings(singleElementCapacity));
             q.open();
 
             for (Queueable e : elements) {
@@ -305,7 +312,7 @@ public class QueueTest {
         Queueable element = new StringElement("foobarbaz");
         int singleElementCapacity = ByteBufferPageIO.HEADER_SIZE + ByteBufferPageIO._persistedByteCount(element.serialize().length);
 
-        Settings settings = TestSettings.getSettings(singleElementCapacity);
+        Settings settings = TestSettings.volatileQueueSettings(singleElementCapacity);
         settings.setMaxUnread(2); // 2 so we know the first write should not block and the second should
         TestQueue q = new TestQueue(settings);
         q.open();
@@ -353,7 +360,7 @@ public class QueueTest {
         Queueable element = new StringElement("foobarbaz");
 
         // TODO: add randomized testing on the page size (but must be > single element size)
-        Settings settings = TestSettings.getSettings(256); // 256 is arbitrary, large enough to hold a few elements
+        Settings settings = TestSettings.volatileQueueSettings(256); // 256 is arbitrary, large enough to hold a few elements
 
         settings.setMaxUnread(2); // 2 so we know the first write should not block and the second should
         TestQueue q = new TestQueue(settings);
@@ -408,7 +415,7 @@ public class QueueTest {
         int singleElementCapacity = ByteBufferPageIO.HEADER_SIZE + ByteBufferPageIO._persistedByteCount(element.serialize().length);
 
         // allow 10 elements per page but only 100 events in total
-        Settings settings = TestSettings.getSettings(singleElementCapacity * 10, singleElementCapacity * 100);
+        Settings settings = TestSettings.volatileQueueSettings(singleElementCapacity * 10, singleElementCapacity * 100);
 
         TestQueue q = new TestQueue(settings);
         q.open();
@@ -443,7 +450,7 @@ public class QueueTest {
         int singleElementCapacity = ByteBufferPageIO.HEADER_SIZE + ByteBufferPageIO._persistedByteCount(element.serialize().length);
 
         // allow 10 elements per page but only 100 events in total
-        Settings settings = TestSettings.getSettings(singleElementCapacity * 10, singleElementCapacity * 100);
+        Settings settings = TestSettings.volatileQueueSettings(singleElementCapacity * 10, singleElementCapacity * 100);
 
         TestQueue q = new TestQueue(settings);
         q.open();
@@ -486,7 +493,7 @@ public class QueueTest {
         int singleElementCapacity = ByteBufferPageIO.HEADER_SIZE + ByteBufferPageIO._persistedByteCount(element.serialize().length);
 
         // allow 10 elements per page but only 100 events in total
-        Settings settings = TestSettings.getSettings(singleElementCapacity * 10, singleElementCapacity * 100);
+        Settings settings = TestSettings.volatileQueueSettings(singleElementCapacity * 10, singleElementCapacity * 100);
 
         TestQueue q = new TestQueue(settings);
         q.open();
@@ -520,7 +527,7 @@ public class QueueTest {
 
     @Test
     public void testAckedCount() throws IOException {
-        Settings settings = TestSettings.getSettingsCheckpointFilePageMemory(100, dataPath);
+        Settings settings = TestSettings.persistedQueueSettings(100, dataPath);
         Queue q = new Queue(settings);
         q.open();
 
@@ -559,7 +566,6 @@ public class QueueTest {
         assertThat(b.getElements().size(), is(equalTo(2)));
 
         q.ack(Arrays.asList(secondSeqNum, thirdSeqNum));
-
 
         assertThat(q.getAckedCount(), equalTo(0L));
         assertThat(q.getUnackedCount(), equalTo(0L));
