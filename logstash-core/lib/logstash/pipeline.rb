@@ -204,6 +204,11 @@ module LogStash; class Pipeline
 
     # exit code
     return 0
+  rescue Exception => e
+    # The pipeline doesn't have a `failed` test but we use the `#running?` predicate to see if a pipeline is running
+    # so on exception we mark this pipeline as not running and reraise the exception to be handled higher.
+    transition_to_stopped
+    raise e
   end # def run
 
   def transition_to_running
@@ -529,6 +534,7 @@ module LogStash; class Pipeline
 
     @flushing.set(false)
   end # flush_filters_to_batch
+  private :flush_filters_to_batch
 
   def plugin_threads_info
     input_threads = @input_threads.select {|t| t.alive? }

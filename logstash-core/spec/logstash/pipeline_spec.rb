@@ -154,6 +154,24 @@ describe LogStash::Pipeline do
     end
   end
 
+  describe "when an exception occur in a running pipeline" do
+    let(:config) {
+      <<-eos
+      input { generator {} }
+      output { null {} }
+      eos
+    }
+
+    subject { TestPipeline.new(config, pipeline_settings_obj) }
+
+    it "transition to stopped" do
+      expect(subject.running?).to be_falsey
+      expect(subject).to receive(:start_workers).and_raise { "it crashed" }
+      expect { subject.run }.to raise_error
+      expect(subject.running?).to be_falsey
+    end
+  end
+
   describe "defaulting the pipeline workers based on thread safety" do
     before(:each) do
       allow(LogStash::Plugin).to receive(:lookup).with("input", "dummyinput").and_return(DummyInput)
