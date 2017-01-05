@@ -214,10 +214,12 @@ module LogStash; class Pipeline
   def transition_to_running
     @running.make_true
   end
+  private :transition_to_running
 
   def transition_to_stopped
     @running.make_false
   end
+  private :transition_to_stopped
 
   def running?
     @running.true?
@@ -269,6 +271,7 @@ module LogStash; class Pipeline
       @ready.make_true
     end
   end
+  private :start_workers
 
   # Main body of what a worker thread does
   # Repeatedly takes batches off the queue, filters, then outputs them
@@ -294,6 +297,7 @@ module LogStash; class Pipeline
       @filter_queue_client.close_batch(batch)
     end
   end
+  private :worker_loop
 
   def filter_batch(batch)
     batch.each do |event|
@@ -315,6 +319,7 @@ module LogStash; class Pipeline
                   "exception" => e, "backtrace" => e.backtrace)
     raise
   end
+  private :filter_batch
 
   # Take an array of events and send them to the correct output
   def output_batch(batch)
@@ -335,13 +340,15 @@ module LogStash; class Pipeline
     output_events_map.each do |output, events|
       output.multi_receive(events)
     end
-    
+
     @filter_queue_client.add_output_metrics(batch)
   end
+  private :output_batch
 
   def wait_inputs
     @input_threads.each(&:join)
   end
+  private :wait_inputs
 
   def start_inputs
     moreinputs = []
@@ -363,6 +370,7 @@ module LogStash; class Pipeline
   def start_input(plugin)
     @input_threads << Thread.new { inputworker(plugin) }
   end
+  private :start_input
 
   def inputworker(plugin)
     Util::set_thread_name("[#{pipeline_id}]<#{plugin.class.config_name}")
@@ -395,6 +403,7 @@ module LogStash; class Pipeline
       plugin.do_close
     end
   end # def inputworker
+  private :inputworker
 
   # initiate the pipeline shutdown sequence
   # this method is intended to be called from outside the pipeline thread
@@ -433,6 +442,7 @@ module LogStash; class Pipeline
     @filters.each(&:do_close)
     @outputs.each(&:do_close)
   end
+  private :shutdown_workers
 
   def plugin(plugin_type, name, *args)
     @plugin_counter += 1
@@ -468,6 +478,7 @@ module LogStash; class Pipeline
     
     @plugins_by_id[id] = plugin
   end
+  private :plugin
 
   # for backward compatibility in devutils for the rspec helpers, this method is not used
   # in the pipeline anymore.
@@ -475,7 +486,7 @@ module LogStash; class Pipeline
     # filter_func returns all filtered events, including cancelled ones
     filter_func(event).each { |e| block.call(e) }
   end
-
+  private :filter
 
   # perform filters flush and yield flushed event to the passed block
   # @param options [Hash]
@@ -487,6 +498,7 @@ module LogStash; class Pipeline
       flusher.call(options, &block)
     end
   end
+  private :flush_filters
 
   def start_flusher
     # Invariant to help detect improper initialization
@@ -499,10 +511,12 @@ module LogStash; class Pipeline
       end
     end
   end
+  private :start_flusher
 
   def shutdown_flusher
     @flusher_thread.join
   end
+  private :shutdown_flusher
 
   def flush
     if @flushing.compare_and_set(false, true)
@@ -510,7 +524,7 @@ module LogStash; class Pipeline
       @signal_queue.push(FLUSH)
     end
   end
-
+  private :flush
 
   # Calculate the uptime in milliseconds
   #
