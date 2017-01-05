@@ -94,7 +94,7 @@ class LogStash::Agent
 
     pipeline = create_pipeline(pipeline_settings)
     return unless pipeline.is_a?(LogStash::Pipeline)
-    if @auto_reload && pipeline.non_reloadable_plugins.any?
+    if @auto_reload && !pipeline.reloadable?
       @logger.error(I18n.t("logstash.agent.non_reloadable_config_register"),
                     :pipeline_id => pipeline_id,
                     :plugins => pipeline.non_reloadable_plugins.map(&:class))
@@ -279,7 +279,7 @@ class LogStash::Agent
 
     return if new_pipeline.nil?
 
-    if new_pipeline.non_reloadable_plugins.any?
+    if !new_pipeline.reloadable?
       @logger.error(I18n.t("logstash.agent.non_reloadable_config_reload"),
                     :pipeline_id => id,
                     :plugins => new_pipeline.non_reloadable_plugins.map(&:class))
