@@ -179,12 +179,15 @@ module LogStash; class Pipeline
     return @filters.any?
   end
 
+  def start
+    @thread = Thread.new do
+      Util.set_thread_name("[#{pipeline_id}]-pipeline-manager")
+      run
+    end
+  end
+
   def run
     @started_at = Time.now
-
-    @thread = Thread.current
-    Util.set_thread_name("[#{pipeline_id}]-pipeline-manager")
-
     start_workers
 
     @logger.info("Pipeline #{@pipeline_id} started")
@@ -595,5 +598,4 @@ module LogStash; class Pipeline
       :flushing => @flushing
     }
   end
-
 end end
