@@ -9,7 +9,8 @@ module LogStash
       :threadsafe?,
       :do_close,
       :do_stop,
-      :periodic_flush
+      :periodic_flush,
+      :reloadable?
     ]
     def_delegators :@filter, *DELEGATED_METHODS
 

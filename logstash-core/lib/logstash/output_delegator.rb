@@ -29,6 +29,10 @@ module LogStash class OutputDelegator
     @output_class.config_name
   end
 
+  def reloadable?
+    @output_class.reloadable?
+  end
+
   def concurrency
     @output_class.concurrency
   end

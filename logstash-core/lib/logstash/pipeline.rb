@@ -44,10 +44,6 @@ module LogStash; class Pipeline
 
   MAX_INFLIGHT_WARN_THRESHOLD = 10_000
 
-  RELOAD_INCOMPATIBLE_PLUGINS = [
-    "LogStash::Inputs::Stdin"
-  ]
-
   def initialize(config_str, settings = SETTINGS, namespaced_metric = nil)
     @logger = self.logger
     @config_str = config_str
@@ -522,10 +518,12 @@ module LogStash; class Pipeline
       .each {|t| t.delete("status") }
   end
 
+  def reloadable?
+    non_reloadable_plugins.empty?
+  end
+
   def non_reloadable_plugins
-    (inputs + filters + outputs).select do |plugin|
-      RELOAD_INCOMPATIBLE_PLUGINS.include?(plugin.class.name)
-    end
+    (inputs + filters + outputs).select { |plugin| !plugin.reloadable? }
   end
 
   def collect_stats
@@ -564,5 +562,4 @@ module LogStash; class Pipeline
       :flushing => @flushing
     }
   end
-
 end end
