@@ -34,7 +34,6 @@ module LogStash; class Pipeline
     :reporter,
     :pipeline_id,
     :started_at,
-    :thread,
     :config_str,
     :config_hash,
     :settings,
@@ -406,8 +405,9 @@ module LogStash; class Pipeline
     before_stop.call if block_given?
 
     @logger.debug "Closing inputs"
-    @inputs.each(&:do_stop)
+    stop_inputs
     @logger.debug "Closed inputs"
+    wait_workers
   end # def shutdown
 
   # After `shutdown` is called from an external thread this is called from the main thread to
@@ -590,5 +590,14 @@ module LogStash; class Pipeline
       :running => @running,
       :flushing => @flushing
     }
+  end
+
+  private
+  def stop_inputs
+    @inputs.each(&:do_stop)
+  end
+
+  def wait_workers
+    @worker_threads.each(&:join)
   end
 end end

@@ -325,7 +325,6 @@ class LogStash::Agent
     return unless pipeline
     @logger.warn("stopping pipeline", :id => id)
     pipeline.shutdown { LogStash::ShutdownWatcher.start(pipeline) }
-    @pipelines[id].thread.join
   end
 
   def start_pipelines
@@ -344,8 +343,7 @@ class LogStash::Agent
   end
 
   def running_pipeline?(pipeline_id)
-    thread = @pipelines[pipeline_id].thread
-    thread.is_a?(Thread) && thread.alive?
+    @pipelines[pipeline_id].running?
   end
 
   def upgrade_pipeline(pipeline_id, new_pipeline)
