@@ -5,8 +5,6 @@ require "concurrent"
 require "logstash/namespace"
 require "logstash/errors"
 require "logstash-core/logstash-core"
-require "logstash/util/wrapped_acked_queue"
-require "logstash/util/wrapped_synchronous_queue"
 require "logstash/event"
 require "logstash/config/file"
 require "logstash/filters/base"
@@ -21,6 +19,7 @@ require "logstash/instrument/namespaced_null_metric"
 require "logstash/instrument/collector"
 require "logstash/output_delegator"
 require "logstash/filter_delegator"
+require "logstash/queue_factory"
 
 module LogStash; class Pipeline
   include LogStash::Util::Loggable
@@ -99,7 +98,8 @@ module LogStash; class Pipeline
     rescue => e
       raise
     end
-    @queue = build_queue_from_settings
+
+    @queue = LogStash::QueueFactory.create(settings)
     @input_queue_client = @queue.write_client
     @filter_queue_client = @queue.read_client
     @signal_queue = Queue.new
@@ -119,32 +119,6 @@ module LogStash; class Pipeline
     @running = Concurrent::AtomicBoolean.new(false)
     @flushing = Concurrent::AtomicReference.new(false)
   end # def initialize
-
-  def build_queue_from_settings
-    queue_type = settings.get("queue.type")
-    queue_page_capacity = settings.get("queue.page_capacity")
-    queue_max_bytes = settings.get("queue.max_bytes")
-    queue_max_events = settings.get("queue.max_events")
-    checkpoint_max_acks = settings.get("queue.checkpoint.acks")
-    checkpoint_max_writes = settings.get("queue.checkpoint.writes")
-    checkpoint_max_interval = settings.get("queue.checkpoint.interval")
-
-    if queue_type == "memory_acked"
-      # memory_acked is used in tests/specs
-      LogStash::Util::WrappedAckedQueue.create_memory_based("", queue_page_capacity, queue_max_events, queue_max_bytes)
-    elsif queue_type == "memory"
-      # memory is the legacy and default setting
-      LogStash::Util::WrappedSynchronousQueue.new()
-    elsif queue_type == "persisted"
-      # persisted is the disk based acked queue
-      queue_path = settings.get("path.queue")
-      LogStash::Util::WrappedAckedQueue.create_file_based(queue_path, queue_page_capacity, queue_max_events, checkpoint_max_writes, checkpoint_max_acks, checkpoint_max_interval, queue_max_bytes)
-    else
-      raise(ConfigurationError, "invalid queue.type setting")
-    end
-  end
-
-  private :build_queue_from_settings
 
   def ready?
     @ready.value
