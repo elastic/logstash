@@ -9,7 +9,7 @@ import org.logstash.common.io.PageIOFactory;
 
 public class TestSettings {
 
-    public static Settings getSettings(int capacity) {
+    public static Settings volatileQueueSettings(int capacity) {
         MemoryCheckpointIO.clearSources();
         Settings s = new MemorySettings();
         PageIOFactory pageIOFactory = (pageNum, size, path) -> new ByteBufferPageIO(pageNum, size, path);
@@ -21,7 +21,7 @@ public class TestSettings {
         return s;
     }
 
-    public static Settings getSettings(int capacity, long size) {
+    public static Settings volatileQueueSettings(int capacity, long size) {
         MemoryCheckpointIO.clearSources();
         Settings s = new MemorySettings();
         PageIOFactory pageIOFactory = (pageNum, pageSize, path) -> new ByteBufferPageIO(pageNum, pageSize, path);
@@ -34,7 +34,7 @@ public class TestSettings {
         return s;
     }
 
-    public static Settings getSettingsCheckpointFilePageMemory(int capacity, String folder) {
+    public static Settings persistedQueueSettings(int capacity, String folder) {
         Settings s = new FileSettings(folder);
         PageIOFactory pageIOFactory = (pageNum, size, path) -> new MmapPageIO(pageNum, size, path);
         CheckpointIOFactory checkpointIOFactory = (source) -> new FileCheckpointIO(source);

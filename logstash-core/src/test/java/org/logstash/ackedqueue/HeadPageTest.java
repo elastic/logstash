@@ -2,15 +2,10 @@ package org.logstash.ackedqueue;
 
 import org.junit.Test;
 import org.logstash.common.io.ByteBufferPageIO;
-import org.logstash.common.io.FileCheckpointIOTest;
 import org.logstash.common.io.PageIO;
 
 import java.io.IOException;
-import java.net.URL;
-import java.nio.file.NoSuchFileException;
-import java.nio.file.Paths;
 
-import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -19,9 +14,10 @@ public class HeadPageTest {
 
     @Test
     public void newHeadPage() throws IOException {
-        Settings s = TestSettings.getSettings(100);
+        Settings s = TestSettings.volatileQueueSettings(100);
         Queue q = new Queue(s);
         PageIO pageIO = s.getPageIOFactory().build(0, 100, "dummy");
+        pageIO.create();
         HeadPage p = new HeadPage(0, q, pageIO);
 
         assertThat(p.getPageNum(), is(equalTo(0)));
@@ -36,7 +32,7 @@ public class HeadPageTest {
         Queueable element = new StringElement("foobarbaz");
         int singleElementCapacity = ByteBufferPageIO.HEADER_SIZE + ByteBufferPageIO._persistedByteCount(element.serialize().length);
 
-        Settings s = TestSettings.getSettings(singleElementCapacity);
+        Settings s = TestSettings.volatileQueueSettings(singleElementCapacity);
         Queue q = new Queue(s);
         q.open();
         HeadPage p = q.headPage;
@@ -55,7 +51,7 @@ public class HeadPageTest {
         Queueable element = new StringElement("foobarbaz");
         int singleElementCapacity = ByteBufferPageIO.HEADER_SIZE + ByteBufferPageIO._persistedByteCount(element.serialize().length);
 
-        Settings s = TestSettings.getSettings(singleElementCapacity);
+        Settings s = TestSettings.volatileQueueSettings(singleElementCapacity);
         Queue q = new Queue(s);
         q.open();
         HeadPage p = q.headPage;
@@ -79,7 +75,7 @@ public class HeadPageTest {
         Queueable element = new StringElement("foobarbaz");
         int singleElementCapacity = ByteBufferPageIO.HEADER_SIZE + ByteBufferPageIO._persistedByteCount(element.serialize().length);
 
-        Settings s = TestSettings.getSettings(singleElementCapacity);
+        Settings s = TestSettings.volatileQueueSettings(singleElementCapacity);
         Queue q = new Queue(s);
         q.open();
         HeadPage p = q.headPage;
@@ -104,7 +100,7 @@ public class HeadPageTest {
 //        String dirPath = Paths.get(url.toURI()).getParent().toString();
 //        Queueable element = new StringElement("foobarbaz");
 //        int singleElementCapacity = ByteBufferPageIO.HEADER_SIZE + ByteBufferPageIO._persistedByteCount(element.serialize().length);
-//        Settings s = TestSettings.getSettingsCheckpointFilePageMemory(singleElementCapacity, dirPath);
+//        Settings s = TestSettings.persistedQueueSettings(singleElementCapacity, dirPath);
 //        TestQueue q = new TestQueue(s);
 //        try {
 //            q.open();

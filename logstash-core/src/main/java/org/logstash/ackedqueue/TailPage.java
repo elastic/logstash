@@ -14,6 +14,7 @@ public class TailPage extends Page {
     }
 
     // create a new TailPage object for an exiting Checkpoint and data file
+    // @param pageIO the PageIO object is expected to be open/recover/create
     public TailPage(Checkpoint checkpoint, Queue queue, PageIO pageIO) throws IOException {
         super(checkpoint.getPageNum(), queue, checkpoint.getMinSeqNum(), checkpoint.getElementCount(), checkpoint.getFirstUnackedSeqNum(), new BitSet(), pageIO);
 
@@ -21,12 +22,6 @@ public class TailPage extends Page {
         if (checkpoint.getFirstUnackedSeqNum() > checkpoint.getMinSeqNum()) {
             this.ackedSeqNums.flip(0, (int) (checkpoint.getFirstUnackedSeqNum() - checkpoint.getMinSeqNum()));
         }
-
-        if (pageIO != null) {
-            // open the data file and reconstruct the IO object internal state
-            pageIO.open(checkpoint.getMinSeqNum(), checkpoint.getElementCount());
-        }
-
     }
 
     public void checkpoint() throws IOException {
