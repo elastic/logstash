@@ -100,6 +100,8 @@ en:
         Configuration reloading also requires passing a configuration path with '-f yourlogstash.conf'
       invalid-shell: >-
         Invalid option for interactive Ruby shell. Use either "irb" or "pry"
+      multi-pipeline-with-config-flags: >-
+        Cannot use config.multi_pipeline with path.config (-f) or config.string (-w)
       configtest-flag-information: |-
         You may be interested in the '--configtest' flag which you can use to validate
         logstash's configuration before you choose to restart a running system.

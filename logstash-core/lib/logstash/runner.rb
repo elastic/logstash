@@ -232,7 +232,13 @@ class LogStash::Runner < Clamp::StrictCommand
     @settings.format_settings.each {|line| logger.debug(line) }
 
     if setting("config.string").nil? && setting("path.config").nil?
-      fail(I18n.t("logstash.runner.missing-configuration"))
+      if !setting("config.multi_pipeline")
+        signal_usage_error(I18n.t("logstash.runner.missing-configuration"))
+      end
+    elsif setting("path.config") || setting("config.string")
+      if setting("config.multi_pipeline")
+        signal_usage_error(I18n.t("logstash.runner.multi-pipeline-with-config-flags"))
+      end
     end
 
     if setting("config.reload.automatic") && setting("path.config").nil?
@@ -242,11 +248,12 @@ class LogStash::Runner < Clamp::StrictCommand
 
     pipelines = []
 
-    if setting("config.multi_pipeline") && setting("path.config")
-      Dir.glob(setting("path.config")).each do |path|
+    if setting("config.multi_pipeline")
+      setting("pipelines").each do |pipeline_settings|
         settings = @settings.clone
-        settings.set("pipeline.id", path)
-        settings.set("path.config", path)
+        pipeline_settings.each do |setting_name, value|
+          settings.set(setting_name, value)
+        end
         pipelines << settings
       end
     else
