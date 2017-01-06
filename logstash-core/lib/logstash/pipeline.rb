@@ -31,16 +31,16 @@ module LogStash; class Pipeline
     :worker_threads,
     :events_consumed,
     :events_filtered,
+    :filter_queue_client,
+    :queue,
+    :input_queue_client,
     :reporter,
     :pipeline_id,
     :started_at,
     :config_str,
     :config_hash,
-    :settings,
     :metric,
-    :filter_queue_client,
-    :input_queue_client,
-    :queue
+    :settings
 
   MAX_INFLIGHT_WARN_THRESHOLD = 10_000
 

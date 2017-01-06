@@ -1,6 +1,4 @@
 # encoding: utf-8
-require 'ostruct'
-
 module LogStash; class PipelineReporter
   attr_reader :logger, :pipeline
 
