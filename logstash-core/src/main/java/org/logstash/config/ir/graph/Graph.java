@@ -6,8 +6,8 @@ import org.logstash.config.ir.InvalidIRException;
 import org.logstash.config.ir.SourceMetadata;
 import org.logstash.config.ir.graph.algorithms.BreadthFirst;
 import org.logstash.config.ir.graph.algorithms.GraphDiff;
+import org.logstash.config.ir.graph.algorithms.TopologicalSort;
 
-import java.lang.reflect.Array;
 import java.util.*;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
@@ -22,6 +22,7 @@ public class Graph implements ISourceComponent, IHashable {
     private Map<Vertex, Integer> vertexRanks = new HashMap<>();
     private final Map<Vertex,Set<Edge>> outgoingEdgeLookup = new HashMap<>();
     private final Map<Vertex,Set<Edge>> incomingEdgeLookup = new HashMap<>();
+    private List<Vertex> sortedVertices;
 
 
     public Graph(Collection<Vertex> vertices, Collection<Edge> edges) throws InvalidIRException {
@@ -238,7 +239,16 @@ public class Graph implements ISourceComponent, IHashable {
     // in.
     public void refresh() throws InvalidIRException {
         this.calculateRanks();
+        this.calculateTopologicalSort();
         this.validate();
+    }
+
+    private void calculateTopologicalSort() throws InvalidIRException {
+        try {
+            this.sortedVertices = TopologicalSort.sortVertices(this);
+        } catch (TopologicalSort.UnexpectedGraphCycleError unexpectedGraphCycleError) {
+            throw new InvalidIRException("Graph is not a dag!", unexpectedGraphCycleError);
+        }
     }
 
     private void calculateRanks() {
@@ -311,8 +321,9 @@ public class Graph implements ISourceComponent, IHashable {
     public String toString() {
         Stream<Edge> edgesToFormat;
         try {
-            edgesToFormat = getSortedEdges().stream();
+            edgesToFormat = sortedEdges();
         } catch (InvalidIRException e) {
+            // Even if this isn't a valid graph we still need to print it
             edgesToFormat = edges.stream();
         }
 
@@ -334,42 +345,13 @@ public class Graph implements ISourceComponent, IHashable {
         return this.getVertices().stream().filter(v -> v.getOutgoingEdges().isEmpty() && v.getIncomingEdges().isEmpty());
     }
 
-    // Uses Kahn's algorithm to do a topological sort and detect cycles
-    public List<Vertex> getSortedVertices() throws InvalidIRException {
-        if (this.edges.size() == 0) return new ArrayList(this.vertices);
-
-        List<Vertex> sorted = new ArrayList<>(this.vertices.size());
-
-        Deque<Vertex> pending = new LinkedList<>();
-        pending.addAll(this.getRoots());
-
-        Set<Edge> traversedEdges = new HashSet<>();
-
-        while (!pending.isEmpty()) {
-            Vertex currentVertex = pending.removeFirst();
-            sorted.add(currentVertex);
-
-            currentVertex.getOutgoingEdges().forEach(edge -> {
-                traversedEdges.add(edge);
-                Vertex toVertex = edge.getTo();
-                if (toVertex.getIncomingEdges().stream().allMatch(traversedEdges::contains)) {
-                    pending.add(toVertex);
-                }
-            });
-        }
-
-        // Check for cycles
-        if (this.edges.stream().noneMatch(traversedEdges::contains)) {
-            throw new InvalidIRException("Graph has cycles, is not a DAG! " + this.edges);
-        }
-
-        return sorted;
+    public List<Vertex> getSortedVertices() {
+        return this.sortedVertices;
     }
 
-    public List<Edge> getSortedEdges() throws InvalidIRException {
+    public Stream<Edge> sortedEdges() throws InvalidIRException {
         return getSortedVertices().stream().
-                flatMap(Vertex::outgoingEdges).
-                collect(Collectors.toList());
+                flatMap(Vertex::outgoingEdges);
     }
 
     public List<Vertex> getSortedVerticesBefore(Vertex end) throws InvalidIRException {
