@@ -570,16 +570,11 @@ module LogStash; class Pipeline
       end
       pipeline_metric.namespace([:data]).tap do |n|
         n.gauge(:free_space_in_bytes, file_store.get_unallocated_space)
-        n.gauge(:current_size_in_bytes, queue.current_byte_size)
         n.gauge(:storage_type, file_store.type)
         n.gauge(:path, dir_path)
       end
 
-      pipeline_metric.namespace([:events]).tap do |n|
-        n.gauge(:acked_count, queue.acked_count)
-        n.gauge(:unacked_count, queue.unacked_count)
-        n.gauge(:unread_count, queue.unread_count)
-      end
+      pipeline_metric.gauge(:events, queue.unread_count)
     end
   end
 

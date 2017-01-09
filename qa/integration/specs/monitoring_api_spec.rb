@@ -58,12 +58,9 @@ describe "Test Monitoring API" do
       if logstash_service.settings.feature_flag == "persistent_queues"
         expect(result["pipeline"]["queue"]["type"]).to eq "persisted"
         expect(result["pipeline"]["queue"]["data"]["free_space_in_bytes"]).not_to be_nil
-        expect(result["pipeline"]["queue"]["data"]["current_size_in_bytes"]).not_to be_nil
         expect(result["pipeline"]["queue"]["data"]["storage_type"]).not_to be_nil
         expect(result["pipeline"]["queue"]["data"]["path"]).not_to be_nil
-        expect(result["pipeline"]["queue"]["events"]["acked_count"]).not_to be_nil
-        expect(result["pipeline"]["queue"]["events"]["unread_count"]).not_to be_nil
-        expect(result["pipeline"]["queue"]["events"]["unacked_count"]).not_to be_nil
+        expect(result["pipeline"]["queue"]["events"]).not_to be_nil
         expect(result["pipeline"]["queue"]["capacity"]["page_capacity_in_bytes"]).not_to be_nil
         expect(result["pipeline"]["queue"]["capacity"]["max_queue_size_in_bytes"]).not_to be_nil
         expect(result["pipeline"]["queue"]["capacity"]["max_unread_events"]).not_to be_nil
