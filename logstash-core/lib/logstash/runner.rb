@@ -19,6 +19,10 @@ require "logstash/patches/clamp"
 require "logstash/settings"
 require "logstash/version"
 require "logstash/plugins/registry"
+require "logstash/bootstrap_check/default_config"
+require "logstash/bootstrap_check/bad_java"
+require "logstash/bootstrap_check/bad_ruby"
+require "set"
 
 java_import 'org.logstash.FileLockFactory'
 
@@ -30,6 +34,14 @@ class LogStash::Runner < Clamp::StrictCommand
   # See issue https://github.com/elastic/logstash/issues/5361
   LogStash::SETTINGS.register(LogStash::Setting::String.new("path.settings", ::File.join(LogStash::Environment::LOGSTASH_HOME, "config")))
   LogStash::SETTINGS.register(LogStash::Setting::String.new("path.logs", ::File.join(LogStash::Environment::LOGSTASH_HOME, "logs")))
+
+  # Ordered list of check to run before starting logstash
+  # theses checks can be changed by a plugin loaded into memory.
+  DEFAULT_BOOTSTRAP_CHECKS = [
+      LogStash::BootstrapCheck::BadRuby,
+      LogStash::BootstrapCheck::BadJava,
+      LogStash::BootstrapCheck::DefaultConfig
+  ]
 
   # Node Settings
   option ["-n", "--node.name"], "NAME",
@@ -153,10 +165,16 @@ class LogStash::Runner < Clamp::StrictCommand
     I18n.t("logstash.runner.flag.quiet"),
     :new_flag => "log.level", :new_value => "error"
 
-  attr_reader :agent
+  attr_reader :agent, :settings
+  attr_accessor :bootstrap_checks
 
   def initialize(*args)
     @settings = LogStash::SETTINGS
+    @bootstrap_checks = DEFAULT_BOOTSTRAP_CHECKS.dup
+
+    # Default we check local sources: `-e`, `-f` and the logstash.yml options.
+    LogStash::Config::SOURCE_LOADER.add_source(LogStash::Config::Source::Local.new(@settings))
+
     super(*args)
   end
 
@@ -190,7 +208,7 @@ class LogStash::Runner < Clamp::StrictCommand
     # We invoke post_process to apply extra logic to them.
     # The post_process callbacks have been added in environment.rb
     @settings.post_process
-    
+
     require "logstash/util"
     require "logstash/util/java_version"
     require "stud/task"
@@ -211,54 +229,55 @@ class LogStash::Runner < Clamp::StrictCommand
       logger.warn("--config.debug was specified, but log.level was not set to \'debug\'! No config info will be logged.")
     end
 
-    # We configure the registry and load any plugin that can register hooks
-    # with logstash, this need to be done before any operation.
-    LogStash::PLUGIN_REGISTRY.setup!
-    @settings.validate_all
-
-    LogStash::Util::set_thread_name(self.class.name)
-
-    if RUBY_VERSION < "1.9.2"
-      logger.fatal "Ruby 1.9.2 or later is required. (You are running: " + RUBY_VERSION + ")"
-      return 1
-    end
-
-    # Exit on bad java versions
-    java_version = LogStash::Util::JavaVersion.version
-    if LogStash::Util::JavaVersion.bad_java_version?(java_version)
-      logger.fatal "Java version 1.8.0 or later is required. (You are running: #{java_version})"
-      return 1
-    end
-
-    LogStash::ShutdownWatcher.unsafe_shutdown = setting("pipeline.unsafe_shutdown")
-
-    configure_plugin_paths(setting("path.plugins"))
-
+    # Skip any validation and just return the version
     if version?
       show_version
       return 0
     end
 
+    # We configure the registry and load any plugin that can register hooks
+    # with logstash, this need to be done before any operation.
+    LogStash::PLUGIN_REGISTRY.setup!
+
+    @dispatcher = LogStash::EventDispatcher.new(self)
+    LogStash::PLUGIN_REGISTRY.hooks.register_emitter(self.class, @dispatcher)
+
+    @settings.validate_all
+    @dispatcher.fire(:before_bootstrap_checks)
+
     return start_shell(setting("interactive"), binding) if setting("interactive")
+
+    begin
+      @bootstrap_checks.each { |bootstrap| bootstrap.check(@settings) }
+    rescue LogStash::BootstrapCheckError => e
+      signal_usage_error(e.message)
+      return 1
+    end
+    @dispatcher.fire(:after_bootstrap_checks)
+
+    LogStash::Util::set_thread_name(self.class.name)
+
+    LogStash::ShutdownWatcher.unsafe_shutdown = setting("pipeline.unsafe_shutdown")
+
+    configure_plugin_paths(setting("path.plugins"))
+
 
     @settings.format_settings.each {|line| logger.debug(line) }
 
-    if setting("config.string").nil? && setting("path.config").nil?
-      fail(I18n.t("logstash.runner.missing-configuration"))
-    end
-
-    if setting("config.reload.automatic") && setting("path.config").nil?
-      # there's nothing to reload
-      signal_usage_error(I18n.t("logstash.runner.reload-without-config-path"))
-    end
-
     if setting("config.test_and_exit")
-      config_loader = LogStash::Config::Loader.new(logger)
-      config_str = config_loader.format_config(setting("path.config"), setting("config.string"))
       begin
-        LogStash::BasePipeline.new(config_str)
-        puts "Configuration OK"
-        logger.info "Using config.test_and_exit mode. Config Validation Result: OK. Exiting Logstash"
+        results = LogStash::Config::SOURCE_LOADER.fetch
+
+        # TODO(ph): make it better for multiple pipeline
+        if results.success?
+          results.response.each do |pipeline_config|
+            LogStash::BasePipeline.new(pipeline_config.config_string)
+          end
+          puts "Configuration OK"
+          logger.info "Using config.test_and_exit mode. Config Validation Result: OK. Exiting Logstash"
+        else
+          raise "Could not load the configuration file"
+        end
         return 0
       rescue => e
         logger.fatal I18n.t("logstash.runner.invalid-configuration", :error => e.message)
@@ -269,9 +288,9 @@ class LogStash::Runner < Clamp::StrictCommand
     # lock path.data before starting the agent
     @data_path_lock = FileLockFactory.getDefault().obtainLock(setting("path.data"), ".lock");
 
-    @agent = create_agent(@settings)
-
-    @agent.register_pipeline(@settings)
+    @dispatcher.fire(:before_agent)
+    @agent = create_agent(@settings, LogStash::Config::SOURCE_LOADER)
+    @dispatcher.fire(:after_agent)
 
     # enable sigint/sigterm before starting the agent
     # to properly handle a stalled agent
@@ -388,7 +407,7 @@ class LogStash::Runner < Clamp::StrictCommand
   def trap_sighup
     Stud::trap("HUP") do
       logger.warn(I18n.t("logstash.agent.sighup"))
-      @agent.reload_state!
+      @agent.converge_state_and_update
     end
   end
 
@@ -403,6 +422,7 @@ class LogStash::Runner < Clamp::StrictCommand
     Stud::trap("INT") do
       if @interrupted_once
         logger.fatal(I18n.t("logstash.agent.forced_sigint"))
+        @agent.force_shutdown!
         exit
       else
         logger.warn(I18n.t("logstash.agent.sigint"))

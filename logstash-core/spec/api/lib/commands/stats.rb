@@ -4,7 +4,7 @@ require_relative "../../spec_helper"
 describe LogStash::Api::Commands::Stats do
 
   let(:report_method) { :run }
-  subject(:report) { do_request { report_class.new.send(report_method) } }
+  subject(:report) { report_class.new.send(report_method) }
 
   let(:report_class) { described_class }
 

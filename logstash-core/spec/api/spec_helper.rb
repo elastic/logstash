@@ -6,6 +6,7 @@ require "logstash/devutils/rspec/spec_helper"
 $LOAD_PATH.unshift(File.expand_path(File.dirname(__FILE__)))
 require "lib/api/support/resource_dsl_methods"
 require_relative "../support/mocks_classes"
+require_relative "../support/helpers"
 require 'rspec/expectations'
 require "logstash/settings"
 require 'rack/test'
@@ -24,6 +25,7 @@ module LogStash
       @webserver = Struct.new(:address).new(http_address)
       self.metric.gauge([], :http_address, http_address)
     end
+
     def stop_webserver; end
   end
 end
@@ -38,7 +40,7 @@ class LogStashRunner
   attr_reader :config_str, :agent, :pipeline_settings
 
   def initialize
-    @config_str   = "input { generator {count => 100 } } output { dummyoutput {} }"
+    @config_str   = "input { generator {id => 'api-generator-pipeline' count => 100 } } output { dummyoutput {} }"
 
     args = {
       "config.reload.automatic" => false,
@@ -51,15 +53,14 @@ class LogStashRunner
       "pipeline.batch.size" => 1,
       "pipeline.workers" => 1
     }
-    @settings = ::LogStash::SETTINGS.clone.merge(args)
 
+    @settings = ::LogStash::SETTINGS.clone.merge(args)
     @agent = LogStash::DummyAgent.new(@settings)
   end
 
   def start
     # We start a pipeline that will generate a finite number of events
     # before starting the expectations
-    agent.register_pipeline(@settings)
     @agent_task = Stud::Task.new { agent.execute }
     @agent_task.wait
   end
@@ -67,19 +68,6 @@ class LogStashRunner
   def stop
     agent.shutdown
   end
-end
-
-##
-# Method used to wrap up a request in between of a running
-# pipeline, this makes the whole execution model easier and
-# more contained as some threads might go wild.
-##
-def do_request(&block)
-  runner = LogStashRunner.new
-  runner.start
-  ret_val = block.call
-  runner.stop
-  ret_val
 end
 
 RSpec::Matchers.define :be_available? do
@@ -95,10 +83,11 @@ end
 
 shared_context "api setup" do
   before :all do
+    clear_data_dir
     @runner = LogStashRunner.new
     @runner.start
   end
-  
+
   after :all do
     @runner.stop
   end

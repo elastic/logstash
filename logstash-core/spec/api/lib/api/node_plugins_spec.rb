@@ -12,7 +12,7 @@ describe LogStash::Api::Modules::Plugins do
   extend ResourceDSLMethods
 
   before(:each) do
-    do_request { get "/" }
+    get "/"
   end
 
   let(:payload) { LogStash::Json.load(last_response.body) }

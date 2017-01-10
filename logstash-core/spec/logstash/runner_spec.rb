@@ -6,7 +6,9 @@ require "stud/trap"
 require "stud/temporary"
 require "logstash/util/java_version"
 require "logstash/logging/json"
+require "logstash/config/source_loader"
 require "json"
+require_relative "../support/helpers"
 
 class NullRunner
   def run(args); end
@@ -18,6 +20,8 @@ describe LogStash::Runner do
   let(:logger) { double("logger") }
 
   before :each do
+    clear_data_dir
+
     allow(LogStash::Runner).to receive(:logger).and_return(logger)
     allow(logger).to receive(:debug?).and_return(true)
     allow(logger).to receive(:subscribe).with(any_args)
@@ -34,9 +38,6 @@ describe LogStash::Runner do
 
   after :each do
     LogStash::SETTINGS.reset
-  end
-
-  after :all do
   end
 
   describe "argument precedence" do
@@ -136,6 +137,10 @@ describe LogStash::Runner do
   end
 
   describe "--config.test_and_exit" do
+    before do
+      # Reset the source in a clean state before any asserts
+      LogStash::Config::SOURCE_LOADER.configure_sources([])
+    end
     subject { LogStash::Runner.new("") }
     let(:args) { ["-t", "-e", pipeline_string] }
 
@@ -382,10 +387,10 @@ describe LogStash::Runner do
   describe "path.settings" do
     subject { LogStash::Runner.new("") }
     context "if does not exist" do
-      let(:args) { ["--path.settings", "/tmp/a/a/a/a", "-e", "input {} output {}"] }
+      let(:args) { ["--path.settings", "/tmp/a/a/a/a", "-e", "input { generator { count => 1000 }} output {}"] }
 
       it "should not terminate logstash" do
-        expect(subject.run(args)).to eq(nil)
+        expect(subject.run(args)).to eq(0)
       end
 
       context "but if --help is passed" do

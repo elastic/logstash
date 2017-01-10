@@ -12,7 +12,7 @@ describe LogStash::Api::Modules::Node do
   describe "#hot threads" do
 
     before(:all) do
-      do_request { get "/hot_threads" }
+      get "/hot_threads"
     end
 
     it "respond OK" do
@@ -26,7 +26,7 @@ describe LogStash::Api::Modules::Node do
     context "#threads count" do
 
       before(:all) do
-        do_request { get "/hot_threads?threads=5" }
+        get "/hot_threads?threads=5"
       end
 
       let(:payload) { LogStash::Json.load(last_response.body) }
@@ -49,7 +49,7 @@ describe LogStash::Api::Modules::Node do
       ].each do |path|
 
         before(:all) do
-          do_request { get path }
+          get path
         end
 
         let(:payload) { last_response.body }
@@ -70,7 +70,7 @@ describe LogStash::Api::Modules::Node do
         @threads = []
         5.times { @threads << Thread.new { loop {} } }
 
-        do_request { get "/hot_threads?human=t&threads=2"}
+        get "/hot_threads?human=t&threads=2"
       end
 
       after(:all) do
@@ -91,7 +91,7 @@ describe LogStash::Api::Modules::Node do
         "/hot_threads?human=f",
       ].each do |path|
         before(:all) do
-          do_request { get path }
+          get path
         end
 
         it "should return a json payload content type" do

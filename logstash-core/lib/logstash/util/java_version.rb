@@ -32,6 +32,12 @@ module LogStash::Util::JavaVersion
     }
   end
 
+  def self.validate_java_version!
+    if bad_java_version?(version)
+      raise "Java version 1.8.0 or later is required. (You are running: #{version})"
+    end
+  end
+
   # Determine if the given java version string is a bad version of java
   # If it is, return true, if it isn't return false.
   # Accepts nil, returning nil.

@@ -16,10 +16,12 @@ en:
     pipeline:
       worker-error: |-
         A plugin had an unrecoverable error. Will restart this plugin.
+          Pipeline_id:%{pipeline_id}
           Plugin: %{plugin}
           Error: %{error}
       worker-error-debug: |-
         A plugin had an unrecoverable error. Will restart this plugin.
+          Pipeline_id:%{pipeline_id}
           Plugin: %{plugin}
           Error: %{error}
           Exception: %{exception}

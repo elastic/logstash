@@ -27,7 +27,7 @@ module ResourceDSLMethods
       let(:payload) { LogStash::Json.load(last_response.body) }
 
       before(:all) do
-        do_request { get path }
+        get path
       end
 
       it "should respond OK" do

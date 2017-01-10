@@ -2,27 +2,36 @@
 require "spec_helper"
 require "stud/temporary"
 require "logstash/inputs/generator"
+require "logstash/config/pipeline_config"
+require "logstash/config/config_part"
+require "logstash/config/source/local"
 require_relative "../support/mocks_classes"
 require "fileutils"
 require_relative "../support/helpers"
+require_relative "../support/matchers"
 
 describe LogStash::Agent do
-
-  let(:agent_settings) { LogStash::SETTINGS }
+  let(:agent_settings) { mock_settings("config.string" => "input {}") }
   let(:default_pipeline_id) { LogStash::SETTINGS.get("pipeline.id") }
   let(:agent_args) { {} }
   let(:pipeline_settings) { agent_settings.clone }
   let(:pipeline_args) { {} }
   let(:config_file) { Stud::Temporary.pathname }
-  let(:config_file_txt) { "input { generator { count => 100000 } } output { }" }
+  let(:config_file_txt) { "input { generator { id => 'initial' } } output { }" }
+  let(:default_source_loader) do
+    sl = LogStash::Config::SourceLoader.new
+    sl.add_source(LogStash::Config::Source::Local.new(agent_settings))
+    sl
+  end
 
-  subject { LogStash::Agent.new(agent_settings) }
+  subject { LogStash::Agent.new(agent_settings, default_source_loader) }
 
   before :each do
     # This MUST run first, before `subject` is invoked to ensure clean state
     clear_data_dir
 
     File.open(config_file, "w") { |f| f.puts config_file_txt }
+
     agent_args.each do |key, value|
       agent_settings.set(key, value)
       pipeline_settings.set(key, value)
@@ -38,10 +47,14 @@ describe LogStash::Agent do
   end
 
   it "fallback to hostname when no name is provided" do
-    expect(LogStash::Agent.new.name).to eq(Socket.gethostname)
+    expect(LogStash::Agent.new(agent_settings, default_source_loader).name).to eq(Socket.gethostname)
   end
 
-  describe "register_pipeline" do
+  after(:each) do
+    subject.shutdown # shutdown/close the pipelines
+  end
+
+  describe "adding a new pipeline" do
     let(:config_string) { "input { } filter { } output { }" }
     let(:agent_args) do
       {
@@ -52,16 +65,12 @@ describe LogStash::Agent do
       }
     end
 
-    after(:each) do
-      subject.close_pipelines
-    end
-
     it "should delegate settings to new pipeline" do
       expect(LogStash::Pipeline).to receive(:new) do |arg1, arg2|
         expect(arg1).to eq(config_string)
         expect(arg2.to_hash).to include(agent_args)
       end
-      subject.register_pipeline(agent_settings)
+      subject.converge_state_and_update
     end
   end
 
@@ -80,7 +89,11 @@ describe LogStash::Agent do
   end
 
   describe "#execute" do
-    let(:config_file_txt) { "input { generator { count => 100000 } } output { }" }
+    let(:config_file_txt) { "input { generator { id => 'old'} } output { }" }
+    let(:mock_config_pipeline) { mock_pipeline_config(:main, config_file_txt, pipeline_settings) }
+
+    let(:source_loader) { TestSourceLoader.new(mock_config_pipeline) }
+    subject { described_class.new(agent_settings, source_loader) }
 
     before :each do
       allow(subject).to receive(:start_webserver).and_return(false)
@@ -95,19 +108,15 @@ describe LogStash::Agent do
         }
       end
 
-      before(:each) do
-        subject.register_pipeline(pipeline_settings)
-      end
 
       context "if state is clean" do
         before :each do
           allow(subject).to receive(:running_pipelines?).and_return(true)
-          allow(subject).to receive(:sleep)
           allow(subject).to receive(:clean_state?).and_return(false)
         end
 
-        it "should not reload_state!" do
-          expect(subject).to_not receive(:reload_state!)
+        it "should not converge state more than once" do
+          expect(subject).to receive(:converge_state_and_update).once
           t = Thread.new { subject.execute }
 
           # TODO: refactor this. forcing an arbitrary fixed delay for thread concurrency issues is an indication of
@@ -119,16 +128,19 @@ describe LogStash::Agent do
         end
       end
 
-      context "when calling reload_pipeline!" do
+      context "when calling reloading a pipeline" do
         context "with a config that contains reload incompatible plugins" do
           let(:second_pipeline_config) { "input { stdin {} } filter { } output { }" }
+          let(:mock_second_pipeline_config) { mock_pipeline_config(:main, second_pipeline_config, pipeline_settings) }
+
+          let(:source_loader) { TestSequenceSourceLoader.new(mock_config_pipeline, mock_second_pipeline_config)}
 
           it "does not upgrade the new config" do
             t = Thread.new { subject.execute }
             sleep(0.1) until subject.running_pipelines? && subject.pipelines.values.first.ready?
-            expect(subject).to_not receive(:upgrade_pipeline)
-            File.open(config_file, "w") { |f| f.puts second_pipeline_config }
-            subject.send(:"reload_pipeline!", "main")
+
+            expect(subject.converge_state_and_update).not_to be_a_successful_converge
+            expect(subject).to have_running_pipeline?(mock_config_pipeline)
 
             # TODO: refactor this. forcing an arbitrary fixed delay for thread concurrency issues is an indication of
             # a bad test design or missing class functionality.
@@ -141,13 +153,16 @@ describe LogStash::Agent do
 
         context "with a config that does not contain reload incompatible plugins" do
           let(:second_pipeline_config) { "input { generator { } } filter { } output { }" }
+          let(:mock_second_pipeline_config) { mock_pipeline_config(:main, second_pipeline_config, pipeline_settings) }
+
+          let(:source_loader) { TestSequenceSourceLoader.new(mock_config_pipeline, mock_second_pipeline_config)}
 
           it "does upgrade the new config" do
             t = Thread.new { subject.execute }
-            sleep(0.1) until subject.running_pipelines? && subject.pipelines.values.first.ready?
-            expect(subject).to receive(:upgrade_pipeline).once.and_call_original
-            File.open(config_file, "w") { |f| f.puts second_pipeline_config }
-            subject.send(:"reload_pipeline!", "main")
+            sleep(0.1) until subject.pipelines_count > 0 && subject.pipelines.values.first.ready?
+
+            expect(subject.converge_state_and_update).to be_a_successful_converge
+            expect(subject).to have_running_pipeline?(mock_second_pipeline_config)
 
             # TODO: refactor this. forcing an arbitrary fixed delay for thread concurrency issues is an indication of
             # a bad test design or missing class functionality.
@@ -162,14 +177,17 @@ describe LogStash::Agent do
       context "when calling reload_state!" do
         context "with a pipeline with auto reloading turned off" do
           let(:second_pipeline_config) { "input { generator { } } filter { } output { }" }
-          let(:pipeline_args) { { "config.reload.automatic" => false } }
+          let(:pipeline_args) { { "pipeline.reloadable" => false } }
+          let(:mock_second_pipeline_config) { mock_pipeline_config(:main, second_pipeline_config, mock_settings(pipeline_args)) }
+
+          let(:source_loader) { TestSequenceSourceLoader.new(mock_config_pipeline, mock_second_pipeline_config)}
 
           it "does not try to reload the pipeline" do
             t = Thread.new { subject.execute }
             sleep(0.01) until subject.running_pipelines? && subject.pipelines.values.first.running?
-            expect(subject).to_not receive(:reload_pipeline!)
-            File.open(config_file, "w") { |f| f.puts second_pipeline_config }
-            subject.reload_state!
+
+            expect(subject.converge_state_and_update).not_to be_a_successful_converge
+            expect(subject).to have_running_pipeline?(mock_config_pipeline)
 
             # TODO: refactor this. forcing an arbitrary fixed delay for thread concurrency issues is an indication of
             # a bad test design or missing class functionality.
@@ -181,15 +199,17 @@ describe LogStash::Agent do
         end
 
         context "with a pipeline with auto reloading turned on" do
-          let(:second_pipeline_config) { "input { generator { } } filter { } output { }" }
-          let(:pipeline_args) { { "config.reload.automatic" => true } }
+          let(:second_pipeline_config) { "input { generator { id => 'second' } } filter { } output { }" }
+          let(:pipeline_args) { { "pipeline.reloadable" => true } }
+          let(:mock_second_pipeline_config) { mock_pipeline_config(:main, second_pipeline_config, mock_settings(pipeline_args)) }
+          let(:source_loader) { TestSequenceSourceLoader.new(mock_config_pipeline, mock_second_pipeline_config)}
 
           it "tries to reload the pipeline" do
             t = Thread.new { subject.execute }
             sleep(0.01) until subject.running_pipelines? && subject.pipelines.values.first.running?
-            expect(subject).to receive(:reload_pipeline!).once.and_call_original
-            File.open(config_file, "w") { |f| f.puts second_pipeline_config }
-            subject.reload_state!
+
+            expect(subject.converge_state_and_update).to be_a_successful_converge
+            expect(subject).to have_running_pipeline?(mock_second_pipeline_config)
 
             # TODO: refactor this. forcing an arbitrary fixed delay for thread concurrency issues is an indication of
             # a bad test design or missing class functionality.
@@ -203,24 +223,23 @@ describe LogStash::Agent do
     end
 
     context "when auto_reload is true" do
+      subject { described_class.new(agent_settings, default_source_loader) }
+
       let(:agent_args) do
         {
+          "config.string" => "",
           "config.reload.automatic" => true,
           "config.reload.interval" => 0.01,
-          "path.config" => config_file,
+          "path.config" => config_file
         }
-      end
-
-      before(:each) do
-        subject.register_pipeline(pipeline_settings)
       end
 
       context "if state is clean" do
         it "should periodically reload_state" do
           allow(subject).to receive(:clean_state?).and_return(false)
           t = Thread.new { subject.execute }
-          sleep(0.01) until subject.running_pipelines? && subject.pipelines.values.first.running?
-          expect(subject).to receive(:reload_state!).at_least(2).times
+          sleep(0.05) until subject.running_pipelines? && subject.pipelines.values.first.running?
+          expect(subject).to receive(:converge_state_and_update).at_least(2).times
 
           # TODO: refactor this. forcing an arbitrary fixed delay for thread concurrency issues is an indication of
           # a bad test design or missing class functionality.
@@ -232,18 +251,19 @@ describe LogStash::Agent do
       end
 
       context "when calling reload_state!" do
-        context "with a config that contains reload incompatible plugins" do
-          let(:second_pipeline_config) { "input { stdin {} } filter { } output { }" }
+        xcontext "with a config that contains reload incompatible plugins" do
+          let(:second_pipeline_config) { "input { stdin { id => '123' } } filter { } output { }" }
 
           it "does not upgrade the new config" do
             t = Thread.new { subject.execute }
-            sleep(0.01) until subject.running_pipelines? && subject.pipelines.values.first.running?
-            expect(subject).to_not receive(:upgrade_pipeline)
+            sleep(0.05) until subject.running_pipelines? && subject.pipelines.values.first.running?
             File.open(config_file, "w") { |f| f.puts second_pipeline_config }
+            sleep(0.2) # lets us catch the new file
 
-            # TODO: refactor this. forcing an arbitrary fixed delay for thread concurrency issues is an indication of
-            # a bad test design or missing class functionality.
-            sleep(0.1)
+            try do
+              expect(subject.pipelines[default_pipeline_id.to_sym].config_str).not_to eq(second_pipeline_config)
+            end
+
             Stud.stop!(t)
             t.join
             subject.shutdown
@@ -251,19 +271,27 @@ describe LogStash::Agent do
         end
 
         context "with a config that does not contain reload incompatible plugins" do
-          let(:second_pipeline_config) { "input { generator { } } filter { } output { }" }
+          let(:second_pipeline_config) { "input { generator { id => 'new' } } filter { } output { }" }
 
           it "does upgrade the new config" do
             t = Thread.new { subject.execute }
-            sleep(0.01) until subject.running_pipelines? && subject.pipelines.values.first.running?
-            expect(subject).to receive(:upgrade_pipeline).once.and_call_original
+
+            sleep(0.05) until subject.running_pipelines? && subject.pipelines.values.first.running?
+
             File.open(config_file, "w") { |f| f.puts second_pipeline_config }
+            sleep(0.2) # lets us catch the new file
+
+            try do
+              expect(subject.pipelines[default_pipeline_id.to_sym]).not_to be_nil
+              expect(subject.pipelines[default_pipeline_id.to_sym].config_str).to match(second_pipeline_config)
+            end
 
             # TODO: refactor this. forcing an arbitrary fixed delay for thread concurrency issues is an indication of
             # a bad test design or missing class functionality.
             sleep(0.1)
             Stud.stop!(t)
             t.join
+            expect(subject.get_pipeline(:main).config_str).to match(second_pipeline_config)
             subject.shutdown
           end
         end
@@ -271,46 +299,25 @@ describe LogStash::Agent do
     end
   end
 
-  describe "#reload_state!" do
-    let(:first_pipeline_config) { "input { } filter { } output { }" }
-    let(:second_pipeline_config) { "input { generator {} } filter { } output { }" }
-    let(:pipeline_args) { {
-      "config.string" => first_pipeline_config,
-      "pipeline.workers" => 4,
-      "config.reload.automatic" => true
-    } }
-
-    before(:each) do
-      subject.register_pipeline(pipeline_settings)
-    end
-
-    after(:each) do
-      subject.close_pipelines
-    end
-
-    context "when fetching a new state" do
-      it "upgrades the state" do
-        expect(subject).to receive(:fetch_config).and_return(second_pipeline_config)
-        expect(subject).to receive(:upgrade_pipeline).with(default_pipeline_id, kind_of(LogStash::Settings), second_pipeline_config)
-        subject.reload_state!
-      end
-    end
-    context "when fetching the same state" do
-      it "doesn't upgrade the state" do
-        expect(subject).to receive(:fetch_config).and_return(first_pipeline_config)
-        expect(subject).to_not receive(:upgrade_pipeline)
-        subject.reload_state!
-      end
-    end
-  end
-
   describe "Environment Variables In Configs" do
-    let(:pipeline_config) { "input { generator { message => '${FOO}-bar' } } filter { } output { }" }
+    let(:temporary_file) { Stud::Temporary.file.path }
+
+    let(:pipeline_config) { "input { generator { message => '${FOO}-bar' count => 1 } } filter { } output { file { path => '#{temporary_file}' } }" }
     let(:agent_args) { {
       "config.reload.automatic" => false,
       "config.reload.interval" => 0.01,
       "config.string" => pipeline_config
     } }
+
+    let(:source_loader) {
+      TestSourceLoader.new(mock_pipeline_config(default_pipeline_id, pipeline_config))
+    }
+
+    subject { described_class.new(mock_settings(agent_args), source_loader) }
+
+    after do
+      subject.shutdown
+    end
 
     context "environment variable templating" do
       before :each do
@@ -320,52 +327,50 @@ describe LogStash::Agent do
 
       after :each do
         ENV["FOO"] = @foo_content
-        subject.close_pipelines
       end
 
-      it "doesn't upgrade the state" do
-        allow(subject).to receive(:fetch_config).and_return(pipeline_config)
-        subject.register_pipeline(pipeline_settings)
-        expect(subject.pipelines[default_pipeline_id].inputs.first.message).to eq("foo-bar")
+      it "are evaluated at plugins creation" do
+        expect(subject.converge_state_and_update).to be_a_successful_converge
+
+        # Since the pipeline is running in another threads
+        # the content of the file wont be instant.
+        sleep(0.1) until ::File.size(temporary_file) > 0
+        json_document = LogStash::Json.load(File.read(temporary_file).chomp)
+        expect(json_document["message"]).to eq("foo-bar")
       end
     end
   end
 
   describe "#upgrade_pipeline" do
-    let(:pipeline_config) { "input { } filter { } output { }" }
-    let(:pipeline_args) { {
-      "config.string" => pipeline_config,
-      "pipeline.workers" => 4
-    } }
-    let(:new_pipeline_config) { "input { generator {} } output { }" }
+    let(:pipeline_config) { "input { generator {} } filter { } output { }" }
+    let(:pipeline_args) { { "pipeline.workers" => 4 } }
+    let(:mocked_pipeline_config) { mock_pipeline_config(default_pipeline_id, pipeline_config, mock_settings(pipeline_args))}
+
+    let(:new_pipeline_config) { "input generator {} } output { }" }
+    let(:mocked_new_pipeline_config) { mock_pipeline_config(default_pipeline_id, new_pipeline_config, mock_settings(pipeline_args))}
+    let(:source_loader) { TestSequenceSourceLoader.new(mocked_pipeline_config, mocked_new_pipeline_config)}
+
+    subject { described_class.new(agent_settings, source_loader) }
 
     before(:each) do
-      subject.register_pipeline(pipeline_settings)
+      # Run the initial config
+      expect(subject.converge_state_and_update).to be_a_successful_converge
     end
 
     after(:each) do
       # new pipelines will be created part of the upgrade process so we need
       # to close any initialized pipelines
-      subject.close_pipelines
+      subject.shutdown
     end
 
     context "when the upgrade fails" do
-      before :each do
-        allow(subject).to receive(:fetch_config).and_return(new_pipeline_config)
-        allow(subject).to receive(:create_pipeline).and_return(nil)
-        allow(subject).to receive(:stop_pipeline) do |id|
-          # we register_pipeline but we never execute them so we have to mock #stop_pipeline to
-          # not call Pipeline#shutdown but Pipeline#close
-          subject.close_pipeline(id)
-        end
-      end
-
       it "leaves the state untouched" do
-        subject.send(:"reload_pipeline!", default_pipeline_id)
+        expect(subject.converge_state_and_update).not_to be_a_successful_converge
         expect(subject.pipelines[default_pipeline_id].config_str).to eq(pipeline_config)
       end
 
-      context "and current state is empty" do
+      # TODO(ph): This valid?
+      xcontext "and current state is empty" do
         it "should not start a pipeline" do
           expect(subject).to_not receive(:start_pipeline)
           subject.send(:"reload_pipeline!", default_pipeline_id)
@@ -374,42 +379,18 @@ describe LogStash::Agent do
     end
 
     context "when the upgrade succeeds" do
-      let(:new_config) { "input { generator { count => 1 } } output { }" }
-
-      before :each do
-        allow(subject).to receive(:fetch_config).and_return(new_config)
-        allow(subject).to receive(:start_pipeline).and_return(true)
-        allow(subject).to receive(:stop_pipeline) do |id|
-          # we register_pipeline but we never execute them so we have to mock #stop_pipeline to
-          # not call Pipeline#shutdown but Pipeline#close
-          subject.close_pipeline(id)
-        end
-      end
+      let(:new_config) { "input { generator { id => 'abc' count => 1000000 } } output { }" }
+      let(:mocked_new_pipeline_config) { mock_pipeline_config(default_pipeline_id, new_config, mock_settings(pipeline_args)) }
 
       it "updates the state" do
-        subject.send(:"reload_pipeline!", default_pipeline_id)
+        expect(subject.converge_state_and_update).to be_a_successful_converge
         expect(subject.pipelines[default_pipeline_id].config_str).to eq(new_config)
       end
 
       it "starts the pipeline" do
-        expect(subject).to receive(:start_pipeline).and_return(true)
-        expect(subject).to receive(:stop_pipeline) do |id|
-          # we register_pipeline but we never execute them so we have to mock #stop_pipeline to
-          # not call Pipeline#shutdown but Pipeline#close
-          subject.close_pipeline(id)
-        end
-        subject.send(:"reload_pipeline!", default_pipeline_id)
+        expect(subject.converge_state_and_update).to be_a_successful_converge
+        expect(subject.pipelines[default_pipeline_id].running?).to be_truthy
       end
-    end
-  end
-
-  describe "#fetch_config" do
-    let(:cli_config) { "filter { drop { } } " }
-    let(:agent_args) { { "config.string" => cli_config, "path.config" => config_file } }
-
-    it "should join the config string and config path content" do
-      fetched_config = subject.send(:fetch_config, agent_settings)
-      expect(fetched_config.strip).to eq(cli_config + IO.read(config_file).strip)
     end
   end
 
@@ -436,18 +417,13 @@ describe LogStash::Agent do
       f.path
     end
 
-    let(:pipeline_args) do
-      {
-        "pipeline.workers" => 2,
-        "path.config" => config_path
-      }
-    end
-
     let(:agent_args) do
       {
-        "config.reload.automatic" => false,
+        "config.reload.automatic" => true,
+        "config.reload.interval" => 0.01,
         "pipeline.batch.size" => 1,
-        "metric.collect" => true
+        "metric.collect" => true,
+        "path.config" => config_path
       }
     end
 
@@ -461,11 +437,11 @@ describe LogStash::Agent do
     let(:initial_generator_threshold) { 1000 }
     let(:pipeline_thread) do
       Thread.new do
-        subject.register_pipeline(pipeline_settings)
         subject.execute
       end
     end
 
+    subject { described_class.new(agent_settings, default_source_loader) }
 
     before :each do
       allow(LogStash::Outputs::DroppingDummyOutput).to receive(:new).at_least(:once).with(anything).and_return(dummy_output)
@@ -479,7 +455,9 @@ describe LogStash::Agent do
       @abort_on_exception = Thread.abort_on_exception
       Thread.abort_on_exception = true
 
-      pipeline_thread
+      @t = Thread.new do
+        subject.execute
+      end
 
       # wait for some events to reach the dummy_output
       sleep(0.1) until dummy_output.events_received > initial_generator_threshold
@@ -505,10 +483,8 @@ describe LogStash::Agent do
           f.fsync
         end
 
-        subject.send(:"reload_pipeline!", "main")
-
         # wait until pipeline restarts
-        sleep(0.01) until dummy_output2.events_received > 0
+        sleep(0.2) until dummy_output2.events_received > 0
       end
 
       it "resets the pipeline metric collector" do
@@ -527,8 +503,8 @@ describe LogStash::Agent do
         snapshot = subject.metric.collector.snapshot_metric
         value = snapshot.metric_store.get_with_path("/stats/pipelines")[:stats][:pipelines][:main][:reloads][:successes].value
         instance_value = snapshot.metric_store.get_with_path("/stats")[:stats][:reloads][:successes].value
-        expect(value).to eq(1)
         expect(instance_value).to eq(1)
+        expect(value).to eq(1)
       end
 
       it "does not set the failure reload timestamp" do
@@ -559,7 +535,7 @@ describe LogStash::Agent do
           f.fsync
         end
 
-        subject.send(:"reload_pipeline!", "main")
+        sleep(0.1)
       end
 
       it "does not increase the successful reload count" do
@@ -596,6 +572,14 @@ describe LogStash::Agent do
 
     context "when reloading a config that raises exception on pipeline.run" do
       let(:new_config) { "input { generator { count => 10000 } }" }
+      let(:agent_args) do
+        {
+          "config.reload.automatic" => false,
+          "pipeline.batch.size" => 1,
+          "metric.collect" => true,
+          "path.config" => config_path
+        }
+      end
 
       class BrokenGenerator < LogStash::Inputs::Generator
         def register
@@ -605,6 +589,7 @@ describe LogStash::Agent do
 
       before :each do
         allow(LogStash::Plugin).to receive(:lookup).with("input", "generator").and_return(BrokenGenerator)
+        allow(LogStash::Plugin).to receive(:lookup).with("output", "stdout").and_return(DummyOutput2)
 
         File.open(config_path, "w") do |f|
           f.write(new_config)
@@ -613,7 +598,7 @@ describe LogStash::Agent do
       end
 
       it "does not increase the successful reload count" do
-        expect { subject.send(:"reload_pipeline!", "main") }.to_not change {
+        expect { subject.converge_state_and_update }.to_not change {
           snapshot = subject.metric.collector.snapshot_metric
           reload_metrics = snapshot.metric_store.get_with_path("/stats/pipelines")[:stats][:pipelines][:main][:reloads]
           reload_metrics[:successes].value
@@ -621,7 +606,7 @@ describe LogStash::Agent do
       end
 
       it "increases the failures reload count" do
-        expect { subject.send(:"reload_pipeline!", "main") }.to change {
+        expect { subject.converge_state_and_update }.to change {
           snapshot = subject.metric.collector.snapshot_metric
           reload_metrics = snapshot.metric_store.get_with_path("/stats/pipelines")[:stats][:pipelines][:main][:reloads]
           reload_metrics[:failures].value
