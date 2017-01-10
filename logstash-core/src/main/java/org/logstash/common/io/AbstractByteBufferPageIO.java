@@ -265,6 +265,11 @@ public abstract class AbstractByteBufferPageIO implements PageIO {
         return SEQNUM_SIZE + LENGTH_SIZE + byteCount + CHECKSUM_SIZE;
     }
 
+    @Override
+    public int getHead() {
+        return this.head;
+    }
+
     protected int checksum(byte[] bytes) {
         checkSummer.reset();
         checkSummer.update(bytes, 0, bytes.length);
