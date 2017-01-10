@@ -21,6 +21,7 @@ require "logstash/instrument/namespaced_null_metric"
 require "logstash/instrument/collector"
 require "logstash/output_delegator"
 require "logstash/filter_delegator"
+require 'logstash/compiler'
 
 module LogStash; class Pipeline
   include LogStash::Util::Loggable
@@ -41,7 +42,8 @@ module LogStash; class Pipeline
     :metric,
     :filter_queue_client,
     :input_queue_client,
-    :queue
+    :queue,
+    :lir
 
   MAX_INFLIGHT_WARN_THRESHOLD = 10_000
 
@@ -53,13 +55,16 @@ module LogStash; class Pipeline
     @logger = self.logger
     @config_str = config_str
     @config_hash = Digest::SHA1.hexdigest(@config_str)
+    
+    @lir = compile_lir
+    
     # Every time #plugin is invoked this is incremented to give each plugin
     # a unique id when auto-generating plugin ids
     @plugin_counter ||= 0
     @settings = settings
     @pipeline_id = @settings.get_value("pipeline.id") || self.object_id
     @reporter = PipelineReporter.new(@logger, self)
-
+    
     # A list of plugins indexed by id
     @plugins_by_id = {}
     @inputs = nil
@@ -119,6 +124,10 @@ module LogStash; class Pipeline
     @running = Concurrent::AtomicBoolean.new(false)
     @flushing = Concurrent::AtomicReference.new(false)
   end # def initialize
+  
+  def compile_lir
+    LogStash::Compiler.compile_pipeline(self.config_str)
+  end
 
   def build_queue_from_settings
     queue_type = settings.get("queue.type")
