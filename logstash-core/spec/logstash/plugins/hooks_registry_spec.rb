@@ -48,6 +48,12 @@ describe LogStash::Plugins::HooksRegistry do
     expect { subject.register_hooks(emitter.class, listener) }.to change { subject.hooks_count(emitter.class) }.by(1)
   end
 
+  it "verifies if a hook is registered to a specific emitter scope" do
+    subject.register_hooks(emitter.class, listener)
+    expect(subject.registered_hook?(emitter.class, listener.class)).to be_truthy
+    expect(subject.registered_hook?(Class.new, listener.class)).to be_falsey
+  end
+
   it "link the emitter class to the listener" do
     subject.register_emitter(emitter.class, emitter.dispatcher)
     subject.register_hooks(emitter.class, listener)

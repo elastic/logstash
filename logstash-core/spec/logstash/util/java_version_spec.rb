@@ -39,6 +39,28 @@ describe "LogStash::Util::JavaVersion" do
     expect(mod.bad_java_version?("pwi3270sr9fp10-20150708_01 (SR9 FP10)")).to be_falsey
   end
 
+  context ".validate_java_version!" do
+    context "with good version" do
+      before do
+        expect(mod).to receive(:version).and_return("1.8.0")
+      end
+
+      it "doesn't raise an error" do
+        expect { mod.validate_java_version! }.not_to raise_error
+      end
+    end
+
+    context "with a bad version" do
+      before do
+        expect(mod).to receive(:version).and_return("1.7.0").twice
+      end
+
+      it "raises an error" do
+        expect { mod.validate_java_version! }.to raise_error RuntimeError, /Java version 1.8.0 or later/
+      end
+    end
+  end
+
   describe "parsing java versions" do
     it "should return nil on a nil version" do
       expect(mod.parse_java_version(nil)).to be_nil

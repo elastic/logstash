@@ -10,8 +10,11 @@ require "logstash/instrument/metric"
 require "logstash/pipeline"
 require "logstash/webserver"
 require "logstash/event_dispatcher"
+require "logstash/config/source_loader"
+require "logstash/pipeline_action"
+require "logstash/converge_result"
+require "logstash/state_resolver"
 require "stud/trap"
-require "logstash/config/loader"
 require "uri"
 require "socket"
 require "securerandom"
@@ -30,7 +33,7 @@ class LogStash::Agent
   #   :name [String] - identifier for the agent
   #   :auto_reload [Boolean] - enable reloading of pipelines
   #   :reload_interval [Integer] - reload pipelines every X seconds
-  def initialize(settings = LogStash::SETTINGS)
+  def initialize(settings = LogStash::SETTINGS, source_loader = nil)
     @logger = self.class.logger
     @settings = settings
     @auto_reload = setting("config.reload.automatic")
@@ -43,37 +46,63 @@ class LogStash::Agent
     # Generate / load the persistent uuid
     id
 
-    @config_loader = LogStash::Config::Loader.new(@logger)
+    # This is for backward compatibility in the tests
+    if source_loader.nil?
+      @source_loader = LogStash::Config::SOURCE_LOADER
+      @source_loader.add_source(LogStash::Config::Source::Local.new(@settings))
+    else
+      @source_loader = source_loader
+    end
+
     @reload_interval = setting("config.reload.interval")
-    @upgrade_mutex = Mutex.new
+    @pipelines_mutex = Mutex.new
 
     @collect_metric = setting("metric.collect")
 
     # Create the collectors and configured it with the library
     configure_metrics_collectors
 
+    @state_resolver = LogStash::StateResolver.new(metric)
+
     @pipeline_reload_metric = metric.namespace([:stats, :pipelines])
     @instance_reload_metric = metric.namespace([:stats, :reloads])
+    initialize_agent_metrics
 
     @dispatcher = LogStash::EventDispatcher.new(self)
     LogStash::PLUGIN_REGISTRY.hooks.register_emitter(self.class, dispatcher)
     dispatcher.fire(:after_initialize)
+
+    @running = Concurrent::AtomicBoolean.new(false)
   end
 
   def execute
-    @thread = Thread.current # this var is implicitly used by Stud.stop?
-    @logger.debug("starting agent")
+    @thread = Thread.current # this var is implicilty used by Stud.stop?
+    logger.debug("starting agent")
 
-    start_pipelines
     start_webserver
 
-    return 1 if clean_state?
+    transition_to_running
 
-    Stud.stoppable_sleep(@reload_interval) # sleep before looping
+    converge_state_and_update
 
-    if @auto_reload
-      Stud.interval(@reload_interval) { reload_state! }
+    if auto_reload?
+      # `sleep_then_run` instead of firing the interval right away
+      Stud.interval(@reload_interval, :sleep_then_run => true) do
+        # TODO(ph) OK, in reality, we should get out of the loop, but I am
+        # worried about the implication of that change so instead when we are stopped
+        # we don't converge.
+        #
+        # Logstash currently expect to be block here, the signal will force a kill on the agent making
+        # the agent thread unblock
+        #
+        # Actually what we really need is one more state:
+        #
+        # init => running => stopping => stopped
+        converge_state_and_update unless stopped?
+      end
     else
+      return 1 if clean_state?
+
       while !Stud.stop?
         if clean_state? || running_pipelines?
           sleep 0.5
@@ -82,44 +111,52 @@ class LogStash::Agent
         end
       end
     end
+
+    return 0
+  ensure
+    transition_to_stopped
   end
 
-  # register_pipeline - adds a pipeline to the agent's state
-  # @param pipeline_id [String] pipeline string identifier
-  # @param settings [Hash] settings that will be passed when creating the pipeline.
-  #   keys should be symbols such as :pipeline_workers and :pipeline_batch_delay
-  def register_pipeline(settings)
-    pipeline_settings = settings.clone
-    pipeline_id = pipeline_settings.get("pipeline.id")
-
-    pipeline = create_pipeline(pipeline_settings)
-    return unless pipeline.is_a?(LogStash::Pipeline)
-    if @auto_reload && !pipeline.reloadable?
-      @logger.error(I18n.t("logstash.agent.non_reloadable_config_register"),
-                    :pipeline_id => pipeline_id,
-                    :plugins => pipeline.non_reloadable_plugins.map(&:class))
-      return
-    end
-    @pipelines[pipeline_id] = pipeline
+  def auto_reload?
+    @auto_reload
   end
 
-  def reload_state!
-    @upgrade_mutex.synchronize do
-      @pipelines.each do |pipeline_id, pipeline|
-        next if pipeline.settings.get("config.reload.automatic") == false
-        begin
-          reload_pipeline!(pipeline_id)
-        rescue => e
-          @instance_reload_metric.increment(:failures)
-          @pipeline_reload_metric.namespace([pipeline_id.to_sym, :reloads]).tap do |n|
-            n.increment(:failures)
-            n.gauge(:last_error, { :message => e.message, :backtrace => e.backtrace})
-            n.gauge(:last_failure_timestamp, LogStash::Timestamp.now)
-          end
-          @logger.error(I18n.t("oops"), :message => e.message, :class => e.class.name, :backtrace => e.backtrace)
-        end
+  def running?
+    @running.value
+  end
+
+  def stopped?
+    !@running.value
+  end
+
+  def converge_state_and_update
+    results = @source_loader.fetch
+
+    unless results.success?
+      if auto_reload?
+        logger.debug("Count not fetch the configuration to converge, will retry", :message => results.error, :retrying_in => @reload_interval)
+        return
+      else
+        raise "Count not fetch the configuration, message: #{results.error}"
       end
     end
+
+    # We Lock any access on the pipelines, since the actions will modify the
+    # content of it.
+    converge_result = nil
+
+    @pipelines_mutex.synchronize do
+      pipeline_actions = resolve_actions(results.response)
+      converge_result = converge_state(pipeline_actions)
+    end
+
+    report_currently_running_pipelines(converge_result)
+    update_metrics(converge_result)
+    dispatch_events(converge_result)
+
+    converge_result
+  rescue => e
+    logger.error("An exception happened when converging configuration", :exception => e.class, :message => e.message, :backtrace => e.backtrace)
   end
 
   # Calculate the Logstash uptime in milliseconds
@@ -129,14 +166,19 @@ class LogStash::Agent
     ((Time.now.to_f - STARTED_AT.to_f) * 1000.0).to_i
   end
 
-  def stop_collecting_metrics
-    @periodic_pollers.stop
-  end
-
   def shutdown
     stop_collecting_metrics
     stop_webserver
-    shutdown_pipelines
+    transition_to_stopped
+    converge_result = shutdown_pipelines
+    converge_result
+  end
+
+  def force_shutdown!
+    stop_collecting_metrics
+    stop_webserver
+    transition_to_stopped
+    force_shutdown_pipelines!
   end
 
   def id
@@ -177,14 +219,26 @@ class LogStash::Agent
     @id_path ||= ::File.join(settings.get("path.data"), "uuid")
   end
 
+  def get_pipeline(pipeline_id)
+    @pipelines_mutex.synchronize do
+      @pipelines[pipeline_id]
+    end
+  end
+
+  def pipelines_count
+    @pipelines_mutex.synchronize do
+      pipelines.size
+    end
+  end
+
   def running_pipelines
-    @upgrade_mutex.synchronize do
+    @pipelines_mutex.synchronize do
       @pipelines.select {|pipeline_id, _| running_pipeline?(pipeline_id) }
     end
   end
 
   def running_pipelines?
-    @upgrade_mutex.synchronize do
+    @pipelines_mutex.synchronize do
       @pipelines.select {|pipeline_id, _| running_pipeline?(pipeline_id) }.any?
     end
   end
@@ -204,6 +258,93 @@ class LogStash::Agent
   end
 
   private
+  def transition_to_stopped
+    @running.make_false
+  end
+
+  def transition_to_running
+    @running.make_true
+  end
+
+  # We depends on a series of task derived from the internal state and what
+  # need to be run, theses actions are applied to the current pipelines to converge to
+  # the desired state.
+  #
+  # The current actions are simple and favor composition, allowing us to experiment with different
+  # way to making them and also test them in isolation with the current running agent.
+  #
+  # Currently only action related to pipeline exist, but nothing prevent us to use the same logic
+  # for other tasks.
+  #
+  def converge_state(pipeline_actions)
+    logger.debug("Converging pipelines")
+
+    converge_result = LogStash::ConvergeResult.new(pipeline_actions.size)
+
+    logger.debug("Needed actions to converge", :actions_count => pipeline_actions.size) unless pipeline_actions.empty?
+
+    pipeline_actions.each do |action|
+      # We execute every task we need to converge the current state of pipelines
+      # for every task we will record the action result, that will help us
+      # the results of all the task will determine if the converge was successful or not
+      #
+      # The ConvergeResult#add, will accept the following values
+      #  - boolean
+      #  - FailedAction
+      #  - SuccessfulAction
+      #  - Exception
+      #
+      # This give us a bit more extensibility with the current startup/validation model
+      # that we currently have.
+      begin
+        logger.debug("Executing action", :action => action)
+        action_result = action.execute(@pipelines)
+        converge_result.add(action, action_result)
+
+        unless action_result.successful?
+          logger.error("Failed to execute action", :id => action.pipeline_id,
+                       :action_type => action_result.class, :message => action_result.message)
+        end
+      rescue SystemExit => e
+        converge_result.add(action, e)
+      rescue Exception => e
+        logger.error("Failed to execute action", :action => action, :exception => e.class.name, :message => e.message)
+        converge_result.add(action, e)
+      end
+    end
+
+    if logger.trace?
+      logger.trace("Converge results", :success => converge_result.success?,
+                   :failed_actions => converge_result.failed_actions.collect { |a, r| "id: #{a.pipeline_id}, action_type: #{a.class}, message: #{r.message}" },
+                   :successful_actions => converge_result.successful_actions.collect { |a, r| "id: #{a.pipeline_id}, action_type: #{a.class}" })
+    end
+
+    converge_result
+  end
+
+  def resolve_actions(pipeline_configs)
+    @state_resolver.resolve(@pipelines, pipeline_configs)
+  end
+
+  def report_currently_running_pipelines(converge_result)
+    if converge_result.success? && converge_result.total > 0
+      number_of_running_pipeline = running_pipelines.size
+      logger.info("Pipelines running", :count => number_of_running_pipeline, :pipelines => running_pipelines.values.collect(&:pipeline_id) )
+    end
+  end
+
+  def dispatch_events(converge_results)
+    converge_results.successful_actions.each do |action, _|
+      case action
+      when LogStash::PipelineAction::Create
+        dispatcher.fire(:pipeline_started, get_pipeline(action.pipeline_id))
+      when LogStash::PipelineAction::Reload
+        dispatcher.fire(:pipeline_stopped, get_pipeline(action.pipeline_id))
+      when LogStash::PipelineAction::Stop
+        dispatcher.fire(:pipeline_started, get_pipeline(action.pipeline_id))
+      end
+    end
+  end
 
   def start_webserver
     options = {:http_host => @http_host, :http_ports => @http_port, :http_environment => @http_environment }
@@ -232,207 +373,31 @@ class LogStash::Agent
     @periodic_pollers.start
   end
 
-  def reset_pipeline_metrics(id)
-    # selectively reset metrics we don't wish to keep after reloading
-    # these include metrics about the plugins and number of processed events
-    # we want to keep other metrics like reload counts and error messages
-    @collector.clear("stats/pipelines/#{id}/plugins")
-    @collector.clear("stats/pipelines/#{id}/events")
+  def stop_collecting_metrics
+    @periodic_pollers.stop
   end
 
   def collect_metrics?
     @collect_metric
   end
 
-  def increment_reload_failures_metrics(id, message, backtrace = nil)
-    @instance_reload_metric.increment(:failures)
-    @pipeline_reload_metric.namespace([id.to_sym, :reloads]).tap do |n|
-      n.increment(:failures)
-      n.gauge(:last_error, { :message => message, :backtrace =>backtrace})
-      n.gauge(:last_failure_timestamp, LogStash::Timestamp.now)
-    end
-    if @logger.debug?
-      @logger.error("Cannot load an invalid configuration", :reason => message, :backtrace => backtrace)
-    else
-      @logger.error("Cannot load an invalid configuration", :reason => message)
-    end
-  end
-
-  # create a new pipeline with the given settings and config, if the pipeline initialization failed
-  # increment the failures metrics
-  # @param settings [Settings] the setting for the new pipelines
-  # @param config [String] the configuration string or nil to fetch the configuration per settings
-  # @return [Pipeline] the new pipeline or nil if it failed
-  def create_pipeline(settings, config = nil)
-    if config.nil?
-      begin
-        config = fetch_config(settings)
-      rescue => e
-        @logger.error("failed to fetch pipeline configuration", :message => e.message)
-        return nil
-      end
-    end
-
-    begin
-      LogStash::Pipeline.new(config, settings, metric)
-    rescue => e
-      increment_reload_failures_metrics(settings.get("pipeline.id"), e.message, e.backtrace)
-      return nil
-    end
-  end
-
-  def fetch_config(settings)
-    @config_loader.format_config(settings.get("path.config"), settings.get("config.string"))
-  end
-
-  # reload_pipeline trys to reloads the pipeline with id using a potential new configuration if it changed
-  # since this method modifies the @pipelines hash it is wrapped in @upgrade_mutex in the parent call `reload_state!`
-  # @param id [String] the pipeline id to reload
-  def reload_pipeline!(id)
-    old_pipeline = @pipelines[id]
-    new_config = fetch_config(old_pipeline.settings)
-
-    if old_pipeline.config_str == new_config
-      @logger.debug("no configuration change for pipeline", :pipeline => id)
-      return
-    end
-
-    # check if this pipeline is not reloadable. it should not happen as per the check below
-    # but keep it here as a safety net if a reloadable pipeline was reloaded with a non reloadable pipeline
-    if !old_pipeline.reloadable?
-      @logger.error("pipeline is not reloadable", :pipeline => id)
-      return
-    end
-
-    # BasePipeline#initialize will compile the config, and load all plugins and raise an exception
-    # on an invalid configuration
-    begin
-      pipeline_validator = LogStash::BasePipeline.new(new_config, old_pipeline.settings)
-    rescue => e
-      increment_reload_failures_metrics(id, e.message, e.backtrace)
-      return
-    end
-
-    # check if the new pipeline will be reloadable in which case we want to log that as an error and abort
-    if !pipeline_validator.reloadable?
-      @logger.error(I18n.t("logstash.agent.non_reloadable_config_reload"), :pipeline_id => id, :plugins => pipeline_validator.non_reloadable_plugins.map(&:class))
-      increment_reload_failures_metrics(id, "non reloadable pipeline")
-      return
-    end
-
-    # we know configis valid so we are fairly comfortable to first stop old pipeline and then start new one
-    upgrade_pipeline(id, old_pipeline.settings, new_config)
-  end
-
-  # upgrade_pipeline first stops the old pipeline and starts the new one
-  # this method exists only for specs to be able to expects this to be executed
-  # @params pipeline_id [String] the pipeline id to upgrade
-  # @params settings [Settings] the settings for the new pipeline
-  # @params new_config [String] the new pipeline config
-  def upgrade_pipeline(pipeline_id, settings, new_config)
-    @logger.warn("fetched new config for pipeline. upgrading..", :pipeline => pipeline_id, :config => new_config)
-
-    # first step: stop the old pipeline.
-    # IMPORTANT: a new pipeline with same settings should not be instantiated before the previous one is shutdown
-
-    stop_pipeline(pipeline_id)
-    reset_pipeline_metrics(pipeline_id)
-
-    # second step create and start a new pipeline now that the old one is shutdown
-
-    new_pipeline = create_pipeline(settings, new_config)
-    if new_pipeline.nil?
-      # this is a scenario where the configuration is valid (compilable) but the new pipeline refused to start
-      # and at this point NO pipeline is running
-      @logger.error("failed to create the reloaded pipeline and no pipeline is currently running", :pipeline => pipeline_id)
-      increment_reload_failures_metrics(pipeline_id, "failed to create the reloaded pipeline")
-      return
-    end
-
-    ### at this point pipeline#close must be called if upgrade_pipeline does not succeed
-
-    # check if the new pipeline will be reloadable in which case we want to log that as an error and abort. this should normally not
-    # happen since the check should be done in reload_pipeline! prior to get here.
-    if !new_pipeline.reloadable?
-      @logger.error(I18n.t("logstash.agent.non_reloadable_config_reload"), :pipeline_id => pipeline_id, :plugins => new_pipeline.non_reloadable_plugins.map(&:class))
-      increment_reload_failures_metrics(pipeline_id, "non reloadable pipeline")
-      new_pipeline.close
-      return
-    end
-
-    # @pipelines[pipeline_id] must be initialized before #start_pipeline below which uses it
-    @pipelines[pipeline_id] = new_pipeline
-
-    if !start_pipeline(pipeline_id)
-      @logger.error("failed to start the reloaded pipeline and no pipeline is currently running", :pipeline => pipeline_id)
-      # do not call increment_reload_failures_metrics here since #start_pipeline already does it on failure
-      new_pipeline.close
-      return
-    end
-
-    # pipeline started successfully, update reload success metrics
-    @instance_reload_metric.increment(:successes)
-    @pipeline_reload_metric.namespace([pipeline_id.to_sym, :reloads]).tap do |n|
-      n.increment(:successes)
-      n.gauge(:last_success_timestamp, LogStash::Timestamp.now)
-    end
-  end
-
-  def start_pipeline(id)
-    pipeline = @pipelines[id]
-    return unless pipeline.is_a?(LogStash::Pipeline)
-    return if pipeline.ready?
-    @logger.debug("starting pipeline", :id => id)
-    t = Thread.new do
-      LogStash::Util.set_thread_name("pipeline.#{id}")
-      begin
-        pipeline.run
-      rescue => e
-        @instance_reload_metric.increment(:failures)
-        @pipeline_reload_metric.namespace([id.to_sym, :reloads]).tap do |n|
-          n.increment(:failures)
-          n.gauge(:last_error, { :message => e.message, :backtrace => e.backtrace})
-          n.gauge(:last_failure_timestamp, LogStash::Timestamp.now)
-        end
-        @logger.error("Pipeline aborted due to error", :exception => e, :backtrace => e.backtrace)
-
-        # TODO: this is weird, why dont we return directly here? any reason we need to enter the while true loop below?!
-      end
-    end
-    while true do
-      if !t.alive?
-        return false
-      elsif pipeline.running?
-        dispatcher.fire(:pipeline_started, pipeline)
-        return true
-      else
-        sleep 0.01
-      end
-    end
-  end
-
-  def stop_pipeline(id)
-    pipeline = @pipelines[id]
-    return unless pipeline
-    @logger.warn("stopping pipeline", :id => id)
-    pipeline.shutdown { LogStash::ShutdownWatcher.start(pipeline) }
-    @pipelines[id].thread.join
-    dispatcher.fire(:pipeline_stopped, pipeline)
-  end
-
-  def start_pipelines
-    @instance_reload_metric.increment(:successes, 0)
-    @instance_reload_metric.increment(:failures, 0)
-    @pipelines.each do |id, pipeline|
-      start_pipeline(id)
-      pipeline.collect_stats
-      # no reloads yet, initialize all the reload metrics
-      init_pipeline_reload_metrics(id)
+  def force_shutdown_pipelines!
+    @pipelines.each do |_, pipeline|
+      # TODO(ph): should it be his own action?
+      pipeline.force_shutdown!
     end
   end
 
   def shutdown_pipelines
-    @pipelines.each { |id, _| stop_pipeline(id) }
+    logger.debug("Shutting down all pipelines", :pipelines_count => pipelines_count)
+
+    # In this context I could just call shutdown, but I've decided to
+    # use the stop action implementation for that so we have the same code.
+    # This also give us some context into why a shutdown is failing
+    @pipelines_mutex.synchronize do
+      pipeline_actions = resolve_actions([]) # We stop all the pipeline, so we converge to a empty state
+      converge_state(pipeline_actions)
+    end
   end
 
   def running_pipeline?(pipeline_id)
@@ -448,13 +413,68 @@ class LogStash::Agent
     @settings.get(key)
   end
 
-  def init_pipeline_reload_metrics(id)
-    @pipeline_reload_metric.namespace([id.to_sym, :reloads]).tap do |n|
+  # Methods related to the creation of all metrics
+  # related to states changes and failures
+  #
+  # I think we could use an observer here to decouple the metrics, but moving the code
+  # into separate function is the first step we take.
+  def update_metrics(converge_result)
+    converge_result.failed_actions.each do |action, action_result|
+      update_failures_metrics(action, action_result)
+    end
+
+    converge_result.successful_actions.each do |action, action_result|
+      update_success_metrics(action, action_result)
+    end
+  end
+
+  def update_success_metrics(action, action_result)
+    case action
+      when LogStash::PipelineAction::Create
+        # When a pipeline is successfully created we create the metric
+        # place holder related to the lifecycle of the pipeline
+        initialize_pipeline_metrics(action)
+      when LogStash::PipelineAction::Reload
+        update_successful_reload_metrics(action, action_result)
+    end
+  end
+
+  def update_failures_metrics(action, action_result)
+    if action.is_a?(LogStash::PipelineAction::Create)
+      # force to create the metric fields
+      initialize_pipeline_metrics(action)
+    end
+
+    @instance_reload_metric.increment(:failures)
+
+    @pipeline_reload_metric.namespace([action.pipeline_id, :reloads]).tap do |n|
+      n.increment(:failures)
+      n.gauge(:last_error, { :message => action_result.message, :backtrace => action_result.backtrace})
+      n.gauge(:last_failure_timestamp, LogStash::Timestamp.now)
+    end
+  end
+
+  def initialize_agent_metrics
+    @instance_reload_metric.increment(:successes, 0)
+    @instance_reload_metric.increment(:failures, 0)
+  end
+
+  def initialize_pipeline_metrics(action)
+    @pipeline_reload_metric.namespace([action.pipeline_id, :reloads]).tap do |n|
       n.increment(:successes, 0)
       n.increment(:failures, 0)
       n.gauge(:last_error, nil)
       n.gauge(:last_success_timestamp, nil)
       n.gauge(:last_failure_timestamp, nil)
+    end
+  end
+
+  def update_successful_reload_metrics(action, action_result)
+    @instance_reload_metric.increment(:successes)
+
+    @pipeline_reload_metric.namespace([action.pipeline_id, :reloads]).tap do |n|
+      n.increment(:successes)
+      n.gauge(:last_success_timestamp, action_result.executed_at)
     end
   end
 end # class LogStash::Agent

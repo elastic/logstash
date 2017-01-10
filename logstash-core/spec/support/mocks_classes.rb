@@ -1,5 +1,6 @@
 # encoding: utf-8
 require "logstash/outputs/base"
+require "logstash/config/source_loader"
 require "logstash/inputs/base"
 require "thread"
 
@@ -86,6 +87,85 @@ module LogStash
       def close
         @num_closes = 1
       end
+    end
+end end
+
+
+# A Test Source loader will return the same configuration on every fetch call
+class TestSourceLoader
+  FailedFetch = LogStash::Config::SourceLoader::FailedFetch
+  SuccessfulFetch = LogStash::Config::SourceLoader::SuccessfulFetch
+
+  def initialize(*responses)
+    @count = Concurrent::AtomicFixnum.new(0)
+    @responses_mutex = Mutex.new
+    @responses = coerce_responses(responses)
+  end
+
+  def fetch
+    @count.increment
+    @responses
+end
+
+  def fetch_count
+    @count.value
+  end
+
+  private
+  def coerce_responses(responses)
+    if responses.size == 1
+      response = responses.first
+
+      case response
+      when LogStash::Config::SourceLoader::SuccessfulFetch
+        response
+      when LogStash::Config::SourceLoader::FailedFetch
+        response
+      else
+        LogStash::Config::SourceLoader::SuccessfulFetch.new(Array(response))
+      end
+
+    else
+      LogStash::Config::SourceLoader::SuccessfulFetch.new(responses)
+    end
+  end
+end
+
+# This source loader will return a new configuration on very call until we ran out.
+class TestSequenceSourceLoader
+  FailedFetch = LogStash::Config::SourceLoader::FailedFetch
+  SuccessfulFetch = LogStash::Config::SourceLoader::SuccessfulFetch
+
+  attr_reader :original_responses
+
+  def initialize(*responses)
+    @count = Concurrent::AtomicFixnum.new(0)
+    @responses_mutex = Mutex.new
+    @responses = responses.collect(&method(:coerce_response))
+
+    @original_responses = @responses.dup
+  end
+
+  def fetch
+    @count.increment
+    response  = @responses_mutex.synchronize { @responses.shift }
+    raise "TestSequenceSourceLoader runs out of response" if response.nil?
+    response
+  end
+
+  def fetch_count
+    @count.value
+  end
+
+  private
+  def coerce_response(response)
+    case response
+    when LogStash::Config::SourceLoader::SuccessfulFetch
+      response
+    when LogStash::Config::SourceLoader::FailedFetch
+      response
+    else
+      LogStash::Config::SourceLoader::SuccessfulFetch.new(Array(response))
     end
   end
 end

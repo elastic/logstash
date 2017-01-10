@@ -9,7 +9,7 @@ describe LogStash::Api::Modules::Root do
   include_context "api setup"
 
   it "should respond to root resource" do
-    do_request { get "/" }
+    get "/"
     expect(last_response).to be_ok
   end
 

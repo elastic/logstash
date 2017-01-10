@@ -41,6 +41,12 @@ module LogStash module Plugins
       end
     end
 
+    def registered_hook?(emitter_scope, klass)
+      callbacks = @registered_hooks[emitter_scope]
+      return false if callbacks.nil?
+      callbacks.collect(&:class).include?(klass)
+    end
+
     private
     def sync_hooks
       @registered_emitters.each do |emitter, dispatcher|

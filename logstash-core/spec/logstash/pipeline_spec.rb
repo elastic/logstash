@@ -3,6 +3,7 @@ require "spec_helper"
 require "logstash/inputs/generator"
 require "logstash/filters/multiline"
 require_relative "../support/mocks_classes"
+require_relative "../support/helpers"
 require_relative "../logstash/pipeline_reporter_spec" # for DummyOutput class
 
 class DummyInput < LogStash::Inputs::Base
@@ -210,7 +211,7 @@ describe LogStash::Pipeline do
           msg = "Defaulting pipeline worker threads to 1 because there are some filters that might not work with multiple worker threads"
           pipeline = TestPipeline.new(test_config_with_filters)
           expect(pipeline.logger).to receive(:warn).with(msg,
-            {:count_was=>worker_thread_count, :filters=>["dummyfilter"]})
+            hash_including({:count_was=>worker_thread_count, :filters=>["dummyfilter"]}))
           pipeline.run
           expect(pipeline.worker_threads.size).to eq(safe_thread_count)
           pipeline.shutdown
@@ -223,8 +224,7 @@ describe LogStash::Pipeline do
           msg = "Warning: Manual override - there are filters that might" +
                 " not work with multiple worker threads"
           pipeline = TestPipeline.new(test_config_with_filters, pipeline_settings_obj)
-          expect(pipeline.logger).to receive(:warn).with(msg,
-            {:worker_threads=> override_thread_count, :filters=>["dummyfilter"]})
+          expect(pipeline.logger).to receive(:warn).with(msg, hash_including({:worker_threads=> override_thread_count, :filters=>["dummyfilter"]}))
           pipeline.run
           expect(pipeline.worker_threads.size).to eq(override_thread_count)
           pipeline.shutdown
@@ -406,7 +406,7 @@ describe LogStash::Pipeline do
       let(:batch_size) { LogStash::Pipeline::MAX_INFLIGHT_WARN_THRESHOLD + 1 }
 
       it "should raise a max inflight warning if the max_inflight count is exceeded" do
-        expect(logger).to have_received(:warn).with(warning_prefix)
+        expect(logger).to have_received(:warn).with(warning_prefix, hash_including(:pipeline_id => anything))
       end
     end
   end
@@ -852,6 +852,36 @@ describe LogStash::Pipeline do
 
     it "should not add ivars" do
        expect(pipeline1.instance_variables).to eq(pipeline2.instance_variables)
+    end
+  end
+
+  context "#reloadable?" do
+    after do
+      pipeline.close # close the queue
+    end
+
+    context "when all plugins are reloadable and pipeline is configured as reloadable" do
+      let(:pipeline) { LogStash::Pipeline.new("input { generator {} } output { null {} }", mock_settings("pipeline.reloadable" => true)) }
+
+      it "returns true" do
+        expect(pipeline.reloadable?).to be_truthy
+      end
+    end
+
+    context "when the plugins are not reloadable and pipeline is configured as reloadable" do
+      let(:pipeline) { LogStash::Pipeline.new("input { stdin {} } output { null {} }", mock_settings("pipeline.reloadable" => true)) }
+
+      it "returns true" do
+        expect(pipeline.reloadable?).to be_falsey
+      end
+    end
+
+    context "when all plugins are reloadable and pipeline is configured as non-reloadable" do
+      let(:pipeline) { LogStash::Pipeline.new("input { generator {} } output { null {} }", mock_settings("pipeline.reloadable" => false)) }
+
+      it "returns true" do
+        expect(pipeline.reloadable?).to be_falsey
+      end
     end
   end
 end
