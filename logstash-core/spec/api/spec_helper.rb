@@ -59,7 +59,7 @@ class LogStashRunner
   def start
     # We start a pipeline that will generate a finite number of events
     # before starting the expectations
-    agent.register_pipeline("main", @settings)
+    agent.register_pipeline(@settings)
     @agent_task = Stud::Task.new { agent.execute }
     @agent_task.wait
   end
