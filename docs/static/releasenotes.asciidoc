@@ -3,8 +3,16 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-5-1-1,Logstash 5.1.2>>
 * <<logstash-5-1-1,Logstash 5.1.1>>
 * <<logstash-5-1-0,Logstash 5.1.0>>
+
+[[logstash-5-1-2]]
+=== Logstash 5.1.2 Release Notes
+
+* Restored the ability to remove `tags` field from events. In versions 5.0.1 and 5.1.1, `tags` fields could not be 
+  removed because of a side effect of another related change ({lsissue}6429[Issue 6429], {lsissue}6384[Issue 6384]).
+* Corrected the slowlog field `took_in_millis` to report duration in milliseconds instead of microseconds ({lsissue}6476[Issue 6476]).
 
 [[logstash-5-1-1]]
 === Logstash 5.1.1 Release Notes
