@@ -43,7 +43,23 @@ class LogStash::Agent
     # Generate / load the persistent uuid
     id
 
-    @config_loader = LogStash::Config::SourceLoaderFactory.new
+    @config_loader = LogStash::Config::SourceLoaderFactory.new(settings).create
+    pipelines_config = @config_loader.configs
+
+    require "pry"; binding.pry
+
+    # always fetch all the possible pipelines
+    # than we check what should be running or not
+
+    # This shoudl return a PipelineConfig
+    # and it contains the following:
+    # - ConfigPart Lexical part
+    # - Settings
+    # - name
+    # - update!
+    # - config hash
+    # - Kind of notification to the ConfigLoader that it was successfully loaded
+
     @reload_interval = setting("config.reload.interval")
     @upgrade_mutex = Mutex.new
 
@@ -359,7 +375,6 @@ class LogStash::Agent
         n.increment(:successes)
         n.gauge(:last_success_timestamp, LogStash::Timestamp.now)
       end
-      
     end
   end
 

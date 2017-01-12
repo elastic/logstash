@@ -5,33 +5,13 @@ require "logstash/config/source_loader/remote_file"
 require "thread"
 
 module LogStash module Config
-  class PipelineConfig
-    attr_reader :pipeline_name
-
-    def initialize(pipeline_name, config_parts)
-      @pipeline_name = pipeline_name
-      @config_parts = config_parts.sort # TODO make is invariant
-    end
-
-    def config_parts
-      @config_parts
-    end
-  end
-
   class SourceLoader
-    def initialize(sources)
-      @sources = sources
+    def initialize(source_loaders)
+      @source_loaders = source_loaders
     end
 
-    def get_pipelines
-      pipeline_configs = []
-
-      @sources
-        .collect(&:get)
-        .flatten
-        .group_by(&:pipeline_name).each do |pipeline_name, config_parts|
-        pipeline_configs << PipelineConfig.new(pipeline_name, config_parts)
-      end
+    def pipeline_configs
+      @sources_loaders.collect(&:pipeline_configs)
     end
   end
 
@@ -45,7 +25,11 @@ module LogStash module Config
       LogStash::Config::SourceLoader::LocalFile
     ])
 
-    def create(settings)
+    def initialize
+      @settings = settings
+    end
+
+    def create
       loaders = []
 
       source_loaders do |config_source|

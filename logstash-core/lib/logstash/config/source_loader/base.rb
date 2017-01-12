@@ -11,8 +11,8 @@ module LogStash module Config module SourceLoader
       settings.get_value("config.debug")
     end
 
-    def get
-      raise NotImplementedError, "`#get` must be implemented!"
+    def pipelines_configs
+      raise NotImplementedError, "`#pipeline_config` must be implemented!"
     end
 
     def self.match?(settings)
