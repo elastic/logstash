@@ -88,9 +88,9 @@ class LogStash::Agent
   # @param pipeline_id [String] pipeline string identifier
   # @param settings [Hash] settings that will be passed when creating the pipeline.
   #   keys should be symbols such as :pipeline_workers and :pipeline_batch_delay
-  def register_pipeline(pipeline_id, settings = @settings)
+  def register_pipeline(settings)
     pipeline_settings = settings.clone
-    pipeline_settings.set("pipeline.id", pipeline_id)
+    pipeline_id = pipeline_settings.get("pipeline.id")
 
     pipeline = create_pipeline(pipeline_settings)
     return unless pipeline.is_a?(LogStash::Pipeline)

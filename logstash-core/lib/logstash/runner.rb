@@ -261,7 +261,7 @@ class LogStash::Runner < Clamp::StrictCommand
 
     @agent = create_agent(@settings)
 
-    @agent.register_pipeline("main", @settings)
+    @agent.register_pipeline(@settings)
 
     # enable sigint/sigterm before starting the agent
     # to properly handle a stalled agent
