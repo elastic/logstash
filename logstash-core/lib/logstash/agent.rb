@@ -45,7 +45,6 @@ class LogStash::Agent
     id
 
     @config_loader = LogStash::Config::SourceLoaderFactory.new(settings).create
-    require "pry"; binding.pry
 
     # always fetch all the possible pipelines
     # than we check what should be running or not
