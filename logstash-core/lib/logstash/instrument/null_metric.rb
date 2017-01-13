@@ -54,6 +54,7 @@ module LogStash module Instrument
     # @see LogStash::Instrument::TimedExecution`
     class NullTimedExecution
       def self.stop
+        0
       end
     end
   end
