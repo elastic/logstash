@@ -17,6 +17,7 @@ require "logstash/instrument/namespaced_metric"
 require "logstash/instrument/null_metric"
 require "logstash/instrument/namespaced_null_metric"
 require "logstash/instrument/collector"
+require "logstash/instrument/wrapped_write_client"
 require "logstash/output_delegator"
 require "logstash/filter_delegator"
 require "logstash/queue_factory"
@@ -429,7 +430,8 @@ module LogStash; class Pipeline < BasePipeline
   def inputworker(plugin)
     Util::set_thread_name("[#{pipeline_id}]<#{plugin.class.config_name}")
     begin
-      plugin.run(@input_queue_client)
+      input_queue_client = wrapped_write_client(plugin)
+      plugin.run(input_queue_client)
     rescue => e
       if plugin.stop?
         @logger.debug("Input plugin raised exception during shutdown, ignoring it.",
@@ -616,5 +618,9 @@ module LogStash; class Pipeline < BasePipeline
 
   def draining_queue?
     @drain_queue ? !@filter_queue_client.empty? : false
+  end
+
+  def wrapped_write_client(plugin)
+    LogStash::Instrument::WrappedWriteClient.new(@input_queue_client, self, metric, plugin)
   end
 end; end
