@@ -22,9 +22,9 @@ module LogStash module Config module SourceLoader
       @uri = URI.parse(settings.get("path.config"))
     end
 
-    def get
+    def pipeline_configs
       begin
-        [ConfigPart.new(self.class, PIPELINE_NAME, SourceMetadata.new(@uri), Net::HTTP.get(@uri)]
+        [ConfigPart.new(self.class, PIPELINE_NAME, SourceMetadata.new(@uri), Net::HTTP.get(@uri))]
       rescue Exception => e
         fail(I18n.t("logstash.runner.configuration.fetch-failed", :path => uri.to_s, :message => e.message))
       end

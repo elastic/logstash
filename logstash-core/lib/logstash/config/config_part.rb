@@ -12,7 +12,7 @@ module LogStash module Config
    end
 
    def inspect
-     "#{source_loader} => from: #{metadata} pipeline: #{pipeline_name}"
+     "#{source_loader} => from: #{metadata} pipeline_name: #{pipeline_name}"
    end
  end
 end end

@@ -10,8 +10,9 @@ require "logstash/instrument/metric"
 require "logstash/pipeline"
 require "logstash/webserver"
 require "logstash/event_dispatcher"
-require "stud/trap"
 require "logstash/config/loader"
+require "logstash/config/source_loader_factory"
+require "stud/trap"
 require "uri"
 require "socket"
 require "securerandom"
@@ -44,8 +45,6 @@ class LogStash::Agent
     id
 
     @config_loader = LogStash::Config::SourceLoaderFactory.new(settings).create
-    pipelines_config = @config_loader.configs
-
     require "pry"; binding.pry
 
     # always fetch all the possible pipelines
@@ -53,13 +52,23 @@ class LogStash::Agent
 
     # This shoudl return a PipelineConfig
     # and it contains the following:
+    # - rename local file for Local (config_string + local_file)
+    # - rename remote file for remote (config_string + remote_file)
+    # - ES
+    # - Always return a list of pipeline config
+    # - use what is running vs what is provided to know what to do. diff like
+    # - execute the diff create, stop or reload
     # - ConfigPart Lexical part
     # - Settings
     # - name
     # - update!
     # - config hash
     # - Kind of notification to the ConfigLoader that it was successfully loaded
-
+    # - install flow
+    #     - install xpack
+    #     - yield a configuration warning or auto configure?
+    #     -
+    # yield a warning when we try with the es config try to use -f -e
     @reload_interval = setting("config.reload.interval")
     @upgrade_mutex = Mutex.new
 

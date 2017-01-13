@@ -21,10 +21,10 @@ module LogStash module Config module SourceLoader
 
     def initialize(settings)
       super(settings)
-      @path = File.expand_path(settings.get("path.config"))
+      @path = ::File.expand_path(settings.get("path.config"))
     end
 
-    def get
+    def pipeline_configs
       config_parts = []
       encoding_issue_files = []
 
@@ -77,7 +77,7 @@ module LogStash module Config module SourceLoader
     end
 
     def valid_encoding?(content)
-      !content.ascii_only? && !content.valid_encoding?
+      content.ascii_only? && content.valid_encoding?
     end
 
     def temporary_file?(filepath)

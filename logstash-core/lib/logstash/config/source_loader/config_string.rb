@@ -16,11 +16,11 @@ module LogStash module Config module SourceLoader
       super(settings)
     end
 
-    def get
-      [ConfigPart.new([self.class,
+    def pipeline_configs
+      [ConfigPart.new(self.class,
                        PIPELINE_NAME,
                        SourceMetadata.new,
-                       settings.get("config.string")])]
+                       settings.get("config.string"))]
     end
 
     def self.match?(settings)
