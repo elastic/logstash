@@ -15,18 +15,19 @@ module LogStash
       checkpoint_max_writes = settings.get("queue.checkpoint.writes")
       checkpoint_max_interval = settings.get("queue.checkpoint.interval")
 
-      if queue_type == "memory_acked"
+      case queue_type
+      when "memory_acked"
         # memory_acked is used in tests/specs
         LogStash::Util::WrappedAckedQueue.create_memory_based("", queue_page_capacity, queue_max_events, queue_max_bytes)
-      elsif queue_type == "memory"
+      when "memory"
         # memory is the legacy and default setting
         LogStash::Util::WrappedSynchronousQueue.new
-      elsif queue_type == "persisted"
+      when "persisted"
         # persisted is the disk based acked queue
         queue_path = settings.get("path.queue")
         LogStash::Util::WrappedAckedQueue.create_file_based(queue_path, queue_page_capacity, queue_max_events, checkpoint_max_writes, checkpoint_max_acks, checkpoint_max_interval, queue_max_bytes)
       else
-        raise ConfigurationError, "invalid queue.type setting"
+        raise ConfigurationError, "Invalid setting `#{queue_type}` for `queue.type`, supported types are: 'memory_acked', 'memory', 'persisted'"
       end
     end
   end
