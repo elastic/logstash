@@ -64,9 +64,6 @@ describe LogStash::Util::WrappedSynchronousQueue do
             read_client.close_batch(batch)
             store = collector.snapshot_metric.metric_store
 
-            expect(store.get_shallow(:events, :in).value).to eq(0)
-            expect(store.get_shallow(:events, :in)).to be_kind_of(LogStash::Instrument::MetricType::Counter)
-
             expect(store.get_shallow(:events, :out).value).to eq(0)
             expect(store.get_shallow(:events, :out)).to be_kind_of(LogStash::Instrument::MetricType::Counter)
 
@@ -75,9 +72,6 @@ describe LogStash::Util::WrappedSynchronousQueue do
 
             expect(store.get_shallow(:events, :duration_in_millis).value).to eq(0)
             expect(store.get_shallow(:events, :duration_in_millis)).to be_kind_of(LogStash::Instrument::MetricType::Counter)
-
-            expect(store.get_shallow(:pipeline, :in).value).to eq(0)
-            expect(store.get_shallow(:pipeline, :in)).to be_kind_of(LogStash::Instrument::MetricType::Counter)
 
             expect(store.get_shallow(:pipeline, :duration_in_millis).value).to eq(0)
             expect(store.get_shallow(:pipeline, :duration_in_millis)).to be_kind_of(LogStash::Instrument::MetricType::Counter)
@@ -105,11 +99,9 @@ describe LogStash::Util::WrappedSynchronousQueue do
             read_client.close_batch(read_batch)
             store = collector.snapshot_metric.metric_store
 
-            expect(store.get_shallow(:events, :in).value).to eq(5)
             expect(store.get_shallow(:events, :out).value).to eq(5)
             expect(store.get_shallow(:events, :filtered).value).to eq(5)
             expect(store.get_shallow(:events, :duration_in_millis).value).to be > 0
-            expect(store.get_shallow(:pipeline, :in).value).to eq(5)
             expect(store.get_shallow(:pipeline, :duration_in_millis).value).to be > 0
             expect(store.get_shallow(:pipeline, :out).value).to eq(5)
             expect(store.get_shallow(:pipeline, :filtered).value).to eq(5)

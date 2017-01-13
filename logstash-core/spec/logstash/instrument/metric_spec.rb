@@ -85,8 +85,9 @@ describe LogStash::Instrument::Metric do
     it "return a TimedExecution" do
       execution = subject.time(:root, :duration_ms)
       sleep(sleep_time)
-      execution.stop
+      execution_time = execution.stop
 
+      expect(execution_time).to eq(collector.last)
       expect(collector.last).to be_within(sleep_time_ms).of(sleep_time_ms + 0.1)
       expect(collector[0]).to match(:root)
       expect(collector[1]).to be(:duration_ms)

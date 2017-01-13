@@ -78,7 +78,8 @@ describe LogStash::Api::Modules::NodeStats do
         "duration_in_millis" => Numeric,
         "in" => Numeric,
         "filtered" => Numeric,
-        "out" => Numeric
+        "out" => Numeric,
+        "queue_push_duration_in_millis" => Numeric
      }
    },
    "reloads" => {

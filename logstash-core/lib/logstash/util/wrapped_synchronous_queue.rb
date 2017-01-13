@@ -94,7 +94,6 @@ module LogStash; module Util
       def define_initial_metrics_values(namespaced_metric)
         namespaced_metric.report_time(:duration_in_millis, 0)
         namespaced_metric.increment(:filtered, 0)
-        namespaced_metric.increment(:in, 0)
         namespaced_metric.increment(:out, 0)
       end
 
@@ -124,7 +123,6 @@ module LogStash; module Util
       def start_metrics(batch)
         @mutex.synchronize do
           # there seems to be concurrency issues with metrics, keep it in the mutex
-          add_starting_metrics(batch)
           set_current_thread_inflight_batch(batch)
           start_clock
         end
@@ -159,11 +157,6 @@ module LogStash; module Util
           end
           @inflight_clocks.delete(Thread.current)
         end
-      end
-
-      def add_starting_metrics(batch)
-        @event_metric.increment(:in, batch.starting_size)
-        @pipeline_metric.increment(:in, batch.starting_size)
       end
 
       def add_filtered_metrics(batch)
@@ -291,6 +284,10 @@ module LogStash; module Util
     class WriteBatch
       def initialize
         @events = []
+      end
+
+      def size
+        @events.size
       end
 
       def push(event)

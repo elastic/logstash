@@ -96,7 +96,9 @@ module LogStash module Instrument
       end
 
       def stop
-        @metric.report_time(@namespace, @key, (MILLISECONDS * (Time.now - @start_time)).to_i)
+        execution_time = (MILLISECONDS * (Time.now - @start_time)).to_i
+        @metric.report_time(@namespace, @key, execution_time)
+        execution_time
       end
     end
   end
