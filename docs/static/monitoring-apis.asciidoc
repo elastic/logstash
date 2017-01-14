@@ -457,8 +457,6 @@ Example response:
 
 The following request returns a JSON document that shows info about config reload successes and failures.
 
-//REVIEWERS: We also report reloads under /_node/stats/pipeline. Is that intentional?
-
 [source,js]
 --------------------------------------------------
 GET /_node/stats/reloads
@@ -483,8 +481,6 @@ When Logstash is running in a container, the following request returns a JSON do
 contains cgroup information to give you a more accurate view of CPU load, including whether
 the container is being throttled. 
 
-//REVIEWERS: I couldn't easily test this because I'm not running Logstash in a Linux container. The example is based on info in the PR. Can someone confirm?
-
 [source,js]
 --------------------------------------------------
 GET /_node/stats/os
@@ -496,21 +492,21 @@ Example response:
 --------------------------------------------------
 {
   "os" : {
-    "cgroup" : {
+    "cgroup" : { 
       "cpuacct" : {
-        "usage" : 789470280230,
-        "control_group" : "/user.slice/user-1000.slice"
-      },
+        "control_group" : "/elastic1",
+        "usage_nanos" : 378477588075
+                },
       "cpu" : {
-        "cfs_quota_micros" : -1,
-        "control_group" : "/user.slice/user-1000.slice",
+        "control_group" : "/elastic1",
+        "cfs_period_micros" : 1000000,
+        "cfs_quota_micros" : 800000,
         "stat" : {
-          "number_of_times_throttled" : 0,
-          "time_throttled_nanos" : 0,
-          "number_of_periods" : 0
-        },
-        "cfs_period_micros" : 100000
-      }
+          "number_of_elapsed_periods" : 4157,
+          "number_of_times_throttled" : 460,
+          "time_throttled_nanos" : 581617440755
+        }
+      }    
     }
   }
 --------------------------------------------------
