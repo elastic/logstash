@@ -1,17 +1,98 @@
 [[offline-plugins]]
 === Offline Plugin Management
 
-The Logstash <<working-with-plugins,plugin manager>> was introduced in the 1.5 release. This section discusses setting up
-local repositories of plugins for use on systems without access to the Internet.
+The Logstash <<working-with-plugins,plugin manager>> provides support for preparing offline plugin packs that you can
+use to install Logstash plugins on systems that don't have Internet access. 
 
-The procedures in this section require a staging machine running Logstash that has access to a public or private Rubygems
-server. This staging machine downloads and packages the files used for offline installation.
+This procedure requires a staging machine running Logstash that has access to a public or
+<<private-rubygem,private Rubygems>> server. The staging machine downloads and packages all the files and dependencies
+required for offline installation.
 
-See the <<private-rubygem,Private Gem Repositories>> section for information on setting up your own private
-Rubygems server.
+//REVIEWERS: I'm assuming that a private gem repository is still an option, but I haven't tested it. Is it still an option?
+
+NOTE: If you used offline plugin management prior to Logstash 5.2, you used the `pack` and `unpack` subcommands. Those
+subcommands are now deprecated, but the procedure for using them is still available in the documentation 
+<<building-offline-packages-deprecated,here>>.
+
+[[building-offline-packs]]
+[float]
+=== Building Offline Plugin Packs
+
+An _offline plugin pack_ is a compressed file that contains all the plugins your offline Logstash installation requires,
+along with the dependencies for those plugins.
+
+To build an offline plugin pack:
+
+. Make sure all the plugins that you want to package are installed on the staging server and that the staging server can
+access the Internet.
+
+. Run the `bin/logstash-plugin prepare-offline-pack` subcommand to package the plugins and dependencies:
++
+[source, shell]
+-------------------------------------------------------------------------------
+bin/logstash-plugin prepare-offline-pack [PLUGINS] --output OUTPUT
+-------------------------------------------------------------------------------
++
+where:
++
+* `[PLUGINS]` specifies one or more plugins that you want to include in the pack.
+* `OUTPUT` specifies the location where the compressed plugin pack will be written. The default location is
++/LOGSTASH_HOME/logstash-offline-plugins-{logstash_version}.zip+.
+
+Examples:
+
+["source","sh",subs="attributes"]
+-------------------------------------------------------------------------------
+bin/logstash-plugin prepare-offline-pack logstash-input-beats <1>
+bin/logstash-plugin prepare-offline-pack logstash-filter-* <2>
+bin/logstash-plugin prepare-offline-pack logstash-filter-* logstash-input-beats <3>
+-------------------------------------------------------------------------------
+<1> Packages the Beats input plugin and any dependencies.
+<2> Uses a wildcard to package all filter plugins and any dependencies.
+<3> Packages all filter plugins, the Beats input plugin, and any dependencies.
+
+NOTE: Downloading all dependencies for the specified plugins may take some time, depending on the plugins listed.
+
+[[installing-offline-packs]]
+[float]
+=== Installing Offline Plugin Packs
+
+To install an offline plugin pack:
+
+. Move the compressed bundle to the machine where you want to install the plugins.
+
+. Run the `bin/logstash-plugin install` subcommand to install the packaged plugins:
++
+["source","sh",subs="attributes"]
+-------------------------------------------------------------------------------
+bin/logstash-plugin install file:///path/to/logstash-offline-plugins-{logstash_version}.zip
+-------------------------------------------------------------------------------
++
+Where +path/to/logstash-offline-plugins-{logstash_version}.zip+ is the path to the offline plugin pack.
+
+//REVIEWERS: Are there any other options from the `install` command that are also supported for an offline plugins install?
+
+//REVIEWERS: In the --help for the latest snapshot build, it doesn't mention that the  --local is deprecated. Looks like the text for the help needs to be updated. Should I open an issue for this, or is this known?
+
 
 [float]
-=== Building the Offline Package
+=== Updating Offline Plugins
+
+To update offline plugins, you update the plugins on the staging server and then use the same process that you followed to
+build and install the plugin pack:
+
+. On the staging server, run the `bin/logstash-plugin update` subcommand to update the plugins. See <<updating-plugins>>.
+
+. Create a new version of the plugin pack. See <<building-offline-packs>>.
+
+. Install the new version of the plugin pack. See <<installing-offline-packs>>.
+
+
+[[building-offline-packages-deprecated]]
+[float]
+=== Building the Offline Package (Deprecated Procedure)
+
+deprecated[5.2, Starting with Logstash 5.2, the `pack` and `unpack` commands are deprecated and replaced by the `prepare-offline-pack` and `install` commands]
 
 Working with offline plugins requires you to create an _offline package_, which is a compressed file that contains all of
 the plugins your offline Logstash installation requires, along with the dependencies for those plugins.
@@ -30,7 +111,9 @@ NOTE: Downloading all dependencies for the specified plugins may take some time,
 `bin/logstash-plugin unpack` subcommand to make the packaged plugins available.
 
 [float]
-=== Install or Update a local plugin
+=== Install or Update a local plugin (Deprecated Procedure)
+
+deprecated[5.2]
 
 To install or update a local plugin, use the `--local` option with the install and update commands, as in the following
 examples:
@@ -53,6 +136,8 @@ examples:
 [float]
 [[managing-packs]]
 === Managing Plugin Packs
+
+deprecated[5.2]
 
 The `pack` and `unpack` subcommands for `bin/logstash-plugin` take the following options:
 
