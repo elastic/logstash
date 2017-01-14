@@ -126,7 +126,7 @@ describe LogStash::Instrument::PeriodicPoller::Cgroup do
             :cfs_period_micros => cfs_period_micros,
             :cfs_quota_micros => cfs_quota_micros,
             :stat => {
-                :number_of_periods => cpu_stats_number_of_periods,
+                :number_of_elapsed_periods => cpu_stats_number_of_periods,
                 :number_of_times_throttled => cpu_stats_number_of_time_throttled,
                 :time_throttled_nanos => cpu_stats_time_throttled_nanos
             }
