@@ -245,7 +245,7 @@ class LogStash::Agent
     end
 
     begin
-      LogStash::Pipeline.new(config, config.settings, metric)
+      LogStash::Pipeline.new(config.config_string, config.settings, metric)
     rescue => e
       @instance_reload_metric.increment(:failures)
       @pipeline_reload_metric.namespace([settings.get("pipeline.id").to_sym, :reloads]).tap do |n|
@@ -271,7 +271,7 @@ class LogStash::Agent
   def reload_pipeline!(id)
     old_pipeline = @pipelines[id]
     new_config = fetch_config
-    if old_pipeline == new_config
+    if old_pipeline.config_hash == new_config.config_hash
       @logger.debug("no configuration change for pipeline",
                     :pipeline => id, :config => new_config)
       return
