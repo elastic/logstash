@@ -84,7 +84,7 @@ namespace "artifact" do
   task "all" => ["prepare", "build"]
 
   desc "Build a tar.gz of default logstash plugins with all dependencies"
-  task "tar" => ["prepare", "generate_build_metadata"] do
+  task "tar" => ["prepare", "generate_build_metadata", "license:generate-notice-file"] do
     puts("[artifact:tar] Building tar.gz of default plugins")
     build_tar
   end
@@ -451,5 +451,4 @@ namespace "artifact" do
       out.cleanup
     end
   end # def package
-
 end
