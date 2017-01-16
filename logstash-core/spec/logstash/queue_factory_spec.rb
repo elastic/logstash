@@ -4,6 +4,7 @@ require "logstash/settings"
 require "stud/temporary"
 
 describe LogStash::QueueFactory do
+  let(:pipeline_id) { "my_pipeline" }
   let(:settings_array) do
     [
       LogStash::Setting::WritableDirectory.new("path.queue", Stud::Temporary.pathname),
@@ -13,7 +14,8 @@ describe LogStash::QueueFactory do
       LogStash::Setting::Numeric.new("queue.max_events", 0),
       LogStash::Setting::Numeric.new("queue.checkpoint.acks", 1024),
       LogStash::Setting::Numeric.new("queue.checkpoint.writes", 1024),
-      LogStash::Setting::Numeric.new("queue.checkpoint.interval", 1000)
+      LogStash::Setting::Numeric.new("queue.checkpoint.interval", 1000),
+      LogStash::Setting::String.new("pipeline.id", pipeline_id)
     ]
   end
 
@@ -35,6 +37,20 @@ describe LogStash::QueueFactory do
 
     it "returns a `WrappedAckedQueue`" do
       expect(subject.create(settings)).to be_kind_of(LogStash::Util::WrappedAckedQueue)
+    end
+
+    describe "per pipeline id subdirectory creation" do
+      let(:queue_path) { ::File.join(settings.get("path.queue"), pipeline_id) }
+
+      after :each do
+        FileUtils.rmdir(queue_path)
+      end
+
+      it "creates a queue directory based on the pipeline id" do
+        expect(Dir.exist?(queue_path)).to be_falsey
+        queue = subject.create(settings)
+        expect(Dir.exist?(queue_path)).to be_truthy
+      end
     end
   end
 
