@@ -36,7 +36,7 @@ namespace "license" do
     notice_file << "Copyright 2012-#{copyright_year} Elasticsearch\n"
     notice_file << "\nThis product includes software developed by The Apache Software Foundation (http://www.apache.org/).\n"
     notice_file << "\n==========================================================================\n"
-    notice_file << "Third party libraries used by the Logstash project:\n\n"
+    notice_file << "Third party libraries bundled by the Logstash project:\n\n"
   end
 
   def add_dependencies_licenses(notice_file)
@@ -65,7 +65,7 @@ namespace "license" do
 
           if !notice.empty? || !license.empty?
             notice_file << "==========================================================================\n"
-            notice_file << "RubyGem: #{name}\n"
+            notice_file << "RubyGem: #{name} Version: #{dep.to_spec.version}\n"
             notice_file << notice
             notice_file << license
           end
