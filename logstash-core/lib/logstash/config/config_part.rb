@@ -1,18 +1,16 @@
 # encoding: utf-8
-
 module LogStash module Config
  class ConfigPart
-   attr_reader :source_loader, :pipeline_name, :metadata, :config_string
+   attr_reader :reader, :source_id, :config_string
 
-   def initialize(source_loader, pipeline_name, metadata, config_string)
-     @source_loader = source_loader
-     @pipeline_name = pipeline_name
-     @metadata = metadata
+   def initialize(reader, source_id, config_string)
+     @reader = reader
+     @source_id = source_id
      @config_string = config_string
    end
 
    def inspect
-     "#{source_loader} => from: #{metadata} pipeline_name: #{pipeline_name}"
+     "#{reader} => from: #{source_id}"
    end
  end
 end end

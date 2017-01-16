@@ -20,20 +20,16 @@ module LogStash module Config
 
     @@SOURCE_LOADERS_MUTEX = Mutex.new
     @@SOURCE_LOADERS = Set.new([
-      LogStash::Config::SourceLoader::ConfigString,
-      LogStash::Config::SourceLoader::RemoteFile,
-      LogStash::Config::SourceLoader::LocalFile
+      LogStash::Config::Source::Local
     ])
 
     def initialize(settings)
       @settings = settings
     end
 
+    # This return a ConfigLoader object that will
+    # abstract the call to the different sources, or the different configured pipeline
     def create
-
-
-
-
       loaders = []
 
       source_loaders do |config_source|
