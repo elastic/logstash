@@ -2,61 +2,7 @@
 require 'logstash/errors'
 require "treetop"
 
-class Treetop::Runtime::SyntaxNode
-
-  def compile
-    return "" if elements.nil?
-    return elements.collect(&:compile).reject(&:empty?).join("")
-  end
-
-  # Traverse the syntax tree recursively.
-  # The order should respect the order of the configuration file as it is read
-  # and written by humans (and the order in which it is parsed).
-  def recurse(e, depth=0, &block)
-    r = block.call(e, depth)
-    e.elements.each { |e| recurse(e, depth + 1, &block) } if r && e.elements
-    nil
-  end
-
-  def recursive_inject(results=[], &block)
-    if !elements.nil?
-      elements.each do |element|
-        if block.call(element)
-          results << element
-        else
-          element.recursive_inject(results, &block)
-        end
-      end
-    end
-    return results
-  end
-
-  # When Treetop parses the configuration file
-  # it will generate a tree, the generated tree will contain
-  # a few `Empty` nodes to represent the actual space/tab or newline in the file.
-  # Some of theses node will point to our concrete class.
-  # To fetch a specific types of object we need to follow each branch
-  # and ignore the empty nodes.
-  def recursive_select(klass)
-    return recursive_inject { |e| e.is_a?(klass) }
-  end
-
-  def recursive_inject_parent(results=[], &block)
-    if !parent.nil?
-      if block.call(parent)
-        results << parent
-      else
-        parent.recursive_inject_parent(results, &block)
-      end
-    end
-    return results
-  end
-
-  def recursive_select_parent(results=[], klass)
-    return recursive_inject_parent(results) { |e| e.is_a?(klass) }
-  end
-end
-
+require "logstash/compiler/treetop_monkeypatches"
 
 module LogStash; module Config; module AST
 

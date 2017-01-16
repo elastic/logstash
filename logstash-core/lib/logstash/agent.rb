@@ -314,6 +314,7 @@ class LogStash::Agent
       if !t.alive?
         return false
       elsif pipeline.ready?
+        dispatcher.fire(:pipeline_started, pipeline)
         return true
       else
         sleep 0.01
@@ -327,6 +328,7 @@ class LogStash::Agent
     @logger.warn("stopping pipeline", :id => id)
     pipeline.shutdown { LogStash::ShutdownWatcher.start(pipeline) }
     @pipelines[id].thread.join
+    dispatcher.fire(:pipeline_stopped, pipeline)
   end
 
   def start_pipelines
