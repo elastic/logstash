@@ -90,19 +90,19 @@ namespace "artifact" do
   end
 
   desc "Build a zip of default logstash plugins with all dependencies"
-  task "zip" => ["prepare", "generate_build_metadata"] do
+  task "zip" => ["prepare", "generate_build_metadata", "license:generate-notice-file"] do
     puts("[artifact:zip] Building zip of default plugins")
     build_zip
   end
 
   desc "Build an RPM of logstash with all dependencies"
-  task "rpm" => ["prepare", "generate_build_metadata"] do
+  task "rpm" => ["prepare", "generate_build_metadata", "license:generate-notice-file"] do
     puts("[artifact:rpm] building rpm package")
     package("centos", "5")
   end
 
   desc "Build a DEB of logstash with all dependencies"
-  task "deb" => ["prepare", "generate_build_metadata"] do
+  task "deb" => ["prepare", "generate_build_metadata", "license:generate-notice-file"] do
     puts("[artifact:deb] building deb package")
     package("ubuntu", "12.04")
   end
