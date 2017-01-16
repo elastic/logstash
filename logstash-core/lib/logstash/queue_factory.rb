@@ -1,4 +1,5 @@
 # encoding: utf-8
+require "fileutils"
 require "logstash/event"
 require "logstash/namespace"
 require "logstash/util/wrapped_acked_queue"
@@ -24,7 +25,8 @@ module LogStash
         LogStash::Util::WrappedSynchronousQueue.new
       when "persisted"
         # persisted is the disk based acked queue
-        queue_path = settings.get("path.queue")
+        queue_path = ::File.join(settings.get("path.queue"), settings.get("pipeline.id"))
+        FileUtils.mkdir_p(queue_path)
         LogStash::Util::WrappedAckedQueue.create_file_based(queue_path, queue_page_capacity, queue_max_events, checkpoint_max_writes, checkpoint_max_acks, checkpoint_max_interval, queue_max_bytes)
       else
         raise ConfigurationError, "Invalid setting `#{queue_type}` for `queue.type`, supported types are: 'memory_acked', 'memory', 'persisted'"
