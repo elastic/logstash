@@ -46,28 +46,6 @@ class LogStash::Agent
 
     @config_loader = LogStash::Config::SourceLoaderFactory.new(settings).create
 
-    # always fetch all the possible pipelines
-    # than we check what should be running or not
-
-    # This shoudl return a PipelineConfig
-    # and it contains the following:
-    # - rename local file for Local (config_string + local_file)
-    # - rename remote file for remote (config_string + remote_file)
-    # - ES
-    # - Always return a list of pipeline config
-    # - use what is running vs what is provided to know what to do. diff like
-    # - execute the diff create, stop or reload
-    # - ConfigPart Lexical part
-    # - Settings
-    # - name
-    # - update!
-    # - config hash
-    # - Kind of notification to the ConfigLoader that it was successfully loaded
-    # - install flow
-    #     - install xpack
-    #     - yield a configuration warning or auto configure?
-    #     -
-    # yield a warning when we try with the es config try to use -f -e
     @reload_interval = setting("config.reload.interval")
     @upgrade_mutex = Mutex.new
 
@@ -259,7 +237,7 @@ class LogStash::Agent
   def create_pipeline(settings, config=nil)
     if config.nil?
       begin
-        config = fetch_config(settings)
+        config = fetch_config
       rescue => e
         @logger.error("failed to fetch pipeline configuration", :message => e.message)
         return
@@ -267,7 +245,7 @@ class LogStash::Agent
     end
 
     begin
-      LogStash::Pipeline.new(config, settings, metric)
+      LogStash::Pipeline.new(config, config.settings, metric)
     rescue => e
       @instance_reload_metric.increment(:failures)
       @pipeline_reload_metric.namespace([settings.get("pipeline.id").to_sym, :reloads]).tap do |n|
@@ -284,16 +262,16 @@ class LogStash::Agent
     end
   end
 
-  def fetch_config(settings)
-    @config_loader.format_config(settings.get("path.config"), settings.get("config.string"))
+  def fetch_config
+    @config_loader.pipeline_configs.first # we only support one config for now
   end
 
   # since this method modifies the @pipelines hash it is
   # wrapped in @upgrade_mutex in the parent call `reload_state!`
   def reload_pipeline!(id)
     old_pipeline = @pipelines[id]
-    new_config = fetch_config(old_pipeline.settings)
-    if old_pipeline.config_str == new_config
+    new_config = fetch_config
+    if old_pipeline == new_config
       @logger.debug("no configuration change for pipeline",
                     :pipeline => id, :config => new_config)
       return

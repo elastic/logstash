@@ -1,6 +1,8 @@
 # encoding: utf-8
 require "logstash/config/source/base"
 require "logstash/config/config_part"
+require "logstash/config/pipeline_config"
+require "logstash/util/loggable"
 require "uri"
 
 module LogStash module Config module Source
@@ -13,19 +15,19 @@ module LogStash module Config module Source
   #
   #  All theses option will create a unique pipeline
   #
-  class Local < Base
+  class Local
     class ConfigStringLoader
       def self.read(config_string)
-        [ConfigPart.new(self.class, :config_string, config_string)]
+        [ConfigPart.new(self.name, :config_string, config_string)]
       end
     end
 
     class ConfigPathLoader
-      include LogStash::Utils::Loggable
+      include LogStash::Util::Loggable
 
       TEMPORARY_FILE_RE = /~$/
 
-      def initalize(path)
+      def initialize(path)
         @path = ::File.expand_path(path)
       end
 
@@ -46,7 +48,7 @@ module LogStash module Config module Source
           config_string = ::File.read(file)
 
           if valid_encoding?(config_string)
-            config_parts << ConfigPart.new(self.class, file, config_string)
+            config_parts << ConfigPart.new(self.class.name, file, config_string)
           else
             encoding_issue_files << file
           end
@@ -59,9 +61,8 @@ module LogStash module Config module Source
         config_parts
       end
 
-
       def self.read(path)
-        self.class.new(path).read
+        ConfigPathLoader.new(path).read
       end
 
       private
@@ -86,8 +87,8 @@ module LogStash module Config module Source
       def self.read(uri)
         uri = URI.parse(uri)
         begin
-          config_string = Net::HTTP.get(uri))
-          [ConfigPart.new(self.class, uri.to_s, config_string)]
+          config_string = Net::HTTP.get(uri)
+          [ConfigPart.new(self.name, uri.to_s, config_string)]
         rescue Exception => e
           fail(I18n.t("logstash.runner.configuration.fetch-failed", :path => uri.to_s, :message => e.message))
         end
@@ -105,25 +106,25 @@ module LogStash module Config module Source
       config_parts = []
 
       config_parts << ConfigStringLoader.read(config_string) if config_string?
-      config_parts << ConfigPathLoader.read(config_path) if config_path?
+      config_parts << ConfigPathLoader.read(config_path) if local_config?
       config_parts << ConfigRemoteLoader.read(config_path) if remote_config?
 
       config_parts.flatten!
 
-      PipelineConfig.new(PIPELINE_ID, config_parts, settings)
+      PipelineConfig.new(self.class, PIPELINE_ID, config_parts, @settings)
     end
 
     def self.match?(settings)
-      settings.get("path.config_string") || settings.get("path.config")
+      settings.get("config.string") || settings.get("path.config")
     end
 
     private
     def config_string
-      @settings.get("path.config_string")
+      @settings.get("config.string")
     end
 
     def config_string?
-      !config_string.empty?
+      !config_string.nil? && !config_string.empty?
     end
 
     def config_path
@@ -131,10 +132,10 @@ module LogStash module Config module Source
     end
 
     def config_path?
-      !config_path.empty?
+      !config_path.nil? && !config_path.empty?
     end
 
-    def local_file?
+    def local_config?
       return false unless config_path?
 
       begin
@@ -148,7 +149,7 @@ module LogStash module Config module Source
       end
     end
 
-    def remote_file?
+    def remote_config?
       return false unless config_path?
 
       begin

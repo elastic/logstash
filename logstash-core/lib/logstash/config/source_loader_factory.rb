@@ -1,7 +1,5 @@
 # encoding: utf-8
-require "logstash/config/source_loader/config_string"
-require "logstash/config/source_loader/local_file"
-require "logstash/config/source_loader/remote_file"
+require "logstash/config/source/local"
 require "thread"
 
 module LogStash module Config

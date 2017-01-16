@@ -1,5 +1,5 @@
 # encoding: utf-8
-module LogStash module Config module SourceLoader
+module LogStash module Config module Source
   class Base
     PIPELINE_NAME = :main
 
