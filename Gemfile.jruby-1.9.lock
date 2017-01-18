@@ -65,7 +65,7 @@ GEM
     benchmark-ips (2.7.2)
     bindata (2.3.4)
     buftok (0.2.0)
-    builder (3.2.2)
+    builder (3.2.3)
     cabin (0.9.0)
     childprocess (0.5.9)
       ffi (~> 1.0, >= 1.0.11)
@@ -87,7 +87,7 @@ GEM
       json
     domain_name (0.5.20161129)
       unf (>= 0.0.5, < 1.0.0)
-    dotenv (2.1.1)
+    dotenv (2.1.2)
     edn (1.1.1)
     elasticsearch (1.1.0)
       elasticsearch-api (= 1.1.0)
@@ -101,7 +101,7 @@ GEM
     excon (0.54.0)
     faraday (0.9.2)
       multipart-post (>= 1.2, < 3)
-    ffi (1.9.14-java)
+    ffi (1.9.17-java)
     file-dependencies (0.1.6)
       minitar
     filesize (0.0.4)
@@ -141,8 +141,8 @@ GEM
     jrmonitor (0.4.2)
     jruby-openssl (0.9.16-java)
     jruby-stdin-channel (0.2.0-java)
-    json (1.8.3-java)
-    kramdown (1.13.1)
+    json (1.8.6-java)
+    kramdown (1.13.2)
     logstash-codec-cef (4.1.2-java)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
     logstash-codec-collectd (3.0.3)
@@ -304,7 +304,7 @@ GEM
       puma (~> 2.16, >= 2.16.0)
       rack (~> 1)
       stud
-    logstash-input-http_poller (3.1.0)
+    logstash-input-http_poller (3.1.1)
       logstash-codec-plain
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       logstash-mixin-http_client (>= 2.2.4, < 5.0.0)
@@ -328,7 +328,7 @@ GEM
       sequel
       tzinfo
       tzinfo-data
-    logstash-input-kafka (5.1.1)
+    logstash-input-kafka (5.1.4)
       logstash-codec-json
       logstash-codec-plain
       logstash-core-plugin-api (>= 1.60, <= 2.99)
@@ -346,10 +346,10 @@ GEM
       logstash-codec-plain
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       stud (~> 0.0.22)
-    logstash-input-rabbitmq (5.2.0)
+    logstash-input-rabbitmq (5.2.2)
       logstash-codec-json
       logstash-core-plugin-api (>= 1.60, <= 2.99)
-      logstash-mixin-rabbitmq_connection (>= 4.2.0, < 5.0.0)
+      logstash-mixin-rabbitmq_connection (>= 4.2.2, < 5.0.0)
     logstash-input-redis (3.1.1)
       logstash-codec-json
       logstash-core-plugin-api (>= 1.60, <= 2.99)
@@ -366,7 +366,7 @@ GEM
       logstash-codec-json
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       logstash-mixin-aws (>= 1.0.0)
-    logstash-input-stdin (3.2.1)
+    logstash-input-stdin (3.2.2)
       concurrent-ruby
       jruby-stdin-channel
       logstash-codec-line
@@ -409,8 +409,8 @@ GEM
       logstash-codec-plain
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       manticore (>= 0.5.2, < 1.0.0)
-    logstash-mixin-rabbitmq_connection (4.2.1-java)
-      march_hare (~> 2.20.0)
+    logstash-mixin-rabbitmq_connection (4.2.2-java)
+      march_hare (~> 2.22.0)
       stud (~> 0.0.22)
     logstash-output-cloudwatch (3.0.3)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
@@ -421,7 +421,7 @@ GEM
       logstash-filter-json
       logstash-input-generator
       logstash-output-file
-    logstash-output-elasticsearch (6.2.0-java)
+    logstash-output-elasticsearch (6.2.1-java)
       cabin (~> 0.6)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       manticore (>= 0.5.4, < 1.0.0)
@@ -455,14 +455,14 @@ GEM
     logstash-output-pipe (3.0.2)
       logstash-codec-plain
       logstash-core-plugin-api (>= 1.60, <= 2.99)
-    logstash-output-rabbitmq (4.0.4-java)
+    logstash-output-rabbitmq (4.0.6-java)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
-      logstash-mixin-rabbitmq_connection (>= 4.1.1, < 5.0.0)
+      logstash-mixin-rabbitmq_connection (>= 4.2.2, < 5.0.0)
     logstash-output-redis (3.0.3)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       redis
       stud
-    logstash-output-s3 (4.0.1)
+    logstash-output-s3 (4.0.5)
       concurrent-ruby
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       logstash-mixin-aws
@@ -470,11 +470,9 @@ GEM
     logstash-output-sns (4.0.2)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       logstash-mixin-aws (>= 1.0.0)
-    logstash-output-sqs (3.0.2)
-      aws-sdk
+    logstash-output-sqs (4.0.0)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       logstash-mixin-aws (>= 1.0.0)
-      stud
     logstash-output-statsd (3.1.1)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       logstash-input-generator
@@ -502,7 +500,7 @@ GEM
     mail (2.6.4)
       mime-types (>= 1.16, < 4)
     manticore (0.6.0-java)
-    march_hare (2.20.0-java)
+    march_hare (2.22.0-java)
     memoizable (0.4.2)
       thread_safe (~> 0.3, >= 0.3.1)
     method_source (0.8.2)
@@ -518,7 +516,7 @@ GEM
     murmurhash3 (0.1.6-java)
     mustache (0.99.8)
     naught (1.1.0)
-    nokogiri (1.7.0-java)
+    nokogiri (1.7.0.1-java)
     numerizer (0.1.1)
     octokit (3.8.0)
       sawyer (~> 0.6.0, >= 0.5.3)
@@ -568,7 +566,7 @@ GEM
     sawyer (0.6.0)
       addressable (~> 2.3.5)
       faraday (~> 0.8, < 0.10)
-    sequel (4.42.0)
+    sequel (4.42.1)
     simple_oauth (0.3.1)
     simplecov (0.12.0)
       docile (~> 1.1.0)
