@@ -131,7 +131,7 @@ GEM
     http_parser.rb (0.6.0-java)
     i18n (0.6.9)
     insist (1.0.0)
-    jar-dependencies (0.3.8)
+    jar-dependencies (0.3.9)
     jls-grok (0.11.4)
       cabin (>= 0.6.0)
     jls-lumberjack (0.0.26)
