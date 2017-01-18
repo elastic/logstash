@@ -8,7 +8,7 @@ module LogStash module Config module Source
     end
 
     def pipeline_configs
-      raise NotImplementedError, "`#pipeline_config` must be implemented!"
+      raise NotImplementedError, "`#pipeline_configs` must be implemented!"
     end
 
     def self.match?(settings)
