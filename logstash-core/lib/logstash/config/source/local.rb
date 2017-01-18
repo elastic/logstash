@@ -18,7 +18,7 @@ module LogStash module Config module Source
   class Local
     class ConfigStringLoader
       def self.read(config_string)
-        [ConfigPart.new(self.name, :config_string, config_string)]
+        [ConfigPart.new(self.name, "config_string", config_string)]
       end
     end
 

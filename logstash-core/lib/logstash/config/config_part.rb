@@ -9,10 +9,5 @@ module LogStash module Config
      @source_id = source_id
      @config_string = config_string
    end
-
-
-   def inspect
-     "#{reader} => from: #{source_id}"
-   end
  end
 end end

@@ -7,10 +7,6 @@ module LogStash module Config module Source
       @settings = settings
     end
 
-    def config_debug?
-      settings.get_value("config.debug")
-    end
-
     def pipeline_configs
       raise NotImplementedError, "`#pipeline_config` must be implemented!"
     end
@@ -21,5 +17,10 @@ module LogStash module Config module Source
 
     protected
     attr_reader :settings
+
+    private
+    def config_debug?
+      settings.get_value("config.debug")
+    end
   end
 end end end
