@@ -36,17 +36,17 @@ describe LogStash::Config::PipelineConfig do
   end
 
   it "returns the config_hash" do
-    expect(subject.config_hash).to eq("eh")
+    expect(subject.config_hash).not_to be_nil
   end
 
   it "does object equality on config_hash and pipeline_id" do
-    another_exect_pipeline = described_class.new(source, pipeline_id, ordered_config_parts, settings)
-    expect(subject).to eq(another_exect_pipeline_fetch)
+    another_exact_pipeline = described_class.new(source, pipeline_id, ordered_config_parts, settings)
+    expect(subject).to eq(another_exact_pipeline)
 
     not_matching_pipeline = described_class.new(source, pipeline_id, [], settings)
-    expect(subject).not eq(not_matching_pipeline)
+    expect(subject).not_to eq(not_matching_pipeline)
 
     not_same_pipeline_id = described_class.new(source, :another_pipeline, unordered_config_parts, settings)
-    expect(subject).to eq(not_same_pipeline_id)
+    expect(subject).not_to eq(not_same_pipeline_id)
   end
 end
