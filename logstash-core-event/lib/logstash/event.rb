@@ -87,6 +87,7 @@ class LogStash::Event
     @data[VERSION] ||= VERSION_ONE
     ts = @data[TIMESTAMP]
     @data[TIMESTAMP] = ts ? init_timestamp(ts) : LogStash::Timestamp.now
+    @data[TAGS] ||= []
 
     @metadata = @data.delete(METADATA) || {}
     @metadata_accessors = LogStash::Util::Accessors.new(@metadata)
@@ -117,6 +118,10 @@ class LogStash::Event
 
   def to_s
     "#{timestamp.to_iso8601} #{self.sprintf("%{host} %{message}")}"
+  end
+
+  def tags
+    @data[TAGS]
   end
 
   def timestamp
@@ -215,7 +220,7 @@ class LogStash::Event
 
   def tag(value)
     # Generalize this method for more usability
-    tags = @accessors.get(TAGS) || []
+    tags = @accessors.get(TAGS)
     tags << value unless tags.include?(value)
     @accessors.set(TAGS, tags)
   end
