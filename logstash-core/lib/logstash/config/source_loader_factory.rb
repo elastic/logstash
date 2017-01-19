@@ -3,7 +3,7 @@ require "logstash/config/source/local"
 require "thread"
 
 module LogStash module Config
-  class SourceLoaderFactory
+  class SourceLoader
     class ConfigLoader
       def initialize(source_loaders)
         @source_loaders = source_loaders

@@ -44,7 +44,7 @@ class LogStash::Agent
     # Generate / load the persistent uuid
     id
 
-    @config_loader = LogStash::Config::SourceLoaderFactory.new(settings).create
+    @config_loader = LogStash::Config::SourceLoader.new(settings).create
 
     @reload_interval = setting("config.reload.interval")
     @upgrade_mutex = Mutex.new

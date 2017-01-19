@@ -127,6 +127,8 @@ module LogStash module Config module Source
 
     PIPELINE_ID = :main
     HTTP_RE = /^http(s)/
+    INPUT_RE = /input *{/
+    OUTPUT_RE = /output *{/
 
     def initialize(settings)
       @settings = settings
@@ -141,6 +143,8 @@ module LogStash module Config module Source
 
       config_parts.flatten!
 
+      add_missing_inputs_or_outputs(config_parts)
+
       PipelineConfig.new(self.class, PIPELINE_ID, config_parts, @settings)
     end
 
@@ -149,6 +153,20 @@ module LogStash module Config module Source
     end
 
     private
+    # Make sure we have an input and at least 1 output
+    # if its not the case we will add stdin and stdout
+    # this is for backward compatibility reason
+    def add_missing_inputs_or_outputs(config_parts)
+      if !config_parts.any? { |part| !~ INPUT_RE }
+        config_parts << LogStash::ConfigPart.new(self.class.name, "default input", LogStash::Config::Defaults.input)
+      end
+
+      # include a default stdout output if no outputs given
+      if !config_parts.any? { |part| !~ OUTPUT_RE }
+        config_parts << LogStash::ConfigPart.new(self.class.name, "default output", LogStash::Config::Defaults.output)
+      end
+    end
+
     def config_string
       @settings.get("config.string")
     end
