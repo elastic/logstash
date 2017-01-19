@@ -3,17 +3,19 @@ require "logstash/config/source/base"
 require "logstash/config/config_part"
 require "logstash/config/pipeline_config"
 require "logstash/util/loggable"
+require "logstash/errors"
 require "uri"
 
 module LogStash module Config module Source
   # A locally defined configuration source
   #
-  # Which can aggregate the following config streams:
+  # Which can aggregate the following config options:
   #  - settings.config_string: "input { stdin {} }"
   #  - settings.config_path: /tmp/logstash/*.conf
   #  - settings.config_path: http://localhost/myconfig.conf
   #
-  #  All theses option will create a unique pipeline
+  #  All theses option will create a unique pipeline, generated parts will be
+  #  sorted alphabetically.
   #
   class Local
     class ConfigStringLoader
@@ -26,16 +28,17 @@ module LogStash module Config module Source
       include LogStash::Util::Loggable
 
       TEMPORARY_FILE_RE = /~$/
+      LOCAL_FILE_URI = /^file:\/\//i
 
       def initialize(path)
-        @path = ::File.expand_path(path)
+        @path = normalize_path(path)
       end
 
       def read
         config_parts = []
         encoding_issue_files = []
 
-        get_files(@path).each do |file|
+        get_files.each do |file|
           next unless ::File.file?(file) # skip directory
 
           logger.debug("Reading config file", :config_file => file)
@@ -55,9 +58,10 @@ module LogStash module Config module Source
         end
 
         if encoding_issue_files.any?
-          fail("The following config files contains non-ascii characters but are not UTF-8 encoded #{encoding_issue_files}")
+          raise LogStash::ConfigLoadingError, "The following config files contains non-ascii characters but are not UTF-8 encoded #{encoding_issue_files}"
         end
 
+        raise LogStash::ConfigLoadingError, "Cannot load configuration for path: #{path}" if config_parts.empty?
         config_parts
       end
 
@@ -66,12 +70,21 @@ module LogStash module Config module Source
       end
 
       private
-      def get_files(path)
-        if ::File.directory?(@path)
-          path = ::File.join(path, "*")
-        end
+      def normalize_path(path)
+        path.gsub!(LOCAL_FILE_URI, "")
+        ::File.expand_path(path)
+      end
 
+      def get_files
         Dir.glob(path).sort
+      end
+
+      def path
+        if ::File.directory?(@path)
+          ::File.join(@path, "*")
+        else
+          @path
+        end
       end
 
       def valid_encoding?(content)
@@ -84,13 +97,30 @@ module LogStash module Config module Source
     end
 
     class ConfigRemoteLoader
+      HTTPS_SCHEME = "https"
+
       def self.read(uri)
         uri = URI.parse(uri)
-        begin
-          config_string = Net::HTTP.get(uri)
-          [ConfigPart.new(self.name, uri.to_s, config_string)]
-        rescue Exception => e
-          fail(I18n.t("logstash.runner.configuration.fetch-failed", :path => uri.to_s, :message => e.message))
+
+        Net::HTTP.start(uri.host, uri.port, :use_ssl => uri.scheme == HTTPS_SCHEME) do |http|
+          request = Net::HTTP::Get.new(uri.path)
+          response = http.request(request)
+
+          # since we have fetching config we wont follow any redirection.
+          case response.code.to_i
+          when 200
+            [ConfigPart.new(self.name, uri.to_s, response.body)]
+          when 302
+            raise LogStash::ConfigLoadingError, I18n.t("logstash.runner.configuration.fetch-failed", :path => uri.to_s, :message => "We don't follow redirection for remote configuration")
+          when 404
+            raise LogStash::ConfigLoadingError, I18n.t("logstash.runner.configuration.fetch-failed", :path => uri.to_s, :message => "File not found")
+          when 403
+            raise LogStash::ConfigLoadingError, I18n.t("logstash.runner.configuration.fetch-failed", :path => uri.to_s, :message => "Permission denied")
+          when 500
+            raise LogStash::ConfigLoadingError, I18n.t("logstash.runner.configuration.fetch-failed", :path => uri.to_s, :message => "500 error on remote host")
+          else
+            raise LogStash::ConfigLoadingError, I18n.t("logstash.runner.configuration.fetch-failed", :path => uri.to_s, :message => "code: #{response.code}, message: #{response.class.to_s}")
+          end
         end
       end
     end

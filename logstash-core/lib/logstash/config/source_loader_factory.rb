@@ -3,17 +3,17 @@ require "logstash/config/source/local"
 require "thread"
 
 module LogStash module Config
-  class ConfigLoader
-    def initialize(source_loaders)
-      @source_loaders = source_loaders
-    end
-
-    def pipeline_configs
-      @source_loaders.collect(&:pipeline_configs).flatten
-    end
-  end
-
   class SourceLoaderFactory
+    class ConfigLoader
+      def initialize(source_loaders)
+        @source_loaders = source_loaders
+      end
+
+      def pipeline_configs
+        @source_loaders.collect(&:pipeline_configs).flatten
+      end
+    end
+
     include LogStash::Util::Loggable
 
     @@SOURCE_LOADERS_MUTEX = Mutex.new
@@ -37,7 +37,7 @@ module LogStash module Config
       end
 
       if loaders.empty?
-        raise "Can't find a appropriate config loader with current settings"
+        raise "Can't find an appropriate config loader with current settings"
       else
         ConfigLoader.new(loaders)
       end

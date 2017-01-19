@@ -21,12 +21,8 @@ module LogStash module Config
       @config_string = config_parts.collect(&:config_string).join("\n")
     end
 
-    def inspect
-      "PipelineConfig: from #{source}, pipeline_id: #{pipeline_id}, configs_parts#size: #{config_parts.size}, read_at: #{read_at}"
-    end
-
     def ==(other)
-      config_hash == other.config_hash
+      config_hash == other.config_hash && pipeline_id == other.pipeline_id
     end
   end
 end end
