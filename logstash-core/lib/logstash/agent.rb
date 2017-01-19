@@ -11,7 +11,7 @@ require "logstash/pipeline"
 require "logstash/webserver"
 require "logstash/event_dispatcher"
 require "logstash/config/loader"
-require "logstash/config/source_loader_factory"
+require "logstash/config/source_loader"
 require "stud/trap"
 require "uri"
 require "socket"
@@ -44,7 +44,7 @@ class LogStash::Agent
     # Generate / load the persistent uuid
     id
 
-    @config_loader = LogStash::Config::SourceLoader.new(settings).create
+    @config_loader = LogStash::Config::SOURCE_LOADER.create
 
     @reload_interval = setting("config.reload.interval")
     @upgrade_mutex = Mutex.new

@@ -24,4 +24,3 @@ def mock_settings(settings_values)
 
   settings
 end
-

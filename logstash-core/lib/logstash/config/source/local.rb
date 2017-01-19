@@ -17,7 +17,7 @@ module LogStash module Config module Source
   #  All theses option will create a unique pipeline, generated parts will be
   #  sorted alphabetically.
   #
-  class Local
+  class Local < Base
     class ConfigStringLoader
       def self.read(config_string)
         [ConfigPart.new(self.name, "config_string", config_string)]
@@ -97,12 +97,10 @@ module LogStash module Config module Source
     end
 
     class ConfigRemoteLoader
-      HTTPS_SCHEME = "https"
-
       def self.read(uri)
         uri = URI.parse(uri)
 
-        Net::HTTP.start(uri.host, uri.port, :use_ssl => uri.scheme == HTTPS_SCHEME) do |http|
+        Net::HTTP.start(uri.host, uri.port, :use_ssl => uri.scheme == "https") do |http|
           request = Net::HTTP::Get.new(uri.path)
           response = http.request(request)
 
@@ -127,8 +125,8 @@ module LogStash module Config module Source
 
     PIPELINE_ID = :main
     HTTP_RE = /^http(s)/
-    INPUT_RE = /input *{/
-    OUTPUT_RE = /output *{/
+    INPUT_BLOCK_RE = /input *{/
+    OUTPUT_BLOCK_RE = /output *{/
 
     def initialize(settings)
       @settings = settings
@@ -143,7 +141,7 @@ module LogStash module Config module Source
 
       config_parts.flatten!
 
-      add_missing_inputs_or_outputs(config_parts)
+      add_missing_default_inputs_or_outputs(config_parts)
 
       PipelineConfig.new(self.class, PIPELINE_ID, config_parts, @settings)
     end
@@ -156,13 +154,13 @@ module LogStash module Config module Source
     # Make sure we have an input and at least 1 output
     # if its not the case we will add stdin and stdout
     # this is for backward compatibility reason
-    def add_missing_inputs_or_outputs(config_parts)
-      if !config_parts.any? { |part| !~ INPUT_RE }
+    def add_missing_default_inputs_or_outputs(config_parts)
+      if !config_parts.any? { |part| INPUT_BLOCK_RE.match(part.config_string) }
         config_parts << LogStash::ConfigPart.new(self.class.name, "default input", LogStash::Config::Defaults.input)
       end
 
       # include a default stdout output if no outputs given
-      if !config_parts.any? { |part| !~ OUTPUT_RE }
+      if !config_parts.any? { |part| OUTPUT_BLOCK_RE.match(part.config_string) }
         config_parts << LogStash::ConfigPart.new(self.class.name, "default output", LogStash::Config::Defaults.output)
       end
     end

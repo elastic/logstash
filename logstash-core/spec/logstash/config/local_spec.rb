@@ -238,3 +238,7 @@ describe LogStash::Config::Source::Local::ConfigRemoteLoader do
     end
   end
 end
+
+describe LogStash::Config::Source::Local do
+end
+
