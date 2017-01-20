@@ -144,6 +144,40 @@ describe LogStash::Config::Source::Local::ConfigPathLoader do
       include_examples "read config from files"
     end
 
+    context "when there temporary files in the directory" do
+      let(:reader_config) { ::File.join(directory, "conf*.conf") }
+
+      let(:files) {
+        {
+          "config1.conf" => "input1",
+          "config2.conf" => "input2",
+          "config3.conf" => "input3",
+          "config4.conf" => "input4"
+        }
+      }
+
+      let(:other_files) do
+        {
+          "config1.conf~" => "input1",
+          "config2.conf~" => "input2",
+          "config3.conf~" => "input3",
+          "config4.conf~" => "input4"
+        }
+      end
+
+      include_examples "read config from files" do
+        before do
+          other_files.keys.shuffle.each do |file|
+            content = files[file]
+            temporary_file(content, file, directory)
+          end
+
+          # make sure we actually do some filtering
+          expect(Dir.glob(::File.join(directory, "*")).size).to eq(other_files.size + files.size)
+        end
+      end
+    end
+
     context "when the path is a wildcard" do
       let(:reader_config) { ::File.join(directory, "conf*.conf") }
 

@@ -200,7 +200,7 @@ module LogStash module Config module Source
 
       begin
         uri = URI.parse(config_path)
-        HTTP_RE.match(uri.scheme)
+        uri.scheme =~ HTTP_RE
       rescue URI::InvalidURIError
         false
       end

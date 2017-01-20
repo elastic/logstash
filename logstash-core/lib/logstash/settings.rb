@@ -47,6 +47,7 @@ module LogStash
     def clone
       get_subset(".*")
     end
+    alias_method :dup, :clone
 
     def get_default(setting_name)
       get_setting(setting_name).default

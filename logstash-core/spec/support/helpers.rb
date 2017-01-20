@@ -16,7 +16,7 @@ def clear_data_dir
 end
 
 def mock_settings(settings_values)
-  settings = LogStash::SETTINGS.dup
+  settings = LogStash::SETTINGS.clone
 
   settings_values.each do |key, value|
     settings.set(key, value)
