@@ -313,7 +313,7 @@ class LogStash::Agent
     while true do
       if !t.alive?
         return false
-      elsif pipeline.ready?
+      elsif pipeline.running?
         return true
       else
         sleep 0.01
