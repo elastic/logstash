@@ -15,7 +15,7 @@ module LogStash module Config module Source
   #  - settings.config_path: http://localhost/myconfig.conf
   #
   #  All theses option will create a unique pipeline, generated parts will be
-  #  sorted alphabetically.
+  #  sorted alphabetically. Se `PipelineConfig` class for the sorting algorithm.
   #
   class Local < Base
     class ConfigStringLoader
@@ -124,7 +124,7 @@ module LogStash module Config module Source
     end
 
     PIPELINE_ID = :main
-    HTTP_RE = /^http(s)/
+    HTTP_RE = /^http(s)?/
     INPUT_BLOCK_RE = /input *{/
     OUTPUT_BLOCK_RE = /output *{/
 
@@ -200,7 +200,7 @@ module LogStash module Config module Source
 
       begin
         uri = URI.parse(config_path)
-        uri.scheme =~ HTTP_RE
+        HTTP_RE.match(uri.scheme)
       rescue URI::InvalidURIError
         false
       end

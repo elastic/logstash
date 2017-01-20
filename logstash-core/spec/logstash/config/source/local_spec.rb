@@ -258,13 +258,89 @@ describe LogStash::Config::Source::Local::ConfigRemoteLoader do
 end
 
 describe LogStash::Config::Source::Local do
+  let(:input_block) { "input { generator {} }" }
+  let(:filter_block) { "filter { mutate {} } " }
+  let(:output_block) { "output { elasticsearch {}}" }
+  subject { described_class.new(settings) }
+
+  context "when `config.string` and `config.path` are set`" do
+    let(:config_file) { temporary_file(input_block) }
+
+    let(:settings) do
+      mock_settings(
+        "config.string" => "#{filter_block} #{output_block}",
+        "path.config" => config_file
+      )
+    end
+
+    it "returns a merged config" do
+      expect(subject.pipeline_configs.config_string).to include(input_block, output_block, filter_block)
+    end
+  end
+
+  context "when only the `config.string` is set" do
+    let(:settings) do
+      mock_settings( "config.string" => filter_block)
+    end
+
+    it "returns a config" do
+      expect(subject.pipeline_configs.config_string).to include(filter_block)
+    end
+  end
+
+  context "when only the `path.config` is set" do
+    let(:config_file) { temporary_file(input_block) }
+    let(:settings) do
+      mock_settings( "path.config" => config_file)
+    end
+
+    it "returns a config" do
+      expect(subject.pipeline_configs.config_string).to include(input_block)
+    end
+  end
+
+  context "when the `path.config` is an url" do
+    let(:remote_url) { "http://test.dev/superconfig.conf" }
+
+    before :all do
+      WebMock.disable_net_connect!
+    end
+
+    after :all do
+      WebMock.allow_net_connect!
+    end
+
+    before do
+      stub_request(:get, remote_url)
+        .to_return({
+        :body => input_block,
+        :status => 200
+      })
+    end
+
+    let(:settings) do
+      mock_settings( "path.config" => remote_url)
+    end
+
+    it "returns a config" do
+      expect(subject.pipeline_configs.config_string).to include(input_block)
+    end
+
+    context "when `config.string` is set" do
+      let(:settings) do
+        mock_settings(
+          "path.config" => remote_url,
+          "config.string" => filter_block
+        )
+      end
+
+      it "returns a merged config" do
+        expect(subject.pipeline_configs.config_string).to include(input_block, filter_block)
+      end
+    end
+  end
+
   context "incomplete configuration" do
-    let(:input_block) { "input { generator {} }" }
-    let(:filter_block) { "filter { mutate {} } " }
-    let(:output_block) { "output { elasticsearch {}}" }
-
-    subject { described_class.new(settings) }
-
     context "when the input block is missing" do
       let(:settings) { mock_settings( "config.string" => "#{filter_block} #{output_block}") }
 
@@ -281,7 +357,7 @@ describe LogStash::Config::Source::Local do
       end
     end
 
-    context "when both the output block and input bloc are missing" do
+    context "when both the output block and input block are missing" do
       let(:settings) { mock_settings( "config.string" => "#{filter_block}") }
 
       it "add stdin and output" do

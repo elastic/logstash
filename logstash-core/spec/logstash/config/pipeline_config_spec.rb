@@ -43,6 +43,10 @@ describe LogStash::Config::PipelineConfig do
     expect(subject.config_string).to eq(ordered_config_parts.collect(&:config_string).join("\n"))
   end
 
+  it "records when the config was read" do
+    expect(subject.read_at).to be <= Time.now
+  end
+
   it "does object equality on config_hash and pipeline_id" do
     another_exact_pipeline = described_class.new(source, pipeline_id, ordered_config_parts, settings)
     expect(subject).to eq(another_exact_pipeline)
