@@ -2,19 +2,27 @@
 require "spec_helper"
 require "stud/temporary"
 require "logstash/inputs/generator"
+require "logstash/config/pipeline_config"
+require "logstash/config/config_part"
+require "logstash/config/source/local"
 require_relative "../support/mocks_classes"
 require "fileutils"
 require_relative "../support/helpers"
 
+def create_pipeline_config(config_string)
+  parts = [LogStash::Config::ConfigPart.new(LogStash::Config::Source::Local::ConfigStringLoader, "config_string", config_string)]
+  LogStash::Config::PipelineConfig.new("TestMock", :main, parts, LogStash::SETTINGS)
+end
+
 describe LogStash::Agent do
-  let(:agent_settings) { mock_settings( "config.string" => "input {} output {}") }
-  let(:agent_args) { {} }
+  let(:agent_settings) { LogStash::SETTINGS }
+  let(:agent_args) { { "config.string" => "input {} output {}" }  }
   let(:pipeline_settings) { agent_settings.clone }
   let(:pipeline_args) { {} }
   let(:config_file) { Stud::Temporary.pathname }
   let(:config_file_txt) { "input { generator { count => 100000 } } output { }" }
 
-    subject { LogStash::Agent.new(agent_settings) }
+  subject { LogStash::Agent.new(agent_settings) }
 
   before :each do
     # This MUST run first, before `subject` is invoked to ensure clean state
@@ -36,7 +44,7 @@ describe LogStash::Agent do
   end
 
   it "fallback to hostname when no name is provided" do
-    expect(LogStash::Agent.new.name).to eq(Socket.gethostname)
+    expect(LogStash::Agent.new(agent_settings).name).to eq(Socket.gethostname)
   end
 
   describe "register_pipeline" do
@@ -251,7 +259,7 @@ describe LogStash::Agent do
     let(:pipeline_id) { "main" }
     let(:first_pipeline_config) { "input { } filter { } output { }" }
     let(:second_pipeline_config) { "input { generator {} } filter { } output { }" }
-    let(:pipeline_args) { {
+    let(:agent_args) { {
       "config.string" => first_pipeline_config,
       "pipeline.workers" => 4,
       "config.reload.automatic" => true
@@ -263,14 +271,14 @@ describe LogStash::Agent do
 
     context "when fetching a new state" do
       it "upgrades the state" do
-        expect(subject).to receive(:fetch_config).and_return(second_pipeline_config)
+        expect(subject).to receive(:fetch_config).and_return(create_pipeline_config(second_pipeline_config))
         expect(subject).to receive(:upgrade_pipeline).with(pipeline_id, kind_of(LogStash::Pipeline))
         subject.reload_state!
       end
     end
     context "when fetching the same state" do
       it "doesn't upgrade the state" do
-        expect(subject).to receive(:fetch_config).and_return(first_pipeline_config)
+        expect(subject).to receive(:fetch_config).and_return(create_pipeline_config(first_pipeline_config))
         expect(subject).to_not receive(:upgrade_pipeline)
         subject.reload_state!
       end
@@ -297,7 +305,7 @@ describe LogStash::Agent do
       end
 
       it "doesn't upgrade the state" do
-        allow(subject).to receive(:fetch_config).and_return(pipeline_config)
+        allow(subject).to receive(:fetch_config).and_return(create_pipeline_config(pipeline_config))
         subject.register_pipeline(pipeline_id, pipeline_settings)
         expect(subject.pipelines[pipeline_id].inputs.first.message).to eq("foo-bar")
       end
@@ -307,7 +315,7 @@ describe LogStash::Agent do
   describe "#upgrade_pipeline" do
     let(:pipeline_id) { "main" }
     let(:pipeline_config) { "input { } filter { } output { }" }
-    let(:pipeline_args) { {
+    let(:agent_args) { {
       "config.string" => pipeline_config,
       "pipeline.workers" => 4
     } }
@@ -323,7 +331,7 @@ describe LogStash::Agent do
 
     context "when the upgrade fails" do
       before :each do
-        allow(subject).to receive(:fetch_config).and_return(new_pipeline_config)
+        allow(subject).to receive(:fetch_config).and_return(create_pipeline_config(new_pipeline_config))
         allow(subject).to receive(:create_pipeline).and_return(nil)
         allow(subject).to receive(:stop_pipeline)
       end
@@ -344,7 +352,7 @@ describe LogStash::Agent do
     context "when the upgrade succeeds" do
       let(:new_config) { "input { generator { count => 1 } } output { }" }
       before :each do
-        allow(subject).to receive(:fetch_config).and_return(new_config)
+        allow(subject).to receive(:fetch_config).and_return(create_pipeline_config(new_config))
         allow(subject).to receive(:stop_pipeline)
         allow(subject).to receive(:start_pipeline)
       end
@@ -357,16 +365,6 @@ describe LogStash::Agent do
         expect(subject).to receive(:start_pipeline)
         subject.send(:"reload_pipeline!", pipeline_id)
       end
-    end
-  end
-
-  describe "#fetch_config" do
-    let(:cli_config) { "filter { drop { } } " }
-    let(:agent_args) { { "config.string" => cli_config, "path.config" => config_file } }
-
-    it "should join the config string and config path content" do
-      fetched_config = subject.send(:fetch_config, agent_settings)
-      expect(fetched_config.strip).to eq(cli_config + IO.read(config_file).strip)
     end
   end
 
@@ -392,18 +390,14 @@ describe LogStash::Agent do
       f.close
       f.path
     end
-    let(:pipeline_args) do
-      {
-        "pipeline.workers" => 2,
-        "path.config" => config_path
-      }
-    end
 
     let(:agent_args) do
       {
         "config.reload.automatic" => false,
         "pipeline.batch.size" => 1,
-        "metric.collect" => true
+        "metric.collect" => true,
+        "pipeline.workers" => 2,
+        "path.config" => config_path
       }
     end
 

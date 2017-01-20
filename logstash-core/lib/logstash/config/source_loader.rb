@@ -13,6 +13,11 @@ module LogStash module Config
       def pipeline_configs
         @loaders.collect(&:pipeline_configs).flatten
       end
+
+      # TODO(ph) multiple pipeline
+      def pipeline_config
+        pipeline_configs.first
+      end
     end
 
     include LogStash::Util::Loggable

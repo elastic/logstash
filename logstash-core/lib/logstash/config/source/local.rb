@@ -129,7 +129,7 @@ module LogStash module Config module Source
     OUTPUT_BLOCK_RE = /output *{/
 
     def initialize(settings)
-      @settings = settings
+      super(settings)
     end
 
     def pipeline_configs

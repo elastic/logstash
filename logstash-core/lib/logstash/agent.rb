@@ -43,7 +43,7 @@ class LogStash::Agent
     # Generate / load the persistent uuid
     id
 
-    @config_loader = LogStash::Config::SOURCE_LOADER.create
+    @config_loader = LogStash::Config::SOURCE_LOADER.create(settings)
 
     @reload_interval = setting("config.reload.interval")
     @upgrade_mutex = Mutex.new
@@ -262,7 +262,8 @@ class LogStash::Agent
   end
 
   def fetch_config
-    @config_loader.pipeline_configs.first # we only support one config for now
+    # TODO(ph) multiple pipeline, we only support one config for now
+    @config_loader.pipeline_config
   end
 
   # since this method modifies the @pipelines hash it is
