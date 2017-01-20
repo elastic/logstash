@@ -4,6 +4,7 @@ require "rspec/expectations"
 require "stud/temporary"
 require "fileutils"
 require "pathname"
+require_relative "../../../support/helpers"
 require "spec_helper"
 require "webmock/rspec"
 
@@ -97,6 +98,23 @@ describe LogStash::Config::Source::Local::ConfigPathLoader do
           content = files[basename]
           expect(part).to be_a_config_part(described_class.to_s, file_path, content)
         end
+      end
+    end
+
+    context "when the files have invalid encoding" do
+      let(:config_string) { "\x80" }
+      let(:file_path) { Stud::Temporary.pathname }
+      let(:file) { ::File.join(file_path, "wrong_encoding.conf") }
+
+      before do
+        FileUtils.mkdir_p(file_path)
+        f = File.open(file, "wb") do |file|
+          file.write(config_string)
+        end
+      end
+
+      it "raises an exception" do
+        expect { subject.read(file_path) }.to raise_error LogStash::ConfigLoadingError, /#{file_path}/
       end
     end
 
@@ -240,5 +258,43 @@ describe LogStash::Config::Source::Local::ConfigRemoteLoader do
 end
 
 describe LogStash::Config::Source::Local do
-end
+  context "incomplete configuration" do
+    let(:input_block) { "input { generator {} }" }
+    let(:filter_block) { "filter { mutate {} } " }
+    let(:output_block) { "output { elasticsearch {}}" }
 
+    subject { described_class.new(settings) }
+
+    context "when the input block is missing" do
+      let(:settings) { mock_settings( "config.string" => "#{filter_block} #{output_block}") }
+
+      it "add stdin input" do
+        expect(subject.pipeline_configs.config_string).to include(LogStash::Config::Defaults.input)
+      end
+    end
+
+    context "when the output block is missing" do
+      let(:settings) { mock_settings( "config.string" => "#{input_block} #{filter_block}") }
+
+      it "add stdout output" do
+        expect(subject.pipeline_configs.config_string).to include(LogStash::Config::Defaults.output)
+      end
+    end
+
+    context "when both the output block and input bloc are missing" do
+      let(:settings) { mock_settings( "config.string" => "#{filter_block}") }
+
+      it "add stdin and output" do
+        expect(subject.pipeline_configs.config_string).to include(LogStash::Config::Defaults.output, LogStash::Config::Defaults.input)
+      end
+    end
+
+    context "when it has an input and an output" do
+      let(:settings) { mock_settings( "config.string" => "#{input_block} #{filter_block} #{output_block}") }
+
+      it "doesn't add anything" do
+        expect(subject.pipeline_configs.config_string).not_to include(LogStash::Config::Defaults.output, LogStash::Config::Defaults.input)
+      end
+    end
+  end
+end

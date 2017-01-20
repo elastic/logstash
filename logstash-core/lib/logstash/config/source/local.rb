@@ -156,12 +156,12 @@ module LogStash module Config module Source
     # this is for backward compatibility reason
     def add_missing_default_inputs_or_outputs(config_parts)
       if !config_parts.any? { |part| INPUT_BLOCK_RE.match(part.config_string) }
-        config_parts << LogStash::ConfigPart.new(self.class.name, "default input", LogStash::Config::Defaults.input)
+        config_parts << LogStash::Config::ConfigPart.new(self.class.name, "default input", LogStash::Config::Defaults.input)
       end
 
       # include a default stdout output if no outputs given
       if !config_parts.any? { |part| OUTPUT_BLOCK_RE.match(part.config_string) }
-        config_parts << LogStash::ConfigPart.new(self.class.name, "default output", LogStash::Config::Defaults.output)
+        config_parts << LogStash::Config::ConfigPart.new(self.class.name, "default output", LogStash::Config::Defaults.output)
       end
     end
 
