@@ -237,7 +237,13 @@ class LogStash::Runner < Clamp::StrictCommand
     @settings.format_settings.each {|line| logger.debug(line) }
 
     if setting("config.string").nil? && setting("path.config").nil?
-      fail(I18n.t("logstash.runner.missing-configuration"))
+      if !setting("config.multi_pipeline")
+        signal_usage_error(I18n.t("logstash.runner.missing-configuration"))
+      end
+    elsif setting("path.config") || setting("config.string")
+      if setting("config.multi_pipeline")
+        signal_usage_error(I18n.t("logstash.runner.multi-pipeline-with-config-flags"))
+      end
     end
 
     if setting("config.reload.automatic") && setting("path.config").nil?
@@ -245,23 +251,41 @@ class LogStash::Runner < Clamp::StrictCommand
       signal_usage_error(I18n.t("logstash.runner.reload-without-config-path"))
     end
 
+    pipelines = []
+
+    if setting("config.multi_pipeline")
+      setting("pipelines").each do |pipeline_settings|
+        settings = @settings.clone
+        pipeline_settings.each do |setting_name, value|
+          settings.set(setting_name, value)
+        end
+        pipelines << settings
+      end
+    else
+      pipelines << @settings
+    end
+
     if setting("config.test_and_exit")
       config_loader = LogStash::Config::Loader.new(logger)
-      config_str = config_loader.format_config(setting("path.config"), setting("config.string"))
-      begin
-        LogStash::Pipeline.new(config_str)
-        puts "Configuration OK"
-        logger.info "Using config.test_and_exit mode. Config Validation Result: OK. Exiting Logstash"
-        return 0
-      rescue => e
-        logger.fatal I18n.t("logstash.runner.invalid-configuration", :error => e.message)
-        return 1
+      pipelines.each do |settings|
+        config_str = config_loader.format_config(settings.get("path.config"), settings.get("config.string"))
+        begin
+          LogStash::Pipeline.new(config_str, settings)
+          puts "Configuration OK"
+          logger.info "Using config.test_and_exit mode. Config Validation Result: OK. Exiting Logstash"
+          return 0
+        rescue => e
+          logger.fatal I18n.t("logstash.runner.invalid-configuration", :error => e.message)
+          return 1
+        end
       end
     end
 
     @agent = create_agent(@settings)
 
-    @agent.register_pipeline("main", @settings)
+    pipelines.each do |settings|
+      @agent.register_pipeline(settings.get("pipeline.id"), settings)
+    end
 
     # enable sigint/sigterm before starting the agent
     # to properly handle a stalled agent

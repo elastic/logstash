@@ -366,4 +366,29 @@ describe LogStash::Runner do
       end
     end
   end
+
+  describe "setting config.multi_pipeline" do
+    subject { LogStash::Runner.new("") }
+    context "when enabled" do
+      before :each do
+        LogStash::SETTINGS.set("config.multi_pipeline", true)
+      end
+      context "and -f is enabled too" do
+        let(:args) { ["-f", Stud::Temporary.pathname] }
+
+        it "terminates runner and shows help" do
+          expect(subject).to receive(:signal_usage_error)
+          expect(subject.run(args)).to eq(1)
+        end
+      end
+      context "and -e is enabled too" do
+        let(:args) { ["-e", ""] }
+
+        it "terminates runner and shows help" do
+          expect(subject).to receive(:signal_usage_error)
+          expect(subject.run(args)).to eq(1)
+        end
+      end
+    end
+  end
 end
