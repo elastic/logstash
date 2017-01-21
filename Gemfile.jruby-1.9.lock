@@ -421,7 +421,7 @@ GEM
       logstash-filter-json
       logstash-input-generator
       logstash-output-file
-    logstash-output-elasticsearch (6.2.3-java)
+    logstash-output-elasticsearch (6.2.4-java)
       cabin (~> 0.6)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       manticore (>= 0.5.4, < 1.0.0)
