@@ -155,7 +155,7 @@ describe LogStash::Agent do
 
           it "does not try to reload the pipeline" do
             t = Thread.new { subject.execute }
-            sleep 0.01 until subject.running_pipelines? && subject.pipelines.values.first.ready?
+            sleep 0.01 until subject.running_pipelines? && subject.pipelines.values.first.running?
             expect(subject).to_not receive(:reload_pipeline!)
             File.open(config_file, "w") { |f| f.puts second_pipeline_config }
             subject.reload_state!
@@ -173,7 +173,7 @@ describe LogStash::Agent do
 
           it "tries to reload the pipeline" do
             t = Thread.new { subject.execute }
-            sleep 0.01 until subject.running_pipelines? && subject.pipelines.values.first.ready?
+            sleep 0.01 until subject.running_pipelines? && subject.pipelines.values.first.running?
             expect(subject).to receive(:reload_pipeline!).once.and_call_original
             File.open(config_file, "w") { |f| f.puts second_pipeline_config }
             subject.reload_state!
@@ -205,7 +205,7 @@ describe LogStash::Agent do
         it "should periodically reload_state" do
           allow(subject).to receive(:clean_state?).and_return(false)
           t = Thread.new { subject.execute }
-          sleep 0.01 until subject.running_pipelines? && subject.pipelines.values.first.ready?
+          sleep 0.01 until subject.running_pipelines? && subject.pipelines.values.first.running?
           expect(subject).to receive(:reload_state!).at_least(2).times
           sleep 0.1
           Stud.stop!(t)
@@ -220,7 +220,7 @@ describe LogStash::Agent do
 
           it "does not upgrade the new config" do
             t = Thread.new { subject.execute }
-            sleep 0.01 until subject.running_pipelines? && subject.pipelines.values.first.ready?
+            sleep 0.01 until subject.running_pipelines? && subject.pipelines.values.first.running?
             expect(subject).to_not receive(:upgrade_pipeline)
             File.open(config_file, "w") { |f| f.puts second_pipeline_config }
             sleep 0.1
@@ -235,7 +235,7 @@ describe LogStash::Agent do
 
           it "does upgrade the new config" do
             t = Thread.new { subject.execute }
-            sleep 0.01 until subject.running_pipelines? && subject.pipelines.values.first.ready?
+            sleep 0.01 until subject.running_pipelines? && subject.pipelines.values.first.running?
             expect(subject).to receive(:upgrade_pipeline).once.and_call_original
             File.open(config_file, "w") { |f| f.puts second_pipeline_config }
             sleep 0.1
