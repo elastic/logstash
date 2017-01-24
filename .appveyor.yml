@@ -1,0 +1,26 @@
+# Version format
+version: "{build}"
+
+# Operating system (build VM template)
+os: Windows Server 2012 R2
+
+install:
+  - set JAVA_HOME=C:\Program Files\Java\jdk1.8.0
+  - cd C:\projects\logstash
+  - ps: Start-FileDownload 'https://s3.amazonaws.com/jruby.org/downloads/1.7.26/jruby-bin-1.7.26.zip'
+  - ps: 7z x C:\projects\logstash\jruby-bin-1.7.26.zip -oC:\projects\logstash -y > nul
+  - set PATH=C:\projects\logstash\jruby-1.7.26\bin;%PATH%
+
+build_script:
+  - ruby -v
+  - appveyor AddCompilationMessage "Starting Build"
+  - cd C:\projects\logstash
+  - rake bootstrap
+  - rake artifact:zip
+
+branches:
+  only:
+    - new_appveyor_test
+
+test_script:
+  - rake test:core
