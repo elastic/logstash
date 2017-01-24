@@ -9,8 +9,7 @@
 # - Java 8 or newer
 
 $LS_CONFIG="test.conf"
-$LS_BRANCH=$env:LS_BRANCH
-$Logstash_path = "C:\logstash"
+$Logstash_path = "C:\projects\logstash\build\logstash"
 $Logstash_Snapshot_Directory = "$Logstash_path\logstash-latest-SNAPSHOT.zip"
 $Logstash_URL = "https://s3-eu-west-1.amazonaws.com/build-eu.elasticsearch.org/logstash/$LS_BRANCH/nightly/JDK7/logstash-latest-SNAPSHOT.zip"
 
