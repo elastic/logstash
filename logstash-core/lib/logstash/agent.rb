@@ -293,11 +293,10 @@ class LogStash::Agent
 
   def start_pipeline(id)
     pipeline = @pipelines[id]
-    return unless pipeline.is_a?(LogStash::Pipeline)
     return if pipeline.ready?
     @logger.debug("starting pipeline", :id => id)
     t = Thread.new do
-      LogStash::Util.set_thread_name("pipeline.#{id}")
+      LogStash::Util.set_thread_name("[#{id}]-pipeline-manager")
       begin
         pipeline.run
       rescue => e
@@ -326,7 +325,6 @@ class LogStash::Agent
     return unless pipeline
     @logger.warn("stopping pipeline", :id => id)
     pipeline.shutdown { LogStash::ShutdownWatcher.start(pipeline) }
-    @pipelines[id].thread.join
   end
 
   def start_pipelines
@@ -345,8 +343,7 @@ class LogStash::Agent
   end
 
   def running_pipeline?(pipeline_id)
-    thread = @pipelines[pipeline_id].thread
-    thread.is_a?(Thread) && thread.alive?
+    @pipelines[pipeline_id].running?
   end
 
   def upgrade_pipeline(pipeline_id, new_pipeline)

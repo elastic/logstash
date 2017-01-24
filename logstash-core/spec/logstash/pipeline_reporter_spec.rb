@@ -20,7 +20,6 @@ describe LogStash::PipelineReporter do
     allow(LogStash::Plugin).to receive(:lookup).with("codec", "plain").and_call_original
 
     @pre_snapshot = reporter.snapshot
-    
     pipeline.run
     @post_snapshot = reporter.snapshot
   end

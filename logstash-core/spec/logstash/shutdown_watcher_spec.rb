@@ -6,14 +6,13 @@ describe LogStash::ShutdownWatcher do
   let(:check_every) { 0.01 }
   let(:check_threshold) { 100 }
   subject { LogStash::ShutdownWatcher.new(pipeline, check_every) }
-  let(:pipeline) { double("pipeline") }
+  let(:pipeline) { double("pipeline", :running? => true) }
   let(:reporter) { double("reporter") }
   let(:reporter_snapshot) { double("reporter snapshot") }
   report_count = 0
 
   before :each do
     allow(pipeline).to receive(:reporter).and_return(reporter)
-    allow(pipeline).to receive(:thread).and_return(Thread.current)
     allow(reporter).to receive(:snapshot).and_return(reporter_snapshot)
     allow(reporter_snapshot).to receive(:o_simple_hash).and_return({})
 
