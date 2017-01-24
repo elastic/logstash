@@ -8,8 +8,6 @@ This procedure requires a staging machine running Logstash that has access to a 
 <<private-rubygem,private Rubygems>> server. The staging machine downloads and packages all the files and dependencies
 required for offline installation.
 
-//REVIEWERS: I'm assuming that a private gem repository is still an option, but I haven't tested it. Is it still an option?
-
 NOTE: If you used offline plugin management prior to Logstash 5.2, you used the `pack` and `unpack` subcommands. Those
 subcommands are now deprecated, but the procedure for using them is still available in the documentation 
 <<building-offline-packages-deprecated,here>>.
@@ -69,11 +67,6 @@ bin/logstash-plugin install file:///path/to/logstash-offline-plugins-{logstash_v
 -------------------------------------------------------------------------------
 +
 Where +path/to/logstash-offline-plugins-{logstash_version}.zip+ is the path to the offline plugin pack.
-
-//REVIEWERS: Are there any other options from the `install` command that are also supported for an offline plugins install?
-
-//REVIEWERS: In the --help for the latest snapshot build, it doesn't mention that the  --local is deprecated. Looks like the text for the help needs to be updated. Should I open an issue for this, or is this known?
-
 
 [float]
 === Updating Offline Plugins
