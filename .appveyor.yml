@@ -8,7 +8,7 @@ install:
   - set JAVA_HOME=C:\Program Files\Java\jdk1.8.0
   - cd C:\projects\logstash
   - ps: Start-FileDownload 'https://s3.amazonaws.com/jruby.org/downloads/1.7.26/jruby-bin-1.7.26.zip'
-  - ps: 7z x C:\projects\logstash\jruby-bin-1.7.26.zip -oC:\projects\logstash -y > nul
+  - ps: 7z x C:\projects\logstash\jruby-bin-1.7.26.zip -oC:\projects\logstash -y
   - set PATH=C:\projects\logstash\jruby-1.7.26\bin;%PATH%
 
 build_script:
