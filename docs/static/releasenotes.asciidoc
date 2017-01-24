@@ -1,0 +1,84 @@
+[[releasenotes]]
+== Release Notes
+
+This section summarizes the changes in the following releases:
+
+* <<logstash-5-2-0,Logstash 5.2.0>>
+
+[[logstash-5-2-0]]
+=== Logstash 5.2.0 Release Notes
+
+* Added the ability to collect and report on cgroup information. This info is helpful when you're 
+  running Logstash in a container and the normal metrics like CPU and system load are still tracked at the 
+  machine level, not the container level ({lsissue}6252[Issue 6252]).
+* Persistent queue stats are now available in stats API when persistent queues are enabled. Metrics such as the number 
+  of events in the queue waiting to be processed and disk space info are reported ({lsissue}6508[Issue 6508]).
+* Plugin outputs have been enhanced to report wall-clock execution time. This info is available in the 
+  `duration_in_millis` field in the node stats API response ({lsissue}6458[Issue 6458]).
+* Offline plugin management: Introduced a new mechanism to manage plugins in an offline (air-gapped) 
+  environment. The previous approach would not completely download the plugins' dependency chain on the staging
+  machine. A new command called `prepare-offline-pack` replaces the existing `pack` and `unpack` subcommands 
+  in the `logstash-plugin` CLI to manage offline plugins. The `pack` and `unpack` subcommands are 
+  now deprecated ({lsissue}6393[Issue 6393]).
+* Fixed an issue where plugins couldn't be installed when HTTP proxy was enabled in Logstash 
+  deployments ({lsissue}6044[Issue 6044], {lsissue}5777[Issue 5777], {lsissue}5966[Issue 5966]).
+* Improved user facing error when `logstash.yml` is invalid ({lsissue}6509[Issue 6509]).
+* Fixed an issue where the Logstash slowlog `took_in_millis` field reported values in microseconds instead of 
+  milliseconds ({lsissue}6476[Issue 6476]).
+* Added explicit `fsync` when writing to the checkpoint file to ensure date has been flushed to disk.
+* The `jvm.options` file is now loaded relative to the location of `logstash.yml` or, if `path.settings` is 
+  specified, relative to the specified path ({lsissue}6379[Issue 6379]).
+* Added ability to create a startup init script to the `system-install` utility ({lsissue}6148[Issue 6148]).
+
+[float]
+==== Input Plugins
+
+*`Kafka`*:
+
+* Made error reporting clearer when the connection to a Kafka broker fails.
+* Made a change to set the `kerberos` option only when using GSSAPI.
+
+*`Ganglia`*:
+
+* Added ability to store the name and value of ganglia metrics (https://github.com/logstash-plugins/logstash-input-ganglia/issues/2[Issue 2]).
+
+*`RabbitMQ`*
+
+* Fixed issue where metadata would be broken for string values larger than 255 chars in message headers (https://github.com/logstash-plugins/logstash-input-rabbitmq/issues/94[Issue 94])
+
+==== Filter Plugins
+
+*`GeoIP`*:
+
+* Fixed a bug that caused the target field to be overwritten by looked up GeoIP data. The target field 
+  is now merged instead of being completely overwritten (https://github.com/logstash-plugins/logstash-filter-geoip/issues/98[Issue 98]).
+
+*`Sleep`*:
+
+* Fixed a bug that caused the plugin to crash when the `every` config option was set (https://github.com/logstash-plugins/logstash-filter-sleep/issues/5[Issue 5]).
+
+==== Codec Plugins
+
+*`Netflow`*:
+
+* Added support for VMware VDS IPFIX.
+* Fixed 0-length scope field length (Netflow 9, Juniper SRX)
+  
+==== Output Plugins
+
+*`Elasticsearch`*:
+
+* Previously users could specify a proxy configuration as a hash. This has been disabled due to security reasons.
+* The proxy feature has been fixed to work when authentication credentials are specified in the URL (https://github.com/logstash-plugins/logstash-output-elasticsearch/issues/516[Issue 516]).
+* Fixed a bug that forced users to URL encode the `password` option. Passwords with special characters can be used directly 
+  in the URL or in the `password` option.
+
+*`S3`*:
+
+* Updated this plugin to use the v2.0 of the AWS SDK which brings in many updates and bug fixes.
+* Improved efficiency of uploading large files to S3 by using S3's upload_file method. This method handles 
+  large files in multi-part chunks.
+* Added new option called `server_side_encryption` that allows users to specify the type of encryption (https://github.com/logstash-plugins/logstash-output-s3/issues/62[Issue 62])
+* Added support for dynamically configuring file paths within an S3 bucket. Field references can now be used 
+  to specify a prefix for the target in S3 (https://github.com/logstash-plugins/logstash-output-s3/issues/4[Issue 4])
+* Added new config option `storage_class` to specify what S3 storage class to use when uploading the file.
