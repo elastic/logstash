@@ -13,14 +13,13 @@ install:
 
 build_script:
   - ruby -v
-  - appveyor AddCompilationMessage "Starting Build"
+  - appveyor AddCompilationMessage "Creating a zip artifact"
   - cd C:\projects\logstash
-  - rake bootstrap
   - rake artifact:zip
-
-branches:
-  only:
-    - new_appveyor_test
+  - ps: 7z x C:\projects\logstash\build\*.zip -oC:\projects\logstash\build -y
+  - appveyor AddCompilationMessage "Installing core plugins for test"
+  - rake test:install-core
 
 test_script:
+  - appveyor AddCompilationMessage "Testing core plugins test:core"
   - rake test:core
