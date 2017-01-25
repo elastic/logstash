@@ -19,6 +19,10 @@ require "logstash/patches/clamp"
 require "logstash/settings"
 require "logstash/version"
 require "logstash/plugins/registry"
+require "logstash/bootstrap_check/default_config"
+require "logstash/bootstrap_check/bad_java"
+require "logstash/bootstrap_check/bad_ruby"
+require "set"
 
 class LogStash::Runner < Clamp::StrictCommand
   include LogStash::Util::Loggable
@@ -28,6 +32,14 @@ class LogStash::Runner < Clamp::StrictCommand
   # See issue https://github.com/elastic/logstash/issues/5361
   LogStash::SETTINGS.register(LogStash::Setting::String.new("path.settings", ::File.join(LogStash::Environment::LOGSTASH_HOME, "config")))
   LogStash::SETTINGS.register(LogStash::Setting::String.new("path.logs", ::File.join(LogStash::Environment::LOGSTASH_HOME, "logs")))
+
+  # Ordered list of check to run before starting logstash
+  # theses checks can be changed by a plugin loaded into memory.
+  DEFAULT_BOOTSTRAP_CHECKS = Set.new([
+      LogStash::BootstrapCheck::BadRuby,
+      LogStash::BootstrapCheck::BadJava,
+      LogStash::BootstrapCheck::DefaultConfig
+  ])
 
   # Node Settings
   option ["-n", "--node.name"], "NAME",
@@ -152,9 +164,11 @@ class LogStash::Runner < Clamp::StrictCommand
     :new_flag => "log.level", :new_value => "error"
 
   attr_reader :agent
+  attr_accessor :bootstrap_checks
 
   def initialize(*args)
     @settings = LogStash::SETTINGS
+    @bootstrap_checks = DEFAULT_BOOTSTRAP_CHECKS.dup
     super(*args)
   end
 
@@ -202,21 +216,23 @@ class LogStash::Runner < Clamp::StrictCommand
     # We configure the registry and load any plugin that can register hooks
     # with logstash, this need to be done before any operation.
     LogStash::PLUGIN_REGISTRY.setup!
+
+    @dispatcher = LogStash::EventDispatcher.new(self)
+    LogStash::PLUGIN_REGISTRY.hooks.register_emitter(self.class, @dispatcher)
+
+    @dispatcher.fire(:before_settings_validation)
     @settings.validate_all
+    @dispatcher.fire(:after_settings_validation)
+
+    begin
+      @bootstrap_checks.each { |bootstrap| bootstrap.check(@settings) }
+    rescue LogStash::BootstrapCheckError => e
+      signal_usage_error(e.message)
+      return 1
+    end
+
 
     LogStash::Util::set_thread_name(self.class.name)
-
-    if RUBY_VERSION < "1.9.2"
-      logger.fatal "Ruby 1.9.2 or later is required. (You are running: " + RUBY_VERSION + ")"
-      return 1
-    end
-
-    # Exit on bad java versions
-    java_version = LogStash::Util::JavaVersion.version
-    if LogStash::Util::JavaVersion.bad_java_version?(java_version)
-      logger.fatal "Java version 1.8.0 or later is required. (You are running: #{java_version})"
-      return 1
-    end
 
     LogStash::ShutdownWatcher.unsafe_shutdown = setting("pipeline.unsafe_shutdown")
 
@@ -230,15 +246,6 @@ class LogStash::Runner < Clamp::StrictCommand
     return start_shell(setting("interactive"), binding) if setting("interactive")
 
     @settings.format_settings.each {|line| logger.debug(line) }
-
-    if setting("config.string").nil? && setting("path.config").nil?
-      fail(I18n.t("logstash.runner.missing-configuration"))
-    end
-
-    if setting("config.reload.automatic") && setting("path.config").nil?
-      # there's nothing to reload
-      signal_usage_error(I18n.t("logstash.runner.reload-without-config-path"))
-    end
 
     if setting("config.test_and_exit")
       begin

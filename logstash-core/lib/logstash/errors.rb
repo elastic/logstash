@@ -6,6 +6,7 @@ module LogStash
   class PluginLoadingError < Error; end
   class ShutdownSignal < StandardError; end
   class PluginNoVersionError < Error; end
+  class BootstrapCheckError < Error; end
 
   class Bug < Error; end
   class ThisMethodWasRemoved < Bug; end

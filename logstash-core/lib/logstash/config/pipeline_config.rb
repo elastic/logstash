@@ -8,7 +8,7 @@ module LogStash module Config
     def initialize(source, pipeline_id, config_parts, settings)
       @source = source
       @pipeline_id = pipeline_id
-      @config_parts = config_parts.sort_by { |config_part| [config_part.reader.to_s, config_part.source_id] }
+      @config_parts = Array(config_parts).sort_by { |config_part| [config_part.reader.to_s, config_part.source_id] }
       @settings = settings
       @read_at = Time.now
     end
