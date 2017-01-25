@@ -220,9 +220,8 @@ class LogStash::Runner < Clamp::StrictCommand
     @dispatcher = LogStash::EventDispatcher.new(self)
     LogStash::PLUGIN_REGISTRY.hooks.register_emitter(self.class, @dispatcher)
 
-    @dispatcher.fire(:before_settings_validation)
     @settings.validate_all
-    @dispatcher.fire(:after_settings_validation)
+    @dispatcher.fire(:before_bootstrap_checks)
 
     begin
       @bootstrap_checks.each { |bootstrap| bootstrap.check(@settings) }
