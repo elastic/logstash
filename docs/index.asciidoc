@@ -1,10 +1,10 @@
 [[logstash-reference]]
 = Logstash Reference
 
-:branch:                5.x
+:branch:                5.2
 :major-version:         5.x
-:logstash_version:      5.1.0
-:elasticsearch_version: 5.1.0
+:logstash_version:      5.2.0
+:elasticsearch_version: 5.2.0
 :docker-image:          docker.elastic.co/logstash/logstash:{logstash_version}
 
 //////////
@@ -14,13 +14,13 @@ release-state can be: released | prerelease | unreleased
 
 :jdk:                   1.8.0
 :guide:                 https://www.elastic.co/guide/en/elasticsearch/guide/current/
-:ref:                   https://www.elastic.co/guide/en/elasticsearch/reference/5.x/
+:ref:                   https://www.elastic.co/guide/en/elasticsearch/reference/5.2/
 :xpack:                 https://www.elastic.co/guide/en/x-pack/current/
-:logstash:              https://www.elastic.co/guide/en/logstash/5.x/
-:filebeat:              https://www.elastic.co/guide/en/beats/filebeat/5.x/
+:logstash:              https://www.elastic.co/guide/en/logstash/5.2/
+:filebeat:              https://www.elastic.co/guide/en/beats/filebeat/5.2/
 :lsissue:               https://github.com/elastic/logstash/issues/
 :security:              X-Pack Security
-:stack:                 https://www.elastic.co/guide/en/elastic-stack/current/
+:stack:                 https://www.elastic.co/guide/en/elastic-stack/5.2/
 
 [[introduction]]
 == Logstash Introduction
