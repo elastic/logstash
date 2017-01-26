@@ -1,6 +1,6 @@
 require_relative "monitoring_api"
 
-require "logstash/environment"
+#require "logstash/environment"
 require "childprocess"
 require "childprocess"
 require "bundler"
@@ -128,10 +128,10 @@ class LogstashService < Service
       puts "Found feature flag. Starting LS using --path.settings #{feature_config_dir}"
     end
     puts "Starting Logstash: #{@logstash_bin} #{args}"
-    if LogStash::Environment.windows?
-      ChildProcess.build("cmd.exe", "/c", @logstash_bin, *args)
-    else
-      ChildProcess.build(@logstash_bin, *args)
+    #if LogStash::Environment.windows?
+    ChildProcess.build("cmd.exe", "/c", @logstash_bin, *args)
+    ##else
+    ##  ChildProcess.build(@logstash_bin, *args)
     end
   end
 
