@@ -1,4 +1,4 @@
-# kncoding: utf-8
+# encoding: utf-8
 
 require "jruby_acked_queue_ext"
 require "jruby_acked_batch_ext"
@@ -38,9 +38,13 @@ module LogStash; module Util
 
     def with_queue(queue)
       @queue = queue
-      @queue.open
-      @closed = Concurrent::AtomicBoolean.new(false)
+      @closed = Concurrent::AtomicBoolean.new(true)
       self
+    end
+
+    def open
+      @queue.open
+      @closed.make_false
     end
 
     def closed?

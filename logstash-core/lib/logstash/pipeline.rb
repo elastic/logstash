@@ -22,19 +22,20 @@ require "logstash/output_delegator"
 require "logstash/filter_delegator"
 require "logstash/queue_factory"
 require 'logstash/compiler'
+require "logstash/dlq_manager"
 
 module LogStash; class BasePipeline
   include LogStash::Util::Loggable
 
   attr_reader :config_str, :config_hash, :inputs, :filters, :outputs, :pipeline_id, :lir
-  
+
   def initialize(config_str, settings = SETTINGS)
     @logger = self.logger
     @config_str = config_str
     @config_hash = Digest::SHA1.hexdigest(@config_str)
-    
+
     @lir = compile_lir
-    
+
     # Every time #plugin is invoked this is incremented to give each plugin
     # a unique id when auto-generating plugin ids
     @plugin_counter ||= 0
@@ -59,12 +60,6 @@ module LogStash; class BasePipeline
       @logger.debug("Compiled pipeline code", :code => config_code)
     end
 
-    @dlq = nil
-    if @settings.get_value("dead_letter_queue.enable")
-      @dlq = LogStash::Util::WrappedAckedQueue.create_file_based(@settings.get_value("path.dead_letter_queue"),
-                                                                 52428800, 0, 1, 1, 0, 0, "org.logstash.DLQEntry")
-    end
-
     # Evaluate the config compiled code that will initialize all the plugins and define the
     # filter and output methods.
     begin
@@ -73,7 +68,7 @@ module LogStash; class BasePipeline
       raise e
     end
   end
-  
+
   def compile_lir
     LogStash::Compiler.compile_pipeline(self.config_str)
   end
@@ -103,11 +98,11 @@ module LogStash; class BasePipeline
     klass = Plugin.lookup(plugin_type, name)
 
     if plugin_type == "output"
-      OutputDelegator.new(@logger, klass, type_scoped_metric,  OutputDelegatorStrategyRegistry.instance, args, @dlq)
+      OutputDelegator.new(@logger, klass, type_scoped_metric,  OutputDelegatorStrategyRegistry.instance, args, @dlq_manager)
     elsif plugin_type == "filter"
-      FilterDelegator.new(@logger, klass, type_scoped_metric, args, @dlq)
+      FilterDelegator.new(@logger, klass, type_scoped_metric, args, @dlq_manager)
     else # input
-      input_plugin = klass.new(args, @dlq)
+      input_plugin = klass.new(args, @dlq_manager)
       input_plugin.metric = type_scoped_metric.namespace(id)
       input_plugin
     end
@@ -134,7 +129,8 @@ module LogStash; class Pipeline < BasePipeline
     :metric,
     :filter_queue_client,
     :input_queue_client,
-    :queue
+    :queue,
+    :dlq_manager
 
   MAX_INFLIGHT_WARN_THRESHOLD = 10_000
 
@@ -170,6 +166,12 @@ module LogStash; class Pipeline < BasePipeline
         metric.namespace([:stats, :pipelines, pipeline_id.to_s.to_sym, :events])
     )
     @drain_queue =  @settings.get_value("queue.drain")
+
+    @dlq_manager = nil
+    if @settings.get_value("dead_letter_queue.enable")
+      managed_path = ::File.join(@settings.get_value("path.dead_letter_queue"), @pipeline_id)
+      @dlq_manager = LogStash::DeadLetterQueueManager.new(managed_path)
+    end
 
     @events_filtered = Concurrent::AtomicFixnum.new(0)
     @events_consumed = Concurrent::AtomicFixnum.new(0)
@@ -249,7 +251,7 @@ module LogStash; class Pipeline < BasePipeline
   def close
     @filter_queue_client.close
     @queue.close
-    @dlq.close unless @dlq.nil?
+    @dlq_manager.close unless @dlq.nil?
   end
 
   def transition_to_running
