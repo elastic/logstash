@@ -16,9 +16,8 @@ class MonitoringAPI
   end
 
   def version
-    request = @agent.get("http://localhost:9600/")
-    response = request.execute
-    r = JSON.parse(response.body.read)
+    resp = Manticore.get("http://localhost:9600/").body
+    r = JSON.parse(resp)
     r["version"]
   end
   

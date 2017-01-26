@@ -1,5 +1,7 @@
 require_relative "monitoring_api"
 
+require "logstash/environment"
+require "childprocess"
 require "childprocess"
 require "bundler"
 require "tempfile"
@@ -126,7 +128,11 @@ class LogstashService < Service
       puts "Found feature flag. Starting LS using --path.settings #{feature_config_dir}"
     end
     puts "Starting Logstash: #{@logstash_bin} #{args}"
-    ChildProcess.build(@logstash_bin, *args)
+    if LogStash::Environment.windows?
+      ChildProcess.build("cmd.exe", "/c", @logstash_bin, *args)
+    else
+      ChildProcess.build(@logstash_bin, *args)
+    end
   end
 
   def teardown
@@ -175,7 +181,7 @@ class LogstashService < Service
   end  
   
   def get_version
-    `#{@logstash_bin} --version`
+    @monitoring_api.version
   end
   
   def get_version_yml

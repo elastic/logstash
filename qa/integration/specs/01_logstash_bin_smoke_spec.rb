@@ -90,8 +90,9 @@ describe "Test Logstash instance" do
   end
 
   it "gets the right version when asked" do
+    @ls1.start_with_stdin
     expected = YAML.load_file(LogstashService::LS_VERSION_FILE)
-    expect(@ls1.get_version.strip).to eq("logstash #{expected['logstash']}")
+    expect(@ls1.get_version.strip).to eq("#{expected['logstash']}")
   end
 
   it "should still merge when -e is specified and -f has no valid config files" do

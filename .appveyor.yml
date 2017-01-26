@@ -23,5 +23,7 @@ build_script:
   - rake test:install-core
 
 test_script:
-  - appveyor AddCompilationMessage "Testing core plugins test:core"
-  - rake test:core
+  #- appveyor AddCompilationMessage "Testing core plugins test:core"
+  #- rake test:core
+  - appveyor AddCompilationMessage "Integration Tests"
+  - ps: C:\projects\logstash\ci\windows\appveyor_integration_run.ps1
