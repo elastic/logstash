@@ -10,6 +10,7 @@ install:
   - ps: Start-FileDownload 'https://s3.amazonaws.com/jruby.org/downloads/1.7.26/jruby-bin-1.7.26.zip'
   - ps: 7z x C:\projects\logstash\jruby-bin-1.7.26.zip -oC:\projects\logstash -y
   - set PATH=C:\projects\logstash\jruby-1.7.26\bin;C:\Ruby193\bin;%PATH%
+  - gem install rspec
 
 build_script:
   - ruby -v
