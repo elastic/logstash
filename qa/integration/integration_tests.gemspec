@@ -15,7 +15,10 @@ Gem::Specification.new do |s|
   s.add_development_dependency 'elasticsearch'
   s.add_development_dependency 'childprocess'
   s.add_development_dependency 'rspec-wait'
-  s.add_development_dependency 'manticore', '0.6.0'
+  if RUBY_PLATFORM == 'java'
+    s.platform = RUBY_PLATFORM
+    s.add_development_dependency "manticore", '>= 0.5.4', '< 1.0.0'
+  end
   s.add_development_dependency 'stud'
   s.add_development_dependency 'pry'
   s.add_development_dependency 'logstash-devutils'
