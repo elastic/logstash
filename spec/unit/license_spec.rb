@@ -15,7 +15,9 @@ describe "Project licenses" do
                    /artistic 2.*/,
                    /ruby/,
                    /lgpl/,
-                   /epl/])
+                   /epl/,
+                   /elastic/i
+  ])
   }
 
   ##
