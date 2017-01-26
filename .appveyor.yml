@@ -19,7 +19,7 @@ build_script:
   - appveyor AddCompilationMessage "Unzipping the Logstash zip artifact"
   - ps: 7z x C:\projects\logstash\build\*.zip -oC:\projects\logstash\build -y
   - appveyor AddCompilationMessage "Installing core plugins for test"
-  - rake test:install-core
+  #- rake test:install-core
 
 test_script:
   #- appveyor AddCompilationMessage "Testing core plugins test:core"
