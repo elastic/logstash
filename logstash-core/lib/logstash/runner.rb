@@ -230,7 +230,6 @@ class LogStash::Runner < Clamp::StrictCommand
       return 1
     end
 
-
     LogStash::Util::set_thread_name(self.class.name)
 
     LogStash::ShutdownWatcher.unsafe_shutdown = setting("pipeline.unsafe_shutdown")
