@@ -238,7 +238,7 @@ class LogstashService < Service
       run("install #{plugin_name}")
     end
 
-    def run_raw(cmd_parameters)
+    def run_raw(cmd_parameters, change_dir = true)
       out = Tempfile.new("content")
       out.sync = true
 
@@ -248,8 +248,12 @@ class LogstashService < Service
       process = ChildProcess.build(cmd, *parts)
       process.io.stdout = process.io.stderr = out
 
-      Dir.chdir(@logstash_home) do
-        Bundler.with_clean_env do
+      Bundler.with_clean_env do
+        if change_dir
+          Dir.chdir(@logstash_home) do
+            process.start
+          end
+        else
           process.start
         end
       end
