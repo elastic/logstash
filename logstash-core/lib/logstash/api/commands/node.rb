@@ -17,11 +17,12 @@ module LogStash
           payload
         end
 
-        def pipeline
-          extract_metrics(
-            [:stats, :pipelines, :main, :config],
+        def pipeline(pipeline_id = LogStash::SETTINGS.get("pipeline.id").to_sym)
+          stats = extract_metrics(
+            [:stats, :pipelines, pipeline_id, :config],
             :workers, :batch_size, :batch_delay, :config_reload_automatic, :config_reload_interval
           )
+          stats.merge(:id => pipeline_id)
         end
 
         def os
