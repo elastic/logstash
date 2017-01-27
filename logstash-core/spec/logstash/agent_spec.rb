@@ -16,7 +16,9 @@ end
 
 describe LogStash::Agent do
   let(:agent_settings) { LogStash::SETTINGS }
+  let(:default_pipeline_id) { LogStash::SETTINGS.get("pipeline.id") }
   let(:agent_args) { { "config.string" => "input {} output {}" }  }
+  let(:agent_args) { {} }
   let(:pipeline_settings) { agent_settings.clone }
   let(:pipeline_args) { {} }
   let(:config_file) { Stud::Temporary.pathname }
@@ -48,7 +50,6 @@ describe LogStash::Agent do
   end
 
   describe "register_pipeline" do
-    let(:pipeline_id) { "main" }
     let(:config_string) { "input { } filter { } output { }" }
     let(:agent_args) do
       {
@@ -64,7 +65,7 @@ describe LogStash::Agent do
         expect(arg1).to eq(config_string)
         expect(arg2.to_hash).to include(agent_args)
       end
-      subject.register_pipeline(pipeline_id, agent_settings)
+      subject.register_pipeline(agent_settings)
     end
   end
 
@@ -97,10 +98,9 @@ describe LogStash::Agent do
           "path.config" => config_file
         }
       end
-      let(:pipeline_id) { "main" }
 
       before(:each) do
-        subject.register_pipeline(pipeline_id, pipeline_settings)
+        subject.register_pipeline(pipeline_settings)
       end
 
       context "if state is clean" do
@@ -162,7 +162,7 @@ describe LogStash::Agent do
 
           it "does not try to reload the pipeline" do
             t = Thread.new { subject.execute }
-            sleep 0.01 until subject.running_pipelines? && subject.pipelines.values.first.ready?
+            sleep 0.01 until subject.running_pipelines? && subject.pipelines.values.first.running?
             expect(subject).to_not receive(:reload_pipeline!)
             File.open(config_file, "w") { |f| f.puts second_pipeline_config }
             subject.reload_state!
@@ -180,7 +180,7 @@ describe LogStash::Agent do
 
           it "tries to reload the pipeline" do
             t = Thread.new { subject.execute }
-            sleep 0.01 until subject.running_pipelines? && subject.pipelines.values.first.ready?
+            sleep 0.01 until subject.running_pipelines? && subject.pipelines.values.first.running?
             expect(subject).to receive(:reload_pipeline!).once.and_call_original
             File.open(config_file, "w") { |f| f.puts second_pipeline_config }
             subject.reload_state!
@@ -202,17 +202,16 @@ describe LogStash::Agent do
           "path.config" => config_file,
         }
       end
-      let(:pipeline_id) { "main" }
 
       before(:each) do
-        subject.register_pipeline(pipeline_id, pipeline_settings)
+        subject.register_pipeline(pipeline_settings)
       end
 
       context "if state is clean" do
         it "should periodically reload_state" do
           allow(subject).to receive(:clean_state?).and_return(false)
           t = Thread.new { subject.execute }
-          sleep 0.01 until subject.running_pipelines? && subject.pipelines.values.first.ready?
+          sleep 0.01 until subject.running_pipelines? && subject.pipelines.values.first.running?
           expect(subject).to receive(:reload_state!).at_least(2).times
           sleep 0.1
           Stud.stop!(t)
@@ -227,7 +226,7 @@ describe LogStash::Agent do
 
           it "does not upgrade the new config" do
             t = Thread.new { subject.execute }
-            sleep 0.01 until subject.running_pipelines? && subject.pipelines.values.first.ready?
+            sleep 0.01 until subject.running_pipelines? && subject.pipelines.values.first.running?
             expect(subject).to_not receive(:upgrade_pipeline)
             File.open(config_file, "w") { |f| f.puts second_pipeline_config }
             sleep 0.1
@@ -242,7 +241,7 @@ describe LogStash::Agent do
 
           it "does upgrade the new config" do
             t = Thread.new { subject.execute }
-            sleep 0.01 until subject.running_pipelines? && subject.pipelines.values.first.ready?
+            sleep 0.01 until subject.running_pipelines? && subject.pipelines.values.first.running?
             expect(subject).to receive(:upgrade_pipeline).once.and_call_original
             File.open(config_file, "w") { |f| f.puts second_pipeline_config }
             sleep 0.1
@@ -256,7 +255,6 @@ describe LogStash::Agent do
   end
 
   describe "#reload_state!" do
-    let(:pipeline_id) { "main" }
     let(:first_pipeline_config) { "input { } filter { } output { }" }
     let(:second_pipeline_config) { "input { generator {} } filter { } output { }" }
     let(:agent_args) { {
@@ -266,7 +264,7 @@ describe LogStash::Agent do
     } }
 
     before(:each) do
-      subject.register_pipeline(pipeline_id, pipeline_settings)
+      subject.register_pipeline(pipeline_settings)
     end
 
     context "when fetching a new state" do
@@ -292,7 +290,6 @@ describe LogStash::Agent do
       "config.reload.interval" => 0.01,
       "config.string" => pipeline_config
     } }
-    let(:pipeline_id) { "main" }
 
     context "environment variable templating" do
       before :each do
@@ -313,7 +310,6 @@ describe LogStash::Agent do
   end
 
   describe "#upgrade_pipeline" do
-    let(:pipeline_id) { "main" }
     let(:pipeline_config) { "input { } filter { } output { }" }
     let(:agent_args) { {
       "config.string" => pipeline_config,
@@ -322,7 +318,7 @@ describe LogStash::Agent do
     let(:new_pipeline_config) { "input { generator {} } output { }" }
 
     before(:each) do
-      subject.register_pipeline(pipeline_id, pipeline_settings)
+      subject.register_pipeline(pipeline_settings)
     end
 
     after(:each) do
@@ -337,14 +333,14 @@ describe LogStash::Agent do
       end
 
       it "leaves the state untouched" do
-        subject.send(:"reload_pipeline!", pipeline_id)
-        expect(subject.pipelines[pipeline_id].config_str).to eq(pipeline_config)
+        subject.send(:"reload_pipeline!", default_pipeline_id)
+        expect(subject.pipelines[default_pipeline_id].config_str).to eq(pipeline_config)
       end
 
       context "and current state is empty" do
         it "should not start a pipeline" do
           expect(subject).to_not receive(:start_pipeline)
-          subject.send(:"reload_pipeline!", pipeline_id)
+          subject.send(:"reload_pipeline!", default_pipeline_id)
         end
       end
     end
@@ -357,13 +353,13 @@ describe LogStash::Agent do
         allow(subject).to receive(:start_pipeline)
       end
       it "updates the state" do
-        subject.send(:"reload_pipeline!", pipeline_id)
-        expect(subject.pipelines[pipeline_id].config_str).to eq(new_config)
+        subject.send(:"reload_pipeline!", default_pipeline_id)
+        expect(subject.pipelines[default_pipeline_id].config_str).to eq(new_config)
       end
       it "starts the pipeline" do
         expect(subject).to receive(:stop_pipeline)
         expect(subject).to receive(:start_pipeline)
-        subject.send(:"reload_pipeline!", pipeline_id)
+        subject.send(:"reload_pipeline!", default_pipeline_id)
       end
     end
   end
@@ -423,7 +419,7 @@ describe LogStash::Agent do
       Thread.abort_on_exception = true
 
       @t = Thread.new do
-        subject.register_pipeline("main",  pipeline_settings)
+        subject.register_pipeline(pipeline_settings)
         subject.execute
       end
 

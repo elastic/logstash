@@ -94,6 +94,14 @@ class LogStash::Plugin
     end
   end
 
+  def reloadable?
+    self.class.reloadable?
+  end
+
+  def self.reloadable?
+    true
+  end
+
   def debug_info
     [self.class.to_s, original_params]
   end

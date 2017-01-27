@@ -184,7 +184,12 @@ class LogStash::Runner < Clamp::StrictCommand
     rescue => e
       # abort unless we're just looking for the help
       unless cli_help?(args)
-        $stderr.puts "ERROR: Failed to load settings file from \"path.settings\". Aborting... path.setting=#{LogStash::SETTINGS.get("path.settings")}, exception=#{e.class}, message=>#{e.message}"
+        if e.kind_of?(Psych::Exception)
+          yaml_file_path = ::File.join(LogStash::SETTINGS.get("path.settings"), "logstash.yml")
+          $stderr.puts "ERROR: Failed to parse YAML file \"#{yaml_file_path}\". Please confirm if the YAML structure is valid (e.g. look for incorrect usage of whitespace or indentation). Aborting... parser_error=>#{e.message}"
+        else
+          $stderr.puts "ERROR: Failed to load settings file from \"path.settings\". Aborting... path.setting=#{LogStash::SETTINGS.get("path.settings")}, exception=#{e.class}, message=>#{e.message}"
+        end
         return 1
       end
     end
@@ -263,7 +268,7 @@ class LogStash::Runner < Clamp::StrictCommand
 
     @agent = create_agent(@settings)
 
-    @agent.register_pipeline("main", @settings)
+    @agent.register_pipeline(@settings)
 
     # enable sigint/sigterm before starting the agent
     # to properly handle a stalled agent

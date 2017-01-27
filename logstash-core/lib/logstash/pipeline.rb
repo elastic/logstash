@@ -5,8 +5,6 @@ require "concurrent"
 require "logstash/namespace"
 require "logstash/errors"
 require "logstash-core/logstash-core"
-require "logstash/util/wrapped_acked_queue"
-require "logstash/util/wrapped_synchronous_queue"
 require "logstash/event"
 require "logstash/config/file"
 require "logstash/filters/base"
@@ -21,6 +19,7 @@ require "logstash/instrument/namespaced_null_metric"
 require "logstash/instrument/collector"
 require "logstash/output_delegator"
 require "logstash/filter_delegator"
+require "logstash/queue_factory"
 
 module LogStash; class Pipeline
   include LogStash::Util::Loggable
@@ -44,10 +43,6 @@ module LogStash; class Pipeline
     :queue
 
   MAX_INFLIGHT_WARN_THRESHOLD = 10_000
-
-  RELOAD_INCOMPATIBLE_PLUGINS = [
-    "LogStash::Inputs::Stdin"
-  ]
 
   def initialize(config_str, settings = SETTINGS, namespaced_metric = nil)
     @logger = self.logger
@@ -101,7 +96,8 @@ module LogStash; class Pipeline
     rescue => e
       raise
     end
-    @queue = build_queue_from_settings
+
+    @queue = LogStash::QueueFactory.create(settings)
     @input_queue_client = @queue.write_client
     @filter_queue_client = @queue.read_client
     @signal_queue = Queue.new
@@ -121,32 +117,6 @@ module LogStash; class Pipeline
     @running = Concurrent::AtomicBoolean.new(false)
     @flushing = Concurrent::AtomicReference.new(false)
   end # def initialize
-
-  def build_queue_from_settings
-    queue_type = settings.get("queue.type")
-    queue_page_capacity = settings.get("queue.page_capacity")
-    queue_max_bytes = settings.get("queue.max_bytes")
-    queue_max_events = settings.get("queue.max_events")
-    checkpoint_max_acks = settings.get("queue.checkpoint.acks")
-    checkpoint_max_writes = settings.get("queue.checkpoint.writes")
-    checkpoint_max_interval = settings.get("queue.checkpoint.interval")
-
-    if queue_type == "memory_acked"
-      # memory_acked is used in tests/specs
-      LogStash::Util::WrappedAckedQueue.create_memory_based("", queue_page_capacity, queue_max_events, queue_max_bytes)
-    elsif queue_type == "memory"
-      # memory is the legacy and default setting
-      LogStash::Util::WrappedSynchronousQueue.new()
-    elsif queue_type == "persisted"
-      # persisted is the disk based acked queue
-      queue_path = settings.get("path.queue")
-      LogStash::Util::WrappedAckedQueue.create_file_based(queue_path, queue_page_capacity, queue_max_events, checkpoint_max_writes, checkpoint_max_acks, checkpoint_max_interval, queue_max_bytes)
-    else
-      raise(ConfigurationError, "invalid queue.type setting")
-    end
-  end
-
-  private :build_queue_from_settings
 
   def ready?
     @ready.value
@@ -550,10 +520,12 @@ module LogStash; class Pipeline
       .each {|t| t.delete("status") }
   end
 
+  def reloadable?
+    non_reloadable_plugins.empty?
+  end
+
   def non_reloadable_plugins
-    (inputs + filters + outputs).select do |plugin|
-      RELOAD_INCOMPATIBLE_PLUGINS.include?(plugin.class.name)
-    end
+    (inputs + filters + outputs).select { |plugin| !plugin.reloadable? }
   end
 
   def collect_stats
@@ -572,16 +544,11 @@ module LogStash; class Pipeline
       end
       pipeline_metric.namespace([:data]).tap do |n|
         n.gauge(:free_space_in_bytes, file_store.get_unallocated_space)
-        n.gauge(:current_size_in_bytes, queue.current_byte_size)
         n.gauge(:storage_type, file_store.type)
         n.gauge(:path, dir_path)
       end
 
-      pipeline_metric.namespace([:events]).tap do |n|
-        n.gauge(:acked_count, queue.acked_count)
-        n.gauge(:unacked_count, queue.unacked_count)
-        n.gauge(:unread_count, queue.unread_count)
-      end
+      pipeline_metric.gauge(:events, queue.unread_count)
     end
   end
 
@@ -597,5 +564,4 @@ module LogStash; class Pipeline
       :flushing => @flushing
     }
   end
-
 end end

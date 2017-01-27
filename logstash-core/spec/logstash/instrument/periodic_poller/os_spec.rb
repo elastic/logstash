@@ -72,7 +72,7 @@ describe LogStash::Instrument::PeriodicPoller::Os do
       [:cgroup, :cpuacct, :usage_nanos],
       [:cgroup, :cpu, :cfs_period_micros],
       [:cgroup, :cpu, :cfs_quota_micros],
-      [:cgroup, :cpu, :stat, :number_of_periods],
+      [:cgroup, :cpu, :stat, :number_of_elapsed_periods],
       [:cgroup, :cpu, :stat, :number_of_times_throttled],
       [:cgroup, :cpu, :stat, :time_throttled_nanos]
     ].each do |path|

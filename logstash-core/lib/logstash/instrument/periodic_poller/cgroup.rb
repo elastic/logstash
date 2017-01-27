@@ -65,10 +65,10 @@ module LogStash module Instrument module PeriodicPoller
       end
 
       class CpuStats
-        attr_reader :number_of_periods, :number_of_times_throttled, :time_throttled_nanos
+        attr_reader :number_of_elapsed_periods, :number_of_times_throttled, :time_throttled_nanos
 
-        def initialize(number_of_periods, number_of_times_throttled, time_throttled_nanos)
-          @number_of_periods = number_of_periods
+        def initialize(number_of_elapsed_periods, number_of_times_throttled, time_throttled_nanos)
+          @number_of_elapsed_periods = number_of_elapsed_periods
           @number_of_times_throttled = number_of_times_throttled
           @time_throttled_nanos = time_throttled_nanos
         end
@@ -81,20 +81,20 @@ module LogStash module Instrument module PeriodicPoller
       def cgroup_cpuacct_cpu_stat(control_group)
         lines = read_sys_fs_cgroup_cpuacct_cpu_stat(control_group);
 
-        number_of_periods = -1;
+        number_of_elapsed_periods = -1;
         number_of_times_throttled = -1;
         time_throttled_nanos = -1;
 
         lines.each do |line|
           fields = line.split(/\s+/)
           case fields.first
-          when "nr_periods" then number_of_periods = fields[1].to_i
+          when "nr_periods" then number_of_elapsed_periods = fields[1].to_i
           when "nr_throttled" then number_of_times_throttled= fields[1].to_i
           when "throttled_time" then time_throttled_nanos = fields[1].to_i
           end
         end
 
-        CpuStats.new(number_of_periods, number_of_times_throttled, time_throttled_nanos)
+        CpuStats.new(number_of_elapsed_periods, number_of_times_throttled, time_throttled_nanos)
       end
 
       def get_all
@@ -118,7 +118,7 @@ module LogStash module Instrument module PeriodicPoller
        cpu_stats = cgroup_cpuacct_cpu_stat(cpu_group)
 
        cgroups_stats[:cpu][:stat] = {
-         :number_of_periods => cpu_stats.number_of_periods,
+         :number_of_elapsed_periods => cpu_stats.number_of_elapsed_periods,
          :number_of_times_throttled => cpu_stats.number_of_times_throttled,
          :time_throttled_nanos => cpu_stats.time_throttled_nanos
        }

@@ -90,13 +90,13 @@ class LogStash::Agent
   # @param pipeline_id [String] pipeline string identifier
   # @param settings [Hash] settings that will be passed when creating the pipeline.
   #   keys should be symbols such as :pipeline_workers and :pipeline_batch_delay
-  def register_pipeline(pipeline_id, settings = @settings)
+  def register_pipeline(settings)
     pipeline_settings = settings.clone
-    pipeline_settings.set("pipeline.id", pipeline_id)
+    pipeline_id = pipeline_settings.get("pipeline.id")
 
     pipeline = create_pipeline(pipeline_settings)
     return unless pipeline.is_a?(LogStash::Pipeline)
-    if @auto_reload && pipeline.non_reloadable_plugins.any?
+    if @auto_reload && !pipeline.reloadable?
       @logger.error(I18n.t("logstash.agent.non_reloadable_config_register"),
                     :pipeline_id => pipeline_id,
                     :plugins => pipeline.non_reloadable_plugins.map(&:class))
@@ -284,7 +284,7 @@ class LogStash::Agent
 
     return if new_pipeline.nil?
 
-    if new_pipeline.non_reloadable_plugins.any?
+    if !new_pipeline.reloadable?
       @logger.error(I18n.t("logstash.agent.non_reloadable_config_reload"),
                     :pipeline_id => id,
                     :plugins => new_pipeline.non_reloadable_plugins.map(&:class))
@@ -318,7 +318,7 @@ class LogStash::Agent
     while true do
       if !t.alive?
         return false
-      elsif pipeline.ready?
+      elsif pipeline.running?
         return true
       else
         sleep 0.01
