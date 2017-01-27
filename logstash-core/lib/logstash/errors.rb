@@ -11,4 +11,5 @@ module LogStash
   class Bug < Error; end
   class ThisMethodWasRemoved < Bug; end
   class ConfigLoadingError < Error; end
+  class InvalidSourceLoaderSettingError < Error; end
 end

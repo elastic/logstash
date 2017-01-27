@@ -1,5 +1,6 @@
 # encoding: utf-8
 require "logstash/config/source/local"
+require "logstash/errors"
 require "thread"
 require "set"
 
@@ -10,13 +11,8 @@ module LogStash module Config
         @loaders = loaders
       end
 
-      def pipeline_configs
+      def fetch
         @loaders.collect(&:pipeline_configs).flatten
-      end
-
-      # TODO(ph) multiple pipeline
-      def pipeline_config
-        pipeline_configs.first
       end
     end
 
@@ -39,9 +35,10 @@ module LogStash module Config
       end
 
       if loaders.empty?
-        # This shouldn't happen with the settings object
-        #  Or with any external plugins.
-        raise "Can't find an appropriate config loader with current settings"
+
+        # This shouldn't happen with the settings object or with any external plugins.
+        # but lets add a guard so we fail fast.
+        raise LogStash::InvalidSourceLoaderSettingError, "Can't find an appropriate config loader with current settings"
       else
         Loader.new(loaders)
       end
