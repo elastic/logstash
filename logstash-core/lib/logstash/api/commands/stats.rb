@@ -46,8 +46,10 @@ module LogStash
         end
 
         def pipeline
-          stats = service.get_shallow(:stats, :pipelines)
-          PluginsStats.report(stats)
+          pipeline_id = LogStash::SETTINGS.get("pipeline.id").to_sym
+          stats = service.get_shallow(:stats, :pipelines, pipeline_id)
+          stats = PluginsStats.report(stats)
+          stats.merge(:id => pipeline_id)
         end
 
         def memory
@@ -98,9 +100,6 @@ module LogStash
           end
 
           def report(stats)
-            # Only one pipeline right now.
-            stats = stats[:main]
-
             {
               :events => stats[:events],
               :plugins => {
