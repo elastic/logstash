@@ -105,6 +105,7 @@ class LogStash::Agent
   end
 
   def reload_state!
+    logger.trace("reloading state!")
     @upgrade_mutex.synchronize do
       @pipelines.each do |pipeline_id, pipeline|
         next if pipeline.settings.get("config.reload.automatic") == false
