@@ -3,7 +3,7 @@ require "logstash/config/source_loader"
 require "logstash/config/source/base"
 require_relative "../../support/helpers"
 
-class DummyLoader < LogStash::Config::Source::Base
+class DummySource < LogStash::Config::Source::Base
   def pipeline_configs
     [self.class]
   end
@@ -13,7 +13,7 @@ class DummyLoader < LogStash::Config::Source::Base
   end
 end
 
-class AnotherDummyLoader < LogStash::Config::Source::Base
+class AnotherDummySource < LogStash::Config::Source::Base
   def pipeline_configs
     [self.class]
   end
@@ -36,28 +36,28 @@ describe LogStash::Config::SourceLoader do
   end
 
   it "allows to override the available source loaders" do
-    subject.configure_sources(DummyLoader)
+    subject.configure_sources(DummySource)
     loaders = []
     subject.source_loaders { |loader| loaders << loader }
 
     expect(loaders.size).to eq(1)
-    expect(loaders).to include(DummyLoader)
+    expect(loaders).to include(DummySource)
   end
 
   it "allows to add a new source" do
     loaders = []
-    subject.add_source(DummyLoader)
+    subject.add_source(DummySource)
     subject.source_loaders { |loader| loaders << loader }
 
     expect(loaders.size).to eq(2)
-    expect(loaders).to include(DummyLoader, LogStash::Config::Source::Local)
+    expect(loaders).to include(DummySource, LogStash::Config::Source::Local)
   end
 
   context "when no source match" do
     let(:settings) { mock_settings("path.config" => "make it not match") } # match both regex
 
     it "return the loaders with the matched sources" do
-      subject.configure_sources([DummyLoader, AnotherDummyLoader])
+      subject.configure_sources([DummySource, AnotherDummySource])
 
       expect { config_loader = subject.create(settings) }.to raise_error
     end
@@ -68,12 +68,12 @@ describe LogStash::Config::SourceLoader do
       let(:settings) { mock_settings("path.config" => "another dummy") } # match both regex
 
       it "return the loaders with the matched sources" do
-        subject.configure_sources([DummyLoader, AnotherDummyLoader])
+        subject.configure_sources([DummySource, AnotherDummySource])
 
         config_loader = subject.create(settings)
 
-        expect(config_loader.pipeline_configs.size).to eq(2)
-        expect(config_loader.pipeline_configs).to include(DummyLoader, AnotherDummyLoader)
+        expect(config_loader.fetch.size).to eq(2)
+        expect(config_loader.fetch).to include(DummySource, AnotherDummySource)
       end
     end
 
@@ -81,12 +81,12 @@ describe LogStash::Config::SourceLoader do
       let(:settings) { mock_settings("path.config" => "another") } # match both regex
 
       it "return the loaders with the matched sources" do
-        subject.configure_sources([DummyLoader, AnotherDummyLoader])
+        subject.configure_sources([DummySource, AnotherDummySource])
 
         config_loader = subject.create(settings)
 
-        expect(config_loader.pipeline_configs.size).to eq(1)
-        expect(config_loader.pipeline_configs).to include(AnotherDummyLoader)
+        expect(config_loader.fetch.size).to eq(1)
+        expect(config_loader.fetch).to include(AnotherDummySource)
       end
     end
   end
