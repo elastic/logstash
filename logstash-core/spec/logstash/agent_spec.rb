@@ -18,7 +18,6 @@ describe LogStash::Agent do
   let(:agent_settings) { LogStash::SETTINGS }
   let(:default_pipeline_id) { LogStash::SETTINGS.get("pipeline.id") }
   let(:agent_args) { { "config.string" => "input {} output {}" }  }
-  let(:agent_args) { {} }
   let(:pipeline_settings) { agent_settings.clone }
   let(:pipeline_args) { {} }
   let(:config_file) { Stud::Temporary.pathname }
@@ -270,7 +269,7 @@ describe LogStash::Agent do
     context "when fetching a new state" do
       it "upgrades the state" do
         expect(subject).to receive(:fetch_config).and_return(create_pipeline_config(second_pipeline_config))
-        expect(subject).to receive(:upgrade_pipeline).with(pipeline_id, kind_of(LogStash::Pipeline))
+        expect(subject).to receive(:upgrade_pipeline).with(default_pipeline_id, kind_of(LogStash::Pipeline))
         subject.reload_state!
       end
     end
@@ -303,8 +302,8 @@ describe LogStash::Agent do
 
       it "doesn't upgrade the state" do
         allow(subject).to receive(:fetch_config).and_return(create_pipeline_config(pipeline_config))
-        subject.register_pipeline(pipeline_id, pipeline_settings)
-        expect(subject.pipelines[pipeline_id].inputs.first.message).to eq("foo-bar")
+        subject.register_pipeline(pipeline_settings)
+        expect(subject.pipelines[default_pipeline_id].inputs.first.message).to eq("foo-bar")
       end
     end
   end
