@@ -10,20 +10,27 @@ namespace "compile" do
   desc "Compile the config grammar"
 
   task "grammar" => "logstash-core/lib/logstash/config/grammar.rb"
+  
+  def safe_system(*args)
+    if !system(*args)
+      status = $?
+      raise "Got exit status #{status.exitstatus} attempting to execute #{args.inspect}!"
+    end
+  end
 
   task "logstash-core-java" do
     puts("Building logstash-core using gradle")
-    system("./gradlew", "jar", "-p", "./logstash-core")
+    safe_system("./gradlew", "jar", "-p", "./logstash-core")
   end
 
   task "logstash-core-event-java" do
     puts("Building logstash-core-event-java using gradle")
-    system("./gradlew", "jar", "-p", "./logstash-core-event-java")
+    safe_system("./gradlew", "jar", "-p", "./logstash-core-event-java")
   end
 
   task "logstash-core-queue-jruby" do
     puts("Building logstash-core-queue-jruby using gradle")
-    system("./gradlew", "jar", "-p", "./logstash-core-queue-jruby")
+    safe_system("./gradlew", "jar", "-p", "./logstash-core-queue-jruby")
   end
 
   desc "Build everything"

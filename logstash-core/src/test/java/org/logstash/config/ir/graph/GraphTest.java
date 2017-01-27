@@ -1,8 +1,12 @@
 package org.logstash.config.ir.graph;
 
 import org.junit.Test;
+import org.logstash.config.ir.DSL;
 import org.logstash.config.ir.IRHelpers;
 import org.logstash.config.ir.InvalidIRException;
+import org.logstash.config.ir.PluginDefinition;
+import org.logstash.config.ir.graph.algorithms.GraphDiff;
+import org.logstash.config.ir.imperative.IfStatement;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -82,11 +86,11 @@ public class GraphTest {
     }
 
     @Test
-    public void ComplexConsistencyTest() throws InvalidIRException {
+    public void complexConsistencyTest() throws InvalidIRException {
         Graph g1 = IRHelpers.samplePipeline().getGraph();
         Graph g2 = IRHelpers.samplePipeline().getGraph();
 
-        assertEquals(g1.hashSource(), g2.hashSource());
+        assertEquals(g1.uniqueHash(), g2.uniqueHash());
     }
 
     @Test
@@ -137,6 +141,27 @@ public class GraphTest {
         Vertex rv = right.getVertexById("t1");
         assertTrue(lv.sourceComponentEquals(rv));
         assertTrue(rv.sourceComponentEquals(lv));
+    }
+
+    @Test
+    public void uniqueHashingOfSimilarLeaves() throws InvalidIRException {
+        // the initial implementation didn't handle this well, so we'll leave it here as a tricky test
+
+        IfStatement imperative = DSL.iIf(
+                DSL.eTruthy(DSL.eValue("1")),
+                DSL.iPlugin(PluginDefinition.Type.FILTER, "drop"),
+                DSL.iIf(
+                        DSL.eTruthy(DSL.eValue("2")),
+                        DSL.iPlugin(PluginDefinition.Type.FILTER, "drop"),
+                        DSL.iIf(
+                                DSL.eTruthy(DSL.eValue("3")),
+                                DSL.iPlugin(PluginDefinition.Type.FILTER, "drop")
+                        )
+                )
+        );
+
+        Graph g = imperative.toGraph();
+        g.validate();
     }
 
     private void assertVerticesConnected(Graph graph, String fromId, String toId) {

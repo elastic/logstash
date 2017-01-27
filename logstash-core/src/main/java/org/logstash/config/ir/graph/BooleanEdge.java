@@ -1,5 +1,6 @@
 package org.logstash.config.ir.graph;
 
+import org.logstash.common.Util;
 import org.logstash.config.ir.ISourceComponent;
 import org.logstash.config.ir.InvalidIRException;
 
@@ -50,7 +51,12 @@ public class BooleanEdge extends Edge {
 
     @Override
     public String individualHashSource() {
-        return this.getClass().getCanonicalName() + "|" + this.getEdgeType();
+        return this.getClass().getCanonicalName() + "|" + this.getEdgeType() + "|";
+    }
+
+    @Override
+    public String getId() {
+        return Util.digest(this.getFrom().getId() + "[" + this.getEdgeType() + "]->" + this.getTo().getId());
     }
 
     public String toString() {

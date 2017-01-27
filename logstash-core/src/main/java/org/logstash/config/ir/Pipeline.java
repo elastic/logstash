@@ -30,6 +30,11 @@ public class Pipeline implements IHashable {
     private final SpecialVertex filterOut;
 
     public Pipeline(Graph inputSection, Graph filterSection, Graph outputSection) throws InvalidIRException {
+        // Validate all incoming graphs, we can't turn an invalid graph into a Pipeline!
+        inputSection.validate();
+        filterSection.validate();
+        outputSection.validate();
+
         Graph tempGraph = inputSection.copy(); // The input section are our roots, so we can import that wholesale
 
         // Connect all the input vertices out to the queue

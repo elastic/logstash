@@ -99,6 +99,11 @@ public class IRHelpers {
         public String individualHashSource() {
             return "TEdge";
         }
+
+        @Override
+        public String getId() {
+            return individualHashSource();
+        }
     }
 
     public static BooleanExpression testExpression() throws InvalidIRException {

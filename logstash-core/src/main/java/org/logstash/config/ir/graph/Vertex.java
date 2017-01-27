@@ -7,10 +7,8 @@ import org.logstash.config.ir.InvalidIRException;
 import org.logstash.config.ir.SourceMetadata;
 import org.logstash.config.ir.graph.algorithms.DepthFirst;
 
-import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.stream.Collectors;
@@ -123,29 +121,36 @@ public abstract class Vertex implements ISourceComponent, IHashable {
     }
 
     @Override
-    public String hashSource() {
+    public String uniqueHash() {
         // Sort the lineage to ensure consistency. We prepend each item with a lexicographically sortable
         // encoding of its rank (using hex notation) so that the sort order is identical to the traversal order.
         // This is a required since there may be individually identical components in different locations in the graph.
         // It is, however, illegal to have functionally identical vertices, that is to say two vertices with the same
         // contents that have the same lineage.
 
-        try {
-            MessageDigest lineageDigest = MessageDigest.getInstance("SHA-256");
+        MessageDigest lineageDigest = Util.defaultMessageDigest();
 
-            // The lineage can be quite long and we want to avoid the quadratic complexity of string concatenation
-            lineage().
-                    map(Vertex::contextualHashSource).
-                    sorted().
-                    forEachOrdered(v -> {
-                        byte[] bytes = v.getBytes(StandardCharsets.UTF_8);
-                        lineageDigest.update(bytes);
-                    });
+        lineageDigest.update(hashPrefix().getBytes());
 
-            return hashPrefix() + Util.bytesToHexString(lineageDigest.digest());
-        } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException(e);
-        }
+        // The lineage can be quite long and we want to avoid the quadratic complexity of string concatenation
+        // Thus, in this case there's no real way to get the hash source, we just hash as we go.
+        lineage().
+                map(Vertex::contextualHashSource).
+                sorted().
+                forEachOrdered(v -> {
+                    byte[] bytes = v.getBytes(StandardCharsets.UTF_8);
+                    lineageDigest.update(bytes);
+                });
+
+        String digest = Util.bytesToHexString(lineageDigest.digest());
+
+        return digest;
+    }
+
+    @Override
+    public String hashSource() {
+        // In this case the source can be quite large, so we never actually use this function.
+        return this.uniqueHash();
     }
 
     public String hashPrefix() {
@@ -154,14 +159,14 @@ public abstract class Vertex implements ISourceComponent, IHashable {
 
     public String contextualHashSource() {
         // This string must be lexicographically sortable hence the ID at the front. It also must have the individualHashSource
-        // repeated at the front for the case of a graph with two nodes at the same rank
+        // repeated at the front for the case of a graph with two nodes at the same rank, same contents, but different lineages
         StringBuilder result = new StringBuilder();
         result.append(hashPrefix());
+        result.append(individualHashSource());
 
-
-        result.append("INCOMING=");
+        result.append("I:");
         this.incomingEdges().map(Edge::individualHashSource).sorted().forEachOrdered(result::append);
-        result.append("OUTGOING=");
+        result.append("O:");
         this.outgoingEdges().map(Edge::individualHashSource).sorted().forEachOrdered(result::append);
 
         return result.toString();

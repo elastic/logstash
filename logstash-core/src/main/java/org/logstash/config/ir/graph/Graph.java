@@ -1,5 +1,6 @@
 package org.logstash.config.ir.graph;
 
+import org.logstash.common.Util;
 import org.logstash.config.ir.IHashable;
 import org.logstash.config.ir.ISourceComponent;
 import org.logstash.config.ir.InvalidIRException;
@@ -8,6 +9,7 @@ import org.logstash.config.ir.graph.algorithms.BreadthFirst;
 import org.logstash.config.ir.graph.algorithms.GraphDiff;
 import org.logstash.config.ir.graph.algorithms.TopologicalSort;
 
+import java.security.MessageDigest;
 import java.util.*;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
@@ -17,14 +19,15 @@ import java.util.stream.Stream;
  * Created by andrewvc on 9/15/16.
  */
 public class Graph implements ISourceComponent, IHashable {
-    private final Set<Vertex> vertices = new HashSet<>();
+    public final Set<Vertex> vertices = new HashSet<>();
     private final Set<Edge> edges = new HashSet<>();
     private Map<Vertex, Integer> vertexRanks = new HashMap<>();
     private final Map<Vertex,Set<Edge>> outgoingEdgeLookup = new HashMap<>();
     private final Map<Vertex,Set<Edge>> incomingEdgeLookup = new HashMap<>();
     private List<Vertex> sortedVertices;
 
-
+    // Builds a graph that has the specified vertices and edges
+    // Note that this does *not* validate the result
     public Graph(Collection<Vertex> vertices, Collection<Edge> edges) throws InvalidIRException {
         for (Vertex vertex : vertices) { this.addVertex(vertex, false); }
         for (Edge edge : edges) { this.addEdge(edge, false); }
@@ -195,7 +198,10 @@ public class Graph implements ISourceComponent, IHashable {
         return threadVertices(edgeFactory, argVertices);
     }
 
-    public Collection<Edge> threadVertices(Edge.EdgeFactory edgeFactory, Vertex... argVertices) throws InvalidIRException {
+    // Will not validate the graph after running!
+    // You must invoke validate the graph yourself
+    // after invoking
+    public Collection<Edge> threadVerticesUnsafe(Edge.EdgeFactory edgeFactory, Vertex... argVertices) throws InvalidIRException {
         List<Vertex> importedVertices = new ArrayList<>(argVertices.length);
         for (Vertex va : argVertices) {
             importedVertices.add(this.importVertex(va));
@@ -206,17 +212,23 @@ public class Graph implements ISourceComponent, IHashable {
             Vertex from = importedVertices.get(i);
             Vertex to = importedVertices.get(i+1);
 
-            this.addVertex(from);
-            this.addVertex(to);
+            this.addVertex(from, false);
+            this.addVertex(to, false);
 
             Edge edge = edgeFactory.make(from, to);
             newEdges.add(edge);
-            this.addEdge(edge);
+            this.addEdge(edge, false);
         }
 
         refresh();
 
         return newEdges;
+    }
+
+    public Collection<Edge> threadVertices(Edge.EdgeFactory edgeFactory, Vertex... argVertices) throws InvalidIRException {
+        Collection<Edge> edges = threadVerticesUnsafe(edgeFactory, argVertices);
+        validate();
+        return edges;
     }
 
     public Edge threadVertices(Vertex a, Vertex b) throws InvalidIRException {
@@ -240,7 +252,6 @@ public class Graph implements ISourceComponent, IHashable {
     public void refresh() throws InvalidIRException {
         this.calculateRanks();
         this.calculateTopologicalSort();
-        this.validate();
     }
 
     private void calculateTopologicalSort() throws InvalidIRException {
@@ -267,8 +278,10 @@ public class Graph implements ISourceComponent, IHashable {
     }
 
     public void validate() throws InvalidIRException {
+        if (this.isEmpty()) return;
+
         if (this.getVertices().stream().noneMatch(Vertex::isLeaf)) {
-            throw new InvalidIRException("Graph has no leaf vertices!" + this.toString());
+            throw new InvalidIRException("Graph has no leaf vertices!\n" + this.toString());
         }
 
         List<List<Vertex>> duplicates = verticesByHash().values().stream().filter((group) -> group.size() > 1).collect(Collectors.toList());
@@ -278,7 +291,7 @@ public class Graph implements ISourceComponent, IHashable {
 
             String joinedErrorMessageGroups = errorMessageGroups.collect(Collectors.joining("\n---\n"));
 
-            throw new InvalidIRException("Some nodes on the graph are fully redundant!\n" + joinedErrorMessageGroups);
+            throw new InvalidIRException("Some nodes on the graph are fully redundant!\n" + this + "|" + joinedErrorMessageGroups);
         }
     }
 
@@ -335,10 +348,12 @@ public class Graph implements ISourceComponent, IHashable {
             edgelessVerticesStr = "";
         }
 
-        return "<GRAPH>\n" +
-                edgesToFormat.map(Edge::toString).collect(Collectors.joining("\n")) +
-                edgelessVerticesStr +
-                "\n</GRAPH>";
+        return "**GRAPH**\n" +
+               "Vertices: " + this.vertices.size()+ " Edges: " + this.edges().count() + "\n" +
+               "----------------------" +
+               edgesToFormat.map(Edge::toString).collect(Collectors.joining("\n")) +
+               edgelessVerticesStr +
+               "\n**GRAPH**";
     }
 
     public Stream<Vertex> isolatedVertices() {
@@ -411,6 +426,9 @@ public class Graph implements ISourceComponent, IHashable {
 
     @Override
     public String hashSource() {
-        return this.vertices.stream().map(Vertex::hashSource).sorted().collect(Collectors.joining("\n"));
+        MessageDigest lineageDigest = Util.defaultMessageDigest();
+        List<byte[]> sources = this.vertices.stream().parallel().map(Vertex::uniqueHash).sorted().map(String::getBytes).collect(Collectors.toList());
+        sources.forEach(lineageDigest::update);
+        return Util.bytesToHexString(lineageDigest.digest());
     }
 }
