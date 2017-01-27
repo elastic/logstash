@@ -5,11 +5,21 @@ require "bundler/definition"
 require "bundler/dependency"
 require "bundler/dsl"
 require "bundler/injector"
+require "bundler/shared_helpers"
 require "pluginmanager/gemfile"
+require "pathname"
 
 
 # This class cannot be in the logstash namespace, because of the way the DSL
 # class interact with the other libraries
+module Bundler
+  module SharedHelpers
+    def default_bundle_dir
+      Pathname.new(LogStash::Environment::LOGSTASH_HOME)
+    end
+  end
+end
+
 module Bundler
   class LogstashInjector < ::Bundler::Injector
     def self.inject!(new_deps, options = { :gemfile => LogStash::Environment::GEMFILE, :lockfile => LogStash::Environment::LOCKFILE })
@@ -20,7 +30,12 @@ module Bundler
       dependencies = new_deps.dependencies.collect(&method(:dependency))
 
       injector = new(bundler_format)
-      injector.inject(gemfile, lockfile, dependencies)
+
+      # Some of the internal classes requires to be inside the LOGSTASH_HOME to find the relative
+      # path of the core gems.
+      Dir.chdir(LogStash::Environment::LOGSTASH_HOME) do
+        injector.inject(gemfile, lockfile, dependencies)
+      end
     end
 
     def self.dependency(plugin)
