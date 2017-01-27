@@ -158,7 +158,7 @@ describe LogStash::Agent do
       context "when calling reload_state!" do
         context "with a pipeline with auto reloading turned off" do
           let(:second_pipeline_config) { "input { generator { } } filter { } output { }" }
-          let(:pipeline_args) { { "config.reload.automatic" => false } }
+          let(:agent_args) { super.merge({ "config.reload.automatic" => false }) }
 
           it "does not try to reload the pipeline" do
             t = Thread.new { subject.execute }
@@ -176,7 +176,7 @@ describe LogStash::Agent do
 
         context "with a pipeline with auto reloading turned on" do
           let(:second_pipeline_config) { "input { generator { } } filter { } output { }" }
-          let(:pipeline_args) { { "config.reload.automatic" => true } }
+          let(:agent_args) { super.merge({ "config.reload.automatic" => true }) }
 
           it "tries to reload the pipeline" do
             t = Thread.new { subject.execute }
@@ -543,7 +543,7 @@ describe LogStash::Agent do
     end
 
     context "when reloading a config that raises exception on pipeline.run" do
-      let(:new_config) { "input { generator { count => 10000 } }" }
+      let(:new_config) { "input { generator { count => 10000 } } output { stdout {}}" }
       let(:new_config_generator_counter) { 500 }
 
       class BrokenGenerator < LogStash::Inputs::Generator
@@ -555,6 +555,7 @@ describe LogStash::Agent do
       before :each do
 
         allow(LogStash::Plugin).to receive(:lookup).with("input", "generator").and_return(BrokenGenerator)
+        allow(LogStash::Plugin).to receive(:lookup).with("output", "stdout").and_return(DummyOutput2)
 
         File.open(config_path, "w") do |f|
           f.write(new_config)

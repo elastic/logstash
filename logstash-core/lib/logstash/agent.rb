@@ -73,7 +73,8 @@ class LogStash::Agent
     Stud.stoppable_sleep(@reload_interval) # sleep before looping
 
     if @auto_reload
-      Stud.interval(@reload_interval) { reload_state! }
+      # `sleep_then_run` instead of firing the interval right away
+      Stud.interval(@reload_interval, :sleep_then_run => true) { reload_state! }
     else
       while !Stud.stop?
         if clean_state? || running_pipelines?
@@ -108,6 +109,7 @@ class LogStash::Agent
     logger.trace("reloading state!")
     @upgrade_mutex.synchronize do
       @pipelines.each do |pipeline_id, pipeline|
+
         next if pipeline.settings.get("config.reload.automatic") == false
         begin
           reload_pipeline!(pipeline_id)
