@@ -51,28 +51,28 @@ module LogStash::Config::Mixin
   def deep_replace(value)
     if (value.is_a?(Hash))
       value.each do |valueHashKey, valueHashValue|
-          value[valueHashKey.to_s] = deep_replace(valueHashValue)
+        value[valueHashKey.to_s] = deep_replace(valueHashValue)
       end
     else
-        if (value.is_a?(Array))
-           value.each_index do | valueArrayIndex|
-                value[valueArrayIndex] = deep_replace(value[valueArrayIndex])
-                end
-        else
-            return replace_env_placeholders(value)
+      if (value.is_a?(Array))
+        value.each_index do | valueArrayIndex|
+          value[valueArrayIndex] = deep_replace(value[valueArrayIndex])
         end
+      else
+        return replace_env_placeholders(value)
+      end
     end
   end
 
   def config_init(params)
     # Validation will modify the values inside params if necessary.
     # For example: converting a string to a number, etc.
-
+    
     # Keep a copy of the original config params so that we can later
     # differentiate between explicit configuration and implicit (default)
     # configuration.
     original_params = params.clone
-
+    
     # store the plugin type, turns LogStash::Inputs::Base into 'input'
     @plugin_type = self.class.ancestors.find { |a| a.name =~ /::Base$/ }.config_name
 
@@ -105,7 +105,7 @@ module LogStash::Config::Mixin
       next if params.include?(name.to_s)
       if opts.include?(:default) and (name.is_a?(Symbol) or name.is_a?(String))
         # default values should be cloned if possible
-        # cloning prevents
+        # cloning prevents 
         case opts[:default]
           when FalseClass, TrueClass, NilClass, Numeric
             params[name.to_s] = opts[:default]
@@ -124,6 +124,7 @@ module LogStash::Config::Mixin
     params.each do |name, value|
       params[name.to_s] = deep_replace(value)
     end
+
 
     if !self.class.validate(params)
       raise LogStash::ConfigurationError,
@@ -208,7 +209,7 @@ module LogStash::Config::Mixin
 
       name = name.to_s if name.is_a?(Symbol)
       @config[name] = opts  # ok if this is empty
-
+      
       if name.is_a?(String)
         define_method(name) { instance_variable_get("@#{name}") }
         define_method("#{name}=") { |v| instance_variable_set("@#{name}", v) }
@@ -350,7 +351,7 @@ module LogStash::Config::Mixin
                                :setting => config_key, :plugin => @plugin_name,
                                :type => @plugin_type))
           is_valid = false
-        end
+        end        
       end
 
       return is_valid
@@ -358,26 +359,26 @@ module LogStash::Config::Mixin
 
     def process_parameter_value(value, config_settings)
       config_val = config_settings[:validate]
-
+      
       if config_settings[:list]
         value = Array(value) # coerce scalars to lists
         # Empty lists are converted to nils
         return true, nil if value.empty?
-
+          
         validated_items = value.map {|v| validate_value(v, config_val)}
         is_valid = validated_items.all? {|sr| sr[0] }
         processed_value = validated_items.map {|sr| sr[1]}
       else
         is_valid, processed_value = validate_value(value, config_val)
       end
-
+      
       return [is_valid, processed_value]
     end
 
     def validate_check_parameter_values(params)
       # Filter out parametrs that match regexp keys.
       # These are defined in plugins like this:
-      #   config /foo.*/ => ...
+      #   config /foo.*/ => ... 
       all_params_valid = true
 
       params.each do |key, value|
@@ -385,10 +386,10 @@ module LogStash::Config::Mixin
           next unless (config_key.is_a?(Regexp) && key =~ config_key) \
                       || (config_key.is_a?(String) && key == config_key)
 
-          config_settings = @config[config_key]
+          config_settings = @config[config_key]          
 
           is_valid, processed_value = process_parameter_value(value, config_settings)
-
+          
           if is_valid
             # Accept coerced value if valid
             # Used for converting values in the config to proper objects.
@@ -400,7 +401,7 @@ module LogStash::Config::Mixin
                                  :value_type => config_settings[:validate],
                                  :note => processed_value))
           end
-
+          
           all_params_valid &&= is_valid
 
           break # done with this param key
@@ -546,7 +547,7 @@ module LogStash::Config::Mixin
             if value.size > 1
               return false, "Expected uri (one value), got #{value.size} values?"
             end
-
+            
             result = value.first.is_a?(::LogStash::Util::SafeURI) ? value.first : ::LogStash::Util::SafeURI.new(value.first)
           when :path
             if value.size > 1 # Only 1 value wanted
