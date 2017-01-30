@@ -1,0 +1,9 @@
+#!/usr/bin/env bin/ruby
+
+require_relative "../lib/bootstrap/environment"
+LogStash::Bundler.setup!({:without => [:build, :development]})
+require "logstash-core"
+
+lock = Java::OrgLogstash::FileLockFactory.getDefault.obtainLock(ARGV[0], ".lock")
+puts("locking " + File.join(ARGV[0], ".lock"))
+sleep

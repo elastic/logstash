@@ -60,6 +60,7 @@ namespace "artifact" do
     @exclude_paths << "bin/bundle"
     @exclude_paths << "bin/rspec"
     @exclude_paths << "bin/rspec.bat"
+    @exclude_paths << "bin/lock"
 
     @exclude_paths
   end
