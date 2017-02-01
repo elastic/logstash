@@ -10,7 +10,12 @@ require "uri"
 
 module LogStash module PluginManager module PackFetchStrategy
   class Repository
-    ELASTIC_PACK_BASE_URI = ENV["LOGSTASH_PACK_URL"] || "https://artifacts.elastic.co/downloads/logstash-plugins"
+    if ENV["LOGSTASH_PACK_URL"].nil? || ENV["LOGSTASH_PACK_URL"].empty?
+      ELASTIC_PACK_BASE_URI = "https://artifacts.elastic.co/downloads/logstash-plugins"
+    else
+      ELASTIC_PACK_BASE_URI = ENV["LOGSTASH_PACK_URL"]
+    end
+
     PACK_EXTENSION = "zip"
 
     class << self
