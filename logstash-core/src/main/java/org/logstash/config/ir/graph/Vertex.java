@@ -7,10 +7,8 @@ import org.logstash.config.ir.InvalidIRException;
 import org.logstash.config.ir.SourceMetadata;
 import org.logstash.config.ir.graph.algorithms.DepthFirst;
 
-import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.stream.Collectors;
@@ -22,6 +20,7 @@ import java.util.stream.Stream;
 public abstract class Vertex implements ISourceComponent, IHashable {
     private final SourceMetadata sourceMetadata;
     private Graph graph = this.getGraph();
+    private volatile String cachedContextualHashSource;
 
     public Vertex() {
         this.sourceMetadata = null;
@@ -130,22 +129,19 @@ public abstract class Vertex implements ISourceComponent, IHashable {
         // It is, however, illegal to have functionally identical vertices, that is to say two vertices with the same
         // contents that have the same lineage.
 
-        try {
-            MessageDigest lineageDigest = MessageDigest.getInstance("SHA-256");
+        MessageDigest lineageDigest = Util.defaultMessageDigest();
 
-            // The lineage can be quite long and we want to avoid the quadratic complexity of string concatenation
-            lineage().
-                    map(Vertex::contextualHashSource).
-                    sorted().
-                    forEachOrdered(v -> {
-                        byte[] bytes = v.getBytes(StandardCharsets.UTF_8);
-                        lineageDigest.update(bytes);
-                    });
 
-            return hashPrefix() + Util.bytesToHexString(lineageDigest.digest());
-        } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException(e);
-        }
+        // The lineage can be quite long and we want to avoid the quadratic complexity of string concatenation
+        lineage().
+                map(Vertex::contextualHashSource).
+                sorted().
+                forEachOrdered(v -> {
+                    byte[] bytes = v.getBytes(StandardCharsets.UTF_8);
+                    lineageDigest.update(bytes);
+                });
+
+        return hashPrefix() + Util.bytesToHexString(lineageDigest.digest());
     }
 
     public String hashPrefix() {
@@ -153,17 +149,20 @@ public abstract class Vertex implements ISourceComponent, IHashable {
     }
 
     public String contextualHashSource() {
+        if (this.cachedContextualHashSource != null) return this.cachedContextualHashSource;
+
         // This string must be lexicographically sortable hence the ID at the front. It also must have the individualHashSource
         // repeated at the front for the case of a graph with two nodes at the same rank
         StringBuilder result = new StringBuilder();
         result.append(hashPrefix());
 
-
-        result.append("INCOMING=");
+        result.append("I:");
         this.incomingEdges().map(Edge::individualHashSource).sorted().forEachOrdered(result::append);
-        result.append("OUTGOING=");
+        result.append("O:");
         this.outgoingEdges().map(Edge::individualHashSource).sorted().forEachOrdered(result::append);
 
+
+        //this.cachedContextualHashSource = result.toString();
         return result.toString();
     }
 

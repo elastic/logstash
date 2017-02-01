@@ -1,8 +1,11 @@
 package org.logstash.config.ir.graph;
 
 import org.junit.Test;
+import org.logstash.config.ir.DSL;
 import org.logstash.config.ir.IRHelpers;
 import org.logstash.config.ir.InvalidIRException;
+import org.logstash.config.ir.PluginDefinition;
+import org.logstash.config.ir.imperative.IfStatement;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -137,6 +140,38 @@ public class GraphTest {
         Vertex rv = right.getVertexById("t1");
         assertTrue(lv.sourceComponentEquals(rv));
         assertTrue(rv.sourceComponentEquals(lv));
+    }
+
+    @Test
+    public void uniqueHashingOfSimilarLeaves() throws InvalidIRException {
+        // the initial implementation didn't handle this well, so we'll leave it here as a tricky test
+
+        IfStatement imperative = DSL.iIf(
+                DSL.eTruthy(DSL.eValue("1")),
+                DSL.iPlugin(PluginDefinition.Type.FILTER, "drop"),
+                DSL.iIf(
+                        DSL.eTruthy(DSL.eValue("2")),
+                        DSL.iPlugin(PluginDefinition.Type.FILTER, "drop"),
+                        DSL.iIf(
+                                DSL.eTruthy(DSL.eValue("3")),
+                                DSL.iPlugin(PluginDefinition.Type.FILTER, "drop")
+                        )
+                )
+        );
+
+        Graph g = imperative.toGraph();
+
+
+
+/*
+    if [msg] =~ /^Failed to synchronize license information with Licensing Server./ {
+                drop {}
+        } else if [msg] =~ /^ctx: exit level/ {
+            drop {}
+        } else if [msg] =~ /^System time updated based on response from NTP server/ {
+            drop{}
+        }
+*/
     }
 
     private void assertVerticesConnected(Graph graph, String fromId, String toId) {

@@ -41,13 +41,14 @@ public class PluginVertex extends Vertex {
     }
 
     public String toString() {
-        return "P[" + pluginDefinition + "]";
+        return "P[" + pluginDefinition + "|" + this.getMeta() + "]";
     }
 
     @Override
     public String individualHashSource() {
         return Util.sha256(this.getClass().getCanonicalName() + "|" +
                 (this.id != null ? this.id : "NOID") + "|" +
+                //this.getMeta().getSourceLine() + "|" + this.getMeta().getSourceColumn() + "|" + // Temp hack REMOVE BEFORE RELEASE
                 this.getPluginDefinition().hashSource());
     }
 

@@ -9,14 +9,19 @@ import java.security.NoSuchAlgorithmException;
  */
 public class Util {
     // Modified from http://stackoverflow.com/a/11009612/11105
-    public static String sha256(String base) {
+
+    public static MessageDigest defaultMessageDigest() {
         try {
-            MessageDigest digest = MessageDigest.getInstance("SHA-256");
-            byte[] hash = digest.digest(base.getBytes(StandardCharsets.UTF_8));
-            return bytesToHexString(hash);
+            return MessageDigest.getInstance("SHA-512");
         } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException("Your system is (somehow) missing the SHA-256 algorithm!", e);
+            throw new RuntimeException(e);
         }
+    }
+
+    public static String sha256(String base) {
+        MessageDigest digest = defaultMessageDigest();
+        byte[] hash = digest.digest(base.getBytes(StandardCharsets.UTF_8));
+        return bytesToHexString(hash);
     }
 
     public static String bytesToHexString(byte[] bytes) {

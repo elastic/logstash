@@ -1,5 +1,6 @@
 package org.logstash.config.ir.graph;
 
+import org.logstash.common.Util;
 import org.logstash.config.ir.IHashable;
 import org.logstash.config.ir.ISourceComponent;
 import org.logstash.config.ir.InvalidIRException;
@@ -8,6 +9,7 @@ import org.logstash.config.ir.graph.algorithms.BreadthFirst;
 import org.logstash.config.ir.graph.algorithms.GraphDiff;
 import org.logstash.config.ir.graph.algorithms.TopologicalSort;
 
+import java.security.MessageDigest;
 import java.util.*;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
@@ -267,6 +269,8 @@ public class Graph implements ISourceComponent, IHashable {
     }
 
     public void validate() throws InvalidIRException {
+        if (this.isEmpty()) return;
+
         if (this.getVertices().stream().noneMatch(Vertex::isLeaf)) {
             throw new InvalidIRException("Graph has no leaf vertices!" + this.toString());
         }
@@ -411,6 +415,10 @@ public class Graph implements ISourceComponent, IHashable {
 
     @Override
     public String hashSource() {
-        return this.vertices.stream().map(Vertex::hashSource).sorted().collect(Collectors.joining("\n"));
+        MessageDigest lineageDigest = Util.defaultMessageDigest();
+        int i = 0;
+        List<byte[]> sources = this.vertices.stream().parallel().map(Vertex::hashSource).map(String::getBytes).collect(Collectors.toList());
+        sources.forEach(lineageDigest::update);
+        return Util.bytesToHexString(lineageDigest.digest());
     }
 }
