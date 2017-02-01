@@ -36,7 +36,9 @@ describe LogStash::QueueFactory do
     end
 
     it "returns a `WrappedAckedQueue`" do
-      expect(subject.create(settings)).to be_kind_of(LogStash::Util::WrappedAckedQueue)
+      queue =  subject.create(settings)
+      expect(queue).to be_kind_of(LogStash::Util::WrappedAckedQueue)
+      queue.close
     end
 
     describe "per pipeline id subdirectory creation" do
@@ -50,6 +52,7 @@ describe LogStash::QueueFactory do
         expect(Dir.exist?(queue_path)).to be_falsey
         queue = subject.create(settings)
         expect(Dir.exist?(queue_path)).to be_truthy
+        queue.close
       end
     end
   end
@@ -60,7 +63,9 @@ describe LogStash::QueueFactory do
     end
 
     it "returns a `WrappedAckedQueue`" do
-      expect(subject.create(settings)).to be_kind_of(LogStash::Util::WrappedAckedQueue)
+      queue =  subject.create(settings)
+      expect(queue).to be_kind_of(LogStash::Util::WrappedAckedQueue)
+      queue.close
     end
   end
 
@@ -70,7 +75,9 @@ describe LogStash::QueueFactory do
     end
 
     it "returns a `WrappedAckedQueue`" do
-      expect(subject.create(settings)).to be_kind_of(LogStash::Util::WrappedSynchronousQueue)
+      queue =  subject.create(settings)
+      expect(queue).to be_kind_of(LogStash::Util::WrappedSynchronousQueue)
+      queue.close
     end
   end
 end

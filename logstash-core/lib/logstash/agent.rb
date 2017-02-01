@@ -189,7 +189,22 @@ class LogStash::Agent
     end
   end
 
+  def close_pipeline(id)
+    pipeline = @pipelines[id]
+    if pipeline
+      @logger.warn("closing pipeline", :id => id)
+      pipeline.close
+    end
+  end
+
+  def close_pipelines
+    @pipelines.each  do |id, _|
+      close_pipeline(id)
+    end
+  end
+
   private
+
   def start_webserver
     options = {:http_host => @http_host, :http_ports => @http_port, :http_environment => @http_environment }
     @webserver = LogStash::WebServer.new(@logger, self, options)
@@ -229,17 +244,17 @@ class LogStash::Agent
     @collect_metric
   end
 
-  def increment_reload_failures_metrics(id, config, exception)
+  def increment_reload_failures_metrics(id, message, backtrace = nil)
     @instance_reload_metric.increment(:failures)
     @pipeline_reload_metric.namespace([id.to_sym, :reloads]).tap do |n|
       n.increment(:failures)
-      n.gauge(:last_error, { :message => exception.message, :backtrace => exception.backtrace})
+      n.gauge(:last_error, { :message => message, :backtrace =>backtrace})
       n.gauge(:last_failure_timestamp, LogStash::Timestamp.now)
     end
     if @logger.debug?
-      @logger.error("Cannot load an invalid configuration.", :reason => exception.message, :backtrace => exception.backtrace)
+      @logger.error("Cannot load an invalid configuration", :reason => message, :backtrace => backtrace)
     else
-      @logger.error("Cannot load an invalid configuration.", :reason => exception.message)
+      @logger.error("Cannot load an invalid configuration", :reason => message)
     end
   end
 
@@ -261,7 +276,7 @@ class LogStash::Agent
     begin
       LogStash::Pipeline.new(config, settings, metric)
     rescue => e
-      increment_reload_failures_metrics(settings.get("pipeline.id"), config, e)
+      increment_reload_failures_metrics(settings.get("pipeline.id"), e.message, e.backtrace)
       return nil
     end
   end
@@ -294,15 +309,14 @@ class LogStash::Agent
     begin
       pipeline_validator = LogStash::BasePipeline.new(new_config, old_pipeline.settings)
     rescue => e
-      increment_reload_failures_metrics(id, new_config, e)
+      increment_reload_failures_metrics(id, e.message, e.backtrace)
       return
     end
 
     # check if the new pipeline will be reloadable in which case we want to log that as an error and abort
     if !pipeline_validator.reloadable?
       @logger.error(I18n.t("logstash.agent.non_reloadable_config_reload"), :pipeline_id => id, :plugins => pipeline_validator.non_reloadable_plugins.map(&:class))
-      # TODO: in the original code the failure metrics were not incremented, should we do it here?
-      # increment_reload_failures_metrics(id, new_config, e)
+      increment_reload_failures_metrics(id, "non reloadable pipeline")
       return
     end
 
@@ -331,20 +345,28 @@ class LogStash::Agent
       # this is a scenario where the configuration is valid (compilable) but the new pipeline refused to start
       # and at this point NO pipeline is running
       @logger.error("failed to create the reloaded pipeline and no pipeline is currently running", :pipeline => pipeline_id)
+      increment_reload_failures_metrics(pipeline_id, "failed to create the reloaded pipeline")
       return
     end
+
+    ### at this point pipeline#close must be called if upgrade_pipeline does not succeed
 
     # check if the new pipeline will be reloadable in which case we want to log that as an error and abort. this should normally not
     # happen since the check should be done in reload_pipeline! prior to get here.
     if !new_pipeline.reloadable?
       @logger.error(I18n.t("logstash.agent.non_reloadable_config_reload"), :pipeline_id => pipeline_id, :plugins => new_pipeline.non_reloadable_plugins.map(&:class))
+      increment_reload_failures_metrics(pipeline_id, "non reloadable pipeline")
+      new_pipeline.close
       return
     end
 
+    # @pipelines[pipeline_id] must be initialized before #start_pipeline below which uses it
     @pipelines[pipeline_id] = new_pipeline
 
     if !start_pipeline(pipeline_id)
       @logger.error("failed to start the reloaded pipeline and no pipeline is currently running", :pipeline => pipeline_id)
+      # do not call increment_reload_failures_metrics here since #start_pipeline already does it on failure
+      new_pipeline.close
       return
     end
 
@@ -373,6 +395,8 @@ class LogStash::Agent
           n.gauge(:last_failure_timestamp, LogStash::Timestamp.now)
         end
         @logger.error("Pipeline aborted due to error", :exception => e, :backtrace => e.backtrace)
+
+        # TODO: this is weird, why dont we return directly here? any reason we need to enter the while true loop below?!
       end
     end
     while true do
