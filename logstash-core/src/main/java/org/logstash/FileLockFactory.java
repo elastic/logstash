@@ -27,9 +27,21 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
+/**
+ * FileLockFactory provides a way to obtain an exclusive file lock for a given dir path and lock name.
+ * The obtainLock() method will return a Filelock object which should be released using the releaseLock()
+ * method. Normally the returned FileLock object should not be manipulated directly. Only the obtainLock()
+ * and releaseLock() methods should be use to gain and release exclusive access.
+ * This is threadsafe and will work across threads on the same JVM and will also work across processes/JVM.
+ *
+ * TODO: because of the releaseLock() method, strictly speaking this class is not only a factory anymore,
+ * maybe we should rename it FileLockManager?
+ */
 public class FileLockFactory {
 
     /**
@@ -39,7 +51,8 @@ public class FileLockFactory {
 
     private FileLockFactory() {}
 
-    private static final Set<String> LOCK_HELD = Collections.synchronizedSet(new HashSet<String>());
+    private static final Set<String> LOCK_HELD = Collections.synchronizedSet(new HashSet<>());
+    private static final Map<FileLock, String> LOCK_MAP =  Collections.synchronizedMap(new HashMap<>());
 
     public static final FileLockFactory getDefault() {
         return FileLockFactory.INSTANCE;
@@ -71,6 +84,7 @@ public class FileLockFactory {
                 channel = FileChannel.open(realLockPath, StandardOpenOption.CREATE, StandardOpenOption.WRITE);
                 lock = channel.tryLock();
                 if (lock != null) {
+                    LOCK_MAP.put(lock, realLockPath.toString());
                     return lock;
                 } else {
                     throw new LockException("Lock held by another program: " + realLockPath);
@@ -85,8 +99,8 @@ public class FileLockFactory {
                         // suppress any channel close exceptions
                     }
 
-                    boolean remove = LOCK_HELD.remove(realLockPath.toString());
-                    if (remove == false) {
+                    boolean removed = LOCK_HELD.remove(realLockPath.toString());
+                    if (removed == false) {
                         throw new LockException("Lock path was cleared but never marked as held: " + realLockPath);
                     }
                 }
@@ -95,4 +109,13 @@ public class FileLockFactory {
             throw new LockException("Lock held by this virtual machine: " + realLockPath);
         }
     }
+
+    public void releaseLock(FileLock lock) throws IOException {
+        String lockPath = LOCK_MAP.remove(lock);
+        if (lockPath == null) { throw new LockException("Cannot release unobtained lock"); }
+        lock.release();
+        Boolean removed = LOCK_HELD.remove(lockPath);
+        if (removed == false) { throw new LockException("Lock path was not marked as held: " + lockPath); }
+    }
+
 }
