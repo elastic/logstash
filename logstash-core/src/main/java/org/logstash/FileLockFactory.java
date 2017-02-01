@@ -87,7 +87,7 @@ public class FileLockFactory {
                     LOCK_MAP.put(lock, realLockPath.toString());
                     return lock;
                 } else {
-                    throw new LockException("Lock held by another program: " + realLockPath);
+                    throw new LockException("Lock held by another program on lock path: " + realLockPath);
                 }
             } finally {
                 if (lock == null) { // not successful - clear up and move out
@@ -106,7 +106,7 @@ public class FileLockFactory {
                 }
             }
         } else {
-            throw new LockException("Lock held by this virtual machine: " + realLockPath);
+            throw new LockException("Lock held by this virtual machine on lock path: " + realLockPath);
         }
     }
 

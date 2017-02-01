@@ -151,6 +151,7 @@ public class Concurent {
 
         // gotta hate exception handling in lambdas
         consumers.forEach(c -> {try{c.join();} catch(InterruptedException e) {throw new RuntimeException(e);}});
+        q.close();
 
         Instant end = Instant.now();
 

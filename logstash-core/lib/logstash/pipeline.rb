@@ -26,7 +26,7 @@ module LogStash; class BasePipeline
 
   attr_reader :config_str, :config_hash, :inputs, :filters, :outputs, :pipeline_id
 
-  def initialize(config_str, settings)
+  def initialize(config_str, settings = SETTINGS)
     @logger = self.logger
     @config_str = config_str
     @config_hash = Digest::SHA1.hexdigest(@config_str)
@@ -59,8 +59,7 @@ module LogStash; class BasePipeline
     begin
       eval(config_code)
     rescue => e
-      # TODO: the original code rescue e but does nothing with it, should we re-raise to have original exception details!?
-      raise
+      raise e
     end
   end
 
@@ -139,7 +138,13 @@ module LogStash; class Pipeline < BasePipeline
 
     super(config_str, settings)
 
-    @queue = LogStash::QueueFactory.create(settings)
+    begin
+      @queue = LogStash::QueueFactory.create(settings)
+    rescue => e
+      @logger.error("Logstash failed to create queue", "exception" => e, "backtrace" => e.backtrace)
+      raise e
+    end
+
     @input_queue_client = @queue.write_client
     @filter_queue_client = @queue.read_client
     @signal_queue = Queue.new
@@ -216,14 +221,18 @@ module LogStash; class Pipeline < BasePipeline
     shutdown_flusher
     shutdown_workers
 
-    @filter_queue_client.close
-    @queue.close
+    close
 
     @logger.debug("Pipeline #{@pipeline_id} has been shutdown")
 
     # exit code
     return 0
   end # def run
+
+  def close
+    @filter_queue_client.close
+    @queue.close
+  end
 
   def transition_to_running
     @running.make_true
@@ -327,7 +336,8 @@ module LogStash; class Pipeline < BasePipeline
     # plugin.
     @logger.error("Exception in pipelineworker, the pipeline stopped processing new events, please check your filter configuration and restart Logstash.",
                   "exception" => e, "backtrace" => e.backtrace)
-    raise
+
+    raise e
   end
 
   # Take an array of events and send them to the correct output
