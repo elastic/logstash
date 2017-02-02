@@ -489,6 +489,32 @@ module LogStash
         Util::TimeValue.from_value(value).to_nanos
       end
     end
+
+    class ArrayCoercible < Coercible
+      def initialize(name, klass, default, strict=true, &validator_proc)
+        @element_class = klass
+        super(name, ::Array, default, strict, &validator_proc)
+      end
+
+      def coerce(value)
+        Array(value)
+      end
+
+      protected
+      def validate(input)
+        if !input.is_a?(@klass)
+          raise ArgumentError.new("Setting \"#{@name}\" must be a #{@klass}. Received: #{input} (#{input.class})")
+        end
+
+        unless input.all? {|el| el.kind_of?(@element_class) }
+          raise ArgumentError.new("Values of setting \"#{@name}\" must be #{@element_class}. Received: #{input.map(&:class)}")
+        end
+
+        if @validator_proc && !@validator_proc.call(input)
+          raise ArgumentError.new("Failed to validate setting \"#{@name}\" with value: #{input}")
+        end
+      end
+    end
   end
 
 
