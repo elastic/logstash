@@ -21,21 +21,101 @@ require "logstash/output_delegator"
 require "logstash/filter_delegator"
 require "logstash/queue_factory"
 
-module LogStash; class Pipeline
+module LogStash; class BasePipeline
   include LogStash::Util::Loggable
 
-  attr_reader :inputs,
-    :filters,
-    :outputs,
+  attr_reader :config_str, :config_hash, :inputs, :filters, :outputs, :pipeline_id
+
+  def initialize(config_str, settings)
+    @logger = self.logger
+    @config_str = config_str
+    @config_hash = Digest::SHA1.hexdigest(@config_str)
+    # Every time #plugin is invoked this is incremented to give each plugin
+    # a unique id when auto-generating plugin ids
+    @plugin_counter ||= 0
+
+    @pipeline_id = settings.get_value("pipeline.id") || self.object_id
+
+    # A list of plugins indexed by id
+    @plugins_by_id = {}
+    @inputs = nil
+    @filters = nil
+    @outputs = nil
+
+    grammar = LogStashConfigParser.new
+    parsed_config = grammar.parse(config_str)
+    raise(ConfigurationError, grammar.failure_reason) if parsed_config.nil?
+
+    config_code = parsed_config.compile
+
+    # config_code = BasePipeline.compileConfig(config_str)
+
+    if settings.get_value("config.debug") && @logger.debug?
+      @logger.debug("Compiled pipeline code", :code => config_code)
+    end
+
+    # Evaluate the config compiled code that will initialize all the plugins and define the
+    # filter and output methods.
+    begin
+      eval(config_code)
+    rescue => e
+      # TODO: the original code rescue e but does nothing with it, should we re-raise to have original exception details!?
+      raise
+    end
+  end
+
+  def plugin(plugin_type, name, *args)
+    @plugin_counter += 1
+
+    # Collapse the array of arguments into a single merged hash
+    args = args.reduce({}, &:merge)
+
+    id = if args["id"].nil? || args["id"].empty?
+      args["id"] = "#{@config_hash}-#{@plugin_counter}"
+    else
+      args["id"]
+    end
+
+    raise ConfigurationError, "Two plugins have the id '#{id}', please fix this conflict" if @plugins_by_id[id]
+    @plugins_by_id[id] = true
+
+    # use NullMetric if called in the BasePipeline context otherwise use the @metric value
+    metric = @metric || Instrument::NullMetric.new
+
+    pipeline_scoped_metric = metric.namespace([:stats, :pipelines, pipeline_id.to_s.to_sym, :plugins])
+    # Scope plugins of type 'input' to 'inputs'
+    type_scoped_metric = pipeline_scoped_metric.namespace("#{plugin_type}s".to_sym)
+
+    klass = Plugin.lookup(plugin_type, name)
+
+    if plugin_type == "output"
+      OutputDelegator.new(@logger, klass, type_scoped_metric,  OutputDelegatorStrategyRegistry.instance, args)
+    elsif plugin_type == "filter"
+      FilterDelegator.new(@logger, klass, type_scoped_metric, args)
+    else # input
+      input_plugin = klass.new(args)
+      input_plugin.metric = type_scoped_metric.namespace(id)
+      input_plugin
+    end
+  end
+
+  def reloadable?
+    non_reloadable_plugins.empty?
+  end
+
+  def non_reloadable_plugins
+    (inputs + filters + outputs).select { |plugin| !plugin.reloadable? }
+  end
+end; end
+
+module LogStash; class Pipeline < BasePipeline
+  attr_reader \
     :worker_threads,
     :events_consumed,
     :events_filtered,
     :reporter,
-    :pipeline_id,
     :started_at,
     :thread,
-    :config_str,
-    :config_hash,
     :settings,
     :metric,
     :filter_queue_client,
@@ -45,55 +125,19 @@ module LogStash; class Pipeline
   MAX_INFLIGHT_WARN_THRESHOLD = 10_000
 
   def initialize(config_str, settings = SETTINGS, namespaced_metric = nil)
-    @logger = self.logger
-    @config_str = config_str
-    @config_hash = Digest::SHA1.hexdigest(@config_str)
-    # Every time #plugin is invoked this is incremented to give each plugin
-    # a unique id when auto-generating plugin ids
-    @plugin_counter ||= 0
-    @settings = settings
-    @pipeline_id = @settings.get_value("pipeline.id") || self.object_id
-    @reporter = PipelineReporter.new(@logger, self)
-
-    # A list of plugins indexed by id
-    @plugins_by_id = {}
-    @inputs = nil
-    @filters = nil
-    @outputs = nil
-
-    @worker_threads = []
-
-    # This needs to be configured before we evaluate the code to make
+    # This needs to be configured before we call super which will evaluate the code to make
     # sure the metric instance is correctly send to the plugins to make the namespace scoping work
     @metric = if namespaced_metric
-                settings.get("metric.collect") ? namespaced_metric : Instrument::NullMetric.new(namespaced_metric.collector)
-              else
-                Instrument::NullMetric.new
-              end
-
-    grammar = LogStashConfigParser.new
-    @config = grammar.parse(config_str)
-    if @config.nil?
-      raise ConfigurationError, grammar.failure_reason
-    end
-    # This will compile the config to ruby and evaluate the resulting code.
-    # The code will initialize all the plugins and define the
-    # filter and output methods.
-    code = @config.compile
-    @code = code
-
-    # The config code is hard to represent as a log message...
-    # So just print it.
-
-    if @settings.get_value("config.debug") && @logger.debug?
-      @logger.debug("Compiled pipeline code", :code => code)
+      settings.get("metric.collect") ? namespaced_metric : Instrument::NullMetric.new(namespaced_metric.collector)
+    else
+      Instrument::NullMetric.new
     end
 
-    begin
-      eval(code)
-    rescue => e
-      raise
-    end
+    @settings = settings
+    @reporter = PipelineReporter.new(@logger, self)
+    @worker_threads = []
+
+    super(config_str, settings)
 
     @queue = LogStash::QueueFactory.create(settings)
     @input_queue_client = @queue.write_client
@@ -403,41 +447,6 @@ module LogStash; class Pipeline
     @outputs.each(&:do_close)
   end
 
-  def plugin(plugin_type, name, *args)
-    @plugin_counter += 1
-
-    # Collapse the array of arguments into a single merged hash
-    args = args.reduce({}, &:merge)
-
-    id = if args["id"].nil? || args["id"].empty?
-           args["id"] = "#{@config_hash}-#{@plugin_counter}"
-         else
-           args["id"]
-         end
-
-    raise ConfigurationError, "Two plugins have the id '#{id}', please fix this conflict" if @plugins_by_id[id]
-    
-    pipeline_scoped_metric = metric.namespace([:stats, :pipelines, pipeline_id.to_s.to_sym, :plugins])
-
-    klass = Plugin.lookup(plugin_type, name)
-
-    # Scope plugins of type 'input' to 'inputs'
-    type_scoped_metric = pipeline_scoped_metric.namespace("#{plugin_type}s".to_sym)
-    plugin = if plugin_type == "output"
-               OutputDelegator.new(@logger, klass, type_scoped_metric,
-                                   OutputDelegatorStrategyRegistry.instance,
-                                   args)
-             elsif plugin_type == "filter"
-               FilterDelegator.new(@logger, klass, type_scoped_metric, args)
-             else # input
-               input_plugin = klass.new(args)
-               input_plugin.metric = type_scoped_metric.namespace(id)
-               input_plugin
-             end
-    
-    @plugins_by_id[id] = plugin
-  end
-
   # for backward compatibility in devutils for the rspec helpers, this method is not used
   # in the pipeline anymore.
   def filter(event, &block)
@@ -516,14 +525,6 @@ module LogStash; class Pipeline
       .each {|t| t.delete("backtrace") }
       .each {|t| t.delete("blocked_on") }
       .each {|t| t.delete("status") }
-  end
-
-  def reloadable?
-    non_reloadable_plugins.empty?
-  end
-
-  def non_reloadable_plugins
-    (inputs + filters + outputs).select { |plugin| !plugin.reloadable? }
   end
 
   def collect_stats
