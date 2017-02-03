@@ -10,8 +10,8 @@ require "logstash/instrument/metric"
 require "logstash/pipeline"
 require "logstash/webserver"
 require "logstash/event_dispatcher"
+require "logstash/config/source_loader"
 require "stud/trap"
-require "logstash/config/loader"
 require "uri"
 require "socket"
 require "securerandom"
@@ -43,7 +43,8 @@ class LogStash::Agent
     # Generate / load the persistent uuid
     id
 
-    @config_loader = LogStash::Config::Loader.new(@logger)
+    @source_loader = LogStash::Config::SOURCE_LOADER.create(settings)
+
     @reload_interval = setting("config.reload.interval")
     @upgrade_mutex = Mutex.new
 
@@ -72,7 +73,8 @@ class LogStash::Agent
     Stud.stoppable_sleep(@reload_interval) # sleep before looping
 
     if @auto_reload
-      Stud.interval(@reload_interval) { reload_state! }
+      # `sleep_then_run` instead of firing the interval right away
+      Stud.interval(@reload_interval, :sleep_then_run => true) { reload_state! }
     else
       while !Stud.stop?
         if clean_state? || running_pipelines?
@@ -104,8 +106,10 @@ class LogStash::Agent
   end
 
   def reload_state!
+    logger.trace("reloading state!")
     @upgrade_mutex.synchronize do
       @pipelines.each do |pipeline_id, pipeline|
+
         next if pipeline.settings.get("config.reload.automatic") == false
         begin
           reload_pipeline!(pipeline_id)
@@ -235,7 +239,7 @@ class LogStash::Agent
   def create_pipeline(settings, config=nil)
     if config.nil?
       begin
-        config = fetch_config(settings)
+        config = fetch_config
       rescue => e
         @logger.error("failed to fetch pipeline configuration", :message => e.message)
         return
@@ -243,7 +247,7 @@ class LogStash::Agent
     end
 
     begin
-      LogStash::Pipeline.new(config, settings, metric)
+      LogStash::Pipeline.new(config.config_string, config.settings, metric)
     rescue => e
       @instance_reload_metric.increment(:failures)
       @pipeline_reload_metric.namespace([settings.get("pipeline.id").to_sym, :reloads]).tap do |n|
@@ -260,16 +264,17 @@ class LogStash::Agent
     end
   end
 
-  def fetch_config(settings)
-    @config_loader.format_config(settings.get("path.config"), settings.get("config.string"))
+  def fetch_config
+    # TODO(ph) multiple pipeline, we only support one config for now
+    @source_loader.fetch.first
   end
 
   # since this method modifies the @pipelines hash it is
   # wrapped in @upgrade_mutex in the parent call `reload_state!`
   def reload_pipeline!(id)
     old_pipeline = @pipelines[id]
-    new_config = fetch_config(old_pipeline.settings)
-    if old_pipeline.config_str == new_config
+    new_config = fetch_config
+    if old_pipeline.config_hash == new_config.config_hash
       @logger.debug("no configuration change for pipeline",
                     :pipeline => id, :config => new_config)
       return
@@ -359,7 +364,6 @@ class LogStash::Agent
         n.increment(:successes)
         n.gauge(:last_success_timestamp, LogStash::Timestamp.now)
       end
-      
     end
   end
 

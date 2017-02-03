@@ -46,8 +46,10 @@ module LogStash; class Pipeline
 
   def initialize(config_str, settings = SETTINGS, namespaced_metric = nil)
     @logger = self.logger
+
     @config_str = config_str
     @config_hash = Digest::SHA1.hexdigest(@config_str)
+
     # Every time #plugin is invoked this is incremented to give each plugin
     # a unique id when auto-generating plugin ids
     @plugin_counter ||= 0

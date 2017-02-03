@@ -14,3 +14,13 @@ def clear_data_dir
     FileUtils.rm_rf(File.join(data_path, f))
   end
 end
+
+def mock_settings(settings_values)
+  settings = LogStash::SETTINGS.clone
+
+  settings_values.each do |key, value|
+    settings.set(key, value)
+  end
+
+  settings
+end
