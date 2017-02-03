@@ -108,9 +108,9 @@
 # queue.max_events: 0
 #
 # If using queue.type: persisted, the total capacity of the queue in number of bytes.
-# If you would like more unacked events to be buffered in Logstash, you can increase the 
-# capacity using this setting. Please make sure your disk drive has capacity greater than 
-# the size specified here. If both max_bytes and max_events are specified, Logstash will pick 
+# If you would like more unacked events to be buffered in Logstash, you can increase the
+# capacity using this setting. Please make sure your disk drive has capacity greater than
+# the size specified here. If both max_bytes and max_events are specified, Logstash will pick
 # whichever criteria is reached first
 # Default is 1024mb or 1gb
 #
