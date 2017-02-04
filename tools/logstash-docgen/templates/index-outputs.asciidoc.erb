@@ -13,8 +13,8 @@ The following output plugins are available:
 |=======================================================================
 
 <% plugins.each do |plugin| %>
-pass::[<?edit_url <%=plugin.edit_url%> ?>]
+:edit_url: <%=plugin.edit_url%>
 include::<%=plugin.type%>/<%=plugin.name%>.asciidoc[]
 <% end %>
 
-pass::[<?edit_url?>]
+:edit_url:
