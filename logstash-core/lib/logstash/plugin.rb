@@ -22,13 +22,14 @@ class LogStash::Plugin
   # Add a unique `ID` to the plugin instance, this `ID` is used for tracking
   # information for a specific configuration of the plugin.
   #
-  # ```
+  # [source,ruby]
+  # ---------------------------------------------------------------------------------------------------
   # output {
   #  stdout {
   #    id => "ABC"
   #  }
   # }
-  # ```
+  # ---------------------------------------------------------------------------------------------------
   #
   # If you don't explicitely set this variable Logstash will generate a unique name.
   config :id, :validate => :string
