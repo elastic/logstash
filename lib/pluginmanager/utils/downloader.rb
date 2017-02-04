@@ -46,7 +46,7 @@ module LogStash module PluginManager module Utils
 
       begin
         FileUtils.mkdir_p(download_to)
-        downloaded_file = ::File.open(::File.join(download_to, ::File.basename(remote_file_uri.path)), "w")
+        downloaded_file = ::File.open(::File.join(download_to, ::File.basename(remote_file_uri.path)), "wb")
 
         HttpClient.start(remote_file_uri) do |http|
           request = Net::HTTP::Get.new(remote_file_uri.path)
