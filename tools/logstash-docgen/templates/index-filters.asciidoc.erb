@@ -1,7 +1,7 @@
 [[filter-plugins]]
 == Filter plugins
 
-A filter plugin performs intermediary processing on an event. Filters are often applied conditionally depending on the 
+A filter plugin performs intermediary processing on an event. Filters are often applied conditionally depending on the
 characteristics of the event.
 
 The following filter plugins are available:
@@ -14,8 +14,8 @@ The following filter plugins are available:
 |=======================================================================
 
 <% plugins.each do |plugin| %>
-pass::[<?edit_url <%=plugin.edit_url%> ?>]
+:edit_url: <%=plugin.edit_url%>
 include::<%=plugin.type%>/<%=plugin.name%>.asciidoc[]
 <% end %>
 
-pass::[<?edit_url?>]
+:edit_url:
