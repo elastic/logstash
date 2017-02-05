@@ -237,9 +237,9 @@ class LogStash::Agent
       n.gauge(:last_failure_timestamp, LogStash::Timestamp.now)
     end
     if @logger.debug?
-      @logger.error("fetched an invalid config", :config => config, :reason => exception.message, :backtrace => exception.backtrace)
+      @logger.error("Cannot load an invalid configuration.", :reason => exception.message, :backtrace => exception.backtrace)
     else
-      @logger.error("fetched an invalid config", :config => config, :reason => exception.message)
+      @logger.error("Cannot load an invalid configuration.", :reason => exception.message)
     end
   end
 
