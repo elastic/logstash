@@ -19,7 +19,7 @@ import java.util.stream.Stream;
  * Created by andrewvc on 9/15/16.
  */
 public class Graph implements ISourceComponent, IHashable {
-    private final Set<Vertex> vertices = new HashSet<>();
+    public final Set<Vertex> vertices = new HashSet<>();
     private final Set<Edge> edges = new HashSet<>();
     private Map<Vertex, Integer> vertexRanks = new HashMap<>();
     private final Map<Vertex,Set<Edge>> outgoingEdgeLookup = new HashMap<>();
@@ -242,7 +242,6 @@ public class Graph implements ISourceComponent, IHashable {
     public void refresh() throws InvalidIRException {
         this.calculateRanks();
         this.calculateTopologicalSort();
-        this.validate();
     }
 
     private void calculateTopologicalSort() throws InvalidIRException {
@@ -282,7 +281,7 @@ public class Graph implements ISourceComponent, IHashable {
 
             String joinedErrorMessageGroups = errorMessageGroups.collect(Collectors.joining("\n---\n"));
 
-            throw new InvalidIRException("Some nodes on the graph are fully redundant!\n" + joinedErrorMessageGroups);
+            throw new InvalidIRException("Some nodes on the graph are fully redundant!\n" + this + "|" + joinedErrorMessageGroups);
         }
     }
 
@@ -416,8 +415,7 @@ public class Graph implements ISourceComponent, IHashable {
     @Override
     public String hashSource() {
         MessageDigest lineageDigest = Util.defaultMessageDigest();
-        int i = 0;
-        List<byte[]> sources = this.vertices.stream().parallel().map(Vertex::hashSource).map(String::getBytes).collect(Collectors.toList());
+        List<byte[]> sources = this.vertices.stream().parallel().map(Vertex::uniqueHash).sorted().map(String::getBytes).collect(Collectors.toList());
         sources.forEach(lineageDigest::update);
         return Util.bytesToHexString(lineageDigest.digest());
     }

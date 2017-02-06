@@ -23,7 +23,7 @@ public class PlainEdge extends Edge {
 
     @Override
     public String getId() {
-        return Util.sha256(this.getFrom().getId() + "->" + this.getTo().getId());
+        return Util.digest(this.getFrom().getId() + "->" + this.getTo().getId());
     }
 
     public PlainEdge(Vertex from, Vertex to) throws InvalidIRException {

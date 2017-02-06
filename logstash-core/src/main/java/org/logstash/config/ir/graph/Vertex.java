@@ -20,7 +20,6 @@ import java.util.stream.Stream;
 public abstract class Vertex implements ISourceComponent, IHashable {
     private final SourceMetadata sourceMetadata;
     private Graph graph = this.getGraph();
-    private volatile String cachedContextualHashSource;
 
     public Vertex() {
         this.sourceMetadata = null;
@@ -122,7 +121,7 @@ public abstract class Vertex implements ISourceComponent, IHashable {
     }
 
     @Override
-    public String hashSource() {
+    public String uniqueHash() {
         // Sort the lineage to ensure consistency. We prepend each item with a lexicographically sortable
         // encoding of its rank (using hex notation) so that the sort order is identical to the traversal order.
         // This is a required since there may be individually identical components in different locations in the graph.
@@ -131,8 +130,10 @@ public abstract class Vertex implements ISourceComponent, IHashable {
 
         MessageDigest lineageDigest = Util.defaultMessageDigest();
 
+        lineageDigest.update(hashPrefix().getBytes());
 
         // The lineage can be quite long and we want to avoid the quadratic complexity of string concatenation
+        // Thus, in this case there's no real way to get the hash source, we just hash as we go.
         lineage().
                 map(Vertex::contextualHashSource).
                 sorted().
@@ -141,7 +142,15 @@ public abstract class Vertex implements ISourceComponent, IHashable {
                     lineageDigest.update(bytes);
                 });
 
-        return hashPrefix() + Util.bytesToHexString(lineageDigest.digest());
+        String digest = Util.bytesToHexString(lineageDigest.digest());
+
+        return digest;
+    }
+
+    @Override
+    public String hashSource() {
+        // In this case the source can be quite large, so we never actually use this function.
+        return this.uniqueHash();
     }
 
     public String hashPrefix() {
@@ -149,20 +158,17 @@ public abstract class Vertex implements ISourceComponent, IHashable {
     }
 
     public String contextualHashSource() {
-        if (this.cachedContextualHashSource != null) return this.cachedContextualHashSource;
-
         // This string must be lexicographically sortable hence the ID at the front. It also must have the individualHashSource
-        // repeated at the front for the case of a graph with two nodes at the same rank
+        // repeated at the front for the case of a graph with two nodes at the same rank, same contents, but different lineages
         StringBuilder result = new StringBuilder();
         result.append(hashPrefix());
+        result.append(individualHashSource());
 
         result.append("I:");
         this.incomingEdges().map(Edge::individualHashSource).sorted().forEachOrdered(result::append);
         result.append("O:");
         this.outgoingEdges().map(Edge::individualHashSource).sorted().forEachOrdered(result::append);
 
-
-        //this.cachedContextualHashSource = result.toString();
         return result.toString();
     }
 

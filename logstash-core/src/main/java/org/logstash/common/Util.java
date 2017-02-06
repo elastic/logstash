@@ -12,13 +12,13 @@ public class Util {
 
     public static MessageDigest defaultMessageDigest() {
         try {
-            return MessageDigest.getInstance("SHA-512");
+            return MessageDigest.getInstance("SHA-256");
         } catch (NoSuchAlgorithmException e) {
             throw new RuntimeException(e);
         }
     }
 
-    public static String sha256(String base) {
+    public static String digest(String base) {
         MessageDigest digest = defaultMessageDigest();
         byte[] hash = digest.digest(base.getBytes(StandardCharsets.UTF_8));
         return bytesToHexString(hash);

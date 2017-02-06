@@ -5,6 +5,7 @@ import org.logstash.config.ir.DSL;
 import org.logstash.config.ir.IRHelpers;
 import org.logstash.config.ir.InvalidIRException;
 import org.logstash.config.ir.PluginDefinition;
+import org.logstash.config.ir.graph.algorithms.GraphDiff;
 import org.logstash.config.ir.imperative.IfStatement;
 
 import java.util.ArrayList;
@@ -85,11 +86,11 @@ public class GraphTest {
     }
 
     @Test
-    public void ComplexConsistencyTest() throws InvalidIRException {
+    public void complexConsistencyTest() throws InvalidIRException {
         Graph g1 = IRHelpers.samplePipeline().getGraph();
         Graph g2 = IRHelpers.samplePipeline().getGraph();
 
-        assertEquals(g1.hashSource(), g2.hashSource());
+        assertEquals(g1.uniqueHash(), g2.uniqueHash());
     }
 
     @Test
@@ -160,6 +161,7 @@ public class GraphTest {
         );
 
         Graph g = imperative.toGraph();
+        g.validate();
 
 
 

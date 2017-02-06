@@ -46,14 +46,14 @@ public class PluginVertex extends Vertex {
 
     @Override
     public String individualHashSource() {
-        return Util.sha256(this.getClass().getCanonicalName() + "|" +
+        return Util.digest(this.getClass().getCanonicalName() + "|" +
                 (this.id != null ? this.id : "NOID") + "|" +
                 //this.getMeta().getSourceLine() + "|" + this.getMeta().getSourceColumn() + "|" + // Temp hack REMOVE BEFORE RELEASE
                 this.getPluginDefinition().hashSource());
     }
 
     public String individualHash() {
-        return Util.sha256(individualHashSource());
+        return Util.digest(individualHashSource());
     }
 
     @Override

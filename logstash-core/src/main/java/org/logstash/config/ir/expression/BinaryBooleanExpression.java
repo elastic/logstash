@@ -48,6 +48,6 @@ public abstract class BinaryBooleanExpression extends BooleanExpression {
 
     @Override
     public String hashSource() {
-        return getLeft().hashSource() + this.getClass().getCanonicalName() + getRight().hashSource();
+        return this.getClass().getCanonicalName() + "[" + getLeft().hashSource() + "|" + getRight().hashSource() + "]";
     }
 }

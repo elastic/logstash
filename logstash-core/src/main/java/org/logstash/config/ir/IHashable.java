@@ -9,6 +9,6 @@ public interface IHashable {
     String hashSource();
 
     default String uniqueHash() {
-        return Util.sha256(this.hashSource());
+        return Util.digest(this.hashSource());
     }
 }
