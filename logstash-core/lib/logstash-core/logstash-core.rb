@@ -23,3 +23,10 @@ else
     raise("Error loading logstash-core/logstash-core.jar file, cause: #{e.message}")
   end
 end
+
+require "jruby_event_ext"
+require "jruby_timestamp_ext"
+require "jruby_acked_queue_ext"
+require "jruby_acked_batch_ext"
+require "logstash/event"
+require "logstash/timestamp"
