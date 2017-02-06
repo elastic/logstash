@@ -47,5 +47,10 @@ class LogStash::Util::SafeURI
   def ==(other)
     other.is_a?(::LogStash::Util::SafeURI) ? @uri == other.uri : false
   end
+
+  def clone
+    cloned_uri = uri.clone
+    self.class.new(cloned_uri)
+  end
 end
 
