@@ -24,7 +24,9 @@ Gem::Specification.new do |spec|
   spec.add_runtime_dependency "pry"
   spec.add_runtime_dependency "addressable"
   spec.add_runtime_dependency "octokit", "~> 3.8.0"
-  spec.add_runtime_dependency "gems"
+
+  # gems 1.0.0 requires Ruby 2.1.9 or newer, so we pin down.
+  spec.add_runtime_dependency "gems", "0.8.3"
 
   spec.add_development_dependency "rake", "~> 10.0"
   spec.add_development_dependency "rspec"
