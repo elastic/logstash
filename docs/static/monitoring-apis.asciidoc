@@ -366,11 +366,15 @@ The following request returns a JSON document containing pipeline stats,
 including:
 
 * the number of events that were input, filtered, or output by the pipeline
-* stats for each configured input, filter, or output stage
+* stats for each configured filter or output stage
 * info about config reload successes and failures
 (when <<reloading-config,config reload>> is enabled)
 * info about the persistent queue (when
 <<persistent-queues,persistent queues>> are enabled)
+
+NOTE: Detailed pipeline stats for input plugins are not currently available, but
+will be available in a future release. For now, the node stats API returns an
+empty set array for inputs (`"inputs": []`).
 
 [source,js]
 --------------------------------------------------
