@@ -28,14 +28,14 @@ access the Internet.
 +
 [source, shell]
 -------------------------------------------------------------------------------
-bin/logstash-plugin prepare-offline-pack [PLUGINS] --output OUTPUT
+bin/logstash-plugin prepare-offline-pack --output OUTPUT [PLUGINS]
 -------------------------------------------------------------------------------
 +
 where:
 +
-* `[PLUGINS]` specifies one or more plugins that you want to include in the pack.
 * `OUTPUT` specifies the location where the compressed plugin pack will be written. The default location is
 +/LOGSTASH_HOME/logstash-offline-plugins-{logstash_version}.zip+.
+* `[PLUGINS]` specifies one or more plugins that you want to include in the pack.
 
 Examples:
 
