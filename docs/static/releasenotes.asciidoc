@@ -42,7 +42,7 @@ This section summarizes the changes in the following releases:
 
 ==== Filter Plugins
 
-*`Date*:
+*`Date`*:
 
 * Fixed a bug where numbers from a JSON codec would result in a date parse failure. (#86, #89)
 * Docs: Fix date format used in examples
