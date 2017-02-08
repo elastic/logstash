@@ -36,6 +36,7 @@ LS_CONF_DIR=/etc/logstash/conf.d
 LS_OPEN_FILES=16384
 LS_NICE=19
 KILL_ON_STOP_TIMEOUT=${KILL_ON_STOP_TIMEOUT-0} #default value is zero to this variable but could be updated by user request
+STOP_WAIT_TIME=10
 LS_OPTS=""
 
 
@@ -91,7 +92,7 @@ stop() {
     echo "Killing $name (pid $pid) with SIGTERM"
     kill -TERM $pid
     # Wait for it to exit.
-    for i in 1 2 3 4 5 6 7 8 9 ; do
+    for i in $(seq 1 $STOP_WAIT_TIME); do
       echo "Waiting $name (pid $pid) to die..."
       status || break
       sleep 1
