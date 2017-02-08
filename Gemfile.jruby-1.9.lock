@@ -226,6 +226,10 @@ GEM
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       metriks
       thread_safe
+    logstash-filter-multiline (3.0.2)
+      jls-grok (~> 0.11.0)
+      logstash-core-plugin-api (>= 1.60, <= 2.99)
+      logstash-patterns-core
     logstash-filter-mutate (3.1.3)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
     logstash-filter-ruby (3.0.2)
@@ -660,6 +664,7 @@ DEPENDENCIES
   logstash-filter-json
   logstash-filter-kv (< 4.0.0)
   logstash-filter-metrics
+  logstash-filter-multiline
   logstash-filter-mutate
   logstash-filter-ruby
   logstash-filter-sleep
