@@ -220,7 +220,7 @@ GEM
       logstash-patterns-core
     logstash-filter-json (3.0.2)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
-    logstash-filter-kv (4.0.0)
+    logstash-filter-kv (3.1.1)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
     logstash-filter-metrics (4.0.2)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
@@ -265,10 +265,11 @@ GEM
       logstash-codec-plain
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       stud (>= 0.0.22)
-    logstash-input-elasticsearch (4.0.2)
-      elasticsearch (>= 5.0.3, < 6.0.0)
+    logstash-input-elasticsearch (4.0.1)
+      elasticsearch (>= 5.0.0, < 6.0.0)
       logstash-codec-json
       logstash-core-plugin-api (>= 1.60, <= 2.99)
+      manticore (>= 0.5.4, < 1.0.0)
     logstash-input-exec (3.1.2)
       logstash-codec-plain
       logstash-core-plugin-api (>= 1.60, <= 2.99)
@@ -657,7 +658,7 @@ DEPENDENCIES
   logstash-filter-geoip
   logstash-filter-grok
   logstash-filter-json
-  logstash-filter-kv
+  logstash-filter-kv (< 4.0.0)
   logstash-filter-metrics
   logstash-filter-mutate
   logstash-filter-ruby
@@ -671,7 +672,7 @@ DEPENDENCIES
   logstash-filter-xml
   logstash-input-beats
   logstash-input-couchdb_changes
-  logstash-input-elasticsearch
+  logstash-input-elasticsearch (< 4.0.2)
   logstash-input-exec
   logstash-input-file
   logstash-input-ganglia
