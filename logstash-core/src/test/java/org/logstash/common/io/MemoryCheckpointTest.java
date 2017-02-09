@@ -2,11 +2,13 @@ package org.logstash.common.io;
 
 import org.junit.Before;
 import org.junit.Test;
+import static org.junit.Assert.fail;
 import org.logstash.ackedqueue.Checkpoint;
 import org.logstash.ackedqueue.MemorySettings;
 import org.logstash.ackedqueue.Settings;
 
 import java.io.IOException;
+import java.nio.file.NoSuchFileException;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
@@ -37,9 +39,8 @@ public class MemoryCheckpointTest {
         assertThat(checkpoint.getElementCount(), is(equalTo(5)));
     }
 
-    @Test
+    @Test(expected = NoSuchFileException.class)
     public void readInnexisting() throws IOException {
-        Checkpoint checkpoint = io.read("checkpoint.invalid");
-        assertThat(checkpoint, is(equalTo(null)));
+        io.read("checkpoint.invalid");
     }
 }

@@ -27,8 +27,8 @@ Slow-log for Logstash adds the ability to log when a specific event takes an abn
 through the pipeline. Just like the normal application log, you can find slow-logs in your `--path.logs` directory.
 Slowlog is configured in the `logstash.yml` settings file with the following options:
 
+[source,yaml]
 ------------------------------
-[source]
 slowlog.threshold.warn (default: -1)
 slowlog.threshold.info (default: -1)
 slowlog.threshold.debug (default: -1)
@@ -42,12 +42,12 @@ can be specified using the following time units: `nanos` (nanoseconds), `micros`
 
 Here is an example:
 
+[source,yaml]
 ------------------------------
-[source]
 slowlog.threshold.warn: 2s
-slowlog.threshold.info 1s
-slowlog.threshold.debug 500ms
-slowlog.threshold.trace 100ms
+slowlog.threshold.info: 1s
+slowlog.threshold.debug: 500ms
+slowlog.threshold.trace: 100ms
 ------------------------------
 
 In the above configuration, events that take longer than two seconds to be processed within a filter will be logged.

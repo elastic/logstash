@@ -47,4 +47,26 @@ describe "Test Monitoring API" do
     end
   end
 
+  it "can retrieve queue stats" do
+    logstash_service = @fixture.get_service("logstash")
+    logstash_service.start_with_stdin
+    logstash_service.wait_for_logstash
+
+    Stud.try(max_retry.times, RSpec::Expectations::ExpectationNotMetError) do
+      result = logstash_service.monitoring_api.node_stats
+      expect(result["pipeline"]["queue"]).not_to be_nil
+      if logstash_service.settings.feature_flag == "persistent_queues"
+        expect(result["pipeline"]["queue"]["type"]).to eq "persisted"
+        expect(result["pipeline"]["queue"]["data"]["free_space_in_bytes"]).not_to be_nil
+        expect(result["pipeline"]["queue"]["data"]["storage_type"]).not_to be_nil
+        expect(result["pipeline"]["queue"]["data"]["path"]).not_to be_nil
+        expect(result["pipeline"]["queue"]["events"]).not_to be_nil
+        expect(result["pipeline"]["queue"]["capacity"]["page_capacity_in_bytes"]).not_to be_nil
+        expect(result["pipeline"]["queue"]["capacity"]["max_queue_size_in_bytes"]).not_to be_nil
+        expect(result["pipeline"]["queue"]["capacity"]["max_unread_events"]).not_to be_nil
+      else
+        expect(result["pipeline"]["queue"]["type"]).to eq "memory"
+      end
+    end
+  end
 end

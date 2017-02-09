@@ -273,6 +273,7 @@ module LogStash::Config::Mixin
       return is_valid
     end # def validate
 
+    # TODO: Remove in 6.0
     def print_version_notice
       return if @@version_notice_given
 
@@ -293,13 +294,9 @@ module LogStash::Config::Mixin
           end
         end
       rescue LogStash::PluginNoVersionError
-        # If we cannot find a version in the currently installed gems we
-        # will display this message. This could happen in the test, if you
-        # create an anonymous class to test a plugin.
-        self.logger.warn(I18n.t("logstash.plugin.no_version",
-                                :type => @plugin_type,
-                                :name => @config_name,
-                                :LOGSTASH_VERSION => LOGSTASH_VERSION))
+        # This can happen because of one of the following:
+        # - The plugin is loaded from the plugins.path and contains no gemspec.
+        # - The plugin is defined in a universal plugin, so the loaded plugin doesn't correspond to an actual gemspec.
       ensure
         @@version_notice_given = true
       end

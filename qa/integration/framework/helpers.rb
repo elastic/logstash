@@ -1,7 +1,8 @@
 # encoding: utf-8
 # Helper module for all tests
-
 require "flores/random"
+require "fileutils"
+require "zip"
 
 def wait_for_port(port, retry_attempts)
   tries = retry_attempts
@@ -42,4 +43,66 @@ end
 def random_port
   # 9600-9700 is reserved in Logstash HTTP server, so we don't want that
   Flores::Random.integer(9701..15000)
-end  
+end
+
+class Pack
+  PLUGINS_PATH = "logstash"
+  DEPENDENCIES_PATH = File.join("logstash", "dependencies")
+  GEM_EXTENSION = ".gem"
+
+  def initialize(target)
+    @target = target
+  end
+
+  def plugins
+    @plugins ||= extract_gems_data(File.join(@target, PLUGINS_PATH))
+  end
+
+  def dependencies
+    @dependencies ||= extract_gems_data(File.join(@target, DEPENDENCIES_PATH))
+  end
+
+  def glob_gems
+    "*#{GEM_EXTENSION}"
+  end
+
+  def extract_gems_data(path)
+    Dir.glob(File.join(path, glob_gems)).collect { |gem_file| extract_gem_data_from_file(gem_file) }
+  end
+
+  def extract_gem_data_from_file(gem_file)
+    gem = File.basename(gem_file.downcase, GEM_EXTENSION)
+
+    parts = gem.split("-")
+
+    if gem.match(/java/)
+      platform = parts.pop
+      version = parts.pop
+      name = parts.join("-")
+
+      OpenStruct.new(:name => name, :version => version, :platform => platform)
+    else
+      version = parts.pop
+      name = parts.join("-")
+
+      OpenStruct.new(:name => name, :version => version, :platform => nil)
+    end
+  end
+end
+
+def extract(source, target, pattern = nil)
+  raise "Directory #{target} exist" if ::File.exist?(target)
+  Zip::File.open(source) do |zip_file|
+    zip_file.each do |file|
+      path = ::File.join(target, file.name)
+      FileUtils.mkdir_p(::File.dirname(path))
+      zip_file.extract(file, path) if pattern.nil? || pattern =~ file.name
+    end
+  end
+end
+
+def unpack(zip)
+  target = Stud::Temporary.pathname
+  extract(zip, target)
+  Pack.new(target)
+end

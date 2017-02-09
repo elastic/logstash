@@ -1,5 +1,7 @@
 package org.logstash.ackedqueue;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.logstash.common.io.CheckpointIO;
 import org.logstash.common.io.PageIO;
 import org.logstash.common.io.PageIOFactory;
@@ -60,22 +62,24 @@ public class Queue implements Closeable {
     private final Method deserializeMethod;
 
     // thread safety
-    final Lock lock = new ReentrantLock();
-    final Condition notFull  = lock.newCondition();
-    final Condition notEmpty = lock.newCondition();
+    private final Lock lock = new ReentrantLock();
+    private final Condition notFull  = lock.newCondition();
+    private final Condition notEmpty = lock.newCondition();
+
+    private static final Logger logger = LogManager.getLogger(Queue.class);
 
     public Queue(Settings settings) {
         this(
-                settings.getDirPath(),
-                settings.getCapacity(),
-                settings.getQueueMaxBytes(),
-                settings.getCheckpointIOFactory().build(settings.getDirPath()),
-                settings.getPageIOFactory(),
-                settings.getElementClass(),
-                settings.getMaxUnread(),
-                settings.getCheckpointMaxWrites(),
-                settings.getCheckpointMaxAcks(),
-                settings.getCheckpointMaxInterval()
+            settings.getDirPath(),
+            settings.getCapacity(),
+            settings.getQueueMaxBytes(),
+            settings.getCheckpointIOFactory().build(settings.getDirPath()),
+            settings.getPageIOFactory(),
+            settings.getElementClass(),
+            settings.getMaxUnread(),
+            settings.getCheckpointMaxWrites(),
+            settings.getCheckpointMaxAcks(),
+            settings.getCheckpointMaxInterval()
         );
     }
 
@@ -106,6 +110,30 @@ public class Queue implements Closeable {
         }
     }
 
+    public String getDirPath() {
+        return this.dirPath;
+    }
+
+    public long getMaxBytes() {
+        return this.maxBytes;
+    }
+
+    public long getMaxUnread() {
+        return this.maxUnread;
+    }
+
+    public long getCurrentByteSize() {
+        return this.currentByteSize;
+    }
+
+    public int getPageCapacity() {
+        return this.pageCapacity;
+    }
+
+    public long getUnreadCount() {
+        return this.unreadCount;
+    }
+
     // moved queue opening logic in open() method until we have something in place to used in-memory checkpoints for testing
     // because for now we need to pass a Queue instance to the Page and we don't want to trigger a Queue recovery when
     // testing Page
@@ -118,11 +146,8 @@ public class Queue implements Closeable {
         try {
             headCheckpoint = this.checkpointIO.read(checkpointIO.headFileName());
         } catch (NoSuchFileException e) {
-            headCheckpoint = null;
-        }
+            // if there is no head checkpoint, create a new headpage and checkpoint it and exit method
 
-        // if there is no head checkpoint, create a new headpage and checkpoint it and exit method
-        if (headCheckpoint == null) {
             this.seqNum = 0;
             headPageNum = 0;
 
@@ -138,33 +163,45 @@ public class Queue implements Closeable {
         for (int pageNum = headCheckpoint.getFirstUnackedPageNum(); pageNum < headCheckpoint.getPageNum(); pageNum++) {
 
             // all tail checkpoints in the sequence should exist, if not abort mission with a NoSuchFileException
-            Checkpoint tailCheckpoint = this.checkpointIO.read(this.checkpointIO.tailFileName(pageNum));
+            Checkpoint cp = this.checkpointIO.read(this.checkpointIO.tailFileName(pageNum));
 
             PageIO pageIO = this.pageIOFactory.build(pageNum, this.pageCapacity, this.dirPath);
+            pageIO.open(cp.getMinSeqNum(), cp.getElementCount());
 
-            add(tailCheckpoint, pageIO);
+            add(cp, new TailPage(cp, this, pageIO));
         }
 
         // transform the head page into a tail page only if the headpage is non-empty
         // in both cases it will be checkpointed to track any changes in the firstUnackedPageNum when reconstructing the tail pages
 
-        if (headCheckpoint.getMinSeqNum() <= 0 && headCheckpoint.getElementCount() <= 0) {
+        PageIO pageIO = this.pageIOFactory.build(headCheckpoint.getPageNum(), this.pageCapacity, this.dirPath);
+        pageIO.recover(); // optimistically recovers the head page data file and set minSeqNum and elementCount to the actual read/recovered data
+
+        if (pageIO.getMinSeqNum() != headCheckpoint.getMinSeqNum() || pageIO.getElementCount() != headCheckpoint.getElementCount()) {
+            // the recovered page IO shows different minSeqNum or elementCount than the checkpoint, use the page IO attributes
+
+            logger.warn("recovered head data page {} is different than checkpoint, using recovered page information", headCheckpoint.getPageNum());
+            logger.debug("head checkpoint minSeqNum={} or elementCount={} is different than head pageIO minSeqNum={} or elementCount={}", headCheckpoint.getMinSeqNum(), headCheckpoint.getElementCount(), pageIO.getMinSeqNum(), pageIO.getElementCount());
+
+            long firstUnackedSeqNum = headCheckpoint.getFirstUnackedSeqNum();
+            if (firstUnackedSeqNum < pageIO.getMinSeqNum()) {
+                logger.debug("head checkpoint firstUnackedSeqNum={} is < head pageIO minSeqNum={}, using pageIO minSeqNum", firstUnackedSeqNum, pageIO.getMinSeqNum());
+                firstUnackedSeqNum = pageIO.getMinSeqNum();
+            }
+            headCheckpoint = new Checkpoint(headCheckpoint.getPageNum(), headCheckpoint.getFirstUnackedPageNum(), firstUnackedSeqNum, pageIO.getMinSeqNum(), pageIO.getElementCount());
+        }
+        this.headPage = new HeadPage(headCheckpoint, this, pageIO);
+
+        if (this.headPage.getMinSeqNum() <= 0 && this.headPage.getElementCount() <= 0) {
             // head page is empty, let's keep it as-is
 
-            PageIO headPageIO = this.pageIOFactory.build(headCheckpoint.getPageNum(), this.pageCapacity, this.dirPath);
-            this.headPage = new HeadPage(headCheckpoint, this, headPageIO);
-            this.currentByteSize += headPageIO.getCapacity();
+            this.currentByteSize += pageIO.getCapacity();
 
             // but checkpoint it to update the firstUnackedPageNum if it changed
             this.headPage.checkpoint();
         } else {
             // head page is non-empty, transform it into a tail page and create a new empty head page
-
-            PageIO pageIO = this.pageIOFactory.build(headCheckpoint.getPageNum(), this.pageCapacity, this.dirPath);
-
-            TailPage p = new TailPage(headCheckpoint, this, pageIO);
-            p.checkpoint();
-            add(headCheckpoint, pageIO);
+            add(headCheckpoint, this.headPage.behead());
 
             headPageNum = headCheckpoint.getPageNum() + 1;
             newCheckpointedHeadpage(headPageNum);
@@ -183,10 +220,12 @@ public class Queue implements Closeable {
         this.closed.set(false);
     }
 
-    private void add(Checkpoint checkpoint, PageIO pageIO) throws IOException {
+    // add a read tail page into this queue structures but also verify that this tail page
+    // is not fully acked in which case it will be purged
+    private void add(Checkpoint checkpoint, TailPage page) throws IOException {
         if (checkpoint.isFullyAcked()) {
             // first make sure any fully acked page per the checkpoint is purged if not already
-            try { pageIO.purge(); } catch (NoSuchFileException e) { /* ignore */ }
+            try { page.getPageIO().purge(); } catch (NoSuchFileException e) { /* ignore */ }
 
             // we want to keep all the "middle" checkpoints between the first unacked tail page and the head page
             // to always have a contiguous sequence of checkpoints which helps figuring queue integrity. for this
@@ -199,30 +238,30 @@ public class Queue implements Closeable {
             } else {
                 // create a tail page with a null PageIO and add it to tail pages but not unreadTailPages
                 // since it is fully read because also fully acked
+                // TODO: I don't like this null pageIO tail page...
                 this.tailPages.add(new TailPage(checkpoint, this, null));
             }
         } else {
-            TailPage p = new TailPage(checkpoint, this, pageIO);
-            this.tailPages.add(p);
-            this.unreadTailPages.add(p);
-            this.unreadCount += p.unreadCount();
-            this.currentByteSize += pageIO.getCapacity();
+            this.tailPages.add(page);
+            this.unreadTailPages.add(page);
+            this.unreadCount += page.unreadCount();
+            this.currentByteSize += page.getPageIO().getCapacity();
 
             // for now deactivate all tail pages, we will only reactivate the first one at the end
-            pageIO.deactivate();
+            page.getPageIO().deactivate();
         }
 
         // track the seqNum as we rebuild tail pages, prevent empty pages with a minSeqNum of 0 to reset seqNum
         if (checkpoint.maxSeqNum() > this.seqNum) {
             this.seqNum = checkpoint.maxSeqNum();
         }
-
     }
 
     // create a new empty headpage for the given pageNum and imidiately checkpoint it
     // @param pageNum the page number of the new head page
     private void newCheckpointedHeadpage(int pageNum) throws IOException {
         PageIO headPageIO = this.pageIOFactory.build(pageNum, this.pageCapacity, this.dirPath);
+        headPageIO.create();
         this.headPage = new HeadPage(pageNum, this, headPageIO);
         this.headPage.forceCheckpoint();
         this.currentByteSize += headPageIO.getCapacity();
@@ -583,6 +622,19 @@ public class Queue implements Closeable {
             return this.headPage.getPageNum();
         }
         return this.tailPages.get(0).getPageNum();
+    }
+
+    public long getAckedCount() {
+        return headPage.ackedSeqNums.cardinality() + tailPages.stream()
+                .mapToLong(page -> page.ackedSeqNums.cardinality())
+                .sum();
+    }
+
+    public long getUnackedCount() {
+        long headPageCount = (headPage.getElementCount() - headPage.ackedSeqNums.cardinality());
+        long tailPagesCount = tailPages.stream()
+                .mapToLong(page -> (page.getElementCount() - page.ackedSeqNums.cardinality())).sum();
+        return headPageCount + tailPagesCount;
     }
 
     protected long nextSeqNum() {

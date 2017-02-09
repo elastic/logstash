@@ -29,6 +29,10 @@ module LogStash class OutputDelegator
     @output_class.config_name
   end
 
+  def reloadable?
+    @output_class.reloadable?
+  end
+
   def concurrency
     @output_class.concurrency
   end
@@ -39,7 +43,9 @@ module LogStash class OutputDelegator
 
   def multi_receive(events)
     @metric_events.increment(:in, events.length)
+    clock = @metric_events.time(:duration_in_millis)
     @strategy.multi_receive(events)
+    clock.stop
     @metric_events.increment(:out, events.length)
   end
 

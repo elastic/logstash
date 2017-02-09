@@ -8,6 +8,7 @@ import org.logstash.common.io.BufferedChecksumStreamOutput;
 import org.logstash.common.io.ByteArrayStreamOutput;
 import org.logstash.common.io.ByteBufferStreamInput;
 import org.logstash.common.io.PageIO;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -67,6 +68,11 @@ public class MemoryPageIOStream implements PageIO {
         streamedInput = new ByteBufferStreamInput(ByteBuffer.wrap(buffer));
         streamedOutput = new ByteArrayStreamOutput(buffer);
         crcWrappedOutput = new BufferedChecksumStreamOutput(streamedOutput);
+    }
+
+    @Override
+    public void recover() throws IOException {
+        throw new NotImplementedException();
     }
 
     @Override

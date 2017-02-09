@@ -33,6 +33,8 @@ module LogStash; module Util
 
     private_class_method :new
 
+    attr_reader :queue
+
     def with_queue(queue)
       @queue = queue
       @queue.open
@@ -130,10 +132,19 @@ module LogStash; module Util
 
       def set_events_metric(metric)
         @event_metric = metric
+        define_initial_metrics_values(@event_metric)
       end
 
       def set_pipeline_metric(metric)
         @pipeline_metric = metric
+        define_initial_metrics_values(@pipeline_metric)
+      end
+
+      def define_initial_metrics_values(namespaced_metric)
+        namespaced_metric.report_time(:duration_in_millis, 0)
+        namespaced_metric.increment(:filtered, 0)
+        namespaced_metric.increment(:in, 0)
+        namespaced_metric.increment(:out, 0)
       end
 
       def inflight_batches

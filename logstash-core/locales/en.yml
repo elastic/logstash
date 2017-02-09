@@ -44,9 +44,6 @@ en:
         %{plugin} plugin is using the 'milestone' method to declare the version
         of the plugin this method is deprecated in favor of declaring the
         version inside the gemspec.
-      no_version: >-
-        %{name} plugin doesn't have a version. This plugin isn't well
-         supported by the community and likely has no maintainer.
       version:
         0-9-x:
          Using version 0.9.x %{type} plugin '%{name}'. This plugin should work but

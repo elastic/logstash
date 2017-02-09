@@ -60,6 +60,7 @@ namespace "artifact" do
     @exclude_paths << "bin/bundle"
     @exclude_paths << "bin/rspec"
     @exclude_paths << "bin/rspec.bat"
+    @exclude_paths << "bin/lock"
 
     @exclude_paths
   end
@@ -84,25 +85,25 @@ namespace "artifact" do
   task "all" => ["prepare", "build"]
 
   desc "Build a tar.gz of default logstash plugins with all dependencies"
-  task "tar" => ["prepare", "generate_build_metadata"] do
+  task "tar" => ["prepare", "generate_build_metadata", "license:generate-notice-file"] do
     puts("[artifact:tar] Building tar.gz of default plugins")
     build_tar
   end
 
   desc "Build a zip of default logstash plugins with all dependencies"
-  task "zip" => ["prepare", "generate_build_metadata"] do
+  task "zip" => ["prepare", "generate_build_metadata", "license:generate-notice-file"] do
     puts("[artifact:zip] Building zip of default plugins")
     build_zip
   end
 
   desc "Build an RPM of logstash with all dependencies"
-  task "rpm" => ["prepare", "generate_build_metadata"] do
+  task "rpm" => ["prepare", "generate_build_metadata", "license:generate-notice-file"] do
     puts("[artifact:rpm] building rpm package")
     package("centos", "5")
   end
 
   desc "Build a DEB of logstash with all dependencies"
-  task "deb" => ["prepare", "generate_build_metadata"] do
+  task "deb" => ["prepare", "generate_build_metadata", "license:generate-notice-file"] do
     puts("[artifact:deb] building deb package")
     package("ubuntu", "12.04")
   end
@@ -112,6 +113,7 @@ namespace "artifact" do
     Rake::Task["artifact:build-logstash-core"].invoke
     Rake::Task["artifact:build-logstash-core-event"].invoke
     Rake::Task["artifact:build-logstash-core-plugin-api"].invoke
+    Rake::Task["artifact:build-logstash-core-queue-jruby"].invoke
   end
 
   # "all-plugins" version of tasks
@@ -216,6 +218,24 @@ namespace "artifact" do
       Rake::Task["plugin:build-local-core-gem"].invoke("logstash-core-plugin-api", path)
     else
       puts "The Gemfile should reference \"logstash-core-plugin-api\" gem locally through :path, but found instead: #{matches}"
+      exit(1)
+    end
+  end
+
+  task "build-logstash-core-queue-jruby" do
+    # regex which matches a Gemfile gem definition for the logstash-core gem and captures the :path option
+    gem_line_regex = /^\s*gem\s+["']logstash-core-queue-jruby["'](?:\s*,\s*["'][^"^']+["'])?(?:\s*,\s*:path\s*=>\s*["']([^"^']+)["'])?/i
+
+    lines = File.readlines("Gemfile")
+    matches = lines.select{|line| line[gem_line_regex]}
+    abort("ERROR: Gemfile format error, need a single logstash-core-queue-jruby gem specification") if matches.size != 1
+
+    path = matches.first[gem_line_regex, 1]
+
+    if path
+      Rake::Task["plugin:build-local-core-gem"].invoke("logstash-core-queue-jruby", path)
+    else
+      puts "The Gemfile should reference \"logstash-core-queue-jruby\" gem locally through :path, but found instead: #{matches}"
       exit(1)
     end
   end
@@ -432,5 +452,4 @@ namespace "artifact" do
       out.cleanup
     end
   end # def package
-
 end

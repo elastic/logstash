@@ -248,7 +248,21 @@ describe LogStash::Filters::NOOP do
     end
   end
 
- describe "remove_field on deep objects" do
+  describe "remove_field on tags" do
+    config <<-CONFIG
+    filter {
+      noop {
+        remove_field => ["tags"]
+      }
+    }
+    CONFIG
+
+    sample("tags" => "foo") do
+      reject { subject }.include?("tags")
+    end
+  end
+
+  describe "remove_field on deep objects" do
     config <<-CONFIG
     filter {
       noop {

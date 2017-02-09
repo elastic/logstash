@@ -87,9 +87,17 @@ module LogStash
       @server = ::Puma::Server.new(app, events)
       @server.add_tcp_listener(http_host, port)
 
-      logger.info("Successfully started Logstash API endpoint", :port => @port)
+      logger.info("Successfully started Logstash API endpoint", :port => port)
+
+      set_http_address_metric("#{http_host}:#{port}")
 
       @server.run.join
+    end
+
+    private
+    def set_http_address_metric(value)
+      return unless @agent.metric
+      @agent.metric.gauge([], :http_address, value)
     end
   end
 end

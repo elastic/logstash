@@ -5,8 +5,13 @@ import org.logstash.ackedqueue.Checkpoint;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
+import java.nio.file.OpenOption;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import static java.nio.file.StandardOpenOption.CREATE;
+import static java.nio.file.StandardOpenOption.WRITE;
+import static java.nio.file.StandardOpenOption.TRUNCATE_EXISTING;
+import static java.nio.file.StandardOpenOption.DSYNC;
 
 public class FileCheckpointIO  implements CheckpointIO {
 //    Checkpoint file structure
@@ -29,6 +34,7 @@ public class FileCheckpointIO  implements CheckpointIO {
     private final String dirPath;
     private final String HEAD_CHECKPOINT = "checkpoint.head";
     private final String TAIL_CHECKPOINT = "checkpoint.";
+    private final OpenOption[] WRITE_OPTIONS = new OpenOption[] { WRITE, CREATE, TRUNCATE_EXISTING, DSYNC };
 
     public FileCheckpointIO(String dirPath) {
         this.dirPath = dirPath;
@@ -53,7 +59,7 @@ public class FileCheckpointIO  implements CheckpointIO {
         Path path = Paths.get(dirPath, fileName);
         final byte[] buffer = new byte[BUFFER_SIZE];
         write(checkpoint, buffer);
-        Files.write(path, buffer);
+        Files.write(path, buffer, WRITE_OPTIONS);
     }
 
     @Override
