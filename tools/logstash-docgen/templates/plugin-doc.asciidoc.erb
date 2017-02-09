@@ -4,7 +4,6 @@
 Version: <%=version%>
 Released on: <%=release_date%>
 <%=changelog_url%>[Changelog]
-Compatible: <%= supported_logstash %>
 
 <% unless default_plugin? %>
 NOTE: This plugin does not ship with Logstash by default, but it is easy to install by running `bin/logstash-plugin install logstash-<%= section %>-<%= name %>`.
