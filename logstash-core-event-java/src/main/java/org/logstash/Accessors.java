@@ -34,10 +34,12 @@ public class Accessors {
                 return ((Map<String, Object>) target).remove(field.getKey());
             } else if (target instanceof List) {
                 int i = Integer.parseInt(field.getKey());
-                if (i < 0 || i >= ((List) target).size()) {
+                try {
+                    int offset = listIndex(i, ((List) target).size());
+                    return ((List)target).remove(offset);
+                } catch (IndexOutOfBoundsException e) {
                     return null;
                 }
-                return ((List<Object>) target).remove(i);
             } else {
                 throw newCollectionException(target);
             }
@@ -112,10 +114,13 @@ public class Accessors {
     }
 
     private boolean foundInList(List<Object> target, int index) {
-        if (index < 0 || index >= target.size()) {
+        try {
+            int offset = listIndex(index, target.size());
+            return target.get(offset) != null;
+        } catch (IndexOutOfBoundsException e) {
             return false;
         }
-        return target.get(index) != null;
+
     }
 
     private boolean foundInMap(Map<String, Object> target, String key) {
@@ -127,12 +132,12 @@ public class Accessors {
             Object result = ((Map<String, Object>) target).get(key);
             return result;
         } else if (target instanceof List) {
-            int i = Integer.parseInt(key);
-            if (i < 0 || i >= ((List) target).size()) {
+            try {
+                int offset = listIndex(Integer.parseInt(key), ((List) target).size());
+                return ((List<Object>) target).get(offset);
+            } catch (IndexOutOfBoundsException e) {
                 return null;
             }
-            Object result = ((List<Object>) target).get(i);
-            return result;
         } else if (target == null) {
             return null;
         } else {
@@ -156,7 +161,8 @@ public class Accessors {
                 }
                 ((List<Object>) target).add(value);
             } else {
-                ((List<Object>) target).set(i, value);
+                int offset = listIndex(i, ((List) target).size());
+                ((List<Object>) target).set(offset, value);
             }
         } else {
             throw newCollectionException(target);
@@ -173,5 +179,24 @@ public class Accessors {
 
     private ClassCastException newCollectionException(Object target) {
         return new ClassCastException("expecting List or Map, found "  + target.getClass());
+    }
+
+    /* 
+     * Returns a positive integer offset for a list of known size.
+     *
+     * @param i if positive, and offset from the start of the list. If negative, the offset from the end of the list, where -1 means the last element.
+     * @param size the size of the list.
+     * @return the positive integer offset for the list given by index i.
+     */
+    public static int listIndex(int i, int size) {
+        if (i >= size || i < -size) {
+            throw new IndexOutOfBoundsException("Index " + i + " is out of bounds for a list with size " + size);
+        }
+
+        if (i < 0) { // Offset from the end of the array.
+            return size + i;
+        } else {
+            return i;
+        }
     }
 }

@@ -61,6 +61,16 @@ describe LogStash::Event do
       expect(e.get("[foo][2]")).to eq(1.0)
       expect(e.get("[foo][3]")).to be_nil
     end
+
+    context "negative array values" do
+      it "should index from the end of the array" do
+        list = ["bar", 1, 1.0]
+        e = LogStash::Event.new({"foo" => list})
+        expect(e.get("[foo][-3]")).to eq(list[-3])
+        expect(e.get("[foo][-2]")).to eq(list[-2])
+        expect(e.get("[foo][-1]")).to eq(list[-1])
+      end
+    end
   end
 
   context "#set" do

@@ -89,7 +89,7 @@ types are supported.
 [[array]]
 ==== Array
 
-This type is now mostly deprecated in favor of using a standard type like `string` with the plugin defining the `:list => true` property for better type checking. It is still needed to handle lists of hashes or mixed types where type checking is not desired. 
+This type is now mostly deprecated in favor of using a standard type like `string` with the plugin defining the `:list => true` property for better type checking. It is still needed to handle lists of hashes or mixed types where type checking is not desired.
 
 Example:
 

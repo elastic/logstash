@@ -63,7 +63,7 @@ nodes. By default, Logstash uses the HTTP protocol to move data into the cluster
 You can use the Elasticsearch HTTP REST APIs to index data into the Elasticsearch cluster. These APIs represent the
 indexed data in JSON. Using the REST APIs does not require the Java client classes or any additional JAR
 files and has no performance disadvantages compared to the transport or node protocols. You can secure communications
-that use the HTTP REST APIs by using {xpack}xpack-security.html[{security}], which supports SSL and HTTP basic authentication.
+that use the HTTP REST APIs by using {xpack}/xpack-security.html[{security}], which supports SSL and HTTP basic authentication.
 
 When you use the HTTP protocol, you can configure the Logstash Elasticsearch output plugin to automatically
 load-balance indexing requests across a

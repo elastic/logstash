@@ -1,10 +1,10 @@
 [[logstash-reference]]
 = Logstash Reference
 
-:branch:                5.x
-:major-version:         5.x
-:logstash_version:      5.1.1
-:elasticsearch_version: 5.1.1
+:branch:                master
+:major-version:         6.x
+:logstash_version:      6.0.0-alpha1
+:elasticsearch_version: 6.0.0-alpha1
 :docker-image:          docker.elastic.co/logstash/logstash:{logstash_version}
 
 //////////
@@ -14,10 +14,10 @@ release-state can be: released | prerelease | unreleased
 
 :jdk:                   1.8.0
 :guide:                 https://www.elastic.co/guide/en/elasticsearch/guide/current/
-:ref:                   https://www.elastic.co/guide/en/elasticsearch/reference/5.x/
-:xpack:                 https://www.elastic.co/guide/en/x-pack/current/
-:logstash:              https://www.elastic.co/guide/en/logstash/5.x/
-:filebeat:              https://www.elastic.co/guide/en/beats/filebeat/5.x/
+:ref:                   https://www.elastic.co/guide/en/elasticsearch/reference/current/
+:xpack:                https://www.elastic.co/guide/en/x-pack/current
+:logstash:              https://www.elastic.co/guide/en/logstash/current/
+:filebeat:              https://www.elastic.co/guide/en/beats/filebeat/current/
 :lsissue:               https://github.com/elastic/logstash/issues/
 :security:              X-Pack Security
 :stack:                 https://www.elastic.co/guide/en/elastic-stack/current/
@@ -146,14 +146,10 @@ pass::[<?edit_url?>]
 pass::[<?edit_url https://github.com/elastic/logstash/edit/master/docs/static/submitting-a-plugin.asciidoc ?>]
 include::static/submitting-a-plugin.asciidoc[]
 
-
-// This is in the pluginbody.asciidoc itself
-// pass::[<?edit_url?>]
-
 // Glossary of Terms
 pass::[<?edit_url https://github.com/elastic/logstash/edit/master/docs/static/glossary.asciidoc ?>]
 include::static/glossary.asciidoc[]
 
-// Release Notes
-pass::[<?edit_url https://github.com/elastic/logstash/edit/master/docs/static/releasenotes.asciidoc ?>]
-include::static/releasenotes.asciidoc[]
+// This is in the pluginbody.asciidoc itself
+// pass::[<?edit_url?>]
+
