@@ -47,6 +47,23 @@ module LogStash::Config::Mixin
     base.extend(LogStash::Config::Mixin::DSL)
   end
 
+  # Recursive method to replace environment variable references in parameters
+  def deep_replace(value)
+    if (value.is_a?(Hash))
+      value.each do |valueHashKey, valueHashValue|
+        value[valueHashKey.to_s] = deep_replace(valueHashValue)
+      end
+    else
+      if (value.is_a?(Array))
+        value.each_index do | valueArrayIndex|
+          value[valueArrayIndex] = deep_replace(value[valueArrayIndex])
+        end
+      else
+        return replace_env_placeholders(value)
+      end
+    end
+  end
+
   def config_init(params)
     # Validation will modify the values inside params if necessary.
     # For example: converting a string to a number, etc.
@@ -105,19 +122,7 @@ module LogStash::Config::Mixin
 
     # Resolve environment variables references
     params.each do |name, value|
-      if (value.is_a?(Hash))
-        value.each do |valueHashKey, valueHashValue|
-          value[valueHashKey.to_s] = replace_env_placeholders(valueHashValue)
-        end
-      else
-        if (value.is_a?(Array))
-          value.each_index do |valueArrayIndex|
-            value[valueArrayIndex] = replace_env_placeholders(value[valueArrayIndex])
-          end
-        else
-          params[name.to_s] = replace_env_placeholders(value)
-        end
-      end
+      params[name.to_s] = deep_replace(value)
     end
 
 
@@ -289,13 +294,13 @@ module LogStash::Config::Mixin
         end
       rescue LogStash::PluginNoVersionError
         # If we cannot find a version in the currently installed gems we
-        # will display this message. This could happen in the test, if you 
+        # will display this message. This could happen in the test, if you
         # create an anonymous class to test a plugin.
         self.logger.warn(I18n.t("logstash.plugin.no_version",
                                 :type => @plugin_type,
                                 :name => @config_name,
                                 :LOGSTASH_VERSION => LOGSTASH_VERSION))
-      ensure 
+      ensure
         @@version_notice_given = true
       end
     end
