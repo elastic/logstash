@@ -658,7 +658,7 @@ DEPENDENCIES
   logstash-filter-geoip
   logstash-filter-grok
   logstash-filter-json
-  logstash-filter-kv
+  logstash-filter-kv (< 4.0.0)
   logstash-filter-metrics
   logstash-filter-mutate
   logstash-filter-ruby
