@@ -101,6 +101,9 @@ public class MmapPageIO extends AbstractByteBufferPageIO {
 
     @Override
     public void close() throws IOException {
+        if (this.buffer != null) {
+            this.buffer.force();
+        }
         if (this.channel != null && this.channel.isOpen()) {
             this.channel.close();
         }

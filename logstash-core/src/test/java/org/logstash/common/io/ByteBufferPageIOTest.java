@@ -134,6 +134,46 @@ public class ByteBufferPageIOTest {
         assertThat(io.getMinSeqNum(), is(equalTo(seqNum)));
     }
 
+    @Test
+    public void recoverEmptyWriteRecover() throws IOException {
+        Queueable element = new StringElement("foobarbaz");
+        long seqNum = 42L;
+        ByteBufferPageIO io = newEmptyPageIO();
+        byte[] inititalState = io.dump();
+
+        io = newPageIO(inititalState.length, inititalState);
+        io.recover();
+        assertThat(io.getElementCount(), is(equalTo(0)));
+
+        io.write(element.serialize(), seqNum);
+        inititalState = io.dump();
+
+        io = newPageIO(inititalState.length, inititalState);
+        io.recover();
+        assertThat(io.getElementCount(), is(equalTo(1)));
+        assertThat(io.getMinSeqNum(), is(equalTo(seqNum)));
+    }
+
+    @Test
+    public void recoverNonEmptyWriteRecover() throws IOException {
+        Queueable element = new StringElement("foobarbaz");
+
+        ByteBufferPageIO io = newEmptyPageIO();
+        io.write(element.serialize(), 1L);
+        byte[] inititalState = io.dump();
+
+        io = newPageIO(inititalState.length, inititalState);
+        io.recover();
+        assertThat(io.getElementCount(), is(equalTo(1)));
+
+        io.write(element.serialize(), 2L);
+        inititalState = io.dump();
+
+        io = newPageIO(inititalState.length, inititalState);
+        io.recover();
+        assertThat(io.getElementCount(), is(equalTo(2)));
+    }
+
     @Test(expected = IOException.class)
     public void openUnexpectedSeqNum() throws IOException {
         Queueable element = new StringElement("foobarbaz");
