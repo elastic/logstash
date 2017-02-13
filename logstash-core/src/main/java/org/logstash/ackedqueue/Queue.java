@@ -160,6 +160,8 @@ public class Queue implements Closeable {
             } catch (NoSuchFileException e) {
                 // if there is no head checkpoint, create a new headpage and checkpoint it and exit method
 
+                logger.debug("No head checkpoint found at: {}, creating new head page", checkpointIO.headFileName());
+
                 this.seqNum = 0;
                 headPageNum = 0;
 
@@ -177,6 +179,8 @@ public class Queue implements Closeable {
                 // all tail checkpoints in the sequence should exist, if not abort mission with a NoSuchFileException
                 Checkpoint cp = this.checkpointIO.read(this.checkpointIO.tailFileName(pageNum));
 
+                logger.debug("opening tail page: {}, in: {}, with checkpoint: {}", pageNum, this.dirPath, cp.toString());
+
                 PageIO pageIO = this.pageIOFactory.build(pageNum, this.pageCapacity, this.dirPath);
                 pageIO.open(cp.getMinSeqNum(), cp.getElementCount());
 
@@ -185,6 +189,8 @@ public class Queue implements Closeable {
 
             // transform the head page into a tail page only if the headpage is non-empty
             // in both cases it will be checkpointed to track any changes in the firstUnackedPageNum when reconstructing the tail pages
+
+            logger.debug("opening head page: {}, in: {}, with checkpoint: {}", headCheckpoint.getPageNum(), this.dirPath, headCheckpoint.toString());
 
             PageIO pageIO = this.pageIOFactory.build(headCheckpoint.getPageNum(), this.pageCapacity, this.dirPath);
             pageIO.recover(); // optimistically recovers the head page data file and set minSeqNum and elementCount to the actual read/recovered data

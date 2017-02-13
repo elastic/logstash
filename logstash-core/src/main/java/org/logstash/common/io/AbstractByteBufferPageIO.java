@@ -1,5 +1,7 @@
 package org.logstash.common.io;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.logstash.ackedqueue.SequencedList;
 
 import java.io.IOException;
@@ -32,6 +34,8 @@ public abstract class AbstractByteBufferPageIO implements PageIO {
 
     public static final boolean VERIFY_CHECKSUM = true;
     public static final boolean STRICT_CAPACITY = true;
+
+    private static final Logger logger = LogManager.getLogger(AbstractByteBufferPageIO.class);
 
     protected int capacity; // page capacity is an int per the ByteBuffer class.
     protected final int pageNum;
@@ -105,6 +109,7 @@ public abstract class AbstractByteBufferPageIO implements PageIO {
                 this.elementCount += 1;
             } catch (PageIOInvalidElementException e) {
                 // simply stop at first invalid element
+                logger.debug("PageIO recovery element index:{}, readNextElement exception: {}", i, e.getMessage());
                 break;
             }
         }
@@ -131,21 +136,22 @@ public abstract class AbstractByteBufferPageIO implements PageIO {
         if (this.head + SEQNUM_SIZE + LENGTH_SIZE > capacity) { throw new PageIOInvalidElementException("cannot read seqNum and length bytes past buffer capacity"); }
 
         int elementOffset = this.head;
+        int newHead = this.head;
         ByteBuffer buffer = getBuffer();
 
         long seqNum = buffer.getLong();
-        this.head += SEQNUM_SIZE;
+        newHead += SEQNUM_SIZE;
 
         if (seqNum != expectedSeqNum) { throw new PageIOInvalidElementException(String.format("Element seqNum %d is expected to be %d", seqNum, expectedSeqNum)); }
 
         int length = buffer.getInt();
-        this.head += LENGTH_SIZE;
+        newHead += LENGTH_SIZE;
 
         // length must be > 0
         if (length <= 0) { throw new PageIOInvalidElementException("Element invalid length"); }
 
         // if there is no room for the proposed data length and checksum just stop here
-        if (this.head + length + CHECKSUM_SIZE > capacity) { throw new PageIOInvalidElementException("cannot read element payload and checksum past buffer capacity"); }
+        if (newHead + length + CHECKSUM_SIZE > capacity) { throw new PageIOInvalidElementException("cannot read element payload and checksum past buffer capacity"); }
 
         if (verifyChecksum) {
             // read data and compute checksum;
@@ -158,9 +164,9 @@ public abstract class AbstractByteBufferPageIO implements PageIO {
 
         // at this point we recovered a valid element
         this.offsetMap.add(elementOffset);
-        this.head += length + CHECKSUM_SIZE;
+        this.head = newHead + length + CHECKSUM_SIZE;
 
-        buffer.position(head);
+        buffer.position(this.head);
     }
 
     @Override
