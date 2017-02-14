@@ -143,7 +143,7 @@ When recording a checkpoint, Logstash will:
 The following settings are available to let you tune durability:
 
 * `queue.checkpoint.writes`: Logstash will checkpoint after this many writes into the queue. Currently, one event counts as one write, but this may change in future releases.
-* `queue.checkpoint.acks`: Logstah will checkpoint after this many events are acknowledged. This configuration controls the durability at the processing (filter + output)
+* `queue.checkpoint.acks`: Logstash will checkpoint after this many events are acknowledged. This configuration controls the durability at the processing (filter + output)
 part of Logstash.
 
 Disk writes have a resource cost. Tuning the above values higher or lower will trade durability for performance. For instance, if you want to the strongest durability for all input events, you can set `queue.checkpoint.writes: 1`.
