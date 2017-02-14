@@ -29,7 +29,9 @@ module LogStash module Docgen
 
     # Content needed to inject to make the generator work
     GEMFILE_CHANGES = "gem 'logstash-docgen', :path => \"#{File.expand_path(File.join(File.dirname(__FILE__), "..", "..", ".."))}\""
-    RAKEFILE_CHANGES = "require 'logstash/docgen/plugin_doc'"
+
+    # require devutils to fix an issue when the logger is not found
+    RAKEFILE_CHANGES = "require 'logstash/devutils/rspec/spec_helper'; require 'logstash/docgen/plugin_doc'"
 
     attr_reader :path, :full_name
 
