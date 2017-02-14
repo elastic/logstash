@@ -9,56 +9,43 @@ This section summarizes the changes in the following releases:
 [[logstash-5-2-1]]
 === Logstash 5.2.1 Release Notes
 
-* Added the ability in the settings class to coerce an array of values to a predefined type ({lsissue}6630[Issue 6630]).
-* Fixed an issue when downloading the x-pack under windows causing remote file to not be downloaded in
-  binary mode and resulting into corrupt files. ({lsissue}6640[Issue 6640]).
-* Fixed an issue with the shutdown reporter where the logger didn't not receive the correct information
-  to log and making the reporter to not log anything ({lsissue}6507[Issue 6507]).
-* Fixed an issue with the installation of x-pack in a staging environment when the `$LOGSTASH_PACK_URL` was not correctly set,
-  the downloader will now fallback to the default url when `$LOGSTASH_PACK_URL` is an empty string or nil ({lsissue}6618[Issue 6618])
-* Fixed an issue when executing the `bin/logstash-plugin` outside the `$LOGSTASH_HOME` that was returning a Gemfile not found ({lsissue}6659[Issue 6599])
-
+* Restored messages that provide shutdown information when Logstash process is shutdown ({lsissue}6507[Issue 6507]).
 
 [float]
 ==== Input Plugins
 
 *`Kafka`*
 
-* Fixed `Client ID` is no longer reused across multiple Kafka consumer instances.
-* Fixed a bug where consumer was not correctly setup when SASL_SSL option was specified.
+* Client ID is no longer reused across multiple Kafka consumer instances (https://github.com/logstash-plugins/logstash-input-kafka/issues/166[Issue 166]).
+* Fixed a bug where Kafka consumer was not correctly setup when the `SASL_SSL` option was specified.
 
 *`Redis`*:
 
-* Fixed: use correct unsubscribe method for `channel_listener` data type.
+* The config reload behavior has been fixed by using the correct unsubscribe method for `channel_listener` data type ({lsissue}5222[Issue 5222]).
 
 *`S3`*:
 
-* Fixed an issue when the remote file contains multiple blob of gz in the same file #101
+* Handle conditions where the remote file on S3 contains multiple blobs of gzipped data (https://github.com/logstash-plugins/logstash-input-s3/issues/101[Issue 101]).
 
 *`Elasticsearch`*
 
-* Bump ES client to 5.0.2 to get content-type: json behavior
-* Revert unneeded manticore change
+* We now set the `Content-Type` header to `application/json` when making HTTP requests to Elasticsearch.
 
 ==== Filter Plugins
 
 *`Date`*:
 
-* Fixed a bug where numbers from a JSON codec would result in a date parse failure. (#86, #89)
-* Docs: Fix date format used in examples
+* Fixed a bug where numbers from JSON codec would result in a date parse failure. (#86, #89)
 
 ==== Output Plugins
 
 *`Elasticsearch`*:
 
-* Fixed: Change how the healthcheck_path is treated: either append it to any existing path (default) or replace any existing path
-* Also ensures that the healthcheck url contains no query parameters regarless of hosts urls contains them or query_params being set. #554
-* Send the Content-Type: application/json header that proper ES clients should send
+* Set the `Content-Type` header to `application/json` when making HTTP requests to Elasticsearch.
 
 *`Kafka`*:
 
-* Fix a bug where consumer was not correctly setup when SASL_SSL option was specified.
-* Docs: Move info about security features out of the compatibility matrix and into the main text.
+* Fixed a bug where consumer was not correctly setup when the `SASL_SSL` option was specified.
 
 [[logstash-5-2-0]]
 === Logstash 5.2.0 Release Notes
