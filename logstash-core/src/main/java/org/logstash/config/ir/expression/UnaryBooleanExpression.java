@@ -22,6 +22,6 @@ public abstract class UnaryBooleanExpression extends BooleanExpression {
 
     @Override
     public String hashSource() {
-        return this.getClass().getCanonicalName() + this.expression.hashSource();
+        return this.getClass().getCanonicalName() + "[" + this.expression.hashSource() + "]";
     }
 }

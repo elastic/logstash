@@ -7,7 +7,7 @@ import org.logstash.config.ir.IHashable;
 import org.logstash.config.ir.SourceComponent;
 import org.logstash.config.ir.SourceMetadata;
 
-/**
+/*
  * [foo] == "foostr" eAnd [bar] > 10
  * eAnd(eEq(eventValueExpr("foo"), value("foostr")), eEq(eEventValue("bar"), value(10)))
  *

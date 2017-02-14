@@ -19,6 +19,8 @@ public class ImperativeToGraphtest {
     @Test
     public void convertSimpleExpression() throws InvalidIRException {
         Graph imperative =  iComposeSequence(iPlugin(FILTER, "json"), iPlugin(FILTER, "stuff")).toGraph();
+        imperative.validate(); // Verify this is a valid graph
+
         Graph regular = Graph.empty();
         regular.threadVertices(gPlugin(FILTER, "json"), gPlugin(FILTER, "stuff"));
 
@@ -28,6 +30,8 @@ public class ImperativeToGraphtest {
     @Test
     public void testIdsDontAffectSourceComponentEquality() throws InvalidIRException {
         Graph imperative =  iComposeSequence(iPlugin(FILTER, "json", "oneid"), iPlugin(FILTER, "stuff", "anotherid")).toGraph();
+        imperative.validate(); // Verify this is a valid graph
+
         Graph regular = Graph.empty();
         regular.threadVertices(gPlugin(FILTER, "json", "someotherid"), gPlugin(FILTER, "stuff", "graphid"));
 
@@ -36,7 +40,7 @@ public class ImperativeToGraphtest {
 
     @Test
     public void convertComplexExpression() throws InvalidIRException {
-        Graph generated = iComposeSequence(
+        Graph imperative = iComposeSequence(
                 iPlugin(FILTER, "p1"),
                 iPlugin(FILTER, "p2"),
                 iIf(eAnd(eTruthy(eValue(5l)), eTruthy(eValue(null))),
@@ -44,6 +48,7 @@ public class ImperativeToGraphtest {
                         iComposeSequence(iPlugin(FILTER, "p4"), iPlugin(FILTER, "p5"))
                 )
         ).toGraph();
+        imperative.validate(); // Verify this is a valid graph
 
         PluginVertex p1 = gPlugin(FILTER, "p1");
         PluginVertex p2 = gPlugin(FILTER, "p2");
@@ -58,14 +63,14 @@ public class ImperativeToGraphtest {
         expected.threadVertices(false, testIf, p4);
         expected.threadVertices(p4, p5);
 
-        assertGraphEquals(expected, generated);
+        assertGraphEquals(expected, imperative);
     }
 
     // This test has an imperative grammar with nested ifs and dangling
     // partial leaves. This makes sure they all wire-up right
     @Test
     public void deepDanglingPartialLeaves() throws InvalidIRException {
-         Graph generated = iComposeSequence(
+         Graph imperative = iComposeSequence(
                  iPlugin(FILTER, "p0"),
                  iIf(eTruthy(eValue(1)),
                          iPlugin(FILTER, "p1"),
@@ -79,6 +84,7 @@ public class ImperativeToGraphtest {
                  iPlugin(FILTER, "pLast")
 
          ).toGraph();
+        imperative.validate(); // Verify this is a valid graph
 
         IfVertex if1 = gIf(eTruthy(eValue(1)));
         IfVertex if2 = gIf(eTruthy(eValue(2)));
@@ -104,7 +110,7 @@ public class ImperativeToGraphtest {
         expected.threadVertices(p3, pLast);
         expected.threadVertices(p4,pLast);
 
-        assertGraphEquals(generated, expected);
+        assertGraphEquals(imperative, expected);
     }
 
     // This is a good test for what the filter block will do, where there
@@ -112,7 +118,7 @@ public class ImperativeToGraphtest {
     // single node
     @Test
     public void convertComplexExpressionWithTerminal() throws InvalidIRException {
-        Graph generated = iComposeSequence(
+        Graph imperative = iComposeSequence(
             iPlugin(FILTER, "p1"),
             iIf(eTruthy(eValue(1)),
                 iComposeSequence(
@@ -126,6 +132,7 @@ public class ImperativeToGraphtest {
             ),
             iPlugin(FILTER, "terminal")
         ).toGraph();
+        imperative.validate(); // Verify this is a valid graph
 
         PluginVertex p1 = gPlugin(FILTER,"p1");
         PluginVertex p2 = gPlugin(FILTER, "p2");
@@ -154,7 +161,7 @@ public class ImperativeToGraphtest {
         expected.threadVertices(p4, p5);
         expected.threadVertices(p5, terminal);
 
-        assertGraphEquals(generated, expected);
+        assertGraphEquals(imperative, expected);
 
     }
 }

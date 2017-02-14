@@ -89,6 +89,9 @@ public abstract class Edge implements ISourceComponent {
 
     public abstract String individualHashSource();
 
+
+    public abstract String getId();
+
     @Override
     public SourceMetadata getMeta() {
         return null;

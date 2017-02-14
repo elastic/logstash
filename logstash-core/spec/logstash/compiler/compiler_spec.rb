@@ -392,6 +392,15 @@ describe LogStash::Compiler do
               it "should compile correctly" do
                 expect(c_expression).to ir_eql(j.eRegexEq(j.eEventValue("[foo]"), j.eRegex('^abc$')))
               end
+              
+              # Believe it or not, "\.\." is a valid regexp!
+              describe "when given a quoted regexp" do
+                let(:expression) { '[foo] =~ "\\.\\."' }
+              
+                it "should compile correctly" do
+                  expect(c_expression).to ir_eql(j.eRegexEq(j.eEventValue("[foo]"), j.eRegex('\\.\\.')))
+                end
+              end
             end
 
             describe "'!~'" do

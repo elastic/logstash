@@ -93,11 +93,11 @@ public class IfStatement extends Statement {
         newGraph.addVertex(ifVertex);
 
         for (Vertex v : trueRoots) {
-            newGraph.threadVertices(BooleanEdge.trueFactory, ifVertex, v);
+            newGraph.threadVerticesUnsafe(BooleanEdge.trueFactory, ifVertex, v);
         }
 
         for (Vertex v : falseRoots) {
-            newGraph.threadVertices(BooleanEdge.falseFactory, ifVertex, v);
+            newGraph.threadVerticesUnsafe(BooleanEdge.falseFactory, ifVertex, v);
         }
 
         return newGraph;

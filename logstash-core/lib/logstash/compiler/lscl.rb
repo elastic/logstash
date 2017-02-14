@@ -478,10 +478,21 @@ module LogStashCompilerLSCLGrammar; module LogStash; module Compiler; module LSC
 
   class RegexpExpression < Node
     def expr
-      selector, operator_method, regexp = recursive_select(Selector, LogStash::Compiler::LSCL::AST::RegExpOperator, LogStash::Compiler::LSCL::AST::RegExp).map(&:expr)
+      selector, operator_method, regexp = recursive_select(
+        Selector, 
+        LogStash::Compiler::LSCL::AST::RegExpOperator, 
+        LogStash::Compiler::LSCL::AST::RegExp, 
+        LogStash::Compiler::LSCL::AST::String # Strings work as rvalues! :p
+      ).map(&:expr)
 
-      raise "Expected a selector #{text_value}!" unless selector
-      raise "Expected a regexp #{text_value}!" unless regexp
+      # Handle string rvalues, they just get turned into regexps
+      # Maybe we really shouldn't handle these anymore...
+      if regexp.class == org.logstash.config.ir.expression.ValueExpression
+        regexp = jdsl.eRegex(regexp.get)
+      end
+      
+      raise "Expected a selector in #{text_value}!" unless selector
+      raise "Expected a regexp in #{text_value}!" unless regexp
 
       operator_method.call(source_meta, selector, regexp);
     end

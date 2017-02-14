@@ -1,5 +1,6 @@
 package org.logstash.config.ir.graph;
 
+import org.logstash.common.Util;
 import org.logstash.config.ir.InvalidIRException;
 
 /**
@@ -18,6 +19,11 @@ public class PlainEdge extends Edge {
     @Override
     public String individualHashSource() {
         return this.getClass().getCanonicalName();
+    }
+
+    @Override
+    public String getId() {
+        return Util.digest(this.getFrom().getId() + "->" + this.getTo().getId());
     }
 
     public PlainEdge(Vertex from, Vertex to) throws InvalidIRException {
