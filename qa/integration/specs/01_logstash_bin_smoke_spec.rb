@@ -1,4 +1,5 @@
 require_relative '../framework/fixture'
+
 require_relative '../framework/settings'
 require_relative '../services/logstash_service'
 require_relative '../framework/helpers'
@@ -24,12 +25,19 @@ describe "Test Logstash instance" do
     @ls2.teardown
   }
 
+  let(:file_config1) { Stud::Temporary.file.path }
+  let(:file_config2) { Stud::Temporary.file.path }
+  let(:file_config3) { Stud::Temporary.file.path }
+
   let(:num_retries) { 10 }
-  let(:config1) { config_to_temp_file(@fixture.config("root", { :port => random_port })) }
-  let(:config2) { config_to_temp_file(@fixture.config("root", { :port => random_port })) }
+  let(:config1) { config_to_temp_file(@fixture.config("root", { :port => port1, :random_file => file_config1 })) }
+  let(:config2) { config_to_temp_file(@fixture.config("root", { :port => port2 , :random_file => file_config2 })) }
+  let(:config3) { config_to_temp_file(@fixture.config("root", { :port => port3, :random_file => file_config3 })) }
   let(:port1) { random_port }
   let(:port2) { random_port }
-  let(:config3) { config_to_temp_file(@fixture.config("root", { :port => port2 })) }
+  let(:port3) { random_port }
+
+  let(:persistent_queue_settings) { { "queue.type" => "persisted" } }
 
   it "can start the embedded http server on default port 9600" do
     @ls1.start_with_stdin
@@ -39,20 +47,46 @@ describe "Test Logstash instance" do
   end
 
   it "multiple of them can be started on the same box with automatically trying different ports for HTTP server" do
-    @ls1.spawn_logstash("-f", config1)
-    try(num_retries) do
+    if @ls2.settings.feature_flag != "persistent_queues"
+      # Make sure that each instance use a different `path.queue`
+      @ls1.spawn_logstash("-f", config1)
+      sleep(0.1) until File.exist?(file_config1) && File.size(file_config1) > 0 # Everything is started succesfully at this point
       expect(is_port_open?(9600)).to be true
-    end
 
-    puts "will try to start the second LS instance on 9601"
+      puts "will try to start the second LS instance on 9601"
 
-    # bring up new LS instance
-    @ls2.spawn_logstash("-f", config2)
-    try(20) do
+      # bring up new LS instance
+      # Use another path for the PQ
+      @ls2.spawn_logstash("-f", config2)
+      sleep(0.1) until File.exist?(file_config2) && File.size(file_config2) > 0 # Everything is started succesfully at this point
       expect(is_port_open?(9601)).to be true
-    end
+      expect(@ls1.process_id).not_to eq(@ls2.process_id)
+    else
+      # Make sure that each instance use a different `path.queue`
+      path = Stud::Temporary.pathname
+      FileUtils.mkdir_p(File.join(path, "data"))
+      data = File.join(path, "data")
+      settings = persistent_queue_settings.merge({ "path.queue" => data })
+      IO.write(File.join(path, "logstash.yml"), YAML.dump(settings))
 
-    expect(@ls1.process_id).not_to eq(@ls2.process_id)
+      @ls1.spawn_logstash("--path.settings", path, "-f", config1)
+      sleep(0.1) until File.exist?(file_config1) && File.size(file_config1) > 0 # Everything is started succesfully at this point
+      expect(is_port_open?(9600)).to be true
+
+      puts "will try to start the second LS instance on 9601"
+
+      # bring up new LS instance
+      path = Stud::Temporary.pathname
+      FileUtils.mkdir_p(File.join(path, "data"))
+      data = File.join(path, "data")
+      settings = persistent_queue_settings.merge({ "path.queue" => data })
+      IO.write(File.join(path, "logstash.yml"), YAML.dump(settings))
+      @ls2.spawn_logstash("--path.settings", path, "-f", config2)
+      sleep(0.1) until File.exist?(file_config2) && File.size(file_config2) > 0 # Everything is started succesfully at this point
+      expect(is_port_open?(9601)).to be true
+
+      expect(@ls1.process_id).not_to eq(@ls2.process_id)
+    end
   end
 
   it "gets the right version when asked" do
@@ -71,8 +105,10 @@ describe "Test Logstash instance" do
   end
 
   it "should not start when -e is not specified and -f has no valid config files" do
-    @ls1.spawn_logstash("-e", "", "-f" "/tmp/foobartest")
-    expect(is_port_open?(9600)).to be false
+    @ls2.spawn_logstash("-e", "", "-f" "/tmp/foobartest")
+    try(num_retries) do
+      expect(is_port_open?(9600)).to be_falsey
+    end
   end
 
   it "should merge config_string when both -f and -e is specified" do
@@ -86,7 +122,7 @@ describe "Test Logstash instance" do
     end
 
     try(20) do
-      expect(is_port_open?(port2)).to be true
+      expect(is_port_open?(port3)).to be true
     end
   end
 
