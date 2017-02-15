@@ -13,7 +13,7 @@ module LogStash
         end
       end
 
-      # Patch to prevent Bundler to save a .bundle/config file in the root 
+      # Patch to prevent Bundler to save a .bundle/config file in the root
       # of the application
       ::Bundler::Settings.module_exec do
         def set_key(key, value, hash, file)
@@ -46,7 +46,8 @@ module LogStash
       # make sure we use our own installed bundler
       LogStash::Rubygems.patch!
       ::Gem.clear_paths
-      ::Gem.paths = ENV['GEM_HOME'] = ENV['GEM_PATH'] = Environment.logstash_gem_home
+      ENV['GEM_HOME'] = ENV['GEM_PATH'] = Environment.logstash_gem_home
+      ::Gem.paths = ENV
 
       # set BUNDLE_GEMFILE ENV before requiring bundler to avoid bundler recurse and load unrelated Gemfile(s)
       ENV["BUNDLE_GEMFILE"] = Environment::GEMFILE_PATH
@@ -86,8 +87,8 @@ module LogStash
       # require "logstash/patches/rubygems" # patch rubygems before clear_paths
       LogStash::Rubygems.patch!
       ::Gem.clear_paths
-      ::Gem.paths = ENV['GEM_HOME'] = ENV['GEM_PATH'] = LogStash::Environment.logstash_gem_home
-
+      ENV['GEM_HOME'] = ENV['GEM_PATH'] = LogStash::Environment.logstash_gem_home
+      ::Gem.paths = ENV
       # set BUNDLE_GEMFILE ENV before requiring bundler to avoid bundler recurse and load unrelated Gemfile(s).
       # in the context of calling Bundler::CLI this is not really required since Bundler::CLI will look at
       # Bundler.settings[:gemfile] unlike Bundler.setup. For the sake of consistency and defensive/future proofing, let's keep it here.
