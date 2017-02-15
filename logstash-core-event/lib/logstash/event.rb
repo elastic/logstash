@@ -106,13 +106,8 @@ class LogStash::Event
 
   # Create a deep-ish copy of this event.
   def clone
-    copy = {}
-    @data.each do |k,v|
-      # TODO(sissel): Recurse if this is a hash/array?
-      copy[k] = begin v.clone rescue v end
-    end
-
-    self.class.new(copy)
+    copy = LogStash::Util.deep_clone(@data)
+    self.class.new(copy.merge({ "@metadata" => LogStash::Util.deep_clone(@metadata.clone) }))
   end
 
   def to_s
