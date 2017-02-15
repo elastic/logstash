@@ -81,8 +81,9 @@ module LogStash module Docgen
       gemspec.version.to_s
     end
 
-    def release_date(format = "%Y-%m-%d")
+    def release_date(format = "%B %-d, %Y")
       @release_date ||= begin
+
                           response = open("https://rubygems.org/api/v1/versions/#{canonical_name}.json").read
                           # HACK: One of out default plugins, the webhdfs, has a bad encoding in the gemspec
                           # which make our parser trip with this error:
