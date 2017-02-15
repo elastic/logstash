@@ -46,7 +46,7 @@ namespace "artifact" do
       # See more in https://github.com/elastic/logstash/issues/4818
       "vendor/??*/**/.mvn/**/*",
       "Gemfile",
-      "Gemfile.jruby-1.9.lock",
+      "Gemfile.jruby-2.3.lock",
     ]
   end
 
@@ -353,7 +353,7 @@ namespace "artifact" do
     File.join(basedir, "pkg", "log4j2.properties").tap do |path|
       dir.input("#{path}=/etc/logstash")
     end
-    
+
     package_filename = "logstash-#{LOGSTASH_VERSION}#{PACKAGE_SUFFIX}.TYPE"
 
     case platform
