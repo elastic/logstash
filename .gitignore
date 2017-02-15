@@ -33,7 +33,7 @@ qa/.vm_ssh_config
 qa/.vagrant
 qa/acceptance/.vagrant
 qa/Gemfile.lock
-Gemfile.jruby-1.9.lock
+Gemfile.jruby-2.3.lock
 Gemfile
 *.ipr
 *.iws

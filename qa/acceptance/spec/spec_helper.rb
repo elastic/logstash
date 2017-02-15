@@ -5,6 +5,15 @@ require_relative '../../rspec/matchers'
 require_relative 'config_helper'
 require_relative "../../platform_config"
 
+
+# This is a non obvious hack,
+# EllipticalCurve are not completely implemented in JRuby 9k and the new version of SSH from the standard library
+# use them.
+#
+# Details: https://github.com/jruby/jruby-openssl/issues/105
+Net::SSH::Transport::Algorithms::ALGORITHMS.values.each { |algs| algs.reject! { |a| a =~ /^ecd(sa|h)-sha2/ } }
+Net::SSH::KnownHosts::SUPPORTED_TYPE.reject! { |t| t =~ /^ecd(sa|h)-sha2/ }
+
 ROOT = File.expand_path(File.join(File.dirname(__FILE__), '..', '..', '..'))
 $LOAD_PATH.unshift File.join(ROOT, 'logstash-core/lib')
 

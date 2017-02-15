@@ -33,10 +33,14 @@ class JSONIOThingy < IO
   end
 end
 
+# Refactor the suite to https://github.com/elastic/logstash/issues/7148
+RSpec::Expectations.configuration.on_potential_false_positives = :nothing
+
 RSpec.configure do |c|
   Flores::RSpec.configure(c)
   c.include LogStashHelper
   c.extend LogStashHelper
+
   c.before(:each) do
     # TODO: commented out on post-merged in master - the logger has moved to log4j
     #

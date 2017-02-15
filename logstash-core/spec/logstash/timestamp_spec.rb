@@ -12,7 +12,7 @@ describe LogStash::Timestamp do
       t = LogStash::Timestamp.now
       expect(t.time.to_i).to be_within(1).of Time.now.to_i
 
-      now = Time.now.utc
+      now = DateTime.now.to_time.utc
       t = LogStash::Timestamp.new(now)
       expect(t.time).to eq(now)
 

@@ -54,13 +54,6 @@ describe LogStash::PluginManager::PackInstaller::Local do
         expect(::LogStash::PluginManager::GemInstaller).to receive(:install).with(/logstash-input-packtest/, anything)
         expect(::LogStash::PluginManager::GemInstaller).to receive(:install).with(/logstash-input-packtestdep/, anything)
 
-        # Since the Gem::Indexer have side effect and we have more things loaded
-        # I have to disable it in the tests
-        mock_indexer = double("Gem::Indexer")
-        allow(mock_indexer).to receive(:ui=).with(anything)
-        expect(mock_indexer).to receive(:generate_index)
-        expect(::Gem::Indexer).to receive(:new).with(be_kind_of(String), hash_including(:build_modern => true)).and_return(mock_indexer)
-
         expect { subject.execute }.not_to raise_error
       end
     end

@@ -56,7 +56,8 @@ describe LogStash::Compiler do
 
       describe "applying protocol and id metadata" do
         it "should apply the correct source metadata to all components" do
-          pipeline.plugin_vertices.each do |pv| 
+          # TODO: seems to be a jruby regression we cannot currently call each on a stream
+          pipeline.get_plugin_vertices.each do |pv|
             name_idx = pv.plugin_definition.name.split("_").last
             source_protocol_idx = pv.source_with_metadata.protocol.split("_").last
             source_id_idx = pv.source_with_metadata.id.split("_").last

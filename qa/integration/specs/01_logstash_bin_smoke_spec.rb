@@ -151,10 +151,10 @@ describe "Test Logstash instance" do
     }
     start_ls.call()
     # we use a try since logstash may have started but the webserver may not yet
-    first_id = try(num_retries) { get_id }
+    first_id = Stud.try(num_retries.times, Errno::ECONNREFUSED) { get_id }
     @ls1.teardown
     start_ls.call()
-    second_id = try(num_retries) { get_id }
+    second_id = Stud.try(num_retries.times, Errno::ECONNREFUSED) { get_id }
     expect(first_id).to eq(second_id)
   end
 end

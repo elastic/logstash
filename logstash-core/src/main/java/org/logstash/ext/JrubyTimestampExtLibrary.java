@@ -130,6 +130,12 @@ public class JrubyTimestampExtLibrary implements Library {
             return ruby_to_iso8601(context);
         }
 
+        @JRubyMethod(name = "inspect")
+        public IRubyObject ruby_inspect(ThreadContext context)
+        {
+            return ruby_to_iso8601(context);
+        }
+
         @JRubyMethod(name = "to_iso8601")
         public IRubyObject ruby_to_iso8601(ThreadContext context)
         {
@@ -206,15 +212,8 @@ public class JrubyTimestampExtLibrary implements Library {
         {
             RubyTime t;
             if (args.length == 1) {
-                IRubyObject epoch = args[0];
-
-                if (epoch instanceof RubyBigDecimal) {
-                    // bug in JRuby prevents correctly parsing a BigDecimal fractional part, see https://github.com/elastic/logstash/issues/4565
-                    double usec = ((RubyBigDecimal)epoch).frac().convertToFloat().getDoubleValue() * 1000000;
-                    t = (RubyTime)RubyTime.at(context, context.runtime.getTime(), ((RubyBigDecimal)epoch).to_int(), new RubyFloat(context.runtime, usec));
-                } else {
-                    t = (RubyTime)RubyTime.at(context, context.runtime.getTime(), epoch);
-                }
+                // JRuby 9K has fixed the problem iwth BigDecimal precision see https://github.com/elastic/logstash/issues/4565
+                t = (RubyTime)RubyTime.at(context, context.runtime.getTime(), args[0]);
             } else {
                 t = (RubyTime)RubyTime.at(context, context.runtime.getTime(), args[0], args[1]);
             }

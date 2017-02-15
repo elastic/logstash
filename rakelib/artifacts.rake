@@ -40,7 +40,7 @@ namespace "artifact" do
       # See more in https://github.com/elastic/logstash/issues/4818
       "vendor/??*/**/.mvn/**/*",
       "Gemfile",
-      "Gemfile.jruby-1.9.lock",
+      "Gemfile.jruby-2.3.lock",
     ]
   end
 
@@ -275,6 +275,10 @@ namespace "artifact" do
     require "fpm/errors" # TODO(sissel): fix this in fpm
     require "fpm/package/dir"
     require "fpm/package/gem" # TODO(sissel): fix this in fpm; rpm needs it.
+    require "childprocess/jruby/pump"
+    # TODO(ph): Cabin is closing the fd when it reach EOF, childprocess will attempt to write to it and hit an IOError.
+    # This will make a the thread dies, in 1.7.25 we had a Thread Death
+    require_relative "childprocess_patch"
 
     dir = FPM::Package::Dir.new
 
@@ -305,7 +309,7 @@ namespace "artifact" do
     File.join(basedir, "pkg", "log4j2.properties").tap do |path|
       dir.input("#{path}=/etc/logstash")
     end
-    
+
     package_filename = "logstash-#{LOGSTASH_VERSION}#{PACKAGE_SUFFIX}.TYPE"
 
     case platform

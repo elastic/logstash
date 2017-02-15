@@ -80,7 +80,7 @@ describe LogStash::Setting do
     end
     context "when the argument's class does not match @klass" do
       it "should throw an exception" do
-        expect { subject.set("not a number") }.to raise_error
+        expect { subject.set("not a number") }.to raise_error ArgumentError
       end
     end
     context "when strict=false" do
@@ -131,7 +131,7 @@ describe LogStash::Setting do
     context "when validation fails" do
       let(:new_value) { "very very very very very big text" }
       it "should raise an exception" do
-        expect { subject.set(new_value) }.to raise_error
+        expect { subject.set(new_value) }.to raise_error ArgumentError
       end
       it "should not change the value" do
         subject.set(new_value) rescue nil

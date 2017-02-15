@@ -56,7 +56,7 @@ describe LogStash::Retryable do
 
       expect do
         subject.retryable(:on_retry => callback){i += 1; raise E}
-      end.to raise_error
+      end.to raise_error E
 
       expect(i).to eq(2)
 
@@ -86,7 +86,7 @@ describe LogStash::Retryable do
 
       expect do
         subject.retryable(:tries => n, :on_retry => callback){i += 1; raise E}
-      end.to raise_error
+      end.to raise_error E
 
       expect(i).to eq(n + 1)
 

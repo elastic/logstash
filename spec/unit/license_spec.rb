@@ -1,6 +1,7 @@
 # encoding: utf-8
-require_relative '../spec_helper'
-require 'rakelib/default_plugins'
+
+require 'spec_helper'
+require_relative '../../rakelib/default_plugins'
 
 describe "Project licenses" do
 
@@ -55,7 +56,7 @@ describe "Project licenses" do
         next unless runtime_spec
         next if skipped_dependencies.include?(runtime_spec.name)
         runtime_spec.licenses.each do |license|
-          expect(license.downcase).to match(expected_licenses), 
+          expect(license.downcase).to match(expected_licenses),
             lambda { "Runtime license check failed for gem #{runtime_spec.name} with version #{runtime_spec.version}" }
         end
       end
