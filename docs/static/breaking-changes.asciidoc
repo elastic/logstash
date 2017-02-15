@@ -148,7 +148,7 @@ NOTE: None of the short form options have changed!
 ==== RSpec testing script
 
 The `rspec` script is no longer bundled with Logstash release artifacts. This script has been used previously to 
-run unit tests for validating users Logstash configuration. While this was useful to some users, this mechanism assumed that Logstash users 
+run unit tests for validating Logstash configurations. While this was useful to some users, this mechanism assumed that Logstash users 
 were familiar with the RSpec framework, which is a Ruby testing framework.
 
 
@@ -220,13 +220,13 @@ The version numbers were found by checking the compatibility matrix for the indi
 [float]
 ==== Kafka Input Configuration Changes
 
-As described in the section <<plugin-versions, above>>, Kafka plugin has been updated to bring in new consumer features. 
-In addition, to the plugin being incompatible with 0.8.x version of Kafka broker, _most_ of the config options have 
+As described in the section <<plugin-versions, above>>, the Kafka plugin has been updated to bring in new consumer features. 
+In addition, to the plugin being incompatible with 0.8.x version of the Kafka broker, _most_ of the config options have 
 been changed to match the new consumer configurations from the Kafka Java consumer. Here's a list of important config options that have changed:
 
 * `topic_id` is renamed to `topics` and accepts an array of topics to consume from.
-* `zk_connect` has been dropped; you should use `bootstrap_servers`. There is no need for the consumer to go through ZooKeeper
-* `consumer_id` is renamed to `client_id`
+* `zk_connect` has been dropped; you should use `bootstrap_servers`. There is no need for the consumer to go through ZooKeeper.
+* `consumer_id` is renamed to `client_id`.
 
 We recommend users of the Kafka plugin to check the documentation for the latest <<plugins-inputs-kafka, config options>>.
 
