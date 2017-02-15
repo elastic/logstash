@@ -46,7 +46,7 @@ Available configuration options:
 
 [cols="<,<,<,<m",options="header",]
 |=======================================================================
-|Setting |Input type|Required|Default value
+|Setting |Input type|Required
 <% sorted_attributes.each do |name, config|
    next if config[:obsolete]
    next if config[:deprecated]
@@ -65,11 +65,6 @@ Available configuration options:
      annotation += "|Yes"
    else
      annotation += "|No"
-   end
-   if config.include?(:default)
-     annotation += "|`#{config[:default].inspect}`"
-   else
-     annotation += "|"
    end
 -%>
 | <<plugins-<%= section %>s-<%=config_name%>-<%=name%>>> <%= annotation %>
