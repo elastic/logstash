@@ -36,15 +36,13 @@ describe LogStash::PluginManager::GemInstaller do
 
       context "when we want the message" do
         it "display the message" do
-          expect(LogStash::PluginManager.ui).to receive(:info).with(message)
-          subject.install(simple_gem, true, temporary_gem_home)
+          expect(subject.install(simple_gem, true, temporary_gem_home)).to eq(message)
         end
       end
 
       context "when we dont want the message" do
         it "doesn't display the message" do
-          expect(LogStash::PluginManager.ui).not_to receive(:info).with(message)
-          subject.install(simple_gem, false, temporary_gem_home)
+          expect(subject.install(simple_gem, false, temporary_gem_home)).to be_nil
         end
       end
     end

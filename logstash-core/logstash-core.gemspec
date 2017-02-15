@@ -31,7 +31,7 @@ Gem::Specification.new do |gem|
 
   gem.add_runtime_dependency "sinatra", '~> 1.4', '>= 1.4.6'
   gem.add_runtime_dependency 'puma', '~> 2.16'
-  gem.add_runtime_dependency "jruby-openssl", "0.9.16" # >= 0.9.13 Required to support TLSv1.2
+  gem.add_runtime_dependency "jruby-openssl", "0.9.20" # >= 0.9.13 Required to support TLSv1.2
   gem.add_runtime_dependency "chronic_duration", "0.10.6"
 
   # TODO(sissel): Treetop 1.5.x doesn't seem to work well, but I haven't
@@ -43,7 +43,7 @@ Gem::Specification.new do |gem|
 
   # filetools and rakelib
   gem.add_runtime_dependency "minitar", "~> 0.5.4"
-  gem.add_runtime_dependency "rubyzip", "~> 1.1.7"
+  gem.add_runtime_dependency "rubyzip", "~> 1.2.1"
   gem.add_runtime_dependency "thread_safe", "~> 0.3.5" #(Apache 2.0 license)
 
   gem.add_runtime_dependency "jrjackson", "~> 0.4.2" #(Apache 2.0 license)

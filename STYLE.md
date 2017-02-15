@@ -95,3 +95,4 @@ inconsistencies between ruby versions.
 
     # This is good.
     str[0, 1]
+

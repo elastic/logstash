@@ -7,6 +7,7 @@ require "bundler/dsl"
 require "bundler/injector"
 require "bundler/shared_helpers"
 require "pluginmanager/gemfile"
+require "rubygems/specification"
 require "pathname"
 
 
@@ -23,6 +24,12 @@ end
 module Bundler
   class LogstashInjector < ::Bundler::Injector
     def self.inject!(new_deps, options = { :gemfile => LogStash::Environment::GEMFILE, :lockfile => LogStash::Environment::LOCKFILE })
+      # Make sure all the available Specifications
+      # are loaded before trying to inject any new gems
+      # If we dont do this, we will have a stale index that wont have the gems
+      # that we just have installed.
+      ::Gem::Specification.reset
+
       gemfile = options.delete(:gemfile)
       lockfile = options.delete(:lockfile)
 

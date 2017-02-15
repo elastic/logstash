@@ -13,10 +13,6 @@ require "json"
 require_relative "../support/helpers"
 require_relative "../support/matchers"
 
-class NullRunner
-  def run(args); end
-end
-
 describe LogStash::Runner do
 
   subject { LogStash::Runner }
@@ -174,12 +170,14 @@ describe LogStash::Runner do
         let(:queue_override_path) { "/tmp/queue-override_path" }
 
         it "should set data paths" do
+          LogStash::SETTINGS.set("path.queue", queue_override_path)
+
           expect(LogStash::Agent).to receive(:new) do |settings|
             expect(settings.get("path.data")).to eq(test_data_path)
             expect(settings.get("path.queue")).to eq(queue_override_path)
           end
 
-          LogStash::SETTINGS.set("path.queue", queue_override_path)
+
 
           args = ["--path.data", test_data_path, "-e", pipeline_string]
           subject.run("bin/logstash", args)

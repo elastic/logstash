@@ -24,7 +24,7 @@ describe LogStash::Filters::Base do
   end
 
   it "should provide class public API" do
-    [:register, :filter, :multi_filter, :execute, :threadsafe?, :filter_matched, :filter?, :close].each do |method|
+    [:register, :filter, :multi_filter, :execute, :threadsafe?, :close].each do |method|
       expect(subject).to respond_to(method)
     end
   end
