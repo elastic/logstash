@@ -26,12 +26,16 @@ module LogStash module Docgen
     BUNDLER_CMD = "bundler install --jobs 8 --quiet --path /tmp/vendor"
     RAKE_VENDOR_CMD = "bundle exec rake vendor"
     RAKE_DOC_ASCIIDOC = "bundle exec rake doc:asciidoc"
+    DOCUMENT_SEPARATOR = "~~~ASCIIDOC_DOCUMENT~~~\n"
 
     # Content needed to inject to make the generator work
     GEMFILE_CHANGES = "gem 'logstash-docgen', :path => \"#{File.expand_path(File.join(File.dirname(__FILE__), "..", "..", ".."))}\""
 
     # require devutils to fix an issue when the logger is not found
-    RAKEFILE_CHANGES = "require 'logstash/devutils/rspec/spec_helper'; require 'logstash/docgen/plugin_doc'"
+    RAKEFILE_CHANGES = "
+    require 'logstash/devutils/rspec/spec_helper'
+    puts '#{DOCUMENT_SEPARATOR}'
+    require 'logstash/docgen/plugin_doc'"
 
     attr_reader :path, :full_name
 
@@ -89,7 +93,8 @@ module LogStash module Docgen
       output = run_in_directory(RAKE_DOC_ASCIIDOC)
       destination = File.join(destination, "#{type}s")
       FileUtils.mkdir_p(destination)
-      IO.write(File.join(destination, "#{name}.asciidoc"), output.read)
+      content = output.read.split(DOCUMENT_SEPARATOR).last
+      IO.write(File.join(destination, "#{name}.asciidoc"), content)
     end
 
     def bundle_install
