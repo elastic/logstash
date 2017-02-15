@@ -18,6 +18,7 @@ module LogStash::Docgen
     NEW_CLASS_DEFINITION_RE_ML = /^\s*class\s(.*) < *(::)?LogStash::(Outputs|Filters|Inputs|Codecs)::(\w+)/
     CONFIG_OPTION_RE = /^\s*((mod|base).)?config +[^=].*/
     CONFIG_NAME_RE = /^ *config_name .*/
+    RESET_BUFFER_RE = /^require\s("|')\w+("|')/
 
     def initialize(context)
       @rules =  [
@@ -26,6 +27,7 @@ module LogStash::Docgen
         [ NEW_CLASS_DEFINITION_RE_ML, :parse_new_class_description ],
         [ CONFIG_OPTION_RE, :parse_config ],
         [ CONFIG_NAME_RE, :parse_config_name ],
+        [ RESET_BUFFER_RE, :reset_buffer ]
       ]
 
       @context = context
