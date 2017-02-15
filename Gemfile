@@ -6,11 +6,6 @@ gem "logstash-core", :path => "./logstash-core"
 gem "logstash-core-queue-jruby", :path => "./logstash-core-queue-jruby"
 gem "logstash-core-event-java", :path => "./logstash-core-event-java"
 gem "logstash-core-plugin-api", :path => "./logstash-core-plugin-api"
-gem "rspec-core", :path => "/Users/guy/elastic/rspec-core", :group => :development
-gem "rspec-expectations", "~> 3.5", :group => :development
-gem "rspec-mocks", "~> 3.5", :group => :development
-gem "rspec-support", "~> 3.5", :group => :development
-#
 gem "paquet", "~> 0.2.0"
 gem "ruby-progressbar", "~> 1.8.1"
 gem "builder", "~> 3.2.2"
@@ -18,7 +13,7 @@ gem "file-dependencies", "0.1.6"
 gem "ci_reporter_rspec", "1.0.0", :group => :development
 gem "simplecov", :group => :development
 gem "tins", "1.6", :group => :development
-# gem "rspec", "~> 3.5", :group => :development
+gem "rspec", "~> 3.5", :group => :development
 gem "logstash-devutils", :group => :development
 gem "benchmark-ips", :group => :development
 gem "octokit", "3.8.0", :group => :build
