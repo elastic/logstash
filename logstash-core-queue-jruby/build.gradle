@@ -112,8 +112,8 @@ idea {
 dependencies {
     testCompile group: 'junit', name: 'junit', version: '4.12'
     provided group: 'org.jruby', name: 'jruby-core', version: '1.7.25'
-    provided files('../logstash-core-event-java/lib/logstash-core-event-java/logstash-core-event-java.jar')
-    provided files('../logstash-core/lib/logstash-core/logstash-core.jar')
+    provided project(':logstash-core-event-java')
+    provided project(':logstash-core')
 }
 
 // See http://www.gradle.org/docs/current/userguide/gradle_wrapper.html

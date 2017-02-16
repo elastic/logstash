@@ -1,2 +1,4 @@
 rootProject.name = 'logstash-core-event-java'
 
+include ':logstash-core'
+project(':logstash-core').projectDir = new File('../logstash-core')
