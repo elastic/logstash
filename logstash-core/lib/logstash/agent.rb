@@ -270,8 +270,7 @@ class LogStash::Agent
     old_pipeline = @pipelines[id]
     new_config = fetch_config(old_pipeline.settings)
     if old_pipeline.config_str == new_config
-      @logger.debug("no configuration change for pipeline",
-                    :pipeline => id, :config => new_config)
+      @logger.debug("no configuration change for pipeline", :pipeline => id)
       return
     end
 
