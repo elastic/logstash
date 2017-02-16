@@ -186,6 +186,7 @@ has stopped existing before transitioning to only using `.keyword`; this will wa
 help users to avoid having to relearn operations.
 
 [float]
+[[plugin-versions]]
 ==== Plugin Versions
 
 Logstash is unique amongst the Elastic Stack with respect to its plugins. Unlike Elasticsearch and Kibana, which both 
