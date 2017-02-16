@@ -106,7 +106,7 @@ dependencies {
     testCompile 'junit:junit:4.12'
     testCompile 'net.javacrumbs.json-unit:json-unit:1.9.0'
     provided 'org.jruby:jruby-core:1.7.25'
-    provided files('../logstash-core/lib/logstash-core/logstash-core.jar')
+    provided project(':logstash-core')
 }
 
 // See http://www.gradle.org/docs/current/userguide/gradle_wrapper.html
