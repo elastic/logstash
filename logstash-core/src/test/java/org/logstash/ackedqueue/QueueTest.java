@@ -40,6 +40,8 @@ public class QueueTest {
         q.open();
 
         assertThat(q.nonBlockReadBatch(1), is(equalTo(null)));
+
+        q.close();
     }
 
     @Test
@@ -55,6 +57,8 @@ public class QueueTest {
         assertThat(b.getElements().size(), is(equalTo(1)));
         assertThat(b.getElements().get(0).toString(), is(equalTo(element.toString())));
         assertThat(q.nonBlockReadBatch(1), is(equalTo(null)));
+
+        q.close();
     }
 
     @Test
@@ -70,6 +74,8 @@ public class QueueTest {
         assertThat(b.getElements().size(), is(equalTo(1)));
         assertThat(b.getElements().get(0).toString(), is(equalTo(element.toString())));
         assertThat(q.nonBlockReadBatch(2), is(equalTo(null)));
+
+        q.close();
     }
 
     @Test
@@ -93,6 +99,8 @@ public class QueueTest {
 
         assertThat(b.getElements().size(), is(equalTo(1)));
         assertThat(b.getElements().get(0).toString(), is(equalTo(elements.get(2).toString())));
+
+        q.close();
     }
 
     @Test
@@ -135,6 +143,8 @@ public class QueueTest {
 
         b = q.nonBlockReadBatch(10);
         assertThat(b, is(equalTo(null)));
+
+        q.close();
     }
 
 
@@ -176,6 +186,8 @@ public class QueueTest {
         b.close();
 
         assertThat(q.getHeadPage().isFullyAcked(), is(equalTo(true)));
+
+        q.close();
     }
 
     @Test
@@ -256,6 +268,8 @@ public class QueueTest {
         assertThat(c.getMinSeqNum(), is(equalTo(3L)));
         assertThat(c.getFirstUnackedSeqNum(), is(equalTo(5L)));
         assertThat(c.getFirstUnackedPageNum(), is(equalTo(1)));
+
+        q.close();
     }
 
     @Test
@@ -297,6 +311,8 @@ public class QueueTest {
             }
 
             assertThat(q.getTailPages().size(), is(equalTo(0)));
+
+            q.close();
         }
     }
 
@@ -346,6 +362,8 @@ public class QueueTest {
 
         // since we did not ack and pages hold a single item
         assertThat(q.getTailPages().size(), is(equalTo(ELEMENT_COUNT)));
+
+        q.close();
     }
 
     @Test
@@ -399,6 +417,8 @@ public class QueueTest {
         assertThat(q.getHeadPage().getElementCount() > 0L, is(true));
         assertThat(q.getHeadPage().unreadCount(), is(equalTo(1L)));
         assertThat(q.unreadCount, is(equalTo(1L)));
+
+        q.close();
     }
 
     @Test(timeout = 5000)
@@ -433,6 +453,8 @@ public class QueueTest {
         assertThat(q.isFull(), is(true));
 
         executor.shutdown();
+
+        q.close();
     }
 
     @Test(timeout = 5000)
@@ -476,6 +498,8 @@ public class QueueTest {
         assertThat(q.isFull(), is(false));
 
         executor.shutdown();
+
+        q.close();
     }
 
     @Test(timeout = 5000)
@@ -516,6 +540,8 @@ public class QueueTest {
         assertThat(q.isFull(), is(true)); // queue should still be full
 
         executor.shutdown();
+
+        q.close();
     }
 
     @Test

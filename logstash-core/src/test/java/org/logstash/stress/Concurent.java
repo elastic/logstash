@@ -162,6 +162,8 @@ public class Concurent {
         } else {
             System.out.println("SUCCESS, result size=" + output.size() + ", elapsed=" + Duration.between(start, end) + ", rate=" + (new Float(ELEMENT_COUNT) / Duration.between(start, end).toMillis()) * 1000);
         }
+
+        q.close();
     }
 
 

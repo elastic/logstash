@@ -29,6 +29,8 @@ public class HeadPageTest {
         assertThat(p.isFullyAcked(), is(false));
         assertThat(p.hasSpace(10), is(true));
         assertThat(p.hasSpace(100), is(false));
+
+        q.close();
     }
 
     @Test
@@ -47,6 +49,8 @@ public class HeadPageTest {
         assertThat(p.hasSpace(element.serialize().length), is(false));
         assertThat(p.isFullyRead(), is(false));
         assertThat(p.isFullyAcked(), is(false));
+
+        q.close();
     }
 
     @Test
@@ -71,6 +75,8 @@ public class HeadPageTest {
         assertThat(p.hasSpace(element.serialize().length), is(false));
         assertThat(p.isFullyRead(), is(true));
         assertThat(p.isFullyAcked(), is(false));
+
+        q.close();
     }
 
     @Test
@@ -95,6 +101,8 @@ public class HeadPageTest {
         assertThat(p.hasSpace(element.serialize().length), is(false));
         assertThat(p.isFullyRead(), is(true));
         assertThat(p.isFullyAcked(), is(false));
+
+        q.close();
     }
 
     // disabled test until we figure what to do in this condition

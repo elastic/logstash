@@ -22,21 +22,104 @@ require "logstash/instrument/collector"
 require "logstash/output_delegator"
 require "logstash/filter_delegator"
 
-module LogStash; class Pipeline
+module LogStash; class BasePipeline
   include LogStash::Util::Loggable
 
-  attr_reader :inputs,
-    :filters,
-    :outputs,
+  attr_reader :config_str, :config_hash, :inputs, :filters, :outputs, :pipeline_id
+
+  RELOAD_INCOMPATIBLE_PLUGINS = [
+      "LogStash::Inputs::Stdin"
+  ]
+
+  def initialize(config_str, settings = SETTINGS)
+    @logger = self.logger
+    @config_str = config_str
+    @config_hash = Digest::SHA1.hexdigest(@config_str)
+    # Every time #plugin is invoked this is incremented to give each plugin
+    # a unique id when auto-generating plugin ids
+    @plugin_counter ||= 0
+
+    @pipeline_id = settings.get_value("pipeline.id") || self.object_id
+
+    # A list of plugins indexed by id
+    @plugins_by_id = {}
+    @inputs = nil
+    @filters = nil
+    @outputs = nil
+
+    grammar = LogStashConfigParser.new
+    parsed_config = grammar.parse(config_str)
+    raise(ConfigurationError, grammar.failure_reason) if parsed_config.nil?
+
+    config_code = parsed_config.compile
+
+    # config_code = BasePipeline.compileConfig(config_str)
+
+    if settings.get_value("config.debug") && @logger.debug?
+      @logger.debug("Compiled pipeline code", :code => config_code)
+    end
+
+    # Evaluate the config compiled code that will initialize all the plugins and define the
+    # filter and output methods.
+    begin
+      eval(config_code)
+    rescue => e
+      raise e
+    end
+  end
+
+  def plugin(plugin_type, name, *args)
+    @plugin_counter += 1
+
+    # Collapse the array of arguments into a single merged hash
+    args = args.reduce({}, &:merge)
+
+    id = if args["id"].nil? || args["id"].empty?
+           args["id"] = "#{@config_hash}-#{@plugin_counter}"
+         else
+           args["id"]
+         end
+
+    raise ConfigurationError, "Two plugins have the id '#{id}', please fix this conflict" if @plugins_by_id[id]
+
+    @plugins_by_id[id] = true
+
+    # use NullMetric if called in the BasePipeline context otherwise use the @metric value
+    metric = @metric || Instrument::NullMetric.new
+
+    pipeline_scoped_metric = metric.namespace([:stats, :pipelines, pipeline_id.to_s.to_sym, :plugins])
+
+    # Scope plugins of type 'input' to 'inputs'
+    type_scoped_metric = pipeline_scoped_metric.namespace("#{plugin_type}s".to_sym)
+
+    klass = Plugin.lookup(plugin_type, name)
+
+    if plugin_type == "output"
+      OutputDelegator.new(@logger, klass, type_scoped_metric, OutputDelegatorStrategyRegistry.instance,  args)
+    elsif plugin_type == "filter"
+      FilterDelegator.new(@logger, klass, type_scoped_metric, args)
+    else # input
+      input_plugin = klass.new(args)
+      input_plugin.metric = type_scoped_metric.namespace(id)
+      input_plugin
+    end
+  end
+
+  def non_reloadable_plugins
+    (inputs + filters + outputs).select do |plugin|
+      RELOAD_INCOMPATIBLE_PLUGINS.include?(plugin.class.name)
+    end
+  end
+end; end
+
+module LogStash; class Pipeline < BasePipeline
+  attr_reader \
     :worker_threads,
     :events_consumed,
     :events_filtered,
     :reporter,
-    :pipeline_id,
     :started_at,
     :thread,
-    :config_str,
-    :config_hash,
     :settings,
     :metric,
     :filter_queue_client,
@@ -45,29 +128,7 @@ module LogStash; class Pipeline
 
   MAX_INFLIGHT_WARN_THRESHOLD = 10_000
 
-  RELOAD_INCOMPATIBLE_PLUGINS = [
-    "LogStash::Inputs::Stdin"
-  ]
-
   def initialize(config_str, settings = SETTINGS, namespaced_metric = nil)
-    @logger = self.logger
-    @config_str = config_str
-    @config_hash = Digest::SHA1.hexdigest(@config_str)
-    # Every time #plugin is invoked this is incremented to give each plugin
-    # a unique id when auto-generating plugin ids
-    @plugin_counter ||= 0
-    @settings = settings
-    @pipeline_id = @settings.get_value("pipeline.id") || self.object_id
-    @reporter = PipelineReporter.new(@logger, self)
-
-    # A list of plugins indexed by id
-    @plugins_by_id = {}
-    @inputs = nil
-    @filters = nil
-    @outputs = nil
-
-    @worker_threads = []
-
     # This needs to be configured before we evaluate the code to make
     # sure the metric instance is correctly send to the plugins to make the namespace scoping work
     @metric = if namespaced_metric
@@ -76,29 +137,12 @@ module LogStash; class Pipeline
                 Instrument::NullMetric.new
               end
 
-    grammar = LogStashConfigParser.new
-    @config = grammar.parse(config_str)
-    if @config.nil?
-      raise ConfigurationError, grammar.failure_reason
-    end
-    # This will compile the config to ruby and evaluate the resulting code.
-    # The code will initialize all the plugins and define the
-    # filter and output methods.
-    code = @config.compile
-    @code = code
+    @settings = settings
+    @reporter = PipelineReporter.new(@logger, self)
+    @worker_threads = []
 
-    # The config code is hard to represent as a log message...
-    # So just print it.
+    super(config_str, settings)
 
-    if @settings.get_value("config.debug") && @logger.debug?
-      @logger.debug("Compiled pipeline code", :code => code)
-    end
-
-    begin
-      eval(code)
-    rescue => e
-      raise
-    end
     @queue = build_queue_from_settings
     @input_queue_client = @queue.write_client
     @filter_queue_client = @queue.read_client
@@ -202,14 +246,18 @@ module LogStash; class Pipeline
     shutdown_flusher
     shutdown_workers
 
-    @filter_queue_client.close
-    @queue.close
+    close
 
     @logger.debug("Pipeline #{@pipeline_id} has been shutdown")
 
     # exit code
     return 0
   end # def run
+
+  def close
+    @filter_queue_client.close
+    @queue.close
+  end
 
   def transition_to_running
     @running.make_true
@@ -227,12 +275,32 @@ module LogStash; class Pipeline
     @running.false?
   end
 
+  # register_plugin simply calls the plugin #register method and catches & logs any error
+  # @param plugin [Plugin] the plugin to register
+  # @return [Plugin] the registered plugin
+  def register_plugin(plugin)
+    plugin.register
+    plugin
+  rescue => e
+    @logger.error("Error registering plugin", :plugin => plugin.inspect, :error => e.message)
+    raise e
+  end
+
+  # register_plugins calls #register_plugin on the plugins list and upon exception will call Plugin#do_close on all registered plugins
+  # @param plugins [Array[Plugin]] the list of plugins to register
+  def register_plugins(plugins)
+    registered = []
+    plugins.each { |plugin| registered << register_plugin(plugin) }
+  rescue => e
+    registered.each(&:do_close)
+    raise e
+  end
+
   def start_workers
     @worker_threads.clear # In case we're restarting the pipeline
     begin
-      start_inputs
-      @outputs.each {|o| o.register }
-      @filters.each {|f| f.register }
+      register_plugins(@outputs)
+      register_plugins(@filters)
 
       pipeline_workers = safe_pipeline_worker_count
       batch_size = @settings.get("pipeline.batch.size")
@@ -262,6 +330,16 @@ module LogStash; class Pipeline
           Util.set_thread_name("[#{pipeline_id}]>worker#{t}")
           worker_loop(batch_size, batch_delay)
         end
+      end
+
+      # inputs should be started last, after all workers
+      begin
+        start_inputs
+      rescue => e
+        # if there is any exception in starting inputs, make sure we shutdown workers.
+        # exception will already by logged in start_inputs
+        shutdown_workers
+        raise e
       end
     ensure
       # it is important to guarantee @ready to be true after the startup sequence has been completed
@@ -354,10 +432,11 @@ module LogStash; class Pipeline
     end
     @inputs += moreinputs
 
-    @inputs.each do |input|
-      input.register
-      start_input(input)
-    end
+    # first make sure we can register all input plugins
+    register_plugins(@inputs)
+
+    # then after all input plugins are sucessfully registered, start them
+    @inputs.each { |input| start_input(input) }
   end
 
   def start_input(plugin)
@@ -431,41 +510,6 @@ module LogStash; class Pipeline
 
     @filters.each(&:do_close)
     @outputs.each(&:do_close)
-  end
-
-  def plugin(plugin_type, name, *args)
-    @plugin_counter += 1
-
-    # Collapse the array of arguments into a single merged hash
-    args = args.reduce({}, &:merge)
-
-    id = if args["id"].nil? || args["id"].empty?
-           args["id"] = "#{@config_hash}-#{@plugin_counter}"
-         else
-           args["id"]
-         end
-
-    raise ConfigurationError, "Two plugins have the id '#{id}', please fix this conflict" if @plugins_by_id[id]
-    
-    pipeline_scoped_metric = metric.namespace([:stats, :pipelines, pipeline_id.to_s.to_sym, :plugins])
-
-    klass = Plugin.lookup(plugin_type, name)
-
-    # Scope plugins of type 'input' to 'inputs'
-    type_scoped_metric = pipeline_scoped_metric.namespace("#{plugin_type}s".to_sym)
-    plugin = if plugin_type == "output"
-               OutputDelegator.new(@logger, klass, type_scoped_metric,
-                                   OutputDelegatorStrategyRegistry.instance,
-                                   args)
-             elsif plugin_type == "filter"
-               FilterDelegator.new(@logger, klass, type_scoped_metric, args)
-             else # input
-               input_plugin = klass.new(args)
-               input_plugin.metric = type_scoped_metric.namespace(id)
-               input_plugin
-             end
-    
-    @plugins_by_id[id] = plugin
   end
 
   # for backward compatibility in devutils for the rspec helpers, this method is not used
@@ -548,12 +592,6 @@ module LogStash; class Pipeline
       .each {|t| t.delete("status") }
   end
 
-  def non_reloadable_plugins
-    (inputs + filters + outputs).select do |plugin|
-      RELOAD_INCOMPATIBLE_PLUGINS.include?(plugin.class.name)
-    end
-  end
-
   def collect_stats
     pipeline_metric = @metric.namespace([:stats, :pipelines, pipeline_id.to_s.to_sym, :queue])
     pipeline_metric.gauge(:type, settings.get("queue.type"))
@@ -590,5 +628,4 @@ module LogStash; class Pipeline
       :flushing => @flushing
     }
   end
-
-end end
+end; end

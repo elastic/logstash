@@ -249,7 +249,7 @@ class LogStash::Runner < Clamp::StrictCommand
       config_loader = LogStash::Config::Loader.new(logger)
       config_str = config_loader.format_config(setting("path.config"), setting("config.string"))
       begin
-        LogStash::Pipeline.new(config_str)
+        LogStash::BasePipeline.new(config_str)
         puts "Configuration OK"
         logger.info "Using config.test_and_exit mode. Config Validation Result: OK. Exiting Logstash"
         return 0

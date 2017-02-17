@@ -52,6 +52,10 @@ describe LogStash::Agent do
       }
     end
 
+    after(:each) do
+      subject.close_pipelines
+    end
+
     it "should delegate settings to new pipeline" do
       expect(LogStash::Pipeline).to receive(:new) do |arg1, arg2|
         expect(arg1).to eq(config_string)
@@ -262,10 +266,14 @@ describe LogStash::Agent do
       subject.register_pipeline(pipeline_id, pipeline_settings)
     end
 
+    after(:each) do
+      subject.close_pipelines
+    end
+
     context "when fetching a new state" do
       it "upgrades the state" do
         expect(subject).to receive(:fetch_config).and_return(second_pipeline_config)
-        expect(subject).to receive(:upgrade_pipeline).with(pipeline_id, kind_of(LogStash::Pipeline))
+        expect(subject).to receive(:upgrade_pipeline).with(pipeline_id, kind_of(LogStash::Settings), second_pipeline_config)
         subject.reload_state!
       end
     end
@@ -295,6 +303,7 @@ describe LogStash::Agent do
 
       after :each do
         ENV["FOO"] = @foo_content
+        subject.close_pipelines
       end
 
       it "doesn't upgrade the state" do
@@ -319,14 +328,16 @@ describe LogStash::Agent do
     end
 
     after(:each) do
-      subject.shutdown
+      subject.close_pipelines
     end
 
     context "when the upgrade fails" do
       before :each do
         allow(subject).to receive(:fetch_config).and_return(new_pipeline_config)
         allow(subject).to receive(:create_pipeline).and_return(nil)
-        allow(subject).to receive(:stop_pipeline)
+        allow(subject).to receive(:stop_pipeline) do |id|
+          subject.close_pipeline(id)
+        end
       end
 
       it "leaves the state untouched" do
@@ -346,16 +357,20 @@ describe LogStash::Agent do
       let(:new_config) { "input { generator { count => 1 } } output { }" }
       before :each do
         allow(subject).to receive(:fetch_config).and_return(new_config)
-        allow(subject).to receive(:stop_pipeline)
         allow(subject).to receive(:start_pipeline)
+        allow(subject).to receive(:stop_pipeline) do |id|
+           subject.close_pipeline(id)
+        end
       end
       it "updates the state" do
         subject.send(:"reload_pipeline!", pipeline_id)
         expect(subject.pipelines[pipeline_id].config_str).to eq(new_config)
       end
       it "starts the pipeline" do
-        expect(subject).to receive(:stop_pipeline)
         expect(subject).to receive(:start_pipeline)
+        expect(subject).to receive(:stop_pipeline) do |id|
+          subject.close_pipeline(id)
+        end
         subject.send(:"reload_pipeline!", pipeline_id)
       end
     end
@@ -416,6 +431,12 @@ describe LogStash::Agent do
     let!(:dummy_output) { LogStash::Outputs::DroppingDummyOutput.new }
     let!(:dummy_output2) { DummyOutput2.new }
     let(:initial_generator_threshold) { 1000 }
+    let(:pipeline_thread) do
+      Thread.new do
+        subject.register_pipeline("main",  pipeline_settings)
+        subject.execute
+      end
+    end
 
     before :each do
       allow(LogStash::Outputs::DroppingDummyOutput).to receive(:new).at_least(:once).with(anything).and_return(dummy_output)
@@ -429,10 +450,11 @@ describe LogStash::Agent do
       @abort_on_exception = Thread.abort_on_exception
       Thread.abort_on_exception = true
 
-      @t = Thread.new do
-        subject.register_pipeline("main",  pipeline_settings)
-        subject.execute
-      end
+      pipeline_thread
+      # @t = Thread.new do
+      #   subject.register_pipeline("main",  pipeline_settings)
+      #   subject.execute
+      # end
 
       # wait for some events to reach the dummy_output
       sleep(0.01) until dummy_output.events_received > initial_generator_threshold
@@ -441,8 +463,8 @@ describe LogStash::Agent do
     after :each do
       begin
         subject.shutdown
-        Stud.stop!(@t)
-        @t.join
+        Stud.stop!(pipeline_thread)
+        pipeline_thread.join
       ensure
         Thread.abort_on_exception = @abort_on_exception
       end
@@ -451,8 +473,8 @@ describe LogStash::Agent do
     context "when reloading a good config" do
       let(:new_config_generator_counter) { 500 }
       let(:new_config) { "input { generator { count => #{new_config_generator_counter} } } output { dummyoutput2 {} }" }
-      before :each do
 
+      before :each do
         File.open(config_path, "w") do |f|
           f.write(new_config)
           f.fsync
