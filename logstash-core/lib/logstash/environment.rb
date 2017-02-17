@@ -56,6 +56,15 @@ module LogStash
   # Compute the default queue path based on `path.data`
   default_queue_file_path = ::File.join(SETTINGS.get("path.data"), "queue")
   SETTINGS.register Setting::WritableDirectory.new("path.queue", default_queue_file_path)
+  
+  SETTINGS.on_post_process do |settings|
+    # If the data path is overriden but the queue path isn't recompute the queue path
+    # We need to do this at this stage because of the weird execution order
+    # our monkey-patched Clamp follows
+    if settings.set?("path.data") && !settings.set?("path.queue")
+      settings.set_value("path.queue", ::File.join(settings.get("path.data"), "queue"))
+    end
+  end
 
   module Environment
     extend self
