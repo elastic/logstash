@@ -55,6 +55,20 @@ describe LogStash::QueueFactory do
         queue.close
       end
     end
+
+    describe "per pipeline id subdirectory creation" do
+      let(:queue_path) { ::File.join(settings.get("path.queue"), pipeline_id) }
+
+      after :each do
+        FileUtils.rmdir(queue_path)
+      end
+
+      it "creates a queue directory based on the pipeline id" do
+        expect(Dir.exist?(queue_path)).to be_falsey
+        queue = subject.create(settings)
+        expect(Dir.exist?(queue_path)).to be_truthy
+      end
+    end
   end
 
   context "when `queue.type` is `memory_acked`" do
