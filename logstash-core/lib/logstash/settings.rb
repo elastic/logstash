@@ -108,6 +108,20 @@ module LogStash
     def from_yaml(yaml_path)
       settings = read_yaml(::File.join(yaml_path, "logstash.yml"))
       self.merge(flatten_hash(settings), true)
+      self
+    end
+    
+    def post_process
+      if @post_process_callbacks
+        @post_process_callbacks.each do |callback|
+          callback.call(self)
+        end
+      end
+    end
+    
+    def on_post_process(&block)
+      @post_process_callbacks ||= []
+      @post_process_callbacks << block
     end
 
     def validate_all
@@ -232,7 +246,6 @@ module LogStash
           @default = default
         end
       end
-
       def set(value)
         coerced_value = coerce(value)
         validate(coerced_value)
@@ -520,4 +533,3 @@ module LogStash
 
   SETTINGS = Settings.new
 end
-

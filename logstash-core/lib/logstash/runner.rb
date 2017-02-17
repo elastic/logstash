@@ -184,6 +184,11 @@ class LogStash::Runner < Clamp::StrictCommand
   end
 
   def execute
+    # Only when execute is have the CLI options been added to the @settings
+    # We invoke post_process to apply extra logic to them.
+    # The post_process callbacks have been added in environment.rb
+    @settings.post_process
+    
     require "logstash/util"
     require "logstash/util/java_version"
     require "stud/task"
