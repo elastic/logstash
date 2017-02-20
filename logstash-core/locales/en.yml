@@ -98,6 +98,8 @@ en:
         the '-f yourlogstash.conf' flag?
       reload-without-config-path: >-
         Configuration reloading also requires passing a configuration path with '-f yourlogstash.conf'
+      locked-data-path: >-
+        Logstash could not be started because there is already another instance using the configured data directory.  If you wish to run multiple instances, you must change the "path.data" setting.
       invalid-shell: >-
         Invalid option for interactive Ruby shell. Use either "irb" or "pry"
       configtest-flag-information: |-
