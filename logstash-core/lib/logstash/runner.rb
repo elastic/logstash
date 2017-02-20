@@ -20,6 +20,8 @@ require "logstash/settings"
 require "logstash/version"
 require "logstash/plugins/registry"
 
+java_import 'org.logstash.FileLockFactory'
+
 class LogStash::Runner < Clamp::StrictCommand
   include LogStash::Util::Loggable
   # The `path.settings` and `path.logs` need to be defined in the runner instead of the `logstash-core/lib/logstash/environment.rb`
@@ -264,6 +266,9 @@ class LogStash::Runner < Clamp::StrictCommand
       end
     end
 
+    # lock path.data before starting the agent
+    @data_path_lock = FileLockFactory.getDefault().obtainLock(setting("path.data"), ".lock");
+
     @agent = create_agent(@settings)
 
     @agent.register_pipeline(@settings)
@@ -288,6 +293,9 @@ class LogStash::Runner < Clamp::StrictCommand
 
     agent_return
 
+  rescue org.logstash.LockException => e
+    logger.fatal(I18n.t("logstash.runner.locked-data-path", :path => setting("path.data")))
+    return 1
   rescue Clamp::UsageError => e
     $stderr.puts "ERROR: #{e.message}"
     show_short_help
@@ -304,6 +312,7 @@ class LogStash::Runner < Clamp::StrictCommand
     Stud::untrap("INT", sigint_id) unless sigint_id.nil?
     Stud::untrap("TERM", sigterm_id) unless sigterm_id.nil?
     Stud::untrap("HUP", sighup_id) unless sighup_id.nil?
+    FileLockFactory.getDefault().releaseLock(@data_path_lock) if @data_path_lock
     @log_fd.close if @log_fd
   end # def self.main
 
