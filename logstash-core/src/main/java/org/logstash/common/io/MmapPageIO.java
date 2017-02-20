@@ -1,5 +1,8 @@
 package org.logstash.common.io;
 
+import sun.misc.Cleaner;
+import sun.nio.ch.DirectBuffer;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
@@ -103,9 +106,16 @@ public class MmapPageIO extends AbstractByteBufferPageIO {
     public void close() throws IOException {
         if (this.buffer != null) {
             this.buffer.force();
+
+            // calling the cleaner() method releases resources held by this direct buffer which would be held until GC otherwise.
+            // see https://github.com/elastic/logstash/pull/6740
+            Cleaner cleaner = ((DirectBuffer) this.buffer).cleaner();
+            if (cleaner != null) { cleaner.clean(); }
+
         }
-        if (this.channel != null && this.channel.isOpen()) {
-            this.channel.close();
+        if (this.channel != null) {
+            if (this.channel.isOpen()) { this.channel.force(false); }
+            this.channel.close(); // close can be called multiple times
         }
         this.channel = null;
         this.buffer = null;
