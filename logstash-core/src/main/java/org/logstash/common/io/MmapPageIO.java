@@ -1,7 +1,12 @@
 package org.logstash.common.io;
 
+<<<<<<< HEAD
 import org.logstash.ackedqueue.Queueable;
 import org.logstash.ackedqueue.SequencedList;
+=======
+import sun.misc.Cleaner;
+import sun.nio.ch.DirectBuffer;
+>>>>>>> 26e2c15... memory mapped buffer cleaner
 
 import java.io.File;
 import java.io.IOException;
@@ -226,8 +231,18 @@ public class MmapPageIO implements PageIO {
 
     @Override
     public void close() throws IOException {
-        if (this.channel != null && this.channel.isOpen()) {
-            this.channel.close();
+        if (this.buffer != null) {
+            this.buffer.force();
+
+            // calling the cleaner() method releases resources held by this direct buffer which would be held until GC otherwise.
+            // see https://github.com/elastic/logstash/pull/6740
+            Cleaner cleaner = ((DirectBuffer) this.buffer).cleaner();
+            if (cleaner != null) { cleaner.clean(); }
+
+        }
+        if (this.channel != null) {
+            if (this.channel.isOpen()) { this.channel.force(false); }
+            this.channel.close(); // close can be called multiple times
         }
         this.channel = null;
         this.buffer = null;

@@ -46,7 +46,7 @@ public class FileCheckpointIOTest {
         Path fullFileName = Paths.get(checkpointFolder, "checkpoint.head");
         byte[] contents = Files.readAllBytes(fullFileName);
         URL url = this.getClass().getResource("checkpoint.head");
-        Path path = Paths.get(url.getPath());
+        Path path = Paths.get(url.toURI());
         byte[] compare = Files.readAllBytes(path);
         assertThat(contents, is(equalTo(compare)));
     }
