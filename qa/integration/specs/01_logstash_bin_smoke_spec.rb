@@ -46,46 +46,80 @@ describe "Test Logstash instance" do
     end
   end
 
-  it "multiple of them can be started on the same box with automatically trying different ports for HTTP server" do
-    if @ls2.settings.feature_flag != "persistent_queues"
-      # Make sure that each instance use a different `path.queue`
-      @ls1.spawn_logstash("-f", config1)
+  context "multiple instances" do
+    it "cannot be started on the same box with the same path.data" do
+      tmp_path = Stud::Temporary.pathname
+      tmp_data_path = File.join(tmp_path, "data")
+      FileUtils.mkdir_p(tmp_data_path)
+      @ls1.spawn_logstash("-f", config1, "--path.data", tmp_data_path)
       sleep(0.1) until File.exist?(file_config1) && File.size(file_config1) > 0 # Everything is started succesfully at this point
       expect(is_port_open?(9600)).to be true
 
-      puts "will try to start the second LS instance on 9601"
+      @ls2.spawn_logstash("-f", config2, "--path.data", tmp_data_path)
+      try(20) do
+        expect(@ls2.exited?).to be(true)
+      end
+      expect(@ls2.exit_code).to be(1)
+    end
 
-      # bring up new LS instance
-      # Use another path for the PQ
-      @ls2.spawn_logstash("-f", config2)
-      sleep(0.1) until File.exist?(file_config2) && File.size(file_config2) > 0 # Everything is started succesfully at this point
-      expect(is_port_open?(9601)).to be true
-      expect(@ls1.process_id).not_to eq(@ls2.process_id)
-    else
-      # Make sure that each instance use a different `path.queue`
-      path = Stud::Temporary.pathname
-      FileUtils.mkdir_p(File.join(path, "data"))
-      data = File.join(path, "data")
-      settings = persistent_queue_settings.merge({ "path.queue" => data })
-      IO.write(File.join(path, "logstash.yml"), YAML.dump(settings))
-
-      @ls1.spawn_logstash("--path.settings", path, "-f", config1)
+    it "can be started on the same box with different path.data" do
+      tmp_path_1 = Stud::Temporary.pathname
+      tmp_data_path_1 = File.join(tmp_path_1, "data")
+      FileUtils.mkdir_p(tmp_data_path_1)
+      tmp_path_2 = Stud::Temporary.pathname
+      tmp_data_path_2 = File.join(tmp_path_2, "data")
+      FileUtils.mkdir_p(tmp_data_path_2)
+      @ls1.spawn_logstash("-f", config1, "--path.data", tmp_data_path_1)
       sleep(0.1) until File.exist?(file_config1) && File.size(file_config1) > 0 # Everything is started succesfully at this point
       expect(is_port_open?(9600)).to be true
 
-      puts "will try to start the second LS instance on 9601"
-
-      # bring up new LS instance
-      path = Stud::Temporary.pathname
-      FileUtils.mkdir_p(File.join(path, "data"))
-      data = File.join(path, "data")
-      settings = persistent_queue_settings.merge({ "path.queue" => data })
-      IO.write(File.join(path, "logstash.yml"), YAML.dump(settings))
-      @ls2.spawn_logstash("--path.settings", path, "-f", config2)
+      @ls2.spawn_logstash("-f", config2, "--path.data", tmp_data_path_2)
       sleep(0.1) until File.exist?(file_config2) && File.size(file_config2) > 0 # Everything is started succesfully at this point
-      expect(is_port_open?(9601)).to be true
+      expect(@ls2.exited?).to be(false)
+    end
 
-      expect(@ls1.process_id).not_to eq(@ls2.process_id)
+    it "can be started on the same box with automatically trying different ports for HTTP server" do
+      if @ls2.settings.feature_flag != "persistent_queues"
+        @ls1.spawn_logstash("-f", config1)
+        sleep(0.1) until File.exist?(file_config1) && File.size(file_config1) > 0 # Everything is started succesfully at this point
+        expect(is_port_open?(9600)).to be true
+
+        puts "will try to start the second LS instance on 9601"
+
+        # bring up new LS instance
+        tmp_path = Stud::Temporary.pathname
+        tmp_data_path = File.join(tmp_path, "data")
+        FileUtils.mkdir_p(tmp_data_path)
+        @ls2.spawn_logstash("-f", config2, "--path.data", tmp_data_path)
+        sleep(0.1) until File.exist?(file_config2) && File.size(file_config2) > 0 # Everything is started succesfully at this point
+        expect(is_port_open?(9601)).to be true
+        expect(@ls1.process_id).not_to eq(@ls2.process_id)
+      else
+        # Make sure that each instance use a different `path.data`
+        path = Stud::Temporary.pathname
+        FileUtils.mkdir_p(File.join(path, "data"))
+        data = File.join(path, "data")
+        settings = persistent_queue_settings.merge({ "path.data" => data })
+        IO.write(File.join(path, "logstash.yml"), YAML.dump(settings))
+
+        @ls1.spawn_logstash("--path.settings", path, "-f", config1)
+        sleep(0.1) until File.exist?(file_config1) && File.size(file_config1) > 0 # Everything is started succesfully at this point
+        expect(is_port_open?(9600)).to be true
+
+        puts "will try to start the second LS instance on 9601"
+
+        # bring up new LS instance
+        path = Stud::Temporary.pathname
+        FileUtils.mkdir_p(File.join(path, "data"))
+        data = File.join(path, "data")
+        settings = persistent_queue_settings.merge({ "path.data" => data })
+        IO.write(File.join(path, "logstash.yml"), YAML.dump(settings))
+        @ls2.spawn_logstash("--path.settings", path, "-f", config2)
+        sleep(0.1) until File.exist?(file_config2) && File.size(file_config2) > 0 # Everything is started succesfully at this point
+        expect(is_port_open?(9601)).to be true
+
+        expect(@ls1.process_id).not_to eq(@ls2.process_id)
+      end
     end
   end
 
