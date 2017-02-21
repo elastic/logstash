@@ -1,3 +1,4 @@
+# encoding: utf-8
 # we need to call exit explicity  in order to set the proper exit code, otherwise
 # most common CI systems can not know whats up with this tests.
 
@@ -46,7 +47,7 @@ namespace "test" do
 
   desc "run core specs"
   task "core" => ["setup"] do
-    exit(RSpec::Core::Runner.run(["—-format=documentation", core_specs]))
+    exit(RSpec::Core::Runner.run([core_specs]))
   end
 
   desc "run core specs in fail-fast mode"
