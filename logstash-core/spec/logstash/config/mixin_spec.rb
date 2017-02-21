@@ -322,6 +322,9 @@ describe LogStash::Config::Mixin do
         config :oneNumber, :validate => :number, :required => false
         config :oneArray, :validate => :array, :required => false
         config :oneHash, :validate => :hash, :required => false
+        config :nestedHash, :validate => :hash, :required => false
+        config :nestedArray, :validate => :hash, :required => false
+        config :deepHash, :validate => :hash, :required => false
 
         def initialize(params)
           super(params)
@@ -378,7 +381,10 @@ describe LogStash::Config::Mixin do
           "oneString" => "${FunString:foo}",
           "oneBoolean" => "${FunBool:false}",
           "oneArray" => [ "first array value", "${FunString:foo}" ],
-          "oneHash" => { "key1" => "${FunString:foo}", "key2" => "${FunString} is ${FunBool}", "key3" => "${FunBool:false} or ${funbool:false}" }
+          "oneHash" => { "key1" => "${FunString:foo}", "key2" => "${FunString} is ${FunBool}", "key3" => "${FunBool:false} or ${funbool:false}" },
+          "nestedHash" => { "level1" => { "key1" => "http://${FunString}:8080/blah.txt" } },
+          "nestedArray" => { "level1" => [{ "key1" => "http://${FunString}:8080/blah.txt" }, { "key2" => "http://${FunString}:8080/foo.txt" }] },
+          "deepHash" => { "level1" => { "level2" => {"level3" => { "key1" => "http://${FunString}:8080/blah.txt" } } } }
         )
       end
 
@@ -387,6 +393,9 @@ describe LogStash::Config::Mixin do
         expect(subject.oneBoolean).to(be_truthy)
         expect(subject.oneArray).to(be == [ "first array value", "fancy" ])
         expect(subject.oneHash).to(be == { "key1" => "fancy", "key2" => "fancy is true", "key3" => "true or false" })
+        expect(subject.nestedHash).to(be == { "level1" => { "key1" => "http://fancy:8080/blah.txt" } })
+        expect(subject.nestedArray).to(be == { "level1" => [{ "key1" => "http://fancy:8080/blah.txt" }, { "key2" => "http://fancy:8080/foo.txt" }] })
+        expect(subject.deepHash).to(be == { "level1" => { "level2" => { "level3" => { "key1" => "http://fancy:8080/blah.txt" } } } })
       end
     end
 
