@@ -46,7 +46,7 @@ namespace "test" do
 
   desc "run core specs"
   task "core" => ["setup"] do
-    exit(RSpec::Core::Runner.run([core_specs]))
+    exit(RSpec::Core::Runner.run(["—-format=documentation", core_specs]))
   end
 
   desc "run core specs in fail-fast mode"
