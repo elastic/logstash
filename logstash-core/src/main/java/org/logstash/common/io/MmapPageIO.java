@@ -1,12 +1,8 @@
 package org.logstash.common.io;
 
-<<<<<<< HEAD
-import org.logstash.ackedqueue.Queueable;
 import org.logstash.ackedqueue.SequencedList;
-=======
 import sun.misc.Cleaner;
 import sun.nio.ch.DirectBuffer;
->>>>>>> 26e2c15... memory mapped buffer cleaner
 
 import java.io.File;
 import java.io.IOException;
