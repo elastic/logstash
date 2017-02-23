@@ -31,12 +31,20 @@ java version "1.8.0_65"
 Java(TM) SE Runtime Environment (build 1.8.0_65-b17)
 Java HotSpot(TM) 64-Bit Server VM (build 25.65-b01, mixed mode)
 
+On some Linux systems, you may also need to have the `JAVA_HOME` environment
+exported before attempting the install, particularly if you installed Java from
+a tarball.  This is because Logstash uses Java during installation to
+automatically detect your environment and install the correct startup method
+(SysV init scripts, Upstart, or systemd).  If Logstash is unable to find the
+JAVA_HOME environment variable during package installation time, you may get an
+error message, and Logstash will be unable to start properly.
+
 [float]
 [[installing-binary]]
 === Installing from a Downloaded Binary
 
 Download the https://www.elastic.co/downloads/logstash[Logstash installation file] that matches your host environment.
-Unpack the file. Do not install Logstash into a directory path that contains colon (:) characters. 
+Unpack the file. Do not install Logstash into a directory path that contains colon (:) characters.
 
 On supported Linux operating systems, you can use a package manager to install Logstash.
 
@@ -186,4 +194,3 @@ Logstash adds timestamp and IP address information to the message. Exit Logstash
 shell where Logstash is running.
 
 Congratulations! You've created and run a basic Logstash pipeline. Next, you learn how to create a more realistic pipeline.
-
