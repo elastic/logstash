@@ -16,7 +16,7 @@ class LogstashService < Service
   SETTINGS_CLI_FLAG = "--path.settings"
 
   STDIN_CONFIG = "input {stdin {}} output { }"
-  RETRY_ATTEMPTS = 10
+  RETRY_ATTEMPTS = 60
 
   @process = nil
   
@@ -165,6 +165,7 @@ class LogstashService < Service
       end
       tries -= 1
     end
+    raise RuntimeError.new("failed to start Logstash after #{RETRY_ATTEMPTS} seconds. aborting..")
   end
   
   # this method only overwrites existing config with new config

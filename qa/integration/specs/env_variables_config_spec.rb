@@ -13,7 +13,7 @@ describe "Test Logstash configuration" do
     @fixture.teardown
   }
   
-  let(:num_retries) { 10 }
+  let(:num_retries) { 60 }
   let(:test_tcp_port) { random_port }
   let(:test_tag) { "environment_variables_are_evil" }
   let(:test_path) { Stud::Temporary.directory }
