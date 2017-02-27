@@ -52,7 +52,7 @@ module LogStash module Instrument
       # BUT. If the value is not present in the `@fast_lookup` the value will be inserted and
       # `#puf_if_absent` will return nil. With this returned value of nil we assume that we don't
       # have it in the `@metric_store` for structured search so we add it there too.
-      if found_value = @fast_lookup.put_if_absent([namespaces, key], provided_value)
+      if found_value = @fast_lookup.put_if_absent(namespaces.dup << key, provided_value)
         return found_value
       else
         @structured_lookup_mutex.synchronize do
@@ -162,6 +162,10 @@ module LogStash module Instrument
       end
     end    
 
+    def has_metric?(*path)
+      @fast_lookup[path]
+    end
+
     # Return all the individuals Metric,
     # This call mimic a Enum's each if a block is provided
     #
@@ -179,9 +183,9 @@ module LogStash module Instrument
     alias_method :all, :each
 
     def prune(path)
-      key_paths = key_paths(path).map {|k| k.to_sym }
+      key_paths = key_paths(path).map(&:to_sym)
       @structured_lookup_mutex.synchronize do
-        keys_to_delete = @fast_lookup.keys.select {|namespace, _| (key_paths - namespace).empty? }
+        keys_to_delete = @fast_lookup.keys.select {|namespace| (key_paths - namespace[0..-2]).empty? }
         keys_to_delete.each {|k| @fast_lookup.delete(k) }
         delete_from_map(@store, key_paths)
       end
