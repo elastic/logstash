@@ -53,6 +53,20 @@ describe LogStash::Instrument::MetricStore do
       end
     end
 
+    context "#has_metric?" do
+      context "when the path exist" do
+        it "returns true" do
+          expect(subject.has_metric?(:node, :sashimi, :pipelines, :pipeline01, :plugins, :"logstash-output-elasticsearch", :event_in)).to be_truthy
+        end
+      end
+
+      context "when the path doesn't exist" do
+        it "returns false" do
+          expect(subject.has_metric?(:node, :sashimi, :pipelines, :pipeline01, :plugins, :"logstash-input-nothing")).to be_falsey
+        end
+      end
+    end
+
     describe "#get" do
       context "when the path exist" do
         it "retrieves end of of a branch" do
