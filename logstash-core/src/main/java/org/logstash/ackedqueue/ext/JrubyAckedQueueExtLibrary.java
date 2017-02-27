@@ -1,9 +1,6 @@
 package org.logstash.ackedqueue.ext;
 
-import org.logstash.DLQEntry;
-import org.logstash.Event;
 import org.logstash.ackedqueue.Queueable;
-import org.logstash.ext.JrubyDLQEntryExtLibrary;
 import org.logstash.ext.JrubyEventExtLibrary;
 import org.jruby.Ruby;
 import org.jruby.RubyClass;
@@ -161,11 +158,7 @@ public class JrubyAckedQueueExtLibrary implements Library {
             long seqNum;
             try {
                 final Queueable object;
-                if (event instanceof JrubyEventExtLibrary.RubyEvent) {
-                    object = ((JrubyEventExtLibrary.RubyEvent) event).getEvent();
-                } else {
-                    object = ((JrubyDLQEntryExtLibrary.RubyDLQEntry) event).getEntry();
-                }
+                object = ((JrubyEventExtLibrary.RubyEvent) event).getEvent();
                 seqNum = this.queue.write(object);
             } catch (IOException e) {
                 throw context.runtime.newIOErrorFromException(e);

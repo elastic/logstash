@@ -1,22 +1,3 @@
-/*
- * Licensed to Elasticsearch under one or more contributor
- * license agreements. See the NOTICE file distributed with
- * this work for additional information regarding copyright
- * ownership. Elasticsearch licenses this file to you under
- * the Apache License, Version 2.0 (the "License"); you may
- * not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *    http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
- */
-
 package org.logstash;
 
 import org.logstash.ackedqueue.Queueable;
@@ -53,17 +34,17 @@ public class DLQEntry implements Cloneable, Serializable, Queueable {
         byte[] pluginTypeBytes = pluginType.getBytes();
         byte[] pluginIdBytes = pluginId.getBytes();
         byte[] reasonBytes = reason.getBytes();
-        ByteBuffer buffer = ByteBuffer.allocate(entryTimeInBytes.length
-                + eventInBytes.length
-                + pluginTypeBytes.length
-                + pluginIdBytes.length
-                + reasonBytes.length
-                + (Integer.BYTES * 5)); // magic number represents the five byte[] + lengths
-        putLengthAndBytes(buffer, entryTimeInBytes);
-        putLengthAndBytes(buffer, eventInBytes);
-        putLengthAndBytes(buffer, pluginTypeBytes);
-        putLengthAndBytes(buffer, pluginIdBytes);
-        putLengthAndBytes(buffer, reasonBytes);
+        ByteBuffer buffer = ByteBuffer.allocate(eventInBytes.length + pluginTypeBytes.length +
+                pluginIdBytes.length + reasonBytes.length + (Integer.BYTES * 4));
+        buffer.put(entryTimeInBytes);
+        buffer.putInt(eventInBytes.length);
+        buffer.put(eventInBytes);
+        buffer.putInt(pluginTypeBytes.length);
+        buffer.put(pluginTypeBytes);
+        buffer.putInt(pluginIdBytes.length);
+        buffer.put(pluginIdBytes);
+        buffer.putInt(reasonBytes.length);
+        buffer.put(reasonBytes);
         return buffer.array();
     }
 
@@ -72,25 +53,31 @@ public class DLQEntry implements Cloneable, Serializable, Queueable {
         buffer.put(bytes);
         buffer.position(0);
 
-        Timestamp entryTime = new Timestamp(new String(getLengthPrefixedBytes(buffer)));
-        Event event = Event.deserialize(getLengthPrefixedBytes(buffer));
-        String pluginType = new String(getLengthPrefixedBytes(buffer));
-        String pluginId = new String(getLengthPrefixedBytes(buffer));
-        String reason = new String(getLengthPrefixedBytes(buffer));
+        byte[] entryTimeBytes = new byte[24];
+        buffer.get(entryTimeBytes);
+        Timestamp entryTime = new Timestamp(new String(entryTimeBytes));
+
+        int eventLength = buffer.getInt();
+        byte[] eventBytes = new byte[eventLength];
+        buffer.get(eventBytes);
+        Event event = Event.deserialize(eventBytes);
+
+        int pluginTypeLength = buffer.getInt();
+        byte[] pluginTypeBytes = new byte[pluginTypeLength];
+        buffer.get(pluginTypeBytes);
+        String pluginType = new String(pluginTypeBytes);
+
+        int pluginIdLength = buffer.getInt();
+        byte[] pluginIdBytes = new byte[pluginIdLength];
+        buffer.get(pluginIdBytes);
+        String pluginId = new String(pluginIdBytes);
+
+        int reasonLength = buffer.getInt();
+        byte[] reasonBytes = new byte[reasonLength];
+        buffer.get(reasonBytes);
+        String reason = new String(reasonBytes);
 
         return new DLQEntry(event, pluginType, pluginId, reason, entryTime);
-    }
-
-    private static void putLengthAndBytes(ByteBuffer buffer, byte[] bytes) {
-        buffer.putInt(bytes.length);
-        buffer.put(bytes);
-    }
-
-    private static byte[] getLengthPrefixedBytes(ByteBuffer buffer) {
-        int length = buffer.getInt();
-        byte[] bytes = new byte[length];
-        buffer.get(bytes);
-        return bytes;
     }
 
     public Event getEvent() {

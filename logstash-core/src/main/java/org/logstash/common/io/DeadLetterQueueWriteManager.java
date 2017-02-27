@@ -99,7 +99,11 @@ public class DeadLetterQueueWriteManager {
         return Files.list(path).filter((p) -> p.toString().endsWith(".log"));
     }
 
+<<<<<<< HEAD
     public synchronized void writeEntry(DLQEntry event) throws IOException {
+=======
+    public void writeEvent(DLQEntry event) throws IOException {
+>>>>>>> introduce recordio
         byte[] record = event.serialize();
         int eventPayloadSize = RECORD_HEADER_SIZE + record.length;
         if (currentQueueSize + eventPayloadSize > maxQueueSize) {
@@ -109,10 +113,17 @@ public class DeadLetterQueueWriteManager {
             currentWriter.close();
             currentWriter = nextWriter();
         }
+<<<<<<< HEAD
         currentQueueSize += currentWriter.writeEvent(record);
     }
 
     public synchronized void close() throws IOException {
+=======
+        currentQueueSize += currentWriter.writeRecord(record);
+    }
+
+    public void close() throws IOException {
+>>>>>>> introduce recordio
         this.lock.release();
         if (currentWriter != null) {
             currentWriter.close();

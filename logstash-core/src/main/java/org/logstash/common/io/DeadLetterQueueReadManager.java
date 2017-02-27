@@ -56,6 +56,7 @@ public class DeadLetterQueueReadManager {
         segments.addAll(getSegmentPaths(queuePath).collect(Collectors.toList()));
     }
 
+<<<<<<< HEAD
     public void seekToNextEvent(Timestamp timestamp) throws IOException {
         for (Path segment : segments) {
             currentReader = new RecordIOReader(segment);
@@ -74,6 +75,8 @@ public class DeadLetterQueueReadManager {
         currentReader = null;
     }
 
+=======
+>>>>>>> introduce recordio
     private long pollNewSegments(long timeout) throws IOException, InterruptedException {
         long startTime = System.currentTimeMillis();
         WatchKey key = watchService.poll(timeout, TimeUnit.MILLISECONDS);
@@ -89,6 +92,7 @@ public class DeadLetterQueueReadManager {
     }
 
     public DLQEntry pollEntry(long timeout) throws IOException, InterruptedException {
+<<<<<<< HEAD
         byte[] bytes = pollEntryBytes(timeout);
         if (bytes == null) {
             return null;
@@ -101,26 +105,45 @@ public class DeadLetterQueueReadManager {
     }
 
     byte[] pollEntryBytes(long timeout) throws IOException, InterruptedException {
+=======
+        return DLQEntry.deserialize(pollRecord(timeout));
+    }
+
+    byte[] pollRecord() throws IOException, InterruptedException {
+        return pollRecord(100);
+    }
+
+    byte[] pollRecord(long timeout) throws IOException, InterruptedException {
+>>>>>>> introduce recordio
         long timeoutRemaining = timeout;
         if (currentReader == null) {
             timeoutRemaining -= pollNewSegments(timeout);
             currentReader = new RecordIOReader(segments.first());
         }
 
+<<<<<<< HEAD
         byte[] event = currentReader.readEvent();
+=======
+        byte[] event = currentReader.readRecord();
+>>>>>>> introduce recordio
         if (event == null && currentReader.isEndOfStream()) {
             if (currentReader.getPath().equals(segments.last())) {
                 pollNewSegments(timeoutRemaining);
             } else {
                 currentReader.close();
                 currentReader = new RecordIOReader(segments.higher(currentReader.getPath()));
+<<<<<<< HEAD
                 return pollEntryBytes(timeoutRemaining);
+=======
+                return pollRecord(timeoutRemaining);
+>>>>>>> introduce recordio
             }
         }
 
         return event;
     }
 
+<<<<<<< HEAD
     public void setCurrentReaderAndPosition(Path segmentPath, long position) throws IOException {
         currentReader = new RecordIOReader(segmentPath);
         currentReader.seekToOffset(position);
@@ -134,6 +157,8 @@ public class DeadLetterQueueReadManager {
         return currentReader.getChannelPosition();
     }
 
+=======
+>>>>>>> introduce recordio
     public void close() throws IOException {
         if (currentReader != null) {
             currentReader.close();

@@ -20,15 +20,15 @@ module LogStash; module Util
     class QueueClosedError < ::StandardError; end
     class NotImplementedError < ::StandardError; end
 
-    def self.create_memory_based(path, capacity, max_events, max_bytes, element_class)
+    def self.create_memory_based(path, capacity, max_events, max_bytes)
       self.allocate.with_queue(
-        LogStash::AckedMemoryQueue.new(path, capacity, max_events, max_bytes, element_class)
+        LogStash::AckedMemoryQueue.new(path, capacity, max_events, max_bytes)
       )
     end
 
-    def self.create_file_based(path, capacity, max_events, checkpoint_max_writes, checkpoint_max_acks, checkpoint_max_interval, max_bytes, element_class)
+    def self.create_file_based(path, capacity, max_events, checkpoint_max_writes, checkpoint_max_acks, checkpoint_max_interval, max_bytes)
       self.allocate.with_queue(
-        LogStash::AckedQueue.new(path, capacity, max_events, checkpoint_max_writes, checkpoint_max_acks, checkpoint_max_interval, max_bytes, element_class)
+        LogStash::AckedQueue.new(path, capacity, max_events, checkpoint_max_writes, checkpoint_max_acks, checkpoint_max_interval, max_bytes)
       )
     end
 
@@ -38,13 +38,9 @@ module LogStash; module Util
 
     def with_queue(queue)
       @queue = queue
-      @closed = Concurrent::AtomicBoolean.new(true)
-      self
-    end
-
-    def open
       @queue.open
-      @closed.make_false
+      @closed = Concurrent::AtomicBoolean.new(false)
+      self
     end
 
     def closed?

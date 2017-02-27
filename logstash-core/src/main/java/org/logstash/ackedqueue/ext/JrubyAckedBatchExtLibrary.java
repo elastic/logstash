@@ -11,11 +11,9 @@ import org.jruby.runtime.ObjectAllocator;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.jruby.runtime.load.Library;
-import org.logstash.DLQEntry;
 import org.logstash.ackedqueue.Batch;
 import org.logstash.Event;
 import org.logstash.ackedqueue.Queueable;
-import org.logstash.ext.JrubyDLQEntryExtLibrary;
 import org.logstash.ext.JrubyEventExtLibrary;
 
 import java.io.IOException;
@@ -75,11 +73,7 @@ public class JrubyAckedBatchExtLibrary implements Library {
             // TODO(talevy): what's the point of elementClass?
 
             for (Queueable e : this.batch.getElements()) {
-                if (e instanceof Event) {
-                    result.add(new JrubyEventExtLibrary.RubyEvent(context.runtime, (Event) e));
-                } else {
-                    result.add(new JrubyDLQEntryExtLibrary.RubyDLQEntry(context.runtime, (DLQEntry) e));
-                }
+                result.add(new JrubyEventExtLibrary.RubyEvent(context.runtime, (Event) e));
             }
 
             return result;

@@ -5,19 +5,9 @@ require "logstash/namespace"
 
 module LogStash; class DeadLetterQueueManager
   include LogStash::Util::Loggable
-  @@current_queue_name = "_current"
 
   def initialize(path)
     @path = path
-    @capacity = 5248800
-    @max_events = 0
-    @checkpoint_max_writes = 1
-    @checkpoint_max_acks = 1
-    @checkpoint_max_interval = 0
-    @max_bytes = 0
-    @element_class = "org.logstash.DLQEntry"
-    @mutex = Mutex.new
-    @queues = build_queue_state_from_disk
     @current_queue_path = ::File.join(@path, @@current_queue_name)
     unless @queues.key?(@@current_queue_name)
       @queues[@@current_queue_name] = build_queue_with_name(@@current_queue_name)
