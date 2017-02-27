@@ -18,11 +18,6 @@ def get_versions
       "yaml_version" => yaml_versions["logstash-core-event"],
       "current_version" => get_version(File.join("logstash-core-event", "lib", "logstash-core-event", "version.rb")),
     },
-    "logstash-core-event-java" => {
-      "location" => File.join("logstash-core-event-java", "lib", "logstash-core-event-java", "version.rb"),
-      "yaml_version" => yaml_versions["logstash-core-event-java"],
-      "current_version" => get_version(File.join("logstash-core-event-java", "lib", "logstash-core-event-java", "version.rb")),
-    },
 
     "logstash-core-queue-jruby" => {
       "location" => File.join("logstash-core-queue-jruby", "lib", "logstash-core-queue-jruby", "version.rb"),
@@ -70,17 +65,6 @@ namespace :version do
       IO.write(metadata["location"], text.gsub(metadata["current_version"], metadata["yaml_version"]))
     end
 
-    # update dependencies
-    #
-    # logstash-core depends on logstash-core-event-java
-    # ./logstash-core/logstash-core.gemspec:  gem.add_runtime_dependency "logstash-core-event-java", "~> 5.0.0.dev"
-    logstash_core_gemspec = File.join("logstash-core", "logstash-core.gemspec")
-    logstash_core_event_java_version = versions['logstash-core-event-java']['yaml_version']
-    text = IO.read(logstash_core_gemspec)
-    IO.write(logstash_core_gemspec, text.sub(
-      /  gem.add_runtime_dependency \"logstash-core-event-java\", \".+?\"/,
-      "  gem.add_runtime_dependency \"logstash-core-event-java\", \"#{logstash_core_event_java_version}\""))
-
     # logstash-core-event-java depends on logstash-code
     # ./logstash-core-plugin-api/logstash-core-plugin-api.gemspec:  gem.add_runtime_dependency "logstash-core", "5.0.0.dev"
     logstash_core_plugin_api_gemspec = File.join("logstash-core-plugin-api", "logstash-core-plugin-api.gemspec")
@@ -99,7 +83,7 @@ namespace :version do
     end
   end
 
-  desc "set version of logstash, logstash-core, logstash-core-event, logstash-core-event-java"
+  desc "set version of logstash, logstash-core, logstash-core-event"
   task :set, [:version] => [:validate] do |t, args|
     hash = {}
     get_versions.each do |component, metadata|

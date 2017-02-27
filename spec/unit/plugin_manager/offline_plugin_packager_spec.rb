@@ -51,7 +51,6 @@ describe LogStash::PluginManager::OfflinePluginPackager do
   context "when the plugins is a core gem" do
     %W(
     logstash-core
-    logstash-core-event-java
     logstash-core-plugin-api
     logstash-core-queue-jruby).each do |plugin_name|
       it "raise an exception with plugin: #{plugin_name}" do
