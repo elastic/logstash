@@ -158,11 +158,8 @@ class LogstashService < Service
   def wait_for_logstash
     tries = RETRY_ATTEMPTS
     while tries > 0
-      if is_port_open?
-        break
-      else
-        sleep 1
-      end
+      return if is_port_open?
+      sleep 1
       tries -= 1
     end
     raise RuntimeError.new("failed to start Logstash after #{RETRY_ATTEMPTS} seconds. aborting..")
