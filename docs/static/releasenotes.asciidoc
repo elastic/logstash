@@ -3,8 +3,37 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-5-2-2,Logstash 5.2.2>>
 * <<logstash-5-2-1,Logstash 5.2.1>>
 * <<logstash-5-2-0,Logstash 5.2.0>>
+
+
+[[logstash-5-2-2]]
+=== Logstash 5.2.2 Release Notes
+
+* Fixed an issue where persistent queue feature when enabled on Windows could cause Logstash to crash ({lsissue}6646[Issue 6646]).
+* Fixed an issue where multiple Logstash instances when started with the persistent queue feature and when using the same `path.data` directory 
+  could cause data corruption ({lsissue}6553[Issue 6553]).
+* Fixed an issue where JVM metrics collection was affecting the throughput of Logstash. We were 
+  collecting more information than required from the JVM which has been rectified ({lsissue}6603[Issue 6603]).
+
+  [float]
+  ==== Codec Plugins
+
+  *`Netflow`*
+
+  * Added support for Cisco ASR 9000.
+  * Fixed 0-length scope field length (Netflow 9, Juniper SRX)
+  * Added support for VMware VDS IPFIX.
+
+  [float]
+  ==== Output Plugins
+
+  *`HTTP`*
+
+  * Added support to retry failed requests with exponential backoff mechanism (https://github.com/logstash-plugins/logstash-output-http/issues/28).
+  * Added support to ignore non-standard response codes on retries (https://github.com/logstash-plugins/logstash-output-http/issues/49).
+  * Added support for specifying nested hashes in mapping.
 
 [[logstash-5-2-1]]
 === Logstash 5.2.1 Release Notes
