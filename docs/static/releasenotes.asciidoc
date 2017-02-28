@@ -7,7 +7,6 @@ This section summarizes the changes in the following releases:
 * <<logstash-5-2-1,Logstash 5.2.1>>
 * <<logstash-5-2-0,Logstash 5.2.0>>
 
-
 [[logstash-5-2-2]]
 === Logstash 5.2.2 Release Notes
 
@@ -17,23 +16,23 @@ This section summarizes the changes in the following releases:
 * Fixed an issue where JVM metrics collection was affecting the throughput of Logstash. We were 
   collecting more information than required from the JVM which has been rectified ({lsissue}6603[Issue 6603]).
 
-  [float]
-  ==== Codec Plugins
+[float]
+==== Codec Plugins
 
-  *`Netflow`*
+*`Netflow`*
 
-  * Added support for Cisco ASR 9000.
-  * Fixed 0-length scope field length (Netflow 9, Juniper SRX)
-  * Added support for VMware VDS IPFIX.
+* Added support for Cisco ASR 9000.
+* Fixed 0-length scope field length (Netflow 9, Juniper SRX)
+* Added support for VMware VDS IPFIX.
 
-  [float]
-  ==== Output Plugins
+[float]
+==== Output Plugins
 
-  *`HTTP`*
+*`HTTP`*
 
-  * Added support to retry failed requests with exponential backoff mechanism (https://github.com/logstash-plugins/logstash-output-http/issues/28).
-  * Added support to ignore non-standard response codes on retries (https://github.com/logstash-plugins/logstash-output-http/issues/49).
-  * Added support for specifying nested hashes in mapping.
+* Added support to retry failed requests with exponential backoff mechanism (https://github.com/logstash-plugins/logstash-output-http/issues/28).
+* Added support to ignore non-standard response codes on retries (https://github.com/logstash-plugins/logstash-output-http/issues/49).
+* Added support for specifying nested hashes in mapping.
 
 [[logstash-5-2-1]]
 === Logstash 5.2.1 Release Notes
