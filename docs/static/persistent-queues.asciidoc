@@ -19,10 +19,14 @@ Instead of deploying and managing a message broker, such as Redis, RabbitMQ, or
 Apache Kafka, to facilitate a buffered publish-subscriber model, you can enable
 persistent queues to buffer events on disk and remove the message broker.
 
-In summary, the two benefits of enabling persistent queues are as follows:
+In summary, the benefits of enabling persistent queues are as follows:
 
 * Provides protection from in-flight message loss when the Logstash process is abnormally terminated.
 * Absorbs bursts of events without needing an external buffering mechanism like Redis or Apache Kafka.
+* Provides an at-least-once message delivery guarantee. If Logstash is restarted while events are
+in-flight, Logstash will attempt to deliver messages stored in the persistent queue until delivery
+succeeds at least once. In other words, messages stored in the persistent queue may be duplicated, but
+not lost.
 
 [[persistent-queues-limitations]]
 ==== Limitations of Persistent Queues
