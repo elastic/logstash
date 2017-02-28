@@ -29,7 +29,7 @@ directories are, by default, contained within the home directory -- the director
 created when unpacking the archive.
 
 This is very convenient because you don't have to create any directories to start using Logstash, and uninstalling
-Lostash is as easy as removing the home directory.  However, it is advisable to change the default locations of the
+Logstash is as easy as removing the home directory.  However, it is advisable to change the default locations of the
 config and the logs directories so that you do not delete important data later on.
 
 [cols="<h,<,<m,<m",options="header",]
