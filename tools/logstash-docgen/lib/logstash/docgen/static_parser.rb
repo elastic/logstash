@@ -13,9 +13,9 @@ module LogStash::Docgen
     COMMENT_RE = /^ *#(?: (.*)| *$)/
     MULTILINE_RE = /(, *$)|(\\$)|(\[ *$)/
     ENDLINES_RE = /\r\n|\n/
-    CLASS_DEFINITION_RE = /^ *class\s(.*) < *(::)?LogStash::(Outputs|Filters|Inputs|Codecs)::(\w)/ 
-    NEW_CLASS_DEFINITION_RE = /^module (\w+) module (\w+) class\s(.*) < *(::)?LogStash::(Outputs|Filters|Inputs|Codecs)::(\w)/
-    NEW_CLASS_DEFINITION_RE_ML = /^\s*class\s(.*) < *(::)?LogStash::(Outputs|Filters|Inputs|Codecs)::(\w+)/
+    CLASS_DEFINITION_RE = /^ *class\s(.*) < *(::)?LogStash::(Outputs|Filters|Inputs|Codecs)::(\w+)/
+    NEW_CLASS_DEFINITION_RE = /module (\w+) module (\w+) class\s(.*) < *(::)?LogStash::(Outputs|Filters|Inputs|Codecs)::(\w+)/
+    NEW_CLASS_DEFINITION_RE_ML = /\s*class\s(.*) < *(::)?LogStash::(Outputs|Filters|Inputs|Codecs)::(\w+)/
     CONFIG_OPTION_RE = /^\s*((mod|base).)?config +[^=].*/
     CONFIG_NAME_RE = /^ *config_name .*/
     RESET_BUFFER_RE = /^require\s("|')\w+("|')/
