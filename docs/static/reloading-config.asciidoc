@@ -16,7 +16,7 @@ NOTE: The `--config.reload.automatic` option is not available when you specify t
 in  configuration settings from the command-line.
 
 By default, Logstash checks for configuration changes every 3 seconds. To change this interval,
-use the `----config.reload.interval <seconds>` option,  where `seconds` specifies how often Logstash
+use the `--config.reload.interval <seconds>` option,  where `seconds` specifies how often Logstash
 checks the config files for changes. 
 
 If Logstash is already running without auto-reload enabled, you can force Logstash to
