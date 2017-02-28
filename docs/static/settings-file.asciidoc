@@ -7,7 +7,7 @@ Most of the settings in the `logstash.yml` file are also available as <<command-
 when you run Logstash. Any flags that you set at the command line override the corresponding settings in the
 `logstash.yml` file.
 
-The `logstash.yml` file, which is written in http://http://yaml.org/[YAML], is located in `LOGSTASH_HOME/config`. You can
+The `logstash.yml` file, which is written in http://yaml.org/[YAML], is located in `LOGSTASH_HOME/config`. You can
 specify settings in hierarchical form or use flat keys. For example, to use hierarchical form to set the pipeline batch
 size and batch delay, you specify:
 
