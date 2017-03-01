@@ -278,7 +278,7 @@ input { # comments can appear at the end of a line, too
 ----------------------------------
 
 [[event-dependent-configuration]]
-=== Event Dependent Configuration
+=== Accessing Event Data and Fields
 
 The logstash agent is a processing pipeline with 3 stages: inputs -> filters ->
 outputs. Inputs generate events, filters modify them, outputs ship them
