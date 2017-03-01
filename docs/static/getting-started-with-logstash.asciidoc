@@ -71,6 +71,14 @@ to sign all our packages. It is available from https://pgp.mit.edu.
 [float]
 ==== APT
 
+ifeval::["{release-state}"=="unreleased"]
+
+Version {logstash_version} of Logstash has not yet been released.
+
+endif::[]
+
+ifeval::["{release-state}"!="unreleased"]
+
 Download and install the Public Signing Key:
 
 [source,sh]
@@ -115,8 +123,18 @@ sudo apt-get update && sudo apt-get install logstash
 
 See <<running-logstash,Running Logstash>> for details about managing Logstash as a system service.
 
+endif::[]
+
 [float]
 ==== YUM
+
+ifeval::["{release-state}"=="unreleased"]
+
+Version {logstash_version} of Logstash has not yet been released.
+
+endif::[]
+
+ifeval::["{release-state}"!="unreleased"]
 
 Download and install the public signing key:
 
@@ -151,6 +169,8 @@ WARNING: The repositories do not work with older rpm based distributions
          that still use RPM v3, like CentOS5.
 
 See the <<running-logstash,Running Logstash>> document for managing Logstash as a system service.
+
+endif::[]
 
 ==== Docker
 
