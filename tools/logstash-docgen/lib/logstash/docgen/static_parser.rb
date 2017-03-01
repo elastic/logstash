@@ -6,7 +6,7 @@ module LogStash::Docgen
   class StaticParser
     COMMENTS_IGNORE = Regexp.union(
       Regexp.new(/encoding: utf-8/i),
-      Regexp.new(/TODO:/)
+      Regexp.new(/TODO:?/)
     )
 
     VALID_CLASS_NAME = /^LogStash::(Codecs|Inputs|Filters|Outputs)::(\w+)/
