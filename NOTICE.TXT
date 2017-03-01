@@ -463,8 +463,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
 ==========================================================================
-RubyGem: tzinfo-data Version: 1.2016.10
-Copyright (c) 2005-2016 Philip Ross
+RubyGem: tzinfo-data Version: 1.2017.1
+Copyright (c) 2005-2017 Philip Ross
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of 
 this software and associated documentation files (the "Software"), to deal in 
