@@ -133,6 +133,10 @@ public class Queue implements Closeable {
         return this.currentByteSize;
     }
 
+    public long getCurrentPhysicallyPersistedByteSize() {
+        return headPage.getPageIO().getHead() + tailPages.stream().mapToLong((p) -> p.getPageIO().getHead()).sum();
+    }
+
     public int getPageCapacity() {
         return this.pageCapacity;
     }

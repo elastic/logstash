@@ -107,6 +107,11 @@ public class JrubyAckedQueueMemoryExtLibrary implements Library {
             return context.runtime.newFixnum(queue.getCurrentByteSize());
         }
 
+        @JRubyMethod(name = "current_persisted_bytes")
+        public IRubyObject ruby_current_persisted_bytes(ThreadContext context) {
+            return context.runtime.newFixnum(queue.getCurrentPhysicallyPersistedByteSize());
+        }
+
         @JRubyMethod(name = "acked_count")
         public IRubyObject ruby_acked_count(ThreadContext context) {
             return context.runtime.newFixnum(queue.getAckedCount());
