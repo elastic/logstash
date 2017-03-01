@@ -71,6 +71,14 @@ to sign all our packages. It is available from https://pgp.mit.edu.
 [float]
 ==== APT
 
+ifeval::["{release-state}"=="unreleased"]
+
+Version {logstash_version} of Logstash has not yet been released.
+
+endif::[]
+
+ifeval::["{release-state}"!="unreleased"]
+
 Download and install the Public Signing Key:
 
 [source,sh]
@@ -89,7 +97,7 @@ Save the repository definition to  +/etc/apt/sources.list.d/elastic-{major-versi
 
 ["source","sh",subs="attributes,callouts"]
 --------------------------------------------------
-echo "deb https://artifacts.elastic.co/packages/{major-version}-prerelease/apt stable main" | sudo tee -a /etc/apt/sources.list.d/elastic-{major-version}.list
+echo "deb https://artifacts.elastic.co/packages/{major-version}/apt stable main" | sudo tee -a /etc/apt/sources.list.d/elastic-{major-version}.list
 --------------------------------------------------
 
 [WARNING]
@@ -115,8 +123,18 @@ sudo apt-get update && sudo apt-get install logstash
 
 See <<running-logstash,Running Logstash>> for details about managing Logstash as a system service.
 
+endif::[]
+
 [float]
 ==== YUM
+
+ifeval::["{release-state}"=="unreleased"]
+
+Version {logstash_version} of Logstash has not yet been released.
+
+endif::[]
+
+ifeval::["{release-state}"!="unreleased"]
 
 Download and install the public signing key:
 
@@ -132,7 +150,7 @@ in a file with a `.repo` suffix, for example `logstash.repo`
 --------------------------------------------------
 [logstash-{major-version}]
 name=Elastic repository for {major-version} packages
-baseurl=https://artifacts.elastic.co/packages/{major-version}-prerelease/yum
+baseurl=https://artifacts.elastic.co/packages/{major-version}/yum
 gpgcheck=1
 gpgkey=https://artifacts.elastic.co/GPG-KEY-elasticsearch
 enabled=1
@@ -151,6 +169,8 @@ WARNING: The repositories do not work with older rpm based distributions
          that still use RPM v3, like CentOS5.
 
 See the <<running-logstash,Running Logstash>> document for managing Logstash as a system service.
+
+endif::[]
 
 ==== Docker
 
