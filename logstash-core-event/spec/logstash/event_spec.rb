@@ -431,6 +431,12 @@ describe LogStash::Event do
       end
     end
 
+    context "tags initialization" do
+      it "should default to empty array" do
+        expect(LogStash::Event.new({}).tags).to eq([])
+      end
+    end
+
     context "to_json" do
       it "should support to_json" do
         new_event = LogStash::Event.new(

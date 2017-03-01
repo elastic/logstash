@@ -36,6 +36,7 @@ public class Event implements Cloneable, Serializable, Queueable {
 
     public static final String METADATA = "@metadata";
     public static final String METADATA_BRACKETS = "[" + METADATA + "]";
+    public static final String TAGS = "tags";
     public static final String TIMESTAMP = "@timestamp";
     public static final String TIMESTAMP_FAILURE_TAG = "_timestampparsefailure";
     public static final String TIMESTAMP_FAILURE_FIELD = "_@timestamp";
@@ -55,6 +56,7 @@ public class Event implements Cloneable, Serializable, Queueable {
         this.data = new HashMap<String, Object>();
         this.data.put(VERSION, VERSION_ONE);
         this.cancelled = false;
+        this.data.put(TAGS, new ArrayList<>());
         this.timestamp = new Timestamp();
         this.data.put(TIMESTAMP, this.timestamp);
         this.accessors = new Accessors(this.data);
@@ -355,13 +357,7 @@ public class Event implements Cloneable, Serializable, Queueable {
 
     public void tag(String tag) {
         List<Object> tags;
-        Object _tags = this.getField("tags");
-
-        // short circuit the null case where we know we won't need deduplication step below at the end
-        if (_tags == null) {
-            setField("tags", Arrays.asList(tag));
-            return;
-        }
+        Object _tags = this.getTags();
 
         // assign to tags var the proper List of either the existing _tags List or a new List containing whatever non-List item was in the tags field
         if (_tags instanceof List) {
@@ -379,7 +375,11 @@ public class Event implements Cloneable, Serializable, Queueable {
         }
 
         // set that back as a proper BiValue
-        this.setField("tags", tags);
+        this.setField(TAGS, tags);
+    }
+
+    public List<Object> getTags() {
+        return this.getField(TAGS);
     }
 
     public byte[] serialize() throws IOException {

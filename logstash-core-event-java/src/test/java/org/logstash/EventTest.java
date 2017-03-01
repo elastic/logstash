@@ -273,7 +273,7 @@ public class EventTest {
         Event e = new Event();
         e.tag("foo");
 
-        List<String> tags = (List<String>)e.getField("tags");
+        List<String> tags = (List<String>)e.getTags();
         assertEquals(tags.size(), 1);
         assertEquals(tags.get(0), "foo");
     }
@@ -285,7 +285,7 @@ public class EventTest {
         Event e = new Event(data);
         e.tag("bar");
 
-        List<String> tags = (List<String>)e.getField("tags");
+        List<String> tags = (List<String>)e.getTags();
         assertEquals(tags.size(), 2);
         assertEquals(tags.get(0), "foo");
         assertEquals(tags.get(1), "bar");

@@ -35,6 +35,7 @@ public class JrubyEventExtLibrary implements Library {
 
         clazz.setConstant("METADATA", runtime.newString(Event.METADATA));
         clazz.setConstant("METADATA_BRACKETS", runtime.newString(Event.METADATA_BRACKETS));
+        clazz.setConstant("TAGS", runtime.newString(Event.TAGS));
         clazz.setConstant("TIMESTAMP", runtime.newString(Event.TIMESTAMP));
         clazz.setConstant("TIMESTAMP_FAILURE_TAG", runtime.newString(Event.TIMESTAMP_FAILURE_TAG));
         clazz.setConstant("TIMESTAMP_FAILURE_FIELD", runtime.newString(Event.TIMESTAMP_FAILURE_FIELD));
@@ -282,6 +283,11 @@ public class JrubyEventExtLibrary implements Library {
             //TODO(guy) should these tags be BiValues?
             this.event.tag(((RubyString) value).asJavaString());
             return context.nil;
+        }
+
+        @JRubyMethod(name = "tags")
+        public IRubyObject ruby_tags(ThreadContext context) {
+            return Rubyfier.deep(context.runtime, this.event.getTags());
         }
 
         @JRubyMethod(name = "timestamp")
