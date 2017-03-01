@@ -33,7 +33,6 @@ module LogStash module PluginManager
     IGNORE_GEMS_IN_PACK = %w(
       logstash-core
       logstash-core-queue-jruby
-      logstash-core-event-java
       logstash-core-plugin-api
       jar-dependencies
     )

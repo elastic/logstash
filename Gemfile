@@ -4,7 +4,6 @@
 source "https://rubygems.org"
 gem "logstash-core", :path => "./logstash-core"
 gem "logstash-core-queue-jruby", :path => "./logstash-core-queue-jruby"
-gem "logstash-core-event-java", :path => "./logstash-core-event-java"
 gem "logstash-core-plugin-api", :path => "./logstash-core-plugin-api"
 gem "paquet", "~> 0.2.0"
 gem "ruby-progressbar", "~> 1.8.1"

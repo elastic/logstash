@@ -33,14 +33,6 @@ namespace "test" do
     # implementation.
     specs = ["spec/unit/**/*_spec.rb", "logstash-core/spec/**/*_spec.rb", "logstash-core-event/spec/**/*_spec.rb"]
 
-    # figure if the logstash-core-event-java gem is loaded and if so add its specific specs in the core specs to run
-    begin
-      require "logstash-core-event-java/version"
-      specs << "logstash-core-event-java/spec/**/*_spec.rb"
-    rescue LoadError
-      # logstash-core-event-java gem is not live, ignore and skip specs
-    end
-
     Rake::FileList[*specs]
   end
 

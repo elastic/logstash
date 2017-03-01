@@ -25,10 +25,6 @@ namespace "artifact" do
       "logstash-core/*.gemspec",
       "logstash-core/gemspec_jars.rb",
 
-      "logstash-core-event-java/lib/**/*",
-      "logstash-core-event-java/*.gemspec",
-      "logstash-core-event-java/gemspec_jars.rb",
-
       "logstash-core-queue-jruby/lib/**/*",
       "logstash-core-queue-jruby/*.gemspec",
       "logstash-core-queue-jruby/gemspec_jars.rb",
