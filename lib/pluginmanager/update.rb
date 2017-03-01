@@ -7,7 +7,7 @@ require "file-dependencies/gem"
 class LogStash::PluginManager::Update < LogStash::PluginManager::Command
   REJECTED_OPTIONS = [:path, :git, :github]
   # These are local gems used by LS and needs to be filtered out of other plugin gems
-  NON_PLUGIN_LOCAL_GEMS = ["logstash-core", "logstash-core-event-java", "logstash-core-plugin-api"]
+  NON_PLUGIN_LOCAL_GEMS = ["logstash-core", "logstash-core-plugin-api"]
 
   parameter "[PLUGIN] ...", "Plugin name(s) to upgrade to latest version", :attribute_name => :plugins_arg
   option "--[no-]verify", :flag, "verify plugin validity before installation", :default => true
