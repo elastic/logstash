@@ -13,7 +13,7 @@ gem "file-dependencies", "0.1.6"
 gem "ci_reporter_rspec", "1.0.0", :group => :development
 gem "simplecov", :group => :development
 gem "tins", "1.6", :group => :development
-gem "rspec", "~> 3.1.0", :group => :development
+gem "rspec", "~> 3.5.0", :group => :development
 gem "logstash-devutils", :group => :development
 gem "benchmark-ips", :group => :development
 gem "octokit", "3.8.0", :group => :build
@@ -25,6 +25,7 @@ gem "rack-test", :require => "rack/test", :group => :development
 gem "flores", "~> 0.0.6", :group => :development
 gem "term-ansicolor", "~> 1.3.2", :group => :development
 gem "docker-api", "1.31.0", :group => :development
+gem "webmock", "~> 1.21.0", :group => :development
 gem "pleaserun", "~>0.0.28"
 gem "logstash-input-heartbeat"
 gem "logstash-codec-collectd"
@@ -55,6 +56,7 @@ gem "logstash-filter-grok"
 gem "logstash-filter-json"
 gem "logstash-filter-kv"
 gem "logstash-filter-metrics"
+gem "logstash-filter-multiline"
 gem "logstash-filter-mutate"
 gem "logstash-filter-ruby"
 gem "logstash-filter-sleep"

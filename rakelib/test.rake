@@ -64,7 +64,7 @@ namespace "test" do
     plugins_to_exclude = ENV.fetch("EXCLUDE_PLUGIN", "").split(",")
     # grab all spec files using the live plugins gem specs. this allows correclty also running the specs
     # of a local plugin dir added using the Gemfile :path option. before this, any local plugin spec would
-    # not be run because they were not under the vendor/bundle/jruby/1.9/gems path
+    # not be run because they were not under the vendor/bundle/jruby/2.0/gems path
     test_files = LogStash::PluginManager.find_plugins_gem_specs.map do |spec|
       if plugins_to_exclude.size > 0
         if !plugins_to_exclude.include?(Pathname.new(spec.gem_dir).basename.to_s)
@@ -78,6 +78,58 @@ namespace "test" do
     # "--format=documentation"
     exit(RSpec::Core::Runner.run(["--order", "rand", test_files]))
   end
+
+  # needs bug fix in RSpec before we can run uncomment this out. https://github.com/rspec/rspec-core/pull/2368
+  # desc "run all installed plugins specs in a separate rspec run, args:['format']"
+  # task "plugins-separate", [:format] => ["setup"] do  |t, args|
+  #   format = args.format || "documentation"
+  #   # additionally we could have an output file path as an arg
+  #   exit_code = 0
+
+  #   plugins_to_exclude = ENV.fetch("EXCLUDE_PLUGIN", "").split(",")
+  #   # grab all spec files using the live plugins gem specs. this allows correclty also running the specs
+  #   # of a local plugin dir added using the Gemfile :path option. before this, any local plugin spec would
+  #   # not be run because they were not under the vendor/bundle/jruby/2.0/gems path
+
+  #   STDERR.puts "starting..."
+  #   i = 1
+
+  #   io = File.new("./data/rspec-out.txt", "a")
+
+  #   test_files = LogStash::PluginManager.find_plugins_gem_specs.shuffle.each do |spec|
+
+  #     if plugins_to_exclude.size > 0 && plugins_to_exclude.include?(Pathname.new(spec.gem_dir).basename.to_s)
+  #       next
+  #     end
+
+  #     test_files = Rake::FileList[File.join(spec.gem_dir, "spec/{input,filter,codec,output}s/*_spec.rb")]
+
+  #     # rspec_args = ["--color", "--order", "rand", "--format", format, "--out", "data/rspec-out.txt", test_files]
+  #     rspec_args = ["--no-color", "--order", "rand", "--format", format, test_files]
+  #     # rspec_args = ["--order", "rand", "--format", format, "--out", "data/rspec-out.txt", test_files]
+  #     # rspec_args = ["--order", "rand", "--format", format, test_files]
+
+  #     STDERR.print "#{i} "
+  #     io.print "----------------- #{i} Ran #{spec.gem_dir}\n\n"
+
+  #     begin
+  #       exit_code += RSpec::Core::Runner.run(rspec_args, $stderr, io)
+  #     rescue => e
+
+  #       io.puts "----------------- #{i}"
+  #       io.puts e.message
+  #       io.puts e.backtrace.take(8)
+  #     end
+
+  #     RSpec.clear_examples
+  #     i = i.succ
+  #   end
+
+  #   STDERR.puts "\ndone..."
+  #   io.close
+
+  #   exit(exit_code == 0 ? 0 : 1)
+  # end
 
   task "install-core" => ["bootstrap", "plugin:install-core", "plugin:install-development-dependencies"]
 

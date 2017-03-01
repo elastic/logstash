@@ -218,8 +218,8 @@ class LogStash::Runner < Clamp::StrictCommand
 
     LogStash::Util::set_thread_name(self.class.name)
 
-    if RUBY_VERSION < "1.9.2"
-      logger.fatal "Ruby 1.9.2 or later is required. (You are running: " + RUBY_VERSION + ")"
+    if RUBY_VERSION < "2.0"
+      logger.fatal "Ruby 2.0 or later is required. (You are running: " + RUBY_VERSION + ")"
       return 1
     end
 
@@ -434,7 +434,7 @@ class LogStash::Runner < Clamp::StrictCommand
       nil
     end
   end
-  
+
   # is the user asking for CLI help subcommand?
   def cli_help?(args)
     # I know, double negative

@@ -10,7 +10,9 @@ Signal.trap("INT") { exit 1 }
 
 require_relative "../lib/bootstrap/environment"
 ::Gem.clear_paths
-::Gem.paths = ENV['GEM_HOME'] = ENV['GEM_PATH'] = LogStash::Environment.logstash_gem_home
+
+ENV['GEM_HOME'] = ENV['GEM_PATH'] = LogStash::Environment.logstash_gem_home
+::Gem.paths = ENV
 
 ENV["BUNDLE_GEMFILE"] = LogStash::Environment::GEMFILE_PATH
 
