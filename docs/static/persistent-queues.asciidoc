@@ -21,19 +21,19 @@ persistent queues to buffer events on disk and remove the message broker.
 
 In summary, the benefits of enabling persistent queues are as follows:
 
-* Provides protection from in-flight message loss when the Logstash process is abnormally terminated.
-* Absorbs bursts of events without needing an external buffering mechanism like Redis or Apache Kafka.
-* Provides an at-least-once message delivery guarantee. If Logstash is restarted while events are
-in-flight, Logstash will attempt to deliver messages stored in the persistent queue until delivery
-succeeds at least once. In other words, messages stored in the persistent queue may be duplicated, but
-not lost.
+* Absorbs bursts of events without needing an external buffering mechanism like
+Redis or Apache Kafka.
+* Provides an at-least-once delivery guarantee against message loss during
+a normal shutdown as well as when Logstash is terminated abnormally. If Logstash
+is restarted while events are in-flight, Logstash will attempt to deliver
+messages stored in the persistent queue until delivery succeeds at least once.
 
 [[persistent-queues-limitations]]
 ==== Limitations of Persistent Queues
 
 The following are problems not solved by the persistent queue feature:
 
-* Input plugins that do not use a request-response protocol cannot be protected from data loss. For example: tcp, udp, zeromq push+pull, and many other inputs do not have a mechanism to acknowledge receipt to the sender. Plugins such as beats and http, which *do* have a acknowledgement capability, are well protected by this queue.
+* Input plugins that do not use a request-response protocol cannot be protected from data loss. For example: tcp, udp, zeromq push+pull, and many other inputs do not have a mechanism to acknowledge receipt to the sender. Plugins such as beats and http, which *do* have an acknowledgement capability, are well protected by this queue.
 * It does not handle permanent machine failures such as disk corruption, disk failure, and machine loss. The data persisted to disk is not replicated.
 
 [[persistent-queues-architecture]]
