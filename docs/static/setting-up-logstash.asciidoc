@@ -197,6 +197,8 @@ startup styles they use.  This list is intended to be informative, not exhaustiv
 | CentOS (and RHEL) 6 | <<running-logstash-upstart,upstart>> |
 |=======================================================================
 
+For info about shutting down Logstash safely, see <<shutdown>>.
+
 [[running-logstash-systemd]]
 ==== Running Logstash by Using Systemd
 
