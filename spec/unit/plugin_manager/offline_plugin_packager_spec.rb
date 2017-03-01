@@ -51,8 +51,7 @@ describe LogStash::PluginManager::OfflinePluginPackager do
   context "when the plugins is a core gem" do
     %W(
     logstash-core
-    logstash-core-plugin-api
-    logstash-core-queue-jruby).each do |plugin_name|
+    logstash-core-plugin-api).each do |plugin_name|
       it "raise an exception with plugin: #{plugin_name}" do
         expect { subject.package(plugin_name, target) }.to raise_error(LogStash::PluginManager::UnpackablePluginError)
       end

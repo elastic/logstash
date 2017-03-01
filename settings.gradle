@@ -1,6 +1,2 @@
 include ':logstash-core'
-include ':logstash-core-event-java'
-include ':logstash-core-queue-jruby'
 project(':logstash-core').projectDir = new File('./logstash-core')
-project(':logstash-core-event-java').projectDir = new File('./logstash-core-event-java')
-project(':logstash-core-queue-jruby').projectDir = new File('./logstash-core-queue-jruby')
