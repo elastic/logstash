@@ -58,7 +58,6 @@ namespace :version do
       IO.write(metadata["location"], text.gsub(metadata["current_version"], metadata["yaml_version"]))
     end
 
-    # logstash-core-event-java depends on logstash-code
     # ./logstash-core-plugin-api/logstash-core-plugin-api.gemspec:  gem.add_runtime_dependency "logstash-core", "5.0.0.dev"
     logstash_core_plugin_api_gemspec = File.join("logstash-core-plugin-api", "logstash-core-plugin-api.gemspec")
     logstash_core_version = versions['logstash-core']['yaml_version']
@@ -76,7 +75,7 @@ namespace :version do
     end
   end
 
-  desc "set version of logstash, logstash-core, logstash-core-event"
+  desc "set version of logstash, logstash-core"
   task :set, [:version] => [:validate] do |t, args|
     hash = {}
     get_versions.each do |component, metadata|

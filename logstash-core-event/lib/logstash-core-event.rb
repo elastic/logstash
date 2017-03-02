@@ -1,1 +1,0 @@
-require "logstash-core-event/logstash-core-event"
