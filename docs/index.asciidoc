@@ -59,13 +59,16 @@ include::static/life-of-an-event.asciidoc[]
 include::static/setting-up-logstash.asciidoc[]
 
 
-include::static/docker.asciidoc[]
-
-
 include::static/settings-file.asciidoc[]
 
 
-include::static/command-line-flags.asciidoc[]
+include::static/running-logstash-command-line.asciidoc[]
+
+
+include::static/running-logstash.asciidoc[]
+
+
+include::static/docker.asciidoc[]
 
 
 include::static/logging.asciidoc[]
