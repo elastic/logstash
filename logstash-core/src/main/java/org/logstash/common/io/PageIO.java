@@ -1,11 +1,9 @@
 package org.logstash.common.io;
 
-import org.logstash.ackedqueue.Queueable;
 import org.logstash.ackedqueue.SequencedList;
 
 import java.io.Closeable;
 import java.io.IOException;
-import java.util.List;
 
 public interface PageIO extends Closeable {
 

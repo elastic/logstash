@@ -13,9 +13,11 @@ import java.nio.file.Paths;
 
 // TODO: this essentially a copy of ByteBufferPageIO and should be DRY'ed - temp impl to test file based stress test
 
+@SuppressWarnings("sunapi")
 public class MmapPageIO extends AbstractByteBufferPageIO {
 
     private File file;
+
     private FileChannel channel;
     protected MappedByteBuffer buffer;
 

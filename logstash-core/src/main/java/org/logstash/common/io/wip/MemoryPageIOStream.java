@@ -1,14 +1,12 @@
 package org.logstash.common.io.wip;
 
 import org.logstash.ackedqueue.Checkpoint;
-import org.logstash.ackedqueue.Queueable;
 import org.logstash.ackedqueue.SequencedList;
 import org.logstash.common.io.BufferedChecksumStreamInput;
 import org.logstash.common.io.BufferedChecksumStreamOutput;
 import org.logstash.common.io.ByteArrayStreamOutput;
 import org.logstash.common.io.ByteBufferStreamInput;
 import org.logstash.common.io.PageIO;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -72,7 +70,7 @@ public class MemoryPageIOStream implements PageIO {
 
     @Override
     public void recover() throws IOException {
-        throw new NotImplementedException();
+        throw new UnsupportedOperationException("recover() is not supported");
     }
 
     @Override
