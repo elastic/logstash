@@ -7,10 +7,10 @@ This section includes additional information on how to set up and run Logstash, 
 
 * <<dir-layout>>
 * <<config-setting-files>>
+* <<logstash-settings-file>>
+* <<running-logstash-command-line>>
 * <<running-logstash>>
 * <<docker>>
-* <<logstash-settings-file>>
-* <<command-line-flags>>
 * <<logging>>
 * <<persistent-queues>>
 * <<shutdown>>
@@ -177,59 +177,3 @@ The settings files are already defined in the Logstash installation. Logstash in
   the file and change the values for specific settings. Note that the `startup.options` file is not read at startup. If
   you want to change the Logstash startup script (for example, to change the Logstash user or read from a different
   configuration path), you must re-run the `system-install` script (as root) to pass in the new settings.
-
-[[running-logstash]]
-=== Running Logstash as a Service on Debian or RPM
-
-Logstash is not started automatically after installation. How to start and stop Logstash depends on whether your system
-uses systemd, upstart, or SysV.
-
-Here are some common operating systems and versions, and the corresponding
-startup styles they use.  This list is intended to be informative, not exhaustive.
-
-|=======================================================================
-| Distribution | Service System |
-| Ubuntu 16.04 and newer | <<running-logstash-systemd,systemd>> |
-| Ubuntu 12.04 through 15.10 | <<running-logstash-upstart,upstart>> |
-| Debian 8 "jessie" and newer | <<running-logstash-systemd,systemd>> |
-| Debian 7 "wheezy" and older | <<running-logstash-sysv,sysv>> |
-| CentOS (and RHEL) 7 and newer | <<running-logstash-systemd,systemd>> |
-| CentOS (and RHEL) 6 | <<running-logstash-upstart,upstart>> |
-|=======================================================================
-
-For info about shutting down Logstash safely, see <<shutdown>>.
-
-[[running-logstash-systemd]]
-==== Running Logstash by Using Systemd
-
-Distributions like Debian Jessie, Ubuntu 15.10+, and many of the SUSE derivatives use systemd and the
-`systemctl` command to start and stop services. Logstash places the systemd unit files in `/etc/systemd/system` for both deb and rpm. After installing the package, you can start up Logstash with:
-
-[source,sh]
---------------------------------------------
-sudo systemctl start logstash.service
--------------------------------------------
-
-[[running-logstash-upstart]]
-==== Running Logstash by Using Upstart
-
-For systems that use upstart, you can start Logstash with:
-
-[source,sh]
---------------------------------------------
-sudo initctl start logstash
--------------------------------------------
-
-The auto-generated configuration file for upstart systems is `/etc/init/logstash.conf`.
-
-[[running-logstash-sysv]]
-==== Running Logstash by Using SysV
-
-For systems that use SysV, you can start Logstash with:
-
-[source,sh]
---------------------------------------------
-sudo /etc/init.d/logstash start
--------------------------------------------
-
-The auto-generated configuration file for SysV systems is `/etc/init.d/logstash`.
