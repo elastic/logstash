@@ -1,5 +1,5 @@
 # encoding: utf-8
-require 'spec_helper'
+require_relative '../spec_helper'
 require 'rakelib/default_plugins'
 
 describe "Project licenses" do
