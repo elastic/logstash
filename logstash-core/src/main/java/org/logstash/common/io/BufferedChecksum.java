@@ -13,12 +13,21 @@ public class BufferedChecksum implements Checksum {
     /** Default buffer size: 256 */
     public static final int DEFAULT_BUFFERSIZE = 256;
 
-    /** Create a new BufferedChecksum with {@link #DEFAULT_BUFFERSIZE} */
+    /**
+     * Create a new BufferedChecksum with {@link #DEFAULT_BUFFERSIZE}
+     *
+     * @param in The checksum
+     */
     public BufferedChecksum(Checksum in) {
         this(in, DEFAULT_BUFFERSIZE);
     }
 
-    /** Create a new BufferedChecksum with the specified bufferSize */
+    /**
+     * Create a new BufferedChecksum with the specified buffer size
+     *
+     * @param in The checksum
+     * @param bufferSize The buffer size in bytes
+     */
     public BufferedChecksum(Checksum in, int bufferSize) {
         this.in = in;
         this.buffer = new byte[bufferSize];

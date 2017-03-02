@@ -1,7 +1,6 @@
 package org.logstash.common.io;
 
 import org.logstash.ackedqueue.Checkpoint;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -72,7 +71,7 @@ public class FileCheckpointIO  implements CheckpointIO {
     @Override
     public void purge() throws IOException {
         // TODO: dir traversal and delete all checkpoints?
-        throw new NotImplementedException();
+        throw new UnsupportedOperationException("purge() is not supported");
     }
 
     // @return the head page checkpoint file name

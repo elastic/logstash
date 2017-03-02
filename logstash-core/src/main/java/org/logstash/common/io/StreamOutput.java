@@ -20,6 +20,9 @@ public abstract class StreamOutput extends OutputStream {
      * five bytes.  Smaller values take fewer bytes.  Negative numbers
      * will always use all 5 bytes and are therefore better serialized
      * using {@link #writeInt}
+     *
+     * @param i The integer to write
+     * @throws IOException if an error occurs while writing content
      */
     public void writeVInt(int i) throws IOException {
         while ((i & ~0x7F) != 0) {
@@ -31,6 +34,9 @@ public abstract class StreamOutput extends OutputStream {
 
     /**
      * Writes a short as two bytes.
+     *
+     * @param i The short to write
+     * @throws IOException if an error occurs while writing content
      */
     public void writeShort(short i) throws IOException {
         writeByte((byte)(i >>  8));
@@ -39,6 +45,9 @@ public abstract class StreamOutput extends OutputStream {
 
     /**
      * Writes an int as four bytes.
+     *
+     * @param i The int to write
+     * @throws IOException if an error occurs while writing content
      */
     public void writeInt(int i) throws IOException {
         writeByte((byte) (i >> 24));
@@ -56,6 +65,9 @@ public abstract class StreamOutput extends OutputStream {
 
     /**
      * Writes a long as eight bytes.
+     *
+     * @param i the long to write
+     * @throws IOException if an error occurs while writing content
      */
     public void writeLong(long i) throws IOException {
         writeInt((int) (i >> 32));
@@ -66,6 +78,7 @@ public abstract class StreamOutput extends OutputStream {
      * Writes an array of bytes.
      *
      * @param b the bytes to write
+     * @throws IOException if an error occurs while writing content
      */
     public void writeByteArray(byte[] b) throws IOException {
         writeInt(b.length);
