@@ -32,7 +32,6 @@ module LogStash module PluginManager
     # we will ignore theses gems and they wont be included in the pack
     IGNORE_GEMS_IN_PACK = %w(
       logstash-core
-      logstash-core-queue-jruby
       logstash-core-plugin-api
       jar-dependencies
     )
