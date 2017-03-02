@@ -27,11 +27,7 @@ namespace "test" do
   end
 
   def core_specs
-    # note that regardless if which logstash-core-event-* gem is live, we will always run the
-    # logstash-core-event specs since currently this is the most complete Event and Timestamp specs
-    # which actually defines the Event contract and should pass regardless of the actuall underlying
-    # implementation.
-    specs = ["spec/unit/**/*_spec.rb", "logstash-core/spec/**/*_spec.rb", "logstash-core-event/spec/**/*_spec.rb"]
+    specs = ["spec/unit/**/*_spec.rb", "logstash-core/spec/**/*_spec.rb"]
 
     Rake::FileList[*specs]
   end

@@ -103,7 +103,6 @@ namespace "artifact" do
   desc "Generate logstash core gems"
   task "gems" => ["prepare"] do
     Rake::Task["artifact:build-logstash-core"].invoke
-    Rake::Task["artifact:build-logstash-core-event"].invoke
     Rake::Task["artifact:build-logstash-core-plugin-api"].invoke
   end
 
@@ -168,27 +167,6 @@ namespace "artifact" do
       Rake::Task["plugin:build-local-core-gem"].invoke("logstash-core", path)
     else
       puts "The Gemfile should reference \"logstash-core\" gem locally through :path, but found instead: #{matches}"
-      exit(1)
-    end
-  end
-
-  # # locate the "gem "logstash-core-event*" ..." line in Gemfile, and if the :path => "." option if specified
-  # # build the local logstash-core-event* gem otherwise just do nothing, bundler will deal with it.
-  task "build-logstash-core-event" do
-    # regex which matches a Gemfile gem definition for the logstash-core-event* gem and captures the gem name and :path option
-    gem_line_regex = /^\s*gem\s+["'](logstash-core-event[^"^']*)["'](?:\s*,\s*["'][^"^']+["'])?(?:\s*,\s*:path\s*=>\s*["']([^"^']+)["'])?/i
-
-    lines = File.readlines("Gemfile")
-    matches = lines.select{|line| line[gem_line_regex]}
-    abort("ERROR: Gemfile format error, need a single logstash-core-event gem specification") if matches.size != 1
-
-    name = matches.first[gem_line_regex, 1]
-    path = matches.first[gem_line_regex, 2]
-
-    if path
-      Rake::Task["plugin:build-local-core-gem"].invoke(name, path)
-    else
-      puts "The Gemfile should reference \"logstash-core-event\" gem locally through :path, but found instead: #{matches}"
       exit(1)
     end
   end
