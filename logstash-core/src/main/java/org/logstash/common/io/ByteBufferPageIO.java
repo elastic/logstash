@@ -1,15 +1,7 @@
 package org.logstash.common.io;
 
-import org.logstash.ackedqueue.Queueable;
-import org.logstash.ackedqueue.SequencedList;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
-
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.zip.CRC32;
-import java.util.zip.Checksum;
 
 public class ByteBufferPageIO extends AbstractByteBufferPageIO {
 
