@@ -207,7 +207,7 @@ class LogStash::Runner < Clamp::StrictCommand
     # override log level that may have been introduced from a custom log4j config file
     LogStash::Logging::Logger::configure_logging(setting("log.level"))
 
-    if setting("config.debug") && logger.debug?
+    if setting("config.debug") && !logger.debug?
       logger.warn("--config.debug was specified, but log.level was not set to \'debug\'! No config info will be logged.")
     end
 
