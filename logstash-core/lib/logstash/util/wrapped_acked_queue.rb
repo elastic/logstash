@@ -94,6 +94,10 @@ module LogStash; module Util
       ReadClient.new(self)
     end
 
+    def empty?
+      @queue.is_fully_acked?
+    end
+
     def check_closed(action)
       if closed?
         raise QueueClosedError.new("Attempted to #{action} on a closed AckedQueue")
@@ -127,7 +131,7 @@ module LogStash; module Util
       end
 
       def empty?
-        @mutex.synchronize { @queue.is_fully_acked? }
+        @mutex.synchronize { @queue.empty? }
       end
 
       def set_batch_dimensions(batch_size, wait_for)
@@ -316,14 +320,6 @@ module LogStash; module Util
         # TODO: disabled for https://github.com/elastic/logstash/issues/6055 = will have to properly refactor
         raise("cancelled_size is unsupported ")
         # @cancelled.size
-      end
-
-      def shutdown_signal_received?
-        false
-      end
-
-      def flush_signal_received?
-        false
       end
 
       private
