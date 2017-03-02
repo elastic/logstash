@@ -1,6 +1,7 @@
 # encoding: utf-8
 
-require "logstash-core-queue-jruby/logstash-core-queue-jruby"
+require "jruby_acked_queue_ext"
+require "jruby_acked_batch_ext"
 require "concurrent"
 # This is an adapted copy of the wrapped_synchronous_queue file
 # ideally this should be moved to Java/JRuby
