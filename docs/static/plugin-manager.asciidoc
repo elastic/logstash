@@ -6,6 +6,18 @@ packages called gems and hosted on RubyGems.org. The plugin manager accessed via
 lifecycle of plugins in your Logstash deployment. You can install, remove and upgrade plugins using the Command Line
 Interface (CLI) invocations described below.
 
+[[http-proxy]]
+=== Proxy configuration
+
+The majority of the plugin manager commands require access to the internet to reach https://rubygems.org[RubyGems.org].
+If your organization is behind a firewall you can set these environments variables to configure Logstash to use your proxy.
+
+[source, shell]
+----------------------------------
+export http_proxy=http://localhost:3128
+export https_proxy=http://localhost:3128
+----------------------------------
+
 [float]
 [[listing-plugins]]
 === Listing plugins
