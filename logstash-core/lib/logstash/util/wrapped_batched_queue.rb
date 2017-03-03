@@ -1,6 +1,6 @@
 # encoding: utf-8
 
-require "logstash-core-queue-jruby/logstash-core-queue-jruby"
+require "jruby_batched_queue_ext"
 
 module LogStash; module Util
   class WrappedBatchedQueue
@@ -123,7 +123,6 @@ module LogStash; module Util
       def start_metrics(batch)
         @mutex.synchronize do
           # there seems to be concurrency issues with metrics, keep it in the mutex
-          add_starting_metrics(batch)
           set_current_thread_inflight_batch(batch)
           start_clock
         end
@@ -158,11 +157,6 @@ module LogStash; module Util
           end
           @inflight_clocks.delete(Thread.current)
         end
-      end
-
-      def add_starting_metrics(batch)
-        @event_metric.increment(:in, batch.starting_size)
-        @pipeline_metric.increment(:in, batch.starting_size)
       end
 
       def add_filtered_metrics(batch)
