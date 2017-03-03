@@ -65,7 +65,7 @@ describe "Test Monitoring API" do
         expect(result["pipeline"]["queue"]["capacity"]["max_queue_size_in_bytes"]).not_to be_nil
         expect(result["pipeline"]["queue"]["capacity"]["max_unread_events"]).not_to be_nil
       else
-        expect(result["pipeline"]["queue"]["type"]).to be_in(["memory", "memory_batched"])
+        expect(result["pipeline"]["queue"]["type"]).to eq("memory").or(eq("memory_batched"))
       end
     end
   end
