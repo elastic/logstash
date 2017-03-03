@@ -10,7 +10,15 @@ module LogStash module PluginManager module Utils
     # https://ruby-doc.org/stdlib-2.3.1/libdoc/net/http/rdoc/Net/HTTP.html#class-Net::HTTP-label-Proxies
     def self.start(uri)
       uri = URI(uri)
-      Net::HTTP.start(uri.host, uri.port, :use_ssl => uri.scheme == HTTPS_SCHEME) { |http| yield http }
+      Net::HTTP.start(uri.host, uri.port, http_options(uri)) { |http| yield http }
+    end
+
+    def self.http_options(uri)
+      ssl_enabled = uri.scheme == HTTPS_SCHEME
+
+      {
+        :use_ssl => ssl_enabled
+      }
     end
 
     # Do a HEAD request on the file to see if it exist before downloading it

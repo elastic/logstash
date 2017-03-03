@@ -7,12 +7,12 @@ set -e
 if [[ "$INTEGRATION" != "true" ]]; then
     exit
 fi
-  
+
 echo "Setting up integration tests"
 if [[ ! -d "build" ]]; then
     mkdir build
-fi  
-rm -rf build/*  
+fi
+rm -rf build/*
 echo "Building logstash tar file in build/"
 rake artifact:tar
 cd build
@@ -23,4 +23,4 @@ cd ../qa/integration
 pwd
 echo $BUNDLE_GEMFILE
 # to install test dependencies
-bundle install --gemfile="Gemfile"
+bundle install --gemfile="./Gemfile"
