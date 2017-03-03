@@ -21,15 +21,16 @@ the `mypipeline.conf` file:
 bin/logstash -f mypipeline.conf
 ----
 
+Any flags that you set at the command line override the corresponding settings
+in the Logstash <<logstash-settings-file,settings file>>, but the settings file
+itself is not changed. It remains as-is for subsequent Logstash runs.
+
 Specifying command line options is useful when you are testing Logstash.
 However, in a production environment, we recommend that you use the Logstash
 <<logstash-settings-file,settings file>> to control Logstash execution. Using
 the settings file makes it easier for you to specify multiple options, and it
 provides you with a single, versionable file that you can use to start up
 Logstash consistently for each run.
-
-Any flags that you set at the command line override the corresponding settings
-in the Logstash <<logstash-settings-file,settings file>>.
 
 [[command-line-flags]]
 ==== Command-Line Flags
