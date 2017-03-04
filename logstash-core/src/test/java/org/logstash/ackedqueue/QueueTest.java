@@ -464,7 +464,7 @@ public class QueueTest {
     }
 
     @Test(timeout = 5000)
-    public void resumeWriteOnNoLongerFullQueueTest() throws IOException, InterruptedException, ExecutionException {
+    public void ackingMakesQueueNotFullAgainTest() throws IOException, InterruptedException, ExecutionException {
 
         Queueable element = new StringElement("0123456789"); // 10 bytes
 
@@ -487,21 +487,63 @@ public class QueueTest {
         Callable<Long> write = () -> {
             return q.write(element);
         };
-
         ExecutorService executor = Executors.newFixedThreadPool(1);
         Future<Long> future = executor.submit(write);
+        assertThat(future.isDone(), is(false));
 
         while (!q.isFull()) { Thread.sleep(10); }
-
         assertThat(q.isFull(), is(true));
 
         Batch b = q.readBatch(10); // read 1 page (10 events)
         b.close();  // purge 1 page
 
-        // spin wait until data is written and write blocks
         while (q.isFull()) { Thread.sleep(10); }
+        assertThat(q.isFull(), is(false));
+
+        // will not complete because write will not unblock until the page is purge with a batch close/acking.
+        assertThat(future.isDone(), is(false));
+
+        q.close();
+    }
+
+    @Test(timeout = 5000)
+    public void resumeWriteOnNoLongerFullQueueTest() throws IOException, InterruptedException, ExecutionException {
+        Queueable element = new StringElement("0123456789"); // 10 bytes
+
+        int singleElementCapacity = ByteBufferPageIO.HEADER_SIZE + ByteBufferPageIO._persistedByteCount(element.serialize().length);
+
+        // allow 10 elements per page but only 100 events in total
+        Settings settings = TestSettings.volatileQueueSettings(singleElementCapacity * 10, singleElementCapacity * 100);
+
+        TestQueue q = new TestQueue(settings);
+        q.open();
+
+        int ELEMENT_COUNT = 90; // should be able to write 90 events (9 pages) before getting full
+        for (int i = 0; i < ELEMENT_COUNT; i++) {
+            long seqNum = q.write(element);
+        }
 
         assertThat(q.isFull(), is(false));
+
+        // read 1 page (10 events) here while not full yet so that the read will not singal the not full state
+        // we want the batch closing below to signal the not full state
+        Batch b = q.readBatch(10);
+
+        // we expect this next write call to block so let's wrap it in a Future
+        Callable<Long> write = () -> {
+            return q.write(element);
+        };
+        ExecutorService executor = Executors.newFixedThreadPool(1);
+        Future<Long> future = executor.submit(write);
+        assertThat(future.isDone(), is(false));
+
+        while (!q.isFull()) { Thread.sleep(10); }
+        assertThat(q.isFull(), is(true));
+        assertThat(future.isDone(), is(false));
+
+        b.close();  // purge 1 page
+
+        assertThat(future.get(), is(equalTo(ELEMENT_COUNT + 1L)));
 
         executor.shutdown();
         q.close();
