@@ -45,7 +45,6 @@ public class Queue implements Closeable {
     protected final List<TailPage> unreadTailPages;
 
     protected volatile long unreadCount;
-
     protected volatile long currentByteSize;
 
     private final CheckpointIO checkpointIO;
@@ -331,7 +330,7 @@ public class Queue implements Closeable {
             this.unreadCount++;
 
             // if the queue was empty before write, signal non emptiness
-            if (wasEmpty) { notEmpty.signal(); }
+            if (wasEmpty) { notEmpty.signalAll(); }
 
             // now check if we reached a queue full state and block here until it is not full
             // for the next write or the queue was closed.
@@ -481,7 +480,7 @@ public class Queue implements Closeable {
         this.unreadCount -= b.size();
 
         if (p.isFullyRead()) { removeUnreadPage(p); }
-        if (wasFull) { notFull.signal(); }
+        if (wasFull) { notFull.signalAll(); }
 
         return b;
     }
@@ -565,6 +564,8 @@ public class Queue implements Closeable {
 
                 // cleanup fully acked tail page
                 if (result.page.isFullyAcked()) {
+                    boolean wasFull = isFull();
+
                     this.tailPages.remove(result.index);
 
                     // remove page data file regardless if it is the first or a middle tail page to free resources
@@ -583,6 +584,8 @@ public class Queue implements Closeable {
                             this.tailPages.remove(0);
                         }
                     }
+
+                    if (wasFull) { notFull.signalAll(); }
                 }
 
                 this.headPage.checkpoint();
