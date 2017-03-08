@@ -217,7 +217,7 @@ describe LogStash::Plugin do
           config_name "simple_plugin"
 
           config :host, :validate => :string
-          config :export, :validte => :boolean
+          config :export, :validate => :boolean
 
           def register; end
         end
