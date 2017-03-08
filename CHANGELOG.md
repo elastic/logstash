@@ -140,7 +140,7 @@ pre-releases.
   - Lumberjack: This input was not handling backpressure properly from downstream plugins and
     would continue to accept data, eventually running out of memory. We added a circuit breaker to stop
     accepting new connections when we detect this situation. Please note that `max_clients` setting 
-    intoduced in v0.1.9 has been deprecated. This setting temporarily solved the problem by configuring
+    introduced in v0.1.9 has been deprecated. This setting temporarily solved the problem by configuring
     an upper limit to the number of LSF connections (#12).
   - Http: Added new input to receive data via http(s).
   - File: Fixed a critical bug where new files being added to a dir being watched would crash LS.
