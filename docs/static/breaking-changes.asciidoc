@@ -197,7 +197,7 @@ that flexibility can cause issues when handling upgrades.
 Non-standard plugins must always be checked for compatibility, but some bundled plugins are upgraded in order to remain 
 compatible with the tools or frameworks that they use for communication. For example, the
 <<plugins-inputs-kafka, Kafka Input>> and <<plugins-outputs-kafka, Kafka Output>> plugins serve as a primary example of 
-such compatibilty changes. The latest version of the Kafka plugins is only compatible with Kafka 0.10, but as the 
+such compatibility changes. The latest version of the Kafka plugins is only compatible with Kafka 0.10, but as the 
 compatibility matrices show: earlier plugin versions are required for earlier versions of Kafka (e.g., Kafka 0.9).
 
 Automatic upgrades generally lead to improved features and support, but network layer changes like those above may make part
