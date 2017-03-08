@@ -99,7 +99,7 @@ public abstract class AbstractByteBufferPageIO implements PageIO {
         // reset back position to first seqNum
         getBuffer().position(this.head);
 
-        // reset elementCount to 0 and increment to actal number of valid elements found
+        // reset elementCount to 0 and increment to octal number of valid elements found
         this.elementCount = 0;
 
         for (int i = 0; ; i++) {
