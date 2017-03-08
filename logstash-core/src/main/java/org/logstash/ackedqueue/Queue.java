@@ -282,7 +282,7 @@ public class Queue implements Closeable {
         }
     }
 
-    // create a new empty headpage for the given pageNum and imidiately checkpoint it
+    // create a new empty headpage for the given pageNum and immediately checkpoint it
     // @param pageNum the page number of the new head page
     private void newCheckpointedHeadpage(int pageNum) throws IOException {
         PageIO headPageIO = this.pageIOFactory.build(pageNum, this.pageCapacity, this.dirPath);
