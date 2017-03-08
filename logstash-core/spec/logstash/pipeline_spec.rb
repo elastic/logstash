@@ -411,7 +411,7 @@ describe LogStash::Pipeline do
     end
   end
 
-  context "compiled filter funtions" do
+  context "compiled filter functions" do
     context "new events should propagate down the filters" do
       config <<-CONFIG
         filter {
