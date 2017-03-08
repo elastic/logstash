@@ -419,7 +419,7 @@ module LogStash; class Pipeline < BasePipeline
     # first make sure we can register all input plugins
     register_plugins(@inputs)
 
-    # then after all input plugins are sucessfully registered, start them
+    # then after all input plugins are successfully registered, start them
     @inputs.each { |input| start_input(input) }
   end
 

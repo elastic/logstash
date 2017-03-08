@@ -141,7 +141,7 @@ describe LogStash::Runner do
 
     context "with a good configuration" do
       let(:pipeline_string) { "input { } filter { } output { }" }
-      it "should exit successfuly" do
+      it "should exit successfully" do
         expect(subject.run(args)).to eq(0)
       end
     end

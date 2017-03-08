@@ -23,7 +23,7 @@ shared_examples "logstash update" do |logstash|
     end
 
     context "update a specific plugin" do
-      it "has executed succesfully" do
+      it "has executed successfully" do
         cmd = logstash.run_command_in_path("bin/logstash-plugin update --no-verify #{plugin_name}")
         expect(cmd.stdout).to match(/Updating #{plugin_name}/)
         expect(logstash).not_to have_installed?(plugin_name, previous_version)
@@ -31,7 +31,7 @@ shared_examples "logstash update" do |logstash|
     end
 
     context "update all the plugins" do
-      it "has executed succesfully" do
+      it "has executed successfully" do
         logstash.run_command_in_path("bin/logstash-plugin update --no-verify")
         expect(logstash).to have_installed?(plugin_name, "0.1.1")
       end

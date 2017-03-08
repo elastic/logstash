@@ -370,7 +370,7 @@ class LogStash::Agent
       return
     end
 
-    # pipeline started successfuly, update reload success metrics
+    # pipeline started successfully, update reload success metrics
     @instance_reload_metric.increment(:successes)
     @pipeline_reload_metric.namespace([pipeline_id.to_sym, :reloads]).tap do |n|
       n.increment(:successes)
