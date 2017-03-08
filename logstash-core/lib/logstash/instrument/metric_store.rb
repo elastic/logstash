@@ -131,7 +131,7 @@ module LogStash module Instrument
     # }
     def extract_metrics(path, *keys)
       keys.reduce({}) do |acc,k|
-        # Simplifiy 1-length keys
+        # Simplify 1-length keys
         k = k.first if k.is_a?(Array) && k.size == 1
 
         # If we have array values here we need to recurse
