@@ -789,7 +789,7 @@ pre-releases.
     (LOGSTASH-1423, #692, #739; Jordan Sissel, Bernd Ahlers)
 
 ### patterns
-  - improvement: added IPV6 suppot to IP pattern (#623)
+  - improvement: added IPV6 support to IP pattern (#623)
 
 ## 1.2.1 (September 7, 2013)
 ### general
