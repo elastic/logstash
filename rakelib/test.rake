@@ -12,7 +12,7 @@ namespace "test" do
     mkdir "data" unless File.directory?("data")
     mkdir "data/queue" unless File.directory?("data/queue")
 
-    # Need to be run here as because if run aftewarse (after the bundler.setup task) then the report got wrong
+    # Need to be run here as because if run afterwards (after the bundler.setup task) then the report got wrong
     # numbers and misses files. There is an issue with our setup! method as this does not happen with the regular
     # bundler.setup used in regular bundler flows.
     Rake::Task["test:setup-simplecov"].invoke if ENV['COVERAGE']
