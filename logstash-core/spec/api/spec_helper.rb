@@ -31,7 +31,7 @@ end
 ##
 # Class used to wrap and manage the execution of an agent for test,
 # this helps a lot in order to have a more integrated test for the
-# web api, could be also used for other use cases if generalized enought
+# web api, could be also used for other use cases if generalized enough
 ##
 class LogStashRunner
 
