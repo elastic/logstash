@@ -205,7 +205,7 @@ module LogStash module Plugins
     private
     # lookup a plugin by type and name in the existing LogStash module namespace
     # ex.: namespace_lookup("filter", "grok") looks for LogStash::Filters::Grok
-    # @param type [String] plugin type, "input", "ouput", "filter"
+    # @param type [String] plugin type, "input", "output", "filter"
     # @param name [String] plugin name, ex.: "grok"
     # @return [Class] the plugin class or raises NameError
     # @raise NameError if plugin class does not exist or is invalid
