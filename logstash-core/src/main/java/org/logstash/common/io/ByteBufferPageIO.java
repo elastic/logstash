@@ -30,7 +30,7 @@ public class ByteBufferPageIO extends AbstractByteBufferPageIO {
     public void deactivate() { /* nothing */ }
 
     @Override
-    public void activate() { /* niet */ }
+    public void activate() { /* nyet */ }
 
     @Override
     public void ensurePersisted() { /* nada */ }
