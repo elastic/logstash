@@ -40,7 +40,7 @@ describe LogStash::Timestamp do
   end
 
   it "should support to_json and ignore arguments" do
-    expect(LogStash::Timestamp.parse_iso8601("2014-09-23T00:00:00-0800").to_json(:some => 1, :argumnents => "test")).to eq("\"2014-09-23T08:00:00.000Z\"")
+    expect(LogStash::Timestamp.parse_iso8601("2014-09-23T00:00:00-0800").to_json(:some => 1, :arguments => "test")).to eq("\"2014-09-23T08:00:00.000Z\"")
   end
 
   it "should support timestamp comparaison" do
