@@ -298,7 +298,7 @@ class LogStash::Agent
     end
 
     # check if this pipeline is not reloadable. it should not happen as per the check below
-    # but keep it here as a safety net if a reloadable pipeline was releoaded with a non reloadable pipeline
+    # but keep it here as a safety net if a reloadable pipeline was reloaded with a non reloadable pipeline
     if !old_pipeline.reloadable?
       @logger.error("pipeline is not reloadable", :pipeline => id)
       return
