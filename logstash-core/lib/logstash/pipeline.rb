@@ -248,7 +248,7 @@ module LogStash; class Pipeline < BasePipeline
     status = wait_until_started
 
     if status
-      logger.debug("Pipeline started succesfully", default_logging_keys(:pipeline_id => pipeline_id))
+      logger.debug("Pipeline started successfully", default_logging_keys(:pipeline_id => pipeline_id))
     end
 
     status

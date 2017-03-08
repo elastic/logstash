@@ -67,7 +67,7 @@ describe LogStash::Agent do
       end
 
       context "is set to`FALSE`" do
-        context "and succesfully load the config" do
+        context "and successfully load the config" do
           let(:agent_settings) { mock_settings("config.reload.automatic" => false) }
 
           it "converge only once" do
@@ -106,7 +106,7 @@ describe LogStash::Agent do
           )
         end
 
-        context "and succesfully load the config" do
+        context "and successfully load the config" do
           it "converges periodically the pipelines from the configs source" do
             agent_task = start_agent(subject)
 
