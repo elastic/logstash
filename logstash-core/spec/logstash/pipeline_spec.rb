@@ -630,7 +630,7 @@ describe LogStash::Pipeline do
 
     it "should handle evaluating different config" do
       # When the functions are compiled from the AST it will generate instance
-      # variables that are unique to the actual config, the intances are pointing
+      # variables that are unique to the actual config, the instances are pointing
       # to conditionals and/or plugins.
       #
       # Before the `defined_singleton_method`, the definition of the method was
