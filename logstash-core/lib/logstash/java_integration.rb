@@ -35,7 +35,7 @@ map_mixin = lambda do
   # this bug makes has_key? (and all its aliases) return false for a key that has a nil value.
   # Only LinkedHashMap is patched here because patching the Map interface is not working.
   # TODO find proper fix, and submit upstream
-  # releavant JRuby files:
+  # relevant JRuby files:
   # https://github.com/jruby/jruby/blob/master/core/src/main/ruby/jruby/java/java_ext/java.util.rb
   # https://github.com/jruby/jruby/blob/master/core/src/main/java/org/jruby/java/proxies/MapJavaProxy.java
   def has_key?(key)
