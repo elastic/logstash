@@ -60,20 +60,20 @@ end
 
 module LogStash; module Config; module AST
 
-  def self.defered_conditionals=(val)
-    @defered_conditionals = val
+  def self.deferred_conditionals=(val)
+    @deferred_conditionals = val
   end
 
-  def self.defered_conditionals
-    @defered_conditionals
+  def self.deferred_conditionals
+    @deferred_conditionals
   end
 
-  def self.defered_conditionals_index
-    @defered_conditionals_index
+  def self.deferred_conditionals_index
+    @deferred_conditionals_index
   end
 
-  def self.defered_conditionals_index=(val)
-    @defered_conditionals_index = val
+  def self.deferred_conditionals_index=(val)
+    @deferred_conditionals_index = val
   end
 
   def self.plugin_instance_index
@@ -92,8 +92,8 @@ module LogStash; module Config; module AST
 
   class Config < Node
     def compile
-      LogStash::Config::AST.defered_conditionals = []
-      LogStash::Config::AST.defered_conditionals_index = 0
+      LogStash::Config::AST.deferred_conditionals = []
+      LogStash::Config::AST.deferred_conditionals_index = 0
       LogStash::Config::AST.plugin_instance_index = 0
       code = []
 
@@ -136,7 +136,7 @@ module LogStash; module Config; module AST
 
       code += definitions.join("\n").split("\n", -1).collect { |l| "  #{l}" }
 
-      code += LogStash::Config::AST.defered_conditionals
+      code += LogStash::Config::AST.deferred_conditionals
 
       return code.join("\n")
     end
@@ -402,7 +402,7 @@ module LogStash; module Config; module AST
       type = recursive_select_parent(PluginSection).first.plugin_type.text_value
 
       if type == "filter"
-        i = LogStash::Config::AST.defered_conditionals_index += 1
+        i = LogStash::Config::AST.deferred_conditionals_index += 1
         source = <<-CODE
           @generated_objects[:cond_func_#{i}] = lambda do |input_events|
             result = []
@@ -415,7 +415,7 @@ module LogStash; module Config; module AST
             result
           end
         CODE
-        LogStash::Config::AST.defered_conditionals << source
+        LogStash::Config::AST.deferred_conditionals << source
 
         <<-CODE
           events = @generated_objects[:cond_func_#{i}].call(events)
