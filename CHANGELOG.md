@@ -1228,7 +1228,7 @@ pre-releases.
    Gemfile will be purged in the near future.
  - amqp plugins are now marked 'unsupported' as there is no active maintainer
    nor is there source of active support in the community. If you're interested
-   in maintainership, please email the mailling list or contact Jordan!
+   in maintainership, please email the mailing list or contact Jordan!
 
 ### inputs
  - irc: now stores irc nick
