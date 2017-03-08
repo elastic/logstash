@@ -43,7 +43,7 @@ describe LogStash::Timestamp do
     expect(LogStash::Timestamp.parse_iso8601("2014-09-23T00:00:00-0800").to_json(:some => 1, :arguments => "test")).to eq("\"2014-09-23T08:00:00.000Z\"")
   end
 
-  it "should support timestamp comparaison" do
+  it "should support timestamp comparison" do
    current = LogStash::Timestamp.new(Time.now) 
    future = LogStash::Timestamp.new(Time.now + 100)
 
