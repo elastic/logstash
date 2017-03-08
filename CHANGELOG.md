@@ -326,7 +326,7 @@ pre-releases.
       the ability to capture failed requests from Elasticsearch and retry them. Error codes like 
       429 (too many requests) will now be retried by default for 3 times. The number of retries and the
       interval between consecutive retries can be configured (#1631)
-    - Logstash does not create a "message.raw" by default whic is usually not_analyzed; this
+    - Logstash does not create a "message.raw" by default which is usually not_analyzed; this
       helps save disk space (#11)
     - Added sniffing config to be able to list machines in the cluster while using the transport client (#22) 
     - Deprecate the usage of index_type configuration. Added document_type to be consistent
