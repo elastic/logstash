@@ -31,7 +31,7 @@ module LogStash module Docgen
 
     # Find all the modules included by the specified class
     # and use `source_location` to find the actual file on disk.
-    # We need to cleanup the values for evalued modules or system module.
+    # We need to cleanup the values for evaluated modules or system module.
     # `included_modules` will return the list of module in the order they appear.
     # this is important because modules can override the documentation of some
     # option.
