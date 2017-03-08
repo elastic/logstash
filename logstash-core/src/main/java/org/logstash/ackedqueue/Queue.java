@@ -305,7 +305,7 @@ public class Queue implements Closeable {
         // the write strategy with regard to the isFull() state is to assume there is space for this element
         // and write it, then after write verify if we just filled the queue and wait on the notFull condition
         // *after* the write which is both safer for a crash condition, and the queue closing sequence. In the former case
-        // holding an element in memory while wainting for the notFull condition would mean always having the current write
+        // holding an element in memory while waiting for the notFull condition would mean always having the current write
         // element at risk in the always-full queue state. In the later, when closing a full queue, it would be impossible
         // to write the current element.
 
