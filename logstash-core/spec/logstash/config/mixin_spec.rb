@@ -192,7 +192,7 @@ describe LogStash::Config::Mixin do
         expect(clone.uri.to_s).to eql(uri_hidden)
       end
 
-      it "should make the real URI object availale under #uri" do
+      it "should make the real URI object available under #uri" do
         expect(subject.uri.uri).to be_a(::URI)
       end
 
