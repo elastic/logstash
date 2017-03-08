@@ -31,7 +31,7 @@ module LogStash module Docgen
   # This class acts as the transformation point between the format
   # and the data.
   #
-  # At the beginning of the PoC, I was targetting multiples different format: asciidoc, manpage,
+  # At the beginning of the PoC, I was targeting multiples different format: asciidoc, manpage,
   # since we only support 1 format now, we could probably remove it.
   class Document
     attr_reader :context, :format
