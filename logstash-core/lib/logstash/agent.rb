@@ -76,7 +76,7 @@ class LogStash::Agent
   end
 
   def execute
-    @thread = Thread.current # this var is implicilty used by Stud.stop?
+    @thread = Thread.current # this var is implicitly used by Stud.stop?
     logger.debug("starting agent")
 
     start_webserver
