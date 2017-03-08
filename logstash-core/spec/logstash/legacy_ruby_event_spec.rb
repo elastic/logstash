@@ -191,7 +191,7 @@ describe LogStash::Event do
         end
 
         it "should return unknown patterns as UTF-8" do
-          expect(subject.sprintf("%{unkown_pattern}").encoding).to eq(Encoding::UTF_8)
+          expect(subject.sprintf("%{unknown_pattern}").encoding).to eq(Encoding::UTF_8)
         end
       end
     end
