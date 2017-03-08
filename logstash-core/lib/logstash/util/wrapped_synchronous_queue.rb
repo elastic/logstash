@@ -18,7 +18,7 @@ module LogStash; module Util
     end
     alias_method(:<<, :push)
 
-    # Offer an object to the queue, wait for the specified amout of time.
+    # Offer an object to the queue, wait for the specified amount of time.
     # If adding to the queue was successfull it wil return true, false otherwise.
     #
     # @param [Object] Object to add to the queue
