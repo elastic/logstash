@@ -276,7 +276,7 @@ describe LogStash::Outputs::ZeroMQ do
   end
 end
 
-. To add the missing test, use an instance of the ZeroMQ output and a substitute logger. This examle uses an RSpec feature 
+. To add the missing test, use an instance of the ZeroMQ output and a substitute logger. This example uses an RSpec feature 
 called _test doubles_ as the substitute logger.
 +
 Add the following lines to `zeromq_spec.rb`, after `describe LogStash::Outputs::ZeroMQ do` and before `context "when in 
