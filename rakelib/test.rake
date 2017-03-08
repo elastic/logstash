@@ -1,4 +1,4 @@
-# we need to call exit explicity  in order to set the proper exit code, otherwise
+# we need to call exit explicitly  in order to set the proper exit code, otherwise
 # most common CI systems can not know whats up with this tests.
 
 require "pluginmanager/util"
