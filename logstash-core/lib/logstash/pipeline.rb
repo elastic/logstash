@@ -149,7 +149,7 @@ module LogStash; class Pipeline < BasePipeline
     @input_queue_client = @queue.write_client
     @filter_queue_client = @queue.read_client
     @signal_queue = Queue.new
-    # Note that @infilght_batches as a central mechanism for tracking inflight
+    # Note that @inflight_batches as a central mechanism for tracking inflight
     # batches will fail if we have multiple read clients here.
     @filter_queue_client.set_events_metric(metric.namespace([:stats, :events]))
     @filter_queue_client.set_pipeline_metric(
