@@ -50,7 +50,7 @@ namespace "test" do
   desc "run all installed plugins specs"
   task "plugins" => ["setup"] do
     plugins_to_exclude = ENV.fetch("EXCLUDE_PLUGIN", "").split(",")
-    # grab all spec files using the live plugins gem specs. this allows correclty also running the specs
+    # grab all spec files using the live plugins gem specs. this allows correctly also running the specs
     # of a local plugin dir added using the Gemfile :path option. before this, any local plugin spec would
     # not be run because they were not under the vendor/bundle/jruby/1.9/gems path
     test_files = LogStash::PluginManager.find_plugins_gem_specs.map do |spec|
