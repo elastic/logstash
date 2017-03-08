@@ -103,7 +103,7 @@ module LogStash::PluginManager
   end
 
   # @param plugin_list [Array] array of [plugin name, version] tuples
-  # @return [Array] array of [plugin name, version, ...] tuples when duplciate names have been merged and non duplicate version requirements added
+  # @return [Array] array of [plugin name, version, ...] tuples when duplicate names have been merged and non duplicate version requirements added
   def self.merge_duplicates(plugin_list)
 
     # quick & dirty naive dedup for now
