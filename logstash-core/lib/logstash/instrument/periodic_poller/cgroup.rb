@@ -36,7 +36,7 @@ module LogStash module Instrument module PeriodicPoller
 
         read_proc_self_cgroup_lines.each do |line|
           matches = CONTROL_GROUP_RE.match(line)
-          # multiples controls, same hierachy
+          # multiples controls, same hierarchy
           controllers = matches[1].split(CONTROLLER_SEPERATOR_RE)
           controllers.each_with_object(response) { |controller| response[controller] = matches[2] }
         end
