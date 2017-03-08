@@ -29,7 +29,7 @@ module LogStash module PluginManager
     DEPENDENCIES_DIR = ::File.join(LOGSTASH_DIR, "dependencies")
 
     # To make sure we have the maximum compatibility
-    # we will ignore theses gems and they wont be included in the pack
+    # we will ignore theses gems and they won't be included in the pack
     IGNORE_GEMS_IN_PACK = %w(
       logstash-core
       logstash-core-plugin-api

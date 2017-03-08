@@ -13,7 +13,7 @@ require "paquet/gem"
 # This Tool will take care of looking at the current dependency tree defined in the Gemspec and the gemfile
 # and will traverse all graph and download the gem file into a specified directory.
 #
-# By default, the tool wont fetch everything and the developer need to declare what gems he want to download.
+# By default, the tool won't fetch everything and the developer need to declare what gems he want to download.
 module Paquet
   class Task < Rake::TaskLib
     def initialize(target_path, cache_path = nil, &block)

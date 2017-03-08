@@ -26,7 +26,7 @@ logstash-input-kafka > FAIL
 Exceptions: XXXX
 ```
 
-The generator will try to generate the doc for all the plugins defined in the *Gemfile* and installed in Logstash, if anything goes wrong it wont
+The generator will try to generate the doc for all the plugins defined in the *Gemfile* and installed in Logstash, if anything goes wrong it won't
 stop the generation of the other plugin. The Task will also report any errors with stacktraces at the end, if one plugin fail the build,
 you can interrupt the process and it will output the current errors before exiting.
 

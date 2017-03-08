@@ -54,7 +54,7 @@ class OpenSSL::SSL::SSLContext
   #
   # This monkeypatch doesn't enforce a `VERIFY_MODE` on the SSLContext,
   # SSLContext are both used for the client and the server implementation,
-  # If set the `verify_mode` to peer the server wont accept any connection,
+  # If set the `verify_mode` to peer the server won't accept any connection,
   # because it will try to verify the client certificate, this is a protocol
   # details implemented at the plugin level.
   #

@@ -31,7 +31,7 @@ module LogStash
         end
 
         not_found do
-          # We cannot raise here because it wont be catched by the `error` handler.
+          # We cannot raise here because it won't be catched by the `error` handler.
           # So we manually create a new instance of NotFound and just pass it down.
           respond_with(NotFoundError.new)
         end
