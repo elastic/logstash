@@ -35,7 +35,7 @@ describe LogStash::PipelineAction::Create do
     end
   end
 
-  context "when the pipeline succesfully start" do
+  context "when the pipeline successfully start" do
     it "adds the pipeline to the current pipelines" do
       expect { subject.execute(agent, pipelines) }.to change(pipelines, :size).by(1)
     end
