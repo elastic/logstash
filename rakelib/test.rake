@@ -86,7 +86,7 @@ namespace "test" do
         add_filter pattern
       end
 
-      add_group "bootstrap", "bootstrap/" # This module is used during bootstraping of LS
+      add_group "bootstrap", "bootstrap/" # This module is used during bootstrapping of LS
       add_group "plugin manager", "pluginmanager/" # Code related to the plugin manager
       add_group "core" do |src_file| # The LS core codebase
         /logstash\/\w+.rb/.match(src_file.filename)
