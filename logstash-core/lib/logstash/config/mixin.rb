@@ -438,7 +438,7 @@ module LogStash::Config::Mixin
         end
         result = value.first
       elsif validator.is_a?(Symbol)
-        # TODO(sissel): Factor this out into a coersion method?
+        # TODO(sissel): Factor this out into a coercion method?
         # TODO(sissel): Document this stuff.
         value = hash_or_array(value)
 
