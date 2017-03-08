@@ -1,7 +1,7 @@
 # encoding: utf-8
 require "java"
 
-# this is mainly for usage with JrJackson json parsing in :raw mode which genenerates
+# this is mainly for usage with JrJackson json parsing in :raw mode which generates
 # Java::JavaUtil::ArrayList and Java::JavaUtil::LinkedHashMap native objects for speed.
 # these object already quacks like their Ruby equivalents Array and Hash but they will
 # not test for is_a?(Array) or is_a?(Hash) and we do not want to include tests for
