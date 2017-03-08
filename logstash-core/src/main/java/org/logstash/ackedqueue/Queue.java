@@ -464,7 +464,7 @@ public class Queue implements Closeable {
                     return null;
                 }
 
-                // if after returnining from wait queue is still empty, or the queue was closed return null
+                // if after returning from wait queue is still empty, or the queue was closed return null
                 if ((p = firstUnreadPage()) == null || isClosed()) { return null; }
             }
 
