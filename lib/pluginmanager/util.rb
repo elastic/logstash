@@ -77,7 +77,7 @@ module LogStash::PluginManager
   end
 
   # retrieve gem specs for all or specified name valid logstash plugins locally installed
-  # @param name [String] specific plugin name to find or nil for all plungins
+  # @param name [String] specific plugin name to find or nil for all plugins
   # @return [Array<Gem::Specification>] all local logstash plugin gem specs
   def self.find_plugins_gem_specs(name = nil)
     specs = name ? Gem::Specification.find_all_by_name(name) : Gem::Specification.find_all
