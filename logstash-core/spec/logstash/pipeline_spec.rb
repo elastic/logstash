@@ -134,7 +134,7 @@ describe LogStash::Pipeline do
       CONFIG
     end
 
-    it "should not propage cancelled events from filter to output" do
+    it "should not propagate cancelled events from filter to output" do
       abort_on_exception_state = Thread.abort_on_exception
       Thread.abort_on_exception = true
 
