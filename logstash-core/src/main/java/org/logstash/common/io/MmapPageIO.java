@@ -55,7 +55,7 @@ public class MmapPageIO extends AbstractByteBufferPageIO {
             throw new IOException("Page file size " + pageFileCapacity + " different to configured page capacity " + this.capacity + " for " + this.file);
         }
 
-        // update capacity to actual raf lenght
+        // update capacity to actual raf length
         this.capacity = pageFileCapacity;
 
         if (this.capacity < MIN_CAPACITY) { throw new IOException(String.format("Page file size is too small to hold elements")); }
