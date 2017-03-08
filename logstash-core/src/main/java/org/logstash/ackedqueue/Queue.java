@@ -613,7 +613,7 @@ public class Queue implements Closeable {
         if (closed.getAndSet(true) == false) {
             lock.lock();
             try {
-                // TODO: not sure if we need to do this here since the headpage close will also call ensurePersited
+                // TODO: not sure if we need to do this here since the headpage close will also call ensurePersisted
                 ensurePersistedUpto(this.seqNum);
 
                 for (TailPage p : this.tailPages) { p.close(); }
