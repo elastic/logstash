@@ -373,7 +373,7 @@ pre-releases.
   - bugfix: file: fixed debian 7 path issue
 
 ### codecs
-  - improvement: stdin/tcp: automatically select json_line and line codecs with the tcp and stdin streaming imputs
+  - improvement: stdin/tcp: automatically select json_line and line codecs with the tcp and stdin streaming inputs
   - improvement: collectd: add support for NaN values
 
 ### outputs
