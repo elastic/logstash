@@ -74,7 +74,7 @@ describe LogStash::Instrument::PeriodicPoller::Cgroup do
   end
 
   context ".get_all" do
-    context "when we can retreive the stats" do
+    context "when we can retrieve the stats" do
       let(:cpuacct_control_group) { "/docker/a10687343f90e97bbb1f7181bd065a42de96c40c4aa91764a9d526ea30475f61" }
       let(:cpuacct_usage) { 1982 }
       let(:cpu_control_group) { "/docker/a10687343f90e97bbb1f7181bd065a42de96c40c4aa91764a9d526ea30475f61" }
