@@ -7,13 +7,13 @@ require "net/http"
 require "paquet/gem"
 
 # This class add new rake methods to a an existing ruby gem,
-# these methods allow developpers to create a Uber gem, a uber gem is
+# these methods allow developers to create a Uber gem, a uber gem is
 # a tarball that contains the current gems and one or more of his dependencies.
 #
 # This Tool will take care of looking at the current dependency tree defined in the Gemspec and the gemfile
 # and will traverse all graph and download the gem file into a specified directory.
 #
-# By default, the tool wont fetch everything and the developper need to declare what gems he want to download.
+# By default, the tool wont fetch everything and the developer need to declare what gems he want to download.
 module Paquet
   class Task < Rake::TaskLib
     def initialize(target_path, cache_path = nil, &block)

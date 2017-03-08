@@ -118,7 +118,7 @@ module LogStash module Docgen
       "#{CANONICAL_NAME_PREFIX}-#{section}-#{config_name}"
     end
 
-    # Developper can declare options in the order they want
+    # Developer can declare options in the order they want
     # `Hash` keys are sorted by default in the order of creation.
     # But we force a sort options name for the documentation.
     def config
