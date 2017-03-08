@@ -313,7 +313,7 @@ public class Queue implements Closeable {
         try {
             boolean wasEmpty = (firstUnreadPage() == null);
 
-            // create a new head page if the current does not have suffient space left for data to be written
+            // create a new head page if the current does not have sufficient space left for data to be written
             if (! this.headPage.hasSpace(data.length)) {
                 // beheading includes checkpoint+fsync if required
                 TailPage tailPage = this.headPage.behead();
