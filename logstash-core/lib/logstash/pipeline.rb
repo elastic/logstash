@@ -465,7 +465,7 @@ module LogStash; class Pipeline < BasePipeline
   # @param before_stop [Proc] code block called before performing stop operation on input plugins
   def shutdown(&before_stop)
     # shutdown can only start once the pipeline has completed its startup.
-    # avoid potential race conditoon between the startup sequence and this
+    # avoid potential race condition between the startup sequence and this
     # shutdown method which can be called from another thread at any time
     sleep(0.1) while !ready?
 
