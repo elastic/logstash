@@ -26,7 +26,7 @@ $LS_CONFIG="test.conf"
 $LS_BRANCH=$env:LS_BRANCH
 $Logstash_path = "$Main_path\logstash"
 $Logstash_zip_file = "$Download_path\logstash.zip"
-$Logstas_URL = "https://s3-eu-west-1.amazonaws.com/build-eu.elasticsearch.org/logstash/$LS_BRANCH/nightly/JDK7/logstash-latest-SNAPSHOT.zip"
+$Logstash_URL = "https://s3-eu-west-1.amazonaws.com/build-eu.elasticsearch.org/logstash/$LS_BRANCH/nightly/JDK7/logstash-latest-SNAPSHOT.zip"
 
 ## ----------------------------------------
 
@@ -42,7 +42,7 @@ $ES_URL = "https://download.elastic.co/elasticsearch/elasticsearch/elasticsearch
 ## Download and unzip Logstash
 
 md -Path $Logstash_path
-(New-Object System.Net.WebClient).DownloadFile($Logstas_URL, $Logstash_zip_file)
+(New-Object System.Net.WebClient).DownloadFile($Logstash_URL, $Logstash_zip_file)
 [System.IO.Compression.ZipFile]::ExtractToDirectory($Logstash_zip_file, $Download_path)
 ri $Logstash_zip_file
 mv "$Download_path\log*\*" $Logstash_path

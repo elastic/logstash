@@ -53,7 +53,7 @@ Usages:
 
 ```sh
 bin/logstash-docgen --all # will generate the doc for all the plugins
-bin/logstash-docgen logtash-input-file logstash-input-s3 # generate doc for 2 plugins
+bin/logstash-docgen logstash-input-file logstash-input-s3 # generate doc for 2 plugins
 ```
 
 **See:** `bin/logstash-docgen --help` for complete usage.
