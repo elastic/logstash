@@ -522,7 +522,7 @@ pre-releases.
 ### outputs
   - bugfix: elasticsearch: flush any buffered events on logstash shutdown
     (#1175)
-  - feature: riemann: Automatically map event fields to rieman event fields
+  - feature: riemann: Automatically map event fields to riemann event fields
     (logstash-contrib#15, Byron Pezan)
   - bugfix: lumberjack: fix off-by-one errors causing writes to another
     logstash agent to block indefinitely
