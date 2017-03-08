@@ -55,7 +55,7 @@ to support installing or manipulating Logstash, such as via Puppet.
 ==== Default Logging Level
 
 The default log severity level changed to `INFO` instead of `WARN` to match Elasticsearch. Existing logs
-(in core and plugins) were too noisy at the `INFO` level, so we auditted our log messages and switched some of them to
+(in core and plugins) were too noisy at the `INFO` level, so we audited our log messages and switched some of them to
 `DEBUG` level.
 
 You can use the new `logstash.yml` file to configure the `log.level` setting or continue to pass the new
