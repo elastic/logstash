@@ -389,7 +389,7 @@ describe LogStash::Pipeline do
       allow(LogStash::Plugin).to receive(:lookup).with("output", "dummyoutput").and_return(::LogStash::Outputs::DummyOutput)
       allow(logger).to receive(:warn)
 
-      # pipeline must be first called outside the thread context because it lazyly initialize and will create a
+      # pipeline must be first called outside the thread context because it lazily initialize and will create a
       # race condition if called in the thread
       p = pipeline
       t = Thread.new { p.run }
