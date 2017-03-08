@@ -74,7 +74,7 @@ public abstract class Page implements Closeable {
     public boolean isFullyAcked() {
         // TODO: it should be something similar to this when we use a proper bitset class like ES
         // this.ackedSeqNum.firstUnackedBit >= this.elementCount;
-        // TODO: for now use a naive & inneficient mechanism with a simple Bitset
+        // TODO: for now use a naive & inefficient mechanism with a simple Bitset
         return this.elementCount > 0 && this.ackedSeqNums.cardinality() >= this.elementCount;
     }
 
