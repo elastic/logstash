@@ -36,7 +36,7 @@ public class Queue implements Closeable {
     protected long seqNum;
     protected HeadPage headPage;
 
-    // complete list of all non fully acked pages. note that exact sequenciality by pageNum cannot be assumed
+    // complete list of all non fully acked pages. note that exact sequentially by pageNum cannot be assumed
     // because any fully acked page will be removed from this list potentially creating pageNum gaps in the list.
     protected final List<TailPage> tailPages;
 
