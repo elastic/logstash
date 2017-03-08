@@ -579,7 +579,7 @@ describe LogStash::Event do
   end
 
   describe "using hash input from deserialized json" do
-    # this is to test the case when JrJackson deserialises Json and produces
+    # this is to test the case when JrJackson deserializes Json and produces
     # native Java Collections objects for efficiency
     it_behaves_like "all event tests" do
       subject{LogStash::Event.new(LogStash::Json.load(LogStash::Json.dump(event_hash)))}
