@@ -1172,7 +1172,7 @@ pre-releases.
    matched. (LOGSTASH-705)
  - feature: kv: Adds field_split, value_split, prefix, and container
    settings. (#225, patch by Alex Wheeler)
- - bugfix: mutate: rename on a nonexistant field now does nothing as expected.
+ - bugfix: mutate: rename on a nonexistent field now does nothing as expected.
    (LOGSTASH-757)
  - bugfix: grok: don't tag an event with _grokparsefailure if it's already so
    (#248, patch by Greg Brockman)
