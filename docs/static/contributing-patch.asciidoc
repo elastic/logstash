@@ -15,7 +15,7 @@ Plugins are subclasses of a Logstash base class. A plugin's base class defines c
 ==== Input Plugins
 
 Input plugins ingest data from an external source. Input plugins are always associated with a codec. An input plugin 
-always has an associated codec plugin. Input and codec plugins operate in conjuction to create a Logstash event and add 
+always has an associated codec plugin. Input and codec plugins operate in conjunction to create a Logstash event and add 
 that event to the processing queue. An input codec is a subclass of the `LogStash::Inputs::Base` class.
 
 .Input API
