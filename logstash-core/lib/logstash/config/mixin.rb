@@ -373,7 +373,7 @@ module LogStash::Config::Mixin
     end
 
     def validate_check_parameter_values(params)
-      # Filter out parametrs that match regexp keys.
+      # Filter out parameters that match regexp keys.
       # These are defined in plugins like this:
       #   config /foo.*/ => ...
       all_params_valid = true
