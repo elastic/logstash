@@ -37,7 +37,7 @@ describe LogStash::Util do
       expect(LogStash::Util.stringify_symbols([1, :a])).to eq([1, "a"])
     end
 
-    it "should convert innner array symbol values to strings" do
+    it "should convert inner array symbol values to strings" do
       expect(LogStash::Util.stringify_symbols({:a => [1, :b]})).to eq({"a" => [1, "b"]})
       expect(LogStash::Util.stringify_symbols([:a, [1, :b]])).to eq(["a", [1, "b"]])
     end
