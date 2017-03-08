@@ -85,7 +85,7 @@ module LogStash::PluginManager
   end
 
   # list of all locally installed plugins specs specified in the Gemfile.
-  # note that an installed plugin dependecies like codecs will not be listed, only those
+  # note that an installed plugin dependencies like codecs will not be listed, only those
   # specifically listed in the Gemfile.
   # @param gemfile [LogStash::Gemfile] the gemfile to validate against
   # @return [Array<Gem::Specification>] list of plugin specs
