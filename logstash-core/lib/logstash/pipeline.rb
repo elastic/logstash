@@ -469,7 +469,7 @@ module LogStash; class Pipeline < BasePipeline
     # shutdown method which can be called from another thread at any time
     sleep(0.1) while !ready?
 
-    # TODO: should we also check against calling shutdown multiple times concurently?
+    # TODO: should we also check against calling shutdown multiple times concurrently?
 
     before_stop.call if block_given?
 
