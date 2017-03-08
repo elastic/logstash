@@ -547,7 +547,7 @@ public class Queue implements Closeable {
                 if (p.getMinSeqNum() > 0 && firstAckSeqNum >= p.getMinSeqNum() && firstAckSeqNum < p.getMinSeqNum() + p.getElementCount()) {
                     result = new TailPageResult(p, 0);
                 } else {
-                    // dual search strategy: if few tail pages search linearily otherwise perform binary search
+                    // dual search strategy: if few tail pages search linearly otherwise perform binary search
                     result = (this.tailPages.size() > 3) ? binaryFindPageForSeqnum(firstAckSeqNum) : linearFindPageForSeqnum(firstAckSeqNum);
                 }
             }
