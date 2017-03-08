@@ -73,7 +73,7 @@ module LogStash module Instrument
     # If you use the `,` on a key the metric store will return the both values at that level
     #
     # The returned hash will keep the same structure as it had in the `Concurrent::Map`
-    # but will be a normal ruby hash. This will allow the api to easily seriliaze the content
+    # but will be a normal ruby hash. This will allow the api to easily serialize the content
     # of the map
     #
     # @param [Array] The path where values should be located
