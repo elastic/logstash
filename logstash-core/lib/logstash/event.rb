@@ -10,7 +10,7 @@ require "logstash/string_interpolation"
 # transcient pipeline events for normal in-flow signaling as opposed to
 # flow altering exceptions. for now having base classes is adequate and
 # in the future it might be necessary to refactor using like a BaseEvent
-# class to have a common interface for all pileline events to support
+# class to have a common interface for all pipeline events to support
 # eventual queueing persistence for example, TBD.
 module LogStash
   class SignalEvent
