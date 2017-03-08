@@ -65,7 +65,7 @@ describe LogStash::EventDispatcher do
       emitter.method_exists
     end
 
-    it "allows to remove a listner to an emitter" do
+    it "allows to remove a listener to an emitter" do
       expect(listener).to receive(:method_exists).with(emitter).once
       emitter.dispatcher.add_listener(listener)
       emitter.method_exists
