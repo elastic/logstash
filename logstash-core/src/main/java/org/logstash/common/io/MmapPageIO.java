@@ -42,7 +42,7 @@ public class MmapPageIO extends AbstractByteBufferPageIO {
     }
 
     // memory map data file to this.buffer and read initial version byte
-    // @param strictCapacity if true verify that data file size is same as confgured page capacity, if false update page capacity to actual file size
+    // @param strictCapacity if true verify that data file size is same as configured page capacity, if false update page capacity to actual file size
     private void mapFile(boolean strictCapacity) throws IOException {
         RandomAccessFile raf = new RandomAccessFile(this.file, "rw");
 
