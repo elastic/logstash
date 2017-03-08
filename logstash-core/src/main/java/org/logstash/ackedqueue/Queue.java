@@ -381,7 +381,7 @@ public class Queue implements Closeable {
         }
     }
 
-    // @param seqNum the element sequence number upper bound for which persistence should be garanteed (by fsync'ing)
+    // @param seqNum the element sequence number upper bound for which persistence should be guaranteed (by fsync'ing)
     public void ensurePersistedUpto(long seqNum) throws IOException{
         lock.lock();
         try {
