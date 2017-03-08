@@ -362,7 +362,7 @@ public class Queue implements Closeable {
 
     // @return true if the queue is deemed at full capacity
     public boolean isFull() {
-        // TODO: I am not sure if having unreadCount as volatile is sufficient here. all unreadCount updates are done inside syncronized
+        // TODO: I am not sure if having unreadCount as volatile is sufficient here. all unreadCount updates are done inside synchronized
         // TODO: sections, I believe that to only read the value here, having it as volatile is sufficient?
         if ((this.maxBytes > 0) && this.currentByteSize >= this.maxBytes) {
             return true;
