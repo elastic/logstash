@@ -3,7 +3,7 @@ set -e
 
 ##
 # Note this setup needs a system ruby to be available, this can not
-# be done here as is higly system dependant.
+# be done here as is highly system dependant.
 ##
 
 #squid proxy work, so if there is a proxy it can be cached.
