@@ -534,7 +534,7 @@ public class Queue implements Closeable {
         // as a first implementation we assume that all batches are created from the same page
         // so we will avoid multi pages acking here for now
 
-        // find the page to ack by travesing from oldest tail page
+        // find the page to ack by traversing from oldest tail page
         long firstAckSeqNum = seqNums.get(0);
 
         lock.lock();
