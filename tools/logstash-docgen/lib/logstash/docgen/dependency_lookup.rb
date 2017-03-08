@@ -37,7 +37,7 @@ module LogStash module Docgen
         .select { |v| requirements.any? { |requirement| requirement.satisfied_by?(v) } }
     end
 
-    # Remove betas/aphas and reverse sort
+    # Remove betas/alphas and reverse sort
     def clean_versions(gemspecs)
       gemspecs.collect(&:to_s)
         .collect { |v| v.gsub(PRERELEASES_RE, '') } # remove beta, alphas and snapshots
