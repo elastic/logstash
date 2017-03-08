@@ -46,7 +46,7 @@ describe Paquet::Utils do
     let(:redirect_response) { instance_double("Net::HTTP::Response", :code => "302", :headers => { "location" => "https://localhost:8888/new_path" }) }
     let(:response_ok) { instance_double("Net::HTTP::Response", :code => "200") }
 
-    context "less than the maximun of redirection" do
+    context "less than the maximum of redirection" do
       let(:redirect_url) { "https://localhost:8898/redirect/my-file.txt"}
 
       before do
