@@ -326,7 +326,7 @@ end
 To run this test:
 
 . Open a terminal window
-. Mavigate to the cloned plugin folder
+. Navigate to the cloned plugin folder
 . The first time you run the test, run the command `bundle install`
 . Run the command `bundle exec rspec`
 
