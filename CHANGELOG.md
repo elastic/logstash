@@ -263,7 +263,7 @@ pre-releases.
     - Added IAM roles support so you can securely read and write events from S3 without providing your
       AWS credentials (#1575). 
     - Added support for using temporary credentials obtained from AWS STS (#1946)
-    - AWS credentials can be specfied through environment variables (#1619)  
+    - AWS credentials can be specified through environment variables (#1619)  
   - RabbitMQ: 
     - Fixed march_hare client uses incorrect connection url (LOGSTASH-2276)
     - Use Bunny 1.5.0+ (#1894)

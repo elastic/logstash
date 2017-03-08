@@ -97,7 +97,7 @@ module LogStash::PluginManager
 
   # @param plugin [String] plugin name
   # @param gemfile [LogStash::Gemfile] the gemfile to validate against
-  # @return [Boolean] true if the plugin is an installed logstash plugin and spefificed in the Gemfile
+  # @return [Boolean] true if the plugin is an installed logstash plugin and specified in the Gemfile
   def self.installed_plugin?(plugin, gemfile)
     !!gemfile.find(plugin) && find_plugins_gem_specs(plugin).any?
   end
