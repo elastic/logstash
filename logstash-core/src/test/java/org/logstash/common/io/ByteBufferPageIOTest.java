@@ -113,8 +113,8 @@ public class ByteBufferPageIOTest {
         ByteBufferPageIO io = newEmptyPageIO();
         io.write(element.serialize(), seqNum);
 
-        byte[] inititalState = io.dump();
-        io = newPageIO(inititalState.length, inititalState);
+        byte[] initialState = io.dump();
+        io = newPageIO(initialState.length, initialState);
         io.open(seqNum, 1);
         assertThat(io.getElementCount(), is(equalTo(1)));
         assertThat(io.getMinSeqNum(), is(equalTo(seqNum)));
@@ -127,8 +127,8 @@ public class ByteBufferPageIOTest {
         ByteBufferPageIO io = newEmptyPageIO();
         io.write(element.serialize(), seqNum);
 
-        byte[] inititalState = io.dump();
-        io = newPageIO(inititalState.length, inititalState);
+        byte[] initialState = io.dump();
+        io = newPageIO(initialState.length, initialState);
         io.recover();
         assertThat(io.getElementCount(), is(equalTo(1)));
         assertThat(io.getMinSeqNum(), is(equalTo(seqNum)));
@@ -139,16 +139,16 @@ public class ByteBufferPageIOTest {
         Queueable element = new StringElement("foobarbaz");
         long seqNum = 42L;
         ByteBufferPageIO io = newEmptyPageIO();
-        byte[] inititalState = io.dump();
+        byte[] initialState = io.dump();
 
-        io = newPageIO(inititalState.length, inititalState);
+        io = newPageIO(initialState.length, initialState);
         io.recover();
         assertThat(io.getElementCount(), is(equalTo(0)));
 
         io.write(element.serialize(), seqNum);
-        inititalState = io.dump();
+        initialState = io.dump();
 
-        io = newPageIO(inititalState.length, inititalState);
+        io = newPageIO(initialState.length, initialState);
         io.recover();
         assertThat(io.getElementCount(), is(equalTo(1)));
         assertThat(io.getMinSeqNum(), is(equalTo(seqNum)));
@@ -160,16 +160,16 @@ public class ByteBufferPageIOTest {
 
         ByteBufferPageIO io = newEmptyPageIO();
         io.write(element.serialize(), 1L);
-        byte[] inititalState = io.dump();
+        byte[] initialState = io.dump();
 
-        io = newPageIO(inititalState.length, inititalState);
+        io = newPageIO(initialState.length, initialState);
         io.recover();
         assertThat(io.getElementCount(), is(equalTo(1)));
 
         io.write(element.serialize(), 2L);
-        inititalState = io.dump();
+        initialState = io.dump();
 
-        io = newPageIO(inititalState.length, inititalState);
+        io = newPageIO(initialState.length, initialState);
         io.recover();
         assertThat(io.getElementCount(), is(equalTo(2)));
     }
@@ -181,8 +181,8 @@ public class ByteBufferPageIOTest {
         ByteBufferPageIO io = newEmptyPageIO();
         io.write(element.serialize(), seqNum);
 
-        byte[] inititalState = io.dump();
-        newPageIO(inititalState.length, inititalState);
+        byte[] initialState = io.dump();
+        newPageIO(initialState.length, initialState);
         io.open(1L, 1);
     }
 
