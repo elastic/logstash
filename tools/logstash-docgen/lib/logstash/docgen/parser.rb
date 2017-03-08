@@ -188,7 +188,7 @@ module LogStash module Docgen
     Document.new(context, format)
   end
 
-  # Note that Gem::Specifcation has an internal cache.
+  # Note that Gem::Specification has an internal cache.
   def self.load_plugin_specification(plugin_source_path)
     gemspec = Dir.glob(::File.join(plugin_source_path, "*.gemspec")).first
     raise "Cannot find the gemspec in #{plugin_source_path}" if gemspec.nil?
