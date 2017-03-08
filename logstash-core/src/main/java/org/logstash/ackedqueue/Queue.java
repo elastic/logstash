@@ -598,7 +598,7 @@ public class Queue implements Closeable {
 
     // deserialize a byte array into the required element class.
     // @param bytes the byte array to deserialize
-    // @return Queueable the deserialized byte array into the required Queuable interface implementation concrete class
+    // @return Queueable the deserialized byte array into the required Queueable interface implementation concrete class
     public Queueable deserialize(byte[] bytes) {
         try {
             return (Queueable)this.deserializeMethod.invoke(this.elementClass, bytes);
