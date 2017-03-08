@@ -6,17 +6,17 @@ module LogStash module Plugins
     java_import "java.util.concurrent.CopyOnWriteArrayList"
 
     def initialize
-      @registered_emmitters = ConcurrentHashMap.new
+      @registered_emitters = ConcurrentHashMap.new
       @registered_hooks = ConcurrentHashMap.new
     end
 
     def register_emitter(emitter_scope, dispatcher)
-      @registered_emmitters.put(emitter_scope, dispatcher)
+      @registered_emitters.put(emitter_scope, dispatcher)
       sync_hooks
     end
 
     def remove_emitter(emitter_scope)
-      @registered_emmitters.remove(emitter_scope)
+      @registered_emitters.remove(emitter_scope)
     end
 
     def register_hooks(emitter_scope, callback)
@@ -28,8 +28,8 @@ module LogStash module Plugins
       sync_hooks
     end
 
-    def emmitters_count
-      @registered_emmitters.size
+    def emitters_count
+      @registered_emitters.size
     end
 
     def hooks_count(emitter_scope = nil)
@@ -43,7 +43,7 @@ module LogStash module Plugins
 
     private
     def sync_hooks
-      @registered_emmitters.each do |emitter, dispatcher|
+      @registered_emitters.each do |emitter, dispatcher|
         listeners = @registered_hooks.get(emitter)
 
         unless listeners.nil?
