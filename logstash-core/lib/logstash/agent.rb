@@ -424,7 +424,7 @@ class LogStash::Agent
     @pipelines.each do |id, pipeline|
       start_pipeline(id)
       pipeline.collect_stats
-      # no reloads yet, initalize all the reload metrics
+      # no reloads yet, initialize all the reload metrics
       init_pipeline_reload_metrics(id)
     end
   end
