@@ -10,7 +10,7 @@ import java.util.stream.Collectors;
 
 public abstract class Page implements Closeable {
     protected final int pageNum;
-    protected long minSeqNum; // TODO: see if we can meke it final?
+    protected long minSeqNum; // TODO: see if we can make it final?
     protected int elementCount;
     protected long firstUnreadSeqNum;
     protected final Queue queue;
