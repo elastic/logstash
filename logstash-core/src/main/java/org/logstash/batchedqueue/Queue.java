@@ -14,21 +14,43 @@ public class Queue<E> {
     final Condition notFull  = lock.newCondition();
     final Condition notEmpty = lock.newCondition();
 
+    private final int WORKERS = 4;
+
     final int limit;
-    private List batch;
+    private List[] batches;
+    private int write_batch;
+    private int read_batch;
 
     public Queue(int limit) {
         this.limit = limit;
-        this.batch = new ArrayList<E>();
+        this.batches = new  List[WORKERS];
+        this.write_batch = 0;
+        this.read_batch = 0;
+        for (int i = 0; i < WORKERS; i++) {
+            this.batches[i] = new ArrayList<E>();
+        }
     }
+
+    private int next_write_batch() {
+        return (this.write_batch + 1) % WORKERS;
+    }
+
+    private void inc_write_batch() {
+        this.write_batch = (this.write_batch + 1) % WORKERS;
+    }
+
+    private void inc_read_batch() {
+        this.read_batch = (this.read_batch + 1) % WORKERS;
+    }
+
 
     public void write(E element) {
         lock.lock();
         try {
 
             // empty queue shortcut
-            if (this.batch.isEmpty()) {
-                this.batch.add(element);
+            if (_isEmpty()) {
+                this.batches[this.write_batch].add(element);
                 notEmpty.signal();
                 return;
             }
@@ -49,20 +71,27 @@ public class Queue<E> {
                 }
             }
 
-            this.batch.add(element);
+            if (this.batches[this.write_batch].size() >= this.limit) {
+                inc_write_batch();
+            }
+            this.batches[this.write_batch].add(element);
         } finally {
             lock.unlock();
         }
     }
 
-    public boolean isFull() {
-        return this.batch.size() >= this.limit;
+    private boolean isFull() {
+        return next_write_batch() == read_batch && this.batches[this.write_batch].size() >= this.limit;
+    }
+
+    private boolean _isEmpty() {
+        return this.read_batch == this.write_batch && this.batches[this.read_batch].isEmpty();
     }
 
     public boolean isEmpty() {
         lock.lock();
         try {
-            return this.batch.isEmpty();
+            return _isEmpty();
         } finally {
             lock.unlock();
         }
@@ -74,11 +103,11 @@ public class Queue<E> {
             // full queue shortcut
             if (isFull()) {
                 List<E> batch = swap();
-                notFull.signal();
+                notFull.signalAll();
                 return batch;
             }
 
-            if (this.batch.isEmpty()) { return null; }
+            if (_isEmpty()) { return null; }
 
             return swap();
         } finally {
@@ -93,12 +122,11 @@ public class Queue<E> {
     public List<E> readBatch(long timeout) {
         lock.lock();
         try {
-            while (this.batch.isEmpty()) {
+            while (_isEmpty()) {
+                //System.out.println("*** isEmpty");
                 try {
-                    if (!notEmpty.await(timeout, TimeUnit.MILLISECONDS)) {
-                        // await return false when reaching timeout
-                        break;
-                    }
+                    boolean timedout = !notEmpty.await(timeout, TimeUnit.MILLISECONDS); // await return false when reaching timeout
+                    if (timedout) { break; }
                 } catch (InterruptedException e) {
                     // the thread interrupt() has been called while in the await() blocking call.
                     // at this point the interrupted flag is reset and Thread.interrupted() will return false
@@ -112,11 +140,12 @@ public class Queue<E> {
                 }
             }
 
-            if (this.batch.isEmpty()) { return null; }
+            if (_isEmpty()) { return null; }
 
             if (isFull()) {
+                //System.out.println("*** isFull");
                 List<E> batch = swap();
-                notFull.signal();
+                notFull.signalAll();
                 return batch;
             }
 
@@ -132,8 +161,11 @@ public class Queue<E> {
 
 
     private List<E> swap() {
-        List<E> batch = this.batch;
-        this.batch = new ArrayList<>();
+        List<E> batch = this.batches[this.read_batch];
+        this.batches[this.read_batch] = new ArrayList<>();
+        if (this.read_batch != this.write_batch) {
+            inc_read_batch();
+        }
         return batch;
     }
 
