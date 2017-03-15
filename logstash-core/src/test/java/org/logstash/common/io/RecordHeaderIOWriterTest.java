@@ -19,7 +19,7 @@ import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.logstash.common.io.RecordIOWriter.BLOCK_SIZE;
 
-public class RecordIOWriterTest {
+public class RecordHeaderIOWriterTest {
     private Path file;
 
     @Rule
