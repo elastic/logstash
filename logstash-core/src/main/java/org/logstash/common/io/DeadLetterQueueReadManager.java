@@ -84,7 +84,7 @@ public class DeadLetterQueueReadManager {
             currentReader = new RecordIOReader(segments.first());
         }
 
-        byte[] event = currentReader.readRecord();
+        byte[] event = currentReader.readEvent();
         if (event == null && currentReader.isEndOfStream()) {
             if (currentReader.getPath().equals(segments.last())) {
                 pollNewSegments(timeoutRemaining);

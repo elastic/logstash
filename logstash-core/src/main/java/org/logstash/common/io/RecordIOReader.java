@@ -33,111 +33,138 @@ public class RecordIOReader {
 
     private final FileChannel channel;
     private final ByteBuffer currentBlock;
+    private int currentBlockSizeReadFromChannel;
     private final Path path;
-    private boolean endOfStream;
 
     public RecordIOReader(Path path) throws IOException {
         this.path = path;
         this.channel = FileChannel.open(path, StandardOpenOption.READ);
         this.currentBlock = ByteBuffer.allocate(BLOCK_SIZE);
-        this.endOfStream = true;
-    }
-
-    private void seekNextBlock() throws IOException {
-        seekNextBlock(false);
-    }
-
-    private void seekNextBlock(boolean fresh) throws IOException {
-        long prev = channel.position();
-        int keepPosition;
-        if (fresh) {
-            keepPosition = 0;
-        } else if (endOfStream && currentBlock.hasRemaining()) {
-            keepPosition = currentBlock.position();
-        } else {
-            keepPosition = 0;
-        }
-        currentBlock.position(0);
-        if (channel.read(currentBlock) < BLOCK_SIZE) {
-            endOfStream = true;
-            channel.position(prev);
-        } else {
-            endOfStream = false;
-        }
-        currentBlock.rewind();
-        currentBlock.position(keepPosition);
-    }
-
-    public void seekNextBlock(int bid) throws IOException {
-        currentBlock.position(currentBlock.limit());
-        channel.position(bid * BLOCK_SIZE);
-        seekNextBlock(true);
+        this.currentBlockSizeReadFromChannel = 0;
     }
 
     public Path getPath() {
         return path;
     }
 
-    public boolean isEndOfStream() {
-        return endOfStream;
+    public void seekToBlock(int bid) throws IOException {
+        currentBlock.rewind();
+        currentBlockSizeReadFromChannel = 0;
+        channel.position(bid * BLOCK_SIZE);
     }
 
     /**
-     * TODO(talevy): split out seeking to first record and/or end of buffer vs. actually reading the record
+     *
+     * @param rewind
+     * @throws IOException
+     */
+    void consumeBlock(boolean rewind) throws IOException {
+        if (rewind) {
+            currentBlockSizeReadFromChannel = 0;
+            currentBlock.rewind();
+        } else if (currentBlockSizeReadFromChannel == BLOCK_SIZE) {
+            // already read enough, no need to read more
+            return;
+        }
+        int originalPosition = currentBlock.position();
+        int read = channel.read(currentBlock);
+        currentBlockSizeReadFromChannel += (read > 0) ? read : 0;
+        currentBlock.position(originalPosition);
+    }
+
+    /**
+     * basically, is last block
+     * @return
+     */
+    public boolean isEndOfStream() {
+        return currentBlockSizeReadFromChannel < BLOCK_SIZE;
+    }
+
+    /**
+     *
+     */
+     int seekToStartOfEventInBlock() throws IOException {
+         while (true) {
+             RecordType type = RecordType.fromByte(currentBlock.array()[currentBlock.arrayOffset() + currentBlock.position()]);
+             if (RecordType.COMPLETE.equals(type) || RecordType.START.equals(type)) {
+                 return currentBlock.position();
+             } else if (RecordType.END.equals(type)) {
+                 RecordHeader header = RecordHeader.get(currentBlock);
+                 currentBlock.position(currentBlock.position() + header.getSize());
+             } else {
+                 return -1;
+             }
+         }
+    }
+
+    /**
+     *
+     * @return true if ready to read event, false otherwise
+     * @throws IOException
+     */
+    boolean consumeToStartOfEvent() throws IOException {
+        // read and seek to start of event
+        consumeBlock(false);
+        while (true) {
+            int eventStartPosition = seekToStartOfEventInBlock();
+            if (eventStartPosition < 0) {
+                if (isEndOfStream()) {
+                    return false;
+                } else {
+                    consumeBlock(true);
+                }
+            } else {
+                return true;
+            }
+        }
+    }
+
+    private void maybeRollToNextBlock() throws IOException {
+        // check block position state
+        if (currentBlock.remaining() < RECORD_HEADER_SIZE * 2) {
+            consumeBlock(true);
+        }
+    }
+
+    private void getRecord(ByteBuffer buffer, RecordHeader header) throws IOException {
+        buffer.put(currentBlock.array(), currentBlock.position(), header.getSize());
+        currentBlock.position(currentBlock.position() + header.getSize());
+    }
+
+    /**
+     * TODO(talevy): is this check useful?
+     * check that rest of event is actually written to currentBlock before continuing to read empty bytes
+     * @param recordSize
+     * @return
+     */
+    private boolean isRecordConsumable(int recordSize) {
+        if (currentBlock.position() + recordSize > currentBlockSizeReadFromChannel) {
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+
+    /**
      * @return
      * @throws IOException
      */
-    public byte[] readRecord() throws IOException {
-        if (endOfStream) {
-            seekNextBlock();
-        }
-        if (!currentBlock.hasRemaining() || currentBlock.remaining() < RECORD_HEADER_SIZE + 1) {
+    public byte[] readEvent() throws IOException {
+        if (consumeToStartOfEvent() == false) {
             return null;
         }
-        // read header
-        RecordType type = RecordType.fromByte(currentBlock.get());
-
-        final int totalSize;
-        int size;
+        RecordHeader header = RecordHeader.get(currentBlock);
         int cumReadSize = 0;
-        if (type == RecordType.START) {
-            size = currentBlock.getInt();
-            totalSize = currentBlock.getInt();
-        } else if (type == RecordType.COMPLETE) {
-            totalSize = currentBlock.getInt();
-            size = totalSize;
-        } else if (type == RecordType.MIDDLE) {
-            seekNextBlock(true);
-            return readRecord();
-        } else if (type == RecordType.END){
-            size = currentBlock.getInt();
-            currentBlock.position(currentBlock.position() + size);
-            return readRecord();
-        } else {
-            currentBlock.position(currentBlock.position() - 1);
-            return null;
-        }
-        ByteBuffer buffer = ByteBuffer.allocate(totalSize);
-        buffer.put(currentBlock.array(), currentBlock.position(), size);
-        currentBlock.position(currentBlock.position() + size);
-        cumReadSize += size;
-
-        if (!currentBlock.hasRemaining()) {
-            seekNextBlock();
-        }
-
-        while (cumReadSize < totalSize) {
-            type = RecordType.fromByte(currentBlock.get());
-            if (type == null) {
-                break;
-            }
-            size = currentBlock.getInt();
-            buffer.put(currentBlock.array(), currentBlock.position(), size);
-            currentBlock.position(currentBlock.position() + size);
-            cumReadSize += size;
-            if (!currentBlock.hasRemaining() && type != RecordType.END) {
-                seekNextBlock();
-            }
+        int bufferSize = header.getTotalEventSize().orElseGet(header::getSize);
+        ByteBuffer buffer = ByteBuffer.allocate(bufferSize);
+        getRecord(buffer, header);
+        cumReadSize += header.getSize();
+        while (cumReadSize < bufferSize) {
+            maybeRollToNextBlock();
+            RecordHeader nextHeader = RecordHeader.get(currentBlock);
+            getRecord(buffer, nextHeader);
+            cumReadSize += nextHeader.getSize();
         }
         return buffer.array();
     }

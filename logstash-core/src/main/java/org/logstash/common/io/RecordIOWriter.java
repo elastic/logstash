@@ -35,8 +35,8 @@ import static org.logstash.common.io.RecordType.START;
  * | — magic number (4bytes) --|
  *
  * [  32kbyte block....
- *    --- 1 byte Record Type ---
- *    --- 4 byte Record Size ---
+ *    --- 1 byte RecordHeader Type ---
+ *    --- 4 byte RecordHeader Size ---
  *
  * ]
  * [ 32kbyte block...
@@ -48,7 +48,6 @@ import static org.logstash.common.io.RecordType.START;
 public class RecordIOWriter {
 
     private final FileChannel channel;
-    private int numRecords;
     private int posInBlock;
     private int currentBlockIdx;
 
@@ -56,7 +55,6 @@ public class RecordIOWriter {
     static final int RECORD_HEADER_SIZE = 5;
 
     public RecordIOWriter(Path recordsFile) throws IOException {
-        this.numRecords = 0;
         this.posInBlock = 0;
         this.currentBlockIdx = 0;
         recordsFile.toFile().createNewFile();
@@ -64,14 +62,14 @@ public class RecordIOWriter {
     }
 
     private boolean blockHasSpaceForRecord() {
-        return posInBlock + RECORD_HEADER_SIZE <= BLOCK_SIZE;
+        return posInBlock + 2 * RECORD_HEADER_SIZE <= BLOCK_SIZE;
     }
 
     private int remainingInBlock() {
         return BLOCK_SIZE - posInBlock;
     }
 
-    private int writeRecordHeader(int size, RecordType type) throws IOException {
+    int writeRecordHeader(int size, RecordType type) throws IOException {
         ByteBuffer buffer = ByteBuffer.allocate(RECORD_HEADER_SIZE);
         buffer.put(type.toByte());
         buffer.putInt(size);
@@ -87,7 +85,7 @@ public class RecordIOWriter {
     }
 
     private RecordType getNextType(ByteBuffer buffer, RecordType previous) {
-        boolean fits = buffer.remaining() + RECORD_HEADER_SIZE < remainingInBlock();
+        boolean fits = buffer.remaining() + 2 * RECORD_HEADER_SIZE < remainingInBlock();
         if (previous == null) {
             return (fits) ? COMPLETE : START;
         }

@@ -4,14 +4,10 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
-import org.logstash.ackedqueue.SequencedList;
 import org.logstash.ackedqueue.StringElement;
 
-import java.io.IOException;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
@@ -20,7 +16,7 @@ import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.logstash.common.io.RecordIOWriter.BLOCK_SIZE;
 
-public class RecordIOWriterTest {
+public class RecordHeaderIOWriterTest {
     private Path file;
 
     @Rule
@@ -32,12 +28,71 @@ public class RecordIOWriterTest {
     }
 
     @Test
-    public void testFitsInBlock() throws Exception {
+    public void testReadEmptyBlock() throws Exception {
+        RecordIOWriter writer = new RecordIOWriter(file);
+        RecordIOReader reader = new RecordIOReader(file);
+        assertThat(reader.readEvent(), is(nullValue()));
+        writer.close();
+        reader.close();
+    }
+
+    @Test
+    public void testReadOnlyHeaderWritten() throws Exception {
+        RecordIOWriter writer = new RecordIOWriter(file);
+        writer.writeRecordHeader(10, RecordType.COMPLETE);
+        RecordIOReader reader = new RecordIOReader(file);
+        assertThat(reader.readEvent(), is(nullValue()));
+        writer.close();
+        reader.close();
+    }
+
+    @Test
+    public void testSingleComplete() throws Exception {
         StringElement input = new StringElement("element");
         RecordIOWriter writer = new RecordIOWriter(file);
         writer.writeRecord(input.serialize());
+        RecordIOReader reader = new RecordIOReader(file);
+        assertThat(StringElement.deserialize(reader.readEvent()), is(equalTo(input)));
+
+        reader.close();
         writer.close();
     }
+
+    @Test
+    public void testSeekToStartFromEndWithoutNextRecord() throws Exception {
+        char[] tooBig = new char[BLOCK_SIZE + 1000];
+        Arrays.fill(tooBig, 'c');
+        StringElement input = new StringElement(new String(tooBig));
+        RecordIOWriter writer = new RecordIOWriter(file);
+        writer.writeRecord(input.serialize());
+
+        RecordIOReader reader = new RecordIOReader(file);
+        reader.seekToBlock(1);
+        reader.consumeBlock(true);
+        assertThat(reader.seekToStartOfEventInBlock(), equalTo(-1));
+
+        reader.close();
+        writer.close();
+    }
+
+    @Test
+    public void testSeekToStartFromEndWithNextRecordPresent() throws Exception {
+        char[] tooBig = new char[BLOCK_SIZE + 1000];
+        Arrays.fill(tooBig, 'c');
+        StringElement input = new StringElement(new String(tooBig));
+        RecordIOWriter writer = new RecordIOWriter(file);
+        writer.writeRecord(input.serialize());
+        writer.writeRecord(input.serialize());
+
+        RecordIOReader reader = new RecordIOReader(file);
+        reader.seekToBlock(1);
+        reader.consumeBlock(true);
+        assertThat(reader.seekToStartOfEventInBlock(), equalTo(1014));
+
+        reader.close();
+        writer.close();
+    }
+
 
     @Test
     public void testFitsInTwoBlocks() throws Exception {
@@ -59,10 +114,10 @@ public class RecordIOWriterTest {
         writer.close();
 
         RecordIOReader reader = new RecordIOReader(file);
-        StringElement element = StringElement.deserialize(reader.readRecord());
+        StringElement element = StringElement.deserialize(reader.readEvent());
         assertThat(element.toString().length(), equalTo(input.toString().length()));
         assertThat(element.toString(), equalTo(input.toString()));
-        assertThat(reader.readRecord(), is(nullValue()));
+        assertThat(reader.readEvent(), is(nullValue()));
         reader.close();
     }
 
@@ -76,27 +131,27 @@ public class RecordIOWriterTest {
         byte[] inputSerialized = input.serialize();
 
         writer.writeRecord(inputSerialized);
-        assertThat(reader.readRecord(), equalTo(inputSerialized));
+        assertThat(reader.readEvent(), equalTo(inputSerialized));
         writer.writeRecord(inputSerialized);
-        assertThat(reader.readRecord(), equalTo(inputSerialized));
+        assertThat(reader.readEvent(), equalTo(inputSerialized));
         writer.writeRecord(inputSerialized);
-        assertThat(reader.readRecord(), equalTo(inputSerialized));
+        assertThat(reader.readEvent(), equalTo(inputSerialized));
         writer.writeRecord(inputSerialized);
-        assertThat(reader.readRecord(), equalTo(inputSerialized));
-        assertThat(reader.readRecord(), is(nullValue()));
-        assertThat(reader.readRecord(), is(nullValue()));
-        assertThat(reader.readRecord(), is(nullValue()));
+        assertThat(reader.readEvent(), equalTo(inputSerialized));
+        assertThat(reader.readEvent(), is(nullValue()));
+        assertThat(reader.readEvent(), is(nullValue()));
+        assertThat(reader.readEvent(), is(nullValue()));
         writer.writeRecord(inputSerialized);
-        assertThat(reader.readRecord(), equalTo(inputSerialized));
-        writer.writeRecord(inputSerialized);
-        writer.writeRecord(inputSerialized);
+        assertThat(reader.readEvent(), equalTo(inputSerialized));
         writer.writeRecord(inputSerialized);
         writer.writeRecord(inputSerialized);
-        assertThat(reader.readRecord(), equalTo(inputSerialized));
-        assertThat(reader.readRecord(), equalTo(inputSerialized));
-        assertThat(reader.readRecord(), equalTo(inputSerialized));
-        assertThat(reader.readRecord(), equalTo(inputSerialized));
-        assertThat(reader.readRecord(), is(nullValue()));
+        writer.writeRecord(inputSerialized);
+        writer.writeRecord(inputSerialized);
+        assertThat(reader.readEvent(), equalTo(inputSerialized));
+        assertThat(reader.readEvent(), equalTo(inputSerialized));
+        assertThat(reader.readEvent(), equalTo(inputSerialized));
+        assertThat(reader.readEvent(), equalTo(inputSerialized));
+        assertThat(reader.readEvent(), is(nullValue()));
 
         writer.close();
         reader.close();
@@ -112,11 +167,11 @@ public class RecordIOWriterTest {
         byte[] inputSerialized = input.serialize();
 
         writer.writeRecord(inputSerialized);
-        reader.seekNextBlock(1);
-        assertThat(reader.readRecord(), is(nullValue()));
+        reader.seekToBlock(1);
+        assertThat(reader.readEvent(), is(nullValue()));
         writer.writeRecord(inputSerialized);
-        reader.seekNextBlock(1);
-        assertThat(reader.readRecord(), is(not(nullValue())));
+        reader.seekToBlock(1);
+        assertThat(reader.readEvent(), is(not(nullValue())));
 
         writer.close();
         reader.close();
