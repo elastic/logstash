@@ -21,6 +21,7 @@ gem "rack-test", :require => "rack/test", :group => :development
 gem "flores", "~> 0.0.6", :group => :development
 gem "term-ansicolor", "~> 1.3.2", :group => :development
 gem "docker-api", "1.31.0", :group => :development
+gem "rest-client", "1.8.0", :group => :development
 gem "pleaserun"
 gem "logstash-input-heartbeat"
 gem "logstash-codec-collectd"
