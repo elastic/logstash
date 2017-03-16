@@ -57,18 +57,23 @@ describe "Test Logstash service when config reload is enabled" do
       expect(IO.read(output_file2).blank?).to be false
     end
     
-    # check metrics. It should be reset
-    result = logstash_service.monitoring_api.event_stats
-    expect(result["in"]).to eq(1)
-    expect(result["out"]).to eq(1)
+    # check instance metrics. It should not be reset
+    instance_event_stats = logstash_service.monitoring_api.event_stats
+    expect(instance_event_stats["in"]).to eq(2)
+    expect(instance_event_stats["out"]).to eq(2)
+
+    # check pipeline metrics. It should be reset
+    pipeline_event_stats = logstash_service.monitoring_api.pipeline_stats("main")["events"]
+    expect(pipeline_event_stats["in"]).to eq(1)
+    expect(pipeline_event_stats["out"]).to eq(1)
     
     # check reload stats
-    reload_stats = logstash_service.monitoring_api.pipeline_stats["reloads"]
+    pipeline_reload_stats = logstash_service.monitoring_api.pipeline_stats("main")["reloads"]
     instance_reload_stats = logstash_service.monitoring_api.node_stats["reloads"]
-    expect(reload_stats["successes"]).to eq(1)
-    expect(reload_stats["failures"]).to eq(0)
-    expect(reload_stats["last_success_timestamp"].blank?).to be false
-    expect(reload_stats["last_error"]).to eq(nil)
+    expect(pipeline_reload_stats["successes"]).to eq(1)
+    expect(pipeline_reload_stats["failures"]).to eq(0)
+    expect(pipeline_reload_stats["last_success_timestamp"].blank?).to be false
+    expect(pipeline_reload_stats["last_error"]).to eq(nil)
     
     expect(instance_reload_stats["successes"]).to eq(1)
     expect(instance_reload_stats["failures"]).to eq(0)

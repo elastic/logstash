@@ -96,8 +96,8 @@ module LogStash module Config module Source
 
       def get_unmatched_files
         # transform "/var/lib/*.conf" => /var/lib/*
-        t = File.split(@path)
-        all_files = Dir.glob(File.join(t.first, "*")).sort
+        t = ::File.split(@path)
+        all_files = Dir.glob(::File.join(t.first, "*")).sort
         all_files - get_matched_files
       end
 
@@ -144,8 +144,10 @@ module LogStash module Config module Source
 
     def pipeline_configs
 
-      unless mutually_exclusive(config_string?, local_config?, remote_config?)
+      if config_path? && config_string?
         raise ConfigurationError.new("Settings 'config.string' and 'path.config' can't be used simultaneously.")
+      elsif !config_path? && !config_string?
+        raise ConfigurationError.new("Either 'config.string' or 'path.config' must be set.")
       end
 
       config_parts = if config_string?
@@ -162,7 +164,7 @@ module LogStash module Config module Source
 
       add_missing_default_inputs_or_outputs(config_parts) if config_string?
 
-      [PipelineConfig.new(self.class, PIPELINE_ID, config_parts, @settings)]
+      [PipelineConfig.new(self.class, @settings.get("pipeline.id").to_sym, config_parts, @settings)]
     end
 
     def match?
@@ -223,10 +225,6 @@ module LogStash module Config module Source
       rescue URI::InvalidURIError
         false
       end
-    end
-
-    def mutually_exclusive(a, b, c)
-      (a ^ b ^ c) && !(a && b && c)
     end
   end
 end end end

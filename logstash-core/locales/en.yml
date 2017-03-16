@@ -102,6 +102,8 @@ en:
         Settings 'path.config' (-f) and 'config.string' (-e) can't be used simultaneously.
       reload-without-config-path: >-
         Configuration reloading also requires passing a configuration path with '-f yourlogstash.conf'
+      reload-with-config-string: >-
+        Configuration reloading can't be used with 'config.string' (-e).
       locked-data-path: >-
         Logstash could not be started because there is already another instance using the configured data directory.  If you wish to run multiple instances, you must change the "path.data" setting.
       invalid-shell: >-

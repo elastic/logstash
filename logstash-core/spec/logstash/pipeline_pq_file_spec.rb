@@ -2,6 +2,7 @@
 require "spec_helper"
 require "logstash/inputs/generator"
 require "logstash/filters/multiline"
+require_relative "../support/helpers"
 
 class PipelinePqFileOutput < LogStash::Outputs::Base
   config_name "pipelinepqfileoutput"
@@ -67,7 +68,8 @@ describe LogStash::Pipeline do
 
    let(:pipeline_settings) { { "queue.type" => queue_type, "pipeline.workers" => worker_thread_count, "pipeline.id" => pipeline_id} }
 
-  subject { described_class.new(config, pipeline_settings_obj, metric) }
+  let(:pipeline_config) { mock_pipeline_config(pipeline_id, config, pipeline_settings_obj) }
+  subject { described_class.new(pipeline_config, metric) }
 
   let(:counting_output) { PipelinePqFileOutput.new({ "id" => output_id }) }
   let(:metric_store) { subject.metric.collector.snapshot_metric.metric_store }

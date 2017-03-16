@@ -45,8 +45,13 @@ def mock_pipeline(pipeline_id, reloadable = true, config_hash = nil)
   settings = mock_settings("pipeline.id" => pipeline_id.to_s,
                            "config.string" => config_string,
                            "config.reload.automatic" => reloadable)
-  pipeline = LogStash::Pipeline.new(config_string, settings)
-  pipeline
+  pipeline_config = mock_pipeline_config(pipeline_id, config_string, settings)
+  LogStash::Pipeline.new(pipeline_config)
+end
+
+def mock_pipeline_from_string(config_string, settings = LogStash::SETTINGS, metric = nil)
+  pipeline_config = mock_pipeline_config(settings.get("pipeline.id"), config_string, settings)
+  LogStash::Pipeline.new(pipeline_config, metric)
 end
 
 def mock_pipeline_config(pipeline_id, config_string = nil, settings = {})

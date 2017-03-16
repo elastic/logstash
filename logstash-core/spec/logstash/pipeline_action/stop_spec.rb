@@ -8,7 +8,7 @@ require "logstash/instrument/null_metric"
 describe LogStash::PipelineAction::Stop do
   let(:pipeline_config) { "input { generator {} } output { null {} }" }
   let(:pipeline_id) { :main }
-  let(:pipeline) { LogStash::Pipeline.new(pipeline_config) }
+  let(:pipeline) { mock_pipeline_from_string(pipeline_config) }
   let(:pipelines) { { :main => pipeline } }
   let(:agent) { double("agent") }
 

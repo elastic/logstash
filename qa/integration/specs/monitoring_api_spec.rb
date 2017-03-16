@@ -59,7 +59,7 @@ describe "Test Monitoring API" do
       expect(result).not_to be_nil
       # we use fetch here since we want failed fetches to raise an exception
       # and trigger the retry block
-      queue_stats = result.fetch("pipeline").fetch("queue")
+      queue_stats = result.fetch("pipelines").fetch("main").fetch("queue")
       expect(queue_stats).not_to be_nil
       if logstash_service.settings.feature_flag == "persistent_queues"
         expect(queue_stats["type"]).to eq "persisted"

@@ -109,12 +109,9 @@ module LogStash
       @settings.values.each(&:reset)
     end
 
-    def from_yaml(yaml_path)
-      settings = read_yaml(::File.join(yaml_path, "logstash.yml"))
-      self.merge(
-        deep_replace(flatten_hash(settings)),
-        true
-      )
+    def from_yaml(yaml_path, file_name="logstash.yml")
+      settings = read_yaml(::File.join(yaml_path, file_name))
+      self.merge(deep_replace(flatten_hash(settings)), true)
       self
     end
     
@@ -138,6 +135,11 @@ module LogStash
       @settings.each do |name, setting|
         setting.validate_value
       end
+    end
+
+    def ==(other)
+      return false unless other.kind_of?(::LogStash::Settings)
+      self.to_hash == other.to_hash
     end
 
     private

@@ -78,14 +78,14 @@ describe "Test Logstash instance whose default settings are overridden" do
   end
   
   it "should exit when config test_and_exit is set" do
-    s = {}
-    s["path.config"] = temp_dir
-    s["config.test_and_exit"] = true
-    s["path.logs"] = temp_dir
-    overwrite_settings(s)
     test_config_path = File.join(temp_dir, "test.config")
     IO.write(test_config_path, "#{tcp_config}")
     expect(File.exists?(test_config_path)).to be true
+    s = {}
+    s["path.config"] = test_config_path
+    s["config.test_and_exit"] = true
+    s["path.logs"] = temp_dir
+    overwrite_settings(s)
     @logstash_service.spawn_logstash
     try(num_retries) do
       expect(@logstash_service.exited?).to be true
@@ -118,8 +118,8 @@ describe "Test Logstash instance whose default settings are overridden" do
 
     # now check monitoring API to validate
     node_info = @logstash_service.monitoring_api.node_info
-    expect(node_info["pipeline"]["workers"]).to eq(workers)
-    expect(node_info["pipeline"]["batch_size"]).to eq(batch_size)
+    expect(node_info["pipelines"]["main"]["workers"]).to eq(workers)
+    expect(node_info["pipelines"]["main"]["batch_size"]).to eq(batch_size)
   end
 
   it "start on a different HTTP port" do
