@@ -41,7 +41,9 @@ module LogStash
             Setting::PortRange.new("http.port", 9600..9700),
             Setting::String.new("http.environment", "production"),
             Setting::String.new("queue.type", "memory", true, ["persisted", "memory", "memory_acked"]),
+            Setting::Boolean.new("queue.drain", false),
             Setting::Bytes.new("queue.page_capacity", "250mb"),
+            Setting::Bytes.new("queue.max_bytes", "1024mb"),
             Setting::Numeric.new("queue.max_events", 0), # 0 is unlimited
             Setting::Numeric.new("queue.checkpoint.acks", 1024), # 0 is unlimited
             Setting::Numeric.new("queue.checkpoint.writes", 1024), # 0 is unlimited
@@ -55,6 +57,15 @@ module LogStash
   # Compute the default queue path based on `path.data`
   default_queue_file_path = ::File.join(SETTINGS.get("path.data"), "queue")
   SETTINGS.register Setting::WritableDirectory.new("path.queue", default_queue_file_path)
+  
+  SETTINGS.on_post_process do |settings|
+    # If the data path is overriden but the queue path isn't recompute the queue path
+    # We need to do this at this stage because of the weird execution order
+    # our monkey-patched Clamp follows
+    if settings.set?("path.data") && !settings.set?("path.queue")
+      settings.set_value("path.queue", ::File.join(settings.get("path.data"), "queue"))
+    end
+  end
 
   module Environment
     extend self

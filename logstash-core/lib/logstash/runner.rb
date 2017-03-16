@@ -20,6 +20,8 @@ require "logstash/settings"
 require "logstash/version"
 require "logstash/plugins/registry"
 
+java_import 'org.logstash.FileLockFactory'
+
 class LogStash::Runner < Clamp::StrictCommand
   include LogStash::Util::Loggable
   # The `path.settings` and `path.logs` need to be defined in the runner instead of the `logstash-core/lib/logstash/environment.rb`
@@ -170,7 +172,12 @@ class LogStash::Runner < Clamp::StrictCommand
     rescue => e
       # abort unless we're just looking for the help
       unless cli_help?(args)
-        $stderr.puts "ERROR: Failed to load settings file from \"path.settings\". Aborting... path.setting=#{LogStash::SETTINGS.get("path.settings")}, exception=#{e.class}, message=>#{e.message}"
+        if e.kind_of?(Psych::Exception)
+          yaml_file_path = ::File.join(LogStash::SETTINGS.get("path.settings"), "logstash.yml")
+          $stderr.puts "ERROR: Failed to parse YAML file \"#{yaml_file_path}\". Please confirm if the YAML structure is valid (e.g. look for incorrect usage of whitespace or indentation). Aborting... parser_error=>#{e.message}"
+        else
+          $stderr.puts "ERROR: Failed to load settings file from \"path.settings\". Aborting... path.setting=#{LogStash::SETTINGS.get("path.settings")}, exception=#{e.class}, message=>#{e.message}"
+        end
         return 1
       end
     end
@@ -179,6 +186,11 @@ class LogStash::Runner < Clamp::StrictCommand
   end
 
   def execute
+    # Only when execute is have the CLI options been added to the @settings
+    # We invoke post_process to apply extra logic to them.
+    # The post_process callbacks have been added in environment.rb
+    @settings.post_process
+    
     require "logstash/util"
     require "logstash/util/java_version"
     require "stud/task"
@@ -195,7 +207,7 @@ class LogStash::Runner < Clamp::StrictCommand
     # override log level that may have been introduced from a custom log4j config file
     LogStash::Logging::Logger::configure_logging(setting("log.level"))
 
-    if setting("config.debug") && logger.debug?
+    if setting("config.debug") && !logger.debug?
       logger.warn("--config.debug was specified, but log.level was not set to \'debug\'! No config info will be logged.")
     end
 
@@ -244,7 +256,7 @@ class LogStash::Runner < Clamp::StrictCommand
       config_loader = LogStash::Config::Loader.new(logger)
       config_str = config_loader.format_config(setting("path.config"), setting("config.string"))
       begin
-        LogStash::Pipeline.new(config_str)
+        LogStash::BasePipeline.new(config_str)
         puts "Configuration OK"
         logger.info "Using config.test_and_exit mode. Config Validation Result: OK. Exiting Logstash"
         return 0
@@ -254,9 +266,12 @@ class LogStash::Runner < Clamp::StrictCommand
       end
     end
 
+    # lock path.data before starting the agent
+    @data_path_lock = FileLockFactory.getDefault().obtainLock(setting("path.data"), ".lock");
+
     @agent = create_agent(@settings)
 
-    @agent.register_pipeline("main", @settings)
+    @agent.register_pipeline(@settings)
 
     # enable sigint/sigterm before starting the agent
     # to properly handle a stalled agent
@@ -278,6 +293,9 @@ class LogStash::Runner < Clamp::StrictCommand
 
     agent_return
 
+  rescue org.logstash.LockException => e
+    logger.fatal(I18n.t("logstash.runner.locked-data-path", :path => setting("path.data")))
+    return 1
   rescue Clamp::UsageError => e
     $stderr.puts "ERROR: #{e.message}"
     show_short_help
@@ -294,6 +312,7 @@ class LogStash::Runner < Clamp::StrictCommand
     Stud::untrap("INT", sigint_id) unless sigint_id.nil?
     Stud::untrap("TERM", sigterm_id) unless sigterm_id.nil?
     Stud::untrap("HUP", sighup_id) unless sighup_id.nil?
+    FileLockFactory.getDefault().releaseLock(@data_path_lock) if @data_path_lock
     @log_fd.close if @log_fd
   end # def self.main
 

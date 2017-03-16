@@ -5,26 +5,50 @@ require "bundler/definition"
 require "bundler/dependency"
 require "bundler/dsl"
 require "bundler/injector"
+require "bundler/shared_helpers"
+require "pluginmanager/gemfile"
+require "pathname"
+
 
 # This class cannot be in the logstash namespace, because of the way the DSL
 # class interact with the other libraries
+module Bundler
+  module SharedHelpers
+    def default_bundle_dir
+      Pathname.new(LogStash::Environment::LOGSTASH_HOME)
+    end
+  end
+end
+
 module Bundler
   class LogstashInjector < ::Bundler::Injector
     def self.inject!(new_deps, options = { :gemfile => LogStash::Environment::GEMFILE, :lockfile => LogStash::Environment::LOCKFILE })
       gemfile = options.delete(:gemfile)
       lockfile = options.delete(:lockfile)
 
-      bundler_format = Array(new_deps).collect { |plugin|  ::Bundler::Dependency.new(plugin.name, "=#{plugin.version}")}
+      bundler_format = new_deps.plugins.collect(&method(:dependency))
+      dependencies = new_deps.dependencies.collect(&method(:dependency))
 
       injector = new(bundler_format)
-      injector.inject(gemfile, lockfile)
+
+      # Some of the internal classes requires to be inside the LOGSTASH_HOME to find the relative
+      # path of the core gems.
+      Dir.chdir(LogStash::Environment::LOGSTASH_HOME) do
+        injector.inject(gemfile, lockfile, dependencies)
+      end
     end
 
+    def self.dependency(plugin)
+      ::Bundler::Dependency.new(plugin.name, "=#{plugin.version}")
+    end
 
     # This class is pretty similar to what bundler's injector class is doing
     # but we only accept a local resolution of the dependencies instead of calling rubygems.
     # so we removed `definition.resolve_remotely!`
-    def inject(gemfile_path, lockfile_path)
+    #
+    # And managing the gemfile is down by using our own Gemfile parser, this allow us to
+    # make it work with gems that are already defined in the gemfile.
+    def inject(gemfile_path, lockfile_path, dependencies)
       if Bundler.settings[:frozen]
         # ensure the lock and Gemfile are synced
         Bundler.definition.ensure_equivalent_gemfile_and_lockfile(true)
@@ -33,16 +57,31 @@ module Bundler
       end
 
       builder = Dsl.new
-      builder.eval_gemfile(gemfile_path)
+      gemfile = LogStash::Gemfile.new(File.new(gemfile_path, "r+")).load
 
-      @new_deps -= builder.dependencies
+      begin
+        @new_deps.each do |dependency|
+          gemfile.update(dependency.name, dependency.requirement)
+        end
 
-      builder.eval_gemfile("injected gems", new_gem_lines) if @new_deps.any?
-      definition = builder.to_definition(lockfile_path, {})
-      append_to(gemfile_path) if @new_deps.any?
-      definition.lock(lockfile_path)
+        # If the dependency is defined in the gemfile, lets try to update the version with the one we have
+        # with the pack.
+        dependencies.each do |dependency|
+          if gemfile.defined_in_gemfile?(dependency.name)
+            gemfile.update(dependency.name, dependency.requirement)
+          end
+        end
 
-      return @new_deps
+        builder.eval_gemfile("bundler file", gemfile.generate())
+        definition = builder.to_definition(lockfile_path, {})
+        definition.lock(lockfile_path)
+        gemfile.save
+      rescue => e
+        # the error should be handled elsewhere but we need to get the original file if we dont
+        # do this logstash will be in an inconsistent state
+        gemfile.restore!
+        raise e
+      end
     ensure
       Bundler.settings[:frozen] = "1" if frozen
     end

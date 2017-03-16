@@ -45,5 +45,9 @@ describe LogStash::Instrument::Collector do
     it "return a `LogStash::Instrument::MetricStore`" do
       expect(subject.snapshot_metric).to be_kind_of(LogStash::Instrument::Snapshot)
     end
+
+    it "returns a clone of the metric store" do
+      expect(subject.snapshot_metric).not_to eq(subject.snapshot_metric)
+    end
   end
 end

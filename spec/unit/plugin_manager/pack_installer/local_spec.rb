@@ -49,7 +49,7 @@ describe LogStash::PluginManager::PackInstaller::Local do
       let(:local_file) { ::File.join(::File.dirname(__FILE__), "..", "..", "..", "support", "pack", "valid-pack.zip") }
 
       it "install the gems" do
-        expect(::Bundler::LogstashInjector).to receive(:inject!).with(be_kind_of(Array)).and_return([])
+        expect(::Bundler::LogstashInjector).to receive(:inject!).with(be_kind_of(LogStash::PluginManager::PackInstaller::Pack)).and_return([])
 
         expect(::LogStash::PluginManager::GemInstaller).to receive(:install).with(/logstash-input-packtest/, anything)
         expect(::LogStash::PluginManager::GemInstaller).to receive(:install).with(/logstash-input-packtestdep/, anything)

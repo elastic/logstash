@@ -1,4 +1,4 @@
-pass::[<?edit_url https://github.com/elastic/logstash/edit/master/docs/static/include/pluginbody.asciidoc ?>]
+
 
 === How to write a Logstash {plugintype} plugin
 
@@ -1300,4 +1300,4 @@ the Logstash repository. When the acceptance guidelines are completed, we will
 facilitate the move to the logstash-plugins organization using the recommended
 https://help.github.com/articles/transferring-a-repository/#transferring-from-a-user-to-an-organization[github process].
 
-pass::[<?edit_url?>]
+

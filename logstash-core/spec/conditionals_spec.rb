@@ -287,7 +287,7 @@ describe "conditionals in filter" do
     conditional "!([message] <= 'sample')" do
       sample("apple") { expect(subject.get("tags")).not_to include("success") }
       sample("zebra") { expect(subject.get("tags")).not_to include("failure") }
-      sample("sample") { expect(subject.get("tags")).not_to include("success") }
+      sample("sample") { expect(subject.get("tags")).not_to include("success")}
     end
 
     conditional "!([message] >= 'sample')" do

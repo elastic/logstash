@@ -5,8 +5,6 @@ require "concurrent"
 require "logstash/namespace"
 require "logstash/errors"
 require "logstash-core/logstash-core"
-require "logstash/util/wrapped_acked_queue"
-require "logstash/util/wrapped_synchronous_queue"
 require "logstash/event"
 require "logstash/config/file"
 require "logstash/filters/base"
@@ -19,45 +17,25 @@ require "logstash/instrument/namespaced_metric"
 require "logstash/instrument/null_metric"
 require "logstash/instrument/namespaced_null_metric"
 require "logstash/instrument/collector"
+require "logstash/instrument/wrapped_write_client"
 require "logstash/output_delegator"
 require "logstash/filter_delegator"
+require "logstash/queue_factory"
 
-module LogStash; class Pipeline
+module LogStash; class BasePipeline
   include LogStash::Util::Loggable
 
-  attr_reader :inputs,
-    :filters,
-    :outputs,
-    :worker_threads,
-    :events_consumed,
-    :events_filtered,
-    :reporter,
-    :pipeline_id,
-    :started_at,
-    :thread,
-    :config_str,
-    :config_hash,
-    :settings,
-    :metric,
-    :filter_queue_client,
-    :input_queue_client
+  attr_reader :config_str, :config_hash, :inputs, :filters, :outputs, :pipeline_id
 
-  MAX_INFLIGHT_WARN_THRESHOLD = 10_000
-
-  RELOAD_INCOMPATIBLE_PLUGINS = [
-    "LogStash::Inputs::Stdin"
-  ]
-
-  def initialize(config_str, settings = SETTINGS, namespaced_metric = nil)
+  def initialize(config_str, settings = SETTINGS)
     @logger = self.logger
     @config_str = config_str
     @config_hash = Digest::SHA1.hexdigest(@config_str)
     # Every time #plugin is invoked this is incremented to give each plugin
     # a unique id when auto-generating plugin ids
     @plugin_counter ||= 0
-    @settings = settings
-    @pipeline_id = @settings.get_value("pipeline.id") || self.object_id
-    @reporter = PipelineReporter.new(@logger, self)
+
+    @pipeline_id = settings.get_value("pipeline.id") || self.object_id
 
     # A list of plugins indexed by id
     @plugins_by_id = {}
@@ -65,36 +43,109 @@ module LogStash; class Pipeline
     @filters = nil
     @outputs = nil
 
+    grammar = LogStashConfigParser.new
+    parsed_config = grammar.parse(config_str)
+    raise(ConfigurationError, grammar.failure_reason) if parsed_config.nil?
+
+    config_code = parsed_config.compile
+
+    # config_code = BasePipeline.compileConfig(config_str)
+
+    if settings.get_value("config.debug") && @logger.debug?
+      @logger.debug("Compiled pipeline code", :code => config_code)
+    end
+
+    # Evaluate the config compiled code that will initialize all the plugins and define the
+    # filter and output methods.
+    begin
+      eval(config_code)
+    rescue => e
+      raise e
+    end
+  end
+
+  def plugin(plugin_type, name, *args)
+    @plugin_counter += 1
+
+    # Collapse the array of arguments into a single merged hash
+    args = args.reduce({}, &:merge)
+
+    id = if args["id"].nil? || args["id"].empty?
+      args["id"] = "#{@config_hash}-#{@plugin_counter}"
+    else
+      args["id"]
+    end
+
+    raise ConfigurationError, "Two plugins have the id '#{id}', please fix this conflict" if @plugins_by_id[id]
+    @plugins_by_id[id] = true
+
+    # use NullMetric if called in the BasePipeline context otherwise use the @metric value
+    metric = @metric || Instrument::NullMetric.new
+
+    pipeline_scoped_metric = metric.namespace([:stats, :pipelines, pipeline_id.to_s.to_sym, :plugins])
+    # Scope plugins of type 'input' to 'inputs'
+    type_scoped_metric = pipeline_scoped_metric.namespace("#{plugin_type}s".to_sym)
+
+    klass = Plugin.lookup(plugin_type, name)
+
+    if plugin_type == "output"
+      OutputDelegator.new(@logger, klass, type_scoped_metric,  OutputDelegatorStrategyRegistry.instance, args)
+    elsif plugin_type == "filter"
+      FilterDelegator.new(@logger, klass, type_scoped_metric, args)
+    else # input
+      input_plugin = klass.new(args)
+      input_plugin.metric = type_scoped_metric.namespace(id)
+      input_plugin
+    end
+  end
+
+  def reloadable?
+    non_reloadable_plugins.empty?
+  end
+
+  def non_reloadable_plugins
+    (inputs + filters + outputs).select { |plugin| !plugin.reloadable? }
+  end
+end; end
+
+module LogStash; class Pipeline < BasePipeline
+  attr_reader \
+    :worker_threads,
+    :events_consumed,
+    :events_filtered,
+    :reporter,
+    :started_at,
+    :thread,
+    :settings,
+    :metric,
+    :filter_queue_client,
+    :input_queue_client,
+    :queue
+
+  MAX_INFLIGHT_WARN_THRESHOLD = 10_000
+
+  def initialize(config_str, settings = SETTINGS, namespaced_metric = nil)
+    # This needs to be configured before we call super which will evaluate the code to make
+    # sure the metric instance is correctly send to the plugins to make the namespace scoping work
+    @metric = if namespaced_metric
+      settings.get("metric.collect") ? namespaced_metric : Instrument::NullMetric.new(namespaced_metric.collector)
+    else
+      Instrument::NullMetric.new
+    end
+
+    @settings = settings
+    @reporter = PipelineReporter.new(@logger, self)
     @worker_threads = []
 
-    # This needs to be configured before we evaluate the code to make
-    # sure the metric instance is correctly send to the plugins to make the namespace scoping work
-    @metric = namespaced_metric.nil? ? Instrument::NullMetric.new : namespaced_metric
-
-    grammar = LogStashConfigParser.new
-    @config = grammar.parse(config_str)
-    if @config.nil?
-      raise ConfigurationError, grammar.failure_reason
-    end
-    # This will compile the config to ruby and evaluate the resulting code.
-    # The code will initialize all the plugins and define the
-    # filter and output methods.
-    code = @config.compile
-    @code = code
-
-    # The config code is hard to represent as a log message...
-    # So just print it.
-
-    if @settings.get_value("config.debug") && @logger.debug?
-      @logger.debug("Compiled pipeline code", :code => code)
-    end
+    super(config_str, settings)
 
     begin
-      eval(code)
+      @queue = LogStash::QueueFactory.create(settings)
     rescue => e
-      raise
+      @logger.error("Logstash failed to create queue", "exception" => e.message, "backtrace" => e.backtrace)
+      raise e
     end
-    @queue = build_queue_from_settings
+
     @input_queue_client = @queue.write_client
     @filter_queue_client = @queue.read_client
     @signal_queue = Queue.new
@@ -104,6 +155,7 @@ module LogStash; class Pipeline
     @filter_queue_client.set_pipeline_metric(
         metric.namespace([:stats, :pipelines, pipeline_id.to_s.to_sym, :events])
     )
+    @drain_queue =  @settings.get_value("queue.drain")
 
     @events_filtered = Concurrent::AtomicFixnum.new(0)
     @events_consumed = Concurrent::AtomicFixnum.new(0)
@@ -114,31 +166,6 @@ module LogStash; class Pipeline
     @running = Concurrent::AtomicBoolean.new(false)
     @flushing = Concurrent::AtomicReference.new(false)
   end # def initialize
-
-  def build_queue_from_settings
-    queue_type = settings.get("queue.type")
-    queue_page_capacity = settings.get("queue.page_capacity")
-    max_events = settings.get("queue.max_events")
-    checkpoint_max_acks = settings.get("queue.checkpoint.acks")
-    checkpoint_max_writes = settings.get("queue.checkpoint.writes")
-    checkpoint_max_interval = settings.get("queue.checkpoint.interval")
-
-    if queue_type == "memory_acked"
-      # memory_acked is used in tests/specs
-      LogStash::Util::WrappedAckedQueue.create_memory_based("", queue_page_capacity, max_events)
-    elsif queue_type == "memory"
-      # memory is the legacy and default setting
-      LogStash::Util::WrappedSynchronousQueue.new()
-    elsif queue_type == "persisted"
-      # persisted is the disk based acked queue
-      queue_path = settings.get("path.queue")
-      LogStash::Util::WrappedAckedQueue.create_file_based(queue_path, queue_page_capacity, max_events, checkpoint_max_writes, checkpoint_max_acks, checkpoint_max_interval)
-    else
-      raise(ConfigurationError, "invalid queue.type setting")
-    end
-  end
-
-  private :build_queue_from_settings
 
   def ready?
     @ready.value
@@ -196,14 +223,18 @@ module LogStash; class Pipeline
     shutdown_flusher
     shutdown_workers
 
-    @filter_queue_client.close
-    @queue.close
+    close
 
     @logger.debug("Pipeline #{@pipeline_id} has been shutdown")
 
     # exit code
     return 0
   end # def run
+
+  def close
+    @filter_queue_client.close
+    @queue.close
+  end
 
   def transition_to_running
     @running.make_true
@@ -221,12 +252,32 @@ module LogStash; class Pipeline
     @running.false?
   end
 
+  # register_plugin simply calls the plugin #register method and catches & logs any error
+  # @param plugin [Plugin] the plugin to register
+  # @return [Plugin] the registered plugin
+  def register_plugin(plugin)
+    plugin.register
+    plugin
+  rescue => e
+    @logger.error("Error registering plugin", :plugin => plugin.inspect, :error => e.message)
+    raise e
+  end
+
+  # register_plugins calls #register_plugin on the plugins list and upon exception will call Plugin#do_close on all registered plugins
+  # @param plugins [Array[Plugin]] the list of plugins to register
+  def register_plugins(plugins)
+    registered = []
+    plugins.each { |plugin| registered << register_plugin(plugin) }
+  rescue => e
+    registered.each(&:do_close)
+    raise e
+  end
+
   def start_workers
     @worker_threads.clear # In case we're restarting the pipeline
     begin
-      start_inputs
-      @outputs.each {|o| o.register }
-      @filters.each {|f| f.register }
+      register_plugins(@outputs)
+      register_plugins(@filters)
 
       pipeline_workers = safe_pipeline_worker_count
       batch_size = @settings.get("pipeline.batch.size")
@@ -257,6 +308,16 @@ module LogStash; class Pipeline
           worker_loop(batch_size, batch_delay)
         end
       end
+
+      # inputs should be started last, after all workers
+      begin
+        start_inputs
+      rescue => e
+        # if there is any exception in starting inputs, make sure we shutdown workers.
+        # exception will already by logged in start_inputs
+        shutdown_workers
+        raise e
+      end
     ensure
       # it is important to guarantee @ready to be true after the startup sequence has been completed
       # to potentially unblock the shutdown method which may be waiting on @ready to proceed
@@ -267,26 +328,32 @@ module LogStash; class Pipeline
   # Main body of what a worker thread does
   # Repeatedly takes batches off the queue, filters, then outputs them
   def worker_loop(batch_size, batch_delay)
-    running = true
+    shutdown_requested = false
 
     @filter_queue_client.set_batch_dimensions(batch_size, batch_delay)
 
-    while running
-      batch = @filter_queue_client.take_batch
+    while true
       signal = @signal_queue.empty? ? NO_SIGNAL : @signal_queue.pop
-      running = !signal.shutdown?
+      shutdown_requested |= signal.shutdown? # latch on shutdown signal
 
+      batch = @filter_queue_client.read_batch # metrics are started in read_batch
       @events_consumed.increment(batch.size)
-
       filter_batch(batch)
-
-      if signal.flush? || signal.shutdown?
-        flush_filters_to_batch(batch, :final => signal.shutdown?)
-      end
-
+      flush_filters_to_batch(batch, :final => false) if signal.flush?
       output_batch(batch)
       @filter_queue_client.close_batch(batch)
+
+      # keep break at end of loop, after the read_batch operation, some pipeline specs rely on this "final read_batch" before shutdown.
+      break if shutdown_requested && !draining_queue?
     end
+
+    # we are shutting down, queue is drained if it was required, now  perform a final flush.
+    # for this we need to create a new empty batch to contain the final flushed events
+    batch = @filter_queue_client.new_batch
+    @filter_queue_client.start_metrics(batch) # explicitly call start_metrics since we dont do a read_batch here
+    flush_filters_to_batch(batch, :final => true)
+    output_batch(batch)
+    @filter_queue_client.close_batch(batch)
   end
 
   def filter_batch(batch)
@@ -306,8 +373,9 @@ module LogStash; class Pipeline
     # Users need to check their configuration or see if there is a bug in the
     # plugin.
     @logger.error("Exception in pipelineworker, the pipeline stopped processing new events, please check your filter configuration and restart Logstash.",
-                  "exception" => e, "backtrace" => e.backtrace)
-    raise
+                  "exception" => e.message, "backtrace" => e.backtrace)
+
+    raise e
   end
 
   # Take an array of events and send them to the correct output
@@ -348,10 +416,11 @@ module LogStash; class Pipeline
     end
     @inputs += moreinputs
 
-    @inputs.each do |input|
-      input.register
-      start_input(input)
-    end
+    # first make sure we can register all input plugins
+    register_plugins(@inputs)
+
+    # then after all input plugins are sucessfully registered, start them
+    @inputs.each { |input| start_input(input) }
   end
 
   def start_input(plugin)
@@ -361,11 +430,12 @@ module LogStash; class Pipeline
   def inputworker(plugin)
     Util::set_thread_name("[#{pipeline_id}]<#{plugin.class.config_name}")
     begin
-      plugin.run(@input_queue_client)
+      input_queue_client = wrapped_write_client(plugin)
+      plugin.run(input_queue_client)
     rescue => e
       if plugin.stop?
         @logger.debug("Input plugin raised exception during shutdown, ignoring it.",
-                      :plugin => plugin.class.config_name, :exception => e,
+                      :plugin => plugin.class.config_name, :exception => e.message,
                       :backtrace => e.backtrace)
         return
       end
@@ -373,12 +443,12 @@ module LogStash; class Pipeline
       # otherwise, report error and restart
       if @logger.debug?
         @logger.error(I18n.t("logstash.pipeline.worker-error-debug",
-                             :plugin => plugin.inspect, :error => e.to_s,
+                             :plugin => plugin.inspect, :error => e.message,
                              :exception => e.class,
                              :stacktrace => e.backtrace.join("\n")))
       else
         @logger.error(I18n.t("logstash.pipeline.worker-error",
-                             :plugin => plugin.inspect, :error => e))
+                             :plugin => plugin.inspect, :error => e.message))
       end
 
       # Assuming the failure that caused this exception is transient,
@@ -425,41 +495,6 @@ module LogStash; class Pipeline
 
     @filters.each(&:do_close)
     @outputs.each(&:do_close)
-  end
-
-  def plugin(plugin_type, name, *args)
-    @plugin_counter += 1
-
-    # Collapse the array of arguments into a single merged hash
-    args = args.reduce({}, &:merge)
-
-    id = if args["id"].nil? || args["id"].empty?
-           args["id"] = "#{@config_hash}-#{@plugin_counter}"
-         else
-           args["id"]
-         end
-
-    raise ConfigurationError, "Two plugins have the id '#{id}', please fix this conflict" if @plugins_by_id[id]
-    
-    pipeline_scoped_metric = metric.namespace([:stats, :pipelines, pipeline_id.to_s.to_sym, :plugins])
-
-    klass = Plugin.lookup(plugin_type, name)
-
-    # Scope plugins of type 'input' to 'inputs'
-    type_scoped_metric = pipeline_scoped_metric.namespace("#{plugin_type}s".to_sym)
-    plugin = if plugin_type == "output"
-               OutputDelegator.new(@logger, klass, type_scoped_metric,
-                                   OutputDelegatorStrategyRegistry.instance,
-                                   args)
-             elsif plugin_type == "filter"
-               FilterDelegator.new(@logger, klass, type_scoped_metric, args)
-             else # input
-               input_plugin = klass.new(args)
-               input_plugin.metric = type_scoped_metric.namespace(id)
-               input_plugin
-             end
-    
-    @plugins_by_id[id] = plugin
   end
 
   # for backward compatibility in devutils for the rspec helpers, this method is not used
@@ -542,9 +577,27 @@ module LogStash; class Pipeline
       .each {|t| t.delete("status") }
   end
 
-  def non_reloadable_plugins
-    (inputs + filters + outputs).select do |plugin|
-      RELOAD_INCOMPATIBLE_PLUGINS.include?(plugin.class.name)
+  def collect_stats
+    pipeline_metric = @metric.namespace([:stats, :pipelines, pipeline_id.to_s.to_sym, :queue])
+    pipeline_metric.gauge(:type, settings.get("queue.type"))
+
+    if @queue.is_a?(LogStash::Util::WrappedAckedQueue) && @queue.queue.is_a?(LogStash::AckedQueue)
+      queue = @queue.queue
+      dir_path = queue.dir_path
+      file_store = Files.get_file_store(Paths.get(dir_path))
+
+      pipeline_metric.namespace([:capacity]).tap do |n|
+        n.gauge(:page_capacity_in_bytes, queue.page_capacity)
+        n.gauge(:max_queue_size_in_bytes, queue.max_size_in_bytes)
+        n.gauge(:max_unread_events, queue.max_unread_events)
+      end
+      pipeline_metric.namespace([:data]).tap do |n|
+        n.gauge(:free_space_in_bytes, file_store.get_unallocated_space)
+        n.gauge(:storage_type, file_store.type)
+        n.gauge(:path, dir_path)
+      end
+
+      pipeline_metric.gauge(:events, queue.unread_count)
     end
   end
 
@@ -561,4 +614,13 @@ module LogStash; class Pipeline
     }
   end
 
-end end
+  private
+
+  def draining_queue?
+    @drain_queue ? !@filter_queue_client.empty? : false
+  end
+
+  def wrapped_write_client(plugin)
+    LogStash::Instrument::WrappedWriteClient.new(@input_queue_client, self, metric, plugin)
+  end
+end; end

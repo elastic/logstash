@@ -1,18 +1,26 @@
 package org.logstash.common.io;
 
-import org.logstash.ackedqueue.Queueable;
 import org.logstash.ackedqueue.SequencedList;
 
 import java.io.Closeable;
 import java.io.IOException;
-import java.util.List;
 
 public interface PageIO extends Closeable {
 
     // the concrete class should be constructed with the pageNum, capacity and dirPath attributes
+    // and open/recover/create must first be called to setup with physical data file
+    //
+    // TODO: we should probably refactor this with a factory to force the creation of a fully
+    //       initialized concrete object with either open/recover/create instead of allowing
+    //       a partially initialized object using the concrete class constructor. Not sure.
 
     // open an existing data container and reconstruct internal state if required
     void open(long minSeqNum, int elementCount) throws IOException;
+
+    // optimistically recover an existing data container and reconstruct internal state
+    // with the actual read/recovered data. this is only useful when reading a head page
+    // data file since tail pages are read-only.
+    void recover() throws IOException;
 
     // create a new empty data file
     void create() throws IOException;
@@ -44,4 +52,10 @@ public interface PageIO extends Closeable {
 
     // delete/unlink/remove data file
     void purge() throws IOException;
+
+    // @return the data container elements count
+    int getElementCount();
+
+    // @return the data container min sequence number
+    long getMinSeqNum();
 }

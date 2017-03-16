@@ -7,13 +7,16 @@ require "file-dependencies/gem"
 class LogStash::PluginManager::Update < LogStash::PluginManager::Command
   REJECTED_OPTIONS = [:path, :git, :github]
   # These are local gems used by LS and needs to be filtered out of other plugin gems
-  NON_PLUGIN_LOCAL_GEMS = ["logstash-core", "logstash-core-event-java", "logstash-core-plugin-api"]
+  NON_PLUGIN_LOCAL_GEMS = ["logstash-core", "logstash-core-plugin-api"]
 
   parameter "[PLUGIN] ...", "Plugin name(s) to upgrade to latest version", :attribute_name => :plugins_arg
   option "--[no-]verify", :flag, "verify plugin validity before installation", :default => true
   option "--local", :flag, "force local-only plugin update. see bin/logstash-plugin package|unpack", :default => false
 
   def execute
+    # Turn off any jar dependencies lookup when running with `--local`
+    ENV["JARS_SKIP"] = "true" if local?
+
     # remove "system" local gems used by LS
     local_gems = gemfile.locally_installed_gems.map(&:name) - NON_PLUGIN_LOCAL_GEMS
 
@@ -62,7 +65,9 @@ class LogStash::PluginManager::Update < LogStash::PluginManager::Command
     options = {:update => plugins, :rubygems_source => gemfile.gemset.sources}
     options[:local] = true if local?
     output = LogStash::Bundler.invoke!(options)
-    output = LogStash::Bundler.invoke!(:clean => true)
+    # We currently dont removed unused gems from the logstash installation
+    # see: https://github.com/elastic/logstash/issues/6339
+    # output = LogStash::Bundler.invoke!(:clean => true)
     display_updated_plugins(previous_gem_specs_map)
   rescue => exception
     gemfile.restore!

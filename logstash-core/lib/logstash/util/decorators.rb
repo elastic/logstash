@@ -34,8 +34,9 @@ module LogStash::Util
 
     # tags is an array of string. sprintf syntax can be used.
     def add_tags(new_tags, event, pluginname)
-      tags = event.get("tags")
-      tags = tags.nil? ? [] : Array(tags)
+      return if new_tags.empty?
+
+      tags = Array(event.get("tags")) # note that Array(nil) => []
 
       new_tags.each do |new_tag|
         new_tag = event.sprintf(new_tag)

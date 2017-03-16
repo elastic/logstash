@@ -3,6 +3,9 @@ require "logstash/api/commands/base"
 require 'logstash/util/thread_dump'
 require_relative "hot_threads_reporter"
 
+java_import java.nio.file.Files
+java_import java.nio.file.Paths
+
 module LogStash
   module Api
     module Commands
@@ -16,8 +19,12 @@ module LogStash
             ),
             :mem => memory,
             :gc => gc,
-            :uptime_in_millis => service.get_shallow(:jvm, :uptime_in_millis)
+            :uptime_in_millis => service.get_shallow(:jvm, :uptime_in_millis),
           }
+        end
+
+        def reloads
+          service.get_shallow(:stats, :reloads)
         end
 
         def process
@@ -38,9 +45,10 @@ module LogStash
           )
         end
 
-        def pipeline
-          stats = service.get_shallow(:stats, :pipelines)
-          PluginsStats.report(stats)
+        def pipeline(pipeline_id = LogStash::SETTINGS.get("pipeline.id").to_sym)
+          stats = service.get_shallow(:stats, :pipelines, pipeline_id)
+          stats = PluginsStats.report(stats)
+          stats.merge(:id => pipeline_id)
         end
 
         def memory
@@ -59,6 +67,14 @@ module LogStash
               acc
             end
           }
+        end
+
+        def os
+          service.get_shallow(:os)
+        rescue
+          # The only currently fetch OS information is about the linux
+          # containers.
+          {}
         end
 
         def gc
@@ -83,9 +99,6 @@ module LogStash
           end
 
           def report(stats)
-            # Only one pipeline right now.
-            stats = stats[:main]
-
             {
               :events => stats[:events],
               :plugins => {
@@ -94,6 +107,7 @@ module LogStash
                 :outputs => plugin_stats(stats, :outputs)
               },
               :reloads => stats[:reloads],
+              :queue => stats[:queue]
             }
           end
         end # module PluginsStats

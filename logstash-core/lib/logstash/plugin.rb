@@ -19,18 +19,20 @@ class LogStash::Plugin
   # for a specific plugin.
   config :enable_metric, :validate => :boolean, :default => true
 
-  # Add a unique `ID` to the plugin instance, this `ID` is used for tracking
-  # information for a specific configuration of the plugin.
+  # Add a unique `ID` to the plugin configuration. If no ID is specified, Logstash will generate one. 
+  # It is strongly recommended to set this ID in your configuration. This is particulary useful 
+  # when you have two or more plugins of the same type, for example, if you have 2 grok filters. 
+  # Adding a named ID in this case will help in monitoring Logstash when using the monitoring APIs.
   #
-  # ```
+  # [source,ruby]
+  # ---------------------------------------------------------------------------------------------------
   # output {
   #  stdout {
-  #    id => "ABC"
+  #    id => "my_plugin_id"
   #  }
   # }
-  # ```
+  # ---------------------------------------------------------------------------------------------------
   #
-  # If you don't explicitely set this variable Logstash will generate a unique name.
   config :id, :validate => :string
 
   def hash
@@ -92,6 +94,14 @@ class LogStash::Plugin
     else
       return "<#{self.class.name} --->"
     end
+  end
+
+  def reloadable?
+    self.class.reloadable?
+  end
+
+  def self.reloadable?
+    true
   end
 
   def debug_info

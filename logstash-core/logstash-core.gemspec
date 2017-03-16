@@ -11,16 +11,13 @@ Gem::Specification.new do |gem|
   gem.homepage      = "http://www.elastic.co/guide/en/logstash/current/index.html"
   gem.license       = "Apache License (2.0)"
 
-  gem.files         = Dir.glob(["logstash-core.gemspec", "gemspec_jars.rb", "lib/**/*.rb", "spec/**/*.rb", "locales/*", "lib/logstash/api/init.ru"])
+  gem.files         = Dir.glob(["logstash-core.gemspec", "gemspec_jars.rb", "lib/**/*.rb", "spec/**/*.rb", "locales/*", "lib/logstash/api/init.ru", "lib/logstash-core/logstash-core.jar"])
   gem.test_files    = gem.files.grep(%r{^(test|spec|features)/})
   gem.name          = "logstash-core"
   gem.require_paths = ["lib"]
   gem.version       = LOGSTASH_CORE_VERSION
 
   gem.platform = "java"
-
-  gem.add_runtime_dependency "logstash-core-event-java"
-  gem.add_runtime_dependency "logstash-core-queue-jruby"
 
   gem.add_runtime_dependency "pry", "~> 0.10.1"  #(Ruby license)
   gem.add_runtime_dependency "stud", "~> 0.0.19" #(Apache 2.0 license)
@@ -46,7 +43,7 @@ Gem::Specification.new do |gem|
   gem.add_runtime_dependency "rubyzip", "~> 1.1.7"
   gem.add_runtime_dependency "thread_safe", "~> 0.3.5" #(Apache 2.0 license)
 
-  gem.add_runtime_dependency "jrjackson", "~> 0.4.0" #(Apache 2.0 license)
+  gem.add_runtime_dependency "jrjackson", "~> 0.4.2" #(Apache 2.0 license)
 
   gem.add_runtime_dependency "jar-dependencies"
   # as of Feb 3rd 2016, the ruby-maven gem is resolved to version 3.3.3 and that version

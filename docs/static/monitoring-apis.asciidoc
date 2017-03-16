@@ -80,13 +80,17 @@ Where `<types>` is optional and specifies the types of node info you want to ret
 You can limit the info that's returned by combining any of the following types in a comma-separated list:
 
 [horizontal]
-`pipeline`::
+<<node-pipeline-info,`pipeline`>>::
 Gets pipeline-specific information and settings.
-`os`::
+<<node-os-info,`os`>>::
 Gets node-level info about the OS.
-`jvm`::
+<<node-jvm-info,`jvm`>>::
 Gets node-level JVM info, including info about threads.
 
+See <<monitoring-common-options, Common Options>> for a list of options that can be applied to all
+Logstash monitoring APIs.
+
+[[node-pipeline-info]]
 ==== Pipeline Info
 
 The following request returns a JSON document that shows pipeline info, such as the number of workers,
@@ -115,6 +119,7 @@ Example response:
   }
 --------------------------------------------------
 
+[[node-os-info]]
 ==== OS Info
 
 The following request returns a JSON document that shows the OS name, architecture, version, and
@@ -133,11 +138,12 @@ Example response:
   "os": {
     "name": "Mac OS X",
     "arch": "x86_64",
-    "version": "10.11.2",
+    "version": "10.12.1",
     "available_processors": 8
   }
 --------------------------------------------------
 
+[[node-jvm-info]]
 ==== JVM Info
 
 The following request returns a JSON document that shows node-level JVM stats, such as the JVM process id, version,
@@ -154,12 +160,12 @@ Example response:
 --------------------------------------------------
 {
   "jvm": {
-    "pid": 8187,
+    "pid": 59616,
     "version": "1.8.0_65",
     "vm_name": "Java HotSpot(TM) 64-Bit Server VM",
     "vm_version": "1.8.0_65",
     "vm_vendor": "Oracle Corporation",
-    "start_time_in_millis": 1474305161631,
+    "start_time_in_millis": 1484251185878,
     "mem": {
       "heap_init_in_bytes": 268435456,
       "heap_max_in_bytes": 1037959168,
@@ -171,6 +177,7 @@ Example response:
       "ConcurrentMarkSweep"
     ]
   }
+}
 --------------------------------------------------
 
 [[plugins-api]]
@@ -186,6 +193,9 @@ This API basically returns the output of running the `bin/logstash-plugin list -
 GET /_node/plugins
 --------------------------------------------------
 
+See <<monitoring-common-options, Common Options>> for a list of options that can be applied to all
+Logstash monitoring APIs.
+
 The output is a JSON document.
 
 Example response:
@@ -193,11 +203,15 @@ Example response:
 ["source","js",subs="attributes"]
 --------------------------------------------------
 {
-  "total": 91,
+  "total": 92,
   "plugins": [
     {
+      "name": "logstash-codec-cef",
+      "version": "4.1.2"
+    },
+    {
       "name": "logstash-codec-collectd",
-      "version": "3.0.2"
+      "version": "3.0.3"
     },
     {
       "name": "logstash-codec-dots",
@@ -230,15 +244,22 @@ Where `<types>` is optional and specifies the types of stats you want to return.
 By default, all stats are returned. You can limit the info that's returned by combining any of the following types in a comma-separated list:
 
 [horizontal]
-`jvm`::
-Gets JVM stats, including stats about threads, memory usage, and garbage collectors.
-`process`::
+<<jvm-stats,`jvm`>>::
+Gets JVM stats, including stats about threads, memory usage, garbage collectors,
+and uptime.
+<<process-stats,`process`>>::
 Gets process stats, including stats about file descriptors, memory consumption, and CPU usage.
-`mem`::
-Gets memory usage stats.
-`pipeline`::
+<<pipeline-stats,`pipeline`>>::
 Gets runtime stats about the Logstash pipeline.
+<<reload-stats,`reloads`>>::
+Gets runtime stats about config reload successes and failures.
+<<os-stats,`os`>>::
+Gets runtime stats about cgroups when Logstash is running in a container.
 
+See <<monitoring-common-options, Common Options>> for a list of options that can be applied to all
+Logstash monitoring APIs.
+
+[[jvm-stats]]
 ==== JVM Stats
 
 The following request returns a JSON document containing JVM stats:
@@ -255,34 +276,34 @@ Example response:
 {
   "jvm": {
     "threads": {
-      "count": 33,
-      "peak_count": 34
+      "count": 35,
+      "peak_count": 36
     },
     "mem": {
-      "heap_used_in_bytes": 276974824,
-      "heap_used_percent": 13,
+      "heap_used_in_bytes": 318691184,
+      "heap_used_percent": 15,
       "heap_committed_in_bytes": 519045120,
       "heap_max_in_bytes": 2075918336,
-      "non_heap_used_in_bytes": 182122272,
-      "non_heap_committed_in_bytes": 193372160,
+      "non_heap_used_in_bytes": 189382304,
+      "non_heap_committed_in_bytes": 200728576,
       "pools": {
         "survivor": {
           "peak_used_in_bytes": 8912896,
-          "used_in_bytes": 11182152,
+          "used_in_bytes": 9538656,
           "peak_max_in_bytes": 35782656,
           "max_in_bytes": 71565312,
           "committed_in_bytes": 17825792
         },
         "old": {
-          "peak_used_in_bytes": 111736080,
-          "used_in_bytes": 171282544,
+          "peak_used_in_bytes": 106946320,
+          "used_in_bytes": 181913072,
           "peak_max_in_bytes": 715849728,
           "max_in_bytes": 1431699456,
           "committed_in_bytes": 357957632
         },
         "young": {
           "peak_used_in_bytes": 71630848,
-          "used_in_bytes": 94510128,
+          "used_in_bytes": 127239456,
           "peak_max_in_bytes": 286326784,
           "max_in_bytes": 572653568,
           "committed_in_bytes": 143261696
@@ -292,18 +313,20 @@ Example response:
     "gc": {
       "collectors": {
         "old": {
-          "collection_time_in_millis": 48,
+          "collection_time_in_millis": 58,
           "collection_count": 2
         },
         "young": {
-          "collection_time_in_millis": 316,
-          "collection_count": 23
+          "collection_time_in_millis": 338,
+          "collection_count": 26
         }
       }
-    }
+    },
+    "uptime_in_millis": 382701
   }
 --------------------------------------------------
 
+[[process-stats]]
 ==== Process Stats
 
 The following request returns a JSON document containing process stats:
@@ -319,25 +342,39 @@ Example response:
 --------------------------------------------------
 {
   "process": {
-    "open_file_descriptors": 60,
-    "peak_open_file_descriptors": 65,
+    "open_file_descriptors": 164,
+    "peak_open_file_descriptors": 166,
     "max_file_descriptors": 10240,
     "mem": {
-      "total_virtual_in_bytes": 5364461568
+      "total_virtual_in_bytes": 5399474176
     },
     "cpu": {
-      "total_in_millis": 101294404000,
-      "percent": 0
+      "total_in_millis": 72810537000,
+      "percent": 0,
+      "load_average": {
+        "1m": 2.41943359375
+      }
     }
   }
+}
 --------------------------------------------------
 
 [[pipeline-stats]]
 ==== Pipeline Stats
 
-The following request returns a JSON document containing pipeline stats, including the number of events that were
-input, filtered, or output by the pipeline. The request also returns stats for each configured input, filter, or
-output stage, and info about whether config reload (if configured) failed or succeeded.
+The following request returns a JSON document containing pipeline stats,
+including:
+
+* the number of events that were input, filtered, or output by the pipeline
+* stats for each configured filter or output stage
+* info about config reload successes and failures
+(when <<reloading-config,config reload>> is enabled)
+* info about the persistent queue (when
+<<persistent-queues,persistent queues>> are enabled)
+
+NOTE: Detailed pipeline stats for input plugins are not currently available, but
+will be available in a future release. For now, the node stats API returns an
+empty set array for inputs (`"inputs": []`).
 
 [source,js]
 --------------------------------------------------
@@ -351,45 +388,46 @@ Example response:
 {
   "pipeline": {
     "events": {
-      "duration_in_millis": 7863504,
-      "in": 100,
-      "filtered": 100,
-      "out": 100
+      "duration_in_millis": 6304989,
+      "in": 200,
+      "filtered": 200,
+      "out": 200
     },
     "plugins": {
       "inputs": [],
       "filters": [
         {
-          "id": "grok_20e5cb7f7c9e712ef9750edf94aefb465e3e361b-2",
+          "id": "4e3d4bed6ba821ebb47f4752bb757b04a754d736-2",
           "events": {
-            "duration_in_millis": 48,
-            "in": 100,
-            "out": 100
+            "duration_in_millis": 113,
+            "in": 200,
+            "out": 200
           },
-          "matches": 100,
+          "matches": 200,
           "patterns_per_field": {
             "message": 1
           },
           "name": "grok"
         },
         {
-          "id": "geoip_20e5cb7f7c9e712ef9750edf94aefb465e3e361b-3",
+          "id": "4e3d4bed6ba821ebb47f4752bb757b04a754d736-3",
           "events": {
-            "duration_in_millis": 141,
-            "in": 100,
-            "out": 100
+            "duration_in_millis": 526,
+            "in": 200,
+            "out": 200
           },
           "name": "geoip"
         }
       ],
       "outputs": [
         {
-          "id": "20e5cb7f7c9e712ef9750edf94aefb465e3e361b-4",
+          "id": "4e3d4bed6ba821ebb47f4752bb757b04a754d736-4",
           "events": {
-            "in": 100,
-            "out": 100
+            "duration_in_millis": 2312,
+            "in": 200,
+            "out": 200
           },
-          "name": "elasticsearch"
+          "name": "stdout"
         }
       ]
     },
@@ -399,12 +437,83 @@ Example response:
       "last_success_timestamp": null,
       "last_failure_timestamp": null,
       "failures": 0
+    },
+    "queue": {
+      "events": 26,
+      "type": "persisted",
+      "capacity": {
+        "page_capacity_in_bytes": 262144000,
+        "max_queue_size_in_bytes": 4294967296,
+        "max_unread_events": 0
+      },
+      "data": {
+        "path": "/path/to/data/queue",
+        "free_space_in_bytes": 123027787776,
+        "storage_type": "hfs"
+      }
+    }
+  }
+}
+--------------------------------------------------
+
+[[reload-stats]]
+==== Reload Stats
+
+The following request returns a JSON document that shows info about config reload successes and failures.
+
+[source,js]
+--------------------------------------------------
+GET /_node/stats/reloads
+--------------------------------------------------
+
+Example response:
+
+[source,js]
+--------------------------------------------------
+{
+  "reloads": {
+    "successes": 0,
+    "failures": 0
+  }
+}
+--------------------------------------------------
+
+[[os-stats]]
+==== OS Stats
+
+When Logstash is running in a container, the following request returns a JSON document that
+contains cgroup information to give you a more accurate view of CPU load, including whether
+the container is being throttled. 
+
+[source,js]
+--------------------------------------------------
+GET /_node/stats/os
+--------------------------------------------------
+
+Example response:
+
+[source,js]
+--------------------------------------------------
+{
+  "os" : {
+    "cgroup" : { 
+      "cpuacct" : {
+        "control_group" : "/elastic1",
+        "usage_nanos" : 378477588075
+                },
+      "cpu" : {
+        "control_group" : "/elastic1",
+        "cfs_period_micros" : 1000000,
+        "cfs_quota_micros" : 800000,
+        "stat" : {
+          "number_of_elapsed_periods" : 4157,
+          "number_of_times_throttled" : 460,
+          "time_throttled_nanos" : 581617440755
+        }
+      }    
     }
   }
 --------------------------------------------------
-
-See <<monitoring-common-options, Common Options>> for a list of options that can be applied to all
-Logstash monitoring APIs.
 
 
 [[hot-threads-api]]
@@ -429,13 +538,12 @@ Example response:
 [source,js]
 --------------------------------------------------
 {
-  "hot_threads": {
-    "time": "2016-09-19T10:44:13-07:00",
+    "time": "2017-01-12T12:09:45-08:00",
     "busiest_threads": 3,
     "threads": [
       {
         "name": "LogStash::Runner",
-        "percent_of_cpu_time": 0.17,
+        "percent_of_cpu_time": 1.07,
         "state": "timed_waiting",
         "traces": [
           "java.lang.Object.wait(Native Method)",
@@ -451,38 +559,37 @@ Example response:
         ]
       },
       {
-        "name": "Ruby-0-Thread-17",
-        "percent_of_cpu_time": 0.11,
-        "state": "timed_waiting",
-        "path": "/Users/username/logstash-5.0.0/logstash-core/lib/logstash/pipeline.rb:471",
+        "name": "[main]>worker7",
+        "percent_of_cpu_time": 0.71,
+        "state": "waiting",
         "traces": [
-          "java.lang.Object.wait(Native Method)",
-          "org.jruby.RubyThread.sleep(RubyThread.java:1002)",
-          "org.jruby.RubyKernel.sleep(RubyKernel.java:803)",
-          "org.jruby.RubyKernel$INVOKER$s$0$1$sleep.call(RubyKernel$INVOKER$s$0$1$sleep.gen)",
-          "org.jruby.internal.runtime.methods.JavaMethod$JavaMethodN.call(JavaMethod.java:667)",
-          "org.jruby.internal.runtime.methods.DynamicMethod.call(DynamicMethod.java:206)",
-          "org.jruby.runtime.callsite.CachingCallSite.call(CachingCallSite.java:168)",
-          "rubyjit.Module$$stoppable_sleep_c19c1639527ca7d373b5093f339d26538f1c21ef1028566121.__file__(/Users/username/logstash-5.0.0/vendor/bundle/jruby/1.9/gems/stud-0.0.22/lib/stud/interval.rb:84)",
-          "rubyjit.Module$$stoppable_sleep_c19c1639527ca7d373b5093f339d26538f1c21ef1028566121.__file__(/Users/username/logstash-5.0.0/vendor/bundle/jruby/1.9/gems/stud-0.0.22/lib/stud/interval.rb)",
-          "org.jruby.ast.executable.AbstractScript.__file__(AbstractScript.java:46)"
+          "sun.misc.Unsafe.park(Native Method)",
+          "java.util.concurrent.locks.LockSupport.park(LockSupport.java:175)",
+          "java.util.concurrent.locks.AbstractQueuedSynchronizer.parkAndCheckInterrupt(AbstractQueuedSynchronizer.java:836)",
+          "java.util.concurrent.locks.AbstractQueuedSynchronizer.doAcquireInterruptibly(AbstractQueuedSynchronizer.java:897)",
+          "java.util.concurrent.locks.AbstractQueuedSynchronizer.acquireInterruptibly(AbstractQueuedSynchronizer.java:1222)",
+          "java.util.concurrent.locks.ReentrantLock.lockInterruptibly(ReentrantLock.java:335)",
+          "org.jruby.RubyThread.lockInterruptibly(RubyThread.java:1470)",
+          "org.jruby.ext.thread.Mutex.lock(Mutex.java:91)",
+          "org.jruby.ext.thread.Mutex.synchronize(Mutex.java:147)",
+          "org.jruby.ext.thread.Mutex$INVOKER$i$0$0$synchronize.call(Mutex$INVOKER$i$0$0$synchronize.gen)"
         ]
       },
       {
-        "name": "[main]-pipeline-manager",
-        "percent_of_cpu_time": 0.04,
-        "state": "timed_waiting",
+        "name": "[main]>worker3",
+        "percent_of_cpu_time": 0.71,
+        "state": "waiting",
         "traces": [
-          "java.lang.Object.wait(Native Method)",
-          "java.lang.Thread.join(Thread.java:1253)",
-          "org.jruby.internal.runtime.NativeThread.join(NativeThread.java:75)",
-          "org.jruby.RubyThread.join(RubyThread.java:697)",
-          "org.jruby.RubyThread$INVOKER$i$0$1$join.call(RubyThread$INVOKER$i$0$1$join.gen)",
-          "org.jruby.internal.runtime.methods.JavaMethod$JavaMethodN.call(JavaMethod.java:663)",
-          "org.jruby.internal.runtime.methods.DynamicMethod.call(DynamicMethod.java:198)",
-          "org.jruby.internal.runtime.methods.JavaMethod$JavaMethodN.call(JavaMethod.java:683)",
-          "org.jruby.runtime.callsite.CachingCallSite.cacheAndCall(CachingCallSite.java:286)",
-          "org.jruby.runtime.callsite.CachingCallSite.callBlock(CachingCallSite.java:81)"
+          "sun.misc.Unsafe.park(Native Method)",
+          "java.util.concurrent.locks.LockSupport.park(LockSupport.java:175)",
+          "java.util.concurrent.locks.AbstractQueuedSynchronizer.parkAndCheckInterrupt(AbstractQueuedSynchronizer.java:836)",
+          "java.util.concurrent.locks.AbstractQueuedSynchronizer.doAcquireInterruptibly(AbstractQueuedSynchronizer.java:897)",
+          "java.util.concurrent.locks.AbstractQueuedSynchronizer.acquireInterruptibly(AbstractQueuedSynchronizer.java:1222)",
+          "java.util.concurrent.locks.ReentrantLock.lockInterruptibly(ReentrantLock.java:335)",
+          "org.jruby.RubyThread.lockInterruptibly(RubyThread.java:1470)",
+          "org.jruby.ext.thread.Mutex.lock(Mutex.java:91)",
+          "org.jruby.ext.thread.Mutex.synchronize(Mutex.java:147)",
+          "org.jruby.ext.thread.Mutex$INVOKER$i$0$0$synchronize.call(Mutex$INVOKER$i$0$0$synchronize.gen)"
         ]
       }
     ]
@@ -497,6 +604,9 @@ The parameters allowed are:
 `human`:: 	            If true, returns plain text instead of JSON format. The default is false.
 `ignore_idle_threads`:: If true, does not return idle threads. The default is true.
 
+See <<monitoring-common-options, Common Options>> for a list of options that can be applied to all
+Logstash monitoring APIs.
+
 You can use the `?human` parameter to return the document in a human-readable format.
 
 [source,js]
@@ -508,10 +618,10 @@ Example of a human-readable response:
 
 [source,js]
 --------------------------------------------------
-::: {}
-Hot threads at 2016-07-26T18:46:18-07:00, busiestThreads=3:
-================================================================================
- 0.15 % of cpu usage by timed_waiting thread named 'LogStash::Runner'
+ ::: {}
+ Hot threads at 2017-01-12T12:10:15-08:00, busiestThreads=3: 
+ ================================================================================
+ 1.02 % of cpu usage, state: timed_waiting, thread name: 'LogStash::Runner' 
 	java.lang.Object.wait(Native Method)
 	java.lang.Thread.join(Thread.java:1253)
 	org.jruby.internal.runtime.NativeThread.join(NativeThread.java:75)
@@ -523,32 +633,29 @@ Hot threads at 2016-07-26T18:46:18-07:00, busiestThreads=3:
 	org.jruby.runtime.callsite.CachingCallSite.call(CachingCallSite.java:136)
 	org.jruby.ast.CallNoArgNode.interpret(CallNoArgNode.java:60)
  --------------------------------------------------------------------------------
- 0.11 % of cpu usage by timed_waiting thread named 'Ruby-0-Thread-17'
- /Users/username/BuildTesting/logstash-5.0.0logstash-core/lib/logstash/pipeline.rb:471
-	java.lang.Object.wait(Native Method)
-	org.jruby.RubyThread.sleep(RubyThread.java:1002)
-	org.jruby.RubyKernel.sleep(RubyKernel.java:803)
-	org.jruby.RubyKernel$INVOKER$s$0$1$sleep.call(RubyKernel$INVOKER$s$0$1$sleep.gen)
-	org.jruby.internal.runtime.methods.JavaMethod$JavaMethodN.call(JavaMethod.java:667)
-	org.jruby.internal.runtime.methods.DynamicMethod.call(DynamicMethod.java:206)
-	org.jruby.runtime.callsite.CachingCallSite.call(CachingCallSite.java:168)
-	rubyjit.Module$$stoppable_sleep_c19c1639527ca7d373b5093f339d26538f1c21ef1028566121.__file__(/Users/username/BuildTesting/logstash-5.0.0/vendor/bundle/jruby/1.9/gems/stud-0.0.22/lib/stud/interval.rb:84)
-	rubyjit.Module$$stoppable_sleep_c19c1639527ca7d373b5093f339d26538f1c21ef1028566121.__file__(/Users/username/BuildTesting/logstash-5.0.0/vendor/bundle/jruby/1.9/gems/stud-0.0.22/lib/stud/interval.rb)
-	org.jruby.ast.executable.AbstractScript.__file__(AbstractScript.java:46)
+ 0.71 % of cpu usage, state: waiting, thread name: '[main]>worker7' 
+	sun.misc.Unsafe.park(Native Method)
+	java.util.concurrent.locks.LockSupport.park(LockSupport.java:175)
+	java.util.concurrent.locks.AbstractQueuedSynchronizer.parkAndCheckInterrupt(AbstractQueuedSynchronizer.java:836)
+	java.util.concurrent.locks.AbstractQueuedSynchronizer.doAcquireInterruptibly(AbstractQueuedSynchronizer.java:897)
+	java.util.concurrent.locks.AbstractQueuedSynchronizer.acquireInterruptibly(AbstractQueuedSynchronizer.java:1222)
+	java.util.concurrent.locks.ReentrantLock.lockInterruptibly(ReentrantLock.java:335)
+	org.jruby.RubyThread.lockInterruptibly(RubyThread.java:1470)
+	org.jruby.ext.thread.Mutex.lock(Mutex.java:91)
+	org.jruby.ext.thread.Mutex.synchronize(Mutex.java:147)
+	org.jruby.ext.thread.Mutex$INVOKER$i$0$0$synchronize.call(Mutex$INVOKER$i$0$0$synchronize.gen)
  --------------------------------------------------------------------------------
- 0.04 % of cpu usage by timed_waiting thread named '[main]-pipeline-manager'
-	java.lang.Object.wait(Native Method)
-	java.lang.Thread.join(Thread.java:1253)
-	org.jruby.internal.runtime.NativeThread.join(NativeThread.java:75)
-	org.jruby.RubyThread.join(RubyThread.java:697)
-	org.jruby.RubyThread$INVOKER$i$0$1$join.call(RubyThread$INVOKER$i$0$1$join.gen)
-	org.jruby.internal.runtime.methods.JavaMethod$JavaMethodN.call(JavaMethod.java:663)
-	org.jruby.internal.runtime.methods.DynamicMethod.call(DynamicMethod.java:198)
-	org.jruby.internal.runtime.methods.JavaMethod$JavaMethodN.call(JavaMethod.java:683)
-	org.jruby.runtime.callsite.CachingCallSite.cacheAndCall(CachingCallSite.java:286)
-	org.jruby.runtime.callsite.CachingCallSite.callBlock(CachingCallSite.java:81)
+ 0.71 % of cpu usage, state: timed_waiting, thread name: '[main]>worker3' 
+	sun.misc.Unsafe.park(Native Method)
+	java.util.concurrent.locks.LockSupport.parkNanos(LockSupport.java:215)
+	java.util.concurrent.SynchronousQueue$TransferStack.awaitFulfill(SynchronousQueue.java:460)
+	java.util.concurrent.SynchronousQueue$TransferStack.transfer(SynchronousQueue.java:362)
+	java.util.concurrent.SynchronousQueue.poll(SynchronousQueue.java:941)
+	sun.reflect.GeneratedMethodAccessor6.invoke(Unknown Source)
+	sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	java.lang.reflect.Method.invoke(Method.java:497)
+	org.jruby.javasupport.JavaMethod.invokeDirectWithExceptionHandling(JavaMethod.java:466)
+	org.jruby.javasupport.JavaMethod.invokeDirect(JavaMethod.java:324)
 
 --------------------------------------------------
 
-See <<monitoring-common-options, Common Options>> for a list of options that can be applied to all
-Logstash monitoring APIs.

@@ -1,6 +1,7 @@
 # encoding: utf-8
 require "logstash/instrument/periodic_poller/os"
 require "logstash/instrument/periodic_poller/jvm"
+require "logstash/instrument/periodic_poller/pq"
 
 module LogStash module Instrument
   # Each PeriodPoller manager his own thread to do the poller
@@ -9,10 +10,11 @@ module LogStash module Instrument
   class PeriodicPollers
     attr_reader :metric
 
-    def initialize(metric)
+    def initialize(metric, queue_type, pipelines)
       @metric = metric
       @periodic_pollers = [PeriodicPoller::Os.new(metric),
-                          PeriodicPoller::JVM.new(metric)]
+                           PeriodicPoller::JVM.new(metric),
+                           PeriodicPoller::PersistentQueue.new(metric, queue_type, pipelines)]
     end
 
     def start

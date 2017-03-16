@@ -64,11 +64,14 @@ describe "Test Logstash service when config reload is enabled" do
     
     # check reload stats
     reload_stats = logstash_service.monitoring_api.pipeline_stats["reloads"]
+    instance_reload_stats = logstash_service.monitoring_api.node_stats["reloads"]
     expect(reload_stats["successes"]).to eq(1)
     expect(reload_stats["failures"]).to eq(0)
     expect(reload_stats["last_success_timestamp"].blank?).to be false
     expect(reload_stats["last_error"]).to eq(nil)
     
+    expect(instance_reload_stats["successes"]).to eq(1)
+    expect(instance_reload_stats["failures"]).to eq(0)
     # parse the results and validate
     re = JSON.load(File.new(output_file2))
     expect(re["clientip"]).to eq("74.125.176.147")

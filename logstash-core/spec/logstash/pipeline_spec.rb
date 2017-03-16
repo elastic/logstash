@@ -3,6 +3,7 @@ require "spec_helper"
 require "logstash/inputs/generator"
 require "logstash/filters/multiline"
 require_relative "../support/mocks_classes"
+require_relative "../logstash/pipeline_reporter_spec" # for DummyOutput class
 
 class DummyInput < LogStash::Inputs::Base
   config_name "dummyinput"
@@ -49,7 +50,7 @@ class DummyCodec < LogStash::Codecs::Base
   end
 end
 
-class DummyOutputMore < DummyOutput
+class DummyOutputMore < ::LogStash::Outputs::DummyOutput
   config_name "dummyoutputmore"
 end
 
@@ -138,8 +139,8 @@ describe LogStash::Pipeline do
       Thread.abort_on_exception = true
 
       pipeline = LogStash::Pipeline.new(config, pipeline_settings_obj)
-      Thread.new { pipeline.run }
-      sleep 0.1 while !pipeline.ready?
+      t = Thread.new { pipeline.run }
+      sleep(0.1) until pipeline.ready?
       wait(3).for do
         # give us a bit of time to flush the events
         # puts("*****" + output.events.map{|e| e.message}.to_s)
@@ -149,6 +150,7 @@ describe LogStash::Pipeline do
       expect(output.events[0].get("tags")).to eq(["notdropped"])
       expect(output.events[1].get("tags")).to eq(["notdropped"])
       pipeline.shutdown
+      t.join
 
       Thread.abort_on_exception = abort_on_exception_state
     end
@@ -158,7 +160,7 @@ describe LogStash::Pipeline do
     before(:each) do
       allow(LogStash::Plugin).to receive(:lookup).with("input", "dummyinput").and_return(DummyInput)
       allow(LogStash::Plugin).to receive(:lookup).with("codec", "plain").and_return(DummyCodec)
-      allow(LogStash::Plugin).to receive(:lookup).with("output", "dummyoutput").and_return(DummyOutput)
+      allow(LogStash::Plugin).to receive(:lookup).with("output", "dummyoutput").and_return(::LogStash::Outputs::DummyOutput)
       allow(LogStash::Plugin).to receive(:lookup).with("filter", "dummyfilter").and_return(DummyFilter)
       allow(LogStash::Plugin).to receive(:lookup).with("filter", "dummysafefilter").and_return(DummySafeFilter)
     end
@@ -192,12 +194,14 @@ describe LogStash::Pipeline do
           pipeline_settings_obj.set("config.debug", false)
           expect(logger).not_to receive(:debug).with(/Compiled pipeline/, anything)
           pipeline = TestPipeline.new(test_config_with_filters)
+          pipeline.close
         end
 
         it "should print the compiled code if config.debug is set to true" do
           pipeline_settings_obj.set("config.debug", true)
           expect(logger).to receive(:debug).with(/Compiled pipeline/, anything)
           pipeline = TestPipeline.new(test_config_with_filters, pipeline_settings_obj)
+          pipeline.close
         end
       end
 
@@ -258,7 +262,7 @@ describe LogStash::Pipeline do
     before(:each) do
       allow(LogStash::Plugin).to receive(:lookup).with("input", "dummyinput").and_return(DummyInput)
       allow(LogStash::Plugin).to receive(:lookup).with("codec", "plain").and_return(DummyCodec)
-      allow(LogStash::Plugin).to receive(:lookup).with("output", "dummyoutput").and_return(DummyOutput)
+      allow(LogStash::Plugin).to receive(:lookup).with("output", "dummyoutput").and_return(::LogStash::Outputs::DummyOutput)
     end
 
 
@@ -313,7 +317,7 @@ describe LogStash::Pipeline do
       before(:each) do
         allow(LogStash::Plugin).to receive(:lookup).with("input", "dummyinput").and_return(DummyInput)
         allow(LogStash::Plugin).to receive(:lookup).with("codec", "plain").and_return(DummyCodec)
-        allow(LogStash::Plugin).to receive(:lookup).with("output", "dummyoutput").and_return(DummyOutput)
+        allow(LogStash::Plugin).to receive(:lookup).with("output", "dummyoutput").and_return(::LogStash::Outputs::DummyOutput)
       end
 
       let(:config) { "input { dummyinput {} } output { dummyoutput {} }"}
@@ -363,7 +367,6 @@ describe LogStash::Pipeline do
 
       sample(["foo", "bar"]) do
         expect(subject.size).to eq(2)
-
         expect(subject[0].get("message")).to eq("foo\nbar")
         expect(subject[0].get("type")).to be_nil
         expect(subject[1].get("message")).to eq("foo\nbar")
@@ -378,16 +381,21 @@ describe LogStash::Pipeline do
     let(:pipeline_settings) { { "pipeline.batch.size" => batch_size, "pipeline.workers" => 1 } }
     let(:pipeline) { LogStash::Pipeline.new(config, pipeline_settings_obj) }
     let(:logger) { pipeline.logger }
-    let(:warning_prefix) { /CAUTION: Recommended inflight events max exceeded!/ }
+    let(:warning_prefix) { Regexp.new("CAUTION: Recommended inflight events max exceeded!") }
 
     before(:each) do
       allow(LogStash::Plugin).to receive(:lookup).with("input", "dummyinput").and_return(DummyInput)
       allow(LogStash::Plugin).to receive(:lookup).with("codec", "plain").and_return(DummyCodec)
-      allow(LogStash::Plugin).to receive(:lookup).with("output", "dummyoutput").and_return(DummyOutput)
+      allow(LogStash::Plugin).to receive(:lookup).with("output", "dummyoutput").and_return(::LogStash::Outputs::DummyOutput)
       allow(logger).to receive(:warn)
-      thread = Thread.new { pipeline.run }
+
+      # pipeline must be first called outside the thread context because it lazyly initialize and will create a
+      # race condition if called in the thread
+      p = pipeline
+      t = Thread.new { p.run }
+      sleep(0.1) until pipeline.ready?
       pipeline.shutdown
-      thread.join
+      t.join
     end
 
     it "should not raise a max inflight warning if the max_inflight count isn't exceeded" do
@@ -435,27 +443,91 @@ describe LogStash::Pipeline do
   end
 
   context "metrics" do
-    config <<-CONFIG
-    input { }
-    filter { }
-    output { }
-    CONFIG
+    config = "input { } filter { } output { }"
 
-    it "uses a `NullMetric` object if `metric.collect` is set to false" do
-      settings = double("LogStash::SETTINGS")
+    let(:settings) { LogStash::SETTINGS.clone }
+    subject { LogStash::Pipeline.new(config, settings, metric) }
 
-      allow(settings).to receive(:get_value).with("pipeline.id").and_return("main")
-      allow(settings).to receive(:get_value).with("metric.collect").and_return(false)
-      allow(settings).to receive(:get_value).with("config.debug").and_return(false)
-      allow(settings).to receive(:get).with("queue.type").and_return("memory")
-      allow(settings).to receive(:get).with("queue.page_capacity").and_return(1024 * 1024)
-      allow(settings).to receive(:get).with("queue.max_events").and_return(250)
-      allow(settings).to receive(:get).with("queue.checkpoint.acks").and_return(1024)
-      allow(settings).to receive(:get).with("queue.checkpoint.writes").and_return(1024)
-      allow(settings).to receive(:get).with("queue.checkpoint.interval").and_return(1000)
+    after :each do
+      subject.close
+    end
 
-      pipeline = LogStash::Pipeline.new(config, settings)
-      expect(pipeline.metric).to be_kind_of(LogStash::Instrument::NullMetric)
+    context "when metric.collect is disabled" do
+      before :each do
+        settings.set("metric.collect", false)
+      end
+
+      context "if namespaced_metric is nil" do
+        let(:metric) { nil }
+        it "uses a `NullMetric` object" do
+          expect(subject.metric).to be_a(LogStash::Instrument::NullMetric)
+        end
+      end
+
+      context "if namespaced_metric is a Metric object" do
+        let(:collector) { ::LogStash::Instrument::Collector.new }
+        let(:metric) { ::LogStash::Instrument::Metric.new(collector) }
+
+        it "uses a `NullMetric` object" do
+          expect(subject.metric).to be_a(LogStash::Instrument::NullMetric)
+        end
+
+        it "uses the same collector" do
+          expect(subject.metric.collector).to be(collector)
+        end
+      end
+
+      context "if namespaced_metric is a NullMetric object" do
+        let(:collector) { ::LogStash::Instrument::Collector.new }
+        let(:metric) { ::LogStash::Instrument::NullMetric.new(collector) }
+
+        it "uses a `NullMetric` object" do
+          expect(subject.metric).to be_a(::LogStash::Instrument::NullMetric)
+        end
+
+        it "uses the same collector" do
+          expect(subject.metric.collector).to be(collector)
+        end
+      end
+    end
+
+    context "when metric.collect is enabled" do
+      before :each do
+        settings.set("metric.collect", true)
+      end
+
+      context "if namespaced_metric is nil" do
+        let(:metric) { nil }
+        it "uses a `NullMetric` object" do
+          expect(subject.metric).to be_a(LogStash::Instrument::NullMetric)
+        end
+      end
+
+      context "if namespaced_metric is a Metric object" do
+        let(:collector) { ::LogStash::Instrument::Collector.new }
+        let(:metric) { ::LogStash::Instrument::Metric.new(collector) }
+
+        it "uses a `Metric` object" do
+          expect(subject.metric).to be_a(LogStash::Instrument::Metric)
+        end
+
+        it "uses the same collector" do
+          expect(subject.metric.collector).to be(collector)
+        end
+      end
+
+      context "if namespaced_metric is a NullMetric object" do
+        let(:collector) { ::LogStash::Instrument::Collector.new }
+        let(:metric) { ::LogStash::Instrument::NullMetric.new(collector) }
+
+        it "uses a `NullMetric` object" do
+          expect(subject.metric).to be_a(LogStash::Instrument::NullMetric)
+        end
+
+        it "uses the same collector" do
+          expect(subject.metric.collector).to be(collector)
+        end
+      end
     end
   end
 
@@ -464,12 +536,24 @@ describe LogStash::Pipeline do
       allow(LogStash::Plugin).to receive(:lookup).with("input", "dummyinputgenerator").and_return(DummyInputGenerator)
       allow(LogStash::Plugin).to receive(:lookup).with("codec", "plain").and_return(DummyCodec)
       allow(LogStash::Plugin).to receive(:lookup).with("filter", "dummyfilter").and_return(DummyFilter)
-      allow(LogStash::Plugin).to receive(:lookup).with("output", "dummyoutput").and_return(DummyOutput)
+      allow(LogStash::Plugin).to receive(:lookup).with("output", "dummyoutput").and_return(::LogStash::Outputs::DummyOutput)
       allow(LogStash::Plugin).to receive(:lookup).with("output", "dummyoutputmore").and_return(DummyOutputMore)
+    end
+
+    # multiple pipelines cannot be instantiated using the same PQ settings, force memory queue
+    before :each do
+      pipeline_workers_setting = LogStash::SETTINGS.get_setting("queue.type")
+      allow(pipeline_workers_setting).to receive(:value).and_return("memory")
+      pipeline_settings.each {|k, v| pipeline_settings_obj.set(k, v) }
     end
 
     let(:pipeline1) { LogStash::Pipeline.new("input { dummyinputgenerator {} } filter { dummyfilter {} } output { dummyoutput {}}") }
     let(:pipeline2) { LogStash::Pipeline.new("input { dummyinputgenerator {} } filter { dummyfilter {} } output { dummyoutputmore {}}") }
+
+    after  do
+      pipeline1.close
+      pipeline2.close
+    end
 
     it "should handle evaluating different config" do
       expect(pipeline1.output_func(LogStash::Event.new)).not_to include(nil)
@@ -500,21 +584,21 @@ describe LogStash::Pipeline do
       }
       EOS
     end
-    let(:output) { DummyOutput.new }
+    let(:output) { ::LogStash::Outputs::DummyOutput.new }
 
     before do
-      allow(DummyOutput).to receive(:new).with(any_args).and_return(output)
+      allow(::LogStash::Outputs::DummyOutput).to receive(:new).with(any_args).and_return(output)
       allow(LogStash::Plugin).to receive(:lookup).with("input", "generator").and_return(LogStash::Inputs::Generator)
       allow(LogStash::Plugin).to receive(:lookup).with("codec", "plain").and_return(LogStash::Codecs::Plain)
       allow(LogStash::Plugin).to receive(:lookup).with("filter", "multiline").and_return(LogStash::Filters::Multiline)
-      allow(LogStash::Plugin).to receive(:lookup).with("output", "dummyoutput").and_return(DummyOutput)
+      allow(LogStash::Plugin).to receive(:lookup).with("output", "dummyoutput").and_return(::LogStash::Outputs::DummyOutput)
     end
 
     it "flushes the buffered contents of the filter" do
       Thread.abort_on_exception = true
       pipeline = LogStash::Pipeline.new(config, pipeline_settings_obj)
-      Thread.new { pipeline.run }
-      sleep 0.1 while !pipeline.ready?
+      t = Thread.new { pipeline.run }
+      sleep(0.1) until pipeline.ready?
       wait(3).for do
         # give us a bit of time to flush the events
         output.events.empty?
@@ -522,6 +606,7 @@ describe LogStash::Pipeline do
       event = output.events.pop
       expect(event.get("message").count("\n")).to eq(99)
       pipeline.shutdown
+      t.join
     end
   end
 
@@ -530,11 +615,18 @@ describe LogStash::Pipeline do
       allow(LogStash::Plugin).to receive(:lookup).with("input", "generator").and_return(LogStash::Inputs::Generator)
       allow(LogStash::Plugin).to receive(:lookup).with("codec", "plain").and_return(DummyCodec)
       allow(LogStash::Plugin).to receive(:lookup).with("filter", "dummyfilter").and_return(DummyFilter)
-      allow(LogStash::Plugin).to receive(:lookup).with("output", "dummyoutput").and_return(DummyOutput)
+      allow(LogStash::Plugin).to receive(:lookup).with("output", "dummyoutput").and_return(::LogStash::Outputs::DummyOutput)
     end
 
     let(:pipeline1) { LogStash::Pipeline.new("input { generator {} } filter { dummyfilter {} } output { dummyoutput {}}") }
     let(:pipeline2) { LogStash::Pipeline.new("input { generator {} } filter { dummyfilter {} } output { dummyoutput {}}") }
+
+    # multiple pipelines cannot be instantiated using the same PQ settings, force memory queue
+    before :each do
+      pipeline_workers_setting = LogStash::SETTINGS.get_setting("queue.type")
+      allow(pipeline_workers_setting).to receive(:value).and_return("memory")
+      pipeline_settings.each {|k, v| pipeline_settings_obj.set(k, v) }
+    end
 
     it "should handle evaluating different config" do
       # When the functions are compiled from the AST it will generate instance
@@ -566,8 +658,14 @@ describe LogStash::Pipeline do
 
     subject { described_class.new(config) }
 
-    it "returns nil when the pipeline isnt started" do
-      expect(subject.started_at).to be_nil
+    context "when the pipeline is not started" do
+      after :each do
+        subject.close
+      end
+
+      it "returns nil when the pipeline isnt started" do
+        expect(subject.started_at).to be_nil
+      end
     end
 
     it "return when the pipeline started working" do
@@ -588,6 +686,10 @@ describe LogStash::Pipeline do
     subject { described_class.new(config) }
 
     context "when the pipeline is not started" do
+      after :each do
+        subject.close
+      end
+
       it "returns 0" do
         expect(subject.uptime).to eq(0)
       end
@@ -595,10 +697,15 @@ describe LogStash::Pipeline do
 
     context "when the pipeline is started" do
       it "return the duration in milliseconds" do
-        t = Thread.new { subject.run }
+        # subject must be first call outside the thread context because of lazy initialization
+        s = subject
+        t = Thread.new { s.run }
+        sleep(0.1) until subject.ready?
+
         sleep(0.1)
         expect(subject.uptime).to be > 0
         subject.shutdown
+        t.join
       end
     end
   end
@@ -642,26 +749,35 @@ describe LogStash::Pipeline do
       }
       EOS
     end
-    let(:dummyoutput) { DummyOutput.new({ "id" => dummy_output_id }) }
+    let(:dummyoutput) { ::LogStash::Outputs::DummyOutput.new({ "id" => dummy_output_id }) }
     let(:metric_store) { subject.metric.collector.snapshot_metric.metric_store }
+    let(:pipeline_thread) do
+      # subject has to be called for the first time outside the thread because it will create a race condition
+      # with the subject.ready? call since subject is lazily initialized
+      s = subject
+      Thread.new { s.run }
+    end
 
     before :each do
-      allow(DummyOutput).to receive(:new).with(any_args).and_return(dummyoutput)
+      allow(::LogStash::Outputs::DummyOutput).to receive(:new).with(any_args).and_return(dummyoutput)
       allow(LogStash::Plugin).to receive(:lookup).with("input", "generator").and_return(LogStash::Inputs::Generator)
       allow(LogStash::Plugin).to receive(:lookup).with("codec", "plain").and_return(LogStash::Codecs::Plain)
       allow(LogStash::Plugin).to receive(:lookup).with("filter", "multiline").and_return(LogStash::Filters::Multiline)
-      allow(LogStash::Plugin).to receive(:lookup).with("output", "dummyoutput").and_return(DummyOutput)
+      allow(LogStash::Plugin).to receive(:lookup).with("output", "dummyoutput").and_return(::LogStash::Outputs::DummyOutput)
 
-      Thread.new { subject.run }
+      pipeline_thread
+      sleep(0.1) until subject.ready?
+
       # make sure we have received all the generated events
       wait(3).for do
         # give us a bit of time to flush the events
-        dummyoutput.events.size < number_of_events
-      end.to be_falsey
+        dummyoutput.events.size >= number_of_events
+      end.to be_truthy
     end
 
     after :each do
       subject.shutdown
+      pipeline_thread.join
     end
 
     context "global metric" do
@@ -696,12 +812,15 @@ describe LogStash::Pipeline do
 
       it "populates the output metrics" do
         plugin_name = dummy_output_id.to_sym
+
+        expect(collected_metric[:stats][:pipelines][:main][:plugins][:outputs][plugin_name][:events][:in].value).to eq(number_of_events)
         expect(collected_metric[:stats][:pipelines][:main][:plugins][:outputs][plugin_name][:events][:out].value).to eq(number_of_events)
+        expect(collected_metric[:stats][:pipelines][:main][:plugins][:outputs][plugin_name][:events][:duration_in_millis].value).not_to be_nil
       end
 
       it "populates the name of the output plugin" do
         plugin_name = dummy_output_id.to_sym
-        expect(collected_metric[:stats][:pipelines][:main][:plugins][:outputs][plugin_name][:name].value).to eq(DummyOutput.config_name)
+        expect(collected_metric[:stats][:pipelines][:main][:plugins][:outputs][plugin_name][:name].value).to eq(::LogStash::Outputs::DummyOutput.config_name)
       end
 
       it "populates the name of the filter plugin" do
@@ -718,11 +837,18 @@ describe LogStash::Pipeline do
       allow(LogStash::Plugin).to receive(:lookup).with("input", "generator").and_return(LogStash::Inputs::Generator)
       allow(LogStash::Plugin).to receive(:lookup).with("codec", "plain").and_return(DummyCodec)
       allow(LogStash::Plugin).to receive(:lookup).with("filter", "dummyfilter").and_return(DummyFilter)
-      allow(LogStash::Plugin).to receive(:lookup).with("output", "dummyoutput").and_return(DummyOutput)
+      allow(LogStash::Plugin).to receive(:lookup).with("output", "dummyoutput").and_return(::LogStash::Outputs::DummyOutput)
     end
 
     let(:pipeline1) { LogStash::Pipeline.new("input { generator {} } filter { dummyfilter {} } output { dummyoutput {}}") }
     let(:pipeline2) { LogStash::Pipeline.new("input { generator {} } filter { dummyfilter {} } output { dummyoutput {}}") }
+
+    # multiple pipelines cannot be instantiated using the same PQ settings, force memory queue
+    before :each do
+      pipeline_workers_setting = LogStash::SETTINGS.get_setting("queue.type")
+      allow(pipeline_workers_setting).to receive(:value).and_return("memory")
+      pipeline_settings.each {|k, v| pipeline_settings_obj.set(k, v) }
+    end
 
     it "should not add ivars" do
        expect(pipeline1.instance_variables).to eq(pipeline2.instance_variables)

@@ -165,7 +165,38 @@ describe LogStash::Runner do
       allow(pipeline).to receive(:run).and_return(task)
       allow(pipeline).to receive(:shutdown)
     end
-
+    
+    context "when :path.data is defined by the user" do
+      let(:test_data_path) { "/tmp/ls-test-data" }
+      let(:test_queue_path) { test_data_path + "/" + "queue" }
+      
+      it "should set data paths" do
+        expect(LogStash::Agent).to receive(:new) do |settings|
+          expect(settings.get("path.data")).to eq(test_data_path)
+          expect(settings.get("path.queue")).to eq(test_queue_path)
+        end
+        
+        args = ["--path.data", test_data_path, "-e", pipeline_string]
+        subject.run("bin/logstash", args)
+      end
+      
+      context "and path.queue is manually set" do
+        let(:queue_override_path) { "/tmp/queue-override_path" }
+        
+        it "should set data paths" do
+          expect(LogStash::Agent).to receive(:new) do |settings|
+            expect(settings.get("path.data")).to eq(test_data_path)
+            expect(settings.get("path.queue")).to eq(queue_override_path)
+          end
+          
+          LogStash::SETTINGS.set("path.queue", queue_override_path)
+          
+          args = ["--path.data", test_data_path, "-e", pipeline_string]
+          subject.run("bin/logstash", args)
+        end
+      end
+    end
+    
     context "when :http.host is defined by the user" do
       it "should pass the value to the webserver" do
         expect(LogStash::Agent).to receive(:new) do |settings|

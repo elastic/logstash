@@ -39,13 +39,12 @@ module LogStash module Instrument module PeriodicPoller
 
     def initialize(metric, options = {})
       super(metric, options)
-      @metric = metric
       @load_average = LoadAverage.create
     end
 
     def collect
       raw = JRMonitor.memory.generate
-      collect_jvm_metrics(raw)      
+      collect_jvm_metrics(raw)
       collect_pools_metrics(raw)
       collect_threads_metrics
       collect_process_metrics
@@ -70,15 +69,10 @@ module LogStash module Instrument module PeriodicPoller
     end
 
     def collect_threads_metrics
-      threads = JRMonitor.threads.generate
+      threads_mx = ManagementFactory.getThreadMXBean()
 
-      current = threads.count
-      if @peak_threads.nil? || @peak_threads < current
-        @peak_threads = current
-      end
-
-      metric.gauge([:jvm, :threads], :count, threads.count)
-      metric.gauge([:jvm, :threads], :peak_count, @peak_threads)
+      metric.gauge([:jvm, :threads], :count, threads_mx.getThreadCount())
+      metric.gauge([:jvm, :threads], :peak_count, threads_mx.getPeakThreadCount())
     end
 
     def collect_process_metrics
@@ -114,7 +108,7 @@ module LogStash module Instrument module PeriodicPoller
 
       metric.gauge([:jvm, :process, :cpu], :load_average, load_average) unless load_average.nil?
     end
-    
+
     def collect_jvm_metrics(data)
       runtime_mx_bean = ManagementFactory.getRuntimeMXBean()
       metric.gauge([:jvm], :uptime_in_millis, runtime_mx_bean.getUptime())

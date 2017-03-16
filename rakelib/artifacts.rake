@@ -25,14 +25,6 @@ namespace "artifact" do
       "logstash-core/*.gemspec",
       "logstash-core/gemspec_jars.rb",
 
-      "logstash-core-event-java/lib/**/*",
-      "logstash-core-event-java/*.gemspec",
-      "logstash-core-event-java/gemspec_jars.rb",
-
-      "logstash-core-queue-jruby/lib/**/*",
-      "logstash-core-queue-jruby/*.gemspec",
-      "logstash-core-queue-jruby/gemspec_jars.rb",
-
       "logstash-core-plugin-api/lib/**/*",
       "logstash-core-plugin-api/*.gemspec",
 
@@ -60,6 +52,7 @@ namespace "artifact" do
     @exclude_paths << "bin/bundle"
     @exclude_paths << "bin/rspec"
     @exclude_paths << "bin/rspec.bat"
+    @exclude_paths << "bin/lock"
 
     @exclude_paths
   end
@@ -84,25 +77,25 @@ namespace "artifact" do
   task "all" => ["prepare", "build"]
 
   desc "Build a tar.gz of default logstash plugins with all dependencies"
-  task "tar" => ["prepare", "generate_build_metadata"] do
+  task "tar" => ["prepare", "generate_build_metadata", "license:generate-notice-file"] do
     puts("[artifact:tar] Building tar.gz of default plugins")
     build_tar
   end
 
   desc "Build a zip of default logstash plugins with all dependencies"
-  task "zip" => ["prepare", "generate_build_metadata"] do
+  task "zip" => ["prepare", "generate_build_metadata", "license:generate-notice-file"] do
     puts("[artifact:zip] Building zip of default plugins")
     build_zip
   end
 
   desc "Build an RPM of logstash with all dependencies"
-  task "rpm" => ["prepare", "generate_build_metadata"] do
+  task "rpm" => ["prepare", "generate_build_metadata", "license:generate-notice-file"] do
     puts("[artifact:rpm] building rpm package")
     package("centos", "5")
   end
 
   desc "Build a DEB of logstash with all dependencies"
-  task "deb" => ["prepare", "generate_build_metadata"] do
+  task "deb" => ["prepare", "generate_build_metadata", "license:generate-notice-file"] do
     puts("[artifact:deb] building deb package")
     package("ubuntu", "12.04")
   end
@@ -110,7 +103,6 @@ namespace "artifact" do
   desc "Generate logstash core gems"
   task "gems" => ["prepare"] do
     Rake::Task["artifact:build-logstash-core"].invoke
-    Rake::Task["artifact:build-logstash-core-event"].invoke
     Rake::Task["artifact:build-logstash-core-plugin-api"].invoke
   end
 
@@ -175,27 +167,6 @@ namespace "artifact" do
       Rake::Task["plugin:build-local-core-gem"].invoke("logstash-core", path)
     else
       puts "The Gemfile should reference \"logstash-core\" gem locally through :path, but found instead: #{matches}"
-      exit(1)
-    end
-  end
-
-  # # locate the "gem "logstash-core-event*" ..." line in Gemfile, and if the :path => "." option if specified
-  # # build the local logstash-core-event* gem otherwise just do nothing, bundler will deal with it.
-  task "build-logstash-core-event" do
-    # regex which matches a Gemfile gem definition for the logstash-core-event* gem and captures the gem name and :path option
-    gem_line_regex = /^\s*gem\s+["'](logstash-core-event[^"^']*)["'](?:\s*,\s*["'][^"^']+["'])?(?:\s*,\s*:path\s*=>\s*["']([^"^']+)["'])?/i
-
-    lines = File.readlines("Gemfile")
-    matches = lines.select{|line| line[gem_line_regex]}
-    abort("ERROR: Gemfile format error, need a single logstash-core-event gem specification") if matches.size != 1
-
-    name = matches.first[gem_line_regex, 1]
-    path = matches.first[gem_line_regex, 2]
-
-    if path
-      Rake::Task["plugin:build-local-core-gem"].invoke(name, path)
-    else
-      puts "The Gemfile should reference \"logstash-core-event\" gem locally through :path, but found instead: #{matches}"
       exit(1)
     end
   end
@@ -416,6 +387,7 @@ namespace "artifact" do
     #   correct version of OpenJDK is impossible because there is no guarantee that
     #   is impossible for the same reasons as the Red Hat section above.
     # References:
+    # - https://github.com/elastic/logstash/issues/6275
     # - http://www.elasticsearch.org/blog/java-1-7u55-safe-use-elasticsearch-lucene/
     # - deb: https://github.com/elasticsearch/logstash/pull/1008
     # - rpm: https://github.com/elasticsearch/logstash/pull/1290
@@ -431,5 +403,4 @@ namespace "artifact" do
       out.cleanup
     end
   end # def package
-
 end

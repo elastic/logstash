@@ -7,6 +7,41 @@ require "logstash/inputs/base"
 require "logstash/filters/base"
 
 describe LogStash::Plugin do
+  context "reloadable" do
+    context "by default" do
+      subject do
+        Class.new(LogStash::Plugin) do
+        end
+      end
+
+      it "makes .reloadable? return true" do
+        expect(subject.reloadable?).to be_truthy
+      end
+
+      it "makes #reloadable? return true" do
+        expect(subject.new({}).reloadable?).to be_truthy
+      end
+    end
+
+    context "user can overrides" do
+      subject do
+        Class.new(LogStash::Plugin) do
+          def self.reloadable?
+            false
+          end
+        end
+      end
+
+      it "makes .reloadable? return true" do
+        expect(subject.reloadable?).to be_falsey
+      end
+
+      it "makes #reloadable? return true" do
+        expect(subject.new({}).reloadable?).to be_falsey
+      end
+    end
+  end
+
   it "should fail lookup on inexisting type" do
     #expect_any_instance_of(Cabin::Channel).to receive(:debug).once
     expect { LogStash::Plugin.lookup("badbadtype", "badname") }.to raise_error(LogStash::PluginLoadingError)
@@ -106,12 +141,8 @@ describe LogStash::Plugin do
       one_notice.validate({})
     end
 
-    it "warns the user if we can't find a defined version" do
-      expect_any_instance_of(LogStash::Logging::Logger).to receive(:warn)
-        .once
-        .with(/plugin doesn't have a version/)
-
-      subject.validate({})
+    it "doesn't raise an exception if no version is found" do
+      expect { subject.validate({}) }.not_to raise_error
     end
 
 

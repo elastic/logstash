@@ -36,7 +36,6 @@ qa/Gemfile.lock
 *.ipr
 *.iws
 *.iml
-.gradle
 .idea
 logs
 qa/integration/services/installed/

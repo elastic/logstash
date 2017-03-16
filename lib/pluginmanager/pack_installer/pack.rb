@@ -67,7 +67,6 @@ module LogStash module PluginManager module PackInstaller
     end
 
     def plugins
-      require "pry"
       gems.select { |gem| !gem.dependency? }
     end
 

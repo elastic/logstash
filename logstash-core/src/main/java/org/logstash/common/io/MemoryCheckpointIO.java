@@ -3,6 +3,7 @@ package org.logstash.common.io;
 import org.logstash.ackedqueue.Checkpoint;
 
 import java.io.IOException;
+import java.nio.file.NoSuchFileException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -11,7 +12,7 @@ public class MemoryCheckpointIO implements CheckpointIO {
     private final String HEAD_CHECKPOINT = "checkpoint.head";
     private final String TAIL_CHECKPOINT = "checkpoint.";
 
-    private static final Map<String, Checkpoint> sources = new HashMap<>();
+    private static final Map<String, Map<String, Checkpoint>> sources = new HashMap<>();
 
     private final String dirPath;
 
@@ -25,7 +26,14 @@ public class MemoryCheckpointIO implements CheckpointIO {
 
     @Override
     public Checkpoint read(String fileName) throws IOException {
-        return this.sources.get(fileName);
+
+        Checkpoint cp = null;
+        Map<String, Checkpoint> ns = this.sources.get(dirPath);
+        if (ns != null) {
+           cp = ns.get(fileName);
+        }
+        if (cp == null) { throw new NoSuchFileException("no memory checkpoint for dirPath: " + this.dirPath + ", fileName: " + fileName); }
+        return cp;
     }
 
     @Override
@@ -37,17 +45,25 @@ public class MemoryCheckpointIO implements CheckpointIO {
 
     @Override
     public void write(String fileName, Checkpoint checkpoint) throws IOException {
-        this.sources.put(fileName, checkpoint);
+        Map<String, Checkpoint> ns = this.sources.get(dirPath);
+        if (ns == null) {
+            ns = new HashMap<>();
+            this.sources.put(this.dirPath, ns);
+        }
+        ns.put(fileName, checkpoint);
     }
 
     @Override
     public void purge(String fileName) {
-        this.sources.remove(fileName);
+        Map<String, Checkpoint> ns = this.sources.get(dirPath);
+        if (ns != null) {
+           ns.remove(fileName);
+        }
     }
 
     @Override
     public void purge() {
-        this.sources.clear();
+        this.sources.remove(this.dirPath);
     }
 
     // @return the head page checkpoint file name

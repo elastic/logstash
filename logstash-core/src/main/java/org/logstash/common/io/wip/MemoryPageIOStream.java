@@ -1,7 +1,6 @@
 package org.logstash.common.io.wip;
 
 import org.logstash.ackedqueue.Checkpoint;
-import org.logstash.ackedqueue.Queueable;
 import org.logstash.ackedqueue.SequencedList;
 import org.logstash.common.io.BufferedChecksumStreamInput;
 import org.logstash.common.io.BufferedChecksumStreamOutput;
@@ -67,6 +66,11 @@ public class MemoryPageIOStream implements PageIO {
         streamedInput = new ByteBufferStreamInput(ByteBuffer.wrap(buffer));
         streamedOutput = new ByteArrayStreamOutput(buffer);
         crcWrappedOutput = new BufferedChecksumStreamOutput(streamedOutput);
+    }
+
+    @Override
+    public void recover() throws IOException {
+        throw new UnsupportedOperationException("recover() is not supported");
     }
 
     @Override

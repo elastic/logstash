@@ -1,6 +1,8 @@
 # Base class for a service like Kafka, ES, Logstash
 class Service
 
+  attr_reader :settings
+
   def initialize(name, settings)
     @name = name
     @settings = settings

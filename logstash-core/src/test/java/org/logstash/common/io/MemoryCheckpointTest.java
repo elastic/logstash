@@ -2,11 +2,13 @@ package org.logstash.common.io;
 
 import org.junit.Before;
 import org.junit.Test;
+import static org.junit.Assert.fail;
 import org.logstash.ackedqueue.Checkpoint;
 import org.logstash.ackedqueue.MemorySettings;
 import org.logstash.ackedqueue.Settings;
 
 import java.io.IOException;
+import java.nio.file.NoSuchFileException;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
@@ -37,9 +39,50 @@ public class MemoryCheckpointTest {
         assertThat(checkpoint.getElementCount(), is(equalTo(5)));
     }
 
-    @Test
+    @Test(expected = NoSuchFileException.class)
     public void readInnexisting() throws IOException {
-        Checkpoint checkpoint = io.read("checkpoint.invalid");
-        assertThat(checkpoint, is(equalTo(null)));
+        io.read("checkpoint.invalid");
+    }
+
+    @Test
+    public void readWriteDirPathNamespaced() throws IOException {
+        CheckpointIO io1 = new MemoryCheckpointIO("path1");
+        CheckpointIO io2 = new MemoryCheckpointIO("path2");
+        io1.write("checkpoint.head", 1, 0, 0, 0, 0);
+        io2.write("checkpoint.head", 2, 0, 0, 0, 0);
+
+        Checkpoint checkpoint;
+
+        checkpoint = io1.read("checkpoint.head");
+        assertThat(checkpoint.getPageNum(), is(equalTo(1)));
+
+        checkpoint = io2.read("checkpoint.head");
+        assertThat(checkpoint.getPageNum(), is(equalTo(2)));
+    }
+
+    @Test(expected = NoSuchFileException.class)
+    public void purgeDirPathNamespaced1() throws IOException {
+        CheckpointIO io1 = new MemoryCheckpointIO("path1");
+        CheckpointIO io2 = new MemoryCheckpointIO("path2");
+        io1.write("checkpoint.head", 1, 0, 0, 0, 0);
+        io2.write("checkpoint.head", 2, 0, 0, 0, 0);
+
+        io1.purge("checkpoint.head");
+
+        Checkpoint checkpoint = io1.read("checkpoint.head");
+    }
+
+    @Test
+    public void purgeDirPathNamespaced2() throws IOException {
+        CheckpointIO io1 = new MemoryCheckpointIO("path1");
+        CheckpointIO io2 = new MemoryCheckpointIO("path2");
+        io1.write("checkpoint.head", 1, 0, 0, 0, 0);
+        io2.write("checkpoint.head", 2, 0, 0, 0, 0);
+
+        io1.purge("checkpoint.head");
+
+        Checkpoint checkpoint;
+        checkpoint = io2.read("checkpoint.head");
+        assertThat(checkpoint.getPageNum(), is(equalTo(2)));
     }
 }

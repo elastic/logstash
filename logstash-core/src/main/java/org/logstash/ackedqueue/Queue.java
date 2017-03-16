@@ -1,5 +1,9 @@
 package org.logstash.ackedqueue;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.logstash.FileLockFactory;
+import org.logstash.LockException;
 import org.logstash.common.io.CheckpointIO;
 import org.logstash.common.io.PageIO;
 import org.logstash.common.io.PageIOFactory;
@@ -8,6 +12,7 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.nio.channels.FileLock;
 import java.nio.file.NoSuchFileException;
 import java.util.ArrayList;
 import java.util.List;
@@ -41,9 +46,12 @@ public class Queue implements Closeable {
 
     protected volatile long unreadCount;
 
+    protected volatile long currentByteSize;
+
     private final CheckpointIO checkpointIO;
     private final PageIOFactory pageIOFactory;
     private final int pageCapacity;
+    private final long maxBytes;
     private final String dirPath;
     private final int maxUnread;
     private final int checkpointMaxAcks;
@@ -57,27 +65,35 @@ public class Queue implements Closeable {
     private final Method deserializeMethod;
 
     // thread safety
-    final Lock lock = new ReentrantLock();
-    final Condition notFull  = lock.newCondition();
-    final Condition notEmpty = lock.newCondition();
+    private final Lock lock = new ReentrantLock();
+    private final Condition notFull  = lock.newCondition();
+    private final Condition notEmpty = lock.newCondition();
+
+    // exclusive dir access
+    private FileLock dirLock;
+    private final static String LOCK_NAME = ".lock";
+
+    private static final Logger logger = LogManager.getLogger(Queue.class);
 
     public Queue(Settings settings) {
         this(
-                settings.getDirPath(),
-                settings.getCapacity(),
-                settings.getCheckpointIOFactory().build(settings.getDirPath()),
-                settings.getPageIOFactory(),
-                settings.getElementClass(),
-                settings.getMaxUnread(),
-                settings.getCheckpointMaxWrites(),
-                settings.getCheckpointMaxAcks(),
-                settings.getCheckpointMaxInterval()
+            settings.getDirPath(),
+            settings.getCapacity(),
+            settings.getQueueMaxBytes(),
+            settings.getCheckpointIOFactory().build(settings.getDirPath()),
+            settings.getPageIOFactory(),
+            settings.getElementClass(),
+            settings.getMaxUnread(),
+            settings.getCheckpointMaxWrites(),
+            settings.getCheckpointMaxAcks(),
+            settings.getCheckpointMaxInterval()
         );
     }
 
-    public Queue(String dirPath, int pageCapacity, CheckpointIO checkpointIO, PageIOFactory pageIOFactory, Class elementClass, int maxUnread, int checkpointMaxWrites, int checkpointMaxAcks, int checkpointMaxInterval) {
+    public Queue(String dirPath, int pageCapacity, long maxBytes, CheckpointIO checkpointIO, PageIOFactory pageIOFactory, Class elementClass, int maxUnread, int checkpointMaxWrites, int checkpointMaxAcks, int checkpointMaxInterval) {
         this.dirPath = dirPath;
         this.pageCapacity = pageCapacity;
+        this.maxBytes = maxBytes;
         this.checkpointIO = checkpointIO;
         this.pageIOFactory = pageIOFactory;
         this.elementClass = elementClass;
@@ -89,6 +105,7 @@ public class Queue implements Closeable {
         this.checkpointMaxWrites = checkpointMaxWrites;
         this.checkpointMaxInterval = checkpointMaxInterval;
         this.unreadCount = 0;
+        this.currentByteSize = 0;
 
         // retrieve the deserialize method
         try {
@@ -100,6 +117,30 @@ public class Queue implements Closeable {
         }
     }
 
+    public String getDirPath() {
+        return this.dirPath;
+    }
+
+    public long getMaxBytes() {
+        return this.maxBytes;
+    }
+
+    public long getMaxUnread() {
+        return this.maxUnread;
+    }
+
+    public long getCurrentByteSize() {
+        return this.currentByteSize;
+    }
+
+    public int getPageCapacity() {
+        return this.pageCapacity;
+    }
+
+    public long getUnreadCount() {
+        return this.unreadCount;
+    }
+
     // moved queue opening logic in open() method until we have something in place to used in-memory checkpoints for testing
     // because for now we need to pass a Queue instance to the Page and we don't want to trigger a Queue recovery when
     // testing Page
@@ -108,76 +149,108 @@ public class Queue implements Closeable {
 
         if (!this.closed.get()) { throw new IOException("queue already opened"); }
 
-        Checkpoint headCheckpoint;
+        lock.lock();
         try {
-            headCheckpoint = this.checkpointIO.read(checkpointIO.headFileName());
-        } catch (NoSuchFileException e) {
-            headCheckpoint = null;
-        }
+            // verify exclusive access to the dirPath
+            this.dirLock = FileLockFactory.getDefault().obtainLock(this.dirPath, LOCK_NAME);
 
-        // if there is no head checkpoint, create a new headpage and checkpoint it and exit method
-        if (headCheckpoint == null) {
-            this.seqNum = 0;
-            headPageNum = 0;
+            Checkpoint headCheckpoint;
+            try {
+                headCheckpoint = this.checkpointIO.read(checkpointIO.headFileName());
+            } catch (NoSuchFileException e) {
+                // if there is no head checkpoint, create a new headpage and checkpoint it and exit method
 
-            newCheckpointedHeadpage(headPageNum);
-            this.closed.set(false);
+                logger.debug("No head checkpoint found at: {}, creating new head page", checkpointIO.headFileName());
 
-            return;
-        }
+                this.seqNum = 0;
+                headPageNum = 0;
 
-        // at this point we have a head checkpoint to figure queue recovery
+                newCheckpointedHeadpage(headPageNum);
+                this.closed.set(false);
 
-        // reconstruct all tail pages state upto but excluding the head page
-        for (int pageNum = headCheckpoint.getFirstUnackedPageNum(); pageNum < headCheckpoint.getPageNum(); pageNum++) {
+                return;
+            }
 
-            // all tail checkpoints in the sequence should exist, if not abort mission with a NoSuchFileException
-            Checkpoint tailCheckpoint = this.checkpointIO.read(this.checkpointIO.tailFileName(pageNum));
+            // at this point we have a head checkpoint to figure queue recovery
 
-            PageIO pageIO = this.pageIOFactory.build(pageNum, this.pageCapacity, this.dirPath);
-            add(tailCheckpoint, pageIO);
-        }
+            // reconstruct all tail pages state upto but excluding the head page
+            for (int pageNum = headCheckpoint.getFirstUnackedPageNum(); pageNum < headCheckpoint.getPageNum(); pageNum++) {
 
-        // transform the head page into a tail page only if the headpage is non-empty
-        // in both cases it will be checkpointed to track any changes in the firstUnackedPageNum when reconstructing the tail pages
+                // all tail checkpoints in the sequence should exist, if not abort mission with a NoSuchFileException
+                Checkpoint cp = this.checkpointIO.read(this.checkpointIO.tailFileName(pageNum));
 
-        if (headCheckpoint.getMinSeqNum() <= 0 && headCheckpoint.getElementCount() <= 0) {
-            // head page is empty, let's keep it as-is
+                logger.debug("opening tail page: {}, in: {}, with checkpoint: {}", pageNum, this.dirPath, cp.toString());
 
-            PageIO headPageIO = this.pageIOFactory.build(headCheckpoint.getPageNum(), this.pageCapacity, this.dirPath);
-            this.headPage = new HeadPage(headCheckpoint, this, headPageIO);
+                PageIO pageIO = this.pageIOFactory.build(pageNum, this.pageCapacity, this.dirPath);
+                pageIO.open(cp.getMinSeqNum(), cp.getElementCount());
 
-            // but checkpoint it to update the firstUnackedPageNum if it changed
-            this.headPage.checkpoint();
-        } else {
-            // head page is non-empty, transform it into a tail page and create a new empty head page
+                add(cp, new TailPage(cp, this, pageIO));
+            }
+
+            // transform the head page into a tail page only if the headpage is non-empty
+            // in both cases it will be checkpointed to track any changes in the firstUnackedPageNum when reconstructing the tail pages
+
+            logger.debug("opening head page: {}, in: {}, with checkpoint: {}", headCheckpoint.getPageNum(), this.dirPath, headCheckpoint.toString());
 
             PageIO pageIO = this.pageIOFactory.build(headCheckpoint.getPageNum(), this.pageCapacity, this.dirPath);
-            TailPage p = new TailPage(headCheckpoint, this, pageIO);
-            p.checkpoint();
-            add(headCheckpoint, pageIO);
+            pageIO.recover(); // optimistically recovers the head page data file and set minSeqNum and elementCount to the actual read/recovered data
 
-            headPageNum = headCheckpoint.getPageNum() + 1;
-            newCheckpointedHeadpage(headPageNum);
+            if (pageIO.getMinSeqNum() != headCheckpoint.getMinSeqNum() || pageIO.getElementCount() != headCheckpoint.getElementCount()) {
+                // the recovered page IO shows different minSeqNum or elementCount than the checkpoint, use the page IO attributes
 
-            // track the seqNum as we add this new tail page, prevent empty tailPage with a minSeqNum of 0 to reset seqNum
-            if (headCheckpoint.maxSeqNum() > this.seqNum) { this.seqNum = headCheckpoint.maxSeqNum(); }
-         }
+                logger.warn("recovered head data page {} is different than checkpoint, using recovered page information", headCheckpoint.getPageNum());
+                logger.debug("head checkpoint minSeqNum={} or elementCount={} is different than head pageIO minSeqNum={} or elementCount={}", headCheckpoint.getMinSeqNum(), headCheckpoint.getElementCount(), pageIO.getMinSeqNum(), pageIO.getElementCount());
 
-        // only activate the first tail page
-        if (tailPages.size() > 0) {
-            this.tailPages.get(0).getPageIO().activate();
+                long firstUnackedSeqNum = headCheckpoint.getFirstUnackedSeqNum();
+                if (firstUnackedSeqNum < pageIO.getMinSeqNum()) {
+                    logger.debug("head checkpoint firstUnackedSeqNum={} is < head pageIO minSeqNum={}, using pageIO minSeqNum", firstUnackedSeqNum, pageIO.getMinSeqNum());
+                    firstUnackedSeqNum = pageIO.getMinSeqNum();
+                }
+                headCheckpoint = new Checkpoint(headCheckpoint.getPageNum(), headCheckpoint.getFirstUnackedPageNum(), firstUnackedSeqNum, pageIO.getMinSeqNum(), pageIO.getElementCount());
+            }
+            this.headPage = new HeadPage(headCheckpoint, this, pageIO);
+
+            if (this.headPage.getMinSeqNum() <= 0 && this.headPage.getElementCount() <= 0) {
+                // head page is empty, let's keep it as-is
+
+                this.currentByteSize += pageIO.getCapacity();
+
+                // but checkpoint it to update the firstUnackedPageNum if it changed
+                this.headPage.checkpoint();
+            } else {
+                // head page is non-empty, transform it into a tail page and create a new empty head page
+                add(headCheckpoint, this.headPage.behead());
+
+                headPageNum = headCheckpoint.getPageNum() + 1;
+                newCheckpointedHeadpage(headPageNum);
+
+                // track the seqNum as we add this new tail page, prevent empty tailPage with a minSeqNum of 0 to reset seqNum
+                if (headCheckpoint.maxSeqNum() > this.seqNum) {
+                    this.seqNum = headCheckpoint.maxSeqNum();
+                }
+            }
+
+            // only activate the first tail page
+            if (tailPages.size() > 0) {
+                this.tailPages.get(0).getPageIO().activate();
+            }
+
+            // TODO: here do directory traversal and cleanup lingering pages? could be a background operations to not delay queue start?
+
+            this.closed.set(false);
+        } catch (LockException e) {
+            throw new LockException("The queue failed to obtain exclusive access, cause: " + e.getMessage());
+        } finally {
+            lock.unlock();
         }
-
-        // TODO: here do directory traversal and cleanup lingering pages? could be a background operations to not delay queue start?
-
-        this.closed.set(false);
     }
 
-    private void add(Checkpoint checkpoint, PageIO pageIO) throws IOException {
+    // add a read tail page into this queue structures but also verify that this tail page
+    // is not fully acked in which case it will be purged
+    private void add(Checkpoint checkpoint, TailPage page) throws IOException {
         if (checkpoint.isFullyAcked()) {
             // first make sure any fully acked page per the checkpoint is purged if not already
-            try { pageIO.purge(); } catch (NoSuchFileException e) { /* ignore */ }
+            try { page.getPageIO().purge(); } catch (NoSuchFileException e) { /* ignore */ }
 
             // we want to keep all the "middle" checkpoints between the first unacked tail page and the head page
             // to always have a contiguous sequence of checkpoints which helps figuring queue integrity. for this
@@ -190,32 +263,33 @@ public class Queue implements Closeable {
             } else {
                 // create a tail page with a null PageIO and add it to tail pages but not unreadTailPages
                 // since it is fully read because also fully acked
+                // TODO: I don't like this null pageIO tail page...
                 this.tailPages.add(new TailPage(checkpoint, this, null));
             }
         } else {
-            TailPage p = new TailPage(checkpoint, this, pageIO);
-            this.tailPages.add(p);
-            this.unreadTailPages.add(p);
-            this.unreadCount += p.unreadCount();
+            this.tailPages.add(page);
+            this.unreadTailPages.add(page);
+            this.unreadCount += page.unreadCount();
+            this.currentByteSize += page.getPageIO().getCapacity();
 
             // for now deactivate all tail pages, we will only reactivate the first one at the end
-            pageIO.deactivate();
+            page.getPageIO().deactivate();
         }
 
         // track the seqNum as we rebuild tail pages, prevent empty pages with a minSeqNum of 0 to reset seqNum
         if (checkpoint.maxSeqNum() > this.seqNum) {
             this.seqNum = checkpoint.maxSeqNum();
         }
-
     }
 
     // create a new empty headpage for the given pageNum and imidiately checkpoint it
     // @param pageNum the page number of the new head page
     private void newCheckpointedHeadpage(int pageNum) throws IOException {
         PageIO headPageIO = this.pageIOFactory.build(pageNum, this.pageCapacity, this.dirPath);
+        headPageIO.create();
         this.headPage = new HeadPage(pageNum, this, headPageIO);
         this.headPage.forceCheckpoint();
-
+        this.currentByteSize += headPageIO.getCapacity();
     }
 
     // @param element the Queueable object to write to the queue
@@ -290,7 +364,21 @@ public class Queue implements Closeable {
     public boolean isFull() {
         // TODO: I am not sure if having unreadCount as volatile is sufficient here. all unreadCount updates are done inside syncronized
         // TODO: sections, I believe that to only read the value here, having it as volatile is sufficient?
-        return (this.maxUnread > 0) ? this.unreadCount >= this.maxUnread : false;
+        if ((this.maxBytes > 0) && this.currentByteSize >= this.maxBytes) {
+            return true;
+        } else {
+            return ((this.maxUnread > 0) && this.unreadCount >= this.maxUnread);
+        }
+    }
+
+    // @return true if the queue is fully acked, which implies that it is fully read which works as an "empty" state.
+    public boolean isFullyAcked() {
+        lock.lock();
+        try {
+            return this.tailPages.isEmpty() ? this.headPage.isFullyAcked() : false;
+        } finally {
+            lock.unlock();
+        }
     }
 
     // @param seqNum the element sequence number upper bound for which persistence should be garanteed (by fsync'ing)
@@ -481,6 +569,7 @@ public class Queue implements Closeable {
 
                     // remove page data file regardless if it is the first or a middle tail page to free resources
                     result.page.purge();
+                    this.currentByteSize -= result.page.getPageIO().getCapacity();
 
                      if (result.index == 0) {
                         // if this is the first page also remove checkpoint file
@@ -543,7 +632,14 @@ public class Queue implements Closeable {
                 // unblock blocked writes. a write is blocked *after* the write has been performed so
                 // unblocking is safe and will return from the write call
                 notFull.signalAll();
+
             } finally {
+                try {
+                    FileLockFactory.getDefault().releaseLock(this.dirLock);
+                } catch (IOException e) {
+                    // log error and ignore
+                    logger.error("Queue close releaseLock failed, error={}", e.getMessage());
+                }
                 lock.unlock();
             }
         }
@@ -568,6 +664,19 @@ public class Queue implements Closeable {
             return this.headPage.getPageNum();
         }
         return this.tailPages.get(0).getPageNum();
+    }
+
+    public long getAckedCount() {
+        return headPage.ackedSeqNums.cardinality() + tailPages.stream()
+                .mapToLong(page -> page.ackedSeqNums.cardinality())
+                .sum();
+    }
+
+    public long getUnackedCount() {
+        long headPageCount = (headPage.getElementCount() - headPage.ackedSeqNums.cardinality());
+        long tailPagesCount = tailPages.stream()
+                .mapToLong(page -> (page.getElementCount() - page.ackedSeqNums.cardinality())).sum();
+        return headPageCount + tailPagesCount;
     }
 
     protected long nextSeqNum() {

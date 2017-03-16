@@ -9,6 +9,7 @@ public class FileSettings implements Settings {
     private PageIOFactory pageIOFactory;
     private Class elementClass;
     private int capacity;
+    private long queueMaxBytes;
     private int maxUnread;
     private int checkpointMaxAcks;
     private int checkpointMaxWrites;
@@ -39,6 +40,12 @@ public class FileSettings implements Settings {
     @Override
     public Settings setElementClass(Class elementClass) {
         this.elementClass = elementClass;
+        return this;
+    }
+
+    @Override
+    public Settings setQueueMaxBytes(long size) {
+        this.queueMaxBytes = size;
         return this;
     }
 
@@ -104,6 +111,11 @@ public class FileSettings implements Settings {
     @Override
     public String getDirPath() {
         return dirForFiles;
+    }
+
+    @Override
+    public long getQueueMaxBytes() {
+        return queueMaxBytes;
     }
 
     @Override

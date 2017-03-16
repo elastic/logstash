@@ -1,7 +1,7 @@
-#!/usr/bin/env vendor/jruby/bin/jruby
+#!/usr/bin/env bin/ruby
 
 require_relative "../lib/bootstrap/environment"
-LogStash::Bundler.setup!({:without => [:build]})
+LogStash::Bundler.setup!({:without => [:build, :development]})
 require "logstash-core"
 require "logstash/environment"
 require "logstash/settings"

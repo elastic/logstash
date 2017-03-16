@@ -31,12 +31,20 @@ java version "1.8.0_65"
 Java(TM) SE Runtime Environment (build 1.8.0_65-b17)
 Java HotSpot(TM) 64-Bit Server VM (build 25.65-b01, mixed mode)
 
+On some Linux systems, you may also need to have the `JAVA_HOME` environment
+exported before attempting the install, particularly if you installed Java from
+a tarball.  This is because Logstash uses Java during installation to
+automatically detect your environment and install the correct startup method
+(SysV init scripts, Upstart, or systemd).  If Logstash is unable to find the
+JAVA_HOME environment variable during package installation time, you may get an
+error message, and Logstash will be unable to start properly.
+
 [float]
 [[installing-binary]]
 === Installing from a Downloaded Binary
 
 Download the https://www.elastic.co/downloads/logstash[Logstash installation file] that matches your host environment.
-Unpack the file. Do not install Logstash into a directory path that contains colon (:) characters. 
+Unpack the file. Do not install Logstash into a directory path that contains colon (:) characters.
 
 On supported Linux operating systems, you can use a package manager to install Logstash.
 
@@ -63,6 +71,14 @@ to sign all our packages. It is available from https://pgp.mit.edu.
 [float]
 ==== APT
 
+ifeval::["{release-state}"=="unreleased"]
+
+Version {logstash_version} of Logstash has not yet been released.
+
+endif::[]
+
+ifeval::["{release-state}"!="unreleased"]
+
 Download and install the Public Signing Key:
 
 [source,sh]
@@ -81,7 +97,7 @@ Save the repository definition to  +/etc/apt/sources.list.d/elastic-{major-versi
 
 ["source","sh",subs="attributes,callouts"]
 --------------------------------------------------
-echo "deb https://artifacts.elastic.co/packages/{major-version}-prerelease/apt stable main" | sudo tee -a /etc/apt/sources.list.d/elastic-{major-version}.list
+echo "deb https://artifacts.elastic.co/packages/{major-version}/apt stable main" | sudo tee -a /etc/apt/sources.list.d/elastic-{major-version}.list
 --------------------------------------------------
 
 [WARNING]
@@ -107,8 +123,18 @@ sudo apt-get update && sudo apt-get install logstash
 
 See <<running-logstash,Running Logstash>> for details about managing Logstash as a system service.
 
+endif::[]
+
 [float]
 ==== YUM
+
+ifeval::["{release-state}"=="unreleased"]
+
+Version {logstash_version} of Logstash has not yet been released.
+
+endif::[]
+
+ifeval::["{release-state}"!="unreleased"]
 
 Download and install the public signing key:
 
@@ -124,7 +150,7 @@ in a file with a `.repo` suffix, for example `logstash.repo`
 --------------------------------------------------
 [logstash-{major-version}]
 name=Elastic repository for {major-version} packages
-baseurl=https://artifacts.elastic.co/packages/{major-version}-prerelease/yum
+baseurl=https://artifacts.elastic.co/packages/{major-version}/yum
 gpgcheck=1
 gpgkey=https://artifacts.elastic.co/GPG-KEY-elasticsearch
 enabled=1
@@ -143,6 +169,8 @@ WARNING: The repositories do not work with older rpm based distributions
          that still use RPM v3, like CentOS5.
 
 See the <<running-logstash,Running Logstash>> document for managing Logstash as a system service.
+
+endif::[]
 
 ==== Docker
 
@@ -163,13 +191,17 @@ the data to a destination.
 
 image::static/images/basic_logstash_pipeline.png[]
 
-To test your Logstash installation, run the most basic Logstash pipeline:
+To test your Logstash installation, run the most basic Logstash pipeline. For
+example:
 
 ["source","sh",subs="attributes"]
 --------------------------------------------------
 cd logstash-{logstash_version}
 bin/logstash -e 'input { stdin { } } output { stdout {} }'
 --------------------------------------------------
+
+NOTE: The location of the `bin` directory varies by platform. See <<dir-layout>>
+to find the location of `bin\logstash` on your system.
 
 The `-e` flag enables you to specify a configuration directly from the command line. Specifying configurations at the
 command line lets you quickly test configurations without having to edit a file between iterations.
@@ -186,4 +218,3 @@ Logstash adds timestamp and IP address information to the message. Exit Logstash
 shell where Logstash is running.
 
 Congratulations! You've created and run a basic Logstash pipeline. Next, you learn how to create a more realistic pipeline.
-

@@ -87,6 +87,27 @@ describe LogStash::Settings do
       end
     end
   end
+  
+  describe "post_process" do
+    subject(:settings) { described_class.new }
+    
+    before do
+      settings.on_post_process do
+        settings.set("baz", "bot")
+      end
+      settings.register(LogStash::Setting::String.new("foo", "bar"))
+      settings.register(LogStash::Setting::String.new("baz", "somedefault"))
+      settings.post_process
+    end
+    
+    it "should run the post process callbacks" do
+      expect(settings.get("baz")).to eq("bot")
+    end
+    
+    it "should preserve original settings" do
+      expect(settings.get("foo")).to eq("bar")
+    end
+  end
 
   context "transient settings" do
     subject do

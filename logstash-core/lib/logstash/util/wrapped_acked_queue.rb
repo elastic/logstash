@@ -1,6 +1,7 @@
 # encoding: utf-8
 
-require "logstash-core-queue-jruby/logstash-core-queue-jruby"
+require "jruby_acked_queue_ext"
+require "jruby_acked_batch_ext"
 require "concurrent"
 # This is an adapted copy of the wrapped_synchronous_queue file
 # ideally this should be moved to Java/JRuby
@@ -19,19 +20,21 @@ module LogStash; module Util
     class QueueClosedError < ::StandardError; end
     class NotImplementedError < ::StandardError; end
 
-    def self.create_memory_based(path, capacity, size)
+    def self.create_memory_based(path, capacity, max_events, max_bytes)
       self.allocate.with_queue(
-        LogStash::AckedMemoryQueue.new(path, capacity, size)
+        LogStash::AckedMemoryQueue.new(path, capacity, max_events, max_bytes)
       )
     end
 
-    def self.create_file_based(path, capacity, size, checkpoint_max_writes, checkpoint_max_acks, checkpoint_max_interval)
+    def self.create_file_based(path, capacity, max_events, checkpoint_max_writes, checkpoint_max_acks, checkpoint_max_interval, max_bytes)
       self.allocate.with_queue(
-        LogStash::AckedQueue.new(path, capacity, size, checkpoint_max_writes, checkpoint_max_acks, checkpoint_max_interval)
+        LogStash::AckedQueue.new(path, capacity, max_events, checkpoint_max_writes, checkpoint_max_acks, checkpoint_max_interval, max_bytes)
       )
     end
 
     private_class_method :new
+
+    attr_reader :queue
 
     def with_queue(queue)
       @queue = queue
@@ -123,6 +126,10 @@ module LogStash; module Util
         @queue.close
       end
 
+      def empty?
+        @mutex.synchronize { @queue.is_fully_acked? }
+      end
+
       def set_batch_dimensions(batch_size, wait_for)
         @batch_size = batch_size
         @wait_for = wait_for
@@ -130,10 +137,18 @@ module LogStash; module Util
 
       def set_events_metric(metric)
         @event_metric = metric
+        define_initial_metrics_values(@event_metric)
       end
 
       def set_pipeline_metric(metric)
         @pipeline_metric = metric
+        define_initial_metrics_values(@pipeline_metric)
+      end
+
+      def define_initial_metrics_values(namespaced_metric)
+        namespaced_metric.report_time(:duration_in_millis, 0)
+        namespaced_metric.increment(:filtered, 0)
+        namespaced_metric.increment(:out, 0)
       end
 
       def inflight_batches
@@ -146,16 +161,28 @@ module LogStash; module Util
         @inflight_batches.fetch(Thread.current, [])
       end
 
-      def take_batch
+      # create a new empty batch
+      # @return [ReadBatch] a new empty read batch
+      def new_batch
+        ReadBatch.new(@queue, @batch_size, @wait_for)
+      end
+
+      def read_batch
         if @queue.closed?
           raise QueueClosedError.new("Attempt to take a batch from a closed AckedQueue")
         end
+
+        batch = new_batch
+        @mutex.synchronize { batch.read_next }
+        start_metrics(batch)
+        batch
+      end
+
+      def start_metrics(batch)
         @mutex.synchronize do
-          batch = ReadBatch.new(@queue, @batch_size, @wait_for)
-          add_starting_metrics(batch)
+          # there seems to be concurrency issues with metrics, keep it in the mutex
           set_current_thread_inflight_batch(batch)
           start_clock
-          batch
         end
       end
 
@@ -166,21 +193,30 @@ module LogStash; module Util
       def close_batch(batch)
         @mutex.synchronize do
           batch.close
+
+          # there seems to be concurrency issues with metrics, keep it in the mutex
           @inflight_batches.delete(Thread.current)
-          stop_clock
+          stop_clock(batch)
         end
       end
 
       def start_clock
         @inflight_clocks[Thread.current] = [
-        @event_metric.time(:duration_in_millis),
-        @pipeline_metric.time(:duration_in_millis)
+          @event_metric.time(:duration_in_millis),
+          @pipeline_metric.time(:duration_in_millis)
         ]
       end
 
-      def stop_clock
-        @inflight_clocks[Thread.current].each(&:stop)
-        @inflight_clocks.delete(Thread.current)
+      def stop_clock(batch)
+        unless @inflight_clocks[Thread.current].nil?
+          if batch.size > 0
+            # onl/y stop (which also records) the metrics if the batch is non-empty.
+            # start_clock is now called at empty batch creation and an empty batch could
+            # stay empty all the way down to the close_batch call.
+            @inflight_clocks[Thread.current].each(&:stop)
+          end
+          @inflight_clocks.delete(Thread.current)
+        end
       end
 
       def add_starting_metrics(batch)
@@ -202,6 +238,10 @@ module LogStash; module Util
 
     class ReadBatch
       def initialize(queue, size, wait)
+        @queue = queue
+        @size = size
+        @wait = wait
+
         @originals = Hash.new
 
         # TODO: disabled for https://github.com/elastic/logstash/issues/6055 - will have to properly refactor
@@ -210,7 +250,13 @@ module LogStash; module Util
         @generated = Hash.new
         @iterating_temp = Hash.new
         @iterating = false # Atomic Boolean maybe? Although batches are not shared across threads
-        take_originals_from_queue(queue, size, wait) # this sets a reference to @acked_batch
+        @acked_batch = nil
+      end
+
+      def read_next
+        @acked_batch = @queue.read_batch(@size, @wait)
+        return if @acked_batch.nil?
+        @acked_batch.get_elements.each { |e| @originals[e] = true }
       end
 
       def close
@@ -290,14 +336,6 @@ module LogStash; module Util
         @generated.update(@iterating_temp)
         @iterating_temp.clear
       end
-
-      def take_originals_from_queue(queue, size, wait)
-        @acked_batch = queue.read_batch(size, wait)
-        return if @acked_batch.nil?
-        @acked_batch.get_elements.each do |e|
-          @originals[e] = true
-        end
-      end
     end
 
     class WriteClient
@@ -330,6 +368,10 @@ module LogStash; module Util
     class WriteBatch
       def initialize
         @events = []
+      end
+
+      def size
+        @events.size
       end
 
       def push(event)

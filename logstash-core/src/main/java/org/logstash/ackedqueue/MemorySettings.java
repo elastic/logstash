@@ -8,6 +8,7 @@ public class MemorySettings implements Settings {
     private PageIOFactory pageIOFactory;
     private Class elementClass;
     private int capacity;
+    private long queueMaxBytes;
     private final String dirPath;
     private int maxUnread;
     private int checkpointMaxAcks;
@@ -47,6 +48,12 @@ public class MemorySettings implements Settings {
     @Override
     public Settings setCapacity(int capacity) {
         this.capacity = capacity;
+        return this;
+    }
+
+    @Override
+    public Settings setQueueMaxBytes(long size) {
+        this.queueMaxBytes = size;
         return this;
     }
 
@@ -106,6 +113,11 @@ public class MemorySettings implements Settings {
     @Override
     public String getDirPath() {
         return this.dirPath;
+    }
+
+    @Override
+    public long getQueueMaxBytes() {
+        return this.queueMaxBytes;
     }
 
     @Override
