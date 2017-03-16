@@ -21,6 +21,7 @@ gem "rack-test", :require => "rack/test", :group => :development
 gem "flores", "~> 0.0.6", :group => :development
 gem "term-ansicolor", "~> 1.3.2", :group => :development
 gem "docker-api", "1.31.0", :group => :development
+gem "rest-client", "1.8.0", :group => :development
 gem "pleaserun"
 gem "logstash-input-heartbeat"
 gem "logstash-codec-collectd"
@@ -48,7 +49,7 @@ gem "logstash-filter-fingerprint"
 gem "logstash-filter-geoip"
 gem "logstash-filter-grok"
 gem "logstash-filter-json"
-gem "logstash-filter-kv"
+gem "logstash-filter-kv", "< 4.0.0"
 gem "logstash-filter-metrics"
 gem "logstash-filter-mutate"
 gem "logstash-filter-ruby"
@@ -61,7 +62,7 @@ gem "logstash-filter-useragent"
 gem "logstash-filter-uuid"
 gem "logstash-filter-xml"
 gem "logstash-input-couchdb_changes"
-gem "logstash-input-elasticsearch"
+gem "logstash-input-elasticsearch", "< 4.0.1"
 gem "logstash-input-exec"
 gem "logstash-input-file"
 gem "logstash-input-ganglia"
