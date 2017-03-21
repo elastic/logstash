@@ -19,7 +19,7 @@ You can specify the log file location using `--path.logs` setting.
 
 Logstash ships with a `log4j2.properties` file with out-of-the-box settings. You  can modify this file directly to change the 
 rotation policy, type, and other https://logging.apache.org/log4j/2.x/manual/configuration.html#Loggers[log4j2 configuration]. 
-You must restart Lostash to apply any changes that you make to this file.
+You must restart Logstash to apply any changes that you make to this file.
 
 ==== Slowlog
 
