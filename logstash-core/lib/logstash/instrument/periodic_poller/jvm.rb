@@ -161,14 +161,21 @@ module LogStash module Instrument module PeriodicPoller
     end
 
     def aggregate_information_for(collection)
+      transpose_map = {
+        "usage.used" => :used_in_bytes,
+        "usage.committed" => :committed_in_bytes,
+        "usage.max" => :max_in_bytes,
+        "peak.max" => :peak_max_in_bytes,
+        "peak.used" => :peak_used_in_bytes
+
+      }
       collection.reduce(default_information_accumulator) do |m,e|
         e = { e[0] => e[1] } if e.is_a?(Array)
         e.each_pair do |k,v|
-          m[:used_in_bytes] += v       if k.include?("used")
-          m[:committed_in_bytes] += v  if k.include?("committed")
-          m[:max_in_bytes] += v        if k.include?("max")
-          m[:peak_max_in_bytes] += v   if k.include?("peak.max")
-          m[:peak_used_in_bytes] += v  if k.include?("peak.used")
+          if transpose_map.include?(k)
+            transpose_key = transpose_map[k]
+            m[transpose_key] += v
+          end
         end
         m
       end
