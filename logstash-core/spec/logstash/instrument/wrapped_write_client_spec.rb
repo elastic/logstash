@@ -66,7 +66,7 @@ describe LogStash::Instrument::WrappedWriteClient do
       end
 
       it "record input `out`" do
-        expect(snapshot_metric[:pipelines][:main][:plugins][:inputs][myid.to_sym][:out].value).to eq(1)
+        expect(snapshot_metric[:pipelines][:main][:plugins][:inputs][myid.to_sym][:events][:out].value).to eq(1)
       end
 
       context "recording of the duration of pushing to the queue" do
@@ -79,7 +79,7 @@ describe LogStash::Instrument::WrappedWriteClient do
         end
 
         it "records at the `plugin level" do
-          expect(snapshot_metric[:pipelines][:main][:plugins][:inputs][myid.to_sym][:queue_push_duration_in_millis].value).to be_kind_of(Integer)
+          expect(snapshot_metric[:pipelines][:main][:plugins][:inputs][myid.to_sym][:events][:queue_push_duration_in_millis].value).to be_kind_of(Integer)
         end
       end
     end
