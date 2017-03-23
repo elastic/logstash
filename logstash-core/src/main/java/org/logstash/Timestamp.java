@@ -7,13 +7,11 @@ import org.joda.time.Duration;
 import org.joda.time.LocalDateTime;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
-import org.logstash.ackedqueue.Queueable;
 
-import java.io.IOException;
 import java.util.Date;
 
 @JsonSerialize(using = org.logstash.json.TimestampSerializer.class)
-public class Timestamp implements Cloneable, Queueable {
+public class Timestamp implements Cloneable {
 
     // all methods setting the time object must set it in the UTC timezone
     private DateTime time;
@@ -82,10 +80,5 @@ public class Timestamp implements Cloneable, Queueable {
         Timestamp clone = (Timestamp)super.clone();
         clone.setTime(this.getTime());
         return clone;
-    }
-
-    @Override
-    public byte[] serialize() throws IOException {
-        return toString().getBytes();
     }
 }
