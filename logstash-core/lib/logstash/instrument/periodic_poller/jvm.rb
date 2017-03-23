@@ -34,6 +34,13 @@ module LogStash module Instrument module PeriodicPoller
       end
     end
 
+    MEMORY_TRANSPOSE_MAP = {
+      "usage.used" => :used_in_bytes,
+      "usage.committed" => :committed_in_bytes,
+      "usage.max" => :max_in_bytes,
+      "peak.max" => :peak_max_in_bytes,
+      "peak.used" => :peak_used_in_bytes
+    }
 
     attr_reader :metric
 
@@ -51,8 +58,6 @@ module LogStash module Instrument module PeriodicPoller
       collect_gc_stats
       collect_load_average
     end
-
-    private
 
     def collect_gc_stats
       garbage_collectors = ManagementFactory.getGarbageCollectorMXBeans()
@@ -141,7 +146,6 @@ module LogStash module Instrument module PeriodicPoller
       end
     end
 
-
     def build_pools_metrics(data)
       heap = data["heap"]
       old  = {}
@@ -161,19 +165,11 @@ module LogStash module Instrument module PeriodicPoller
     end
 
     def aggregate_information_for(collection)
-      transpose_map = {
-        "usage.used" => :used_in_bytes,
-        "usage.committed" => :committed_in_bytes,
-        "usage.max" => :max_in_bytes,
-        "peak.max" => :peak_max_in_bytes,
-        "peak.used" => :peak_used_in_bytes
-
-      }
       collection.reduce(default_information_accumulator) do |m,e|
         e = { e[0] => e[1] } if e.is_a?(Array)
         e.each_pair do |k,v|
-          if transpose_map.include?(k)
-            transpose_key = transpose_map[k]
+          if MEMORY_TRANSPOSE_MAP.include?(k)
+            transpose_key = MEMORY_TRANSPOSE_MAP[k]
             m[transpose_key] += v
           end
         end
