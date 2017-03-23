@@ -54,6 +54,41 @@ describe LogStash::Instrument::PeriodicPoller::JVM do
     end
   end
 
+  describe "aggregate heap information" do
+    shared_examples "heap_information" do
+      let(:data_set) do
+        {
+          "usage.used" => 5,
+          "usage.committed" => 11,
+          "usage.max" => 21,
+          "peak.max" => 51,
+          "peak.used" => 61
+        }
+      end
+      let(:collection) { [data_set] }
+
+      it "return the right values" do
+        expect(subject.aggregate_information_for(collection)).to match({
+          :used_in_bytes => 5 * collection.size,
+          :committed_in_bytes => 11 * collection.size,
+          :max_in_bytes => 21 * collection.size,
+          :peak_max_in_bytes => 51 * collection.size,
+          :peak_used_in_bytes => 61 * collection.size
+        })
+      end
+    end
+
+    context "with only one data set in a collection" do
+      include_examples "heap_information"
+    end
+
+    context "with multiples data set in a collection" do
+      include_examples "heap_information" do
+        let(:collection) { ar = []; ar << data_set; ar << data_set; ar }
+      end
+    end
+  end
+
   describe "collections" do
     subject(:collection) { jvm.collect }
     it "should run cleanly" do
