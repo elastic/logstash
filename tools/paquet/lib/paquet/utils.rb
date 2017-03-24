@@ -11,7 +11,7 @@ module Paquet
       raise "Too many redirection" if counter == 0
 
       begin
-        f = File.open(destination, "w")
+        f = File.open(destination, "wb")
 
         uri = URI.parse(source)
 
