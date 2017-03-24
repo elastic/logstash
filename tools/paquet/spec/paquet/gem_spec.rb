@@ -25,7 +25,7 @@ describe Paquet::Gem do
 
   context "when not configuring cache" do
     it "use_cache? returns false" do
-      expect(subject.use_cache?).to be_truthy
+      expect(subject.use_cache?).to be_falsey
     end
   end
 
