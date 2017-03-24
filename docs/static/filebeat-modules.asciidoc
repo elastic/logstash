@@ -3,51 +3,62 @@
 == Working with Filebeat Modules
 
 Starting with version 5.3, Filebeat comes packaged with pre-built 
-{filebeat}filebeat-modules.html[modules] that contain the configuration needed
-to read, parse, and visualize data from various log file formats, such as Nginx,
-Apache2, and MySQL. Each Filebeat module consists of one or more filesets that
-contain ingest node pipelines, Elasticsearch templates, Filebeat prospector
-configurations, and Kibana dashboards.
+{filebeat}filebeat-modules.html[modules] that contain the configurations needed
+to collect, parse, enrich, and visualize data from various log file formats.
+Each Filebeat module consists of one or more filesets that contain ingest node
+pipelines, Elasticsearch templates, Filebeat prospector configurations, and
+Kibana dashboards.
 
-Filebeat modules do not currently provide Logstash pipeline configurations.
-In the future, Filebeat modules will provide tighter integration with Logstash
-to offer you a more powerful alternative to using ingest node pipelines.
-For now, you can follow the steps in this section to configure Filebeat and
-build Logstash pipeline configurations that are equivalent to the ingest
-node pipelines available with the Filebeat modules.
+Filebeat modules are a great way to get started, but you might find that ingest
+pipelines don't offer the processing power that you require. If that's the case,
+you'll need to use Logstash.
 
-Then you'll be able to use the sample Kibana dashboards available with Filebeat
+[float]
+[[graduating-to-Logstash]]
+=== Graduating to Logstash
+
+You may need to graduate to using Logstash instead of ingest pipelines if you
+want to:
+
+* Use multiple outputs. Ingest pipelines were designed to only support
+Elasticsearch as an output, but you may want to use more than one output. For
+example, you may want to archive your incoming data to S3 as well as indexing
+it in Elasticsearch.
+* Use the <<persistent-queues,persistent queue>> feature to handle spikes when
+ingesting data (from Beats and other sources).
+* Take advantage of the richer transformation capabilities in Logstash, such as
+external lookups.
+
+Currently, we don't provide an automatic migration path from ingest pipelines
+to Logstash pipelines (but that's coming). For now, you can follow the steps in
+this section to configure Filebeat and build Logstash pipeline configurations
+that are equivalent to the ingest node pipelines available with the Filebeat
+modules. Then you'll be able to use the same dashboards available with Filebeat
 to visualize your data in Kibana.
 
-NOTE: These manual steps will no longer be required when Logstash support
-is added to Filebeat modules in a future release.
+Follow the steps in this section to build and run Logstash configurations that
+provide capabilities similar to Filebeat modules.
 
-To build and run Logstash configurations that provide capabilities similar to
-Filebeat modules:
-
-. Load the Filebeat index pattern and sample Kibana dashboards.
+. Load the Filebeat index pattern and sample Kibana dashboards. To do this, you
+need to run the Filebeat module with the Elasticsearch output enabled and
+specify the `-setup` flag. 
 +
-To do this, you need to run Filebeat with the Elasticsearch output enabled and
-specify the `-setup` flag. For example:
+For example, to load the sample dashboards for Nginx, run:
 +
 [source,shell]
 ----------------------------------------------------------------------
-./filebeat -e -setup -E "output.elasticsearch.hosts=["http://localhost:9200"]"
+./filebeat -e -modules=nginx -setup -E "output.elasticsearch.hosts=["http://localhost:9200"]"
 ----------------------------------------------------------------------
 +
 A connection to Elasticsearch is required for this one-time setup step because
 Filebeat needs to create the index pattern and load the sample dashboards into the
 Kibana index. 
 +
-After the dashboards are loaded, you'll see the message
-+INFO Connected to Elasticsearch version {elasticsearch_version}+. You can ignore
-any `ERR Connecting error publishing events` messages and shut down Filebeat. 
+After the template and dashboards are loaded, you'll see the message
+`INFO Elasticsearch template with name 'filebeat' loaded`. You can shut
+down Filebeat.
 
 . Configure Filebeat to send log lines to Logstash.
-+
-In version 5.3, Filebeat modules won't work when Logstash is configured as
-the output. Therefore you need to configure Filebeat to harvest lines from
-your log files and send them as events to Logstash. 
 +
 See <<logstash-config-for-filebeat-modules>> for detailed examples.
 
@@ -62,6 +73,12 @@ See <<logstash-config-for-filebeat-modules>> for detailed examples.
 ----------------------------------------------------------------------
 sudo ./filebeat -e -c filebeat.yml -d "publish"
 ----------------------------------------------------------------------
++
+NOTE: Depending on how you've installed Filebeat, you might see errors
+related to file ownership or permissions when you try to run Filebeat modules.
+See {libbeat}/config-file-permissions.html[Config File Ownership and Permissions]
+in the _Beats Platform Reference_ if you encounter errors related to file
+ownership or permissions.
 +
 See {filebeat}/filebeat-starting.html[Starting Filebeat] for more info.
 
@@ -97,8 +114,6 @@ Logstash pipelines that parse:
 * <<parsing-nginx>>
 * <<parsing-system>>
 
-//REVIEWERS: Do we want to add an example that shows how to conditionally select the grok pattern? If not, what guidance should we provide to help users understand how to build a config that works with more than one type of log file?
-
 Of course, the paths that you specify in the Filebeat config depend on the location
 of the logs you are harvesting. The examples show common default locations.
 
@@ -108,47 +123,13 @@ of the logs you are harvesting. The examples show common default locations.
 Here are some configuration examples for shipping and parsing Apache 2 access and
 error logs.
 
-===== Access Logs
-
-// Reviewers: I could provide separate Filebeat config examples for each OS, but I think that might be overkill. WDYT? There's already a bit of repetition here, but worth it IMO to enable copy/paste.
+===== Apache 2 Access Logs
 
 Example Filebeat config:
 
 [source,yml]
 ----------------------------------------------------------------------
-filebeat.prospectors:
-- input_type: log
-  paths:
-    - /var/log/apache2/access.log* 
-    - /var/log/apache2/other_vhosts_access.log*
-  exclude_files: [".gz$"]
-output.logstash:
-  hosts: ["localhost:5044"]
-----------------------------------------------------------------------
-
-
-//REVIEWERS: When testing these configs, I've used a path to a local test file, so please confirm that the log files located at these paths can be parsed given the specified LS config.
-
-Example Logstash pipeline config:
-
-[source,json]
-----------------------------------------------------------------------------
-#include::filebeat_modules/apache2/access/pipeline.conf[]
-----------------------------------------------------------------------------
-
-===== Error Logs
-
-Example Filebeat config:
-
-[source,yml]
-----------------------------------------------------------------------
-filebeat.prospectors:
-- input_type: log
-  paths:
-    - /var/log/apache2/error.log*
-  exclude_files: [".gz$"]
-output.logstash:
-  hosts: ["localhost:5044"]
+include::filebeat_modules/apache2/access/filebeat.yml[]
 ----------------------------------------------------------------------
 
 
@@ -156,7 +137,24 @@ Example Logstash pipeline config:
 
 [source,json]
 ----------------------------------------------------------------------------
-#include::filebeat_modules/apache2/error/pipeline.conf[]
+include::filebeat_modules/apache2/access/pipeline.conf[]
+----------------------------------------------------------------------------
+
+===== Apache 2 Error Logs
+
+Example Filebeat config:
+
+[source,yml]
+----------------------------------------------------------------------
+include::filebeat_modules/apache2/error/filebeat.yml[]
+----------------------------------------------------------------------
+
+
+Example Logstash pipeline config:
+
+[source,json]
+----------------------------------------------------------------------------
+include::filebeat_modules/apache2/error/pipeline.conf[]
 ----------------------------------------------------------------------------
 
 [[parsing-mysql]]
@@ -165,20 +163,13 @@ Example Logstash pipeline config:
 Here are some configuration examples for shipping and parsing MySQL error and
 slowlog logs.
 
-===== Error Logs
+===== MySQL Error Logs
 
 Example Filebeat config:
 
 [source,yml]
 ----------------------------------------------------------------------
-filebeat.prospectors:
-- input_type: log
-  paths:
-    - /var/log/mysql/error.log*
-    - /var/log/mysqld.log*
-  exclude_files: [".gz$"]
-output.logstash:
-  hosts: ["localhost:5044"]
+include::filebeat_modules/mysql/error/filebeat.yml[]
 ----------------------------------------------------------------------
 
 
@@ -186,23 +177,16 @@ Example Logstash pipeline config:
 
 [source,json]
 ----------------------------------------------------------------------------
-#include::filebeat_modules/mysql/error/pipeline.conf[]
+include::filebeat_modules/mysql/error/pipeline.conf[]
 ----------------------------------------------------------------------------
 
-===== Slowlog
+===== MySQL Slowlog
 
 Example Filebeat config:
 
 [source,yml]
 ----------------------------------------------------------------------
-filebeat.prospectors:
-- input_type: log
-  paths:
-    - /var/log/mysql/mysql-slow.log*
-    - /var/lib/mysql/hostname-slow.log
-  exclude_files: [".gz$"]
-output.logstash:
-  hosts: ["localhost:5044"]
+include::filebeat_modules/mysql/slowlog/filebeat.yml[]
 ----------------------------------------------------------------------
 
 
@@ -210,7 +194,7 @@ Example Logstash pipeline config:
 
 [source,json]
 ----------------------------------------------------------------------------
-#include::filebeat_modules/mysql/slowlog/pipeline.conf[]
+include::filebeat_modules/mysql/slowlog/pipeline.conf[]
 ----------------------------------------------------------------------------
 
 [[parsing-nginx]]
@@ -219,19 +203,13 @@ Example Logstash pipeline config:
 Here are some configuration examples for shipping and parsing Nginx access and
 error logs.
 
-===== Access Logs
+===== Nginx Access Logs
 
 Example Filebeat config:
 
 [source,yml]
 ----------------------------------------------------------------------
-filebeat.prospectors:
-- input_type: log
-  paths:
-    - /var/log/nginx/access.log*
-  exclude_files: [".gz$"]
-output.logstash:
-  hosts: ["localhost:5044"]
+include::filebeat_modules/nginx/access/filebeat.yml[]
 ----------------------------------------------------------------------
 
 
@@ -239,23 +217,17 @@ Example Logstash pipeline config:
 
 [source,json]
 ----------------------------------------------------------------------------
-#include::filebeat_modules/nginx/access/pipeline.conf[]
+include::filebeat_modules/nginx/access/pipeline.conf[]
 ----------------------------------------------------------------------------
 
 
-===== Error Logs
+===== Nginx Error Logs
 
 Example Filebeat config:
 
 [source,yml]
 ----------------------------------------------------------------------
-filebeat.prospectors:
-- input_type: log
-  paths:
-    - /var/log/nginx/error.log*
-  exclude_files: [".gz$"]
-output.logstash:
-  hosts: ["localhost:5044"]
+include::filebeat_modules/nginx/error/filebeat.yml[]
 ----------------------------------------------------------------------
 
 
@@ -263,7 +235,7 @@ Example Logstash pipeline config:
 
 [source,json]
 ----------------------------------------------------------------------------
-#include::filebeat_modules/nginx/error/pipeline.conf[]
+include::filebeat_modules/nginx/error/pipeline.conf[]
 ----------------------------------------------------------------------------
 
 [[parsing-system]]
@@ -272,20 +244,13 @@ Example Logstash pipeline config:
 Here are some configuration examples for shipping and parsing system
 logs.
 
-===== Authorization Logs
+===== System Authorization Logs
 
 Example Filebeat config:
 
 [source,yml]
 ----------------------------------------------------------------------
-filebeat.prospectors:
-- input_type: log
-  paths:
-    - /var/log/auth.log*
-    - /var/log/secure*
-  exclude_files: [".gz$"]
-output.logstash:
-  hosts: ["localhost:5044"]
+include::filebeat_modules/system/auth/filebeat.yml[]
 ----------------------------------------------------------------------
 
 
@@ -293,7 +258,7 @@ Example Logstash pipeline config:
 
 [source,json]
 ----------------------------------------------------------------------------
-#include::filebeat_modules/system/auth/pipeline.conf[]
+include::filebeat_modules/system/auth/pipeline.conf[]
 ----------------------------------------------------------------------------
 
 ===== Syslog
@@ -302,14 +267,7 @@ Example Filebeat config:
 
 [source,yml]
 ----------------------------------------------------------------------
-filebeat.prospectors:
-- input_type: log
-  paths:
-    - /var/log/messages*
-    - /var/log/syslog*
-  exclude_files: [".gz$"]
-output.logstash:
-  hosts: ["localhost:5044"]
+include::filebeat_modules/system/syslog/filebeat.yml[]
 ----------------------------------------------------------------------
 
 
@@ -317,5 +275,5 @@ Example Logstash pipeline config:
 
 [source,json]
 ----------------------------------------------------------------------------
-#include::filebeat_modules/system/syslog/pipeline.conf[]
+include::filebeat_modules/system/syslog/pipeline.conf[]
 ----------------------------------------------------------------------------
