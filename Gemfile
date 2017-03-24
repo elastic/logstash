@@ -21,6 +21,7 @@ gem "gems", "~> 0.8.3", :group => :build
 gem "flores", "~> 0.0.6", :group => :development
 gem "term-ansicolor", "~> 1.3.2", :group => :development
 gem "docker-api", "1.31.0", :group => :development
+gem "restforce", "2.4.2"
 gem "logstash-input-beats", "~> 3.1.0"
 gem "logstash-input-cloudwatch" ,"<2.0.0"
 gem "logstash-input-couchdb_changes" ,"<3.0.0"
