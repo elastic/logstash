@@ -11,5 +11,7 @@ rm -rf build/docs/*
 rm -rf tools/logstash-docgen/source
 
 cd tools/logstash-docgen
-bundle install
+# Make sure we scope the gem in the project directory
+# so we don't run into weird issues about rake.
+bundle install --path vendor
 bin/logstash-docgen --all --target ../../build/docs
