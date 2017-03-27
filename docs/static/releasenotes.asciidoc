@@ -10,9 +10,9 @@ This section summarizes the changes in the following releases:
 
 
 * Persistent queues:
-    ** Changed the default queue location on disk to include the pipeline's ID as it's parent directory.
-       By default, the queue now gets created under path.data/queue/main. This breaking change was made in
-       anticipation of an upcoming feature where multiple, isolated pipelines could be run on the same Logstash
+    ** Changed the default queue location on disk to include the pipeline's ID in the path hierarchy.
+       By default, the queue is now created under <path.data>/queue/main. This breaking change was made to
+       accommodate an upcoming feature where multiple, isolated pipelines could be run on the same Logstash
        instance.
     ** Added a _recovery_ process that runs when Logstash starts up to recover data written to the persistent
        queue, but not yet checkpoint'd. This is useful in a situation when the input had written data to the queue,
@@ -44,11 +44,11 @@ This section summarizes the changes in the following releases:
 
 *`KV`*:
 
-* Breaking: `trim` and `trimkey` options are renamed to `trim_value` and `trim_key`.
+* Breaking: `trim` and `trimkey` options are renamed to `trim_value` and `trim_key` respectively (https://github.com/logstash-plugins/logstash-filter-kv/issues/10[Issue 10]).
 * `trim_value` only removes the specified leading and trailing characters from the value. Similarly, `trim_key`
   only removes the specified leading and trailing characters from the key (https://github.com/logstash-plugins/logstash-filter-kv/issues/10[Issue 10]).
 * Added new options `remove_char_value` and `remove_char_key` to remove the specified characters from keys
-  (or values) regardless of where these characters are found.
+  (or values) regardless of where these characters are found (https://github.com/logstash-plugins/logstash-filter-kv/issues/10[Issue 10]).
 
 *`Grok`*:
 
