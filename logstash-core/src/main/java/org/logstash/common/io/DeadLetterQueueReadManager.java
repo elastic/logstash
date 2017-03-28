@@ -19,6 +19,7 @@
 package org.logstash.common.io;
 
 import org.logstash.DLQEntry;
+import org.logstash.Timestamp;
 
 import java.io.IOException;
 import java.nio.file.FileSystems;
@@ -55,6 +56,24 @@ public class DeadLetterQueueReadManager {
         segments.addAll(getSegmentPaths(queuePath).collect(Collectors.toList()));
     }
 
+    public void seekToNextEvent(Timestamp timestamp) throws IOException {
+        for (Path segment : segments) {
+            currentReader = new RecordIOReader(segment);
+            byte[] event = currentReader.seekToNextEventPosition(timestamp, (b) -> {
+                try {
+                    return DLQEntry.deserialize(b).getEntryTime();
+                } catch (IOException e) {
+                    return null;
+                }
+            }, Timestamp::compareTo);
+            if (event != null) {
+                return;
+            }
+        }
+        currentReader.close();
+        currentReader = null;
+    }
+
     private long pollNewSegments(long timeout) throws IOException, InterruptedException {
         long startTime = System.currentTimeMillis();
         WatchKey key = watchService.poll(timeout, TimeUnit.MILLISECONDS);
@@ -70,7 +89,11 @@ public class DeadLetterQueueReadManager {
     }
 
     public DLQEntry pollEntry(long timeout) throws IOException, InterruptedException {
-        return DLQEntry.deserialize(pollEntryBytes(timeout));
+        byte[] bytes = pollEntryBytes(timeout);
+        if (bytes == null) {
+            return null;
+        }
+        return DLQEntry.deserialize(bytes);
     }
 
     byte[] pollEntryBytes() throws IOException, InterruptedException {
@@ -96,6 +119,19 @@ public class DeadLetterQueueReadManager {
         }
 
         return event;
+    }
+
+    public void setCurrentReaderAndPosition(Path segmentPath, long position) throws IOException {
+        currentReader = new RecordIOReader(segmentPath);
+        currentReader.seekToOffset(position);
+    }
+
+    public Path getCurrentSegment() {
+        return currentReader.getPath();
+    }
+
+    public long getCurrentPosition() throws IOException {
+        return currentReader.getChannelPosition();
     }
 
     public void close() throws IOException {
