@@ -1,10 +1,63 @@
 [[breaking-changes]]
 == Breaking changes
 
+This section summarizes the breaking changes in the following releases:
+
+* <<logstash-breaking-changes-5-3,Logstash 5.3.0>>
+* <<logstash-breaking-changes-5-2,Logstash 5.2.0>>
+* <<logstash-breaking-changes-5-1,Logstash 5.1.0>>
+* <<logstash-breaking-changes-5-0,Logstash 5.0.0>>
+
+[[logstash-breaking-changes-5-3]]
+=== Logstash 5.3.0 Breaking Changes
+
+This section discusses the changes that you need to be aware of when migrating your application 
+from Logstash 5.2 to 5.3.
+
+[float]
+==== Changes in Logstash Core
+
+==== Persistent queue
+
+The default location on disk where the queue data is stored has been changed from `<path.data>/queue` to 
+`<path.data>/queue/main`. The directory hierarchy now includes the pipeline ID which defaults to `main`. 
+This change was made to accommodate an upcoming feature where multiple, isolated pipelines can be run on 
+the same Logstash instance. In this future situation, each pipeline will have its own queue; hence the new directory 
+structure.
+
+**Upgrading to 5.3**
+
+If you are using the persistent queue feature and intend to upgrade to 5.3:
+
+* Ensure you completely drain the queue data in 5.2 by stopping the incoming data and processing all of the 
+  in-flight events.
+* Stop Logstash and manually move the files under `<path.data>/queue/` to `<path.data>/queue/main` before upgrading to 5.3.
+* If you do not intend to process the data currently buffered in the queue in 5.2, you can manually delete 
+  the `path.data/queue` directory before upgrading to 5.3.
+
+[float]
+==== Breaking Changes in Plugins
+
+*`KV filter`*: `trim` and `trimkey` options are renamed to `trim_value` and `trim_key` respectively. Their behavior has been 
+changed as well to _trim_ the characters at the beginning or end of the values.
+
+[[logstash-breaking-changes-5-2]]
+=== Logstash 5.2.0 Breaking Changes
+
+There are no breaking changes in this particular release.
+
+[[logstash-breaking-changes-5-1]]
+=== Logstash 5.1.0 Breaking Changes
+
+There are no breaking changes in this particular release.
+
+[[logstash-breaking-changes-5-0]]
+=== Logstash 5.0.0 Breaking Changes
+
 This section discusses the changes that you need to be aware of when migrating your application to Logstash 5.0 from the previous major release of Logstash (2.x).
 
 [float]
-=== Changes in Logstash Core
+==== Changes in Logstash Core
 
 These changes can impact any instance of Logstash and are plugin agnostic, but only if you are using the features that are impacted.
 
@@ -153,7 +206,7 @@ were familiar with the RSpec framework, which is a Ruby testing framework.
 
 
 [float]
-=== Breaking Changes in Plugins
+==== Breaking Changes in Plugins
 
 [float]
 ==== Elasticsearch Output `workers` Setting Removed
