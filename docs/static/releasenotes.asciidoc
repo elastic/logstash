@@ -11,18 +11,18 @@ This section summarizes the changes in the following releases:
 
 * Persistent queues:
     ** Changed the default queue location on disk to include the pipeline's ID in the path hierarchy.
-       By default, the queue is now created under <path.data>/queue/main. This breaking change was made to
+       By default, the queue is now created under `<path.data>/queue/main`. This breaking change was made to
        accommodate an upcoming feature where multiple, isolated pipelines could be run on the same Logstash
        instance.
-    ** Added a _recovery_ process that runs when Logstash starts up to recover data written to the persistent
-       queue, but not yet checkpoint'd. This is useful in a situation when the input had written data to the queue,
-       but Logstash crashed before writing to the checkpoint file.
-    ** Added exclusive access to the persistent queue on disk, as defined by the path.queue setting. Using a file
-       lock we ensure that only a single Logstash instance has access to write to the queue on the same path, to
-       guard against corruption ({lsissue}6604[Issue 6604]).
-    ** You can now safely reload the pipeline config when using persistent queues. Previously, the reloading of
-       config could result in data corruption.  In 5.3, the reload sequence has been changed to reliably shutdown the
-       first pipeline before a new one is started with same settings.
+    ** Added a recovery process that runs during Logstash startup to recover data that has been written to the 
+       persistent queue, but not yet checkpointed. This is useful in situations where the input has written data to 
+       the queue, but Logstash crashed before writing to the checkpoint file.
+    ** Added exclusive access to the persistent queue on disk, as defined by the `path.queue` setting. Using a file 
+       lock guards against corruption by ensuring that only a single Logstash instance has access to write to the 
+       queue on the same path. ({lsissue}6604[Issue 6604]).
+    ** You can now safely reload the pipeline config when using persistent queues. Previously, reloading the 
+       config could result in data corruption. In 5.3, the reload sequence has been changed to reliably shut down the
+       first pipeline before a new one is started with the same settings.
     ** Fixed an issue where Logstash would stop accepting new events when queue capacity is reached even though events
        were successfully acknowledged ({lsissue}6626[Issue 6626]).
 
@@ -38,13 +38,13 @@ This section summarizes the changes in the following releases:
 
 *`Unix`*:
 
-* Do not overwrite `host` and `path` fields if they are already provided by `add_field` config.
+* The `host` and `path` fields are no longer overwritten if they are already provided by `add_field` config.
 
 ==== Filter Plugins
 
 *`KV`*:
 
-* Breaking: `trim` and `trimkey` options are renamed to `trim_value` and `trim_key` respectively (https://github.com/logstash-plugins/logstash-filter-kv/issues/10[Issue 10]).
+* Breaking: The `trim` and `trimkey` options are renamed to `trim_value` and `trim_key` respectively (https://github.com/logstash-plugins/logstash-filter-kv/issues/10[Issue 10]).
 * `trim_value` only removes the specified leading and trailing characters from the value. Similarly, `trim_key`
   only removes the specified leading and trailing characters from the key (https://github.com/logstash-plugins/logstash-filter-kv/issues/10[Issue 10]).
 * Added new options `remove_char_value` and `remove_char_key` to remove the specified characters from keys
@@ -63,4 +63,4 @@ This section summarizes the changes in the following releases:
 
 *`CSV`*:
 
-* Updated to work with 5.0 event API and threading contracts (https://github.com/logstash-plugins/logstash-output-csv/issues/10[Issue 10]).
+* Updated to work with the 5.0 event API and threading contracts (https://github.com/logstash-plugins/logstash-output-csv/issues/10[Issue 10]).

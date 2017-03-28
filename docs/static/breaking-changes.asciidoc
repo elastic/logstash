@@ -11,12 +11,13 @@ This section summarizes the breaking changes in the following releases:
 [[logstash-breaking-changes-5-3]]
 === Logstash 5.3.0 Breaking Changes
 
+This section discusses the changes that you need to be aware of when migrating your application 
+from Logstash 5.2 to 5.3.
+
 [float]
 ==== Changes in Logstash Core
 
 ==== Persistent queue
-
-If you are using the persistent queue feature and upgrading from 5.2.0, please see the below section:
 
 The default location on disk where the queue data is stored has been changed from `<path.data>/queue` to 
 `<path.data>/queue/main`. The directory hierarchy now includes the pipeline ID which defaults to `main`. 
@@ -24,20 +25,20 @@ This change was made to accommodate an upcoming feature where multiple, isolated
 the same Logstash instance. In this future situation, each pipeline will have its own queue; hence the new directory 
 structure.
 
-**Upgrading from 5.3.0**
+**Upgrading to 5.3**
 
-The following options are available if you intend to upgrade to 5.3.0 with the persistent queue enabled:
+If you are using the persistent queue feature and intend to upgrade to 5.3:
 
-* Ensure you completely drain the queue data in 5.2.0 by stopping the incoming data and processing all of the 
+* Ensure you completely drain the queue data in 5.2 by stopping the incoming data and processing all of the 
   in-flight events.
-* Stop Logstash and manually move the files under `<path.data>/queue/`` to `<path.data>/queue/main` before upgrading to 5.3.
-* If you do not intend to process the data currently buffered in the queue in 5.2.0, you can manually delete 
-  the `path.data/queue` directory before upgrading to 5.3.0.
+* Stop Logstash and manually move the files under `<path.data>/queue/` to `<path.data>/queue/main` before upgrading to 5.3.
+* If you do not intend to process the data currently buffered in the queue in 5.2, you can manually delete 
+  the `path.data/queue` directory before upgrading to 5.3.
 
 [float]
 ==== Breaking Changes in Plugins
 
-*`KV`*: `trim` and `trimkey` options are renamed to `trim_value` and `trim_key` respectively. Their behavior has been 
+*`KV filter`*: `trim` and `trimkey` options are renamed to `trim_value` and `trim_key` respectively. Their behavior has been 
 changed as well to _trim_ the characters at the beginning or end of the values.
 
 [[logstash-breaking-changes-5-2]]

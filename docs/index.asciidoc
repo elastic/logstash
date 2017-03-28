@@ -154,3 +154,7 @@ include::static/submitting-a-plugin.asciidoc[]
 
 include::static/glossary.asciidoc[]
 
+
+// Release Notes
+
+include::static/releasenotes.asciidoc[]
