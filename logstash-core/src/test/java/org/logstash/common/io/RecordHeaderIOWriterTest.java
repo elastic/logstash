@@ -6,8 +6,11 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.logstash.ackedqueue.StringElement;
 
+import java.nio.ByteBuffer;
 import java.nio.file.Path;
 import java.util.Arrays;
+import java.util.Comparator;
+import java.util.function.Function;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
@@ -165,5 +168,23 @@ public class RecordHeaderIOWriterTest {
 
         writer.close();
         reader.close();
+    }
+
+    @Test
+    public void testFind() throws Exception {
+
+        RecordIOWriter writer = new RecordIOWriter(file);
+        RecordIOReader reader = new RecordIOReader(file);
+        ByteBuffer intBuffer = ByteBuffer.wrap(new byte[4]);
+        for (int i = 0; i < 20000; i++) {
+            intBuffer.rewind();
+            intBuffer.putInt(i);
+            writer.writeEvent(intBuffer.array());
+        }
+
+        Function<byte[], Object> toInt = (b) -> ByteBuffer.wrap(b).getInt();
+        reader.seekToNextEventPosition(34, toInt, (o1, o2) -> ((Integer) o1).compareTo((Integer) o2));
+        int nextVal = (int) toInt.apply(reader.readEvent());
+        assertThat(nextVal, equalTo(34));
     }
 }
