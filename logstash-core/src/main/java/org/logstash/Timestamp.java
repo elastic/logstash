@@ -13,7 +13,7 @@ import java.io.IOException;
 import java.util.Date;
 
 @JsonSerialize(using = org.logstash.json.TimestampSerializer.class)
-public class Timestamp implements Cloneable, Queueable {
+public class Timestamp implements Cloneable, Comparable, Queueable {
 
     // all methods setting the time object must set it in the UTC timezone
     private DateTime time;
@@ -75,6 +75,11 @@ public class Timestamp implements Cloneable, Queueable {
         // JodaTime only supports milliseconds precision we can only return usec at millisec precision.
         // note that getMillis() return millis since epoch
         return (new Duration(JAN_1_1970.toDateTime(DateTimeZone.UTC), this.time).getMillis() % 1000) * 1000;
+    }
+
+    @Override
+    public int compareTo(Object other) {
+        return getTime().compareTo(((Timestamp) other).getTime());
     }
 
     @Override

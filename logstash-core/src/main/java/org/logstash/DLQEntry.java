@@ -58,17 +58,12 @@ public class DLQEntry implements Cloneable, Serializable, Queueable {
                 + pluginTypeBytes.length
                 + pluginIdBytes.length
                 + reasonBytes.length
-                + (Integer.BYTES * 5));
-        buffer.putInt(entryTimeInBytes.length);
-        buffer.put(entryTimeInBytes);
-        buffer.putInt(eventInBytes.length);
-        buffer.put(eventInBytes);
-        buffer.putInt(pluginTypeBytes.length);
-        buffer.put(pluginTypeBytes);
-        buffer.putInt(pluginIdBytes.length);
-        buffer.put(pluginIdBytes);
-        buffer.putInt(reasonBytes.length);
-        buffer.put(reasonBytes);
+                + (Integer.BYTES * 5)); // magic number represents the five byte[] + lengths
+        putLengthAndBytes(buffer, entryTimeInBytes);
+        putLengthAndBytes(buffer, eventInBytes);
+        putLengthAndBytes(buffer, pluginTypeBytes);
+        putLengthAndBytes(buffer, pluginIdBytes);
+        putLengthAndBytes(buffer, reasonBytes);
         return buffer.array();
     }
 
@@ -77,32 +72,25 @@ public class DLQEntry implements Cloneable, Serializable, Queueable {
         buffer.put(bytes);
         buffer.position(0);
 
-        int entryTimeLength = buffer.getInt();
-        byte[] entryTimeBytes = new byte[entryTimeLength];
-        buffer.get(entryTimeBytes);
-        Timestamp entryTime = new Timestamp(new String(entryTimeBytes));
-
-        int eventLength = buffer.getInt();
-        byte[] eventBytes = new byte[eventLength];
-        buffer.get(eventBytes);
-        Event event = Event.deserialize(eventBytes);
-
-        int pluginTypeLength = buffer.getInt();
-        byte[] pluginTypeBytes = new byte[pluginTypeLength];
-        buffer.get(pluginTypeBytes);
-        String pluginType = new String(pluginTypeBytes);
-
-        int pluginIdLength = buffer.getInt();
-        byte[] pluginIdBytes = new byte[pluginIdLength];
-        buffer.get(pluginIdBytes);
-        String pluginId = new String(pluginIdBytes);
-
-        int reasonLength = buffer.getInt();
-        byte[] reasonBytes = new byte[reasonLength];
-        buffer.get(reasonBytes);
-        String reason = new String(reasonBytes);
+        Timestamp entryTime = new Timestamp(new String(getLengthPrefixedBytes(buffer)));
+        Event event = Event.deserialize(getLengthPrefixedBytes(buffer));
+        String pluginType = new String(getLengthPrefixedBytes(buffer));
+        String pluginId = new String(getLengthPrefixedBytes(buffer));
+        String reason = new String(getLengthPrefixedBytes(buffer));
 
         return new DLQEntry(event, pluginType, pluginId, reason, entryTime);
+    }
+
+    private static void putLengthAndBytes(ByteBuffer buffer, byte[] bytes) {
+        buffer.putInt(bytes.length);
+        buffer.put(bytes);
+    }
+
+    private static byte[] getLengthPrefixedBytes(ByteBuffer buffer) {
+        int length = buffer.getInt();
+        byte[] bytes = new byte[length];
+        buffer.get(bytes);
+        return bytes;
     }
 
     public Event getEvent() {

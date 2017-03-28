@@ -18,11 +18,17 @@
  */
 package org.logstash.common.io;
 
+import org.logstash.Timestamp;
+
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.channels.ClosedByInterruptException;
 import java.nio.channels.FileChannel;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
+import java.util.Comparator;
+import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.zip.CRC32;
 import java.util.zip.Checksum;
 
@@ -39,6 +45,7 @@ public class RecordIOReader {
     private final ByteBuffer currentBlock;
     private int currentBlockSizeReadFromChannel;
     private final Path path;
+    private long channelPosition;
 
     public RecordIOReader(Path path) throws IOException {
         this.path = path;
@@ -51,6 +58,7 @@ public class RecordIOReader {
         if (versionBuffer.get() != VERSION) {
             throw new RuntimeException("Invalid file. check version");
         }
+        this.channelPosition = this.channel.position();
     }
 
     public Path getPath() {
@@ -58,9 +66,57 @@ public class RecordIOReader {
     }
 
     public void seekToBlock(int bid) throws IOException {
+        seekToOffset(bid * BLOCK_SIZE + VERSION_SIZE);
+    }
+
+    public void seekToOffset(long channelOffset) throws IOException {
         currentBlock.rewind();
         currentBlockSizeReadFromChannel = 0;
-        channel.position(bid * BLOCK_SIZE + VERSION_SIZE);
+        channel.position(channelOffset);
+        channelPosition = channel.position();
+    }
+
+    public <T> byte[] seekToNextEventPosition(T target, Function<byte[], T> keyExtractor, Comparator<T> keyComparator) throws IOException {
+        int matchingBlock;
+        int lowBlock = 0;
+        int highBlock = (int) (channel.size() - VERSION_SIZE) / BLOCK_SIZE;
+
+        if (highBlock == 0) {
+            return null;
+        }
+
+        while (lowBlock < highBlock) {
+            int middle = (int) Math.ceil((highBlock + lowBlock) / 2.0);
+            seekToBlock(middle);
+            T found = keyExtractor.apply(readEvent());
+            int compare = keyComparator.compare(found, target);
+            if (compare > 0) {
+                highBlock = middle - 1;
+            } else if (compare < 0) {
+                lowBlock = middle;
+            } else {
+                matchingBlock = middle;
+                break;
+            }
+        }
+        matchingBlock = lowBlock;
+
+        // now sequential scan to event
+        seekToBlock(matchingBlock);
+        int currentPosition = 0;
+        int compare = -1;
+        byte[] event = null;
+        while (compare < 0) {
+            currentPosition = currentBlock.position();
+            event = readEvent();
+            compare = keyComparator.compare(keyExtractor.apply(event), target);
+        }
+        currentBlock.position(currentPosition);
+        return event;
+    }
+
+    public long getChannelPosition() throws IOException {
+        return channelPosition;
     }
 
     /**
@@ -153,22 +209,30 @@ public class RecordIOReader {
      * @throws IOException
      */
     public byte[] readEvent() throws IOException {
-        if (consumeToStartOfEvent() == false) {
+        try {
+            if (channel.isOpen() == false || consumeToStartOfEvent() == false) {
+                return null;
+            }
+            RecordHeader header = RecordHeader.get(currentBlock);
+            int cumReadSize = 0;
+            int bufferSize = header.getTotalEventSize().orElseGet(header::getSize);
+            ByteBuffer buffer = ByteBuffer.allocate(bufferSize);
+            getRecord(buffer, header);
+            cumReadSize += header.getSize();
+            while (cumReadSize < bufferSize) {
+                maybeRollToNextBlock();
+                RecordHeader nextHeader = RecordHeader.get(currentBlock);
+                getRecord(buffer, nextHeader);
+                cumReadSize += nextHeader.getSize();
+            }
+            return buffer.array();
+        } catch (ClosedByInterruptException e) {
             return null;
+        } finally {
+            if (channel.isOpen()) {
+                channelPosition = channel.position();
+            }
         }
-        RecordHeader header = RecordHeader.get(currentBlock);
-        int cumReadSize = 0;
-        int bufferSize = header.getTotalEventSize().orElseGet(header::getSize);
-        ByteBuffer buffer = ByteBuffer.allocate(bufferSize);
-        getRecord(buffer, header);
-        cumReadSize += header.getSize();
-        while (cumReadSize < bufferSize) {
-            maybeRollToNextBlock();
-            RecordHeader nextHeader = RecordHeader.get(currentBlock);
-            getRecord(buffer, nextHeader);
-            cumReadSize += nextHeader.getSize();
-        }
-        return buffer.array();
     }
 
     public void close() throws IOException {

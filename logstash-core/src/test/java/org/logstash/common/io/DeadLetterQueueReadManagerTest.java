@@ -24,9 +24,14 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+import org.logstash.DLQEntry;
+import org.logstash.Event;
+import org.logstash.Timestamp;
 import org.logstash.ackedqueue.StringElement;
 
+import java.io.IOException;
 import java.nio.file.Path;
+import java.util.Collections;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
@@ -39,6 +44,10 @@ public class DeadLetterQueueReadManagerTest {
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
+    private static String segmentFileName(int i) {
+        return String.format(DeadLetterQueueWriteManager.SEGMENT_FILE_PATTERN, i);
+    }
+
     @Before
     public void setUp() throws Exception {
         dir = temporaryFolder.newFolder().toPath();
@@ -49,7 +58,7 @@ public class DeadLetterQueueReadManagerTest {
         RecordIOWriter writer = null;
 
         for (int i = 0; i < 5; i++) {
-            Path segmentPath = dir.resolve(String.format(DeadLetterQueueWriteManager.SEGMENT_FILE_PATTERN, i));
+            Path segmentPath = dir.resolve(segmentFileName(i));
             writer = new RecordIOWriter(segmentPath);
             for (int j = 0; j < 10; j++) {
                 writer.writeEvent((new StringElement("" + (i * 10 + j))).serialize());
@@ -82,7 +91,7 @@ public class DeadLetterQueueReadManagerTest {
 
         writer.close();
 
-        Path segmentPath = dir.resolve(String.format(DeadLetterQueueWriteManager.SEGMENT_FILE_PATTERN, 5));
+        Path segmentPath = dir.resolve(segmentFileName(5));
         writer = new RecordIOWriter(segmentPath);
 
         for (int j = 0; j < 10; j++) {
@@ -101,5 +110,28 @@ public class DeadLetterQueueReadManagerTest {
 
 
         manager.close();
+    }
+
+    @Test
+    public void testSeek() throws Exception {
+        DeadLetterQueueWriteManager writeManager = new DeadLetterQueueWriteManager(dir, 10000000, 10000000);
+        Event event = new Event(Collections.emptyMap());
+        Timestamp target = null;
+        long currentEpoch = System.currentTimeMillis();
+        for (int i = 0; i < 1000; i++){
+            DLQEntry entry = new DLQEntry(event, "foo", "bar", String.valueOf(i), new Timestamp(currentEpoch++));
+            writeManager.writeEntry(entry);
+            if (i == 543) {
+                target = entry.getEntryTime();
+            }
+
+        }
+        writeManager.close();
+
+        DeadLetterQueueReadManager readManager = new DeadLetterQueueReadManager(dir);
+        readManager.seekToNextEvent(target);
+        DLQEntry entry = readManager.pollEntry(100);
+        assertThat(entry.getEntryTime().toIso8601(), equalTo(target.toIso8601()));
+        assertThat(entry.getReason(), equalTo("543"));
     }
 }
