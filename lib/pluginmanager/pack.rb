@@ -13,6 +13,8 @@ class LogStash::PluginManager::Pack < LogStash::PluginManager::PackCommand
     puts("Packaging plugins for offline usage")
 
     validate_target_file
+
+    LogStash::Bundler.rebuild_gem_cache
     LogStash::Bundler.invoke!({:package => true, :all => true})
     archive_manager.compress(LogStash::Environment::CACHE_PATH, target_file)
     FileUtils.rm_rf(LogStash::Environment::CACHE_PATH) if clean?
