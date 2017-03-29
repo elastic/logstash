@@ -28,7 +28,7 @@ describe "Test Logstash instance whose default settings are overridden" do
     FileUtils.mv("#{@logstash_service.application_settings_file}.original", @logstash_service.application_settings_file)
   }
 
-  let(:num_retries) { 15 }
+  let(:num_retries) { 60 }
   let(:test_port) { random_port }
   let(:temp_dir) { Stud::Temporary.directory("logstash-settings-test") }
   let(:tcp_config) { @fixture.config("root", { :port => test_port }) }
