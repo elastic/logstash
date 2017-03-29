@@ -37,7 +37,7 @@ public class DeadLetterQueueWriteManager {
 
     private static final Logger logger = LogManager.getLogger(DeadLetterQueueWriteManager.class);
 
-    static final String SEGMENT_FILE_PATTERN = "%020d.log";
+    static final String SEGMENT_FILE_PATTERN = "%d.log";
     static final String LOCK_FILE = ".lock";
     private final long maxSegmentSize;
     private final long maxQueueSize;

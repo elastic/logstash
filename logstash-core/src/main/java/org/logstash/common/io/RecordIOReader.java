@@ -109,6 +109,9 @@ public class RecordIOReader {
         while (compare < 0) {
             currentPosition = currentBlock.position();
             event = readEvent();
+            if (event == null) {
+                return null;
+            }
             compare = keyComparator.compare(keyExtractor.apply(event), target);
         }
         currentBlock.position(currentPosition);
