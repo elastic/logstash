@@ -873,7 +873,7 @@ end
 ----------------------------------
 
 It is appropriate to change these values to fit your plugin. In particular,
-`s.name` and `s.summary` shoud reflect your plugin's name and behavior.
+`s.name` and `s.summary` should reflect your plugin's name and behavior.
 
 `s.licenses` and `s.version` are also important and will come into play when
 you are ready to publish your plugin.

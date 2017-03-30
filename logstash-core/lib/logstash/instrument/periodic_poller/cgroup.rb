@@ -9,7 +9,7 @@ module LogStash module Instrument module PeriodicPoller
     include LogStash::Util::Loggable
 
     CONTROL_GROUP_RE = Regexp.compile("\\d+:([^:,]+(?:,[^:,]+)?):(/.*)");
-    CONTROLLER_SEPERATOR_RE = ","
+    CONTROLLER_SEPARATOR_RE = ","
 
     PROC_SELF_CGROUP_FILE = Pathname.new("/proc/self/cgroup")
     PROC_CGROUP_CPU_DIR = Pathname.new("/sys/fs/cgroup/cpu")
@@ -36,8 +36,8 @@ module LogStash module Instrument module PeriodicPoller
 
         read_proc_self_cgroup_lines.each do |line|
           matches = CONTROL_GROUP_RE.match(line)
-          # multiples controlles, same hierachy
-          controllers = matches[1].split(CONTROLLER_SEPERATOR_RE)
+          # multiples controls, same hierarchy
+          controllers = matches[1].split(CONTROLLER_SEPARATOR_RE)
           controllers.each_with_object(response) { |controller| response[controller] = matches[2] }
         end
 

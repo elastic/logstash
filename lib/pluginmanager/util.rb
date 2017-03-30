@@ -77,7 +77,7 @@ module LogStash::PluginManager
   end
 
   # retrieve gem specs for all or specified name valid logstash plugins locally installed
-  # @param name [String] specific plugin name to find or nil for all plungins
+  # @param name [String] specific plugin name to find or nil for all plugins
   # @return [Array<Gem::Specification>] all local logstash plugin gem specs
   def self.find_plugins_gem_specs(name = nil)
     specs = name ? Gem::Specification.find_all_by_name(name) : Gem::Specification.find_all
@@ -85,7 +85,7 @@ module LogStash::PluginManager
   end
 
   # list of all locally installed plugins specs specified in the Gemfile.
-  # note that an installed plugin dependecies like codecs will not be listed, only those
+  # note that an installed plugin dependencies like codecs will not be listed, only those
   # specifically listed in the Gemfile.
   # @param gemfile [LogStash::Gemfile] the gemfile to validate against
   # @return [Array<Gem::Specification>] list of plugin specs
@@ -97,13 +97,13 @@ module LogStash::PluginManager
 
   # @param plugin [String] plugin name
   # @param gemfile [LogStash::Gemfile] the gemfile to validate against
-  # @return [Boolean] true if the plugin is an installed logstash plugin and spefificed in the Gemfile
+  # @return [Boolean] true if the plugin is an installed logstash plugin and specified in the Gemfile
   def self.installed_plugin?(plugin, gemfile)
     !!gemfile.find(plugin) && find_plugins_gem_specs(plugin).any?
   end
 
   # @param plugin_list [Array] array of [plugin name, version] tuples
-  # @return [Array] array of [plugin name, version, ...] tuples when duplciate names have been merged and non duplicate version requirements added
+  # @return [Array] array of [plugin name, version, ...] tuples when duplicate names have been merged and non duplicate version requirements added
   def self.merge_duplicates(plugin_list)
 
     # quick & dirty naive dedup for now

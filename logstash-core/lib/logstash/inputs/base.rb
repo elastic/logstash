@@ -89,7 +89,7 @@ class LogStash::Inputs::Base < LogStash::Plugin
     stop
   end
 
-  # stop? should never be overriden
+  # stop? should never be overridden
   public
   def stop?
     @stop_called.value

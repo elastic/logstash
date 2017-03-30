@@ -71,9 +71,9 @@ en:
         Logstash is not able to start since configuration auto reloading was enabled but the configuration contains plugins that don't support it. Quitting...
     web_api:
       cant_bind_to_port: |-
-        Logstash tried to bind to port %{port}, but the port is already in use. You can specify a new port by launching logtash with the --http.port option."
+        Logstash tried to bind to port %{port}, but the port is already in use. You can specify a new port by launching logstash with the --http.port option."
       cant_bind_to_port_in_range: |-
-        Logstash tried to bind to port range %{http_ports}, but all the ports are already in use. You can specify a new port by launching logtash with the --http.port option."
+        Logstash tried to bind to port range %{http_ports}, but all the ports are already in use. You can specify a new port by launching logstash with the --http.port option."
       hot_threads:
         title: |-
           ::: {%{hostname}}

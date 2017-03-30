@@ -22,7 +22,7 @@ shared_examples "logstash remove" do |logstash|
 
     # Disabled because of this bug https://github.com/elastic/logstash/issues/5286
     xcontext "when the plugin is installed" do
-      it "succesfully removes it" do
+      it "successfully removes it" do
         result = logstash.run_command_in_path("bin/logstash-plugin install logstash-filter-qatest")
         expect(logstash).to have_installed?("logstash-filter-qatest")
 

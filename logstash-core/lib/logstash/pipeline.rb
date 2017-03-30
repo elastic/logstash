@@ -149,7 +149,7 @@ module LogStash; class Pipeline < BasePipeline
     @input_queue_client = @queue.write_client
     @filter_queue_client = @queue.read_client
     @signal_queue = Queue.new
-    # Note that @infilght_batches as a central mechanism for tracking inflight
+    # Note that @inflight_batches as a central mechanism for tracking inflight
     # batches will fail if we have multiple read clients here.
     @filter_queue_client.set_events_metric(metric.namespace([:stats, :events]))
     @filter_queue_client.set_pipeline_metric(
@@ -419,7 +419,7 @@ module LogStash; class Pipeline < BasePipeline
     # first make sure we can register all input plugins
     register_plugins(@inputs)
 
-    # then after all input plugins are sucessfully registered, start them
+    # then after all input plugins are successfully registered, start them
     @inputs.each { |input| start_input(input) }
   end
 
@@ -465,11 +465,11 @@ module LogStash; class Pipeline < BasePipeline
   # @param before_stop [Proc] code block called before performing stop operation on input plugins
   def shutdown(&before_stop)
     # shutdown can only start once the pipeline has completed its startup.
-    # avoid potential race conditoon between the startup sequence and this
+    # avoid potential race condition between the startup sequence and this
     # shutdown method which can be called from another thread at any time
     sleep(0.1) while !ready?
 
-    # TODO: should we also check against calling shutdown multiple times concurently?
+    # TODO: should we also check against calling shutdown multiple times concurrently?
 
     before_stop.call if block_given?
 

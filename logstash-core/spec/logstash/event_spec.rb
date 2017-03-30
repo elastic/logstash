@@ -108,7 +108,7 @@ describe LogStash::Event do
       expect(e.to_hash).to include("foo" => nil)
     end
 
-    # BigDecinal is now natively converted by JRuby, see https://github.com/elastic/logstash/pull/4838
+    # BigDecimal is now natively converted by JRuby, see https://github.com/elastic/logstash/pull/4838
     it "should set BigDecimal" do
       e = LogStash::Event.new()
       e.set("[foo]", BigDecimal.new(1))
@@ -238,8 +238,8 @@ describe LogStash::Event do
 
   context "to_hash" do
     let (:source_hash) {  {"a" => 1, "b" => [1, 2, 3, {"h" => 1, "i" => "baz"}], "c" => {"d" => "foo", "e" => "bar", "f" => [4, 5, "six"]}} }
-    let (:source_hash_with_matada) {  source_hash.merge({"@metadata" => {"a" => 1, "b" => 2}}) }
-    subject { LogStash::Event.new(source_hash_with_matada) }
+    let (:source_hash_with_metadata) {  source_hash.merge({"@metadata" => {"a" => 1, "b" => 2}}) }
+    subject { LogStash::Event.new(source_hash_with_metadata) }
 
     it "should include @timestamp and @version" do
       h = subject.to_hash
@@ -266,7 +266,7 @@ describe LogStash::Event do
       h = subject.to_hash_with_metadata
       h.delete("@timestamp")
       h.delete("@version")
-      expect(h).to eq(source_hash_with_matada)
+      expect(h).to eq(source_hash_with_metadata)
     end
   end
 

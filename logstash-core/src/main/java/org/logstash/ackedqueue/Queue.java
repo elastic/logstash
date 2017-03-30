@@ -36,7 +36,7 @@ public class Queue implements Closeable {
     protected long seqNum;
     protected HeadPage headPage;
 
-    // complete list of all non fully acked pages. note that exact sequenciality by pageNum cannot be assumed
+    // complete list of all non fully acked pages. note that exact sequentially by pageNum cannot be assumed
     // because any fully acked page will be removed from this list potentially creating pageNum gaps in the list.
     protected final List<TailPage> tailPages;
 
@@ -281,7 +281,7 @@ public class Queue implements Closeable {
         }
     }
 
-    // create a new empty headpage for the given pageNum and imidiately checkpoint it
+    // create a new empty headpage for the given pageNum and immediately checkpoint it
     // @param pageNum the page number of the new head page
     private void newCheckpointedHeadpage(int pageNum) throws IOException {
         PageIO headPageIO = this.pageIOFactory.build(pageNum, this.pageCapacity, this.dirPath);
@@ -304,7 +304,7 @@ public class Queue implements Closeable {
         // the write strategy with regard to the isFull() state is to assume there is space for this element
         // and write it, then after write verify if we just filled the queue and wait on the notFull condition
         // *after* the write which is both safer for a crash condition, and the queue closing sequence. In the former case
-        // holding an element in memory while wainting for the notFull condition would mean always having the current write
+        // holding an element in memory while waiting for the notFull condition would mean always having the current write
         // element at risk in the always-full queue state. In the later, when closing a full queue, it would be impossible
         // to write the current element.
 
@@ -312,7 +312,7 @@ public class Queue implements Closeable {
         try {
             boolean wasEmpty = (firstUnreadPage() == null);
 
-            // create a new head page if the current does not have suffient space left for data to be written
+            // create a new head page if the current does not have sufficient space left for data to be written
             if (! this.headPage.hasSpace(data.length)) {
                 // beheading includes checkpoint+fsync if required
                 TailPage tailPage = this.headPage.behead();
@@ -363,7 +363,7 @@ public class Queue implements Closeable {
 
     // @return true if the queue is deemed at full capacity
     public boolean isFull() {
-        // TODO: I am not sure if having unreadCount as volatile is sufficient here. all unreadCount updates are done inside syncronized
+        // TODO: I am not sure if having unreadCount as volatile is sufficient here. all unreadCount updates are done inside synchronized
         // TODO: sections, I believe that to only read the value here, having it as volatile is sufficient?
         if ((this.maxBytes > 0) && this.currentByteSize >= this.maxBytes) {
             return true;
@@ -382,7 +382,7 @@ public class Queue implements Closeable {
         }
     }
 
-    // @param seqNum the element sequence number upper bound for which persistence should be garanteed (by fsync'ing)
+    // @param seqNum the element sequence number upper bound for which persistence should be guaranteed (by fsync'ing)
     public void ensurePersistedUpto(long seqNum) throws IOException{
         lock.lock();
         try {
@@ -465,7 +465,7 @@ public class Queue implements Closeable {
                     return null;
                 }
 
-                // if after returnining from wait queue is still empty, or the queue was closed return null
+                // if after returning from wait queue is still empty, or the queue was closed return null
                 if ((p = firstUnreadPage()) == null || isClosed()) { return null; }
             }
 
@@ -535,7 +535,7 @@ public class Queue implements Closeable {
         // as a first implementation we assume that all batches are created from the same page
         // so we will avoid multi pages acking here for now
 
-        // find the page to ack by travesing from oldest tail page
+        // find the page to ack by traversing from oldest tail page
         long firstAckSeqNum = seqNums.get(0);
 
         lock.lock();
@@ -548,7 +548,7 @@ public class Queue implements Closeable {
                 if (p.getMinSeqNum() > 0 && firstAckSeqNum >= p.getMinSeqNum() && firstAckSeqNum < p.getMinSeqNum() + p.getElementCount()) {
                     result = new TailPageResult(p, 0);
                 } else {
-                    // dual search strategy: if few tail pages search linearily otherwise perform binary search
+                    // dual search strategy: if few tail pages search linearly otherwise perform binary search
                     result = (this.tailPages.size() > 3) ? binaryFindPageForSeqnum(firstAckSeqNum) : linearFindPageForSeqnum(firstAckSeqNum);
                 }
             }
@@ -603,7 +603,7 @@ public class Queue implements Closeable {
 
     // deserialize a byte array into the required element class.
     // @param bytes the byte array to deserialize
-    // @return Queueable the deserialized byte array into the required Queuable interface implementation concrete class
+    // @return Queueable the deserialized byte array into the required Queueable interface implementation concrete class
     public Queueable deserialize(byte[] bytes) {
         try {
             return (Queueable)this.deserializeMethod.invoke(this.elementClass, bytes);
@@ -618,7 +618,7 @@ public class Queue implements Closeable {
         if (closed.getAndSet(true) == false) {
             lock.lock();
             try {
-                // TODO: not sure if we need to do this here since the headpage close will also call ensurePersited
+                // TODO: not sure if we need to do this here since the headpage close will also call ensurePersisted
                 ensurePersistedUpto(this.seqNum);
 
                 for (TailPage p : this.tailPages) { p.close(); }

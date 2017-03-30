@@ -111,7 +111,7 @@ module LogStash module Plugins
 
     def load_available_plugins
       GemRegistry.logstash_plugins.each do |plugin_context|
-        # When a plugin has a HOOK_FILE defined, its the responsability of the plugin
+        # When a plugin has a HOOK_FILE defined, its the responsibility of the plugin
         # to register itself to the registry of available plugins.
         #
         # Legacy plugin will lazy register themselves
@@ -205,7 +205,7 @@ module LogStash module Plugins
     private
     # lookup a plugin by type and name in the existing LogStash module namespace
     # ex.: namespace_lookup("filter", "grok") looks for LogStash::Filters::Grok
-    # @param type [String] plugin type, "input", "ouput", "filter"
+    # @param type [String] plugin type, "input", "output", "filter"
     # @param name [String] plugin name, ex.: "grok"
     # @return [Class] the plugin class or raises NameError
     # @raise NameError if plugin class does not exist or is invalid

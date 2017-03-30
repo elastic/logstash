@@ -3,7 +3,7 @@ module LogStash
   module Retryable
     # execute retryable code block
     # @param [Hash] options retryable options
-    # @option options [Fixnum] :tries retries to perform, default 1, set to 0 for infite retries. 1 means that upon exception the block will be retried once
+    # @option options [Fixnum] :tries retries to perform, default 1, set to 0 for infinite retries. 1 means that upon exception the block will be retried once
     # @option options [Fixnum] :base_sleep seconds to sleep on first retry, default 1
     # @option options [Fixnum] :max_sleep max seconds to sleep upon exponential backoff, default 1
     # @option options [Exception] :rescue exception class list to retry on, defaults is Exception, which retries on any Exception.

@@ -36,7 +36,7 @@ module LogStash module PluginManager module PackInstaller
       # minus the support for additionals source and doing local resolution only.
       ::Bundler::LogstashInjector.inject!(pack)
 
-      # When successfull its safe to install the gem and their specifications in the bundle directory
+      # When successful its safe to install the gem and their specifications in the bundle directory
       pack.gems.each do |packed_gem|
         PluginManager.ui.debug("Installing, #{packed_gem.name}, version: #{packed_gem.version} file: #{packed_gem.file}")
         LogStash::PluginManager::GemInstaller::install(packed_gem.file, packed_gem.plugin?)

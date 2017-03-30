@@ -1,4 +1,4 @@
-# we need to call exit explicity  in order to set the proper exit code, otherwise
+# we need to call exit explicitly  in order to set the proper exit code, otherwise
 # most common CI systems can not know whats up with this tests.
 
 require "pluginmanager/util"
@@ -12,7 +12,7 @@ namespace "test" do
     mkdir "data" unless File.directory?("data")
     mkdir "data/queue" unless File.directory?("data/queue")
 
-    # Need to be run here as because if run aftewarse (after the bundler.setup task) then the report got wrong
+    # Need to be run here as because if run afterwards (after the bundler.setup task) then the report got wrong
     # numbers and misses files. There is an issue with our setup! method as this does not happen with the regular
     # bundler.setup used in regular bundler flows.
     Rake::Task["test:setup-simplecov"].invoke if ENV['COVERAGE']
@@ -50,7 +50,7 @@ namespace "test" do
   desc "run all installed plugins specs"
   task "plugins" => ["setup"] do
     plugins_to_exclude = ENV.fetch("EXCLUDE_PLUGIN", "").split(",")
-    # grab all spec files using the live plugins gem specs. this allows correclty also running the specs
+    # grab all spec files using the live plugins gem specs. this allows correctly also running the specs
     # of a local plugin dir added using the Gemfile :path option. before this, any local plugin spec would
     # not be run because they were not under the vendor/bundle/jruby/1.9/gems path
     test_files = LogStash::PluginManager.find_plugins_gem_specs.map do |spec|
@@ -86,7 +86,7 @@ namespace "test" do
         add_filter pattern
       end
 
-      add_group "bootstrap", "bootstrap/" # This module is used during bootstraping of LS
+      add_group "bootstrap", "bootstrap/" # This module is used during bootstrapping of LS
       add_group "plugin manager", "pluginmanager/" # Code related to the plugin manager
       add_group "core" do |src_file| # The LS core codebase
         /logstash\/\w+.rb/.match(src_file.filename)

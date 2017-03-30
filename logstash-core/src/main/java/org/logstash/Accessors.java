@@ -154,7 +154,7 @@ public class Accessors {
             if (i >= size) {
                 // grow array by adding trailing null items
                 // this strategy reflects legacy Ruby impl behaviour and is backed by specs
-                // TODO: (colin) this is potentially dangerous, and could produce OOM using arbritary big numbers
+                // TODO: (colin) this is potentially dangerous, and could produce OOM using arbitrary big numbers
                 // TODO: (colin) should be guard against this?
                 for (int j = size; j < i; j++) {
                     ((List<Object>) target).add(null);

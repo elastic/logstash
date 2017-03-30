@@ -42,7 +42,7 @@ module LogStash
       new_events = @filter.multi_filter(events)
       clock.stop
 
-      # There is no garantee in the context of filter
+      # There is no guarantee in the context of filter
       # that EVENTS_INT == EVENTS_OUT, see the aggregates and
       # the split filter
       c = new_events.count { |event| !event.cancelled? }

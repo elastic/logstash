@@ -139,7 +139,7 @@ describe LogStash::IOWrappedLogger do
     expect(logger).to have_received(:debug).with(message)
   end
 
-  it "reponds to <<" do
+  it "responds to <<" do
     subject << message
     expect(logger).to have_received(:debug).with(message)
   end

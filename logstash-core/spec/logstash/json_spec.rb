@@ -37,7 +37,7 @@ describe "LogStash::Json" do
 
     ### JRuby specific
     # Former expectation in this code were removed because of https://github.com/rspec/rspec-mocks/issues/964
-    # as soon as is fix we can re introduce them if decired, however for now the completeness of the test
+    # as soon as is fix we can re introduce them if desired, however for now the completeness of the test
     # is also not affected as the conversion would not work if the expectation where not meet.
     ###
     context "jruby deserialize" do

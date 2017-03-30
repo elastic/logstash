@@ -27,7 +27,7 @@ class PlatformConfig
       @bootstrap = OpenStruct.new(:privileged     => "sys/#{type}/bootstrap.sh",
                                   :non_privileged => "sys/#{type}/user_bootstrap.sh")
       ##
-      # for now the only specific boostrap scripts are ones need
+      # for now the only specific bootstrap scripts are ones need
       # with privileged access level, whenever others are also
       # required we can update this section as well with the same pattern.
       ##

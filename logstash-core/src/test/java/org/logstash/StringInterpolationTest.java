@@ -51,7 +51,7 @@ public class StringInterpolationTest {
     }
 
     @Test
-    public void testDateFormater() throws IOException {
+    public void testDateFormatter() throws IOException {
         Event event = getTestEvent();
         String path = "/full/%{+YYYY}";
         StringInterpolation si = StringInterpolation.getInstance();

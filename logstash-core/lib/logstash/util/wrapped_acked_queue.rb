@@ -63,7 +63,7 @@ module LogStash; module Util
     #
     # @param [Object] Object to add to the queue
     # @param [Integer] Time in milliseconds to wait before giving up
-    # @return [Boolean] True if adding was successfull if not it return false
+    # @return [Boolean] True if adding was successful if not it return false
     def offer(obj, timeout_ms)
       raise NotImplementedError.new("The offer method is not implemented. There is no non blocking write operation yet.")
     end

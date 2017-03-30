@@ -252,12 +252,12 @@ public class Event implements Cloneable, Serializable, Queueable {
             int i = 0;
             for (Object e : (List)o) {
                 if (!(e instanceof Map)) {
-                    throw new IOException("incompatible inner json array object type=" + e.getClass().getName() + " , only hash map is suppoted");
+                    throw new IOException("incompatible inner json array object type=" + e.getClass().getName() + " , only hash map is supported");
                 }
                 result[i++] = new Event((Map)e);
             }
         } else {
-            throw new IOException("incompatible json object type=" + o.getClass().getName() + " , only hash map or arrays are suppoted");
+            throw new IOException("incompatible json object type=" + o.getClass().getName() + " , only hash map or arrays are supported");
         }
 
         return result;

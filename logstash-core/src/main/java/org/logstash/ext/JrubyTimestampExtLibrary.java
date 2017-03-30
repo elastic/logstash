@@ -209,7 +209,7 @@ public class JrubyTimestampExtLibrary implements Library {
                 IRubyObject epoch = args[0];
 
                 if (epoch instanceof RubyBigDecimal) {
-                    // bug in JRuby prevents correcly parsing a BigDecimal fractional part, see https://github.com/elastic/logstash/issues/4565
+                    // bug in JRuby prevents correctly parsing a BigDecimal fractional part, see https://github.com/elastic/logstash/issues/4565
                     double usec = ((RubyBigDecimal)epoch).frac().convertToFloat().getDoubleValue() * 1000000;
                     t = (RubyTime)RubyTime.at(context, context.runtime.getTime(), ((RubyBigDecimal)epoch).to_int(), new RubyFloat(context.runtime, usec));
                 } else {

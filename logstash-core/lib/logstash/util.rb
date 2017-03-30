@@ -141,7 +141,7 @@ module LogStash::Util
   end # def hash_merge_many
 
 
-  # nomalize method definition based on platform.
+  # normalize method definition based on platform.
   # normalize is used to convert an object create through
   # json deserialization from JrJackson in :raw mode to pure Ruby
   # to support these pure Ruby object monkey patches.

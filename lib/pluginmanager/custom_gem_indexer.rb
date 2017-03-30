@@ -24,7 +24,7 @@ module LogStash module PluginManager
         local_source
       end
 
-      # *WARNING*: Bundler need to not be activated at this point because it wont find anything that
+      # *WARNING*: Bundler need to not be activated at this point because it won't find anything that
       # is not defined in the gemfile/lock combo
       #
       # This takes a folder with a special structure, will generate an index

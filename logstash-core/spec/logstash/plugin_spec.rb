@@ -42,12 +42,12 @@ describe LogStash::Plugin do
     end
   end
 
-  it "should fail lookup on inexisting type" do
+  it "should fail lookup on nonexistent type" do
     #expect_any_instance_of(Cabin::Channel).to receive(:debug).once
     expect { LogStash::Plugin.lookup("badbadtype", "badname") }.to raise_error(LogStash::PluginLoadingError)
   end
 
-  it "should fail lookup on inexisting name" do
+  it "should fail lookup on nonexistent name" do
     #expect_any_instance_of(Cabin::Channel).to receive(:debug).once
     expect { LogStash::Plugin.lookup("filter", "badname") }.to raise_error(LogStash::PluginLoadingError)
   end
@@ -217,7 +217,7 @@ describe LogStash::Plugin do
           config_name "simple_plugin"
 
           config :host, :validate => :string
-          config :export, :validte => :boolean
+          config :export, :validate => :boolean
 
           def register; end
         end

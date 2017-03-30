@@ -35,12 +35,12 @@ describe LogStash::Plugins::HooksRegistry do
   let(:listener) { DummyListener.new }
 
   it "allow to register an emitter" do
-    expect { subject.register_emitter(emitter.class, emitter.dispatcher) }.to change { subject.emmitters_count }.by(1)
+    expect { subject.register_emitter(emitter.class, emitter.dispatcher) }.to change { subject.emitters_count }.by(1)
   end
 
   it "allow to remove an emitter" do
     subject.register_emitter(emitter.class, emitter.dispatcher)
-    expect { subject.remove_emitter(emitter.class)}.to change { subject.emmitters_count }.by(-1)
+    expect { subject.remove_emitter(emitter.class)}.to change { subject.emitters_count }.by(-1)
   end
 
   it "allow to register hooks to emitters" do

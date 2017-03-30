@@ -30,7 +30,7 @@ describe Paquet::Dependency do
     end
   end
 
-  it "return a meaninful string" do
+  it "return a meaningful string" do
     expect(subject.to_s).to eq("#{name}-#{version}")
   end
 end

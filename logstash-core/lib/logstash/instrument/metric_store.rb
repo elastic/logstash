@@ -73,7 +73,7 @@ module LogStash module Instrument
     # If you use the `,` on a key the metric store will return the both values at that level
     #
     # The returned hash will keep the same structure as it had in the `Concurrent::Map`
-    # but will be a normal ruby hash. This will allow the api to easily seriliaze the content
+    # but will be a normal ruby hash. This will allow the api to easily serialize the content
     # of the map
     #
     # @param [Array] The path where values should be located
@@ -131,7 +131,7 @@ module LogStash module Instrument
     # }
     def extract_metrics(path, *keys)
       keys.reduce({}) do |acc,k|
-        # Simplifiy 1-length keys
+        # Simplify 1-length keys
         k = k.first if k.is_a?(Array) && k.size == 1
 
         # If we have array values here we need to recurse
