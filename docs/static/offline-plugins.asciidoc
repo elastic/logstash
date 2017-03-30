@@ -28,14 +28,15 @@ access the Internet.
 +
 [source, shell]
 -------------------------------------------------------------------------------
-bin/logstash-plugin prepare-offline-pack --output OUTPUT [PLUGINS]
+bin/logstash-plugin prepare-offline-pack --output OUTPUT [PLUGINS] --overwrite
 -------------------------------------------------------------------------------
 +
 where:
 +
-* `OUTPUT` specifies the location where the compressed plugin pack will be written. The default location is
-+/LOGSTASH_HOME/logstash-offline-plugins-{logstash_version}.zip+.
+* `OUTPUT` specifies the zip file where the compressed plugin pack will be written. The default file is
++/LOGSTASH_HOME/logstash-offline-plugins-{logstash_version}.zip+. If you are using 5.2.x and 5.3.0, this location should be a zip file whose contents will be overwritten.
 * `[PLUGINS]` specifies one or more plugins that you want to include in the pack.
+* `--overwrite` specifies if you want to override an existing file at the location
 
 Examples:
 
