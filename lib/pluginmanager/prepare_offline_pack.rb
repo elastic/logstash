@@ -4,7 +4,8 @@ require "pluginmanager/errors"
 
 class LogStash::PluginManager::PrepareOfflinePack < LogStash::PluginManager::Command
   parameter "[PLUGIN] ...", "plugin name(s)", :attribute_name => :plugins_arg
-  option "--output", "OUTPUT", "output file", :default => ::File.join(LogStash::Environment::LOGSTASH_HOME, "logstash-offline-plugins-#{LOGSTASH_VERSION}.zip")
+  option "--output", "OUTPUT", "output zip file", :default => ::File.join(LogStash::Environment::LOGSTASH_HOME, "logstash-offline-plugins-#{LOGSTASH_VERSION}.zip")
+  option "--overwrite", :flag, "overwrite a previously generated package file", :default => false
 
   def execute
     validate_arguments!
@@ -21,7 +22,21 @@ class LogStash::PluginManager::PrepareOfflinePack < LogStash::PluginManager::Com
     # To silence some of debugs/info statements
     Paquet.ui = Paquet::SilentUI unless debug?
 
-    FileUtils.rm_rf(output) if ::File.exist?(output)
+    if File.directory?(output)
+      signal_error("Package creation cancelled: The specified output is a directory, you must specify a filename with a zip extension, provided output: #{output}.")
+    else
+      if File.extname(output).downcase != ".zip"
+        signal_error("Package creation cancelled: You must specify the zip extension for the provided filename: #{output}.")
+      end
+
+      if ::File.exists?(output)
+        if overwrite?
+          File.delete(output)
+        else
+          signal_error("Package creation cancelled: output file destination #{output} already exists.")
+        end
+      end
+    end
 
     LogStash::PluginManager::OfflinePluginPackager.package(plugins_arg, output)
 
