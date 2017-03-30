@@ -5,6 +5,7 @@ require "pluginmanager/prepare_offline_pack"
 require "pluginmanager/offline_plugin_packager"
 require "stud/temporary"
 require "fileutils"
+require "webmock"
 
 # This Test only handle the interaction with the OfflinePluginPackager class
 # any test for bundler will need to be done as rats test
@@ -19,7 +20,7 @@ describe LogStash::PluginManager::PrepareOfflinePack do
   let(:tmp_zip_file) { ::File.join(temporary_dir, "myspecial.zip") }
   let(:offline_plugin_packager) { double("offline_plugin_packager") }
   let(:cmd_args) { ["--output", tmp_zip_file, "logstash-input-stdin"] }
-  let(:cmd) { "install" }
+  let(:cmd) { "prepare-offline-pack" }
 
   before do
     FileUtils.mkdir_p(temporary_dir)
@@ -41,17 +42,6 @@ describe LogStash::PluginManager::PrepareOfflinePack do
     it "silences paquet ui reporter" do
       expect(Paquet).to receive(:ui=).with(Paquet::SilentUI)
       subject.run(cmd_args)
-    end
-
-    context "when file target already exist" do
-      before do
-        FileUtils.touch(tmp_zip_file)
-      end
-
-      it "overrides the file" do
-        expect(FileUtils).to receive(:rm_rf).with(tmp_zip_file)
-        subject.run(cmd_args)
-      end
     end
 
     context "when trying to use a core gem" do
@@ -77,6 +67,57 @@ describe LogStash::PluginManager::PrepareOfflinePack do
       it "catches the error" do
         expect(subject).to receive(:report_exception).with("Cannot create the offline archive", be_kind_of(exception)).and_return(nil)
         subject.run(cmd_args)
+      end
+    end
+
+
+    context "if the output is directory" do
+      let(:tmp_zip_file) { f = Stud::Temporary.pathname; FileUtils.mkdir_p(f); f }
+      let(:cmd) { "prepare-offline-pack" }
+
+      before do
+        expect(LogStash::PluginManager::OfflinePluginPackager).not_to receive(:package).with(anything)
+      end
+
+      it "fails to do any action" do
+        expect { subject.run(cmd_args) }.to raise_error Clamp::ExecutionError, /you must specify a filename/
+      end
+    end
+
+    context "if the output doesn't have a zip extension" do
+      let(:tmp_zip_file) { ::File.join(temporary_dir, "myspecial.rs") }
+
+      before do
+        expect(LogStash::PluginManager::OfflinePluginPackager).not_to receive(:package).with(anything)
+      end
+
+      it "fails to create the package" do
+        expect { subject.run(cmd_args) }.to raise_error Clamp::ExecutionError, /the zip extension/
+      end
+    end
+
+    context "if the file already exist" do
+      before do
+        FileUtils.touch(tmp_zip_file)
+      end
+
+      context "without `--overwrite`" do
+        before do
+          expect(LogStash::PluginManager::OfflinePluginPackager).not_to receive(:package).with(anything)
+        end
+
+        it "should fails" do
+          expect { subject.run(cmd_args) }.to raise_error Clamp::ExecutionError, /output file destination #{tmp_zip_file} already exist/
+        end
+      end
+
+      context "with `--overwrite`" do
+        let(:cmd_args) { ["--overwrite", "--output", tmp_zip_file, "logstash-input-stdin"] }
+
+        it "succeed" do
+          expect(LogStash::PluginManager::OfflinePluginPackager).to receive(:package).with(anything, tmp_zip_file)
+          subject.run(cmd_args)
+        end
       end
     end
   end
