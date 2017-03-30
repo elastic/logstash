@@ -29,7 +29,7 @@ module LogStash module Instrument
     # of update the metric
     #
     # If there is a problem with the key or the type of metric we will record an error
-    # but we wont stop processing events, theses errors are not considered fatal.
+    # but we won't stop processing events, theses errors are not considered fatal.
     #
     def push(namespaces_path, key, type, *metric_type_params)
       begin

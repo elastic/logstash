@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.stream.Collectors;
 
-public class Concurent {
+public class Concurrent {
     final static int ELEMENT_COUNT = 2000000;
     final static int BATCH_SIZE = 1000;
     static Settings settings;

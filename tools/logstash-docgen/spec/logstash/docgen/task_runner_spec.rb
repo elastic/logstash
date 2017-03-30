@@ -6,7 +6,7 @@ describe LogStash::Docgen::TaskRunner::Status do
 
   context "#success?" do
     let(:name) { :making_stuff }
-    let(:error) { OpenStruct.new(:message => "Something bad, OOOPS!") }
+    let(:error) { OpenStruct.new(:message => "Something bad, OOPS!") }
 
     it "returns true when no errors was passed to the class" do
       expect(subject.new(name).success?).to be_truthy

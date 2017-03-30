@@ -80,7 +80,7 @@ module LogStash
           # Custom logger object. Rack CommonLogger does not work with cabin
           use ApiLogger, logger
 
-          # In test env we want errors to propogate up the chain
+          # In test env we want errors to propagate up the chain
           # so we get easy to understand test failures.
           # In production / dev we don't want a bad API endpoint
           # to crash the process

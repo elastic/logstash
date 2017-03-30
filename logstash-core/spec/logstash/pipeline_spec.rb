@@ -134,7 +134,7 @@ describe LogStash::Pipeline do
       CONFIG
     end
 
-    it "should not propage cancelled events from filter to output" do
+    it "should not propagate cancelled events from filter to output" do
       abort_on_exception_state = Thread.abort_on_exception
       Thread.abort_on_exception = true
 
@@ -389,7 +389,7 @@ describe LogStash::Pipeline do
       allow(LogStash::Plugin).to receive(:lookup).with("output", "dummyoutput").and_return(::LogStash::Outputs::DummyOutput)
       allow(logger).to receive(:warn)
 
-      # pipeline must be first called outside the thread context because it lazyly initialize and will create a
+      # pipeline must be first called outside the thread context because it lazily initialize and will create a
       # race condition if called in the thread
       p = pipeline
       t = Thread.new { p.run }
@@ -411,7 +411,7 @@ describe LogStash::Pipeline do
     end
   end
 
-  context "compiled filter funtions" do
+  context "compiled filter functions" do
     context "new events should propagate down the filters" do
       config <<-CONFIG
         filter {
@@ -630,7 +630,7 @@ describe LogStash::Pipeline do
 
     it "should handle evaluating different config" do
       # When the functions are compiled from the AST it will generate instance
-      # variables that are unique to the actual config, the intances are pointing
+      # variables that are unique to the actual config, the instances are pointing
       # to conditionals and/or plugins.
       #
       # Before the `defined_singleton_method`, the definition of the method was

@@ -14,7 +14,7 @@ module LogStash module Docgen
   # generation on a specific plugin.
   #
   # Since the doc generation need access to the current library/dependency and we
-  # dont want to polute the main exection namespace with libraries that could be incompatible
+  # dont want to pollute the main execution namespace with libraries that could be incompatible
   # each execution of the doc is is own process.
   #
   # Its a lot slower, but we know for sure that it uses the latest dependency for each plugins.

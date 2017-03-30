@@ -99,7 +99,7 @@ public abstract class AbstractByteBufferPageIO implements PageIO {
         // reset back position to first seqNum
         getBuffer().position(this.head);
 
-        // reset elementCount to 0 and increment to actal number of valid elements found
+        // reset elementCount to 0 and increment to octal number of valid elements found
         this.elementCount = 0;
 
         for (int i = 0; ; i++) {
@@ -128,7 +128,7 @@ public abstract class AbstractByteBufferPageIO implements PageIO {
         }
     }
 
-    // read and vadidate next element at page head
+    // read and validate next element at page head
     // @param verifyChecksum if true the actual element data will be read + checksumed and compared to written checksum
     private void readNextElement(long expectedSeqNum, boolean verifyChecksum) throws PageIOInvalidElementException {
         // if there is no room for the seqNum and length bytes stop here

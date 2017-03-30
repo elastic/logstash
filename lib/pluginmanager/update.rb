@@ -46,7 +46,7 @@ class LogStash::PluginManager::Update < LogStash::PluginManager::Command
     previous_gem_specs_map = find_latest_gem_specs
 
     # remove any version constrain from the Gemfile so the plugin(s) can be updated to latest version
-    # calling update without requiremend will remove any previous requirements
+    # calling update without requirements will remove any previous requirements
     plugins = plugins_to_update(previous_gem_specs_map)
     # Skipping the major version validation when using a local cache as we can have situations
     # without internet connection.

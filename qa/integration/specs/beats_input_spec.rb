@@ -43,7 +43,7 @@ describe "Beat Input" do
     end
 
 
-    it "sucessfully send events" do
+    it "successfully send events" do
       logstash_service.start_background(logstash_config)
       process = filebeat_service.run(filebeat_config_path)
 

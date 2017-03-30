@@ -164,7 +164,7 @@ module LogStash::Docgen
       @cached_read[file] ||= File.read(file)
     end
 
-    # Let's try to extract a meaninful name for the classes
+    # Let's try to extract a meaningful name for the classes
     # We need to support theses format:
     #
     # class LogStash::Inputs::File # legacy

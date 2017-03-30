@@ -18,12 +18,12 @@ module LogStash; module Util
     end
     alias_method(:<<, :push)
 
-    # Offer an object to the queue, wait for the specified amout of time.
-    # If adding to the queue was successfull it wil return true, false otherwise.
+    # Offer an object to the queue, wait for the specified amount of time.
+    # If adding to the queue was successful it wil return true, false otherwise.
     #
     # @param [Object] Object to add to the queue
     # @param [Integer] Time in milliseconds to wait before giving up
-    # @return [Boolean] True if adding was successfull if not it return false
+    # @return [Boolean] True if adding was successful if not it return false
     def offer(obj, timeout_ms)
       @queue.offer(obj, timeout_ms, TimeUnit::MILLISECONDS)
     end
@@ -58,7 +58,7 @@ module LogStash; module Util
       def initialize(queue, batch_size = 125, wait_for = 250)
         @queue = queue
         @mutex = Mutex.new
-        # Note that @infilght_batches as a central mechanism for tracking inflight
+        # Note that @inflight_batches as a central mechanism for tracking inflight
         # batches will fail if we have multiple read clients in the pipeline.
         @inflight_batches = {}
 

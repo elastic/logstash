@@ -28,13 +28,13 @@ describe LogStash::PluginManager do
     end
 
     context "fetch plugin info" do
-      it "should search for the last version infomation non prerelease" do
+      it "should search for the last version information non prerelease" do
         version_info = LogStash::PluginManager.fetch_latest_version_info(plugin_name)
         expect(version_info["number"]).to eq("1.0.7")
       end
 
 
-      it "should search for the last version infomation with prerelease" do
+      it "should search for the last version information with prerelease" do
         version_info = LogStash::PluginManager.fetch_latest_version_info(plugin_name, :pre => true)
         expect(version_info["number"]).to eq("2.0.0.pre")
       end

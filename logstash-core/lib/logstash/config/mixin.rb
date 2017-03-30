@@ -373,7 +373,7 @@ module LogStash::Config::Mixin
     end
 
     def validate_check_parameter_values(params)
-      # Filter out parametrs that match regexp keys.
+      # Filter out parameters that match regexp keys.
       # These are defined in plugins like this:
       #   config /foo.*/ => ...
       all_params_valid = true
@@ -438,7 +438,7 @@ module LogStash::Config::Mixin
         end
         result = value.first
       elsif validator.is_a?(Symbol)
-        # TODO(sissel): Factor this out into a coersion method?
+        # TODO(sissel): Factor this out into a coercion method?
         # TODO(sissel): Document this stuff.
         value = hash_or_array(value)
 

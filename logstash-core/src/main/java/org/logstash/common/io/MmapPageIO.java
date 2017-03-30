@@ -42,7 +42,7 @@ public class MmapPageIO extends AbstractByteBufferPageIO {
     }
 
     // memory map data file to this.buffer and read initial version byte
-    // @param strictCapacity if true verify that data file size is same as confgured page capcity, if false update page capcity to actual file size
+    // @param strictCapacity if true verify that data file size is same as configured page capacity, if false update page capacity to actual file size
     private void mapFile(boolean strictCapacity) throws IOException {
         RandomAccessFile raf = new RandomAccessFile(this.file, "rw");
 
@@ -55,7 +55,7 @@ public class MmapPageIO extends AbstractByteBufferPageIO {
             throw new IOException("Page file size " + pageFileCapacity + " different to configured page capacity " + this.capacity + " for " + this.file);
         }
 
-        // update capacity to actual raf lenght
+        // update capacity to actual raf length
         this.capacity = pageFileCapacity;
 
         if (this.capacity < MIN_CAPACITY) { throw new IOException(String.format("Page file size is too small to hold elements")); }

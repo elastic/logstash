@@ -199,7 +199,7 @@ public class QueueTest {
         int singleElementCapacity = ByteBufferPageIO.HEADER_SIZE + ByteBufferPageIO._persistedByteCount(elements1.get(0).serialize().length);
 
         Settings settings = TestSettings.volatileQueueSettings(2 * singleElementCapacity);
-        settings.setCheckpointMaxWrites(1024); // arbritary high enough threshold so that it's not reached (default for TestSettings is 1)
+        settings.setCheckpointMaxWrites(1024); // arbitrary high enough threshold so that it's not reached (default for TestSettings is 1)
         TestQueue q = new TestQueue(settings);
         q.open();
 

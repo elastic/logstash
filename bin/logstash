@@ -11,7 +11,7 @@
 # Supported environment variables:
 #   LS_JVM_OPTS="xxx" path to file with JVM options
 #   LS_JAVA_OPTS="xxx" to append extra options to the defaults JAVA_OPTS provided by logstash
-#   JAVA_OPTS="xxx" to *completely override* the defauls set of JAVA_OPTS provided by logstash
+#   JAVA_OPTS="xxx" to *completely override* the default set of JAVA_OPTS provided by logstash
 #
 # Development environment variables:
 #   USE_RUBY=1 to force use the local "ruby" command to launch logstash instead of using the vendored JRuby

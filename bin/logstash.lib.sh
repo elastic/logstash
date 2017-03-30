@@ -157,7 +157,7 @@ setup_ruby() {
 
 setup() {
   # first check if we want to use drip, which can be used in vendored jruby mode
-  # and also when setting USE_RUBY=1 if the ruby interpretor is in fact jruby
+  # and also when setting USE_RUBY=1 if the ruby interpreter is in fact jruby
   if [ "$JAVACMD" ] ; then
     if [ "$(basename $JAVACMD)" = "drip" ] ; then
       DRIP_JAVACMD=1

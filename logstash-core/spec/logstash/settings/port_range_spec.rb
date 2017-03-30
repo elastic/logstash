@@ -56,7 +56,7 @@ describe LogStash::Setting::PortRange do
     end
   end
 
-  context "when the value is an unkown type" do
+  context "when the value is an unknown type" do
     subject { LogStash::Setting::PortRange.new("mynewtest", 0.1) }
 
 

@@ -31,7 +31,7 @@ module LogStash module Docgen
   # This class acts as the transformation point between the format
   # and the data.
   #
-  # At the beginning of the PoC, I was targetting multiples different format: asciidoc, manpage,
+  # At the beginning of the PoC, I was targeting multiples different format: asciidoc, manpage,
   # since we only support 1 format now, we could probably remove it.
   class Document
     attr_reader :context, :format
@@ -118,7 +118,7 @@ module LogStash module Docgen
       "#{CANONICAL_NAME_PREFIX}-#{section}-#{config_name}"
     end
 
-    # Developper can declare options in the order they want
+    # Developer can declare options in the order they want
     # `Hash` keys are sorted by default in the order of creation.
     # But we force a sort options name for the documentation.
     def config
@@ -188,7 +188,7 @@ module LogStash module Docgen
     Document.new(context, format)
   end
 
-  # Note that Gem::Specifcation has an internal cache.
+  # Note that Gem::Specification has an internal cache.
   def self.load_plugin_specification(plugin_source_path)
     gemspec = Dir.glob(::File.join(plugin_source_path, "*.gemspec")).first
     raise "Cannot find the gemspec in #{plugin_source_path}" if gemspec.nil?

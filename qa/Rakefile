@@ -33,7 +33,7 @@ namespace :qa do
       experimental = (ENV['LS_QA_EXPERIMENTAL_OS'].to_s.downcase || "false") == "true"
       machines = config.select_names_for(args[:platform], {"experimental" => experimental})
 
-      puts user_feedback_string_for("bootstraping", args[:platform], machines, {"experimental" => experimental})
+      puts user_feedback_string_for("bootstrapping", args[:platform], machines, {"experimental" => experimental})
 
       options = {:debug => ENV['LS_QA_DEBUG']}
       LogStash::VagrantHelpers.destroy(machines, options)

@@ -4,7 +4,7 @@ module LibC
   extend FFI::Library
   ffi_lib 'c'
 
-  # Ok so the 2nd arg isn't really a string... but whaatever
+  # Ok so the 2nd arg isn't really a string... but whatever
   attach_function :prctl, [:int, :string, :long, :long, :long], :int
 end
 

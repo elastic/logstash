@@ -10,7 +10,7 @@ import java.util.stream.Collectors;
 
 public abstract class Page implements Closeable {
     protected final int pageNum;
-    protected long minSeqNum; // TODO: see if we can meke it final?
+    protected long minSeqNum; // TODO: see if we can make it final?
     protected int elementCount;
     protected long firstUnreadSeqNum;
     protected final Queue queue;
@@ -74,7 +74,7 @@ public abstract class Page implements Closeable {
     public boolean isFullyAcked() {
         // TODO: it should be something similar to this when we use a proper bitset class like ES
         // this.ackedSeqNum.firstUnackedBit >= this.elementCount;
-        // TODO: for now use a naive & inneficient mechanism with a simple Bitset
+        // TODO: for now use a naive & inefficient mechanism with a simple Bitset
         return this.elementCount > 0 && this.ackedSeqNums.cardinality() >= this.elementCount;
     }
 

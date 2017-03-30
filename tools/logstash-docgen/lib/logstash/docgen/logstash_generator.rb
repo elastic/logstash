@@ -11,7 +11,7 @@ module LogStash module Docgen
   # This class is used to generate the documentation inside a working logstash
   # directory, it will take all the installed gemspec and gerate the documentation for them.
   #
-  # In pratice we will install **all the plugins** before running this generator.
+  # In practice we will install **all the plugins** before running this generator.
   # This class is invoked inside logstash with a rake task named: `docs:generate-plugins`
   #
   # There is also code to generate `Index` but for now we will still handle them manually.

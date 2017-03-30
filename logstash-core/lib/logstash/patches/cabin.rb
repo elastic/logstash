@@ -9,7 +9,7 @@ if ENV["PROFILE_BAD_LOG_CALLS"] || ($DEBUGLIST || []).include?("log")
   # Basically, the following is wastes tons of effort creating objects that are
   # never used if the log level hides the log:
   #
-  #     logger.debug("something happend", :what => Happened)
+  #     logger.debug("something happened", :what => Happened)
   #
   # This is shown to be 4x faster:
   #

@@ -28,7 +28,7 @@ describe LogStash::PluginManager::PrepareOfflinePack do
     allow(LogStash::PluginManager::OfflinePluginPackager).to receive(:package).with(anything, anything).and_return(offline_plugin_packager)
   end
 
-  context "when not debbuging" do
+  context "when not debugging" do
     before do
       @before_debug_value = ENV["DEBUG"]
       ENV["DEBUG"] = nil

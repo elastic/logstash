@@ -40,7 +40,7 @@ public class MemoryCheckpointTest {
     }
 
     @Test(expected = NoSuchFileException.class)
-    public void readInnexisting() throws IOException {
+    public void readNonexistent() throws IOException {
         io.read("checkpoint.invalid");
     }
 

@@ -61,7 +61,7 @@ class LogStash::Agent
   end
 
   def execute
-    @thread = Thread.current # this var is implicilty used by Stud.stop?
+    @thread = Thread.current # this var is implicitly used by Stud.stop?
     @logger.debug("starting agent")
 
     start_pipelines
@@ -298,7 +298,7 @@ class LogStash::Agent
     end
 
     # check if this pipeline is not reloadable. it should not happen as per the check below
-    # but keep it here as a safety net if a reloadable pipeline was releoaded with a non reloadable pipeline
+    # but keep it here as a safety net if a reloadable pipeline was reloaded with a non reloadable pipeline
     if !old_pipeline.reloadable?
       @logger.error("pipeline is not reloadable", :pipeline => id)
       return
@@ -370,7 +370,7 @@ class LogStash::Agent
       return
     end
 
-    # pipeline started successfuly, update reload success metrics
+    # pipeline started successfully, update reload success metrics
     @instance_reload_metric.increment(:successes)
     @pipeline_reload_metric.namespace([pipeline_id.to_sym, :reloads]).tap do |n|
       n.increment(:successes)
@@ -424,7 +424,7 @@ class LogStash::Agent
     @pipelines.each do |id, pipeline|
       start_pipeline(id)
       pipeline.collect_stats
-      # no reloads yet, initalize all the reload metrics
+      # no reloads yet, initialize all the reload metrics
       init_pipeline_reload_metrics(id)
     end
   end

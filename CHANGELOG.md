@@ -140,7 +140,7 @@ pre-releases.
   - Lumberjack: This input was not handling backpressure properly from downstream plugins and
     would continue to accept data, eventually running out of memory. We added a circuit breaker to stop
     accepting new connections when we detect this situation. Please note that `max_clients` setting 
-    intoduced in v0.1.9 has been deprecated. This setting temporarily solved the problem by configuring
+    introduced in v0.1.9 has been deprecated. This setting temporarily solved the problem by configuring
     an upper limit to the number of LSF connections (#12).
   - Http: Added new input to receive data via http(s).
   - File: Fixed a critical bug where new files being added to a dir being watched would crash LS.
@@ -263,7 +263,7 @@ pre-releases.
     - Added IAM roles support so you can securely read and write events from S3 without providing your
       AWS credentials (#1575). 
     - Added support for using temporary credentials obtained from AWS STS (#1946)
-    - AWS credentials can be specfied through environment variables (#1619)  
+    - AWS credentials can be specified through environment variables (#1619)  
   - RabbitMQ: 
     - Fixed march_hare client uses incorrect connection url (LOGSTASH-2276)
     - Use Bunny 1.5.0+ (#1894)
@@ -326,7 +326,7 @@ pre-releases.
       the ability to capture failed requests from Elasticsearch and retry them. Error codes like 
       429 (too many requests) will now be retried by default for 3 times. The number of retries and the
       interval between consecutive retries can be configured (#1631)
-    - Logstash does not create a "message.raw" by default whic is usually not_analyzed; this
+    - Logstash does not create a "message.raw" by default which is usually not_analyzed; this
       helps save disk space (#11)
     - Added sniffing config to be able to list machines in the cluster while using the transport client (#22) 
     - Deprecate the usage of index_type configuration. Added document_type to be consistent
@@ -373,7 +373,7 @@ pre-releases.
   - bugfix: file: fixed debian 7 path issue
 
 ### codecs
-  - improvement: stdin/tcp: automatically select json_line and line codecs with the tcp and stdin streaming imputs
+  - improvement: stdin/tcp: automatically select json_line and line codecs with the tcp and stdin streaming inputs
   - improvement: collectd: add support for NaN values
 
 ### outputs
@@ -522,7 +522,7 @@ pre-releases.
 ### outputs
   - bugfix: elasticsearch: flush any buffered events on logstash shutdown
     (#1175)
-  - feature: riemann: Automatically map event fields to rieman event fields
+  - feature: riemann: Automatically map event fields to riemann event fields
     (logstash-contrib#15, Byron Pezan)
   - bugfix: lumberjack: fix off-by-one errors causing writes to another
     logstash agent to block indefinitely
@@ -789,7 +789,7 @@ pre-releases.
     (LOGSTASH-1423, #692, #739; Jordan Sissel, Bernd Ahlers)
 
 ### patterns
-  - improvement: added IPV6 suppot to IP pattern (#623)
+  - improvement: added IPV6 support to IP pattern (#623)
 
 ## 1.2.1 (September 7, 2013)
 ### general
@@ -1172,7 +1172,7 @@ pre-releases.
    matched. (LOGSTASH-705)
  - feature: kv: Adds field_split, value_split, prefix, and container
    settings. (#225, patch by Alex Wheeler)
- - bugfix: mutate: rename on a nonexistant field now does nothing as expected.
+ - bugfix: mutate: rename on a nonexistent field now does nothing as expected.
    (LOGSTASH-757)
  - bugfix: grok: don't tag an event with _grokparsefailure if it's already so
    (#248, patch by Greg Brockman)
@@ -1228,7 +1228,7 @@ pre-releases.
    Gemfile will be purged in the near future.
  - amqp plugins are now marked 'unsupported' as there is no active maintainer
    nor is there source of active support in the community. If you're interested
-   in maintainership, please email the mailling list or contact Jordan!
+   in maintainership, please email the mailing list or contact Jordan!
 
 ### inputs
  - irc: now stores irc nick

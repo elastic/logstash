@@ -26,7 +26,7 @@ describe "CLI > logstash-plugin install" do
     let(:install_command) { "bin/logstash-plugin install" }
     let(:change_dir) { true }
 
-    # When you are on anything by linux we wont disable the internet with seccomp
+    # When you are on anything by linux we won't disable the internet with seccomp
     if RbConfig::CONFIG["host_os"] == "linux"
       context "without internet connection (linux seccomp wrapper)" do
 
