@@ -58,6 +58,13 @@ module LogStash module Config
             .compact
             .flatten
 
+          duplicate_ids = find_duplicate_ids(pipeline_configs)
+
+          if duplicate_ids.any?
+            logger.debug("Fetching pipelines with duplicate ids", duplicate_ids.each { |k, v| v.collect(&:pipeline_id) } )
+            return FailedFetch.new("Found duplicate ids in your source: #{duplicate_ids.keys.sort.join(", ")}")
+          end
+
           if config_debug?
             pipeline_configs.each { |pipeline_config| pipeline_config.display_debug_information }
           end
@@ -100,12 +107,17 @@ module LogStash module Config
 
     def add_source(new_source)
       logger.debug("Adding source", :source => new_source.to_s)
-      @sources_lock.synchronize { @sources << new_source}
+      @sources_lock.synchronize { @sources << new_source }
     end
 
     private
     def config_debug?
       @settings.get_value("config.debug") && logger.debug?
+    end
+
+    def find_duplicate_ids(pipeline_configs)
+      pipeline_configs.group_by { |pipeline_config| pipeline_config.pipeline_id }
+        .select { |group, pipeline_configs| pipeline_configs.size > 1 }
     end
   end
 
