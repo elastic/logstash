@@ -40,7 +40,11 @@ class LogStashRunner
   attr_reader :config_str, :agent, :pipeline_settings
 
   def initialize
-    @config_str   = "input { generator {id => 'api-generator-pipeline' count => 100 } } output { dummyoutput {} }"
+
+    require "securerandom"
+    id = SecureRandom.uuid
+
+    @config_str   = "input { generator {id => 'api-generator-pipeline-#{id}' count => 100 } } output { dummyoutput {} }"
 
     args = {
       "config.reload.automatic" => false,
@@ -48,14 +52,16 @@ class LogStashRunner
       "log.level" => "debug",
       "node.name" => "test_agent",
       "http.port" => rand(9600..9700),
-      "http.environment" => "test",      
+      "http.environment" => "test",
       "config.string" => @config_str,
       "pipeline.batch.size" => 1,
       "pipeline.workers" => 1
     }
 
     @settings = ::LogStash::SETTINGS.clone.merge(args)
-    @agent = LogStash::DummyAgent.new(@settings)
+    source_loader = LogStash::Config::SourceLoader.new
+    source_loader.configure_sources(LogStash::Config::Source::Local.new(@settings))
+    @agent = LogStash::DummyAgent.new(@settings, source_loader)
   end
 
   def start

@@ -3,9 +3,14 @@ require "logstash/config/source_loader"
 require "logstash/config/source/base"
 require_relative "../../support/helpers"
 
+def temporary_pipeline_config(id, source, reader = "random_reader")
+  config_part = org.logstash.common.SourceWithMetadata.new("local", "...", "input {} output {}")
+  LogStash::Config::PipelineConfig.new(source, id, [config_part], LogStash::SETTINGS)
+end
+
 class DummySource < LogStash::Config::Source::Base
   def pipeline_configs
-    [self.class]
+    [temporary_pipeline_config("dummy_source_id", self.class)]
   end
 
   def match?
@@ -15,7 +20,7 @@ end
 
 class AnotherDummySource < LogStash::Config::Source::Base
   def pipeline_configs
-    [self.class]
+    [temporary_pipeline_config("another_dummy_source_id", self.class)]
   end
 
   def match?
@@ -88,11 +93,19 @@ describe LogStash::Config::SourceLoader do
 
         expect(result.success?).to be_truthy
         expect(result.response.size).to eq(2)
-        expect(result.response).to include(DummySource, AnotherDummySource)
+        expect(result.response.collect(&:pipeline_id)).to include("dummy_source_id", "another_dummy_source_id")
+      end
+
+      context "when duplicate id is returned" do
+        it "fails to return pipeline" do
+          subject.configure_sources([AnotherDummySource.new(settings), AnotherDummySource.new(settings)])
+          result = subject.fetch
+          expect(result.success?).to be_falsey
+        end
       end
     end
 
-    context "when multiple match" do
+    context "when one match" do
       let(:settings) { mock_settings("path.config" => "another") } # match both regex
 
       it "return the loaders with the matched sources" do
@@ -102,7 +115,7 @@ describe LogStash::Config::SourceLoader do
 
         expect(result.success?).to be_truthy
         expect(result.response.size).to eq(1)
-        expect(result.response).to include(AnotherDummySource)
+        expect(result.response.collect(&:pipeline_id)).to include("another_dummy_source_id")
       end
     end
   end
