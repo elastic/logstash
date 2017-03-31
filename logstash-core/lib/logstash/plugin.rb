@@ -44,7 +44,7 @@ class LogStash::Plugin
     self.class.name == other.class.name && @params == other.params
   end
 
-  def initialize(params=nil)
+  def initialize(params, dlq_manager=nil)
     @logger = self.logger
     # need to access settings statically because plugins are initialized in config_ast with no context.
     settings = LogStash::SETTINGS
@@ -56,6 +56,7 @@ class LogStash::Plugin
     # The id should always be defined normally, but in tests that might not be the case
     # In the future we may make this more strict in the Plugin API
     @params["id"] ||= "#{self.class.config_name}_#{SecureRandom.uuid}"
+    @dlq_manager = dlq_manager
   end
 
   # Return a uniq ID for this plugin configuration, by default
@@ -122,10 +123,20 @@ class LogStash::Plugin
                          LogStash::Instrument::NamespacedNullMetric.new(@metric, :null)
                        end
   end
+
   # return the configured name of this plugin
   # @return [String] The name of the plugin defined by `config_name`
   def config_name
     self.class.config_name
+  end
+
+  # commit event to dlq
+  def dlq_commit(event, reason)
+    if @dlq_manager.nil?
+      raise ArgumentError, "DLQ is not enabled, plugin cannot commit to it"
+    else
+      @dlq_manager.write(LogStash::DLQEntry.new(event, config_name, id, reason))
+    end
   end
 
   # This is keep for backward compatibility, the logic was moved into the registry class

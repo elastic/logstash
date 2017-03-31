@@ -11,6 +11,12 @@ module LogStash
       def run(queue)
         # noop
       end
+    attr_reader :num_closes, :events
+
+    def initialize(params={}, dlq=nil)
+      super
+      @num_closes = 0
+      @events = []
     end
   end
   module Outputs
@@ -44,7 +50,7 @@ module LogStash
 
       attr_reader :events
 
-      def initialize(params={})
+      def initialize(params={}, dlq=nil)
         super
         @events = []
       end
@@ -66,7 +72,7 @@ module LogStash
 
       attr_reader :num_closes
 
-      def initialize(params={})
+      def initialize(params={}, dlq=nil)
         super
         @num_closes = 0
         @events_received = Concurrent::AtomicFixnum.new(0)

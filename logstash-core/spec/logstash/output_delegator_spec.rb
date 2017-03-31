@@ -9,7 +9,7 @@ describe LogStash::OutputDelegator do
   let(:collector) { [] }
   let(:metric) { LogStash::Instrument::NamespacedNullMetric.new(collector, :null) }
 
-  subject { described_class.new(logger, out_klass, metric, ::LogStash::OutputDelegatorStrategyRegistry.instance, plugin_args) }
+  subject { described_class.new(logger, out_klass, metric, ::LogStash::OutputDelegatorStrategyRegistry.instance, plugin_args, nil) }
 
   context "with a plain output plugin" do
     let(:out_klass) { double("output klass") }
@@ -39,7 +39,7 @@ describe LogStash::OutputDelegator do
 
     it "should push the name of the plugin to the metric" do
       expect(metric).to receive(:gauge).with(:name, out_klass.config_name)
-      described_class.new(logger, out_klass, metric, ::LogStash::OutputDelegatorStrategyRegistry.instance, plugin_args)
+      described_class.new(logger, out_klass, metric, ::LogStash::OutputDelegatorStrategyRegistry.instance, plugin_args, nil)
     end
 
     context "after having received a batch of events" do
@@ -103,7 +103,7 @@ describe LogStash::OutputDelegator do
           end
 
           it "should set the correct parameters on the instance" do
-            expect(out_klass).to have_received(:new).with(plugin_args)
+            expect(out_klass).to have_received(:new).with(plugin_args, nil)
           end
 
           it "should set the metric on the instance" do

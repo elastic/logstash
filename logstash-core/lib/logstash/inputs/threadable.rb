@@ -10,7 +10,7 @@ class LogStash::Inputs::Threadable < LogStash::Inputs::Base
   # This is the same as declaring the input multiple times
   config :threads, :validate => :number, :default => 1
  
-  def initialize(params)
+  def initialize(params, dlq=nil)
     super
     @threadable = true
   end

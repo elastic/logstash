@@ -21,6 +21,7 @@ require "logstash/instrument/wrapped_write_client"
 require "logstash/output_delegator"
 require "logstash/filter_delegator"
 require "logstash/queue_factory"
+require "logstash/dlq_manager"
 
 module LogStash; class BasePipeline
   include LogStash::Util::Loggable
@@ -89,11 +90,11 @@ module LogStash; class BasePipeline
     klass = Plugin.lookup(plugin_type, name)
 
     if plugin_type == "output"
-      OutputDelegator.new(@logger, klass, type_scoped_metric,  OutputDelegatorStrategyRegistry.instance, args)
+      OutputDelegator.new(@logger, klass, type_scoped_metric,  OutputDelegatorStrategyRegistry.instance, args, @dlq_manager)
     elsif plugin_type == "filter"
-      FilterDelegator.new(@logger, klass, type_scoped_metric, args)
+      FilterDelegator.new(@logger, klass, type_scoped_metric, args, @dlq_manager)
     else # input
-      input_plugin = klass.new(args)
+      input_plugin = klass.new(args, @dlq_manager)
       input_plugin.metric = type_scoped_metric.namespace(id)
       input_plugin
     end
@@ -120,7 +121,8 @@ module LogStash; class Pipeline < BasePipeline
     :metric,
     :filter_queue_client,
     :input_queue_client,
-    :queue
+    :queue,
+    :dlq_manager
 
   MAX_INFLIGHT_WARN_THRESHOLD = 10_000
 
@@ -156,6 +158,12 @@ module LogStash; class Pipeline < BasePipeline
         metric.namespace([:stats, :pipelines, pipeline_id.to_s.to_sym, :events])
     )
     @drain_queue =  @settings.get_value("queue.drain")
+
+    @dlq_manager = nil
+    if @settings.get_value("dead_letter_queue.enable")
+      managed_path = ::File.join(@settings.get_value("path.dead_letter_queue"), @pipeline_id)
+      @dlq_manager = LogStash::DeadLetterQueueManager.new(managed_path)
+    end
 
     @events_filtered = Concurrent::AtomicFixnum.new(0)
     @events_consumed = Concurrent::AtomicFixnum.new(0)
@@ -223,7 +231,6 @@ module LogStash; class Pipeline < BasePipeline
     shutdown_flusher
     shutdown_workers
 
-    close
 
     @logger.debug("Pipeline #{@pipeline_id} has been shutdown")
 
@@ -234,6 +241,7 @@ module LogStash; class Pipeline < BasePipeline
   def close
     @filter_queue_client.close
     @queue.close
+    @dlq_manager.close unless @dlq.nil?
   end
 
   def transition_to_running
@@ -341,6 +349,7 @@ module LogStash; class Pipeline < BasePipeline
       filter_batch(batch)
       flush_filters_to_batch(batch, :final => false) if signal.flush?
       output_batch(batch)
+
       @filter_queue_client.close_batch(batch)
 
       # keep break at end of loop, after the read_batch operation, some pipeline specs rely on this "final read_batch" before shutdown.
@@ -397,7 +406,6 @@ module LogStash; class Pipeline < BasePipeline
     output_events_map.each do |output, events|
       output.multi_receive(events)
     end
-    
     @filter_queue_client.add_output_metrics(batch)
   end
 
