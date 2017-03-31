@@ -94,6 +94,12 @@ class LogStash::Inputs::Base < LogStash::Plugin
   def stop?
     @stop_called.value
   end
+  
+  def clone
+    cloned = super
+    cloned.codec = @codec.clone if @codec
+    cloned
+  end
 
   protected
   def decorate(event)

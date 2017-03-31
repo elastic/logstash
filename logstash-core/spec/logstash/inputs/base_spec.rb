@@ -60,6 +60,24 @@ describe "LogStash::Inputs::Base#decorate" do
     expect(evt.get("field")).to eq(["value1","value2"])
     expect(evt.get("field2")).to eq("value")
   end
+  
+  describe "cloning" do
+    let(:input) do
+      LogStash::Inputs::NOOP.new("add_field" => {"field" => ["value1", "value2"], "field2" => "value"})
+    end
+    
+    let(:cloned) do
+      input.clone
+    end
+    
+    it "should clone the codec when cloned" do
+      expect(input.codec).not_to eq(cloned.codec)
+    end  
+    
+    it "should preserve codec params" do
+      expect(input.codec.params).to eq(cloned.codec.params)
+    end
+  end
 end
 
 describe "LogStash::Inputs::Base#fix_streaming_codecs" do
