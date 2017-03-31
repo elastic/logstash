@@ -15,7 +15,9 @@ Packaging?
   `rake artifact:deb`  to build an deb
 
 Developing?
-  `rake bootstrap`     installs any dependencies for doing Logstash development
-  `rake vendor:clean`  clean vendored dependencies used for Logstash development
+  `rake bootstrap`          installs any dependencies for doing Logstash development
+  `rake test:install-core`  installs any dependencies for testing Logstasch core
+  `rake test:core`          to run Logstasch core tests
+  `rake vendor:clean`       clean vendored dependencies used for Logstash development
 HELP
 end
