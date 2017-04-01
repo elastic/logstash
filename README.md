@@ -80,17 +80,13 @@ jruby 1.7.26 (1.9.3p551) 2016-08-26 69763b8 on Java HotSpot(TM) 64-Bit Server VM
 rake bootstrap
 ```
     
-* You can then use `bin/logstash` to start Logstash, but there are no plugins installed. Logstash ships with default plugins. To install those, you can run:
+* You can then use `bin/logstash` to start Logstash, but there are no plugins installed. To install default plugins, you can run:
 
 ```sh
 rake plugin:install-default
 ```
 
-* Alternatively, you can only install the core plugins required to run the tests
-
-```sh
-rake test:install-core
-```
+This will install the 80+ default plugins which makes Logstash ready to connect to multiple data sources, perform transformations and send the results to Elasticsearch and other destinatins.
 
 To verify your environment, run the following to send your first event:
 
@@ -121,7 +117,7 @@ Drip does not work with STDIN. You cannot use drip for running configs which use
 
 ## Testing
 
-For testing you can use the *test* `rake` tasks and the `bin/rspec` command, see instructions below. Note that the `bin/logstash rspec` command has been replaced by `bin/rspec`.
+Most of the unit tests in Logstash are written using [rspec](http://rspec.info/) for the Ruby parts. For the Java parts, we use junit. For testing you can use the *test* `rake` tasks and the `bin/rspec` command, see instructions below:
 
 ### Core tests
 
@@ -129,7 +125,7 @@ For testing you can use the *test* `rake` tasks and the `bin/rspec` command, see
 
     rake test:install-core
 
-2- To run the logstash core tests you can use the rake task:
+2- To run the core tests you can use the rake task:
 
     rake test:core
 
