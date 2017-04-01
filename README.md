@@ -1,11 +1,5 @@
 # Logstash
 
-### Build status
-
-| Test | master | 5.0 | 2.4 |
-|---|---|---|---|
-| core | [![Build Status](https://travis-ci.org/elastic/logstash.svg?branch=master)](https://travis-ci.org/elastic/logstash) | [![Build Status](https://travis-ci.org/elastic/logstash.svg?branch=5.0)](https://travis-ci.org/elastic/logstash) | [![Build Status](https://travis-ci.org/elastic/logstash.svg?branch=2.4)](https://travis-ci.org/elastic/logstash) |
-
 Logstash is part of the [Elastic Stack](https://www.elastic.co/products) along with Beats, Elasticsearch and Kibana. Logstash is an open source, server-side data processing pipeline that ingests data from a multitude of sources simultaneously, transforms it, and then sends it to your favorite "stash." (Ours is Elasticsearch, naturally.). Logstash has over 200 plugins, and you can write your own very easily as well.
 
 The license is Apache 2.0, meaning you are pretty much free to use it however you want in whatever way.
@@ -19,8 +13,19 @@ on the [elastic.co site](https://www.elastic.co/guide/en/logstash/current/gettin
 
 ## Downloads
 
-You can download Logstash binaries, as well as debian/rpm packages for the
+You can download officially released Logstash binaries, as well as debian/rpm packages for the
 supported platforms, from [downloads page](https://www.elastic.co/downloads/logstash).
+
+### Snapshot Builds
+
+For the daring, snapshot builds from `master` branch are available. These builds are created nightly and have undergone no formal QA, so they should **never** be run in production.
+
+| artifact |
+| --- |
+| [tar](https://snapshots.elastic.co/downloads/logstash/logstash-6.0.0-alpha1-SNAPSHOT.tar.gz) |
+| [zip](https://snapshots.elastic.co/downloads/logstash/logstash-6.0.0-alpha1-SNAPSHOT.zip) |
+| [deb](https://snapshots.elastic.co/downloads/logstash/logstash-6.0.0-alpha1-SNAPSHOT.deb) |
+| [rpm](https://snapshots.elastic.co/downloads/logstash/logstash-6.0.0-alpha1-SNAPSHOT.rpm) |
 
 ## Need Help?
 
