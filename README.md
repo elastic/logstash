@@ -50,13 +50,29 @@ Logstash core will continue to exist under this repository and all related issue
 
 ### Prerequisites
 
-* Install JDK version 8
-* Install JRuby 1.7.x.
+* Install JDK version 8. Make sure to set the `JAVA_HOME` environment variable to the path to your JDK installation directory. For example `set JAVA_HOME=<JDK_PATH>`
+* Install JRuby 1.7.x. It is recommended to use a Ruby version manager such as [RVM](https://rvm.io/) or [rbenv](https://github.com/sstephenson/rbenv).
 * Install `rake` and `bundler` tool using `gem install rake` and `gem install bundler` respectively.
 
-**On Windows** make sure to set the `JAVA_HOME` environment variable to the path to your JDK installation directory. For example `set JAVA_HOME=<JDK_PATH>`
+### RVM install (optional)
 
-**Vendored JRuby**: Logstash uses [JRuby](http://jruby.org/) which gets embedded in the `vendor/jruby/` directory. It is recommended to use a Ruby version manager such as [RVM](https://rvm.io/) or [rbenv](https://github.com/sstephenson/rbenv).
+If you prefer to use rvm (ruby version manager) to manage Ruby versions on your machine, follow these directions:
+
+```sh
+gpg --keyserver hkp://keys.gnupg.net --recv-keys 409B6B1796C275462A1703113804BB82D39DC0E3
+\curl -sSL https://get.rvm.io | bash -s stable --ruby=jruby-1.7.26
+```
+
+### Check Ruby version
+
+Before you proceed, please check your ruby version by:
+
+```sh
+$ ruby -v
+jruby 1.7.26 (1.9.3p551) 2016-08-26 69763b8 on Java HotSpot(TM) 64-Bit Server VM 1.8.0_65-b17 +jit [darwin-x86_64]
+```
+
+### Building Logstash
 
 * To run Logstash from the repo you must first bootstrap the environment:
 
@@ -76,7 +92,7 @@ rake plugin:install-default
 rake test:install-core
 ```
 
-To verify your environment, run
+To verify your environment, run the following to send your first event:
 
 ```sh
 bin/logstash -e 'input { stdin { } } output { stdout {} }'
@@ -89,7 +105,7 @@ hello world
 2016-11-11T01:22:14.405+0000 0.0.0.0 hello world
 ```
 
-**Drip Launcher**
+**Advanced: Drip Launcher**
 
 [Drip](https://github.com/ninjudd/drip) is a tool that solves the slow JVM startup problem while developing Logstash. The drip script is intended to be a drop-in replacement for the java command. We recommend using drip during development, in particular for running tests. Using drip, the first invocation of a command will not be faster but the subsequent commands will be swift.
 
