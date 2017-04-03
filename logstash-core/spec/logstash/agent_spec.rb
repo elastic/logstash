@@ -456,8 +456,8 @@ describe LogStash::Agent do
     # Theses values are compared with what we store in the metric store.
     class DummyOutput2 < LogStash::Outputs::DroppingDummyOutput; end
 
-    let!(:dummy_output) { LogStash::Outputs::DroppingDummyOutput.new({}, nil) }
-    let!(:dummy_output2) { DummyOutput2.new({}, nil) }
+    let!(:dummy_output) { LogStash::Outputs::DroppingDummyOutput.new({}) }
+    let!(:dummy_output2) { DummyOutput2.new({}) }
     let(:initial_generator_threshold) { 1000 }
     let(:pipeline_thread) do
       Thread.new do
@@ -468,8 +468,8 @@ describe LogStash::Agent do
 
 
     before :each do
-      allow(LogStash::Outputs::DroppingDummyOutput).to receive(:new).at_least(:once).with(anything, nil).and_return(dummy_output)
-      allow(DummyOutput2).to receive(:new).at_least(:once).with(anything, nil).and_return(dummy_output2)
+      allow(LogStash::Outputs::DroppingDummyOutput).to receive(:new).at_least(:once).with(anything).and_return(dummy_output)
+      allow(DummyOutput2).to receive(:new).at_least(:once).with(anything).and_return(dummy_output2)
 
       allow(LogStash::Plugin).to receive(:lookup).with("input", "generator").and_return(LogStash::Inputs::Generator)
       allow(LogStash::Plugin).to receive(:lookup).with("codec", "plain").and_return(LogStash::Codecs::Plain)

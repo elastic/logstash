@@ -294,10 +294,10 @@ module LogStash; module Util
         # TODO: for https://github.com/elastic/logstash/issues/6055 = will have to properly refactor
         @iterating = true
         @originals.each do |e, _|
-          blk.call(e) unless (e.respond_to?(:cancelled?) && e.cancelled?)
+          blk.call(e) unless e.cancelled?
         end
         @generated.each do |e, _|
-          blk.call(e) unless (e.respond_to?(:cancelled?) && e.cancelled?)
+          blk.call(e) unless e.cancelled?
         end
         @iterating = false
         update_generated

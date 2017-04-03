@@ -21,6 +21,8 @@ package org.logstash.common.io;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.logstash.DLQEntry;
+import org.logstash.Event;
+import org.logstash.Timestamp;
 
 import java.io.IOException;
 import java.nio.channels.FileChannel;
@@ -46,6 +48,7 @@ public class DeadLetterQueueWriteManager {
     private RecordIOWriter currentWriter;
     private long currentQueueSize;
     private int currentSegmentIndex;
+    private Timestamp lastEntryTimestamp;
 
     /**
      *
@@ -54,6 +57,8 @@ public class DeadLetterQueueWriteManager {
      * @throws IOException
      */
     public DeadLetterQueueWriteManager(Path queuePath, long maxSegmentSize, long maxQueueSize) throws IOException {
+        // ensure path exists, create it otherwise.
+        Files.createDirectories(queuePath);
         // check that only one instance of the writer is open in this configured path
         Path lockFilePath = queuePath.resolve(LOCK_FILE);
         boolean isNewlyCreated = lockFilePath.toFile().createNewFile();
@@ -77,6 +82,7 @@ public class DeadLetterQueueWriteManager {
                 .mapToInt(Integer::parseInt)
                 .max().orElse(0);
         this.currentWriter = nextWriter();
+        this.lastEntryTimestamp = Timestamp.now();
     }
 
     private long getStartupQueueSize() throws IOException {
@@ -99,11 +105,25 @@ public class DeadLetterQueueWriteManager {
         return Files.list(path).filter((p) -> p.toString().endsWith(".log"));
     }
 
-    public synchronized void writeEntry(DLQEntry event) throws IOException {
-        byte[] record = event.serialize();
+    public synchronized void writeEntry(DLQEntry entry) throws IOException {
+        innerWriteEntry(entry);
+    }
+
+    public synchronized void writeEntry(Event event, String pluginName, String pluginId, String reason) throws IOException {
+        Timestamp entryTimestamp = Timestamp.now();
+        if (entryTimestamp.getTime().isBefore(lastEntryTimestamp.getTime())) {
+            entryTimestamp = lastEntryTimestamp;
+        }
+        DLQEntry entry = new DLQEntry(event, pluginName, pluginId, reason);
+        innerWriteEntry(entry);
+        lastEntryTimestamp = entryTimestamp;
+    }
+
+    private void innerWriteEntry(DLQEntry entry) throws IOException {
+        byte[] record = entry.serialize();
         int eventPayloadSize = RECORD_HEADER_SIZE + record.length;
         if (currentQueueSize + eventPayloadSize > maxQueueSize) {
-            logger.error("cannot write event to DLQ, no space available");
+            logger.error("cannot write event to DLQ: reached maxQueueSize of " + maxQueueSize);
             return;
         } else if (currentWriter.getPosition() + eventPayloadSize > maxSegmentSize) {
             currentWriter.close();
@@ -111,6 +131,7 @@ public class DeadLetterQueueWriteManager {
         }
         currentQueueSize += currentWriter.writeEvent(record);
     }
+
 
     public synchronized void close() throws IOException {
         this.lock.release();

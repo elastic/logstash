@@ -1,4 +1,4 @@
-# encodingrspec ./logstash-core/spec/logstash/output_delegator_spec.rb:36: utf-8
+# encoding: utf-8
 require "spec_helper"
 require "logstash/filter_delegator"
 require "logstash/instrument/null_metric"
@@ -26,11 +26,11 @@ describe LogStash::FilterDelegator do
     end
   end
 
-  subject { described_class.new(logger, plugin_klass, metric, config, nil) }
+  subject { described_class.new(logger, plugin_klass, metric, config) }
 
   it "create a plugin with the passed options" do
-    expect(plugin_klass).to receive(:new).with(config, nil).and_return(plugin_klass.new(config))
-    described_class.new(logger, plugin_klass, metric, config, nil)
+    expect(plugin_klass).to receive(:new).with(config).and_return(plugin_klass.new(config))
+    described_class.new(logger, plugin_klass, metric, config)
   end
 
   context "when the plugin support flush" do

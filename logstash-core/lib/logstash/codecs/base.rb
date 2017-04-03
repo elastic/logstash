@@ -14,7 +14,7 @@ module LogStash::Codecs; class Base < LogStash::Plugin
     "codec"
   end
 
-  def initialize(params = {}, dlq=nil)
+  def initialize(params={})
     super
     config_init(@params)
     register if respond_to?(:register)

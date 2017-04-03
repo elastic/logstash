@@ -71,7 +71,7 @@ module LogStash
         settings.set_value("path.queue", ::File.join(settings.get("path.data"), "queue"))
       end
       if !settings.set?("path.dead_letter_queue")
-        settings.set_value("path.queue", ::File.join(settings.get("path.data"), "dead_letter_queue"))
+        settings.set_value("path.dead_letter_queue", ::File.join(settings.get("path.data"), "dead_letter_queue"))
       end
     end
   end

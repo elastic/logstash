@@ -4,6 +4,7 @@ module LogStash
   class FilterDelegator
     extend Forwardable
     DELEGATED_METHODS = [
+      :do_register,
       :register,
       :close,
       :threadsafe?,
@@ -14,11 +15,11 @@ module LogStash
     ]
     def_delegators :@filter, *DELEGATED_METHODS
 
-    def initialize(logger, klass, metric, plugin_args, dlq)
+    def initialize(logger, klass, metric, plugin_args)
       @logger = logger
       @klass = klass
       @id = plugin_args["id"]
-      @filter = klass.new(plugin_args, dlq)
+      @filter = klass.new(plugin_args)
 
       # Scope the metrics to the plugin
       namespaced_metric = metric.namespace(@id.to_sym)

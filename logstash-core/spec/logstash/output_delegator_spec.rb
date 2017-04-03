@@ -9,7 +9,7 @@ describe LogStash::OutputDelegator do
   let(:collector) { [] }
   let(:metric) { LogStash::Instrument::NamespacedNullMetric.new(collector, :null) }
 
-  subject { described_class.new(logger, out_klass, metric, ::LogStash::OutputDelegatorStrategyRegistry.instance, plugin_args, nil) }
+  subject { described_class.new(logger, out_klass, metric, ::LogStash::OutputDelegatorStrategyRegistry.instance, plugin_args) }
 
   context "with a plain output plugin" do
     let(:out_klass) { double("output klass") }
@@ -24,7 +24,7 @@ describe LogStash::OutputDelegator do
       allow(out_klass).to receive(:name).and_return("example")
       allow(out_klass).to receive(:concurrency).with(any_args).and_return concurrency
       allow(out_klass).to receive(:config_name).and_return("dummy_plugin")
-      allow(out_inst).to receive(:register)
+      allow(out_inst).to receive(:do_register)
       allow(out_inst).to receive(:multi_receive)
       allow(out_inst).to receive(:metric=).with(any_args)
       allow(out_inst).to receive(:id).and_return("a-simple-plugin")
@@ -39,12 +39,12 @@ describe LogStash::OutputDelegator do
 
     it "should push the name of the plugin to the metric" do
       expect(metric).to receive(:gauge).with(:name, out_klass.config_name)
-      described_class.new(logger, out_klass, metric, ::LogStash::OutputDelegatorStrategyRegistry.instance, plugin_args, nil)
+      described_class.new(logger, out_klass, metric, ::LogStash::OutputDelegatorStrategyRegistry.instance, plugin_args)
     end
 
     context "after having received a batch of events" do
       before do
-        subject.register
+        subject.do_register
       end
 
       it "should pass the events through" do
@@ -68,11 +68,11 @@ describe LogStash::OutputDelegator do
 
     describe "closing" do
       before do
-        subject.register
+        subject.do_register
       end
 
       it "should register the output plugin instance on register" do
-        expect(out_inst).to have_received(:register)
+        expect(out_inst).to have_received(:do_register)
       end
 
       it "should close the output plugin instance when closing" do
@@ -103,7 +103,7 @@ describe LogStash::OutputDelegator do
           end
 
           it "should set the correct parameters on the instance" do
-            expect(out_klass).to have_received(:new).with(plugin_args, nil)
+            expect(out_klass).to have_received(:new).with(plugin_args)
           end
 
           it "should set the metric on the instance" do

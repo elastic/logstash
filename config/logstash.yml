@@ -134,12 +134,12 @@
 # ------------ Dead-Letter Queue Settings --------------
 # Flag to turn on dead-letter queue.
 #
-dead_letter_queue.enable: true
+# dead_letter_queue.enable: false
 #
 # If using dead_letter_queue.enable: true, the directory path where the data files will be stored.
 # Default is path.data/dead_letter_queue
 #
-# path.dead_letter_queue: false
+# path.dead_letter_queue:
 #
 # ------------ Metrics Settings --------------
 #

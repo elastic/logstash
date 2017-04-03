@@ -1,4 +1,3 @@
-# encoding: utf-8
 require "thread"
 require "stud/interval"
 require "concurrent"
@@ -22,7 +21,6 @@ require "logstash/output_delegator"
 require "logstash/filter_delegator"
 require "logstash/queue_factory"
 require 'logstash/compiler'
-require "logstash/dlq_manager"
 
 module LogStash; class BasePipeline
   include LogStash::Util::Loggable
@@ -98,11 +96,11 @@ module LogStash; class BasePipeline
     klass = Plugin.lookup(plugin_type, name)
 
     if plugin_type == "output"
-      OutputDelegator.new(@logger, klass, type_scoped_metric,  OutputDelegatorStrategyRegistry.instance, args, @dlq_manager)
+      OutputDelegator.new(@logger, klass, type_scoped_metric,  OutputDelegatorStrategyRegistry.instance, args)
     elsif plugin_type == "filter"
-      FilterDelegator.new(@logger, klass, type_scoped_metric, args, @dlq_manager)
+      FilterDelegator.new(@logger, klass, type_scoped_metric, args)
     else # input
-      input_plugin = klass.new(args, @dlq_manager)
+      input_plugin = klass.new(args)
       input_plugin.metric = type_scoped_metric.namespace(id)
       input_plugin
     end
@@ -170,7 +168,10 @@ module LogStash; class Pipeline < BasePipeline
     @dlq_manager = nil
     if @settings.get_value("dead_letter_queue.enable")
       managed_path = ::File.join(@settings.get_value("path.dead_letter_queue"), @pipeline_id)
-      @dlq_manager = LogStash::DeadLetterQueueManager.new(managed_path)
+      managed_path = java.nio.file.Paths.get(managed_path)
+      max_segment_size = 10485760 # 10MB
+      max_queue_size = java.lang.Long::MAX_VALUE
+      @dlq_manager = org.logstash.common.io.DeadLetterQueueWriteManager.new(managed_path, max_segment_size, max_queue_size)
     end
 
     @events_filtered = Concurrent::AtomicFixnum.new(0)
@@ -182,8 +183,6 @@ module LogStash; class Pipeline < BasePipeline
     @running = Concurrent::AtomicBoolean.new(false)
     @flushing = Concurrent::AtomicReference.new(false)
   end # def initialize
-  
-  
 
   def ready?
     @ready.value
@@ -241,6 +240,7 @@ module LogStash; class Pipeline < BasePipeline
     shutdown_flusher
     shutdown_workers
 
+    close
 
     @logger.debug("Pipeline #{@pipeline_id} has been shutdown")
 
@@ -251,7 +251,7 @@ module LogStash; class Pipeline < BasePipeline
   def close
     @filter_queue_client.close
     @queue.close
-    @dlq_manager.close unless @dlq.nil?
+    @dlq_manager.close unless @dlq_manager.nil?
   end
 
   def transition_to_running
@@ -273,8 +273,8 @@ module LogStash; class Pipeline < BasePipeline
   # register_plugin simply calls the plugin #register method and catches & logs any error
   # @param plugin [Plugin] the plugin to register
   # @return [Plugin] the registered plugin
-  def register_plugin(plugin)
-    plugin.register
+  def register_plugin(plugin, dlq_manager=nil)
+    plugin.do_register(dlq_manager)
     plugin
   rescue => e
     @logger.error("Error registering plugin", :plugin => plugin.inspect, :error => e.message)
@@ -283,9 +283,9 @@ module LogStash; class Pipeline < BasePipeline
 
   # register_plugins calls #register_plugin on the plugins list and upon exception will call Plugin#do_close on all registered plugins
   # @param plugins [Array[Plugin]] the list of plugins to register
-  def register_plugins(plugins)
+  def register_plugins(plugins, dlq_manager=nil)
     registered = []
-    plugins.each { |plugin| registered << register_plugin(plugin) }
+    plugins.each { |plugin| registered << register_plugin(plugin, dlq_manager) }
   rescue => e
     registered.each(&:do_close)
     raise e
@@ -294,8 +294,8 @@ module LogStash; class Pipeline < BasePipeline
   def start_workers
     @worker_threads.clear # In case we're restarting the pipeline
     begin
-      register_plugins(@outputs)
-      register_plugins(@filters)
+      register_plugins(@outputs, @dlq_manager)
+      register_plugins(@filters, @dlq_manager)
 
       pipeline_workers = safe_pipeline_worker_count
       batch_size = @settings.get("pipeline.batch.size")
@@ -435,7 +435,7 @@ module LogStash; class Pipeline < BasePipeline
     @inputs += moreinputs
 
     # first make sure we can register all input plugins
-    register_plugins(@inputs)
+    register_plugins(@inputs, @dlq_manager)
 
     # then after all input plugins are successfully registered, start them
     @inputs.each { |input| start_input(input) }

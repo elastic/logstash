@@ -44,7 +44,7 @@ class LogStash::Plugin
     self.class.name == other.class.name && @params == other.params
   end
 
-  def initialize(params, dlq_manager=nil)
+  def initialize(params)
     @logger = self.logger
     # need to access settings statically because plugins are initialized in config_ast with no context.
     settings = LogStash::SETTINGS
@@ -56,7 +56,14 @@ class LogStash::Plugin
     # The id should always be defined normally, but in tests that might not be the case
     # In the future we may make this more strict in the Plugin API
     @params["id"] ||= "#{self.class.config_name}_#{SecureRandom.uuid}"
+  end
+
+  def register
+  end
+
+  def do_register(dlq_manager=nil)
     @dlq_manager = dlq_manager
+    register
   end
 
   # Return a uniq ID for this plugin configuration, by default
@@ -132,10 +139,8 @@ class LogStash::Plugin
 
   # commit event to dlq
   def dlq_commit(event, reason)
-    if @dlq_manager.nil?
-      raise ArgumentError, "DLQ is not enabled, plugin cannot commit to it"
-    else
-      @dlq_manager.write(LogStash::DLQEntry.new(event, config_name, id, reason))
+    if @dlq_manager
+      @dlq_manager.writeEntry(event.to_java, config_name, id, reason)
     end
   end
 

@@ -1,6 +1,6 @@
 module LogStash module OutputDelegatorStrategies class Single
-  def initialize(logger, klass, metric, plugin_args, dlq)
-    @output = klass.new(plugin_args, dlq)
+  def initialize(logger, klass, metric, plugin_args)
+    @output = klass.new(plugin_args)
     @output.metric = metric
     @mutex = Mutex.new
   end
@@ -8,7 +8,11 @@ module LogStash module OutputDelegatorStrategies class Single
   def register
     @output.register
   end
-  
+
+  def do_register(dlq_manager=nil)
+    @output.do_register(dlq_manager)
+  end
+
   def multi_receive(events)
     @mutex.synchronize do
       @output.multi_receive(events)
