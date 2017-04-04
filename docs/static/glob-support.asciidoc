@@ -1,7 +1,7 @@
 [[glob-support]]
 === Glob Pattern Support
 
-Logstash supports the following patterns wherever glob patters are allowed:
+Logstash supports the following patterns wherever glob patterns are allowed:
 
 *`*`*::
 Match any file. You can also use an `*` to restrict other values in the glob.
