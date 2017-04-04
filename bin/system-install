@@ -7,8 +7,8 @@ setup
 if [ -z "$1" ]; then
   if [ -r /etc/logstash/startup.options ]; then
     OPTIONS_PATH=/etc/logstash/startup.options
-  elif [ -r ${LOGSTASH_HOME}/config/startup.options ]; then
-    OPTIONS_PATH=${LOGSTASH_HOME}/config/startup.options
+  elif [ -r "${LOGSTASH_HOME}"/config/startup.options ]; then
+    OPTIONS_PATH="${LOGSTASH_HOME}"/config/startup.options
   fi
 elif [ "$1" == "-h" ] || [ "$1" == "--help" ]; then
   echo "Usage: system-install [OPTIONSFILE] [STARTUPTYPE] [VERSION]"
@@ -30,9 +30,9 @@ elif [ "$1" == "-h" ] || [ "$1" == "--help" ]; then
   echo "For more information, see https://github.com/jordansissel/pleaserun"
   exit 0
 else
-  if [ -r $1 ]; then
+  if [ -r "$1" ]; then
     echo "Using provided startup.options file: ${1}"
-    OPTIONS_PATH=$1
+    OPTIONS_PATH="$1"
   else
     echo "$1 is not a file path"
     echo "To manually specify a startup style, put the path to startup.options as the "
@@ -42,7 +42,7 @@ else
 fi
 
 # Read in the env vars in the selected startup.options file...
-. ${OPTIONS_PATH}
+. "${OPTIONS_PATH}"
 
 old_IFS=$IFS
 IFS=$'\n'
