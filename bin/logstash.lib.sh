@@ -1,16 +1,16 @@
 unset CDPATH
 # This unwieldy bit of scripting is to try to catch instances where Logstash
 # was launched from a symlink, rather than a full path to the Logstash binary
-if [ -L $0 ]; then
+if [ -L "$0" ]; then
   # Launched from a symlink
   # --Test for the readlink binary
-  RL=$(which readlink)
+  RL="$(which readlink)"
   if [ $? -eq 0 ]; then
     # readlink exists
-    SOURCEPATH=$($RL $0)
+    SOURCEPATH="$($RL $0)"
   else
     # readlink not found, attempt to parse the output of stat
-    SOURCEPATH=$(stat -c %N $0 | awk '{print $3}' | sed -e 's/\‘//' -e 's/\’//')
+    SOURCEPATH="$(stat -c %N $0 | awk '{print $3}' | sed -e 's/\‘//' -e 's/\’//')"
     if [ $? -ne 0 ]; then
       # Failed to execute or parse stat
       echo "Failed to set LOGSTASH_HOME from $(cd `dirname $0`/..; pwd)/bin/logstash.lib.sh"
@@ -20,12 +20,12 @@ if [ -L $0 ]; then
   fi
 else
   # Not a symlink
-  SOURCEPATH=$0
+  SOURCEPATH="$0"
 fi
 
-LOGSTASH_HOME=$(cd `dirname $SOURCEPATH`/..; pwd)
+LOGSTASH_HOME="$(cd `dirname $SOURCEPATH`/..; pwd)"
 export LOGSTASH_HOME
-SINCEDB_DIR=${LOGSTASH_HOME}
+SINCEDB_DIR="${LOGSTASH_HOME}"
 export SINCEDB_DIR
 
 # This block will iterate over the command-line args Logstash was started with
@@ -65,7 +65,7 @@ setup_java() {
 
   # Resolve full path to the java command.
   if [ ! -f "$JAVACMD" ] ; then
-    JAVACMD=$(which $JAVACMD 2>/dev/null)
+    JAVACMD="$(which $JAVACMD 2>/dev/null)"
   fi
 
   if [ ! -x "$JAVACMD" ] ; then
@@ -114,7 +114,7 @@ setup_drip() {
 
   # resolve full path to the drip command.
   if [ ! -f "$JAVACMD" ] ; then
-    JAVACMD=$(which $JAVACMD 2>/dev/null)
+    JAVACMD="$(which $JAVACMD 2>/dev/null)"
   fi
 
   if [ ! -x "$JAVACMD" ] ; then
