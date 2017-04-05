@@ -1,7 +1,7 @@
 # Remove this in Logstash 6.0
 module LogStash module OutputDelegatorStrategies class Legacy
   attr_reader :worker_count, :workers
-  
+
   def initialize(logger, klass, metric, plugin_args)
     @worker_count = (plugin_args["workers"] || 1).to_i
     @workers = @worker_count.times.map { klass.new(plugin_args) }
@@ -9,11 +9,17 @@ module LogStash module OutputDelegatorStrategies class Legacy
     @worker_queue = SizedQueue.new(@worker_count)
     @workers.each {|w| @worker_queue << w}
   end
-  
+
   def register
     @workers.each(&:register)
   end
-  
+
+  def do_register(dlq_manager=nil)
+    @workers.each do |w|
+      w.do_register(dlq_manager)
+    end
+  end
+
   def multi_receive(events)
     worker = @worker_queue.pop
     worker.multi_receive(events)

@@ -15,11 +15,11 @@ module LogStash class OutputDelegator
 
     raise ArgumentError, "No strategy registry specified" unless strategy_registry
     raise ArgumentError, "No ID specified! Got args #{plugin_args}" unless id
-    
+
     @strategy = strategy_registry.
                   class_for(self.concurrency).
                   new(@logger, @output_class, @metric, plugin_args)
-    
+
     @namespaced_metric = metric.namespace(id.to_sym)
     @namespaced_metric.gauge(:name, config_name)
     @metric_events = @namespaced_metric.namespace(:events)
@@ -39,6 +39,10 @@ module LogStash class OutputDelegator
 
   def register
     @strategy.register
+  end
+
+  def do_register(dlq_manager=nil)
+    @strategy.do_register(dlq_manager)
   end
 
   def multi_receive(events)

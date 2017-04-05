@@ -456,8 +456,8 @@ describe LogStash::Agent do
     # Theses values are compared with what we store in the metric store.
     class DummyOutput2 < LogStash::Outputs::DroppingDummyOutput; end
 
-    let!(:dummy_output) { LogStash::Outputs::DroppingDummyOutput.new }
-    let!(:dummy_output2) { DummyOutput2.new }
+    let!(:dummy_output) { LogStash::Outputs::DroppingDummyOutput.new({}) }
+    let!(:dummy_output2) { DummyOutput2.new({}) }
     let(:initial_generator_threshold) { 1000 }
     let(:pipeline_thread) do
       Thread.new do

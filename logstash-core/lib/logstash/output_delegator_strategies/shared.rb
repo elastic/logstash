@@ -3,19 +3,23 @@ module LogStash module OutputDelegatorStrategies class Shared
     @output = klass.new(plugin_args)
     @output.metric = metric
   end
-  
+
   def register
     @output.register
+  end
+
+  def do_register(dlq_manager=nil)
+    @output.do_register(dlq_manager)
   end
 
   def multi_receive(events)
     @output.multi_receive(events)
   end
 
-  def do_close    
+  def do_close
     @output.do_close
   end
 
-  ::LogStash::OutputDelegatorStrategyRegistry.instance.register(:shared, self)  
+  ::LogStash::OutputDelegatorStrategyRegistry.instance.register(:shared, self)
 end; end; end
 

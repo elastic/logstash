@@ -4,6 +4,7 @@ module LogStash
   class FilterDelegator
     extend Forwardable
     DELEGATED_METHODS = [
+      :do_register,
       :register,
       :close,
       :threadsafe?,

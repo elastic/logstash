@@ -8,6 +8,14 @@ module LogStash
     class DummyInput < LogStash::Inputs::Base
       config_name "dummyinput"
 
+      attr_reader :num_closes, :events
+
+      def initialize(params={})
+        super
+        @num_closes = 0
+        @events = []
+      end
+
       def run(queue)
         # noop
       end

@@ -8,7 +8,11 @@ module LogStash module OutputDelegatorStrategies class Single
   def register
     @output.register
   end
-  
+
+  def do_register(dlq_manager=nil)
+    @output.do_register(dlq_manager)
+  end
+
   def multi_receive(events)
     @mutex.synchronize do
       @output.multi_receive(events)

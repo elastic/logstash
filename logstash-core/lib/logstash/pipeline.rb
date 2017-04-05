@@ -1,4 +1,3 @@
-# encoding: utf-8
 require "thread"
 require "stud/interval"
 require "concurrent"
@@ -27,14 +26,14 @@ module LogStash; class BasePipeline
   include LogStash::Util::Loggable
 
   attr_reader :config_str, :config_hash, :inputs, :filters, :outputs, :pipeline_id, :lir
-  
+
   def initialize(config_str, settings = SETTINGS)
     @logger = self.logger
     @config_str = config_str
     @config_hash = Digest::SHA1.hexdigest(@config_str)
-    
+
     @lir = compile_lir
-    
+
     # Every time #plugin is invoked this is incremented to give each plugin
     # a unique id when auto-generating plugin ids
     @plugin_counter ||= 0
@@ -67,7 +66,7 @@ module LogStash; class BasePipeline
       raise e
     end
   end
-  
+
   def compile_lir
     LogStash::Compiler.compile_pipeline(self.config_str)
   end
@@ -128,7 +127,8 @@ module LogStash; class Pipeline < BasePipeline
     :metric,
     :filter_queue_client,
     :input_queue_client,
-    :queue
+    :queue,
+    :dlq_manager
 
   MAX_INFLIGHT_WARN_THRESHOLD = 10_000
 
@@ -165,6 +165,15 @@ module LogStash; class Pipeline < BasePipeline
     )
     @drain_queue =  @settings.get_value("queue.drain")
 
+    @dlq_manager = nil
+    if @settings.get_value("dead_letter_queue.enable")
+      managed_path = ::File.join(@settings.get_value("path.dead_letter_queue"), @pipeline_id)
+      managed_path = java.nio.file.Paths.get(managed_path)
+      max_segment_size = 10485760 # 10MB
+      max_queue_size = java.lang.Long::MAX_VALUE
+      @dlq_manager = org.logstash.common.io.DeadLetterQueueWriteManager.new(managed_path, max_segment_size, max_queue_size)
+    end
+
     @events_filtered = Concurrent::AtomicFixnum.new(0)
     @events_consumed = Concurrent::AtomicFixnum.new(0)
 
@@ -174,8 +183,6 @@ module LogStash; class Pipeline < BasePipeline
     @running = Concurrent::AtomicBoolean.new(false)
     @flushing = Concurrent::AtomicReference.new(false)
   end # def initialize
-  
-  
 
   def ready?
     @ready.value
@@ -244,6 +251,7 @@ module LogStash; class Pipeline < BasePipeline
   def close
     @filter_queue_client.close
     @queue.close
+    @dlq_manager.close unless @dlq_manager.nil?
   end
 
   def transition_to_running
@@ -265,8 +273,8 @@ module LogStash; class Pipeline < BasePipeline
   # register_plugin simply calls the plugin #register method and catches & logs any error
   # @param plugin [Plugin] the plugin to register
   # @return [Plugin] the registered plugin
-  def register_plugin(plugin)
-    plugin.register
+  def register_plugin(plugin, dlq_manager=nil)
+    plugin.do_register(dlq_manager)
     plugin
   rescue => e
     @logger.error("Error registering plugin", :plugin => plugin.inspect, :error => e.message)
@@ -275,9 +283,9 @@ module LogStash; class Pipeline < BasePipeline
 
   # register_plugins calls #register_plugin on the plugins list and upon exception will call Plugin#do_close on all registered plugins
   # @param plugins [Array[Plugin]] the list of plugins to register
-  def register_plugins(plugins)
+  def register_plugins(plugins, dlq_manager=nil)
     registered = []
-    plugins.each { |plugin| registered << register_plugin(plugin) }
+    plugins.each { |plugin| registered << register_plugin(plugin, dlq_manager) }
   rescue => e
     registered.each(&:do_close)
     raise e
@@ -286,8 +294,8 @@ module LogStash; class Pipeline < BasePipeline
   def start_workers
     @worker_threads.clear # In case we're restarting the pipeline
     begin
-      register_plugins(@outputs)
-      register_plugins(@filters)
+      register_plugins(@outputs, @dlq_manager)
+      register_plugins(@filters, @dlq_manager)
 
       pipeline_workers = safe_pipeline_worker_count
       batch_size = @settings.get("pipeline.batch.size")
@@ -351,6 +359,7 @@ module LogStash; class Pipeline < BasePipeline
       filter_batch(batch)
       flush_filters_to_batch(batch, :final => false) if signal.flush?
       output_batch(batch)
+
       @filter_queue_client.close_batch(batch)
 
       # keep break at end of loop, after the read_batch operation, some pipeline specs rely on this "final read_batch" before shutdown.
@@ -407,7 +416,6 @@ module LogStash; class Pipeline < BasePipeline
     output_events_map.each do |output, events|
       output.multi_receive(events)
     end
-    
     @filter_queue_client.add_output_metrics(batch)
   end
 
@@ -427,7 +435,7 @@ module LogStash; class Pipeline < BasePipeline
     @inputs += moreinputs
 
     # first make sure we can register all input plugins
-    register_plugins(@inputs)
+    register_plugins(@inputs, @dlq_manager)
 
     # then after all input plugins are successfully registered, start them
     @inputs.each { |input| start_input(input) }

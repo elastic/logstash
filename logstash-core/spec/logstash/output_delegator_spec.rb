@@ -24,7 +24,7 @@ describe LogStash::OutputDelegator do
       allow(out_klass).to receive(:name).and_return("example")
       allow(out_klass).to receive(:concurrency).with(any_args).and_return concurrency
       allow(out_klass).to receive(:config_name).and_return("dummy_plugin")
-      allow(out_inst).to receive(:register)
+      allow(out_inst).to receive(:do_register)
       allow(out_inst).to receive(:multi_receive)
       allow(out_inst).to receive(:metric=).with(any_args)
       allow(out_inst).to receive(:id).and_return("a-simple-plugin")
@@ -44,7 +44,7 @@ describe LogStash::OutputDelegator do
 
     context "after having received a batch of events" do
       before do
-        subject.register
+        subject.do_register
       end
 
       it "should pass the events through" do
@@ -68,11 +68,11 @@ describe LogStash::OutputDelegator do
 
     describe "closing" do
       before do
-        subject.register
+        subject.do_register
       end
 
       it "should register the output plugin instance on register" do
-        expect(out_inst).to have_received(:register)
+        expect(out_inst).to have_received(:do_register)
       end
 
       it "should close the output plugin instance when closing" do

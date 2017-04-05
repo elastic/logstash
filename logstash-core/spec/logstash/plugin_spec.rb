@@ -311,7 +311,7 @@ describe LogStash::Plugin do
       context "when no metric is set to the plugin" do
         context "when `enable_metric` is TRUE" do
           it "recording metric should not raise an exception" do
-            expect { subject.register }.not_to raise_error
+            expect { subject.do_register }.not_to raise_error
           end
 
           it "should use a `NullMetric`" do
@@ -323,7 +323,7 @@ describe LogStash::Plugin do
           let(:config) { { "enable_metric" => false } }
 
           it "recording metric should not raise an exception" do
-            expect { subject.register }.not_to raise_error
+            expect { subject.do_register }.not_to raise_error
           end
 
           it "should use a `NullMetric`" do
@@ -341,7 +341,7 @@ describe LogStash::Plugin do
           end
 
           it "recording metric should not raise an exception" do
-            expect { subject.register }.not_to raise_error
+            expect { subject.do_register }.not_to raise_error
           end
 
           it "should use the configured metric" do
@@ -353,7 +353,7 @@ describe LogStash::Plugin do
           let(:config) { { "enable_metric" => false } }
 
           it "recording metric should not raise an exception" do
-            expect { subject.register }.not_to raise_error
+            expect { subject.do_register }.not_to raise_error
           end
 
           it "should use a `NullMetric`" do
