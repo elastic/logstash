@@ -33,11 +33,11 @@ public class Accessors {
             if (target instanceof Map) {
                 return ((Map<String, Object>) target).remove(field.getKey());
             } else if (target instanceof List) {
-                int i = Integer.parseInt(field.getKey());
                 try {
+                    int i = Integer.parseInt(field.getKey());
                     int offset = listIndex(i, ((List) target).size());
                     return ((List)target).remove(offset);
-                } catch (IndexOutOfBoundsException e) {
+                } catch (IndexOutOfBoundsException|NumberFormatException e) {
                     return null;
                 }
             } else {
@@ -52,8 +52,13 @@ public class Accessors {
         Object target = findTarget(field);
         if (target instanceof Map && foundInMap((Map<String, Object>) target, field.getKey())) {
             return true;
-        } else if (target instanceof List && foundInList((List<Object>) target, Integer.parseInt(field.getKey()))) {
-            return true;
+        } else if (target instanceof List) {
+            try {
+                int i = Integer.parseInt(field.getKey());
+                return (foundInList((List<Object>) target, i) ? true : false);
+            } catch (NumberFormatException e) {
+                return false;
+            }
         } else {
             return false;
         }
@@ -98,9 +103,13 @@ public class Accessors {
                 if (target instanceof Map) {
                     ((Map<String, Object>)target).put(key, result);
                 } else if (target instanceof List) {
-                    int i = Integer.parseInt(key);
-                    // TODO: what about index out of bound?
-                    ((List<Object>)target).set(i, result);
+                    try {
+                        int i = Integer.parseInt(key);
+                        // TODO: what about index out of bound?
+                        ((List<Object>)target).set(i, result);
+                    } catch (NumberFormatException e) {
+                        continue;
+                    }
                 } else if (target != null) {
                     throw newCollectionException(target);
                 }
@@ -135,7 +144,7 @@ public class Accessors {
             try {
                 int offset = listIndex(Integer.parseInt(key), ((List) target).size());
                 return ((List<Object>) target).get(offset);
-            } catch (IndexOutOfBoundsException e) {
+            } catch (IndexOutOfBoundsException|NumberFormatException e) {
                 return null;
             }
         } else if (target == null) {
@@ -149,7 +158,12 @@ public class Accessors {
         if (target instanceof Map) {
             ((Map<String, Object>) target).put(key, value);
         } else if (target instanceof List) {
-            int i = Integer.parseInt(key);
+            int i;
+            try {
+                i = Integer.parseInt(key);
+            } catch (NumberFormatException e) {
+                return null;
+            }
             int size = ((List<Object>) target).size();
             if (i >= size) {
                 // grow array by adding trailing null items
