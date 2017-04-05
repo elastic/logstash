@@ -127,6 +127,30 @@ public class AccessorsTest {
         assertEquals(accessors.get(reference), null);
         assertEquals(accessors.lutGet(reference), inner);
     }
+    /*
+     * Check if accessors are able to recovery from
+     * failure to convert the key (string) to integer,
+     * when it is a non-numeric value, which is not
+     * expected.
+     */
+    @Test
+    public void testInvalidIdList() throws Exception {
+        Map data = new HashMap();
+        List inner = new ArrayList();
+        data.put("map1", inner);
+        inner.add("obj1");
+        inner.add("obj2");
+
+        String reference = "[map1][IdNonNumeric]";
+
+        TestableAccessors accessors = new TestableAccessors(data);
+        assertEquals(accessors.lutGet(reference), null);
+        assertEquals(accessors.get(reference), null);
+        assertEquals(accessors.set(reference, "obj3"), null);
+        assertEquals(accessors.lutGet(reference), inner);
+        assertFalse(accessors.includes(reference));
+        assertEquals(accessors.del(reference), null);
+    }
 
     @Test
     public void testBarePut() throws Exception {
