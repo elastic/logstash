@@ -18,6 +18,8 @@
  */
 package org.logstash.common.io;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.logstash.DLQEntry;
 import org.logstash.Timestamp;
 
@@ -38,6 +40,7 @@ import static java.nio.file.StandardWatchEventKinds.ENTRY_DELETE;
 import static org.logstash.common.io.DeadLetterQueueWriteManager.getSegmentPaths;
 
 public class DeadLetterQueueReadManager {
+    private static final Logger logger = LogManager.getLogger(DeadLetterQueueReadManager.class);
 
     private RecordIOReader currentReader;
     private final Path queuePath;
@@ -104,6 +107,11 @@ public class DeadLetterQueueReadManager {
         long timeoutRemaining = timeout;
         if (currentReader == null) {
             timeoutRemaining -= pollNewSegments(timeout);
+            // If no new segments are found, exit
+            if (segments.isEmpty()) {
+                logger.debug("No entries found: no segment files found in dead-letter-queue directory");
+                return null;
+            }
             currentReader = new RecordIOReader(segments.first());
         }
 
