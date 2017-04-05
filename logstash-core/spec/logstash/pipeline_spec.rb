@@ -855,6 +855,26 @@ describe LogStash::Pipeline do
     end
   end
 
+  context "#system" do
+    after do
+      pipeline.close # close the queue
+    end
+
+    context "when the pipeline is a system pipeline" do
+      let(:pipeline) { LogStash::Pipeline.new("input { generator {} } output { null {} }", mock_settings("pipeline.system" => true)) }
+      it "returns true" do
+        expect(pipeline.system?).to be_truthy
+      end
+    end
+
+    context "when the pipeline is not a system pipeline" do
+      let(:pipeline) { LogStash::Pipeline.new("input { generator {} } output { null {} }", mock_settings("pipeline.system" => false)) }
+      it "returns true" do
+        expect(pipeline.system?).to be_falsey
+      end
+    end
+  end
+
   context "#reloadable?" do
     after do
       pipeline.close # close the queue

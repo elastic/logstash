@@ -104,9 +104,12 @@ class LogStash::Agent
       return 1 if clean_state?
 
       while !Stud.stop?
-        if clean_state? || running_pipelines?
-          sleep 0.5
-        else
+        if running_user_defined_pipelines?
+          sleep(0.5)
+        elsif running_pipelines?
+          logger.debug("Shutting down system pipelines")
+          shutdown_pipelines
+        elsif clean_state? || !running_pipelines?
           break
         end
       end
@@ -240,6 +243,15 @@ class LogStash::Agent
   def running_pipelines?
     @pipelines_mutex.synchronize do
       @pipelines.select {|pipeline_id, _| running_pipeline?(pipeline_id) }.any?
+    end
+  end
+
+  def running_user_defined_pipelines?
+    @pipelines_mutex.synchronize do
+      @pipelines.select do |pipeline_id, _|
+        pipeline = @pipelines[pipeline_id]
+        pipeline.running? && !pipeline.system?
+      end.any?
     end
   end
 

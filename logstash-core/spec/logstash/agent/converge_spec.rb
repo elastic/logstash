@@ -43,7 +43,7 @@ describe LogStash::Agent do
       TestSourceLoader.new(finite_pipeline_config)
     end
 
-    context "when the pipeline is execution limite (finite)" do
+    context "when the pipeline execution is finite" do
       let(:finite_pipeline_config) { mock_pipeline_config(:main, "input { generator { count => 1000 } } output { null {} }") }
 
       it "execute the pipeline and stop execution" do
@@ -56,6 +56,39 @@ describe LogStash::Agent do
 
       it "execute the pipeline and stop execution" do
         expect(subject.execute).to eq(0)
+      end
+    end
+
+    context "#running_user_defined_pipelines?" do
+      let(:finite_pipeline_config) { mock_pipeline_config(:main, "input { generator { count => 1 } } output { null {} }") }
+
+      it "returns false" do
+        agent_task = start_agent(subject)
+        expect(subject.running_user_defined_pipelines?).to be_falsey
+        subject.shutdown
+      end
+    end
+
+    context "system pipeline" do
+      let(:finite_pipeline_config) { mock_pipeline_config(:main, "input { generator { count => 1000 } } output { null {} }") }
+      let(:system_pipeline_config) { mock_pipeline_config(:system_pipeline, "input { generator { } } output { null {} }", { "pipeline.system" => true }) }
+
+      let(:source_loader) do
+        TestSourceLoader.new(finite_pipeline_config, system_pipeline_config)
+      end
+
+      context "when we have a finite pipeline and a system pipeline running" do
+        it "execute the pipeline and stop execution" do
+          expect(subject.execute).to eq(0)
+        end
+      end
+
+      context "#running_user_defined_pipelines?" do
+        it "returns true" do
+          agent_task = start_agent(subject)
+          expect(subject.running_user_defined_pipelines?).to be_truthy
+          subject.shutdown
+        end
       end
     end
 
