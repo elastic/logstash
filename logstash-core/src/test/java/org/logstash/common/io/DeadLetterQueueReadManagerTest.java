@@ -29,7 +29,9 @@ import org.logstash.Event;
 import org.logstash.Timestamp;
 import org.logstash.ackedqueue.StringElement;
 
+import java.io.BufferedWriter;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collections;
 
@@ -133,5 +135,11 @@ public class DeadLetterQueueReadManagerTest {
         DLQEntry entry = readManager.pollEntry(100);
         assertThat(entry.getEntryTime().toIso8601(), equalTo(target.toIso8601()));
         assertThat(entry.getReason(), equalTo("543"));
+    }
+
+    @Test
+    public void testInvalidDirectory()  throws Exception {
+        DeadLetterQueueReadManager readManager = new DeadLetterQueueReadManager(dir);
+        assertThat(readManager.pollEntry(100), is(nullValue()));
     }
 }
