@@ -262,6 +262,10 @@ module LogStash; class Pipeline < BasePipeline
     @running.false?
   end
 
+  def system?
+    settings.get_value("pipeline.system")
+  end
+
   # register_plugin simply calls the plugin #register method and catches & logs any error
   # @param plugin [Plugin] the plugin to register
   # @return [Plugin] the registered plugin
