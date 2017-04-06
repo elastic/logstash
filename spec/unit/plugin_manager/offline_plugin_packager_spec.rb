@@ -4,6 +4,7 @@ require "stud/temporary"
 require "bootstrap/util/compress"
 require "fileutils"
 require "spec_helper"
+require "webmock"
 
 def retrieve_packaged_plugins(path)
   Dir.glob(::File.join(path, "logstash", "*.gem"))
@@ -74,9 +75,11 @@ describe LogStash::PluginManager::OfflinePluginPackager do
       let(:plugins_args) { ["logstash-input-stdin"] }
 
       it "creates a pack with the plugin" do
-        expect(retrieve_packaged_plugins(extract_to).size).to eq(1)
-        expect(retrieve_packaged_plugins(extract_to)).to include(/logstash-input-stdin/)
-        expect(retrieve_dependencies_gems(extract_to).size).to be > 0
+        try do
+          expect(retrieve_packaged_plugins(extract_to).size).to eq(1)
+          expect(retrieve_packaged_plugins(extract_to)).to include(/logstash-input-stdin/)
+          expect(retrieve_dependencies_gems(extract_to).size).to be > 0
+        end
       end
     end
 
@@ -84,13 +87,15 @@ describe LogStash::PluginManager::OfflinePluginPackager do
       let(:plugins_args) { ["logstash-input-stdin", "logstash-input-beats"] }
 
       it "creates pack with the plugins" do
-        expect(retrieve_packaged_plugins(extract_to).size).to eq(2)
+        try do
+          expect(retrieve_packaged_plugins(extract_to).size).to eq(2)
 
-        plugins_args.each do |plugin_name|
-          expect(retrieve_packaged_plugins(extract_to)).to include(/#{plugin_name}/)
+          plugins_args.each do |plugin_name|
+            expect(retrieve_packaged_plugins(extract_to)).to include(/#{plugin_name}/)
+          end
+
+          expect(retrieve_dependencies_gems(extract_to).size).to be > 0
         end
-
-        expect(retrieve_dependencies_gems(extract_to).size).to be > 0
       end
     end
 
