@@ -5,6 +5,7 @@ require "logstash/outputs/base"
 require "logstash/codecs/base"
 require "logstash/inputs/base"
 require "logstash/filters/base"
+require "logstash/execution_context"
 
 describe LogStash::Plugin do
   context "reloadable" do
@@ -39,6 +40,17 @@ describe LogStash::Plugin do
       it "makes #reloadable? return true" do
         expect(subject.new({}).reloadable?).to be_falsey
       end
+    end
+  end
+
+  context "#execution_context" do
+    subject { Class.new(LogStash::Plugin).new({}) }
+
+    it "can be set and get" do
+      expect(subject.execution_context).to be_nil
+      execution_context = LogStash::ExecutionContext.new(:main)
+      subject.execution_context = execution_context
+      expect(subject.execution_context).to eq(execution_context)
     end
   end
 

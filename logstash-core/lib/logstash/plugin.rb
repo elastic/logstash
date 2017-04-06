@@ -8,7 +8,8 @@ require "securerandom"
 
 class LogStash::Plugin
   include LogStash::Util::Loggable
-  attr_accessor :params
+
+  attr_accessor :params, :execution_context
 
   NL = "\n"
 
@@ -122,6 +123,7 @@ class LogStash::Plugin
                          LogStash::Instrument::NamespacedNullMetric.new(@metric, :null)
                        end
   end
+
   # return the configured name of this plugin
   # @return [String] The name of the plugin defined by `config_name`
   def config_name

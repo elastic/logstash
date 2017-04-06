@@ -1,5 +1,7 @@
 # encoding: utf-8
 require "spec_helper"
+require "logstash/execution_context"
+require "logstash/inputs/base"
 
 # use a dummy NOOP input to test Inputs::Base
 class LogStash::Inputs::NOOP < LogStash::Inputs::Base
@@ -60,7 +62,28 @@ describe "LogStash::Inputs::Base#decorate" do
     expect(evt.get("field")).to eq(["value1","value2"])
     expect(evt.get("field2")).to eq("value")
   end
-  
+
+  context "execution context" do
+    let(:default_execution_context) { LogStash::ExecutionContext.new(:main) }
+    let(:klass) { LogStash::Inputs::NOOP }
+
+    subject(:instance) { klass.new({}) }
+
+    it "allow to set the context" do
+      expect(instance.execution_context).to be_nil
+      instance.execution_context = default_execution_context
+
+      expect(instance.execution_context).to eq(default_execution_context)
+    end
+
+    it "propagate the context to the codec" do
+      expect(instance.codec.execution_context).to be_nil
+      instance.execution_context = default_execution_context
+
+      expect(instance.codec.execution_context).to eq(default_execution_context)
+    end
+  end
+
   describe "cloning" do
     let(:input) do
       LogStash::Inputs::NOOP.new("add_field" => {"field" => ["value1", "value2"], "field2" => "value"})

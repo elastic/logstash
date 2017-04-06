@@ -1,5 +1,7 @@
 # encoding: utf-8
 require "spec_helper"
+require "logstash/outputs/base"
+require "logstash/execution_context"
 
 # use a dummy NOOP output to test Outputs::Base
 class LogStash::Outputs::NOOPSingle < LogStash::Outputs::Base
@@ -74,6 +76,27 @@ describe "LogStash::Outputs::Base#new" do
 
     it "should default concurrency to :legacy" do
       expect(subject.concurrency).to eq(:legacy)
+    end
+  end
+
+  context "execution context" do
+    let(:default_execution_context) { LogStash::ExecutionContext.new(:main) }
+    let(:klass) { LogStash::Outputs::NOOPSingle }
+
+    subject(:instance) { klass.new(params.dup) }
+
+    it "allow to set the context" do
+      expect(instance.execution_context).to be_nil
+      instance.execution_context = default_execution_context
+
+      expect(instance.execution_context).to eq(default_execution_context)
+    end
+
+    it "propagate the context to the codec" do
+      expect(instance.codec.execution_context).to be_nil
+      instance.execution_context = default_execution_context
+
+      expect(instance.codec.execution_context).to eq(default_execution_context)
     end
   end
 
