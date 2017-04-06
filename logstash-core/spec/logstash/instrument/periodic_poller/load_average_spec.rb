@@ -13,14 +13,10 @@ describe LogStash::Instrument::PeriodicPoller::LoadAverage do
       context "when it can read the file" do
         let(:proc_loadavg) { "0.00 0.01 0.05 3/180 29727" }
 
-        before do
-          expect(::File).to receive(:read).with("/proc/loadavg").and_return(proc_loadavg)
-        end
-
         it "return the 3 load average from `/proc/loadavg`" do
           avg_1m, avg_5m, avg_15m = proc_loadavg.chomp.split(" ")
 
-          expect(subject.get).to include(:"1m" => avg_1m.to_f, :"5m" => avg_5m.to_f, :"15m" => avg_15m.to_f)
+          expect(subject.get(proc_loadavg)).to include(:"1m" => avg_1m.to_f, :"5m" => avg_5m.to_f, :"15m" => avg_15m.to_f)
         end
       end
     end
