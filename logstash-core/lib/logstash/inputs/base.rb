@@ -101,6 +101,14 @@ class LogStash::Inputs::Base < LogStash::Plugin
     cloned
   end
 
+  def execution_context=(context)
+    super
+    # There is no easy way to propage an instance variable into the codec, because the codec
+    # are created at the class level
+    @codec.execution_context = context
+    context
+  end
+
   protected
   def decorate(event)
     # Only set 'type' if not already set. This is backwards-compatible behavior
