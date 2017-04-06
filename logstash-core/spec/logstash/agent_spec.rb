@@ -99,6 +99,30 @@ describe LogStash::Agent do
         subject.register_pipeline(pipeline_settings)
       end
 
+      context "when a system pipeline is running" do
+        context "when one pipeline is finite" do
+          let(:pipeline_args) {
+            {
+              "path.config" => "a",
+              "config.string" => "input { generator { count => 1000 }} output { null {} }"
+            }
+          }
+          let(:system_pipeline_settings) do
+            s = agent_settings.clone
+            s.set("path.config", "")
+            s.set("config.string", "input { generator {}} output { null {} }")
+            s.set("pipeline.id", ".monitoring")
+            s.set("pipeline.system", true)
+            s
+          end
+
+          it "stops logstash at the end of the execution of the finite pipeline" do
+            subject.register_pipeline(system_pipeline_settings)
+            expect(subject.execute).to be_nil
+          end
+        end
+      end
+
       context "if state is clean" do
         before :each do
           allow(subject).to receive(:running_pipelines?).and_return(true)
