@@ -42,6 +42,7 @@ module LogStash; class BasePipeline
     @inputs = nil
     @filters = nil
     @outputs = nil
+    @execution_context = LogStash::ExecutionContext.new(@pipeline_id)
 
     grammar = LogStashConfigParser.new
     parsed_config = grammar.parse(config_str)
@@ -89,12 +90,13 @@ module LogStash; class BasePipeline
     klass = Plugin.lookup(plugin_type, name)
 
     if plugin_type == "output"
-      OutputDelegator.new(@logger, klass, type_scoped_metric,  OutputDelegatorStrategyRegistry.instance, args)
+      OutputDelegator.new(@logger, klass, type_scoped_metric, @execution_context, OutputDelegatorStrategyRegistry.instance, args)
     elsif plugin_type == "filter"
-      FilterDelegator.new(@logger, klass, type_scoped_metric, args)
+      FilterDelegator.new(@logger, klass, type_scoped_metric, @execution_context, args)
     else # input
       input_plugin = klass.new(args)
       input_plugin.metric = type_scoped_metric.namespace(id)
+      input_plugin.execution_context = @execution_context
       input_plugin
     end
   end
