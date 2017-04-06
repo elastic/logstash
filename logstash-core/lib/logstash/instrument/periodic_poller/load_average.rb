@@ -1,4 +1,6 @@
 # encoding: utf-8
+java_import "java.lang.management.ManagementFactory"
+
 module LogStash module Instrument module PeriodicPoller
   class LoadAverage
     class Windows
@@ -11,8 +13,8 @@ module LogStash module Instrument module PeriodicPoller
       LOAD_AVG_FILE = "/proc/loadavg"
       TOKEN_SEPARATOR = " "
 
-      def self.get
-        load_average = ::File.read(LOAD_AVG_FILE).chomp.split(TOKEN_SEPARATOR)
+      def self.get(content = ::File.read(LOAD_AVG_FILE))
+        load_average = content.chomp.split(TOKEN_SEPARATOR)
 
         {
           :"1m" => load_average[0].to_f,
