@@ -29,9 +29,6 @@ import org.logstash.Event;
 import org.logstash.Timestamp;
 import org.logstash.ackedqueue.StringElement;
 
-import java.io.BufferedWriter;
-import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collections;
 
@@ -40,14 +37,14 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 
-public class DeadLetterQueueReadManagerTest {
+public class DeadLetterQueueReaderTest {
     private Path dir;
 
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
     private static String segmentFileName(int i) {
-        return String.format(DeadLetterQueueWriteManager.SEGMENT_FILE_PATTERN, i);
+        return String.format(DeadLetterQueueWriter.SEGMENT_FILE_PATTERN, i);
     }
 
     @Before
@@ -70,7 +67,7 @@ public class DeadLetterQueueReadManagerTest {
             }
         }
 
-        DeadLetterQueueReadManager manager = new DeadLetterQueueReadManager(dir);
+        DeadLetterQueueReader manager = new DeadLetterQueueReader(dir);
 
         for (int i = 0; i < 50; i++) {
             String first = StringElement.deserialize(manager.pollEntryBytes()).toString();
@@ -116,7 +113,7 @@ public class DeadLetterQueueReadManagerTest {
 
     @Test
     public void testSeek() throws Exception {
-        DeadLetterQueueWriteManager writeManager = new DeadLetterQueueWriteManager(dir, 10000000, 10000000);
+        DeadLetterQueueWriter writeManager = new DeadLetterQueueWriter(dir, 10000000, 10000000);
         Event event = new Event(Collections.emptyMap());
         Timestamp target = null;
         long currentEpoch = System.currentTimeMillis();
@@ -130,7 +127,7 @@ public class DeadLetterQueueReadManagerTest {
         }
         writeManager.close();
 
-        DeadLetterQueueReadManager readManager = new DeadLetterQueueReadManager(dir);
+        DeadLetterQueueReader readManager = new DeadLetterQueueReader(dir);
         readManager.seekToNextEvent(target);
         DLQEntry entry = readManager.pollEntry(100);
         assertThat(entry.getEntryTime().toIso8601(), equalTo(target.toIso8601()));

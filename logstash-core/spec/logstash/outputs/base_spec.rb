@@ -82,7 +82,7 @@ describe "LogStash::Outputs::Base#new" do
 
   context "execution context" do
     include_context "execution_context"
-    
+
     let(:klass) { LogStash::Outputs::NOOPSingle }
 
     subject(:instance) { klass.new(params.dup) }

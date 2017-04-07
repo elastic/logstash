@@ -50,6 +50,7 @@ module LogStash
             Setting::Numeric.new("queue.checkpoint.acks", 1024), # 0 is unlimited
             Setting::Numeric.new("queue.checkpoint.writes", 1024), # 0 is unlimited
             Setting::Numeric.new("queue.checkpoint.interval", 1000), # 0 is no time-based checkpointing
+            Setting::Boolean.new("dead_letter_queue.enable", false),
             Setting::TimeValue.new("slowlog.threshold.warn", "-1"),
             Setting::TimeValue.new("slowlog.threshold.info", "-1"),
             Setting::TimeValue.new("slowlog.threshold.debug", "-1"),
@@ -59,13 +60,21 @@ module LogStash
   # Compute the default queue path based on `path.data`
   default_queue_file_path = ::File.join(SETTINGS.get("path.data"), "queue")
   SETTINGS.register Setting::WritableDirectory.new("path.queue", default_queue_file_path)
-  
+  # Compute the default dead_letter_queue path based on `path.data`
+  default_dlq_file_path = ::File.join(SETTINGS.get("path.data"), "dead_letter_queue")
+  SETTINGS.register Setting::WritableDirectory.new("path.dead_letter_queue", default_dlq_file_path)
+
   SETTINGS.on_post_process do |settings|
     # If the data path is overridden but the queue path isn't recompute the queue path
     # We need to do this at this stage because of the weird execution order
     # our monkey-patched Clamp follows
-    if settings.set?("path.data") && !settings.set?("path.queue")
-      settings.set_value("path.queue", ::File.join(settings.get("path.data"), "queue"))
+    if settings.set?("path.data")
+      if !settings.set?("path.queue")
+        settings.set_value("path.queue", ::File.join(settings.get("path.data"), "queue"))
+      end
+      if !settings.set?("path.dead_letter_queue")
+        settings.set_value("path.dead_letter_queue", ::File.join(settings.get("path.data"), "dead_letter_queue"))
+      end
     end
   end
 

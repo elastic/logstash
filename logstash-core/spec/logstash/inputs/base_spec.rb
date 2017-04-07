@@ -66,7 +66,7 @@ describe "LogStash::Inputs::Base#decorate" do
 
   context "execution context" do
     include_context "execution_context"
-    
+
     let(:klass) { LogStash::Inputs::NOOP }
 
     subject(:instance) { klass.new({}) }

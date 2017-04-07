@@ -18,11 +18,14 @@ require "logstash/instrument/null_metric"
 require "logstash/instrument/namespaced_null_metric"
 require "logstash/instrument/collector"
 require "logstash/instrument/wrapped_write_client"
+require "logstash/util/dead_letter_queue_manager"
 require "logstash/output_delegator"
 require "logstash/filter_delegator"
 require "logstash/queue_factory"
 require "logstash/compiler"
 require "logstash/execution_context"
+
+java_import org.logstash.common.io.DeadLetterQueueWriter
 
 module LogStash; class BasePipeline
   include LogStash::Util::Loggable
@@ -49,7 +52,14 @@ module LogStash; class BasePipeline
     @inputs = nil
     @filters = nil
     @outputs = nil
-    @execution_context = LogStash::ExecutionContext.new(self, agent)
+    @agent = agent
+
+    if settings.get_value("dead_letter_queue.enable")
+      pipeline_dlq_path = ::File.join(settings.get_value("path.dead_letter_queue"), @pipeline_id)
+      @dlq_writer = DeadLetterQueueWriter.new(pipeline_dlq_path)
+    else
+      @dlq_writer = LogStash::Util::DummyDeadLetterQueueWriter.new
+    end
 
     grammar = LogStashConfigParser.new
     parsed_config = grammar.parse(config_str)
@@ -100,16 +110,18 @@ module LogStash; class BasePipeline
 
     klass = Plugin.lookup(plugin_type, name)
 
+    execution_context = ExecutionContext.new(self, @agent, id, klass.config_name, @dlq_writer)
+
     if plugin_type == "output"
-      OutputDelegator.new(@logger, klass, type_scoped_metric, @execution_context, OutputDelegatorStrategyRegistry.instance, args)
+      OutputDelegator.new(@logger, klass, type_scoped_metric, execution_context, OutputDelegatorStrategyRegistry.instance, args)
     elsif plugin_type == "filter"
-      FilterDelegator.new(@logger, klass, type_scoped_metric, @execution_context, args)
+      FilterDelegator.new(@logger, klass, type_scoped_metric, execution_context, args)
     else # input
       input_plugin = klass.new(args)
       scoped_metric = type_scoped_metric.namespace(id.to_sym)
       scoped_metric.gauge(:name, input_plugin.config_name)
       input_plugin.metric = scoped_metric
-      input_plugin.execution_context = @execution_context
+      input_plugin.execution_context = execution_context
       input_plugin
     end
   end
@@ -180,6 +192,7 @@ module LogStash; class Pipeline < BasePipeline
     )
     @drain_queue =  @settings.get_value("queue.drain")
 
+
     @events_filtered = Concurrent::AtomicFixnum.new(0)
     @events_consumed = Concurrent::AtomicFixnum.new(0)
 
@@ -190,8 +203,6 @@ module LogStash; class Pipeline < BasePipeline
     @flushing = Concurrent::AtomicReference.new(false)
     @force_shutdown = Concurrent::AtomicBoolean.new(false)
   end # def initialize
-
-
 
   def ready?
     @ready.value
@@ -305,6 +316,7 @@ module LogStash; class Pipeline < BasePipeline
   def close
     @filter_queue_client.close
     @queue.close
+    @dlq_writer.close
   end
 
   def transition_to_running
