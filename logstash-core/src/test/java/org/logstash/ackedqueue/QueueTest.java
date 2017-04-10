@@ -19,6 +19,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
@@ -634,6 +635,92 @@ public class QueueTest {
 
         assertThat(q.getAckedCount(), equalTo(0L));
         assertThat(q.getUnackedCount(), equalTo(0L));
+
+        q.close();
+    }
+
+    @Test(timeout = 5000)
+    public void concurrentWritesTest() throws IOException, InterruptedException, ExecutionException {
+
+        // very small pages to maximize page creation
+        Settings settings = TestSettings.volatileQueueSettings(100);
+
+        TestQueue q = new TestQueue(settings);
+        q.open();
+
+        int ELEMENT_COUNT = 10000;
+        int WRITER_COUNT = 5;
+        AtomicInteger element_num = new AtomicInteger(0);
+
+        // we expect this next write call to block so let's wrap it in a Future
+        Callable<Integer> writer = () -> {
+            for (int i = 0; i < ELEMENT_COUNT; i++) {
+                int n = element_num.getAndIncrement();
+                q.write(new StringElement("" + n));
+            }
+            return ELEMENT_COUNT;
+        };
+
+        List<Future<Integer>> futures = new ArrayList<>();
+        ExecutorService executor = Executors.newFixedThreadPool(WRITER_COUNT);
+        for  (int i = 0; i < WRITER_COUNT; i++) {
+            futures.add(executor.submit(writer));
+        }
+
+        int BATCH_SIZE = 10;
+        int read_count = 0;
+
+        while (read_count < ELEMENT_COUNT * WRITER_COUNT) {
+            Batch b = q.readBatch(BATCH_SIZE);
+            read_count += b.size();
+            b.close();
+        }
+
+        for (Future<Integer> future : futures) {
+            int result = future.get();
+            assertThat(result, is(equalTo(ELEMENT_COUNT)));
+        }
+
+        assertThat(q.getTailPages().isEmpty(), is(true));
+        assertThat(q.isFullyAcked(), is(true));
+
+        executor.shutdown();
+        q.close();
+    }
+
+    @Test
+    public void fullyAckedHeadPageBeheadingTest() throws IOException {
+        Queueable element = new StringElement("foobarbaz1");
+        int singleElementCapacity = ByteBufferPageIO.HEADER_SIZE + ByteBufferPageIO._persistedByteCount(element.serialize().length);
+
+        TestQueue q = new TestQueue(TestSettings.volatileQueueSettings(2 * singleElementCapacity));
+        q.open();
+
+        Batch b;
+        q.write(element);
+        b = q.nonBlockReadBatch(1);
+        assertThat(b.getElements().size(), is(equalTo(1)));
+        b.close();
+
+        q.write(element);
+        b = q.nonBlockReadBatch(1);
+        assertThat(b.getElements().size(), is(equalTo(1)));
+        b.close();
+
+        // head page should be full and fully acked
+        assertThat(q.getHeadPage().isFullyAcked(), is(true));
+        assertThat(q.getHeadPage().hasSpace(element.serialize().length), is(false));
+        assertThat(q.isFullyAcked(), is(true));
+
+        // write extra element to trigger beheading
+        q.write(element);
+
+        // since head page was fully acked it should not have created a new tail page
+
+        assertThat(q.getTailPages().isEmpty(), is(true));
+        assertThat(q.getHeadPage().getPageNum(), is(equalTo(1)));
+        assertThat(q.firstUnackedPageNum(), is(equalTo(1)));
+        assertThat(q.isFullyAcked(), is(false));
 
         q.close();
     }

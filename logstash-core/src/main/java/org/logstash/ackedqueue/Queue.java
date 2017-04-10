@@ -15,7 +15,10 @@ import java.lang.reflect.Method;
 import java.nio.channels.FileLock;
 import java.nio.file.NoSuchFileException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Condition;
@@ -43,6 +46,10 @@ public class Queue implements Closeable {
     // this list serves the only purpose of quickly retrieving the first unread page, operation necessary on every read
     // reads will simply remove the first page from the list when fully read and writes will append new pages upon beheading
     protected final List<TailPage> unreadTailPages;
+
+    // checkpoints that were not purged in the acking code to keep contiguous checkpoint files
+    // regardless of the correcponding data file purge.
+    protected final Set<Integer> preservedCheckpoints;
 
     protected volatile long unreadCount;
     protected volatile long currentByteSize;
@@ -98,6 +105,7 @@ public class Queue implements Closeable {
         this.elementClass = elementClass;
         this.tailPages = new ArrayList<>();
         this.unreadTailPages = new ArrayList<>();
+        this.preservedCheckpoints = new HashSet<>();
         this.closed = new AtomicBoolean(true); // not yet opened
         this.maxUnread = maxUnread;
         this.checkpointMaxAcks = checkpointMaxAcks;
@@ -294,7 +302,6 @@ public class Queue implements Closeable {
     // @param element the Queueable object to write to the queue
     // @return long written sequence number
     public long write(Queueable element) throws IOException {
-        long seqNum = nextSeqNum();
         byte[] data = element.serialize();
 
         if (! this.headPage.hasCapacity(data.length)) {
@@ -314,18 +321,32 @@ public class Queue implements Closeable {
 
             // create a new head page if the current does not have suffient space left for data to be written
             if (! this.headPage.hasSpace(data.length)) {
-                // beheading includes checkpoint+fsync if required
-                TailPage tailPage = this.headPage.behead();
 
-                this.tailPages.add(tailPage);
-                if (! tailPage.isFullyRead()) {
-                    this.unreadTailPages.add(tailPage);
+                // TODO: verify queue state integrity WRT Queue.open()/recover() at each step of this process
+
+                int newHeadPageNum = this.headPage.pageNum + 1;
+
+                if (this.headPage.isFullyAcked()) {
+                    // purge the old headPage because its full and fully acked
+                    // there is no checkpoint file to purge since just creating a new TailPage from a HeadPage does
+                    // not trigger a checkpoint creation in itself
+                    TailPage tailPage = new TailPage(this.headPage);
+                    tailPage.purge();
+                } else {
+                    // beheading includes checkpoint+fsync if required
+                    TailPage tailPage = this.headPage.behead();
+
+                    this.tailPages.add(tailPage);
+                    if (! tailPage.isFullyRead()) {
+                        this.unreadTailPages.add(tailPage);
+                    }
                 }
 
                 // create new head page
-                newCheckpointedHeadpage(tailPage.pageNum + 1);
+                newCheckpointedHeadpage(newHeadPageNum);
             }
 
+            long seqNum = nextSeqNum();
             this.headPage.write(data, seqNum, this.checkpointMaxWrites);
             this.unreadCount++;
 
@@ -564,16 +585,19 @@ public class Queue implements Closeable {
                     result.page.purge();
                     this.currentByteSize -= result.page.getPageIO().getCapacity();
 
-                     if (result.index == 0) {
+                    if (result.index != 0) {
+                        // this an in-between page, we don't purge it's checkpoint to preserve checkpoints sequence on disk
+                        // save that checkpoint so that if it becomes the first checkpoint it can be purged later on.
+                        this.preservedCheckpoints.add(result.page.getPageNum());
+                    } else {
                         // if this is the first page also remove checkpoint file
                         this.checkpointIO.purge(this.checkpointIO.tailFileName(result.page.getPageNum()));
 
-                         // and see if next "first tail page" is also fully acked and remove checkpoint file
-                        while (this.tailPages.size() > 0) {
-                            TailPage p = this.tailPages.get(0);
-                            if (!p.isFullyAcked()) { break; }
-                            this.checkpointIO.purge(this.checkpointIO.tailFileName(p.getPageNum()));
-                            this.tailPages.remove(0);
+                        // check if there are preserved checkpoints file next to this one and delete them
+                        int nextPageNum = result.page.getPageNum() + 1;
+                        while (preservedCheckpoints.remove(nextPageNum)) {
+                            this.checkpointIO.purge(this.checkpointIO.tailFileName(nextPageNum));
+                            nextPageNum++;
                         }
                     }
 
