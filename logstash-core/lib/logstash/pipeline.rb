@@ -21,6 +21,7 @@ require "logstash/instrument/wrapped_write_client"
 require "logstash/output_delegator"
 require "logstash/filter_delegator"
 require "logstash/queue_factory"
+require "logstash/execution_context"
 
 module LogStash; class BasePipeline
   include LogStash::Util::Loggable
