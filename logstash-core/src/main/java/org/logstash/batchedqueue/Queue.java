@@ -55,21 +55,8 @@ public class Queue<E> {
                 return;
             }
 
-            while (isFull()) {
-                try {
-                    notFull.await();
-                } catch (InterruptedException e) {
-                    // the thread interrupt() has been called while in the await() blocking call.
-                    // at this point the interrupted flag is reset and Thread.interrupted() will return false
-                    // to any upstream calls on it. for now our choice is to return normally and set back
-                    // the Thread.interrupted() flag so it can be checked upstream.
-
-                    // set back the interrupted flag
-                    Thread.currentThread().interrupt();
-
-                    return;
-                }
-            }
+            boolean interrupted = !_waitNotFull();
+            if (interrupted) { return; }
 
             if (this.batches[this.write_batch].size() >= this.limit) {
                 inc_write_batch();
@@ -78,6 +65,58 @@ public class Queue<E> {
         } finally {
             lock.unlock();
         }
+    }
+
+    public void write(List<E> elements) {
+        lock.lock();
+        try {
+            int read_pos = 0;
+
+            while (read_pos < elements.size()) {
+
+                boolean interrupted = !_waitNotFull();
+                if (interrupted) { return; }
+
+                int max_writes = this.limit - this.batches[this.write_batch].size();
+                int remaining = elements.size() - read_pos;
+                int write_size = max_writes >= remaining ? remaining : max_writes;
+
+                boolean wasEmpty = _isEmpty();
+
+                this.batches[this.write_batch].addAll(elements.subList(read_pos, read_pos + write_size));
+                read_pos += write_size;
+                if (this.batches[this.write_batch].size() >= this.limit) {
+                    inc_write_batch();
+                }
+
+                if (wasEmpty) {  notEmpty.signal(); }
+            }
+        } finally {
+            lock.unlock();
+        }
+    }
+
+
+
+
+    // returns false if the thread was interrrupted
+    private boolean _waitNotFull() {
+        while (isFull()) {
+            try {
+                notFull.await();
+            } catch (InterruptedException e) {
+                // the thread interrupt() has been called while in the await() blocking call.
+                // at this point the interrupted flag is reset and Thread.interrupted() will return false
+                // to any upstream calls on it. for now our choice is to return normally and set back
+                // the Thread.interrupted() flag so it can be checked upstream.
+
+                // set back the interrupted flag
+                Thread.currentThread().interrupt();
+
+                return false;
+            }
+        }
+        return true;
     }
 
     private boolean isFull() {

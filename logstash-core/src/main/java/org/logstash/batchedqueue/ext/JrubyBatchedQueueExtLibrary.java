@@ -1,5 +1,6 @@
 package org.logstash.batchedqueue.ext;
 
+import org.jruby.RubyArray;
 import org.logstash.Event;
 import org.logstash.ext.JrubyEventExtLibrary;
 import org.jruby.Ruby;
@@ -67,6 +68,18 @@ public class JrubyBatchedQueueExtLibrary implements Library {
             }
 
             this.queue.write(event);
+
+            return context.nil;
+        }
+
+        @JRubyMethod(name = {"write_batch"}, required = 1)
+        public IRubyObject ruby_write_batch(ThreadContext context, IRubyObject events)
+        {
+            if (!(events instanceof RubyArray)) {
+                throw context.runtime.newTypeError("wrong argument type " + events.getMetaClass() + " (expected Array)");
+            }
+
+            this.queue.write(((RubyArray)events).getList());
 
             return context.nil;
         }

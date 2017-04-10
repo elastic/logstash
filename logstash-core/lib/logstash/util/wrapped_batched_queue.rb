@@ -18,6 +18,10 @@ module LogStash; module Util
     end
     alias_method(:<<, :push)
 
+    def push_batch(batch)
+      @queue.write_batch(batch)
+    end
+
     # Offer an object to the queue, wait for the specified amout of time.
     # If adding to the queue was successfull it wil return true, false otherwise.
     #
@@ -272,9 +276,7 @@ module LogStash; module Util
       alias_method(:<<, :push)
 
       def push_batch(batch)
-        batch.each do |event|
-          push(event)
-        end
+        @queue.push_batch(batch)
       end
     end
 

@@ -16,11 +16,13 @@ import java.nio.channels.FileLock;
 import java.nio.file.NoSuchFileException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.stream.Collectors;
 
 
 // TODO: Notes
@@ -355,6 +357,75 @@ public class Queue implements Closeable {
             }
 
             return seqNum;
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    // @param elements the Queueable objects to write to the queue
+    // @return long written sequence number
+    public void write(List<Queueable> elements) throws IOException {
+        List<byte[]> serialized = elements.stream().map(e -> { try { return e.serialize(); } catch (IOException ex) { throw new RuntimeException(ex); }}).collect(Collectors.toList());
+
+        // the write strategy with regard to the isFull() state is to assume there is space for this element
+        // and write it, then after write verify if we just filled the queue and wait on the notFull condition
+        // *after* the write which is both safer for a crash condition, and the queue closing sequence. In the former case
+        // holding an element in memory while wainting for the notFull condition would mean always having the current write
+        // element at risk in the always-full queue state. In the later, when closing a full queue, it would be impossible
+        // to write the current element.
+
+        lock.lock();
+        try {
+            boolean wasEmpty = (firstUnreadPage() == null);
+
+            for (byte[] data : serialized) {
+                if (! this.headPage.hasCapacity(data.length)) {
+                    throw new IOException("data to be written is bigger than page capacity");
+                }
+
+                long seqNum = nextSeqNum();
+
+                // create a new head page if the current does not have suffient space left for data to be written
+                if (! this.headPage.hasSpace(data.length)) {
+                    // beheading includes checkpoint+fsync if required
+                    TailPage tailPage = this.headPage.behead();
+
+                    this.tailPages.add(tailPage);
+                    if (! tailPage.isFullyRead()) {
+                        this.unreadTailPages.add(tailPage);
+                    }
+
+                    // create new head page
+                    newCheckpointedHeadpage(tailPage.pageNum + 1);
+                }
+
+                this.headPage.write(data, seqNum, this.checkpointMaxWrites);
+                this.unreadCount++;
+            }
+
+            // if the queue was empty before write, signal non emptiness
+            if (wasEmpty) { notEmpty.signal(); }
+
+            // now check if we reached a queue full state and block here until it is not full
+            // for the next write or the queue was closed.
+            while (isFull() && !isClosed()) {
+                try {
+                    notFull.await();
+                } catch (InterruptedException e) {
+                    // the thread interrupt() has been called while in the await() blocking call.
+                    // at this point the interrupted flag is reset and Thread.interrupted() will return false
+                    // to any upstream calls on it. for now our choice is to return normally and set back
+                    // the Thread.interrupted() flag so it can be checked upstream.
+
+                    // this is a bit tricky in the case of the queue full condition blocking state.
+                    // TODO: we will want to avoid initiating a new write operation if Thread.interrupted() was called.
+
+                    // set back the interrupted flag
+                    Thread.currentThread().interrupt();
+
+                    return;
+                }
+            }
         } finally {
             lock.unlock();
         }

@@ -1,6 +1,8 @@
 package org.logstash.ackedqueue.ext;
 
+import org.jruby.RubyArray;
 import org.logstash.Event;
+import org.logstash.ackedqueue.Queueable;
 import org.logstash.ext.JrubyEventExtLibrary;
 import org.jruby.Ruby;
 import org.jruby.RubyClass;
@@ -25,6 +27,8 @@ import org.logstash.common.io.MmapPageIO;
 import org.logstash.common.io.PageIOFactory;
 
 import java.io.IOException;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class JrubyAckedQueueExtLibrary implements Library {
 
@@ -155,6 +159,25 @@ public class JrubyAckedQueueExtLibrary implements Library {
 
             return context.runtime.newFixnum(seqNum);
         }
+
+        @JRubyMethod(name = {"write_batch"}, required = 1)
+        public IRubyObject ruby_write_batch(ThreadContext context, IRubyObject events)
+        {
+            if (!(events instanceof RubyArray)) {
+                throw context.runtime.newTypeError("wrong argument type " + events.getMetaClass() + " (expected Array)");
+            }
+
+            try {
+                List<JrubyEventExtLibrary.RubyEvent> rubyEvents = ((RubyArray)events).getList();
+                List<Queueable> javaEvents = rubyEvents.stream().map(e -> e.getEvent()).collect(Collectors.toList());
+                this.queue.write(javaEvents);
+            } catch (IOException e) {
+                throw context.runtime.newIOErrorFromException(e);
+            }
+
+            return context.nil;
+        }
+
 
         @JRubyMethod(name = "read_batch", required = 2)
         public IRubyObject ruby_read_batch(ThreadContext context, IRubyObject limit, IRubyObject timeout)

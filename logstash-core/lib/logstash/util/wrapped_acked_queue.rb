@@ -57,6 +57,11 @@ module LogStash; module Util
     end
     alias_method(:<<, :push)
 
+    def push_batch(batch)
+      check_closed("write")
+      @queue.write_batch(batch)
+    end
+
     # TODO - fix doc for this noop method
     # Offer an object to the queue, wait for the specified amount of time.
     # If adding to the queue was successful it will return true, false otherwise.
@@ -349,9 +354,7 @@ module LogStash; module Util
         if @queue.closed?
           raise QueueClosedError.new("Attempted to write a batch to a closed AckedQueue")
         end
-        batch.each do |event|
-          push(event)
-        end
+        @queue.push_batch(batch)
       end
     end
 
