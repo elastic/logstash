@@ -71,6 +71,14 @@ PUT /_node/logging
 While this setting is in effect, Logstash will begin to emit DEBUG-level logs for __all__ the Elasticsearch outputs 
 specified in your configuration. Please note this new setting is transient and will not survive a restart.
 
+Persistent changes should be added to `log4j2.properties`. For example:
+
+[source,yaml]
+--------------------------------------------------
+logger.elasticsearchoutput.name = logstash.outputs.elasticsearch
+logger.elasticsearchoutput.level = debug
+--------------------------------------------------
+
 To retrieve a list of logging subsystems available at runtime, you can do a `GET` request to `_node/logging`
 
 [source,js]
