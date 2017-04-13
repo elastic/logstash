@@ -9,7 +9,7 @@
 ################################################################################
 
 # Override Java location
-JAVACMD=/usr/bin/java
+#JAVACMD=/usr/bin/java
 
 # Set a home directory
 LS_HOME=/usr/share/logstash
