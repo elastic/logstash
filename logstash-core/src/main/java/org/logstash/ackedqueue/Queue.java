@@ -668,8 +668,9 @@ public class Queue implements Closeable {
                 } catch (IOException e) {
                     // log error and ignore
                     logger.error("Queue close releaseLock failed, error={}", e.getMessage());
+                } finally {
+                    lock.unlock();
                 }
-                lock.unlock();
             }
         }
     }
