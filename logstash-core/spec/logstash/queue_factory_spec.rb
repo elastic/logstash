@@ -15,7 +15,8 @@ describe LogStash::QueueFactory do
       LogStash::Setting::Numeric.new("queue.checkpoint.acks", 1024),
       LogStash::Setting::Numeric.new("queue.checkpoint.writes", 1024),
       LogStash::Setting::Numeric.new("queue.checkpoint.interval", 1000),
-      LogStash::Setting::String.new("pipeline.id", pipeline_id)
+      LogStash::Setting::String.new("pipeline.id", pipeline_id),
+      LogStash::Setting::PositiveInteger.new("pipeline.batch.size", 125),
     ]
   end
 

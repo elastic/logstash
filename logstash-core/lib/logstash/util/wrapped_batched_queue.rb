@@ -1,50 +1,12 @@
 # encoding: utf-8
 
-require "jruby_acked_queue_ext"
-require "jruby_acked_batch_ext"
-require "concurrent"
-# This is an adapted copy of the wrapped_synchronous_queue file
-# ideally this should be moved to Java/JRuby
+require "jruby_batched_queue_ext"
 
 module LogStash; module Util
-  # Some specialized constructors. The calling code *does* need to know what kind it creates but
-  # not the internal implementation e.g. LogStash::AckedMemoryQueue etc.
-  # Note the use of allocate - this is what new does before it calls initialize.
-  # Note that the new method has been made private this is because there is no
-  # default queue implementation.
-  # It would be expensive to create a persistent queue in the new method
-  # to then throw it away in favor of a memory based one directly after.
-  # Especially in terms of (mmap) memory allocation and proper close sequencing.
+  class WrappedBatchedQueue
 
-  class WrappedAckedQueue
-    class QueueClosedError < ::StandardError; end
-    class NotImplementedError < ::StandardError; end
-
-    def self.create_memory_based(path, capacity, max_events, max_bytes)
-      self.allocate.with_queue(
-        LogStash::AckedMemoryQueue.new(path, capacity, max_events, max_bytes)
-      )
-    end
-
-    def self.create_file_based(path, capacity, max_events, checkpoint_max_writes, checkpoint_max_acks, checkpoint_max_interval, max_bytes)
-      self.allocate.with_queue(
-        LogStash::AckedQueue.new(path, capacity, max_events, checkpoint_max_writes, checkpoint_max_acks, checkpoint_max_interval, max_bytes)
-      )
-    end
-
-    private_class_method :new
-
-    attr_reader :queue
-
-    def with_queue(queue)
-      @queue = queue
-      @queue.open
-      @closed = Concurrent::AtomicBoolean.new(false)
-      self
-    end
-
-    def closed?
-      @closed.true?
+    def initialize(batch_size = 125)
+      @queue = LogStash::BatchedQueue.new(batch_size)
     end
 
     # Push an object to the queue if the queue is full
@@ -52,66 +14,52 @@ module LogStash; module Util
     #
     # @param [Object] Object to add to the queue
     def push(obj)
-      check_closed("write")
       @queue.write(obj)
     end
     alias_method(:<<, :push)
 
     def push_batch(batch)
-      check_closed("write")
       @queue.write_batch(batch)
     end
 
-    # TODO - fix doc for this noop method
-    # Offer an object to the queue, wait for the specified amount of time.
-    # If adding to the queue was successful it will return true, false otherwise.
+    # Offer an object to the queue, wait for the specified amout of time.
+    # If adding to the queue was successfull it wil return true, false otherwise.
     #
     # @param [Object] Object to add to the queue
     # @param [Integer] Time in milliseconds to wait before giving up
-    # @return [Boolean] True if adding was successful if not it return false
+    # @return [Boolean] True if adding was successfull if not it return false
     def offer(obj, timeout_ms)
       raise NotImplementedError.new("The offer method is not implemented. There is no non blocking write operation yet.")
     end
 
     # Blocking
     def take
-      check_closed("read a batch")
-      # TODO - determine better arbitrary timeout millis
-      @queue.read_batch(1, 200).get_elements.first
+      raise NotImplementedError.new("The take method is not implemented.")
     end
 
     # Block for X millis
     def poll(millis)
-      check_closed("read")
-      @queue.read_batch(1, millis).get_elements.first
+      raise NotImplementedError.new("The poll method is not implemented.")
     end
 
-    def read_batch(size, wait)
-      check_closed("read a batch")
-      @queue.read_batch(size, wait)
+    def read_batch(wait)
+      @queue.read_batch(wait)
     end
 
     def write_client
       WriteClient.new(self)
     end
 
-    def read_client()
+    def read_client
       ReadClient.new(self)
     end
 
     def empty?
-      @queue.is_fully_acked?
-    end
-
-    def check_closed(action)
-      if closed?
-        raise QueueClosedError.new("Attempted to #{action} on a closed AckedQueue")
-      end
+      @queue.empty?
     end
 
     def close
-      @queue.close
-      @closed.make_true
+      # ignore
     end
 
     class ReadClient
@@ -122,9 +70,10 @@ module LogStash; module Util
       def initialize(queue, batch_size = 125, wait_for = 250)
         @queue = queue
         @mutex = Mutex.new
-        # Note that @inflight_batches as a central mechanism for tracking inflight
+        # Note that @infilght_batches as a central mechanism for tracking inflight
         # batches will fail if we have multiple read clients in the pipeline.
         @inflight_batches = {}
+
         # allow the worker thread to report the execution time of the filter + output
         @inflight_clocks = {}
         @batch_size = batch_size
@@ -132,11 +81,11 @@ module LogStash; module Util
       end
 
       def close
-        @queue.close
+        # noop, compat with acked queue read client
       end
 
       def empty?
-        @mutex.synchronize { @queue.empty? }
+        @queue.empty?
       end
 
       def set_batch_dimensions(batch_size, wait_for)
@@ -146,18 +95,10 @@ module LogStash; module Util
 
       def set_events_metric(metric)
         @event_metric = metric
-        define_initial_metrics_values(@event_metric)
       end
 
       def set_pipeline_metric(metric)
         @pipeline_metric = metric
-        define_initial_metrics_values(@pipeline_metric)
-      end
-
-      def define_initial_metrics_values(namespaced_metric)
-        namespaced_metric.report_time(:duration_in_millis, 0)
-        namespaced_metric.increment(:filtered, 0)
-        namespaced_metric.increment(:out, 0)
       end
 
       def inflight_batches
@@ -177,10 +118,6 @@ module LogStash; module Util
       end
 
       def read_batch
-        if @queue.closed?
-          raise QueueClosedError.new("Attempt to take a batch from a closed AckedQueue")
-        end
-
         batch = new_batch
         @mutex.synchronize { batch.read_next }
         start_metrics(batch)
@@ -201,8 +138,6 @@ module LogStash; module Util
 
       def close_batch(batch)
         @mutex.synchronize do
-          batch.close
-
           # there seems to be concurrency issues with metrics, keep it in the mutex
           @inflight_batches.delete(Thread.current)
           stop_clock(batch)
@@ -253,20 +188,13 @@ module LogStash; module Util
         @generated = Hash.new
         @iterating_temp = Hash.new
         @iterating = false # Atomic Boolean maybe? Although batches are not shared across threads
-        @acked_batch = nil
+        @batch = nil
       end
 
       def read_next
-        @acked_batch = @queue.read_batch(@size, @wait)
-        return if @acked_batch.nil?
-        @acked_batch.get_elements.each { |e| @originals[e] = true }
-      end
-
-      def close
-        # this will ack the whole batch, regardless of whether some
-        # events were cancelled or failed
-        return if @acked_batch.nil?
-        @acked_batch.close
+        @batch = @queue.read_batch(@wait)
+        return if @batch.nil?
+        @batch.each { |e| @originals[e] = true }
       end
 
       def merge(event)
@@ -289,10 +217,10 @@ module LogStash; module Util
 
       def each(&blk)
         # take care not to cause @originals or @generated to change during iteration
+        @iterating = true
 
         # below the checks for @cancelled.include?(e) have been replaced by e.cancelled?
         # TODO: for https://github.com/elastic/logstash/issues/6055 = will have to properly refactor
-        @iterating = true
         @originals.each do |e, _|
           blk.call(e) unless e.cancelled?
         end
@@ -343,17 +271,11 @@ module LogStash; module Util
       end
 
       def push(event)
-        if @queue.closed?
-          raise QueueClosedError.new("Attempted to write an event to a closed AckedQueue")
-        end
         @queue.push(event)
       end
       alias_method(:<<, :push)
 
       def push_batch(batch)
-        if @queue.closed?
-          raise QueueClosedError.new("Attempted to write a batch to a closed AckedQueue")
-        end
         @queue.push_batch(batch)
       end
     end
@@ -361,10 +283,6 @@ module LogStash; module Util
     class WriteBatch
       def initialize
         @events = []
-      end
-
-      def size
-        @events.size
       end
 
       def push(event)

@@ -4,6 +4,7 @@ require "logstash/event"
 require "logstash/namespace"
 require "logstash/util/wrapped_acked_queue"
 require "logstash/util/wrapped_synchronous_queue"
+require "logstash/util/wrapped_batched_queue"
 
 module LogStash
   class QueueFactory
@@ -15,6 +16,7 @@ module LogStash
       checkpoint_max_acks = settings.get("queue.checkpoint.acks")
       checkpoint_max_writes = settings.get("queue.checkpoint.writes")
       checkpoint_max_interval = settings.get("queue.checkpoint.interval")
+      pipeline_batch_size = settings.get("pipeline.batch.size")
 
       queue_path = ::File.join(settings.get("path.queue"), settings.get("pipeline.id"))
 
@@ -27,6 +29,8 @@ module LogStash
         # persisted is the disk based acked queue
         FileUtils.mkdir_p(queue_path)
         LogStash::Util::WrappedAckedQueue.create_file_based(queue_path, queue_page_capacity, queue_max_events, checkpoint_max_writes, checkpoint_max_acks, checkpoint_max_interval, queue_max_bytes)
+      when "memory_batched"
+        LogStash::Util::WrappedBatchedQueue.new(pipeline_batch_size)
       when "memory"
         # memory is the legacy and default setting
         LogStash::Util::WrappedSynchronousQueue.new
