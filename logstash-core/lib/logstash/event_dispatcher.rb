@@ -1,13 +1,13 @@
 # encoding: utf-8
 module LogStash
   class EventDispatcher
-    java_import "java.util.concurrent.CopyOnWriteArrayList"
+    java_import "java.util.concurrent.CopyOnWriteArraySet"
 
     attr_reader :emitter
 
     def initialize(emitter)
       @emitter = emitter
-      @listeners = CopyOnWriteArrayList.new
+      @listeners = CopyOnWriteArraySet.new
     end
 
     # This operation is slow because we use a CopyOnWriteArrayList
