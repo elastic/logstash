@@ -854,4 +854,39 @@ describe LogStash::Pipeline do
        expect(pipeline1.instance_variables).to eq(pipeline2.instance_variables)
     end
   end
+  context "#system" do
+    after do
+      pipeline.close # close the queue
+    end
+
+    let(:pipeline) { LogStash::Pipeline.new(config_string, settings) }
+    let(:config_string) { "input { generator {} } output { null {} }" }
+
+    context "when the pipeline is a system pipeline" do
+      let(:settings) do
+        s = LogStash::SETTINGS.clone
+        s.set("pipeline.system", true)
+        s.set("config.string", config_string)
+        s
+      end
+
+
+      it "returns true" do
+        expect(pipeline.system?).to be_truthy
+      end
+    end
+
+    context "when the pipeline is not a system pipeline" do
+      let(:settings) do
+        s = LogStash::SETTINGS.clone
+        s.set("pipeline.system", false)
+        s.set("config.string", config_string)
+        s
+      end
+
+      it "returns true" do
+        expect(pipeline.system?).to be_falsey
+      end
+    end
+  end
 end
