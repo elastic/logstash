@@ -34,6 +34,13 @@ describe LogStash::EventDispatcher do
   let(:listener) { CustomSpy }
   subject(:emitter) { DummyEmitter.new }
 
+  it "ignores duplicate listener" do
+    emitter.dispatcher.add_listener(listener)
+    emitter.dispatcher.add_listener(listener)
+    expect(listener).to receive(:method_exists).with(emitter).once
+    emitter.method_exists
+  end
+
   describe "Emits events" do
     before do
       emitter.dispatcher.add_listener(listener)
