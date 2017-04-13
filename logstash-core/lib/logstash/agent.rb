@@ -298,7 +298,7 @@ class LogStash::Agent
       # that we currently have.
       begin
         logger.debug("Executing action", :action => action)
-        action_result = action.execute(@pipelines)
+        action_result = action.execute(self, @pipelines)
         converge_result.add(action, action_result)
 
         unless action_result.successful?

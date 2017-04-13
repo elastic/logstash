@@ -279,7 +279,7 @@ describe LogStash::Agent do
             sleep(0.05) until subject.running_pipelines? && subject.pipelines.values.first.running?
 
             File.open(config_file, "w") { |f| f.puts second_pipeline_config }
-            sleep(0.2) # lets us catch the new file
+            sleep(5) # lets us catch the new file
 
             try do
               expect(subject.pipelines[default_pipeline_id.to_sym]).not_to be_nil

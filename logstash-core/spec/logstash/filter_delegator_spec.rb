@@ -4,8 +4,11 @@ require "logstash/filter_delegator"
 require "logstash/instrument/null_metric"
 require "logstash/event"
 require "logstash/execution_context"
+require "support/shared_contexts"
 
 describe LogStash::FilterDelegator do
+  include_context "execution_context"
+  
   let(:logger) { double(:logger) }
   let(:filter_id) { "my-filter" }
   let(:config) do
@@ -14,9 +17,9 @@ describe LogStash::FilterDelegator do
   let(:collector) { [] }
   let(:metric) { LogStash::Instrument::NamespacedNullMetric.new(collector, :null) }
   let(:events) { [LogStash::Event.new, LogStash::Event.new] }
-  let(:default_execution_context) { LogStash::ExecutionContext.new(:main) }
 
   before :each do
+    allow(pipeline).to receive(:id).and_return(pipeline_id)
     allow(metric).to receive(:namespace).with(anything).and_return(metric)
   end
 
@@ -28,11 +31,11 @@ describe LogStash::FilterDelegator do
     end
   end
 
-  subject { described_class.new(logger, plugin_klass, metric, default_execution_context, config) }
+  subject { described_class.new(logger, plugin_klass, metric, execution_context, config) }
 
   it "create a plugin with the passed options" do
     expect(plugin_klass).to receive(:new).with(config).and_return(plugin_klass.new(config))
-    described_class.new(logger, plugin_klass, metric, default_execution_context, config)
+    described_class.new(logger, plugin_klass, metric, execution_context, config)
   end
 
   context "when the plugin support flush" do

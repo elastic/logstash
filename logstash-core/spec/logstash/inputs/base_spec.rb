@@ -2,6 +2,7 @@
 require "spec_helper"
 require "logstash/execution_context"
 require "logstash/inputs/base"
+require "support/shared_contexts"
 
 # use a dummy NOOP input to test Inputs::Base
 class LogStash::Inputs::NOOP < LogStash::Inputs::Base
@@ -64,23 +65,24 @@ describe "LogStash::Inputs::Base#decorate" do
   end
 
   context "execution context" do
-    let(:default_execution_context) { LogStash::ExecutionContext.new(:main) }
+    include_context "execution_context"
+    
     let(:klass) { LogStash::Inputs::NOOP }
 
     subject(:instance) { klass.new({}) }
 
     it "allow to set the context" do
       expect(instance.execution_context).to be_nil
-      instance.execution_context = default_execution_context
+      instance.execution_context = execution_context
 
-      expect(instance.execution_context).to eq(default_execution_context)
+      expect(instance.execution_context).to eq(execution_context)
     end
 
     it "propagate the context to the codec" do
       expect(instance.codec.execution_context).to be_nil
-      instance.execution_context = default_execution_context
+      instance.execution_context = execution_context
 
-      expect(instance.codec.execution_context).to eq(default_execution_context)
+      expect(instance.codec.execution_context).to eq(execution_context)
     end
   end
 

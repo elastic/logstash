@@ -11,7 +11,7 @@ module LogStash module PipelineAction
       @pipeline_id = pipeline_id
     end
 
-    def execute(pipelines)
+    def execute(agent, pipelines)
       pipeline = pipelines[pipeline_id]
       pipeline.shutdown { LogStash::ShutdownWatcher.start(pipeline) }
       pipelines.delete(pipeline_id)
