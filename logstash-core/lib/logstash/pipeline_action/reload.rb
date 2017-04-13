@@ -19,7 +19,7 @@ module LogStash module PipelineAction
       @pipeline_config.pipeline_id
     end
 
-    def execute(pipelines)
+    def execute(agent, pipelines)
       old_pipeline = pipelines[pipeline_id]
 
       if !old_pipeline.reloadable?
@@ -36,10 +36,10 @@ module LogStash module PipelineAction
         return LogStash::ConvergeResult::FailedAction.new("Cannot reload pipeline, because the new pipeline is not reloadable")
       end
 
-      status = Stop.new(pipeline_id).execute(pipelines)
+      status = Stop.new(pipeline_id).execute(agent, pipelines)
 
       if status
-        return Create.new(@pipeline_config, @metric).execute(pipelines)
+        return Create.new(@pipeline_config, @metric).execute(agent, pipelines)
       else
         return status
       end

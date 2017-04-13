@@ -27,9 +27,9 @@ require "logstash/execution_context"
 module LogStash; class BasePipeline
   include LogStash::Util::Loggable
 
-  attr_reader :settings, :config_str, :config_hash, :inputs, :filters, :outputs, :pipeline_id, :lir
+  attr_reader :settings, :config_str, :config_hash, :inputs, :filters, :outputs, :pipeline_id, :lir, :execution_context
 
-  def initialize(config_str, settings = SETTINGS, namespaced_metric = nil)
+  def initialize(config_str, settings = SETTINGS, namespaced_metric = nil, agent = nil)
     @logger = self.logger
 
     @config_str = config_str
@@ -49,7 +49,7 @@ module LogStash; class BasePipeline
     @inputs = nil
     @filters = nil
     @outputs = nil
-    @execution_context = LogStash::ExecutionContext.new(@pipeline_id)
+    @execution_context = LogStash::ExecutionContext.new(self, agent)
 
     grammar = LogStashConfigParser.new
     parsed_config = grammar.parse(config_str)
@@ -147,7 +147,7 @@ module LogStash; class Pipeline < BasePipeline
 
   MAX_INFLIGHT_WARN_THRESHOLD = 10_000
 
-  def initialize(config_str, settings = SETTINGS, namespaced_metric = nil)
+  def initialize(config_str, settings = SETTINGS, namespaced_metric = nil, agent = nil)
     # This needs to be configured before we call super which will evaluate the code to make
     # sure the metric instance is correctly send to the plugins to make the namespace scoping work
     @metric = if namespaced_metric
@@ -160,7 +160,7 @@ module LogStash; class Pipeline < BasePipeline
     @reporter = PipelineReporter.new(@logger, self)
     @worker_threads = []
 
-    super(config_str, settings)
+    super
 
     begin
       @queue = LogStash::QueueFactory.create(settings)

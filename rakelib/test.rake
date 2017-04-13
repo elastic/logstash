@@ -2,6 +2,7 @@
 # most common CI systems can not know whats up with this tests.
 
 require "pluginmanager/util"
+require 'pathname'
 
 namespace "test" do
 
@@ -21,6 +22,12 @@ namespace "test" do
     LogStash::Bundler.setup!({:without => [:build]})
     require "logstash-core"
 
+    # Aligns behavior with bin/rspec command here
+    $LOAD_PATH << Pathname.new(File.join(File.dirname(__FILE__), "..", "logstash-core", "spec")).
+      cleanpath.
+      expand_path.
+      to_s
+    
     require "rspec/core/runner"
     require "rspec"
     require 'ci/reporter/rake/rspec_loader'

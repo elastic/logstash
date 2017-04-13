@@ -12,6 +12,7 @@ describe LogStash::PipelineAction::Reload do
   let(:pipeline_config) { "input { generator {} } output { null {} }" }
   let(:pipeline) { LogStash::Pipeline.new(pipeline_config, mock_settings("pipeline.reloadable" => true)) }
   let(:pipelines) { { pipeline_id => pipeline } }
+  let(:agent) { double("agent") }
 
   subject { described_class.new(new_pipeline_config, metric) }
 
@@ -30,16 +31,16 @@ describe LogStash::PipelineAction::Reload do
 
   context "when existing pipeline and new pipeline are both reloadable" do
     it "stop the previous pipeline" do
-      expect { subject.execute(pipelines) }.to change(pipeline, :running?).from(true).to(false)
+      expect { subject.execute(agent, pipelines) }.to change(pipeline, :running?).from(true).to(false)
     end
 
     it "start the new pipeline" do
-      subject.execute(pipelines)
+      subject.execute(agent, pipelines)
       expect(pipelines[pipeline_id].running?).to be_truthy
     end
 
     it "run the new pipeline code" do
-      subject.execute(pipelines)
+      subject.execute(agent, pipelines)
       expect(pipelines[pipeline_id].config_hash).to eq(new_pipeline_config.config_hash)
     end
   end
@@ -50,7 +51,7 @@ describe LogStash::PipelineAction::Reload do
     end
 
     it "cannot successfully execute the action" do
-      expect(subject.execute(pipelines)).not_to be_a_successful_action
+      expect(subject.execute(agent, pipelines)).not_to be_a_successful_action
     end
   end
 
@@ -58,7 +59,7 @@ describe LogStash::PipelineAction::Reload do
     let(:new_pipeline_config) { mock_pipeline_config(pipeline_id, "input { generator { id => 'new' } } output { null {} }", { "pipeline.reloadable" => false}) }
 
     it "cannot successfully execute the action" do
-      expect(subject.execute(pipelines)).not_to be_a_successful_action
+      expect(subject.execute(agent, pipelines)).not_to be_a_successful_action
     end
   end
 
@@ -66,7 +67,7 @@ describe LogStash::PipelineAction::Reload do
     let(:new_pipeline_config) { mock_pipeline_config(pipeline_id, "input generator { id => 'new' } } output { null {} }", { "pipeline.reloadable" => false}) }
 
     it "cannot successfully execute the action" do
-      expect(subject.execute(pipelines)).not_to be_a_successful_action
+      expect(subject.execute(agent, pipelines)).not_to be_a_successful_action
     end
   end
 
@@ -76,7 +77,7 @@ describe LogStash::PipelineAction::Reload do
     end
 
     it "cannot successfully execute the action" do
-      expect(subject.execute(pipelines)).not_to be_a_successful_action
+      expect(subject.execute(agent, pipelines)).not_to be_a_successful_action
     end
   end
 end

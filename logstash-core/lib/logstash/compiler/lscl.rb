@@ -171,7 +171,7 @@ module LogStashCompilerLSCLGrammar; module LogStash; module Compiler; module LSC
   
   class String < Value
     def expr
-      jdsl.eValue(source_meta, text_value[1...-1])
+      jdsl.e_value(source_meta, text_value[1...-1])
     end
   end
   
