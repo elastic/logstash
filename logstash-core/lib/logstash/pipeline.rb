@@ -105,6 +105,7 @@ module LogStash; class BasePipeline
     else # input
       input_plugin = klass.new(args)
       input_plugin.metric = type_scoped_metric.namespace(id)
+      input_plugin.metric.gauge(:type, input_plugin.config_name)
       input_plugin.execution_context = @execution_context
       input_plugin
     end
