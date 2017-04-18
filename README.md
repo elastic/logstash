@@ -120,6 +120,20 @@ Example:
 
 Drip does not work with STDIN. You cannot use drip for running configs which use the stdin plugin.
 
+If you are seeing errors that look like
+
+    $ rake bootstrap
+    Installing minitar >= 0 because the build process needs it.
+    [bootstrap] Fetching and installing gem: minitar (>= 0)
+    rake aborted!
+    LoadError: no such file to load -- archive/tar/minitar
+    /Users/<user>/projects/logstash/rakelib/vendor.rake:17:in `untar'
+    /Users/<user>/projects/logstash/rakelib/vendor.rake:86:in `(root)'
+    Tasks: TOP => bootstrap => vendor:all => vendor:jruby
+    (See full trace by running task with --trace)
+
+then you may need to update your version of rubygems. Run `gem -v` to see the version of rubygems installed. Version 2.5.2 or higher should work. To update rubygems run `gem update --system` (you may need to run with `sudo` if you're using your system Ruby environment).
+
 ## Testing
 
 Most of the unit tests in Logstash are written using [rspec](http://rspec.info/) for the Ruby parts. For the Java parts, we use junit. For testing you can use the *test* `rake` tasks and the `bin/rspec` command, see instructions below:
