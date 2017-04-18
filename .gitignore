@@ -47,3 +47,4 @@ qa/integration/services/installed/
 **/.settings
 **/.classpath
 logstash-core/bin
+plugins_version_docs.json
