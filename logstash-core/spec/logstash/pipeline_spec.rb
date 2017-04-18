@@ -854,7 +854,8 @@ describe LogStash::Pipeline do
        expect(pipeline1.instance_variables).to eq(pipeline2.instance_variables)
     end
   end
-  context "#system" do
+
+  describe "#system?" do
     after do
       pipeline.close # close the queue
     end
