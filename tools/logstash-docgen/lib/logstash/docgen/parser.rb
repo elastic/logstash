@@ -61,6 +61,13 @@ module LogStash module Docgen
     ANCHOR_VERSION_RE = /\./
     LOGSTASH_PLUGINS_ORGANIZATION = "https://github.com/logstash-plugins"
     CANONICAL_NAME_PREFIX = "logstash"
+    GLOBAL_BLOCKLIST = ["enable_metric", "id"]
+    BLOCKLIST = {
+      "input" => GLOBAL_BLOCKLIST + [ "type", "debug", "format", "charset", "message_format", "codec", "tags", "add_field"],
+      "codec" => GLOBAL_BLOCKLIST,
+      "output" => GLOBAL_BLOCKLIST + [ "type", "tags", "exclude_tags", "codec", "workers" ],
+      "filter" => GLOBAL_BLOCKLIST + ["type", "tags", "add_tag", "remove_tag", "add_field", "remove_field", "periodic_flush" ]
+    }
 
     attr_accessor :description, :config_name, :section, :name, :default_plugin, :gemspec
 
@@ -122,7 +129,7 @@ module LogStash module Docgen
     # `Hash` keys are sorted by default in the order of creation.
     # But we force a sort options name for the documentation.
     def config
-      Hash[@config.sort_by(&:first)]
+      Hash[@config.sort_by(&:first)].delete_if { |k, v| BLOCKLIST[section].include?(k) }
     end
     alias_method :sorted_attributes, :config
 

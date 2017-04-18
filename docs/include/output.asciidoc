@@ -1,0 +1,58 @@
+[id="plugins-{type}s-common-options"]
+==== Common Options
+
+The following configuration options are supported by all output plugins:
+
+[cols="<,<,<",options="header",]
+|=======================================================================
+|Setting |Input type|Required
+| <<plugins-{type}s-{plugin}-codec>> |<<codec,codec>>|No
+| <<plugins-{type}s-{plugin}-enable_metric>> |<<boolean,boolean>>|No
+| <<plugins-{type}s-{plugin}-id>> |<<string,string>>|No
+| <<plugins-{type}s-{plugin}-workers>> |<<number,number>>|No
+|=======================================================================
+
+[id="plugins-{type}s-{plugin}-codec"]
+===== `codec`
+
+  * Value type is <<codec,codec>>
+  * Default value is `"plain"`
+
+The codec used for output data. Output codecs are a convenient method for encoding your data before it leaves the output, without needing a separate filter in your Logstash pipeline.
+
+[id="plugins-{type}s-{plugin}-enable_metric"]
+===== `enable_metric`
+
+  * Value type is <<boolean,boolean>>
+  * Default value is `true`
+
+Disable or enable metric logging for this specific plugin instance
+by default we record all the metrics we can, but you can disable metrics collection
+for a specific plugin.
+
+[id="plugins-{type}s-{plugin}-id"]
+===== `id`
+
+  * Value type is <<string,string>>
+  * There is no default value for this setting.
+
+Add a unique `ID` to the plugin configuration. If no ID is specified, Logstash will generate one.
+It is strongly recommended to set this ID in your configuration. This is particularly useful
+when you have two or more plugins of the same type, for example, if you have 2 grok filters.
+Adding a named ID in this case will help in monitoring Logstash when using the monitoring APIs.
+
+[source,ruby]
+---------------------------------------------------------------------------------------------------
+output {
+ stdout {
+   id => "my_plugin_id"
+ }
+}
+---------------------------------------------------------------------------------------------------
+
+
+[id="plugins-{type}s-{plugin}-workers"]
+===== `workers`
+
+  * Value type is <<string,string>>
+  * Default value is `1`
