@@ -32,12 +32,20 @@ namespace "test" do
     Rake::FileList[*specs]
   end
 
-  desc "run core specs"
-  task "core" => ["setup"] do
+  desc "run all core specs"
+  task "core" => ["core-slow"]
+
+  desc "run all core specs"
+  task "core-slow" => ["setup"] do
     exit(RSpec::Core::Runner.run([core_specs]))
   end
 
-  desc "run core specs in fail-fast mode"
+  desc "run core specs excluding slower tests like stress tests"
+  task "core-fast" => ["setup"] do
+    exit(RSpec::Core::Runner.run(["--tag", "~stress_test", core_specs]))
+  end
+
+  desc "run all core specs in fail-fast mode"
   task "core-fail-fast" => ["setup"] do
     exit(RSpec::Core::Runner.run(["--fail-fast", core_specs]))
   end
