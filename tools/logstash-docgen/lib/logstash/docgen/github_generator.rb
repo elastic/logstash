@@ -17,13 +17,14 @@ module LogStash module Docgen
   # dont want to pollute the main execution namespace with libraries that could be incompatible
   # each execution of the doc is is own process.
   #
+  #
   # Its a lot slower, but we know for sure that it uses the latest dependency for each plugins.
   class Plugin
     class CommandException < StandardError; end
 
     GITHUB_URI = "https://github.com/logstash-plugins/%s"
 
-    BUNDLER_CMD = "bundler install --jobs 8 --quiet --path /tmp/vendor"
+    BUNDLER_CMD = "bundle install"
     RAKE_VENDOR_CMD = "bundle exec rake vendor"
     RAKE_DOC_ASCIIDOC = "bundle exec rake doc:asciidoc"
     DOCUMENT_SEPARATOR = "~~~ASCIIDOC_DOCUMENT~~~\n"
@@ -52,8 +53,8 @@ module LogStash module Docgen
       full_name.split("-").last
     end
 
-    def generate(destination)
-      fetch
+    def generate(destination, config = {})
+      fetch if config.fetch(:skip_fetch, false)
       inject_docgen
       bundle_install
       rake_vendor
@@ -179,7 +180,7 @@ module LogStash module Docgen
 
       plugins.each do |plugin|
         task_runner.run(plugin.name) do
-          plugin.generate(@target)
+          plugin.generate(@target, config)
         end
       end
 

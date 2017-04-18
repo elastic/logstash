@@ -43,3 +43,7 @@ logs
 .lock
 qa/integration/services/installed/
 .gradle
+**/.settings
+**/.classpath
+logstash-core/bin
+plugins_version_docs.json

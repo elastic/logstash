@@ -1,23 +1,14 @@
 #!/usr/bin/env bash
 set -e
 
-output_dir=$1
+export JRUBY_OPTS="-J-Xmx2g"
 
-if [[ -z $output_dir ]]; then
-  echo "Docs will be generated in default directory in LS_HOME/build/docs"
-else
-  echo "Docs will be generated in directory $output_dir"
-fi
-
-# Since we are using the system jruby, we need to make sure our jvm process
-# uses at least 1g of memory, If we don't do this we can get OOM issues when
-# installing gems. See https://github.com/elastic/logstash/issues/5179
-export JRUBY_OPTS="-J-Xmx1g"
-
-mkdir -p build/docs
-rm -rf build/docs/*
-
-grep -q -F "logstash-docgen" Gemfile || echo 'gem "logstash-docgen", :path => "./tools/logstash-docgen"' >> Gemfile
 rake bootstrap
+# needed to workaround `group => :development`
 rake test:install-core
-rake docs:generate-plugins[$output_dir]
+rake plugin:install-default
+echo "Generate json with plugins version"
+# Since we generate the lock file and we try to resolve dependencies we will need
+# to use the bundle wrapper to correctly find the rake cli. If we don't do this we
+# will get an activation error,
+./bin/bundle exec rake generate_plugins_version
