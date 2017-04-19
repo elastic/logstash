@@ -6,6 +6,9 @@ import org.logstash.config.ir.SourceComponent;
 import org.logstash.config.ir.InvalidIRException;
 import org.logstash.config.ir.SourceMetadata;
 
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+
 /**
  * Created by andrewvc on 9/15/16.
  */
@@ -19,7 +22,7 @@ public class RegexValueExpression extends ValueExpression {
             throw new InvalidIRException("Regex value expressions can only take strings!");
         }
 
-        byte[] patternBytes = getSource().getBytes();
+        byte[] patternBytes = getSource().getBytes(StandardCharsets.UTF_8);
         this.regex = new Regex(patternBytes, 0, patternBytes.length, Option.NONE);
     }
 

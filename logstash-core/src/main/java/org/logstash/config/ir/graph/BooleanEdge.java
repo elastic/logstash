@@ -4,6 +4,8 @@ import org.logstash.common.Util;
 import org.logstash.config.ir.SourceComponent;
 import org.logstash.config.ir.InvalidIRException;
 
+import java.util.Objects;
+
 /**
  * Created by andrewvc on 9/15/16.
  */
@@ -23,6 +25,11 @@ public class BooleanEdge extends Edge {
             return new BooleanEdge(edgeType, in, out);
         }
 
+        @Override
+        public int hashCode() {
+            return this.edgeType.hashCode();
+        }
+
         public boolean equals(Object other) {
             if (other == null) return false;
             if (other instanceof BooleanEdgeFactory) {
@@ -35,8 +42,8 @@ public class BooleanEdge extends Edge {
             return "BooleanEdge.BooleanEdgeFactory[" + edgeType + "]";
         }
     }
-    public static BooleanEdge.BooleanEdgeFactory trueFactory = new BooleanEdge.BooleanEdgeFactory(true);
-    public static BooleanEdge.BooleanEdgeFactory falseFactory = new BooleanEdge.BooleanEdgeFactory(false);
+    public static final BooleanEdge.BooleanEdgeFactory trueFactory = new BooleanEdge.BooleanEdgeFactory(true);
+    public static final BooleanEdge.BooleanEdgeFactory falseFactory = new BooleanEdge.BooleanEdgeFactory(false);
 
     private final Boolean edgeType;
 

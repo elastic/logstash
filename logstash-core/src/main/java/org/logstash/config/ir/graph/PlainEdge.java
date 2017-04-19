@@ -14,7 +14,7 @@ public class PlainEdge extends Edge {
         }
     }
 
-    public static PlainEdgeFactory factory = new PlainEdgeFactory();
+    public static final PlainEdgeFactory factory = new PlainEdgeFactory();
 
     @Override
     public String individualHashSource() {

@@ -78,11 +78,6 @@ public class Graph implements SourceComponent, Hashable {
         return this.vertices().filter(v -> v.getId().equals(id)).findAny().get();
     }
 
-    // Use chainVertices instead
-    private Graph addEdge(Edge e) throws InvalidIRException {
-        return addEdge(e, true);
-    }
-
     private Graph addEdge(Edge e, boolean doRefresh) throws InvalidIRException {
         if (!(this.getVertices().contains(e.getFrom()) && this.getVertices().contains(e.getTo()))) {
             throw new InvalidIRException("Attempted to add edge referencing vertices not in this graph!");
