@@ -130,7 +130,7 @@ public abstract class Vertex implements SourceComponent, Hashable {
 
         MessageDigest lineageDigest = Util.defaultMessageDigest();
 
-        lineageDigest.update(hashPrefix().getBytes());
+        lineageDigest.update(hashPrefix().getBytes(StandardCharsets.UTF_8));
 
         // The lineage can be quite long and we want to avoid the quadratic complexity of string concatenation
         // Thus, in this case there's no real way to get the hash source, we just hash as we go.
