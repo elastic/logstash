@@ -14,7 +14,7 @@ class LogStash::PluginManager::Install < LogStash::PluginManager::Command
   option "--[no-]verify", :flag, "verify plugin validity before installation", :default => true
   option "--preserve", :flag, "preserve current gem options", :default => false
   option "--development", :flag, "install all development dependencies of currently installed plugins", :default => false
-  option "--local", :flag, "force local-only plugin installation. see bin/logstash-plugin package|unpack", :default => false
+  option "--local", :flag, "force local-only plugin installation. see bin/logstash-plugin pack|unpack", :default => false
 
   # the install logic below support installing multiple plugins with each a version specification
   # but the argument parsing does not support it for now so currently if specifying --version only
