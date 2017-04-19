@@ -96,7 +96,9 @@ module LogStash; class BasePipeline
       FilterDelegator.new(@logger, klass, type_scoped_metric, @execution_context, args)
     else # input
       input_plugin = klass.new(args)
-      input_plugin.metric = type_scoped_metric.namespace(id)
+      scoped_metric = type_scoped_metric.namespace(id.to_sym)
+      scoped_metric.gauge(:name, input_plugin.config_name)
+      input_plugin.metric = scoped_metric
       input_plugin.execution_context = @execution_context
       input_plugin
     end
