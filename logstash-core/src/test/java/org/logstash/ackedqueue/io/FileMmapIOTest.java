@@ -1,4 +1,4 @@
-package org.logstash.common.io;
+package org.logstash.ackedqueue.io;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -6,6 +6,7 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.logstash.ackedqueue.SequencedList;
 import org.logstash.ackedqueue.StringElement;
+import org.logstash.ackedqueue.io.MmapPageIO;
 
 import java.util.ArrayList;
 import java.util.List;

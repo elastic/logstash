@@ -1,11 +1,11 @@
 package org.logstash.ackedqueue;
 
-import org.logstash.common.io.ByteBufferPageIO;
-import org.logstash.common.io.CheckpointIOFactory;
-import org.logstash.common.io.FileCheckpointIO;
-import org.logstash.common.io.MemoryCheckpointIO;
-import org.logstash.common.io.MmapPageIO;
-import org.logstash.common.io.PageIOFactory;
+import org.logstash.ackedqueue.io.ByteBufferPageIO;
+import org.logstash.ackedqueue.io.CheckpointIOFactory;
+import org.logstash.ackedqueue.io.FileCheckpointIO;
+import org.logstash.ackedqueue.io.MemoryCheckpointIO;
+import org.logstash.ackedqueue.io.MmapPageIO;
+import org.logstash.ackedqueue.io.PageIOFactory;
 
 public class TestSettings {
 

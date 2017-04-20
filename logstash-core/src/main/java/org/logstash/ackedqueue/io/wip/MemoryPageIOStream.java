@@ -1,4 +1,4 @@
-package org.logstash.common.io.wip;
+package org.logstash.ackedqueue.io.wip;
 
 import org.logstash.ackedqueue.Checkpoint;
 import org.logstash.ackedqueue.SequencedList;
@@ -6,7 +6,7 @@ import org.logstash.common.io.BufferedChecksumStreamInput;
 import org.logstash.common.io.BufferedChecksumStreamOutput;
 import org.logstash.common.io.ByteArrayStreamOutput;
 import org.logstash.common.io.ByteBufferStreamInput;
-import org.logstash.common.io.PageIO;
+import org.logstash.ackedqueue.io.PageIO;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;

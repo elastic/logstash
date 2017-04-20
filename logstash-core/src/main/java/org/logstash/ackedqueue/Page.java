@@ -1,6 +1,6 @@
 package org.logstash.ackedqueue;
 
-import org.logstash.common.io.PageIO;
+import org.logstash.ackedqueue.io.PageIO;
 
 import java.io.Closeable;
 import java.io.IOException;
