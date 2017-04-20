@@ -1,7 +1,7 @@
 package org.logstash.ackedqueue;
 
-import org.logstash.common.io.CheckpointIO;
-import org.logstash.common.io.PageIO;
+import org.logstash.ackedqueue.io.CheckpointIO;
+import org.logstash.ackedqueue.io.PageIO;
 
 import java.io.IOException;
 import java.util.BitSet;

@@ -19,10 +19,10 @@ import org.logstash.ackedqueue.Batch;
 import org.logstash.ackedqueue.MemorySettings;
 import org.logstash.ackedqueue.Queue;
 import org.logstash.ackedqueue.Settings;
-import org.logstash.common.io.ByteBufferPageIO;
-import org.logstash.common.io.CheckpointIOFactory;
-import org.logstash.common.io.MemoryCheckpointIO;
-import org.logstash.common.io.PageIOFactory;
+import org.logstash.ackedqueue.io.ByteBufferPageIO;
+import org.logstash.ackedqueue.io.CheckpointIOFactory;
+import org.logstash.ackedqueue.io.MemoryCheckpointIO;
+import org.logstash.ackedqueue.io.PageIOFactory;
 
 import java.io.IOException;
 

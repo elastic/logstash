@@ -5,7 +5,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import static org.junit.Assert.fail;
 import org.junit.rules.TemporaryFolder;
-import org.logstash.common.io.ByteBufferPageIO;
+import org.logstash.ackedqueue.io.ByteBufferPageIO;
 
 import java.io.IOException;
 import java.nio.file.NoSuchFileException;

@@ -1,4 +1,4 @@
-package org.logstash.common.io;
+package org.logstash.ackedqueue.io;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;

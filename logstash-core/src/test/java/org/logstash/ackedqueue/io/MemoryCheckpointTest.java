@@ -1,4 +1,4 @@
-package org.logstash.common.io;
+package org.logstash.ackedqueue.io;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -6,6 +6,9 @@ import static org.junit.Assert.fail;
 import org.logstash.ackedqueue.Checkpoint;
 import org.logstash.ackedqueue.MemorySettings;
 import org.logstash.ackedqueue.Settings;
+import org.logstash.ackedqueue.io.CheckpointIO;
+import org.logstash.ackedqueue.io.CheckpointIOFactory;
+import org.logstash.ackedqueue.io.MemoryCheckpointIO;
 
 import java.io.IOException;
 import java.nio.file.NoSuchFileException;

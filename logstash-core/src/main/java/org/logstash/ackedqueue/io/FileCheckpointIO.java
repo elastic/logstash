@@ -1,6 +1,10 @@
-package org.logstash.common.io;
+package org.logstash.ackedqueue.io;
 
 import org.logstash.ackedqueue.Checkpoint;
+import org.logstash.common.io.BufferedChecksumStreamInput;
+import org.logstash.common.io.BufferedChecksumStreamOutput;
+import org.logstash.common.io.ByteArrayStreamOutput;
+import org.logstash.common.io.InputStreamStreamInput;
 
 import java.io.IOException;
 import java.io.InputStream;
