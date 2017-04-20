@@ -57,10 +57,12 @@ describe LogStash::Config::Source::Local::ConfigPathLoader do
       let(:directory) { Stud::Temporary.pathname }
 
       before do
-        files.keys.shuffle.each do |file|
-          content = files[file]
+        files.each do |file, content|
           temporary_file(content, file, directory)
         end
+
+        expect(files.size).to be >= 1
+        expect(Dir.glob(::File.join(directory, "*")).size).to eq(files.size)
       end
 
       it "returns a `config_parts` per file" do
@@ -208,14 +210,14 @@ describe LogStash::Config::Source::Local::ConfigPathLoader do
 
     context "relative path" do
       let(:reader_config) do
-        current = Pathname.new(::File.dirname(__FILE__))
-        target = Pathname.new(::File.join(directory, files.keys.first))
-        target.relative_path_from(current).to_s
+        FileUtils.mkdir_p(::File.join(directory, "inside"))
+        ::File.join(directory, "inside", "../")
       end
 
       let(:files) {
         {
-          "config1.conf" => "input1",
+          "config2.conf" => "input1",
+          "config1.conf" => "input2",
         }
       }
 
