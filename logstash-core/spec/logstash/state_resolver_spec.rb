@@ -18,6 +18,11 @@ describe LogStash::StateResolver do
     clear_data_dir
   end
 
+  after do
+    # ensure that the the created pipeline are closed
+    running_pipelines.each { |_, pipeline| pipeline.close }
+  end
+
   context "when no pipeline is running" do
     let(:running_pipelines) { {} }
 
@@ -43,12 +48,6 @@ describe LogStash::StateResolver do
   context "when some pipeline are running" do
     context "when a pipeline is running" do
       let(:running_pipelines) { { :main => mock_pipeline(:main) } }
-
-
-      after do
-        # ensure that the the created pipeline are closed
-        running_pipelines.each { |_, pipeline| pipeline.close }
-      end
 
       context "when the pipeline config contains a new one and the existing" do
         let(:pipeline_configs) { [mock_pipeline_config(:hello_world), mock_pipeline_config(:main)] }
@@ -104,26 +103,54 @@ describe LogStash::StateResolver do
         }
       end
 
-      let(:pipeline_configs) do
-        [
-          mock_pipeline_config(:main1),
-          mock_pipeline_config(:main9),
-          mock_pipeline_config(:main5, "input { generator {}}"),
-          mock_pipeline_config(:main3, "input { generator {}}"),
-          mock_pipeline_config(:main7)
-        ]
+      context "without system pipeline" do
+        let(:pipeline_configs) do
+          [
+            mock_pipeline_config(:main1),
+            mock_pipeline_config(:main9),
+            mock_pipeline_config(:main5, "input { generator {}}"),
+            mock_pipeline_config(:main3, "input { generator {}}"),
+            mock_pipeline_config(:main7)
+          ]
+        end
+
+        it "generates actions required to converge" do
+          expect(subject.resolve(running_pipelines, pipeline_configs)).to have_actions(
+            [:create, :main7],
+            [:create, :main9],
+            [:reload, :main3],
+            [:reload, :main5],
+            [:stop, :main2],
+            [:stop, :main4],
+            [:stop, :main6]
+          )
+        end
       end
 
-      it "generates actions required to converge" do
-        expect(subject.resolve(running_pipelines, pipeline_configs)).to have_actions(
-          [:create, :main7],
-          [:create, :main9],
-          [:reload, :main3],
-          [:reload, :main5],
-          [:stop, :main2],
-          [:stop, :main4],
-          [:stop, :main6]
-        )
+      context "with system pipeline" do
+        let(:pipeline_configs) do
+          [
+            mock_pipeline_config(:main1),
+            mock_pipeline_config(:main9),
+            mock_pipeline_config(:main5, "input { generator {}}"),
+            mock_pipeline_config(:main3, "input { generator {}}"),
+            mock_pipeline_config(:main7),
+            mock_pipeline_config(:monitoring, "input { generator {}}", { "pipeline.system" => true }),
+          ]
+        end
+
+        it "creates the system pipeline before user defined pipelines" do
+          expect(subject.resolve(running_pipelines, pipeline_configs)).to have_actions(
+            [:create, :monitoring],
+            [:create, :main7],
+            [:create, :main9],
+            [:reload, :main3],
+            [:reload, :main5],
+            [:stop, :main2],
+            [:stop, :main4],
+            [:stop, :main6]
+          )
+        end
       end
     end
   end

@@ -6,7 +6,6 @@
 # Some actions could be retryable, or have a delay or timeout.
 module LogStash module PipelineAction
   class Base
-
     # Only used for debugging purpose and in the logger statement.
     def inspect
       "#{self.class.name}/pipeline_id:#{pipeline_id}"
@@ -17,8 +16,13 @@ module LogStash module PipelineAction
       raise "`#execute` Not implemented!"
     end
 
+    # See the definition in `logstash/pipeline_action.rb` for the default ordering
+    def execution_priority
+      ORDERING.fetch(self.class)
+    end
+
     def <=>(other)
-      order = ORDERING.index(self.class) <=> ORDERING.index(other.class)
+      order = self.execution_priority <=> other.execution_priority
       order.nonzero? ? order : self.pipeline_id <=> other.pipeline_id
     end
   end

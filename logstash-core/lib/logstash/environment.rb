@@ -25,7 +25,7 @@ module LogStash
            Setting::Numeric.new("config.reload.interval", 3), # in seconds
            Setting::Boolean.new("metric.collect", true),
             Setting::String.new("pipeline.id", "main"),
-            Setting::Boolean.new("pipeline.system", false),
+           Setting::Boolean.new("pipeline.system", false),
    Setting::PositiveInteger.new("pipeline.workers", LogStash::Config::CpuCoreStrategy.maximum),
    Setting::PositiveInteger.new("pipeline.output.workers", 1),
    Setting::PositiveInteger.new("pipeline.batch.size", 125),

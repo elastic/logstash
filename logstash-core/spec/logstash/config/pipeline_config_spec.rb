@@ -57,4 +57,20 @@ describe LogStash::Config::PipelineConfig do
     not_same_pipeline_id = described_class.new(source, :another_pipeline, unordered_config_parts, settings)
     expect(subject).not_to eq(not_same_pipeline_id)
   end
+
+  describe "#system?" do
+    context "when the pipeline is a system pipeline" do
+      let(:settings) { mock_settings({ "pipeline.system" => true })}
+
+      it "returns true if the pipeline is a system pipeline" do
+        expect(subject.system?).to be_truthy
+      end
+    end
+
+    context "when is not a system pipeline" do
+      it "returns false if the pipeline is not a system pipeline" do
+        expect(subject.system?).to be_falsey
+      end
+    end
+  end
 end

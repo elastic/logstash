@@ -23,6 +23,10 @@ module LogStash module Config
       @config_string = config_parts.collect(&:config_string).join("\n")
     end
 
+    def system?
+      @settings.get("pipeline.system")
+    end
+
     def ==(other)
       config_hash == other.config_hash && pipeline_id == other.pipeline_id
     end

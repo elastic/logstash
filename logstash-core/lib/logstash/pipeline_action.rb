@@ -5,9 +5,9 @@ require "logstash/pipeline_action/stop"
 require "logstash/pipeline_action/reload"
 
 module LogStash module PipelineAction
-  ORDERING = [
-    LogStash::PipelineAction::Create,
-    LogStash::PipelineAction::Reload,
-    LogStash::PipelineAction::Stop
-  ]
+  ORDERING = {
+    LogStash::PipelineAction::Create => 100,
+    LogStash::PipelineAction::Reload => 200,
+    LogStash::PipelineAction::Stop => 300
+  }
 end end
