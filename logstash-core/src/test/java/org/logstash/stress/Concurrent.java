@@ -1,7 +1,12 @@
 package org.logstash.stress;
 
 import org.logstash.ackedqueue.*;
-import org.logstash.common.io.*;
+import org.logstash.ackedqueue.io.ByteBufferPageIO;
+import org.logstash.ackedqueue.io.CheckpointIOFactory;
+import org.logstash.ackedqueue.io.FileCheckpointIO;
+import org.logstash.ackedqueue.io.MemoryCheckpointIO;
+import org.logstash.ackedqueue.io.MmapPageIO;
+import org.logstash.ackedqueue.io.PageIOFactory;
 
 import java.io.IOException;
 import java.time.Duration;

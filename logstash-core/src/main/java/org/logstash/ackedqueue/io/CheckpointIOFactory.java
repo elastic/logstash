@@ -1,4 +1,4 @@
-package org.logstash.common.io;
+package org.logstash.ackedqueue.io;
 
 @FunctionalInterface
 public interface CheckpointIOFactory {

@@ -1,7 +1,7 @@
 package org.logstash.ackedqueue;
 
-import org.logstash.common.io.CheckpointIOFactory;
-import org.logstash.common.io.PageIOFactory;
+import org.logstash.ackedqueue.io.CheckpointIOFactory;
+import org.logstash.ackedqueue.io.PageIOFactory;
 
 public interface Settings {
     Settings setCheckpointIOFactory(CheckpointIOFactory factory);
