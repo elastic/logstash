@@ -75,11 +75,8 @@ class LogStash::Agent
       Stud.interval(@reload_interval) { reload_state! }
     else
       while !Stud.stop?
-        if clean_state || running_user_defined_pipelines?
+        if clean_state? || running_user_defined_pipelines?
           sleep(0.5)
-        elsif !running_user_defined_pipelines? && running_pipelines? && Stud.stop?
-          logger.debug("Shutting down system pipelines")
-          shutdown_pipelines
         else
           break
         end
