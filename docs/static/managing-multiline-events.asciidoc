@@ -5,10 +5,17 @@ Several use cases generate events that span multiple lines of text. In order to 
 Logstash needs to know how to tell which lines are part of a single event.
 
 Multiline event processing is complex and relies on proper event ordering. The best way to guarantee ordered log
-processing is to implement the processing as early in the pipeline as possible. The preferred tool in the Logstash
-pipeline is the {logstash}plugins-codecs-multiline.html[multiline codec], which merges lines from a single input using
+processing is to implement the processing as early in the pipeline as possible.
+
+The <<plugins-codecs-multiline>> codec is the preferred tool for handling multiline events
+in the Logstash pipeline. The multiline codec merges lines from a single input using
 a simple set of rules.
 
+IMPORTANT: If you are using a Logstash input plugin that supports multiple hosts, such as
+the <<plugins-inputs-beats>> input plugin, you should not use the
+<<plugins-codecs-multiline>> codec to handle multiline events. Doing so may result in the 
+mixing of streams and corrupted event data. In this situation, you need to handle multiline
+events before sending the event data to Logstash. 
 
 The most important aspects of configuring the multiline codec are the following:
 
@@ -20,7 +27,7 @@ value in the `pattern` option are part of the previous line. The `next` value sp
 in the `pattern` option are part of the following line.* The `negate` option applies the multiline codec to lines that
 _do not_ match the regular expression specified in the `pattern` option.
 
-See the full documentation for the {logstash}plugins-codecs-multiline.html[multiline codec] plugin for more information
+See the full documentation for the <<plugins-codecs-multiline>> codec plugin for more information
 on configuration options.
 
 ==== Examples of Multiline Codec Configuration
