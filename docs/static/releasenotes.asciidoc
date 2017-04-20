@@ -4,10 +4,17 @@
 This section summarizes the changes in the following releases:
 
 * <<logstash-5-3-0,Logstash 5.3.0>>
+* <<logstash-5-3-0,Logstash 5.3.1>>
+
+[[logstash-5-3-1]]
+=== Logstash 5.3.1 Release Notes
+
+* Fixed an issue when using the persistent queue feature where old data on disk was not getting purged ({lsissue}6829[Issue 6829]).
+* Fixed a potential data deletion issue on the deployment instance when using the `pack` command of the 
+  offline plugin workflow ({lsissue}6862[Issue 6862]).
 
 [[logstash-5-3-0]]
 === Logstash 5.3.0 Release Notes
-
 
 * Persistent queues:
     ** Changed the default queue location on disk to include the pipeline's ID in the path hierarchy.
