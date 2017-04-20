@@ -1,7 +1,7 @@
 PATH
   remote: ./logstash-core
   specs:
-    logstash-core (5.3.1-java)
+    logstash-core (5.3.2-java)
       chronic_duration (= 0.10.6)
       clamp (~> 0.6.5)
       concurrent-ruby (= 1.0.0)
@@ -12,8 +12,8 @@ PATH
       jrjackson (~> 0.4.0)
       jrmonitor (~> 0.4.2)
       jruby-openssl (= 0.9.16)
-      logstash-core-event-java (= 5.3.1)
-      logstash-core-queue-jruby (= 5.3.1)
+      logstash-core-event-java (= 5.3.2)
+      logstash-core-queue-jruby (= 5.3.2)
       minitar (~> 0.5.4)
       pry (~> 0.10.1)
       puma (~> 2.16)
@@ -27,7 +27,7 @@ PATH
 PATH
   remote: ./logstash-core-event-java
   specs:
-    logstash-core-event-java (5.3.1-java)
+    logstash-core-event-java (5.3.2-java)
       jar-dependencies
       ruby-maven (~> 3.3.9)
 
@@ -35,12 +35,12 @@ PATH
   remote: ./logstash-core-plugin-api
   specs:
     logstash-core-plugin-api (2.1.12-java)
-      logstash-core (= 5.3.1)
+      logstash-core (= 5.3.2)
 
 PATH
   remote: ./logstash-core-queue-jruby
   specs:
-    logstash-core-queue-jruby (5.3.1-java)
+    logstash-core-queue-jruby (5.3.2-java)
 
 GEM
   remote: https://rubygems.org/
@@ -58,12 +58,12 @@ GEM
       jmespath (~> 1.0)
     aws-sdk-resources (2.3.22)
       aws-sdk-core (= 2.3.22)
-    aws-sdk-v1 (1.66.0)
+    aws-sdk-v1 (1.67.0)
       json (~> 1.4)
-      nokogiri (>= 1.4.4)
-    backports (3.6.8)
+      nokogiri (~> 1)
+    backports (3.7.0)
     benchmark-ips (2.7.2)
-    bindata (2.3.5)
+    bindata (2.4.0)
     buftok (0.2.0)
     builder (3.2.3)
     cabin (0.9.0)
@@ -85,16 +85,16 @@ GEM
     docker-api (1.31.0)
       excon (>= 0.38.0)
       json
-    domain_name (0.5.20170223)
+    domain_name (0.5.20170404)
       unf (>= 0.0.5, < 1.0.0)
     dotenv (2.2.0)
     edn (1.1.1)
-    elasticsearch (5.0.3)
-      elasticsearch-api (= 5.0.3)
-      elasticsearch-transport (= 5.0.3)
-    elasticsearch-api (5.0.3)
+    elasticsearch (5.0.4)
+      elasticsearch-api (= 5.0.4)
+      elasticsearch-transport (= 5.0.4)
+    elasticsearch-api (5.0.4)
       multi_json
-    elasticsearch-transport (5.0.3)
+    elasticsearch-transport (5.0.4)
       faraday
       multi_json
     equalizer (0.0.10)
@@ -244,7 +244,7 @@ GEM
       atomic
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       thread_safe
-    logstash-filter-urldecode (3.0.2)
+    logstash-filter-urldecode (3.0.3)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
     logstash-filter-useragent (3.0.3)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
@@ -256,7 +256,7 @@ GEM
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       nokogiri
       xml-simple
-    logstash-input-beats (3.1.14-java)
+    logstash-input-beats (3.1.15-java)
       concurrent-ruby (>= 0.9.2, <= 1.0.0)
       jar-dependencies (~> 0.3.4)
       logstash-codec-multiline (>= 2.0.5)
@@ -268,7 +268,7 @@ GEM
       logstash-codec-plain
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       stud (>= 0.0.22)
-    logstash-input-elasticsearch (4.0.2)
+    logstash-input-elasticsearch (4.0.3)
       elasticsearch (>= 5.0.3, < 6.0.0)
       logstash-codec-json
       logstash-core-plugin-api (>= 1.60, <= 2.99)
@@ -301,7 +301,7 @@ GEM
       logstash-codec-plain
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       stud
-    logstash-input-http (3.0.3)
+    logstash-input-http (3.0.4)
       logstash-codec-plain
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       puma (~> 2.16, >= 2.16.0)
@@ -331,12 +331,12 @@ GEM
       sequel
       tzinfo
       tzinfo-data
-    logstash-input-kafka (5.1.6)
+    logstash-input-kafka (5.1.7)
       logstash-codec-json
       logstash-codec-plain
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       stud (>= 0.0.22, < 0.1.0)
-    logstash-input-log4j (3.0.3-java)
+    logstash-input-log4j (3.0.4-java)
       logstash-codec-plain
       logstash-core-plugin-api (>= 1.60, <= 2.99)
     logstash-input-lumberjack (3.1.1)
@@ -424,7 +424,7 @@ GEM
       logstash-filter-json
       logstash-input-generator
       logstash-output-file
-    logstash-output-elasticsearch (6.2.6-java)
+    logstash-output-elasticsearch (6.3.0-java)
       cabin (~> 0.6)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       manticore (>= 0.5.4, < 1.0.0)
@@ -442,7 +442,7 @@ GEM
       cinch
       logstash-codec-plain
       logstash-core-plugin-api (>= 1.60, <= 2.99)
-    logstash-output-kafka (5.1.5)
+    logstash-output-kafka (5.1.6)
       logstash-codec-json
       logstash-codec-plain
       logstash-core-plugin-api (>= 1.60, <= 2.99)
@@ -470,7 +470,7 @@ GEM
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       logstash-mixin-aws
       stud (~> 0.0.22)
-    logstash-output-sns (4.0.2)
+    logstash-output-sns (4.0.3)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       logstash-mixin-aws (>= 1.0.0)
     logstash-output-sqs (4.0.1)
@@ -525,7 +525,7 @@ GEM
     octokit (3.8.0)
       sawyer (~> 0.6.0, >= 0.5.3)
     paquet (0.2.1)
-    pleaserun (0.0.28)
+    pleaserun (0.0.29)
       cabin (> 0)
       clamp
       dotenv
@@ -574,7 +574,7 @@ GEM
     sawyer (0.6.0)
       addressable (~> 2.3.5)
       faraday (~> 0.8, < 0.10)
-    sequel (4.44.0)
+    sequel (4.45.0)
     simple_oauth (0.3.1)
     simplecov (0.14.1)
       docile (~> 1.1.0)

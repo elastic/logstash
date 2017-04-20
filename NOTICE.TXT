@@ -908,7 +908,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ==========================================================================
-RubyGem: sequel Version: 4.44.0
+RubyGem: sequel Version: 4.45.0
 Copyright (c) 2007-2008 Sharon Rosner
 Copyright (c) 2008-2017 Jeremy Evans
 
