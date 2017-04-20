@@ -110,9 +110,14 @@ describe LogStash::Agent do
           it "converges periodically the pipelines from the configs source" do
             agent_task = start_agent(subject)
 
-            sleep(interval * 10) # let the interval reload a few times
+            sleep(2) # let the interval reload a few times
             expect(subject).to have_running_pipeline?(pipeline_config)
-            expect(source_loader.fetch_count).to be > 1
+
+            # we rely on a periodic thread to call fetch count, we have seen unreliable run on
+            # travis, so lets add a few retries
+            try do
+              expect(source_loader.fetch_count).to be > 1
+            end
 
             subject.shutdown
             agent_task.stop!
