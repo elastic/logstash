@@ -59,16 +59,6 @@ describe LogStash::Agent do
       end
     end
 
-    context "#running_user_defined_pipelines?" do
-      let(:finite_pipeline_config) { mock_pipeline_config(:main, "input { generator { count => 1 } } output { null {} }") }
-
-      it "returns false" do
-        agent_task = start_agent(subject)
-        expect(subject.running_user_defined_pipelines?).to be_falsey
-        subject.shutdown
-      end
-    end
-
     context "system pipeline" do
       let(:finite_pipeline_config) { mock_pipeline_config(:main, "input { generator { count => 1000 } } output { null {} }") }
       let(:system_pipeline_config) { mock_pipeline_config(:system_pipeline, "input { generator { } } output { null {} }", { "pipeline.system" => true }) }

@@ -111,7 +111,7 @@ describe LogStash::Agent do
 
       context "if state is clean" do
         before :each do
-          allow(subject).to receive(:running_pipelines?).and_return(true)
+          allow(subject).to receive(:running_user_defined_pipelines?).and_return(true)
           allow(subject).to receive(:clean_state?).and_return(false)
         end
 
