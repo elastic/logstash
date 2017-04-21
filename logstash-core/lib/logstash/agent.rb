@@ -104,12 +104,9 @@ class LogStash::Agent
       return 1 if clean_state?
 
       while !Stud.stop?
-        if running_user_defined_pipelines?
+        if clean_state? || running_user_defined_pipelines?
           sleep(0.5)
-        elsif running_pipelines?
-          logger.debug("Shutting down system pipelines")
-          shutdown_pipelines
-        elsif clean_state? || !running_pipelines?
+        else
           break
         end
       end
