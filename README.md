@@ -32,7 +32,7 @@ supported platforms, from [downloads page](https://www.elastic.co/downloads/logs
 
 ## Logstash Plugins
 
-Logstash plugins are hosted in separate repositories under under the [logstash-plugins](https://github.com/logstash-plugins) github organization. Each plugin is a self-contained Ruby gem which gets published to RubyGems.org.
+Logstash plugins are hosted in separate repositories under the [logstash-plugins](https://github.com/logstash-plugins) github organization. Each plugin is a self-contained Ruby gem which gets published to RubyGems.org.
 
 ### Writing your own Plugin
 
