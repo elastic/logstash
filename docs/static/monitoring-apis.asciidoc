@@ -72,7 +72,7 @@ The node info API retrieves information about the node.
 
 [source,js]
 --------------------------------------------------
-GET /_node/<types>
+GET /_nodes/<types>
 --------------------------------------------------
 
 Where `<types>` is optional and specifies the types of node info you want to return.
@@ -98,7 +98,7 @@ batch size, and batch delay:
 
 [source,js]
 --------------------------------------------------
-GET /_node/pipeline
+GET /_nodes/pipeline
 --------------------------------------------------
 
 If you want to view additional information about the pipeline, such as stats for each configured input, filter,
@@ -127,7 +127,7 @@ available processors:
 
 [source,js]
 --------------------------------------------------
-GET /_node/os
+GET /_nodes/os
 --------------------------------------------------
 
 Example response:
@@ -151,7 +151,7 @@ VM info, memory usage, and info about garbage collectors:
 
 [source,js]
 --------------------------------------------------
-GET /_node/jvm
+GET /_nodes/jvm
 --------------------------------------------------
 
 Example response:
@@ -190,7 +190,7 @@ This API basically returns the output of running the `bin/logstash-plugin list -
 
 [source,js]
 --------------------------------------------------
-GET /_node/plugins
+GET /_nodes/plugins
 --------------------------------------------------
 
 See <<monitoring-common-options, Common Options>> for a list of options that can be applied to all
@@ -236,7 +236,7 @@ The node stats API retrieves runtime stats about Logstash.
 
 [source,js]
 --------------------------------------------------
-GET /_node/stats/<types>
+GET /_nodes/stats/<types>
 --------------------------------------------------
 
 Where `<types>` is optional and specifies the types of stats you want to return.
@@ -266,7 +266,7 @@ The following request returns a JSON document containing JVM stats:
 
 [source,js]
 --------------------------------------------------
-GET /_node/stats/jvm
+GET /_nodes/stats/jvm
 --------------------------------------------------
 
 Example response:
@@ -333,7 +333,7 @@ The following request returns a JSON document containing process stats:
 
 [source,js]
 --------------------------------------------------
-GET /_node/stats/process
+GET /_nodes/stats/process
 --------------------------------------------------
 
 Example response:
@@ -378,7 +378,7 @@ empty set array for inputs (`"inputs": []`).
 
 [source,js]
 --------------------------------------------------
-GET /_node/stats/pipeline
+GET /_nodes/stats/pipeline
 --------------------------------------------------
 
 Example response:
@@ -527,7 +527,7 @@ of time.
 
 [source,js]
 --------------------------------------------------
-GET /_node/hot_threads
+GET /_nodes/hot_threads
 --------------------------------------------------
 
 The output is a JSON document that contains a breakdown of the top hot threads for
@@ -611,7 +611,7 @@ You can use the `?human` parameter to return the document in a human-readable fo
 
 [source,js]
 --------------------------------------------------
-GET /_node/hot_threads?human=true
+GET /_nodes/hot_threads?human=true
 --------------------------------------------------
 
 Example of a human-readable response:
