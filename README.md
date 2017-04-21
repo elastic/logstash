@@ -37,7 +37,7 @@ For the daring, snapshot builds from `master` branch are available. These builds
 
 ## Logstash Plugins
 
-Logstash plugins are hosted in separate repositories under under the [logstash-plugins](https://github.com/logstash-plugins) github organization. Each plugin is a self-contained Ruby gem which gets published to RubyGems.org.
+Logstash plugins are hosted in separate repositories under the [logstash-plugins](https://github.com/logstash-plugins) github organization. Each plugin is a self-contained Ruby gem which gets published to RubyGems.org.
 
 ### Writing your own Plugin
 
