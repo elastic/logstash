@@ -1,61 +1,84 @@
 [[releasenotes]]
-== Logstash 2.1 Release Notes
+== Release Notes
+
+This section summarizes the changes in the following releases:
+
+* <<logstash-5-1-1,Logstash 5.1.1>>
+* <<logstash-5-1-0,Logstash 5.1.0>>
+
+[[logstash-5-1-1]]
+=== Logstash 5.1.1 Release Notes
+
+* Persistent queues is a new beta feature that provides infrastructure in Logstash for buffering event data to disk. 
+  By default, Logstash still uses an in-memory, bounded queue between the input and filter stages without any guarantees 
+  for data delivery. Users can now opt-in to enable disk-based persistence that can prevent event loss in certain 
+  scenarios. The setting `queue.type: persisted` enables this feature ({lsissue}2605[Issue 2605], {lsissue}2606[Issue 2606]).
+* Filters can be configured to log event data and related context when filter execution exceeds a specified time threshold. 
+  These slowlogs will be collected in a separate file called `logstash-slowlog-plain-YYYY-MM-dd.log` ({lsissue}5733[Issue 5733]).
+* Added two new fields `id`, and `name` to the base metadata for API requests. The `id` field is the persisted 
+  UUID. The `name` field is the custom name the user has passed in (defaults to the hostname).
+* The `_node/stats` API will now report uptime in milliseconds ({lsissue}6214[Issue 6214]).
+* Enhanced the `/_node/stats` API to report the CPU load average information. Load average stats are not reported 
+  on Windows ({lsissue}6215[Issue 6215]).
+* Fixed heap dump path for Windows installs.
+* When using the JSON logging format, exception messages are now handled correctly ({lsissue}6082[Issue 6082]).
+* We now log an error message when a plugin specified in the config is not found in the installed list ({lsissue}6020[Issue 6020]).
 
 [float]
-== General
+==== Input Plugins
 
-* {lsissue}2376[Issue 2376]: Added ability to install and upgrade Logstash plugins without requiring internet
-connectivity.
-* {lsissue}3576[Issue 3576]: Support alternate or private Ruby gems server to install and update plugins.
-* {lsissue}3451[Issue 3451]: Added ability to reliably shutdown Logstash when there is a stall in event processing. This
-option can be enabled by passing `--allow-unsafe-shutdown` flag while starting Logstash. Please be aware that any in-
-flight events will be lost when shutdown happens.
-* {lsissue}4222[Issue 4222]: Fixed a memory leak which could be triggered when events having a date were serialized to
-string.
-* Added JDBC input to default package.
-* {lsissue}3243[Issue 3243]: Adding `--debug` to `--configtest` now shows the configuration in blocks annotated by source
-config file. Very useful when using multiple config files in a directory.
-* {lsissue}4130[Issue 4130]: Reset default worker threads to 1 when using non thread-safe filters like multiline.
-* Fixed file permissions for the `logrotate` configuration file.
-* {lsissue}3861[Issue 3861]: Changed the default heap size from 500MB to 1GB.
-* {lsissue}3645[Issue 3645]: Fixed config check option when starting Logstash through init scripts.
+*`Beats`*:
 
-[float]
-== Input Plugins
+* The `congestion_threshold` configuration is now deprecated as the new Java implementation uses an alternate keep-alive 
+  mechanism.
+* Fixed an issue where data shipped in intervals greater than five seconds could cause the connection between 
+  Filebeat and Logstash to be closed (https://github.com/logstash-plugins/logstash-input-beats/issues/163[Issue 163]).
 
-[float]
-=== Twitter
-* https://github.com/logstash-plugins/logstash-input-twitter/issues/21[Issue 21]: Added an option to fetch data from the
-sample Twitter streaming endpoint.
-* https://github.com/logstash-plugins/logstash-input-twitter/issues/22[Issue 22]: Added hashtags, symbols and
-user_mentions as data for the non extended tweet event.
-* https://github.com/logstash-plugins/logstash-input-twitter/issues/20[Issue 20]: Added an option to filter per location
-and language.
-* https://github.com/logstash-plugins/logstash-input-twitter/issues/11[Issue 11]: Added an option to stream data from a
-list of users.
+*`Kafka`*:
 
-[float]
-=== Beats
-* https://github.com/logstash-plugins/logstash-input-beats/issues/10[Issue 10]: Properly handle multiline events from
-multiple sources, originating from Filebeat.
+* Added Kerberos authentication support (https://github.com/logstash-plugins/logstash-input-kafka/issues/124[Issue 124]).
 
-[float]
-=== File
-* https://github.com/logstash-plugins/logstash-input-file/issues/44[Issue 44]: Properly handle multiline events from
-multiple sources.
+*`Syslog`*:
 
-[float]
-=== Eventlog
-* https://github.com/logstash-plugins/logstash-input-eventlog/issues/11[Issue 11]: Change the underlying library to
-capture Event Logs from Windows more reliably.
+* Added support for proxy protocol ({lsissue}4418[Issue 4418]).
 
-[float]
-== Output
+*`TCP`*:
 
-[float]
-=== Elasticsearch
-* Improved the default template to use doc_values wherever possible.
-* Improved the default template to disable fielddata on analyzed string fields.
-* https://github.com/logstash-plugins/logstash-output-elasticsearch/issues/260[Issue 260]: Added New setting: timeout.
-This lets you control the behavior of a slow/stuck request to Elasticsearch that could be, for example, caused by network,
-firewall, or load balancer issues.
+* Added support for proxy protocol ({lsissue}4418[Issue 4418]).
+
+*`UDP`*:
+
+* Added `receive_buffer_bytes` config setting to optionally set the socket receive buffer size. Allowing a user to set this 
+  can prevent data loss on uneven traffic flow (https://github.com/logstash-plugins/logstash-input-udp/issues/22[Issue 22]).
+
+*`RabbitMQ`*
+
+* A dropped connection between Logstash and RabbitMQ is now re-tried when an intermediary proxy reports 
+  that there are no live backends (https://github.com/logstash-plugins/logstash-input-rabbitmq/issues/76[#76])
+
+==== Filter Plugins
+
+*`Grok`*:
+
+* The timeout enforcer can now be disabled by setting `timeout_millis` to nil. The default for `timeout_millis` 
+  is now 30s (https://github.com/logstash-plugins/logstash-filter-grok/issues/99[Issue 99]).
+
+*`Date`*:
+
+* Improved performance: The date filter is now 2.8x faster for common case (first pattern matches), and 14x faster for 
+  events where multiple patterns are attempted (https://github.com/logstash-plugins/logstash-filter-date/issues/74[Issue 74]).
+
+==== Output Plugins
+
+*`Elasticsearch`*:
+
+* A health check is now performed against Elasticsearch hosts right after startup and sniffing for the first 
+  time. Previously, a health check was issued after an error was received from a request (https://github.com/logstash-plugins/logstash-output-elasticsearch/issues/507[Issue 507]).
+* You can now specify event dependent configuration when configuring the ingest pipeline (https://github.com/logstash-plugins/logstash-output-elasticsearch/issues/491[Issue 491]).
+
+[[logstash-5-1-0]]
+=== Logstash 5.1.0 Release Notes (Skipped)
+
+* Version 5.1.0 doesn’t exist because, for a short period of time, the Elastic Yum and Apt repositories included 
+  unreleased binaries labeled 5.1.0. To avoid confusion and upgrade issues for the people that have installed 
+  these without realizing, we decided to skip the 5.1.0 version and release 5.1.1 instead.
