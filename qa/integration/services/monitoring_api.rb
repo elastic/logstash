@@ -23,13 +23,13 @@ class MonitoringAPI
   end
   
   def node_info
-    resp = Manticore.get("http://localhost:9600/_node").body
-    JSON.parse(resp)
+    resp = Manticore.get("http://localhost:9600/_node")
+    JSON.parse(resp.body)
   end
 
   def node_stats
-    resp = Manticore.get("http://localhost:9600/_node/stats").body
-    JSON.parse(resp)
+    resp = Manticore.get("http://localhost:9600/_node/stats")
+    JSON.parse(resp.body)
   end
 
 end

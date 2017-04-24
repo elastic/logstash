@@ -39,7 +39,6 @@ describe "Test Monitoring API" do
   it "can retrieve JVM stats" do
     logstash_service = @fixture.get_service("logstash")
     logstash_service.start_with_stdin
-    logstash_service.wait_for_logstash
 
     Stud.try(max_retry.times, RSpec::Expectations::ExpectationNotMetError) do
        result = logstash_service.monitoring_api.node_stats
@@ -50,7 +49,6 @@ describe "Test Monitoring API" do
   it "can retrieve queue stats" do
     logstash_service = @fixture.get_service("logstash")
     logstash_service.start_with_stdin
-    logstash_service.wait_for_logstash
 
     Stud.try(max_retry.times, RSpec::Expectations::ExpectationNotMetError) do
       result = logstash_service.monitoring_api.node_stats
