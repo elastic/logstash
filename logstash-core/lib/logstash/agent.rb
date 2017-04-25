@@ -252,9 +252,9 @@ class LogStash::Agent
       n.gauge(:last_failure_timestamp, LogStash::Timestamp.now)
     end
     if @logger.debug?
-      @logger.error("Cannot load an invalid configuration", :reason => message, :backtrace => backtrace)
+      @logger.error("Cannot create pipeline", :reason => message, :backtrace => backtrace)
     else
-      @logger.error("Cannot load an invalid configuration", :reason => message)
+      @logger.error("Cannot create pipeline", :reason => message)
     end
   end
 
