@@ -21,20 +21,22 @@ describe "Test Elasticsearch output" do
     es_client = es_service.get_client
     # now we test if all data was indexed by ES, but first refresh manually
     es_client.indices.refresh
-    result = es_client.search(index: 'logstash-*', size: 0, q: '*')
-    expect(result["hits"]["total"]).to eq(37)
-    
-    # randomly checked for results and structured fields
-    result = es_client.search(index: 'logstash-*', size: 1, q: 'dynamic')
-    expect(result["hits"]["total"]).to eq(1)
-    s = result["hits"]["hits"][0]["_source"]
-    expect(s["bytes"]).to eq(18848)
-    expect(s["response"]).to eq(200)
-    expect(s["clientip"]).to eq("213.113.233.227")
-    expect(s["geoip"]["longitude"]).to eq(12.9443)
-    expect(s["geoip"]["latitude"]).to eq(56.1357)
-    expect(s["verb"]).to eq("GET")
-    expect(s["useragent"]["os"]).to eq("Windows 7")
-  end
 
+    try do
+      result = es_client.search(index: 'logstash-*', size: 0, q: '*')
+      expect(result["hits"]["total"]).to eq(37)
+
+      # randomly checked for results and structured fields
+      result = es_client.search(index: 'logstash-*', size: 1, q: 'dynamic')
+      expect(result["hits"]["total"]).to eq(1)
+      s = result["hits"]["hits"][0]["_source"]
+      expect(s["bytes"]).to eq(18848)
+      expect(s["response"]).to eq(200)
+      expect(s["clientip"]).to eq("213.113.233.227")
+      expect(s["geoip"]["longitude"]).to eq(12.9443)
+      expect(s["geoip"]["latitude"]).to eq(56.1357)
+      expect(s["verb"]).to eq("GET")
+      expect(s["useragent"]["os"]).to eq("Windows 7")
+    end
+  end
 end
