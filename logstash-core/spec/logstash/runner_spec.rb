@@ -18,6 +18,7 @@ describe LogStash::Runner do
 
   subject { LogStash::Runner }
   let(:logger) { double("logger") }
+  let(:agent) { double("agent") }
 
   before :each do
     clear_data_dir
@@ -34,6 +35,12 @@ describe LogStash::Runner do
     allow(LogStash::Logging::Logger).to receive(:configure_logging) do |level, path|
       allow(logger).to receive(:level).and_return(level.to_sym)
     end
+
+    # Make sure we don't start a real pipeline here.
+    # because we cannot easily close the pipeline
+    allow(LogStash::Agent).to receive(:new).with(any_args).and_return(agent)
+    allow(agent).to receive(:execute)
+    allow(agent).to receive(:shutdown)
   end
 
   after :each do
@@ -57,7 +64,7 @@ describe LogStash::Runner do
       expect(LogStash::Agent).to receive(:new) do |settings|
         expect(settings.get("config.string")).to eq(config)
         expect(settings.get("pipeline.workers")).to eq(20)
-      end
+      end.and_return(agent)
       subject.run("bin/logstash", cli_args)
     end
   end
@@ -72,7 +79,6 @@ describe LogStash::Runner do
 
       before do
         allow(agent).to receive(:shutdown)
-        allow(agent).to receive(:register_pipeline)
       end
 
       it "should execute the agent" do
@@ -390,6 +396,8 @@ describe LogStash::Runner do
       let(:args) { ["--path.settings", "/tmp/a/a/a/a", "-e", "input { generator { count => 1000 }} output {}"] }
 
       it "should not terminate logstash" do
+        # The runner should just pass the code from the agent execute
+        allow(agent).to receive(:execute).and_return(0)
         expect(subject.run(args)).to eq(0)
       end
 
