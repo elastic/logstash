@@ -22,10 +22,6 @@ public abstract class Expression extends BaseSourceComponent implements Hashable
         super(meta);
     }
 
-    public boolean eval() {
-        return true;
-    }
-
     public void compile() {
         container = new ScriptingContainer();
         container.setCompileMode(RubyInstanceConfig.CompileMode.JIT);
