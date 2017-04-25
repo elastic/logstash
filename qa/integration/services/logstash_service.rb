@@ -19,7 +19,7 @@ class LogstashService < Service
   SETTINGS_CLI_FLAG = "--path.settings"
 
   STDIN_CONFIG = "input {stdin {}} output { }"
-  MAXIMUM_WAIT_TIME = 15 * 60
+  MAXIMUM_WAIT_TIME = 5 * 60
 
   @process = nil
 
@@ -157,9 +157,11 @@ class LogstashService < Service
     @monitoring_api
   end
 
-  # Wait until logstash is started and the tcp server answer a real HTTP response
+  # Make sure Logstash can return a complete http response before proceeding forward
   def wait_for_logstash
     started_at = Time.now
+    sleep_time = 1
+    maximum_sleep_time = 10
 
     uri = URI(API_URL)
     successful = false
@@ -176,14 +178,15 @@ class LogstashService < Service
           else
             puts "Received wrong response from the Logstash's API: #{data}"
           end
-        else
           puts "Received wrong code, expected 200 received #{response.code}"
         end
 
-        sleep(1)
+        sleep(sleep_time)
+        sleep_time = [sleep_time + 1, maximum_sleep_time].min
       rescue => e
         puts "Retrying to reach Logstash's API, but got an error: #{e}"
-        sleep(1)
+        sleep(sleep_time)
+        sleep_time = [sleep_time + 1, maximum_sleep_time].min
       end
     end
 
