@@ -39,3 +39,4 @@ qa/Gemfile.lock
 .idea
 logs
 qa/integration/services/installed/
+.gradle
