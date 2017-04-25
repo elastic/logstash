@@ -9,7 +9,7 @@ require "uri"
 
 # A locally started Logstash service
 class LogstashService < Service
-  API_URL = "http://localhost:9600/"
+  API_URL = "http://localhost:%s/"
 
   LS_ROOT_DIR = File.join("..", "..", "..", "..")
   LS_VERSION_FILE = File.expand_path(File.join(LS_ROOT_DIR, "versions.yml"), __FILE__)
@@ -95,9 +95,36 @@ class LogstashService < Service
       @process.io.stdout = @process.io.stderr = out
       @process.duplex = true
       @process.start
-      wait_for_logstash
+      wait_for_startup_message(out)
       puts "Logstash started with PID #{@process.pid}" if alive?
     end
+  end
+
+  # This is based on the logging message right now
+  # We know at this time that logstash has started and tried to run some pipeline.
+  def wait_for_startup_message(out)
+    successful = maximum_wait_loop do
+      out.rewind
+      lines = out.readlines
+      lines.any? { |line| line =~ /Pipelines running {:count=>1/ }
+    end
+
+    if !successful
+      out.rewind
+      raise "Logstash took more time to start than the #{MAXIMUM_WAIT_TIME}s, Complete output:\n#{out.readlines}"
+    end
+  end
+
+  def maximum_wait_loop
+    started_at = Time.now
+    successful = false
+    while Time.now - started_at < MAXIMUM_WAIT_TIME
+      successful = yield
+      sleep(1)
+      break if successful
+    end
+
+    successful
   end
 
   def write_to_stdin(input)
@@ -109,11 +136,14 @@ class LogstashService < Service
   # Spawn LS as a child process
   def spawn_logstash(*args)
     Bundler.with_clean_env do
+      out = Tempfile.new("duplex")
+      out.sync = true
       @process = build_child_process(*args)
       @env_variables.map { |k, v|  @process.environment[k] = v} unless @env_variables.nil?
-      @process.io.inherit!
+      # @process.io.inherit!
+      @process.io.stdout = @process.io.stderr = out
       @process.start
-      wait_for_logstash
+      wait_for_startup_message(out)
       puts "Logstash started with PID #{@process.pid}" if @process.alive?
     end
   end
@@ -142,9 +172,9 @@ class LogstashService < Service
   end
 
   # check if LS HTTP port is open
-  def is_port_open?
+  def is_port_open?(port = 9600)
     begin
-      s = TCPSocket.open("localhost", 9600)
+      s = TCPSocket.open("localhost", port)
       s.close
       return true
     rescue Errno::ECONNREFUSED, Errno::EHOSTUNREACH
@@ -158,12 +188,12 @@ class LogstashService < Service
   end
 
   # Make sure Logstash can return a complete http response before proceeding forward
-  def wait_for_logstash
+  def wait_for_logstash_api(port = 9600)
     started_at = Time.now
     sleep_time = 1
     maximum_sleep_time = 10
 
-    uri = URI(API_URL)
+    uri = URI(sprintf(API_URL, port))
     successful = false
 
     while Time.now - started_at < MAXIMUM_WAIT_TIME
@@ -194,6 +224,7 @@ class LogstashService < Service
       raise "Logstash's API didn't answer corrrectly within the specified maximum time of #{MAXIMUM_WAIT_TIME}"
     end
   end
+  alias_method :wait_for_logstash, :wait_for_logstash_api
 
   # this method only overwrites existing config with new config
   # it does not assume that LS pipeline is fully reloaded after a
