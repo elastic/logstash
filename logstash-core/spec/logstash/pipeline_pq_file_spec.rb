@@ -36,7 +36,7 @@ class PipelinePqFileOutput < LogStash::Outputs::Base
 end
 
 describe LogStash::Pipeline do
-  let(:pipeline_settings_obj) { LogStash::SETTINGS }
+  let(:pipeline_settings_obj) { LogStash::SETTINGS.clone }
   let(:pipeline_id) { "main" }
 
   let(:multiline_id) { "my-multiline" }
