@@ -22,7 +22,7 @@ module LogStash
         elsif action_result == true
           SuccessfulAction.new
         elsif action_result == false
-          FailedAction.from_action(action)
+          FailedAction.from_action(action, action_result)
         else
           raise LogStash::Error, "Don't know how to handle `#{action_result.class}` for `#{action}`"
         end
@@ -43,8 +43,8 @@ module LogStash
         FailedAction.new(exception.message, exception.backtrace)
       end
 
-      def self.from_action(action)
-        FailedAction.new("Could not execute action: #{action}")
+      def self.from_action(action, action_result)
+        FailedAction.new("Could not execute action: #{action}, action_result: #{action_result}")
       end
 
       def successful?
