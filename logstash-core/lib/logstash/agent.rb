@@ -244,13 +244,12 @@ class LogStash::Agent
   end
 
   def running_user_defined_pipelines?
-    user_defined_pipelines.any?
+    running_user_defined_pipelines.any?
   end
 
-  def user_defined_pipelines
+  def running_user_defined_pipelines
     @pipelines_mutex.synchronize do
-      @pipelines.select do |pipeline_id, _|
-        pipeline = @pipelines[pipeline_id]
+      @pipelines.select do |_, pipeline|
         pipeline.running? && !pipeline.system?
       end
     end
