@@ -73,11 +73,11 @@ describe LogStash::Agent do
         end
       end
 
-      describe "#user_defined_pipelines" do
+      describe "#running_user_defined_pipelines" do
         it "returns the user defined pipelines" do
           agent_task = start_agent(subject)
-          expect(subject.user_defined_pipelines.keys).to include(:main)
-          expect(subject.user_defined_pipelines.keys).not_to include(:system_pipeline)
+          expect(subject.running_user_defined_pipelines.keys).to include(:main)
+          expect(subject.running_user_defined_pipelines.keys).not_to include(:system_pipeline)
           subject.shutdown
         end
       end
