@@ -81,11 +81,13 @@ structure out of unstructured data. Enjoy a wealth of integrated patterns aimed 
 networking, and other types of event formats.
 * Expand your horizons by deciphering <<plugins-filters-geoip,geo coordinates>> from IP addresses, normalizing
 <<plugins-filters-date,date>> complexity, simplifying <<plugins-filters-kv,key-value pairs>> and
-<<plugins-filters-csv,CSV>> data, <<plugins-filters-anonymize,anonymizing>> sensitive information, and further
-enriching your data with <<plugins-filters-translate,local lookups>> or Elasticsearch
+<<plugins-filters-csv,CSV>> data, <<plugins-filters-fingerprint,fingerprinting>> (anonymizing) sensitive information,
+and further enriching your data with <<plugins-filters-translate,local lookups>> or Elasticsearch
 <<plugins-filters-elasticsearch,queries>>.
 * Codecs are often used to ease the processing of common event structures like <<plugins-codecs-json,JSON>>
 and <<plugins-codecs-multiline,multiline>> events.
+
+See <<transformation>> for an overview of some of the popular data processing plugins.
 
 [float]
 == Choose Your Stash

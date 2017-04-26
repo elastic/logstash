@@ -106,6 +106,10 @@ include::static/glob-support.asciidoc[]
 
 include::static/filebeat-modules.asciidoc[]
 
+// Transforming Data
+
+include::static/transforming-data.asciidoc[]
+
 // Deploying & Scaling
 
 include::static/deploying.asciidoc[]
