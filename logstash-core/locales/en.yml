@@ -98,6 +98,8 @@ en:
       missing-configuration: >-
         No configuration file was specified. Perhaps you forgot to provide
         the '-f yourlogstash.conf' flag?
+      config-string-path-exclusive:
+        Settings 'path.config' (-f) and 'config.string' (-e) can't be used simultaneously.
       reload-without-config-path: >-
         Configuration reloading also requires passing a configuration path with '-f yourlogstash.conf'
       locked-data-path: >-

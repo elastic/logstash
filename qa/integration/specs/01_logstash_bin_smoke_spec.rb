@@ -128,36 +128,13 @@ describe "Test Logstash instance" do
     expect(@ls1.get_version.strip).to eq("logstash #{expected['logstash']}")
   end
 
-  it "should still merge when -e is specified and -f has no valid config files" do
+  it "should abort if both -f and -e are specified" do
     config_string = "input { tcp { port => #{port1} } }"
-    @ls1.spawn_logstash("-e", config_string, "-f" "/tmp/foobartest")
-    @ls1.wait_for_logstash
-
+    @ls1.spawn_logstash("-e", config_string, "-f", config2)
     try(20) do
-      expect(is_port_open?(port1)).to be true
+      expect(@ls1.exited?).to be(true)
     end
-  end
-
-  it "should not start when -e is not specified and -f has no valid config files" do
-    @ls2.spawn_logstash("-e", "", "-f" "/tmp/foobartest")
-    try(num_retries) do
-      expect(is_port_open?(9600)).to be_falsey
-    end
-  end
-
-  it "should merge config_string when both -f and -e is specified" do
-    config_string = "input { tcp { port => #{port1} } }"
-    @ls1.spawn_logstash("-e", config_string, "-f", config3)
-    @ls1.wait_for_logstash
-
-    # Both ports should be reachable
-    try(20) do
-      expect(is_port_open?(port1)).to be true
-    end
-
-    try(20) do
-      expect(is_port_open?(port3)).to be true
-    end
+    expect(@ls1.exit_code).to be(1)
   end
 
   def get_id
@@ -168,7 +145,7 @@ describe "Test Logstash instance" do
     config_string = "input { tcp { port => #{port1} } }"
 
     start_ls = lambda {
-      @ls1.spawn_logstash("-e", config_string, "-f", config3)
+      @ls1.spawn_logstash("-e", config_string)
       @ls1.wait_for_logstash
     }
     start_ls.call()

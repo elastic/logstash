@@ -8,6 +8,10 @@ module LogStash module BootstrapCheck
         raise LogStash::BootstrapCheckError, I18n.t("logstash.runner.missing-configuration")
       end
 
+      if settings.get("config.string") && settings.get("path.config")
+        raise LogStash::BootstrapCheckError, I18n.t("logstash.runner.config-string-path-exclusive")
+      end
+
       if settings.get("config.reload.automatic") && settings.get("path.config").nil?
         # there's nothing to reload
         raise LogStash::BootstrapCheckError, I18n.t("logstash.runner.reload-without-config-path")

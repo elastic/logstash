@@ -100,13 +100,8 @@ describe LogStash::Agent do
     end
 
     context "when auto_reload is false" do
-      let(:agent_args) do
-        {
-          "config.reload.automatic" => false,
-          "path.config" => config_file
-        }
-      end
-
+      let(:agent_settings) { mock_settings("config.reload.automatic" => false) }
+      let(:agent_args) { { "path.config" => config_file } }
 
       context "if state is clean" do
         before :each do
@@ -222,16 +217,10 @@ describe LogStash::Agent do
     end
 
     context "when auto_reload is true" do
+      let(:agent_settings) { mock_settings("config.reload.automatic" => true, "config.reload.interval" => 0.01) }
       subject { described_class.new(agent_settings, default_source_loader) }
 
-      let(:agent_args) do
-        {
-          "config.string" => "",
-          "config.reload.automatic" => true,
-          "config.reload.interval" => 0.01,
-          "path.config" => config_file
-        }
-      end
+      let(:agent_args) { { "path.config" => config_file } }
 
       context "if state is clean" do
         it "should periodically reload_state" do
@@ -406,8 +395,8 @@ describe LogStash::Agent do
   end
 
   context "metrics after config reloading" do
-    let(:temporary_file) { Stud::Temporary.file.path }
-    let(:config) { "input { generator { } } output { file { path => '#{temporary_file}' } }" }
+    let(:agent_settings) { mock_settings({}) }
+    let!(:config) { "input { generator { } } output { dummyoutput { } }" }
 
     let(:config_path) do
       f = Stud::Temporary.file

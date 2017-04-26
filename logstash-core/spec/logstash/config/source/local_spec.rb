@@ -292,8 +292,9 @@ describe LogStash::Config::Source::Local do
       )
     end
 
-    it "returns a merged config" do
-      expect(subject.pipeline_configs.first.config_string).to include(input_block, output_block, filter_block)
+    # this should be impossible as the bootstrap checks should catch this
+    it "raises an exception" do
+      expect { subject.pipeline_configs }.to raise_error
     end
   end
 
@@ -353,8 +354,8 @@ describe LogStash::Config::Source::Local do
         )
       end
 
-      it "returns a merged config" do
-        expect(subject.pipeline_configs.first.config_string).to include(input_block, filter_block)
+      it "raises an exception" do
+        expect { subject.pipeline_configs }.to raise_error
       end
     end
   end
