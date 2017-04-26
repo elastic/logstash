@@ -85,7 +85,7 @@ class LogstashService < Service
 
   # Can start LS in stdin and can send messages to stdin
   # Useful to test metrics and such
-  def start_with_stdin
+  def start_with_stdin(wait_for_pipelines_to_start = true)
     puts "Starting Logstash #{@logstash_bin} -e #{STDIN_CONFIG}"
     Bundler.with_clean_env do
       out = Tempfile.new("duplex")
@@ -95,7 +95,7 @@ class LogstashService < Service
       @process.io.stdout = @process.io.stderr = out
       @process.duplex = true
       @process.start
-      wait_for_startup_message(out)
+      wait_for_startup_message(out) if wait_for_pipelines_to_start
       puts "Logstash started with PID #{@process.pid}" if alive?
     end
   end
@@ -135,6 +135,10 @@ class LogstashService < Service
 
   # Spawn LS as a child process
   def spawn_logstash(*args)
+    dont_wait_for_pipelines = args.find_index(:dont_wait_for_pipelines)
+    args.delete_at(dont_wait_for_pipelines) if dont_wait_for_pipelines
+    dont_wait_for_pipelines ||= false # if we don't explicitely set it to false we will wait for it
+
     Bundler.with_clean_env do
       out = Tempfile.new("duplex")
       out.sync = true
@@ -143,7 +147,7 @@ class LogstashService < Service
       # @process.io.inherit!
       @process.io.stdout = @process.io.stderr = out
       @process.start
-      wait_for_startup_message(out)
+      wait_for_startup_message(out) unless dont_wait_for_pipelines
       puts "Logstash started with PID #{@process.pid}" if @process.alive?
     end
   end

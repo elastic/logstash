@@ -83,7 +83,7 @@ describe "Test Logstash instance whose default settings are overridden" do
     test_config_path = File.join(temp_dir, "test.config")
     IO.write(test_config_path, "#{tcp_config}")
     expect(File.exists?(test_config_path)).to be true
-    @logstash_service.spawn_logstash
+    @logstash_service.spawn_logstash(:dont_wait_for_pipelines)
     try(num_retries) do
       expect(@logstash_service.exited?).to be true
     end
@@ -92,7 +92,7 @@ describe "Test Logstash instance whose default settings are overridden" do
     # now with bad config
     IO.write(test_config_path, "#{tcp_config} filters {} ")
     expect(File.exists?(test_config_path)).to be true
-    @logstash_service.spawn_logstash
+    @logstash_service.spawn_logstash(:dont_wait_for_pipelines)
     try(num_retries) do
       expect(@logstash_service.exited?).to be true
     end

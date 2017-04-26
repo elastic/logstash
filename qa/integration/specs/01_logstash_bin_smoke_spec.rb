@@ -55,7 +55,7 @@ describe "Test Logstash instance" do
       sleep(0.1) until File.exist?(file_config1) && File.size(file_config1) > 0 # Everything is started successfully at this point
       expect(is_port_open?(9600)).to be true
 
-      @ls2.spawn_logstash("-f", config2, "--path.data", tmp_data_path)
+      @ls2.spawn_logstash("-f", config2, "--path.data", tmp_data_path, :dont_wait_for_pipelines)
       try(20) do
         expect(@ls2.exited?).to be(true)
       end
@@ -139,7 +139,7 @@ describe "Test Logstash instance" do
   end
 
   it "should not start when -e is not specified and -f has no valid config files" do
-    @ls2.spawn_logstash("-e", "", "-f" "/tmp/foobartest")
+    @ls2.spawn_logstash("-e", "", "-f" "/tmp/foobartest", :dont_wait_for_pipelines)
     try(num_retries) do
       expect(is_port_open?(9600)).to be_falsey
     end
