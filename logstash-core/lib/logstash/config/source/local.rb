@@ -148,9 +148,8 @@ module LogStash module Config module Source
       end
 
       return if config_parts.empty?
-      return if config_string? && config_string.strip.empty?
 
-      add_missing_default_inputs_or_outputs(config_parts)
+      add_missing_default_inputs_or_outputs(config_parts) if config_string?
 
       [PipelineConfig.new(self.class, PIPELINE_ID, config_parts, @settings)]
     end
