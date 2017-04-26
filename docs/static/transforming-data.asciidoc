@@ -1,0 +1,520 @@
+[[transformation]]
+== Transforming Data
+
+With over 200 plugins in the Logstash plugin ecosystem, it's sometimes
+challenging to choose the best plugin to meet your data processing needs.
+In this section, we've collected a list of popular plugins and organized them
+according to their processing capabilities:
+
+* <<core-operations>>
+* <<data-deserialization>>
+* <<field-extraction>>
+* <<lookup-enrichment>>
+
+[[core-operations]]
+=== Performing Core Operations
+
+The plugins described in this section are useful for core operations, such as
+aggregating, mutating, and dropping events.
+
+Also see <<filter-plugins>> for the full list of available filter plugins. 
+
+<<plugins-filters-aggregate,aggregate filter>>::
+
+Aggregates information from several events (typically log lines) that belong to
+the same task and pushes the aggregated information into a final task event.
+For example:
++
+[source,json]
+--------------------------------------------------------------------------------
+filter {
+  aggregate {
+    task_id => "%{country_name}"
+    code => "
+      map['country_name'] = event.get('country_name')
+      map['towns'] ||= []
+      map['towns'] << {'town_name' => event.get('town_name')}
+      event.cancel()
+    "
+    push_previous_map_as_event => true
+    timeout => 3
+  }
+}
+--------------------------------------------------------------------------------
+
+
+<<plugins-filters-date,date filter>>::
+
+Parses dates from fields to use as Logstash timestamps for events.
++
+The following config parses a field called `logdate` to set the Logstash
+timestamp:
++
+[source,json]
+--------------------------------------------------------------------------------
+filter {
+  date {
+    match => [ "logdate", "MMM dd yyyy HH:mm:ss" ]
+  }
+}   
+--------------------------------------------------------------------------------
+
+
+<<plugins-filters-drop,drop filter>>::
+
+Drops events. This filter is typically used in combination with conditionals.
++
+The following config drops 40% of the `debug` level log messages:
++
+[source,json]
+--------------------------------------------------------------------------------
+filter {
+  if [loglevel] == "debug" {
+    drop {
+      percentage => 40
+    }
+  }
+}
+--------------------------------------------------------------------------------
+
+
+<<plugins-filters-fingerprint,fingerprint filter>>::
+
+Fingerprints fields by applying a consistent hash.
++
+The following config fingerprints the `IP`, `@timestamp`, and `message` fields
+and adds the hash to a metadata field called `generated_id`:
++
+[source,json]
+--------------------------------------------------------------------------------
+filter {
+  fingerprint {
+    source => ["IP", "@timestamp", "message"]
+    method => "SHA1"
+    key => "0123"
+    target => "[@metadata][generated_id]"
+  }
+}
+--------------------------------------------------------------------------------
+
+
+<<plugins-filters-mutate,mutate filter>>::
+
+Performs general mutations on fields. You can rename, remove, replace, and
+modify fields in your events.
++
+The following config renames the `HOSTORIP` field to `client_ip`:
++
+[source,json]
+--------------------------------------------------------------------------------
+filter {
+  mutate {
+    rename => { "HOSTORIP" => "client_ip" }
+  }
+}
+--------------------------------------------------------------------------------
+
+
+<<plugins-filters-ruby,ruby filter>>::
+
+Executes Ruby code.
++
+The following config executes Ruby code that cancels 90% of the events:
++
+[source,json]
+--------------------------------------------------------------------------------
+filter {
+  ruby {
+    code => "event.cancel if rand <= 0.90"
+  }
+}
+--------------------------------------------------------------------------------
+
+
+[[data-deserialization]]
+=== Deserializing Data
+
+The plugins described in this section are useful for deserializing data into
+Logstash events.
+
+Also see <<filter-plugins>> and <<codec-plugins>> for the full list of available
+data processing plugins.
+
+<<plugins-codecs-avro,avro codec>>::
+
+Reads serialized Avro records as Logstash events. This plugin deserializes
+individual Avro records. It is not for reading Avro files. Avro files have a
+unique format that must be handled upon input.
++
+The following config deserializes input from Kafka:
++
+[source,json]
+----------------------------------
+input {
+  kafka {
+    codec => {
+      avro => {
+        schema_uri => "/tmp/schema.avsc"
+      }
+    }
+  }
+}
+...
+----------------------------------
+
+
+<<plugins-filters-csv,csv filter>>::
+
+Parses comma-separated value data into individual fields. By default, the
+filter autogenerates field names (column1, column2, and so on), or you can specify
+a list of names. You can also change the column separator.
++
+The following config parses CSV data into the field names specified in the
+`columns` field:
++
+[source,json]
+--------------------------------------------------------------------------------
+filter {
+  csv {
+    separator => ","
+    columns => [ "Transaction Number", "Date", "Description", "Amount Debit", "Amount Credit", "Balance" ]
+  }
+}
+--------------------------------------------------------------------------------
+
+<<plugins-codecs-fluent,fluent codec>>::
+        
+Reads the Fluentd `msgpack` schema.
++
+The following config decodes logs received from `fluent-logger-ruby`:
++
+[source,json]
+--------------------------------------------------------------------------------
+input {
+  tcp {
+    codec => fluent
+    port => 4000
+  }
+}
+--------------------------------------------------------------------------------
+
+
+//ALVIN: SHOULD WE ALSO COVER THE MSGPACK CODEC? I LOOKED AT THE DOCS FOR MSGPACK AND THERE'S NO USEFUL INFO IN THERE. 
+
+<<plugins-codecs-json,json codec>>::
+
+Decodes (via inputs) and encodes (via outputs) JSON formatted content, creating
+one event per element in a JSON array.
++
+The following config decodes the JSON formatted content in a file:
++
+[source,json]
+--------------------------------------------------------------------------------
+input {
+  file {
+    path => "/path/to/myfile.json"
+    codec =>"json"
+}
+--------------------------------------------------------------------------------
+
+
+//ALVIN: SHOULD WE INCLUDE JSON_LINES HERE, TOO, OR MAYBE MENTION IT?
+
+<<plugins-codecs-protobuf,protobuf codec>>::
+
+Reads protobuf encoded messages and converts them to Logstash events. Requires
+the protobuf definitions to be compiled as Ruby files.
++
+The following config decodes events from a Kafka stream:
++
+[source,json]
+--------------------------------------------------------------------------------
+kafka {
+  zk_connect => "127.0.0.1"
+  topic_id => "your_topic_goes_here"
+  codec => protobuf {
+    class_name => "Animal::Unicorn"
+    include_path => ['/path/to/protobuf/definitions/UnicornProtobuf.pb.rb']
+  }
+}
+--------------------------------------------------------------------------------
+
+
+//REVIEWERS: PLEASE DOUBLE-CHECK THE SYNTAX FOR THE PROTOBUF EXAMPLE. I CHANGED THE FORMATTING TO BE CONSISTENT WITH THE REST OF THE DOCUMENTATION HERE, BUT DIDN'T TEST THIS EXAMPLE.
+
+<<plugins-filters-xml,xml filter>>::
+
+Parses XML into fields.
++
+The following config parses the whole XML document stored in the `message` field:
++
+[source,json]
+--------------------------------------------------------------------------------
+filter {
+  xml {
+    source => "message"
+  }
+}
+--------------------------------------------------------------------------------
+
+
+[[field-extraction]]
+=== Extracting Fields and Wrangling Data
+
+The plugins described in this section are useful for extracting fields and
+parsing unstructured data into fields.
+
+Also see <<filter-plugins>> for the full list of available filter plugins. 
+
+<<plugins-filters-dissect,dissect filter>>::
+
+Extracts unstructured event data into fields by using delimiters. The dissect
+filter does not use regular expressions and is very fast. However, if the
+structure of the data varies from line to line, the grok filter is more
+suitable.
++
+The following config dissects messages that match the structure specified in
+the mapping:
++
+[source,json]
+--------------------------------------------------------------------------------
+filter {
+  dissect {
+    mapping => {
+      "message" => "%{ts} %{+ts} %{+ts} %{src} %{} %{prog}[%{pid}]: %{msg}"
+    }
+  }
+}
+--------------------------------------------------------------------------------
+
+
+//REVIEWERS: I DON'T REALLY UNDERSTAND HOW THIS WORKS FROM READING THE DOCS. CAN SOMEONE SUGGEST AN EXAMPLE THAT INCLUDES THE MESSAGE BEING DISSECTED (THAT WOULD  HELP USERS A LOT). THE DOCUMENTATION FOR THIS FILTER IS HARD TO FOLLOW IN GENERAL.
+
+<<plugins-filters-kv,kv filter>>::
+
+Parses key-value pairs.
++
+For example, let's say you have a log message that contains the following
+key-value pairs: `ip=1.2.3.4 error=REFUSED`.
++
+The following config parses the key-value pairs into fields:
++
+[source,json]
+--------------------------------------------------------------------------------
+filter {
+  kv { }
+}
+--------------------------------------------------------------------------------
++
+After the filter is applied, the event in the example will have these fields:
++
+* `ip: 1.2.3.4`
+* `error: REFUSED`
+
+
+<<plugins-filters-grok,grok filter>>::
+
+Parses unstructured event data into fields. This tool is perfect for syslog
+logs, Apache and other webserver logs, MySQL logs, and in general, any log
+format that is generally written for humans and not computer consumption.
+Grok works by combining text patterns into something that matches your
+logs.
++
+For example, let's say you have an HTTP request log that contains
+the following message:
++
+[source,json]
+--------------------------------------------------------------------------------
+55.3.244.1 GET /index.html 15824 0.043
+--------------------------------------------------------------------------------
++
+The following config parses the message into fields:
++
+[source,json]
+--------------------------------------------------------------------------------
+filter {
+  grok {
+    match => { "message" => "%{IP:client} %{WORD:method} %{URIPATHPARAM:request} %{NUMBER:bytes} %{NUMBER:duration}" }
+  }
+}
+--------------------------------------------------------------------------------
++
+After the filter is applied, the event in the example will have these fields:
++
+* `client: 55.3.244.1`
+* `method: GET`
+* `request: /index.html`
+* `bytes: 15824`
+* `duration: 0.043`
+
+[[lookup-enrichment]]
+=== Enriching Data with Lookups
+
+The plugins described in this section are useful for enriching data with
+additional info, such as GeoIP and user agent info.
+
+Also see <<filter-plugins>> for the full list of available filter plugins. 
+
+<<plugins-filters-dns,dns filter>>::
+
+Performs a standard or reverse DNS lookup.
++
+The following config performs a reverse lookup on the address in the
+`source_host` field and replaces it with the domain name:
++
+[source,json]
+--------------------------------------------------------------------------------
+filter {
+  dns {
+    reverse => [ "source_host" ]
+    action => "replace"
+  }
+}
+--------------------------------------------------------------------------------
+
+    
+<<plugins-filters-elasticsearch,elasticsearch>>::
+
+Copies fields from previous log events in Elasticsearch to current events. 
++
+[source,json]
+--------------------------------------------------
+NEED A SIMPLE EXAMPLE HERE. 
+--------------------------------------------------
+
+
+//REVEIWERS: I NEED A BETTER EXAMPLE FOR THE ELASTICSEARCH FILTER. THE EXAMPLE IN THE DOCUMENTATION MIGHT BE TOO COMPLEX FOR AN OVERVIEW.
+
+
+<<plugins-filters-geoip,geoip filter>>::
+
+Adds geographical information about the location of IP addresses. For example: 
++
+[source,json]
+--------------------------------------------------------------------------------
+filter {
+  geoip {
+    source => "clientip"
+  }
+}
+--------------------------------------------------------------------------------
++    
+After the geoip filter is applied, the event will be enriched with geoip fields.
+For example:
++
+[source,json]
+--------------------------------------------------------------------------------
+          "geoip" => {
+              "timezone" => "Europe/Moscow",
+                    "ip" => "83.149.9.216",
+              "latitude" => 55.7522,
+        "continent_code" => "EU",
+             "city_name" => "Moscow",
+         "country_code2" => "RU",
+          "country_name" => "Russia",
+              "dma_code" => nil,
+         "country_code3" => "RU",
+           "region_name" => "Moscow",
+              "location" => [
+            [0] 37.6156,
+            [1] 55.7522
+        ],
+           "postal_code" => "101194",
+             "longitude" => 37.6156,
+           "region_code" => "MOW"
+    }
+--------------------------------------------------------------------------------
+
+<<plugins-filters-jdbc_streaming,jdbc_streaming>>::
+
+Enriches events with database data.
++
+The following example executes a SQL query and stores the result set in a field
+called `country_details`:
++
+[source,json]
+--------------------------------------------------------------------------------
+filter {
+  jdbc_streaming {
+    jdbc_driver_library => "/path/to/mysql-connector-java-5.1.34-bin.jar"
+    jdbc_driver_class => "com.mysql.jdbc.Driver"
+    jdbc_connection_string => ""jdbc:mysql://localhost:3306/mydatabase"
+    jdbc_user => "me"
+    jdbc_password => "secret"
+    statement => "select * from WORLD.COUNTRY WHERE Code = :code"
+    parameters => { "code" => "country_code"}
+    target => "country_details"
+  }
+}
+--------------------------------------------------------------------------------
+
+
+//REVIEWERS: THE MYSQL CONNECTOR SHOWN IN THIS EXAMPLE IS KIND OF OLD. NOT SURE I SHOULD CHANGE IT, THOUGH, BECAUSE I'M NOT SURE IF WE SUPPORT ALL VERSIONS OF THE CONNECTOR.
+
+//ALVIN: YOU ALSO HAD JDBC STATIC PLUGIN IN YOUR LIST. DO YOU MEAN THE INPUT PLUGIN? SEEMS A LITTLE OUT-OF-PLACE TO LIST AN INPUT PLUGIN IN THIS SECTION, IMO. DOES IT DO SOMETHING BEYOND WHAT INPUT PLUGINS NORMALLY DO SO THAT IT 
+
+<<plugins-filters-translate,translate filter>>::
+
+Replaces field contents based on replacement values specified in a hash or file.
+Currently supports these file types: YAML, JSON, and CSV.
++
+The following example takes the value of the `response_code` field, translates
+it to a description based on the values specified in the dictionary, and then
+removes the `response_code` field from the event:
++
+[source,json]
+--------------------------------------------------------------------------------
+filter {
+  translate {
+    field => "response_code"
+    destination => "http_response"
+    dictionary => {
+      "200" => "OK"
+      "403" => "Forbidden"
+      "404" => "Not Found"
+      "408" => "Request Timeout" 
+    }
+    remove_field => "response_code"
+  }
+}
+--------------------------------------------------------------------------------
+
+
+<<plugins-filters-useragent,useragent filter>>::
+
+Parses user agent strings into fields.
++
+The following example takes the user agent string in the `agent` field, parses
+it into user agent fields, and adds the user agent fields to a new field called
+`user_agent`. It also removes the original `agent` field: 
++
+[source,json]
+--------------------------------------------------------------------------------
+filter {
+  useragent {
+    source => "agent"
+    target => "user_agent"
+    remove_field => "agent"
+  }
+}
+--------------------------------------------------------------------------------
++ 
+After the filter is applied, the event will be enriched with user agent fields.
+For example:
++
+[source,json]
+--------------------------------------------------------------------------------
+        "user_agent": {
+          "os": "Mac OS X 10.12",
+          "major": "50",
+          "minor": "0",
+          "os_minor": "12",
+          "os_major": "10",
+          "name": "Firefox",
+          "os_name": "Mac OS X",
+          "device": "Other"
+        }
+--------------------------------------------------------------------------------   
+        
+
+    
