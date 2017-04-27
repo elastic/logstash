@@ -13,7 +13,7 @@ module LogStash
         end
       end
 
-      # Patch to prevent Bundler to save a .bundle/config file in the root 
+      # Patch to prevent Bundler to save a .bundle/config file in the root
       # of the application
       ::Bundler::Settings.module_exec do
         def set_key(key, value, hash, file)
@@ -95,6 +95,14 @@ module LogStash
 
       require "bundler"
       require "bundler/cli"
+
+      # create Gemfile from template iff it does not exist
+      unless ::File.exists?(Environment::GEMFILE_PATH)
+        ::FileUtils.copy(
+          ::File.join(ENV["LOGSTASH_HOME"], "Gemfile.template"), Environment::GEMFILE_PATH
+        )
+      end
+
       LogStash::Bundler.patch!
 
       # force Rubygems sources to our Gemfile sources
