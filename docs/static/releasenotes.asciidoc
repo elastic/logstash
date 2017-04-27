@@ -15,7 +15,7 @@ This section summarizes the changes in the following releases:
 
 *`Elasticsearch`*:
 
-* Fix scrolling to use JSON bodies in the requests.
+* Fixed scrolling to use JSON bodies in the requests.
 
 *`HTTP`*:
 
@@ -29,7 +29,7 @@ This section summarizes the changes in the following releases:
 
 *`URL Decode`*:
 
-* Fix an issue where Logstash would crash when processing unicode input with this filter.
+* Fixed an issue where Logstash would crash when processing unicode input with this filter.
 
 ==== Output Plugins
 
