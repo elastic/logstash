@@ -1,10 +1,10 @@
 [[logstash-reference]]
 = Logstash Reference
 
-:branch:                5.x
-:major-version:         5.x
-:logstash_version:      5.x.0
-:elasticsearch_version: 5.x.0
+:branch:                5.4
+:major-version:         5.4
+:logstash_version:      5.4.0
+:elasticsearch_version: 5.4.0
 :docker-image:          docker.elastic.co/logstash/logstash:{logstash_version}
 
 //////////
@@ -14,10 +14,11 @@ release-state can be: released | prerelease | unreleased
 
 :jdk:                   1.8.0
 :guide:                 https://www.elastic.co/guide/en/elasticsearch/guide/current/
-:ref:                   https://www.elastic.co/guide/en/elasticsearch/reference/5.x/
+:ref:                   https://www.elastic.co/guide/en/elasticsearch/reference/5.4/
 :xpack:                 https://www.elastic.co/guide/en/x-pack/current/
-:logstash:              https://www.elastic.co/guide/en/logstash/5.x/
-:filebeat:              https://www.elastic.co/guide/en/beats/filebeat/5.x/
+:logstash:              https://www.elastic.co/guide/en/logstash/5.4/
+:libbeat:               https://www.elastic.co/guide/en/beats/libbeat/5.4/
+:filebeat:              https://www.elastic.co/guide/en/beats/filebeat/5.4/
 :lsissue:               https://github.com/elastic/logstash/issues/
 :security:              X-Pack Security
 :stack:                 https://www.elastic.co/guide/en/elastic-stack/current/
@@ -99,6 +100,10 @@ include::static/managing-multiline-events.asciidoc[]
 
 
 include::static/glob-support.asciidoc[]
+
+// Working with Filebeat Modules
+
+include::static/filebeat-modules.asciidoc[]
 
 // Deploying & Scaling
 
