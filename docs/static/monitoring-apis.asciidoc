@@ -1,8 +1,6 @@
 [[monitoring]]
 == Monitoring APIs
 
-experimental[]
-
 Logstash provides the following monitoring APIs to retrieve runtime metrics
 about Logstash:
 
@@ -65,8 +63,6 @@ consumption.  The default for the `human` flag is
 
 [[node-info-api]]
 === Node Info API
-
-experimental[]
 
 The node info API retrieves information about the node.
 
@@ -183,8 +179,6 @@ Example response:
 [[plugins-api]]
 === Plugins Info API
 
-experimental[]
-
 The plugins info API gets information about all Logstash plugins that are currently installed.
 This API basically returns the output of running the `bin/logstash-plugin list --verbose` command.
 
@@ -229,8 +223,6 @@ Example response:
 
 [[node-stats-api]]
 === Node Stats API
-
-experimental[]
 
 The node stats API retrieves runtime stats about Logstash.
 
@@ -518,8 +510,6 @@ Example response:
 
 [[hot-threads-api]]
 === Hot Threads API
-
-experimental[]
 
 The hot threads API gets the current hot threads for Logstash. A hot thread is a
 Java thread that has high CPU usage and executes for a longer than normal period
