@@ -3,8 +3,43 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-5-3-2,Logstash 5.3.2>>
+* <<logstash-5-3-1,Logstash 5.3.1>>
 * <<logstash-5-3-0,Logstash 5.3.0>>
-* <<logstash-5-3-0,Logstash 5.3.1>>
+
+[[logstash-5-3-2]]
+=== Logstash 5.3.2 Release Notes
+
+[float]
+==== Input Plugins
+
+*`Elasticsearch`*:
+
+* Fix scrolling to use JSON bodies in the requests.
+
+*`HTTP`*:
+
+* Improve error logging to log more details including stack trace.
+
+*`Log4j`*:
+
+* This input will now reject any non-log4j log objects sent as input.
+
+==== Filter Plugins
+
+*`URL Decode`*:
+
+* Fix an issue where Logstash would crash when processing unicode input with this filter.
+
+==== Output Plugins
+
+*`Elasticsearch`*:
+
+* Add support for customizing `sniffing_path` with having to use `absolute_sniffing_path`
+
+*`Kafka`*:
+
+* Fixed a bug when Logstash would fail to start up when `SASL_SSL` and `PLAIN` (no Kerberos) options were specified.
 
 [[logstash-5-3-1]]
 === Logstash 5.3.1 Release Notes
