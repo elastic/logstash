@@ -1,8 +1,6 @@
 [[persistent-queues]]
 === Persistent Queues
 
-WARNING: This functionality is in beta and is subject to change. Deployment in production is at your own risk.
-
 By default, Logstash uses in-memory bounded queues between pipeline stages
 (inputs → pipeline workers) to buffer events. The size of these in-memory
 queues is fixed and not configurable. If Logstash experiences a temporary
