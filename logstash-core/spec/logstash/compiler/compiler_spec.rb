@@ -10,6 +10,8 @@ describe LogStash::Compiler do
 
   let(:source_protocol) { "test_proto" }
 
+  let(:settings) { mock_settings({}) }
+
   # Static import of these useful enums
   INPUT = Java::OrgLogstashConfigIr::PluginDefinition::Type::INPUT
   FILTER = Java::OrgLogstashConfigIr::PluginDefinition::Type::FILTER
@@ -29,7 +31,7 @@ describe LogStash::Compiler do
   describe "compiling to Pipeline" do
     subject(:source_id) { "fake_sourcefile" }
     let(:source_with_metadata) { org.logstash.common.SourceWithMetadata.new(source_protocol, source_id, 0, 0, source) }
-    subject(:compiled) { puts "PCOMP"; described_class.compile_pipeline(source_with_metadata) }
+    subject(:compiled) { puts "PCOMP"; described_class.compile_pipeline(source_with_metadata, settings) }
 
     describe "compiling multiple sources" do
       let(:sources) do
@@ -38,13 +40,14 @@ describe LogStash::Compiler do
           "input { input_1 {} } filter { filter_1 {} } output { output_1 {} }"
         ]
       end
+
       let(:sources_with_metadata) do
         sources.map.with_index do |source, idx|
           org.logstash.common.SourceWithMetadata.new("#{source_protocol}_#{idx}", "#{source_id}_#{idx}", 0, 0, source)
         end
       end
 
-      subject(:pipeline) { described_class.compile_sources(*sources_with_metadata) }
+      subject(:pipeline) { described_class.compile_sources(sources_with_metadata, settings) }
 
       it "should generate a hash" do
         expect(pipeline.unique_hash).to be_a(String)
@@ -97,8 +100,47 @@ describe LogStash::Compiler do
   describe "compiling imperative" do
     let(:source_id) { "fake_sourcefile" }
     let(:source_with_metadata) { org.logstash.common.SourceWithMetadata.new(source_protocol, source_id, 0, 0, source) }
-    subject(:compiled) { described_class.compile_imperative(source_with_metadata) }
+    subject(:compiled) { described_class.compile_imperative(source_with_metadata, settings) }
 
+    context "when config.support_escapes" do
+      let(:parser) { LogStashCompilerLSCLGrammarParser.new }
+
+      let(:processed_value)  { 'The computer says, "No"' }
+
+      let(:source) { 
+        %q(
+          input {
+            foo {
+              bar => "The computer says, \"No\""
+            }
+          }
+        )
+      }
+
+      let(:compiled_string) do
+        compiled[:input].toGraph.vertices.toArray.first.getPluginDefinition.arguments["bar"]
+      end
+
+      before do
+        settings.set_value("config.support_escapes", process_escape_sequences)
+      end
+
+      context "is enabled" do
+        let(:process_escape_sequences) { true }
+
+        it "should process escape sequences" do
+          expect(compiled_string).to be == processed_value
+        end
+      end
+
+      context "is false" do
+        let(:process_escape_sequences) { false }
+
+        it "should not process escape sequences" do
+          expect(compiled_string).not_to be == processed_value
+        end
+      end
+    end
     describe "an empty file" do
       let(:source) { "input {} output {}" }
 

@@ -25,6 +25,7 @@ module LogStash
            Setting::Boolean.new("config.test_and_exit", false),
            Setting::Boolean.new("config.reload.automatic", false),
            Setting::Numeric.new("config.reload.interval", 3), # in seconds
+           Setting::Boolean.new("config.support_escapes", false),
            Setting::Boolean.new("metric.collect", true),
             Setting::String.new("pipeline.id", "main"),
            Setting::Boolean.new("pipeline.system", false),

@@ -2,10 +2,14 @@
 require 'logstash/errors'
 require "treetop"
 require "logstash/compiler/treetop_monkeypatches"
+require "logstash/config/string_escape"
+
 java_import org.logstash.config.ir.DSL
 java_import org.logstash.common.SourceWithMetadata
 
 module LogStashCompilerLSCLGrammar; module LogStash; module Compiler; module LSCL; module AST
+  PROCESS_ESCAPE_SEQUENCES = :process_escape_sequences
+
   # Helpers for parsing LSCL files
   module Helpers
     def source_meta
@@ -73,6 +77,10 @@ module LogStashCompilerLSCLGrammar; module LogStash; module Compiler; module LSC
 
   class Config < Node
     include Helpers
+
+    def process_escape_sequences=(val)
+      set_meta(PROCESS_ESCAPE_SEQUENCES, val)
+    end
     
     def compile(base_source_with_metadata=nil)
       # There is no way to move vars across nodes in treetop :(
@@ -176,7 +184,12 @@ module LogStashCompilerLSCLGrammar; module LogStash; module Compiler; module LSC
   
   class String < Value
     def expr
-      jdsl.e_value(source_meta, text_value[1...-1])
+      value = if get_meta(PROCESS_ESCAPE_SEQUENCES)
+        ::LogStash::Config::StringEscape.process_escapes(text_value[1...-1])
+      else
+        text_value[1...-1]
+      end
+      jdsl.eValue(source_meta, value)
     end
   end
   

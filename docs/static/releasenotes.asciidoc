@@ -12,6 +12,10 @@ This section summarizes the changes in the following releases:
 
 Placeholder for alpha3 release notes
 
+* Added new `logstash.yml` setting: `config.support_escapes`. When
+  enabled, Logstash will interpret escape sequences in strings in the pipeline
+  configuration.
+
 
 [[logstash-6-0-0-alpha2]]
 === Logstash 6.0.0-alpha2 Release Notes
