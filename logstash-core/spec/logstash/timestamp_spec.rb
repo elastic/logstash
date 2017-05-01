@@ -20,6 +20,12 @@ describe LogStash::Timestamp do
       expect(t.time.to_i).to eq(now.to_i)
     end
 
+    it "should have consistent behaviour across == and .eql?" do
+      its_xmas = Time.utc(2015, 12, 25, 0, 0, 0)
+      expect(LogStash::Timestamp.new(its_xmas)).to eql(LogStash::Timestamp.new(its_xmas))
+      expect(LogStash::Timestamp.new(its_xmas)).to be ==(LogStash::Timestamp.new(its_xmas))
+    end
+
     it "should raise exception on invalid format" do
       expect{LogStash::Timestamp.new("foobar")}.to raise_error
     end

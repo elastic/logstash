@@ -13,6 +13,10 @@ module LogStash
       self.time <=> other.time
     end
 
+    def eql?(other)
+      self.== other
+    end
+
     # TODO (colin) implement in Java
     def +(other)
       self.time + other
