@@ -2,7 +2,7 @@ package org.logstash.config.ir.expression;
 
 import org.logstash.config.ir.SourceComponent;
 import org.logstash.config.ir.InvalidIRException;
-import org.logstash.config.ir.SourceMetadata;
+import org.logstash.common.SourceWithMetadata;
 
 /**
  * Created by andrewvc on 9/6/16.
@@ -31,7 +31,7 @@ public abstract class BinaryBooleanExpression extends BooleanExpression {
         return left;
     }
 
-    public BinaryBooleanExpression(SourceMetadata meta,
+    public BinaryBooleanExpression(SourceWithMetadata meta,
                                    Expression left,
                                    Expression right) throws InvalidIRException {
         super(meta);

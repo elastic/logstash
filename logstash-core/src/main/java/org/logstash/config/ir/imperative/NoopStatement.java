@@ -1,7 +1,7 @@
 package org.logstash.config.ir.imperative;
 
 import org.logstash.config.ir.SourceComponent;
-import org.logstash.config.ir.SourceMetadata;
+import org.logstash.common.SourceWithMetadata;
 import org.logstash.config.ir.graph.Graph;
 
 /**
@@ -9,7 +9,7 @@ import org.logstash.config.ir.graph.Graph;
  */
 public class NoopStatement extends Statement {
 
-    public NoopStatement(SourceMetadata meta) {
+    public NoopStatement(SourceWithMetadata meta) {
         super(meta);
     }
 

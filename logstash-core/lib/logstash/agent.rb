@@ -134,10 +134,10 @@ class LogStash::Agent
 
     unless results.success?
       if auto_reload?
-        logger.debug("Count not fetch the configuration to converge, will retry", :message => results.error, :retrying_in => @reload_interval)
+        logger.debug("Could not fetch the configuration to converge, will retry", :message => results.error, :retrying_in => @reload_interval)
         return
       else
-        raise "Count not fetch the configuration, message: #{results.error}"
+        raise "Could not fetch the configuration, message: #{results.error}"
       end
     end
 

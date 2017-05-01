@@ -1,7 +1,7 @@
 package org.logstash.config.ir.graph;
 
 import org.logstash.config.ir.SourceComponent;
-import org.logstash.config.ir.SourceMetadata;
+import org.logstash.common.SourceWithMetadata;
 
 /**
  * Created by andrewvc on 9/15/16.
@@ -38,7 +38,7 @@ public class QueueVertex extends Vertex {
 
     // Special vertices really have no metadata
     @Override
-    public SourceMetadata getMeta() {
+    public SourceWithMetadata getMeta() {
         return null;
     }
 }

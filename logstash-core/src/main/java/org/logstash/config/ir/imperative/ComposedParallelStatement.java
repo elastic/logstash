@@ -1,7 +1,7 @@
 package org.logstash.config.ir.imperative;
 
 import org.logstash.config.ir.InvalidIRException;
-import org.logstash.config.ir.SourceMetadata;
+import org.logstash.common.SourceWithMetadata;
 import org.logstash.config.ir.graph.Graph;
 
 import java.util.List;
@@ -10,7 +10,7 @@ import java.util.List;
  * Created by andrewvc on 9/22/16.
  */
 public class ComposedParallelStatement extends ComposedStatement {
-    public ComposedParallelStatement(SourceMetadata meta, List<Statement> statements) throws InvalidIRException {
+    public ComposedParallelStatement(SourceWithMetadata meta, List<Statement> statements) throws InvalidIRException {
         super(meta, statements);
     }
 

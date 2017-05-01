@@ -19,7 +19,7 @@ describe LogStash::Config::Source::Local::ConfigStringLoader do
 
   it "returns a valid config part" do
     config_part = subject.read(config_string).first
-    expect(config_part).to be_a_config_part(described_class.to_s, "config_string", config_string)
+    expect(config_part).to be_a_source_with_metadata("string", "config_string", config_string)
   end
 end
 
@@ -71,17 +71,17 @@ describe LogStash::Config::Source::Local::ConfigPathLoader do
 
       it "returns alphabetically sorted parts" do
         parts = subject.read(reader_config)
-        expect(parts.collect { |part| ::File.basename(part.source_id) }).to eq(files.keys.sort)
+        expect(parts.collect { |part| ::File.basename(part.id) }).to eq(files.keys.sort)
       end
 
       it "returns valid `config_parts`" do
         parts = subject.read(reader_config)
 
         parts.each do |part|
-          basename = ::File.basename(part.source_id)
+          basename = ::File.basename(part.id)
           file_path = ::File.join(directory, basename)
           content = files[basename]
-          expect(part).to be_a_config_part(described_class.to_s, file_path, content)
+          expect(part).to be_a_source_with_metadata("file", file_path, content)
         end
       end
     end
@@ -256,7 +256,7 @@ describe LogStash::Config::Source::Local::ConfigRemoteLoader do
 
     it "returns a valid config part" do
       config_part = subject.read(remote_url).first
-      expect(config_part).to be_a_config_part(described_class.to_s, remote_url, config_string)
+      expect(config_part).to be_a_source_with_metadata("http", remote_url, config_string)
     end
   end
 
@@ -293,7 +293,7 @@ describe LogStash::Config::Source::Local do
     end
 
     it "returns a merged config" do
-      expect(subject.pipeline_configs.config_string).to include(input_block, output_block, filter_block)
+      expect(subject.pipeline_configs.first.config_string).to include(input_block, output_block, filter_block)
     end
   end
 
@@ -303,7 +303,7 @@ describe LogStash::Config::Source::Local do
     end
 
     it "returns a config" do
-      expect(subject.pipeline_configs.config_string).to include(filter_block)
+      expect(subject.pipeline_configs.first.config_string).to include(filter_block)
     end
   end
 
@@ -314,7 +314,7 @@ describe LogStash::Config::Source::Local do
     end
 
     it "returns a config" do
-      expect(subject.pipeline_configs.config_string).to include(input_block)
+      expect(subject.pipeline_configs.first.config_string).to include(input_block)
     end
   end
 
@@ -342,7 +342,7 @@ describe LogStash::Config::Source::Local do
     end
 
     it "returns a config" do
-      expect(subject.pipeline_configs.config_string).to include(input_block)
+      expect(subject.pipeline_configs.first.config_string).to include(input_block)
     end
 
     context "when `config.string` is set" do
@@ -354,7 +354,7 @@ describe LogStash::Config::Source::Local do
       end
 
       it "returns a merged config" do
-        expect(subject.pipeline_configs.config_string).to include(input_block, filter_block)
+        expect(subject.pipeline_configs.first.config_string).to include(input_block, filter_block)
       end
     end
   end
@@ -364,7 +364,7 @@ describe LogStash::Config::Source::Local do
       let(:settings) { mock_settings( "config.string" => "#{filter_block} #{output_block}") }
 
       it "add stdin input" do
-        expect(subject.pipeline_configs.config_string).to include(LogStash::Config::Defaults.input)
+        expect(subject.pipeline_configs.first.config_string).to include(LogStash::Config::Defaults.input)
       end
     end
 
@@ -372,7 +372,7 @@ describe LogStash::Config::Source::Local do
       let(:settings) { mock_settings( "config.string" => "#{input_block} #{filter_block}") }
 
       it "add stdout output" do
-        expect(subject.pipeline_configs.config_string).to include(LogStash::Config::Defaults.output)
+        expect(subject.pipeline_configs.first.config_string).to include(LogStash::Config::Defaults.output)
       end
     end
 
@@ -380,7 +380,7 @@ describe LogStash::Config::Source::Local do
       let(:settings) { mock_settings( "config.string" => "#{filter_block}") }
 
       it "add stdin and output" do
-        expect(subject.pipeline_configs.config_string).to include(LogStash::Config::Defaults.output, LogStash::Config::Defaults.input)
+        expect(subject.pipeline_configs.first.config_string).to include(LogStash::Config::Defaults.output, LogStash::Config::Defaults.input)
       end
     end
 
@@ -388,7 +388,7 @@ describe LogStash::Config::Source::Local do
       let(:settings) { mock_settings( "config.string" => "#{input_block} #{filter_block} #{output_block}") }
 
       it "doesn't add anything" do
-        expect(subject.pipeline_configs.config_string).not_to include(LogStash::Config::Defaults.output, LogStash::Config::Defaults.input)
+        expect(subject.pipeline_configs.first.config_string).not_to include(LogStash::Config::Defaults.output, LogStash::Config::Defaults.input)
       end
     end
   end

@@ -5,13 +5,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.logstash.common.Util;
 import org.logstash.config.ir.SourceComponent;
 import org.logstash.config.ir.PluginDefinition;
-import org.logstash.config.ir.SourceMetadata;
+import org.logstash.common.SourceWithMetadata;
 
 /**
  * Created by andrewvc on 9/15/16.
  */
 public class PluginVertex extends Vertex {
-    private final SourceMetadata meta;
+    private final SourceWithMetadata meta;
     private final String id;
     private final PluginDefinition pluginDefinition;
 
@@ -27,12 +27,12 @@ public class PluginVertex extends Vertex {
         return pluginDefinition;
     }
     @Override
-    public SourceMetadata getMeta() {
+    public SourceWithMetadata getMeta() {
         return meta;
     }
 
 
-    public PluginVertex(SourceMetadata meta, PluginDefinition pluginDefinition) {
+    public PluginVertex(SourceWithMetadata meta, PluginDefinition pluginDefinition) {
         super(meta);
         this.meta = meta;
 

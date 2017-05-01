@@ -2,7 +2,7 @@ package org.logstash.config.ir.graph;
 
 import org.logstash.config.ir.SourceComponent;
 import org.logstash.config.ir.InvalidIRException;
-import org.logstash.config.ir.SourceMetadata;
+import org.logstash.common.SourceWithMetadata;
 
 import java.util.stream.Stream;
 
@@ -93,7 +93,7 @@ public abstract class Edge implements SourceComponent {
     public abstract String getId();
 
     @Override
-    public SourceMetadata getMeta() {
+    public SourceWithMetadata getMeta() {
         return null;
     }
 }

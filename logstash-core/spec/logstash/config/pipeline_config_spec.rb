@@ -1,6 +1,5 @@
 # encoding: utf-8
 require "logstash/config/pipeline_config"
-require "logstash/config/config_part"
 require "logstash/config/source/local"
 
 describe LogStash::Config::PipelineConfig do
@@ -8,13 +7,13 @@ describe LogStash::Config::PipelineConfig do
   let(:pipeline_id) { :main }
   let(:ordered_config_parts) do
     [
-      LogStash::Config::ConfigPart.new(LogStash::Config::Source::Local::ConfigPathLoader, "/tmp/1", "input { generator1 }"),
-      LogStash::Config::ConfigPart.new(LogStash::Config::Source::Local::ConfigPathLoader, "/tmp/2", "input { generator2 }"),
-      LogStash::Config::ConfigPart.new(LogStash::Config::Source::Local::ConfigPathLoader, "/tmp/3", "input { generator3 }"),
-      LogStash::Config::ConfigPart.new(LogStash::Config::Source::Local::ConfigPathLoader, "/tmp/4", "input { generator4 }"),
-      LogStash::Config::ConfigPart.new(LogStash::Config::Source::Local::ConfigPathLoader, "/tmp/5", "input { generator5 }"),
-      LogStash::Config::ConfigPart.new(LogStash::Config::Source::Local::ConfigPathLoader, "/tmp/6", "input { generator6 }"),
-      LogStash::Config::ConfigPart.new(LogStash::Config::Source::Local::ConfigStringLoader, "config_string", "input { generator1 }"),
+      org.logstash.common.SourceWithMetadata.new("file", "/tmp/1", "input { generator1 }"),
+      org.logstash.common.SourceWithMetadata.new("file", "/tmp/2", "input { generator2 }"),
+      org.logstash.common.SourceWithMetadata.new("file", "/tmp/3", "input { generator3 }"),
+      org.logstash.common.SourceWithMetadata.new("file", "/tmp/4", "input { generator4 }"),
+      org.logstash.common.SourceWithMetadata.new("file", "/tmp/5", "input { generator5 }"),
+      org.logstash.common.SourceWithMetadata.new("file", "/tmp/6", "input { generator6 }"),
+      org.logstash.common.SourceWithMetadata.new("string", "config_string", "input { generator1 }"),
     ]
   end
 
@@ -40,7 +39,7 @@ describe LogStash::Config::PipelineConfig do
   end
 
   it "returns the merged `ConfigPart#config_string`" do
-    expect(subject.config_string).to eq(ordered_config_parts.collect(&:config_string).join("\n"))
+    expect(subject.config_string).to eq(ordered_config_parts.collect(&:text).join("\n"))
   end
 
   it "records when the config was read" do

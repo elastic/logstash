@@ -10,7 +10,9 @@ module LogStash module Config
     def initialize(source, pipeline_id, config_parts, settings)
       @source = source
       @pipeline_id = pipeline_id
-      @config_parts = Array(config_parts).sort_by { |config_part| [config_part.reader.to_s, config_part.source_id] }
+      # We can't use Array() since config_parts may be a java object!
+      config_parts_array = config_parts.is_a?(Array) ? config_parts : [config_parts]
+      @config_parts = config_parts_array.sort_by { |config_part| [config_part.protocol.to_s, config_part.id] }
       @settings = settings
       @read_at = Time.now
     end
@@ -20,7 +22,7 @@ module LogStash module Config
     end
 
     def config_string
-      @config_string = config_parts.collect(&:config_string).join("\n")
+      @config_string = config_parts.collect(&:text).join("\n")
     end
 
     def system?
@@ -36,8 +38,8 @@ module LogStash module Config
       logger.debug("Config from source", :source => source, :pipeline_id => pipeline_id)
 
       config_parts.each do |config_part|
-        logger.debug("Config string", :reader => config_part.reader, :source_id => config_part.source_id)
-        logger.debug("\n\n#{config_part.config_string}")
+        logger.debug("Config string", :protocol => config_part.protocol, :id => config_part.id)
+        logger.debug("\n\n#{config_part.text}")
       end
       logger.debug("Merged config")
       logger.debug("\n\n#{config_string}")

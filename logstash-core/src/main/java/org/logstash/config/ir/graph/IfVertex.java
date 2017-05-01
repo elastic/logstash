@@ -1,7 +1,7 @@
 package org.logstash.config.ir.graph;
 
 import org.logstash.config.ir.SourceComponent;
-import org.logstash.config.ir.SourceMetadata;
+import org.logstash.common.SourceWithMetadata;
 import org.logstash.config.ir.expression.BooleanExpression;
 
 import java.util.Collection;
@@ -19,7 +19,7 @@ public class IfVertex extends Vertex {
 
     private final BooleanExpression booleanExpression;
 
-    public IfVertex(SourceMetadata meta, BooleanExpression booleanExpression) {
+    public IfVertex(SourceWithMetadata meta, BooleanExpression booleanExpression) {
         super(meta);
         this.booleanExpression = booleanExpression;
     }
@@ -43,7 +43,7 @@ public class IfVertex extends Vertex {
 
     // An IfVertex has no real metadata in and of itself, but its expression does!
     @Override
-    public SourceMetadata getMeta() {
+    public SourceWithMetadata getMeta() {
         return null;
     }
 
@@ -83,7 +83,7 @@ public class IfVertex extends Vertex {
     // The easiest readable version of this for a human.
     // If the original source is available we use that, otherwise we serialize the expression
     public String humanReadableExpression() {
-        String sourceText = this.booleanExpression.getMeta() != null ? this.booleanExpression.getMeta().getSourceText() : null;
+        String sourceText = this.booleanExpression.getMeta() != null ? this.booleanExpression.getMeta().getText() : null;
         if (sourceText != null) {
             return sourceText;
         } else {

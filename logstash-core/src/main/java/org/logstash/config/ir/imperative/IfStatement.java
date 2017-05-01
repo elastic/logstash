@@ -2,7 +2,7 @@ package org.logstash.config.ir.imperative;
 
 import org.logstash.config.ir.SourceComponent;
 import org.logstash.config.ir.InvalidIRException;
-import org.logstash.config.ir.SourceMetadata;
+import org.logstash.common.SourceWithMetadata;
 import org.logstash.config.ir.expression.BooleanExpression;
 import org.logstash.config.ir.graph.BooleanEdge;
 import org.logstash.config.ir.graph.Graph;
@@ -36,7 +36,7 @@ public class IfStatement extends Statement {
         return falseStatement;
     }
 
-    public IfStatement(SourceMetadata meta,
+    public IfStatement(SourceWithMetadata meta,
                        BooleanExpression booleanExpression,
                        Statement trueStatement,
                        Statement falseStatement

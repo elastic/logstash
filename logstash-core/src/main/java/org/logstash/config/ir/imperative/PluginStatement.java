@@ -3,7 +3,7 @@ package org.logstash.config.ir.imperative;
 import org.logstash.config.ir.SourceComponent;
 import org.logstash.config.ir.InvalidIRException;
 import org.logstash.config.ir.PluginDefinition;
-import org.logstash.config.ir.SourceMetadata;
+import org.logstash.common.SourceWithMetadata;
 import org.logstash.config.ir.graph.Graph;
 import org.logstash.config.ir.graph.PluginVertex;
 import org.logstash.config.ir.graph.Vertex;
@@ -14,7 +14,7 @@ import org.logstash.config.ir.graph.Vertex;
 public class PluginStatement extends Statement {
     private final PluginDefinition pluginDefinition;
 
-    public PluginStatement(SourceMetadata meta, PluginDefinition pluginDefinition) {
+    public PluginStatement(SourceWithMetadata meta, PluginDefinition pluginDefinition) {
         super(meta);
         this.pluginDefinition = pluginDefinition;
     }

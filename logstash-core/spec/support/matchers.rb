@@ -124,10 +124,10 @@ RSpec::Matchers.define :be_a_successful_action do
   end
 end
 
-RSpec::Matchers.define :be_a_config_part do |reader, source_id, config_string = nil|
+RSpec::Matchers.define :be_a_source_with_metadata do |protocol, id, text = nil|
   match do |actual|
-   expect(actual.reader).to eq(reader)
-   expect(actual.source_id).to eq(source_id)
-   expect(actual.config_string).to match(config_string) unless config_string.nil?
+   expect(actual.protocol).to eq(protocol)
+   expect(actual.id).to eq(id)
+   expect(actual.text).to match(text) unless text.nil?
   end
 end
