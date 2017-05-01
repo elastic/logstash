@@ -1,5 +1,6 @@
 require "spec_helper"
 require "logstash/compiler"
+require "support/helpers"
 java_import Java::OrgLogstashConfigIr::DSL
 
 describe LogStash::Compiler do
@@ -62,7 +63,7 @@ describe LogStash::Compiler do
       let(:source) { "input { generator {} } output { }" }
 
       it "should attach correct source text for components" do
-        expect(compiled[:input].get_meta.getSourceText).to eql("generator {}")
+        expect(compiled[:input].get_meta.getText).to eql("generator {}")
       end
     end
 
@@ -188,12 +189,12 @@ describe LogStash::Compiler do
                                       ))
         end
 
-        it "should attach source_metadata with correct info to the statements" do
+        it "should attach source_with_metadata with correct info to the statements" do
           meta = compiled_section.statements.first.meta
-          expect(meta.getSourceText).to eql("aplugin { count => 1 }")
-          expect(meta.getSourceLine).to eql(2)
-          expect(meta.getSourceColumn).to eql(13)
-          expect(meta.getSourceFile).to eql(source_file)
+          expect(meta.text).to eql("aplugin { count => 1 }")
+          expect(meta.line).to eql(2)
+          expect(meta.column).to eql(13)
+          expect(meta.id).to eql(source_file)
           expect(compiled_section.statements.first.meta)
           expect(compiled_section)
         end

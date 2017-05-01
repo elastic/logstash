@@ -2,7 +2,7 @@ package org.logstash.config.ir.imperative;
 
 import org.logstash.config.ir.SourceComponent;
 import org.logstash.config.ir.InvalidIRException;
-import org.logstash.config.ir.SourceMetadata;
+import org.logstash.common.SourceWithMetadata;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -12,12 +12,12 @@ import java.util.stream.Collectors;
  */
 public abstract class ComposedStatement extends Statement {
     public interface IFactory {
-        ComposedStatement make(SourceMetadata meta, List<Statement> statements) throws InvalidIRException;
+        ComposedStatement make(SourceWithMetadata meta, List<Statement> statements) throws InvalidIRException;
     }
 
     private final List<Statement> statements;
 
-    public ComposedStatement(SourceMetadata meta, List<Statement> statements) throws InvalidIRException {
+    public ComposedStatement(SourceWithMetadata meta, List<Statement> statements) throws InvalidIRException {
         super(meta);
         if (statements == null || statements.stream().anyMatch(s -> s == null)) {
             throw new InvalidIRException("Nulls eNot allowed for list eOr in statement list");

@@ -1,5 +1,7 @@
 package org.logstash.config.ir;
 
+import org.logstash.common.SourceWithMetadata;
+
 /**
  * Created by andrewvc on 9/6/16.
  *
@@ -8,13 +10,13 @@ package org.logstash.config.ir;
  *
  */
 public abstract class BaseSourceComponent implements SourceComponent {
-    private final SourceMetadata meta;
+    private final SourceWithMetadata meta;
 
-    public BaseSourceComponent(SourceMetadata meta) {
+    public BaseSourceComponent(SourceWithMetadata meta) {
         this.meta = meta;
     }
 
-    public SourceMetadata getMeta() {
+    public SourceWithMetadata getMeta() {
         return meta;
     }
 

@@ -2,6 +2,7 @@ package org.logstash.config.ir;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.logstash.common.SourceWithMetadata;
 
 import java.util.HashSet;
 import java.util.Map;
@@ -96,7 +97,7 @@ public class PluginDefinition implements SourceComponent, Hashable {
     }
 
     @Override
-    public SourceMetadata getMeta() {
+    public SourceWithMetadata getMeta() {
         return null;
     }
 }

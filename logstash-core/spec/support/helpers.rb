@@ -50,7 +50,7 @@ def mock_pipeline_config(pipeline_id, config_string = nil, settings = {})
     settings = mock_settings(settings)
   end
 
-  config_part = LogStash::Config::ConfigPart.new(:config_string, "config_string", config_string)
+  config_part = org.logstash.common.SourceWithMetadata.new("config_string", "config_string", config_string)
 
   LogStash::Config::PipelineConfig.new(LogStash::Config::Source::Local, pipeline_id, config_part, settings)
 end

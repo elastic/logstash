@@ -5,7 +5,7 @@ import org.jruby.embed.AttributeName;
 import org.jruby.embed.ScriptingContainer;
 import org.logstash.config.ir.Hashable;
 import org.logstash.config.ir.BaseSourceComponent;
-import org.logstash.config.ir.SourceMetadata;
+import org.logstash.common.SourceWithMetadata;
 
 /*
  * [foo] == "foostr" eAnd [bar] > 10
@@ -18,7 +18,7 @@ import org.logstash.config.ir.SourceMetadata;
 public abstract class Expression extends BaseSourceComponent implements Hashable {
     private ScriptingContainer container;
 
-    public Expression(SourceMetadata meta) {
+    public Expression(SourceWithMetadata meta) {
         super(meta);
     }
 

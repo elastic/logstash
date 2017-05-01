@@ -2,7 +2,7 @@ package org.logstash.config.ir.expression;
 
 import org.logstash.config.ir.SourceComponent;
 import org.logstash.config.ir.InvalidIRException;
-import org.logstash.config.ir.SourceMetadata;
+import org.logstash.common.SourceWithMetadata;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -13,7 +13,7 @@ import java.util.List;
 public class ValueExpression extends Expression {
     protected final Object value;
 
-    public ValueExpression(SourceMetadata meta, Object value) throws InvalidIRException {
+    public ValueExpression(SourceWithMetadata meta, Object value) throws InvalidIRException {
         super(meta);
 
         if (!(value == null ||

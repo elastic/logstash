@@ -1,5 +1,6 @@
 package org.logstash.config.ir;
 
+import org.logstash.common.SourceWithMetadata;
 import org.logstash.config.ir.expression.*;
 import org.logstash.config.ir.expression.binary.*;
 import org.logstash.config.ir.expression.unary.Not;
@@ -17,33 +18,33 @@ import java.util.Map;
  * Created by andrewvc on 9/15/16.
  */
 public class DSL {
-    public static EventValueExpression eEventValue(SourceMetadata meta, String fieldName) {
+    public static EventValueExpression eEventValue(SourceWithMetadata meta, String fieldName) {
         return new EventValueExpression(meta, fieldName);
     }
 
     public static EventValueExpression eEventValue(String fieldName) {
-        return eEventValue(new SourceMetadata(), fieldName);
+        return eEventValue(new SourceWithMetadata(), fieldName);
     }
 
-    public static ValueExpression eValue(SourceMetadata meta, Object value) throws InvalidIRException {
+    public static ValueExpression eValue(SourceWithMetadata meta, Object value) throws InvalidIRException {
         return new ValueExpression(meta, value);
     }
 
     public static ValueExpression eValue(Object value) throws InvalidIRException {
-        return eValue(new SourceMetadata(), value);
+        return eValue(new SourceWithMetadata(), value);
     }
 
-    public static ValueExpression eRegex(SourceMetadata meta, String pattern) throws InvalidIRException {
+    public static ValueExpression eRegex(SourceWithMetadata meta, String pattern) throws InvalidIRException {
        return new RegexValueExpression(meta, pattern);
     }
 
     public static ValueExpression eRegex(String pattern) throws InvalidIRException {
-        return eRegex(new SourceMetadata(), pattern);
+        return eRegex(new SourceWithMetadata(), pattern);
     }
 
     public static ValueExpression eValue(long value) {
         try {
-            return eValue(new SourceMetadata(), value);
+            return eValue(new SourceWithMetadata(), value);
         } catch (InvalidIRException e) {
             e.printStackTrace(); // Can't happen with an int
             return null;
@@ -52,14 +53,14 @@ public class DSL {
 
     public static ValueExpression eValue(double value) {
         try {
-            return eValue(new SourceMetadata(), value);
+            return eValue(new SourceWithMetadata(), value);
         } catch (InvalidIRException e) {
             e.printStackTrace(); // Can't happen with an int
             return null;
         }
     }
 
-    public static Gt eGt(SourceMetadata meta, Expression left, Expression right) throws InvalidIRException {
+    public static Gt eGt(SourceWithMetadata meta, Expression left, Expression right) throws InvalidIRException {
         return new Gt(meta, left, right);
     }
 
@@ -67,7 +68,7 @@ public class DSL {
         return new Gt(null, left, right);
     }
 
-    public static Gte eGte(SourceMetadata meta, Expression left, Expression right) throws InvalidIRException {
+    public static Gte eGte(SourceWithMetadata meta, Expression left, Expression right) throws InvalidIRException {
         return new Gte(meta, left, right);
     }
 
@@ -75,7 +76,7 @@ public class DSL {
         return new Gte(null, left, right);
     }
 
-    public static Lt eLt(SourceMetadata meta, Expression left, Expression right) throws InvalidIRException {
+    public static Lt eLt(SourceWithMetadata meta, Expression left, Expression right) throws InvalidIRException {
         return new Lt(meta, left, right);
     }
 
@@ -83,14 +84,14 @@ public class DSL {
         return new Lt(null, left, right);
     }
 
-    public static Lte eLte(SourceMetadata meta, Expression left, Expression right) throws InvalidIRException {
+    public static Lte eLte(SourceWithMetadata meta, Expression left, Expression right) throws InvalidIRException {
         return new Lte(meta, left, right);
     }
     public static Lte eLte(Expression left, Expression right) throws InvalidIRException {
         return new Lte(null, left, right);
     }
 
-    public static Eq eEq(SourceMetadata meta, Expression left, Expression right) throws InvalidIRException {
+    public static Eq eEq(SourceWithMetadata meta, Expression left, Expression right) throws InvalidIRException {
         return new Eq(meta, left, right);
     }
 
@@ -98,7 +99,7 @@ public class DSL {
         return new Eq(null, left, right);
     }
 
-    public static And eAnd(SourceMetadata meta, Expression left, Expression right) throws InvalidIRException {
+    public static And eAnd(SourceWithMetadata meta, Expression left, Expression right) throws InvalidIRException {
         return new And(meta, left, right);
     }
 
@@ -106,7 +107,7 @@ public class DSL {
         return new And(null, left, right);
     }
 
-    public static Or eOr(SourceMetadata meta, Expression left, Expression right) throws InvalidIRException {
+    public static Or eOr(SourceWithMetadata meta, Expression left, Expression right) throws InvalidIRException {
         return new Or(meta, left, right);
     }
 
@@ -114,7 +115,7 @@ public class DSL {
         return new Or(null, left, right);
     }
 
-    public static RegexEq eRegexEq(SourceMetadata meta, Expression left, ValueExpression right) throws InvalidIRException {
+    public static RegexEq eRegexEq(SourceWithMetadata meta, Expression left, ValueExpression right) throws InvalidIRException {
         return new RegexEq(meta, left, right);
     }
 
@@ -122,7 +123,7 @@ public class DSL {
         return new RegexEq(null, left, right);
     }
 
-    public static Expression eRegexNeq(SourceMetadata meta, Expression left, ValueExpression right) throws InvalidIRException {
+    public static Expression eRegexNeq(SourceWithMetadata meta, Expression left, ValueExpression right) throws InvalidIRException {
         return eNot(eRegexEq(meta, left, right));
     }
 
@@ -130,14 +131,14 @@ public class DSL {
         return eNot(eRegexEq(left, right));
     }
 
-    public static Neq eNeq(SourceMetadata meta, Expression left, Expression right) throws InvalidIRException {
+    public static Neq eNeq(SourceWithMetadata meta, Expression left, Expression right) throws InvalidIRException {
         return new Neq(meta, left, right);
     }
     public static Neq eNeq(Expression left, Expression right) throws InvalidIRException {
         return new Neq(null, left, right);
     }
 
-    public static In eIn(SourceMetadata meta, Expression left, Expression right) throws InvalidIRException {
+    public static In eIn(SourceWithMetadata meta, Expression left, Expression right) throws InvalidIRException {
         return new In(meta, left, right);
     }
 
@@ -145,7 +146,7 @@ public class DSL {
         return new In(null, left, right);
     }
 
-    public static Not eNot(SourceMetadata meta, Expression expr) throws InvalidIRException {
+    public static Not eNot(SourceWithMetadata meta, Expression expr) throws InvalidIRException {
         return new Not(meta, expr);
     }
 
@@ -153,7 +154,7 @@ public class DSL {
         return new Not(null, expr);
     }
 
-    public static BooleanExpression eTruthy(SourceMetadata meta, Expression expr) throws InvalidIRException {
+    public static BooleanExpression eTruthy(SourceWithMetadata meta, Expression expr) throws InvalidIRException {
         if (expr instanceof BooleanExpression) {
             return (BooleanExpression) expr;
         }
@@ -163,7 +164,7 @@ public class DSL {
         return eTruthy(null, expr);
     }
 
-    public static Statement iCompose(ComposedStatement.IFactory factory, SourceMetadata meta, Statement... statements) throws InvalidIRException {
+    public static Statement iCompose(ComposedStatement.IFactory factory, SourceWithMetadata meta, Statement... statements) throws InvalidIRException {
         if (statements.length == 0 ) {
             return new NoopStatement(meta);
         } else if (statements.length == 1 ) {
@@ -173,7 +174,7 @@ public class DSL {
         }
     }
 
-    public static Statement iComposeSequence(SourceMetadata meta, Statement... statements) throws InvalidIRException {
+    public static Statement iComposeSequence(SourceWithMetadata meta, Statement... statements) throws InvalidIRException {
         return iCompose(ComposedSequenceStatement::new, meta, statements);
     }
 
@@ -181,7 +182,7 @@ public class DSL {
         return iComposeSequence(null, statements);
     }
 
-    public static Statement iComposeParallel(SourceMetadata meta, Statement... statements) throws InvalidIRException {
+    public static Statement iComposeParallel(SourceWithMetadata meta, Statement... statements) throws InvalidIRException {
         return iCompose(ComposedParallelStatement::new, meta, statements);
     }
 
@@ -189,20 +190,20 @@ public class DSL {
         return iComposeParallel(null, statements);
     }
 
-    public static NoopStatement noop(SourceMetadata meta) {
+    public static NoopStatement noop(SourceWithMetadata meta) {
         return new NoopStatement(meta);
     }
 
     public static NoopStatement noop() {
-        return new NoopStatement(new SourceMetadata());
+        return new NoopStatement(new SourceWithMetadata());
     }
 
-    public static PluginStatement iPlugin(SourceMetadata meta, PluginDefinition.Type pluginType,  String pluginName, Map<String, Object> pluginArguments) {
+    public static PluginStatement iPlugin(SourceWithMetadata meta, PluginDefinition.Type pluginType, String pluginName, Map<String, Object> pluginArguments) {
         return new PluginStatement(meta, new PluginDefinition(pluginType, pluginName, pluginArguments));
     }
 
     public static PluginStatement iPlugin(PluginDefinition.Type type, String pluginName, Map<String, Object> pluginArguments) {
-        return iPlugin(new SourceMetadata(), type, pluginName, pluginArguments);
+        return iPlugin(new SourceWithMetadata(), type, pluginName, pluginArguments);
     }
 
     public static PluginStatement iPlugin(PluginDefinition.Type type, String pluginName, MapBuilder<String, Object> argBuilder) {
@@ -217,7 +218,7 @@ public class DSL {
         return iPlugin(type, pluginName, pargs());
     }
 
-    public static IfStatement iIf(SourceMetadata meta,
+    public static IfStatement iIf(SourceWithMetadata meta,
                                   Expression condition,
                                   Statement ifTrue,
                                   Statement ifFalse) throws InvalidIRException {
@@ -228,12 +229,12 @@ public class DSL {
     public static IfStatement iIf(Expression condition,
                                   Statement ifTrue,
                                   Statement ifFalse) throws InvalidIRException {
-        return iIf(new SourceMetadata(), condition, ifTrue, ifFalse);
+        return iIf(new SourceWithMetadata(), condition, ifTrue, ifFalse);
     }
 
     public static IfStatement iIf(Expression condition,
                                   Statement ifTrue) throws InvalidIRException {
-        return iIf(new SourceMetadata(), condition, ifTrue, noop());
+        return iIf(new SourceWithMetadata(), condition, ifTrue, noop());
     }
 
     public static class MapBuilder<K,V> {
@@ -269,12 +270,12 @@ public class DSL {
         return new Graph();
     }
 
-    public static PluginVertex gPlugin(SourceMetadata sourceMetadata, PluginDefinition.Type pluginType, String pluginName, Map<String, Object> pluginArgs) {
-       return new PluginVertex(sourceMetadata, new PluginDefinition(pluginType, pluginName, pluginArgs));
+    public static PluginVertex gPlugin(SourceWithMetadata sourceWithMetadata, PluginDefinition.Type pluginType, String pluginName, Map<String, Object> pluginArgs) {
+       return new PluginVertex(sourceWithMetadata, new PluginDefinition(pluginType, pluginName, pluginArgs));
     }
 
     public static PluginVertex gPlugin(PluginDefinition.Type type, String pluginName, Map<String, Object> pluginArgs) {
-        return gPlugin(new SourceMetadata(), type, pluginName, pluginArgs);
+        return gPlugin(new SourceWithMetadata(), type, pluginName, pluginArgs);
     }
 
     public static PluginVertex gPlugin(PluginDefinition.Type type, String pluginName, String id) {
@@ -282,15 +283,15 @@ public class DSL {
     }
 
     public static PluginVertex gPlugin(PluginDefinition.Type type, String pluginName) {
-        return gPlugin(new SourceMetadata(), type, pluginName, new HashMap<>());
+        return gPlugin(new SourceWithMetadata(), type, pluginName, new HashMap<>());
     }
 
 
-    public static IfVertex gIf(SourceMetadata meta, BooleanExpression expression) {
+    public static IfVertex gIf(SourceWithMetadata meta, BooleanExpression expression) {
        return new IfVertex(meta, expression);
     }
 
     public static IfVertex gIf(BooleanExpression expression) {
-       return new IfVertex(new SourceMetadata(), expression);
+       return new IfVertex(new SourceWithMetadata(), expression);
     }
 }

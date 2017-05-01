@@ -3,14 +3,14 @@ require 'logstash/errors'
 require "treetop"
 require "logstash/compiler/treetop_monkeypatches"
 java_import org.logstash.config.ir.DSL
-java_import org.logstash.config.ir.SourceMetadata
+java_import org.logstash.common.SourceWithMetadata
 
 module LogStashCompilerLSCLGrammar; module LogStash; module Compiler; module LSCL; module AST
   # Helpers for parsing LSCL files
   module Helpers
     def source_meta
       line, column = line_and_column
-      org.logstash.config.ir.SourceMetadata.new(source_file, line, column, self.text_value)
+      org.logstash.common.SourceWithMetadata.new(source_file, line, column, self.text_value)
     end
 
     def source_file=(value)
@@ -39,7 +39,7 @@ module LogStashCompilerLSCLGrammar; module LogStash; module Compiler; module LSC
     end
 
     def empty_source_meta()
-      org.logstash.config.ir.SourceMetadata.new()
+      org.logstash.common.SourceWithMetadata.new()
     end
 
     def jdsl

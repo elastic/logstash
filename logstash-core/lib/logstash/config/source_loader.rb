@@ -54,7 +54,7 @@ module LogStash module Config
       else
         begin
           pipeline_configs = sources_loaders
-            .collect { |source| Array(source.pipeline_configs) }
+            .collect { |source| source.pipeline_configs }
             .compact
             .flatten
 
@@ -68,7 +68,7 @@ module LogStash module Config
 
           SuccessfulFetch.new(pipeline_configs)
         rescue => e
-          logger.error("Could not fetch all the sources", :exception => e.class, :message => e.message)
+          logger.error("Could not fetch all the sources", :exception => e.class, :message => e.message, :backtrace => e.backtrace)
           FailedFetch.new(e.message)
         end
       end

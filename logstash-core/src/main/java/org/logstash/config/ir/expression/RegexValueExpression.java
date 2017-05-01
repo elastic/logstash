@@ -4,9 +4,8 @@ import org.joni.Option;
 import org.joni.Regex;
 import org.logstash.config.ir.SourceComponent;
 import org.logstash.config.ir.InvalidIRException;
-import org.logstash.config.ir.SourceMetadata;
+import org.logstash.common.SourceWithMetadata;
 
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 
 /**
@@ -15,7 +14,7 @@ import java.nio.charset.StandardCharsets;
 public class RegexValueExpression extends ValueExpression {
     private final Regex regex;
 
-    public RegexValueExpression(SourceMetadata meta, Object value) throws InvalidIRException {
+    public RegexValueExpression(SourceWithMetadata meta, Object value) throws InvalidIRException {
         super(meta, value);
 
         if (!(value instanceof String)) {

@@ -1,7 +1,7 @@
 package org.logstash.config.ir.expression;
 
 import org.logstash.config.ir.SourceComponent;
-import org.logstash.config.ir.SourceMetadata;
+import org.logstash.common.SourceWithMetadata;
 
 /**
  * Created by andrewvc on 9/13/16.
@@ -9,7 +9,7 @@ import org.logstash.config.ir.SourceMetadata;
 public class EventValueExpression extends Expression {
     private final String fieldName;
 
-    public EventValueExpression(SourceMetadata meta, String fieldName) {
+    public EventValueExpression(SourceWithMetadata meta, String fieldName) {
         super(meta);
         this.fieldName = fieldName;
     }
