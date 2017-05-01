@@ -19,6 +19,7 @@ release-state can be: released | prerelease | unreleased
 :logstash:              https://www.elastic.co/guide/en/logstash/current/
 :libbeat:               https://www.elastic.co/guide/en/beats/libbeat/current/
 :filebeat:              https://www.elastic.co/guide/en/beats/filebeat/current/
+:metricbeat:            https://www.elastic.co/guide/en/beats/metricbeat/current/          
 :lsissue:               https://github.com/elastic/logstash/issues/
 :security:              X-Pack Security
 :stack:                 https://www.elastic.co/guide/en/elastic-stack/current/
