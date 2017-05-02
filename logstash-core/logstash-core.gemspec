@@ -15,7 +15,7 @@ Gem::Specification.new do |gem|
   gem.test_files    = gem.files.grep(%r{^(test|spec|features)/})
   gem.name          = "logstash-core"
   gem.require_paths = ["lib"]
-  gem.version       = LOGSTASH_CORE_VERSION
+  gem.version       = LOGSTASH_CORE_VERSION.gsub("-", ".")
 
   gem.platform = "java"
 
