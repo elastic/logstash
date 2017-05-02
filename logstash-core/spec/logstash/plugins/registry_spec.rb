@@ -61,5 +61,23 @@ describe LogStash::Plugins::Registry do
       registry.add(:filter, "simple_plugin", SimplePlugin)
       expect(registry.lookup("filter", "simple_plugin")).to eq(SimplePlugin)
     end
+
+    it "doesn't add multiple time the same plugin" do
+      plugin1 = Class.new
+      plugin2 = Class.new
+
+      registry.add(:filter, "simple_plugin", plugin1)
+      registry.add(:filter, "simple_plugin", plugin2)
+
+      expect(registry.plugins_with_type(:filter)).to include(plugin1)
+      expect(registry.plugins_with_type(:filter).size).to eq(1)
+    end
+
+    it "allow you find plugin by type" do
+      registry.add(:filter, "simple_plugin", SimplePlugin)
+
+      expect(registry.plugins_with_type(:filter)).to include(SimplePlugin)
+      expect(registry.plugins_with_type(:modules)).to match([])
+    end
   end
 end
