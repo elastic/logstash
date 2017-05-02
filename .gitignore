@@ -34,7 +34,6 @@ qa/.vagrant
 qa/acceptance/.vagrant
 qa/Gemfile.lock
 Gemfile.jruby-1.9.lock
-.lock
 Gemfile
 *.ipr
 *.iws
