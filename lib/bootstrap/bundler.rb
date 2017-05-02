@@ -1,4 +1,7 @@
 # encoding: utf-8
+
+require "fileutils"
+
 module LogStash
   module Bundler
     extend self
@@ -98,14 +101,14 @@ module LogStash
 
       # create Gemfile from template iff it does not exist
       unless ::File.exists?(Environment::GEMFILE_PATH)
-        ::FileUtils.copy(
-          ::File.join(ENV["LOGSTASH_HOME"], "Gemfile.template"), Environment::GEMFILE_PATH
+        FileUtils.copy(
+          ::File.join(Environment::LOGSTASH_HOME, "Gemfile.template"), Environment::GEMFILE_PATH
         )
       end
       # create Gemfile.jruby-1.9.lock from template iff a template exists it itself does not exist
       lock_template = ::File.join(ENV["LOGSTASH_HOME"], "Gemfile.jruby-1.9.lock.release")
-      if File.exists?(lock_template) && !::File.exists?(Environment::LOCKFILE)
-        ::FileUtils.copy(lock_template, Environment::LOCKFILE)
+      if ::File.exists?(lock_template) && !::File.exists?(Environment::LOCKFILE)
+        FileUtils.copy(lock_template, Environment::LOCKFILE)
       end
 
       LogStash::Bundler.patch!
