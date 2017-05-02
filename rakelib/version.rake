@@ -59,7 +59,7 @@ namespace :version do
     text = IO.read(logstash_core_plugin_api_gemspec)
     IO.write(logstash_core_plugin_api_gemspec, text.sub(
       /  gem.add_runtime_dependency \"logstash-core\", \".+?\"/,
-      "  gem.add_runtime_dependency \"logstash-core\", \"#{logstash_core_version}\""))
+      "  gem.add_runtime_dependency \"logstash-core\", \"#{logstash_core_version.gsub("-", ".")}\""))
   end
 
   desc "show version of core components"
