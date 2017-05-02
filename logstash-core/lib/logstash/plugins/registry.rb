@@ -109,6 +109,10 @@ module LogStash module Plugins
         .each { |specification| specification.register(hooks, LogStash::SETTINGS) }
     end
 
+    def plugins_with_type(type)
+      @registry.values.select { |specification| specification.type.to_sym == type.to_sym }.collect(&:klass)
+    end
+
     def load_available_plugins
       GemRegistry.logstash_plugins.each do |plugin_context|
         # When a plugin has a HOOK_FILE defined, its the responsibility of the plugin
