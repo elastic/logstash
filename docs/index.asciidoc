@@ -15,10 +15,11 @@ release-state can be: released | prerelease | unreleased
 :jdk:                   1.8.0
 :guide:                 https://www.elastic.co/guide/en/elasticsearch/guide/current/
 :ref:                   https://www.elastic.co/guide/en/elasticsearch/reference/5.4/
-:xpack:                 https://www.elastic.co/guide/en/x-pack/current/
+:xpack:                https://www.elastic.co/guide/en/x-pack/current/
 :logstash:              https://www.elastic.co/guide/en/logstash/5.4/
 :libbeat:               https://www.elastic.co/guide/en/beats/libbeat/5.4/
 :filebeat:              https://www.elastic.co/guide/en/beats/filebeat/5.4/
+:metricbeat:            https://www.elastic.co/guide/en/beats/metricbeat/5.4/          
 :lsissue:               https://github.com/elastic/logstash/issues/
 :security:              X-Pack Security
 :stack:                 https://www.elastic.co/guide/en/elastic-stack/current/
