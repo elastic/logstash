@@ -9,9 +9,9 @@ This section summarizes the changes in the following releases:
 === Logstash 5.4.0 Release Notes
 
 * The persistent queues feature is generally available (GA) now. The beta tag has been removed.
-* Dissect filter is now bundled in the Logstash artifact.
+* The `dissect` filter is now bundled in the Logstash artifact.
 * Updated the `line` and `multiline` codecs to be threadsafe when used with inputs.
-* Logstash's plugin manager now works when a HTTP proxy is used ({lsissue}6619[Issue 6619], {lsissue}6528[Issue 6528]).
+* Logstash's plugin manager now works when an HTTP proxy is used ({lsissue}6619[Issue 6619], {lsissue}6528[Issue 6528]).
 * On Windows deployments, we now search for the java executable in `%PATH%` which works well for 
   the latest JDK 8 updates.
 * Fixed an issue where the JVM max heap size stats were reported incorrectly in the stats API ({lsissue}6608[Issue 6608]).
