@@ -25,6 +25,7 @@ require "logstash/queue_factory"
 require "logstash/compiler"
 require "logstash/execution_context"
 
+java_import org.logstash.common.DeadLetterQueueFactory
 java_import org.logstash.common.io.DeadLetterQueueWriter
 
 module LogStash; class BasePipeline
@@ -55,8 +56,7 @@ module LogStash; class BasePipeline
     @agent = agent
 
     if settings.get_value("dead_letter_queue.enable")
-      pipeline_dlq_path = ::File.join(settings.get_value("path.dead_letter_queue"), @pipeline_id)
-      @dlq_writer = DeadLetterQueueWriter.new(pipeline_dlq_path)
+      @dlq_writer = DeadLetterQueueFactory.getWriter(pipeline_id, settings.get_value("path.dead_letter_queue"))
     else
       @dlq_writer = LogStash::Util::DummyDeadLetterQueueWriter.new
     end

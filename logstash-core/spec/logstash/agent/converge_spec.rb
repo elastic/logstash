@@ -26,18 +26,6 @@ describe LogStash::Agent do
     expect(converge_result).to be_a_successful_converge
   end
 
-
-  describe "passing the agent to the pipeline" do
-    let(:source_loader) { TestSourceLoader.new(pipeline_config) }
-    let(:pipeline_config) { mock_pipeline_config(:main, "input { generator { count => 10 } } output { null {} }") }
-      
-    before { subject.execute }
-
-    it "execute the pipeline and stop execution" do
-      expect(subject.get_pipeline(:main).execution_context.agent).to eq(subject)
-    end
-  end
-
   context "Agent execute options" do
     let(:source_loader) do
       TestSourceLoader.new(finite_pipeline_config)

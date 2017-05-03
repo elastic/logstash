@@ -136,7 +136,7 @@ public class DeadLetterQueueReaderTest {
 
     @Test
     public void testInvalidDirectory()  throws Exception {
-        DeadLetterQueueReadManager readManager = new DeadLetterQueueReadManager(dir);
-        assertThat(readManager.pollEntry(100), is(nullValue()));
+        DeadLetterQueueReader reader = new DeadLetterQueueReader(dir);
+        assertThat(reader.pollEntry(100), is(nullValue()));
     }
 }

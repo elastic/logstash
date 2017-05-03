@@ -1,3 +1,4 @@
+require 'logstash/environment'
 
 module LogStash; module Util
   class PluginDeadLetterQueueWriter
@@ -24,6 +25,7 @@ module LogStash; module Util
   end
 
   class DummyDeadLetterQueueWriter
+    # class uses to represent a writer when dead_letter_queue is disabled
     def initialize
     end
 
@@ -37,6 +39,23 @@ module LogStash; module Util
 
     def close
       # noop
+    end
+  end
+
+  class DeadLetterQueueFactory
+    java_import org.logstash.common.DeadLetterQueueFactory
+
+    def self.get(pipeline_id)
+      if LogStash::SETTINGS.get("dead_letter_queue.enable")
+        return DeadLetterQueueWriter.new(
+          DeadLetterQueueFactory.getWriter(pipeline_id, LogStash::SETTINGS.get("path.dead_letter_queue")))
+      else
+        return DeadLetterQueueWriter.new(nil)
+      end
+    end
+
+    def self.close(pipeline_id)
+      DeadLetterQueueFactory.close(pipeline_id)
     end
   end
 end end
