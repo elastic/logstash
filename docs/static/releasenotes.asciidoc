@@ -9,4 +9,4 @@ This section summarizes the changes in the following releases:
 === Logstash 5.4.0 Release Notes
 
 * Persistent queues feature is generally available (GA) now. The beta tag has been removed.
-* Dissect filter is now bundled in Logstash core artifact.
+* Dissect filter is now bundled in the Logstash artifact.
