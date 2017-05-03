@@ -3,8 +3,16 @@
 Docker images for Logstash are available from the Elastic Docker
 registry.
 
-Obtaining Logstash for Docker is as simple as issuing a +docker pull+
-command against the Elastic Docker registry.
+The base image is https://hub.docker.com/_/centos/[centos:7] and the source
+code can be found on
+https://github.com/elastic/logstash-docker/tree/{branch}[GitHub].
+
+The images are shipped with https://www.elastic.co/products/x-pack[X-Pack]
+installed.
+
+=== Pulling the image
+Obtaining Logstash for Docker is as simple as issuing a +docker
+pull+ command against the Elastic Docker registry.
 
 ifeval::["{release-state}"=="unreleased"]
 
@@ -69,7 +77,14 @@ behaviour that you are observing, ensure that your pipeline
 configuration is being picked up correctly, and that you are replacing
 either +logstash.conf+ or the entire +pipeline+ directory.
 
-===== Settings Files
+===== Settings
+
+The image provides several methods for configuring settings. The conventional
+approach is to provide a custom `logstash.yml` file, but it's
+also possible to use environment variables to define settings.
+
+[[docker-bind-mount-settings]]
+==== Bind-mounted settings files
 
 Settings files can also be provided through bind-mounts. Logstash
 expects to find them at +/usr/share/logstash/config/+.
@@ -111,6 +126,35 @@ ADD config/ /usr/share/logstash/config/
 
 Be sure to replace or delete `logstash.conf` in your custom image, so
 that you don't retain the example config from the base image.
+
+==== Environment variable configuration
+
+Under Docker, Logstash settings can be configured via environment
+variables. When the container starts, a helper process checks the environment
+for variables that can be mapped to Logstash settings. Settings that are found
+in the environment are merged into `logstash.yml` as the container starts up.
+
+For compatibility with container orchestration systems, these environment
+variables are written in all capitals, with underscores as word
+separators
+
+Some example translations are shown here:
+
+.Example Docker Environment Variables
+[horizontal]
+**Environment Variable**:: **Logstash Setting**
+`PIPELINE_WORKERS`:: `pipeline.workers`
+`LOG_LEVEL`:: `log.level`
+`XPACK_MONITORING_ENABLED`:: `xpack.monitoring.enabled`
+
+In general, any setting listed in the <<logstash-settings-file, settings
+documentation>> can be configured with this technique.
+
+NOTE: Defining settings with environment variables causes `logstash.yml` to
+be modified in place. This behaviour is likely undesirable if `logstash.yml` was
+bind-mounted from the host system. Thus, it is not reccomended to
+combine the bind-mount technique with the environment variable technique. It
+is best to choose a single method for defining Logstash settings.
 
 ==== Logging Configuration
 
