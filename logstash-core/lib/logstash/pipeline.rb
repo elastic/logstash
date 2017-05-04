@@ -71,7 +71,7 @@ module LogStash; class BasePipeline
       raise e
     end
   end
-  
+
   def compile_lir
     LogStash::Compiler.compile_pipeline(self.config_str)
   end
@@ -190,8 +190,8 @@ module LogStash; class Pipeline < BasePipeline
     @flushing = Concurrent::AtomicReference.new(false)
     @force_shutdown = Concurrent::AtomicBoolean.new(false)
   end # def initialize
-  
-  
+
+
 
   def ready?
     @ready.value
@@ -691,6 +691,7 @@ module LogStash; class Pipeline < BasePipeline
         n.gauge(:page_capacity_in_bytes, queue.page_capacity)
         n.gauge(:max_queue_size_in_bytes, queue.max_size_in_bytes)
         n.gauge(:max_unread_events, queue.max_unread_events)
+        n.gauge(:queue_size_in_bytes, queue.persisted_size_in_bytes)
       end
       pipeline_metric.namespace([:data]).tap do |n|
         n.gauge(:free_space_in_bytes, file_store.get_unallocated_space)
