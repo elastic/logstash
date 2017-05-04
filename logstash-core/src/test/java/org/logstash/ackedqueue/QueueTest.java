@@ -725,4 +725,11 @@ public class QueueTest {
         q.close();
     }
 
+    @Test
+    public void getsPersistedByteSizeCorrectlyForUnopened() throws Exception {
+        Settings settings = TestSettings.persistedQueueSettings(100, dataPath);
+        try (Queue q = new Queue(settings)) {
+            assertThat(q.getPersistedByteSize(), is(equalTo(0L)));
+        }
+    }
 }
