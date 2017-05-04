@@ -25,6 +25,9 @@ Redis or Apache Kafka.
 a normal shutdown as well as when Logstash is terminated abnormally. If Logstash
 is restarted while events are in-flight, Logstash will attempt to deliver
 messages stored in the persistent queue until delivery succeeds at least once.
++
+NOTE: You must set `queue.checkpoint.writes: 1` explicitly to guarantee
+maximum durability for all input events. See <<durability-persistent-queues>>.
 
 [[persistent-queues-limitations]]
 ==== Limitations of Persistent Queues
@@ -148,7 +151,7 @@ The following settings are available to let you tune durability:
 * `queue.checkpoint.acks`: Logstash will checkpoint after this many events are acknowledged. This configuration controls the durability at the processing (filter + output)
 part of Logstash.
 
-Disk writes have a resource cost. Tuning the above values higher or lower will trade durability for performance. For instance, if you want to the strongest durability for all input events, you can set `queue.checkpoint.writes: 1`.
+Disk writes have a resource cost. Tuning the above values higher or lower will trade durability for performance. For instance, if you want the strongest durability for all input events, you can set `queue.checkpoint.writes: 1`.
 
 The process of checkpointing is atomic, which means any update to the file is saved if successful.
 
