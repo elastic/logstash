@@ -53,13 +53,12 @@ describe LogStash::Plugins::Registry do
   end
 
   context "when loading plugin manually configured" do
-    it "should return the plugin" do
-      class SimplePlugin
-      end
+    let(:simple_plugin) { Class.new }
 
+    it "should return the plugin" do
       expect { registry.lookup("filter", "simple_plugin") }.to raise_error(LoadError)
-      registry.add(:filter, "simple_plugin", SimplePlugin)
-      expect(registry.lookup("filter", "simple_plugin")).to eq(SimplePlugin)
+      registry.add(:filter, "simple_plugin", simple_plugin)
+      expect(registry.lookup("filter", "simple_plugin")).to eq(simple_plugin)
     end
 
     it "doesn't add multiple time the same plugin" do
@@ -74,9 +73,9 @@ describe LogStash::Plugins::Registry do
     end
 
     it "allow you find plugin by type" do
-      registry.add(:filter, "simple_plugin", SimplePlugin)
+      registry.add(:filter, "simple_plugin", simple_plugin)
 
-      expect(registry.plugins_with_type(:filter)).to include(SimplePlugin)
+      expect(registry.plugins_with_type(:filter)).to include(simple_plugin)
       expect(registry.plugins_with_type(:modules)).to match([])
     end
   end
