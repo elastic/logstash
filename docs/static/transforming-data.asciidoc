@@ -11,37 +11,14 @@ according to their processing capabilities:
 * <<field-extraction>>
 * <<lookup-enrichment>>
 
+Also see <<filter-plugins>> and <<codec-plugins>> for the full list of available
+data processing plugins.
+
 [[core-operations]]
 === Performing Core Operations
 
 The plugins described in this section are useful for core operations, such as
-aggregating, mutating, and dropping events.
-
-Also see <<filter-plugins>> for the full list of available filter plugins. 
-
-<<plugins-filters-aggregate,aggregate filter>>::
-
-Aggregates information from several events (typically log lines) that belong to
-the same task and pushes the aggregated information into a final task event.
-For example:
-+
-[source,json]
---------------------------------------------------------------------------------
-filter {
-  aggregate {
-    task_id => "%{country_name}"
-    code => "
-      map['country_name'] = event.get('country_name')
-      map['towns'] ||= []
-      map['towns'] << {'town_name' => event.get('town_name')}
-      event.cancel()
-    "
-    push_previous_map_as_event => true
-    timeout => 3
-  }
-}
---------------------------------------------------------------------------------
-
+mutating and dropping events.
 
 <<plugins-filters-date,date filter>>::
 
@@ -64,15 +41,13 @@ filter {
 
 Drops events. This filter is typically used in combination with conditionals.
 +
-The following config drops 40% of the `debug` level log messages:
+The following config drops `debug` level log messages:
 +
 [source,json]
 --------------------------------------------------------------------------------
 filter {
   if [loglevel] == "debug" {
-    drop {
-      percentage => 40
-    }
+    drop { }
   }
 }
 --------------------------------------------------------------------------------
@@ -113,6 +88,18 @@ filter {
   }
 }
 --------------------------------------------------------------------------------
++
+The following config strips leading and trailing whitespace from the specified
+fields:
++
+[source,json]
+--------------------------------------------------------------------------------
+filter {
+  mutate {
+    strip => ["field1", "field2"]
+  }
+}
+--------------------------------------------------------------------------------
 
 
 <<plugins-filters-ruby,ruby filter>>::
@@ -136,9 +123,6 @@ filter {
 
 The plugins described in this section are useful for deserializing data into
 Logstash events.
-
-Also see <<filter-plugins>> and <<codec-plugins>> for the full list of available
-data processing plugins.
 
 <<plugins-codecs-avro,avro codec>>::
 
@@ -199,8 +183,6 @@ input {
 --------------------------------------------------------------------------------
 
 
-//ALVIN: SHOULD WE ALSO COVER THE MSGPACK CODEC? I LOOKED AT THE DOCS FOR MSGPACK AND THERE'S NO USEFUL INFO IN THERE. 
-
 <<plugins-codecs-json,json codec>>::
 
 Decodes (via inputs) and encodes (via outputs) JSON formatted content, creating
@@ -218,29 +200,29 @@ input {
 --------------------------------------------------------------------------------
 
 
-//ALVIN: SHOULD WE INCLUDE JSON_LINES HERE, TOO, OR MAYBE MENTION IT?
-
 <<plugins-codecs-protobuf,protobuf codec>>::
 
 Reads protobuf encoded messages and converts them to Logstash events. Requires
-the protobuf definitions to be compiled as Ruby files.
+the protobuf definitions to be compiled as Ruby files. You can compile them by
+using the
+https://github.com/codekitchen/ruby-protocol-buffers[ruby-protoc compiler].
 +
 The following config decodes events from a Kafka stream:
 +
 [source,json]
 --------------------------------------------------------------------------------
-kafka {
-  zk_connect => "127.0.0.1"
-  topic_id => "your_topic_goes_here"
-  codec => protobuf {
-    class_name => "Animal::Unicorn"
-    include_path => ['/path/to/protobuf/definitions/UnicornProtobuf.pb.rb']
+input
+  kafka {
+    zk_connect => "127.0.0.1"
+    topic_id => "your_topic_goes_here"
+    codec => protobuf {
+      class_name => "Animal::Unicorn"
+      include_path => ['/path/to/protobuf/definitions/UnicornProtobuf.pb.rb']
+    }
   }
 }
 --------------------------------------------------------------------------------
 
-
-//REVIEWERS: PLEASE DOUBLE-CHECK THE SYNTAX FOR THE PROTOBUF EXAMPLE. I CHANGED THE FORMATTING TO BE CONSISTENT WITH THE REST OF THE DOCUMENTATION HERE, BUT DIDN'T TEST THIS EXAMPLE.
 
 <<plugins-filters-xml,xml filter>>::
 
@@ -264,8 +246,6 @@ filter {
 The plugins described in this section are useful for extracting fields and
 parsing unstructured data into fields.
 
-Also see <<filter-plugins>> for the full list of available filter plugins. 
-
 <<plugins-filters-dissect,dissect filter>>::
 
 Extracts unstructured event data into fields by using delimiters. The dissect
@@ -273,29 +253,54 @@ filter does not use regular expressions and is very fast. However, if the
 structure of the data varies from line to line, the grok filter is more
 suitable.
 +
-The following config dissects messages that match the structure specified in
-the mapping:
+For example, let's say you have a log that contains the following message:
++
+[source,json]
+--------------------------------------------------------------------------------
+Apr 26 12:20:02 localhost systemd[1]: Starting system activity accounting tool...
+--------------------------------------------------------------------------------
++
+The following config dissects the message:
 +
 [source,json]
 --------------------------------------------------------------------------------
 filter {
   dissect {
-    mapping => {
-      "message" => "%{ts} %{+ts} %{+ts} %{src} %{} %{prog}[%{pid}]: %{msg}"
-    }
+    mapping => { "message" => "%{ts} %{+ts} %{+ts} %{src} %{prog}[%{pid}]: %{msg}" }
   }
 }
 --------------------------------------------------------------------------------
-
-
-//REVIEWERS: I DON'T REALLY UNDERSTAND HOW THIS WORKS FROM READING THE DOCS. CAN SOMEONE SUGGEST AN EXAMPLE THAT INCLUDES THE MESSAGE BEING DISSECTED (THAT WOULD  HELP USERS A LOT). THE DOCUMENTATION FOR THIS FILTER IS HARD TO FOLLOW IN GENERAL.
++
+After the dissect filter is applied, the event will be dissected into the following
+fields:
++
+[source,json]
+--------------------------------------------------------------------------------
+{
+  "msg"        => "Starting system activity accounting tool...",
+  "@timestamp" => 2017-04-26T19:33:39.257Z,
+  "src"        => "localhost",
+  "@version"   => "1",
+  "host"       => "localhost.localdomain",
+  "pid"        => "1",
+  "message"    => "Apr 26 12:20:02 localhost systemd[1]: Starting system activity accounting tool...",
+  "type"       => "stdin",
+  "prog"       => "systemd",
+  "ts"         => "Apr 26 12:20:02"
+}
+--------------------------------------------------------------------------------
 
 <<plugins-filters-kv,kv filter>>::
 
 Parses key-value pairs.
 +
 For example, let's say you have a log message that contains the following
-key-value pairs: `ip=1.2.3.4 error=REFUSED`.
+key-value pairs:
++
+[source,json]
+--------------------------------------------------------------------------------
+ip=1.2.3.4 error=REFUSED
+--------------------------------------------------------------------------------
 +
 The following config parses the key-value pairs into fields:
 +
@@ -353,8 +358,6 @@ After the filter is applied, the event in the example will have these fields:
 The plugins described in this section are useful for enriching data with
 additional info, such as GeoIP and user agent info.
 
-Also see <<filter-plugins>> for the full list of available filter plugins. 
-
 <<plugins-filters-dns,dns filter>>::
 
 Performs a standard or reverse DNS lookup.
@@ -377,13 +380,31 @@ filter {
 
 Copies fields from previous log events in Elasticsearch to current events. 
 +
+The following config shows a complete example of how this filter might
+be used.  Whenever Logstash receives an "end" event, it uses this Elasticsearch
+filter to find the matching "start" event based on some operation identifier.
+Then it copies the `@timestamp` field from the "start" event into a new field on
+the "end" event.  Finally, using a combination of the date filter and the
+ruby filter, the code in the example calculates the time duration in hours
+between the two events.
++
 [source,json]
 --------------------------------------------------
-NEED A SIMPLE EXAMPLE HERE. 
+      if [type] == "end" {
+         elasticsearch {
+            hosts => ["es-server"]
+            query => "type:start AND operation:%{[opid]}"
+            fields => { "@timestamp" => "started" }
+         }
+         date {
+            match => ["[started]", "ISO8601"]
+            target => "[started]"
+         }
+         ruby {
+            code => 'event.set("duration_hrs", (event.get("@timestamp") - event.get("started")) / 3600) rescue nil'
+         }
+      }
 --------------------------------------------------
-
-
-//REVEIWERS: I NEED A BETTER EXAMPLE FOR THE ELASTICSEARCH FILTER. THE EXAMPLE IN THE DOCUMENTATION MIGHT BE TOO COMPLEX FOR AN OVERVIEW.
 
 
 <<plugins-filters-geoip,geoip filter>>::
@@ -438,7 +459,7 @@ filter {
   jdbc_streaming {
     jdbc_driver_library => "/path/to/mysql-connector-java-5.1.34-bin.jar"
     jdbc_driver_class => "com.mysql.jdbc.Driver"
-    jdbc_connection_string => ""jdbc:mysql://localhost:3306/mydatabase"
+    jdbc_connection_string => "jdbc:mysql://localhost:3306/mydatabase"
     jdbc_user => "me"
     jdbc_password => "secret"
     statement => "select * from WORLD.COUNTRY WHERE Code = :code"
@@ -448,10 +469,6 @@ filter {
 }
 --------------------------------------------------------------------------------
 
-
-//REVIEWERS: THE MYSQL CONNECTOR SHOWN IN THIS EXAMPLE IS KIND OF OLD. NOT SURE I SHOULD CHANGE IT, THOUGH, BECAUSE I'M NOT SURE IF WE SUPPORT ALL VERSIONS OF THE CONNECTOR.
-
-//ALVIN: YOU ALSO HAD JDBC STATIC PLUGIN IN YOUR LIST. DO YOU MEAN THE INPUT PLUGIN? SEEMS A LITTLE OUT-OF-PLACE TO LIST AN INPUT PLUGIN IN THIS SECTION, IMO. DOES IT DO SOMETHING BEYOND WHAT INPUT PLUGINS NORMALLY DO SO THAT IT 
 
 <<plugins-filters-translate,translate filter>>::
 
