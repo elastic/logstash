@@ -37,6 +37,9 @@ public interface PageIO extends Closeable {
     // @return the data container total capacity in bytes
     int getCapacity();
 
+    // @return the current head offset within the page
+    int getHead();
+
     // @return the actual persisted byte count (with overhead) for the given data bytes
     int persistedByteCount(int bytes);
 

@@ -154,6 +154,11 @@ public class MemoryPageIOStream implements PageIO {
     }
 
     @Override
+    public int getHead() {
+        return writePosition;
+    }
+
+    @Override
     public void deactivate() {
         // do nothing
     }
