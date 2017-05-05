@@ -3,6 +3,9 @@
 require "flores/random"
 require "fileutils"
 require "zip"
+require "stud/temporary"
+require "socket"
+require "ostruct"
 
 def wait_for_port(port, retry_attempts)
   tries = retry_attempts
