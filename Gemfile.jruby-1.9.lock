@@ -1,7 +1,7 @@
 PATH
   remote: ./logstash-core
   specs:
-    logstash-core (5.4.0-java)
+    logstash-core (5.4.1-java)
       chronic_duration (= 0.10.6)
       clamp (~> 0.6.5)
       concurrent-ruby (= 1.0.0)
@@ -12,8 +12,6 @@ PATH
       jrjackson (~> 0.4.0)
       jrmonitor (~> 0.4.2)
       jruby-openssl (= 0.9.16)
-      logstash-core-event-java (= 5.4.0)
-      logstash-core-queue-jruby (= 5.4.0)
       minitar (~> 0.5.4)
       pry (~> 0.10.1)
       puma (~> 2.16)
@@ -25,22 +23,10 @@ PATH
       treetop (< 1.5.0)
 
 PATH
-  remote: ./logstash-core-event-java
-  specs:
-    logstash-core-event-java (5.4.0-java)
-      jar-dependencies
-      ruby-maven (~> 3.3.9)
-
-PATH
   remote: ./logstash-core-plugin-api
   specs:
     logstash-core-plugin-api (2.1.12-java)
-      logstash-core (= 5.4.0)
-
-PATH
-  remote: ./logstash-core-queue-jruby
-  specs:
-    logstash-core-queue-jruby (5.4.0-java)
+      logstash-core (= 5.4.1)
 
 GEM
   remote: https://rubygems.org/
@@ -597,7 +583,7 @@ GEM
     term-ansicolor (1.3.2)
       tins (~> 1.0)
     thread_safe (0.3.5-java)
-    tilt (2.0.6)
+    tilt (2.0.7)
     tins (1.6.0)
     treetop (1.4.15)
       polyglot
@@ -653,9 +639,7 @@ DEPENDENCIES
   logstash-codec-plain
   logstash-codec-rubydebug
   logstash-core!
-  logstash-core-event-java!
   logstash-core-plugin-api!
-  logstash-core-queue-jruby!
   logstash-devutils
   logstash-filter-clone
   logstash-filter-csv
