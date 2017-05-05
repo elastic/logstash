@@ -2,6 +2,7 @@ require_relative "monitoring_api"
 
 require "childprocess"
 require "bundler"
+require "socket"
 require "tempfile"
 require 'yaml'
 
