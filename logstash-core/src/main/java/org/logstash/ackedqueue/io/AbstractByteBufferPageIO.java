@@ -248,7 +248,7 @@ public abstract class AbstractByteBufferPageIO implements PageIO {
             }
         }
 
-        return new SequencedList<byte[]>(elements, seqNums);
+        return new SequencedList<>(elements, seqNums);
     }
 
     @Override

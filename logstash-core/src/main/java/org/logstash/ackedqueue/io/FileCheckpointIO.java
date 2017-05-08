@@ -35,10 +35,10 @@ public class FileCheckpointIO  implements CheckpointIO {
             + Integer.BYTES  // eventCount
             + Integer.BYTES;    // checksum
 
+    private static final String HEAD_CHECKPOINT = "checkpoint.head";
+    private static final String TAIL_CHECKPOINT = "checkpoint.";
+    private static final OpenOption[] WRITE_OPTIONS = { WRITE, CREATE, TRUNCATE_EXISTING, DSYNC };
     private final String dirPath;
-    private final String HEAD_CHECKPOINT = "checkpoint.head";
-    private final String TAIL_CHECKPOINT = "checkpoint.";
-    private final OpenOption[] WRITE_OPTIONS = new OpenOption[] { WRITE, CREATE, TRUNCATE_EXISTING, DSYNC };
 
     public FileCheckpointIO(String dirPath) {
         this.dirPath = dirPath;
