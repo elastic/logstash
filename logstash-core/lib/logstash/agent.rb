@@ -48,7 +48,7 @@ class LogStash::Agent
 
     # This is for backward compatibility in the tests
     if source_loader.nil?
-      @source_loader = LogStash::Config::SOURCE_LOADER
+      @source_loader = LogStash::Config::SourceLoader.new
       @source_loader.add_source(LogStash::Config::Source::Local.new(@settings))
     else
       @source_loader = source_loader
