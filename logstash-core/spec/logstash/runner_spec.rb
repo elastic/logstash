@@ -143,10 +143,6 @@ describe LogStash::Runner do
   end
 
   describe "--config.test_and_exit" do
-    before do
-      # Reset the source in a clean state before any asserts
-      LogStash::Config::SOURCE_LOADER.configure_sources([])
-    end
     subject { LogStash::Runner.new("") }
     let(:args) { ["-t", "-e", pipeline_string] }
 

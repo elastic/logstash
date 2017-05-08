@@ -120,6 +120,4 @@ module LogStash module Config
         .select { |group, pipeline_configs| pipeline_configs.size > 1 }
     end
   end
-
-  SOURCE_LOADER = SourceLoader.new
 end end

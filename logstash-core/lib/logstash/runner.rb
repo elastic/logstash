@@ -165,7 +165,7 @@ class LogStash::Runner < Clamp::StrictCommand
     I18n.t("logstash.runner.flag.quiet"),
     :new_flag => "log.level", :new_value => "error"
 
-  attr_reader :agent, :settings
+  attr_reader :agent, :settings, :source_loader
   attr_accessor :bootstrap_checks
 
   def initialize(*args)
@@ -173,7 +173,8 @@ class LogStash::Runner < Clamp::StrictCommand
     @bootstrap_checks = DEFAULT_BOOTSTRAP_CHECKS.dup
 
     # Default we check local sources: `-e`, `-f` and the logstash.yml options.
-    LogStash::Config::SOURCE_LOADER.add_source(LogStash::Config::Source::Local.new(@settings))
+    @source_loader = LogStash::Config::SourceLoader.new(@settings)
+    @source_loader.add_source(LogStash::Config::Source::Local.new(@settings))
 
     super(*args)
   end
@@ -266,7 +267,7 @@ class LogStash::Runner < Clamp::StrictCommand
 
     if setting("config.test_and_exit")
       begin
-        results = LogStash::Config::SOURCE_LOADER.fetch
+        results = @source_loader.fetch
 
         # TODO(ph): make it better for multiple pipeline
         if results.success?
@@ -289,7 +290,7 @@ class LogStash::Runner < Clamp::StrictCommand
     @data_path_lock = FileLockFactory.getDefault().obtainLock(setting("path.data"), ".lock");
 
     @dispatcher.fire(:before_agent)
-    @agent = create_agent(@settings, LogStash::Config::SOURCE_LOADER)
+    @agent = create_agent(@settings, @source_loader)
     @dispatcher.fire(:after_agent)
 
     # enable sigint/sigterm before starting the agent
