@@ -21,7 +21,7 @@ public class MmapPageIO extends AbstractByteBufferPageIO {
     private FileChannel channel;
     protected MappedByteBuffer buffer;
 
-    public MmapPageIO(int pageNum, int capacity, String dirPath) throws IOException {
+    public MmapPageIO(int pageNum, int capacity, String dirPath) {
         super(pageNum, capacity);
 
         this.file = Paths.get(dirPath, "page." + pageNum).toFile();

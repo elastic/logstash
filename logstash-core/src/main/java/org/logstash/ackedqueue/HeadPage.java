@@ -9,13 +9,13 @@ import java.util.BitSet;
 public class HeadPage extends Page {
 
     // create a new HeadPage object and new page.{pageNum} empty valid data file
-    public HeadPage(int pageNum, Queue queue, PageIO pageIO) throws IOException {
+    public HeadPage(int pageNum, Queue queue, PageIO pageIO) {
         super(pageNum, queue, 0, 0, 0, new BitSet(), pageIO);
     }
 
     // create a new HeadPage object from an existing checkpoint and open page.{pageNum} empty valid data file
     // @param pageIO is expected to be open/recover/create
-    public HeadPage(Checkpoint checkpoint, Queue queue, PageIO pageIO) throws IOException {
+    public HeadPage(Checkpoint checkpoint, Queue queue, PageIO pageIO) {
         super(checkpoint.getPageNum(), queue, checkpoint.getMinSeqNum(), checkpoint.getElementCount(), checkpoint.getFirstUnackedSeqNum(), new BitSet(), pageIO);
 
         assert checkpoint.getMinSeqNum() == pageIO.getMinSeqNum() && checkpoint.getElementCount() == pageIO.getElementCount() :
