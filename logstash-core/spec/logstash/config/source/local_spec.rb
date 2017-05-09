@@ -361,6 +361,21 @@ describe LogStash::Config::Source::Local do
   end
 
   context "incomplete configuration" do
+    context "when using path.config" do
+      let(:config_string) { filter_block }
+      let(:config_path) do
+        file = Stud::Temporary.file
+        path = file.path
+        file.write(config_string)
+        path
+      end
+      let(:settings) { mock_settings( "path.config" => config_path) }
+
+      it "doesn't add anything" do
+        expect(subject.pipeline_configs.first.config_string).not_to include(LogStash::Config::Defaults.output, LogStash::Config::Defaults.input)
+      end
+    end
+
     context "when the input block is missing" do
       let(:settings) { mock_settings( "config.string" => "#{filter_block} #{output_block}") }
 
