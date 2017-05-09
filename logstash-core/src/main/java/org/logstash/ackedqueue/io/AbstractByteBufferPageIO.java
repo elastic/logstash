@@ -1,15 +1,13 @@
 package org.logstash.ackedqueue.io;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.logstash.ackedqueue.SequencedList;
-
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.zip.CRC32;
-import java.util.zip.Checksum;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.logstash.ackedqueue.SequencedList;
 
 public abstract class AbstractByteBufferPageIO implements PageIO {
 
@@ -44,7 +42,7 @@ public abstract class AbstractByteBufferPageIO implements PageIO {
     protected int elementCount;
     protected int head; // head is the write position and is an int per ByteBuffer class position
     protected byte version;
-    protected Checksum checkSummer;
+    private CRC32 checkSummer;
 
     public AbstractByteBufferPageIO(int pageNum, int capacity) {
         this.minSeqNum = 0;
@@ -155,10 +153,13 @@ public abstract class AbstractByteBufferPageIO implements PageIO {
 
         if (verifyChecksum) {
             // read data and compute checksum;
-            byte[] readBytes = new byte[length];
-            buffer.get(readBytes);
+            this.checkSummer.reset();
+            final int prevLimit = buffer.limit();
+            buffer.limit(buffer.position() + length);
+            this.checkSummer.update(buffer);
+            buffer.limit(prevLimit);
             int checksum = buffer.getInt();
-            int computedChecksum = checksum(readBytes);
+            int computedChecksum = (int) this.checkSummer.getValue();
             if (computedChecksum != checksum) { throw new PageIOInvalidElementException("Element invalid checksum"); }
         }
 
