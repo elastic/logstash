@@ -225,6 +225,13 @@ filter {
     }
 }
 --------------------------------------------------------------------------------
+And change output to see a result :
+[source,json]
+--------------------------------------------------------------------------------
+output {
+  stdout { codec => rubydebug }
+}
+--------------------------------------------------------------------------------
 
 When you're done, the contents of `first-pipeline.conf` should look like this:
 
