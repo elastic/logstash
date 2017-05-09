@@ -396,7 +396,8 @@ describe LogStash::Agent do
 
   context "metrics after config reloading" do
     let(:agent_settings) { mock_settings({}) }
-    let!(:config) { "input { generator { } } output { dummyoutput { } }" }
+    let(:temporary_file) { Stud::Temporary.file.path }
+    let(:config) { "input { generator { count => #{initial_generator_threshold*2} } } output { file { path => '#{temporary_file}'} }" }
 
     let(:config_path) do
       f = Stud::Temporary.file
@@ -449,8 +450,8 @@ describe LogStash::Agent do
 
     context "when reloading a good config" do
       let(:new_config_generator_counter) { 500 }
-      let(:output_file) { Stud::Temporary.file.path }
-      let(:new_config) { "input { generator { count => #{new_config_generator_counter} } } output { file { path => '#{output_file}'} }" }
+      let(:new_file) { Stud::Temporary.file.path }
+      let(:new_config) { "input { generator { count => #{new_config_generator_counter} } } output { file { path => '#{new_file}'} }" }
 
       before :each do
         File.open(config_path, "w") do |f|
@@ -459,7 +460,7 @@ describe LogStash::Agent do
         end
 
         # wait until pipeline restarts
-        sleep(1) if ::File.read(output_file).empty?
+        sleep(1) if ::File.read(new_file).empty?
       end
 
       it "resets the pipeline metric collector" do
