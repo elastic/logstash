@@ -132,20 +132,23 @@ module LogStash module Config module Source
     OUTPUT_BLOCK_RE = /output *{/
 
     def pipeline_configs
-      config_parts = []
 
-      config_parts.concat(ConfigStringLoader.read(config_string)) if config_string?
-      if local_config?
-        local_config_parts = ConfigPathLoader.read(config_path)
-        config_parts.concat(local_config_parts)
-      else
-        local_config_parts = []
+      unless mutually_exclusive(config_string?, local_config?, remote_config?)
+        raise ConfigurationError.new("Settings 'config.string' and 'path.config' can't be used simultaneously.")
       end
 
-      config_parts.concat(ConfigRemoteLoader.read(config_path)) if remote_config?
+      config_parts = if config_string?
+        ConfigStringLoader.read(config_string)
+      elsif local_config?
+        ConfigPathLoader.read(config_path)
+      elsif remote_config?
+        ConfigRemoteLoader.read(config_path)
+      else
+        []
+      end
 
       return if config_parts.empty?
-      return if config_string? && config_string.strip.empty? && local_config? && local_config_parts.empty?
+      return if config_string? && config_string.strip.empty?
 
       add_missing_default_inputs_or_outputs(config_parts)
 
@@ -210,6 +213,10 @@ module LogStash module Config module Source
       rescue URI::InvalidURIError
         false
       end
+    end
+
+    def mutually_exclusive(a, b, c)
+      (a ^ b ^ c) && !(a && b && c)
     end
   end
 end end end
