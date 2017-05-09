@@ -40,5 +40,6 @@ Gemfile
 *.iml
 .idea
 logs
+.lock
 qa/integration/services/installed/
 .gradle
