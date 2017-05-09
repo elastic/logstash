@@ -104,11 +104,11 @@ module LogStash
     end
 
     def load_runtime_jars!(dir_name="vendor", package="jar-dependencies")
-      load_jars!(::File.join(runtime_jars_root(dir_name, package), "*.jar"))
+      load_jars!(::File.join(runtime_jars_root(dir_name, package), "**", "*.jar"))
     end
 
     def load_test_jars!(dir_name="vendor", package="jar-dependencies")
-      load_jars!(::File.join(test_jars_root(dir_name, package), "*.jar"))
+      load_jars!(::File.join(test_jars_root(dir_name, package), "**", "*.jar"))
     end
 
     def load_jars!(pattern)
