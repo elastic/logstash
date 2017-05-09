@@ -166,3 +166,7 @@ include::static/glossary.asciidoc[]
 // This is in the pluginbody.asciidoc itself
 //
 
+// Release Notes
+
+include::static/releasenotes.asciidoc[]
+
