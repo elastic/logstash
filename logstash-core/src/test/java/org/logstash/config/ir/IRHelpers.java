@@ -75,7 +75,7 @@ public class IRHelpers {
         }
 
         @Override
-        public SourceWithMetadata getMeta() {
+        public SourceWithMetadata getSourceWithMetadata() {
             return null;
         }
     }

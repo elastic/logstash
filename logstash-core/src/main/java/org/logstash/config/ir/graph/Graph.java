@@ -403,7 +403,7 @@ public class Graph implements SourceComponent, Hashable {
     }
 
     @Override
-    public SourceWithMetadata getMeta() {
+    public SourceWithMetadata getSourceWithMetadata() {
         return null;
     }
 

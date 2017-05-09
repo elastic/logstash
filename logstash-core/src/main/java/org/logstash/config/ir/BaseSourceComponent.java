@@ -16,7 +16,7 @@ public abstract class BaseSourceComponent implements SourceComponent {
         this.meta = meta;
     }
 
-    public SourceWithMetadata getMeta() {
+    public SourceWithMetadata getSourceWithMetadata() {
         return meta;
     }
 

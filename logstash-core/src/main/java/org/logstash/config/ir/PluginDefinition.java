@@ -97,7 +97,7 @@ public class PluginDefinition implements SourceComponent, Hashable {
     }
 
     @Override
-    public SourceWithMetadata getMeta() {
+    public SourceWithMetadata getSourceWithMetadata() {
         return null;
     }
 }

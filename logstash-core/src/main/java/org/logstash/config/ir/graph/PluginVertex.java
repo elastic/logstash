@@ -27,7 +27,7 @@ public class PluginVertex extends Vertex {
         return pluginDefinition;
     }
     @Override
-    public SourceWithMetadata getMeta() {
+    public SourceWithMetadata getSourceWithMetadata() {
         return meta;
     }
 
@@ -43,7 +43,7 @@ public class PluginVertex extends Vertex {
     }
 
     public String toString() {
-        return "P[" + pluginDefinition + "|" + this.getMeta() + "]";
+        return "P[" + pluginDefinition + "|" + this.getSourceWithMetadata() + "]";
     }
 
     @Override

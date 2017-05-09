@@ -8,15 +8,61 @@ describe LogStash::Compiler do
     Java::OrgLogstashConfigIr::DSL
   end
 
+  let(:source_protocol) { "test_proto" }
+
   # Static import of these useful enums
   INPUT = Java::OrgLogstashConfigIr::PluginDefinition::Type::INPUT
   FILTER = Java::OrgLogstashConfigIr::PluginDefinition::Type::FILTER
   OUTPUT = Java::OrgLogstashConfigIr::PluginDefinition::Type::OUTPUT
   CODEC = Java::OrgLogstashConfigIr::PluginDefinition::Type::OUTPUT
 
+  shared_examples_for("component source_with_metadata") do
+    it "should set the correct protocol" do
+      expect(component.source_with_metadata.protocol).to eq(source_protocol)
+    end
+
+    it "should set the id to the source id" do
+      expect(component.source_with_metadata.id).to eq(source_id)
+    end
+  end
+
   describe "compiling to Pipeline" do
-    subject(:source_file) { "fake_sourcefile" }
-    subject(:compiled) { described_class.compile_pipeline(source, source_file) }
+    subject(:source_id) { "fake_sourcefile" }
+    let(:source_with_metadata) { org.logstash.common.SourceWithMetadata.new(source_protocol, source_id, source) }
+    subject(:compiled) { described_class.compile_pipeline(source_with_metadata) }
+
+    describe "compiling multiple sources" do
+      let(:sources) do
+        [ 
+          "input { input_0 {} } filter { filter_0 {} } output { output_0 {} }",
+          "input { input_1 {} } filter { filter_1 {} } output { output_1 {} }"
+        ]
+      end
+      let(:sources_with_metadata) do
+        sources.map.with_index do |source, idx|
+          org.logstash.common.SourceWithMetadata.new("#{source_protocol}_#{idx}", "#{source_id}_#{idx}", source)
+        end
+      end
+
+      subject(:pipeline) { described_class.compile_sources(*sources_with_metadata) }
+
+      it "should compile cleanly" do
+        expect(pipeline).to be_a(org.logstash.config.ir.Pipeline)
+      end
+
+      describe "applying protocol and id metadata" do
+        it "should apply the correct source metadata to all components" do
+          pipeline.plugin_vertices.each do |pv| 
+            name_idx = pv.plugin_definition.name.split("_").last
+            source_protocol_idx = pv.source_with_metadata.protocol.split("_").last
+            source_id_idx = pv.source_with_metadata.id.split("_").last
+
+            expect(name_idx).to eq(source_protocol_idx)
+            expect(name_idx).to eq(source_id_idx)
+          end
+        end
+      end
+    end
 
     describe "complex configs" do
       shared_examples_for "compilable LSCL files" do |path|
@@ -40,8 +86,9 @@ describe LogStash::Compiler do
   end
 
   describe "compiling imperative" do
-    let(:source_file) { "fake_sourcefile" }
-    subject(:compiled) { described_class.compile_imperative(source, source_file) }
+    let(:source_id) { "fake_sourcefile" }
+    let(:source_with_metadata) { org.logstash.common.SourceWithMetadata.new(source_protocol, source_id, source) }
+    subject(:compiled) { described_class.compile_imperative(source_with_metadata) }
 
     describe "an empty file" do
       let(:source) { "input {} output {}" }
@@ -63,7 +110,7 @@ describe LogStash::Compiler do
       let(:source) { "input { generator {} } output { }" }
 
       it "should attach correct source text for components" do
-        expect(compiled[:input].get_meta.getText).to eql("generator {}")
+        expect(compiled[:input].source_with_metadata.getText).to eql("generator {}")
       end
     end
 
@@ -105,6 +152,10 @@ describe LogStash::Compiler do
 
         it "should contain the single input" do
           expect(input).to ir_eql(j.iPlugin(INPUT, "generator"))
+        end
+
+        it_should_behave_like("component source_with_metadata") do
+          let(:component) { input }
         end
       end
 
@@ -190,12 +241,12 @@ describe LogStash::Compiler do
         end
 
         it "should attach source_with_metadata with correct info to the statements" do
-          meta = compiled_section.statements.first.meta
+          meta = compiled_section.statements.first.source_with_metadata
           expect(meta.text).to eql("aplugin { count => 1 }")
           expect(meta.line).to eql(2)
           expect(meta.column).to eql(13)
-          expect(meta.id).to eql(source_file)
-          expect(compiled_section.statements.first.meta)
+          expect(meta.id).to eql(source_id)
+          expect(compiled_section.statements.first.source_with_metadata)
           expect(compiled_section)
         end
       end
@@ -559,8 +610,12 @@ describe LogStash::Compiler do
       describe "a single filter" do
         let(:source) { "input { } filter { grok {} } output { }" }
 
-        it "should contain the single input" do
+        it "should contain the single filter" do
           expect(filter).to ir_eql(j.iPlugin(FILTER, "grok"))
+        end
+
+        it_should_behave_like("component source_with_metadata") do
+          let(:component) { filter }
         end
       end
 
@@ -575,6 +630,10 @@ describe LogStash::Compiler do
 
         it "should contain the single input" do
           expect(output).to ir_eql(j.iPlugin(OUTPUT, "stdout"))
+        end
+
+        it_should_behave_like("component source_with_metadata") do
+          let(:component) { output }
         end
       end
 

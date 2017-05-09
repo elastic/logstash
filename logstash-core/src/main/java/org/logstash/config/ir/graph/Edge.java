@@ -93,7 +93,7 @@ public abstract class Edge implements SourceComponent {
     public abstract String getId();
 
     @Override
-    public SourceWithMetadata getMeta() {
+    public SourceWithMetadata getSourceWithMetadata() {
         return null;
     }
 }
