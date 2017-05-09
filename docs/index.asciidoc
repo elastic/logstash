@@ -10,7 +10,7 @@
 //////////
 release-state can be: released | prerelease | unreleased
 //////////
-:release-state:  unreleased
+:release-state:  prerelease
 
 :jdk:                   1.8.0
 :guide:                 https://www.elastic.co/guide/en/elasticsearch/guide/current/
