@@ -10,7 +10,7 @@ describe LogStash::OutputDelegator do
   let(:plugin_args) { {"id" => "foo", "arg1" => "val1"} }
   let(:collector) { [] }
   let(:metric) { LogStash::Instrument::NamespacedNullMetric.new(collector, :null) }
-  
+
   include_context "execution_context"
 
   subject { described_class.new(logger, out_klass, metric, execution_context, ::LogStash::OutputDelegatorStrategyRegistry.instance, plugin_args) }
