@@ -2,7 +2,7 @@
 = Logstash Reference
 
 :branch:                5.4
-:major-version:         5.4
+:major-version:         5.x
 :logstash_version:      5.4.0
 :elasticsearch_version: 5.4.0
 :docker-image:          docker.elastic.co/logstash/logstash:{logstash_version}
