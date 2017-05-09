@@ -1,5 +1,6 @@
 package org.logstash.config.ir;
 
+import org.logstash.common.SourceWithMetadata;
 import org.logstash.config.ir.graph.Graph;
 import org.logstash.config.ir.graph.PluginVertex;
 import org.logstash.config.ir.graph.QueueVertex;

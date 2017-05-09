@@ -10,15 +10,23 @@ module LogStashCompilerLSCLGrammar; module LogStash; module Compiler; module LSC
   module Helpers
     def source_meta
       line, column = line_and_column
-      org.logstash.common.SourceWithMetadata.new(source_file, line, column, self.text_value)
+      org.logstash.common.SourceWithMetadata.new(base_protocol, base_id, line, column, self.text_value)
     end
 
-    def source_file=(value)
-      set_meta(:source_file, value)
+    def base_source_with_metadata=(value)
+      set_meta(:base_source_with_metadata, value)
     end
     
-    def source_file
-      get_meta(:source_file)
+    def base_source_with_metadata
+      get_meta(:base_source_with_metadata)
+    end
+
+    def base_protocol
+      self.base_source_with_metadata.protocol
+    end
+
+    def base_id
+      self.base_source_with_metadata.id
     end
 
     def compose(*statements)
@@ -39,7 +47,7 @@ module LogStashCompilerLSCLGrammar; module LogStash; module Compiler; module LSC
     end
 
     def empty_source_meta()
-      org.logstash.common.SourceWithMetadata.new()
+      org.logstash.common.SourceWithMetadata.new(base_protocol, base_id, nil)
     end
 
     def jdsl
@@ -70,9 +78,9 @@ module LogStashCompilerLSCLGrammar; module LogStash; module Compiler; module LSC
   class Config < Node
     include Helpers
     
-    def compile(source_file=nil)
+    def compile(base_source_with_metadata=nil)
       # There is no way to move vars across nodes in treetop :(
-      self.source_file = source_file
+      self.base_source_with_metadata = base_source_with_metadata
 
       sections = recursive_select(PluginSection)
 

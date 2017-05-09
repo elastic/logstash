@@ -38,7 +38,7 @@ public class QueueVertex extends Vertex {
 
     // Special vertices really have no metadata
     @Override
-    public SourceWithMetadata getMeta() {
+    public SourceWithMetadata getSourceWithMetadata() {
         return null;
     }
 }

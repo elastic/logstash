@@ -43,7 +43,7 @@ public class IfVertex extends Vertex {
 
     // An IfVertex has no real metadata in and of itself, but its expression does!
     @Override
-    public SourceWithMetadata getMeta() {
+    public SourceWithMetadata getSourceWithMetadata() {
         return null;
     }
 
@@ -83,7 +83,7 @@ public class IfVertex extends Vertex {
     // The easiest readable version of this for a human.
     // If the original source is available we use that, otherwise we serialize the expression
     public String humanReadableExpression() {
-        String sourceText = this.booleanExpression.getMeta() != null ? this.booleanExpression.getMeta().getText() : null;
+        String sourceText = this.booleanExpression.getSourceWithMetadata() != null ? this.booleanExpression.getSourceWithMetadata().getText() : null;
         if (sourceText != null) {
             return sourceText;
         } else {
@@ -93,7 +93,7 @@ public class IfVertex extends Vertex {
 
     @Override
     public IfVertex copy() {
-        return new IfVertex(getMeta(),getBooleanExpression());
+        return new IfVertex(getSourceWithMetadata(),getBooleanExpression());
     }
 
     @Override

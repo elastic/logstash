@@ -8,31 +8,47 @@ java_import org.logstash.config.ir.graph.PluginVertex;
 module LogStash; class Compiler
   include ::LogStash::Util::Loggable
 
-  def self.compile_pipeline(config_str, source_file=nil)
-    graph_sections = self.compile_graph(config_str, source_file)
-    pipeline = org.logstash.config.ir.Pipeline.new(
-      graph_sections[:input],
-      graph_sections[:filter],
-      graph_sections[:output]
-    )
+  def self.compile_sources(*sources_with_metadata)
+    graph_sections = sources_with_metadata.map do |swm|
+      self.compile_graph(swm)
+    end
+
+    input_graph = org.logstash.config.ir.graph.Graph.combine(*graph_sections.map {|s| s[:input] }).graph
+    output_graph = org.logstash.config.ir.graph.Graph.combine(*graph_sections.map {|s| s[:output] }).graph
+
+    filter_graph = graph_sections.reduce(nil) do |acc, s| 
+      filter_section = s[:filter]
+
+      if acc.nil? 
+        filter_section
+      else
+        acc.chain(filter_section)
+      end
+    end
+
+    org.logstash.config.ir.Pipeline.new(input_graph, filter_graph, output_graph)
   end
 
-  def self.compile_ast(config_str, source_file=nil)
+  def self.compile_ast(source_with_metadata)
+    if !source_with_metadata.is_a?(org.logstash.common.SourceWithMetadata)
+      raise ArgumentError, "Expected 'org.logstash.common.SourceWithMetadata', got #{source_with_metadata.class}"
+    end
+
     grammar = LogStashCompilerLSCLGrammarParser.new
-    config = grammar.parse(config_str)
+    config = grammar.parse(source_with_metadata.text)
 
     if config.nil?
       raise ConfigurationError, grammar.failure_reason
     end
 
-    config
+    config.compile(source_with_metadata)
   end
 
-  def self.compile_imperative(config_str, source_file=nil)
-    compile_ast(config_str, source_file).compile(source_file)
+  def self.compile_imperative(source_with_metadata)
+    compile_ast(source_with_metadata)
   end
 
-  def self.compile_graph(config_str, source_file=nil)
-    Hash[compile_imperative(config_str, source_file).map {|section,icompiled| [section, icompiled.toGraph]}]
+  def self.compile_graph(source_with_metadata)
+    Hash[compile_imperative(source_with_metadata).map {|section,icompiled| [section, icompiled.toGraph]}]
   end
 end; end

@@ -37,7 +37,7 @@ public class PluginStatement extends Statement {
 
     @Override
     public Graph toGraph() throws InvalidIRException {
-        Vertex pluginVertex = new PluginVertex(getMeta(), pluginDefinition);
+        Vertex pluginVertex = new PluginVertex(getSourceWithMetadata(), pluginDefinition);
         Graph g = Graph.empty();
         g.addVertex(pluginVertex);
         return g;
