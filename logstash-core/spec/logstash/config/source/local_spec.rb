@@ -372,7 +372,7 @@ describe LogStash::Config::Source::Local do
       let(:settings) { mock_settings( "path.config" => config_path) }
 
       it "doesn't add anything" do
-        expect(subject.pipeline_configs.config_string).not_to include(LogStash::Config::Defaults.output, LogStash::Config::Defaults.input)
+        expect(subject.pipeline_configs.first.config_string).not_to include(LogStash::Config::Defaults.output, LogStash::Config::Defaults.input)
       end
     end
 
