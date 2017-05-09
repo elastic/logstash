@@ -21,6 +21,8 @@ package org.logstash.common.io;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.logstash.DLQEntry;
+import org.logstash.Event;
+import org.logstash.Timestamp;
 
 import java.io.IOException;
 import java.nio.channels.FileChannel;
@@ -28,14 +30,16 @@ import java.nio.channels.FileLock;
 import java.nio.channels.OverlappingFileLockException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.stream.Stream;
 
 import static org.logstash.common.io.RecordIOWriter.RECORD_HEADER_SIZE;
 
-public class DeadLetterQueueWriteManager {
+public class DeadLetterQueueWriter {
 
-    private static final Logger logger = LogManager.getLogger(DeadLetterQueueWriteManager.class);
+    private static final Logger logger = LogManager.getLogger(DeadLetterQueueWriter.class);
+    private static final long MAX_SEGMENT_SIZE_BYTES = 10 * 1024 * 1024;
 
     static final String SEGMENT_FILE_PATTERN = "%d.log";
     static final String LOCK_FILE = ".lock";
@@ -46,6 +50,8 @@ public class DeadLetterQueueWriteManager {
     private RecordIOWriter currentWriter;
     private long currentQueueSize;
     private int currentSegmentIndex;
+    private Timestamp lastEntryTimestamp;
+    private boolean open;
 
     /**
      *
@@ -53,7 +59,9 @@ public class DeadLetterQueueWriteManager {
      * @param maxSegmentSize
      * @throws IOException
      */
-    public DeadLetterQueueWriteManager(Path queuePath, long maxSegmentSize, long maxQueueSize) throws IOException {
+    public DeadLetterQueueWriter(Path queuePath, long maxSegmentSize, long maxQueueSize) throws IOException {
+        // ensure path exists, create it otherwise.
+        Files.createDirectories(queuePath);
         // check that only one instance of the writer is open in this configured path
         Path lockFilePath = queuePath.resolve(LOCK_FILE);
         boolean isNewlyCreated = lockFilePath.toFile().createNewFile();
@@ -77,6 +85,18 @@ public class DeadLetterQueueWriteManager {
                 .mapToInt(Integer::parseInt)
                 .max().orElse(0);
         this.currentWriter = nextWriter();
+        this.lastEntryTimestamp = Timestamp.now();
+        this.open = true;
+    }
+
+    /**
+     * Constructor for Writer that uses defaults
+     *
+     * @param queuePath the path to the dead letter queue segments directory
+     * @throws IOException
+     */
+    public DeadLetterQueueWriter(String queuePath) throws IOException {
+        this(Paths.get(queuePath), MAX_SEGMENT_SIZE_BYTES, Long.MAX_VALUE);
     }
 
     private long getStartupQueueSize() throws IOException {
@@ -99,11 +119,25 @@ public class DeadLetterQueueWriteManager {
         return Files.list(path).filter((p) -> p.toString().endsWith(".log"));
     }
 
-    public synchronized void writeEntry(DLQEntry event) throws IOException {
-        byte[] record = event.serialize();
+    public synchronized void writeEntry(DLQEntry entry) throws IOException {
+        innerWriteEntry(entry);
+    }
+
+    public synchronized void writeEntry(Event event, String pluginName, String pluginId, String reason) throws IOException {
+        Timestamp entryTimestamp = Timestamp.now();
+        if (entryTimestamp.getTime().isBefore(lastEntryTimestamp.getTime())) {
+            entryTimestamp = lastEntryTimestamp;
+        }
+        DLQEntry entry = new DLQEntry(event, pluginName, pluginId, reason);
+        innerWriteEntry(entry);
+        lastEntryTimestamp = entryTimestamp;
+    }
+
+    private void innerWriteEntry(DLQEntry entry) throws IOException {
+        byte[] record = entry.serialize();
         int eventPayloadSize = RECORD_HEADER_SIZE + record.length;
         if (currentQueueSize + eventPayloadSize > maxQueueSize) {
-            logger.error("cannot write event to DLQ, no space available");
+            logger.error("cannot write event to DLQ: reached maxQueueSize of " + maxQueueSize);
             return;
         } else if (currentWriter.getPosition() + eventPayloadSize > maxSegmentSize) {
             currentWriter.close();
@@ -112,11 +146,17 @@ public class DeadLetterQueueWriteManager {
         currentQueueSize += currentWriter.writeEvent(record);
     }
 
+
     public synchronized void close() throws IOException {
         this.lock.release();
         if (currentWriter != null) {
             currentWriter.close();
         }
         Files.deleteIfExists(queuePath.resolve(LOCK_FILE));
+        open = false;
+    }
+
+    public boolean isOpen() {
+        return open;
     }
 }

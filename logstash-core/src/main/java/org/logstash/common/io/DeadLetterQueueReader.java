@@ -37,17 +37,17 @@ import java.util.stream.Collectors;
 
 import static java.nio.file.StandardWatchEventKinds.ENTRY_CREATE;
 import static java.nio.file.StandardWatchEventKinds.ENTRY_DELETE;
-import static org.logstash.common.io.DeadLetterQueueWriteManager.getSegmentPaths;
+import static org.logstash.common.io.DeadLetterQueueWriter.getSegmentPaths;
 
-public class DeadLetterQueueReadManager {
-    private static final Logger logger = LogManager.getLogger(DeadLetterQueueReadManager.class);
+public class DeadLetterQueueReader {
+    private static final Logger logger = LogManager.getLogger(DeadLetterQueueReader.class);
 
     private RecordIOReader currentReader;
     private final Path queuePath;
     private final ConcurrentSkipListSet<Path> segments;
     private final WatchService watchService;
 
-    public DeadLetterQueueReadManager(Path queuePath) throws Exception {
+    public DeadLetterQueueReader(Path queuePath) throws Exception {
         this.queuePath = queuePath;
         this.watchService = FileSystems.getDefault().newWatchService();
         this.queuePath.register(watchService, ENTRY_CREATE, ENTRY_DELETE);

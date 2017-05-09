@@ -48,7 +48,7 @@ describe LogStash::Plugin do
 
     it "can be set and get" do
       expect(subject.execution_context).to be_nil
-      execution_context = LogStash::ExecutionContext.new(:main)
+      execution_context = LogStash::ExecutionContext.new(:main, "id", "type", nil)
       subject.execution_context = execution_context
       expect(subject.execution_context).to eq(execution_context)
     end

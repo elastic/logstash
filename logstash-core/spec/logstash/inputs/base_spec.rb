@@ -64,7 +64,7 @@ describe "LogStash::Inputs::Base#decorate" do
   end
 
   context "execution context" do
-    let(:default_execution_context) { LogStash::ExecutionContext.new(:main) }
+    let(:default_execution_context) { LogStash::ExecutionContext.new(:main, "id", "input", LogStash::Util::DummyDeadLetterQueueWriter.new) }
     let(:klass) { LogStash::Inputs::NOOP }
 
     subject(:instance) { klass.new({}) }

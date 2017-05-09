@@ -36,7 +36,7 @@ import static junit.framework.TestCase.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-public class DeadLetterQueueWriteManagerTest {
+public class DeadLetterQueueWriterTest {
     private Path dir;
 
     @Rule
@@ -50,7 +50,7 @@ public class DeadLetterQueueWriteManagerTest {
     @Test
     public void testLockFileManagement() throws Exception {
         Path lockFile = dir.resolve(".lock");
-        DeadLetterQueueWriteManager writer = new DeadLetterQueueWriteManager(dir, 1000, 1000000);
+        DeadLetterQueueWriter writer = new DeadLetterQueueWriter(dir, 1000, 1000000);
         assertTrue(Files.exists(lockFile));
         writer.close();
         assertFalse(Files.exists(lockFile));
@@ -58,9 +58,9 @@ public class DeadLetterQueueWriteManagerTest {
 
     @Test
     public void testFileLocking() throws Exception {
-        DeadLetterQueueWriteManager writer = new DeadLetterQueueWriteManager(dir, 1000, 1000000);
+        DeadLetterQueueWriter writer = new DeadLetterQueueWriter(dir, 1000, 1000000);
         try {
-            new DeadLetterQueueWriteManager(dir, 1000, 100000);
+            new DeadLetterQueueWriter(dir, 1000, 100000);
             fail();
         } catch (RuntimeException e) {
         } finally {
@@ -72,7 +72,7 @@ public class DeadLetterQueueWriteManagerTest {
     public void testUncleanCloseOfPreviousWriter() throws Exception {
         Path lockFilePath = dir.resolve(".lock");
         boolean created = lockFilePath.toFile().createNewFile();
-        DeadLetterQueueWriteManager writer = new DeadLetterQueueWriteManager(dir, 1000, 1000000);
+        DeadLetterQueueWriter writer = new DeadLetterQueueWriter(dir, 1000, 1000000);
 
         FileChannel channel = FileChannel.open(lockFilePath, StandardOpenOption.WRITE);
         try {
@@ -87,7 +87,7 @@ public class DeadLetterQueueWriteManagerTest {
 
     @Test
     public void testWrite() throws Exception {
-        DeadLetterQueueWriteManager writer = new DeadLetterQueueWriteManager(dir, 1000, 1000000);
+        DeadLetterQueueWriter writer = new DeadLetterQueueWriter(dir, 1000, 1000000);
         DLQEntry entry = new DLQEntry(new Event(), "type", "id", "reason");
         writer.writeEntry(entry);
         writer.close();

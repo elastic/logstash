@@ -14,7 +14,8 @@ describe LogStash::FilterDelegator do
   let(:collector) { [] }
   let(:metric) { LogStash::Instrument::NamespacedNullMetric.new(collector, :null) }
   let(:events) { [LogStash::Event.new, LogStash::Event.new] }
-  let(:default_execution_context) { LogStash::ExecutionContext.new(:main) }
+  let(:default_execution_context) { LogStash::ExecutionContext.new(:main, filter_id, "filter",
+                                                                   LogStash::Util::DummyDeadLetterQueueWriter.new) }
 
   before :each do
     allow(metric).to receive(:namespace).with(anything).and_return(metric)

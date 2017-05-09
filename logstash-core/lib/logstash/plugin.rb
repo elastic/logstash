@@ -3,6 +3,7 @@ require "logstash/namespace"
 require "logstash/logging"
 require "logstash/config/mixin"
 require "logstash/instrument/null_metric"
+require "logstash/util/dead_letter_queue_manager"
 require "concurrent"
 require "securerandom"
 

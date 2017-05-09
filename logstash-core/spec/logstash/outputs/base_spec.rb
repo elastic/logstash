@@ -80,7 +80,7 @@ describe "LogStash::Outputs::Base#new" do
   end
 
   context "execution context" do
-    let(:default_execution_context) { LogStash::ExecutionContext.new(:main) }
+    let(:default_execution_context) { LogStash::ExecutionContext.new(:main, "id", "output", LogStash::Util::DummyDeadLetterQueueWriter.new) }
     let(:klass) { LogStash::Outputs::NOOPSingle }
 
     subject(:instance) { klass.new(params.dup) }
