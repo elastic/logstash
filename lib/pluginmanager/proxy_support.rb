@@ -54,18 +54,26 @@ def extract_proxy_values_from_uri(proxy_uri)
   }
 end
 
+def get_proxy(key)
+  ENV[key.downcase] || ENV[key.upcase]
+end
+
+def valid_proxy?(proxy)
+  !proxy.nil? && !proxy.strip.empty?
+end
+
 def configure_proxy
   proxies = []
-  proxy = (ENV["http_proxy"] || ENV["HTTP_PROXY"])
-  if !proxy.nil? && !proxy.strip.empty?
+  proxy = get_proxy("http_proxy")
+  if valid_proxy?(proxy)
     proxy_settings = extract_proxy_values_from_uri(proxy)
     proxy_settings[:protocol] = "http"
     apply_env_proxy_settings(proxy_settings)
     proxies << proxy_settings
   end
 
-  proxy = (ENV["https_proxy"] || ENV["HTTPS_PROXY"])
-  if !proxy.nil? && !proxy.strip.empty?
+  proxy = get_proxy("https_proxy")
+  if valid_proxy?(proxy)
     proxy_settings = extract_proxy_values_from_uri(proxy)
     proxy_settings[:protocol] = "https"
     apply_env_proxy_settings(proxy_settings)
