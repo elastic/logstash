@@ -29,7 +29,7 @@ describe "Test Logstash instance" do
   let(:file_config2) { Stud::Temporary.file.path }
   let(:file_config3) { Stud::Temporary.file.path }
 
-  let(:num_retries) { 10 }
+  let(:num_retries) { 50 }
   let(:config1) { config_to_temp_file(@fixture.config("root", { :port => port1, :random_file => file_config1 })) }
   let(:config2) { config_to_temp_file(@fixture.config("root", { :port => port2 , :random_file => file_config2 })) }
   let(:config3) { config_to_temp_file(@fixture.config("root", { :port => port3, :random_file => file_config3 })) }
@@ -42,7 +42,7 @@ describe "Test Logstash instance" do
   it "can start the embedded http server on default port 9600" do
     @ls1.start_with_stdin
     try(num_retries) do
-      expect(is_port_open?(9600)).to be true
+      expect(is_port_open?(9600)).to be(true)
     end
   end
 
@@ -56,7 +56,7 @@ describe "Test Logstash instance" do
       expect(is_port_open?(9600)).to be true
 
       @ls2.spawn_logstash("-f", config2, "--path.data", tmp_data_path)
-      try(20) do
+      try(num_retries) do
         expect(@ls2.exited?).to be(true)
       end
       expect(@ls2.exit_code).to be(1)

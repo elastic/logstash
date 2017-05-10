@@ -23,13 +23,8 @@ describe "Test Monitoring API" do
   it "can retrieve event stats" do
     logstash_service = @fixture.get_service("logstash")
     logstash_service.start_with_stdin
+    logstash_service.wait_for_logstash
     number_of_events.times { logstash_service.write_to_stdin("Hello world") }
-
-    begin
-      sleep(1) while (result = logstash_service.monitoring_api.event_stats).nil?
-    rescue
-      retry
-    end
 
     Stud.try(max_retry.times, RSpec::Expectations::ExpectationNotMetError) do
       # event_stats can fail if the stats subsystem isn't ready

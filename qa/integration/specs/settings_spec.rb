@@ -28,7 +28,7 @@ describe "Test Logstash instance whose default settings are overridden" do
     FileUtils.mv("#{@logstash_service.application_settings_file}.original", @logstash_service.application_settings_file)
   }
 
-  let(:num_retries) { 15 }
+  let(:num_retries) { 50 }
   let(:test_port) { random_port }
   let(:temp_dir) { Stud::Temporary.directory("logstash-settings-test") }
   let(:tcp_config) { @fixture.config("root", { :port => test_port }) }
@@ -46,6 +46,7 @@ describe "Test Logstash instance whose default settings are overridden" do
   it "should start with a new data dir" do
     change_setting("path.data", temp_dir)
     @logstash_service.spawn_logstash("-e", tcp_config)
+    @logstash_service.wait_for_logstash
     # check LS is up and running with new data path
     try(num_retries) do
       expect(is_port_open?(test_port)).to be true
@@ -55,6 +56,7 @@ describe "Test Logstash instance whose default settings are overridden" do
   it "should write logs to a new dir" do
     change_setting("path.logs", temp_dir)
     @logstash_service.spawn_logstash("-e", tcp_config)
+    @logstash_service.wait_for_logstash
     # check LS is up and running with new data path
     try(num_retries) do
       expect(is_port_open?(test_port)).to be true
@@ -68,6 +70,7 @@ describe "Test Logstash instance whose default settings are overridden" do
     IO.write(test_config_path, tcp_config)
     expect(File.exists?(test_config_path)).to be true
     @logstash_service.spawn_logstash
+    @logstash_service.wait_for_logstash
     # check LS is up and running with new data path
     try(num_retries) do
       expect(is_port_open?(test_port)).to be true
@@ -102,14 +105,14 @@ describe "Test Logstash instance whose default settings are overridden" do
   it "change pipeline settings" do
     s = {}
     workers = 31
-    batch_size = 1250
+    batch_size = 1
     s["pipeline.workers"] = workers
     s["pipeline.batch.size"] = batch_size
     overwrite_settings(s)
     @logstash_service.spawn_logstash("-e", tcp_config)
     @logstash_service.wait_for_logstash
     # check LS is up and running with new data path
-    try do
+    try(num_retries) do
       expect(is_port_open?(test_port)).to be true
     end
 
@@ -124,6 +127,7 @@ describe "Test Logstash instance whose default settings are overridden" do
     http_port = random_port
     change_setting("http.port", http_port)
     @logstash_service.spawn_logstash("-e", tcp_config)
+    @logstash_service.wait_for_logstash
     
     try(num_retries) do
       expect(is_port_open?(http_port)).to be true
@@ -143,6 +147,7 @@ describe "Test Logstash instance whose default settings are overridden" do
 
   it "start even without a settings file specified" do
     @logstash_service.spawn_logstash("-e", tcp_config, "--path.settings", "/tmp/fooooobbaaar")
+    @logstash_service.wait_for_logstash
     http_port = 9600
     try(num_retries) do
       expect(is_port_open?(http_port)).to be true
