@@ -112,4 +112,21 @@ describe "Proxy support" do
       }
     end
   end
+
+  context "when proxies are set with an empty string" do
+    let(:environments) {
+      {
+        "http_proxy" => "",
+        "https_proxy" => ""
+      }
+    }
+
+    before do
+      environments.each { |key, value| ENV[key] = value }
+    end
+
+    it "doesn't raise an exception" do
+      expect { configure_proxy }.not_to raise_exception
+    end
+  end
 end
