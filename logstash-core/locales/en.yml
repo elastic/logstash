@@ -85,6 +85,18 @@ en:
       logging:
         unrecognized_option: |-
           unrecognized option [%{option}]
+    modules:
+      configuration:
+        parse-failed: |-
+          Failed to parse the module configuration: [%{error}]
+        modules-must-be-unique: >-
+          Only a single instance of any module can be run at a time. List of 
+          modules specified: %{duplicate_modules}
+        modules-empty-value: >-
+          Empty value provided for --modules
+        modules-variables-malformed: >-
+          Failed to parse module variable %{rawvar}.  Must be in -M
+          "MODULE_NAME.var.PLUGIN_TYPE.PLUGIN_NAME.VARIABLE_NAME=VALUE" format
     runner:
       short-help: |-
         usage:
@@ -100,6 +112,9 @@ en:
         the '-f yourlogstash.conf' flag?
       config-string-path-exclusive:
         Settings 'path.config' (-f) and 'config.string' (-e) can't be used simultaneously.
+      config-module-exclusive: >-
+        Settings 'path.config' (-f) or 'config.string' (-e) can't be used in conjunction with
+        (--modules) or the "modules:" block in the logstash.yml file.
       reload-without-config-path: >-
         Configuration reloading also requires passing a configuration path with '-f yourlogstash.conf'
       locked-data-path: >-
@@ -185,6 +200,24 @@ en:
           "%{default_output}"
           If you wish to use both defaults, please use
           the empty string for the '-e' flag.
+        modules: |+
+          Load Logstash modules.
+          Modules can be defined using multiple instances 
+          '--modules module1 --modules module2', 
+             or comma-separated syntax 
+          '--modules=module1,module2' 
+          Cannot be used in conjunction with '-e' or '-f'
+          Use of '--modules' will override modules declared
+          in the 'logstash.yml' file.
+        modules_variable: |+
+          Load variables for module template.
+          Multiple instances of '-M' or 
+          '--modules.variable' are supported.
+          Ignored if '--modules' flag is not used.
+          Should be in the format of 
+          '-M "MODULE_NAME.var.PLUGIN_TYPE.PLUGIN_NAME.VARIABLE_NAME=VALUE"'
+          as in 
+          '-M "example.var.filter.mutate.fieldname=fieldvalue"'
         configtest: |+
           Check configuration for valid syntax and then exit.
         http_host: Web API binding host
