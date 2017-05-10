@@ -1,0 +1,13 @@
+:register_method:	true
+:receive_method:	true
+:teardown_method: true
+:plugintype:    	output
+:pluginclass:   	Outputs
+:pluginname:    	example
+:pluginnamecap: 	Example
+
+:getstarted: Let's step through creating an {plugintype} plugin using the https://github.com/logstash-plugins/logstash-output-example/[example {plugintype} plugin].
+
+:methodheader: Logstash outputs must implement the `register` and `receive` methods.
+
+include::include/pluginbody.asciidoc[]
