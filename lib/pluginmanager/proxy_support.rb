@@ -56,14 +56,16 @@ end
 
 def configure_proxy
   proxies = []
-  if proxy = (ENV["http_proxy"] || ENV["HTTP_PROXY"])
+  proxy = (ENV["http_proxy"] || ENV["HTTP_PROXY"])
+  if !proxy.nil? && !proxy.strip.empty?
     proxy_settings = extract_proxy_values_from_uri(proxy)
     proxy_settings[:protocol] = "http"
     apply_env_proxy_settings(proxy_settings)
     proxies << proxy_settings
   end
 
-  if proxy = (ENV["https_proxy"] || ENV["HTTPS_PROXY"])
+  proxy = (ENV["https_proxy"] || ENV["HTTPS_PROXY"])
+  if !proxy.nil? && !proxy.strip.empty?
     proxy_settings = extract_proxy_values_from_uri(proxy)
     proxy_settings[:protocol] = "https"
     apply_env_proxy_settings(proxy_settings)
