@@ -22,15 +22,15 @@ public class Pipeline implements Hashable {
         return queue;
     }
 
-    //public QueueVertex getFilterOut() {
-    //    return filterOut;
-    //}
-
     private final Graph graph;
     private final QueueVertex queue;
-    //private final QueueVertex filterOut;
+    // Temporary until we have LIR execution
+    // Then we will no longer need this property here
+    private final String originalSource;
 
-    public Pipeline(Graph inputSection, Graph filterSection, Graph outputSection) throws InvalidIRException {
+    public Pipeline(Graph inputSection, Graph filterSection, Graph outputSection, String originalSource) throws InvalidIRException {
+        this.originalSource = originalSource;
+
         // Validate all incoming graphs, we can't turn an invalid graph into a Pipeline!
         inputSection.validate();
         filterSection.validate();
@@ -47,6 +47,10 @@ public class Pipeline implements Hashable {
 
         // Finally, connect the filter out node to all the outputs
         this.graph = tempGraph.chain(outputSection);
+    }
+
+    public String getOriginalSource() {
+        return this.originalSource;
     }
 
     public List<Vertex> getPostQueue() throws InvalidIRException {
