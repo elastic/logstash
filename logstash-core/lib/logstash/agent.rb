@@ -148,10 +148,10 @@ class LogStash::Agent
     @pipelines_mutex.synchronize do
       pipeline_actions = resolve_actions(results.response)
       converge_result = converge_state(pipeline_actions)
+      update_metrics(converge_result)
     end
 
     report_currently_running_pipelines(converge_result)
-    update_metrics(converge_result)
     dispatch_events(converge_result)
 
     converge_result
