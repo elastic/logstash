@@ -26,7 +26,9 @@ module LogStash; class Compiler
       end
     end
 
-    org.logstash.config.ir.Pipeline.new(input_graph, filter_graph, output_graph)
+    original_source = sources_with_metadata.join("\n")
+
+    org.logstash.config.ir.Pipeline.new(input_graph, filter_graph, output_graph, original_source)
   end
 
   def self.compile_ast(source_with_metadata)
