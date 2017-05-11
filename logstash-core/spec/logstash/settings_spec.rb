@@ -150,7 +150,7 @@ describe LogStash::Settings do
 
   describe "#from_yaml" do
 
-    context "env placeholders in logstash.yml" do
+    context "env placeholders in flat logstash.yml" do
 
       after do
         ENV.delete('SOME_LOGSTASH_SPEC_ENV_VAR')
@@ -187,6 +187,54 @@ describe LogStash::Settings do
         expect(subject.get('interpolated')).to eq("correct_setting")
         expect(subject.get('with_dot')).to eq("correct_setting_for_dotted")
       end
+    end
+  end
+
+  context "env placeholders in nested logstash.yml" do
+
+    before do
+      ENV['lsspecdomain'] = "domain1"
+      ENV['lsspecdomain2'] = "domain2"
+    end
+
+    after do
+      ENV.delete('lsspecdomain')
+      ENV.delete('lsspecdomain2')
+    end
+
+    subject do
+      settings = described_class.new
+      settings.register(LogStash::Setting::ArrayCoercible.new("host", String, []))
+      settings.register(LogStash::Setting::ArrayCoercible.new("modules", Hash, []))
+      settings
+    end
+
+    let(:values) {{
+      "host" => ["dev1.${lsspecdomain}", "dev2.${lsspecdomain}"],
+      "modules" => [
+        {"name" => "${lsspecdomain}", "testing" => "${lsspecdomain}"}, 
+        {"name" => "${lsspecdomain2}", "testing" => "${lsspecdomain2}"}
+      ]
+    }}
+    let(:yaml_path) do
+      p = Stud::Temporary.pathname
+      FileUtils.mkdir_p(p)
+
+      ::File.open(::File.join(p, "logstash.yml"), "w+") do |f|
+        f.write(YAML.dump(values))
+      end
+      p
+    end
+
+    it "can interpolate environment into settings" do
+      expect(subject.get('host')).to match_array([])
+      expect(subject.get('modules')).to match_array([])
+      subject.from_yaml(yaml_path)
+      expect(subject.get('host')).to match_array(["dev1.domain1", "dev2.domain1"])
+      expect(subject.get('modules')).to match_array([
+                                                      {"name" => "domain1", "testing" => "domain1"},
+                                                      {"name" => "domain2", "testing" => "domain2"}
+                                                    ])
     end
   end
 end
