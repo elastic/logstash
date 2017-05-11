@@ -249,6 +249,7 @@ describe LogStash::Pipeline do
       }
 
       it "starts multiple filter threads" do
+        skip("This test has been failing periodically since November 2016. Tracked as https://github.com/elastic/logstash/issues/6245")
         pipeline = TestPipeline.new(test_config_with_filters)
         pipeline.run
         expect(pipeline.worker_threads.size).to eq(worker_thread_count)
