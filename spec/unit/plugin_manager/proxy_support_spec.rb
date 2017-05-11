@@ -5,10 +5,20 @@ require "fileutils"
 require "uri"
 
 describe "Proxy support" do
-  shared_examples "proxy access" do
-    let(:settings) { File.join(Dir.home, ".m2", "settings.xml") }
-    let(:settings_backup) { "#{settings}_bk" }
+  let(:settings) { File.join(Dir.home, ".m2", "settings.xml") }
+  let(:settings_backup) { "#{settings}_bk" }
 
+  before do
+    FileUtils.mv(settings, settings_backup) if File.exist?(settings)
+    environments.each { |key, value| ENV[key] = value }
+  end
+
+  after do
+    FileUtils.mv(settings_backup, settings) if File.exist?(settings_backup)
+    environments.each { |key, _| ENV[key] = nil }
+  end
+
+  shared_examples "proxy access" do
     let(:http_proxy) { "http://a:b@local.dev:9898" }
     let(:https_proxy) { "https://c:d@local.dev:9898" }
     let(:http_proxy_uri) { URI(http_proxy) }
@@ -22,15 +32,7 @@ describe "Proxy support" do
       }
     }
 
-    before do
-      FileUtils.mv(settings, settings_backup) if File.exist?(settings)
-      environments.each { |key, value| ENV[key] = value }
-    end
-
     after do
-      FileUtils.mv(settings_backup, settings) if File.exist?(settings_backup)
-      environments.each { |key, _| ENV[key] = nil }
-
       ["http", "https"].each do |scheme|
         java.lang.System.clearProperty("#{scheme}.proxyHost")
         java.lang.System.clearProperty("#{scheme}.proxyPort")
@@ -121,9 +123,6 @@ describe "Proxy support" do
       }
     }
 
-    before do
-      environments.each { |key, value| ENV[key] = value }
-    end
 
     it "doesn't raise an exception" do
       expect { configure_proxy }.not_to raise_exception
