@@ -13,7 +13,7 @@ import java.util.stream.Stream;
 /**
  * Created by andrewvc on 9/20/16.
  */
-public class Pipeline implements Hashable {
+public class PipelineIR implements Hashable {
     public Graph getGraph() {
         return graph;
     }
@@ -28,10 +28,14 @@ public class Pipeline implements Hashable {
     // Then we will no longer need this property here
     private final String originalSource;
 
-    public Pipeline(Graph inputSection, Graph filterSection, Graph outputSection, String originalSource) throws InvalidIRException {
+    public PipelineIR(Graph inputSection, Graph filterSection, Graph outputSection) throws InvalidIRException {
+        this(inputSection, filterSection, outputSection, null);
+    }
+
+    public PipelineIR(Graph inputSection, Graph filterSection, Graph outputSection, String originalSource) throws InvalidIRException {
         this.originalSource = originalSource;
 
-        // Validate all incoming graphs, we can't turn an invalid graph into a Pipeline!
+        // Validate all incoming graphs, we can't turn an invalid graph into a PipelineIR!
         inputSection.validate();
         filterSection.validate();
         outputSection.validate();

@@ -47,7 +47,11 @@ describe LogStash::Compiler do
       subject(:pipeline) { described_class.compile_sources(*sources_with_metadata) }
 
       it "should compile cleanly" do
-        expect(pipeline).to be_a(org.logstash.config.ir.Pipeline)
+        expect(pipeline).to be_a(org.logstash.config.ir.PipelineIR)
+      end
+
+      it "should provide the original source" do
+        expect(pipeline.original_source).to eq(sources.join("\n"))
       end
 
       describe "applying protocol and id metadata" do

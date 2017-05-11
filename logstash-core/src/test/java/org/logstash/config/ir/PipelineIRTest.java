@@ -11,7 +11,7 @@ import static org.logstash.config.ir.PluginDefinition.Type.*;
 /**
  * Created by andrewvc on 9/20/16.
  */
-public class PipelineTest {
+public class PipelineIRTest {
     @Test
     public void testPipelineCreation() throws InvalidIRException {
         Graph inputSection = iComposeParallel(iPlugin(INPUT, "generator"), iPlugin(INPUT, "stdin")).toGraph();
@@ -24,9 +24,9 @@ public class PipelineTest {
                                             iPlugin(OUTPUT, "elasticsearch")),
                                     iPlugin(OUTPUT, "stdout")).toGraph();
 
-        Pipeline pipeline = new Pipeline(inputSection, filterSection, outputSection);
-        assertEquals(2, pipeline.getInputPluginVertices().size());
-        assertEquals(2, pipeline.getFilterPluginVertices().size());
-        assertEquals(3, pipeline.getOutputPluginVertices().size());
+        PipelineIR pipelineIR = new PipelineIR(inputSection, filterSection, outputSection);
+        assertEquals(2, pipelineIR.getInputPluginVertices().size());
+        assertEquals(2, pipelineIR.getFilterPluginVertices().size());
+        assertEquals(3, pipelineIR.getOutputPluginVertices().size());
     }
 }
