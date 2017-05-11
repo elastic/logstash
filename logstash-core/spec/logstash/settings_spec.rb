@@ -146,4 +146,46 @@ describe LogStash::Settings do
       end
     end
   end
+
+  describe "#from_yaml" do
+
+    context "env placeholders in logstash.yml" do
+
+      after do
+        ENV.delete('SOME_LOGSTASH_SPEC_ENV_VAR')
+        ENV.delete('some.logstash.spec.env.var')
+      end
+      
+      subject do
+        settings = described_class.new
+        settings.register(LogStash::Setting::String.new("interpolated", "missing"))
+        settings.register(LogStash::Setting::String.new("with_dot", "missing"))
+        settings
+      end
+
+      let(:values) {{
+        "interpolated" => "${SOME_LOGSTASH_SPEC_ENV_VAR}",
+        "with_dot" => "${some.logstash.spec.env.var}"
+      }}
+      let(:yaml_path) do
+        p = Stud::Temporary.pathname
+        FileUtils.mkdir_p(p)
+
+        ::File.open(::File.join(p, "logstash.yml"), "w+") do |f|
+          f.write(YAML.dump(values))
+        end
+        p
+      end
+
+      it "can interpolate environment into settings" do
+        expect(subject.get('interpolated')).to eq("missing")
+        expect(subject.get('with_dot')).to eq("missing")
+        ENV['SOME_LOGSTASH_SPEC_ENV_VAR'] = "correct_setting"
+        ENV['some.logstash.spec.env.var'] = "correct_setting_for_dotted"
+        subject.from_yaml(yaml_path)
+        expect(subject.get('interpolated')).to eq("correct_setting")
+        expect(subject.get('with_dot')).to eq("correct_setting_for_dotted")
+      end
+    end
+  end
 end
