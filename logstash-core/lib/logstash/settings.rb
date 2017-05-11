@@ -107,6 +107,7 @@ module LogStash
 
     def from_yaml(yaml_path)
       settings = read_yaml(::File.join(yaml_path, "logstash.yml"))
+      substitute_env(settings)
       self.merge(flatten_hash(settings), true)
       self
     end
@@ -146,6 +147,15 @@ module LogStash
         h.each { |k,r| flatten_hash(r,"#{f}.#{k}",g) }
       end
       g
+    end
+
+    # Substitutes environment variables into setting values of string type.
+    def substitute_env(settings)
+      settings.each do |_, setting|
+        if setting.is_a? String
+          setting.gsub!(/\$([a-zA-Z_.][a-zA-Z0-9_.]*)|\${\g<1>}|%\g<1>%/) {ENV[$1]}
+        end
+      end
     end
   end
 
