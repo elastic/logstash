@@ -22,10 +22,10 @@ For the daring, snapshot builds from `master` branch are available. These builds
 
 | artifact |
 | --- |
-| [tar](https://snapshots.elastic.co/downloads/logstash/logstash-6.0.0-alpha1-SNAPSHOT.tar.gz) |
-| [zip](https://snapshots.elastic.co/downloads/logstash/logstash-6.0.0-alpha1-SNAPSHOT.zip) |
-| [deb](https://snapshots.elastic.co/downloads/logstash/logstash-6.0.0-alpha1-SNAPSHOT.deb) |
-| [rpm](https://snapshots.elastic.co/downloads/logstash/logstash-6.0.0-alpha1-SNAPSHOT.rpm) |
+| [tar](https://snapshots.elastic.co/downloads/logstash/logstash-6.0.0-alpha2-SNAPSHOT.tar.gz) |
+| [zip](https://snapshots.elastic.co/downloads/logstash/logstash-6.0.0-alpha2-SNAPSHOT.zip) |
+| [deb](https://snapshots.elastic.co/downloads/logstash/logstash-6.0.0-alpha2-SNAPSHOT.deb) |
+| [rpm](https://snapshots.elastic.co/downloads/logstash/logstash-6.0.0-alpha2-SNAPSHOT.rpm) |
 
 ## Need Help?
 
