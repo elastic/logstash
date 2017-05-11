@@ -124,7 +124,7 @@ public class IRHelpers {
         return new PluginDefinition(PluginDefinition.Type.FILTER, "testDefinition", new HashMap<String, Object>());
     }
 
-    public static Pipeline samplePipeline() throws InvalidIRException {
+    public static PipelineIR samplePipeline() throws InvalidIRException {
         Graph inputSection = iComposeParallel(iPlugin(INPUT, "generator"), iPlugin(INPUT, "stdin")).toGraph();
         Graph filterSection = iIf(eEq(eEventValue("[foo]"), eEventValue("[bar]")),
                                     iPlugin(FILTER, "grok"),
@@ -135,6 +135,6 @@ public class IRHelpers {
                                             iPlugin(OUTPUT, "elasticsearch")),
                                     iPlugin(OUTPUT, "stdout")).toGraph();
 
-        return new Pipeline(inputSection, filterSection, outputSection);
+        return new PipelineIR(inputSection, filterSection, outputSection);
     }
 }
