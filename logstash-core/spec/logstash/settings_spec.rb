@@ -1,5 +1,6 @@
 # encoding: utf-8
 require "spec_helper"
+require "logstash/util/environment_variables"
 require "logstash/settings"
 require "fileutils"
 
@@ -160,14 +161,12 @@ describe LogStash::Settings do
         settings = described_class.new
         settings.register(LogStash::Setting::String.new("interpolated", "missing"))
         settings.register(LogStash::Setting::String.new("with_dot", "missing"))
-        settings.register(LogStash::Setting::String.new("windows_notation", "missing"))
         settings
       end
 
       let(:values) {{
         "interpolated" => "${SOME_LOGSTASH_SPEC_ENV_VAR}",
-        "with_dot" => "${some.logstash.spec.env.var}",
-        "windows_notation" => "%SOME_LOGSTASH_SPEC_ENV_VAR%",
+        "with_dot" => "${some.logstash.spec.env.var}"
       }}
       let(:yaml_path) do
         p = Stud::Temporary.pathname
@@ -182,13 +181,11 @@ describe LogStash::Settings do
       it "can interpolate environment into settings" do
         expect(subject.get('interpolated')).to eq("missing")
         expect(subject.get('with_dot')).to eq("missing")
-        expect(subject.get('windows_notation')).to eq("missing")
         ENV['SOME_LOGSTASH_SPEC_ENV_VAR'] = "correct_setting"
         ENV['some.logstash.spec.env.var'] = "correct_setting_for_dotted"
         subject.from_yaml(yaml_path)
         expect(subject.get('interpolated')).to eq("correct_setting")
         expect(subject.get('with_dot')).to eq("correct_setting_for_dotted")
-        expect(subject.get('windows_notation')).to eq("correct_setting")
       end
     end
   end
