@@ -31,8 +31,9 @@ describe "Test Monitoring API" do
     end
 
     Stud.try(max_retry.times, RSpec::Expectations::ExpectationNotMetError) do
-       result = logstash_service.monitoring_api.event_stats
-       expect(result["in"]).to eq(number_of_events)
+      # event_stats can fail if the stats subsystem isn't ready
+      result = logstash_service.monitoring_api.event_stats rescue {}
+      expect(result["in"]).to eq(number_of_events)
     end
   end
 
@@ -42,8 +43,11 @@ describe "Test Monitoring API" do
     logstash_service.wait_for_logstash
 
     Stud.try(max_retry.times, RSpec::Expectations::ExpectationNotMetError) do
-       result = logstash_service.monitoring_api.node_stats
-       expect(result["jvm"]["uptime_in_millis"]).to be > 100
+      # node_stats can fail if the stats subsystem isn't ready
+      result = logstash_service.monitoring_api.node_stats rescue nil
+      expect(result).not_to be_nil
+      expect(result["jvm"]).not_to be_nil
+      expect(result["jvm"]["uptime_in_millis"]).to be > 100
     end
   end
 
@@ -53,7 +57,10 @@ describe "Test Monitoring API" do
     logstash_service.wait_for_logstash
 
     Stud.try(max_retry.times, RSpec::Expectations::ExpectationNotMetError) do
-      result = logstash_service.monitoring_api.node_stats
+      # node_stats can fail if the stats subsystem isn't ready
+      result = logstash_service.monitoring_api.node_stats rescue nil
+      expect(result).not_to be_nil
+      expect(result["pipeline"]).not_to be_nil
       expect(result["pipeline"]["queue"]).not_to be_nil
       if logstash_service.settings.feature_flag == "persistent_queues"
         expect(result["pipeline"]["queue"]["type"]).to eq "persisted"
