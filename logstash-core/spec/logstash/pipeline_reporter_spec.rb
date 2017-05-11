@@ -1,6 +1,7 @@
 # encoding: utf-8
 require "spec_helper"
 require "logstash/pipeline"
+require "logstash/config/source/local"
 require "logstash/pipeline_reporter"
 require_relative "../support/mocks_classes"
 
@@ -11,7 +12,12 @@ describe LogStash::PipelineReporter do
   let(:config) do
     "input { generator { count => #{generator_count} } } output { dummyoutput {} } "
   end
-  let(:pipeline) { LogStash::Pipeline.new(config)}
+  let(:metric) { nil }
+  let(:pipeline_id) { :main }
+  let(:settings) { LogStash::SETTINGS }
+  let(:config_parts) { ::LogStash::Config::Source::Local::ConfigStringLoader.read(config) }
+  let(:pipeline_config) { ::LogStash::Config::PipelineConfig.new(nil, pipeline_id, config_parts, settings) }
+  let(:pipeline) { LogStash::Pipeline.new(pipeline_config, metric) }
   let(:reporter) { pipeline.reporter }
 
   before do

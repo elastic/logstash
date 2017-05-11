@@ -32,12 +32,14 @@ module LogStash; class BasePipeline
   include LogStash::Util::Loggable
 
   attr_reader :settings, :config_str, :config_hash, :inputs, :filters, :outputs, :pipeline_id, :lir, :execution_context
+  attr_reader :pipeline_settings
 
-  def initialize(config_str, settings = SETTINGS, namespaced_metric = nil, agent = nil)
+  def initialize(pipeline_config, namespaced_metric = nil, agent = nil)
     @logger = self.logger
 
-    @config_str = config_str
-    @settings = settings
+    @pipeline_config = pipeline_config
+    @config_str = @pipeline_config.config_string
+    @settings = @pipeline_config.settings
     @config_hash = Digest::SHA1.hexdigest(@config_str)
 
     @lir = compile_lir
@@ -160,20 +162,19 @@ module LogStash; class Pipeline < BasePipeline
 
   MAX_INFLIGHT_WARN_THRESHOLD = 10_000
 
-  def initialize(config_str, settings = SETTINGS, namespaced_metric = nil, agent = nil)
+  def initialize(pipeline_config, namespaced_metric = nil, agent = nil)
     # This needs to be configured before we call super which will evaluate the code to make
     # sure the metric instance is correctly send to the plugins to make the namespace scoping work
     @metric = if namespaced_metric
-      settings.get("metric.collect") ? namespaced_metric : Instrument::NullMetric.new(namespaced_metric.collector)
+      pipeline_config.settings.get("metric.collect") ? namespaced_metric : Instrument::NullMetric.new(namespaced_metric.collector)
     else
       Instrument::NullMetric.new
     end
 
-    @settings = settings
+    super
+
     @reporter = PipelineReporter.new(@logger, self)
     @worker_threads = []
-
-    super
 
     begin
       @queue = LogStash::QueueFactory.create(settings)

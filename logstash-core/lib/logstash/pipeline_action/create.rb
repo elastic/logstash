@@ -32,8 +32,8 @@ module LogStash module PipelineAction
     # The execute assume that the thread safety access of the pipeline
     # is managed by the caller.
     def execute(agent, pipelines)
-      pipeline = LogStash::Pipeline.new(@pipeline_config.config_string, @pipeline_config.settings, @metric, agent)
-      
+      pipeline = LogStash::Pipeline.new(@pipeline_config, @metric, agent)
+
       status = pipeline.start # block until the pipeline is correctly started or crashed
 
       if status
