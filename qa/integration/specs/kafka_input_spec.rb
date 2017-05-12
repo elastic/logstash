@@ -25,7 +25,7 @@ describe "Test Kafka Input" do
     end
 
     try(num_retries) do
-      count = File.foreach(@fixture.actual_output).inject(0) {|c, line| c+1}
+      count = File.foreach(@fixture.actual_output).inject(0) {|c, _| c+1}
       expect(count).to eq(num_events)
     end
   end
