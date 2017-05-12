@@ -2,7 +2,7 @@ require_relative '../framework/fixture'
 require_relative '../framework/settings'
 require_relative '../services/logstash_service'
 require "logstash/devutils/rspec/spec_helper"
-require"stud/try"
+require "stud/try"
 
 describe "Test Monitoring API" do
   before(:all) {
