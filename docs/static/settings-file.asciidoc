@@ -27,6 +27,24 @@ pipeline.batch.size: 125
 pipeline.batch.delay: 5
 -------------------------------------------------------------------------------------
 
+The `logstash.yml` file also supports bash-style interpolation of environment variables in
+setting values.
+
+[source,yaml]
+-------------------------------------------------------------------------------------
+pipeline:
+  batch:
+    size: ${BATCH_SIZE}
+    delay: ${BATCH_DELAY:5}
+node:
+  name: "node_${LS_NODE_NAME}"
+path:
+   queue: "/tmp/${QUEUE_DIR:queue}"
+-------------------------------------------------------------------------------------
+
+Note that the `${VAR_NAME:default_value}` notation is supported, setting a default batch delay
+of `5` and a default `path.queue` of `/tmp/queue` in the above example.
+
 The `logstash.yml` file includes the following settings:
 
 [options="header"]
