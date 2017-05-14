@@ -34,6 +34,8 @@ namespace "test" do
   end
 
   def core_specs
+    exit(1) unless system './gradlew clean test'
+    
     specs = ["spec/unit/**/*_spec.rb", "logstash-core/spec/**/*_spec.rb"]
 
     Rake::FileList[*specs]
