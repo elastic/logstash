@@ -13,7 +13,7 @@ namespace "compile" do
 
   task "logstash-core-java" do
     puts("Building logstash-core using gradle")
-    system("./gradlew", "jar")
+    system("./gradlew", "assemble")
   end
 
   desc "Build everything"
