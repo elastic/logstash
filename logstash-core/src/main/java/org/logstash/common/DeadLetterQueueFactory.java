@@ -44,13 +44,13 @@ public class DeadLetterQueueFactory {
     }
 
     /**
-     * Retrieves an existing {@link DeadLetterQueueWriter} associated with {@param id}, or
+     * Retrieves an existing {@link DeadLetterQueueWriter} associated with the given id, or
      * opens a new one to be returned. It is the retrievers responsibility to close these newly
      * created writers.
      *
      * @param id The identifier context for this dlq manager
      * @param dlqPath The path to use for the queue's backing data directory. contains sub-directories
-     *                for each {@param id}
+     *                for each id
      * @return The write manager for the specific id's dead-letter-queue context
      */
     public static DeadLetterQueueWriter getWriter(String id, String dlqPath) {
