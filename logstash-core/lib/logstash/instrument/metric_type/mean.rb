@@ -4,7 +4,12 @@ require "concurrent"
 
 module LogStash module Instrument module MetricType
   class Mean < Base
+    include ::LogStash::Util::Loggable
+
     def initialize(namespaces, key)
+      logger.warn("Deprecated 'mean' metric type used! This will be removed in Logstash 6.0!",
+                   :namespaces => namespaces,
+                   :key => key)
       super(namespaces, key)
 
       @counter = Concurrent::AtomicFixnum.new
