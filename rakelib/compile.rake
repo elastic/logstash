@@ -20,7 +20,7 @@ namespace "compile" do
 
   task "logstash-core-java" do
     puts("Building logstash-core using gradle")
-    safe_system("./gradlew", "jar")
+    safe_system("./gradlew", "assemble")
   end
 
   desc "Build everything"
