@@ -7,8 +7,8 @@ require_relative "../../support/mocks_classes"
 require "spec_helper"
 
 describe LogStash::Instrument::WrappedWriteClient do
-  let(:write_client) { queue.write_client }
-  let(:read_client) { queue.read_client }
+  let!(:write_client) { queue.write_client }
+  let!(:read_client) { queue.read_client }
   let(:pipeline) { double("pipeline", :pipeline_id => :main) }
   let(:collector)   { LogStash::Instrument::Collector.new }
   let(:metric) { LogStash::Instrument::Metric.new(collector) }
@@ -18,8 +18,8 @@ describe LogStash::Instrument::WrappedWriteClient do
 
   subject { described_class.new(write_client, pipeline, metric, plugin) }
 
-  def threaded_read_client(read_client)
-    Thread.new(read_client) do |_read_client|
+  def threaded_read_client
+    Thread.new do
       started_at = Time.now
 
       batch_size = 0
@@ -27,7 +27,7 @@ describe LogStash::Instrument::WrappedWriteClient do
         if Time.now - started_at > 60
           raise "Took too much time to read from the queue"
         end
-        batch_size = _read_client.read_batch.size
+        batch_size = read_client.read_batch.size
 
         break if batch_size > 0
       }
@@ -38,10 +38,10 @@ describe LogStash::Instrument::WrappedWriteClient do
   shared_examples "queue tests" do
     it "pushes single event to the `WriteClient`" do
       pusher_thread = Thread.new(subject, event) do |_subject, _event|
-        _subject.push(event)
+        _subject.push(_event)
       end
 
-      reader_thread = threaded_read_client(read_client)
+      reader_thread = threaded_read_client
 
       [pusher_thread, reader_thread].collect(&:join)
     end
@@ -51,20 +51,20 @@ describe LogStash::Instrument::WrappedWriteClient do
       batch << event
 
       pusher_thread = Thread.new(subject, batch) do |_subject, _batch|
-        subject.push_batch(_batch)
+        _subject.push_batch(_batch)
       end
 
-      reader_thread = threaded_read_client(read_client)
+      reader_thread = threaded_read_client
       [pusher_thread, reader_thread].collect(&:join)
     end
 
     context "recorded metrics" do
       before do
         pusher_thread = Thread.new(subject, event) do |_subject, _event|
-          _subject.push(event)
+          _subject.push(_event)
         end
 
-        reader_thread = threaded_read_client(read_client)
+        reader_thread = threaded_read_client
         [pusher_thread, reader_thread].collect(&:join)
       end
 
