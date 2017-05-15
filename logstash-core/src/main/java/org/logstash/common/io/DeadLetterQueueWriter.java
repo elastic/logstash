@@ -53,12 +53,6 @@ public class DeadLetterQueueWriter {
     private Timestamp lastEntryTimestamp;
     private boolean open;
 
-    /**
-     *
-     * @param queuePath
-     * @param maxSegmentSize
-     * @throws IOException
-     */
     public DeadLetterQueueWriter(Path queuePath, long maxSegmentSize, long maxQueueSize) throws IOException {
         // ensure path exists, create it otherwise.
         Files.createDirectories(queuePath);
@@ -93,7 +87,7 @@ public class DeadLetterQueueWriter {
      * Constructor for Writer that uses defaults
      *
      * @param queuePath the path to the dead letter queue segments directory
-     * @throws IOException
+     * @throws IOException if the size of the file cannot be determined
      */
     public DeadLetterQueueWriter(String queuePath) throws IOException {
         this(Paths.get(queuePath), MAX_SEGMENT_SIZE_BYTES, Long.MAX_VALUE);

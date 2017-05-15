@@ -122,12 +122,7 @@ public class RecordIOReader {
         return channelPosition;
     }
 
-    /**
-     *
-     * @param rewind
-     * @throws IOException
-     */
-    void consumeBlock(boolean rewind) throws IOException {
+   void consumeBlock(boolean rewind) throws IOException {
         if (rewind) {
             currentBlockSizeReadFromChannel = 0;
             currentBlock.rewind();
@@ -143,7 +138,7 @@ public class RecordIOReader {
 
     /**
      * basically, is last block
-     * @return
+     * @return true if this is the end of the stream
      */
     public boolean isEndOfStream() {
         return currentBlockSizeReadFromChannel < BLOCK_SIZE;
@@ -169,7 +164,6 @@ public class RecordIOReader {
     /**
      *
      * @return true if ready to read event, false otherwise
-     * @throws IOException
      */
     boolean consumeToStartOfEvent() throws IOException {
         // read and seek to start of event
@@ -207,10 +201,6 @@ public class RecordIOReader {
         currentBlock.position(currentBlock.position() + header.getSize());
     }
 
-    /**
-     * @return
-     * @throws IOException
-     */
     public byte[] readEvent() throws IOException {
         try {
             if (channel.isOpen() == false || consumeToStartOfEvent() == false) {
