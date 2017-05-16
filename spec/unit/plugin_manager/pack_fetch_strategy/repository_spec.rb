@@ -33,7 +33,7 @@ describe LogStash::PluginManager::PackFetchStrategy::Repository do
   context "when the remote host is unreachable" do
     it "returns false and yield a debug message" do
       # To make sure we really try to connect to a failing host we have to let it through webmock
-      host ="#{Time.now.to_i.to_s}-do-not-exist.com"
+      host ="#{Time.now.to_i.to_s}-do-not-exist"
       WebMock.disable_net_connect!(:allow => host)
       ENV["LOGSTASH_PACK_URL"] = "http://#{host}"
       expect(subject.get_installer_for(plugin_name)).to be_falsey
