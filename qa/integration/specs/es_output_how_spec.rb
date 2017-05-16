@@ -31,10 +31,11 @@ describe "Test Elasticsearch output" do
     expect(s["bytes"]).to eq(18848)
     expect(s["response"]).to eq(200)
     expect(s["clientip"]).to eq("213.113.233.227")
-    expect(s["geoip"]["longitude"]).to eq(12.9443)
-    expect(s["geoip"]["latitude"]).to eq(56.1357)
+    # Use a range instead of a fixed number
+    # update on the geoip data can change the values
+    expect(s["geoip"]["longitude"]).to be_between(-180, 180)
+    expect(s["geoip"]["latitude"]).to be_between(-90, 90)
     expect(s["verb"]).to eq("GET")
     expect(s["useragent"]["os"]).to eq("Windows 7")
   end
-
 end
