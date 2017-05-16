@@ -19,6 +19,8 @@ gem "stud", "~> 0.0.22", :group => :build
 gem "fpm", "~> 1.3.3", :group => :build
 gem "rubyzip", "~> 1.1.7", :group => :build
 gem "gems", "~> 0.8.3", :group => :build
+# Pinned till we have Jruby 9k with ruby 2.0 support
+gem "rack", "1.6.6"
 gem "rack-test", :require => "rack/test", :group => :development
 gem "flores", "~> 0.0.6", :group => :development
 gem "term-ansicolor", "~> 1.3.2", :group => :development

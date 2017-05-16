@@ -57,29 +57,6 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ==========================================================================
-RubyGem: jar-dependencies Version: 0.3.10
-Copyright (c) 2014 Christian Meier
-
-Permission is hereby granted, free of charge, to any person obtaining
-a copy of this software and associated documentation files (the
-"Software"), to deal in the Software without restriction, including
-without limitation the rights to use, copy, modify, merge, publish,
-distribute, sublicense, and/or sell copies of the Software, and to
-permit persons to whom the Software is furnished to do so, subject to
-the following conditions:
-
-The above copyright notice and this permission notice shall be
-included in all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
-NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
-LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
-OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
-WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-
-==========================================================================
 RubyGem: lru_redux Version: 1.1.0
 Copyright (c) 2013 Sam Saffron
 
@@ -127,7 +104,7 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ==========================================================================
-RubyGem: elasticsearch Version: 1.1.2
+RubyGem: elasticsearch Version: 5.0.4
    Copyright 2013 Elasticsearch
 
    Licensed under the Apache License, Version 2.0 (the "License");
@@ -372,8 +349,8 @@ THE SOFTWARE.
 
 
 ==========================================================================
-RubyGem: mail Version: 2.6.4
-Copyright (c) 2009-2016 Mikel Lindsaar
+RubyGem: mail Version: 2.6.5
+Copyright (c) 2009-2017 Mikel Lindsaar
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -419,7 +396,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ==========================================================================
-RubyGem: sequel Version: 4.43.0
+RubyGem: sequel Version: 4.46.0
 Copyright (c) 2007-2008 Sharon Rosner
 Copyright (c) 2008-2017 Jeremy Evans
 
@@ -441,8 +418,8 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ==========================================================================
-RubyGem: tzinfo Version: 1.2.2
-Copyright (c) 2005-2014 Philip Ross
+RubyGem: tzinfo Version: 1.2.3
+Copyright (c) 2005-2017 Philip Ross
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of 
 this software and associated documentation files (the "Software"), to deal in 
@@ -463,8 +440,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
 ==========================================================================
-RubyGem: tzinfo-data Version: 1.2016.10
-Copyright (c) 2005-2016 Philip Ross
+RubyGem: tzinfo-data Version: 1.2017.2
+Copyright (c) 2005-2017 Philip Ross
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of 
 this software and associated documentation files (the "Software"), to deal in 
