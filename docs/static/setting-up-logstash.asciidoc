@@ -154,8 +154,8 @@ pipeline, and _settings files_, which specify options that control Logstash star
 ==== Pipeline Configuration Files
 
 You create pipeline configuration files when you define the stages of your Logstash processing pipeline. On deb and
-rpm, you place the pipeline configuration files in the `/etc/logstash/conf.d` directory. Logstash tries to load all
-files in the `/etc/logstash/conf.d directory`, so don't store any non-config files or backup files in this directory.
+rpm, you place the pipeline configuration files in the `/etc/logstash/conf.d` directory. Logstash tries to load only
+files with `.conf` extension in the `/etc/logstash/conf.d directory` and ignores all other files.
 
 See <<configuration>> for more info.
 

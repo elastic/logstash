@@ -37,7 +37,11 @@ module LogStash module Config module Source
         config_parts = []
         encoding_issue_files = []
 
-        get_files.each do |file|
+        if logger.debug?
+          logger.debug("Skipping following files while reading config since they doesn't match the glob", :files => get_unmatched_files)
+        end
+
+        get_matched_files.each do |file|
           next unless ::File.file?(file) # skip directory
 
           logger.debug("Reading config file", :config_file => file)
@@ -78,7 +82,7 @@ module LogStash module Config module Source
         ::File.expand_path(path)
       end
 
-      def get_files
+      def get_matched_files
         Dir.glob(path).sort
       end
 
@@ -88,6 +92,13 @@ module LogStash module Config module Source
         else
           @path
         end
+      end
+
+      def get_unmatched_files
+        # transform "/var/lib/*.conf" => /var/lib/*
+        t = File.split(@path)
+        all_files = Dir.glob(File.join(t.first, "*")).sort
+        all_files - get_matched_files
       end
 
       def valid_encoding?(content)
