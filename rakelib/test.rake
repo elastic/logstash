@@ -6,66 +6,35 @@ require 'pathname'
 
 namespace "test" do
 
-  task "setup" do
-
-    # make sure we have a ./data/queue dir here
-    # temporary wiring until we figure proper queue initialization sequence and in test context etc.
-    mkdir "data" unless File.directory?("data")
-    mkdir "data/queue" unless File.directory?("data/queue")
-
-    # Need to be run here as because if run afterwards (after the bundler.setup task) then the report got wrong
-    # numbers and misses files. There is an issue with our setup! method as this does not happen with the regular
-    # bundler.setup used in regular bundler flows.
-    Rake::Task["test:setup-simplecov"].invoke if ENV['COVERAGE']
-
-    require "bootstrap/environment"
-    LogStash::Bundler.setup!({:without => [:build]})
-    require "logstash-core"
-
-    # Aligns behavior with bin/rspec command here
-    $LOAD_PATH << Pathname.new(File.join(File.dirname(__FILE__), "..", "logstash-core", "spec")).
-      cleanpath.
-      expand_path.
-      to_s
-    
-    require "rspec/core/runner"
-    require "rspec"
-    require 'ci/reporter/rake/rspec_loader'
-  end
-
-  def core_specs
+  desc "run the java tests"
+  task "core-java" do
     exit(1) unless system './gradlew clean test --info'
-    
-    specs = ["spec/unit/**/*_spec.rb", "logstash-core/spec/**/*_spec.rb"]
-
-    Rake::FileList[*specs]
   end
 
   desc "run all core specs"
   task "core" => ["core-slow"]
+  
+  def default_spec_command
+    ["bin/rspec", "-fd", "--pattern", "spec/unit/**/*_spec.rb,logstash-core/spec/**/*_spec.rb"]
+  end
 
   desc "run all core specs"
-  task "core-slow" => ["setup"] do
-    exit(RSpec::Core::Runner.run([core_specs]))
+  task "core-slow" => ["core-java"] do
+    exit 1 unless system(*default_spec_command)
   end
 
   desc "run core specs excluding slower tests like stress tests"
-  task "core-fast" => ["setup"] do
-    exit(RSpec::Core::Runner.run(["--tag", "~stress_test", core_specs]))
+  task "core-fast" do
+    exit 1 unless system(*(default_spec_command.concat(["--tag", "~stress_test"])))
   end
 
   desc "run all core specs in fail-fast mode"
-  task "core-fail-fast" => ["setup"] do
-    exit(RSpec::Core::Runner.run(["--fail-fast", core_specs]))
+  task "core-fail-fast" do
+    exit 1 unless system(*(default_spec_command.concat(["--fail-fast"])))
   end
-
-  desc "run core specs on a single file"
-  task "core-single-file", [:specfile] => ["setup"] do |t, args|
-    exit(RSpec::Core::Runner.run([Rake::FileList[args.specfile]]))
-  end
-
+  
   desc "run all installed plugins specs"
-  task "plugins" => ["setup"] do
+  task "plugins" do
     plugins_to_exclude = ENV.fetch("EXCLUDE_PLUGIN", "").split(",")
     # grab all spec files using the live plugins gem specs. this allows correctly also running the specs
     # of a local plugin dir added using the Gemfile :path option. before this, any local plugin spec would
