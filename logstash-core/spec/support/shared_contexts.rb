@@ -14,3 +14,25 @@ shared_context "execution_context" do
     allow(pipeline).to receive(:agent).and_return(agent)
   end
 end
+
+shared_context "api setup" do
+  before :all do
+    clear_data_dir
+    settings = mock_settings
+    config_string = "input { generator {id => 'api-generator-pipeline' count => 100 } } output { dummyoutput {} }"
+    settings.set("config.string", config_string)
+    @agent = make_test_agent(settings)
+    @agent.register_pipeline(settings)
+    @agent.execute
+  end
+
+  after :all do
+    @agent.shutdown
+  end
+
+  include Rack::Test::Methods
+
+  def app()
+    described_class.new(nil, @agent)
+  end
+end

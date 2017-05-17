@@ -9,6 +9,19 @@ require "logstash/devutils/rspec/spec_helper"
 require "flores/rspec"
 require "flores/random"
 require "pathname"
+require "stud/task"
+require "logstash/devutils/rspec/spec_helper"
+require "support/resource_dsl_methods"
+require "support/mocks_classes"
+require "support/helpers"
+require "support/shared_contexts"
+require "support/shared_examples"
+require 'rspec/expectations'
+require "logstash/settings"
+require 'rack/test'
+require 'rspec'
+require "json"
+
 
 SUPPORT_DIR = Pathname.new(::File.join(::File.dirname(__FILE__), "support"))
 
@@ -53,3 +66,4 @@ end
 def installed_plugins
   Gem::Specification.find_all.select { |spec| spec.metadata["logstash_plugin"] }.map { |plugin| plugin.name }
 end
+
