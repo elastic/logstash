@@ -27,7 +27,7 @@ module ResourceDSLMethods
       let(:payload) { LogStash::Json.load(last_response.body) }
 
       before(:all) do
-        do_request { get path }
+        get path
       end
 
       it "should respond OK" do
@@ -45,15 +45,15 @@ module ResourceDSLMethods
         end
 
         it "should include the http address" do
-          expect(payload["http_address"]).to eql("#{Socket.gethostname}:#{::LogStash::WebServer::DEFAULT_PORTS.first}")
+          expect(payload["http_address"]).to eql("127.0.0.1:#{::LogStash::WebServer::DEFAULT_PORTS.first}")
         end
 
         it "should include the node name" do
-          expect(payload["name"]).to eql(@runner.agent.name)
+          expect(payload["name"]).to eql(@agent.name)
         end
 
         it "should include the node id" do
-          expect(payload["id"]).to eql(@runner.agent.id)
+          expect(payload["id"]).to eql(@agent.id)
         end
       end
 
@@ -63,6 +63,7 @@ module ResourceDSLMethods
         it "should set '#{dotted}' at '#{path}' to be a '#{klass}'" do
           expect(last_response).to be_ok # fail early if need be
           resource_path_value = resource_path.reduce(payload) do |acc,v|
+            expect(acc).to be_a(Hash), "Got a nil looking for #{resource_path} in #{payload}"
             expect(acc.has_key?(v)).to eql(true), "Expected to find value '#{v}' in structure '#{acc}', but could not. Payload was '#{payload}'"
             acc[v]
           end

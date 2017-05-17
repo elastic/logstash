@@ -1,10 +1,15 @@
 # encoding: utf-8
-require_relative "../../spec_helper"
+require "spec_helper"
 
 describe LogStash::Api::Commands::Stats do
+  include_context "api setup"
 
   let(:report_method) { :run }
-  subject(:report) { do_request { report_class.new.send(report_method) } }
+  subject(:report) do
+    factory = ::LogStash::Api::CommandFactory.new(LogStash::Api::Service.new(@agent))
+   
+    factory.build(:stats).send(report_method)
+  end
 
   let(:report_class) { described_class }
 
