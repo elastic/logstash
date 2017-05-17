@@ -29,6 +29,10 @@ module LogStash module Config
       @settings.get("pipeline.system")
     end
 
+    def system?
+      @settings.get("pipeline.system")
+    end
+
     def ==(other)
       config_hash == other.config_hash && pipeline_id == other.pipeline_id
     end
