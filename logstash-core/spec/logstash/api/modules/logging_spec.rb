@@ -1,5 +1,5 @@
 # encoding: utf-8
-require_relative "../../spec_helper"
+require "spec_helper"
 require "sinatra"
 require "logstash/api/modules/logging"
 require "logstash/json"
@@ -10,15 +10,6 @@ describe LogStash::Api::Modules::Logging do
   describe "#logging" do
 
     context "when setting a logger's log level" do
-      before(:all) do
-        @runner = LogStashRunner.new
-        @runner.start
-      end
-
-      after(:all) do
-        @runner.stop
-      end
-
       it "should return a positive acknowledgement on success" do
         put '/', '{"logger.logstash": "ERROR"}'
         payload = LogStash::Json.load(last_response.body)

@@ -1,6 +1,5 @@
 # encoding: utf-8
-require_relative "../../spec_helper"
-require_relative "../../../support/shared_examples"
+require "spec_helper"
 require "sinatra"
 require "logstash/api/modules/plugins"
 require "logstash/json"
@@ -40,7 +39,9 @@ describe LogStash::Api::Modules::Plugins do
 
     it "return a list of available plugins" do
       payload["plugins"].each do |plugin|
-        expect(plugin).to be_available?
+        expect do 
+          Gem::Specification.find_by_name(plugin["name"])
+        end.not_to raise_error
       end
     end
 
