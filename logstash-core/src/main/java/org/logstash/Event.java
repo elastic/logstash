@@ -1,6 +1,5 @@
 package org.logstash;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.logstash.bivalues.NullBiValue;
 import org.logstash.bivalues.StringBiValue;
 import org.logstash.bivalues.TimeBiValue;
@@ -43,16 +42,13 @@ public class Event implements Cloneable, Serializable, Queueable {
     public static final String VERSION_ONE = "1";
     private static final String DATA_MAP_KEY = "DATA";
     private static final String META_MAP_KEY = "META";
-    private static final String SEQNUM_MAP_KEY = "SEQUENCE_NUMBER";
-
 
     private static final Logger logger = LogManager.getLogger(Event.class);
-    private static final ObjectMapper mapper = new ObjectMapper();
 
     public Event()
     {
-        this.metadata = new HashMap<String, Object>();
-        this.data = new HashMap<String, Object>();
+        this.metadata = new HashMap<>();
+        this.data = new HashMap<>();
         this.data.put(VERSION, VERSION_ONE);
         this.cancelled = false;
         this.timestamp = new Timestamp();
@@ -72,7 +68,7 @@ public class Event implements Cloneable, Serializable, Queueable {
         if (this.data.containsKey(METADATA)) {
             this.metadata = (Map<String, Object>) this.data.remove(METADATA);
         } else {
-            this.metadata = new HashMap<String, Object>();
+            this.metadata = new HashMap<>();
         }
         this.metadata_accessors = new Accessors(this.metadata);
 
