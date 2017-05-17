@@ -24,7 +24,7 @@ end
 
 RSpec.configure do |c|
   Flores::RSpec.configure(c)
-  c.before do
+  c.before(:each) do
     # TODO: commented out on post-merged in master - the logger has moved to log4j
     #
     #
@@ -40,6 +40,9 @@ RSpec.configure do |c|
     #
     #   logger
     # end
+
+    # Some tests mess with the settings. This ensures one test cannot pollute another
+    LogStash::SETTINGS.reset
 
     LogStash::SETTINGS.set("queue.type", "memory_acked")
     LogStash::SETTINGS.set("queue.page_capacity", 1024 * 1024)

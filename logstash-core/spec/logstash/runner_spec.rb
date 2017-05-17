@@ -32,13 +32,6 @@ describe LogStash::Runner do
     end
   end
 
-  after :each do
-    LogStash::SETTINGS.reset
-  end
-
-  after :all do
-  end
-
   describe "argument precedence" do
     let(:config) { "input {} output {}" }
     let(:cli_args) { ["-e", config, "-w", "20"] }
@@ -46,10 +39,6 @@ describe LogStash::Runner do
 
     before :each do
       allow(LogStash::SETTINGS).to receive(:read_yaml).and_return(settings_yml_hash)
-    end
-
-    after :each do
-      LogStash::SETTINGS.reset
     end
 
     it "favors the last occurence of an option" do
