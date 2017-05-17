@@ -48,33 +48,44 @@ describe LogStash::Agent do
     end
 
     context "system pipeline" do
-      let(:finite_pipeline_config) { mock_pipeline_config(:main, "input { generator { count => 1000 } } output { null {} }") }
+      
       let(:system_pipeline_config) { mock_pipeline_config(:system_pipeline, "input { generator { } } output { null {} }", { "pipeline.system" => true }) }
 
-      let(:source_loader) do
-        TestSourceLoader.new(finite_pipeline_config, system_pipeline_config)
-      end
-
       context "when we have a finite pipeline and a system pipeline running" do
+
+        let(:finite_pipeline_config) { mock_pipeline_config(:main, "input { generator { count => 1000 } } output { null {} }") }
+
+        let(:source_loader) do
+          TestSourceLoader.new(finite_pipeline_config, system_pipeline_config)
+        end
+
         it "execute the pipeline and stop execution" do
           expect(subject.execute).to eq(0)
         end
       end
 
-      describe "#running_user_defined_pipelines" do
-        it "returns the user defined pipelines" do
-          agent_task = start_agent(subject)
-          expect(subject.running_user_defined_pipelines.keys).to include(:main)
-          expect(subject.running_user_defined_pipelines.keys).not_to include(:system_pipeline)
-          subject.shutdown
-        end
-      end
+      context "when we have an infinite pipeline and a system pipeline running" do
+        let(:infinite_pipeline_config) { mock_pipeline_config(:main, "input { generator { } } output { null {} }") }
 
-      describe "#running_user_defined_pipelines?" do
-        it "returns true" do
-          agent_task = start_agent(subject)
-          expect(subject.running_user_defined_pipelines?).to be_truthy
-          subject.shutdown
+        let(:source_loader) do
+          TestSourceLoader.new(infinite_pipeline_config, system_pipeline_config)
+        end
+
+        describe "#running_user_defined_pipelines" do
+          it "returns the user defined pipelines" do
+            start_agent(subject)
+            expect(subject.running_user_defined_pipelines.keys).to include(:main)
+            expect(subject.running_user_defined_pipelines.keys).not_to include(:system_pipeline)
+            subject.shutdown
+          end
+        end
+
+        describe "#running_user_defined_pipelines?" do
+          it "returns true" do
+            start_agent(subject)
+            expect(subject.running_user_defined_pipelines?).to be_truthy
+            subject.shutdown
+          end
         end
       end
     end
