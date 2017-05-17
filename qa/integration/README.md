@@ -7,6 +7,7 @@ No VMs, all tests run locally.
 ## Dependencies
 * An existing Logstash binary, defaults to `LS_HOME/build/logstash-<version>`
 * `rspec`
+* A local Docker installation (OSX and Linux are both supported for Docker versions 1.12.x and up)
 
 ## Preparing a test run
 
