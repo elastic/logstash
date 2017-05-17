@@ -38,7 +38,7 @@ module LogStash module Config module Source
         encoding_issue_files = []
 
         if logger.debug?
-          logger.debug("Skipping following files while reading config since they doesn't match the glob", :files => get_unmatched_files)
+          logger.debug("Skipping the following files while reading config since they don't match the specified glob pattern", :files => get_unmatched_files)
         end
 
         get_matched_files.each do |file|
