@@ -1,12 +1,11 @@
 package org.logstash.ackedqueue;
 
-import org.logstash.ackedqueue.io.PageIO;
-
 import java.io.Closeable;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.List;
-import java.util.stream.Collectors;
+import org.logstash.ackedqueue.io.PageIO;
 
 public abstract class Page implements Closeable {
     protected final int pageNum;
@@ -54,16 +53,18 @@ public abstract class Page implements Closeable {
         this.pageIO.activate();
 
         SequencedList<byte[]> serialized = this.pageIO.read(this.firstUnreadSeqNum, limit);
-        List<Queueable> deserialized = serialized.getElements().stream().map(e -> this.queue.deserialize(e)).collect(Collectors.toList());
-
+        List<byte[]> elements = serialized.getElements();
+        final int count = elements.size();
+        List<Queueable> deserialized = new ArrayList<>(count);
+        for (final byte[] element : elements) {
+            deserialized.add(this.queue.deserialize(element));
+        }
         assert serialized.getSeqNums().get(0) == this.firstUnreadSeqNum :
             String.format("firstUnreadSeqNum=%d != first result seqNum=%d", this.firstUnreadSeqNum, serialized.getSeqNums().get(0));
 
-        Batch batch = new Batch(deserialized, serialized.getSeqNums(), this.queue);
+        this.firstUnreadSeqNum += count;
 
-        this.firstUnreadSeqNum += deserialized.size();
-
-        return batch;
+        return new Batch(deserialized, serialized.getSeqNums(), this.queue);
     }
 
     public boolean isFullyRead() {
