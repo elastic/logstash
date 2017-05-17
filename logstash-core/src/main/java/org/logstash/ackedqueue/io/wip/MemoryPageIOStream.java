@@ -1,5 +1,6 @@
 package org.logstash.ackedqueue.io.wip;
 
+import java.util.Collections;
 import org.logstash.ackedqueue.Checkpoint;
 import org.logstash.ackedqueue.SequencedList;
 import org.logstash.common.io.BufferedChecksumStreamInput;
@@ -142,7 +143,7 @@ public class MemoryPageIOStream implements PageIO {
     @Override
     public SequencedList<byte[]> read(long seqNum, int limit) throws IOException {
         if (elementCount == 0) {
-            return new SequencedList<>(new ArrayList<>(), new ArrayList<>());
+            return new SequencedList<>(Collections.emptyList(), Collections.emptyList());
         }
         setReadPoint(seqNum);
         return read(limit);
@@ -215,7 +216,7 @@ public class MemoryPageIOStream implements PageIO {
         return details;
     }
 
-    private void setReadPoint(long seqNum) throws IOException {
+    private void setReadPoint(long seqNum) {
         int readPosition = offsetMap.get(calcRelativeSeqNum(seqNum));
         streamedInput.movePosition(readPosition);
     }
@@ -254,10 +255,9 @@ public class MemoryPageIOStream implements PageIO {
     }
 
     private SequencedList<byte[]> read(int limit) throws IOException {
-        List<byte[]> elements = new ArrayList<>();
-        List<Long> seqNums = new ArrayList<>();
-
         int upto = available(limit);
+        List<byte[]> elements = new ArrayList<>(upto);
+        List<Long> seqNums = new ArrayList<>(upto);
         for (int i = 0; i < upto; i++) {
             long seqNum = readSeqNum();
             byte[] data = readData();
