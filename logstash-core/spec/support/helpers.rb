@@ -22,7 +22,7 @@ def clear_data_dir
   end
 end
 
-def mock_settings(settings_values)
+def mock_settings(settings_values={})
   settings = LogStash::SETTINGS.clone
 
   settings_values.each do |key, value|
@@ -30,6 +30,14 @@ def mock_settings(settings_values)
   end
 
   settings
+end
+
+def make_test_agent(settings=mock_settings)
+    sl = LogStash::Config::SourceLoader.new
+    sl.add_source(LogStash::Config::Source::Local.new(settings))
+    sl
+
+    ::LogStash::Agent.new(settings, sl)
 end
 
 def mock_pipeline(pipeline_id, reloadable = true, config_hash = nil)

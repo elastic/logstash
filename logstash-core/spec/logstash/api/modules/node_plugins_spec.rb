@@ -1,6 +1,5 @@
 # encoding: utf-8
-require_relative "../../../support/shared_examples"
-require_relative "../../spec_helper"
+require "spec_helper"
 require "sinatra"
 require "logstash/api/modules/plugins"
 require "logstash/json"
