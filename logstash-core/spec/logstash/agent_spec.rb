@@ -15,6 +15,7 @@ describe LogStash::Agent do
   let(:pipeline_args) { {} }
   let(:config_file) { Stud::Temporary.pathname }
   let(:config_file_txt) { "input { generator { count => 100000 } } output { }" }
+  let(:logger) { double("logger") }
 
   subject { LogStash::Agent.new(agent_settings) }
 
@@ -30,6 +31,9 @@ describe LogStash::Agent do
     pipeline_args.each do |key, value|
       pipeline_settings.set(key, value)
     end
+    allow(described_class).to receive(:logger).and_return(logger)
+    [:debug, :info, :error, :warn, :fatal, :trace].each {|level| allow(logger).to receive(level) }
+    [:debug?, :info?, :error?, :warn?, :fatal?, :trace?].each {|level| allow(logger).to receive(level) }
   end
 
   after :each do
@@ -134,55 +138,12 @@ describe LogStash::Agent do
           expect(subject).to_not receive(:reload_state!)
           t = Thread.new { subject.execute }
 
-          # TODO: refactor this. forcing an arbitrary fixed delay for thread concurrency issues is an indication of
-          # a bad test design or missing class functionality.
-          sleep(0.1)
           Stud.stop!(t)
           t.join
           subject.shutdown
         end
       end
 
-      context "when calling reload_pipeline!" do
-        context "with a config that contains reload incompatible plugins" do
-          let(:second_pipeline_config) { "input { stdin {} } filter { } output { }" }
-
-          it "does not upgrade the new config" do
-            t = Thread.new { subject.execute }
-            sleep(0.1) until subject.running_pipelines? && subject.pipelines.values.first.ready?
-            expect(subject).to_not receive(:upgrade_pipeline)
-            File.open(config_file, "w") { |f| f.puts second_pipeline_config }
-            subject.send(:"reload_pipeline!", "main")
-
-            # TODO: refactor this. forcing an arbitrary fixed delay for thread concurrency issues is an indication of
-            # a bad test design or missing class functionality.
-            sleep(0.1)
-            Stud.stop!(t)
-            t.join
-            subject.shutdown
-          end
-        end
-
-        context "with a config that does not contain reload incompatible plugins" do
-          let(:second_pipeline_config) { "input { generator { } } filter { } output { }" }
-
-          it "does upgrade the new config" do
-            t = Thread.new { subject.execute }
-            sleep(0.1) until subject.running_pipelines? && subject.pipelines.values.first.ready?
-            expect(subject).to receive(:upgrade_pipeline).once.and_call_original
-            File.open(config_file, "w") { |f| f.puts second_pipeline_config }
-            subject.send(:"reload_pipeline!", "main")
-
-            # TODO: refactor this. forcing an arbitrary fixed delay for thread concurrency issues is an indication of
-            # a bad test design or missing class functionality.
-            sleep(0.1)
-            Stud.stop!(t)
-            t.join
-            subject.shutdown
-          end
-        end
-
-      end
       context "when calling reload_state!" do
         context "with a pipeline with auto reloading turned off" do
           let(:second_pipeline_config) { "input { generator { } } filter { } output { }" }
@@ -197,7 +158,6 @@ describe LogStash::Agent do
 
             # TODO: refactor this. forcing an arbitrary fixed delay for thread concurrency issues is an indication of
             # a bad test design or missing class functionality.
-            sleep(0.1)
             Stud.stop!(t)
             t.join
             subject.shutdown
@@ -215,9 +175,6 @@ describe LogStash::Agent do
             File.open(config_file, "w") { |f| f.puts second_pipeline_config }
             subject.reload_state!
 
-            # TODO: refactor this. forcing an arbitrary fixed delay for thread concurrency issues is an indication of
-            # a bad test design or missing class functionality.
-            sleep(0.1)
             Stud.stop!(t)
             t.join
             subject.shutdown
@@ -244,60 +201,25 @@ describe LogStash::Agent do
           allow(subject).to receive(:clean_state?).and_return(false)
           t = Thread.new { subject.execute }
           sleep(0.01) until subject.running_pipelines? && subject.pipelines.values.first.running?
+
           expect(subject).to receive(:reload_state!).at_least(2).times
 
-          # TODO: refactor this. forcing an arbitrary fixed delay for thread concurrency issues is an indication of
-          # a bad test design or missing class functionality.
-          sleep(0.1)
+          sleep 1
+
           Stud.stop!(t)
           t.join
           subject.shutdown
         end
       end
+    end
 
-      context "when calling reload_state!" do
-        context "with a config that contains reload incompatible plugins" do
-          let(:second_pipeline_config) { "input { stdin {} } filter { } output { }" }
-
-          it "does not upgrade the new config" do
-            t = Thread.new { subject.execute }
-            sleep(0.01) until subject.running_pipelines? && subject.pipelines.values.first.running?
-            expect(subject).to_not receive(:upgrade_pipeline)
-            File.open(config_file, "w") { |f| f.puts second_pipeline_config }
-
-            # TODO: refactor this. forcing an arbitrary fixed delay for thread concurrency issues is an indication of
-            # a bad test design or missing class functionality.
-            sleep(0.1)
-            Stud.stop!(t)
-            t.join
-            subject.shutdown
-          end
-        end
-
-        context "with a config that does not contain reload incompatible plugins" do
-          let(:second_pipeline_config) { "input { generator { } } filter { } output { }" }
-
-          it "does upgrade the new config" do
-            t = Thread.new { subject.execute }
-            sleep(0.01) until subject.running_pipelines? && subject.pipelines.values.first.running?
-            expect(subject).to receive(:upgrade_pipeline).once.and_call_original
-            File.open(config_file, "w") { |f| f.puts second_pipeline_config }
-
-            # TODO: refactor this. forcing an arbitrary fixed delay for thread concurrency issues is an indication of
-            # a bad test design or missing class functionality.
-            sleep(0.1)
-            Stud.stop!(t)
-            t.join
-            subject.shutdown
-          end
-        end
-      end
+    context "when calling reload_state!" do
     end
   end
 
   describe "#reload_state!" do
     let(:first_pipeline_config) { "input { } filter { } output { }" }
-    let(:second_pipeline_config) { "input { generator {} } filter { } output { }" }
+    let(:second_pipeline_config) { "input { generator { count => 10000 } } filter { } output { }" }
     let(:pipeline_args) { {
       "config.string" => first_pipeline_config,
       "pipeline.workers" => 4,
@@ -322,6 +244,16 @@ describe LogStash::Agent do
     context "when fetching the same state" do
       it "doesn't upgrade the state" do
         expect(subject).to receive(:fetch_config).and_return(first_pipeline_config)
+        expect(subject).to_not receive(:upgrade_pipeline)
+        subject.reload_state!
+      end
+    end
+
+    context "with a config that contains reload incompatible plugins" do
+      let(:second_pipeline_config) { "input { stdin {} } filter { } output { }" }
+
+      it "does not upgrade the new config" do
+        expect(subject).to receive(:fetch_config).and_return(second_pipeline_config)
         expect(subject).to_not receive(:upgrade_pipeline)
         subject.reload_state!
       end
