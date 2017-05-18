@@ -1,13 +1,12 @@
 package org.logstash.ackedqueue.ext;
 
-import org.logstash.Event;
-import org.logstash.ext.JrubyEventExtLibrary;
+import java.io.IOException;
 import org.jruby.Ruby;
+import org.jruby.RubyBoolean;
 import org.jruby.RubyClass;
 import org.jruby.RubyFixnum;
 import org.jruby.RubyModule;
 import org.jruby.RubyObject;
-import org.jruby.RubyBoolean;
 import org.jruby.anno.JRubyClass;
 import org.jruby.anno.JRubyMethod;
 import org.jruby.runtime.Arity;
@@ -15,16 +14,13 @@ import org.jruby.runtime.ObjectAllocator;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.jruby.runtime.load.Library;
+import org.logstash.Event;
 import org.logstash.ackedqueue.Batch;
-import org.logstash.ackedqueue.FileSettings;
 import org.logstash.ackedqueue.Queue;
-import org.logstash.ackedqueue.Settings;
-import org.logstash.ackedqueue.io.CheckpointIOFactory;
+import org.logstash.ackedqueue.SettingsImpl;
 import org.logstash.ackedqueue.io.FileCheckpointIO;
 import org.logstash.ackedqueue.io.MmapPageIO;
-import org.logstash.ackedqueue.io.PageIOFactory;
-
-import java.io.IOException;
+import org.logstash.ext.JrubyEventExtLibrary;
 
 public class JrubyAckedQueueExtLibrary implements Library {
 
@@ -66,24 +62,20 @@ public class JrubyAckedQueueExtLibrary implements Library {
             int maxUnread = RubyFixnum.num2int(args[2]);
             int checkpointMaxAcks = RubyFixnum.num2int(args[3]);
             int checkpointMaxWrites = RubyFixnum.num2int(args[4]);
-            int checkpointMaxInterval = RubyFixnum.num2int(args[5]);
             long queueMaxBytes = RubyFixnum.num2long(args[6]);
 
-            Settings s = new FileSettings(args[0].asJavaString());
-            PageIOFactory pageIOFactory = (pageNum, size, path) -> new MmapPageIO(pageNum, size, path);
-            CheckpointIOFactory checkpointIOFactory = (source) -> new FileCheckpointIO(source);
-            s.setCapacity(capacity);
-            s.setMaxUnread(maxUnread);
-            s.setQueueMaxBytes(queueMaxBytes);
-            s.setCheckpointMaxAcks(checkpointMaxAcks);
-            s.setCheckpointMaxWrites(checkpointMaxWrites);
-            s.setCheckpointMaxInterval(checkpointMaxInterval);
-            s.setElementIOFactory(pageIOFactory);
-            s.setCheckpointIOFactory(checkpointIOFactory);
-            s.setElementClass(Event.class);
-
-            this.queue = new Queue(s);
-
+            this.queue = new Queue(
+                SettingsImpl.fileSettingsBuilder(args[0].asJavaString())
+                    .capacity(capacity)
+                    .maxUnread(maxUnread)
+                    .queueMaxBytes(queueMaxBytes)
+                    .checkpointMaxAcks(checkpointMaxAcks)
+                    .checkpointMaxWrites(checkpointMaxWrites)
+                    .elementIOFactory(MmapPageIO::new)
+                    .checkpointIOFactory(FileCheckpointIO::new)
+                    .elementClass(Event.class)
+                    .build()
+            );
             return context.nil;
         }
 
