@@ -1,2 +1,3 @@
-include ':logstash-core'
+include ':logstash-core', 'logstash-core-benchmarks'
 project(':logstash-core').projectDir = new File('./logstash-core')
+project(':logstash-core-benchmarks').projectDir = new File('./logstash-core/benchmarks')
