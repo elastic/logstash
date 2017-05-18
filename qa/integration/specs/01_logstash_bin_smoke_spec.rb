@@ -161,6 +161,7 @@ describe "Test Logstash instance" do
   end
 
   def get_id
+    # make sure logstash is up and running when calling this
     JSON.parse(open("http://localhost:9600/").read)["id"]
   end
 
@@ -172,10 +173,11 @@ describe "Test Logstash instance" do
       @ls1.wait_for_logstash
     }
     start_ls.call()
-    first_id = get_id
+    # we use a try since logstash may have started but the webserver may not yet
+    first_id = try(num_retries) { get_id }
     @ls1.teardown
     start_ls.call()
-    second_id = get_id
+    second_id = try(num_retries) { get_id }
     expect(first_id).to eq(second_id)
   end
 end
