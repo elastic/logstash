@@ -38,7 +38,10 @@ class LogstashService < Service
       # First try without the snapshot if it's there
       @logstash_home = File.expand_path(File.join(LS_BUILD_DIR, ls_file), __FILE__)
       @logstash_home += "-SNAPSHOT" unless Dir.exists?(@logstash_home)
-
+      
+      @logstash_queue_path = File.join("#{@logstash_home}", "data")
+      FileUtils.remove_dir(@logstash_queue_path, true)
+      
       puts "Using #{@logstash_home} as LS_HOME"
       @logstash_bin = File.join("#{@logstash_home}", LS_BIN)
       raise "Logstash binary not found in path #{@logstash_home}" unless File.file? @logstash_bin
@@ -136,6 +139,7 @@ class LogstashService < Service
       @process.io.stdin.close rescue nil
       @process.stop
       @process = nil
+      FileUtils.remove_dir(@logstash_queue_path, true)
     end
   end
 
