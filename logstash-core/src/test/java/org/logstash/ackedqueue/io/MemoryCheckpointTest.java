@@ -1,17 +1,12 @@
 package org.logstash.ackedqueue.io;
 
-import org.junit.Before;
-import org.junit.Test;
-import static org.junit.Assert.fail;
-import org.logstash.ackedqueue.Checkpoint;
-import org.logstash.ackedqueue.MemorySettings;
-import org.logstash.ackedqueue.Settings;
-import org.logstash.ackedqueue.io.CheckpointIO;
-import org.logstash.ackedqueue.io.CheckpointIOFactory;
-import org.logstash.ackedqueue.io.MemoryCheckpointIO;
-
 import java.io.IOException;
 import java.nio.file.NoSuchFileException;
+import org.junit.Before;
+import org.junit.Test;
+import org.logstash.ackedqueue.Checkpoint;
+import org.logstash.ackedqueue.SettingsImpl;
+import org.logstash.ackedqueue.Settings;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
@@ -23,9 +18,9 @@ public class MemoryCheckpointTest {
 
     @Before
     public void setUp() {
-        Settings settings = new MemorySettings();
         CheckpointIOFactory factory = (dirPath) -> new MemoryCheckpointIO(dirPath);
-        settings.setCheckpointIOFactory(factory);
+        Settings settings = 
+            SettingsImpl.memorySettingsBuilder().checkpointIOFactory(factory).build();
         this.io = settings.getCheckpointIOFactory().build(settings.getDirPath());
     }
 

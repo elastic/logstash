@@ -61,7 +61,6 @@ public class Queue implements Closeable {
     private final int maxUnread;
     private final int checkpointMaxAcks;
     private final int checkpointMaxWrites;
-    private final int checkpointMaxInterval;
 
     private final AtomicBoolean closed;
 
@@ -90,12 +89,11 @@ public class Queue implements Closeable {
             settings.getElementClass(),
             settings.getMaxUnread(),
             settings.getCheckpointMaxWrites(),
-            settings.getCheckpointMaxAcks(),
-            settings.getCheckpointMaxInterval()
+            settings.getCheckpointMaxAcks()
         );
     }
 
-    public Queue(String dirPath, int pageCapacity, long maxBytes, CheckpointIO checkpointIO, PageIOFactory pageIOFactory, Class elementClass, int maxUnread, int checkpointMaxWrites, int checkpointMaxAcks, int checkpointMaxInterval) {
+    private Queue(String dirPath, int pageCapacity, long maxBytes, CheckpointIO checkpointIO, PageIOFactory pageIOFactory, Class elementClass, int maxUnread, int checkpointMaxWrites, int checkpointMaxAcks) {
         this.dirPath = dirPath;
         this.pageCapacity = pageCapacity;
         this.maxBytes = maxBytes;
@@ -109,7 +107,6 @@ public class Queue implements Closeable {
         this.maxUnread = maxUnread;
         this.checkpointMaxAcks = checkpointMaxAcks;
         this.checkpointMaxWrites = checkpointMaxWrites;
-        this.checkpointMaxInterval = checkpointMaxInterval;
         this.unreadCount = 0;
         this.currentByteSize = 0;
 

@@ -7,9 +7,9 @@ import java.util.concurrent.TimeUnit;
 import org.apache.commons.io.FileUtils;
 import org.logstash.Event;
 import org.logstash.Timestamp;
-import org.logstash.ackedqueue.FileSettings;
 import org.logstash.ackedqueue.Queue;
 import org.logstash.ackedqueue.Settings;
+import org.logstash.ackedqueue.SettingsImpl;
 import org.logstash.ackedqueue.io.FileCheckpointIO;
 import org.logstash.ackedqueue.io.MmapPageIO;
 import org.openjdk.jmh.annotations.Benchmark;
@@ -83,14 +83,13 @@ public class QueueBenchmark {
     }
 
     private static Settings settings() {
-        Settings s = new FileSettings(Files.createTempDir().getPath());
-        s.setCapacity(256 * 1024 * 1024);
-        s.setQueueMaxBytes(Long.MAX_VALUE);
-        s.setElementIOFactory(MmapPageIO::new);
-        s.setCheckpointMaxWrites(50_000);
-        s.setCheckpointMaxAcks(50_000);
-        s.setCheckpointIOFactory(FileCheckpointIO::new);
-        s.setElementClass(Event.class);
-        return s;
+        return SettingsImpl.fileSettingsBuilder(Files.createTempDir().getPath())
+            .capacity(256 * 1024 * 1024)
+            .queueMaxBytes(Long.MAX_VALUE)
+            .elementIOFactory(MmapPageIO::new)
+            .checkpointMaxWrites(50_000)
+            .checkpointMaxAcks(50_000)
+            .checkpointIOFactory(FileCheckpointIO::new)
+            .elementClass(Event.class).build();
     }
 }

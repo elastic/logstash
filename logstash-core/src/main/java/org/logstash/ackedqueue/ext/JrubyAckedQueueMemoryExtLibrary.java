@@ -1,13 +1,12 @@
 package org.logstash.ackedqueue.ext;
 
-import org.logstash.Event;
-import org.logstash.ext.JrubyEventExtLibrary;
+import java.io.IOException;
 import org.jruby.Ruby;
+import org.jruby.RubyBoolean;
 import org.jruby.RubyClass;
 import org.jruby.RubyFixnum;
 import org.jruby.RubyModule;
 import org.jruby.RubyObject;
-import org.jruby.RubyBoolean;
 import org.jruby.anno.JRubyClass;
 import org.jruby.anno.JRubyMethod;
 import org.jruby.runtime.Arity;
@@ -15,16 +14,13 @@ import org.jruby.runtime.ObjectAllocator;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.jruby.runtime.load.Library;
+import org.logstash.Event;
 import org.logstash.ackedqueue.Batch;
-import org.logstash.ackedqueue.MemorySettings;
 import org.logstash.ackedqueue.Queue;
-import org.logstash.ackedqueue.Settings;
+import org.logstash.ackedqueue.SettingsImpl;
 import org.logstash.ackedqueue.io.ByteBufferPageIO;
-import org.logstash.ackedqueue.io.CheckpointIOFactory;
 import org.logstash.ackedqueue.io.MemoryCheckpointIO;
-import org.logstash.ackedqueue.io.PageIOFactory;
-
-import java.io.IOException;
+import org.logstash.ext.JrubyEventExtLibrary;
 
 public class JrubyAckedQueueMemoryExtLibrary implements Library {
 
@@ -66,19 +62,16 @@ public class JrubyAckedQueueMemoryExtLibrary implements Library {
             int capacity = RubyFixnum.num2int(args[1]);
             int maxUnread = RubyFixnum.num2int(args[2]);
             long queueMaxBytes = RubyFixnum.num2long(args[3]);
-
-            Settings s = new MemorySettings(args[0].asJavaString());
-            PageIOFactory pageIOFactory = (pageNum, size, path) -> new ByteBufferPageIO(pageNum, size, path);
-            CheckpointIOFactory checkpointIOFactory = (source) -> new MemoryCheckpointIO(source);
-            s.setCapacity(capacity);
-            s.setMaxUnread(maxUnread);
-            s.setQueueMaxBytes(queueMaxBytes);
-            s.setElementIOFactory(pageIOFactory);
-            s.setCheckpointIOFactory(checkpointIOFactory);
-            s.setElementClass(Event.class);
-
-            this.queue = new Queue(s);
-
+            this.queue = new Queue(
+                SettingsImpl.memorySettingsBuilder(args[0].asJavaString())
+                    .capacity(capacity)
+                    .maxUnread(maxUnread)
+                    .queueMaxBytes(queueMaxBytes)
+                    .elementIOFactory(ByteBufferPageIO::new)
+                    .checkpointIOFactory(MemoryCheckpointIO::new)
+                    .elementClass(Event.class)
+                    .build()
+            );
             return context.nil;
         }
 
