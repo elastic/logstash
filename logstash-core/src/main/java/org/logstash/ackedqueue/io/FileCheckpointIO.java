@@ -6,8 +6,8 @@ import org.logstash.common.io.BufferedChecksumStreamOutput;
 import org.logstash.common.io.ByteArrayStreamOutput;
 import org.logstash.common.io.InputStreamStreamInput;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.OpenOption;
 import java.nio.file.Path;
@@ -46,9 +46,13 @@ public class FileCheckpointIO  implements CheckpointIO {
 
     @Override
     public Checkpoint read(String fileName) throws IOException {
-        Path path = Paths.get(dirPath, fileName);
-        InputStream is = Files.newInputStream(path);
-        return read(new BufferedChecksumStreamInput(new InputStreamStreamInput(is)));
+        return read(
+            new BufferedChecksumStreamInput(
+                new InputStreamStreamInput(
+                    new ByteArrayInputStream(Files.readAllBytes(Paths.get(dirPath, fileName)))
+                )
+            )
+        );
     }
 
     @Override
