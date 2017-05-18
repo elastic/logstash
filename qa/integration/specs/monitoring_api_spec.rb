@@ -26,7 +26,7 @@ describe "Test Monitoring API" do
     logstash_service.wait_for_logstash
     number_of_events.times { logstash_service.write_to_stdin("Hello world") }
 
-    Stud.try(max_retry.times, [NoMethodError, RSpec::Expectations::ExpectationNotMetError]) do
+    Stud.try(max_retry.times) do
       # event_stats can fail if the stats subsystem isn't ready
       result = logstash_service.monitoring_api.event_stats rescue nil
       expect(result).not_to be_nil
@@ -39,7 +39,7 @@ describe "Test Monitoring API" do
     logstash_service.start_with_stdin
     logstash_service.wait_for_logstash
 
-    Stud.try(max_retry.times, [NoMethodError, RSpec::Expectations::ExpectationNotMetError]) do
+    Stud.try(max_retry.times) do
       # node_stats can fail if the stats subsystem isn't ready
       result = logstash_service.monitoring_api.node_stats rescue nil
       expect(result).not_to be_nil
@@ -53,23 +53,27 @@ describe "Test Monitoring API" do
     logstash_service.start_with_stdin
     logstash_service.wait_for_logstash
 
-    Stud.try(max_retry.times, [NoMethodError, RSpec::Expectations::ExpectationNotMetError]) do
+    Stud.try(max_retry.times) do
       # node_stats can fail if the stats subsystem isn't ready
       result = logstash_service.monitoring_api.node_stats rescue nil
       expect(result).not_to be_nil
-      expect(result["pipeline"]).not_to be_nil
-      expect(result["pipeline"]["queue"]).not_to be_nil
+      # we use fetch here since we want failed fetches to raise an exception
+      # and trigger the retry block
+      queue_stats = result.fetch("pipeline").fetch("queue")
+      expect(queue_stats).not_to be_nil
       if logstash_service.settings.feature_flag == "persistent_queues"
-        expect(result["pipeline"]["queue"]["type"]).to eq "persisted"
-        expect(result["pipeline"]["queue"]["data"]["free_space_in_bytes"]).not_to be_nil
-        expect(result["pipeline"]["queue"]["data"]["storage_type"]).not_to be_nil
-        expect(result["pipeline"]["queue"]["data"]["path"]).not_to be_nil
-        expect(result["pipeline"]["queue"]["events"]).not_to be_nil
-        expect(result["pipeline"]["queue"]["capacity"]["page_capacity_in_bytes"]).not_to be_nil
-        expect(result["pipeline"]["queue"]["capacity"]["max_queue_size_in_bytes"]).not_to be_nil
-        expect(result["pipeline"]["queue"]["capacity"]["max_unread_events"]).not_to be_nil
+        expect(queue_stats["type"]).to eq "persisted"
+        queue_data_stats = queue_stats.fetch("data")
+        expect(queue_data_stats["free_space_in_bytes"]).not_to be_nil
+        expect(queue_data_stats["storage_type"]).not_to be_nil
+        expect(queue_data_stats["path"]).not_to be_nil
+        expect(queue_stats["events"]).not_to be_nil
+        queue_capacity_stats = queue_stats.fetch("capacity")
+        expect(queue_capacity_stats["page_capacity_in_bytes"]).not_to be_nil
+        expect(queue_capacity_stats["max_queue_size_in_bytes"]).not_to be_nil
+        expect(queue_capacity_stats["max_unread_events"]).not_to be_nil
       else
-        expect(result["pipeline"]["queue"]["type"]).to eq "memory"
+        expect(queue_stats["type"]).to eq("memory")
       end
     end
   end
