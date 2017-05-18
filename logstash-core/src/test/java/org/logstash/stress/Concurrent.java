@@ -1,13 +1,5 @@
 package org.logstash.stress;
 
-import org.logstash.ackedqueue.*;
-import org.logstash.ackedqueue.io.ByteBufferPageIO;
-import org.logstash.ackedqueue.io.CheckpointIOFactory;
-import org.logstash.ackedqueue.io.FileCheckpointIO;
-import org.logstash.ackedqueue.io.MemoryCheckpointIO;
-import org.logstash.ackedqueue.io.MmapPageIO;
-import org.logstash.ackedqueue.io.PageIOFactory;
-
 import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
@@ -17,6 +9,17 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.stream.Collectors;
+import org.logstash.ackedqueue.Batch;
+import org.logstash.ackedqueue.SettingsImpl;
+import org.logstash.ackedqueue.Queue;
+import org.logstash.ackedqueue.Settings;
+import org.logstash.ackedqueue.StringElement;
+import org.logstash.ackedqueue.io.ByteBufferPageIO;
+import org.logstash.ackedqueue.io.CheckpointIOFactory;
+import org.logstash.ackedqueue.io.FileCheckpointIO;
+import org.logstash.ackedqueue.io.MemoryCheckpointIO;
+import org.logstash.ackedqueue.io.MmapPageIO;
+import org.logstash.ackedqueue.io.PageIOFactory;
 
 public class Concurrent {
     final static int ELEMENT_COUNT = 2000000;
@@ -24,25 +27,18 @@ public class Concurrent {
     static Settings settings;
 
     public static Settings memorySettings(int capacity) {
-        Settings s = new MemorySettings();
         PageIOFactory pageIOFactory = (pageNum, size, path) -> new ByteBufferPageIO(pageNum, size, path);
         CheckpointIOFactory checkpointIOFactory = (source) -> new MemoryCheckpointIO(source);
-        s.setCapacity(capacity);
-        s.setElementIOFactory(pageIOFactory);
-        s.setCheckpointIOFactory(checkpointIOFactory);
-        s.setElementClass(StringElement.class);
-        return s;
+        return SettingsImpl.memorySettingsBuilder().capacity(capacity).elementIOFactory(pageIOFactory)
+            .checkpointIOFactory(checkpointIOFactory).elementClass(StringElement.class).build();
     }
 
     public static Settings fileSettings(int capacity) {
-        Settings s = new MemorySettings("/tmp/queue");
         PageIOFactory pageIOFactory = (pageNum, size, path) -> new MmapPageIO(pageNum, size, path);
         CheckpointIOFactory checkpointIOFactory = (source) -> new FileCheckpointIO(source);
-        s.setCapacity(capacity);
-        s.setElementIOFactory(pageIOFactory);
-        s.setCheckpointIOFactory(checkpointIOFactory);
-        s.setElementClass(StringElement.class);
-        return s;
+        return SettingsImpl.memorySettingsBuilder("/tmp/queue").capacity(capacity)
+            .elementIOFactory(pageIOFactory)
+            .checkpointIOFactory(checkpointIOFactory).elementClass(StringElement.class).build();
     }
 
     public static Thread producer(Queue q, List<StringElement> input) {

@@ -1,12 +1,5 @@
 package org.logstash.ackedqueue;
 
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import static org.junit.Assert.fail;
-import org.junit.rules.TemporaryFolder;
-import org.logstash.ackedqueue.io.ByteBufferPageIO;
-
 import java.io.IOException;
 import java.nio.file.NoSuchFileException;
 import java.util.ArrayList;
@@ -21,12 +14,17 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
+import org.logstash.ackedqueue.io.ByteBufferPageIO;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.fail;
 
 public class QueueTest {
     @Rule public TemporaryFolder temporaryFolder = new TemporaryFolder();
@@ -200,8 +198,10 @@ public class QueueTest {
         List<Queueable> elements2 = Arrays.asList(new StringElement("foobarbaz3"), new StringElement("foobarbaz4"));
         int singleElementCapacity = ByteBufferPageIO.HEADER_SIZE + ByteBufferPageIO._persistedByteCount(elements1.get(0).serialize().length);
 
-        Settings settings = TestSettings.volatileQueueSettings(2 * singleElementCapacity);
-        settings.setCheckpointMaxWrites(1024); // arbitrary high enough threshold so that it's not reached (default for TestSettings is 1)
+        Settings settings = SettingsImpl.builder(
+            TestSettings.volatileQueueSettings(2 * singleElementCapacity)
+        ).checkpointMaxWrites(1024) // arbitrary high enough threshold so that it's not reached (default for TestSettings is 1)
+        .build();
         TestQueue q = new TestQueue(settings);
         q.open();
 
@@ -330,8 +330,10 @@ public class QueueTest {
         Queueable element = new StringElement("foobarbaz");
         int singleElementCapacity = ByteBufferPageIO.HEADER_SIZE + ByteBufferPageIO._persistedByteCount(element.serialize().length);
 
-        Settings settings = TestSettings.volatileQueueSettings(singleElementCapacity);
-        settings.setMaxUnread(2); // 2 so we know the first write should not block and the second should
+        Settings settings = SettingsImpl.builder(
+            TestSettings.volatileQueueSettings(singleElementCapacity)
+        ).maxUnread(2) // 2 so we know the first write should not block and the second should
+        .build();
         TestQueue q = new TestQueue(settings);
         q.open();
 
@@ -380,9 +382,10 @@ public class QueueTest {
         Queueable element = new StringElement("foobarbaz");
 
         // TODO: add randomized testing on the page size (but must be > single element size)
-        Settings settings = TestSettings.volatileQueueSettings(256); // 256 is arbitrary, large enough to hold a few elements
-
-        settings.setMaxUnread(2); // 2 so we know the first write should not block and the second should
+        Settings settings = SettingsImpl.builder(
+            TestSettings.volatileQueueSettings(256) // 256 is arbitrary, large enough to hold a few elements
+        ).maxUnread(2)
+        .build(); // 2 so we know the first write should not block and the second should
         TestQueue q = new TestQueue(settings);
         q.open();
 

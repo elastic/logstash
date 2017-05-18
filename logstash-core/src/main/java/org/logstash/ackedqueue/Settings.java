@@ -4,23 +4,6 @@ import org.logstash.ackedqueue.io.CheckpointIOFactory;
 import org.logstash.ackedqueue.io.PageIOFactory;
 
 public interface Settings {
-    Settings setCheckpointIOFactory(CheckpointIOFactory factory);
-
-    Settings setElementIOFactory(PageIOFactory factory);
-
-    Settings setElementClass(Class elementClass);
-
-    Settings setCapacity(int capacity);
-
-    Settings setQueueMaxBytes(long size);
-
-    Settings setMaxUnread(int maxUnread);
-
-    Settings setCheckpointMaxAcks(int checkpointMaxAcks);
-
-    Settings setCheckpointMaxWrites(int checkpointMaxWrites);
-
-    Settings setCheckpointMaxInterval(int checkpointMaxInterval);
 
     CheckpointIOFactory getCheckpointIOFactory();
 
@@ -39,6 +22,26 @@ public interface Settings {
     int getCheckpointMaxAcks();
 
     int getCheckpointMaxWrites();
+    
+    interface Builder {
 
-    int getCheckpointMaxInterval();
+        Builder checkpointIOFactory(CheckpointIOFactory factory);
+
+        Builder elementIOFactory(PageIOFactory factory);
+
+        Builder elementClass(Class elementClass);
+
+        Builder capacity(int capacity);
+
+        Builder queueMaxBytes(long size);
+
+        Builder maxUnread(int maxUnread);
+
+        Builder checkpointMaxAcks(int checkpointMaxAcks);
+
+        Builder checkpointMaxWrites(int checkpointMaxWrites);
+        
+        Settings build();
+
+    }
 }
