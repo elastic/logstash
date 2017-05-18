@@ -9,22 +9,12 @@ describe LogStash::ShutdownWatcher do
   let(:pipeline) { double("pipeline") }
   let(:reporter) { double("reporter") }
   let(:reporter_snapshot) { double("reporter snapshot") }
-  report_count = 0
 
   before :each do
     allow(pipeline).to receive(:reporter).and_return(reporter)
     allow(pipeline).to receive(:thread).and_return(Thread.current)
     allow(reporter).to receive(:snapshot).and_return(reporter_snapshot)
     allow(reporter_snapshot).to receive(:o_simple_hash).and_return({})
-
-    allow(subject).to receive(:pipeline_report_snapshot).and_wrap_original do |m, *args|
-      report_count += 1
-      m.call(*args)
-    end
-  end
-
-  after :each do
-    report_count = 0
   end
 
   context "when pipeline is stalled" do
@@ -69,8 +59,9 @@ describe LogStash::ShutdownWatcher do
       it "shouldn't force the shutdown" do
         expect(subject).to_not receive(:force_exit)
         thread = Thread.new(subject) {|subject| subject.start }
-        sleep 0.1 until report_count > check_threshold
-        thread.kill
+        sleep 0.1 until subject.attempts_count > check_threshold
+        subject.stop!
+        expect(thread.join(60)).to_not be_nil
       end
     end
   end
@@ -91,8 +82,9 @@ describe LogStash::ShutdownWatcher do
       it "should force the shutdown" do
         expect(subject).to_not receive(:force_exit)
         thread = Thread.new(subject) {|subject| subject.start }
-        sleep 0.1 until report_count > check_threshold
-        thread.kill
+        sleep 0.1 until subject.attempts_count > check_threshold
+        subject.stop!
+        expect(thread.join(60)).to_not be_nil
       end
     end
 
@@ -105,8 +97,10 @@ describe LogStash::ShutdownWatcher do
       it "shouldn't force the shutdown" do
         expect(subject).to_not receive(:force_exit)
         thread = Thread.new(subject) {|subject| subject.start }
-        sleep 0.1 until report_count > check_threshold
-        thread.kill
+        sleep 0.1 until subject.attempts_count > check_threshold
+        subject.stop!
+        thread.join
+        expect(thread.join(60)).to_not be_nil
       end
     end
   end
