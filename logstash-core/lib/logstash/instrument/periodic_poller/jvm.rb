@@ -2,18 +2,19 @@
 require "logstash/instrument/periodic_poller/base"
 require "logstash/instrument/periodic_poller/load_average"
 require "logstash/environment"
-require "jrmonitor"
 require "set"
 
+java_import 'com.sun.management.UnixOperatingSystemMXBean'
 java_import 'java.lang.management.ManagementFactory'
 java_import 'java.lang.management.OperatingSystemMXBean'
 java_import 'java.lang.management.GarbageCollectorMXBean'
 java_import 'java.lang.management.RuntimeMXBean'
-java_import 'com.sun.management.UnixOperatingSystemMXBean'
 java_import 'javax.management.MBeanServer'
 java_import 'javax.management.ObjectName'
 java_import 'javax.management.AttributeList'
 java_import 'javax.naming.directory.Attribute'
+java_import 'org.logstash.instrument.reports.MemoryReport'
+java_import 'org.logstash.instrument.reports.ProcessReport'
 
 
 module LogStash module Instrument module PeriodicPoller
@@ -50,7 +51,7 @@ module LogStash module Instrument module PeriodicPoller
     end
 
     def collect
-      raw = JRMonitor.memory.generate
+      raw = MemoryReport.generate
       collect_jvm_metrics(raw)
       collect_pools_metrics(raw)
       collect_threads_metrics
@@ -81,10 +82,9 @@ module LogStash module Instrument module PeriodicPoller
     end
 
     def collect_process_metrics
-      process_metrics = JRMonitor.process.generate
+      process_metrics = ProcessReport.generate
 
       path = [:jvm, :process]
-
 
       open_fds = process_metrics["open_file_descriptors"]
       if @peak_open_fds.nil? || open_fds > @peak_open_fds

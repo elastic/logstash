@@ -1,4 +1,5 @@
 # encoding: utf-8
+java_import 'org.logstash.instrument.reports.ThreadsReport'
 
 class HotThreadsReport
   STRING_SEPARATOR_LENGTH = 80.freeze
@@ -7,8 +8,7 @@ class HotThreadsReport
   def initialize(cmd, options)
     @cmd = cmd
     filter = { :stacktrace_size => options.fetch(:stacktrace_size, HOT_THREADS_STACK_TRACES_SIZE_DEFAULT) }
-    jr_dump = JRMonitor.threads.generate(filter)
-    @thread_dump = ::LogStash::Util::ThreadDump.new(options.merge(:dump => jr_dump))
+    @thread_dump = ::LogStash::Util::ThreadDump.new(options.merge(:dump => ThreadsReport.generate(filter)))
   end
 
   def to_s

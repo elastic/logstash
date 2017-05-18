@@ -1,4 +1,6 @@
 # encoding: utf-8
+java_import 'org.logstash.instrument.reports.ThreadsReport'
+
 module LogStash
   module Util
     class ThreadDump
@@ -10,7 +12,7 @@ module LogStash
 
       def initialize(options={})
         @options   = options
-        @dump = options.fetch(:dump, JRMonitor.threads.generate({}))
+        @dump = options.fetch(:dump, ThreadsReport.generate({}))
         @top_count = options.fetch(:threads, THREADS_COUNT_DEFAULT)
         @ignore    = options.fetch(:ignore_idle_threads, IGNORE_IDLE_THREADS_DEFAULT)
       end
