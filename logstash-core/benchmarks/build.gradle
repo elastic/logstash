@@ -1,0 +1,78 @@
+import org.yaml.snakeyaml.Yaml
+
+apply plugin: 'java'
+apply plugin: 'idea'
+
+// fetch version from Logstash's master versions.yml file
+def versionMap = (Map) (new Yaml()).load(new File("$projectDir/../../versions.yml").text)
+
+group = 'org.logstash'
+description = """Logstash Core Java Benchmarks"""
+version = versionMap['logstash-core']
+
+project.sourceCompatibility = JavaVersion.VERSION_1_8
+project.targetCompatibility = JavaVersion.VERSION_1_8
+
+repositories {
+  mavenCentral()
+  jcenter()
+}
+
+buildscript {
+  repositories {
+    mavenCentral()
+    jcenter()
+  }
+  dependencies {
+    classpath 'org.yaml:snakeyaml:1.17'
+    classpath 'com.github.jengelman.gradle.plugins:shadow:1.2.4'
+  }
+}
+
+test.enabled = false
+
+jar {
+  manifest {
+    attributes "Main-Class": "org.openjdk.jmh.Main"
+  }
+}
+
+ext {
+  jmh = 1.18 
+}
+
+dependencies {
+  compile project(':logstash-core')
+  compile "org.openjdk.jmh:jmh-core:$jmh"
+  compile "org.openjdk.jmh:jmh-generator-annprocess:$jmh"
+  compile "org.openjdk.jmh:jmh-core-benchmarks:$jmh"
+  compile 'net.sf.jopt-simple:jopt-simple:5.0.3'
+  compile 'com.google.guava:guava:21.0'
+  compile 'commons-io:commons-io:2.5'
+  runtime 'joda-time:joda-time:2.8.2'
+  runtime 'org.jruby:jruby-core:1.7.26'
+}
+
+javadoc {
+  enabled = false
+}
+
+apply plugin: 'com.github.johnrengelman.shadow'
+
+shadowJar {
+  baseName = 'logstash-core-benchmarks-all'
+  classifier = null
+  version = null
+}
+
+task jmh(type: JavaExec, dependsOn: [':logstash-core-benchmarks:clean', ':logstash-core-benchmarks:shadowJar']) {
+
+  main="-jar"
+
+  doFirst {
+    if (System.getProperty("jmhArgs")) {
+      args System.getProperty("jmhArgs").split(',')
+    }
+    args = [shadowJar.archivePath, *args]
+  }
+}
