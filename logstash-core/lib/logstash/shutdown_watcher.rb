@@ -1,4 +1,6 @@
 # encoding: utf-8
+require "concurrent/atomic/atomic_fixnum"
+require "concurrent/atomic/atomic_boolean"
 
 module LogStash
   class ShutdownWatcher
@@ -16,6 +18,8 @@ module LogStash
       @report_every = report_every
       @abort_threshold = abort_threshold
       @reports = []
+      @attempts_count = Concurrent::AtomicFixnum.new(0)
+      @running = Concurrent::AtomicBoolean.new(false)
     end
 
     def self.unsafe_shutdown=(boolean)
@@ -35,11 +39,26 @@ module LogStash
       self.class.logger
     end
 
+    def attempts_count
+      @attempts_count.value
+    end
+
+    def stop!
+      @running.make_false
+    end
+
+    def stopped?
+      @running.false?
+    end
+
     def start
       sleep(@cycle_period)
       cycle_number = 0
       stalled_count = 0
+      running!
       Stud.interval(@cycle_period) do
+        @attempts_count.increment
+        break if stopped?
         break unless @pipeline.thread.alive?
         @reports << pipeline_report_snapshot
         @reports.delete_at(0) if @reports.size > @report_every # expire old report
@@ -61,6 +80,8 @@ module LogStash
         end
         cycle_number = (cycle_number + 1) % @report_every
       end
+    ensure
+      stop!
     end
 
     def pipeline_report_snapshot
@@ -89,6 +110,11 @@ module LogStash
 
     def force_exit
       exit(-1)
+    end
+
+    private
+    def running!
+      @running.make_true
     end
   end
 end
