@@ -1,0 +1,46 @@
+import org.yaml.snakeyaml.Yaml
+
+apply plugin: 'java'
+apply plugin: 'idea'
+
+// fetch version from Logstash's master versions.yml file
+def versionMap = (Map) (new Yaml()).load(new File("$projectDir/../../versions.yml").text)
+
+group = 'org.logstash'
+description = """Ingest JSON to Logstash Grok Config Converter"""
+version = versionMap['logstash-core']
+
+project.sourceCompatibility = JavaVersion.VERSION_1_8
+project.targetCompatibility = JavaVersion.VERSION_1_8
+
+repositories {
+  mavenCentral()
+  jcenter()
+}
+
+buildscript {
+  repositories {
+    mavenCentral()
+    jcenter()
+  }
+  dependencies {
+    classpath 'org.yaml:snakeyaml:1.17'
+    classpath 'com.github.jengelman.gradle.plugins:shadow:1.2.4'
+  }
+}
+
+dependencies {
+  testCompile "junit:junit:4.12"
+}
+
+javadoc {
+  enabled = true
+}
+
+apply plugin: 'com.github.johnrengelman.shadow'
+
+shadowJar {
+  baseName = 'ingest-converter'
+  classifier = null
+  version = null
+}
