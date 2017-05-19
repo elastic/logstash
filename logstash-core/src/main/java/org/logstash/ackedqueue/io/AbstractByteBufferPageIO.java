@@ -12,7 +12,6 @@ import org.logstash.ackedqueue.SequencedList;
 public abstract class AbstractByteBufferPageIO implements PageIO {
 
     public class PageIOInvalidElementException extends IOException {
-        public PageIOInvalidElementException() { super(); }
         public PageIOInvalidElementException(String message) { super(message); }
     }
 
@@ -25,10 +24,8 @@ public abstract class AbstractByteBufferPageIO implements PageIO {
     public static final int CHECKSUM_SIZE = Integer.BYTES;
     public static final int LENGTH_SIZE = Integer.BYTES;
     public static final int SEQNUM_SIZE = Long.BYTES;
-    public static final int MIN_RECORD_SIZE = SEQNUM_SIZE + CHECKSUM_SIZE;
     public static final int HEADER_SIZE = 1;     // version byte
     public static final int MIN_CAPACITY = VERSION_SIZE + SEQNUM_SIZE + LENGTH_SIZE + 1 + CHECKSUM_SIZE; // header overhead plus elements overhead to hold a single 1 byte element
-    public static final List<byte[]> EMPTY_READ = new ArrayList<>(0);
 
     public static final boolean VERIFY_CHECKSUM = true;
     public static final boolean STRICT_CAPACITY = true;
@@ -37,12 +34,12 @@ public abstract class AbstractByteBufferPageIO implements PageIO {
 
     protected int capacity; // page capacity is an int per the ByteBuffer class.
     protected final int pageNum;
-    protected final List<Integer> offsetMap; // has to be extendable
     protected long minSeqNum; // TODO: to make minSeqNum final we have to pass in the minSeqNum in the constructor and not set it on first write
     protected int elementCount;
     protected int head; // head is the write position and is an int per ByteBuffer class position
     protected byte version;
     private CRC32 checkSummer;
+    private final List<Integer> offsetMap; // has to be extendable
 
     public AbstractByteBufferPageIO(int pageNum, int capacity) {
         this.minSeqNum = 0;
