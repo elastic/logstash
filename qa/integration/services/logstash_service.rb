@@ -41,6 +41,7 @@ class LogstashService < Service
       
       @logstash_queue_path = File.join("#{@logstash_home}", "data/queue")
       FileUtils.remove_dir(@logstash_queue_path, true)
+      FileUtils.mkdir(@logstash_queue_path)
       
       puts "Using #{@logstash_home} as LS_HOME"
       @logstash_bin = File.join("#{@logstash_home}", LS_BIN)
@@ -53,7 +54,7 @@ class LogstashService < Service
 
   def alive?
     if @process.nil? || @process.exited?
-      raise "Logstash process is not up because of an errot, or it stopped"
+      raise "Logstash process is not up because of an error, or it stopped"
     else
       @process.alive?
     end
@@ -140,6 +141,7 @@ class LogstashService < Service
       @process.stop
       @process = nil
       FileUtils.remove_dir(@logstash_queue_path, true)
+      FileUtils.mkdir(@logstash_queue_path)
     end
   end
 
