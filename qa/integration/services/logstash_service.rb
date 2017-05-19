@@ -39,7 +39,7 @@ class LogstashService < Service
       @logstash_home = File.expand_path(File.join(LS_BUILD_DIR, ls_file), __FILE__)
       @logstash_home += "-SNAPSHOT" unless Dir.exists?(@logstash_home)
       
-      @logstash_queue_path = File.join("#{@logstash_home}", "data")
+      @logstash_queue_path = File.join("#{@logstash_home}", "data/queue")
       FileUtils.remove_dir(@logstash_queue_path, true)
       
       puts "Using #{@logstash_home} as LS_HOME"
