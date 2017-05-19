@@ -3,14 +3,14 @@ require "docker"
 
 class KafkaService < Service
   def initialize(settings)
-    @kafka_image = Docker::Image.build_from_dir(File.expand_path("../kafka_dockerized", __FILE__))
-                     .insert_local(
-                       'localPath' => File.join(TestSettings::FIXTURES_DIR, "how_sample.input"),
-                       'outputPath' => '/')
     super("kafka", settings)
   end
 
   def setup
+    @kafka_image = Docker::Image.build_from_dir(File.expand_path("../kafka_dockerized", __FILE__))
+                     .insert_local(
+                       'localPath' => File.join(TestSettings::FIXTURES_DIR, "how_sample.input"),
+                       'outputPath' => '/')
     @kafka_container = Docker::Container.create(:Image => @kafka_image.id,
                                                 :HostConfig => {
                                                   :PortBindings => {
