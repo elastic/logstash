@@ -40,8 +40,7 @@ class LogstashService < Service
       @logstash_home += "-SNAPSHOT" unless Dir.exists?(@logstash_home)
       
       @logstash_queue_path = File.join("#{@logstash_home}", "data/queue")
-      FileUtils.remove_dir(@logstash_queue_path, true)
-      FileUtils.mkdir(@logstash_queue_path)
+      clear_pq_data
       
       puts "Using #{@logstash_home} as LS_HOME"
       @logstash_bin = File.join("#{@logstash_home}", LS_BIN)
@@ -140,8 +139,7 @@ class LogstashService < Service
       @process.io.stdin.close rescue nil
       @process.stop
       @process = nil
-      FileUtils.remove_dir(@logstash_queue_path, true)
-      FileUtils.mkdir(@logstash_queue_path)
+      clear_pq_data
     end
   end
 
@@ -208,6 +206,13 @@ class LogstashService < Service
 
   def lock_file
     File.join(@logstash_home, "Gemfile.jruby-1.9.lock")
+  end
+  
+  private
+  
+  def clear_pq_data
+    FileUtils.remove_dir(@logstash_queue_path, true)
+    FileUtils.mkdir(@logstash_queue_path)
   end
 
   class PluginCli
