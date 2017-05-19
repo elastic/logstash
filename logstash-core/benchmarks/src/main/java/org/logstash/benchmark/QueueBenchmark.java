@@ -87,8 +87,8 @@ public class QueueBenchmark {
             .capacity(256 * 1024 * 1024)
             .queueMaxBytes(Long.MAX_VALUE)
             .elementIOFactory(MmapPageIO::new)
-            .checkpointMaxWrites(50_000)
-            .checkpointMaxAcks(50_000)
+            .checkpointMaxWrites(1024)
+            .checkpointMaxAcks(1024)
             .checkpointIOFactory(FileCheckpointIO::new)
             .elementClass(Event.class).build();
     }
