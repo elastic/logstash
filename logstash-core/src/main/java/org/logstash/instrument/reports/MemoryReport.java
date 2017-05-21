@@ -16,7 +16,9 @@ public class MemoryReport {
 
     /**
      * Build a report with current Memory information
-     * @return
+     * @return Returns a Map containing information about the
+     *         current state of the Java memory pools
+     *
      */
     public static Map<String, Map<String, Map<String, Object>>> generate() {
         MemoryMonitor.Report report = generateReport(MemoryMonitor.Type.All);
