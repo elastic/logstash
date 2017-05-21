@@ -42,7 +42,7 @@ class HotThreadsReport
       _hash["thread.stacktrace"].each do |trace|
         traces << trace
       end
-      thread[:traces] = traces unless traces.empty?
+      thread[:traces] = traces
       hash[:threads] << thread
     end
     { :hot_threads => hash }
