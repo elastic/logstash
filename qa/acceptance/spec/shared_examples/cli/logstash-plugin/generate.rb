@@ -15,7 +15,7 @@ shared_examples "logstash generate" do |logstash|
   describe "on #{logstash.hostname}" do
 
     GENERATE_TYPES = ["input", "filter", "codec", "output"]
-    GENERATE_TYPES.each |type| do
+    GENERATE_TYPES.each do |type|
       context "with type #{type}" do
         it "successfully generate the plugin skeleton" do
           command = logstash.run_command_in_path("bin/logstash-plugin generate --type #{type} --name qatest-generated")
