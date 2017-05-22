@@ -74,8 +74,10 @@ bin/logstash --path.plugins /opt/shared/lib
 [float]
 === Updating plugins
 
-Plugins have their own release cycle and are often released independent of Logstash’s core release cycle. Using the update
-subcommand you can get the latest or update to a particular version of the plugin.
+Plugins have their own release cycle and are often released independent of Logstash’s core release cycle. 
+Using the update subcommand will install the latest available minor version of the plugin's current major release. 
+For example if the currently installed version of logstash-output-elasticsearch is 6.2.6 and the latest minor version for 6.x is 6.3.0 then using update will replace 6.2.6 with 6.3.0, even if there are 7.x versions available. 
+To install a specific plugin version such as one from a newer major release, you can use the install subommand with the version parameter `--version=x.y.z`
 
 [source,shell]
 ----------------------------------
