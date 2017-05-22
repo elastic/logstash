@@ -26,7 +26,7 @@ describe "Test Monitoring API" do
     logstash_service.wait_for_logstash
     number_of_events.times { logstash_service.write_to_stdin("Hello world") }
 
-    Stud.try(max_retry.times) do
+    Stud.try(max_retry.times, [StandardError, RSpec::Expectations::ExpectationNotMetError]) do
       # event_stats can fail if the stats subsystem isn't ready
       result = logstash_service.monitoring_api.event_stats rescue nil
       expect(result).not_to be_nil
@@ -39,7 +39,7 @@ describe "Test Monitoring API" do
     logstash_service.start_with_stdin
     logstash_service.wait_for_logstash
 
-    Stud.try(max_retry.times) do
+    Stud.try(max_retry.times, [StandardError, RSpec::Expectations::ExpectationNotMetError]) do
       # node_stats can fail if the stats subsystem isn't ready
       result = logstash_service.monitoring_api.node_stats rescue nil
       expect(result).not_to be_nil
@@ -53,7 +53,7 @@ describe "Test Monitoring API" do
     logstash_service.start_with_stdin
     logstash_service.wait_for_logstash
 
-    Stud.try(max_retry.times) do
+    Stud.try(max_retry.times, [StandardError, RSpec::Expectations::ExpectationNotMetError]) do
       # node_stats can fail if the stats subsystem isn't ready
       result = logstash_service.monitoring_api.node_stats rescue nil
       expect(result).not_to be_nil
