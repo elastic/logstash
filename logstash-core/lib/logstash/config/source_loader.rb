@@ -1,5 +1,6 @@
 # encoding: utf-8
 require "logstash/config/source/local"
+require "logstash/config/source/modules"
 require "logstash/errors"
 require "thread"
 require "set"
