@@ -9,6 +9,7 @@ require "net/http"
 require "logstash/namespace"
 require "logstash-core/logstash-core"
 require "logstash/environment"
+require "logstash/modules_cli_parser"
 
 LogStash::Environment.load_locale!
 
@@ -60,6 +61,17 @@ class LogStash::Runner < Clamp::StrictCommand
       :default_output => LogStash::Config::Defaults.output),
     :default => LogStash::SETTINGS.get_default("config.string"),
     :attribute_name => "config.string"
+
+  # Module settings
+  option ["--modules"], "MODULES",
+    I18n.t("logstash.runner.flag.modules"),
+    :multivalued => true,
+    :attribute_name => "modules_list"
+
+  option ["-M", "--modules.variable"], "MODULES_VARIABLE", 
+    I18n.t("logstash.runner.flag.modules_variable"),
+    :multivalued => true,
+    :attribute_name => "modules_variable_list"
 
   # Pipeline settings
   option ["-w", "--pipeline.workers"], "COUNT",
@@ -175,6 +187,7 @@ class LogStash::Runner < Clamp::StrictCommand
     # Default we check local sources: `-e`, `-f` and the logstash.yml options.
     @source_loader = LogStash::Config::SourceLoader.new(@settings)
     @source_loader.add_source(LogStash::Config::Source::Local.new(@settings))
+    @source_loader.add_source(LogStash::Config::Source::Modules.new(@settings))
 
     super(*args)
   end
@@ -247,6 +260,10 @@ class LogStash::Runner < Clamp::StrictCommand
     @dispatcher.fire(:before_bootstrap_checks)
 
     return start_shell(setting("interactive"), binding) if setting("interactive")
+
+    module_parser = LogStash::ModulesCLIParser.new(@modules_list, @modules_variable_list)
+    # Now populate Setting for modules.list with our parsed array.
+    @settings.set("modules.cli", module_parser.output)
 
     begin
       @bootstrap_checks.each { |bootstrap| bootstrap.check(@settings) }
