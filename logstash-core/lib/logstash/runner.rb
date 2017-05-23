@@ -9,7 +9,7 @@ require "net/http"
 require "logstash/namespace"
 require "logstash-core/logstash-core"
 require "logstash/environment"
-require "logstash/modules_cli_parser"
+require "logstash/modules/cli_parser"
 
 LogStash::Environment.load_locale!
 
@@ -68,7 +68,7 @@ class LogStash::Runner < Clamp::StrictCommand
     :multivalued => true,
     :attribute_name => "modules_list"
 
-  option ["-M", "--modules.variable"], "MODULES_VARIABLE", 
+  option ["-M", "--modules.variable"], "MODULES_VARIABLE",
     I18n.t("logstash.runner.flag.modules_variable"),
     :multivalued => true,
     :attribute_name => "modules_variable_list"
@@ -261,7 +261,7 @@ class LogStash::Runner < Clamp::StrictCommand
 
     return start_shell(setting("interactive"), binding) if setting("interactive")
 
-    module_parser = LogStash::ModulesCLIParser.new(@modules_list, @modules_variable_list)
+    module_parser = LogStash::Modules::CLIParser.new(@modules_list, @modules_variable_list)
     # Now populate Setting for modules.list with our parsed array.
     @settings.set("modules.cli", module_parser.output)
 
@@ -472,7 +472,7 @@ class LogStash::Runner < Clamp::StrictCommand
       nil
     end
   end
-  
+
   # is the user asking for CLI help subcommand?
   def cli_help?(args)
     # I know, double negative

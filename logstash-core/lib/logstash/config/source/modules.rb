@@ -2,6 +2,8 @@
 require "logstash/config/source/base"
 require "logstash/config/pipeline_config"
 require "logstash/util/loggable"
+require "logstash/elasticsearch_client"
+require "logstash/modules/importer"
 require "logstash/errors"
 
 module LogStash module Config module Source
@@ -23,12 +25,19 @@ module LogStash module Config module Source
       ### a warning/error message to that effect.
       modules_array.each do |module_hash|
         begin
+          import_engine = LogStash::Modules::Importer.new(LogStash::ElasticsearchClient.build(module_hash))
+
           current_module = plugin_modules.find { |allmodules| allmodules.module_name == module_hash["name"] }
           alt_name = "module-#{module_hash["name"]}"
           pipeline_id = alt_name
-          config_string = current_module.config_string(module_hash)
+
+          current_module.with_settings(module_hash)
+          current_module.import(import_engine)
+          config_string = current_module.config_string
+
           logger.debug("Config string for module", :config_string => config_string, :module => module_hash["name"])
           config_part = org.logstash.common.SourceWithMetadata.new("module", alt_name, config_string)
+
           pipelines << PipelineConfig.new(self, pipeline_id.to_sym, config_part, @settings)
         rescue => e
           raise LogStash::ConfigLoadingError, I18n.t("logstash.modules.configuration.parse-failed", :error => e.message)
@@ -41,5 +50,5 @@ module LogStash module Config module Source
       # will fill this later
       true
     end
-  end 
+  end
 end end end
