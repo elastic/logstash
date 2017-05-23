@@ -3,7 +3,7 @@ require "rubygems/package"
 require "logstash/util/loggable"
 require "logstash/plugin"
 require "logstash/plugins/hooks_registry"
-require "logstash/modules"
+require "logstash/modules/scaffold"
 
 module LogStash module Plugins
   class Registry
