@@ -194,28 +194,6 @@ describe LogStash::Agent do
         end
       end
     end
-
-    context "when auto_reload is true" do
-      let(:agent_settings) { mock_settings("config.reload.automatic" => true, "config.reload.interval" => 0.0001) }
-      subject { described_class.new(agent_settings, default_source_loader) }
-
-      let(:agent_args) { { "path.config" => config_file } }
-
-      context "if state is clean" do
-        it "should periodically reload_state" do
-          allow(subject).to receive(:clean_state?).and_return(false)
-          t = Thread.new { subject.execute }
-          sleep(0.01) until subject.running_pipelines? && subject.pipelines.values.first.running?
-          expect(subject).to receive(:converge_state_and_update).at_least(2).times
-          # TODO this is a bad practice, any suggestions on how to test something happens
-          # without some form of timing or expiring condition?
-          sleep 0.1
-          Stud.stop!(t)
-          t.join
-          subject.shutdown
-        end
-      end
-    end
   end
 
   describe "Environment Variables In Configs" do
