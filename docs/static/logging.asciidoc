@@ -57,15 +57,22 @@ The logs will include the full event and filter configuration that are responsib
 
 You could modify the `log4j2.properties` file and restart your Logstash, but that is both tedious and leads to unnecessary 
 downtime. Instead, you can dynamically update logging levels through the logging API. These settings are effective 
-immediately and do not need a restart. To update logging levels, take the subsystem/module you are interested in and prepend 
+immediately and do not need a restart.
+
+NOTE: By default, the logging API attempts to bind to `tcp:9600`. If this port is already in use by another Logstash
+instance, you need to launch Logstash with the `--http.port` flag specified to bind to a different port. See
+<<command-line-flags>> for more information.
+
+To update logging levels, take the subsystem/module you are interested in and prepend 
 `logger.` to it. For example:
 
 [source,js]
 --------------------------------------------------
-PUT /_node/logging
+curl -XPUT 'localhost:9600/_node/logging?pretty' -H 'Content-Type: application/json' -d'
 {
     "logger.logstash.outputs.elasticsearch" : "DEBUG"
 }
+'
 --------------------------------------------------
 
 While this setting is in effect, Logstash will begin to emit DEBUG-level logs for __all__ the Elasticsearch outputs 
@@ -83,7 +90,7 @@ To retrieve a list of logging subsystems available at runtime, you can do a `GET
 
 [source,js]
 --------------------------------------------------
-GET /_node/logging?pretty
+curl -XGET 'localhost:9600/_node/logging?pretty'
 --------------------------------------------------
 
 Example response:
@@ -92,18 +99,28 @@ Example response:
 --------------------------------------------------
 {
 ...
-"loggers" : {
-   "logstash.registry" : "WARN",
-   "logstash.instrument.periodicpoller.os" : "WARN",
-   "logstash.instrument.collector" : "WARN",
-   "logstash.runner" : "WARN",
-   "logstash.inputs.stdin" : "WARN",
-   "logstash.outputs.stdout" : "WARN",
-   "logstash.agent" : "WARN",
-   "logstash.api.service" : "WARN",
-   "logstash.instrument.periodicpoller.jvm" : "WARN",
-   "logstash.pipeline" : "WARN",
-   "logstash.codecs.line" : "WARN"
-   }
+  "loggers" : {
+    "logstash.agent" : "INFO",
+    "logstash.api.service" : "INFO",
+    "logstash.basepipeline" : "INFO",
+    "logstash.codecs.plain" : "INFO",
+    "logstash.codecs.rubydebug" : "INFO",
+    "logstash.filters.grok" : "INFO",
+    "logstash.inputs.beats" : "INFO",
+    "logstash.instrument.periodicpoller.jvm" : "INFO",
+    "logstash.instrument.periodicpoller.os" : "INFO",
+    "logstash.instrument.periodicpoller.persistentqueue" : "INFO",
+    "logstash.outputs.stdout" : "INFO",
+    "logstash.pipeline" : "INFO",
+    "logstash.plugins.registry" : "INFO",
+    "logstash.runner" : "INFO",
+    "logstash.shutdownwatcher" : "INFO",
+    "org.logstash.Event" : "INFO",
+    "slowlog.logstash.codecs.plain" : "TRACE",
+    "slowlog.logstash.codecs.rubydebug" : "TRACE",
+    "slowlog.logstash.filters.grok" : "TRACE",
+    "slowlog.logstash.inputs.beats" : "TRACE",
+    "slowlog.logstash.outputs.stdout" : "TRACE"
+  }
 }
 --------------------------------------------------
