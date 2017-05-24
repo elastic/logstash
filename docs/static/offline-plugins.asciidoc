@@ -61,11 +61,18 @@ To install an offline plugin pack:
 . Move the compressed bundle to the machine where you want to install the plugins.
 
 . Run the `bin/logstash-plugin install` subcommand and pass in the file URI of
-the offline plugin pack. For example: 
+the offline plugin pack. 
 +
 ["source","sh",subs="attributes"]
+.Windows example:
 -------------------------------------------------------------------------------
-bin/logstash-plugin install file:///c:/elastic/install/plugins/logstash-offline-plugins-{logstash_version}.zip
+bin/logstash-plugin install file:///c:/path/to/logstash-offline-plugins-{logstash_version}.zip
+-------------------------------------------------------------------------------
++
+["source","sh",subs="attributes"]
+.Linux example:
+-------------------------------------------------------------------------------
+bin/logstash-plugin install file:///path/to/logstash-offline-plugins-{logstash_version}.zip
 -------------------------------------------------------------------------------
 +
 This command expects a file URI, so make sure you use forward slashes and
