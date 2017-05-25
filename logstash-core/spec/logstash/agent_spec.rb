@@ -122,7 +122,7 @@ describe LogStash::Agent do
 
           it "does not upgrade the new config" do
             t = Thread.new { subject.execute }
-            sleep(0.01) until subject.running_pipelines? && subject.pipelines.values.first.ready?
+            sleep(0.01) until subject.with_pipelines {|pipelines| subject.running_pipelines? && pipelines.values.first.ready? }
 
             expect(subject.converge_state_and_update).not_to be_a_successful_converge
             expect(subject).to have_running_pipeline?(mock_config_pipeline)
@@ -141,7 +141,7 @@ describe LogStash::Agent do
 
           it "does upgrade the new config" do
             t = Thread.new { subject.execute }
-            sleep(0.01) until subject.pipelines_count > 0 && subject.pipelines.values.first.ready?
+            sleep(0.01) until subject.with_pipelines {|pipelines| subject.pipelines_count > 0 && pipelines.values.first.ready? }
 
             expect(subject.converge_state_and_update).to be_a_successful_converge
             expect(subject).to have_running_pipeline?(mock_second_pipeline_config)
@@ -163,7 +163,7 @@ describe LogStash::Agent do
 
           it "does not try to reload the pipeline" do
             t = Thread.new { subject.execute }
-            sleep(0.01) until subject.running_pipelines? && subject.pipelines.values.first.running?
+            sleep(0.01) until subject.with_pipelines {|pipelines| subject.running_pipelines? && pipelines.values.first.running? }
 
             expect(subject.converge_state_and_update).not_to be_a_successful_converge
             expect(subject).to have_running_pipeline?(mock_config_pipeline)
@@ -182,7 +182,7 @@ describe LogStash::Agent do
 
           it "tries to reload the pipeline" do
             t = Thread.new { subject.execute }
-            sleep(0.01) until subject.running_pipelines? && subject.pipelines.values.first.running?
+            sleep(0.01) until subject.with_pipelines {|pipelines| subject.running_pipelines? && pipelines.values.first.running? }
 
             expect(subject.converge_state_and_update).to be_a_successful_converge
             expect(subject).to have_running_pipeline?(mock_second_pipeline_config)
@@ -263,7 +263,7 @@ describe LogStash::Agent do
     context "when the upgrade fails" do
       it "leaves the state untouched" do
         expect(subject.converge_state_and_update).not_to be_a_successful_converge
-        expect(subject.pipelines[default_pipeline_id].config_str).to eq(pipeline_config)
+        expect(subject.get_pipeline(default_pipeline_id).config_str).to eq(pipeline_config)
       end
 
       # TODO(ph): This valid?
@@ -281,12 +281,12 @@ describe LogStash::Agent do
 
       it "updates the state" do
         expect(subject.converge_state_and_update).to be_a_successful_converge
-        expect(subject.pipelines[default_pipeline_id].config_str).to eq(new_config)
+        expect(subject.get_pipeline(default_pipeline_id).config_str).to eq(new_config)
       end
 
       it "starts the pipeline" do
         expect(subject.converge_state_and_update).to be_a_successful_converge
-        expect(subject.pipelines[default_pipeline_id].running?).to be_truthy
+        expect(subject.get_pipeline(default_pipeline_id).running?).to be_truthy
       end
     end
   end
