@@ -1,16 +1,24 @@
 package org.logstash;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 import static org.junit.Assert.fail;
+import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.channels.FileLock;
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
@@ -24,9 +32,12 @@ public class FileLockFactoryTest {
 
     private FileLock lock;
 
+    private ExecutorService executor;
+
     @Before
     public void setUp() throws Exception {
         lockDir = temporaryFolder.newFolder("lock").getPath();
+        executor = Executors.newSingleThreadExecutor();
     }
 
     @Before
@@ -34,6 +45,14 @@ public class FileLockFactoryTest {
         lock = FileLockFactory.getDefault().obtainLock(lockDir, LOCK_FILE);
         assertThat(lock.isValid(), is(equalTo(true)));
         assertThat(lock.isShared(), is(equalTo(false)));
+    }
+
+    @After
+    public void tearDown() throws Exception {
+        executor.shutdownNow();
+        if (!executor.awaitTermination(2L, TimeUnit.MINUTES)) {
+            throw new IllegalStateException("Failed to shut down Executor");
+        }
     }
 
     @Test
@@ -87,5 +106,46 @@ public class FileLockFactoryTest {
     public void ReleaseUnobtainedLock() throws IOException {
         FileLockFactory.getDefault().releaseLock(lock);
         FileLockFactory.getDefault().releaseLock(lock);
+    }
+
+    @Test
+    public void crossJvmObtainLockOnLocked() throws Exception {
+        Process p = null;
+        String lockFile = ".testCrossJvm";
+        FileLock lock = null;
+
+        // Build the command to spawn a children JVM.
+        String[] cmd = {
+            Paths.get(System.getProperty("java.home"), "bin", "java").toString(),
+            "-cp", System.getProperty("java.class.path"),
+            Class.forName("org.logstash.FileLockFactoryMain").getName(),
+            lockDir, lockFile
+        };
+
+        try {
+            // Start the children program that will lock the file.
+            p = new ProcessBuilder(cmd).start();
+            InputStream is = p.getInputStream();
+            /* Wait the children program write to stdout, meaning the file
+             * is locked. Set a timeout to ensure it returns.
+             */
+            Future<Integer> future = executor.submit(() -> {return is.read();});
+            assertTrue(future.get(30, TimeUnit.SECONDS) > -1);
+
+            // Check the children process is still running.
+            assertThat(p.isAlive(), is(equalTo(true)));
+
+            try {
+                // Try to obtain the lock held by the children process.
+                FileLockFactory.getDefault().obtainLock(lockDir, lockFile);
+                fail("Should have threw an exception");
+            } catch (LockException e) {
+                // Expected exception as the file is already locked.
+            }
+        } finally {
+            if (p != null) {
+                p.destroy();
+            }
+        }
     }
 }

@@ -20,6 +20,6 @@ describe "CLI operation" do
     it_behaves_like "logstash uninstall", logstash
     it_behaves_like "logstash remove", logstash
     it_behaves_like "logstash update", logstash
-    it_behaves_like "logstash generate", logstash
+#    it_behaves_like "logstash generate", logstash
   end
 end
