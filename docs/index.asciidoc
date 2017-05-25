@@ -67,7 +67,7 @@ include::static/setting-up-logstash.asciidoc[]
 :edit_url: https://github.com/elastic/logstash/edit/5.3/docs/static/settings-file.asciidoc
 include::static/settings-file.asciidoc[]
 
-:edit_url: https://github.com/elastic/logstash/edit/5.3/docs/static/command-line-flags.asciidoc
+:edit_url: https://github.com/elastic/logstash/edit/5.3/docs/static/running-logstash-command-line.asciidoc
 include::static/running-logstash-command-line.asciidoc[]
 
 :edit_url: https://github.com/elastic/logstash/edit/5.3/docs/static/running-logstash.asciidoc
@@ -111,6 +111,7 @@ include::static/glob-support.asciidoc[]
 
 // Working with Filebeat Modules
 
+:edit_url: https://github.com/elastic/logstash/edit/5.3/docs/static/filebeat-modules.asciidoc
 include::static/filebeat-modules.asciidoc[]
 
 // Deploying & Scaling
