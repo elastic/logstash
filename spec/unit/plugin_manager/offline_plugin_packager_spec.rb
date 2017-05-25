@@ -106,7 +106,7 @@ describe LogStash::PluginManager::OfflinePluginPackager do
     end
 
     context "with wildcards" do
-      let(:plugins_args) { ["logstash-filter-*"] }
+      let(:plugins_args) { ["logstash-filter-x*"] }
 
       it "creates a pack with the plugins" do
         expect(retrieve_packaged_plugins(extract_to).size).to eq(LogStash::PluginManager::SpecificationHelpers.find_by_name_with_wildcards(plugins_args.first).size)
@@ -120,7 +120,7 @@ describe LogStash::PluginManager::OfflinePluginPackager do
     end
 
     context "with wildcards and normal plugins" do
-      let(:plugins_args) { ["logstash-filter-*", "logstash-input-beats"] }
+      let(:plugins_args) { ["logstash-filter-x*", "logstash-input-beats"] }
 
       it "creates a pack with the plugins" do
         groups = retrieve_packaged_plugins(extract_to).group_by { |gem_file| ::File.basename(gem_file).split("-")[1] }
