@@ -3,7 +3,7 @@ require "logstash/config/source/base"
 require "logstash/config/pipeline_config"
 require "logstash/util/loggable"
 require "logstash/elasticsearch_client"
-require "logstash/modules_importer"
+require "logstash/modules/importer"
 require "logstash/errors"
 
 module LogStash module Config module Source
@@ -25,7 +25,7 @@ module LogStash module Config module Source
       ### a warning/error message to that effect.
       modules_array.each do |module_hash|
         begin
-          import_engine = ModulesImporter.new(ElasticsearchClient.build(module_hash))
+          import_engine = LogStash::Modules::Importer.new(LogStash::ElasticsearchClient.build(module_hash))
 
           current_module = plugin_modules.find { |allmodules| allmodules.module_name == module_hash["name"] }
           alt_name = "module-#{module_hash["name"]}"
