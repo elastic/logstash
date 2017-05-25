@@ -84,7 +84,7 @@ include::static/logging.asciidoc[]
 include::static/persistent-queues.asciidoc[]
 
 
-:edit_url: https://github.com/elastic/logstash/edit/master/docs/staticinclude::static/shutdown.asciidoc[]
+:edit_url: https://github.com/elastic/logstash/edit/master/docs/static/shutdown.asciidoc
 include::static/shutdown.asciidoc[]
 
 // Breaking Changes
