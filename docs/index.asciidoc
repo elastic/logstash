@@ -66,7 +66,7 @@ include::static/setting-up-logstash.asciidoc[]
 :edit_url: https://github.com/elastic/logstash/edit/5.1/docs/static/settings-file.asciidoc
 include::static/settings-file.asciidoc[]
 
-:edit_url: https://github.com/elastic/logstash/edit/5.1/docs/static/command-line-flags.asciidoc
+:edit_url: https://github.com/elastic/logstash/edit/5.1/docs/static/running-logstash-command-line.asciidoc
 include::static/running-logstash-command-line.asciidoc[]
 
 :edit_url: https://github.com/elastic/logstash/edit/5.1/docs/static/running-logstash.asciidoc
