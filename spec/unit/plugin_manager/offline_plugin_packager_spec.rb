@@ -1,6 +1,7 @@
 # encoding: utf-8
 require "pluginmanager/offline_plugin_packager"
 require "stud/temporary"
+require "stud/try"
 require "bootstrap/util/compress"
 require "fileutils"
 require "spec_helper"
@@ -40,6 +41,8 @@ describe LogStash::PluginManager::OfflinePluginPackager do
   let(:temporary_dir) { Stud::Temporary.pathname }
   let(:target) { ::File.join(temporary_dir, "my-pack.zip")}
   let(:extract_to) { Stud::Temporary.pathname }
+  let(:retries_count) { 50 }
+  let(:retries_exceptions) { [IOError] }
 
   context "when the plugins doesn't" do
     let(:plugins_args) { "idotnotexist" }
@@ -67,7 +70,10 @@ describe LogStash::PluginManager::OfflinePluginPackager do
     before do
       FileUtils.mkdir_p(temporary_dir)
 
-      subject.package(plugins_args, target)
+      # Because this method will reach rubygems and can be unreliable at time on CI
+      # we will retry any IOError a few times before giving up.
+      Stud.try(retries_count.times, retries_exceptions)  { subject.package(plugins_args, target) }
+
       LogStash::Util::Zip.extract(target, extract_to)
     end
 
