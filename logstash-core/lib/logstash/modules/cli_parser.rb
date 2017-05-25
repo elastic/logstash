@@ -22,7 +22,7 @@ module LogStash module Modules class CLIParser
       # Catch if --modules was launched empty but an option/flag (-something)
       # follows immediately after
       if module_value.start_with?('-')
-        raise LogStash::ConfigLoadingError, I18n.t("logstash.modules.configuration.modules-empty-value", :modules => module_names)
+        raise LogStash::ConfigLoadingError, I18n.t("logstash.modules.configuration.modules-invalid-name", :module_name => module_value)
       end
       parsed_modules.concat module_value.split(',')
     end
@@ -36,7 +36,7 @@ module LogStash module Modules class CLIParser
     # in a passphrase, which might result in an incomplete key.  The
     # portion before the first `=` should always be the key, leaving
     # the rest to be the value
-    k, op, rest = uparsed.partition('=')
+    k, op, rest = unparsed.partition('=')
     if rest.size.zero?
       raise LogStash::ConfigLoadingError, I18n.t("logstash.modules.configuration.modules-variables-malformed", :rawvar => (module_name + '.' + unparsed))
     end
