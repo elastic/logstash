@@ -3,7 +3,83 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-5-4-1,Logstash 5.4.1>>
 * <<logstash-5-4-0,Logstash 5.4.0>>
+
+[[logstash-5-4-1]]
+=== Logstash 5.4.1 Release Notes
+
+* Fixed an issue on Windows where Logstash was unable to locate the default log4j2.properties file ({lsissue}6352[Issue 6352]).
+
+[float]
+==== Input Plugins
+
+*`Beats`*:
+
+* Fixed an issue where Logstash would incorrectly close the connection from beats due to a timeout (https://github.com/logstash-plugins/logstash-input-beats/issues/185)[#185].
+
+*`JDBC`*:
+
+* This plugin now automatically reconnects on connection issues (https://github.com/logstash-plugins/logstash-input-jdbc/issues/45)[Issue 45].
+
+*`HTTP Poller`*:
+
+* Added option to specify top level user/password options that apply to all URLs by default.
+* Added eager auth functionality. This means the client will send any credentials in its first request rather than waiting for a 401 challenge.
+
+*`Log4j`*:
+
+* This input will now reject any non-log4j log objects sent as input.
+
+* `RabbitMQ`*:
+
+* Updated the underlying Rabbitmq Java lib to v3.0.0.
+
+*`S3`*:
+
+* Fixed an issue when LS would crash when attempting to ingest a json file with a message attribute that is not a string (https://github.com/logstash-plugins/logstash-input-s3/issues/109)[Issue 109].
+
+*`Elasticsearch`*:
+
+* Fixed scrolling to use JSON bodies in the requests.
+
+==== Filter Plugins
+
+*`Date`*:
+
+* This plugin now ignores canceled events which were unnecessarily processed before.
+
+*`Fingerprint`*:
+
+* Improved error messages that could happen during start up.
+
+*`Grok`*:
+
+* Fixed an issue when a subdirectory under patterns directory could crash Logstash at startup (https://github.com/logstash-plugins/logstash-filter-grok/issues/110[Issue 110]).
+* Added an option to define custom patterns using `pattern_definitions` configuration.
+
+*`URL Decode`*:
+
+* Fixed an issue where Logstash would crash when processing unicode input with this filter.
+
+==== Output Plugins
+
+*`S3`*:
+
+* Fixed `restore_from_crash` option to use the same upload options as the normal uploader (https://github.com/logstash-plugins/logstash-output-s3/issues/140)[Issue 140].
+* Updated `canned_acl` options to allow `public-read`, `public-read-write` and `authenticated-read` as possible values.
+
+* `RabbitMQ`*:
+
+* Updated the underlying Rabbitmq Java lib to v3.0.0.
+
+*`Elasticsearch`*:
+
+* Add support for customizing `sniffing_path` with having to use `absolute_sniffing_path`
+
+*`Kafka`*:
+
+* Fixed a bug when Logstash would fail to start up when `SASL_SSL` and `PLAIN` (no Kerberos) options were specified.
 
 [[logstash-5-4-0]]
 === Logstash 5.4.0 Release Notes
