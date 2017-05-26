@@ -92,8 +92,8 @@ en:
         modules-must-be-unique: >-
           Only a single instance of any module can be run at a time. Duplicate
           modules: %{duplicate_modules}
-        modules-empty-value: >-
-          Empty value provided for --modules
+        modules-invalid-name: >-
+          Invalid module name: %{module_name}
         modules-variables-malformed: >-
           Failed to parse module variable %{rawvar}.  Must be in -M
           "MODULE_NAME.var.PLUGIN_TYPE.PLUGIN_NAME.VARIABLE_NAME=VALUE" format
