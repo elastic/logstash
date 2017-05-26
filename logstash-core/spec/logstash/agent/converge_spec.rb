@@ -74,8 +74,10 @@ describe LogStash::Agent do
         describe "#running_user_defined_pipelines" do
           it "returns the user defined pipelines" do
             start_agent(subject)
-            expect(subject.running_user_defined_pipelines.keys).to include(:main)
-            expect(subject.running_user_defined_pipelines.keys).not_to include(:system_pipeline)
+            subject.with_running_user_defined_pipelines do |pipelines|
+              expect(pipelines).to include(:main)
+              expect(pipelines).not_to include(:system_pipeline)
+            end
             subject.shutdown
           end
         end
@@ -185,7 +187,7 @@ describe LogStash::Agent do
 
     it "stops the running pipelines" do
       expect(subject.converge_state_and_update).to be_a_successful_converge
-      expect { subject.shutdown }.to change { subject.running_pipelines.size }.from(2).to(0)
+      expect { subject.shutdown }.to change { subject.running_pipelines_count }.from(2).to(0)
     end
   end
 
@@ -206,7 +208,7 @@ describe LogStash::Agent do
       it "creates and starts the new pipeline" do
         expect {
           expect(subject.converge_state_and_update).to be_a_successful_converge
-        }.to change { subject.running_pipelines.count }.from(0).to(1)
+        }.to change { subject.running_pipelines_count }.from(0).to(1)
         expect(subject).to have_running_pipeline?(pipeline_config)
       end
     end
@@ -223,7 +225,7 @@ describe LogStash::Agent do
         it "start a new pipeline and keep the original" do
           expect {
             expect(subject.converge_state_and_update).to be_a_successful_converge
-          }.to change { subject.running_pipelines.count }.from(1).to(2)
+          }.to change { subject.running_pipelines_count }.from(1).to(2)
           expect(subject).to have_running_pipeline?(pipeline_config)
           expect(subject).to have_running_pipeline?(new_pipeline_config)
         end
@@ -240,7 +242,7 @@ describe LogStash::Agent do
         it "stops the missing pipeline and start the new one" do
           expect {
             expect(subject.converge_state_and_update).to be_a_successful_converge
-          }.not_to change { subject.running_pipelines.count }
+          }.not_to change { subject.running_pipelines_count }
           expect(subject).not_to have_pipeline?(pipeline_config)
           expect(subject).to have_running_pipeline?(new_pipeline_config)
         end
@@ -260,7 +262,7 @@ describe LogStash::Agent do
       it "reloads the modified pipeline" do
         expect {
           expect(subject.converge_state_and_update).to be_a_successful_converge
-        }.not_to change { subject.running_pipelines.count }
+        }.not_to change { subject.running_pipelines_count }
         expect(subject).to have_running_pipeline?(modified_pipeline_config)
         expect(subject).not_to have_pipeline?(pipeline_config)
       end
@@ -277,7 +279,7 @@ describe LogStash::Agent do
       it "stops all the pipelines" do
         expect {
           expect(subject.converge_state_and_update).to be_a_successful_converge
-        }.to change { subject.running_pipelines.count }.from(2).to(0)
+        }.to change { subject.running_pipelines_count }.from(2).to(0)
         expect(subject).not_to have_pipeline?(pipeline_config)
       end
     end
