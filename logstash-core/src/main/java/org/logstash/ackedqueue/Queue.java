@@ -24,7 +24,6 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-
 // TODO: Notes
 //
 // - time-based fsync
@@ -181,12 +180,13 @@ public class Queue implements Closeable {
 
                 newCheckpointedHeadpage(headPageNum);
                 this.closed.set(false);
+                this.ensureDiskAvailable(this.maxBytes);
 
                 return;
             }
 
+            long diskNeeded = this.maxBytes;
             // at this point we have a head checkpoint to figure queue recovery
-
             // reconstruct all tail pages state upto but excluding the head page
             for (int pageNum = headCheckpoint.getFirstUnackedPageNum(); pageNum < headCheckpoint.getPageNum(); pageNum++) {
 
@@ -197,7 +197,7 @@ public class Queue implements Closeable {
 
                 PageIO pageIO = this.pageIOFactory.build(pageNum, this.pageCapacity, this.dirPath);
                 pageIO.open(cp.getMinSeqNum(), cp.getElementCount());
-
+                diskNeeded -= pageIO.getHead();
                 add(cp, new TailPage(cp, this, pageIO));
             }
 
@@ -208,6 +208,7 @@ public class Queue implements Closeable {
 
             PageIO pageIO = this.pageIOFactory.build(headCheckpoint.getPageNum(), this.pageCapacity, this.dirPath);
             pageIO.recover(); // optimistically recovers the head page data file and set minSeqNum and elementCount to the actual read/recovered data
+            ensureDiskAvailable(diskNeeded - (long) pageIO.getHead());
 
             if (pageIO.getMinSeqNum() != headCheckpoint.getMinSeqNum() || pageIO.getElementCount() != headCheckpoint.getElementCount()) {
                 // the recovered page IO shows different minSeqNum or elementCount than the checkpoint, use the page IO attributes
@@ -256,6 +257,14 @@ public class Queue implements Closeable {
             throw new LockException("The queue failed to obtain exclusive access, cause: " + e.getMessage());
         } finally {
             lock.unlock();
+        }
+    }
+
+    private void ensureDiskAvailable(final long diskNeeded) throws IOException {
+        if (!FsUtil.hasFreeSpace(this.dirPath, diskNeeded)) {
+            throw new IOException(
+                "Not enough free disk space available to allocate persisted queue."
+            );
         }
     }
 

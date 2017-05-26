@@ -700,10 +700,33 @@ public class QueueTest {
     }
 
     @Test
+    public void getsPersistedByteSizeCorrectly() throws Exception {
+        Settings settings = TestSettings.persistedQueueSettings(100, dataPath);
+        try (Queue queue = new Queue(settings)) {
+            queue.open();
+            for (int i = 0; i < 50; ++i) {
+                queue.write(new StringElement("foooo"));
+            }
+            queue.ensurePersistedUpto(queue.nextSeqNum());
+            assertThat(queue.getPersistedByteSize(), is(1063L));
+        }
+    }
+
+    @Test
     public void getsPersistedByteSizeCorrectlyForUnopened() throws Exception {
         Settings settings = TestSettings.persistedQueueSettings(100, dataPath);
         try (Queue q = new Queue(settings)) {
             assertThat(q.getPersistedByteSize(), is(0L));
+        }
+    }
+
+    @Test(expected = IOException.class)
+    public void throwsWhenNotEnoughDiskFree() throws Exception {
+        Settings settings = SettingsImpl.builder(
+            TestSettings.persistedQueueSettings(100, dataPath)
+        ).queueMaxBytes(Long.MAX_VALUE).build();
+        try (Queue queue = new Queue(settings)) {
+            queue.open();
         }
     }
 }
