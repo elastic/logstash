@@ -4,19 +4,18 @@ require "concurrent/atomic_reference/mutex_atomic"
 require "logstash/json"
 
 module LogStash module Instrument module MetricType
-  class Gauge < Base
-    def initialize(namespaces, key)
-      super(namespaces, key)
-
-      @gauge = Concurrent::MutexAtomicReference.new()
-    end
-
+  class Gauge < org.logstash.instrument.metrics.Gauge
     def execute(action, value = nil)
-      @gauge.set(value)
+      self.set(value)
     end
 
-    def value
-      @gauge.get
+    # We don't want these ruby style methods in java-land
+    def get
+      self.getValue()
+    end
+
+    def set(value)
+      self.setValue(value)
     end
   end
 end; end; end

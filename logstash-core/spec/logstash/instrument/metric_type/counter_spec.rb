@@ -22,7 +22,7 @@ describe LogStash::Instrument::MetricType::Counter do
 
   context "When serializing to JSON" do
     it "serializes the value" do
-      expect(LogStash::Json.dump(subject)).to eq("0")
+      expect(LogStash::Json.dump(subject)).to eq("0.0")
     end
   end
 
