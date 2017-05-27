@@ -1,13 +1,12 @@
 package org.logstash.instrument.monitors;
 
 import com.sun.management.UnixOperatingSystemMXBean;
-
-import javax.management.MBeanServer;
 import java.lang.management.ManagementFactory;
 import java.lang.management.OperatingSystemMXBean;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
+import java.util.concurrent.TimeUnit;
+import javax.management.MBeanServer;
 
 /**
  * Created by andrewvc on 5/12/16.
@@ -35,8 +34,9 @@ public class ProcessMonitor {
 
                 this.openFds = unixOsBean.getOpenFileDescriptorCount();
                 this.maxFds =  unixOsBean.getMaxFileDescriptorCount();
-
-                this.cpuMillisTotal = unixOsBean.getProcessCpuTime();
+                this.cpuMillisTotal = TimeUnit.MILLISECONDS.convert(
+                    unixOsBean.getProcessCpuTime(), TimeUnit.NANOSECONDS
+                );
                 this.cpuProcessPercent = scaleLoadToPercent(unixOsBean.getProcessCpuLoad());
                 this.cpuSystemPercent = scaleLoadToPercent(unixOsBean.getSystemCpuLoad());
 
