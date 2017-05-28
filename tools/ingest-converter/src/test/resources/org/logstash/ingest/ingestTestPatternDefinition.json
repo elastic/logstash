@@ -1,0 +1,18 @@
+{
+  "description":"Syslog",
+  "processors":[
+    {
+      "grok":{
+        "field":"message",
+        "patterns":[
+          "%{SYSLOGTIMESTAMP:system.syslog.timestamp} %{SYSLOGHOST:system.syslog.hostname} %{DATA:system.syslog.program}(?:\\[%{POSINT:system.syslog.pid}\\])?: %{GREEDYMULTILINE:system.syslog.message}",
+          "%{SYSLOGTIMESTAMP:system.syslog.timestamp} %{GREEDYMULTILINE:system.syslog.message}"
+        ],
+        "pattern_definitions":{
+          "GREEDYMULTILINE":"(.|\\n)*"
+        },
+        "ignore_missing":true
+      }
+    }
+  ]
+}

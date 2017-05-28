@@ -1,6 +1,5 @@
 package org.logstash.ingest;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -18,12 +17,20 @@ public final class GrokTest {
     public final TemporaryFolder temp = new TemporaryFolder();
 
     @Test
-    public void convertsCorrectly() throws Exception {
-        final File testdir = temp.newFolder();
-        final String grok = testdir.toPath().resolve("converted.grok").toString();
+    public void convertsFieldPatternsCorrectly() throws Exception {
+        final String grok = temp.newFolder().toPath().resolve("converted.grok").toString();
         Grok.main(resourcePath("ingestTestConfig.json"), grok);
         assertThat(
             utf8File(grok), is(utf8File(resourcePath("ingestTestConfig.grok")))
+        );
+    }
+
+    @Test
+    public void convertsFieldDefinitionsCorrectly() throws Exception {
+        final String grok = temp.newFolder().toPath().resolve("converted.grok").toString();
+        Grok.main(resourcePath("ingestTestPatternDefinition.json"), grok);
+        assertThat(
+            utf8File(grok), is(utf8File(resourcePath("ingestTestPatternDefinition.grok")))
         );
     }
 
