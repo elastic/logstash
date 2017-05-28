@@ -24,6 +24,15 @@ function json_to_grok(json) {
     }
 
     /**
+     * All hash fields in Grok start on a new line.
+     * @param fields Array of Strings of Serialized Hash Fields
+     * @returns {string} Joined Serialization of Hash Fields
+     */
+    function join_hash_fields(fields) {
+        return fields.join("\n");
+    }
+
+    /**
      * Converts Ingest/JSON style pattern array to Grok pattern array, performing necessary variable
      * name and quote escaping adjustments.
      * @param patterns Pattern Array in JSON formatting
@@ -65,6 +74,16 @@ function json_to_grok(json) {
         return "[\n" + patterns.map(dots_to_square_brackets).map(quote_string).join(",\n") + "\n]";
     }
 
+    function create_pattern_definition_hash(definitions) {
+        var content = [];
+        for (var key in definitions) {
+            if (definitions.hasOwnProperty(key)) {
+                content.push(create_field(quote_string(key), quote_string(definitions[key])));
+            }
+        }
+        return create_hash_field("pattern_definitions", content);
+    }
+
     /**
      * Fixes indentation in Grok string.
      * @param string Grok string to fix indentation in, that has no indentation intentionally with 
@@ -87,30 +106,42 @@ function json_to_grok(json) {
             } else if (lines[i].match(/(\}|\])$/)) {
                 --count;
                 lines[i] = indent(lines[i], count);
-            } else {
+            // Only indent line if previous line ended on relevant control char.
+            } else if (i > 0 && lines[i - 1].match(/(,|\{|\}|\[|\])$/)) {
                 lines[i] = indent(lines[i], count);
             }
         }
         return lines.join("\n");
     }
-
-    var parsed = JSON.parse(json);
-    var processors = parsed["processors"];
-    return processors.map(function (filter) {
+    
+    function grok_hash(processor) {
+        var grok_data = processor["grok"];
+        var grok_contents = create_hash_field(
+            "match",
+            create_field(
+                quote_string(grok_data["field"]),
+                create_pattern_array(grok_data["patterns"])
+            )
+        );
+        if (grok_data["pattern_definitions"]) {
+            grok_contents = join_hash_fields([
+                    grok_contents, 
+                    create_pattern_definition_hash(grok_data["pattern_definitions"])
+            ])
+        }
+        return grok_contents;
+    }
+    
+    function map_processor (processor) {
         return fix_indent(
             create_hash(
                 "filter",
                 create_hash(
-                    "grok",
-                    create_hash_field(
-                        "match",
-                        create_field(
-                            quote_string(filter["grok"]["field"]),
-                            create_pattern_array(filter["grok"]["patterns"])
-                        )
-                    )
+                    "grok", grok_hash(processor)
                 )
             )
         )
-    }).join("\n\n") + "\n";
+    }
+
+    return JSON.parse(json)["processors"].map(map_processor).join("\n\n") + "\n";
 }
