@@ -1,7 +1,6 @@
 package org.logstash;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -39,42 +38,65 @@ public class Util {
         return map;
     }
 
-    public static void mapMerge(Map<String, Object> target, Map<String, Object> add) {
-        for (Map.Entry<String, Object> e : add.entrySet()) {
-            if (target.containsKey(e.getKey())) {
-                if (target.get(e.getKey()) instanceof Map && e.getValue() instanceof Map) {
-                    mapMerge((Map<String, Object>) target.get(e.getKey()), (Map<String, Object>) e.getValue());
-                } else if (e.getValue() instanceof List) {
-                    if (target.get(e.getKey()) instanceof List) {
-                        // needs optimizing
-                        List targetList = (List) target.get(e.getKey());
-                        targetList.addAll((List) e.getValue());
-                        target.put(e.getKey(), new ArrayList<Object>(new LinkedHashSet<Object>(targetList)));
+    public static void mapMerge(final Map<String, Object> target, final Map<String, Object> add) {
+        LinkedHashSet<Object> buffer = null;
+        for (final Map.Entry<String, Object> entry : add.entrySet()) {
+            final String entryKey = entry.getKey();
+            final Object entryValue = entry.getValue();
+            final Object targetValue = target.get(entryKey);
+            if (targetValue == null) {
+                target.put(entryKey, entryValue);
+            } else {
+                if (targetValue instanceof Map && entryValue instanceof Map) {
+                    mapMerge((Map<String, Object>) targetValue, (Map<String, Object>) entryValue);
+                } else if (entryValue instanceof List) {
+                    final List<Object> entryValueList = (List<Object>) entryValue;
+                    if (targetValue instanceof List) {
+                        if (buffer == null) {
+                            buffer = new LinkedHashSet<>();
+                        } else {
+                            buffer.clear();
+                        }
+                        mergeLists((List<Object>) targetValue, (List<Object>) entryValue, buffer);
                     } else {
-                        Object targetValue = target.get(e.getKey());
-                        List targetValueList = new ArrayList();
+                        final List<Object> targetValueList =
+                            new ArrayList<>(entryValueList.size() + 1);
                         targetValueList.add(targetValue);
-                        for (Object o : (List) e.getValue()) {
+                        for (final Object o : entryValueList) {
                             if (!targetValue.equals(o)) {
                                 targetValueList.add(o);
                             }
                         }
-                        target.put(e.getKey(), targetValueList);
+                        target.put(entryKey, targetValueList);
                     }
-                } else if (target.get(e.getKey()) instanceof List) {
-                    List t = ((List) target.get(e.getKey()));
-                    if (!t.contains(e.getValue())) {
-                        t.add(e.getValue());
+                } else if (targetValue instanceof List) {
+                    final List<Object> targetValueList = (List<Object>) targetValue;
+                    if (!targetValueList.contains(entryValue)) {
+                        targetValueList.add(entryValue);
                     }
-                } else if (!target.get(e.getKey()).equals(e.getValue())) {
-                    List targetValue = new ArrayList();
-                    targetValue.add(target.get(e.getKey()));
-                    ((List) targetValue).add(e.getValue());
-                    target.put(e.getKey(), targetValue);
+                } else if (!targetValue.equals(entryValue)) {
+                    final List<Object> targetValueList = new ArrayList<>(2);
+                    targetValueList.add(targetValue);
+                    targetValueList.add(entryValue);
+                    target.put(entryKey, targetValueList);
                 }
-            } else {
-                target.put(e.getKey(), e.getValue());
             }
         }
+    }
+
+    /**
+     * Merges elements in the source list into the target list, adding only those in the source
+     * list that are not yet contained in the target list while keeping the target list ordered
+     * according to last added.
+     * @param target Target List
+     * @param source Source List
+     * @param buffer {@link LinkedHashSet} used as sort buffer
+     */
+    private static void mergeLists(final List<Object> target, final List<Object> source,
+        final LinkedHashSet<Object> buffer) {
+        buffer.addAll(target);
+        buffer.addAll(source);
+        target.clear();
+        target.addAll(buffer);
     }
 }
