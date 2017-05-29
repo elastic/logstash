@@ -2,7 +2,6 @@ package org.logstash.config.ir.graph.algorithms;
 
 import org.logstash.config.ir.graph.Vertex;
 
-import java.security.cert.CollectionCertStoreParameters;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
