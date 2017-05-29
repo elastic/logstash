@@ -1,12 +1,8 @@
 package org.logstash.instrument.reports;
 
-import org.jruby.*;
-import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.instrument.monitors.MemoryMonitor;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public class MemoryReport {
