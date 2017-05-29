@@ -18,7 +18,6 @@ public class Timestamp implements Cloneable, Comparable, Queueable {
     // all methods setting the time object must set it in the UTC timezone
     private DateTime time;
 
-    // TODO: is this DateTimeFormatter thread safe?
     private static DateTimeFormatter iso8601Formatter = ISODateTimeFormat.dateTime();
 
     private static final LocalDateTime JAN_1_1970 = new LocalDateTime(1970, 1, 1, 0, 0);
