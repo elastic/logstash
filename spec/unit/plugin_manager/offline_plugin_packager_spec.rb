@@ -6,6 +6,7 @@ require "bootstrap/util/compress"
 require "fileutils"
 require "spec_helper"
 require "webmock"
+require "openssl"
 
 def retrieve_packaged_plugins(path)
   Dir.glob(::File.join(path, "logstash", "*.gem"))
@@ -42,7 +43,7 @@ describe LogStash::PluginManager::OfflinePluginPackager do
   let(:target) { ::File.join(temporary_dir, "my-pack.zip")}
   let(:extract_to) { Stud::Temporary.pathname }
   let(:retries_count) { 50 }
-  let(:retries_exceptions) { [IOError] }
+  let(:retries_exceptions) { [IOError, OpenSSL::SSL::SSLError] }
 
   context "when the plugins doesn't" do
     let(:plugins_args) { "idotnotexist" }
