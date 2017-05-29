@@ -154,7 +154,4 @@ public abstract class Page implements Closeable {
         return this.ackedSeqNums.nextClearBit(0) + this.minSeqNum;
     }
 
-    protected int firstUnackedPageNumFromQueue() {
-        return queue.firstUnackedPageNum();
-    }
 }
