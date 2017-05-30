@@ -106,6 +106,7 @@ module LogStash; class BasePipeline
 
     # use NullMetric if called in the BasePipeline context otherwise use the @metric value
     metric = @metric || Instrument::NullMetric.new
+    @agent_metrics = org.logstash.instrument.metrics.namespaces.AgentMetrics
 
     pipeline_scoped_metric = metric.namespace([:stats, :pipelines, pipeline_id.to_s.to_sym, :plugins])
     # Scope plugins of type 'input' to 'inputs'

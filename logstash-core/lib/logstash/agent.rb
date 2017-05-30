@@ -7,6 +7,7 @@ require "logstash/instrument/metric"
 require "logstash/instrument/periodic_pollers"
 require "logstash/instrument/collector"
 require "logstash/instrument/metric"
+require "logstash/instrument/metric_factory"
 require "logstash/pipeline"
 require "logstash/webserver"
 require "logstash/event_dispatcher"
@@ -65,10 +66,6 @@ class LogStash::Agent
     configure_metrics_collectors
 
     @state_resolver = LogStash::StateResolver.new(metric)
-
-    @pipeline_reload_metric = metric.namespace([:stats, :pipelines])
-    @instance_reload_metric = metric.namespace([:stats, :reloads])
-    initialize_agent_metrics
 
     @dispatcher = LogStash::EventDispatcher.new(self)
     LogStash::PLUGIN_REGISTRY.hooks.register_emitter(self.class, dispatcher)
@@ -413,6 +410,9 @@ class LogStash::Agent
       LogStash::Instrument::NullMetric.new(@collector)
     end
 
+    metric_factory = ::LogStash::Instrument::MetricFactory.new(@metric)
+    @agent_metrics = org.logstash.instrument.metrics.namespaces.AgentMetrics.new(metric_factory)
+
     @periodic_pollers = LogStash::Instrument::PeriodicPollers.new(@metric, settings.get("queue.type"), self)
     @periodic_pollers.start
   end
@@ -493,36 +493,16 @@ class LogStash::Agent
       initialize_pipeline_metrics(action)
     end
 
-    @instance_reload_metric.increment(:failures)
-
-    @pipeline_reload_metric.namespace([action.pipeline_id, :reloads]).tap do |n|
-      n.increment(:failures)
-      n.gauge(:last_error, { :message => action_result.message, :backtrace => action_result.backtrace})
-      n.gauge(:last_failure_timestamp, LogStash::Timestamp.now)
-    end
-  end
-
-  def initialize_agent_metrics
-    @instance_reload_metric.increment(:successes, 0)
-    @instance_reload_metric.increment(:failures, 0)
+    @agent_metrics.
+      get_pipeline_metrics(action.pipeline_id).
+      reload_failure(action_result.message, action_result.backtrace)
   end
 
   def initialize_pipeline_metrics(action)
-    @pipeline_reload_metric.namespace([action.pipeline_id, :reloads]).tap do |n|
-      n.increment(:successes, 0)
-      n.increment(:failures, 0)
-      n.gauge(:last_error, nil)
-      n.gauge(:last_success_timestamp, nil)
-      n.gauge(:last_failure_timestamp, nil)
-    end
+    pipeline_metrics = @agent_metrics.add_pipeline(action.pipeline_id)
   end
 
   def update_successful_reload_metrics(action, action_result)
-    @instance_reload_metric.increment(:successes)
-
-    @pipeline_reload_metric.namespace([action.pipeline_id, :reloads]).tap do |n|
-      n.increment(:successes)
-      n.gauge(:last_success_timestamp, action_result.executed_at)
-    end
+    @agent_metrics.get_pipeline_metrics(action.pipeline_id).reload_success
   end
 end # class LogStash::Agent

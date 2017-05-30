@@ -139,8 +139,8 @@ describe LogStash::Agent do
       end
 
       it "records the `message` and the `backtrace`" do
-        expect(mval(:stats, :pipelines, pipeline_name, :reloads, :last_error)[:message]).to_not be_nil
-        expect(mval(:stats, :pipelines, pipeline_name, :reloads, :last_error)[:backtrace]).to_not be_nil
+        expect(mval(:stats, :pipelines, pipeline_name, :reloads, :last_error).message).to_not be_nil
+        expect(mval(:stats, :pipelines, pipeline_name, :reloads, :last_error).backtrace).to_not be_nil
       end
 
       it "records the time of the last failure" do

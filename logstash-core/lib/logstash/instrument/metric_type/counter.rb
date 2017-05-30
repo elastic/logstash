@@ -6,8 +6,8 @@ module LogStash module Instrument module MetricType
   class Counter < Base
     def initialize(namespaces, key, value = 0)
       super(namespaces, key)
-
-      @counter = Concurrent::AtomicFixnum.new(value)
+      @key = key
+      @counter = org.logstash.instrument.metrics.Counter.new(value)
     end
 
     def increment(value = 1)
@@ -23,7 +23,11 @@ module LogStash module Instrument module MetricType
     end
 
     def value
-      @counter.value
+      @counter.get
+    end
+
+    def java_metric
+      @counter
     end
   end
 end; end; end
