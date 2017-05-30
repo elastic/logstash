@@ -62,7 +62,7 @@ public class ProcessMonitor {
             return map;
         }
 
-        private short scaleLoadToPercent(double load) {
+        private static short scaleLoadToPercent(double load) {
             if (osMxBean instanceof UnixOperatingSystemMXBean) {
                 if (load >= 0) {
                     return (short) (load * 100);
@@ -75,7 +75,7 @@ public class ProcessMonitor {
         }
     }
 
-    public Report detect() {
+    public static Report detect() {
         return new Report();
     }
 }

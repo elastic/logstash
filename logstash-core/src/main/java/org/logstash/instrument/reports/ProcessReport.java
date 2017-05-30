@@ -12,6 +12,6 @@ public class ProcessReport {
      * @return a Map with the current process report
      */
     public static Map<String, Object> generate() {
-        return new ProcessMonitor().detect().toMap();
+        return ProcessMonitor.detect().toMap();
     }
 }

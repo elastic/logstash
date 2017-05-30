@@ -57,7 +57,7 @@ public abstract class Edge implements SourceComponent {
             throw new Vertex.InvalidEdgeTypeException(String.format("Invalid outgoing edge %s for edge %s", this.from, this));
         }
 
-        if (!this.to.acceptsIncomingEdge(this)) {
+        if (!Vertex.acceptsIncomingEdge(this)) {
             throw new Vertex.InvalidEdgeTypeException(String.format("Invalid incoming edge %s for edge %s", this.from, this));
         }
     }

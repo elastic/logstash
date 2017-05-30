@@ -53,7 +53,7 @@ public class HotThreadsMonitor {
             map.put(THREAD_STACKTRACE, stackTraceAsString(info.getStackTrace()));
         }
 
-        private List<String> stackTraceAsString(StackTraceElement [] elements) {
+        private static List<String> stackTraceAsString(StackTraceElement[] elements) {
             return Arrays.stream(elements)
                             .map(StackTraceElement::toString)
                             .collect(Collectors.toList());
@@ -164,12 +164,12 @@ public class HotThreadsMonitor {
         return sort(new ArrayList<>(reports.values()), type);
      }
 
-    private List<ThreadReport> sort(List<ThreadReport> reports, final String type) {
+    private static List<ThreadReport> sort(List<ThreadReport> reports, final String type) {
         reports.sort(comparatorForOrderType(type));
         return reports;
     }
 
-    private Comparator<ThreadReport> comparatorForOrderType(final String type){
+    private static Comparator<ThreadReport> comparatorForOrderType(final String type){
         if ("block".equals(type)){
             return Comparator.comparingLong(ThreadReport::getBlockedTime).reversed();
         } else if ("wait".equals(type)) {

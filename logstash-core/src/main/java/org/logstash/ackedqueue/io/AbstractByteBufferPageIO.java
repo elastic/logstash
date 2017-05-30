@@ -11,11 +11,11 @@ import org.logstash.ackedqueue.SequencedList;
 
 public abstract class AbstractByteBufferPageIO implements PageIO {
 
-    public class PageIOInvalidElementException extends IOException {
+    public static class PageIOInvalidElementException extends IOException {
         public PageIOInvalidElementException(String message) { super(message); }
     }
 
-    public class PageIOInvalidVersionException extends IOException {
+    public static class PageIOInvalidVersionException extends IOException {
         public PageIOInvalidVersionException(String message) { super(message); }
     }
 
@@ -120,9 +120,10 @@ public abstract class AbstractByteBufferPageIO implements PageIO {
 
     // we don't have different versions yet so simply check if the version is VERSION_ONE for basic integrity check
     // and if an unexpected version byte is read throw PageIOInvalidVersionException
-    private void validateVersion(byte version) throws PageIOInvalidVersionException {
+    private static void validateVersion(byte version) throws PageIOInvalidVersionException {
         if (version != VERSION_ONE) {
-            throw new PageIOInvalidVersionException(String.format("Expected page version=%d but found version=%d", VERSION_ONE, version));
+            throw new PageIOInvalidVersionException(String
+                .format("Expected page version=%d but found version=%d", VERSION_ONE, version));
         }
     }
 
@@ -131,7 +132,8 @@ public abstract class AbstractByteBufferPageIO implements PageIO {
     private void readNextElement(long expectedSeqNum, boolean verifyChecksum) throws PageIOInvalidElementException {
         // if there is no room for the seqNum and length bytes stop here
         // TODO: I know this isn't a great exception message but at the time of writing I couldn't come up with anything better :P
-        if (this.head + SEQNUM_SIZE + LENGTH_SIZE > capacity) { throw new PageIOInvalidElementException("cannot read seqNum and length bytes past buffer capacity"); }
+        if (this.head + SEQNUM_SIZE + LENGTH_SIZE > capacity) { throw new PageIOInvalidElementException(
+            "cannot read seqNum and length bytes past buffer capacity"); }
 
         int elementOffset = this.head;
         int newHead = this.head;
@@ -140,7 +142,8 @@ public abstract class AbstractByteBufferPageIO implements PageIO {
         long seqNum = buffer.getLong();
         newHead += SEQNUM_SIZE;
 
-        if (seqNum != expectedSeqNum) { throw new PageIOInvalidElementException(String.format("Element seqNum %d is expected to be %d", seqNum, expectedSeqNum)); }
+        if (seqNum != expectedSeqNum) { throw new PageIOInvalidElementException(
+            String.format("Element seqNum %d is expected to be %d", seqNum, expectedSeqNum)); }
 
         int length = buffer.getInt();
         newHead += LENGTH_SIZE;
@@ -149,7 +152,8 @@ public abstract class AbstractByteBufferPageIO implements PageIO {
         if (length <= 0) { throw new PageIOInvalidElementException("Element invalid length"); }
 
         // if there is no room for the proposed data length and checksum just stop here
-        if (newHead + length + CHECKSUM_SIZE > capacity) { throw new PageIOInvalidElementException("cannot read element payload and checksum past buffer capacity"); }
+        if (newHead + length + CHECKSUM_SIZE > capacity) { throw new PageIOInvalidElementException(
+            "cannot read element payload and checksum past buffer capacity"); }
 
         if (verifyChecksum) {
             // read data and compute checksum;
@@ -160,7 +164,8 @@ public abstract class AbstractByteBufferPageIO implements PageIO {
             buffer.limit(prevLimit);
             int checksum = buffer.getInt();
             int computedChecksum = (int) this.checkSummer.getValue();
-            if (computedChecksum != checksum) { throw new PageIOInvalidElementException("Element invalid checksum"); }
+            if (computedChecksum != checksum) { throw new PageIOInvalidElementException(
+                "Element invalid checksum"); }
         }
 
         // at this point we recovered a valid element

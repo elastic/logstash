@@ -86,7 +86,7 @@ public class GraphDiff {
             return output.toString();
         }
 
-        private String detailedDiffFor(String name, Collection removed, Collection added) {
+        private static String detailedDiffFor(String name, Collection removed, Collection added) {
             return (name + " GraphDiff: " + "\n") +
                     "--------------------------\n" +
                     Stream.concat(removed.stream().map(c -> "-" + c.toString()),

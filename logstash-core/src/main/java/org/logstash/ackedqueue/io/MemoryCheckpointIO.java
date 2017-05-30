@@ -9,8 +9,8 @@ import java.util.Map;
 
 public class MemoryCheckpointIO implements CheckpointIO {
 
-    private final String HEAD_CHECKPOINT = "checkpoint.head";
-    private final String TAIL_CHECKPOINT = "checkpoint.";
+    private static final String HEAD_CHECKPOINT = "checkpoint.head";
+    private static final String TAIL_CHECKPOINT = "checkpoint.";
 
     private static final Map<String, Map<String, Checkpoint>> sources = new HashMap<>();
 

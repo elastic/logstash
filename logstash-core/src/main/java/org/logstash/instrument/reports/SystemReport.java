@@ -15,7 +15,7 @@ import java.util.Map;
      * @return a Map with the current system report
      */
     public static Map<String, Object> generate() {
-        return new SystemMonitor().detect().toMap();
+        return SystemMonitor.detect().toMap();
     }
 }
 

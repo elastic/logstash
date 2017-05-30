@@ -1,16 +1,5 @@
 package org.logstash;
 
-import org.logstash.bivalues.NullBiValue;
-import org.logstash.bivalues.StringBiValue;
-import org.logstash.bivalues.TimeBiValue;
-import org.logstash.bivalues.TimestampBiValue;
-import org.logstash.ext.JrubyTimestampExtLibrary;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.joda.time.DateTime;
-import org.jruby.RubySymbol;
-import org.logstash.ackedqueue.Queueable;
-
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -19,6 +8,16 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.joda.time.DateTime;
+import org.jruby.RubySymbol;
+import org.logstash.ackedqueue.Queueable;
+import org.logstash.bivalues.NullBiValue;
+import org.logstash.bivalues.StringBiValue;
+import org.logstash.bivalues.TimeBiValue;
+import org.logstash.bivalues.TimestampBiValue;
+import org.logstash.ext.JrubyTimestampExtLibrary;
 
 import static org.logstash.ObjectMappers.CBOR_MAPPER;
 import static org.logstash.ObjectMappers.JSON_MAPPER;
@@ -192,7 +191,8 @@ public class Event implements Cloneable, Serializable, Queueable {
         return hashMap;
     }
 
-    private byte[] toBinaryFromMap(Map<String, Map<String, Object>> representation) throws IOException {
+    private static byte[] toBinaryFromMap(Map<String, Map<String, Object>> representation)
+        throws IOException {
         return CBOR_MAPPER.writeValueAsBytes(representation);
     }
 
@@ -315,7 +315,7 @@ public class Event implements Cloneable, Serializable, Queueable {
         }
     }
 
-    private Timestamp initTimestamp(Object o) {
+    private static Timestamp initTimestamp(Object o) {
         try {
             if (o == null || o instanceof NullBiValue) {
                 // most frequent

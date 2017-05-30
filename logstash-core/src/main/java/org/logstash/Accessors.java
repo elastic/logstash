@@ -15,19 +15,19 @@ public class Accessors {
     }
 
     public Object get(String reference) {
-        FieldReference field = PathCache.getInstance().cache(reference);
+        FieldReference field = PathCache.cache(reference);
         Object target = findTarget(field);
         return (target == null) ? null : fetch(target, field.getKey());
     }
 
     public Object set(String reference, Object value) {
-        FieldReference field = PathCache.getInstance().cache(reference);
+        FieldReference field = PathCache.cache(reference);
         Object target = findCreateTarget(field);
         return store(target, field.getKey(), value);
     }
 
     public Object del(String reference) {
-        FieldReference field = PathCache.getInstance().cache(reference);
+        FieldReference field = PathCache.cache(reference);
         Object target = findTarget(field);
         if (target != null) {
             if (target instanceof Map) {
@@ -48,7 +48,7 @@ public class Accessors {
     }
 
     public boolean includes(String reference) {
-        FieldReference field = PathCache.getInstance().cache(reference);
+        FieldReference field = PathCache.cache(reference);
         Object target = findTarget(field);
         if (target instanceof Map && foundInMap((Map<String, Object>) target, field.getKey())) {
             return true;
@@ -122,7 +122,7 @@ public class Accessors {
         return target;
     }
 
-    private boolean foundInList(List<Object> target, int index) {
+    private static boolean foundInList(List<Object> target, int index) {
         try {
             int offset = listIndex(index, target.size());
             return target.get(offset) != null;
@@ -132,11 +132,11 @@ public class Accessors {
 
     }
 
-    private boolean foundInMap(Map<String, Object> target, String key) {
+    private static boolean foundInMap(Map<String, Object> target, String key) {
         return target.containsKey(key);
     }
 
-    private Object fetch(Object target, String key) {
+    private static Object fetch(Object target, String key) {
         if (target instanceof Map) {
             Object result = ((Map<String, Object>) target).get(key);
             return result;
@@ -154,7 +154,7 @@ public class Accessors {
         }
     }
 
-    private Object store(Object target, String key, Object value) {
+    private static Object store(Object target, String key, Object value) {
         if (target instanceof Map) {
             ((Map<String, Object>) target).put(key, value);
         } else if (target instanceof List) {
@@ -184,14 +184,14 @@ public class Accessors {
         return value;
     }
 
-    private boolean isCollection(Object target) {
+    private static boolean isCollection(Object target) {
         if (target == null) {
             return false;
         }
         return (target instanceof Map || target instanceof List);
     }
 
-    private ClassCastException newCollectionException(Object target) {
+    private static ClassCastException newCollectionException(Object target) {
         return new ClassCastException("expecting List or Map, found "  + target.getClass());
     }
 

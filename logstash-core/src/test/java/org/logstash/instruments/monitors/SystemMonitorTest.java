@@ -13,7 +13,7 @@ public class SystemMonitorTest {
 
     @Test
     public void systemMonitorTest(){
-        Map<String, Object> map = new SystemMonitor().detect().toMap();
+        Map<String, Object> map = SystemMonitor.detect().toMap();
         assertThat("system.load_average is missing", (Double)map.get("system.load_average") > 0, is(true));
         assertThat("system.available_processors is missing ", ((Integer)map.get("system.available_processors")) > 0, is(true));
         assertThat("os.version is missing", map.get("os.version"), allOf(notNullValue(), instanceOf(String.class)));
