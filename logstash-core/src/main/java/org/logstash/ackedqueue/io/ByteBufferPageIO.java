@@ -47,9 +47,6 @@ public class ByteBufferPageIO extends AbstractByteBufferPageIO {
 
     // below public methods only used by tests
 
-    // TODO: static method for tests - should refactor
-    public static int _persistedByteCount(int byteCount) { return SEQNUM_SIZE + LENGTH_SIZE + byteCount + CHECKSUM_SIZE; }
-
     public int getWritePosition() { return this.head; }
 
     public byte[] dump() { return this.buffer.array(); }

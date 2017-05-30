@@ -8,8 +8,6 @@ import org.junit.runners.Parameterized.Parameters;
 import org.logstash.ackedqueue.Queueable;
 import org.logstash.ackedqueue.SequencedList;
 import org.logstash.ackedqueue.StringElement;
-import org.logstash.ackedqueue.io.AbstractByteBufferPageIO;
-import org.logstash.ackedqueue.io.ByteBufferPageIO;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -21,6 +19,8 @@ import java.util.stream.Collectors;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.logstash.ackedqueue.QueueTestHelpers.BYTE_BUF_PAGEIO_MIN_CAPACITY;
+import static org.logstash.ackedqueue.QueueTestHelpers.singleElementCapacityForByteBufferPageIO;
 
 public class ByteBufferPageIOTest {
 
@@ -40,7 +40,6 @@ public class ByteBufferPageIOTest {
     }
 
     private static int CAPACITY = 1024;
-    private static int MIN_CAPACITY = ByteBufferPageIO.HEADER_SIZE + ByteBufferPageIO._persistedByteCount(0);
 
     private static ByteBufferPageIO newEmptyPageIO() throws IOException {
         return newEmptyPageIO(CAPACITY);
@@ -77,17 +76,16 @@ public class ByteBufferPageIOTest {
 
     @Test
     public void hasSpace() throws IOException {
-        assertThat(newEmptyPageIO(MIN_CAPACITY).hasSpace(0), is(true));
-        assertThat(newEmptyPageIO(MIN_CAPACITY).hasSpace(1), is(false));
+        assertThat(newEmptyPageIO(BYTE_BUF_PAGEIO_MIN_CAPACITY).hasSpace(0), is(true));
+        assertThat(newEmptyPageIO(BYTE_BUF_PAGEIO_MIN_CAPACITY).hasSpace(1), is(false));
     }
 
     @Test
     public void hasSpaceAfterWrite() throws IOException {
         Queueable element = new StringElement("foobarbaz");
-        int singleElementCapacity = ByteBufferPageIO.HEADER_SIZE + ByteBufferPageIO._persistedByteCount(element.serialize().length);
         long seqNum = 1L;
 
-        ByteBufferPageIO io = newEmptyPageIO(singleElementCapacity);
+        ByteBufferPageIO io = newEmptyPageIO(singleElementCapacityForByteBufferPageIO(element));
 
         assertThat(io.hasSpace(element.serialize().length), is(true));
         io.write(element.serialize(), seqNum);
@@ -101,7 +99,7 @@ public class ByteBufferPageIOTest {
         long seqNum = 42L;
         ByteBufferPageIO io = newEmptyPageIO();
         io.write(element.serialize(), seqNum);
-        assertThat(io.getWritePosition(), is(equalTo(ByteBufferPageIO.HEADER_SIZE +  ByteBufferPageIO._persistedByteCount(element.serialize().length))));
+        assertThat(io.getWritePosition(), is(equalTo(singleElementCapacityForByteBufferPageIO(element))));
         assertThat(io.getElementCount(), is(equalTo(1)));
         assertThat(io.getMinSeqNum(), is(equalTo(seqNum)));
     }
