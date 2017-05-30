@@ -47,7 +47,7 @@ public class StringInterpolation {
         return compiledTemplate.evaluate(event);
     }
 
-    public TemplateNode compile(String template) {
+    public static TemplateNode compile(String template) {
         Template compiledTemplate = new Template();
 
         if (template.indexOf('%') == -1) {
@@ -83,7 +83,7 @@ public class StringInterpolation {
         }
     }
 
-    public TemplateNode identifyTag(String tag) {
+    public static TemplateNode identifyTag(String tag) {
         if(tag.equals("+%s")) {
             return new EpochNode();
         } else if(tag.charAt(0) == '+') {

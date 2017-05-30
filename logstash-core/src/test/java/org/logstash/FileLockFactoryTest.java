@@ -12,8 +12,6 @@ import static org.junit.Assert.assertTrue;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.channels.FileLock;
-import java.nio.file.FileSystems;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ExecutorService;
@@ -42,7 +40,7 @@ public class FileLockFactoryTest {
 
     @Before
     public void lockFirst() throws Exception {
-        lock = FileLockFactory.getDefault().obtainLock(lockDir, LOCK_FILE);
+        lock = FileLockFactory.obtainLock(lockDir, LOCK_FILE);
         assertThat(lock.isValid(), is(equalTo(true)));
         assertThat(lock.isShared(), is(equalTo(false)));
     }
@@ -62,50 +60,50 @@ public class FileLockFactoryTest {
 
     @Test(expected = LockException.class)
     public void ObtainLockOnLocked() throws IOException {
-        FileLockFactory.getDefault().obtainLock(lockDir, LOCK_FILE);
+        FileLockFactory.obtainLock(lockDir, LOCK_FILE);
     }
 
     @Test
     public void ObtainLockOnOtherLocked() throws IOException {
-        FileLock lock2 = FileLockFactory.getDefault().obtainLock(lockDir, ".test2");
+        FileLock lock2 = FileLockFactory.obtainLock(lockDir, ".test2");
         assertThat(lock2.isValid(), is(equalTo(true)));
         assertThat(lock2.isShared(), is(equalTo(false)));
     }
 
     @Test
     public void LockReleaseLock() throws IOException {
-        FileLockFactory.getDefault().releaseLock(lock);
+        FileLockFactory.releaseLock(lock);
     }
 
     @Test
     public void LockReleaseLockObtainLock() throws IOException {
-        FileLockFactory.getDefault().releaseLock(lock);
+        FileLockFactory.releaseLock(lock);
 
-        FileLock lock2 = FileLockFactory.getDefault().obtainLock(lockDir, LOCK_FILE);
+        FileLock lock2 = FileLockFactory.obtainLock(lockDir, LOCK_FILE);
         assertThat(lock2.isValid(), is(equalTo(true)));
         assertThat(lock2.isShared(), is(equalTo(false)));
     }
 
     @Test
     public void LockReleaseLockObtainLockRelease() throws IOException {
-        FileLockFactory.getDefault().releaseLock(lock);
+        FileLockFactory.releaseLock(lock);
 
-        FileLock lock2 = FileLockFactory.getDefault().obtainLock(lockDir, LOCK_FILE);
+        FileLock lock2 = FileLockFactory.obtainLock(lockDir, LOCK_FILE);
         assertThat(lock2.isValid(), is(equalTo(true)));
         assertThat(lock2.isShared(), is(equalTo(false)));
 
-        FileLockFactory.getDefault().releaseLock(lock2);
+        FileLockFactory.releaseLock(lock2);
     }
 
     @Test(expected = LockException.class)
     public void ReleaseNullLock() throws IOException {
-        FileLockFactory.getDefault().releaseLock(null);
+        FileLockFactory.releaseLock(null);
      }
 
     @Test(expected = LockException.class)
     public void ReleaseUnobtainedLock() throws IOException {
-        FileLockFactory.getDefault().releaseLock(lock);
-        FileLockFactory.getDefault().releaseLock(lock);
+        FileLockFactory.releaseLock(lock);
+        FileLockFactory.releaseLock(lock);
     }
 
     @Test
@@ -137,7 +135,7 @@ public class FileLockFactoryTest {
 
             try {
                 // Try to obtain the lock held by the children process.
-                FileLockFactory.getDefault().obtainLock(lockDir, lockFile);
+                FileLockFactory.obtainLock(lockDir, lockFile);
                 fail("Should have threw an exception");
             } catch (LockException e) {
                 // Expected exception as the file is already locked.

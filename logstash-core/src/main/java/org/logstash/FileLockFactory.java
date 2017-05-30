@@ -44,21 +44,12 @@ import java.util.Set;
  */
 public class FileLockFactory {
 
-    /**
-     * Singleton instance
-     */
-    public static final FileLockFactory INSTANCE = new FileLockFactory();
-
     private FileLockFactory() {}
 
     private static final Set<String> LOCK_HELD = Collections.synchronizedSet(new HashSet<>());
     private static final Map<FileLock, String> LOCK_MAP =  Collections.synchronizedMap(new HashMap<>());
 
-    public static final FileLockFactory getDefault() {
-        return FileLockFactory.INSTANCE;
-    }
-
-    public FileLock obtainLock(String lockDir, String lockName) throws IOException {
+    public static FileLock obtainLock(String lockDir, String lockName) throws IOException {
         Path dirPath = FileSystems.getDefault().getPath(lockDir);
 
         // Ensure that lockDir exists and is a directory.
@@ -110,7 +101,7 @@ public class FileLockFactory {
         }
     }
 
-    public void releaseLock(FileLock lock) throws IOException {
+    public static void releaseLock(FileLock lock) throws IOException {
         String lockPath = LOCK_MAP.remove(lock);
         if (lockPath == null) { throw new LockException("Cannot release unobtained lock"); }
         lock.release();

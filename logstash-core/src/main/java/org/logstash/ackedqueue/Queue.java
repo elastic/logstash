@@ -166,7 +166,7 @@ public class Queue implements Closeable {
         lock.lock();
         try {
             // verify exclusive access to the dirPath
-            this.dirLock = FileLockFactory.getDefault().obtainLock(this.dirPath, LOCK_NAME);
+            this.dirLock = FileLockFactory.obtainLock(this.dirPath, LOCK_NAME);
 
             Checkpoint headCheckpoint;
             try {
@@ -671,7 +671,7 @@ public class Queue implements Closeable {
 
             } finally {
                 try {
-                    FileLockFactory.getDefault().releaseLock(this.dirLock);
+                    FileLockFactory.releaseLock(this.dirLock);
                 } catch (IOException e) {
                     // log error and ignore
                     logger.error("Queue close releaseLock failed, error={}", e.getMessage());

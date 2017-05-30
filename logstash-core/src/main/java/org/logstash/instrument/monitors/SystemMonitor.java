@@ -33,7 +33,7 @@ public class SystemMonitor {
         }
     }
 
-    public Report detect() {
+    public static Report detect() {
         return new Report(ManagementFactory.getOperatingSystemMXBean());
     }
 }

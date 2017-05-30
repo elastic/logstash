@@ -100,7 +100,7 @@ public class FileCheckpointIO implements CheckpointIO {
         return TAIL_CHECKPOINT + pageNum;
     }
 
-    private Checkpoint read(BufferedChecksumStreamInput crcsi) throws IOException {
+    private static Checkpoint read(BufferedChecksumStreamInput crcsi) throws IOException {
         int version = (int) crcsi.readShort();
         // TODO - build reader for this version
         int pageNum = crcsi.readInt();
