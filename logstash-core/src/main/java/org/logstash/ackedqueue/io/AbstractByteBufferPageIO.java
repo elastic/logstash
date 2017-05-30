@@ -27,6 +27,9 @@ public abstract class AbstractByteBufferPageIO implements PageIO {
     public static final int HEADER_SIZE = 1;     // version byte
     public static final int MIN_CAPACITY = VERSION_SIZE + SEQNUM_SIZE + LENGTH_SIZE + 1 + CHECKSUM_SIZE; // header overhead plus elements overhead to hold a single 1 byte element
 
+    // Size of: Header + Sequence Number + Length + Checksum
+    public static final int WRAPPER_SIZE = HEADER_SIZE + SEQNUM_SIZE + LENGTH_SIZE + CHECKSUM_SIZE;
+
     public static final boolean VERIFY_CHECKSUM = true;
     public static final boolean STRICT_CAPACITY = true;
 
