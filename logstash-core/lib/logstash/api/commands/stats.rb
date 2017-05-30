@@ -54,7 +54,6 @@ module LogStash
         def memory
           memory = service.get_shallow(:jvm, :memory)
           {
-            :heap_used_in_bytes => memory[:heap][:used_in_bytes],
             :heap_used_percent => memory[:heap][:used_percent],
             :heap_committed_in_bytes => memory[:heap][:committed_in_bytes],
             :heap_max_in_bytes => memory[:heap][:max_in_bytes],
