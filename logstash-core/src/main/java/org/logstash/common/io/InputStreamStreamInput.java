@@ -24,7 +24,7 @@ public class InputStreamStreamInput extends StreamInput {
     public void readBytes(byte[] b, int offset, int len) throws IOException {
         if (len < 0)
             throw new IndexOutOfBoundsException();
-        final int read = Streams.readFully(is, b, offset, len);
+        final int read = readFully(is, b, offset, len);
         if (read != len) {
             throw new EOFException();
         }
@@ -73,5 +73,17 @@ public class InputStreamStreamInput extends StreamInput {
     @Override
     public long skip(long n) throws IOException {
         return is.skip(n);
+    }
+
+    private static int readFully(InputStream reader, byte[] dest, int offset, int len) throws IOException {
+        int read = 0;
+        while (read < len) {
+            final int r = reader.read(dest, offset + read, len - read);
+            if (r == -1) {
+                break;
+            }
+            read += r;
+        }
+        return read;
     }
 }
