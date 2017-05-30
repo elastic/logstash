@@ -40,7 +40,6 @@ module LogStash
           {
             :pid =>  ManagementFactory.getRuntimeMXBean().getName().split("@").first.to_i,
             :version => java.lang.System.getProperty("java.version"),
-            :vm_name => java.lang.System.getProperty("java.vm.name"),
             :vm_version => java.lang.System.getProperty("java.version"),
             :vm_vendor => java.lang.System.getProperty("java.vendor"),
             :vm_name => java.lang.System.getProperty("java.vm.name"),
