@@ -297,7 +297,9 @@ public class QueueTest {
         // 10 tests of random queue sizes
         for (int loop = 0; loop < 10; loop++) {
             int page_count = random.nextInt(10000) + 1;
-            int digits = new Double(Math.ceil(Math.log10(page_count))).intValue();
+
+            // String format call below needs to at least print one digit
+            final int digits = Math.max((int) Math.ceil(Math.log10(page_count)), 1);
 
             // create a queue with a single element per page
             List<Queueable> elements = new ArrayList<>();
