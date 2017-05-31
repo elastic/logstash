@@ -34,19 +34,34 @@ import static org.logstash.common.io.RecordType.START;
 
 /**
  *
- * File Format
- * | — magic number (4bytes) --|
+ * RecordIO File Format: A file that is divided up into equal-sized blocks representing
+ * parts of a sequence of Logstash Events so that it is easy to binary-search across to find
+ * specific records based on some sort-value.
  *
- * [  32kbyte block....
- *    --- 1 byte RecordHeader Type ---
- *    --- 4 byte RecordHeader Size ---
+ * At a high level, each recordIO file contains an initial version byte
+ * and then 32kb record block sizes
  *
- * ]
- * [ 32kbyte block...
+ * |- VERSION (1 byte) -|- 32kb event block -|- 32kb event block -|...
  *
+ * Each 32kb event block contains different record types prepended by their
+ * respective record headers
  *
+ * |- record header (13 bytes) -|- record type (varlength) -|
  *
- * ]
+ * Record Header:
+ *
+ * |- record type -|- record size -|- total LS event size -|- checksum -|
+ *
+ * LS Events are split up into different record types because one event may be larger than the 32kb block
+ * allotted. Therefore, we need to cut up the LS Event into different types so that we can more easily piece them
+ * together when reading the RecordIO file.
+ *
+ * There are four different {@link RecordType} definitions:
+ *   START: The start of an Event that was broken up into different records
+ *   COMPLETE: A record representing the fully serialized LS Event
+ *   MIDDLE: A middle record of one or multiple middle records representing a segment of an LS Event that will be proceeded
+ *           by a final END record type.
+ *   END: The final record segment of an LS Event, the final record representing the end of an LS Event.
  */
 public class RecordIOWriter {
 
