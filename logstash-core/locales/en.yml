@@ -96,7 +96,7 @@ en:
           Invalid module name: %{module_name}
         modules-variables-malformed: >-
           Failed to parse module variable %{rawvar}.  Must be in -M
-          "MODULE_NAME.var.PLUGIN_TYPE.PLUGIN_NAME.VARIABLE_NAME=VALUE" format
+          "MODULE_NAME.KEY.SUBKEY=VALUE" format
     runner:
       short-help: |-
         usage:

@@ -33,7 +33,7 @@ module LogStash module Modules class KibanaConfig
     default_index_json = '{"defaultIndex": "#{pattern_name}"}'
     default_index_content_id = @settings.fetch("index_pattern.kibana_version", "5.4.0") # make this 5.5.0
     [
-      KibanaResource.new(@index_name, "index-pattern", dynamic("index_pattern"),nil, pattern_name),
+      KibanaResource.new(@index_name, "index-pattern", dynamic("index-pattern"),nil, pattern_name),
       KibanaResource.new(@index_name, "config", nil, default_index_json, default_index_content_id)
     ]
   end
