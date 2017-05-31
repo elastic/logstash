@@ -28,26 +28,22 @@ module LogStash module Modules class KibanaConfig
     end
   end
 
-  def kibana_index_hacks
-    # Copied from libbeat/dashboards/importer.go
-    # CreateKibanaIndex creates the kibana index if it doesn't exists and sets
-    # some index properties which are needed as a workaround for:
-    # https://github.com/elastic/beats-dashboards/issues/94
-    # with kibana 5.4.0 this hack failed to be applied.
-    ha = '{"settings": {"index":{"mapping":{"single_type": false}}}}'
-    hb = '{"search": {"properties": {"hits": {"type": "integer"}, "version": {"type": "integer"}}}}'
+  def index_pattern
+    pattern_name = "#{@name}-*"
+    default_index_json = '{"defaultIndex": "#{pattern_name}"}'
+    default_index_content_id = @settings.fetch("index_pattern.kibana_version", "5.4.0") # make this 5.5.0
     [
-      KibanaBaseResource.new(@index_name, "not-used", "not-used", ha),
-      KibanaBaseResource.new(@index_name, "not-used", "not-used", hb)
+      KibanaResource.new(@index_name, "index-pattern", dynamic("index_pattern"),nil, pattern_name),
+      KibanaResource.new(@index_name, "config", nil, default_index_json, default_index_content_id)
     ]
   end
 
   def resources
-    list = [] # kibana_index_hacks
+    list = index_pattern
     dashboards.each do |board|
       extract_panels_into(board, list)
     end
-    list
+    list.concat(extract_saved_searches(list))
   end
 
   private
@@ -87,6 +83,21 @@ module LogStash module Modules class KibanaConfig
       else
         logger.warn("panelJSON contained unknown type", :type => panel_type)
       end
+    end
+
+    def extract_saved_searches(list)
+      result = [] # must not add to list while iterating
+      list.each do |resource|
+        next unless resource.contains?("savedSearchId")
+        content = resource.content_as_object
+        next if content.nil?
+        saved_search = content["savedSearchId"]
+        next if saved_search.nil?
+        ss_resource = KibanaResource.new(@index_name, "search", dynamic("search", saved_search))
+        next if list.member?(ss_resource) || result.member?(ss_resource)
+        result << ss_resource
+      end
+      result
     end
   end
 end end end

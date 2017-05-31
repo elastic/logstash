@@ -13,7 +13,7 @@ describe LogStash::Modules::Scaffold do
   subject(:test_module) { described_class.new(mname, base_dir) }
   let(:module_settings) do
     {
-      "var.output.elasticsearch.host" => "\"es.mycloud.com:9200\"",
+      "var.output.elasticsearch.hosts" => "es.mycloud.com:9200",
       "var.output.elasticsearch.user" => "foo",
       "var.output.elasticsearch.password" => "password",
       "var.input.tcp.port" => 5606,
@@ -37,7 +37,19 @@ describe LogStash::Modules::Scaffold do
 }
 JSON
   end
-
+  let(:viz_json) do
+<<-JSON
+{
+"visState": "",
+"description": "",
+"title": "foo-c",
+"uiStateJSON": "",
+"version": 1,
+"savedSearchId": "foo-f",
+"kibanaSavedObjectMeta": {}
+}
+JSON
+  end
   context "logstash operation" do
     let(:ls_conf) do
 <<-ERB
@@ -85,8 +97,10 @@ ERB
 
   context "kibana operation" do
     before do
+      allow(LogStash::Modules::FileReader).to receive(:read).and_return("{}")
       allow(LogStash::Modules::FileReader).to receive(:read).with("gem-home/kibana/dashboard/foo.json").and_return("[\"Foo-Dashboard\"]")
       allow(LogStash::Modules::FileReader).to receive(:read).with("gem-home/kibana/dashboard/Foo-Dashboard.json").and_return(dashboard_json)
+      allow(LogStash::Modules::FileReader).to receive(:read).with("gem-home/kibana/visualization/foo-c.json").and_return(viz_json)
     end
 
     it "provides a list of importable files" do
@@ -94,16 +108,24 @@ ERB
       test_module.with_settings(module_settings)
       expect(test_module.kibana_configuration).not_to be_nil
       files = test_module.kibana_configuration.resources
-      expect(files.size).to eq(4)
+      expect(files.size).to eq(7)
       expect(files.map{|o| o.class.name}.uniq).to eq(["LogStash::Modules::KibanaResource"])
-      expect(files[0].content_path).to eq("gem-home/kibana/dashboard/Foo-Dashboard.json")
-      expect(files[0].import_path).to eq(".kibana/dashboard/Foo-Dashboard")
-      expect(files[1].content_path).to eq("gem-home/kibana/visualization/foo-c.json")
-      expect(files[1].import_path).to eq(".kibana/visualization/foo-c")
-      expect(files[2].content_path).to eq("gem-home/kibana/visualization/foo-d.json")
-      expect(files[2].import_path).to eq(".kibana/visualization/foo-d")
-      expect(files[3].content_path).to eq("gem-home/kibana/search/foo-e.json") #<- the panels can contain items from other folders
-      expect(files[3].import_path).to eq(".kibana/search/foo-e")
+      expect(files[0].content_path).to eq("gem-home/kibana/index_pattern/foo.json")
+      expect(files[0].import_path).to eq(".kibana/index-pattern/foo-*")
+
+      expect(files[1].content).to eq("{\"defaultIndex\": \"\#{pattern_name}\"}")
+      expect(files[1].import_path).to eq(".kibana/config/5.4.0")
+
+      expect(files[2].content_path).to eq("gem-home/kibana/dashboard/Foo-Dashboard.json")
+      expect(files[2].import_path).to eq(".kibana/dashboard/Foo-Dashboard")
+      expect(files[3].content_path).to eq("gem-home/kibana/visualization/foo-c.json")
+      expect(files[3].import_path).to eq(".kibana/visualization/foo-c")
+      expect(files[4].content_path).to eq("gem-home/kibana/visualization/foo-d.json")
+      expect(files[4].import_path).to eq(".kibana/visualization/foo-d")
+      expect(files[5].content_path).to eq("gem-home/kibana/search/foo-e.json") #<- the panels can contain items from other folders
+      expect(files[5].import_path).to eq(".kibana/search/foo-e")
+      expect(files[6].content_path).to eq("gem-home/kibana/search/foo-f.json") #<- the visualization can contain items from the search folder
+      expect(files[6].import_path).to eq(".kibana/search/foo-f")
     end
 
     it "provides the kibana index string" do
@@ -122,6 +144,8 @@ ERB
     let(:expected_paths) do
       [
         "_template/cef",
+        ".kibana/index-pattern/cef-*",
+        ".kibana/config/5.4.0",
         ".kibana/dashboard/FW-Dashboard",
         ".kibana/visualization/FW-Metrics",
         ".kibana/visualization/FW-Last-Update",
@@ -160,7 +184,7 @@ ERB
     let(:base_dir) { File.expand_path(File.join(File.dirname(__FILE__), "..", "..", "modules_test_files", "#{mname}")) }
     let(:module_settings) do
       {
-        "var.output.elasticsearch.host" => "localhost:9200",
+        "var.output.elasticsearch.hosts" => "localhost:9200",
         "var.output.elasticsearch.user" => "foo",
         "var.output.elasticsearch.password" => "password",
         "var.input.tcp.port" => 5606,

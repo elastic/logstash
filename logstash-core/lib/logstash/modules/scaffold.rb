@@ -54,26 +54,61 @@ modules:
   var.output.elasticsearch.password: "password"
   var.input.tcp.port: 5606
 
-File structure
+GEM File structure
 logstash-module-netflow
 ├── configuration
 │   ├── elasticsearch
 │   │   └── netflow.json
 │   ├── kibana
 │   │   ├── dashboard
-│   │   │   └── netflow.json ("panelJSON" contains references to visualization panels 1,2,3)
+│   │   │   └── netflow.json (contains '["dash1", "dash2"]')
+│   │   │   └── dash1.json ("panelJSON" contains refs to visualization panels 1,2 and search 1)
+│   │   │   └── dash2.json ("panelJSON" contains refs to visualization panel 3  and search 2)
 │   │   ├── search
-|   |   |   └── netflow-search1.json
-|   |   |   └── netflow-search2.json
+|   |   |   └── search1.json
+|   |   |   └── search2.json
 │   │   └── vizualization
-|   |   |   └── netflow-panel1.json
-|   |   |   └── netflow-panel2.json
-|   |   |   └── netflow-panel3.json
+|   |   |   └── panel1.json
+|   |   |   └── panel2.json
+|   |   |   └── panel3.json
 │   └── logstash
 │       └── netflow.conf.erb
 ├── lib
-│   ├── logstash
-│   │   └── modules
-│   │       └── netflow.rb
+│   └── logstash_registry.rb
+└── logstash-module-netflow.gemspec
+
+GEM File structure
+logstash-module-netflow
+├── configuration
+│   ├── elasticsearch
+│   │   └── netflow.json
+│   ├── kibana
+│   │   ├── dashboard
+│   │   │   └── netflow.json (contains '{"v5.5.0": ["dash1", "dash2"], "v6.0.4": ["dash1", "dash2"]')
+│   │   │   └── v5.5.0
+│   │   │   |   └── dash1.json ("panelJSON" contains refs to visualization panels 1,2 and search 1)
+│   │   │   |   └── dash2.json ("panelJSON" contains refs to visualization panel 3  and search 2)
+│   │   │   └── v6.0.4
+│   │   │       └── dash1.json ("panelJSON" contains refs to visualization panels 1,2 and search 1)
+│   │   │       └── dash2.json ("panelJSON" contains refs to visualization panel 3  and search 2)
+│   │   ├── search
+│   │   │   └── v5
+|   |   |   |   └── search1.json
+|   |   |   |   └── search2.json
+│   │   │   └── v6
+|   |   |       └── search1.json
+|   |   |       └── search2.json
+│   │   └── vizualization
+│   │   │   └── v5
+|   |   |   |   └── panel1.json
+|   |   |   |   └── panel2.json
+|   |   |   |   └── panel3.json
+│   │   │   └── v6
+|   |   |       └── panel1.json
+|   |   |       └── panel2.json
+|   |   |       └── panel3.json
+│   └── logstash
+│       └── netflow.conf.erb
+├── lib
 │   └── logstash_registry.rb
 └── logstash-module-netflow.gemspec
