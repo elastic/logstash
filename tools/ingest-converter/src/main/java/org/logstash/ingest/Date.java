@@ -12,7 +12,7 @@ import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 
 /**
- * Ingest Date DSL to Logstash Grok Transpiler.
+ * Ingest Date DSL to Logstash Date Transpiler.
  */
 public final class Date {
 

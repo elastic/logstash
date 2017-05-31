@@ -1,5 +1,5 @@
 /**
- * Converts Ingest JSON to Grok.
+ * Converts Ingest Date JSON to LS Date filter.
  */
 function ingest_to_logstash_date(json) {
 
@@ -20,7 +20,7 @@ function ingest_to_logstash_date(json) {
     }
 
     /**
-     * All hash fields in Grok start on a new line.
+     * All hash fields in LS start on a new line.
      * @param fields Array of Strings of Serialized Hash Fields
      * @returns {string} Joined Serialization of Hash Fields
      */
@@ -29,7 +29,7 @@ function ingest_to_logstash_date(json) {
     }
 
     /**
-     * Translates the JSON naming pattern (`name.qualifier.sub`) into the grok pattern
+     * Translates the JSON naming pattern (`name.qualifier.sub`) into the LS pattern
      * [name][qualifier][sub] for all applicable tokens in the given string.
      * This function correctly identifies and omits renaming of string literals.
      * @param string to replace naming pattern in
@@ -60,7 +60,7 @@ function ingest_to_logstash_date(json) {
     }
 
     /**
-     * Converts Ingest/JSON style pattern array to Grok pattern array, performing necessary variable
+     * Converts Ingest/JSON style pattern array to LS pattern array, performing necessary variable
      * name and quote escaping adjustments.
      * @param patterns Pattern Array in JSON formatting
      * @returns {string} Pattern array in Grok formatting
@@ -71,10 +71,10 @@ function ingest_to_logstash_date(json) {
 
 
     /**
-     * Fixes indentation in Grok string.
-     * @param string Grok string to fix indentation in, that has no indentation intentionally with
+     * Fixes indentation in LS string.
+     * @param string LS string to fix indentation in, that has no indentation intentionally with
      * all lines starting on a token without preceding spaces.
-     * @returns {string} Grok string indented by 3 spaces per level
+     * @returns {string} LS string indented by 3 spaces per level
      */
     function fix_indent(string) {
 

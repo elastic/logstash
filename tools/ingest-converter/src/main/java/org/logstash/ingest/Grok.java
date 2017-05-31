@@ -29,7 +29,7 @@ public final class Grok {
                 new ScriptEngineManager().getEngineByName("nashorn");
             engine.eval(reader);
             Files.write(Paths.get(args[1]), ((String) ((Invocable) engine).invokeFunction(
-                "json_to_grok",
+                "ingest_to_logstash_grok",
                 new String(
                     Files.readAllBytes(Paths.get(args[0])), StandardCharsets.UTF_8
                 )

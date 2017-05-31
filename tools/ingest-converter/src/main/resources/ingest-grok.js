@@ -1,7 +1,7 @@
 /**
- * Converts Ingest JSON to Grok.
+ * Converts Ingest JSON to LS Grok.
  */
-function json_to_grok(json) {
+function ingest_to_logstash_grok(json) {
 
     function quote_string(string) {
         return "\"" + string.replace(/"/g, "\\\"") + "\"";
@@ -24,7 +24,7 @@ function json_to_grok(json) {
     }
 
     /**
-     * All hash fields in Grok start on a new line.
+     * All hash fields in LS start on a new line.
      * @param fields Array of Strings of Serialized Hash Fields
      * @returns {string} Joined Serialization of Hash Fields
      */
@@ -33,10 +33,10 @@ function json_to_grok(json) {
     }
 
     /**
-     * Converts Ingest/JSON style pattern array to Grok pattern array, performing necessary variable
+     * Converts Ingest/JSON style pattern array to LS pattern array, performing necessary variable
      * name and quote escaping adjustments.
      * @param patterns Pattern Array in JSON formatting
-     * @returns {string} Pattern array in Grok formatting
+     * @returns {string} Pattern array in LS formatting
      */
     function create_pattern_array(patterns) {
 
@@ -85,10 +85,10 @@ function json_to_grok(json) {
     }
 
     /**
-     * Fixes indentation in Grok string.
-     * @param string Grok string to fix indentation in, that has no indentation intentionally with
+     * Fixes indentation in LS string.
+     * @param string LS string to fix indentation in, that has no indentation intentionally with
      * all lines starting on a token without preceding spaces.
-     * @returns {string} Grok string indented by 3 spaces per level
+     * @returns {string} LS string indented by 3 spaces per level
      */
     function fix_indent(string) {
 
