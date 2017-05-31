@@ -39,7 +39,7 @@ function json_to_grok(json) {
      * @returns {string} Pattern array in Grok formatting
      */
     function create_pattern_array(patterns) {
-        
+
         /**
          * Translates the JSON naming pattern (`name.qualifier.sub`) into the grok pattern
          * [name][qualifier][sub] for all applicable tokens in the given string.
@@ -70,7 +70,7 @@ function json_to_grok(json) {
             tokens.push(token_dots_to_square_brackets(right));
             return tokens.join("");
         }
-        
+
         return "[\n" + patterns.map(dots_to_square_brackets).map(quote_string).join(",\n") + "\n]";
     }
 
@@ -86,16 +86,16 @@ function json_to_grok(json) {
 
     /**
      * Fixes indentation in Grok string.
-     * @param string Grok string to fix indentation in, that has no indentation intentionally with 
+     * @param string Grok string to fix indentation in, that has no indentation intentionally with
      * all lines starting on a token without preceding spaces.
      * @returns {string} Grok string indented by 3 spaces per level
      */
     function fix_indent(string) {
-        
+
         function indent(string, shifts) {
             return new Array(shifts * 3 + 1).join(" ") + string;
         }
-        
+
         var lines = string.split("\n");
         var count = 0;
         var i;
@@ -113,7 +113,7 @@ function json_to_grok(json) {
         }
         return lines.join("\n");
     }
-    
+
     function grok_hash(processor) {
         var grok_data = processor["grok"];
         var grok_contents = create_hash_field(
@@ -125,13 +125,13 @@ function json_to_grok(json) {
         );
         if (grok_data["pattern_definitions"]) {
             grok_contents = join_hash_fields([
-                    grok_contents, 
+                    grok_contents,
                     create_pattern_definition_hash(grok_data["pattern_definitions"])
             ])
         }
         return grok_contents;
     }
-    
+
     function map_processor (processor) {
         return fix_indent(
             create_hash(
