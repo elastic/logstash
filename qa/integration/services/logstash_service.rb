@@ -1,13 +1,16 @@
 require_relative "monitoring_api"
-
 require "childprocess"
 require "bundler"
 require "socket"
 require "tempfile"
-require 'yaml'
+require "yaml"
+require "json"
+require "net/http"
+require "uri"
 
 # A locally started Logstash service
 class LogstashService < Service
+  API_URL = "http://localhost:9600/"
 
   LS_ROOT_DIR = File.join("..", "..", "..", "..")
   LS_VERSION_FILE = File.expand_path(File.join(LS_ROOT_DIR, "versions.yml"), __FILE__)
@@ -17,10 +20,10 @@ class LogstashService < Service
   SETTINGS_CLI_FLAG = "--path.settings"
 
   STDIN_CONFIG = "input {stdin {}} output { }"
-  RETRY_ATTEMPTS = 10
+  MAXIMUM_WAIT_TIME = 5 * 60
 
   @process = nil
-  
+
   attr_reader :logstash_home
   attr_reader :default_settings_file
   attr_writer :env_variables
@@ -43,7 +46,7 @@ class LogstashService < Service
       @logstash_bin = File.join("#{@logstash_home}", LS_BIN)
       raise "Logstash binary not found in path #{@logstash_home}" unless File.file? @logstash_bin
     end
-    
+
     @default_settings_file = File.join(@logstash_home, LS_CONFIG_FILE)
     @monitoring_api = MonitoringAPI.new
   end
@@ -55,14 +58,14 @@ class LogstashService < Service
       @process.alive?
     end
   end
-  
+
   def exited?
     @process.exited?
   end
-  
+
   def exit_code
     @process.exit_code
-  end  
+  end
 
   # Starts a LS process in background with a given config file
   # and shuts it down after input is completely processed
@@ -155,34 +158,59 @@ class LogstashService < Service
     @monitoring_api
   end
 
-  # Wait until LS is started by repeatedly doing a socket connection to HTTP port
+  # Make sure Logstash can return a complete http response before proceeding forward
   def wait_for_logstash
-    tries = RETRY_ATTEMPTS
-    while tries > 0
-      if is_port_open?
-        break
-      else
-        sleep 1
+    started_at = Time.now
+    sleep_time = 1
+    maximum_sleep_time = 10
+
+    uri = URI(API_URL)
+    successful = false
+
+    while Time.now - started_at < MAXIMUM_WAIT_TIME
+      begin
+        response = Net::HTTP.get_response(uri)
+
+        if response.code.to_i == 200
+          data = JSON.parse(response.body)
+          if !data["host"].nil? && !data["version"].nil?
+            successful = true
+            break
+          else
+            puts "Received wrong response from the Logstash's API: #{data}"
+          end
+          puts "Received wrong code, expected 200 received #{response.code}"
+        end
+
+        sleep(sleep_time)
+        sleep_time = [sleep_time + 1, maximum_sleep_time].min
+      rescue => e
+        puts "Retrying to reach Logstash's API, but got an error: #{e}"
+        sleep(sleep_time)
+        sleep_time = [sleep_time + 1, maximum_sleep_time].min
       end
-      tries -= 1
+    end
+
+    if !successful
+      raise "Logstash's API didn't answer corrrectly within the specified maximum time of #{MAXIMUM_WAIT_TIME}"
     end
   end
-  
+
   # this method only overwrites existing config with new config
-  # it does not assume that LS pipeline is fully reloaded after a 
+  # it does not assume that LS pipeline is fully reloaded after a
   # config change. It is up to the caller to validate that.
   def reload_config(initial_config_file, reload_config_file)
     FileUtils.cp(reload_config_file, initial_config_file)
-  end  
-  
+  end
+
   def get_version
     `#{@logstash_bin} --version`
   end
-  
+
   def get_version_yml
     LS_VERSION_FILE
-  end   
-  
+  end
+
   def process_id
     @process.pid
   end
