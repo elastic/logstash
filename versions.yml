@@ -1,4 +1,4 @@
 ---
-logstash: 6.0.0-beta1
-logstash-core: 6.0.0-beta1
+logstash: 6.0.0-alpha2
+logstash-core: 6.0.0-alpha2
 logstash-core-plugin-api: 2.1.16
