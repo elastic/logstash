@@ -41,20 +41,26 @@ module LogStash
         def events
           extract_metrics(
             [:stats, :events],
-            :in, :filtered, :out, :duration_in_millis
+            :in, :filtered, :out, :duration_in_millis, :queue_push_duration_in_millis
           )
         end
 
-        def pipeline(pipeline_id = LogStash::SETTINGS.get("pipeline.id").to_sym)
-          stats = service.get_shallow(:stats, :pipelines, pipeline_id)
-          stats = PluginsStats.report(stats)
-          stats.merge(:id => pipeline_id)
+        def pipeline(pipeline_id = nil)
+          if pipeline_id.nil?
+            pipeline_ids = service.get_shallow(:stats, :pipelines).keys
+            pipeline_ids.each_with_object({}) do |pipeline_id, result|
+              result[pipeline_id] = plugins_stats_report(pipeline_id)
+            end
+          else
+            { pipeline_id => plugins_stats_report(pipeline_id) }
+          end
+        rescue # failed to find pipeline
+          {}
         end
 
         def memory
           memory = service.get_shallow(:jvm, :memory)
           {
-            :heap_used_in_bytes => memory[:heap][:used_in_bytes],
             :heap_used_percent => memory[:heap][:used_percent],
             :heap_committed_in_bytes => memory[:heap][:committed_in_bytes],
             :heap_max_in_bytes => memory[:heap][:max_in_bytes],
@@ -83,6 +89,12 @@ module LogStash
 
         def hot_threads(options={})
           HotThreadsReport.new(self, options)
+        end
+
+        private
+        def plugins_stats_report(pipeline_id)
+          stats = service.get_shallow(:stats, :pipelines, pipeline_id.to_sym)
+          PluginsStats.report(stats)
         end
 
         module PluginsStats

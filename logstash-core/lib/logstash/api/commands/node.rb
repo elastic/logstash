@@ -9,7 +9,7 @@ module LogStash
 
         def all(selected_fields=[])
           payload = {
-            :pipeline => pipeline,
+            :pipelines => pipelines,
             :os => os,
             :jvm => jvm
           }
@@ -17,12 +17,20 @@ module LogStash
           payload
         end
 
-        def pipeline(pipeline_id = LogStash::SETTINGS.get("pipeline.id").to_sym)
-          stats = extract_metrics(
-            [:stats, :pipelines, pipeline_id, :config],
+        def pipelines
+          pipeline_ids = service.get_shallow(:stats, :pipelines).keys
+          pipeline_ids.each_with_object({}) do |pipeline_id, result|
+            result[pipeline_id] = pipeline(pipeline_id)
+          end
+        end
+
+        def pipeline(pipeline_id)
+          extract_metrics(
+            [:stats, :pipelines, pipeline_id.to_sym, :config],
             :workers, :batch_size, :batch_delay, :config_reload_automatic, :config_reload_interval
           )
-          stats.merge(:id => pipeline_id)
+        rescue
+          {}
         end
 
         def os
@@ -40,7 +48,6 @@ module LogStash
           {
             :pid =>  ManagementFactory.getRuntimeMXBean().getName().split("@").first.to_i,
             :version => java.lang.System.getProperty("java.version"),
-            :vm_name => java.lang.System.getProperty("java.vm.name"),
             :vm_version => java.lang.System.getProperty("java.version"),
             :vm_vendor => java.lang.System.getProperty("java.vendor"),
             :vm_name => java.lang.System.getProperty("java.vm.name"),

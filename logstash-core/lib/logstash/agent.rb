@@ -245,27 +245,35 @@ class LogStash::Agent
     end
   end
 
-  def running_pipelines
+  def with_running_pipelines
     with_pipelines do |pipelines|
-      pipelines.select {|pipeline_id, _| running_pipeline?(pipeline_id) }
+      yield pipelines.select {|pipeline_id, _| running_pipeline?(pipeline_id) }
     end
   end
 
   def running_pipelines?
-    with_pipelines do |pipelines|
-      pipelines.select {|pipeline_id, _| running_pipeline?(pipeline_id) }.any?
+    running_pipelines_count > 0
+  end
+
+  def running_pipelines_count
+    with_running_pipelines do |pipelines|
+      pipelines.size
     end
   end
 
   def running_user_defined_pipelines?
-    running_user_defined_pipelines.any?
+    with_running_user_defined_pipelines do |pipelines|
+      pipelines.size > 0
+    end
   end
 
-  def running_user_defined_pipelines
+  def with_running_user_defined_pipelines
     with_pipelines do |pipelines|
-      pipelines.select do |_, pipeline|
+      found = pipelines.select do |_, pipeline|
         pipeline.running? && !pipeline.system?
       end
+
+      yield found
     end
   end
 
@@ -362,8 +370,10 @@ class LogStash::Agent
 
   def report_currently_running_pipelines(converge_result)
     if converge_result.success? && converge_result.total > 0
-      number_of_running_pipeline = running_pipelines.size
-      logger.info("Pipelines running", :count => number_of_running_pipeline, :pipelines => running_pipelines.values.collect(&:pipeline_id) )
+      with_running_pipelines do |pipelines|
+        number_of_running_pipeline = pipelines.size
+        logger.info("Pipelines running", :count => number_of_running_pipeline, :pipelines => pipelines.values.collect(&:pipeline_id) )
+      end
     end
   end
 

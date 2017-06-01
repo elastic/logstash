@@ -32,12 +32,14 @@ module LogStash; class BasePipeline
   include LogStash::Util::Loggable
 
   attr_reader :settings, :config_str, :config_hash, :inputs, :filters, :outputs, :pipeline_id, :lir, :execution_context
+  attr_reader :pipeline_config
 
-  def initialize(config_str, settings = SETTINGS, namespaced_metric = nil, agent = nil)
+  def initialize(pipeline_config, namespaced_metric = nil, agent = nil)
     @logger = self.logger
 
-    @config_str = config_str
-    @settings = settings
+    @pipeline_config = pipeline_config
+    @config_str = pipeline_config.config_string
+    @settings = pipeline_config.settings
     @config_hash = Digest::SHA1.hexdigest(@config_str)
 
     @lir = compile_lir
@@ -46,7 +48,7 @@ module LogStash; class BasePipeline
     # a unique id when auto-generating plugin ids
     @plugin_counter ||= 0
 
-    @pipeline_id = settings.get_value("pipeline.id") || self.object_id
+    @pipeline_id = @settings.get_value("pipeline.id") || self.object_id
 
     # A list of plugins indexed by id
     @plugins_by_id = {}
@@ -160,7 +162,8 @@ module LogStash; class Pipeline < BasePipeline
 
   MAX_INFLIGHT_WARN_THRESHOLD = 10_000
 
-  def initialize(config_str, settings = SETTINGS, namespaced_metric = nil, agent = nil)
+  def initialize(pipeline_config, namespaced_metric = nil, agent = nil)
+    @settings = pipeline_config.settings
     # This needs to be configured before we call super which will evaluate the code to make
     # sure the metric instance is correctly send to the plugins to make the namespace scoping work
     @metric = if namespaced_metric
@@ -242,7 +245,7 @@ module LogStash; class Pipeline < BasePipeline
     # this is useful in the context of pipeline reloading
     collect_stats
 
-    logger.debug("Starting pipeline", default_logging_keys)
+    @logger.debug("Starting pipeline", default_logging_keys)
 
     @finished_execution = Concurrent::AtomicBoolean.new(false)
 
@@ -291,7 +294,7 @@ module LogStash; class Pipeline < BasePipeline
 
     start_workers
 
-    @logger.info("Pipeline started", default_logging_keys)
+    @logger.info("Pipeline started", "pipeline.id" => @pipeline_id)
 
     # Block until all inputs have stopped
     # Generally this happens if SIGINT is sent and `shutdown` is called from an external thread
@@ -572,6 +575,7 @@ module LogStash; class Pipeline < BasePipeline
     # stopped
     wait_for_workers
     clear_pipeline_metrics
+    @logger.info("Pipeline terminated", "pipeline.id" => @pipeline_id)
   end # def shutdown
 
   def force_shutdown!

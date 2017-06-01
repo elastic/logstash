@@ -46,10 +46,12 @@ describe LogStash::StateResolver do
 
   context "when some pipeline are running" do
     context "when a pipeline is running" do
-      let(:running_pipelines) { { :main => mock_pipeline(:main) } }
+      let(:main_pipeline) { mock_pipeline(:main) }
+      let(:main_pipeline_config) { main_pipeline.pipeline_config }
+      let(:running_pipelines) { { :main => main_pipeline } }
 
       context "when the pipeline config contains a new one and the existing" do
-        let(:pipeline_configs) { [mock_pipeline_config(:hello_world), mock_pipeline_config(:main)] }
+        let(:pipeline_configs) { [mock_pipeline_config(:hello_world), main_pipeline_config ] }
 
         it "creates the new one and keep the other one" do
           expect(subject.resolve(running_pipelines, pipeline_configs)).to have_actions(
@@ -105,7 +107,7 @@ describe LogStash::StateResolver do
       context "without system pipeline" do
         let(:pipeline_configs) do
           [
-            mock_pipeline_config(:main1),
+            running_pipelines[:main1].pipeline_config,
             mock_pipeline_config(:main9),
             mock_pipeline_config(:main5, "input { generator {}}"),
             mock_pipeline_config(:main3, "input { generator {}}"),
@@ -129,7 +131,7 @@ describe LogStash::StateResolver do
       context "with system pipeline" do
         let(:pipeline_configs) do
           [
-            mock_pipeline_config(:main1),
+            running_pipelines[:main1].pipeline_config,
             mock_pipeline_config(:main9),
             mock_pipeline_config(:main5, "input { generator {}}"),
             mock_pipeline_config(:main3, "input { generator {}}"),

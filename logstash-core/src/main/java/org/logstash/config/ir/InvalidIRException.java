@@ -1,7 +1,5 @@
 package org.logstash.config.ir;
 
-import org.logstash.config.ir.graph.algorithms.TopologicalSort;
-
 /**
  * Created by andrewvc on 9/6/16.
  */

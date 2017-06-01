@@ -15,7 +15,7 @@ the host and version.
 
 [source,js]
 --------------------------------------------------
-GET /
+curl -XGET 'localhost:9600/?pretty'
 --------------------------------------------------
 
 Example response:
@@ -68,7 +68,7 @@ The node info API retrieves information about the node.
 
 [source,js]
 --------------------------------------------------
-GET /_node/<types>
+curl -XGET 'localhost:9600/_node/<types>'
 --------------------------------------------------
 
 Where `<types>` is optional and specifies the types of node info you want to return.
@@ -94,7 +94,7 @@ batch size, and batch delay:
 
 [source,js]
 --------------------------------------------------
-GET /_node/pipeline
+curl -XGET 'localhost:9600/_node/pipeline?pretty'
 --------------------------------------------------
 
 If you want to view additional information about the pipeline, such as stats for each configured input, filter,
@@ -111,7 +111,7 @@ Example response:
     "batch_delay": 5,
     "config_reload_automatic": true,
     "config_reload_interval": 3
-
+    "id" : "main"
   }
 --------------------------------------------------
 
@@ -123,7 +123,7 @@ available processors:
 
 [source,js]
 --------------------------------------------------
-GET /_node/os
+curl -XGET 'localhost:9600/_node/os?pretty'
 --------------------------------------------------
 
 Example response:
@@ -134,7 +134,7 @@ Example response:
   "os": {
     "name": "Mac OS X",
     "arch": "x86_64",
-    "version": "10.12.1",
+    "version": "10.12.4",
     "available_processors": 8
   }
 --------------------------------------------------
@@ -147,7 +147,7 @@ VM info, memory usage, and info about garbage collectors:
 
 [source,js]
 --------------------------------------------------
-GET /_node/jvm
+curl -XGET 'localhost:9600/_node/jvm?pretty'
 --------------------------------------------------
 
 Example response:
@@ -184,7 +184,7 @@ This API basically returns the output of running the `bin/logstash-plugin list -
 
 [source,js]
 --------------------------------------------------
-GET /_node/plugins
+curl -XGET 'localhost:9600/_node/plugins?pretty'
 --------------------------------------------------
 
 See <<monitoring-common-options, Common Options>> for a list of options that can be applied to all
@@ -197,7 +197,7 @@ Example response:
 ["source","js",subs="attributes"]
 --------------------------------------------------
 {
-  "total": 92,
+  "total": 93,
   "plugins": [
     {
       "name": "logstash-codec-cef",
@@ -228,7 +228,7 @@ The node stats API retrieves runtime stats about Logstash.
 
 [source,js]
 --------------------------------------------------
-GET /_node/stats/<types>
+curl -XGET 'localhost:9600/_node/stats/<types>'
 --------------------------------------------------
 
 Where `<types>` is optional and specifies the types of stats you want to return.
@@ -258,7 +258,7 @@ The following request returns a JSON document containing JVM stats:
 
 [source,js]
 --------------------------------------------------
-GET /_node/stats/jvm
+curl -XGET 'localhost:9600/_node/stats/jvm?pretty'
 --------------------------------------------------
 
 Example response:
@@ -325,7 +325,7 @@ The following request returns a JSON document containing process stats:
 
 [source,js]
 --------------------------------------------------
-GET /_node/stats/process
+curl -XGET 'localhost:9600/_node/stats/process?pretty'
 --------------------------------------------------
 
 Example response:
@@ -364,13 +364,9 @@ including:
 * info about the persistent queue (when
 <<persistent-queues,persistent queues>> are enabled)
 
-NOTE: Detailed pipeline stats for input plugins are not currently available, but
-will be available in a future release. For now, the node stats API returns an
-empty set array for inputs (`"inputs": []`).
-
 [source,js]
 --------------------------------------------------
-GET /_node/stats/pipeline
+curl -XGET 'localhost:9600/_node/stats/pipeline?pretty'
 --------------------------------------------------
 
 Example response:
@@ -378,72 +374,68 @@ Example response:
 [source,js]
 --------------------------------------------------
 {
-  "pipeline": {
-    "events": {
-      "duration_in_millis": 6304989,
-      "in": 200,
-      "filtered": 200,
-      "out": 200
+  "pipeline" : {
+    "events" : {
+      "duration_in_millis" : 1955,
+      "in" : 100,
+      "filtered" : 100,
+      "out" : 100,
+      "queue_push_duration_in_millis" : 71
     },
-    "plugins": {
-      "inputs": [],
-      "filters": [
-        {
-          "id": "4e3d4bed6ba821ebb47f4752bb757b04a754d736-2",
-          "events": {
-            "duration_in_millis": 113,
-            "in": 200,
-            "out": 200
-          },
-          "matches": 200,
-          "patterns_per_field": {
-            "message": 1
-          },
-          "name": "grok"
+    "plugins" : {
+      "inputs" : [ {
+        "id" : "729b0efdc657715a4a59103ab2643c010fc46e77-1",
+        "events" : {
+          "out" : 100,
+          "queue_push_duration_in_millis" : 71
         },
-        {
-          "id": "4e3d4bed6ba821ebb47f4752bb757b04a754d736-3",
-          "events": {
-            "duration_in_millis": 526,
-            "in": 200,
-            "out": 200
-          },
-          "name": "geoip"
-        }
-      ],
-      "outputs": [
-        {
-          "id": "4e3d4bed6ba821ebb47f4752bb757b04a754d736-4",
-          "events": {
-            "duration_in_millis": 2312,
-            "in": 200,
-            "out": 200
-          },
-          "name": "stdout"
-        }
-      ]
+        "name" : "beats"
+      } ],
+      "filters" : [ {
+        "id" : "729b0efdc657715a4a59103ab2643c010fc46e77-2",
+        "events" : {
+          "duration_in_millis" : 64,
+          "in" : 100,
+          "out" : 100
+        },
+        "matches" : 100,
+        "patterns_per_field" : {
+          "message" : 1
+        },
+        "name" : "grok"
+      } ],
+      "outputs" : [ {
+        "id" : "729b0efdc657715a4a59103ab2643c010fc46e77-3",
+        "events" : {
+          "duration_in_millis" : 1724,
+          "in" : 100,
+          "out" : 100
+        },
+        "name" : "stdout"
+      } ]
     },
-    "reloads": {
-      "last_error": null,
-      "successes": 0,
-      "last_success_timestamp": null,
-      "last_failure_timestamp": null,
-      "failures": 0
+    "reloads" : {
+      "last_error" : null,
+      "successes" : 2,
+      "last_success_timestamp" : "2017-05-25T02:40:40.974Z",
+      "last_failure_timestamp" : null,
+      "failures" : 0
     },
-    "queue": {
-      "events": 26,
-      "type": "persisted",
-      "capacity": {
-        "page_capacity_in_bytes": 262144000,
-        "max_queue_size_in_bytes": 4294967296,
-        "max_unread_events": 0
+    "queue" : {
+      "events" : 0,
+      "type" : "persisted",
+      "capacity" : {
+        "page_capacity_in_bytes" : 262144000,
+        "max_queue_size_in_bytes" : 8589934592,
+        "max_unread_events" : 0
       },
-      "data": {
-        "path": "/path/to/data/queue",
-        "free_space_in_bytes": 123027787776,
-        "storage_type": "hfs"
+      "data" : {
+        "path" : "/path/to/data/queue",
+        "free_space_in_bytes" : 89280552960,
+        "storage_type" : "hfs"
       }
-    }
+    },
+    "id" : "main"
   }
 }
 --------------------------------------------------
@@ -455,7 +447,7 @@ The following request returns a JSON document that shows info about config reloa
 
 [source,js]
 --------------------------------------------------
-GET /_node/stats/reloads
+curl -XGET 'localhost:9600/_node/stats/reloads?pretty'
 --------------------------------------------------
 
 Example response:
@@ -479,7 +471,7 @@ the container is being throttled.
 
 [source,js]
 --------------------------------------------------
-GET /_node/stats/os
+curl -XGET 'localhost:9600/_node/stats/os?pretty'
 --------------------------------------------------
 
 Example response:
@@ -517,7 +509,7 @@ of time.
 
 [source,js]
 --------------------------------------------------
-GET /_node/hot_threads
+curl -XGET 'localhost:9600/_node/hot_threads?pretty'
 --------------------------------------------------
 
 The output is a JSON document that contains a breakdown of the top hot threads for
@@ -601,7 +593,7 @@ You can use the `?human` parameter to return the document in a human-readable fo
 
 [source,js]
 --------------------------------------------------
-GET /_node/hot_threads?human=true
+curl -XGET 'localhost:9600/_node/hot_threads?human=true'
 --------------------------------------------------
 
 Example of a human-readable response:

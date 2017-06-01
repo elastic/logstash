@@ -56,7 +56,7 @@ describe LogStash::Pipeline do
     eos
   }
 
-  subject { LogStash::Pipeline.new(test_config, pipeline_settings_obj, metric) }
+  subject { mock_pipeline_from_string(test_config, pipeline_settings_obj, metric) }
 
   before(:each) do
     pipeline_settings.each {|k, v| pipeline_settings_obj.set(k, v) }

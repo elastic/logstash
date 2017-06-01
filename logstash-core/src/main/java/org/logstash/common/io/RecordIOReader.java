@@ -18,8 +18,6 @@
  */
 package org.logstash.common.io;
 
-import org.logstash.Timestamp;
-
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.ClosedByInterruptException;
@@ -28,7 +26,6 @@ import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.Comparator;
 import java.util.function.Function;
-import java.util.function.Supplier;
 import java.util.zip.CRC32;
 import java.util.zip.Checksum;
 
