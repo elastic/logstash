@@ -1,4 +1,4 @@
 ---
-logstash: 5.4.1
-logstash-core: 5.4.1
+logstash: 5.4.2
+logstash-core: 5.4.2
 logstash-core-plugin-api: 2.1.12
