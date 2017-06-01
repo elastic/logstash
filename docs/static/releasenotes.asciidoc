@@ -16,28 +16,28 @@ This section summarizes the changes in the following releases:
 
 *`Beats`*:
 
-* Fixed an issue where Logstash would incorrectly close the connection from beats due to a timeout (https://github.com/logstash-plugins/logstash-input-beats/issues/185)[#185].
+* Fixed an issue where Logstash would incorrectly close the connection from beats due to a timeout (https://github.com/logstash-plugins/logstash-input-beats/issues/185[Issue 185]).
 
 *`JDBC`*:
 
-* This plugin now automatically reconnects on connection issues (https://github.com/logstash-plugins/logstash-input-jdbc/issues/45)[Issue 45].
+* This plugin now automatically reconnects on connection issues (https://github.com/logstash-plugins/logstash-input-jdbc/issues/45[Issue 45]).
 
 *`HTTP Poller`*:
 
-* Added option to specify top level user/password options that apply to all URLs by default.
+* Added option to specify top-level user/password options that apply to all URLs by default.
 * Added eager auth functionality. This means the client will send any credentials in its first request rather than waiting for a 401 challenge.
 
 *`Log4j`*:
 
-* This input will now reject any non-log4j log objects sent as input.
+* This input now rejects any non-log4j log objects sent as input.
 
-* `RabbitMQ`*:
+*`RabbitMQ`*:
 
-* Updated the underlying Rabbitmq Java lib to v3.0.0.
+* Updated the underlying RabbitMQ Java lib to v3.0.0.
 
 *`S3`*:
 
-* Fixed an issue when LS would crash when attempting to ingest a json file with a message attribute that is not a string (https://github.com/logstash-plugins/logstash-input-s3/issues/109)[Issue 109].
+* Fixed an issue where Logstash would crash when attempting to ingest a JSON file with a message attribute that was not a string (https://github.com/logstash-plugins/logstash-input-s3/issues/109[Issue 109]).
 
 *`Elasticsearch`*:
 
@@ -47,35 +47,35 @@ This section summarizes the changes in the following releases:
 
 *`Date`*:
 
-* This plugin now ignores canceled events which were unnecessarily processed before.
+* This plugin now ignores canceled events. Previously, these events were unnecessarily processed.
 
 *`Fingerprint`*:
 
-* Improved error messages that could happen during start up.
+* Improved error messages that could happen during startup.
 
 *`Grok`*:
 
-* Fixed an issue when a subdirectory under patterns directory could crash Logstash at startup (https://github.com/logstash-plugins/logstash-filter-grok/issues/110[Issue 110]).
-* Added an option to define custom patterns using `pattern_definitions` configuration.
+* Fixed an issue where a subdirectory under the `patterns` directory could cause Logstash to crash at startup (https://github.com/logstash-plugins/logstash-filter-grok/issues/110[Issue 110]).
+* Added ability to define custom patterns within a `grok` filter by using the `pattern_definitions` config option.
 
 *`URL Decode`*:
 
-* Fixed an issue where Logstash would crash when processing unicode input with this filter.
+* Fixed an issue where Logstash would crash when processing Unicode input with this filter.
 
 ==== Output Plugins
 
 *`S3`*:
 
-* Fixed `restore_from_crash` option to use the same upload options as the normal uploader (https://github.com/logstash-plugins/logstash-output-s3/issues/140)[Issue 140].
-* Updated `canned_acl` options to allow `public-read`, `public-read-write` and `authenticated-read` as possible values.
+* Fixed the `restore_from_crash` option to use the same upload options as the normal uploader (https://github.com/logstash-plugins/logstash-output-s3/issues/140[Issue 140]).
+* Updated the `canned_acl` option to allow `public-read`, `public-read-write` and `authenticated-read` as possible values.
 
-* `RabbitMQ`*:
+*`RabbitMQ`*:
 
-* Updated the underlying Rabbitmq Java lib to v3.0.0.
+* Updated the underlying RabbitMQ Java lib to v3.0.0.
 
 *`Elasticsearch`*:
 
-* Add support for customizing `sniffing_path` with having to use `absolute_sniffing_path`
+* Added support for customizing the sniffing path with the `sniffing_path` and `absolute_sniffing_path` config options.
 
 *`Kafka`*:
 
