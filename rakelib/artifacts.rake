@@ -14,6 +14,7 @@ namespace "artifact" do
       "bin/**/*",
       "config/**/*",
       "data",
+      "modules/**/*",
 
       "lib/bootstrap/**/*",
       "lib/pluginmanager/**/*",
