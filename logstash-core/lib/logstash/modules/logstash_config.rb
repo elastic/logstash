@@ -18,7 +18,9 @@ module LogStash module Modules class LogStashConfig
   end
 
   def elasticsearch_output_config
-    hosts = "#{setting("var.output.elasticsearch.host", "localhost:9200")}"
+    hosts = setting("var.output.elasticsearch.hosts", "localhost:9200").split(',').map do |s|
+      '"' + s.strip + '"'
+    end.join(',')
     index = "#{@name}-#{setting("var.output.elasticsearch.index_suffix", "%{+YYYY.MM.dd}")}"
     password = "#{setting("var.output.elasticsearch.password", "changeme")}"
     user = "#{setting("var.output.elasticsearch.user", "elasticsearch")}"
