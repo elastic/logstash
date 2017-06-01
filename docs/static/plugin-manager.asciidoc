@@ -100,13 +100,13 @@ bin/logstash-plugin update logstash-output-kafka <2>
 
 [[removing-plugins]]
 [float]
-=== Removing plugins
+=== Uninstalling plugins
 
 If you need to remove plugins from your Logstash installation:
 
 [source,shell]
 ----------------------------------
-bin/logstash-plugin remove logstash-output-kafka
+bin/logstash-plugin uninstall logstash-output-kafka
 ----------------------------------
 
 [[proxy-plugins]]
