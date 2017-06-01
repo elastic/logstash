@@ -30,7 +30,7 @@ module LogStash module Config
     end
 
     def ==(other)
-      config_hash == other.config_hash && pipeline_id == other.pipeline_id
+      config_hash == other.config_hash && pipeline_id == other.pipeline_id && settings == other.settings
     end
 
     def display_debug_information

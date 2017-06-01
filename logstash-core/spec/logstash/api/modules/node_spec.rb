@@ -109,12 +109,14 @@ describe LogStash::Api::Modules::Node do
       extend ResourceDSLMethods
 
       root_structure = {
-        "pipeline" => {
-          "workers" => Numeric,
-          "batch_size" => Numeric,
-          "batch_delay" => Numeric,
-          "config_reload_automatic" => Boolean,
-          "config_reload_interval" => Numeric
+        "pipelines" => {
+          "main" => {
+            "workers" => Numeric,
+            "batch_size" => Numeric,
+            "batch_delay" => Numeric,
+            "config_reload_automatic" => Boolean,
+            "config_reload_interval" => Numeric
+          }
         },
         "os" => {
           "name" => String,

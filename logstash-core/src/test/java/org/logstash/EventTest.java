@@ -1,14 +1,12 @@
 package org.logstash;
 
-import org.junit.Assert;
-import org.junit.Test;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.junit.Test;
 
 import static net.javacrumbs.jsonunit.JsonAssert.assertJsonEquals;
 import static org.junit.Assert.assertEquals;
@@ -198,6 +196,25 @@ public class EventTest {
         assertEquals(2, ((List) e.getField("[field1]")).size());
         assertEquals("original1", e.getField("[field1][0]"));
         assertEquals("original2", e.getField("[field1][1]"));
+    }
+
+    @Test
+    public void testAppendLists() throws Exception {
+        Map data1 = new HashMap();
+        data1.put("field1", Arrays.asList("original1", "original2"));
+
+        Map data2 = new HashMap();
+        data2.put("field1", Arrays.asList("original3", "original4"));
+
+        Event e = new Event(data1);
+        Event e2 = new Event(data2);
+        e.append(e2);
+
+        assertEquals(4, ((List) e.getField("[field1]")).size());
+        assertEquals("original1", e.getField("[field1][0]"));
+        assertEquals("original2", e.getField("[field1][1]"));
+        assertEquals("original3", e.getField("[field1][2]"));
+        assertEquals("original4", e.getField("[field1][3]"));
     }
 
     @Test

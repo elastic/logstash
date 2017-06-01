@@ -2,6 +2,7 @@
 require "spec_helper"
 require "logstash/pipeline"
 require "logstash/pipeline_reporter"
+require_relative "../support/helpers"
 require_relative "../support/mocks_classes"
 
 #TODO: Figure out how to add more tests that actually cover inflight events
@@ -11,7 +12,7 @@ describe LogStash::PipelineReporter do
   let(:config) do
     "input { generator { count => #{generator_count} } } output { dummyoutput {} } "
   end
-  let(:pipeline) { LogStash::Pipeline.new(config)}
+  let(:pipeline) { mock_pipeline_from_string(config)}
   let(:reporter) { pipeline.reporter }
 
   before do

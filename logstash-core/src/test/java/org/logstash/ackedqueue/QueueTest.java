@@ -19,7 +19,6 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
-import org.logstash.ackedqueue.io.ByteBufferPageIO;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
@@ -27,6 +26,7 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.fail;
+import static org.logstash.ackedqueue.QueueTestHelpers.singleElementCapacityForByteBufferPageIO;
 
 public class QueueTest {
 
@@ -120,7 +120,7 @@ public class QueueTest {
     @Test
     public void writeMultiPage() throws IOException {
         List<Queueable> elements = Arrays.asList(new StringElement("foobarbaz1"), new StringElement("foobarbaz2"), new StringElement("foobarbaz3"), new StringElement("foobarbaz4"));
-        int singleElementCapacity = ByteBufferPageIO.HEADER_SIZE + ByteBufferPageIO._persistedByteCount(elements.get(0).serialize().length);
+        int singleElementCapacity = singleElementCapacityForByteBufferPageIO(elements.get(0));
         try (TestQueue q = new TestQueue(
             TestSettings.volatileQueueSettings(2 * singleElementCapacity))) {
             q.open();
@@ -164,7 +164,7 @@ public class QueueTest {
     @Test
     public void writeMultiPageWithInOrderAcking() throws IOException {
         List<Queueable> elements = Arrays.asList(new StringElement("foobarbaz1"), new StringElement("foobarbaz2"), new StringElement("foobarbaz3"), new StringElement("foobarbaz4"));
-        int singleElementCapacity = ByteBufferPageIO.HEADER_SIZE + ByteBufferPageIO._persistedByteCount(elements.get(0).serialize().length);
+        int singleElementCapacity = singleElementCapacityForByteBufferPageIO(elements.get(0));
         try (TestQueue q = new TestQueue(
             TestSettings.volatileQueueSettings(2 * singleElementCapacity))) {
             q.open();
@@ -206,7 +206,7 @@ public class QueueTest {
     public void writeMultiPageWithInOrderAckingCheckpoints() throws IOException {
         List<Queueable> elements1 = Arrays.asList(new StringElement("foobarbaz1"), new StringElement("foobarbaz2"));
         List<Queueable> elements2 = Arrays.asList(new StringElement("foobarbaz3"), new StringElement("foobarbaz4"));
-        int singleElementCapacity = ByteBufferPageIO.HEADER_SIZE + ByteBufferPageIO._persistedByteCount(elements1.get(0).serialize().length);
+        int singleElementCapacity = singleElementCapacityForByteBufferPageIO(elements1.get(0));
 
         Settings settings = SettingsImpl.builder(
             TestSettings.volatileQueueSettings(2 * singleElementCapacity)
@@ -304,7 +304,7 @@ public class QueueTest {
             for (int i = 0; i < page_count; i++) {
                 elements.add(new StringElement(String.format("%0" + digits + "d", i)));
             }
-            int singleElementCapacity = ByteBufferPageIO.HEADER_SIZE + ByteBufferPageIO._persistedByteCount(elements.get(0).serialize().length);
+            int singleElementCapacity = singleElementCapacityForByteBufferPageIO(elements.get(0));
             try (TestQueue q = new TestQueue(
                 TestSettings.volatileQueueSettings(singleElementCapacity))) {
                 q.open();
@@ -336,7 +336,7 @@ public class QueueTest {
     @Test(timeout = 5000)
     public void reachMaxUnread() throws IOException, InterruptedException, ExecutionException {
         Queueable element = new StringElement("foobarbaz");
-        int singleElementCapacity = ByteBufferPageIO.HEADER_SIZE + ByteBufferPageIO._persistedByteCount(element.serialize().length);
+        int singleElementCapacity = singleElementCapacityForByteBufferPageIO(element);
 
         Settings settings = SettingsImpl.builder(
             TestSettings.volatileQueueSettings(singleElementCapacity)
@@ -429,7 +429,7 @@ public class QueueTest {
     public void reachMaxSizeTest() throws IOException, InterruptedException, ExecutionException {
         Queueable element = new StringElement("0123456789"); // 10 bytes
 
-        int singleElementCapacity = ByteBufferPageIO.HEADER_SIZE + ByteBufferPageIO._persistedByteCount(element.serialize().length);
+        int singleElementCapacity = singleElementCapacityForByteBufferPageIO(element);
 
         // allow 10 elements per page but only 100 events in total
         Settings settings = TestSettings.volatileQueueSettings(singleElementCapacity * 10, singleElementCapacity * 100);
@@ -457,7 +457,7 @@ public class QueueTest {
 
         Queueable element = new StringElement("0123456789"); // 10 bytes
 
-        int singleElementCapacity = ByteBufferPageIO.HEADER_SIZE + ByteBufferPageIO._persistedByteCount(element.serialize().length);
+        int singleElementCapacity = singleElementCapacityForByteBufferPageIO(element);
 
         // allow 10 elements per page but only 100 events in total
         Settings settings = TestSettings.volatileQueueSettings(singleElementCapacity * 10, singleElementCapacity * 100);
@@ -493,7 +493,7 @@ public class QueueTest {
     public void resumeWriteOnNoLongerFullQueueTest() throws IOException, InterruptedException, ExecutionException {
         Queueable element = new StringElement("0123456789"); // 10 bytes
 
-        int singleElementCapacity = ByteBufferPageIO.HEADER_SIZE + ByteBufferPageIO._persistedByteCount(element.serialize().length);
+        int singleElementCapacity = singleElementCapacityForByteBufferPageIO(element);
 
         // allow 10 elements per page but only 100 events in total
         Settings settings = TestSettings.volatileQueueSettings(singleElementCapacity * 10, singleElementCapacity * 100);
@@ -531,7 +531,7 @@ public class QueueTest {
 
         Queueable element = new StringElement("0123456789"); // 10 bytes
 
-        int singleElementCapacity = ByteBufferPageIO.HEADER_SIZE + ByteBufferPageIO._persistedByteCount(element.serialize().length);
+        int singleElementCapacity = singleElementCapacityForByteBufferPageIO(element);
 
         // allow 10 elements per page but only 100 events in total
         Settings settings = TestSettings.volatileQueueSettings(singleElementCapacity * 10, singleElementCapacity * 100);
@@ -664,7 +664,7 @@ public class QueueTest {
     @Test
     public void fullyAckedHeadPageBeheadingTest() throws IOException {
         Queueable element = new StringElement("foobarbaz1");
-        int singleElementCapacity = ByteBufferPageIO.HEADER_SIZE + ByteBufferPageIO._persistedByteCount(element.serialize().length);
+        int singleElementCapacity = singleElementCapacityForByteBufferPageIO(element);
         try (TestQueue q = new TestQueue(
             TestSettings.volatileQueueSettings(2 * singleElementCapacity))) {
             q.open();

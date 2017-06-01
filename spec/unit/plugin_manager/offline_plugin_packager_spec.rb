@@ -1,10 +1,12 @@
 # encoding: utf-8
 require "pluginmanager/offline_plugin_packager"
 require "stud/temporary"
+require "stud/try"
 require "bootstrap/util/compress"
 require "fileutils"
 require "spec_helper"
 require "webmock"
+require "openssl"
 
 def retrieve_packaged_plugins(path)
   Dir.glob(::File.join(path, "logstash", "*.gem"))
@@ -40,6 +42,8 @@ describe LogStash::PluginManager::OfflinePluginPackager do
   let(:temporary_dir) { Stud::Temporary.pathname }
   let(:target) { ::File.join(temporary_dir, "my-pack.zip")}
   let(:extract_to) { Stud::Temporary.pathname }
+  let(:retries_count) { 50 }
+  let(:retries_exceptions) { [IOError, OpenSSL::SSL::SSLError] }
 
   context "when the plugins doesn't" do
     let(:plugins_args) { "idotnotexist" }
@@ -67,7 +71,10 @@ describe LogStash::PluginManager::OfflinePluginPackager do
     before do
       FileUtils.mkdir_p(temporary_dir)
 
-      subject.package(plugins_args, target)
+      # Because this method will reach rubygems and can be unreliable at time on CI
+      # we will retry any IOError a few times before giving up.
+      Stud.try(retries_count.times, retries_exceptions)  { subject.package(plugins_args, target) }
+
       LogStash::Util::Zip.extract(target, extract_to)
     end
 
@@ -100,7 +107,7 @@ describe LogStash::PluginManager::OfflinePluginPackager do
     end
 
     context "with wildcards" do
-      let(:plugins_args) { ["logstash-filter-*"] }
+      let(:plugins_args) { ["logstash-filter-x*"] }
 
       it "creates a pack with the plugins" do
         expect(retrieve_packaged_plugins(extract_to).size).to eq(LogStash::PluginManager::SpecificationHelpers.find_by_name_with_wildcards(plugins_args.first).size)
@@ -114,7 +121,7 @@ describe LogStash::PluginManager::OfflinePluginPackager do
     end
 
     context "with wildcards and normal plugins" do
-      let(:plugins_args) { ["logstash-filter-*", "logstash-input-beats"] }
+      let(:plugins_args) { ["logstash-filter-x*", "logstash-input-beats"] }
 
       it "creates a pack with the plugins" do
         groups = retrieve_packaged_plugins(extract_to).group_by { |gem_file| ::File.basename(gem_file).split("-")[1] }

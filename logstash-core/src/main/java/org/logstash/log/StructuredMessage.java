@@ -3,7 +3,6 @@ package org.logstash.log;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.apache.logging.log4j.message.Message;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 

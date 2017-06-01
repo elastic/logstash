@@ -199,6 +199,7 @@ class LogStash::Runner < Clamp::StrictCommand
     @source_loader = LogStash::Config::SourceLoader.new(@settings)
     @source_loader.add_source(LogStash::Config::Source::Local.new(@settings))
     @source_loader.add_source(LogStash::Config::Source::Modules.new(@settings))
+    @source_loader.add_source(LogStash::Config::Source::MultiLocal.new(@settings))
 
     super(*args)
   end
@@ -303,7 +304,7 @@ class LogStash::Runner < Clamp::StrictCommand
         # TODO(ph): make it better for multiple pipeline
         if results.success?
           results.response.each do |pipeline_config|
-            LogStash::BasePipeline.new(pipeline_config.config_string)
+            LogStash::BasePipeline.new(pipeline_config)
           end
           puts "Configuration OK"
           logger.info "Using config.test_and_exit mode. Config Validation Result: OK. Exiting Logstash"

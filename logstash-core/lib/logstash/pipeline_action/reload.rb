@@ -27,7 +27,7 @@ module LogStash module PipelineAction
       end
 
       begin
-        pipeline_validator = LogStash::BasePipeline.new(@pipeline_config.config_string, @pipeline_config.settings)
+        pipeline_validator = LogStash::BasePipeline.new(@pipeline_config)
       rescue => e
         return LogStash::ConvergeResult::FailedAction.from_exception(e)
       end
@@ -36,6 +36,7 @@ module LogStash module PipelineAction
         return LogStash::ConvergeResult::FailedAction.new("Cannot reload pipeline, because the new pipeline is not reloadable")
       end
 
+      logger.info("Reloading pipeline", "pipeline.id" => pipeline_id)
       status = Stop.new(pipeline_id).execute(agent, pipelines)
 
       if status

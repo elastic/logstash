@@ -4,15 +4,16 @@ require "json"
 # Convenience class to interact with the HTTP monitoring APIs
 class MonitoringAPI
 
-  def pipeline_stats
-    resp = Manticore.get("http://localhost:9600/_node/stats/pipeline").body
+  def pipeline_stats(pipeline_id)
+    resp = Manticore.get("http://localhost:9600/_node/stats/pipelines/#{pipeline_id}").body
     stats_response = JSON.parse(resp)
-    stats_response["pipeline"]
+    stats_response.fetch("pipelines").fetch(pipeline_id)
   end
 
   def event_stats
-    stats = pipeline_stats
-    stats["events"]
+    resp = Manticore.get("http://localhost:9600/_node/stats").body
+    stats_response = JSON.parse(resp)
+    stats_response["events"]
   end
 
   def version
