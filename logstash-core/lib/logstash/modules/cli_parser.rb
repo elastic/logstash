@@ -44,9 +44,9 @@ module LogStash module Modules class CLIParser
   end
 
   def name_splitter(unparsed)
-    # It must have at least `modulename.var.PLUGINTYPE.PLUGINNAME.VARNAME`
+    # It must have at least `modulename.something`
     module_name, dot, rest = unparsed.partition('.')
-    if rest.count('.') >= 3
+    if rest.count('.') >= 1
       return module_name, rest
     else
       raise LogStash::ConfigLoadingError, I18n.t("logstash.modules.configuration.modules-variables-malformed", :rawvar => unparsed)
