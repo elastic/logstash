@@ -13,6 +13,7 @@ module LogStash module Modules class KibanaConfig
 
   attr_reader :index_name
 
+  # We name it `modul` here because `module` has meaning in Ruby.
   def initialize(modul, settings)
     @directory = ::File.join(modul.directory, "kibana")
     @name = modul.module_name

@@ -3,6 +3,8 @@ require "logstash/namespace"
 require_relative "file_reader"
 
 module LogStash module Modules class LogStashConfig
+
+  # We name it `modul` here because `module` has meaning in Ruby.
   def initialize(modul, settings)
     @directory = ::File.join(modul.directory, "logstash")
     @name = modul.module_name
@@ -23,7 +25,7 @@ module LogStash module Modules class LogStashConfig
     end.join(',')
     index = "#{@name}-#{setting("var.output.elasticsearch.index_suffix", "%{+YYYY.MM.dd}")}"
     password = "#{setting("var.output.elasticsearch.password", "changeme")}"
-    user = "#{setting("var.output.elasticsearch.user", "elasticsearch")}"
+    user = "#{setting("var.output.elasticsearch.user", "elastic")}"
     <<-CONF
 elasticsearch {
 hosts => [#{hosts}]
