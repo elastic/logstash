@@ -23,7 +23,7 @@ public abstract class IngestTest {
         return IngestTest.class.getResource(name).getPath();
     }
 
-    static String getResultPath(TemporaryFolder temp) throws Exception {
+    static String getResultPath(TemporaryFolder temp) throws IOException {
         return temp.newFolder().toPath().resolve("converted").toString();
     }
 }

@@ -1,0 +1,14 @@
+{
+  "description" : "...",
+  "processors" : [
+    {
+      "date" : {
+        "field" : "initial_date",
+        "target_field" : "apache.timestamp",
+        "formats" : ["dd/MM/yyyy hh:mm:ss", "dd/MM/yyyy"],
+        "timezone" : "Europe/Amsterdam",
+        "locale": "en"
+      }
+    }
+  ]
+}
