@@ -1,14 +1,11 @@
 package org.logstash.ingest;
 
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.Reader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import javax.script.Invocable;
 import javax.script.ScriptEngine;
-import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 
 /**
@@ -21,13 +18,8 @@ public final class Date {
     }
 
     public static void main(final String... args) throws ScriptException, NoSuchMethodException {
-        try (final Reader reader = new InputStreamReader(
-            Grok.class.getResourceAsStream("/ingest-date.js")
-        )
-        ) {
-            final ScriptEngine engine =
-                new ScriptEngineManager().getEngineByName("nashorn");
-            engine.eval(reader);
+        try {
+            final ScriptEngine engine = JsUtil.engine("/ingest-date.js");
             Files.write(Paths.get(args[1]), ((String) ((Invocable) engine).invokeFunction(
                 "ingest_to_logstash_date",
                 new String(
