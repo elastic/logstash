@@ -24,4 +24,13 @@ public final class DateTest extends IngestTest {
             utf8File(date), is(utf8File(resourcePath("logstashDateExtraFields.conf")))
         );
     }
+
+    @Test
+    public void convertsDotsInDateField() throws Exception {
+        final String date = getResultPath(temp);
+        Date.main(resourcePath("dotsInDateField.json"), date);
+        assertThat(
+            utf8File(date), is(utf8File(resourcePath("dotsInDateField.conf")))
+        );
+    }
 }
