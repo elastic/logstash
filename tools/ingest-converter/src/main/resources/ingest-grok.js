@@ -107,7 +107,7 @@ function ingest_to_logstash_grok(json) {
                 --count;
                 lines[i] = indent(lines[i], count);
             // Only indent line if previous line ended on relevant control char.
-            } else if (i > 0 && lines[i - 1].match(/(,|\{|\}|\[|\])$/)) {
+            } else if (i > 0 && lines[i - 1].match(/(=>\s+".+"|,|\{|\}|\[|\])$/)) {
                 lines[i] = indent(lines[i], count);
             }
         }

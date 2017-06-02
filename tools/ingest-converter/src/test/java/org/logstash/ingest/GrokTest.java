@@ -1,16 +1,11 @@
 package org.logstash.ingest;
 
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 
-public final class GrokTest extends IngestTest{
-
-    @Rule
-    public final TemporaryFolder temp = new TemporaryFolder();
+public final class GrokTest extends IngestTest {
 
     @Test
     public void convertsFieldPatternsCorrectly() throws Exception {
