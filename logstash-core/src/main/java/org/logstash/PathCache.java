@@ -9,13 +9,11 @@ public class PathCache {
 
     private FieldReference timestamp;
 
-    // TODO: dry with Event
-    public static final String TIMESTAMP = "@timestamp";
-    public static final String BRACKETS_TIMESTAMP = "[" + TIMESTAMP + "]";
+    private static final String BRACKETS_TIMESTAMP = "[" + Event.TIMESTAMP + "]";
 
     protected PathCache() {
         // inject @timestamp
-        this.timestamp = cache(TIMESTAMP);
+        this.timestamp = cache(Event.TIMESTAMP);
         cache(BRACKETS_TIMESTAMP, this.timestamp);
     }
 
