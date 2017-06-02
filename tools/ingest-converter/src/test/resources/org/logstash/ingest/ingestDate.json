@@ -1,0 +1,12 @@
+{
+    "description" : "...",
+    "processors" : [
+        {
+            "date" : {
+                "field" : "initial_date",
+                "target_field" : "timestamp",
+                "formats" : ["dd/MM/yyyy hh:mm:ss", "dd/MM/yyyy"]
+            }
+        }
+    ]
+}
