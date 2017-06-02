@@ -12,24 +12,24 @@ import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 
 /**
- * Ingest JSON DSL to Logstash Grok Transpiler.
+ * Ingest Date DSL to Logstash Date Transpiler.
  */
-public final class Grok {
+public final class Date {
 
-    private Grok() {
+    private Date() {
         // Utility Wrapper for JS Script.
     }
 
     public static void main(final String... args) throws ScriptException, NoSuchMethodException {
         try (final Reader reader = new InputStreamReader(
-                     Grok.class.getResourceAsStream("/ingest-grok.js")
-             )
+            Grok.class.getResourceAsStream("/ingest-date.js")
+        )
         ) {
             final ScriptEngine engine =
                 new ScriptEngineManager().getEngineByName("nashorn");
             engine.eval(reader);
             Files.write(Paths.get(args[1]), ((String) ((Invocable) engine).invokeFunction(
-                "ingest_to_logstash_grok",
+                "ingest_to_logstash_date",
                 new String(
                     Files.readAllBytes(Paths.get(args[0])), StandardCharsets.UTF_8
                 )
