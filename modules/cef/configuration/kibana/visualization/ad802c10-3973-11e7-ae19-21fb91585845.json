@@ -1,0 +1,11 @@
+{
+  "title": "Top Device Bandwidth Utilization",
+  "visState": "{\"aggs\":[{\"enabled\":true,\"id\":\"2\",\"params\":{\"customLabel\":\"Device\",\"field\":\"deviceHostName\",\"order\":\"desc\",\"orderBy\":\"1\",\"size\":10},\"schema\":\"bucket\",\"type\":\"terms\"},{\"enabled\":true,\"id\":\"4\",\"params\":{\"customLabel\":\"Source(s)\",\"field\":\"sourceAddress\"},\"schema\":\"metric\",\"type\":\"cardinality\"},{\"enabled\":true,\"id\":\"5\",\"params\":{\"customLabel\":\"Destination(s)\",\"field\":\"destinationAddress\"},\"schema\":\"metric\",\"type\":\"cardinality\"},{\"enabled\":true,\"id\":\"6\",\"params\":{\"customLabel\":\"Destination Ports\",\"field\":\"destinationPort\"},\"schema\":\"metric\",\"type\":\"cardinality\"},{\"enabled\":true,\"id\":\"1\",\"params\":{\"customLabel\":\"Bandwidth (Incoming)\",\"field\":\"bytesIn\"},\"schema\":\"metric\",\"type\":\"sum\"},{\"enabled\":true,\"id\":\"3\",\"params\":{\"customLabel\":\"Bandwidth (Outgoing)\",\"field\":\"bytesOut\"},\"schema\":\"metric\",\"type\":\"sum\"}],\"listeners\":{},\"params\":{\"perPage\":10,\"showMeticsAtAllLevels\":false,\"showPartialRows\":false,\"showTotal\":false,\"sort\":{\"columnIndex\":null,\"direction\":null},\"totalFunc\":\"sum\"},\"title\":\"Top Device Bandwidth Utilization\",\"type\":\"table\"}",
+  "uiStateJSON": "{\"vis\":{\"params\":{\"sort\":{\"columnIndex\":null,\"direction\":null}}}}",
+  "description": "",
+  "savedSearchId": "6315e7a0-34be-11e7-95dc-4f6090d732f6",
+  "version": 1,
+  "kibanaSavedObjectMeta": {
+    "searchSourceJSON": "{\"filter\":[]}"
+  }
+}
