@@ -1,12 +1,8 @@
 import org.yaml.snakeyaml.Yaml
 
-apply plugin: 'java'
-apply plugin: 'idea'
-
 // fetch version from Logstash's master versions.yml file
 def versionMap = (Map) (new Yaml()).load(new File("$projectDir/../versions.yml").text)
 
-group = 'org.logstash'
 description = """Logstash Core Java"""
 version = versionMap['logstash-core']
 
@@ -29,9 +25,6 @@ gradle.projectsEvaluated {
 //        options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation"
     }
 }
-
-project.sourceCompatibility = 1.8
-project.targetCompatibility = 1.8
 
 task sourcesJar(type: org.gradle.api.tasks.bundling.Jar, dependsOn: classes) {
     from sourceSets.main.allSource
