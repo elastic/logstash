@@ -46,3 +46,4 @@ qa/integration/services/installed/
 **/.settings
 **/.classpath
 logstash-core/bin
+gradle/
