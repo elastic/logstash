@@ -26,6 +26,7 @@ require "logstash/compiler"
 require "logstash/execution_context"
 
 java_import org.logstash.common.DeadLetterQueueFactory
+java_import org.logstash.common.SourceWithMetadata
 java_import org.logstash.common.io.DeadLetterQueueWriter
 
 module LogStash; class BasePipeline
@@ -85,7 +86,7 @@ module LogStash; class BasePipeline
   end
 
   def compile_lir
-    source_with_metadata = org.logstash.common.SourceWithMetadata.new("str", "pipeline", self.config_str)
+    source_with_metadata = SourceWithMetadata.new("str", "pipeline", self.config_str)
     LogStash::Compiler.compile_sources(source_with_metadata)
   end
 
