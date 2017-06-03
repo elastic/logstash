@@ -2,8 +2,7 @@ require 'logstash/util/loggable'
 require 'logstash/compiler/lscl/lscl_grammar'
 
 java_import org.logstash.config.ir.PipelineIR
-java_import org.logstash.config.ir.graph.Graph;
-java_import org.logstash.config.ir.graph.PluginVertex;
+java_import org.logstash.config.ir.graph.Graph
 
 module LogStash; class Compiler
   include ::LogStash::Util::Loggable
@@ -13,8 +12,8 @@ module LogStash; class Compiler
       self.compile_graph(swm)
     end
 
-    input_graph = org.logstash.config.ir.graph.Graph.combine(*graph_sections.map {|s| s[:input] }).graph
-    output_graph = org.logstash.config.ir.graph.Graph.combine(*graph_sections.map {|s| s[:output] }).graph
+    input_graph = Graph.combine(*graph_sections.map {|s| s[:input] }).graph
+    output_graph = Graph.combine(*graph_sections.map {|s| s[:output] }).graph
 
     filter_graph = graph_sections.reduce(nil) do |acc, s| 
       filter_section = s[:filter]
@@ -28,7 +27,7 @@ module LogStash; class Compiler
 
     original_source = sources_with_metadata.map(&:text).join("\n")
 
-    org.logstash.config.ir.PipelineIR.new(input_graph, filter_graph, output_graph, original_source)
+    PipelineIR.new(input_graph, filter_graph, output_graph, original_source)
   end
 
   def self.compile_ast(source_with_metadata)
