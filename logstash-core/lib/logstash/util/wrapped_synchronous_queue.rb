@@ -57,7 +57,7 @@ module LogStash; module Util
 
       def initialize(queue, batch_size = 125, wait_for = 250)
         @queue = queue
-        @mutex = java.util.concurrent.locks.ReentrantLock.new
+        @mutex = Mutex.new
         # Note that @inflight_batches as a central mechanism for tracking inflight
         # batches will fail if we have multiple read clients in the pipeline.
         @inflight_batches = {}
