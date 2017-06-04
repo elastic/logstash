@@ -116,10 +116,3 @@ dependencies {
     testCompile 'org.elasticsearch:securemock:1.2'
     provided 'org.jruby:jruby-core:1.7.25'
 }
-
-// See http://www.gradle.org/docs/current/userguide/gradle_wrapper.html
-task wrapper(type: Wrapper) {
-    description = 'Install Gradle wrapper'
-    gradleVersion = '2.8'
-}
-
