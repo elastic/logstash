@@ -1,0 +1,23 @@
+[[resiliency]]
+== Data Resiliency
+
+As data flows through the event processing pipeline, Logstash may encounter
+situations that prevent it from delivering events to the configured
+output. For example, the data might contain unexpected data types, or
+Logstash might terminate abnormally. 
+
+To guard against data loss and ensure that events flow through the
+pipeline without interruption, Logstash provides the following data resiliency
+features. 
+
+* <<persistent-queues>> protect against data loss by storing events in a message
+queue on disk. 
+
+* <<dead-letter-queues>> provide on-disk storage for events that Logstash is
+unable to process. You can easily reprocess events in the dead letter queue by
+using the `dead_letter_queue` input plugin.
+
+//TODO: Make dead_letter_queue an active link after the plugin docs are published.
+
+These resiliency features are disabled by default. To turn on these features,
+you must explicitly enable them in the Logstash <<logstash-settings-file,settings file>>.
