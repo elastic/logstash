@@ -1,0 +1,155 @@
+[[dead-letter-queues]]
+=== Dead Letter Queues
+
+//REVIEWERS: I had to install logstash-input-dead_letter_queue. Is it not bundled with the alpha2 release?
+
+NOTE: The dead letter queue feature is currently supported for the Elasticsearch
+output only. Support for additional outputs will be available in future releases
+of the Logstash plugins. 
+
+//REVIEWERS: I feel like we have to say something here ^^ but I'm not sure if this is enough info. How will users be able to tell if a specific output supports DLQs? Do we have a plan for when/how we will add DLQ support to plugins that we support?
+
+//REVIEWERS: It sounds like there might be some performance implications wrt enabling DLQs. If so, what are they? Should we document the restrictions?
+
+By default, when Logstash encounters an event that it cannot process because the
+data contains a mapping error or some other issue, the Logstash pipeline 
+either hangs or drops the unsuccessful event. In order to protect against data
+loss in this situation, you can configure Logstash to write unsuccessful events
+to a dead letter queue instead of dropping them. 
+
+Each event written to the dead letter queue includes the original event along
+with metadata indicating when the event entered the queue. For example:
+
+//TODO: Need a better example here. Just filling in the example until I can test this. It's not clear to me if @timestamp here is the timestamp of the event or the timestamp when the dead event was written to the queue (can't test right now to see this because the plugin isn't working).
+
+[source,json]
+-------------------------------------------------------------------------------
+{
+          "rand" => "changeme",
+      "sequence" => 9817,
+        "static" => "value",
+    "@timestamp" => 2017-06-06T15:36:48.182Z,
+      "@version" => "1",
+          "host" => "myhost.local"
+}
+-------------------------------------------------------------------------------
+
+To process events in the dead letter queue, you simply create a Logstash
+pipeline configuration that uses the `dead_letter_queue` input plugin
+to read from the queue, process the events, and write to the output. 
+
+image::static/images/dead_letter_queue.png[Diagram showing pipeline reading from the dead letter queue]
+
+See <<processing-dlq-events>> for more information.
+
+
+[[configuring-dlq]]
+==== Configuring Logstash to Use Dead Letter Queues
+
+You enable dead letter queues by setting the `dead_letter_queue_enable` option
+in the  `logstash.yml` <<logstash-settings-file,settings file>>: 
+
+[source,yaml]
+-------------------------------------------------------------------------------
+dead_letter_queue.enable: true
+-------------------------------------------------------------------------------
+
+Dead letter queues are stored as files in the local directory of the Logstash
+instance. By default, the dead letter queue files are stored in
+`path.data/dead_letter_queue`. Each pipeline has a separate queue. For example,
+the dead letter queue for the `main` pipeline is stored in
+`LOGSTASH_HOME/data/dead_letter_queue/main` by default. The queue files are
+numbered sequentially: `1.log`, `2.log`, and so on.
+
+You can set `path.dead_letter_queue` in the `logstash.yml` file to
+specify a different path for the files:
+
+[source,yaml]
+-------------------------------------------------------------------------------
+path.dead_letter_queue: "path/to/data/dead_letter_queue"
+-------------------------------------------------------------------------------
+
+===== File Rotation
+
+Dead letter queues have a built-in file rotation policy that manages the file
+size of the queue. When the file size reaches a preconfigured threshold,  a new
+file is created automatically. The size limit of the dead letter queue is
+constrained only by the amount of space that you have available on disk.
+
+NOTE: Dead letter queues retain all the events that are written to them.
+Currently, you cannot configure the size of the queue or the size of the files
+that are used to store the queue. 
+
+//REVIEWIERS: I feel that we have to say something about this ^^ because users will wonder, but I'm not sure what we should say wrt future plans to make this configurable.
+
+[[processing-dlq-events]]
+==== Processing Events in the Dead Letter Queue
+
+When you are ready to process events in the dead letter queue, you create a
+pipeline that uses the `dead_letter_queue` input plugin to read from the dead
+letter queue. The pipeline configuration that you use depends, of course, on
+what you need to do. For example, if the dead letter queue contains events that
+resulted from a mapping error in Elasticsearch, you can create a pipeline that
+reads the "dead" events, removes the field that caused the mapping issue, and
+re-indexes the clean events into Elasticsearch. 
+
+The following example shows how to read events from the dead letter queue and
+write the events to standard output: 
+
+[source,yaml]
+--------------------------------------------------------------------------------
+input {
+  dead_letter_queue {
+    path => "/path/to/data/dead_letter_queue" <1>
+    commit_offsets => true <2>
+    pipeline_id => "main" <3>
+  }
+}
+
+output {
+  stdout {
+    codec => rubydebug
+  }
+}
+--------------------------------------------------------------------------------
+
+<1> The path to the directory containing the dead letter queue. This is either
+the default, `path.data/dead_letter_queue`, or the value specified for
+`path.dead_letter_queue` in the `logstash.yml` file. 
+<2> When `true`, saves the offset. When the pipeline restarts, it will continue
+reading from the position where it left off rather than reprocessing all the
+items in the queue. You can set `commit_offsets` to `false` when you are
+exploring events in the dead letter queue and want to iterate over the events
+multiple times. 
+<3> The ID of the pipeline that's writing to the dead letter queue. The default
+is `"main"`.
+
+When the pipeline has finished processing all the events in the dead letter
+queue, it will continue to run and process new events as they stream into the
+queue. This means that you do not need to stop your production system to handle
+events in the dead letter queue. 
+
+When you read from the dead letter queue, you might not want to process all the
+events in the queue, especially if there are a lot of old events in the queue.
+You can start processing events at a specific point in the queue by using the
+`start_timestamp` option. This option configures the pipeline to start
+processing events based on the timestamp of when they entered the queue:
+
+[source,yaml]
+--------------------------------------------------------------------------------
+input {
+  dead_letter_queue {
+    path => "/path/to/data/dead_letter_queue" 
+    start_timestamp => 2017-06-06T23:40:37
+    pipeline_id => "main"
+  }
+}
+--------------------------------------------------------------------------------
+
+For this example, the pipeline starts reading all events that were delivered to
+the dead letter queue on or after June 6, 2017, at 23:40:37.
+
+//REVIEWERS: It's not clear to me what happens when the user configures start_timestamp and commit_offsets is true. If an offset's been committed, will the pipeline start reading at the offset, or go by the timestamp specified in start_timestamp.
+
+
+
