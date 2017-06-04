@@ -1,0 +1,16 @@
+{
+  "description": "Add geoip info",
+  "processors": [
+    {
+      "geoip": {
+        "field": "ip",
+        "target_field": "geo",
+        "database_file": "GeoLite2-Country.mmdb.gz",
+        "properties": [
+          "continent_name",
+          "country_iso_code"
+        ]
+      }
+    }
+  ]
+}

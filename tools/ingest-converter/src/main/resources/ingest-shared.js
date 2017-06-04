@@ -89,5 +89,26 @@ var IngestConverter = {
         return "[\n" 
             + patterns.map(this.dots_to_square_brackets).map(this.quote_string).join(",\n") 
             + "\n]";
+    },
+    
+    /**
+     * Converts Ingest/JSON style pattern array to LS pattern array or string if the given array
+     * contains a single element only, performing necessary variable name and quote escaping
+     * adjustments.
+     * @param patterns Pattern Array in JSON formatting
+     * @returns {string} Pattern array or string in LS formatting
+     */
+    create_pattern_array_or_field: function (patterns) {
+        return patterns.length === 1
+            ? this.quote_string(this.dots_to_square_brackets(patterns[0]))
+            : this.create_pattern_array(patterns);
+    },
+    
+    filter_hash: function(contents) {
+        return this.fix_indent(this.create_hash("filter", contents))
+    },
+    
+    filters_to_file: function(filters) {
+        return filters.join("\n\n") + "\n";
     }
 };

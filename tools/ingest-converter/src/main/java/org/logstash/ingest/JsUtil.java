@@ -9,31 +9,37 @@ import javax.script.ScriptException;
 
 final class JsUtil {
 
+    /**
+     * Script names used by the converter in correct load order.
+     */
+    private static final String[] SCRIPTS = {"shared", "date", "grok", "geoip", "pipeline"};
+
     private JsUtil() {
         // Utility Class
     }
 
     /**
-     * Sets up a {@link ScriptEngine} for a given file loaded after `ingest-shared.js`.
-     * @param file File to set up {@link ScriptEngine} for
-     * @return {@link ScriptEngine} for file
+     * Sets up a {@link ScriptEngine} with all Ingest to LS DSL Converter JS scripts loaded.
+     * @return {@link ScriptEngine} for Ingest to LS DSL Converter
      */
-    public static ScriptEngine engine(final String file) {
+    public static ScriptEngine engine() {
         final ScriptEngine engine =
             new ScriptEngineManager().getEngineByName("nashorn");
-        try (
-            final Reader shared = reader("/ingest-shared.js");
-            final Reader reader = reader(file)
-        ) {
-            engine.eval(shared);
-            engine.eval(reader);
+        try {
+            for (final String file : SCRIPTS) {
+                add(engine, String.format("/ingest-%s.js", file));
+            }
         } catch (final IOException | ScriptException ex) {
             throw new IllegalStateException(ex);
         }
         return engine;
     }
 
-    private static Reader reader(final String file) {
-        return new InputStreamReader(JsUtil.class.getResourceAsStream(file));
+    private static void add(final ScriptEngine engine, final String file)
+        throws IOException, ScriptException {
+        try (final Reader reader =
+                 new InputStreamReader(JsUtil.class.getResourceAsStream(file))) {
+            engine.eval(reader);
+        }
     }
 }

@@ -1,27 +1,25 @@
 package org.logstash.ingest;
 
+import java.util.Arrays;
 import org.junit.Test;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.runners.Parameterized.Parameters;
 
 public final class GrokTest extends IngestTest {
 
-    @Test
-    public void convertsFieldPatternsCorrectly() throws Exception {
-        final String grok = getResultPath(temp);
-        Grok.main(resourcePath("ingestGrok.json"), grok);
-        assertThat(
-            utf8File(grok), is(utf8File(resourcePath("logstashGrok.conf")))
-        );
+    @Parameters
+    public static Iterable<String> data() {
+        return Arrays.asList("Grok", "GrokPatternDefinition");
     }
 
     @Test
-    public void convertsFieldDefinitionsCorrectly() throws Exception {
-        final String grok = getResultPath(temp);
-        Grok.main(resourcePath("ingestGrokPatternDefinition.json"), grok);
+    public void convertsGrokFieldCorrectly() throws Exception {
+        final String date = getResultPath(temp);
+        Grok.main(resourcePath(String.format("ingest%s.json", testCase)), date);
         assertThat(
-            utf8File(grok), is(utf8File(resourcePath("logstashGrokPatternDefinition.conf")))
+            utf8File(date), is(utf8File(resourcePath(String.format("logstash%s.conf", testCase))))
         );
     }
 }
