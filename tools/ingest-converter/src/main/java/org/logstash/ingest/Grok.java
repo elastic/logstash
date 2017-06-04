@@ -19,7 +19,7 @@ public final class Grok {
 
     public static void main(final String... args) throws ScriptException, NoSuchMethodException {
         try {
-            final ScriptEngine engine = JsUtil.engine("/ingest-grok.js");
+            final ScriptEngine engine = JsUtil.engine();
             Files.write(Paths.get(args[1]), ((String) ((Invocable) engine).invokeFunction(
                 "ingest_to_logstash_grok",
                 new String(
