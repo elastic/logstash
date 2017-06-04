@@ -8,20 +8,17 @@ import javax.script.Invocable;
 import javax.script.ScriptEngine;
 import javax.script.ScriptException;
 
-/**
- * Ingest Date DSL to Logstash Date Transpiler.
- */
-public final class Date {
+public final class GeoIp {
 
-    private Date() {
+    private GeoIp() {
         // Utility Wrapper for JS Script.
     }
-
+    
     public static void main(final String... args) throws ScriptException, NoSuchMethodException {
         try {
             final ScriptEngine engine = JsUtil.engine();
             Files.write(Paths.get(args[1]), ((String) ((Invocable) engine).invokeFunction(
-                "ingest_to_logstash_date",
+                "ingest_to_logstash_geoip",
                 new String(
                     Files.readAllBytes(Paths.get(args[0])), StandardCharsets.UTF_8
                 )

@@ -9,11 +9,11 @@ import javax.script.ScriptEngine;
 import javax.script.ScriptException;
 
 /**
- * Ingest Date DSL to Logstash Date Transpiler.
+ * Ingest Full DSL to Logstash DSL Transpiler.
  */
-public final class Date {
+public final class Pipeline {
 
-    private Date() {
+    private Pipeline() {
         // Utility Wrapper for JS Script.
     }
 
@@ -21,7 +21,7 @@ public final class Date {
         try {
             final ScriptEngine engine = JsUtil.engine();
             Files.write(Paths.get(args[1]), ((String) ((Invocable) engine).invokeFunction(
-                "ingest_to_logstash_date",
+                "ingest_pipeline_to_logstash",
                 new String(
                     Files.readAllBytes(Paths.get(args[0])), StandardCharsets.UTF_8
                 )
