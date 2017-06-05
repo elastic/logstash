@@ -30,6 +30,12 @@
         "field": "source.ip",
         "target_field": "source.geo"
       }
+    },
+    {
+      "convert": {
+        "field" : "[client][bytes]",
+        "type": "integer"
+      }
     }
   ]
 }
