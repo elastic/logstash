@@ -1,0 +1,11 @@
+{
+    "description": "Pipeline to parse Apache logs",
+    "processors": [
+        {
+            "convert": {
+                "field" : "client.bytes",
+                "type": "float"
+            }
+        }
+    ]
+}

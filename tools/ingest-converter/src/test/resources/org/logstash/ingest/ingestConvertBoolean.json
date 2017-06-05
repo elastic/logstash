@@ -1,0 +1,10 @@
+{
+  "processors": [
+    {
+      "convert": {
+        "field" : "delete",
+        "type": "boolean"
+      }
+    }
+  ]
+}
