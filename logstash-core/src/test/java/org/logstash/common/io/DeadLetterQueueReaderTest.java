@@ -40,6 +40,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.logstash.common.io.RecordIOWriter.BLOCK_SIZE;
+import static org.logstash.common.io.RecordIOWriter.VERSION_SIZE;
 
 public class DeadLetterQueueReaderTest {
     private Path dir;
@@ -152,6 +153,53 @@ public class DeadLetterQueueReaderTest {
                           String.valueOf(TARGET_EVENT));
     }
 
+
+    @Test
+    public void testSeekToStartOfRemovedLog() throws Exception {
+        writeSegmentSizeEntries(3);
+        Path startLog = dir.resolve("1.log");
+        validateEntries(startLog, 1, 3, 1);
+        startLog.toFile().delete();
+        validateEntries(startLog, 2, 3, 1);
+    }
+
+    @Test
+    public void testSeekToMiddleOfRemovedLog() throws Exception {
+        writeSegmentSizeEntries(3);
+        Path startLog = dir.resolve("1.log");
+        startLog.toFile().delete();
+        validateEntries(startLog, 2, 3, 32);
+    }
+
+    private void writeSegmentSizeEntries(int count) throws IOException {
+        Event event = new Event(Collections.emptyMap());
+        DLQEntry templateEntry = new DLQEntry(event, "1", "1", String.valueOf(0));
+        int size = templateEntry.serialize().length + RecordIOWriter.RECORD_HEADER_SIZE + VERSION_SIZE;
+        DeadLetterQueueWriter writeManager = null;
+        try {
+            writeManager = new DeadLetterQueueWriter(dir, size, 10000000);
+            for (int i = 1; i <= count; i++) {
+                writeManager.writeEntry(new DLQEntry(event, "1", "1", String.valueOf(i)));
+            }
+        } finally {
+            writeManager.close();
+        }
+    }
+
+
+    private void validateEntries(Path firstLog, int startEntry, int endEntry, int startPosition) throws IOException, InterruptedException {
+        DeadLetterQueueReader readManager = null;
+        try {
+            readManager = new DeadLetterQueueReader(dir);
+            readManager.setCurrentReaderAndPosition(firstLog, startPosition);
+            for (int i = startEntry; i <= endEntry; i++) {
+                DLQEntry readEntry = readManager.pollEntry(100);
+                assertThat(readEntry.getReason(), equalTo(String.valueOf(i)));
+            }
+        } finally {
+            readManager.close();
+        }
+    }
 
     // Notes on these tests:
     //   These tests are designed to test specific edge cases where events end at block boundaries, hence the specific
