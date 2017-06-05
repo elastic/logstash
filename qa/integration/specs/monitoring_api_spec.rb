@@ -116,7 +116,7 @@ describe "Test Monitoring API" do
       logging_put_assert logstash_service.monitoring_api.logging_put({"logger." => "INFO"})
       logging_get_assert logstash_service, "INFO", "TRACE"
 
-      #package logger 
+      #package logger
       logging_put_assert logstash_service.monitoring_api.logging_put({"logger.logstash.agent" => "DEBUG"})
       expect(logstash_service.monitoring_api.logging_get["loggers"]["logstash.agent"]).to eq ("DEBUG")
       logging_put_assert logstash_service.monitoring_api.logging_put({"logger.logstash.agent" => "INFO"})
