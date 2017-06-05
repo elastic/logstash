@@ -38,7 +38,10 @@ class LogstashService < Service
       # First try without the snapshot if it's there
       @logstash_home = File.expand_path(File.join(LS_BUILD_DIR, ls_file), __FILE__)
       @logstash_home += "-SNAPSHOT" unless Dir.exists?(@logstash_home)
-
+      
+      @logstash_queue_path = File.join("#{@logstash_home}", "data/queue")
+      clear_pq_data
+      
       puts "Using #{@logstash_home} as LS_HOME"
       @logstash_bin = File.join("#{@logstash_home}", LS_BIN)
       raise "Logstash binary not found in path #{@logstash_home}" unless File.file? @logstash_bin
@@ -50,7 +53,7 @@ class LogstashService < Service
 
   def alive?
     if @process.nil? || @process.exited?
-      raise "Logstash process is not up because of an errot, or it stopped"
+      raise "Logstash process is not up because of an error, or it stopped"
     else
       @process.alive?
     end
@@ -136,6 +139,7 @@ class LogstashService < Service
       @process.io.stdin.close rescue nil
       @process.stop
       @process = nil
+      clear_pq_data
     end
   end
 
@@ -202,6 +206,13 @@ class LogstashService < Service
 
   def lock_file
     File.join(@logstash_home, "Gemfile.jruby-1.9.lock")
+  end
+  
+  private
+  
+  def clear_pq_data
+    FileUtils.remove_dir(@logstash_queue_path, true)
+    FileUtils.mkdir(@logstash_queue_path)
   end
 
   class PluginCli
