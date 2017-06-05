@@ -24,7 +24,12 @@ function ingest_pipeline_to_logstash(json) {
         if (IngestConvert.has_convert(processor)) {
             filter_blocks.push(
                 IngestConverter.create_hash("mutate", IngestConvert.convert_hash(processor))
-            )
+            );
+        }
+        if (IngestGsub.has_gsub(processor)) {
+            filter_blocks.push(
+                IngestConverter.create_hash("mutate", IngestGsub.gsub_hash(processor))
+            );
         }
         return IngestConverter.join_hash_fields(filter_blocks);
     }
