@@ -103,12 +103,19 @@ describe LogStash::Pipeline do
   let(:worker_thread_count)     { 5 }
   let(:safe_thread_count)       { 1 }
   let(:override_thread_count)   { 42 }
+  let(:dead_letter_queue_enabled) { false }
+  let(:dead_letter_queue_path) { }
   let(:pipeline_settings_obj) { LogStash::SETTINGS }
   let(:pipeline_settings) { {} }
 
   before :each do
     pipeline_workers_setting = LogStash::SETTINGS.get_setting("pipeline.workers")
     allow(pipeline_workers_setting).to receive(:default).and_return(worker_thread_count)
+    dlq_enabled_setting = LogStash::SETTINGS.get_setting("dead_letter_queue.enable")
+    allow(dlq_enabled_setting).to receive(:value).and_return(dead_letter_queue_enabled)
+    dlq_path_setting = LogStash::SETTINGS.get_setting("path.dead_letter_queue")
+    allow(dlq_path_setting).to receive(:value).and_return(dead_letter_queue_path)
+
     pipeline_settings.each {|k, v| pipeline_settings_obj.set(k, v) }
   end
 
@@ -839,6 +846,33 @@ describe LogStash::Pipeline do
         [multiline_id, multiline_id_other].map(&:to_sym).each do |id|
           plugin_name = id.to_sym
           expect(collected_metric[:stats][:pipelines][:main][:plugins][:filters][plugin_name][:name].value).to eq(LogStash::Filters::Multiline.config_name)
+        end
+      end
+
+      context 'when dlq is disabled' do
+        let (:collect_stats) { subject.collect_dlq_stats}
+        let (:collected_stats) { collected_metric[:stats][:pipelines][:main][:dlq]}
+        let (:available_stats) {[:path, :queue_size_in_bytes]}
+
+        it 'should show not show any dlq stats' do
+          collect_stats
+          expect(collected_stats).to be_nil
+        end
+
+      end
+
+      context 'when dlq is enabled' do
+        let (:dead_letter_queue_enabled) { true }
+        let (:dead_letter_queue_path) { Stud::Temporary.directory }
+        let (:pipeline_dlq_path) { "#{dead_letter_queue_path}/#{pipeline_id}"}
+
+        let (:collect_stats) { subject.collect_dlq_stats }
+        let (:collected_stats) { collected_metric[:stats][:pipelines][:main][:dlq]}
+
+        it 'should show dlq stats' do
+          collect_stats
+          # A newly created dead letter queue with no entries will have a size of 1 (the version 'header')
+          expect(collected_stats[:queue_size_in_bytes].value).to eq(1)
         end
       end
     end
