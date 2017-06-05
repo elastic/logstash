@@ -115,7 +115,8 @@ describe LogStash::Api::Modules::Node do
             "batch_size" => Numeric,
             "batch_delay" => Numeric,
             "config_reload_automatic" => Boolean,
-            "config_reload_interval" => Numeric
+            "config_reload_interval" => Numeric,
+            "dead_letter_queue_enabled" => Boolean
           }
         },
         "os" => {
