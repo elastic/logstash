@@ -42,7 +42,7 @@ public abstract class AbstractByteBufferPageIO implements PageIO {
     protected int head; // head is the write position and is an int per ByteBuffer class position
     protected byte version;
     private CRC32 checkSummer;
-    private final List<Integer> offsetMap; // has to be extendable
+    protected final List<Integer> offsetMap; // has to be extendable
 
     public AbstractByteBufferPageIO(int pageNum, int capacity) {
         this.minSeqNum = 0;
@@ -189,7 +189,7 @@ public abstract class AbstractByteBufferPageIO implements PageIO {
         write(bytes, seqNum, bytes.length, checksum(bytes));
     }
 
-    protected int write(byte[] bytes, long seqNum, int length, int checksum) {
+    protected int write(byte[] bytes, long seqNum, int length, int checksum) throws IOException {
         // since writes always happen at head, we can just append head to the offsetMap
         assert this.offsetMap.size() == this.elementCount :
                 String.format("offsetMap size=%d != elementCount=%d", this.offsetMap.size(), this.elementCount);
