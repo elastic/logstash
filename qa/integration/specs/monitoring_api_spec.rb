@@ -77,4 +77,63 @@ describe "Test Monitoring API" do
       end
     end
   end
+
+  it "can configure logging" do
+    logstash_service = @fixture.get_service("logstash")
+    logstash_service.start_with_stdin
+    logstash_service.wait_for_logstash
+
+    Stud.try(max_retry.times, [StandardError, RSpec::Expectations::ExpectationNotMetError]) do
+      # monitoring api can fail if the subsystem isn't ready
+      result = logstash_service.monitoring_api.logging_get rescue nil
+      expect(result).not_to be_nil
+      expect(result["loggers"].size).to be > 0
+      #default
+      logging_get_assert logstash_service, "INFO", "TRACE"
+
+      #root logger - does not apply to logger.slowlog
+      logging_put_assert logstash_service.monitoring_api.logging_put({"logger." => "WARN"}.to_json)
+      logging_get_assert logstash_service, "WARN", "TRACE"
+      logging_put_assert logstash_service.monitoring_api.logging_put({"logger." => "INFO"}.to_json)
+      logging_get_assert logstash_service, "INFO", "TRACE"
+
+      #package logger 
+      logging_put_assert logstash_service.monitoring_api.logging_put({"logger.logstash.agent" => "DEBUG"}.to_json)
+      expect(logstash_service.monitoring_api.logging_get["loggers"]["logstash.agent"]).to eq ("DEBUG")
+      logging_put_assert logstash_service.monitoring_api.logging_put({"logger.logstash.agent" => "INFO"}.to_json)
+      logging_get_assert logstash_service, "INFO", "TRACE"
+
+      #parent package loggers
+      logging_put_assert logstash_service.monitoring_api.logging_put({"logger.logstash" => "ERROR"}.to_json)
+      logging_put_assert logstash_service.monitoring_api.logging_put({"logger.slowlog" => "ERROR"}.to_json)
+
+      result = logstash_service.monitoring_api.logging_get
+      result["loggers"].each do | k, v |
+        #since we explicitly set the logstash.agent logger above, the parent logger will not take precedence
+        if k.eql? "logstash.agent"
+          expect(v).to eq("INFO")
+        else
+          expect(v).to eq("ERROR")
+        end
+      end
+    end
+  end
+
+  private
+
+  def logging_get_assert(logstash_service, logstash_level, slowlog_level)
+    result = logstash_service.monitoring_api.logging_get
+    result["loggers"].each do | k, v |
+      if k.start_with? "logstash"
+        expect(v).to eq(logstash_level)
+      elsif k.start_with? "slowlog"
+        expect(v).to eq(slowlog_level)
+      end
+    end
+  end
+
+  def logging_put_assert(result)
+    expect(result["acknowledged"]).to be(true)
+  end
+
 end
