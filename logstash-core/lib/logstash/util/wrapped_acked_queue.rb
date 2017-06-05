@@ -127,7 +127,12 @@ module LogStash; module Util
       end
 
       def empty?
-        @mutex.synchronize { @queue.is_fully_acked? }
+        @mutex.lock
+        begin
+          @queue.is_fully_acked?
+        ensure
+          @mutex.unlock
+        end
       end
 
       def set_batch_dimensions(batch_size, wait_for)
@@ -152,8 +157,11 @@ module LogStash; module Util
       end
 
       def inflight_batches
-        @mutex.synchronize do
+        @mutex.lock
+        begin
           yield(@inflight_batches)
+        ensure
+          @mutex.unlock
         end
       end
 
@@ -173,16 +181,24 @@ module LogStash; module Util
         end
 
         batch = new_batch
-        @mutex.synchronize { batch.read_next }
+        @mutex.lock
+        begin
+          batch.read_next
+        ensure
+          @mutex.unlock
+        end
         start_metrics(batch)
         batch
       end
 
       def start_metrics(batch)
-        @mutex.synchronize do
+        @mutex.lock
+        begin
           # there seems to be concurrency issues with metrics, keep it in the mutex
           set_current_thread_inflight_batch(batch)
           start_clock
+        ensure
+          @mutex.unlock
         end
       end
 
@@ -191,12 +207,14 @@ module LogStash; module Util
       end
 
       def close_batch(batch)
-        @mutex.synchronize do
+        @mutex.lock
+        begin
           batch.close
-
           # there seems to be concurrency issues with metrics, keep it in the mutex
           @inflight_batches.delete(Thread.current)
           stop_clock(batch)
+        ensure
+          @mutex.unlock
         end
       end
 
