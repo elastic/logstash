@@ -12,7 +12,9 @@ final class JsUtil {
     /**
      * Script names used by the converter in correct load order.
      */
-    private static final String[] SCRIPTS = {"shared", "date", "grok", "geoip", "pipeline", "convert"};
+
+    private static final String[] SCRIPTS =
+        {"shared", "date", "grok", "geoip", "gsub", "pipeline", "convert"};
 
     private JsUtil() {
         // Utility Class

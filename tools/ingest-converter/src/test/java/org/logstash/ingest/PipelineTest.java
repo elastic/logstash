@@ -19,6 +19,7 @@ public final class PipelineTest extends IngestTest {
         DateTest.data().forEach(cases::add);
         GrokTest.data().forEach(cases::add);
         ConvertTest.data().forEach(cases::add);
+        GsubTest.data().forEach(cases::add);
         return cases;
     }
 

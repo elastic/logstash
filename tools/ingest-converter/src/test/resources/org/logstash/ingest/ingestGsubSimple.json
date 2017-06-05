@@ -1,0 +1,12 @@
+{
+  "description": "ExampleGsub",
+  "processors": [
+    {
+      "gsub": {
+        "field": "field1",
+        "pattern": "\\.",
+        "replacement": "_"
+      }
+    }
+  ]
+}
