@@ -7,6 +7,7 @@ module LogStash
     java_import org.apache.logging.log4j.LogManager
     java_import org.apache.logging.log4j.core.config.Configurator
     java_import org.apache.logging.log4j.core.config.DefaultConfiguration
+    java_import org.apache.logging.log4j.core.config.LoggerConfig
 
     class Logger
       @@config_mutex = Mutex.new
@@ -65,7 +66,7 @@ module LogStash
       end
 
       def self.configure_logging(level, path = LogManager::ROOT_LOGGER_NAME)
-        @@config_mutex.synchronize { Configurator.setLevel(path, Level.valueOf(level)) }
+        @@config_mutex.synchronize { set_level(level, path) }
       rescue Exception => e
         raise ArgumentError, "invalid level[#{level}] for logger[#{path}]"
       end
@@ -90,6 +91,30 @@ module LogStash
       def self.get_logging_context
         return @@logging_context
       end
+
+      # Clone of org.apache.logging.log4j.core.config.Configurator.setLevel(), but using initialized @@logging_context
+      def self.set_level(_level, path)
+        configuration = @@logging_context.getConfiguration()
+        level = Level.valueOf(_level)
+        if path.nil? || path.strip.empty?
+          root_logger = configuration.getRootLogger()
+          if root_logger.getLevel() != level
+            root_logger.setLevel(level)
+            @@logging_context.updateLoggers()
+          end
+        else
+          package_logger = configuration.getLoggerConfig(path)
+          if package_logger.name != path #no package logger found
+            configuration.addLogger(path, LoggerConfig.new(path, level, true))
+            @@logging_context.updateLoggers()
+          elsif package_logger.getLevel() != level
+            package_logger.setLevel(level)
+            @@logging_context.updateLoggers()
+          end
+        end
+      end
+
+      private_class_method :set_level
     end
 
     class SlowLogger
