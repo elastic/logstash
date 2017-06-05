@@ -110,7 +110,7 @@ ERB
       files = test_module.kibana_configuration.resources
       expect(files.size).to eq(7)
       expect(files.map{|o| o.class.name}.uniq).to eq(["LogStash::Modules::KibanaResource"])
-      expect(files[0].content_path).to eq("gem-home/kibana/index_pattern/foo.json")
+      expect(files[0].content_path).to eq("gem-home/kibana/index-pattern/foo.json")
       expect(files[0].import_path).to eq(".kibana/index-pattern/foo-*")
 
       expect(files[1].content).to eq("{\"defaultIndex\": \"\#{pattern_name}\"}")

@@ -35,9 +35,7 @@ module LogStash module Config module Source
           current_module.import(import_engine)
           config_string = current_module.config_string
 
-          logger.debug("Config string for module", :config_string => config_string, :module => module_hash["name"])
           config_part = org.logstash.common.SourceWithMetadata.new("module", alt_name, config_string)
-
           pipelines << PipelineConfig.new(self, pipeline_id.to_sym, config_part, @settings)
         rescue => e
           raise LogStash::ConfigLoadingError, I18n.t("logstash.modules.configuration.parse-failed", :error => e.message)

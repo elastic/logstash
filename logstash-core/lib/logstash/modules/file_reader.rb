@@ -21,7 +21,6 @@ module LogStash module Modules class FileReader
     begin
       LogStash::Json.load(json)
     rescue => e
-      STDERR.puts e.message
       logger.error("Error when parsing json from path", :path => path)
       return {}
     end
@@ -29,7 +28,7 @@ module LogStash module Modules class FileReader
 
   def self.glob(path)
     files = Dir.glob(path)
-    if files.nil?
+    if files.empty?
       logger.warn("No files found for glob", :pattern => path)
     end
     files

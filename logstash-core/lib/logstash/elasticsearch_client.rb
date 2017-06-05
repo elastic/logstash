@@ -3,14 +3,13 @@ require "logstash/namespace"
 require "logstash/logging"
 require "elasticsearch"
 require "elasticsearch/transport/transport/http/manticore"
-        #
-        #     client = Elasticsearch::Client.new transport_class: Elasticsearch::Transport::Transport::HTTP::Manticore
+
 module LogStash class ElasticsearchClient
   include LogStash::Util::Loggable
 
   class Response
     # duplicated here from Elasticsearch::Transport::Transport::Response
-    # to create a normailised response across different client IMPL
+    # to create a normalised response across different client IMPL
     attr_reader :status, :body, :headers
     def initialize(status, body, headers={})
       @status, @body, @headers = status, body, headers
@@ -49,7 +48,7 @@ module LogStash class ElasticsearchClient
       begin
         normalize_response(@client.perform_request('HEAD', path, {}, nil))
       rescue Exception => e
-        if e.class.to_s =~ /NotFound/ || e.message =~ /Not\s*Found|404/i
+        if is_404_error?(e)
           Response.new(404, "", {})
         else
           raise e
@@ -58,6 +57,10 @@ module LogStash class ElasticsearchClient
     end
 
     private
+
+    def is_404_error?(error)
+      error.class.to_s =~ /NotFound/ || error.message =~ /Not\s*Found|404/i
+    end
 
     def normalize_response(response)
       Response.new(response.status, response.body, response.headers)

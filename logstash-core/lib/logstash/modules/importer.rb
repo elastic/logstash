@@ -5,8 +5,6 @@ require "logstash/logging"
 module LogStash module Modules class Importer
   include LogStash::Util::Loggable
 
-  attr_reader :client
-
   def initialize(client)
     @client = client
   end
