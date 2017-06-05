@@ -1,4 +1,5 @@
 # encoding: utf-8
+require "logstash/instrument/periodic_poller/dlq"
 require "logstash/instrument/periodic_poller/os"
 require "logstash/instrument/periodic_poller/jvm"
 require "logstash/instrument/periodic_poller/pq"
@@ -14,7 +15,8 @@ module LogStash module Instrument
       @metric = metric
       @periodic_pollers = [PeriodicPoller::Os.new(metric),
                            PeriodicPoller::JVM.new(metric),
-                           PeriodicPoller::PersistentQueue.new(metric, queue_type, pipelines)]
+                           PeriodicPoller::PersistentQueue.new(metric, queue_type, pipelines),
+                           PeriodicPoller::DeadLetterQueue.new(metric, pipelines)]
     end
 
     def start

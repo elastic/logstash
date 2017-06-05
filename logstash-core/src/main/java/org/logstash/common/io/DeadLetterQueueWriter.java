@@ -32,6 +32,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.util.concurrent.atomic.LongAdder;
 import java.util.stream.Stream;
 
 import static org.logstash.common.io.RecordIOWriter.RECORD_HEADER_SIZE;
@@ -45,10 +46,10 @@ public class DeadLetterQueueWriter {
     static final String LOCK_FILE = ".lock";
     private final long maxSegmentSize;
     private final long maxQueueSize;
+    private LongAdder currentQueueSize;
     private final Path queuePath;
     private final FileLock lock;
     private RecordIOWriter currentWriter;
-    private long currentQueueSize;
     private int currentSegmentIndex;
     private Timestamp lastEntryTimestamp;
     private boolean open;
@@ -68,11 +69,11 @@ public class DeadLetterQueueWriter {
             }
             throw new RuntimeException("uh oh, someone else is writing to this dead-letter queue");
         }
-
         this.queuePath = queuePath;
         this.maxSegmentSize = maxSegmentSize;
         this.maxQueueSize = maxQueueSize;
-        this.currentQueueSize = getStartupQueueSize();
+        this.currentQueueSize = new LongAdder();
+        this.currentQueueSize.add(getStartupQueueSize());
 
         currentSegmentIndex = getSegmentPaths(queuePath)
                 .map(s -> s.getFileName().toString().split("\\.")[0])
@@ -106,7 +107,9 @@ public class DeadLetterQueueWriter {
     }
 
     private RecordIOWriter nextWriter() throws IOException {
-        return new RecordIOWriter(queuePath.resolve(String.format(SEGMENT_FILE_PATTERN, ++currentSegmentIndex)));
+        RecordIOWriter recordIOWriter = new RecordIOWriter(queuePath.resolve(String.format(SEGMENT_FILE_PATTERN, ++currentSegmentIndex)));
+        currentQueueSize.increment();
+        return recordIOWriter;
     }
 
     static Stream<Path> getSegmentPaths(Path path) throws IOException {
@@ -130,16 +133,15 @@ public class DeadLetterQueueWriter {
     private void innerWriteEntry(DLQEntry entry) throws IOException {
         byte[] record = entry.serialize();
         int eventPayloadSize = RECORD_HEADER_SIZE + record.length;
-        if (currentQueueSize + eventPayloadSize > maxQueueSize) {
+        if (currentQueueSize.longValue() + eventPayloadSize > maxQueueSize) {
             logger.error("cannot write event to DLQ: reached maxQueueSize of " + maxQueueSize);
             return;
         } else if (currentWriter.getPosition() + eventPayloadSize > maxSegmentSize) {
             currentWriter.close();
             currentWriter = nextWriter();
         }
-        currentQueueSize += currentWriter.writeEvent(record);
+        currentQueueSize.add(currentWriter.writeEvent(record));
     }
-
 
     public synchronized void close() throws IOException {
         this.lock.release();
@@ -152,5 +154,13 @@ public class DeadLetterQueueWriter {
 
     public boolean isOpen() {
         return open;
+    }
+
+    public Path getPath(){
+        return queuePath;
+    }
+
+    public long getCurrentQueueSize() {
+        return currentQueueSize.longValue();
     }
 }

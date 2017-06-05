@@ -58,11 +58,7 @@ module LogStash; class BasePipeline
     @outputs = nil
     @agent = agent
 
-    if settings.get_value("dead_letter_queue.enable")
-      @dlq_writer = DeadLetterQueueFactory.getWriter(pipeline_id, settings.get_value("path.dead_letter_queue"))
-    else
-      @dlq_writer = LogStash::Util::DummyDeadLetterQueueWriter.new
-    end
+    @dlq_writer = dlq_writer
 
     grammar = LogStashConfigParser.new
     parsed_config = grammar.parse(config_str)
@@ -82,6 +78,14 @@ module LogStash; class BasePipeline
       eval(config_code)
     rescue => e
       raise e
+    end
+  end
+
+  def dlq_writer
+    if settings.get_value("dead_letter_queue.enable")
+      @dlq_writer = DeadLetterQueueFactory.getWriter(pipeline_id, settings.get_value("path.dead_letter_queue"))
+    else
+      @dlq_writer = LogStash::Util::DummyDeadLetterQueueWriter.new
     end
   end
 
@@ -245,6 +249,7 @@ module LogStash; class Pipeline < BasePipeline
     # Since we start lets assume that the metric namespace is cleared
     # this is useful in the context of pipeline reloading
     collect_stats
+    collect_dlq_stats
 
     @logger.debug("Starting pipeline", default_logging_keys)
 
@@ -383,6 +388,9 @@ module LogStash; class Pipeline < BasePipeline
       config_metric.gauge(:batch_delay, batch_delay)
       config_metric.gauge(:config_reload_automatic, @settings.get("config.reload.automatic"))
       config_metric.gauge(:config_reload_interval, @settings.get("config.reload.interval"))
+      config_metric.gauge(:dead_letter_queue_enabled, dlq_enabled?)
+      config_metric.gauge(:dead_letter_queue_path, @dlq_writer.get_path.to_absolute_path.to_s) if dlq_enabled?
+
 
       @logger.info("Starting pipeline", default_logging_keys(
         "pipeline.workers" => pipeline_workers,
@@ -414,6 +422,10 @@ module LogStash; class Pipeline < BasePipeline
       # to potentially unblock the shutdown method which may be waiting on @ready to proceed
       @ready.make_true
     end
+  end
+
+  def dlq_enabled?
+    @settings.get("dead_letter_queue.enable")
   end
 
   # Main body of what a worker thread does
@@ -696,10 +708,16 @@ module LogStash; class Pipeline < BasePipeline
       .each {|t| t.delete("status") }
   end
 
+  def collect_dlq_stats
+    if dlq_enabled?
+      dlq_metric = @metric.namespace([:stats, :pipelines, pipeline_id.to_s.to_sym, :dlq])
+      dlq_metric.gauge(:queue_size_in_bytes, @dlq_writer.get_current_queue_size)
+    end
+  end
+
   def collect_stats
     pipeline_metric = @metric.namespace([:stats, :pipelines, pipeline_id.to_s.to_sym, :queue])
     pipeline_metric.gauge(:type, settings.get("queue.type"))
-
     if @queue.is_a?(LogStash::Util::WrappedAckedQueue) && @queue.queue.is_a?(LogStash::AckedQueue)
       queue = @queue.queue
       dir_path = queue.dir_path
