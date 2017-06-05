@@ -21,6 +21,11 @@ function ingest_pipeline_to_logstash(json) {
                 IngestConverter.create_hash("geoip", IngestGeoIp.geoip_hash(processor))
             )
         }
+        if (IngestConvert.has_convert(processor)) {
+            filter_blocks.push(
+                IngestConverter.create_hash("mutate", IngestConvert.convert_hash(processor))
+            )
+        }
         return IngestConverter.join_hash_fields(filter_blocks);
     }
 

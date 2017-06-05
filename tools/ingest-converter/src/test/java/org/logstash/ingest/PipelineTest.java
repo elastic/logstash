@@ -18,6 +18,7 @@ public final class PipelineTest extends IngestTest {
         GeoIpTest.data().forEach(cases::add);
         DateTest.data().forEach(cases::add);
         GrokTest.data().forEach(cases::add);
+        ConvertTest.data().forEach(cases::add);
         return cases;
     }
 

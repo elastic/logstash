@@ -24,6 +24,12 @@
         "field": "client.ip",
         "target_field": "geo"
       }
+    },
+    {
+      "convert": {
+        "field" : "bytes",
+        "foo": "integer"
+      }
     }
   ]
 }
