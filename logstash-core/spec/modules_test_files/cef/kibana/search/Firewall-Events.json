@@ -1,0 +1,30 @@
+{
+  "title": "Firewall Events",
+  "description": "",
+  "hits": 0,
+  "columns": [
+    "sevCode",
+    "name",
+    "deviceVendor",
+    "deviceProduct",
+    "categoryDeviceType",
+    "categoryBehavior",
+    "categoryOutcome",
+    "sourceAddress",
+    "sourcePort",
+    "sourceHostName",
+    "destinationAddress",
+    "destinationPort",
+    "destinationHostName",
+    "sourceUserName",
+    "destinationUserName"
+  ],
+  "sort": [
+    "@timestamp",
+    "desc"
+  ],
+  "version": 1,
+  "kibanaSavedObjectMeta": {
+    "searchSourceJSON": "{\"index\":\"cef-*\",\"query\":{\"query_string\":{\"query\":\"categoryDeviceType:\\\"Firewall\\\"\",\"analyze_wildcard\":true}},\"filter\":[],\"highlight\":{\"pre_tags\":[\"@kibana-highlighted-field@\"],\"post_tags\":[\"@/kibana-highlighted-field@\"],\"fields\":{\"*\":{}},\"require_field_match\":false,\"fragment_size\":2147483647}}"
+  }
+}

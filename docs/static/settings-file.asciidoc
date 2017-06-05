@@ -45,6 +45,24 @@ path:
 Note that the `${VAR_NAME:default_value}` notation is supported, setting a default batch delay
 of `5` and a default `path.queue` of `/tmp/queue` in the above example.
 
+Modules may also be specified in the `logstash.yml` file. The modules definition will have
+this format:
+
+[source,yaml]
+-------------------------------------------------------------------------------------
+modules:
+  - name: MODULE_NAME1
+    var.PLUGIN_TYPE1.PLUGIN_NAME1.KEY1: VALUE
+    var.PLUGIN_TYPE1.PLUGIN_NAME1.KEY2: VALUE
+    var.PLUGIN_TYPE2.PLUGIN_NAME2.KEY1: VALUE
+    var.PLUGIN_TYPE3.PLUGIN_NAME3.KEY1: VALUE
+  - name: MODULE_NAME2
+    var.PLUGIN_TYPE1.PLUGIN_NAME1.KEY1: VALUE
+    var.PLUGIN_TYPE1.PLUGIN_NAME1.KEY2: VALUE
+-------------------------------------------------------------------------------------
+
+IMPORTANT: If the <<command-line-flags,command-line flag>> `--modules` is used, any modules defined in the `logstash.yml` file will be ignored.
+
 The `logstash.yml` file includes the following settings:
 
 [options="header"]
@@ -120,6 +138,10 @@ The `logstash.yml` file includes the following settings:
   in plaintext passwords appearing in your logs!
 | `false`
 
+| `modules`
+| When configured, `modules` must be in the nested YAML structure described above this table.
+| None
+
 | `queue.type`
 | The internal queuing model to use for event buffering. Specify `memory` for legacy in-memory based queuing, or `persisted` for disk-based ACKed queueing (<<persistent-queues,persistent queues>>).
 | `memory`
@@ -137,7 +159,7 @@ The `logstash.yml` file includes the following settings:
 | 0 (unlimited)
 
 | `queue.max_bytes`
-| The total capacity of the queue in number of bytes. Make sure the capacity of your disk drive is greater than the value you specify here. If both `queue.max_events` and `queue.max_bytes` are specified, Logstash uses whichever criteria is reached first. 
+| The total capacity of the queue in number of bytes. Make sure the capacity of your disk drive is greater than the value you specify here. If both `queue.max_events` and `queue.max_bytes` are specified, Logstash uses whichever criteria is reached first.
 | 1024mb (1g)
 
 | `queue.checkpoint.acks`
@@ -172,7 +194,7 @@ The `logstash.yml` file includes the following settings:
 a|
 The log level. Valid options are:
 
-* `fatal` 
+* `fatal`
 * `error`
 * `warn`
 * `info`

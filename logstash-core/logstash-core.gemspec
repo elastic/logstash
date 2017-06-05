@@ -28,7 +28,7 @@ Gem::Specification.new do |gem|
 
   # Later versions are ruby 2.0 only. We should remove the rack dep once we support 9k
   gem.add_runtime_dependency "rack", '1.6.6'
-  
+
   gem.add_runtime_dependency "sinatra", '~> 1.4', '>= 1.4.6'
   gem.add_runtime_dependency 'puma', '~> 2.16'
   gem.add_runtime_dependency "jruby-openssl", "0.9.16" # >= 0.9.13 Required to support TLSv1.2
@@ -53,6 +53,7 @@ Gem::Specification.new do |gem|
   # has an rdoc problem that causes a bundler exception. 3.3.9 is the current latest version
   # which does not have this problem.
   gem.add_runtime_dependency "ruby-maven", "~> 3.3.9"
+  gem.add_runtime_dependency "elasticsearch", "~> 5.0", ">= 5.0.4" # Ruby client for ES (Apache 2.0 license)
 
   eval(File.read(File.expand_path("../gemspec_jars.rb", __FILE__)))
 end

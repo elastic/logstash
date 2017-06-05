@@ -9,6 +9,7 @@ require "net/http"
 require "logstash/namespace"
 require "logstash-core/logstash-core"
 require "logstash/environment"
+require "logstash/modules/cli_parser"
 
 LogStash::Environment.load_locale!
 
@@ -25,6 +26,17 @@ require "logstash/bootstrap_check/bad_ruby"
 require "set"
 
 java_import 'org.logstash.FileLockFactory'
+
+def register_local_modules(path)
+  modules_path = File.join(path, File::Separator, "modules")
+  Dir.foreach(modules_path) do |item|
+    # Ignore unix relative path ids
+    next if item == '.' or item == '..'
+    # Ignore non-directories
+    next if !File.directory?(File.join(modules_path, File::Separator, item))
+    LogStash::PLUGIN_REGISTRY.add(:modules, item, LogStash::Modules::Scaffold.new(item, File.join(modules_path, File::Separator, item, File::Separator, "configuration")))
+  end
+end
 
 class LogStash::Runner < Clamp::StrictCommand
   include LogStash::Util::Loggable
@@ -60,6 +72,17 @@ class LogStash::Runner < Clamp::StrictCommand
       :default_output => LogStash::Config::Defaults.output),
     :default => LogStash::SETTINGS.get_default("config.string"),
     :attribute_name => "config.string"
+
+  # Module settings
+  option ["--modules"], "MODULES",
+    I18n.t("logstash.runner.flag.modules"),
+    :multivalued => true,
+    :attribute_name => "modules_list"
+
+  option ["-M", "--modules.variable"], "MODULES_VARIABLE",
+    I18n.t("logstash.runner.flag.modules_variable"),
+    :multivalued => true,
+    :attribute_name => "modules_variable_list"
 
   # Pipeline settings
   option ["-w", "--pipeline.workers"], "COUNT",
@@ -175,6 +198,7 @@ class LogStash::Runner < Clamp::StrictCommand
     # Default we check local sources: `-e`, `-f` and the logstash.yml options.
     @source_loader = LogStash::Config::SourceLoader.new(@settings)
     @source_loader.add_source(LogStash::Config::Source::Local.new(@settings))
+    @source_loader.add_source(LogStash::Config::Source::Modules.new(@settings))
     @source_loader.add_source(LogStash::Config::Source::MultiLocal.new(@settings))
 
     super(*args)
@@ -237,6 +261,9 @@ class LogStash::Runner < Clamp::StrictCommand
       return 0
     end
 
+    # Add local modules to the registry before everything else
+    register_local_modules(LogStash::Environment::LOGSTASH_HOME)
+
     # We configure the registry and load any plugin that can register hooks
     # with logstash, this need to be done before any operation.
     LogStash::PLUGIN_REGISTRY.setup!
@@ -248,6 +275,10 @@ class LogStash::Runner < Clamp::StrictCommand
     @dispatcher.fire(:before_bootstrap_checks)
 
     return start_shell(setting("interactive"), binding) if setting("interactive")
+
+    module_parser = LogStash::Modules::CLIParser.new(@modules_list, @modules_variable_list)
+    # Now populate Setting for modules.list with our parsed array.
+    @settings.set("modules.cli", module_parser.output)
 
     begin
       @bootstrap_checks.each { |bootstrap| bootstrap.check(@settings) }
@@ -456,7 +487,7 @@ class LogStash::Runner < Clamp::StrictCommand
       nil
     end
   end
-  
+
   # is the user asking for CLI help subcommand?
   def cli_help?(args)
     # I know, double negative
