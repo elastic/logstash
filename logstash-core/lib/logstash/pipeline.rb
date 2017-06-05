@@ -313,6 +313,9 @@ module LogStash; class Pipeline < BasePipeline
       config_metric.gauge(:batch_delay, batch_delay)
       config_metric.gauge(:config_reload_automatic, @settings.get("config.reload.automatic"))
       config_metric.gauge(:config_reload_interval, @settings.get("config.reload.interval"))
+      config_metric.gauge(:dead_letter_queue_enabled, dlq_enabled?)
+      config_metric.gauge(:dead_letter_queue_path, @dlq_writer.get_path.to_absolute_path.to_s) if dlq_enabled?
+
 
       @logger.info("Starting pipeline",
                    "id" => self.pipeline_id,
@@ -345,6 +348,10 @@ module LogStash; class Pipeline < BasePipeline
       # to potentially unblock the shutdown method which may be waiting on @ready to proceed
       @ready.make_true
     end
+  end
+
+  def dlq_enabled?
+    @settings.get("dead_letter_queue.enable")
   end
 
   # Main body of what a worker thread does
@@ -419,7 +426,7 @@ module LogStash; class Pipeline < BasePipeline
     output_events_map.each do |output, events|
       output.multi_receive(events)
     end
-    
+
     @filter_queue_client.add_output_metrics(batch)
   end
 
@@ -597,6 +604,13 @@ module LogStash; class Pipeline < BasePipeline
       .each {|t| t.delete("backtrace") }
       .each {|t| t.delete("blocked_on") }
       .each {|t| t.delete("status") }
+  end
+
+  def collect_dlq_stats
+    if dlq_enabled?
+      dlq_metric = @metric.namespace([:stats, :pipelines, pipeline_id.to_s.to_sym, :dlq])
+      dlq_metric.gauge(:queue_size_in_bytes, @dlq_writer.get_current_queue_size)
+    end
   end
 
   def collect_stats

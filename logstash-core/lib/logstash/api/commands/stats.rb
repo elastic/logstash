@@ -107,8 +107,8 @@ module LogStash
               },
               :reloads => stats[:reloads],
               :queue => stats[:queue]
-            }
-          end
+            }.merge(stats[:dlq] ? {:dead_letter_queue => stats[:dlq]} : {})
+            end
         end # module PluginsStats
       end
     end
