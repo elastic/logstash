@@ -1,0 +1,10 @@
+{
+  "processors": [
+    {
+      "convert": {
+        "field" : "blah",
+        "foo": "string"
+      }
+    }
+  ]
+}
