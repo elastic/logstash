@@ -3,7 +3,7 @@
     {
         "convert": {
             "field" : "bytes",
-            "foo": "integer"
+            "type": "integer"
         }
     }
 ]

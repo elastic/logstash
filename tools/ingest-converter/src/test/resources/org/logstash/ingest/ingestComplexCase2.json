@@ -34,7 +34,7 @@
     {
       "convert": {
         "field" : "[client][bytes]",
-        "foo": "integer"
+        "type": "integer"
       }
     }
   ]

@@ -3,7 +3,7 @@
     {
       "convert": {
         "field" : "delete",
-        "foo": "boolean"
+        "type": "boolean"
       }
     }
   ]

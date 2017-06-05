@@ -6,7 +6,7 @@ var IngestConvert = {
         var convert_json = processor["convert"];
         var mutate_contents = IngestConverter.create_field(
             IngestConverter.quote_string(IngestConverter.dots_to_square_brackets(convert_json["field"])),
-            IngestConverter.quote_string(convert_json["foo"])
+            IngestConverter.quote_string(convert_json["type"])
         );
         return IngestConverter.create_hash("convert", mutate_contents);
     }

@@ -3,7 +3,7 @@
     {
       "convert": {
         "field" : "blah",
-        "foo": "string"
+        "type": "string"
       }
     }
   ]
