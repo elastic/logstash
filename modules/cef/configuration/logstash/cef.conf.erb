@@ -8,6 +8,13 @@ input {
 }
 
 filter {
+  
+  # Map the @timestamp with the event time, as recorded in deviceReceiptTime
+
+  date {
+    match => [ "deviceReceiptTime", "MMM dd yyyy HH:mm:ss", "MMM  d yyyy HH:mm:ss", "UNIX_MS" ]
+  }
+
   # To map the attacker Geo IP if plausible
 
   geoip {

@@ -30,11 +30,17 @@ module LogStash module Config module Source
     def match?
       uses_config_string = @original_settings.get_setting("config.string").set?
       uses_path_config = @original_settings.get_setting("path.config").set?
-      return true if !uses_config_string && !uses_path_config
+      uses_modules_cli = @original_settings.get_setting("modules.cli").set?
+      uses_modules_yml = @original_settings.get_setting("modules").set?
+      return true if !uses_config_string && !uses_path_config && !uses_modules_cli && !uses_modules_yml
       if uses_path_config
         logger.warn("Ignoring the 'pipelines.yml' file because 'path.config' (-f) is being used.")
       elsif uses_config_string
         logger.warn("Ignoring the 'pipelines.yml' file because 'config.string' (-e) is being used.")
+      elsif uses_modules_cli
+        logger.warn("Ignoring the 'pipelines.yml' file because 'modules.cli' (--modules) is being used.")
+      elsif uses_modules_yml
+        logger.warn("Ignoring the 'pipelines.yml' file because modules are defined in the 'logstash.yml' file.")
       end
       false
     end
