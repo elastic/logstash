@@ -102,6 +102,9 @@ include::static/upgrading.asciidoc[]
 :edit_url: https://github.com/elastic/logstash/edit/master/docs/static/configuration.asciidoc
 include::static/configuration.asciidoc[]
 
+:edit_url: https://github.com/elastic/logstash/edit/master/docs/static/multiple-pipelines.asciidoc
+include::static/multiple-pipelines.asciidoc[]
+
 :edit_url: https://github.com/elastic/logstash/edit/master/docs/static/reloading-config.asciidoc
 include::static/reloading-config.asciidoc[]
 
