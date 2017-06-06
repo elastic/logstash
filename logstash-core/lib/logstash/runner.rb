@@ -277,7 +277,7 @@ class LogStash::Runner < Clamp::StrictCommand
     module_configs = LogStash::Config::ModulesCommon.pipeline_configs(@settings)
     module_config_hash = module_configs.first
     if !module_config_hash.nil?
-      @settings.set_value("config.string", config_hash["config_string"])
+      @settings.set_value("config.string", module_config_hash["config_string"])
     end
     if module_configs.size > 1
       logger.warn "Multiple modules defined in logstash.yml - using the first one: #{module_config_hash["pipeline_id"]}"
