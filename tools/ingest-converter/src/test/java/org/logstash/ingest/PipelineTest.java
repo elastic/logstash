@@ -21,6 +21,7 @@ public final class PipelineTest extends IngestTest {
         ConvertTest.data().forEach(cases::add);
         GsubTest.data().forEach(cases::add);
         AppendTest.data().forEach(cases::add);
+        JsonTest.data().forEach(cases::add);
         return cases;
     }
 

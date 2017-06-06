@@ -1,19 +1,18 @@
 package org.logstash.ingest;
 
+import javax.script.Invocable;
+import javax.script.ScriptEngine;
+import javax.script.ScriptException;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import javax.script.Invocable;
-import javax.script.ScriptEngine;
-import javax.script.ScriptException;
 
 /**
- * Ingest Append DSL to Logstash mutate Transpiler.
+ * Ingest JSON processor DSL to Logstash json Transpiler.
  */
-public final class Append {
-
-    private Append() {
+public class Json {
+    private Json() {
         // Utility Wrapper for JS Script.
     }
 
@@ -21,7 +20,7 @@ public final class Append {
         try {
             final ScriptEngine engine = JsUtil.engine();
             Files.write(Paths.get(args[1]), ((String) ((Invocable) engine).invokeFunction(
-                "ingest_append_to_logstash",
+                "ingest_json_to_logstash",
                 new String(
                     Files.readAllBytes(Paths.get(args[0])), StandardCharsets.UTF_8
                 )

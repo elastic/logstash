@@ -1,0 +1,11 @@
+{
+  "description": "ExampleJson",
+  "processors": [
+    {
+      "json": {
+        "field": "[foo][string_source]",
+        "target_field": "[bar][json_target]"
+      }
+    }
+  ]
+}
