@@ -3,22 +3,22 @@ var IngestJson = {
         return !!processor["json"];
     },
     json_hash: function (processor) {
-        var json_date = processor["json"];
+        var json_data = processor["json"];
         var parts = [
             IngestConverter.create_field(
                 "source",
                 IngestConverter.quote_string(
-                    IngestConverter.dots_to_square_brackets(json_date["field"])
+                    IngestConverter.dots_to_square_brackets(json_data["field"])
                 )
             )
         ];
 
-        if (json_date["target_field"]) {
+        if (json_data["target_field"]) {
             parts.push(
                 IngestConverter.create_field(
                     "target",
                     IngestConverter.quote_string(
-                        IngestConverter.dots_to_square_brackets(json_date["target_field"])
+                        IngestConverter.dots_to_square_brackets(json_data["target_field"])
                     )
                 )
             );
