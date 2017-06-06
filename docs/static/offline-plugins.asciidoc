@@ -8,10 +8,6 @@ This procedure requires a staging machine running Logstash that has access to a 
 <<private-rubygem,private Rubygems>> server. The staging machine downloads and packages all the files and dependencies
 required for offline installation.
 
-NOTE: If you used offline plugin management prior to Logstash 5.2, you used the `pack` and `unpack` subcommands. Those
-subcommands are now deprecated, but the procedure for using them is still available in the documentation 
-<<building-offline-packages-deprecated,here>>.
-
 [[building-offline-packs]]
 [float]
 === Building Offline Plugin Packs
@@ -90,62 +86,3 @@ build and install the plugin pack:
 
 . Install the new version of the plugin pack. See <<installing-offline-packs>>.
 
-
-[[building-offline-packages-deprecated]]
-[float]
-=== Building the Offline Package (Deprecated Procedure)
-
-deprecated[5.2, Starting with Logstash 5.2, the `pack` and `unpack` commands are deprecated and replaced by the `prepare-offline-pack` and `install` commands]
-
-Working with offline plugins requires you to create an _offline package_, which is a compressed file that contains all of
-the plugins your offline Logstash installation requires, along with the dependencies for those plugins.
-
-. Create the offline package with the `bin/logstash-plugin pack` subcommand.
-+
-When you run the `bin/logstash-plugin pack` subcommand, Logstash creates a compressed bundle that contains all of the currently
-installed plugins and the dependencies for those plugins. By default, the compressed bundle is a GZipped TAR file when you
-run the `bin/logstash-plugin pack` subcommand on a UNIX machine. By default, when you run the `bin/logstash-plugin pack` subcommand on a
-Windows machine, the compressed bundle is a ZIP file. See <<managing-packs,Managing Plugin Packs>> for details on changing
-these default behaviors.
-+
-NOTE: Downloading all dependencies for the specified plugins may take some time, depending on the plugins listed.
-
-. Move the compressed bundle to the offline machines that are the source for offline plugin installation, then use the
-`bin/logstash-plugin unpack` subcommand to make the packaged plugins available.
-
-[float]
-=== Install or Update a local plugin (Deprecated Procedure)
-
-deprecated[5.2]
-
-To install or update a local plugin, use the `--local` option with the install and update commands, as in the following
-examples:
-
-.Installing a local plugin
-============
-`bin/logstash-plugin install --local logstash-input-jdbc`
-============
-
-.Updating a local plugin
-============
-`bin/logstash-plugin update --local logstash-input-jdbc`
-============
-
-.Updating all local plugins in one command
-============
-`bin/logstash-plugin update --local`
-============
-
-[float]
-[[managing-packs]]
-=== Managing Plugin Packs
-
-deprecated[5.2]
-
-The `pack` and `unpack` subcommands for `bin/logstash-plugin` take the following options:
-
-[horizontal]
-`--tgz`:: Generate the offline package as a GZipped TAR file. The default behavior on UNIX systems.
-`--zip`:: Generate the offline package as a ZIP file. The default behavior on Windows systems.
-`[packname] --override`:: Generates a new offline package that overwrites an existing offline with the specified name.
-`[packname] --[no-]clean`: Deletes offline packages matching the specified name.
