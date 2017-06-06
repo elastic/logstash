@@ -32,7 +32,7 @@ module LogStash class ElasticsearchClient
       begin
         normalize_response(@client.perform_request('DELETE', path, {}, nil))
       rescue Exception => e
-        if e.class.to_s =~ /NotFound/ || e.message =~ /Not\s*Found|404/i
+        if is_404_error?(e)
           Response.new(404, "", {})
         else
           raise e
