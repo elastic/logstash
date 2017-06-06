@@ -6,6 +6,13 @@
 		"test-vendor-plugins": false,
 		"skip-list": false
 	},
+	"logstash-input-dead_letter_queue": {
+		"default-plugins": true,
+		"core-specs": false,
+		"test-jar-dependencies": false,
+		"test-vendor-plugins": false,
+		"skip-list": false
+	},
 	"logstash-codec-collectd": {
 		"default-plugins": true,
 		"core-specs": false,
