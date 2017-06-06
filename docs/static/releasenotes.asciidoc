@@ -3,8 +3,15 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-6-0-0-alpha3,Logstash 6.0.0-alpha3>>
 * <<logstash-6-0-0-alpha2,Logstash 6.0.0-alpha2>>
 * <<logstash-6-0-0-alpha1,Logstash 6.0.0-alpha1>>
+
+[[logstash-6-0-0-alpha3]]
+=== Logstash 6.0.0-alpha3 Release Notes
+
+Placeholder for alpha3 release notes
+
 
 [[logstash-6-0-0-alpha2]]
 === Logstash 6.0.0-alpha2 Release Notes
