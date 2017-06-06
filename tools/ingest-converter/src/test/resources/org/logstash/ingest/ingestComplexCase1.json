@@ -30,6 +30,12 @@
         "field" : "bytes",
         "type": "integer"
       }
+    },
+    {
+      "append": {
+        "field" : "response_code",
+        "value": ["200", "400", "503"]
+      }
     }
   ]
 }
