@@ -15,7 +15,7 @@ public final class AppendTest extends IngestTest {
     }
 
     @Test
-    public void convertsConvertProcessorCorrectly() throws Exception {
+    public void convertsAppendProcessorCorrectly() throws Exception {
         final String append = getResultPath(temp);
         Append.main(resourcePath(String.format("ingest%s.json", testCase)), append);
         assertThat(
