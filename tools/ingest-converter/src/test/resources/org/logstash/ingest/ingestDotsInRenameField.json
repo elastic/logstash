@@ -3,8 +3,8 @@
   "processors": [
     {
       "rename": {
-        "field": "[foo][bar]",
-        "target_field": "[foo][baz]"
+        "field": "foo.bar",
+        "target_field": "foo.baz"
       }
     }
   ]
