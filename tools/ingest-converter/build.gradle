@@ -23,6 +23,7 @@ buildscript {
 }
 
 dependencies {
+  compile 'net.sf.jopt-simple:jopt-simple:5.0.3'
   testCompile "junit:junit:4.12"
 }
 
@@ -37,3 +38,5 @@ shadowJar {
   classifier = null
   version = null
 }
+
+assemble.dependsOn shadowJar

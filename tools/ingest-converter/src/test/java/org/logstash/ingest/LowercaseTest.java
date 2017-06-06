@@ -5,15 +5,15 @@ import org.junit.Test;
 
 import static org.junit.runners.Parameterized.Parameters;
 
-public final class AppendTest extends IngestTest {
+public final class LowercaseTest extends IngestTest {
 
     @Parameters
     public static Iterable<String> data() {
-        return Arrays.asList("Append", "DotsInAppendField", "AppendScalar");
+        return Arrays.asList("LowercaseSimple", "LowercaseDots");
     }
 
     @Test
     public void convertsAppendProcessorCorrectly() throws Exception {
-        assertCorrectConversion(Append.class);
+        assertCorrectConversion(Lowercase.class);
     }
 }
