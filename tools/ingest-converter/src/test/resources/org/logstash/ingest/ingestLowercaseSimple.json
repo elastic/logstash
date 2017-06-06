@@ -1,0 +1,10 @@
+{
+  "description": "ExampleLowercase",
+  "processors": [
+    {
+      "lowercase": {
+        "field": "foo"
+      }
+    }
+  ]
+}

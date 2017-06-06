@@ -4,8 +4,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import org.junit.Test;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.runners.Parameterized.Parameters;
 
 public final class PipelineTest extends IngestTest {
@@ -23,15 +21,12 @@ public final class PipelineTest extends IngestTest {
         AppendTest.data().forEach(cases::add);
         JsonTest.data().forEach(cases::add);
         RenameTest.data().forEach(cases::add);
+        LowercaseTest.data().forEach(cases::add);
         return cases;
     }
 
     @Test
     public void convertsComplexCaseCorrectly() throws Exception {
-        final String date = getResultPath(temp);
-        Pipeline.main(resourcePath(String.format("ingest%s.json", testCase)), date);
-        assertThat(
-            utf8File(date), is(utf8File(resourcePath(String.format("logstash%s.conf", testCase))))
-        );
+        assertCorrectConversion(Pipeline.class);
     }
 }
