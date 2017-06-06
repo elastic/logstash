@@ -9,4 +9,5 @@ module LogStash
 
   class Bug < Error; end
   class ThisMethodWasRemoved < Bug; end
+  class ConfigLoadingError < Error; end
 end

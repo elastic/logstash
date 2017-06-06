@@ -1,0 +1,42 @@
+input {
+  tcp {
+    # The delimiter config used is for TCP interpretation
+    codec => cef { delimiter => "\r\n"}
+    port => <%= setting("var.input.tcp.port", 5000) %>
+    type => syslog
+  }
+}
+
+filter {
+  
+  # Map the @timestamp with the event time, as recorded in deviceReceiptTime
+
+  date {
+    match => [ "deviceReceiptTime", "MMM dd yyyy HH:mm:ss", "MMM  d yyyy HH:mm:ss", "UNIX_MS" ]
+  }
+
+  # To map the attacker Geo IP if plausible
+
+  geoip {
+    source => "sourceAddress"
+    target => "source"
+  }
+
+  # To map the target Geo IP if plausible
+
+  geoip {
+    source => "destinationAddress"
+    target => "destination"
+  }
+
+  # To map the log producing device Geo IP if plausible
+
+  geoip {
+    source => "deviceAddress"
+    target => "device"
+  }
+}
+
+output {
+  <%= elasticsearch_output_config('syslog') %>
+}

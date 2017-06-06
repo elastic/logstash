@@ -64,7 +64,7 @@ that using the `rake qa:vm:setup[platform]` task. This is done like this
 as bootstrap imply setting up the VM'S and this might take some time and
 you might only want to this once.
 
-In the feature we might add new rake tasks to do all at once, but for now you can use the script under
+In the future we might add new rake tasks to do all at once, but for now you can use the script under
 `ci/ci_acceptance.sh` to do all at once.
 
 For local testing purposes, is recommended to not run all together, pick your target and run with the single machine command, If you're willing to run on single one, you should use:
