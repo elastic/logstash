@@ -6,8 +6,8 @@ This section summarizes the changes in the following releases:
 * <<logstash-6-0-0-alpha2,Logstash 6.0.0-alpha2>>
 * <<logstash-6-0-0-alpha1,Logstash 6.0.0-alpha1>>
 
-[[logstash-6-0-0-alpha1]]
-=== Logstash 6.0.0-alpha1 Release Notes
+[[logstash-6-0-0-alpha2]]
+=== Logstash 6.0.0-alpha2 Release Notes
 
 * Added support for running multiple pipelines in the same Logstash instance. Running multiple pipelines 
   allow users to isolate data flow, provide separate runtime pipeline parameters and helps simplify complex 
