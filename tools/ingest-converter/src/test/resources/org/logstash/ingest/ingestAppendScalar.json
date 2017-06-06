@@ -1,0 +1,11 @@
+{
+  "description": "Pipeline to parse Apache logs",
+  "processors": [
+    {
+      "append": {
+        "field" : "foo",
+        "value": "bar"
+      }
+    }
+  ]
+}
