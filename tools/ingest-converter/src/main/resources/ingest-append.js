@@ -19,7 +19,7 @@ var IngestAppend = {
 };
 
 /**
- * Converts Ingest Append JSON to LS Date filter.
+ * Converts Ingest Append JSON to LS mutate filter.
  */
 function ingest_append_to_logstash(json) {
 
