@@ -3,7 +3,19 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-6-0-0-alpha2,Logstash 6.0.0-alpha2>>
 * <<logstash-6-0-0-alpha1,Logstash 6.0.0-alpha1>>
+
+[[logstash-6-0-0-alpha1]]
+=== Logstash 6.0.0-alpha1 Release Notes
+
+* Added support for running multiple pipelines in the same Logstash instance. Running multiple pipelines 
+  allow users to isolate data flow, provide separate runtime pipeline parameters and helps simplify complex 
+  configurations.
+* A new `pipelines.yml` configuration file has been added to define pipelines.
+* Breaking: Currently, when Logstash is installed and set up via package managers, it loads all files found 
+  in `/etc/logstash/conf.d` as configuration. This can be problematic if there are non-configuration files in this 
+  folder. Starting from alpha2, Logstash will only glob files ending with `.conf` extension in `/etc/logstash/conf.d` ({lsissue}6979)[Issue 6979)]).
 
 [[logstash-6-0-0-alpha1]]
 === Logstash 6.0.0-alpha1 Release Notes
