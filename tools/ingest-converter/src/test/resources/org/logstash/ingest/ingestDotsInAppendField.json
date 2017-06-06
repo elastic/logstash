@@ -1,0 +1,11 @@
+{
+  "description": "Pipeline to parse Apache logs",
+  "processors": [
+    {
+      "append": {
+        "field" : "client.ip",
+        "value": ["127.0.0.1", "127.0.0.2"]
+      }
+    }
+  ]
+}
