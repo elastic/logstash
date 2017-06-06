@@ -8,6 +8,9 @@ import org.logstash.common.SourceWithMetadata;
 
 import java.nio.charset.StandardCharsets;
 
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+
 /**
  * Created by andrewvc on 9/15/16.
  */

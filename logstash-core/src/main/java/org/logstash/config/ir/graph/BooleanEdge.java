@@ -4,6 +4,8 @@ import org.logstash.common.Util;
 import org.logstash.config.ir.SourceComponent;
 import org.logstash.config.ir.InvalidIRException;
 
+import java.util.Objects;
+
 /**
  * Created by andrewvc on 9/15/16.
  */
