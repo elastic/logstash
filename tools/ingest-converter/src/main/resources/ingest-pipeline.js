@@ -41,6 +41,11 @@ function ingest_pipeline_to_logstash(json) {
                 IngestConverter.create_hash("json", IngestJson.json_hash(processor))
             );
         }
+        if (IngestRename.has_rename(processor)) {
+            filter_blocks.push(
+                IngestConverter.create_hash("mutate", IngestRename.rename_hash(processor))
+            );
+        }
         return IngestConverter.join_hash_fields(filter_blocks);
     }
 

@@ -1,0 +1,11 @@
+{
+  "description": "ExampleRename",
+  "processors": [
+    {
+      "rename": {
+        "field": "foo.bar",
+        "target_field": "foo.baz"
+      }
+    }
+  ]
+}
