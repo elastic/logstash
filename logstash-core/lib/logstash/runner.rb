@@ -213,7 +213,7 @@ class LogStash::Runner < Clamp::StrictCommand
     # We invoke post_process to apply extra logic to them.
     # The post_process callbacks have been added in environment.rb
     @settings.post_process
-    
+
     require "logstash/util"
     require "logstash/util/java_version"
     require "stud/task"
@@ -272,6 +272,15 @@ class LogStash::Runner < Clamp::StrictCommand
     return start_shell(setting("interactive"), binding) if setting("interactive")
 
     @settings.format_settings.each {|line| logger.debug(line) }
+
+    module_configs = LogStash::Config::ModulesCommon.pipeline_configs(@settings)
+    module_config_hash = module_configs.first
+    if !module_config_hash.nil?
+      @settings.set_value("config.string", config_hash["config_string"])
+    end
+    if module_configs.size > 1
+      logger.warn "Multiple modules defined in logstash.yml - using the first one: #{module_config_hash["pipeline_id"]}"
+    end
 
     if setting("config.string").nil? && setting("path.config").nil?
       fail(I18n.t("logstash.runner.missing-configuration"))
@@ -464,7 +473,7 @@ class LogStash::Runner < Clamp::StrictCommand
       nil
     end
   end
-  
+
   # is the user asking for CLI help subcommand?
   def cli_help?(args)
     # I know, double negative
