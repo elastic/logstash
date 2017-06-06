@@ -41,6 +41,12 @@
       "json": {
         "field": "string_source"
       }
+    },
+    {
+      "rename": {
+        "field": "foo",
+        "target_field": "foobar"
+      }
     }
   ]
 }
