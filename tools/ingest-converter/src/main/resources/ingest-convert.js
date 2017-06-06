@@ -8,7 +8,7 @@ var IngestConvert = {
             IngestConverter.quote_string(IngestConverter.dots_to_square_brackets(convert_json["field"])),
             IngestConverter.quote_string(convert_json["type"])
         );
-        return IngestConverter.create_field("convert",  IngestConverter.wrap_in_curly(mutate_contents));
+        return IngestConverter.create_field("convert", IngestConverter.wrap_in_curly(mutate_contents));
     }
 };
 
