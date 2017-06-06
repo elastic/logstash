@@ -9,7 +9,9 @@ import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
-import static org.junit.runners.Parameterized.*;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.runners.Parameterized.Parameter;
 
 /**
  * Base class for ingest migration tests
@@ -22,6 +24,20 @@ public abstract class IngestTest {
 
     @Parameter
     public String testCase;
+    
+    protected final void assertCorrectConversion(final Class clazz) throws Exception {
+        final String append = getResultPath(temp);
+        clazz.getMethod("main", String[].class).invoke(
+            null,
+            (Object) new String[]{
+                String.format("--input=file://%s", resourcePath(String.format("ingest%s.json", testCase))),
+                String.format("--output=file://%s", append)
+            }
+        );
+        assertThat(
+            utf8File(append), is(utf8File(resourcePath(String.format("logstash%s.conf", testCase))))
+        );
+    } 
     
     static String utf8File(final String path) throws IOException {
         return new String(Files.readAllBytes(Paths.get(path)), StandardCharsets.UTF_8);
