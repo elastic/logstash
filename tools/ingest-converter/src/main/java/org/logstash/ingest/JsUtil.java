@@ -14,7 +14,7 @@ final class JsUtil {
      */
 
     private static final String[] SCRIPTS =
-        {"shared", "date", "grok", "geoip", "gsub", "pipeline", "convert"};
+        {"shared", "date", "grok", "geoip", "gsub", "pipeline", "convert", "append"};
 
     private JsUtil() {
         // Utility Class

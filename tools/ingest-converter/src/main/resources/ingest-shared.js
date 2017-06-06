@@ -90,6 +90,12 @@ var IngestConverter = {
             + patterns.map(this.dots_to_square_brackets).map(this.quote_string).join(",\n") 
             + "\n]";
     },
+
+    create_array: function (ingest_array) {
+        return "[\n"
+            + ingest_array.map(this.quote_string).join(",\n")
+            + "\n]";
+    },
     
     /**
      * Converts Ingest/JSON style pattern array to LS pattern array or string if the given array
