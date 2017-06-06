@@ -83,10 +83,23 @@ en:
       logging:
         unrecognized_option: |-
           unrecognized option [%{option}]
+    modules:
+      configuration:
+        parse-failed: |-
+          Failed to parse the module configuration: [%{error}]
+        modules-must-be-unique: >-
+          Only a single instance of any module can be run at a time. Duplicate
+          modules: %{duplicate_modules}
+        modules-invalid-name: >-
+          Invalid module name: %{module_name}
+        modules-variables-malformed: >-
+          Failed to parse module variable %{rawvar}.  Must be in -M
+          "MODULE_NAME.KEY.SUBKEY=VALUE" format
     runner:
       short-help: |-
         usage:
           bin/logstash -f CONFIG_PATH [-t] [-r] [] [-w COUNT] [-l LOG]
+          bin/logstash --modules MODULE_NAME [-M "MODULE_NAME.var.PLUGIN_TYPE.PLUGIN_NAME.VARIABLE_NAME=VALUE"] [-t] [-w COUNT] [-l LOG]
           bin/logstash -e CONFIG_STR [-t] [--log.level fatal|error|warn|info|debug|trace] [-w COUNT] [-l LOG]
           bin/logstash -i SHELL [--log.level fatal|error|warn|info|debug|trace]
           bin/logstash -V [--log.level fatal|error|warn|info|debug|trace]
@@ -96,6 +109,13 @@ en:
       missing-configuration: >-
         No configuration file was specified. Perhaps you forgot to provide
         the '-f yourlogstash.conf' flag?
+      config-module-exclusive: >-
+        Settings 'path.config' (-f) or 'config.string' (-e) can't be used in conjunction with
+        (--modules) or the "modules:" block in the logstash.yml file.
+      cli-module-override: >-
+        Both command-line and logstash.yml modules configurations detected. 
+        Using command-line module configuration and ignoring logstash.yml module
+        configuration.
       reload-without-config-path: >-
         Configuration reloading also requires passing a configuration path with '-f yourlogstash.conf'
       locked-data-path: >-
@@ -181,6 +201,24 @@ en:
           "%{default_output}"
           If you wish to use both defaults, please use
           the empty string for the '-e' flag.
+        modules: |+
+          Load Logstash modules.
+          Modules can be defined using multiple instances 
+          '--modules module1 --modules module2', 
+             or comma-separated syntax 
+          '--modules=module1,module2' 
+          Cannot be used in conjunction with '-e' or '-f'
+          Use of '--modules' will override modules declared
+          in the 'logstash.yml' file.
+        modules_variable: |+
+          Load variables for module template.
+          Multiple instances of '-M' or 
+          '--modules.variable' are supported.
+          Ignored if '--modules' flag is not used.
+          Should be in the format of 
+          '-M "MODULE_NAME.var.PLUGIN_TYPE.PLUGIN_NAME.VARIABLE_NAME=VALUE"'
+          as in 
+          '-M "example.var.filter.mutate.fieldname=fieldvalue"'
         configtest: |+
           Check configuration for valid syntax and then exit.
         http_host: Web API binding host

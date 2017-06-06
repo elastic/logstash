@@ -85,6 +85,25 @@
 #
 # config.debug: false
 #
+# ------------ Module Settings ---------------
+# Define modules here.  Modules definitions must be defined as an array.
+# The simple way to see this is to prepend each `name` with a `-`, and keep
+# all associated variables under the `name` they are associated with, and 
+# above the next, like this:
+#
+# modules:
+#   - name: MODULE_NAME
+#     var.PLUGINTYPE1.PLUGINNAME1.KEY1: VALUE
+#     var.PLUGINTYPE1.PLUGINNAME1.KEY2: VALUE
+#     var.PLUGINTYPE2.PLUGINNAME1.KEY1: VALUE
+#     var.PLUGINTYPE3.PLUGINNAME3.KEY1: VALUE
+#
+# Module variable names must be in the format of 
+#
+# var.PLUGIN_TYPE.PLUGIN_NAME.KEY
+#
+# modules:
+#
 # ------------ Queuing Settings --------------
 #
 # Internal queuing model, "memory" for legacy in-memory based queuing and

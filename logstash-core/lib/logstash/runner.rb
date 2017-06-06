@@ -9,11 +9,13 @@ require "net/http"
 require "logstash/namespace"
 require "logstash-core/logstash-core"
 require "logstash/environment"
+require "logstash/modules/cli_parser"
 
 LogStash::Environment.load_locale!
 
 require "logstash/agent"
 require "logstash/config/defaults"
+require "logstash/config/modules_common"
 require "logstash/shutdown_watcher"
 require "logstash/patches/clamp"
 require "logstash/settings"
@@ -21,6 +23,17 @@ require "logstash/version"
 require "logstash/plugins/registry"
 
 java_import 'org.logstash.FileLockFactory'
+
+def register_local_modules(path)
+  modules_path = File.join(path, File::Separator, "modules")
+  Dir.foreach(modules_path) do |item|
+    # Ignore unix relative path ids
+    next if item == '.' or item == '..'
+    # Ignore non-directories
+    next if !File.directory?(File.join(modules_path, File::Separator, item))
+    LogStash::PLUGIN_REGISTRY.add(:modules, item, LogStash::Modules::Scaffold.new(item, File.join(modules_path, File::Separator, item, File::Separator, "configuration")))
+  end
+end
 
 class LogStash::Runner < Clamp::StrictCommand
   include LogStash::Util::Loggable
@@ -48,6 +61,17 @@ class LogStash::Runner < Clamp::StrictCommand
       :default_output => LogStash::Config::Defaults.output),
     :default => LogStash::SETTINGS.get_default("config.string"),
     :attribute_name => "config.string"
+
+  # Module settings
+  option ["--modules"], "MODULES",
+    I18n.t("logstash.runner.flag.modules"),
+    :multivalued => true,
+    :attribute_name => "modules_list"
+
+  option ["-M", "--modules.variable"], "MODULES_VARIABLE",
+    I18n.t("logstash.runner.flag.modules_variable"),
+    :multivalued => true,
+    :attribute_name => "modules_variable_list"
 
   # Pipeline settings
   option ["-w", "--pipeline.workers"], "COUNT",
@@ -190,7 +214,7 @@ class LogStash::Runner < Clamp::StrictCommand
     # We invoke post_process to apply extra logic to them.
     # The post_process callbacks have been added in environment.rb
     @settings.post_process
-    
+
     require "logstash/util"
     require "logstash/util/java_version"
     require "stud/task"
@@ -211,6 +235,9 @@ class LogStash::Runner < Clamp::StrictCommand
       logger.warn("--config.debug was specified, but log.level was not set to \'debug\'! No config info will be logged.")
     end
 
+    # Add local modules to the registry before everything else
+    register_local_modules(LogStash::Environment::LOGSTASH_HOME)
+
     # We configure the registry and load any plugin that can register hooks
     # with logstash, this need to be done before any operation.
     LogStash::PLUGIN_REGISTRY.setup!
@@ -230,6 +257,10 @@ class LogStash::Runner < Clamp::StrictCommand
       return 1
     end
 
+    module_parser = LogStash::Modules::CLIParser.new(@modules_list, @modules_variable_list)
+    # Now populate Setting for modules.list with our parsed array.
+    @settings.set("modules.cli", module_parser.output)
+
     LogStash::ShutdownWatcher.unsafe_shutdown = setting("pipeline.unsafe_shutdown")
 
     configure_plugin_paths(setting("path.plugins"))
@@ -242,6 +273,15 @@ class LogStash::Runner < Clamp::StrictCommand
     return start_shell(setting("interactive"), binding) if setting("interactive")
 
     @settings.format_settings.each {|line| logger.debug(line) }
+
+    module_configs = LogStash::Config::ModulesCommon.pipeline_configs(@settings)
+    module_config_hash = module_configs.first
+    if !module_config_hash.nil?
+      @settings.set_value("config.string", module_config_hash["config_string"])
+    end
+    if module_configs.size > 1
+      logger.warn "Multiple modules defined in logstash.yml - using the first one: #{module_config_hash["pipeline_id"]}"
+    end
 
     if setting("config.string").nil? && setting("path.config").nil?
       fail(I18n.t("logstash.runner.missing-configuration"))
@@ -434,7 +474,7 @@ class LogStash::Runner < Clamp::StrictCommand
       nil
     end
   end
-  
+
   # is the user asking for CLI help subcommand?
   def cli_help?(args)
     # I know, double negative
