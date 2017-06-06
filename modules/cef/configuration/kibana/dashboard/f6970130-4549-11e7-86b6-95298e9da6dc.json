@@ -1,0 +1,20 @@
+{
+  "title": "[CEF] DNS Overview Dashboard",
+  "hits": 0,
+  "description": "",
+  "panelsJSON": "[{\"col\":11,\"id\":\"f23438c0-4548-11e7-a94a-5d0a73686c64\",\"panelIndex\":1,\"row\":1,\"size_x\":2,\"size_y\":2,\"type\":\"visualization\"},{\"col\":7,\"id\":\"6bb7d0e0-4548-11e7-a94a-5d0a73686c64\",\"panelIndex\":2,\"row\":4,\"size_x\":6,\"size_y\":4,\"type\":\"visualization\"},{\"col\":1,\"id\":\"ec576ff0-4546-11e7-a94a-5d0a73686c64\",\"panelIndex\":3,\"row\":4,\"size_x\":6,\"size_y\":4,\"type\":\"visualization\"},{\"col\":4,\"id\":\"c6db4140-4544-11e7-a94a-5d0a73686c64\",\"panelIndex\":4,\"row\":1,\"size_x\":7,\"size_y\":2,\"type\":\"visualization\"},{\"col\":1,\"id\":\"49953800-4547-11e7-a94a-5d0a73686c64\",\"panelIndex\":5,\"row\":8,\"size_x\":6,\"size_y\":3,\"type\":\"visualization\"},{\"col\":6,\"id\":\"6414e6b0-4549-11e7-86b6-95298e9da6dc\",\"panelIndex\":6,\"row\":11,\"size_x\":7,\"size_y\":5,\"type\":\"visualization\"},{\"col\":7,\"id\":\"039815b0-4548-11e7-a94a-5d0a73686c64\",\"panelIndex\":7,\"row\":8,\"size_x\":6,\"size_y\":3,\"type\":\"visualization\"},{\"col\":1,\"id\":\"4ff86ee0-4549-11e7-86b6-95298e9da6dc\",\"panelIndex\":8,\"row\":11,\"size_x\":5,\"size_y\":5,\"type\":\"visualization\"},{\"col\":1,\"id\":\"31b85570-454a-11e7-86b6-95298e9da6dc\",\"panelIndex\":9,\"row\":1,\"size_x\":3,\"size_y\":3,\"type\":\"visualization\"},{\"col\":4,\"id\":\"9d317890-3988-11e7-8b9d-ddc45b5f6d00\",\"panelIndex\":10,\"row\":3,\"size_x\":9,\"size_y\":1,\"type\":\"visualization\"}]",
+  "optionsJSON": "{\"darkTheme\":false}",
+  "uiStateJSON": "{\"P-2\":{\"vis\":{\"defaultColors\":{\"0 - 33\":\"rgb(255,255,204)\",\"33 - 65\":\"rgb(254,217,118)\",\"65 - 98\":\"rgb(253,141,60)\",\"98 - 130\":\"rgb(227,27,28)\"}}}}",
+  "version": 1,
+  "timeRestore": true,
+  "timeTo": "now",
+  "timeFrom": "now-24h",
+  "refreshInterval": {
+    "display": "Off",
+    "pause": false,
+    "value": 0
+  },
+  "kibanaSavedObjectMeta": {
+    "searchSourceJSON": "{\"filter\":[{\"query\":{\"query_string\":{\"analyze_wildcard\":true,\"query\":\"*\"}}}],\"highlightAll\":true,\"version\":true}"
+  }
+}

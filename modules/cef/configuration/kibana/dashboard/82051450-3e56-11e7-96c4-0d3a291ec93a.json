@@ -1,0 +1,20 @@
+{
+  "title": "[CEF] Network Suspicious Activity Dashboard",
+  "hits": 0,
+  "description": "",
+  "panelsJSON": "[{\"col\":1,\"id\":\"aa2ff0a0-3e4a-11e7-96c4-0d3a291ec93a\",\"panelIndex\":1,\"row\":9,\"size_x\":12,\"size_y\":3,\"type\":\"visualization\"},{\"col\":1,\"id\":\"992c7bd0-3e4e-11e7-96c4-0d3a291ec93a\",\"panelIndex\":2,\"row\":12,\"size_x\":4,\"size_y\":3,\"type\":\"visualization\"},{\"col\":5,\"id\":\"f99c22e0-3e4e-11e7-96c4-0d3a291ec93a\",\"panelIndex\":3,\"row\":12,\"size_x\":4,\"size_y\":3,\"type\":\"visualization\"},{\"col\":11,\"id\":\"ed2f5570-3d5b-11e7-8b9d-ddc45b5f6d00\",\"panelIndex\":4,\"row\":1,\"size_x\":2,\"size_y\":2,\"type\":\"visualization\"},{\"col\":1,\"id\":\"e3888410-3e50-11e7-96c4-0d3a291ec93a\",\"panelIndex\":5,\"row\":4,\"size_x\":12,\"size_y\":2,\"type\":\"visualization\"},{\"col\":4,\"id\":\"161e27e0-3988-11e7-8b9d-ddc45b5f6d00\",\"panelIndex\":8,\"row\":1,\"size_x\":7,\"size_y\":2,\"type\":\"visualization\"},{\"col\":9,\"id\":\"75582a90-3987-11e7-8b9d-ddc45b5f6d00\",\"panelIndex\":9,\"row\":6,\"size_x\":4,\"size_y\":3,\"type\":\"visualization\"},{\"col\":1,\"id\":\"0bdbb5a0-3e55-11e7-96c4-0d3a291ec93a\",\"panelIndex\":11,\"row\":6,\"size_x\":8,\"size_y\":3,\"type\":\"visualization\"},{\"col\":1,\"id\":\"afdba840-3e55-11e7-96c4-0d3a291ec93a\",\"panelIndex\":12,\"row\":15,\"size_x\":6,\"size_y\":4,\"type\":\"visualization\"},{\"col\":7,\"id\":\"bfa45650-3e55-11e7-96c4-0d3a291ec93a\",\"panelIndex\":13,\"row\":15,\"size_x\":6,\"size_y\":4,\"type\":\"visualization\"},{\"col\":9,\"id\":\"cd462cc0-3e55-11e7-96c4-0d3a291ec93a\",\"panelIndex\":14,\"row\":12,\"size_x\":4,\"size_y\":3,\"type\":\"visualization\"},{\"col\":1,\"id\":\"31b85570-454a-11e7-86b6-95298e9da6dc\",\"panelIndex\":15,\"row\":1,\"size_x\":3,\"size_y\":3,\"type\":\"visualization\"},{\"size_x\":9,\"size_y\":1,\"panelIndex\":16,\"type\":\"visualization\",\"id\":\"9d317890-3988-11e7-8b9d-ddc45b5f6d00\",\"col\":4,\"row\":3}]",
+  "optionsJSON": "{\"darkTheme\":false}",
+  "uiStateJSON": "{\"P-1\":{\"vis\":{\"colors\":{\"Destination Addresses\":\"#E0752D\",\"Destination Ports\":\"#E24D42\"}}},\"P-2\":{\"vis\":{\"params\":{\"sort\":{\"columnIndex\":null,\"direction\":null}}}},\"P-3\":{\"vis\":{\"params\":{\"sort\":{\"columnIndex\":null,\"direction\":null}}}},\"P-9\":{\"vis\":{\"colors\":{\"/Success\":\"#629E51\",\"/Failure\":\"#BF1B00\",\"/Attempt\":\"#0A50A1\"}}}}",
+  "version": 1,
+  "timeRestore": true,
+  "timeTo": "now",
+  "timeFrom": "now-24h",
+  "refreshInterval": {
+    "display": "Off",
+    "pause": false,
+    "value": 0
+  },
+  "kibanaSavedObjectMeta": {
+    "searchSourceJSON": "{\"filter\":[{\"query\":{\"query_string\":{\"analyze_wildcard\":true,\"query\":\"*\"}}}],\"highlightAll\":true,\"version\":true}"
+  }
+}
