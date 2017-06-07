@@ -3,11 +3,16 @@ package org.logstash.benchmark;
 import com.google.common.io.Files;
 import java.io.File;
 import java.io.IOException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import org.apache.commons.io.FileUtils;
 import org.logstash.Event;
 import org.logstash.Timestamp;
+import org.logstash.ackedqueue.Batch;
 import org.logstash.ackedqueue.Queue;
+import org.logstash.ackedqueue.Queueable;
 import org.logstash.ackedqueue.Settings;
 import org.logstash.ackedqueue.SettingsImpl;
 import org.logstash.ackedqueue.io.FileCheckpointIO;
@@ -24,6 +29,7 @@ import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.annotations.TearDown;
 import org.openjdk.jmh.annotations.Warmup;
+import org.openjdk.jmh.infra.Blackhole;
 import org.openjdk.jmh.runner.Runner;
 import org.openjdk.jmh.runner.RunnerException;
 import org.openjdk.jmh.runner.options.Options;
@@ -35,18 +41,22 @@ import org.openjdk.jmh.runner.options.OptionsBuilder;
 @BenchmarkMode(Mode.Throughput)
 @OutputTimeUnit(TimeUnit.MILLISECONDS)
 @State(Scope.Thread)
-public class QueueBenchmark {
+public class QueueRWBenchmark {
 
     private static final int EVENTS_PER_INVOCATION = 500_000;
+    
+    private static final int BATCH_SIZE = 100;
 
     private static final Event EVENT = new Event();
 
     private Queue queue;
 
     private String path;
+    
+    private ExecutorService exec;
 
     @Setup
-    public void setUp() throws IOException {
+    public void setUp() throws IOException, CloneNotSupportedException {
         final Settings settings = settings();
         EVENT.setField("Foo", "Bar");
         EVENT.setField("Foo1", "Bar1");
@@ -56,27 +66,43 @@ public class QueueBenchmark {
         path = settings.getDirPath();
         queue = new Queue(settings);
         queue.open();
+        exec = Executors.newSingleThreadExecutor();
     }
 
     @TearDown
     public void tearDown() throws IOException {
         queue.close();
         FileUtils.deleteDirectory(new File(path));
+        exec.shutdownNow();
     }
 
     @Benchmark
     @OperationsPerInvocation(EVENTS_PER_INVOCATION)
-    public final void pushToPersistedQueue() throws Exception {
-        for (int i = 0; i < EVENTS_PER_INVOCATION; ++i) {
-            final Event evnt = EVENT.clone();
-            evnt.setTimestamp(Timestamp.now());
-            queue.write(evnt);
+    public final void readFromPersistedQueue(final Blackhole blackhole) throws Exception {
+        final Future<?> future = exec.submit(() -> {
+            for (int i = 0; i < EVENTS_PER_INVOCATION; ++i) {
+                try {
+                    final Event evnt = EVENT.clone();
+                    evnt.setTimestamp(Timestamp.now());
+                    this.queue.write(evnt);
+                } catch (final IOException | CloneNotSupportedException ex) {
+                    throw new IllegalStateException(ex);
+                }
+            }
+        });
+        for (int i = 0; i < EVENTS_PER_INVOCATION / BATCH_SIZE; ++i) {
+            try (Batch batch = queue.readBatch(BATCH_SIZE)) {
+                for (final Queueable elem : batch.getElements()) {
+                    blackhole.consume(elem);
+                }
+            }
         }
+        future.get();
     }
 
     public static void main(final String... args) throws RunnerException {
         Options opt = new OptionsBuilder()
-            .include(QueueBenchmark.class.getSimpleName())
+            .include(QueueRWBenchmark.class.getSimpleName())
             .forks(2)
             .build();
         new Runner(opt).run();
