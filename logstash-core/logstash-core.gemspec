@@ -24,7 +24,7 @@ Gem::Specification.new do |gem|
   gem.add_runtime_dependency "clamp", "~> 0.6.5" #(MIT license) for command line args/flags
   gem.add_runtime_dependency "filesize", "0.0.4" #(MIT license) for :bytes config validator
   gem.add_runtime_dependency "gems", "~> 0.8.3"  #(MIT license)
-  gem.add_runtime_dependency "concurrent-ruby", "1.0.0"
+  gem.add_runtime_dependency "concurrent-ruby", "~> 1.0", ">= 1.0.5"
   gem.add_runtime_dependency "sinatra", '~> 1.4', '>= 1.4.6'
   gem.add_runtime_dependency 'puma', '~> 2.16'
   gem.add_runtime_dependency "jruby-openssl", "0.9.16" # >= 0.9.13 Required to support TLSv1.2
