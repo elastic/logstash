@@ -131,3 +131,17 @@ RSpec::Matchers.define :be_a_source_with_metadata do |protocol, id, text = nil|
    expect(actual.text).to match(text) unless text.nil?
   end
 end
+
+RSpec::Matchers.define :be_a_config_loading_error_hash do |regex|
+  match do |hash|
+    expect(hash).to include(:error)
+    error = hash[:error]
+    expect(error).to be_a(LogStash::ConfigLoadingError)
+    expect(error.message).to match(regex)
+  end
+
+  match_when_negated do
+    raise "Not implemented"
+  end
+end
+
