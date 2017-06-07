@@ -9,11 +9,7 @@ import java.util.regex.Pattern;
 
 public class StringInterpolation {
     static Pattern TEMPLATE_TAG = Pattern.compile("%\\{([^}]+)\\}");
-    static Map cache;
-
-    protected static class HoldCurrent {
-        private static final StringInterpolation INSTANCE = new StringInterpolation();
-    }
+    static final Map<String, TemplateNode> cache = new ConcurrentHashMap<>();
 
     private StringInterpolation() {
         // TODO:
@@ -25,23 +21,22 @@ public class StringInterpolation {
         //  - If the key doesn't contains a `%` do not cache it, this will reduce the key size at a performance cost.
         //  - Use some kind LRU cache
         //  - Create a new data structure that use weakref or use Google Guava for the cache https://code.google.com/p/guava-libraries/
-        this.cache = new ConcurrentHashMap<>();
     }
 
-    public void clearCache() {
-        this.cache.clear();
+    public static void clearCache() {
+        cache.clear();
     }
 
-    public int cacheSize() {
-        return this.cache.size();
+    public static int cacheSize() {
+        return cache.size();
     }
 
-    public String evaluate(Event event, String template) throws IOException {
-        TemplateNode compiledTemplate = (TemplateNode) this.cache.get(template);
+    public static String evaluate(Event event, String template) throws IOException {
+        TemplateNode compiledTemplate = cache.get(template);
 
         if (compiledTemplate == null) {
-            compiledTemplate = this.compile(template);
-            this.cache.put(template, compiledTemplate);
+            compiledTemplate = compile(template);
+            cache.put(template, compiledTemplate);
         }
 
         return compiledTemplate.evaluate(event);
@@ -94,7 +89,4 @@ public class StringInterpolation {
         }
     }
 
-    static StringInterpolation getInstance() {
-        return HoldCurrent.INSTANCE;
-    }
 }
