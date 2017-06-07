@@ -96,24 +96,8 @@ public class Event implements Cloneable, Serializable, Queueable {
         return this.metadata;
     }
 
-    public void setData(Map<String, Object> data) {
-        this.data = ConvertedMap.newFromMap(data);
-    }
-
-    public Accessors getAccessors() {
+    private Accessors getAccessors() {
         return this.accessors;
-    }
-
-    public Accessors getMetadataAccessors() {
-        return this.metadata_accessors;
-    }
-
-    public void setAccessors(Accessors accessors) {
-        this.accessors = accessors;
-    }
-
-    public void setMetadataAccessors(Accessors accessors) {
-        this.metadata_accessors = accessors;
     }
 
     public void cancel() {
@@ -180,20 +164,11 @@ public class Event implements Cloneable, Serializable, Queueable {
         }
     }
 
-    public byte[] toBinary() throws IOException {
-        return toBinaryFromMap(toSerializableMap());
-    }
-
     private Map<String, Map<String, Object>> toSerializableMap() {
         HashMap<String, Map<String, Object>> hashMap = new HashMap<>();
         hashMap.put(DATA_MAP_KEY, this.data);
         hashMap.put(META_MAP_KEY, this.metadata);
         return hashMap;
-    }
-
-    private static byte[] toBinaryFromMap(Map<String, Map<String, Object>> representation)
-        throws IOException {
-        return CBOR_MAPPER.writeValueAsBytes(representation);
     }
 
     private static Event fromSerializableMap(Map<String, Map<String, Object>> representation) throws IOException{
@@ -206,13 +181,6 @@ public class Event implements Cloneable, Serializable, Queueable {
         Map<String, Object> dataMap = representation.get(DATA_MAP_KEY);
         dataMap.put(METADATA, representation.get(META_MAP_KEY));
         return new Event(dataMap);
-    }
-
-    public static Event fromBinary(byte[] source) throws IOException {
-        if (source == null || source.length == 0) {
-            return new Event();
-        }
-        return fromSerializableMap(fromBinaryToMap(source));
     }
 
     private static Map<String, Map<String, Object>> fromBinaryToMap(byte[] source) throws IOException {
@@ -290,14 +258,9 @@ public class Event implements Cloneable, Serializable, Queueable {
         return StringInterpolation.getInstance().evaluate(this, s);
     }
 
-    public Event clone()
-            throws CloneNotSupportedException
-    {
-//        Event clone = (Event)super.clone();
-//        clone.setAccessors(new Accessors(clone.getData()));
-
-        Event clone = new Event(Cloner.deep(getData()));
-        return clone;
+    @Override
+    public Event clone() throws CloneNotSupportedException {
+        return new Event(Cloner.deep(getData()));
     }
 
     public String toString() {
@@ -378,20 +341,15 @@ public class Event implements Cloneable, Serializable, Queueable {
         this.setField("tags", tags);
     }
 
+    @Override
     public byte[] serialize() throws IOException {
-        Map<String, Map<String, Object>> dataMap = toSerializableMap();
-        return toBinaryFromMap(dataMap);
-    }
-
-    public byte[] serializeWithoutSeqNum() throws IOException {
-        return toBinary();
+        return CBOR_MAPPER.writeValueAsBytes(toSerializableMap());
     }
 
     public static Event deserialize(byte[] data) throws IOException {
         if (data == null || data.length == 0) {
             return new Event();
         }
-        Map<String, Map<String, Object>> dataMap = fromBinaryToMap(data);
-        return fromSerializableMap(dataMap);
+        return fromSerializableMap(fromBinaryToMap(data));
     }
 }

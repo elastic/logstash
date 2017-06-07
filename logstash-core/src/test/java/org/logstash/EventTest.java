@@ -13,26 +13,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
 public class EventTest {
-    @Test
-    public void queueableInterfaceWithoutSeqNumRoundTrip() throws Exception {
-        Event e = new Event();
-        e.setField("foo", 42L);
-        e.setField("bar", 42);
-        HashMap inner = new HashMap(2);
-        inner.put("innerFoo", 42L);
-        inner.put("innerQuux", 42.42);
-        e.setField("baz", inner);
-        e.setField("[@metadata][foo]", 42L);
-        byte[] binary = e.serializeWithoutSeqNum();
-        Event er = Event.deserialize(binary);
-        assertEquals(42L, er.getField("foo"));
-        assertEquals(42, er.getField("bar"));
-        assertEquals(42L, er.getField("[baz][innerFoo]"));
-        assertEquals(42.42, er.getField("[baz][innerQuux]"));
-        assertEquals(42L, er.getField("[@metadata][foo]"));
-
-        assertEquals(e.getTimestamp().toIso8601(), er.getTimestamp().toIso8601());
-    }
 
     @Test
     public void queueableInterfaceRoundTrip() throws Exception {
@@ -65,8 +45,7 @@ public class EventTest {
         inner.put("innerQuux", 42.42);
         e.setField("baz", inner);
         e.setField("[@metadata][foo]", 42L);
-        byte[] binary = e.toBinary();
-        Event er = Event.fromBinary(binary);
+        Event er = Event.deserialize(e.serialize());
         assertEquals(42L, er.getField("foo"));
         assertEquals(42, er.getField("bar"));
         assertEquals(42L, er.getField("[baz][innerFoo]"));
