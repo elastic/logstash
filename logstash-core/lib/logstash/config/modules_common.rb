@@ -25,16 +25,18 @@ module LogStash module Config
         raise LogStash::ConfigLoadingError, I18n.t("logstash.modules.configuration.modules-must-be-unique", :duplicate_modules => duplicate_modules)
       end
 
-      available_modules = plugin_modules.map(&:module_name)
-      if (module_names & available_modules).empty?
-        i18n_opts = {:specified_modules => module_names, :available_modules => available_modules}
+      available_module_names = plugin_modules.map(&:module_name)
+      specified_and_available_names = module_names & available_module_names
+
+      if (specified_and_available_names).empty?
+        i18n_opts = {:specified_modules => module_names, :available_modules => available_module_names}
         raise LogStash::ConfigLoadingError, I18n.t("logstash.modules.configuration.modules-unavailable", i18n_opts)
       end
 
-      modules_array.each do |module_hash|
+      specified_and_available_names.each do |module_name|
         connect_fail_args = {}
         begin
-          module_name = module_hash["name"]
+          module_hash = modules_array.find {|m| m["name"] == module_name}
           current_module = plugin_modules.find { |allmodules| allmodules.module_name == module_name }
 
           alt_name = "module-#{module_name}"
