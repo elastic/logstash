@@ -3,27 +3,14 @@ require "logstash/instrument/metric_type/base"
 require "concurrent"
 
 module LogStash module Instrument module MetricType
-  class Counter < Base
-    def initialize(namespaces, key, value = 0)
-      super(namespaces, key)
-
-      @counter = Concurrent::AtomicFixnum.new(value)
-    end
-
-    def increment(value = 1)
-      @counter.increment(value)
-    end
-
-    def decrement(value = 1)
-      @counter.decrement(value)
-    end
-
+  class Counter < org.logstash.instrument.metrics.Counter
     def execute(action, value = 1)
-      @counter.send(action, value)
+      self.send(action, value)
     end
 
+    # We don't want this ruby style method in java-land
     def value
-      @counter.value
+      self.getValue()
     end
   end
 end; end; end

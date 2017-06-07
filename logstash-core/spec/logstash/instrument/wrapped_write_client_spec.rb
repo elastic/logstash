@@ -86,15 +86,15 @@ describe LogStash::Instrument::WrappedWriteClient do
 
       context "recording of the duration of pushing to the queue" do
         it "records at the `global events` level" do
-          expect(snapshot_metric[:events][:queue_push_duration_in_millis].value).to be_kind_of(Integer)
+          expect(snapshot_metric[:events][:queue_push_duration_in_millis].value).to be_kind_of(Float)
         end
 
         it "records at the `pipeline` level" do
-          expect(snapshot_metric[:pipelines][:main][:events][:queue_push_duration_in_millis].value).to be_kind_of(Integer)
+          expect(snapshot_metric[:pipelines][:main][:events][:queue_push_duration_in_millis].value).to be_kind_of(Float)
         end
 
         it "records at the `plugin level" do
-          expect(snapshot_metric[:pipelines][:main][:plugins][:inputs][myid.to_sym][:events][:queue_push_duration_in_millis].value).to be_kind_of(Integer)
+          expect(snapshot_metric[:pipelines][:main][:plugins][:inputs][myid.to_sym][:events][:queue_push_duration_in_millis].value).to be_kind_of(Float)
         end
       end
     end
