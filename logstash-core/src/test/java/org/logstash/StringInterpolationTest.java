@@ -18,87 +18,70 @@ public class StringInterpolationTest {
     public void testCompletelyStaticTemplate() throws IOException {
         Event event = getTestEvent();
         String path = "/full/path/awesome";
-        StringInterpolation si = StringInterpolation.getInstance();
-
-        assertEquals(path, si.evaluate(event, path));
+        assertEquals(path, StringInterpolation.evaluate(event, path));
     }
 
     @Test
     public void testOneLevelField() throws IOException {
         Event event = getTestEvent();
         String path = "/full/%{bar}/awesome";
-        StringInterpolation si = StringInterpolation.getInstance();
-
-        assertEquals("/full/foo/awesome", si.evaluate(event, path));
+        assertEquals("/full/foo/awesome", StringInterpolation.evaluate(event, path));
     }
 
     @Test
     public void testMultipleLevelField() throws IOException {
         Event event = getTestEvent();
         String path = "/full/%{bar}/%{awesome}";
-        StringInterpolation si = StringInterpolation.getInstance();
-
-        assertEquals("/full/foo/logstash", si.evaluate(event, path));
+        assertEquals("/full/foo/logstash", StringInterpolation.evaluate(event, path));
     }
 
     @Test
     public void testMissingKey() throws IOException {
         Event event = getTestEvent();
         String path = "/full/%{do-not-exist}";
-        StringInterpolation si = StringInterpolation.getInstance();
-
-        assertEquals("/full/%{do-not-exist}", si.evaluate(event, path));
+        assertEquals("/full/%{do-not-exist}", StringInterpolation.evaluate(event, path));
     }
 
     @Test
     public void testDateFormatter() throws IOException {
         Event event = getTestEvent();
         String path = "/full/%{+YYYY}";
-        StringInterpolation si = StringInterpolation.getInstance();
-
-        assertEquals("/full/2015", si.evaluate(event, path));
+        assertEquals("/full/2015", StringInterpolation.evaluate(event, path));
     }
 
     @Test
     public void TestMixDateAndFields() throws IOException {
         Event event = getTestEvent();
         String path = "/full/%{+YYYY}/weeee/%{bar}";
-        StringInterpolation si = StringInterpolation.getInstance();
-
-        assertEquals("/full/2015/weeee/foo", si.evaluate(event, path));
+        assertEquals("/full/2015/weeee/foo", StringInterpolation.evaluate(event, path));
     }
 
     @Test
     public void testUnclosedTag() throws IOException {
         Event event = getTestEvent();
         String path = "/full/%{+YYY/web";
-        StringInterpolation si = StringInterpolation.getInstance();
-
-        assertEquals("/full/%{+YYY/web", si.evaluate(event, path));
+        assertEquals("/full/%{+YYY/web", StringInterpolation.evaluate(event, path));
     }
 
     @Test
     public void TestStringIsOneDateTag() throws IOException {
         Event event = getTestEvent();
         String path = "%{+YYYY}";
-        StringInterpolation si = StringInterpolation.getInstance();
-        assertEquals("2015", si.evaluate(event, path));
+        assertEquals("2015", StringInterpolation.evaluate(event, path));
     }
 
     @Test
     public void TestFieldRef() throws IOException {
         Event event = getTestEvent();
         String path = "%{[j][k1]}";
-        StringInterpolation si = StringInterpolation.getInstance();
-        assertEquals("v", si.evaluate(event, path));
+        assertEquals("v", StringInterpolation.evaluate(event, path));
     }
 
     @Test
     public void TestEpoch() throws IOException {
         Event event = getTestEvent();
         String path = "%{+%s}";
-        StringInterpolation si = StringInterpolation.getInstance();
-        assertEquals("1443657600", si.evaluate(event, path));
+        assertEquals("1443657600", StringInterpolation.evaluate(event, path));
     }
 
     @Test
@@ -111,8 +94,7 @@ public class StringInterpolationTest {
         event.setField("message", l);
 
         String path = "%{message}";
-        StringInterpolation si = StringInterpolation.getInstance();
-        assertEquals("Hello,world", si.evaluate(event, path));
+        assertEquals("Hello,world", StringInterpolation.evaluate(event, path));
     }
 
     @Test
@@ -120,8 +102,7 @@ public class StringInterpolationTest {
         Event event = getTestEvent();
 
         String path = "%{j}";
-        StringInterpolation si = StringInterpolation.getInstance();
-        assertEquals("{\"k1\":\"v\"}", si.evaluate(event, path));
+        assertEquals("{\"k1\":\"v\"}", StringInterpolation.evaluate(event, path));
     }
 
     public Event getTestEvent() {

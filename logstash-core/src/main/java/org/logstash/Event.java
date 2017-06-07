@@ -255,7 +255,7 @@ public class Event implements Cloneable, Serializable, Queueable {
     }
 
     public String sprintf(String s) throws IOException {
-        return StringInterpolation.getInstance().evaluate(this, s);
+        return StringInterpolation.evaluate(this, s);
     }
 
     @Override

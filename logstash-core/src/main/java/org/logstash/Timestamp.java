@@ -64,7 +64,7 @@ public class Timestamp implements Cloneable, Comparable, Queueable {
     }
 
     public String toIso8601() {
-        return this.iso8601Formatter.print(this.time);
+        return iso8601Formatter.print(this.time);
     }
 
     public String toString() {
