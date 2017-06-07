@@ -95,6 +95,14 @@ en:
         modules-variables-malformed: >-
           Failed to parse module variable %{rawvar}.  Must be in -M
           "MODULE_NAME.KEY.SUBKEY=VALUE" format
+        modules-unavailable: >-
+          The modules specified are not available yet.
+          Specified modules: %{specified_modules}
+          Available modules: %{available_modules}
+        elasticsearch_connection_failed: >-
+          Failed to import module configurations to Elasticsearch.
+          Module: %{module_name} has hosts: %{hosts}
+
     runner:
       short-help: |-
         usage:
@@ -113,7 +121,7 @@ en:
         Settings 'path.config' (-f) or 'config.string' (-e) can't be used in conjunction with
         (--modules) or the "modules:" block in the logstash.yml file.
       cli-module-override: >-
-        Both command-line and logstash.yml modules configurations detected. 
+        Both command-line and logstash.yml modules configurations detected.
         Using command-line module configuration and ignoring logstash.yml module
         configuration.
       reload-without-config-path: >-
@@ -203,21 +211,21 @@ en:
           the empty string for the '-e' flag.
         modules: |+
           Load Logstash modules.
-          Modules can be defined using multiple instances 
-          '--modules module1 --modules module2', 
-             or comma-separated syntax 
-          '--modules=module1,module2' 
+          Modules can be defined using multiple instances
+          '--modules module1 --modules module2',
+             or comma-separated syntax
+          '--modules=module1,module2'
           Cannot be used in conjunction with '-e' or '-f'
           Use of '--modules' will override modules declared
           in the 'logstash.yml' file.
         modules_variable: |+
           Load variables for module template.
-          Multiple instances of '-M' or 
+          Multiple instances of '-M' or
           '--modules.variable' are supported.
           Ignored if '--modules' flag is not used.
-          Should be in the format of 
+          Should be in the format of
           '-M "MODULE_NAME.var.PLUGIN_TYPE.PLUGIN_NAME.VARIABLE_NAME=VALUE"'
-          as in 
+          as in
           '-M "example.var.filter.mutate.fieldname=fieldvalue"'
         configtest: |+
           Check configuration for valid syntax and then exit.

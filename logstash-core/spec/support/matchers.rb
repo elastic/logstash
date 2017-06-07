@@ -28,3 +28,16 @@ RSpec::Matchers.define :implement_interface_of do |type, key, value|
     "Expecting `#{expected}` to implements instance methods of `#{actual}`, missing methods: #{missing_methods.join(",")}"
   end
 end
+
+RSpec::Matchers.define :be_a_config_loading_error_hash do |regex|
+  match do |hash|
+    expect(hash).to include(:error)
+    error = hash[:error]
+    expect(error).to be_a(LogStash::ConfigLoadingError)
+    expect(error.message).to match(regex)
+  end
+
+  match_when_negated do
+    raise "Not implemented"
+  end
+end
