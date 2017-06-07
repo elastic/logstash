@@ -276,7 +276,7 @@ and uptime.
 <<process-stats,`process`>>::
 Gets process stats, including stats about file descriptors, memory consumption, and CPU usage.
 <<event-stats,`events`>>:: 
-Gets cumulative event counts for the Logstash instance (regardless of how many
+Gets event-related statistics for the Logstash instance (regardless of how many
 pipelines were created and destroyed).
 <<pipeline-stats,`pipelines`>>::
 Gets runtime stats about each Logstash pipeline.
@@ -390,7 +390,7 @@ Example response:
 [[event-stats]]
 ==== Event Stats
 
-The following request returns a JSON document containing cumulative event counts
+The following request returns a JSON document containing event-related statistics
 for the Logstash instance:
 
 [source,js]
