@@ -42,9 +42,39 @@ module Clamp
         end
       end
 
+      # Clamp append the "_list" string to attribute name of
+      # multivalued options. Need to clean it up because the name
+      # of the option in the settings hash will not match.
+      def self.attribute_name_sanitized(option)
+        if option.multivalued?
+          return option.attribute_name.sub(/_list$/, "")
+        else
+          return option.attribute_name
+        end
+      end
+
+      # Define how to append values to multivalued options.
+      def define_appender_for(option, &block)
+        define_method(option.append_method) do |value|
+          value = instance_exec(value, &block) if block
+          attr_name = ::Clamp::Option::StrictDeclaration.attribute_name_sanitized(option)
+          current_values = LogStash::SETTINGS.get(attr_name) || []
+          LogStash::SETTINGS.set_value(attr_name, current_values + [value])
+        end
+      end
+
+      # Write accessor for multivalued options.
+      def define_multi_writer_for(option)
+        define_method(option.write_method) do |values|
+          attr_name = ::Clamp::Option::StrictDeclaration.attribute_name_sanitized(option)
+          LogStash::SETTINGS.get(attr_name)
+          LogStash::SETTINGS.set_value(attr_name, values)
+        end
+      end
+
       def define_reader_for(option)
         define_method(option.read_method) do
-          LogStash::SETTINGS.get_value(option.attribute_name)
+          LogStash::SETTINGS.get_value(::Clamp::Option::StrictDeclaration.attribute_name_sanitized(option))
         end
       end
 
