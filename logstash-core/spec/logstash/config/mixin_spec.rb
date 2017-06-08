@@ -192,8 +192,8 @@ describe LogStash::Config::Mixin do
         expect(clone.uri.to_s).to eql(uri_hidden)
       end
 
-      it "should make the real java.net.URI object available under #uri" do
-        expect(subject.uri.uri).to be_a(java.net.URI)
+      it "should make the real URI object available under #uri" do
+        expect(subject.uri.uri).to be_a(::URI)
       end
 
       it "should obfuscate original_params" do
