@@ -316,7 +316,6 @@ public class Queue implements Closeable {
 
         lock.lock();
         try {
-            boolean wasEmpty = (firstUnreadPage() == null);
 
             // create a new head page if the current does not have sufficient space left for data to be written
             if (! this.headPage.hasSpace(data.length)) {
@@ -348,11 +347,8 @@ public class Queue implements Closeable {
             long seqNum = nextSeqNum();
             this.headPage.write(data, seqNum, this.checkpointMaxWrites);
             this.unreadCount++;
-
-            // if the queue was empty before write, signal non emptiness
-            // a simple signal and not signalAll is necessary here since writing a single element
-            // can only really enable a single thread to read a batch
-            if (wasEmpty) { notEmpty.signal(); }
+            
+            notEmpty.signal();
 
             // now check if we reached a queue full state and block here until it is not full
             // for the next write or the queue was closed.
