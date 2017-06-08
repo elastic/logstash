@@ -60,4 +60,29 @@ class ServiceContainer < Service
     @container.stop
     @container.delete(:force => true, :volumes => true)
   end
+
+  # Get environment variable from container's ENV.
+  def envvar(var)
+    # Exec command returns an array with [[stdout], [stderr], exit_code] layout.
+    res = @container.exec(['printenv', var])
+    res[0].join(" ").chomp
+  end
+
+  # Get path to certificates directory.
+  def certificates_dir
+    envvar("CERTIFICATES_DIR")
+  end
+
+  # Copy certificates from container to directory in the host.
+  def certificates(dest_dir)
+    FileUtils.mkdir_p(dest_dir)
+    cert_dir = certificates_dir
+    ["certificate.key", "certificate.crt"].each do |file|
+      File.open(File.join(dest_dir, file), "w") do |io|
+        # Use container's file separator (i.e. Linux)
+        io.write(@container.read_file(cert_dir.chomp + "/" + file))
+      end
+    end
+  end
+
 end
