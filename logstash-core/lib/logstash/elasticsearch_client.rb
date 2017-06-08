@@ -25,7 +25,22 @@ module LogStash class ElasticsearchClient
     def initialize(settings, logger)
       @settings = settings
       @logger = logger
-      @client = Elasticsearch::Client.new(client_args)
+      @client_args = client_args
+      @client = Elasticsearch::Client.new(@client_args)
+    end
+
+    def can_connect?
+      begin
+        head(SecureRandom.hex(32).prepend('_'))
+      rescue Elasticsearch::Transport::Transport::Errors::BadRequest
+        true
+      rescue Manticore::SocketException
+        false
+      end
+    end
+
+    def host_settings
+      @client_args[:hosts]
     end
 
     def delete(path)
@@ -70,7 +85,7 @@ module LogStash class ElasticsearchClient
       {
         :transport_class => Elasticsearch::Transport::Transport::HTTP::Manticore,
         :hosts => [*unpack_hosts],
-        :logger => @logger,
+        # :logger => @logger, # silence the client logging
       }
     end
 
@@ -93,5 +108,13 @@ module LogStash class ElasticsearchClient
 
   def head(path)
     @client.head(path)
+  end
+
+  def can_connect?
+    @client.can_connect?
+  end
+
+  def host_settings
+    @client.host_settings
   end
 end end # class LogStash::ModulesImporter
