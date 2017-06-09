@@ -92,20 +92,20 @@ describe "Test Monitoring API" do
       logging_get_assert logstash_service, "INFO", "TRACE"
 
       #root logger - does not apply to logger.slowlog
-      logging_put_assert logstash_service.monitoring_api.logging_put({"logger." => "WARN"}.to_json)
+      logging_put_assert logstash_service.monitoring_api.logging_put({"logger." => "WARN"})
       logging_get_assert logstash_service, "WARN", "TRACE"
-      logging_put_assert logstash_service.monitoring_api.logging_put({"logger." => "INFO"}.to_json)
+      logging_put_assert logstash_service.monitoring_api.logging_put({"logger." => "INFO"})
       logging_get_assert logstash_service, "INFO", "TRACE"
 
       #package logger 
-      logging_put_assert logstash_service.monitoring_api.logging_put({"logger.logstash.agent" => "DEBUG"}.to_json)
+      logging_put_assert logstash_service.monitoring_api.logging_put({"logger.logstash.agent" => "DEBUG"})
       expect(logstash_service.monitoring_api.logging_get["loggers"]["logstash.agent"]).to eq ("DEBUG")
-      logging_put_assert logstash_service.monitoring_api.logging_put({"logger.logstash.agent" => "INFO"}.to_json)
+      logging_put_assert logstash_service.monitoring_api.logging_put({"logger.logstash.agent" => "INFO"})
       logging_get_assert logstash_service, "INFO", "TRACE"
 
       #parent package loggers
-      logging_put_assert logstash_service.monitoring_api.logging_put({"logger.logstash" => "ERROR"}.to_json)
-      logging_put_assert logstash_service.monitoring_api.logging_put({"logger.slowlog" => "ERROR"}.to_json)
+      logging_put_assert logstash_service.monitoring_api.logging_put({"logger.logstash" => "ERROR"})
+      logging_put_assert logstash_service.monitoring_api.logging_put({"logger.slowlog" => "ERROR"})
 
       result = logstash_service.monitoring_api.logging_get
       result["loggers"].each do | k, v |
