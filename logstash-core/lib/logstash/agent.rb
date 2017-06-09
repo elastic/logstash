@@ -25,7 +25,7 @@ class LogStash::Agent
   include LogStash::Util::Loggable
   STARTED_AT = Time.now.freeze
 
-  attr_reader :metric, :name, :settings, :webserver, :dispatcher
+  attr_reader :metric, :name, :settings, :webserver, :dispatcher, :ephemeral_id
   attr_accessor :logger
 
   # initialize method for LogStash::Agent
@@ -37,6 +37,7 @@ class LogStash::Agent
     @logger = self.class.logger
     @settings = settings
     @auto_reload = setting("config.reload.automatic")
+    @ephemeral_id = SecureRandom.uuid
 
     # Do not use @pipelines directly. Use #with_pipelines which does locking
     @pipelines = {}
