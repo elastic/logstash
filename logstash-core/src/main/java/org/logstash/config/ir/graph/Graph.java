@@ -222,7 +222,6 @@ public class Graph implements SourceComponent, Hashable {
 
     public Collection<Edge> chainVertices(Edge.EdgeFactory edgeFactory, Vertex... argVertices) throws InvalidIRException {
         Collection<Edge> edges = chainVerticesUnsafe(edgeFactory, argVertices);
-        validate();
         return edges;
     }
 
@@ -246,6 +245,7 @@ public class Graph implements SourceComponent, Hashable {
     // in.
     public void refresh() throws InvalidIRException {
         this.calculateRanks();
+        this.vertices.forEach(Vertex::clearCache);
         this.calculateTopologicalSort();
     }
 
@@ -269,7 +269,7 @@ public class Graph implements SourceComponent, Hashable {
     }
 
     public Map<String, List<Vertex>> verticesByHash() {
-        return this.vertices().collect(Collectors.groupingBy(Vertex::uniqueHash));
+        return this.vertices().parallel().collect(Collectors.groupingBy(Vertex::uniqueHash));
     }
 
     public void validate() throws InvalidIRException {
@@ -279,14 +279,21 @@ public class Graph implements SourceComponent, Hashable {
             throw new InvalidIRException("Graph has no leaf vertices!\n" + this.toString());
         }
 
-        List<List<Vertex>> duplicates = verticesByHash().values().stream().filter((group) -> group.size() > 1).collect(Collectors.toList());
-        if (!duplicates.isEmpty()) {
-            Stream<String> errorMessageGroups = duplicates.stream().
-                    map((group) -> group.stream().map(Object::toString).collect(Collectors.joining("===")));
+        // Check for duplicate IDs in the config
+        List<String> duplicateIdErrorMessages = this.vertices().parallel()
+                .collect(Collectors.groupingBy(Vertex::getId))
+                .values()
+                .stream()
+                .filter(group -> group.size() > 1)
+                .map(group -> {
+                    return "ID: " + group.stream().findAny().get().getId() + " " +
+                            group.stream().map(Object::toString).collect(Collectors.joining(","));
+                })
+                .collect(Collectors.toList());
 
-            String joinedErrorMessageGroups = errorMessageGroups.collect(Collectors.joining("\n---\n"));
-
-            throw new InvalidIRException("Some nodes on the graph are fully redundant!\n" + this + "|" + joinedErrorMessageGroups);
+        if (!duplicateIdErrorMessages.isEmpty()) {
+            String dupeErrors = duplicateIdErrorMessages.stream().collect(Collectors.joining("\n"));
+            throw new InvalidIRException("Config has duplicate Ids: \n" + dupeErrors);
         }
     }
 
@@ -422,7 +429,16 @@ public class Graph implements SourceComponent, Hashable {
     @Override
     public String hashSource() {
         MessageDigest lineageDigest = Util.defaultMessageDigest();
-        List<byte[]> sources = this.vertices.stream().parallel().map(Vertex::uniqueHash).sorted().map(String::getBytes).collect(Collectors.toList());
+
+        // We only need to calculate the hashes of the leaves since those hashes are sensitive to changes
+        // anywhere else on the graph. It would also be OK to use the roots, the decision is arbitrary
+        List<byte[]> sources = this.leaves().parallel()
+                .map(Vertex::uniqueHash)
+                .sorted()
+                .map(String::getBytes)
+                .collect(Collectors.toList());
+        // We don't do this inline with the stream because we need this to be single threaded
+        // not parallel
         sources.forEach(lineageDigest::update);
         return Util.bytesToHexString(lineageDigest.digest());
     }

@@ -97,7 +97,7 @@ public class IfVertex extends Vertex {
     }
 
     @Override
-    public String individualHashSource() {
+    public String calculateIndividualHashSource() {
         return this.getClass().getCanonicalName() + "{" + this.booleanExpression.hashSource() + "}";
     }
 }

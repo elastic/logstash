@@ -17,7 +17,7 @@ public class QueueVertex extends Vertex {
     }
 
     @Override
-    public String individualHashSource() {
+    public String calculateIndividualHashSource() {
         return this.getClass().getCanonicalName();
     }
 

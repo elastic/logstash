@@ -34,11 +34,6 @@ public class PipelineIR implements Hashable {
     public PipelineIR(Graph inputSection, Graph filterSection, Graph outputSection, String originalSource) throws InvalidIRException {
         this.originalSource = originalSource;
 
-        // Validate all incoming graphs, we can't turn an invalid graph into a PipelineIR!
-        inputSection.validate();
-        filterSection.validate();
-        outputSection.validate();
-
         Graph tempGraph = inputSection.copy(); // The input section are our roots, so we can import that wholesale
 
         // Connect all the input vertices out to the queue
@@ -50,6 +45,8 @@ public class PipelineIR implements Hashable {
 
         // Finally, connect the filter out node to all the outputs
         this.graph = tempGraph.chain(outputSection);
+
+        this.graph.validate();
     }
 
     public String getOriginalSource() {

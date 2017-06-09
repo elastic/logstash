@@ -52,7 +52,7 @@ public class IRHelpers {
         }
 
         @Override
-        public String individualHashSource() {
+        public String calculateIndividualHashSource() {
             return "TVertex" + "|" + id;
         }
 
