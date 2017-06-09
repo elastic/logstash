@@ -11,7 +11,7 @@ module LogStash module Modules class Importer
 
   def put(resource, overwrite = true)
     path = resource.import_path
-    logger.info("Attempting PUT", :url_path => path, :file_path => resource.content_path)
+    logger.debug("Attempting PUT", :url_path => path, :file_path => resource.content_path)
     if !overwrite && content_exists?(path)
       logger.debug("Found existing Elasticsearch resource.", :resource => path)
       return
