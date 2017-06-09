@@ -124,6 +124,18 @@ describe LogStash::Pipeline do
     pipeline_settings_obj.reset
   end
 
+  describe "#ephemeral_id" do
+    it "creates an ephemeral_id at creation time" do
+      pipeline = mock_pipeline_from_string("input { generator { count =>  1 } } output { null {} }")
+      expect(pipeline.ephemeral_id).to_not be_nil
+      pipeline.close
+
+      second_pipeline = mock_pipeline_from_string("input { generator { count => 1 } } output { null {} }")
+      expect(second_pipeline.ephemeral_id).not_to eq(pipeline.ephemeral_id)
+      second_pipeline.close
+    end
+  end
+
 
   describe "event cancellation" do
     # test harness for https://github.com/elastic/logstash/issues/6055

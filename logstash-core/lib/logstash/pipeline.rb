@@ -24,6 +24,7 @@ require "logstash/filter_delegator"
 require "logstash/queue_factory"
 require "logstash/compiler"
 require "logstash/execution_context"
+require "securerandom"
 
 java_import org.logstash.common.DeadLetterQueueFactory
 java_import org.logstash.common.SourceWithMetadata
@@ -32,11 +33,13 @@ java_import org.logstash.common.io.DeadLetterQueueWriter
 module LogStash; class BasePipeline
   include LogStash::Util::Loggable
 
-  attr_reader :settings, :config_str, :config_hash, :inputs, :filters, :outputs, :pipeline_id, :lir, :execution_context
+  attr_reader :settings, :config_str, :config_hash, :inputs, :filters, :outputs, :pipeline_id, :lir, :execution_context, :ephemeral_id
   attr_reader :pipeline_config
 
   def initialize(pipeline_config, namespaced_metric = nil, agent = nil)
     @logger = self.logger
+
+    @ephemeral_id = SecureRandom.uuid
 
     @pipeline_config = pipeline_config
     @config_str = pipeline_config.config_string
@@ -177,6 +180,7 @@ module LogStash; class Pipeline < BasePipeline
       Instrument::NullMetric.new
     end
 
+    @ephemeral_id = SecureRandom.uuid
     @settings = settings
     @reporter = PipelineReporter.new(@logger, self)
     @worker_threads = []

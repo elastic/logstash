@@ -81,6 +81,12 @@ describe LogStash::Agent do
     end
   end
 
+  describe "ephemeral_id" do
+    it "create a ephemeral id at creation time" do
+      expect(subject.ephemeral_id).to_not be_nil
+    end
+  end
+
   describe "#execute" do
     let(:config_string) { "input { generator { id => 'old'} } output { }" }
     let(:mock_config_pipeline) { mock_pipeline_config(:main, config_string, pipeline_settings) }
