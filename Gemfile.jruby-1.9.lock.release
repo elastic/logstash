@@ -415,7 +415,7 @@ GEM
       logstash-filter-json
       logstash-input-generator
       logstash-output-file
-    logstash-output-elasticsearch (7.3.4-java)
+    logstash-output-elasticsearch (7.3.5-java)
       cabin (~> 0.6)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       manticore (>= 0.5.4, < 1.0.0)
@@ -623,7 +623,6 @@ DEPENDENCIES
   builder (~> 3.2.2)
   ci_reporter_rspec (= 1.0.0)
   docker-api (= 1.31.0)
-  elasticsearch
   file-dependencies (= 0.1.6)
   flores (~> 0.0.6)
   fpm (~> 1.3.3)
@@ -724,7 +723,6 @@ DEPENDENCIES
   logstash-output-udp
   logstash-output-webhdfs
   logstash-output-xmpp
-  logstash-patterns-core
   octokit (= 3.8.0)
   paquet (~> 0.2.0)
   pleaserun (~> 0.0.28)
