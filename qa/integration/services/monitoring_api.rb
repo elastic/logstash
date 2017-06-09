@@ -37,8 +37,8 @@ class MonitoringAPI
     JSON.parse(resp)
   end
 
-  def logging_put(json_body)
-    resp = Manticore.put("http://localhost:9600/_node/logging", {headers: {"Content-Type" => "application/json"}, body: json_body }).body
+  def logging_put(body)
+    resp = Manticore.put("http://localhost:9600/_node/logging", {headers: {"Content-Type" => "application/json"}, body: body.to_json }).body
     JSON.parse(resp)
   end
 end
