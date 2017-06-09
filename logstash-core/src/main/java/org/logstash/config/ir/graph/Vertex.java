@@ -20,6 +20,9 @@ import java.util.stream.Stream;
 public abstract class Vertex implements SourceComponent, Hashable {
     private final SourceWithMetadata sourceWithMetadata;
     private Graph graph = this.getGraph();
+    private volatile String contextualHashCache;
+    private volatile String hashCache;
+    private volatile String individualHashSourceCache;
 
     public Vertex() {
         this.sourceWithMetadata = null;
@@ -122,6 +125,10 @@ public abstract class Vertex implements SourceComponent, Hashable {
 
     @Override
     public String uniqueHash() {
+        if (this.hashCache != null) {
+            return this.hashCache;
+        }
+
         // Sort the lineage to ensure consistency. We prepend each item with a lexicographically sortable
         // encoding of its rank (using hex notation) so that the sort order is identical to the traversal order.
         // This is a required since there may be individually identical components in different locations in the graph.
@@ -142,9 +149,8 @@ public abstract class Vertex implements SourceComponent, Hashable {
                     lineageDigest.update(bytes);
                 });
 
-        String digest = Util.bytesToHexString(lineageDigest.digest());
-
-        return digest;
+        this.hashCache = Util.bytesToHexString(lineageDigest.digest());
+        return hashCache;
     }
 
     @Override
@@ -158,7 +164,11 @@ public abstract class Vertex implements SourceComponent, Hashable {
     }
 
     public String contextualHashSource() {
-        // This string must be lexicographically sortable hence the ID at the front. It also must have the individualHashSource
+        if (this.contextualHashCache != null) {
+            return this.contextualHashCache;
+        }
+
+        // This string must be lexicographically sortable hence the ID at the front. It also must have the calculateIndividualHashSource
         // repeated at the front for the case of a graph with two nodes at the same rank, same contents, but different lineages
         StringBuilder result = new StringBuilder();
         result.append(hashPrefix());
@@ -169,10 +179,20 @@ public abstract class Vertex implements SourceComponent, Hashable {
         result.append("O:");
         this.outgoingEdges().map(Edge::individualHashSource).sorted().forEachOrdered(result::append);
 
-        return result.toString();
+        this.contextualHashCache = result.toString();
+        return this.contextualHashCache;
     }
 
-    public abstract String individualHashSource();
+    public String individualHashSource() {
+        if (this.individualHashSourceCache != null) {
+            return this.individualHashSourceCache;
+        }
+
+        this.individualHashSourceCache = calculateIndividualHashSource();
+        return this.individualHashSourceCache;
+    }
+
+    public abstract String calculateIndividualHashSource();
 
     // Can be overriden in subclasses to define multiple
     // expected Edge classes this Vertex can take.
@@ -198,4 +218,11 @@ public abstract class Vertex implements SourceComponent, Hashable {
     }
 
     public abstract String getId();
+
+    public void clearCache() {
+        this.hashCache = null;
+        this.contextualHashCache = null;
+        this.individualHashSourceCache = null;
+    }
+
 }

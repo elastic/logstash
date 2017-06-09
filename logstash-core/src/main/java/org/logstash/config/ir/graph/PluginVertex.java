@@ -47,7 +47,7 @@ public class PluginVertex extends Vertex {
     }
 
     @Override
-    public String individualHashSource() {
+    public String calculateIndividualHashSource() {
         ObjectMapper objectMapper = new ObjectMapper();
         try {
             return Util.digest(this.getClass().getCanonicalName() + "|" +
@@ -59,10 +59,6 @@ public class PluginVertex extends Vertex {
             // This is basically impossible given the constrained values in the plugin definition
             throw new RuntimeException(e);
         }
-    }
-
-    public String individualHash() {
-        return Util.digest(individualHashSource());
     }
 
     @Override
