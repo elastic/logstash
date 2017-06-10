@@ -1,6 +1,9 @@
 var IngestGrok = {
     has_grok: function (processor) {
-        return !!processor["grok"];
+        return !!processor[this.get_name()];
+    },
+    get_name: function () {
+        return "grok";
     },
     grok_hash: function (processor) {
 

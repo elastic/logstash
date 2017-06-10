@@ -86,8 +86,8 @@ var IngestConverter = {
      * @returns {string} Pattern array in LS formatting
      */
     create_pattern_array: function (patterns) {
-        return "[\n" 
-            + patterns.map(this.dots_to_square_brackets).map(this.quote_string).join(",\n") 
+        return "[\n"
+            + patterns.map(this.dots_to_square_brackets).map(this.quote_string).join(",\n")
             + "\n]";
     },
 
@@ -96,7 +96,7 @@ var IngestConverter = {
             + ingest_array.map(this.quote_string).join(",\n")
             + "\n]";
     },
-    
+
     /**
      * Converts Ingest/JSON style pattern array to LS pattern array or string if the given array
      * contains a single element only, performing necessary variable name and quote escaping
@@ -109,12 +109,38 @@ var IngestConverter = {
             ? this.quote_string(this.dots_to_square_brackets(patterns[0]))
             : this.create_pattern_array(patterns);
     },
-    
+
     filter_hash: function(contents) {
         return this.fix_indent(this.create_hash("filter", contents))
     },
-    
+
     filters_to_file: function(filters) {
         return filters.join("\n\n") + "\n";
+    },
+
+    has_on_failure: function (processor, name) {
+        return !!processor[name]["on_failure"];
+    },
+
+    get_on_failure: function (processor, name) {
+        return processor[name]["on_failure"];
+    },
+
+    create_tag_conditional: function (tag, on_failure_pipeline) {
+        return "if " + this.quote_string(tag) + " in [tags] {\n" +
+                "   " + on_failure_pipeline + "\n" +
+                "}";
+    },
+
+    get_stdin_input: function () {
+        return "input { \n" +
+            "   stdin {}\n" +
+            "}";
+    },
+
+    get_stdout_output: function () {
+        return "output { \n" +
+            "   stdout { codec => \"rubydebug\" }\n" +
+            "}"
     }
 };
