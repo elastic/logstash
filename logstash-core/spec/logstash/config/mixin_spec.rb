@@ -369,11 +369,13 @@ describe LogStash::Config::Mixin do
       before do
         ENV["FunString"] = "fancy"
         ENV["FunBool"] = "true"
+        ENV["SERVER_LS_TEST_ADDRESS"] = "some.host.address.tld"
       end
 
       after do
         ENV.delete("FunString")
         ENV.delete("FunBool")
+        ENV.delete("SERVER_LS_TEST_ADDRESS")
       end
 
       subject do
@@ -396,6 +398,16 @@ describe LogStash::Config::Mixin do
         expect(subject.nestedHash).to(be == { "level1" => { "key1" => "http://fancy:8080/blah.txt" } })
         expect(subject.nestedArray).to(be == { "level1" => [{ "key1" => "http://fancy:8080/blah.txt" }, { "key2" => "http://fancy:8080/foo.txt" }] })
         expect(subject.deepHash).to(be == { "level1" => { "level2" => { "level3" => { "key1" => "http://fancy:8080/blah.txt" } } } })
+      end
+
+      it "should validate settings after interpolating ENV variables" do
+        expect {
+          Class.new(LogStash::Filters::Base) do
+            include LogStash::Config::Mixin
+            config_name "test"
+            config :server_address, :validate => :uri
+          end.new({"server_address" => "${SERVER_LS_TEST_ADDRESS}"})
+        }.not_to raise_error
       end
     end
 
