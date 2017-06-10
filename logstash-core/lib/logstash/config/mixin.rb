@@ -143,6 +143,9 @@ module LogStash::Config::Mixin
   end # def config_init
 
   module DSL
+
+    include LogStash::Util::EnvironmentVariables
+
     attr_accessor :flags
 
     # If name is given, set the name and return it.
@@ -387,6 +390,8 @@ module LogStash::Config::Mixin
       #   config :mykey => lambda do |value| ... end
       # (see LogStash::Inputs::File for example)
       result = nil
+
+      value = deep_replace(value)
 
       if validator.nil?
         return true, value
