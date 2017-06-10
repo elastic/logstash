@@ -118,6 +118,12 @@ var IngestConverter = {
         return filters.join("\n\n") + "\n";
     },
 
+    /**
+     * Does it have an on_failure field?
+     * @param processor Json
+     * @param name Name of the processor
+     * @returns {boolean} True if has on failure
+     */
     has_on_failure: function (processor, name) {
         return !!processor[name]["on_failure"];
     },
@@ -126,21 +132,15 @@ var IngestConverter = {
         return processor[name]["on_failure"];
     },
 
+    /**
+     * Creates an if clause with the tag name
+     * @param tag String tag name to find in [tags] field
+     * @param on_failure_pipeline The on failure pipeline converted to LS to tack on in the conditional
+     * @returns {string} a string representing a conditional logic
+     */
     create_tag_conditional: function (tag, on_failure_pipeline) {
         return "if " + this.quote_string(tag) + " in [tags] {\n" +
                 "   " + on_failure_pipeline + "\n" +
                 "}";
-    },
-
-    get_stdin_input: function () {
-        return "input { \n" +
-            "   stdin {}\n" +
-            "}";
-    },
-
-    get_stdout_output: function () {
-        return "output { \n" +
-            "   stdout { codec => \"rubydebug\" }\n" +
-            "}"
     }
 };
