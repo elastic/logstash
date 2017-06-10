@@ -3,9 +3,9 @@
  */
 function ingest_pipeline_to_logstash(json) {
 
-    function handle_on_failure_pipeline(on_failure_json) {
+    function handle_on_failure_pipeline(on_failure_json, tag_name) {
 
-        return IngestConverter.create_tag_conditional("_grokparsefailure",
+        return IngestConverter.create_tag_conditional(tag_name,
             IngestConverter.join_hash_fields(on_failure_json.map(map_processor))
         );
     }
@@ -19,7 +19,10 @@ function ingest_pipeline_to_logstash(json) {
             );
             if (IngestConverter.has_on_failure(processor, IngestGrok.get_name())) {
                 filter_blocks.push(
-                    handle_on_failure_pipeline(IngestConverter.get_on_failure(processor, IngestGrok.get_name()))
+                    handle_on_failure_pipeline(
+                        IngestConverter.get_on_failure(processor, IngestGrok.get_name()),
+                        "_grokparsefailure"
+                    )
                 );
             }
         }
