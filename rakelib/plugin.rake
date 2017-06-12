@@ -8,7 +8,7 @@ namespace "plugin" do
     raise(RuntimeError, $!.to_s) unless $?.success?
   end
 
-  task "install-development-dependencies" do
+  task "install-development-dependencies" => "bootstrap" do
     puts("[plugin:install-development-dependencies] Installing development dependencies of all installed plugins")
     install_plugins("--development",  "--preserve")
 
@@ -23,35 +23,35 @@ namespace "plugin" do
     task.reenable # Allow this task to be run again
   end # task "install"
 
-  task "install-default" do
+  task "install-default" => "bootstrap" do
     puts("[plugin:install-default] Installing default plugins")
     install_plugins("--no-verify", "--preserve", *LogStash::RakeLib::DEFAULT_PLUGINS)
 
     task.reenable # Allow this task to be run again
   end
 
-  task "install-core" do
+  task "install-core" => "bootstrap" do
     puts("[plugin:install-core] Installing core plugins")
     install_plugins("--no-verify", "--preserve", *LogStash::RakeLib::CORE_SPECS_PLUGINS)
 
     task.reenable # Allow this task to be run again
   end
 
-  task "install-jar-dependencies" do
+  task "install-jar-dependencies" => "bootstrap" do
     puts("[plugin:install-jar-dependencies] Installing jar_dependencies plugins for testing")
     install_plugins("--no-verify", "--preserve", *LogStash::RakeLib::TEST_JAR_DEPENDENCIES_PLUGINS)
 
     task.reenable # Allow this task to be run again
   end
 
-  task "install-vendor" do
+  task "install-vendor" => "bootstrap" do
     puts("[plugin:install-jar-dependencies] Installing vendor plugins for testing")
     install_plugins("--no-verify", "--preserve", *LogStash::RakeLib::TEST_VENDOR_PLUGINS)
 
     task.reenable # Allow this task to be run again
   end
 
-  task "install-all" do
+  task "install-all" => "bootstrap" do
     puts("[plugin:install-all] Installing all plugins from https://github.com/logstash-plugins")
     p = *LogStash::RakeLib.fetch_all_plugins
     # Install plugin one by one, ignoring plugins that have issues. Otherwise, one bad plugin will
