@@ -56,7 +56,7 @@ Logstash core will continue to exist under this repository and all related issue
 ### Prerequisites
 
 * Install JDK version 8. Make sure to set the `JAVA_HOME` environment variable to the path to your JDK installation directory. For example `set JAVA_HOME=<JDK_PATH>`
-* Install JRuby 1.7.x. It is recommended to use a Ruby version manager such as [RVM](https://rvm.io/) or [rbenv](https://github.com/sstephenson/rbenv).
+* Install JRuby 9.1.x It is recommended to use a Ruby version manager such as [RVM](https://rvm.io/) or [rbenv](https://github.com/sstephenson/rbenv).
 * Install `rake` and `bundler` tool using `gem install rake` and `gem install bundler` respectively.
 
 ### RVM install (optional)
@@ -65,7 +65,7 @@ If you prefer to use rvm (ruby version manager) to manage Ruby versions on your 
 
 ```sh
 gpg --keyserver hkp://keys.gnupg.net --recv-keys 409B6B1796C275462A1703113804BB82D39DC0E3
-\curl -sSL https://get.rvm.io | bash -s stable --ruby=jruby-1.7.26
+\curl -sSL https://get.rvm.io | bash -s stable --ruby=jruby-9.1.10.0
 ```
 
 ### Check Ruby version
@@ -74,7 +74,7 @@ Before you proceed, please check your ruby version by:
 
 ```sh
 $ ruby -v
-jruby 1.7.26 (1.9.3p551) 2016-08-26 69763b8 on Java HotSpot(TM) 64-Bit Server VM 1.8.0_65-b17 +jit [darwin-x86_64]
+jruby 9.1.10.0 (2.3.3) 2017-05-25 b09c48a Java HotSpot(TM) 64-Bit Server VM 25.131-b11 on 1.8.0_131-b11 +jit [darwin-x86_64]
 ```
 
 ### Building Logstash
