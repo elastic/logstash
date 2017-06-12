@@ -13,6 +13,8 @@ public final class PipelineTest extends IngestTest {
         final Collection<String> cases = new ArrayList<>();
         cases.add("ComplexCase1");
         cases.add("ComplexCase2");
+        cases.add("ComplexCase3");
+        cases.add("ComplexCase4");
         GeoIpTest.data().forEach(cases::add);
         DateTest.data().forEach(cases::add);
         GrokTest.data().forEach(cases::add);
@@ -22,6 +24,7 @@ public final class PipelineTest extends IngestTest {
         JsonTest.data().forEach(cases::add);
         RenameTest.data().forEach(cases::add);
         LowercaseTest.data().forEach(cases::add);
+        SetTest.data().forEach(cases::add);
         return cases;
     }
 

@@ -24,7 +24,7 @@ final class JsUtil {
 
     private static final String[] SCRIPTS = {
         "shared", "date", "grok", "geoip", "gsub", "pipeline", "convert", "append", "json",
-        "rename", "lowercase"
+        "rename", "lowercase", "set"
     };
 
     private JsUtil() {
@@ -90,7 +90,7 @@ final class JsUtil {
      * Retrieves the input Ingest JSON from a given {@link URI}.
      * @param uri {@link URI} of Ingest JSON
      * @return Json String
-     * @throws IOException On failure to load Ingest JSON 
+     * @throws IOException On failure to load Ingest JSON
      */
     private static String input(final URI uri) throws IOException {
         if ("file".equals(uri.getScheme())) {
