@@ -114,5 +114,5 @@ dependencies {
     testCompile 'junit:junit:4.12'
     testCompile 'net.javacrumbs.json-unit:json-unit:1.9.0'
     testCompile 'org.elasticsearch:securemock:1.2'
-    provided 'org.jruby:jruby-core:1.7.25'
+    provided 'org.jruby:jruby-core:9.1.10.0'
 }
