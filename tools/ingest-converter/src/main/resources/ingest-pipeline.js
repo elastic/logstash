@@ -15,7 +15,7 @@ function ingest_pipeline_to_logstash(json) {
         var filter_blocks = [];
         if (IngestGrok.has_grok(processor)) {
             filter_blocks.push(
-                IngestConverter.create_hash("grok", IngestGrok.grok_hash(processor))
+                IngestConverter.create_hash(IngestGrok.get_name(), IngestGrok.grok_hash(processor))
             );
             if (IngestConverter.has_on_failure(processor, IngestGrok.get_name())) {
                 filter_blocks.push(

@@ -140,7 +140,7 @@ var IngestConverter = {
      */
     create_tag_conditional: function (tag, on_failure_pipeline) {
         return "if " + this.quote_string(tag) + " in [tags] {\n" +
-                "   " + on_failure_pipeline + "\n" +
+                on_failure_pipeline + "\n" +
                 "}";
     }
 };
