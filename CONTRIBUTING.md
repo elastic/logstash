@@ -55,6 +55,8 @@ point to contribute to Logstash.
 See: https://github.com/elastic/logstash/labels/adoptme
 https://github.com/elastic/logstash/labels/low%20hanging%20fruit
 
+Using IntelliJ? See a detailed getting started guide [here](https://docs.google.com/document/d/1kqunARvYMrlfTEOgMpYHig0U-ZqCcMJfhvTtGt09iZg/pub).
+
 ## Contributing to plugins
 
 Check our [documentation](https://www.elastic.co/guide/en/logstash/current/contributing-to-logstash.html) on how to contribute to plugins or write your own! It is super easy!
