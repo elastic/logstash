@@ -4,7 +4,7 @@ require "logstash/config/source/base"
 require_relative "../../support/helpers"
 
 def temporary_pipeline_config(id, source, reader = "random_reader")
-  config_part = org.logstash.common.SourceWithMetadata.new("local", "...", "input {} output {}")
+  config_part = org.logstash.common.SourceWithMetadata.new("local", "...", 0, 0, "input {} output {}")
   LogStash::Config::PipelineConfig.new(source, id, [config_part], LogStash::SETTINGS)
 end
 

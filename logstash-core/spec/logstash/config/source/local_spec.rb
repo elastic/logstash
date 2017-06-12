@@ -367,6 +367,7 @@ describe LogStash::Config::Source::Local do
         file = Stud::Temporary.file
         path = file.path
         file.write(config_string)
+        file.close # we need to flush the write
         path
       end
       let(:settings) { mock_settings( "path.config" => config_path) }

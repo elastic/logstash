@@ -1,6 +1,8 @@
 package org.logstash.config.ir.graph;
 
 import org.junit.Test;
+import org.logstash.common.IncompleteSourceWithMetadataException;
+import org.logstash.common.SourceWithMetadata;
 import org.logstash.config.ir.InvalidIRException;
 import org.logstash.config.ir.PluginDefinition;
 
@@ -25,7 +27,7 @@ public class PluginVertexTest {
     }
 
     @Test
-    public void testConstructionIdHandlingWhenExplicitId() {
+    public void testConstructionIdHandlingWhenExplicitId() throws IncompleteSourceWithMetadataException {
         String customId = "mycustomid";
         Map<String, Object> pluginArguments = new HashMap<>();
         pluginArguments.put("id", customId);

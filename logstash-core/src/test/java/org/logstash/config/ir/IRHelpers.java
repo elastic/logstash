@@ -1,6 +1,7 @@
 package org.logstash.config.ir;
 
 import org.hamcrest.MatcherAssert;
+import org.logstash.common.IncompleteSourceWithMetadataException;
 import org.logstash.common.SourceWithMetadata;
 import org.logstash.config.ir.expression.BooleanExpression;
 import org.logstash.config.ir.expression.ValueExpression;
@@ -116,8 +117,8 @@ public class IRHelpers {
         return new Truthy(null, new ValueExpression(null, 1));
     }
 
-    public static SourceWithMetadata testMetadata() {
-        return new SourceWithMetadata("/fake/file", 1, 2, "<fakesource>");
+    public static SourceWithMetadata testMetadata() throws IncompleteSourceWithMetadataException {
+        return new SourceWithMetadata("file", "/fake/file", 1, 2, "<fakesource>");
     }
 
     public static PluginDefinition testPluginDefinition() {

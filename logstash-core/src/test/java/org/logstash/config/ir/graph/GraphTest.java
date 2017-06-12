@@ -9,6 +9,7 @@ import org.logstash.config.ir.imperative.IfStatement;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;

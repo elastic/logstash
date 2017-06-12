@@ -13,6 +13,8 @@ import java.util.stream.Stream;
  * Created by andrewvc on 9/20/16.
  */
 public class PipelineIR implements Hashable {
+    private String uniqueHash;
+
     public Graph getGraph() {
         return graph;
     }
@@ -47,6 +49,10 @@ public class PipelineIR implements Hashable {
         this.graph = tempGraph.chain(outputSection);
 
         this.graph.validate();
+
+        if (this.getOriginalSource() != null && this.getOriginalSource().matches("^\\S+$")) {
+            uniqueHash = this.graph.uniqueHash();
+        }
     }
 
     public String getOriginalSource() {
@@ -101,7 +107,7 @@ public class PipelineIR implements Hashable {
     }
 
     @Override
-    public String hashSource() {
-        return this.graph.uniqueHash();
+    public String uniqueHash() {
+        return this.uniqueHash;
     }
 }

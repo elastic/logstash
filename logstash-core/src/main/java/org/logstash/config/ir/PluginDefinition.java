@@ -12,7 +12,7 @@ import java.util.Set;
 /**
  * Created by andrewvc on 9/20/16.
  */
-public class PluginDefinition implements SourceComponent, Hashable {
+public class PluginDefinition implements SourceComponent, HashableWithSource {
     private static ObjectMapper om = new ObjectMapper();
 
     @Override

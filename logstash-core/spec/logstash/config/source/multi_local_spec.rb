@@ -29,7 +29,7 @@ describe LogStash::Config::Source::MultiLocal do
     end
 
     context "when `config.path` are set`" do
-      let(:config_file) { temporary_file("") }
+      let(:config_file) { temporary_file("input {} output {}") }
 
       let(:settings) do
         mock_settings("path.config" => config_file)
@@ -85,8 +85,8 @@ describe LogStash::Config::Source::MultiLocal do
   describe "#pipeline_configs" do
     let(:retrieved_pipelines) do
       [
-        { "pipeline.id" => "main", "config.string" => "" },
-        { "pipeline.id" => "backup", "config.string" => "" }
+        { "pipeline.id" => "main", "config.string" => "input {} output {}" },
+        { "pipeline.id" => "backup", "config.string" => "input {} output {}" }
       ]
     end
     before(:each) do

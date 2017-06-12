@@ -90,7 +90,7 @@ module LogStash; class BasePipeline
   end
 
   def compile_lir
-    source_with_metadata = SourceWithMetadata.new("str", "pipeline", self.config_str)
+    source_with_metadata = SourceWithMetadata.new("str", "pipeline", 0, 0, self.config_str)
     LogStash::Compiler.compile_sources(source_with_metadata)
   end
 
