@@ -1,8 +1,8 @@
 # encoding: utf-8
 require "spec_helper"
+require "json-schema"
 require "sinatra"
 require "logstash/api/modules/node"
-require "logstash/json"
 
 describe LogStash::Api::Modules::Node do
   include_context "api setup"
@@ -19,7 +19,7 @@ describe LogStash::Api::Modules::Node do
     end
 
     it "should return a JSON object" do
-      expect{ LogStash::Json.load(last_response.body) }.not_to raise_error
+      expect(JSON::Validator.validate({}, last_response.body)).to eq(true)
     end
 
     context "#threads count" do
@@ -28,14 +28,21 @@ describe LogStash::Api::Modules::Node do
         get "/hot_threads?threads=5"
       end
 
-      let(:payload) { LogStash::Json.load(last_response.body) }
-
       it "should return a json payload content type" do
         expect(last_response.content_type).to eq("application/json")
       end
 
       it "should return information for <= # requested threads" do
-        expect(payload["hot_threads"]["threads"].count).to be <= 5
+        expect(JSON::Validator.fully_validate(
+          {
+            "properties" => {
+              "hot_threads" => {
+                "properties" => { "threads" => { "type" => "array", "maxItems" => 5 } }
+              }
+            }
+          },
+          last_response.body
+        )).to be_empty
       end
     end
 
@@ -51,14 +58,12 @@ describe LogStash::Api::Modules::Node do
           get path
         end
 
-        let(:payload) { last_response.body }
-
         it "should return a text/plain content type" do
           expect(last_response.content_type).to eq("text/plain;charset=utf-8")
         end
 
         it "should return a plain text payload" do
-          expect{ JSON.parse(payload) }.to raise_error
+          expect {JSON::Validator.fully_validate({}, payload)}.to raise_error
         end
       end
     end
@@ -76,10 +81,8 @@ describe LogStash::Api::Modules::Node do
         @threads.each { |t| t.kill } rescue nil
       end
 
-      let(:payload) { last_response.body }
-
       it "should return information for <= # requested threads" do
-        expect(payload.scan(/thread name/).size).to eq(2)
+        expect(last_response.body.scan(/thread name/).size).to eq(2)
       end
     end
 
@@ -97,10 +100,8 @@ describe LogStash::Api::Modules::Node do
           expect(last_response.content_type).to eq("application/json")
         end
 
-        let(:payload) { last_response.body }
-
         it "should return a json payload" do
-          expect{ JSON.parse(payload) }.not_to raise_error
+          expect(JSON::Validator.validate({}, last_response.body)).to eq(true)
         end
       end
     end
