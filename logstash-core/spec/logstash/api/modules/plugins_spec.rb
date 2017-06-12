@@ -1,5 +1,6 @@
 # encoding: utf-8
 require "spec_helper"
+require "json-schema"
 require "sinatra"
 require "logstash/api/modules/plugins"
 require "logstash/json"
@@ -12,8 +13,6 @@ describe LogStash::Api::Modules::Plugins do
     get "/"
   end
 
-  let(:payload) { LogStash::Json.load(last_response.body) }
-
   it "respond to plugins resource" do
     expect(last_response).to be_ok
   end
@@ -24,14 +23,30 @@ describe LogStash::Api::Modules::Plugins do
 
   context "#schema" do
     it "return the expected schema" do
-      expect(payload.keys).to include("plugins", "total")
-      payload["plugins"].each do |plugin|
-        expect(plugin.keys).to include("name", "version")
-      end
+      expect(JSON::Validator.fully_validate(
+        {
+          "properties" => {
+            "plugins" => {
+              "type" => "array",
+              "items" => [
+                {
+                  "type" => "object",
+                  "required" => ["version", "name"]
+                }
+              ]
+            },
+            "total" => { "type" => "number" } 
+          },
+          "required" => ["plugins", "total"]
+        },
+        last_response.body)
+      ).to be_empty
     end
   end
 
   context "#values" do
+
+    let(:payload) { LogStash::Json.load(last_response.body) }
 
     it "return totals of plugins" do
       expect(payload["total"]).to eq(payload["plugins"].count)
@@ -46,9 +61,25 @@ describe LogStash::Api::Modules::Plugins do
     end
 
     it "return non empty version values" do
-      payload["plugins"].each do |plugin|
-        expect(plugin["version"]).not_to be_empty
-      end
+      expect(JSON::Validator.fully_validate(
+        { "properties" => { "plugins" => {
+          "type" => "array",
+          "items" => [
+            {
+              "type" => "object",
+              "properties" => {
+                "version" => {
+                  "type" => "string",
+                  "minLength" => 1
+                }
+              },
+              "required" => ["version"]
+            }
+          ],
+          "minItems" => 1
+        } } },
+        last_response.body)
+      ).to be_empty
     end
   end
 end

@@ -1,4 +1,5 @@
 require "logstash/api/rack_app"
+require "json-schema"
 require "rack/test"
 
 describe LogStash::Api::RackApp do
@@ -55,7 +56,7 @@ describe LogStash::Api::RackApp do
       end
 
       it "should return valid JSON" do
-        expect { LogStash::Json.load(last_response.body) }.not_to raise_error
+        expect(JSON::Validator.validate({}, last_response.body)).to eq(true)
       end
 
       it "should log the error" do

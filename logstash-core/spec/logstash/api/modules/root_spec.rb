@@ -3,7 +3,6 @@ require "spec_helper"
 
 require "sinatra"
 require "logstash/api/modules/root"
-require "logstash/json"
 
 describe LogStash::Api::Modules::Root do
   include_context "api setup"
