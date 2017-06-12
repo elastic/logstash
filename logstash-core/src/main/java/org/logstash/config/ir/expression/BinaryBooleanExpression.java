@@ -1,5 +1,6 @@
 package org.logstash.config.ir.expression;
 
+import org.logstash.common.Util;
 import org.logstash.config.ir.SourceComponent;
 import org.logstash.config.ir.InvalidIRException;
 import org.logstash.common.SourceWithMetadata;
@@ -46,8 +47,7 @@ public abstract class BinaryBooleanExpression extends BooleanExpression {
         return "(" + getLeft().toRubyString() + rubyOperator() + getRight().toRubyString() + ")";
     }
 
-    @Override
-    public String hashSource() {
-        return this.getClass().getCanonicalName() + "[" + getLeft().hashSource() + "|" + getRight().hashSource() + "]";
+    public String uniqueHash() {
+        return Util.digest(this.getClass().getCanonicalName() + "[" + getLeft().hashSource() + "|" + getRight().hashSource() + "]");
     }
 }

@@ -28,8 +28,8 @@ describe LogStash::Compiler do
 
   describe "compiling to Pipeline" do
     subject(:source_id) { "fake_sourcefile" }
-    let(:source_with_metadata) { org.logstash.common.SourceWithMetadata.new(source_protocol, source_id, source) }
-    subject(:compiled) { described_class.compile_pipeline(source_with_metadata) }
+    let(:source_with_metadata) { org.logstash.common.SourceWithMetadata.new(source_protocol, source_id, 0, 0, source) }
+    subject(:compiled) { puts "PCOMP"; described_class.compile_pipeline(source_with_metadata) }
 
     describe "compiling multiple sources" do
       let(:sources) do
@@ -40,7 +40,7 @@ describe LogStash::Compiler do
       end
       let(:sources_with_metadata) do
         sources.map.with_index do |source, idx|
-          org.logstash.common.SourceWithMetadata.new("#{source_protocol}_#{idx}", "#{source_id}_#{idx}", source)
+          org.logstash.common.SourceWithMetadata.new("#{source_protocol}_#{idx}", "#{source_id}_#{idx}", 0, 0, source)
         end
       end
 
@@ -92,7 +92,7 @@ describe LogStash::Compiler do
 
   describe "compiling imperative" do
     let(:source_id) { "fake_sourcefile" }
-    let(:source_with_metadata) { org.logstash.common.SourceWithMetadata.new(source_protocol, source_id, source) }
+    let(:source_with_metadata) { org.logstash.common.SourceWithMetadata.new(source_protocol, source_id, 0, 0, source) }
     subject(:compiled) { described_class.compile_imperative(source_with_metadata) }
 
     describe "an empty file" do

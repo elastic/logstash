@@ -1,11 +1,19 @@
 package org.logstash.common;
 
+import org.logstash.config.ir.HashableWithSource;
+
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
 import java.util.Objects;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Created by andrewvc on 9/6/16.
  */
-public class SourceWithMetadata {
+public class SourceWithMetadata implements HashableWithSource {
     // Either 'file' or something else
     private final String protocol;
     // A Unique identifier for the source within the given protocol
@@ -35,32 +43,49 @@ public class SourceWithMetadata {
         return text;
     }
 
-    public SourceWithMetadata(String protocol, String id, Integer line, Integer column, String text) {
+    private static final Pattern emptyString = Pattern.compile("^\\s*$");
+
+    public SourceWithMetadata(String protocol, String id, Integer line, Integer column, String text) throws IncompleteSourceWithMetadataException {
         this.protocol = protocol;
         this.id = id;
         this.line = line;
         this.column = column;
         this.text = text;
+
+        List<Object> badAttributes = this.attributes().stream().filter(a -> {
+            if (a == null) return true;
+            if (a instanceof String) {
+                return emptyString.matcher((String) a).matches();
+            }
+            return false;
+        }).collect(Collectors.toList());
+
+        if (!badAttributes.isEmpty()){
+            String message = "Missing attributes in SourceWithMetadata: (" + badAttributes + ") "
+                    + this.toString();
+            throw new IncompleteSourceWithMetadataException(message);
+        }
     }
 
-    // Convenience method for dealing with files
-    public SourceWithMetadata(String path, Integer line, Integer column, String text) {
-        this("file", path, line, column, text);
-    }
-
-    public SourceWithMetadata(String protocol, String id, String text) {
-        this(protocol, id, 1, 1, text);
-    }
-
-    public SourceWithMetadata() {
-        this(null, null, null, null, null);
+    public SourceWithMetadata(String protocol, String id, String text) throws IncompleteSourceWithMetadataException {
+        this(protocol, id, 0, 0, text);
     }
 
     public int hashCode() {
-        return Objects.hash(this.id, this.line, this.column, this.text);
+        return Objects.hash(attributes().toArray());
     }
 
     public String toString() {
-        return "[protocol]" + id + ":" + line + ":" + column + ":```\n" + text + "\n```";
+        return "[" + protocol + "]" + id + ":" + line + ":" + column + ":```\n" + text + "\n```";
+    }
+
+    @Override
+    public String hashSource() {
+        return attributes().stream().map(Object::toString).collect(Collectors.joining("|"));
+    }
+
+    // Fields used in the hashSource and hashCode methods to ensure uniqueness
+    private Collection<Object> attributes() {
+        return Arrays.asList(this.getId(), this.getProtocol(), this.getLine(), this.getColumn(), this.getText());
     }
 }

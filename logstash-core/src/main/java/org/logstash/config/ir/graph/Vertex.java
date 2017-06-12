@@ -1,7 +1,7 @@
 package org.logstash.config.ir.graph;
 
 import org.logstash.common.Util;
-import org.logstash.config.ir.Hashable;
+import org.logstash.config.ir.HashableWithSource;
 import org.logstash.config.ir.SourceComponent;
 import org.logstash.config.ir.InvalidIRException;
 import org.logstash.common.SourceWithMetadata;
@@ -17,19 +17,26 @@ import java.util.stream.Stream;
 /**
  * Created by andrewvc on 9/15/16.
  */
-public abstract class Vertex implements SourceComponent, Hashable {
+public abstract class Vertex implements SourceComponent, HashableWithSource {
     private final SourceWithMetadata sourceWithMetadata;
     private Graph graph = this.getGraph();
     private volatile String contextualHashCache;
     private volatile String hashCache;
     private volatile String individualHashSourceCache;
+    private final String explicitId;
+    private volatile String generatedId;
 
     public Vertex() {
-        this.sourceWithMetadata = null;
+        this(null);
     }
 
     public Vertex(SourceWithMetadata sourceWithMetadata) {
+        this(sourceWithMetadata, null);
+    }
+
+    public Vertex(SourceWithMetadata sourceWithMetadata, String explicitId) {
         this.sourceWithMetadata = sourceWithMetadata;
+        this.explicitId = explicitId;
     }
 
     public abstract Vertex copy();
@@ -217,7 +224,30 @@ public abstract class Vertex implements SourceComponent, Hashable {
         return true;
     }
 
-    public abstract String getId();
+    public String getExplicitId() {
+        return this.explicitId;
+    }
+
+    public String getId() {
+        if (explicitId != null) return explicitId;
+        if (generatedId != null) return generatedId;
+
+        if (this.getGraph() == null) {
+            throw new RuntimeException("Attempted to get ID from PluginVertex before attaching it to a graph!");
+        }
+
+        // Generating unique hashes for vertices is very slow!
+        // We try to avoid this where possible, which means that generally only tests hit the path with hashes, since
+        // they have no source metadata. This might also be used in the future by alternate config languages which are
+        // willing to take the hit.
+        if (this.getSourceWithMetadata() != null) {
+            generatedId = this.getGraph().uniqueHash() + "|" + this.getSourceWithMetadata().uniqueHash();
+        } else {
+            generatedId = this.uniqueHash();
+        }
+
+        return generatedId;
+    }
 
     public void clearCache() {
         this.hashCache = null;

@@ -7,21 +7,15 @@ import org.logstash.config.ir.SourceComponent;
 import org.logstash.config.ir.PluginDefinition;
 import org.logstash.common.SourceWithMetadata;
 
+import java.util.UUID;
+
 /**
  * Created by andrewvc on 9/15/16.
  */
 public class PluginVertex extends Vertex {
     private final SourceWithMetadata meta;
-    private final String id;
     private final PluginDefinition pluginDefinition;
-
-    public String getId() {
-        if (id != null) return id;
-        if (this.getGraph() == null) {
-            throw new RuntimeException("Attempted to get ID from PluginVertex before attaching it to a graph!");
-        }
-        return this.uniqueHash();
-    }
+    private volatile String generatedId;
 
     public PluginDefinition getPluginDefinition() {
         return pluginDefinition;
@@ -31,15 +25,11 @@ public class PluginVertex extends Vertex {
         return meta;
     }
 
-
     public PluginVertex(SourceWithMetadata meta, PluginDefinition pluginDefinition) {
-        super(meta);
+        // We know that if the ID value exists it will be as a string
+        super(meta, (String) pluginDefinition.getArguments().get("id"));
         this.meta = meta;
-
         this.pluginDefinition = pluginDefinition;
-
-        Object argId = this.pluginDefinition.getArguments().get("id");
-        this.id = argId != null ? argId.toString() : null;
     }
 
     public String toString() {
@@ -51,7 +41,7 @@ public class PluginVertex extends Vertex {
         ObjectMapper objectMapper = new ObjectMapper();
         try {
             return Util.digest(this.getClass().getCanonicalName() + "|" +
-                    (this.id != null ? this.id : "NOID") + "|" +
+                    (this.getExplicitId() != null ? this.getExplicitId() : "NOID") + "|" +
                     this.pluginDefinition.getName() + "|" +
                     this.pluginDefinition.getType().toString() + "|" +
                     objectMapper.writeValueAsString(this.pluginDefinition.getArguments()));
@@ -77,5 +67,11 @@ public class PluginVertex extends Vertex {
             return otherV.getPluginDefinition().sourceComponentEquals(this.getPluginDefinition());
         }
         return false;
+    }
+
+    @Override
+    public void clearCache() {
+        super.clearCache();
+        this.generatedId = null;
     }
 }

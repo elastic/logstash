@@ -13,6 +13,8 @@ import java.util.stream.Collectors;
  * Created by andrewvc on 9/15/16.
  */
 public class IfVertex extends Vertex {
+    private volatile String generatedId;
+
     public BooleanExpression getBooleanExpression() {
         return booleanExpression;
     }
@@ -64,11 +66,6 @@ public class IfVertex extends Vertex {
 
     public boolean acceptsOutgoingEdge(Edge e) {
         return (e instanceof BooleanEdge);
-    }
-
-    @Override
-    public String getId() {
-        return this.uniqueHash();
     }
 
     public Collection<BooleanEdge> getOutgoingBooleanEdges() {

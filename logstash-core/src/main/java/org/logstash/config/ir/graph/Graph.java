@@ -268,10 +268,6 @@ public class Graph implements SourceComponent, Hashable {
         return rank;
     }
 
-    public Map<String, List<Vertex>> verticesByHash() {
-        return this.vertices().parallel().collect(Collectors.groupingBy(Vertex::uniqueHash));
-    }
-
     public void validate() throws InvalidIRException {
         if (this.isEmpty()) return;
 
@@ -426,8 +422,7 @@ public class Graph implements SourceComponent, Hashable {
         return this.edges.stream();
     }
 
-    @Override
-    public String hashSource() {
+    public String uniqueHash() {
         MessageDigest lineageDigest = Util.defaultMessageDigest();
 
         // We only need to calculate the hashes of the leaves since those hashes are sensitive to changes

@@ -23,7 +23,7 @@ public class DSL {
     }
 
     public static EventValueExpression eEventValue(String fieldName) {
-        return eEventValue(new SourceWithMetadata(), fieldName);
+        return eEventValue(null, fieldName);
     }
 
     public static ValueExpression eValue(SourceWithMetadata meta, Object value) throws InvalidIRException {
@@ -31,7 +31,7 @@ public class DSL {
     }
 
     public static ValueExpression eValue(Object value) throws InvalidIRException {
-        return eValue(new SourceWithMetadata(), value);
+        return eValue(null, value);
     }
 
     public static ValueExpression eRegex(SourceWithMetadata meta, String pattern) throws InvalidIRException {
@@ -39,12 +39,12 @@ public class DSL {
     }
 
     public static ValueExpression eRegex(String pattern) throws InvalidIRException {
-        return eRegex(new SourceWithMetadata(), pattern);
+        return eRegex(null, pattern);
     }
 
     public static ValueExpression eValue(long value) {
         try {
-            return eValue(new SourceWithMetadata(), value);
+            return eValue(null, value);
         } catch (InvalidIRException e) {
             e.printStackTrace(); // Can't happen with an int
             return null;
@@ -53,7 +53,7 @@ public class DSL {
 
     public static ValueExpression eValue(double value) {
         try {
-            return eValue(new SourceWithMetadata(), value);
+            return eValue(null, value);
         } catch (InvalidIRException e) {
             e.printStackTrace(); // Can't happen with an int
             return null;
@@ -195,7 +195,7 @@ public class DSL {
     }
 
     public static NoopStatement noop() {
-        return new NoopStatement(new SourceWithMetadata());
+        return new NoopStatement(null);
     }
 
     public static PluginStatement iPlugin(SourceWithMetadata meta, PluginDefinition.Type pluginType, String pluginName, Map<String, Object> pluginArguments) {
@@ -203,7 +203,7 @@ public class DSL {
     }
 
     public static PluginStatement iPlugin(PluginDefinition.Type type, String pluginName, Map<String, Object> pluginArguments) {
-        return iPlugin(new SourceWithMetadata(), type, pluginName, pluginArguments);
+        return iPlugin(null, type, pluginName, pluginArguments);
     }
 
     public static PluginStatement iPlugin(PluginDefinition.Type type, String pluginName, MapBuilder<String, Object> argBuilder) {
@@ -229,12 +229,12 @@ public class DSL {
     public static IfStatement iIf(Expression condition,
                                   Statement ifTrue,
                                   Statement ifFalse) throws InvalidIRException {
-        return iIf(new SourceWithMetadata(), condition, ifTrue, ifFalse);
+        return iIf(null, condition, ifTrue, ifFalse);
     }
 
     public static IfStatement iIf(Expression condition,
                                   Statement ifTrue) throws InvalidIRException {
-        return iIf(new SourceWithMetadata(), condition, ifTrue, noop());
+        return iIf(null, condition, ifTrue, noop());
     }
 
     public static class MapBuilder<K,V> {
@@ -275,7 +275,7 @@ public class DSL {
     }
 
     public static PluginVertex gPlugin(PluginDefinition.Type type, String pluginName, Map<String, Object> pluginArgs) {
-        return gPlugin(new SourceWithMetadata(), type, pluginName, pluginArgs);
+        return gPlugin(null, type, pluginName, pluginArgs);
     }
 
     public static PluginVertex gPlugin(PluginDefinition.Type type, String pluginName, String id) {
@@ -283,7 +283,7 @@ public class DSL {
     }
 
     public static PluginVertex gPlugin(PluginDefinition.Type type, String pluginName) {
-        return gPlugin(new SourceWithMetadata(), type, pluginName, new HashMap<>());
+        return gPlugin(null, type, pluginName, new HashMap<>());
     }
 
 
@@ -292,6 +292,6 @@ public class DSL {
     }
 
     public static IfVertex gIf(BooleanExpression expression) {
-       return new IfVertex(new SourceWithMetadata(), expression);
+       return new IfVertex(null, expression);
     }
 }

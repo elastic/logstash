@@ -46,10 +46,6 @@ module LogStashCompilerLSCLGrammar; module LogStash; module Compiler; module LSC
       [self.input.line_of(start), self.input.column_of(start)]
     end
 
-    def empty_source_meta()
-      org.logstash.common.SourceWithMetadata.new(base_protocol, base_id, nil)
-    end
-
     def jdsl
       org.logstash.config.ir.DSL
     end
@@ -99,11 +95,12 @@ module LogStashCompilerLSCLGrammar; module LogStash; module Compiler; module LSC
         end
       end
 
+      compiled_section_map = {}
       section_map.keys.each do |key|
-        section_map[key] = compose_for(key).call(empty_source_meta, *section_map[key])
+        compiled_section_map[key] = compose_for(key).call(*section_map[key])
       end
 
-      section_map
+      compiled_section_map
     end
   end
 
