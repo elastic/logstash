@@ -32,6 +32,7 @@ java_import org.logstash.common.io.DeadLetterQueueWriter
 
 module LogStash; class BasePipeline
   include LogStash::Util::Loggable
+  include LogStash::Util::EnvironmentVariables
 
   attr_reader :settings, :config_str, :config_hash, :inputs, :filters, :outputs, :pipeline_id, :lir, :execution_context, :ephemeral_id
   attr_reader :pipeline_config
@@ -117,9 +118,9 @@ module LogStash; class BasePipeline
       id = SecureRandom.uuid # codecs don't really use their IDs for metrics, so we can use anything here
     else
       # Pull the ID from LIR to keep IDs consistent between the two representations
-      id = lir.graph.vertices.filter do |v| 
-        v.source_with_metadata && 
-        v.source_with_metadata.line == line && 
+      id = lir.graph.vertices.filter do |v|
+        v.source_with_metadata &&
+        v.source_with_metadata.line == line &&
         v.source_with_metadata.column == column
       end.findFirst.get.id
     end

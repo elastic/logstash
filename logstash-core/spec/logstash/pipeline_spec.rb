@@ -207,6 +207,52 @@ describe LogStash::Pipeline do
     end
   end
 
+  context "environment variables in ids" do
+    before(:each) do
+      allow(LogStash::Plugin).to receive(:lookup).with("input", "dummyinput").and_return(DummyInput)
+      allow(LogStash::Plugin).to receive(:lookup).with("codec", "plain").and_return(DummyCodec)
+      allow(LogStash::Plugin).to receive(:lookup).with("output", "dummyoutput").and_return(::LogStash::Outputs::DummyOutput)
+    end
+
+
+    let(:test_config_without_output_workers) {
+      <<-eos
+      input {
+        dummyinput {'id' => '${INPUT}_1'}
+      }
+
+      output {
+        dummyoutput {'id' => '${OUTPUT}_1'}
+      }
+      eos
+    }
+
+    context "should be subsituted" do
+      let(:pipeline) { mock_pipeline_from_string(test_config_without_output_workers) }
+      let(:output) { pipeline.outputs.first }
+      let(:input) { pipeline.inputs.first }
+
+      before do
+        ENV['INPUT'] = 'input'
+        ENV['OUTPUT'] = 'output'
+      end
+
+      after do
+        ENV.delete('INPUT')
+        ENV.delete('OUTPUT')
+        pipeline.shutdown
+      end
+
+      it "in different plugin types" do
+        pipeline.run
+
+        expect(input.id).to eql('input_1')
+        expect(output.id).to eql('output_1')
+      end
+    end
+  end
+
+
   describe "defaulting the pipeline workers based on thread safety" do
     before(:each) do
       allow(LogStash::Plugin).to receive(:lookup).with("input", "dummyinput").and_return(DummyInput)
