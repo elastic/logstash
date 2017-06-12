@@ -1,6 +1,6 @@
 namespace "vendor" do
   VERSIONS = {
-    "jruby" => { "version" => "9.1.9.0", "sha1" => "b062fe6e411e4dab52ac7a25078b63e831471f9b" },
+    "jruby" => { "version" => "9.1.10.0", "sha1" => "ced42e80db30fa0d0ea3bb97c5da860c34d98e3e" },
   }
 
   def vendor(*args)

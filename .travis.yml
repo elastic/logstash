@@ -7,7 +7,7 @@ cache:
     - vendor/bundle
     - ~/.gradle/
 rvm:
-  - jruby-9.1.9.0
+  - jruby-9.1.10.0
 jdk:
   - oraclejdk8
 env:
