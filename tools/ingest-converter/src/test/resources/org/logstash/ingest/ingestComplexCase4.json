@@ -1,0 +1,41 @@
+{
+  "description": "Pipeline to parse Apache logs",
+  "processors": [
+    {
+      "grok": {
+        "field": "message",
+        "patterns": ["%{COMBINEDAPACHELOG}"],
+        "on_failure" : [
+          {
+            "set" : {
+              "field" : "error",
+              "value" : "field does not exist"
+            }
+          },
+          {
+            "convert": {
+              "field" : "client.ip",
+              "type": "integer"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "date": {
+        "field": "timestamp",
+        "target_field": "@timestamp",
+        "formats": [
+          "dd/MMM/YYYY:HH:mm:ss Z"
+        ],
+        "locale": "en"
+      }
+    },
+    {
+      "geoip": {
+        "field": "clientip",
+        "target_field": "geo"
+      }
+    }
+  ]
+}

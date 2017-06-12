@@ -1,0 +1,11 @@
+{
+  "description": "SetExample",
+  "processors": [
+    {
+      "set": {
+        "field": "field1",
+        "value": 5344.4
+      }
+    }
+  ]
+}
