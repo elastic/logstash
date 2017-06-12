@@ -59,7 +59,7 @@ public class JrubyAckedBatchExtLibrary implements Library {
                 context.runtime.newArgumentError("expected queue AckedQueue");
             }
 
-            this.batch = new Batch(((RubyArray)events).getList(), ((RubyArray)seqNums).getList(), ((JrubyAckedQueueExtLibrary.RubyAckedQueue)queue).getQueue());
+            this.batch = new Batch(((RubyArray)events), ((RubyArray)seqNums), ((JrubyAckedQueueExtLibrary.RubyAckedQueue)queue).getQueue());
 
             return context.nil;
         }

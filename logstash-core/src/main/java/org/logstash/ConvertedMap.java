@@ -36,13 +36,13 @@ public class ConvertedMap<K, V> implements Map<K, V> {
     public static ConvertedMap<String, Object> newFromRubyHash(RubyHash o) {
         final ConvertedMap<String, Object> result = new ConvertedMap<>();
 
-        o.visitAll(new RubyHash.Visitor() {
+        o.visitAll(o.getRuntime().getCurrentContext(), new RubyHash.Visitor() {
             @Override
             public void visit(IRubyObject key, IRubyObject value) {
                 String k = String.valueOf(BiValues.newBiValue(key).javaValue()) ;
                 result.put(k, Valuefier.convert(value));
             }
-        });
+        }, null);
         return result;
     }
 
