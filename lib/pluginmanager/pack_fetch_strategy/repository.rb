@@ -36,10 +36,10 @@ module LogStash module PluginManager module PackFetchStrategy
           PluginManager.ui.debug("Package not found at: #{uri}")
           return nil
         end
-      rescue SocketError => e
+      rescue SocketError, Errno::ECONNREFUSED, Errno::EHOSTUNREACH => e
         # This probably means there is a firewall in place of the proxy is not correctly configured.
         # So lets skip this strategy but log a meaningful errors.
-        PluginManager.ui.debug("SocketError, skipping Elastic pack, exception: #{e}")
+        PluginManager.ui.debug("Network error, skipping Elastic pack, exception: #{e}")
 
         return nil
       end
