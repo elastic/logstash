@@ -26,7 +26,7 @@ module LogStash; module Util
       write_file_pool = @write_file_pool
       queue = @queue
 
-      2.times do
+      1.times do
         Thread.new do |t|
           current_file = @write_file_pool.take()
           count = 0
