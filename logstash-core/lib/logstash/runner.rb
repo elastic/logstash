@@ -20,9 +20,10 @@ require "logstash/patches/clamp"
 require "logstash/settings"
 require "logstash/version"
 require "logstash/plugins/registry"
-require "logstash/bootstrap_check/default_config"
 require "logstash/bootstrap_check/bad_java"
 require "logstash/bootstrap_check/bad_ruby"
+require "logstash/bootstrap_check/default_config"
+require "logstash/bootstrap_check/persisted_queue_config"
 require "set"
 
 java_import 'org.logstash.FileLockFactory'
@@ -52,7 +53,8 @@ class LogStash::Runner < Clamp::StrictCommand
   DEFAULT_BOOTSTRAP_CHECKS = [
       LogStash::BootstrapCheck::BadRuby,
       LogStash::BootstrapCheck::BadJava,
-      LogStash::BootstrapCheck::DefaultConfig
+      LogStash::BootstrapCheck::DefaultConfig,
+      LogStash::BootstrapCheck::PersistedQueueConfig
   ]
 
   # Node Settings

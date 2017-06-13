@@ -44,6 +44,15 @@ public abstract class AbstractByteBufferPageIO implements PageIO {
     private CRC32 checkSummer;
     private final List<Integer> offsetMap; // has to be extendable
 
+    // we don't have different versions yet so simply check if the version is VERSION_ONE for basic integrity check
+    // and if an unexpected version byte is read throw PageIOInvalidVersionException
+    public static void validateVersion(byte version) throws PageIOInvalidVersionException {
+        if (version != VERSION_ONE) {
+            throw new PageIOInvalidVersionException(String
+                .format("Expected page version=%d but found version=%d", VERSION_ONE, version));
+        }
+    }
+
     public AbstractByteBufferPageIO(int pageNum, int capacity) {
         this.minSeqNum = 0;
         this.elementCount = 0;
@@ -115,15 +124,6 @@ public abstract class AbstractByteBufferPageIO implements PageIO {
         // if we were not able to read any element just reset minSeqNum to zero
         if (this.elementCount <= 0) {
             this.minSeqNum = 0;
-        }
-    }
-
-    // we don't have different versions yet so simply check if the version is VERSION_ONE for basic integrity check
-    // and if an unexpected version byte is read throw PageIOInvalidVersionException
-    private static void validateVersion(byte version) throws PageIOInvalidVersionException {
-        if (version != VERSION_ONE) {
-            throw new PageIOInvalidVersionException(String
-                .format("Expected page version=%d but found version=%d", VERSION_ONE, version));
         }
     }
 
