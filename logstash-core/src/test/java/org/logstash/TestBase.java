@@ -15,9 +15,8 @@ public abstract class TestBase {
     public void setUp() throws Exception {
         if (setupDone) return;
 
-        RubyInstanceConfig config_19 = new RubyInstanceConfig();
-        config_19.setCompatVersion(CompatVersion.RUBY1_9);
-        ruby = Ruby.newInstance(config_19);
+        RubyInstanceConfig config = new RubyInstanceConfig();
+        ruby = Ruby.newInstance(config);
         RubyBigDecimal.createBigDecimal(ruby); // we need to do 'require "bigdecimal"'
         JrubyTimestampExtLibrary.createTimestamp(ruby);
         setupDone = true;
