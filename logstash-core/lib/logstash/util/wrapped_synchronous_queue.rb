@@ -5,8 +5,47 @@ module LogStash; module Util
     java_import java.util.concurrent.SynchronousQueue
     java_import java.util.concurrent.TimeUnit
 
+    attr_reader :read_file_pool, :write_file_pool
+
     def initialize
       @queue = java.util.concurrent.SynchronousQueue.new
+
+      # This should really be the number of workers, but I just set it here to a high number
+      # out of laziness
+      num_files = 20
+
+      @write_file_pool = java.util.concurrent.ArrayBlockingQueue.new(num_files)
+      @read_file_pool = java.util.concurrent.ArrayBlockingQueue.new(num_files+200)
+
+      num_files.times do |t|
+        @write_file_pool.put(::File.open("/tmp/lsq/#{t}.batch", "a+"))
+      end
+
+      @writer_thread = Thread.new do |t|
+        @current_file = @write_file_pool.take()
+        count = 0
+
+        while true
+          event_or_signal = @queue.poll(50, TimeUnit::MILLISECONDS)
+          next if event_or_signal.nil?
+
+          break if event_or_signal == :shutdown
+
+          if count >= 512 || event_or_signal == :steal
+            next if count < 1 # You can't steal nothin'!
+            @current_file.fsync
+            @read_file_pool.put(@current_file)
+            @current_file = @write_file_pool.take()
+            count = 0
+          end
+
+          if event_or_signal.is_a?(::LogStash::Event)
+            count += 1
+            @current_file.write(event_or_signal.to_json)
+            @current_file.write("\n")
+          end
+        end
+      end
     end
 
     # Push an object to the queue if the queue is full
@@ -47,7 +86,7 @@ module LogStash; module Util
     end
 
     def close
-      # ignore
+      @queue.put :shutdown
     end
 
     class ReadClient
@@ -67,17 +106,11 @@ module LogStash; module Util
         @batch_size = batch_size
         @wait_for = wait_for
 
-        # This should really be the number of workers, but I just set it here to a high number
-        # out of laziness
-        num_files = 20 
-        @file_pool = java.util.concurrent.ArrayBlockingQueue.new(num_files)
-        num_files.times do |t|
-          @file_pool.put(::File.open("/tmp/lsq/#{t}.batch", "ab"))
-        end
+        @read_file_pool = queue.read_file_pool
       end
 
       def close
-        # noop, compat with acked queue read client
+        @read_file_pool.put(:shutdown)
       end
 
       def empty?
@@ -121,8 +154,7 @@ module LogStash; module Util
       # create a new empty batch
       # @return [ReadBatch] a new empty read batch
       def new_batch
-        file = @file_pool.take()
-        ReadBatch.new(@queue, @batch_size, @wait_for, file)
+        ReadBatch.new(@queue, @batch_size, @wait_for)
       end
 
       def read_batch
@@ -153,10 +185,7 @@ module LogStash; module Util
       end
 
       def close_batch(batch)
-        file = batch.file
-        file.truncate(0)
-        @file_pool.put(file)
-
+        batch.close
         @mutex.lock
         begin
           # there seems to be concurrency issues with metrics, keep it in the mutex
@@ -200,11 +229,10 @@ module LogStash; module Util
     class ReadBatch
       attr_reader :file
 
-      def initialize(queue, size, wait, file)
+      def initialize(queue, size, wait)
         @queue = queue
         @size = size
         @wait = wait
-        @file = file
 
         @originals = Hash.new
 
@@ -217,20 +245,27 @@ module LogStash; module Util
         @acked_batch = nil
       end
 
-      NEWLINE = "\n"
       def read_next
-
-        @size.times do |t|
-          event = @queue.poll(@wait)
-          return if event.nil? # queue poll timed out
-
-          @file << event.to_json
-          @file << NEWLINE
-
-          @originals[event] = true
+        @file = @queue.read_file_pool.poll(5, TimeUnit::MILLISECONDS)
+        break if file == :shutdown
+        if file.nil?
+          @queue.push(:steal)
+          return
         end
 
-        @file.fsync
+        return if @file == :shutdown
+        @file.rewind
+        @file.each_line do |line|
+          event = Event.from_json(line).first
+          @originals[event] = true
+        end
+      end
+
+      def close
+        if @file
+          @file.truncate(0)
+          @queue.write_file_pool.put(file);
+        end
       end
 
       def merge(event)
