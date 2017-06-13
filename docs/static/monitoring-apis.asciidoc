@@ -1,5 +1,6 @@
+[float]
 [[monitoring]]
-== Monitoring APIs
+=== Monitoring APIs
 
 Logstash provides the following monitoring APIs to retrieve runtime metrics
 about Logstash:
