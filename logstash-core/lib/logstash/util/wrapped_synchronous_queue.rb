@@ -66,6 +66,14 @@ module LogStash; module Util
         @inflight_clocks = {}
         @batch_size = batch_size
         @wait_for = wait_for
+
+        # This should really be the number of workers, but I just set it here to a high number
+        # out of laziness
+        num_files = 20 
+        @file_pool = java.util.concurrent.ArrayBlockingQueue.new(num_files)
+        num_files.times do |t|
+          @file_pool.put(::File.open("/tmp/lsq/#{t}.batch", "ab"))
+        end
       end
 
       def close
@@ -113,7 +121,8 @@ module LogStash; module Util
       # create a new empty batch
       # @return [ReadBatch] a new empty read batch
       def new_batch
-        ReadBatch.new(@queue, @batch_size, @wait_for)
+        file = @file_pool.take()
+        ReadBatch.new(@queue, @batch_size, @wait_for, file)
       end
 
       def read_batch
@@ -144,6 +153,10 @@ module LogStash; module Util
       end
 
       def close_batch(batch)
+        file = batch.file
+        file.truncate(0)
+        @file_pool.put(file)
+
         @mutex.lock
         begin
           # there seems to be concurrency issues with metrics, keep it in the mutex
@@ -185,10 +198,13 @@ module LogStash; module Util
     end
 
     class ReadBatch
-      def initialize(queue, size, wait)
+      attr_reader :file
+
+      def initialize(queue, size, wait, file)
         @queue = queue
         @size = size
         @wait = wait
+        @file = file
 
         @originals = Hash.new
 
@@ -201,13 +217,20 @@ module LogStash; module Util
         @acked_batch = nil
       end
 
+      NEWLINE = "\n"
       def read_next
+
         @size.times do |t|
           event = @queue.poll(@wait)
           return if event.nil? # queue poll timed out
 
+          @file << event.to_json
+          @file << NEWLINE
+
           @originals[event] = true
         end
+
+        @file.fsync
       end
 
       def merge(event)
