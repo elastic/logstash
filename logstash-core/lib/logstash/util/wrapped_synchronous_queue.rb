@@ -11,7 +11,8 @@ module LogStash; module Util
       @queue = java.util.concurrent.SynchronousQueue.new
 
       # This should really be the number of workers, but I just set it here to a high number
-      # out of laziness
+      # out of laziness. This controls the number of inflight batches, and as a result, the number
+      # of buffered events
       num_files = 20
 
       @write_file_pool = java.util.concurrent.ArrayBlockingQueue.new(num_files)
@@ -26,12 +27,12 @@ module LogStash; module Util
         count = 0
 
         while true
-          event_or_signal = @queue.poll(50, TimeUnit::MILLISECONDS)
+          event_or_signal = @queue.poll(5, TimeUnit::MILLISECONDS)
           next if event_or_signal.nil?
 
           break if event_or_signal == :shutdown
 
-          if count >= 512 || event_or_signal == :steal
+          if count >= 1024 || event_or_signal == :steal
             next if count < 1 # You can't steal nothin'!
             @current_file.fsync
             @read_file_pool.put(@current_file)
