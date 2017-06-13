@@ -1,7 +1,9 @@
 require 'yaml'
 
+VERSION_FILE = "versions.yml"
+
 def get_versions
-  yaml_versions = YAML.safe_load(IO.read("versions.yml"))
+  yaml_versions = YAML.safe_load(IO.read(VERSION_FILE))
   {
     "logstash" => {
       "location" => File.join("logstash-core", "lib", "logstash", "version.rb"),
@@ -19,6 +21,12 @@ def get_versions
       "current_version" => get_version(File.join("logstash-core-plugin-api", "lib", "logstash-core-plugin-api", "version.rb")),
     }
   }
+end
+
+def update_version_file(hash)
+  existing_content = YAML.safe_load(File.read(VERSION_FILE))
+  existing_content.merge!(hash)
+  IO.write(VERSION_FILE, existing_content.to_yaml)
 end
 
 def get_version(file)
@@ -83,7 +91,7 @@ namespace :version do
         hash[component] = args[:version]
       end
     end
-    IO.write("versions.yml", hash.to_yaml)
+    update_version_file(hash)
     Rake::Task["version:sync"].invoke; Rake::Task["version:sync"].reenable
   end
 
@@ -97,7 +105,7 @@ namespace :version do
         hash[component] = metadata["yaml_version"]
       end
     end
-    IO.write("versions.yml", hash.to_yaml)
+    update_version_file(hash)
     Rake::Task["version:sync"].invoke; Rake::Task["version:sync"].reenable
   end
 
