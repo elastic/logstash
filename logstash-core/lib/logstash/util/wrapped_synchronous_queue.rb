@@ -22,28 +22,36 @@ module LogStash; module Util
         @write_file_pool.put(::File.open("/tmp/lsq/#{t}.batch", "a+"))
       end
 
-      @writer_thread = Thread.new do |t|
-        @current_file = @write_file_pool.take()
-        count = 0
+      read_file_pool = @read_file_pool
+      write_file_pool = @write_file_pool
+      queue = @queue
 
-        while true
-          event_or_signal = @queue.poll(5, TimeUnit::MILLISECONDS)
-          next if event_or_signal.nil?
+      2.times do
+        Thread.new do |t|
+          current_file = @write_file_pool.take()
+          count = 0
 
-          break if event_or_signal == :shutdown
+          while true
+            event_or_signal = queue.poll(5, TimeUnit::MILLISECONDS)
+            next if event_or_signal.nil?
 
-          if count >= 1024 || event_or_signal == :steal
-            next if count < 1 # You can't steal nothin'!
-            @current_file.fsync
-            @read_file_pool.put(@current_file)
-            @current_file = @write_file_pool.take()
-            count = 0
-          end
+            break if event_or_signal == :shutdown
 
-          if event_or_signal.is_a?(::LogStash::Event)
-            count += 1
-            @current_file.write(event_or_signal.to_json)
-            @current_file.write("\n")
+            if count >= 1024 || event_or_signal == :steal
+              next if count < 1 # You can't steal nothin'!
+              current_file.fsync
+              count = 0
+              read_file_pool.put(current_file)
+              current_file = write_file_pool.take()
+            end
+
+            if event_or_signal.is_a?(::LogStash::Event)
+              count += 1
+              json = event_or_signal.to_json
+              current_file.write(json)
+              current_file.write("\n")
+              current_file.flush
+            end
           end
         end
       end
@@ -255,6 +263,7 @@ module LogStash; module Util
         end
 
         return if @file == :shutdown
+
         @file.rewind
         @file.each_line do |line|
           event = Event.from_json(line).first
