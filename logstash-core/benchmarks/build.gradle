@@ -5,6 +5,7 @@ def versionMap = (Map) (new Yaml()).load(new File("$projectDir/../../versions.ym
 
 description = """Logstash Core Java Benchmarks"""
 version = versionMap['logstash-core']
+String jrubyVersion = versionMap['jruby']['version']
 
 repositories {
   mavenCentral()
@@ -43,7 +44,7 @@ dependencies {
   compile 'com.google.guava:guava:21.0'
   compile 'commons-io:commons-io:2.5'
   runtime 'joda-time:joda-time:2.8.2'
-  runtime 'org.jruby:jruby-core:9.1.10.0'
+  runtime "org.jruby:jruby-core:$jrubyVersion"
 }
 
 javadoc {

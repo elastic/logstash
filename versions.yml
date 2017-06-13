@@ -2,3 +2,6 @@
 logstash: 6.0.0-alpha3
 logstash-core: 6.0.0-alpha3
 logstash-core-plugin-api: 2.1.16
+jruby:
+  version: 9.1.10.0
+  sha1: ced42e80db30fa0d0ea3bb97c5da860c34d98e3e
