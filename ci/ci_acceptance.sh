@@ -8,6 +8,13 @@ export JRUBY_OPTS="-J-Xmx1g"
 
 SELECTED_TEST_SUITE=$1
 
+# The acceptance test in our CI infrastructure doesn't clear the workspace between run
+# this mean the lock of the Gemfile can be sticky from a previous run, before generating any package
+# we will clear them out to make sure we use the latest version of theses files
+# If we don't do this we will run into gem Conflict error.
+rm *.lock
+rm Gemfile
+
 if [[ $SELECTED_TEST_SUITE == $"redhat" ]]; then
   echo "Generating the RPM, make sure you start with a clean environment before generating other packages."
   rake artifact:rpm
