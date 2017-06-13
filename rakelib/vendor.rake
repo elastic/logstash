@@ -1,7 +1,6 @@
 namespace "vendor" do
-  VERSIONS = {
-    "jruby" => { "version" => "9.1.10.0", "sha1" => "ced42e80db30fa0d0ea3bb97c5da860c34d98e3e" },
-  }
+  require "yaml"
+  VERSIONS = YAML.load(File.read(File.join(File.dirname(__FILE__), "..", "versions.yml")))
 
   def vendor(*args)
     return File.join("vendor", *args)
