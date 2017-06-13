@@ -21,7 +21,7 @@ release-state can be: released | prerelease | unreleased
 :filebeat:              https://www.elastic.co/guide/en/beats/filebeat/5.x/
 :metricbeat:            https://www.elastic.co/guide/en/beats/metricbeat/5.x/          
 :lsissue:               https://github.com/elastic/logstash/issues/
-:security:              X-Pack Security
+:security:              X-Pack security
 :stack:                 https://www.elastic.co/guide/en/elastic-stack/5.x/
 
 [[introduction]]
@@ -129,6 +129,11 @@ include::static/deploying.asciidoc[]
 
 :edit_url: https://github.com/elastic/logstash/edit/5.x/docs/static/performance-checklist.asciidoc
 include::static/performance-checklist.asciidoc[]
+
+// Monitoring overview
+
+:edit_url: https://github.com/elastic/logstash/edit/master/docs/static/monitoring.asciidoc
+include::static/monitoring.asciidoc[]
 
 // Monitoring APIs
 
