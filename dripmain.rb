@@ -17,7 +17,6 @@ require "rspec"
 require "rspec/core/runner"
 
 require "logstash/namespace"
-require "logstash/program"
 require "logstash/agent"
 require "logstash/util"
 require "logstash/errors"
