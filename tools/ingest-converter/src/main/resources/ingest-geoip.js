@@ -33,7 +33,7 @@ var IngestGeoIp = {
 /**
  * Converts Ingest JSON to LS Grok.
  */
-function ingest_to_logstash_geoip(json) {
+function ingest_to_logstash_geoip(json, append_stdio) {
 
     function map_processor(processor) {
 
@@ -42,5 +42,9 @@ function ingest_to_logstash_geoip(json) {
         )
     }
 
-    return IngestConverter.filters_to_file(JSON.parse(json)["processors"].map(map_processor));
+    var filters_pipeline = JSON.parse(json)["processors"].map(map_processor);
+    return IngestConverter.filters_to_file([
+        IngestConverter.append_io_plugins(filters_pipeline, append_stdio)
+        ]
+    );
 }

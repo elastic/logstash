@@ -1,7 +1,7 @@
 /**
  * Converts Ingest JSON to LS Grok.
  */
-function ingest_pipeline_to_logstash(json) {
+function ingest_pipeline_to_logstash(json, append_stdio) {
 
     function handle_on_failure_pipeline(on_failure_json, tag_name) {
 
@@ -74,10 +74,11 @@ function ingest_pipeline_to_logstash(json) {
         return IngestConverter.join_hash_fields(filter_blocks);
     }
 
+    var logstash_pipeline = IngestConverter.filter_hash(
+        IngestConverter.join_hash_fields(JSON.parse(json)["processors"].map(map_processor))
+    );
     return IngestConverter.filters_to_file([
-            IngestConverter.filter_hash(
-                IngestConverter.join_hash_fields(JSON.parse(json)["processors"].map(map_processor))
-            )
+        IngestConverter.append_io_plugins(logstash_pipeline, append_stdio)
         ]
     );
 }
