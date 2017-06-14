@@ -10,6 +10,7 @@ module LogStash module Config module Source
     def initialize(settings)
       @original_settings = settings
       super(settings)
+      @match_warning_done = false
     end
 
     def pipeline_configs
@@ -23,29 +24,41 @@ module LogStash module Config module Source
         # this relies on instance variable @settings and the parent class' pipeline_configs
         # method. The alternative is to refactor most of the Local source methods to accept
         # a settings object instead of relying on @settings.
-        super # create a PipelineConfig object based on @settings
+        local_pipeline_configs # create a PipelineConfig object based on @settings
       end.flatten
     end
 
     def match?
-      uses_config_string = @original_settings.get_setting("config.string").set?
-      uses_path_config = @original_settings.get_setting("path.config").set?
-      uses_modules_cli = @original_settings.get_setting("modules.cli").set?
-      uses_modules_yml = @original_settings.get_setting("modules").set?
-      return true if !uses_config_string && !uses_path_config && !uses_modules_cli && !uses_modules_yml
-      if uses_path_config
-        logger.warn("Ignoring the 'pipelines.yml' file because 'path.config' (-f) is being used.")
-      elsif uses_config_string
-        logger.warn("Ignoring the 'pipelines.yml' file because 'config.string' (-e) is being used.")
-      elsif uses_modules_cli
-        logger.warn("Ignoring the 'pipelines.yml' file because 'modules.cli' (--modules) is being used.")
-      elsif uses_modules_yml
-        logger.warn("Ignoring the 'pipelines.yml' file because modules are defined in the 'logstash.yml' file.")
+      detect_pipelines if !@detect_pipelines_called
+      # see basic settings predicates and getters defined in the base class
+      return !(invalid_pipelines_detected? || modules_cli? || modules? || config_string? || config_path?)
+    end
+
+    def invalid_pipelines_detected?
+      !@detected_marker || @detected_marker.is_a?(Class)
+    end
+
+    def config_conflict?
+      detect_pipelines if !@detect_pipelines_called
+      @conflict_messages.clear
+      # are there any auto-reload conflicts?
+      if !(modules_cli? || modules? || config_string? || config_path?)
+        if @detected_marker.nil?
+          @conflict_messages << I18n.t("logstash.runner.config-pipelines-failed-read", :path => pipelines_yaml_location)
+        elsif @detected_marker == false
+          @conflict_messages << I18n.t("logstash.runner.config-pipelines-empty", :path => pipelines_yaml_location)
+        elsif @detected_marker.is_a?(Class)
+          @conflict_messages << I18n.t("logstash.runner.config-pipelines-invalid", :invalid_class => @detected_marker, :path => pipelines_yaml_location)
+        end
+      else
+        do_warning? && logger.warn("Ignoring the 'pipelines.yml' file because modules or command line options are specified")
       end
-      false
+      @conflict_messages.any?
     end
 
     def retrieve_yaml_pipelines
+      # by now, either the config_conflict? or the match? should have ruled out any config problems
+      # but we don't rely on this, we can still get IO errors or
       result = read_pipelines_from_yaml(pipelines_yaml_location)
       case result
       when Array
@@ -73,6 +86,29 @@ module LogStash module Config module Source
       if duplicate_ids.any?
         raise ConfigurationError.new("Pipelines YAML file contains duplicate pipeline ids: #{duplicate_ids.inspect}. Location: #{pipelines_yaml_location}")
       end
+    end
+
+    def detect_pipelines
+      result = read_pipelines_from_yaml(pipelines_yaml_location) rescue nil
+      if result.is_a?(Array)
+        @detected_marker = true
+      elsif result.nil?
+        @detected_marker = nil
+      elsif !result
+        @detected_marker = false
+      else
+        @detected_marker = result.class
+      end
+      @detect_pipelines_called = true
+    end
+
+    private
+
+    def do_warning?
+      if !(done = true && @match_warning_done)
+        @match_warning_done = true
+      end
+      !done
     end
   end
 end end end

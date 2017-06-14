@@ -297,6 +297,29 @@ class LogStash::Runner < Clamp::StrictCommand
 
     @settings.format_settings.each {|line| logger.debug(line) }
 
+    # Check for absence of any configuration
+    # not bulletproof because we don't know yet if there
+    # are no pipelines from pipelines.yml
+    sources_without_conflict = []
+    unmatched_sources_conflict_messages = []
+    @source_loader.sources do |source|
+      if source.config_conflict?
+        if source.conflict_messages.any?
+          unmatched_sources_conflict_messages << source.conflict_messages.join(", ")
+        end
+      else
+        sources_without_conflict << source
+      end
+    end
+    if unmatched_sources_conflict_messages.any?
+      # i18n should be done at the sources side
+      signal_usage_error(unmatched_sources_conflict_messages.join(" "))
+      return 1
+    elsif sources_without_conflict.empty?
+      signal_usage_error(I18n.t("logstash.runner.missing-configuration"))
+      return 1
+    end
+
     if setting("config.test_and_exit")
       begin
         results = @source_loader.fetch

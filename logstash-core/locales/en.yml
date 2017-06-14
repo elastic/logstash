@@ -124,10 +124,18 @@ en:
       config-module-exclusive: >-
         Settings 'path.config' (-f) or 'config.string' (-e) can't be used in conjunction with
         (--modules) or the "modules:" block in the logstash.yml file.
+      reload-with-modules: >-
+        Configuration reloading can't be used with command-line or logstash.yml specified modules.
       cli-module-override: >-
         Both command-line and logstash.yml modules configurations detected.
         Using command-line module configuration and ignoring logstash.yml module
         configuration.
+      config-pipelines-failed-read: >-
+        Failed to read pipelines yaml file. Location: %{path}
+      config-pipelines-empty: >-
+        Pipelines YAML file is empty. Location: %{path}
+      config-pipelines-invalid: >-
+        Pipelines YAML file must contain an array of pipeline configs. Found "%{invalid_class}" in %{path}
       reload-without-config-path: >-
         Configuration reloading also requires passing a configuration path with '-f yourlogstash.conf'
       reload-with-config-string: >-
