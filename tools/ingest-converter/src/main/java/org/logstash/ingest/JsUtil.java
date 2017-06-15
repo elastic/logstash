@@ -68,7 +68,7 @@ final class JsUtil {
         ).withRequiredArg().ofType(URI.class).required().forHelp();
         final OptionSpec<Void> appendStdio = parser.accepts(
             "append-stdio",
-            "Flag to append stdin and stdout as outputs instead of the ES default."
+            "Flag to append stdin and stdout as outputs instead of the default ES output."
         ).forHelp();
         try {
             final OptionSet options;
