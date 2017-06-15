@@ -72,3 +72,6 @@
 # log GC status to a file with time stamps
 # ensure the directory exists
 #-Xloggc:${LS_GC_LOG_FILE}
+
+# Entropy source for randomness
+-Djava.security.egd=file:/dev/urandom
