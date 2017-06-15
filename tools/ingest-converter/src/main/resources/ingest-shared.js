@@ -167,19 +167,11 @@ var IngestConverter = {
             "}");
     },
 
-    get_newline: function () {
-        return "\n";
-    },
-
     append_io_plugins: function(filters_pipeline, append_stdio) {
         if (append_stdio === true) {
-            return IngestConverter.get_stdin_input() +
-                IngestConverter.get_newline() +
-                filters_pipeline +
-                IngestConverter.get_newline() +
-                IngestConverter.get_stdout_output();
+            return [IngestConverter.get_stdin_input(), filters_pipeline, IngestConverter.get_stdout_output()].join("\n");
         } else {
-            return filters_pipeline + IngestConverter.get_newline() + IngestConverter.get_elasticsearch_output();
+            return [filters_pipeline, IngestConverter.get_elasticsearch_output()].join("\n");
         }
     }
 };
