@@ -14,7 +14,10 @@ describe LogStash::Timestamp do
 
       now = DateTime.now.to_time.utc
       t = LogStash::Timestamp.new(now)
-      expect(t.time).to eq(now)
+      # Via JRuby 9k time see logstash/issues/7463
+      # expected: 2017-06-15 10:34:08.389999999 +0000
+      #      got: 2017-06-15 10:34:08.389000000 +0000
+      expect(t.time.to_f).to be_within(0.000999999).of(now.to_f)
 
       t = LogStash::Timestamp.at(now.to_i)
       expect(t.time.to_i).to eq(now.to_i)
