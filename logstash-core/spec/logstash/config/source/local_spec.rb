@@ -288,13 +288,15 @@ describe LogStash::Config::Source::Local do
     let(:settings) do
       mock_settings(
         "config.string" => "#{filter_block} #{output_block}",
-        "path.config" => config_file
+        "path.config" => config_file,
+        "modules.cli" => [],
+        "modules" => []
       )
     end
 
     # this should be impossible as the bootstrap checks should catch this
     it "raises an exception" do
-      expect { subject.pipeline_configs }.to raise_error
+      expect { subject.pipeline_configs }.to raise_error(LogStash::ConfigurationError)
     end
   end
 

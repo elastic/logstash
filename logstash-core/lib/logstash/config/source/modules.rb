@@ -11,6 +11,10 @@ module LogStash module Config module Source
   class Modules < Base
     include LogStash::Util::Loggable
     def pipeline_configs
+      if config_conflict? # double check
+        raise ConfigurationError, @conflict_messages.join(", ")
+      end
+
       pipelines = LogStash::Config::ModulesCommon.pipeline_configs(@settings)
       pipelines.map do |hash|
         PipelineConfig.new(self, hash["pipeline_id"].to_sym,
@@ -20,8 +24,34 @@ module LogStash module Config module Source
     end
 
     def match?
-      # will fill this later
-      true
+      # see basic settings predicates and getters defined in the base class
+      (modules_cli? || modules?) && !(config_string? || config_path?) && !automatic_reload_with_modules?
+    end
+
+    def config_conflict?
+      @conflict_messages.clear
+      # Make note that if modules are configured in both cli and logstash.yml that cli module
+      # settings will be used, and logstash.yml modules settings ignored
+      if modules_cli? && modules?
+        logger.info(I18n.t("logstash.runner.cli-module-override"))
+      end
+
+      if automatic_reload_with_modules?
+        @conflict_messages << I18n.t("logstash.runner.reload-with-modules")
+      end
+
+      # Check if config (-f or -e) and modules are configured
+      if (modules_cli? || modules?) && (config_string? || config_path?)
+        @conflict_messages << I18n.t("logstash.runner.config-module-exclusive")
+      end
+
+      @conflict_messages.any?
+    end
+
+    private
+
+    def automatic_reload_with_modules?
+      (modules_cli? || modules?) && config_reload_automatic?
     end
   end
 end end end
