@@ -46,6 +46,10 @@ describe LogStash::Compiler do
 
       subject(:pipeline) { described_class.compile_sources(*sources_with_metadata) }
 
+      it "should generate a hash" do
+        expect(pipeline.unique_hash).to be_a(String)
+      end
+
       it "should compile cleanly" do
         expect(pipeline).to be_a(org.logstash.config.ir.PipelineIR)
       end
