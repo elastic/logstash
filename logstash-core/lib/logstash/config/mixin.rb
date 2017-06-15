@@ -6,6 +6,7 @@ require "logstash/util/password"
 require "logstash/util/safe_uri"
 require "logstash/version"
 require "logstash/environment"
+require "logstash/util/environment_variables"
 require "logstash/util/plugin_version"
 require "filesize"
 
