@@ -315,6 +315,7 @@ describe LogStash::Runner do
       context "with a good configuration" do
         let(:module_string) { "cef" }
         it "should exit successfully" do
+          skip("Skipped until cef module is added back to the codebase as explained in #7455")
           expect(logger).not_to receive(:fatal)
           expect(subject.run(args)).to eq(0)
         end
@@ -348,6 +349,7 @@ describe LogStash::Runner do
           end
         end
         it "should log fatally and return a bad exit code" do
+          skip("Skipped until cef module is added back to the codebase as explained in #7455")
           expect(subject.run("bin/logstash", args)).to eq(1)
         end
       end
@@ -378,6 +380,7 @@ describe LogStash::Runner do
           expect(logger).not_to receive(:error)
         end
         it "should not terminate logstash" do
+          skip("Skipped until cef module is added back to the codebase as explained in #7455")
           expect(subject.run("bin/logstash", args)).to be_nil
         end
       end
