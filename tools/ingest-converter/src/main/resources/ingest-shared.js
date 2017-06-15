@@ -142,5 +142,36 @@ var IngestConverter = {
         return "if " + this.quote_string(tag) + " in [tags] {\n" +
                 on_failure_pipeline + "\n" +
                 "}";
+    },
+
+    get_elasticsearch_output: function () {
+        return this.fix_indent("output {\n" +
+            "elasticsearch {\n" +
+            "hosts => \"localhost\"\n" +
+            "}\n" +
+            "}");
+    },
+
+    get_stdin_input: function () {
+        return this.fix_indent("input {\n" +
+            "stdin {\n" +
+            "}\n" +
+            "}");
+    },
+
+    get_stdout_output: function () {
+        return this.fix_indent("output {\n" +
+            "stdout {\n" +
+            "codec => \"rubydebug\"\n" +
+            "}\n" +
+            "}");
+    },
+
+    append_io_plugins: function(filters_pipeline, append_stdio) {
+        if (append_stdio === true) {
+            return [IngestConverter.get_stdin_input(), filters_pipeline, IngestConverter.get_stdout_output()].join("\n");
+        } else {
+            return [filters_pipeline, IngestConverter.get_elasticsearch_output()].join("\n");
+        }
     }
 };
