@@ -1,3 +1,7 @@
+++++
+<titleabbrev>{plugin}</titleabbrev>
+++++
+
 * Plugin version: {version}
 * Released on: {release_date}
 * {changelog_url}[Changelog]
