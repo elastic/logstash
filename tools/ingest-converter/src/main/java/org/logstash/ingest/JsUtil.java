@@ -66,6 +66,10 @@ final class JsUtil {
             "output",
             "Output Logstash DSL file location URI. Only supports 'file://' as URI schema."
         ).withRequiredArg().ofType(URI.class).required().forHelp();
+        final OptionSpec<Void> appendStdio = parser.accepts(
+            "append-stdio",
+            "Flag to append stdin and stdout as outputs instead of the default ES output."
+        ).forHelp();
         try {
             final OptionSet options;
             try {
@@ -78,7 +82,7 @@ final class JsUtil {
             Files.write(
                 Paths.get(options.valueOf(output)),
                 ((String) ((Invocable) engine).invokeFunction(
-                    jsFunc, input(options.valueOf(input))
+                    jsFunc, input(options.valueOf(input)), options.has(appendStdio)
                 )).getBytes(StandardCharsets.UTF_8)
             );
         } catch (final IOException ex) {

@@ -41,7 +41,7 @@ var IngestDate = {
 /**
  * Converts Ingest Date JSON to LS Date filter.
  */
-function ingest_to_logstash_date(json) {
+function ingest_to_logstash_date(json, append_stdio) {
 
     function map_processor(processor) {
 
@@ -52,5 +52,9 @@ function ingest_to_logstash_date(json) {
         );
     }
 
-    return IngestConverter.filters_to_file(JSON.parse(json)["processors"].map(map_processor));
+    var filters_pipeline = JSON.parse(json)["processors"].map(map_processor);
+    return IngestConverter.filters_to_file([
+        IngestConverter.append_io_plugins(filters_pipeline, append_stdio)
+        ]
+    );
 }
