@@ -2,6 +2,21 @@
 # If you modify this file manually all comments and formatting will be lost.
 
 source "https://rubygems.org"
+
+# Autoload extension gems in ../logstash-extra/GEMNAME for 
+# convenience during development. Do not enable in production
+# as this may allow loading of code from unexpected extra directories
+if ENV["AUTOLOAD_LOGSTASH_EXTRA"] == "true" && Dir.exist?("../logstash-extra")
+  Dir.open("../logstash-extra").each do |entry|
+    next if entry.start_with?('.')
+    path = "../logstash-extra/#{entry}"
+    next unless File.directory?(path)
+    name = entry =~ /^(.+)-logstash$/ ? $1 : entry 
+    puts "Loading development gem: '#{name}' from '#{path}'"
+    gem name, :path => path
+  end
+end
+
 gem "logstash-core", :path => "./logstash-core"
 gem "logstash-core-plugin-api", :path => "./logstash-core-plugin-api"
 gem "paquet", "~> 0.2.0"
