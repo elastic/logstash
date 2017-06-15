@@ -112,4 +112,15 @@ public class DLQEntry implements Cloneable, Serializable, Queueable {
     public Timestamp getEntryTime() {
         return entryTime;
     }
+
+    @Override
+    public String toString() {
+        return "DLQEntry{" +
+                "event=" + event +
+                ", pluginType='" + pluginType + '\'' +
+                ", pluginId='" + pluginId + '\'' +
+                ", reason='" + reason + '\'' +
+                ", entryTime=" + entryTime +
+                '}';
+    }
 }
