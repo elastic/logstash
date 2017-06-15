@@ -43,6 +43,7 @@ public class RecordIOReader {
     private int currentBlockSizeReadFromChannel;
     private final Path path;
     private long channelPosition;
+    private static final int UNSET = -1;
 
     public RecordIOReader(Path path) throws IOException {
         this.path = path;
@@ -74,7 +75,7 @@ public class RecordIOReader {
     }
 
     public <T> byte[] seekToNextEventPosition(T target, Function<byte[], T> keyExtractor, Comparator<T> keyComparator) throws IOException {
-        int matchingBlock;
+        int matchingBlock = UNSET;
         int lowBlock = 0;
         int highBlock = (int) (channel.size() - VERSION_SIZE) / BLOCK_SIZE;
 
@@ -96,7 +97,9 @@ public class RecordIOReader {
                 break;
             }
         }
-        matchingBlock = lowBlock;
+        if (matchingBlock == UNSET) {
+            matchingBlock = lowBlock;
+        }
 
         // now sequential scan to event
         seekToBlock(matchingBlock);
