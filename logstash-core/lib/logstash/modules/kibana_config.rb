@@ -10,7 +10,8 @@ module LogStash module Modules class KibanaConfig
   include LogStash::Util::Loggable
 
   ALLOWED_DIRECTORIES = ["search", "visualization"]
-
+  METRICS_MAX_BUCKETS = (24 * 60 * 60).freeze # 24 hours of events/sec buckets.
+  KIBANA_CONFIG_CONTENT_ID = "5.5.0".freeze
   attr_reader :index_name
 
   # We name it `modul` here because `module` has meaning in Ruby.
@@ -18,7 +19,7 @@ module LogStash module Modules class KibanaConfig
     @directory = ::File.join(modul.directory, "kibana")
     @name = modul.module_name
     @settings = settings
-    @index_name = settings.fetch("dashboards.kibana_index", ".kibana")
+    @index_name = @settings.fetch("dashboards.kibana_index", ".kibana")
   end
 
   def dashboards
@@ -29,18 +30,19 @@ module LogStash module Modules class KibanaConfig
     end
   end
 
-  def index_pattern
+  def kibana_config_patches
     pattern_name = "#{@name}-*"
-    default_index_json = '{"defaultIndex": "#{pattern_name}"}'
-    default_index_content_id = @settings.fetch("index_pattern.kibana_version", "5.4.0") # make this 5.5.0
+    metrics_max_buckets = @settings.fetch("dashboards.metrics_max_buckets", METRICS_MAX_BUCKETS).to_s
+    kibana_config_json = '{"defaultIndex": "' + pattern_name + '}", "metrics:max_buckets": "' + metrics_max_buckets + '"}'
+    kibana_config_content_id = @settings.fetch("index_pattern.kibana_version", KIBANA_CONFIG_CONTENT_ID)
     [
       KibanaResource.new(@index_name, "index-pattern", dynamic("index-pattern"),nil, pattern_name),
-      KibanaResource.new(@index_name, "config", nil, default_index_json, default_index_content_id)
+      KibanaResource.new(@index_name, "config", nil, kibana_config_json, kibana_config_content_id)
     ]
   end
 
   def resources
-    list = index_pattern
+    list = kibana_config_patches
     dashboards.each do |board|
       extract_panels_into(board, list)
     end

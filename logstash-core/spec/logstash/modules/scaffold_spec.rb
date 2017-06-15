@@ -1,6 +1,7 @@
 # encoding: utf-8
 #
 require "logstash/namespace"
+require "logstash/modules/kibana_config"
 require "logstash/modules/scaffold"
 require "logstash/modules/importer"
 require "logstash/elasticsearch_client"
@@ -113,8 +114,8 @@ ERB
       expect(files[0].content_path).to eq("gem-home/kibana/index-pattern/foo.json")
       expect(files[0].import_path).to eq(".kibana/index-pattern/foo-*")
 
-      expect(files[1].content).to eq("{\"defaultIndex\": \"\#{pattern_name}\"}")
-      expect(files[1].import_path).to eq(".kibana/config/5.4.0")
+      expect(files[1].content).to eq("{\"defaultIndex\": \"foo-*}\", \"metrics:max_buckets\": \"#{LogStash::Modules::KibanaConfig::METRICS_MAX_BUCKETS}\"}")
+      expect(files[1].import_path).to eq(".kibana/config/#{LogStash::Modules::KibanaConfig::KIBANA_CONFIG_CONTENT_ID}")
 
       expect(files[2].content_path).to eq("gem-home/kibana/dashboard/Foo-Dashboard.json")
       expect(files[2].import_path).to eq(".kibana/dashboard/Foo-Dashboard")
@@ -145,7 +146,7 @@ ERB
       [
         "_template/cef",
         ".kibana/index-pattern/cef-*",
-        ".kibana/config/5.4.0",
+        ".kibana/config/#{LogStash::Modules::KibanaConfig::KIBANA_CONFIG_CONTENT_ID}",
         ".kibana/dashboard/FW-Dashboard",
         ".kibana/visualization/FW-Metrics",
         ".kibana/visualization/FW-Last-Update",
