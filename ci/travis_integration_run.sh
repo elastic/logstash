@@ -8,5 +8,5 @@ cd qa/integration
 # due to some sideeffects of the seccomp policy interfering with
 # the docker daemon
 # See prepare_offline_pack_spec.rb for details
-rspec --tag ~offline
-rspec --tag offline
+bin/rspec --tag ~offline
+bin/rspec --tag offline
