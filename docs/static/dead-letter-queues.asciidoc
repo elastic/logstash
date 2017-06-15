@@ -1,15 +1,11 @@
 [[dead-letter-queues]]
 === Dead Letter Queues
 
-//REVIEWERS: I had to install logstash-input-dead_letter_queue. Is it not bundled with the alpha2 release?
-
-NOTE: The dead letter queue feature is currently supported for the Elasticsearch
-output only. Support for additional outputs will be available in future releases
-of the Logstash plugins. 
-
-//REVIEWERS: I feel like we have to say something here ^^ but I'm not sure if this is enough info. How will users be able to tell if a specific output supports DLQs? Do we have a plan for when/how we will add DLQ support to plugins that we support?
-
-//REVIEWERS: It sounds like there might be some performance implications wrt enabling DLQs. If so, what are they? Should we document the restrictions?
+NOTE: The dead letter queue feature is currently supported for the
+<<plugins-outputs-elasticsearch>> output only. Support for additional outputs
+will be available in future releases of the Logstash plugins. Before configuring
+Logstash to use this feature, refer to the output plugin documentation to
+verify that the plugin supports the dead letter queue feature.
 
 By default, when Logstash encounters an event that it cannot process because the
 data contains a mapping error or some other issue, the Logstash pipeline 
@@ -20,7 +16,7 @@ to a dead letter queue instead of dropping them.
 Each event written to the dead letter queue includes the original event along
 with metadata indicating when the event entered the queue. For example:
 
-//TODO: Need a better example here. Just filling in the example until I can test this. It's not clear to me if @timestamp here is the timestamp of the event or the timestamp when the dead event was written to the queue (can't test right now to see this because the plugin isn't working).
+//TODO: Need a better example here. 
 
 [source,json]
 -------------------------------------------------------------------------------
@@ -80,8 +76,6 @@ NOTE: Dead letter queues retain all the events that are written to them.
 Currently, you cannot configure the size of the queue or the size of the files
 that are used to store the queue. 
 
-//REVIEWIERS: I feel that we have to say something about this ^^ because users will wonder, but I'm not sure what we should say wrt future plans to make this configurable.
-
 [[processing-dlq-events]]
 ==== Processing Events in the Dead Letter Queue
 
@@ -113,9 +107,13 @@ output {
 }
 --------------------------------------------------------------------------------
 
-<1> The path to the directory containing the dead letter queue. This is either
-the default, `path.data/dead_letter_queue`, or the value specified for
-`path.dead_letter_queue` in the `logstash.yml` file. 
+<1> The path to the top-level directory containing the dead letter queue. This
+directory contains a separate folder for each pipeline that writes to the dead
+letter queue. To find the path to this directory, look at the `logstash.yml`
+<<logstash-settings-file,settings file>>. By default, Logstash creates the
+`dead_letter_queue` directory under the location used for persistent
+storage (`path.data`), for example, `LOGSTASH_HOME/data/dead_letter_queue`.
+However, if `path.dead_letter_queue` is set, it uses that location instead.
 <2> When `true`, saves the offset. When the pipeline restarts, it will continue
 reading from the position where it left off rather than reprocessing all the
 items in the queue. You can set `commit_offsets` to `false` when you are
@@ -147,9 +145,5 @@ input {
 --------------------------------------------------------------------------------
 
 For this example, the pipeline starts reading all events that were delivered to
-the dead letter queue on or after June 6, 2017, at 23:40:37.
-
-//REVIEWERS: It's not clear to me what happens when the user configures start_timestamp and commit_offsets is true. If an offset's been committed, will the pipeline start reading at the offset, or go by the timestamp specified in start_timestamp.
-
-
+the dead letter queue on or after June 6, 2017, at 23:40:37. 
 
