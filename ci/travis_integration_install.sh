@@ -3,11 +3,6 @@ set -e
 
 # This file sets up the environment for travis integration tests
 
-
-if [[ "$INTEGRATION" != "true" ]]; then
-    exit
-fi
-
 echo "Setting up integration tests"
 if [[ ! -d "build" ]]; then
     mkdir build
