@@ -24,7 +24,7 @@ public class DepthFirst {
     }
 
     public static Stream<Vertex> reverseDepthFirst(Vertex v) {
-        return depthFirst(Collections.singleton(v));
+        return reverseDepthFirst(Collections.singleton(v));
     }
 
     public static Stream<Vertex> depthFirst(Collection<Vertex> v) {
