@@ -143,13 +143,35 @@ module LogStash module Config module Source
     OUTPUT_BLOCK_RE = /output *{/
 
     def pipeline_configs
+      if config_conflict?
+        raise ConfigurationError, @conflict_messages.join(", ")
+      end
+      local_pipeline_configs
+    end
 
-      if config_path? && config_string?
-        raise ConfigurationError.new("Settings 'config.string' and 'path.config' can't be used simultaneously.")
-      elsif !config_path? && !config_string?
-        raise ConfigurationError.new("Either 'config.string' or 'path.config' must be set.")
+    def match?
+      # see basic settings predicates and getters defined in the base class
+      (config_string? || config_path?) && !(modules_cli? || modules?) && !automatic_reload_with_config_string?
+    end
+
+    def config_conflict?
+      @conflict_messages.clear
+
+      # Check if configuration auto-reload is used that -f is specified
+      if automatic_reload_with_config_string?
+        @conflict_messages << I18n.t("logstash.runner.reload-with-config-string")
+      end
+      # Check if both -f and -e are present
+      if config_string? && config_path?
+        @conflict_messages << I18n.t("logstash.runner.config-string-path-exclusive")
       end
 
+      @conflict_messages.any?
+    end
+
+    private
+
+    def local_pipeline_configs
       config_parts = if config_string?
         ConfigStringLoader.read(config_string)
       elsif local_config?
@@ -167,11 +189,10 @@ module LogStash module Config module Source
       [PipelineConfig.new(self.class, @settings.get("pipeline.id").to_sym, config_parts, @settings)]
     end
 
-    def match?
-      config_string? || config_path?
+    def automatic_reload_with_config_string?
+      config_reload_automatic? && !config_path? && config_string?
     end
 
-    private
     # Make sure we have an input and at least 1 output
     # if its not the case we will add stdin and stdout
     # this is for backward compatibility reason
@@ -184,22 +205,6 @@ module LogStash module Config module Source
       if !config_parts.any? { |part| OUTPUT_BLOCK_RE.match(part.text) }
         config_parts << org.logstash.common.SourceWithMetadata.new(self.class.name, "default output", 0, 0, LogStash::Config::Defaults.output)
       end
-    end
-
-    def config_string
-      @settings.get("config.string")
-    end
-
-    def config_string?
-      !config_string.nil?
-    end
-
-    def config_path
-      @settings.get("path.config")
-    end
-
-    def config_path?
-      !config_path.nil? && !config_path.empty?
     end
 
     def local_config?
