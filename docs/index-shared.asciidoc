@@ -1,28 +1,3 @@
-[[logstash-reference]]
-= Logstash Reference
-
-:branch:                master
-:major-version:         6.x
-:logstash_version:      6.0.0-alpha3
-:elasticsearch_version: 6.0.0-alpha3
-:docker-image:          docker.elastic.co/logstash/logstash:{logstash_version}
-
-//////////
-release-state can be: released | prerelease | unreleased
-//////////
-:release-state:  prerelease
-
-:jdk:                   1.8.0
-:guide:                 https://www.elastic.co/guide/en/elasticsearch/guide/current/
-:ref:                   https://www.elastic.co/guide/en/elasticsearch/reference/current/
-:xpack:                 https://www.elastic.co/guide/en/x-pack/current
-:logstash:              https://www.elastic.co/guide/en/logstash/current/
-:libbeat:               https://www.elastic.co/guide/en/beats/libbeat/current/
-:filebeat:              https://www.elastic.co/guide/en/beats/filebeat/current/
-:metricbeat:            https://www.elastic.co/guide/en/beats/metricbeat/current/
-:lsissue:               https://github.com/elastic/logstash/issues/
-:security:              X-Pack security
-:stack:                 https://www.elastic.co/guide/en/elastic-stack/current/
 
 [[introduction]]
 == Logstash Introduction
@@ -133,11 +108,6 @@ include::static/deploying.asciidoc[]
 
 :edit_url: https://github.com/elastic/logstash/edit/master/docs/static/performance-checklist.asciidoc
 include::static/performance-checklist.asciidoc[]
-
-// Monitoring overview
-
-:edit_url: https://github.com/elastic/logstash/edit/master/docs/static/monitoring.asciidoc
-include::static/monitoring.asciidoc[]
 
 // Monitoring APIs
 
