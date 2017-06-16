@@ -50,7 +50,7 @@ public class PipelineIRTest {
 
     @Test
     public void hashingWithOriginalSource() throws InvalidIRException {
-        String source = "mysource";
+        String source = "input { stdin {} } output { stdout {} }";
         PipelineIR pipelineIR = new PipelineIR(makeInputSection(), makeFilterSection(), makeOutputSection(), source);
         assertEquals(pipelineIR.uniqueHash(), Util.digest(source));
     }

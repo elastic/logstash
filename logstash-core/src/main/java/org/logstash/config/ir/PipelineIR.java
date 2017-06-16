@@ -51,7 +51,7 @@ public class PipelineIR implements Hashable {
 
         this.graph.validate();
 
-        if (this.getOriginalSource() != null && this.getOriginalSource().matches("^\\S+$")) {
+        if (this.getOriginalSource() != null && !this.getOriginalSource().matches("^\\s+$")) {
             uniqueHash = Util.digest(this.getOriginalSource());
         } else {
             uniqueHash = this.graph.uniqueHash();
