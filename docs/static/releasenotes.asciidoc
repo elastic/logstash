@@ -13,17 +13,15 @@ This section summarizes the changes in the following releases:
 * We now handle connection refused errors when installing a plugin ({lsissue}6529[Issue 6529]).
 * Fixed an issue where environment variables specified in Elasticsearch Output host configuration 
   wasn't resolved correctly ({lsissue}6696[Issue 6696]).
-* Fixed a concurrency issue in persistent queue based on a test run where there are multiple consumers 
-  and one producer ({lsissue}7382[Issue 7382]).
+* Fixed a concurrency issue in the persistent queues feature ({lsissue}7382[Issue 7382]).
 
 [float]
 ==== Input Plugins
 
 *`HTTP Poller`*:
 
-* Added credentials option which are configurable per-URL at the top level of configuration.
-* Added top level user/password options that apply to all URLs by default.
-* Added support for eager auth which means the client will send any credentials in its first request 
+* Added a top level user/password config option that apply to all URLs by default.
+* Added support for eager authorization. The Logstash client will now send credentials in its first request 
   rather than waiting for a 401 challenge.
   
 [float]
@@ -44,7 +42,7 @@ This section summarizes the changes in the following releases:
 
 *`User Agent`*:
 
-* Parser performance increased by a factor of about 2.5 by moving core parser logic from Ruby to Java.
+* Improved performance by 2.5x by moving core parser logic from Ruby to Java.
 
 *`Grok`*:
 
