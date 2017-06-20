@@ -3,6 +3,7 @@
 :major-version:         6.x
 :logstash_version:      6.0.0-alpha3
 :elasticsearch_version: 6.0.0-alpha3
+:kibana_version:        6.0.0-alpha3
 :docker-image:          docker.elastic.co/logstash/logstash:{logstash_version}
 
 //////////
