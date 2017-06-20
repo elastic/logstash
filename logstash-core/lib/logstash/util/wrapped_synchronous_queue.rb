@@ -19,7 +19,7 @@ module LogStash; module Util
       @read_file_pool = java.util.concurrent.ArrayBlockingQueue.new(num_files+200)
 
       num_files.times do |t|
-        @write_file_pool.put(::File.open("/tmp/lsq/#{t}.batch", "a+"))
+        @write_file_pool.put(::File.open("./lsq/#{t}.batch", "a+"))
       end
 
       read_file_pool = @read_file_pool
@@ -30,19 +30,35 @@ module LogStash; module Util
         Thread.new do |t|
           current_file = @write_file_pool.take()
           count = 0
+          steals_received = 0
+          batches_sent = 0
+          events_sent = 0
 
           while true
             event_or_signal = queue.poll(5, TimeUnit::MILLISECONDS)
             next if event_or_signal.nil?
 
-            break if event_or_signal == :shutdown
+            if event_or_signal == :shutdown
+              STDERR.write("BATCH AVG: #{events_sent/batches_sent} in #{batches_sent} batches")
+              break
+            end
 
-            if count >= 1024 || event_or_signal == :steal
+            if event_or_signal == :steal
+              steals_received += 1
+            end
+
+            # Steals received really needs to be autotuned based on the poll time * number of workers
+            # This is fine for benchmarking it with 1-4 workers. It only really might make the wallclock
+            # slow by a little bit. At higher worker counts it will cause the batch size to slip below 1024
+            # which will give bad benchmark results
+            if count >= 1024 || (steals_received > 20  && count > 1)
               next if count < 1 # You can't steal nothin'!
               current_file.fsync
               count = 0
               read_file_pool.put(current_file)
               current_file = write_file_pool.take()
+              batches_sent += 1
+              steals_received = 0
             end
 
             if event_or_signal.is_a?(::LogStash::Event)
@@ -51,6 +67,7 @@ module LogStash; module Util
               current_file.write(json)
               current_file.write("\n")
               current_file.flush
+              events_sent += 1
             end
           end
         end
