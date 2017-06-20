@@ -25,7 +25,7 @@ bin/logstash \
 ```
 
 ## Current Gem structure
-
+```
 GEM File structure
 logstash-module-netflow
 ├── configuration
@@ -50,9 +50,9 @@ logstash-module-netflow
 ├── lib
 │   └── logstash_registry.rb
 └── logstash-module-netflow.gemspec
-
+```
 ## Proposed multi-version Gem structure
-
+```
 GEM File structure
 logstash-module-netflow
 ├── configuration
@@ -93,3 +93,4 @@ logstash-module-netflow
 ├── lib
 │   └── logstash_registry.rb
 └── logstash-module-netflow.gemspec
+```
