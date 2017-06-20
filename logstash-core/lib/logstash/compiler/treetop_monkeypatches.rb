@@ -10,6 +10,7 @@ class Treetop::Runtime::SyntaxNode
     @ast_metadata ||= {}
     @ast_metadata[key] = value
   end
+
   def compile
     return "" if elements.nil?
     return elements.collect(&:compile).reject(&:empty?).join("")

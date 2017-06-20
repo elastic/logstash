@@ -138,6 +138,10 @@ The `logstash.yml` file includes the following settings:
   in plaintext passwords appearing in your logs!
 | `false`
 
+| `config.support_escapes`
+| When set to `true`, quoted strings will process the following escape sequences: `\n` becomes a literal newline (ASCII 10). `\r` becomes a literal carriage return (ASCII 13). `\t` becomes a literal tab (ASCII 9). `\\` becomes a literal backslash `\`. `\"` becomes a literal double quotation mark. `\'` becomes a literal quotation mark.
+| `false`
+
 | `modules`
 | When configured, `modules` must be in the nested YAML structure described above this table.
 | None

@@ -5,6 +5,7 @@ require "treetop"
 require "logstash/compiler/treetop_monkeypatches"
 
 module LogStash; module Config; module AST
+  PROCESS_ESCAPE_SEQUENCES = :process_escape_sequences
 
   def self.deferred_conditionals=(val)
     @deferred_conditionals = val
@@ -37,6 +38,11 @@ module LogStash; module Config; module AST
   end
 
   class Config < Node
+    def process_escape_sequences=(val)
+      set_meta(PROCESS_ESCAPE_SEQUENCES, val)
+    end
+
+
     def compile
       LogStash::Config::AST.deferred_conditionals = []
       LogStash::Config::AST.deferred_conditionals_index = 0
@@ -279,7 +285,11 @@ module LogStash; module Config; module AST
   end
   class String < Value
     def compile
-      return Unicode.wrap(text_value[1...-1])
+      if get_meta(PROCESS_ESCAPE_SEQUENCES)
+        Unicode.wrap(LogStash::Config::StringEscape.process_escapes(text_value[1...-1]))
+      else
+        Unicode.wrap(text_value[1...-1])
+      end
     end
   end
   class RegExp < Value
