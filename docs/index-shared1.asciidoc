@@ -3,7 +3,6 @@
 :major-version:         6.x
 :logstash_version:      6.0.0-alpha3
 :elasticsearch_version: 6.0.0-alpha3
-:kibana_version:        6.0.0-alpha3
 :docker-image:          docker.elastic.co/logstash/logstash:{logstash_version}
 
 //////////
@@ -21,7 +20,7 @@ release-state can be: released | prerelease | unreleased
 :filebeat:              https://www.elastic.co/guide/en/beats/filebeat/current/
 :metricbeat:            https://www.elastic.co/guide/en/beats/metricbeat/current/
 :lsissue:               https://github.com/elastic/logstash/issues/
-:security:              X-Pack Security
+:security:              X-Pack security
 :stack:                 https://www.elastic.co/guide/en/elastic-stack/current/
 
 :xpack:                 X-Pack
