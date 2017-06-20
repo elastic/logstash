@@ -3,8 +3,51 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-5-4-2,Logstash 5.4.2>>
 * <<logstash-5-4-1,Logstash 5.4.1>>
 * <<logstash-5-4-0,Logstash 5.4.0>>
+
+[[logstash-5-4-2]]
+=== Logstash 5.4.2 Release Notes
+
+* We now handle connection refused errors when installing a plugin ({lsissue}6529[Issue 6529]).
+* Fixed an issue where environment variables specified in the Elasticsearch Output host configuration 
+  weren't resolved correctly ({lsissue}6696[Issue 6696]).
+* Fixed a concurrency issue in the persistent queues feature ({lsissue}7382[Issue 7382]).
+
+[float]
+==== Input Plugins
+
+*`HTTP Poller`*:
+
+* Added a top-level user/password config option that apply to all URLs by default.
+* Added support for eager authorization. The Logstash client will now send credentials in its first request 
+  rather than waiting for a 401 challenge.
+  
+[float]
+==== Output Plugins
+
+*`Elasticsearch`*:
+
+* Fixed an error where a 429 response code would cause this output to crash.
+* This output now waits for all inflight requests to complete before stopping.
+
+[float]
+==== Filter Plugins
+
+*`GeoIP`*: 
+
+* Added support for commercial databases from Maxmind.
+* Added ASN data support via the GeoIP2-ISP database.
+
+*`User Agent`*:
+
+* Improved performance by 2.5x by moving core parser logic from Ruby to Java.
+
+*`Grok`*:
+
+* Fixed an issue where having subdirectories in a pattern folder caused Logstash to crash.
+
 
 [[logstash-5-4-1]]
 === Logstash 5.4.1 Release Notes
