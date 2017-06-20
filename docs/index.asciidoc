@@ -1,6 +1,8 @@
 [[logstash-reference]]
 = Logstash Reference
 
+:plugins-repo-dir:      {docdir}/../../logstash-docs/docs
+
 :branch:                master
 :major-version:         6.x
 :logstash_version:      6.0.0-alpha3

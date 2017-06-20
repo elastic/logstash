@@ -58,10 +58,10 @@ include::static/plugin-manager.asciidoc[]
 
 // These files do their own pass blocks
 
-include::plugins/inputs.asciidoc[]
-include::plugins/outputs.asciidoc[]
-include::plugins/filters.asciidoc[]
-include::plugins/codecs.asciidoc[]
+include::{plugins-repo-dir}/plugins/inputs.asciidoc[]
+include::{plugins-repo-dir}/plugins/outputs.asciidoc[]
+include::{plugins-repo-dir}/plugins/filters.asciidoc[]
+include::{plugins-repo-dir}/plugins/codecs.asciidoc[]
 
 :edit_url:
 
