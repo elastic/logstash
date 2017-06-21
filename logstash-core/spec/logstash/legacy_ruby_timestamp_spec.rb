@@ -4,7 +4,12 @@ require "logstash/timestamp"
 require "bigdecimal"
 
 describe LogStash::Timestamp do
-
+  # Via JRuby 9k time see logstash/issues/7463
+  # JRuby 9k now uses Java 8 Time with nanosecond precision but
+  # our Timestamp use Joda with millisecond precision
+  #        expected: 10
+  #             got: 9.999000001
+  # we may need to use `be_within(0.000999999).of()` in other places too
   it "should parse its own iso8601 output" do
     t = Time.now
     ts = LogStash::Timestamp.new(t)
@@ -44,7 +49,7 @@ describe LogStash::Timestamp do
   end
 
   it "should support timestamp comparison" do
-   current = LogStash::Timestamp.new(Time.now) 
+   current = LogStash::Timestamp.new(Time.now)
    future = LogStash::Timestamp.new(Time.now + 100)
 
    expect(future > current).to eq(true)
@@ -59,7 +64,7 @@ describe LogStash::Timestamp do
   it "should allow unary operation +" do
     current = DateTime.now.to_time
     t = LogStash::Timestamp.new(current) + 10
-    expect(t).to eq(current + 10)
+    expect(t).to be_within(0.000999999).of(current + 10)
   end
 
   describe "subtraction" do
@@ -67,19 +72,19 @@ describe LogStash::Timestamp do
       t = DateTime.now.to_time
       current = LogStash::Timestamp.new(t)
       future = LogStash::Timestamp.new(t + 10)
-      expect(future - current).to eq(10)
+      expect(future - current).to be_within(0.000999999).of(10)
     end
 
     it "should work on with time object" do
       current = DateTime.now.to_time
       t = LogStash::Timestamp.new(current + 10)
-      expect(t - current).to eq(10)
+      expect(t - current).to be_within(0.000999999).of(10)
     end
 
     it "should work with numeric value" do
       current = DateTime.now.to_time
       t = LogStash::Timestamp.new(current + 10)
-      expect(t - 10).to eq(current)
+      expect(t - 10).to be_within(0.000999999).of(current)
     end
   end
 
