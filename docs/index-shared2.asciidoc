@@ -1,0 +1,91 @@
+
+// Breaking Changes
+
+:edit_url: https://github.com/elastic/logstash/edit/5.2/docs/static/breaking-changes.asciidoc
+include::static/breaking-changes.asciidoc[]
+
+// Upgrading Logstash
+
+:edit_url: https://github.com/elastic/logstash/edit/5.2/docs/static/upgrading.asciidoc
+include::static/upgrading.asciidoc[]
+
+// Configuring Logstash
+
+:edit_url: https://github.com/elastic/logstash/edit/5.2/docs/static/configuration.asciidoc
+include::static/configuration.asciidoc[]
+
+:edit_url: https://github.com/elastic/logstash/edit/5.2/docs/static/reloading-config.asciidoc
+include::static/reloading-config.asciidoc[]
+
+:edit_url: https://github.com/elastic/logstash/edit/5.2/docs/static/managing-multiline-events.asciidoc
+include::static/managing-multiline-events.asciidoc[]
+
+:edit_url: https://github.com/elastic/logstash/edit/5.2/docs/static/glob-support.asciidoc
+include::static/glob-support.asciidoc[]
+
+// Deploying & Scaling
+
+:edit_url: https://github.com/elastic/logstash/edit/5.2/docs/static/deploying.asciidoc
+include::static/deploying.asciidoc[]
+
+// Troubleshooting performance
+
+:edit_url: https://github.com/elastic/logstash/edit/5.2/docs/static/performance-checklist.asciidoc
+include::static/performance-checklist.asciidoc[]
+
+// Monitoring APIs
+
+:edit_url: https://github.com/elastic/logstash/edit/5.2/docs/static/monitoring-apis.asciidoc
+include::static/monitoring-apis.asciidoc[]
+
+// Working with Plugins
+
+:edit_url: https://github.com/elastic/logstash/edit/5.2/docs/static/plugin-manager.asciidoc
+include::static/plugin-manager.asciidoc[]
+
+// These files do their own pass blocks
+
+include::{plugins-repo-dir}/plugins/inputs.asciidoc[]
+include::{plugins-repo-dir}/plugins/outputs.asciidoc[]
+include::{plugins-repo-dir}/plugins/filters.asciidoc[]
+include::{plugins-repo-dir}/plugins/codecs.asciidoc[]
+
+:edit_url:
+
+// Contributing to Logstash
+
+include::static/contributing-to-logstash.asciidoc[]
+
+include::static/input.asciidoc[]
+include::static/codec.asciidoc[]
+include::static/filter.asciidoc[]
+include::static/output.asciidoc[]
+
+// Contributing a Patch to a Logstash Plugin
+
+:edit_url: https://github.com/elastic/logstash/edit/5.2/docs/static/contributing-patch.asciidoc
+include::static/contributing-patch.asciidoc[]
+
+// Logstash Community Maintainer Guide
+
+:edit_url: https://github.com/elastic/logstash/edit/5.2/docs/static/maintainer-guide.asciidoc
+include::static/maintainer-guide.asciidoc[]
+
+// A space is necessary here ^^^
+
+
+// Submitting a Plugin
+
+:edit_url: https://github.com/elastic/logstash/edit/5.2/docs/static/submitting-a-plugin.asciidoc
+include::static/submitting-a-plugin.asciidoc[]
+
+
+// Glossary of Terms
+
+:edit_url: https://github.com/elastic/logstash/edit/5.2/docs/static/glossary.asciidoc
+include::static/glossary.asciidoc[]
+
+// Release Notes
+
+:edit_url: https://github.com/elastic/logstash/edit/5.2/docs/static/releasenotes.asciidoc
+include::static/releasenotes.asciidoc[]
