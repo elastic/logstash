@@ -11,9 +11,6 @@ include::static/upgrading.asciidoc[]
 :edit_url: https://github.com/elastic/logstash/edit/master/docs/static/configuration.asciidoc
 include::static/configuration.asciidoc[]
 
-:edit_url: https://github.com/elastic/logstash/edit/master/docs/static/reloading-config.asciidoc
-include::static/reloading-config.asciidoc[]
-
 :edit_url: https://github.com/elastic/logstash/edit/master/docs/static/command-line-flags.asciidoc
 include::static/command-line-flags.asciidoc[]
 
@@ -24,20 +21,9 @@ include::static/managing-multiline-events.asciidoc[]
 :edit_url: https://github.com/elastic/logstash/edit/master/docs/static/deploying.asciidoc
 include::static/deploying.asciidoc[]
 
-// Troubleshooting performance
-:edit_url: https://github.com/elastic/logstash/edit/master/docs/static/performance-checklist.asciidoc
-include::static/performance-checklist.asciidoc[]
-
 // Working with Plugins
 :edit_url: https://github.com/elastic/logstash/edit/master/docs/static/plugin-manager.asciidoc
 include::static/plugin-manager.asciidoc[]
-
-// These files do their own pass blocks
-:edit_url:
-include::{plugins-repo-dir}/plugins/inputs.asciidoc[]
-include::{plugins-repo-dir}/plugins/outputs.asciidoc[]
-include::{plugins-repo-dir}/plugins/filters.asciidoc[]
-include::{plugins-repo-dir}/plugins/codecs.asciidoc[]
 
 // Contributing to Logstash
 :edit_url: https://github.com/elastic/logstash/edit/master/docs/static/contributing-to-logstash.asciidoc
@@ -69,9 +55,12 @@ include::static/submitting-a-plugin.asciidoc[]
 // This is in the pluginbody.asciidoc itself
 // :edit_url:
 
-// Glossary of Terms
-:edit_url: https://github.com/elastic/logstash/edit/master/docs/static/glossary.asciidoc
-include::static/glossary.asciidoc[]
+// These files do their own pass blocks
+:edit_url:
+include::{plugins-repo-dir}/plugins/inputs.asciidoc[]
+include::{plugins-repo-dir}/plugins/outputs.asciidoc[]
+include::{plugins-repo-dir}/plugins/filters.asciidoc[]
+include::{plugins-repo-dir}/plugins/codecs.asciidoc[]
 
 // Release Notes
 :edit_url: https://github.com/elastic/logstash/edit/master/docs/static/releasenotes.asciidoc
