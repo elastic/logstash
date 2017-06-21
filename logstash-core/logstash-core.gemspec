@@ -50,6 +50,4 @@ Gem::Specification.new do |gem|
   # has an rdoc problem that causes a bundler exception. 3.3.9 is the current latest version
   # which does not have this problem.
   gem.add_runtime_dependency "ruby-maven", "~> 3.3.9"
-
-  eval(File.read(File.expand_path("../gemspec_jars.rb", __FILE__)))
 end
