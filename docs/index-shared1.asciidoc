@@ -1,8 +1,8 @@
 
-:branch:                2.4
-:logstash_version:      2.4.0
-:elasticsearch_version: 2.4.0
-:kibana_version:        2.4.0
+:branch:                2.3
+:logstash_version:      2.3.0
+:elasticsearch_version: 2.3.0
+:kibana_version:        2.3.0
 :jdk:                   1.7.0_60
 :guide:                 https://www.elastic.co/guide/en/elasticsearch/guide/2.x/
 :ref:                   https://www.elastic.co/guide/en/elasticsearch/reference/{branch}/
