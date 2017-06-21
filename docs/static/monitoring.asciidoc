@@ -1,0 +1,42 @@
+[[monitoring-logstash]]
+== Monitoring Logstash
+
+When you run Logstash, it automatically captures runtime metrics that you can
+use to monitor the health and performance of your Logstash deployment.
+
+The metrics collected by Logstash include:
+
+* Logstash node info, like pipeline settings, OS info, and JVM info.
+* Plugin info, including a list of installed plugins.
+* Node stats, like JVM stats, process stats, event-related stats, and pipeline
+runtime stats.
+* Hot threads.
+
+You can use the <<logstash-monitoring-ui,monitoring UI>> in X-Pack to view
+these metrics and gain insight into how your Logstash deployment is running.
+
+Or you can use the basic <<monitoring,monitoring APIs>> providing by Logstash
+to retrieve these metrics.
+
+[float]
+[[logstash-monitoring-ui]]
+=== [xpack]#Monitoring UI#
+
+NOTE: Monitoring is an X-Pack feature under the Basic License and is therefore
+*free to use*. To get started, consult the
+{xpack}/monitoring-logstash.html[Logstash monitoring documentation].
+
+When running Logstash 5.2 or greater, you can use the
+https://www.elastic.co/products/x-pack/monitoring[monitoring feature in X-Pack]
+to gain deep visibility into metrics about your Logstash deployment. In the
+overview dashboard, you can see all events received and sent by Logstash, plus
+info about memory usage and uptime:
+
+image::static/images/overviewstats.png[Logstash monitoring overview dashboard in Kibana]
+
+Then you can drill down to see stats about a specific node: 
+
+image::static/images/nodestats.png[Logstash monitoring node stats dashboard in Kibana]
+
+See the {xpack}/monitoring-logstash.html[Logstash monitoring documentation] to learn
+how to set up and use this feature.
