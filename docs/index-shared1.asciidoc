@@ -1,46 +1,35 @@
+[[logstash-reference]]
+= Reference
 
-:branch:                2.4
-:logstash_version:      2.4.0
-:elasticsearch_version: 2.4.0
-:kibana_version:        2.4.0
+:branch:                1.5
+:logstash_version:      1.5.2
+:elasticsearch_version: 1.5.1
+:kibana_version:        1.5.1
 :jdk:                   1.7.0_60
-:guide:                 https://www.elastic.co/guide/en/elasticsearch/guide/2.x/
-:ref:                   https://www.elastic.co/guide/en/elasticsearch/reference/{branch}/
-:shield:                https://www.elastic.co/guide/en/shield/current
-:logstash:              https://www.elastic.co/guide/en/logstash/{branch}/
-:lsissue:               https://github.com/elastic/logstash/issues/
+:guide:                 https://www.elastic.co/guide/en/elasticsearch/guide/current/
+:ref:                   https://www.elastic.co/guide/en/elasticsearch/reference/1.7/
+:shield:                https://www.elastic.co/guide/en/shield/shield-1.3/
+:logstash:              https://www.elastic.co/guide/en/logstash/1.5/
 
 :es:                    Elasticsearch
 :kib:                   Kibana
 
-[[introduction]]
-== Logstash Introduction
 
-Logstash is an open source data collection engine with real-time pipelining capabilities. Logstash can dynamically
-unify data from disparate sources and normalize the data into destinations of your choice. Cleanse and democratize all
-your data for diverse advanced downstream analytics and visualization use cases.
+/////
+Introduction
+/////
 
-While Logstash originally drove innovation in log collection, its capabilities extend well beyond that use case. Any
-type of event can be enriched and transformed with a broad array of input, filter, and output plugins, with many
-native codecs further simplifying the ingestion process. Logstash accelerates your insights by harnessing a greater
-volume and variety of data.
-
-// The pass blocks here point to the correct repository for the edit links in the guide.
-
-// Introduction
-:edit_url: https://github.com/elastic/logstash/edit/master/docs/static/introduction.asciidoc
-include::static/introduction.asciidoc[]
-
-// Glossary and core concepts go here
+:edit_url: https://github.com/elastic/logstash/edit/master/docs/asciidoc/static/introduction.asciidoc
+include::{plugins-repo-dir}/static/introduction.asciidoc[]
 
 // Getting Started with Logstash
-:edit_url: https://github.com/elastic/logstash/edit/master/docs/static/getting-started-with-logstash.asciidoc
-include::static/getting-started-with-logstash.asciidoc[]
+:edit_url: https://github.com/elastic/logstash/edit/master/docs/asciidoc/static/getting-started-with-logstash.asciidoc
+include::{plugins-repo-dir}/static/getting-started-with-logstash.asciidoc[]
 
 // Advanced LS Pipelines
-:edit_url: https://github.com/elastic/logstash/edit/master/docs/static/advanced-pipeline.asciidoc
-include::static/advanced-pipeline.asciidoc[]
+:edit_url: https://github.com/elastic/logstash/edit/master/docs/asciidoc/static/advanced-pipeline.asciidoc
+include::{plugins-repo-dir}/static/advanced-pipeline.asciidoc[]
 
-// Processing Pipeline
-:edit_url: https://github.com/elastic/logstash/edit/master/docs/static/life-of-an-event.asciidoc
-include::static/life-of-an-event.asciidoc[]
+// Installing from a Repository
+:edit_url: https://github.com/elastic/logstash/edit/master/docs/asciidoc/static/repositories.asciidoc
+include::{plugins-repo-dir}/static/repositories.asciidoc[]
