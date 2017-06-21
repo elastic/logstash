@@ -15,6 +15,8 @@ describe LogStash::Timestamp do
       now = DateTime.now.to_time.utc
       t = LogStash::Timestamp.new(now)
       # Via JRuby 9k time see logstash/issues/7463
+      # JRuby 9k now uses Java 8 Time with nanosecond precision but
+      # our Timestamp use Joda with millisecond precision
       # expected: 2017-06-15 10:34:08.389999999 +0000
       #      got: 2017-06-15 10:34:08.389000000 +0000
       expect(t.time.to_f).to be_within(0.000999999).of(now.to_f)
