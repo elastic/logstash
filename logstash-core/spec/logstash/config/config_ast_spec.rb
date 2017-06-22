@@ -6,6 +6,8 @@ require "logstash/config/grammar"
 require "logstash/config/config_ast"
 
 describe LogStashConfigParser do
+  let(:settings) { mock_settings({}) }
+
   context '#parse' do
     context "valid configuration" do
       it "should permit single-quoted attribute names" do
@@ -77,7 +79,7 @@ describe LogStashConfigParser do
         }
       CONFIG
       subject { LogStashConfigParser.new }
-         
+
       it "should compile successfully" do
         result = subject.parse(config)
         expect(result).not_to(be_nil)
@@ -142,12 +144,50 @@ describe LogStashConfigParser do
         expect(config).to be_nil
       end
     end
+
+    context "when config.support_escapes" do
+      let(:parser) { LogStashConfigParser.new }
+
+      let(:processed_value)  { 'The computer says, "No"' }
+
+      let(:config) {
+        parser.parse(%q(
+          input {
+            foo {
+              bar => "The computer says, \"No\""
+            }
+          }
+        ))
+      }
+
+      let(:compiled_string) { eval(config.recursive_select(LogStash::Config::AST::String).first.compile) }
+
+      before do
+        config.process_escape_sequences = escapes
+      end
+
+      context "is enabled" do
+        let(:escapes) { true }
+
+        it "should process escape sequences" do
+          expect(compiled_string).to be == processed_value
+        end
+      end
+
+      context "is false" do
+        let(:escapes) { false }
+
+        it "should not process escape sequences" do
+          expect(compiled_string).not_to be == processed_value
+        end
+      end
+    end
   end
 
   context "when using two plugin sections of the same type" do
     let(:pipeline_klass) do
       Class.new do
-        def initialize(config)
+        def initialize(config, settings)
           grammar = LogStashConfigParser.new
           @config = grammar.parse(config)
           @code = @config.compile
@@ -166,7 +206,7 @@ describe LogStashConfigParser do
 
 
       it "should create a pipeline with both sections" do
-        generated_objects = pipeline_klass.new(config_string).instance_variable_get("@generated_objects")
+        generated_objects = pipeline_klass.new(config_string, settings).instance_variable_get("@generated_objects")
         filters = generated_objects.keys.map(&:to_s).select {|obj_name| obj_name.match(/^filter.+?_\d+$/) }
         expect(filters.size).to eq(2)
       end
@@ -181,14 +221,13 @@ describe LogStashConfigParser do
 
 
       it "should create a pipeline with both sections" do
-        generated_objects = pipeline_klass.new(config_string).instance_variable_get("@generated_objects")
+        generated_objects = pipeline_klass.new(config_string, settings).instance_variable_get("@generated_objects")
         outputs = generated_objects.keys.map(&:to_s).select {|obj_name| obj_name.match(/^output.+?_\d+$/) }
         expect(outputs.size).to eq(2)
       end
     end
   end
   context "when creating two instances of the same configuration" do
-
     let(:config_string) {
       "input { generator { } }
        filter {
@@ -201,7 +240,7 @@ describe LogStashConfigParser do
 
     let(:pipeline_klass) do
       Class.new do
-        def initialize(config)
+        def initialize(config, settings)
           grammar = LogStashConfigParser.new
           @config = grammar.parse(config)
           @code = @config.compile
@@ -213,8 +252,8 @@ describe LogStashConfigParser do
 
     describe "generated conditional functionals" do
       it "should be created per instance" do
-        instance_1 = pipeline_klass.new(config_string)
-        instance_2 = pipeline_klass.new(config_string)
+        instance_1 = pipeline_klass.new(config_string, settings)
+        instance_2 = pipeline_klass.new(config_string, settings)
         generated_method_1 = instance_1.instance_variable_get("@generated_objects")[:cond_func_1]
         generated_method_2 = instance_2.instance_variable_get("@generated_objects")[:cond_func_1]
         expect(generated_method_1).to_not be(generated_method_2)

@@ -249,10 +249,24 @@ Example:
 ==== String
 
 A string must be a single character sequence. Note that string values are
-enclosed in quotes, either double or single. Literal quotes in the string
-need to be escaped with a backslash if they are of the same kind as the string
-delimiter, i.e. single quotes within a single-quoted string need to be escaped
-as well as double quotes within a double-quoted string.
+enclosed in quotes, either double or single. 
+
+===== Escape Sequences
+
+By default, escape sequences are not enabled. If you wish to use escape
+sequences in quoted strings, you will need to set
+`config.support_escapes: true` in your `logstash.yml`. When `true`, quoted
+strings (double and single) will have this transformation:
+
+|===========================
+| Text | Result
+| \r   | carriage return (ASCII 13)
+| \n   | new line (ASCII 10)
+| \t   | tab (ASCII 9)
+| \\   | backslash (ASCII 92)
+| \"   | double quote (ASCII 34)
+| \'   | single quote (ASCII 39)
+|===========================
 
 Example:
 
