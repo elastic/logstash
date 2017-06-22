@@ -58,6 +58,8 @@ module LogStash; class BasePipeline
     parsed_config = grammar.parse(config_str)
     raise(ConfigurationError, grammar.failure_reason) if parsed_config.nil?
 
+    parsed_config.process_escape_sequences = settings.get_value("config.support_escapes")
+
     config_code = parsed_config.compile
 
     # config_code = BasePipeline.compileConfig(config_str)
