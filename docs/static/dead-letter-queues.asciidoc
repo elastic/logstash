@@ -10,40 +10,28 @@ verify that the plugin supports the dead letter queue feature.
 By default, when Logstash encounters an event that it cannot process because the
 data contains a mapping error or some other issue, the Logstash pipeline 
 either hangs or drops the unsuccessful event. In order to protect against data
-loss in this situation, you can configure Logstash to write unsuccessful events
-to a dead letter queue instead of dropping them. 
+loss in this situation, you can <<configuring-dlq,configure Logstash>> to write
+unsuccessful events to a dead letter queue instead of dropping them. 
 
-Each event written to the dead letter queue includes the original event along
-with metadata indicating when the event entered the queue. For example:
-
-//TODO: Need a better example here. 
-
-[source,json]
--------------------------------------------------------------------------------
-{
-          "rand" => "changeme",
-      "sequence" => 9817,
-        "static" => "value",
-    "@timestamp" => 2017-06-06T15:36:48.182Z,
-      "@version" => "1",
-          "host" => "myhost.local"
-}
--------------------------------------------------------------------------------
+Each event written to the dead letter queue includes the original event, along
+with metadata that describes the reason the event could not be processed,
+information about the plugin that wrote the event, and the timestamp for when
+the event entered the dead letter queue.
 
 To process events in the dead letter queue, you simply create a Logstash
 pipeline configuration that uses the `dead_letter_queue` input plugin
-to read from the queue, process the events, and write to the output. 
+to read from the queue. 
 
 image::static/images/dead_letter_queue.png[Diagram showing pipeline reading from the dead letter queue]
 
 See <<processing-dlq-events>> for more information.
 
-
 [[configuring-dlq]]
 ==== Configuring Logstash to Use Dead Letter Queues
 
-You enable dead letter queues by setting the `dead_letter_queue_enable` option
-in the  `logstash.yml` <<logstash-settings-file,settings file>>: 
+Dead letter queues are disabled by default. To enable dead letter queues, set
+the `dead_letter_queue_enable` option in the `logstash.yml`
+<<logstash-settings-file,settings file>>: 
 
 [source,yaml]
 -------------------------------------------------------------------------------
@@ -87,8 +75,8 @@ resulted from a mapping error in Elasticsearch, you can create a pipeline that
 reads the "dead" events, removes the field that caused the mapping issue, and
 re-indexes the clean events into Elasticsearch. 
 
-The following example shows how to read events from the dead letter queue and
-write the events to standard output: 
+The following example shows a simple pipeline that reads events from the dead
+letter queue and writes the events, including metadata, to standard output: 
 
 [source,yaml]
 --------------------------------------------------------------------------------
@@ -102,7 +90,7 @@ input {
 
 output {
   stdout {
-    codec => rubydebug
+    codec => rubydebug { metadata => true }
   }
 }
 --------------------------------------------------------------------------------
@@ -122,10 +110,15 @@ multiple times.
 <3> The ID of the pipeline that's writing to the dead letter queue. The default
 is `"main"`.
 
+For another example, see <<dlq-example>>.
+
 When the pipeline has finished processing all the events in the dead letter
 queue, it will continue to run and process new events as they stream into the
 queue. This means that you do not need to stop your production system to handle
 events in the dead letter queue. 
+
+[[dlq-timestamp]]
+==== Reading From a Timestamp
 
 When you read from the dead letter queue, you might not want to process all the
 events in the queue, especially if there are a lot of old events in the queue.
@@ -146,4 +139,68 @@ input {
 
 For this example, the pipeline starts reading all events that were delivered to
 the dead letter queue on or after June 6, 2017, at 23:40:37. 
+
+[[dlq-example]]
+==== Example: Processing Data That Has Mapping Errors
+
+In this example, the user attempts to index a document that includes geo_ip data,
+but the data cannot be processed because it contains a mapping error:
+
+[source,json]
+--------------------------------------------------------------------------------
+{"geoip":{"location":"home"}}
+--------------------------------------------------------------------------------
+
+Indexing fails because the Logstash output plugin expects a `geo_point` object in
+the `location` field, but the value is a string. The failed event is written to
+the dead letter queue, along with metadata about the error that caused the
+failure:
+
+[source,json]
+--------------------------------------------------------------------------------
+{
+   "@metadata" => {
+    "dead_letter_queue" => {
+       "entry_time" => #<Java::OrgLogstash::Timestamp:0x5b5dacd5>,
+        "plugin_id" => "fb80f1925088497215b8d037e622dec5819b503e-4",
+      "plugin_type" => "elasticsearch",
+           "reason" => "Could not index event to Elasticsearch. status: 400, action: [\"index\", {:_id=>nil, :_index=>\"logstash-2017.06.22\", :_type=>\"logs\", :_routing=>nil}, 2017-06-22T01:29:29.804Z Suyogs-MacBook-Pro-2.local {\"geoip\":{\"location\":\"home\"}}], response: {\"index\"=>{\"_index\"=>\"logstash-2017.06.22\", \"_type\"=>\"logs\", \"_id\"=>\"AVzNayPze1iR9yDdI2MD\", \"status\"=>400, \"error\"=>{\"type\"=>\"mapper_parsing_exception\", \"reason\"=>\"failed to parse\", \"caused_by\"=>{\"type\"=>\"illegal_argument_exception\", \"reason\"=>\"illegal latitude value [266.30859375] for geoip.location\"}}}}"
+    }
+  },
+  "@timestamp" => 2017-06-22T01:29:29.804Z,
+    "@version" => "1",
+       "geoip" => {
+    "location" => "home"
+  },
+        "host" => "Suyogs-MacBook-Pro-2.local",
+     "message" => "{\"geoip\":{\"location\":\"home\"}}"
+}
+--------------------------------------------------------------------------------
+
+To process the failed event, you create the following pipeline that reads from
+the dead letter queue and removes the mapping problem:
+
+[source,json]
+--------------------------------------------------------------------------------
+input { 
+  dead_letter_queue { 
+    path => "/path/to/data/dead_letter_queue/" <1>
+  } 
+} 
+filter {
+  mutate { 
+    remove_field => "[geoip][location]" <2>
+  } 
+} 
+output { 
+  elasticsearch{
+    hosts => [ "localhost:9200" ] <3>
+  } 
+}
+--------------------------------------------------------------------------------
+
+<1> The `dead_letter_queue` input reads from the dead letter queue.
+<2> The `mutate` filter removes the problem field called `location`.
+<3> The clean event is sent to Elasticsearch, where it can be indexed because
+the mapping issue is resolved.
 
