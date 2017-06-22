@@ -135,7 +135,7 @@ class PluginVersionWorking
   end
 
   def extract_versions(definition, dependencies, from)
-    definition.specs.each do |spec|
+    definition.specs.select { |spec| spec.metadata && spec.metadata["logstash_plugin"] == "true" }.each do |spec|
       dependencies[spec.name] ||= []
       dependencies[spec.name] << VersionDependencies.new(spec.version, from)
     end
