@@ -84,9 +84,5 @@ include::static/docker.asciidoc[]
 :edit_url: https://github.com/elastic/logstash/edit/master/docs/static/logging.asciidoc
 include::static/logging.asciidoc[]
 
-:edit_url: https://github.com/elastic/logstash/edit/master/docs/static/persistent-queues.asciidoc
-include::static/persistent-queues.asciidoc[]
-
-
 :edit_url: https://github.com/elastic/logstash/edit/master/docs/static/shutdown.asciidoc
 include::static/shutdown.asciidoc[]
