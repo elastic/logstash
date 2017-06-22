@@ -12,8 +12,8 @@ SELECTED_TEST_SUITE=$1
 # this mean the lock of the Gemfile can be sticky from a previous run, before generating any package
 # we will clear them out to make sure we use the latest version of theses files
 # If we don't do this we will run into gem Conflict error.
-rm *.lock
-rm Gemfile
+[ -f Gemfile ] && rm Gemfile
+[ -f Gemfile.jruby-2.3.lock ] && rm Gemfile.jruby-2.3.lock
 
 if [[ $SELECTED_TEST_SUITE == $"redhat" ]]; then
   echo "Generating the RPM, make sure you start with a clean environment before generating other packages."
