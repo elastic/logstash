@@ -16,8 +16,8 @@ env:
   - INTEGRATION=false FEATURE_FLAG=persistent_queues SPEC_OPTS="--order rand --format documentation" JRUBY_OPTS='-Xcompile.invokedynamic=false'
   - INTEGRATION=true FEATURE_FLAG=persistent_queues SPEC_OPTS="--order rand --format documentation" JRUBY_OPTS='-Xcompile.invokedynamic=false'
 before_install:
-  - sudo apt-get remove -y docker-engine
-  - sudo apt-get install -y docker-engine
+  - sudo apt-get remove -y docker-ce
+  - sudo apt-get install -y docker-ce
   - sudo service docker stop
   - sudo dockerd --disable-legacy-registry &>/dev/null &
   - export JRUBY_OPTS=""
