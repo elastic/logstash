@@ -9,6 +9,18 @@ class Treetop::Runtime::SyntaxNode
     return elements.collect(&:compile).reject(&:empty?).join("")
   end
 
+  def get_meta(key)
+    @ast_metadata ||= {}
+    return @ast_metadata[key] if @ast_metadata[key]
+    return self.parent.get_meta(key) if self.parent
+    nil
+  end
+
+  def set_meta(key, value)
+    @ast_metadata ||= {}
+    @ast_metadata[key] = value
+  end
+
   # Traverse the syntax tree recursively.
   # The order should respect the order of the configuration file as it is read
   # and written by humans (and the order in which it is parsed).
