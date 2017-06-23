@@ -1,4 +1,3 @@
-[id="plugins-{type}s-common-options"]
 ==== Common Options
 
 The following configuration options are supported by all input plugins:
