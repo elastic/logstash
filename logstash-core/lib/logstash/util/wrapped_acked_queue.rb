@@ -129,7 +129,7 @@ module LogStash; module Util
       def empty?
         @mutex.lock
         begin
-          @queue.is_fully_acked?
+          @queue.queue.is_fully_acked?
         ensure
           @mutex.unlock
         end
