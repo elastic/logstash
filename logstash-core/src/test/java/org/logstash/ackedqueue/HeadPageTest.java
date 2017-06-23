@@ -23,7 +23,7 @@ public class HeadPageTest {
         try(final HeadPage p = new HeadPage(0, q, pageIO)) {
             assertThat(p.getPageNum(), is(equalTo(0)));
             assertThat(p.isFullyRead(), is(true));
-            assertThat(p.isFullyAcked(), is(false));
+            assertThat(p.isFullyAcked(), is(true));
             assertThat(p.hasSpace(10), is(true));
             assertThat(p.hasSpace(100), is(false));
         }

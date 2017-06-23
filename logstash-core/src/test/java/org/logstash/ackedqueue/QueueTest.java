@@ -81,15 +81,16 @@ public class QueueTest {
     public void singleWriteMultiRead() throws IOException {
         try (Queue q = new TestQueue(TestSettings.volatileQueueSettings(100))) {
             q.open();
-
+            assertThat(q.isFullyAcked(), is(true));
             Queueable element = new StringElement("foobarbaz");
             q.write(element);
-
-            Batch b = q.nonBlockReadBatch(2);
-
-            assertThat(b.getElements().size(), is(1));
-            assertThat(b.getElements().get(0).toString(), is(element.toString()));
-            assertThat(q.nonBlockReadBatch(2), nullValue());
+            try (Batch b = q.nonBlockReadBatch(2)) {
+                assertThat(b.getElements().size(), is(1));
+                assertThat(b.getElements().get(0).toString(), is(element.toString()));
+                assertThat(q.nonBlockReadBatch(2), nullValue());
+                assertThat(q.isFullyAcked(), is(false));
+            }
+            assertThat(q.isFullyAcked(), is(true));
         }
     }
 
