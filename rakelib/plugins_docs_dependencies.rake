@@ -135,7 +135,12 @@ class PluginVersionWorking
   end
 
   def extract_versions(definition, dependencies, from)
-    definition.specs.select { |spec| spec.metadata && spec.metadata["logstash_plugin"] == "true" }.each do |spec|
+    #definition.specs.select { |spec| spec.metadata && spec.metadata["logstash_plugin"] == "true" }.each do |spec|
+    #
+    # Bundler doesn't seem to provide us with `spec.metadata` for remotely
+    # discovered plugins (via rubygems.org api), so we have to choose by 
+    # a name pattern instead of by checking spec.metadata["logstash_plugin"]
+    definition.specs.select { |spec| spec.name =~ /^logstash-(input|filter|output|codec)-/ }.each do |spec|
       dependencies[spec.name] ||= []
       dependencies[spec.name] << VersionDependencies.new(spec.version, from)
     end
