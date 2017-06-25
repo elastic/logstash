@@ -32,7 +32,7 @@ jar {
 }
 
 ext {
-  jmh = 1.18 
+  jmh = 1.18
 }
 
 dependencies {
@@ -61,12 +61,15 @@ shadowJar {
 
 task jmh(type: JavaExec, dependsOn: [':logstash-core-benchmarks:clean', ':logstash-core-benchmarks:shadowJar']) {
 
-  main="-jar"
+  main = "-jar"
 
   doFirst {
-    if (System.getProperty("jmhArgs")) {
-      args System.getProperty("jmhArgs").split(',')
-    }
-    args = [shadowJar.archivePath, *args]
+    args = [
+      "-Djava.io.tmpdir=${buildDir.absolutePath}",
+      "-XX:+UseParNewGC", "-XX:+UseConcMarkSweepGC", "-XX:CMSInitiatingOccupancyFraction=75",
+      "-XX:+UseCMSInitiatingOccupancyOnly", "-XX:+DisableExplicitGC",
+      "-XX:+HeapDumpOnOutOfMemoryError", "-Xms2g", "-Xmx2g",
+      shadowJar.archivePath,
+    ]
   }
 }
