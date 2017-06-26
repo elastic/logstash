@@ -111,17 +111,24 @@ class PluginVersionWorking
     end
   end
 
-  def install(plugins_to_install, successful_dependencies, failures)
-    begin
+  def resolve_plugins(plugins_to_install)
       builder = Bundler::Dsl.new
       gemfile = LogStash::Gemfile.new(File.new(LogStash::Environment::GEMFILE_PATH, "r+")).load
       plugins_to_install.each { |plugin_name| gemfile.update(plugin_name) }
       builder.eval_gemfile("bundler file", gemfile.generate())
       definition = builder.to_definition(LogStash::Environment::LOCKFILE, {})
       definition.resolve_remotely!
+      definition
+  end
+
+  def install(plugins_to_install, successful_dependencies, failures)
+    begin
+      definition = resolve_plugins(plugins_to_install)
       extract_versions(definition, successful_dependencies, :missing)
       puts "Batch install size: #{plugins_to_install.size}, Succesfully resolved: #{plugins_to_install}"
     rescue => e
+      definition = nil # mark it to GC
+
       if plugins_to_install.size > 1
         batch_install(plugins_to_install, successful_dependencies, failures)
       else
