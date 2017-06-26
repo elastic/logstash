@@ -3,9 +3,15 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-5-4-3,Logstash 5.4.3>>
 * <<logstash-5-4-2,Logstash 5.4.2>>
 * <<logstash-5-4-1,Logstash 5.4.1>>
 * <<logstash-5-4-0,Logstash 5.4.0>>
+
+[[logstash-5-4-3]]
+=== Logstash 5.4.3 Release Notes
+
+There are no user-facing changes in Logstash core and Logstash default plugins.
 
 [[logstash-5-4-2]]
 === Logstash 5.4.2 Release Notes
