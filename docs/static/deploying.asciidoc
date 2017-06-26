@@ -158,7 +158,7 @@ Logstash can expose endpoint listeners with the respective
 <<plugins-inputs-http,HTTP>> input plugins. The data sources enumerated below
 are typically ingested through one of these three protocols.
 
-NOTE: The TCP protocol does not support application-level acknowledgements, so
+NOTE: The UDP protocol does not support application-level acknowledgements, so
 connectivity issues may result in data loss.
 
 For high availability scenarios, a third-party hardware or software load
