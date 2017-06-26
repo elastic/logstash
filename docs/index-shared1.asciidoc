@@ -12,16 +12,16 @@ release-state can be: released | prerelease | unreleased
 
 :jdk:                   1.8.0
 :guide:                 https://www.elastic.co/guide/en/elasticsearch/guide/current/
-:ref:                   https://www.elastic.co/guide/en/elasticsearch/reference/5.x/
-:xpack-ref:             https://www.elastic.co/guide/en/x-pack/5.x/
-:kibana-ref:            https://www.elastic.co/guide/en/kibana/5.x/
-:logstash:              https://www.elastic.co/guide/en/logstash/5.x/
-:libbeat:               https://www.elastic.co/guide/en/beats/libbeat/5.x/
-:filebeat:              https://www.elastic.co/guide/en/beats/filebeat/5.x/
-:metricbeat:            https://www.elastic.co/guide/en/beats/metricbeat/5.x/
+:ref:                   https://www.elastic.co/guide/en/elasticsearch/reference/{branch}/
+:xpack-ref:             https://www.elastic.co/guide/en/x-pack/{branch}/
+:kibana-ref:            https://www.elastic.co/guide/en/kibana/{branch}/
+:logstash:              https://www.elastic.co/guide/en/logstash/{branch}/
+:libbeat:               https://www.elastic.co/guide/en/beats/libbeat/{branch}/
+:filebeat:              https://www.elastic.co/guide/en/beats/filebeat/{branch}/
+:metricbeat:            https://www.elastic.co/guide/en/beats/metricbeat/{branch}/
 :lsissue:               https://github.com/elastic/logstash/issues/
 :security:              X-Pack security
-:stack:                 https://www.elastic.co/guide/en/elastic-stack/5.x/
+:stack:                 https://www.elastic.co/guide/en/elastic-stack/{branch}/
 
 :xpack:                 X-Pack
 :es:                    Elasticsearch
