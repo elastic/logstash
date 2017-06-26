@@ -1,7 +1,8 @@
 [[logstash-reference]]
 = Logstash Reference
 
-:plugins-repo-dir:      {docdir}/../../logstash-docs/docs
+:plugins-repo-dir:  {docdir}/../../logstash-docs/docs
+:docs-dir:          {docdir}/../../docs
 
 include::index-shared1.asciidoc[]
 include::index-shared2.asciidoc[]
