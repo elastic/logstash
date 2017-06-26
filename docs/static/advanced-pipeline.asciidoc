@@ -223,6 +223,10 @@ Bytes served:: `bytes`
 Referrer URL:: `referrer`
 User agent:: `agent`
 
+TIP: If you need help building grok patterns, try out the
+{kibana-ref}xpack-grokdebugger.html[Grok Debugger]. The Grok Debugger is an
+{xpack} feature under the Basic License and is therefore *free to use*. 
+
 Edit the `first-pipeline.conf` file and replace the entire `filter` section with the following text:
 
 [source,json]
@@ -311,7 +315,6 @@ After Logstash applies the grok pattern, the events will have the following JSON
 --------------------------------------------------------------------------------
 
 Notice that the event includes the original message, but the log message is also broken down into specific fields.
-
 
 [float]
 [[configuring-geoip-plugin]]
