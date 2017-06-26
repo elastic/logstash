@@ -40,10 +40,9 @@ dead_letter_queue.enable: true
 
 Dead letter queues are stored as files in the local directory of the Logstash
 instance. By default, the dead letter queue files are stored in
-`path.data/dead_letter_queue`. Each pipeline has a separate queue. For example,
-the dead letter queue for the `main` pipeline is stored in
-`LOGSTASH_HOME/data/dead_letter_queue/main` by default. The queue files are
-numbered sequentially: `1.log`, `2.log`, and so on.
+`path.data/dead_letter_queue`. For example, the dead letter queue for the
+`main` pipeline is stored in `LOGSTASH_HOME/data/dead_letter_queue/main` by
+default. The queue files are numbered sequentially: `1.log`, `2.log`, and so on.
 
 You can set `path.dead_letter_queue` in the `logstash.yml` file to
 specify a different path for the files:
@@ -84,7 +83,6 @@ input {
   dead_letter_queue {
     path => "/path/to/data/dead_letter_queue" <1>
     commit_offsets => true <2>
-    pipeline_id => "main" <3>
   }
 }
 
@@ -96,8 +94,8 @@ output {
 --------------------------------------------------------------------------------
 
 <1> The path to the top-level directory containing the dead letter queue. This
-directory contains a separate folder for each pipeline that writes to the dead
-letter queue. To find the path to this directory, look at the `logstash.yml`
+directory contains a `main` folder for the main pipeline. To find the path to
+this directory, look at the `logstash.yml`
 <<logstash-settings-file,settings file>>. By default, Logstash creates the
 `dead_letter_queue` directory under the location used for persistent
 storage (`path.data`), for example, `LOGSTASH_HOME/data/dead_letter_queue`.
@@ -107,8 +105,6 @@ reading from the position where it left off rather than reprocessing all the
 items in the queue. You can set `commit_offsets` to `false` when you are
 exploring events in the dead letter queue and want to iterate over the events
 multiple times. 
-<3> The ID of the pipeline that's writing to the dead letter queue. The default
-is `"main"`.
 
 For another example, see <<dlq-example>>.
 
@@ -132,7 +128,6 @@ input {
   dead_letter_queue {
     path => "/path/to/data/dead_letter_queue" 
     start_timestamp => 2017-06-06T23:40:37
-    pipeline_id => "main"
   }
 }
 --------------------------------------------------------------------------------
