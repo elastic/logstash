@@ -1,9 +1,9 @@
 
 :branch:                5.4
 :major-version:         5.x
-:logstash_version:      5.4.2
-:elasticsearch_version: 5.4.2
-:kibana_version:        5.4.2
+:logstash_version:      5.4.3
+:elasticsearch_version: 5.4.3
+:kibana_version:        5.4.3
 :docker-image:          docker.elastic.co/logstash/logstash:{logstash_version}
 
 //////////
