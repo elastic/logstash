@@ -782,6 +782,10 @@ filter {
 === Logstash Configuration Examples
 The following examples illustrate how you can configure Logstash to filter events, process Apache logs and syslog messages, and use conditionals to control what events are processed by a filter or output.
 
+TIP: If you need help building grok patterns, try out the
+{kibana-ref}xpack-grokdebugger.html[Grok Debugger]. The Grok Debugger is an
+{xpack} feature under the Basic License and is therefore *free to use*.
+
 [float]
 [[filter-example]]
 ==== Configuring Filters
