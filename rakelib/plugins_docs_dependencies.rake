@@ -65,87 +65,49 @@ class PluginVersionWorking
     definition = builder.to_definition(LogStash::Environment::LOCKFILE, {})
     extract_versions(definition, successful_dependencies, :default)
 
-    plugins_to_install = all_plugins - successful_dependencies.keys
-    plugins_to_install, partition_size = optimize_for_successful_resolution(plugins_to_install)
+    plugins_to_install = (all_plugins - successful_dependencies.keys).delete_if { |name| name =~ /^logstash-core/ }
+
     measure_execution("batch install of plugins") do
-      batch_install(plugins_to_install, successful_dependencies, failures, partition_size)
+      install_plugins_sequential(plugins_to_install, successful_dependencies, failures)
     end
 
     return [successful_dependencies, failures]
   end
 
-  # If we found the result of a previous execution we will use the successful plugins result
-  # to order the current plugins, we assume that the plugin that was successful will still be successful.
-  # This help us reduce the number of resolve call and make the generation 3 times faster.
-  def optimize_for_successful_resolution(plugins_to_install)
-    if ::File.exist?(EXPORT_FILE)
-      content = JSON.parse(::File.read(EXPORT_FILE))
+  def install_plugins_sequential(plugins_to_install, successful_dependencies, failures)
+    total = plugins_to_install.size + successful_dependencies.size
+    puts "Default installed: #{successful_dependencies.size} Total available plugins: #{total}"
 
-      possible_success = []
-      possible_failures = []
-      unknown = []
+    plugins_to_install.each do |plugin|
+      begin
+        builder = Bundler::Dsl.new
+        gemfile = LogStash::Gemfile.new(File.new(LogStash::Environment::GEMFILE_PATH, "r+")).load
+        gemfile.update(plugin)
 
-      plugins_to_install.each do |name|
-        if content["successful"][name].nil?
-          if content["failures"][name].nil?
-            unknown << name
-          else
-            possible_failures << name
-          end
-        else
-          possible_success << name
-        end
-      end
+        builder.eval_gemfile("bundler file", gemfile.generate())
+        definition = builder.to_definition(LogStash::Environment::LOCKFILE, {})
+        definition.resolve_remotely!
+        extract_versions(definition, successful_dependencies, :missing)
+        puts "Successfully installed: #{plugin}"
+      rescue => e
+        puts "Failed to install: #{plugin}"
 
-      plugins_to_install = possible_success.concat(possible_failures).concat(unknown)
-      [plugins_to_install, plugins_to_install.size / possible_success.size]
-    else
-      [plugins_to_install, 2]
-    end
-  end
-
-  # Try to recursively do batch operation on the plugin list to reduce the number of resolution required.
-  def batch_install(plugins_to_install, successful_dependencies, failures, partition_size = 2)
-    plugins_to_install.each_slice(plugins_to_install.size /  partition_size) do |partition|
-      install(partition, successful_dependencies, failures)
-    end
-  end
-
-  def resolve_plugins(plugins_to_install)
-      builder = Bundler::Dsl.new
-      gemfile = LogStash::Gemfile.new(File.new(LogStash::Environment::GEMFILE_PATH, "r+")).load
-      plugins_to_install.each { |plugin_name| gemfile.update(plugin_name) }
-      builder.eval_gemfile("bundler file", gemfile.generate())
-      definition = builder.to_definition(LogStash::Environment::LOCKFILE, {})
-      definition.resolve_remotely!
-      definition
-  end
-
-  def install(plugins_to_install, successful_dependencies, failures)
-    begin
-      definition = resolve_plugins(plugins_to_install)
-      extract_versions(definition, successful_dependencies, :missing)
-      puts "Batch install size: #{plugins_to_install.size}, Succesfully resolved: #{plugins_to_install}"
-    rescue => e
-      definition = nil # mark it to GC
-
-      if plugins_to_install.size > 1
-        batch_install(plugins_to_install, successful_dependencies, failures)
-      else
-        puts "Failed to install: #{plugins_to_install.first}"
-        failures[plugins_to_install.first] = {
+        failures[plugin] = {
           "klass" => e.class,
           "message" => e.message
         }
       end
     end
+
+    puts "Successful: #{successful_dependencies.size}/#{total}"
+    puts "Failures: #{failures.size}/#{total}"
   end
 
   def extract_versions(definition, dependencies, from)
     #definition.specs.select { |spec| spec.metadata && spec.metadata["logstash_plugin"] == "true" }.each do |spec|
     #
     # Bundler doesn't seem to provide us with `spec.metadata` for remotely
-    # discovered plugins (via rubygems.org api), so we have to choose by 
+    # discovered plugins (via rubygems.org api), so we have to choose by
     # a name pattern instead of by checking spec.metadata["logstash_plugin"]
     definition.specs.select { |spec| spec.name =~ /^logstash-(input|filter|output|codec)-/ }.each do |spec|
       dependencies[spec.name] ||= []
