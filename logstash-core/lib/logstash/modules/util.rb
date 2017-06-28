@@ -5,7 +5,6 @@ require_relative "scaffold"
 # x-pack defines modules in their folder structures.
 module LogStash module Modules module Util
   def self.register_local_modules(path)
-    STDERR.puts "-------------- register_local_modules --------------"
     modules_path = ::File.join(path, ::File::Separator, "modules")
     ::Dir.foreach(modules_path) do |item|
       # Ignore unix relative path ids
