@@ -41,26 +41,26 @@ module LogStash module Instrument
     # @param [Symbol] The metric key
     # @return [Object] Return the new_value of the retrieve object in the tree
     def fetch_or_store(namespaces, key, default_value = nil)
-      provided_value =  block_given? ? yield(key) : default_value
 
       # We first check in the `@fast_lookup` store to see if we have already see that metrics before,
       # This give us a `o(1)` access, which is faster than searching through the structured
       # data store (Which is a `o(n)` operation where `n` is the number of element in the namespace and
-      # the value of the key). If the metric is already present in the `@fast_lookup`, the call to
-      # `#put_if_absent` will return the value. This value is send back directly to the caller.
+      # the value of the key). If the metric is already present in the `@fast_lookup`, then that value is sent
+      # back directly to the caller.
       #
-      # BUT. If the value is not present in the `@fast_lookup` the value will be inserted and
-      # `#puf_if_absent` will return nil. With this returned value of nil we assume that we don't
+      # BUT. If the value is not present in the `@fast_lookup` the value will be inserted and we assume that we don't
       # have it in the `@metric_store` for structured search so we add it there too.
-      if found_value = @fast_lookup.put_if_absent(namespaces.dup << key, provided_value)
-        return found_value
-      else
+
+      value = @fast_lookup.get(namespaces.dup << key)
+      if value.nil?
+        value = block_given? ? yield(key) : default_value
+        @fast_lookup.put(namespaces.dup << key, value)
         @structured_lookup_mutex.synchronize do
-          # If we cannot find the value this mean we need to save it in the store.
-          fetch_or_store_namespaces(namespaces).fetch_or_store(key, provided_value)
+            # If we cannot find the value this mean we need to save it in the store.
+          fetch_or_store_namespaces(namespaces).fetch_or_store(key, value)
         end
-        return provided_value
       end
+      return value;
     end
 
     # This method allow to retrieve values for a specific path,
