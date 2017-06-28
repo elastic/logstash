@@ -68,6 +68,7 @@ describe LogStash::Pipeline do
 
   after(:each) do
     FileUtils.remove_entry pipeline_settings["path.dead_letter_queue"]
+    pipeline_settings_obj.reset
   end
 
   context "dlq is enabled" do

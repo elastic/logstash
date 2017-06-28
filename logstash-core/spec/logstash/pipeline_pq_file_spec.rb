@@ -123,6 +123,7 @@ describe LogStash::Pipeline do
     subject.shutdown
     pipeline_thread.join
     # Dir.rm_rf(this_queue_folder)
+    pipeline_settings_obj.reset
   end
 
   let(:collected_metric) { metric_store.get_with_path("stats/pipelines/") }
