@@ -21,19 +21,9 @@ require "logstash/patches/clamp"
 require "logstash/settings"
 require "logstash/version"
 require "logstash/plugins/registry"
+require "logstash/modules/util"
 
 java_import 'org.logstash.FileLockFactory'
-
-def register_local_modules(path)
-  modules_path = File.join(path, File::Separator, "modules")
-  Dir.foreach(modules_path) do |item|
-    # Ignore unix relative path ids
-    next if item == '.' or item == '..'
-    # Ignore non-directories
-    next if !File.directory?(File.join(modules_path, File::Separator, item))
-    LogStash::PLUGIN_REGISTRY.add(:modules, item, LogStash::Modules::Scaffold.new(item, File.join(modules_path, File::Separator, item, File::Separator, "configuration")))
-  end
-end
 
 class LogStash::Runner < Clamp::StrictCommand
   include LogStash::Util::Loggable
@@ -236,7 +226,7 @@ class LogStash::Runner < Clamp::StrictCommand
     end
 
     # Add local modules to the registry before everything else
-    register_local_modules(LogStash::Environment::LOGSTASH_HOME)
+    LogStash::Modules::Util.register_local_modules(LogStash::Environment::LOGSTASH_HOME)
 
     # We configure the registry and load any plugin that can register hooks
     # with logstash, this need to be done before any operation.
