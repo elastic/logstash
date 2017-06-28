@@ -447,15 +447,18 @@ module LogStash; class Pipeline < BasePipeline
       shutdown_requested |= signal.shutdown? # latch on shutdown signal
 
       batch = @filter_queue_client.read_batch # metrics are started in read_batch
-      @events_consumed.increment(batch.size)
-      filter_batch(batch)
-      flush_filters_to_batch(batch, :final => false) if signal.flush?
-      output_batch(batch)
-      break if @force_shutdown.true? # Do not ack the current batch
-      @filter_queue_client.close_batch(batch)
+      if (batch.size > 0)
+        @events_consumed.increment(batch.size)
+        filter_batch(batch)
+        flush_filters_to_batch(batch, :final => false) if signal.flush?
+        output_batch(batch)
+        unless @force_shutdown.true? # ack the current batch
+          @filter_queue_client.close_batch(batch)
+        end
+      end
 
       # keep break at end of loop, after the read_batch operation, some pipeline specs rely on this "final read_batch" before shutdown.
-      break if shutdown_requested && !draining_queue?
+      break if (shutdown_requested && !draining_queue?) || @force_shutdown.true?
     end
 
     # we are shutting down, queue is drained if it was required, now  perform a final flush.
