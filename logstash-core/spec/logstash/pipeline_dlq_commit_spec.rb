@@ -36,7 +36,7 @@ class DLQCommittingFilter < LogStash::Filters::Base
 end
 
 describe LogStash::Pipeline do
-  let(:pipeline_settings_obj) { LogStash::SETTINGS }
+  let(:pipeline_settings_obj) { LogStash::SETTINGS.clone }
   let(:pipeline_settings) do
     {
       "pipeline.workers" => 2,
@@ -68,7 +68,6 @@ describe LogStash::Pipeline do
 
   after(:each) do
     FileUtils.remove_entry pipeline_settings["path.dead_letter_queue"]
-    pipeline_settings_obj.reset
   end
 
   context "dlq is enabled" do
