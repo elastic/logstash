@@ -1,0 +1,38 @@
+[[releasenotes]]
+== Release Notes
+
+This section summarizes the changes in the following releases:
+
+* <<logstash-5-5-0,Logstash 5.5.0>>
+
+[[logstash-5-5-0]]
+=== Logstash 5.5.0 Release Notes
+
+* Introduced a new feature called dead letter queues. When enabled, the dead letter queue (DLQ) 
+  will route events to a file based store when it can't be processed by certain plugins. Currently, 
+  the Elasticsearch Output is the only plugin that uses this feature to store events that cause a 
+  Elasticsearch mapping error.
+* Upgraded to jruby version 1.7.27.
+* Set the default entropy source to `/dev/urandom`. This change resolves an issue that caused Logstash to 
+  stall on startup for several minutes. This stall behavior was especially visible when Logstash was 
+  deployed on VMs ({lsissue}6117[Issue 6117]).
+* Added support to resolve environment variables specified in the `logstash.yml` ({lsissue}6785[Issue 6785]).  
+* Fixed the ability to change log level via the API ({lsissue}7277[Issue 7277]).
+
+[float]
+==== Input Plugins
+
+*`Beats`*:
+
+* Fixed the ability to set SSL protocols.
+
+[float]
+==== Filter Plugins
+
+*`Date`*:
+
+* A warning message is no longer logged when `ISO8601` format and timezone interpolation option is used (https://github.com/logstash-plugins/logstash-filter-date/issues/97[#97]).
+
+*`Mutate`*:
+
+* Added a new copy option that allows users to clone a field into a new field target.
