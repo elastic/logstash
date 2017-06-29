@@ -23,7 +23,7 @@ enable you to quickly collect, parse, and index popular log types and view
 pre-built Kibana dashboards within minutes.
 {metricbeat}metricbeat-modules.html[Metricbeat Modules] provide a similar
 experience, but with metrics data. In this context, Beats will ship data
-directly to Elasticsearch where {ref}ingest.html[Ingest Nodes] will process
+directly to Elasticsearch where {ref}/ingest.html[Ingest Nodes] will process
 and index your data.
 
 image::static/images/deploy1.png[]
@@ -120,11 +120,11 @@ Enterprise-grade security is available across the entire delivery chain.
 
 * Wire encryption is recommended for both the transport from
 {filebeat}configuring-ssl-logstash.html[Beats to Logstash] and from
-{xpack-ref}logstash.html[Logstash to Elasticsearch].
+{xpack-ref}/logstash.html[Logstash to Elasticsearch].
 * There’s a wealth of security options when communicating with Elasticsearch
 including basic authentication, TLS, PKI, LDAP, AD, and other custom realms.
 To enable Elasticsearch security, consult the
-{xpack-ref}xpack-security.html[X-Pack documentation].
+{xpack-ref}/xpack-security.html[X-Pack documentation].
 
 [float]
 ==== Monitoring
