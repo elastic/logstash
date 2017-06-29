@@ -10,7 +10,7 @@ Before upgrading Logstash:
 ===========================================
 
 If you are installing Logstash with other components in the Elastic Stack, also see the
-{stack}index.html[Elastic Stack installation and upgrade documentation].
+{stack-ref}/index.html[Elastic Stack installation and upgrade documentation].
 
 See the following topics for information about upgrading Logstash:
 
@@ -49,11 +49,11 @@ some Logstash plugins have changed in the 5.x release.
 Before upgrading Logstash, remember to read the <<breaking-changes,breaking changes>>.
 
 If you are installing Logstash with other components in the Elastic Stack, also see the
-{stack}index.html[Elastic Stack installation and upgrade documentation].
+{stack-ref}/index.html[Elastic Stack installation and upgrade documentation].
 
 ==== When to Upgrade
 
-Fresh installations can and should start with the same version across the Elastic Stack. 
+Fresh installations can and should start with the same version across the Elastic Stack.
 
 Elasticsearch 5.0 does not require Logstash 5.0. An Elasticsearch 5.0 cluster will happily receive data from a
 Logstash 2.x instance via the default HTTP communication layer. This provides some flexibility to decide when to upgrade
@@ -78,5 +78,3 @@ then this issue can be ignored.
 
 Note the Elasticsearch Output Index Template change in the <<breaking-changes>> documentation for further insight into
 this change and how it impacts operations.
-
-

@@ -2,11 +2,11 @@
 === Parsing Logs with Logstash
 
 In <<first-event>>, you created a basic Logstash pipeline to test your Logstash setup. In the real world, a Logstash
-pipeline is a bit more complex: it typically has one or more input, filter, and output plugins.  
+pipeline is a bit more complex: it typically has one or more input, filter, and output plugins.
 
 In this section, you create a Logstash pipeline that uses Filebeat to take Apache web logs as input, parses those
 logs to create specific, named fields from the logs, and writes the parsed data to an Elasticsearch cluster. Rather than
-defining the pipeline configuration at the command line, you'll define the pipeline in a config file. 
+defining the pipeline configuration at the command line, you'll define the pipeline in a config file.
 
 To get started, go https://download.elastic.co/demos/logstash/gettingstarted/logstash-tutorial.log.gz[here] to
 download the sample data set used in this example. Unpack the file.
@@ -15,20 +15,20 @@ download the sample data set used in this example. Unpack the file.
 [[configuring-filebeat]]
 ==== Configuring Filebeat to Send Log Lines to Logstash
 
-Before you create the Logstash pipeline, you'll configure Filebeat to send log lines to Logstash.  
+Before you create the Logstash pipeline, you'll configure Filebeat to send log lines to Logstash.
 The https://github.com/elastic/beats/tree/master/filebeat[Filebeat] client is a lightweight, resource-friendly tool
 that collects logs from files on the server and forwards these logs to your Logstash instance for processing.
 Filebeat is designed for reliability and low latency. Filebeat has a light resource footprint on the host machine,
-and the {logstash}plugins-inputs-beats.html[`Beats input`] plugin minimizes the resource demands on the Logstash
+and the {logstash-ref}/plugins-inputs-beats.html[`Beats input`] plugin minimizes the resource demands on the Logstash
 instance.
 
 NOTE: In a typical use case, Filebeat runs on a separate machine from the machine running your
 Logstash instance. For the purposes of this tutorial, Logstash and Filebeat are running on the
 same machine.
 
-The default Logstash installation includes the {logstash}plugins-inputs-beats.html[`Beats input`] plugin. The Beats
+The default Logstash installation includes the {logstash-ref}/plugins-inputs-beats.html[`Beats input`] plugin. The Beats
 input plugin enables Logstash to receive events from the Elastic Beats framework, which means that any Beat written
-to work with the Beats framework, such as Packetbeat and Metricbeat, can also send event data to Logstash. 
+to work with the Beats framework, such as Packetbeat and Metricbeat, can also send event data to Logstash.
 
 To install Filebeat on your data source machine, download the appropriate package from the Filebeat https://www.elastic.co/downloads/beats/filebeat[product page]. You can also refer to
 {filebeat}filebeat-getting-started.html[Getting Started with Filebeat] in the Beats documentation for additional
@@ -36,7 +36,7 @@ installation instructions.
 
 After installing Filebeat, you need to configure it. Open the `filebeat.yml` file located in your Filebeat installation
 directory, and replace the contents with the following lines. Make sure `paths` points to the example Apache log file,
-`logstash-tutorial.log`, that you downloaded earlier: 
+`logstash-tutorial.log`, that you downloaded earlier:
 
 [source,yaml]
 --------------------------------------------------------------------------------
@@ -50,7 +50,7 @@ output.logstash:
 
 <1> Absolute path to the file or files that Filebeat processes.
 
-Save your changes. 
+Save your changes.
 
 To keep the configuration simple, you won't specify TLS/SSL settings as you would in a real world
 scenario.
@@ -91,10 +91,10 @@ output {
 }
 --------------------------------------------------------------------------------
 
-This skeleton is non-functional, because the input and output sections don’t have any valid options defined. 
+This skeleton is non-functional, because the input and output sections don’t have any valid options defined.
 
 To get started, copy and paste the skeleton configuration pipeline into a file named `first-pipeline.conf` in your home
-Logstash directory. 
+Logstash directory.
 
 Next, configure your Logstash instance to use the Beats input plugin by adding the following lines to the `input` section
 of the `first-pipeline.conf` file:
@@ -107,7 +107,7 @@ of the `first-pipeline.conf` file:
 --------------------------------------------------------------------------------
 
 You'll configure Logstash to write to Elasticsearch later. For now, you can add the following line
-to the `output` section so that the output is printed to stdout when you run Logstash: 
+to the `output` section so that the output is printed to stdout when you run Logstash:
 
 [source,json]
 --------------------------------------------------------------------------------
@@ -190,7 +190,7 @@ Now you have a working pipeline that reads log lines from Filebeat. However you'
 is not ideal. You want to parse the log messages to create specific, named fields from the logs.
 To do this, you'll use the `grok` filter plugin.
 
-The {logstash}plugins-filters-grok.html[`grok`] filter plugin is one of several plugins that are available by default in
+The {logstash-ref}/plugins-filters-grok.html[`grok`] filter plugin is one of several plugins that are available by default in
 Logstash. For details on how to manage Logstash plugins, see the <<working-with-plugins,reference documentation>> for
 the plugin manager.
 
@@ -257,7 +257,7 @@ output {
 }
 --------------------------------------------------------------------------------
 
-Save your changes. Because you've enabled automatic config reloading, you don't have to restart Logstash to 
+Save your changes. Because you've enabled automatic config reloading, you don't have to restart Logstash to
 pick up your changes. However, you do need to force Filebeat to read the log file from scratch. To do this,
 go to the terminal window where Filebeat is running and press Ctrl+C to shut down Filebeat. Then delete the
 Filebeat registry file. For example, run:
@@ -278,7 +278,7 @@ sudo ./filebeat -e -c filebeat.yml -d "publish"
 --------------------------------------------------------------------------------
 
 There might be a slight delay before Filebeat begins processing events if it needs to wait for Logstash to reload the
-config file. 
+config file.
 
 After Logstash applies the grok pattern, the events will have the following JSON representation:
 
@@ -321,7 +321,7 @@ Notice that the event includes the original message, but the log message is also
 ==== Enhancing Your Data with the Geoip Filter Plugin
 
 In addition to parsing log data for better searches, filter plugins can derive supplementary information from existing
-data. As an example, the {logstash}plugins-filters-geoip.html[`geoip`] plugin looks up IP addresses, derives geographic
+data. As an example, the {logstash-ref}/plugins-filters-geoip.html[`geoip`] plugin looks up IP addresses, derives geographic
 location information from the addresses, and adds that location information to the logs.
 
 Configure your Logstash instance to use the `geoip` filter plugin by adding the following lines to the `filter` section
@@ -336,8 +336,8 @@ of the `first-pipeline.conf` file:
 
 The `geoip` plugin configuration requires you to specify the name of the source field that contains the IP address to look up. In this example, the `clientip` field contains the IP address.
 
-Since filters are evaluated in sequence, make sure that the `geoip` section is after the `grok` section of 
-the configuration file and that both the `grok` and `geoip` sections are nested within the `filter` section. 
+Since filters are evaluated in sequence, make sure that the `geoip` section is after the `grok` section of
+the configuration file and that both the `grok` and `geoip` sections are nested within the `filter` section.
 
 When you're done, the contents of `first-pipeline.conf` should look like this:
 
@@ -361,7 +361,7 @@ output {
 }
 --------------------------------------------------------------------------------
 
-Save your changes. To force Filebeat to read the log file from scratch, as you did earlier, shut down Filebeat (press Ctrl+C), 
+Save your changes. To force Filebeat to read the log file from scratch, as you did earlier, shut down Filebeat (press Ctrl+C),
 delete the registry file, and then restart Filebeat with the following command:
 
 [source,shell]
@@ -445,7 +445,7 @@ output {
 }
 --------------------------------------------------------------------------------
 
-Save your changes. To force Filebeat to read the log file from scratch, as you did earlier, shut down Filebeat (press Ctrl+C), 
+Save your changes. To force Filebeat to read the log file from scratch, as you did earlier, shut down Filebeat (press Ctrl+C),
 delete the registry file, and then restart Filebeat with the following command:
 
 [source,shell]
@@ -460,7 +460,7 @@ sudo ./filebeat -e -c filebeat.yml -d "publish"
 Now that the Logstash pipeline is configured to index the data into an
 Elasticsearch cluster, you can query Elasticsearch.
 
-Try a test query to Elasticsearch based on the fields created by the `grok` filter plugin. 
+Try a test query to Elasticsearch based on the fields created by the `grok` filter plugin.
 Replace $DATE with the current date, in YYYY.MM.DD format:
 
 [source,shell]
@@ -470,7 +470,7 @@ curl -XGET 'localhost:9200/logstash-$DATE/_search?pretty&q=response=200'
 
 NOTE: The date used in the index name is based on UTC, not the timezone where Logstash is running.
 If the query returns `index_not_found_exception`, make sure that `logstash-$DATE` reflects the actual
-name of the index. To see a list of available indexes, use this query: `curl 'localhost:9200/_cat/indices?v'`. 
+name of the index. To see a list of available indexes, use this query: `curl 'localhost:9200/_cat/indices?v'`.
 
 You should get multiple hits back. For example:
 
@@ -541,9 +541,9 @@ You should get multiple hits back. For example:
           "timestamp" : "04/Jan/2015:05:13:45 +0000"
         }
       }
-    }, 
+    },
     ...
-    
+
 --------------------------------------------------------------------------------
 
 Try another search for the geographic information derived from the IP address.
@@ -624,7 +624,7 @@ A few log entries come from Buffalo, so the query produces the following respons
         }
       },
      ...
-     
+
 --------------------------------------------------------------------------------
 
 If you are using Kibana to visualize your data, you can also explore the Filebeat data in Kibana:
@@ -652,7 +652,7 @@ sends the information to an Elasticsearch cluster as well as writing the informa
 [[twitter-configuration]]
 ==== Reading from a Twitter Feed
 
-To add a Twitter feed, you use the {logstash}plugins-inputs-twitter.html[`twitter`] input plugin. To
+To add a Twitter feed, you use the {logstash-ref}/plugins-inputs-twitter.html[`twitter`] input plugin. To
 configure the plugin, you need several pieces of information:
 
 * A _consumer key_, which uniquely identifies your Twitter app.
@@ -662,13 +662,13 @@ configure the plugin, you need several pieces of information:
 * An _oauth token secret_, which serves as the password of the Twitter account.
 
 Visit https://dev.twitter.com/apps[https://dev.twitter.com/apps] to set up a Twitter account and generate your consumer
-key and secret, as well as your access token and secret. See the docs for the {logstash}plugins-inputs-twitter.html[`twitter`] input plugin if you're not sure how to generate these keys. 
+key and secret, as well as your access token and secret. See the docs for the {logstash-ref}/plugins-inputs-twitter.html[`twitter`] input plugin if you're not sure how to generate these keys.
 
 Like you did earlier when you worked on <<advanced-pipeline>>, create a config file (called `second-pipeline.conf`) that
 contains the skeleton of a configuration pipeline. If you want, you can reuse the file you created earlier, but make
-sure you pass in the correct config file name when you run Logstash. 
+sure you pass in the correct config file name when you run Logstash.
 
-Add the following lines to the `input` section of the `second-pipeline.conf` file, substituting your values for the 
+Add the following lines to the `input` section of the `second-pipeline.conf` file, substituting your values for the
 placeholder values shown here:
 
 [source,json]
@@ -691,7 +691,7 @@ client is a lightweight, resource-friendly tool that collects logs from files on
 Logstash instance for processing.
 
 After installing Filebeat, you need to configure it. Open the `filebeat.yml` file located in your Filebeat installation
-directory, and replace the contents with the following lines. Make sure `paths` points to your syslog: 
+directory, and replace the contents with the following lines. Make sure `paths` points to your syslog:
 
 [source,shell]
 --------------------------------------------------------------------------------
@@ -708,7 +708,7 @@ output.logstash:
 <1> Absolute path to the file or files that Filebeat processes.
 <2> Adds a field called `type` with the value `syslog` to the event.
 
-Save your changes. 
+Save your changes.
 
 To keep the configuration simple, you won't specify TLS/SSL settings as you would in a real world
 scenario.
@@ -728,7 +728,7 @@ of the `second-pipeline.conf` file:
 ==== Writing Logstash Data to a File
 
 You can configure your Logstash pipeline to write data directly to a file with the
-{logstash}plugins-outputs-file.html[`file`] output plugin.
+{logstash-ref}/plugins-outputs-file.html[`file`] output plugin.
 
 Configure your Logstash instance to use the `file` output plugin by adding the following lines to the `output` section
 of the `second-pipeline.conf` file:
@@ -766,7 +766,7 @@ the default port for Elasticsearch is `9200` and can be omitted in the configura
 [[testing-second-pipeline]]
 ===== Testing the Pipeline
 
-At this point, your `second-pipeline.conf` file looks like this: 
+At this point, your `second-pipeline.conf` file looks like this:
 
 [source,json]
 --------------------------------------------------------------------------------
@@ -843,7 +843,4 @@ To see data from the Twitter feed, try this query:
 curl -XGET 'http://localhost:9200/logstash-$DATE/_search?pretty&q=client:iphone'
 --------------------------------------------------------------------------------
 
-Again, remember to replace $DATE with the current date, in YYYY.MM.DD format. 
-
-
-
+Again, remember to replace $DATE with the current date, in YYYY.MM.DD format.

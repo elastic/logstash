@@ -13,20 +13,12 @@ release-state can be: released | prerelease | unreleased
 
 :jdk:                   1.8.0
 :guide:                 https://www.elastic.co/guide/en/elasticsearch/guide/current/
-:ref:                   https://www.elastic.co/guide/en/elasticsearch/reference/{branch}/
-:xpack-ref:             https://www.elastic.co/guide/en/x-pack/{branch}/
-:kibana-ref:            https://www.elastic.co/guide/en/kibana/{branch}/
-:logstash:              https://www.elastic.co/guide/en/logstash/{branch}/
 :libbeat:               https://www.elastic.co/guide/en/beats/libbeat/{branch}/
 :filebeat:              https://www.elastic.co/guide/en/beats/filebeat/{branch}/
 :metricbeat:            https://www.elastic.co/guide/en/beats/metricbeat/{branch}/
 :lsissue:               https://github.com/elastic/logstash/issues/
-:security:              X-Pack security
-:stack:                 https://www.elastic.co/guide/en/elastic-stack/{branch}/
 
-:xpack:                 X-Pack
-:es:                    Elasticsearch
-:kib:                   Kibana
+include::{docs-dir}/shared/attributes.asciidoc[]
 
 [[introduction]]
 == Logstash Introduction

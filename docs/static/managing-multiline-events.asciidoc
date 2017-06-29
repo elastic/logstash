@@ -13,15 +13,15 @@ a simple set of rules.
 
 IMPORTANT: If you are using a Logstash input plugin that supports multiple hosts, such as
 the <<plugins-inputs-beats>> input plugin, you should not use the
-<<plugins-codecs-multiline>> codec to handle multiline events. Doing so may result in the 
+<<plugins-codecs-multiline>> codec to handle multiline events. Doing so may result in the
 mixing of streams and corrupted event data. In this situation, you need to handle multiline
-events before sending the event data to Logstash. 
+events before sending the event data to Logstash.
 
 The most important aspects of configuring the multiline codec are the following:
 
 * The `pattern` option specifies a regular expression. Lines that match the specified regular expression are considered
 either continuations of a previous line or the start of a new multiline event. You can use
-{logstash}plugins-filters-grok.html[grok] regular expression templates with this configuration option.
+{logstash-ref}/plugins-filters-grok.html[grok] regular expression templates with this configuration option.
 * The `what` option takes two values: `previous` or `next`. The `previous` value specifies that lines that match the
 value in the `pattern` option are part of the previous line. The `next` value specifies that lines that match the value
 in the `pattern` option are part of the following line.* The `negate` option applies the multiline codec to lines that
