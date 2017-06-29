@@ -18,7 +18,7 @@ release-state can be: released | prerelease | unreleased
 :metricbeat:            https://www.elastic.co/guide/en/beats/metricbeat/current/
 :lsissue:               https://github.com/elastic/logstash/issues/
 
-include::{docs-dir}/sharedattributes.asciidoc[]
+include::{docs-dir}/shared/attributes.asciidoc[]
 
 [[introduction]]
 == Logstash Introduction
