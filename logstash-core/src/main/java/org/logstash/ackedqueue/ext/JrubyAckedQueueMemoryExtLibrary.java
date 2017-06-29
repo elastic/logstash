@@ -171,6 +171,12 @@ public class JrubyAckedQueueMemoryExtLibrary implements Library {
             return RubyBoolean.newBoolean(context.runtime, this.queue.isFullyAcked());
         }
 
+        @JRubyMethod(name = "is_empty?")
+        public IRubyObject ruby_is_empty(ThreadContext context)
+        {
+            return RubyBoolean.newBoolean(context.runtime, this.queue.isEmpty());
+        }
+
         @JRubyMethod(name = "close")
         public IRubyObject ruby_close(ThreadContext context)
         {
