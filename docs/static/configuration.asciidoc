@@ -249,7 +249,7 @@ Example:
 ==== String
 
 A string must be a single character sequence. Note that string values are
-enclosed in quotes, either double or single. 
+enclosed in quotes, either double or single.
 
 ===== Escape Sequences
 
@@ -668,7 +668,7 @@ environment variable is undefined.
 The following examples show you how to use environment variables to set the values of some commonly used
 configuration options.
 
-===== Setting the TCP Port 
+===== Setting the TCP Port
 
 Here's an example that uses an environment variable to set the TCP port:
 
@@ -688,7 +688,7 @@ Now let's set the value of `TCP_PORT`:
 export TCP_PORT=12345
 ----
 
-At startup, Logstash uses the following configuration: 
+At startup, Logstash uses the following configuration:
 
 [source,ruby]
 ----------------------------------
@@ -701,7 +701,7 @@ input {
 
 If the `TCP_PORT` environment variable is not set, Logstash returns a configuration error.
 
-You can fix this problem by specifying a default value: 
+You can fix this problem by specifying a default value:
 
 [source,ruby]
 ----
@@ -723,7 +723,7 @@ input {
 }
 ----
 
-If the environment variable is defined, Logstash uses the value specified for the variable instead of the default. 
+If the environment variable is defined, Logstash uses the value specified for the variable instead of the default.
 
 ===== Setting the Value of a Tag
 
@@ -745,7 +745,7 @@ Let's set the value of `ENV_TAG`:
 export ENV_TAG="tag2"
 ----
 
-At startup, Logstash uses the following configuration: 
+At startup, Logstash uses the following configuration:
 
 [source,ruby]
 ----
@@ -778,7 +778,7 @@ Let's set the value of `HOME`:
 export HOME="/path"
 ----
 
-At startup, Logstash uses the following configuration: 
+At startup, Logstash uses the following configuration:
 
 [source,ruby]
 ----
@@ -797,7 +797,7 @@ filter {
 The following examples illustrate how you can configure Logstash to filter events, process Apache logs and syslog messages, and use conditionals to control what events are processed by a filter or output.
 
 TIP: If you need help building grok patterns, try out the
-{kibana-ref}xpack-grokdebugger.html[Grok Debugger]. The Grok Debugger is an
+{kibana-ref}/xpack-grokdebugger.html[Grok Debugger]. The Grok Debugger is an
 {xpack} feature under the Basic License and is therefore *free to use*.
 
 [float]

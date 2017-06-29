@@ -224,8 +224,8 @@ Referrer URL:: `referrer`
 User agent:: `agent`
 
 TIP: If you need help building grok patterns, try out the
-{kibana-ref}xpack-grokdebugger.html[Grok Debugger]. The Grok Debugger is an
-{xpack} feature under the Basic License and is therefore *free to use*. 
+{kibana-ref}/xpack-grokdebugger.html[Grok Debugger]. The Grok Debugger is an
+{xpack} feature under the Basic License and is therefore *free to use*.
 
 Edit the `first-pipeline.conf` file and replace the entire `filter` section with the following text:
 
