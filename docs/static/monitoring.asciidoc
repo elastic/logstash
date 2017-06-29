@@ -38,5 +38,5 @@ Then you can drill down to see stats about a specific node:
 
 image::static/images/nodestats.png[Logstash monitoring node stats dashboard in Kibana]
 
-See the {xpack-ref}monitoring-logstash.html[Logstash monitoring documentation] to learn
+See the {xpack-ref}/monitoring-logstash.html[Logstash monitoring documentation] to learn
 how to set up and use this feature.

@@ -33,7 +33,7 @@ filter {
   date {
     match => [ "logdate", "MMM dd yyyy HH:mm:ss" ]
   }
-}   
+}
 --------------------------------------------------------------------------------
 
 
@@ -167,7 +167,7 @@ filter {
 --------------------------------------------------------------------------------
 
 <<plugins-codecs-fluent,fluent codec>>::
-        
+
 Reads the Fluentd `msgpack` schema.
 +
 The following config decodes logs received from `fluent-logger-ruby`:
@@ -353,8 +353,8 @@ After the filter is applied, the event in the example will have these fields:
 * `duration: 0.043`
 
 TIP: If you need help building grok patterns, try out the
-{kibana-ref}xpack-grokdebugger.html[Grok Debugger]. The Grok Debugger is an
-{xpack} feature under the Basic License and is therefore *free to use*. 
+{kibana-ref}/xpack-grokdebugger.html[Grok Debugger]. The Grok Debugger is an
+{xpack} feature under the Basic License and is therefore *free to use*.
 
 [[lookup-enrichment]]
 === Enriching Data with Lookups
@@ -379,10 +379,10 @@ filter {
 }
 --------------------------------------------------------------------------------
 
-    
+
 <<plugins-filters-elasticsearch,elasticsearch>>::
 
-Copies fields from previous log events in Elasticsearch to current events. 
+Copies fields from previous log events in Elasticsearch to current events.
 +
 The following config shows a complete example of how this filter might
 be used.  Whenever Logstash receives an "end" event, it uses this Elasticsearch
@@ -413,7 +413,7 @@ between the two events.
 
 <<plugins-filters-geoip,geoip filter>>::
 
-Adds geographical information about the location of IP addresses. For example: 
+Adds geographical information about the location of IP addresses. For example:
 +
 [source,json]
 --------------------------------------------------------------------------------
@@ -423,7 +423,7 @@ filter {
   }
 }
 --------------------------------------------------------------------------------
-+    
++
 After the geoip filter is applied, the event will be enriched with geoip fields.
 For example:
 +
@@ -493,7 +493,7 @@ filter {
       "200" => "OK"
       "403" => "Forbidden"
       "404" => "Not Found"
-      "408" => "Request Timeout" 
+      "408" => "Request Timeout"
     }
     remove_field => "response_code"
   }
@@ -507,7 +507,7 @@ Parses user agent strings into fields.
 +
 The following example takes the user agent string in the `agent` field, parses
 it into user agent fields, and adds the user agent fields to a new field called
-`user_agent`. It also removes the original `agent` field: 
+`user_agent`. It also removes the original `agent` field:
 +
 [source,json]
 --------------------------------------------------------------------------------
@@ -519,7 +519,7 @@ filter {
   }
 }
 --------------------------------------------------------------------------------
-+ 
++
 After the filter is applied, the event will be enriched with user agent fields.
 For example:
 +
@@ -535,7 +535,4 @@ For example:
           "os_name": "Mac OS X",
           "device": "Other"
         }
---------------------------------------------------------------------------------   
-        
-
-    
+--------------------------------------------------------------------------------
