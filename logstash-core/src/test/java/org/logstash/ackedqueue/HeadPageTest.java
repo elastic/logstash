@@ -73,6 +73,25 @@ public class HeadPageTest {
     }
 
     @Test
+    public void inEmpty() throws IOException {
+        Queueable element = new StringElement("foobarbaz");
+
+        Settings s = TestSettings.volatileQueueSettings(1000);
+        try(Queue q = new Queue(s)) {
+            q.open();
+            HeadPage p = q.headPage;
+
+            assertThat(p.isEmpty(), is(true));
+            p.write(element.serialize(), 1, 1);
+            assertThat(p.isEmpty(), is(false));
+            Batch b = q.readBatch(1);
+            assertThat(p.isEmpty(), is(false));
+            b.close();
+            assertThat(p.isEmpty(), is(true));
+        }
+    }
+
+    @Test
     public void pageWriteAndReadMulti() throws IOException {
         long seqNum = 1L;
         Queueable element = new StringElement("foobarbaz");

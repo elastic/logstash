@@ -67,6 +67,17 @@ public abstract class Page implements Closeable {
         return new Batch(deserialized, serialized.getSeqNums(), this.queue);
     }
 
+    /**
+     * Page is considered empty if it does not contain any element or if all elements are acked.
+     *
+     * TODO: note that this should be the same as isFullyAcked once fixed per https://github.com/elastic/logstash/issues/7570
+     *
+     * @return true if the page has no element or if all elements are acked.
+     */
+    public boolean isEmpty() {
+        return this.elementCount == 0 || isFullyAcked();
+    }
+
     public boolean isFullyRead() {
         return unreadCount() <= 0;
 //        return this.elementCount <= 0 || this.firstUnreadSeqNum > maxSeqNum();
