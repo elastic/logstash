@@ -755,4 +755,21 @@ public class QueueTest {
             assertThat(q.getPersistedByteSize(), is(0L));
         }
     }
+
+    @Test
+    public void inEmpty() throws IOException {
+        try(Queue q = new Queue(TestSettings.volatileQueueSettings(1000))) {
+            q.open();
+            assertThat(q.isEmpty(), is(true));
+
+            q.write(new StringElement("foobarbaz"));
+            assertThat(q.isEmpty(), is(false));
+
+            Batch b = q.readBatch(1);
+            assertThat(q.isEmpty(), is(false));
+
+            b.close();
+            assertThat(q.isEmpty(), is(true));
+        }
+    }
 }

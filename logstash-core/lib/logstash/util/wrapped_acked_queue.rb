@@ -100,6 +100,10 @@ module LogStash; module Util
       end
     end
 
+    def is_empty?
+      @queue.is_empty?
+    end
+
     def close
       @queue.close
       @closed.make_true
@@ -129,7 +133,7 @@ module LogStash; module Util
       def empty?
         @mutex.lock
         begin
-          @queue.is_fully_acked?
+          @queue.is_empty?
         ensure
           @mutex.unlock
         end

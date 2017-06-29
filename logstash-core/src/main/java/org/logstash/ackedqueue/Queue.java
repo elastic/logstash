@@ -396,6 +396,24 @@ public class Queue implements Closeable {
         }
     }
 
+    /**
+     * Queue is considered empty if it does not contain any tail page and the headpage has no element or all
+     * elements are acked
+     *
+     * TODO: note that this should be the same as isFullyAcked once fixed per https://github.com/elastic/logstash/issues/7570
+     *
+     * @return true if the queue has no tail page and the head page is empty.
+     */
+    public boolean isEmpty() {
+        lock.lock();
+        try {
+            return this.tailPages.isEmpty() && this.headPage.isEmpty();
+        } finally {
+            lock.unlock();
+        }
+
+    }
+
     // @return true if the queue is fully acked, which implies that it is fully read which works as an "empty" state.
     public boolean isFullyAcked() {
         lock.lock();
