@@ -36,11 +36,14 @@ module LogStash module Config
       specified_and_available_names.each do |module_name|
         connect_fail_args = {}
         begin
+          module_settings = settings.clone
+
           module_hash = modules_array.find {|m| m["name"] == module_name}
           current_module = plugin_modules.find { |allmodules| allmodules.module_name == module_name }
 
           alt_name = "module-#{module_name}"
           pipeline_id = alt_name
+          module_settings.set("pipeline.id", pipeline_id)
 
           current_module.with_settings(module_hash)
           esclient = LogStash::ElasticsearchClient.build(module_hash)
@@ -52,7 +55,7 @@ module LogStash module Config
 
             config_string = current_module.config_string
 
-            pipelines << {"pipeline_id" => pipeline_id, "alt_name" => alt_name, "config_string" => config_string, "settings" => settings}
+            pipelines << {"pipeline_id" => pipeline_id, "alt_name" => alt_name, "config_string" => config_string, "settings" => module_settings}
           else
             connect_fail_args[:module_name] = module_name
             connect_fail_args[:hosts] = esclient.host_settings
