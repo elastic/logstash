@@ -48,3 +48,4 @@ qa/integration/services/installed/
 **/.classpath
 logstash-core/bin
 plugins_version_docs.json
+tools/benchmark-cli/out/
