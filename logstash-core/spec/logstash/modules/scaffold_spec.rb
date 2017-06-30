@@ -80,7 +80,7 @@ ERB
       expect(test_module.logstash_configuration).not_to be_nil
       config_string = test_module.config_string
       expect(config_string).to include("port => 5606")
-      expect(config_string).to include('hosts => ["es.mycloud.com:9200"]')
+      expect(config_string).to include("hosts => ['es.mycloud.com:9200']")
     end
   end
 
