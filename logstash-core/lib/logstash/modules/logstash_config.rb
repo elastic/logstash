@@ -1,9 +1,9 @@
 # encoding: utf-8
 require "logstash/namespace"
 require_relative "file_reader"
+require "logstash/settings"
 
 module LogStash module Modules class LogStashConfig
-
   # We name it `modul` here because `module` has meaning in Ruby.
   def initialize(modul, settings)
     @directory = ::File.join(modul.directory, "logstash")
@@ -15,21 +15,58 @@ module LogStash module Modules class LogStashConfig
     ::File.join(@directory, "#{@name}.conf.erb")
   end
 
-  def setting(value, default)
-    @settings.fetch(value, default)
+  def configured_inputs(default = [], aliases = {})
+    name = "var.inputs"
+    values = get_setting(LogStash::Setting::SplittableStringArray.new(name, String, default))
+
+    aliases.each { |k,v| values << v if values.include?(k) }
+    aliases.invert.each { |k,v| values << v if values.include?(k) }
+    values.flatten.uniq
+  end
+
+  def alias_settings_keys!(aliases)
+    aliased_settings = alias_matching_keys(aliases, @settings)
+    @settings = alias_matching_keys(aliases.invert, aliased_settings)
+  end
+
+  def array_to_string(array)
+    "[#{array.collect { |i| "'#{i}'" }.join(", ")}]"
+  end
+
+  def get_setting(setting_class)
+    raw_value = @settings[setting_class.name]
+    # If we dont check for NIL, the Settings class will try to coerce the value
+    # and most of the it will fails when a NIL value is explicitely set.
+    # This will be fixed once we wrap the plugins settings into a Settings class
+    setting_class.set(raw_value) unless raw_value.nil?
+    setting_class.value
+  end
+
+  def setting(name, default)
+    # by default we use the more permissive setting which is a `NullableString`
+    # This is fine because the end format of the logstash configuration is a string representation
+    # of the pipeline. There is a good reason why I think we should use the settings classes, we
+    # can `preprocess` a template and generate a configuration from the defined settings
+    # validate the values and replace them in the template.
+    case default
+      when String
+        get_setting(LogStash::Setting::NullableString.new(name, default.to_s))
+      when Numeric
+        get_setting(LogStash::Setting::Numeric.new(name, default))
+      else
+        get_setting(LogStash::Setting::NullableString.new(name, default.to_s))
+      end
   end
 
   def elasticsearch_output_config(type_string = nil)
-    hosts = setting("var.output.elasticsearch.hosts", "localhost:9200").split(',').map do |s|
-      '"' + s.strip + '"'
-    end.join(',')
+    hosts = array_to_string(get_setting(LogStash::Setting::SplittableStringArray.new("var.output.elasticsearch.hosts", String, ["localhost:9200"])))
     index = "#{@name}-#{setting("var.output.elasticsearch.index_suffix", "%{+YYYY.MM.dd}")}"
     password = "#{setting("var.output.elasticsearch.password", "changeme")}"
     user = "#{setting("var.output.elasticsearch.user", "elastic")}"
     document_type_line = type_string ? "document_type => #{type_string}" : ""
     <<-CONF
 elasticsearch {
-hosts => [#{hosts}]
+hosts => #{hosts}
 index => "#{index}"
 password => "#{password}"
 user => "#{user}"
@@ -44,5 +81,32 @@ CONF
     # send back as a string
     renderer = ERB.new(FileReader.read(template))
     renderer.result(binding)
+  end
+
+  private
+  # For a first version we are copying the values of the original hash,
+  # this might become problematic if we users changes the values of the
+  # settings in the template, which could result in an inconsistent view of the original data
+  #
+  # For v1 of the feature I think its an OK compromise, v2 we have a more advanced hash that
+  # support alias.
+  def alias_matching_keys(aliases, target)
+    aliased_target = target.dup
+
+    aliases.each do |matching_key_prefix, new_key_prefix|
+      target.each do |k, v|
+        re = /^#{matching_key_prefix}\./
+
+        if k =~ re
+          alias_key = k.gsub(re, "#{new_key_prefix}.")
+
+          # If the user setup the same values twices with different values lets just halt.
+          raise "Cannot create an alias, the destination key has already a value set: original key: #{k}, alias key: #{alias_key}" if (!aliased_target[alias_key].nil? && aliased_target[alias_key] != v)
+          aliased_target[alias_key] = v unless v.nil?
+        end
+      end
+    end
+
+    aliased_target
   end
 end end end
