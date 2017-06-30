@@ -1,0 +1,171 @@
+{
+  "host": "localhost",
+  "version": "6.0.0-alpha3",
+  "http_address": "127.0.0.1:9600",
+  "id": "8bbabc13-ea58-4dcd-b94e-90ae5f692c17",
+  "name": "localhost",
+  "jvm": {
+    "threads": {
+      "count": 28,
+      "peak_count": 28
+    },
+    "mem": {
+      "heap_used_percent": 16,
+      "heap_committed_in_bytes": 259522560,
+      "heap_max_in_bytes": 1037959168,
+      "heap_used_in_bytes": 168360000,
+      "non_heap_used_in_bytes": 113241032,
+      "non_heap_committed_in_bytes": 124989440,
+      "pools": {
+        "survivor": {
+          "peak_used_in_bytes": 8912896,
+          "used_in_bytes": 6872400,
+          "peak_max_in_bytes": 35782656,
+          "max_in_bytes": 35782656,
+          "committed_in_bytes": 8912896
+        },
+        "old": {
+          "peak_used_in_bytes": 141395984,
+          "used_in_bytes": 119128832,
+          "peak_max_in_bytes": 715849728,
+          "max_in_bytes": 715849728,
+          "committed_in_bytes": 178978816
+        },
+        "young": {
+          "peak_used_in_bytes": 71630848,
+          "used_in_bytes": 42358768,
+          "peak_max_in_bytes": 286326784,
+          "max_in_bytes": 286326784,
+          "committed_in_bytes": 71630848
+        }
+      }
+    },
+    "gc": {
+      "collectors": {
+        "old": {
+          "collection_time_in_millis": 89,
+          "collection_count": 3
+        },
+        "young": {
+          "collection_time_in_millis": 516,
+          "collection_count": 36
+        }
+      }
+    },
+    "uptime_in_millis": 15055
+  },
+  "process": {
+    "open_file_descriptors": 63,
+    "peak_open_file_descriptors": 63,
+    "max_file_descriptors": 10240,
+    "mem": {
+      "total_virtual_in_bytes": 5335916544
+    },
+    "cpu": {
+      "total_in_millis": 67919,
+      "percent": 63,
+      "load_average": {
+        "1m": 2.6826171875
+      }
+    }
+  },
+  "events": {
+    "in": 23101,
+    "filtered": 21052,
+    "out": 21052,
+    "duration_in_millis": 8939,
+    "queue_push_duration_in_millis": 3978
+  },
+  "pipelines": {
+    "main": {
+      "events": {
+        "duration_in_millis": 9250,
+        "in": 24125,
+        "filtered": 22076,
+        "out": 22076,
+        "queue_push_duration_in_millis": 4236
+      },
+      "plugins": {
+        "inputs": [
+          {
+            "id": "1db6e3e8163d4cf302e5b5ee12f6fc3dcfe783ba-1",
+            "events": {
+              "out": 24125,
+              "queue_push_duration_in_millis": 4236
+            },
+            "name": "stdin"
+          }
+        ],
+        "filters": [
+          {
+            "id": "1db6e3e8163d4cf302e5b5ee12f6fc3dcfe783ba-4",
+            "events": {
+              "duration_in_millis": 374,
+              "in": 23045,
+              "out": 23044
+            },
+            "name": "geoip"
+          },
+          {
+            "id": "1db6e3e8163d4cf302e5b5ee12f6fc3dcfe783ba-3",
+            "events": {
+              "duration_in_millis": 24,
+              "in": 23045,
+              "out": 23045
+            },
+            "matches": 23045,
+            "name": "date"
+          },
+          {
+            "id": "1db6e3e8163d4cf302e5b5ee12f6fc3dcfe783ba-5",
+            "events": {
+              "duration_in_millis": 1373,
+              "in": 23045,
+              "out": 23045
+            },
+            "name": "useragent"
+          },
+          {
+            "id": "1db6e3e8163d4cf302e5b5ee12f6fc3dcfe783ba-2",
+            "events": {
+              "duration_in_millis": 295,
+              "in": 23047,
+              "out": 23045
+            },
+            "matches": 23045,
+            "patterns_per_field": {
+              "message": 1
+            },
+            "name": "grok"
+          }
+        ],
+        "outputs": [
+          {
+            "id": "1db6e3e8163d4cf302e5b5ee12f6fc3dcfe783ba-6",
+            "events": {
+              "duration_in_millis": 89,
+              "in": 22076,
+              "out": 22076
+            },
+            "name": "stdout"
+          }
+        ]
+      },
+      "reloads": {
+        "last_error": null,
+        "successes": 0,
+        "last_success_timestamp": null,
+        "last_failure_timestamp": null,
+        "failures": 0
+      },
+      "queue": {
+        "type": "memory"
+      }
+    }
+  },
+  "reloads": {
+    "successes": 0,
+    "failures": 0
+  },
+  "os": {}
+}
