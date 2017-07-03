@@ -61,15 +61,17 @@ module LogStash module Modules class LogStashConfig
   def elasticsearch_output_config(type_string = nil)
     hosts = array_to_string(get_setting(LogStash::Setting::SplittableStringArray.new("var.output.elasticsearch.hosts", String, ["localhost:9200"])))
     index = "#{@name}-#{setting("var.output.elasticsearch.index_suffix", "%{+YYYY.MM.dd}")}"
-    password = "#{setting("var.output.elasticsearch.password", "changeme")}"
-    user = "#{setting("var.output.elasticsearch.user", "elastic")}"
+    user = @settings["var.output.elasticsearch.user"]
+    user_line = user ? "user => \"#{user}\"" : ""
+    password = @settings["var.output.elasticsearch.password"]
+    password_line = password ? "password => \"#{password}\"" : ""
     document_type_line = type_string ? "document_type => #{type_string}" : ""
     <<-CONF
 elasticsearch {
 hosts => #{hosts}
 index => "#{index}"
-password => "#{password}"
-user => "#{user}"
+#{user_line}
+#{password_line}
 manage_template => false
 #{document_type_line}
 }
