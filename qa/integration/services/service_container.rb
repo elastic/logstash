@@ -1,8 +1,10 @@
 require_relative "service"
 require "docker"
+require "logstash/devutils/rspec/logstash_helpers"
 
 # Represents a service running within a container.
 class ServiceContainer < Service
+  include LogStashHelper
 
   def initialize(name, settings)
     super(name, settings)
@@ -47,7 +49,9 @@ class ServiceContainer < Service
   end
 
   def build_image
-    @image = Docker::Image.build_from_dir(@image_context)
+    try(20) do
+      @image = Docker::Image.build_from_dir(@image_context)
+    end
   end
 
   def start_container
