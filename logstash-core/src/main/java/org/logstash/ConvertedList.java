@@ -20,15 +20,12 @@ import static org.logstash.Valuefier.convert;
 public class ConvertedList<T> implements List<T>, Collection<T>, Iterable<T> {
     private final List<T> delegate;
 
-    public ConvertedList(List<T> delegate) {
-        this.delegate = delegate;
-    }
-    public ConvertedList() {
-        this.delegate = new ArrayList<>();
+    public ConvertedList(final int size) {
+        this.delegate = new ArrayList<>(size);
     }
 
     public static ConvertedList<Object> newFromList(List<Object> list) {
-        ConvertedList<Object> array = new ConvertedList<>();
+        ConvertedList<Object> array = new ConvertedList<>(list.size());
 
         for (Object item : list) {
             array.add(convert(item));
@@ -37,7 +34,7 @@ public class ConvertedList<T> implements List<T>, Collection<T>, Iterable<T> {
     }
 
     public static ConvertedList<Object> newFromRubyArray(RubyArray a) {
-        final ConvertedList<Object> result = new ConvertedList<>();
+        final ConvertedList<Object> result = new ConvertedList<>(a.size());
 
         for (IRubyObject o : a.toJavaArray()) {
             result.add(convert(o));
@@ -46,7 +43,7 @@ public class ConvertedList<T> implements List<T>, Collection<T>, Iterable<T> {
     }
 
     public Object unconvert() {
-        final ArrayList<Object> result = new ArrayList<>();
+        final ArrayList<Object> result = new ArrayList<>(size());
         for (Object obj : delegate) {
             result.add(Javafier.deep(obj));
         }
