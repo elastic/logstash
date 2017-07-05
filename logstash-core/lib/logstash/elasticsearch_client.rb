@@ -117,4 +117,4 @@ module LogStash class ElasticsearchClient
   def host_settings
     @client.host_settings
   end
-end end # class LogStash::ModulesImporter
+end end

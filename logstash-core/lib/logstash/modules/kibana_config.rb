@@ -3,23 +3,29 @@ require "logstash/namespace"
 require "logstash/logging"
 
 require_relative "file_reader"
+require_relative "kibana_settings"
+require_relative "kibana_dashboards"
 require_relative "kibana_resource"
-require_relative "kibana_base_resource"
 
 module LogStash module Modules class KibanaConfig
   include LogStash::Util::Loggable
 
   ALLOWED_DIRECTORIES = ["search", "visualization"]
   METRICS_MAX_BUCKETS = (24 * 60 * 60).freeze # 24 hours of events/sec buckets.
-  KIBANA_CONFIG_CONTENT_ID = "5.5.0".freeze
-  attr_reader :index_name
+  attr_reader :index_name # not used when importing via kibana but for BWC with ElastsearchConfig
 
   # We name it `modul` here because `module` has meaning in Ruby.
   def initialize(modul, settings)
-    @directory = ::File.join(modul.directory, "kibana")
+    build_versioned_directory(modul)
     @name = modul.module_name
     @settings = settings
-    @index_name = @settings.fetch("dashboards.kibana_index", ".kibana")
+    @index_name = "kibana"
+    @pattern_name = "#{@name}-*"
+    @metrics_max_buckets = @settings.fetch("dashboards.metrics_max_buckets", METRICS_MAX_BUCKETS).to_i
+    @kibana_settings = [
+      KibanaSettings::Setting.new("defaultIndex", @pattern_name),
+      KibanaSettings::Setting.new("metrics:max_buckets", @metrics_max_buckets)
+    ]
   end
 
   def dashboards
@@ -30,35 +36,48 @@ module LogStash module Modules class KibanaConfig
     end
   end
 
-  def kibana_config_patches
-    pattern_name = "#{@name}-*"
-    metrics_max_buckets = @settings.fetch("dashboards.metrics_max_buckets", METRICS_MAX_BUCKETS).to_s
-    kibana_config_json = '{"defaultIndex": "' + pattern_name + '}", "metrics:max_buckets": "' + metrics_max_buckets + '"}'
-    kibana_config_content_id = @settings.fetch("index_pattern.kibana_version", KIBANA_CONFIG_CONTENT_ID)
-    [
-      KibanaResource.new(@index_name, "index-pattern", dynamic("index-pattern"),nil, pattern_name),
-      KibanaResource.new(@index_name, "config", nil, kibana_config_json, kibana_config_content_id)
-    ]
+  def index_pattern
+    [KibanaResource.new(@index_name, "index-pattern", dynamic("index-pattern"),nil, @pattern_name)]
   end
 
   def resources
-    list = kibana_config_patches
+    list = index_pattern
     dashboards.each do |board|
+      list << board
       extract_panels_into(board, list)
     end
-    list.concat(extract_saved_searches(list))
+    list.concat(extract_saved_searches_into(list))
+    [
+      KibanaSettings.new("api/kibana/settings", @kibana_settings),
+      KibanaDashboards.new("api/kibana/dashboards/import", list)
+    ]
   end
 
   private
+
+  def build_versioned_directory(modul)
+    # try to detect which directory holds the config for the kibana version
+    base_dir = ::File.join(modul.directory, "kibana")
+    maj, min, patch = modul.kibana_version_parts
+    version_dir = "#{maj}.x"
+    @directory = ::File.join(base_dir, version_dir)
+    return if ::File.directory?(@directory)
+    version_dir = "#{maj}.#{min}.x"
+    @directory = ::File.join(base_dir, version_dir)
+    return if ::File.directory?(@directory)
+    version_dir = "#{maj}.#{min}.#{patch}"
+    @directory = ::File.join(base_dir, version_dir)
+    unless ::File.directory?(@directory)
+      logger.error("Cannot find kibana version sub-directory", :module => @name, :base_directory => base_dir)
+    end
+  end
 
   def dynamic(dynamic_folder, filename = @name)
     ::File.join(@directory, dynamic_folder, "#{filename}.json")
   end
 
   def extract_panels_into(dashboard, list)
-    list << dashboard
-
-    dash = FileReader.read_json(dashboard.content_path)
+    dash = dashboard.content_as_object
 
     if !dash.is_a?(Hash)
       logger.warn("Kibana dashboard JSON is not an Object", :module => @name)
@@ -87,20 +106,20 @@ module LogStash module Modules class KibanaConfig
         logger.warn("panelJSON contained unknown type", :type => panel_type)
       end
     end
+  end
 
-    def extract_saved_searches(list)
-      result = [] # must not add to list while iterating
-      list.each do |resource|
-        next unless resource.contains?("savedSearchId")
-        content = resource.content_as_object
-        next if content.nil?
-        saved_search = content["savedSearchId"]
-        next if saved_search.nil?
-        ss_resource = KibanaResource.new(@index_name, "search", dynamic("search", saved_search))
-        next if list.member?(ss_resource) || result.member?(ss_resource)
-        result << ss_resource
-      end
-      result
+  def extract_saved_searches_into(list)
+    result = [] # must not add to list while iterating
+    list.each do |resource|
+      content = resource.content_as_object
+      next if content.nil?
+      next unless content.keys.include?("savedSearchId")
+      saved_search = content["savedSearchId"]
+      next if saved_search.nil?
+      ss_resource = KibanaResource.new(@index_name, "search", dynamic("search", saved_search))
+      next if list.member?(ss_resource) || result.member?(ss_resource)
+      result << ss_resource
     end
+    result
   end
 end end end

@@ -1,7 +1,9 @@
 # encoding: utf-8
 require "logstash/util/loggable"
 require "logstash/elasticsearch_client"
-require "logstash/modules/importer"
+require "logstash/modules/kibana_client"
+require "logstash/modules/elasticsearch_importer"
+require "logstash/modules/kibana_importer"
 require "logstash/errors"
 
 module LogStash module Config
@@ -44,24 +46,31 @@ module LogStash module Config
           alt_name = "module-#{module_name}"
           pipeline_id = alt_name
           module_settings.set("pipeline.id", pipeline_id)
-
           current_module.with_settings(module_hash)
-          esclient = LogStash::ElasticsearchClient.build(module_hash)
           config_test = settings.get("config.test_and_exit")
-          if esclient.can_connect? || config_test
-            if !config_test
-              current_module.import(LogStash::Modules::Importer.new(esclient))
+          if !config_test
+            esclient = LogStash::ElasticsearchClient.build(module_hash)
+            kbnclient = LogStash::Modules::KibanaClient.new(module_hash)
+            esconnected = esclient.can_connect?
+            kbnconnected = kbnclient.can_connect?
+            if esconnected && kbnconnected
+              current_module.add_kibana_version(kbnclient.version_parts)
+              current_module.import(
+                  LogStash::Modules::ElasticsearchImporter.new(esclient),
+                  LogStash::Modules::KibanaImporter.new(kbnclient)
+                )
+            else
+              connect_fail_args[:module_name] = module_name
+              connect_fail_args[:elasticsearch_hosts] = esclient.host_settings unless esconnected
+              connect_fail_args[:kibana_hosts] = kbnclient.host_settings unless kbnconnected
             end
-
-            config_string = current_module.config_string
-
-            pipelines << {"pipeline_id" => pipeline_id, "alt_name" => alt_name, "config_string" => config_string, "settings" => module_settings}
-          else
-            connect_fail_args[:module_name] = module_name
-            connect_fail_args[:hosts] = esclient.host_settings
           end
+          config_string = current_module.config_string
+          pipelines << {"pipeline_id" => pipeline_id, "alt_name" => alt_name, "config_string" => config_string, "settings" => module_settings}
         rescue => e
-          raise LogStash::ConfigLoadingError, I18n.t("logstash.modules.configuration.parse-failed", :error => e.message)
+          new_error = LogStash::ConfigLoadingError.new(I18n.t("logstash.modules.configuration.parse-failed", :error => e.message))
+          new_error.set_backtrace(e.backtrace)
+          raise new_error
         end
 
         if !connect_fail_args.empty?

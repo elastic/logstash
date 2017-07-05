@@ -1,10 +1,12 @@
 # encoding: utf-8
 #
 require "logstash/namespace"
+require "logstash/elasticsearch_client"
+require "logstash/modules/kibana_client"
 require "logstash/modules/kibana_config"
 require "logstash/modules/scaffold"
-require "logstash/modules/importer"
-require "logstash/elasticsearch_client"
+require "logstash/modules/elasticsearch_importer"
+require "logstash/modules/kibana_importer"
 
 require_relative "../../support/helpers"
 
@@ -18,38 +20,41 @@ describe LogStash::Modules::Scaffold do
       "var.output.elasticsearch.user" => "foo",
       "var.output.elasticsearch.password" => "password",
       "var.input.tcp.port" => 5606,
-      "dashboards.kibana_index" => ".kibana"
     }
   end
-  let(:dashboard_json) do
-<<-JSON
-{
-"hits": 0,
-"timeRestore": false,
-"description": "",
-"title": "Filebeat Apache2 Dashboard",
-"uiStateJSON": "{\\"P-1\\":{\\"mapCenter\\":[40.713955826286046,-0.17578125]}}",
-"panelsJSON": "[{\\"col\\":1,\\"id\\":\\"foo-c\\",\\"panelIndex\\":1,\\"row\\":1,\\"size_x\\":12,\\"size_y\\":3,\\"type\\":\\"visualization\\"},{\\"col\\":1,\\"id\\":\\"foo-d\\",\\"panelIndex\\":2,\\"row\\":6,\\"size_x\\":8,\\"size_y\\":3,\\"type\\":\\"visualization\\"},{\\"id\\":\\"foo-e\\",\\"type\\":\\"search\\",\\"panelIndex\\":7,\\"size_x\\":12,\\"size_y\\":3,\\"col\\":1,\\"row\\":11,\\"columns\\":[\\"apache2.error.client\\",\\"apache2.error.level\\",\\"apache2.error.module\\",\\"apache2.error.message\\"],\\"sort\\":[\\"@timestamp\\",\\"desc\\"]}]",
-"optionsJSON": "{\\"darkTheme\\":false}",
-"version": 1,
-"kibanaSavedObjectMeta": {
-  "searchSourceJSON": "{\\"filter\\":[{\\"query\\":{\\"query_string\\":{\\"analyze_wildcard\\":true,\\"query\\":\\"*\\"}}}]}"
-}
-}
-JSON
+  let(:dashboard_hash) do
+    {
+      "hits" => 0,
+      "timeRestore" => false,
+      "description" => "",
+      "title" => "Filebeat Apache2 Dashboard",
+      "uiStateJSON" => "{}",
+      "panelsJSON" => '[{"col":1,"id":"foo-c","panelIndex":1,"row":1,"size_x":12,"size_y":3,"type":"visualization"},{"id":"foo-d","type":"search","panelIndex":7,"size_x":12,"size_y":3,"col":1,"row":11,"columns":["apache2.error.client","apache2.error.level","apache2.error.module","apache2.error.message"],"sort":["@timestamp","desc"]}]',
+      "optionsJSON" => "{}",
+      "version" => 1,
+      "kibanaSavedObjectMeta" => {
+        "searchSourceJSON" => "{}"
+      }
+    }
   end
-  let(:viz_json) do
-<<-JSON
-{
-"visState": "",
-"description": "",
-"title": "foo-c",
-"uiStateJSON": "",
-"version": 1,
-"savedSearchId": "foo-f",
-"kibanaSavedObjectMeta": {}
-}
-JSON
+  let(:viz_hash) do
+    {
+      "visState" => "",
+      "description" => "",
+      "title" => "foo-c",
+      "uiStateJSON" => "",
+      "version" => 1,
+      "savedSearchId" => "foo-e",
+      "kibanaSavedObjectMeta" => {}
+    }
+  end
+  let(:index_pattern_hash) do
+    {
+      "title" => "foo-*",
+      "timeFieldName" =>"time",
+      "fieldFormatMap" => "{some map}",
+      "fields" => "[some array]"
+    }
   end
   context "logstash operation" do
     let(:ls_conf) do
@@ -98,85 +103,117 @@ ERB
 
   context "kibana operation" do
     before do
-      allow(LogStash::Modules::FileReader).to receive(:read).and_return("{}")
-      allow(LogStash::Modules::FileReader).to receive(:read).with("gem-home/kibana/dashboard/foo.json").and_return("[\"Foo-Dashboard\"]")
-      allow(LogStash::Modules::FileReader).to receive(:read).with("gem-home/kibana/dashboard/Foo-Dashboard.json").and_return(dashboard_json)
-      allow(LogStash::Modules::FileReader).to receive(:read).with("gem-home/kibana/visualization/foo-c.json").and_return(viz_json)
+      # allow(LogStash::Modules::FileReader).to receive(:read_json).and_return({})
+      allow(LogStash::Modules::FileReader).to receive(:read_json).with("gem-home/kibana/6.0.0/dashboard/foo.json").and_return(["Foo-Dashboard"])
+      allow(LogStash::Modules::FileReader).to receive(:read_json).with("gem-home/kibana/6.0.0/dashboard/Foo-Dashboard.json").and_return(dashboard_hash)
+      allow(LogStash::Modules::FileReader).to receive(:read_json).with("gem-home/kibana/6.0.0/visualization/foo-c.json").and_return(viz_hash)
+      allow(LogStash::Modules::FileReader).to receive(:read_json).with("gem-home/kibana/6.0.0/search/foo-d.json").and_return({"d" => "search"})
+      allow(LogStash::Modules::FileReader).to receive(:read_json).with("gem-home/kibana/6.0.0/search/foo-e.json").and_return({"e" => "search"})
+      allow(LogStash::Modules::FileReader).to receive(:read_json).with("gem-home/kibana/6.0.0/index-pattern/foo.json").and_return(index_pattern_hash)
     end
 
     it "provides a list of importable files" do
       expect(test_module.kibana_configuration).to be_nil
       test_module.with_settings(module_settings)
       expect(test_module.kibana_configuration).not_to be_nil
-      files = test_module.kibana_configuration.resources
-      expect(files.size).to eq(7)
-      expect(files.map{|o| o.class.name}.uniq).to eq(["LogStash::Modules::KibanaResource"])
-      expect(files[0].content_path).to eq("gem-home/kibana/index-pattern/foo.json")
-      expect(files[0].import_path).to eq(".kibana/index-pattern/foo-*")
+      resources = test_module.kibana_configuration.resources
+      expect(resources.size).to eq(2)
+      resource1 = resources[0]
+      resource2 = resources[1]
+      expect(resource1).to be_a(LogStash::Modules::KibanaSettings)
+      expect(resource2).to be_a(LogStash::Modules::KibanaDashboards)
+      expect(resource1.import_path).to eq("api/kibana/settings")
+      expect(resource1.content).to be_a(Array)
+      expect(resource1.content.size).to eq(2)
 
-      expect(files[1].content).to eq("{\"defaultIndex\": \"foo-*}\", \"metrics:max_buckets\": \"#{LogStash::Modules::KibanaConfig::METRICS_MAX_BUCKETS}\"}")
-      expect(files[1].import_path).to eq(".kibana/config/#{LogStash::Modules::KibanaConfig::KIBANA_CONFIG_CONTENT_ID}")
+      test_object = resource1.content[0]
+      expect(test_object).to be_a(LogStash::Modules::KibanaSettings::Setting)
+      expect(test_object.name).to eq("defaultIndex")
+      expect(test_object.value).to eq("foo-*")
 
-      expect(files[2].content_path).to eq("gem-home/kibana/dashboard/Foo-Dashboard.json")
-      expect(files[2].import_path).to eq(".kibana/dashboard/Foo-Dashboard")
-      expect(files[3].content_path).to eq("gem-home/kibana/visualization/foo-c.json")
-      expect(files[3].import_path).to eq(".kibana/visualization/foo-c")
-      expect(files[4].content_path).to eq("gem-home/kibana/visualization/foo-d.json")
-      expect(files[4].import_path).to eq(".kibana/visualization/foo-d")
-      expect(files[5].content_path).to eq("gem-home/kibana/search/foo-e.json") #<- the panels can contain items from other folders
-      expect(files[5].import_path).to eq(".kibana/search/foo-e")
-      expect(files[6].content_path).to eq("gem-home/kibana/search/foo-f.json") #<- the visualization can contain items from the search folder
-      expect(files[6].import_path).to eq(".kibana/search/foo-f")
-    end
+      test_object = resource1.content[1]
+      expect(test_object).to be_a(LogStash::Modules::KibanaSettings::Setting)
+      expect(test_object.name).to eq("metrics:max_buckets")
+      expect(test_object.value).to eq(86400)
 
-    it "provides the kibana index string" do
-      test_module.with_settings(module_settings)
-      expect(test_module.kibana_configuration).not_to be_nil
-      expect(test_module.kibana_configuration.index_name).to eq(".kibana")
+      expect(resource2.import_path).to eq("api/kibana/dashboards/import")
+      expect(resource2.content).to be_a(Array)
+      expect(resource2.content.size).to eq(5)
+      expect(resource2.content.map{|o| o.class}.uniq).to eq([LogStash::Modules::KibanaResource])
+
+      test_object = resource2.content[0]
+      expect(test_object.content_id).to eq("foo-*")
+      expect(test_object.content_type).to eq("index-pattern")
+      expect(test_object.content_as_object).to eq(index_pattern_hash)
+
+      test_object = resource2.content[1]
+      expect(test_object.content_id).to eq("Foo-Dashboard")
+      expect(test_object.content_type).to eq("dashboard")
+      expect(test_object.content_as_object).to eq(dashboard_hash)
+
+      test_object = resource2.content[2]
+      expect(test_object.content_id).to eq("foo-c") #<- the panels can contain items from other folders
+      expect(test_object.content_type).to eq("visualization")
+      expect(test_object.content_as_object).to eq(viz_hash)
+      expect(test_object.content_as_object["savedSearchId"]).to eq("foo-e")
+
+      test_object = resource2.content[3]
+      expect(test_object.content_id).to eq("foo-d") #<- the panels can contain items from other folders
+      expect(test_object.content_type).to eq("search")
+      expect(test_object.content_as_object).to eq("d"=>"search")
+
+      test_object = resource2.content[4]
+      expect(test_object.content_id).to eq("foo-e") # <- the visualization can contain items from the search folder
+      expect(test_object.content_type).to eq("search")
+      expect(test_object.content_as_object).to eq("e"=>"search")
     end
   end
 
   context "importing to elasticsearch stubbed client" do
-    let(:mname) { "cef" }
-    let(:base_dir) { File.expand_path(File.join(File.dirname(__FILE__), "..", "..", "modules_test_files", "#{mname}")) }
+    let(:mname) { "tester" }
+    let(:base_dir) { File.expand_path(File.join(File.dirname(__FILE__), "..", "..", "modules_test_files", "modules", "#{mname}", "configuration")) }
     let(:response) { double(:response) }
     let(:client) { double(:client) }
+    let(:kbnclient) { double(:kbnclient) }
     let(:paths) { [] }
-    let(:expected_paths) do
+    let(:expected_paths) { ["_template/tester", "api/kibana/settings", "api/kibana/dashboards/import"] }
+    let(:contents) { [] }
+    let(:expected_objects) do
       [
-        "_template/cef",
-        ".kibana/index-pattern/cef-*",
-        ".kibana/config/#{LogStash::Modules::KibanaConfig::KIBANA_CONFIG_CONTENT_ID}",
-        ".kibana/dashboard/FW-Dashboard",
-        ".kibana/visualization/FW-Metrics",
-        ".kibana/visualization/FW-Last-Update",
-        ".kibana/visualization/FW-Area-by-Outcome",
-        ".kibana/visualization/FW-Count-by-Source,-Destination-Address-and-Ports",
-        ".kibana/visualization/FW-Traffic-by-Outcome",
-        ".kibana/visualization/FW-Device-Vendor-by-Category-Outcome",
-        ".kibana/visualization/FW-Geo-Traffic-by-Destination-Address",
-        ".kibana/visualization/FW-Geo-Traffic-by-Source-Address",
-        ".kibana/visualization/FW-Destination-Country-Data-Table",
-        ".kibana/visualization/FW-Source-Country-Data-Table",
-        ".kibana/visualization/FW-Destination-Ports-by-Outcome",
-        ".kibana/visualization/FW-Source,-Destination-Address-and-Port-Sunburst",
-        ".kibana/search/Firewall-Events"
+        "index-pattern tester-*",
+        "dashboard FW-Dashboard",
+        "visualization FW-Viz-1",
+        "visualization FW-Viz-2",
+        "search Search-Tester"
       ]
     end
 
     before do
       allow(response).to receive(:status).and_return(404)
       allow(client).to receive(:head).and_return(response)
+      allow(kbnclient).to receive(:version).and_return("9.8.7-6")
     end
 
     it "calls the import method" do
-      expect(client).to receive(:put).at_least(15).times do |path, content|
+      expect(client).to receive(:put).once do |path, content|
         paths << path
         LogStash::ElasticsearchClient::Response.new(201, "", {})
       end
+      expect(kbnclient).to receive(:post).twice do |path, content|
+        paths << path
+        contents << content
+        LogStash::Modules::KibanaClient::Response.new(201, "", {})
+      end
       test_module.with_settings(module_settings)
-      test_module.import(LogStash::Modules::Importer.new(client))
+      test_module.import(LogStash::Modules::ElasticsearchImporter.new(client), LogStash::Modules::KibanaImporter.new(kbnclient))
       expect(paths).to eq(expected_paths)
+      expect(contents[0]).to eq({"changes"=>{"defaultIndex"=>"tester-*", "metrics:max_buckets"=>"86400"}})
+      second_kbn_post = contents[1]
+      expect(second_kbn_post[:version]).to eq("9.8.7-6")
+      expect(second_kbn_post[:objects]).to be_a(Array)
+      expect(second_kbn_post[:objects].size).to eq(5)
+      objects_types_ids = second_kbn_post[:objects].map {|h| "#{h["type"]} #{h["id"]}"}
+      expect(objects_types_ids).to eq(expected_objects)
     end
   end
 

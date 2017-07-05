@@ -3,8 +3,6 @@ require "logstash/config/source/base"
 require "logstash/config/modules_common"
 require "logstash/config/pipeline_config"
 require "logstash/util/loggable"
-require "logstash/elasticsearch_client"
-require "logstash/modules/importer"
 require "logstash/errors"
 
 module LogStash module Config module Source

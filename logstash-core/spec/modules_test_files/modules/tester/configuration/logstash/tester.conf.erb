@@ -1,0 +1,17 @@
+input {
+  tcp {
+    codec => json
+    port => <%= setting("var.input.tcp.port", 5000) %>
+    type => syslog
+  }
+}
+
+filter {
+  date {
+    match => [ "logdate", "ISO8601" ]
+  }
+}
+
+output {
+  <%= elasticsearch_output_config() %>
+}
