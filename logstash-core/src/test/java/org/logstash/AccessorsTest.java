@@ -1,19 +1,19 @@
 package org.logstash;
 
-import org.junit.experimental.theories.DataPoint;
-import org.junit.Rule;
-import org.junit.rules.ExpectedException;
-import org.junit.experimental.theories.Theories;
-import org.junit.experimental.theories.Theory;
-import org.junit.runner.RunWith;
-import org.junit.Test;
-
-import static org.junit.Assert.*;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.experimental.theories.DataPoint;
+import org.junit.experimental.theories.Theories;
+import org.junit.experimental.theories.Theory;
+import org.junit.rules.ExpectedException;
+import org.junit.runner.RunWith;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 
 public class AccessorsTest {
 
@@ -21,10 +21,6 @@ public class AccessorsTest {
 
         public TestableAccessors(Map data) {
             super(data);
-        }
-
-        public Map<String, Object> getLut() {
-            return lut;
         }
 
         public Object lutGet(String reference) {
@@ -238,6 +234,16 @@ public class AccessorsTest {
         assertEquals(accessors.get("[foo]"), "boom");
     }
 
+    @Test
+    public void testListIndexOutOfBounds() {
+        assertEquals(Accessors.listIndex(0, 10), 0);
+        assertEquals(Accessors.listIndex(1, 10), 1);
+        assertEquals(Accessors.listIndex(9, 10), 9);
+        assertEquals(Accessors.listIndex(-1, 10), 9);
+        assertEquals(Accessors.listIndex(-9, 10), 1);
+        assertEquals(Accessors.listIndex(-10, 10), 0);
+    }
+
     @RunWith(Theories.class)
     public static class TestListIndexFailureCases {
       private static final int size = 10;
@@ -261,14 +267,4 @@ public class AccessorsTest {
       }
     }
 
-    public static class TestListIndex {
-      public void testListIndexOutOfBounds() {
-        assertEquals(Accessors.listIndex(0, 10), 0);
-        assertEquals(Accessors.listIndex(1, 10), 1);
-        assertEquals(Accessors.listIndex(9, 10), 9);
-        assertEquals(Accessors.listIndex(-1, 10), 9);
-        assertEquals(Accessors.listIndex(-9, 10), 1);
-        assertEquals(Accessors.listIndex(-10, 10), 0);
-      }
-    }
 }
