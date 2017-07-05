@@ -16,16 +16,12 @@ public class ConvertedMap<K, V> implements Map<K, V> {
 
     private final Map<K, V> delegate;
 
-    public ConvertedMap(Map<K, V> delegate) {
-        this.delegate = delegate;
-    }
-
-    public ConvertedMap() {
-        this.delegate = new HashMap<>();
+    private ConvertedMap(final int size) {
+        this.delegate = new HashMap<>(size);
     }
 
     public static ConvertedMap<String, Object> newFromMap(Map<String, Object> o) {
-        ConvertedMap<String, Object> cm = new ConvertedMap<>();
+        ConvertedMap<String, Object> cm = new ConvertedMap<>(o.size());
         for (Map.Entry<String, Object> entry : o.entrySet()) {
             String k = String.valueOf(BiValues.newBiValue(entry.getKey()).javaValue());
             cm.put(k, Valuefier.convert(entry.getValue()));
@@ -34,7 +30,7 @@ public class ConvertedMap<K, V> implements Map<K, V> {
     }
 
     public static ConvertedMap<String, Object> newFromRubyHash(RubyHash o) {
-        final ConvertedMap<String, Object> result = new ConvertedMap<>();
+        final ConvertedMap<String, Object> result = new ConvertedMap<>(o.size());
 
         o.visitAll(new RubyHash.Visitor() {
             @Override
@@ -47,8 +43,8 @@ public class ConvertedMap<K, V> implements Map<K, V> {
     }
 
     public Object unconvert() {
-        final HashMap<K, V> result = new HashMap<>();
-        for (Map.Entry<K, V> entry : entrySet()) {
+        final HashMap<K, V> result = new HashMap<>(size());
+        for (final Map.Entry<K, V> entry : entrySet()) {
             result.put(entry.getKey(), (V) Javafier.deep(entry.getValue()));
         }
         return result;
