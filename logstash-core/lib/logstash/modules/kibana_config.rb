@@ -59,13 +59,13 @@ module LogStash module Modules class KibanaConfig
     # try to detect which directory holds the config for the kibana version
     base_dir = ::File.join(modul.directory, "kibana")
     maj, min, patch = modul.kibana_version_parts
-    version_dir = "#{maj}.x"
+    version_dir = "#{maj}.#{min}.#{patch}"
     @directory = ::File.join(base_dir, version_dir)
     return if ::File.directory?(@directory)
     version_dir = "#{maj}.#{min}.x"
     @directory = ::File.join(base_dir, version_dir)
     return if ::File.directory?(@directory)
-    version_dir = "#{maj}.#{min}.#{patch}"
+    version_dir = "#{maj}.x"
     @directory = ::File.join(base_dir, version_dir)
     unless ::File.directory?(@directory)
       logger.error("Cannot find kibana version sub-directory", :module => @name, :base_directory => base_dir)

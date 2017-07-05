@@ -104,12 +104,12 @@ ERB
   context "kibana operation" do
     before do
       # allow(LogStash::Modules::FileReader).to receive(:read_json).and_return({})
-      allow(LogStash::Modules::FileReader).to receive(:read_json).with("gem-home/kibana/6.0.0/dashboard/foo.json").and_return(["Foo-Dashboard"])
-      allow(LogStash::Modules::FileReader).to receive(:read_json).with("gem-home/kibana/6.0.0/dashboard/Foo-Dashboard.json").and_return(dashboard_hash)
-      allow(LogStash::Modules::FileReader).to receive(:read_json).with("gem-home/kibana/6.0.0/visualization/foo-c.json").and_return(viz_hash)
-      allow(LogStash::Modules::FileReader).to receive(:read_json).with("gem-home/kibana/6.0.0/search/foo-d.json").and_return({"d" => "search"})
-      allow(LogStash::Modules::FileReader).to receive(:read_json).with("gem-home/kibana/6.0.0/search/foo-e.json").and_return({"e" => "search"})
-      allow(LogStash::Modules::FileReader).to receive(:read_json).with("gem-home/kibana/6.0.0/index-pattern/foo.json").and_return(index_pattern_hash)
+      allow(LogStash::Modules::FileReader).to receive(:read_json).with("gem-home/kibana/6.x/dashboard/foo.json").and_return(["Foo-Dashboard"])
+      allow(LogStash::Modules::FileReader).to receive(:read_json).with("gem-home/kibana/6.x/dashboard/Foo-Dashboard.json").and_return(dashboard_hash)
+      allow(LogStash::Modules::FileReader).to receive(:read_json).with("gem-home/kibana/6.x/visualization/foo-c.json").and_return(viz_hash)
+      allow(LogStash::Modules::FileReader).to receive(:read_json).with("gem-home/kibana/6.x/search/foo-d.json").and_return({"d" => "search"})
+      allow(LogStash::Modules::FileReader).to receive(:read_json).with("gem-home/kibana/6.x/search/foo-e.json").and_return({"e" => "search"})
+      allow(LogStash::Modules::FileReader).to receive(:read_json).with("gem-home/kibana/6.x/index-pattern/foo.json").and_return(index_pattern_hash)
     end
 
     it "provides a list of importable files" do
