@@ -30,7 +30,7 @@ public class KeyNode implements TemplateNode {
                 return join((List)value, ",");
             } else if (value instanceof Map) {
                 ObjectMapper mapper = new ObjectMapper();
-                return mapper.writeValueAsString((Map<String, Object>)value);
+                return mapper.writeValueAsString(value);
             } else {
                 return event.getField(this.key).toString();
             }
@@ -60,7 +60,7 @@ public class KeyNode implements TemplateNode {
         if (value == null) return "";
         if (value instanceof List) return join((List)value, delim);
         if (value instanceof BiValue) {
-            return ((BiValue) value).toString();
+            return value.toString();
         }
         return value.toString();
     }
