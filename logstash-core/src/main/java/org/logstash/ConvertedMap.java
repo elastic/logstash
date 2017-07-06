@@ -1,9 +1,6 @@
 package org.logstash;
 
-import org.logstash.bivalues.BiValues;
-import org.jruby.RubyHash;
-import org.jruby.runtime.builtin.IRubyObject;
-
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -11,6 +8,8 @@ import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Function;
+import org.jruby.RubyHash;
+import org.jruby.runtime.builtin.IRubyObject;
 
 public class ConvertedMap<K, V> implements Map<K, V> {
 
@@ -20,11 +19,10 @@ public class ConvertedMap<K, V> implements Map<K, V> {
         this.delegate = new HashMap<>(size);
     }
 
-    public static ConvertedMap<String, Object> newFromMap(Map<String, Object> o) {
+    public static ConvertedMap<String, Object> newFromMap(Map<Serializable, Object> o) {
         ConvertedMap<String, Object> cm = new ConvertedMap<>(o.size());
-        for (Map.Entry<String, Object> entry : o.entrySet()) {
-            String k = String.valueOf(BiValues.newBiValue(entry.getKey()).javaValue());
-            cm.put(k, Valuefier.convert(entry.getValue()));
+        for (final Map.Entry<Serializable, Object> entry : o.entrySet()) {
+            cm.put(entry.getKey().toString(), Valuefier.convert(entry.getValue()));
         }
         return cm;
     }
@@ -35,8 +33,7 @@ public class ConvertedMap<K, V> implements Map<K, V> {
         o.visitAll(o.getRuntime().getCurrentContext(), new RubyHash.Visitor() {
             @Override
             public void visit(IRubyObject key, IRubyObject value) {
-                String k = String.valueOf(BiValues.newBiValue(key).javaValue()) ;
-                result.put(k, Valuefier.convert(value));
+                result.put(key.toString(), Valuefier.convert(value));
             }
         }, null);
         return result;
