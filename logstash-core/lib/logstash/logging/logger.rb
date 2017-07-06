@@ -8,10 +8,12 @@ module LogStash
     java_import org.apache.logging.log4j.core.config.Configurator
     java_import org.apache.logging.log4j.core.config.DefaultConfiguration
     java_import org.apache.logging.log4j.core.config.LoggerConfig
+    java_import org.logstash.log.LogstashLoggerContextFactory
+    java_import org.apache.logging.log4j.core.LoggerContext
+    java_import java.net.URI
 
     class Logger
       @@config_mutex = Mutex.new
-      @@logging_context = nil
 
       def initialize(name)
         @logger = LogManager.getLogger(name)
@@ -73,43 +75,45 @@ module LogStash
 
       def self.initialize(config_location)
         @@config_mutex.synchronize do
-          if @@logging_context.nil?
-            file_path = URI(config_location).path
-            if ::File.exists?(file_path)
-              logs_location = java.lang.System.getProperty("ls.logs")
-              puts "Sending Logstash's logs to #{logs_location} which is now configured via log4j2.properties"
-              @@logging_context = Configurator.initialize(nil, config_location)
-            else
-              # fall back to default config
-              puts "Could not find log4j2 configuration at path #{file_path}. Using default config which logs to console"
-              @@logging_context = Configurator.initialize(DefaultConfiguration.new)
-            end
+          config_location_uri = URI.create(config_location)
+          file_path = config_location_uri.path
+          if ::File.exists?(file_path)
+            logs_location = java.lang.System.getProperty("ls.logs")
+            puts "Sending Logstash's logs to #{logs_location} which is now configured via log4j2.properties"
+            #reconfigure the default context to use our log4j2.properties file
+            get_logging_context.setConfigLocation(URI.create(config_location))
+            #ensure everyone agrees which context to use for the LogManager
+            context_factory = LogstashLoggerContextFactory.new(get_logging_context)
+            LogManager.setFactory(context_factory)
+          else
+            # fall back to default config
+            puts "Could not find log4j2 configuration at path #{file_path}. Using default config which logs errors to the console"
           end
         end
       end
 
       def self.get_logging_context
-        return @@logging_context
+        return  LoggerContext.getContext(false)
       end
 
-      # Clone of org.apache.logging.log4j.core.config.Configurator.setLevel(), but using initialized @@logging_context
+      # Clone of org.apache.logging.log4j.core.config.Configurator.setLevel(), but ensure the proper context is used
       def self.set_level(_level, path)
-        configuration = @@logging_context.getConfiguration()
+        configuration =  get_logging_context.getConfiguration()
         level = Level.valueOf(_level)
         if path.nil? || path.strip.empty?
           root_logger = configuration.getRootLogger()
           if root_logger.getLevel() != level
             root_logger.setLevel(level)
-            @@logging_context.updateLoggers()
+            get_logging_context.updateLoggers()
           end
         else
           package_logger = configuration.getLoggerConfig(path)
           if package_logger.name != path #no package logger found
             configuration.addLogger(path, LoggerConfig.new(path, level, true))
-            @@logging_context.updateLoggers()
+            get_logging_context.updateLoggers()
           elsif package_logger.getLevel() != level
             package_logger.setLevel(level)
-            @@logging_context.updateLoggers()
+            get_logging_context.updateLoggers()
           end
         end
       end
