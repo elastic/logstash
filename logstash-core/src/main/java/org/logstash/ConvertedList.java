@@ -17,7 +17,7 @@ import java.util.stream.Stream;
 
 import static org.logstash.Valuefier.convert;
 
-public class ConvertedList<T> implements List<T>, Collection<T>, Iterable<T> {
+public class ConvertedList<T> implements List<T> {
     private final List<T> delegate;
 
     public ConvertedList(final int size) {
