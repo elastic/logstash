@@ -83,6 +83,7 @@ module LogStash module Modules class KibanaClient
       resp = @client.http(method_sym, full_url(relative_path), options).call
       Response.new(resp.code, resp.body, resp.headers)
     rescue Manticore::ManticoreException => e
+      logger.error("Error when executing Kibana client request", :error => e)
       body = {"statusCode" => 0, "error" => e.message}
       Response.new(0, body, {})
     end
