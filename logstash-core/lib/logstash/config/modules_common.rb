@@ -61,8 +61,8 @@ module LogStash module Config
                 )
             else
               connect_fail_args[:module_name] = module_name
-              connect_fail_args[:elasticsearch_hosts] = esclient.host_settings unless esconnected
-              connect_fail_args[:kibana_hosts] = kbnclient.host_settings unless kbnconnected
+              connect_fail_args[:elasticsearch_hosts] = esclient.host_settings
+              connect_fail_args[:kibana_hosts] = kbnclient.host_settings
             end
           end
           config_string = current_module.config_string
