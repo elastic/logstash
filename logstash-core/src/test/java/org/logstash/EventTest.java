@@ -306,6 +306,28 @@ public class EventTest {
         assertEquals(tags.size(), 2);
         assertEquals(tags.get(0), "foo");
         assertEquals(tags.get(1), "bar");
-      }
+    }
 
+    @Test
+    public void toStringwithTimestamp() throws Exception {
+        Map data = new HashMap();
+        data.put("host", "foo");
+        data.put("message", "bar");
+        Event e = new Event(data);
+        assertEquals(e.toString(), e.getTimestamp().toIso8601() + " foo bar");
+    }
+
+    @Test
+    public void toStringwithoutTimestamp() throws Exception {
+        Map data = new HashMap();
+        data.put("host", "foo");
+        data.put("message", "bar");
+        Event e = new Event(data);
+        e.remove("@timestamp");
+        assertEquals(e.toString(), "foo bar");
+
+        e = new Event();
+        e.remove("@timestamp");
+        assertEquals(e.toString(), "%{host} %{message}");
+    }
 }

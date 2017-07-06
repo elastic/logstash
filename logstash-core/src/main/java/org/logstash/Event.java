@@ -301,17 +301,15 @@ public class Event implements Cloneable, Serializable, Queueable {
     }
 
     public String toString() {
-        // TODO: (colin) clean this IOException handling, not sure why we bubble IOException here
+        Object hostField = this.getField("host");
+        Object messageField = this.getField("message");
+        String hostMessageString = (hostField != null ? hostField.toString() : "%{host}") + " " + (messageField != null ? messageField.toString() : "%{message}");
+
         try {
-            return (getTimestamp().toIso8601() + " " + this.sprintf("%{host} %{message}"));
+            // getTimestamp throws an IOException if there is no @timestamp field, see #7613
+            return getTimestamp().toIso8601() + " " + hostMessageString;
         } catch (IOException e) {
-            String host = (String)this.data.get("host");
-            host = (host != null ? host : "%{host}");
-
-            String message = (String)this.data.get("message");
-            message = (message != null ? message : "%{message}");
-
-            return (host + " " + message);
+            return hostMessageString;
         }
     }
 
