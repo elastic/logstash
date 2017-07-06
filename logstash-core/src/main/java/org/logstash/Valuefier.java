@@ -1,5 +1,6 @@
 package org.logstash;
 
+import java.io.Serializable;
 import org.logstash.bivalues.BiValue;
 import org.logstash.bivalues.BiValues;
 import org.logstash.ext.JrubyTimestampExtLibrary;
@@ -67,7 +68,7 @@ public class Valuefier {
             return ConvertedList.newFromRubyArray((RubyArray) o);
         }
         if (o instanceof Map) {
-            return ConvertedMap.newFromMap((Map<String, Object>) o);
+            return ConvertedMap.newFromMap((Map<Serializable, Object>) o);
         }
         if (o instanceof List) {
             return ConvertedList.newFromList((List<Object>) o);
