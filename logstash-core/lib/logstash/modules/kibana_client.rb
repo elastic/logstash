@@ -30,8 +30,15 @@ module LogStash module Modules class KibanaClient
     @settings = settings
     @client = Manticore::Client.new(request_timeout: 5, connect_timeout: 5, socket_timeout: 5, pool_max: 10, pool_max_per_route: 2)
     @host = @settings.fetch("var.kibana.host", "localhost:5601")
+    username = @settings["var.kibana.username"]
+    password = @settings["var.kibana.password"]
+
     @scheme = @settings.fetch("var.kibana.scheme", "http")
     @http_options = {:headers => {'Content-Type' => 'application/json'}}
+    if username
+      @http_options[:auth] = {:user => username, :password => password}
+    end
+
     # e.g. {"name":"Elastics-MacBook-Pro.local","version":{"number":"6.0.0-alpha3","build_hash":"41e69","build_number":15613,"build_snapshot":true}..}
     @version = "0.0.0"
     response = get("api/status")
