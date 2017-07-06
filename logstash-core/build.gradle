@@ -107,6 +107,7 @@ idea {
 dependencies {
     compile 'org.apache.logging.log4j:log4j-api:2.6.2'
     compile 'org.apache.logging.log4j:log4j-core:2.6.2'
+    runtime 'org.apache.logging.log4j:log4j-slf4j-impl:2.6.2'
     compile 'com.fasterxml.jackson.core:jackson-core:2.7.4'
     compile 'com.fasterxml.jackson.core:jackson-databind:2.7.4'
     compile 'com.fasterxml.jackson.module:jackson-module-afterburner:2.7.4'
