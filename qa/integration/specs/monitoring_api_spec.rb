@@ -128,8 +128,8 @@ describe "Test Monitoring API" do
 
       result = logstash_service.monitoring_api.logging_get
       result["loggers"].each do | k, v |
-        #since we explicitly set the logstash.agent logger above, the parent logger will not take precedence
-        if k.eql? "logstash.agent"
+        #since we explicitly set the logstash.agent logger above, the logger.logstash parent logger will not take precedence
+        if k.eql?("logstash.agent") || k.start_with?("org.logstash")
           expect(v).to eq("INFO")
         else
           expect(v).to eq("ERROR")
@@ -143,7 +143,7 @@ describe "Test Monitoring API" do
   def logging_get_assert(logstash_service, logstash_level, slowlog_level)
     result = logstash_service.monitoring_api.logging_get
     result["loggers"].each do | k, v |
-      if k.start_with? "logstash"
+      if k.start_with? "logstash", "org.logstash" #logstash is the ruby namespace, and org.logstash for java
         expect(v).to eq(logstash_level)
       elsif k.start_with? "slowlog"
         expect(v).to eq(slowlog_level)
