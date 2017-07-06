@@ -1,5 +1,6 @@
 require_relative "service"
 require "docker"
+require "logstash/devutils/rspec/spec_helper"
 require "logstash/devutils/rspec/logstash_helpers"
 
 # Represents a service running within a container.
