@@ -97,10 +97,6 @@ public class Event implements Cloneable, Serializable, Queueable {
         return this.metadata;
     }
 
-    public void setData(Map<String, Object> data) {
-        this.data = ConvertedMap.newFromMap(data);
-    }
-
     public Accessors getAccessors() {
         return this.accessors;
     }
