@@ -36,7 +36,7 @@ module LogStash module Modules class KibanaClient
     @scheme = @settings.fetch("var.kibana.scheme", "http")
     @http_options = {:headers => {'Content-Type' => 'application/json'}}
     if username
-      @http_options[:auth] = {:user => username, :password => password}
+      @http_options[:headers]['Authorization'] = 'Basic ' + Base64.encode64( "#{username}:#{password}" ).chomp
     end
 
     # e.g. {"name":"Elastics-MacBook-Pro.local","version":{"number":"6.0.0-alpha3","build_hash":"41e69","build_number":15613,"build_snapshot":true}..}

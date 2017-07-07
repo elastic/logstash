@@ -26,6 +26,13 @@ module LogStash class ElasticsearchClient
       @settings = settings
       @logger = logger
       @client_args = client_args
+
+      username = @settings["var.output.elasticsearch.user"]
+      password = @settings["var.output.elasticsearch.password"]
+      if username
+        @client_args[:transport_options] = { :headers => { "Authorization" => 'Basic ' + Base64.encode64( "#{username}:#{password}" ).chomp } }
+      end
+
       @client = Elasticsearch::Client.new(@client_args)
     end
 
