@@ -1,30 +1,34 @@
 package org.logstash.instrument.monitors;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
-
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  * Hot threads monitoring class. This class pulls information out of the JVM #
  * provided beans and lest the different consumers query it.
  * Created by purbon on 12/12/15.
  */
-public class HotThreadsMonitor {
+public final class HotThreadsMonitor {
 
     private static final String ORDERED_BY = "ordered_by";
     private static final String STACKTRACE_SIZE = "stacktrace_size";
-    private final Logger logger = LogManager.getLogger(HotThreadsMonitor.class);
+    private static final Logger logger = LogManager.getLogger(HotThreadsMonitor.class);
+
+    private HotThreadsMonitor() {
+        //Utility Class
+    }
 
     /**
      * Placeholder for a given thread report
@@ -63,10 +67,6 @@ public class HotThreadsMonitor {
             return map;
         }
 
-        public String getThreadState() {
-            return (String) map.get(THREAD_STATE);
-        }
-
         public String getThreadName() {
             return (String) map.get(THREAD_NAME);
         }
@@ -98,21 +98,16 @@ public class HotThreadsMonitor {
         }
     }
 
-    private List<String> VALID_ORDER_BY = new ArrayList<>();
-
-    public HotThreadsMonitor() {
-        VALID_ORDER_BY.add("cpu");
-        VALID_ORDER_BY.add("wait");
-        VALID_ORDER_BY.add("block");
-    }
+    private static final Collection<String>
+        VALID_ORDER_BY = new HashSet<>(Arrays.asList("cpu", "wait", "block"));
 
     /**
      * Return the current hot threads information as provided by the JVM
      *
      * @return A list of ThreadReport including all selected threads
      */
-    public List<ThreadReport> detect() {
-        Map<String, String> options = new HashMap<String, String>();
+    public static List<ThreadReport> detect() {
+        Map<String, String> options = new HashMap<>();
         options.put(ORDERED_BY, "cpu");
         return detect(options);
     }
@@ -125,7 +120,7 @@ public class HotThreadsMonitor {
      *                      stacktrace_size - max depth of stack trace
      * @return A list of ThreadReport including all selected threads
      */
-    public List<ThreadReport> detect(Map<String, String> options) {
+    public static List<ThreadReport> detect(Map<String, String> options) {
         String type = "cpu";
         if (options.containsKey(ORDERED_BY)) {
             type = options.get(ORDERED_BY);
@@ -179,12 +174,11 @@ public class HotThreadsMonitor {
         }
     }
 
-    private boolean isValidSortOrder(String type) {
-        return VALID_ORDER_BY.indexOf(type.toLowerCase()) != -1;
+    private static boolean isValidSortOrder(String type) {
+        return VALID_ORDER_BY.contains(type.toLowerCase());
     }
 
-
-    private void enableCpuTime(ThreadMXBean threadMXBean) {
+    private static void enableCpuTime(ThreadMXBean threadMXBean) {
         try {
             if (threadMXBean.isThreadCpuTimeSupported()) {
                 if (!threadMXBean.isThreadCpuTimeEnabled()) {
