@@ -19,12 +19,13 @@ module LogStash
 
       def each(&block)
         i=0
-        dump.each_pair do |thread_name, _hash|
+        dump.each do |hash|
+          thread_name = hash["thread.name"]
           break if i >= top_count
           if ignore
-            next if idle_thread?(thread_name, _hash)
+            next if idle_thread?(thread_name, hash)
           end
-          block.call(thread_name, _hash)
+          block.call(hash)
           i += 1
         end
       end

@@ -39,6 +39,7 @@ public class HotThreadsMonitor {
         private static final String THREAD_NAME = "thread.name";
         private static final String THREAD_STATE = "thread.state";
         private static final String THREAD_STACKTRACE = "thread.stacktrace";
+        private static final String THREAD_ID = "thread.id";
 
         private Map<String, Object> map = new HashMap<>();
 
@@ -49,6 +50,7 @@ public class HotThreadsMonitor {
             map.put(WAITED_COUNT, info.getWaitedCount());
             map.put(WAITED_TIME, info.getWaitedTime());
             map.put(THREAD_NAME, info.getThreadName());
+            map.put(THREAD_ID, info.getThreadId());
             map.put(THREAD_STATE, info.getThreadState().name().toLowerCase());
             map.put(THREAD_STACKTRACE, stackTraceAsString(info.getStackTrace()));
         }
@@ -69,6 +71,10 @@ public class HotThreadsMonitor {
 
         public String getThreadName() {
             return (String) map.get(THREAD_NAME);
+        }
+
+        public long getThreadId() {
+            return (long) map.get(THREAD_ID);
         }
 
         @Override

@@ -17,7 +17,12 @@ class HotThreadsReport
     report << '=' * STRING_SEPARATOR_LENGTH
     report << "\n"
     hash[:threads].each do |thread|
-      thread_report = "#{I18n.t("logstash.web_api.hot_threads.thread_title", :percent_of_cpu_time => thread[:percent_of_cpu_time], :thread_state => thread[:state], :thread_name => thread[:name])} \n"
+      line_str = I18n.t("logstash.web_api.hot_threads.thread_title", 
+        :percent_of_cpu_time => thread[:percent_of_cpu_time], 
+        :thread_state => thread[:state], 
+        :thread_name => thread[:name],
+        :thread_id => thread[:thread_id])
+      thread_report = "#{line_str} \n"
       thread_report << "#{thread[:path]}\n" if thread[:path]
       thread[:traces].each do |trace|
         thread_report << "\t#{trace}\n"
@@ -31,9 +36,10 @@ class HotThreadsReport
 
   def to_hash
     hash = { :time => Time.now.iso8601, :busiest_threads => @thread_dump.top_count, :threads => [] }
-    @thread_dump.each do |thread_name, _hash|
+    @thread_dump.each do |_hash|
       thread_name, thread_path = _hash["thread.name"].split(": ")
       thread = { :name => thread_name,
+                 :thread_id => _hash["thread.id"],
                  :percent_of_cpu_time => cpu_time_as_percent(_hash),
                  :state => _hash["thread.state"]
       }
