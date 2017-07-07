@@ -21,14 +21,13 @@ public class ThreadsReport {
      *                      stacktrace_size - max depth of stack trace
      * @return A Map containing hot threads information
      */
-    public static Map<String, Object> generate(Map<String, String> options) {
+    public static List<Map<String, Object>> generate(Map<String, String> options) {
         HotThreadsMonitor reporter = new HotThreadsMonitor();
         List<HotThreadsMonitor.ThreadReport> reports = reporter.detect(options);
         return reports
                 .stream()
-                .collect(Collectors
-                    .toMap(HotThreadsMonitor.ThreadReport::getThreadName,
-                           HotThreadsMonitor.ThreadReport::toMap));
+                .map(HotThreadsMonitor.ThreadReport::toMap)
+                .collect(Collectors.toList());
     }
 
 
@@ -36,7 +35,7 @@ public class ThreadsReport {
      * Generate a report with current Thread information
      * @return A Map containing the hot threads information
      */
-    public static Map<String, Object> generate() {
+    public static List<Map<String, Object>> generate() {
         Map<String, String> options = new HashMap<>();
         options.put("order_by", "cpu");
         return generate(options);
