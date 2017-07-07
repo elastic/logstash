@@ -22,8 +22,7 @@ public class ThreadsReport {
      * @return A Map containing hot threads information
      */
     public static Map<String, Object> generate(Map<String, String> options) {
-        HotThreadsMonitor reporter = new HotThreadsMonitor();
-        List<HotThreadsMonitor.ThreadReport> reports = reporter.detect(options);
+        List<HotThreadsMonitor.ThreadReport> reports = HotThreadsMonitor.detect(options);
         return reports
                 .stream()
                 .collect(Collectors
