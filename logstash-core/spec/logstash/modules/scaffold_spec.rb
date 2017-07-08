@@ -104,12 +104,12 @@ ERB
   context "kibana operation" do
     before do
       # allow(LogStash::Modules::FileReader).to receive(:read_json).and_return({})
-      allow(LogStash::Modules::FileReader).to receive(:read_json).with("gem-home/kibana/6.x/dashboard/foo.json").and_return(["Foo-Dashboard"])
-      allow(LogStash::Modules::FileReader).to receive(:read_json).with("gem-home/kibana/6.x/dashboard/Foo-Dashboard.json").and_return(dashboard_hash)
-      allow(LogStash::Modules::FileReader).to receive(:read_json).with("gem-home/kibana/6.x/visualization/foo-c.json").and_return(viz_hash)
-      allow(LogStash::Modules::FileReader).to receive(:read_json).with("gem-home/kibana/6.x/search/foo-d.json").and_return({"d" => "search"})
-      allow(LogStash::Modules::FileReader).to receive(:read_json).with("gem-home/kibana/6.x/search/foo-e.json").and_return({"e" => "search"})
-      allow(LogStash::Modules::FileReader).to receive(:read_json).with("gem-home/kibana/6.x/index-pattern/foo.json").and_return(index_pattern_hash)
+      allow(LogStash::Modules::FileReader).to receive(:read_json).with("gem-home/kibana/dashboard/foo.json").and_return(["Foo-Dashboard"])
+      allow(LogStash::Modules::FileReader).to receive(:read_json).with("gem-home/kibana/dashboard/Foo-Dashboard.json").and_return(dashboard_hash)
+      allow(LogStash::Modules::FileReader).to receive(:read_json).with("gem-home/kibana/visualization/foo-c.json").and_return(viz_hash)
+      allow(LogStash::Modules::FileReader).to receive(:read_json).with("gem-home/kibana/search/foo-d.json").and_return({"d" => "search"})
+      allow(LogStash::Modules::FileReader).to receive(:read_json).with("gem-home/kibana/search/foo-e.json").and_return({"e" => "search"})
+      allow(LogStash::Modules::FileReader).to receive(:read_json).with("gem-home/kibana/index-pattern/foo.json").and_return(index_pattern_hash)
     end
 
     it "provides a list of importable files" do
@@ -204,6 +204,7 @@ ERB
         contents << content
         LogStash::Modules::KibanaClient::Response.new(201, "", {})
       end
+      puts contents.inspect
       test_module.with_settings(module_settings)
       test_module.import(LogStash::Modules::ElasticsearchImporter.new(client), LogStash::Modules::KibanaImporter.new(kbnclient))
       expect(paths).to eq(expected_paths)

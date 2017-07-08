@@ -31,6 +31,9 @@ module LogStash module Modules class KibanaConfig
 
   def dashboards
     # there can be more than one dashboard to load
+    puts "*"*10
+    puts dynamic("dashboard")
+    puts "*"*10
     filenames = FileReader.read_json(dynamic("dashboard"))
     filenames.map do |filename|
       KibanaResource.new(@index_name, "dashboard", dynamic("dashboard", filename))

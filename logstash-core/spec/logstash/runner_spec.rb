@@ -363,7 +363,7 @@ describe LogStash::Runner do
 
       context "with an available module specified and a mocked connection to elasticsearch" do
         let(:module_string) { "tester" }
-        let(:kbn_version) { "6.0.0" }
+        let(:kbn_version) { "5.6.0" }
         let(:esclient) { double(:esclient) }
         let(:kbnclient) { double(:kbnclient) }
         let(:response) { double(:response) }
