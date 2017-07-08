@@ -1,0 +1,19 @@
+{
+  "title": "Firewall Events",
+  "description": "",
+  "hits": 0,
+  "columns": [
+    "f1",
+    "f2",
+    "f3",
+    "f4"
+  ],
+  "sort": [
+    "f4",
+    "desc"
+  ],
+  "version": 1,
+  "kibanaSavedObjectMeta": {
+    "searchSourceJSON": "{\"index\":\"tester-*\",\"query\":{\"query_string\":{\"query\":\"f3:\\\"Firewall\\\"\",\"analyze_wildcard\":true}},\"filter\":[],\"highlight\":{\"pre_tags\":[\"@kibana-highlighted-field@\"],\"post_tags\":[\"@/kibana-highlighted-field@\"],\"fields\":{\"*\":{}},\"require_field_match\":false,\"fragment_size\":2147483647}}"
+  }
+}

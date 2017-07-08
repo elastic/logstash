@@ -1,0 +1,20 @@
+{
+  "title": "FW - Dashboard",
+  "hits": 0,
+  "description": "",
+  "panelsJSON": "[{\"id\":\"FW-Viz-1\",\"type\":\"visualization\",\"panelIndex\":12,\"size_x\":4,\"size_y\":3,\"col\":9,\"row\":6},{\"id\":\"FW-Viz-2\",\"type\":\"visualization\",\"panelIndex\":13,\"size_x\":4,\"size_y\":3,\"col\":5,\"row\":6},{\"id\":\"Search-Tester\",\"type\":\"search\",\"panelIndex\":14,\"size_x\":6,\"size_y\":3,\"col\":1,\"row\":13,\"columns\":[\"sevCode\",\"name\",\"deviceVendor\",\"deviceProduct\",\"categoryDeviceType\",\"categoryBehavior\",\"categoryOutcome\",\"sourceAddress\",\"sourcePort\",\"sourceHostName\",\"destinationAddress\",\"destinationPort\",\"destinationHostName\",\"sourceUserName\",\"destinationUserName\"],\"sort\":[\"@timestamp\",\"desc\"]}]",
+  "optionsJSON": "{\"darkTheme\":false}",
+  "uiStateJSON": "{\"P-1\":{\"vis\":{\"legendOpen\":true,\"colors\":{\"/Success\":\"#629E51\",\"/Failure\":\"#BF1B00\"}}},\"P-2\":{\"vis\":{\"legendOpen\":true}},\"P-3\":{\"vis\":{\"params\":{\"sort\":{\"columnIndex\":null,\"direction\":null}}}},\"P-4\":{\"vis\":{\"legendOpen\":true,\"colors\":{\"/Success\":\"#629E51\",\"/Failure\":\"#BF1B00\",\"Check Point\":\"#C15C17\",\"CISCO\":\"#EF843C\",\"NetScreen\":\"#F9BA8F\"}}},\"P-5\":{\"mapCenter\":[46.195042108660154,-56.42578125]},\"P-6\":{\"mapCenter\":[15.961329081596647,-0.3515625],\"mapZoom\":1},\"P-8\":{\"vis\":{\"params\":{\"sort\":{\"columnIndex\":null,\"direction\":null}}}},\"P-12\":{\"vis\":{\"legendOpen\":false}}}",
+  "version": 1,
+  "timeRestore": true,
+  "timeTo": "now",
+  "timeFrom": "now-1h",
+  "refreshInterval": {
+    "display": "Off",
+    "pause": false,
+    "value": 0
+  },
+  "kibanaSavedObjectMeta": {
+    "searchSourceJSON": "{\"filter\":[{\"query\":{\"query_string\":{\"analyze_wildcard\":true,\"query\":\"*\"}}}]}"
+  }
+}
