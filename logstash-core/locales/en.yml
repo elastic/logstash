@@ -102,8 +102,8 @@ en:
           Specified modules: %{specified_modules}
           Available modules: %{available_modules}
         elasticsearch_connection_failed: >-
-          Failed to import module configurations to Elasticsearch.
-          Module: %{module_name} has hosts: %{hosts}
+          Failed to import module configurations to Elasticsearch and/or Kibana.
+          Module: %{module_name} has Elasticsearch hosts: %{elasticsearch_hosts} and Kibana hosts: %{kibana_hosts}
 
     runner:
       short-help: |-

@@ -10,19 +10,25 @@ require_relative "logstash_config"
 module LogStash module Modules class Scaffold
   include LogStash::Util::Loggable
 
-  attr_reader :directory, :module_name, :logstash_configuration, :kibana_configuration, :elasticsearch_configuration
+  attr_reader :directory, :module_name, :kibana_version_parts
+  attr_reader :kibana_configuration, :logstash_configuration, :elasticsearch_configuration
 
   def initialize(name, directory)
     @module_name = name
     @directory = directory  # this is the 'configuration folder in the GEM root.'
+    @kibana_version_parts = "6.0.0".split('.') # this is backup in case kibana client fails to connect
   end
 
-  def import(import_engine)
+  def add_kibana_version(version_parts)
+    @kibana_version_parts = version_parts
+  end
+
+  def import(import_engine, kibana_import_engine)
     @elasticsearch_configuration.resources.each do |resource|
       import_engine.put(resource)
     end
     @kibana_configuration.resources.each do |resource|
-      import_engine.put(resource)
+      kibana_import_engine.put(resource)
     end
   end
 

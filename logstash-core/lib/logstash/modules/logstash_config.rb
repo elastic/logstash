@@ -62,19 +62,17 @@ module LogStash module Modules class LogStashConfig
     hosts = array_to_string(get_setting(LogStash::Setting::SplittableStringArray.new("var.output.elasticsearch.hosts", String, ["localhost:9200"])))
     index = "#{@name}-#{setting("var.output.elasticsearch.index_suffix", "%{+YYYY.MM.dd}")}"
     user = @settings["var.output.elasticsearch.user"]
-    user_line = user ? "user => \"#{user}\"" : ""
     password = @settings["var.output.elasticsearch.password"]
-    password_line = password ? "password => \"#{password}\"" : ""
-    document_type_line = type_string ? "document_type => #{type_string}" : ""
+    lines = ["hosts => #{hosts}", "index => \"#{index}\""]
+    lines.push(user ? "user => \"#{user}\"" : nil)
+    lines.push(password ? "password => \"#{password}\"" : nil)
+    lines.push(type_string ? "document_type => #{type_string}" : nil)
+    # NOTE: the first line should be indented in the conf.erb
     <<-CONF
 elasticsearch {
-hosts => #{hosts}
-index => "#{index}"
-#{user_line}
-#{password_line}
-manage_template => false
-#{document_type_line}
-}
+    #{lines.compact.join("\n    ")}
+    manage_template => false
+  }
 CONF
   end
 

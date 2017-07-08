@@ -155,6 +155,12 @@ module LogStash; class BasePipeline
   def non_reloadable_plugins
     (inputs + filters + outputs).select { |plugin| !plugin.reloadable? }
   end
+
+  private
+
+  def default_logging_keys(other_keys = {})
+    { :pipeline_id => pipeline_id }.merge(other_keys)
+  end
 end; end
 
 module LogStash; class Pipeline < BasePipeline
@@ -779,12 +785,9 @@ module LogStash; class Pipeline < BasePipeline
   private
 
   def default_logging_keys(other_keys = {})
-    default_options = if thread
-                        { :pipeline_id => pipeline_id, :thread => thread.inspect }
-                      else
-                        { :pipeline_id => pipeline_id }
-                      end
-    default_options.merge(other_keys)
+    keys = super
+    keys[:thread] = thread.inspect if thread
+    keys
   end
 
   def draining_queue?
