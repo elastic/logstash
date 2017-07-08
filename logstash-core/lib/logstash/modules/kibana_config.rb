@@ -17,10 +17,10 @@ module LogStash module Modules class KibanaConfig
 
   # We name it `modul` here because `module` has meaning in Ruby.
   def initialize(modul, settings)
-    build_versioned_directory(modul)
     @name = modul.module_name
     @settings = settings
     @index_name = settings.fetch("dashboards.kibana_index", ".kibana")
+    @directory = ::File.join(modul.directory, "kibana")
     @pattern_name = "#{@name}-*"
     @metrics_max_buckets = @settings.fetch("dashboards.metrics_max_buckets", METRICS_MAX_BUCKETS).to_i
     @kibana_settings = [
@@ -55,23 +55,6 @@ module LogStash module Modules class KibanaConfig
   end
 
   private
-
-  def build_versioned_directory(modul)
-    # try to detect which directory holds the config for the kibana version
-    base_dir = ::File.join(modul.directory, "kibana")
-    maj, min, patch = modul.kibana_version_parts
-    version_dir = "#{maj}.#{min}.#{patch}"
-    @directory = ::File.join(base_dir, version_dir)
-    return if ::File.directory?(@directory)
-    version_dir = "#{maj}.#{min}.x"
-    @directory = ::File.join(base_dir, version_dir)
-    return if ::File.directory?(@directory)
-    version_dir = "#{maj}.x"
-    @directory = ::File.join(base_dir, version_dir)
-    unless ::File.directory?(@directory)
-      logger.error("Cannot find kibana version sub-directory", :module => @name, :base_directory => base_dir)
-    end
-  end
 
   def dynamic(dynamic_folder, filename = @name)
     ::File.join(@directory, dynamic_folder, "#{filename}.json")
