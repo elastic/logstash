@@ -17,10 +17,10 @@ module LogStash module Modules class KibanaConfig
 
   # We name it `modul` here because `module` has meaning in Ruby.
   def initialize(modul, settings)
+    @directory = ::File.join(modul.directory, "kibana")
     @name = modul.module_name
     @settings = settings
     @index_name = settings.fetch("dashboards.kibana_index", ".kibana")
-    @directory = ::File.join(modul.directory, "kibana")
     @pattern_name = "#{@name}-*"
     @metrics_max_buckets = @settings.fetch("dashboards.metrics_max_buckets", METRICS_MAX_BUCKETS).to_i
     @kibana_settings = [

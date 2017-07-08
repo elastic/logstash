@@ -204,7 +204,6 @@ ERB
         contents << content
         LogStash::Modules::KibanaClient::Response.new(201, "", {})
       end
-      puts contents.inspect
       test_module.with_settings(module_settings)
       test_module.import(LogStash::Modules::ElasticsearchImporter.new(client), LogStash::Modules::KibanaImporter.new(kbnclient))
       expect(paths).to eq(expected_paths)
