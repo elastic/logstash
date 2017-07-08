@@ -88,7 +88,7 @@ bin/logstash --path.plugins /opt/shared/lib
 === Updating plugins
 
 Plugins have their own release cycle and are often released independent of Logstash’s core release cycle. Using the update
-subcommand you can get the latest or update to a particular version of the plugin.
+subcommand you can get the latest version of the plugin.
 
 [source,shell]
 ----------------------------------
