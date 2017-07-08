@@ -49,6 +49,8 @@ module LogStash module Modules class KibanaClient
         if status["version"]["build_snapshot"]
           @version.concat("-SNAPSHOT")
         end
+      else
+        @version = status["version"]
       end
     end
     @http_options[:headers]['kbn-version'] = @version
