@@ -1,5 +1,6 @@
 package org.logstash.ackedqueue.ext;
 
+import java.util.List;
 import org.jruby.Ruby;
 import org.jruby.RubyClass;
 import org.jruby.RubyModule;
@@ -13,6 +14,7 @@ import org.jruby.runtime.builtin.IRubyObject;
 import org.jruby.runtime.load.Library;
 import org.logstash.ackedqueue.Batch;
 import org.logstash.Event;
+import org.logstash.ackedqueue.Queueable;
 import org.logstash.ext.JrubyEventExtLibrary;
 
 import java.io.IOException;
@@ -59,7 +61,7 @@ public class JrubyAckedBatchExtLibrary implements Library {
                 context.runtime.newArgumentError("expected queue AckedQueue");
             }
 
-            this.batch = new Batch(((RubyArray)events).getList(), ((RubyArray)seqNums).getList(), ((JrubyAckedQueueExtLibrary.RubyAckedQueue)queue).getQueue());
+            this.batch = new Batch((List<Queueable>) events, (List<Long>) seqNums, ((JrubyAckedQueueExtLibrary.RubyAckedQueue)queue).getQueue());
 
             return context.nil;
         }
