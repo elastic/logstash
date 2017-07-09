@@ -19,7 +19,7 @@ public final class PathCache {
         return cache(reference) == timestamp;
     }
 
-    public FieldReference cache(String reference) {
+    public static FieldReference cache(String reference) {
         // atomicity between the get and put is not important
         FieldReference result = cache.get(reference);
         if (result == null) {
@@ -29,7 +29,7 @@ public final class PathCache {
         return result;
     }
 
-    public FieldReference cache(String reference, FieldReference field) {
+    public static FieldReference cache(String reference, FieldReference field) {
         cache.put(reference, field);
         return field;
     }
