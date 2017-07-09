@@ -22,7 +22,7 @@ public class TimestampBiValue extends BiValueCommon<RubyTimestamp, Timestamp> im
     }
 
     protected void addRuby(Ruby runtime) {
-        rubyValue = RubyTimestamp.newRubyTimestamp(runtime, (Timestamp) javaValue);
+        rubyValue = RubyTimestamp.newRubyTimestamp(runtime, javaValue);
     }
 
     protected void addJava() {

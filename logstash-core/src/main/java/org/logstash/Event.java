@@ -213,10 +213,10 @@ public class Event implements Cloneable, Serializable, Queueable {
 
     private static Map<String, Map<String, Object>> fromBinaryToMap(byte[] source) throws IOException {
         Object o = CBOR_MAPPER.readValue(source, HashMap.class);
-        if (o instanceof Map) {
-            return (HashMap<String, Map<String, Object>>) o;
+        if (o == null) {
+            throw new IOException("incompatible from binary object type only HashMap is supported");
         } else {
-            throw new IOException("incompatible from binary object type=" + o.getClass().getName() + " , only HashMap is supported");
+            return (Map<String, Map<String, Object>>) o;
         }
     }
 
