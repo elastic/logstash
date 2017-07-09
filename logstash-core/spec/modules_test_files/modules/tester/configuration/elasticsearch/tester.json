@@ -1,0 +1,51 @@
+{
+    "order": 100,
+    "template": "tester-*",
+    "mappings": {
+      "_default_": {
+        "dynamic": true,
+        "dynamic_templates": [
+          {
+            "string_fields": {
+              "mapping": {
+                "type": "keyword"
+              },
+              "match_mapping_type": "string",
+              "match": "*"
+            }
+          }
+        ],
+        "_all": {
+          "enabled": true
+        },
+        "properties": {
+          "f1": {
+            "type": "integer"
+          },
+          "f2": {
+            "type": "integer"
+          },
+          "f3": {
+            "type": "ip"
+          },
+          "f4": {
+            "format": "epoch_millis||epoch_second||date_time||MMM dd yyyy HH:mm:ss",
+            "type": "date"
+          },
+          "f6": {
+            "type": "integer"
+          },
+          "f7": {
+            "type": "integer"
+          },
+          "f8": {
+            "type": "integer"
+          },
+          "f9": {
+            "type": "integer"
+          },
+        }
+      }
+    },
+    "aliases": {}
+}

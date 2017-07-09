@@ -2,7 +2,7 @@
 require "logstash/namespace"
 require "logstash/logging"
 
-module LogStash module Modules class Importer
+module LogStash module Modules class ElasticsearchImporter
   include LogStash::Util::Loggable
 
   def initialize(client)
@@ -31,7 +31,7 @@ module LogStash module Modules class Importer
 
   def content_exists?(path)
     response = @client.head(path)
-    response.status >= 200 && response.status <= 299
+    response.status >= 200 && response.status < 300
   end
 
 end end end # class LogStash::Modules::Importer
