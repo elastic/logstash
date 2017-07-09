@@ -120,7 +120,7 @@ public class JrubyEventExtLibrary implements Library {
         {
             String r = reference.asJavaString();
 
-            if (PathCache.getInstance().isTimestamp(r)) {
+            if (PathCache.isTimestamp(r)) {
                 if (!(value instanceof JrubyTimestampExtLibrary.RubyTimestamp)) {
                     throw context.runtime.newTypeError("wrong argument type " + value.getMetaClass() + " (expected LogStash::Timestamp)");
                 }
