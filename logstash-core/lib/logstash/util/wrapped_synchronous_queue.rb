@@ -6,7 +6,7 @@ module LogStash; module Util
     java_import java.util.concurrent.TimeUnit
 
     def initialize
-      @queue = java.util.concurrent.SynchronousQueue.new
+      @queue = SynchronousQueue.new
     end
 
     # Push an object to the queue if the queue is full
@@ -118,12 +118,7 @@ module LogStash; module Util
 
       def read_batch
         batch = new_batch
-        @mutex.lock
-        begin
-          batch.read_next
-        ensure
-          @mutex.unlock
-        end
+        batch.read_next
         start_metrics(batch)
         batch
       end
