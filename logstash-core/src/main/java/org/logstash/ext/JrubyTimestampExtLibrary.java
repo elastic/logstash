@@ -1,10 +1,17 @@
 package org.logstash.ext;
 
-import org.jruby.*;
+import java.io.IOException;
+import org.jruby.Ruby;
+import org.jruby.RubyClass;
+import org.jruby.RubyFixnum;
+import org.jruby.RubyFloat;
+import org.jruby.RubyModule;
+import org.jruby.RubyObject;
+import org.jruby.RubyString;
+import org.jruby.RubyTime;
 import org.jruby.anno.JRubyClass;
 import org.jruby.anno.JRubyMethod;
 import org.jruby.exceptions.RaiseException;
-import org.jruby.ext.bigdecimal.RubyBigDecimal;
 import org.jruby.javasupport.JavaUtil;
 import org.jruby.runtime.Arity;
 import org.jruby.runtime.ObjectAllocator;
@@ -12,8 +19,6 @@ import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.jruby.runtime.load.Library;
 import org.logstash.Timestamp;
-
-import java.io.IOException;
 
 public class JrubyTimestampExtLibrary implements Library {
 
@@ -90,7 +95,7 @@ public class JrubyTimestampExtLibrary implements Library {
                 this.timestamp = new Timestamp(((RubyTime)time).getDateTime());
             } else if (time instanceof RubyString) {
                 try {
-                    this.timestamp = new Timestamp(((RubyString) time).toString());
+                    this.timestamp = new Timestamp(time.toString());
                 } catch (IllegalArgumentException e) {
                     throw new RaiseException(
                             getRuntime(),
@@ -161,7 +166,7 @@ public class JrubyTimestampExtLibrary implements Library {
             } else if (time instanceof RubyTime) {
                 return new Timestamp(((RubyTime)time).getDateTime());
             } else if (time instanceof RubyString) {
-                return new Timestamp(((RubyString) time).toString());
+                return new Timestamp(time.toString());
             } else if (time instanceof RubyTimestamp) {
                 return new Timestamp(((RubyTimestamp) time).timestamp);
             } else {
