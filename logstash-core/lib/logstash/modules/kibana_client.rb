@@ -39,7 +39,7 @@ module LogStash module Modules class KibanaClient
       @http_options[:headers]['Authorization'] = 'Basic ' + Base64.encode64( "#{username}:#{password}" ).chomp
     end
 
-    # e.g. {"name":"Elastics-MacBook-Pro.local","version":{"number":"6.0.0-alpha3","build_hash":"41e69","build_number":15613,"build_snapshot":true}..}
+    # e.g. {"name":"Elastics-MacBook-Pro.local","version":{"number":"6.0.0-beta1","build_hash":"41e69","build_number":15613,"build_snapshot":true}..}
     @version = "0.0.0"
     response = get("api/status")
     if response.succeeded?
