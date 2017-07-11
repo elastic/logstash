@@ -45,9 +45,9 @@ public class DeadLetterQueueFactoryTest {
     @Test
     public void test() throws IOException {
         Path pipelineA = dir.resolve("pipelineA");
-        DeadLetterQueueWriter writer = DeadLetterQueueFactory.getWriter("pipelineA", pipelineA.toString());
+        DeadLetterQueueWriter writer = DeadLetterQueueFactory.getWriter("pipelineA", pipelineA.toString(), 10000);
         assertTrue(writer.isOpen());
-        DeadLetterQueueWriter writer2 = DeadLetterQueueFactory.getWriter("pipelineA", pipelineA.toString());
+        DeadLetterQueueWriter writer2 = DeadLetterQueueFactory.getWriter("pipelineA", pipelineA.toString(), 10000);
         assertSame(writer, writer2);
         writer.close();
     }
