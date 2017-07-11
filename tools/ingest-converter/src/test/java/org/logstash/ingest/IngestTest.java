@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.util.regex.Pattern;
 import org.apache.commons.io.IOUtils;
 import org.junit.Rule;
 import org.junit.rules.TemporaryFolder;
@@ -20,6 +21,17 @@ import static org.junit.runners.Parameterized.Parameter;
  */
 @RunWith(Parameterized.class)
 public abstract class IngestTest {
+
+    /**
+     * Used to normalize line endings since static reference result files have Unix line endings.
+     */
+    private static final Pattern CR_LF =
+        Pattern.compile("\\r\\n");
+
+    /**
+     * Used to normalize line endings since static reference result files have Unix line endings.
+     */
+    private static final Pattern CARRIAGE_RETURN = Pattern.compile("\\r");
 
     @Rule
     public TemporaryFolder temp = new TemporaryFolder();
@@ -41,19 +53,30 @@ public abstract class IngestTest {
         );
     }
 
+    /**
+     * Reads a file, normalizes line endings to Unix line endings and returns the whole content
+     * as a String.
+     * @param path Url to read
+     * @return String content of the URL
+     * @throws IOException On failure to read from given URL
+     */
     private static String utf8File(final URL path) throws IOException {
         final ByteArrayOutputStream baos = new ByteArrayOutputStream();
         try (final InputStream input = path.openStream()) {
             IOUtils.copy(input, baos);
         }
-        return baos.toString(StandardCharsets.UTF_8.name());
+        return CARRIAGE_RETURN.matcher(
+            CR_LF.matcher(
+                baos.toString(StandardCharsets.UTF_8.name())
+            ).replaceAll("\n")
+        ).replaceAll("\n");
     }
 
     private static URL resourcePath(final String name) {
         return IngestTest.class.getResource(name);
     }
 
-    static URL getResultPath(TemporaryFolder temp) throws IOException {
+    private static URL getResultPath(TemporaryFolder temp) throws IOException {
         return temp.newFolder().toPath().resolve("converted").toUri().toURL();
     }
 }
