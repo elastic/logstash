@@ -26,7 +26,7 @@ module LogStash module Modules class KibanaDashboards < KibanaBase
       }
       objects << hash
     end
-    body = {"version": client.version, "objects": objects}
+    body = {"version" => client.version, "objects" => objects}
     response = client.post(import_path, body)
     if response.failed?
       logger.error("Attempted POST failed", :url_path => import_path, :response => response.body)
