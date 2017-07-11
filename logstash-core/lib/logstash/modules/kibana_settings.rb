@@ -22,7 +22,7 @@ module LogStash module Modules class KibanaSettings < KibanaBase
 
   def import(client)
     # e.g. curl "http://localhost:5601/api/kibana/settings"
-    # 6.0.0-alpha3 -> {"settings":{"buildNum":{"userValue":15613},"defaultIndex":{"userValue":"arcsight-*"}}}
+    # 6.0.0-beta1 -> {"settings":{"buildNum":{"userValue":15613},"defaultIndex":{"userValue":"arcsight-*"}}}
     # 5.4 -> {"settings":{"defaultIndex":{"userValue":"cef-*"},"metrics:max_buckets":{"userValue":"600000"}}}
     # array of Setting objects
     # The POST api body { "changes": { "defaultIndex": "arcsight-*", "metrics:max_buckets": "400" } }
