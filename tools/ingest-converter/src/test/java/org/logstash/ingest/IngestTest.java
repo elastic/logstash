@@ -1,9 +1,11 @@
 package org.logstash.ingest;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
+import org.apache.commons.io.IOUtils;
 import org.junit.Rule;
 import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
@@ -24,30 +26,34 @@ public abstract class IngestTest {
 
     @Parameter
     public String testCase;
-    
+
     protected final void assertCorrectConversion(final Class clazz) throws Exception {
-        final String append = getResultPath(temp);
+        final URL append = getResultPath(temp);
         clazz.getMethod("main", String[].class).invoke(
             null,
             (Object) new String[]{
-                String.format("--input=file://%s", resourcePath(String.format("ingest%s.json", testCase))),
-                String.format("--output=file://%s", append)
+                String.format("--input=%s", resourcePath(String.format("ingest%s.json", testCase))),
+                String.format("--output=%s", append)
             }
         );
         assertThat(
             utf8File(append), is(utf8File(resourcePath(String.format("logstash%s.conf", testCase))))
         );
-    } 
-    
-    static String utf8File(final String path) throws IOException {
-        return new String(Files.readAllBytes(Paths.get(path)), StandardCharsets.UTF_8);
     }
 
-    static String resourcePath(final String name) {
-        return IngestTest.class.getResource(name).getPath();
+    private static String utf8File(final URL path) throws IOException {
+        final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        try (final InputStream input = path.openStream()) {
+            IOUtils.copy(input, baos);
+        }
+        return baos.toString(StandardCharsets.UTF_8.name());
     }
 
-    static String getResultPath(TemporaryFolder temp) throws IOException {
-        return temp.newFolder().toPath().resolve("converted").toString();
+    private static URL resourcePath(final String name) {
+        return IngestTest.class.getResource(name);
+    }
+
+    static URL getResultPath(TemporaryFolder temp) throws IOException {
+        return temp.newFolder().toPath().resolve("converted").toUri().toURL();
     }
 }
