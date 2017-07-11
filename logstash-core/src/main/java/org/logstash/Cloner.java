@@ -24,7 +24,7 @@ public final class Cloner {
             clone = new LinkedList<>();
         } else if (list instanceof ArrayList<?>) {
             clone = new ArrayList<>();
-        } else if (list instanceof ConvertedList<?>) {
+        } else if (list instanceof ConvertedList) {
             clone = new ArrayList<>();
         } else {
             throw new ClassCastException("unexpected List type " + list.getClass());
@@ -45,7 +45,7 @@ public final class Cloner {
             clone = new TreeMap<>();
         } else if (map instanceof HashMap<?, ?>) {
             clone = new HashMap<>();
-        } else if (map instanceof ConvertedMap<?, ?>) {
+        } else if (map instanceof ConvertedMap) {
             clone = new HashMap<>();
         } else {
             throw new ClassCastException("unexpected Map type " + map.getClass());
