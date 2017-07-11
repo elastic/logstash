@@ -10,6 +10,7 @@ REM installing gems. See https://github.com/elastic/logstash/issues/5179
 SET JRUBY_OPTS="-J-Xmx1g"
 SET SELECTEDTESTSUITE=%1
 SET /p JRUBYVERSION=<.ruby-version
+SET JARS_DEBUG=true
 
 IF NOT EXIST %JRUBYSRCDIR% (
   echo "Variable JRUBYSRCDIR must be declared with a valid directory. Aborting.."
