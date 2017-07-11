@@ -11,7 +11,11 @@ import java.util.Map;
 /**
  * Based on code created by purbon on 13/12/15.
  */
-public class MemoryMonitor {
+public final class MemoryMonitor {
+
+    private MemoryMonitor() {
+        //Utility Class
+    }
 
     public enum Type {
         All, Heap, NonHeap

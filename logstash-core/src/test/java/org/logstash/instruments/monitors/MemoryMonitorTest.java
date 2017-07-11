@@ -15,19 +15,19 @@ public class MemoryMonitorTest {
 
     @Test
     public void testEachHeapSpaceRepresented() {
-        Map<String, Map<String, Object>> heap = new MemoryMonitor().detect(MemoryMonitor.Type.All).getHeap();
+        Map<String, Map<String, Object>> heap = MemoryMonitor.detect(MemoryMonitor.Type.All).getHeap();
         assertThat(heap, notNullValue());
         assertThat(heap.keySet(), hasItems("PS Survivor Space", "PS Old Gen", "PS Eden Space"));
     }
 
     @Test
     public void testAllStatsAreAvailableForHeap(){
-        testAllStatsAreAvailable(new MemoryMonitor().detect(MemoryMonitor.Type.All).getHeap());
+        testAllStatsAreAvailable(MemoryMonitor.detect(MemoryMonitor.Type.All).getHeap());
     }
 
     @Test
     public void testAllStatsAreAvailableForNonHeap(){
-        testAllStatsAreAvailable(new MemoryMonitor().detect(MemoryMonitor.Type.All).getNonHeap());
+        testAllStatsAreAvailable(MemoryMonitor.detect(MemoryMonitor.Type.All).getNonHeap());
     }
 
     private void testAllStatsAreAvailable(Map<String, Map<String, Object>> stats){
