@@ -72,7 +72,7 @@ public class Event implements Cloneable, Serializable, Queueable {
      * makes to its underlying data will be propagated to it.
      * @param data Converted Map
      */
-    public Event(ConvertedMap<String, Object> data) {
+    public Event(ConvertedMap data) {
         this.data = data;
         if (!this.data.containsKey(VERSION)) {
             this.data.put(VERSION, VERSION_ONE);
