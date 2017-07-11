@@ -87,7 +87,7 @@ module LogStash; class BasePipeline
 
   def dlq_writer
     if settings.get_value("dead_letter_queue.enable")
-      @dlq_writer = DeadLetterQueueFactory.getWriter(pipeline_id, settings.get_value("path.dead_letter_queue"))
+      @dlq_writer = DeadLetterQueueFactory.getWriter(pipeline_id, settings.get_value("path.dead_letter_queue"), settings.get_value("dead_letter_queue.max_bytes"))
     else
       @dlq_writer = LogStash::Util::DummyDeadLetterQueueWriter.new
     end
