@@ -27,12 +27,7 @@ public class Valuefier {
     private static Object convertJavaProxy(JavaProxy jp) {
         Object obj = JavaUtil.unwrapJavaObject(jp);
         if (obj instanceof IRubyObject[]) {
-            final IRubyObject[] arr = (IRubyObject[]) obj;
-            ConvertedList<Object> list = new ConvertedList<>(arr.length);
-            for (IRubyObject ro : arr) {
-                list.add(convert(ro));
-            }
-            return list;
+            return ConvertedList.newFromRubyArray((IRubyObject[]) obj);
         }
         if (obj instanceof List) {
             return ConvertedList.newFromList((List<Object>) obj);

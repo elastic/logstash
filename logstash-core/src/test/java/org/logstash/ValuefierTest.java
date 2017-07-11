@@ -36,7 +36,7 @@ public class ValuefierTest extends TestBase {
 
         Object result = Valuefier.convert(mjp);
         assertEquals(ConvertedMap.class, result.getClass());
-        ConvertedMap<String, Object> m = (ConvertedMap) result;
+        ConvertedMap m = (ConvertedMap) result;
         BiValue bv = BiValues.newBiValue("bar");
         assertEquals(bv.javaValue(), ((BiValue) m.get("foo")).javaValue());
     }
