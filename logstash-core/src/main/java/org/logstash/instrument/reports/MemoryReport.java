@@ -25,7 +25,7 @@ public class MemoryReport {
     }
 
     private static MemoryMonitor.Report generateReport(MemoryMonitor.Type type) {
-        return new MemoryMonitor().detect(type);
+        return MemoryMonitor.detect(type);
     }
 }
 
