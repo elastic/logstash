@@ -56,10 +56,23 @@ public class Event implements Cloneable, Serializable, Queueable {
         this.metadata_accessors = new Accessors(this.metadata);
     }
 
-    public Event(Map data)
-    {
-        this.data = (Map<String, Object>)Valuefier.convert(data);
+    /**
+     * Constructor from a map that will be copied and the copy will have its contents converted to
+     * Java objects.
+     * @param data Map that is assumed to have either {@link String} or {@link org.jruby.RubyString}
+     * keys and may contain Java and Ruby objects.
+     */
+    public Event(Map data) {
+        this(ConvertedMap.newFromMap(data));
+    }
 
+    /**
+     * Constructor wrapping a {@link ConvertedMap} without copying it. Any changes this instance
+     * makes to its underlying data will be propagated to it.
+     * @param data Converted Map
+     */
+    public Event(ConvertedMap<String, Object> data) {
+        this.data = data;
         if (!this.data.containsKey(VERSION)) {
             this.data.put(VERSION, VERSION_ONE);
         }
