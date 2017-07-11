@@ -52,14 +52,14 @@ public final class MemoryMonitor {
             addPeak(beanMap, bean.getPeakUsage());
         }
 
-        private void addUsage(Map<String, Object> map, MemoryUsage usage){
+        private static void addUsage(Map<String, Object> map, MemoryUsage usage){
             map.put(USAGE_INIT, usage.getInit());
             map.put(USAGE_COMMITTED, usage.getCommitted());
             map.put(USAGE_USED, usage.getUsed());
             map.put(USAGE_MAX, usage.getMax());
         }
 
-        private void addPeak(Map<String, Object> map, MemoryUsage peak){
+        private static void addPeak(Map<String, Object> map, MemoryUsage peak){
             map.put(PEAK_INIT, peak.getInit());
             map.put(PEAK_COMMITTED, peak.getCommitted());
             map.put(PEAK_USED, peak.getUsed());
@@ -67,7 +67,7 @@ public final class MemoryMonitor {
         }
      }
 
-     public Report detect(Type selectType){
+     public static Report detect(Type selectType){
         List<MemoryPoolMXBean> beans = ManagementFactory.getMemoryPoolMXBeans();
         Report report = new Report();
 
@@ -77,7 +77,7 @@ public final class MemoryMonitor {
         return report;
     }
 
-    private boolean filterPool(MemoryType type, Type selectType) {
+    private static boolean filterPool(MemoryType type, Type selectType) {
        return ((selectType.equals(Type.NonHeap) && type.equals(MemoryType.HEAP))
                || (selectType.equals(Type.Heap) && type.equals(MemoryType.NON_HEAP)));
     }
