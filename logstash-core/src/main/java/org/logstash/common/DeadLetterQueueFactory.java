@@ -51,12 +51,14 @@ public class DeadLetterQueueFactory {
      * @param id The identifier context for this dlq manager
      * @param dlqPath The path to use for the queue's backing data directory. contains sub-directories
      *                for each id
+     * @param maxQueueSize Maximum size of the dead letter queue (in bytes). No entries will be written
+     *                     that would make the size of this dlq greater than this value
      * @return The write manager for the specific id's dead-letter-queue context
      */
-    public static DeadLetterQueueWriter getWriter(String id, String dlqPath) {
+    public static DeadLetterQueueWriter getWriter(String id, String dlqPath, long maxQueueSize) {
         return REGISTRY.computeIfAbsent(id, k -> {
             try {
-                return new DeadLetterQueueWriter(Paths.get(dlqPath, k), MAX_SEGMENT_SIZE_BYTES, Long.MAX_VALUE);
+                return new DeadLetterQueueWriter(Paths.get(dlqPath, k), MAX_SEGMENT_SIZE_BYTES, maxQueueSize);
             } catch (IOException e) {
                 logger.error("unable to create dead letter queue writer", e);
             }

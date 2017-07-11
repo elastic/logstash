@@ -26,15 +26,21 @@ import org.junit.rules.TemporaryFolder;
 import org.logstash.DLQEntry;
 import org.logstash.Event;
 
+import java.io.IOException;
 import java.nio.channels.FileChannel;
 import java.nio.channels.OverlappingFileLockException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
+import java.util.Collections;
 
 import static junit.framework.TestCase.assertFalse;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.logstash.common.io.RecordIOWriter.RECORD_HEADER_SIZE;
+import static org.logstash.common.io.RecordIOWriter.VERSION_SIZE;
 
 public class DeadLetterQueueWriterTest {
     private Path dir;
@@ -91,5 +97,40 @@ public class DeadLetterQueueWriterTest {
         DLQEntry entry = new DLQEntry(new Event(), "type", "id", "reason");
         writer.writeEntry(entry);
         writer.close();
+    }
+
+    @Test
+    public void testDoesNotWriteBeyondLimit() throws Exception {
+        DLQEntry entry = new DLQEntry(new Event(), "type", "id", "reason");
+
+        int payloadLength = RECORD_HEADER_SIZE + VERSION_SIZE + entry.serialize().length;
+        final int MESSAGE_COUNT= 5;
+        long queueLength = payloadLength * MESSAGE_COUNT;
+        DeadLetterQueueWriter writer = null;
+
+        try{
+            writer = new DeadLetterQueueWriter(dir, payloadLength, queueLength);
+            for (int i = 0; i < MESSAGE_COUNT; i++)
+                writer.writeEntry(entry);
+
+            long size = Files.list(dir)
+                    .filter(p -> p.toString().endsWith(".log"))
+                    .mapToLong(p -> p.toFile().length())
+                    .sum();
+
+            assertThat(size, is(queueLength));
+
+            writer.writeEntry(entry);
+            size = Files.list(dir)
+                    .filter(p -> p.toString().endsWith(".log"))
+                    .mapToLong(p -> p.toFile().length())
+                    .sum();
+            assertThat(size, is(queueLength));
+        } finally {
+            if (writer != null) {
+                writer.close();
+            }
+        }
+
     }
 }
