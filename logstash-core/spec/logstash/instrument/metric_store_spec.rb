@@ -1,6 +1,5 @@
 # encoding: utf-8
 require "logstash/instrument/metric_store"
-require "logstash/instrument/metric_type/base"
 
 describe LogStash::Instrument::MetricStore do
   let(:namespaces) { [ :root, :pipelines, :pipeline_01 ] }
@@ -81,7 +80,7 @@ describe LogStash::Instrument::MetricStore do
 
         it "allow to retrieve a specific metrics" do
           metrics = subject.get(:node, :sashimi, :pipelines, :pipeline01, :plugins, :"logstash-output-elasticsearch", :event_in)
-          expect(metrics).to match(a_hash_including(:node => a_hash_including(:sashimi => a_hash_including(:pipelines  => a_hash_including(:pipeline01 => a_hash_including(:plugins => a_hash_including(:"logstash-output-elasticsearch" => a_hash_including(:event_in => be_kind_of(LogStash::Instrument::MetricType::Base)))))))))
+          expect(metrics).to match(a_hash_including(:node => a_hash_including(:sashimi => a_hash_including(:pipelines  => a_hash_including(:pipeline01 => a_hash_including(:plugins => a_hash_including(:"logstash-output-elasticsearch" => a_hash_including(:event_in => be_kind_of(LogStash::Instrument::MetricType::Counter)))))))))
         end
 
         context "with filtered keys" do
@@ -127,7 +126,7 @@ describe LogStash::Instrument::MetricStore do
 
           it "allow to retrieve a specific metrics" do
             metrics = subject.get_with_path("node/sashimi/pipelines/pipeline01/plugins/logstash-output-elasticsearch/event_in")
-            expect(metrics).to match(a_hash_including(:node => a_hash_including(:sashimi => a_hash_including(:pipelines  => a_hash_including(:pipeline01 => a_hash_including(:plugins => a_hash_including(:"logstash-output-elasticsearch" => a_hash_including(:event_in => be_kind_of(LogStash::Instrument::MetricType::Base)))))))))
+            expect(metrics).to match(a_hash_including(:node => a_hash_including(:sashimi => a_hash_including(:pipelines  => a_hash_including(:pipeline01 => a_hash_including(:plugins => a_hash_including(:"logstash-output-elasticsearch" => a_hash_including(:event_in => be_kind_of(LogStash::Instrument::MetricType::Counter)))))))))
           end
 
           context "with filtered keys" do

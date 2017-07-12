@@ -26,12 +26,5 @@ describe LogStash::Instrument::MetricType::Gauge do
     end
   end
 
-  context "When creating a hash " do
-    it "creates the hash from all the values" do
-      metric_hash = {
-        key => value
-      }
-      expect(subject.to_hash).to match(metric_hash)
-    end
-  end
+
 end
