@@ -122,3 +122,4 @@ dependencies {
     testCompile 'org.assertj:assertj-core:3.8.0'
     provided "org.jruby:jruby-core:$jrubyVersion"
 }
+
