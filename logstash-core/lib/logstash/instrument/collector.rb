@@ -38,6 +38,7 @@ module LogStash module Instrument
         end
 
         metric.execute(*metric_type_params)
+        metric
       rescue MetricStore::NamespacesExpectedError => e
         logger.error("Collector: Cannot record metric", :exception => e)
       rescue NameError => e

@@ -8,15 +8,23 @@ module LogStash module Instrument module MetricType
     def initialize(namespaces, key)
       super(namespaces, key)
 
-      @gauge = Concurrent::MutexAtomicReference.new()
+      @gauge = org.logstash.instrument.metrics.Gauge.new(nil)
     end
 
-    def execute(action, value = nil)
+    def execute(action, value=nil)
+      @gauge.set(value)
+    end
+
+    def set(value)
       @gauge.set(value)
     end
 
     def value
       @gauge.get
+    end
+
+    def java_metric
+      @gauge
     end
   end
 end; end; end
