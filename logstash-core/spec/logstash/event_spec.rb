@@ -84,6 +84,15 @@ describe LogStash::Event do
       expect(e.get("foo")).to eq("bar")
     end
 
+    it "should propagate changes to mutable strings to java APIs" do
+      e = LogStash::Event.new()
+      e.to_java.setField("foo", "bar")
+      expect(e.get("foo")).to eq("bar")
+      e.get("foo").gsub!(/bar/, 'pff')
+      expect(e.get("foo")).to eq("pff")
+      expect(e.to_java.getField("foo")).to eq("pff")
+    end
+
     it "should set deep hash values" do
       e = LogStash::Event.new()
       expect(e.set("[foo][bar]", "baz")).to eq("baz")
