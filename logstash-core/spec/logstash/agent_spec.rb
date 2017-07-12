@@ -167,7 +167,7 @@ describe LogStash::Agent do
             it "reloads the pipeline" do
               t = Thread.new { subject.execute }
               sleep(0.01) until subject.running_pipelines? && subject.pipelines.values.first.running?
-              expect(subject).to receive(:reload_pipeline!).with(true)
+              expect(subject).to receive(:reload_pipeline!).with("main", true)
               subject.reload_state!(true)
 
               Stud.stop!(t)
