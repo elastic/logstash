@@ -48,7 +48,7 @@ module LogStash; module Util
     def self.get(pipeline_id)
       if LogStash::SETTINGS.get("dead_letter_queue.enable")
         return DeadLetterQueueWriter.new(
-          DeadLetterQueueFactory.getWriter(pipeline_id, LogStash::SETTINGS.get("path.dead_letter_queue")))
+          DeadLetterQueueFactory.getWriter(pipeline_id, LogStash::SETTINGS.get("path.dead_letter_queue"), LogStash::SETTINGS.get('dead_letter_queue.max_bytes')))
       else
         return DeadLetterQueueWriter.new(nil)
       end
