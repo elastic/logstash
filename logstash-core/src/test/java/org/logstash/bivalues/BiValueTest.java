@@ -29,7 +29,7 @@ public class BiValueTest extends TestBase {
         String s = "foo bar baz";
         StringBiValue subject = new StringBiValue(RubyString.newString(ruby, s));
         assertTrue(subject.hasRubyValue());
-        assertFalse(subject.hasJavaValue());
+        assertTrue(subject.hasJavaValue());
         assertEquals(s, subject.javaValue());
     }
 
