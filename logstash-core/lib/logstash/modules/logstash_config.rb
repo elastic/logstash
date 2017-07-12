@@ -61,12 +61,16 @@ module LogStash module Modules class LogStashConfig
   def elasticsearch_output_config(type_string = nil)
     hosts = array_to_string(get_setting(LogStash::Setting::SplittableStringArray.new("var.output.elasticsearch.hosts", String, ["localhost:9200"])))
     index = "#{@name}-#{setting("var.output.elasticsearch.index_suffix", "%{+YYYY.MM.dd}")}"
-    user = @settings["var.output.elasticsearch.user"]
+    user = @settings["var.output.elasticsearch.username"]
     password = @settings["var.output.elasticsearch.password"]
     lines = ["hosts => #{hosts}", "index => \"#{index}\""]
     lines.push(user ? "user => \"#{user}\"" : nil)
     lines.push(password ? "password => \"#{password}\"" : nil)
     lines.push(type_string ? "document_type => #{type_string}" : nil)
+    lines.push("ssl => #{@settings.fetch('var.ssl.enabled', false)}")
+    if cacert = @settings["var.ssl.certificate_authority"]
+      lines.push("cacert => \"#{cacert}\"") if cacert
+    end
     # NOTE: the first line should be indented in the conf.erb
     <<-CONF
 elasticsearch {

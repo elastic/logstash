@@ -27,7 +27,18 @@ module LogStash class ElasticsearchClient
       @logger = logger
       @client_args = client_args
 
-      username = @settings["var.output.elasticsearch.user"]
+      ssl_options = {}
+
+      if @settings["var.ssl.enabled"] == "true"
+        ssl_options[:verify] = @settings.fetch("var.ssl.verification_mode", true)
+        ssl_options[:ca_file] = @settings.fetch("var.ssl.certificate_authority", nil)
+        ssl_options[:client_cert] = @settings.fetch("var.ssl.certificate", nil)
+        ssl_options[:client_key] = @settings.fetch("var.ssl.key", nil)
+      end
+
+      @client_args[:ssl] = ssl_options
+
+      username = @settings["var.output.elasticsearch.username"]
       password = @settings["var.output.elasticsearch.password"]
       if username
         @client_args[:transport_options] = { :headers => { "Authorization" => 'Basic ' + Base64.encode64( "#{username}:#{password}" ).chomp } }
