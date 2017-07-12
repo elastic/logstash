@@ -20,13 +20,6 @@
 		"test-vendor-plugins": true,
 		"skip-list": false
 	},
-	"logstash-output-xmpp": {
-		"default-plugins": true,
-		"core-specs": false,
-		"test-jar-dependencies": false,
-		"test-vendor-plugins": false,
-		"skip-list": false
-	},
 	"logstash-codec-dots": {
 		"default-plugins": true,
 		"core-specs": false,
@@ -126,6 +119,13 @@
 		"skip-list": false
 	},
 	"logstash-filter-clone": {
+		"default-plugins": true,
+		"core-specs": true,
+		"test-jar-dependencies": false,
+		"test-vendor-plugins": false,
+		"skip-list": false
+	},
+	"logstash-filter-cidr": {
 		"default-plugins": true,
 		"core-specs": true,
 		"test-jar-dependencies": false,
@@ -265,21 +265,7 @@
 		"test-vendor-plugins": false,
 		"skip-list": false
 	},
-	"logstash-filter-uuid": {
-		"default-plugins": true,
-		"core-specs": false,
-		"test-jar-dependencies": false,
-		"test-vendor-plugins": false,
-		"skip-list": false
-	},
 	"logstash-filter-xml": {
-		"default-plugins": true,
-		"core-specs": false,
-		"test-jar-dependencies": false,
-		"test-vendor-plugins": false,
-		"skip-list": false
-	},
-	"logstash-input-couchdb_changes": {
 		"default-plugins": true,
 		"core-specs": false,
 		"test-jar-dependencies": false,
@@ -356,33 +342,12 @@
 		"test-vendor-plugins": false,
 		"skip-list": false
 	},
-	"logstash-input-irc": {
-		"default-plugins": true,
-		"core-specs": false,
-		"test-jar-dependencies": false,
-		"test-vendor-plugins": false,
-		"skip-list": false
-	},
 	"logstash-input-jdbc": {
 		"default-plugins": true,
 		"core-specs": false,
 		"test-jar-dependencies": false,
 		"test-vendor-plugins": false,
 		"skip-list": true
-	},
-	"logstash-input-log4j": {
-		"default-plugins": true,
-		"core-specs": false,
-		"test-jar-dependencies": false,
-		"test-vendor-plugins": false,
-		"skip-list": false
-	},
-	"logstash-input-lumberjack": {
-		"default-plugins": true,
-		"core-specs": false,
-		"test-jar-dependencies": false,
-		"test-vendor-plugins": false,
-		"skip-list": false
 	},
 	"logstash-input-pipe": {
 		"default-plugins": true,
@@ -468,13 +433,6 @@
 		"test-vendor-plugins": false,
 		"skip-list": false
 	},
-	"logstash-input-xmpp": {
-		"default-plugins": true,
-		"core-specs": false,
-		"test-jar-dependencies": false,
-		"test-vendor-plugins": false,
-		"skip-list": false
-	},
 	"logstash-input-kafka": {
 		"default-plugins": true,
 		"core-specs": false,
@@ -525,13 +483,6 @@
 		"skip-list": false
 	},
 	"logstash-output-http": {
-		"default-plugins": true,
-		"core-specs": false,
-		"test-jar-dependencies": false,
-		"test-vendor-plugins": false,
-		"skip-list": false
-	},
-	"logstash-output-irc": {
 		"default-plugins": true,
 		"core-specs": false,
 		"test-jar-dependencies": false,
@@ -602,13 +553,6 @@
 		"skip-list": false
 	},
 	"logstash-output-sqs": {
-		"default-plugins": true,
-		"core-specs": false,
-		"test-jar-dependencies": false,
-		"test-vendor-plugins": false,
-		"skip-list": false
-	},
-	"logstash-output-statsd": {
 		"default-plugins": true,
 		"core-specs": false,
 		"test-jar-dependencies": false,
