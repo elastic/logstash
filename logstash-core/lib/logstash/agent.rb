@@ -103,12 +103,12 @@ class LogStash::Agent
     @pipelines[pipeline_id] = pipeline
   end
 
-  def reload_state!
+  def reload_state!(force=false)
     @upgrade_mutex.synchronize do
       @pipelines.each do |pipeline_id, pipeline|
-        next if pipeline.settings.get("config.reload.automatic") == false
+        next if pipeline.settings.get("config.reload.automatic") == false && force == false
         begin
-          reload_pipeline!(pipeline_id)
+          reload_pipeline!(pipeline_id, force)
         rescue => e
           @instance_reload_metric.increment(:failures)
           @pipeline_reload_metric.namespace([pipeline_id.to_sym, :reloads]).tap do |n|
@@ -297,11 +297,11 @@ class LogStash::Agent
   # reload_pipeline trys to reloads the pipeline with id using a potential new configuration if it changed
   # since this method modifies the @pipelines hash it is wrapped in @upgrade_mutex in the parent call `reload_state!`
   # @param id [String] the pipeline id to reload
-  def reload_pipeline!(id)
+  def reload_pipeline!(id, force=false)
     old_pipeline = @pipelines[id]
     new_config = fetch_config(old_pipeline.settings)
 
-    if old_pipeline.config_str == new_config
+    if old_pipeline.config_str == new_config && force == false
       @logger.debug("no configuration change for pipeline", :pipeline => id)
       return
     end
