@@ -428,7 +428,7 @@ class LogStash::Runner < Clamp::StrictCommand
   def trap_sighup
     Stud::trap("HUP") do
       logger.warn(I18n.t("logstash.agent.sighup"))
-      @agent.reload_state!
+      @agent.reload_state!(true)
     end
   end
 
