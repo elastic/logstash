@@ -162,7 +162,7 @@
 
 # If using dead_letter_queue.enable: true, the maximum size of each dead letter queue. Entries
 # will be dropped if they would increase the size of the dead letter queue beyond this setting.
-# Deafault is 1024mb
+# Default is 1024mb
 # dead_letter_queue.max_bytes: 1024mb
 
 # If using dead_letter_queue.enable: true, the directory path where the data files will be stored.
