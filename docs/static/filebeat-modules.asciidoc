@@ -113,6 +113,7 @@ Logstash pipelines that parse:
 * <<parsing-mysql>>
 * <<parsing-nginx>>
 * <<parsing-system>>
+* <<parsing-auditd>>
 
 Of course, the paths that you specify in the Filebeat config depend on the location
 of the logs you are harvesting. The examples show common default locations.
@@ -277,3 +278,24 @@ Example Logstash pipeline config:
 ----------------------------------------------------------------------------
 include::filebeat_modules/system/syslog/pipeline.conf[]
 ----------------------------------------------------------------------------
+
+[[parsing-auditd]]
+==== Auditd Logs
+
+Here are some configuration examples for shipping and parsing auditd logs.
+
+Filebeat config:
+
+[source,yml]
+----------------------------------------------------------------------
+include::filebeat_modules/auditd/log/filebeat.yml[]
+----------------------------------------------------------------------
+
+
+Example Logstash pipeline config:
+
+[source,json]
+----------------------------------------------------------------------------
+include::filebeat_modules/auditd/log/pipeline.conf[]
+----------------------------------------------------------------------------
+

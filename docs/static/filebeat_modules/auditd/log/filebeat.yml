@@ -1,0 +1,7 @@
+filebeat.prospectors:
+- input_type: log
+  paths:
+    - /var/log/audit/audit.log*
+  exclude_files: [".gz$"]
+output.logstash:
+  hosts: ["localhost:5044"]
