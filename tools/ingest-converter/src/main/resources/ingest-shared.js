@@ -9,10 +9,17 @@ var IngestConverter = {
     dots_to_square_brackets: function (string) {
 
         function token_dots_to_square_brackets(string) {
-            return string.replace(/(\w*)\.(\w*)/g, "$1][$2")
-                .replace(/\[(\w+)(}|$)/g, "[$1]$2")
-                .replace(/{(\w+):(\w+)]/g, "{$1:[$2]")
-                .replace(/^(\w+)]\[/g, "[$1][");
+            var adjusted;
+            //Break out if this is not a naming pattern we convert
+            if (string.match(/([\w_]+\.)+[\w_]+/)) {
+                adjusted = string.replace(/(\w*)\.(\w*)/g, "$1][$2")
+                    .replace(/\[(\w+)(}|$)/g, "[$1]$2")
+                    .replace(/{(\w+):(\w+)]/g, "{$1:[$2]")
+                    .replace(/^(\w+)]\[/g, "[$1][");
+            } else {
+                adjusted = string;
+            }
+            return adjusted;
         }
 
         var literals = string.match(/\(\?:%{.*\|-\)/);

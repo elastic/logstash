@@ -24,7 +24,10 @@ var IngestGrok = {
                     );
                 }
             }
-            return create_hash_field("pattern_definitions", content);
+            return create_hash_field(
+                "pattern_definitions", 
+                content.map(IngestConverter.dots_to_square_brackets).join("\n")
+            );
         }
 
         var grok_data = processor["grok"];
