@@ -9,7 +9,7 @@ public final class GrokTest extends IngestTest {
 
     @Parameters
     public static Iterable<String> data() {
-        return Arrays.asList("Grok", "GrokPatternDefinition");
+        return Arrays.asList("Grok", "GrokPatternDefinition", "GrokMultiplePatternDefinitions");
     }
 
     @Test
