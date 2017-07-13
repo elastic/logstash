@@ -10,6 +10,7 @@ pkg/*.rpm
 *.jar
 .bundle
 build
+out
 local
 test/setup/elasticsearch/elasticsearch-*
 vendor
