@@ -5,6 +5,8 @@ require "logstash/instrument/collector"
 
 describe LogStash::Util::WrappedSynchronousQueue do
 
+  subject {LogStash::Util::WrappedSynchronousQueue.new(5)}
+
   describe "queue clients" do
     context "when requesting a write client" do
       it "returns a client" do
@@ -18,15 +20,9 @@ describe LogStash::Util::WrappedSynchronousQueue do
       end
     end
 
-    class DummyQueue < Array
-      def take() shift(); end
-      def poll(*) shift(); end
-    end
-
     describe "WriteClient | ReadClient" do
-      let(:queue) { DummyQueue.new }
-      let(:write_client) { LogStash::Util::WrappedSynchronousQueue::WriteClient.new(queue)}
-      let(:read_client)  { LogStash::Util::WrappedSynchronousQueue::ReadClient.new(queue)}
+      let(:write_client) { LogStash::Util::WrappedSynchronousQueue::WriteClient.new(subject)}
+      let(:read_client)  { LogStash::Util::WrappedSynchronousQueue::ReadClient.new(subject)}
 
       context "when reading from the queue" do
         let(:collector) { LogStash::Instrument::Collector.new }
@@ -95,25 +91,32 @@ describe LogStash::Util::WrappedSynchronousQueue do
 
         it "appends batches to the queue" do
           batch = write_client.get_new_batch
-          5.times {|i| batch.push(LogStash::Event.new({"message" => "value-#{i}"}))}
+          messages = []
+          5.times do |i|
+            message = "value-#{i}"
+            batch.push(LogStash::Event.new({"message" => message}))
+            messages << message
+          end
           write_client.push_batch(batch)
           read_batch = read_client.read_batch
           expect(read_batch.size).to eq(5)
-          i = 0
           read_batch.each do |data|
-            expect(data.get("message")).to eq("value-#{i}")
+            message = data.get("message")
+            expect(messages).to include(message)
+            messages.delete(message)
             # read_batch.cancel("value-#{i}") if i > 2     # TODO: disabled for https://github.com/elastic/logstash/issues/6055 - will have to properly refactor
-            data.cancel if i > 2
-            read_batch.merge(LogStash::Event.new({"message" => "generated-#{i}"})) if i > 2
-            i += 1
+            if message.match /value-[3-4]/
+              data.cancel
+              read_batch.merge(LogStash::Event.new({ "message" => message.gsub(/value/, 'generated') }))
+            end
           end
           # expect(read_batch.cancelled_size).to eq(2) # disabled for https://github.com/elastic/logstash/issues/6055
-          i = 0
+          received = []
           read_batch.each do |data|
-            expect(data.get("message")).to eq("value-#{i}") if i < 3
-            expect(data.get("message")).to eq("generated-#{i}") if i > 2
-            i += 1
+            received << data.get("message")
           end
+          (0..2).each {|i| expect(received).to include("value-#{i}")}
+          (3..4).each {|i| expect(received).to include("generated-#{i}")}
         end
       end
     end

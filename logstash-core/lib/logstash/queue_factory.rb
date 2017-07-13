@@ -29,7 +29,9 @@ module LogStash
         LogStash::Util::WrappedAckedQueue.create_file_based(queue_path, queue_page_capacity, queue_max_events, checkpoint_max_writes, checkpoint_max_acks, checkpoint_max_interval, queue_max_bytes)
       when "memory"
         # memory is the legacy and default setting
-        LogStash::Util::WrappedSynchronousQueue.new
+        LogStash::Util::WrappedSynchronousQueue.new(
+          settings.get("pipeline.batch.size") * settings.get("pipeline.workers") * 2
+        )
       else
         raise ConfigurationError, "Invalid setting `#{queue_type}` for `queue.type`, supported types are: 'memory_acked', 'memory', 'persisted'"
       end
