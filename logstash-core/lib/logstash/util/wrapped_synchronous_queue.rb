@@ -2,12 +2,15 @@
 
 module LogStash; module Util
   class WrappedSynchronousQueue
+    java_import java.util.concurrent.ArrayBlockingQueue
     java_import java.util.concurrent.SynchronousQueue
     java_import java.util.concurrent.TimeUnit
 
-    def initialize
-      @queue = SynchronousQueue.new
+    def initialize (size)
+      @queue = ArrayBlockingQueue.new(size)
     end
+
+    attr_reader :queue
 
     # Push an object to the queue if the queue is full
     # it will block until the object can be added to the queue.
@@ -58,7 +61,7 @@ module LogStash; module Util
       end
 
       def empty?
-        true # synchronous queue is alway empty
+        @queue.queue.isEmpty
       end
 
       def set_batch_dimensions(batch_size, wait_for)
@@ -170,11 +173,11 @@ module LogStash; module Util
         @size = size
         @wait = wait
 
-        @originals = Hash.new
-
         # TODO: disabled for https://github.com/elastic/logstash/issues/6055 - will have to properly refactor
         # @cancelled = Hash.new
 
+        #Sizing HashSet to size/load_factor to ensure no rehashing
+        @originals = java.util.HashSet.new(size * 4 / 3 + 1, 0.75)
         @generated = Hash.new
         @iterating_temp = Hash.new
         @iterating = false # Atomic Boolean maybe? Although batches are not shared across threads
@@ -182,16 +185,18 @@ module LogStash; module Util
       end
 
       def read_next
-        @size.times do |t|
-          event = @queue.poll(@wait)
-          return if event.nil? # queue poll timed out
-
-          @originals[event] = true
+        read_size = @queue.queue.drainTo(@originals, @size)
+        if read_size < @size
+          (@size - read_size).times do |_|
+            e = @queue.poll(@wait)
+            return if e.nil?
+            @originals.add(e)
+          end
         end
       end
 
       def merge(event)
-        return if event.nil? || @originals.key?(event)
+        return if event.nil? || @originals.contains(event)
         # take care not to cause @generated to change during iteration
         # @iterating_temp is merged after the iteration
         if iterating?
@@ -214,9 +219,10 @@ module LogStash; module Util
 
         # below the checks for @cancelled.include?(e) have been replaced by e.cancelled?
         # TODO: for https://github.com/elastic/logstash/issues/6055 = will have to properly refactor
-        @originals.each do |e, _|
+        @originals.each do |e|
           blk.call(e) unless e.cancelled?
         end
+        
         @generated.each do |e, _|
           blk.call(e) unless e.cancelled?
         end
