@@ -59,16 +59,16 @@ module LogStash module Modules class LogStashConfig
   end
 
   def elasticsearch_output_config(type_string = nil)
-    hosts = array_to_string(get_setting(LogStash::Setting::SplittableStringArray.new("var.output.elasticsearch.hosts", String, ["localhost:9200"])))
-    index = "#{@name}-#{setting("var.output.elasticsearch.index_suffix", "%{+YYYY.MM.dd}")}"
-    user = @settings["var.output.elasticsearch.username"]
-    password = @settings["var.output.elasticsearch.password"]
+    hosts = array_to_string(get_setting(LogStash::Setting::SplittableStringArray.new("var.elasticsearch.hosts", String, ["localhost:9200"])))
+    index = "#{@name}-#{setting("var.elasticsearch.index_suffix", "%{+YYYY.MM.dd}")}"
+    user = @settings["var.elasticsearch.username"]
+    password = @settings["var.elasticsearch.password"]
     lines = ["hosts => #{hosts}", "index => \"#{index}\""]
     lines.push(user ? "user => \"#{user}\"" : nil)
     lines.push(password ? "password => \"#{password}\"" : nil)
     lines.push(type_string ? "document_type => #{type_string}" : nil)
-    lines.push("ssl => #{@settings.fetch('var.ssl.enabled', false)}")
-    if cacert = @settings["var.ssl.certificate_authority"]
+    lines.push("ssl => #{@settings.fetch('var.elasticsearch.ssl.enabled', false)}")
+    if cacert = @settings["var.elasticsearch.ssl.certificate_authority"]
       lines.push("cacert => \"#{cacert}\"") if cacert
     end
     # NOTE: the first line should be indented in the conf.erb
