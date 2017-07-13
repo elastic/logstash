@@ -58,7 +58,8 @@ class LogStash::Agent
       @source_loader = source_loader
     end
 
-    @reload_interval = setting("config.reload.interval")
+    # Normalize time interval to seconds
+    @reload_interval = setting("config.reload.interval") / 1_000_000_000.0
 
     @collect_metric = setting("metric.collect")
 

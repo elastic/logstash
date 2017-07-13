@@ -208,7 +208,7 @@ describe LogStash::Agent do
     let(:pipeline_config) { "input { generator { message => '${FOO}-bar' count => 1 } } filter { } output { file { path => '#{temporary_file}' } }" }
     let(:agent_args) { {
       "config.reload.automatic" => false,
-      "config.reload.interval" => 0.01,
+      "config.reload.interval" => "10ms",
       "config.string" => pipeline_config
     } }
 
