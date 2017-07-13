@@ -130,7 +130,7 @@ The `logstash.yml` file includes the following settings:
 
 | `config.reload.interval`
 | How often in seconds Logstash checks the config files for changes.
-| `3`
+| `3s`
 
 | `config.debug`
 | When set to `true`, shows the fully compiled configuration as a debug log message. You must also set `log.level: debug`.

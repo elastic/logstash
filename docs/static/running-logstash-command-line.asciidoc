@@ -152,7 +152,7 @@ With this command, Logstash concatenates three config files, `/tmp/one`, `/tmp/t
   NOTE: Use SIGHUP to manually reload the config. The default is false.
 
 *`--config.reload.interval RELOAD_INTERVAL`*::
-  How frequently to poll the configuration location for changes, in seconds. The default is every 3 seconds.
+  How frequently to poll the configuration location for changes. The default value is "3s".
 
 *`--http.host HTTP_HOST`*::
   Web API binding host. This option specifies the bind address for the metrics REST endpoint. The default is "127.0.0.1".

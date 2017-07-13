@@ -131,7 +131,7 @@ describe LogStash::Agent do
       end
 
       context "is set to `TRUE`" do
-        let(:interval) { 0.01 }
+        let(:interval) { "10ms" }
         let(:agent_settings) do
           mock_settings(
             "config.reload.automatic" => true,
@@ -165,7 +165,7 @@ describe LogStash::Agent do
           it "it will keep trying to converge" do
             agent_task = start_agent(subject)
 
-            sleep(interval * 20) # let the interval reload a few times
+            sleep(agent_settings.get("config.reload.interval") / 1_000_000_000.0 * 20) # let the interval reload a few times
             expect(subject.pipelines_count).to eq(0)
             expect(source_loader.fetch_count).to be > 1
 

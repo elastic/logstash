@@ -78,7 +78,7 @@
 #
 # How often to check if the pipeline configuration has changed (in seconds)
 #
-# config.reload.interval: 3
+# config.reload.interval: 3s
 #
 # Show fully compiled configuration as debug log message
 # NOTE: --log.level must be 'debug'
