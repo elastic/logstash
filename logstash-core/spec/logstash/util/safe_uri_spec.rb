@@ -16,5 +16,21 @@ module LogStash module Util
         expect(cloned_safe_uri.query).to eq("a=b")
       end
     end
+
+    describe "handling escapable fields" do
+      let(:user) { "u%20" }
+      let(:password) { "p%20ss" }
+      let(:path) { "/a%20/path" }
+      let(:query) { "a%20query&another=es%3dq" }
+      let(:fragment) { "spacey%20fragment" }
+      subject { LogStash::Util::SafeURI.new("http://#{user}:#{password}@example.net#{path}?#{query}\##{fragment}") }
+
+      [:user, :password, :path, :query, :fragment].each do |field|
+        it "should not escape the #{field} field" do
+          expected = self.send(field)
+          expect(subject.send(field)).to eq(expected)
+        end
+      end
+    end
   end
 end end
