@@ -101,7 +101,7 @@ describe LogStash::Instrument::WrappedWriteClient do
   end
 
   context "WrappedSynchronousQueue" do
-    let(:queue) { LogStash::Util::WrappedSynchronousQueue.new }
+    let(:queue) { LogStash::Util::WrappedSynchronousQueue.new(1024) }
 
     before do
       read_client.set_events_metric(metric.namespace([:stats, :events]))

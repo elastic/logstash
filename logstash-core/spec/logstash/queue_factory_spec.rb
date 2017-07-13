@@ -15,7 +15,9 @@ describe LogStash::QueueFactory do
       LogStash::Setting::Numeric.new("queue.checkpoint.acks", 1024),
       LogStash::Setting::Numeric.new("queue.checkpoint.writes", 1024),
       LogStash::Setting::Numeric.new("queue.checkpoint.interval", 1000),
-      LogStash::Setting::String.new("pipeline.id", pipeline_id)
+      LogStash::Setting::String.new("pipeline.id", pipeline_id),
+      LogStash::Setting::PositiveInteger.new("pipeline.batch.size", 125),
+      LogStash::Setting::PositiveInteger.new("pipeline.workers", LogStash::Config::CpuCoreStrategy.maximum)
     ]
   end
 
@@ -72,9 +74,10 @@ describe LogStash::QueueFactory do
   context "when `queue.type` is `memory`" do
     before do
       settings.set("queue.type", "memory")
+      settings.set("pipeline.batch.size", 1024)
     end
 
-    it "returns a `WrappedAckedQueue`" do
+    it "returns a `WrappedSynchronousQueue`" do
       queue =  subject.create(settings)
       expect(queue).to be_kind_of(LogStash::Util::WrappedSynchronousQueue)
       queue.close
