@@ -92,8 +92,8 @@ class LogStash::Util::SafeURI
   end
 
   def user
-    if @uri.userInfo
-      @uri.userInfo.split(":")[0]
+    if userinfo
+      userinfo.split(":")[0]
     end
   end
 
@@ -102,8 +102,8 @@ class LogStash::Util::SafeURI
   end
 
   def password
-    if @uri.userInfo
-      @uri.userInfo.split(":")[1]
+    if userinfo
+      userinfo.split(":")[1]
     end
   end
 
@@ -160,7 +160,23 @@ class LogStash::Util::SafeURI
     d
   end
 
-  def_delegators :@uri, :absolute?, :scheme, :host, :path, :query, :fragment, :userinfo
+  def path
+    @uri.raw_path
+  end
+
+  def query
+    @uri.raw_query
+  end
+
+  def fragment
+    @uri.raw_fragment
+  end
+
+  def userinfo
+    @uri.raw_user_info
+  end
+
+  def_delegators :@uri, :absolute?, :scheme, :host
 
   private
 
