@@ -1,4 +1,3 @@
-goto no_test
 @echo off
 
 setlocal
@@ -10,7 +9,6 @@ REM installing gems. See https://github.com/elastic/logstash/issues/5179
 SET JRUBY_OPTS="-J-Xmx1g"
 SET SELECTEDTESTSUITE=%1
 SET /p JRUBYVERSION=<.ruby-version
-SET JARS_DEBUG=true
 
 IF NOT EXIST %JRUBYSRCDIR% (
   echo "Variable JRUBYSRCDIR must be declared with a valid directory. Aborting.."
@@ -41,5 +39,3 @@ IF "%SELECTEDTESTSUITE%"=="core-fail-fast" (
     %RAKEPATH% test:core
   )
 )
-:no_test
-echo ***** SKIPPING TESTS : https://github.com/elastic/logstash/issues/7634 *****
