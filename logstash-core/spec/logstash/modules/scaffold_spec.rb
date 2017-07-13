@@ -16,9 +16,9 @@ describe LogStash::Modules::Scaffold do
   subject(:test_module) { described_class.new(mname, base_dir) }
   let(:module_settings) do
     {
-      "var.output.elasticsearch.hosts" => "es.mycloud.com:9200",
-      "var.output.elasticsearch.user" => "foo",
-      "var.output.elasticsearch.password" => "password",
+      "var.elasticsearch.hosts" => "es.mycloud.com:9200",
+      "var.elasticsearch.user" => "foo",
+      "var.elasticsearch.password" => "password",
       "var.input.tcp.port" => 5606,
     }
   end
@@ -222,11 +222,10 @@ ERB
     let(:base_dir) { File.expand_path(File.join(File.dirname(__FILE__), "..", "..", "modules_test_files", "#{mname}")) }
     let(:module_settings) do
       {
-        "var.output.elasticsearch.hosts" => "localhost:9200",
-        "var.output.elasticsearch.user" => "foo",
-        "var.output.elasticsearch.password" => "password",
+        "var.elasticsearch.hosts" => "localhost:9200",
+        "var.elasticsearch.user" => "foo",
+        "var.elasticsearch.password" => "password",
         "var.input.tcp.port" => 5606,
-        "dashboards.kibana_index" => ".kibana"
       }
     end
     it "puts stuff in ES" do

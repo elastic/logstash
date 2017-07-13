@@ -28,7 +28,27 @@ module LogStash module Modules class KibanaClient
 
   def initialize(settings)
     @settings = settings
-    @client = Manticore::Client.new(request_timeout: 5, connect_timeout: 5, socket_timeout: 5, pool_max: 10, pool_max_per_route: 2)
+
+    client_options = {
+      request_timeout: 5,
+      connect_timeout: 5,
+      socket_timeout: 5,
+      pool_max: 10,
+      pool_max_per_route: 2
+    }
+
+    ssl_options = {}
+
+    if @settings["var.kibana.ssl.enabled"] == "true"
+      ssl_options[:verify] = @settings.fetch("var.kibana.ssl.verification_mode", "strict").to_sym
+      ssl_options[:ca_file] = @settings.fetch("var.kibana.ssl.certificate_authority", nil)
+      ssl_options[:client_cert] = @settings.fetch("var.kibana.ssl.certificate", nil)
+      ssl_options[:client_key] = @settings.fetch("var.kibana.ssl.key", nil)
+    end
+
+    client_options[:ssl] = ssl_options
+
+    @client = Manticore::Client.new(client_options)
     @host = @settings.fetch("var.kibana.host", "localhost:5601")
     username = @settings["var.kibana.username"]
     password = @settings["var.kibana.password"]
