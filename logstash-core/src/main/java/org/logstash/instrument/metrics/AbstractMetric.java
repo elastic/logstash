@@ -38,4 +38,14 @@ public abstract class AbstractMetric<T> implements Metric<T> {
                 getValue().toString());
     }
 
+    @Override
+    public List<String> getNameSpaces() {
+        return this.nameSpace;
+    }
+
+    @Override
+    public String getKey() {
+        return this.key;
+    }
+
 }
