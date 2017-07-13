@@ -20,13 +20,6 @@ buildscript {
     }
 }
 
-gradle.projectsEvaluated {
-    tasks.withType(JavaCompile) {
-        options.compilerArgs << "-Xlint:deprecation"
-//        options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation"
-    }
-}
-
 task sourcesJar(type: org.gradle.api.tasks.bundling.Jar, dependsOn: classes) {
     from sourceSets.main.allSource
     classifier 'sources'

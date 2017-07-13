@@ -6,4 +6,8 @@ allprojects {
   
   project.sourceCompatibility = JavaVersion.VERSION_1_8
   project.targetCompatibility = JavaVersion.VERSION_1_8
+
+  tasks.withType(JavaCompile).all {
+    options.compilerArgs.add("-Xlint:all")
+  }
 }
