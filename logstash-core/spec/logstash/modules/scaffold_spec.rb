@@ -226,7 +226,6 @@ ERB
         "var.elasticsearch.user" => "foo",
         "var.elasticsearch.password" => "password",
         "var.input.tcp.port" => 5606,
-        "dashboards.kibana_index" => ".kibana"
       }
     end
     it "puts stuff in ES" do
