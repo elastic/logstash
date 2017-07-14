@@ -1,92 +1,80 @@
 package org.logstash;
 
-
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import org.joda.time.DateTimeZone;
+import org.joda.time.format.DateTimeFormat;
 
-public class StringInterpolation {
-    static Pattern TEMPLATE_TAG = Pattern.compile("%\\{([^}]+)\\}");
-    static final Map<String, TemplateNode> cache = new ConcurrentHashMap<>();
+public final class StringInterpolation {
+    
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
+    private static final ThreadLocal<StringBuilder> STRING_BUILDER =
+        new ThreadLocal<StringBuilder>() {
+            @Override
+            protected StringBuilder initialValue() {
+                return new StringBuilder();
+            }
+
+            @Override
+            public StringBuilder get() {
+                StringBuilder b = super.get();
+                b.setLength(0); // clear/reset the buffer
+                return b;
+            }
+
+        };
+    
     private StringInterpolation() {
-        // TODO:
-        // This may need some tweaking for the concurrency level to get better memory usage.
-        // The current implementation doesn't allow the keys to expire, I think under normal usage
-        // the keys will converge to a fixed number.
-        //
-        // If this code make logstash goes OOM, we have the following options:
-        //  - If the key doesn't contains a `%` do not cache it, this will reduce the key size at a performance cost.
-        //  - Use some kind LRU cache
-        //  - Create a new data structure that use weakref or use Google Guava for the cache https://code.google.com/p/guava-libraries/
+        // Utility Class
     }
 
-    public static void clearCache() {
-        cache.clear();
-    }
-
-    public static int cacheSize() {
-        return cache.size();
-    }
-
-    public static String evaluate(Event event, String template) throws IOException {
-        TemplateNode compiledTemplate = cache.get(template);
-
-        if (compiledTemplate == null) {
-            compiledTemplate = compile(template);
-            cache.put(template, compiledTemplate);
+    public static String evaluate(final Event event, final String template) throws IOException {
+        int open = template.indexOf("%{");
+        int close = template.indexOf('}', open);
+        if (open == -1 || close == -1) {
+            return template;
         }
-
-        return compiledTemplate.evaluate(event);
-    }
-
-    public static TemplateNode compile(String template) {
-        Template compiledTemplate = new Template();
-
-        if (template.indexOf('%') == -1) {
-            // Move the nodes to a custom instance
-            // so we can remove the iterator and do one `.evaluate`
-            compiledTemplate.add(new StaticNode(template));
-        } else {
-            Matcher matcher = TEMPLATE_TAG.matcher(template);
-            String tag;
-            int pos = 0;
-
-            while (matcher.find()) {
-                if (matcher.start() > 0) {
-                    compiledTemplate.add(new StaticNode(template.substring(pos, matcher.start())));
+        final StringBuilder builder = STRING_BUILDER.get();
+        int pos = 0;
+        while (open > -1 && close > -1) {
+            if (open > 0) {
+                builder.append(template, pos, open);
+            }
+            if (template.regionMatches(open + 2, "+%s", 0, close - open - 2)) {
+                builder.append(event.getTimestamp().getTime().getMillis() / 1000L);
+            } else if (template.charAt(open + 2) == '+') {
+                builder.append(
+                    event.getTimestamp().getTime().toString(
+                        DateTimeFormat.forPattern(template.substring(open + 3, close))
+                            .withZone(DateTimeZone.UTC)
+                    ));
+            } else {
+                final String found = template.substring(open + 2, close);
+                final Object value = event.getField(found);
+                if (value != null) {
+                    if (value instanceof List) {
+                        builder.append(KeyNode.join((List) value, ","));
+                    } else if (value instanceof Map) {
+                        builder.append(OBJECT_MAPPER.writeValueAsString(value));
+                    } else {
+                        builder.append(value.toString());
+                    }
+                } else {
+                    builder.append("%{").append(found).append('}');
                 }
-
-                tag = matcher.group(1);
-                compiledTemplate.add(identifyTag(tag));
-                pos = matcher.end();
             }
-
-            if(pos <= template.length() - 1) {
-                compiledTemplate.add(new StaticNode(template.substring(pos)));
-            }
+            pos = close + 1;
+            open = template.indexOf("%{", pos);
+            close = template.indexOf('}', open);
         }
-
-        // if we only have one node return the node directly
-        // and remove the need to loop.
-        if(compiledTemplate.size() == 1) {
-            return compiledTemplate.get(0);
-        } else {
-            return compiledTemplate;
+        final int len = template.length();
+        if (pos < len) {
+            builder.append(template, pos, len);
         }
-    }
-
-    public static TemplateNode identifyTag(String tag) {
-        if(tag.equals("+%s")) {
-            return new EpochNode();
-        } else if(tag.charAt(0) == '+') {
-                return new DateNode(tag.substring(1));
-
-        } else {
-            return new KeyNode(tag);
-        }
+        return builder.toString();
     }
 
 }
