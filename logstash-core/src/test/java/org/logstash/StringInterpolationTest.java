@@ -78,6 +78,13 @@ public class StringInterpolationTest {
     }
 
     @Test
+    public void TestEpochSeconds() throws IOException {
+        Event event = getTestEvent();
+        String path = "%{+%ss}";
+        assertEquals("%00", StringInterpolation.evaluate(event, path));
+    }
+
+    @Test
     public void TestEpoch() throws IOException {
         Event event = getTestEvent();
         String path = "%{+%s}";
