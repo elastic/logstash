@@ -332,6 +332,7 @@ namespace "artifact" do
         out.attributes[:rpm_os] = "linux"
         out.config_files << "/etc/logstash/startup.options"
         out.config_files << "/etc/logstash/jvm.options"
+        out.config_files << "/etc/logstash/log4j2.properties"
         out.config_files << "/etc/logstash/logstash.yml"
       when "debian", "ubuntu"
         File.join(basedir, "pkg", "startup.options").tap do |path|
@@ -351,6 +352,7 @@ namespace "artifact" do
         out.attributes[:deb_suggests] = "java8-runtime-headless"
         out.config_files << "/etc/logstash/startup.options"
         out.config_files << "/etc/logstash/jvm.options"
+        out.config_files << "/etc/logstash/log4j2.properties"
         out.config_files << "/etc/logstash/logstash.yml"
     end
 
