@@ -121,7 +121,7 @@ public class RecordIOReader {
         return event;
     }
 
-    public long getChannelPosition() throws IOException {
+    public long getChannelPosition() {
         return channelPosition;
     }
 
@@ -150,7 +150,7 @@ public class RecordIOReader {
     /**
      *
      */
-     int seekToStartOfEventInBlock() throws IOException {
+     int seekToStartOfEventInBlock() {
          while (true) {
              RecordType type = RecordType.fromByte(currentBlock.array()[currentBlock.arrayOffset() + currentBlock.position()]);
              if (RecordType.COMPLETE.equals(type) || RecordType.START.equals(type)) {
@@ -192,7 +192,7 @@ public class RecordIOReader {
         }
     }
 
-    private void getRecord(ByteBuffer buffer, RecordHeader header) throws IOException {
+    private void getRecord(ByteBuffer buffer, RecordHeader header) {
         Checksum computedChecksum = new CRC32();
         computedChecksum.update(currentBlock.array(), currentBlock.position(), header.getSize());
 
