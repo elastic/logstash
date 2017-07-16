@@ -1,23 +1,24 @@
 package org.logstash.bivalues;
 
 import com.fasterxml.jackson.annotation.JsonValue;
+import java.io.ObjectStreamException;
 import org.jruby.Ruby;
 import org.jruby.RubyNil;
 
-import java.io.ObjectStreamException;
+public final class NullBiValue extends BiValueCommon<RubyNil, Object>
+    implements BiValue<RubyNil, Object> {
 
-public class NullBiValue extends BiValueCommon<RubyNil, Object> implements BiValue<RubyNil, Object> {
+    private static final NullBiValue INSTANCE =
+        new NullBiValue((RubyNil) Ruby.getGlobalRuntime().getNil());
+
+    private static final Object WRITE_PROXY = newProxy(INSTANCE);
+
     public static NullBiValue newNullBiValue() {
-        return new NullBiValue();
+        return INSTANCE;
     }
 
-    public NullBiValue(RubyNil rubyValue) {
+    private NullBiValue(final RubyNil rubyValue) {
         this.rubyValue = rubyValue;
-        javaValue = null;
-    }
-
-    private NullBiValue() {
-        rubyValue = null;
         javaValue = null;
     }
 
@@ -32,14 +33,19 @@ public class NullBiValue extends BiValueCommon<RubyNil, Object> implements BiVal
         return true;
     }
 
-    protected void addRuby(Ruby runtime) {
-        rubyValue = (RubyNil) runtime.getNil();
+    @Override
+    public boolean hasRubyValue() {
+        return true;
     }
 
+    @Override
+    protected void addRuby(Ruby runtime) {}
+
+    @Override
     protected void addJava() {}
 
     // Called when object is to be serialized on a stream to allow the object to substitute a proxy for itself.
     private Object writeReplace() throws ObjectStreamException {
-        return newProxy(this);
+        return WRITE_PROXY;
     }
 }

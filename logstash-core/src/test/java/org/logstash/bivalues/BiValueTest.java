@@ -1,25 +1,23 @@
 package org.logstash.bivalues;
 
-import org.logstash.TestBase;
-import org.joda.time.DateTime;
-import org.jruby.RubyBignum;
-import org.jruby.RubyBoolean;
-import org.jruby.RubyFixnum;
-import org.jruby.RubyFloat;
-import org.jruby.RubyInteger;
-import org.jruby.RubyNil;
-import org.jruby.RubyString;
-import org.jruby.RubySymbol;
-import org.jruby.RubyTime;
-import org.jruby.ext.bigdecimal.RubyBigDecimal;
-import org.junit.Test;
-
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import org.joda.time.DateTime;
+import org.jruby.RubyBignum;
+import org.jruby.RubyBoolean;
+import org.jruby.RubyFixnum;
+import org.jruby.RubyFloat;
+import org.jruby.RubyInteger;
+import org.jruby.RubyString;
+import org.jruby.RubySymbol;
+import org.jruby.RubyTime;
+import org.jruby.ext.bigdecimal.RubyBigDecimal;
+import org.junit.Test;
+import org.logstash.TestBase;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -144,17 +142,9 @@ public class BiValueTest extends TestBase {
     }
 
     @Test
-    public void testNullBiValueFromRuby() {
-        NullBiValue subject = new NullBiValue((RubyNil) ruby.getNil());
-        assertTrue(subject.hasRubyValue());
-        assertTrue(subject.hasJavaValue());
-        assertEquals(null, subject.javaValue());
-    }
-
-    @Test
     public void testNullBiValueFromJava() {
         NullBiValue subject = NullBiValue.newNullBiValue();
-        assertFalse(subject.hasRubyValue());
+        assertTrue(subject.hasRubyValue());
         assertTrue(subject.hasJavaValue());
         assertEquals(ruby.getNil(), subject.rubyValue(ruby));
     }
