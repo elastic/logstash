@@ -1,21 +1,19 @@
 package org.logstash.bivalues;
 
-import org.logstash.Timestamp;
-import org.logstash.ext.JrubyTimestampExtLibrary.RubyTimestamp;
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.util.HashMap;
 import org.jruby.RubyBignum;
 import org.jruby.RubyBoolean;
 import org.jruby.RubyFloat;
 import org.jruby.RubyInteger;
-import org.jruby.RubyNil;
 import org.jruby.RubyString;
 import org.jruby.RubySymbol;
 import org.jruby.ext.bigdecimal.RubyBigDecimal;
 import org.jruby.java.proxies.JavaProxy;
 import org.jruby.runtime.builtin.IRubyObject;
-
-import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.util.HashMap;
+import org.logstash.Timestamp;
+import org.logstash.ext.JrubyTimestampExtLibrary.RubyTimestamp;
 
 public enum BiValues {
     ORG_LOGSTASH_EXT_JRUBYTIMESTAMPEXTLIBRARY$RUBYTIMESTAMP(BiValueType.TIMESTAMP),
@@ -69,6 +67,8 @@ public enum BiValues {
         return hm;
     }
 
+    private static final NullBiValue NULL_BI_VALUE = NullBiValue.newNullBiValue();
+
     private final BiValueType biValueType;
 
     BiValues(BiValueType biValueType) {
@@ -82,8 +82,8 @@ public enum BiValues {
     }
 
     public static BiValue newBiValue(Object o) {
-        if (o == null){
-            return NULL.build(null);
+        if (o == null) {
+            return NULL_BI_VALUE;
         }
         BiValues bvs = valueOf(fetchName(o));
         return bvs.build(o);
@@ -174,11 +174,8 @@ public enum BiValues {
             }
         },
         NULL {
-            BiValue build(Object value) {
-                if (value instanceof IRubyObject) {
-                    return new NullBiValue((RubyNil) value);
-                }
-                return NullBiValue.newNullBiValue();
+            NullBiValue build(Object value) {
+                return NULL_BI_VALUE;
             }
         },
         BIGINT {
