@@ -1,6 +1,7 @@
 package org.logstash;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import java.util.Date;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.Duration;
@@ -8,18 +9,15 @@ import org.joda.time.LocalDateTime;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
 import org.logstash.ackedqueue.Queueable;
-
-import java.io.IOException;
-import java.util.Date;
 import org.logstash.json.TimestampSerializer;
 
 @JsonSerialize(using = TimestampSerializer.class)
-public class Timestamp implements Cloneable, Comparable, Queueable {
+public final class Timestamp implements Cloneable, Comparable<Timestamp>, Queueable {
 
     // all methods setting the time object must set it in the UTC timezone
     private DateTime time;
 
-    private static DateTimeFormatter iso8601Formatter = ISODateTimeFormat.dateTime();
+    private static final DateTimeFormatter iso8601Formatter = ISODateTimeFormat.dateTime();
 
     private static final LocalDateTime JAN_1_1970 = new LocalDateTime(1970, 1, 1, 0, 0);
 
@@ -78,8 +76,8 @@ public class Timestamp implements Cloneable, Comparable, Queueable {
     }
 
     @Override
-    public int compareTo(Object other) {
-        return getTime().compareTo(((Timestamp) other).getTime());
+    public int compareTo(Timestamp other) {
+        return getTime().compareTo(other.getTime());
     }
 
     @Override
@@ -90,7 +88,7 @@ public class Timestamp implements Cloneable, Comparable, Queueable {
     }
 
     @Override
-    public byte[] serialize() throws IOException {
+    public byte[] serialize() {
         return toString().getBytes();
     }
 }
