@@ -39,7 +39,7 @@ public abstract class IngestTest {
     @Parameter
     public String testCase;
 
-    protected final void assertCorrectConversion(final Class clazz) throws Exception {
+    protected final void assertCorrectConversion(final Class<?> clazz) throws Exception {
         final URL append = getResultPath(temp);
         clazz.getMethod("main", String[].class).invoke(
             null,
