@@ -65,7 +65,7 @@ public class Queue implements Closeable {
     private final AtomicBoolean closed;
 
     // deserialization
-    private final Class elementClass;
+    private final Class<? extends Queueable> elementClass;
     private final Method deserializeMethod;
 
     // thread safety
@@ -93,7 +93,9 @@ public class Queue implements Closeable {
         );
     }
 
-    private Queue(String dirPath, int pageCapacity, long maxBytes, CheckpointIO checkpointIO, PageIOFactory pageIOFactory, Class elementClass, int maxUnread, int checkpointMaxWrites, int checkpointMaxAcks) {
+    private Queue(String dirPath, int pageCapacity, long maxBytes, CheckpointIO checkpointIO,
+        PageIOFactory pageIOFactory, Class<? extends Queueable> elementClass, int maxUnread,
+        int checkpointMaxWrites, int checkpointMaxAcks) {
         this.dirPath = dirPath;
         this.pageCapacity = pageCapacity;
         this.maxBytes = maxBytes;

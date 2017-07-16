@@ -9,7 +9,7 @@ public interface Settings {
 
     PageIOFactory getPageIOFactory();
 
-    Class getElementClass();
+    Class<? extends Queueable> getElementClass();
 
     String getDirPath();
 
@@ -29,7 +29,7 @@ public interface Settings {
 
         Builder elementIOFactory(PageIOFactory factory);
 
-        Builder elementClass(Class elementClass);
+        Builder elementClass(Class<? extends Queueable> elementClass);
 
         Builder capacity(int capacity);
 
