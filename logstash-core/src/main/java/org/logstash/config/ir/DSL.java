@@ -60,58 +60,58 @@ public class DSL {
         }
     }
 
-    public static Gt eGt(SourceWithMetadata meta, Expression left, Expression right) throws InvalidIRException {
+    public static Gt eGt(SourceWithMetadata meta, Expression left, Expression right) {
         return new Gt(meta, left, right);
     }
 
-    public static Gt eGt(Expression left, Expression right) throws InvalidIRException {
+    public static Gt eGt(Expression left, Expression right) {
         return new Gt(null, left, right);
     }
 
-    public static Gte eGte(SourceWithMetadata meta, Expression left, Expression right) throws InvalidIRException {
+    public static Gte eGte(SourceWithMetadata meta, Expression left, Expression right) {
         return new Gte(meta, left, right);
     }
 
-    public static Gte eGte(Expression left, Expression right) throws InvalidIRException {
+    public static Gte eGte(Expression left, Expression right) {
         return new Gte(null, left, right);
     }
 
-    public static Lt eLt(SourceWithMetadata meta, Expression left, Expression right) throws InvalidIRException {
+    public static Lt eLt(SourceWithMetadata meta, Expression left, Expression right) {
         return new Lt(meta, left, right);
     }
 
-    public static Lt eLt(Expression left, Expression right) throws InvalidIRException {
+    public static Lt eLt(Expression left, Expression right) {
         return new Lt(null, left, right);
     }
 
-    public static Lte eLte(SourceWithMetadata meta, Expression left, Expression right) throws InvalidIRException {
+    public static Lte eLte(SourceWithMetadata meta, Expression left, Expression right) {
         return new Lte(meta, left, right);
     }
-    public static Lte eLte(Expression left, Expression right) throws InvalidIRException {
+    public static Lte eLte(Expression left, Expression right) {
         return new Lte(null, left, right);
     }
 
-    public static Eq eEq(SourceWithMetadata meta, Expression left, Expression right) throws InvalidIRException {
+    public static Eq eEq(SourceWithMetadata meta, Expression left, Expression right) {
         return new Eq(meta, left, right);
     }
 
-    public static Eq eEq(Expression left, Expression right) throws InvalidIRException {
+    public static Eq eEq(Expression left, Expression right) {
         return new Eq(null, left, right);
     }
 
-    public static And eAnd(SourceWithMetadata meta, Expression left, Expression right) throws InvalidIRException {
+    public static And eAnd(SourceWithMetadata meta, Expression left, Expression right) {
         return new And(meta, left, right);
     }
 
-    public static And eAnd(Expression left, Expression right) throws InvalidIRException {
+    public static And eAnd(Expression left, Expression right) {
         return new And(null, left, right);
     }
 
-    public static Or eOr(SourceWithMetadata meta, Expression left, Expression right) throws InvalidIRException {
+    public static Or eOr(SourceWithMetadata meta, Expression left, Expression right) {
         return new Or(meta, left, right);
     }
 
-    public static Or eOr(Expression left, Expression right) throws InvalidIRException {
+    public static Or eOr(Expression left, Expression right) {
         return new Or(null, left, right);
     }
 
@@ -131,18 +131,18 @@ public class DSL {
         return eNot(eRegexEq(left, right));
     }
 
-    public static Neq eNeq(SourceWithMetadata meta, Expression left, Expression right) throws InvalidIRException {
+    public static Neq eNeq(SourceWithMetadata meta, Expression left, Expression right) {
         return new Neq(meta, left, right);
     }
-    public static Neq eNeq(Expression left, Expression right) throws InvalidIRException {
+    public static Neq eNeq(Expression left, Expression right) {
         return new Neq(null, left, right);
     }
 
-    public static In eIn(SourceWithMetadata meta, Expression left, Expression right) throws InvalidIRException {
+    public static In eIn(SourceWithMetadata meta, Expression left, Expression right) {
         return new In(meta, left, right);
     }
 
-    public static In eIn(Expression left, Expression right) throws InvalidIRException {
+    public static In eIn(Expression left, Expression right) {
         return new In(null, left, right);
     }
 

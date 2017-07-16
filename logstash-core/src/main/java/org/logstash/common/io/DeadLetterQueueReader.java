@@ -138,7 +138,7 @@ public class DeadLetterQueueReader {
         return currentReader.getPath();
     }
 
-    public long getCurrentPosition() throws IOException {
+    public long getCurrentPosition() {
         return currentReader.getChannelPosition();
     }
 

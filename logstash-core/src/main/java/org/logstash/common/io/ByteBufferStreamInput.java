@@ -40,7 +40,7 @@ public class ByteBufferStreamInput extends StreamInput {
     }
 
     @Override
-    public long skip(long n) throws IOException {
+    public long skip(long n) {
         if (n > buffer.remaining()) {
             int ret = buffer.position();
             buffer.position(buffer.limit());
@@ -67,7 +67,7 @@ public class ByteBufferStreamInput extends StreamInput {
         buffer.position(position);
     }
 
-    public void rewind() throws IOException {
+    public void rewind() {
         buffer.rewind();
     }
 

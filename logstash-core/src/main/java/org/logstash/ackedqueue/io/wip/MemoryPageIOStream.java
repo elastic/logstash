@@ -276,7 +276,7 @@ public class MemoryPageIOStream implements PageIO {
         return streamedInput.readByteArray();
     }
 
-    private void skipChecksum() throws IOException {
+    private void skipChecksum() {
         streamedInput.skip(CHECKSUM_SIZE);
     }
 
