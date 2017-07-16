@@ -15,7 +15,7 @@ public class TailPage extends Page {
 
     // create a new TailPage object for an exiting Checkpoint and data file
     // @param pageIO the PageIO object is expected to be open/recover/create
-    public TailPage(Checkpoint checkpoint, Queue queue, PageIO pageIO) throws IOException {
+    public TailPage(Checkpoint checkpoint, Queue queue, PageIO pageIO) {
         super(checkpoint.getPageNum(), queue, checkpoint.getMinSeqNum(), checkpoint.getElementCount(), checkpoint.getFirstUnackedSeqNum(), new BitSet(), pageIO);
 
         // this page ackedSeqNums bitset is a new empty bitset, if we have some acked elements, set them in the bitset

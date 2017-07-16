@@ -196,7 +196,7 @@ public class JrubyEventExtLibrary implements Library {
         }
 
         @JRubyMethod(name = "sprintf", required = 1)
-        public IRubyObject ruby_sprintf(ThreadContext context, IRubyObject format) throws IOException {
+        public IRubyObject ruby_sprintf(ThreadContext context, IRubyObject format) {
             try {
                 return RubyString.newString(context.runtime, event.sprintf(format.toString()));
             } catch (IOException e) {
@@ -211,14 +211,12 @@ public class JrubyEventExtLibrary implements Library {
         }
 
         @JRubyMethod(name = "to_hash")
-        public IRubyObject ruby_to_hash(ThreadContext context) throws IOException
-        {
+        public IRubyObject ruby_to_hash(ThreadContext context) {
             return Rubyfier.deep(context.runtime, this.event.getData());
         }
 
         @JRubyMethod(name = "to_hash_with_metadata")
-        public IRubyObject ruby_to_hash_with_metadata(ThreadContext context) throws IOException
-        {
+        public IRubyObject ruby_to_hash_with_metadata(ThreadContext context) {
             Map data = this.event.toMap();
             Map metadata = this.event.getMetadata();
 
