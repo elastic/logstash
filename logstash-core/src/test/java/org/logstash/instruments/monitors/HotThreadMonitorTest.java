@@ -50,7 +50,8 @@ public class HotThreadMonitorTest {
         Map<String, String> options = new HashMap<>();
         options.put("stacktrace_size", testStackSize);
         HotThreadsMonitor.detect(options).stream().filter(tr -> !tr.getThreadName().equals("Signal Dispatcher") &&
-                                                                      !tr.getThreadName().equals("Reference Handler"))
+                                                                      !tr.getThreadName().equals("Reference Handler") &&
+                                                                            !tr.getThreadName().equals("Attach Listener"))
                                                         .forEach(tr -> {
             List stackTrace = (List)tr.toMap().get("thread.stacktrace");
             assertThat(stackTrace.size(), is(Integer.valueOf(testStackSize)));
