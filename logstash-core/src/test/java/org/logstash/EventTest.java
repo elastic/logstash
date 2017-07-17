@@ -18,7 +18,7 @@ public class EventTest {
         Event e = new Event();
         e.setField("foo", 42L);
         e.setField("bar", 42);
-        HashMap inner = new HashMap(2);
+        Map<String, Object> inner = new HashMap<>(2);
         inner.put("innerFoo", 42L);
         inner.put("innerQuux", 42.42);
         e.setField("baz", inner);
@@ -39,7 +39,7 @@ public class EventTest {
         Event e = new Event();
         e.setField("foo", 42L);
         e.setField("bar", 42);
-        HashMap inner = new HashMap(2);
+        Map<String, Object> inner = new HashMap<>(2);
         inner.put("innerFoo", 42L);
         inner.put("innerQuux", 42.42);
         e.setField("baz", inner);
@@ -84,7 +84,7 @@ public class EventTest {
 
     @Test
     public void testSimpleStringFieldToJson() throws Exception {
-        Map data = new HashMap();
+        Map<String, Object> data = new HashMap<>();
         data.put("foo", "bar");
         Event e = new Event(data);
         assertJsonEquals("{\"@timestamp\":\"" + e.getTimestamp().toIso8601() + "\",\"foo\":\"bar\",\"@version\":\"1\"}", e.toJson());
@@ -92,7 +92,7 @@ public class EventTest {
 
     @Test
     public void testSimpleIntegerFieldToJson() throws Exception {
-        Map data = new HashMap();
+        Map<String, Object> data = new HashMap<>();
         data.put("foo", 1);
         Event e = new Event(data);
         assertJsonEquals("{\"@timestamp\":\"" + e.getTimestamp().toIso8601() + "\",\"foo\":1,\"@version\":\"1\"}", e.toJson());
@@ -100,7 +100,7 @@ public class EventTest {
 
     @Test
     public void testSimpleDecimalFieldToJson() throws Exception {
-        Map data = new HashMap();
+        Map<String, Object> data = new HashMap<>();
         data.put("foo", 1.0);
         Event e = new Event(data);
         assertJsonEquals("{\"@timestamp\":\"" + e.getTimestamp().toIso8601() + "\",\"foo\":1.0,\"@version\":\"1\"}", e.toJson());
@@ -108,7 +108,7 @@ public class EventTest {
 
     @Test
     public void testSimpleMultipleFieldToJson() throws Exception {
-        Map data = new HashMap();
+        Map<String, Object> data = new HashMap<>();
         data.put("foo", 1.0);
         data.put("bar", "bar");
         data.put("baz", 1);
@@ -129,8 +129,8 @@ public class EventTest {
 
     @Test
     public void testGetFieldList() throws Exception {
-        Map data = new HashMap();
-        List l = new ArrayList();
+        Map<String, Object> data = new HashMap<>();
+        List<Object> l = new ArrayList<>();
         data.put("foo", l);
         l.add(1);
         Event e = new Event(data);
@@ -139,10 +139,10 @@ public class EventTest {
 
     @Test
     public void testDeepGetField() throws Exception {
-        Map data = new HashMap();
-        List l = new ArrayList();
+        Map<String, Object> data = new HashMap<>();
+        List<Object> l = new ArrayList<>();
         data.put("foo", l);
-        Map m = new HashMap();
+        Map<String, Object> m = new HashMap<>();
         m.put("bar", "baz");
         l.add(m);
         Event e = new Event(data);
@@ -152,11 +152,11 @@ public class EventTest {
 
     @Test
     public void testClone() throws Exception {
-        Map data = new HashMap();
-        List l = new ArrayList();
+        Map<String, Object> data = new HashMap<>();
+        List<Object> l = new ArrayList<>();
         data.put("array", l);
 
-        Map m = new HashMap();
+        Map<String, Object> m = new HashMap<>();
         m.put("foo", "bar");
         l.add(m);
 
@@ -175,18 +175,18 @@ public class EventTest {
     @Test
     public void testToMap() throws Exception {
         Event e = new Event();
-        Map original = e.getData();
-        Map clone = e.toMap();
+        Map<String, Object> original = e.getData();
+        Map<String, Object> clone = e.toMap();
         assertFalse(original == clone);
         assertEquals(original, clone);
     }
 
     @Test
     public void testAppend() throws Exception {
-        Map data1 = new HashMap();
+        Map<String, Object> data1 = new HashMap<>();
         data1.put("field1", Arrays.asList("original1", "original2"));
 
-        Map data2 = new HashMap();
+        Map<String, Object> data2 = new HashMap<>();
         data2.put("field1", "original1");
 
         Event e = new Event(data1);
@@ -200,10 +200,10 @@ public class EventTest {
 
     @Test
     public void testAppendLists() throws Exception {
-        Map data1 = new HashMap();
+        Map<String, Object> data1 = new HashMap<>();
         data1.put("field1", Arrays.asList("original1", "original2"));
 
-        Map data2 = new HashMap();
+        Map<String, Object> data2 = new HashMap<>();
         data2.put("field1", Arrays.asList("original3", "original4"));
 
         Event e = new Event(data1);
@@ -297,7 +297,7 @@ public class EventTest {
 
     @Test
     public void testTagOnExistingTagsField() throws Exception {
-        Map data = new HashMap();
+        Map<String, Object> data = new HashMap<>();
         data.put("tags", "foo");
         Event e = new Event(data);
         e.tag("bar");
@@ -310,7 +310,7 @@ public class EventTest {
 
     @Test
     public void toStringwithTimestamp() throws Exception {
-        Map data = new HashMap();
+        Map<String, Object> data = new HashMap<>();
         data.put("host", "foo");
         data.put("message", "bar");
         Event e = new Event(data);
@@ -319,7 +319,7 @@ public class EventTest {
 
     @Test
     public void toStringwithoutTimestamp() throws Exception {
-        Map data = new HashMap();
+        Map<String, Object> data = new HashMap<>();
         data.put("host", "foo");
         data.put("message", "bar");
         Event e = new Event(data);

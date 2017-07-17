@@ -14,12 +14,14 @@ import org.junit.runner.RunWith;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 public class AccessorsTest {
 
     public class TestableAccessors extends Accessors {
 
-        public TestableAccessors(Map data) {
+        public TestableAccessors(Map<String, Object> data) {
             super(data);
         }
 
@@ -30,73 +32,73 @@ public class AccessorsTest {
 
     @Test
     public void testBareGet() throws Exception {
-        Map data = new HashMap();
+        Map<String, Object> data = new HashMap<>();
         data.put("foo", "bar");
         String reference = "foo";
 
         TestableAccessors accessors = new TestableAccessors(data);
-        assertEquals(accessors.lutGet(reference), null);
-        assertEquals(accessors.get(reference), "bar");
-        assertEquals(accessors.lutGet(reference), data);
+        assertNull(accessors.lutGet(reference));
+        assertEquals("bar", accessors.get(reference));
+        assertEquals(data, accessors.lutGet(reference));
     }
 
     @Test
     public void testAbsentBareGet() throws Exception {
-        Map data = new HashMap();
+        Map<String, Object> data = new HashMap<>();
         data.put("foo", "bar");
         String reference = "baz";
 
         TestableAccessors accessors = new TestableAccessors(data);
-        assertEquals(accessors.lutGet(reference), null);
-        assertEquals(accessors.get(reference), null);
-        assertEquals(accessors.lutGet(reference), data);
+        assertNull(accessors.lutGet(reference));
+        assertNull(accessors.get(reference));
+        assertEquals(data, accessors.lutGet(reference));
     }
 
     @Test
     public void testBareBracketsGet() throws Exception {
-        Map data = new HashMap();
+        Map<String, Object> data = new HashMap<>();
         data.put("foo", "bar");
         String reference = "[foo]";
 
         TestableAccessors accessors = new TestableAccessors(data);
-        assertEquals(accessors.lutGet(reference), null);
-        assertEquals(accessors.get(reference), "bar");
-        assertEquals(accessors.lutGet(reference), data);
+        assertNull(accessors.lutGet(reference));
+        assertEquals("bar", accessors.get(reference));
+        assertEquals(data, accessors.lutGet(reference));
     }
 
     @Test
     public void testDeepMapGet() throws Exception {
-        Map data = new HashMap();
-        Map inner = new HashMap();
+        Map<String, Object> data = new HashMap<>();
+        Map<String, Object> inner = new HashMap<>();
         data.put("foo", inner);
         inner.put("bar", "baz");
 
         String reference = "[foo][bar]";
 
         TestableAccessors accessors = new TestableAccessors(data);
-        assertEquals(accessors.lutGet(reference), null);
-        assertEquals(accessors.get(reference), "baz");
-        assertEquals(accessors.lutGet(reference), inner);
+        assertNull(accessors.lutGet(reference));
+        assertEquals("baz", accessors.get(reference));
+        assertEquals(inner, accessors.lutGet(reference));
     }
 
     @Test
     public void testAbsentDeepMapGet() throws Exception {
-        Map data = new HashMap();
-        Map inner = new HashMap();
+        Map<String, Object> data = new HashMap<>();
+        Map<String, Object> inner = new HashMap<>();
         data.put("foo", inner);
         inner.put("bar", "baz");
 
         String reference = "[foo][foo]";
 
         TestableAccessors accessors = new TestableAccessors(data);
-        assertEquals(accessors.lutGet(reference), null);
-        assertEquals(accessors.get(reference), null);
-        assertEquals(accessors.lutGet(reference), inner);
+        assertNull(accessors.lutGet(reference));
+        assertNull(accessors.get(reference));
+        assertEquals(inner, accessors.lutGet(reference));
     }
 
     @Test
     public void testDeepListGet() throws Exception {
-        Map data = new HashMap();
+        Map<String, Object> data = new HashMap<>();
         List inner = new ArrayList();
         data.put("foo", inner);
         inner.add("bar");
@@ -104,14 +106,14 @@ public class AccessorsTest {
         String reference = "[foo][0]";
 
         TestableAccessors accessors = new TestableAccessors(data);
-        assertEquals(accessors.lutGet(reference), null);
-        assertEquals(accessors.get(reference), "bar");
-        assertEquals(accessors.lutGet(reference), inner);
+        assertNull(accessors.lutGet(reference));
+        assertEquals("bar", accessors.get(reference));
+        assertEquals(inner, accessors.lutGet(reference));
     }
 
     @Test
     public void testAbsentDeepListGet() throws Exception {
-        Map data = new HashMap();
+        Map<String, Object> data = new HashMap<>();
         List inner = new ArrayList();
         data.put("foo", inner);
         inner.add("bar");
@@ -119,9 +121,9 @@ public class AccessorsTest {
         String reference = "[foo][1]";
 
         TestableAccessors accessors = new TestableAccessors(data);
-        assertEquals(accessors.lutGet(reference), null);
-        assertEquals(accessors.get(reference), null);
-        assertEquals(accessors.lutGet(reference), inner);
+        assertNull(accessors.lutGet(reference));
+        assertNull(accessors.get(reference));
+        assertEquals(inner, accessors.lutGet(reference));
     }
     /*
      * Check if accessors are able to recovery from
@@ -131,7 +133,7 @@ public class AccessorsTest {
      */
     @Test
     public void testInvalidIdList() throws Exception {
-        Map data = new HashMap();
+        Map<String, Object> data = new HashMap<>();
         List inner = new ArrayList();
         data.put("map1", inner);
         inner.add("obj1");
@@ -140,108 +142,106 @@ public class AccessorsTest {
         String reference = "[map1][IdNonNumeric]";
 
         TestableAccessors accessors = new TestableAccessors(data);
-        assertEquals(accessors.lutGet(reference), null);
-        assertEquals(accessors.get(reference), null);
-        assertEquals(accessors.set(reference, "obj3"), null);
-        assertEquals(accessors.lutGet(reference), inner);
+        assertNull(accessors.lutGet(reference));
+        assertNull(accessors.get(reference));
+        assertNull(accessors.set(reference, "obj3"));
+        assertEquals(inner, accessors.lutGet(reference));
         assertFalse(accessors.includes(reference));
-        assertEquals(accessors.del(reference), null);
+        assertNull(accessors.del(reference));
     }
 
     @Test
     public void testBarePut() throws Exception {
-        Map data = new HashMap();
+        Map<String, Object> data = new HashMap<>();
         String reference = "foo";
 
         TestableAccessors accessors = new TestableAccessors(data);
-        assertEquals(accessors.lutGet(reference), null);
-        assertEquals(accessors.set(reference, "bar"), "bar");
-        assertEquals(accessors.lutGet(reference), data);
-        assertEquals(accessors.get(reference), "bar");
+        assertNull(accessors.lutGet(reference));
+        assertEquals("bar", accessors.set(reference, "bar"));
+        assertEquals(data, accessors.lutGet(reference));
+        assertEquals("bar", accessors.get(reference));
     }
 
     @Test
     public void testBareBracketsPut() throws Exception {
-        Map data = new HashMap();
+        Map<String, Object> data = new HashMap<>();
         String reference = "[foo]";
 
         TestableAccessors accessors = new TestableAccessors(data);
-        assertEquals(accessors.lutGet(reference), null);
-        assertEquals(accessors.set(reference, "bar"), "bar");
-        assertEquals(accessors.lutGet(reference), data);
-        assertEquals(accessors.get(reference), "bar");
+        assertNull(accessors.lutGet(reference));
+        assertEquals("bar", accessors.set(reference, "bar"));
+        assertEquals(data, accessors.lutGet(reference));
+        assertEquals("bar", accessors.get(reference));
     }
 
     @Test
     public void testDeepMapSet() throws Exception {
-        Map data = new HashMap();
+        Map<String, Object> data = new HashMap<>();
 
         String reference = "[foo][bar]";
 
         TestableAccessors accessors = new TestableAccessors(data);
-        assertEquals(accessors.lutGet(reference), null);
-        assertEquals(accessors.set(reference, "baz"), "baz");
+        assertNull(accessors.lutGet(reference));
+        assertEquals("baz", accessors.set(reference, "baz"));
         assertEquals(accessors.lutGet(reference), data.get("foo"));
-        assertEquals(accessors.get(reference), "baz");
+        assertEquals("baz", accessors.get(reference));
     }
 
     @Test
     public void testDel() throws Exception {
-        Map data = new HashMap();
+        Map<String, Object> data = new HashMap<>();
         List inner = new ArrayList();
         data.put("foo", inner);
         inner.add("bar");
         data.put("bar", "baz");
         TestableAccessors accessors = new TestableAccessors(data);
 
-        assertEquals(accessors.del("[foo][0]"), "bar");
-        assertEquals(accessors.del("[foo][0]"), null);
-        assertEquals(accessors.get("[foo]"), new ArrayList<>());
-        assertEquals(accessors.del("[bar]"), "baz");
-        assertEquals(accessors.get("[bar]"), null);
+        assertEquals("bar", accessors.del("[foo][0]"));
+        assertNull(accessors.del("[foo][0]"));
+        assertEquals(new ArrayList<>(), accessors.get("[foo]"));
+        assertEquals("baz", accessors.del("[bar]"));
+        assertNull(accessors.get("[bar]"));
     }
 
     @Test
     public void testNilInclude() throws Exception {
-        Map data = new HashMap();
+        Map<String, Object> data = new HashMap<>();
         data.put("nilfield", null);
         TestableAccessors accessors = new TestableAccessors(data);
-
-        assertEquals(accessors.includes("nilfield"), true);
+        assertTrue(accessors.includes("nilfield"));
     }
 
     @Test
     public void testInvalidPath() throws Exception {
-        Map data = new HashMap();
+        Map<String, Object> data = new HashMap<>();
         Accessors accessors = new Accessors(data);
 
-        assertEquals(accessors.set("[foo]", 1), 1);
-        assertEquals(accessors.get("[foo][bar]"), null);
+        assertEquals(1, accessors.set("[foo]", 1));
+        assertNull(accessors.get("[foo][bar]"));
     }
 
     @Test
     public void testStaleTargetCache() throws Exception {
-        Map data = new HashMap();
+        Map<String, Object> data = new HashMap<>();
 
         Accessors accessors = new Accessors(data);
+        assertNull(accessors.get("[foo][bar]"));
+        assertEquals("baz", accessors.set("[foo][bar]", "baz"));
+        assertEquals("baz", accessors.get("[foo][bar]"));
 
-        assertEquals(accessors.get("[foo][bar]"), null);
-        assertEquals(accessors.set("[foo][bar]", "baz"), "baz");
-        assertEquals(accessors.get("[foo][bar]"), "baz");
-
-        assertEquals(accessors.set("[foo]", "boom"), "boom");
-        assertEquals(accessors.get("[foo][bar]"), null);
-        assertEquals(accessors.get("[foo]"), "boom");
+        assertEquals("boom", accessors.set("[foo]", "boom"));
+        assertNull(accessors.get("[foo][bar]"));
+        assertEquals("boom", accessors.get("[foo]"));
     }
 
     @Test
     public void testListIndexOutOfBounds() {
-        assertEquals(Accessors.listIndex(0, 10), 0);
-        assertEquals(Accessors.listIndex(1, 10), 1);
-        assertEquals(Accessors.listIndex(9, 10), 9);
-        assertEquals(Accessors.listIndex(-1, 10), 9);
-        assertEquals(Accessors.listIndex(-9, 10), 1);
-        assertEquals(Accessors.listIndex(-10, 10), 0);
+        assertEquals(0, Accessors.listIndex(0, 10));
+        assertEquals(1, Accessors.listIndex(1, 10));
+        assertEquals(9, Accessors.listIndex(9, 10));
+        assertEquals(9, Accessors.listIndex(-1, 10));
+        assertEquals(1, Accessors.listIndex(-9, 10));
+        assertEquals(0, Accessors.listIndex(-10, 10));
     }
 
     @RunWith(Theories.class)
