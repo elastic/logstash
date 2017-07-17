@@ -9,7 +9,7 @@ import java.util.List;
 /**
  * A {@link GaugeMetric} that is backed by a {@link Boolean}
  */
-public class BooleanGauge extends AbstractMetric<Boolean> implements GaugeMetric<Boolean> {
+public class BooleanGauge extends AbstractMetric<Boolean> implements GaugeMetric<Boolean,Boolean> {
 
     private volatile Boolean value;
 
