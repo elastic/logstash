@@ -24,14 +24,18 @@ public enum MetricType {
      * A gauge backed by a {@link Number} type
      */
     GAUGE_NUMERIC("gauge/numeric"),
-    /**
+     /**
      * A gauge backed by a {@link Object} type.
      */
     GAUGE_UNKNOWN("gauge/unknown"),
     /**
      * A gauge backed by a {@link org.jruby.RubyHash} type. Note - Java consumers should not use this, exist for legacy Ruby code.
      */
-    GAUGE_RUBYHASH("gauge/rubyhash");
+    GAUGE_RUBYHASH("gauge/rubyhash"),
+    /**
+     * A gauge backed by a {@link org.logstash.ext.JrubyTimestampExtLibrary.RubyTimestamp} type. Note - Java consumers should not use this, exist for legacy Ruby code.
+     */
+    GAUGE_RUBYTIMESTAMP("gauge/rubytimestamp");
 
     private final String type;
 

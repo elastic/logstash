@@ -4,13 +4,14 @@ import org.jruby.RubyHash;
 import org.logstash.instrument.metrics.AbstractMetric;
 import org.logstash.instrument.metrics.MetricType;
 
+
 import java.util.List;
 
 /**
  * A {@link GaugeMetric} that is backed by a {@link RubyHash}.  Note - This should not be used directly from Java code and exists for passivity with legacy Ruby code. Depending
  * on the types in in the {@link RubyHash} there are no guarantees serializing properly.
  */
-public class RubyHashGauge extends AbstractMetric<RubyHash> implements GaugeMetric<RubyHash> {
+public class RubyHashGauge extends AbstractMetric<RubyHash> implements GaugeMetric<RubyHash,RubyHash> {
 
     private volatile RubyHash value;
 

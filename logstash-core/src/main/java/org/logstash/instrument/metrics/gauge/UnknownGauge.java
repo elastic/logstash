@@ -8,7 +8,7 @@ import java.util.List;
 /**
  * A {@link GaugeMetric} that is backed by a {@link Object}.  Note - A stronger typed {@link GaugeMetric} should be used since this makes no guarantees of serializing properly.
  */
-public class UnknownGauge extends AbstractMetric<Object> implements GaugeMetric<Object> {
+public class UnknownGauge extends AbstractMetric<Object> implements GaugeMetric<Object,Object> {
 
     private volatile Object value;
 
