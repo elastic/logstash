@@ -3,9 +3,10 @@ package org.logstash.instrument.metrics.gauge;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jruby.RubyHash;
+import org.logstash.Timestamp;
+import org.logstash.ext.JrubyTimestampExtLibrary.RubyTimestamp;
 import org.logstash.instrument.metrics.AbstractMetric;
 import org.logstash.instrument.metrics.MetricType;
-import org.logstash.instrument.metrics.counter.CounterMetric;
 
 import java.util.List;
 
@@ -13,7 +14,7 @@ import java.util.List;
  * A lazy proxy to a more specific typed {@link GaugeMetric}. The metric will only be initialized if the initial value is set, or once the {@code set} operation is called.
  * <p><strong>Intended only for use with Ruby's duck typing, Java consumers should use the specific typed {@link GaugeMetric}</strong></p>
  */
-public class LazyDelegatingGauge extends AbstractMetric<Object> implements GaugeMetric<Object> {
+public class LazyDelegatingGauge extends AbstractMetric<Object> implements GaugeMetric<Object,Object> {
 
     private final static Logger LOGGER = LogManager.getLogger(LazyDelegatingGauge.class);
 
@@ -89,6 +90,8 @@ public class LazyDelegatingGauge extends AbstractMetric<Object> implements Gauge
                 lazyMetric = new BooleanGauge(nameSpaces, key, (Boolean) value);
             } else if (value instanceof RubyHash) {
                 lazyMetric = new RubyHashGauge(nameSpaces, key, (RubyHash) value);
+            } else if (value instanceof RubyTimestamp) {
+                lazyMetric = new RubyTimeStampGauge(nameSpaces, key, ((RubyTimestamp) value));
             } else {
                 LOGGER.warn("A gauge metric of an unknown type ({}) has been create for key: {}, namespace:{}. This may result in invalid serialization.  It is recommended to " +
                         "log an issue to the responsible developer/development team.", value.getClass().getCanonicalName(), key, nameSpaces);
