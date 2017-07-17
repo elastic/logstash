@@ -213,7 +213,7 @@ The log level. Valid options are:
 
 | `path.logs`
 | The directory where Logstash will write its log to.
-| `LOGSTASH_HOME/logs
+| `LOGSTASH_HOME/logs`
 
 | `path.plugins`
 | Where to find custom plugins. You can specify this setting multiple times to include
