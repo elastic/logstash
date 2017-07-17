@@ -132,6 +132,13 @@
 		"test-vendor-plugins": false,
 		"skip-list": false
 	},
+	"logstash-filter-cidr": {
+		"default-plugins": true,
+		"core-specs": true,
+		"test-jar-dependencies": false,
+		"test-vendor-plugins": false,
+		"skip-list": false
+	},
 	"logstash-filter-csv": {
 		"default-plugins": true,
 		"core-specs": false,
@@ -245,6 +252,13 @@
 		"skip-list": false
 	},
 	"logstash-filter-throttle": {
+		"default-plugins": true,
+		"core-specs": false,
+		"test-jar-dependencies": false,
+		"test-vendor-plugins": false,
+		"skip-list": false
+	},
+	"logstash-filter-translate": {
 		"default-plugins": true,
 		"core-specs": false,
 		"test-jar-dependencies": false,
