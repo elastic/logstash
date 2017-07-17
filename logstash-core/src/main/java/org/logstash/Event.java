@@ -322,12 +322,23 @@ public class Event implements Cloneable, Serializable, Queueable {
         }
     }
 
-    private Timestamp initTimestamp(Object o) {
+    private static Timestamp initTimestamp(Object o) {
+        if (o == null || o instanceof NullBiValue) {
+            // most frequent
+            return new Timestamp();
+        } else {
+            return parseTimestamp(o);
+        }
+    }
+
+    /**
+     * Cold path of {@link Event#initTimestamp(Object)}.
+     * @param o Object to parse Timestamp out of
+     * @return Parsed {@link Timestamp} or {@code null} on failure
+     */
+    private static Timestamp parseTimestamp(final Object o) {
         try {
-            if (o == null || o instanceof NullBiValue) {
-                // most frequent
-                return new Timestamp();
-            } else if (o instanceof String) {
+            if (o instanceof String) {
                 // second most frequent
                 return new Timestamp((String) o);
             } else if (o instanceof StringBiValue) {
@@ -352,7 +363,6 @@ public class Event implements Cloneable, Serializable, Queueable {
         } catch (IllegalArgumentException e) {
             logger.warn("Error parsing " + TIMESTAMP + " string value=" + o.toString());
         }
-
         return null;
     }
 
