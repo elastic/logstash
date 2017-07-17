@@ -1,4 +1,3 @@
-goto no_test
 @echo off
 
 setlocal
@@ -40,5 +39,3 @@ IF "%SELECTEDTESTSUITE%"=="core-fail-fast" (
     %RAKEPATH% test:core
   )
 )
-:no_test
-echo ***** SKIPPING TESTS : https://github.com/elastic/logstash/issues/7634 *****
