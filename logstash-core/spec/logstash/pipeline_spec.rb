@@ -5,6 +5,7 @@ require "logstash/filters/multiline"
 require_relative "../support/mocks_classes"
 require_relative "../support/helpers"
 require_relative "../logstash/pipeline_reporter_spec" # for DummyOutput class
+require "stud/try"
 
 class DummyInput < LogStash::Inputs::Base
   config_name "dummyinput"
@@ -799,10 +800,12 @@ describe LogStash::Pipeline do
       sleep(0.1) until subject.ready?
 
       # make sure we have received all the generated events
-      wait(3).for do
-        # give us a bit of time to flush the events
-        dummyoutput.events.size >= number_of_events
-      end.to be_truthy
+      Stud.try(10.times, [StandardError, RSpec::Expectations::ExpectationNotMetError]) do
+        wait(3).for do
+          # give us a bit of time to flush the events
+          dummyoutput.events.size >= number_of_events
+        end.to be_truthy
+      end
     end
 
     after :each do
