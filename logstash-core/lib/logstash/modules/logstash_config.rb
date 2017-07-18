@@ -33,6 +33,10 @@ module LogStash module Modules class LogStashConfig
     "[#{array.collect { |i| "'#{i}'" }.join(", ")}]"
   end
 
+  def csv_string(array)
+    "'#{array.join(',')}'"
+  end
+
   def get_setting(setting_class)
     raw_value = @settings[setting_class.name]
     # If we dont check for NIL, the Settings class will try to coerce the value
