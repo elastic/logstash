@@ -27,25 +27,25 @@ Collect more, so you can know more. Logstash welcomes data of all shapes and siz
 Where it all started.
 
 * Handle all types of logging data
-** Easily ingest a multitude of web logs like <<advanced-pipeline,Apache>>, and application
-logs like <<plugins-inputs-log4j,log4j>> for Java
-** Capture many other log formats like <<plugins-inputs-syslog,syslog>>,
-<<plugins-inputs-eventlog,Windows event logs>>, networking and firewall logs, and more
+** Easily ingest a multitude of web logs like {logstash}advanced-pipeline.html[Apache], and application
+logs like {logstash}plugins-inputs-log4j.html[log4j] for Java
+** Capture many other log formats like {logstash}plugins-inputs-syslog.html[syslog],
+{logstash}plugins-inputs-eventlog.html[Windows event logs], networking and firewall logs, and more
 * Enjoy complementary secure log forwarding capabilities with https://www.elastic.co/products/beats/filebeat[Filebeat]
-* Collect metrics from <<plugins-inputs-ganglia,Ganglia>>, <<plugins-codecs-collectd,collectd>>,
-<<plugins-codecs-netflow,NetFlow>>, <<plugins-inputs-jmx,JMX>>, and many other infrastructure
-and application platforms over <<plugins-inputs-tcp,TCP>> and <<plugins-inputs-udp,UDP>>
+* Collect metrics from {logstash}plugins-inputs-ganglia.html[Ganglia], {logstash}plugins-codecs-collectd.html[collectd],
+{logstash}plugins-codecs-netflow.html[NetFlow], {logstash}plugins-inputs-jmx.html[JMX], and many other infrastructure
+and application platforms over {logstash}plugins-inputs-tcp.html[TCP] and {logstash}plugins-inputs-udp.html[UDP]
 
 [float]
 === The Web
 
 Unlock the World Wide Web.
 
-* Transform <<plugins-inputs-http,HTTP requests>> into events
-** Consume from web service firehoses like <<plugins-inputs-twitter,Twitter>> for social sentiment analysis
+* Transform {logstash}plugins-inputs-http.html[HTTP requests] into events
+** Consume from web service firehoses like {logstash}plugins-inputs-twitter.html[Twitter] for social sentiment analysis
 ** Webhook support for GitHub, HipChat, JIRA, and countless other applications
 ** Enables many https://www.elastic.co/products/x-pack/alerting[Watcher] alerting use cases
-* Create events by polling <<plugins-inputs-http_poller,HTTP endpoints>> on demand
+* Create events by polling {logstash}plugins-inputs-http_poller.html[HTTP endpoints] on demand
 ** Universally capture health, performance, metrics, and other types of data from web application interfaces
 ** Perfect for scenarios where the control of polling is preferred over receiving
 
@@ -55,9 +55,9 @@ Unlock the World Wide Web.
 Discover more value from the data you already own.
 
 * Better understand your data from any relational database or NoSQL store with a
-<<plugins-inputs-jdbc,JDBC>> interface 
-* Unify diverse data streams from messaging queues like Apache <<plugins-outputs-kafka,Kafka>>,
-<<plugins-outputs-rabbitmq,RabbitMQ>>, <<plugins-outputs-sqs,Amazon SQS>>, and <<plugins-outputs-zeromq,ZeroMQ>>
+{logstash}plugins-inputs-jdbc.html[JDBC] interface 
+* Unify diverse data streams from messaging queues like Apache {logstash}plugins-outputs-kafka.html[Kafka],
+{logstash}plugins-outputs-rabbitmq.html[RabbitMQ], {logstash}plugins-outputs-sqs.html[Amazon SQS], and {logstash}plugins-outputs-zeromq.html[ZeroMQ]
 
 [float]
 === Sensors and IoT
@@ -76,18 +76,18 @@ The better the data, the better the knowledge. Clean and transform your data dur
 insights immediately at index or output time. Logstash comes out-of-box with many aggregations and mutations along
 with pattern matching, geo mapping, and dynamic lookup capabilities.
 
-* <<plugins-filters-grok,Grok>> is the bread and butter of Logstash filters and is used ubiquitously to derive
+* {logstash}plugins-filters-grok.html[Grok] is the bread and butter of Logstash filters and is used ubiquitously to derive
 structure out of unstructured data. Enjoy a wealth of integrated patterns aimed to help quickly resolve web, systems,
 networking, and other types of event formats.
-* Expand your horizons by deciphering <<plugins-filters-geoip,geo coordinates>> from IP addresses, normalizing
-<<plugins-filters-date,date>> complexity, simplifying <<plugins-filters-kv,key-value pairs>> and
-<<plugins-filters-csv,CSV>> data, <<plugins-filters-fingerprint,fingerprinting>> (anonymizing) sensitive information,
-and further enriching your data with <<plugins-filters-translate,local lookups>> or Elasticsearch
-<<plugins-filters-elasticsearch,queries>>.
-* Codecs are often used to ease the processing of common event structures like <<plugins-codecs-json,JSON>>
-and <<plugins-codecs-multiline,multiline>> events.
+* Expand your horizons by deciphering {logstash}plugins-filters-geoip.html[geo coordinates] from IP addresses, normalizing
+{logstash}plugins-filters-date.html[date] complexity, simplifying {logstash}plugins-filters-kv.html[key-value pairs] and
+{logstash}plugins-filters-csv.html[CSV] data, {logstash}plugins-filters-fingerprint.html[fingerprinting](anonymizing) sensitive information,
+and further enriching your data with {logstash}plugins-filters-translate.html[local lookups] or Elasticsearch
+{logstash}plugins-filters-elasticsearch.html[queries].
+* Codecs are often used to ease the processing of common event structures like {logstash}plugins-codecs-json.html[JSON]
+and {logstash}plugins-codecs-multiline.html[multiline] events.
 
-See <<transformation>> for an overview of some of the popular data processing plugins.
+See {logstash}transformation.html[Transforming Data] for an overview of some of the popular data processing plugins.
 
 [float]
 == Choose Your Stash
@@ -101,37 +101,37 @@ analyzing, and taking action on your data.
 
 *Analysis*
 
-* <<plugins-outputs-elasticsearch,Elasticsearch>>
-* Data stores such as <<plugins-outputs-mongodb,MongoDB>> and <<plugins-outputs-riak,Riak>>
+* {logstash}plugins-outputs-elasticsearch.html[Elasticsearch]
+* Data stores such as {logstash}plugins-outputs-mongodb.html[MongoDB] and {logstash}plugins-outputs-riak.html[Riak]
 
 |
 
 *Archiving*
 
-* <<plugins-outputs-webhdfs,HDFS>>
-* <<plugins-outputs-s3,S3>>
-* <<plugins-outputs-google_cloud_storage,Google Cloud Storage>>
+* {logstash}plugins-outputs-webhdfs.html[HDFS]
+* {logstash}plugins-outputs-s3.html[S3]
+* {logstash}plugins-outputs-google_cloud_storage.html[Google Cloud Storage]
 
 |
 
 *Monitoring*
 
-* <<plugins-outputs-nagios,Nagios>>
-* <<plugins-outputs-ganglia,Ganglia>>
-* <<plugins-outputs-zabbix,Zabbix>>
-* <<plugins-outputs-graphite,Graphite>>
-* <<plugins-outputs-datadog,Datadog>>
-* <<plugins-outputs-cloudwatch,CloudWatch>>
+* {logstash}plugins-outputs-nagios.html[Nagios]
+* {logstash}plugins-outputs-ganglia.html[Ganglia]
+* {logstash}plugins-outputs-zabbix.html[Zabbix]
+* {logstash}plugins-outputs-graphite.html[Graphite]
+* {logstash}plugins-outputs-datadog.html[Datadog]
+* {logstash}plugins-outputs-cloudwatch.html[CloudWatch]
 
 |
 
 *Alerting*
 
 * https://www.elastic.co/products/watcher[Watcher] with Elasticsearch
-* <<plugins-outputs-email,Email>>
-* <<plugins-outputs-pagerduty,Pagerduty>>
-* <<plugins-outputs-hipchat,HipChat>>
-* <<plugins-outputs-irc,IRC>>
-* <<plugins-outputs-sns,SNS>>
+* {logstash}plugins-outputs-email.html[Email]
+* {logstash}plugins-outputs-pagerduty.html[Pagerduty]
+* {logstash}plugins-outputs-hipchat.html[HipChat]
+* {logstash}plugins-outputs-irc.html[IRC]
+* {logstash}plugins-outputs-sns.html[SNS]
 
 |=======================================================================
