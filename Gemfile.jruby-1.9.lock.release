@@ -242,7 +242,7 @@ GEM
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       nokogiri
       xml-simple
-    logstash-input-beats (3.1.21-java)
+    logstash-input-beats (3.1.23-java)
       concurrent-ruby (~> 1.0)
       jar-dependencies (~> 0.3.4)
       logstash-codec-multiline (>= 2.0.5)
@@ -415,7 +415,7 @@ GEM
       logstash-filter-json
       logstash-input-generator
       logstash-output-file
-    logstash-output-elasticsearch (7.3.6-java)
+    logstash-output-elasticsearch (7.3.7-java)
       cabin (~> 0.6)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       manticore (>= 0.5.4, < 1.0.0)
@@ -654,7 +654,7 @@ DEPENDENCIES
   logstash-filter-dns
   logstash-filter-drop
   logstash-filter-fingerprint
-  logstash-filter-geoip
+  logstash-filter-geoip (~> 4.2.0)
   logstash-filter-grok
   logstash-filter-json
   logstash-filter-kv
