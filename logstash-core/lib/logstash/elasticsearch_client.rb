@@ -108,7 +108,11 @@ module LogStash class ElasticsearchClient
     end
 
     def unpack_hosts
-      @settings.fetch("var.elasticsearch.hosts", "localhost:9200").split(',').map(&:strip)
+      setting = @settings.fetch("var.elasticsearch.hosts", "localhost:9200")
+      if setting.is_a?(String)
+        return setting.split(',').map(&:strip)
+      end
+      setting
     end
   end
 
