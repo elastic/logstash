@@ -7,6 +7,7 @@ module LogStash
     # there are settings that the pipeline uses and can be changed per pipeline instance
     SETTINGS_WHITE_LIST = [
       "config.debug",
+      "config.support_escapes",
       "config.reload.automatic",
       "config.reload.interval",
       "config.string",
