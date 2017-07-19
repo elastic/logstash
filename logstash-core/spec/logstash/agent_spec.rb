@@ -5,6 +5,7 @@ require "logstash/inputs/generator"
 require_relative "../support/mocks_classes"
 require "fileutils"
 require_relative "../support/helpers"
+require 'timeout'
 
 describe LogStash::Agent do
 
@@ -16,6 +17,7 @@ describe LogStash::Agent do
   let(:config_file) { Stud::Temporary.pathname }
   let(:config_file_txt) { "input { generator { count => 100000 } } output { }" }
   let(:logger) { double("logger") }
+  let(:timeout) {120} #seconds
 
   subject { LogStash::Agent.new(agent_settings) }
 
@@ -151,7 +153,9 @@ describe LogStash::Agent do
 
           it "does not try to reload the pipeline" do
             t = Thread.new { subject.execute }
-            sleep(0.01) until subject.running_pipelines? && subject.pipelines.values.first.running?
+            Timeout.timeout(timeout) do
+              sleep(0.01) until subject.running_pipelines? && subject.pipelines.values.first.running?
+            end
             expect(subject).to_not receive(:reload_pipeline!)
             File.open(config_file, "w") { |f| f.puts second_pipeline_config }
             subject.reload_state!
@@ -170,7 +174,9 @@ describe LogStash::Agent do
 
           it "tries to reload the pipeline" do
             t = Thread.new { subject.execute }
-            sleep(0.01) until subject.running_pipelines? && subject.pipelines.values.first.running?
+            Timeout.timeout(timeout) do
+              sleep(0.01) until subject.running_pipelines? && subject.pipelines.values.first.running?
+            end
             expect(subject).to receive(:reload_pipeline!).once.and_call_original
             File.open(config_file, "w") { |f| f.puts second_pipeline_config }
             subject.reload_state!
@@ -200,8 +206,9 @@ describe LogStash::Agent do
         it "should periodically reload_state" do
           allow(subject).to receive(:clean_state?).and_return(false)
           t = Thread.new { subject.execute }
-          sleep(0.01) until subject.running_pipelines? && subject.pipelines.values.first.running?
-
+          Timeout.timeout(timeout) do
+            sleep(0.01) until subject.running_pipelines? && subject.pipelines.values.first.running?
+          end
           expect(subject).to receive(:reload_state!).at_least(2).times
 
           sleep 1
@@ -438,7 +445,9 @@ describe LogStash::Agent do
       pipeline_thread
 
       # wait for some events to reach the dummy_output
-      sleep(0.1) until dummy_output.events_received > initial_generator_threshold
+      Timeout.timeout(timeout) do
+        sleep(0.1) until dummy_output.events_received > initial_generator_threshold
+      end
     end
 
     after :each do
@@ -446,6 +455,8 @@ describe LogStash::Agent do
         subject.shutdown
         Stud.stop!(pipeline_thread)
         pipeline_thread.join
+      rescue
+          #don't care about errors here.
       ensure
         Thread.abort_on_exception = @abort_on_exception
       end
@@ -464,7 +475,9 @@ describe LogStash::Agent do
         subject.send(:"reload_pipeline!", "main")
 
         # wait until pipeline restarts
-        sleep(0.01) until dummy_output2.events_received > 0
+        Timeout.timeout(timeout) do
+          sleep(0.01) until dummy_output2.events_received > 0
+        end
       end
 
       it "resets the pipeline metric collector" do
