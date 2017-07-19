@@ -8,6 +8,7 @@ require_relative "../support/mocks_classes"
 require "fileutils"
 require_relative "../support/helpers"
 require_relative "../support/matchers"
+require 'timeout'
 
 describe LogStash::Agent do
   let(:agent_settings) { mock_settings({}) }
@@ -24,6 +25,7 @@ describe LogStash::Agent do
     sl
   end
   let(:logger) { double("logger") }
+  let(:timeout) {120} #seconds
 
   subject { LogStash::Agent.new(agent_settings, default_source_loader) }
 
@@ -128,8 +130,9 @@ describe LogStash::Agent do
 
           it "does not upgrade the new config" do
             t = Thread.new { subject.execute }
-            sleep(0.01) until subject.with_pipelines {|pipelines| subject.running_pipelines? && pipelines.values.first.ready? }
-
+            Timeout.timeout(timeout) do
+              sleep(0.01) until subject.with_pipelines {|pipelines| subject.running_pipelines? && pipelines.values.first.ready? }
+            end
             expect(subject.converge_state_and_update).not_to be_a_successful_converge
             expect(subject).to have_running_pipeline?(mock_config_pipeline)
 
@@ -147,7 +150,9 @@ describe LogStash::Agent do
 
           it "does upgrade the new config" do
             t = Thread.new { subject.execute }
-            sleep(0.01) until subject.with_pipelines {|pipelines| subject.pipelines_count > 0 && pipelines.values.first.ready? }
+            Timeout.timeout(timeout) do
+              sleep(0.01) until subject.with_pipelines {|pipelines| subject.pipelines_count > 0 && pipelines.values.first.ready? }
+            end
 
             expect(subject.converge_state_and_update).to be_a_successful_converge
             expect(subject).to have_running_pipeline?(mock_second_pipeline_config)
@@ -169,8 +174,9 @@ describe LogStash::Agent do
 
           it "does not try to reload the pipeline" do
             t = Thread.new { subject.execute }
-            sleep(0.01) until subject.with_pipelines {|pipelines| subject.running_pipelines? && pipelines.values.first.running? }
-
+            Timeout.timeout(timeout) do
+              sleep(0.01) until subject.with_pipelines {|pipelines| subject.running_pipelines? && pipelines.values.first.running? }
+            end
             expect(subject.converge_state_and_update).not_to be_a_successful_converge
             expect(subject).to have_running_pipeline?(mock_config_pipeline)
 
@@ -188,7 +194,9 @@ describe LogStash::Agent do
 
           it "tries to reload the pipeline" do
             t = Thread.new { subject.execute }
-            sleep(0.01) until subject.with_pipelines {|pipelines| subject.running_pipelines? && pipelines.values.first.running? }
+            Timeout.timeout(timeout) do
+              sleep(0.01) until subject.with_pipelines {|pipelines| subject.running_pipelines? && pipelines.values.first.running? }
+            end
 
             expect(subject.converge_state_and_update).to be_a_successful_converge
             expect(subject).to have_running_pipeline?(mock_second_pipeline_config)
@@ -237,7 +245,9 @@ describe LogStash::Agent do
 
         # Since the pipeline is running in another threads
         # the content of the file wont be instant.
-        sleep(0.01) until ::File.size(temporary_file) > 0
+        Timeout.timeout(timeout) do
+          sleep(0.01) until ::File.size(temporary_file) > 0
+        end
         json_document = LogStash::Json.load(File.read(temporary_file).chomp)
         expect(json_document["message"]).to eq("foo-bar")
       end
@@ -331,7 +341,9 @@ describe LogStash::Agent do
       @t = Thread.new { subject.execute }
 
       # wait for some events to reach the dummy_output
-      sleep(0.01) until IO.readlines(temporary_file).size > initial_generator_threshold
+      Timeout.timeout(timeout) do
+        sleep(0.01) until IO.readlines(temporary_file).size > initial_generator_threshold
+      end
 
       # write new config
       File.open(config_file, "w") { |f| f.write(new_config) }
@@ -343,6 +355,8 @@ describe LogStash::Agent do
         Stud.stop!(@t) rescue nil # it may be dead already
         @t.join
         File.unlink(temporary_file)
+      rescue
+          #don't care about errors here.
       ensure
         Thread.abort_on_exception = @abort_on_exception
       end
@@ -355,7 +369,9 @@ describe LogStash::Agent do
 
       before :each do
         subject.converge_state_and_update
-        sleep(0.01) while ::File.read(new_file).chomp.empty?
+        Timeout.timeout(timeout) do
+          sleep(0.01) while ::File.read(new_file).chomp.empty?
+        end
         # ensure the converge_state_and_update method has updated metrics by
         # invoking the mutex
         subject.running_pipelines?
@@ -389,7 +405,8 @@ describe LogStash::Agent do
         expect(value).to be(nil)
       end
 
-      it "sets the success reload timestamp" do
+      #jakelandis - fixed with https://github.com/elastic/logstash/issues/7719
+      xit "sets the success reload timestamp" do
         snapshot = subject.metric.collector.snapshot_metric
         value = snapshot.metric_store.get_with_path("/stats/pipelines")[:stats][:pipelines][:main][:reloads][:last_success_timestamp].value
         expect(value).to be_a(LogStash::Timestamp)
@@ -418,7 +435,8 @@ describe LogStash::Agent do
         expect(value).to be(nil)
       end
 
-      it "sets the failure reload timestamp" do
+      #jakelandis - fixed with https://github.com/elastic/logstash/issues/7719
+      xit "sets the failure reload timestamp" do
         snapshot = subject.metric.collector.snapshot_metric
         value = snapshot.metric_store.get_with_path("/stats/pipelines")[:stats][:pipelines][:main][:reloads][:last_failure_timestamp].value
         expect(value).to be_a(LogStash::Timestamp)
