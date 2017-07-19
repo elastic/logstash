@@ -1,3 +1,5 @@
+require "stud/try"
+
 # Ruby doesn't have common class for boolean,
 # And to simplify the ResourceDSLMethods check it make sense to have it.
 module Boolean; end
@@ -27,13 +29,15 @@ module ResourceDSLMethods
       let(:payload) { LogStash::Json.load(last_response.body) }
 
       before(:all) do
-        get path
+        Stud.try(10.times, [StandardError, RSpec::Expectations::ExpectationNotMetError]) do
+          get path
+          expect(last_response).to be_ok
+        end
       end
 
       it "should respond OK" do
         expect(last_response).to be_ok
       end
-
 
       describe "the default metadata" do
         it "should include the host" do
