@@ -15,18 +15,21 @@ describe "Test Logstash service when multiple pipelines are used" do
     @fixture.teardown
   }
 
+  let(:temporary_out_file_1) { Stud::Temporary.pathname }
+  let(:temporary_out_file_2) { Stud::Temporary.pathname }
+
   let(:pipelines) {[
     {
       "pipeline.id" => "test",
       "pipeline.workers" => 1,
       "pipeline.batch.size" => 1,
-      "config.string" => "input { } output { }"
+      "config.string" => "input { generator { count => 1 } } output { file { path => \"#{temporary_out_file_1}\" } }"
     },
     {
       "pipeline.id" => "test2",
       "pipeline.workers" => 1,
       "pipeline.batch.size" => 1,
-      "config.string" => "input { } output { }"
+      "config.string" => "input { generator { count => 1 } } output { file { path => \"#{temporary_out_file_2}\" } }"
     }
   ]}
 
@@ -47,5 +50,9 @@ describe "Test Logstash service when multiple pipelines are used" do
       expect(logstash_service.exited?).to be(true)
     end
     expect(logstash_service.exit_code).to eq(0)
+    expect(File.exist?(temporary_out_file_1)).to be(true)
+    expect(IO.readlines(temporary_out_file_1).size).to eq(1)
+    expect(File.exist?(temporary_out_file_2)).to be(true)
+    expect(IO.readlines(temporary_out_file_2).size).to eq(1)
   end
 end
