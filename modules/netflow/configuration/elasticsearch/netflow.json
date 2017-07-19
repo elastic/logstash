@@ -4,15 +4,14 @@
     "mappings": {
         "_default_": {
             "_meta": {
-                "version": "5.5.0"
+                "version": "6.0.0"
             },
             "dynamic_templates": [
                 {
                     "application_id": {
                         "path_match": "netflow.application_id",
                         "mapping": {
-                            "type": "integer",
-                            "include_in_all": false
+                            "type": "integer"
                         }
                     }
                 },
@@ -36,8 +35,7 @@
                     "conn_id": {
                         "path_match": "netflow.conn_id",
                         "mapping": {
-                            "type": "integer",
-                            "include_in_all": false
+                            "type": "integer"
                         }
                     }
                 },
@@ -45,8 +43,7 @@
                     "dst_as": {
                         "path_match": "netflow.dst_as",
                         "mapping": {
-                            "type": "integer",
-                            "include_in_all": false
+                            "type": "integer"
                         }
                     }
                 },
@@ -54,8 +51,7 @@
                     "dst_tos": {
                         "path_match": "netflow.dst_tos",
                         "mapping": {
-                            "type": "integer",
-                            "include_in_all": false
+                            "type": "integer"
                         }
                     }
                 },
@@ -63,8 +59,7 @@
                     "dst_vlan": {
                         "path_match": "netflow.dst_vlan",
                         "mapping": {
-                            "type": "integer",
-                            "include_in_all": false
+                            "type": "integer"
                         }
                     }
                 },
@@ -72,8 +67,7 @@
                     "engine_id": {
                         "path_match": "netflow.engine_id",
                         "mapping": {
-                            "type": "integer",
-                            "include_in_all": false
+                            "type": "integer"
                         }
                     }
                 },
@@ -81,8 +75,7 @@
                     "engine_type": {
                         "path_match": "netflow.engine_type",
                         "mapping": {
-                            "type": "integer",
-                            "include_in_all": false
+                            "type": "integer"
                         }
                     }
                 },
@@ -90,8 +83,7 @@
                     "event_time_msec": {
                         "path_match": "netflow.event_time_msec",
                         "mapping": {
-                            "type": "long",
-                            "include_in_all": false
+                            "type": "long"
                         }
                     }
                 },
@@ -99,8 +91,7 @@
                     "flow_active_timeout": {
                         "path_match": "netflow.flow_active_timeout",
                         "mapping": {
-                            "type": "integer",
-                            "include_in_all": false
+                            "type": "integer"
                         }
                     }
                 },
@@ -108,8 +99,7 @@
                     "flow_end_reason": {
                         "path_match": "netflow.flow_end_reason",
                         "mapping": {
-                            "type": "integer",
-                            "include_in_all": false
+                            "type": "integer"
                         }
                     }
                 },
@@ -117,8 +107,7 @@
                     "flow_inactive_timeout": {
                         "path_match": "netflow.flow_inactive_timeout",
                         "mapping": {
-                            "type": "integer",
-                            "include_in_all": false
+                            "type": "integer"
                         }
                     }
                 },
@@ -126,8 +115,7 @@
                     "flow_records": {
                         "path_match": "netflow.flow_records",
                         "mapping": {
-                            "type": "integer",
-                            "include_in_all": false
+                            "type": "integer"
                         }
                     }
                 },
@@ -135,8 +123,7 @@
                     "flow_sampler_id": {
                         "path_match": "netflow.flow_sampler_id",
                         "mapping": {
-                            "type": "integer",
-                            "include_in_all": false
+                            "type": "integer"
                         }
                     }
                 },
@@ -144,8 +131,7 @@
                     "flow_sampler_mode": {
                         "path_match": "netflow.flow_sampler_mode",
                         "mapping": {
-                            "type": "integer",
-                            "include_in_all": false
+                            "type": "integer"
                         }
                     }
                 },
@@ -153,8 +139,7 @@
                     "flow_sampler_random_interval": {
                         "path_match": "netflow.flow_sampler_random_interval",
                         "mapping": {
-                            "type": "integer",
-                            "include_in_all": false
+                            "type": "integer"
                         }
                     }
                 },
@@ -162,8 +147,7 @@
                     "flow_start_msec": {
                         "path_match": "netflow.flow_start_msec",
                         "mapping": {
-                            "type": "long",
-                            "include_in_all": false
+                            "type": "long"
                         }
                     }
                 },
@@ -171,8 +155,7 @@
                     "flows": {
                         "path_match": "netflow.flows",
                         "mapping": {
-                            "type": "integer",
-                            "include_in_all": false
+                            "type": "integer"
                         }
                     }
                 },
@@ -180,8 +163,7 @@
                     "flowset_id": {
                         "path_match": "netflow.flowset_id",
                         "mapping": {
-                            "type": "integer",
-                            "include_in_all": false
+                            "type": "integer"
                         }
                     }
                 },
@@ -189,8 +171,7 @@
                     "fw_event": {
                         "path_match": "netflow.fw_event",
                         "mapping": {
-                            "type": "integer",
-                            "include_in_all": false
+                            "type": "integer"
                         }
                     }
                 },
@@ -198,8 +179,7 @@
                     "fw_ext_event": {
                         "path_match": "netflow.fw_ext_event",
                         "mapping": {
-                            "type": "integer",
-                            "include_in_all": false
+                            "type": "integer"
                         }
                     }
                 },
@@ -207,8 +187,7 @@
                     "fwd_flow_delta_bytes": {
                         "path_match": "netflow.fwd_flow_delta_bytes",
                         "mapping": {
-                            "type": "long",
-                            "include_in_all": false
+                            "type": "long"
                         }
                     }
                 },
@@ -216,8 +195,7 @@
                     "icmp_code": {
                         "path_match": "netflow.icmp_code",
                         "mapping": {
-                            "type": "integer",
-                            "include_in_all": false
+                            "type": "integer"
                         }
                     }
                 },
@@ -225,8 +203,7 @@
                     "icmp_code_ipv6": {
                         "path_match": "netflow.icmp_code_ipv6",
                         "mapping": {
-                            "type": "integer",
-                            "include_in_all": false
+                            "type": "integer"
                         }
                     }
                 },
@@ -234,8 +211,7 @@
                     "icmp_type": {
                         "path_match": "netflow.icmp_type",
                         "mapping": {
-                            "type": "integer",
-                            "include_in_all": false
+                            "type": "integer"
                         }
                     }
                 },
@@ -243,8 +219,7 @@
                     "icmp_type_ipv6": {
                         "path_match": "netflow.icmp_type_ipv6",
                         "mapping": {
-                            "type": "integer",
-                            "include_in_all": false
+                            "type": "integer"
                         }
                     }
                 },
@@ -270,8 +245,7 @@
                     "in_bytes": {
                         "path_match": "netflow.in_bytes",
                         "mapping": {
-                            "type": "long",
-                            "include_in_all": false
+                            "type": "long"
                         }
                     }
                 },
@@ -288,8 +262,7 @@
                     "in_permanent_bytes": {
                         "path_match": "netflow.in_permanent_bytes",
                         "mapping": {
-                            "type": "long",
-                            "include_in_all": false
+                            "type": "long"
                         }
                     }
                 },
@@ -297,8 +270,7 @@
                     "in_permanent_pkts": {
                         "path_match": "netflow.in_permanent_pkts",
                         "mapping": {
-                            "type": "long",
-                            "include_in_all": false
+                            "type": "long"
                         }
                     }
                 },
@@ -306,8 +278,7 @@
                     "in_pkts": {
                         "path_match": "netflow.in_pkts",
                         "mapping": {
-                            "type": "long",
-                            "include_in_all": false
+                            "type": "long"
                         }
                     }
                 },
@@ -324,8 +295,7 @@
                     "ip_protocol_version": {
                         "path_match": "netflow.ip_protocol_version",
                         "mapping": {
-                            "type": "integer",
-                            "include_in_all": false
+                            "type": "integer"
                         }
                     }
                 },
@@ -349,8 +319,7 @@
                     "ipv4_ident": {
                         "path_match": "netflow.ipv4_ident",
                         "mapping": {
-                            "type": "integer",
-                            "include_in_all": false
+                            "type": "integer"
                         }
                     }
                 },
@@ -390,8 +359,7 @@
                     "ipv6_dst_mask": {
                         "path_match": "netflow.ipv6_dst_mask",
                         "mapping": {
-                            "type": "integer",
-                            "include_in_all": false
+                            "type": "integer"
                         }
                     }
                 },
@@ -399,8 +367,7 @@
                     "ipv6_flow_label": {
                         "path_match": "netflow.ipv6_flow_label",
                         "mapping": {
-                            "type": "integer",
-                            "include_in_all": false
+                            "type": "integer"
                         }
                     }
                 },
@@ -416,8 +383,7 @@
                     "ipv6_option_headers": {
                         "path_match": "netflow.ipv6_option_headers",
                         "mapping": {
-                            "type": "integer",
-                            "include_in_all": false
+                            "type": "integer"
                         }
                     }
                 },
@@ -433,8 +399,7 @@
                     "ipv6_src_mask": {
                         "path_match": "netflow.ipv6_src_mask",
                         "mapping": {
-                            "type": "integer",
-                            "include_in_all": false
+                            "type": "integer"
                         }
                     }
                 },
@@ -442,8 +407,7 @@
                     "l4_dst_port": {
                         "path_match": "netflow.l4_dst_port",
                         "mapping": {
-                            "type": "integer",
-                            "include_in_all": false
+                            "type": "integer"
                         }
                     }
                 },
@@ -451,8 +415,7 @@
                     "l4_src_port": {
                         "path_match": "netflow.l4_src_port",
                         "mapping": {
-                            "type": "integer",
-                            "include_in_all": false
+                            "type": "integer"
                         }
                     }
                 },
@@ -460,8 +423,7 @@
                     "max_pkt_length": {
                         "path_match": "netflow.max_pkt_length",
                         "mapping": {
-                            "type": "integer",
-                            "include_in_all": false
+                            "type": "integer"
                         }
                     }
                 },
@@ -469,8 +431,7 @@
                     "max_ttl": {
                         "path_match": "netflow.max_ttl",
                         "mapping": {
-                            "type": "integer",
-                            "include_in_all": false
+                            "type": "integer"
                         }
                     }
                 },
@@ -478,8 +439,7 @@
                     "min_pkt_length": {
                         "path_match": "netflow.min_pkt_length",
                         "mapping": {
-                            "type": "integer",
-                            "include_in_all": false
+                            "type": "integer"
                         }
                     }
                 },
@@ -487,8 +447,7 @@
                     "min_ttl": {
                         "path_match": "netflow.min_ttl",
                         "mapping": {
-                            "type": "integer",
-                            "include_in_all": false
+                            "type": "integer"
                         }
                     }
                 },
@@ -496,8 +455,7 @@
                     "mpls_label_stack_octets.bottom_of_stack": {
                         "path_match": "netflow.mpls_label_stack_octets.bottom_of_stack",
                         "mapping": {
-                            "type": "integer",
-                            "include_in_all": false
+                            "type": "integer"
                         }
                     }
                 },
@@ -505,8 +463,7 @@
                     "mpls_label_stack_octets.experimental": {
                         "path_match": "netflow.mpls_label_stack_octets.experimental",
                         "mapping": {
-                            "type": "integer",
-                            "include_in_all": false
+                            "type": "integer"
                         }
                     }
                 },
@@ -514,8 +471,7 @@
                     "mpls_label_stack_octets.label": {
                         "path_match": "netflow.mpls_label_stack_octets.label",
                         "mapping": {
-                            "type": "integer",
-                            "include_in_all": false
+                            "type": "integer"
                         }
                     }
                 },
@@ -523,8 +479,7 @@
                     "mpls_label_stack_octets.ttl": {
                         "path_match": "netflow.mpls_label_stack_octets.ttl",
                         "mapping": {
-                            "type": "integer",
-                            "include_in_all": false
+                            "type": "integer"
                         }
                     }
                 },
@@ -540,8 +495,7 @@
                     "mpls_top_label_type": {
                         "path_match": "netflow.mpls_top_label_type",
                         "mapping": {
-                            "type": "integer",
-                            "include_in_all": false
+                            "type": "integer"
                         }
                     }
                 },
@@ -549,8 +503,7 @@
                     "mul_dst_bytes": {
                         "path_match": "netflow.mul_dst_bytes",
                         "mapping": {
-                            "type": "long",
-                            "include_in_all": false
+                            "type": "long"
                         }
                     }
                 },
@@ -558,8 +511,7 @@
                     "mul_dst_pkts": {
                         "path_match": "netflow.mul_dst_pkts",
                         "mapping": {
-                            "type": "long",
-                            "include_in_all": false
+                            "type": "long"
                         }
                     }
                 },
@@ -567,8 +519,7 @@
                     "mul_igmp_type": {
                         "path_match": "netflow.mul_igmp_type",
                         "mapping": {
-                            "type": "integer",
-                            "include_in_all": false
+                            "type": "integer"
                         }
                     }
                 },
@@ -576,8 +527,7 @@
                     "out_bytes": {
                         "path_match": "netflow.out_bytes",
                         "mapping": {
-                            "type": "long",
-                            "include_in_all": false
+                            "type": "long"
                         }
                     }
                 },
@@ -594,8 +544,7 @@
                     "out_pkts": {
                         "path_match": "netflow.out_pkts",
                         "mapping": {
-                            "type": "long",
-                            "include_in_all": false
+                            "type": "long"
                         }
                     }
                 },
@@ -612,8 +561,7 @@
                     "rev_flow_delta_bytes": {
                         "path_match": "netflow.rev_flow_delta_bytes",
                         "mapping": {
-                            "type": "long",
-                            "include_in_all": false
+                            "type": "long"
                         }
                     }
                 },
@@ -630,8 +578,7 @@
                     "sampling_algorithm": {
                         "path_match": "netflow.sampling_algorithm",
                         "mapping": {
-                            "type": "integer",
-                            "include_in_all": false
+                            "type": "integer"
                         }
                     }
                 },
@@ -639,8 +586,7 @@
                     "src_as": {
                         "path_match": "netflow.src_as",
                         "mapping": {
-                            "type": "integer",
-                            "include_in_all": false
+                            "type": "integer"
                         }
                     }
                 },
@@ -648,8 +594,7 @@
                     "src_mask": {
                         "path_match": "netflow.src_mask",
                         "mapping": {
-                            "type": "integer",
-                            "include_in_all": false
+                            "type": "integer"
                         }
                     }
                 },
@@ -657,8 +602,7 @@
                     "src_tos": {
                         "path_match": "netflow.src_tos",
                         "mapping": {
-                            "type": "integer",
-                            "include_in_all": false
+                            "type": "integer"
                         }
                     }
                 },
@@ -666,8 +610,7 @@
                     "src_vlan": {
                         "path_match": "netflow.src_vlan",
                         "mapping": {
-                            "type": "integer",
-                            "include_in_all": false
+                            "type": "integer"
                         }
                     }
                 },
@@ -675,8 +618,7 @@
                     "tcp_dst_port": {
                         "path_match": "netflow.tcp_dst_port",
                         "mapping": {
-                            "type": "integer",
-                            "include_in_all": false
+                            "type": "integer"
                         }
                     }
                 },
@@ -684,8 +626,7 @@
                     "tcp_src_port": {
                         "path_match": "netflow.tcp_src_port",
                         "mapping": {
-                            "type": "integer",
-                            "include_in_all": false
+                            "type": "integer"
                         }
                     }
                 },
@@ -693,8 +634,7 @@
                     "total_bytes_exp": {
                         "path_match": "netflow.total_bytes_exp",
                         "mapping": {
-                            "type": "long",
-                            "include_in_all": false
+                            "type": "long"
                         }
                     }
                 },
@@ -702,8 +642,7 @@
                     "total_flows_exp": {
                         "path_match": "netflow.total_flows_exp",
                         "mapping": {
-                            "type": "long",
-                            "include_in_all": false
+                            "type": "long"
                         }
                     }
                 },
@@ -711,8 +650,7 @@
                     "total_pkts_exp": {
                         "path_match": "netflow.total_pkts_exp",
                         "mapping": {
-                            "type": "long",
-                            "include_in_all": false
+                            "type": "long"
                         }
                     }
                 },
@@ -720,8 +658,7 @@
                     "udp_dst_port": {
                         "path_match": "netflow.udp_dst_port",
                         "mapping": {
-                            "type": "integer",
-                            "include_in_all": false
+                            "type": "integer"
                         }
                     }
                 },
@@ -729,8 +666,7 @@
                     "udp_src_port": {
                         "path_match": "netflow.udp_src_port",
                         "mapping": {
-                            "type": "integer",
-                            "include_in_all": false
+                            "type": "integer"
                         }
                     }
                 },
@@ -763,8 +699,7 @@
                     "xlate_dst_port": {
                         "path_match": "netflow.xlate_dst_port",
                         "mapping": {
-                            "type": "integer",
-                            "include_in_all": false
+                            "type": "integer"
                         }
                     }
                 },
@@ -788,8 +723,7 @@
                     "xlate_src_port": {
                         "path_match": "netflow.xlate_src_port",
                         "mapping": {
-                            "type": "integer",
-                            "include_in_all": false
+                            "type": "integer"
                         }
                     }
                 },
@@ -804,17 +738,11 @@
                     }
                 }
             ],
-            "_all": {
-                "norms": false,
-                "enabled": true
-            },
             "properties": {
                 "@version": {
-                    "include_in_all": false,
                     "type": "keyword"
                 },
                 "@timestamp": {
-                    "include_in_all": false,
                     "type": "date"
                 },
                 "geoip": {
@@ -853,8 +781,7 @@
                             "norms": false
                         },
                         "dma_code": {
-                            "type": "integer",
-                            "include_in_all": false
+                            "type": "integer"
                         },
                         "ip": {
                             "type": "ip"
@@ -922,8 +849,7 @@
                             "norms": false
                         },
                         "dma_code": {
-                            "type": "integer",
-                            "include_in_all": false
+                            "type": "integer"
                         },
                         "ip": {
                             "type": "ip"
@@ -991,8 +917,7 @@
                             "norms": false
                         },
                         "dma_code": {
-                            "type": "integer",
-                            "include_in_all": false
+                            "type": "integer"
                         },
                         "ip": {
                             "type": "ip"
@@ -1029,8 +954,7 @@
                     "type": "object",
                     "properties": {
                         "bytes": {
-                            "type": "long",
-                            "include_in_all": false
+                            "type": "long"
                         },
                         "direction": {
                             "type": "keyword",
@@ -1040,25 +964,21 @@
                             "type": "ip"
                         },
                         "dst_mask_len": {
-                            "type": "integer",
-                            "include_in_all": false
+                            "type": "integer"
                         },
                         "dst_port": {
                             "type": "keyword",
-                            "norms": false,
-                            "include_in_all": false
+                            "norms": false
                         },
                         "dst_port_name": {
                             "type": "keyword",
                             "norms": false
                         },
                         "first_switched": {
-                            "type": "date",
-                            "include_in_all": false
+                            "type": "date"
                         },
                         "flow_seq_num": {
-                            "type": "long",
-                            "include_in_all": false
+                            "type": "long"
                         },
                         "input_snmp": {
                             "type": "keyword",
@@ -1069,8 +989,7 @@
                             "norms": false
                         },
                         "last_switched": {
-                            "type": "date",
-                            "include_in_all": false
+                            "type": "date"
                         },
                         "next_hop": {
                             "type": "ip"
@@ -1080,41 +999,35 @@
                             "norms": false
                         },
                         "packets": {
-                            "type": "long",
-                            "include_in_all": false
+                            "type": "long"
                         },
                         "protocol": {
                             "type": "keyword",
-                            "norms": false,
-                            "include_in_all": false
+                            "norms": false
                         },
                         "protocol_name": {
                             "type": "keyword",
                             "norms": false
                         },
                         "sampling_interval": {
-                            "type": "integer",
-                            "include_in_all": false
+                            "type": "integer"
                         },
                         "src_addr": {
                             "type": "ip"
                         },
                         "src_mask_len": {
-                            "type": "integer",
-                            "include_in_all": false
+                            "type": "integer"
                         },
                         "src_port": {
                             "type": "keyword",
-                            "norms": false,
-                            "include_in_all": false
+                            "norms": false
                         },
                         "src_port_name": {
                             "type": "keyword",
                             "norms": false
                         },
                         "tcp_flags": {
-                            "type": "integer",
-                            "include_in_all": false
+                            "type": "integer"
                         },
                         "tcp_flags_label": {
                             "type": "keyword",
