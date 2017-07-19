@@ -37,6 +37,10 @@ describe LogStash::Runner do
     end
   end
 
+  after :each do
+    LogStash::Logging::Logger::configure_logging("info")
+  end
+
   describe "argument precedence" do
     let(:config) { "input {} output {}" }
     let(:cli_args) { ["-e", config, "-w", "20"] }
