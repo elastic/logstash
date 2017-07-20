@@ -29,7 +29,7 @@ module LogStash module Config module Source
     def config_conflict?
       @conflict_messages.clear
       # Make note that if modules are configured in both cli and logstash.yml that cli module
-      # settings will be used, and logstash.yml modules settings ignored
+      # settings will overwrite the logstash.yml modules settings
       if modules_cli? && modules?
         logger.info(I18n.t("logstash.runner.cli-module-override"))
       end
