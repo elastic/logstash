@@ -159,6 +159,10 @@ module LogStash
           end
         end
       end
+            puts "**********************"
+            puts output
+            puts "**********************"
+  
       raise exception if exception
 
       return output

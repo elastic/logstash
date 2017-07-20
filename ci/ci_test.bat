@@ -9,6 +9,7 @@ REM installing gems. See https://github.com/elastic/logstash/issues/5179
 SET JRUBY_OPTS="-J-Xmx1g"
 SET SELECTEDTESTSUITE=%1
 SET /p JRUBYVERSION=<.ruby-version
+SET JARS_DEBUG=true
 
 IF NOT EXIST %JRUBYSRCDIR% (
   echo "Variable JRUBYSRCDIR must be declared with a valid directory. Aborting.."
@@ -27,22 +28,15 @@ SET RAKEPATH=%JRUBYPATH%\bin\rake
 IF "%SELECTEDTESTSUITE%"=="core-fail-fast" (
   echo "Running core-fail-fast tests"
   %RAKEPATH% test:install-core
-REM ensure that a rake failure will cause the test to fail
-  if %errorlevel% neq 0 exit /b %errorlevel%
   %RAKEPATH% test:core-fail-fast
-  if %errorlevel% neq 0 exit /b %errorlevel%
 ) ELSE (
   IF "%SELECTEDTESTSUITE%"=="all" (
     echo "Running all plugins tests"
     %RAKEPATH% test:install-all
-    if %errorlevel% neq 0 exit /b %errorlevel%
     %RAKEPATH% test:plugins
-    if %errorlevel% neq 0 exit /b %errorlevel%
   ) ELSE (
     echo "Running core tests"
     %RAKEPATH% test:install-core
-    if %errorlevel% neq 0 exit /b %errorlevel%
     %RAKEPATH% test:core
-    if %errorlevel% neq 0 exit /b %errorlevel%
   )
 )
