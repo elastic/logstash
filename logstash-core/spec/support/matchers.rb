@@ -2,6 +2,7 @@
 require "rspec"
 require "rspec/expectations"
 require "logstash/config/pipeline_config"
+require "stud/try"
 
 RSpec::Matchers.define :be_a_metric_event do |namespace, type, *args|
   match do
@@ -63,10 +64,12 @@ end
 
 RSpec::Matchers.define :have_running_pipeline? do |pipeline_config|
   match do |agent|
-    pipeline = agent.get_pipeline(pipeline_config.pipeline_id)
-    expect(pipeline).to_not be_nil
-    expect(pipeline.config_str).to eq(pipeline_config.config_string)
-    expect(pipeline.running?).to be_truthy
+    Stud.try(10.times, [StandardError, RSpec::Expectations::ExpectationNotMetError]) do
+      pipeline = agent.get_pipeline(pipeline_config.pipeline_id)
+      expect(pipeline).to_not be_nil
+      expect(pipeline.config_str).to eq(pipeline_config.config_string)
+      expect(pipeline.running?).to be_truthy
+    end
   end
 
   failure_message do |agent|
