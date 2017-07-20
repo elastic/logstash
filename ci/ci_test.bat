@@ -10,8 +10,7 @@ SET JRUBY_OPTS="-J-Xmx1g"
 SET SELECTEDTESTSUITE=%1
 SET /p JRUBYVERSION=<.ruby-version
 SET JARS_DEBUG=true
-SET USERPROFILE="C:\Users\jenkins\"
-SET WORKSPACE="C:\Users\jenkins\workspace\elastic+logstash+pull-request+multijob-windows-compatibility\"
+
 IF NOT EXIST %JRUBYSRCDIR% (
   echo "Variable JRUBYSRCDIR must be declared with a valid directory. Aborting.."
   exit /B 1
