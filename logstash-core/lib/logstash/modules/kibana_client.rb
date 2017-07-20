@@ -98,7 +98,7 @@ module LogStash module Modules class KibanaClient
   end
 
   def head(relative_path)
-    safely(:head, relative_path)
+    safely(:head, relative_path, @http_options)
   end
 
   def can_connect?
