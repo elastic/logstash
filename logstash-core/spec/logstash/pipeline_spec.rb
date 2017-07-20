@@ -6,6 +6,7 @@ require_relative "../support/mocks_classes"
 require_relative "../support/helpers"
 require_relative "../logstash/pipeline_reporter_spec" # for DummyOutput class
 require "stud/try"
+require 'timeout'
 
 class DummyInput < LogStash::Inputs::Base
   config_name "dummyinput"
@@ -109,6 +110,8 @@ describe LogStash::Pipeline do
   let(:dead_letter_queue_path) { }
   let(:pipeline_settings_obj) { LogStash::SETTINGS }
   let(:pipeline_settings) { {} }
+  let(:max_retry) {10} #times
+  let(:timeout) {120} #seconds
 
   before :each do
     pipeline_workers_setting = LogStash::SETTINGS.get_setting("pipeline.workers")
@@ -176,12 +179,16 @@ describe LogStash::Pipeline do
 
       pipeline = mock_pipeline_from_string(config, pipeline_settings_obj)
       t = Thread.new { pipeline.run }
-      sleep(0.1) until pipeline.ready?
-      wait(3).for do
-        # give us a bit of time to flush the events
-        # puts("*****" + output.events.map{|e| e.message}.to_s)
-        output.events.map{|e| e.get("message")}.include?("END")
-      end.to be_truthy
+      Timeout.timeout(timeout) do
+        sleep(0.1) until pipeline.ready?
+      end
+      Stud.try(max_retry.times, [StandardError, RSpec::Expectations::ExpectationNotMetError]) do
+        wait(3).for do
+          # give us a bit of time to flush the events
+          # puts("*****" + output.events.map{|e| e.message}.to_s)
+          output.events.map{|e| e.get("message")}.include?("END")
+        end.to be_truthy
+      end
       expect(output.events.size).to eq(2)
       expect(output.events[0].get("tags")).to eq(["notdropped"])
       expect(output.events[1].get("tags")).to eq(["notdropped"])
@@ -429,7 +436,9 @@ describe LogStash::Pipeline do
       # race condition if called in the thread
       p = pipeline
       t = Thread.new { p.run }
-      sleep(0.1) until pipeline.ready?
+      Timeout.timeout(timeout) do
+        sleep(0.1) until pipeline.ready?
+      end
       pipeline.shutdown
       t.join
     end
@@ -627,11 +636,15 @@ describe LogStash::Pipeline do
       Thread.abort_on_exception = true
       pipeline = mock_pipeline_from_string(config, pipeline_settings_obj)
       t = Thread.new { pipeline.run }
-      sleep(0.1) until pipeline.ready?
-      wait(10).for do
-        # give us a bit of time to flush the events
-        output.events.empty?
-      end.to be_falsey
+      Timeout.timeout(timeout) do
+        sleep(0.1) until pipeline.ready?
+      end
+      Stud.try(max_retry.times, [StandardError, RSpec::Expectations::ExpectationNotMetError]) do
+        wait(10).for do
+          # give us a bit of time to flush the events
+          output.events.empty?
+        end.to be_falsey
+      end
 
       expect(output.events.any? {|e| e.get("message") == "dummy_flush"}).to eq(true)
 
@@ -731,9 +744,12 @@ describe LogStash::Pipeline do
         # subject must be first call outside the thread context because of lazy initialization
         s = subject
         t = Thread.new { s.run }
-        sleep(0.1) until subject.ready?
-
-        sleep(0.1)
+        Timeout.timeout(timeout) do
+          sleep(0.1) until subject.ready?
+        end
+        Timeout.timeout(timeout) do
+          sleep(0.1)
+        end
         expect(subject.uptime).to be > 0
         subject.shutdown
         t.join
@@ -797,10 +813,12 @@ describe LogStash::Pipeline do
       allow(LogStash::Plugin).to receive(:lookup).with("output", "dummyoutput").and_return(::LogStash::Outputs::DummyOutput)
 
       pipeline_thread
-      sleep(0.1) until subject.ready?
+      Timeout.timeout(timeout) do
+        sleep(0.1) until subject.ready?
+      end
 
       # make sure we have received all the generated events
-      Stud.try(10.times, [StandardError, RSpec::Expectations::ExpectationNotMetError]) do
+      Stud.try(max_retry.times, [StandardError, RSpec::Expectations::ExpectationNotMetError]) do
         wait(3).for do
           # give us a bit of time to flush the events
           dummyoutput.events.size >= number_of_events
