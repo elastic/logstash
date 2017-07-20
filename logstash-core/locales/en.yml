@@ -104,6 +104,8 @@ en:
         elasticsearch_connection_failed: >-
           Failed to import module configurations to Elasticsearch and/or Kibana.
           Module: %{module_name} has Elasticsearch hosts: %{elasticsearch_hosts} and Kibana hosts: %{kibana_hosts}
+        modules-too-many-specified: >-
+          Too many modules specified. Maximum allowed: %{max}, specified: %{specified_modules}
 
     runner:
       short-help: |-
@@ -128,8 +130,7 @@ en:
         Configuration reloading can't be used with command-line or logstash.yml specified modules.
       cli-module-override: >-
         Both command-line and logstash.yml modules configurations detected.
-        Using command-line module configuration and ignoring logstash.yml module
-        configuration.
+        Using command-line module configuration to override logstash.yml module configuration.
       config-pipelines-failed-read: >-
         Failed to read pipelines yaml file. Location: %{path}
       config-pipelines-empty: >-
