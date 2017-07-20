@@ -44,7 +44,7 @@ describe LogStash::Instrument::PeriodicPoller::JVM do
         before do
           expect(LogStash::Environment).to receive(:windows?).and_return(false)
           expect(LogStash::Environment).to receive(:linux?).and_return(true)
-          expect(::File).to receive(:read).with("/proc/loadavg").and_raise("Didnt work out so well")
+          expect(::File).to receive(:read).with("/proc/loadavg").at_least(:once).and_raise("Didnt work out so well")
         end
 
         it "doesn't raise an exception" do
