@@ -166,11 +166,7 @@ public class JrubyEventExtLibrary implements Library {
         @JRubyMethod(name = "clone")
         public IRubyObject ruby_clone(ThreadContext context)
         {
-            try {
-                return RubyEvent.newRubyEvent(context.runtime, this.event.clone());
-            } catch (CloneNotSupportedException e) {
-                throw context.runtime.newRuntimeError(e.getMessage());
-            }
+            return RubyEvent.newRubyEvent(context.runtime, this.event.clone());
         }
 
         @JRubyMethod(name = "overwrite", required = 1)
