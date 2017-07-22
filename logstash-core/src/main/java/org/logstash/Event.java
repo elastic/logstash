@@ -12,7 +12,6 @@ import org.jruby.RubySymbol;
 import org.logstash.ackedqueue.Queueable;
 
 import java.io.IOException;
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -23,8 +22,7 @@ import java.util.Map;
 import static org.logstash.ObjectMappers.CBOR_MAPPER;
 import static org.logstash.ObjectMappers.JSON_MAPPER;
 
-
-public class Event implements Cloneable, Serializable, Queueable {
+public final class Event implements Cloneable, Queueable {
 
     private boolean cancelled;
     private Map<String, Object> data;
@@ -299,14 +297,9 @@ public class Event implements Cloneable, Serializable, Queueable {
         return StringInterpolation.getInstance().evaluate(this, s);
     }
 
-    public Event clone()
-            throws CloneNotSupportedException
-    {
-//        Event clone = (Event)super.clone();
-//        clone.setAccessors(new Accessors(clone.getData()));
-
-        Event clone = new Event(Cloner.deep(getData()));
-        return clone;
+    @Override
+    public Event clone() {
+        return new Event(Cloner.deep(this.data));
     }
 
     public String toString() {
