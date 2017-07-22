@@ -1,7 +1,6 @@
 package org.logstash;
 
 import java.io.IOException;
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -22,8 +21,7 @@ import org.logstash.ext.JrubyTimestampExtLibrary;
 import static org.logstash.ObjectMappers.CBOR_MAPPER;
 import static org.logstash.ObjectMappers.JSON_MAPPER;
 
-
-public class Event implements Cloneable, Serializable, Queueable {
+public final class Event implements Cloneable, Queueable {
 
     private boolean cancelled;
     private Map<String, Object> data;
@@ -272,8 +270,8 @@ public class Event implements Cloneable, Serializable, Queueable {
     }
 
     @Override
-    public Event clone() throws CloneNotSupportedException {
-        return new Event(Cloner.deep(getData()));
+    public Event clone() {
+        return new Event(Cloner.deep(this.data));
     }
 
     public String toString() {
