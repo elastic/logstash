@@ -18,6 +18,7 @@
  */
 package org.logstash.common.io;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
@@ -63,7 +64,7 @@ import static org.logstash.common.io.RecordType.START;
  *           by a final END record type.
  *   END: The final record segment of an LS Event, the final record representing the end of an LS Event.
  */
-public class RecordIOWriter {
+public final class RecordIOWriter implements Closeable {
 
     private final FileChannel channel;
     private int posInBlock;
@@ -139,6 +140,7 @@ public class RecordIOWriter {
         return channel.position() - startPosition;
     }
 
+    @Override
     public void close() throws IOException {
         channel.close();
     }
