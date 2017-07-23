@@ -18,6 +18,7 @@
  */
 package org.logstash.common.io;
 
+import java.io.Closeable;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.logstash.DLQEntry;
@@ -39,7 +40,7 @@ import static java.nio.file.StandardWatchEventKinds.ENTRY_CREATE;
 import static java.nio.file.StandardWatchEventKinds.ENTRY_DELETE;
 import static org.logstash.common.io.DeadLetterQueueWriter.getSegmentPaths;
 
-public class DeadLetterQueueReader {
+public final class DeadLetterQueueReader implements Closeable {
     private static final Logger logger = LogManager.getLogger(DeadLetterQueueReader.class);
 
     private RecordIOReader currentReader;
@@ -142,6 +143,7 @@ public class DeadLetterQueueReader {
         return currentReader.getChannelPosition();
     }
 
+    @Override
     public void close() throws IOException {
         if (currentReader != null) {
             currentReader.close();
