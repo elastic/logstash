@@ -98,12 +98,7 @@ module LogStash; module Util
       end
 
       def inflight_batches
-        @mutex.lock
-        begin
-          yield(@inflight_batches)
-        ensure
-          @mutex.unlock
-        end
+        @inflight_batches
       end
 
       def current_inflight_batch
