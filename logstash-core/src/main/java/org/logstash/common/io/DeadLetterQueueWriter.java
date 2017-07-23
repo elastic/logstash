@@ -18,6 +18,7 @@
  */
 package org.logstash.common.io;
 
+import java.io.Closeable;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.logstash.DLQEntry;
@@ -37,7 +38,7 @@ import java.util.stream.Stream;
 
 import static org.logstash.common.io.RecordIOWriter.RECORD_HEADER_SIZE;
 
-public class DeadLetterQueueWriter {
+public final class DeadLetterQueueWriter implements Closeable {
 
     private static final Logger logger = LogManager.getLogger(DeadLetterQueueWriter.class);
     private static final long MAX_SEGMENT_SIZE_BYTES = 10 * 1024 * 1024;
@@ -143,6 +144,7 @@ public class DeadLetterQueueWriter {
         currentQueueSize.add(currentWriter.writeEvent(record));
     }
 
+    @Override
     public synchronized void close() throws IOException {
         this.lock.release();
         if (currentWriter != null) {
