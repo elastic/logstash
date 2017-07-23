@@ -18,8 +18,7 @@
  */
 package org.logstash.common.io;
 
-import org.logstash.Timestamp;
-
+import java.io.Closeable;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.ClosedByInterruptException;
@@ -28,7 +27,6 @@ import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.Comparator;
 import java.util.function.Function;
-import java.util.function.Supplier;
 import java.util.zip.CRC32;
 import java.util.zip.Checksum;
 
@@ -39,7 +37,7 @@ import static org.logstash.common.io.RecordIOWriter.VERSION_SIZE;
 
 /**
  */
-public class RecordIOReader {
+public final class RecordIOReader implements Closeable {
 
     private final FileChannel channel;
     private final ByteBuffer currentBlock;
@@ -231,6 +229,7 @@ public class RecordIOReader {
         }
     }
 
+    @Override
     public void close() throws IOException {
         channel.close();
     }
