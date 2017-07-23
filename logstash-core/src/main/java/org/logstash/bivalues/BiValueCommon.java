@@ -1,17 +1,19 @@
 package org.logstash.bivalues;
 
 import com.fasterxml.jackson.annotation.JsonValue;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import org.jruby.Ruby;
 import org.jruby.runtime.builtin.IRubyObject;
 
-import java.io.InvalidObjectException;
-import java.io.ObjectInputStream;
-import java.io.ObjectStreamException;
-import java.io.Serializable;
-
 public abstract class BiValueCommon<R extends IRubyObject, J> implements Serializable {
+
+    private static final long serialVersionUID = -5550024069165773235L;
+
     protected transient R rubyValue;
-    protected J javaValue;
+    protected transient J javaValue;
 
     public R rubyValue(Ruby runtime) {
         if (hasRubyValue()) {
@@ -86,25 +88,11 @@ public abstract class BiValueCommon<R extends IRubyObject, J> implements Seriali
         return String.valueOf(javaValue);
     }
 
-    protected static Object newProxy(BiValue instance) {
-        return new SerializationProxy(instance);
+    private void writeObject(final ObjectOutputStream out) throws IOException {
+        out.writeObject(this.javaValue());
     }
 
-    private static class SerializationProxy implements Serializable {
-        private static final long serialVersionUID = -1749700725129586973L;
-
-        private final Object javaValue;
-
-        public SerializationProxy(BiValue o) {
-            javaValue = o.javaValue(); // ensure the javaValue is converted from a ruby one if it exists
-        }
-
-        private Object readResolve() throws ObjectStreamException {
-            return BiValues.newBiValue(javaValue);
-        }
-    }
-
-    private void readObject(ObjectInputStream stream) throws InvalidObjectException {
-        throw new InvalidObjectException("Proxy required");
+    private void readObject(final ObjectInputStream in) throws IOException, ClassNotFoundException {
+        this.javaValue = (J) in.readObject();
     }
 }

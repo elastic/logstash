@@ -4,9 +4,10 @@ import org.jruby.Ruby;
 import org.jruby.java.proxies.JavaProxy;
 import org.jruby.javasupport.JavaUtil;
 
-import java.io.ObjectStreamException;
+public final class JavaProxyBiValue extends BiValueCommon<JavaProxy, Object> 
+    implements BiValue<JavaProxy, Object> {
 
-public class JavaProxyBiValue extends BiValueCommon<JavaProxy, Object> implements BiValue<JavaProxy, Object> {
+    private static final long serialVersionUID = 9127622347449815350L;
 
     public JavaProxyBiValue(JavaProxy rubyValue) {
         this.rubyValue = rubyValue;
@@ -18,19 +19,11 @@ public class JavaProxyBiValue extends BiValueCommon<JavaProxy, Object> implement
         rubyValue = null;
     }
 
-    private JavaProxyBiValue() {
-    }
-
     protected void addRuby(Ruby runtime) {
         rubyValue = (JavaProxy) JavaUtil.convertJavaToUsableRubyObject(runtime, javaValue);
     }
 
     protected void addJava() {
         javaValue = rubyValue.getObject();
-    }
-
-    // Called when object is to be serialized on a stream to allow the object to substitute a proxy for itself.
-    private Object writeReplace() throws ObjectStreamException {
-        return newProxy(this);
     }
 }

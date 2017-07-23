@@ -3,10 +3,10 @@ package org.logstash.bivalues;
 import org.jruby.Ruby;
 import org.jruby.RubyFloat;
 
-import java.io.ObjectStreamException;
+public final class FloatBiValue extends BiValueCommon<RubyFloat, Float> 
+    implements BiValue<RubyFloat, Float> {
 
-
-public class FloatBiValue extends BiValueCommon<RubyFloat, Float> implements BiValue<RubyFloat, Float> {
+    private static final long serialVersionUID = 3076337527056049715L;
 
     public FloatBiValue(RubyFloat rubyValue) {
         this.rubyValue = rubyValue;
@@ -16,9 +16,6 @@ public class FloatBiValue extends BiValueCommon<RubyFloat, Float> implements BiV
     public FloatBiValue(Float javaValue) {
         this.javaValue = javaValue;
         rubyValue = null;
-    }
-
-    private FloatBiValue() {
     }
 
     protected void addRuby(Ruby runtime) {
@@ -31,10 +28,5 @@ public class FloatBiValue extends BiValueCommon<RubyFloat, Float> implements BiV
             throw new ArithmeticException("Float overflow - Incorrect FloatBiValue usage: BiValues should pick DoubleBiValue for RubyFloat");
         }
         javaValue = (float) value;
-    }
-
-    // Called when object is to be serialized on a stream to allow the object to substitute a proxy for itself.
-    private Object writeReplace() throws ObjectStreamException {
-        return newProxy(this);
     }
 }
