@@ -1,8 +1,8 @@
 package org.logstash;
 
 import java.util.HashMap;
-import java.util.Map;
 import java.util.List;
+import java.util.Map;
 
 public class Accessors {
 
@@ -21,9 +21,36 @@ public class Accessors {
     }
 
     public Object set(String reference, Object value) {
-        FieldReference field = PathCache.cache(reference);
-        Object target = findCreateTarget(field);
-        return store(target, field.getKey(), value);
+        final FieldReference field = PathCache.cache(reference);
+        final Object target = findCreateTarget(field);
+        final String key = field.getKey();
+        if (target instanceof Map) {
+            ((Map<String, Object>) target).put(key, value);
+        } else if (target instanceof List) {
+            int i;
+            try {
+                i = Integer.parseInt(key);
+            } catch (NumberFormatException e) {
+                return null;
+            }
+            int size = ((List<Object>) target).size();
+            if (i >= size) {
+                // grow array by adding trailing null items
+                // this strategy reflects legacy Ruby impl behaviour and is backed by specs
+                // TODO: (colin) this is potentially dangerous, and could produce OOM using arbitrary big numbers
+                // TODO: (colin) should be guard against this?
+                for (int j = size; j < i; j++) {
+                    ((List<Object>) target).add(null);
+                }
+                ((List<Object>) target).add(value);
+            } else {
+                int offset = listIndex(i, ((List) target).size());
+                ((List<Object>) target).set(offset, value);
+            }
+        } else {
+            throw newCollectionException(target);
+        }
+        return value;
     }
 
     public Object del(String reference) {
@@ -48,18 +75,17 @@ public class Accessors {
     }
 
     public boolean includes(String reference) {
-        FieldReference field = PathCache.cache(reference);
-        Object target = findTarget(field);
-        if (target instanceof Map && foundInMap((Map<String, Object>) target, field.getKey())) {
-            return true;
-        } else if (target instanceof List) {
-            try {
-                int i = Integer.parseInt(field.getKey());
-                return (foundInList((List<Object>) target, i) ? true : false);
-            } catch (NumberFormatException e) {
-                return false;
-            }
-        } else {
+        final FieldReference field = PathCache.cache(reference);
+        final Object target = findTarget(field);
+        final String key = field.getKey();
+        return target instanceof Map && ((Map<String, Object>) target).containsKey(key) ||
+            target instanceof List && foundInList(key, (List<Object>) target);
+    }
+
+    private static boolean foundInList(final String key, final List<Object> target) {
+        try {
+            return foundInList(target, Integer.parseInt(key));
+        } catch (NumberFormatException e) {
             return false;
         }
     }
@@ -132,10 +158,6 @@ public class Accessors {
 
     }
 
-    private static boolean foundInMap(Map<String, Object> target, String key) {
-        return target.containsKey(key);
-    }
-
     private static Object fetch(Object target, String key) {
         if (target instanceof Map) {
             Object result = ((Map<String, Object>) target).get(key);
@@ -152,36 +174,6 @@ public class Accessors {
         } else {
             throw newCollectionException(target);
         }
-    }
-
-    private static Object store(Object target, String key, Object value) {
-        if (target instanceof Map) {
-            ((Map<String, Object>) target).put(key, value);
-        } else if (target instanceof List) {
-            int i;
-            try {
-                i = Integer.parseInt(key);
-            } catch (NumberFormatException e) {
-                return null;
-            }
-            int size = ((List<Object>) target).size();
-            if (i >= size) {
-                // grow array by adding trailing null items
-                // this strategy reflects legacy Ruby impl behaviour and is backed by specs
-                // TODO: (colin) this is potentially dangerous, and could produce OOM using arbitrary big numbers
-                // TODO: (colin) should be guard against this?
-                for (int j = size; j < i; j++) {
-                    ((List<Object>) target).add(null);
-                }
-                ((List<Object>) target).add(value);
-            } else {
-                int offset = listIndex(i, ((List) target).size());
-                ((List<Object>) target).set(offset, value);
-            }
-        } else {
-            throw newCollectionException(target);
-        }
-        return value;
     }
 
     private static boolean isCollection(Object target) {
