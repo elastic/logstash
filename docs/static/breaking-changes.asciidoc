@@ -1,310 +1,38 @@
 [[breaking-changes]]
 == Breaking changes
 
-This section discusses the changes that you need to be aware of when migrating your application to Logstash 5.0 from the previous major release of Logstash (2.x).
-
-[float]
-=== Changes in Logstash Core
-
-These changes can impact any instance of Logstash and are plugin agnostic, but only if you are using the features that are impacted.
+This section discusses the changes that you need to be aware of when migrating to Logstash 6.0.0 from the previous major releases of Logstash.
 
 [float]
 ==== Application Settings
 
-[IMPORTANT]
-Logstash 5.0 introduces a new way to <<logstash-settings-file, configure application settings>> for Logstash through a
-`logstash.yml` file.
-
-This file is typically located in `${LS_HOME}/config`, or `/etc/logstash` when installed via packages. Logstash will not be
-able to start without this file, so please make sure to pass in `--path.settings` if you are starting Logstash manually
-after installing it via a package (RPM, DEB).
-
-[source,bash]
-----------------------------------
-bin/logstash --path.settings /path/to/logstash.yml
-----------------------------------
+* The setting `config.reload.interval` has been changed to use time value strings such as `5m`, `10s` etc.
+  Previously, users had to convert this to a millisecond time value themselves. 
 
 [float]
-==== URL Changes for DEB/RPM Packages
+==== RPM/Deb package changes
 
-The previous `packages.elastic.co` URL has been altered to `artifacts.elastic.co`.
-Ensure you update your repository files before running the upgrade process, or
-your operating system may not see the new packages.
-
+* For `rpm` and `deb` release artifacts, Logstash only globs config files matching `*.conf` pattern in the `conf.d` folder. 
+  Any config files which don't follow this pattern will not be loaded.
+  
 [float]
-==== Release Packages
+==== Command Line Interface behavior
 
-When Logstash 5.0 is installed via DEB or RPM packages, it now uses `/usr/share/logstash` to
-install binaries. Previously it used to install in `/opt/logstash` directory. This change was done to make the user experience consistent with other products in the Elastic Stack.
+* The `-e` and `-f` CLI options are now mutually exclusive. This also applies to the corresponding long form options `config.string` and 
+  `path.config`. This means config provided via `-e` will no longer be appended to the config provided via `-f`.
+* Configuration provided with `-e` or `config.string` will not be appended with `stdin` input and `stdout` output automatically.
 
-[cols="3", options="header"]
-|===
-| |DEB |RPM
-|Logstash 2.x
-|`/opt/logstash`
-|`/opt/logstash`
-|Logstash 5.0
-|`/usr/share/logstash`
-|`/usr/share/logstash`
-|===
+==== List of plugins bundled with Logstash
 
-A complete directory layout is described in <<dir-layout>>. This will likely impact any scripts that you may have written
-to support installing or manipulating Logstash, such as via Puppet.
-
-[float]
-==== Default Logging Level
-
-The default log severity level changed to `INFO` instead of `WARN` to match Elasticsearch. Existing logs
-(in core and plugins) were too noisy at the `INFO` level, so we audited our log messages and switched some of them to
-`DEBUG` level.
-
-You can use the new `logstash.yml` file to configure the `log.level` setting or continue to pass the new
-`--log.level` command line flag.
-
-[source,bash]
-----------------------------------
-bin/logstash --log.level warn
-----------------------------------
-
-[float]
-==== Plugin Manager Renamed
-
-`bin/plugin` has been renamed to `bin/logstash-plugin`. This occurred in Logstash 2.3 and it was mainly prevent `PATH` being
-polluted when other components of the Elastic Stack are installed on the same machine. Also, this provides a foundation
-for future change which will allow Elastic Stack packs to be installed via this script.
-
-Logstash 5.0 also adds a `remove` option, which is an alias for the now-deprecated `uninstall` option.
-
-As with earlier releases, the updated script allows both online and offline plugin installation. For example, to install a
-plugin named “my-plugin”, it’s as simple as running:
-
-[source,bash]
-----------------------------------
-bin/logstash-plugin install my-plugin
-----------------------------------
-
-Similar to the package changes, this is likely to impact and scripts that have been written to follow Logstash
-installations.
-
-Like earlier releases of Logstash, most plugins are bundled directly with Logstash, so no additional action is required
-while upgrading from earlier Logstash releases. However, if you are attempting to install a non-bundled plugin, then make
-sure that it supports Logstash 5.0 before upgrading!
-
-[float]
-==== Logstash with All Plugins Download
-
-The Logstash All Plugins download option has been removed. For users previously using this option as a convenience for
-offline plugin management purposes (air-gapped environments), please see the <<offline-plugins>> documentation page.
-
-There were 17 plugins removed from 5.0 default bundle. These plugins can still be installed manually for use:
+The following plugins were removed from 5.0 default bundle based on usage data collected by us. These plugins can still be installed 
+manually for use:
 
 * logstash-codec-oldlogstashjson
-* logstash-input-eventlog
+* logstash-input-couchdb_changes
+* logstash-input-irc
 * logstash-input-log4j
-* logstash-input-zeromq
-* logstash-filter-anonymize
-* logstash-filter-checksum
-* logstash-filter-multiline
-* logstash-output-email
-* logstash-output-exec
-* logstash-output-ganglia
-* logstash-output-gelf
-* logstash-output-hipchat
-* logstash-output-juggernaut
-* logstash-output-lumberjack
-* logstash-output-nagios_nsca
-* logstash-output-opentsdb
-* logstash-output-zeromq
-
-[float]
-==== Command Line Interface
-
-Some CLI Options changed in Logstash 5.0. If you were using the “long form” of the <<command-line-flags,options>>,
-then this will impact the way that you launch Logstash. They were changed to match the `logstash.yml` format used to
-simplify future setup, as well as behave in the same way as other products in the Elastic Stack. For example, here’s two
-before-and-after examples. In Logstash 2.x, you may have run something:
-
-[source,bash]
-----------------------------------
-bin/logstash --config my.conf --pipeline-workers 8 <1>
-bin/logstash -f my.conf -w 8 <2>
-----------------------------------
-<1> Long form options `config` and `pipeline-workers` are used here.
-<2> Short form options `f` and `w` (aliases for the former` are used here.
-
-But, in Logstash 5.0, this becomes:
-
-[source,bash]
-----------------------------------
-bin/logstash --path.config my.conf --pipeline.workers 8 <1>
-bin/logstash -f my.conf -w 8 <2>
-----------------------------------
-<1> Long form options are changed to reflect the new options.
-<2> Short form options are unchanged.
-
-NOTE: None of the short form options have changed!
-
-[float]
-==== RSpec testing script
-
-The `rspec` script is no longer bundled with Logstash release artifacts. This script has been used previously to
-run unit tests for validating Logstash configurations. While this was useful to some users, this mechanism assumed that Logstash users
-were familiar with the RSpec framework, which is a Ruby testing framework.
-
-
-[float]
-=== Breaking Changes in Plugins
-
-[float]
-==== Elasticsearch Output `workers` Setting Removed
-
-Starting with Logstash 5.0, the `workers` setting in the Elasticsearch output
-plugin is no longer supported. Pipelines that specify this setting will no
-longer start up. You need to specify the `pipeline.workers` setting at the
-pipeline level instead. For more information about setting
-`pipeline.workers`, see <<logstash-settings-file>>.
-
-[float]
-==== Elasticsearch Output Index Template
-
-The index template for Elasticsearch 5.0 has been changed to reflect
-https://www.elastic.co/guide/en/elasticsearch/reference/5.0/breaking_50_mapping_changes.html[Elasticsearch's mapping changes]. Most
-importantly, the subfield for string multi-fields has changed from `.raw` to `.keyword` to match Elasticsearch's default
-behavior. The impact of this change to various user groups is detailed below:
-
-** New Logstash 5.0 and Elasticsearch 5.0 users: Multi-fields (often called sub-fields) use `.keyword` from the
-outset. In Kibana, you can use `my_field.keyword` to perform aggregations against text-based fields, in the same way that it
-used to be `my_field.raw`.
-** Existing users with custom templates: Using a custom template means that you control the template completely, and our
-template changes do not impact you.
-** Existing users with default template: Logstash does not force you to upgrade templates if one already exists. If you
-intend to move to the new template and want to use `.keyword`, you will most likely want to reindex existing data so that it
-also uses the `.keyword` field, unless you are able to transition from `.raw` to `.keyword`. Elasticsearch's
-{ref}/docs-reindex.html[reindexing API] can help move your data from using `.raw` subfields to `.keyword`, thereby avoiding any
-transition time. You _can_ use a custom template to get both `.raw` and `.keyword` so that you can wait until all `.raw` data
-has stopped existing before transitioning to only using `.keyword`; this will waste some storage space and memory, but it does
-help users to avoid having to relearn operations.
-
-[float]
-[[plugin-versions]]
-==== Plugin Versions
-
-Logstash is unique amongst the Elastic Stack with respect to its plugins. Unlike Elasticsearch and Kibana, which both
-require plugins to be targeted to a specific release, Logstash’s plugin ecosystem provides more flexibility so that it can
-support outside ecosystems _within the same release_. Unfortunately,
-that flexibility can cause issues when handling upgrades.
-
-Non-standard plugins must always be checked for compatibility, but some bundled plugins are upgraded in order to remain
-compatible with the tools or frameworks that they use for communication. For example, the
-<<plugins-inputs-kafka, Kafka Input>> and <<plugins-outputs-kafka, Kafka Output>> plugins serve as a primary example of
-such compatibility changes. The latest version of the Kafka plugins is only compatible with Kafka 0.10, but as the
-compatibility matrices show: earlier plugin versions are required for earlier versions of Kafka (e.g., Kafka 0.9).
-
-Automatic upgrades generally lead to improved features and support, but network layer changes like those above may make part
-of your architecture incompatible. You should always test your Logstash configurations in a test environment before
-deploying to production, which would catch these kinds of issues. If you do face such an issue, then you should also check
-the specific plugin’s page to see how to get a compatible, older plugin version if necessary.
-
-For example, if you upgrade to Logstash 5.0, but you want to run against Kafka 0.9, then you need to remove the
-bundled plugin(s) that only work with Kafka 0.10 and replace them:
-
-[source,bash]
-----------------------------------
-bin/logstash-plugin remove logstash-input-kafka
-bin/logstash-plugin remove logstash-output-kafka
-bin/logstash-plugin install --version 4.0.0 logstash-input-kafka
-bin/logstash-plugin install --version 4.0.1 logstash-output-kafka
-----------------------------------
-
-The version numbers were found by checking the compatibility matrix for the individual plugins.
-
-[float]
-==== Kafka Input Configuration Changes
-
-As described in the section <<plugin-versions, above>>, the Kafka plugin has been updated to bring in new consumer features.
-In addition, to the plugin being incompatible with 0.8.x version of the Kafka broker, _most_ of the config options have
-been changed to match the new consumer configurations from the Kafka Java consumer. Here's a list of important config options that have changed:
-
-* `topic_id` is renamed to `topics` and accepts an array of topics to consume from.
-* `zk_connect` has been dropped; you should use `bootstrap_servers`. There is no need for the consumer to go through ZooKeeper.
-* `consumer_id` is renamed to `client_id`.
-
-We recommend users of the Kafka plugin to check the documentation for the latest <<plugins-inputs-kafka, config options>>.
-
-[float]
-==== File Input
-
-The <<plugins-inputs-file, File Input>> `SinceDB` file is now saved at `<path.data>/plugins/inputs/file` location,
-where `path.data` is the path defined in the new `logstash.yml` file.
-
-[cols="2", options="header"]
-|===
-| |Default `sincedb_path`
-|Logstash 2.x
-|`$HOME/.sincedb*`
-|Logstash 5.0
-|`<path.data>/plugins/inputs/file`
-|===
-
-If you have manually specified `sincedb_path` as part of the configuration, this change will not affect you.
-If you are moving from Logstash 2.x to Logstash 5.0, and you would like to use the existing SinceDB file,
-then it must be copied over to `path.data` manually to use the save state (or the path needs to be changed to point to it).
-
-[float]
-==== GeoIP Filter
-
-The GeoIP filter has been updated to use MaxMind's GeoIP2 database. Previous GeoIP version is now considered legacy
-by MaxMind. As a result of this, `.dat` version files are no longer supported, and only `.mmdb` format is supported.
-The new database will not include ASN data in the basic free database file.
-
-Previously, when the filter encountered an IP address for which there were no results in the database, the event
-would just pass through the filter without modification. It will now add a `_geoip_lookup_failure` tag to the
-event which will allow for some subsequent stage of the pipeline to identify those events and perform some other
-operation. To simply get the same behavior as the earlier versions, just add a filter conditional on that tag
-which then drops the tag from the event.
-
-[float]
-=== Ruby Filter and Custom Plugin Developers
-
-With the migration to the new <<event-api>>, we have changed how you can access internal data compared to previous release.
-The `event` object no longer returns a reference to the data. Instead, it returns a copy. This might change how you perform
-manipulation of your data, especially when working with nested hashes. When working with nested hashes, it’s recommended that
-you use the <<logstash-config-field-references, `field reference` syntax>> instead of using multiple square brackets.
-
-As part of this change, Logstash has introduced new Getter/Setter APIs for accessing information in the `event` object.
-
-**Examples:**
-
-Prior to Logstash 5.0, you may have used Ruby filters like so:
-
-[source, js]
-----------------------------------
-filter {
-  ruby {
-    code => "event['name'] = 'Logstash'"
-  }
-  ruby {
-    code => "event['product']['version'] = event['major'] + '.' + event['minor']"
-  }
-}
-----------------------------------
-
-The above syntax, which uses the `event` object as a reference, is no longer supported in
-Logstash 5.0. Fortunately, the change to make it work is very simple:
-
-[source, js]
-----------------------------------
-filter {
-  ruby {
-    code => "event.set('name', 'Logstash')"
-  }
-  ruby {
-    code => "event.set('[product][version]', event.get('major') + '.' + event.get('minor'))"
-  }
-}
-----------------------------------
-
-NOTE: Moving from the old syntax to the new syntax, it can be easy to miss that `['product']['version']` became
-`'[product][version]'`. The quotes moved from inside of the square brackets to outside of the square brackets!
-
-The <<event-api>> documentation describes the available syntax in great detail.
+* logstash-input-lumberjack
+* logstash-filter-uuid
+* logstash-output-xmpp
+* logstash-output-irc
+* logstash-output-statsd
