@@ -1,6 +1,6 @@
 {
   "host": "localhost",
-  "version": "6.0.0-alpha3",
+  "version": "7.0.0-alpha1",
   "http_address": "127.0.0.1:9600",
   "id": "8bbabc13-ea58-4dcd-b94e-90ae5f692c17",
   "name": "localhost",
