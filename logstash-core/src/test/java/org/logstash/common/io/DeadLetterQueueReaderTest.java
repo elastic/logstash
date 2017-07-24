@@ -134,9 +134,63 @@ public class DeadLetterQueueReaderTest {
         assertThat(entry.getReason(), equalTo("543"));
     }
 
+
     @Test
-    public void testInvalidDirectory()  throws Exception {
-        DeadLetterQueueReader reader = new DeadLetterQueueReader(dir);
-        assertThat(reader.pollEntry(100), is(nullValue()));
+    public void testWriteStopSmallWriteSeekByTimestamp() throws Exception {
+        DeadLetterQueueWriter writeManager = new DeadLetterQueueWriter(dir, 10000000, 10000000);
+        Event event = new Event(Collections.emptyMap());
+        Timestamp target = null;
+        long currentEpoch = System.currentTimeMillis();
+
+        for (int i = 0; i < 100; i++) {
+            DLQEntry entry = new DLQEntry(event, "foo", "bar", String.valueOf(i), new Timestamp(currentEpoch++));
+            writeManager.writeEntry(entry);
+            target = entry.getEntryTime();
+        }
+        writeManager.close();
+
+        writeManager = new DeadLetterQueueWriter(dir, 10000000, 10000000);
+
+        for (int i = 200; i < 300; i++){
+            DLQEntry entry = new DLQEntry(event, "foo", "bar", String.valueOf(i), new Timestamp(currentEpoch++));
+            writeManager.writeEntry(entry);
+        }
+        writeManager.close();
+
+        DeadLetterQueueReader readManager = new DeadLetterQueueReader(dir);
+        readManager.seekToNextEvent(new Timestamp(target));
+        DLQEntry readEntry = readManager.pollEntry(100);
+        assertThat(readEntry.getReason(), equalTo("99"));
+        assertThat(readEntry.getEntryTime().toIso8601(), equalTo(target.toIso8601()));
     }
+
+    @Test
+    public void testWriteStopBigWriteSeekByTimestamp() throws Exception {
+        DeadLetterQueueWriter writeManager = new DeadLetterQueueWriter(dir, 10000000, 10000000);
+        Event event = new Event(Collections.emptyMap());
+        Timestamp target = null;
+        long currentEpoch = System.currentTimeMillis();
+
+        for (int i = 0; i < 100; i++) {
+            DLQEntry entry = new DLQEntry(event, "foo", "bar", String.valueOf(i), new Timestamp(currentEpoch++));
+            writeManager.writeEntry(entry);
+            target = entry.getEntryTime();
+        }
+        writeManager.close();
+
+        writeManager = new DeadLetterQueueWriter(dir, 10000000, 10000000);
+
+        for (int i = 200; i < 3000; i++){
+            DLQEntry entry = new DLQEntry(event, "foo", "bar", String.valueOf(i), new Timestamp(currentEpoch++));
+            writeManager.writeEntry(entry);
+        }
+        writeManager.close();
+
+        DeadLetterQueueReader readManager = new DeadLetterQueueReader(dir);
+        readManager.seekToNextEvent(new Timestamp(target));
+        DLQEntry readEntry = readManager.pollEntry(100);
+        assertThat(readEntry.getReason(), equalTo("99"));
+        assertThat(readEntry.getEntryTime().toIso8601(), equalTo(target.toIso8601()));
+    }
+
 }
