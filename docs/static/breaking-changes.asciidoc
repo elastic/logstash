@@ -27,6 +27,7 @@ These changes can impact any instance of Logstash and are plugin agnostic, but o
   `path.config`. This means any configurations  provided via `-e` will no longer be appended to the configurations provided via `-f`.
 * Configurations provided with `-f` or `config.path` will not be appended with `stdin` input and `stdout` output automatically.
 
+[float]
 ==== List of plugins bundled with Logstash
 
 The following plugins were removed from the 5.0 default bundle based on usage data. You can still install these plugins manually:
