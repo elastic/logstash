@@ -57,24 +57,6 @@ module LogStash; module Util
     end
     alias_method(:<<, :push)
 
-    # TODO - fix doc for this noop method
-    # Offer an object to the queue, wait for the specified amount of time.
-    # If adding to the queue was successful it will return true, false otherwise.
-    #
-    # @param [Object] Object to add to the queue
-    # @param [Integer] Time in milliseconds to wait before giving up
-    # @return [Boolean] True if adding was successful if not it return false
-    def offer(obj, timeout_ms)
-      raise NotImplementedError.new("The offer method is not implemented. There is no non blocking write operation yet.")
-    end
-
-    # Blocking
-    def take
-      check_closed("read a batch")
-      # TODO - determine better arbitrary timeout millis
-      @queue.read_batch(1, 200).get_elements.first
-    end
-
     # Block for X millis
     def poll(millis)
       check_closed("read")
