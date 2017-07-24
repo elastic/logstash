@@ -4,6 +4,11 @@
 This section discusses the changes that you need to be aware of when migrating to Logstash 6.0.0 from the previous major releases.
 
 [float]
+=== Changes in Logstash Core
+
+These changes can impact any instance of Logstash and are plugin agnostic, but only if you are using the features that are impacted.
+
+[float]
 ==== Application Settings
 
 * The setting `config.reload.interval` has been changed to use time value strings such as `5m`, `10s` etc.
