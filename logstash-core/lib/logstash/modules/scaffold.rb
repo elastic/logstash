@@ -16,7 +16,7 @@ module LogStash module Modules class Scaffold
   def initialize(name, directory)
     @module_name = name
     @directory = directory  # this is the 'configuration folder in the GEM root.'
-    @kibana_version_parts = "5.6.0".split('.') # this is backup in case kibana client fails to connect
+    @kibana_version_parts = "5.7.0".split('.') # this is backup in case kibana client fails to connect
   end
 
   def add_kibana_version(version_parts)
