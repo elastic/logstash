@@ -80,11 +80,7 @@ public class RecordIOReader {
         int matchingBlock;
         int lowBlock = 0;
         int highBlock = (int) (channel.size() - VERSION_SIZE) / BLOCK_SIZE;
-
-        if (highBlock == 0) {
-            return null;
-        }
-
+        
         while (lowBlock < highBlock) {
             int middle = (int) Math.ceil((highBlock + lowBlock) / 2.0);
             seekToBlock(middle);
