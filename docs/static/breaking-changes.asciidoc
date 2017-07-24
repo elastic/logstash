@@ -1,7 +1,7 @@
 [[breaking-changes]]
 == Breaking changes
 
-This section discusses the changes that you need to be aware of when migrating to Logstash 6.0.0 from the previous major releases of Logstash.
+This section discusses the changes that you need to be aware of when migrating to Logstash 6.0.0 from the previous major releases.
 
 [float]
 ==== Application Settings
@@ -12,20 +12,19 @@ This section discusses the changes that you need to be aware of when migrating t
 [float]
 ==== RPM/Deb package changes
 
-* For `rpm` and `deb` release artifacts, Logstash only globs config files matching `*.conf` pattern in the `conf.d` folder. 
-  Any config files which don't follow this pattern will not be loaded.
+* For `rpm` and `deb` release artifacts, config files that match the `*.conf` glob pattern must be in the conf.d folder, 
+  or the files will not be loaded.
   
 [float]
 ==== Command Line Interface behavior
 
 * The `-e` and `-f` CLI options are now mutually exclusive. This also applies to the corresponding long form options `config.string` and 
-  `path.config`. This means config provided via `-e` will no longer be appended to the config provided via `-f`.
-* Configuration provided with `-e` or `config.string` will not be appended with `stdin` input and `stdout` output automatically.
+  `path.config`. This means any configurations  provided via `-e` will no longer be appended to the configurations provided via `-f`.
+* Configurations provided with `-f` or `config.path` will not be appended with `stdin` input and `stdout` output automatically.
 
 ==== List of plugins bundled with Logstash
 
-The following plugins were removed from 5.0 default bundle based on usage data collected by us. These plugins can still be installed 
-manually for use:
+The following plugins were removed from the 5.0 default bundle based on usage data. You can still install these plugins manually:
 
 * logstash-codec-oldlogstashjson
 * logstash-input-couchdb_changes
