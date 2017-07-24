@@ -18,7 +18,7 @@ describe "Test Logstash service when config reload is enabled" do
   let(:timeout_seconds) { 5 }
   let(:initial_port) { random_port }
   let(:reload_port) { random_port }
-  let(:retry_attempts) { 10 }
+  let(:retry_attempts) { 60 }
   let(:output_file1) { Stud::Temporary.file.path }
   let(:output_file2) { Stud::Temporary.file.path }
   let(:sample_data) { '74.125.176.147 - - [11/Sep/2014:21:50:37 +0000] "GET /?flav=rss20 HTTP/1.1" 200 29941 "-" "FeedBurner/1.0 (http://www.FeedBurner.com)"' }
