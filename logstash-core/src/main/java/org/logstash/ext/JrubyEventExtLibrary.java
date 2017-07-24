@@ -1,7 +1,15 @@
 package org.logstash.ext;
 
-import org.logstash.*;
-import org.jruby.*;
+import java.io.IOException;
+import java.util.Map;
+import org.jruby.Ruby;
+import org.jruby.RubyArray;
+import org.jruby.RubyBoolean;
+import org.jruby.RubyClass;
+import org.jruby.RubyHash;
+import org.jruby.RubyModule;
+import org.jruby.RubyObject;
+import org.jruby.RubyString;
 import org.jruby.anno.JRubyClass;
 import org.jruby.anno.JRubyMethod;
 import org.jruby.exceptions.RaiseException;
@@ -12,9 +20,11 @@ import org.jruby.runtime.ObjectAllocator;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.jruby.runtime.load.Library;
-
-import java.io.IOException;
-import java.util.Map;
+import org.logstash.ConvertedMap;
+import org.logstash.Event;
+import org.logstash.PathCache;
+import org.logstash.Rubyfier;
+import org.logstash.Valuefier;
 
 public class JrubyEventExtLibrary implements Library {
 
@@ -57,8 +67,8 @@ public class JrubyEventExtLibrary implements Library {
         }
     }
 
-    @JRubyClass(name = "Event", parent = "Object")
-    public static class RubyEvent extends RubyObject {
+    @JRubyClass(name = "Event")
+    public static final class RubyEvent extends RubyObject {
         private Event event;
 
         public RubyEvent(Ruby runtime, RubyClass klass) {
@@ -88,23 +98,14 @@ public class JrubyEventExtLibrary implements Library {
 
         // def initialize(data = {})
         @JRubyMethod(name = "initialize", optional = 1)
-        public IRubyObject ruby_initialize(ThreadContext context, IRubyObject[] args)
-        {
+        public IRubyObject ruby_initialize(ThreadContext context, IRubyObject[] args) {
             args = Arity.scanArgs(context.runtime, args, 0, 1);
             IRubyObject data = args[0];
-
-            if (data == null || data.isNil()) {
-                this.event = new Event();
-            } else if (data instanceof RubyHash) {
+            if (data instanceof RubyHash) {
                 this.event = new Event(ConvertedMap.newFromRubyHash((RubyHash) data));
-            } else if (data instanceof MapJavaProxy) {
-                this.event = new Event(ConvertedMap.newFromMap(
-                    (Map)((MapJavaProxy)data).getObject())
-                );
             } else {
-                throw context.runtime.newTypeError("wrong argument type " + data.getMetaClass() + " (expected Hash)");
+                initializeFallback(context, data);
             }
-
             return context.nil;
         }
 
@@ -292,6 +293,26 @@ public class JrubyEventExtLibrary implements Library {
             }
             this.event.setTimestamp(((JrubyTimestampExtLibrary.RubyTimestamp)value).getTimestamp());
             return value;
+        }
+
+        /**
+         * Cold path for the Ruby constructor
+         * {@link JrubyEventExtLibrary.RubyEvent#ruby_initialize(ThreadContext, IRubyObject[])} for
+         * when its argument is not a {@link RubyHash}.
+         * @param context Ruby {@link ThreadContext}
+         * @param data Either {@code null}, {@link org.jruby.RubyNil} or an instance of
+         * {@link MapJavaProxy}
+         */
+        private void initializeFallback(final ThreadContext context, final IRubyObject data) {
+            if (data == null || data.isNil()) {
+                this.event = new Event();
+            } else if (data instanceof MapJavaProxy) {
+                this.event = new Event(ConvertedMap.newFromMap(
+                    (Map)((MapJavaProxy)data).getObject())
+                );
+            } else {
+                throw context.runtime.newTypeError("wrong argument type " + data.getMetaClass() + " (expected Hash)");
+            }
         }
     }
 }
