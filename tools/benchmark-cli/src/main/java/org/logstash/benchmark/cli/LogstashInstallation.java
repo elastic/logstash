@@ -127,8 +127,9 @@ public interface LogstashInstallation {
             );
             final Path lsbin = location.resolve("bin").resolve("logstash");
             LsBenchFileUtil.ensureExecutable(lsbin.toFile());
+            final File output = Files.createTempFile(null, null).toFile();
             final Process process = pbuilder.command(lsbin.toString(), "-w", "2", "-f", cfg.toString()).redirectOutput(
-                ProcessBuilder.Redirect.to(new File("/dev/null"))
+                ProcessBuilder.Redirect.to(output)
             ).start();
             if (data != null) {
                 try (final InputStream file = new FileInputStream(data);
@@ -140,6 +141,7 @@ public interface LogstashInstallation {
                 throw new IllegalStateException("Logstash failed to start!");
             }
             LsBenchFileUtil.ensureDeleted(cfg.toFile());
+            LsBenchFileUtil.ensureDeleted(output);
         }
 
         @Override
