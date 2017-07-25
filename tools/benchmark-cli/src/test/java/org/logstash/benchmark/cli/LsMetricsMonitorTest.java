@@ -2,14 +2,16 @@ package org.logstash.benchmark.cli;
 
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.EnumMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import org.apache.commons.io.IOUtils;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
 import org.junit.Rule;
@@ -30,11 +32,7 @@ public final class LsMetricsMonitorTest {
     public void parsesFilteredCount() throws Exception {
         final String path = "/_node/stats/?pretty";
         http.stubFor(WireMock.get(WireMock.urlEqualTo(path)).willReturn(WireMock.okJson(
-            new String(
-                Files.readAllBytes(
-                    Paths.get(LsMetricsMonitorTest.class.getResource("metrics.json").getPath()
-                    ))
-                , StandardCharsets.UTF_8)
+            metricsFixture()
         )));
         final ExecutorService executor = Executors.newSingleThreadExecutor();
         try {
@@ -54,11 +52,7 @@ public final class LsMetricsMonitorTest {
     public void parsesCpuUsage() throws Exception {
         final String path = "/_node/stats/?pretty";
         http.stubFor(WireMock.get(WireMock.urlEqualTo(path)).willReturn(WireMock.okJson(
-            new String(
-                Files.readAllBytes(
-                    Paths.get(LsMetricsMonitorTest.class.getResource("metrics.json").getPath()
-                    ))
-                , StandardCharsets.UTF_8)
+            metricsFixture()
         )));
         final ExecutorService executor = Executors.newSingleThreadExecutor();
         try {
@@ -72,5 +66,14 @@ public final class LsMetricsMonitorTest {
         } finally {
             executor.shutdownNow();
         }
+    }
+
+    private static String metricsFixture() throws IOException {
+        final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        try (final InputStream input = LsMetricsMonitorTest.class
+            .getResourceAsStream("metrics.json")) {
+            IOUtils.copy(input, baos);
+        }
+        return baos.toString(StandardCharsets.UTF_8.name());
     }
 }
