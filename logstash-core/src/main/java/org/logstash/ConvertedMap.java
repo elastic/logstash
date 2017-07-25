@@ -8,6 +8,8 @@ import org.jruby.runtime.builtin.IRubyObject;
 
 public final class ConvertedMap extends HashMap<String, Object> {
 
+    private static final long serialVersionUID = -4651798808586901122L;
+
     private ConvertedMap(final int size) {
         super((size << 2) / 3 + 2);
     }
