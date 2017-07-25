@@ -52,7 +52,7 @@
 #-Djna.nosys=true
 
 # Turn on JRuby invokedynamic
--Djruby.compile.invokedynamic=true
+# -Djruby.compile.invokedynamic=true
 
 ## heap dumps
 
