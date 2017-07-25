@@ -19,14 +19,12 @@
 
 package org.logstash;
 
+import java.io.IOException;
+import java.nio.ByteBuffer;
 import org.logstash.ackedqueue.Queueable;
 
-import java.io.IOException;
-import java.io.Serializable;
-import java.nio.ByteBuffer;
 
-
-public class DLQEntry implements Cloneable, Serializable, Queueable {
+public class DLQEntry implements Cloneable, Queueable {
 
     private final Event event;
     private final String pluginType;

@@ -11,6 +11,8 @@ import java.util.*;
  */
 public class TopologicalSort {
     public static class UnexpectedGraphCycleError extends Exception {
+        private static final long serialVersionUID = 1778155790783320839L;
+
         UnexpectedGraphCycleError(Graph g) {
             super("Graph has cycles, is not a DAG! " + g);
         }
