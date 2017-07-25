@@ -30,6 +30,7 @@ dependencies {
   compile 'net.sf.jopt-simple:jopt-simple:5.0.3'
   compile group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.3'
   compile group: 'org.apache.commons', name: 'commons-compress', version: '1.14'
+  compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.6'
   compile group: 'commons-io', name: 'commons-io', version: '2.5'
   compile 'com.fasterxml.jackson.core:jackson-core:2.7.4'
   compile 'com.fasterxml.jackson.core:jackson-databind:2.7.4'
