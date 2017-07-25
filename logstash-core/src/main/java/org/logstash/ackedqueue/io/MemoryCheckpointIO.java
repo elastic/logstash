@@ -28,7 +28,7 @@ public class MemoryCheckpointIO implements CheckpointIO {
     public Checkpoint read(String fileName) throws IOException {
 
         Checkpoint cp = null;
-        Map<String, Checkpoint> ns = this.sources.get(dirPath);
+        Map<String, Checkpoint> ns = sources.get(dirPath);
         if (ns != null) {
            cp = ns.get(fileName);
         }
@@ -45,17 +45,17 @@ public class MemoryCheckpointIO implements CheckpointIO {
 
     @Override
     public void write(String fileName, Checkpoint checkpoint) throws IOException {
-        Map<String, Checkpoint> ns = this.sources.get(dirPath);
+        Map<String, Checkpoint> ns = sources.get(dirPath);
         if (ns == null) {
             ns = new HashMap<>();
-            this.sources.put(this.dirPath, ns);
+            sources.put(this.dirPath, ns);
         }
         ns.put(fileName, checkpoint);
     }
 
     @Override
     public void purge(String fileName) {
-        Map<String, Checkpoint> ns = this.sources.get(dirPath);
+        Map<String, Checkpoint> ns = sources.get(dirPath);
         if (ns != null) {
            ns.remove(fileName);
         }
@@ -63,7 +63,7 @@ public class MemoryCheckpointIO implements CheckpointIO {
 
     @Override
     public void purge() {
-        this.sources.remove(this.dirPath);
+        sources.remove(this.dirPath);
     }
 
     // @return the head page checkpoint file name

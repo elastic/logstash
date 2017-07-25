@@ -13,6 +13,7 @@ import java.util.stream.Stream;
  */
 public class ShortestPath {
     static class InvalidShortestPathArguments extends Exception {
+        private static final long serialVersionUID = -1493537067800744231L;
         private final Collection<Vertex> invalidVertices;
 
         public InvalidShortestPathArguments(Collection<Vertex> invalidVertices) {

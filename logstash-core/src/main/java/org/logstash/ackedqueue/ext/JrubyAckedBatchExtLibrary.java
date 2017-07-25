@@ -33,8 +33,9 @@ public class JrubyAckedBatchExtLibrary implements Library {
         clazz.defineAnnotatedMethods(RubyAckedBatch.class);
     }
 
-    @JRubyClass(name = "AckedBatch", parent = "Object")
+    @JRubyClass(name = "AckedBatch")
     public static class RubyAckedBatch extends RubyObject {
+        private static final long serialVersionUID = -3118949118637372130L;
         private Batch batch;
 
         public RubyAckedBatch(Ruby runtime, RubyClass klass) {

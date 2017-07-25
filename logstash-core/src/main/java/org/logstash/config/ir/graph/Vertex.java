@@ -42,6 +42,8 @@ public abstract class Vertex implements SourceComponent, HashableWithSource {
     public abstract Vertex copy();
 
     public static class InvalidEdgeTypeException extends InvalidIRException {
+        private static final long serialVersionUID = -2707379453144995223L;
+
         public InvalidEdgeTypeException(String s) {
             super(s);
         }

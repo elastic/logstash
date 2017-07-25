@@ -35,7 +35,7 @@ public class Valuefier {
         try {
             return BiValues.newBiValue(jp);
         } catch (IllegalArgumentException e) {
-            Class cls = obj.getClass();
+            final Class<?> cls = obj.getClass();
             throw new IllegalArgumentException(String.format(PROXY_ERR_TEMPLATE, cls.getName(), cls.getSimpleName(), obj.getClass().getName()), e);
         }
     }
@@ -44,7 +44,7 @@ public class Valuefier {
         try {
             return BiValues.newBiValue(o);
         } catch (IllegalArgumentException e) {
-            Class cls = o.getClass();
+            final Class<?> cls = o.getClass();
             throw new IllegalArgumentException(String.format(ERR_TEMPLATE, cls.getName(), cls.getSimpleName()), e);
         }
     }

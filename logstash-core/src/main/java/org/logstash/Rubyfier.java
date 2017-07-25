@@ -34,7 +34,7 @@ public final class Rubyfier {
         try {
             return BiValues.newBiValue(input).rubyValue(runtime);
         } catch (IllegalArgumentException e) {
-            Class cls = input.getClass();
+            Class<?> cls = input.getClass();
             throw new IllegalArgumentException(String.format(ERR_TEMPLATE, cls.getName(), cls.getSimpleName()));
         }
     }
@@ -50,7 +50,7 @@ public final class Rubyfier {
 
     private static RubyHash deepMap(Ruby runtime, final Map<?, ?> map) {
         RubyHash hash = RubyHash.newHash(runtime);
-        for (Map.Entry entry : map.entrySet()) {
+        for (Map.Entry<?, ?> entry : map.entrySet()) {
             // Note: RubyHash.put calls JavaUtil.convertJavaToUsableRubyObject on keys and values
             hash.put(entry.getKey(), deep(runtime, entry.getValue()));
         }
