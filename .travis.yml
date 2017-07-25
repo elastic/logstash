@@ -12,9 +12,11 @@ jdk:
   - oraclejdk8
 env:
   - INTEGRATION=false SPEC_OPTS="--order rand --format documentation" JRUBY_OPTS='-Xcompile.invokedynamic=false'
-  - INTEGRATION=true SPEC_OPTS="--order rand --format documentation" JRUBY_OPTS='-Xcompile.invokedynamic=false'
+  - INTEGRATION=true ONLINE=false SPEC_OPTS="--order rand --format documentation" JRUBY_OPTS='-Xcompile.invokedynamic=false'
+  - INTEGRATION=true ONLINE=true SPEC_OPTS="--order rand --format documentation" JRUBY_OPTS='-Xcompile.invokedynamic=false'
   - INTEGRATION=false FEATURE_FLAG=persistent_queues SPEC_OPTS="--order rand --format documentation" JRUBY_OPTS='-Xcompile.invokedynamic=false'
-  - INTEGRATION=true FEATURE_FLAG=persistent_queues SPEC_OPTS="--order rand --format documentation" JRUBY_OPTS='-Xcompile.invokedynamic=false'
+  - INTEGRATION=true ONLINE=true FEATURE_FLAG=persistent_queues SPEC_OPTS="--order rand --format documentation" JRUBY_OPTS='-Xcompile.invokedynamic=false'
+  - INTEGRATION=true ONLINE=false FEATURE_FLAG=persistent_queues SPEC_OPTS="--order rand --format documentation" JRUBY_OPTS='-Xcompile.invokedynamic=false'
 before_install:
   - sudo apt-get update && sudo apt-get install -y docker-ce
   - sudo service docker stop
@@ -29,7 +31,11 @@ script:
   - |+
       if [ "$INTEGRATION" == "true" ]; then
         ci/travis_integration_install.sh
-        ci/travis_integration_run.sh;
+        if [ "$ONLINE" == "true" ]; then
+          ci/travis_integration_run_online.sh
+        else
+          ci/travis_integration_run_offline.sh
+        fi
       else
         rake test:core
       fi
