@@ -14,17 +14,23 @@ This section summarizes the changes in the following releases:
 [float]
 ==== Input Plugins
 
-*`Dead Letter Queue`*: Re-published this plugin to include jar artifacts. Without this, the plugin couldn't be used with Logstash.
+*`Dead Letter Queue`*: 
+
+* Re-published this plugin to include jar artifacts. Without this, the plugin couldn't be used with Logstash.
 
 [float]
 ==== Filter Plugins
 
-*`Dissect`*: Re-published this plugin to include jar artifacts. Without this, the plugin couldn't be used with Logstash.
+*`Dissect`*: 
+
+* Re-published this plugin to include jar artifacts. Without this, the plugin couldn't be used with Logstash.
 
 [float]
 ==== Output Plugins
 
-*`Elasticsearch`*: We now correctly handle special characters in the password option.
+*`Elasticsearch`*: 
+
+* We now correctly handle special characters in the password option.
 
 [[logstash-5-5-0]]
 === Logstash 5.5.0 Release Notes
