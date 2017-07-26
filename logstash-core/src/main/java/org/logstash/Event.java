@@ -23,8 +23,8 @@ import static org.logstash.ObjectMappers.JSON_MAPPER;
 public final class Event implements Cloneable, Queueable {
 
     private boolean cancelled;
-    private Map<String, Object> data;
-    private Map<String, Object> metadata;
+    private ConvertedMap data;
+    private ConvertedMap metadata;
     private Timestamp timestamp;
     private Accessors accessors;
     private Accessors metadata_accessors;
@@ -43,8 +43,8 @@ public final class Event implements Cloneable, Queueable {
 
     public Event()
     {
-        this.metadata = new HashMap<>();
-        this.data = new HashMap<>();
+        this.metadata = new ConvertedMap(10);
+        this.data = new ConvertedMap(10);
         this.data.put(VERSION, VERSION_ONE);
         this.cancelled = false;
         this.timestamp = new Timestamp();
@@ -75,9 +75,9 @@ public final class Event implements Cloneable, Queueable {
         }
 
         if (this.data.containsKey(METADATA)) {
-            this.metadata = (Map<String, Object>) this.data.remove(METADATA);
+            this.metadata = ConvertedMap.newFromMap((Map) this.data.remove(METADATA));
         } else {
-            this.metadata = new HashMap<>();
+            this.metadata = new ConvertedMap(10);
         }
         this.metadata_accessors = new Accessors(this.metadata);
 
@@ -98,11 +98,11 @@ public final class Event implements Cloneable, Queueable {
         }
     }
 
-    public Map<String, Object> getData() {
+    public ConvertedMap getData() {
         return this.data;
     }
 
-    public Map<String, Object> getMetadata() {
+    public ConvertedMap getMetadata() {
         return this.metadata;
     }
 
@@ -155,7 +155,7 @@ public final class Event implements Cloneable, Queueable {
             // TODO(talevy): check type of timestamp
             this.accessors.set(reference, value);
         } else if (reference.equals(METADATA_BRACKETS) || reference.equals(METADATA)) {
-            this.metadata = (Map<String, Object>) value;
+            this.metadata = ConvertedMap.newFromMap((Map) value);
             this.metadata_accessors = new Accessors(this.metadata);
         } else if (reference.startsWith(METADATA_BRACKETS)) {
             this.metadata_accessors.set(reference.substring(METADATA_BRACKETS.length()), value);
@@ -270,7 +270,7 @@ public final class Event implements Cloneable, Queueable {
 
     @Override
     public Event clone() {
-        return new Event(Cloner.deep(this.data));
+        return new Event(Cloner.<Map>deep(this.data));
     }
 
     public String toString() {
