@@ -165,7 +165,12 @@ public final class DeadLetterQueueWriter implements Closeable {
 
     @Override
     public synchronized void close() throws IOException {
-        this.lock.release();
+        if (this.lock != null){
+            this.lock.release();
+            if (this.lock.channel() != null && this.lock.channel().isOpen()) {
+                this.lock.channel().close();
+            }
+        }
         if (currentWriter != null) {
             currentWriter.close();
         }
