@@ -22,6 +22,15 @@ include::static/managing-multiline-events.asciidoc[]
 :edit_url: https://github.com/elastic/logstash/edit/5.x/docs/static/glob-support.asciidoc
 include::static/glob-support.asciidoc[]
 
+// Working with Logstash Modules
+
+include::static/modules.asciidoc[]
+
+// Working with Filebeat Modules
+
+:edit_url: https://github.com/elastic/logstash/edit/master/docs/static/filebeat-modules.asciidoc
+include::static/filebeat-modules.asciidoc[]
+
 // Data resiliency
 
 :edit_url: https://github.com/elastic/logstash/edit/master/docs/static/resiliency.asciidoc
@@ -32,11 +41,6 @@ include::static/persistent-queues.asciidoc[]
 
 :edit_url: https://github.com/elastic/logstash/edit/master/docs/static/dead-letter-queues.asciidoc
 include::static/dead-letter-queues.asciidoc[]
-
-// Working with Filebeat Modules
-
-:edit_url: https://github.com/elastic/logstash/edit/5.x/docs/static/filebeat-modules.asciidoc
-include::static/filebeat-modules.asciidoc[]
 
 // Transforming Data
 
