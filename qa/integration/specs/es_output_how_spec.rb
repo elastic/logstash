@@ -2,7 +2,7 @@ require_relative '../framework/fixture'
 require_relative '../framework/settings'
 require_relative '../services/logstash_service'
 
-describe "Test Elasticsearch output" do
+describe "Test Elasticsearch output", :dependent => true do
 
   before(:all) {
     @fixture = Fixture.new(__FILE__)

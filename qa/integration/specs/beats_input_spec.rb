@@ -6,7 +6,7 @@ require "rspec/wait"
 require "yaml"
 require "fileutils"
 
-describe "Beat Input" do
+describe "Beat Input", :dependent => true do
   before(:all) do
     @fixture = Fixture.new(__FILE__)
   end

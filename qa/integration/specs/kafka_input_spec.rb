@@ -4,7 +4,7 @@ require_relative '../services/logstash_service'
 require "rspec/wait"
 require "logstash/devutils/rspec/spec_helper"
 
-describe "Test Kafka Input" do
+describe "Test Kafka Input", :dependent => true do
   let(:num_retries) { 60 }
   let(:num_events) { 37 }
 
