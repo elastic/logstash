@@ -25,6 +25,9 @@ public class Valuefier {
     private Valuefier(){}
 
     private static Object convertJavaProxy(JavaProxy jp) {
+        if(jp == null) {
+            return BiValues.NULL_BI_VALUE;
+        }
         Object obj = JavaUtil.unwrapJavaObject(jp);
         if (obj instanceof IRubyObject[]) {
             return ConvertedList.newFromRubyArray((IRubyObject[]) obj);
@@ -42,7 +45,7 @@ public class Valuefier {
 
     public static Object convertNonCollection(Object o) {
         try {
-            return BiValues.newBiValue(o);
+            return o == null ? BiValues.NULL_BI_VALUE : BiValues.newBiValue(o);
         } catch (IllegalArgumentException e) {
             final Class<?> cls = o.getClass();
             throw new IllegalArgumentException(String.format(ERR_TEMPLATE, cls.getName(), cls.getSimpleName()), e);

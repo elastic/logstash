@@ -91,22 +91,19 @@ public class Accessors {
     }
 
     private Object findTarget(FieldReference field) {
-        Object target;
+        final Object target = this.lut.get(field.getReference());
+        return target != null ? target : cacheTarget(field);
+    }
 
-        if ((target = this.lut.get(field.getReference())) != null) {
-            return target;
-        }
-
-        target = this.data;
-        for (String key : field.getPath()) {
+    private Object cacheTarget(final FieldReference field) {
+        Object target = this.data;
+        for (final String key : field.getPath()) {
             target = fetch(target, key);
-            if (! isCollection(target)) {
+            if (!isCollection(target)) {
                 return null;
             }
         }
-
         this.lut.put(field.getReference(), target);
-
         return target;
     }
 

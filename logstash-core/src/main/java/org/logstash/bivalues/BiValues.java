@@ -67,7 +67,7 @@ public enum BiValues {
         return hm;
     }
 
-    private static final NullBiValue NULL_BI_VALUE = NullBiValue.newNullBiValue();
+    public static final NullBiValue NULL_BI_VALUE = NullBiValue.newNullBiValue();
 
     private final BiValueType biValueType;
 
@@ -75,7 +75,7 @@ public enum BiValues {
         this.biValueType = biValueType;
     }
 
-    private static final HashMap<String, String> nameCache = initCache();
+    private static final HashMap<String, String> NAME_CACHE = initCache();
 
     private BiValue build(Object value) {
         return biValueType.build(value);
@@ -85,18 +85,22 @@ public enum BiValues {
         if (o == null) {
             return NULL_BI_VALUE;
         }
-        BiValues bvs = valueOf(fetchName(o));
-        return bvs.build(o);
+        return valueOf(fetchName(o)).build(o);
     }
 
     private static String fetchName(Object o) {
-        String cls = o.getClass().getName();
-        if (nameCache.containsKey(cls)) {
-            return nameCache.get(cls);
+        final String cls = o.getClass().getName();
+        final String name = NAME_CACHE.get(cls);
+        if (name != null) {
+            return name;
         }
-        String toCache = cls.toUpperCase().replace('.', '_');
+        return cacheName(cls);
+    }
+    
+    private static String cacheName(final String cls) {
+        final String toCache = cls.toUpperCase().replace('.', '_');
         // TODO[Guy] log warn that we are seeing a uncached value
-        nameCache.put(cls, toCache);
+        NAME_CACHE.put(cls, toCache);
         return toCache;
     }
 
