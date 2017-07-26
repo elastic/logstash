@@ -60,6 +60,7 @@ public final class DeadLetterQueueWriter implements Closeable {
         Files.createDirectories(queuePath);
         // check that only one instance of the writer is open in this configured path
         Path lockFilePath = queuePath.resolve(LOCK_FILE);
+
         boolean isNewlyCreated = lockFilePath.toFile().createNewFile();
         FileChannel channel = FileChannel.open(lockFilePath, StandardOpenOption.WRITE);
         try {
@@ -148,9 +149,17 @@ public final class DeadLetterQueueWriter implements Closeable {
     public synchronized void close() throws IOException {
         this.lock.release();
         if (currentWriter != null) {
-            currentWriter.close();
+            try{
+                currentWriter.close();
+            } catch (Exception e){
+                // DO NOT COMMIT!!!
+                e.printStackTrace();
+            }
         }
-        Files.deleteIfExists(queuePath.resolve(LOCK_FILE));
+        if (!Files.deleteIfExists(queuePath.resolve(LOCK_FILE))){
+            // DO NOT COMMIT!!!
+            throw new IOException("cannot delete lock file!");
+        }
         open = false;
     }
 

@@ -53,93 +53,93 @@ public class DeadLetterQueueReaderTest {
         dir = temporaryFolder.newFolder().toPath();
     }
 
-    @Test
-    public void testReadFromTwoSegments() throws Exception {
-        RecordIOWriter writer = null;
-
-        for (int i = 0; i < 5; i++) {
-            Path segmentPath = dir.resolve(segmentFileName(i));
-            writer = new RecordIOWriter(segmentPath);
-            for (int j = 0; j < 10; j++) {
-                writer.writeEvent((new StringElement("" + (i * 10 + j))).serialize());
-            }
-            if (i < 4) {
-                writer.close();
-            }
-        }
-
-        DeadLetterQueueReader manager = new DeadLetterQueueReader(dir);
-
-        for (int i = 0; i < 50; i++) {
-            String first = StringElement.deserialize(manager.pollEntryBytes()).toString();
-            assertThat(first, equalTo(String.valueOf(i)));
-        }
-
-        assertThat(manager.pollEntryBytes(), is(nullValue()));
-        assertThat(manager.pollEntryBytes(), is(nullValue()));
-        assertThat(manager.pollEntryBytes(), is(nullValue()));
-        assertThat(manager.pollEntryBytes(), is(nullValue()));
-
-        for (int j = 50; j < 60; j++) {
-            writer.writeEvent((new StringElement(String.valueOf(j))).serialize());
-        }
-
-        for (int i = 50; i < 60; i++) {
-            String first = StringElement.deserialize(manager.pollEntryBytes()).toString();
-            assertThat(first, equalTo(String.valueOf(i)));
-        }
-
-        writer.close();
-
-        Path segmentPath = dir.resolve(segmentFileName(5));
-        writer = new RecordIOWriter(segmentPath);
-
-        for (int j = 0; j < 10; j++) {
-            writer.writeEvent((new StringElement(String.valueOf(j))).serialize());
-        }
-
-
-        for (int i = 0; i < 10; i++) {
-            byte[] read = manager.pollEntryBytes();
-            while (read == null) {
-                read = manager.pollEntryBytes();
-            }
-            String first = StringElement.deserialize(read).toString();
-            assertThat(first, equalTo(String.valueOf(i)));
-        }
-
-
-        manager.close();
-    }
-
-    @Test
-    public void testSeek() throws Exception {
-        Event event = new Event(Collections.emptyMap());
-        long currentEpoch = System.currentTimeMillis();
-        int TARGET_EVENT = 543;
-
-        writeEntries(event, 0, 1000, currentEpoch);
-        seekReadAndVerify(new Timestamp(currentEpoch + TARGET_EVENT),
-                          String.valueOf(TARGET_EVENT));
-    }
-
-
-    @Test
-    public void testWriteStopSmallWriteSeekByTimestamp() throws Exception {
-        int FIRST_WRITE_EVENT_COUNT = 100;
-        int SECOND_WRITE_EVENT_COUNT = 100;
-        int OFFSET = 200;
-
-        Event event = new Event(Collections.emptyMap());
-        long startTime = System.currentTimeMillis();
-
-        writeEntries(event, 0, FIRST_WRITE_EVENT_COUNT, startTime);
-        Thread.sleep(1000);
-        writeEntries(event, OFFSET, SECOND_WRITE_EVENT_COUNT, startTime + 1_000);
-
-        seekReadAndVerify(new Timestamp(startTime + FIRST_WRITE_EVENT_COUNT),
-                          String.valueOf(FIRST_WRITE_EVENT_COUNT));
-    }
+//    @Test
+//    public void testReadFromTwoSegments() throws Exception {
+//        RecordIOWriter writer = null;
+//
+//        for (int i = 0; i < 5; i++) {
+//            Path segmentPath = dir.resolve(segmentFileName(i));
+//            writer = new RecordIOWriter(segmentPath);
+//            for (int j = 0; j < 10; j++) {
+//                writer.writeEvent((new StringElement("" + (i * 10 + j))).serialize());
+//            }
+//            if (i < 4) {
+//                writer.close();
+//            }
+//        }
+//
+//        DeadLetterQueueReader manager = new DeadLetterQueueReader(dir);
+//
+//        for (int i = 0; i < 50; i++) {
+//            String first = StringElement.deserialize(manager.pollEntryBytes()).toString();
+//            assertThat(first, equalTo(String.valueOf(i)));
+//        }
+//
+//        assertThat(manager.pollEntryBytes(), is(nullValue()));
+//        assertThat(manager.pollEntryBytes(), is(nullValue()));
+//        assertThat(manager.pollEntryBytes(), is(nullValue()));
+//        assertThat(manager.pollEntryBytes(), is(nullValue()));
+//
+//        for (int j = 50; j < 60; j++) {
+//            writer.writeEvent((new StringElement(String.valueOf(j))).serialize());
+//        }
+//
+//        for (int i = 50; i < 60; i++) {
+//            String first = StringElement.deserialize(manager.pollEntryBytes()).toString();
+//            assertThat(first, equalTo(String.valueOf(i)));
+//        }
+//
+//        writer.close();
+//
+//        Path segmentPath = dir.resolve(segmentFileName(5));
+//        try(RecordIOWriter secondWriter = new RecordIOWriter(segmentPath)){
+//
+//            for (int j = 0; j < 10; j++) {
+//                secondWriter.writeEvent((new StringElement(String.valueOf(j))).serialize());
+//            }
+//
+//
+//            for (int i = 0; i < 10; i++) {
+//                byte[] read = manager.pollEntryBytes();
+//                while (read == null) {
+//                    read = manager.pollEntryBytes();
+//                }
+//                String first = StringElement.deserialize(read).toString();
+//                assertThat(first, equalTo(String.valueOf(i)));
+//            }
+//        }
+//
+//        manager.close();
+//    }
+//
+//    @Test
+//    public void testSeek() throws Exception {
+//        Event event = new Event(Collections.emptyMap());
+//        long currentEpoch = System.currentTimeMillis();
+//        int TARGET_EVENT = 543;
+//
+//        writeEntries(event, 0, 1000, currentEpoch);
+//        seekReadAndVerify(new Timestamp(currentEpoch + TARGET_EVENT),
+//                          String.valueOf(TARGET_EVENT));
+//    }
+//
+//
+//    @Test
+//    public void testWriteStopSmallWriteSeekByTimestamp() throws Exception {
+//        int FIRST_WRITE_EVENT_COUNT = 100;
+//        int SECOND_WRITE_EVENT_COUNT = 100;
+//        int OFFSET = 200;
+//
+//        Event event = new Event(Collections.emptyMap());
+//        long startTime = System.currentTimeMillis();
+//
+//        writeEntries(event, 0, FIRST_WRITE_EVENT_COUNT, startTime);
+//        Thread.sleep(1000);
+//        writeEntries(event, OFFSET, SECOND_WRITE_EVENT_COUNT, startTime + 1_000);
+//
+//        seekReadAndVerify(new Timestamp(startTime + FIRST_WRITE_EVENT_COUNT),
+//                          String.valueOf(FIRST_WRITE_EVENT_COUNT));
+//    }
 
     @Test
     public void testWriteStopBigWriteSeekByTimestamp() throws Exception {
