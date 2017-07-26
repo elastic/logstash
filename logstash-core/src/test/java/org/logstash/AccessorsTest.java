@@ -1,5 +1,6 @@
 package org.logstash;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -11,6 +12,7 @@ import org.junit.experimental.theories.Theories;
 import org.junit.experimental.theories.Theory;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
+import org.logstash.bivalues.StringBiValue;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -19,9 +21,9 @@ import static org.junit.Assert.assertTrue;
 
 public class AccessorsTest {
 
-    public class TestableAccessors extends Accessors {
+    private static final class TestableAccessors extends Accessors {
 
-        public TestableAccessors(Map<String, Object> data) {
+        public TestableAccessors(ConvertedMap data) {
             super(data);
         }
 
@@ -32,7 +34,7 @@ public class AccessorsTest {
 
     @Test
     public void testBareGet() throws Exception {
-        Map<String, Object> data = new HashMap<>();
+        final ConvertedMap data = new ConvertedMap(1);
         data.put("foo", "bar");
         String reference = "foo";
 
@@ -44,8 +46,9 @@ public class AccessorsTest {
 
     @Test
     public void testAbsentBareGet() throws Exception {
-        Map<String, Object> data = new HashMap<>();
-        data.put("foo", "bar");
+        final Map<Serializable, Object> java = new HashMap<>(1);
+        java.put("foo", "bar");
+        final ConvertedMap data = ConvertedMap.newFromMap(java);
         String reference = "baz";
 
         TestableAccessors accessors = new TestableAccessors(data);
@@ -56,20 +59,21 @@ public class AccessorsTest {
 
     @Test
     public void testBareBracketsGet() throws Exception {
-        Map<String, Object> data = new HashMap<>();
-        data.put("foo", "bar");
+        final Map<Serializable, Object> java = new HashMap<>(1);
+        java.put("foo", "bar");
+        final ConvertedMap data = ConvertedMap.newFromMap(java);
         String reference = "[foo]";
-
         TestableAccessors accessors = new TestableAccessors(data);
         assertNull(accessors.lutGet(reference));
-        assertEquals("bar", accessors.get(reference));
+        assertEquals(new StringBiValue("bar"), accessors.get(reference));
         assertEquals(data, accessors.lutGet(reference));
+
     }
 
     @Test
     public void testDeepMapGet() throws Exception {
-        Map<String, Object> data = new HashMap<>();
-        Map<String, Object> inner = new HashMap<>();
+        final ConvertedMap data = new ConvertedMap(1);
+        Map<String, Object> inner = new ConvertedMap(1);
         data.put("foo", inner);
         inner.put("bar", "baz");
 
@@ -83,8 +87,8 @@ public class AccessorsTest {
 
     @Test
     public void testAbsentDeepMapGet() throws Exception {
-        Map<String, Object> data = new HashMap<>();
-        Map<String, Object> inner = new HashMap<>();
+        final ConvertedMap data = new ConvertedMap(1);
+        Map<String, Object> inner = new ConvertedMap(1);
         data.put("foo", inner);
         inner.put("bar", "baz");
 
@@ -98,8 +102,8 @@ public class AccessorsTest {
 
     @Test
     public void testDeepListGet() throws Exception {
-        Map<String, Object> data = new HashMap<>();
-        List inner = new ArrayList();
+        final ConvertedMap data = new ConvertedMap(1);
+        List inner = new ConvertedList(1);
         data.put("foo", inner);
         inner.add("bar");
 
@@ -113,8 +117,8 @@ public class AccessorsTest {
 
     @Test
     public void testAbsentDeepListGet() throws Exception {
-        Map<String, Object> data = new HashMap<>();
-        List inner = new ArrayList();
+        final ConvertedMap data = new ConvertedMap(1);
+        List inner = new ConvertedList(1);
         data.put("foo", inner);
         inner.add("bar");
 
@@ -133,8 +137,8 @@ public class AccessorsTest {
      */
     @Test
     public void testInvalidIdList() throws Exception {
-        Map<String, Object> data = new HashMap<>();
-        List inner = new ArrayList();
+        final ConvertedMap data = new ConvertedMap(1);
+        List inner = new ConvertedList(1);
         data.put("map1", inner);
         inner.add("obj1");
         inner.add("obj2");
@@ -152,7 +156,7 @@ public class AccessorsTest {
 
     @Test
     public void testBarePut() throws Exception {
-        Map<String, Object> data = new HashMap<>();
+        final ConvertedMap data = new ConvertedMap(1);
         String reference = "foo";
 
         TestableAccessors accessors = new TestableAccessors(data);
@@ -164,7 +168,7 @@ public class AccessorsTest {
 
     @Test
     public void testBareBracketsPut() throws Exception {
-        Map<String, Object> data = new HashMap<>();
+        final ConvertedMap data = new ConvertedMap(1);
         String reference = "[foo]";
 
         TestableAccessors accessors = new TestableAccessors(data);
@@ -176,7 +180,7 @@ public class AccessorsTest {
 
     @Test
     public void testDeepMapSet() throws Exception {
-        Map<String, Object> data = new HashMap<>();
+        final ConvertedMap data = new ConvertedMap(1);
 
         String reference = "[foo][bar]";
 
@@ -189,8 +193,8 @@ public class AccessorsTest {
 
     @Test
     public void testDel() throws Exception {
-        Map<String, Object> data = new HashMap<>();
-        List inner = new ArrayList();
+        final ConvertedMap data = new ConvertedMap(1);
+        List inner = new ConvertedList(1);
         data.put("foo", inner);
         inner.add("bar");
         data.put("bar", "baz");
@@ -205,7 +209,7 @@ public class AccessorsTest {
 
     @Test
     public void testNilInclude() throws Exception {
-        Map<String, Object> data = new HashMap<>();
+        ConvertedMap data = new ConvertedMap(1);
         data.put("nilfield", null);
         TestableAccessors accessors = new TestableAccessors(data);
         assertTrue(accessors.includes("nilfield"));
@@ -213,7 +217,7 @@ public class AccessorsTest {
 
     @Test
     public void testInvalidPath() throws Exception {
-        Map<String, Object> data = new HashMap<>();
+        ConvertedMap data = new ConvertedMap(1);
         Accessors accessors = new Accessors(data);
 
         assertEquals(1, accessors.set("[foo]", 1));
@@ -222,7 +226,7 @@ public class AccessorsTest {
 
     @Test
     public void testStaleTargetCache() throws Exception {
-        Map<String, Object> data = new HashMap<>();
+        ConvertedMap data = new ConvertedMap(1);
 
         Accessors accessors = new Accessors(data);
         assertNull(accessors.get("[foo][bar]"));
