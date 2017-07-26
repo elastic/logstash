@@ -9,7 +9,7 @@ import static org.logstash.Valuefier.convert;
 
 public final class ConvertedList extends ArrayList<Object> {
 
-    private ConvertedList(final int size) {
+    ConvertedList(final int size) {
         super(size);
     }
 

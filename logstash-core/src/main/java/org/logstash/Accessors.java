@@ -4,12 +4,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class Accessors {
+class Accessors {
 
-    private Map<String, Object> data;
+    private final ConvertedMap data;
     protected Map<String, Object> lut;
 
-    public Accessors(Map<String, Object> data) {
+    public Accessors(final ConvertedMap data) {
         this.data = data;
         this.lut = new HashMap<>(); // reference -> target LUT
     }
@@ -24,16 +24,16 @@ public class Accessors {
         final FieldReference field = PathCache.cache(reference);
         final Object target = findCreateTarget(field);
         final String key = field.getKey();
-        if (target instanceof Map) {
-            ((Map<String, Object>) target).put(key, value);
-        } else if (target instanceof List) {
+        if (target instanceof ConvertedMap) {
+            ((ConvertedMap) target).put(key, value);
+        } else if (target instanceof ConvertedList) {
             int i;
             try {
                 i = Integer.parseInt(key);
             } catch (NumberFormatException e) {
                 return null;
             }
-            int size = ((List<Object>) target).size();
+            int size = ((ConvertedList) target).size();
             if (i >= size) {
                 // grow array by adding trailing null items
                 // this strategy reflects legacy Ruby impl behaviour and is backed by specs
@@ -45,7 +45,7 @@ public class Accessors {
                 ((List<Object>) target).add(value);
             } else {
                 int offset = listIndex(i, ((List) target).size());
-                ((List<Object>) target).set(offset, value);
+                ((ConvertedList) target).set(offset, value);
             }
         } else {
             throw newCollectionException(target);
@@ -57,9 +57,9 @@ public class Accessors {
         FieldReference field = PathCache.cache(reference);
         Object target = findTarget(field);
         if (target != null) {
-            if (target instanceof Map) {
-                return ((Map<String, Object>) target).remove(field.getKey());
-            } else if (target instanceof List) {
+            if (target instanceof ConvertedMap) {
+                return ((ConvertedMap) target).remove(field.getKey());
+            } else if (target instanceof ConvertedList) {
                 try {
                     int i = Integer.parseInt(field.getKey());
                     int offset = listIndex(i, ((List) target).size());
@@ -78,11 +78,11 @@ public class Accessors {
         final FieldReference field = PathCache.cache(reference);
         final Object target = findTarget(field);
         final String key = field.getKey();
-        return target instanceof Map && ((Map<String, Object>) target).containsKey(key) ||
-            target instanceof List && foundInList(key, (List<Object>) target);
+        return target instanceof ConvertedMap && ((ConvertedMap) target).containsKey(key) ||
+            target instanceof ConvertedList && foundInList(key, (ConvertedList) target);
     }
 
-    private static boolean foundInList(final String key, final List<Object> target) {
+    private static boolean foundInList(final String key, final ConvertedList target) {
         try {
             return foundInList(target, Integer.parseInt(key));
         } catch (NumberFormatException e) {
@@ -125,14 +125,14 @@ public class Accessors {
         for (String key : field.getPath()) {
             Object result = fetch(target, key);
             if (result == null) {
-                result = new HashMap<String, Object>();
-                if (target instanceof Map) {
-                    ((Map<String, Object>)target).put(key, result);
-                } else if (target instanceof List) {
+                result = new ConvertedMap(1);
+                if (target instanceof ConvertedMap) {
+                    ((ConvertedMap) target).put(key, result);
+                } else if (target instanceof ConvertedList) {
                     try {
                         int i = Integer.parseInt(key);
                         // TODO: what about index out of bound?
-                        ((List<Object>)target).set(i, result);
+                        ((ConvertedList) target).set(i, result);
                     } catch (NumberFormatException e) {
                         continue;
                     }
@@ -148,7 +148,7 @@ public class Accessors {
         return target;
     }
 
-    private static boolean foundInList(List<Object> target, int index) {
+    private static boolean foundInList(ConvertedList target, int index) {
         try {
             int offset = listIndex(index, target.size());
             return target.get(offset) != null;
@@ -159,13 +159,12 @@ public class Accessors {
     }
 
     private static Object fetch(Object target, String key) {
-        if (target instanceof Map) {
-            Object result = ((Map<String, Object>) target).get(key);
-            return result;
-        } else if (target instanceof List) {
+        if (target instanceof ConvertedMap) {
+            return ((ConvertedMap) target).get(key);
+        } else if (target instanceof ConvertedList) {
             try {
-                int offset = listIndex(Integer.parseInt(key), ((List) target).size());
-                return ((List<Object>) target).get(offset);
+                int offset = listIndex(Integer.parseInt(key), ((ConvertedList) target).size());
+                return ((ConvertedList) target).get(offset);
             } catch (IndexOutOfBoundsException|NumberFormatException e) {
                 return null;
             }
@@ -177,14 +176,11 @@ public class Accessors {
     }
 
     private static boolean isCollection(Object target) {
-        if (target == null) {
-            return false;
-        }
-        return (target instanceof Map || target instanceof List);
+        return target instanceof ConvertedList || target instanceof ConvertedMap;
     }
 
     private static ClassCastException newCollectionException(Object target) {
-        return new ClassCastException("expecting List or Map, found "  + target.getClass());
+        return new ClassCastException("expecting ConvertedList or ConvertedMap, found "  + target.getClass());
     }
 
     /* 
