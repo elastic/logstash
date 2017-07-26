@@ -165,12 +165,33 @@ public final class DeadLetterQueueWriter implements Closeable {
 
     @Override
     public synchronized void close() throws IOException {
-        this.lock.release();
         if (currentWriter != null) {
-            currentWriter.close();
+            try {
+                currentWriter.close();
+                open = false;
+            }catch (Exception e){
+                logger.debug("Unable to close dlq writer", e);
+            }
         }
-        Files.deleteIfExists(queuePath.resolve(LOCK_FILE));
-        open = false;
+        releaseLock();
+    }
+
+    private void releaseLock() {
+        if (this.lock != null){
+            try {
+                this.lock.release();
+                if (this.lock.channel() != null && this.lock.channel().isOpen()) {
+                    this.lock.channel().close();
+                }
+            } catch (Exception e) {
+                logger.debug("Unable to close lock channel", e);
+            }
+            try {
+                Files.deleteIfExists(queuePath.resolve(LOCK_FILE));
+            } catch (IOException e){
+                logger.debug("Unable to delete lock file", e);
+            }
+        }
     }
 
     public boolean isOpen() {
