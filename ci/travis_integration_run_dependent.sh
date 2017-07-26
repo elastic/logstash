@@ -8,4 +8,4 @@ fi
 echo "Running integration tests from qa/integration directory"
 cd qa/integration
 
-rspec --tag dependent --profile
+rspec --tag dependent --profile --fail-fast

@@ -12,5 +12,5 @@ cd qa/integration
 # due to some sideeffects of the seccomp policy interfering with
 # the docker daemon
 # See prepare_offline_pack_spec.rb for details
-rspec --tag ~dependent --tag ~offline --profile
-rspec --tag offline --profile
+rspec --tag ~dependent --tag ~offline --profile --fail-fast
+rspec --tag offline --profile --fail-fast
