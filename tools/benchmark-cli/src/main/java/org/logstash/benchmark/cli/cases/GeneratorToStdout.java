@@ -3,10 +3,6 @@ package org.logstash.benchmark.cli.cases;
 import java.io.IOException;
 import java.util.EnumMap;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import org.logstash.benchmark.cli.LogstashInstallation;
 import org.logstash.benchmark.cli.LsMetricsMonitor;
@@ -34,17 +30,12 @@ public final class GeneratorToStdout implements Case {
 
     @Override
     public EnumMap<LsMetricStats, ListStatistics> run() {
-        final LsMetricsMonitor monitor = new LsMetricsMonitor(logstash.metrics());
-        final ExecutorService exec = Executors.newSingleThreadExecutor();
-        final Future<EnumMap<LsMetricStats, ListStatistics>> future = exec.submit(monitor);
-        try {
+        try (final LsMetricsMonitor.MonitorExecution monitor =
+                 new LsMetricsMonitor.MonitorExecution(logstash.metrics())) {
             logstash.execute(GeneratorToStdout.CONFIGURATION);
-            monitor.stop();
-            return future.get(20L, TimeUnit.SECONDS);
+            return monitor.stopAndGet();
         } catch (final IOException | InterruptedException | ExecutionException | TimeoutException ex) {
             throw new IllegalStateException(ex);
-        } finally {
-            exec.shutdownNow();
         }
     }
 }
