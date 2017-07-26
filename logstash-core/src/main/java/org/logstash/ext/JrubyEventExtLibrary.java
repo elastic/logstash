@@ -15,7 +15,6 @@ import org.jruby.anno.JRubyMethod;
 import org.jruby.exceptions.RaiseException;
 import org.jruby.java.proxies.MapJavaProxy;
 import org.jruby.javasupport.JavaUtil;
-import org.jruby.runtime.Arity;
 import org.jruby.runtime.ObjectAllocator;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
@@ -99,8 +98,7 @@ public class JrubyEventExtLibrary implements Library {
         // def initialize(data = {})
         @JRubyMethod(name = "initialize", optional = 1)
         public IRubyObject ruby_initialize(ThreadContext context, IRubyObject[] args) {
-            args = Arity.scanArgs(context.runtime, args, 0, 1);
-            IRubyObject data = args[0];
+            final IRubyObject data = args.length > 0 ? args[0] : null;
             if (data instanceof RubyHash) {
                 this.event = new Event(ConvertedMap.newFromRubyHash((RubyHash) data));
             } else {
