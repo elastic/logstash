@@ -134,6 +134,7 @@ public class DeadLetterQueueReaderTest {
         long startTime = System.currentTimeMillis();
 
         writeEntries(event, 0, FIRST_WRITE_EVENT_COUNT, startTime);
+        Thread.sleep(1000);
         writeEntries(event, OFFSET, SECOND_WRITE_EVENT_COUNT, startTime + 1_000);
 
         seekReadAndVerify(new Timestamp(startTime + FIRST_WRITE_EVENT_COUNT),
@@ -150,6 +151,7 @@ public class DeadLetterQueueReaderTest {
         long startTime = System.currentTimeMillis();
 
         writeEntries(event, 0, FIRST_WRITE_EVENT_COUNT, startTime);
+        Thread.sleep(1000);
         writeEntries(event, OFFSET, SECOND_WRITE_EVENT_COUNT, startTime + 1_000);
 
         seekReadAndVerify(new Timestamp(startTime + FIRST_WRITE_EVENT_COUNT),
