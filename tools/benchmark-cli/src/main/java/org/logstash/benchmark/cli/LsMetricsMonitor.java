@@ -1,5 +1,6 @@
 package org.logstash.benchmark.cli;
 
+import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -7,7 +8,12 @@ import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -19,11 +25,14 @@ public final class LsMetricsMonitor implements Callable<EnumMap<LsMetricStats, L
 
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
+    private static final JavaType MAP_TYPE =
+        OBJECT_MAPPER.getTypeFactory().constructMapType(HashMap.class, String.class, Object.class);
+
     private final String metrics;
 
     private volatile boolean running = true;
 
-    public LsMetricsMonitor(final String metrics) {
+    LsMetricsMonitor(final String metrics) {
         this.metrics = metrics;
     }
 
@@ -77,14 +86,13 @@ public final class LsMetricsMonitor implements Callable<EnumMap<LsMetricStats, L
             } catch (final IOException ex) {
                 return new long[]{-1L, -1L};
             }
-            final Map<String, Object> data =
-                OBJECT_MAPPER.readValue(baos.toByteArray(), HashMap.class);
+            final Map<String, Object> data = OBJECT_MAPPER.readValue(baos.toByteArray(), MAP_TYPE);
             final long count;
             if (data.containsKey("pipeline")) {
-                count = getFiltered((Map<String, Object>) data.get("pipeline"));
+                count = readNestedLong(data, "pipeline", "events", "filtered");
 
             } else if (data.containsKey("events")) {
-                count = getFiltered(data);
+                count = readNestedLong(data, "events", "filtered");
             } else {
                 count = -1L;
             }
@@ -92,17 +100,59 @@ public final class LsMetricsMonitor implements Callable<EnumMap<LsMetricStats, L
             if (count == -1L) {
                 cpu = -1L;
             } else {
-                cpu = ((Number) ((Map<String, Object>) ((Map<String, Object>) data.get("process"))
-                    .get("cpu")).get("percent")).longValue();
+                cpu = readNestedLong(data, "process", "cpu", "percent");
             }
             return new long[]{count, cpu};
         } catch (final IOException ex) {
             throw new IllegalStateException(ex);
         }
     }
+    
+    private static long readNestedLong(final Map<String, Object> map, final String ... path) {
+        Map<String, Object> nested = map;
+        for (int i = 0; i < path.length - 1; ++i) {
+            nested = (Map<String, Object>) (nested).get(path[i]);
+        }
+        return ((Number) nested.get(path[path.length - 1])).longValue();
+    }
 
-    private static long getFiltered(final Map<String, Object> data) {
-        return ((Number) ((Map<String, Object>) (data.get("events")))
-            .get("filtered")).longValue();
+    /**
+     * Runs a {@link LsMetricsMonitor} instance in a background thread.
+     */
+    public static final class MonitorExecution implements AutoCloseable {
+        
+        private final Future<EnumMap<LsMetricStats, ListStatistics>> future;
+
+        private final ExecutorService exec;
+
+        private final LsMetricsMonitor monitor;
+
+        /**
+         * Ctor.
+         * @param metrics Logstash Metrics URL
+         */
+        public MonitorExecution(final String metrics) {
+            monitor = new LsMetricsMonitor(metrics);
+            exec = Executors.newSingleThreadExecutor();
+            future = exec.submit(monitor);
+        }
+
+        /**
+         * Stops metric collection and returns the collected results.
+         * @return Statistical results from metric collection
+         * @throws InterruptedException On Failure
+         * @throws ExecutionException On Failure
+         * @throws TimeoutException On Failure
+         */
+        public EnumMap<LsMetricStats, ListStatistics> stopAndGet()
+            throws InterruptedException, ExecutionException, TimeoutException {
+            monitor.stop();
+            return future.get(20L, TimeUnit.SECONDS);
+        }
+
+        @Override
+        public void close() {
+            exec.shutdownNow();
+        }
     }
 }
