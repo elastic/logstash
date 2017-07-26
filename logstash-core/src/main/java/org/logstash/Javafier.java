@@ -15,6 +15,9 @@ public class Javafier {
     private Javafier(){}
 
     public static Object deep(Object o) {
+        if(o == null) {
+            return null;
+        }
         if (o instanceof BiValue) {
             return ((BiValue)o).javaValue();
         } else if(o instanceof ConvertedMap) {

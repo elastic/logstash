@@ -12,7 +12,7 @@ public final class PathCache {
 
     static {
         // inject @timestamp
-        cache(BRACKETS_TIMESTAMP, timestamp);
+        cache.put(BRACKETS_TIMESTAMP, timestamp);
     }
 
     public static boolean isTimestamp(String reference) {
@@ -21,16 +21,16 @@ public final class PathCache {
 
     public static FieldReference cache(String reference) {
         // atomicity between the get and put is not important
-        FieldReference result = cache.get(reference);
-        if (result == null) {
-            result = FieldReference.parse(reference);
-            cache.put(reference, result);
+        final FieldReference result = cache.get(reference);
+        if (result != null) {
+            return result;
         }
-        return result;
+        return parseToCache(reference);
     }
-
-    public static FieldReference cache(String reference, FieldReference field) {
-        cache.put(reference, field);
-        return field;
+    
+    private static FieldReference parseToCache(final String reference) {
+        final FieldReference result = FieldReference.parse(reference);
+        cache.put(reference, result);
+        return result;
     }
 }
