@@ -2,7 +2,6 @@ package org.logstash;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -137,8 +136,7 @@ public final class Event implements Cloneable, Queueable {
     }
 
     public Object getField(String reference) {
-        Object val = getUnconvertedField(reference);
-        return Javafier.deep(val);
+        return Javafier.deep(getUnconvertedField(reference));
     }
 
     public Object getUnconvertedField(String reference) {
@@ -331,33 +329,63 @@ public final class Event implements Cloneable, Queueable {
         return null;
     }
 
-    public void tag(String tag) {
-        List<Object> tags;
-        Object _tags = this.getField("tags");
-
+    public void tag(final String tag) {
+        final Object tags = Javafier.deep(accessors.get("tags"));
         // short circuit the null case where we know we won't need deduplication step below at the end
-        if (_tags == null) {
-            setField("tags", Arrays.asList(tag));
-            return;
-        }
-
-        // assign to tags var the proper List of either the existing _tags List or a new List containing whatever non-List item was in the tags field
-        if (_tags instanceof List) {
-            tags = (List<Object>) _tags;
+        if (tags == null) {
+            initTag(tag);
         } else {
-            // tags field has a value but not in a List, convert in into a List
-            tags = new ArrayList<>();
-            tags.add(_tags);
+            existingTag(tags, tag);
         }
+    }
 
-        // now make sure the tags list does not already contain the tag
+    /**
+     * Branch of {@link Event#tag(String)} that handles adding the first tag to this event.
+     * @param tag
+     */
+    private void initTag(final String tag) {
+        final ConvertedList list = new ConvertedList(1);
+        list.add(new StringBiValue(tag));
+        accessors.set("tags", list);
+    }
+
+    /**
+     * Branch of {@link Event#tag(String)} that handles adding to existing tags.
+     * @param tags Existing Tag(s)
+     * @param tag Tag to add
+     */
+    private void existingTag(final Object tags, final String tag) {
+        if (tags instanceof List) {
+            appendTag((List<String>) tags, tag);
+        } else {
+            scalarTagFallback((String) tags, tag);
+        }
+    }
+
+    /**
+     * Merge the given tag into the given list of existing tags if the list doesn't already contain
+     * the tag.
+     * @param tags Existing tag list
+     * @param tag Tag to add
+     */
+    private void appendTag(final List<String> tags, final String tag) {
         // TODO: we should eventually look into using alternate data structures to do more efficient dedup but that will require properly defining the tagging API too
         if (!tags.contains(tag)) {
             tags.add(tag);
+            accessors.set("tags", ConvertedList.newFromList(tags));
         }
+    }
 
-        // set that back as a proper BiValue
-        this.setField("tags", tags);
+    /**
+     * Fallback for {@link Event#tag(String)} in case "tags" was populated by just a String value
+     * and needs to be converted to a list before appending to it.
+     * @param existing Existing Tag
+     * @param tag Tag to add
+     */
+    private void scalarTagFallback(final String existing, final String tag) {
+        final List<String> tags = new ArrayList<>(2);
+        tags.add(existing);
+        appendTag(tags, tag);
     }
 
     @Override

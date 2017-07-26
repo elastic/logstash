@@ -1,6 +1,7 @@
 package org.logstash;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import org.jruby.RubyArray;
 import org.jruby.runtime.builtin.IRubyObject;
@@ -11,11 +12,11 @@ public final class ConvertedList extends ArrayList<Object> {
 
     private static final long serialVersionUID = 1396291343595074238L;
 
-    private ConvertedList(final int size) {
+    ConvertedList(final int size) {
         super(size);
     }
 
-    public static ConvertedList newFromList(List<Object> list) {
+    public static ConvertedList newFromList(final Collection<?> list) {
         ConvertedList array = new ConvertedList(list.size());
 
         for (Object item : list) {
