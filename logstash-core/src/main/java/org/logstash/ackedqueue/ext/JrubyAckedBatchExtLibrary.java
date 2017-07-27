@@ -71,7 +71,7 @@ public class JrubyAckedBatchExtLibrary implements Library {
         public IRubyObject ruby_get_elements(ThreadContext context)
         {
             RubyArray result = context.runtime.newArray();
-            this.batch.getElements().forEach(e -> result.add(new JrubyEventExtLibrary.RubyEvent(context.runtime, (Event)e)));
+            this.batch.getElements().forEach(e -> result.add(JrubyEventExtLibrary.RubyEvent.newRubyEvent(context.runtime, (Event)e)));
 
             return result;
         }
