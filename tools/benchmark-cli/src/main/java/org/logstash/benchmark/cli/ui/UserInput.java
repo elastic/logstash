@@ -8,6 +8,12 @@ import java.nio.file.Paths;
  */
 public final class UserInput {
 
+    public static final String ES_OUTPUT_PARAM = "elasticsearch-export";
+
+    public static final String ES_OUTPUT_HELP = "Optional Elasticsearch host URL to store detailed results at.";
+
+    public static final String ES_OUTPUT_DEFAULT = "";
+
     /**
      * The Default Cache/Working-Directory.
      */

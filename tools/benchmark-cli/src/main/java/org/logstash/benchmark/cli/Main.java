@@ -3,9 +3,15 @@ package org.logstash.benchmark.cli;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.InetAddress;
+import java.net.URI;
+import java.net.UnknownHostException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.security.NoSuchAlgorithmException;
 import java.util.AbstractMap;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 import joptsimple.OptionException;
@@ -13,6 +19,7 @@ import joptsimple.OptionParser;
 import joptsimple.OptionSet;
 import joptsimple.OptionSpec;
 import joptsimple.OptionSpecBuilder;
+import org.apache.commons.lang3.SystemUtils;
 import org.logstash.benchmark.cli.cases.ApacheLogsComplex;
 import org.logstash.benchmark.cli.cases.Case;
 import org.logstash.benchmark.cli.cases.GeneratorToStdout;
@@ -69,6 +76,9 @@ public final class Main {
             UserInput.WORKING_DIRECTORY_PARAM, UserInput.WORKING_DIRECTORY_HELP
         ).withRequiredArg().ofType(File.class).defaultsTo(UserInput.WORKING_DIRECTORY_DEFAULT)
             .forHelp();
+        final OptionSpec<String> esout = parser.accepts(
+            UserInput.ES_OUTPUT_PARAM, UserInput.ES_OUTPUT_HELP
+        ).withRequiredArg().ofType(String.class).defaultsTo(UserInput.ES_OUTPUT_DEFAULT).forHelp();
         final OptionSet options;
         try {
             options = parser.parse(args);
@@ -90,7 +100,7 @@ public final class Main {
         }
         execute(
             new UserOutput(System.out), loadSettings(), options.valueOf(testcase),
-            options.valueOf(pwd).toPath(), version, type
+            options.valueOf(pwd).toPath(), version, type, options.valueOf(esout)
         );
     }
 
@@ -102,10 +112,12 @@ public final class Main {
      * @param cwd Working Directory to run in and write cache files to
      * @param version Version of Logstash to benchmark
      * @param type Type of Logstash version to benchmark
+     * @param esout Elastic Search URL (empty string is interpreted as not using ES output)
      * @throws Exception On Failure
      */
     public static void execute(final UserOutput output, final Properties settings,
-        final String test, final Path cwd, final String version, final LsVersionType type)
+        final String test, final Path cwd, final String version, final LsVersionType type,
+        final String esout)
         throws Exception {
         output.printBanner();
         output.printLine();
@@ -121,38 +133,60 @@ public final class Main {
         } else {
             logstash = LsBenchLsSetup.setupLS(cwd.toAbsolutePath().toString(), version, type);
         }
+        try (final DataStore store = setupDataStore(esout, test, version, type)) {
+            final Case testcase = setupTestCase(store, logstash, cwd, settings, test);
+            output.printStartTime();
+            final long start = System.currentTimeMillis();
+            final AbstractMap<LsMetricStats, ListStatistics> stats = testcase.run();
+            output.green("Statistical Summary:\n");
+            output.green(String.format(
+                "Elapsed Time: %ds",
+                TimeUnit.SECONDS.convert(
+                    System.currentTimeMillis() - start, TimeUnit.MILLISECONDS
+                )
+            ));
+            output.printStatistics(stats);
+        }
+    }
+
+    private static Case setupTestCase(final DataStore store, final LogstashInstallation logstash,
+        final Path cwd, final Properties settings, final String test)
+        throws IOException, NoSuchAlgorithmException {
         final Case testcase;
         if (GeneratorToStdout.IDENTIFIER.equalsIgnoreCase(test)) {
-            testcase = new GeneratorToStdout(logstash);
+            testcase = new GeneratorToStdout(store, logstash);
         } else if (ApacheLogsComplex.IDENTIFIER.equalsIgnoreCase(test)) {
-            testcase = new ApacheLogsComplex(logstash, cwd, settings);
+            testcase = new ApacheLogsComplex(store, logstash, cwd, settings);
         } else {
             throw new IllegalArgumentException(String.format("Unknown test case %s", test));
         }
-        output.printStartTime();
-        final long start = System.currentTimeMillis();
-        final AbstractMap<LsMetricStats, ListStatistics> stats = testcase.run();
-        output.green("Statistical Summary:\n");
-        output.green(String.format(
-            "Elapsed Time: %ds",
-            TimeUnit.SECONDS.convert(
-                System.currentTimeMillis() - start, TimeUnit.MILLISECONDS
-            )
-        ));
-        output.green(
-            String.format("Num Events: %d", (long) stats.get(LsMetricStats.COUNT).getMax())
-        );
-        final ListStatistics throughput = stats.get(LsMetricStats.THROUGHPUT);
-        output.green(String.format("Throughput Min: %.2f", throughput.getMin()));
-        output.green(String.format("Throughput Max: %.2f", throughput.getMax()));
-        output.green(String.format("Throughput Mean: %.2f", throughput.getMean()));
-        output.green(String.format("Throughput StdDev: %.2f", throughput.getStandardDeviation()));
-        output.green(String.format("Throughput Variance: %.2f", throughput.getVariance()));
-        output.green(
-            String.format(
-                "Mean CPU Usage: %.2f%%", stats.get(LsMetricStats.CPU_USAGE).getMean()
-            )
-        );
+        return testcase;
+    }
+
+    private static DataStore setupDataStore(final String elastic, final String test,
+        final String version, final LsVersionType vtype) throws UnknownHostException {
+        if (elastic.isEmpty()) {
+            return DataStore.NONE;
+        } else {
+            final URI elasticsearch = URI.create(elastic);
+            return new DataStore.ElasticSearch(
+                elasticsearch.getHost(), elasticsearch.getPort(), elasticsearch.getScheme(),
+                meta(test, version, vtype)
+            );
+        }
+    }
+
+    private static Map<String, Object> meta(final String testcase, final String version,
+        final LsVersionType vtype) throws UnknownHostException {
+        final Map<String, Object> result = new HashMap<>();
+        result.put("test_name", testcase);
+        result.put("os_name", SystemUtils.OS_NAME);
+        result.put("os_version", SystemUtils.OS_VERSION);
+        result.put("host_name", InetAddress.getLocalHost().getHostName());
+        result.put("cpu_cores", Runtime.getRuntime().availableProcessors());
+        result.put("version_type", vtype);
+        result.put("version", version);
+        return result;
     }
 
     private static Properties loadSettings() throws IOException {

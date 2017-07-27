@@ -18,6 +18,8 @@ Option                           Description
 ------                           -----------                                    
 --distribution-version <String>  The version of a Logstash build to download    
                                    from elastic.co.                             
+--elasticsearch-export <String>  Optional Elasticsearch host URL to store       
+                                   detailed results at. (default: )                       
 --git-hash <String>              Either a git tree (tag/branch or commit hash), 
                                    optionally prefixed by a Github username,    
                                  if ran against forks.                          

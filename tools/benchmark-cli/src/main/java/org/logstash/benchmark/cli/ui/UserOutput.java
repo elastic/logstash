@@ -4,7 +4,9 @@ import java.io.PrintStream;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
+import java.util.Map;
 import org.apache.commons.lang3.SystemUtils;
+import org.openjdk.jmh.util.ListStatistics;
 
 public final class UserOutput {
 
@@ -54,6 +56,23 @@ public final class UserOutput {
         target.println(colorize(line, GREEN_ANSI_OPEN));
     }
 
+    public void printStatistics(final Map<LsMetricStats, ListStatistics> stats) {
+        green(
+            String.format("Num Events: %d", (long) stats.get(LsMetricStats.COUNT).getMax())
+        );
+        final ListStatistics throughput = stats.get(LsMetricStats.THROUGHPUT);
+        green(String.format("Throughput Min: %.2f", throughput.getMin()));
+        green(String.format("Throughput Max: %.2f", throughput.getMax()));
+        green(String.format("Throughput Mean: %.2f", throughput.getMean()));
+        green(String.format("Throughput StdDev: %.2f", throughput.getStandardDeviation()));
+        green(String.format("Throughput Variance: %.2f", throughput.getVariance()));
+        green(
+            String.format(
+                "Mean CPU Usage: %.2f%%", stats.get(LsMetricStats.CPU_USAGE).getMean()
+            )
+        );
+    }
+    
     private static String colorize(final String line, final String prefix) {
         final String reset = ANSI_CLOSE;
         return new StringBuilder(line.length() + 2 * reset.length())
