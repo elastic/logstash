@@ -11,6 +11,7 @@ import java.util.Properties;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 import org.apache.commons.io.IOUtils;
+import org.logstash.benchmark.cli.DataStore;
 import org.logstash.benchmark.cli.LogstashInstallation;
 import org.logstash.benchmark.cli.LsMetricsMonitor;
 import org.logstash.benchmark.cli.ui.LsMetricStats;
@@ -32,17 +33,21 @@ public final class ApacheLogsComplex implements Case {
 
     private final File data;
 
-    public ApacheLogsComplex(final LogstashInstallation logstash, final Path cwd,
+    private final DataStore store;
+
+    public ApacheLogsComplex(final DataStore store, final LogstashInstallation logstash,
+        final Path cwd,
         final Properties settings) throws IOException, NoSuchAlgorithmException {
         this.data = cwd.resolve("data_apache").resolve("apache_access_logs").toFile();
         ensureDatafile(data.toPath().getParent().toFile(), settings);
         this.logstash = logstash;
+        this.store = store;
     }
 
     @Override
     public EnumMap<LsMetricStats, ListStatistics> run() {
         try (final LsMetricsMonitor.MonitorExecution monitor =
-                 new LsMetricsMonitor.MonitorExecution(logstash.metrics())) {
+                 new LsMetricsMonitor.MonitorExecution(logstash.metrics(), store)) {
             final String config;
             try (final InputStream cfg = ApacheLogsComplex.class
                 .getResourceAsStream("apache.cfg")) {

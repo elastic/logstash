@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.EnumMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
+import org.logstash.benchmark.cli.DataStore;
 import org.logstash.benchmark.cli.LogstashInstallation;
 import org.logstash.benchmark.cli.LsMetricsMonitor;
 import org.logstash.benchmark.cli.ui.LsMetricStats;
@@ -24,14 +25,18 @@ public final class GeneratorToStdout implements Case {
 
     private final LogstashInstallation logstash;
 
-    public GeneratorToStdout(final LogstashInstallation logstash) {
+    private final DataStore store;
+
+    public GeneratorToStdout(final DataStore store, final LogstashInstallation logstash) {
         this.logstash = logstash;
+        this.store = store;
+
     }
 
     @Override
     public EnumMap<LsMetricStats, ListStatistics> run() {
         try (final LsMetricsMonitor.MonitorExecution monitor =
-                 new LsMetricsMonitor.MonitorExecution(logstash.metrics())) {
+                 new LsMetricsMonitor.MonitorExecution(logstash.metrics(), store)) {
             logstash.execute(GeneratorToStdout.CONFIGURATION);
             return monitor.stopAndGet();
         } catch (final IOException | InterruptedException | ExecutionException | TimeoutException ex) {
