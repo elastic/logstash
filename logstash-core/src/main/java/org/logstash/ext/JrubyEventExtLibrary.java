@@ -15,7 +15,6 @@ import org.jruby.anno.JRubyMethod;
 import org.jruby.exceptions.RaiseException;
 import org.jruby.java.proxies.MapJavaProxy;
 import org.jruby.javasupport.JavaUtil;
-import org.jruby.runtime.ObjectAllocator;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.jruby.runtime.load.Library;
@@ -35,12 +34,9 @@ public class JrubyEventExtLibrary implements Library {
     public void load(Ruby runtime, boolean wrap) throws IOException {
         RubyModule module = runtime.defineModule("LogStash");
 
-        RubyClass clazz = runtime.defineClassUnder("Event", runtime.getObject(), new ObjectAllocator() {
-            @Override
-            public IRubyObject allocate(Ruby runtime, RubyClass rubyClass) {
-                return new RubyEvent(runtime, rubyClass);
-            }
-        }, module);
+        RubyClass clazz = runtime.defineClassUnder(
+            "Event", runtime.getObject(), RubyEvent::new, module
+        );
 
         clazz.setConstant("METADATA", runtime.newString(Event.METADATA));
         clazz.setConstant("METADATA_BRACKETS", runtime.newString(Event.METADATA_BRACKETS));
@@ -70,29 +66,19 @@ public class JrubyEventExtLibrary implements Library {
     public static final class RubyEvent extends RubyObject {
         private Event event;
 
-        public RubyEvent(Ruby runtime, RubyClass klass) {
+        private RubyEvent(Ruby runtime, RubyClass klass) {
             super(runtime, klass);
         }
 
-        public RubyEvent(Ruby runtime) {
-            this(runtime, runtime.getModule("LogStash").getClass("Event"));
-        }
-
-        public RubyEvent(Ruby runtime, Event event) {
-            this(runtime);
-            this.event = event;
-        }
-
         public static RubyEvent newRubyEvent(Ruby runtime, Event event) {
-            return new RubyEvent(runtime, event);
+            final RubyEvent ruby =
+                new RubyEvent(runtime, runtime.getModule("LogStash").getClass("Event"));
+            ruby.setEvent(event);
+            return ruby;
         }
 
         public Event getEvent() {
             return event;
-        }
-
-        public void setEvent(Event event) {
-            this.event = event;
         }
 
         // def initialize(data = {})
@@ -311,6 +297,10 @@ public class JrubyEventExtLibrary implements Library {
             } else {
                 throw context.runtime.newTypeError("wrong argument type " + data.getMetaClass() + " (expected Hash)");
             }
+        }
+
+        private void setEvent(Event event) {
+            this.event = event;
         }
     }
 }

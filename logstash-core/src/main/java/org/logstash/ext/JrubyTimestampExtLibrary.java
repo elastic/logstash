@@ -39,7 +39,7 @@ public class JrubyTimestampExtLibrary implements Library {
         return clazz;
     }
 
-    @JRubyClass(name = "Timestamp", parent = "Object")
+    @JRubyClass(name = "Timestamp")
     public static class RubyTimestamp extends RubyObject {
 
         private Timestamp timestamp;
