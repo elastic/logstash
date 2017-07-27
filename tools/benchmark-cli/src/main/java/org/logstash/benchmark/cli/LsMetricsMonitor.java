@@ -1,11 +1,8 @@
 package org.logstash.benchmark.cli;
 
-import com.fasterxml.jackson.databind.JavaType;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.EnumMap;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -19,25 +16,26 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.logstash.benchmark.cli.ui.LsMetricStats;
+import org.logstash.benchmark.cli.util.LsBenchJsonUtil;
 import org.openjdk.jmh.util.ListStatistics;
 
 public final class LsMetricsMonitor implements Callable<EnumMap<LsMetricStats, ListStatistics>> {
 
-    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+    private final ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
-    private static final JavaType MAP_TYPE =
-        OBJECT_MAPPER.getTypeFactory().constructMapType(HashMap.class, String.class, Object.class);
-
+    private final DataStore store;
+    
     private final String metrics;
 
     private volatile boolean running = true;
 
-    LsMetricsMonitor(final String metrics) {
+    private LsMetricsMonitor(final String metrics, final DataStore store) {
         this.metrics = metrics;
+        this.store = store;
     }
 
     @Override
-    public EnumMap<LsMetricStats, ListStatistics> call() {
+    public EnumMap<LsMetricStats, ListStatistics> call() throws IOException {
         final ListStatistics stats = new ListStatistics();
         long count = 0L;
         final ListStatistics counts = new ListStatistics();
@@ -69,6 +67,7 @@ public final class LsMetricsMonitor implements Callable<EnumMap<LsMetricStats, L
         result.put(LsMetricStats.THROUGHPUT, stats);
         result.put(LsMetricStats.COUNT, counts);
         result.put(LsMetricStats.CPU_USAGE, cpu);
+        store.store(result);
         return result;
     }
 
@@ -77,7 +76,6 @@ public final class LsMetricsMonitor implements Callable<EnumMap<LsMetricStats, L
     }
 
     private long[] getCounts() {
-        final ByteArrayOutputStream baos = new ByteArrayOutputStream();
         try (final CloseableHttpClient client = HttpClientBuilder.create().build()) {
             baos.reset();
             try (final CloseableHttpResponse response = client
@@ -86,7 +84,7 @@ public final class LsMetricsMonitor implements Callable<EnumMap<LsMetricStats, L
             } catch (final IOException ex) {
                 return new long[]{-1L, -1L};
             }
-            final Map<String, Object> data = OBJECT_MAPPER.readValue(baos.toByteArray(), MAP_TYPE);
+            final Map<String, Object> data = LsBenchJsonUtil.deserializeMetrics(baos.toByteArray());
             final long count;
             if (data.containsKey("pipeline")) {
                 count = readNestedLong(data, "pipeline", "events", "filtered");
@@ -107,7 +105,7 @@ public final class LsMetricsMonitor implements Callable<EnumMap<LsMetricStats, L
             throw new IllegalStateException(ex);
         }
     }
-    
+
     private static long readNestedLong(final Map<String, Object> map, final String ... path) {
         Map<String, Object> nested = map;
         for (int i = 0; i < path.length - 1; ++i) {
@@ -120,7 +118,7 @@ public final class LsMetricsMonitor implements Callable<EnumMap<LsMetricStats, L
      * Runs a {@link LsMetricsMonitor} instance in a background thread.
      */
     public static final class MonitorExecution implements AutoCloseable {
-        
+
         private final Future<EnumMap<LsMetricStats, ListStatistics>> future;
 
         private final ExecutorService exec;
@@ -130,9 +128,10 @@ public final class LsMetricsMonitor implements Callable<EnumMap<LsMetricStats, L
         /**
          * Ctor.
          * @param metrics Logstash Metrics URL
+         * @param store {@link DataStore} to persist benchmark results
          */
-        public MonitorExecution(final String metrics) {
-            monitor = new LsMetricsMonitor(metrics);
+        public MonitorExecution(final String metrics, final DataStore store) {
+            monitor = new LsMetricsMonitor(metrics, store);
             exec = Executors.newSingleThreadExecutor();
             future = exec.submit(monitor);
         }
@@ -155,4 +154,5 @@ public final class LsMetricsMonitor implements Callable<EnumMap<LsMetricStats, L
             exec.shutdownNow();
         }
     }
+
 }
