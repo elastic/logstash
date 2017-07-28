@@ -1,0 +1,118 @@
+[[logstash-modules]]
+== Working with Logstash Modules
+
+Logstash modules provide a quick, end-to-end solution for ingesting data and
+visualizing it with purpose-built dashboards.
+
+Each module comes pre-packaged with Logstash configurations, Kibana dashboards,
+and other meta files that make it easier for you to set up the Elastic Stack for
+specific use cases or data sources.
+
+[float]
+[[running-logstash-modules]]
+=== Running modules
+
+When you run a module, Logstash creates and loads the pipeline configurations
+required to read and parse the data. It also loads the index pattern,
+field definitions, searches, visualizations, and dashboards required to
+visualize your data in Kibana.
+
+To run a module, you use the `--modules` option:
+
+[source,shell]
+----
+bin/logstash --modules MODULE_NAME [-M CONFIG_SETTINGS]
+----
+
+
+//TODO: For 6.0, show how to run mutliple modules
+
+Where `MODULE_NAME` is the name of Logstash module and `CONFIG_SETTINGS`
+is one or more optional configuration settings. `CONFIG_SETTINGS` are only
+required when the default configuration doesn't meet your needs, or you need to
+override settings specified in the `logstash.yml` settings file.
+
+For example, the following command runs the Netflow module with the default
+settings:
+
+[source,shell]
+----
+bin/logstash --modules netflow
+----
+
+The following command runs the Netflow module and overrides the Elasticsearch
+`host` setting:
+
+[source,shell]
+----
+bin/logstash --modules netflow -M "netflow.var.elasticsearch.host=es.mycloud.com"
+----
+
+
+See <<overriding-logstash-module-settings>> for more info about overriding settings.
+
+[float]
+[[configuring-logstash-modules]]
+=== Configuring modules
+
+To configure a module, you can either
+<<setting-logstash-module-config,specify configuration settings>> in the
+`logstash.yml` <<logstash-settings-file,settings file>>, or use command-line overrides to
+<<overriding-logstash-module-settings,specify settings at the command line>>.
+
+[float]
+[[setting-logstash-module-config]]
+==== Specify module settings in `logstash.yml`
+
+To specify module settings in the `logstash.yml`
+<<logstash-settings-file,settings file>> file, you add a module definition to
+the modules array. Each module definition begins with a dash (-) and is followed
+by `name: module_name` then a series of name/value pairs that specify module
+settings. For example:
+
+[source,shell]
+----
+modules:
+- name: netflow
+   var.output.elasticsearch.host: "es.mycloud.com"
+   var.output.elasticsearch.user: "foo"
+   var.output.elasticsearch.password: "password"
+   var.input.tcp.port: 5606
+----
+
+For a list of available module settings, see the documentation for the module.
+
+[float]
+[[overriding-logstash-module-settings]]
+==== Specify module settings at the command line
+
+You can override module settings by specifying one or more configuration
+overrides when you start Logstash. To specify an override, you use the `-M`
+command line option:
+
+[source,shell]
+----
+-M MODULE_NAME.var.PLUGINTYPE1.PLUGINNAME1.KEY1=VALUE
+----
+
+Notice that the fully-qualified setting name includes the module name.
+
+You can specify multiple overrides. Each override must start with `-M`. 
+
+The following command runs the Netflow module and overrides both the
+Elasticsearch `host` setting and the `udp.port` setting:
+
+[source,shell]
+----
+bin/logstash --modules netflow -M "netflow.var.input.udp.port=3555" -M "netflow.var.elasticseach.host=my-es-cloud"
+----
+
+Any settings defined in the command line are ephemeral and will not persist across
+subsequent runs of Logstash. If you want to persist a configuration, you need to
+set it in the `logstash.yml` <<logstash-settings-file,settings file>>.
+
+Settings that you specify at the command line are merged with any settings 
+specified in the `logstash.yml` file. If an option is set in both
+places, the value specified at the command line takes precedence. 
+
+
