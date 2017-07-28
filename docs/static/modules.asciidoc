@@ -1,10 +1,11 @@
 [[logstash-modules]]
 == Working with Logstash Modules
 
-Logstash modules provide a quick way to get started using Logstash. 
+Logstash modules provide a quick, end-to-end solution for ingesting data and
+visualizing it with purpose-built dashboards.
 
-Each module comes pre-packaged with configurations, Kibana dashboards, and
-other meta files that make it easier for you to set up the Elastic stack for
+Each module comes pre-packaged with Logstash configurations, Kibana dashboards,
+and other meta files that make it easier for you to set up the Elastic Stack for
 specific use cases or data sources.
 
 [float]
@@ -24,7 +25,7 @@ bin/logstash --modules MODULE_NAME [-M CONFIG_SETTINGS]
 ----
 
 
-//REVIEWERS: Can users run multiple modules like they can in Filebeat? This topic assumes "no" but I haven't tested it yet.
+//TODO: For 6.0, show how to run mutliple modules
 
 Where `MODULE_NAME` is the name of Logstash module and `CONFIG_SETTINGS`
 is one or more optional configuration settings. `CONFIG_SETTINGS` are only
@@ -39,7 +40,8 @@ settings:
 bin/logstash --modules netflow
 ----
 
-The following command runs the Netflow module and overrides the `host` setting:
+The following command runs the Netflow module and overrides the Elasticsearch
+`host` setting:
 
 [source,shell]
 ----
@@ -47,15 +49,11 @@ bin/logstash --modules netflow -M "netflow.var.elasticsearch.host=es.mycloud.com
 ----
 
 
-//REVIEWERS: I'm mentioning the overrides here because I've had some feedback from Tanya about making it clear in the docs that the var overrides are available. Figured this is relevant for LS too.
-
 See <<overriding-logstash-module-settings>> for more info about overriding settings.
 
 [float]
 [[configuring-logstash-modules]]
 === Configuring modules
-
-//REVIEWERS: How will users know when the defaults are OK and when they need to change the config?
 
 To configure a module, you can either
 <<setting-logstash-module-config,specify configuration settings>> in the
@@ -101,13 +99,12 @@ Notice that the fully-qualified setting name includes the module name.
 
 You can specify multiple overrides. Each override must start with `-M`. 
 
-The following command runs the Netflow module and sets the `tcp.port` to `5606`:
-
-//REVIEWERS: It would be better here to show an example that overrides multiple settings. Any suggestions for a realistic example?
+The following command runs the Netflow module and overrides both the
+Elasticsearch `host` setting and the `udp.port` setting:
 
 [source,shell]
 ----
-bin/logstash --modules netflow -M "netflow.var.tcp.port=5606"
+bin/logstash --modules netflow -M "netflow.var.input.udp.port=3555" -M "netflow.var.elasticseach.host=my-es-cloud"
 ----
 
 Any settings defined in the command line are ephemeral and will not persist across
