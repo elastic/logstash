@@ -415,10 +415,11 @@ module LogStash; class Pipeline < BasePipeline
       end
 
       pipeline_workers.times do |t|
-        @worker_threads << Thread.new do
-          Util.set_thread_name("[#{pipeline_id}]>worker#{t}")
-          worker_loop(batch_size, batch_delay)
+        thread = Thread.new(batch_size, batch_delay, self) do |_b_size, _b_delay, _pipeline|
+          _pipeline.worker_loop(_b_size, _b_delay)
         end
+        thread.name="[#{pipeline_id}]>worker#{t}"
+        @worker_threads << thread
       end
 
       # inputs should be started last, after all workers
