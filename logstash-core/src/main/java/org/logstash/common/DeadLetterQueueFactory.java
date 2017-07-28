@@ -56,13 +56,19 @@ public class DeadLetterQueueFactory {
      * @return The write manager for the specific id's dead-letter-queue context
      */
     public static DeadLetterQueueWriter getWriter(String id, String dlqPath, long maxQueueSize) {
-        return REGISTRY.computeIfAbsent(id, k -> {
-            try {
-                return new DeadLetterQueueWriter(Paths.get(dlqPath, k), MAX_SEGMENT_SIZE_BYTES, maxQueueSize);
-            } catch (IOException e) {
-                logger.error("unable to create dead letter queue writer", e);
-            }
-            return null;
-        });
+        return REGISTRY.computeIfAbsent(id, key -> newWriter(key, dlqPath, maxQueueSize));
+    }
+
+    public static DeadLetterQueueWriter release(String id) {
+        return REGISTRY.remove(id);
+    }
+
+    private static DeadLetterQueueWriter newWriter(final String id, final String dlqPath, final long maxQueueSize) {
+        try {
+            return new DeadLetterQueueWriter(Paths.get(dlqPath, id), MAX_SEGMENT_SIZE_BYTES, maxQueueSize);
+        } catch (IOException e) {
+            logger.error("unable to create dead letter queue writer", e);
+        }
+        return null;
     }
 }
