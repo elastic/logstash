@@ -32,6 +32,7 @@ import static junit.framework.TestCase.assertSame;
 import static org.junit.Assert.assertTrue;
 
 public class DeadLetterQueueFactoryTest {
+    public static final String PIPELINE_NAME = "pipelineA";
     private Path dir;
 
     @Rule
@@ -43,12 +44,33 @@ public class DeadLetterQueueFactoryTest {
     }
 
     @Test
-    public void test() throws IOException {
-        Path pipelineA = dir.resolve("pipelineA");
-        DeadLetterQueueWriter writer = DeadLetterQueueFactory.getWriter("pipelineA", pipelineA.toString(), 10000);
-        assertTrue(writer.isOpen());
-        DeadLetterQueueWriter writer2 = DeadLetterQueueFactory.getWriter("pipelineA", pipelineA.toString(), 10000);
-        assertSame(writer, writer2);
-        writer.close();
+    public void testSameBeforeRelease() throws IOException {
+        try {
+            Path pipelineA = dir.resolve(PIPELINE_NAME);
+            DeadLetterQueueWriter writer = DeadLetterQueueFactory.getWriter(PIPELINE_NAME, pipelineA.toString(), 10000);
+            assertTrue(writer.isOpen());
+            DeadLetterQueueWriter writer2 = DeadLetterQueueFactory.getWriter(PIPELINE_NAME, pipelineA.toString(), 10000);
+            assertSame(writer, writer2);
+            writer.close();
+        } finally {
+            DeadLetterQueueFactory.release(PIPELINE_NAME);
+        }
     }
+
+    @Test
+    public void testOpenableAfterRelease() throws IOException {
+        try {
+            Path pipelineA = dir.resolve(PIPELINE_NAME);
+            DeadLetterQueueWriter writer = DeadLetterQueueFactory.getWriter(PIPELINE_NAME, pipelineA.toString(), 10000);
+            assertTrue(writer.isOpen());
+            writer.close();
+            DeadLetterQueueFactory.release(PIPELINE_NAME);
+            writer = DeadLetterQueueFactory.getWriter(PIPELINE_NAME, pipelineA.toString(), 10000);
+            assertTrue(writer.isOpen());
+            writer.close();
+        }finally{
+            DeadLetterQueueFactory.release(PIPELINE_NAME);
+        }
+    }
+
 }
