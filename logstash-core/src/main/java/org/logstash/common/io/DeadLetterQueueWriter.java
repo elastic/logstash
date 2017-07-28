@@ -45,6 +45,7 @@ public final class DeadLetterQueueWriter implements Closeable {
 
     static final String SEGMENT_FILE_PATTERN = "%d.log";
     static final String LOCK_FILE = ".lock";
+    public static final String DEAD_LETTER_QUEUE_METADATA_KEY = "dead_letter_queue";
     private final long maxSegmentSize;
     private final long maxQueueSize;
     private LongAdder currentQueueSize;
@@ -132,6 +133,12 @@ public final class DeadLetterQueueWriter implements Closeable {
     }
 
     private void innerWriteEntry(DLQEntry entry) throws IOException {
+        Event event = entry.getEvent();
+
+        if (alreadyProcessed(event)) {
+            logger.warn("Event previously submitted to dead letter queue. Skipping...");
+            return;
+        }
         byte[] record = entry.serialize();
         int eventPayloadSize = RECORD_HEADER_SIZE + record.length;
         if (currentQueueSize.longValue() + eventPayloadSize > maxQueueSize) {
@@ -142,6 +149,18 @@ public final class DeadLetterQueueWriter implements Closeable {
             currentWriter = nextWriter();
         }
         currentQueueSize.add(currentWriter.writeEvent(record));
+    }
+
+    /**
+     * Method to determine whether the event has already been processed by the DLQ - currently this
+     * just checks the metadata to see if metadata has been added to the event that indicates that
+     * it has already gone through the DLQ.
+     * TODO: Add metadata around 'depth' to enable >1 iteration through the DLQ if required.
+     * @param event Logstash Event
+     * @return boolean indicating whether the event is eligible to be added to the DLQ
+     */
+    private boolean alreadyProcessed(final Event event) {
+        return event.getMetadata() != null && event.getMetadata().containsKey(DEAD_LETTER_QUEUE_METADATA_KEY);
     }
 
     @Override
