@@ -93,6 +93,13 @@ module LogStash; class BasePipeline
     end
   end
 
+  def close_dlq_writer
+    @dlq_writer.close
+    if settings.get_value("dead_letter_queue.enable")
+      DeadLetterQueueFactory.release(pipeline_id)
+    end
+  end
+
   def compile_lir
     sources_with_metadata = [
       SourceWithMetadata.new("str", "pipeline", 0, 0, self.config_str)
@@ -339,7 +346,7 @@ module LogStash; class Pipeline < BasePipeline
   def close
     @filter_queue_client.close
     @queue.close
-    @dlq_writer.close
+    close_dlq_writer
   end
 
   def transition_to_running
