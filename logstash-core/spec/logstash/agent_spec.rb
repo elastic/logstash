@@ -10,6 +10,8 @@ require_relative "../support/helpers"
 require_relative "../support/matchers"
 require 'timeout'
 
+java_import org.logstash.Timestamp
+
 describe LogStash::Agent do
   let(:agent_settings) { mock_settings({}) }
   let(:agent_args) { {} }
@@ -405,11 +407,10 @@ describe LogStash::Agent do
         expect(value).to be(nil)
       end
 
-      #jakelandis - fixed with https://github.com/elastic/logstash/issues/7719
-      xit "sets the success reload timestamp" do
+      it "sets the success reload timestamp" do
         snapshot = subject.metric.collector.snapshot_metric
         value = snapshot.metric_store.get_with_path("/stats/pipelines")[:stats][:pipelines][:main][:reloads][:last_success_timestamp].value
-        expect(value).to be_a(LogStash::Timestamp)
+        expect(value).to be_a(Timestamp)
       end
 
       it "does not set the last reload error" do
@@ -435,11 +436,10 @@ describe LogStash::Agent do
         expect(value).to be(nil)
       end
 
-      #jakelandis - fixed with https://github.com/elastic/logstash/issues/7719
-      xit "sets the failure reload timestamp" do
+      it "sets the failure reload timestamp" do
         snapshot = subject.metric.collector.snapshot_metric
         value = snapshot.metric_store.get_with_path("/stats/pipelines")[:stats][:pipelines][:main][:reloads][:last_failure_timestamp].value
-        expect(value).to be_a(LogStash::Timestamp)
+        expect(value).to be_a(Timestamp)
       end
 
       it "sets the last reload error" do
