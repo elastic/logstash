@@ -1,6 +1,5 @@
 package org.logstash;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
@@ -8,8 +7,6 @@ import org.joda.time.DateTimeZone;
 import org.joda.time.format.DateTimeFormat;
 
 public final class StringInterpolation {
-    
-    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     private static final ThreadLocal<StringBuilder> STRING_BUILDER =
         new ThreadLocal<StringBuilder>() {
@@ -58,7 +55,7 @@ public final class StringInterpolation {
                     if (value instanceof List) {
                         builder.append(KeyNode.join((List) value, ","));
                     } else if (value instanceof Map) {
-                        builder.append(OBJECT_MAPPER.writeValueAsString(value));
+                        builder.append(ObjectMappers.JSON_MAPPER.writeValueAsString(value));
                     } else {
                         builder.append(value.toString());
                     }
