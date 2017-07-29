@@ -1,13 +1,11 @@
 package org.logstash.config.ir.graph;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.logstash.common.Util;
-import org.logstash.config.ir.SourceComponent;
-import org.logstash.config.ir.PluginDefinition;
+import org.logstash.ObjectMappers;
 import org.logstash.common.SourceWithMetadata;
-
-import java.util.UUID;
+import org.logstash.common.Util;
+import org.logstash.config.ir.PluginDefinition;
+import org.logstash.config.ir.SourceComponent;
 
 /**
  * Created by andrewvc on 9/15/16.
@@ -38,13 +36,13 @@ public class PluginVertex extends Vertex {
 
     @Override
     public String calculateIndividualHashSource() {
-        ObjectMapper objectMapper = new ObjectMapper();
         try {
             return Util.digest(this.getClass().getCanonicalName() + "|" +
                     (this.getExplicitId() != null ? this.getExplicitId() : "NOID") + "|" +
                     this.pluginDefinition.getName() + "|" +
                     this.pluginDefinition.getType().toString() + "|" +
-                    objectMapper.writeValueAsString(this.pluginDefinition.getArguments()));
+                    ObjectMappers.JSON_MAPPER
+                        .writeValueAsString(this.pluginDefinition.getArguments()));
         } catch (JsonProcessingException e) {
             // This is basically impossible given the constrained values in the plugin definition
             throw new RuntimeException(e);

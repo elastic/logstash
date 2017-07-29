@@ -1,6 +1,5 @@
 package org.logstash;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -21,9 +20,7 @@ public class Util {
         json.append("\"float\": 42.42, ");
         json.append("\"array\": [\"bar\",\"baz\"], ");
         json.append("\"hash\": {\"string\":\"quux\"} }");
-
-        ObjectMapper mapper = new ObjectMapper();
-        return mapper.readValue(json.toString(), Object.class);
+        return ObjectMappers.JSON_MAPPER.readValue(json.toString(), Object.class);
     }
 
     public static Map<String, Object> getMapFixtureHandcrafted() {
