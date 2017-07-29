@@ -1,24 +1,23 @@
 package org.logstash.config.ir;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.logstash.common.SourceWithMetadata;
-
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import org.logstash.ObjectMappers;
+import org.logstash.common.SourceWithMetadata;
 
 /**
  * Created by andrewvc on 9/20/16.
  */
 public class PluginDefinition implements SourceComponent, HashableWithSource {
-    private static ObjectMapper om = new ObjectMapper();
 
     @Override
     public String hashSource() {
         try {
-            String serializedArgs = om.writeValueAsString(this.getArguments());
+            String serializedArgs =
+                ObjectMappers.JSON_MAPPER.writeValueAsString(this.getArguments());
             return this.getClass().getCanonicalName() + "|" +
                     this.getType().toString() + "|" +
                     this.getName() + "|" +

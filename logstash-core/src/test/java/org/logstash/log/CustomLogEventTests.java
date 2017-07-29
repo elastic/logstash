@@ -19,24 +19,22 @@
 
 package org.logstash.log;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.junit.LoggerContextRule;
 import org.apache.logging.log4j.test.appender.ListAppender;
 import org.junit.ClassRule;
 import org.junit.Test;
-
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import org.logstash.ObjectMappers;
 
 import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertNotNull;
 
 public class CustomLogEventTests {
-    private static final ObjectMapper mapper = new ObjectMapper();
     private static final String CONFIG = "log4j2-test1.xml";
     private ListAppender appender;
 
@@ -74,7 +72,8 @@ public class CustomLogEventTests {
 
         List<String> messages = appender.getMessages();
 
-        Map<String, Object> firstMessage = mapper.readValue(messages.get(0), Map.class);
+        Map<String, Object> firstMessage =
+            ObjectMappers.JSON_MAPPER.readValue(messages.get(0), Map.class);
 
         assertEquals(5, firstMessage.size());
         assertEquals("INFO", firstMessage.get("level"));
@@ -82,7 +81,8 @@ public class CustomLogEventTests {
         assertNotNull(firstMessage.get("thread"));
         assertEquals(Collections.singletonMap("message", "simple message"), firstMessage.get("logEvent"));
 
-        Map<String, Object> secondMessage = mapper.readValue(messages.get(1), Map.class);
+        Map<String, Object> secondMessage =
+            ObjectMappers.JSON_MAPPER.readValue(messages.get(1), Map.class);
 
         assertEquals(5, secondMessage.size());
         assertEquals("WARN", secondMessage.get("level"));
@@ -93,19 +93,22 @@ public class CustomLogEventTests {
         logEvent.put("foo", "bar");
         assertEquals(logEvent, secondMessage.get("logEvent"));
 
-        Map<String, Object> thirdMessage = mapper.readValue(messages.get(2), Map.class);
+        Map<String, Object> thirdMessage =
+            ObjectMappers.JSON_MAPPER.readValue(messages.get(2), Map.class);
         assertEquals(5, thirdMessage.size());
         logEvent = Collections.singletonMap("message", "my name is: foo");
         assertEquals(logEvent, thirdMessage.get("logEvent"));
 
-        Map<String, Object> fourthMessage = mapper.readValue(messages.get(3), Map.class);
+        Map<String, Object> fourthMessage =
+            ObjectMappers.JSON_MAPPER.readValue(messages.get(3), Map.class);
         assertEquals(5, fourthMessage.size());
         logEvent = new HashMap<>();
         logEvent.put("message", "here is a map: {}");
         logEvent.put("2", 5);
         assertEquals(logEvent, fourthMessage.get("logEvent"));
 
-        Map<String, Object> fifthMessage = mapper.readValue(messages.get(4), Map.class);
+        Map<String, Object> fifthMessage =
+            ObjectMappers.JSON_MAPPER.readValue(messages.get(4), Map.class);
         assertEquals(5, fifthMessage.size());
         logEvent = Collections.singletonMap("message", "ignored params 4");
         assertEquals(logEvent, fifthMessage.get("logEvent"));
