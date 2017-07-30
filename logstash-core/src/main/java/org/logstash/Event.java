@@ -136,7 +136,8 @@ public final class Event implements Cloneable, Queueable {
     }
 
     public Object getField(String reference) {
-        return Javafier.deep(getUnconvertedField(reference));
+        final Object unconverted = getUnconvertedField(reference);
+        return unconverted == null ? null : Javafier.deep(unconverted);
     }
 
     public Object getUnconvertedField(String reference) {
@@ -330,18 +331,18 @@ public final class Event implements Cloneable, Queueable {
     }
 
     public void tag(final String tag) {
-        final Object tags = Javafier.deep(accessors.get("tags"));
+        final Object tags = accessors.get("tags");
         // short circuit the null case where we know we won't need deduplication step below at the end
         if (tags == null) {
             initTag(tag);
         } else {
-            existingTag(tags, tag);
+            existingTag(Javafier.deep(tags), tag);
         }
     }
 
     /**
      * Branch of {@link Event#tag(String)} that handles adding the first tag to this event.
-     * @param tag
+     * @param tag Tag to add
      */
     private void initTag(final String tag) {
         final ConvertedList list = new ConvertedList(1);

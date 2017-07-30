@@ -15,9 +15,6 @@ public class Javafier {
     private Javafier(){}
 
     public static Object deep(Object o) {
-        if(o == null) {
-            return null;
-        }
         if (o instanceof BiValue) {
             return ((BiValue)o).javaValue();
         } else if(o instanceof ConvertedMap) {
@@ -25,12 +22,24 @@ public class Javafier {
         }  else if(o instanceof ConvertedList) {
             return ((ConvertedList) o).unconvert();
         } else {
-            try {
-                return BiValues.newBiValue(o).javaValue();
-            } catch (IllegalArgumentException e) {
-                Class cls = o.getClass();
-                throw new IllegalArgumentException(String.format(ERR_TEMPLATE, cls.getName(), cls.getSimpleName()));
-            }
+            return fallback(o);
+        }
+    }
+
+    /**
+     * Cold path of {@link Javafier#deep(Object)}.
+     * We assume that we never get an input that is neither {@link ConvertedMap}, {@link ConvertedList}
+     * nor {@link BiValue}, but fallback to attempting to create a {@link BiValue} from the input
+     * before converting to a Java type.
+     * @param o Know to not be an expected type in {@link Javafier#deep(Object)}.
+     * @return Input converted to Java type
+     */
+    private static Object fallback(final Object o) {
+        try {
+            return BiValues.newBiValue(o).javaValue();
+        } catch (IllegalArgumentException e) {
+            Class cls = o.getClass();
+            throw new IllegalArgumentException(String.format(ERR_TEMPLATE, cls.getName(), cls.getSimpleName()));
         }
     }
 }
