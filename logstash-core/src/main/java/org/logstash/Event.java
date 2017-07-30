@@ -81,9 +81,7 @@ public final class Event implements Cloneable, Queueable {
         // keep reference to the parsedTimestamp for tagging below
         Timestamp parsedTimestamp = initTimestamp(providedTimestamp);
         this.timestamp = (parsedTimestamp == null) ? Timestamp.now() : parsedTimestamp;
-
-        this.data.put(TIMESTAMP, this.timestamp);
-
+        Accessors.set(data, TIMESTAMP, timestamp);
         // the tag() method has to be called after the Accessors initialization
         if (parsedTimestamp == null) {
             tag(TIMESTAMP_FAILURE_TAG);
@@ -124,38 +122,38 @@ public final class Event implements Cloneable, Queueable {
         this.data.put(TIMESTAMP, this.timestamp);
     }
 
-    public Object getField(String reference) {
+    public Object getField(final String reference) {
         return Javafier.deep(getUnconvertedField(reference));
     }
 
-    public Object getUnconvertedField(String reference) {
-        if (reference.equals(METADATA)) {
+    public Object getUnconvertedField(final CharSequence reference) {
+        if (compareString(METADATA, reference)) {
             return this.metadata;
-        } else if (reference.startsWith(METADATA_BRACKETS)) {
-            return Accessors.get(metadata, reference.substring(METADATA_BRACKETS.length()));
+        } else if (startsWith(METADATA_BRACKETS, reference)) {
+            return Accessors.get(metadata, metaKey(reference));
         } else {
             return Accessors.get(data, reference);
         }
     }
+    public void setField(final String reference, final Object value) {
+        setField((CharSequence) reference, value);
+    }
 
-    public void setField(String reference, Object value) {
-        if (reference.equals(TIMESTAMP)) {
-            // TODO(talevy): check type of timestamp
-            Accessors.set(data, reference, value);
-        } else if (reference.equals(METADATA_BRACKETS) || reference.equals(METADATA)) {
+    public void setField(final CharSequence reference, final Object value) {
+        if (isMetadataKey(reference)) {
             this.metadata = (Map<String, Object>) value;
-        } else if (reference.startsWith(METADATA_BRACKETS)) {
-            Accessors.set(metadata, reference.substring(METADATA_BRACKETS.length()), value);
+        } else if (startsWith(METADATA_BRACKETS, reference)) {
+            Accessors.set(metadata, metaKey(reference), value);
         } else {
             Accessors.set(data, reference, Valuefier.convert(value));
         }
     }
 
-    public boolean includes(String reference) {
-        if (reference.equals(METADATA_BRACKETS) || reference.equals(METADATA)) {
+    public boolean includes(final CharSequence reference) {
+        if (isMetadataKey(reference)) {
             return true;
-        } else if (reference.startsWith(METADATA_BRACKETS)) {
-            return Accessors.includes(metadata, reference.substring(METADATA_BRACKETS.length()));
+        } else if (startsWith(METADATA_BRACKETS, reference)) {
+            return Accessors.includes(metadata, metaKey(reference));
         } else {
             return Accessors.includes(data, reference);
         }
@@ -166,6 +164,40 @@ public final class Event implements Cloneable, Queueable {
         hashMap.put(DATA_MAP_KEY, this.data);
         hashMap.put(META_MAP_KEY, this.metadata);
         return hashMap;
+    }
+    
+    private static boolean isMetadataKey(final CharSequence reference) {
+        return compareString(METADATA_BRACKETS, reference) || compareString(METADATA, reference);
+    }
+
+    private static CharSequence metaKey(final CharSequence reference) {
+        return reference.subSequence(METADATA_BRACKETS.length(), reference.length());
+    }
+    
+    private static boolean startsWith(final String string, final CharSequence chars) {
+        final int len = string.length();
+        if (len > chars.length()) {
+            return false;
+        }
+        return compareRange(string, chars, len);
+    }
+
+    public static boolean compareString(final String string, final CharSequence chars) {
+        final int len = string.length();
+        if (len != chars.length()) {
+            return false;
+        }
+        return compareRange(string, chars, len);
+    }
+
+    private static boolean compareRange(final String string, final CharSequence chars,
+        final int len) {
+        for (int i = 0; i < len; ++i) {
+            if (string.charAt(i) != chars.charAt(i)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private static Event fromSerializableMap(Map<String, Map<String, Object>> representation) throws IOException{
@@ -246,7 +278,7 @@ public final class Event implements Cloneable, Queueable {
         return this;
     }
 
-    public Object remove(String path) {
+    public Object remove(final CharSequence path) {
         return Accessors.del(data, path);
     }
 

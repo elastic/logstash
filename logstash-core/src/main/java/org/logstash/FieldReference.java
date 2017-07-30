@@ -3,23 +3,21 @@ package org.logstash;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
-// TODO: implement thread-safe path cache singleton to avoid parsing
 
-public class FieldReference {
+public final class FieldReference {
 
     private static final Pattern SPLIT_PATTERN = Pattern.compile("[\\[\\]]");
+    private static final String[] EMPTY_STRING_ARRAY = new String[0];
 
-    private List<String> path;
-    private String key;
-    private String reference;
+    private final String[] path;
+    private final String key;
 
-    public FieldReference(List<String> path, String key, String reference) {
-        this.path = path;
+    private FieldReference(final List<String> path, final String key) {
+        this.path = path.toArray(EMPTY_STRING_ARRAY);
         this.key = key;
-        this.reference = reference;
     }
 
-    public List<String> getPath() {
+    public String[] getPath() {
         return path;
     }
 
@@ -27,19 +25,14 @@ public class FieldReference {
         return key;
     }
 
-    public String getReference() {
-        return reference;
-    }
-
-    public static FieldReference parse(String reference) {
+    public static FieldReference parse(final CharSequence reference) {
         final String[] parts = SPLIT_PATTERN.split(reference);
-        List<String> path = new ArrayList<>(parts.length);
+        final List<String> path = new ArrayList<>(parts.length);
         for (final String part : parts) {
             if (!part.isEmpty()) {
                 path.add(part);
             }
         }
-        String key = path.remove(path.size() - 1);
-        return new FieldReference(path, key, reference);
+        return new FieldReference(path, path.remove(path.size() - 1));
     }
 }

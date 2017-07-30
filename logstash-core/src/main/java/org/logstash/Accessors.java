@@ -10,19 +10,19 @@ public final class Accessors {
         //Utility Class
     }
 
-    public static Object get(final Map<String, Object> data, final String reference) {
+    public static Object get(final Map<String, Object> data, final CharSequence reference) {
         final FieldReference field = PathCache.cache(reference);
         final Object target = findParent(data, field);
         return target == null ? null : fetch(target, field.getKey());
     }
 
-    public static Object set(final Map<String, Object> data, final String reference,
+    public static Object set(final Map<String, Object> data, final CharSequence reference,
         final Object value) {
         final FieldReference field = PathCache.cache(reference);
         return setChild(findCreateTarget(data, field), field.getKey(), value);
     }
 
-    public static Object del(final Map<String, Object> data, final String reference) {
+    public static Object del(final Map<String, Object> data, final CharSequence reference) {
         final FieldReference field = PathCache.cache(reference);
         final Object target = findParent(data, field);
         if (target instanceof Map) {
@@ -32,7 +32,7 @@ public final class Accessors {
         }
     }
 
-    public static boolean includes(final Map<String, Object> data, final String reference) {
+    public static boolean includes(final Map<String, Object> data, final CharSequence reference) {
         final FieldReference field = PathCache.cache(reference);
         final Object target = findParent(data, field);
         final String key = field.getKey();
