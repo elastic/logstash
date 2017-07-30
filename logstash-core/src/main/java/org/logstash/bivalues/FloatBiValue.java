@@ -6,7 +6,7 @@ import org.jruby.RubyFloat;
 import java.io.ObjectStreamException;
 
 
-public class FloatBiValue extends BiValueCommon<RubyFloat, Float> implements BiValue<RubyFloat, Float> {
+public class FloatBiValue extends BiValue<RubyFloat, Float> {
 
     public FloatBiValue(RubyFloat rubyValue) {
         this.rubyValue = rubyValue;

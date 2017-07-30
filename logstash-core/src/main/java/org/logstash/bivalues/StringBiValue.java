@@ -5,8 +5,7 @@ import java.io.ObjectStreamException;
 import org.jruby.Ruby;
 import org.jruby.RubyString;
 
-public final class StringBiValue extends BiValueCommon<RubyString, String>
-    implements BiValue<RubyString, String> {
+public final class StringBiValue extends BiValue<RubyString, String> {
 
     public StringBiValue(RubyString rubyValue) {
         this.rubyValue = rubyValue;
@@ -30,7 +29,7 @@ public final class StringBiValue extends BiValueCommon<RubyString, String>
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o instanceof BiValue) {
-            final BiValueCommon<?, ?> other = (BiValueCommon<?, ?>) o;
+            final BiValue<?, ?> other = (BiValue<?, ?>) o;
             return other.hasRubyValue() && other.rubyValueUnconverted().equals(rubyValue) ||
                 (other.hasJavaValue() && other.javaValue().equals(this.javaValue()));
         } else {
