@@ -6,7 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.junit.Test;
-import org.logstash.bivalues.StringBiValue;
+import org.logstash.bivalues.BiValues;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -20,7 +20,9 @@ public class AccessorsTest {
         Map<Serializable, Object> data = new HashMap<>();
         data.put("foo", "bar");
         String reference = "foo";
-        assertEquals(new StringBiValue("bar"), get(ConvertedMap.newFromMap(data), reference));
+        assertEquals(
+            BiValues.RUBY.newString("bar"), get(ConvertedMap.newFromMap(data), reference)
+        );
     }
 
     @Test
@@ -36,7 +38,9 @@ public class AccessorsTest {
         Map<Serializable, Object>  data = new HashMap<>();
         data.put("foo", "bar");
         String reference = "[foo]";
-        assertEquals(new StringBiValue("bar"), get(ConvertedMap.newFromMap(data), reference));
+        assertEquals(
+            BiValues.RUBY.newString("bar"), get(ConvertedMap.newFromMap(data), reference)
+        );
     }
 
     @Test
@@ -46,7 +50,9 @@ public class AccessorsTest {
         data.put("foo", inner);
         inner.put("bar", "baz");
         String reference = "[foo][bar]";
-        assertEquals(new StringBiValue("baz"), get(ConvertedMap.newFromMap(data), reference));
+        assertEquals(
+            BiValues.RUBY.newString("baz"), get(ConvertedMap.newFromMap(data), reference)
+        );
     }
 
     @Test
@@ -66,7 +72,9 @@ public class AccessorsTest {
         data.put("foo", inner);
         inner.add("bar");
         String reference = "[foo][0]";
-        assertEquals(new StringBiValue("bar"), get(ConvertedMap.newFromMap(data), reference));
+        assertEquals(
+            BiValues.RUBY.newString("bar"), get(ConvertedMap.newFromMap(data), reference)
+        );
     }
 
     @Test

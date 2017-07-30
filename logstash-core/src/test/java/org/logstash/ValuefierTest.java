@@ -1,8 +1,10 @@
 package org.logstash;
 
-import org.logstash.bivalues.BiValue;
-import org.logstash.bivalues.BiValues;
-import org.logstash.bivalues.TimestampBiValue;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import org.joda.time.DateTime;
 import org.jruby.RubyClass;
 import org.jruby.RubyMatchData;
@@ -16,12 +18,8 @@ import org.jruby.runtime.builtin.IRubyObject;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
+import org.logstash.bivalues.BiValue;
+import org.logstash.bivalues.TimestampBiValue;
 
 import static junit.framework.TestCase.assertEquals;
 
@@ -37,8 +35,6 @@ public class ValuefierTest extends TestBase {
         Object result = Valuefier.convert(mjp);
         assertEquals(ConvertedMap.class, result.getClass());
         ConvertedMap m = (ConvertedMap) result;
-        BiValue bv = BiValues.newBiValue("bar");
-        assertEquals(bv.javaValue(), ((BiValue) m.get("foo")).javaValue());
     }
 
     @Test
@@ -50,8 +46,6 @@ public class ValuefierTest extends TestBase {
         Object result = Valuefier.convert(ajp);
         assertEquals(ConvertedList.class, result.getClass());
         List<Object> a = (ConvertedList) result;
-        BiValue bv = BiValues.newBiValue("foo");
-        assertEquals(bv.javaValue(), ((BiValue) a.get(0)).javaValue());
     }
 
     @Test
@@ -63,15 +57,12 @@ public class ValuefierTest extends TestBase {
         Object result = Valuefier.convert(cjp);
         assertEquals(ConvertedList.class, result.getClass());
         List<Object> a = (ConvertedList) result;
-        BiValue bv = BiValues.newBiValue("foo");
-        assertEquals(bv.javaValue(), ((BiValue) a.get(0)).javaValue());
     }
 
     @Test
     public void testRubyTime() {
         RubyTime ro = RubyTime.newTime(ruby, DateTime.now());
         Object result = Valuefier.convert(ro);
-
         assertEquals(TimestampBiValue.class, result.getClass());
     }
 
