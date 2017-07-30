@@ -5,8 +5,7 @@ import java.io.ObjectStreamException;
 import org.jruby.Ruby;
 import org.jruby.RubyNil;
 
-public final class NullBiValue extends BiValueCommon<RubyNil, Object>
-    implements BiValue<RubyNil, Object> {
+public final class NullBiValue extends BiValue<RubyNil, Object> {
 
     private static final NullBiValue INSTANCE =
         new NullBiValue((RubyNil) Ruby.getGlobalRuntime().getNil());

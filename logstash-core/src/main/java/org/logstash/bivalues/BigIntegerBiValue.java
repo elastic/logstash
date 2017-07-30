@@ -6,7 +6,7 @@ import org.jruby.RubyBignum;
 import java.io.ObjectStreamException;
 import java.math.BigInteger;
 
-public class BigIntegerBiValue extends BiValueCommon<RubyBignum, BigInteger> implements BiValue<RubyBignum, BigInteger> {
+public class BigIntegerBiValue extends BiValue<RubyBignum, BigInteger> {
 
     public BigIntegerBiValue(RubyBignum rubyValue) {
         this.rubyValue = rubyValue;

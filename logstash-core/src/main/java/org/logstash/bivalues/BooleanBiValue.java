@@ -6,7 +6,7 @@ import org.jruby.RubyBoolean;
 import java.io.ObjectStreamException;
 
 
-public class BooleanBiValue extends BiValueCommon<RubyBoolean, Boolean> implements BiValue<RubyBoolean, Boolean> {
+public class BooleanBiValue extends BiValue<RubyBoolean, Boolean> {
 
     public BooleanBiValue(RubyBoolean rubyValue) {
         this.rubyValue = rubyValue;
