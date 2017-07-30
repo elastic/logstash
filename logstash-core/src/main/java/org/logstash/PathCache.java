@@ -1,10 +1,12 @@
 package org.logstash;
 
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public final class PathCache {
 
-    private static final ConcurrentHashMap<String, FieldReference> cache = new ConcurrentHashMap<>();
+    private static final Map<String, FieldReference> cache =
+        new ConcurrentHashMap<>(64, 0.2F, 1);
 
     private static final FieldReference timestamp = cache(Event.TIMESTAMP);
 
