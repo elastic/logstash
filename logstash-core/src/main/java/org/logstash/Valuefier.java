@@ -1,12 +1,12 @@
 package org.logstash;
 
 import java.io.Serializable;
-import org.logstash.bivalues.BiValue;
-import org.logstash.bivalues.BiValues;
-import org.logstash.ext.JrubyTimestampExtLibrary;
+import java.util.List;
+import java.util.Map;
 import org.joda.time.DateTime;
 import org.jruby.RubyArray;
 import org.jruby.RubyHash;
+import org.jruby.RubyString;
 import org.jruby.RubyTime;
 import org.jruby.java.proxies.ArrayJavaProxy;
 import org.jruby.java.proxies.ConcreteJavaProxy;
@@ -14,9 +14,9 @@ import org.jruby.java.proxies.JavaProxy;
 import org.jruby.java.proxies.MapJavaProxy;
 import org.jruby.javasupport.JavaUtil;
 import org.jruby.runtime.builtin.IRubyObject;
-
-import java.util.List;
-import java.util.Map;
+import org.logstash.bivalues.BiValue;
+import org.logstash.bivalues.BiValues;
+import org.logstash.ext.JrubyTimestampExtLibrary;
 
 public class Valuefier {
     private static final String PROXY_ERR_TEMPLATE = "Missing Valuefier handling for full class name=%s, simple name=%s, wrapped object=%s";
@@ -53,6 +53,12 @@ public class Valuefier {
     }
 
     public static Object convert(Object o) throws IllegalArgumentException {
+        if (o instanceof RubyString) {
+            return o;
+        }
+        if (o instanceof String) {
+            return BiValues.RUBY.newString((String) o);
+        }
         if (o instanceof ConvertedMap || o instanceof ConvertedList) {
             return o;
         }

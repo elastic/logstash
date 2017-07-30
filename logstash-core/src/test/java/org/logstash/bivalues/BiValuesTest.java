@@ -1,22 +1,20 @@
 package org.logstash.bivalues;
 
-import org.logstash.TestBase;
-import org.logstash.Timestamp;
-import org.logstash.ext.JrubyTimestampExtLibrary.RubyTimestamp;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import org.jruby.RubyBignum;
 import org.jruby.RubyBoolean;
 import org.jruby.RubyFixnum;
 import org.jruby.RubyFloat;
 import org.jruby.RubyInteger;
 import org.jruby.RubyNil;
-import org.jruby.RubyString;
 import org.jruby.RubySymbol;
 import org.jruby.ext.bigdecimal.RubyBigDecimal;
 import org.jruby.javasupport.JavaUtil;
 import org.junit.Test;
-
-import java.math.BigDecimal;
-import java.math.BigInteger;
+import org.logstash.TestBase;
+import org.logstash.Timestamp;
+import org.logstash.ext.JrubyTimestampExtLibrary.RubyTimestamp;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -24,30 +22,6 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 public class BiValuesTest extends TestBase {
-
-    @Test
-    public void testBiValuesStringRuby() {
-        String js = "double";
-        RubyString rs = RubyString.newUnicodeString(ruby, js);
-        BiValue subject = BiValues.newBiValue(rs);
-
-        assertEquals(rs, subject.rubyValueUnconverted());
-        assertEquals(rs.getClass(), subject.rubyValue(ruby).getClass());
-        assertEquals(js, subject.javaValue());
-        assertEquals(String.class, subject.javaValue().getClass());
-    }
-
-    @Test
-    public void testBiValuesStringJava() {
-        String js = "double";
-        RubyString rs = RubyString.newUnicodeString(ruby, js);
-        BiValue subject = BiValues.newBiValue(js);
-
-        assertEquals(js, subject.javaValue());
-        assertEquals(String.class, subject.javaValue().getClass());
-        assertEquals(rs, subject.rubyValue(ruby));
-        assertEquals(rs.getClass(), subject.rubyValue(ruby).getClass());
-    }
 
     @Test
     public void testBiValuesSymbolRuby() {

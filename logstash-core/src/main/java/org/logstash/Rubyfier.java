@@ -1,15 +1,15 @@
 package org.logstash;
 
-import org.logstash.bivalues.BiValue;
-import org.logstash.bivalues.BiValues;
-import org.jruby.Ruby;
-import org.jruby.RubyArray;
-import org.jruby.RubyHash;
-import org.jruby.runtime.builtin.IRubyObject;
-
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import org.jruby.Ruby;
+import org.jruby.RubyArray;
+import org.jruby.RubyHash;
+import org.jruby.RubyString;
+import org.jruby.runtime.builtin.IRubyObject;
+import org.logstash.bivalues.BiValue;
+import org.logstash.bivalues.BiValues;
 
 public final class Rubyfier {
     private static final String ERR_TEMPLATE = "Missing Java class handling for full class name=%s, simple name=%s";
@@ -26,6 +26,8 @@ public final class Rubyfier {
     }
 
     public static IRubyObject deep(Ruby runtime, final Object input) {
+        if (input instanceof RubyString) return (RubyString) input;
+        if (input instanceof String) return BiValues.RUBY.newString((String) input);
         if (input instanceof BiValue) return ((BiValue) input).rubyValue(runtime);
         if (input instanceof Map) return deepMap(runtime, (Map) input);
         if (input instanceof List) return deepList(runtime, (List) input);
