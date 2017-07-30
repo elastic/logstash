@@ -6,7 +6,7 @@ import org.jruby.javasupport.JavaUtil;
 
 import java.io.ObjectStreamException;
 
-public class LongBiValue extends BiValueCommon<RubyInteger, Long> implements BiValue<RubyInteger, Long> {
+public class LongBiValue extends BiValue<RubyInteger, Long> {
 
     public LongBiValue(RubyInteger rubyValue) {
         this.rubyValue = rubyValue;

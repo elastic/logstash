@@ -6,7 +6,7 @@ import org.jruby.javasupport.JavaUtil;
 
 import java.io.ObjectStreamException;
 
-public class JavaProxyBiValue extends BiValueCommon<JavaProxy, Object> implements BiValue<JavaProxy, Object> {
+public class JavaProxyBiValue extends BiValue<JavaProxy, Object> {
 
     public JavaProxyBiValue(JavaProxy rubyValue) {
         this.rubyValue = rubyValue;

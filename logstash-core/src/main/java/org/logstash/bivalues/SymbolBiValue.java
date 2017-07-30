@@ -5,7 +5,7 @@ import org.jruby.RubySymbol;
 
 import java.io.ObjectStreamException;
 
-public class SymbolBiValue extends BiValueCommon<RubySymbol, String> implements BiValue<RubySymbol, String> {
+public class SymbolBiValue extends BiValue<RubySymbol, String> {
 
     public SymbolBiValue(RubySymbol rubyValue) {
         this.rubyValue = rubyValue;

@@ -6,7 +6,7 @@ import org.jruby.ext.bigdecimal.RubyBigDecimal;
 import java.io.ObjectStreamException;
 import java.math.BigDecimal;
 
-public class BigDecimalBiValue extends BiValueCommon<RubyBigDecimal, BigDecimal> implements BiValue<RubyBigDecimal, BigDecimal> {
+public class BigDecimalBiValue extends BiValue<RubyBigDecimal, BigDecimal> {
 
     public BigDecimalBiValue(RubyBigDecimal rubyValue) {
         this.rubyValue = rubyValue;

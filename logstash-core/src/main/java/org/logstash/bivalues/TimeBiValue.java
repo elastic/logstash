@@ -7,7 +7,7 @@ import org.jruby.RubyTime;
 import java.io.ObjectStreamException;
 
 
-public class TimeBiValue extends BiValueCommon<RubyTime, DateTime> implements BiValue<RubyTime, DateTime> {
+public class TimeBiValue extends BiValue<RubyTime, DateTime> {
 
     public TimeBiValue(RubyTime rubyValue) {
         this.rubyValue = rubyValue;
