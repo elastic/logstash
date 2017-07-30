@@ -12,7 +12,6 @@ import org.jruby.RubyBoolean;
 import org.jruby.RubyFixnum;
 import org.jruby.RubyFloat;
 import org.jruby.RubyInteger;
-import org.jruby.RubyString;
 import org.jruby.RubySymbol;
 import org.jruby.RubyTime;
 import org.jruby.ext.bigdecimal.RubyBigDecimal;
@@ -24,23 +23,6 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 public class BiValueTest extends TestBase {
-    @Test
-    public void testStringBiValueFromRuby() {
-        String s = "foo bar baz";
-        StringBiValue subject = new StringBiValue(RubyString.newString(ruby, s));
-        assertTrue(subject.hasRubyValue());
-        assertTrue(subject.hasJavaValue());
-        assertEquals(s, subject.javaValue());
-    }
-
-    @Test
-    public void testStringBiValueFromJava() {
-        RubyString v = RubyString.newString(ruby, "foo bar baz");
-        StringBiValue subject = new StringBiValue("foo bar baz");
-        assertFalse(subject.hasRubyValue());
-        assertTrue(subject.hasJavaValue());
-        assertEquals(v, subject.rubyValue(ruby));
-    }
 
     @Test
     public void testSymbolBiValueFromRuby() {

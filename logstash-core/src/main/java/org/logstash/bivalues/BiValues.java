@@ -3,11 +3,11 @@ package org.logstash.bivalues;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.HashMap;
+import org.jruby.Ruby;
 import org.jruby.RubyBignum;
 import org.jruby.RubyBoolean;
 import org.jruby.RubyFloat;
 import org.jruby.RubyInteger;
-import org.jruby.RubyString;
 import org.jruby.RubySymbol;
 import org.jruby.ext.bigdecimal.RubyBigDecimal;
 import org.jruby.java.proxies.JavaProxy;
@@ -23,7 +23,6 @@ public enum BiValues {
     JAVA_LANG_FLOAT(BiValueType.FLOAT),
     JAVA_LANG_INTEGER(BiValueType.INT),
     JAVA_LANG_LONG(BiValueType.LONG),
-    JAVA_LANG_STRING(BiValueType.STRING),
     JAVA_MATH_BIGDECIMAL(BiValueType.DECIMAL),
     JAVA_MATH_BIGINTEGER(BiValueType.BIGINT),
     ORG_JRUBY_EXT_BIGDECIMAL_RUBYBIGDECIMAL(BiValueType.DECIMAL),
@@ -36,7 +35,6 @@ public enum BiValues {
     ORG_JRUBY_RUBYFLOAT(BiValueType.DOUBLE),
     ORG_JRUBY_RUBYINTEGER(BiValueType.LONG),
     ORG_JRUBY_RUBYNIL(BiValueType.NULL),
-    ORG_JRUBY_RUBYSTRING(BiValueType.STRING),
     ORG_JRUBY_RUBYSYMBOL(BiValueType.SYMBOL), // one way conversion, a Java string will use STRING
     NULL(BiValueType.NULL);
 
@@ -66,6 +64,8 @@ public enum BiValues {
         hm.put("org.jruby.java.proxies.ConcreteJavaProxy", "ORG_JRUBY_JAVA_PROXIES_CONCRETEJAVAPROXY");
         return hm;
     }
+
+    public static final Ruby RUBY = Ruby.getGlobalRuntime();
 
     public static final NullBiValue NULL_BI_VALUE = NullBiValue.newNullBiValue();
 
@@ -105,14 +105,6 @@ public enum BiValues {
     }
 
     private enum BiValueType {
-        STRING {
-            BiValue build(Object value) {
-                if (value instanceof IRubyObject) {
-                    return new StringBiValue((RubyString) value);
-                }
-                return new StringBiValue((String) value);
-            }
-        },
         SYMBOL {
             BiValue build(Object value) {
                 if (value instanceof IRubyObject) {

@@ -1,6 +1,7 @@
 package org.logstash;
 
 
+import org.jruby.RubyString;
 import org.logstash.bivalues.BiValue;
 import org.logstash.bivalues.BiValues;
 
@@ -15,6 +16,12 @@ public class Javafier {
     private Javafier(){}
 
     public static Object deep(Object o) {
+        if (o instanceof RubyString) {
+            return o.toString();
+        }
+        if (o instanceof String) {
+            return o;
+        }
         if (o instanceof BiValue) {
             return ((BiValue)o).javaValue();
         } else if(o instanceof ConvertedMap) {
