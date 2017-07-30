@@ -96,15 +96,14 @@ public class JrubyEventExtLibrary implements Library {
         @JRubyMethod(name = "get", required = 1)
         public IRubyObject ruby_get_field(ThreadContext context, RubyString reference)
         {
-            Object value = this.event.getUnconvertedField(reference.asJavaString());
+            Object value = this.event.getUnconvertedField(reference.getByteList());
             return Rubyfier.deep(context.runtime, value);
         }
 
         @JRubyMethod(name = "set", required = 2)
         public IRubyObject ruby_set_field(ThreadContext context, RubyString reference, IRubyObject value)
         {
-            String r = reference.asJavaString();
-
+            final CharSequence r = reference.getByteList();
             if (PathCache.isTimestamp(r)) {
                 if (!(value instanceof JrubyTimestampExtLibrary.RubyTimestamp)) {
                     throw context.runtime.newTypeError("wrong argument type " + value.getMetaClass() + " (expected LogStash::Timestamp)");
@@ -139,13 +138,13 @@ public class JrubyEventExtLibrary implements Library {
         @JRubyMethod(name = "include?", required = 1)
         public IRubyObject ruby_includes(ThreadContext context, RubyString reference)
         {
-            return RubyBoolean.newBoolean(context.runtime, this.event.includes(reference.asJavaString()));
+            return RubyBoolean.newBoolean(context.runtime, this.event.includes(reference.getByteList()));
         }
 
         @JRubyMethod(name = "remove", required = 1)
         public IRubyObject ruby_remove(ThreadContext context, RubyString reference)
         {
-            return Rubyfier.deep(context.runtime, this.event.remove(reference.asJavaString()));
+            return Rubyfier.deep(context.runtime, this.event.remove(reference.getByteList()));
         }
 
         @JRubyMethod(name = "clone")
