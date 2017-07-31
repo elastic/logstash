@@ -13,7 +13,6 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
@@ -124,30 +123,6 @@ public class AccessorsTest {
         assertNull(accessors.lutGet(reference));
         assertNull(accessors.get(reference));
         assertEquals(inner, accessors.lutGet(reference));
-    }
-    /*
-     * Check if accessors are able to recovery from
-     * failure to convert the key (string) to integer,
-     * when it is a non-numeric value, which is not
-     * expected.
-     */
-    @Test
-    public void testInvalidIdList() throws Exception {
-        Map<String, Object> data = new HashMap<>();
-        List inner = new ArrayList();
-        data.put("map1", inner);
-        inner.add("obj1");
-        inner.add("obj2");
-
-        String reference = "[map1][IdNonNumeric]";
-
-        TestableAccessors accessors = new TestableAccessors(data);
-        assertNull(accessors.lutGet(reference));
-        assertNull(accessors.get(reference));
-        assertNull(accessors.set(reference, "obj3"));
-        assertEquals(inner, accessors.lutGet(reference));
-        assertFalse(accessors.includes(reference));
-        assertNull(accessors.del(reference));
     }
 
     @Test
@@ -262,8 +237,7 @@ public class AccessorsTest {
 
       @Theory
       public void testListIndexOutOfBounds(int i) {
-        exception.expect(IndexOutOfBoundsException.class);
-        Accessors.listIndex(i, size);
+        assertEquals(-1, Accessors.listIndex(i, size));
       }
     }
 
