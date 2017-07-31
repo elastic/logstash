@@ -9,8 +9,6 @@ end
 namespace "compile" do
   desc "Compile the config grammar"
 
-  task "grammar" => "logstash-core/lib/logstash/config/grammar.rb"
-  
   def safe_system(*args)
     if !system(*args)
       status = $?
@@ -24,5 +22,5 @@ namespace "compile" do
   end
 
   desc "Build everything"
-  task "all" => ["grammar", "logstash-core-java"]
+  task "all" => ["logstash-core-java"]
 end

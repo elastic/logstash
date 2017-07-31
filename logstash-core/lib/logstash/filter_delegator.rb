@@ -2,6 +2,7 @@
 #
 module LogStash
   class FilterDelegator
+    include org.logstash.config.ir.CompiledPipeline::Filter
     extend Forwardable
     DELEGATED_METHODS = [
       :register,
@@ -32,7 +33,8 @@ module LogStash
       namespaced_metric.gauge(:name, config_name)
 
       # Not all the filters will do bufferings
-      define_flush_method if @filter.respond_to?(:flush)
+      @flushes = @filter.respond_to?(:flush)
+      define_flush_method if @flushes
     end
 
     def config_name
@@ -52,6 +54,10 @@ module LogStash
       c = new_events.count { |event| !event.cancelled? }
       @metric_events_out.increment(c) if c > 0
       new_events
+    end
+    
+    def has_flush()
+      @flushes
     end
 
     private

@@ -1,19 +1,19 @@
 package org.logstash.config.ir;
 
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.logstash.common.Util;
 import org.logstash.config.ir.graph.Graph;
 import org.logstash.config.ir.graph.PluginVertex;
 import org.logstash.config.ir.graph.QueueVertex;
 import org.logstash.config.ir.graph.Vertex;
 
-import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
 /**
  * Created by andrewvc on 9/20/16.
  */
-public class PipelineIR implements Hashable {
+public final class PipelineIR implements Hashable {
+
     private String uniqueHash;
 
     public Graph getGraph() {

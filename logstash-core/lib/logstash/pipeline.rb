@@ -6,7 +6,6 @@ require "logstash/namespace"
 require "logstash/errors"
 require "logstash-core/logstash-core"
 require "logstash/event"
-require "logstash/config/file"
 require "logstash/filters/base"
 require "logstash/inputs/base"
 require "logstash/outputs/base"
@@ -29,6 +28,7 @@ require "securerandom"
 java_import org.logstash.common.DeadLetterQueueFactory
 java_import org.logstash.common.SourceWithMetadata
 java_import org.logstash.common.io.DeadLetterQueueWriter
+java_import org.logstash.config.ir.CompiledPipeline
 
 module LogStash; class BasePipeline
   include LogStash::Util::Loggable
@@ -47,6 +47,7 @@ module LogStash; class BasePipeline
     @config_hash = Digest::SHA1.hexdigest(@config_str)
 
     @lir = compile_lir
+    @lir_execution = CompiledPipeline.new(@lir)
 
     # Every time #plugin is invoked this is incremented to give each plugin
     # a unique id when auto-generating plugin ids
@@ -56,33 +57,17 @@ module LogStash; class BasePipeline
 
     # A list of plugins indexed by id
     @plugins_by_id = {}
-    @inputs = nil
-    @filters = nil
-    @outputs = nil
     @agent = agent
 
     @dlq_writer = dlq_writer
-
-    grammar = LogStashConfigParser.new
-    parsed_config = grammar.parse(config_str)
-    raise(ConfigurationError, grammar.failure_reason) if parsed_config.nil?
-
-    parsed_config.process_escape_sequences = settings.get_value("config.support_escapes")
-    config_code = parsed_config.compile
-
     # config_code = BasePipeline.compileConfig(config_str)
 
     if settings.get_value("config.debug") && @logger.debug?
       @logger.debug("Compiled pipeline code", default_logging_keys(:code => config_code))
     end
-
-    # Evaluate the config compiled code that will initialize all the plugins and define the
-    # filter and output methods.
-    begin
-      eval(config_code)
-    rescue => e
-      raise e
-    end
+    @inputs = @lir_execution.inputs(self)
+    @filters = @lir_execution.filters(self)
+    @outputs = @lir_execution.outputs(self)
   end
 
   def dlq_writer
@@ -232,6 +217,7 @@ module LogStash; class Pipeline < BasePipeline
     @flushing = Concurrent::AtomicReference.new(false)
     @force_shutdown = Concurrent::AtomicBoolean.new(false)
     @outputs_registered = Concurrent::AtomicBoolean.new(false)
+    @finished_execution = Concurrent::AtomicBoolean.new(false)
   end # def initialize
 
   def ready?
@@ -263,7 +249,7 @@ module LogStash; class Pipeline < BasePipeline
   end
 
   def filters?
-    return @filters.any?
+    @filters.any?
   end
 
   def start
@@ -273,8 +259,6 @@ module LogStash; class Pipeline < BasePipeline
     collect_dlq_stats
 
     @logger.debug("Starting pipeline", default_logging_keys)
-
-    @finished_execution = Concurrent::AtomicBoolean.new(false)
 
     @thread = Thread.new do
       begin
@@ -304,7 +288,7 @@ module LogStash; class Pipeline < BasePipeline
       # because the execution of the thread was successful and complete
       if @finished_execution.true?
         return true
-      elsif !thread.alive?
+      elsif thread.nil? || !thread.alive?
         return false
       elsif running?
         return true
@@ -370,22 +354,11 @@ module LogStash; class Pipeline < BasePipeline
     settings.get_value("pipeline.system")
   end
 
-  # register_plugin simply calls the plugin #register method and catches & logs any error
-  # @param plugin [Plugin] the plugin to register
-  # @return [Plugin] the registered plugin
-  def register_plugin(plugin)
-    plugin.register
-    plugin
-  rescue => e
-    @logger.error("Error registering plugin", default_logging_keys(:plugin => plugin.inspect, :error => e.message))
-    raise e
-  end
-
   # register_plugins calls #register_plugin on the plugins list and upon exception will call Plugin#do_close on all registered plugins
   # @param plugins [Array[Plugin]] the list of plugins to register
   def register_plugins(plugins)
     registered = []
-    plugins.each { |plugin| registered << register_plugin(plugin) }
+    plugins.each { |plugin| registered << @lir_execution.registerPlugin(plugin) }
   rescue => e
     registered.each(&:do_close)
     raise e
@@ -462,6 +435,7 @@ module LogStash; class Pipeline < BasePipeline
       shutdown_requested |= signal.shutdown? # latch on shutdown signal
 
       batch = @filter_queue_client.read_batch # metrics are started in read_batch
+
       if batch.size > 0
         @events_consumed.increment(batch.size)
         filter_batch(batch)
@@ -488,13 +462,13 @@ module LogStash; class Pipeline < BasePipeline
   end
 
   def filter_batch(batch)
+    buffer = []
     batch.each do |event|
       return if @force_shutdown.true?
-
-      filter_func(event).each do |e|
-        #these are both original and generated events
-        batch.merge(e) unless e.cancelled?
-      end
+      @lir_execution.filter(event, buffer) unless event.cancelled?
+    end
+    buffer.each do |e|
+      batch.merge(e) unless e.nil? || e.cancelled?
     end
     @filter_queue_client.add_filtered_metrics(batch)
     @events_filtered.increment(batch.size)
@@ -514,24 +488,11 @@ module LogStash; class Pipeline < BasePipeline
   # Take an array of events and send them to the correct output
   def output_batch(batch)
     # Build a mapping of { output_plugin => [events...]}
-    output_events_map = Hash.new { |h, k| h[k] = [] }
+    buffer = []
     batch.each do |event|
-      # We ask the AST to tell us which outputs to send each event to
-      # Then, we stick it in the correct bin
-
-      # output_func should never return anything other than an Array but we have lots of legacy specs
-      # that monkeypatch it and return nil. We can deprecate  "|| []" after fixing these specs
-      (output_func(event) || []).each do |output|
-        output_events_map[output].push(event)
-      end
+      buffer.push(event)
     end
-    # Now that we have our output to event mapping we can just invoke each output
-    # once with its list of events
-    output_events_map.each do |output, events|
-      return if @force_shutdown.true?
-      output.multi_receive(events)
-    end
-
+    @lir_execution.output(buffer)
     @filter_queue_client.add_output_metrics(batch)
   end
 
@@ -657,19 +618,26 @@ module LogStash; class Pipeline < BasePipeline
   def filter(event, &block)
     maybe_setup_out_plugins
     # filter_func returns all filtered events, including cancelled ones
-    filter_func(event).each {|e| block.call(e)}
+    wait_until_started
+    buffer = []
+    @lir_execution.filter(event, buffer)
+    buffer.each { |e| 
+      block.call(e) unless e.nil?
+    }
   end
 
   # perform filters flush and yield flushed event to the passed block
   # @param options [Hash]
   # @option options [Boolean] :final => true to signal a final shutdown flush
   def flush_filters(options = {}, &block)
-    flushers = options[:final] ? @shutdown_flushers : @periodic_flushers
+    flushers = options[:final] ? @lir_execution.shutdownFlushers : @lir_execution.periodicFlushers
 
+    events = []
     flushers.each do |flusher|
       return if @force_shutdown.true?
-      flusher.call(options, &block)
+      events += flusher.flush(options, &block)
     end
+    events.each {|e| block.call(e)}
   end
 
   def start_flusher

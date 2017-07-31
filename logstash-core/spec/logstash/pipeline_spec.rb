@@ -104,7 +104,7 @@ class DummyFlushingFilterPeriodic < DummyFlushingFilter
   def flush(options)
     # Don't generate events on the shutdown flush to make sure we actually test the
     # periodic flush.
-    options[:final] ? [] : [::LogStash::Event.new("message" => "dummy_flush")]
+    return options[:final] ? [] : [::LogStash::Event.new("message" => "dummy_flush")]
   end
 end
 
@@ -247,13 +247,6 @@ describe LogStash::Pipeline do
           pipeline_settings_obj.set("config.debug", false)
           expect(logger).not_to receive(:debug).with(/Compiled pipeline/, anything)
           pipeline = mock_pipeline_from_string(test_config_with_filters)
-          pipeline.close
-        end
-
-        it "should print the compiled code if config.debug is set to true" do
-          pipeline_settings_obj.set("config.debug", true)
-          expect(logger).to receive(:debug).with(/Compiled pipeline/, anything)
-          pipeline = mock_pipeline_from_string(test_config_with_filters, pipeline_settings_obj)
           pipeline.close
         end
       end
@@ -586,38 +579,6 @@ describe LogStash::Pipeline do
     end
   end
 
-  context "Multiples pipelines" do
-    before do
-      allow(LogStash::Plugin).to receive(:lookup).with("input", "dummyinputgenerator").and_return(DummyInputGenerator)
-      allow(LogStash::Plugin).to receive(:lookup).with("codec", "plain").and_return(DummyCodec)
-      allow(LogStash::Plugin).to receive(:lookup).with("filter", "dummyfilter").and_return(DummyFilter)
-      allow(LogStash::Plugin).to receive(:lookup).with("output", "dummyoutput").and_return(::LogStash::Outputs::DummyOutput)
-      allow(LogStash::Plugin).to receive(:lookup).with("output", "dummyoutputmore").and_return(DummyOutputMore)
-    end
-
-    # multiple pipelines cannot be instantiated using the same PQ settings, force memory queue
-    before :each do
-      pipeline_workers_setting = LogStash::SETTINGS.get_setting("queue.type")
-      allow(pipeline_workers_setting).to receive(:value).and_return("memory")
-      pipeline_settings.each {|k, v| pipeline_settings_obj.set(k, v) }
-    end
-
-    let(:pipeline1) { mock_pipeline_from_string("input { dummyinputgenerator {} } filter { dummyfilter {} } output { dummyoutput {}}") }
-    let(:pipeline2) { mock_pipeline_from_string("input { dummyinputgenerator {} } filter { dummyfilter {} } output { dummyoutputmore {}}") }
-
-    after  do
-      pipeline1.close
-      pipeline2.close
-    end
-
-    it "should handle evaluating different config" do
-      expect(pipeline1.output_func(LogStash::Event.new)).not_to include(nil)
-      expect(pipeline1.filter_func(LogStash::Event.new)).not_to include(nil)
-      expect(pipeline2.output_func(LogStash::Event.new)).not_to include(nil)
-      expect(pipeline1.filter_func(LogStash::Event.new)).not_to include(nil)
-    end
-  end
-
   context "Periodic Flush" do
     let(:config) do
       <<-EOS
@@ -650,7 +611,7 @@ describe LogStash::Pipeline do
         sleep(0.1) until pipeline.ready?
       end
       Stud.try(max_retry.times, [StandardError, RSpec::Expectations::ExpectationNotMetError]) do
-        wait(10).for do
+        wait(1).for do
           # give us a bit of time to flush the events
           output.events.empty?
         end.to be_falsey
@@ -661,42 +622,6 @@ describe LogStash::Pipeline do
       pipeline.shutdown
 
       t.join
-    end
-  end
-
-  context "Multiple pipelines" do
-    before do
-      allow(LogStash::Plugin).to receive(:lookup).with("input", "generator").and_return(LogStash::Inputs::Generator)
-      allow(LogStash::Plugin).to receive(:lookup).with("codec", "plain").and_return(DummyCodec)
-      allow(LogStash::Plugin).to receive(:lookup).with("filter", "dummyfilter").and_return(DummyFilter)
-      allow(LogStash::Plugin).to receive(:lookup).with("output", "dummyoutput").and_return(::LogStash::Outputs::DummyOutput)
-    end
-
-    let(:pipeline1) { mock_pipeline_from_string("input { generator {} } filter { dummyfilter {} } output { dummyoutput {}}") }
-    let(:pipeline2) { mock_pipeline_from_string("input { generator {} } filter { dummyfilter {} } output { dummyoutput {}}") }
-
-    # multiple pipelines cannot be instantiated using the same PQ settings, force memory queue
-    before :each do
-      pipeline_workers_setting = LogStash::SETTINGS.get_setting("queue.type")
-      allow(pipeline_workers_setting).to receive(:value).and_return("memory")
-      pipeline_settings.each {|k, v| pipeline_settings_obj.set(k, v) }
-    end
-
-    it "should handle evaluating different config" do
-      # When the functions are compiled from the AST it will generate instance
-      # variables that are unique to the actual config, the instances are pointing
-      # to conditionals and/or plugins.
-      #
-      # Before the `defined_singleton_method`, the definition of the method was
-      # not unique per class, but the `instance variables` were unique per class.
-      #
-      # So the methods were trying to access instance variables that did not exist
-      # in the current instance and was returning an array containing nil values for
-      # the match.
-      expect(pipeline1.output_func(LogStash::Event.new)).not_to include(nil)
-      expect(pipeline1.filter_func(LogStash::Event.new)).not_to include(nil)
-      expect(pipeline2.output_func(LogStash::Event.new)).not_to include(nil)
-      expect(pipeline1.filter_func(LogStash::Event.new)).not_to include(nil)
     end
   end
 

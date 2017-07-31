@@ -5,6 +5,7 @@ require "logstash/output_delegator_strategies/single"
 require "logstash/output_delegator_strategies/legacy"
 
 module LogStash class OutputDelegator
+  include org.logstash.config.ir.CompiledPipeline::Output
   attr_reader :metric, :metric_events, :strategy, :namespaced_metric, :metric_events, :id
 
   def initialize(logger, output_class, metric, execution_context, strategy_registry, plugin_args)
