@@ -53,7 +53,7 @@ module LogStash module Config module Source
 
           config_string = ::File.read(file)
 
-          if valid_encoding?(config_string)
+          if config_string.valid_encoding?
             part = org.logstash.common.SourceWithMetadata.new("file", file, 0, 0, config_string)
             config_parts << part
           else
@@ -99,10 +99,6 @@ module LogStash module Config module Source
         t = ::File.split(@path)
         all_files = Dir.glob(::File.join(t.first, "*")).sort
         all_files - get_matched_files
-      end
-
-      def valid_encoding?(content)
-        content.ascii_only? && content.valid_encoding?
       end
 
       def temporary_file?(filepath)
