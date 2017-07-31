@@ -12,7 +12,7 @@ module LogStash
         end
 
         def host
-          Socket.gethostname
+          @@host ||= Socket.gethostname
         end
 
         def version
