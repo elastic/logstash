@@ -34,7 +34,7 @@ public interface LogstashInstallation {
      * @throws IOException On I/O Exception
      * @throws InterruptedException Iff Interrupted
      */
-    void execute(String configuration, File data) throws IOException, InterruptedException;
+    void execute(String configuration, File data, int repeat) throws IOException, InterruptedException;
 
     /**
      * Returns the url under which the metrics from uri `_node/stats/?pretty` can be found.
@@ -63,9 +63,9 @@ public interface LogstashInstallation {
         }
 
         @Override
-        public void execute(final String configuration, final File data)
+        public void execute(final String configuration, final File data, final int repeat)
             throws IOException, InterruptedException {
-            base.execute(configuration, data);
+            base.execute(configuration, data, repeat);
         }
 
         @Override
@@ -112,11 +112,11 @@ public interface LogstashInstallation {
 
         @Override
         public void execute(final String configuration) throws IOException, InterruptedException {
-            execute(configuration, null);
+            execute(configuration, null, 1);
         }
 
         @Override
-        public void execute(final String configuration, final File data)
+        public void execute(final String configuration, final File data, final int repeat)
             throws IOException, InterruptedException {
             final Path cfg = location.resolve("config.temp");
             Files.write(
@@ -128,13 +128,13 @@ public interface LogstashInstallation {
             final Path lsbin = location.resolve("bin").resolve("logstash");
             LsBenchFileUtil.ensureExecutable(lsbin.toFile());
             final File output = Files.createTempFile(null, null).toFile();
-            final Process process = pbuilder.command(lsbin.toString(), "-w", "2", "-f", cfg.toString()).redirectOutput(
-                ProcessBuilder.Redirect.to(output)
-            ).start();
+            final Process process =
+                pbuilder.command(lsbin.toString(), "-w", "2", "-f", cfg.toString()).redirectOutput(
+                    ProcessBuilder.Redirect.to(output)
+                ).start();
             if (data != null) {
-                try (final InputStream file = new FileInputStream(data);
-                     final OutputStream out = process.getOutputStream()) {
-                    IOUtils.copy(file, out, 16 * 4096);
+                try (final OutputStream out = process.getOutputStream()) {
+                    pipeRepeatedly(data, out, repeat);
                 }
             }
             if (process.waitFor() != 0) {
@@ -147,6 +147,23 @@ public interface LogstashInstallation {
         @Override
         public String metrics() {
             return METRICS_URL;
+        }
+
+        /**
+         * Pipes the content of the given input {@link File} to the given {@link OutputStream}
+         * repeatedly.
+         * @param input Input File
+         * @param out Output Stream
+         * @param count Number of repeats
+         * @throws IOException On Failure
+         */
+        private static void pipeRepeatedly(final File input, final OutputStream out,
+            final int count) throws IOException {
+            for (int i = 0; i < count; ++i) {
+                try (final InputStream file = new FileInputStream(input)) {
+                    IOUtils.copy(file, out, 16 * 4096);
+                }
+            }
         }
     }
 
@@ -177,9 +194,9 @@ public interface LogstashInstallation {
         }
 
         @Override
-        public void execute(final String configuration, final File data)
+        public void execute(final String configuration, final File data, final int repeat)
             throws IOException, InterruptedException {
-            base.execute(configuration, data);
+            base.execute(configuration, data, repeat);
         }
 
         @Override

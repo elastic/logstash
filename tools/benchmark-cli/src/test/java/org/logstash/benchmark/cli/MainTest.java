@@ -62,12 +62,39 @@ public final class MainTest {
      * @throws Exception On Failure
      */
     @Test
+    public void runsRepeatedDatasetAgainstRelease() throws Exception {
+        final File pwd = temp.newFolder();
+        Main.main(
+            String.format("--%s=5.5.0", UserInput.DISTRIBUTION_VERSION_PARAM),
+            String.format("--workdir=%s", pwd.getAbsolutePath()),
+            String.format("--%s=%d", UserInput.REPEAT_PARAM, 2)
+        );
+    }
+
+    /**
+     * @throws Exception On Failure
+     */
+    @Test
     public void runsApacheAgainstRelease() throws Exception {
         final File pwd = temp.newFolder();
         Main.main(
             String.format("--%s=5.5.0", UserInput.DISTRIBUTION_VERSION_PARAM),
             String.format("--%s=apache", UserInput.TEST_CASE_PARAM),
             String.format("--workdir=%s", pwd.getAbsolutePath())
+        );
+    }
+
+    /**
+     * @throws Exception On Failure
+     */
+    @Test
+    public void runsRepeatApacheAgainstRelease() throws Exception {
+        final File pwd = temp.newFolder();
+        Main.main(
+            String.format("--%s=5.5.0", UserInput.DISTRIBUTION_VERSION_PARAM),
+            String.format("--%s=apache", UserInput.TEST_CASE_PARAM),
+            String.format("--workdir=%s", pwd.getAbsolutePath()),
+            String.format("--%s=%d", UserInput.REPEAT_PARAM, 2)
         );
     }
 }
