@@ -231,6 +231,7 @@ module LogStash; class Pipeline < BasePipeline
     @running = Concurrent::AtomicBoolean.new(false)
     @flushing = Concurrent::AtomicReference.new(false)
     @force_shutdown = Concurrent::AtomicBoolean.new(false)
+    @outputs_registered = Concurrent::AtomicBoolean.new(false)
   end # def initialize
 
   def ready?
@@ -392,9 +393,9 @@ module LogStash; class Pipeline < BasePipeline
 
   def start_workers
     @worker_threads.clear # In case we're restarting the pipeline
+    @outputs_registered.make_false
     begin
-      register_plugins(@outputs)
-      register_plugins(@filters)
+      maybe_setup_out_plugins
 
       pipeline_workers = safe_pipeline_worker_count
       batch_size = @settings.get("pipeline.batch.size")
@@ -460,16 +461,17 @@ module LogStash; class Pipeline < BasePipeline
       shutdown_requested |= signal.shutdown? # latch on shutdown signal
 
       batch = @filter_queue_client.read_batch # metrics are started in read_batch
-      if (batch.size > 0)
+      if batch.size > 0
         @events_consumed.increment(batch.size)
         filter_batch(batch)
-        flush_filters_to_batch(batch, :final => false) if signal.flush?
+      end
+      flush_filters_to_batch(batch, :final => false) if signal.flush?
+      if batch.size > 0
         output_batch(batch)
         unless @force_shutdown.true? # ack the current batch
           @filter_queue_client.close_batch(batch)
         end
       end
-
       # keep break at end of loop, after the read_batch operation, some pipeline specs rely on this "final read_batch" before shutdown.
       break if (shutdown_requested && !draining_queue?) || @force_shutdown.true?
     end
@@ -652,10 +654,10 @@ module LogStash; class Pipeline < BasePipeline
   # for backward compatibility in devutils for the rspec helpers, this method is not used
   # in the pipeline anymore.
   def filter(event, &block)
+    maybe_setup_out_plugins
     # filter_func returns all filtered events, including cancelled ones
-    filter_func(event).each { |e| block.call(e) }
+    filter_func(event).each {|e| block.call(e)}
   end
-
 
   # perform filters flush and yield flushed event to the passed block
   # @param options [Hash]
@@ -790,6 +792,13 @@ module LogStash; class Pipeline < BasePipeline
   end
 
   private
+
+  def maybe_setup_out_plugins
+    if @outputs_registered.make_true
+      register_plugins(@outputs)
+      register_plugins(@filters)
+    end
+  end
 
   def default_logging_keys(other_keys = {})
     keys = super
