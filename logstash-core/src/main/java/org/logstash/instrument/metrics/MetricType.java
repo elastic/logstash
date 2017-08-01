@@ -21,9 +21,13 @@ public enum MetricType {
      */
     GAUGE_BOOLEAN("gauge/boolean"),
     /**
-     * A gauge backed by a {@link Number} type
+     * A gauge backed by a {@link Double} type
      */
-    GAUGE_NUMERIC("gauge/numeric"),
+    GAUGE_DOUBLE("gauge/double"),
+    /**
+     * A gauge backed by a {@link Long} type
+     */
+    GAUGE_LONG("gauge/long"),
      /**
      * A gauge backed by a {@link Object} type.
      */

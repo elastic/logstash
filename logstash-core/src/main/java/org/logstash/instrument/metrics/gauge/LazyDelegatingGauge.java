@@ -13,6 +13,7 @@ import java.util.List;
 /**
  * A lazy proxy to a more specific typed {@link GaugeMetric}. The metric will only be initialized if the initial value is set, or once the {@code set} operation is called.
  * <p><strong>Intended only for use with Ruby's duck typing, Java consumers should use the specific typed {@link GaugeMetric}</strong></p>
+ * @deprecated - there are no plans to replace this.
  */
 public class LazyDelegatingGauge extends AbstractMetric<Object> implements GaugeMetric<Object,Object> {
 
@@ -28,6 +29,7 @@ public class LazyDelegatingGauge extends AbstractMetric<Object> implements Gauge
      *
      * @param nameSpace The namespace for this metric
      * @param key       The key <i>(with in the namespace)</i> for this metric
+     * @deprecated - there are no plans to replace this
      */
     public LazyDelegatingGauge(final List<String> nameSpace, final String key) {
         this(nameSpace, key, null);
@@ -39,9 +41,10 @@ public class LazyDelegatingGauge extends AbstractMetric<Object> implements Gauge
      * @param nameSpace    The namespace for this metric
      * @param key          The key <i>(with in the namespace)</i> for this metric
      * @param initialValue The initial value for this {@link GaugeMetric}, may be null
+     * @deprecated - there are no plans to replace this
      */
     protected LazyDelegatingGauge(List<String> nameSpace, String key, Object initialValue) {
-        super(nameSpace, key);
+        super(key);
         this.nameSpaces = nameSpace;
         this.key = key;
         if (initialValue != null) {
@@ -66,12 +69,22 @@ public class LazyDelegatingGauge extends AbstractMetric<Object> implements Gauge
     }
 
     @Override
+    public boolean isDirty() {
+        return lazyMetric == null ? false : lazyMetric.isDirty();
+    }
+
+    @Override
     public void set(Object value) {
         if (lazyMetric == null) {
             wakeMetric(value);
         } else {
             lazyMetric.set(value);
         }
+    }
+
+    @Override
+    public void setDirty(boolean dirty) {
+        lazyMetric.setDirty(dirty);
     }
 
     /**
@@ -82,21 +95,24 @@ public class LazyDelegatingGauge extends AbstractMetric<Object> implements Gauge
     private synchronized void wakeMetric(Object value) {
         if (lazyMetric == null && value != null) {
             //"quack quack"
-            if (value instanceof Number) {
-                lazyMetric = new NumericGauge(nameSpaces, key, (Number) value);
-            } else if (value instanceof String) {
-                lazyMetric = new TextGauge(nameSpaces, key, (String) value);
+            if (value instanceof String) {
+                lazyMetric = new TextGauge(key, (String) value);
+            } else if (value instanceof Long) {
+                lazyMetric = new LongGauge(key, (Long) value);
+            } else if (value instanceof Double) {
+                lazyMetric = new DoubleGauge(key, (Double) value);
             } else if (value instanceof Boolean) {
-                lazyMetric = new BooleanGauge(nameSpaces, key, (Boolean) value);
+                lazyMetric = new BooleanGauge(key, (Boolean) value);
             } else if (value instanceof RubyHash) {
-                lazyMetric = new RubyHashGauge(nameSpaces, key, (RubyHash) value);
+                lazyMetric = new RubyHashGauge(key, (RubyHash) value);
             } else if (value instanceof RubyTimestamp) {
-                lazyMetric = new RubyTimeStampGauge(nameSpaces, key, ((RubyTimestamp) value));
+                lazyMetric = new RubyTimeStampGauge(key, ((RubyTimestamp) value));
             } else {
                 LOGGER.warn("A gauge metric of an unknown type ({}) has been create for key: {}, namespace:{}. This may result in invalid serialization.  It is recommended to " +
                         "log an issue to the responsible developer/development team.", value.getClass().getCanonicalName(), key, nameSpaces);
-                lazyMetric = new UnknownGauge(nameSpaces, key, value);
+                lazyMetric = new UnknownGauge(key, value);
             }
+            lazyMetric.setDirty(true);
         }
     }
 

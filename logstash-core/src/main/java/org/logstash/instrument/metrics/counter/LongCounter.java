@@ -12,18 +12,19 @@ import java.util.concurrent.atomic.LongAdder;
  */
 public class LongCounter extends AbstractMetric<Long> implements CounterMetric<Long> {
 
-    private final LongAdder longAdder;
+    private static final IllegalArgumentException NEGATIVE_COUNT_EXCEPTION = new IllegalArgumentException("Counters can not be incremented by negative values");
+    private LongAdder longAdder;
+    private volatile boolean dirty;
 
     /**
      * Constructor
      *
-     * @param nameSpace    The namespace for this metric
-     * @param key          The key <i>(with in the namespace)</i> for this metric
+     * @param name The name of this metric. This value may be used for display purposes.
      */
-    public LongCounter(List<String> nameSpace, String key) {
-        super(nameSpace, key);
+    public LongCounter(String name) {
+        super(name);
         longAdder = new LongAdder();
-     }
+    }
 
     @Override
     public MetricType getType() {
@@ -36,31 +37,39 @@ public class LongCounter extends AbstractMetric<Long> implements CounterMetric<L
     }
 
     @Override
+    public boolean isDirty() {
+        return dirty;
+    }
+
+    @Override
+    public void setDirty(boolean dirty){
+        this.dirty = dirty;
+    }
+
+    @Override
     public void increment() {
         increment(1l);
     }
 
-    /**
-     * {@inheritDoc}
-     * throws {@link UnsupportedOperationException} if attempt is made to increment by a negative value
-     */
     @Override
     public void increment(Long by) {
         if (by < 0) {
-            throw new UnsupportedOperationException("Counters can not be incremented by negative values");
+            throw NEGATIVE_COUNT_EXCEPTION;
         }
         longAdder.add(by);
+        dirty = true;
     }
 
     /**
      * Optimized version of {@link #increment(Long)} to avoid auto-boxing.
-     * throws {@link UnsupportedOperationException} if attempt is made to increment by a negative value
+     * @param by The value which to increment by. Can not be negative.
      */
     public void increment(long by) {
         if (by < 0) {
-            throw new UnsupportedOperationException("Counters can not be incremented by negative values");
+            throw NEGATIVE_COUNT_EXCEPTION;
         }
         longAdder.add(by);
+        dirty = true;
     }
 
 }

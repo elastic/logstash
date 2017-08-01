@@ -12,18 +12,15 @@ import java.util.List;
  * @param <T> The underlying type for this metric. For example {@link Long} for Counter, or {@link String} for Gauge.
  */
 public abstract class AbstractMetric<T> implements Metric<T> {
-    final protected String key;
-    final protected List<String> nameSpace;
+    final protected String name;
 
     /**
      * Constructor
      *
-     * @param nameSpace The namespace for this metric
-     * @param key       The key <i>(with in the namespace)</i> for this metric
+     * @param name The name of this metric. This value may be used for display purposes.
      */
-    protected AbstractMetric(final List<String> nameSpace, final String key) {
-        this.nameSpace = nameSpace;
-        this.key = key;
+    protected AbstractMetric(final String name) {
+        this.name = name;
     }
 
     @Override
@@ -34,18 +31,13 @@ public abstract class AbstractMetric<T> implements Metric<T> {
 
     @Override
     public String toString() {
-        return String.format("%s - namespace: %s key: %s value:%s", this.getClass().getName(), Arrays.toString(nameSpace.toArray()), this.key, getValue() == null ? "null" :
+        return String.format("%s -  name: %s value:%s", this.getClass().getName(), this.name, getValue() == null ? "null" :
                 getValue().toString());
     }
 
     @Override
-    public List<String> getNameSpaces() {
-        return this.nameSpace;
-    }
-
-    @Override
-    public String getKey() {
-        return this.key;
+    public String getName() {
+        return this.name;
     }
 
 }

@@ -4,6 +4,8 @@ import org.jruby.RubyHash;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.logstash.Timestamp;
+import org.logstash.ext.JrubyTimestampExtLibrary;
 import org.logstash.instrument.metrics.MetricType;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
@@ -23,20 +25,32 @@ public class LazyDelegatingGaugeTest {
     @Mock
     RubyHash rubyHash;
 
+    @Mock
+    private JrubyTimestampExtLibrary.RubyTimestamp rubyTimestamp;
+
+    private final Timestamp timestamp = new Timestamp();
+
     private static final String RUBY_HASH_AS_STRING = "{}";
 
     @Before
     public void _setup() {
         //hacky workaround using the toString method to avoid mocking the Ruby runtime
         when(rubyHash.toString()).thenReturn(RUBY_HASH_AS_STRING);
+        when(rubyTimestamp.getTimestamp()).thenReturn(timestamp);
     }
 
     @Test
     public void getValue() {
-        //Numeric
+        //Long
         LazyDelegatingGauge gauge = new LazyDelegatingGauge(Collections.singletonList("foo"), "bar", 99l);
+        assertThat(gauge.isDirty()).isTrue();
         assertThat(gauge.getValue()).isEqualTo(99l);
-        assertThat(gauge.getType()).isEqualTo(MetricType.GAUGE_NUMERIC);
+        assertThat(gauge.getType()).isEqualTo(MetricType.GAUGE_LONG);
+
+        //Double
+        gauge = new LazyDelegatingGauge(Collections.singletonList("foo"), "bar", 99.0);
+        assertThat(gauge.getValue()).isEqualTo(99.0);
+        assertThat(gauge.getType()).isEqualTo(MetricType.GAUGE_DOUBLE);
 
         //Boolean
         gauge = new LazyDelegatingGauge(Collections.singletonList("foo"), "bar", true);
@@ -53,6 +67,11 @@ public class LazyDelegatingGaugeTest {
         assertThat(gauge.getValue().toString()).isEqualTo(RUBY_HASH_AS_STRING);
         assertThat(gauge.getType()).isEqualTo(MetricType.GAUGE_RUBYHASH);
 
+        //Ruby Timestamp
+        gauge = new LazyDelegatingGauge(Collections.singletonList("foo"), "bar", rubyTimestamp);
+        assertThat(gauge.getValue()).isEqualTo(timestamp);
+        assertThat(gauge.getType()).isEqualTo(MetricType.GAUGE_RUBYTIMESTAMP);
+
         //Unknown
         gauge = new LazyDelegatingGauge(Collections.singletonList("foo"), "bar", Collections.singleton("value"));
         assertThat(gauge.getValue()).isEqualTo(Collections.singleton("value"));
@@ -68,13 +87,23 @@ public class LazyDelegatingGaugeTest {
 
     @Test
     public void set() {
-        //Numeric
+        //Long
         LazyDelegatingGauge gauge = new LazyDelegatingGauge(Collections.singletonList("foo"), "bar");
+        assertThat(gauge.isDirty()).isFalse();
         gauge.set(99l);
+        assertThat(gauge.isDirty()).isTrue();
         assertThat(gauge.getValue()).isEqualTo(99l);
         gauge.set(199l);
         assertThat(gauge.getValue()).isEqualTo(199l);
-        assertThat(gauge.getType()).isEqualTo(MetricType.GAUGE_NUMERIC);
+        assertThat(gauge.getType()).isEqualTo(MetricType.GAUGE_LONG);
+
+        //Double
+        gauge = new LazyDelegatingGauge(Collections.singletonList("foo"), "bar");
+        gauge.set(99.0);
+        assertThat(gauge.getValue()).isEqualTo(99.0);
+        gauge.set(199.01);
+        assertThat(gauge.getValue()).isEqualTo(199.01);
+        assertThat(gauge.getType()).isEqualTo(MetricType.GAUGE_DOUBLE);
 
         //Boolean
         gauge = new LazyDelegatingGauge(Collections.singletonList("foo"), "bar");
@@ -98,6 +127,12 @@ public class LazyDelegatingGaugeTest {
         assertThat(gauge.getValue().toString()).isEqualTo(RUBY_HASH_AS_STRING);
         assertThat(gauge.getType()).isEqualTo(MetricType.GAUGE_RUBYHASH);
 
+        //Ruby Timestamp
+        gauge = new LazyDelegatingGauge(Collections.singletonList("foo"), "bar");
+        gauge.set(rubyTimestamp);
+        assertThat(gauge.getValue()).isEqualTo(timestamp);
+        assertThat(gauge.getType()).isEqualTo(MetricType.GAUGE_RUBYTIMESTAMP);
+
         //Unknown
         gauge = new LazyDelegatingGauge(Collections.singletonList("foo"), "bar");
         gauge.set(Collections.singleton("value"));
@@ -119,6 +154,9 @@ public class LazyDelegatingGaugeTest {
         gauge.set(null);
         assertThat(gauge.getValue()).isNull();
         assertThat(gauge.getType()).isEqualTo(MetricType.GAUGE_TEXT);
+        assertThat(gauge.isDirty()).isTrue();
+        gauge.setDirty(false);
+        assertThat(gauge.isDirty()).isFalse();
     }
 
 }
