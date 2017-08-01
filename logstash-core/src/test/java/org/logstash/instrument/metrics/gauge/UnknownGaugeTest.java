@@ -15,23 +15,28 @@ public class UnknownGaugeTest {
 
     @Test
     public void getValue() {
-        UnknownGauge gauge = new UnknownGauge(Collections.singletonList("foo"), "bar", URI.create("baz"));
+        UnknownGauge gauge = new UnknownGauge("bar", URI.create("baz"));
+        assertThat(gauge.isDirty()).isTrue();
         assertThat(gauge.getValue()).isEqualTo(URI.create("baz"));
         assertThat(gauge.getType()).isEqualTo(MetricType.GAUGE_UNKNOWN);
 
         //Null initialize
-        gauge = new UnknownGauge(Collections.singletonList("foo"), "bar");
+        gauge = new UnknownGauge("bar");
         assertThat(gauge.getValue()).isNull();
         assertThat(gauge.getType()).isEqualTo(MetricType.GAUGE_UNKNOWN);
     }
 
     @Test
     public void set() {
-        UnknownGauge gauge = new UnknownGauge(Collections.singletonList("foo"), "bar");
+        UnknownGauge gauge = new UnknownGauge("bar");
+        assertThat(gauge.isDirty()).isFalse();
         gauge.set(URI.create("baz"));
         assertThat(gauge.getValue()).isEqualTo(URI.create("baz"));
         gauge.set(URI.create("fizzbuzz"));
         assertThat(gauge.getValue()).isEqualTo(URI.create("fizzbuzz"));
         assertThat(gauge.getType()).isEqualTo(MetricType.GAUGE_UNKNOWN);
+        assertThat(gauge.isDirty()).isTrue();
+        gauge.setDirty(false);
+        assertThat(gauge.isDirty()).isFalse();
     }
 }

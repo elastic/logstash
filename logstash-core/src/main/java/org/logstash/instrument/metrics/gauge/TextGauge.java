@@ -1,54 +1,35 @@
 package org.logstash.instrument.metrics.gauge;
 
 
-import org.logstash.instrument.metrics.AbstractMetric;
 import org.logstash.instrument.metrics.MetricType;
-
-import java.util.List;
 
 /**
  * A {@link GaugeMetric} that is backed by a {@link String}
  */
-public class TextGauge extends AbstractMetric<String> implements GaugeMetric<String,String> {
-
-    private volatile String value;
+public class TextGauge extends AbstractGaugeMetric<String> {
 
     /**
-     * Constructor - null initial value
+     * Constructor
      *
-     * @param nameSpace The namespace for this metric
-     * @param key       The key <i>(with in the namespace)</i> for this metric
+     * @param name The name of this metric. This value may be used for display purposes.
      */
-    public TextGauge(List<String> nameSpace, String key) {
-        this(nameSpace, key, null);
+    public TextGauge(String name) {
+        super(name);
     }
 
     /**
      * Constructor
      *
-     * @param nameSpace    The namespace for this metric
-     * @param key          The key <i>(with in the namespace)</i> for this metric
+     * @param name         The name of this metric. This value may be used for display purposes.
      * @param initialValue The initial value for this {@link GaugeMetric}, may be null
      */
-    public TextGauge(List<String> nameSpace, String key, String initialValue) {
-        super(nameSpace, key);
-        this.value = initialValue;
+    public TextGauge(String name, String initialValue) {
+        super(name, initialValue);
     }
 
     @Override
     public MetricType getType() {
         return MetricType.GAUGE_TEXT;
     }
-
-    @Override
-    public String getValue() {
-        return value;
-    }
-
-    @Override
-    public void set(String value) {
-        this.value = value;
-    }
-
 
 }
