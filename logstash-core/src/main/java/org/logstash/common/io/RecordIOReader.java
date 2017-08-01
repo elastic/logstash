@@ -145,6 +145,10 @@ public final class RecordIOReader implements Closeable {
      *
      */
      int seekToStartOfEventInBlock() {
+         // Already consumed all the bytes in this block.
+        if (currentBlock.position() == currentBlockSizeReadFromChannel){
+             return -1;
+         }
          while (true) {
              RecordType type = RecordType.fromByte(currentBlock.array()[currentBlock.arrayOffset() + currentBlock.position()]);
              if (RecordType.COMPLETE.equals(type) || RecordType.START.equals(type)) {
@@ -156,7 +160,7 @@ public final class RecordIOReader implements Closeable {
                  return -1;
              }
          }
-    }
+     }
 
     /**
      *
