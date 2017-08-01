@@ -79,6 +79,9 @@ public final class Main {
         final OptionSpec<String> esout = parser.accepts(
             UserInput.ES_OUTPUT_PARAM, UserInput.ES_OUTPUT_HELP
         ).withRequiredArg().ofType(String.class).defaultsTo(UserInput.ES_OUTPUT_DEFAULT).forHelp();
+        final OptionSpec<Integer> repeats = parser.accepts(
+            UserInput.REPEAT_PARAM, UserInput.REPEAT_PARAM_HELP
+        ).withRequiredArg().ofType(Integer.class).defaultsTo(1).forHelp();
         final OptionSet options;
         try {
             options = parser.parse(args);
@@ -98,8 +101,12 @@ public final class Main {
             type = LsVersionType.LOCAL;
             version = options.valueOf(local);
         }
+        final Properties settings = loadSettings();
+        settings.setProperty(
+            LsBenchSettings.INPUT_DATA_REPEAT, String.valueOf(options.valueOf(repeats))
+        );
         execute(
-            new UserOutput(System.out), loadSettings(), options.valueOf(testcase),
+            new UserOutput(System.out), settings, options.valueOf(testcase),
             options.valueOf(pwd).toPath(), version, type, options.valueOf(esout)
         );
     }
@@ -122,7 +129,12 @@ public final class Main {
         output.printBanner();
         output.printLine();
         output.green(String.format("Benchmarking Version: %s", version));
-        output.green(String.format("Running Test Case: %s", test));
+        output.green(
+            String.format(
+                "Running Test Case: %s (x%d)", test,
+                Integer.parseInt(settings.getProperty(LsBenchSettings.INPUT_DATA_REPEAT))
+            )
+        );
         output.printLine();
         Files.createDirectories(cwd);
         final LogstashInstallation logstash;
@@ -154,7 +166,7 @@ public final class Main {
         throws IOException, NoSuchAlgorithmException {
         final Case testcase;
         if (GeneratorToStdout.IDENTIFIER.equalsIgnoreCase(test)) {
-            testcase = new GeneratorToStdout(store, logstash);
+            testcase = new GeneratorToStdout(store, logstash, settings);
         } else if (ApacheLogsComplex.IDENTIFIER.equalsIgnoreCase(test)) {
             testcase = new ApacheLogsComplex(store, logstash, cwd, settings);
         } else {
