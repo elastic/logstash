@@ -41,7 +41,7 @@ module LogStash module Config module Source
     end
 
     def config_string?
-      !(config_string.nil? || config_string.empty?)
+      !config_string.nil?
     end
 
     def config_path_setting
