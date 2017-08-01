@@ -113,6 +113,9 @@ queue, it will continue to run and process new events as they stream into the
 queue. This means that you do not need to stop your production system to handle
 events in the dead letter queue. 
 
+NOTE: Events emitted from the dead letter queue input plugin will not be resubmitted to the
+dead letter queue if they cannot be processed correctly
+
 [[dlq-timestamp]]
 ==== Reading From a Timestamp
 
