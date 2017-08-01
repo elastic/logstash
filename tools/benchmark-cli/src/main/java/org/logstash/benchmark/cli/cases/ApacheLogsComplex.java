@@ -13,6 +13,7 @@ import java.util.concurrent.TimeoutException;
 import org.apache.commons.io.IOUtils;
 import org.logstash.benchmark.cli.DataStore;
 import org.logstash.benchmark.cli.LogstashInstallation;
+import org.logstash.benchmark.cli.LsBenchSettings;
 import org.logstash.benchmark.cli.LsMetricsMonitor;
 import org.logstash.benchmark.cli.ui.LsMetricStats;
 import org.logstash.benchmark.cli.util.LsBenchDownloader;
@@ -35,13 +36,15 @@ public final class ApacheLogsComplex implements Case {
 
     private final DataStore store;
 
+    private final int repeats;
+    
     public ApacheLogsComplex(final DataStore store, final LogstashInstallation logstash,
-        final Path cwd,
-        final Properties settings) throws IOException, NoSuchAlgorithmException {
+        final Path cwd, final Properties settings) throws IOException, NoSuchAlgorithmException {
         this.data = cwd.resolve("data_apache").resolve("apache_access_logs").toFile();
         ensureDatafile(data.toPath().getParent().toFile(), settings);
         this.logstash = logstash;
         this.store = store;
+        repeats = Integer.parseInt(settings.getProperty(LsBenchSettings.INPUT_DATA_REPEAT));
     }
 
     @Override
@@ -55,7 +58,7 @@ public final class ApacheLogsComplex implements Case {
                 IOUtils.copy(cfg, baos);
                 config = baos.toString();
             }
-            logstash.execute(config, data);
+            logstash.execute(config, data, repeats);
             return monitor.stopAndGet();
         } catch (final IOException | InterruptedException | ExecutionException | TimeoutException ex) {
             throw new IllegalStateException(ex);
@@ -65,7 +68,7 @@ public final class ApacheLogsComplex implements Case {
     private static void ensureDatafile(final File file, final Properties settings)
         throws IOException, NoSuchAlgorithmException {
         LsBenchDownloader.downloadDecompress(
-            file, settings.getProperty("org.logstash.benchmark.apache.dataset.url"), false
+            file, settings.getProperty(LsBenchSettings.APACHE_DATASET_URL), false
         );
     }
 }

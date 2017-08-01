@@ -31,7 +31,9 @@ Option                           Description
 --local-path <String>            Path to the root of a local Logstash           
                                    distribution.                                
                                   E.g. `/opt/logstash`                          
---testcase <String>              Currently available test cases are 'baseline'    
+--repeat-data <Integer>          Sets how often the test's dataset should be    
+                                   run. (default: 1)                            
+--testcase <String>              Currently available test cases are 'baseline'  
                                    and 'apache'. (default: baseline)            
 --workdir <File>                 Working directory to store cached files in.    
                                    (default: ~/.logstash-benchmarks)  

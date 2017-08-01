@@ -8,6 +8,11 @@ import java.nio.file.Paths;
  */
 public final class UserInput {
 
+    public static final String REPEAT_PARAM = "repeat-data";
+
+    public static final String REPEAT_PARAM_HELP =
+        "Sets how often the test's dataset should be run.";
+
     public static final String ES_OUTPUT_PARAM = "elasticsearch-export";
 
     public static final String ES_OUTPUT_HELP = "Optional Elasticsearch host URL to store detailed results at.";
