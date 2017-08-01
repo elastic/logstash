@@ -60,6 +60,10 @@ public class SourceWithMetadata implements HashableWithSource {
             return false;
         }).collect(Collectors.toList());
 
+        if (!(this.getText() instanceof String)) {
+          badAttributes.add(this.getText());
+        }
+
         if (!badAttributes.isEmpty()){
             String message = "Missing attributes in SourceWithMetadata: (" + badAttributes + ") "
                     + this.toString();
@@ -72,7 +76,7 @@ public class SourceWithMetadata implements HashableWithSource {
     }
 
     public int hashCode() {
-        return Objects.hash(attributes().toArray());
+        return Objects.hash(hashableAttributes().toArray());
     }
 
     public String toString() {
@@ -81,11 +85,16 @@ public class SourceWithMetadata implements HashableWithSource {
 
     @Override
     public String hashSource() {
-        return attributes().stream().map(Object::toString).collect(Collectors.joining("|"));
+        return hashableAttributes().stream().map(Object::toString).collect(Collectors.joining("|"));
+    }
+
+    // Fields checked for being not null and non empty String
+    private Collection<Object> attributes() {
+        return Arrays.asList(this.getId(), this.getProtocol(), this.getLine(), this.getColumn());
     }
 
     // Fields used in the hashSource and hashCode methods to ensure uniqueness
-    private Collection<Object> attributes() {
+    private Collection<Object> hashableAttributes() {
         return Arrays.asList(this.getId(), this.getProtocol(), this.getLine(), this.getColumn(), this.getText());
     }
 }

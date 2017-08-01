@@ -40,10 +40,8 @@ public class SourceWithMetadataTest {
             new ParameterGroup("proto", "path", 1, 1, null),
             new ParameterGroup("", "path", 1, 1, "foo"),
             new ParameterGroup("proto", "", 1, 1, "foo"),
-            new ParameterGroup("proto", "path", 1, 1, ""),
             new ParameterGroup(" ", "path", 1, 1, "foo"),
-            new ParameterGroup("proto", "  ", 1, 1, "foo"),
-            new ParameterGroup("proto", "path", 1, 1, "   ")
+            new ParameterGroup("proto", "  ", 1, 1, "foo")
         );
     }
 
