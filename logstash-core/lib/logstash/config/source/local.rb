@@ -18,8 +18,27 @@ module LogStash module Config module Source
   #
   class Local < Base
     class ConfigStringLoader
+      INPUT_BLOCK_RE = /input *{/
+      OUTPUT_BLOCK_RE = /output *{/
+      EMPTY_RE = /^\s*$/
+
       def self.read(config_string)
-        [org.logstash.common.SourceWithMetadata.new("string", "config_string", 0, 0, config_string)]
+        config_parts = [org.logstash.common.SourceWithMetadata.new("string", "config_string", 0, 0, config_string)]
+
+        # Make sure we have an input and at least 1 output
+        # if its not the case we will add stdin and stdout
+        # this is for backward compatibility reason
+        if !INPUT_BLOCK_RE.match(config_string)
+          config_parts << org.logstash.common.SourceWithMetadata.new(self.class.name, "default input", 0, 0, LogStash::Config::Defaults.input)
+
+        end
+
+        # include a default stdout output if no outputs given
+        if !OUTPUT_BLOCK_RE.match(config_string)
+          config_parts << org.logstash.common.SourceWithMetadata.new(self.class.name, "default output", 0, 0, LogStash::Config::Defaults.output)
+        end
+
+        config_parts
       end
     end
 
@@ -135,8 +154,6 @@ module LogStash module Config module Source
 
     PIPELINE_ID = LogStash::SETTINGS.get("pipeline.id").to_sym
     HTTP_RE = /^http(s)?/
-    INPUT_BLOCK_RE = /input *{/
-    OUTPUT_BLOCK_RE = /output *{/
 
     def pipeline_configs
       if config_conflict?
@@ -178,29 +195,13 @@ module LogStash module Config module Source
         []
       end
 
-      return if config_parts.empty?
-
-      add_missing_default_inputs_or_outputs(config_parts) if config_string?
+      return [] if config_parts.empty?
 
       [PipelineConfig.new(self.class, @settings.get("pipeline.id").to_sym, config_parts, @settings)]
     end
 
     def automatic_reload_with_config_string?
       config_reload_automatic? && !config_path? && config_string?
-    end
-
-    # Make sure we have an input and at least 1 output
-    # if its not the case we will add stdin and stdout
-    # this is for backward compatibility reason
-    def add_missing_default_inputs_or_outputs(config_parts)
-      if !config_parts.any? { |part| INPUT_BLOCK_RE.match(part.text) }
-        config_parts << org.logstash.common.SourceWithMetadata.new(self.class.name, "default input", 0, 0, LogStash::Config::Defaults.input)
-      end
-
-      # include a default stdout output if no outputs given
-      if !config_parts.any? { |part| OUTPUT_BLOCK_RE.match(part.text) }
-        config_parts << org.logstash.common.SourceWithMetadata.new(self.class.name, "default output", 0, 0, LogStash::Config::Defaults.output)
-      end
     end
 
     def local_config?
