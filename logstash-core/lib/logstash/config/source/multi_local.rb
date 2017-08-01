@@ -19,13 +19,15 @@ module LogStash module Config module Source
         ::LogStash::PipelineSettings.from_settings(@original_settings.clone).merge(pipeline_settings)
       end
       detect_duplicate_pipelines(pipelines_settings)
-      pipelines_settings.map do |pipeline_settings|
+      pipeline_configs = pipelines_settings.map do |pipeline_settings|
         @settings = pipeline_settings
         # this relies on instance variable @settings and the parent class' pipeline_configs
         # method. The alternative is to refactor most of the Local source methods to accept
         # a settings object instead of relying on @settings.
         local_pipeline_configs # create a PipelineConfig object based on @settings
       end.flatten
+      @settings = @original_settings
+      pipeline_configs
     end
 
     def match?
