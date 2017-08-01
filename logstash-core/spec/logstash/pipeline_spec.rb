@@ -93,9 +93,19 @@ class DummyFlushingFilter < LogStash::Filters::Base
     true
   end
   def flush(options)
-    return [::LogStash::Event.new("message" => "dummy_flush")]
+    [::LogStash::Event.new("message" => "dummy_flush")]
   end
   def close() end
+end
+
+class DummyFlushingFilterPeriodic < DummyFlushingFilter
+  config_name "dummyflushingfilterperiodic"
+
+  def flush(options)
+    # Don't generate events on the shutdown flush to make sure we actually test the
+    # periodic flush.
+    options[:final] ? [] : [::LogStash::Event.new("message" => "dummy_flush")]
+  end
 end
 
 class TestPipeline < LogStash::Pipeline
@@ -627,7 +637,7 @@ describe LogStash::Pipeline do
     before do
       allow(::LogStash::Outputs::DummyOutput).to receive(:new).with(any_args).and_return(output)
       allow(LogStash::Plugin).to receive(:lookup).with("input", "dummy_input").and_return(DummyInput)
-      allow(LogStash::Plugin).to receive(:lookup).with("filter", "dummy_flushing_filter").and_return(DummyFlushingFilter)
+      allow(LogStash::Plugin).to receive(:lookup).with("filter", "dummy_flushing_filter").and_return(DummyFlushingFilterPeriodic)
       allow(LogStash::Plugin).to receive(:lookup).with("output", "dummy_output").and_return(::LogStash::Outputs::DummyOutput)
       allow(LogStash::Plugin).to receive(:lookup).with("codec", "plain").and_return(LogStash::Codecs::Plain)
     end
