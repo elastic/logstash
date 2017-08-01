@@ -1,7 +1,5 @@
 package org.logstash.instrument.metrics;
 
-import java.util.List;
-
 /**
  * Top level contract for metrics within Logstash.
  *
@@ -11,38 +9,11 @@ import java.util.List;
 public interface Metric<T> {
 
     /**
-     * The list of namespaces this metric belongs to, for compatibility with Ruby code. Java consumers should use #getNameSpaces()
+     * This metric's name. May be used for display purposes.
      *
-     * @return List of namespaces
-     * @deprecated
+     * @return The name of this metric.
      */
-    default List<String> namespaces() {
-        return getNameSpaces();
-    }
-
-    /**
-     * The list of namespaces this metric belongs to.
-     *
-     * @return List of namespaces
-     */
-    List<String> getNameSpaces();
-
-    /**
-     * This metric's key (or name), exists for access through Ruby code. Java consumers should use #getKey()
-     *
-     * @return This metric's key
-     * @deprecated
-     */
-    default String key() {
-        return getKey();
-    }
-
-    /**
-     * This metric's key (or name)
-     *
-     * @return List of namespaces
-     */
-    String getKey();
+    String getName();
 
     /**
      * This should be equal to #getValue, exists for passivity with legacy Ruby code. Java consumers should use #getValue().
@@ -88,4 +59,18 @@ public interface Metric<T> {
         return getType().asString();
     }
 
+    /**
+     * Determine if this metric has a value explicitly set.
+     * @return true if this metric has been set to a specific value, false if it is the default state
+     * @deprecated - This will be removed in the next release.
+     */
+    boolean isDirty();
+
+    /**
+     * Sets the dirty state of this metric. A metric is dirty if it is anything other then it's default state.
+     *
+     * @param dirty the dirty state
+     * @deprecated - This will be removed in the next release.
+     */
+    void setDirty(boolean dirty);
 }

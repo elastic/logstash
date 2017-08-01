@@ -1,53 +1,35 @@
 package org.logstash.instrument.metrics.gauge;
 
-import org.logstash.instrument.metrics.AbstractMetric;
 import org.logstash.instrument.metrics.MetricType;
-import org.logstash.instrument.metrics.counter.CounterMetric;
-
-import java.util.List;
 
 /**
  * A {@link GaugeMetric} that is backed by a {@link Boolean}
  */
-public class BooleanGauge extends AbstractMetric<Boolean> implements GaugeMetric<Boolean,Boolean> {
-
-    private volatile Boolean value;
+public class BooleanGauge extends AbstractGaugeMetric<Boolean> {
 
     /**
      * Constructor - null initial value
      *
-     * @param nameSpace    The namespace for this metric
-     * @param key          The key <i>(with in the namespace)</i> for this metric
+     * @param name The name of this metric. This value may be used for display purposes.
      */
-    public BooleanGauge(List<String> nameSpace, String key) {
-        this(nameSpace, key, null);
+    public BooleanGauge(String name) {
+        super(name);
     }
 
     /**
      * Constructor
      *
-     * @param nameSpace    The namespace for this metric
-     * @param key          The key <i>(with in the namespace)</i> for this metric
+     * @param name         The name of this metric. This value may be used for display purposes.
      * @param initialValue The initial value for this {@link GaugeMetric}, may be null
      */
-    public BooleanGauge(List<String> nameSpace, String key, Boolean initialValue) {
-        super(nameSpace, key);
-        this.value = initialValue;
+    public BooleanGauge(String name, Boolean initialValue) {
+        super(name, initialValue);
+
     }
 
     @Override
     public MetricType getType() {
         return MetricType.GAUGE_BOOLEAN;
-    }
-
-    @Override
-    public Boolean getValue() {
-        return value;
-    }
-
-    @Override
-    public void set(Boolean value) {
-        this.value = value;
     }
 
 }
