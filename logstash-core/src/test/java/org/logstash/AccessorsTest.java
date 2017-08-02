@@ -20,7 +20,7 @@ public class AccessorsTest {
         Map<Serializable, Object> data = new HashMap<>();
         data.put("foo", "bar");
         String reference = "foo";
-        assertEquals(new StringBiValue("bar"), Accessors.get(ConvertedMap.newFromMap(data), reference));
+        assertEquals(new StringBiValue("bar"), get(ConvertedMap.newFromMap(data), reference));
     }
 
     @Test
@@ -28,7 +28,7 @@ public class AccessorsTest {
         Map<Serializable, Object>  data = new HashMap<>();
         data.put("foo", "bar");
         String reference = "baz";
-        assertNull(Accessors.get(ConvertedMap.newFromMap(data), reference));
+        assertNull(get(ConvertedMap.newFromMap(data), reference));
     }
 
     @Test
@@ -36,7 +36,7 @@ public class AccessorsTest {
         Map<Serializable, Object>  data = new HashMap<>();
         data.put("foo", "bar");
         String reference = "[foo]";
-        assertEquals(new StringBiValue("bar"), Accessors.get(ConvertedMap.newFromMap(data), reference));
+        assertEquals(new StringBiValue("bar"), get(ConvertedMap.newFromMap(data), reference));
     }
 
     @Test
@@ -46,7 +46,7 @@ public class AccessorsTest {
         data.put("foo", inner);
         inner.put("bar", "baz");
         String reference = "[foo][bar]";
-        assertEquals(new StringBiValue("baz"), Accessors.get(ConvertedMap.newFromMap(data), reference));
+        assertEquals(new StringBiValue("baz"), get(ConvertedMap.newFromMap(data), reference));
     }
 
     @Test
@@ -56,7 +56,7 @@ public class AccessorsTest {
         data.put("foo", inner);
         inner.put("bar", "baz");
         String reference = "[foo][foo]";
-        assertNull(Accessors.get(ConvertedMap.newFromMap(data), reference));
+        assertNull(get(ConvertedMap.newFromMap(data), reference));
     }
 
     @Test
@@ -66,7 +66,7 @@ public class AccessorsTest {
         data.put("foo", inner);
         inner.add("bar");
         String reference = "[foo][0]";
-        assertEquals(new StringBiValue("bar"), Accessors.get(ConvertedMap.newFromMap(data), reference));
+        assertEquals(new StringBiValue("bar"), get(ConvertedMap.newFromMap(data), reference));
     }
 
     @Test
@@ -76,7 +76,7 @@ public class AccessorsTest {
         data.put("foo", inner);
         inner.add("bar");
         String reference = "[foo][1]";
-        assertNull(Accessors.get(ConvertedMap.newFromMap(data), reference));
+        assertNull(get(ConvertedMap.newFromMap(data), reference));
     }
     /*
      * Check if accessors are able to recovery from
@@ -94,18 +94,18 @@ public class AccessorsTest {
 
         String reference = "[map1][IdNonNumeric]";
 
-        assertNull(Accessors.get(data, reference));
-        assertNull(Accessors.set(data, reference, "obj3"));
-        assertFalse(Accessors.includes(data, reference));
-        assertNull(Accessors.del(data, reference));
+        assertNull(get(data, reference));
+        assertNull(set(data, reference, "obj3"));
+        assertFalse(includes(data, reference));
+        assertNull(del(data, reference));
     }
 
     @Test
     public void testBarePut() throws Exception {
         final ConvertedMap data = new ConvertedMap(1);
         String reference = "foo";
-        assertEquals("bar", Accessors.set(data, reference, "bar"));
-        assertEquals("bar", Accessors.get(data, reference));
+        assertEquals("bar", set(data, reference, "bar"));
+        assertEquals("bar", get(data, reference));
     }
 
     @Test
@@ -113,8 +113,8 @@ public class AccessorsTest {
         final ConvertedMap data = new ConvertedMap(1);
         String reference = "[foo]";
 
-        assertEquals("bar", Accessors.set(data, reference, "bar"));
-        assertEquals("bar", Accessors.get(data, reference));
+        assertEquals("bar", set(data, reference, "bar"));
+        assertEquals("bar", get(data, reference));
     }
 
     @Test
@@ -123,8 +123,8 @@ public class AccessorsTest {
 
         String reference = "[foo][bar]";
 
-        assertEquals("baz", Accessors.set(data, reference, "baz"));
-        assertEquals("baz", Accessors.get(data, reference));
+        assertEquals("baz", set(data, reference, "baz"));
+        assertEquals("baz", get(data, reference));
     }
 
     @Test
@@ -135,39 +135,39 @@ public class AccessorsTest {
         inner.add("bar");
         data.put("bar", "baz");
 
-        assertEquals("bar", Accessors.del(data, "[foo][0]"));
-        assertNull(Accessors.del(data, "[foo][0]"));
-        assertEquals(new ConvertedList(0), Accessors.get(data,"[foo]"));
-        assertEquals("baz", Accessors.del(data, "[bar]"));
-        assertNull(Accessors.get(data, "[bar]"));
+        assertEquals("bar", del(data, "[foo][0]"));
+        assertNull(del(data, "[foo][0]"));
+        assertEquals(new ConvertedList(0), get(data,"[foo]"));
+        assertEquals("baz", del(data, "[bar]"));
+        assertNull(get(data, "[bar]"));
     }
 
     @Test
     public void testNilInclude() throws Exception {
         final ConvertedMap data = new ConvertedMap(1);
         data.put("nilfield", null);
-        assertTrue(Accessors.includes(data, "nilfield"));
+        assertTrue(includes(data, "nilfield"));
     }
 
     @Test
     public void testInvalidPath() throws Exception {
         final ConvertedMap data = new ConvertedMap(1);
 
-        assertEquals(1, Accessors.set(data, "[foo]", 1));
-        assertNull(Accessors.get(data, "[foo][bar]"));
+        assertEquals(1, set(data, "[foo]", 1));
+        assertNull(get(data, "[foo][bar]"));
     }
 
     @Test
     public void testStaleTargetCache() throws Exception {
         final ConvertedMap data = new ConvertedMap(1);
 
-        assertNull(Accessors.get(data,"[foo][bar]"));
-        assertEquals("baz", Accessors.set(data,"[foo][bar]", "baz"));
-        assertEquals("baz", Accessors.get(data, "[foo][bar]"));
+        assertNull(get(data,"[foo][bar]"));
+        assertEquals("baz", set(data,"[foo][bar]", "baz"));
+        assertEquals("baz", get(data, "[foo][bar]"));
 
-        assertEquals("boom", Accessors.set(data, "[foo]", "boom"));
-        assertNull(Accessors.get(data, "[foo][bar]"));
-        assertEquals("boom", Accessors.get(data,"[foo]"));
+        assertEquals("boom", set(data, "[foo]", "boom"));
+        assertNull(get(data, "[foo][bar]"));
+        assertEquals("boom", get(data,"[foo]"));
     }
 
     @Test
@@ -178,5 +178,22 @@ public class AccessorsTest {
         assertEquals(9, Accessors.listIndex(-1, 10));
         assertEquals(1, Accessors.listIndex(-9, 10));
         assertEquals(0, Accessors.listIndex(-10, 10));
+    }
+
+    private static Object get(final ConvertedMap data, final CharSequence reference) {
+        return Accessors.get(data, PathCache.cache(reference));
+    }
+
+    private static Object set(final ConvertedMap data, final CharSequence reference,
+        final Object value) {
+        return Accessors.set(data, PathCache.cache(reference), value);
+    }
+
+    private static Object del(final ConvertedMap data, final CharSequence reference) {
+        return Accessors.del(data, PathCache.cache(reference));
+    }
+
+    private static boolean includes(final ConvertedMap data, final CharSequence reference) {
+        return Accessors.includes(data, PathCache.cache(reference));
     }
 }
