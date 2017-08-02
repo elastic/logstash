@@ -4,10 +4,10 @@ import org.joda.time.DateTime;
 import org.jruby.Ruby;
 import org.jruby.RubyTime;
 
-import java.io.ObjectStreamException;
+public final class TimeBiValue extends BiValueCommon<RubyTime, DateTime> 
+    implements BiValue<RubyTime, DateTime> {
 
-
-public class TimeBiValue extends BiValueCommon<RubyTime, DateTime> implements BiValue<RubyTime, DateTime> {
+    private static final long serialVersionUID = -8792359519343205099L;
 
     public TimeBiValue(RubyTime rubyValue) {
         this.rubyValue = rubyValue;
@@ -19,19 +19,11 @@ public class TimeBiValue extends BiValueCommon<RubyTime, DateTime> implements Bi
         rubyValue = null;
     }
 
-    private TimeBiValue() {
-    }
-
     protected void addRuby(Ruby runtime) {
         rubyValue = RubyTime.newTime(runtime, javaValue);
     }
 
     protected void addJava() {
         javaValue = rubyValue.getDateTime();
-    }
-
-    // Called when object is to be serialized on a stream to allow the object to substitute a proxy for itself.
-    private Object writeReplace() throws ObjectStreamException {
-        return newProxy(this);
     }
 }

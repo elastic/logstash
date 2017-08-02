@@ -1,7 +1,6 @@
 package org.logstash.bivalues;
 
 import com.fasterxml.jackson.annotation.JsonValue;
-import java.io.ObjectStreamException;
 import org.jruby.Ruby;
 import org.jruby.RubyNil;
 
@@ -11,7 +10,7 @@ public final class NullBiValue extends BiValueCommon<RubyNil, Object>
     private static final NullBiValue INSTANCE =
         new NullBiValue((RubyNil) Ruby.getGlobalRuntime().getNil());
 
-    private static final Object WRITE_PROXY = newProxy(INSTANCE);
+    private static final long serialVersionUID = 3324022424426763767L;
 
     public static NullBiValue newNullBiValue() {
         return INSTANCE;
@@ -43,9 +42,4 @@ public final class NullBiValue extends BiValueCommon<RubyNil, Object>
 
     @Override
     protected void addJava() {}
-
-    // Called when object is to be serialized on a stream to allow the object to substitute a proxy for itself.
-    private Object writeReplace() throws ObjectStreamException {
-        return WRITE_PROXY;
-    }
 }

@@ -1,12 +1,13 @@
 package org.logstash.bivalues;
 
 import com.fasterxml.jackson.annotation.JsonValue;
-import java.io.ObjectStreamException;
 import org.jruby.Ruby;
 import org.jruby.RubyString;
 
 public final class StringBiValue extends BiValueCommon<RubyString, String>
     implements BiValue<RubyString, String> {
+
+    private static final long serialVersionUID = -1059663228107569565L;
 
     public StringBiValue(RubyString rubyValue) {
         this.rubyValue = rubyValue;
@@ -15,9 +16,6 @@ public final class StringBiValue extends BiValueCommon<RubyString, String>
     public StringBiValue(String javaValue) {
         this.javaValue = javaValue;
         rubyValue = null;
-    }
-
-    private StringBiValue() {
     }
 
     @Override
@@ -49,10 +47,5 @@ public final class StringBiValue extends BiValueCommon<RubyString, String>
     @Override
     public boolean hasJavaValue() {
         return true;
-    }
-
-    // Called when object is to be serialized on a stream to allow the object to substitute a proxy for itself.
-    private Object writeReplace() throws ObjectStreamException {
-        return newProxy(this);
     }
 }
