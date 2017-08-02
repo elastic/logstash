@@ -16,6 +16,7 @@ import org.logstash.benchmark.cli.LogstashInstallation;
 import org.logstash.benchmark.cli.LsBenchSettings;
 import org.logstash.benchmark.cli.LsMetricsMonitor;
 import org.logstash.benchmark.cli.ui.LsMetricStats;
+import org.logstash.benchmark.cli.ui.UserOutput;
 import org.logstash.benchmark.cli.util.LsBenchDownloader;
 import org.openjdk.jmh.util.ListStatistics;
 
@@ -32,16 +33,26 @@ public final class ApacheLogsComplex implements Case {
 
     private final LogstashInstallation logstash;
 
+    /**
+     * File containing example Apache web-server logs.
+     */
     private final File data;
 
+    /**
+     * {@link DataStore} to save benchmark run results to.
+     */
     private final DataStore store;
 
     private final int repeats;
-    
+
     public ApacheLogsComplex(final DataStore store, final LogstashInstallation logstash,
-        final Path cwd, final Properties settings) throws IOException, NoSuchAlgorithmException {
-        this.data = cwd.resolve("data_apache").resolve("apache_access_logs").toFile();
-        ensureDatafile(data.toPath().getParent().toFile(), settings);
+        final Path cwd, final Properties settings, final UserOutput output)
+        throws IOException, NoSuchAlgorithmException {
+        data = cwd.resolve("data_apache").resolve("apache_access_logs").toFile();
+        ensureDatafile(
+            data.toPath().getParent().toFile(),
+            settings.getProperty(LsBenchSettings.APACHE_DATASET_URL), output
+        );
         this.logstash = logstash;
         this.store = store;
         repeats = Integer.parseInt(settings.getProperty(LsBenchSettings.INPUT_DATA_REPEAT));
@@ -51,24 +62,26 @@ public final class ApacheLogsComplex implements Case {
     public EnumMap<LsMetricStats, ListStatistics> run() {
         try (final LsMetricsMonitor.MonitorExecution monitor =
                  new LsMetricsMonitor.MonitorExecution(logstash.metrics(), store)) {
-            final String config;
+            final ByteArrayOutputStream baos = new ByteArrayOutputStream();
             try (final InputStream cfg = ApacheLogsComplex.class
                 .getResourceAsStream("apache.cfg")) {
-                final ByteArrayOutputStream baos = new ByteArrayOutputStream();
                 IOUtils.copy(cfg, baos);
-                config = baos.toString();
             }
-            logstash.execute(config, data, repeats);
+            logstash.execute(baos.toString(), data, repeats);
             return monitor.stopAndGet();
         } catch (final IOException | InterruptedException | ExecutionException | TimeoutException ex) {
             throw new IllegalStateException(ex);
         }
     }
 
-    private static void ensureDatafile(final File file, final Properties settings)
+    private static void ensureDatafile(final File file, final String url, final UserOutput output)
         throws IOException, NoSuchAlgorithmException {
-        LsBenchDownloader.downloadDecompress(
-            file, settings.getProperty(LsBenchSettings.APACHE_DATASET_URL), false
-        );
+        if (file.exists()) {
+            output.blue("Using example Apache web-server logs from cache.");
+        } else {
+            output.blue("Downloading example Apache web-server logs.");
+            LsBenchDownloader.downloadDecompress(file, url);
+            output.blue("Finished downloading example Apache web-server logs.");
+        }
     }
 }
