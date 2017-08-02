@@ -146,7 +146,7 @@ public final class RecordIOReader implements Closeable {
      */
      int seekToStartOfEventInBlock() {
          // Already consumed all the bytes in this block.
-        if (currentBlock.position() == currentBlockSizeReadFromChannel){
+        if (currentBlock.position() >= currentBlockSizeReadFromChannel){
              return -1;
          }
          while (true) {
