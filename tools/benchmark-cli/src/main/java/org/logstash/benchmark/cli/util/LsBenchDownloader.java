@@ -15,9 +15,9 @@ import org.apache.http.impl.client.HttpClientBuilder;
 
 public final class LsBenchDownloader {
     
-    public static void downloadDecompress(final File file, final String url, final boolean force)
+    public static void downloadDecompress(final File file, final String url)
         throws IOException, NoSuchAlgorithmException {
-        if (force && file.exists()) {
+        if (file.exists()) {
             LsBenchFileUtil.ensureDeleted(file);
         }
         if (!file.exists()) {

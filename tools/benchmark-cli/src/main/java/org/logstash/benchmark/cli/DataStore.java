@@ -59,7 +59,7 @@ public interface DataStore extends Closeable {
         ElasticSearch(final String host, final int port, final String schema,
             final Map<String, Object> meta) {
             client = RestClient.builder(new HttpHost(host, port, schema)).build();
-            this.meta = meta;
+            this.meta = Collections.unmodifiableMap(meta);
         }
 
         @Override
