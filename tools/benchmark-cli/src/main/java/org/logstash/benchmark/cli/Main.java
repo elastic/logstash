@@ -143,7 +143,8 @@ public final class Main {
                 cwd.toAbsolutePath().toString(), version, JRubyInstallation.bootstrapJruby(cwd)
             );
         } else {
-            logstash = LsBenchLsSetup.setupLS(cwd.toAbsolutePath().toString(), version, type);
+            logstash =
+                LsBenchLsSetup.setupLS(cwd.toAbsolutePath().toString(), version, type, output);
         }
         try (final DataStore store = setupDataStore(esout, test, version, type)) {
             final Case testcase = setupTestCase(store, logstash, cwd, settings, test);

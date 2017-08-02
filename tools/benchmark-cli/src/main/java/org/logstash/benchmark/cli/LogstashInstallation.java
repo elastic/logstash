@@ -13,6 +13,7 @@ import java.nio.file.StandardOpenOption;
 import java.security.NoSuchAlgorithmException;
 import java.util.Map;
 import org.apache.commons.io.IOUtils;
+import org.logstash.benchmark.cli.ui.UserOutput;
 import org.logstash.benchmark.cli.util.LsBenchDownloader;
 import org.logstash.benchmark.cli.util.LsBenchFileUtil;
 
@@ -46,12 +47,16 @@ public interface LogstashInstallation {
 
         private final LogstashInstallation base;
 
-        public FromRelease(final File pwd, final String version) {
+        public FromRelease(final File pwd, final String version, final UserOutput output) {
             try {
-                LogstashInstallation.FromRelease.download(pwd, version);
-                this.base = LogstashInstallation.FromRelease.setup(
-                    pwd.toPath().resolve(String.format("logstash-%s", version))
-                );
+                final Path basedir = pwd.toPath().resolve(String.format("logstash-%s", version));
+                if (basedir.toFile().exists()) {
+                    output.blue(String.format("Using Logstash %s from cache.", version));
+                } else {
+                    output.blue(String.format("Downloading Logstash %s.", version));
+                    LogstashInstallation.FromRelease.download(pwd, version);
+                }
+                this.base = LogstashInstallation.FromRelease.setup(basedir);
             } catch (IOException | NoSuchAlgorithmException ex) {
                 throw new IllegalStateException(ex);
             }

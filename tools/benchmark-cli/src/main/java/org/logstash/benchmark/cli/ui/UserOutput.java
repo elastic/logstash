@@ -16,6 +16,11 @@ public final class UserOutput {
     private static final String GREEN_ANSI_OPEN = SystemUtils.IS_OS_UNIX ? "\u001B[32m" : "";
 
     /**
+     * ANSI colorized blue section open sequence(On Unix platform only).
+     */
+    private static final String BLUE_ANSI_OPEN = SystemUtils.IS_OS_UNIX ? "\u001B[34m" : "";
+
+    /**
      * ANSI colorized section close sequence(On Unix platform only).
      */
     private static final String ANSI_CLOSE = SystemUtils.IS_OS_UNIX ? "\u001B[0m" : "";
@@ -54,6 +59,10 @@ public final class UserOutput {
 
     public void green(final String line) {
         target.println(colorize(line, GREEN_ANSI_OPEN));
+    }
+
+    public void blue(final String line) {
+        target.println(colorize(line, BLUE_ANSI_OPEN));
     }
 
     public void printStatistics(final Map<LsMetricStats, ListStatistics> stats) {

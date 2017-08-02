@@ -5,6 +5,7 @@ import java.nio.file.Paths;
 import org.logstash.benchmark.cli.JRubyInstallation;
 import org.logstash.benchmark.cli.LogstashInstallation;
 import org.logstash.benchmark.cli.ui.LsVersionType;
+import org.logstash.benchmark.cli.ui.UserOutput;
 
 public final class LsBenchLsSetup {
 
@@ -25,13 +26,13 @@ public final class LsBenchLsSetup {
     }
 
     public static LogstashInstallation setupLS(final String pwd, final String version,
-        final LsVersionType type) {
+        final LsVersionType type, final UserOutput output) {
         final LogstashInstallation logstash;
         if (type == LsVersionType.LOCAL) {
             logstash = new LogstashInstallation.FromLocalPath(version);
         } else {
             logstash = new LogstashInstallation.FromRelease(
-                Paths.get(pwd, String.format("ls-release-%s", version)).toFile(), version
+                Paths.get(pwd, String.format("ls-release-%s", version)).toFile(), version, output
             );
         }
         return logstash;
