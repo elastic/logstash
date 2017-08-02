@@ -198,9 +198,7 @@ public class Queue implements Closeable {
                 logger.debug("opening tail page: {}, in: {}, with checkpoint: {}", pageNum, this.dirPath, cp.toString());
 
                 PageIO pageIO = this.pageIOFactory.build(pageNum, this.pageCapacity, this.dirPath);
-                pageIO.open(cp.getMinSeqNum(), cp.getElementCount());
-
-                add(cp, new TailPage(cp, this, pageIO));
+                addIO(cp, pageIO);
             }
 
             // transform the head page into a tail page only if the headpage is non-empty
@@ -235,7 +233,7 @@ public class Queue implements Closeable {
                 this.headPage.checkpoint();
             } else {
                 // head page is non-empty, transform it into a tail page and create a new empty head page
-                add(headCheckpoint, this.headPage.behead());
+                addPage(headCheckpoint, this.headPage.behead());
 
                 headPageNum = headCheckpoint.getPageNum() + 1;
                 newCheckpointedHeadpage(headPageNum);
@@ -261,9 +259,53 @@ public class Queue implements Closeable {
         }
     }
 
+    // TODO: addIO and addPage are almost identical - we should refactor to DRY it up.
+
+    // addIO is basically the same as addPage except that it avoid calling PageIO.open
+    // before actually purging the page if it is fully acked. This avoid dealing with
+    // zero byte page files that are fully acked.
+    // see issue #7809
+    private void addIO(Checkpoint checkpoint, PageIO pageIO) throws IOException {
+        if (checkpoint.isFullyAcked()) {
+            // first make sure any fully acked page per the checkpoint is purged if not already
+            try { pageIO.purge(); } catch (NoSuchFileException e) { /* ignore */ }
+
+            // we want to keep all the "middle" checkpoints between the first unacked tail page and the head page
+            // to always have a contiguous sequence of checkpoints which helps figuring queue integrity. for this
+            // we will remove any prepended fully acked tail pages but keep all other checkpoints between the first
+            // unacked tail page and the head page. we did however purge the data file to free disk resources.
+
+            if (this.tailPages.size() == 0) {
+                // this is the first tail page and it is fully acked so just purge it
+                this.checkpointIO.purge(this.checkpointIO.tailFileName(checkpoint.getPageNum()));
+            } else {
+                // create a tail page with a null PageIO and add it to tail pages but not unreadTailPages
+                // since it is fully read because also fully acked
+                // TODO: I don't like this null pageIO tail page...
+                this.tailPages.add(new TailPage(checkpoint, this, null));
+            }
+        } else {
+            pageIO.open(checkpoint.getMinSeqNum(), checkpoint.getElementCount());
+            TailPage page = new TailPage(checkpoint, this, pageIO);
+
+            this.tailPages.add(page);
+            this.unreadTailPages.add(page);
+            this.unreadCount += page.unreadCount();
+            this.currentByteSize += page.getPageIO().getCapacity();
+
+            // for now deactivate all tail pages, we will only reactivate the first one at the end
+            page.getPageIO().deactivate();
+        }
+
+        // track the seqNum as we rebuild tail pages, prevent empty pages with a minSeqNum of 0 to reset seqNum
+        if (checkpoint.maxSeqNum() > this.seqNum) {
+            this.seqNum = checkpoint.maxSeqNum();
+        }
+    }
+
     // add a read tail page into this queue structures but also verify that this tail page
     // is not fully acked in which case it will be purged
-    private void add(Checkpoint checkpoint, TailPage page) throws IOException {
+    private void addPage(Checkpoint checkpoint, TailPage page) throws IOException {
         if (checkpoint.isFullyAcked()) {
             // first make sure any fully acked page per the checkpoint is purged if not already
             try { page.getPageIO().purge(); } catch (NoSuchFileException e) { /* ignore */ }
