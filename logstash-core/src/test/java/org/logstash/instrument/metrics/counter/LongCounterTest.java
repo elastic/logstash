@@ -34,7 +34,7 @@ public class LongCounterTest {
         assertThat(longCounter.getValue()).isEqualTo(INITIAL_VALUE + 1);
     }
 
-    @Test(expected = UnsupportedOperationException.class)
+    @Test(expected = IllegalArgumentException.class)
     public void incrementByNegativeValue() {
         longCounter.increment(-100l);
     }
