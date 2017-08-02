@@ -1,7 +1,10 @@
 package org.logstash.ackedqueue;
 
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.channels.FileChannel;
 import java.nio.file.NoSuchFileException;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -779,6 +782,57 @@ public class QueueTest {
 
             b.close();
             assertThat(q.isEmpty(), is(true));
+        }
+    }
+
+    @Test
+    public void testZeroByteFullyAckedPageOnOpen() throws IOException {
+        Queueable element = new StringElement("0123456789"); // 10 bytes
+        int singleElementCapacity = singleElementCapacityForByteBufferPageIO(element);
+        Settings settings = TestSettings.persistedQueueSettings(singleElementCapacity, dataPath);
+
+        // the goal here is to recreate a condition where the queue has a tail page of size zero with
+        // a checkpoint that indicates it is full acknowledged
+        // see issue #7809
+
+        try(TestQueue q = new TestQueue(settings)) {
+            q.open();
+
+            Queueable element1 = new StringElement("0123456789");
+            Queueable element2 = new StringElement("9876543210");
+
+            // write 2 elements to force a new page.
+            q.write(element1);
+            q.write(element2);
+            assertThat(q.getTailPages().size(), is(1));
+
+            // work directly on the tail page and not the queue to avoid habing the queue purge the page
+            // but make sure the tail page checkpoint marks it as fully acked
+            TailPage tp = q.getTailPages().get(0);
+            Batch b = tp.readBatch(1);
+            assertThat(b.getElements().get(0), is(element1));
+            tp.ack(b.getSeqNums(), 1);
+            assertThat(tp.isFullyAcked(), is(true));
+
+        }
+        // now we have a queue state where page 0 is fully acked but not purged
+        // manually truncate page 0 to zero byte.
+
+        // TODO page.0 file name is hard coded here because we did not expose the page file naming.
+        FileChannel c = new FileOutputStream(Paths.get(dataPath, "page.0").toFile(), true).getChannel();
+        c.truncate(0);
+        c.close();
+
+        try(TestQueue q = new TestQueue(settings)) {
+            // here q.open used to crash with:
+            // java.io.IOException: Page file size 0 different to configured page capacity 27 for ...
+            // because page.0 ended up as a zero byte file but its checkpoint says it's fully acked
+            q.open();
+            assertThat(q.getUnackedCount(), is(1L));
+            assertThat(q.getTailPages().size(), is(1));
+            assertThat(q.getTailPages().get(0).isFullyAcked(), is(false));
+            assertThat(q.getTailPages().get(0).elementCount, is(1));
+            assertThat(q.getHeadPage().elementCount, is(0));
         }
     }
 
