@@ -1,16 +1,17 @@
 package org.logstash.instrument.metrics.counter;
 
-
-import org.logstash.instrument.metrics.AbstractMetric;
-import org.logstash.instrument.metrics.MetricType;
-
 import java.util.List;
 import java.util.concurrent.atomic.LongAdder;
+import org.logstash.instrument.metrics.AbstractMetric;
+import org.logstash.instrument.metrics.MetricType;
 
 /**
  * A {@link CounterMetric} that is backed by a {@link Long} type.
  */
 public class LongCounter extends AbstractMetric<Long> implements CounterMetric<Long> {
+
+    private static final IllegalArgumentException NEG_COUNT_EX =
+        new IllegalArgumentException("Counters can not be incremented by negative values");
 
     private final LongAdder longAdder;
 
@@ -40,25 +41,21 @@ public class LongCounter extends AbstractMetric<Long> implements CounterMetric<L
         increment(1l);
     }
 
-    /**
-     * {@inheritDoc}
-     * throws {@link UnsupportedOperationException} if attempt is made to increment by a negative value
-     */
     @Override
     public void increment(Long by) {
         if (by < 0) {
-            throw new UnsupportedOperationException("Counters can not be incremented by negative values");
+            throw NEG_COUNT_EX;
         }
         longAdder.add(by);
     }
 
     /**
      * Optimized version of {@link #increment(Long)} to avoid auto-boxing.
-     * throws {@link UnsupportedOperationException} if attempt is made to increment by a negative value
+     * @param by Count to add
      */
     public void increment(long by) {
         if (by < 0) {
-            throw new UnsupportedOperationException("Counters can not be incremented by negative values");
+            throw NEG_COUNT_EX;
         }
         longAdder.add(by);
     }
