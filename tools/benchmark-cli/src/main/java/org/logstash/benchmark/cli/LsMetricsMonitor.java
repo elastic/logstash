@@ -106,10 +106,11 @@ public final class LsMetricsMonitor implements Callable<EnumMap<LsMetricStats, L
         }
     }
 
+    @SuppressWarnings("unchecked")
     private static long readNestedLong(final Map<String, Object> map, final String ... path) {
         Map<String, Object> nested = map;
         for (int i = 0; i < path.length - 1; ++i) {
-            nested = (Map<String, Object>) (nested).get(path[i]);
+            nested = (Map<String, Object>) nested.get(path[i]);
         }
         return ((Number) nested.get(path[path.length - 1])).longValue();
     }

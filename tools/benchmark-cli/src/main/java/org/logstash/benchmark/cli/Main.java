@@ -147,7 +147,7 @@ public final class Main {
                 LsBenchLsSetup.setupLS(cwd.toAbsolutePath().toString(), version, type, output);
         }
         try (final DataStore store = setupDataStore(esout, test, version, type)) {
-            final Case testcase = setupTestCase(store, logstash, cwd, settings, test);
+            final Case testcase = setupTestCase(store, logstash, cwd, settings, test, output);
             output.printStartTime();
             final long start = System.currentTimeMillis();
             final AbstractMap<LsMetricStats, ListStatistics> stats = testcase.run();
@@ -163,13 +163,13 @@ public final class Main {
     }
 
     private static Case setupTestCase(final DataStore store, final LogstashInstallation logstash,
-        final Path cwd, final Properties settings, final String test)
+        final Path cwd, final Properties settings, final String test, final UserOutput output)
         throws IOException, NoSuchAlgorithmException {
         final Case testcase;
         if (GeneratorToStdout.IDENTIFIER.equalsIgnoreCase(test)) {
             testcase = new GeneratorToStdout(store, logstash, settings);
         } else if (ApacheLogsComplex.IDENTIFIER.equalsIgnoreCase(test)) {
-            testcase = new ApacheLogsComplex(store, logstash, cwd, settings);
+            testcase = new ApacheLogsComplex(store, logstash, cwd, settings, output);
         } else {
             throw new IllegalArgumentException(String.format("Unknown test case %s", test));
         }

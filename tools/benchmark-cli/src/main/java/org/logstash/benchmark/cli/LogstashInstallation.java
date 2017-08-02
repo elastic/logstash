@@ -55,6 +55,7 @@ public interface LogstashInstallation {
                 } else {
                     output.blue(String.format("Downloading Logstash %s.", version));
                     LogstashInstallation.FromRelease.download(pwd, version);
+                    output.blue("Finished downloading Logstash.");
                 }
                 this.base = LogstashInstallation.FromRelease.setup(basedir);
             } catch (IOException | NoSuchAlgorithmException ex) {
@@ -83,9 +84,8 @@ public interface LogstashInstallation {
             LsBenchDownloader.downloadDecompress(
                 pwd,
                 String.format(
-                    "https://artifacts.elastic.co/downloads/logstash/logstash-%s.zip",
-                    version
-                ), true
+                    "https://artifacts.elastic.co/downloads/logstash/logstash-%s.zip", version
+                )
             );
         }
 
@@ -212,8 +212,7 @@ public interface LogstashInstallation {
         private static void download(final File pwd, final String user, final String hash)
             throws IOException, NoSuchAlgorithmException {
             LsBenchDownloader.downloadDecompress(
-                pwd, String.format("https://github.com/%s/logstash/archive/%s.zip", user, hash),
-                true
+                pwd, String.format("https://github.com/%s/logstash/archive/%s.zip", user, hash)
             );
         }
 

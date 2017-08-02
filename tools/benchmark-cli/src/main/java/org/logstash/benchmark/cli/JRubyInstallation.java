@@ -41,8 +41,7 @@ public final class JRubyInstallation {
             String.format(
                 "http://jruby.org.s3.amazonaws.com/downloads/%s/jruby-bin-%s.tar.gz",
                 JRUBY_DEFAULT_VERSION, JRUBY_DEFAULT_VERSION
-            ),
-            false
+            )
         );
         return new JRubyInstallation(
             pwd.resolve("jruby").resolve(String.format("jruby-%s", JRUBY_DEFAULT_VERSION))
