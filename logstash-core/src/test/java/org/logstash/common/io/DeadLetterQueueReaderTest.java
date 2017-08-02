@@ -115,6 +115,42 @@ public class DeadLetterQueueReaderTest {
         manager.close();
     }
 
+
+    // This test checks that polling after a block has been mostly filled with an event is handled correctly.
+    @Test
+    public void testRereadFinalBlock() throws Exception {
+        Event event = new Event(Collections.emptyMap());
+
+        // Fill event with not quite enough characters to fill block. Fill event with valid RecordType characters - this
+        // was the cause of https://github.com/elastic/logstash/issues/7868
+        char[] field = new char[32500];
+        Arrays.fill(field, 's');
+        event.setField("message", new String(field));
+        long startTime = System.currentTimeMillis();
+        int messageSize = 0;
+        DeadLetterQueueWriter writeManager = null;
+        try {
+            writeManager = new DeadLetterQueueWriter(dir, 10 * 1024 * 1024, 1_000_000_000);
+            for (int i = 0; i < 2; i++) {
+                DLQEntry entry = new DLQEntry(event, "", "", "", new Timestamp(startTime++));
+                messageSize += entry.serialize().length;
+                writeManager.writeEntry(entry);
+            }
+        } finally {
+            if (writeManager != null) writeManager.close();
+        }
+        DeadLetterQueueReader readManager = null;
+        try {
+            readManager = new DeadLetterQueueReader(dir);
+            for (int i = 0; i < 3;i++) {
+                readManager.pollEntry(100);
+            }
+        } finally {
+            if (readManager != null) readManager.close();
+        }
+    }
+
+
     @Test
     public void testSeek() throws Exception {
         Event event = new Event(Collections.emptyMap());
@@ -144,7 +180,7 @@ public class DeadLetterQueueReaderTest {
 
         DeadLetterQueueWriter writeManager = null;
         try {
-            writeManager = new DeadLetterQueueWriter(dir, 10 * 1024 * 1024, 1_000_000_000)
+            writeManager = new DeadLetterQueueWriter(dir, 10 * 1024 * 1024, 1_000_000_000);
             for (int i = 0; i < 2; i++) {
                 DLQEntry entry = new DLQEntry(event, "", "", "", timestamp);
                 assertThat(entry.serialize().length + RecordIOWriter.RECORD_HEADER_SIZE, is(BLOCK_SIZE));
@@ -175,7 +211,7 @@ public class DeadLetterQueueReaderTest {
         int messageSize = 0;
         DeadLetterQueueWriter writeManager = null;
         try {
-            writeManager = new DeadLetterQueueWriter(dir, 10 * 1024 * 1024, 1_000_000_000)
+            writeManager = new DeadLetterQueueWriter(dir, 10 * 1024 * 1024, 1_000_000_000);
             for (int i = 1; i <= 5; i++) {
                 DLQEntry entry = new DLQEntry(event, "", "", "", new Timestamp(startTime++));
                 messageSize += entry.serialize().length;
@@ -211,7 +247,7 @@ public class DeadLetterQueueReaderTest {
 
         DeadLetterQueueWriter writeManager = null;
         try {
-            writeManager = new DeadLetterQueueWriter(dir, BLOCK_SIZE, 1_000_000_000)
+            writeManager = new DeadLetterQueueWriter(dir, BLOCK_SIZE, 1_000_000_000);
             for (int i = 0; i < 2; i++) {
                 DLQEntry entry = new DLQEntry(event, "", "", "", timestamp);
                 assertThat(entry.serialize().length + RecordIOWriter.RECORD_HEADER_SIZE, is(BLOCK_SIZE));
