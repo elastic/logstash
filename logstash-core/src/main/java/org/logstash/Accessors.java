@@ -8,20 +8,17 @@ public final class Accessors {
         //Utility Class
     }
 
-    public static Object get(final ConvertedMap data, final String reference) {
-        final FieldReference field = PathCache.cache(reference);
+    public static Object get(final ConvertedMap data, final FieldReference field) {
         final Object target = findParent(data, field);
         return target == null ? null : fetch(target, field.getKey());
     }
 
-    public static Object set(final ConvertedMap data, final String reference,
+    public static Object set(final ConvertedMap data, final FieldReference field,
         final Object value) {
-        final FieldReference field = PathCache.cache(reference);
         return setChild(findCreateTarget(data, field), field.getKey(), value);
     }
 
-    public static Object del(final ConvertedMap data, final String reference) {
-        final FieldReference field = PathCache.cache(reference);
+    public static Object del(final ConvertedMap data, final FieldReference field) {
         final Object target = findParent(data, field);
         if (target instanceof ConvertedMap) {
             return ((ConvertedMap) target).remove(field.getKey());
@@ -30,8 +27,7 @@ public final class Accessors {
         }
     }
 
-    public static boolean includes(final ConvertedMap data, final String reference) {
-        final FieldReference field = PathCache.cache(reference);
+    public static boolean includes(final ConvertedMap data, final FieldReference field) {
         final Object target = findParent(data, field);
         final String key = field.getKey();
         return target instanceof ConvertedMap && ((ConvertedMap) target).containsKey(key) ||
@@ -138,9 +134,10 @@ public final class Accessors {
     }
 
     /**
-     * Returns a positive integer offset for a list of known size.
-     * @param size the size of the list.
-     * @return the positive integer offset for the list given by index i.
+     * Returns a positive integer offset from a Ruby style positive or negative list index.
+     * @param i List index
+     * @param size the size of the list
+     * @return the positive integer offset for the list given by index i
      */
     public static int listIndex(int i, int size) {
         return i < 0 ? size + i : i;
@@ -148,8 +145,9 @@ public final class Accessors {
 
     /**
      * Returns a positive integer offset for a list of known size.
-     * @param size the size of the list.
-     * @return the positive integer offset for the list given by index i.
+     * @param key List index (String matching /[0-9]+/)
+     * @param size the size of the list
+     * @return the positive integer offset for the list given by index i
      */
     private static int listIndex(final String key, final int size) {
         return listIndex(Integer.parseInt(key), size);

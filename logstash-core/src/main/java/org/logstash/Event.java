@@ -37,6 +37,8 @@ public final class Event implements Cloneable, Queueable {
     private static final String DATA_MAP_KEY = "DATA";
     private static final String META_MAP_KEY = "META";
 
+    private static final FieldReference TAGS_FIELD = PathCache.cache("tags");
+    
     private static final Logger logger = LogManager.getLogger(Event.class);
 
     public Event()
@@ -81,9 +83,7 @@ public final class Event implements Cloneable, Queueable {
         // keep reference to the parsedTimestamp for tagging below
         Timestamp parsedTimestamp = initTimestamp(providedTimestamp);
         this.timestamp = (parsedTimestamp == null) ? Timestamp.now() : parsedTimestamp;
-
-        this.data.put(TIMESTAMP, this.timestamp);
-
+        Accessors.set(data, FieldReference.TIMESTAMP_REFERENCE, timestamp);
         // the tag() method has to be called after the Accessors initialization
         if (parsedTimestamp == null) {
             tag(TIMESTAMP_FAILURE_TAG);
@@ -124,41 +124,55 @@ public final class Event implements Cloneable, Queueable {
         this.data.put(TIMESTAMP, this.timestamp);
     }
 
-    public Object getField(String reference) {
-        final Object unconverted = getUnconvertedField(reference);
+    public Object getField(final String reference) {
+        final Object unconverted = getUnconvertedField(PathCache.cache(reference));
         return unconverted == null ? null : Javafier.deep(unconverted);
     }
 
-    public Object getUnconvertedField(String reference) {
-        if (reference.equals(METADATA)) {
-            return this.metadata;
-        } else if (reference.startsWith(METADATA_BRACKETS)) {
-            return Accessors.get(metadata, reference.substring(METADATA_BRACKETS.length()));
-        } else {
-            return Accessors.get(data, reference);
+    public Object getUnconvertedField(final String reference) {
+        return getUnconvertedField(PathCache.cache(reference));
+    }
+
+    public Object getUnconvertedField(final FieldReference field) {
+        switch (field.type()) {
+            case FieldReference.META_PARENT:
+                return this.metadata;
+            case FieldReference.META_CHILD:
+                return Accessors.get(metadata, field);
+            default:
+                return Accessors.get(data, field);
         }
     }
 
-    public void setField(String reference, Object value) {
-        if (reference.equals(TIMESTAMP)) {
-            // TODO(talevy): check type of timestamp
-            Accessors.set(data, reference, value);
-        } else if (reference.equals(METADATA_BRACKETS) || reference.equals(METADATA)) {
-            this.metadata = ConvertedMap.newFromMap((Map) value);
-        } else if (reference.startsWith(METADATA_BRACKETS)) {
-            Accessors.set(metadata, reference.substring(METADATA_BRACKETS.length()), value);
-        } else {
-            Accessors.set(data, reference, Valuefier.convert(value));
+    public void setField(final String reference, final Object value) {
+        setField(PathCache.cache(reference), value);
+    }
+
+    public void setField(final FieldReference field, final Object value) {
+        switch (field.type()) {
+            case FieldReference.META_PARENT:
+                this.metadata = ConvertedMap.newFromMap((Map) value);
+                break;
+            case FieldReference.META_CHILD:
+                Accessors.set(metadata, field, value);
+                break;
+            default:
+                Accessors.set(data, field, Valuefier.convert(value));
         }
     }
 
-    public boolean includes(String reference) {
-        if (reference.equals(METADATA_BRACKETS) || reference.equals(METADATA)) {
-            return true;
-        } else if (reference.startsWith(METADATA_BRACKETS)) {
-            return Accessors.includes(metadata, reference.substring(METADATA_BRACKETS.length()));
-        } else {
-            return Accessors.includes(data, reference);
+    public boolean includes(final String field) {
+        return includes(PathCache.cache(field));
+    }
+
+    public boolean includes(final FieldReference field) {
+        switch (field.type()) {
+            case FieldReference.META_PARENT:
+                return true;
+            case FieldReference.META_CHILD:
+                return Accessors.includes(metadata, field);
+            default:
+                return Accessors.includes(data, field);
         }
     }
 
@@ -247,8 +261,12 @@ public final class Event implements Cloneable, Queueable {
         return this;
     }
 
-    public Object remove(String path) {
-        return Accessors.del(data, path);
+    public Object remove(final String path) {
+        return remove(PathCache.cache(path));
+    }
+
+    public Object remove(final FieldReference field) {
+        return Accessors.del(data, field);
     }
 
     public String sprintf(String s) throws IOException {
@@ -318,7 +336,7 @@ public final class Event implements Cloneable, Queueable {
     }
 
     public void tag(final String tag) {
-        final Object tags = Accessors.get(data,"tags");
+        final Object tags = Accessors.get(data, TAGS_FIELD);
         // short circuit the null case where we know we won't need deduplication step below at the end
         if (tags == null) {
             initTag(tag);
@@ -334,7 +352,7 @@ public final class Event implements Cloneable, Queueable {
     private void initTag(final String tag) {
         final ConvertedList list = new ConvertedList(1);
         list.add(new StringBiValue(tag));
-        Accessors.set(data, "tags", list);
+        Accessors.set(data, TAGS_FIELD, list);
     }
 
     /**
@@ -360,7 +378,7 @@ public final class Event implements Cloneable, Queueable {
         // TODO: we should eventually look into using alternate data structures to do more efficient dedup but that will require properly defining the tagging API too
         if (!tags.contains(tag)) {
             tags.add(tag);
-            Accessors.set(data,"tags", ConvertedList.newFromList(tags));
+            Accessors.set(data, TAGS_FIELD, ConvertedList.newFromList(tags));
         }
     }
 
