@@ -87,7 +87,9 @@ public class JrubyEventExtLibrary implements Library {
         public IRubyObject ruby_initialize(ThreadContext context, IRubyObject[] args) {
             final IRubyObject data = args.length > 0 ? args[0] : null;
             if (data instanceof RubyHash) {
-                this.event = new Event(ConvertedMap.newFromRubyHash((RubyHash) data));
+                this.event = new Event(
+                    ConvertedMap.newFromRubyHash(context, (RubyHash) data)
+                );
             } else {
                 initializeFallback(context, data);
             }
