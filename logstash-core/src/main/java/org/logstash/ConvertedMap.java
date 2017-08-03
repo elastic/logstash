@@ -4,11 +4,22 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 import org.jruby.RubyHash;
+import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 
 public final class ConvertedMap extends HashMap<String, Object> {
 
     private static final long serialVersionUID = -4651798808586901122L;
+
+    private static final RubyHash.VisitorWithState<ConvertedMap> RUBY_HASH_VISITOR =
+        new RubyHash.VisitorWithState<ConvertedMap>() {
+            @Override
+            public void visit(final ThreadContext context, final RubyHash self,
+                final IRubyObject key, final IRubyObject value,
+                final int index, final ConvertedMap state) {
+                state.put(key.toString(), Valuefier.convert(value));
+            }
+        };
 
     ConvertedMap(final int size) {
         super((size << 2) / 3 + 2);
@@ -22,15 +33,13 @@ public final class ConvertedMap extends HashMap<String, Object> {
         return cm;
     }
 
-    public static ConvertedMap newFromRubyHash(RubyHash o) {
-        final ConvertedMap result = new ConvertedMap(o.size());
+    public static ConvertedMap newFromRubyHash(final RubyHash o) {
+        return newFromRubyHash(o.getRuntime().getCurrentContext(), o);
+    }
 
-        o.visitAll(o.getRuntime().getCurrentContext(), new RubyHash.Visitor() {
-            @Override
-            public void visit(IRubyObject key, IRubyObject value) {
-                result.put(key.toString(), Valuefier.convert(value));
-            }
-        }, null);
+    public static ConvertedMap newFromRubyHash(final ThreadContext context, final RubyHash o) {
+        final ConvertedMap result = new ConvertedMap(o.size());
+        o.visitAll(context, RUBY_HASH_VISITOR, result);
         return result;
     }
 
