@@ -67,10 +67,10 @@ public final class FieldReference {
         final List<String> path = new ArrayList<>(parts.length);
         for (final String part : parts) {
             if (!part.isEmpty()) {
-                path.add(part);
+                path.add(part.intern());
             }
         }
-        final String key = path.remove(path.size() - 1);
+        final String key = path.remove(path.size() - 1).intern();
         final boolean empty = path.isEmpty();
         if (empty && key.equals(Event.METADATA)) {
             return METADATA_PARENT_REFERENCE;
