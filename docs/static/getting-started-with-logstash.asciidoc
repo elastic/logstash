@@ -9,8 +9,8 @@ This section includes the following topics:
 
 * <<installing-logstash>>
 * <<first-event>>
-* {logstash-ref}advanced-pipeline.html[Advanced Pipeline]
-* {logstash-ref}multiple-input-output-plugins.html[Multiple Output Plugins]
+* {logstash-ref}/advanced-pipeline.html[Advanced Pipeline]
+* {logstash-ref}/multiple-input-output-plugins.html[Multiple Output Plugins]
 
 [[installing-logstash]]
 === Installing Logstash
@@ -121,7 +121,7 @@ it with:
 sudo apt-get update && sudo apt-get install logstash
 --------------------------------------------------
 
-See {logstash-ref}running-logstash.html[Running Logstash] for details about managing Logstash as a system service.
+See {logstash-ref}/running-logstash.html[Running Logstash] for details about managing Logstash as a system service.
 
 endif::[]
 
@@ -168,14 +168,14 @@ sudo yum install logstash
 WARNING: The repositories do not work with older rpm based distributions
          that still use RPM v3, like CentOS5.
 
-See the {logstash-ref}running-logstash.html[Running Logstash] document for managing Logstash as a system service.
+See the {logstash-ref}/running-logstash.html[Running Logstash] document for managing Logstash as a system service.
 
 endif::[]
 
 ==== Docker
 
 An image is available for running Logstash as a Docker container. It is
-available from the Elastic Docker registry. See {logstash-ref}docker.html[Running Logstash on Docker] for
+available from the Elastic Docker registry. See {logstash-ref}/docker.html[Running Logstash on Docker] for
 details on how to configure and run Logstash Docker containers.
 
 [[first-event]]
@@ -200,7 +200,7 @@ cd logstash-{logstash_version}
 bin/logstash -e 'input { stdin { } } output { stdout {} }'
 --------------------------------------------------
 
-NOTE: The location of the `bin` directory varies by platform. See {logstash-ref}dir-layout.html[Directory layout]
+NOTE: The location of the `bin` directory varies by platform. See {logstash-ref}/dir-layout.html[Directory layout]
 to find the location of `bin\logstash` on your system.
 
 The `-e` flag enables you to specify a configuration directly from the command line. Specifying configurations at the
