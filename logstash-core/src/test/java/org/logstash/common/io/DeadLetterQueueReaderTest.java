@@ -307,7 +307,7 @@ public class DeadLetterQueueReaderTest {
 
     private void seekReadAndVerify(final Timestamp seekTarget, final String expectedValue) throws Exception {
         try(DeadLetterQueueReader readManager = new DeadLetterQueueReader(dir)) {
-            readManager.seekToNextEvent(new Timestamp(seekTarget));
+            readManager.seekToNextEvent(seekTarget);
             DLQEntry readEntry = readManager.pollEntry(100);
             assertThat(readEntry.getReason(), equalTo(expectedValue));
             assertThat(readEntry.getEntryTime().toIso8601(), equalTo(seekTarget.toIso8601()));

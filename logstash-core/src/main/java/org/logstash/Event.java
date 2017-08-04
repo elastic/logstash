@@ -314,11 +314,11 @@ public final class Event implements Cloneable, Queueable {
             } else if (o instanceof TimeBiValue) {
                 return new Timestamp(((TimeBiValue) o).javaValue());
             } else if (o instanceof JrubyTimestampExtLibrary.RubyTimestamp) {
-                return new Timestamp(((JrubyTimestampExtLibrary.RubyTimestamp) o).getTimestamp());
+                return ((JrubyTimestampExtLibrary.RubyTimestamp) o).getTimestamp();
             } else if (o instanceof Timestamp) {
-                return new Timestamp((Timestamp) o);
+                return (Timestamp) o;
             } else if (o instanceof TimestampBiValue) {
-                return new Timestamp(((TimestampBiValue) o).javaValue());
+                return ((TimestampBiValue) o).javaValue();
             } else if (o instanceof DateTime) {
                 return new Timestamp((DateTime) o);
             } else if (o instanceof Date) {
