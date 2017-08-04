@@ -428,11 +428,9 @@ class LogStash::Agent
   end
 
   def force_shutdown_pipelines!
-    with_pipelines do |pipelines|
-      pipelines.each do |_, pipeline|
-        # TODO(ph): should it be his own action?
-        pipeline.force_shutdown!
-      end
+    @pipelines.each do |_, pipeline|
+      # TODO(ph): should it be his own action?
+      pipeline.force_shutdown!
     end
   end
 
