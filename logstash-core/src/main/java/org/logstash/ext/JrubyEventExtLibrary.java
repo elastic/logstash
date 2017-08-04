@@ -2,6 +2,7 @@ package org.logstash.ext;
 
 import java.io.IOException;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicLong;
 import org.jruby.Ruby;
 import org.jruby.RubyArray;
 import org.jruby.RubyBoolean;
@@ -65,9 +66,21 @@ public class JrubyEventExtLibrary implements Library {
 
     @JRubyClass(name = "Event")
     public static final class RubyEvent extends RubyObject {
+
+        /**
+         * Sequence number generator, for generating {@link RubyEvent#hash}.
+         */
+        private static final AtomicLong SEQUENCE_GENERATOR = new AtomicLong(1L);
+
+        /**
+         * Hashcode of this instance. Used to avoid the more expensive {@link RubyObject#hashCode()}
+         * since we only care about reference equality for this class anyway.
+         */
+        private final int hash = nextHash();
+
         private Event event;
 
-        private RubyEvent(Ruby runtime, RubyClass klass) {
+        private RubyEvent(final Ruby runtime, final RubyClass klass) {
             super(runtime, klass);
         }
 
@@ -286,6 +299,16 @@ public class JrubyEventExtLibrary implements Library {
             return value;
         }
 
+        @Override
+        public int hashCode() {
+            return hash;
+        }
+
+        @Override
+        public boolean equals(final Object that) {
+            return this == that;
+        }
+
         /**
          * Cold path for the Ruby constructor
          * {@link JrubyEventExtLibrary.RubyEvent#ruby_initialize(ThreadContext, IRubyObject[])} for
@@ -308,6 +331,15 @@ public class JrubyEventExtLibrary implements Library {
 
         private void setEvent(Event event) {
             this.event = event;
+        }
+
+        /**
+         * Generates a fixed hashcode.
+         * @return HashCode value
+         */
+        private static int nextHash() {
+            final long sequence = SEQUENCE_GENERATOR.incrementAndGet();
+            return (int) (sequence ^ sequence >>> 32) + 31;
         }
     }
 }
