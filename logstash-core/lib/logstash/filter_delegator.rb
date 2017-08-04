@@ -44,12 +44,11 @@ module LogStash
       clock.stop
 
       # There is no guarantee in the context of filter
-      # that EVENTS_INT == EVENTS_OUT, see the aggregates and
+      # that EVENTS_IN == EVENTS_OUT, see the aggregates and
       # the split filter
       c = new_events.count { |event| !event.cancelled? }
       @metric_events.increment(:out, c) if c > 0
-
-      return new_events
+      new_events
     end
 
     private
