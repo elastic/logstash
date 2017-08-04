@@ -7,6 +7,7 @@ module LogStash module Instrument module MetricType
       super(namespaces, key.to_s)
     end
 
+    # deprecated - use set
     def execute(action, value = nil)
       send(action, value)
     end
