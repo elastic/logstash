@@ -37,7 +37,22 @@ module LogStash module Instrument
           LogStash::Instrument::MetricType.create(type, namespaces_path, key)
         end
 
-        metric.execute(*metric_type_params)
+        unless metric_type_params.size.eql? 2
+          logger.error("Collector: Cannot record metric. Unexpected metric params: " + metric_type_params.to_s)
+          return
+        end
+
+        method = metric_type_params[0]
+        value = metric_type_params[1]
+        if (:gauge.eql? type) && (:set.eql? method)
+          metric.set(value)
+        elsif (:counter.eql? type) && (:increment.eql? method)
+          metric.increment(value)
+        else
+          logger.error("Collector: Cannot record metric. Unexpected metric method: " + method.to_s)
+          return
+        end
+
       rescue MetricStore::NamespacesExpectedError => e
         logger.error("Collector: Cannot record metric", :exception => e)
       rescue NameError => e

@@ -9,6 +9,7 @@ module LogStash module Instrument module MetricType
 
     end
 
+    # deprecated - use increment
     def execute(action, value = 1)
       send(action, value)
     end
