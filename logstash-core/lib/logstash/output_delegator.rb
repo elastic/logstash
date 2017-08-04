@@ -44,9 +44,11 @@ module LogStash class OutputDelegator
 
   def multi_receive(events)
     @in_counter.increment(events.length)
-    clock = @metric_events.time(:duration_in_millis)
+    start_time = java.lang.System.current_time_millis
     @strategy.multi_receive(events)
-    clock.stop
+    @metric_events.report_time(
+      :duration_in_millis, java.lang.System.current_time_millis - start_time
+    )
     @out_counter.increment(events.length)
   end
 
