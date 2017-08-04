@@ -5,7 +5,6 @@ import java.math.BigInteger;
 import org.jruby.RubyBignum;
 import org.jruby.RubyBoolean;
 import org.jruby.RubyFixnum;
-import org.jruby.RubyFloat;
 import org.jruby.RubyInteger;
 import org.jruby.RubyNil;
 import org.jruby.RubySymbol;
@@ -55,30 +54,6 @@ public class BiValuesTest extends TestBase {
 
         assertEquals(jo, subject.javaValue());
         assertEquals(Long.class, subject.javaValue().getClass());
-        assertEquals(ro, subject.rubyValue(ruby));
-        assertEquals(ro.getClass(), subject.rubyValue(ruby).getClass());
-    }
-
-    @Test
-    public void testBiValuesFloatRuby() {
-        double jo = 1234.567D;
-        RubyFloat ro = (RubyFloat) JavaUtil.convertJavaToUsableRubyObject(ruby, jo);
-        BiValue subject = BiValues.newBiValue(ro);
-
-        assertEquals(ro, subject.rubyValueUnconverted());
-        assertEquals(ro.getClass(), subject.rubyValue(ruby).getClass());
-        assertEquals(jo, subject.javaValue());
-        assertEquals(Double.class, subject.javaValue().getClass());
-    }
-
-    @Test
-    public void testBiValuesFloatJava() {
-        double jo = 1234.567D;
-        RubyFloat ro = (RubyFloat) JavaUtil.convertJavaToUsableRubyObject(ruby, jo);
-        BiValue subject = BiValues.newBiValue(jo);
-
-        assertEquals(jo, subject.javaValue());
-        assertEquals(Double.class, subject.javaValue().getClass());
         assertEquals(ro, subject.rubyValue(ruby));
         assertEquals(ro.getClass(), subject.rubyValue(ruby).getClass());
     }
