@@ -1,208 +1,155 @@
 package org.logstash;
 
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
-public class Accessors {
+public final class Accessors {
 
-    private Map<String, Object> data;
-    protected Map<String, Object> lut;
-
-    public Accessors(Map<String, Object> data) {
-        this.data = data;
-        this.lut = new HashMap<>(); // reference -> target LUT
+    private Accessors() {
+        //Utility Class
     }
 
-    public Object get(String reference) {
-        FieldReference field = PathCache.cache(reference);
-        Object target = findTarget(field);
-        return (target == null) ? null : fetch(target, field.getKey());
+    public static Object get(final ConvertedMap data, final FieldReference field) {
+        final Object target = findParent(data, field);
+        return target == null ? null : fetch(target, field.getKey());
     }
 
-    public Object set(String reference, Object value) {
-        final FieldReference field = PathCache.cache(reference);
-        final Object target = findCreateTarget(field);
-        final String key = field.getKey();
-        if (target instanceof Map) {
-            ((Map<String, Object>) target).put(key, value);
-        } else if (target instanceof List) {
-            int i;
-            try {
-                i = Integer.parseInt(key);
-            } catch (NumberFormatException e) {
-                return null;
-            }
-            int size = ((List<Object>) target).size();
-            if (i >= size) {
-                // grow array by adding trailing null items
-                // this strategy reflects legacy Ruby impl behaviour and is backed by specs
-                // TODO: (colin) this is potentially dangerous, and could produce OOM using arbitrary big numbers
-                // TODO: (colin) should be guard against this?
-                for (int j = size; j < i; j++) {
-                    ((List<Object>) target).add(null);
-                }
-                ((List<Object>) target).add(value);
-            } else {
-                int offset = listIndex(i, ((List) target).size());
-                ((List<Object>) target).set(offset, value);
-            }
+    public static Object set(final ConvertedMap data, final FieldReference field,
+        final Object value) {
+        return setChild(findCreateTarget(data, field), field.getKey(), value);
+    }
+
+    public static Object del(final ConvertedMap data, final FieldReference field) {
+        final Object target = findParent(data, field);
+        if (target instanceof ConvertedMap) {
+            return ((ConvertedMap) target).remove(field.getKey());
         } else {
-            throw newCollectionException(target);
+            return target == null ? null : delFromList((ConvertedList) target, field.getKey());
+        }
+    }
+
+    public static boolean includes(final ConvertedMap data, final FieldReference field) {
+        final Object target = findParent(data, field);
+        final String key = field.getKey();
+        return target instanceof ConvertedMap && ((ConvertedMap) target).containsKey(key) ||
+            target instanceof ConvertedList && foundInList(key, (ConvertedList) target);
+    }
+
+    private static Object delFromList(final ConvertedList list, final String key) {
+        try {
+            return list.remove(listIndex(key, list.size()));
+        } catch (IndexOutOfBoundsException | NumberFormatException e) {
+            return null;
+        }
+    }
+
+    private static Object setOnList(final String key, final Object value, final ConvertedList list) {
+        final int index;
+        try {
+            index = Integer.parseInt(key);
+        } catch (NumberFormatException e) {
+            return null;
+        }
+        final int size = list.size();
+        if (index >= size) {
+            appendAtIndex(list, value, index, size);
+        } else {
+            list.set(listIndex(index, size), value);
         }
         return value;
     }
 
-    public Object del(String reference) {
-        FieldReference field = PathCache.cache(reference);
-        Object target = findTarget(field);
-        if (target != null) {
-            if (target instanceof Map) {
-                return ((Map<String, Object>) target).remove(field.getKey());
-            } else if (target instanceof List) {
-                try {
-                    int i = Integer.parseInt(field.getKey());
-                    int offset = listIndex(i, ((List) target).size());
-                    return ((List)target).remove(offset);
-                } catch (IndexOutOfBoundsException|NumberFormatException e) {
-                    return null;
-                }
-            } else {
-                throw newCollectionException(target);
-            }
+    private static void appendAtIndex(final ConvertedList list, final Object value, final int index,
+        final int size) {
+        // grow array by adding trailing null items
+        // this strategy reflects legacy Ruby impl behaviour and is backed by specs
+        // TODO: (colin) this is potentially dangerous, and could produce OOM using arbitrary big numbers
+        // TODO: (colin) should be guard against this?
+        for (int i = size; i < index; i++) {
+            list.add(null);
         }
-        return null;
+        list.add(value);
     }
 
-    public boolean includes(String reference) {
-        final FieldReference field = PathCache.cache(reference);
-        final Object target = findTarget(field);
-        final String key = field.getKey();
-        return target instanceof Map && ((Map<String, Object>) target).containsKey(key) ||
-            target instanceof List && foundInList(key, (List<Object>) target);
-    }
-
-    private static boolean foundInList(final String key, final List<Object> target) {
-        try {
-            return foundInList(target, Integer.parseInt(key));
-        } catch (NumberFormatException e) {
-            return false;
-        }
-    }
-
-    private Object findTarget(FieldReference field) {
-        Object target;
-
-        if ((target = this.lut.get(field.getReference())) != null) {
-            return target;
-        }
-
-        target = this.data;
-        for (String key : field.getPath()) {
+    private static Object findParent(final ConvertedMap data, final FieldReference field) {
+        Object target = data;
+        for (final String key : field.getPath()) {
             target = fetch(target, key);
-            if (! isCollection(target)) {
+            if (!(target instanceof ConvertedMap || target instanceof ConvertedList)) {
                 return null;
             }
         }
-
-        this.lut.put(field.getReference(), target);
-
         return target;
     }
 
-    private Object findCreateTarget(FieldReference field) {
-        Object target;
-
-        // flush the @lut to prevent stale cached fieldref which may point to an old target
-        // which was overwritten with a new value. for example, if "[a][b]" is cached and we
-        // set a new value for "[a]" then reading again "[a][b]" would point in a stale target.
-        // flushing the complete @lut is suboptimal, but a hierarchical lut would be required
-        // to be able to invalidate fieldrefs from a common root.
-        // see https://github.com/elastic/logstash/pull/5132
-        this.lut.clear();
-
-        target = this.data;
-        for (String key : field.getPath()) {
-            Object result = fetch(target, key);
-            if (result == null) {
-                result = new HashMap<String, Object>();
-                if (target instanceof Map) {
-                    ((Map<String, Object>)target).put(key, result);
-                } else if (target instanceof List) {
-                    try {
-                        int i = Integer.parseInt(key);
-                        // TODO: what about index out of bound?
-                        ((List<Object>)target).set(i, result);
-                    } catch (NumberFormatException e) {
-                        continue;
-                    }
-                } else if (target != null) {
-                    throw newCollectionException(target);
+    private static Object findCreateTarget(final ConvertedMap data, final FieldReference field) {
+        Object target = data;
+        boolean create = false;
+        for (final String key : field.getPath()) {
+            Object result;
+            if (create) {
+                result = createChild((ConvertedMap) target, key);
+            } else {
+                result = fetch(target, key);
+                create = result == null;
+                if (create) {
+                    result = new ConvertedMap(1);
+                    setChild(target, key, result);
                 }
             }
             target = result;
         }
-
-        this.lut.put(field.getReference(), target);
-
         return target;
     }
 
-    private static boolean foundInList(List<Object> target, int index) {
-        try {
-            int offset = listIndex(index, target.size());
-            return target.get(offset) != null;
-        } catch (IndexOutOfBoundsException e) {
-            return false;
+    private static Object setChild(final Object target, final String key, final Object value) {
+        if (target instanceof Map) {
+            ((ConvertedMap) target).put(key, value);
+            return value;
+        } else {
+            return setOnList(key, value, (ConvertedList) target);
         }
+    }
 
+    private static Object createChild(final ConvertedMap target, final String key) {
+        final Object result = new ConvertedMap(1);
+        target.put(key, result);
+        return result;
     }
 
     private static Object fetch(Object target, String key) {
-        if (target instanceof Map) {
-            Object result = ((Map<String, Object>) target).get(key);
-            return result;
-        } else if (target instanceof List) {
-            try {
-                int offset = listIndex(Integer.parseInt(key), ((List) target).size());
-                return ((List<Object>) target).get(offset);
-            } catch (IndexOutOfBoundsException|NumberFormatException e) {
-                return null;
-            }
-        } else if (target == null) {
+        return target instanceof ConvertedMap
+            ? ((ConvertedMap) target).get(key) : fetchFromList((ConvertedList) target, key);
+    }
+
+    private static Object fetchFromList(final ConvertedList list, final String key) {
+        try {
+            return list.get(listIndex(key, list.size()));
+        } catch (IndexOutOfBoundsException | NumberFormatException e) {
             return null;
-        } else {
-            throw newCollectionException(target);
         }
     }
 
-    private static boolean isCollection(Object target) {
-        if (target == null) {
-            return false;
-        }
-        return (target instanceof Map || target instanceof List);
+    private static boolean foundInList(final String key, final ConvertedList target) {
+        return fetchFromList(target, key) != null;
     }
 
-    private static ClassCastException newCollectionException(Object target) {
-        return new ClassCastException("expecting List or Map, found "  + target.getClass());
-    }
-
-    /* 
-     * Returns a positive integer offset for a list of known size.
-     *
-     * @param i if positive, and offset from the start of the list. If negative, the offset from the end of the list, where -1 means the last element.
-     * @param size the size of the list.
-     * @return the positive integer offset for the list given by index i.
+    /**
+     * Returns a positive integer offset from a Ruby style positive or negative list index.
+     * @param i List index
+     * @param size the size of the list
+     * @return the positive integer offset for the list given by index i
      */
     public static int listIndex(int i, int size) {
-        if (i >= size || i < -size) {
-            throw new IndexOutOfBoundsException("Index " + i + " is out of bounds for a list with size " + size);
-        }
+        return i < 0 ? size + i : i;
+    }
 
-        if (i < 0) { // Offset from the end of the array.
-            return size + i;
-        } else {
-            return i;
-        }
+    /**
+     * Returns a positive integer offset for a list of known size.
+     * @param key List index (String matching /[0-9]+/)
+     * @param size the size of the list
+     * @return the positive integer offset for the list given by index i
+     */
+    private static int listIndex(final String key, final int size) {
+        return listIndex(Integer.parseInt(key), size);
     }
 }

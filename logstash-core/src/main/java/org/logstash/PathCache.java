@@ -1,36 +1,28 @@
 package org.logstash;
 
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public final class PathCache {
 
-    private static final ConcurrentHashMap<String, FieldReference> cache = new ConcurrentHashMap<>();
+    private static final Map<CharSequence, FieldReference> CACHE =
+        new ConcurrentHashMap<>(64, 0.2F, 1);
 
-    private static final FieldReference timestamp = cache(Event.TIMESTAMP);
-
-    private static final String BRACKETS_TIMESTAMP = "[" + Event.TIMESTAMP + "]";
-
-    static {
-        // inject @timestamp
-        cache(BRACKETS_TIMESTAMP, timestamp);
+    private PathCache() {
     }
 
-    public static boolean isTimestamp(String reference) {
-        return cache(reference) == timestamp;
-    }
-
-    public static FieldReference cache(String reference) {
+    public static FieldReference cache(final CharSequence reference) {
         // atomicity between the get and put is not important
-        FieldReference result = cache.get(reference);
-        if (result == null) {
-            result = FieldReference.parse(reference);
-            cache.put(reference, result);
+        final FieldReference result = CACHE.get(reference);
+        if (result != null) {
+            return result;
         }
-        return result;
+        return parseToCache(reference);
     }
 
-    public static FieldReference cache(String reference, FieldReference field) {
-        cache.put(reference, field);
-        return field;
+    private static FieldReference parseToCache(final CharSequence reference) {
+        final FieldReference result = FieldReference.parse(reference);
+        CACHE.put(reference, result);
+        return result;
     }
 }

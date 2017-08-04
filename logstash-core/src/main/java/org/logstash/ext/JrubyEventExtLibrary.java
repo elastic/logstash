@@ -22,6 +22,7 @@ import org.jruby.runtime.builtin.IRubyObject;
 import org.jruby.runtime.load.Library;
 import org.logstash.ConvertedMap;
 import org.logstash.Event;
+import org.logstash.FieldReference;
 import org.logstash.PathCache;
 import org.logstash.Rubyfier;
 import org.logstash.Valuefier;
@@ -112,16 +113,17 @@ public class JrubyEventExtLibrary implements Library {
         @JRubyMethod(name = "get", required = 1)
         public IRubyObject ruby_get_field(ThreadContext context, RubyString reference)
         {
-            Object value = this.event.getUnconvertedField(reference.asJavaString());
-            return Rubyfier.deep(context.runtime, value);
+            return Rubyfier.deep(
+                context.runtime,
+                this.event.getUnconvertedField(PathCache.cache(reference.getByteList()))
+            );
         }
 
         @JRubyMethod(name = "set", required = 2)
         public IRubyObject ruby_set_field(ThreadContext context, RubyString reference, IRubyObject value)
         {
-            String r = reference.asJavaString();
-
-            if (PathCache.isTimestamp(r)) {
+            final FieldReference r = PathCache.cache(reference.getByteList());
+            if (r  == FieldReference.TIMESTAMP_REFERENCE) {
                 if (!(value instanceof JrubyTimestampExtLibrary.RubyTimestamp)) {
                     throw context.runtime.newTypeError("wrong argument type " + value.getMetaClass() + " (expected LogStash::Timestamp)");
                 }
@@ -153,15 +155,18 @@ public class JrubyEventExtLibrary implements Library {
         }
 
         @JRubyMethod(name = "include?", required = 1)
-        public IRubyObject ruby_includes(ThreadContext context, RubyString reference)
-        {
-            return RubyBoolean.newBoolean(context.runtime, this.event.includes(reference.asJavaString()));
+        public IRubyObject ruby_includes(ThreadContext context, RubyString reference) {
+            return RubyBoolean.newBoolean(
+                context.runtime, this.event.includes(PathCache.cache(reference.getByteList()))
+            );
         }
 
         @JRubyMethod(name = "remove", required = 1)
-        public IRubyObject ruby_remove(ThreadContext context, RubyString reference)
-        {
-            return Rubyfier.deep(context.runtime, this.event.remove(reference.asJavaString()));
+        public IRubyObject ruby_remove(ThreadContext context, RubyString reference) {
+            return Rubyfier.deep(
+                context.runtime,
+                this.event.remove(PathCache.cache(reference.getByteList()))
+            );
         }
 
         @JRubyMethod(name = "clone")
