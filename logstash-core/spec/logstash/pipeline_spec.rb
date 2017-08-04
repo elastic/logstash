@@ -819,7 +819,9 @@ describe LogStash::Pipeline do
 
       # make sure we have received all the generated events
       Stud.try(max_retry.times, [StandardError, RSpec::Expectations::ExpectationNotMetError]) do
-        wait(3).for do
+        # This test is sometimes flakey. It used to wait for 3. It's been bumped  to 6 in the hope that it makes the build more reliable
+        # If this is still failing on build servers with this bump we should investigate a different tack. I couldn't repro locally
+        wait(6).for do
           # give us a bit of time to flush the events
           dummyoutput.events.size >= number_of_events
         end.to be_truthy
