@@ -8,7 +8,7 @@ import org.jruby.runtime.builtin.IRubyObject;
 
 public final class ConvertedMap extends HashMap<String, Object> {
 
-    private ConvertedMap(final int size) {
+    ConvertedMap(final int size) {
         super((size << 2) / 3 + 2);
     }
     
