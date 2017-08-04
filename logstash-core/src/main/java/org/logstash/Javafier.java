@@ -1,6 +1,7 @@
 package org.logstash;
 
 
+import org.jruby.RubyFloat;
 import org.jruby.RubyString;
 import org.logstash.bivalues.BiValue;
 import org.logstash.bivalues.BiValues;
@@ -19,8 +20,11 @@ public class Javafier {
         if (o instanceof RubyString) {
             return o.toString();
         }
-        if (o instanceof String) {
+        if (o instanceof String || o instanceof Float || o instanceof Double) {
             return o;
+        }
+        if (o instanceof RubyFloat) {
+            return ((RubyFloat) o).getDoubleValue();
         }
         if (o instanceof BiValue) {
             return ((BiValue)o).javaValue();

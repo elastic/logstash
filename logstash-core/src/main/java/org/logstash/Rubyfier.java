@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 import org.jruby.Ruby;
 import org.jruby.RubyArray;
+import org.jruby.RubyFloat;
 import org.jruby.RubyHash;
 import org.jruby.RubyString;
 import org.jruby.runtime.builtin.IRubyObject;
@@ -28,6 +29,10 @@ public final class Rubyfier {
     public static IRubyObject deep(Ruby runtime, final Object input) {
         if (input instanceof RubyString) return (RubyString) input;
         if (input instanceof String) return BiValues.RUBY.newString((String) input);
+        if (input instanceof RubyFloat) return (RubyFloat) input;
+        if (input instanceof Double || input instanceof Float) {
+            return BiValues.RUBY.newFloat(((Number) input).doubleValue());
+        }
         if (input instanceof BiValue) return ((BiValue) input).rubyValue(runtime);
         if (input instanceof Map) return deepMap(runtime, (Map) input);
         if (input instanceof List) return deepList(runtime, (List) input);
