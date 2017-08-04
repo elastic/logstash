@@ -21,31 +21,37 @@ module LogStash module Instrument
     end
 
     def push(event)
-      record_metric { @write_client.push(event) }
+      increment_counters(1)
+      start_time = java.lang.System.current_time_millis
+      result = @write_client.push(event)
+      report_execution_time(start_time)
+      result
     end
+
     alias_method(:<<, :push)
 
     def push_batch(batch)
-      record_metric(batch.size) { @write_client.push_batch(batch) }
+      increment_counters(batch.size)
+      start_time = java.lang.System.current_time_millis
+      result = @write_client.push_batch(batch)
+      report_execution_time(start_time)
+      result
     end
 
     private
-    def record_metric(size = 1)
+
+    def increment_counters(size)
       @events_metrics_counter.increment(size)
       @pipeline_metrics_counter.increment(size)
       @plugin_events_metrics_counter.increment(size)
+    end
 
-      clock = @events_metrics.time(:queue_push_duration_in_millis)
-
-      result = yield
-
+    def report_execution_time(start_time)
+      execution_time = java.lang.System.current_time_millis - start_time
+      @events_metrics.report_time(:queue_push_duration_in_millis, execution_time)
       # Reuse the same values for all the endpoints to make sure we don't have skew in times.
-      execution_time = clock.stop
-
       @pipeline_metrics.report_time(:queue_push_duration_in_millis, execution_time)
       @plugin_events_metrics.report_time(:queue_push_duration_in_millis, execution_time)
-
-      result
     end
 
     def define_initial_metrics_values
