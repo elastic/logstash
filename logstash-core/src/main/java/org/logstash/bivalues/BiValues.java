@@ -6,7 +6,6 @@ import java.util.HashMap;
 import org.jruby.Ruby;
 import org.jruby.RubyBignum;
 import org.jruby.RubyBoolean;
-import org.jruby.RubyFloat;
 import org.jruby.RubyInteger;
 import org.jruby.RubySymbol;
 import org.jruby.ext.bigdecimal.RubyBigDecimal;
@@ -19,8 +18,6 @@ public enum BiValues {
     ORG_LOGSTASH_EXT_JRUBYTIMESTAMPEXTLIBRARY$RUBYTIMESTAMP(BiValueType.TIMESTAMP),
     ORG_LOGSTASH_TIMESTAMP(BiValueType.TIMESTAMP),
     JAVA_LANG_BOOLEAN(BiValueType.BOOLEAN),
-    JAVA_LANG_DOUBLE(BiValueType.DOUBLE),
-    JAVA_LANG_FLOAT(BiValueType.FLOAT),
     JAVA_LANG_INTEGER(BiValueType.INT),
     JAVA_LANG_LONG(BiValueType.LONG),
     JAVA_MATH_BIGDECIMAL(BiValueType.DECIMAL),
@@ -32,7 +29,6 @@ public enum BiValues {
     ORG_JRUBY_RUBYBOOLEAN$TRUE(BiValueType.BOOLEAN),
     ORG_JRUBY_RUBYBOOLEAN(BiValueType.BOOLEAN),
     ORG_JRUBY_RUBYFIXNUM(BiValueType.LONG),
-    ORG_JRUBY_RUBYFLOAT(BiValueType.DOUBLE),
     ORG_JRUBY_RUBYINTEGER(BiValueType.LONG),
     ORG_JRUBY_RUBYNIL(BiValueType.NULL),
     ORG_JRUBY_RUBYSYMBOL(BiValueType.SYMBOL), // one way conversion, a Java string will use STRING
@@ -43,11 +39,8 @@ public enum BiValues {
         hm.put("org.logstash.Timestamp", "ORG_LOGSTASH_TIMESTAMP");
         hm.put("org.logstash.ext.JrubyTimestampExtLibrary$RubyTimestamp", "ORG_LOGSTASH_EXT_JRUBYTIMESTAMPEXTLIBRARY$RUBYTIMESTAMP");
         hm.put("java.lang.Boolean", "JAVA_LANG_BOOLEAN");
-        hm.put("java.lang.Double", "JAVA_LANG_DOUBLE");
-        hm.put("java.lang.Float", "JAVA_LANG_FLOAT");
         hm.put("java.lang.Integer", "JAVA_LANG_INTEGER");
         hm.put("java.lang.Long", "JAVA_LANG_LONG");
-        hm.put("java.lang.String", "JAVA_LANG_STRING");
         hm.put("java.math.BigDecimal", "JAVA_MATH_BIGDECIMAL");
         hm.put("java.math.BigInteger", "JAVA_MATH_BIGINTEGER");
         hm.put("org.jruby.RubyBignum", "ORG_JRUBY_RUBYBIGNUM");
@@ -55,10 +48,8 @@ public enum BiValues {
         hm.put("org.jruby.RubyBoolean$False", "ORG_JRUBY_RUBYBOOLEAN$FALSE");
         hm.put("org.jruby.RubyBoolean$True", "ORG_JRUBY_RUBYBOOLEAN$TRUE");
         hm.put("org.jruby.RubyFixnum", "ORG_JRUBY_RUBYFIXNUM");
-        hm.put("org.jruby.RubyFloat", "ORG_JRUBY_RUBYFLOAT");
         hm.put("org.jruby.RubyInteger", "ORG_JRUBY_RUBYINTEGER");
         hm.put("org.jruby.RubyNil", "ORG_JRUBY_RUBYNIL");
-        hm.put("org.jruby.RubyString", "ORG_JRUBY_RUBYSTRING");
         hm.put("org.jruby.RubySymbol", "ORG_JRUBY_RUBYSYMBOL");
         hm.put("org.jruby.ext.bigdecimal.RubyBigDecimal", "ORG_JRUBY_EXT_BIGDECIMAL_RUBYBIGDECIMAL");
         hm.put("org.jruby.java.proxies.ConcreteJavaProxy", "ORG_JRUBY_JAVA_PROXIES_CONCRETEJAVAPROXY");
@@ -127,22 +118,6 @@ public enum BiValues {
                     return new IntegerBiValue((RubyInteger) value);
                 }
                 return new IntegerBiValue((Integer) value);
-            }
-        },
-        DOUBLE {
-            BiValue build(Object value) {
-                if (value instanceof IRubyObject) {
-                    return new DoubleBiValue((RubyFloat) value);
-                }
-                return new DoubleBiValue((Double) value);
-            }
-        },
-        FLOAT {
-            BiValue build(Object value) {
-                if (value instanceof IRubyObject) {
-                    return new DoubleBiValue((RubyFloat) value);
-                }
-                return new FloatBiValue((Float) value);
             }
         },
         DECIMAL {

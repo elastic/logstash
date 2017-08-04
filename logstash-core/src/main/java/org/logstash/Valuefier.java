@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 import org.joda.time.DateTime;
 import org.jruby.RubyArray;
+import org.jruby.RubyFloat;
 import org.jruby.RubyHash;
 import org.jruby.RubyString;
 import org.jruby.RubyTime;
@@ -58,6 +59,12 @@ public class Valuefier {
         }
         if (o instanceof String) {
             return BiValues.RUBY.newString((String) o);
+        }
+        if (o instanceof RubyFloat) {
+            return o;
+        }
+        if (o instanceof Float || o instanceof Double) {
+            return BiValues.RUBY.newFloat(((Number) o).doubleValue());
         }
         if (o instanceof ConvertedMap || o instanceof ConvertedList) {
             return o;

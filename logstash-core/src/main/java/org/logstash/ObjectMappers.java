@@ -9,20 +9,22 @@ import com.fasterxml.jackson.dataformat.cbor.CBORFactory;
 import com.fasterxml.jackson.dataformat.cbor.CBORGenerator;
 import com.fasterxml.jackson.module.afterburner.AfterburnerModule;
 import java.io.IOException;
+import org.jruby.RubyFloat;
 import org.jruby.RubyString;
 
 public final class ObjectMappers {
 
-    private static final SimpleModule RUBY_STRING_SERIALIZER =
+    private static final SimpleModule RUBY_SERIALIZERS =
         new SimpleModule("RubyStringSerializer")
-            .addSerializer(RubyString.class, new RubyStringSerializer());
+            .addSerializer(RubyString.class, new RubyStringSerializer())
+            .addSerializer(RubyFloat.class, new RubyFloatSerializer());
 
     public static final ObjectMapper JSON_MAPPER = new ObjectMapper()
-        .registerModule(new AfterburnerModule()).registerModule(RUBY_STRING_SERIALIZER);
+        .registerModule(new AfterburnerModule()).registerModule(RUBY_SERIALIZERS);
 
     public static final ObjectMapper CBOR_MAPPER = new ObjectMapper(
         new CBORFactory().configure(CBORGenerator.Feature.WRITE_MINIMAL_INTS, false)
-    ).registerModule(new AfterburnerModule()).registerModule(RUBY_STRING_SERIALIZER);
+    ).registerModule(new AfterburnerModule()).registerModule(RUBY_SERIALIZERS);
 
     private ObjectMappers() {
     }
@@ -44,6 +46,23 @@ public final class ObjectMappers {
             throws IOException {
             generator.writeString(value.asJavaString());
         }
+    }
 
+    /**
+     * Serializer for {@link RubyFloat} since Jackson can't handle that type natively, so we
+     * simply serialize it as if it were a {@code double}.
+     */
+    private static final class RubyFloatSerializer
+        extends NonTypedScalarSerializerBase<RubyFloat> {
+
+        RubyFloatSerializer() {
+            super(RubyFloat.class, true);
+        }
+
+        @Override
+        public void serialize(final RubyFloat value, final JsonGenerator generator,
+            final SerializerProvider provider) throws IOException {
+            generator.writeNumber(value.getDoubleValue());
+        }
     }
 }
