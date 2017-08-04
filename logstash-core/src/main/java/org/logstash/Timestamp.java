@@ -11,11 +11,16 @@ import org.joda.time.format.ISODateTimeFormat;
 import org.logstash.ackedqueue.Queueable;
 import org.logstash.json.TimestampSerializer;
 
+/**
+ * Wrapper around a {@link DateTime} with Logstash specific serialization behaviour.
+ * This class is immutable and thread-safe since its only state is held in a final {@link DateTime}
+ * reference and {@link DateTime} which itself is immutable and thread-safe.
+ */
 @JsonSerialize(using = TimestampSerializer.class)
-public final class Timestamp implements Cloneable, Comparable<Timestamp>, Queueable {
+public final class Timestamp implements Comparable<Timestamp>, Queueable {
 
     // all methods setting the time object must set it in the UTC timezone
-    private DateTime time;
+    private final DateTime time;
 
     private static final DateTimeFormatter iso8601Formatter = ISODateTimeFormat.dateTime();
 
@@ -29,15 +34,7 @@ public final class Timestamp implements Cloneable, Comparable<Timestamp>, Queuea
         this.time = ISODateTimeFormat.dateTimeParser().parseDateTime(iso8601).toDateTime(DateTimeZone.UTC);
     }
 
-    public Timestamp(Timestamp t) {
-        this.time = t.getTime();
-    }
-
     public Timestamp(long epoch_milliseconds) {
-        this.time = new DateTime(epoch_milliseconds, DateTimeZone.UTC);
-    }
-
-    public Timestamp(Long epoch_milliseconds) {
         this.time = new DateTime(epoch_milliseconds, DateTimeZone.UTC);
     }
 
@@ -51,10 +48,6 @@ public final class Timestamp implements Cloneable, Comparable<Timestamp>, Queuea
 
     public DateTime getTime() {
         return time;
-    }
-
-    public void setTime(DateTime time) {
-        this.time = time.toDateTime(DateTimeZone.UTC);
     }
 
     public static Timestamp now() {
@@ -77,14 +70,7 @@ public final class Timestamp implements Cloneable, Comparable<Timestamp>, Queuea
 
     @Override
     public int compareTo(Timestamp other) {
-        return getTime().compareTo(other.getTime());
-    }
-
-    @Override
-    public Timestamp clone() throws CloneNotSupportedException {
-        Timestamp clone = (Timestamp)super.clone();
-        clone.setTime(this.getTime());
-        return clone;
+        return time.compareTo(other.time);
     }
 
     @Override

@@ -159,28 +159,22 @@ public class JrubyTimestampExtLibrary implements Library {
             return RubyString.newString(context.runtime,  "\"" + this.timestamp.toIso8601() + "\"");
         }
 
-        public static Timestamp newTimestamp(IRubyObject time)
-        {
-            if (time.isNil()) {
-                return new Timestamp();
-            } else if (time instanceof RubyTime) {
-                return new Timestamp(((RubyTime)time).getDateTime());
-            } else if (time instanceof RubyString) {
-                return new Timestamp(time.toString());
-            } else if (time instanceof RubyTimestamp) {
-                return new Timestamp(((RubyTimestamp) time).timestamp);
-            } else {
-               return null;
-            }
-        }
-
-
         @JRubyMethod(name = "coerce", required = 1, meta = true)
         public static IRubyObject ruby_coerce(ThreadContext context, IRubyObject recv, IRubyObject time)
         {
             try {
-                Timestamp ts = newTimestamp(time);
-                return (ts == null) ? context.runtime.getNil() : RubyTimestamp.newRubyTimestamp(context.runtime, ts);
+                if (time instanceof RubyTimestamp) {
+                    return time;
+                } else if (time instanceof RubyTime) {
+                    return RubyTimestamp.newRubyTimestamp(
+                        context.runtime,
+                        new Timestamp(((RubyTime) time).getDateTime())
+                    );
+                } else if (time instanceof RubyString) {
+                    return fromRString(context.runtime, (RubyString) time);
+                } else {
+                    return context.runtime.getNil();
+                }
              } catch (IllegalArgumentException e) {
                 throw new RaiseException(
                         context.runtime,
@@ -197,7 +191,7 @@ public class JrubyTimestampExtLibrary implements Library {
         {
             if (time instanceof RubyString) {
                 try {
-                    return RubyTimestamp.newRubyTimestamp(context.runtime, newTimestamp(time));
+                    return fromRString(context.runtime, (RubyString) time);
                 } catch (IllegalArgumentException e) {
                     throw new RaiseException(
                             context.runtime,
@@ -253,6 +247,10 @@ public class JrubyTimestampExtLibrary implements Library {
         public IRubyObject ruby_year(ThreadContext context)
         {
             return RubyFixnum.newFixnum(context.runtime, this.timestamp.getTime().getYear());
+        }
+
+        private static RubyTimestamp fromRString(final Ruby runtime, final RubyString string) {
+            return RubyTimestamp.newRubyTimestamp(runtime, new Timestamp(string.toString()));
         }
     }
 }
