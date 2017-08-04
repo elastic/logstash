@@ -63,9 +63,7 @@ describe LogStash::OutputDelegator do
       end
 
       it "should record the `duration_in_millis`" do
-        clock = spy("clock")
-        expect(subject.metric_events).to receive(:time).with(:duration_in_millis).and_return(clock)
-        expect(clock).to receive(:stop)
+        expect(subject.metric_events).to receive(:report_time).with(:duration_in_millis, Integer)
         subject.multi_receive(events)
       end
     end
