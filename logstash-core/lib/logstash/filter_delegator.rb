@@ -28,6 +28,7 @@ module LogStash
       @metric_events = namespaced_metric.namespace(:events)
       @metric_events_in = @metric_events.counter(:in)
       @metric_events_out = @metric_events.counter(:out)
+      @metric_events_time = @metric_events.counter(:duration_in_millis)
       namespaced_metric.gauge(:name, config_name)
 
       # Not all the filters will do bufferings
@@ -43,15 +44,13 @@ module LogStash
 
       start_time = java.lang.System.current_time_millis
       new_events = @filter.multi_filter(events)
-      @metric_events.report_time(
-        :duration_in_millis, java.lang.System.current_time_millis - start_time
-      )
+      @metric_events_time.increment(java.lang.System.current_time_millis - start_time)
 
       # There is no guarantee in the context of filter
       # that EVENTS_IN == EVENTS_OUT, see the aggregates and
       # the split filter
       c = new_events.count { |event| !event.cancelled? }
-      @metric_events_out.increment(:out) if c > 0
+      @metric_events_out.increment(c) if c > 0
       new_events
     end
 
@@ -64,7 +63,7 @@ module LogStash
 
         # Filter plugins that does buffering or spooling of events like the
         # `Logstash-filter-aggregates` can return `NIL` and will flush on the next flush ticks.
-        @metric_events.increment(:out, new_events.size) if new_events && new_events.size > 0
+        @metric_events_out.increment(new_events.size) if new_events && new_events.size > 0
         new_events
       end
     end
