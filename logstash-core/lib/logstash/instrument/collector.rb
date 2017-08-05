@@ -33,11 +33,7 @@ module LogStash module Instrument
     #
     def push(namespaces_path, key, type, *metric_type_params)
       begin
-        metric = @metric_store.fetch_or_store(namespaces_path, key) do
-          LogStash::Instrument::MetricType.create(type, namespaces_path, key)
-        end
-
-        metric.execute(*metric_type_params)
+        get(namespaces_path, key, type).execute(*metric_type_params)
       rescue MetricStore::NamespacesExpectedError => e
         logger.error("Collector: Cannot record metric", :exception => e)
       rescue NameError => e
@@ -48,6 +44,12 @@ module LogStash module Instrument
                      :metrics_params => metric_type_params,
                      :exception => e,
                      :stacktrace => e.backtrace)
+      end
+    end
+
+    def get(namespaces_path, key, type)
+      @metric_store.fetch_or_store(namespaces_path, key) do
+        LogStash::Instrument::MetricType.create(type, namespaces_path, key)
       end
     end
 

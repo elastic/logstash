@@ -10,7 +10,9 @@ module LogStash module Instrument
       @events_metrics = metric.namespace([:stats, :events])
       @pipeline_metrics = metric.namespace([:stats, :pipelines, pipeline_id, :events])
       @plugin_events_metrics = metric.namespace([:stats, :pipelines, pipeline_id, :plugins, plugin_type, plugin.id.to_sym, :events])
-
+      @events_metrics_counter = @events_metrics.counter(:in)
+      @pipeline_metrics_counter = @pipeline_metrics.counter(:in)
+      @plugin_events_metrics_counter = @plugin_events_metrics.counter(:out)
       define_initial_metrics_values
     end
 
@@ -29,9 +31,9 @@ module LogStash module Instrument
 
     private
     def record_metric(size = 1)
-      @events_metrics.increment(:in, size)
-      @pipeline_metrics.increment(:in, size)
-      @plugin_events_metrics.increment(:out, size)
+      @events_metrics_counter.increment(size)
+      @pipeline_metrics_counter.increment(size)
+      @plugin_events_metrics_counter.increment(size)
 
       clock = @events_metrics.time(:queue_push_duration_in_millis)
 
@@ -47,9 +49,9 @@ module LogStash module Instrument
     end
 
     def define_initial_metrics_values
-      @events_metrics.increment(:in, 0)
-      @pipeline_metrics.increment(:in, 0)
-      @plugin_events_metrics.increment(:out, 0)
+      @events_metrics_counter.increment(0)
+      @pipeline_metrics_counter.increment(0)
+      @plugin_events_metrics_counter.increment(0)
 
       @events_metrics.report_time(:queue_push_duration_in_millis, 0)
       @pipeline_metrics.report_time(:queue_push_duration_in_millis, 0)
