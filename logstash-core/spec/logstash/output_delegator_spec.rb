@@ -5,10 +5,19 @@ require "spec_helper"
 require "support/shared_contexts"
 
 describe LogStash::OutputDelegator do
+
+  class MockGauge
+    def increment(_)
+    end
+  end
+
   let(:logger) { double("logger") }
   let(:events) { 7.times.map { LogStash::Event.new }}
   let(:plugin_args) { {"id" => "foo", "arg1" => "val1"} }
   let(:collector) { [] }
+  let(:counter_in) { MockGauge.new }
+  let(:counter_out) { MockGauge.new }
+  let(:counter_time) { MockGauge.new }
   let(:metric) { LogStash::Instrument::NamespacedNullMetric.new(collector, :null) }
 
   include_context "execution_context"
@@ -23,6 +32,9 @@ describe LogStash::OutputDelegator do
     before(:each) do
       # use the same metric instance
       allow(metric).to receive(:namespace).with(any_args).and_return(metric)
+      allow(metric).to receive(:counter).with(:in).and_return(counter_in)
+      allow(metric).to receive(:counter).with(:out).and_return(counter_out)
+      allow(metric).to receive(:counter).with(:duration_in_millis).and_return(counter_time)
 
       allow(out_klass).to receive(:new).with(any_args).and_return(out_inst)
       allow(out_klass).to receive(:name).and_return("example")
@@ -58,13 +70,13 @@ describe LogStash::OutputDelegator do
       end
 
       it "should increment the number of events received" do
-        expect(subject.metric_events).to receive(:increment).with(:in, events.length)
-        expect(subject.metric_events).to receive(:increment).with(:out, events.length)
+        expect(counter_in).to receive(:increment).with(events.length)
+        expect(counter_out).to receive(:increment).with(events.length)
         subject.multi_receive(events)
       end
 
       it "should record the `duration_in_millis`" do
-        expect(subject.metric_events).to receive(:report_time).with(:duration_in_millis, Integer)
+        expect(counter_time).to receive(:increment).with(Integer)
         subject.multi_receive(events)
       end
     end
