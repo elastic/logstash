@@ -44,6 +44,10 @@ module LogStash module Instrument
       @metric.collector
     end
 
+    def counter(_)
+      ::LogStash::Instrument::NullMetric::NullGauge
+    end
+
     def namespace(name)
       NamespacedNullMetric.new(metric, namespace_name + Array(name))
     end
