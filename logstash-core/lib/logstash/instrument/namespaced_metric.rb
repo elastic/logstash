@@ -43,6 +43,10 @@ module LogStash module Instrument
     def collector
       @metric.collector
     end
+    
+    def counter(key)
+      collector.get(@namespace_name, key, :counter)
+    end
 
     def namespace(name)
       NamespacedMetric.new(metric, namespace_name + Array(name))
