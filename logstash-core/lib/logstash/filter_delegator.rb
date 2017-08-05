@@ -26,6 +26,8 @@ module LogStash
       @filter.execution_context = execution_context
 
       @metric_events = namespaced_metric.namespace(:events)
+      @metric_events_in = @metric_events.counter(:in)
+      @metric_events_out = @metric_events.counter(:out)
       namespaced_metric.gauge(:name, config_name)
 
       # Not all the filters will do bufferings
@@ -37,7 +39,7 @@ module LogStash
     end
 
     def multi_filter(events)
-      @metric_events.increment(:in, events.size)
+      @metric_events_in.increment(events.size)
 
       clock = @metric_events.time(:duration_in_millis)
       new_events = @filter.multi_filter(events)
@@ -47,7 +49,7 @@ module LogStash
       # that EVENTS_IN == EVENTS_OUT, see the aggregates and
       # the split filter
       c = new_events.count { |event| !event.cancelled? }
-      @metric_events.increment(:out, c) if c > 0
+      @metric_events_out.increment(:out) if c > 0
       new_events
     end
 
