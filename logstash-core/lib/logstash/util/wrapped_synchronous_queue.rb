@@ -71,11 +71,15 @@ module LogStash; module Util
 
       def set_events_metric(metric)
         @event_metric = metric
+        @event_metric_out = @event_metric.counter(:out)
+        @event_metric_filtered = @event_metric.counter(:filtered)
         define_initial_metrics_values(@event_metric)
       end
 
       def set_pipeline_metric(metric)
         @pipeline_metric = metric
+        @pipeline_metric_out = @pipeline_metric.counter(:out)
+        @pipeline_metric_filtered = @pipeline_metric.counter(:filtered)
         define_initial_metrics_values(@pipeline_metric)
       end
 
@@ -157,13 +161,13 @@ module LogStash; module Util
       end
 
       def add_filtered_metrics(batch)
-        @event_metric.increment(:filtered, batch.filtered_size)
-        @pipeline_metric.increment(:filtered, batch.filtered_size)
+        @event_metric_filtered.increment(batch.filtered_size)
+        @pipeline_metric_filtered.increment(batch.filtered_size)
       end
 
       def add_output_metrics(batch)
-        @event_metric.increment(:out, batch.filtered_size)
-        @pipeline_metric.increment(:out, batch.filtered_size)
+        @event_metric_out.increment(batch.filtered_size)
+        @pipeline_metric_out.increment(batch.filtered_size)
       end
     end
 
