@@ -11,8 +11,11 @@ module LogStash module Instrument
       @pipeline_metrics = metric.namespace([:stats, :pipelines, pipeline_id, :events])
       @plugin_events_metrics = metric.namespace([:stats, :pipelines, pipeline_id, :plugins, plugin_type, plugin.id.to_sym, :events])
       @events_metrics_counter = @events_metrics.counter(:in)
+      @events_metrics_time = @events_metrics.counter(:queue_push_duration_in_millis)
       @pipeline_metrics_counter = @pipeline_metrics.counter(:in)
+      @pipeline_metrics_time = @pipeline_metrics.counter(:queue_push_duration_in_millis)
       @plugin_events_metrics_counter = @plugin_events_metrics.counter(:out)
+      @plugin_events_metrics_time = @plugin_events_metrics.counter(:queue_push_duration_in_millis)
       define_initial_metrics_values
     end
 
@@ -48,20 +51,18 @@ module LogStash module Instrument
 
     def report_execution_time(start_time)
       execution_time = java.lang.System.current_time_millis - start_time
-      @events_metrics.report_time(:queue_push_duration_in_millis, execution_time)
-      # Reuse the same values for all the endpoints to make sure we don't have skew in times.
-      @pipeline_metrics.report_time(:queue_push_duration_in_millis, execution_time)
-      @plugin_events_metrics.report_time(:queue_push_duration_in_millis, execution_time)
+      @events_metrics_time.increment(execution_time)
+      @pipeline_metrics_time.increment(execution_time)
+      @plugin_events_metrics_time.increment(execution_time)
     end
 
     def define_initial_metrics_values
       @events_metrics_counter.increment(0)
       @pipeline_metrics_counter.increment(0)
       @plugin_events_metrics_counter.increment(0)
-
-      @events_metrics.report_time(:queue_push_duration_in_millis, 0)
-      @pipeline_metrics.report_time(:queue_push_duration_in_millis, 0)
-      @plugin_events_metrics.report_time(:queue_push_duration_in_millis, 0)
+      @events_metrics_time.increment(0)
+      @pipeline_metrics_time.increment(0)
+      @plugin_events_metrics_time.increment(0)
     end
   end
 end end

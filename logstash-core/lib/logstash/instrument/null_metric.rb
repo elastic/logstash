@@ -39,6 +39,10 @@ module LogStash module Instrument
       end
     end
 
+    def counter(_)
+      NullGauge
+    end
+
     def namespace(name)
       raise MetricNoNamespaceProvided if name.nil? || name.empty?
       NamespacedNullMetric.new(self, name)
@@ -49,6 +53,12 @@ module LogStash module Instrument
     end
 
     private
+
+    class NullGauge
+      def self.increment(_)
+      end
+    end
+
     # Null implementation of the internal timer class
     #
     # @see LogStash::Instrument::TimedExecution`

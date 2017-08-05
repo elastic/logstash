@@ -21,6 +21,7 @@ module LogStash class OutputDelegator
     @metric_events = @namespaced_metric.namespace(:events)
     @in_counter = @metric_events.counter(:in)
     @out_counter = @metric_events.counter(:out)
+    @time_metric = @metric_events.counter(:duration_in_millis)
     @strategy = strategy_registry.
                   class_for(self.concurrency).
                   new(@logger, @output_class, @namespaced_metric, execution_context, plugin_args)
@@ -46,9 +47,7 @@ module LogStash class OutputDelegator
     @in_counter.increment(events.length)
     start_time = java.lang.System.current_time_millis
     @strategy.multi_receive(events)
-    @metric_events.report_time(
-      :duration_in_millis, java.lang.System.current_time_millis - start_time
-    )
+    @time_metric.increment(java.lang.System.current_time_millis - start_time)
     @out_counter.increment(events.length)
   end
 
