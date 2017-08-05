@@ -19,7 +19,8 @@ module LogStash class OutputDelegator
     @namespaced_metric = metric.namespace(id.to_sym)
     @namespaced_metric.gauge(:name, config_name)
     @metric_events = @namespaced_metric.namespace(:events)
-
+    @in_counter = @metric_events.counter(:in)
+    @out_counter = @metric_events.counter(:out)
     @strategy = strategy_registry.
                   class_for(self.concurrency).
                   new(@logger, @output_class, @namespaced_metric, execution_context, plugin_args)
@@ -42,11 +43,11 @@ module LogStash class OutputDelegator
   end
 
   def multi_receive(events)
-    @metric_events.increment(:in, events.length)
+    @in_counter.increment(events.length)
     clock = @metric_events.time(:duration_in_millis)
     @strategy.multi_receive(events)
     clock.stop
-    @metric_events.increment(:out, events.length)
+    @out_counter.increment(events.length)
   end
 
   def do_close
