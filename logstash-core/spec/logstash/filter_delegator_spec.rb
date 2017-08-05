@@ -7,20 +7,32 @@ require "logstash/execution_context"
 require "support/shared_contexts"
 
 describe LogStash::FilterDelegator do
+
+  class MockGauge
+    def increment(_)
+    end
+  end
+
   include_context "execution_context"
-  
+
   let(:logger) { double(:logger) }
   let(:filter_id) { "my-filter" }
   let(:config) do
     { "host" => "127.0.0.1", "id" => filter_id }
   end
   let(:collector) { [] }
+  let(:counter_in) { MockGauge.new }
+  let(:counter_out) { MockGauge.new }
+  let(:counter_time) { MockGauge.new }
   let(:metric) { LogStash::Instrument::NamespacedNullMetric.new(collector, :null) }
   let(:events) { [LogStash::Event.new, LogStash::Event.new] }
 
   before :each do
     allow(pipeline).to receive(:id).and_return(pipeline_id)
     allow(metric).to receive(:namespace).with(anything).and_return(metric)
+    allow(metric).to receive(:counter).with(:in).and_return(counter_in)
+    allow(metric).to receive(:counter).with(:out).and_return(counter_out)
+    allow(metric).to receive(:counter).with(:duration_in_millis).and_return(counter_time)
   end
 
   let(:plugin_klass) do
@@ -60,7 +72,7 @@ describe LogStash::FilterDelegator do
     context "when the flush return events" do
       it "increments the out" do
         subject.multi_filter([LogStash::Event.new])
-        expect(metric).to receive(:increment).with(:out, 1)
+        expect(counter_out).to receive(:increment).with(1)
         subject.flush({})
       end
     end
@@ -78,12 +90,12 @@ describe LogStash::FilterDelegator do
       end
 
       it "has incremented :in" do
-        expect(metric).to receive(:increment).with(:in, events.size)
+        expect(counter_in).to receive(:increment).with(events.size)
         subject.multi_filter(events)
       end
 
       it "has not incremented :out" do
-        expect(metric).not_to receive(:increment).with(:out, anything)
+        expect(counter_out).not_to receive(:increment).with(anything)
         subject.multi_filter(events)
       end
     end
@@ -109,8 +121,8 @@ describe LogStash::FilterDelegator do
       end
 
       it "increments the in/out of the metric" do
-        expect(metric).to receive(:increment).with(:in, events.size)
-        expect(metric).to receive(:increment).with(:out, events.size * 2)
+        expect(counter_in).to receive(:increment).with(events.size)
+        expect(counter_out).to receive(:increment).with(events.size * 2)
 
         subject.multi_filter(events)
       end
@@ -138,8 +150,8 @@ describe LogStash::FilterDelegator do
     end
 
     it "increments the in/out of the metric" do
-      expect(metric).to receive(:increment).with(:in, events.size)
-      expect(metric).to receive(:increment).with(:out, events.size)
+      expect(counter_in).to receive(:increment).with(events.size)
+      expect(counter_out).to receive(:increment).with(events.size)
 
       subject.multi_filter(events)
     end

@@ -70,6 +70,7 @@ module LogStash; module Util
         @event_metric = metric
         @event_metric_out = @event_metric.counter(:out)
         @event_metric_filtered = @event_metric.counter(:filtered)
+        @event_metric_time = @event_metric.counter(:duration_in_millis)
         define_initial_metrics_values(@event_metric)
       end
 
@@ -77,6 +78,7 @@ module LogStash; module Util
         @pipeline_metric = metric
         @pipeline_metric_out = @pipeline_metric.counter(:out)
         @pipeline_metric_filtered = @pipeline_metric.counter(:filtered)
+        @pipeline_metric_time = @pipeline_metric.counter(:duration_in_millis)
         define_initial_metrics_values(@pipeline_metric)
       end
 
@@ -154,8 +156,8 @@ module LogStash; module Util
             # start_clock is now called at empty batch creation and an empty batch could
             # stay empty all the way down to the close_batch call.
             time_taken = java.lang.System.current_time_millis - @inflight_clocks[Thread.current]
-            @event_metric.report_time(:duration_in_millis, time_taken)
-            @pipeline_metric.report_time(:duration_in_millis, time_taken)
+            @event_metric_time.increment(time_taken)
+            @pipeline_metric_time.increment(time_taken)
           end
           @inflight_clocks.delete(Thread.current)
         end
