@@ -36,9 +36,6 @@ public class TimestampTest {
         t = new Timestamp("2014-09-23T08:00:00.000Z");
         assertEquals(DateTimeZone.UTC, t.getTime().getZone());
 
-        t = new Timestamp(new Timestamp());
-        assertEquals(DateTimeZone.UTC, t.getTime().getZone());
-
         long ms = DateTime.now(DateTimeZone.forID("EST")).getMillis();
         t = new Timestamp(ms);
         assertEquals(DateTimeZone.UTC, t.getTime().getZone());
