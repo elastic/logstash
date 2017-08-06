@@ -6,14 +6,12 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import org.joda.time.DateTime;
 import org.jruby.RubyBignum;
 import org.jruby.RubyBoolean;
 import org.jruby.RubyFixnum;
 import org.jruby.RubyFloat;
 import org.jruby.RubyInteger;
 import org.jruby.RubySymbol;
-import org.jruby.RubyTime;
 import org.jruby.ext.bigdecimal.RubyBigDecimal;
 import org.junit.Test;
 import org.logstash.TestBase;
@@ -129,25 +127,6 @@ public class BiValueTest extends TestBase {
         assertTrue(subject.hasRubyValue());
         assertTrue(subject.hasJavaValue());
         assertEquals(ruby.getNil(), subject.rubyValue(ruby));
-    }
-
-    @Test
-    public void testTimeBiValueFromRuby() {
-        DateTime t = DateTime.now();
-        RubyTime now = RubyTime.newTime(ruby, t);
-        TimeBiValue subject = new TimeBiValue(now);
-        assertTrue(subject.hasRubyValue());
-        assertFalse(subject.hasJavaValue());
-        assertEquals(t, subject.javaValue());
-    }
-
-    @Test
-    public void testTimeBiValueFromJava() {
-        DateTime t = DateTime.now();
-        TimeBiValue subject = new TimeBiValue(t);
-        assertFalse(subject.hasRubyValue());
-        assertTrue(subject.hasJavaValue());
-        assertEquals(RubyTime.newTime(ruby, t), subject.rubyValue(ruby));
     }
 
     @Test
