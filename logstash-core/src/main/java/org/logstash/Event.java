@@ -1,5 +1,6 @@
 package org.logstash;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
@@ -175,35 +176,25 @@ public final class Event implements Cloneable, Queueable {
         }
     }
 
-    private Map<String, Map<String, Object>> toSerializableMap() {
-        HashMap<String, Map<String, Object>> hashMap = new HashMap<>();
-        hashMap.put(DATA_MAP_KEY, this.data);
-        hashMap.put(META_MAP_KEY, this.metadata);
-        return hashMap;
-    }
-
-    private static Event fromSerializableMap(Map<String, Map<String, Object>> representation) throws IOException{
-        if (!representation.containsKey(DATA_MAP_KEY)) {
+    private static Event fromSerializableMap(final byte[] source) throws IOException {
+        final Map<String, Map<String, Object>> representation =
+            CBOR_MAPPER.readValue(source, ObjectMappers.EVENT_MAP_TYPE);
+        if (representation == null) {
+            throw new IOException("incompatible from binary object type only HashMap is supported");
+        }
+        final Map<String, Object> dataMap = representation.get(DATA_MAP_KEY);
+        if (dataMap == null) {
             throw new IOException("The deserialized Map must contain the \"DATA\" key");
         }
-        if (!representation.containsKey(META_MAP_KEY)) {
+        final Map<String, Object> metaMap = representation.get(META_MAP_KEY);
+        if (metaMap == null) {
             throw new IOException("The deserialized Map must contain the \"META\" key");
         }
-        Map<String, Object> dataMap = representation.get(DATA_MAP_KEY);
-        dataMap.put(METADATA, representation.get(META_MAP_KEY));
+        dataMap.put(METADATA, metaMap);
         return new Event(dataMap);
     }
 
-    private static Map<String, Map<String, Object>> fromBinaryToMap(byte[] source) throws IOException {
-        Object o = CBOR_MAPPER.readValue(source, HashMap.class);
-        if (o == null) {
-            throw new IOException("incompatible from binary object type only HashMap is supported");
-        } else {
-            return (Map<String, Map<String, Object>>) o;
-        }
-    }
-
-    public String toJson() throws IOException {
+    public String toJson() throws JsonProcessingException {
         return JSON_MAPPER.writeValueAsString(this.data);
     }
 
@@ -388,14 +379,17 @@ public final class Event implements Cloneable, Queueable {
     }
 
     @Override
-    public byte[] serialize() throws IOException {
-        return CBOR_MAPPER.writeValueAsBytes(toSerializableMap());
+    public byte[] serialize() throws JsonProcessingException {
+        final Map<String, Map<String, Object>> map = new HashMap<>(2, 1.0F);
+        map.put(DATA_MAP_KEY, this.data);
+        map.put(META_MAP_KEY, this.metadata);
+        return CBOR_MAPPER.writeValueAsBytes(map);
     }
 
     public static Event deserialize(byte[] data) throws IOException {
         if (data == null || data.length == 0) {
             return new Event();
         }
-        return fromSerializableMap(fromBinaryToMap(data));
+        return fromSerializableMap(data);
     }
 }
