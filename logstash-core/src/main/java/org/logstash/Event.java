@@ -14,7 +14,6 @@ import org.jruby.RubySymbol;
 import org.logstash.ackedqueue.Queueable;
 import org.logstash.bivalues.BiValues;
 import org.logstash.bivalues.NullBiValue;
-import org.logstash.bivalues.TimeBiValue;
 import org.logstash.bivalues.TimestampBiValue;
 import org.logstash.ext.JrubyTimestampExtLibrary;
 
@@ -311,8 +310,6 @@ public final class Event implements Cloneable, Queueable {
                 return new Timestamp((String) o);
             } else if (o instanceof RubyString) {
                 return new Timestamp(o.toString());
-            } else if (o instanceof TimeBiValue) {
-                return new Timestamp(((TimeBiValue) o).javaValue());
             } else if (o instanceof JrubyTimestampExtLibrary.RubyTimestamp) {
                 return ((JrubyTimestampExtLibrary.RubyTimestamp) o).getTimestamp();
             } else if (o instanceof Timestamp) {
