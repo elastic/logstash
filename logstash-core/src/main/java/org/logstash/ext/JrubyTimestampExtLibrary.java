@@ -144,7 +144,7 @@ public class JrubyTimestampExtLibrary implements Library {
         @JRubyMethod(name = "to_iso8601")
         public IRubyObject ruby_to_iso8601(ThreadContext context)
         {
-            return RubyString.newString(context.runtime, this.timestamp.toIso8601());
+            return RubyString.newString(context.runtime, this.timestamp.toString());
         }
 
         @JRubyMethod(name = "to_java")
@@ -156,7 +156,7 @@ public class JrubyTimestampExtLibrary implements Library {
         @JRubyMethod(name = "to_json", rest = true)
         public IRubyObject ruby_to_json(ThreadContext context, IRubyObject[] args)
         {
-            return RubyString.newString(context.runtime,  "\"" + this.timestamp.toIso8601() + "\"");
+            return RubyString.newString(context.runtime,  "\"" + this.timestamp.toString() + "\"");
         }
 
         @JRubyMethod(name = "coerce", required = 1, meta = true)

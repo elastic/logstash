@@ -310,7 +310,7 @@ public class DeadLetterQueueReaderTest {
             readManager.seekToNextEvent(seekTarget);
             DLQEntry readEntry = readManager.pollEntry(100);
             assertThat(readEntry.getReason(), equalTo(expectedValue));
-            assertThat(readEntry.getEntryTime().toIso8601(), equalTo(seekTarget.toIso8601()));
+            assertThat(readEntry.getEntryTime().toString(), equalTo(seekTarget.toString()));
         }
     }
 
