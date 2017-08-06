@@ -284,7 +284,7 @@ public final class Event implements Cloneable, Queueable {
 
         try {
             // getTimestamp throws an IOException if there is no @timestamp field, see #7613
-            return getTimestamp().toIso8601() + " " + hostMessageString;
+            return getTimestamp().toString() + " " + hostMessageString;
         } catch (IOException e) {
             return hostMessageString;
         }
