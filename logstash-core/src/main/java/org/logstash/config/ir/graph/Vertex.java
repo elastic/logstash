@@ -243,7 +243,7 @@ public abstract class Vertex implements SourceComponent, HashableWithSource {
         // they have no source metadata. This might also be used in the future by alternate config languages which are
         // willing to take the hit.
         if (this.getSourceWithMetadata() != null) {
-            generatedId = this.getGraph().uniqueHash() + "|" + this.getSourceWithMetadata().uniqueHash();
+            generatedId = Util.digest(this.getGraph().uniqueHash() + "|" + this.getSourceWithMetadata().uniqueHash());
         } else {
             generatedId = this.uniqueHash();
         }
