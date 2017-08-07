@@ -1,5 +1,6 @@
 # encoding: utf-8
 require 'logstash/errors'
+require "logstash/compiler/lscl/helpers"
 require "treetop"
 
 require "logstash/compiler/treetop_monkeypatches"
@@ -32,6 +33,8 @@ module LogStash; module Config; module AST
   end
 
   class Node < Treetop::Runtime::SyntaxNode
+    include LogStashCompilerLSCLGrammar::LogStash::Compiler::LSCL::AST::Helpers
+
     def text_value_for_comments
       text_value.gsub(/[\r\n]/, " ")
     end
@@ -189,12 +192,12 @@ module LogStash; module Config; module AST
       # If any parent is a Plugin, this must be a codec.
 
       if attributes.elements.nil?
-        return "plugin(#{plugin_type.inspect}, #{plugin_name.inspect})" << (plugin_type == "codec" ? "" : "\n")
+        return "plugin(#{plugin_type.inspect}, #{plugin_name.inspect}, #{source_meta.line}, #{source_meta.column})" << (plugin_type == "codec" ? "" : "\n")
       else
         settings = attributes.recursive_select(Attribute).collect(&:compile).reject(&:empty?)
 
         attributes_code = "LogStash::Util.hash_merge_many(#{settings.map { |c| "{ #{c} }" }.join(", ")})"
-        return "plugin(#{plugin_type.inspect}, #{plugin_name.inspect}, #{attributes_code})" << (plugin_type == "codec" ? "" : "\n")
+        return "plugin(#{plugin_type.inspect}, #{plugin_name.inspect}, #{source_meta.line}, #{source_meta.column}, #{attributes_code})" << (plugin_type == "codec" ? "" : "\n")
       end
     end
 
@@ -211,7 +214,7 @@ module LogStash; module Config; module AST
       when "codec"
         settings = attributes.recursive_select(Attribute).collect(&:compile).reject(&:empty?)
         attributes_code = "LogStash::Util.hash_merge_many(#{settings.map { |c| "{ #{c} }" }.join(", ")})"
-        return "plugin(#{plugin_type.inspect}, #{plugin_name.inspect}, #{attributes_code})"
+        return "plugin(#{plugin_type.inspect}, #{plugin_name.inspect}, #{source_meta.line}, #{source_meta.column}, #{attributes_code})"
       end
     end
 
