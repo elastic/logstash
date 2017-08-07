@@ -51,14 +51,12 @@ module LogStash module Instrument
       # BUT. If the value is not present in the `@fast_lookup` the value will be inserted and we assume that we don't
       # have it in the `@metric_store` for structured search so we add it there too.
 
-      # array.hash as the key since it is faster then using the array itself, see #7772
-      fast_lookup_key = (namespaces.dup << key).hash
-      value = @fast_lookup.get(fast_lookup_key)
+      value = @fast_lookup.get(namespaces.dup << key)
       if value.nil?
         value = block_given? ? yield(key) : default_value
-        @fast_lookup.put(fast_lookup_key, value)
+        @fast_lookup.put(namespaces.dup << key, value)
         @structured_lookup_mutex.synchronize do
-          # If we cannot find the value this mean we need to save it in the store.
+            # If we cannot find the value this mean we need to save it in the store.
           fetch_or_store_namespaces(namespaces).fetch_or_store(key, value)
         end
       end
@@ -165,7 +163,7 @@ module LogStash module Instrument
     end    
 
     def has_metric?(*path)
-      @fast_lookup[path.hash]
+      @fast_lookup[path]
     end
 
     # Return all the individuals Metric,
@@ -187,9 +185,8 @@ module LogStash module Instrument
     def prune(path)
       key_paths = key_paths(path).map(&:to_sym)
       @structured_lookup_mutex.synchronize do
-        fetch_or_store_namespaces(key_paths).each do |key, v|
-          @fast_lookup.delete((key_paths.dup << key).hash)
-        end
+        keys_to_delete = @fast_lookup.keys.select {|namespace| (key_paths - namespace[0..-2]).empty? }
+        keys_to_delete.each {|k| @fast_lookup.delete(k) }
         delete_from_map(@store, key_paths)
       end
     end
