@@ -43,7 +43,7 @@ module LogStash; module Config; module AST
     end
 
 
-    def compile
+    def compile(debug_logging)
       LogStash::Config::AST.deferred_conditionals = []
       LogStash::Config::AST.deferred_conditionals_index = 0
       LogStash::Config::AST.plugin_instance_index = 0
@@ -60,7 +60,7 @@ module LogStash; module Config; module AST
 
       sections = recursive_select(LogStash::Config::AST::PluginSection)
       sections.each do |s|
-        code << s.compile_initializer
+        code << s.compile_initializer(debug_logging)
       end
 
       # start inputs
@@ -75,12 +75,12 @@ module LogStash; module Config; module AST
         definitions << "define_singleton_method :#{type}_func do |event|"
         definitions << "  targeted_outputs = []" if type == "output"
         definitions << "  events = [event]" if type == "filter"
-        definitions << "  @logger.debug? && @logger.debug(\"#{type} received\", \"event\" => event.to_hash)"
-
-        sections.select { |s| s.plugin_type.text_value == type }.each do |s|
-          definitions << s.compile.split("\n", -1).map { |e| "  #{e}" }
+        if debug_logging
+          definitions << "  @logger.debug(\"#{type} received\", \"event\" => event.to_hash)"
         end
-
+        sections.select {|s| s.plugin_type.text_value == type}.each do |s|
+          definitions << s.compile.split("\n", -1).map {|e| "  #{e}"}
+        end
         definitions << "  events" if type == "filter"
         definitions << "  targeted_outputs" if type == "output"
         definitions << "end"
@@ -104,7 +104,7 @@ module LogStash; module Config; module AST
     end
 
     # Generate ruby code to initialize all the plugins.
-    def compile_initializer
+    def compile_initializer(debug_logging)
       generate_variables
       code = []
       @variables.each do |plugin, name|
@@ -120,14 +120,22 @@ module LogStash; module Config; module AST
 
           code << <<-CODE
             @generated_objects[:#{name}_flush] = lambda do |options, &block|
-              @logger.debug? && @logger.debug(\"Flushing\", :plugin => @generated_objects[:#{name}])
-
+          CODE
+          if debug_logging
+            code << <<-CODE
+              @logger.debug(\"Flushing\", :plugin => @generated_objects[:#{name}])
+            CODE
+          end
+          code << <<-CODE
               events = @generated_objects[:#{name}].flush(options)
-
               return if events.nil? || events.empty?
-
-              @logger.debug? && @logger.debug(\"Flushing\", :plugin => @generated_objects[:#{name}], :events => events.map { |x| x.to_hash  })
-
+          CODE
+          if debug_logging
+            code << <<-CODE
+              @logger.debug(\"Flushing\", :plugin => @generated_objects[:#{name}], :events => events.map { |x| x.to_hash  })
+            CODE
+          end
+          code << <<-CODE
               #{plugin.compile_starting_here.gsub(/^/, "  ")}
 
               events.each{|e| block.call(e)}
