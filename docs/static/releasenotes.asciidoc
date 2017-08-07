@@ -10,12 +10,16 @@ This section summarizes the changes in the following releases:
 [[logstash-6-0-0-beta1]]
 === Logstash 6.0.0-beta1 Release Notes
 
-Placeholder for beta1 release notes
-
-* Added new `logstash.yml` setting: `config.support_escapes`. When
-  enabled, Logstash will interpret escape sequences in strings in the pipeline
-  configuration.
-
+* Added new `logstash.yml` setting: `config.support_escapes`. When enabled, Logstash will interpret escape sequences in 
+  strings in the pipeline configuration.
+* Breaking: The setting `config.reload.interval` has been changed to use time value strings such as `5m`, `10s`, etc for 
+  convenience. Previously, users had to convert this to a second time value themselves.
+* Breaking: The list of plugins bundled with Logstash 6.0.0-beta1 release has changed. Please consult the breaking changes document 
+  for a complete list.
+* Added an {xpack} feature to manage Logstash configurations centrally in Elasticsearch. We've also added a UI to manage 
+  configurations directly in Kibana without having to restart Logstash.
+* Users can now visualize the Logstash configuration pipeline as part of the {xpack} monitoring feature.
+* We now report an error if config file referenced in the `pipelines.yml` is missing.
 
 [[logstash-6-0-0-alpha2]]
 === Logstash 6.0.0-alpha2 Release Notes
