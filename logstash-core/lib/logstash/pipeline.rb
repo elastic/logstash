@@ -107,16 +107,23 @@ module LogStash; class BasePipeline
     LogStash::Compiler.compile_sources(sources_with_metadata, @settings)
   end
 
-  def plugin(plugin_type, name, *args)
+  def plugin(plugin_type, name, line, column, *args)
     @plugin_counter += 1
 
     # Collapse the array of arguments into a single merged hash
     args = args.reduce({}, &:merge)
 
-    id = if args["id"].nil? || args["id"].empty?
-      args["id"] = "#{@config_hash}-#{@plugin_counter}"
-    else
-      args["id"]
+    # Pull the ID from LIR to keep IDs consistent between the two representations
+    id = lir.graph.vertices.filter do |v| 
+      v.source_with_metadata && 
+      v.source_with_metadata.line == line && 
+      v.source_with_metadata.column == column
+    end.findFirst.get.id
+
+    args["id"] = id # some code pulls the id out of the args
+
+    if !id
+      raise ConfigurationError, "Could not determine ID for #{plugin_type}/#{plugin_name}"
     end
 
     raise ConfigurationError, "Two plugins have the id '#{id}', please fix this conflict" if @plugins_by_id[id]

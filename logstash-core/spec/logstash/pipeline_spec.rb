@@ -365,6 +365,30 @@ describe LogStash::Pipeline do
     end
   end
 
+  context "with no explicit ids declared" do
+    before(:each) do
+      allow(LogStash::Plugin).to receive(:lookup).with("input", "dummyinput").and_return(DummyInput)
+      allow(LogStash::Plugin).to receive(:lookup).with("codec", "plain").and_return(DummyCodec)
+      allow(LogStash::Plugin).to receive(:lookup).with("filter", "dummyfilter").and_return(DummyFilter)
+      allow(LogStash::Plugin).to receive(:lookup).with("output", "dummyoutput").and_return(::LogStash::Outputs::DummyOutput)
+    end
+
+    let(:config) { "input { dummyinput {} } filter { dummyfilter {} } output { dummyoutput {} }"}
+    let(:pipeline) { mock_pipeline_from_string(config) }
+
+    after do
+      # If you don't start/stop the pipeline it won't release the queue lock and will
+      # cause the suite to fail :(
+      pipeline.close
+    end
+    
+    it "should use LIR provided IDs" do
+      expect(pipeline.inputs.first.id).to eq(pipeline.lir.input_plugin_vertices.first.id)
+      expect(pipeline.filters.first.id).to eq(pipeline.lir.filter_plugin_vertices.first.id)
+      expect(pipeline.outputs.first.id).to eq(pipeline.lir.output_plugin_vertices.first.id)
+    end
+  end
+
   context "compiled flush function" do
     describe "flusher thread" do
       before(:each) do

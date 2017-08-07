@@ -2,6 +2,7 @@
 require 'logstash/errors'
 require "treetop"
 require "logstash/compiler/treetop_monkeypatches"
+require "logstash/compiler/lscl/helpers"
 require "logstash/config/string_escape"
 
 java_import org.logstash.config.ir.DSL
@@ -10,59 +11,7 @@ java_import org.logstash.common.SourceWithMetadata
 module LogStashCompilerLSCLGrammar; module LogStash; module Compiler; module LSCL; module AST
   PROCESS_ESCAPE_SEQUENCES = :process_escape_sequences
 
-  # Helpers for parsing LSCL files
-  module Helpers
-    def source_meta
-      line, column = line_and_column
-      org.logstash.common.SourceWithMetadata.new(base_protocol, base_id, line, column, self.text_value)
-    end
-
-    def base_source_with_metadata=(value)
-      set_meta(:base_source_with_metadata, value)
-    end
-    
-    def base_source_with_metadata
-      get_meta(:base_source_with_metadata)
-    end
-
-    def base_protocol
-      self.base_source_with_metadata.protocol
-    end
-
-    def base_id
-      self.base_source_with_metadata.id
-    end
-
-    def compose(*statements)
-      compose_for(section_type.to_sym).call(source_meta, *statements)
-    end
-
-    def compose_for(section_sym)
-      if section_sym == :filter
-        jdsl.method(:iComposeSequence)
-      else
-        jdsl.method(:iComposeParallel)
-      end
-    end
-
-    def line_and_column
-      start = self.interval.first
-      [self.input.line_of(start), self.input.column_of(start)]
-    end
-
-    def jdsl
-      org.logstash.config.ir.DSL
-    end
-
-    def self.jdsl
-      org.logstash.config.ir.DSL
-    end
-    
-    AND_METHOD = jdsl.method(:eAnd)
-    OR_METHOD = jdsl.method(:eOr)
-  end
-  
-  class Node < Treetop::Runtime::SyntaxNode
+    class Node < Treetop::Runtime::SyntaxNode
     include Helpers
     
     def section_type
