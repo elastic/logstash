@@ -176,6 +176,23 @@ public final class CompiledPipeline {
         boolean fulfilled(JrubyEventExtLibrary.RubyEvent event);
     }
 
+    public interface Filter {
+
+        RubyArray multiFilter(RubyArray events);
+
+        boolean hasFlush();
+
+        boolean periodicFlush();
+    }
+
+    public interface Output {
+        void multiReceive(RubyArray events);
+    }
+    
+    public interface Pipeline {
+        
+    }
+
     private final class FieldEquals implements CompiledPipeline.Condition {
 
         private final FieldReference field;
@@ -191,18 +208,5 @@ public final class CompiledPipeline {
         public boolean fulfilled(final JrubyEventExtLibrary.RubyEvent event) {
             return value.equals(event.getEvent().getUnconvertedField(field));
         }
-    }
-
-    public interface Filter {
-
-        RubyArray multiFilter(RubyArray events);
-
-        boolean hasFlush();
-
-        boolean periodicFlush();
-    }
-
-    public interface Output {
-        void multiReceive(RubyArray events);
     }
 }
