@@ -3,6 +3,7 @@ package org.logstash.config.ir;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import org.jruby.RubyArray;
 import org.jruby.RubyString;
@@ -14,6 +15,7 @@ import org.logstash.bivalues.BiValues;
 import org.logstash.config.ir.expression.EventValueExpression;
 import org.logstash.config.ir.expression.ValueExpression;
 import org.logstash.config.ir.expression.binary.Eq;
+import org.logstash.config.ir.expression.binary.RegexEq;
 import org.logstash.config.ir.graph.IfVertex;
 import org.logstash.ext.JrubyEventExtLibrary;
 
@@ -65,6 +67,15 @@ public final class CompiledPipeline {
                                     conditions.add(new FieldEquals(
                                         ((EventValueExpression) equals.getLeft()).getFieldName(),
                                         ((ValueExpression) equals.getRight()).get().toString()
+                                    ));
+                                }
+                            } else if (iff.getBooleanExpression() instanceof RegexEq) {
+                                final RegexEq regex = (RegexEq) iff.getBooleanExpression();
+                                if (regex.getLeft() instanceof EventValueExpression &&
+                                    regex.getRight() instanceof ValueExpression) {
+                                    conditions.add(new FieldMatches(
+                                        ((EventValueExpression) regex.getLeft()).getFieldName(),
+                                        ((ValueExpression) regex.getRight()).get().toString()
                                     ));
                                 }
                             }
@@ -212,6 +223,26 @@ public final class CompiledPipeline {
         @Override
         public boolean fulfilled(final JrubyEventExtLibrary.RubyEvent event) {
             return value.equals(event.getEvent().getUnconvertedField(field));
+        }
+    }
+
+    private final class FieldMatches implements CompiledPipeline.Condition {
+
+        private final FieldReference field;
+
+        private final Pattern value;
+
+        FieldMatches(final String field, final String value) {
+            this.field = PathCache.cache(field);
+            this.value = Pattern.compile(value);
+            System.out.println(value);
+        }
+
+        @Override
+        public boolean fulfilled(final JrubyEventExtLibrary.RubyEvent event) {
+            final String tomatch = event.getEvent().getUnconvertedField(field).toString();
+            System.out.println(tomatch);
+            return value.matcher(tomatch).find();
         }
     }
 }
