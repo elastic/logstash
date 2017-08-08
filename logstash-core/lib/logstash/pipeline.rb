@@ -603,7 +603,6 @@ module LogStash; class Pipeline < BasePipeline
     # We make this call blocking, so we know for sure when the method return the shtudown is
     # stopped
     wait_for_workers
-    clear_pipeline_metrics
     @logger.info("Pipeline terminated", "pipeline.id" => @pipeline_id)
   end # def shutdown
 
@@ -745,20 +744,6 @@ module LogStash; class Pipeline < BasePipeline
       end
 
       pipeline_metric.gauge(:events, queue.unread_count)
-    end
-  end
-
-  def clear_pipeline_metrics
-    # TODO(ph): I think the metric should also proxy that call correctly to the collector
-    # this will simplify everything since the null metric would simply just do a noop
-    collector = @metric.collector
-
-    unless collector.nil?
-      # selectively reset metrics we don't wish to keep after reloading
-      # these include metrics about the plugins and number of processed events
-      # we want to keep other metrics like reload counts and error messages
-      collector.clear("stats/pipelines/#{pipeline_id}/plugins")
-      collector.clear("stats/pipelines/#{pipeline_id}/events")
     end
   end
 

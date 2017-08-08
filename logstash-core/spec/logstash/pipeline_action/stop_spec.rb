@@ -11,12 +11,14 @@ describe LogStash::PipelineAction::Stop do
   let(:pipeline) { mock_pipeline_from_string(pipeline_config) }
   let(:pipelines) { { :main => pipeline } }
   let(:agent) { double("agent") }
+  let(:metric) { LogStash::Instrument::NullMetric.new(LogStash::Instrument::Collector.new) }
 
   subject { described_class.new(pipeline_id) }
 
   before do
     clear_data_dir
     pipeline.start
+    allow(agent).to receive(:metric).and_return(metric)
   end
 
   after do

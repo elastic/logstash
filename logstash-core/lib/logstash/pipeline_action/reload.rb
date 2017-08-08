@@ -37,7 +37,7 @@ module LogStash module PipelineAction
       end
 
       logger.info("Reloading pipeline", "pipeline.id" => pipeline_id)
-      status = Stop.new(pipeline_id).execute(agent, pipelines)
+      status = Stop.new(pipeline_id, :reload => true).execute(agent, pipelines)
 
       if status
         return Create.new(@pipeline_config, @metric).execute(agent, pipelines)

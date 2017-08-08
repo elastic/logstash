@@ -31,7 +31,7 @@ module LogStash
       # stop it.
       pipelines.keys
         .select { |pipeline_id| !running_pipelines.include?(pipeline_id) }
-        .each { |pipeline_id| actions << LogStash::PipelineAction::Stop.new(pipeline_id) }
+        .each { |pipeline_id| actions << LogStash::PipelineAction::Stop.new(pipeline_id, :reload => false) }
 
       actions.sort # See logstash/pipeline_action.rb
     end

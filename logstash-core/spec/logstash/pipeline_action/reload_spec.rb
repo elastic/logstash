@@ -19,6 +19,7 @@ describe LogStash::PipelineAction::Reload do
   before do
     clear_data_dir
     pipeline.start
+    allow(agent).to receive(:metric).and_return(metric)
   end
 
   after do
