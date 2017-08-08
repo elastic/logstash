@@ -72,4 +72,13 @@ public class LongCounter extends AbstractMetric<Long> implements CounterMetric<L
         dirty = true;
     }
 
+    /**
+     * Resets the counter back to it's initial state.
+     */
+    public void reset(){
+        //replacing since LongAdder#reset "is only effective if there are no concurrent updates", we can not make that guarantee
+        longAdder = new LongAdder();
+        dirty = false;
+    }
+
 }
