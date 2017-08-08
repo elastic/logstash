@@ -8,7 +8,7 @@ import org.logstash.instrument.metrics.AbstractMetric;
  */
 public abstract class AbstractGaugeMetric<T> extends AbstractMetric<T> implements GaugeMetric<T,T>{
 
-    private volatile boolean dirty;
+    private boolean dirty;
 
     private volatile T value;
 
