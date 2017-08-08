@@ -14,7 +14,6 @@ import org.jruby.RubySymbol;
 import org.logstash.ackedqueue.Queueable;
 import org.logstash.bivalues.BiValues;
 import org.logstash.bivalues.NullBiValue;
-import org.logstash.bivalues.TimestampBiValue;
 import org.logstash.ext.JrubyTimestampExtLibrary;
 
 import static org.logstash.ObjectMappers.CBOR_MAPPER;
@@ -314,8 +313,6 @@ public final class Event implements Cloneable, Queueable {
                 return ((JrubyTimestampExtLibrary.RubyTimestamp) o).getTimestamp();
             } else if (o instanceof Timestamp) {
                 return (Timestamp) o;
-            } else if (o instanceof TimestampBiValue) {
-                return ((TimestampBiValue) o).javaValue();
             } else if (o instanceof DateTime) {
                 return new Timestamp((DateTime) o);
             } else if (o instanceof Date) {

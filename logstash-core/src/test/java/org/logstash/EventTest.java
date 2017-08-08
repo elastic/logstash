@@ -6,13 +6,24 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.junit.BeforeClass;
 import org.junit.Test;
+import org.logstash.bivalues.BiValues;
 
 import static net.javacrumbs.jsonunit.JsonAssert.assertJsonEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
-public class EventTest {
+public final class EventTest {
+
+    /**
+     * Some of these tests require a fully initialized global {@link org.jruby.Ruby} instance
+     * so we force the creation of the "LogStash" module here.
+     */
+    @BeforeClass
+    public static void before() {
+        BiValues.RUBY.getOrCreateModule("LogStash");
+    }
 
     @Test
     public void queueableInterfaceRoundTrip() throws Exception {
