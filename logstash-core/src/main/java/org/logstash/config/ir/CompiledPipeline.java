@@ -40,20 +40,20 @@ public final class CompiledPipeline {
         return plugin;
     }
 
-    public Collection<CompiledPipeline.Output> outputs(final IRubyObject pipeline) {
+    public Collection<CompiledPipeline.Output> outputs(final Pipeline pipeline) {
         if (outputs.isEmpty()) {
             graph.getOutputPluginVertices().forEach(v -> {
                 final PluginDefinition def = v.getPluginDefinition();
-                outputs.add((CompiledPipeline.Output) callRuby(pipeline, "plugin",
-                    new IRubyObject[]{RUBY.newString("output"), RUBY.newString(def.getName()),
-                        Rubyfier.deep(RUBY, def.getArguments())}
+                outputs.add((CompiledPipeline.Output) pipeline.plugin(
+                    RUBY.newString("output"), RUBY.newString(def.getName()),
+                    Rubyfier.deep(RUBY, def.getArguments())
                 ));
             });
         }
         return outputs;
     }
 
-    public Collection<CompiledPipeline.Filter> filters(final IRubyObject pipeline) {
+    public Collection<CompiledPipeline.Filter> filters(final Pipeline pipeline) {
         if (filters.isEmpty()) {
             graph.getFilterPluginVertices().forEach(filterPlugin -> {
                 final Collection<CompiledPipeline.Condition> conditions = new ArrayList<>(5);
@@ -76,10 +76,10 @@ public final class CompiledPipeline {
                 final PluginDefinition def = filterPlugin.getPluginDefinition();
                 filters.add(
                     new CompiledPipeline.ConditionalFilter(
-                        (CompiledPipeline.Filter) callRuby(pipeline, "plugin",
-                            new IRubyObject[]{RUBY.newString("filter"),
-                                RUBY.newString(def.getName()),
-                                Rubyfier.deep(RUBY, def.getArguments())}
+                        (CompiledPipeline.Filter) pipeline.plugin(
+                            RUBY.newString("filter"),
+                            RUBY.newString(def.getName()),
+                            Rubyfier.deep(RUBY, def.getArguments())
                         ), conditions.toArray(NO_CONDITIONS)));
             });
         }
@@ -176,7 +176,11 @@ public final class CompiledPipeline {
         boolean fulfilled(JrubyEventExtLibrary.RubyEvent event);
     }
 
-    public interface Filter {
+    public interface Plugin {
+        
+    }
+
+    public interface Filter extends Plugin {
 
         RubyArray multiFilter(RubyArray events);
 
@@ -185,12 +189,13 @@ public final class CompiledPipeline {
         boolean periodicFlush();
     }
 
-    public interface Output {
+    public interface Output extends Plugin {
         void multiReceive(RubyArray events);
     }
-    
+
     public interface Pipeline {
-        
+
+        Plugin plugin(RubyString type, RubyString name, IRubyObject args);
     }
 
     private final class FieldEquals implements CompiledPipeline.Condition {
