@@ -1,6 +1,7 @@
 package org.logstash;
 
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import org.joda.time.DateTime;
@@ -19,22 +20,19 @@ import org.logstash.bivalues.BiValue;
 import org.logstash.bivalues.BiValues;
 import org.logstash.ext.JrubyTimestampExtLibrary;
 
-public class Valuefier {
+public final class Valuefier {
     private static final String PROXY_ERR_TEMPLATE = "Missing Valuefier handling for full class name=%s, simple name=%s, wrapped object=%s";
     private static final String ERR_TEMPLATE = "Missing Valuefier handling for full class name=%s, simple name=%s";
 
     private Valuefier(){}
 
-    private static Object convertJavaProxy(JavaProxy jp) {
-        if(jp == null) {
-            return BiValues.NULL_BI_VALUE;
-        }
-        Object obj = JavaUtil.unwrapJavaObject(jp);
+    private static Object convertJavaProxy(final JavaProxy jp) {
+        final Object obj = JavaUtil.unwrapJavaObject(jp);
         if (obj instanceof IRubyObject[]) {
             return ConvertedList.newFromRubyArray((IRubyObject[]) obj);
         }
         if (obj instanceof List) {
-            return ConvertedList.newFromList((List<Object>) obj);
+            return ConvertedList.newFromList((Collection<?>) obj);
         }
         try {
             return BiValues.newBiValue(jp);
@@ -44,16 +42,16 @@ public class Valuefier {
         }
     }
 
-    public static Object convertNonCollection(Object o) {
+    private static Object convertNonCollection(Object o) {
         try {
-            return o == null ? BiValues.NULL_BI_VALUE : BiValues.newBiValue(o);
+            return BiValues.newBiValue(o);
         } catch (IllegalArgumentException e) {
             final Class<?> cls = o.getClass();
             throw new IllegalArgumentException(String.format(ERR_TEMPLATE, cls.getName(), cls.getSimpleName()), e);
         }
     }
 
-    public static Object convert(Object o) throws IllegalArgumentException {
+    public static Object convert(Object o) {
         if (o instanceof RubyString) {
             return o;
         }
@@ -100,6 +98,6 @@ public class Valuefier {
             Timestamp ts = new Timestamp((DateTime) o);
             return convertNonCollection(ts);
         }
-        return convertNonCollection(o);
+        return o == null ? BiValues.NULL_BI_VALUE : convertNonCollection(o);
     }
 }
