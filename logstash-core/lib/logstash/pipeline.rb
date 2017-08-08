@@ -60,7 +60,7 @@ module LogStash; class BasePipeline
 
     parsed_config.process_escape_sequences = settings.get_value("config.support_escapes")
 
-    config_code = parsed_config.compile
+    config_code = parsed_config.compile(@logger.debug?)
 
     # config_code = BasePipeline.compileConfig(config_str)
 
