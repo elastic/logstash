@@ -64,7 +64,7 @@ describe LogStashConfigParser do
       it "should compile successfully" do
         result = subject.parse(config)
         expect(result).not_to(be_nil)
-        expect { eval(result.compile(false)) }.not_to(raise_error)
+        expect { eval(result.compile) }.not_to(raise_error)
       end
     end
 
@@ -83,7 +83,7 @@ describe LogStashConfigParser do
       it "should compile successfully" do
         result = subject.parse(config)
         expect(result).not_to(be_nil)
-        expect { eval(result.compile(false)) }.not_to(raise_error)
+        expect { eval(result.compile) }.not_to(raise_error)
       end
     end
 
@@ -103,7 +103,7 @@ describe LogStashConfigParser do
           }
         ))
 
-        expect { config.compile(false) }.to raise_error(LogStash::ConfigurationError, /Duplicate keys found in your configuration: \["message"\]/)
+        expect { config.compile }.to raise_error(LogStash::ConfigurationError, /Duplicate keys found in your configuration: \["message"\]/)
       end
 
       it "rejects duplicate keys in nested hash" do
@@ -122,7 +122,7 @@ describe LogStashConfigParser do
           }
         ))
 
-        expect { config.compile(false) }.to raise_error(LogStash::ConfigurationError, /Duplicate keys found in your configuration: \["cool"\]/)
+        expect { config.compile }.to raise_error(LogStash::ConfigurationError, /Duplicate keys found in your configuration: \["cool"\]/)
       end
 
       it "rejects a key with multiple double quotes" do
@@ -190,7 +190,7 @@ describe LogStashConfigParser do
         def initialize(config, settings)
           grammar = LogStashConfigParser.new
           @config = grammar.parse(config)
-          @code = @config.compile(false)
+          @code = @config.compile
           eval(@code)
         end
         def plugin(*args);end
@@ -243,7 +243,7 @@ describe LogStashConfigParser do
         def initialize(config, settings)
           grammar = LogStashConfigParser.new
           @config = grammar.parse(config)
-          @code = @config.compile(false)
+          @code = @config.compile
           eval(@code)
         end
         def plugin(*args);end
