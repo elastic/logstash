@@ -51,24 +51,33 @@ public final class Valuefier {
         }
     }
 
-    public static Object convert(Object o) {
-        if (o instanceof RubyString) {
+    public static Object convert(final Object o) {
+        if (o instanceof RubyString || o instanceof RubyFloat
+            || o instanceof JrubyTimestampExtLibrary.RubyTimestamp
+            || o instanceof ConvertedMap || o instanceof ConvertedList
+            || o instanceof BiValue) {
             return o;
         }
         if (o instanceof String) {
             return BiValues.RUBY.newString((String) o);
         }
-        if (o instanceof RubyFloat) {
-            return o;
-        }
         if (o instanceof Float || o instanceof Double) {
             return BiValues.RUBY.newFloat(((Number) o).doubleValue());
         }
-        if (o instanceof ConvertedMap || o instanceof ConvertedList) {
-            return o;
+        if (o instanceof Timestamp) {
+            return JrubyTimestampExtLibrary.RubyTimestamp.newRubyTimestamp(
+                BiValues.RUBY, (Timestamp) o
+            );
         }
-        if (o instanceof BiValue) {
-            return o;
+        if (o instanceof RubyTime) {
+            return JrubyTimestampExtLibrary.RubyTimestamp.newRubyTimestamp(
+                BiValues.RUBY, new Timestamp(((RubyTime) o).getDateTime())
+            );
+        }
+        if (o instanceof DateTime) {
+            return JrubyTimestampExtLibrary.RubyTimestamp.newRubyTimestamp(
+                BiValues.RUBY, new Timestamp((DateTime) o)
+            );
         }
         if (o instanceof RubyHash) {
             return ConvertedMap.newFromRubyHash((RubyHash) o);
@@ -87,16 +96,6 @@ public final class Valuefier {
         }
         if (o instanceof ArrayJavaProxy || o instanceof ConcreteJavaProxy){
             return convertJavaProxy((JavaProxy) o);
-        }
-        if (o instanceof RubyTime) {
-            RubyTime time = (RubyTime) o;
-            Timestamp ts = new Timestamp(time.getDateTime());
-            JrubyTimestampExtLibrary.RubyTimestamp rts = JrubyTimestampExtLibrary.RubyTimestamp.newRubyTimestamp(time.getRuntime(), ts);
-            return convertNonCollection(rts);
-        }
-        if (o instanceof DateTime) {
-            Timestamp ts = new Timestamp((DateTime) o);
-            return convertNonCollection(ts);
         }
         return o == null ? BiValues.NULL_BI_VALUE : convertNonCollection(o);
     }
