@@ -14,7 +14,7 @@ public class LongCounter extends AbstractMetric<Long> implements CounterMetric<L
 
     private static final IllegalArgumentException NEGATIVE_COUNT_EXCEPTION = new IllegalArgumentException("Counters can not be incremented by negative values");
     private LongAdder longAdder;
-    private volatile boolean dirty;
+    private boolean dirty;
 
     /**
      * Constructor
