@@ -129,7 +129,7 @@ public final class RecordIOReader implements Closeable {
         return channelPosition;
     }
 
-   void consumeBlock(boolean rewind) throws IOException {
+    void consumeBlock(boolean rewind) throws IOException {
         if (rewind) {
             currentBlockSizeReadFromChannel = 0;
             currentBlock.rewind();
@@ -250,12 +250,11 @@ public final class RecordIOReader implements Closeable {
 
 
     private BufferState saveBufferState() throws IOException {
-        BufferState bufferState = new BufferState();
-        bufferState.blockContents = Arrays.copyOf(this.currentBlock.array(), this.currentBlock.array().length);
-        bufferState.channelPosition = channel.position();
-        bufferState.currentBlockPosition = currentBlock.position();
-        bufferState.currentBlockSizeReadFromChannel = this.currentBlockSizeReadFromChannel;
-        return bufferState;
+        return new BufferState.Builder().channelPosition(channel.position())
+                                        .blockContents(Arrays.copyOf(this.currentBlock.array(), this.currentBlock.array().length))
+                                        .currentBlockPosition(currentBlock.position())
+                                        .currentBlockSizeReadFromChannel(currentBlockSizeReadFromChannel)
+                                        .build();
     }
 
     private void restoreFrom(BufferState bufferState) throws IOException {
@@ -268,14 +267,52 @@ public final class RecordIOReader implements Closeable {
     }
 
     final static class BufferState {
-        int currentBlockPosition;
-        int currentBlockSizeReadFromChannel;
-        long channelPosition;
-        byte[] blockContents;
+        private int currentBlockPosition;
+        private int currentBlockSizeReadFromChannel;
+        private long channelPosition;
+        private byte[] blockContents;
+
+        BufferState(Builder builder){
+            this.currentBlockPosition = builder.currentBlockPosition;
+            this.currentBlockSizeReadFromChannel = builder.currentBlockSizeReadFromChannel;
+            this.channelPosition = builder.channelPosition;
+            this.blockContents = builder.blockContents;
+        }
 
         public String toString() {
             return String.format("CurrentBlockPosition:%d, currentBlockSizeReadFromChannel: %d, channelPosition: %d",
                     currentBlockPosition, currentBlockSizeReadFromChannel, channelPosition);
+        }
+
+        final static class Builder{
+            private int currentBlockPosition;
+            private int currentBlockSizeReadFromChannel;
+            private long channelPosition;
+            private byte[] blockContents;
+
+            Builder currentBlockPosition(final int currentBlockPosition){
+                this.currentBlockPosition = currentBlockPosition;
+                return this;
+            }
+
+            Builder currentBlockSizeReadFromChannel(final int currentBlockSizeReadFromChannel){
+                this.currentBlockSizeReadFromChannel = currentBlockSizeReadFromChannel;
+                return this;
+            }
+
+            Builder channelPosition(final long channelPosition){
+                this.channelPosition = channelPosition;
+                return this;
+            }
+
+            Builder blockContents(final byte[] blockContents){
+                this.blockContents = blockContents;
+                return this;
+            }
+
+            BufferState build(){
+                return new BufferState(this);
+            }
         }
     }
 }
