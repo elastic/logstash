@@ -190,13 +190,6 @@ class LogStash::Agent
     converge_result
   end
 
-  def force_shutdown!
-    stop_collecting_metrics
-    stop_webserver
-    transition_to_stopped
-    force_shutdown_pipelines!
-  end
-
   def id
     return @id if @id
 
@@ -425,13 +418,6 @@ class LogStash::Agent
 
   def collect_metrics?
     @collect_metric
-  end
-
-  def force_shutdown_pipelines!
-    @pipelines.each do |_, pipeline|
-      # TODO(ph): should it be his own action?
-      pipeline.force_shutdown!
-    end
   end
 
   def shutdown_pipelines
