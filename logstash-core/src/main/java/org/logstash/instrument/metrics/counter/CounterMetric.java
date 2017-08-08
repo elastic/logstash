@@ -16,7 +16,7 @@ public interface CounterMetric<T extends Number> extends Metric<T> {
 
     /**
      * Increments the counter by the value specified. <i>The caller should be careful to avoid incrementing by values so large as to overflow the underlying type.</i>
-     * @param by The value which to increment by.
+     * @param by The value which to increment by. Can not be negative.
      */
     void increment(T by) ;
 }

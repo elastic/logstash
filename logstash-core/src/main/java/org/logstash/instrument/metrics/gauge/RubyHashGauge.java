@@ -10,46 +10,34 @@ import java.util.List;
 /**
  * A {@link GaugeMetric} that is backed by a {@link RubyHash}.  Note - This should not be used directly from Java code and exists for passivity with legacy Ruby code. Depending
  * on the types in in the {@link RubyHash} there are no guarantees serializing properly.
+ * @deprecated - There are no plans to replace this.
  */
-public class RubyHashGauge extends AbstractMetric<RubyHash> implements GaugeMetric<RubyHash,RubyHash> {
-
-    private volatile RubyHash value;
+public class RubyHashGauge extends AbstractGaugeMetric<RubyHash> {
 
     /**
-     * Constructor - protected so that Ruby may sub class proxy and discourage usage from Java, null initial value
+     * Constructor
      *
-     * @param nameSpace    The namespace for this metric
-     * @param key          The key <i>(with in the namespace)</i> for this metric
+     * @param name The name of this metric. This value may be used for display purposes.
+     * @deprecated - There are no plans to replace this.
      */
-    protected RubyHashGauge(List<String> nameSpace, String key) {
-        this(nameSpace, key, null);
+    protected RubyHashGauge(String name) {
+        super(name);
     }
 
     /**
      * Constructor - protected so that Ruby may sub class proxy and discourage usage from Java
      *
-     * @param nameSpace    The namespace for this metric
-     * @param key          The key <i>(with in the namespace)</i> for this metric
+     * @param name The name of this metric. This value may be used for display purposes.
      * @param initialValue The initial value for this {@link GaugeMetric}, may be null
+     * @deprecated - There are no plans to replace this.
      */
-    protected RubyHashGauge(List<String> nameSpace, String key, RubyHash initialValue) {
-        super(nameSpace, key);
-        this.value = initialValue;
+    protected RubyHashGauge(String name, RubyHash initialValue) {
+        super(name, initialValue);
     }
 
     @Override
     public MetricType getType() {
         return MetricType.GAUGE_RUBYHASH;
-    }
-
-    @Override
-    public RubyHash getValue() {
-        return value;
-    }
-
-    @Override
-    public void set(RubyHash value) {
-        this.value = value;
     }
 
 }

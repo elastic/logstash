@@ -19,7 +19,7 @@ public class LongCounterTest {
 
     @Before
     public void _setup() {
-        longCounter = new LongCounter(Collections.singletonList("foo"), "bar");
+        longCounter = new LongCounter("bar");
     }
 
     @Test
@@ -29,12 +29,11 @@ public class LongCounterTest {
 
     @Test
     public void increment() {
-
         longCounter.increment();
         assertThat(longCounter.getValue()).isEqualTo(INITIAL_VALUE + 1);
     }
 
-    @Test(expected = UnsupportedOperationException.class)
+    @Test(expected = IllegalArgumentException.class)
     public void incrementByNegativeValue() {
         longCounter.increment(-100l);
     }
@@ -43,17 +42,23 @@ public class LongCounterTest {
     public void incrementByValue() {
         longCounter.increment(100l);
         assertThat(longCounter.getValue()).isEqualTo(INITIAL_VALUE + 100);
+        longCounter.increment(Long.valueOf(100));
+        assertThat(longCounter.getValue()).isEqualTo(INITIAL_VALUE + 200);
     }
 
     @Test
     public void noInitialValue() {
-        LongCounter counter = new LongCounter(Collections.singletonList("foo"), "bar");
+        LongCounter counter = new LongCounter("bar");
+        assertThat(counter.isDirty()).isFalse();
         counter.increment();
+        assertThat(counter.isDirty()).isTrue();
         assertThat(counter.getValue()).isEqualTo(1l);
+        counter.setDirty(false);
+        assertThat(counter.isDirty()).isFalse();
     }
 
     @Test
-    @SuppressWarnings( "deprecation" )
+    @SuppressWarnings("deprecation")
     public void type() {
         assertThat(longCounter.type()).isEqualTo(MetricType.COUNTER_LONG.asString());
     }
