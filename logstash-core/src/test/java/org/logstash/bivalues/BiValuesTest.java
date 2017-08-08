@@ -12,8 +12,6 @@ import org.jruby.ext.bigdecimal.RubyBigDecimal;
 import org.jruby.javasupport.JavaUtil;
 import org.junit.Test;
 import org.logstash.TestBase;
-import org.logstash.Timestamp;
-import org.logstash.ext.JrubyTimestampExtLibrary.RubyTimestamp;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -127,30 +125,6 @@ public class BiValuesTest extends TestBase {
         assertFalse(subject.javaValue());
         assertEquals(Boolean.class, subject.javaValue().getClass());
         assertEquals(ro, subject.rubyValue(ruby));
-        assertEquals(ro.getClass(), subject.rubyValue(ruby).getClass());
-    }
-
-    @Test
-    public void testBiValuesTimestampRuby() {
-        Timestamp jo = new Timestamp("2014-09-23T00:00:00-0800");
-        RubyTimestamp ro = RubyTimestamp.newRubyTimestamp(ruby, jo);
-        BiValue subject = BiValues.newBiValue(ro);
-
-        assertEquals(ro, subject.rubyValueUnconverted());
-        assertEquals(ro.getClass(), subject.rubyValue(ruby).getClass());
-        assertEquals(jo, subject.javaValue());
-        assertEquals(Timestamp.class, subject.javaValue().getClass());
-    }
-
-    @Test
-    public void testBiValuesTimestampJava() {
-        Timestamp jo = new Timestamp("2014-09-23T00:00:00-0800");
-        RubyTimestamp ro = RubyTimestamp.newRubyTimestamp(ruby, jo);
-        BiValue subject = BiValues.newBiValue(jo);
-
-        assertEquals(jo, subject.javaValue());
-        assertEquals(Timestamp.class, subject.javaValue().getClass());
-        assertEquals(ro.toString(), subject.rubyValue(ruby).toString());
         assertEquals(ro.getClass(), subject.rubyValue(ruby).getClass());
     }
 

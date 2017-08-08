@@ -11,12 +11,8 @@ import org.jruby.RubySymbol;
 import org.jruby.ext.bigdecimal.RubyBigDecimal;
 import org.jruby.java.proxies.JavaProxy;
 import org.jruby.runtime.builtin.IRubyObject;
-import org.logstash.Timestamp;
-import org.logstash.ext.JrubyTimestampExtLibrary.RubyTimestamp;
 
 public enum BiValues {
-    ORG_LOGSTASH_EXT_JRUBYTIMESTAMPEXTLIBRARY$RUBYTIMESTAMP(BiValueType.TIMESTAMP),
-    ORG_LOGSTASH_TIMESTAMP(BiValueType.TIMESTAMP),
     JAVA_LANG_BOOLEAN(BiValueType.BOOLEAN),
     JAVA_LANG_INTEGER(BiValueType.INT),
     JAVA_LANG_LONG(BiValueType.LONG),
@@ -36,8 +32,6 @@ public enum BiValues {
 
     private static HashMap<String, String> initCache() {
         HashMap<String, String> hm = new HashMap<>();
-        hm.put("org.logstash.Timestamp", "ORG_LOGSTASH_TIMESTAMP");
-        hm.put("org.logstash.ext.JrubyTimestampExtLibrary$RubyTimestamp", "ORG_LOGSTASH_EXT_JRUBYTIMESTAMPEXTLIBRARY$RUBYTIMESTAMP");
         hm.put("java.lang.Boolean", "JAVA_LANG_BOOLEAN");
         hm.put("java.lang.Integer", "JAVA_LANG_INTEGER");
         hm.put("java.lang.Long", "JAVA_LANG_LONG");
@@ -134,14 +128,6 @@ public enum BiValues {
                     return new BooleanBiValue((RubyBoolean) value);
                 }
                 return new BooleanBiValue((Boolean) value);
-            }
-        },
-        TIMESTAMP {
-            BiValue build(Object value) {
-                if (value instanceof IRubyObject) {
-                    return new TimestampBiValue((RubyTimestamp) value);
-                }
-                return new TimestampBiValue((Timestamp) value);
             }
         },
         NULL {
