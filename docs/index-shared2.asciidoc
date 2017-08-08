@@ -26,6 +26,9 @@ include::static/managing-multiline-events.asciidoc[]
 :edit_url: https://github.com/elastic/logstash/edit/master/docs/static/glob-support.asciidoc
 include::static/glob-support.asciidoc[]
 
+// Centralized configuration managements
+include::static/config-management.asciidoc[]
+
 // Working with Logstash Modules
 
 include::static/modules.asciidoc[]
