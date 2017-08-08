@@ -41,6 +41,8 @@ class DummyCodec < LogStash::Codecs::Base
   config_name "dummycodec"
   milestone 2
 
+  config :format, :validate => :string
+
   def decode(data)
     data
   end
@@ -373,7 +375,7 @@ describe LogStash::Pipeline do
       allow(LogStash::Plugin).to receive(:lookup).with("output", "dummyoutput").and_return(::LogStash::Outputs::DummyOutput)
     end
 
-    let(:config) { "input { dummyinput {} } filter { dummyfilter {} } output { dummyoutput {} }"}
+    let(:config) { "input { dummyinput { codec => plain { format => 'something'  } } } filter { dummyfilter {} } output { dummyoutput {} }"}
     let(:pipeline) { mock_pipeline_from_string(config) }
 
     after do

@@ -113,12 +113,16 @@ module LogStash; class BasePipeline
     # Collapse the array of arguments into a single merged hash
     args = args.reduce({}, &:merge)
 
-    # Pull the ID from LIR to keep IDs consistent between the two representations
-    id = lir.graph.vertices.filter do |v| 
-      v.source_with_metadata && 
-      v.source_with_metadata.line == line && 
-      v.source_with_metadata.column == column
-    end.findFirst.get.id
+    if plugin_type == "codec"
+      id = SecureRandom.uuid # codecs don't really use their IDs for metrics, so we can use anything here
+    else
+      # Pull the ID from LIR to keep IDs consistent between the two representations
+      id = lir.graph.vertices.filter do |v| 
+        v.source_with_metadata && 
+        v.source_with_metadata.line == line && 
+        v.source_with_metadata.column == column
+      end.findFirst.get.id
+    end
 
     args["id"] = id # some code pulls the id out of the args
 
