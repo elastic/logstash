@@ -92,7 +92,19 @@ module LogStash; class BasePipeline
     ]
     LogStash::Compiler.compile_sources(sources_with_metadata, @settings)
   end
+   
+  def build_output(name, *args) 
+    plugin("output", name, *args)
+  end
 
+  def build_filter(name, *args) 
+    plugin("filter", name, *args)
+  end
+               
+  def build_input(name, *args) 
+    plugin("input", name, *args)
+  end
+               
   def plugin(plugin_type, name, *args)
     @plugin_counter += 1
 
