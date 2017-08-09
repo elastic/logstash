@@ -19,7 +19,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.logstash.bivalues.BiValue;
-import org.logstash.bivalues.TimestampBiValue;
+import org.logstash.ext.JrubyTimestampExtLibrary;
 
 import static junit.framework.TestCase.assertEquals;
 
@@ -63,7 +63,7 @@ public class ValuefierTest extends TestBase {
     public void testRubyTime() {
         RubyTime ro = RubyTime.newTime(ruby, DateTime.now());
         Object result = Valuefier.convert(ro);
-        assertEquals(TimestampBiValue.class, result.getClass());
+        assertEquals(JrubyTimestampExtLibrary.RubyTimestamp.class, result.getClass());
     }
 
     @Test
@@ -71,7 +71,7 @@ public class ValuefierTest extends TestBase {
         DateTime jo = DateTime.now();
         Object result = Valuefier.convert(jo);
 
-        assertEquals(TimestampBiValue.class, result.getClass());
+        assertEquals(JrubyTimestampExtLibrary.RubyTimestamp.class, result.getClass());
     }
 
     @Rule

@@ -11,6 +11,7 @@ import org.jruby.RubyString;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.bivalues.BiValue;
 import org.logstash.bivalues.BiValues;
+import org.logstash.ext.JrubyTimestampExtLibrary;
 
 public final class Rubyfier {
     private static final String ERR_TEMPLATE = "Missing Java class handling for full class name=%s, simple name=%s";
@@ -27,11 +28,18 @@ public final class Rubyfier {
     }
 
     public static IRubyObject deep(Ruby runtime, final Object input) {
-        if (input instanceof RubyString) return (RubyString) input;
+        if (input instanceof RubyString || input instanceof RubyFloat
+            || input instanceof JrubyTimestampExtLibrary.RubyTimestamp) {
+            return (IRubyObject) input;
+        }
         if (input instanceof String) return BiValues.RUBY.newString((String) input);
-        if (input instanceof RubyFloat) return (RubyFloat) input;
         if (input instanceof Double || input instanceof Float) {
             return BiValues.RUBY.newFloat(((Number) input).doubleValue());
+        }
+        if (input instanceof Timestamp) {
+            return JrubyTimestampExtLibrary.RubyTimestamp.newRubyTimestamp(
+                BiValues.RUBY, (Timestamp) input
+            );
         }
         if (input instanceof BiValue) return ((BiValue) input).rubyValue(runtime);
         if (input instanceof Map) return deepMap(runtime, (Map) input);

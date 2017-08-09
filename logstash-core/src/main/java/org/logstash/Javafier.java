@@ -5,6 +5,7 @@ import org.jruby.RubyFloat;
 import org.jruby.RubyString;
 import org.logstash.bivalues.BiValue;
 import org.logstash.bivalues.BiValues;
+import org.logstash.ext.JrubyTimestampExtLibrary;
 
 public class Javafier {
     private static final String ERR_TEMPLATE = "Missing Ruby class handling for full class name=%s, simple name=%s";
@@ -20,11 +21,15 @@ public class Javafier {
         if (o instanceof RubyString) {
             return o.toString();
         }
-        if (o instanceof String || o instanceof Float || o instanceof Double) {
+        if (o instanceof String || o instanceof Float || o instanceof Double ||
+            o instanceof Timestamp) {
             return o;
         }
         if (o instanceof RubyFloat) {
             return ((RubyFloat) o).getDoubleValue();
+        }
+        if (o instanceof JrubyTimestampExtLibrary.RubyTimestamp) {
+            return ((JrubyTimestampExtLibrary.RubyTimestamp) o).getTimestamp();
         }
         if (o instanceof BiValue) {
             return ((BiValue)o).javaValue();
