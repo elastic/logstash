@@ -1,6 +1,7 @@
 package org.logstash;
 
 import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.module.SimpleModule;
@@ -9,6 +10,7 @@ import com.fasterxml.jackson.dataformat.cbor.CBORFactory;
 import com.fasterxml.jackson.dataformat.cbor.CBORGenerator;
 import com.fasterxml.jackson.module.afterburner.AfterburnerModule;
 import java.io.IOException;
+import java.util.HashMap;
 import org.jruby.RubyFloat;
 import org.jruby.RubyString;
 
@@ -25,6 +27,12 @@ public final class ObjectMappers {
     public static final ObjectMapper CBOR_MAPPER = new ObjectMapper(
         new CBORFactory().configure(CBORGenerator.Feature.WRITE_MINIMAL_INTS, false)
     ).registerModule(new AfterburnerModule()).registerModule(RUBY_SERIALIZERS);
+
+    /**
+     * {@link JavaType} for the {@link HashMap} that {@link Event} is serialized as.
+     */
+    public static final JavaType EVENT_MAP_TYPE =
+        CBOR_MAPPER.getTypeFactory().constructMapType(HashMap.class, String.class, Object.class);
 
     private ObjectMappers() {
     }
