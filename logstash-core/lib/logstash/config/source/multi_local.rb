@@ -31,9 +31,11 @@ module LogStash module Config module Source
     end
 
     def match?
+      if modules_cli? || modules? || config_string? || config_path?
+        return false
+      end
       detect_pipelines if !@detect_pipelines_called
-      # see basic settings predicates and getters defined in the base class
-      return !(invalid_pipelines_detected? || modules_cli? || modules? || config_string? || config_path?)
+      return !(invalid_pipelines_detected?)
     end
 
     def invalid_pipelines_detected?
@@ -41,10 +43,10 @@ module LogStash module Config module Source
     end
 
     def config_conflict?
-      detect_pipelines if !@detect_pipelines_called
       @conflict_messages.clear
       # are there any auto-reload conflicts?
       if !(modules_cli? || modules? || config_string? || config_path?)
+        detect_pipelines if !@detect_pipelines_called
         if @detected_marker.nil?
           @conflict_messages << I18n.t("logstash.runner.config-pipelines-failed-read", :path => pipelines_yaml_location)
         elsif @detected_marker == false

@@ -74,9 +74,7 @@ module LogStash; class BasePipeline
     parsed_config.process_escape_sequences = settings.get_value("config.support_escapes")
     config_code = parsed_config.compile
 
-    # config_code = BasePipeline.compileConfig(config_str)
-
-    if settings.get_value("config.debug") && @logger.debug?
+    if settings.get_value("config.debug")
       @logger.debug("Compiled pipeline code", default_logging_keys(:code => config_code))
     end
 
@@ -238,7 +236,10 @@ module LogStash; class Pipeline < BasePipeline
     collect_stats
     collect_dlq_stats
 
-    @logger.debug("Starting pipeline", default_logging_keys)
+    @logger.info("Starting pipeline", default_logging_keys(
+      "pipeline.workers" => @settings.get("pipeline.workers"),
+      "pipeline.batch.size" => @settings.get("pipeline.batch.size"),
+      "pipeline.batch.delay" => @settings.get("pipeline.batch.delay")))
 
     @finished_execution = Concurrent::AtomicBoolean.new(false)
 
@@ -249,14 +250,14 @@ module LogStash; class Pipeline < BasePipeline
         @finished_execution.make_true
       rescue => e
         close
-        logger.error("Pipeline aborted due to error", default_logging_keys(:exception => e, :backtrace => e.backtrace))
+        @logger.error("Pipeline aborted due to error", default_logging_keys(:exception => e, :backtrace => e.backtrace))
       end
     end
 
     status = wait_until_started
 
     if status
-      logger.debug("Pipeline started successfully", default_logging_keys(:pipeline_id => pipeline_id))
+      @logger.info("Pipeline started succesfully", default_logging_keys)
     end
 
     status
@@ -287,8 +288,6 @@ module LogStash; class Pipeline < BasePipeline
 
     start_workers
 
-    @logger.info("Pipeline started", "pipeline.id" => @pipeline_id)
-
     # Block until all inputs have stopped
     # Generally this happens if SIGINT is sent and `shutdown` is called from an external thread
 
@@ -297,14 +296,13 @@ module LogStash; class Pipeline < BasePipeline
     wait_inputs
     transition_to_stopped
 
-    @logger.debug("Input plugins stopped! Will shutdown filter/output workers.", default_logging_keys)
-
     shutdown_flusher
+    @logger.debug("Shutting down filter/output workers", default_logging_keys)
     shutdown_workers
 
     close
 
-    @logger.debug("Pipeline has been shutdown", default_logging_keys)
+    @logger.info("Pipeline has terminated", default_logging_keys)
 
     # exit code
     return 0
@@ -378,12 +376,6 @@ module LogStash; class Pipeline < BasePipeline
       config_metric.gauge(:dead_letter_queue_enabled, dlq_enabled?)
       config_metric.gauge(:dead_letter_queue_path, @dlq_writer.get_path.to_absolute_path.to_s) if dlq_enabled?
 
-
-      @logger.info("Starting pipeline", default_logging_keys(
-        "pipeline.workers" => pipeline_workers,
-        "pipeline.batch.size" => batch_size,
-        "pipeline.batch.delay" => batch_delay,
-        "pipeline.max_inflight" => max_inflight))
       if max_inflight > MAX_INFLIGHT_WARN_THRESHOLD
         @logger.warn("CAUTION: Recommended inflight events max exceeded! Logstash will run with up to #{max_inflight} events in memory in your current configuration. If your message sizes are large this may cause instability with the default heap size. Please consider setting a non-standard heap size, changing the batch size (currently #{batch_size}), or changing the number of pipeline workers (currently #{pipeline_workers})", default_logging_keys)
       end
@@ -565,19 +557,19 @@ module LogStash; class Pipeline < BasePipeline
     # stopped
     wait_for_workers
     clear_pipeline_metrics
-    @logger.info("Pipeline terminated", "pipeline.id" => @pipeline_id)
   end # def shutdown
 
   def wait_for_workers
-    @logger.debug("Closing inputs", default_logging_keys)
-    @worker_threads.map(&:join)
-    @logger.debug("Worker closed", default_logging_keys)
+    @worker_threads.each do |t|
+      t.join
+      @logger.debug("Worker terminated", default_logging_keys(:thread => t.inspect))
+    end
   end
 
   def stop_inputs
-    @logger.debug("Closing inputs", default_logging_keys)
+    @logger.debug("Stopping inputs", default_logging_keys)
     @inputs.each(&:do_stop)
-    @logger.debug("Closed inputs", default_logging_keys)
+    @logger.debug("Stopped inputs", default_logging_keys)
   end
 
   # After `shutdown` is called from an external thread this is called from the main thread to
