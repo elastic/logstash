@@ -16,34 +16,6 @@ public abstract class StreamOutput extends OutputStream {
     public abstract void reset() throws IOException;
 
     /**
-     * Writes an int in a variable-length format.  Writes between one and
-     * five bytes.  Smaller values take fewer bytes.  Negative numbers
-     * will always use all 5 bytes and are therefore better serialized
-     * using {@link #writeInt}
-     *
-     * @param i The integer to write
-     * @throws IOException if an error occurs while writing content
-     */
-    public void writeVInt(int i) throws IOException {
-        while ((i & ~0x7F) != 0) {
-            writeByte((byte) ((i & 0x7f) | 0x80));
-            i >>>= 7;
-        }
-        writeByte((byte) i);
-    }
-
-    /**
-     * Writes a short as two bytes.
-     *
-     * @param i The short to write
-     * @throws IOException if an error occurs while writing content
-     */
-    public void writeShort(short i) throws IOException {
-        writeByte((byte)(i >>  8));
-        writeByte((byte) i);
-    }
-
-    /**
      * Writes an int as four bytes.
      *
      * @param i The int to write
@@ -54,13 +26,6 @@ public abstract class StreamOutput extends OutputStream {
         writeByte((byte) (i >> 16));
         writeByte((byte) (i >> 8));
         writeByte((byte) i);
-    }
-
-    public void writeIntArray(int[] values) throws IOException {
-        writeVInt(values.length);
-        for (int value : values) {
-            writeInt(value);
-        }
     }
 
     /**

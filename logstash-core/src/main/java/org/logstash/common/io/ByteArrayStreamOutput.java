@@ -1,7 +1,5 @@
 package org.logstash.common.io;
 
-import java.nio.ByteBuffer;
-
 public class ByteArrayStreamOutput extends StreamOutput {
     private byte[] bytes;
 
@@ -10,18 +8,6 @@ public class ByteArrayStreamOutput extends StreamOutput {
 
     public ByteArrayStreamOutput(byte[] bytes) {
         reset(bytes);
-    }
-
-    public ByteArrayStreamOutput(ByteBuffer bytebuffer) {
-        reset(bytebuffer.array());
-    }
-
-    public ByteArrayStreamOutput(ByteBuffer bytebuffer, int offset, int len) {
-        reset(bytebuffer.array(), offset, len);
-    }
-
-    public ByteArrayStreamOutput(byte[] bytes, int offset, int len) {
-        reset(bytes, offset, len);
     }
 
     public void reset(byte[] bytes) {
