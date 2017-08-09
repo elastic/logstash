@@ -12,11 +12,17 @@ The metrics collected by Logstash include:
 runtime stats.
 * Hot threads.
 
-You can use the <<logstash-monitoring-ui,monitoring UI>> in X-Pack to view
+You can use the <<logstash-monitoring-ui,monitoring UI>> in {xpack} to view
 these metrics and gain insight into how your Logstash deployment is running.
 
 Or you can use the basic <<monitoring,monitoring APIs>> providing by Logstash
 to retrieve these metrics.
+
+The <<logstash-pipeline-viewer,pipeline viewer>> in {xpack} offers additional
+visibility into the behavior and performance of complex pipeline configurations.
+It shows a graph representation of the overall pipeline topology, data flow, and
+branching logic, overlayed with important metrics, like events per second, for
+each plugin in the view.
 
 [role="xpack"]
 [[logstash-monitoring-ui]]
