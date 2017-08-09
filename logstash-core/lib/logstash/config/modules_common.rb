@@ -45,9 +45,18 @@ module LogStash module Config
           current_module.with_settings(module_hash)
           esclient = LogStash::ElasticsearchClient.build(module_hash)
           config_test = settings.get("config.test_and_exit")
-          if esclient.can_connect? || config_test
-            if !config_test
-              current_module.import(LogStash::Modules::Importer.new(esclient))
+          modul_setup = settings.get("modules_setup")
+          # Only import data if it's not a config test and --setup is true
+          if !config_test && modul_setup
+            esclient = LogStash::ElasticsearchClient.build(module_hash)
+            esconnected = esclient.can_connect?
+            if esconnected
+              current_module.import(
+                  LogStash::Modules::Importer.new(esclient)
+                )
+            else
+              connect_fail_args[:module_name] = module_name
+              connect_fail_args[:hosts] = esclient.host_settings
             end
 
             config_string = current_module.config_string
