@@ -60,23 +60,27 @@ public final class CompiledPipeline {
                     .filter(vertex -> vertex instanceof IfVertex)
                     .forEach(vertex -> {
                             final IfVertex iff = (IfVertex) vertex;
-                            if (iff.getBooleanExpression() instanceof Eq) {
-                                final Eq equals = (Eq) iff.getBooleanExpression();
-                                if (equals.getLeft() instanceof EventValueExpression &&
-                                    equals.getRight() instanceof ValueExpression) {
-                                    conditions.add(new FieldEquals(
-                                        ((EventValueExpression) equals.getLeft()).getFieldName(),
-                                        ((ValueExpression) equals.getRight()).get().toString()
-                                    ));
-                                }
-                            } else if (iff.getBooleanExpression() instanceof RegexEq) {
-                                final RegexEq regex = (RegexEq) iff.getBooleanExpression();
-                                if (regex.getLeft() instanceof EventValueExpression &&
-                                    regex.getRight() instanceof ValueExpression) {
-                                    conditions.add(new FieldMatches(
-                                        ((EventValueExpression) regex.getLeft()).getFieldName(),
-                                        ((ValueExpression) regex.getRight()).get().toString()
-                                    ));
+                            if (iff.getOutgoingBooleanEdgesByType(true).stream()
+                                .filter(e -> e.getTo().equals(filterPlugin)).count() > 0L) {
+                                if (iff.getBooleanExpression() instanceof Eq) {
+                                    final Eq equals = (Eq) iff.getBooleanExpression();
+                                    if (equals.getLeft() instanceof EventValueExpression &&
+                                        equals.getRight() instanceof ValueExpression) {
+                                        conditions.add(new FieldEquals(
+                                            ((EventValueExpression) equals.getLeft())
+                                                .getFieldName(),
+                                            ((ValueExpression) equals.getRight()).get().toString()
+                                        ));
+                                    }
+                                } else if (iff.getBooleanExpression() instanceof RegexEq) {
+                                    final RegexEq regex = (RegexEq) iff.getBooleanExpression();
+                                    if (regex.getLeft() instanceof EventValueExpression &&
+                                        regex.getRight() instanceof ValueExpression) {
+                                        conditions.add(new FieldMatches(
+                                            ((EventValueExpression) regex.getLeft()).getFieldName(),
+                                            ((ValueExpression) regex.getRight()).get().toString()
+                                        ));
+                                    }
                                 }
                             }
                         }
@@ -209,7 +213,7 @@ public final class CompiledPipeline {
         CompiledPipeline.Filter buildFilter(RubyString name, IRubyObject args);
     }
 
-    private final class FieldEquals implements CompiledPipeline.Condition {
+    private static final class FieldEquals implements CompiledPipeline.Condition {
 
         private final FieldReference field;
 
@@ -226,7 +230,7 @@ public final class CompiledPipeline {
         }
     }
 
-    private final class FieldMatches implements CompiledPipeline.Condition {
+    private static final class FieldMatches implements CompiledPipeline.Condition {
 
         private final FieldReference field;
 
@@ -245,4 +249,5 @@ public final class CompiledPipeline {
             return value.matcher(tomatch).find();
         }
     }
+
 }
