@@ -120,7 +120,7 @@ describe LogStash::Pipeline do
   let(:override_thread_count)   { 42 }
   let(:dead_letter_queue_enabled) { false }
   let(:dead_letter_queue_path) { }
-  let(:pipeline_settings_obj) { LogStash::SETTINGS }
+  let(:pipeline_settings_obj) { LogStash::SETTINGS.clone }
   let(:pipeline_settings) { {} }
   let(:max_retry) {10} #times
   let(:timeout) {120} #seconds
@@ -134,10 +134,6 @@ describe LogStash::Pipeline do
     allow(dlq_path_setting).to receive(:value).and_return(dead_letter_queue_path)
 
     pipeline_settings.each {|k, v| pipeline_settings_obj.set(k, v) }
-  end
-
-  after :each do
-    pipeline_settings_obj.reset
   end
 
   describe "#ephemeral_id" do
