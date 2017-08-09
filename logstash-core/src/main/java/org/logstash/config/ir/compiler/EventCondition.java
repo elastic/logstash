@@ -9,6 +9,7 @@ import org.logstash.PathCache;
 import org.logstash.RubyUtil;
 import org.logstash.config.ir.expression.BooleanExpression;
 import org.logstash.config.ir.expression.EventValueExpression;
+import org.logstash.config.ir.expression.Expression;
 import org.logstash.config.ir.expression.ValueExpression;
 import org.logstash.config.ir.expression.binary.And;
 import org.logstash.config.ir.expression.binary.Eq;
@@ -155,14 +156,50 @@ public interface EventCondition {
                 }
             } else if (expression instanceof Or) {
                 final Or or = (Or) expression;
-                final EventCondition first = buildCondition((BooleanExpression) or.getLeft());
-                final EventCondition second = buildCondition((BooleanExpression) or.getRight());
+                final Expression left = or.getLeft();
+                final Expression right = or.getRight();
+                final EventCondition first;
+                final EventCondition second;
+                if (left instanceof BooleanExpression && right instanceof BooleanExpression) {
+                    first = buildCondition((BooleanExpression) left);
+                    second = buildCondition((BooleanExpression) right);
+                } else if (left instanceof EventValueExpression && right instanceof EventValueExpression) {
+                    final FieldReference lfield =
+                        PathCache.cache(((EventValueExpression) left).getFieldName());
+                    final FieldReference rfield =
+                        PathCache.cache(((EventValueExpression) left).getFieldName());
+                    first = event -> event.getEvent().getUnconvertedField(lfield).equals(true);
+                    second = event -> event.getEvent().getUnconvertedField(rfield).equals(true);
+                } else if (left instanceof BooleanExpression && right instanceof EventValueExpression) {
+                    final FieldReference rfield =
+                        PathCache.cache(((EventValueExpression) right).getFieldName());
+                    second = event -> event.getEvent().getUnconvertedField(rfield).equals(true);
+                    first = buildCondition((BooleanExpression) left);
+                } else if (right instanceof BooleanExpression && left instanceof EventValueExpression) {
+                    final FieldReference lfield =
+                        PathCache.cache(((EventValueExpression) left).getFieldName());
+                    first = event -> event.getEvent().getUnconvertedField(lfield).equals(true);
+                    second = buildCondition((BooleanExpression) right);
+                } else {
+                    throw new IllegalStateException(
+                        "GOT " + left.getClass() + " " + right.getClass());
+                }
                 condition = or(first, second);
             } else if (expression instanceof Truthy) {
                 condition = TRUE;
             } else if (expression instanceof Not) {
-                condition =
-                    not(buildCondition((BooleanExpression) ((Not) expression).getExpression()));
+                final Expression inner = ((Not) expression).getExpression();
+                if (inner instanceof BooleanExpression) {
+                    condition = not(buildCondition((BooleanExpression) inner));
+                } else if (inner instanceof EventValueExpression) {
+                    final FieldReference field =
+                        PathCache.cache(((EventValueExpression) inner).getFieldName());
+                    condition = not(
+                        event -> event.getEvent().getUnconvertedField(field).equals(true)
+                    );
+                } else {
+                    throw new IllegalStateException("C2");
+                }
             } else if (expression instanceof Gt) {
                 final Gt greater = (Gt) expression;
                 if (greater.getLeft() instanceof EventValueExpression &&
@@ -221,8 +258,34 @@ public interface EventCondition {
                 }
             } else if (expression instanceof And) {
                 final And and = (And) expression;
-                final EventCondition first = buildCondition((BooleanExpression) and.getLeft());
-                final EventCondition second = buildCondition((BooleanExpression) and.getRight());
+                final Expression left = and.getLeft();
+                final Expression right = and.getRight();
+                final EventCondition first;
+                final EventCondition second;
+                if (left instanceof BooleanExpression && right instanceof BooleanExpression) {
+                    first = buildCondition((BooleanExpression) left);
+                    second = buildCondition((BooleanExpression) right);
+                } else if (left instanceof EventValueExpression && right instanceof EventValueExpression) {
+                    final FieldReference lfield =
+                        PathCache.cache(((EventValueExpression) left).getFieldName());
+                    final FieldReference rfield =
+                        PathCache.cache(((EventValueExpression) left).getFieldName());
+                    first = event -> event.getEvent().getUnconvertedField(lfield).equals(true);
+                    second = event -> event.getEvent().getUnconvertedField(rfield).equals(true);
+                } else if (left instanceof BooleanExpression && right instanceof EventValueExpression) {
+                    final FieldReference rfield =
+                        PathCache.cache(((EventValueExpression) right).getFieldName());
+                    second = event -> event.getEvent().getUnconvertedField(rfield).equals(true);
+                    first = buildCondition((BooleanExpression) left);
+                } else if (right instanceof BooleanExpression && left instanceof EventValueExpression) {
+                    final FieldReference lfield =
+                        PathCache.cache(((EventValueExpression) left).getFieldName());
+                    first = event -> event.getEvent().getUnconvertedField(lfield).equals(true);
+                    second = buildCondition((BooleanExpression) right);
+                } else {
+                    throw new IllegalStateException(
+                        "GOT " + left.getClass() + " " + right.getClass());
+                }
                 condition = and(first, second);
             } else if (expression instanceof Neq) {
                 final Neq nequals = (Neq) expression;
@@ -308,7 +371,7 @@ public interface EventCondition {
             @Override
             public boolean fulfilled(final JrubyEventExtLibrary.RubyEvent event) {
                 return value.toString()
-                    .compareTo(event.getEvent().getUnconvertedField(field).toString()) > 0;
+                    .compareTo(event.getEvent().getUnconvertedField(field).toString()) < 0;
             }
         }
 
