@@ -786,7 +786,7 @@ module LogStash; class Pipeline < BasePipeline
 
   def default_logging_keys(other_keys = {})
     keys = super
-    keys[:thread] = thread.inspect if thread
+    keys[:thread] ||= thread.inspect if thread
     keys
   end
 
