@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import org.jruby.RubyArray;
@@ -21,6 +22,7 @@ import org.logstash.config.ir.expression.binary.In;
 import org.logstash.config.ir.expression.binary.RegexEq;
 import org.logstash.config.ir.graph.IfVertex;
 import org.logstash.config.ir.graph.PluginVertex;
+import org.logstash.config.ir.graph.Vertex;
 import org.logstash.ext.JrubyEventExtLibrary;
 
 public final class CompiledPipeline {
@@ -59,18 +61,16 @@ public final class CompiledPipeline {
     public Collection<CompiledPipeline.Filter> filters(final CompiledPipeline.Pipeline pipeline) {
         if (filters.isEmpty()) {
             graph.getFilterPluginVertices().forEach(filterPlugin -> {
-                final Collection<CompiledPipeline.Condition> conditions = new ArrayList<>(5);
-                wrapCondition(filterPlugin, conditions);
                 final PluginDefinition def = filterPlugin.getPluginDefinition();
                 filters.add(
                     new CompiledPipeline.ConditionalFilter(
                         pipeline.buildFilter(
                             BiValues.RUBY.newString(def.getName()),
                             Rubyfier.deep(BiValues.RUBY, def.getArguments())
-                        ), conditions.toArray(NO_CONDITIONS)));
+                        ), wrapCondition(filterPlugin).toArray(NO_CONDITIONS)));
             });
         }
-        return filters.stream().map(f -> f.filter).collect(Collectors.toList());
+        return filters.stream().map(fil -> fil.filter).collect(Collectors.toList());
     }
 
     public Collection<IRubyObject> inputs(final CompiledPipeline.Pipeline pipeline) {
@@ -119,8 +119,9 @@ public final class CompiledPipeline {
             .filter(e -> e.getTo().equals(negative)).count() > 0L;
     }
 
-    private static void wrapCondition(final PluginVertex filterPlugin,
-        final Collection<CompiledPipeline.Condition> conditions) {
+    private static Collection<CompiledPipeline.Condition> wrapCondition(
+        final PluginVertex filterPlugin) {
+        final Collection<CompiledPipeline.Condition> conditions = new ArrayList<>(5);
         filterPlugin.getIncomingVertices().stream()
             .filter(vertex -> vertex instanceof IfVertex)
             .forEach(vertex -> {
@@ -133,11 +134,21 @@ public final class CompiledPipeline {
                     } else if (notPointsAt(filterPlugin, iff)) {
                         final CompiledPipeline.Condition condition = buildCondition(iff);
                         if (condition != null) {
-                            conditions.add(new Negated(condition));
+                            conditions.add(new CompiledPipeline.Negated(condition));
+                        }
+                        Optional<Vertex> next = iff.getIncomingVertices().stream().findFirst();
+                        while (next.isPresent() && next.get() instanceof IfVertex) {
+                            final IfVertex nextif = (IfVertex) next.get();
+                            final CompiledPipeline.Condition nextc = buildCondition(nextif);
+                            if (nextc != null) {
+                                conditions.add(new CompiledPipeline.Negated(nextc));
+                            }
+                            next = nextif.getIncomingVertices().stream().findFirst();
                         }
                     }
                 }
             );
+        return conditions;
     }
 
     private static CompiledPipeline.Condition buildCondition(final IfVertex iff) {
