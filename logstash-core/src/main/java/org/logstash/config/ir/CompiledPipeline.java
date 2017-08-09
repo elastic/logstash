@@ -13,8 +13,8 @@ import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.ConvertedList;
 import org.logstash.FieldReference;
 import org.logstash.PathCache;
+import org.logstash.RubyUtil;
 import org.logstash.Rubyfier;
-import org.logstash.bivalues.BiValues;
 import org.logstash.config.ir.expression.BooleanExpression;
 import org.logstash.config.ir.expression.EventValueExpression;
 import org.logstash.config.ir.expression.ValueExpression;
@@ -52,8 +52,8 @@ public final class CompiledPipeline {
             graph.getOutputPluginVertices().forEach(v -> {
                 final PluginDefinition def = v.getPluginDefinition();
                 outputs.add(pipeline.buildOutput(
-                    BiValues.RUBY.newString(def.getName()),
-                    Rubyfier.deep(BiValues.RUBY, def.getArguments())
+                    RubyUtil.RUBY.newString(def.getName()),
+                    Rubyfier.deep(RubyUtil.RUBY, def.getArguments())
                 ));
             });
         }
@@ -67,8 +67,8 @@ public final class CompiledPipeline {
                 filters.add(
                     new CompiledPipeline.ConditionalFilter(
                         pipeline.buildFilter(
-                            BiValues.RUBY.newString(def.getName()),
-                            Rubyfier.deep(BiValues.RUBY, def.getArguments())
+                            RubyUtil.RUBY.newString(def.getName()),
+                            Rubyfier.deep(RubyUtil.RUBY, def.getArguments())
                         ), wrapCondition(filterPlugin).toArray(NO_CONDITIONS)));
             });
         }
@@ -80,8 +80,8 @@ public final class CompiledPipeline {
             graph.getInputPluginVertices().forEach(v -> {
                 final PluginDefinition def = v.getPluginDefinition();
                 inputs.add(pipeline.buildInput(
-                    BiValues.RUBY.newString(def.getName()),
-                    Rubyfier.deep(BiValues.RUBY, def.getArguments())
+                    RubyUtil.RUBY.newString(def.getName()),
+                    Rubyfier.deep(RubyUtil.RUBY, def.getArguments())
                 ));
             });
         }
@@ -89,7 +89,7 @@ public final class CompiledPipeline {
     }
 
     public void filter(final JrubyEventExtLibrary.RubyEvent event, final RubyArray generated) {
-        RubyArray events = BiValues.RUBY.newArray();
+        RubyArray events = RubyUtil.RUBY.newArray();
         events.add(event);
         for (final CompiledPipeline.ConditionalFilter filter : filters) {
             events = filter.execute(events);
@@ -257,8 +257,8 @@ public final class CompiledPipeline {
         }
 
         public RubyArray execute(final RubyArray events) {
-            final RubyArray valid = BiValues.RUBY.newArray();
-            final RubyArray output = BiValues.RUBY.newArray();
+            final RubyArray valid = RubyUtil.RUBY.newArray();
+            final RubyArray output = RubyUtil.RUBY.newArray();
             for (final Object obj : events) {
                 if (fulfilled((JrubyEventExtLibrary.RubyEvent) obj)) {
                     valid.add(obj);
@@ -323,7 +323,7 @@ public final class CompiledPipeline {
 
         FieldEquals(final String field, final String value) {
             this.field = PathCache.cache(field);
-            this.value = BiValues.RUBY.newString(value);
+            this.value = RubyUtil.RUBY.newString(value);
         }
 
         @Override
