@@ -73,22 +73,6 @@ public final class CompiledPipeline {
         return filters.stream().map(f -> f.filter).collect(Collectors.toList());
     }
 
-    private static void wrapCondition(final PluginVertex filterPlugin,
-        final Collection<CompiledPipeline.Condition> conditions) {
-        filterPlugin.getIncomingVertices().stream()
-            .filter(vertex -> vertex instanceof IfVertex)
-            .forEach(vertex -> {
-                    final IfVertex iff = (IfVertex) vertex;
-                    if (ifPointsAt(filterPlugin, iff)) {
-                        final CompiledPipeline.Condition condition = buildCondition(iff);
-                        if (condition != null) {
-                            conditions.add(condition);
-                        }
-                    }
-                }
-            );
-    }
-
     public Collection<IRubyObject> inputs(final CompiledPipeline.Pipeline pipeline) {
         if (inputs.isEmpty()) {
             graph.getInputPluginVertices().forEach(v -> {
@@ -128,6 +112,32 @@ public final class CompiledPipeline {
     private static boolean ifPointsAt(final PluginVertex positive, final IfVertex iff) {
         return iff.getOutgoingBooleanEdgesByType(true).stream()
             .filter(e -> e.getTo().equals(positive)).count() > 0L;
+    }
+
+    private static boolean notPointsAt(final PluginVertex negative, final IfVertex iff) {
+        return iff.getOutgoingBooleanEdgesByType(false).stream()
+            .filter(e -> e.getTo().equals(negative)).count() > 0L;
+    }
+
+    private static void wrapCondition(final PluginVertex filterPlugin,
+        final Collection<CompiledPipeline.Condition> conditions) {
+        filterPlugin.getIncomingVertices().stream()
+            .filter(vertex -> vertex instanceof IfVertex)
+            .forEach(vertex -> {
+                    final IfVertex iff = (IfVertex) vertex;
+                    if (ifPointsAt(filterPlugin, iff)) {
+                        final CompiledPipeline.Condition condition = buildCondition(iff);
+                        if (condition != null) {
+                            conditions.add(condition);
+                        }
+                    } else if (notPointsAt(filterPlugin, iff)) {
+                        final CompiledPipeline.Condition condition = buildCondition(iff);
+                        if (condition != null) {
+                            conditions.add(new Negated(condition));
+                        }
+                    }
+                }
+            );
     }
 
     private static CompiledPipeline.Condition buildCondition(final IfVertex iff) {
@@ -390,5 +400,20 @@ public final class CompiledPipeline {
                 return found != null && other != null && found.equals(other);
             }
         }
+    }
+
+    private static final class Negated implements CompiledPipeline.Condition {
+
+        private final CompiledPipeline.Condition condition;
+
+        Negated(final CompiledPipeline.Condition condition) {
+            this.condition = condition;
+        }
+
+        @Override
+        public boolean fulfilled(final JrubyEventExtLibrary.RubyEvent event) {
+            return !condition.fulfilled(event);
+        }
+
     }
 }
