@@ -13,7 +13,6 @@ import org.joda.time.DateTime;
 import org.jruby.RubyString;
 import org.jruby.RubySymbol;
 import org.logstash.ackedqueue.Queueable;
-import org.logstash.bivalues.BiValues;
 import org.logstash.bivalues.NullBiValue;
 import org.logstash.ext.JrubyTimestampExtLibrary;
 
@@ -335,7 +334,7 @@ public final class Event implements Cloneable, Queueable {
      */
     private void initTag(final String tag) {
         final ConvertedList list = new ConvertedList(1);
-        list.add(BiValues.RUBY.newString(tag));
+        list.add(RubyUtil.RUBY.newString(tag));
         Accessors.set(data, TAGS_FIELD, list);
     }
 

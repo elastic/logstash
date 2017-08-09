@@ -6,7 +6,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.junit.Test;
-import org.logstash.bivalues.BiValues;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -21,7 +20,7 @@ public class AccessorsTest {
         data.put("foo", "bar");
         String reference = "foo";
         assertEquals(
-            BiValues.RUBY.newString("bar"), get(ConvertedMap.newFromMap(data), reference)
+            RubyUtil.RUBY.newString("bar"), get(ConvertedMap.newFromMap(data), reference)
         );
     }
 
@@ -39,7 +38,7 @@ public class AccessorsTest {
         data.put("foo", "bar");
         String reference = "[foo]";
         assertEquals(
-            BiValues.RUBY.newString("bar"), get(ConvertedMap.newFromMap(data), reference)
+            RubyUtil.RUBY.newString("bar"), get(ConvertedMap.newFromMap(data), reference)
         );
     }
 
@@ -51,7 +50,7 @@ public class AccessorsTest {
         inner.put("bar", "baz");
         String reference = "[foo][bar]";
         assertEquals(
-            BiValues.RUBY.newString("baz"), get(ConvertedMap.newFromMap(data), reference)
+            RubyUtil.RUBY.newString("baz"), get(ConvertedMap.newFromMap(data), reference)
         );
     }
 
@@ -73,7 +72,7 @@ public class AccessorsTest {
         inner.add("bar");
         String reference = "[foo][0]";
         assertEquals(
-            BiValues.RUBY.newString("bar"), get(ConvertedMap.newFromMap(data), reference)
+            RubyUtil.RUBY.newString("bar"), get(ConvertedMap.newFromMap(data), reference)
         );
     }
 
