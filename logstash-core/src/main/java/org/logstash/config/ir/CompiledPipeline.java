@@ -11,8 +11,6 @@ import org.logstash.RubyUtil;
 import org.logstash.Rubyfier;
 import org.logstash.config.ir.compiler.EventCondition;
 import org.logstash.config.ir.compiler.RubyIntegration;
-import org.logstash.config.ir.expression.BooleanExpression;
-import org.logstash.config.ir.expression.unary.Not;
 import org.logstash.config.ir.graph.IfVertex;
 import org.logstash.config.ir.graph.PluginVertex;
 import org.logstash.config.ir.graph.Vertex;
@@ -145,15 +143,12 @@ public final class CompiledPipeline {
     }
 
     private static EventCondition buildCondition(final IfVertex iff) {
-        final EventCondition condition;
-        if (iff.getBooleanExpression() instanceof Not) {
-            condition = EventCondition.Factory.not(EventCondition.Factory.buildCondition(
-                (BooleanExpression) ((Not) iff.getBooleanExpression()).getExpression())
-            );
-        } else {
-            condition = EventCondition.Factory.buildCondition(iff.getBooleanExpression());
+        try {
+            return EventCondition.Factory.buildCondition(iff.getBooleanExpression());
+        } catch (final Exception ex) {
+            ex.printStackTrace();
+            throw ex;
         }
-        return condition;
     }
 
     private static final class ConditionalFilter {
