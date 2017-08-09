@@ -2,7 +2,7 @@
 #
 module LogStash
   class FilterDelegator
-    include org.logstash.config.ir.CompiledPipeline::Filter
+    include org.logstash.config.ir.compiler.RubyIntegration::Filter
     extend Forwardable
     DELEGATED_METHODS = [
       :register,

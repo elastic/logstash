@@ -31,7 +31,7 @@ java_import org.logstash.common.io.DeadLetterQueueWriter
 java_import org.logstash.config.ir.CompiledPipeline
 
 module LogStash; class BasePipeline
-               include org.logstash.config.ir.CompiledPipeline::Pipeline 
+               include org.logstash.config.ir.compiler.RubyIntegration::Pipeline 
                include LogStash::Util::Loggable
 
   attr_reader :settings, :config_str, :config_hash, :inputs, :filters, :outputs, :pipeline_id, :lir, :execution_context, :ephemeral_id
