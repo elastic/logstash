@@ -348,7 +348,7 @@ describe LogStash::Runner do
     end
 
     describe "--modules" do
-      let(:args) { ["--modules", module_string] }
+      let(:args) { ["--modules", module_string, "--setup"] }
 
       context "with an available module specified but no connection to elasticsearch" do
         let(:module_string) { "tester" }

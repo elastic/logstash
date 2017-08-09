@@ -66,7 +66,9 @@ module LogStash module Config
           module_settings.set("pipeline.id", pipeline_id)
           current_module.with_settings(module_hash)
           config_test = settings.get("config.test_and_exit")
-          if !config_test
+          modul_setup = settings.get("modules_setup")
+          # Only import data if it's not a config test and --setup is true
+          if !config_test && modul_setup
             esclient = LogStash::ElasticsearchClient.build(module_hash)
             kbnclient = LogStash::Modules::KibanaClient.new(module_hash)
             esconnected = esclient.can_connect?

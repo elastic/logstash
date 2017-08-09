@@ -22,6 +22,7 @@ module LogStash
     Setting::NullableString.new("config.string", nil, false),
                     Setting.new("modules.cli", Array, []),
                     Setting.new("modules", Array, []),
+           Setting::Boolean.new("modules_setup", false),
            Setting::Boolean.new("config.test_and_exit", false),
            Setting::Boolean.new("config.reload.automatic", false),
            Setting::Boolean.new("config.support_escapes", false),

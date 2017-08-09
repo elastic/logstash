@@ -230,6 +230,10 @@ en:
           '-M "MODULE_NAME.var.PLUGIN_TYPE.PLUGIN_NAME.VARIABLE_NAME=VALUE"'
           as in
           '-M "example.var.filter.mutate.fieldname=fieldvalue"'
+        modules_setup: |+
+          Load index template into Elasticsearch, and saved searches, 
+          index-pattern, visualizations, and dashboards into Kibana when
+          running modules.
         configtest: |+
           Check configuration for valid syntax and then exit.
         http_host: Web API binding host
