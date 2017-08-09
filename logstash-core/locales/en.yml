@@ -58,9 +58,9 @@ en:
       sighup: >-
         SIGHUP received.
       sigint: >-
-        SIGINT received. Shutting down the agent.
+        SIGINT received. Shutting down.
       sigterm: >-
-        SIGTERM received. Shutting down the agent.
+        SIGTERM received. Shutting down.
       slow_shutdown: |-
         Received shutdown signal, but pipeline is still waiting for in-flight events
         to be processed. Sending another ^C will force quit Logstash, but this may cause
@@ -327,8 +327,6 @@ en:
         name: |+
           Specify the name of this logstash instance, if no value is given
           it will default to the current hostname.
-        agent: |+
-          Specify an alternate agent plugin name.
         config_debug: |+
           Print the compiled config ruby code out as a debug log (you must also have --log.level=debug enabled).
           WARNING: This will include any 'password' options passed to plugin configs as plaintext, and may result
