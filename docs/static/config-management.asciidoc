@@ -55,9 +55,9 @@ following fields:
 
 [horizontal]
 Pipeline ID::
-A name that uniquely identifies the pipeline. You use this ID when you set up
-{logstash-ref}/configuration-management-settings.html[configuration management]
-and specify a list of pipeline IDs in the `xpack.management.pipeline.id` setting.
+A name that uniquely identifies the pipeline. You use this ID when you
+{logstash-ref}/settings-xpack.html[configure {xpack}] and specify a list of
+pipeline IDs in the `xpack.management.pipeline.id` setting.
 
 Version::
 A string value that you can use as metadata to track the version of the pipeline
