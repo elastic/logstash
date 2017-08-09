@@ -20,6 +20,7 @@ import org.logstash.config.ir.expression.binary.Eq;
 import org.logstash.config.ir.expression.binary.In;
 import org.logstash.config.ir.expression.binary.RegexEq;
 import org.logstash.config.ir.graph.IfVertex;
+import org.logstash.config.ir.graph.PluginVertex;
 import org.logstash.ext.JrubyEventExtLibrary;
 
 public final class CompiledPipeline {
@@ -59,84 +60,7 @@ public final class CompiledPipeline {
         if (filters.isEmpty()) {
             graph.getFilterPluginVertices().forEach(filterPlugin -> {
                 final Collection<CompiledPipeline.Condition> conditions = new ArrayList<>(5);
-                filterPlugin.getIncomingVertices().stream()
-                    .filter(vertex -> vertex instanceof IfVertex)
-                    .forEach(vertex -> {
-                            final IfVertex iff = (IfVertex) vertex;
-                            if (iff.getOutgoingBooleanEdgesByType(true).stream()
-                                .filter(e -> e.getTo().equals(filterPlugin)).count() > 0L) {
-                                if (iff.getBooleanExpression() instanceof Eq) {
-                                    final Eq equals = (Eq) iff.getBooleanExpression();
-                                    if (equals.getLeft() instanceof EventValueExpression &&
-                                        equals.getRight() instanceof ValueExpression) {
-                                        conditions.add(new CompiledPipeline.FieldEquals(
-                                            ((EventValueExpression) equals.getLeft())
-                                                .getFieldName(),
-                                            ((ValueExpression) equals.getRight()).get().toString()
-                                        ));
-                                    }
-                                } else if (iff.getBooleanExpression() instanceof RegexEq) {
-                                    final RegexEq regex = (RegexEq) iff.getBooleanExpression();
-                                    if (regex.getLeft() instanceof EventValueExpression &&
-                                        regex.getRight() instanceof ValueExpression) {
-                                        conditions.add(new CompiledPipeline.FieldMatches(
-                                            ((EventValueExpression) regex.getLeft()).getFieldName(),
-                                            ((ValueExpression) regex.getRight()).get().toString()
-                                        ));
-                                    }
-                                } else if (iff.getBooleanExpression() instanceof In) {
-                                    final In regex = (In) iff.getBooleanExpression();
-                                    if (regex.getLeft() instanceof EventValueExpression &&
-                                        regex.getRight() instanceof ValueExpression
-                                        &&
-                                        ((ValueExpression) regex.getRight()).get() instanceof String) {
-                                        conditions.add(new CompiledPipeline.FieldArrayContainsValue(
-                                            PathCache.cache(((EventValueExpression) regex.getLeft())
-                                                .getFieldName()),
-                                            ((ValueExpression) regex.getRight()).get().toString()
-                                        ));
-                                    } else if (regex.getRight() instanceof EventValueExpression &&
-                                        regex.getLeft() instanceof ValueExpression
-                                        &&
-                                        ((ValueExpression) regex.getLeft()).get() instanceof String) {
-                                        conditions.add(new CompiledPipeline.FieldArrayContainsValue(
-                                            PathCache.cache(((EventValueExpression) regex.getRight())
-                                                .getFieldName()),
-                                            ((ValueExpression) regex.getLeft()).get().toString()
-                                        ));
-                                    } else if (regex.getLeft() instanceof EventValueExpression &&
-                                        regex.getRight() instanceof ValueExpression
-                                        &&
-                                        ((ValueExpression) regex.getRight()).get() instanceof List) {
-                                        conditions.add(new CompiledPipeline.FieldContainsListedValue(
-                                            PathCache.cache(((EventValueExpression) regex.getLeft())
-                                                .getFieldName()),
-                                            (List) ((ValueExpression) regex.getRight()).get()
-                                        ));
-                                    } else if (regex.getRight() instanceof EventValueExpression &&
-                                        regex.getLeft() instanceof ValueExpression
-                                        &&
-                                        ((ValueExpression) regex.getLeft()).get() instanceof List) {
-                                        conditions.add(new CompiledPipeline.FieldContainsListedValue(
-                                            PathCache.cache(((EventValueExpression) regex.getRight())
-                                                .getFieldName()),
-                                            (List) ((ValueExpression) regex.getLeft()).get()
-                                        ));
-                                    } else if (regex.getRight() instanceof EventValueExpression &&
-                                        regex.getLeft() instanceof EventValueExpression) {
-                                        conditions
-                                            .add(new CompiledPipeline.FieldArrayContainsFieldValue(
-                                                PathCache
-                                                    .cache(((EventValueExpression) regex.getRight())
-                                                        .getFieldName()),
-                                                PathCache.cache(((EventValueExpression) regex.getLeft())
-                                                    .getFieldName())
-                                            ));
-                                    }
-                                }
-                            }
-                        }
-                    );
+                wrapCondition(filterPlugin, conditions);
                 final PluginDefinition def = filterPlugin.getPluginDefinition();
                 filters.add(
                     new CompiledPipeline.ConditionalFilter(
@@ -147,6 +71,22 @@ public final class CompiledPipeline {
             });
         }
         return filters.stream().map(f -> f.filter).collect(Collectors.toList());
+    }
+
+    private static void wrapCondition(final PluginVertex filterPlugin,
+        final Collection<CompiledPipeline.Condition> conditions) {
+        filterPlugin.getIncomingVertices().stream()
+            .filter(vertex -> vertex instanceof IfVertex)
+            .forEach(vertex -> {
+                    final IfVertex iff = (IfVertex) vertex;
+                    if (ifPointsAt(filterPlugin, iff)) {
+                        final CompiledPipeline.Condition condition = buildCondition(iff);
+                        if (condition != null) {
+                            conditions.add(condition);
+                        }
+                    }
+                }
+            );
     }
 
     public Collection<IRubyObject> inputs(final CompiledPipeline.Pipeline pipeline) {
@@ -185,13 +125,88 @@ public final class CompiledPipeline {
             filter -> filter.periodicFlush()).collect(Collectors.toList());
     }
 
-    private static IRubyObject callRuby(final IRubyObject object, final String method) {
-        return object.callMethod(BiValues.RUBY.getCurrentContext(), method);
+    private static boolean ifPointsAt(final PluginVertex positive, final IfVertex iff) {
+        return iff.getOutgoingBooleanEdgesByType(true).stream()
+            .filter(e -> e.getTo().equals(positive)).count() > 0L;
     }
 
-    private static IRubyObject callRuby(final IRubyObject object, final String method,
-        final IRubyObject[] args) {
-        return object.callMethod(BiValues.RUBY.getCurrentContext(), method, args);
+    private static CompiledPipeline.Condition buildCondition(final IfVertex iff) {
+        CompiledPipeline.Condition condition = null;
+        if (iff.getBooleanExpression() instanceof Eq) {
+            final Eq equals = (Eq) iff.getBooleanExpression();
+            if (equals.getLeft() instanceof EventValueExpression &&
+                equals.getRight() instanceof ValueExpression) {
+                condition = new CompiledPipeline.FieldEquals(
+                    ((EventValueExpression) equals.getLeft())
+                        .getFieldName(),
+                    ((ValueExpression) equals.getRight()).get().toString()
+                );
+            }
+        } else if (iff.getBooleanExpression() instanceof RegexEq) {
+            final RegexEq regex = (RegexEq) iff.getBooleanExpression();
+            if (regex.getLeft() instanceof EventValueExpression &&
+                regex.getRight() instanceof ValueExpression) {
+                condition = new CompiledPipeline.FieldMatches(
+                    ((EventValueExpression) regex.getLeft()).getFieldName(),
+                    ((ValueExpression) regex.getRight()).get().toString()
+                );
+            }
+        } else if (iff.getBooleanExpression() instanceof In) {
+            final In in = (In) iff.getBooleanExpression();
+            if (in.getLeft() instanceof EventValueExpression &&
+                in.getRight() instanceof ValueExpression
+                &&
+                (((ValueExpression) in.getRight()).get() instanceof String
+                    || ((ValueExpression) in.getRight())
+                    .get() instanceof Number)) {
+                condition = new CompiledPipeline.FieldArrayContainsValue(
+                    PathCache.cache(((EventValueExpression) in.getLeft())
+                        .getFieldName()),
+                    ((ValueExpression) in.getRight()).get().toString()
+                );
+            } else if (in.getRight() instanceof EventValueExpression &&
+                in.getLeft() instanceof ValueExpression
+                &&
+                (((ValueExpression) in.getLeft()).get() instanceof String
+                    || ((ValueExpression) in.getLeft())
+                    .get() instanceof Number)) {
+                condition = new CompiledPipeline.FieldArrayContainsValue(
+                    PathCache.cache(((EventValueExpression) in.getRight())
+                        .getFieldName()),
+                    ((ValueExpression) in.getLeft()).get().toString()
+                );
+            } else if (in.getLeft() instanceof EventValueExpression &&
+                in.getRight() instanceof ValueExpression
+                &&
+                ((ValueExpression) in.getRight()).get() instanceof List) {
+                condition = new CompiledPipeline.FieldContainsListedValue(
+                    PathCache.cache(((EventValueExpression) in.getLeft())
+                        .getFieldName()),
+                    (List) ((ValueExpression) in.getRight()).get()
+                );
+            } else if (in.getRight() instanceof EventValueExpression &&
+                in.getLeft() instanceof ValueExpression
+                &&
+                ((ValueExpression) in.getLeft()).get() instanceof List) {
+                condition = new CompiledPipeline.FieldContainsListedValue(
+                    PathCache.cache(((EventValueExpression) in.getRight())
+                        .getFieldName()),
+                    (List) ((ValueExpression) in.getLeft()).get()
+                );
+            } else if (in.getRight() instanceof EventValueExpression &&
+                in.getLeft() instanceof EventValueExpression) {
+                condition =
+                    new CompiledPipeline.FieldArrayContainsFieldValue(
+                        PathCache
+                            .cache(((EventValueExpression) in.getRight())
+                                .getFieldName()),
+                        PathCache
+                            .cache(((EventValueExpression) in.getLeft())
+                                .getFieldName())
+                    );
+            }
+        }
+        return condition;
     }
 
     private static final class ConditionalFilter {
@@ -291,7 +306,6 @@ public final class CompiledPipeline {
         FieldMatches(final String field, final String value) {
             this.field = PathCache.cache(field);
             this.value = Pattern.compile(value);
-            System.out.println(value);
         }
 
         @Override
@@ -315,7 +329,7 @@ public final class CompiledPipeline {
         @Override
         public boolean fulfilled(final JrubyEventExtLibrary.RubyEvent event) {
             final Object found = event.getEvent().getUnconvertedField(field);
-            if (found instanceof RubyString) {
+            if (found != null) {
                 return
                     value.stream().filter(val -> val.toString().equals(found.toString())).count() >
                         0L;
@@ -343,7 +357,7 @@ public final class CompiledPipeline {
                 final ConvertedList tomatch = (ConvertedList) found;
                 return tomatch.stream().filter(item -> item.toString().equals(value)).count() > 0L;
             } else
-                return found instanceof RubyString && found.toString().contains(value);
+                return found != null && found.toString().contains(value);
         }
     }
 
@@ -373,7 +387,7 @@ public final class CompiledPipeline {
                 return tomatch.stream().filter(item -> item.toString()
                     .equals(found.toString())).count() > 0L;
             } else {
-                return false;
+                return found != null && other != null && found.equals(other);
             }
         }
     }
