@@ -74,10 +74,13 @@ settings. For example:
 ----
 modules:
 - name: netflow
-   var.output.elasticsearch.host: "es.mycloud.com"
-   var.output.elasticsearch.user: "foo"
-   var.output.elasticsearch.password: "password"
-   var.input.tcp.port: 5606
+  var.elasticsearch.hosts: "es.mycloud.com"
+  var.elasticsearch.username: "foo"
+  var.elasticsearch.password: "password"
+  var.kibana.host: "kb.mycloud.com"
+  var.kibana.username: "foo"
+  var.kibana.password: "password"
+  var.input.tcp.port: 5606
 ----
 
 For a list of available module settings, see the documentation for the module.
