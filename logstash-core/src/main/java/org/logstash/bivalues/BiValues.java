@@ -3,7 +3,6 @@ package org.logstash.bivalues;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.HashMap;
-import org.jruby.Ruby;
 import org.jruby.RubyBignum;
 import org.jruby.RubyBoolean;
 import org.jruby.RubyInteger;
@@ -49,8 +48,6 @@ public enum BiValues {
         hm.put("org.jruby.java.proxies.ConcreteJavaProxy", "ORG_JRUBY_JAVA_PROXIES_CONCRETEJAVAPROXY");
         return hm;
     }
-
-    public static final Ruby RUBY = Ruby.getGlobalRuntime();
 
     public static final NullBiValue NULL_BI_VALUE = NullBiValue.newNullBiValue();
 
