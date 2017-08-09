@@ -263,7 +263,6 @@ public final class RecordIOReader implements Closeable {
         this.channel.position(bufferState.channelPosition);
         this.channelPosition = channel.position();
         this.currentBlockSizeReadFromChannel = bufferState.currentBlockSizeReadFromChannel;
-
     }
 
     final static class BufferState {
