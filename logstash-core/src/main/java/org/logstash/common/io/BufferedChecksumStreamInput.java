@@ -19,17 +19,6 @@ public final class BufferedChecksumStreamInput extends StreamInput {
         this.digest = new BufferedChecksum(new CRC32());
     }
 
-    public BufferedChecksumStreamInput(StreamInput in, BufferedChecksumStreamInput reuse) {
-        this.in = in;
-        if (reuse == null ) {
-            this.digest = new BufferedChecksum(new CRC32());
-        } else {
-            this.digest = reuse.digest;
-            digest.reset();
-            this.skipBuffer = reuse.skipBuffer;
-        }
-    }
-
     public long getChecksum() {
         return this.digest.getValue();
     }

@@ -31,41 +31,6 @@ public abstract class StreamInput extends InputStream {
         return ((readByte() & 0xFF) << 24) | ((readByte() & 0xFF) << 16)
                 | ((readByte() & 0xFF) << 8) | (readByte() & 0xFF);
     }
-    
-    /**
-     * Reads an int stored in variable-length format.  Reads between one and
-     * five bytes.  Smaller values take fewer bytes.  Negative numbers
-     * will always use all 5 bytes and are therefore better serialized
-     * using {@link #readInt}
-     *
-     * @return integer value from var-int formatted bytes
-     * @throws IOException if an error occurs while reading content
-     */
-    public int readVInt() throws IOException {
-        byte b = readByte();
-        int i = b & 0x7F;
-        if ((b & 0x80) == 0) {
-            return i;
-        }
-        b = readByte();
-        i |= (b & 0x7F) << 7;
-        if ((b & 0x80) == 0) {
-            return i;
-        }
-        b = readByte();
-        i |= (b & 0x7F) << 14;
-        if ((b & 0x80) == 0) {
-            return i;
-        }
-        b = readByte();
-        i |= (b & 0x7F) << 21;
-        if ((b & 0x80) == 0) {
-            return i;
-        }
-        b = readByte();
-        assert (b & 0x80) == 0;
-        return i | ((b & 0x7F) << 28);
-    }
 
     /**
      * Reads two bytes and returns a short.
