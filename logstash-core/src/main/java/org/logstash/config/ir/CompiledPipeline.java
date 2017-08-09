@@ -3,6 +3,7 @@ package org.logstash.config.ir;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import org.jruby.RubyArray;
@@ -86,18 +87,40 @@ public final class CompiledPipeline {
                                 } else if (iff.getBooleanExpression() instanceof In) {
                                     final In regex = (In) iff.getBooleanExpression();
                                     if (regex.getLeft() instanceof EventValueExpression &&
-                                        regex.getRight() instanceof ValueExpression) {
+                                        regex.getRight() instanceof ValueExpression
+                                        &&
+                                        ((ValueExpression) regex.getRight()).get() instanceof String) {
                                         conditions.add(new FieldArrayContainsValue(
                                             PathCache.cache(((EventValueExpression) regex.getLeft())
                                                 .getFieldName()),
                                             ((ValueExpression) regex.getRight()).get().toString()
                                         ));
                                     } else if (regex.getRight() instanceof EventValueExpression &&
-                                        regex.getLeft() instanceof ValueExpression) {
+                                        regex.getLeft() instanceof ValueExpression
+                                        &&
+                                        ((ValueExpression) regex.getLeft()).get() instanceof String) {
                                         conditions.add(new FieldArrayContainsValue(
                                             PathCache.cache(((EventValueExpression) regex.getRight())
                                                 .getFieldName()),
                                             ((ValueExpression) regex.getLeft()).get().toString()
+                                        ));
+                                    } else if (regex.getLeft() instanceof EventValueExpression &&
+                                        regex.getRight() instanceof ValueExpression
+                                        &&
+                                        ((ValueExpression) regex.getRight()).get() instanceof List) {
+                                        conditions.add(new FieldContainsListedValue(
+                                            PathCache.cache(((EventValueExpression) regex.getLeft())
+                                                .getFieldName()),
+                                            (List) ((ValueExpression) regex.getRight()).get()
+                                        ));
+                                    } else if (regex.getRight() instanceof EventValueExpression &&
+                                        regex.getLeft() instanceof ValueExpression
+                                        &&
+                                        ((ValueExpression) regex.getLeft()).get() instanceof List) {
+                                        conditions.add(new FieldContainsListedValue(
+                                            PathCache.cache(((EventValueExpression) regex.getRight())
+                                                .getFieldName()),
+                                            (List) ((ValueExpression) regex.getLeft()).get()
                                         ));
                                     } else if (regex.getRight() instanceof EventValueExpression &&
                                         regex.getLeft() instanceof EventValueExpression) {
@@ -277,6 +300,35 @@ public final class CompiledPipeline {
         }
     }
 
+    private static final class FieldContainsListedValue implements CompiledPipeline.Condition {
+
+        private final FieldReference field;
+
+        private final List<?> value;
+
+        FieldContainsListedValue(final FieldReference field, final List<?> value) {
+            this.field = field;
+            this.value = value;
+        }
+
+        @Override
+        public boolean fulfilled(final JrubyEventExtLibrary.RubyEvent event) {
+            final Object found = event.getEvent().getUnconvertedField(field);
+            if (found instanceof RubyString) {
+                return
+                    value.stream().filter(val -> val.toString().equals(found.toString())).count() >
+                        0;
+            } else if (found != null) {
+                System.out.println("nolist" + found.getClass());
+                System.out.println("value:" + found.toString());
+                return false;
+            } else {
+                System.out.println("null");
+                return false;
+            }
+        }
+    }
+
     private static final class FieldArrayContainsValue implements CompiledPipeline.Condition {
 
         private final FieldReference field;
@@ -295,6 +347,8 @@ public final class CompiledPipeline {
                 System.out.println("listra");
                 final ConvertedList tomatch = (ConvertedList) found;
                 return tomatch.stream().filter(item -> item.toString().equals(value)).count() > 0L;
+            } else if (found instanceof RubyString) {
+                return found.toString().contains(value);
             } else if (found != null) {
                 System.out.println("nolist" + found.getClass());
                 System.out.println("value:" + found.toString());
@@ -320,11 +374,19 @@ public final class CompiledPipeline {
         @Override
         public boolean fulfilled(final JrubyEventExtLibrary.RubyEvent event) {
             final Object found = event.getEvent().getUnconvertedField(field);
-            if (found instanceof ConvertedList) {
+            final Object other = event.getEvent().getUnconvertedField(value);
+            if (found instanceof ConvertedList && other instanceof RubyString) {
                 System.out.println("listra");
                 final ConvertedList tomatch = (ConvertedList) found;
                 return tomatch.stream().filter(item -> item.toString()
-                    .equals(event.getEvent().getUnconvertedField(value).toString())).count() > 0L;
+                    .equals(other.toString())).count() > 0L;
+            } else if (found instanceof RubyString && other instanceof RubyString) {
+                return found.toString().contains(other.toString());
+            } else if (found instanceof RubyString && other instanceof ConvertedList) {
+                System.out.println(found.toString());
+                final ConvertedList tomatch = (ConvertedList) other;
+                return tomatch.stream().filter(item -> item.toString()
+                    .equals(found.toString())).count() > 0L;
             } else if (found != null) {
                 System.out.println("nolist" + found.getClass());
                 System.out.println("value:" + found.toString());
