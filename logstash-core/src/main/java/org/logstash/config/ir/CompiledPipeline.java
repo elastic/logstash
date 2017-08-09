@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 import org.jruby.RubyArray;
 import org.jruby.RubyString;
 import org.jruby.runtime.builtin.IRubyObject;
+import org.logstash.ConvertedList;
 import org.logstash.FieldReference;
 import org.logstash.PathCache;
 import org.logstash.Rubyfier;
@@ -15,6 +16,7 @@ import org.logstash.bivalues.BiValues;
 import org.logstash.config.ir.expression.EventValueExpression;
 import org.logstash.config.ir.expression.ValueExpression;
 import org.logstash.config.ir.expression.binary.Eq;
+import org.logstash.config.ir.expression.binary.In;
 import org.logstash.config.ir.expression.binary.RegexEq;
 import org.logstash.config.ir.graph.IfVertex;
 import org.logstash.ext.JrubyEventExtLibrary;
@@ -34,12 +36,12 @@ public final class CompiledPipeline {
         this.graph = graph;
     }
 
-    public Plugin registerPlugin(final Plugin plugin) {
+    public CompiledPipeline.Plugin registerPlugin(final CompiledPipeline.Plugin plugin) {
         plugin.register();
         return plugin;
     }
 
-    public Collection<CompiledPipeline.Output> outputs(final Pipeline pipeline) {
+    public Collection<CompiledPipeline.Output> outputs(final CompiledPipeline.Pipeline pipeline) {
         if (outputs.isEmpty()) {
             graph.getOutputPluginVertices().forEach(v -> {
                 final PluginDefinition def = v.getPluginDefinition();
@@ -52,7 +54,7 @@ public final class CompiledPipeline {
         return outputs;
     }
 
-    public Collection<CompiledPipeline.Filter> filters(final Pipeline pipeline) {
+    public Collection<CompiledPipeline.Filter> filters(final CompiledPipeline.Pipeline pipeline) {
         if (filters.isEmpty()) {
             graph.getFilterPluginVertices().forEach(filterPlugin -> {
                 final Collection<CompiledPipeline.Condition> conditions = new ArrayList<>(5);
@@ -81,6 +83,32 @@ public final class CompiledPipeline {
                                             ((ValueExpression) regex.getRight()).get().toString()
                                         ));
                                     }
+                                } else if (iff.getBooleanExpression() instanceof In) {
+                                    final In regex = (In) iff.getBooleanExpression();
+                                    if (regex.getLeft() instanceof EventValueExpression &&
+                                        regex.getRight() instanceof ValueExpression) {
+                                        conditions.add(new FieldArrayContainsValue(
+                                            PathCache.cache(((EventValueExpression) regex.getLeft())
+                                                .getFieldName()),
+                                            ((ValueExpression) regex.getRight()).get().toString()
+                                        ));
+                                    } else if (regex.getRight() instanceof EventValueExpression &&
+                                        regex.getLeft() instanceof ValueExpression) {
+                                        conditions.add(new FieldArrayContainsValue(
+                                            PathCache.cache(((EventValueExpression) regex.getRight())
+                                                .getFieldName()),
+                                            ((ValueExpression) regex.getLeft()).get().toString()
+                                        ));
+                                    } else if (regex.getRight() instanceof EventValueExpression &&
+                                        regex.getLeft() instanceof EventValueExpression) {
+                                        conditions.add(new FieldArrayContainsFieldValue(
+                                            PathCache
+                                                .cache(((EventValueExpression) regex.getRight())
+                                                    .getFieldName()),
+                                            PathCache.cache(((EventValueExpression) regex.getLeft())
+                                                .getFieldName())
+                                        ));
+                                    }
                                 }
                             }
                         }
@@ -97,7 +125,7 @@ public final class CompiledPipeline {
         return filters.stream().map(f -> f.filter).collect(Collectors.toList());
     }
 
-    public Collection<IRubyObject> inputs(final Pipeline pipeline) {
+    public Collection<IRubyObject> inputs(final CompiledPipeline.Pipeline pipeline) {
         if (inputs.isEmpty()) {
             graph.getInputPluginVertices().forEach(v -> {
                 final PluginDefinition def = v.getPluginDefinition();
@@ -191,7 +219,7 @@ public final class CompiledPipeline {
         void register();
     }
 
-    public interface Filter extends Plugin {
+    public interface Filter extends CompiledPipeline.Plugin {
 
         RubyArray multiFilter(RubyArray events);
 
@@ -200,7 +228,7 @@ public final class CompiledPipeline {
         boolean periodicFlush();
     }
 
-    public interface Output extends Plugin {
+    public interface Output extends CompiledPipeline.Plugin {
         void multiReceive(RubyArray events);
     }
 
@@ -245,9 +273,66 @@ public final class CompiledPipeline {
         @Override
         public boolean fulfilled(final JrubyEventExtLibrary.RubyEvent event) {
             final String tomatch = event.getEvent().getUnconvertedField(field).toString();
-            System.out.println(tomatch);
             return value.matcher(tomatch).find();
         }
     }
 
+    private static final class FieldArrayContainsValue implements CompiledPipeline.Condition {
+
+        private final FieldReference field;
+
+        private final String value;
+
+        FieldArrayContainsValue(final FieldReference field, final String value) {
+            this.field = field;
+            this.value = value;
+        }
+
+        @Override
+        public boolean fulfilled(final JrubyEventExtLibrary.RubyEvent event) {
+            final Object found = event.getEvent().getUnconvertedField(field);
+            if (found instanceof ConvertedList) {
+                System.out.println("listra");
+                final ConvertedList tomatch = (ConvertedList) found;
+                return tomatch.stream().filter(item -> item.toString().equals(value)).count() > 0L;
+            } else if (found != null) {
+                System.out.println("nolist" + found.getClass());
+                System.out.println("value:" + found.toString());
+                return false;
+            } else {
+                System.out.println("null");
+                return false;
+            }
+        }
+    }
+
+    private static final class FieldArrayContainsFieldValue implements CompiledPipeline.Condition {
+
+        private final FieldReference field;
+
+        private final FieldReference value;
+
+        FieldArrayContainsFieldValue(final FieldReference field, final FieldReference value) {
+            this.field = field;
+            this.value = value;
+        }
+
+        @Override
+        public boolean fulfilled(final JrubyEventExtLibrary.RubyEvent event) {
+            final Object found = event.getEvent().getUnconvertedField(field);
+            if (found instanceof ConvertedList) {
+                System.out.println("listra");
+                final ConvertedList tomatch = (ConvertedList) found;
+                return tomatch.stream().filter(item -> item.toString()
+                    .equals(event.getEvent().getUnconvertedField(value).toString())).count() > 0L;
+            } else if (found != null) {
+                System.out.println("nolist" + found.getClass());
+                System.out.println("value:" + found.toString());
+                return false;
+            } else {
+                System.out.println("null");
+                return false;
+            }
+        }
+    }
 }
