@@ -163,22 +163,21 @@ public interface EventCondition {
                 if (left instanceof BooleanExpression && right instanceof BooleanExpression) {
                     first = buildCondition((BooleanExpression) left);
                     second = buildCondition((BooleanExpression) right);
-                } else if (left instanceof EventValueExpression && right instanceof EventValueExpression) {
-                    final FieldReference lfield =
-                        PathCache.cache(((EventValueExpression) left).getFieldName());
-                    final FieldReference rfield =
-                        PathCache.cache(((EventValueExpression) left).getFieldName());
-                    first = event -> event.getEvent().getUnconvertedField(lfield).equals(true);
-                    second = event -> event.getEvent().getUnconvertedField(rfield).equals(true);
-                } else if (left instanceof BooleanExpression && right instanceof EventValueExpression) {
-                    final FieldReference rfield =
-                        PathCache.cache(((EventValueExpression) right).getFieldName());
-                    second = event -> event.getEvent().getUnconvertedField(rfield).equals(true);
+                } else if (left instanceof EventValueExpression &&
+                    right instanceof EventValueExpression) {
+                    first = new EventCondition.Factory.FieldTruthy(
+                        PathCache.cache(((EventValueExpression) left).getFieldName()));
+                    second = new EventCondition.Factory.FieldTruthy(
+                        PathCache.cache(((EventValueExpression) right).getFieldName()));
+                } else if (left instanceof BooleanExpression &&
+                    right instanceof EventValueExpression) {
+                    second = new EventCondition.Factory.FieldTruthy(
+                        PathCache.cache(((EventValueExpression) right).getFieldName()));
                     first = buildCondition((BooleanExpression) left);
-                } else if (right instanceof BooleanExpression && left instanceof EventValueExpression) {
-                    final FieldReference lfield =
-                        PathCache.cache(((EventValueExpression) left).getFieldName());
-                    first = event -> event.getEvent().getUnconvertedField(lfield).equals(true);
+                } else if (right instanceof BooleanExpression &&
+                    left instanceof EventValueExpression) {
+                    first = new EventCondition.Factory.FieldTruthy(
+                        PathCache.cache(((EventValueExpression) left).getFieldName()));
                     second = buildCondition((BooleanExpression) right);
                 } else {
                     throw new IllegalStateException(
@@ -186,16 +185,21 @@ public interface EventCondition {
                 }
                 condition = or(first, second);
             } else if (expression instanceof Truthy) {
-                condition = TRUE;
+                final Expression inner = ((Truthy) expression).getExpression();
+                if (inner instanceof EventValueExpression) {
+                    condition = new EventCondition.Factory.FieldTruthy(
+                        PathCache.cache(((EventValueExpression) inner).getFieldName()));
+                } else {
+                    condition = TRUE;
+                }
             } else if (expression instanceof Not) {
                 final Expression inner = ((Not) expression).getExpression();
                 if (inner instanceof BooleanExpression) {
                     condition = not(buildCondition((BooleanExpression) inner));
                 } else if (inner instanceof EventValueExpression) {
-                    final FieldReference field =
-                        PathCache.cache(((EventValueExpression) inner).getFieldName());
                     condition = not(
-                        event -> event.getEvent().getUnconvertedField(field).equals(true)
+                        new EventCondition.Factory.FieldTruthy(
+                            PathCache.cache(((EventValueExpression) inner).getFieldName()))
                     );
                 } else {
                     throw new IllegalStateException("C2");
@@ -265,22 +269,21 @@ public interface EventCondition {
                 if (left instanceof BooleanExpression && right instanceof BooleanExpression) {
                     first = buildCondition((BooleanExpression) left);
                     second = buildCondition((BooleanExpression) right);
-                } else if (left instanceof EventValueExpression && right instanceof EventValueExpression) {
-                    final FieldReference lfield =
-                        PathCache.cache(((EventValueExpression) left).getFieldName());
-                    final FieldReference rfield =
-                        PathCache.cache(((EventValueExpression) left).getFieldName());
-                    first = event -> event.getEvent().getUnconvertedField(lfield).equals(true);
-                    second = event -> event.getEvent().getUnconvertedField(rfield).equals(true);
-                } else if (left instanceof BooleanExpression && right instanceof EventValueExpression) {
-                    final FieldReference rfield =
-                        PathCache.cache(((EventValueExpression) right).getFieldName());
-                    second = event -> event.getEvent().getUnconvertedField(rfield).equals(true);
+                } else if (left instanceof EventValueExpression &&
+                    right instanceof EventValueExpression) {
+                    first = new EventCondition.Factory.FieldTruthy(
+                        PathCache.cache(((EventValueExpression) left).getFieldName()));
+                    second = new EventCondition.Factory.FieldTruthy(
+                        PathCache.cache(((EventValueExpression) right).getFieldName()));
+                } else if (left instanceof BooleanExpression &&
+                    right instanceof EventValueExpression) {
+                    second = new EventCondition.Factory.FieldTruthy(
+                        PathCache.cache(((EventValueExpression) right).getFieldName()));
                     first = buildCondition((BooleanExpression) left);
-                } else if (right instanceof BooleanExpression && left instanceof EventValueExpression) {
-                    final FieldReference lfield =
-                        PathCache.cache(((EventValueExpression) left).getFieldName());
-                    first = event -> event.getEvent().getUnconvertedField(lfield).equals(true);
+                } else if (right instanceof BooleanExpression &&
+                    left instanceof EventValueExpression) {
+                    first = new EventCondition.Factory.FieldTruthy(
+                        PathCache.cache(((EventValueExpression) left).getFieldName()));
                     second = buildCondition((BooleanExpression) right);
                 } else {
                     throw new IllegalStateException(
@@ -497,6 +500,26 @@ public interface EventCondition {
                 return found != null &&
                     value.stream().filter(val -> val.toString().equals(found.toString())).count() >
                         0L;
+            }
+        }
+
+        private static final class FieldTruthy implements EventCondition {
+
+            private final FieldReference field;
+
+            private FieldTruthy(final FieldReference field) {
+                this.field = field;
+            }
+
+            @Override
+            public boolean fulfilled(final JrubyEventExtLibrary.RubyEvent event) {
+                final Object object = event.getEvent().getUnconvertedField(field);
+                if (object == null) {
+                    return false;
+                }
+                final String string = object.toString();
+                return string != null && !string.isEmpty() &&
+                    !Boolean.toString(false).equals(string);
             }
         }
     }
