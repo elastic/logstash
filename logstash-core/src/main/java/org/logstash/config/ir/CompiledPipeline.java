@@ -15,11 +15,13 @@ import org.logstash.FieldReference;
 import org.logstash.PathCache;
 import org.logstash.Rubyfier;
 import org.logstash.bivalues.BiValues;
+import org.logstash.config.ir.expression.BooleanExpression;
 import org.logstash.config.ir.expression.EventValueExpression;
 import org.logstash.config.ir.expression.ValueExpression;
 import org.logstash.config.ir.expression.binary.Eq;
 import org.logstash.config.ir.expression.binary.In;
 import org.logstash.config.ir.expression.binary.RegexEq;
+import org.logstash.config.ir.expression.unary.Not;
 import org.logstash.config.ir.graph.IfVertex;
 import org.logstash.config.ir.graph.PluginVertex;
 import org.logstash.config.ir.graph.Vertex;
@@ -114,7 +116,7 @@ public final class CompiledPipeline {
             .filter(e -> e.getTo().equals(positive)).count() > 0L;
     }
 
-    private static boolean notPointsAt(final PluginVertex negative, final IfVertex iff) {
+    private static boolean notPointsAt(final Vertex negative, final IfVertex iff) {
         return iff.getOutgoingBooleanEdgesByType(false).stream()
             .filter(e -> e.getTo().equals(negative)).count() > 0L;
     }
@@ -152,9 +154,21 @@ public final class CompiledPipeline {
     }
 
     private static CompiledPipeline.Condition buildCondition(final IfVertex iff) {
+        final Condition condition;
+        if (iff.getBooleanExpression() instanceof Not) {
+            condition = new Negated(buildCondition(
+                (BooleanExpression) ((Not) iff.getBooleanExpression()).getExpression())
+            );
+        } else {
+            condition = buildCondition(iff.getBooleanExpression());
+        }
+        return condition;
+    }
+
+    private static CompiledPipeline.Condition buildCondition(final BooleanExpression expression) {
         CompiledPipeline.Condition condition = null;
-        if (iff.getBooleanExpression() instanceof Eq) {
-            final Eq equals = (Eq) iff.getBooleanExpression();
+        if (expression instanceof Eq) {
+            final Eq equals = (Eq) expression;
             if (equals.getLeft() instanceof EventValueExpression &&
                 equals.getRight() instanceof ValueExpression) {
                 condition = new CompiledPipeline.FieldEquals(
@@ -163,8 +177,8 @@ public final class CompiledPipeline {
                     ((ValueExpression) equals.getRight()).get().toString()
                 );
             }
-        } else if (iff.getBooleanExpression() instanceof RegexEq) {
-            final RegexEq regex = (RegexEq) iff.getBooleanExpression();
+        } else if (expression instanceof RegexEq) {
+            final RegexEq regex = (RegexEq) expression;
             if (regex.getLeft() instanceof EventValueExpression &&
                 regex.getRight() instanceof ValueExpression) {
                 condition = new CompiledPipeline.FieldMatches(
@@ -172,8 +186,8 @@ public final class CompiledPipeline {
                     ((ValueExpression) regex.getRight()).get().toString()
                 );
             }
-        } else if (iff.getBooleanExpression() instanceof In) {
-            final In in = (In) iff.getBooleanExpression();
+        } else if (expression instanceof In) {
+            final In in = (In) expression;
             if (in.getLeft() instanceof EventValueExpression &&
                 in.getRight() instanceof ValueExpression
                 &&
