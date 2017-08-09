@@ -59,24 +59,24 @@ public final class Valuefier {
             return o;
         }
         if (o instanceof String) {
-            return BiValues.RUBY.newString((String) o);
+            return RubyUtil.RUBY.newString((String) o);
         }
         if (o instanceof Float || o instanceof Double) {
-            return BiValues.RUBY.newFloat(((Number) o).doubleValue());
+            return RubyUtil.RUBY.newFloat(((Number) o).doubleValue());
         }
         if (o instanceof Timestamp) {
             return JrubyTimestampExtLibrary.RubyTimestamp.newRubyTimestamp(
-                BiValues.RUBY, (Timestamp) o
+                RubyUtil.RUBY, (Timestamp) o
             );
         }
         if (o instanceof RubyTime) {
             return JrubyTimestampExtLibrary.RubyTimestamp.newRubyTimestamp(
-                BiValues.RUBY, new Timestamp(((RubyTime) o).getDateTime())
+                RubyUtil.RUBY, new Timestamp(((RubyTime) o).getDateTime())
             );
         }
         if (o instanceof DateTime) {
             return JrubyTimestampExtLibrary.RubyTimestamp.newRubyTimestamp(
-                BiValues.RUBY, new Timestamp((DateTime) o)
+                RubyUtil.RUBY, new Timestamp((DateTime) o)
             );
         }
         if (o instanceof RubyHash) {
