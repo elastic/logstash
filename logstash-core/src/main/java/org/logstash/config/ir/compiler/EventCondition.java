@@ -7,6 +7,7 @@ import org.logstash.ConvertedList;
 import org.logstash.FieldReference;
 import org.logstash.PathCache;
 import org.logstash.RubyUtil;
+import org.logstash.config.ir.expression.BinaryBooleanExpression;
 import org.logstash.config.ir.expression.BooleanExpression;
 import org.logstash.config.ir.expression.EventValueExpression;
 import org.logstash.config.ir.expression.Expression;
@@ -38,18 +39,6 @@ public interface EventCondition {
         private Factory() {
         }
 
-        public static EventCondition not(final EventCondition condition) {
-            return new EventCondition.Factory.Negated(condition);
-        }
-
-        public static EventCondition or(final EventCondition first, final EventCondition second) {
-            return new EventCondition.Factory.OrCondition(first, second);
-        }
-
-        public static EventCondition and(final EventCondition first, final EventCondition second) {
-            return new EventCondition.Factory.AndCondition(first, second);
-        }
-
         public static EventCondition buildCondition(final BooleanExpression expression) {
             final EventCondition condition;
             if (expression instanceof Eq) {
@@ -63,9 +52,9 @@ public interface EventCondition {
                     );
                 } else if (equals.getLeft() instanceof EventValueExpression &&
                     equals.getRight() instanceof EventValueExpression) {
-                    condition = new EventCondition.Factory.FieldEqualsField(
-                        PathCache.cache(((EventValueExpression) equals.getLeft()).getFieldName()),
-                        PathCache.cache(((EventValueExpression) equals.getRight()).getFieldName())
+                    condition = eq(
+                        (EventValueExpression) equals.getLeft(),
+                        (EventValueExpression) equals.getRight()
                     );
                 } else {
                     throw new IllegalStateException("A");
@@ -125,65 +114,19 @@ public interface EventCondition {
                     );
                 } else if (in.getRight() instanceof EventValueExpression &&
                     in.getLeft() instanceof EventValueExpression) {
-                    condition =
-                        new EventCondition.Factory.FieldArrayContainsFieldValue(
-                            PathCache
-                                .cache(((EventValueExpression) in.getRight())
-                                    .getFieldName()),
-                            PathCache
-                                .cache(((EventValueExpression) in.getLeft())
-                                    .getFieldName())
-                        );
+                    condition = in(
+                        (EventValueExpression) in.getRight(), (EventValueExpression) in.getLeft()
+                    );
                 } else if (in.getRight() instanceof ValueExpression &&
                     in.getLeft() instanceof ValueExpression) {
-                    final Object found = ((ValueExpression) in.getRight()).get();
-                    final Object other = ((ValueExpression) in.getLeft()).get();
-                    if (found instanceof ConvertedList && other instanceof RubyString) {
-                        return ((ConvertedList) found).stream().filter(item -> item.toString()
-                            .equals(other.toString())).count() > 0L ? TRUE : FALSE;
-                    } else if (found instanceof RubyString && other instanceof RubyString) {
-                        return found.toString().contains(other.toString()) ? TRUE : FALSE;
-                    } else if (found instanceof RubyString && other instanceof ConvertedList) {
-                        return ((ConvertedList) other).stream()
-                            .filter(item -> item.toString().equals(found.toString())).count() >
-                            0L ? TRUE : FALSE;
-                    } else {
-                        return found != null && other != null && found.equals(other) ? TRUE : FALSE;
-                    }
+                    condition = in((ValueExpression) in.getLeft(), (ValueExpression) in.getRight());
                 } else {
                     throw new IllegalStateException(
                         "C" + in.getRight().getClass() + " " + in.getLeft().getClass());
                 }
             } else if (expression instanceof Or) {
-                final Or or = (Or) expression;
-                final Expression left = or.getLeft();
-                final Expression right = or.getRight();
-                final EventCondition first;
-                final EventCondition second;
-                if (left instanceof BooleanExpression && right instanceof BooleanExpression) {
-                    first = buildCondition((BooleanExpression) left);
-                    second = buildCondition((BooleanExpression) right);
-                } else if (left instanceof EventValueExpression &&
-                    right instanceof EventValueExpression) {
-                    first = new EventCondition.Factory.FieldTruthy(
-                        PathCache.cache(((EventValueExpression) left).getFieldName()));
-                    second = new EventCondition.Factory.FieldTruthy(
-                        PathCache.cache(((EventValueExpression) right).getFieldName()));
-                } else if (left instanceof BooleanExpression &&
-                    right instanceof EventValueExpression) {
-                    second = new EventCondition.Factory.FieldTruthy(
-                        PathCache.cache(((EventValueExpression) right).getFieldName()));
-                    first = buildCondition((BooleanExpression) left);
-                } else if (right instanceof BooleanExpression &&
-                    left instanceof EventValueExpression) {
-                    first = new EventCondition.Factory.FieldTruthy(
-                        PathCache.cache(((EventValueExpression) left).getFieldName()));
-                    second = buildCondition((BooleanExpression) right);
-                } else {
-                    throw new IllegalStateException(
-                        "GOT " + left.getClass() + " " + right.getClass());
-                }
-                condition = or(first, second);
+                final EventCondition[] pair = booleanPair((BinaryBooleanExpression) expression);
+                condition = or(pair[0], pair[1]);
             } else if (expression instanceof Truthy) {
                 final Expression inner = ((Truthy) expression).getExpression();
                 if (inner instanceof EventValueExpression) {
@@ -208,10 +151,9 @@ public interface EventCondition {
                 final Gt greater = (Gt) expression;
                 if (greater.getLeft() instanceof EventValueExpression &&
                     greater.getRight() instanceof ValueExpression) {
-                    condition = new EventCondition.Factory.FieldGreaterThan(
-                        ((EventValueExpression) greater.getLeft())
-                            .getFieldName(),
-                        ((ValueExpression) greater.getRight()).get().toString()
+                    condition = greaterThan(
+                        (EventValueExpression) greater.getLeft(),
+                        (ValueExpression) greater.getRight()
                     );
                 } else {
                     throw new IllegalStateException("D");
@@ -236,15 +178,14 @@ public interface EventCondition {
                 final Lt lt = (Lt) expression;
                 if (lt.getLeft() instanceof EventValueExpression &&
                     lt.getRight() instanceof ValueExpression) {
-                    condition = not(or(new EventCondition.Factory.FieldGreaterThan(
-                        ((EventValueExpression) lt.getLeft())
-                            .getFieldName(),
-                        ((ValueExpression) lt.getRight()).get().toString()
-                    ), new EventCondition.Factory.FieldEquals(
-                        ((EventValueExpression) lt.getLeft())
-                            .getFieldName(),
-                        ((ValueExpression) lt.getRight()).get().toString()
-                    )));
+                    condition = not(
+                        or(
+                            greaterThan(
+                                (EventValueExpression) lt.getLeft(), (ValueExpression) lt.getRight()
+                            ),
+                            eq((EventValueExpression) lt.getLeft(), (ValueExpression) lt.getRight())
+                        )
+                    );
                 } else {
                     throw new IllegalStateException("Fooo");
                 }
@@ -261,35 +202,8 @@ public interface EventCondition {
                     throw new IllegalStateException("F");
                 }
             } else if (expression instanceof And) {
-                final And and = (And) expression;
-                final Expression left = and.getLeft();
-                final Expression right = and.getRight();
-                final EventCondition first;
-                final EventCondition second;
-                if (left instanceof BooleanExpression && right instanceof BooleanExpression) {
-                    first = buildCondition((BooleanExpression) left);
-                    second = buildCondition((BooleanExpression) right);
-                } else if (left instanceof EventValueExpression &&
-                    right instanceof EventValueExpression) {
-                    first = new EventCondition.Factory.FieldTruthy(
-                        PathCache.cache(((EventValueExpression) left).getFieldName()));
-                    second = new EventCondition.Factory.FieldTruthy(
-                        PathCache.cache(((EventValueExpression) right).getFieldName()));
-                } else if (left instanceof BooleanExpression &&
-                    right instanceof EventValueExpression) {
-                    second = new EventCondition.Factory.FieldTruthy(
-                        PathCache.cache(((EventValueExpression) right).getFieldName()));
-                    first = buildCondition((BooleanExpression) left);
-                } else if (right instanceof BooleanExpression &&
-                    left instanceof EventValueExpression) {
-                    first = new EventCondition.Factory.FieldTruthy(
-                        PathCache.cache(((EventValueExpression) left).getFieldName()));
-                    second = buildCondition((BooleanExpression) right);
-                } else {
-                    throw new IllegalStateException(
-                        "GOT " + left.getClass() + " " + right.getClass());
-                }
-                condition = and(first, second);
+                final EventCondition[] pair = booleanPair((BinaryBooleanExpression) expression);
+                condition = and(pair[0], pair[1]);
             } else if (expression instanceof Neq) {
                 final Neq nequals = (Neq) expression;
                 if (nequals.getLeft() instanceof EventValueExpression &&
@@ -307,6 +221,96 @@ public interface EventCondition {
                 throw new IllegalStateException("Received " + expression.getClass());
             }
             return condition;
+        }
+
+        private static EventCondition in(final ValueExpression left, final ValueExpression right) {
+            final Object found = right.get();
+            final Object other = left.get();
+            if (found instanceof ConvertedList && other instanceof RubyString) {
+                return ((ConvertedList) found).stream().filter(item -> item.toString()
+                    .equals(other.toString())).count() > 0L ? TRUE : FALSE;
+            } else if (found instanceof RubyString && other instanceof RubyString) {
+                return found.toString().contains(other.toString()) ? TRUE : FALSE;
+            } else if (found instanceof RubyString && other instanceof ConvertedList) {
+                return ((ConvertedList) other).stream()
+                    .filter(item -> item.toString().equals(found.toString())).count() >
+                    0L ? TRUE : FALSE;
+            } else {
+                return found != null && other != null && found.equals(other) ? TRUE : FALSE;
+            }
+        }
+
+        private static EventCondition in(final EventValueExpression left,
+            final EventValueExpression right) {
+            return new EventCondition.Factory.FieldArrayContainsFieldValue(
+                PathCache.cache(left.getFieldName()), PathCache.cache(right.getFieldName())
+            );
+        }
+
+        private static EventCondition eq(final EventValueExpression evale,
+            final ValueExpression vale) {
+            return new EventCondition.Factory.FieldEquals(
+                evale.getFieldName(), vale.get().toString()
+            );
+        }
+
+        private static EventCondition eq(final EventValueExpression first,
+            final EventValueExpression second) {
+            return new EventCondition.Factory.FieldEqualsField(
+                PathCache.cache(first.getFieldName()), PathCache.cache(second.getFieldName())
+            );
+        }
+
+        private static EventCondition greaterThan(final EventValueExpression evale,
+            final ValueExpression vale) {
+            return new EventCondition.Factory.FieldGreaterThan(
+                evale.getFieldName(),
+                vale.get().toString()
+            );
+        }
+
+        private static EventCondition truthy(final EventValueExpression evale) {
+            return new EventCondition.Factory.FieldTruthy(PathCache.cache(evale.getFieldName()));
+        }
+
+        private static EventCondition[] booleanPair(final BinaryBooleanExpression expression) {
+            final Expression left = expression.getLeft();
+            final Expression right = expression.getRight();
+            final EventCondition first;
+            final EventCondition second;
+            if (left instanceof BooleanExpression && right instanceof BooleanExpression) {
+                first = buildCondition((BooleanExpression) left);
+                second = buildCondition((BooleanExpression) right);
+            } else if (left instanceof EventValueExpression &&
+                right instanceof EventValueExpression) {
+                first = truthy((EventValueExpression) left);
+                second = truthy((EventValueExpression) right);
+            } else if (left instanceof BooleanExpression && right instanceof EventValueExpression) {
+                first = buildCondition((BooleanExpression) left);
+                second = truthy((EventValueExpression) right);
+            } else if (right instanceof BooleanExpression &&
+                left instanceof EventValueExpression) {
+                first = truthy((EventValueExpression) left);
+                second = buildCondition((BooleanExpression) right);
+            } else {
+                throw new IllegalArgumentException(
+                    String.format(
+                        "Unexpected input types %s %s", left.getClass(), right.getClass())
+                );
+            }
+            return new EventCondition[]{first, second};
+        }
+
+        public static EventCondition not(final EventCondition condition) {
+            return new EventCondition.Factory.Negated(condition);
+        }
+
+        private static EventCondition or(final EventCondition first, final EventCondition second) {
+            return new EventCondition.Factory.OrCondition(first, second);
+        }
+
+        private static EventCondition and(final EventCondition first, final EventCondition second) {
+            return new EventCondition.Factory.AndCondition(first, second);
         }
 
         private static final class Negated implements EventCondition {
