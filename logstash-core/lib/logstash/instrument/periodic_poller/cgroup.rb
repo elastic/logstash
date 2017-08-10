@@ -125,8 +125,9 @@ module LogStash module Instrument module PeriodicPoller
 
        cgroups_stats
       rescue => e
-        logger.debug("Error, cannot retrieve cgroups information", :exception => e.class.name, :message => e.message) if logger.debug?
-        nil
+        logger.debug("Error, cannot retrieve cgroups information, returning empty data: ", :exception => e.class.name, :message => e.message) if logger.debug?
+        # return empty information rather then nil.
+        { :cpuacct => {}, :cpu => {} }
       end
 
       def get
