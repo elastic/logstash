@@ -3,6 +3,7 @@ package org.logstash.config.ir;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -21,13 +22,15 @@ public final class CompiledPipeline {
 
     private static final EventCondition[] NO_CONDITIONS =
         new EventCondition[0];
+    public static final CompiledPipeline.ConditionalFilter[] EMPTY_CHILDREN =
+        new CompiledPipeline.ConditionalFilter[0];
 
     private final Collection<IRubyObject> inputs = new ArrayList<>();
 
-    private final Collection<CompiledPipeline.ConditionalFilter> filters = new ArrayList<>();
+    private final HashMap<String, ConditionalFilter> filters = new HashMap<>();
 
     private final Collection<CompiledPipeline.ConditionalFilter> rootFilters = new ArrayList<>();
-    
+
     private final Collection<RubyIntegration.Output> outputs = new ArrayList<>();
 
     private final PipelineIR graph;
@@ -70,21 +73,27 @@ public final class CompiledPipeline {
                 );
             }
         }
-        return filters.stream().map(fil -> fil.filter).collect(Collectors.toList());
+        return filters.values().stream().map(fil -> fil.filter).collect(Collectors.toList());
     }
 
-    private ConditionalFilter buildConditionalFilter(final RubyIntegration.Pipeline pipeline,
+    private CompiledPipeline.ConditionalFilter buildConditionalFilter(
+        final RubyIntegration.Pipeline pipeline,
         final PluginVertex filterPlugin) {
-        final CompiledPipeline.ConditionalFilter filter = new CompiledPipeline.ConditionalFilter(
-            buildFilter(pipeline, filterPlugin.getPluginDefinition()),
-            wrapCondition(filterPlugin).toArray(NO_CONDITIONS),
-            filterPlugin.descendants()
-                .filter(vert -> this.graph.getFilterPluginVertices().contains(vert))
-                .map(vertex -> buildConditionalFilter(pipeline, (PluginVertex) vertex))
-                .collect(Collectors.toList())
-                .toArray(new ConditionalFilter[0])
-        );
-        filters.add(filter);
+        final CompiledPipeline.ConditionalFilter filter;
+        if (!this.filters.containsKey(filterPlugin.getId())) {
+            filter = new CompiledPipeline.ConditionalFilter(
+                buildFilter(pipeline, filterPlugin.getPluginDefinition()),
+                wrapCondition(filterPlugin).toArray(NO_CONDITIONS),
+                filterPlugin.descendants()
+                    .filter(vert -> this.graph.getFilterPluginVertices().contains(vert))
+                    .map(vertex -> buildConditionalFilter(pipeline, (PluginVertex) vertex))
+                    .collect(Collectors.toList())
+                    .toArray(EMPTY_CHILDREN)
+            );
+            filters.put(filterPlugin.getId(), filter);
+        } else {
+            filter = filters.get(filterPlugin.getId());
+        }
         return filter;
     }
 
@@ -127,7 +136,7 @@ public final class CompiledPipeline {
     }
 
     public Collection<RubyIntegration.Filter> shutdownFlushers() {
-        return filters.stream().filter(f -> f.flushes()).map(f -> f.filter).collect(
+        return filters.values().stream().filter(f -> f.flushes()).map(f -> f.filter).collect(
             Collectors.toList());
     }
 
