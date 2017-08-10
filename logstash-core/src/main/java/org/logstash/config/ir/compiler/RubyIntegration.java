@@ -34,5 +34,7 @@ public final class RubyIntegration {
 
         RubyIntegration.Filter buildFilter(RubyString name, RubyInteger line, RubyInteger column,
             IRubyObject args);
+
+        RubyIntegration.Filter buildCodec(RubyString name, IRubyObject args);
     }
 }

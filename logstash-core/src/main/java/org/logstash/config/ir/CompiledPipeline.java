@@ -66,13 +66,11 @@ public final class CompiledPipeline {
         if (filters.isEmpty()) {
             final List<PluginVertex> plugins = new ArrayList<>(graph.getFilterPluginVertices());
             plugins.sort(Comparator.comparingInt(Vertex::rank));
-            int rank = Integer.MAX_VALUE;
             while (!plugins.isEmpty()) {
                 final PluginVertex next = plugins.remove(0);
-                if (next.rank() > rank) {
+                if (filters.containsKey(next.getId())) {
                     continue;
                 }
-                rank = next.rank();
                 rootFilters.add(
                     buildConditionalFilter(pipeline, next)
                 );
@@ -88,7 +86,14 @@ public final class CompiledPipeline {
                 final RubyHash converted = RubyHash.newHash(RubyUtil.RUBY);
                 for (final Map.Entry<String, Object> entry : def.getArguments().entrySet()) {
                     final Object value = entry.getValue();
-                    if (!(value instanceof PluginStatement)) {
+                    if ((value instanceof PluginStatement)) {
+                        final PluginDefinition codec =
+                            ((PluginStatement) value).getPluginDefinition();
+                        converted.put(entry.getKey(), pipeline.buildCodec(
+                            RubyUtil.RUBY.newString(codec.getName()),
+                            Rubyfier.deep(RubyUtil.RUBY, codec.getArguments())
+                        ));
+                    } else {
                         converted.put(entry.getKey(), entry.getValue());
                     }
                 }

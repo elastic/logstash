@@ -105,8 +105,8 @@ module LogStash; class BasePipeline
     plugin("input", name, line, column, *args)
   end
 
-  def build_codec(name, line, column, *args)
-   plugin("codec", name, line, column, *args)
+  def build_codec(name, *args)
+   plugin("codec", name, 0, 0, *args)
   end
 
   def plugin(plugin_type, name, line, column, *args)
