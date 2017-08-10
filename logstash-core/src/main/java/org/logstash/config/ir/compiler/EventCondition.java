@@ -45,10 +45,8 @@ public interface EventCondition {
                 final Eq equals = (Eq) expression;
                 if (equals.getLeft() instanceof EventValueExpression &&
                     equals.getRight() instanceof ValueExpression) {
-                    condition = new EventCondition.Factory.FieldEquals(
-                        ((EventValueExpression) equals.getLeft())
-                            .getFieldName(),
-                        ((ValueExpression) equals.getRight()).get().toString()
+                    condition = eq(
+                        (EventValueExpression) equals.getLeft(), (ValueExpression) equals.getRight()
                     );
                 } else if (equals.getLeft() instanceof EventValueExpression &&
                     equals.getRight() instanceof EventValueExpression) {
