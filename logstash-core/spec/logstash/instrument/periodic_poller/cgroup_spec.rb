@@ -140,8 +140,8 @@ describe LogStash::Instrument::PeriodicPoller::Cgroup do
         allow(subject).to receive(:control_groups).and_raise("Something went wrong")
       end
 
-      it "returns nil" do
-        expect(subject.get_all).to be_nil
+      it "returns empty" do
+        expect(subject.get_all).to be_in([{ :cpuacct => {}, :cpu => {} }])
       end
     end
   end
