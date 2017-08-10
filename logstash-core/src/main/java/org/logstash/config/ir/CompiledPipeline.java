@@ -2,7 +2,8 @@ package org.logstash.config.ir;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import org.jruby.RubyArray;
@@ -21,9 +22,13 @@ public final class CompiledPipeline {
     private static final EventCondition[] NO_CONDITIONS =
         new EventCondition[0];
 
-    private final Collection<IRubyObject> inputs = new HashSet<>();
-    private final Collection<CompiledPipeline.ConditionalFilter> filters = new HashSet<>();
-    private final Collection<RubyIntegration.Output> outputs = new HashSet<>();
+    private final Collection<IRubyObject> inputs = new ArrayList<>();
+
+    private final Collection<CompiledPipeline.ConditionalFilter> filters = new ArrayList<>();
+
+    private final Collection<CompiledPipeline.ConditionalFilter> rootFilters = new ArrayList<>();
+    
+    private final Collection<RubyIntegration.Output> outputs = new ArrayList<>();
 
     private final PipelineIR graph;
 
@@ -51,17 +56,44 @@ public final class CompiledPipeline {
 
     public Collection<RubyIntegration.Filter> filters(final RubyIntegration.Pipeline pipeline) {
         if (filters.isEmpty()) {
-            graph.getFilterPluginVertices().forEach(filterPlugin -> {
-                final PluginDefinition def = filterPlugin.getPluginDefinition();
-                filters.add(
-                    new CompiledPipeline.ConditionalFilter(
-                        pipeline.buildFilter(
-                            RubyUtil.RUBY.newString(def.getName()),
-                            Rubyfier.deep(RubyUtil.RUBY, def.getArguments())
-                        ), wrapCondition(filterPlugin).toArray(NO_CONDITIONS)));
-            });
+            final List<PluginVertex> plugins = new ArrayList<>(graph.getFilterPluginVertices());
+            plugins.sort(Comparator.comparingInt(Vertex::rank));
+            int rank = Integer.MAX_VALUE;
+            while (!plugins.isEmpty()) {
+                final PluginVertex next = plugins.remove(0);
+                if (next.rank() > rank) {
+                    continue;
+                }
+                rank = next.rank();
+                rootFilters.add(
+                    buildConditionalFilter(pipeline, next)
+                );
+            }
         }
         return filters.stream().map(fil -> fil.filter).collect(Collectors.toList());
+    }
+
+    private ConditionalFilter buildConditionalFilter(final RubyIntegration.Pipeline pipeline,
+        final PluginVertex filterPlugin) {
+        final CompiledPipeline.ConditionalFilter filter = new CompiledPipeline.ConditionalFilter(
+            buildFilter(pipeline, filterPlugin.getPluginDefinition()),
+            wrapCondition(filterPlugin).toArray(NO_CONDITIONS),
+            filterPlugin.descendants()
+                .filter(vert -> this.graph.getFilterPluginVertices().contains(vert))
+                .map(vertex -> buildConditionalFilter(pipeline, (PluginVertex) vertex))
+                .collect(Collectors.toList())
+                .toArray(new ConditionalFilter[0])
+        );
+        filters.add(filter);
+        return filter;
+    }
+
+    private static RubyIntegration.Filter buildFilter(final RubyIntegration.Pipeline pipeline,
+        final PluginDefinition def) {
+        return pipeline.buildFilter(
+            RubyUtil.RUBY.newString(def.getName()),
+            Rubyfier.deep(RubyUtil.RUBY, def.getArguments())
+        );
     }
 
     public Collection<IRubyObject> inputs(final RubyIntegration.Pipeline pipeline) {
@@ -80,10 +112,14 @@ public final class CompiledPipeline {
     public void filter(final JrubyEventExtLibrary.RubyEvent event, final RubyArray generated) {
         RubyArray events = RubyUtil.RUBY.newArray();
         events.add(event);
-        for (final CompiledPipeline.ConditionalFilter filter : filters) {
-            events = filter.execute(events);
+        final RubyArray excluded = RubyUtil.RUBY.newArray();
+        for (final CompiledPipeline.ConditionalFilter filter : rootFilters) {
+            events = filter.execute(events, excluded);
+            events.addAll(excluded);
+            excluded.clear();
         }
         generated.addAll(events);
+        generated.addAll(excluded);
     }
 
     public void output(final RubyArray events) {
@@ -155,26 +191,36 @@ public final class CompiledPipeline {
 
         private final RubyIntegration.Filter filter;
 
+        private final CompiledPipeline.ConditionalFilter[] children;
+
         private final EventCondition[] conditions;
 
         ConditionalFilter(final RubyIntegration.Filter filter,
-            final EventCondition[] conditions) {
+            final EventCondition[] conditions,
+            final CompiledPipeline.ConditionalFilter children[]) {
             this.filter = filter;
             this.conditions = conditions;
+            this.children = children;
         }
 
-        public RubyArray execute(final RubyArray events) {
+        public RubyArray execute(final RubyArray events, final RubyArray excluded) {
             final RubyArray valid = RubyUtil.RUBY.newArray();
-            final RubyArray output = RubyUtil.RUBY.newArray();
             for (final Object obj : events) {
                 if (fulfilled((JrubyEventExtLibrary.RubyEvent) obj)) {
                     valid.add(obj);
                 } else {
-                    output.add(obj);
+                    excluded.add(obj);
                 }
             }
-            output.addAll(filter.multiFilter(valid));
-            return output;
+            RubyArray temp = filter.multiFilter(valid);
+            final RubyArray result = RubyUtil.RUBY.newArray();
+            for (final CompiledPipeline.ConditionalFilter filter : children) {
+                final RubyArray childExcluded = RubyUtil.RUBY.newArray();
+                result.addAll(filter.execute(temp, childExcluded));
+                temp = childExcluded;
+            }
+            result.addAll(temp);
+            return result;
         }
 
         public boolean flushes() {

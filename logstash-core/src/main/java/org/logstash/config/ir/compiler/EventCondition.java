@@ -412,7 +412,8 @@ public interface EventCondition {
 
             @Override
             public boolean fulfilled(final JrubyEventExtLibrary.RubyEvent event) {
-                return value.equals(event.getEvent().getUnconvertedField(field));
+                final Object val = event.getEvent().getUnconvertedField(field);
+                return val != null && value.toString().equals(val.toString());
             }
         }
 
