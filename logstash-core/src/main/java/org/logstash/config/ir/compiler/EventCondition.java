@@ -42,25 +42,10 @@ public interface EventCondition {
         public static EventCondition buildCondition(final BooleanExpression expression) {
             final EventCondition condition;
             if (expression instanceof Eq) {
-                final Eq equals = (Eq) expression;
-                if (equals.getLeft() instanceof EventValueExpression &&
-                    equals.getRight() instanceof ValueExpression) {
-                    condition = eq(
-                        (EventValueExpression) equals.getLeft(), (ValueExpression) equals.getRight()
-                    );
-                } else if (equals.getLeft() instanceof EventValueExpression &&
-                    equals.getRight() instanceof EventValueExpression) {
-                    condition = eq(
-                        (EventValueExpression) equals.getLeft(),
-                        (EventValueExpression) equals.getRight()
-                    );
-                } else {
-                    throw new IllegalStateException("A");
-                }
+                condition = eq((Eq) expression);
             } else if (expression instanceof RegexEq) {
                 final RegexEq regex = (RegexEq) expression;
-                if (regex.getLeft() instanceof EventValueExpression &&
-                    regex.getRight() instanceof ValueExpression) {
+                if (eAndV(regex)) {
                     condition = new EventCondition.Factory.FieldMatches(
                         ((EventValueExpression) regex.getLeft()).getFieldName(),
                         ((ValueExpression) regex.getRight()).get().toString()
@@ -70,53 +55,37 @@ public interface EventCondition {
                 }
             } else if (expression instanceof In) {
                 final In in = (In) expression;
-                if (in.getLeft() instanceof EventValueExpression &&
-                    in.getRight() instanceof ValueExpression
-                    &&
-                    (((ValueExpression) in.getRight()).get() instanceof String
-                        || ((ValueExpression) in.getRight())
-                        .get() instanceof Number)) {
+                if (eAndV(in) && (((ValueExpression) in.getRight()).get() instanceof String
+                    || ((ValueExpression) in.getRight()).get() instanceof Number)) {
                     condition = new EventCondition.Factory.FieldArrayContainsValue(
                         PathCache.cache(((EventValueExpression) in.getLeft())
                             .getFieldName()),
                         ((ValueExpression) in.getRight()).get().toString()
                     );
-                } else if (in.getRight() instanceof EventValueExpression &&
-                    in.getLeft() instanceof ValueExpression
-                    &&
-                    (((ValueExpression) in.getLeft()).get() instanceof String
-                        || ((ValueExpression) in.getLeft())
-                        .get() instanceof Number)) {
+                } else if (vAndE(in) && (((ValueExpression) in.getLeft()).get() instanceof String
+                    || ((ValueExpression) in.getLeft()).get() instanceof Number)) {
                     condition = new EventCondition.Factory.FieldArrayContainsValue(
                         PathCache.cache(((EventValueExpression) in.getRight())
                             .getFieldName()),
                         ((ValueExpression) in.getLeft()).get().toString()
                     );
-                } else if (in.getLeft() instanceof EventValueExpression &&
-                    in.getRight() instanceof ValueExpression
-                    &&
-                    ((ValueExpression) in.getRight()).get() instanceof List) {
+                } else if (eAndV(in) && ((ValueExpression) in.getRight()).get() instanceof List) {
                     condition = new EventCondition.Factory.FieldContainsListedValue(
                         PathCache.cache(((EventValueExpression) in.getLeft())
                             .getFieldName()),
                         (List<?>) ((ValueExpression) in.getRight()).get()
                     );
-                } else if (in.getRight() instanceof EventValueExpression &&
-                    in.getLeft() instanceof ValueExpression
-                    &&
-                    ((ValueExpression) in.getLeft()).get() instanceof List) {
+                } else if (vAndE(in) && ((ValueExpression) in.getLeft()).get() instanceof List) {
                     condition = new EventCondition.Factory.FieldContainsListedValue(
                         PathCache.cache(((EventValueExpression) in.getRight())
                             .getFieldName()),
-                        (List) ((ValueExpression) in.getLeft()).get()
+                        (List<?>) ((ValueExpression) in.getLeft()).get()
                     );
-                } else if (in.getRight() instanceof EventValueExpression &&
-                    in.getLeft() instanceof EventValueExpression) {
+                } else if (eAndE(in)) {
                     condition = in(
                         (EventValueExpression) in.getRight(), (EventValueExpression) in.getLeft()
                     );
-                } else if (in.getRight() instanceof ValueExpression &&
-                    in.getLeft() instanceof ValueExpression) {
+                } else if (vAndV(in)) {
                     condition = in((ValueExpression) in.getLeft(), (ValueExpression) in.getRight());
                 } else {
                     throw new IllegalStateException(
@@ -131,24 +100,20 @@ public interface EventCondition {
                     condition = new EventCondition.Factory.FieldTruthy(
                         PathCache.cache(((EventValueExpression) inner).getFieldName()));
                 } else {
-                    condition = TRUE;
+                    throw new IllegalStateException("GOT " + inner.getClass());
                 }
             } else if (expression instanceof Not) {
                 final Expression inner = ((Not) expression).getExpression();
                 if (inner instanceof BooleanExpression) {
                     condition = not(buildCondition((BooleanExpression) inner));
                 } else if (inner instanceof EventValueExpression) {
-                    condition = not(
-                        new EventCondition.Factory.FieldTruthy(
-                            PathCache.cache(((EventValueExpression) inner).getFieldName()))
-                    );
+                    condition = not(truthy((EventValueExpression) inner));
                 } else {
                     throw new IllegalStateException("C2");
                 }
             } else if (expression instanceof Gt) {
                 final Gt greater = (Gt) expression;
-                if (greater.getLeft() instanceof EventValueExpression &&
-                    greater.getRight() instanceof ValueExpression) {
+                if (eAndV(greater)) {
                     condition = greaterThan(
                         (EventValueExpression) greater.getLeft(),
                         (ValueExpression) greater.getRight()
@@ -158,24 +123,19 @@ public interface EventCondition {
                 }
             } else if (expression instanceof Gte) {
                 final Gte gre = (Gte) expression;
-                if (gre.getLeft() instanceof EventValueExpression &&
-                    gre.getRight() instanceof ValueExpression) {
-                    condition = or(new EventCondition.Factory.FieldGreaterThan(
-                        ((EventValueExpression) gre.getLeft())
-                            .getFieldName(),
-                        ((ValueExpression) gre.getRight()).get().toString()
-                    ), new EventCondition.Factory.FieldEquals(
-                        ((EventValueExpression) gre.getLeft())
-                            .getFieldName(),
-                        ((ValueExpression) gre.getRight()).get().toString()
+                if (eAndV(gre)) {
+                    condition = or(greaterThan(
+                        (EventValueExpression) gre.getLeft(), (ValueExpression) gre.getRight()
+                    ), eq(
+                        (EventValueExpression) gre.getLeft(),
+                        (ValueExpression) gre.getRight()
                     ));
                 } else {
                     throw new IllegalStateException("E");
                 }
             } else if (expression instanceof Lt) {
                 final Lt lt = (Lt) expression;
-                if (lt.getLeft() instanceof EventValueExpression &&
-                    lt.getRight() instanceof ValueExpression) {
+                if (eAndV(lt)) {
                     condition = not(
                         or(
                             greaterThan(
@@ -189,12 +149,10 @@ public interface EventCondition {
                 }
             } else if (expression instanceof Lte) {
                 final Lte lessequal = (Lte) expression;
-                if (lessequal.getLeft() instanceof EventValueExpression &&
-                    lessequal.getRight() instanceof ValueExpression) {
-                    condition = not(new EventCondition.Factory.FieldGreaterThan(
-                        ((EventValueExpression) lessequal.getLeft())
-                            .getFieldName(),
-                        ((ValueExpression) lessequal.getRight()).get().toString()
+                if (eAndV(lessequal)) {
+                    condition = not(greaterThan(
+                        (EventValueExpression) lessequal.getLeft(),
+                        (ValueExpression) lessequal.getRight()
                     ));
                 } else {
                     throw new IllegalStateException("F");
@@ -204,12 +162,11 @@ public interface EventCondition {
                 condition = and(pair[0], pair[1]);
             } else if (expression instanceof Neq) {
                 final Neq nequals = (Neq) expression;
-                if (nequals.getLeft() instanceof EventValueExpression &&
-                    nequals.getRight() instanceof ValueExpression) {
-                    condition = not(new EventCondition.Factory.FieldEquals(
-                            ((EventValueExpression) nequals.getLeft())
-                                .getFieldName(),
-                            ((ValueExpression) nequals.getRight()).get().toString()
+                if (eAndV(nequals)) {
+                    condition = not(
+                        eq(
+                            (EventValueExpression) nequals.getLeft(),
+                            (ValueExpression) nequals.getRight()
                         )
                     );
                 } else {
@@ -219,6 +176,43 @@ public interface EventCondition {
                 throw new IllegalStateException("Received " + expression.getClass());
             }
             return condition;
+        }
+
+        private static EventCondition eq(final Eq equals) {
+            final EventCondition condition;
+            if (eAndV(equals)) {
+                condition = eq(
+                    (EventValueExpression) equals.getLeft(), (ValueExpression) equals.getRight()
+                );
+            } else if (eAndE(equals)) {
+                condition = eq(
+                    (EventValueExpression) equals.getLeft(),
+                    (EventValueExpression) equals.getRight()
+                );
+            } else {
+                throw new IllegalStateException("A");
+            }
+            return condition;
+        }
+
+        private static boolean vAndE(final BinaryBooleanExpression expression) {
+            return expression.getLeft() instanceof ValueExpression &&
+                expression.getRight() instanceof EventValueExpression;
+        }
+
+        private static boolean vAndV(final BinaryBooleanExpression expression) {
+            return expression.getLeft() instanceof ValueExpression &&
+                expression.getRight() instanceof ValueExpression;
+        }
+
+        private static boolean eAndV(final BinaryBooleanExpression expression) {
+            return expression.getLeft() instanceof EventValueExpression &&
+                expression.getRight() instanceof ValueExpression;
+        }
+
+        private static boolean eAndE(final BinaryBooleanExpression expression) {
+            return expression.getLeft() instanceof EventValueExpression &&
+                expression.getRight() instanceof EventValueExpression;
         }
 
         private static EventCondition in(final ValueExpression left, final ValueExpression right) {
@@ -259,11 +253,11 @@ public interface EventCondition {
             );
         }
 
-        private static EventCondition greaterThan(final EventValueExpression evale,
-            final ValueExpression vale) {
+        private static EventCondition greaterThan(final EventValueExpression left,
+            final ValueExpression right) {
             return new EventCondition.Factory.FieldGreaterThan(
-                evale.getFieldName(),
-                vale.get().toString()
+                left.getFieldName(),
+                right.get().toString()
             );
         }
 
@@ -279,8 +273,7 @@ public interface EventCondition {
             if (left instanceof BooleanExpression && right instanceof BooleanExpression) {
                 first = buildCondition((BooleanExpression) left);
                 second = buildCondition((BooleanExpression) right);
-            } else if (left instanceof EventValueExpression &&
-                right instanceof EventValueExpression) {
+            } else if (eAndE(expression)) {
                 first = truthy((EventValueExpression) left);
                 second = truthy((EventValueExpression) right);
             } else if (left instanceof BooleanExpression && right instanceof EventValueExpression) {
