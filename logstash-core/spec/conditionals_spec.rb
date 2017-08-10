@@ -426,16 +426,16 @@ describe "conditionals in filter" do
 
     sample({"type" => "original"}) do
       # puts subject.inspect
-      expect(subject[0].get("cond1")).to eq(nil)
+      expect(subject[2].get("cond1")).to eq(nil)
+      expect(subject[2].get("cond2")).to eq(nil)
+
+      expect(subject[0].get("type")).to eq("clone1")
+      expect(subject[0].get("cond1")).to eq("true")
       expect(subject[0].get("cond2")).to eq(nil)
 
-      expect(subject[1].get("type")).to eq("clone1")
-      expect(subject[1].get("cond1")).to eq("true")
-      expect(subject[1].get("cond2")).to eq(nil)
-
-      expect(subject[2].get("type")).to eq("clone2")
-      expect(subject[2].get("cond1")).to eq(nil)
-      expect(subject[2].get("cond2")).to eq("true")
+      expect(subject[1].get("type")).to eq("clone2")
+      expect(subject[1].get("cond1")).to eq(nil)
+      expect(subject[1].get("cond2")).to eq("true")
     end
   end
 end
