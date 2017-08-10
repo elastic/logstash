@@ -165,31 +165,22 @@ public interface EventCondition {
 
         private static EventCondition in(final In in) {
             final EventCondition condition;
-            if (eAndV(in) && (((ValueExpression) in.getRight()).get() instanceof String
-                || ((ValueExpression) in.getRight()).get() instanceof Number)) {
+            if (eAndV(in) && scalarValueRight(in)) {
                 condition = new EventCondition.Factory.FieldArrayContainsValue(
                     PathCache.cache(((EventValueExpression) in.getLeft())
                         .getFieldName()),
                     ((ValueExpression) in.getRight()).get().toString()
                 );
-            } else if (vAndE(in) && (((ValueExpression) in.getLeft()).get() instanceof String
-                || ((ValueExpression) in.getLeft()).get() instanceof Number)) {
+            } else if (vAndE(in) && scalarValueLeft(in)) {
                 condition = new EventCondition.Factory.FieldArrayContainsValue(
                     PathCache.cache(((EventValueExpression) in.getRight())
                         .getFieldName()),
                     ((ValueExpression) in.getLeft()).get().toString()
                 );
-            } else if (eAndV(in) && ((ValueExpression) in.getRight()).get() instanceof List) {
-                condition = new EventCondition.Factory.FieldContainsListedValue(
-                    PathCache.cache(((EventValueExpression) in.getLeft())
-                        .getFieldName()),
+            } else if (eAndV(in) && listValueRight(in)) {
+                condition = in(
+                    (EventValueExpression) in.getLeft(),
                     (List<?>) ((ValueExpression) in.getRight()).get()
-                );
-            } else if (vAndE(in) && ((ValueExpression) in.getLeft()).get() instanceof List) {
-                condition = new EventCondition.Factory.FieldContainsListedValue(
-                    PathCache.cache(((EventValueExpression) in.getRight())
-                        .getFieldName()),
-                    (List<?>) ((ValueExpression) in.getLeft()).get()
                 );
             } else if (eAndE(in)) {
                 condition = in(
@@ -202,6 +193,12 @@ public interface EventCondition {
                     "C" + in.getRight().getClass() + " " + in.getLeft().getClass());
             }
             return condition;
+        }
+
+        private static EventCondition in(final EventValueExpression left, final List<?> right) {
+            return new EventCondition.Factory.FieldContainsListedValue(
+                PathCache.cache(left.getFieldName()), right
+            );
         }
 
         private static EventCondition in(final ValueExpression left, final ValueExpression right) {
@@ -219,6 +216,20 @@ public interface EventCondition {
             } else {
                 return found != null && other != null && found.equals(other) ? TRUE : FALSE;
             }
+        }
+
+        private static boolean listValueRight(final In in) {
+            return ((ValueExpression) in.getRight()).get() instanceof List;
+        }
+
+        private static boolean scalarValueRight(final In in) {
+            return (((ValueExpression) in.getRight()).get() instanceof String
+                || ((ValueExpression) in.getRight()).get() instanceof Number);
+        }
+
+        private static boolean scalarValueLeft(final In in) {
+            return (((ValueExpression) in.getLeft()).get() instanceof String
+                || ((ValueExpression) in.getLeft()).get() instanceof Number);
         }
 
         private static EventCondition in(final EventValueExpression left,
