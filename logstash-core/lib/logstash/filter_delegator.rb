@@ -15,6 +15,8 @@ module LogStash
     ]
     def_delegators :@filter, *DELEGATED_METHODS
 
+    attr_reader :id
+
     def initialize(logger, klass, metric, execution_context, plugin_args)
       @logger = logger
       @klass = klass

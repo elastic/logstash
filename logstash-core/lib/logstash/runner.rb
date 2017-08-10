@@ -74,6 +74,11 @@ class LogStash::Runner < Clamp::StrictCommand
     :multivalued => true,
     :attribute_name => "modules_variable_list"
 
+  option ["--setup"], :flag,
+    I18n.t("logstash.runner.flag.modules_setup"),
+    :default => LogStash::SETTINGS.get_default("modules_setup"),
+    :attribute_name => "modules_setup"
+
   # Pipeline settings
   option ["-w", "--pipeline.workers"], "COUNT",
     I18n.t("logstash.runner.flag.pipeline-workers"),

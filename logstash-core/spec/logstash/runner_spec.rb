@@ -294,6 +294,9 @@ describe LogStash::Runner do
     end
 
     describe "config.debug" do
+      after(:each) do
+        LogStash::SETTINGS.set("config.debug", false)
+      end
       it "should set 'config.debug' to false by default" do
         expect(LogStash::Agent).to receive(:new) do |settings|
           expect(settings.get("config.debug")).to eq(false)
@@ -340,7 +343,7 @@ describe LogStash::Runner do
     end
 
     describe "--modules" do
-      let(:args) { ["--modules", module_string] }
+      let(:args) { ["--modules", module_string, "--setup"] }
 
       context "with an available module specified but no connection to elasticsearch" do
         let(:module_string) { "tester" }

@@ -41,6 +41,8 @@ class DummyCodec < LogStash::Codecs::Base
   config_name "dummycodec"
   milestone 2
 
+  config :format, :validate => :string
+
   def decode(data)
     data
   end
@@ -118,7 +120,7 @@ describe LogStash::Pipeline do
   let(:override_thread_count)   { 42 }
   let(:dead_letter_queue_enabled) { false }
   let(:dead_letter_queue_path) { }
-  let(:pipeline_settings_obj) { LogStash::SETTINGS }
+  let(:pipeline_settings_obj) { LogStash::SETTINGS.clone }
   let(:pipeline_settings) { {} }
   let(:max_retry) {10} #times
   let(:timeout) {120} #seconds
@@ -132,10 +134,6 @@ describe LogStash::Pipeline do
     allow(dlq_path_setting).to receive(:value).and_return(dead_letter_queue_path)
 
     pipeline_settings.each {|k, v| pipeline_settings_obj.set(k, v) }
-  end
-
-  after :each do
-    pipeline_settings_obj.reset
   end
 
   describe "#ephemeral_id" do
@@ -355,6 +353,30 @@ describe LogStash::Pipeline do
 
         expect(output).to have_received(:do_close).once
       end
+    end
+  end
+
+  context "with no explicit ids declared" do
+    before(:each) do
+      allow(LogStash::Plugin).to receive(:lookup).with("input", "dummyinput").and_return(DummyInput)
+      allow(LogStash::Plugin).to receive(:lookup).with("codec", "plain").and_return(DummyCodec)
+      allow(LogStash::Plugin).to receive(:lookup).with("filter", "dummyfilter").and_return(DummyFilter)
+      allow(LogStash::Plugin).to receive(:lookup).with("output", "dummyoutput").and_return(::LogStash::Outputs::DummyOutput)
+    end
+
+    let(:config) { "input { dummyinput { codec => plain { format => 'something'  } } } filter { dummyfilter {} } output { dummyoutput {} }"}
+    let(:pipeline) { mock_pipeline_from_string(config) }
+
+    after do
+      # If you don't start/stop the pipeline it won't release the queue lock and will
+      # cause the suite to fail :(
+      pipeline.close
+    end
+    
+    it "should use LIR provided IDs" do
+      expect(pipeline.inputs.first.id).to eq(pipeline.lir.input_plugin_vertices.first.id)
+      expect(pipeline.filters.first.id).to eq(pipeline.lir.filter_plugin_vertices.first.id)
+      expect(pipeline.outputs.first.id).to eq(pipeline.lir.output_plugin_vertices.first.id)
     end
   end
 

@@ -50,6 +50,8 @@ public final class CompiledPipeline {
                 final PluginDefinition def = v.getPluginDefinition();
                 outputs.add(pipeline.buildOutput(
                     RubyUtil.RUBY.newString(def.getName()),
+                    RubyUtil.RUBY.newFixnum(v.getSourceWithMetadata().getLine()),
+                    RubyUtil.RUBY.newFixnum(v.getSourceWithMetadata().getColumn()),
                     Rubyfier.deep(RubyUtil.RUBY, def.getArguments())
                 ));
             });
@@ -74,6 +76,21 @@ public final class CompiledPipeline {
             }
         }
         return filters.values().stream().map(fil -> fil.filter).collect(Collectors.toList());
+    }
+
+    public Collection<IRubyObject> inputs(final RubyIntegration.Pipeline pipeline) {
+        if (inputs.isEmpty()) {
+            graph.getInputPluginVertices().forEach(v -> {
+                final PluginDefinition def = v.getPluginDefinition();
+                inputs.add(pipeline.buildInput(
+                    RubyUtil.RUBY.newString(def.getName()),
+                    RubyUtil.RUBY.newFixnum(def.getSourceWithMetadata().getLine()),
+                    RubyUtil.RUBY.newFixnum(def.getSourceWithMetadata().getColumn()),
+                    Rubyfier.deep(RubyUtil.RUBY, def.getArguments())
+                ));
+            });
+        }
+        return inputs;
     }
 
     private CompiledPipeline.ConditionalFilter buildConditionalFilter(
@@ -101,21 +118,10 @@ public final class CompiledPipeline {
         final PluginDefinition def) {
         return pipeline.buildFilter(
             RubyUtil.RUBY.newString(def.getName()),
+            RubyUtil.RUBY.newFixnum(def.getSourceWithMetadata().getLine()),
+            RubyUtil.RUBY.newFixnum(def.getSourceWithMetadata().getColumn()),
             Rubyfier.deep(RubyUtil.RUBY, def.getArguments())
         );
-    }
-
-    public Collection<IRubyObject> inputs(final RubyIntegration.Pipeline pipeline) {
-        if (inputs.isEmpty()) {
-            graph.getInputPluginVertices().forEach(v -> {
-                final PluginDefinition def = v.getPluginDefinition();
-                inputs.add(pipeline.buildInput(
-                    RubyUtil.RUBY.newString(def.getName()),
-                    Rubyfier.deep(RubyUtil.RUBY, def.getArguments())
-                ));
-            });
-        }
-        return inputs;
     }
 
     public void filter(final JrubyEventExtLibrary.RubyEvent event, final RubyArray generated) {
