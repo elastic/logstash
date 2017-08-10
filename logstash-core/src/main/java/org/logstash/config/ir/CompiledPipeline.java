@@ -84,8 +84,8 @@ public final class CompiledPipeline {
                 final PluginDefinition def = v.getPluginDefinition();
                 inputs.add(pipeline.buildInput(
                     RubyUtil.RUBY.newString(def.getName()),
-                    RubyUtil.RUBY.newFixnum(def.getSourceWithMetadata().getLine()),
-                    RubyUtil.RUBY.newFixnum(def.getSourceWithMetadata().getColumn()),
+                    RubyUtil.RUBY.newFixnum(v.getSourceWithMetadata().getLine()),
+                    RubyUtil.RUBY.newFixnum(v.getSourceWithMetadata().getColumn()),
                     Rubyfier.deep(RubyUtil.RUBY, def.getArguments())
                 ));
             });
@@ -99,7 +99,7 @@ public final class CompiledPipeline {
         final CompiledPipeline.ConditionalFilter filter;
         if (!this.filters.containsKey(filterPlugin.getId())) {
             filter = new CompiledPipeline.ConditionalFilter(
-                buildFilter(pipeline, filterPlugin.getPluginDefinition()),
+                buildFilter(pipeline, filterPlugin),
                 wrapCondition(filterPlugin).toArray(NO_CONDITIONS),
                 filterPlugin.descendants()
                     .filter(vert -> this.graph.getFilterPluginVertices().contains(vert))
@@ -115,11 +115,12 @@ public final class CompiledPipeline {
     }
 
     private static RubyIntegration.Filter buildFilter(final RubyIntegration.Pipeline pipeline,
-        final PluginDefinition def) {
+        final PluginVertex vertex) {
+        final PluginDefinition def = vertex.getPluginDefinition();
         return pipeline.buildFilter(
             RubyUtil.RUBY.newString(def.getName()),
-            RubyUtil.RUBY.newFixnum(def.getSourceWithMetadata().getLine()),
-            RubyUtil.RUBY.newFixnum(def.getSourceWithMetadata().getColumn()),
+            RubyUtil.RUBY.newFixnum(vertex.getSourceWithMetadata().getLine()),
+            RubyUtil.RUBY.newFixnum(vertex.getSourceWithMetadata().getColumn()),
             Rubyfier.deep(RubyUtil.RUBY, def.getArguments())
         );
     }
