@@ -56,8 +56,7 @@ public interface EventCondition {
             } else if (expression instanceof In) {
                 condition = in((In) expression);
             } else if (expression instanceof Or) {
-                final EventCondition[] pair = booleanPair((BinaryBooleanExpression) expression);
-                condition = or(pair[0], pair[1]);
+                condition = or(booleanPair((BinaryBooleanExpression) expression));
             } else if (expression instanceof Truthy) {
                 final Expression inner = ((Truthy) expression).getExpression();
                 if (inner instanceof EventValueExpression) {
@@ -75,15 +74,8 @@ public interface EventCondition {
                     throw new IllegalStateException("C2");
                 }
             } else if (expression instanceof Gt) {
-                final Gt greater = (Gt) expression;
-                if (eAndV(greater)) {
-                    condition = gt(
-                        (EventValueExpression) greater.getLeft(),
-                        (ValueExpression) greater.getRight()
-                    );
-                } else {
-                    throw new IllegalStateException("D");
-                }
+                condition = gt((Gt) expression);
+
             } else if (expression instanceof Gte) {
                 condition = gte((Gte) expression);
             } else if (expression instanceof Lt) {
@@ -99,20 +91,9 @@ public interface EventCondition {
                     throw new IllegalStateException("F");
                 }
             } else if (expression instanceof And) {
-                final EventCondition[] pair = booleanPair((BinaryBooleanExpression) expression);
-                condition = and(pair[0], pair[1]);
+                condition = and(booleanPair((BinaryBooleanExpression) expression));
             } else if (expression instanceof Neq) {
-                final Neq nequals = (Neq) expression;
-                if (eAndV(nequals)) {
-                    condition = not(
-                        eq(
-                            (EventValueExpression) nequals.getLeft(),
-                            (ValueExpression) nequals.getRight()
-                        )
-                    );
-                } else {
-                    throw new IllegalStateException("G");
-                }
+                condition = neq((Neq) expression);
             } else {
                 throw new IllegalStateException("Received " + expression.getClass());
             }
@@ -137,6 +118,21 @@ public interface EventCondition {
         private static boolean eAndE(final BinaryBooleanExpression expression) {
             return expression.getLeft() instanceof EventValueExpression &&
                 expression.getRight() instanceof EventValueExpression;
+        }
+
+        private static EventCondition neq(final Neq nequals) {
+            final EventCondition condition;
+            if (eAndV(nequals)) {
+                condition = not(
+                    eq(
+                        (EventValueExpression) nequals.getLeft(),
+                        (ValueExpression) nequals.getRight()
+                    )
+                );
+            } else {
+                throw new IllegalStateException("G");
+            }
+            return condition;
         }
 
         private static EventCondition gte(Gte gte) {
@@ -270,6 +266,19 @@ public interface EventCondition {
             );
         }
 
+        private static EventCondition gt(final Gt greater) {
+            final EventCondition condition;
+            if (eAndV(greater)) {
+                condition = gt(
+                    (EventValueExpression) greater.getLeft(),
+                    (ValueExpression) greater.getRight()
+                );
+            } else {
+                throw new IllegalStateException("D");
+            }
+            return condition;
+        }
+
         private static EventCondition gt(final EventValueExpression left,
             final ValueExpression right) {
             return new EventCondition.Factory.FieldGreaterThan(
@@ -313,12 +322,12 @@ public interface EventCondition {
             return new EventCondition.Factory.Negated(condition);
         }
 
-        private static EventCondition or(final EventCondition first, final EventCondition second) {
-            return new EventCondition.Factory.OrCondition(first, second);
+        private static EventCondition or(EventCondition... conditions) {
+            return new EventCondition.Factory.OrCondition(conditions[0], conditions[1]);
         }
 
-        private static EventCondition and(final EventCondition first, final EventCondition second) {
-            return new EventCondition.Factory.AndCondition(first, second);
+        private static EventCondition and(EventCondition... conditions) {
+            return new EventCondition.Factory.AndCondition(conditions[0], conditions[1]);
         }
 
         private static final class Negated implements EventCondition {
