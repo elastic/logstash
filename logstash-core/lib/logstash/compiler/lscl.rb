@@ -153,11 +153,18 @@ module LogStashCompilerLSCLGrammar; module LogStash; module Compiler; module LSC
           [k,v]
         end
       }.reduce({}) do |hash,kv|
-        k,v = kv
-        hash[k] = v
+        k, v = kv
+        if hash[k].nil?
+          hash[k] = v
+        else
+          if hash[k].is_a?(Array)
+            hash[k] << v
+          else
+            hash[k] = [hash[k], v]
+          end
+        end
         hash
       end
-
     end
   end
 
