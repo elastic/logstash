@@ -5,9 +5,11 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import org.jruby.RubyArray;
+import org.jruby.RubyHash;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.RubyUtil;
 import org.logstash.Rubyfier;
@@ -16,6 +18,7 @@ import org.logstash.config.ir.compiler.RubyIntegration;
 import org.logstash.config.ir.graph.IfVertex;
 import org.logstash.config.ir.graph.PluginVertex;
 import org.logstash.config.ir.graph.Vertex;
+import org.logstash.config.ir.imperative.PluginStatement;
 import org.logstash.ext.JrubyEventExtLibrary;
 
 public final class CompiledPipeline {
@@ -82,11 +85,18 @@ public final class CompiledPipeline {
         if (inputs.isEmpty()) {
             graph.getInputPluginVertices().forEach(v -> {
                 final PluginDefinition def = v.getPluginDefinition();
+                final RubyHash converted = RubyHash.newHash(RubyUtil.RUBY);
+                for (final Map.Entry<String, Object> entry : def.getArguments().entrySet()) {
+                    final Object value = entry.getValue();
+                    if (!(value instanceof PluginStatement)) {
+                        converted.put(entry.getKey(), entry.getValue());
+                    }
+                }
                 inputs.add(pipeline.buildInput(
                     RubyUtil.RUBY.newString(def.getName()),
                     RubyUtil.RUBY.newFixnum(v.getSourceWithMetadata().getLine()),
                     RubyUtil.RUBY.newFixnum(v.getSourceWithMetadata().getColumn()),
-                    Rubyfier.deep(RubyUtil.RUBY, def.getArguments())
+                    converted
                 ));
             });
         }
