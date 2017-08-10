@@ -107,7 +107,7 @@ describe LogStash::Pipeline do
   let(:override_thread_count)   { 42 }
   let(:dead_letter_queue_enabled) { false }
   let(:dead_letter_queue_path) { }
-  let(:pipeline_settings_obj) { LogStash::SETTINGS }
+  let(:pipeline_settings_obj) { LogStash::SETTINGS.clone }
   let(:pipeline_settings) { {} }
   let(:max_retry) {10} #times
   let(:timeout) {120} #seconds
@@ -122,11 +122,6 @@ describe LogStash::Pipeline do
 
     pipeline_settings.each {|k, v| pipeline_settings_obj.set(k, v) }
   end
-
-  after :each do
-    pipeline_settings_obj.reset
-  end
-
 
   describe "event cancellation" do
     # test harness for https://github.com/elastic/logstash/issues/6055
