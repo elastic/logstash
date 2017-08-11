@@ -1,12 +1,20 @@
 package org.logstash.instrument.witness;
 
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.databind.SerializerProvider;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.ser.std.StdSerializer;
+import org.logstash.instrument.metrics.Metric;
 import org.logstash.instrument.metrics.gauge.BooleanGauge;
 import org.logstash.instrument.metrics.gauge.LongGauge;
+
+import java.io.IOException;
 
 /**
  * The witness for configuration.
  */
-final public class ConfigWitness {
+@JsonSerialize(using = ConfigWitness.Serializer.class)
+final public class ConfigWitness implements SerializableWitness {
 
     private final BooleanGauge deadLetterQueueEnabled;
     private final BooleanGauge configReloadAutomatic;
@@ -15,6 +23,9 @@ final public class ConfigWitness {
     private final LongGauge batchDelay;
     private final LongGauge configReloadInterval;
     private final Snitch snitch;
+    private final static String KEY = "config";
+    private static final Serializer SERIALIZER = new Serializer();
+
 
     /**
      * Constructor.
@@ -92,6 +103,55 @@ final public class ConfigWitness {
         return this.snitch;
     }
 
+    @Override
+    public void genJson(JsonGenerator gen, SerializerProvider provider) throws IOException {
+        SERIALIZER.innerSerialize(this, gen, provider);
+    }
+
+    /**
+     * The Jackson serializer.
+     */
+    static class Serializer extends StdSerializer<ConfigWitness> {
+
+        /**
+         * Default constructor - required for Jackson
+         */
+        public Serializer() {
+            this(ConfigWitness.class);
+        }
+
+        /**
+         * Constructor
+         *
+         * @param t the type to serialize
+         */
+        protected Serializer(Class<ConfigWitness> t) {
+            super(t);
+        }
+
+        @Override
+        public void serialize(ConfigWitness witness, JsonGenerator gen, SerializerProvider provider) throws IOException {
+            gen.writeStartObject();
+            innerSerialize(witness, gen, provider);
+            gen.writeEndObject();
+        }
+
+        void innerSerialize(ConfigWitness witness, JsonGenerator gen, SerializerProvider provider) throws IOException {
+            gen.writeObjectFieldStart(KEY);
+
+            MetricSerializer<Metric<Long>> longSerializer = MetricSerializer.Get.longSerializer(gen);
+            MetricSerializer<Metric<Boolean>> booleanSerializer = MetricSerializer.Get.booleanSerializer(gen);
+
+            longSerializer.serialize(witness.batchSize);
+            longSerializer.serialize(witness.workers);
+            longSerializer.serialize(witness.batchDelay);
+            longSerializer.serialize(witness.configReloadInterval);
+            booleanSerializer.serialize(witness.configReloadAutomatic);
+            booleanSerializer.serialize(witness.deadLetterQueueEnabled);
+            gen.writeEndObject();
+        }
+    }
+
     /**
      * The snitch for the errors. Used to retrieve discrete metric values.
      */
@@ -105,6 +165,7 @@ final public class ConfigWitness {
 
         /**
          * Gets the configured batch delay
+         *
          * @return the batch delay
          */
         public long batchDelay() {
@@ -114,6 +175,7 @@ final public class ConfigWitness {
 
         /**
          * Gets the configured batch size
+         *
          * @return the batch size
          */
         public long batchSize() {
@@ -122,6 +184,7 @@ final public class ConfigWitness {
 
         /**
          * Gets if the reload automatic is configured
+         *
          * @return true if configured for automatic, false otherwise
          */
         public boolean configReloadAutomatic() {
@@ -130,6 +193,7 @@ final public class ConfigWitness {
 
         /**
          * Gets the configured reload interval
+         *
          * @return the configured reload interval
          */
         public long configReloadInterval() {
@@ -138,7 +202,8 @@ final public class ConfigWitness {
 
         /**
          * Gets if the dead letter queue is configured to be enabled
-          * @return true if the dead letter queue is configured to be enabled, false otherwise
+         *
+         * @return true if the dead letter queue is configured to be enabled, false otherwise
          */
         public boolean deadLetterQueueEnabled() {
             return witness.deadLetterQueueEnabled.getValue();
@@ -146,11 +211,15 @@ final public class ConfigWitness {
 
         /**
          * Gets the number of configured workers
+         *
          * @return the configured number of workers.
          */
         public long workers() {
             return witness.workers.getValue();
         }
 
+
     }
+
+
 }

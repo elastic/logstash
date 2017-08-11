@@ -1,5 +1,6 @@
 package org.logstash.instrument.witness;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -56,6 +57,60 @@ public class ConfigWitnessTest {
     public void testWorkers() {
         witness.workers(96);
         assertThat(witness.snitch().workers()).isEqualTo(96);
+    }
+
+    @Test
+    public void testAsJson() throws Exception {
+        ObjectMapper mapper = new ObjectMapper();
+        assertThat(mapper.writeValueAsString(witness)).isEqualTo(witness.asJson()).contains("config");
+    }
+
+    @Test
+    public void testSerializeEmpty() throws Exception {
+        String json = witness.asJson();
+        assertThat(json).isEqualTo("{\"config\":{}}");
+    }
+
+    @Test
+    public void testSerializeBatchSize() throws Exception {
+        witness.batchSize(999);
+        String json = witness.asJson();
+        assertThat(json).contains("999");
+    }
+
+    @Test
+    public void testSerializeWorkersSize() throws Exception {
+        witness.workers(888);
+        String json = witness.asJson();
+        assertThat(json).isEqualTo("{\"config\":{\"workers\":888}}");
+    }
+
+    @Test
+    public void testSerializeBatchDelay() throws Exception {
+        witness.batchDelay(777);
+        String json = witness.asJson();
+        assertThat(json).isEqualTo("{\"config\":{\"batch_delay\":777}}");
+    }
+
+    @Test
+    public void testSerializeAutoConfigReload() throws Exception {
+        witness.configReloadAutomatic(true);
+        String json = witness.asJson();
+        assertThat(json).isEqualTo("{\"config\":{\"config_reload_automatic\":true}}");
+    }
+
+    @Test
+    public void testSerializeReloadInterval() throws Exception {
+        witness.configReloadInterval(666);
+        String json = witness.asJson();
+        assertThat(json).isEqualTo("{\"config\":{\"config_reload_interval\":666}}");
+    }
+
+    @Test
+    public void testSerializeEnableDeadLetterQueue() throws Exception {
+        witness.deadLetterQueueEnabled(true);
+        String json = witness.asJson();
+        assertThat(json).isEqualTo("{\"config\":{\"dead_letter_queue_enabled\":true}}");
     }
 
 }
