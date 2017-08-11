@@ -1,5 +1,6 @@
 package org.logstash.instrument.witness;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -76,6 +77,72 @@ public class EventsWitnessTest {
         assertThat(witness.snitch().queuePushDuration()).isEqualTo(44);
         witness.queuePushDuration(1);
         assertThat(witness.snitch().queuePushDuration()).isEqualTo(45);
+    }
+
+    @Test
+    public void testAsJson() throws Exception {
+        ObjectMapper mapper = new ObjectMapper();
+        //empty
+        assertThat(mapper.writeValueAsString(witness)).isEqualTo(witness.asJson()).isEmpty();
+        //dirty
+        witness.in(1);
+        assertThat(mapper.writeValueAsString(witness)).isEqualTo(witness.asJson()).contains("events");
+    }
+
+    @Test
+    public void testSerializeEmpty() throws Exception {
+        //Due to legacy requirements if empty, the events should not serialize at all.
+        assertThat(witness.asJson()).isEmpty();
+    }
+
+    @Test
+    public void testSerializeDuration() throws Exception {
+        witness.duration(999);
+        String json = witness.asJson();
+        assertThat(json).contains("999");
+        witness.forgetAll();
+        json = witness.asJson();
+        assertThat(json).doesNotContain("999");
+    }
+
+    @Test
+    public void testSerializeIn() throws Exception {
+        witness.in(888);
+        String json = witness.asJson();
+        assertThat(json).contains("888");
+        witness.forgetAll();
+        json = witness.asJson();
+        assertThat(json).doesNotContain("888");
+    }
+
+    @Test
+    public void testSerializeFiltered() throws Exception {
+        witness.filtered(777);
+        String json = witness.asJson();
+        assertThat(json).contains("777");
+        witness.forgetAll();
+        json = witness.asJson();
+        assertThat(json).doesNotContain("777");
+    }
+
+    @Test
+    public void testSerializeOut() throws Exception {
+        witness.out(666);
+        String json = witness.asJson();
+        assertThat(json).contains("666");
+        witness.forgetAll();
+        json = witness.asJson();
+        assertThat(json).doesNotContain("666");
+    }
+
+    @Test
+    public void testSerializeQueueDuration() throws Exception {
+        witness.queuePushDuration(555);
+        String json = witness.asJson();
+        assertThat(json).contains("555");
+        witness.forgetAll();
+        json = witness.asJson();
+        assertThat(json).doesNotContain("555");
     }
 
 }

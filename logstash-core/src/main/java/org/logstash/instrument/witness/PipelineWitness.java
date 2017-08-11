@@ -1,22 +1,33 @@
 package org.logstash.instrument.witness;
 
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.databind.SerializerProvider;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.ser.std.StdSerializer;
+
+import java.io.IOException;
+
 /**
  * A single pipeline witness.
  */
-final public class PipelineWitness {
+@JsonSerialize(using = PipelineWitness.Serializer.class)
+final public class PipelineWitness implements SerializableWitness {
 
     private final ReloadWitness reloadWitness;
     private final EventsWitness eventsWitness;
     private final ConfigWitness configWitness;
     private final PluginsWitness pluginsWitness;
     private final QueueWitness queueWitness;
+    private final String KEY;
+    private static final Serializer SERIALIZER = new Serializer();
 
     /**
      * Constructor.
      *
      * @param pipelineName The uniquely identifying name of the pipeline.
      */
-    public PipelineWitness(String pipelineName) {  //NOTE - pipeline name is used as part of the serialization
+    public PipelineWitness(String pipelineName) {
+        this.KEY = pipelineName;
         this.reloadWitness = new ReloadWitness();
         this.eventsWitness = new EventsWitness();
         this.configWitness = new ConfigWitness();
@@ -44,6 +55,7 @@ final public class PipelineWitness {
 
     /**
      * Gets the {@link PluginWitness} for the given id, creates the associated {@link PluginWitness} if needed
+     *
      * @param id the id of the filter
      * @return the associated {@link PluginWitness} (for method chaining)
      */
@@ -67,6 +79,7 @@ final public class PipelineWitness {
 
     /**
      * Gets the {@link PluginWitness} for the given id, creates the associated {@link PluginWitness} if needed
+     *
      * @param id the id of the input
      * @return the associated {@link PluginWitness} (for method chaining)
      */
@@ -76,6 +89,7 @@ final public class PipelineWitness {
 
     /**
      * Gets the {@link PluginWitness} for the given id, creates the associated {@link PluginWitness} if needed
+     *
      * @param id the id of the output
      * @return the associated {@link PluginWitness} (for method chaining)
      */
@@ -109,5 +123,47 @@ final public class PipelineWitness {
     public QueueWitness queue() {
         return queueWitness;
     }
-}
 
+    @Override
+    public void genJson(JsonGenerator gen, SerializerProvider provider) throws IOException {
+        SERIALIZER.innerSerialize(this, gen, provider);
+    }
+
+    /**
+     * The Jackson serializer.
+     */
+    public static class Serializer extends StdSerializer<PipelineWitness> {
+
+        /**
+         * Default constructor - required for Jackson
+         */
+        public Serializer() {
+            this(PipelineWitness.class);
+        }
+
+        /**
+         * Constructor
+         *
+         * @param t the type to serialize
+         */
+        protected Serializer(Class<PipelineWitness> t) {
+            super(t);
+        }
+
+        @Override
+        public void serialize(PipelineWitness witness, JsonGenerator gen, SerializerProvider provider) throws IOException {
+            gen.writeStartObject();
+            innerSerialize(witness, gen, provider);
+            gen.writeEndObject();
+        }
+
+        void innerSerialize(PipelineWitness witness, JsonGenerator gen, SerializerProvider provider) throws IOException {
+            gen.writeObjectFieldStart(witness.KEY);
+            witness.events().genJson(gen, provider);
+            witness.plugins().genJson(gen, provider);
+            witness.reloads().genJson(gen, provider);
+            witness.queue().genJson(gen, provider);
+            gen.writeEndObject();
+        }
+    }
+}

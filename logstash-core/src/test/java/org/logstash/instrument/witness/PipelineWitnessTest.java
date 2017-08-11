@@ -1,9 +1,11 @@
 package org.logstash.instrument.witness;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;
 import org.junit.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.within;
 
 /**
  * Unit tests for {@link PipelineWitness}
@@ -60,6 +62,57 @@ public class PipelineWitnessTest {
                 .isEqualTo(0);
 
         assertThat(witness.queue().snitch().type()).isEqualTo("memory");
+    }
+
+    @Test
+    public void testAsJson() throws Exception {
+        ObjectMapper mapper = new ObjectMapper();
+        assertThat(mapper.writeValueAsString(witness)).isEqualTo(witness.asJson());
+    }
+
+    @Test
+    public void testSerializeEmpty() throws Exception {
+        String json = witness.asJson();
+        assertThat(json).isEqualTo("{\"default\":{\"plugins\":{\"inputs\":[],\"filters\":[],\"outputs\":[]},\"reloads\":{\"last_error\":null,\"successes\":0," +
+                "\"last_success_timestamp\":null,\"last_failure_timestamp\":null,\"failures\":0},\"queue\":{}}}");
+    }
+
+    @Test
+    public void testSerializeEvents() throws Exception{
+        witness.events().in(99);
+        String json = witness.asJson();
+        assertThat(json).contains("99");
+        witness.forgetEvents();
+        json = witness.asJson();
+        //events are forgotten
+        assertThat(json).doesNotContain("99");
+    }
+
+    @Test
+    public void testSerializePlugins() throws Exception{
+        witness.inputs("aaa");
+        witness.filters("bbb");
+        witness.outputs("ccc");
+        String json = witness.asJson();
+        assertThat(json).contains("aaa").contains("bbb").contains("ccc");
+        witness.forgetPlugins();
+        json = witness.asJson();
+        //plugins are forgotten
+        assertThat(json).doesNotContain("aaa").doesNotContain("bbb").doesNotContain("ccc");
+    }
+
+    @Test
+    public void testSerializeReloads() throws Exception{
+        witness.reloads().successes(98);
+        String json = witness.asJson();
+        assertThat(json).contains("98");
+    }
+
+    @Test
+    public void testSerializeQueue() throws Exception{
+        witness.queue().type("quantum");
+        String json = witness.asJson();
+        assertThat(json).contains("quantum");
     }
 
 }
