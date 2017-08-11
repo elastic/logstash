@@ -137,10 +137,26 @@ public final class CompiledPipeline {
     private CompiledPipeline.Dataset buildDataset() {
         CompiledPipeline.Dataset first = new RootDataset();
         final Map<String, CompiledPipeline.Dataset> filterplugins = new HashMap<>();
-        final Collection<CompiledPipeline.Dataset> datasets =
-            flatten(Collections.singleton(first), graph.getOutputPluginVertices().get(0),
-                filterplugins
-            );
+        final Collection<CompiledPipeline.Dataset> datasets = new ArrayList<>();
+        graph.pluginVertices().filter(p -> p.isLeaf()).forEach(
+            leaf -> {
+                if (!graph.getFilterPluginVertices().contains(leaf)) {
+                    datasets.addAll(flatten(Collections.singleton(first), leaf, filterplugins));
+                } else {
+                    final CompiledPipeline.Dataset newNode;
+                    if (!filterplugins.containsKey(leaf.getId())) {
+                        newNode = filterDataset(
+                            flatten(Collections.singleton(first), leaf, filterplugins),
+                            filters.get(leaf.getId())
+                        );
+                        filterplugins.put(leaf.getId(), newNode);
+                    } else {
+                        newNode = filterplugins.get(leaf.getId());
+                    }
+                    datasets.add(newNode);
+                }
+            }
+        );
         return new CompiledPipeline.Dataset() {
             @Override
             public RubyArray compute(final RubyArray originals) {
