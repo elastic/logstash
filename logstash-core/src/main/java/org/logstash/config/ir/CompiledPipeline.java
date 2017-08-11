@@ -30,7 +30,7 @@ public final class CompiledPipeline {
 
     private final Collection<IRubyObject> inputs = new ArrayList<>();
 
-    private final HashMap<String, ConditionalFilter> filters = new HashMap<>();
+    private final HashMap<String, CompiledPipeline.ConditionalFilter> filters = new HashMap<>();
 
     private final Collection<CompiledPipeline.ConditionalFilter> rootFilters = new ArrayList<>();
 
@@ -122,7 +122,7 @@ public final class CompiledPipeline {
             final RubyHash converted = RubyHash.newHash(RubyUtil.RUBY);
             for (final Map.Entry<String, Object> entry : def.getArguments().entrySet()) {
                 final Object value = entry.getValue();
-                if ((value instanceof PluginStatement)) {
+                if (value instanceof PluginStatement) {
                     final PluginDefinition codec =
                         ((PluginStatement) value).getPluginDefinition();
                     converted.put(entry.getKey(), pipeline.buildCodec(
@@ -193,7 +193,10 @@ public final class CompiledPipeline {
                         if (condition != null) {
                             conditions.add(condition);
                         }
-                    } else if (notPointsAt(filterPlugin, iff)) {
+                    } else if (notPointsAt(filterPlugin, iff)
+                        &&
+                        iff.getOutgoingBooleanEdgesByType(true).stream().flatMap(x -> x.descendants())
+                            .filter(d -> d.getTo() == filterPlugin).count() == 0) {
                         final EventCondition condition = buildCondition(iff);
                         if (condition != null) {
                             conditions.add(EventCondition.Factory.not(condition));
