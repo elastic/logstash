@@ -177,8 +177,7 @@ public final class CompiledPipeline {
             .filter(e -> e.getTo().equals(negative)).count() > 0L;
     }
 
-    private static Collection<EventCondition> wrapCondition(
-        final PluginVertex filterPlugin) {
+    private static Collection<EventCondition> wrapCondition(final PluginVertex filterPlugin) {
         final Collection<EventCondition> conditions = new ArrayList<>(5);
         filterPlugin.getIncomingVertices().stream()
             .filter(vertex -> vertex instanceof IfVertex)
