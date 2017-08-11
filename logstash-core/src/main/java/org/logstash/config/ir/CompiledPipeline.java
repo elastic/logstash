@@ -23,9 +23,9 @@ import org.logstash.ext.JrubyEventExtLibrary;
 
 public final class CompiledPipeline {
 
-    private static final EventCondition[] NO_CONDITIONS =
-        new EventCondition[0];
-    public static final CompiledPipeline.ConditionalFilter[] EMPTY_CHILDREN =
+    private static final EventCondition[] NO_CONDITIONS = new EventCondition[0];
+
+    private static final CompiledPipeline.ConditionalFilter[] EMPTY_CHILDREN =
         new CompiledPipeline.ConditionalFilter[0];
 
     private final Collection<IRubyObject> inputs = new ArrayList<>();
@@ -38,8 +38,12 @@ public final class CompiledPipeline {
 
     private final PipelineIR graph;
 
-    public CompiledPipeline(final PipelineIR graph) {
+    private final RubyIntegration.Pipeline pipeline;
+
+    public CompiledPipeline(final PipelineIR graph, final RubyIntegration.Pipeline pipeline) {
         this.graph = graph;
+        this.pipeline = pipeline;
+
     }
 
     public RubyIntegration.Plugin registerPlugin(final RubyIntegration.Plugin plugin) {
@@ -74,7 +78,7 @@ public final class CompiledPipeline {
             filter -> filter.periodicFlush()).collect(Collectors.toList());
     }
 
-    public Collection<RubyIntegration.Output> outputs(final RubyIntegration.Pipeline pipeline) {
+    public Collection<RubyIntegration.Output> outputs() {
         if (outputs.isEmpty()) {
             graph.getOutputPluginVertices().forEach(v -> {
                 final PluginDefinition def = v.getPluginDefinition();
@@ -89,7 +93,7 @@ public final class CompiledPipeline {
         return outputs;
     }
 
-    public Collection<RubyIntegration.Filter> filters(final RubyIntegration.Pipeline pipeline) {
+    public Collection<RubyIntegration.Filter> filters() {
         if (filters.isEmpty()) {
             final List<PluginVertex> plugins = new ArrayList<>(graph.getFilterPluginVertices());
             plugins.sort(Comparator.comparingInt(Vertex::rank));
@@ -98,15 +102,13 @@ public final class CompiledPipeline {
                 if (filters.containsKey(next.getId())) {
                     continue;
                 }
-                rootFilters.add(
-                    buildConditionalFilter(pipeline, next)
-                );
+                rootFilters.add(buildConditionalFilter(next));
             }
         }
         return filters.values().stream().map(fil -> fil.filter).collect(Collectors.toList());
     }
 
-    public Collection<IRubyObject> inputs(final RubyIntegration.Pipeline pipeline) {
+    public Collection<IRubyObject> inputs() {
         if (inputs.isEmpty()) {
             graph.getInputPluginVertices().forEach(v -> {
                 final PluginDefinition def = v.getPluginDefinition();
@@ -136,16 +138,15 @@ public final class CompiledPipeline {
     }
 
     private CompiledPipeline.ConditionalFilter buildConditionalFilter(
-        final RubyIntegration.Pipeline pipeline,
         final PluginVertex filterPlugin) {
         final CompiledPipeline.ConditionalFilter filter;
         if (!this.filters.containsKey(filterPlugin.getId())) {
             filter = new CompiledPipeline.ConditionalFilter(
-                buildFilter(pipeline, filterPlugin),
+                buildFilter(filterPlugin),
                 wrapCondition(filterPlugin).toArray(NO_CONDITIONS),
                 filterPlugin.descendants()
                     .filter(vert -> this.graph.getFilterPluginVertices().contains(vert))
-                    .map(vertex -> buildConditionalFilter(pipeline, (PluginVertex) vertex))
+                    .map(vertex -> buildConditionalFilter((PluginVertex) vertex))
                     .collect(Collectors.toList())
                     .toArray(EMPTY_CHILDREN)
             );
@@ -156,8 +157,7 @@ public final class CompiledPipeline {
         return filter;
     }
 
-    private static RubyIntegration.Filter buildFilter(final RubyIntegration.Pipeline pipeline,
-        final PluginVertex vertex) {
+    private RubyIntegration.Filter buildFilter(final PluginVertex vertex) {
         final PluginDefinition def = vertex.getPluginDefinition();
         return pipeline.buildFilter(
             RubyUtil.RUBY.newString(def.getName()),
