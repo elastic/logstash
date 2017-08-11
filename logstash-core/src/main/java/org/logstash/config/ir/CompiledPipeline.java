@@ -6,6 +6,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import org.jruby.RubyArray;
 import org.jruby.RubyHash;
@@ -193,12 +194,24 @@ public final class CompiledPipeline {
                         if (condition != null) {
                             conditions.add(EventCondition.Factory.not(condition));
                         }
+                        Optional<Vertex> next = iff.getIncomingVertices().stream().findFirst();
+                        while (next.isPresent() && next.get() instanceof IfVertex) {
+                            final IfVertex nextif = (IfVertex) next.get();
+                            final EventCondition nextc = buildCondition(nextif);
+                            if (nextc != null) {
+                                conditions.add(EventCondition.Factory.not(nextc));
+                            }
+                            next = nextif.getIncomingVertices().stream().findFirst();
+                        }
                     }
                 }
             );
         return conditions;
     }
 
+    /**
+     * @todo Remove weird print
+     */
     private static EventCondition buildCondition(final IfVertex iff) {
         try {
             return EventCondition.Factory.buildCondition(iff.getBooleanExpression());
