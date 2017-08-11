@@ -2,11 +2,11 @@ package org.logstash.config.ir;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Comparator;
+import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Map;
-import java.util.Optional;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import org.jruby.RubyArray;
 import org.jruby.RubyHash;
@@ -23,18 +23,11 @@ import org.logstash.ext.JrubyEventExtLibrary;
 
 public final class CompiledPipeline {
 
-    private static final EventCondition[] NO_CONDITIONS = new EventCondition[0];
+    private final Collection<IRubyObject> inputs = new HashSet<>();
 
-    private static final CompiledPipeline.ConditionalFilter[] EMPTY_CHILDREN =
-        new CompiledPipeline.ConditionalFilter[0];
+    private final HashMap<String, RubyIntegration.Filter> filters = new HashMap<>();
 
-    private final Collection<IRubyObject> inputs = new ArrayList<>();
-
-    private final HashMap<String, CompiledPipeline.ConditionalFilter> filters = new HashMap<>();
-
-    private final Collection<CompiledPipeline.ConditionalFilter> rootFilters = new ArrayList<>();
-
-    private final Collection<RubyIntegration.Output> outputs = new ArrayList<>();
+    private final Collection<RubyIntegration.Output> outputs = new HashSet<>();
 
     private final PipelineIR graph;
 
@@ -54,16 +47,9 @@ public final class CompiledPipeline {
     }
 
     public void filter(final JrubyEventExtLibrary.RubyEvent event, final RubyArray generated) {
-        RubyArray events = RubyUtil.RUBY.newArray();
-        events.add(event);
-        final RubyArray excluded = RubyUtil.RUBY.newArray();
-        for (final CompiledPipeline.ConditionalFilter filter : rootFilters) {
-            events = filter.execute(events, excluded);
-            events.addAll(excluded);
-            excluded.clear();
-        }
-        generated.addAll(events);
-        generated.addAll(excluded);
+        final RubyArray incoming = RubyUtil.RUBY.newArray();
+        incoming.add(event);
+        generated.addAll(buildDataset().compute(incoming));
     }
 
     public void output(final RubyArray events) {
@@ -71,7 +57,7 @@ public final class CompiledPipeline {
     }
 
     public Collection<RubyIntegration.Filter> shutdownFlushers() {
-        return filters.values().stream().filter(f -> f.flushes()).map(f -> f.filter).collect(
+        return filters.values().stream().filter(RubyIntegration.Filter::hasFlush).collect(
             Collectors.toList());
     }
 
@@ -85,7 +71,7 @@ public final class CompiledPipeline {
     }
 
     public Collection<RubyIntegration.Filter> filters() {
-        return filters.values().stream().map(fil -> fil.filter).collect(Collectors.toList());
+        return new ArrayList<>(filters.values());
     }
 
     public Collection<IRubyObject> inputs() {
@@ -105,14 +91,10 @@ public final class CompiledPipeline {
     }
 
     private void setupFilters() {
-        final List<PluginVertex> plugins = new ArrayList<>(graph.getFilterPluginVertices());
-        plugins.sort(Comparator.comparingInt(Vertex::rank));
-        while (!plugins.isEmpty()) {
-            final PluginVertex next = plugins.remove(0);
-            if (filters.containsKey(next.getId())) {
-                continue;
+        for (final PluginVertex plugin : graph.getFilterPluginVertices()) {
+            if (!filters.containsKey(plugin.getId())) {
+                filters.put(plugin.getId(), buildFilter(plugin));
             }
-            rootFilters.add(buildConditionalFilter(next));
         }
     }
 
@@ -142,26 +124,6 @@ public final class CompiledPipeline {
         });
     }
 
-    private CompiledPipeline.ConditionalFilter buildConditionalFilter(
-        final PluginVertex filterPlugin) {
-        final CompiledPipeline.ConditionalFilter filter;
-        if (!this.filters.containsKey(filterPlugin.getId())) {
-            filter = new CompiledPipeline.ConditionalFilter(
-                buildFilter(filterPlugin),
-                wrapCondition(filterPlugin).toArray(NO_CONDITIONS),
-                filterPlugin.descendants()
-                    .filter(vert -> this.graph.getFilterPluginVertices().contains(vert))
-                    .map(vertex -> buildConditionalFilter((PluginVertex) vertex))
-                    .collect(Collectors.toList())
-                    .toArray(EMPTY_CHILDREN)
-            );
-            filters.put(filterPlugin.getId(), filter);
-        } else {
-            filter = filters.get(filterPlugin.getId());
-        }
-        return filter;
-    }
-
     private RubyIntegration.Filter buildFilter(final PluginVertex vertex) {
         final PluginDefinition def = vertex.getPluginDefinition();
         return pipeline.buildFilter(
@@ -172,48 +134,78 @@ public final class CompiledPipeline {
         );
     }
 
-    private static boolean ifPointsAt(final PluginVertex positive, final IfVertex iff) {
-        return iff.getOutgoingBooleanEdgesByType(true).stream()
-            .filter(e -> e.getTo().equals(positive)).count() > 0L;
-    }
-
-    private static boolean notPointsAt(final Vertex negative, final IfVertex iff) {
-        return iff.getOutgoingBooleanEdgesByType(false).stream()
-            .filter(e -> e.getTo().equals(negative)).count() > 0L;
-    }
-
-    private static Collection<EventCondition> wrapCondition(final PluginVertex filterPlugin) {
-        final Collection<EventCondition> conditions = new ArrayList<>(5);
-        filterPlugin.getIncomingVertices().stream()
-            .filter(vertex -> vertex instanceof IfVertex)
-            .forEach(vertex -> {
-                    final IfVertex iff = (IfVertex) vertex;
-                    if (ifPointsAt(filterPlugin, iff)) {
-                        final EventCondition condition = buildCondition(iff);
-                        if (condition != null) {
-                            conditions.add(condition);
-                        }
-                    } else if (notPointsAt(filterPlugin, iff)
-                        &&
-                        iff.getOutgoingBooleanEdgesByType(true).stream().flatMap(x -> x.descendants())
-                            .filter(d -> d.getTo() == filterPlugin).count() == 0) {
-                        final EventCondition condition = buildCondition(iff);
-                        if (condition != null) {
-                            conditions.add(EventCondition.Factory.not(condition));
-                        }
-                        Optional<Vertex> next = iff.getIncomingVertices().stream().findFirst();
-                        while (next.isPresent() && next.get() instanceof IfVertex) {
-                            final IfVertex nextif = (IfVertex) next.get();
-                            final EventCondition nextc = buildCondition(nextif);
-                            if (nextc != null) {
-                                conditions.add(EventCondition.Factory.not(nextc));
-                            }
-                            next = nextif.getIncomingVertices().stream().findFirst();
-                        }
-                    }
-                }
+    private CompiledPipeline.Dataset buildDataset() {
+        CompiledPipeline.Dataset first = new RootDataset();
+        final Map<String, CompiledPipeline.Dataset> filterplugins = new HashMap<>();
+        final Collection<CompiledPipeline.Dataset> datasets =
+            flatten(Collections.singleton(first), graph.getOutputPluginVertices().get(0),
+                filterplugins
             );
-        return conditions;
+        return new CompiledPipeline.Dataset() {
+            @Override
+            public RubyArray compute(final RubyArray originals) {
+                final RubyArray res = RubyUtil.RUBY.newArray();
+                datasets.forEach(dataset -> res.addAll(dataset.compute(originals)));
+                return res;
+            }
+        };
+    }
+
+    private Collection<CompiledPipeline.Dataset> flatten(
+        final Collection<CompiledPipeline.Dataset> parents, final Vertex start,
+        final Map<String, CompiledPipeline.Dataset> filterMap) {
+        final Collection<Vertex> endings = start.getIncomingVertices();
+        if (endings.isEmpty()) {
+            return parents;
+        }
+        final Collection<CompiledPipeline.Dataset> res = new ArrayList<>();
+        for (final Vertex end : endings) {
+            CompiledPipeline.Dataset newNode = null;
+            Collection<CompiledPipeline.Dataset> newparents = flatten(parents, end, filterMap);
+            if (newparents.isEmpty()) {
+                newparents = new ArrayList<>(parents);
+            }
+            if (end instanceof PluginVertex) {
+                if (!filterMap.containsKey(end.getId())) {
+                    newNode = filterDataset(newparents, filters.get(end.getId()));
+                    filterMap.put(end.getId(), newNode);
+                } else {
+                    newNode = filterMap.get(end.getId());
+                }
+            } else if (end instanceof IfVertex) {
+                final EventCondition iff = buildCondition((IfVertex) end);
+                if (((IfVertex) end).getOutgoingBooleanEdgesByType(true).stream()
+                    .anyMatch(edge -> Objects.equals(edge.getTo(), start))) {
+                    newNode = splitRight(newparents, iff);
+                } else {
+                    newNode = splitLeft(newparents, iff);
+                }
+            }
+            if (newNode != null) {
+                res.add(newNode);
+            }
+        }
+        return res;
+    }
+
+    private static CompiledPipeline.Dataset splitLeft(
+        final Collection<CompiledPipeline.Dataset> dataset,
+        final EventCondition condition) {
+        return new CompiledPipeline.SplitDataset(
+            dataset, EventCondition.Factory.not(condition)
+        );
+    }
+
+    private static CompiledPipeline.Dataset splitRight(
+        final Collection<CompiledPipeline.Dataset> dataset,
+        final EventCondition condition) {
+        return new CompiledPipeline.SplitDataset(dataset, condition);
+    }
+
+    private static CompiledPipeline.Dataset filterDataset(
+        final Collection<CompiledPipeline.Dataset> parents,
+        final RubyIntegration.Filter filter) {
+        return new CompiledPipeline.FilteredDataset(parents, filter);
     }
 
     /**
@@ -228,54 +220,82 @@ public final class CompiledPipeline {
         }
     }
 
-    private static final class ConditionalFilter {
+    private interface Dataset {
 
-        private final RubyIntegration.Filter filter;
+        RubyArray compute(RubyArray originals);
+    }
 
-        private final CompiledPipeline.ConditionalFilter[] children;
+    private final class RootDataset implements CompiledPipeline.Dataset {
 
-        private final EventCondition[] conditions;
-
-        ConditionalFilter(final RubyIntegration.Filter filter,
-            final EventCondition[] conditions,
-            final CompiledPipeline.ConditionalFilter children[]) {
-            this.filter = filter;
-            this.conditions = conditions;
-            this.children = children;
-        }
-
-        public RubyArray execute(final RubyArray events, final RubyArray excluded) {
-            final RubyArray valid = RubyUtil.RUBY.newArray();
-            for (final Object obj : events) {
-                if (fulfilled((JrubyEventExtLibrary.RubyEvent) obj)) {
-                    valid.add(obj);
-                } else {
-                    excluded.add(obj);
-                }
-            }
-            RubyArray temp = filter.multiFilter(valid);
-            final RubyArray result = RubyUtil.RUBY.newArray();
-            for (final CompiledPipeline.ConditionalFilter filter : children) {
-                final RubyArray childExcluded = RubyUtil.RUBY.newArray();
-                result.addAll(filter.execute(temp, childExcluded));
-                temp = childExcluded;
-            }
-            result.addAll(temp);
-            return result;
-        }
-
-        public boolean flushes() {
-            return filter.hasFlush();
-        }
-
-        private boolean fulfilled(final JrubyEventExtLibrary.RubyEvent event) {
-            for (final EventCondition cond : conditions) {
-                if (!cond.fulfilled(event)) {
-                    return false;
-                }
-            }
-            return true;
+        @Override
+        public RubyArray compute(final RubyArray originals) {
+            return originals;
         }
     }
 
+    private static final class FilteredDataset implements CompiledPipeline.Dataset {
+
+        private final Collection<CompiledPipeline.Dataset> parents;
+
+        private final RubyIntegration.Filter func;
+
+        private final RubyArray data;
+
+        private boolean done;
+
+        FilteredDataset(Collection<CompiledPipeline.Dataset> parents,
+            final RubyIntegration.Filter func) {
+            this.parents = parents;
+            this.func = func;
+            data = RubyUtil.RUBY.newArray();
+        }
+
+        @Override
+        public RubyArray compute(final RubyArray originals) {
+            if (done) {
+                return data;
+            }
+            final RubyArray buffer = RubyUtil.RUBY.newArray();
+            for (final CompiledPipeline.Dataset set : parents) {
+                buffer.addAll(set.compute(originals));
+            }
+            done = true;
+            data.addAll(func.multiFilter(buffer));
+            return data;
+        }
+    }
+
+    private static final class SplitDataset implements CompiledPipeline.Dataset {
+
+        private final Collection<CompiledPipeline.Dataset> parents;
+
+        private final EventCondition func;
+
+        private boolean done;
+
+        private final RubyArray data;
+
+        SplitDataset(Collection<CompiledPipeline.Dataset> parents, final EventCondition func) {
+            this.parents = parents;
+            this.func = func;
+            done = false;
+            data = RubyUtil.RUBY.newArray();
+        }
+
+        @Override
+        public RubyArray compute(final RubyArray originals) {
+            if (done) {
+                return data;
+            }
+            for (final CompiledPipeline.Dataset set : parents) {
+                for (final Object event : set.compute(originals)) {
+                    if (func.fulfilled((JrubyEventExtLibrary.RubyEvent) event)) {
+                        data.add(event);
+                    }
+                }
+            }
+            done = true;
+            return data;
+        }
+    }
 }
