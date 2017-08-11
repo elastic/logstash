@@ -1,17 +1,27 @@
 package org.logstash.instrument.witness;
 
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.databind.SerializerProvider;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.ser.std.StdSerializer;
+import org.logstash.instrument.metrics.Metric;
 import org.logstash.instrument.metrics.counter.LongCounter;
+
+import java.io.IOException;
 
 /**
  * Witness for events.
  */
-final public class EventsWitness{
+@JsonSerialize(using = EventsWitness.Serializer.class)
+final public class EventsWitness implements SerializableWitness {
 
     private LongCounter filtered;
     private LongCounter out;
     private LongCounter in;
     private LongCounter duration;
     private LongCounter queuePushDuration;
+    private final static String KEY = "events";
+    private static final Serializer SERIALIZER = new Serializer();
     private final Snitch snitch;
     private boolean dirty; //here for passivity with legacy Ruby implementation
 
@@ -124,6 +134,60 @@ final public class EventsWitness{
         dirty = true;
     }
 
+    @Override
+    public String asJson() throws IOException {
+        return dirty ? SerializableWitness.super.asJson() : "";
+    }
+
+    @Override
+    public void genJson(final JsonGenerator gen, SerializerProvider provider) throws IOException {
+        SERIALIZER.innerSerialize(this, gen, provider);
+    }
+
+    /**
+     * The Jackson serializer.
+     */
+    public static class Serializer extends StdSerializer<EventsWitness> {
+
+        /**
+         * Default constructor - required for Jackson
+         */
+        public Serializer() {
+            this(EventsWitness.class);
+        }
+
+        /**
+         * Constructor
+         *
+         * @param t the type to serialize
+         */
+        protected Serializer(Class<EventsWitness> t) {
+            super(t);
+        }
+
+        @Override
+        public void serialize(EventsWitness witness, JsonGenerator gen, SerializerProvider provider) throws IOException {
+            if (witness.dirty) {
+                gen.writeStartObject();
+                innerSerialize(witness, gen, provider);
+                gen.writeEndObject();
+            }
+        }
+
+        void innerSerialize(EventsWitness witness, JsonGenerator gen, SerializerProvider provider) throws IOException {
+            if (witness.dirty) {
+                gen.writeObjectFieldStart(KEY);
+                MetricSerializer<Metric<Long>> longSerializer = MetricSerializer.Get.longSerializer(gen);
+                longSerializer.serialize(witness.duration);
+                longSerializer.serialize(witness.in);
+                longSerializer.serialize(witness.out);
+                longSerializer.serialize(witness.filtered);
+                longSerializer.serialize(witness.queuePushDuration);
+                gen.writeEndObject();
+            }
+        }
+    }
+
     /**
      * The snitch for the {@link EventsWitness}. Allows to read discrete metrics values.
      */
@@ -174,6 +238,7 @@ final public class EventsWitness{
 
         /**
          * Gets the duration of the queue push
+         *
          * @return the queue push duration.
          */
         public long queuePushDuration() {

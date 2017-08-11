@@ -1,6 +1,7 @@
 package org.logstash.instrument.witness;
 
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -28,5 +29,31 @@ public class PluginWitnessTest {
     @Test
     public void testEvents(){
         assertThat(witness.events()).isNotNull();
+    }
+
+    @Test
+    public void testAsJson() throws Exception {
+        ObjectMapper mapper = new ObjectMapper();
+        assertThat(mapper.writeValueAsString(witness)).isEqualTo(witness.asJson());
+    }
+
+    @Test
+    public void testSerializationEmpty() throws Exception {
+        String json = witness.asJson();
+        assertThat(json).isEqualTo("{\"id\":\"123\"}");
+    }
+
+    @Test
+    public void testSerializationName() throws Exception {
+        witness.name("abc");
+        String json = witness.asJson();
+        assertThat(json).isEqualTo("{\"id\":\"123\",\"name\":\"abc\"}");
+    }
+
+    @Test
+    public void testSerializationEvents() throws Exception {
+        witness.events().in();
+        String json = witness.asJson();
+        assertThat(json).isEqualTo("{\"id\":\"123\",\"events\":{\"in\":1}}");
     }
 }
