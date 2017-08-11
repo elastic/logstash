@@ -43,7 +43,9 @@ public final class CompiledPipeline {
     public CompiledPipeline(final PipelineIR graph, final RubyIntegration.Pipeline pipeline) {
         this.graph = graph;
         this.pipeline = pipeline;
-
+        setupInputs();
+        setupFilters();
+        setupOutputs();
     }
 
     public RubyIntegration.Plugin registerPlugin(final RubyIntegration.Plugin plugin) {
@@ -79,62 +81,65 @@ public final class CompiledPipeline {
     }
 
     public Collection<RubyIntegration.Output> outputs() {
-        if (outputs.isEmpty()) {
-            graph.getOutputPluginVertices().forEach(v -> {
-                final PluginDefinition def = v.getPluginDefinition();
-                outputs.add(pipeline.buildOutput(
-                    RubyUtil.RUBY.newString(def.getName()),
-                    RubyUtil.RUBY.newFixnum(v.getSourceWithMetadata().getLine()),
-                    RubyUtil.RUBY.newFixnum(v.getSourceWithMetadata().getColumn()),
-                    Rubyfier.deep(RubyUtil.RUBY, def.getArguments())
-                ));
-            });
-        }
         return outputs;
     }
 
     public Collection<RubyIntegration.Filter> filters() {
-        if (filters.isEmpty()) {
-            final List<PluginVertex> plugins = new ArrayList<>(graph.getFilterPluginVertices());
-            plugins.sort(Comparator.comparingInt(Vertex::rank));
-            while (!plugins.isEmpty()) {
-                final PluginVertex next = plugins.remove(0);
-                if (filters.containsKey(next.getId())) {
-                    continue;
-                }
-                rootFilters.add(buildConditionalFilter(next));
-            }
-        }
         return filters.values().stream().map(fil -> fil.filter).collect(Collectors.toList());
     }
 
     public Collection<IRubyObject> inputs() {
-        if (inputs.isEmpty()) {
-            graph.getInputPluginVertices().forEach(v -> {
-                final PluginDefinition def = v.getPluginDefinition();
-                final RubyHash converted = RubyHash.newHash(RubyUtil.RUBY);
-                for (final Map.Entry<String, Object> entry : def.getArguments().entrySet()) {
-                    final Object value = entry.getValue();
-                    if ((value instanceof PluginStatement)) {
-                        final PluginDefinition codec =
-                            ((PluginStatement) value).getPluginDefinition();
-                        converted.put(entry.getKey(), pipeline.buildCodec(
-                            RubyUtil.RUBY.newString(codec.getName()),
-                            Rubyfier.deep(RubyUtil.RUBY, codec.getArguments())
-                        ));
-                    } else {
-                        converted.put(entry.getKey(), entry.getValue());
-                    }
-                }
-                inputs.add(pipeline.buildInput(
-                    RubyUtil.RUBY.newString(def.getName()),
-                    RubyUtil.RUBY.newFixnum(v.getSourceWithMetadata().getLine()),
-                    RubyUtil.RUBY.newFixnum(v.getSourceWithMetadata().getColumn()),
-                    converted
-                ));
-            });
-        }
         return inputs;
+    }
+
+    private void setupOutputs() {
+        graph.getOutputPluginVertices().forEach(v -> {
+            final PluginDefinition def = v.getPluginDefinition();
+            outputs.add(pipeline.buildOutput(
+                RubyUtil.RUBY.newString(def.getName()),
+                RubyUtil.RUBY.newFixnum(v.getSourceWithMetadata().getLine()),
+                RubyUtil.RUBY.newFixnum(v.getSourceWithMetadata().getColumn()),
+                Rubyfier.deep(RubyUtil.RUBY, def.getArguments())
+            ));
+        });
+    }
+
+    private void setupFilters() {
+        final List<PluginVertex> plugins = new ArrayList<>(graph.getFilterPluginVertices());
+        plugins.sort(Comparator.comparingInt(Vertex::rank));
+        while (!plugins.isEmpty()) {
+            final PluginVertex next = plugins.remove(0);
+            if (filters.containsKey(next.getId())) {
+                continue;
+            }
+            rootFilters.add(buildConditionalFilter(next));
+        }
+    }
+
+    private void setupInputs() {
+        graph.getInputPluginVertices().forEach(v -> {
+            final PluginDefinition def = v.getPluginDefinition();
+            final RubyHash converted = RubyHash.newHash(RubyUtil.RUBY);
+            for (final Map.Entry<String, Object> entry : def.getArguments().entrySet()) {
+                final Object value = entry.getValue();
+                if ((value instanceof PluginStatement)) {
+                    final PluginDefinition codec =
+                        ((PluginStatement) value).getPluginDefinition();
+                    converted.put(entry.getKey(), pipeline.buildCodec(
+                        RubyUtil.RUBY.newString(codec.getName()),
+                        Rubyfier.deep(RubyUtil.RUBY, codec.getArguments())
+                    ));
+                } else {
+                    converted.put(entry.getKey(), entry.getValue());
+                }
+            }
+            inputs.add(pipeline.buildInput(
+                RubyUtil.RUBY.newString(def.getName()),
+                RubyUtil.RUBY.newFixnum(v.getSourceWithMetadata().getLine()),
+                RubyUtil.RUBY.newFixnum(v.getSourceWithMetadata().getColumn()),
+                converted
+            ));
+        });
     }
 
     private CompiledPipeline.ConditionalFilter buildConditionalFilter(

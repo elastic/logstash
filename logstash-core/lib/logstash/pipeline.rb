@@ -48,7 +48,6 @@ module LogStash; class BasePipeline
     @config_hash = Digest::SHA1.hexdigest(@config_str)
 
     @lir = compile_lir
-    @lir_execution = CompiledPipeline.new(@lir, self)
 
     # Every time #plugin is invoked this is incremented to give each plugin
     # a unique id when auto-generating plugin ids
@@ -61,11 +60,8 @@ module LogStash; class BasePipeline
     @agent = agent
 
     @dlq_writer = dlq_writer
-    # config_code = BasePipeline.compileConfig(config_str)
 
-    if settings.get_value("config.debug") && @logger.debug?
-      @logger.debug("Compiled pipeline code", default_logging_keys(:code => config_code))
-    end
+    @lir_execution = CompiledPipeline.new(@lir, self)
     @inputs = @lir_execution.inputs
     @filters = @lir_execution.filters
     @outputs = @lir_execution.outputs
