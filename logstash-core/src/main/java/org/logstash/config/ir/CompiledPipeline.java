@@ -6,7 +6,6 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.stream.Collectors;
 import org.jruby.RubyArray;
 import org.jruby.RubyHash;
@@ -45,6 +44,33 @@ public final class CompiledPipeline {
     public RubyIntegration.Plugin registerPlugin(final RubyIntegration.Plugin plugin) {
         plugin.register();
         return plugin;
+    }
+
+    public void filter(final JrubyEventExtLibrary.RubyEvent event, final RubyArray generated) {
+        RubyArray events = RubyUtil.RUBY.newArray();
+        events.add(event);
+        final RubyArray excluded = RubyUtil.RUBY.newArray();
+        for (final CompiledPipeline.ConditionalFilter filter : rootFilters) {
+            events = filter.execute(events, excluded);
+            events.addAll(excluded);
+            excluded.clear();
+        }
+        generated.addAll(events);
+        generated.addAll(excluded);
+    }
+
+    public void output(final RubyArray events) {
+        outputs.forEach(output -> output.multiReceive(events));
+    }
+
+    public Collection<RubyIntegration.Filter> shutdownFlushers() {
+        return filters.values().stream().filter(f -> f.flushes()).map(f -> f.filter).collect(
+            Collectors.toList());
+    }
+
+    public Collection<RubyIntegration.Filter> periodicFlushers() {
+        return shutdownFlushers().stream().filter(
+            filter -> filter.periodicFlush()).collect(Collectors.toList());
     }
 
     public Collection<RubyIntegration.Output> outputs(final RubyIntegration.Pipeline pipeline) {
@@ -140,33 +166,6 @@ public final class CompiledPipeline {
         );
     }
 
-    public void filter(final JrubyEventExtLibrary.RubyEvent event, final RubyArray generated) {
-        RubyArray events = RubyUtil.RUBY.newArray();
-        events.add(event);
-        final RubyArray excluded = RubyUtil.RUBY.newArray();
-        for (final CompiledPipeline.ConditionalFilter filter : rootFilters) {
-            events = filter.execute(events, excluded);
-            events.addAll(excluded);
-            excluded.clear();
-        }
-        generated.addAll(events);
-        generated.addAll(excluded);
-    }
-
-    public void output(final RubyArray events) {
-        outputs.forEach(output -> output.multiReceive(events));
-    }
-
-    public Collection<RubyIntegration.Filter> shutdownFlushers() {
-        return filters.values().stream().filter(f -> f.flushes()).map(f -> f.filter).collect(
-            Collectors.toList());
-    }
-
-    public Collection<RubyIntegration.Filter> periodicFlushers() {
-        return shutdownFlushers().stream().filter(
-            filter -> filter.periodicFlush()).collect(Collectors.toList());
-    }
-
     private static boolean ifPointsAt(final PluginVertex positive, final IfVertex iff) {
         return iff.getOutgoingBooleanEdgesByType(true).stream()
             .filter(e -> e.getTo().equals(positive)).count() > 0L;
@@ -193,15 +192,6 @@ public final class CompiledPipeline {
                         final EventCondition condition = buildCondition(iff);
                         if (condition != null) {
                             conditions.add(EventCondition.Factory.not(condition));
-                        }
-                        Optional<Vertex> next = iff.getIncomingVertices().stream().findFirst();
-                        while (next.isPresent() && next.get() instanceof IfVertex) {
-                            final IfVertex nextif = (IfVertex) next.get();
-                            final EventCondition nextc = buildCondition(nextif);
-                            if (nextc != null) {
-                                conditions.add(EventCondition.Factory.not(nextc));
-                            }
-                            next = nextif.getIncomingVertices().stream().findFirst();
                         }
                     }
                 }
