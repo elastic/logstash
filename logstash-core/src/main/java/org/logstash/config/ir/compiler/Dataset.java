@@ -20,6 +20,10 @@ public interface Dataset {
      */
     RubyArray compute(RubyArray originals);
 
+    /**
+     * {@link Dataset} that contains all {@link JrubyEventExtLibrary.RubyEvent} of all of
+     * its dependencies.
+     */
     final class SumDataset implements Dataset {
         private final Collection<Dataset> parents;
 
@@ -81,6 +85,10 @@ public interface Dataset {
         }
     }
 
+    /**
+     * {@link Dataset} resulting from applying a backing {@link RubyIntegration.Filter} to all
+     * dependent {@link Dataset}.
+     */
     final class FilteredDataset implements Dataset {
 
         private final Collection<Dataset> parents;
