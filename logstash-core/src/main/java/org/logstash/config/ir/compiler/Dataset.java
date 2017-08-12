@@ -1,6 +1,7 @@
 package org.logstash.config.ir.compiler;
 
 import java.util.Collection;
+import java.util.Collections;
 import org.jruby.RubyArray;
 import org.logstash.RubyUtil;
 import org.logstash.ext.JrubyEventExtLibrary;
@@ -19,6 +20,12 @@ public interface Dataset {
      * @return Computed {@link RubyArray} of {@link JrubyEventExtLibrary.RubyEvent}
      */
     RubyArray compute(RubyArray originals);
+
+    /**
+     * Root {@link Dataset}s at the beginning of the execution tree that simply pass through
+     * the given set of {@link JrubyEventExtLibrary.RubyEvent} and have no state.
+     */
+    Collection<Dataset> ROOT_DATASETS = Collections.singleton(originals -> originals);
 
     /**
      * {@link Dataset} that contains all {@link JrubyEventExtLibrary.RubyEvent} of all of
@@ -74,14 +81,6 @@ public interface Dataset {
             }
             done = true;
             return data;
-        }
-    }
-
-    final class RootDataset implements Dataset {
-
-        @Override
-        public RubyArray compute(final RubyArray originals) {
-            return originals;
         }
     }
 

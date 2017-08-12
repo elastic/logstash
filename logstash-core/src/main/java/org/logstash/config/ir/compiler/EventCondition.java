@@ -46,6 +46,8 @@ public interface EventCondition {
          */
         private static final EventCondition FALSE = event -> false;
 
+        
+        
         private Compiler() {
             //Utility Class.
         }

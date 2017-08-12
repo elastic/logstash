@@ -2,7 +2,6 @@ package org.logstash.config.ir;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -26,7 +25,7 @@ import org.logstash.ext.JrubyEventExtLibrary;
 
 public final class CompiledPipeline {
 
-    private final Collection<IRubyObject> inputs = new HashSet<>();
+    private final Collection<IRubyObject> inputs;
 
     private final HashMap<String, RubyIntegration.Filter> filters = new HashMap<>();
 
@@ -39,7 +38,7 @@ public final class CompiledPipeline {
     public CompiledPipeline(final PipelineIR graph, final RubyIntegration.Pipeline pipeline) {
         this.graph = graph;
         this.pipeline = pipeline;
-        setupInputs();
+        inputs = setupInputs();
         setupFilters();
         setupOutputs();
     }
@@ -96,35 +95,41 @@ public final class CompiledPipeline {
 
     private void setupFilters() {
         for (final PluginVertex plugin : graph.getFilterPluginVertices()) {
-            if (!filters.containsKey(plugin.getId())) {
-                filters.put(plugin.getId(), buildFilter(plugin));
+            final String ident = plugin.getId();
+            if (!filters.containsKey(ident)) {
+                filters.put(ident, buildFilter(plugin));
             }
         }
     }
 
-    private void setupInputs() {
-        graph.getInputPluginVertices().forEach(v -> {
+    private Collection<IRubyObject> setupInputs() {
+        final Collection<PluginVertex> vertices = graph.getInputPluginVertices();
+        final Collection<IRubyObject> nodes = new HashSet<>(vertices.size());
+        vertices.forEach(v -> {
             final PluginDefinition def = v.getPluginDefinition();
             final RubyHash converted = RubyHash.newHash(RubyUtil.RUBY);
             for (final Map.Entry<String, Object> entry : def.getArguments().entrySet()) {
                 final Object value = entry.getValue();
+                final String key = entry.getKey();
+                final Object toput;
                 if (value instanceof PluginStatement) {
-                    final PluginDefinition codec =
-                        ((PluginStatement) value).getPluginDefinition();
-                    converted.put(entry.getKey(), pipeline.buildCodec(
+                    final PluginDefinition codec = ((PluginStatement) value).getPluginDefinition();
+                    toput = pipeline.buildCodec(
                         RubyUtil.RUBY.newString(codec.getName()),
                         Rubyfier.deep(RubyUtil.RUBY, codec.getArguments())
-                    ));
+                    );
                 } else {
-                    converted.put(entry.getKey(), entry.getValue());
+                    toput = value;
                 }
+                converted.put(key, toput);
             }
             final SourceWithMetadata source = v.getSourceWithMetadata();
-            inputs.add(pipeline.buildInput(
+            nodes.add(pipeline.buildInput(
                 RubyUtil.RUBY.newString(def.getName()), RubyUtil.RUBY.newFixnum(source.getLine()),
                 RubyUtil.RUBY.newFixnum(source.getColumn()), converted
             ));
         });
+        return nodes;
     }
 
     private RubyIntegration.Filter buildFilter(final PluginVertex vertex) {
@@ -138,14 +143,18 @@ public final class CompiledPipeline {
     }
 
     private Dataset buildDataset() {
-        final Dataset first = new Dataset.RootDataset();
-        final Map<String, Dataset> filterplugins = new HashMap<>();
-        final Collection<Dataset> datasets = new ArrayList<>();
+        final Map<String, Dataset> filterplugins = new HashMap<>(this.filters.size());
+        final Collection<Dataset> datasets = new ArrayList<>(5);
+        // We sort the leaves of the graph in a deterministic fashion before compilation.
+        // This is not strictly necessary for correctness since it will only influence the order
+        // of output events for which Logstash makes no guarantees, but it greatly simplifies
+        // testing and is no issue performance wise since compilation only happens on pipeline
+        // reload.
         graph.getGraph().getAllLeaves().stream().sorted(Comparator.comparing(Vertex::hashPrefix))
             .forEachOrdered(
                 leaf -> {
                     final Collection<Dataset> parents =
-                        flatten(Collections.singleton(first), leaf, filterplugins);
+                        flatten(Dataset.ROOT_DATASETS, leaf, filterplugins);
                     if (isFilter(leaf)) {
                         datasets.add(filterDataset(leaf.getId(), filterplugins, parents));
                     } else if (leaf instanceof IfVertex) {
@@ -162,20 +171,27 @@ public final class CompiledPipeline {
         return graph.getFilterPluginVertices().contains(vertex);
     }
 
+    /**
+     * Compiles the next level of the execution from the given {@link Vertex}.
+     * @param parents Nodes from the last already compiled level
+     * @param start Vertex to compile children for
+     * @param cached Cache of already compiled {@link Dataset}
+     * @return Datasets originating from given {@link Vertex}
+     */
     private Collection<Dataset> flatten(final Collection<Dataset> parents, final Vertex start,
-        final Map<String, Dataset> filterMap) {
+        final Map<String, Dataset> cached) {
         final Collection<Vertex> endings = start.getIncomingVertices();
         if (endings.isEmpty()) {
             return parents;
         }
         final Collection<Dataset> res = new ArrayList<>(2);
         for (final Vertex end : endings) {
-            Collection<Dataset> newparents = flatten(parents, end, filterMap);
+            Collection<Dataset> newparents = flatten(parents, end, cached);
             if (newparents.isEmpty()) {
                 newparents = new ArrayList<>(parents);
             }
             if (isFilter(end)) {
-                res.add(filterDataset(end.getId(), filterMap, newparents));
+                res.add(filterDataset(end.getId(), cached, newparents));
             } else if (end instanceof IfVertex) {
                 final IfVertex ifvert = (IfVertex) end;
                 final EventCondition iff = buildCondition(ifvert);
@@ -202,16 +218,14 @@ public final class CompiledPipeline {
         return dataset;
     }
 
-    private static Dataset splitRight(final Collection<Dataset> dataset,
+    private static Dataset splitRight(final Collection<Dataset> parents,
         final EventCondition condition) {
-        return new Dataset.SplitDataset(
-            dataset, EventCondition.Compiler.not(condition)
-        );
+        return splitLeft(parents, EventCondition.Compiler.not(condition));
     }
 
-    private static Dataset splitLeft(final Collection<Dataset> dataset,
+    private static Dataset splitLeft(final Collection<Dataset> parents,
         final EventCondition condition) {
-        return new Dataset.SplitDataset(dataset, condition);
+        return new Dataset.SplitDataset(parents, condition);
     }
 
     /**
