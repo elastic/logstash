@@ -13,6 +13,7 @@ import org.jruby.RubyHash;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.RubyUtil;
 import org.logstash.Rubyfier;
+import org.logstash.config.ir.compiler.Dataset;
 import org.logstash.config.ir.compiler.EventCondition;
 import org.logstash.config.ir.compiler.RubyIntegration;
 import org.logstash.config.ir.graph.IfVertex;
@@ -134,10 +135,10 @@ public final class CompiledPipeline {
         );
     }
 
-    private CompiledPipeline.Dataset buildDataset() {
-        CompiledPipeline.Dataset first = new RootDataset();
-        final Map<String, CompiledPipeline.Dataset> filterplugins = new HashMap<>();
-        final Collection<CompiledPipeline.Dataset> datasets = new ArrayList<>();
+    private Dataset buildDataset() {
+        Dataset first = new Dataset.RootDataset();
+        final Map<String, Dataset> filterplugins = new HashMap<>();
+        final Collection<Dataset> datasets = new ArrayList<>();
         graph.pluginVertices().filter(p -> p.isLeaf()).forEach(
             leaf -> {
                 if (!graph.getFilterPluginVertices().contains(leaf)) {
@@ -151,27 +152,20 @@ public final class CompiledPipeline {
                 }
             }
         );
-        return new CompiledPipeline.Dataset() {
-            @Override
-            public RubyArray compute(final RubyArray originals) {
-                final RubyArray res = RubyUtil.RUBY.newArray();
-                datasets.forEach(dataset -> res.addAll(dataset.compute(originals)));
-                return res;
-            }
-        };
+        return new Dataset.SumDataset(datasets);
     }
 
-    private Collection<CompiledPipeline.Dataset> flatten(
-        final Collection<CompiledPipeline.Dataset> parents, final Vertex start,
-        final Map<String, CompiledPipeline.Dataset> filterMap) {
+    private Collection<Dataset> flatten(
+        final Collection<Dataset> parents, final Vertex start,
+        final Map<String, Dataset> filterMap) {
         final Collection<Vertex> endings = start.getIncomingVertices();
         if (endings.isEmpty()) {
             return parents;
         }
-        final Collection<CompiledPipeline.Dataset> res = new ArrayList<>();
+        final Collection<Dataset> res = new ArrayList<>();
         for (final Vertex end : endings) {
-            CompiledPipeline.Dataset newNode = null;
-            Collection<CompiledPipeline.Dataset> newparents = flatten(parents, end, filterMap);
+            Dataset newNode = null;
+            Collection<Dataset> newparents = flatten(parents, end, filterMap);
             if (newparents.isEmpty()) {
                 newparents = new ArrayList<>(parents);
             }
@@ -193,28 +187,28 @@ public final class CompiledPipeline {
         return res;
     }
 
-    private static CompiledPipeline.Dataset splitLeft(
-        final Collection<CompiledPipeline.Dataset> dataset,
+    private static Dataset splitLeft(
+        final Collection<Dataset> dataset,
         final EventCondition condition) {
-        return new CompiledPipeline.SplitDataset(
+        return new Dataset.SplitDataset(
             dataset, EventCondition.Factory.not(condition)
         );
     }
 
-    private static CompiledPipeline.Dataset splitRight(
-        final Collection<CompiledPipeline.Dataset> dataset,
+    private static Dataset splitRight(
+        final Collection<Dataset> dataset,
         final EventCondition condition) {
-        return new CompiledPipeline.SplitDataset(dataset, condition);
+        return new Dataset.SplitDataset(dataset, condition);
     }
 
-    private CompiledPipeline.Dataset filterDataset(final String vertex,
-        final Map<String, CompiledPipeline.Dataset> filterMap,
-        final Collection<CompiledPipeline.Dataset> parents) {
-        final CompiledPipeline.Dataset dataset;
+    private Dataset filterDataset(final String vertex,
+        final Map<String, Dataset> filterMap,
+        final Collection<Dataset> parents) {
+        final Dataset dataset;
         if (filterMap.containsKey(vertex)) {
             dataset = filterMap.get(vertex);
         } else {
-            dataset = new CompiledPipeline.FilteredDataset(parents, filters.get(vertex));
+            dataset = new Dataset.FilteredDataset(parents, filters.get(vertex));
             filterMap.put(vertex, dataset);
         }
         return dataset;
@@ -232,82 +226,4 @@ public final class CompiledPipeline {
         }
     }
 
-    private interface Dataset {
-
-        RubyArray compute(RubyArray originals);
-    }
-
-    private final class RootDataset implements CompiledPipeline.Dataset {
-
-        @Override
-        public RubyArray compute(final RubyArray originals) {
-            return originals;
-        }
-    }
-
-    private static final class FilteredDataset implements CompiledPipeline.Dataset {
-
-        private final Collection<CompiledPipeline.Dataset> parents;
-
-        private final RubyIntegration.Filter func;
-
-        private final RubyArray data;
-
-        private boolean done;
-
-        FilteredDataset(Collection<CompiledPipeline.Dataset> parents,
-            final RubyIntegration.Filter func) {
-            this.parents = parents;
-            this.func = func;
-            data = RubyUtil.RUBY.newArray();
-        }
-
-        @Override
-        public RubyArray compute(final RubyArray originals) {
-            if (done) {
-                return data;
-            }
-            final RubyArray buffer = RubyUtil.RUBY.newArray();
-            for (final CompiledPipeline.Dataset set : parents) {
-                buffer.addAll(set.compute(originals));
-            }
-            done = true;
-            data.addAll(func.multiFilter(buffer));
-            return data;
-        }
-    }
-
-    private static final class SplitDataset implements CompiledPipeline.Dataset {
-
-        private final Collection<CompiledPipeline.Dataset> parents;
-
-        private final EventCondition func;
-
-        private boolean done;
-
-        private final RubyArray data;
-
-        SplitDataset(Collection<CompiledPipeline.Dataset> parents, final EventCondition func) {
-            this.parents = parents;
-            this.func = func;
-            done = false;
-            data = RubyUtil.RUBY.newArray();
-        }
-
-        @Override
-        public RubyArray compute(final RubyArray originals) {
-            if (done) {
-                return data;
-            }
-            for (final CompiledPipeline.Dataset set : parents) {
-                for (final Object event : set.compute(originals)) {
-                    if (func.fulfilled((JrubyEventExtLibrary.RubyEvent) event)) {
-                        data.add(event);
-                    }
-                }
-            }
-            done = true;
-            return data;
-        }
-    }
 }
