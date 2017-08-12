@@ -32,17 +32,39 @@ import org.logstash.ext.JrubyEventExtLibrary;
  */
 public final class CompiledPipeline {
 
+    /**
+     * Configured inputs.
+     */
     private final Collection<IRubyObject> inputs;
 
+    /**
+     * Configured Filters, index by their ID as returned by {@link PluginVertex#getId()}.
+     */
     private final HashMap<String, RubyIntegration.Filter> filters = new HashMap<>();
 
+    /**
+     * Configured outputs.
+     */
     private final Collection<RubyIntegration.Output> outputs = new HashSet<>();
 
+    /**
+     * Parsed pipeline configuration graph.
+     */
     private final PipelineIR graph;
 
+    /**
+     * Ruby pipeline object.
+     */
     private final RubyIntegration.Pipeline pipeline;
 
-    private final ThreadLocal<Dataset> cachedDataset = new ThreadLocal<>();
+    /**
+     * Compiled {@link Dataset}. Using a {@link ThreadLocal} here is safe, because we know that
+     * a pipeline worker thread is never reused across multiple pipelines or configuration reloads.
+     * We cannot use a {@code static} here, because of legacy tests reusing threads
+     * across pipelines, see Ruby pipeline function {@code def filter(event, &block)} for more
+     * details.
+     */
+    private final ThreadLocal<Dataset> dataset = new ThreadLocal<>();
 
     public CompiledPipeline(final PipelineIR graph, final RubyIntegration.Pipeline pipeline) {
         this.graph = graph;
@@ -60,10 +82,10 @@ public final class CompiledPipeline {
     public void filter(final JrubyEventExtLibrary.RubyEvent event, final RubyArray generated) {
         final RubyArray incoming = RubyUtil.RUBY.newArray();
         incoming.add(event);
-        Dataset dataset = cachedDataset.get();
+        Dataset dataset = this.dataset.get();
         if (dataset == null) {
             dataset = buildDataset();
-            cachedDataset.set(dataset);
+            this.dataset.set(dataset);
         }
         generated.addAll(dataset.compute(incoming));
         dataset.clear();
@@ -162,6 +184,11 @@ public final class CompiledPipeline {
         return converted;
     }
 
+    /**
+     * Compiles a {@link RubyIntegration.Filter} from a given {@link PluginVertex}.
+     * @param vertex Filter {@link PluginVertex}
+     * @return Compiled {@link RubyIntegration.Filter}
+     */
     private RubyIntegration.Filter buildFilter(final PluginVertex vertex) {
         final PluginDefinition def = vertex.getPluginDefinition();
         final SourceWithMetadata source = vertex.getSourceWithMetadata();
@@ -172,6 +199,11 @@ public final class CompiledPipeline {
         );
     }
 
+    /**
+     * This method contains the actual compilation of the {@link Dataset} representing the
+     * underlying pipeline.
+     * @return Compiled {@link Dataset} representation of the underlying {@link PipelineIR} topology
+     */
     private Dataset buildDataset() {
         final Map<String, Dataset> filterplugins = new HashMap<>(this.filters.size());
         final Collection<Dataset> datasets = new ArrayList<>(5);
@@ -197,6 +229,11 @@ public final class CompiledPipeline {
         return new Dataset.SumDataset(datasets);
     }
 
+    /**
+     * Checks if a certain {@link Vertex} represents a {@link RubyIntegration.Filter}.
+     * @param vertex Vertex to check
+     * @return True iff {@link Vertex} represents a {@link RubyIntegration.Filter}
+     */
     private boolean isFilter(final Vertex vertex) {
         return graph.getFilterPluginVertices().contains(vertex);
     }
