@@ -143,17 +143,11 @@ public final class CompiledPipeline {
                 if (!graph.getFilterPluginVertices().contains(leaf)) {
                     datasets.addAll(flatten(Collections.singleton(first), leaf, filterplugins));
                 } else {
-                    final CompiledPipeline.Dataset newNode;
-                    if (!filterplugins.containsKey(leaf.getId())) {
-                        newNode = filterDataset(
-                            flatten(Collections.singleton(first), leaf, filterplugins),
-                            filters.get(leaf.getId())
-                        );
-                        filterplugins.put(leaf.getId(), newNode);
-                    } else {
-                        newNode = filterplugins.get(leaf.getId());
-                    }
-                    datasets.add(newNode);
+                    datasets.add(
+                        filterDataset(
+                            leaf.getId(), filterplugins,
+                            flatten(Collections.singleton(first), leaf, filterplugins)
+                        ));
                 }
             }
         );
@@ -182,12 +176,7 @@ public final class CompiledPipeline {
                 newparents = new ArrayList<>(parents);
             }
             if (end instanceof PluginVertex) {
-                if (!filterMap.containsKey(end.getId())) {
-                    newNode = filterDataset(newparents, filters.get(end.getId()));
-                    filterMap.put(end.getId(), newNode);
-                } else {
-                    newNode = filterMap.get(end.getId());
-                }
+                newNode = filterDataset(end.getId(), filterMap, newparents);
             } else if (end instanceof IfVertex) {
                 final EventCondition iff = buildCondition((IfVertex) end);
                 if (((IfVertex) end).getOutgoingBooleanEdgesByType(true).stream()
@@ -218,10 +207,17 @@ public final class CompiledPipeline {
         return new CompiledPipeline.SplitDataset(dataset, condition);
     }
 
-    private static CompiledPipeline.Dataset filterDataset(
-        final Collection<CompiledPipeline.Dataset> parents,
-        final RubyIntegration.Filter filter) {
-        return new CompiledPipeline.FilteredDataset(parents, filter);
+    private CompiledPipeline.Dataset filterDataset(final String vertex,
+        final Map<String, CompiledPipeline.Dataset> filterMap,
+        final Collection<CompiledPipeline.Dataset> parents) {
+        final CompiledPipeline.Dataset dataset;
+        if (filterMap.containsKey(vertex)) {
+            dataset = filterMap.get(vertex);
+        } else {
+            dataset = new CompiledPipeline.FilteredDataset(parents, filters.get(vertex));
+            filterMap.put(vertex, dataset);
+        }
+        return dataset;
     }
 
     /**
