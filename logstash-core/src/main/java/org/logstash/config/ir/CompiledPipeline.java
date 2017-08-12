@@ -23,6 +23,13 @@ import org.logstash.config.ir.graph.Vertex;
 import org.logstash.config.ir.imperative.PluginStatement;
 import org.logstash.ext.JrubyEventExtLibrary;
 
+/**
+ * <h3>Compiled Logstash Pipeline Configuration.</h3>
+ * This class represents an executable pipeline, compiled from the configured topology that is
+ * learnt from {@link PipelineIR}.
+ * Each compiled pipeline consists in graph of {@link Dataset} that represent either a {@code filter}
+ * or an {@code if} condition.
+ */
 public final class CompiledPipeline {
 
     private final Collection<IRubyObject> inputs;
@@ -88,18 +95,23 @@ public final class CompiledPipeline {
         return inputs;
     }
 
+    /**
+     * Sets up all Ruby outputs learnt from {@link PipelineIR}.
+     */
     private void setupOutputs() {
         graph.getOutputPluginVertices().forEach(v -> {
             final PluginDefinition def = v.getPluginDefinition();
-            final RubyHash converted = convertArgs(def);
             final SourceWithMetadata source = v.getSourceWithMetadata();
             outputs.add(pipeline.buildOutput(
                 RubyUtil.RUBY.newString(def.getName()), RubyUtil.RUBY.newFixnum(source.getLine()),
-                RubyUtil.RUBY.newFixnum(source.getColumn()), converted
+                RubyUtil.RUBY.newFixnum(source.getColumn()), convertArgs(def)
             ));
         });
     }
 
+    /**
+     * Sets up all Ruby filters learnt from {@link PipelineIR}.
+     */
     private void setupFilters() {
         for (final PluginVertex plugin : graph.getFilterPluginVertices()) {
             final String ident = plugin.getId();
@@ -114,11 +126,10 @@ public final class CompiledPipeline {
         final Collection<IRubyObject> nodes = new HashSet<>(vertices.size());
         vertices.forEach(v -> {
             final PluginDefinition def = v.getPluginDefinition();
-            final RubyHash converted = convertArgs(def);
             final SourceWithMetadata source = v.getSourceWithMetadata();
             nodes.add(pipeline.buildInput(
                 RubyUtil.RUBY.newString(def.getName()), RubyUtil.RUBY.newFixnum(source.getLine()),
-                RubyUtil.RUBY.newFixnum(source.getColumn()), converted
+                RubyUtil.RUBY.newFixnum(source.getColumn()), convertArgs(def)
             ));
         });
         return nodes;
@@ -157,7 +168,7 @@ public final class CompiledPipeline {
         return pipeline.buildFilter(
             RubyUtil.RUBY.newString(def.getName()), RubyUtil.RUBY.newFixnum(source.getLine()),
             RubyUtil.RUBY.newFixnum(source.getColumn()),
-            Rubyfier.deep(RubyUtil.RUBY, def.getArguments())
+            Rubyfier.deep(RubyUtil.RUBY, convertArgs(def))
         );
     }
 
