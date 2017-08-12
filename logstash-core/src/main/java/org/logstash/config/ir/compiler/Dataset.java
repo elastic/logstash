@@ -21,11 +21,24 @@ public interface Dataset {
      */
     RubyArray compute(RubyArray originals);
 
+    void clear();
+
     /**
      * Root {@link Dataset}s at the beginning of the execution tree that simply pass through
      * the given set of {@link JrubyEventExtLibrary.RubyEvent} and have no state.
      */
-    Collection<Dataset> ROOT_DATASETS = Collections.singleton(originals -> originals);
+    Collection<Dataset> ROOT_DATASETS = Collections.singleton(
+        new Dataset() {
+            @Override
+            public RubyArray compute(final RubyArray originals) {
+                return originals;
+            }
+
+            @Override
+            public void clear() {
+            }
+        }
+    );
 
     /**
      * {@link Dataset} that contains all {@link JrubyEventExtLibrary.RubyEvent} of all of
@@ -43,6 +56,13 @@ public interface Dataset {
             final RubyArray res = RubyUtil.RUBY.newArray();
             parents.forEach(dataset -> res.addAll(dataset.compute(originals)));
             return res;
+        }
+
+        @Override
+        public void clear() {
+            for (final Dataset parent : parents) {
+                parent.clear();
+            }
         }
     }
 
@@ -82,6 +102,15 @@ public interface Dataset {
             done = true;
             return data;
         }
+
+        @Override
+        public void clear() {
+            for (final Dataset parent : parents) {
+                parent.clear();
+            }
+            data.clear();
+            done = false;
+        }
     }
 
     /**
@@ -117,6 +146,15 @@ public interface Dataset {
             done = true;
             data.addAll(func.multiFilter(buffer));
             return data;
+        }
+
+        @Override
+        public void clear() {
+            for (final Dataset parent : parents) {
+                parent.clear();
+            }
+            data.clear();
+            done = false;
         }
     }
 }

@@ -1,5 +1,6 @@
 package org.logstash.config.ir.compiler;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.regex.Pattern;
 import org.jruby.RubyString;
@@ -46,71 +47,79 @@ public interface EventCondition {
          */
         private static final EventCondition FALSE = event -> false;
 
-        
-        
+        private static final HashMap<String, EventCondition> CACHE = new HashMap<>(10);
+
         private Compiler() {
             //Utility Class.
         }
 
         public static EventCondition buildCondition(final BooleanExpression expression) {
-            final EventCondition condition;
-            if (expression instanceof Eq) {
-                condition = eq((Eq) expression);
-            } else if (expression instanceof RegexEq) {
-                final RegexEq regex = (RegexEq) expression;
-                if (eAndV(regex)) {
-                    condition = new Compiler.FieldMatches(
-                        ((EventValueExpression) regex.getLeft()).getFieldName(),
-                        ((ValueExpression) regex.getRight()).get().toString()
-                    );
-                } else {
-                    throw new IllegalStateException("B");
+            synchronized (CACHE) {
+                final String cachekey = expression.toRubyString();
+                final EventCondition cached = CACHE.get(cachekey);
+                if (cached != null) {
+                    return cached;
                 }
-            } else if (expression instanceof In) {
-                condition = in((In) expression);
-            } else if (expression instanceof Or) {
-                condition = or(booleanPair((BinaryBooleanExpression) expression));
-            } else if (expression instanceof Truthy) {
-                final Expression inner = ((Truthy) expression).getExpression();
-                if (inner instanceof EventValueExpression) {
-                    condition = truthy((EventValueExpression) inner);
-                } else {
-                    throw new IllegalStateException("GOT " + inner.getClass());
-                }
-            } else if (expression instanceof Not) {
-                final Expression inner = ((Not) expression).getExpression();
-                if (inner instanceof BooleanExpression) {
-                    condition = not(buildCondition((BooleanExpression) inner));
-                } else if (inner instanceof EventValueExpression) {
-                    condition = not(truthy((EventValueExpression) inner));
-                } else {
-                    throw new IllegalStateException("C2");
-                }
-            } else if (expression instanceof Gt) {
-                condition = gt((Gt) expression);
+                final EventCondition condition;
+                if (expression instanceof Eq) {
+                    condition = eq((Eq) expression);
+                } else if (expression instanceof RegexEq) {
+                    final RegexEq regex = (RegexEq) expression;
+                    if (eAndV(regex)) {
+                        condition = new Compiler.FieldMatches(
+                            ((EventValueExpression) regex.getLeft()).getFieldName(),
+                            ((ValueExpression) regex.getRight()).get().toString()
+                        );
+                    } else {
+                        throw new IllegalStateException("B");
+                    }
+                } else if (expression instanceof In) {
+                    condition = in((In) expression);
+                } else if (expression instanceof Or) {
+                    condition = or(booleanPair((BinaryBooleanExpression) expression));
+                } else if (expression instanceof Truthy) {
+                    final Expression inner = ((Truthy) expression).getExpression();
+                    if (inner instanceof EventValueExpression) {
+                        condition = truthy((EventValueExpression) inner);
+                    } else {
+                        throw new IllegalStateException("GOT " + inner.getClass());
+                    }
+                } else if (expression instanceof Not) {
+                    final Expression inner = ((Not) expression).getExpression();
+                    if (inner instanceof BooleanExpression) {
+                        condition = not(buildCondition((BooleanExpression) inner));
+                    } else if (inner instanceof EventValueExpression) {
+                        condition = not(truthy((EventValueExpression) inner));
+                    } else {
+                        throw new IllegalStateException("C2");
+                    }
+                } else if (expression instanceof Gt) {
+                    condition = gt((Gt) expression);
 
-            } else if (expression instanceof Gte) {
-                condition = gte((Gte) expression);
-            } else if (expression instanceof Lt) {
-                condition = lt((Lt) expression);
-            } else if (expression instanceof Lte) {
-                final Lte lessequal = (Lte) expression;
-                if (eAndV(lessequal)) {
-                    condition = not(gt(
-                        (EventValueExpression) lessequal.getLeft(),
-                        (ValueExpression) lessequal.getRight()
-                    ));
+                } else if (expression instanceof Gte) {
+                    condition = gte((Gte) expression);
+                } else if (expression instanceof Lt) {
+                    condition = lt((Lt) expression);
+                } else if (expression instanceof Lte) {
+                    final Lte lessequal = (Lte) expression;
+                    if (eAndV(lessequal)) {
+                        condition = not(gt(
+                            (EventValueExpression) lessequal.getLeft(),
+                            (ValueExpression) lessequal.getRight()
+                        ));
+                    } else {
+                        throw new IllegalStateException("F");
+                    }
+                } else if (expression instanceof And) {
+                    condition = and(booleanPair((BinaryBooleanExpression) expression));
+                } else if (expression instanceof Neq) {
+                    condition = neq((Neq) expression);
                 } else {
-                    throw new IllegalStateException("F");
+                    throw new IllegalStateException("Received " + expression.getClass());
                 }
-            } else if (expression instanceof And) {
-                condition = and(booleanPair((BinaryBooleanExpression) expression));
-            } else if (expression instanceof Neq) {
-                condition = neq((Neq) expression);
-            } else {
-                throw new IllegalStateException("Received " + expression.getClass());
+                CACHE.put(cachekey, condition);
+                return condition;
             }
-            return condition;
         }
 
         /**

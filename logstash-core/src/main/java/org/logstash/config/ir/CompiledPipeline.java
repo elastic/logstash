@@ -35,6 +35,8 @@ public final class CompiledPipeline {
 
     private final RubyIntegration.Pipeline pipeline;
 
+    private final ThreadLocal<Dataset> cachedDataset = new ThreadLocal<>();
+
     public CompiledPipeline(final PipelineIR graph, final RubyIntegration.Pipeline pipeline) {
         this.graph = graph;
         this.pipeline = pipeline;
@@ -51,7 +53,13 @@ public final class CompiledPipeline {
     public void filter(final JrubyEventExtLibrary.RubyEvent event, final RubyArray generated) {
         final RubyArray incoming = RubyUtil.RUBY.newArray();
         incoming.add(event);
-        generated.addAll(buildDataset().compute(incoming));
+        Dataset dataset = cachedDataset.get();
+        if (dataset == null) {
+            dataset = buildDataset();
+            cachedDataset.set(dataset);
+        }
+        generated.addAll(dataset.compute(incoming));
+        dataset.clear();
     }
 
     public void output(final RubyArray events) {
