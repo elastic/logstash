@@ -81,6 +81,7 @@ public interface Dataset {
             this.parents = parents;
             this.func = func;
             data = RubyUtil.RUBY.newArray();
+            done = false;
         }
 
         @Override

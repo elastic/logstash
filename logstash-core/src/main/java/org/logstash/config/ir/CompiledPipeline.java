@@ -136,19 +136,17 @@ public final class CompiledPipeline {
     }
 
     private Dataset buildDataset() {
-        Dataset first = new Dataset.RootDataset();
+        final Dataset first = new Dataset.RootDataset();
         final Map<String, Dataset> filterplugins = new HashMap<>();
         final Collection<Dataset> datasets = new ArrayList<>();
-        graph.pluginVertices().filter(p -> p.isLeaf()).forEach(
+        graph.pluginVertices().filter(Vertex::isLeaf).forEach(
             leaf -> {
-                if (!graph.getFilterPluginVertices().contains(leaf)) {
-                    datasets.addAll(flatten(Collections.singleton(first), leaf, filterplugins));
+                final Collection<Dataset> parents =
+                    flatten(Collections.singleton(first), leaf, filterplugins);
+                if (graph.getFilterPluginVertices().contains(leaf)) {
+                    datasets.add(filterDataset(leaf.getId(), filterplugins, parents));
                 } else {
-                    datasets.add(
-                        filterDataset(
-                            leaf.getId(), filterplugins,
-                            flatten(Collections.singleton(first), leaf, filterplugins)
-                        ));
+                    datasets.addAll(parents);
                 }
             }
         );
@@ -164,11 +162,11 @@ public final class CompiledPipeline {
         }
         final Collection<Dataset> res = new ArrayList<>();
         for (final Vertex end : endings) {
-            Dataset newNode = null;
             Collection<Dataset> newparents = flatten(parents, end, filterMap);
             if (newparents.isEmpty()) {
                 newparents = new ArrayList<>(parents);
             }
+            Dataset newNode = null;
             if (end instanceof PluginVertex) {
                 newNode = filterDataset(end.getId(), filterMap, newparents);
             } else if (end instanceof IfVertex) {
@@ -187,29 +185,26 @@ public final class CompiledPipeline {
         return res;
     }
 
-    private static Dataset splitLeft(
-        final Collection<Dataset> dataset,
+    private static Dataset splitLeft(final Collection<Dataset> dataset,
         final EventCondition condition) {
         return new Dataset.SplitDataset(
             dataset, EventCondition.Factory.not(condition)
         );
     }
 
-    private static Dataset splitRight(
-        final Collection<Dataset> dataset,
+    private static Dataset splitRight(final Collection<Dataset> dataset,
         final EventCondition condition) {
         return new Dataset.SplitDataset(dataset, condition);
     }
 
-    private Dataset filterDataset(final String vertex,
-        final Map<String, Dataset> filterMap,
+    private Dataset filterDataset(final String vertex, final Map<String, Dataset> filters,
         final Collection<Dataset> parents) {
         final Dataset dataset;
-        if (filterMap.containsKey(vertex)) {
-            dataset = filterMap.get(vertex);
+        if (filters.containsKey(vertex)) {
+            dataset = filters.get(vertex);
         } else {
-            dataset = new Dataset.FilteredDataset(parents, filters.get(vertex));
-            filterMap.put(vertex, dataset);
+            dataset = new Dataset.FilteredDataset(parents, this.filters.get(vertex));
+            filters.put(vertex, dataset);
         }
         return dataset;
     }
