@@ -3,6 +3,7 @@ package org.logstash.config.ir;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -139,17 +140,18 @@ public final class CompiledPipeline {
         final Dataset first = new Dataset.RootDataset();
         final Map<String, Dataset> filterplugins = new HashMap<>();
         final Collection<Dataset> datasets = new ArrayList<>();
-        graph.pluginVertices().filter(Vertex::isLeaf).forEach(
-            leaf -> {
-                final Collection<Dataset> parents =
-                    flatten(Collections.singleton(first), leaf, filterplugins);
-                if (graph.getFilterPluginVertices().contains(leaf)) {
-                    datasets.add(filterDataset(leaf.getId(), filterplugins, parents));
-                } else {
-                    datasets.addAll(parents);
+        graph.pluginVertices().filter(Vertex::isLeaf).sorted(Comparator.comparingInt(Vertex::rank))
+            .forEach(
+                leaf -> {
+                    final Collection<Dataset> parents =
+                        flatten(Collections.singleton(first), leaf, filterplugins);
+                    if (graph.getFilterPluginVertices().contains(leaf)) {
+                        datasets.add(filterDataset(leaf.getId(), filterplugins, parents));
+                    } else {
+                        datasets.addAll(parents);
+                    }
                 }
-            }
-        );
+            );
         return new Dataset.SumDataset(datasets);
     }
 
@@ -166,33 +168,33 @@ public final class CompiledPipeline {
             if (newparents.isEmpty()) {
                 newparents = new ArrayList<>(parents);
             }
-            Dataset newNode = null;
             if (end instanceof PluginVertex) {
-                newNode = filterDataset(end.getId(), filterMap, newparents);
+                res.add(filterDataset(end.getId(), filterMap, newparents));
             } else if (end instanceof IfVertex) {
-                final EventCondition iff = buildCondition((IfVertex) end);
-                if (((IfVertex) end).getOutgoingBooleanEdgesByType(true).stream()
+                final IfVertex ifvert = (IfVertex) end;
+                final EventCondition iff = buildCondition(ifvert);
+                if (ifvert.getOutgoingBooleanEdgesByType(true).stream()
                     .anyMatch(edge -> Objects.equals(edge.getTo(), start))) {
-                    newNode = splitRight(newparents, iff);
+                    res.add(splitLeft(newparents, iff));
+                    if (ifvert.getOutgoingBooleanEdgesByType(false).isEmpty()) {
+                        res.add(splitRight(parents, iff));
+                    }
                 } else {
-                    newNode = splitLeft(newparents, iff);
+                    res.add(splitRight(newparents, iff));
                 }
-            }
-            if (newNode != null) {
-                res.add(newNode);
             }
         }
         return res;
     }
 
-    private static Dataset splitLeft(final Collection<Dataset> dataset,
+    private static Dataset splitRight(final Collection<Dataset> dataset,
         final EventCondition condition) {
         return new Dataset.SplitDataset(
             dataset, EventCondition.Factory.not(condition)
         );
     }
 
-    private static Dataset splitRight(final Collection<Dataset> dataset,
+    private static Dataset splitLeft(final Collection<Dataset> dataset,
         final EventCondition condition) {
         return new Dataset.SplitDataset(dataset, condition);
     }
