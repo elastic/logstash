@@ -117,7 +117,6 @@ public interface EventCondition {
                     }
                 } else if (expression instanceof Gt) {
                     condition = gt((Gt) expression);
-
                 } else if (expression instanceof Gte) {
                     condition = gte((Gte) expression);
                 } else if (expression instanceof Lt) {
