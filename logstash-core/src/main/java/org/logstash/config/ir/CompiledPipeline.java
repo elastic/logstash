@@ -194,8 +194,7 @@ public final class CompiledPipeline {
         final SourceWithMetadata source = vertex.getSourceWithMetadata();
         return pipeline.buildFilter(
             RubyUtil.RUBY.newString(def.getName()), RubyUtil.RUBY.newFixnum(source.getLine()),
-            RubyUtil.RUBY.newFixnum(source.getColumn()),
-            Rubyfier.deep(RubyUtil.RUBY, convertArgs(def))
+            RubyUtil.RUBY.newFixnum(source.getColumn()), convertArgs(def)
         );
     }
 
@@ -273,6 +272,15 @@ public final class CompiledPipeline {
         return res;
     }
 
+    /**
+     * Build a {@link Dataset} representing the {@link JrubyEventExtLibrary.RubyEvent}s after
+     * the application of the given filter.
+     * @param vertex Vertex Id of the filter to create this {@link Dataset} for
+     * @param cache Already created {@link Dataset.FilteredDataset} used to only instantiate each
+     * filter node in the topology once
+     * @param parents All the parent nodes that go through this filter
+     * @return Filter {@link Dataset}
+     */
     private Dataset filterDataset(final String vertex, final Map<String, Dataset> cache,
         final Collection<Dataset> parents) {
         final Dataset filter;
