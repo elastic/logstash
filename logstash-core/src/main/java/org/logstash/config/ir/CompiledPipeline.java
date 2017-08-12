@@ -140,14 +140,16 @@ public final class CompiledPipeline {
         final Dataset first = new Dataset.RootDataset();
         final Map<String, Dataset> filterplugins = new HashMap<>();
         final Collection<Dataset> datasets = new ArrayList<>();
-        graph.pluginVertices().filter(Vertex::isLeaf).sorted(Comparator.comparingInt(Vertex::rank))
-            .forEach(
+        graph.getGraph().getAllLeaves().stream().sorted(Comparator.comparing(Vertex::hashPrefix))
+            .forEachOrdered(
                 leaf -> {
                     final Collection<Dataset> parents =
                         flatten(Collections.singleton(first), leaf, filterplugins);
                     if (graph.getFilterPluginVertices().contains(leaf)) {
                         datasets.add(filterDataset(leaf.getId(), filterplugins, parents));
-                    } else {
+                    } else if (leaf instanceof IfVertex) {
+                        datasets.add(splitRight(parents, buildCondition((IfVertex) leaf)));
+                     } else {
                         datasets.addAll(parents);
                     }
                 }
@@ -168,7 +170,7 @@ public final class CompiledPipeline {
             if (newparents.isEmpty()) {
                 newparents = new ArrayList<>(parents);
             }
-            if (end instanceof PluginVertex) {
+            if (graph.getFilterPluginVertices().contains(end)) {
                 res.add(filterDataset(end.getId(), filterMap, newparents));
             } else if (end instanceof IfVertex) {
                 final IfVertex ifvert = (IfVertex) end;
@@ -176,9 +178,6 @@ public final class CompiledPipeline {
                 if (ifvert.getOutgoingBooleanEdgesByType(true).stream()
                     .anyMatch(edge -> Objects.equals(edge.getTo(), start))) {
                     res.add(splitLeft(newparents, iff));
-                    if (ifvert.getOutgoingBooleanEdgesByType(false).isEmpty()) {
-                        res.add(splitRight(parents, iff));
-                    }
                 } else {
                     res.add(splitRight(newparents, iff));
                 }
@@ -199,14 +198,14 @@ public final class CompiledPipeline {
         return new Dataset.SplitDataset(dataset, condition);
     }
 
-    private Dataset filterDataset(final String vertex, final Map<String, Dataset> filters,
+    private Dataset filterDataset(final String vertex, final Map<String, Dataset> cache,
         final Collection<Dataset> parents) {
         final Dataset dataset;
-        if (filters.containsKey(vertex)) {
-            dataset = filters.get(vertex);
+        if (cache.containsKey(vertex)) {
+            dataset = cache.get(vertex);
         } else {
-            dataset = new Dataset.FilteredDataset(parents, this.filters.get(vertex));
-            filters.put(vertex, dataset);
+            dataset = new Dataset.FilteredDataset(parents, filters.get(vertex));
+            cache.put(vertex, dataset);
         }
         return dataset;
     }

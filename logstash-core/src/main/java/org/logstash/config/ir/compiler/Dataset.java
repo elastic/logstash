@@ -76,8 +76,7 @@ public interface Dataset {
 
         private boolean done;
 
-        public FilteredDataset(Collection<Dataset> parents,
-            final RubyIntegration.Filter func) {
+        public FilteredDataset(Collection<Dataset> parents, final RubyIntegration.Filter func) {
             this.parents = parents;
             this.func = func;
             data = RubyUtil.RUBY.newArray();
