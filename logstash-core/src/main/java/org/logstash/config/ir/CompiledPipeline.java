@@ -14,6 +14,7 @@ import org.jruby.RubyHash;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.RubyUtil;
 import org.logstash.Rubyfier;
+import org.logstash.common.SourceWithMetadata;
 import org.logstash.config.ir.compiler.Dataset;
 import org.logstash.config.ir.compiler.EventCondition;
 import org.logstash.config.ir.compiler.RubyIntegration;
@@ -83,10 +84,11 @@ public final class CompiledPipeline {
     private void setupOutputs() {
         graph.getOutputPluginVertices().forEach(v -> {
             final PluginDefinition def = v.getPluginDefinition();
+            final SourceWithMetadata source = v.getSourceWithMetadata();
             outputs.add(pipeline.buildOutput(
                 RubyUtil.RUBY.newString(def.getName()),
-                RubyUtil.RUBY.newFixnum(v.getSourceWithMetadata().getLine()),
-                RubyUtil.RUBY.newFixnum(v.getSourceWithMetadata().getColumn()),
+                RubyUtil.RUBY.newFixnum(source.getLine()),
+                RubyUtil.RUBY.newFixnum(source.getColumn()),
                 Rubyfier.deep(RubyUtil.RUBY, def.getArguments())
             ));
         });
@@ -117,21 +119,20 @@ public final class CompiledPipeline {
                     converted.put(entry.getKey(), entry.getValue());
                 }
             }
+            final SourceWithMetadata source = v.getSourceWithMetadata();
             inputs.add(pipeline.buildInput(
-                RubyUtil.RUBY.newString(def.getName()),
-                RubyUtil.RUBY.newFixnum(v.getSourceWithMetadata().getLine()),
-                RubyUtil.RUBY.newFixnum(v.getSourceWithMetadata().getColumn()),
-                converted
+                RubyUtil.RUBY.newString(def.getName()), RubyUtil.RUBY.newFixnum(source.getLine()),
+                RubyUtil.RUBY.newFixnum(source.getColumn()), converted
             ));
         });
     }
 
     private RubyIntegration.Filter buildFilter(final PluginVertex vertex) {
         final PluginDefinition def = vertex.getPluginDefinition();
+        final SourceWithMetadata source = vertex.getSourceWithMetadata();
         return pipeline.buildFilter(
-            RubyUtil.RUBY.newString(def.getName()),
-            RubyUtil.RUBY.newFixnum(vertex.getSourceWithMetadata().getLine()),
-            RubyUtil.RUBY.newFixnum(vertex.getSourceWithMetadata().getColumn()),
+            RubyUtil.RUBY.newString(def.getName()), RubyUtil.RUBY.newFixnum(source.getLine()),
+            RubyUtil.RUBY.newFixnum(source.getColumn()),
             Rubyfier.deep(RubyUtil.RUBY, def.getArguments())
         );
     }
@@ -145,11 +146,11 @@ public final class CompiledPipeline {
                 leaf -> {
                     final Collection<Dataset> parents =
                         flatten(Collections.singleton(first), leaf, filterplugins);
-                    if (graph.getFilterPluginVertices().contains(leaf)) {
+                    if (isFilter(leaf)) {
                         datasets.add(filterDataset(leaf.getId(), filterplugins, parents));
                     } else if (leaf instanceof IfVertex) {
                         datasets.add(splitRight(parents, buildCondition((IfVertex) leaf)));
-                     } else {
+                    } else {
                         datasets.addAll(parents);
                     }
                 }
@@ -157,20 +158,23 @@ public final class CompiledPipeline {
         return new Dataset.SumDataset(datasets);
     }
 
-    private Collection<Dataset> flatten(
-        final Collection<Dataset> parents, final Vertex start,
+    private boolean isFilter(final Vertex vertex) {
+        return graph.getFilterPluginVertices().contains(vertex);
+    }
+
+    private Collection<Dataset> flatten(final Collection<Dataset> parents, final Vertex start,
         final Map<String, Dataset> filterMap) {
         final Collection<Vertex> endings = start.getIncomingVertices();
         if (endings.isEmpty()) {
             return parents;
         }
-        final Collection<Dataset> res = new ArrayList<>();
+        final Collection<Dataset> res = new ArrayList<>(2);
         for (final Vertex end : endings) {
             Collection<Dataset> newparents = flatten(parents, end, filterMap);
             if (newparents.isEmpty()) {
                 newparents = new ArrayList<>(parents);
             }
-            if (graph.getFilterPluginVertices().contains(end)) {
+            if (isFilter(end)) {
                 res.add(filterDataset(end.getId(), filterMap, newparents));
             } else if (end instanceof IfVertex) {
                 final IfVertex ifvert = (IfVertex) end;
@@ -186,18 +190,6 @@ public final class CompiledPipeline {
         return res;
     }
 
-    private static Dataset splitRight(final Collection<Dataset> dataset,
-        final EventCondition condition) {
-        return new Dataset.SplitDataset(
-            dataset, EventCondition.Factory.not(condition)
-        );
-    }
-
-    private static Dataset splitLeft(final Collection<Dataset> dataset,
-        final EventCondition condition) {
-        return new Dataset.SplitDataset(dataset, condition);
-    }
-
     private Dataset filterDataset(final String vertex, final Map<String, Dataset> cache,
         final Collection<Dataset> parents) {
         final Dataset dataset;
@@ -210,16 +202,25 @@ public final class CompiledPipeline {
         return dataset;
     }
 
+    private static Dataset splitRight(final Collection<Dataset> dataset,
+        final EventCondition condition) {
+        return new Dataset.SplitDataset(
+            dataset, EventCondition.Factory.not(condition)
+        );
+    }
+
+    private static Dataset splitLeft(final Collection<Dataset> dataset,
+        final EventCondition condition) {
+        return new Dataset.SplitDataset(dataset, condition);
+    }
+
     /**
-     * @todo Remove weird print
+     * Compiles an {@link IfVertex} into an {@link EventCondition}.
+     * @param iff IfVertex to build condition for
+     * @return EventCondition for given {@link IfVertex}
      */
     private static EventCondition buildCondition(final IfVertex iff) {
-        try {
-            return EventCondition.Factory.buildCondition(iff.getBooleanExpression());
-        } catch (final Exception ex) {
-            ex.printStackTrace();
-            throw ex;
-        }
+        return EventCondition.Factory.buildCondition(iff.getBooleanExpression());
     }
 
 }
