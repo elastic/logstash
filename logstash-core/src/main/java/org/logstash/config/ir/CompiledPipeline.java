@@ -275,14 +275,14 @@ public final class CompiledPipeline {
 
     private Dataset filterDataset(final String vertex, final Map<String, Dataset> cache,
         final Collection<Dataset> parents) {
-        final Dataset dataset;
+        final Dataset filter;
         if (cache.containsKey(vertex)) {
-            dataset = cache.get(vertex);
+            filter = cache.get(vertex);
         } else {
-            dataset = new Dataset.FilteredDataset(parents, filters.get(vertex));
-            cache.put(vertex, dataset);
+            filter = new Dataset.FilteredDataset(parents, filters.get(vertex));
+            cache.put(vertex, filter);
         }
-        return dataset;
+        return filter;
     }
 
     private static Dataset splitRight(final Collection<Dataset> parents,
