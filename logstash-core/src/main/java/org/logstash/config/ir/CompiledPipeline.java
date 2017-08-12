@@ -205,7 +205,7 @@ public final class CompiledPipeline {
     private static Dataset splitRight(final Collection<Dataset> dataset,
         final EventCondition condition) {
         return new Dataset.SplitDataset(
-            dataset, EventCondition.Factory.not(condition)
+            dataset, EventCondition.Compiler.not(condition)
         );
     }
 
@@ -220,7 +220,7 @@ public final class CompiledPipeline {
      * @return EventCondition for given {@link IfVertex}
      */
     private static EventCondition buildCondition(final IfVertex iff) {
-        return EventCondition.Factory.buildCondition(iff.getBooleanExpression());
+        return EventCondition.Compiler.buildCondition(iff.getBooleanExpression());
     }
 
 }

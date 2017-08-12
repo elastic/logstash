@@ -26,17 +26,28 @@ import org.logstash.config.ir.expression.unary.Not;
 import org.logstash.config.ir.expression.unary.Truthy;
 import org.logstash.ext.JrubyEventExtLibrary;
 
+/**
+ * A pipeline execution "if" condition, compiled from the {@link BooleanExpression} of an
+ * {@link org.logstash.config.ir.graph.IfVertex}.
+ */
 public interface EventCondition {
 
     boolean fulfilled(JrubyEventExtLibrary.RubyEvent event);
 
-    final class Factory {
+    final class Compiler {
 
+        /**
+         * {@link EventCondition} that is always {@code true}.
+         */
         private static final EventCondition TRUE = event -> true;
 
+        /**
+         * {@link EventCondition} that is always {@code false}.
+         */
         private static final EventCondition FALSE = event -> false;
 
-        private Factory() {
+        private Compiler() {
+            //Utility Class.
         }
 
         public static EventCondition buildCondition(final BooleanExpression expression) {
@@ -46,7 +57,7 @@ public interface EventCondition {
             } else if (expression instanceof RegexEq) {
                 final RegexEq regex = (RegexEq) expression;
                 if (eAndV(regex)) {
-                    condition = new EventCondition.Factory.FieldMatches(
+                    condition = new Compiler.FieldMatches(
                         ((EventValueExpression) regex.getLeft()).getFieldName(),
                         ((ValueExpression) regex.getRight()).get().toString()
                     );
@@ -100,6 +111,13 @@ public interface EventCondition {
             return condition;
         }
 
+        /**
+         * Checks if a {@link BinaryBooleanExpression} consists of a {@link ValueExpression} on the
+         * left and a {@link EventValueExpression} on the right.
+         * @param expression Expression to check type for
+         * @return True if the left branch of the {@link BinaryBooleanExpression} is a
+         * {@link ValueExpression} and its right side is a {@link EventValueExpression}.
+         */
         private static boolean vAndE(final BinaryBooleanExpression expression) {
             return expression.getLeft() instanceof ValueExpression &&
                 expression.getRight() instanceof EventValueExpression;
@@ -162,13 +180,13 @@ public interface EventCondition {
         private static EventCondition in(final In in) {
             final EventCondition condition;
             if (eAndV(in) && scalarValueRight(in)) {
-                condition = new EventCondition.Factory.FieldArrayContainsValue(
+                condition = new Compiler.FieldArrayContainsValue(
                     PathCache.cache(((EventValueExpression) in.getLeft())
                         .getFieldName()),
                     ((ValueExpression) in.getRight()).get().toString()
                 );
             } else if (vAndE(in) && scalarValueLeft(in)) {
-                condition = new EventCondition.Factory.FieldArrayContainsValue(
+                condition = new Compiler.FieldArrayContainsValue(
                     PathCache.cache(((EventValueExpression) in.getRight())
                         .getFieldName()),
                     ((ValueExpression) in.getLeft()).get().toString()
@@ -192,7 +210,7 @@ public interface EventCondition {
         }
 
         private static EventCondition in(final EventValueExpression left, final List<?> right) {
-            return new EventCondition.Factory.FieldContainsListedValue(
+            return new Compiler.FieldContainsListedValue(
                 PathCache.cache(left.getFieldName()), right
             );
         }
@@ -230,14 +248,14 @@ public interface EventCondition {
 
         private static EventCondition in(final EventValueExpression left,
             final EventValueExpression right) {
-            return new EventCondition.Factory.FieldArrayContainsFieldValue(
+            return new Compiler.FieldArrayContainsFieldValue(
                 PathCache.cache(left.getFieldName()), PathCache.cache(right.getFieldName())
             );
         }
 
         private static EventCondition eq(final EventValueExpression evale,
             final ValueExpression vale) {
-            return new EventCondition.Factory.FieldEquals(
+            return new Compiler.FieldEquals(
                 evale.getFieldName(), vale.get().toString()
             );
         }
@@ -261,7 +279,7 @@ public interface EventCondition {
 
         private static EventCondition eq(final EventValueExpression first,
             final EventValueExpression second) {
-            return new EventCondition.Factory.FieldEqualsField(
+            return new Compiler.FieldEqualsField(
                 PathCache.cache(first.getFieldName()), PathCache.cache(second.getFieldName())
             );
         }
@@ -281,14 +299,14 @@ public interface EventCondition {
 
         private static EventCondition gt(final EventValueExpression left,
             final ValueExpression right) {
-            return new EventCondition.Factory.FieldGreaterThan(
+            return new Compiler.FieldGreaterThan(
                 left.getFieldName(),
                 right.get().toString()
             );
         }
 
         private static EventCondition truthy(final EventValueExpression evale) {
-            return new EventCondition.Factory.FieldTruthy(PathCache.cache(evale.getFieldName()));
+            return new Compiler.FieldTruthy(PathCache.cache(evale.getFieldName()));
         }
 
         private static EventCondition[] booleanPair(final BinaryBooleanExpression expression) {
@@ -319,15 +337,15 @@ public interface EventCondition {
         }
 
         public static EventCondition not(final EventCondition condition) {
-            return new EventCondition.Factory.Negated(condition);
+            return new Compiler.Negated(condition);
         }
 
         private static EventCondition or(EventCondition... conditions) {
-            return new EventCondition.Factory.OrCondition(conditions[0], conditions[1]);
+            return new Compiler.OrCondition(conditions[0], conditions[1]);
         }
 
         private static EventCondition and(EventCondition... conditions) {
-            return new EventCondition.Factory.AndCondition(conditions[0], conditions[1]);
+            return new Compiler.AndCondition(conditions[0], conditions[1]);
         }
 
         private static final class Negated implements EventCondition {

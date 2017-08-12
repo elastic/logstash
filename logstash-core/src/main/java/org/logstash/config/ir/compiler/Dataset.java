@@ -5,8 +5,19 @@ import org.jruby.RubyArray;
 import org.logstash.RubyUtil;
 import org.logstash.ext.JrubyEventExtLibrary;
 
+/**
+ * A data structure backed by a {@link RubyArray} that is lazily filled with
+ * {@link JrubyEventExtLibrary.RubyEvent} computed from its dependencies.
+ */
 public interface Dataset {
 
+    /**
+     * Compute the actual contents of the backing {@link RubyArray} and cache them.
+     * Repeated invocations will be effectively free.
+     * @param originals Input {@link JrubyEventExtLibrary.RubyEvent} received at the root
+     * of the execution
+     * @return Computed {@link RubyArray} of {@link JrubyEventExtLibrary.RubyEvent}
+     */
     RubyArray compute(RubyArray originals);
 
     final class SumDataset implements Dataset {
@@ -24,6 +35,10 @@ public interface Dataset {
         }
     }
 
+    /**
+     * {@link Dataset} that results from the {@code if} branch of its backing
+     * {@link EventCondition} being applied to all of its dependencies.
+     */
     final class SplitDataset implements Dataset {
 
         private final Collection<Dataset> parents;

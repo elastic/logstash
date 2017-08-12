@@ -5,12 +5,25 @@ import org.jruby.RubyInteger;
 import org.jruby.RubyString;
 import org.jruby.runtime.builtin.IRubyObject;
 
+/**
+ * This class holds interfaces implemented by Ruby concrete classes.
+ */
 public final class RubyIntegration {
 
+    private RubyIntegration() {
+        //Utility Class.
+    }
+
+    /**
+     * A Ruby Plugin.
+     */
     public interface Plugin {
         void register();
     }
 
+    /**
+     * A Ruby Filter.
+     */
     public interface Filter extends RubyIntegration.Plugin {
 
         RubyArray multiFilter(RubyArray events);
@@ -20,10 +33,16 @@ public final class RubyIntegration {
         boolean periodicFlush();
     }
 
+    /**
+     * A Ruby Output.
+     */
     public interface Output extends RubyIntegration.Plugin {
         void multiReceive(RubyArray events);
     }
 
+    /**
+     * The Main Ruby Pipeline Class.
+     */
     public interface Pipeline {
 
         IRubyObject buildInput(RubyString name, RubyInteger line, RubyInteger column,
