@@ -39,7 +39,7 @@ public final class RubyIntegration {
      * A Ruby Output.
      */
     public interface Output extends RubyIntegration.Plugin {
-        void multiReceive(RubyArray events);
+        void multiReceive(Collection<JrubyEventExtLibrary.RubyEvent> events);
     }
 
     /**

@@ -417,10 +417,13 @@ module LogStash; class Pipeline < BasePipeline
       if max_inflight > MAX_INFLIGHT_WARN_THRESHOLD
         @logger.warn("CAUTION: Recommended inflight events max exceeded! Logstash will run with up to #{max_inflight} events in memory in your current configuration. If your message sizes are large this may cause instability with the default heap size. Please consider setting a non-standard heap size, changing the batch size (currently #{batch_size}), or changing the number of pipeline workers (currently #{pipeline_workers})", default_logging_keys)
       end
+      
+      @filter_queue_client.set_batch_dimensions(batch_size, batch_delay)
 
       pipeline_workers.times do |t|
-        thread = Thread.new(batch_size, batch_delay, self) do |_b_size, _b_delay, _pipeline|
-          _pipeline.worker_loop(_b_size, _b_delay)
+        filter_func = @lir_execution.buildFilterFunc
+        thread = Thread.new(self, filter_func) do |_pipeline, _filter|
+          _pipeline.worker_loop(_filter)
         end
         thread.name="[#{pipeline_id}]>worker#{t}"
         @worker_threads << thread
@@ -448,11 +451,8 @@ module LogStash; class Pipeline < BasePipeline
 
   # Main body of what a worker thread does
   # Repeatedly takes batches off the queue, filters, then outputs them
-  def worker_loop(batch_size, batch_delay)
+  def worker_loop(filter_func)
     shutdown_requested = false
-
-    @filter_queue_client.set_batch_dimensions(batch_size, batch_delay)
-
     while true
       signal = @signal_queue.poll || NO_SIGNAL
       shutdown_requested |= signal.shutdown? # latch on shutdown signal
@@ -461,7 +461,7 @@ module LogStash; class Pipeline < BasePipeline
 
       if batch.size > 0
         @events_consumed.increment(batch.size)
-        filter_batch(batch)
+        filter_batch(filter_func, batch)
       end
       flush_filters_to_batch(batch, :final => false) if signal.flush?
       output_batch(batch) if batch.size > 0
@@ -478,8 +478,8 @@ module LogStash; class Pipeline < BasePipeline
     @filter_queue_client.close_batch(batch)
   end
 
-  def filter_batch(batch)
-    @lir_execution.filter(batch).each do |e|
+  def filter_batch(filter_func, batch)
+    filter_func.compute(batch).each do |e|
       batch.merge(e) unless e.nil? || e.cancelled?
     end
     @filter_queue_client.add_filtered_metrics(batch)
@@ -624,7 +624,7 @@ module LogStash; class Pipeline < BasePipeline
     wait_until_started
     batch = @filter_queue_client.new_batch
     batch.merge(event)
-    @lir_execution.filter(batch).each {|e| block.call(e) unless e.nil?}
+    @lir_execution.buildFilterFunc.compute(batch).each {|e| block.call(e) unless e.nil?}
   end
 
   # perform filters flush and yield flushed event to the passed block

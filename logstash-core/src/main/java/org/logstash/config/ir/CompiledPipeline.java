@@ -1,6 +1,7 @@
 package org.logstash.config.ir;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -8,7 +9,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
-import org.jruby.RubyArray;
 import org.jruby.RubyHash;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.RubyUtil;
@@ -45,7 +45,7 @@ public final class CompiledPipeline {
     /**
      * Configured outputs.
      */
-    private final Collection<RubyIntegration.Output> outputs = new HashSet<>();
+    private final RubyIntegration.Output[] outputs;
 
     /**
      * Parsed pipeline configuration graph.
@@ -57,21 +57,12 @@ public final class CompiledPipeline {
      */
     private final RubyIntegration.Pipeline pipeline;
 
-    /**
-     * Compiled {@link Dataset}. Using a {@link ThreadLocal} here is safe, because we know that
-     * a pipeline worker thread is never reused across multiple pipelines or configuration reloads.
-     * We cannot use a {@code static} here, because of legacy tests reusing threads
-     * across pipelines, see Ruby pipeline function {@code def filter(event, &block)} for more
-     * details.
-     */
-    private final ThreadLocal<Dataset> dataset = new ThreadLocal<>();
-
     public CompiledPipeline(final PipelineIR graph, final RubyIntegration.Pipeline pipeline) {
         this.graph = graph;
         this.pipeline = pipeline;
         inputs = setupInputs();
         setupFilters();
-        setupOutputs();
+        outputs = setupOutputs();
     }
 
     public RubyIntegration.Plugin registerPlugin(final RubyIntegration.Plugin plugin) {
@@ -80,21 +71,39 @@ public final class CompiledPipeline {
     }
 
     /**
-     * Filter function called by the Ruby pipeline.
-     * @param batch RubyArray of {@link JrubyEventExtLibrary.RubyEvent} to filter
-     * @return RubyArray of generated {@link JrubyEventExtLibrary.RubyEvent}
+     * This method contains the actual compilation of the {@link Dataset} representing the
+     * underlying pipeline.
+     * @return Compiled {@link Dataset} representation of the underlying {@link PipelineIR} topology
      */
-    public Collection<JrubyEventExtLibrary.RubyEvent> filter(final RubyIntegration.Batch batch) {
-        Dataset data = dataset.get();
-        if (data == null) {
-            data = buildDataset();
-            dataset.set(data);
-        }
-        return data.compute(batch);
+    public Dataset buildFilterFunc() {
+        final Map<String, Dataset> filterplugins = new HashMap<>(this.filters.size());
+        final Collection<Dataset> datasets = new ArrayList<>(5);
+        // We sort the leaves of the graph in a deterministic fashion before compilation.
+        // This is not strictly necessary for correctness since it will only influence the order
+        // of output events for which Logstash makes no guarantees, but it greatly simplifies
+        // testing and is no issue performance wise since compilation only happens on pipeline
+        // reload.
+        graph.getGraph().getAllLeaves().stream().sorted(Comparator.comparing(Vertex::hashPrefix))
+            .forEachOrdered(
+                leaf -> {
+                    final Collection<Dataset> parents =
+                        flatten(Dataset.ROOT_DATASETS, leaf, filterplugins);
+                    if (isFilter(leaf)) {
+                        datasets.add(filterDataset(leaf.getId(), filterplugins, parents));
+                    } else if (leaf instanceof IfVertex) {
+                        datasets.add(splitRight(parents, buildCondition((IfVertex) leaf)));
+                    } else {
+                        datasets.addAll(parents);
+                    }
+                }
+            );
+        return Dataset.TerminalDataset.from(datasets);
     }
 
     public void output(final RubyIntegration.Batch batch) {
-        outputs.forEach(output -> output.multiReceive((RubyArray) batch.collect()));
+        for (final RubyIntegration.Output output : outputs) {
+            output.multiReceive(batch.collect());
+        }
     }
 
     public Collection<RubyIntegration.Filter> shutdownFlushers() {
@@ -108,7 +117,7 @@ public final class CompiledPipeline {
     }
 
     public Collection<RubyIntegration.Output> outputs() {
-        return outputs;
+        return Arrays.asList(outputs);
     }
 
     public Collection<RubyIntegration.Filter> filters() {
@@ -122,15 +131,17 @@ public final class CompiledPipeline {
     /**
      * Sets up all Ruby outputs learnt from {@link PipelineIR}.
      */
-    private void setupOutputs() {
+    private RubyIntegration.Output[] setupOutputs() {
+        final Collection<RubyIntegration.Output> set = new HashSet<>(5); 
         graph.getOutputPluginVertices().forEach(v -> {
             final PluginDefinition def = v.getPluginDefinition();
             final SourceWithMetadata source = v.getSourceWithMetadata();
-            outputs.add(pipeline.buildOutput(
+            set.add(pipeline.buildOutput(
                 RubyUtil.RUBY.newString(def.getName()), RubyUtil.RUBY.newFixnum(source.getLine()),
                 RubyUtil.RUBY.newFixnum(source.getColumn()), convertArgs(def)
             ));
         });
+        return set.toArray(new RubyIntegration.Output[0]);
     }
 
     /**
@@ -198,36 +209,6 @@ public final class CompiledPipeline {
             RubyUtil.RUBY.newString(def.getName()), RubyUtil.RUBY.newFixnum(source.getLine()),
             RubyUtil.RUBY.newFixnum(source.getColumn()), convertArgs(def)
         );
-    }
-
-    /**
-     * This method contains the actual compilation of the {@link Dataset} representing the
-     * underlying pipeline.
-     * @return Compiled {@link Dataset} representation of the underlying {@link PipelineIR} topology
-     */
-    private Dataset buildDataset() {
-        final Map<String, Dataset> filterplugins = new HashMap<>(this.filters.size());
-        final Collection<Dataset> datasets = new ArrayList<>(5);
-        // We sort the leaves of the graph in a deterministic fashion before compilation.
-        // This is not strictly necessary for correctness since it will only influence the order
-        // of output events for which Logstash makes no guarantees, but it greatly simplifies
-        // testing and is no issue performance wise since compilation only happens on pipeline
-        // reload.
-        graph.getGraph().getAllLeaves().stream().sorted(Comparator.comparing(Vertex::hashPrefix))
-            .forEachOrdered(
-                leaf -> {
-                    final Collection<Dataset> parents =
-                        flatten(Dataset.ROOT_DATASETS, leaf, filterplugins);
-                    if (isFilter(leaf)) {
-                        datasets.add(filterDataset(leaf.getId(), filterplugins, parents));
-                    } else if (leaf instanceof IfVertex) {
-                        datasets.add(splitRight(parents, buildCondition((IfVertex) leaf)));
-                    } else {
-                        datasets.addAll(parents);
-                    }
-                }
-            );
-        return Dataset.TerminalDataset.from(datasets);
     }
 
     /**

@@ -101,11 +101,9 @@ public interface Dataset {
 
         @Override
         public Collection<JrubyEventExtLibrary.RubyEvent> compute(
-            final RubyIntegration.Batch originals) {
+            final RubyIntegration.Batch batch) {
             final Collection<JrubyEventExtLibrary.RubyEvent> res = new ArrayList<>(10);
-            parents.forEach(dataset -> {
-                res.addAll(dataset.compute(originals));
-            });
+            parents.forEach(dataset -> res.addAll(dataset.compute(batch)));
             this.clear();
             return res;
         }
