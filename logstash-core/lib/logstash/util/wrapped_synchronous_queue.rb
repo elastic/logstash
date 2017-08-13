@@ -173,6 +173,7 @@ module LogStash; module Util
     end
 
     class ReadBatch
+      include org.logstash.config.ir.compiler.RubyIntegration::Batch
       def initialize(queue, size, wait)
         @queue = queue
         @size = size
@@ -215,6 +216,12 @@ module LogStash; module Util
         # TODO: disabled for https://github.com/elastic/logstash/issues/6055 - will have to properly refactor
         raise("cancel is unsupported")
         # @cancelled[event] = true
+      end
+
+      def collect
+        events = []
+        each {|e| events << e}
+        events
       end
 
       def each(&blk)

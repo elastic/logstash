@@ -2,7 +2,6 @@ package org.logstash.config.ir;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -82,31 +81,20 @@ public final class CompiledPipeline {
 
     /**
      * Filter function called by the Ruby pipeline.
-     * @param incoming RubyArray of {@link JrubyEventExtLibrary.RubyEvent} to filter
+     * @param batch RubyArray of {@link JrubyEventExtLibrary.RubyEvent} to filter
      * @return RubyArray of generated {@link JrubyEventExtLibrary.RubyEvent}
      */
-    public Collection<JrubyEventExtLibrary.RubyEvent> filter(
-        final Collection<JrubyEventExtLibrary.RubyEvent> incoming) {
+    public Collection<JrubyEventExtLibrary.RubyEvent> filter(final RubyIntegration.Batch batch) {
         Dataset data = dataset.get();
         if (data == null) {
             data = buildDataset();
             dataset.set(data);
         }
-        final Collection<JrubyEventExtLibrary.RubyEvent> generated = data.compute(incoming);
-        final Collection<JrubyEventExtLibrary.RubyEvent> result;
-        if (generated.isEmpty()) {
-            result = Collections.emptyList();
-        } else {
-            result = new ArrayList<>(generated.size());
-            result.addAll(generated);
-        }
-        // We clear as early as possible to make GC of Event instances easy.
-        data.clear();
-        return result;
+        return data.compute(batch);
     }
 
-    public void output(final RubyArray events) {
-        outputs.forEach(output -> output.multiReceive(events));
+    public void output(final RubyIntegration.Batch batch) {
+        outputs.forEach(output -> output.multiReceive((RubyArray) batch.collect()));
     }
 
     public Collection<RubyIntegration.Filter> shutdownFlushers() {
@@ -239,7 +227,7 @@ public final class CompiledPipeline {
                     }
                 }
             );
-        return Dataset.SumDataset.from(datasets);
+        return Dataset.TerminalDataset.from(datasets);
     }
 
     /**

@@ -1,9 +1,11 @@
 package org.logstash.config.ir.compiler;
 
+import java.util.Collection;
 import org.jruby.RubyArray;
 import org.jruby.RubyInteger;
 import org.jruby.RubyString;
 import org.jruby.runtime.builtin.IRubyObject;
+import org.logstash.ext.JrubyEventExtLibrary;
 
 /**
  * This class holds interfaces implemented by Ruby concrete classes.
@@ -55,5 +57,10 @@ public final class RubyIntegration {
             IRubyObject args);
 
         RubyIntegration.Filter buildCodec(RubyString name, IRubyObject args);
+    }
+
+    public interface Batch {
+
+        Collection<JrubyEventExtLibrary.RubyEvent> collect();
     }
 }

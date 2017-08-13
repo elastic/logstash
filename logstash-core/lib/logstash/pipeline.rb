@@ -479,9 +479,7 @@ module LogStash; class Pipeline < BasePipeline
   end
 
   def filter_batch(batch)
-    input = []
-    batch.each {|event| input << event}
-    @lir_execution.filter(input).each do |e|
+    @lir_execution.filter(batch).each do |e|
       batch.merge(e) unless e.nil? || e.cancelled?
     end
     @filter_queue_client.add_filtered_metrics(batch)
@@ -501,12 +499,7 @@ module LogStash; class Pipeline < BasePipeline
 
   # Take an array of events and send them to the correct output
   def output_batch(batch)
-    # Build a mapping of { output_plugin => [events...]}
-    buffer = []
-    batch.each do |event|
-      buffer.push(event)
-    end
-    @lir_execution.output(buffer)
+    @lir_execution.output(batch)
     @filter_queue_client.add_output_metrics(batch)
   end
 
@@ -629,7 +622,9 @@ module LogStash; class Pipeline < BasePipeline
     maybe_setup_out_plugins
     # filter_func returns all filtered events, including cancelled ones
     wait_until_started
-    @lir_execution.filter([event]).each {|e| block.call(e) unless e.nil?}
+    batch = @filter_queue_client.new_batch
+    batch.merge(event)
+    @lir_execution.filter(batch).each {|e| block.call(e) unless e.nil?}
   end
 
   # perform filters flush and yield flushed event to the passed block
