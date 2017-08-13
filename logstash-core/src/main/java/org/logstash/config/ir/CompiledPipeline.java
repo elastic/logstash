@@ -3,6 +3,7 @@ package org.logstash.config.ir;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -43,6 +44,16 @@ public final class CompiledPipeline {
     private final HashMap<String, RubyIntegration.Filter> filters = new HashMap<>();
 
     /**
+     * Immutable collection of filters that flush on shutdown.
+     */
+    private final Collection<RubyIntegration.Filter> shutdownFlushes;
+
+    /**
+     * Immutable collection of filters that flush periodically.
+     */
+    private final Collection<RubyIntegration.Filter> periodicFlushes;
+
+    /**
      * Configured outputs.
      */
     private final RubyIntegration.Output[] outputs;
@@ -63,6 +74,14 @@ public final class CompiledPipeline {
         inputs = setupInputs();
         setupFilters();
         outputs = setupOutputs();
+        shutdownFlushes = Collections.unmodifiableList(
+            filters.values().stream().filter(RubyIntegration.Filter::hasFlush)
+                .collect(Collectors.toList())
+        );
+        periodicFlushes = Collections.unmodifiableList(
+            shutdownFlushes.stream().filter(RubyIntegration.Filter::periodicFlush)
+                .collect(Collectors.toList())
+        );
     }
 
     public RubyIntegration.Plugin registerPlugin(final RubyIntegration.Plugin plugin) {
@@ -107,13 +126,11 @@ public final class CompiledPipeline {
     }
 
     public Collection<RubyIntegration.Filter> shutdownFlushers() {
-        return filters.values().stream().filter(RubyIntegration.Filter::hasFlush).collect(
-            Collectors.toList());
+        return shutdownFlushes;
     }
 
     public Collection<RubyIntegration.Filter> periodicFlushers() {
-        return shutdownFlushers().stream().filter(
-            filter -> filter.periodicFlush()).collect(Collectors.toList());
+        return periodicFlushes;
     }
 
     public Collection<RubyIntegration.Output> outputs() {
@@ -132,7 +149,7 @@ public final class CompiledPipeline {
      * Sets up all Ruby outputs learnt from {@link PipelineIR}.
      */
     private RubyIntegration.Output[] setupOutputs() {
-        final Collection<RubyIntegration.Output> set = new HashSet<>(5); 
+        final Collection<RubyIntegration.Output> set = new HashSet<>(5);
         graph.getOutputPluginVertices().forEach(v -> {
             final PluginDefinition def = v.getPluginDefinition();
             final SourceWithMetadata source = v.getSourceWithMetadata();
