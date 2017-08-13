@@ -81,12 +81,10 @@ public final class CompiledPipeline {
 
     /**
      * Filter function called by the Ruby pipeline.
-     * @param event Event to filter
+     * @param incoming RubyArray of {@link JrubyEventExtLibrary.RubyEvent} to filter
      * @param generated Array containing generated events as well as the input event
      */
-    public void filter(final JrubyEventExtLibrary.RubyEvent event, final RubyArray generated) {
-        final RubyArray incoming = RubyUtil.RUBY.newArray();
-        incoming.add(event);
+    public void filter(final RubyArray incoming, final RubyArray generated) {
         Dataset data = this.dataset.get();
         if (data == null) {
             data = buildDataset();

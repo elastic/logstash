@@ -480,9 +480,11 @@ module LogStash; class Pipeline < BasePipeline
 
   def filter_batch(batch)
     buffer = []
+    input = []
     batch.each do |event|
-      @lir_execution.filter(event, buffer) unless event.cancelled?
+      input << event unless event.cancelled?
     end
+    @lir_execution.filter(input, buffer)
     buffer.each do |e|
       batch.merge(e) unless e.nil? || e.cancelled?
     end
@@ -632,7 +634,7 @@ module LogStash; class Pipeline < BasePipeline
     # filter_func returns all filtered events, including cancelled ones
     wait_until_started
     buffer = []
-    @lir_execution.filter(event, buffer)
+    @lir_execution.filter([event], buffer)
     buffer.each { |e| 
       block.call(e) unless e.nil?
     }
