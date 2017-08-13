@@ -2,6 +2,7 @@ package org.logstash.config.ir.compiler;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Pattern;
 import org.jruby.RubyString;
 import org.logstash.ConvertedList;
@@ -61,7 +62,7 @@ public interface EventCondition {
         /**
          * Cache of all compiled {@link EventCondition}.
          */
-        private static final HashMap<String, EventCondition> CACHE = new HashMap<>(10);
+        private static final Map<String, EventCondition> CACHE = new HashMap<>(10);
 
         private Compiler() {
             //Utility Class.
@@ -86,35 +87,15 @@ public interface EventCondition {
                 if (expression instanceof Eq) {
                     condition = eq((Eq) expression);
                 } else if (expression instanceof RegexEq) {
-                    final RegexEq regex = (RegexEq) expression;
-                    if (eAndV(regex)) {
-                        condition = new EventCondition.Compiler.FieldMatches(
-                            ((EventValueExpression) regex.getLeft()).getFieldName(),
-                            ((ValueExpression) regex.getRight()).get().toString()
-                        );
-                    } else {
-                        throw new IllegalStateException("B");
-                    }
+                    condition = regex((RegexEq) expression);
                 } else if (expression instanceof In) {
                     condition = in((In) expression);
                 } else if (expression instanceof Or) {
                     condition = or(booleanPair((BinaryBooleanExpression) expression));
                 } else if (expression instanceof Truthy) {
-                    final Expression inner = ((Truthy) expression).getExpression();
-                    if (inner instanceof EventValueExpression) {
-                        condition = truthy((EventValueExpression) inner);
-                    } else {
-                        throw new IllegalStateException("GOT " + inner.getClass());
-                    }
+                    condition = truthy((Truthy) expression);
                 } else if (expression instanceof Not) {
-                    final Expression inner = ((Not) expression).getExpression();
-                    if (inner instanceof BooleanExpression) {
-                        condition = not(buildCondition((BooleanExpression) inner));
-                    } else if (inner instanceof EventValueExpression) {
-                        condition = not(truthy((EventValueExpression) inner));
-                    } else {
-                        throw new IllegalStateException("C2");
-                    }
+                    condition = not((Not) expression);
                 } else if (expression instanceof Gt) {
                     condition = gt((Gt) expression);
                 } else if (expression instanceof Gte) {
@@ -122,21 +103,13 @@ public interface EventCondition {
                 } else if (expression instanceof Lt) {
                     condition = lt((Lt) expression);
                 } else if (expression instanceof Lte) {
-                    final Lte lessequal = (Lte) expression;
-                    if (eAndV(lessequal)) {
-                        condition = not(gt(
-                            (EventValueExpression) lessequal.getLeft(),
-                            (ValueExpression) lessequal.getRight()
-                        ));
-                    } else {
-                        throw new IllegalStateException("F");
-                    }
+                    condition = lte((Lte) expression);
                 } else if (expression instanceof And) {
                     condition = and(booleanPair((BinaryBooleanExpression) expression));
                 } else if (expression instanceof Neq) {
                     condition = neq((Neq) expression);
                 } else {
-                    throw new IllegalStateException("Received " + expression.getClass());
+                    throw new EventCondition.Compiler.UnexpectedTypeException(expression);
                 }
                 CACHE.put(cachekey, condition);
                 return condition;
@@ -177,10 +150,46 @@ public interface EventCondition {
             if (eAndV(neq)) {
                 condition = not(eq((EventValueExpression) uleft, (ValueExpression) uright));
             } else {
-                throw new IllegalArgumentException(
-                    String.format(
-                        "Unexpected input types %s %s", uleft.getClass(), uright.getClass())
+                throw new EventCondition.Compiler.UnexpectedTypeException(uleft, uright);
+            }
+            return condition;
+        }
+
+        private static EventCondition truthy(final Truthy truthy) {
+            final EventCondition condition;
+            final Expression inner = truthy.getExpression();
+            if (inner instanceof EventValueExpression) {
+                condition = truthy((EventValueExpression) inner);
+            } else {
+                throw new EventCondition.Compiler.UnexpectedTypeException(inner);
+            }
+            return condition;
+        }
+
+        private static EventCondition regex(final RegexEq regex) {
+            final EventCondition condition;
+            final Expression uleft = regex.getLeft();
+            final Expression uright = regex.getRight();
+            if (eAndV(regex)) {
+                condition = new EventCondition.Compiler.FieldMatches(
+                    ((EventValueExpression) uleft).getFieldName(),
+                    ((ValueExpression) uright).get().toString()
                 );
+            } else {
+                throw new EventCondition.Compiler.UnexpectedTypeException(uleft, uright);
+            }
+            return condition;
+        }
+
+        private static EventCondition not(final Not not) {
+            final EventCondition condition;
+            final Expression inner = not.getExpression();
+            if (inner instanceof BooleanExpression) {
+                condition = not(buildCondition((BooleanExpression) inner));
+            } else if (inner instanceof EventValueExpression) {
+                condition = not(truthy((EventValueExpression) inner));
+            } else {
+                throw new EventCondition.Compiler.UnexpectedTypeException(inner);
             }
             return condition;
         }
@@ -194,10 +203,19 @@ public interface EventCondition {
                 final ValueExpression right = (ValueExpression) uright;
                 condition = or(gt(left, right), eq(left, right));
             } else {
-                throw new IllegalArgumentException(
-                    String.format(
-                        "Unexpected input types %s %s", uleft.getClass(), uright.getClass())
-                );
+                throw new EventCondition.Compiler.UnexpectedTypeException(uleft, uright);
+            }
+            return condition;
+        }
+
+        private static EventCondition lte(final Lte lte) {
+            final EventCondition condition;
+            final Expression uleft = lte.getLeft();
+            final Expression uright = lte.getRight();
+            if (eAndV(lte)) {
+                condition = not(gt((EventValueExpression) uleft, (ValueExpression) uright));
+            } else {
+                throw new EventCondition.Compiler.UnexpectedTypeException(uleft, uright);
             }
             return condition;
         }
@@ -211,10 +229,7 @@ public interface EventCondition {
                 final ValueExpression right = (ValueExpression) uright;
                 condition = not(or(gt(left, right), eq(left, right)));
             } else {
-                throw new IllegalArgumentException(
-                    String.format(
-                        "Unexpected input types %s %s", uleft.getClass(), uright.getClass())
-                );
+                throw new EventCondition.Compiler.UnexpectedTypeException(uleft, uright);
             }
             return condition;
         }
@@ -242,10 +257,7 @@ public interface EventCondition {
             } else if (vAndV(in)) {
                 condition = in((ValueExpression) left, (ValueExpression) right);
             } else {
-                throw new IllegalArgumentException(
-                    String.format(
-                        "Unexpected input types %s %s", left.getClass(), right.getClass())
-                );
+                throw new EventCondition.Compiler.UnexpectedTypeException(left, right);
             }
             return condition;
         }
@@ -321,10 +333,7 @@ public interface EventCondition {
             } else if (eAndE(equals)) {
                 condition = eq((EventValueExpression) left, (EventValueExpression) right);
             } else {
-                throw new IllegalArgumentException(
-                    String.format(
-                        "Unexpected input types %s %s", left.getClass(), right.getClass())
-                );
+                throw new EventCondition.Compiler.UnexpectedTypeException(left, right);
             }
             return condition;
         }
@@ -343,10 +352,7 @@ public interface EventCondition {
             if (eAndV(greater)) {
                 condition = gt((EventValueExpression) left, (ValueExpression) right);
             } else {
-                throw new IllegalArgumentException(
-                    String.format(
-                        "Unexpected input types %s %s", left.getClass(), right.getClass())
-                );
+                throw new EventCondition.Compiler.UnexpectedTypeException(left, right);
             }
             return condition;
         }
@@ -381,10 +387,7 @@ public interface EventCondition {
                 first = truthy((EventValueExpression) left);
                 second = buildCondition((BooleanExpression) right);
             } else {
-                throw new IllegalArgumentException(
-                    String.format(
-                        "Unexpected input types %s %s", left.getClass(), right.getClass())
-                );
+                throw new EventCondition.Compiler.UnexpectedTypeException(left, right);
             }
             return new EventCondition[]{first, second};
         }
@@ -413,7 +416,6 @@ public interface EventCondition {
             public boolean fulfilled(final JrubyEventExtLibrary.RubyEvent event) {
                 return !condition.fulfilled(event);
             }
-
         }
 
         private static final class AndCondition implements EventCondition {
@@ -431,7 +433,6 @@ public interface EventCondition {
             public boolean fulfilled(final JrubyEventExtLibrary.RubyEvent event) {
                 return first.fulfilled(event) && second.fulfilled(event);
             }
-
         }
 
         private static final class OrCondition implements EventCondition {
@@ -449,7 +450,6 @@ public interface EventCondition {
             public boolean fulfilled(final JrubyEventExtLibrary.RubyEvent event) {
                 return first.fulfilled(event) || second.fulfilled(event);
             }
-
         }
 
         private static final class FieldGreaterThan implements EventCondition {
@@ -615,6 +615,26 @@ public interface EventCondition {
                 final String other = object.toString();
                 return other != null && !other.isEmpty() &&
                     !Boolean.toString(false).equals(other);
+            }
+        }
+
+        /**
+         * This {@link IllegalArgumentException} is thrown when the inputs to an {@code if}
+         * condition do not conform to the expected types. It being thrown is a bug in Logstash
+         * in every case.
+         */
+        private static final class UnexpectedTypeException extends IllegalArgumentException {
+
+            private static final long serialVersionUID = -3673305675726770832L;
+
+            UnexpectedTypeException(final Expression left, final Expression right) {
+                super(
+                    String.format("Unexpected input types %s %s", left.getClass(), right.getClass())
+                );
+            }
+
+            UnexpectedTypeException(final Expression inner) {
+                super(String.format("Unexpected input type %s", inner));
             }
         }
     }

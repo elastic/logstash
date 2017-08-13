@@ -9,6 +9,11 @@ import org.logstash.ext.JrubyEventExtLibrary;
 /**
  * A data structure backed by a {@link RubyArray} that is lazily filled with
  * {@link JrubyEventExtLibrary.RubyEvent} computed from its dependencies.
+ * <p>Note: It does seem more natural to use the {@code clear} invocation to set the next
+ * batch of input data. For now this is intentionally not implemented since we want to clear
+ * the data stored in the Dataset tree as early as possible and before the output operations
+ * finish. Once the whole execution tree including the output operation is implemented in
+ * Java, this API can be adjusted as such.</p>
  */
 public interface Dataset {
 
@@ -21,6 +26,10 @@ public interface Dataset {
      */
     RubyArray compute(RubyArray originals);
 
+    /**
+     * Removes all data from the instance and all of its parents, making the instance ready for
+     * use with a new set of input data.
+     */
     void clear();
 
     /**
