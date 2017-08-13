@@ -2,6 +2,7 @@ package org.logstash.config.ir;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -82,17 +83,26 @@ public final class CompiledPipeline {
     /**
      * Filter function called by the Ruby pipeline.
      * @param incoming RubyArray of {@link JrubyEventExtLibrary.RubyEvent} to filter
-     * @param generated Array containing generated events as well as the input event
+     * @return RubyArray of generated {@link JrubyEventExtLibrary.RubyEvent}
      */
-    public void filter(final RubyArray incoming, final RubyArray generated) {
-        Dataset data = this.dataset.get();
+    public Collection<JrubyEventExtLibrary.RubyEvent> filter(
+        final Collection<JrubyEventExtLibrary.RubyEvent> incoming) {
+        Dataset data = dataset.get();
         if (data == null) {
             data = buildDataset();
-            this.dataset.set(data);
+            dataset.set(data);
         }
-        generated.addAll(data.compute(incoming));
+        final Collection<JrubyEventExtLibrary.RubyEvent> generated = data.compute(incoming);
+        final Collection<JrubyEventExtLibrary.RubyEvent> result;
+        if (generated.isEmpty()) {
+            result = Collections.emptyList();
+        } else {
+            result = new ArrayList<>(generated.size());
+            result.addAll(generated);
+        }
         // We clear as early as possible to make GC of Event instances easy.
         data.clear();
+        return result;
     }
 
     public void output(final RubyArray events) {
@@ -229,7 +239,7 @@ public final class CompiledPipeline {
                     }
                 }
             );
-        return new Dataset.SumDataset(datasets);
+        return Dataset.SumDataset.from(datasets);
     }
 
     /**

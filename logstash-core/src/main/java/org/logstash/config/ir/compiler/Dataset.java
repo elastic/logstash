@@ -1,5 +1,6 @@
 package org.logstash.config.ir.compiler;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import org.jruby.RubyArray;
@@ -24,7 +25,8 @@ public interface Dataset {
      * of the execution
      * @return Computed {@link RubyArray} of {@link JrubyEventExtLibrary.RubyEvent}
      */
-    RubyArray compute(RubyArray originals);
+    Collection<JrubyEventExtLibrary.RubyEvent> compute(
+        Collection<JrubyEventExtLibrary.RubyEvent> originals);
 
     /**
      * Removes all data from the instance and all of its parents, making the instance ready for
@@ -39,7 +41,8 @@ public interface Dataset {
     Collection<Dataset> ROOT_DATASETS = Collections.singleton(
         new Dataset() {
             @Override
-            public RubyArray compute(final RubyArray originals) {
+            public Collection<JrubyEventExtLibrary.RubyEvent> compute(
+                final Collection<JrubyEventExtLibrary.RubyEvent> originals) {
                 return originals;
             }
 
@@ -54,14 +57,54 @@ public interface Dataset {
      * its dependencies.
      */
     final class SumDataset implements Dataset {
+
+        /**
+         * Trivial {@link Dataset} that simply returns an empty collection of elements.
+         */
+        private static final Dataset TRIVIAL = new Dataset() {
+
+            @Override
+            public Collection<JrubyEventExtLibrary.RubyEvent> compute(
+                final Collection<JrubyEventExtLibrary.RubyEvent> originals) {
+                return Collections.emptyList();
+            }
+
+            @Override
+            public void clear() {
+            }
+        };
+
         private final Collection<Dataset> parents;
 
-        public SumDataset(final Collection<Dataset> parents) {
+        /**
+         * <p>Builds sum of the given parent {@link Dataset}. If the given parent {@link Dataset}
+         * collection only contains a single {@link Dataset}, then that one {@link Dataset} will
+         * be returned since no summation is necessary.</p>
+         * <p>If the given set of parent {@link Dataset} is empty the sum is defined as the
+         * trivial dataset that simply passes given inputs through without change.</p>
+         * @param parents Parent {@link Dataset} to sum
+         * @return Dataset representing the sum of given parent {@link Dataset}
+         */
+        public static Dataset from(final Collection<Dataset> parents) {
+            final int count = parents.size();
+            final Dataset result;
+            if (count > 1) {
+                result = new Dataset.SumDataset(parents);
+            } else if (count == 1) {
+                result = parents.iterator().next();
+            } else {
+                result = TRIVIAL;
+            }
+            return result;
+        }
+
+        private SumDataset(final Collection<Dataset> parents) {
             this.parents = parents;
         }
 
         @Override
-        public RubyArray compute(final RubyArray originals) {
+        public Collection<JrubyEventExtLibrary.RubyEvent> compute(
+            final Collection<JrubyEventExtLibrary.RubyEvent> originals) {
             final RubyArray res = RubyUtil.RUBY.newArray();
             parents.forEach(dataset -> res.addAll(dataset.compute(originals)));
             return res;
@@ -87,23 +130,24 @@ public interface Dataset {
 
         private boolean done;
 
-        private final RubyArray data;
+        private final Collection<JrubyEventExtLibrary.RubyEvent> data;
 
         public SplitDataset(Collection<Dataset> parents, final EventCondition func) {
             this.parents = parents;
             this.func = func;
             done = false;
-            data = RubyUtil.RUBY.newArray();
+            data = new ArrayList<>(5);
         }
 
         @Override
-        public RubyArray compute(final RubyArray originals) {
+        public Collection<JrubyEventExtLibrary.RubyEvent> compute(
+            final Collection<JrubyEventExtLibrary.RubyEvent> originals) {
             if (done) {
                 return data;
             }
             for (final Dataset set : parents) {
-                for (final Object event : set.compute(originals)) {
-                    if (func.fulfilled((JrubyEventExtLibrary.RubyEvent) event)) {
+                for (final JrubyEventExtLibrary.RubyEvent event : set.compute(originals)) {
+                    if (func.fulfilled(event)) {
                         data.add(event);
                     }
                 }
@@ -132,19 +176,20 @@ public interface Dataset {
 
         private final RubyIntegration.Filter func;
 
-        private final RubyArray data;
+        private final Collection<JrubyEventExtLibrary.RubyEvent> data;
 
         private boolean done;
 
         public FilteredDataset(Collection<Dataset> parents, final RubyIntegration.Filter func) {
             this.parents = parents;
             this.func = func;
-            data = RubyUtil.RUBY.newArray();
+            data = new ArrayList<>(5);
             done = false;
         }
 
         @Override
-        public RubyArray compute(final RubyArray originals) {
+        public Collection<JrubyEventExtLibrary.RubyEvent> compute(
+            final Collection<JrubyEventExtLibrary.RubyEvent> originals) {
             if (done) {
                 return data;
             }
