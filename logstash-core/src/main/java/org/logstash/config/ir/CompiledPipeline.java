@@ -91,7 +91,7 @@ public final class CompiledPipeline {
 
     /**
      * This method contains the actual compilation of the {@link Dataset} representing the
-     * underlying pipeline.
+     * underlying pipeline from the Queue to the outputs.
      * @return Compiled {@link Dataset} representation of the underlying {@link PipelineIR} topology
      */
     public Dataset buildFilterFunc() {
