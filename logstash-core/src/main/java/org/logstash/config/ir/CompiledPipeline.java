@@ -41,7 +41,7 @@ public final class CompiledPipeline {
     /**
      * Configured Filters, index by their ID as returned by {@link PluginVertex#getId()}.
      */
-    private final HashMap<String, RubyIntegration.Filter> filters = new HashMap<>();
+    private final Map<String, RubyIntegration.Filter> filters;
 
     /**
      * Immutable collection of filters that flush on shutdown.
@@ -72,7 +72,7 @@ public final class CompiledPipeline {
         this.graph = graph;
         this.pipeline = pipeline;
         inputs = setupInputs();
-        setupFilters();
+        filters = setupFilters();
         outputs = setupOutputs();
         shutdownFlushes = Collections.unmodifiableList(
             filters.values().stream().filter(RubyIntegration.Filter::hasFlush)
@@ -140,7 +140,7 @@ public final class CompiledPipeline {
     }
 
     /**
-     * @todo Short circuit this with the Dataset from buildFilterFunc that already has the outputs
+     * todo: Short circuit this with the Dataset from buildFilterFunc that already has the outputs
      * pre-ordered, this approach is not technically correct if there are conditions around
      * outputs!
      */
@@ -169,13 +169,16 @@ public final class CompiledPipeline {
     /**
      * Sets up all Ruby filters learnt from {@link PipelineIR}.
      */
-    private void setupFilters() {
-        for (final PluginVertex plugin : graph.getFilterPluginVertices()) {
+    private Map<String, RubyIntegration.Filter> setupFilters() {
+        final Collection<PluginVertex> plugins = graph.getFilterPluginVertices();
+        final Map<String, RubyIntegration.Filter> res = new HashMap<>(plugins.size());
+        for (final PluginVertex plugin : plugins) {
             final String ident = plugin.getId();
-            if (!filters.containsKey(ident)) {
-                filters.put(ident, buildFilter(plugin));
+            if (!res.containsKey(ident)) {
+                res.put(ident, buildFilter(plugin));
             }
         }
+        return res;
     }
 
     /**
