@@ -139,6 +139,11 @@ public final class CompiledPipeline {
         return Dataset.TerminalDataset.from(datasets);
     }
 
+    /**
+     * @todo Short circuit this with the Dataset from buildFilterFunc that already has the outputs
+     * pre-ordered, this approach is not technically correct if there are conditions around
+     * outputs!
+     */
     public void output(final RubyIntegration.Batch batch) {
         for (final RubyIntegration.Output output : outputs) {
             output.multiReceive(batch.collect());
@@ -278,6 +283,8 @@ public final class CompiledPipeline {
                 } else {
                     final IfVertex ifvert = (IfVertex) child;
                     final EventCondition iff = buildCondition(ifvert);
+                    // It is important that we double check that we are actually dealing with the
+                    // positive/left branch of the if condition
                     if (ifvert.getOutgoingBooleanEdgesByType(true).stream()
                         .anyMatch(edge -> Objects.equals(edge.getTo(), start))) {
                         return splitLeft(newparents, iff);
