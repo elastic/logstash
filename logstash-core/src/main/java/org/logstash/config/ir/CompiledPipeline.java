@@ -154,8 +154,9 @@ public final class CompiledPipeline {
      * Sets up all Ruby outputs learnt from {@link PipelineIR}.
      */
     private RubyIntegration.Output[] setupOutputs() {
-        final Collection<RubyIntegration.Output> set = new HashSet<>(5);
-        graph.getOutputPluginVertices().forEach(v -> {
+        final Collection<PluginVertex> outs = graph.getOutputPluginVertices();
+        final Collection<RubyIntegration.Output> set = new HashSet<>(outs.size());
+        outs.forEach(v -> {
             final PluginDefinition def = v.getPluginDefinition();
             final SourceWithMetadata source = v.getSourceWithMetadata();
             set.add(pipeline.buildOutput(
