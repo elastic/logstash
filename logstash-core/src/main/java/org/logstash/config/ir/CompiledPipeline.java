@@ -243,7 +243,8 @@ public final class CompiledPipeline {
     /**
      * Compiles the next level of the execution from the given {@link Vertex} or simply return
      * the given {@link Dataset} at the previous level if the starting {@link Vertex} cannot
-     * be expanded any further (i.e. doesn't have any more incoming vertices).
+     * be expanded any further (i.e. doesn't have any more incoming vertices that are either
+     * a {code filter} or and {code if} statement).
      * @param parents Nodes from the last already compiled level
      * @param start Vertex to compile children for
      * @param cached Cache of already compiled {@link Dataset}
@@ -251,21 +252,30 @@ public final class CompiledPipeline {
      */
     private Collection<Dataset> flatten(final Collection<Dataset> parents, final Vertex start,
         final Map<String, Dataset> cached) {
-        final Collection<Vertex> endings = start.getIncomingVertices();
+        final Collection<Vertex> endings = start.incomingVertices()
+            .filter(v -> isFilter(v) || v instanceof IfVertex).collect(Collectors.toList());
         return endings.isEmpty() ? parents : flattenChildren(parents, start, cached, endings);
     }
 
+    /**
+     * Compiles all child vertices for a given vertex.
+     * @param parents Parent datasets from previous stage
+     * @param start Start Vertex that got expanded
+     * @param cached Cache of already compiled {@link Dataset}
+     * @param children Children of {@code start} that are either {@code if} or {@code filter} in
+     * type
+     * @return Datasets compiled from vertex children
+     */
     private Collection<Dataset> flattenChildren(final Collection<Dataset> parents,
         final Vertex start, final Map<String, Dataset> cached, final Iterable<Vertex> children) {
         final Collection<Dataset> res = new ArrayList<>(2);
         for (final Vertex child : children) {
-            Collection<Dataset> newparents = flatten(parents, child, cached);
-            if (newparents.isEmpty()) {
-                newparents = parents;
-            }
+            final Collection<Dataset> newparents = flatten(parents, child, cached);
             if (isFilter(child)) {
                 res.add(filterDataset(child.getId(), cached, newparents));
-            } else if (child instanceof IfVertex) {
+                // We know that it's an if vertex since the the input children are either if or
+                // filter type.
+            } else {
                 final IfVertex ifvert = (IfVertex) child;
                 final EventCondition iff = buildCondition(ifvert);
                 if (ifvert.getOutgoingBooleanEdgesByType(true).stream()
