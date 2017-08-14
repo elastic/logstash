@@ -173,6 +173,9 @@ public final class CompiledPipeline {
         }
     }
 
+    /**
+     * Sets up all Ruby inputs learnt from {@link PipelineIR}.
+     */
     private Collection<IRubyObject> setupInputs() {
         final Collection<PluginVertex> vertices = graph.getInputPluginVertices();
         final Collection<IRubyObject> nodes = new HashSet<>(vertices.size());
@@ -238,7 +241,9 @@ public final class CompiledPipeline {
     }
 
     /**
-     * Compiles the next level of the execution from the given {@link Vertex}.
+     * Compiles the next level of the execution from the given {@link Vertex} or simply return
+     * the given {@link Dataset} at the previous level if the starting {@link Vertex} cannot
+     * be expanded any further (i.e. doesn't have any more incoming vertices).
      * @param parents Nodes from the last already compiled level
      * @param start Vertex to compile children for
      * @param cached Cache of already compiled {@link Dataset}
@@ -247,19 +252,21 @@ public final class CompiledPipeline {
     private Collection<Dataset> flatten(final Collection<Dataset> parents, final Vertex start,
         final Map<String, Dataset> cached) {
         final Collection<Vertex> endings = start.getIncomingVertices();
-        if (endings.isEmpty()) {
-            return parents;
-        }
+        return endings.isEmpty() ? parents : flattenChildren(parents, start, cached, endings);
+    }
+
+    private Collection<Dataset> flattenChildren(final Collection<Dataset> parents,
+        final Vertex start, final Map<String, Dataset> cached, final Iterable<Vertex> children) {
         final Collection<Dataset> res = new ArrayList<>(2);
-        for (final Vertex end : endings) {
-            Collection<Dataset> newparents = flatten(parents, end, cached);
+        for (final Vertex child : children) {
+            Collection<Dataset> newparents = flatten(parents, child, cached);
             if (newparents.isEmpty()) {
-                newparents = new ArrayList<>(parents);
+                newparents = parents;
             }
-            if (isFilter(end)) {
-                res.add(filterDataset(end.getId(), cached, newparents));
-            } else if (end instanceof IfVertex) {
-                final IfVertex ifvert = (IfVertex) end;
+            if (isFilter(child)) {
+                res.add(filterDataset(child.getId(), cached, newparents));
+            } else if (child instanceof IfVertex) {
+                final IfVertex ifvert = (IfVertex) child;
                 final EventCondition iff = buildCondition(ifvert);
                 if (ifvert.getOutgoingBooleanEdgesByType(true).stream()
                     .anyMatch(edge -> Objects.equals(edge.getTo(), start))) {
