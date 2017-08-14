@@ -129,7 +129,7 @@ public interface Dataset {
 
         private final Collection<JrubyEventExtLibrary.RubyEvent> data;
 
-        public SplitDataset(Collection<Dataset> parents, final EventCondition func) {
+        public SplitDataset(final Collection<Dataset> parents, final EventCondition func) {
             this.parents = parents;
             this.func = func;
             done = false;
