@@ -460,12 +460,8 @@ module LogStash; class Pipeline < BasePipeline
       shutdown_requested |= signal.shutdown? # latch on shutdown signal
 
       batch = @filter_queue_client.read_batch # metrics are started in read_batch
-
-      if batch.size > 0
-        @events_consumed.increment(batch.size)
-        filter_batch(filter_func, batch)
-      end
-      flush_filters_to_batch(batch, :final => false) if signal.flush?
+      @events_consumed.increment(batch.size)
+      filter_batch(filter_func, batch, signal.flush?)
       if batch.size > 0
         output_batch(batch)
         @filter_queue_client.close_batch(batch)
@@ -478,13 +474,15 @@ module LogStash; class Pipeline < BasePipeline
     # for this we need to create a new empty batch to contain the final flushed events
     batch = @filter_queue_client.new_batch
     @filter_queue_client.start_metrics(batch) # explicitly call start_metrics since we dont do a read_batch here
-    flush_filters_to_batch(batch, :final => true)
+    filter_func.compute(batch, flush, :final => true).each do |e|
+      batch.merge(e) unless e.nil? || e.cancelled?
+    end
     output_batch(batch)
     @filter_queue_client.close_batch(batch)
   end
 
-  def filter_batch(filter_func, batch)
-    filter_func.compute(batch).each do |e|
+  def filter_batch(filter_func, batch, flush)
+    filter_func.compute(batch, flush, :final => false).each do |e|
       batch.merge(e) unless e.nil? || e.cancelled?
     end
     @filter_queue_client.add_filtered_metrics(batch)
@@ -629,7 +627,7 @@ module LogStash; class Pipeline < BasePipeline
     wait_until_started
     batch = @filter_queue_client.new_batch
     batch.merge(event)
-    @lir_execution.buildFilterFunc.compute(batch).each {|e| block.call(e) unless e.nil?}
+    @lir_execution.buildFilterFunc.compute(batch, false, {}).each {|e| block.call(e) unless e.nil?}
   end
 
   # perform filters flush and yield flushed event to the passed block
@@ -675,21 +673,6 @@ module LogStash; class Pipeline < BasePipeline
     return 0 if started_at.nil?
     ((Time.now.to_f - started_at.to_f) * 1000.0).to_i
   end
-
-  # perform filters flush into the output queue
-  #
-  # @param batch [ReadClient::ReadBatch]
-  # @param options [Hash]
-  def flush_filters_to_batch(batch, options = {})
-    flush_filters(options) do |event|
-      unless event.cancelled?
-        @logger.debug? and @logger.debug("Pushing flushed events", default_logging_keys(:event => event))
-        batch.merge(event)
-      end
-    end
-
-    @flushing.set(false)
-  end # flush_filters_to_batch
 
   def plugin_threads_info
     input_threads = @input_threads.select {|t| t.alive? }

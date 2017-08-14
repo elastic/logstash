@@ -36,7 +36,6 @@ module LogStash
 
       # Not all the filters will do bufferings
       @flushes = @filter.respond_to?(:flush)
-      define_flush_method if @flushes
     end
 
     def config_name
@@ -62,18 +61,15 @@ module LogStash
       @flushes
     end
 
-    private
-    def define_flush_method
-      define_singleton_method(:flush) do |options = {}|
-        # we also need to trace the number of events
-        # coming from a specific filters.
-        new_events = @filter.flush(options)
+    def flush(options = {})
+      # we also need to trace the number of events
+      # coming from a specific filters.
+      new_events = @filter.flush(options)
 
-        # Filter plugins that does buffering or spooling of events like the
-        # `Logstash-filter-aggregates` can return `NIL` and will flush on the next flush ticks.
-        @metric_events_out.increment(new_events.size) if new_events && new_events.size > 0
-        new_events
-      end
+      # Filter plugins that does buffering or spooling of events like the
+      # `Logstash-filter-aggregates` can return `NIL` and will flush on the next flush ticks.
+      @metric_events_out.increment(new_events.size) if new_events && new_events.size > 0
+      new_events
     end
   end
 end

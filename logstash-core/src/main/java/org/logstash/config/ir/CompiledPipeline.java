@@ -143,6 +143,7 @@ public final class CompiledPipeline {
      * todo: Short circuit this with the Dataset from buildFilterFunc that already has the outputs
      * pre-ordered, this approach is not technically correct if there are conditions around
      * outputs!
+     * @param batch Batch to output
      */
     public void output(final RubyIntegration.Batch batch) {
         for (final RubyIntegration.Output output : outputs) {
@@ -314,7 +315,12 @@ public final class CompiledPipeline {
         if (cache.containsKey(vertex)) {
             filter = cache.get(vertex);
         } else {
-            filter = new Dataset.FilteredDataset(parents, filters.get(vertex));
+            final RubyIntegration.Filter ruby = filters.get(vertex);
+            if (ruby.hasFlush()) {
+                filter = new Dataset.FilteredFlushableDataset(parents, ruby);
+            } else {
+                filter = new Dataset.FilteredDataset(parents, ruby);
+            }
             cache.put(vertex, filter);
         }
         return filter;

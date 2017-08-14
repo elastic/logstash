@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import org.jruby.RubyArray;
+import org.jruby.RubyHash;
 import org.logstash.ext.JrubyEventExtLibrary;
 
 /**
@@ -22,9 +23,11 @@ public interface Dataset {
      * Repeated invocations will be effectively free.
      * @param originals Input {@link JrubyEventExtLibrary.RubyEvent} received at the root
      * of the execution
+     * @param flush True if flushing flushable nodes while traversing the execution
      * @return Computed {@link RubyArray} of {@link JrubyEventExtLibrary.RubyEvent}
      */
-    Collection<JrubyEventExtLibrary.RubyEvent> compute(RubyIntegration.Batch originals);
+    Collection<JrubyEventExtLibrary.RubyEvent> compute(RubyIntegration.Batch originals,
+        boolean flush, RubyHash options);
 
     /**
      * Removes all data from the instance and all of its parents, making the instance ready for
@@ -40,7 +43,7 @@ public interface Dataset {
         new Dataset() {
             @Override
             public Collection<JrubyEventExtLibrary.RubyEvent> compute(
-                final RubyIntegration.Batch batch) {
+                final RubyIntegration.Batch batch, final boolean flush, final RubyHash options) {
                 return batch.collect();
             }
 
@@ -65,7 +68,7 @@ public interface Dataset {
 
             @Override
             public Collection<JrubyEventExtLibrary.RubyEvent> compute(
-                final RubyIntegration.Batch batch) {
+                final RubyIntegration.Batch batch, final boolean flush, RubyHash options) {
                 return Collections.emptyList();
             }
 
@@ -100,9 +103,9 @@ public interface Dataset {
 
         @Override
         public Collection<JrubyEventExtLibrary.RubyEvent> compute(
-            final RubyIntegration.Batch batch) {
+            final RubyIntegration.Batch batch, final boolean flush, final RubyHash options) {
             final Collection<JrubyEventExtLibrary.RubyEvent> res = new ArrayList<>(10);
-            parents.forEach(dataset -> res.addAll(dataset.compute(batch)));
+            parents.forEach(dataset -> res.addAll(dataset.compute(batch, flush, options)));
             this.clear();
             return res;
         }
@@ -138,12 +141,13 @@ public interface Dataset {
 
         @Override
         public Collection<JrubyEventExtLibrary.RubyEvent> compute(
-            final RubyIntegration.Batch batch) {
+            final RubyIntegration.Batch batch, final boolean flush, final RubyHash options) {
             if (done) {
                 return data;
             }
             for (final Dataset set : parents) {
-                for (final JrubyEventExtLibrary.RubyEvent event : set.compute(batch)) {
+                for (final JrubyEventExtLibrary.RubyEvent event
+                    : set.compute(batch, flush, options)) {
                     if (func.fulfilled(event)) {
                         data.add(event);
                     }
@@ -189,15 +193,68 @@ public interface Dataset {
 
         @Override
         public Collection<JrubyEventExtLibrary.RubyEvent> compute(
-            final RubyIntegration.Batch batch) {
+            final RubyIntegration.Batch batch, final boolean flush, final RubyHash options) {
             if (done) {
                 return data;
             }
             for (final Dataset set : parents) {
-                buffer.addAll(set.compute(batch));
+                buffer.addAll(set.compute(batch, flush, options));
             }
             done = true;
             data.addAll(func.multiFilter(buffer));
+            buffer.clear();
+            return data;
+        }
+
+        @Override
+        public void clear() {
+            for (final Dataset parent : parents) {
+                parent.clear();
+            }
+            data.clear();
+            done = false;
+        }
+    }
+
+    /**
+     * {@link Dataset} resulting from applying a backing {@link RubyIntegration.Filter} to all
+     * dependent {@link Dataset}.
+     */
+    final class FilteredFlushableDataset implements Dataset {
+
+        private final Collection<Dataset> parents;
+
+        private final RubyIntegration.Filter func;
+
+        private final Collection<JrubyEventExtLibrary.RubyEvent> data;
+
+        private final Collection<JrubyEventExtLibrary.RubyEvent> buffer;
+
+        private boolean done;
+
+        public FilteredFlushableDataset(Collection<Dataset> parents,
+            final RubyIntegration.Filter func) {
+            this.parents = parents;
+            this.func = func;
+            data = new ArrayList<>(5);
+            buffer = new ArrayList<>(5);
+            done = false;
+        }
+
+        @Override
+        public Collection<JrubyEventExtLibrary.RubyEvent> compute(
+            final RubyIntegration.Batch batch, final boolean flush, final RubyHash options) {
+            if (done) {
+                return data;
+            }
+            for (final Dataset set : parents) {
+                buffer.addAll(set.compute(batch, flush, options));
+            }
+            done = true;
+            data.addAll(func.multiFilter(buffer));
+            if (flush) {
+                data.addAll(func.flush(options));
+            }
             buffer.clear();
             return data;
         }

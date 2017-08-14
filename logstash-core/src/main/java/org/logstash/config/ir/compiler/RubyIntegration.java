@@ -1,6 +1,7 @@
 package org.logstash.config.ir.compiler;
 
 import java.util.Collection;
+import org.jruby.RubyHash;
 import org.jruby.RubyInteger;
 import org.jruby.RubyString;
 import org.jruby.runtime.builtin.IRubyObject;
@@ -37,7 +38,7 @@ public final class RubyIntegration {
             Collection<JrubyEventExtLibrary.RubyEvent> events
         );
 
-        Collection<JrubyEventExtLibrary.RubyEvent> flush();
+        Collection<JrubyEventExtLibrary.RubyEvent> flush(RubyHash options);
 
         /**
          * Checks if this filter has a flush method.
