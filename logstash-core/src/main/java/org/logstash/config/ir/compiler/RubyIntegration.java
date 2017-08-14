@@ -1,7 +1,6 @@
 package org.logstash.config.ir.compiler;
 
 import java.util.Collection;
-import org.jruby.RubyArray;
 import org.jruby.RubyInteger;
 import org.jruby.RubyString;
 import org.jruby.runtime.builtin.IRubyObject;
@@ -28,7 +27,9 @@ public final class RubyIntegration {
      */
     public interface Filter extends RubyIntegration.Plugin {
 
-        RubyArray multiFilter(RubyArray events);
+        Collection<JrubyEventExtLibrary.RubyEvent> multiFilter(
+            Collection<JrubyEventExtLibrary.RubyEvent> events
+        );
 
         boolean hasFlush();
 

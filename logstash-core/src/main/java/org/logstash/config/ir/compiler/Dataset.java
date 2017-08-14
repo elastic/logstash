@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import org.jruby.RubyArray;
-import org.logstash.RubyUtil;
 import org.logstash.ext.JrubyEventExtLibrary;
 
 /**
@@ -176,12 +175,15 @@ public interface Dataset {
 
         private final Collection<JrubyEventExtLibrary.RubyEvent> data;
 
+        private final Collection<JrubyEventExtLibrary.RubyEvent> buffer;
+
         private boolean done;
 
         public FilteredDataset(Collection<Dataset> parents, final RubyIntegration.Filter func) {
             this.parents = parents;
             this.func = func;
             data = new ArrayList<>(5);
+            buffer = new ArrayList<>(5);
             done = false;
         }
 
@@ -191,12 +193,12 @@ public interface Dataset {
             if (done) {
                 return data;
             }
-            final RubyArray buffer = RubyUtil.RUBY.newArray();
             for (final Dataset set : parents) {
                 buffer.addAll(set.compute(batch));
             }
             done = true;
             data.addAll(func.multiFilter(buffer));
+            buffer.clear();
             return data;
         }
 
