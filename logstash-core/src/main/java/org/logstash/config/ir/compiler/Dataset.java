@@ -268,4 +268,18 @@ public interface Dataset {
             done = false;
         }
     }
+    
+    final class OutputDataset implements Dataset {
+
+        @Override
+        public Collection<JrubyEventExtLibrary.RubyEvent> compute(
+            final RubyIntegration.Batch originals,
+            final boolean flush, final RubyHash options) {
+            return null;
+        }
+
+        @Override
+        public void clear() {
+        }
+    }
 }
