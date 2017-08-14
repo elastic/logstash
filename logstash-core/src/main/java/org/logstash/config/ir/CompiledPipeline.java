@@ -237,7 +237,7 @@ public final class CompiledPipeline {
      * @return True iff {@link Vertex} represents a {@link RubyIntegration.Filter}
      */
     private boolean isFilter(final Vertex vertex) {
-        return graph.getFilterPluginVertices().contains(vertex);
+        return filters.containsKey(vertex.getId());
     }
 
     /**
