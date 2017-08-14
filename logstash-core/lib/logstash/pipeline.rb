@@ -466,7 +466,10 @@ module LogStash; class Pipeline < BasePipeline
         filter_batch(filter_func, batch)
       end
       flush_filters_to_batch(batch, :final => false) if signal.flush?
-      output_batch(batch) if batch.size > 0
+      if batch.size > 0
+        output_batch(batch)
+        @filter_queue_client.close_batch(batch)
+      end
       # keep break at end of loop, after the read_batch operation, some pipeline specs rely on this "final read_batch" before shutdown.
       break if (shutdown_requested && !draining_queue?)
     end
