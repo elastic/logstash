@@ -283,6 +283,8 @@ module LogStash; class Pipeline < BasePipeline
 
     @logger.debug("Starting pipeline", default_logging_keys)
 
+    @finished_execution.make_false
+
     @thread = Thread.new do
       begin
         LogStash::Util.set_thread_name("pipeline.#{pipeline_id}")
