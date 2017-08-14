@@ -45,13 +45,25 @@ describe "Test Dead Letter Queue" do
     es_client = es_service.get_client
     # now we test if all data was indexed by ES, but first refresh manually
     es_client.indices.refresh
+    puts "Waiting for logstash"
     logstash_service.wait_for_logstash
+    puts "Logstash id ready"
     logstash_service.write_to_stdin(IO.read(@fixture.input))
+    puts "Wrote to stdin"
+    started = false
 
     try(100) do
       result = es_client.search(index: 'logstash-*', size: 0, q: '*')
+      puts "Logstash Service alive - #{logstash_service.is_port_open?}"
+      if logstash_service.is_port_open?
+        started = true
+      end
+      if started && !logstash_service.is_port_open?
+        raise "Logstash Service has stopped"
+      end
       expect(result["hits"]["total"]).to eq(37)
     end
+
     # randomly checked for results and structured fields
     result = es_client.search(index: 'logstash-*', size: 1, q: 'dynamic')
     s = result["hits"]["hits"][0]["_source"]
