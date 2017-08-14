@@ -84,6 +84,26 @@ public final class CompiledPipeline {
         );
     }
 
+    public Collection<RubyIntegration.Filter> shutdownFlushers() {
+        return shutdownFlushes;
+    }
+
+    public Collection<RubyIntegration.Filter> periodicFlushers() {
+        return periodicFlushes;
+    }
+
+    public Collection<RubyIntegration.Output> outputs() {
+        return Arrays.asList(outputs);
+    }
+
+    public Collection<RubyIntegration.Filter> filters() {
+        return new ArrayList<>(filters.values());
+    }
+
+    public Collection<IRubyObject> inputs() {
+        return inputs;
+    }
+
     public RubyIntegration.Plugin registerPlugin(final RubyIntegration.Plugin plugin) {
         plugin.register();
         return plugin;
@@ -123,26 +143,6 @@ public final class CompiledPipeline {
         for (final RubyIntegration.Output output : outputs) {
             output.multiReceive(batch.collect());
         }
-    }
-
-    public Collection<RubyIntegration.Filter> shutdownFlushers() {
-        return shutdownFlushes;
-    }
-
-    public Collection<RubyIntegration.Filter> periodicFlushers() {
-        return periodicFlushes;
-    }
-
-    public Collection<RubyIntegration.Output> outputs() {
-        return Arrays.asList(outputs);
-    }
-
-    public Collection<RubyIntegration.Filter> filters() {
-        return new ArrayList<>(filters.values());
-    }
-
-    public Collection<IRubyObject> inputs() {
-        return inputs;
     }
 
     /**
@@ -267,26 +267,25 @@ public final class CompiledPipeline {
      * @return Datasets compiled from vertex children
      */
     private Collection<Dataset> flattenChildren(final Collection<Dataset> parents,
-        final Vertex start, final Map<String, Dataset> cached, final Iterable<Vertex> children) {
-        final Collection<Dataset> res = new ArrayList<>(2);
-        for (final Vertex child : children) {
-            final Collection<Dataset> newparents = flatten(parents, child, cached);
-            if (isFilter(child)) {
-                res.add(filterDataset(child.getId(), cached, newparents));
-                // We know that it's an if vertex since the the input children are either if or
-                // filter type.
-            } else {
-                final IfVertex ifvert = (IfVertex) child;
-                final EventCondition iff = buildCondition(ifvert);
-                if (ifvert.getOutgoingBooleanEdgesByType(true).stream()
-                    .anyMatch(edge -> Objects.equals(edge.getTo(), start))) {
-                    res.add(splitLeft(newparents, iff));
+        final Vertex start, final Map<String, Dataset> cached, final Collection<Vertex> children) {
+        return children.stream().map(
+            child -> {
+                final Collection<Dataset> newparents = flatten(parents, child, cached);
+                if (isFilter(child)) {
+                    return filterDataset(child.getId(), cached, newparents);
+                    // We know that it's an if vertex since the the input children are either if or
+                    // filter type.
                 } else {
-                    res.add(splitRight(newparents, iff));
+                    final IfVertex ifvert = (IfVertex) child;
+                    final EventCondition iff = buildCondition(ifvert);
+                    if (ifvert.getOutgoingBooleanEdgesByType(true).stream()
+                        .anyMatch(edge -> Objects.equals(edge.getTo(), start))) {
+                        return splitLeft(newparents, iff);
+                    } else {
+                        return splitRight(newparents, iff);
+                    }
                 }
-            }
-        }
-        return res;
+            }).collect(Collectors.toList());
     }
 
     /**
@@ -310,11 +309,26 @@ public final class CompiledPipeline {
         return filter;
     }
 
+    /**
+     * Split the parent {@link Dataset}s and return the dataset half of their elements that contains
+     * the {@link JrubyEventExtLibrary.RubyEvent} that <strong>do not</strong> fulfil the given
+     * {@link EventCondition}.
+     * @param parents Datasets to split
+     * @param condition Condition that must be not be fulfilled
+     * @return The half of the datasets contents that does not fulfil the condition
+     */
     private static Dataset splitRight(final Collection<Dataset> parents,
         final EventCondition condition) {
         return splitLeft(parents, EventCondition.Compiler.not(condition));
     }
 
+    /**
+     * Split the parent {@link Dataset}s and return the dataset half of their elements that contains
+     * the {@link JrubyEventExtLibrary.RubyEvent} that fulfil the given {@link EventCondition}.
+     * @param parents Datasets to split
+     * @param condition Condition that must be fulfilled
+     * @return The half of the datasets contents that fulfils the condition
+     */
     private static Dataset splitLeft(final Collection<Dataset> parents,
         final EventCondition condition) {
         return new Dataset.SplitDataset(parents, condition);
