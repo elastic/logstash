@@ -58,7 +58,7 @@ module LogStash
       new_events
     end
     
-    def has_flush()
+    def has_flush
       @flushes
     end
 
