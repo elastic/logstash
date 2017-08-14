@@ -190,6 +190,12 @@ class LogStash::Runner < Clamp::StrictCommand
     @settings = LogStash::SETTINGS
     @bootstrap_checks = DEFAULT_BOOTSTRAP_CHECKS.dup
 
+    # Default we check local sources: `-e`, `-f` and the logstash.yml options.
+    @source_loader = LogStash::Config::SourceLoader.new(@settings)
+    @source_loader.add_source(LogStash::Config::Source::Local.new(@settings))
+    @source_loader.add_source(LogStash::Config::Source::Modules.new(@settings))
+    @source_loader.add_source(LogStash::Config::Source::MultiLocal.new(@settings))
+
     super(*args)
   end
 
@@ -249,12 +255,6 @@ class LogStash::Runner < Clamp::StrictCommand
       show_version
       return 0
     end
-
-    # Default we check local sources: `-e`, `-f` and the logstash.yml options.
-    @source_loader = LogStash::Config::SourceLoader.new(@settings)
-    @source_loader.add_source(LogStash::Config::Source::Local.new(@settings))
-    @source_loader.add_source(LogStash::Config::Source::Modules.new(@settings))
-    @source_loader.add_source(LogStash::Config::Source::MultiLocal.new(@settings))
 
     # Add local modules to the registry before everything else
     LogStash::Modules::Util.register_local_modules(LogStash::Environment::LOGSTASH_HOME)
