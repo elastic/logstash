@@ -340,7 +340,11 @@ public final class CompiledPipeline {
         } else {
             final RubyIntegration.Filter ruby = filters.get(vertex);
             if (ruby.hasFlush()) {
-                filter = new Dataset.FilteredFlushableDataset(parents, ruby);
+                if (ruby.periodicFlush()) {
+                    filter = new Dataset.FilteredFlushableDataset(parents, ruby);
+                } else {
+                    filter = new Dataset.FilteredShutdownFlushableDataset(parents, ruby);
+                }
             } else {
                 filter = new Dataset.FilteredDataset(parents, ruby);
             }
