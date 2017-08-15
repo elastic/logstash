@@ -9,6 +9,7 @@ import org.logstash.ConvertedList;
 import org.logstash.FieldReference;
 import org.logstash.PathCache;
 import org.logstash.RubyUtil;
+import org.logstash.bivalues.BiValues;
 import org.logstash.config.ir.expression.BinaryBooleanExpression;
 import org.logstash.config.ir.expression.BooleanExpression;
 import org.logstash.config.ir.expression.EventValueExpression;
@@ -576,6 +577,19 @@ public interface EventCondition {
                 } else {
                     return found != null && other != null && found.equals(other);
                 }
+            }
+
+            private static boolean contains(final ConvertedList list, final Object value) {
+                if (value == null || value == BiValues.NULL_BI_VALUE) {
+                    return list.contains(BiValues.NULL_BI_VALUE);
+                }
+                final String val = String.valueOf(value);
+                for (final Object element : list) {
+                    if (val.equals(element.toString())) {
+                        return true;
+                    }
+                }
+                return false;
             }
         }
 
