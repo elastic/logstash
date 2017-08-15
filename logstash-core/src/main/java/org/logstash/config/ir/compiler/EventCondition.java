@@ -240,12 +240,12 @@ public interface EventCondition {
             final Expression right = in.getRight();
             final EventCondition condition;
             if (eAndV(in) && scalarValueRight(in)) {
-                condition = new EventCondition.Compiler.FieldArrayContainsValue(
+                condition = new EventCondition.Compiler.FieldInConstant(
                     PathCache.cache(((EventValueExpression) left).getFieldName()),
                     ((ValueExpression) right).get().toString()
                 );
             } else if (vAndE(in) && scalarValueLeft(in)) {
-                condition = new EventCondition.Compiler.FieldArrayContainsValue(
+                condition = new EventCondition.Compiler.FieldInConstant(
                     PathCache.cache(((EventValueExpression) right).getFieldName()),
                     ((ValueExpression) left).get().toString()
                 );
@@ -264,7 +264,7 @@ public interface EventCondition {
         }
 
         private static EventCondition in(final EventValueExpression left, final List<?> right) {
-            return new EventCondition.Compiler.FieldContainsListedValue(
+            return new EventCondition.Compiler.FieldInConstants(
                 PathCache.cache(left.getFieldName()), right
             );
         }
@@ -313,7 +313,7 @@ public interface EventCondition {
 
         private static EventCondition in(final EventValueExpression left,
             final EventValueExpression right) {
-            return new EventCondition.Compiler.FieldArrayContainsFieldValue(
+            return new EventCondition.Compiler.FieldInField(
                 PathCache.cache(left.getFieldName()), PathCache.cache(right.getFieldName())
             );
         }
@@ -403,6 +403,24 @@ public interface EventCondition {
 
         private static EventCondition and(final EventCondition... conditions) {
             return new EventCondition.Compiler.AndCondition(conditions[0], conditions[1]);
+        }
+
+        /**
+         * Contains function using Ruby equivalent comparison logic.
+         * @param list List to find value in
+         * @param value Value to find in list
+         * @return True iff value is in list
+         */
+        private static boolean contains(final ConvertedList list, final Object value) {
+            if (value == null || value == BiValues.NULL_BI_VALUE) {
+                return list.contains(BiValues.NULL_BI_VALUE);
+            }
+            for (final Object element : list) {
+                if (value.equals(element)) {
+                    return true;
+                }
+            }
+            return false;
         }
 
         private static final class Negated implements EventCondition {
@@ -525,37 +543,36 @@ public interface EventCondition {
             }
         }
 
-        private static final class FieldArrayContainsValue implements EventCondition {
+        private static final class FieldInConstant implements EventCondition {
 
             private final FieldReference field;
 
-            private final String value;
+            private final RubyString value;
 
-            private FieldArrayContainsValue(final FieldReference field, final String value) {
+            private FieldInConstant(final FieldReference field, final String value) {
                 this.field = field;
-                this.value = value;
+                this.value = RubyUtil.RUBY.newString(value);
             }
 
             @Override
             public boolean fulfilled(final JrubyEventExtLibrary.RubyEvent event) {
                 final Object found = event.getEvent().getUnconvertedField(field);
                 if (found instanceof ConvertedList) {
-                    return ((ConvertedList) found).stream().anyMatch(
-                        item -> item.toString().equals(value)
-                    );
-                } else
-                    return found != null && found.toString().contains(value);
+                    return contains((ConvertedList) found, value);
+                } else {
+                    return found instanceof RubyString && ((RubyString) found).getByteList()
+                        .indexOf(value.getByteList()) > -1;
+                }
             }
         }
 
-        private static final class FieldArrayContainsFieldValue implements EventCondition {
+        private static final class FieldInField implements EventCondition {
 
             private final FieldReference field;
 
             private final FieldReference value;
 
-            private FieldArrayContainsFieldValue(final FieldReference field,
-                final FieldReference value) {
+            private FieldInField(final FieldReference field, final FieldReference value) {
                 this.field = field;
                 this.value = value;
             }
@@ -564,42 +581,27 @@ public interface EventCondition {
             public boolean fulfilled(final JrubyEventExtLibrary.RubyEvent event) {
                 final Object found = event.getEvent().getUnconvertedField(field);
                 final Object other = event.getEvent().getUnconvertedField(value);
-                if (found instanceof ConvertedList && other instanceof RubyString) {
-                    return ((ConvertedList) found).stream().anyMatch(
-                        item -> item.toString().equals(other.toString())
-                    );
+                if (found instanceof ConvertedList) {
+                    return contains((ConvertedList) found, other);
                 } else if (found instanceof RubyString && other instanceof RubyString) {
-                    return found.toString().contains(other.toString());
-                } else if (found instanceof RubyString && other instanceof ConvertedList) {
-                    return ((ConvertedList) other).stream().anyMatch(
-                        item -> item.toString().equals(found.toString())
-                    );
+                    return ((RubyString) found).getByteList().indexOf(
+                        ((RubyString) other).getByteList()
+                    ) > -1;
+                } else if (other instanceof ConvertedList) {
+                    return contains((ConvertedList) other, found);
                 } else {
                     return found != null && other != null && found.equals(other);
                 }
             }
-
-            private static boolean contains(final ConvertedList list, final Object value) {
-                if (value == null || value == BiValues.NULL_BI_VALUE) {
-                    return list.contains(BiValues.NULL_BI_VALUE);
-                }
-                final String val = String.valueOf(value);
-                for (final Object element : list) {
-                    if (val.equals(element.toString())) {
-                        return true;
-                    }
-                }
-                return false;
-            }
         }
 
-        private static final class FieldContainsListedValue implements EventCondition {
+        private static final class FieldInConstants implements EventCondition {
 
             private final FieldReference field;
 
             private final List<?> value;
 
-            private FieldContainsListedValue(final FieldReference field, final List<?> value) {
+            private FieldInConstants(final FieldReference field, final List<?> value) {
                 this.field = field;
                 this.value = value;
             }
