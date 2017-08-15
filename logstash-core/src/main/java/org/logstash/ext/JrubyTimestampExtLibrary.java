@@ -1,5 +1,6 @@
 package org.logstash.ext;
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import java.io.IOException;
 import org.jruby.Ruby;
 import org.jruby.RubyClass;
@@ -19,6 +20,7 @@ import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.jruby.runtime.load.Library;
 import org.logstash.Timestamp;
+import org.logstash.json.RubyTimestampSerializer;
 
 public class JrubyTimestampExtLibrary implements Library {
 
@@ -40,6 +42,7 @@ public class JrubyTimestampExtLibrary implements Library {
     }
 
     @JRubyClass(name = "Timestamp")
+    @JsonSerialize(using = RubyTimestampSerializer.class)
     public static class RubyTimestamp extends RubyObject {
 
         private Timestamp timestamp;

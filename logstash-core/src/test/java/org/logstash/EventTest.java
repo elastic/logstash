@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.jruby.RubyTime;
 import org.junit.Test;
 
 import static net.javacrumbs.jsonunit.JsonAssert.assertJsonEquals;
@@ -104,6 +105,19 @@ public final class EventTest {
         e = new Event();
         e.setField("[foo][0][baz]", 1);
         assertJsonEquals("{\"@timestamp\":\"" + e.getTimestamp().toIso8601() + "\",\"foo\":{\"0\":{\"baz\":1}},\"@version\":\"1\"}", e.toJson());
+    }
+
+    @Test
+    public void testTimestampFieldToJson() throws Exception {
+        Event e = new Event();
+        final RubyTime time = RubyUtil.RUBY.newTime(1000L);
+        e.setField("[foo][bar][baz]", time);
+        assertJsonEquals(
+            String.format(
+                "{\"@timestamp\":\"%s\",\"foo\":{\"bar\":{\"baz\":\"%s\"}},\"@version\":\"1\"}",
+                e.getTimestamp().toIso8601(), new Timestamp(time.getDateTime()).toIso8601()
+            ), e.toJson()
+        );
     }
 
     @Test
