@@ -25,6 +25,7 @@ import org.logstash.DLQEntry;
 import org.logstash.Timestamp;
 
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
 import java.nio.file.StandardWatchEventKinds;
@@ -48,7 +49,7 @@ public final class DeadLetterQueueReader implements Closeable {
     private final ConcurrentSkipListSet<Path> segments;
     private final WatchService watchService;
 
-    public DeadLetterQueueReader(Path queuePath) throws Exception {
+    public DeadLetterQueueReader(Path queuePath) throws IOException {
         this.queuePath = queuePath;
         this.watchService = FileSystems.getDefault().newWatchService();
         this.queuePath.register(watchService, ENTRY_CREATE, ENTRY_DELETE);
@@ -131,8 +132,18 @@ public final class DeadLetterQueueReader implements Closeable {
     }
 
     public void setCurrentReaderAndPosition(Path segmentPath, long position) throws IOException {
-        currentReader = new RecordIOReader(segmentPath);
-        currentReader.seekToOffset(position);
+        // If the provided segment Path exist, then set the reader to start from the supplied position
+        if (Files.exists(segmentPath)) {
+            currentReader = new RecordIOReader(segmentPath);
+            currentReader.seekToOffset(position);
+        }else{
+            // Otherwise, set the current reader to be at the beginning of the next
+            // segment.
+            Path next = segments.higher(segmentPath);
+            if (next != null){
+                currentReader = new RecordIOReader(next);
+            }
+        }
     }
 
     public Path getCurrentSegment() {
