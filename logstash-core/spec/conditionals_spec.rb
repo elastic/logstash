@@ -222,6 +222,21 @@ describe "conditionals in filter" do
       sample("different") { expect(subject.get("tags") ).to include("failure") }
     end
 
+    conditional "'sample' == [message]" do
+      sample("sample") {expect(subject.get("tags")).to include("success")}
+      sample("different") {expect(subject.get("tags")).to include("failure")}
+    end
+
+    conditional "'value' == 'value'" do
+      sample("sample") {expect(subject.get("tags")).to include("success")}
+      sample("different") {expect(subject.get("tags")).to include("success")}
+    end
+
+    conditional "'value' == 'other'" do
+      sample("sample") {expect(subject.get("tags")).to include("failure")}
+      sample("different") {expect(subject.get("tags")).to include("failure")}
+    end
+
     conditional "[message] != 'sample'" do
       sample("sample") { expect(subject.get("tags") ).to include("failure") }
       sample("different") { expect(subject.get("tags") ).to include("success") }

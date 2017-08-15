@@ -341,8 +341,13 @@ public interface EventCondition {
             final EventCondition condition;
             if (eAndV(equals)) {
                 condition = eq((EventValueExpression) left, (ValueExpression) right);
+            } else if (vAndE(equals)) {
+                condition = eq((EventValueExpression) right, (ValueExpression) left);
             } else if (eAndE(equals)) {
                 condition = eq((EventValueExpression) left, (EventValueExpression) right);
+            } else if (vAndV(equals)) {
+                condition = ((ValueExpression) left).get()
+                    .equals(((ValueExpression) right).get()) ? TRUE : FALSE;
             } else {
                 throw new EventCondition.Compiler.UnexpectedTypeException(left, right);
             }
