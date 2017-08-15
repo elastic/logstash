@@ -62,14 +62,21 @@ public interface Dataset {
     final class TerminalDataset implements Dataset {
 
         /**
+         * Empty {@link Collection} returned by this class's
+         * {@link Dataset#compute(RubyIntegration.Batch, boolean, RubyHash)} implementation.
+         */
+        private static final Collection<JrubyEventExtLibrary.RubyEvent> EMPTY_RETURN =
+            Collections.emptyList();
+
+        /**
          * Trivial {@link Dataset} that simply returns an empty collection of elements.
          */
         private static final Dataset TRIVIAL = new Dataset() {
 
             @Override
             public Collection<JrubyEventExtLibrary.RubyEvent> compute(
-                final RubyIntegration.Batch batch, final boolean flush, RubyHash options) {
-                return Collections.emptyList();
+                final RubyIntegration.Batch batch, final boolean flush, final RubyHash options) {
+                return EMPTY_RETURN;
             }
 
             @Override
@@ -82,15 +89,21 @@ public interface Dataset {
         /**
          * <p>Builds a terminal {@link Dataset} from the given parent {@link Dataset}s.</p>
          * <p>If the given set of parent {@link Dataset} is empty the sum is defined as the
-         * trivial dataset that does not generate any output.</p>
+         * trivial dataset that does not invoke any computation whatsoever.</p>
+         * The return of a call to {@link Dataset#compute(RubyIntegration.Batch, boolean, RubyHash)}
+         * is always {@link Collections#emptyList()}.
          * @param parents Parent {@link Dataset} to sum and terminate
          * @return Dataset representing the sum of given parent {@link Dataset}
          */
-        public static Dataset from(final Collection<Dataset> parents) {
+        public static Dataset from(final Collection<Dataset> parents, final boolean debug) {
             final int count = parents.size();
             final Dataset result;
             if (count > 0) {
-                result = new TerminalDataset(parents);
+                if (debug) {
+                    result = new Dataset.TerminalDataset.TerminalDebugDataset(parents);
+                } else {
+                    result = new Dataset.TerminalDataset(parents);
+                }
             } else {
                 result = TRIVIAL;
             }
@@ -106,7 +119,7 @@ public interface Dataset {
             final RubyIntegration.Batch batch, final boolean flush, final RubyHash options) {
             parents.forEach(dataset -> dataset.compute(batch, flush, options));
             this.clear();
-            return Collections.emptyList();
+            return EMPTY_RETURN;
         }
 
         @Override
@@ -115,69 +128,38 @@ public interface Dataset {
                 parent.clear();
             }
         }
-    }
-    
-    /**
-     * <p>{@link Dataset} that contains all {@link JrubyEventExtLibrary.RubyEvent} of all of
-     * its dependencies and is assumed to be at the end of an execution.</p>
-     * This dataset does not require an explicit call to {@link Dataset#clear()} since it will
-     * automatically {@code clear} all of its parents.
-     */
-    final class TerminalDebugDataset implements Dataset {
 
         /**
-         * Trivial {@link Dataset} that simply returns an empty collection of elements.
+         * <p>{@link Dataset} that contains all {@link JrubyEventExtLibrary.RubyEvent} of all of
+         * its dependencies and is assumed to be at the end of an execution.</p>
+         * This dataset does not require an explicit call to {@link Dataset#clear()} since it will
+         * automatically {@code clear} all of its parents.
+         * Unlike {@link Dataset.TerminalDataset} this class will return all
+         * {@link JrubyEventExtLibrary.RubyEvent} that passed through it on a call to
+         * {@link Dataset#compute(RubyIntegration.Batch, boolean, RubyHash)}.
          */
-        private static final Dataset TRIVIAL = new Dataset() {
+        public static final class TerminalDebugDataset implements Dataset {
+
+            private final Collection<Dataset> parents;
+
+            private TerminalDebugDataset(final Collection<Dataset> parents) {
+                this.parents = parents;
+            }
 
             @Override
             public Collection<JrubyEventExtLibrary.RubyEvent> compute(
-                final RubyIntegration.Batch batch, final boolean flush, RubyHash options) {
-                return Collections.emptyList();
+                final RubyIntegration.Batch batch, final boolean flush, final RubyHash options) {
+                final Collection<JrubyEventExtLibrary.RubyEvent> res = new ArrayList<>(10);
+                parents.forEach(dataset -> res.addAll(dataset.compute(batch, flush, options)));
+                this.clear();
+                return res;
             }
 
             @Override
             public void clear() {
-            }
-        };
-
-        private final Collection<Dataset> parents;
-
-        /**
-         * <p>Builds a terminal {@link Dataset} from the given parent {@link Dataset}s.</p>
-         * <p>If the given set of parent {@link Dataset} is empty the sum is defined as the
-         * trivial dataset that does not generate any output.</p>
-         * @param parents Parent {@link Dataset} to sum and terminate
-         * @return Dataset representing the sum of given parent {@link Dataset}
-         */
-        public static Dataset from(final Collection<Dataset> parents) {
-            final int count = parents.size();
-            final Dataset result;
-            if (count > 0) {
-                result = new TerminalDebugDataset(parents);
-            } else {
-                result = TRIVIAL;
-            }
-            return result;
-        }
-
-        private TerminalDebugDataset(final Collection<Dataset> parents) {
-            this.parents = parents;
-        }
-
-        @Override
-        public Collection<JrubyEventExtLibrary.RubyEvent> compute(
-            final RubyIntegration.Batch batch, final boolean flush, final RubyHash options) {
-            final Collection<JrubyEventExtLibrary.RubyEvent> res = new ArrayList<>(10);
-            parents.forEach(dataset -> res.addAll(dataset.compute(batch, flush, options)));
-            this.clear();
-            return res;
-        }
-
-        @Override
-        public void clear() {
-            for (final Dataset parent : parents) {
-                parent.clear();
+                for (final Dataset parent : parents) {
+                    parent.clear();
+                }
             }
         }
     }
