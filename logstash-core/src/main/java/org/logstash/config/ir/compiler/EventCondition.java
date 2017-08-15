@@ -3,12 +3,16 @@ package org.logstash.config.ir.compiler;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.regex.Pattern;
 import org.jruby.RubyString;
+import org.jruby.util.ByteList;
 import org.logstash.ConvertedList;
+import org.logstash.ConvertedMap;
 import org.logstash.FieldReference;
 import org.logstash.PathCache;
 import org.logstash.RubyUtil;
+import org.logstash.Valuefier;
 import org.logstash.bivalues.BiValues;
 import org.logstash.config.ir.expression.BinaryBooleanExpression;
 import org.logstash.config.ir.expression.BooleanExpression;
@@ -240,15 +244,21 @@ public interface EventCondition {
             final Expression right = in.getRight();
             final EventCondition condition;
             if (eAndV(in) && scalarValueRight(in)) {
-                condition = new EventCondition.Compiler.FieldInConstant(
+                condition = new EventCondition.Compiler.FieldInConstantScalar(
                     PathCache.cache(((EventValueExpression) left).getFieldName()),
                     ((ValueExpression) right).get().toString()
                 );
             } else if (vAndE(in) && scalarValueLeft(in)) {
-                condition = new EventCondition.Compiler.FieldInConstant(
-                    PathCache.cache(((EventValueExpression) right).getFieldName()),
-                    ((ValueExpression) left).get().toString()
-                );
+                final Object leftv = ((ValueExpression) left).get();
+                final FieldReference rfield =
+                    PathCache.cache(((EventValueExpression) right).getFieldName());
+                if (leftv instanceof String) {
+                    condition = new EventCondition.Compiler.ConstantStringInField(
+                        rfield, (String) leftv
+                    );
+                } else {
+                    condition = new EventCondition.Compiler.ConstantScalarInField(rfield, leftv);
+                }
             } else if (eAndV(in) && listValueRight(in)) {
                 condition = in(
                     (EventValueExpression) left, (List<?>) ((ValueExpression) right).get()
@@ -264,7 +274,7 @@ public interface EventCondition {
         }
 
         private static EventCondition in(final EventValueExpression left, final List<?> right) {
-            return new EventCondition.Compiler.FieldInConstants(
+            return new EventCondition.Compiler.FieldInConstantList(
                 PathCache.cache(left.getFieldName()), right
             );
         }
@@ -543,65 +553,102 @@ public interface EventCondition {
             }
         }
 
-        private static final class FieldInConstant implements EventCondition {
+        private static final class ConstantStringInField implements EventCondition {
 
             private final FieldReference field;
 
-            private final RubyString value;
+            private final ByteList bytes;
 
-            private FieldInConstant(final FieldReference field, final String value) {
+            private final RubyString string;
+
+            private ConstantStringInField(final FieldReference field, final String value) {
                 this.field = field;
-                this.value = RubyUtil.RUBY.newString(value);
+                this.string = RubyUtil.RUBY.newString(value);
+                bytes = string.getByteList();
             }
 
             @Override
             public boolean fulfilled(final JrubyEventExtLibrary.RubyEvent event) {
                 final Object found = event.getEvent().getUnconvertedField(field);
-                if (found instanceof ConvertedList) {
-                    return contains((ConvertedList) found, value);
-                } else {
-                    return found instanceof RubyString && ((RubyString) found).getByteList()
-                        .indexOf(value.getByteList()) > -1;
-                }
+                return found instanceof RubyString && 
+                    ((RubyString) found).getByteList().indexOf(bytes) > -1
+                    || found instanceof ConvertedList && contains((ConvertedList) found, string);
+            }
+        }
+
+        private static final class ConstantScalarInField implements EventCondition {
+
+            private final FieldReference field;
+
+            private final Object value;
+
+            private ConstantScalarInField(final FieldReference field, final Object value) {
+                this.field = field;
+                this.value = Valuefier.convert(value);
+            }
+
+            @Override
+            public boolean fulfilled(final JrubyEventExtLibrary.RubyEvent event) {
+                final Object found = event.getEvent().getUnconvertedField(field);
+                return found instanceof ConvertedList && contains((ConvertedList) found, value)
+                    || Objects.equals(found, field);
+            }
+        }
+
+        private static final class FieldInConstantScalar implements EventCondition {
+
+            private final FieldReference field;
+
+            private final ByteList value;
+
+            private FieldInConstantScalar(final FieldReference field, final String value) {
+                this.field = field;
+                this.value = RubyUtil.RUBY.newString(value).getByteList();
+            }
+
+            @Override
+            public boolean fulfilled(final JrubyEventExtLibrary.RubyEvent event) {
+                final Object found = event.getEvent().getUnconvertedField(field);
+                return found instanceof RubyString &&
+                    value.indexOf(((RubyString) found).getByteList()) > -1;
             }
         }
 
         private static final class FieldInField implements EventCondition {
 
-            private final FieldReference field;
+            private final FieldReference left;
 
-            private final FieldReference value;
+            private final FieldReference right;
 
-            private FieldInField(final FieldReference field, final FieldReference value) {
-                this.field = field;
-                this.value = value;
+            private FieldInField(final FieldReference left, final FieldReference right) {
+                this.left = left;
+                this.right = right;
             }
 
             @Override
             public boolean fulfilled(final JrubyEventExtLibrary.RubyEvent event) {
-                final Object found = event.getEvent().getUnconvertedField(field);
-                final Object other = event.getEvent().getUnconvertedField(value);
-                if (found instanceof ConvertedList) {
-                    return contains((ConvertedList) found, other);
-                } else if (found instanceof RubyString && other instanceof RubyString) {
-                    return ((RubyString) found).getByteList().indexOf(
-                        ((RubyString) other).getByteList()
-                    ) > -1;
-                } else if (other instanceof ConvertedList) {
-                    return contains((ConvertedList) other, found);
+                final Object lfound = event.getEvent().getUnconvertedField(left);
+                final Object rfound = event.getEvent().getUnconvertedField(right);
+                if (lfound instanceof ConvertedList || lfound instanceof ConvertedMap) {
+                    return false;
+                } else if (lfound instanceof RubyString && rfound instanceof RubyString) {
+                    return ((RubyString) lfound).getByteList()
+                        .indexOf(((RubyString) rfound).getByteList()) > -1;
+                } else if (rfound instanceof ConvertedList) {
+                    return contains((ConvertedList) rfound, lfound);
                 } else {
-                    return found != null && other != null && found.equals(other);
+                    return lfound != null && rfound != null && lfound.equals(rfound);
                 }
             }
         }
 
-        private static final class FieldInConstants implements EventCondition {
+        private static final class FieldInConstantList implements EventCondition {
 
             private final FieldReference field;
 
             private final List<?> value;
 
-            private FieldInConstants(final FieldReference field, final List<?> value) {
+            private FieldInConstantList(final FieldReference field, final List<?> value) {
                 this.field = field;
                 this.value = value;
             }
