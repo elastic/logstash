@@ -4,7 +4,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.regex.Pattern;
 import org.jruby.RubyString;
 import org.jruby.util.ByteList;
 import org.logstash.ConvertedList;
@@ -544,17 +543,18 @@ public interface EventCondition {
 
             private final FieldReference field;
 
-            private final Pattern value;
+            private final RubyString regex;
 
-            private FieldMatches(final String field, final String value) {
+            private FieldMatches(final String field, final String regex) {
                 this.field = PathCache.cache(field);
-                this.value = Pattern.compile(value);
+                this.regex = RubyUtil.RUBY.newString(regex);
             }
 
             @Override
             public boolean fulfilled(final JrubyEventExtLibrary.RubyEvent event) {
-                final String tomatch = event.getEvent().getUnconvertedField(field).toString();
-                return value.matcher(tomatch).find();
+                final Object tomatch = event.getEvent().getUnconvertedField(field);
+                return tomatch instanceof RubyString &&
+                    !((RubyString) tomatch).match(RubyUtil.RUBY.getCurrentContext(), regex).isNil();
             }
         }
 
