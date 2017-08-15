@@ -230,7 +230,6 @@ module LogStash; class Pipeline < BasePipeline
     )
     @drain_queue =  @settings.get_value("queue.drain")
 
-
     @events_filtered = Concurrent::AtomicFixnum.new(0)
     @events_consumed = Concurrent::AtomicFixnum.new(0)
 
@@ -462,10 +461,7 @@ module LogStash; class Pipeline < BasePipeline
       batch = @filter_queue_client.read_batch # metrics are started in read_batch
       @events_consumed.increment(batch.size)
       filter_batch(filter_func, batch, signal.flush?)
-      if batch.size > 0
-        output_batch(batch)
-        @filter_queue_client.close_batch(batch)
-      end
+      @filter_queue_client.close_batch(batch)
       # keep break at end of loop, after the read_batch operation, some pipeline specs rely on this "final read_batch" before shutdown.
       break if (shutdown_requested && !draining_queue?)
     end
@@ -477,7 +473,6 @@ module LogStash; class Pipeline < BasePipeline
     filter_func.compute(batch, flush, :final => true).each do |e|
       batch.merge(e) unless e.nil? || e.cancelled?
     end
-    output_batch(batch)
     @filter_queue_client.close_batch(batch)
   end
 
@@ -485,6 +480,7 @@ module LogStash; class Pipeline < BasePipeline
     filter_func.compute(batch, flush, :final => false).each do |e|
       batch.merge(e) unless e.nil? || e.cancelled?
     end
+    @filter_queue_client.add_output_metrics(batch)
     @filter_queue_client.add_filtered_metrics(batch)
     @events_filtered.increment(batch.size)
   rescue Exception => e
@@ -498,12 +494,6 @@ module LogStash; class Pipeline < BasePipeline
                   default_logging_keys("exception" => e.message, "backtrace" => e.backtrace))
 
     raise e
-  end
-
-  # Take an array of events and send them to the correct output
-  def output_batch(batch)
-    @lir_execution.output(batch)
-    @filter_queue_client.add_output_metrics(batch)
   end
 
   def wait_inputs

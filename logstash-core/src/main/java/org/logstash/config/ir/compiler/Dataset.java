@@ -21,12 +21,12 @@ public interface Dataset {
     /**
      * Compute the actual contents of the backing {@link RubyArray} and cache them.
      * Repeated invocations will be effectively free.
-     * @param originals Input {@link JrubyEventExtLibrary.RubyEvent} received at the root
+     * @param batch Input {@link JrubyEventExtLibrary.RubyEvent} received at the root
      * of the execution
      * @param flush True if flushing flushable nodes while traversing the execution
      * @return Computed {@link RubyArray} of {@link JrubyEventExtLibrary.RubyEvent}
      */
-    Collection<JrubyEventExtLibrary.RubyEvent> compute(RubyIntegration.Batch originals,
+    Collection<JrubyEventExtLibrary.RubyEvent> compute(RubyIntegration.Batch batch,
         boolean flush, RubyHash options);
 
     /**
@@ -268,18 +268,51 @@ public interface Dataset {
             done = false;
         }
     }
-    
+
     final class OutputDataset implements Dataset {
+
+        private final Collection<Dataset> parents;
+
+        private final RubyIntegration.Output output;
+
+        private final Collection<JrubyEventExtLibrary.RubyEvent> data;
+
+        private final Collection<JrubyEventExtLibrary.RubyEvent> buffer;
+
+        private boolean done;
+
+        public OutputDataset(Collection<Dataset> parents, final RubyIntegration.Output output) {
+            this.parents = parents;
+            this.output = output;
+            data = new ArrayList<>(5);
+            buffer = new ArrayList<>(5);
+            done = false;
+        }
 
         @Override
         public Collection<JrubyEventExtLibrary.RubyEvent> compute(
-            final RubyIntegration.Batch originals,
+            final RubyIntegration.Batch batch,
             final boolean flush, final RubyHash options) {
-            return null;
+            if (done) {
+                return data;
+            }
+            for (final Dataset set : parents) {
+                buffer.addAll(set.compute(batch, flush, options));
+            }
+            output.multiReceive(buffer);
+            data.addAll(buffer);
+            done = true;
+            buffer.clear();
+            return data;
         }
 
         @Override
         public void clear() {
+            for (final Dataset parent : parents) {
+                parent.clear();
+            }
+            data.clear();
+            done = false;
         }
     }
 }

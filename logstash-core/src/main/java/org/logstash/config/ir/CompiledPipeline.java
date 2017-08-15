@@ -1,7 +1,6 @@
 package org.logstash.config.ir;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -56,7 +55,7 @@ public final class CompiledPipeline {
     /**
      * Configured outputs.
      */
-    private final RubyIntegration.Output[] outputs;
+    private final Map<String, RubyIntegration.Output> outputs;
 
     /**
      * Parsed pipeline configuration graph.
@@ -93,11 +92,11 @@ public final class CompiledPipeline {
     }
 
     public Collection<RubyIntegration.Output> outputs() {
-        return Arrays.asList(outputs);
+        return Collections.unmodifiableCollection(outputs.values());
     }
 
     public Collection<RubyIntegration.Filter> filters() {
-        return new ArrayList<>(filters.values());
+        return Collections.unmodifiableCollection(filters.values());
     }
 
     public Collection<IRubyObject> inputs() {
@@ -131,6 +130,8 @@ public final class CompiledPipeline {
                         datasets.add(filterDataset(leaf.getId(), filterplugins, parents));
                     } else if (leaf instanceof IfVertex) {
                         datasets.add(splitRight(parents, buildCondition((IfVertex) leaf)));
+                    } else if (isOutput(leaf)) {
+                        datasets.add(outputDataset(leaf.getId(), filterplugins, parents));
                     } else {
                         datasets.addAll(parents);
                     }
@@ -140,32 +141,20 @@ public final class CompiledPipeline {
     }
 
     /**
-     * todo: Short circuit this with the Dataset from buildFilterFunc that already has the outputs
-     * pre-ordered, this approach is not technically correct if there are conditions around
-     * outputs!
-     * @param batch Batch to output
-     */
-    public void output(final RubyIntegration.Batch batch) {
-        for (final RubyIntegration.Output output : outputs) {
-            output.multiReceive(batch.collect());
-        }
-    }
-
-    /**
      * Sets up all Ruby outputs learnt from {@link PipelineIR}.
      */
-    private RubyIntegration.Output[] setupOutputs() {
+    private Map<String, RubyIntegration.Output> setupOutputs() {
         final Collection<PluginVertex> outs = graph.getOutputPluginVertices();
-        final Collection<RubyIntegration.Output> set = new HashSet<>(outs.size());
+        final Map<String, RubyIntegration.Output> res = new HashMap<>(outs.size());
         outs.forEach(v -> {
             final PluginDefinition def = v.getPluginDefinition();
             final SourceWithMetadata source = v.getSourceWithMetadata();
-            set.add(pipeline.buildOutput(
+            res.put(v.getId(), pipeline.buildOutput(
                 RubyUtil.RUBY.newString(def.getName()), RubyUtil.RUBY.newFixnum(source.getLine()),
                 RubyUtil.RUBY.newFixnum(source.getColumn()), convertArgs(def)
             ));
         });
-        return set.toArray(new RubyIntegration.Output[0]);
+        return res;
     }
 
     /**
@@ -251,6 +240,15 @@ public final class CompiledPipeline {
     }
 
     /**
+     * Checks if a certain {@link Vertex} represents a {@link RubyIntegration.Output}.
+     * @param vertex Vertex to check
+     * @return True iff {@link Vertex} represents a {@link RubyIntegration.Output}
+     */
+    private boolean isOutput(final Vertex vertex) {
+        return outputs.containsKey(vertex.getId());
+    }
+
+    /**
      * Compiles the next level of the execution from the given {@link Vertex} or simply return
      * the given {@link Dataset} at the previous level if the starting {@link Vertex} cannot
      * be expanded any further (i.e. doesn't have any more incoming vertices that are either
@@ -263,7 +261,8 @@ public final class CompiledPipeline {
     private Collection<Dataset> flatten(final Collection<Dataset> parents, final Vertex start,
         final Map<String, Dataset> cached) {
         final Collection<Vertex> endings = start.incomingVertices()
-            .filter(v -> isFilter(v) || v instanceof IfVertex).collect(Collectors.toList());
+            .filter(v -> isFilter(v) || isOutput(v) || v instanceof IfVertex)
+            .collect(Collectors.toList());
         return endings.isEmpty() ? parents : flattenChildren(parents, start, cached, endings);
     }
 
@@ -283,9 +282,11 @@ public final class CompiledPipeline {
                 final Collection<Dataset> newparents = flatten(parents, child, cached);
                 if (isFilter(child)) {
                     return filterDataset(child.getId(), cached, newparents);
-                    // We know that it's an if vertex since the the input children are either if or
-                    // filter type.
+                } else if (isOutput(child)) {
+                    return outputDataset(child.getId(), cached, newparents);
                 } else {
+                    // We know that it's an if vertex since the the input children are either 
+                    // output, filter or if in type.
                     final IfVertex ifvert = (IfVertex) child;
                     final EventCondition iff = buildCondition(ifvert);
                     // It is important that we double check that we are actually dealing with the
@@ -306,7 +307,7 @@ public final class CompiledPipeline {
      * @param vertex Vertex Id of the filter to create this {@link Dataset} for
      * @param cache Already created {@link Dataset.FilteredDataset} used to only instantiate each
      * filter node in the topology once
-     * @param parents All the parent nodes that go through this filter
+     * @param parents All the parent nodes that go into this filter
      * @return Filter {@link Dataset}
      */
     private Dataset filterDataset(final String vertex, final Map<String, Dataset> cache,
@@ -324,6 +325,28 @@ public final class CompiledPipeline {
             cache.put(vertex, filter);
         }
         return filter;
+    }
+
+    /**
+     * Build a {@link Dataset} representing the {@link JrubyEventExtLibrary.RubyEvent}s after
+     * the application of the given output.
+     * @param vertex Vertex Id of the filter to create this {@link Dataset} for
+     * @param cache Already created {@link Dataset.OutputDataset} used to only instantiate each
+     * filter node in the topology once
+     * @param parents All the parent nodes that go into this output
+     * @return Output {@link Dataset}
+     */
+    private Dataset outputDataset(final String vertex, final Map<String, Dataset> cache,
+        final Collection<Dataset> parents) {
+        final Dataset output;
+        if (cache.containsKey(vertex)) {
+            output = cache.get(vertex);
+        } else {
+            final RubyIntegration.Output ruby = outputs.get(vertex);
+            output = new Dataset.OutputDataset(parents, ruby);
+            cache.put(vertex, output);
+        }
+        return output;
     }
 
     /**
