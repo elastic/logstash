@@ -417,6 +417,9 @@ public interface Dataset {
             data.addAll(buffer);
             done = true;
             buffer.clear();
+            for (final JrubyEventExtLibrary.RubyEvent event : data) {
+                batch.merge(event);
+            }
             return data;
         }
 
