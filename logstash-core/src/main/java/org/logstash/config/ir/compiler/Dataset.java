@@ -90,7 +90,7 @@ public interface Dataset {
             final int count = parents.size();
             final Dataset result;
             if (count > 0) {
-                result = new Dataset.TerminalDataset(parents);
+                result = new TerminalDataset(parents);
             } else {
                 result = TRIVIAL;
             }
@@ -98,6 +98,70 @@ public interface Dataset {
         }
 
         private TerminalDataset(final Collection<Dataset> parents) {
+            this.parents = parents;
+        }
+
+        @Override
+        public Collection<JrubyEventExtLibrary.RubyEvent> compute(
+            final RubyIntegration.Batch batch, final boolean flush, final RubyHash options) {
+            parents.forEach(dataset -> dataset.compute(batch, flush, options));
+            this.clear();
+            return Collections.emptyList();
+        }
+
+        @Override
+        public void clear() {
+            for (final Dataset parent : parents) {
+                parent.clear();
+            }
+        }
+    }
+    
+    /**
+     * <p>{@link Dataset} that contains all {@link JrubyEventExtLibrary.RubyEvent} of all of
+     * its dependencies and is assumed to be at the end of an execution.</p>
+     * This dataset does not require an explicit call to {@link Dataset#clear()} since it will
+     * automatically {@code clear} all of its parents.
+     */
+    final class TerminalDebugDataset implements Dataset {
+
+        /**
+         * Trivial {@link Dataset} that simply returns an empty collection of elements.
+         */
+        private static final Dataset TRIVIAL = new Dataset() {
+
+            @Override
+            public Collection<JrubyEventExtLibrary.RubyEvent> compute(
+                final RubyIntegration.Batch batch, final boolean flush, RubyHash options) {
+                return Collections.emptyList();
+            }
+
+            @Override
+            public void clear() {
+            }
+        };
+
+        private final Collection<Dataset> parents;
+
+        /**
+         * <p>Builds a terminal {@link Dataset} from the given parent {@link Dataset}s.</p>
+         * <p>If the given set of parent {@link Dataset} is empty the sum is defined as the
+         * trivial dataset that does not generate any output.</p>
+         * @param parents Parent {@link Dataset} to sum and terminate
+         * @return Dataset representing the sum of given parent {@link Dataset}
+         */
+        public static Dataset from(final Collection<Dataset> parents) {
+            final int count = parents.size();
+            final Dataset result;
+            if (count > 0) {
+                result = new TerminalDebugDataset(parents);
+            } else {
+                result = TRIVIAL;
+            }
+            return result;
+        }
+
+        private TerminalDebugDataset(final Collection<Dataset> parents) {
             this.parents = parents;
         }
 

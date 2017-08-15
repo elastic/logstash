@@ -477,9 +477,7 @@ module LogStash; class Pipeline < BasePipeline
   end
 
   def filter_batch(filter_func, batch, flush)
-    filter_func.compute(batch, flush, :final => false).each do |e|
-      batch.merge(e) unless e.nil? || e.cancelled?
-    end
+    filter_func.compute(batch, flush, :final => false)
     @filter_queue_client.add_output_metrics(batch)
     @filter_queue_client.add_filtered_metrics(batch)
     @events_filtered.increment(batch.size)
@@ -617,7 +615,7 @@ module LogStash; class Pipeline < BasePipeline
     wait_until_started
     batch = @filter_queue_client.new_batch
     batch.merge(event)
-    @lir_execution.buildFilterFunc.compute(batch, false, {}).each {|e| block.call(e) unless e.nil?}
+    @lir_execution.buildFilterFuncDebug.compute(batch, false, {}).each {|e| block.call(e) unless e.nil?}
   end
 
   # perform filters flush and yield flushed event to the passed block

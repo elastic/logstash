@@ -141,6 +141,38 @@ public final class CompiledPipeline {
     }
 
     /**
+     * This method contains the actual compilation of the {@link Dataset} representing the
+     * underlying pipeline from the Queue to the outputs.
+     * @return Compiled {@link Dataset} representation of the underlying {@link PipelineIR} topology
+     */
+    public Dataset buildFilterFuncDebug() {
+        final Map<String, Dataset> filterplugins = new HashMap<>(this.filters.size());
+        final Collection<Dataset> datasets = new ArrayList<>(5);
+        // We sort the leaves of the graph in a deterministic fashion before compilation.
+        // This is not strictly necessary for correctness since it will only influence the order
+        // of output events for which Logstash makes no guarantees, but it greatly simplifies
+        // testing and is no issue performance wise since compilation only happens on pipeline
+        // reload.
+        graph.getGraph().getAllLeaves().stream().sorted(Comparator.comparing(Vertex::hashPrefix))
+            .forEachOrdered(
+                leaf -> {
+                    final Collection<Dataset> parents =
+                        flatten(Dataset.ROOT_DATASETS, leaf, filterplugins);
+                    if (isFilter(leaf)) {
+                        datasets.add(filterDataset(leaf.getId(), filterplugins, parents));
+                    } else if (leaf instanceof IfVertex) {
+                        datasets.add(splitRight(parents, buildCondition((IfVertex) leaf)));
+                    } else if (isOutput(leaf)) {
+                        datasets.add(outputDataset(leaf.getId(), filterplugins, parents));
+                    } else {
+                        datasets.addAll(parents);
+                    }
+                }
+            );
+        return Dataset.TerminalDebugDataset.from(datasets);
+    }
+
+    /**
      * Sets up all Ruby outputs learnt from {@link PipelineIR}.
      */
     private Map<String, RubyIntegration.Output> setupOutputs() {
