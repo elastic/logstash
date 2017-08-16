@@ -11,7 +11,6 @@ module LogStash module Modules class KibanaConfig
   include LogStash::Util::Loggable
 
   ALLOWED_DIRECTORIES = ["search", "visualization"]
-  METRICS_MAX_BUCKETS = (24 * 60 * 60).freeze # 24 hours of events/sec buckets.
   attr_reader :index_name # not used when importing via kibana but for BWC with ElastsearchConfig
 
   # We name it `modul` here because `module` has meaning in Ruby.
@@ -21,10 +20,8 @@ module LogStash module Modules class KibanaConfig
     @settings = settings
     @index_name = "kibana"
     @pattern_name = "#{@name}-*"
-    @metrics_max_buckets = @settings.fetch("dashboards.metrics_max_buckets", METRICS_MAX_BUCKETS).to_i
     @kibana_settings = [
-      KibanaSettings::Setting.new("defaultIndex", @pattern_name),
-      KibanaSettings::Setting.new("metrics:max_buckets", @metrics_max_buckets)
+      KibanaSettings::Setting.new("defaultIndex", @pattern_name)
     ]
   end
 
