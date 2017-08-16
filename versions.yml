@@ -1,6 +1,6 @@
 ---
-logstash: 6.0.0-beta1
-logstash-core: 6.0.0-beta1
+logstash: 6.0.0-beta2
+logstash-core: 6.0.0-beta2
 logstash-core-plugin-api: 2.1.16
 jruby:
   version: 9.1.12.0
