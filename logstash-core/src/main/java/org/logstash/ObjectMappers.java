@@ -8,7 +8,6 @@ import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.ser.std.NonTypedScalarSerializerBase;
 import com.fasterxml.jackson.dataformat.cbor.CBORFactory;
 import com.fasterxml.jackson.dataformat.cbor.CBORGenerator;
-import com.fasterxml.jackson.module.afterburner.AfterburnerModule;
 import java.io.IOException;
 import java.util.HashMap;
 import org.jruby.RubyFloat;
@@ -21,12 +20,12 @@ public final class ObjectMappers {
             .addSerializer(RubyString.class, new RubyStringSerializer())
             .addSerializer(RubyFloat.class, new RubyFloatSerializer());
 
-    public static final ObjectMapper JSON_MAPPER = new ObjectMapper()
-        .registerModule(new AfterburnerModule()).registerModule(RUBY_SERIALIZERS);
+    public static final ObjectMapper JSON_MAPPER = 
+        new ObjectMapper().registerModule(RUBY_SERIALIZERS);
 
     public static final ObjectMapper CBOR_MAPPER = new ObjectMapper(
         new CBORFactory().configure(CBORGenerator.Feature.WRITE_MINIMAL_INTS, false)
-    ).registerModule(new AfterburnerModule()).registerModule(RUBY_SERIALIZERS);
+    ).registerModule(RUBY_SERIALIZERS);
 
     /**
      * {@link JavaType} for the {@link HashMap} that {@link Event} is serialized as.
