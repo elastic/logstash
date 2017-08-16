@@ -40,20 +40,20 @@ public class PluginWitnessTest {
     @Test
     public void testSerializationEmpty() throws Exception {
         String json = witness.asJson();
-        assertThat(json).isEqualTo("{\"id\":\"123\"}");
+        assertThat(json).isEqualTo("{\"id\":\"123\",\"events\":{\"duration_in_millis\":0,\"in\":0,\"out\":0,\"filtered\":0,\"queue_push_duration_in_millis\":0}}");
     }
 
     @Test
     public void testSerializationName() throws Exception {
         witness.name("abc");
         String json = witness.asJson();
-        assertThat(json).isEqualTo("{\"id\":\"123\",\"name\":\"abc\"}");
+        assertThat(json).isEqualTo("{\"id\":\"123\",\"events\":{\"duration_in_millis\":0,\"in\":0,\"out\":0,\"filtered\":0,\"queue_push_duration_in_millis\":0},\"name\":\"abc\"}");
     }
 
     @Test
     public void testSerializationEvents() throws Exception {
         witness.events().in();
         String json = witness.asJson();
-        assertThat(json).isEqualTo("{\"id\":\"123\",\"events\":{\"in\":1}}");
+        assertThat(json).isEqualTo("{\"id\":\"123\",\"events\":{\"duration_in_millis\":0,\"in\":1,\"out\":0,\"filtered\":0,\"queue_push_duration_in_millis\":0}}");
     }
 }

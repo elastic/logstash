@@ -59,18 +59,4 @@ public interface Metric<T> {
         return getType().asString();
     }
 
-    /**
-     * Determine if this metric has a value explicitly set.
-     * @return true if this metric has been set to a specific value, false if it is the default state
-     * @deprecated - This will be removed in the next release.
-     */
-    boolean isDirty();
-
-    /**
-     * Sets the dirty state of this metric. A metric is dirty if it is anything other then it's default state.
-     *
-     * @param dirty the dirty state
-     * @deprecated - This will be removed in the next release.
-     */
-    void setDirty(boolean dirty);
 }

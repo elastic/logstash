@@ -14,7 +14,6 @@ public class LongCounter extends AbstractMetric<Long> implements CounterMetric<L
 
     private static final IllegalArgumentException NEGATIVE_COUNT_EXCEPTION = new IllegalArgumentException("Counters can not be incremented by negative values");
     private LongAdder longAdder;
-    private boolean dirty;
 
     /**
      * Constructor
@@ -37,16 +36,6 @@ public class LongCounter extends AbstractMetric<Long> implements CounterMetric<L
     }
 
     @Override
-    public boolean isDirty() {
-        return dirty;
-    }
-
-    @Override
-    public void setDirty(boolean dirty){
-        this.dirty = dirty;
-    }
-
-    @Override
     public void increment() {
         increment(1l);
     }
@@ -57,7 +46,6 @@ public class LongCounter extends AbstractMetric<Long> implements CounterMetric<L
             throw NEGATIVE_COUNT_EXCEPTION;
         }
         longAdder.add(by);
-        dirty = true;
     }
 
     /**
@@ -69,7 +57,6 @@ public class LongCounter extends AbstractMetric<Long> implements CounterMetric<L
             throw NEGATIVE_COUNT_EXCEPTION;
         }
         longAdder.add(by);
-        dirty = true;
     }
 
     /**
@@ -78,7 +65,6 @@ public class LongCounter extends AbstractMetric<Long> implements CounterMetric<L
     public void reset(){
         //replacing since LongAdder#reset "is only effective if there are no concurrent updates", we can not make that guarantee
         longAdder = new LongAdder();
-        dirty = false;
     }
 
 }

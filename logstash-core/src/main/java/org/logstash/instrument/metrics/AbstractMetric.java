@@ -3,9 +3,6 @@ package org.logstash.instrument.metrics;
 
 import com.fasterxml.jackson.annotation.JsonValue;
 
-import java.util.Arrays;
-import java.util.List;
-
 /**
  * Abstract implementation of a {@link Metric}. All metrics should subclass this.
  *

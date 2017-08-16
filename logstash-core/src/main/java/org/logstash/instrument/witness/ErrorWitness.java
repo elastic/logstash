@@ -24,8 +24,6 @@ public class ErrorWitness implements SerializableWitness {
     private final static String KEY = "last_error";
     private static final Serializer SERIALIZER = new Serializer();
 
-    private boolean dirty; //here for passivity with legacy Ruby implementation
-
     public ErrorWitness() {
         message = new TextGauge("message");
         backtrace = new TextGauge("backtrace");
@@ -39,7 +37,6 @@ public class ErrorWitness implements SerializableWitness {
      */
     public void backtrace(String stackTrace) {
         this.backtrace.set(stackTrace);
-        dirty = true;
     }
 
     /**
@@ -49,7 +46,6 @@ public class ErrorWitness implements SerializableWitness {
      */
     public void message(String message) {
         this.message.set(message);
-        dirty = true;
     }
 
     /**
@@ -115,15 +111,11 @@ public class ErrorWitness implements SerializableWitness {
         }
 
         void innerSerialize(ErrorWitness witness, JsonGenerator gen, SerializerProvider provider) throws IOException {
-            if (witness.dirty) {
-                gen.writeObjectFieldStart(KEY);
-                MetricSerializer<Metric<String>> stringSerializer = MetricSerializer.Get.stringSerializer(gen);
-                stringSerializer.serialize(witness.message);
-                stringSerializer.serialize(witness.backtrace);
-                gen.writeEndObject();
-            } else {
-                gen.writeStringField(KEY, null);
-            }
+            gen.writeObjectFieldStart(KEY);
+            MetricSerializer<Metric<String>> stringSerializer = MetricSerializer.Get.stringSerializer(gen);
+            stringSerializer.serialize(witness.message);
+            stringSerializer.serialize(witness.backtrace);
+            gen.writeEndObject();
         }
     }
 

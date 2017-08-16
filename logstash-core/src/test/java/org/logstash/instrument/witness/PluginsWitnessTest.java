@@ -54,7 +54,8 @@ public class PluginsWitnessTest {
     public void testSerializeInput() throws Exception{
         witness.inputs("foo");
         String json = witness.asJson();
-        assertThat(json).isEqualTo("{\"plugins\":{\"inputs\":[{\"id\":\"foo\"}],\"filters\":[],\"outputs\":[]}}");
+        assertThat(json).isEqualTo("{\"plugins\":{\"inputs\":[{\"id\":\"foo\",\"events\":{\"duration_in_millis\":0,\"in\":0,\"out\":0,\"filtered\":0," +
+                "\"queue_push_duration_in_millis\":0}}],\"filters\":[],\"outputs\":[]}}");
         witness.forgetAll();
         json = witness.asJson();
         assertThat(json).isEqualTo("{\"plugins\":{\"inputs\":[],\"filters\":[],\"outputs\":[]}}");
@@ -64,7 +65,8 @@ public class PluginsWitnessTest {
     public void testSerializeFilters() throws Exception{
         witness.filters("foo");
         String json = witness.asJson();
-        assertThat(json).isEqualTo("{\"plugins\":{\"inputs\":[],\"filters\":[{\"id\":\"foo\"}],\"outputs\":[]}}");
+        assertThat(json).isEqualTo("{\"plugins\":{\"inputs\":[],\"filters\":[{\"id\":\"foo\",\"events\":{\"duration_in_millis\":0,\"in\":0,\"out\":0,\"filtered\":0," +
+                "\"queue_push_duration_in_millis\":0}}],\"outputs\":[]}}");
         witness.forgetAll();
         json = witness.asJson();
         assertThat(json).isEqualTo("{\"plugins\":{\"inputs\":[],\"filters\":[],\"outputs\":[]}}");
@@ -74,7 +76,8 @@ public class PluginsWitnessTest {
     public void testSerializeOutputs() throws Exception{
         witness.outputs("foo");
         String json = witness.asJson();
-        assertThat(json).isEqualTo("{\"plugins\":{\"inputs\":[],\"filters\":[],\"outputs\":[{\"id\":\"foo\"}]}}");
+        assertThat(json).isEqualTo("{\"plugins\":{\"inputs\":[],\"filters\":[],\"outputs\":[{\"id\":\"foo\",\"events\":{\"duration_in_millis\":0,\"in\":0,\"out\":0," +
+                "\"filtered\":0,\"queue_push_duration_in_millis\":0}}]}}");
         witness.forgetAll();
         json = witness.asJson();
         assertThat(json).isEqualTo("{\"plugins\":{\"inputs\":[],\"filters\":[],\"outputs\":[]}}");
