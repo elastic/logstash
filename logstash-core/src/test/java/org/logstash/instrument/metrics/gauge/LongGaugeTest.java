@@ -14,7 +14,6 @@ public class LongGaugeTest {
     @Test
     public void getValue() {
         LongGauge gauge = new LongGauge("bar", 99l);
-        assertThat(gauge.isDirty()).isTrue();
         assertThat(gauge.getValue()).isEqualTo(99);
         assertThat(gauge.getType()).isEqualTo(MetricType.GAUGE_LONG);
 
@@ -27,13 +26,9 @@ public class LongGaugeTest {
     @Test
     public void set() {
         LongGauge gauge = new LongGauge("bar");
-        assertThat(gauge.isDirty()).isFalse();
         assertThat(gauge.getValue()).isNull();
         gauge.set(123l);
         assertThat(gauge.getValue()).isEqualTo(123);
         assertThat(gauge.getType()).isEqualTo(MetricType.GAUGE_LONG);
-        assertThat(gauge.isDirty()).isTrue();
-        gauge.setDirty(false);
-        assertThat(gauge.isDirty()).isFalse();
     }
 }

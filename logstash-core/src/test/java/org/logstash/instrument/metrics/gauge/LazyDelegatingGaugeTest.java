@@ -43,7 +43,6 @@ public class LazyDelegatingGaugeTest {
     public void getValue() {
         //Long
         LazyDelegatingGauge gauge = new LazyDelegatingGauge(Collections.singletonList("foo"), "bar", 99l);
-        assertThat(gauge.isDirty()).isTrue();
         assertThat(gauge.getValue()).isEqualTo(99l);
         assertThat(gauge.getType()).isEqualTo(MetricType.GAUGE_LONG);
 
@@ -89,9 +88,7 @@ public class LazyDelegatingGaugeTest {
     public void set() {
         //Long
         LazyDelegatingGauge gauge = new LazyDelegatingGauge(Collections.singletonList("foo"), "bar");
-        assertThat(gauge.isDirty()).isFalse();
         gauge.set(99l);
-        assertThat(gauge.isDirty()).isTrue();
         assertThat(gauge.getValue()).isEqualTo(99l);
         gauge.set(199l);
         assertThat(gauge.getValue()).isEqualTo(199l);
@@ -154,9 +151,6 @@ public class LazyDelegatingGaugeTest {
         gauge.set(null);
         assertThat(gauge.getValue()).isNull();
         assertThat(gauge.getType()).isEqualTo(MetricType.GAUGE_TEXT);
-        assertThat(gauge.isDirty()).isTrue();
-        gauge.setDirty(false);
-        assertThat(gauge.isDirty()).isFalse();
     }
 
 }

@@ -37,11 +37,6 @@ final public class ReloadWitness implements SerializableWitness {
         lastError = new ErrorWitness();
         lastSuccessTimestamp = new RubyTimeStampGauge("last_success_timestamp");
         lastFailureTimestamp = new RubyTimeStampGauge("last_failure_timestamp");
-        //Legacy Ruby API initializes all of these to zero, resulting in the dirty flag
-        success.setDirty(true);
-        failure.setDirty(true);
-        lastFailureTimestamp.setDirty(true);
-        lastFailureTimestamp.setDirty(true);
         snitch = new Snitch(this);
     }
 

@@ -83,7 +83,7 @@ public class EventsWitnessTest {
     public void testAsJson() throws Exception {
         ObjectMapper mapper = new ObjectMapper();
         //empty
-        assertThat(mapper.writeValueAsString(witness)).isEqualTo(witness.asJson()).isEmpty();
+        assertThat(mapper.writeValueAsString(witness)).isEqualTo(witness.asJson());
         //dirty
         witness.in(1);
         assertThat(mapper.writeValueAsString(witness)).isEqualTo(witness.asJson()).contains("events");
@@ -91,8 +91,7 @@ public class EventsWitnessTest {
 
     @Test
     public void testSerializeEmpty() throws Exception {
-        //Due to legacy requirements if empty, the events should not serialize at all.
-        assertThat(witness.asJson()).isEmpty();
+        assertThat(witness.asJson()).isNotEmpty();
     }
 
     @Test
