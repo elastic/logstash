@@ -105,7 +105,6 @@ dependencies {
     compile 'com.fasterxml.jackson.core:jackson-core:2.7.3'
     compile 'com.fasterxml.jackson.core:jackson-databind:2.7.3'
     compile 'com.fasterxml.jackson.core:jackson-annotations:2.7.3'
-    compile 'com.fasterxml.jackson.module:jackson-module-afterburner:2.7.3'
     compile 'com.fasterxml.jackson.dataformat:jackson-dataformat-cbor:2.7.3'
     testCompile 'org.apache.logging.log4j:log4j-core:2.6.2:tests'
     testCompile 'org.apache.logging.log4j:log4j-api:2.6.2:tests'
