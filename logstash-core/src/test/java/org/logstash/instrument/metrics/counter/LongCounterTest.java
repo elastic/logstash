@@ -49,12 +49,8 @@ public class LongCounterTest {
     @Test
     public void noInitialValue() {
         LongCounter counter = new LongCounter("bar");
-        assertThat(counter.isDirty()).isFalse();
         counter.increment();
-        assertThat(counter.isDirty()).isTrue();
         assertThat(counter.getValue()).isEqualTo(1l);
-        counter.setDirty(false);
-        assertThat(counter.isDirty()).isFalse();
     }
 
     @Test

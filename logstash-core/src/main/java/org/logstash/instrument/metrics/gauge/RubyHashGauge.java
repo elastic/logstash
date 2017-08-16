@@ -1,11 +1,7 @@
 package org.logstash.instrument.metrics.gauge;
 
 import org.jruby.RubyHash;
-import org.logstash.instrument.metrics.AbstractMetric;
 import org.logstash.instrument.metrics.MetricType;
-
-
-import java.util.List;
 
 /**
  * A {@link GaugeMetric} that is backed by a {@link RubyHash}.  Note - This should not be used directly from Java code and exists for passivity with legacy Ruby code. Depending

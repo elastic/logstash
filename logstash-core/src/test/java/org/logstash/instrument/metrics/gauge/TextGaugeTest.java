@@ -14,7 +14,6 @@ public class TextGaugeTest {
     @Test
     public void getValue() {
         TextGauge gauge = new TextGauge("bar", "baz");
-        assertThat(gauge.isDirty()).isTrue();
         assertThat(gauge.getValue()).isEqualTo("baz");
         assertThat(gauge.getType()).isEqualTo(MetricType.GAUGE_TEXT);
 
@@ -27,12 +26,8 @@ public class TextGaugeTest {
     @Test
     public void set() {
         TextGauge gauge = new TextGauge("bar");
-        assertThat(gauge.isDirty()).isFalse();
         gauge.set("baz");
         assertThat(gauge.getValue()).isEqualTo("baz");
         assertThat(gauge.getType()).isEqualTo(MetricType.GAUGE_TEXT);
-        assertThat(gauge.isDirty()).isTrue();
-        gauge.setDirty(false);
-        assertThat(gauge.isDirty()).isFalse();
     }
 }

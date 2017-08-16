@@ -51,11 +51,8 @@ public class WitnessTest {
         witness = new Witness();
         String json = witness.asJson();
         //empty pipelines
-        assertThat(json).contains("\"pipelines\":{}");
-        //non-empty reloads
-        assertThat(json).contains("{\"reloads\":{\"");
-        //no events
-        assertThat(json).doesNotContain("events");
+        assertThat(json).contains("{\"events\":{\"duration_in_millis\":0,\"in\":0,\"out\":0,\"filtered\":0,\"queue_push_duration_in_millis\":0},\"reloads\":{\"last_error\":{}," +
+                "\"successes\":0,\"last_success_timestamp\":null,\"last_failure_timestamp\":null,\"failures\":0},\"pipelines\":{}}");
     }
 
     @Test
@@ -63,10 +60,10 @@ public class WitnessTest {
         witness = new Witness();
         witness.events().in(99);
         String json = witness.asJson();
-        assertThat(json).contains("{\"events\":{\"in\":99}");
+        assertThat(json).contains("\"in\":99");
         witness.events().forgetAll();
         json = witness.asJson();
-        assertThat(json).doesNotContain("events");
+        assertThat(json).doesNotContain("99");
     }
 
     @Test
@@ -77,9 +74,9 @@ public class WitnessTest {
         String json = witness.asJson();
         assertThat(json).contains("\"pipelines\":{\"foo\"");
         //pipeline events
-        assertThat(json).contains("\"foo\":{\"events\":{\"in\":98");
+        assertThat(json).contains("foo").contains("in").contains(":98");
         //plugin events
-        assertThat(json).contains("plugins\":{\"inputs\":[{\"id\":\"bar\",\"events\":{\"in\":99");
+        assertThat(json).contains("\"in\":99");
         //forget events
         witness.pipeline("foo").forgetEvents();
         json = witness.asJson();

@@ -14,7 +14,6 @@ public class BooleanGaugeTest {
     @Test
     public void getValue() {
         BooleanGauge gauge = new BooleanGauge("bar", true);
-        assertThat(gauge.isDirty()).isTrue();
         assertThat(gauge.getValue()).isTrue();
         assertThat(gauge.getType()).isEqualTo(MetricType.GAUGE_BOOLEAN);
 
@@ -28,14 +27,11 @@ public class BooleanGaugeTest {
     public void set() {
         BooleanGauge gauge = new BooleanGauge("bar");
         assertThat(gauge.getValue()).isNull();
-        assertThat(gauge.isDirty()).isFalse();
         gauge.set(true);
         assertThat(gauge.getValue()).isTrue();
         gauge.set(false);
         assertThat(gauge.getValue()).isFalse();
         assertThat(gauge.getType()).isEqualTo(MetricType.GAUGE_BOOLEAN);
-        assertThat(gauge.isDirty()).isTrue();
-        gauge.setDirty(false);
         assertThat(gauge.getValue()).isFalse();
     }
 }

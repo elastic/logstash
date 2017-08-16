@@ -23,7 +23,6 @@ final public class EventsWitness implements SerializableWitness {
     private final static String KEY = "events";
     private static final Serializer SERIALIZER = new Serializer();
     private final Snitch snitch;
-    private boolean dirty; //here for passivity with legacy Ruby implementation
 
     /**
      * Constructor.
@@ -35,7 +34,6 @@ final public class EventsWitness implements SerializableWitness {
         duration = new LongCounter("duration_in_millis");
         queuePushDuration = new LongCounter("queue_push_duration_in_millis");
         snitch = new Snitch(this);
-        dirty = false;
     }
 
     /**
@@ -45,7 +43,6 @@ final public class EventsWitness implements SerializableWitness {
      */
     public void duration(long durationToAdd) {
         duration.increment(durationToAdd);
-        dirty = true;
     }
 
     /**
@@ -53,7 +50,6 @@ final public class EventsWitness implements SerializableWitness {
      */
     public void filtered() {
         filtered.increment();
-        dirty = true;
     }
 
     /**
@@ -63,7 +59,6 @@ final public class EventsWitness implements SerializableWitness {
      */
     public void filtered(long count) {
         filtered.increment(count);
-        dirty = true;
     }
 
     /**
@@ -75,7 +70,6 @@ final public class EventsWitness implements SerializableWitness {
         in.reset();
         duration.reset();
         queuePushDuration.reset();
-        dirty = false;
     }
 
 
@@ -84,7 +78,6 @@ final public class EventsWitness implements SerializableWitness {
      */
     public void in() {
         in.increment();
-        dirty = true;
     }
 
     /**
@@ -94,7 +87,6 @@ final public class EventsWitness implements SerializableWitness {
      */
     public void in(long count) {
         in.increment(count);
-        dirty = true;
     }
 
     /**
@@ -102,7 +94,6 @@ final public class EventsWitness implements SerializableWitness {
      */
     public void out() {
         out.increment();
-        dirty = true;
     }
 
     /**
@@ -112,7 +103,6 @@ final public class EventsWitness implements SerializableWitness {
      */
     public void out(long count) {
         out.increment(count);
-        dirty = true;
     }
 
     /**
@@ -131,12 +121,6 @@ final public class EventsWitness implements SerializableWitness {
      */
     public void queuePushDuration(long durationToAdd) {
         queuePushDuration.increment(durationToAdd);
-        dirty = true;
-    }
-
-    @Override
-    public String asJson() throws IOException {
-        return dirty ? SerializableWitness.super.asJson() : "";
     }
 
     @Override
@@ -167,24 +151,20 @@ final public class EventsWitness implements SerializableWitness {
 
         @Override
         public void serialize(EventsWitness witness, JsonGenerator gen, SerializerProvider provider) throws IOException {
-            if (witness.dirty) {
-                gen.writeStartObject();
-                innerSerialize(witness, gen, provider);
-                gen.writeEndObject();
-            }
+            gen.writeStartObject();
+            innerSerialize(witness, gen, provider);
+            gen.writeEndObject();
         }
 
         void innerSerialize(EventsWitness witness, JsonGenerator gen, SerializerProvider provider) throws IOException {
-            if (witness.dirty) {
-                gen.writeObjectFieldStart(KEY);
-                MetricSerializer<Metric<Long>> longSerializer = MetricSerializer.Get.longSerializer(gen);
-                longSerializer.serialize(witness.duration);
-                longSerializer.serialize(witness.in);
-                longSerializer.serialize(witness.out);
-                longSerializer.serialize(witness.filtered);
-                longSerializer.serialize(witness.queuePushDuration);
-                gen.writeEndObject();
-            }
+            gen.writeObjectFieldStart(KEY);
+            MetricSerializer<Metric<Long>> longSerializer = MetricSerializer.Get.longSerializer(gen);
+            longSerializer.serialize(witness.duration);
+            longSerializer.serialize(witness.in);
+            longSerializer.serialize(witness.out);
+            longSerializer.serialize(witness.filtered);
+            longSerializer.serialize(witness.queuePushDuration);
+            gen.writeEndObject();
         }
     }
 
