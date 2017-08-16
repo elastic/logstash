@@ -24,6 +24,9 @@ public interface Dataset {
      * @param batch Input {@link JrubyEventExtLibrary.RubyEvent} received at the root
      * of the execution
      * @param flush True if flushing flushable nodes while traversing the execution
+     * @param shutdown True if this is the last call to this instance's compute method because
+     * the pipeline it belongs to is shut down
+     * @param options Flush Option hash passed to {@link RubyIntegration.Filter#flush(RubyHash)} 
      * @return Computed {@link RubyArray} of {@link JrubyEventExtLibrary.RubyEvent}
      */
     Collection<JrubyEventExtLibrary.RubyEvent> compute(RubyIntegration.Batch batch,
