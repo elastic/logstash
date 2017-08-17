@@ -1,6 +1,7 @@
 package org.logstash;
 
 
+import org.jruby.RubyBoolean;
 import org.jruby.RubyFloat;
 import org.jruby.RubyString;
 import org.logstash.bivalues.BiValue;
@@ -21,8 +22,8 @@ public class Javafier {
         if (o instanceof RubyString) {
             return o.toString();
         }
-        if (o instanceof String || o instanceof Float || o instanceof Double ||
-            o instanceof Timestamp) {
+        if (o instanceof String || o instanceof Float || o instanceof Double || 
+            o instanceof Boolean || o instanceof Timestamp) {
             return o;
         }
         if (o instanceof RubyFloat) {
@@ -30,6 +31,9 @@ public class Javafier {
         }
         if (o instanceof JrubyTimestampExtLibrary.RubyTimestamp) {
             return ((JrubyTimestampExtLibrary.RubyTimestamp) o).getTimestamp();
+        }
+        if (o instanceof RubyBoolean) {
+            return ((RubyBoolean) o).isTrue();
         }
         if (o instanceof BiValue) {
             return ((BiValue)o).javaValue();

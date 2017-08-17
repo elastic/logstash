@@ -3,7 +3,6 @@ package org.logstash.bivalues;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import org.jruby.RubyBignum;
-import org.jruby.RubyBoolean;
 import org.jruby.RubyFixnum;
 import org.jruby.RubyInteger;
 import org.jruby.RubyNil;
@@ -14,9 +13,7 @@ import org.junit.Test;
 import org.logstash.TestBase;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
 
 public class BiValuesTest extends TestBase {
 
@@ -76,54 +73,6 @@ public class BiValuesTest extends TestBase {
 
         assertEquals(jo, subject.javaValue());
         assertEquals(BigDecimal.class, subject.javaValue().getClass());
-        assertEquals(ro, subject.rubyValue(ruby));
-        assertEquals(ro.getClass(), subject.rubyValue(ruby).getClass());
-    }
-
-    @Test
-    public void testBiValuesBooleanRubyTrue() {
-        boolean jo = true;
-        RubyBoolean ro = (RubyBoolean) JavaUtil.convertJavaToUsableRubyObject(ruby, jo);
-        BiValue<RubyBoolean, Boolean> subject = BiValues.newBiValue(ro);
-
-        assertEquals(ro, subject.rubyValueUnconverted());
-        assertEquals(ro.getClass(), subject.rubyValue(ruby).getClass());
-        assertTrue(subject.javaValue());
-        assertEquals(Boolean.class, subject.javaValue().getClass());
-    }
-
-    @Test
-    public void testBiValuesBooleanRubyFalse() {
-        boolean jo = false;
-        RubyBoolean ro = (RubyBoolean) JavaUtil.convertJavaToUsableRubyObject(ruby, jo);
-        BiValue<RubyBoolean, Boolean> subject = BiValues.newBiValue(ro);
-
-        assertEquals(ro, subject.rubyValueUnconverted());
-        assertEquals(ro.getClass(), subject.rubyValue(ruby).getClass());
-        assertFalse(subject.javaValue());
-        assertEquals(Boolean.class, subject.javaValue().getClass());
-    }
-
-    @Test
-    public void testBiValuesBooleanJavaTrue() {
-        boolean jo = true;
-        RubyBoolean ro = (RubyBoolean) JavaUtil.convertJavaToUsableRubyObject(ruby, jo);
-        BiValue<RubyBoolean, Boolean> subject = BiValues.newBiValue(jo);
-
-        assertTrue(subject.javaValue());
-        assertEquals(Boolean.class, subject.javaValue().getClass());
-        assertEquals(ro, subject.rubyValue(ruby));
-        assertEquals(ro.getClass(), subject.rubyValue(ruby).getClass());
-    }
-
-    @Test
-    public void testBiValuesBooleanJavaFalse() {
-        boolean jo = false;
-        RubyBoolean ro = (RubyBoolean) JavaUtil.convertJavaToUsableRubyObject(ruby, jo);
-        BiValue<RubyBoolean, Boolean> subject = BiValues.newBiValue(jo);
-
-        assertFalse(subject.javaValue());
-        assertEquals(Boolean.class, subject.javaValue().getClass());
         assertEquals(ro, subject.rubyValue(ruby));
         assertEquals(ro.getClass(), subject.rubyValue(ruby).getClass());
     }
