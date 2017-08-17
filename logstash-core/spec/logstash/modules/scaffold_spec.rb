@@ -124,17 +124,12 @@ ERB
       expect(resource2).to be_a(LogStash::Modules::KibanaDashboards)
       expect(resource1.import_path).to eq("api/kibana/settings")
       expect(resource1.content).to be_a(Array)
-      expect(resource1.content.size).to eq(2)
+      expect(resource1.content.size).to eq(1)
 
       test_object = resource1.content[0]
       expect(test_object).to be_a(LogStash::Modules::KibanaSettings::Setting)
       expect(test_object.name).to eq("defaultIndex")
       expect(test_object.value).to eq("foo-*")
-
-      test_object = resource1.content[1]
-      expect(test_object).to be_a(LogStash::Modules::KibanaSettings::Setting)
-      expect(test_object.name).to eq("metrics:max_buckets")
-      expect(test_object.value).to eq(86400)
 
       expect(resource2.import_path).to eq("api/kibana/dashboards/import")
       expect(resource2.content).to be_a(Array)
@@ -207,7 +202,7 @@ ERB
       test_module.with_settings(module_settings)
       test_module.import(LogStash::Modules::ElasticsearchImporter.new(client), LogStash::Modules::KibanaImporter.new(kbnclient))
       expect(paths).to eq(expected_paths)
-      expect(contents[0]).to eq({"changes"=>{"defaultIndex"=>"tester-*", "metrics:max_buckets"=>"86400"}})
+      expect(contents[0]).to eq({"changes"=>{"defaultIndex"=>"tester-*"}})
       second_kbn_post = contents[1]
       expect(second_kbn_post[:version]).to eq("9.8.7-6")
       expect(second_kbn_post[:objects]).to be_a(Array)
