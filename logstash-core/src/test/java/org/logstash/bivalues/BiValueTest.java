@@ -7,7 +7,6 @@ import java.io.ObjectOutputStream;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import org.jruby.RubyBignum;
-import org.jruby.RubyBoolean;
 import org.jruby.RubyFixnum;
 import org.jruby.RubyInteger;
 import org.jruby.RubySymbol;
@@ -80,23 +79,6 @@ public class BiValueTest extends TestBase {
     public void testBigDecimalBiValueFromJava() {
         RubyBigDecimal v = new RubyBigDecimal(ruby, new BigDecimal(12345.678D));
         BigDecimalBiValue subject = new BigDecimalBiValue(new BigDecimal(12345.678D));
-        assertFalse(subject.hasRubyValue());
-        assertTrue(subject.hasJavaValue());
-        assertEquals(v, subject.rubyValue(ruby));
-    }
-
-    @Test
-    public void testBooleanBiValueFromRuby() {
-        BooleanBiValue subject = new BooleanBiValue(RubyBoolean.newBoolean(ruby, true));
-        assertTrue(subject.hasRubyValue());
-        assertFalse(subject.hasJavaValue());
-        assertTrue(subject.javaValue());
-    }
-
-    @Test
-    public void testBooleanBiValueFromJava() {
-        RubyBoolean v = RubyBoolean.newBoolean(ruby, true);
-        BooleanBiValue subject = new BooleanBiValue(true);
         assertFalse(subject.hasRubyValue());
         assertTrue(subject.hasJavaValue());
         assertEquals(v, subject.rubyValue(ruby));

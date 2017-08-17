@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import org.joda.time.DateTime;
 import org.jruby.RubyArray;
+import org.jruby.RubyBoolean;
 import org.jruby.RubyFloat;
 import org.jruby.RubyHash;
 import org.jruby.RubyString;
@@ -55,7 +56,7 @@ public final class Valuefier {
         if (o instanceof RubyString || o instanceof RubyFloat
             || o instanceof JrubyTimestampExtLibrary.RubyTimestamp
             || o instanceof ConvertedMap || o instanceof ConvertedList
-            || o instanceof BiValue) {
+            || o instanceof BiValue || o instanceof RubyBoolean) {
             return o;
         }
         if (o instanceof String) {
@@ -63,6 +64,9 @@ public final class Valuefier {
         }
         if (o instanceof Float || o instanceof Double) {
             return RubyUtil.RUBY.newFloat(((Number) o).doubleValue());
+        }
+        if (o instanceof Boolean) {
+            return RubyUtil.RUBY.newBoolean((Boolean) o);
         }
         if (o instanceof Timestamp) {
             return JrubyTimestampExtLibrary.RubyTimestamp.newRubyTimestamp(

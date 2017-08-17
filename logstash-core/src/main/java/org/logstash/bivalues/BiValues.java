@@ -4,7 +4,6 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.HashMap;
 import org.jruby.RubyBignum;
-import org.jruby.RubyBoolean;
 import org.jruby.RubyInteger;
 import org.jruby.RubySymbol;
 import org.jruby.ext.bigdecimal.RubyBigDecimal;
@@ -12,7 +11,6 @@ import org.jruby.java.proxies.JavaProxy;
 import org.jruby.runtime.builtin.IRubyObject;
 
 public enum BiValues {
-    JAVA_LANG_BOOLEAN(BiValueType.BOOLEAN),
     JAVA_LANG_INTEGER(BiValueType.INT),
     JAVA_LANG_LONG(BiValueType.LONG),
     JAVA_MATH_BIGDECIMAL(BiValueType.DECIMAL),
@@ -20,9 +18,6 @@ public enum BiValues {
     ORG_JRUBY_EXT_BIGDECIMAL_RUBYBIGDECIMAL(BiValueType.DECIMAL),
     ORG_JRUBY_JAVA_PROXIES_CONCRETEJAVAPROXY(BiValueType.JAVAPROXY),
     ORG_JRUBY_RUBYBIGNUM(BiValueType.BIGINT),
-    ORG_JRUBY_RUBYBOOLEAN$FALSE(BiValueType.BOOLEAN),
-    ORG_JRUBY_RUBYBOOLEAN$TRUE(BiValueType.BOOLEAN),
-    ORG_JRUBY_RUBYBOOLEAN(BiValueType.BOOLEAN),
     ORG_JRUBY_RUBYFIXNUM(BiValueType.LONG),
     ORG_JRUBY_RUBYINTEGER(BiValueType.LONG),
     ORG_JRUBY_RUBYNIL(BiValueType.NULL),
@@ -31,15 +26,11 @@ public enum BiValues {
 
     private static HashMap<String, String> initCache() {
         HashMap<String, String> hm = new HashMap<>();
-        hm.put("java.lang.Boolean", "JAVA_LANG_BOOLEAN");
         hm.put("java.lang.Integer", "JAVA_LANG_INTEGER");
         hm.put("java.lang.Long", "JAVA_LANG_LONG");
         hm.put("java.math.BigDecimal", "JAVA_MATH_BIGDECIMAL");
         hm.put("java.math.BigInteger", "JAVA_MATH_BIGINTEGER");
         hm.put("org.jruby.RubyBignum", "ORG_JRUBY_RUBYBIGNUM");
-        hm.put("org.jruby.RubyBoolean", "ORG_JRUBY_RUBYBOOLEAN");
-        hm.put("org.jruby.RubyBoolean$False", "ORG_JRUBY_RUBYBOOLEAN$FALSE");
-        hm.put("org.jruby.RubyBoolean$True", "ORG_JRUBY_RUBYBOOLEAN$TRUE");
         hm.put("org.jruby.RubyFixnum", "ORG_JRUBY_RUBYFIXNUM");
         hm.put("org.jruby.RubyInteger", "ORG_JRUBY_RUBYINTEGER");
         hm.put("org.jruby.RubyNil", "ORG_JRUBY_RUBYNIL");
@@ -117,14 +108,6 @@ public enum BiValues {
                     return new BigDecimalBiValue((RubyBigDecimal) value);
                 }
                 return new BigDecimalBiValue((BigDecimal) value);
-            }
-        },
-        BOOLEAN {
-            BiValue build(Object value) {
-                if (value instanceof IRubyObject) {
-                    return new BooleanBiValue((RubyBoolean) value);
-                }
-                return new BooleanBiValue((Boolean) value);
             }
         },
         NULL {

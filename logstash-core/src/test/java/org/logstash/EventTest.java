@@ -121,6 +121,18 @@ public final class EventTest {
     }
 
     @Test
+    public void testBooleanFieldToJson() throws Exception {
+        Event e = new Event();
+        e.setField("[foo][bar][baz]", true);
+        assertJsonEquals(
+            String.format(
+                "{\"@timestamp\":\"%s\",\"foo\":{\"bar\":{\"baz\":true}},\"@version\":\"1\"}",
+                e.getTimestamp().toIso8601()
+            ), e.toJson()
+        );
+    }
+
+    @Test
     public void testGetFieldList() throws Exception {
         Map<String, Object> data = new HashMap<>();
         List<Object> l = new ArrayList<>();

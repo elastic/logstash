@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 import org.jruby.Ruby;
 import org.jruby.RubyArray;
+import org.jruby.RubyBoolean;
 import org.jruby.RubyFloat;
 import org.jruby.RubyHash;
 import org.jruby.RubyString;
@@ -29,6 +30,7 @@ public final class Rubyfier {
 
     public static IRubyObject deep(Ruby runtime, final Object input) {
         if (input instanceof RubyString || input instanceof RubyFloat
+            || input instanceof RubyBoolean
             || input instanceof JrubyTimestampExtLibrary.RubyTimestamp) {
             return (IRubyObject) input;
         }
@@ -36,6 +38,7 @@ public final class Rubyfier {
         if (input instanceof Double || input instanceof Float) {
             return RubyUtil.RUBY.newFloat(((Number) input).doubleValue());
         }
+        if (input instanceof Boolean) return RubyUtil.RUBY.newBoolean((Boolean) input);
         if (input instanceof Timestamp) {
             return JrubyTimestampExtLibrary.RubyTimestamp.newRubyTimestamp(
                 RubyUtil.RUBY, (Timestamp) input
