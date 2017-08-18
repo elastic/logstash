@@ -1,0 +1,79 @@
+[[glossary]]
+== Glossary of Terms
+
+[[glossary-metadata]]@metadata ::
+  A special field for storing content that you don't want to include in output <<glossary-event,events>>. For example, the `@metadata`
+  field is useful for creating transient fields for use in <<glossary-conditional,conditional>> statements.
+    
+[[glossary-codec-plugin]]codec plugin::
+  A Logstash <<glossary-plugin,plugin>> that changes the data representation of an <<glossary-event,event>>. Codecs are essentially stream filters that can operate as part of an input or output. Codecs enable you to separate the transport of messages from the serialization process. Popular codecs include json, msgpack, and plain (text).
+  
+[[glossary-conditional]]conditional::
+  A control flow that executes certain actions based on whether a statement (also called a condition) is true or false. Logstash supports `if`, `else if`, and `else` statements. You can use conditional statements to apply filters and send events to a specific output based on conditions that you specify. 
+    
+[[glossary-event]]event::
+	A single unit of information, containing a timestamp plus additional data. An event arrives via an input, and is subsequently parsed, timestamped, and passed through the Logstash <<glossary-pipeline,pipeline>>.
+    
+[[glossary-field]]field::
+  An <<glossary-event,event>> property. For example, each event in an apache access log has properties, such as a status
+  code (200, 404), request path ("/", "index.html"), HTTP verb (GET, POST), client IP address, and so on. Logstash uses
+  the term "fields" to refer to these properties.
+  
+[[glossary-field-reference]]field reference::
+  A reference to an event <<glossary-field,field>>. This reference may appear in an output block or filter block in the
+  Logstash config file. Field references are typically wrapped in square (`[]`) brackets, for example `[fieldname]`. If
+  you are referring to a top-level field, you can omit the `[]` and simply use the field name. To refer to a nested
+  field, you specify the full path to that field: `[top-level field][nested field]`.
+
+[[glossary-filter-plugin]]filter plugin::
+  A Logstash <<glossary-plugin,plugin>> that performs intermediary processing on an <<glossary-event,event>>. Typically, filters act upon
+  event data after it has been ingested via inputs, by mutating, enriching, and/or modifying the data according to
+  configuration rules. Filters are often applied conditionally depending on the characteristics of the event. Popular
+  filter plugins include grok, mutate, drop, clone, and geoip. Filter stages are optional.
+  
+[[glossary-gem]]gem::
+  A self-contained package of code that's hosted on https://rubygems.org[RubyGems.org]. Logstash <<glossary-plugin,plugins>> are packaged as
+  Ruby Gems. You can use the Logstash <<glossary-plugin-manager,plugin manager>> to manage Logstash gems.
+  
+[[glossary-hot-thread]]hot thread::
+  A Java thread that has high CPU usage and executes for a longer than normal period of time.
+  
+[[glossary-input-plugin]]input plugin::
+  A Logstash <<glossary-plugin,plugin>> that reads <<glossary-event,event>> data from a specific source. Input plugins are the first stage in the Logstash event processing <<glossary-pipeline,pipeline>>. Popular input plugins include file, syslog, redis, and beats.
+  
+[[glossary-indexer]]indexer::
+	A Logstash instance that is tasked with interfacing with an Elasticsearch cluster in order to index <<glossary-event,event>> data.
+    
+[[glossary-message-broker]]message broker::
+  Also referred to as a _message buffer_ or _message queue_, a message broker is external software (such as Redis, Kafka, or RabbitMQ) that stores messages from the Logstash shipper instance as an intermediate store, waiting to be processed by the Logstash indexer instance.
+ 
+[[glossary-output-plugin]]output plugin::
+  A Logstash <<glossary-plugin,plugin>> that writes <<glossary-event,event>> data to a specific destination. Outputs are the final stage in
+  the event <<glossary-pipeline,pipeline>>. Popular output plugins include elasticsearch, file, graphite, and
+  statsd.  
+  
+[[glossary-pipeline]]pipeline::
+  A term used to describe the flow of <<glossary-event,events>> through the Logstash workflow. A pipeline typically consists of a series of
+  input, filter, and output stages. <<glossary-input-plugin,Input>> stages get data from a source and generate events,
+  <<glossary-filter-plugin,filter>> stages, which are optional, modify the event data, and
+  <<glossary-output-plugin,output>> stages write the data to a destination. Inputs and outputs support <<glossary-codec-plugin,codecs>> that enable you to encode or decode the data as it enters or exits the pipeline without having to use
+  a separate filter. 
+  
+[[glossary-plugin]]plugin::
+  A self-contained software package that implements one of the stages in the Logstash event processing
+  <<glossary-pipeline,pipeline>>. The list of available plugins includes <<glossary-input-plugin,input plugins>>,
+  <<glossary-output-plugin,output plugins>>, <<glossary-codec-plugin,codec plugins>>, and
+  <<glossary-filter-plugin,filter plugins>>. The plugins are implemented as Ruby <<glossary-gem,gems>> and hosted on
+  https://rubygems.org[RubyGems.org]. You define the stages of an event processing <<glossary-pipeline,pipeline>> by configuring plugins. 
+ 
+[[glossary-plugin-manager]]plugin manager::
+  Accessed via the `bin/logstash-plugin` script, the plugin manager enables you to manage the lifecycle of
+  <<glossary-plugin,plugins>> in your Logstash deployment. You can install, remove, and upgrade plugins by using the
+  plugin manager Command Line Interface (CLI).
+
+[[shipper]]shipper::
+	An instance of Logstash that send events to another instance of Logstash, or some other application.
+    
+[[worker]]worker::
+	The filter thread model used by Logstash, where each worker receives an <<glossary-event,event>> and applies all filters, in order, before emitting the event to the output queue. This allows scalability across CPUs because many filters are CPU intensive.
+

@@ -1,0 +1,183 @@
+= Logstash Roadmap
+
+:ISSUES:  https://github.com/elastic/logstash/issues/
+:LABELS:  https://github.com/elastic/logstash/labels/
+
+== Overview
+
+Welcome to the Logstash roadmap page!
+
+While GitHub is great for sharing our work, it can be difficult to get an
+overview of the current state of affairs from an issues list. This page outlines
+major themes for our future plans, with pointers to additional resources if you
+want to contribute to the Logstash project.
+
+We will not track concrete milestones on this page, because we often make
+adjustments to our timelines based on community feedback. For the latest release
+status information, please search for the {LABELS}roadmap[roadmap] tag in
+GitHub.
+
+== Resiliency
+[float]
+=== status: ongoing; v2.x
+
+The Logstash team is committed to continuously improving the resiliency of
+Logstash. As with any modular system, Logstash has many moving parts and a
+multitude of deployment architectures, all of which need to be considered in the
+context of resiliency. Our resiliency project is an ongoing effort to identify
+and enhance areas where Logstash can provide additional resiliency guarantees.
+You can follow this effort on GitHub by searching for issues that have the
+{LABELS}resiliency[resiliency] tag.
+
+*Event persistence ({ISSUES}2605[#2605]).* Logstash relies on bounded in-memory
+queues between pipeline stages to buffer events (see the
+http://www.elastic.co/guide/en/logstash/current/pipeline.html#_fault_tolerance[documentation]
+for more information). Currently, these queues are not persisted to disk.
+To prevent loss in the event of a plugin crash or a restart, we plan to persist
+these queues to disk.
+
+*Variable internal queues ({ISSUES}2606[#2606]).* Logstash currently uses
+fixed-sized queues between pipeline stages. When the processing rates differ
+widely between stages (such as parsing and indexing), users typically deploy a
+message broker, such as Redis or RabbitMQ, to provide an external queueing
+mechanism. We plan to offer a built-in alternative to using an external message
+broker by adding a variable queueing option to Logstash.
+
+*Dead letter queue (https://github.com/elastic/logstash/issues/2607[#2607]).*
+Today, when Logstash cannot process an event due to an error, it has two
+choices: drop or retry. If the condition is temporary (for example,  the next
+stage in the pipeline is temporarily overloaded), retry is a good approach.
+However, if the failure is permanent (such as  bad encoding or a mapping error)
+retrying could cause an indefinite stall in processing. In this case, dropping
+the event is preferred. As a third option, we plan to introduce a dead letter
+queue (DLQ), which will store events that could stall the pipeline. Users can
+then examine these events and resolve problems as needed. The DLQ could also
+receive events that abuse the grok filter (e.g. runaway regular expressions
+which cause expensive backtracking), failures in grok patterns, date filters,
+and so on.
+
+*End-to-end acknowledgement of message delivery ({ISSUES}2609[#2609]).* Logstash
+currently does not provide end-to-end delivery guarantees. When a plugin fails
+to process an event, it does not signal to an earlier stage in the pipeline that
+an error has occurred. In the longer term, we plan to introduce an optional
+notification mechanism to give operators an easier way to track and replay
+failed events.
+
+*Known issues affecting resiliency.* There are certain categories of defects
+that affect resiliency, such as plugin crashes, failures in retry logic, and
+exhausting system resources. We respond to critical bug requests in real-time
+and perform weekly triaging of less urgent requests. All known issues are
+flagged with the
+https://github.com/elastic/logstash/labels/resiliency[resiliency] tag.
+
+*Known unknowns.* If we don’t know it’s happening, it’s hard for us to fix it!
+Please report your issues in GitHub, under the
+https://github.com/elastic/logstash/issues[Logstash] or
+individual https://github.com/logstash-plugins/[Logstash plugin] repositories.
+
+== Manageability
+[float]
+=== status: ongoing; v2.x
+
+As Logstash deployments scale up, managing and monitoring multiple Logstash
+instances using configuration and log files can become challenging. Our
+manageability project aims to improve this experience by adding functionality
+that makes administration of Logstash more efficient and less error-prone. You
+can follow this effort on GitHub by searching for issues that have the
+{LABELS}manageability[manageability] tag.
+
+*Better Defaults.*  Today, some Logstash defaults are geared toward the development experience, rather than production environments. We plan to audit and re-evaluate a number of defaults to alleviate the burden of tuning Logstash performance in production ({ISSUES}1512[#1512]). In addition, we are undertaking additional benchmarking to evaluate the performance of node, transport, and HTTP protocols in the Elasticsearch output to provide additional confirmation for our proposal to switch the default from node to HTTP (https://github.com/logstash-plugins/logstash-output-elasticsearch/issues/150[#150]).
+
+*Logstash Monitoring API ({ISSUES}2611[#2611]).* Today, most Logstash monitoring
+functions are accomplished by tailing logs or outputting debug messages. As a
+result, it is hard to monitor the Logstash health and track success or failure
+of events passing through the pipeline. We plan to introduce a Logstash
+monitoring API to improve visibility into pipeline activity and provide
+performance metrics such as number of events processed, success/failure rates,
+and time spent in each plugin.
+
+*Logstash Management API ({ISSUES}2612[#2612]).* Currently, updating the
+Logstash configuration requires editing a configuration file and restarting
+the Logstash process. This means you either have to temporarily halt the
+pipeline or accept an interruption in processing. While file-based configuration
+management will continue to be supported, we plan to add a robust Logstash
+management API that enables you to update the configuration dynamically without
+restarting the Logstash process. As the API matures, it will provide us with a
+strong foundation for building a user interface for monitoring and managing
+Logstash.
+
+*Clustering ({ISSUES}2632[#2632]).* In large-scale Logstash deployments, users
+run multiple instances of Logstash to horizontally scale event processing.
+Currently, this requires manual management of individual configuration files, or
+custom/3rd party configuration automation tools, some of which are maintained
+and supported by us (e.g. puppet-logstash). We plan to introduce an option to
+centrally store and manage Logstash configuration options to provide an
+alternative for scaling out your deployment that doesn’t rely on manual
+configuration file management or or 3rd party configuration management tools.
+
+*High availability and load balancing ({ISSUES}2633[#2633]).* Currently, if a
+specific instance of Logstash becomes overloaded or unavailable, it can result
+in a performance degradation or outage until the problem is resolved, unless you
+use a dedicated load balancer to distribute traffic over the available
+instances. In a clustered deployment, we have the option of automatically
+distributing the load between instances based on the latest cluster state. This
+is a complex use case that will require input from the community on current
+approaches to implementing HA and load balancing of Logstash instances.
+
+== Performance
+[float]
+=== status: ongoing; v1.5, v2.x
+
+In the 1.5 release, we significantly improved the performance of the Grok
+filter, which is used to parse text via regular expressions. Based on our
+internal benchmarks, parsing common log formats, such as Apache logs, was 2x
+faster in Logstash 1.5 compared to previous versions. We also sped up JSON
+serialization and deserialization. In future releases of Logstash, we plan to
+incorporate additional JRuby optimizations to make the code even more efficient.
+We also plan to seek community feedback in terms of prioritizing other aspects
+of performance, such as startup time, resource utilization, and pipeline
+latency. You can follow our benchmarking and performance improvements in this issue ({ISSUES}3499[#3499]).
+
+== Windows Support
+[float]
+=== status: ongoing; v1.5, v2.x
+
+Leading up to the 1.5 release, we greatly improved automated Windows testing of
+Logstash. As a result of this testing, we identified and
+https://github.com/elastic/logstash/issues?q=is%3Aissue+label%3Awindows+is%3Aclosed[resolved]
+a number of critical issues affecting the Windows platform, pertaining to
+initial setup, upgrade, and file input plugin. You can follow the outstanding
+issues we are still working on using the GitHub
+https://github.com/elastic/logstash/issues?q=is%3Aissue+label%3Awindows+is%3Aopen[windows]
+label.
+
+== Plugin Framework
+[float]
+=== status: completed; v1.5
+
+Logstash has a rich collection of 165+ plugins, which are developed by
+Elasticsearch and contributed by the community. Previously, most commonly-used
+plugins were bundled with Logstash to make the getting started experience
+easier. However, there was no way to update plugins outside of the Logstash
+release cycle. In Logstash 1.5, we created a powerful plugin framework based on
+https://rubygems.org/[RubyGems.org] to facilitate per-plugin installation and
+updates. We will continue to distribute commonly-used plugins with Logstash, but
+now users will be able to install new plugins and receive plugin updates at any
+time. Read more about these changes in the
+http://www.elastic.co/blog/plugin-ecosystem-changes/[Logstash Plugin Ecosystem Changes]
+announcement.
+
+== New Plugins
+[float]
+=== status: ongoing
+
+Logstash plugins are continuously added to the Logstash plugin ecosystem, both
+by us and by our wonderful community of plugin contributors. Recent additions
+include https://github.com/logstash-plugins?query=kafka[Kafka],
+https://github.com/logstash-plugins?query=couchdb[CouchDB], and
+https://github.com/logstash-plugins/logstash-input-rss[RSS], just to name a few.
+In Logstash 1.5, we made it easier than ever to add and maintain plugins by
+putting each plugin into its own repository (see "Plugin Framework" section).
+We also greatly improved the S3, Twitter, RabbitMQ plugins. To follow requests
+for new Logstash plugins or contribute to the discussion, look for issues that
+have the {LABELS}new-plugin[new-plugin] tag in Github.

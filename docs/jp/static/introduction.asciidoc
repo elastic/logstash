@@ -1,0 +1,116 @@
+[float]
+[[power-of-logstash]]
+== Logstashの威力
+
+*Elasticsearchの収集エンジン以上*
+
+強力なElasticsearchとKibanaのシナジーを備えた水平にスケーラブルなデータ処理パイプライン
+
+*プラグ可能なパイプラインアーキテクチャ*
+
+さまざまなinput、filter、およびoutputを組み合わせ、調整して、パイプラインを調和
+
+*コミュニティによる拡張が可能で開発者が使いやすいプラグインエコシステム*
+
+200を超えるプラグインが利用可能であるだけでなく、独自のプラグインを柔軟に作成、共有することが可能
+
+image:static/images/logstash.png[]
+
+[float]
+== Logstashはデータ重視
+
+データを収集するほど、より多くのことがわかります。Logstashは、あらゆる形式やサイズのデータを扱えます。
+
+[float]
+=== ログとメトリクス
+
+すべてここから始まります。
+
+* あらゆる種類のログデータを処理
+** 多数の{logstash}advanced-pipeline.html[Apache]などのWebログやJavaの{logstash}plugins-inputs-log4j.html[log4j]などのアプリケーションログを容易に収集
+** {logstash}plugins-inputs-syslog.html[syslog]、{logstash}plugins-inputs-eventlog.html[Windows event logs]、ネットワークやファイアウォールのログなど、多様な形式のログをキャプチャ
+* https://www.elastic.co/products/beats/filebeat[Filebeat]との安全で補足的なログ転送を利用
+* {logstash}plugins-inputs-ganglia.html[Ganglia]、{logstash}plugins-codecs-collectd.html[collectd]、{logstash}plugins-codecs-netflow.html[NetFlow]、{logstash}plugins-inputs-jmx.html[JMX]を始めとする数多くのインフラストラクチャとアプリケーションプラットフォームのメトリクスを{logstash}plugins-inputs-tcp.html[TCP]と{logstash}plugins-inputs-udp.html[UDP]を通して収集
+
+[float]
+=== Web
+
+World Wide Webを解放します。
+
+* {logstash}plugins-inputs-http.html[HTTPリクエスト]をイベントに変換
+** ソーシャルセンチメント分析に{logstash}plugins-inputs-twitter.html[Twitter]などのWebサービスFirehoseから習得
+** GitHub、HipChat、JIRAを始めとする無数のアプリケーションのWebhookサポート
+** 数多くの https://www.elastic.co/products/x-pack/alerting[Watcher]アラート事例
+* オンデマンド方式の{logstash}plugins-inputs-http_poller.html[HTTPエンドポイント]のポーリングによりイベントを作成
+** Webアプリケーションインターフェイスからヘルス、パフォーマンス、メトリクスといったさまざまな種類のデータを広く一般にキャプチャ
+** 受信よりもポーリングの制御が優先される状況に最適  
+[float]
+
+=== データの格納とストリーム
+すでに所有しているデータからさらなる価値を見つけます。
+
+* {logstash}plugins-inputs-jdbc.html[JDBC]インターフェイスを使用して、リレーショナルデータベースまたはNoSQLストアからのデータの理解を深める
+* Apache {logstash}plugins-outputs-kafka.html[Kafka]、{logstash}plugins-outputs-rabbitmq.html[RabbitMQ]、{logstash}plugins-outputs-sqs.html[Amazon SQS]、{logstash}plugins-outputs-zeromq.html[ZeroMQ]のようなメッセージングキューからのさまざまなデータストリームを統合
+
+[float]
+=== センサとIoT
+
+その他の広大なデータを探索します。
+
+* この技術の進歩した時代に、大規模なIoT世界は、接続したセンサーからのデータの利用を通して、無数の使用事例を解放しています。
+* Logstashは、モバイル機器からインテリジェントホーム、接続された車、ヘルスケアセンサなど数多くの業界固有アプリケーションに送信されたデータを取得する、イベント収集の共通バックボーンです。
+
+[float]
+== 簡単にすべてを整形
+
+データが良ければ良いほど、知識は深まります。取得時にデータをきれいにして変換し、インデックス作成時または出力時にほぼリアルタイムの情報をすぐに取得します。Logstashは、パターン照合、ジオマッピング、動的なルックアップ機能とともに、数多くの集約や変形ですぐに使用できます。
+
+* {logstash}plugins-filters-grok.html[Grok]は、主要なLogstashフィルタで、非構造データから構造を展開するために至る所で使用されます。Web、システム、ネットワークを始めとする各種のイベント形式をすばやく分析することを目的とした数多くの統合パターンを利用してください。
+* IPアドレスからの{logstash}plugins-filters-geoip.html[位置座標]の解読、複雑な{logstash}plugins-filters-date.html[日付]の標準化、{logstash}plugins-filters-kv.html[キーと値のペア]および{logstash}plugins-filters-csv.html[CSV]データの単純化、機密情報の{logstash}plugins-filters-anonymize.html[匿名化]、および{logstash}plugins-filters-translate.html[ローカルルックアップ]やElasticsearchの{logstash}plugins-filters-elasticsearch.html[クエリ]でのデータの整形により視野が広がります。
+* {logstash}plugins-codecs-json.html[JSON]イベントや{logstash}plugins-codecs-multiline.html[multiline]イベントのような共通イベント構造の処理を容易にするために、コーディックがよく使用されます。
+
+[float]
+== 格納庫の選択
+
+最も重要なデータを転送します。データの格納、分析、および措置により、さまざまなダウンストリームの分析事例と運用事例を明らかにします。
+
+[cols="a,a"]
+|=======================================================================
+|
+
+*分析*
+
+* {logstash}plugins-outputs-elasticsearch.html[Elasticsearch]
+* {logstash}plugins-outputs-mongodb.html[MongoDB]や{logstash}plugins-outputs-riak.html[Riak]などのデータストア
+
+|
+
+*アーカイブ*
+
+* {logstash}plugins-outputs-webhdfs.html[HDFS]
+* {logstash}plugins-outputs-s3.html[S3]
+* {logstash}plugins-outputs-google_cloud_storage.html[Google Cloud Storage]
+
+|
+
+*監視*
+
+* {logstash}plugins-outputs-nagios,html[Nagios]
+* {logstash}plugins-outputs-ganglia.html[Ganglia]
+* {logstash}plugins-outputs-zabbix.html[Zabbix]
+* {logstash}plugins-outputs-graphite.html[Graphite]
+* {logstash}plugins-outputs-datadog.html[Datadog]
+* {logstash}plugins-outputs-cloudwatch.html[CloudWatch]
+
+|
+
+*アラート*
+
+* Elasticsearchでの https://www.elastic.co/products/watcher[Watcher] 
+* {logstash}plugins-outputs-email.html[Email]
+* {logstash}plugins-outputs-pagerduty.html[Pagerduty]
+* {logstash}plugins-outputs-hipchat.html[HipChat]
+* {logstash}plugins-outputs-irc.html[IRC]
+* {logstash}plugins-outputs-sns.html[SNS]
+
+|=======================================================================

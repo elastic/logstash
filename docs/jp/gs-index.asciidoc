@@ -1,0 +1,34 @@
+[[logstash-reference]]
+= Logstashリファレンス
+
+:branch:                5.4
+:major-version:         5.4
+:logstash_version:      5.4.0
+:elasticsearch_version: 5.4.0
+:docker-image:          docker.elastic.co/logstash/logstash:{logstash_version}
+
+//////////
+release-state can be: released | prerelease | unreleased
+//////////
+:release-state:  released
+
+:jdk:                   1.8.0
+:guide:                 https://www.elastic.co/guide/en/elasticsearch/guide/current/
+:ref:                   https://www.elastic.co/guide/en/elasticsearch/reference/{major-version}/
+:xpack:                 https://www.elastic.co/guide/en/x-pack/current/
+:logstash:              https://www.elastic.co/guide/en/logstash/{major-version}/
+:filebeat:              https://www.elastic.co/guide/en/beats/filebeat/{major-version}/
+:lsissue:               https://github.com/elastic/logstash/issues/
+:security:              X-Pack Security
+:stack:                 https://www.elastic.co/guide/en/elastic-stack/current/
+
+[[introduction]]
+== Logstashの紹介
+
+Logstashは、リアルタイムのパイプライン機能を備えたオープンソースのデータ収集エンジンです。Logstashは、異なるデータソースのデータを動的に統合し、そのデータを選択した出力先に合わせます。多様で高度なダウンストリーム分析と可視化の事例向けにすべてのデータをクレンジングし、誰でも使えるようにします。
+
+本来、Logstashはログ収集における革新を牽引していますが、その機能はその事例に留まりません。収集プロセスをさらにシンプルにする多数のネイティブコーディックにより、数多くのinput、filter、およびoutputのプラグインであらゆる種類のイベントを整形し変換することができます。Logstashは、大量かつ多様なデータを利用して、分析を促進します。
+
+include::static/introduction.asciidoc[]
+
+include::static/getting-started-with-logstash.asciidoc[]

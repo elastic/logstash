@@ -1,0 +1,53 @@
+[[running-logstash]]
+=== Running Logstash as a Service on Debian or RPM
+
+Logstash is not started automatically after installation. How to start and stop Logstash depends on whether your system
+uses systemd, upstart, or SysV.
+
+Here are some common operating systems and versions, and the corresponding
+startup styles they use.  This list is intended to be informative, not exhaustive.
+
+|=======================================================================
+| Distribution | Service System |
+| Ubuntu 16.04 and newer | <<running-logstash-systemd,systemd>> |
+| Ubuntu 12.04 through 15.10 | <<running-logstash-upstart,upstart>> |
+| Debian 8 "jessie" and newer | <<running-logstash-systemd,systemd>> |
+| Debian 7 "wheezy" and older | <<running-logstash-sysv,sysv>> |
+| CentOS (and RHEL) 7 and newer | <<running-logstash-systemd,systemd>> |
+| CentOS (and RHEL) 6 | <<running-logstash-upstart,upstart>> |
+|=======================================================================
+
+[[running-logstash-systemd]]
+==== Running Logstash by Using Systemd
+
+Distributions like Debian Jessie, Ubuntu 15.10+, and many of the SUSE derivatives use systemd and the
+`systemctl` command to start and stop services. Logstash places the systemd unit files in `/etc/systemd/system` for both deb and rpm. After installing the package, you can start up Logstash with:
+
+[source,sh]
+--------------------------------------------
+sudo systemctl start logstash.service
+-------------------------------------------
+
+[[running-logstash-upstart]]
+==== Running Logstash by Using Upstart
+
+For systems that use upstart, you can start Logstash with:
+
+[source,sh]
+--------------------------------------------
+sudo initctl start logstash
+-------------------------------------------
+
+The auto-generated configuration file for upstart systems is `/etc/init/logstash.conf`.
+
+[[running-logstash-sysv]]
+==== Running Logstash by Using SysV
+
+For systems that use SysV, you can start Logstash with:
+
+[source,sh]
+--------------------------------------------
+sudo /etc/init.d/logstash start
+-------------------------------------------
+
+The auto-generated configuration file for SysV systems is `/etc/init.d/logstash`.
