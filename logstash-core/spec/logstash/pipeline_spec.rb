@@ -106,7 +106,7 @@ class DummyFlushingFilterPeriodic < DummyFlushingFilter
   def flush(options)
     # Don't generate events on the shutdown flush to make sure we actually test the
     # periodic flush.
-    return options[:final] ? [] : [::LogStash::Event.new("message" => "dummy_flush")]
+    options[:final] ? [] : [::LogStash::Event.new("message" => "dummy_flush")]
   end
 end
 
