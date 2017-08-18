@@ -3,6 +3,7 @@ package org.logstash.instrument.witness;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;
 import org.junit.Test;
+import org.logstash.instrument.metrics.gauge.LongGauge;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -47,14 +48,14 @@ public class ErrorWitnessTest {
     @Test
     public void testSerializeEmpty() throws Exception {
         String json = witness.asJson();
-        assertThat(json).isEqualTo("{\"last_error\":{}}");
+        assertThat(json).isEqualTo("{\"last_error\":{\"message\":null,\"backtrace\":null}}");
     }
 
     @Test
     public void testSerializeMessage() throws Exception {
         witness.message("whoops");
         String json = witness.asJson();
-        assertThat(json).isEqualTo("{\"last_error\":{\"message\":\"whoops\"}}");
+        assertThat(json).isEqualTo("{\"last_error\":{\"message\":\"whoops\",\"backtrace\":null}}");
     }
 
     @Test

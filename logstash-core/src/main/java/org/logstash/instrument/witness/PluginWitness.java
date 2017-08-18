@@ -70,7 +70,7 @@ public class PluginWitness implements SerializableWitness {
     /**
      * The Jackson JSON serializer.
      */
-    public static class Serializer extends StdSerializer<PluginWitness> {
+    static class Serializer extends StdSerializer<PluginWitness> {
 
         /**
          * Default constructor - required for Jackson
@@ -106,11 +106,11 @@ public class PluginWitness implements SerializableWitness {
     /**
      * Snitch for a plugin. Provides discrete metric values.
      */
-    public static class Snitch {
+    public class Snitch {
 
         private final PluginWitness witness;
 
-        Snitch(PluginWitness witness) {
+        private Snitch(PluginWitness witness) {
             this.witness = witness;
         }
 

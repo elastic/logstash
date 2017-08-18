@@ -36,8 +36,9 @@ public interface MetricSerializer<T extends Metric<?>> {
          */
         static MetricSerializer<Metric<Long>> longSerializer(JsonGenerator gen) {
             return m -> {
-                if (m != null && m.getValue() != null) {
-                    gen.writeNumberField(m.getName(), m.getValue());
+                if (m != null) {
+                    Long value = m.getValue();
+                    gen.writeNumberField(m.getName(), value == null ? 0 : value);
                 }
             };
         }
@@ -50,8 +51,9 @@ public interface MetricSerializer<T extends Metric<?>> {
          */
         static MetricSerializer<Metric<Boolean>> booleanSerializer(JsonGenerator gen) {
             return m -> {
-                if (m != null && m.getValue() != null) {
-                    gen.writeBooleanField(m.getName(), m.getValue());
+                if (m != null) {
+                    Boolean value = m.getValue();
+                    gen.writeBooleanField(m.getName(), value == null ? false : value);
                 }
             };
         }
@@ -64,7 +66,7 @@ public interface MetricSerializer<T extends Metric<?>> {
          */
         static MetricSerializer<Metric<String>> stringSerializer(JsonGenerator gen) {
             return m -> {
-                if (m != null && m.getValue() != null) {
+                if (m != null) {
                     gen.writeStringField(m.getName(), m.getValue());
                 }
             };

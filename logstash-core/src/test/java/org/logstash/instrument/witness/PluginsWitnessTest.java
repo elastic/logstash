@@ -55,7 +55,7 @@ public class PluginsWitnessTest {
         witness.inputs("foo");
         String json = witness.asJson();
         assertThat(json).isEqualTo("{\"plugins\":{\"inputs\":[{\"id\":\"foo\",\"events\":{\"duration_in_millis\":0,\"in\":0,\"out\":0,\"filtered\":0," +
-                "\"queue_push_duration_in_millis\":0}}],\"filters\":[],\"outputs\":[]}}");
+                "\"queue_push_duration_in_millis\":0},\"name\":null}],\"filters\":[],\"outputs\":[]}}");
         witness.forgetAll();
         json = witness.asJson();
         assertThat(json).isEqualTo("{\"plugins\":{\"inputs\":[],\"filters\":[],\"outputs\":[]}}");
@@ -66,7 +66,7 @@ public class PluginsWitnessTest {
         witness.filters("foo");
         String json = witness.asJson();
         assertThat(json).isEqualTo("{\"plugins\":{\"inputs\":[],\"filters\":[{\"id\":\"foo\",\"events\":{\"duration_in_millis\":0,\"in\":0,\"out\":0,\"filtered\":0," +
-                "\"queue_push_duration_in_millis\":0}}],\"outputs\":[]}}");
+                "\"queue_push_duration_in_millis\":0},\"name\":null}],\"outputs\":[]}}");
         witness.forgetAll();
         json = witness.asJson();
         assertThat(json).isEqualTo("{\"plugins\":{\"inputs\":[],\"filters\":[],\"outputs\":[]}}");
@@ -77,7 +77,7 @@ public class PluginsWitnessTest {
         witness.outputs("foo");
         String json = witness.asJson();
         assertThat(json).isEqualTo("{\"plugins\":{\"inputs\":[],\"filters\":[],\"outputs\":[{\"id\":\"foo\",\"events\":{\"duration_in_millis\":0,\"in\":0,\"out\":0," +
-                "\"filtered\":0,\"queue_push_duration_in_millis\":0}}]}}");
+                "\"filtered\":0,\"queue_push_duration_in_millis\":0},\"name\":null}]}}");
         witness.forgetAll();
         json = witness.asJson();
         assertThat(json).isEqualTo("{\"plugins\":{\"inputs\":[],\"filters\":[],\"outputs\":[]}}");

@@ -103,7 +103,7 @@ public class PluginsWitness implements SerializableWitness {
     /**
      * The Jackson serializer.
      */
-    public static class Serializer extends StdSerializer<PluginsWitness> {
+    static class Serializer extends StdSerializer<PluginsWitness> {
 
         /**
          * Default constructor - required for Jackson
