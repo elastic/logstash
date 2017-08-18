@@ -399,17 +399,17 @@ describe LogStash::Event do
       end
 
       it "should assign current time when no timestamp" do
-        expect(LogStash::Event.new({}).timestamp.to_i).to be_within(1).of (Time.now.to_i)
+        expect(LogStash::Event.new({}).timestamp.to_i).to be_within(2).of (Time.now.to_i)
       end
 
       it "should tag for invalid value" do
         event = LogStash::Event.new("@timestamp" => "foo")
-        expect(event.timestamp.to_i).to be_within(1).of Time.now.to_i
+        expect(event.timestamp.to_i).to be_within(2).of Time.now.to_i
         expect(event.get("tags")).to eq([LogStash::Event::TIMESTAMP_FAILURE_TAG])
         expect(event.get(LogStash::Event::TIMESTAMP_FAILURE_FIELD)).to eq("foo")
 
         event = LogStash::Event.new("@timestamp" => 666)
-        expect(event.timestamp.to_i).to be_within(1).of Time.now.to_i
+        expect(event.timestamp.to_i).to be_within(2).of Time.now.to_i
         expect(event.get("tags")).to eq([LogStash::Event::TIMESTAMP_FAILURE_TAG])
         expect(event.get(LogStash::Event::TIMESTAMP_FAILURE_FIELD)).to eq(666)
       end
@@ -421,7 +421,7 @@ describe LogStash::Event do
 
       it "should tag for invalid string format" do
         event = LogStash::Event.new("@timestamp" => "foo")
-        expect(event.timestamp.to_i).to be_within(1).of Time.now.to_i
+        expect(event.timestamp.to_i).to be_within(2).of Time.now.to_i
         expect(event.get("tags")).to eq([LogStash::Event::TIMESTAMP_FAILURE_TAG])
         expect(event.get(LogStash::Event::TIMESTAMP_FAILURE_FIELD)).to eq("foo")
       end
