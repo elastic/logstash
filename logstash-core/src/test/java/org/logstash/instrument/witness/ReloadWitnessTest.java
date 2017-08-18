@@ -65,7 +65,8 @@ public class ReloadWitnessTest {
     @Test
     public void testSerializeEmpty() throws Exception {
         String json = witness.asJson();
-        assertThat(json).isEqualTo("{\"reloads\":{\"last_error\":{},\"successes\":0,\"last_success_timestamp\":null,\"last_failure_timestamp\":null,\"failures\":0}}");
+        assertThat(json).isEqualTo("{\"reloads\":{\"last_error\":{\"message\":null,\"backtrace\":null},\"successes\":0,\"last_success_timestamp\":null," +
+                "\"last_failure_timestamp\":null,\"failures\":0}}");
     }
 
     @Test
@@ -73,7 +74,7 @@ public class ReloadWitnessTest {
         witness.success();
         witness.lastSuccessTimestamp(rubyTimestamp);
         String json = witness.asJson();
-        assertThat(json).isEqualTo("{\"reloads\":{\"last_error\":{},\"successes\":1,\"last_success_timestamp\":\"" + timestamp.toIso8601() +
+        assertThat(json).isEqualTo("{\"reloads\":{\"last_error\":{\"message\":null,\"backtrace\":null},\"successes\":1,\"last_success_timestamp\":\"" + timestamp.toIso8601() +
                 "\",\"last_failure_timestamp\":null,\"failures\":0}}");
     }
 
@@ -82,8 +83,8 @@ public class ReloadWitnessTest {
         witness.failure();
         witness.lastFailureTimestamp(rubyTimestamp);
         String json = witness.asJson();
-        assertThat(json).isEqualTo("{\"reloads\":{\"last_error\":{},\"successes\":0,\"last_success_timestamp\":null,\"last_failure_timestamp\":\""
-                + timestamp.toIso8601() + "\",\"failures\":1}}");
+        assertThat(json).isEqualTo("{\"reloads\":{\"last_error\":{\"message\":null,\"backtrace\":null},\"successes\":0,\"last_success_timestamp\":null," +
+                "\"last_failure_timestamp\":\"" + timestamp.toIso8601() + "\",\"failures\":1}}");
     }
 
     @Test

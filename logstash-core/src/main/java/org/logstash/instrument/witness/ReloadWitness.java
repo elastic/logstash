@@ -118,7 +118,7 @@ final public class ReloadWitness implements SerializableWitness {
     /**
      * The Jackson serializer.
      */
-    public static class Serializer extends StdSerializer<ReloadWitness> {
+    static class Serializer extends StdSerializer<ReloadWitness> {
 
         /**
          * Default constructor - required for Jackson

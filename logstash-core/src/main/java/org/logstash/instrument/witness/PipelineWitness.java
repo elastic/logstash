@@ -18,6 +18,7 @@ final public class PipelineWitness implements SerializableWitness {
     private final ConfigWitness configWitness;
     private final PluginsWitness pluginsWitness;
     private final QueueWitness queueWitness;
+    private final DeadLetterQueueWitness deadLetterQueueWitness;
     private final String KEY;
     private static final Serializer SERIALIZER = new Serializer();
 
@@ -33,6 +34,7 @@ final public class PipelineWitness implements SerializableWitness {
         this.configWitness = new ConfigWitness();
         this.pluginsWitness = new PluginsWitness();
         this.queueWitness = new QueueWitness();
+        this.deadLetterQueueWitness = new DeadLetterQueueWitness();
     }
 
     /**
@@ -42,6 +44,14 @@ final public class PipelineWitness implements SerializableWitness {
      */
     public ConfigWitness config() {
         return configWitness;
+    }
+
+    /**
+     * Get a reference to the associated dead letter queue witness
+     * @return The associated {@link DeadLetterQueueWitness}
+     */
+    public DeadLetterQueueWitness dlq() {
+        return deadLetterQueueWitness;
     }
 
     /**
@@ -132,7 +142,7 @@ final public class PipelineWitness implements SerializableWitness {
     /**
      * The Jackson serializer.
      */
-    public static class Serializer extends StdSerializer<PipelineWitness> {
+    static class Serializer extends StdSerializer<PipelineWitness> {
 
         /**
          * Default constructor - required for Jackson
@@ -163,6 +173,9 @@ final public class PipelineWitness implements SerializableWitness {
             witness.plugins().genJson(gen, provider);
             witness.reloads().genJson(gen, provider);
             witness.queue().genJson(gen, provider);
+            if (witness.config().snitch().deadLetterQueueEnabled()) {
+                witness.dlq().genJson(gen, provider);
+            }
             gen.writeEndObject();
         }
     }
