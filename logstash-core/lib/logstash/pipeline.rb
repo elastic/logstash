@@ -38,7 +38,7 @@ module LogStash; class BasePipeline
 
   def initialize(pipeline_config, namespaced_metric = nil, agent = nil)
     @logger = self.logger
-
+    @mutex = Mutex.new
     @ephemeral_id = SecureRandom.uuid
 
     @pipeline_config = pipeline_config
@@ -809,6 +809,9 @@ module LogStash; class Pipeline < BasePipeline
   end
 
   def wrapped_write_client(plugin)
-    LogStash::Instrument::WrappedWriteClient.new(@input_queue_client, self, metric, plugin)
+    #need to ensure that metrics are initialized one plugin at a time, else a race condition can exist.
+    @mutex.synchronize do
+      LogStash::Instrument::WrappedWriteClient.new(@input_queue_client, self, metric, plugin)
+    end
   end
 end; end
