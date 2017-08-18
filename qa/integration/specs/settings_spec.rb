@@ -81,7 +81,7 @@ describe "Test Logstash instance whose default settings are overridden" do
     s = {}
     s["path.config"] = temp_dir
     s["config.test_and_exit"] = true
-    s["path.logs"] = temp_dir
+    s["path.logs"] = File.join(temp_dir, "logs")
     overwrite_settings(s)
     test_config_path = File.join(temp_dir, "test.config")
     IO.write(test_config_path, "#{tcp_config}")
