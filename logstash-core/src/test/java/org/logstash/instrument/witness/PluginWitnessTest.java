@@ -40,7 +40,7 @@ public class PluginWitnessTest {
     @Test
     public void testSerializationEmpty() throws Exception {
         String json = witness.asJson();
-        assertThat(json).isEqualTo("{\"id\":\"123\",\"events\":{\"duration_in_millis\":0,\"in\":0,\"out\":0,\"filtered\":0,\"queue_push_duration_in_millis\":0}}");
+        assertThat(json).isEqualTo("{\"id\":\"123\",\"events\":{\"duration_in_millis\":0,\"in\":0,\"out\":0,\"filtered\":0,\"queue_push_duration_in_millis\":0},\"name\":null}");
     }
 
     @Test
@@ -54,6 +54,6 @@ public class PluginWitnessTest {
     public void testSerializationEvents() throws Exception {
         witness.events().in();
         String json = witness.asJson();
-        assertThat(json).isEqualTo("{\"id\":\"123\",\"events\":{\"duration_in_millis\":0,\"in\":1,\"out\":0,\"filtered\":0,\"queue_push_duration_in_millis\":0}}");
+        assertThat(json).isEqualTo("{\"id\":\"123\",\"events\":{\"duration_in_millis\":0,\"in\":1,\"out\":0,\"filtered\":0,\"queue_push_duration_in_millis\":0},\"name\":null}");
     }
 }

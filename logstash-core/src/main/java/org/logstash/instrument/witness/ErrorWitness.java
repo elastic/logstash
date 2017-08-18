@@ -85,7 +85,7 @@ public class ErrorWitness implements SerializableWitness {
     /**
      * The Jackson serializer.
      */
-    public static class Serializer extends StdSerializer<ErrorWitness> {
+    static class Serializer extends StdSerializer<ErrorWitness> {
 
         /**
          * Default constructor - required for Jackson
@@ -122,10 +122,10 @@ public class ErrorWitness implements SerializableWitness {
     /**
      * The snitch for the errors. Used to retrieve discrete metric values.
      */
-    public static class Snitch {
+    public class Snitch {
         private final ErrorWitness witness;
 
-        Snitch(ErrorWitness witness) {
+        private Snitch(ErrorWitness witness) {
             this.witness = witness;
         }
 

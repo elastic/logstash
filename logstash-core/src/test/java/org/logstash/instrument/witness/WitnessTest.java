@@ -51,8 +51,9 @@ public class WitnessTest {
         witness = new Witness();
         String json = witness.asJson();
         //empty pipelines
-        assertThat(json).contains("{\"events\":{\"duration_in_millis\":0,\"in\":0,\"out\":0,\"filtered\":0,\"queue_push_duration_in_millis\":0},\"reloads\":{\"last_error\":{}," +
-                "\"successes\":0,\"last_success_timestamp\":null,\"last_failure_timestamp\":null,\"failures\":0},\"pipelines\":{}}");
+        assertThat(json).isEqualTo("{\"events\":{\"duration_in_millis\":0,\"in\":0,\"out\":0,\"filtered\":0,\"queue_push_duration_in_millis\":0}," +
+                "\"reloads\":{\"last_error\":{\"message\":null,\"backtrace\":null},\"successes\":0,\"last_success_timestamp\":null,\"last_failure_timestamp\":null," +
+                "\"failures\":0},\"pipelines\":{}}");
     }
 
     @Test

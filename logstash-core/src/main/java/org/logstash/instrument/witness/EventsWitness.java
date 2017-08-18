@@ -131,7 +131,7 @@ final public class EventsWitness implements SerializableWitness {
     /**
      * The Jackson serializer.
      */
-    public static class Serializer extends StdSerializer<EventsWitness> {
+    static class Serializer extends StdSerializer<EventsWitness> {
 
         /**
          * Default constructor - required for Jackson
@@ -171,11 +171,11 @@ final public class EventsWitness implements SerializableWitness {
     /**
      * The snitch for the {@link EventsWitness}. Allows to read discrete metrics values.
      */
-    public static class Snitch {
+    public class Snitch {
 
         private final EventsWitness witness;
 
-        Snitch(EventsWitness witness) {
+        private Snitch(EventsWitness witness) {
             this.witness = witness;
         }
 
