@@ -3,7 +3,6 @@ package org.logstash.instrument.metrics.gauge;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jruby.RubyHash;
-import org.logstash.Timestamp;
 import org.logstash.ext.JrubyTimestampExtLibrary.RubyTimestamp;
 import org.logstash.instrument.metrics.AbstractMetric;
 import org.logstash.instrument.metrics.MetricType;
@@ -69,22 +68,12 @@ public class LazyDelegatingGauge extends AbstractMetric<Object> implements Gauge
     }
 
     @Override
-    public boolean isDirty() {
-        return lazyMetric == null ? false : lazyMetric.isDirty();
-    }
-
-    @Override
     public void set(Object value) {
         if (lazyMetric == null) {
             wakeMetric(value);
         } else {
             lazyMetric.set(value);
         }
-    }
-
-    @Override
-    public void setDirty(boolean dirty) {
-        lazyMetric.setDirty(dirty);
     }
 
     /**
@@ -112,7 +101,6 @@ public class LazyDelegatingGauge extends AbstractMetric<Object> implements Gauge
                         "log an issue to the responsible developer/development team.", value.getClass().getCanonicalName(), key, nameSpaces);
                 lazyMetric = new UnknownGauge(key, value);
             }
-            lazyMetric.setDirty(true);
         }
     }
 

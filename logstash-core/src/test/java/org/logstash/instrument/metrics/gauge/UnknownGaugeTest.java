@@ -16,7 +16,6 @@ public class UnknownGaugeTest {
     @Test
     public void getValue() {
         UnknownGauge gauge = new UnknownGauge("bar", URI.create("baz"));
-        assertThat(gauge.isDirty()).isTrue();
         assertThat(gauge.getValue()).isEqualTo(URI.create("baz"));
         assertThat(gauge.getType()).isEqualTo(MetricType.GAUGE_UNKNOWN);
 
@@ -29,14 +28,10 @@ public class UnknownGaugeTest {
     @Test
     public void set() {
         UnknownGauge gauge = new UnknownGauge("bar");
-        assertThat(gauge.isDirty()).isFalse();
         gauge.set(URI.create("baz"));
         assertThat(gauge.getValue()).isEqualTo(URI.create("baz"));
         gauge.set(URI.create("fizzbuzz"));
         assertThat(gauge.getValue()).isEqualTo(URI.create("fizzbuzz"));
         assertThat(gauge.getType()).isEqualTo(MetricType.GAUGE_UNKNOWN);
-        assertThat(gauge.isDirty()).isTrue();
-        gauge.setDirty(false);
-        assertThat(gauge.isDirty()).isFalse();
     }
 }

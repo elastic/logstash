@@ -1,14 +1,22 @@
 package org.logstash.instrument.witness;
 
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.databind.SerializerProvider;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import org.logstash.Timestamp;
 import org.logstash.ext.JrubyTimestampExtLibrary;
+import org.logstash.instrument.metrics.Metric;
 import org.logstash.instrument.metrics.counter.LongCounter;
 import org.logstash.instrument.metrics.gauge.RubyTimeStampGauge;
+
+import java.io.IOException;
 
 /**
  * A witness to record reloads.
  */
-final public class ReloadWitness {
+@JsonSerialize(using = ReloadWitness.Serializer.class)
+final public class ReloadWitness implements SerializableWitness {
 
     private final LongCounter success;
     private final LongCounter failure;
@@ -16,6 +24,9 @@ final public class ReloadWitness {
     private final RubyTimeStampGauge lastSuccessTimestamp;
     private final RubyTimeStampGauge lastFailureTimestamp;
     private final Snitch snitch;
+    private static final Serializer SERIALIZER = new Serializer();
+
+    private final static String KEY = "reloads";
 
     /**
      * Constructor.
@@ -97,6 +108,52 @@ final public class ReloadWitness {
      */
     public void lastFailureTimestamp(JrubyTimestampExtLibrary.RubyTimestamp timestamp) {
         lastFailureTimestamp.set(timestamp);
+    }
+
+    @Override
+    public void genJson(JsonGenerator gen, SerializerProvider provider) throws IOException {
+        SERIALIZER.innerSerialize(this, gen, provider);
+    }
+
+    /**
+     * The Jackson serializer.
+     */
+    public static class Serializer extends StdSerializer<ReloadWitness> {
+
+        /**
+         * Default constructor - required for Jackson
+         */
+        public Serializer() {
+            this(ReloadWitness.class);
+        }
+
+        /**
+         * Constructor
+         *
+         * @param t the type to serialize
+         */
+        protected Serializer(Class<ReloadWitness> t) {
+            super(t);
+        }
+
+        @Override
+        public void serialize(ReloadWitness witness, JsonGenerator gen, SerializerProvider provider) throws IOException {
+            gen.writeStartObject();
+            innerSerialize(witness, gen, provider);
+            gen.writeEndObject();
+        }
+
+        void innerSerialize(ReloadWitness witness, JsonGenerator gen, SerializerProvider provider) throws IOException {
+            gen.writeObjectFieldStart(ReloadWitness.KEY);
+            witness.lastError.genJson(gen, provider);
+            MetricSerializer<Metric<Long>> longSerializer = MetricSerializer.Get.longSerializer(gen);
+            MetricSerializer<RubyTimeStampGauge> timestampSerializer = MetricSerializer.Get.timestampSerializer(gen);
+            longSerializer.serialize(witness.success);
+            timestampSerializer.serialize(witness.lastSuccessTimestamp);
+            timestampSerializer.serialize(witness.lastFailureTimestamp);
+            longSerializer.serialize(witness.failure);
+            gen.writeEndObject();
+        }
     }
 
     /**
