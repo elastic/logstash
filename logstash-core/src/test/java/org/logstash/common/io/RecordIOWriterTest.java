@@ -99,6 +99,28 @@ public class RecordIOWriterTest {
         reader.close();
     }
 
+    @Test
+    public void testReadWhileWriteAcrossBoundary() throws Exception {
+        char[] tooBig = fillArray( BLOCK_SIZE/4);
+        StringElement input = new StringElement(new String(tooBig));
+        byte[] inputSerialized = input.serialize();
+        try(RecordIOWriter writer = new RecordIOWriter(file);
+            RecordIOReader reader = new RecordIOReader(file)){
+
+            for (int j = 0; j < 2; j++) {
+                writer.writeEvent(inputSerialized);
+            }
+            assertThat(reader.readEvent(), equalTo(inputSerialized));
+            for (int j = 0; j < 2; j++) {
+                writer.writeEvent(inputSerialized);
+            }
+            for (int j = 0; j < 3; j++) {
+                assertThat(reader.readEvent(), equalTo(inputSerialized));
+            }
+        }
+    }
+
+
     private char[] fillArray(final int fillSize) {
         char[] blockSize= new char[fillSize];
         Arrays.fill(blockSize, 'e');
