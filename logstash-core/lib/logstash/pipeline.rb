@@ -34,6 +34,7 @@ module LogStash; class BasePipeline
 
   def initialize(config_str, settings = SETTINGS)
     @logger = self.logger
+    @mutex = Mutex.new
     @config_str = config_str
     @config_hash = Digest::SHA1.hexdigest(@config_str)
     # Every time #plugin is invoked this is incremented to give each plugin
@@ -672,6 +673,9 @@ module LogStash; class Pipeline < BasePipeline
   end
 
   def wrapped_write_client(plugin)
-    LogStash::Instrument::WrappedWriteClient.new(@input_queue_client, self, metric, plugin)
+    #need to ensure that metrics are initialized one plugin at a time, else a race condition can exist.
+    @mutex.synchronize do
+      LogStash::Instrument::WrappedWriteClient.new(@input_queue_client, self, metric, plugin)
+    end
   end
 end; end
