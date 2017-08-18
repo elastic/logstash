@@ -1,0 +1,82 @@
+[[upgrading-logstash]]
+== Upgrading Logstash
+
+[IMPORTANT]
+===========================================
+Before upgrading Logstash:
+
+* Consult the <<breaking-changes,breaking changes>> docs.
+* Test upgrades in a development environment before upgrading your production cluster.
+===========================================
+
+If you are installing Logstash with other components in the Elastic Stack, also see the
+{stack}index.html[Elastic Stack installation and upgrade documentation].
+
+See the following topics for information about upgrading Logstash:
+
+* <<upgrading-using-package-managers>>
+* <<upgrading-using-direct-download>>
+* <<upgrading-logstash-5.0>>
+
+[[upgrading-using-package-managers]]
+=== Upgrading Using Package Managers
+
+This procedure uses <<package-repositories,package managers>> to upgrade Logstash.
+
+1. Shut down your Logstash pipeline, including any inputs that send events to Logstash.
+2. Using the directions in the _Package Repositories_ section, update your repository links to point to the 5.x repositories
+instead of the previous version.
+3. Run the `apt-get upgrade logstash` or `yum update logstash` command as appropriate for your operating system.
+4. Test your configuration file with the `logstash --config.test_and_exit -f <configuration-file>` command. Configuration options for
+some Logstash plugins have changed in the 5.x release.
+5. Restart your Logstash pipeline after updating your configuration file.
+
+[[upgrading-using-direct-download]]
+=== Upgrading Using a Direct Download
+
+This procedure downloads the relevant Logstash binaries directly from Elastic.
+
+1. Shut down your Logstash pipeline, including any inputs that send events to Logstash.
+2. Download the https://www.elastic.co/downloads/logstash[Logstash installation file] that matches your host environment.
+3. Unpack the installation file into your Logstash directory.
+4. Test your configuration file with the `logstash --config.test_and_exit -f <configuration-file>` command. Configuration options for
+some Logstash plugins have changed in the 5.x release.
+5. Restart your Logstash pipeline after updating your configuration file.
+
+[[upgrading-logstash-5.0]]
+=== Upgrading Logstash to 5.0
+
+Before upgrading Logstash, remember to read the <<breaking-changes,breaking changes>>.
+
+If you are installing Logstash with other components in the Elastic Stack, also see the
+{stack}index.html[Elastic Stack installation and upgrade documentation].
+
+==== When to Upgrade
+
+Fresh installations can and should start with the same version across the Elastic Stack. 
+
+Elasticsearch 5.0 does not require Logstash 5.0. An Elasticsearch 5.0 cluster will happily receive data from a
+Logstash 2.x instance via the default HTTP communication layer. This provides some flexibility to decide when to upgrade
+Logstash relative to an Elasticsearch upgrade. It may or may not be convenient for you to upgrade them together, and it
+is
+not required to be done at the same time as long as Elasticsearch is upgraded first.
+
+You should upgrade in a timely manner to get the performance improvements that come with Logstash 5.0, but do so in
+the way that makes the most sense for your environment.
+
+==== When Not to Upgrade
+
+If any Logstash plugin that you require is not compatible with Logstash 5.0, then you should wait until it is ready
+before upgrading.
+
+Although we make great efforts to ensure compatibility, Logstash 5.0 is not completely backwards compatible. As noted
+in the Elastic Stack upgrade guide, Logstash 5.0 should not be upgraded before Elasticsearch 5.0. This is both
+practical and because some Logstash 5.0 plugins may attempt to use features of Elasticsearch 5.0 that did not exist
+in earlier versions. For example, if you attempt to send the 5.x template to a cluster before Elasticsearch 5.0, then it
+will not be able to use it and all indexing will fail likely fail. If you use your own, custom template with Logstash,
+then this issue can be ignored.
+
+Note the Elasticsearch Output Index Template change in the <<breaking-changes>> documentation for further insight into
+this change and how it impacts operations.
+
+

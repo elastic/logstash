@@ -1,0 +1,34 @@
+[[logstash-reference]]
+= Logstash 참조
+
+:branch:                5.4
+:major-version:         5.4
+:logstash_version:      5.4.0
+:elasticsearch_version: 5.4.0
+:docker-image:          docker.elastic.co/logstash/logstash:{logstash_version}
+
+//////////
+release-state can be: released | prerelease | unreleased
+//////////
+:release-state:  released
+
+:jdk:                   1.8.0
+:guide:                 https://www.elastic.co/guide/en/elasticsearch/guide/current/
+:ref:                   https://www.elastic.co/guide/en/elasticsearch/reference/5.x/
+:xpack:                 https://www.elastic.co/guide/en/x-pack/current/
+:logstash:              https://www.elastic.co/guide/en/logstash/5.x/
+:filebeat:              https://www.elastic.co/guide/en/beats/filebeat/5.x/
+:lsissue:               https://github.com/elastic/logstash/issues/
+:security:              X-Pack 보안
+:stack:                 https://www.elastic.co/guide/en/elastic-stack/current/
+
+[[introduction]]
+== Logstash 소개
+
+Logstash는 실시간 파이프라인 기능을 가진 오픈소스 데이터 수집 엔진입니다. Logstash는 서로 다른 소스의 데이터를 탄력적으로 통합하고 사용자가 선택한 목적지로 데이터를 정규화할 수 있습니다. 다양한 고급 다운스트림 분석 및 시각화 활용 사례를 위해 모든 데이터를 정리하고 대중화(democratization)합니다.
+
+Logstash는 근본적으로 로그 수집의 혁신을 주도해 왔으며 그 기능은 이러한 활용 사례 이외의 영역으로 확장되고 있습니다. 어떤 유형의 이벤트도 다양한 입력, 필터, 출력 플러그인을 통해 강화하고 전환할 수 있으며 기본 제공되는 여러 코덱으로 수집(ingestion) 프로세스를 한층 더 간소화할 수 있습니다. Logstash로 더 방대하고 다양한 데이터를 활용함으로써 더 신속하게 인사이트를 개발할 수 있습니다.
+
+include::static/introduction.asciidoc[]
+
+include::static/getting-started-with-logstash.asciidoc[]

@@ -1,0 +1,12 @@
+:register_method:	true
+:run_method:		true
+:plugintype:    	input
+:pluginclass:   	Inputs
+:pluginname:    	example
+:pluginnamecap: 	Example
+
+:getstarted: Let's step through creating an {plugintype} plugin using the https://github.com/logstash-plugins/logstash-input-example/[example {plugintype} plugin].
+
+:methodheader: Logstash inputs must implement two main methods: `register` and `run`.
+
+include::include/pluginbody.asciidoc[]

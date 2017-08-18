@@ -1,0 +1,159 @@
+[[running-logstash-command-line]]
+=== Running Logstash from the Command Line
+
+To run Logstash from the command line, use the following command:
+
+[source,shell]
+----
+bin/logstash [options]
+----
+
+Where `options` are <<command-line-flags,command-line>> flags that you can
+specify to control Logstash execution. The location of the `bin` directory
+varies by platform. See <<dir-layout>> to find the location of `bin\logstash` on
+your system.
+
+The following example runs Logstash and loads the Logstash config defined in
+the `mypipeline.conf` file:
+
+[source,shell]
+----
+bin/logstash -f mypipeline.conf
+----
+
+Any flags that you set at the command line override the corresponding settings
+in the Logstash <<logstash-settings-file,settings file>>, but the settings file
+itself is not changed. It remains as-is for subsequent Logstash runs.
+
+Specifying command line options is useful when you are testing Logstash.
+However, in a production environment, we recommend that you use the Logstash
+<<logstash-settings-file,settings file>> to control Logstash execution. Using
+the settings file makes it easier for you to specify multiple options, and it
+provides you with a single, versionable file that you can use to start up
+Logstash consistently for each run.
+
+[[command-line-flags]]
+==== Command-Line Flags
+
+Logstash has the following flags. You can use the `--help` flag to display this information.
+
+*`--node.name NAME`*::
+  Specify the name of this Logstash instance. If no value is given it will default to the current
+  hostname.
+
+*`-f, --path.config CONFIG_PATH`*::
+Load the Logstash config from a specific file or directory. If a directory is given, all
+files in that directory will be concatenated in lexicographical order and then parsed as a
+single config file. Specifying this flag multiple times is not supported. If you specify
+this flag multiple times, Logstash uses the last occurrence (for example, `-f foo -f bar`
+is the same as `-f bar`).
++
+You can specify wildcards (<<glob-support,globs>>) and any matched files will
+be loaded in the order described above. For example, you can use the wildcard feature to
+load specific files by name: 
++
+[source,shell]
+---------------------------------------------
+bin/logstash --debug -f '/tmp/{one,two,three}'
+---------------------------------------------
++
+With this command, Logstash concatenates three config files, `/tmp/one`, `/tmp/two`, and
+`/tmp/three`, and parses them into a single config.
+
+*`-e, --config.string CONFIG_STRING`*::
+  Use the given string as the configuration data. Same syntax as the config file. If no
+  input is specified, then the following is used as the default input:
+  `input { stdin { type => stdin } }` and if no output is specified, then the
+  following is used as the default output: `output { stdout { codec => rubydebug } }`.
+  If you wish to use both defaults, please use the empty string for the `-e` flag.
+  The default is nil.
+
+*`-w, --pipeline.workers COUNT`*::
+  Sets the number of pipeline workers to run. This option sets the number of workers that will,
+  in parallel, execute the filter and output stages of the pipeline. If you find that events are
+  backing up, or that  the CPU is not saturated, consider increasing this number to better utilize
+  machine processing power. The default is the number of the host's CPU cores.
+
+*`-b, --pipeline.batch.size SIZE`*::
+  Size of batches the pipeline is to work in. This option defines the maximum number of events an
+  individual worker thread will collect from inputs before attempting to execute its filters and outputs.
+  The default is 125 events. Larger batch sizes are generally more efficient, but come at the cost of
+  increased memory overhead. You may have to increase the JVM heap size by setting the `LS_HEAP_SIZE`
+  variable to effectively use the option.
+
+*`-u, --pipeline.batch.delay DELAY_IN_MS`*::
+  When creating pipeline batches, how long to wait while polling for the next event. This option defines
+  how long in milliseconds to wait while polling for the next event before dispatching an undersized batch
+  to filters and workers. The default is 250ms.
+
+*`--pipeline.unsafe_shutdown`*::
+  Force Logstash to exit during shutdown even if there are still inflight events
+  in memory. By default, Logstash will refuse to quit until all received events
+  have been pushed to the outputs. Enabling this option can lead to data loss during shutdown.
+
+*`--path.data PATH`*::
+  This should point to a writable directory. Logstash will use this directory whenever it needs to store
+  data. Plugins will also have access to this path. The default is the `data` directory under
+  Logstash home.
+
+*`-p, --path.plugins PATH`*::
+  A path of where to find custom plugins. This flag can be given multiple times to include
+  multiple paths. Plugins are expected to be in a specific directory hierarchy:
+  `PATH/logstash/TYPE/NAME.rb` where `TYPE` is `inputs`, `filters`, `outputs`, or `codecs`,
+  and `NAME` is the name of the plugin.
+
+*`-l, --path.logs PATH`*::
+  Directory to write Logstash internal logs to.
+
+*`--log.level LEVEL`*::
+ Set the log level for Logstash. Possible values are:
+* `fatal`: log very severe error messages that will usually be followed by the application aborting
+* `error`: log errors
+* `warn`: log warnings
+* `info`: log verbose info (this is the default)
+* `debug`: log debugging info (for developers)
+* `trace`: log finer-grained messages beyond debugging info
+
+*`--config.debug`*::
+  Show the fully compiled configuration as a debug log message (you must also have `--log.level=debug` enabled).
+  WARNING: The log message will include any 'password' options passed to plugin configs as plaintext, and may result
+  in plaintext passwords appearing in your logs!
+
+*`-i, --interactive SHELL`*::
+  Drop to shell instead of running as normal. Valid shells are "irb" and "pry".
+
+*`-V, --version`*::
+  Emit the version of Logstash and its friends, then exit.
+
+*`-t, --config.test_and_exit`*::
+  Check configuration for valid syntax and then exit. Note that grok patterns are not checked for
+  correctness with this flag. Logstash can read multiple config files from a directory. If you combine this
+  flag with `--log.level=debug`, Logstash will log the combined config file, annotating
+  each config block with the source file it came from.
+
+*`-r, --config.reload.automatic`*::
+  Monitor configuration changes and reload whenever the configuration is changed.
+  NOTE: Use SIGHUP to manually reload the config. The default is false.
+
+*`--config.reload.interval RELOAD_INTERVAL`*::
+  How frequently to poll the configuration location for changes, in seconds. The default is every 3 seconds.
+
+*`--http.host HTTP_HOST`*::
+  Web API binding host. This option specifies the bind address for the metrics REST endpoint. The default is "127.0.0.1".
+
+*`--http.port HTTP_PORT`*::
+  Web API http port. This option specifies the bind port for the metrics REST endpoint. The default is 9600-9700.
+  This setting accepts a range of the format 9600-9700. Logstash will pick up the first available port.
+
+*`--log.format FORMAT`*::
+   Specify if Logstash should write its own logs in JSON form (one event per line) or in plain text
+   (using Ruby's Object#inspect). The default is "plain".
+
+*`--path.settings SETTINGS_DIR`*::
+  Set the directory containing the `logstash.yml` <<logstash-settings-file,settings file>> as well
+  as the log4j logging configuration. This can also be set through the LS_SETTINGS_DIR environment variable.
+  The default is the `config` directory under Logstash home.
+
+*`-h, --help`*::
+  Print help
+

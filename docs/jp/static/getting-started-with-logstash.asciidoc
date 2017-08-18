@@ -1,0 +1,189 @@
+[[getting-started-with-logstash]]
+== Logstashを始めてみよう
+
+このセクションでは、Logstashのインストール手順と正常動作の確認について説明します。
+最初のイベントの格納方法を学習した後、Apache Webログをinputとして使用し、ログを解析して、解析したデータをElasticsearchクラスタに書き込む高度なパイプラインを作成します。次に、複数のinputプラグインとoutputプラグインをまとめて、多様な異なるソースからのデータを統合する方法について学習します。
+
+このセクションには、次のトピックが含まれます。
+
+* <<installing-logstash>>
+* <<first-event>>
+* {logstash}advanced-pipeline.html[Advanced pipeline]
+* {logstash}multiple-input-output-plugins[Multiple input output plugins]
+
+[[installing-logstash]]
+=== Logstashのインストール
+
+NOTE: LogstashにはJava 8が必要です。Java 9はサポートされていません。 http://www.oracle.com/technetwork/java/javase/downloads/index.html[official Oracle distribution]または http://openjdk.java.net/[OpenJDK]などのオープンソースのデストリビューションを使用します。
+
+お使いのJavaのバージョンを確認するには、次のコマンドを実行します。
+
+[source,shell]
+java -version
+
+Javaがインストールされたシステムでは、このコマンドにより次のようなoutputが表示されます。
+
+[source,shell]
+java version "1.8.0_65"
+Java(TM) SE Runtime Environment (build 1.8.0_65-b17)
+Java HotSpot(TM) 64-Bit Server VM (build 25.65-b01, mixed mode)
+
+一部のLinuxシステムでは、特にtarファイルからJavaをインストールした場合、インストールを試行する前に、`JAVA_HOME`環境のエクスポートが必要になることがあります。これは、インストール中にLogstashがJavaを使用して環境を自動的に検知し、正しいスタートアップ方法（SysV initスクリプト、Upstart、またはsystemd）をインストールするためです。パッケージのインストール中に、LogstashがJAVA_HOME環境変数を検出できない場合、エラーメッセージが表示され、Logstashが適切に起動できなくなります。
+
+[float]
+[[installing-binary]]
+=== ダウンロードしたバイナリのインストール
+
+ホスト環境に合った https://www.elastic.co/downloads/logstash[Logstash installation file]をダウンロードします。
+ファイルを解凍します。Logstashはコロン（:）を含むディレクトリパスにインストールしないでください。
+
+サポートされるLinuxオペレーティングシステムで、パッケージマネージャを使用してLogstashをインストールできます。
+
+[float]
+[[package-repositories]]
+=== パッケージリポジトリからのインストール
+
+APTおよびYUMベースのデストリビューション用にリポジトリも用意しています。パッケージはLogstashビルドの一部として作成されているため、バイナリパッケージだけが提供され、ソースパッケージは提供されないことに注意してください。
+
+メジャーバージョンでの不注意によるアップグレードを避けるため、Logstashパッケージリポジトリは個別のURLにバージョンごとに分けられています。すべての{major-version}.yリリースに対して、{major-version}をバージョン番号として使用します。
+
+次のフィンガープリントが付いたPGPキー https://pgp.mit.edu/pks/lookup?op=vindex&search=0xD27D666CD88E42B4[D88E42B4]（Elasticの署名キー）
+
+    4609 5ACC 8548 582C 1A26 99A9 D27D 666C D88E 42B4
+
+を使用して、弊社のすべてのパッケージに署名しています。これは、 https://pgp.mit.edu から入手できます。
+
+[float]
+==== APT
+
+ifeval::["{release-state}"=="unreleased"]
+
+バージョン{logstash_version}のLogstashはまだリリースされていません。
+
+endif::[]
+
+ifeval::["{release-state}"!="unreleased"]
+
+次のように、公開署名キーをダウンロードしてインストールします。
+
+[source,sh]
+--------------------------------------------------
+wget -qO - https://artifacts.elastic.co/GPG-KEY-elasticsearch | sudo apt-key add -
+--------------------------------------------------
+
+先に進む前に、Debianに`apt-transport-https`パッケージをインストールする必要がある場合があります。
+
+[source,sh]
+--------------------------------------------------
+sudo apt-get install apt-transport-https
+--------------------------------------------------
+
+リポジトリ定義を+/etc/apt/sources.list.d/elastic-{major-version}.list+に保存します。
+
+["source","sh",subs="attributes,callouts"]
+--------------------------------------------------
+echo "deb https://artifacts.elastic.co/packages/{major-version}/apt stable main" | sudo tee -a /etc/apt/sources.list.d/elastic-{major-version}.list
+--------------------------------------------------
+
+[WARNING]
+==================================================
+上記の`echo`メソッドを使用して、Logstashリポジトリを追加します。`deb-src`エントリも追加されますが、ソースパッケージを提供していないため、`add-apt-repository`を使用しないでください。`deb-src`エントリを追加していない場合、次のようなエラーが表示されます。
+
+    Unable to find expected entry 'main/source/Sources' in Release file (Wrong sources.list entry or malformed file)
+
+`/etc/apt/sources.list`ファイルから`deb-src`エントリを削除すると、インストールは正しく動作します。
+==================================================
+
+`sudo apt-get update`を実行します。リポジトリが使用できるようになります。次のコマンドで、インストールできます。
+
+[source,sh]
+--------------------------------------------------
+sudo apt-get update && sudo apt-get install logstash
+--------------------------------------------------
+
+Logstashをシステムサービスとして管理する方法の詳細については、{logstash}running-logstash.html[Logstashの実行]を参照してください。
+
+endif::[]
+
+[float]
+==== YUM
+
+ifeval::["{release-state}"=="unreleased"]
+
+バージョン{logstash_version}のLogstashはまだリリースされていません。
+
+endif::[]
+
+ifeval::["{release-state}"!="unreleased"]
+
+次のように、公開署名キーをダウンロードしてインストールします。
+
+[source,sh]
+--------------------------------------------------
+rpm --import https://artifacts.elastic.co/GPG-KEY-elasticsearch
+--------------------------------------------------
+
+`/etc/yum.repos.d/`ディレクトリ内で`.repo`サフィックスが付いたファイル（例: `logstash.repo`）に次を追加します。
+
+["source","sh",subs="attributes,callouts"]
+--------------------------------------------------
+[logstash-{major-version}]
+name=Elastic repository for {major-version} packages
+baseurl=https://artifacts.elastic.co/packages/{major-version}/yum
+gpgcheck=1
+gpgkey=https://artifacts.elastic.co/GPG-KEY-elasticsearch
+enabled=1
+autorefresh=1
+type=rpm-md
+--------------------------------------------------
+
+リポジトリが使用できるようになります。次のコマンドで、インストールできます。
+
+[source,sh]
+--------------------------------------------------
+sudo yum install logstash
+--------------------------------------------------
+
+WARNING: CentOS 5のようにまだRPM v3を使用している古いRPMベースのデストリビューションでは、リポジトリは機能しません。
+
+Logstashをシステムサービスとして管理するには、{logstash}running-logstash.html[Logstashの実行]を参照してください。
+
+endif::[]
+
+==== Docker
+
+DockerコンテナとしてLogstashを実行するためのイメージが用意されています。Elastic Dockerレジストリから利用できます。Logstash Dockerコンテナの設定方法と実行方法の詳細については、{logstash}docker.html[Docker]を参照してください。
+
+[[first-event]]
+=== 最初のイベントの格納
+
+最初に、最も基本的な_Logstash pipeline_を実行してLogstashインストールをテストします。
+
+Logstash pipelineには、`input`と`output`という2つの必須要素と、`filter`という1つのオプション要素があります。inputプラグインはソースからデータを取得し、filterプラグインは指定どおりにデータを変更し、outputプラグインはデータを出力先に書き込みます。
+
+//TODO: REPLACE WITH NEW IMAGE
+
+image::static/images/basic_logstash_pipeline.png[]
+
+Logstashインストールをテストするには、最も基本的なLogstash pipelineを実行します。例:
+
+["source","sh",subs="attributes"]
+--------------------------------------------------
+cd logstash-{logstash_version}
+bin/logstash -e 'input { stdin { } } output { stdout {} }'
+--------------------------------------------------
+
+NOTE: `bin`ディレクトリのロケーションはプラットフォームにより異なります。お使いのシステムで`bin\logstash`の場所を見つけるには、{logstash}dir-layout.html[dir layout]を参照してください。
+
+`-e`フラグを使用すると、コマンドラインから設定ディレクトリを指定できます。コマンドラインで設定を指定すると、繰り返しの間にファイルを編集しなくても、設定をすばやくテストできます。
+例のパイプラインは、標準input`stdin`のinputを使用し、そのinputを標準output`stdout`に構造化された形式で移します。
+
+Logstashの起動後、「Pipeline main started」と表示されるまで待って、コマンドプロンプトに`hello world`と入力します。
+
+[source,shell]
+hello world
+2013-11-21T01:22:14.405+0000 0.0.0.0 hello world
+
+Logstashは、メッセージにタイムスタンプとIPアドレス情報を追加します。Logstashの稼働中にシェルで*CTRL-D*コマンドを発行して、Logstashを終了します。 
+
+おめでとうございます! 基本的なLogstash pipelineを作成し、実行しました。次は、より現実的なパイプラインの作成方法について学習します。

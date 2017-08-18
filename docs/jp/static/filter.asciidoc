@@ -1,0 +1,14 @@
+:register_method:	true
+:filter_method:		true
+:plugintype:    	filter
+:pluginclass:   	Filters
+:pluginname:    	example
+:pluginnamecap: 	Example
+
+:blockcodec:		true
+
+:getstarted: Let's step through creating a {plugintype} plugin using the https://github.com/logstash-plugins/logstash-filter-example/[example {plugintype} plugin].
+
+:methodheader: Logstash filters must implement the `register` and `filter` methods.
+
+include::include/pluginbody.asciidoc[]
