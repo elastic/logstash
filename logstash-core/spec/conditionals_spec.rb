@@ -484,12 +484,30 @@ describe "conditionals in filter" do
       }
     CONFIG
 
+    sample("tags" => ["bot"]) do
+      tags = subject.get("tags")
+      expect(tags[0]).to eq("bot")
+      expect(tags[1]).to eq("wat")
+      expect(tags[2]).to eq("prev")
+      expect(tags[3]).to eq("final")
+    end
+
     sample("tags" => ["foo"]) do
-      expect(subject.get("tags")).to include("prev")
+      tags = subject.get("tags")
+      expect(tags[0]).to eq("foo")
+      expect(tags[1]).to eq("bar")
+      expect(tags[2]).to eq("baz")
+      expect(tags[3]).to eq("bot")
+      expect(tags[4]).to eq("bonk")
+      expect(tags[5]).to eq("wat")
+      expect(tags[6]).to eq("prev")
+      expect(tags[7]).to eq("final")
     end
     
     sample("type" => "original") do
-      expect(subject.get("tags")).to include("prev")
+      tags = subject.get("tags")
+      expect(tags[0]).to eq("prev")
+      expect(tags[1]).to eq("final")
     end
   end
 end
