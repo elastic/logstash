@@ -633,7 +633,7 @@ describe LogStash::Pipeline do
         sleep(0.1) until pipeline.ready?
       end
       Stud.try(max_retry.times, [StandardError, RSpec::Expectations::ExpectationNotMetError]) do
-        wait(1).for do
+        wait(10).for do
           # give us a bit of time to flush the events
           output.events.empty?
         end.to be_falsey
