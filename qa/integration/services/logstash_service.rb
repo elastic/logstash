@@ -77,6 +77,21 @@ class LogstashService < Service
     end
   end
 
+  def start_with_input_with_settings(config, input, settings_file)
+    Bundler.with_clean_env do
+      `cat #{input} | #{@logstash_bin} --path.settings #{settings_file} -e \'#{config}\'`
+    end
+  end
+
+  def start_with_config_string_settings(config, settings_file)
+    spawn_logstash_stdin("-e", "#{config} ", "--path.settings", settings_file)
+  end
+
+  def start_with_config_file_string_settings(config, settings_file)
+    spawn_logstash_stdin("-f", "#{config}", "--path.settings", settings_file)
+  end
+
+
   def start_with_config_string(config)
     spawn_logstash("-e", "#{config} ")
   end
@@ -110,6 +125,21 @@ class LogstashService < Service
       @process = build_child_process(*args)
       @env_variables.map { |k, v|  @process.environment[k] = v} unless @env_variables.nil?
       @process.io.inherit!
+      @process.start
+      wait_for_logstash
+      puts "Logstash started with PID #{@process.pid}" if @process.alive?
+    end
+  end
+
+  # Spawn LS as a child process
+  def spawn_logstash_stdin(*args)
+    Bundler.with_clean_env do
+      out = Tempfile.new("duplex")
+      out.sync = true
+      @process = build_child_process(*args)
+      @env_variables.map { |k, v|  @process.environment[k] = v} unless @env_variables.nil?
+      @process.io.stdout = @process.io.stderr = out
+      @process.duplex = true
       @process.start
       wait_for_logstash
       puts "Logstash started with PID #{@process.pid}" if @process.alive?
