@@ -137,10 +137,15 @@ public final class RecordIOReader implements Closeable {
             // already read enough, no need to read more
             return;
         }
-        int originalPosition = currentBlock.position();
-        int read = channel.read(currentBlock);
-        currentBlockSizeReadFromChannel += (read > 0) ? read : 0;
-        currentBlock.position(originalPosition);
+        int processedPosition = currentBlock.position();
+        try {
+            // Move to last written to position
+            currentBlock.position(currentBlockSizeReadFromChannel);
+            channel.read(currentBlock);
+            currentBlockSizeReadFromChannel = currentBlock.position();
+        } finally {
+            currentBlock.position(processedPosition);
+        }
     }
 
     /**
