@@ -1,0 +1,38 @@
+---
+services:
+  - logstash
+  - elasticsearch
+config:
+  input {
+    generator{
+      message => '{"test":"one"}'
+      codec => "json"
+      count => 1000
+    }
+
+    dead_letter_queue {
+      path => "<%=options[:dlq_dir]%>"
+      commit_offsets => true
+    }
+  }
+
+  filter {
+    if ([geoip]) {
+        mutate {
+            remove_field => ["geoip"]
+            add_field => {
+              "mutated" => "true"
+            }
+        }
+    }else{
+      mutate {
+        add_field => {
+          "geoip" => "somewhere"
+        }
+      }
+    }
+  }
+  output {
+    elasticsearch {}
+  }
+teardown_script:
