@@ -9,7 +9,7 @@
 * <<installing-logstash>>
 * <<first-event>>
 * {logstash}advanced-pipeline.html[Advanced pipeline]
-* {logstash}multiple-input-output-plugins[Multiple input output plugins]
+* {logstash}multiple-input-output-plugins.html[Multiple input output plugins]
 
 [[installing-logstash]]
 === Logstashのインストール

@@ -66,7 +66,7 @@ World Wide Webを解放します。
 データが良ければ良いほど、知識は深まります。取得時にデータをきれいにして変換し、インデックス作成時または出力時にほぼリアルタイムの情報をすぐに取得します。Logstashは、パターン照合、ジオマッピング、動的なルックアップ機能とともに、数多くの集約や変形ですぐに使用できます。
 
 * {logstash}plugins-filters-grok.html[Grok]は、主要なLogstashフィルタで、非構造データから構造を展開するために至る所で使用されます。Web、システム、ネットワークを始めとする各種のイベント形式をすばやく分析することを目的とした数多くの統合パターンを利用してください。
-* IPアドレスからの{logstash}plugins-filters-geoip.html[位置座標]の解読、複雑な{logstash}plugins-filters-date.html[日付]の標準化、{logstash}plugins-filters-kv.html[キーと値のペア]および{logstash}plugins-filters-csv.html[CSV]データの単純化、機密情報の{logstash}plugins-filters-anonymize.html[匿名化]、および{logstash}plugins-filters-translate.html[ローカルルックアップ]やElasticsearchの{logstash}plugins-filters-elasticsearch.html[クエリ]でのデータの整形により視野が広がります。
+* IPアドレスからの{logstash}plugins-filters-geoip.html[位置座標]の解読、複雑な{logstash}plugins-filters-date.html[日付] の標準化、{logstash}plugins-filters-kv.html[キーと値のペア]および{logstash}plugins-filters-csv.html[CSV] データの単純化、機密情報の{logstash}plugins-filters-anonymize.html[匿名化]、および{logstash}plugins-filters-translate.html[ローカルルックアップ] やElasticsearchの{logstash}plugins-filters-elasticsearch.html[クエリ]でのデータの整形により視野が広がります。
 * {logstash}plugins-codecs-json.html[JSON]イベントや{logstash}plugins-codecs-multiline.html[multiline]イベントのような共通イベント構造の処理を容易にするために、コーディックがよく使用されます。
 
 [float]
