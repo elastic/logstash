@@ -287,7 +287,7 @@ GEM
     logstash-input-generator (3.0.4)
       logstash-codec-plain
       logstash-core-plugin-api (>= 1.60, <= 2.99)
-    logstash-input-graphite (3.0.3)
+    logstash-input-graphite (3.0.4)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       logstash-input-tcp
     logstash-input-heartbeat (3.0.4)
@@ -317,14 +317,14 @@ GEM
       logstash-codec-plain
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       stud (~> 0.0.22)
-    logstash-input-jdbc (4.2.3)
+    logstash-input-jdbc (4.2.4)
       logstash-codec-plain
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       rufus-scheduler
       sequel
       tzinfo
       tzinfo-data
-    logstash-input-kafka (5.1.10)
+    logstash-input-kafka (5.1.11)
       logstash-codec-json
       logstash-codec-plain
       logstash-core-plugin-api (>= 1.60, <= 2.99)
@@ -419,7 +419,7 @@ GEM
       logstash-filter-json
       logstash-input-generator
       logstash-output-file
-    logstash-output-elasticsearch (7.3.8-java)
+    logstash-output-elasticsearch (7.4.0-java)
       cabin (~> 0.6)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       manticore (>= 0.5.4, < 1.0.0)
@@ -437,7 +437,7 @@ GEM
       cinch
       logstash-codec-plain
       logstash-core-plugin-api (>= 1.60, <= 2.99)
-    logstash-output-kafka (5.1.9)
+    logstash-output-kafka (5.1.10)
       logstash-codec-json
       logstash-codec-plain
       logstash-core-plugin-api (>= 1.60, <= 2.99)
@@ -453,7 +453,7 @@ GEM
     logstash-output-pipe (3.0.4)
       logstash-codec-plain
       logstash-core-plugin-api (>= 1.60, <= 2.99)
-    logstash-output-rabbitmq (4.0.10-java)
+    logstash-output-rabbitmq (4.0.11-java)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       logstash-mixin-rabbitmq_connection (>= 4.3.0, < 5.0.0)
     logstash-output-redis (3.0.5)
