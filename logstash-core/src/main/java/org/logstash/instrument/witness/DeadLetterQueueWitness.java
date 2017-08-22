@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import org.logstash.instrument.metrics.Metric;
-import org.logstash.instrument.metrics.gauge.LongGauge;
+import org.logstash.instrument.metrics.gauge.NumberGauge;
 
 import java.io.IOException;
 
@@ -18,13 +18,13 @@ public class DeadLetterQueueWitness implements SerializableWitness {
     private static String KEY = "dead_letter_queue";
     private static final Serializer SERIALIZER = new Serializer();
     private final Snitch snitch;
-    private final LongGauge queueSizeInBytes;
+    private final NumberGauge queueSizeInBytes;
 
     /**
      * Constructor
      */
     public DeadLetterQueueWitness() {
-        queueSizeInBytes = new LongGauge("queue_size_in_bytes");
+        queueSizeInBytes = new NumberGauge("queue_size_in_bytes");
         snitch = new Snitch(this);
     }
 
@@ -82,8 +82,8 @@ public class DeadLetterQueueWitness implements SerializableWitness {
 
         void innerSerialize(DeadLetterQueueWitness witness, JsonGenerator gen, SerializerProvider provider) throws IOException {
             gen.writeObjectFieldStart(KEY);
-            MetricSerializer<Metric<Long>> longSerializer = MetricSerializer.Get.longSerializer(gen);
-            longSerializer.serialize(witness.queueSizeInBytes);
+            MetricSerializer<Metric<Number>> numberSerializer = MetricSerializer.Get.numberSerializer(gen);
+            numberSerializer.serialize(witness.queueSizeInBytes);
             gen.writeEndObject();
         }
     }
@@ -103,7 +103,7 @@ public class DeadLetterQueueWitness implements SerializableWitness {
          *
          * @return the queue size in bytes. May be {@code null}
          */
-        public Long queueSizeInBytes() {
+        public Number queueSizeInBytes() {
             return witness.queueSizeInBytes.getValue();
         }
     }

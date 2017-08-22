@@ -42,43 +42,43 @@ public class LazyDelegatingGaugeTest {
     @Test
     public void getValue() {
         //Long
-        LazyDelegatingGauge gauge = new LazyDelegatingGauge(Collections.singletonList("foo"), "bar", 99l);
+        LazyDelegatingGauge gauge = new LazyDelegatingGauge("bar", 99l);
         assertThat(gauge.getValue()).isEqualTo(99l);
-        assertThat(gauge.getType()).isEqualTo(MetricType.GAUGE_LONG);
+        assertThat(gauge.getType()).isEqualTo(MetricType.GAUGE_NUMBER);
 
         //Double
-        gauge = new LazyDelegatingGauge(Collections.singletonList("foo"), "bar", 99.0);
+        gauge = new LazyDelegatingGauge("bar", 99.0);
         assertThat(gauge.getValue()).isEqualTo(99.0);
-        assertThat(gauge.getType()).isEqualTo(MetricType.GAUGE_DOUBLE);
+        assertThat(gauge.getType()).isEqualTo(MetricType.GAUGE_NUMBER);
 
         //Boolean
-        gauge = new LazyDelegatingGauge(Collections.singletonList("foo"), "bar", true);
+        gauge = new LazyDelegatingGauge("bar", true);
         assertThat(gauge.getValue()).isEqualTo(true);
         assertThat(gauge.getType()).isEqualTo(MetricType.GAUGE_BOOLEAN);
 
         //Text
-        gauge = new LazyDelegatingGauge(Collections.singletonList("foo"), "bar", "something");
+        gauge = new LazyDelegatingGauge("bar", "something");
         assertThat(gauge.getValue()).isEqualTo("something");
         assertThat(gauge.getType()).isEqualTo(MetricType.GAUGE_TEXT);
 
         //Ruby Hash
-        gauge = new LazyDelegatingGauge(Collections.singletonList("foo"), "bar", rubyHash);
+        gauge = new LazyDelegatingGauge("bar", rubyHash);
         assertThat(gauge.getValue().toString()).isEqualTo(RUBY_HASH_AS_STRING);
         assertThat(gauge.getType()).isEqualTo(MetricType.GAUGE_RUBYHASH);
 
         //Ruby Timestamp
-        gauge = new LazyDelegatingGauge(Collections.singletonList("foo"), "bar", rubyTimestamp);
+        gauge = new LazyDelegatingGauge("bar", rubyTimestamp);
         assertThat(gauge.getValue()).isEqualTo(timestamp);
         assertThat(gauge.getType()).isEqualTo(MetricType.GAUGE_RUBYTIMESTAMP);
 
         //Unknown
-        gauge = new LazyDelegatingGauge(Collections.singletonList("foo"), "bar", Collections.singleton("value"));
+        gauge = new LazyDelegatingGauge("bar", Collections.singleton("value"));
         assertThat(gauge.getValue()).isEqualTo(Collections.singleton("value"));
         assertThat(gauge.getValue()).isEqualTo(gauge.get());
         assertThat(gauge.getType()).isEqualTo(MetricType.GAUGE_UNKNOWN);
 
         //Null
-        gauge = new LazyDelegatingGauge(Collections.singletonList("foo"), "bar");
+        gauge = new LazyDelegatingGauge("bar");
         assertThat(gauge.getValue()).isNull();
         assertThat(gauge.get()).isNull();
         assertThat(gauge.getType()).isNull();
@@ -87,23 +87,31 @@ public class LazyDelegatingGaugeTest {
     @Test
     public void set() {
         //Long
-        LazyDelegatingGauge gauge = new LazyDelegatingGauge(Collections.singletonList("foo"), "bar");
+        LazyDelegatingGauge gauge = new LazyDelegatingGauge("bar");
         gauge.set(99l);
         assertThat(gauge.getValue()).isEqualTo(99l);
         gauge.set(199l);
         assertThat(gauge.getValue()).isEqualTo(199l);
-        assertThat(gauge.getType()).isEqualTo(MetricType.GAUGE_LONG);
+        assertThat(gauge.getType()).isEqualTo(MetricType.GAUGE_NUMBER);
+
+        //Integer
+        gauge = new LazyDelegatingGauge("bar");
+        gauge.set(99);
+        assertThat(gauge.getValue()).isEqualTo(99);
+        gauge.set(199);
+        assertThat(gauge.getValue()).isEqualTo(199);
+        assertThat(gauge.getType()).isEqualTo(MetricType.GAUGE_NUMBER);
 
         //Double
-        gauge = new LazyDelegatingGauge(Collections.singletonList("foo"), "bar");
+        gauge = new LazyDelegatingGauge("bar");
         gauge.set(99.0);
         assertThat(gauge.getValue()).isEqualTo(99.0);
         gauge.set(199.01);
         assertThat(gauge.getValue()).isEqualTo(199.01);
-        assertThat(gauge.getType()).isEqualTo(MetricType.GAUGE_DOUBLE);
+        assertThat(gauge.getType()).isEqualTo(MetricType.GAUGE_NUMBER);
 
         //Boolean
-        gauge = new LazyDelegatingGauge(Collections.singletonList("foo"), "bar");
+        gauge = new LazyDelegatingGauge("bar");
         gauge.set(true);
         assertThat(gauge.getValue()).isEqualTo(true);
         gauge.set(false);
@@ -111,7 +119,7 @@ public class LazyDelegatingGaugeTest {
         assertThat(gauge.getType()).isEqualTo(MetricType.GAUGE_BOOLEAN);
 
         //Text
-        gauge = new LazyDelegatingGauge(Collections.singletonList("foo"), "bar");
+        gauge = new LazyDelegatingGauge("bar");
         gauge.set("something");
         assertThat(gauge.getValue()).isEqualTo("something");
         gauge.set("something else");
@@ -119,19 +127,19 @@ public class LazyDelegatingGaugeTest {
         assertThat(gauge.getType()).isEqualTo(MetricType.GAUGE_TEXT);
 
         //Ruby Hash
-        gauge = new LazyDelegatingGauge(Collections.singletonList("foo"), "bar");
+        gauge = new LazyDelegatingGauge("bar");
         gauge.set(rubyHash);
         assertThat(gauge.getValue().toString()).isEqualTo(RUBY_HASH_AS_STRING);
         assertThat(gauge.getType()).isEqualTo(MetricType.GAUGE_RUBYHASH);
 
         //Ruby Timestamp
-        gauge = new LazyDelegatingGauge(Collections.singletonList("foo"), "bar");
+        gauge = new LazyDelegatingGauge("bar");
         gauge.set(rubyTimestamp);
         assertThat(gauge.getValue()).isEqualTo(timestamp);
         assertThat(gauge.getType()).isEqualTo(MetricType.GAUGE_RUBYTIMESTAMP);
 
         //Unknown
-        gauge = new LazyDelegatingGauge(Collections.singletonList("foo"), "bar");
+        gauge = new LazyDelegatingGauge("bar");
         gauge.set(Collections.singleton("value"));
         assertThat(gauge.getValue()).isEqualTo(Collections.singleton("value"));
         gauge.set(URI.create("foo")); //please don't change the type of gauge after already set
@@ -139,13 +147,13 @@ public class LazyDelegatingGaugeTest {
         assertThat(gauge.getType()).isEqualTo(MetricType.GAUGE_UNKNOWN);
 
         //Null
-        gauge = new LazyDelegatingGauge(Collections.singletonList("foo"), "bar");
+        gauge = new LazyDelegatingGauge("bar");
         gauge.set(null);
         assertThat(gauge.getValue()).isNull();
         assertThat(gauge.getType()).isNull();
 
         //Valid, then Null
-        gauge = new LazyDelegatingGauge(Collections.singletonList("foo"), "bar");
+        gauge = new LazyDelegatingGauge("bar");
         gauge.set("something");
         assertThat(gauge.getValue()).isEqualTo("something");
         gauge.set(null);

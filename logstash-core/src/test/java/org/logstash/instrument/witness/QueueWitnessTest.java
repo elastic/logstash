@@ -1,6 +1,5 @@
 package org.logstash.instrument.witness;
 
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;
 import org.junit.Test;
@@ -29,31 +28,31 @@ public class QueueWitnessTest {
     public void testEvents() {
         assertThat(witness.snitch().events()).isNull();
         witness.events(101);
-        assertThat(witness.snitch().events()).isEqualTo(101);
+        assertThat(witness.snitch().events()).isEqualTo(101l);
     }
 
     @Test
     public void testQueueSizeInBytes(){
         witness.capacity().queueSizeInBytes(99);
-        assertThat(witness.capacity().snitch().queueSizeInBytes()).isEqualTo(99);
+        assertThat(witness.capacity().snitch().queueSizeInBytes()).isEqualTo(99l);
     }
 
     @Test
     public void testPageCapacityInBytes(){
         witness.capacity().pageCapacityInBytes(98);
-        assertThat(witness.capacity().snitch().pageCapacityInBytes()).isEqualTo(98);
+        assertThat(witness.capacity().snitch().pageCapacityInBytes()).isEqualTo(98l);
     }
 
     @Test
     public void testMaxQueueSizeInBytes(){
         witness.capacity().maxQueueSizeInBytes(97);
-        assertThat(witness.capacity().snitch().maxQueueSizeInBytes()).isEqualTo(97);
+        assertThat(witness.capacity().snitch().maxQueueSizeInBytes()).isEqualTo(97l);
     }
 
     @Test
     public void testMaxUnreadEvents(){
         witness.capacity().maxUnreadEvents(96);
-        assertThat(witness.capacity().snitch().maxUnreadEvents()).isEqualTo(96);
+        assertThat(witness.capacity().snitch().maxUnreadEvents()).isEqualTo(96l);
     }
 
     @Test
@@ -65,7 +64,7 @@ public class QueueWitnessTest {
     @Test
     public void testFreeSpace(){
         witness.data().freeSpaceInBytes(77);
-        assertThat(witness.data().snitch().freeSpaceInBytes()).isEqualTo(77);
+        assertThat(witness.data().snitch().freeSpaceInBytes()).isEqualTo(77l);
     }
 
     @Test

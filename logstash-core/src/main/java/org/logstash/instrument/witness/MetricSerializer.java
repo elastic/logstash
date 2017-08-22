@@ -25,9 +25,24 @@ public interface MetricSerializer<T extends Metric<?>> {
 
     /**
      * Helper class to create a functional fluent api.
-     * Usage example: {@code MetricSerializer.Get.longSerializer(gen).serialize(99);}
+     * Usage example: {@code MetricSerializer.Get.numberSerializer(gen).serialize(99);}
      */
     class Get {
+        /**
+         * Proper way to serialize a {@link Number} type metric to JSON
+         *
+         * @param gen The {@link JsonGenerator} used to generate JSON
+         * @return the {@link MetricSerializer} which is the function used to serialize the metric
+         */
+        static MetricSerializer<Metric<Number>> numberSerializer(JsonGenerator gen) {
+            return m -> {
+                if (m != null) {
+                    Number value = m.getValue();
+                    gen.writeObjectField(m.getName(), value == null ? 0 : value);
+                }
+            };
+        }
+
         /**
          * Proper way to serialize a {@link Long} type metric to JSON
          *

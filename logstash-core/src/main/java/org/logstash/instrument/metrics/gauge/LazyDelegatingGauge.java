@@ -7,44 +7,39 @@ import org.logstash.ext.JrubyTimestampExtLibrary.RubyTimestamp;
 import org.logstash.instrument.metrics.AbstractMetric;
 import org.logstash.instrument.metrics.MetricType;
 
-import java.util.List;
-
 /**
  * A lazy proxy to a more specific typed {@link GaugeMetric}. The metric will only be initialized if the initial value is set, or once the {@code set} operation is called.
  * <p><strong>Intended only for use with Ruby's duck typing, Java consumers should use the specific typed {@link GaugeMetric}</strong></p>
+ *
  * @deprecated - there are no plans to replace this.
  */
-public class LazyDelegatingGauge extends AbstractMetric<Object> implements GaugeMetric<Object,Object> {
+public class LazyDelegatingGauge extends AbstractMetric<Object> implements GaugeMetric<Object, Object> {
 
     private final static Logger LOGGER = LogManager.getLogger(LazyDelegatingGauge.class);
 
     protected final String key;
-    protected final List<String> nameSpaces;
 
     private GaugeMetric lazyMetric;
 
     /**
-     * Constructor - protected so that Ruby may sub class proxy and discourage usage from Java, null initial value
+     * Constructor - null initial value
      *
-     * @param nameSpace The namespace for this metric
-     * @param key       The key <i>(with in the namespace)</i> for this metric
+     * @param key The key <i>(with in the namespace)</i> for this metric
      * @deprecated - there are no plans to replace this
      */
-    public LazyDelegatingGauge(final List<String> nameSpace, final String key) {
-        this(nameSpace, key, null);
+    public LazyDelegatingGauge(final String key) {
+        this(key, null);
     }
 
     /**
-     * Constructor - protected so that Ruby may sub class proxy and discourage usage from Java
+     * Constructor - with initial value
      *
-     * @param nameSpace    The namespace for this metric
-     * @param key          The key <i>(with in the namespace)</i> for this metric
+     * @param key          The key for this metric
      * @param initialValue The initial value for this {@link GaugeMetric}, may be null
      * @deprecated - there are no plans to replace this
      */
-    protected LazyDelegatingGauge(List<String> nameSpace, String key, Object initialValue) {
+    public LazyDelegatingGauge(String key, Object initialValue) {
         super(key);
-        this.nameSpaces = nameSpace;
         this.key = key;
         if (initialValue != null) {
             wakeMetric(initialValue);
@@ -52,7 +47,7 @@ public class LazyDelegatingGauge extends AbstractMetric<Object> implements Gauge
     }
 
     @Override
-    @SuppressWarnings( "deprecation" )
+    @SuppressWarnings("deprecation")
     public Object get() {
         return lazyMetric == null ? null : lazyMetric.get();
     }
@@ -86,10 +81,8 @@ public class LazyDelegatingGauge extends AbstractMetric<Object> implements Gauge
             //"quack quack"
             if (value instanceof String) {
                 lazyMetric = new TextGauge(key, (String) value);
-            } else if (value instanceof Long) {
-                lazyMetric = new LongGauge(key, (Long) value);
-            } else if (value instanceof Double) {
-                lazyMetric = new DoubleGauge(key, (Double) value);
+            } else if (value instanceof Number) {
+                lazyMetric = new NumberGauge(key, (Number) value);
             } else if (value instanceof Boolean) {
                 lazyMetric = new BooleanGauge(key, (Boolean) value);
             } else if (value instanceof RubyHash) {
@@ -97,11 +90,10 @@ public class LazyDelegatingGauge extends AbstractMetric<Object> implements Gauge
             } else if (value instanceof RubyTimestamp) {
                 lazyMetric = new RubyTimeStampGauge(key, ((RubyTimestamp) value));
             } else {
-                LOGGER.warn("A gauge metric of an unknown type ({}) has been create for key: {}, namespace:{}. This may result in invalid serialization.  It is recommended to " +
-                        "log an issue to the responsible developer/development team.", value.getClass().getCanonicalName(), key, nameSpaces);
+                LOGGER.warn("A gauge metric of an unknown type ({}) has been create for key: {}. This may result in invalid serialization.  It is recommended to " +
+                        "log an issue to the responsible developer/development team.", value.getClass().getCanonicalName(), key);
                 lazyMetric = new UnknownGauge(key, value);
             }
         }
-    }
-
+     }
 }

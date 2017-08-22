@@ -27,7 +27,6 @@ public class PluginsWitness implements SerializableWitness {
      * Constructor.
      */
     public PluginsWitness() {
-
         this.inputs = new ConcurrentHashMap<>();
         this.outputs = new ConcurrentHashMap<>();
         this.filters = new ConcurrentHashMap<>();
