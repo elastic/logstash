@@ -4,7 +4,7 @@ module LogStash module Instrument module MetricType
   class Gauge < LazyDelegatingGauge
 
     def initialize(namespaces, key)
-      super(namespaces, key.to_s)
+      super(key.to_s)
     end
 
     def execute(action, value = nil)

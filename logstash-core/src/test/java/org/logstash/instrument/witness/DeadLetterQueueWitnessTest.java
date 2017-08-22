@@ -23,7 +23,7 @@ public class DeadLetterQueueWitnessTest {
     public void queueSizeInBytes() {
         assertThat(witness.snitch().queueSizeInBytes()).isNull();
         witness.queueSizeInBytes(99);
-        assertThat(witness.snitch().queueSizeInBytes()).isEqualTo(99);
+        assertThat(witness.snitch().queueSizeInBytes()).isEqualTo(99l);
     }
 
     @Test

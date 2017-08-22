@@ -6,7 +6,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import org.logstash.instrument.metrics.Metric;
 import org.logstash.instrument.metrics.gauge.BooleanGauge;
-import org.logstash.instrument.metrics.gauge.LongGauge;
+import org.logstash.instrument.metrics.gauge.NumberGauge;
 import org.logstash.instrument.metrics.gauge.TextGauge;
 
 import java.io.IOException;
@@ -19,10 +19,10 @@ final public class ConfigWitness implements SerializableWitness {
 
     private final BooleanGauge deadLetterQueueEnabled;
     private final BooleanGauge configReloadAutomatic;
-    private final LongGauge batchSize;
-    private final LongGauge workers;
-    private final LongGauge batchDelay;
-    private final LongGauge configReloadInterval;
+    private final NumberGauge batchSize;
+    private final NumberGauge workers;
+    private final NumberGauge batchDelay;
+    private final NumberGauge configReloadInterval;
     private final TextGauge deadLetterQueuePath;
     private final Snitch snitch;
     private final static String KEY = "config";
@@ -35,10 +35,10 @@ final public class ConfigWitness implements SerializableWitness {
     public ConfigWitness() {
         deadLetterQueueEnabled = new BooleanGauge("dead_letter_queue_enabled");
         configReloadAutomatic = new BooleanGauge("config_reload_automatic");
-        batchSize = new LongGauge("batch_size");
-        workers = new LongGauge("workers");
-        batchDelay = new LongGauge("batch_delay");
-        configReloadInterval = new LongGauge("config_reload_interval");
+        batchSize = new NumberGauge("batch_size");
+        workers = new NumberGauge("workers");
+        batchDelay = new NumberGauge("batch_delay");
+        configReloadInterval = new NumberGauge("config_reload_interval");
         deadLetterQueuePath = new TextGauge("dead_letter_queue_path");
         snitch = new Snitch(this);
     }
@@ -151,14 +151,14 @@ final public class ConfigWitness implements SerializableWitness {
         void innerSerialize(ConfigWitness witness, JsonGenerator gen, SerializerProvider provider) throws IOException {
             gen.writeObjectFieldStart(KEY);
 
-            MetricSerializer<Metric<Long>> longSerializer = MetricSerializer.Get.longSerializer(gen);
+            MetricSerializer<Metric<Number>> numberSerializer = MetricSerializer.Get.numberSerializer(gen);
             MetricSerializer<Metric<Boolean>> booleanSerializer = MetricSerializer.Get.booleanSerializer(gen);
             MetricSerializer<Metric<String>> stringSerializer = MetricSerializer.Get.stringSerializer(gen);
 
-            longSerializer.serialize(witness.batchSize);
-            longSerializer.serialize(witness.workers);
-            longSerializer.serialize(witness.batchDelay);
-            longSerializer.serialize(witness.configReloadInterval);
+            numberSerializer.serialize(witness.batchSize);
+            numberSerializer.serialize(witness.workers);
+            numberSerializer.serialize(witness.batchDelay);
+            numberSerializer.serialize(witness.configReloadInterval);
             booleanSerializer.serialize(witness.configReloadAutomatic);
             booleanSerializer.serialize(witness.deadLetterQueueEnabled);
             stringSerializer.serialize(witness.deadLetterQueuePath);
@@ -182,7 +182,7 @@ final public class ConfigWitness implements SerializableWitness {
          *
          * @return the batch delay. May be {@code null}
          */
-        public Long batchDelay() {
+        public Number batchDelay() {
             return witness.batchDelay.getValue();
         }
 
@@ -192,7 +192,7 @@ final public class ConfigWitness implements SerializableWitness {
          *
          * @return the batch size. May be {@code null}
          */
-        public Long batchSize() {
+        public Number batchSize() {
             return witness.batchSize.getValue();
         }
 
@@ -211,7 +211,7 @@ final public class ConfigWitness implements SerializableWitness {
          *
          * @return the configured reload interval. May be {@code null}
          */
-        public Long configReloadInterval() {
+        public Number configReloadInterval() {
             return witness.configReloadInterval.getValue();
         }
 
@@ -239,7 +239,7 @@ final public class ConfigWitness implements SerializableWitness {
          *
          * @return the configured number of workers. May be {@code null}
          */
-        public Long workers() {
+        public Number workers() {
             return witness.workers.getValue();
         }
     }
