@@ -95,24 +95,16 @@ See {logstash}transformation.html[Transforming Data] for an overview of some of 
 Route your data where it matters most. Unlock various downstream analytical and operational use cases by storing,
 analyzing, and taking action on your data.
 
-[cols="a,a"]
-|=======================================================================
-|
-
 *Analysis*
 
 * {logstash}plugins-outputs-elasticsearch.html[Elasticsearch]
 * Data stores such as {logstash}plugins-outputs-mongodb.html[MongoDB] and {logstash}plugins-outputs-riak.html[Riak]
-
-|
 
 *Archiving*
 
 * {logstash}plugins-outputs-webhdfs.html[HDFS]
 * {logstash}plugins-outputs-s3.html[S3]
 * {logstash}plugins-outputs-google_cloud_storage.html[Google Cloud Storage]
-
-|
 
 *Monitoring*
 
@@ -123,8 +115,6 @@ analyzing, and taking action on your data.
 * {logstash}plugins-outputs-datadog.html[Datadog]
 * {logstash}plugins-outputs-cloudwatch.html[CloudWatch]
 
-|
-
 *Alerting*
 
 * https://www.elastic.co/products/watcher[Watcher] with Elasticsearch
@@ -133,5 +123,3 @@ analyzing, and taking action on your data.
 * {logstash}plugins-outputs-hipchat.html[HipChat]
 * {logstash}plugins-outputs-irc.html[IRC]
 * {logstash}plugins-outputs-sns.html[SNS]
-
-|=======================================================================
