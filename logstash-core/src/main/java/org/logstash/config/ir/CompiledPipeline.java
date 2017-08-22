@@ -38,9 +38,15 @@ public final class CompiledPipeline {
     private final Collection<IRubyObject> inputs;
 
     /**
-     * Configured Filters, index by their ID as returned by {@link PluginVertex#getId()}.
+     * Configured Filters, indexed by their ID as returned by {@link PluginVertex#getId()}.
      */
     private final Map<String, RubyIntegration.Filter> filters;
+
+    /**
+     * Compiled {@link IfVertex, indexed by their ID as returned by {@link Vertex#getId()}..
+     */
+    private final Map<String, Dataset.SplitDataset> iffs = new HashMap<>(5);
+
 
     /**
      * Immutable collection of filters that flush on shutdown.

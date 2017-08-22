@@ -26,7 +26,7 @@ public interface Dataset {
      * @param flush True if flushing flushable nodes while traversing the execution
      * @param shutdown True if this is the last call to this instance's compute method because
      * the pipeline it belongs to is shut down
-     * @param options Flush Option hash passed to {@link RubyIntegration.Filter#flush(RubyHash)} 
+     * @param options Flush Option hash passed to {@link RubyIntegration.Filter#flush(RubyHash)}
      * @return Computed {@link RubyArray} of {@link JrubyEventExtLibrary.RubyEvent}
      */
     Collection<JrubyEventExtLibrary.RubyEvent> compute(RubyIntegration.Batch batch,
@@ -184,15 +184,21 @@ public interface Dataset {
 
         private final EventCondition func;
 
-        private boolean done;
-
         private final Collection<JrubyEventExtLibrary.RubyEvent> data;
+
+        private final Collection<JrubyEventExtLibrary.RubyEvent> complement;
+
+        private final Dataset opposite;
+
+        private boolean done;
 
         public SplitDataset(final Collection<Dataset> parents, final EventCondition func) {
             this.parents = parents;
             this.func = func;
             done = false;
             data = new ArrayList<>(5);
+            complement = new ArrayList<>(5);
+            opposite = new Dataset.SplitDataset.Complement(this, complement);
         }
 
         @Override
@@ -203,10 +209,12 @@ public interface Dataset {
                 return data;
             }
             for (final Dataset set : parents) {
-                for (final JrubyEventExtLibrary.RubyEvent event 
+                for (final JrubyEventExtLibrary.RubyEvent event
                     : set.compute(batch, flush, shutdown, options)) {
                     if (func.fulfilled(event)) {
                         data.add(event);
+                    } else {
+                        complement.add(event);
                     }
                 }
             }
@@ -220,7 +228,46 @@ public interface Dataset {
                 parent.clear();
             }
             data.clear();
+            complement.clear();
             done = false;
+        }
+
+        public Dataset left() {
+            return opposite;
+        }
+
+        private static final class Complement implements Dataset {
+
+            private final Dataset left;
+
+            private final Collection<JrubyEventExtLibrary.RubyEvent> data;
+
+            private boolean done;
+
+            private Complement(final Dataset left,
+                final Collection<JrubyEventExtLibrary.RubyEvent> complement) {
+                this.left = left;
+                data = complement;
+            }
+
+            @Override
+            public Collection<JrubyEventExtLibrary.RubyEvent> compute(
+                final RubyIntegration.Batch batch, final boolean flush, final boolean shutdown,
+                final RubyHash options) {
+                if (done) {
+                    return data;
+                }
+                left.compute(batch, flush, shutdown, options);
+                done = true;
+                return data;
+            }
+
+            @Override
+            public void clear() {
+                left.clear();
+                data.clear();
+                done = false;
+            }
         }
     }
 
