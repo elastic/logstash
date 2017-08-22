@@ -47,7 +47,6 @@ public final class CompiledPipeline {
      */
     private final Map<String, Dataset.SplitDataset> iffs = new HashMap<>(5);
 
-
     /**
      * Immutable collection of filters that flush on shutdown.
      */
@@ -157,7 +156,9 @@ public final class CompiledPipeline {
                     if (isFilter(leaf)) {
                         datasets.add(filterDataset(leaf.getId(), filterplugins, parents));
                     } else if (leaf instanceof IfVertex) {
-                        datasets.add(splitRight(parents, buildCondition((IfVertex) leaf)));
+                        datasets.add(
+                            splitRight(parents, buildCondition((IfVertex) leaf), leaf.getId())
+                        );
                     } else if (isOutput(leaf)) {
                         datasets.add(outputDataset(leaf.getId(), filterplugins, parents));
                     } else {
@@ -317,13 +318,14 @@ public final class CompiledPipeline {
                     // output, filter or if in type.
                     final IfVertex ifvert = (IfVertex) child;
                     final EventCondition iff = buildCondition(ifvert);
+                    final String index = ifvert.getId();
                     // It is important that we double check that we are actually dealing with the
                     // positive/left branch of the if condition
                     if (ifvert.getOutgoingBooleanEdgesByType(true).stream()
                         .anyMatch(edge -> Objects.equals(edge.getTo(), start))) {
-                        return splitLeft(newparents, iff);
+                        return splitLeft(newparents, iff, index);
                     } else {
-                        return splitRight(newparents, iff);
+                        return splitRight(newparents, iff, index);
                     }
                 }
             }).collect(Collectors.toList());
@@ -387,11 +389,12 @@ public final class CompiledPipeline {
      * {@link EventCondition}.
      * @param parents Datasets to split
      * @param condition Condition that must be not be fulfilled
+     * @param index Vertex id to cache the resulting {@link Dataset} under
      * @return The half of the datasets contents that does not fulfil the condition
      */
-    private static Dataset splitRight(final Collection<Dataset> parents,
-        final EventCondition condition) {
-        return splitLeft(parents, EventCondition.Compiler.not(condition));
+    private Dataset splitRight(final Collection<Dataset> parents,
+        final EventCondition condition, final String index) {
+        return splitLeft(parents, condition, index).right();
     }
 
     /**
@@ -399,11 +402,15 @@ public final class CompiledPipeline {
      * the {@link JrubyEventExtLibrary.RubyEvent} that fulfil the given {@link EventCondition}.
      * @param parents Datasets to split
      * @param condition Condition that must be fulfilled
+     * @param index Vertex id to cache the resulting {@link Dataset} under
      * @return The half of the datasets contents that fulfils the condition
      */
-    private static Dataset splitLeft(final Collection<Dataset> parents,
-        final EventCondition condition) {
-        return new Dataset.SplitDataset(parents, condition);
+    private Dataset.SplitDataset splitLeft(final Collection<Dataset> parents,
+        final EventCondition condition, final String index) {
+        if (!iffs.containsKey(index)) {
+            iffs.put(index, new Dataset.SplitDataset(parents, condition));
+        }
+        return iffs.get(index);
     }
 
     /**

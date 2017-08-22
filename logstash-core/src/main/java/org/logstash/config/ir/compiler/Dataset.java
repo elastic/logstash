@@ -232,14 +232,26 @@ public interface Dataset {
             done = false;
         }
 
-        public Dataset left() {
+        public Dataset right() {
             return opposite;
         }
 
+        /**
+         * Complementary {@link Dataset} to a {@link Dataset.SplitDataset} representing the
+         * negative branch of the {@code if} statement.
+         */
         private static final class Complement implements Dataset {
 
+            /**
+             * Positive branch of underlying {@code if} statement.
+             */
             private final Dataset left;
 
+            /**
+             * This collection is shared with {@link Dataset.SplitDataset.Complement#left} and 
+             * mutated when calling its {@code compute} method. This class does not directly compute
+             * it.
+             */
             private final Collection<JrubyEventExtLibrary.RubyEvent> data;
 
             private boolean done;

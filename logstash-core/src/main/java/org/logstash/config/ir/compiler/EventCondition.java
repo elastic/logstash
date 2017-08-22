@@ -407,7 +407,7 @@ public interface EventCondition {
             return new EventCondition[]{first, second};
         }
 
-        public static EventCondition not(final EventCondition condition) {
+        private static EventCondition not(final EventCondition condition) {
             return new EventCondition.Compiler.Negated(condition);
         }
 
