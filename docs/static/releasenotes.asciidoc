@@ -14,6 +14,7 @@ This section summarizes the changes in the following releases:
 * Set the JVM min and max heapsize to be 1 GB out of the box. Previously, only the max heapsize was set to 1 GB.
 * Fixed a condition where Logstash would not start when using persistent queue feature and a queue page file of zero byte existed with a fully acked checkpoint ({lsissue}7809[Issue 7809]).
 * Fix an issue where Logstash would crash when using the dead letter queue seek by timestamp feature.
+* Fixed an issue where Logstash would not reload unconditionally when SIGHUP was received with auto-reload turned off.  ({lsissue}6417[Issue 6417]) 
 
 [[logstash-5-5-1]]
 === Logstash 5.5.1 Release Notes
