@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import org.logstash.instrument.metrics.Metric;
-import org.logstash.instrument.metrics.gauge.LongGauge;
+import org.logstash.instrument.metrics.gauge.NumberGauge;
 import org.logstash.instrument.metrics.gauge.TextGauge;
 
 import java.io.IOException;
@@ -17,7 +17,7 @@ import java.io.IOException;
 final public class QueueWitness implements SerializableWitness {
 
     private final TextGauge type;
-    private final LongGauge events; // note this is NOT an EventsWitness
+    private final NumberGauge events; // note this is NOT an EventsWitness
     private final Snitch snitch;
     private final CapacityWitness capacity;
     private final DataWitness data;
@@ -29,7 +29,7 @@ final public class QueueWitness implements SerializableWitness {
      */
     public QueueWitness() {
         type = new TextGauge("type");
-        events = new LongGauge("events");
+        events = new NumberGauge("events");
         snitch = new Snitch(this);
         capacity = new CapacityWitness();
         data = new DataWitness();
@@ -90,19 +90,19 @@ final public class QueueWitness implements SerializableWitness {
      */
     public class CapacityWitness {
 
-        private final LongGauge queueSizeInBytes;
-        private final LongGauge pageCapacityInBytes;
-        private final LongGauge maxQueueSizeInBytes;
-        private final LongGauge maxUnreadEvents;
+        private final NumberGauge queueSizeInBytes;
+        private final NumberGauge pageCapacityInBytes;
+        private final NumberGauge maxQueueSizeInBytes;
+        private final NumberGauge maxUnreadEvents;
         private final Snitch snitch;
         private final static String KEY = "capacity";
 
 
         private CapacityWitness() {
-            queueSizeInBytes = new LongGauge("queue_size_in_bytes");
-            pageCapacityInBytes = new LongGauge("page_capacity_in_bytes");
-            maxQueueSizeInBytes = new LongGauge("max_queue_size_in_bytes");
-            maxUnreadEvents = new LongGauge("max_unread_events");
+            queueSizeInBytes = new NumberGauge("queue_size_in_bytes");
+            pageCapacityInBytes = new NumberGauge("page_capacity_in_bytes");
+            maxQueueSizeInBytes = new NumberGauge("max_queue_size_in_bytes");
+            maxUnreadEvents = new NumberGauge("max_unread_events");
             snitch = new Snitch(this);
         }
 
@@ -167,7 +167,7 @@ final public class QueueWitness implements SerializableWitness {
              *
              * @return the queue size in bytes. May be {@code null}
              */
-            public Long queueSizeInBytes() {
+            public Number queueSizeInBytes() {
                 return witness.queueSizeInBytes.getValue();
             }
 
@@ -176,7 +176,7 @@ final public class QueueWitness implements SerializableWitness {
              *
              * @return the page queue capacity.
              */
-            public Long pageCapacityInBytes() {
+            public Number pageCapacityInBytes() {
                 return witness.pageCapacityInBytes.getValue();
             }
 
@@ -185,7 +185,7 @@ final public class QueueWitness implements SerializableWitness {
              *
              * @return the max queue size.
              */
-            public Long maxQueueSizeInBytes() {
+            public Number maxQueueSizeInBytes() {
                 return witness.maxQueueSizeInBytes.getValue();
             }
 
@@ -194,7 +194,7 @@ final public class QueueWitness implements SerializableWitness {
              *
              * @return the max unread events.
              */
-            public Long maxUnreadEvents() {
+            public Number maxUnreadEvents() {
                 return witness.maxUnreadEvents.getValue();
             }
 
@@ -207,7 +207,7 @@ final public class QueueWitness implements SerializableWitness {
     public class DataWitness {
 
         private final TextGauge path;
-        private final LongGauge freeSpaceInBytes;
+        private final NumberGauge freeSpaceInBytes;
         private final TextGauge storageType;
         private final Snitch snitch;
         private final static String KEY = "data";
@@ -215,7 +215,7 @@ final public class QueueWitness implements SerializableWitness {
 
         private DataWitness() {
             path = new TextGauge("path");
-            freeSpaceInBytes = new LongGauge("free_space_in_bytes");
+            freeSpaceInBytes = new NumberGauge("free_space_in_bytes");
             storageType = new TextGauge("storage_type");
             snitch = new Snitch(this);
         }
@@ -281,7 +281,7 @@ final public class QueueWitness implements SerializableWitness {
              *
              * @return the free space of the queue
              */
-            public Long freeSpaceInBytes() {
+            public Number freeSpaceInBytes() {
                 return witness.freeSpaceInBytes.getValue();
             }
 
@@ -326,22 +326,22 @@ final public class QueueWitness implements SerializableWitness {
 
         void innerSerialize(QueueWitness witness, JsonGenerator gen, SerializerProvider provider) throws IOException {
             gen.writeObjectFieldStart(KEY);
-            MetricSerializer<Metric<Long>> longSerializer = MetricSerializer.Get.longSerializer(gen);
+            MetricSerializer<Metric<Number>> numberSerializer = MetricSerializer.Get.numberSerializer(gen);
             MetricSerializer<Metric<String>> stringSerializer = MetricSerializer.Get.stringSerializer(gen);
             stringSerializer.serialize(witness.type);
             if ("persisted".equals(witness.type.getValue())) {
-                longSerializer.serialize(witness.events);
+                numberSerializer.serialize(witness.events);
                 //capacity
                 gen.writeObjectFieldStart(CapacityWitness.KEY);
-                longSerializer.serialize(witness.capacity.queueSizeInBytes);
-                longSerializer.serialize(witness.capacity.pageCapacityInBytes);
-                longSerializer.serialize(witness.capacity.maxQueueSizeInBytes);
-                longSerializer.serialize(witness.capacity.maxUnreadEvents);
+                numberSerializer.serialize(witness.capacity.queueSizeInBytes);
+                numberSerializer.serialize(witness.capacity.pageCapacityInBytes);
+                numberSerializer.serialize(witness.capacity.maxQueueSizeInBytes);
+                numberSerializer.serialize(witness.capacity.maxUnreadEvents);
                 gen.writeEndObject();
                 //data
                 gen.writeObjectFieldStart(DataWitness.KEY);
                 stringSerializer.serialize(witness.data.path);
-                longSerializer.serialize(witness.data.freeSpaceInBytes);
+                numberSerializer.serialize(witness.data.freeSpaceInBytes);
                 stringSerializer.serialize(witness.data.storageType);
                 gen.writeEndObject();
             }
@@ -375,7 +375,7 @@ final public class QueueWitness implements SerializableWitness {
          *
          * @return the count of events in the queue. {@code null}
          */
-        public Long events() {
+        public Number events() {
             return witness.events.getValue();
         }
     }
