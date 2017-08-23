@@ -58,8 +58,8 @@ public interface Dataset {
     );
 
     /**
-     * <p>{@link Dataset} that contains all {@link JrubyEventExtLibrary.RubyEvent} of all of
-     * its dependencies and is assumed to be at the end of an execution.</p>
+     * <p>{@link Dataset} that contains all {@link JrubyEventExtLibrary.RubyEvent} instances of all 
+     * from its dependencies and is assumed to be at the end of an execution.</p>
      * This dataset does not require an explicit call to {@link Dataset#clear()} since it will
      * automatically {@code clear} all of its parents.
      */
