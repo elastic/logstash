@@ -246,6 +246,12 @@ en:
           Load index template into Elasticsearch, and saved searches, 
           index-pattern, visualizations, and dashboards into Kibana when
           running modules.
+        cloud_id: |+
+          Sets the elasticsearch and kibana host settings
+          for module connections in Elastic Cloud
+        cloud_auth: |+
+          Sets the elasticsearch and kibana username and password
+          for module connections in Elastic Cloud
         configtest: |+
           Check configuration for valid syntax and then exit.
         http_host: Web API binding host

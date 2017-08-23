@@ -22,6 +22,8 @@ module LogStash
     Setting::NullableString.new("config.string", nil, false),
                     Setting.new("modules.cli", Array, []),
                     Setting.new("modules", Array, []),
+           Setting::CloudId.new("cloud.id", nil),
+         Setting::CloudAuth.new("cloud.auth",nil),
            Setting::Boolean.new("modules_setup", false),
            Setting::Boolean.new("config.test_and_exit", false),
            Setting::Boolean.new("config.reload.automatic", false),

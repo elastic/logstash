@@ -109,6 +109,15 @@
 #
 # modules:
 #
+# ------------ Cloud Settings ---------------
+# Define Elastic Cloud settings here. id and auth need to be defined together
+# Format of cloud.id is a base64 number e.g. dXMtZWFzdC0xLmF3cy5mb3VuZC5pbyRub3RhcmVhbCRpZGVudGlmaWVy
+# and it may have an environment prefix e.g. staging:dXMtZ...
+# Format of cloud.auth is: <user>:<pass>
+#
+# cloud.id: <identifier>
+# cloud.auth: elastic:<password>
+#
 # ------------ Queuing Settings --------------
 #
 # Internal queuing model, "memory" for legacy in-memory based queuing and

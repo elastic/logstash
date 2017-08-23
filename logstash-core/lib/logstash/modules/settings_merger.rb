@@ -20,4 +20,25 @@ module LogStash module Modules class SettingsMerger
     end
     merged
   end
+
+  def self.merge_cloud_settings(module_settings, logstash_settings)
+    cloud_id = logstash_settings.get("cloud.id")
+    cloud_auth = logstash_settings.get("cloud.auth")
+    if cloud_id.nil?
+      if cloud_auth.nil?
+        return # user did not specify cloud settings
+      else
+        raise ArgumentError.new("Cloud Auth without Cloud Id")
+      end
+    end
+    module_settings["var.kibana.scheme"] = "https"
+    module_settings["var.kibana.host"] = cloud_id.kibana_host
+    module_settings["var.elasticsearch.hosts"] = cloud_id.elasticsearch_host
+    unless cloud_auth.nil?
+      module_settings["var.elasticsearch.username"] = cloud_auth.username
+      module_settings["var.elasticsearch.password"] = cloud_auth.password.value
+      module_settings["var.kibana.username"] = cloud_auth.username
+      module_settings["var.kibana.password"] = cloud_auth.password.value
+    end
+  end
 end end end

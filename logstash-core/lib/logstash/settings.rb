@@ -4,6 +4,8 @@ require "fileutils"
 require "logstash/util/byte_value"
 require "logstash/util/environment_variables"
 require "logstash/util/time_value"
+require "logstash/util/cloud_id"
+require "logstash/util/cloud_auth"
 
 module LogStash
   class Settings
@@ -255,6 +257,7 @@ module LogStash
           @default = default
         end
       end
+
       def set(value)
         coerced_value = coerce(value)
         validate(coerced_value)
@@ -555,6 +558,54 @@ module LogStash
         else
           value.split(@token).map(&:strip)
         end
+      end
+    end
+
+    class CloudId < Coercible
+      def initialize(name, default, strict=true, &validator_proc)
+        super(name, Util::CloudId, default, false, &validator_proc)
+      end
+
+      def set(value)
+        @value = coerce(value)
+        @value_is_set = true
+        @value
+      end
+
+      def coerce(value)
+        if value.is_a?(@klass)
+          return value
+        end
+        @klass.new(value)
+      end
+
+      protected
+      def validate(value)
+        coerce(value)
+      end
+    end
+
+    class CloudAuth < Coercible
+      def initialize(name, default, strict=true, &validator_proc)
+        super(name, Util::CloudAuth, default, false, &validator_proc)
+      end
+
+      def set(value)
+        @value = coerce(value)
+        @value_is_set = true
+        @value
+      end
+
+      def coerce(value)
+        if value.is_a?(@klass)
+          return value
+        end
+        @klass.new(value)
+      end
+
+      protected
+      def validate(value)
+        coerce(value)
       end
     end
   end
