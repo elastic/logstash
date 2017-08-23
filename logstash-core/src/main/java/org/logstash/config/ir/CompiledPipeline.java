@@ -43,9 +43,15 @@ public final class CompiledPipeline {
     private final Map<String, RubyIntegration.Filter> filters;
 
     /**
-     * Compiled {@link IfVertex, indexed by their ID as returned by {@link Vertex#getId()}..
+     * Compiled {@link IfVertex, indexed by their ID as returned by {@link Vertex#getId()}.
      */
     private final Map<String, Dataset.SplitDataset> iffs = new HashMap<>(5);
+
+    /**
+     * Cached {@link Dataset} compiled from {@link PluginVertex} indexed by their ID as returned
+     * by {@link Vertex#getId()} to avoid duplicate computations.
+     */
+    private final Map<String, Dataset> plugins = new HashMap<>(5);
 
     /**
      * Immutable collection of filters that flush on shutdown.
@@ -141,7 +147,6 @@ public final class CompiledPipeline {
      * terminate on a {@link Dataset.TerminalDataset.TerminalDebugDataset}
      */
     private Dataset compilePipeline(final boolean debug) {
-        final Map<String, Dataset> filterplugins = new HashMap<>(this.filters.size());
         final Collection<Dataset> datasets = new ArrayList<>(5);
         // We sort the leaves of the graph in a deterministic fashion before compilation.
         // This is not strictly necessary for correctness since it will only influence the order
@@ -149,19 +154,20 @@ public final class CompiledPipeline {
         // testing and is no issue performance wise since compilation only happens on pipeline
         // reload.
         iffs.clear();
+        plugins.clear();
         graph.getGraph().getAllLeaves().stream().sorted(Comparator.comparing(Vertex::hashPrefix))
             .forEachOrdered(
                 leaf -> {
                     final Collection<Dataset> parents =
-                        flatten(Dataset.ROOT_DATASETS, leaf, filterplugins);
+                        flatten(Dataset.ROOT_DATASETS, leaf);
                     if (isFilter(leaf)) {
-                        datasets.add(filterDataset(leaf.getId(), filterplugins, parents));
+                        datasets.add(filterDataset(leaf.getId(), parents));
                     } else if (leaf instanceof IfVertex) {
                         datasets.add(
                             splitRight(parents, buildCondition((IfVertex) leaf), leaf.getId())
                         );
                     } else if (isOutput(leaf)) {
-                        datasets.add(outputDataset(leaf.getId(), filterplugins, parents));
+                        datasets.add(outputDataset(leaf.getId(), parents));
                     } else {
                         datasets.addAll(parents);
                     }
@@ -285,35 +291,32 @@ public final class CompiledPipeline {
      * a {code filter} or and {code if} statement).
      * @param parents Nodes from the last already compiled level
      * @param start Vertex to compile children for
-     * @param cached Cache of already compiled {@link Dataset}
      * @return Datasets originating from given {@link Vertex}
      */
-    private Collection<Dataset> flatten(final Collection<Dataset> parents, final Vertex start,
-        final Map<String, Dataset> cached) {
+    private Collection<Dataset> flatten(final Collection<Dataset> parents, final Vertex start) {
         final Collection<Vertex> endings = start.incomingVertices()
             .filter(v -> isFilter(v) || isOutput(v) || v instanceof IfVertex)
             .collect(Collectors.toList());
-        return endings.isEmpty() ? parents : flattenChildren(parents, start, cached, endings);
+        return endings.isEmpty() ? parents : flattenChildren(parents, start, endings);
     }
 
     /**
      * Compiles all child vertices for a given vertex.
      * @param parents Parent datasets from previous stage
      * @param start Start Vertex that got expanded
-     * @param cached Cache of already compiled {@link Dataset}
      * @param children Children of {@code start} that are either {@code if} or {@code filter} in
      * type
      * @return Datasets compiled from vertex children
      */
     private Collection<Dataset> flattenChildren(final Collection<Dataset> parents,
-        final Vertex start, final Map<String, Dataset> cached, final Collection<Vertex> children) {
+        final Vertex start, final Collection<Vertex> children) {
         return children.stream().map(
             child -> {
-                final Collection<Dataset> newparents = flatten(parents, child, cached);
+                final Collection<Dataset> newparents = flatten(parents, child);
                 if (isFilter(child)) {
-                    return filterDataset(child.getId(), cached, newparents);
+                    return filterDataset(child.getId(), newparents);
                 } else if (isOutput(child)) {
-                    return outputDataset(child.getId(), cached, newparents);
+                    return outputDataset(child.getId(), newparents);
                 } else {
                     // We know that it's an if vertex since the the input children are either 
                     // output, filter or if in type.
@@ -336,16 +339,13 @@ public final class CompiledPipeline {
      * Build a {@link Dataset} representing the {@link JrubyEventExtLibrary.RubyEvent}s after
      * the application of the given filter.
      * @param vertex Vertex Id of the filter to create this {@link Dataset} for
-     * @param cache Already created {@link Dataset.FilteredDataset} used to only instantiate each
-     * filter node in the topology once
      * @param parents All the parent nodes that go into this filter
      * @return Filter {@link Dataset}
      */
-    private Dataset filterDataset(final String vertex, final Map<String, Dataset> cache,
-        final Collection<Dataset> parents) {
+    private Dataset filterDataset(final String vertex, final Collection<Dataset> parents) {
         final Dataset filter;
-        if (cache.containsKey(vertex)) {
-            filter = cache.get(vertex);
+        if (plugins.containsKey(vertex)) {
+            filter = plugins.get(vertex);
         } else {
             final RubyIntegration.Filter ruby = filters.get(vertex);
             if (ruby.hasFlush()) {
@@ -357,7 +357,7 @@ public final class CompiledPipeline {
             } else {
                 filter = new Dataset.FilteredDataset(parents, ruby);
             }
-            cache.put(vertex, filter);
+            plugins.put(vertex, filter);
         }
         return filter;
     }
@@ -366,20 +366,18 @@ public final class CompiledPipeline {
      * Build a {@link Dataset} representing the {@link JrubyEventExtLibrary.RubyEvent}s after
      * the application of the given output.
      * @param vertex Vertex Id of the filter to create this {@link Dataset} for
-     * @param cache Already created {@link Dataset.OutputDataset} used to only instantiate each
      * filter node in the topology once
      * @param parents All the parent nodes that go into this output
      * @return Output {@link Dataset}
      */
-    private Dataset outputDataset(final String vertex, final Map<String, Dataset> cache,
-        final Collection<Dataset> parents) {
+    private Dataset outputDataset(final String vertex, final Collection<Dataset> parents) {
         final Dataset output;
-        if (cache.containsKey(vertex)) {
-            output = cache.get(vertex);
+        if (plugins.containsKey(vertex)) {
+            output = plugins.get(vertex);
         } else {
             final RubyIntegration.Output ruby = outputs.get(vertex);
             output = new Dataset.OutputDataset(parents, ruby);
-            cache.put(vertex, output);
+            plugins.put(vertex, output);
         }
         return output;
     }
