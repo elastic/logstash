@@ -8,8 +8,16 @@ end
 require "logstash-core_jars"
 
 # local dev setup
-classes_dir = File.expand_path("../../../build/classes/java/main", __FILE__)
-resources_dir = File.expand_path("../../../build/resources/main", __FILE__)
+alt_classdir = File.expand_path("../../../out/production/classes", __FILE__) #IntelliJ's gradle output as of 2017.02 https://youtrack.jetbrains.com/issue/IDEA-175172
+if File.directory?(alt_classdir)
+  classes_dir = alt_classdir
+  resources_dir = File.expand_path("../../../out/production/resources", __FILE__)
+else
+  classes_dir = File.expand_path("../../../build/classes/java/main", __FILE__)
+  resources_dir = File.expand_path("../../../build/resources/main", __FILE__)
+end
+
+
 
 if File.directory?(classes_dir) && File.directory?(resources_dir)
   # if in local dev setup, add target to classpath
