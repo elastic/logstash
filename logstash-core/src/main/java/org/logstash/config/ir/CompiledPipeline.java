@@ -148,6 +148,7 @@ public final class CompiledPipeline {
         // of output events for which Logstash makes no guarantees, but it greatly simplifies
         // testing and is no issue performance wise since compilation only happens on pipeline
         // reload.
+        iffs.clear();
         graph.getGraph().getAllLeaves().stream().sorted(Comparator.comparing(Vertex::hashPrefix))
             .forEachOrdered(
                 leaf -> {

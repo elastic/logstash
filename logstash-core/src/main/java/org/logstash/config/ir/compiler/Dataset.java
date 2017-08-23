@@ -245,10 +245,10 @@ public interface Dataset {
             /**
              * Positive branch of underlying {@code if} statement.
              */
-            private final Dataset left;
+            private final Dataset parent;
 
             /**
-             * This collection is shared with {@link Dataset.SplitDataset.Complement#left} and 
+             * This collection is shared with {@link Dataset.SplitDataset.Complement#parent} and 
              * mutated when calling its {@code compute} method. This class does not directly compute
              * it.
              */
@@ -256,9 +256,15 @@ public interface Dataset {
 
             private boolean done;
 
-            private Complement(final Dataset left,
-                final Collection<JrubyEventExtLibrary.RubyEvent> complement) {
-                this.left = left;
+            /**
+             * Ctor.
+             * @param left Positive Branch {@link Dataset.SplitDataset}
+             * @param complement Collection of {@link JrubyEventExtLibrary.RubyEvent}s that did
+             * not match {@code left}
+             */
+            private Complement(
+                final Dataset left, final Collection<JrubyEventExtLibrary.RubyEvent> complement) {
+                this.parent = left;
                 data = complement;
             }
 
@@ -269,15 +275,14 @@ public interface Dataset {
                 if (done) {
                     return data;
                 }
-                left.compute(batch, flush, shutdown, options);
+                parent.compute(batch, flush, shutdown, options);
                 done = true;
                 return data;
             }
 
             @Override
             public void clear() {
-                left.clear();
-                data.clear();
+                parent.clear();
                 done = false;
             }
         }
