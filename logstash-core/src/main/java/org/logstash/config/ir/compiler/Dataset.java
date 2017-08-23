@@ -8,8 +8,11 @@ import org.jruby.RubyHash;
 import org.logstash.ext.JrubyEventExtLibrary;
 
 /**
- * A data structure backed by a {@link RubyArray} that is lazily filled with
- * {@link JrubyEventExtLibrary.RubyEvent} computed from its dependencies.
+ * <p>A data structure backed by a {@link RubyArray} that represents one step of execution flow of a 
+ * batch is lazily filled with {@link JrubyEventExtLibrary.RubyEvent} computed from its dependent
+ * {@link Dataset}.</p>
+ * <p>Each {@link Dataset} either represents a filter, output or one branch of an {@code if}
+ * statement in a Logstash configuration file.</p>
  * <p>Note: It does seem more natural to use the {@code clear} invocation to set the next
  * batch of input data. For now this is intentionally not implemented since we want to clear
  * the data stored in the Dataset tree as early as possible and before the output operations
