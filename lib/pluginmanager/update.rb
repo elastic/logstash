@@ -14,8 +14,7 @@ class LogStash::PluginManager::Update < LogStash::PluginManager::Command
   option "--local", :flag, "force local-only plugin update. see bin/logstash-plugin package|unpack", :default => false
 
   def execute
-    # Turn off any jar dependencies lookup when running with `--local`
-    ENV["JARS_SKIP"] = "true" if local?
+    ENV["JARS_SKIP"] = "true"
 
     # remove "system" local gems used by LS
     local_gems = gemfile.locally_installed_gems.map(&:name) - NON_PLUGIN_LOCAL_GEMS
