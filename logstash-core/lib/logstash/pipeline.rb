@@ -422,7 +422,7 @@ module LogStash; class Pipeline < BasePipeline
       @filter_queue_client.set_batch_dimensions(batch_size, batch_delay)
 
       pipeline_workers.times do |t|
-        filter_func = @lir_execution.buildFilterFunc
+        filter_func = @lir_execution.buildExecution
         thread = Thread.new(self, filter_func) do |_pipeline, _filter|
           _pipeline.worker_loop(_filter)
         end
@@ -613,7 +613,7 @@ module LogStash; class Pipeline < BasePipeline
     wait_until_started
     batch = @filter_queue_client.new_batch
     batch.merge(event)
-    @lir_execution.buildFilterFuncDebug.compute(batch, false, false, {}).each do |e|
+    @lir_execution.buildExecutionDebug.compute(batch, false, false, {}).each do |e|
       block.call(e) unless e.nil?
     end
   end
@@ -628,7 +628,7 @@ module LogStash; class Pipeline < BasePipeline
     flushers.each do |flusher|
       events += flusher.flush(options, &block)
     end
-    events.each {|e| block.call(e)}
+    events.each(&block)
   end
 
   def start_flusher

@@ -124,7 +124,7 @@ public final class CompiledPipeline {
      * underlying pipeline from the Queue to the outputs.
      * @return Compiled {@link Dataset} representation of the underlying {@link PipelineIR} topology
      */
-    public Dataset buildFilterFunc() {
+    public Dataset buildExecution() {
         return compilePipeline(false);
     }
 
@@ -136,14 +136,14 @@ public final class CompiledPipeline {
      * {@link Dataset.TerminalDataset.TerminalDebugDataset}.
      * @return Compiled {@link Dataset} representation of the underlying {@link PipelineIR} topology
      */
-    public Dataset buildFilterFuncDebug() {
+    public Dataset buildExecutionDebug() {
         return compilePipeline(true);
     }
 
     /**
      * This method contains the actual compilation of the {@link Dataset} representing the
      * underlying pipeline from the Queue to the outputs.
-     * @param debug True iff called from {@link CompiledPipeline#buildFilterFuncDebug()} to
+     * @param debug True iff called from {@link CompiledPipeline#buildExecutionDebug()} to
      * terminate on a {@link Dataset.TerminalDataset.TerminalDebugDataset}
      */
     private Dataset compilePipeline(final boolean debug) {
