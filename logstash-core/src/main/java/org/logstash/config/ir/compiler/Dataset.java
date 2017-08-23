@@ -124,9 +124,8 @@ public interface Dataset {
         }
 
         @Override
-        public Collection<JrubyEventExtLibrary.RubyEvent> compute(
-            final RubyIntegration.Batch batch, final boolean flush, final boolean shutdown,
-            final RubyHash options) {
+        public Collection<JrubyEventExtLibrary.RubyEvent> compute(final RubyIntegration.Batch batch,
+            final boolean flush, final boolean shutdown, final RubyHash options) {
             parents.forEach(dataset -> dataset.compute(batch, flush, shutdown, options));
             this.clear();
             return EMPTY_RETURN;
@@ -205,9 +204,8 @@ public interface Dataset {
         }
 
         @Override
-        public Collection<JrubyEventExtLibrary.RubyEvent> compute(
-            final RubyIntegration.Batch batch, final boolean flush, final boolean shutdown,
-            final RubyHash options) {
+        public Collection<JrubyEventExtLibrary.RubyEvent> compute(final RubyIntegration.Batch batch,
+            final boolean flush, final boolean shutdown, final RubyHash options) {
             if (done) {
                 return data;
             }
@@ -316,9 +314,8 @@ public interface Dataset {
         }
 
         @Override
-        public Collection<JrubyEventExtLibrary.RubyEvent> compute(
-            final RubyIntegration.Batch batch, final boolean flush, final boolean shutdown,
-            final RubyHash options) {
+        public Collection<JrubyEventExtLibrary.RubyEvent> compute(final RubyIntegration.Batch batch,
+            final boolean flush, final boolean shutdown, final RubyHash options) {
             if (done) {
                 return data;
             }
@@ -367,9 +364,8 @@ public interface Dataset {
         }
 
         @Override
-        public Collection<JrubyEventExtLibrary.RubyEvent> compute(
-            final RubyIntegration.Batch batch, final boolean flush, final boolean shutdown,
-            final RubyHash options) {
+        public Collection<JrubyEventExtLibrary.RubyEvent> compute(final RubyIntegration.Batch batch,
+            final boolean flush, final boolean shutdown, final RubyHash options) {
             if (done) {
                 return data;
             }
@@ -421,9 +417,8 @@ public interface Dataset {
         }
 
         @Override
-        public Collection<JrubyEventExtLibrary.RubyEvent> compute(
-            final RubyIntegration.Batch batch, final boolean flush, final boolean shutdown,
-            final RubyHash options) {
+        public Collection<JrubyEventExtLibrary.RubyEvent> compute(final RubyIntegration.Batch batch,
+            final boolean flush, final boolean shutdown, final RubyHash options) {
             if (done) {
                 return data;
             }
@@ -474,8 +469,7 @@ public interface Dataset {
         }
 
         @Override
-        public Collection<JrubyEventExtLibrary.RubyEvent> compute(
-            final RubyIntegration.Batch batch,
+        public Collection<JrubyEventExtLibrary.RubyEvent> compute(final RubyIntegration.Batch batch,
             final boolean flush, final boolean shutdown, final RubyHash options) {
             if (done) {
                 return data;
