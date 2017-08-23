@@ -2,11 +2,6 @@
 require "logstash/environment"
 require "logstash/errors"
 require "logstash/config/cpu_core_strategy"
-require "logstash/instrument/collector"
-require "logstash/instrument/metric"
-require "logstash/instrument/periodic_pollers"
-require "logstash/instrument/collector"
-require "logstash/instrument/metric"
 require "logstash/pipeline"
 require "logstash/webserver"
 require "logstash/event_dispatcher"
@@ -18,6 +13,8 @@ require "stud/trap"
 require "uri"
 require "socket"
 require "securerandom"
+
+java_import org.logstash.instrument.witness.Witness
 
 LogStash::Environment.load_locale!
 
@@ -34,6 +31,8 @@ class LogStash::Agent
   #   :auto_reload [Boolean] - enable reloading of pipelines
   #   :reload_interval [Integer] - reload pipelines every X seconds
   def initialize(settings = LogStash::SETTINGS, source_loader = nil)
+    witness = Witness.new
+    Witness.setInstance(witness)
     @logger = self.class.logger
     @settings = settings
     @auto_reload = setting("config.reload.automatic")
@@ -61,16 +60,12 @@ class LogStash::Agent
     # Normalize time interval to seconds
     @reload_interval = setting("config.reload.interval") / 1_000_000_000.0
 
-    @collect_metric = setting("metric.collect")
+    #TODO: jake - start periodic pollers
 
-    # Create the collectors and configured it with the library
-    configure_metrics_collectors
+    @state_resolver = LogStash::StateResolver.new
 
-    @state_resolver = LogStash::StateResolver.new(metric)
-
-    @pipeline_reload_metric = metric.namespace([:stats, :pipelines])
-    @instance_reload_metric = metric.namespace([:stats, :reloads])
-    initialize_agent_metrics
+    @witness_pipelines = witness.pipelines
+    @witness_reloads = witness.reloads
 
     @dispatcher = LogStash::EventDispatcher.new(self)
     LogStash::PLUGIN_REGISTRY.hooks.register_emitter(self.class, dispatcher)
@@ -183,7 +178,6 @@ class LogStash::Agent
   end
 
   def shutdown
-    stop_collecting_metrics
     stop_webserver
     transition_to_stopped
     converge_result = shutdown_pipelines
@@ -342,7 +336,7 @@ class LogStash::Agent
         rescue SystemExit => e
           converge_result.add(action, e)
         rescue Exception => e
-          logger.error("Failed to execute action", :action => action, :exception => e.class.name, :message => e.message)
+          logger.error("Failed to execute action", :action => action, :exception => e.class.name, :message => e.message, :backtrace => e.backtrace)
           converge_result.add(action, e)
         end
       end
@@ -398,28 +392,6 @@ class LogStash::Agent
     @webserver.stop if @webserver
   end
 
-  def configure_metrics_collectors
-    @collector = LogStash::Instrument::Collector.new
-
-    @metric = if collect_metrics?
-      @logger.debug("Agent: Configuring metric collection")
-      LogStash::Instrument::Metric.new(@collector)
-    else
-      LogStash::Instrument::NullMetric.new(@collector)
-    end
-
-    @periodic_pollers = LogStash::Instrument::PeriodicPollers.new(@metric, settings.get("queue.type"), self)
-    @periodic_pollers.start
-  end
-
-  def stop_collecting_metrics
-    @periodic_pollers.stop
-  end
-
-  def collect_metrics?
-    @collect_metric
-  end
-
   def shutdown_pipelines
     logger.debug("Shutting down all pipelines", :pipelines_count => pipelines_count)
 
@@ -464,51 +436,27 @@ class LogStash::Agent
 
   def update_success_metrics(action, action_result)
     case action
-      when LogStash::PipelineAction::Create
-        # When a pipeline is successfully created we create the metric
-        # place holder related to the lifecycle of the pipeline
-        initialize_pipeline_metrics(action)
       when LogStash::PipelineAction::Reload
         update_successful_reload_metrics(action, action_result)
     end
   end
 
   def update_failures_metrics(action, action_result)
-    if action.is_a?(LogStash::PipelineAction::Create)
-      # force to create the metric fields
-      initialize_pipeline_metrics(action)
-    end
 
-    @instance_reload_metric.increment(:failures)
+    @witness_reloads.failure
 
-    @pipeline_reload_metric.namespace([action.pipeline_id, :reloads]).tap do |n|
-      n.increment(:failures)
-      n.gauge(:last_error, { :message => action_result.message, :backtrace => action_result.backtrace})
-      n.gauge(:last_failure_timestamp, LogStash::Timestamp.now)
-    end
-  end
-
-  def initialize_agent_metrics
-    @instance_reload_metric.increment(:successes, 0)
-    @instance_reload_metric.increment(:failures, 0)
-  end
-
-  def initialize_pipeline_metrics(action)
-    @pipeline_reload_metric.namespace([action.pipeline_id, :reloads]).tap do |n|
-      n.increment(:successes, 0)
-      n.increment(:failures, 0)
-      n.gauge(:last_error, nil)
-      n.gauge(:last_success_timestamp, nil)
-      n.gauge(:last_failure_timestamp, nil)
-    end
+    witness_pipeline_reloads = @witness_pipelines.pipeline(action.pipeline_id).reloads
+    witness_pipeline_reloads.failure
+    witness_pipeline_reloads.error.message(action_result.message)
+    witness_pipeline_reloads.error.backtrace(action_result.backtrace.to_s)
+    witness_pipeline_reloads.last_failure_timestamp(LogStash::Timestamp.now)
   end
 
   def update_successful_reload_metrics(action, action_result)
-    @instance_reload_metric.increment(:successes)
+    @witness_reloads.success
 
-    @pipeline_reload_metric.namespace([action.pipeline_id, :reloads]).tap do |n|
-      n.increment(:successes)
-      n.gauge(:last_success_timestamp, action_result.executed_at)
-    end
+    witness_pipeline_reloads = @witness_pipelines.pipeline(action.pipeline_id).reloads
+    witness_pipeline_reloads.success
+    witness_pipeline_reloads.last_success_timestamp(action_result.executed_at)
   end
 end # class LogStash::Agent
