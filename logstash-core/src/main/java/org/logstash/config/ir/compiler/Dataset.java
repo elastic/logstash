@@ -142,7 +142,7 @@ public interface Dataset {
          * This dataset does not require an explicit call to {@link Dataset#clear()} since it will
          * automatically {@code clear} all of its parents.
          * Unlike {@link Dataset.TerminalDataset} this class will return all
-         * {@link JrubyEventExtLibrary.RubyEvent} that passed through it on a call to
+         * {@link JrubyEventExtLibrary.RubyEvent}s that passed through it on a call to
          * {@link Dataset#compute(RubyIntegration.Batch, boolean, boolean, RubyHash)}.
          */
         public static final class TerminalDebugDataset implements Dataset {
