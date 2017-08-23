@@ -75,7 +75,7 @@ public interface Dataset {
         /**
          * Trivial {@link Dataset} that simply returns an empty collection of elements.
          */
-        private static final Dataset TRIVIAL = new Dataset() {
+        private static final Dataset EMPTY_DATASET = new Dataset() {
 
             @Override
             public Collection<JrubyEventExtLibrary.RubyEvent> compute(
@@ -111,7 +111,7 @@ public interface Dataset {
                     result = new Dataset.TerminalDataset(parents);
                 }
             } else {
-                result = TRIVIAL;
+                result = EMPTY_DATASET;
             }
             return result;
         }
