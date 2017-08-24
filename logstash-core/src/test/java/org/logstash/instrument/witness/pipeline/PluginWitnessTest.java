@@ -1,4 +1,4 @@
-package org.logstash.instrument.witness;
+package org.logstash.instrument.witness.pipeline;
 
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -7,6 +7,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.logstash.RubyUtil;
 import org.logstash.instrument.metrics.MetricType;
+import org.logstash.instrument.witness.pipeline.PluginWitness;
 
 import java.io.IOException;
 import java.math.BigDecimal;

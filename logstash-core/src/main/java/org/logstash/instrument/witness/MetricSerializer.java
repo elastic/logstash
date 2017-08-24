@@ -34,7 +34,7 @@ public interface MetricSerializer<T extends Metric<?>> {
          * @param gen The {@link JsonGenerator} used to generate JSON
          * @return the {@link MetricSerializer} which is the function used to serialize the metric
          */
-        static MetricSerializer<Metric<Number>> numberSerializer(JsonGenerator gen) {
+        public static MetricSerializer<Metric<Number>> numberSerializer(JsonGenerator gen) {
             return m -> {
                 if (m != null) {
                     Number value = m.getValue();
@@ -49,7 +49,7 @@ public interface MetricSerializer<T extends Metric<?>> {
          * @param gen The {@link JsonGenerator} used to generate JSON
          * @return the {@link MetricSerializer} which is the function used to serialize the metric
          */
-        static MetricSerializer<Metric<Long>> longSerializer(JsonGenerator gen) {
+        public static MetricSerializer<Metric<Long>> longSerializer(JsonGenerator gen) {
             return m -> {
                 if (m != null) {
                     Long value = m.getValue();
@@ -64,7 +64,7 @@ public interface MetricSerializer<T extends Metric<?>> {
          * @param gen The {@link JsonGenerator} used to generate JSON
          * @return the {@link MetricSerializer} which is the function used to serialize the metric
          */
-        static MetricSerializer<Metric<Boolean>> booleanSerializer(JsonGenerator gen) {
+        public static MetricSerializer<Metric<Boolean>> booleanSerializer(JsonGenerator gen) {
             return m -> {
                 if (m != null) {
                     Boolean value = m.getValue();
@@ -79,7 +79,7 @@ public interface MetricSerializer<T extends Metric<?>> {
          * @param gen The {@link JsonGenerator} used to generate JSON
          * @return the {@link MetricSerializer} which is the function used to serialize the metric
          */
-        static MetricSerializer<Metric<String>> stringSerializer(JsonGenerator gen) {
+        public static MetricSerializer<Metric<String>> stringSerializer(JsonGenerator gen) {
             return m -> {
                 if (m != null) {
                     gen.writeStringField(m.getName(), m.getValue());
@@ -93,7 +93,7 @@ public interface MetricSerializer<T extends Metric<?>> {
          * @param gen The {@link JsonGenerator} used to generate JSON
          * @return the {@link MetricSerializer} which is the function used to serialize the metric
          */
-        static MetricSerializer<RubyTimeStampGauge> timestampSerializer(JsonGenerator gen) {
+        public static MetricSerializer<RubyTimeStampGauge> timestampSerializer(JsonGenerator gen) {
             return m -> {
                 if (m != null) {
                     gen.writeStringField(m.getName(), m.getValue() != null ? m.getValue().toString() : null);
