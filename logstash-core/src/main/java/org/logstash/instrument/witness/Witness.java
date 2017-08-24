@@ -4,6 +4,10 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
+import org.logstash.instrument.witness.pipeline.EventsWitness;
+import org.logstash.instrument.witness.pipeline.PipelineWitness;
+import org.logstash.instrument.witness.pipeline.PipelinesWitness;
+import org.logstash.instrument.witness.pipeline.ReloadWitness;
 
 import java.io.IOException;
 import java.util.Arrays;
