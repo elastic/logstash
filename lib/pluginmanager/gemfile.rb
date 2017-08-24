@@ -16,6 +16,9 @@ module LogStash
     end
 
     def load(with_backup = true)
+      # encoding must be set to UTF-8 here to avoid ending up with Windows-1252 encoding on Windows
+      # which will break the DSL instance_eval of that string
+      @io.set_encoding(Encoding::UTF_8)
       @gemset ||= DSL.parse(@io.read)
       backup if with_backup
       self
