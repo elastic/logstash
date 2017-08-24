@@ -1,4 +1,4 @@
-package org.logstash.instrument.witness;
+package org.logstash.instrument.witness.configuration;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
@@ -8,6 +8,8 @@ import org.logstash.instrument.metrics.Metric;
 import org.logstash.instrument.metrics.gauge.BooleanGauge;
 import org.logstash.instrument.metrics.gauge.NumberGauge;
 import org.logstash.instrument.metrics.gauge.TextGauge;
+import org.logstash.instrument.witness.MetricSerializer;
+import org.logstash.instrument.witness.SerializableWitness;
 
 import java.io.IOException;
 

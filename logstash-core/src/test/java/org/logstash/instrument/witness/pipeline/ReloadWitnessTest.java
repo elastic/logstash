@@ -1,4 +1,4 @@
-package org.logstash.instrument.witness;
+package org.logstash.instrument.witness.pipeline;
 
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -7,6 +7,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.logstash.Timestamp;
 import org.logstash.ext.JrubyTimestampExtLibrary;
+import org.logstash.instrument.witness.pipeline.ReloadWitness;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 

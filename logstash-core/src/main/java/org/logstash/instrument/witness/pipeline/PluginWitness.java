@@ -1,4 +1,4 @@
-package org.logstash.instrument.witness;
+package org.logstash.instrument.witness.pipeline;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
@@ -11,10 +11,11 @@ import org.logstash.instrument.metrics.counter.LongCounter;
 import org.logstash.instrument.metrics.gauge.GaugeMetric;
 import org.logstash.instrument.metrics.gauge.LazyDelegatingGauge;
 import org.logstash.instrument.metrics.gauge.TextGauge;
+import org.logstash.instrument.witness.MetricSerializer;
+import org.logstash.instrument.witness.SerializableWitness;
 
 import java.io.IOException;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
