@@ -3,6 +3,7 @@ require "spec_helper"
 require "logstash/util/cloud_setting_id"
 require "logstash/util/cloud_setting_auth"
 require "logstash/modules/settings_merger"
+require "logstash/util/password"
 
 class SubstituteSettingsForRSpec
   def initialize(hash = {}) @hash = hash; end
@@ -95,7 +96,7 @@ describe LogStash::Modules::SettingsMerger do
 
   describe "#format_module_settings" do
     let(:before_hash) { {"foo" => "red", "bar" => "blue", "qux" => "pink"} }
-    let(:after_hash) { {"foo" => "red", "bar" => "steel-blue", "baz" => "cyan", "qux" => nil} }
+    let(:after_hash) { {"foo" => "red", "bar" => "steel-blue", "baz" => LogStash::Util::Password.new("cyan"), "qux" => nil} }
     subject(:results) { described_class.format_module_settings(before_hash, after_hash) }
     it "yields an array of formatted lines for ease of logging" do
       expect(results.size).to eq(after_hash.size + 2)
@@ -103,7 +104,7 @@ describe LogStash::Modules::SettingsMerger do
       expect(results.last).to eq("-------- Module Settings ---------")
       expect(results[1]).to eq("foo: 'red'")
       expect(results[2]).to eq("bar: 'steel-blue', was: 'blue'")
-      expect(results[3]).to eq("baz: 'cyan', was: ''")
+      expect(results[3]).to eq("baz: '<password>', was: ''")
       expect(results[4]).to eq("qux: '', was: 'pink'")
     end
   end

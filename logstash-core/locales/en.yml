@@ -247,11 +247,17 @@ en:
           index-pattern, visualizations, and dashboards into Kibana when
           running modules.
         cloud_id: |+
-          Sets the elasticsearch and kibana host settings
-          for module connections in Elastic Cloud
+          Sets the elasticsearch and kibana host settings for
+          module connections in Elastic Cloud.
+          Your Elastic Cloud User interface or the Cloud support
+          team should provide this.
+          Add an optional label prefix '<label>:' to help you
+          identify multiple cloud.ids.
+          e.g. 'staging:dXMtZWFzdC0xLmF3cy5mb3VuZC5pbyRub3RhcmVhbCRpZGVudGlmaWVy'
         cloud_auth: |+
           Sets the elasticsearch and kibana username and password
           for module connections in Elastic Cloud
+          e.g. 'username:<password>'
         configtest: |+
           Check configuration for valid syntax and then exit.
         http_host: Web API binding host

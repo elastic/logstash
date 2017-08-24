@@ -20,7 +20,7 @@ module LogStash module Util class CloudSettingAuth
   end
 
   def to_s
-    "#{@original}:#{@password}"
+    "#{@username}:#{@password}"
   end
 
   def inspect

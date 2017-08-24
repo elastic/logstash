@@ -39,6 +39,13 @@ describe LogStash::Setting::Modules do
       end
     end
 
+    context "when given a badly formatted encoded id" do
+      it "should not raise an error" do
+        encoded = Base64.urlsafe_encode64("foo$$bal")
+        expect { subject.set(encoded) }.to raise_error(ArgumentError, /Cloud Id, after decoding, is invalid. Format: '<part1>\$<part2>\$<part3>'/)
+      end
+    end
+
     context "when given a nil" do
       it "should not raise an error" do
         expect { subject.set(nil) }.to_not raise_error
@@ -101,6 +108,7 @@ describe LogStash::Setting::Modules do
         expect { subject.set("frodo:baggins") }.to_not raise_error
         expect(subject.value.username).to eq("frodo")
         expect(subject.value.password.value).to eq("baggins")
+        expect(subject.value.to_s).to eq("frodo:<password>")
       end
     end
   end

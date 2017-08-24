@@ -22,7 +22,11 @@ module LogStash module Util class CloudSettingId
     unless @decoded.count("$") == 2
       raise ArgumentError.new("Cloud Id does not decode. Received: \"#{@original}\".")
     end
-    cloud_host, es_server, kb_server = @decoded.split("$")
+    parts = @decoded.split("$")
+    if parts.any?(&:empty?)
+      raise ArgumentError.new("Cloud Id, after decoding, is invalid. Format: '<part1>$<part2>$<part3>'. Received: \"#{@decoded}\".")
+    end
+    cloud_host, es_server, kb_server = parts
     @elasticsearch_host = sprintf("%s.%s:443", es_server, cloud_host)
     @kibana_host  = sprintf("%s.%s:443", kb_server, cloud_host)
   end

@@ -111,7 +111,7 @@
 #
 # ------------ Cloud Settings ---------------
 # Define Elastic Cloud settings here.
-# Format of cloud.id is a base64 number e.g. dXMtZWFzdC0xLmF3cy5mb3VuZC5pbyRub3RhcmVhbCRpZGVudGlmaWVy
+# Format of cloud.id is a base64 value e.g. dXMtZWFzdC0xLmF3cy5mb3VuZC5pbyRub3RhcmVhbCRpZGVudGlmaWVy
 # and it may have an label prefix e.g. staging:dXMtZ...
 # This will overwrite 'var.elasticsearch.hosts' and 'var.kibana.host'
 # cloud.id: <identifier>
