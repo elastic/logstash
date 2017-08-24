@@ -2,7 +2,7 @@
 require "logstash/namespace"
 require "logstash/util/password"
 
-module LogStash module Util class CloudAuth
+module LogStash module Util class CloudSettingAuth
   attr_reader :original, :username, :password
 
   def initialize(value)
@@ -17,5 +17,13 @@ module LogStash module Util class CloudAuth
       raise ArgumentError.new("Cloud Auth username and password format should be \"<username>:<password>\".")
     end
     @password = LogStash::Util::Password.new(password)
+  end
+
+  def to_s
+    "#{@original}:#{@password}"
+  end
+
+  def inspect
+    to_s
   end
 end end end

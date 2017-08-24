@@ -50,12 +50,14 @@ module LogStash module Modules class KibanaClient
 
     @client = Manticore::Client.new(client_options)
     @host = @settings.fetch("var.kibana.host", "localhost:5601")
-    username = @settings["var.kibana.username"]
-    password = @settings["var.kibana.password"]
-
     @scheme = @settings.fetch("var.kibana.scheme", "http")
     @http_options = {:headers => {'Content-Type' => 'application/json'}}
+    username = @settings["var.kibana.username"]
     if username
+      password = @settings["var.kibana.password"]
+      if password.is_a?(LogStash::Util::Password)
+        password = password.value
+      end
       @http_options[:headers]['Authorization'] = 'Basic ' + Base64.encode64( "#{username}:#{password}" ).chomp
     end
 

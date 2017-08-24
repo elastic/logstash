@@ -2,7 +2,7 @@
 require "logstash/namespace"
 require "base64"
 
-module LogStash module Util class CloudId
+module LogStash module Util class CloudSettingId
   attr_reader :original, :decoded, :label, :elasticsearch_host, :kibana_host
 
   def initialize(value)
@@ -25,5 +25,13 @@ module LogStash module Util class CloudId
     cloud_host, es_server, kb_server = @decoded.split("$")
     @elasticsearch_host = sprintf("%s.%s:443", es_server, cloud_host)
     @kibana_host  = sprintf("%s.%s:443", kb_server, cloud_host)
+  end
+
+  def to_s
+    @original.to_s
+  end
+
+  def inspect
+    to_s
   end
 end end end

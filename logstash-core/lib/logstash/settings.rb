@@ -4,8 +4,8 @@ require "fileutils"
 require "logstash/util/byte_value"
 require "logstash/util/environment_variables"
 require "logstash/util/time_value"
-require "logstash/util/cloud_id"
-require "logstash/util/cloud_auth"
+require "logstash/util/cloud_setting_id"
+require "logstash/util/cloud_setting_auth"
 
 module LogStash
   class Settings
@@ -561,33 +561,9 @@ module LogStash
       end
     end
 
-    class CloudId < Coercible
-      def initialize(name, default, strict=true, &validator_proc)
-        super(name, Util::CloudId, default, false, &validator_proc)
-      end
-
-      def set(value)
-        @value = coerce(value)
-        @value_is_set = true
-        @value
-      end
-
-      def coerce(value)
-        if value.is_a?(@klass)
-          return value
-        end
-        @klass.new(value)
-      end
-
-      protected
-      def validate(value)
-        coerce(value)
-      end
-    end
-
-    class CloudAuth < Coercible
-      def initialize(name, default, strict=true, &validator_proc)
-        super(name, Util::CloudAuth, default, false, &validator_proc)
+    class Modules < Coercible
+      def initialize(name, klass, default = nil)
+        super(name, klass, default, false)
       end
 
       def set(value)
@@ -609,6 +585,7 @@ module LogStash
       end
     end
   end
+
 
   SETTINGS = Settings.new
 end

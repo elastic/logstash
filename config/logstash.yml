@@ -110,12 +110,16 @@
 # modules:
 #
 # ------------ Cloud Settings ---------------
-# Define Elastic Cloud settings here. id and auth need to be defined together
+# Define Elastic Cloud settings here.
 # Format of cloud.id is a base64 number e.g. dXMtZWFzdC0xLmF3cy5mb3VuZC5pbyRub3RhcmVhbCRpZGVudGlmaWVy
-# and it may have an environment prefix e.g. staging:dXMtZ...
-# Format of cloud.auth is: <user>:<pass>
-#
+# and it may have an label prefix e.g. staging:dXMtZ...
+# This will overwrite 'var.elasticsearch.hosts' and 'var.kibana.host'
 # cloud.id: <identifier>
+#
+# Format of cloud.auth is: <user>:<pass>
+# This is optional
+# If supplied this will overwrite 'var.elasticsearch.username' and 'var.elasticsearch.password'
+# If supplied this will overwrite 'var.kibana.username' and 'var.kibana.password'
 # cloud.auth: elastic:<password>
 #
 # ------------ Queuing Settings --------------
