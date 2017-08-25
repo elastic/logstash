@@ -123,17 +123,17 @@ places, the value specified at the command line takes precedence.
 
 Logstash comes with two settings that simplify using modules with https://cloud.elastic.co/[Elastic Cloud].
 The Elasticsearch and Kibana hostnames in Elastic Cloud may be hard to set
-in the Logstash config or on the commandline, so a Cloud Id can be used instead.
+in the Logstash config or on the commandline, so a Cloud ID can be used instead.
 
-==== Cloud Id
+==== Cloud ID
 
-The Cloud Id, which can be found in the Elastic Cloud web console, is used by
+The Cloud ID, which can be found in the Elastic Cloud web console, is used by
 Logstash to build the Elasticsearch and Kibana hosts settings.
 It is a base64 encoded text value of about 120 characters made up of upper and
 lower case letters and numbers.
-If you have several Cloud Ids, you can add a label, which is ignored
+If you have several Cloud IDs, you can add a label, which is ignored
 internally, to help you tell them apart. To add a label you should prefix your
-Cloud Id with a label and a `:` separator in this format "<label>:<cloud-id>"
+Cloud ID with a label and a `:` separator in this format "<label>:<cloud-id>"
 
 `cloud.id` will overwrite these settings:
 ----
