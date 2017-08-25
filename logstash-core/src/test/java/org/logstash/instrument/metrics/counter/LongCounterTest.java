@@ -37,6 +37,11 @@ public class LongCounterTest {
         longCounter.increment(-100l);
     }
 
+    @Test(expected = IllegalArgumentException.class)
+    public void incrementByNegativeLongValue() {
+        longCounter.increment(Long.valueOf(-100));
+    }
+
     @Test
     public void incrementByValue() {
         longCounter.increment(100l);
