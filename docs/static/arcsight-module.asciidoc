@@ -29,10 +29,10 @@ The Logstash ArcSight module understands CEF (Common Event Format), and can
 accept, enrich, and index these events for analysis on the Elastic Stack. ADP
 contains two core data collection components for data streaming:
 
-* The _EventBroker (EB)_ is the central hub for incoming data and is based on
+* The _Event Broker (EB)_ is the central hub for incoming data and is based on
 open source Apache Kafka. The Logstash ArcSight module can consume directly from
 EB topics.
-* The _SmartConnectors (SC)_ are edge log collectors that parse and normalize
+* The _Smart Connectors (SC)_ are edge log collectors that parse and normalize
 data to CEF prior to publishing to the EB.
 
 [[arcsight-getting-started]]
@@ -107,8 +107,6 @@ dashboards.
 
 See <<configuring-arcsight>> if you want to specify additional options that
 control the behavior of the ArcSight module.
-
-//ALVIN: All the config information needs to be together in one place, so I've added the above link and moved the section called "Configuring the Module" so that it appears along with the config options.
 
 [[exploring-data-arcsight]]
 ==== Exploring Your Security Data
@@ -193,8 +191,6 @@ prefixed with the module name, i.e. `arcsight.var.inputs` instead of `var.inputs
 
 All settings are optional. If you don't specify configuration settings, Logstash
 uses the defaults.
-
-//ALVIN: I don't see a good reason to have the summary table plus the reference info, so I have not included the table. It doesn't add enough value to warrant the real estate it takes up. Plus...tables don't work well when we go from docbook > PDF. If you feel strongly about having it, you can submit a separate PR, but make sure you make each setting an active link, or users will be extra annoyed by the repeated info. I've modified the intro text slightly to reflect this change.
 
 *`var.inputs`*::
 +
