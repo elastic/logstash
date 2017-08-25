@@ -25,16 +25,31 @@ public interface MetricSerializer<T extends Metric<?>> {
 
     /**
      * Helper class to create a functional fluent api.
-     * Usage example: {@code MetricSerializer.Get.longSerializer(gen).serialize(99);}
+     * Usage example: {@code MetricSerializer.Get.numberSerializer(gen).serialize(99);}
      */
     class Get {
+        /**
+         * Proper way to serialize a {@link Number} type metric to JSON
+         *
+         * @param gen The {@link JsonGenerator} used to generate JSON
+         * @return the {@link MetricSerializer} which is the function used to serialize the metric
+         */
+        public static MetricSerializer<Metric<Number>> numberSerializer(JsonGenerator gen) {
+            return m -> {
+                if (m != null) {
+                    Number value = m.getValue();
+                    gen.writeObjectField(m.getName(), value == null ? 0 : value);
+                }
+            };
+        }
+
         /**
          * Proper way to serialize a {@link Long} type metric to JSON
          *
          * @param gen The {@link JsonGenerator} used to generate JSON
          * @return the {@link MetricSerializer} which is the function used to serialize the metric
          */
-        static MetricSerializer<Metric<Long>> longSerializer(JsonGenerator gen) {
+        public static MetricSerializer<Metric<Long>> longSerializer(JsonGenerator gen) {
             return m -> {
                 if (m != null) {
                     Long value = m.getValue();
@@ -49,7 +64,7 @@ public interface MetricSerializer<T extends Metric<?>> {
          * @param gen The {@link JsonGenerator} used to generate JSON
          * @return the {@link MetricSerializer} which is the function used to serialize the metric
          */
-        static MetricSerializer<Metric<Boolean>> booleanSerializer(JsonGenerator gen) {
+        public static MetricSerializer<Metric<Boolean>> booleanSerializer(JsonGenerator gen) {
             return m -> {
                 if (m != null) {
                     Boolean value = m.getValue();
@@ -64,7 +79,7 @@ public interface MetricSerializer<T extends Metric<?>> {
          * @param gen The {@link JsonGenerator} used to generate JSON
          * @return the {@link MetricSerializer} which is the function used to serialize the metric
          */
-        static MetricSerializer<Metric<String>> stringSerializer(JsonGenerator gen) {
+        public static MetricSerializer<Metric<String>> stringSerializer(JsonGenerator gen) {
             return m -> {
                 if (m != null) {
                     gen.writeStringField(m.getName(), m.getValue());
@@ -78,7 +93,7 @@ public interface MetricSerializer<T extends Metric<?>> {
          * @param gen The {@link JsonGenerator} used to generate JSON
          * @return the {@link MetricSerializer} which is the function used to serialize the metric
          */
-        static MetricSerializer<RubyTimeStampGauge> timestampSerializer(JsonGenerator gen) {
+        public static MetricSerializer<RubyTimeStampGauge> timestampSerializer(JsonGenerator gen) {
             return m -> {
                 if (m != null) {
                     gen.writeStringField(m.getName(), m.getValue() != null ? m.getValue().toString() : null);

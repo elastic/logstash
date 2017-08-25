@@ -33,6 +33,10 @@ include::static/config-management.asciidoc[]
 
 include::static/modules.asciidoc[]
 
+include::static/arcsight-module.asciidoc[]
+
+include::static/netflow-module.asciidoc[]
+
 // Working with Filebeat Modules
 
 :edit_url: https://github.com/elastic/logstash/edit/master/docs/static/filebeat-modules.asciidoc

@@ -1,8 +1,9 @@
-package org.logstash.instrument.witness;
+package org.logstash.instrument.witness.configuration;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;
 import org.junit.Test;
+import org.logstash.instrument.witness.configuration.ConfigWitness;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -23,14 +24,14 @@ public class ConfigWitnessTest {
     public void testBatchDelay() {
         assertThat(witness.snitch().batchDelay()).isNull();
         witness.batchDelay(99);
-        assertThat(witness.snitch().batchDelay()).isEqualTo(99);
+        assertThat(witness.snitch().batchDelay()).isEqualTo(99l);
     }
 
     @Test
     public void testBatchSize() {
         assertThat(witness.snitch().batchSize()).isNull();
         witness.batchSize(98);
-        assertThat(witness.snitch().batchSize()).isEqualTo(98);
+        assertThat(witness.snitch().batchSize()).isEqualTo(98l);
     }
 
     @Test
@@ -46,7 +47,7 @@ public class ConfigWitnessTest {
     public void testConfigReloadInterval() {
         assertThat(witness.snitch().configReloadInterval()).isNull();
         witness.configReloadInterval(97);
-        assertThat(witness.snitch().configReloadInterval()).isEqualTo(97);
+        assertThat(witness.snitch().configReloadInterval()).isEqualTo(97l);
     }
 
     @Test
@@ -69,7 +70,7 @@ public class ConfigWitnessTest {
     public void testWorkers() {
         assertThat(witness.snitch().workers()).isNull();
         witness.workers(96);
-        assertThat(witness.snitch().workers()).isEqualTo(96);
+        assertThat(witness.snitch().workers()).isEqualTo(96l);
     }
 
     @Test
