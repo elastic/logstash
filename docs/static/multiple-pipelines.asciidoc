@@ -27,3 +27,5 @@ Using multiple pipelines is especially useful if your current configuration has 
 Having multiple pipelines in a single instance also allows these event flows to have different performance and durability parameters (for example, different settings for pipeline workers and persistent queues). This separation means that a blocked output in one pipeline won't exert backpressure in the other.
 
 That said, it's important to take into account resource competition between the pipelines, given that the default values are tuned for a single pipeline. So, for example, consider reducing the number of pipeline workers used by each pipeline, because each pipeline will use 1 worker per CPU core by default.
+
+Persistent queues and dead letter queues are isolated per pipeline, with their locations namespaced by the `pipeline.id` value.
