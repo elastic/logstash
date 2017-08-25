@@ -4,8 +4,6 @@ require "fileutils"
 require "logstash/util/byte_value"
 require "logstash/util/environment_variables"
 require "logstash/util/time_value"
-require "logstash/util/cloud_setting_id"
-require "logstash/util/cloud_setting_auth"
 
 module LogStash
   class Settings
