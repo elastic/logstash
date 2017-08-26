@@ -15,7 +15,7 @@ module LogStash; module Util
     # Push an object to the queue if the queue is full
     # it will block until the object can be added to the queue.
     #
-    # @param [Object] Object to add to the queue
+    # @param [obj] Object to add to the queue
     def push(obj)
       @queue.put(obj)
     end
@@ -53,7 +53,7 @@ module LogStash; module Util
         # allow the worker thread to report the execution time of the filter + output
         @inflight_clocks = {}
         @batch_size = batch_size
-        @wait_for = wait_for
+        @wait_for = TimeUnit::NANOSECONDS.convert(wait_for, TimeUnit::MILLISECONDS)
       end
 
       def close
@@ -66,7 +66,7 @@ module LogStash; module Util
 
       def set_batch_dimensions(batch_size, wait_for)
         @batch_size = batch_size
-        @wait_for = wait_for
+        @wait_for = TimeUnit::NANOSECONDS.convert(wait_for, TimeUnit::MILLISECONDS)
       end
 
       def set_events_metric(metric)
@@ -107,12 +107,11 @@ module LogStash; module Util
       # create a new empty batch
       # @return [ReadBatch] a new empty read batch
       def new_batch
-        ReadBatch.new(@queue, @batch_size, @wait_for)
+        ReadBatch.new(@queue, 0, 0)
       end
 
       def read_batch
-        batch = new_batch
-        batch.read_next
+        batch = ReadBatch.new(@queue, @batch_size, @wait_for)
         start_metrics(batch)
         batch
       end
@@ -174,7 +173,7 @@ module LogStash; module Util
 
     class ReadBatch
       def initialize(queue, size, wait)
-        @queue = queue
+        @queue = queue.queue
         @size = size
         @wait = wait
 
@@ -182,20 +181,9 @@ module LogStash; module Util
         # @cancelled = Hash.new
 
         #Sizing HashSet to size/load_factor to ensure no rehashing
-        @originals = HashSet.new(size * 4 / 3 + 1, 0.75)
         @is_iterating = false # Atomic Boolean maybe? Although batches are not shared across threads
         @acked_batch = nil
-      end
-
-      def read_next
-        read_size = @queue.queue.drainTo(@originals, @size)
-        if read_size < @size
-          (@size - read_size).times do |_|
-            e = @queue.poll(@wait)
-            return if e.nil?
-            @originals.add(e)
-          end
-        end
+        @originals = org.logstash.common.LsQueueUtils.drain(@queue, @size, @wait)
       end
 
       def merge(event)
