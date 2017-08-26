@@ -247,6 +247,13 @@ describe LogStash::Pipeline do
           pipeline = mock_pipeline_from_string(test_config_with_filters)
           pipeline.close
         end
+
+        it "should print the compiled code if config.debug is set to true" do
+          pipeline_settings_obj.set("config.debug", true)
+          expect(logger).to receive(:debug).with(/Compiled pipeline/, anything)
+          pipeline = mock_pipeline_from_string(test_config_with_filters, pipeline_settings_obj)
+          pipeline.close
+        end
       end
 
       context "when there is no command line -w N set" do

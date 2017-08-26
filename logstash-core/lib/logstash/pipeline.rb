@@ -62,6 +62,9 @@ module LogStash; class BasePipeline
     @dlq_writer = dlq_writer
 
     @lir_execution = CompiledPipeline.new(@lir, self)
+    if settings.get_value("config.debug") && @logger.debug?
+      @logger.debug("Compiled pipeline code", default_logging_keys(:code => @lir.get_graph.to_string))
+    end
     @inputs = @lir_execution.inputs
     @filters = @lir_execution.filters
     @outputs = @lir_execution.outputs
