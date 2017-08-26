@@ -693,7 +693,7 @@ public interface EventCondition {
          */
         private static final class UnexpectedTypeException extends IllegalArgumentException {
 
-            private static final long serialVersionUID = -3673305675726770832L;
+            private static final long serialVersionUID = 1L;
 
             UnexpectedTypeException(final Expression left, final Expression right) {
                 super(
