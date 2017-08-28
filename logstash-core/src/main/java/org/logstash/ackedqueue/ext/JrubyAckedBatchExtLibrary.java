@@ -12,6 +12,7 @@ import org.jruby.runtime.ObjectAllocator;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.jruby.runtime.load.Library;
+import org.logstash.RubyUtil;
 import org.logstash.ackedqueue.Batch;
 import org.logstash.Event;
 import org.logstash.ackedqueue.Queueable;
@@ -22,7 +23,7 @@ import java.io.IOException;
 public class JrubyAckedBatchExtLibrary implements Library {
 
     public void load(Ruby runtime, boolean wrap) throws IOException {
-        RubyModule module = runtime.defineModule("LogStash");
+        RubyModule module = runtime.defineModule(RubyUtil.LS_MODULE_NAME);
 
         RubyClass clazz = runtime.defineClassUnder("AckedBatch", runtime.getObject(), new ObjectAllocator() {
             public IRubyObject allocate(Ruby runtime, RubyClass rubyClass) {
@@ -44,7 +45,7 @@ public class JrubyAckedBatchExtLibrary implements Library {
         }
 
         public RubyAckedBatch(Ruby runtime, Batch batch) {
-            super(runtime, runtime.getModule("LogStash").getClass("AckedBatch"));
+            super(runtime, runtime.getModule(RubyUtil.LS_MODULE_NAME).getClass("AckedBatch"));
             this.batch = batch;
         }
 
