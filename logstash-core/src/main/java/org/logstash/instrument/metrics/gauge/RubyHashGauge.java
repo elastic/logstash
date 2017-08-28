@@ -8,6 +8,7 @@ import org.logstash.instrument.metrics.MetricType;
  * on the types in in the {@link RubyHash} there are no guarantees serializing properly.
  * @deprecated - There are no plans to replace this.
  */
+@Deprecated
 public class RubyHashGauge extends AbstractGaugeMetric<RubyHash> {
 
     /**
@@ -16,6 +17,7 @@ public class RubyHashGauge extends AbstractGaugeMetric<RubyHash> {
      * @param name The name of this metric. This value may be used for display purposes.
      * @deprecated - There are no plans to replace this.
      */
+    @Deprecated
     protected RubyHashGauge(String name) {
         super(name);
     }
@@ -27,6 +29,7 @@ public class RubyHashGauge extends AbstractGaugeMetric<RubyHash> {
      * @param initialValue The initial value for this {@link GaugeMetric}, may be null
      * @deprecated - There are no plans to replace this.
      */
+    @Deprecated
     protected RubyHashGauge(String name, RubyHash initialValue) {
         super(name, initialValue);
     }

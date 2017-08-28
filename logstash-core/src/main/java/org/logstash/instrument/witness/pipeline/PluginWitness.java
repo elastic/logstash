@@ -26,13 +26,10 @@ import java.util.concurrent.ConcurrentHashMap;
 public class PluginWitness implements SerializableWitness {
 
     private final EventsWitness eventsWitness;
-    private final CustomWitness customWitness;
+    private final PluginWitness.CustomWitness customWitness;
     private final TextGauge id;
     private final TextGauge name;
     private final Snitch snitch;
-
-
-    private static final Serializer SERIALIZER = new Serializer();
 
     /**
      * Constructor.
@@ -41,7 +38,7 @@ public class PluginWitness implements SerializableWitness {
      */
     public PluginWitness(String id) {
         eventsWitness = new EventsWitness();
-        customWitness = new CustomWitness();
+        customWitness = new PluginWitness.CustomWitness();
         this.id = new TextGauge("id", id);
         this.name = new TextGauge("name");
         this.snitch = new Snitch(this);
@@ -70,9 +67,9 @@ public class PluginWitness implements SerializableWitness {
     /**
      * Get a reference to the associated custom witness
      *
-     * @return the {@link CustomWitness}
+     * @return the {@link PluginWitness.CustomWitness}
      */
-    public CustomWitness custom() {
+    public PluginWitness.CustomWitness custom() {
         return this.customWitness;
     }
 
@@ -87,13 +84,15 @@ public class PluginWitness implements SerializableWitness {
 
     @Override
     public void genJson(JsonGenerator gen, SerializerProvider provider) throws IOException {
-        SERIALIZER.innerSerialize(this, gen, provider);
+        Serializer.innerSerialize(this, gen, provider);
     }
 
     /**
      * The Jackson JSON serializer.
      */
-    static class Serializer extends StdSerializer<PluginWitness> {
+    public static final class Serializer extends StdSerializer<PluginWitness> {
+
+        private static final long serialVersionUID = 1L;
 
         /**
          * Default constructor - required for Jackson
@@ -118,7 +117,8 @@ public class PluginWitness implements SerializableWitness {
             gen.writeEndObject();
         }
 
-        void innerSerialize(PluginWitness witness, JsonGenerator gen, SerializerProvider provider) throws IOException {
+        static void innerSerialize(PluginWitness witness, JsonGenerator gen,
+            SerializerProvider provider) throws IOException {
             MetricSerializer<Metric<String>> stringSerializer = MetricSerializer.Get.stringSerializer(gen);
             MetricSerializer<Metric<Long>> longSerializer = MetricSerializer.Get.longSerializer(gen);
             stringSerializer.serialize(witness.id);
@@ -136,7 +136,7 @@ public class PluginWitness implements SerializableWitness {
     /**
      * A custom witness that we can hand off to plugin's to contribute to the metrics
      */
-    public class CustomWitness {
+    public static final class CustomWitness {
 
         private final Snitch snitch;
 
@@ -233,16 +233,16 @@ public class PluginWitness implements SerializableWitness {
         /**
          * Snitch for a plugin. Provides discrete metric values.
          */
-        public class Snitch {
+        public static final class Snitch {
 
-            private final CustomWitness witness;
+            private final PluginWitness.CustomWitness witness;
 
             /**
              * Construtor
              *
              * @param witness the witness
              */
-            private Snitch(CustomWitness witness) {
+            private Snitch(PluginWitness.CustomWitness witness) {
                 this.witness = witness;
             }
 
@@ -289,7 +289,7 @@ public class PluginWitness implements SerializableWitness {
     /**
      * Snitch for a plugin. Provides discrete metric values.
      */
-    public class Snitch {
+    public static final class Snitch {
 
         private final PluginWitness witness;
 

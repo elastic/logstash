@@ -23,14 +23,13 @@ import java.util.Arrays;
  * <p>All Witnesses are capable of serializing their underlying metrics as JSON.</p>
  */
 @JsonSerialize(using = Witness.Serializer.class)
-final public class Witness implements SerializableWitness {
+public final class Witness implements SerializableWitness {
 
     private final ReloadWitness reloadWitness;
     private final EventsWitness eventsWitness;
     private final PipelinesWitness pipelinesWitness;
 
     private static Witness _instance;
-    private static final Serializer SERIALIZER = new Serializer();
 
     /**
      * Constructor. Consumers should use {@link #instance()} method to obtain an instance of this class.
@@ -100,13 +99,15 @@ final public class Witness implements SerializableWitness {
 
     @Override
     public void genJson(JsonGenerator gen, SerializerProvider provider) throws IOException {
-        SERIALIZER.innerSerialize(this, gen, provider);
+        Serializer.innerSerialize(this, gen, provider);
     }
 
     /**
      * The Jackson serializer.
      */
-    static class Serializer extends StdSerializer<Witness> {
+    public static final class Serializer extends StdSerializer<Witness> {
+
+        private static final long serialVersionUID = 1L;
 
         /**
          * Default constructor - required for Jackson
@@ -120,7 +121,7 @@ final public class Witness implements SerializableWitness {
          *
          * @param t the type to serialize
          */
-        protected Serializer(Class<Witness> t) {
+        private Serializer(Class<Witness> t) {
             super(t);
         }
 
@@ -131,7 +132,7 @@ final public class Witness implements SerializableWitness {
             gen.writeEndObject();
         }
 
-        void innerSerialize(Witness witness, JsonGenerator gen, SerializerProvider provider) throws IOException {
+        static void innerSerialize(Witness witness, JsonGenerator gen, SerializerProvider provider) throws IOException {
             witness.events().genJson(gen, provider);
             witness.reloads().genJson(gen, provider);
             witness.pipelinesWitness.genJson(gen, provider);
