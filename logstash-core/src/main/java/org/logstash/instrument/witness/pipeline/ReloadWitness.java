@@ -18,7 +18,7 @@ import java.io.IOException;
  * A witness to record reloads.
  */
 @JsonSerialize(using = ReloadWitness.Serializer.class)
-final public class ReloadWitness implements SerializableWitness {
+public final class ReloadWitness implements SerializableWitness {
 
     private final LongCounter success;
     private final LongCounter failure;
@@ -28,7 +28,7 @@ final public class ReloadWitness implements SerializableWitness {
     private final Snitch snitch;
     private static final Serializer SERIALIZER = new Serializer();
 
-    private final static String KEY = "reloads";
+    private static final String KEY = "reloads";
 
     /**
      * Constructor.
@@ -98,6 +98,7 @@ final public class ReloadWitness implements SerializableWitness {
      * @param timestamp the {@link JrubyTimestampExtLibrary.RubyTimestamp} to set
      * @deprecated
      */
+    @Deprecated
     public void lastSuccessTimestamp(JrubyTimestampExtLibrary.RubyTimestamp timestamp) {
         lastSuccessTimestamp.set(timestamp);
     }
@@ -108,6 +109,7 @@ final public class ReloadWitness implements SerializableWitness {
      * @param timestamp the {@link JrubyTimestampExtLibrary.RubyTimestamp} to set
      * @deprecated
      */
+    @Deprecated
     public void lastFailureTimestamp(JrubyTimestampExtLibrary.RubyTimestamp timestamp) {
         lastFailureTimestamp.set(timestamp);
     }
@@ -120,7 +122,9 @@ final public class ReloadWitness implements SerializableWitness {
     /**
      * The Jackson serializer.
      */
-    static class Serializer extends StdSerializer<ReloadWitness> {
+    public static final class Serializer extends StdSerializer<ReloadWitness> {
+
+        private static final long serialVersionUID = 1L;
 
         /**
          * Default constructor - required for Jackson
@@ -193,6 +197,7 @@ final public class ReloadWitness implements SerializableWitness {
          * @return {@link Timestamp} of the last successful reload
          * @deprecated
          */
+        @Deprecated
         public Timestamp lastSuccessTimestamp() {
             return witness.lastSuccessTimestamp.getValue();
         }
@@ -203,6 +208,7 @@ final public class ReloadWitness implements SerializableWitness {
          * @return {@link Timestamp} of the last failed reload
          * @deprecated
          */
+        @Deprecated
         public Timestamp lastFailureTimestamp() {
             return witness.lastFailureTimestamp.getValue();
         }
