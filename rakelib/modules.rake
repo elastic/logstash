@@ -23,7 +23,7 @@ namespace "modules" do
       full_path = ::File.join(partial_path, filename)
       FileUtils.rm_f(full_path)
 
-      content = JSON.pretty_generate(source)
+      content = JSON.pretty_generate(source) + "\n"
       puts "Writing #{full_path}"
       IO.write(full_path, content)
     end
@@ -42,7 +42,7 @@ namespace "modules" do
     full_path = ::File.join(dashboard_dir, "#{module_name}.json")
     FileUtils.rm_f(full_path)
 
-    content = JSON.pretty_generate(filenames)
+    content = JSON.pretty_generate(filenames) + "\n"
     puts "Writing #{full_path}"
     IO.write(full_path, content)
   end
