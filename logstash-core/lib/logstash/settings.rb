@@ -255,6 +255,7 @@ module LogStash
           @default = default
         end
       end
+
       def set(value)
         coerced_value = coerce(value)
         validate(coerced_value)
@@ -557,7 +558,32 @@ module LogStash
         end
       end
     end
+
+    class Modules < Coercible
+      def initialize(name, klass, default = nil)
+        super(name, klass, default, false)
+      end
+
+      def set(value)
+        @value = coerce(value)
+        @value_is_set = true
+        @value
+      end
+
+      def coerce(value)
+        if value.is_a?(@klass)
+          return value
+        end
+        @klass.new(value)
+      end
+
+      protected
+      def validate(value)
+        coerce(value)
+      end
+    end
   end
+
 
   SETTINGS = Settings.new
 end
