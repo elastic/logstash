@@ -98,10 +98,12 @@ public interface Dataset {
          * <p>Builds a terminal {@link Dataset} from the given parent {@link Dataset}s.</p>
          * <p>If the given set of parent {@link Dataset} is empty the sum is defined as the
          * trivial dataset that does not invoke any computation whatsoever.</p>
-         * The return of a call to
+         * The return of a call to create a {@link Dataset.TerminalDataset.TerminalDebugDataset} 
+         * for tests.
          * {@link Dataset#compute(RubyIntegration.Batch, boolean, boolean, RubyHash)} is always
          * {@link Collections#emptyList()}.
          * @param parents Parent {@link Dataset} to sum and terminate
+         * @param debug Set to {@code true} 
          * @return Dataset representing the sum of given parent {@link Dataset}
          */
         public static Dataset from(final Collection<Dataset> parents, final boolean debug) {
