@@ -3,6 +3,9 @@ require "logstash/errors"
 require "logstash/java_integration"
 require "logstash/config/cpu_core_strategy"
 require "logstash/settings"
+require "logstash/util/cloud_setting_id"
+require "logstash/util/cloud_setting_auth"
+require "logstash/util/modules_setting_array"
 require "socket"
 require "stud/temporary"
 
@@ -20,8 +23,10 @@ module LogStash
     Setting::NullableString.new("path.config", nil, false),
  Setting::WritableDirectory.new("path.data", ::File.join(LogStash::Environment::LOGSTASH_HOME, "data")),
     Setting::NullableString.new("config.string", nil, false),
-                    Setting.new("modules.cli", Array, []),
-                    Setting.new("modules", Array, []),
+           Setting::Modules.new("modules.cli", LogStash::Util::ModulesSettingArray, []),
+           Setting::Modules.new("modules", LogStash::Util::ModulesSettingArray, []),
+           Setting::Modules.new("cloud.id", LogStash::Util::CloudSettingId),
+           Setting::Modules.new("cloud.auth",LogStash::Util::CloudSettingAuth),
            Setting::Boolean.new("modules_setup", false),
            Setting::Boolean.new("config.test_and_exit", false),
            Setting::Boolean.new("config.reload.automatic", false),
