@@ -3,10 +3,8 @@ require "spec_helper"
 require_relative "../../support/helpers"
 require_relative "../../support/matchers"
 require "logstash/pipeline_action/reload"
-require "logstash/instrument/null_metric"
 
 describe LogStash::PipelineAction::Reload do
-  let(:metric) { LogStash::Instrument::NullMetric.new(LogStash::Instrument::Collector.new) }
   let(:pipeline_id) { :main }
   let(:new_pipeline_config) { mock_pipeline_config(pipeline_id, "input { generator { id => 'new' } } output { null {} }", { "pipeline.reloadable" => true}) }
   let(:pipeline_config) { "input { generator {} } output { null {} }" }
@@ -14,7 +12,7 @@ describe LogStash::PipelineAction::Reload do
   let(:pipelines) { { pipeline_id => pipeline } }
   let(:agent) { double("agent") }
 
-  subject { described_class.new(new_pipeline_config, metric) }
+  subject { described_class.new(new_pipeline_config) }
 
   before do
     clear_data_dir

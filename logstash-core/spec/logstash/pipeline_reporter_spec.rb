@@ -5,6 +5,7 @@ require "logstash/pipeline_reporter"
 require_relative "../support/helpers"
 require_relative "../support/mocks_classes"
 
+java_import org.logstash.instrument.witness.Witness
 #TODO: Figure out how to add more tests that actually cover inflight events
 #This will require some janky multithreading stuff
 describe LogStash::PipelineReporter do
@@ -16,6 +17,7 @@ describe LogStash::PipelineReporter do
   let(:reporter) { pipeline.reporter }
 
   before do
+    Witness.setInstance(Witness.new)
     allow(LogStash::Plugin).to receive(:lookup).with("output", "dummyoutput").and_return(::LogStash::Outputs::DummyOutput)
     allow(LogStash::Plugin).to receive(:lookup).with("input", "generator").and_call_original
     allow(LogStash::Plugin).to receive(:lookup).with("codec", "plain").and_call_original

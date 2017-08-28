@@ -67,11 +67,9 @@ describe LogStash::Pipeline do
    let(:pipeline_settings) { { "queue.type" => queue_type, "pipeline.workers" => worker_thread_count, "pipeline.id" => pipeline_id} }
 
   let(:pipeline_config) { mock_pipeline_config(pipeline_id, config, pipeline_settings_obj) }
-  subject { described_class.new(pipeline_config, metric) }
+  subject { described_class.new(pipeline_config) }
 
   let(:counting_output) { PipelinePqFileOutput.new({ "id" => output_id }) }
-  let(:metric_store) { subject.metric.collector.snapshot_metric.metric_store }
-  let(:metric) { LogStash::Instrument::Metric.new(LogStash::Instrument::Collector.new) }
   let(:base_queue_path) { pipeline_settings_obj.get("path.queue") }
   let(:this_queue_folder) { File.join(base_queue_path, SecureRandom.hex(8)) }
 
@@ -91,6 +89,7 @@ describe LogStash::Pipeline do
 
   before :each do
     FileUtils.mkdir_p(this_queue_folder)
+    Witness.setInstance(Witness.new)
 
     pipeline_settings_obj.set("path.queue", this_queue_folder)
     allow(PipelinePqFileOutput).to receive(:new).with(any_args).and_return(counting_output)
@@ -123,14 +122,13 @@ describe LogStash::Pipeline do
     # Dir.rm_rf(this_queue_folder)
   end
 
-  let(:collected_metric) { metric_store.get_with_path("stats/pipelines/") }
+  let(:snitch) { Witness.instance.pipeline("main").events.snitch}
 
   it "populates the pipelines core metrics" do
-    _metric = collected_metric[:stats][:pipelines][:main][:events]
-    expect(_metric[:duration_in_millis].value).not_to be_nil
-    expect(_metric[:in].value).to eq(number_of_events)
-    expect(_metric[:filtered].value).to eq(number_of_events)
-    expect(_metric[:out].value).to eq(number_of_events)
+    expect(snitch.duration).not_to be_nil
+    expect(snitch.in).to eq(number_of_events)
+    expect(snitch.filtered).to eq(number_of_events)
+    expect(snitch.out).to eq(number_of_events)
     STDOUT.puts "  queue.type: #{pipeline_settings_obj.get("queue.type")}"
     STDOUT.puts "  queue.page_capacity: #{pipeline_settings_obj.get("queue.page_capacity") / 1024}KB"
     STDOUT.puts "  queue.max_bytes: #{pipeline_settings_obj.get("queue.max_bytes") / 1024}KB"

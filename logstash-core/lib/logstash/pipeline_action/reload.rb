@@ -10,9 +10,8 @@ module LogStash module PipelineAction
   class Reload < Base
     include LogStash::Util::Loggable
 
-    def initialize(pipeline_config, metric)
+    def initialize(pipeline_config)
       @pipeline_config = pipeline_config
-      @metric = metric
     end
 
     def pipeline_id
@@ -40,7 +39,7 @@ module LogStash module PipelineAction
       status = Stop.new(pipeline_id).execute(agent, pipelines)
 
       if status
-        return Create.new(@pipeline_config, @metric).execute(agent, pipelines)
+        return Create.new(@pipeline_config).execute(agent, pipelines)
       else
         return status
       end

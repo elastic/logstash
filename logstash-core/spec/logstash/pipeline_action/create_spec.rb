@@ -3,11 +3,9 @@ require "spec_helper"
 require_relative "../../support/helpers"
 require_relative "../../support/matchers"
 require "logstash/pipeline_action/create"
-require "logstash/instrument/null_metric"
 require "logstash/inputs/generator"
 
 describe LogStash::PipelineAction::Create do
-  let(:metric) { LogStash::Instrument::NullMetric.new(LogStash::Instrument::Collector.new) }
   let(:pipeline_config) { mock_pipeline_config(:main, "input { generator { id => '123' } } output { null {} }") }
   let(:pipelines) {  Hash.new }
   let(:agent) { double("agent") }
@@ -16,7 +14,7 @@ describe LogStash::PipelineAction::Create do
     clear_data_dir
   end
 
-  subject { described_class.new(pipeline_config, metric) }
+  subject { described_class.new(pipeline_config) }
 
   after do
     pipelines.each do |_, pipeline| 
@@ -28,7 +26,6 @@ describe LogStash::PipelineAction::Create do
   it "returns the pipeline_id" do
     expect(subject.pipeline_id).to eq(:main)
   end
-
 
   context "when we have really short lived pipeline" do
     let(:pipeline_config) { mock_pipeline_config(:main, "input { generator { count => 1 } } output { null {} }") }
@@ -76,8 +73,8 @@ describe LogStash::PipelineAction::Create do
     let(:system_pipeline_config) { mock_pipeline_config(:main_2, "input { generator { id => '123' } } output { null {} }", { "pipeline.system" => true }) }
 
     it "should give higher priority to system pipeline" do
-      action_user_pipeline = described_class.new(pipeline_config, metric)
-      action_system_pipeline = described_class.new(system_pipeline_config, metric)
+      action_user_pipeline = described_class.new(pipeline_config)
+      action_system_pipeline = described_class.new(system_pipeline_config)
 
       sorted = [action_user_pipeline, action_system_pipeline].sort
       expect(sorted).to eq([action_system_pipeline, action_user_pipeline])
