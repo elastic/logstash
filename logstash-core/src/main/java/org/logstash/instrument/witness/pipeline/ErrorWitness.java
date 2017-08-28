@@ -22,8 +22,7 @@ public class ErrorWitness implements SerializableWitness {
     private final TextGauge message;
     private final TextGauge backtrace;
     private final Snitch snitch;
-    private final static String KEY = "last_error";
-    private static final Serializer SERIALIZER = new Serializer();
+    private static final String KEY = "last_error";
 
     public ErrorWitness() {
         message = new TextGauge("message");
@@ -80,13 +79,15 @@ public class ErrorWitness implements SerializableWitness {
 
     @Override
     public void genJson(JsonGenerator gen, SerializerProvider provider) throws IOException {
-        SERIALIZER.innerSerialize(this, gen, provider);
+        Serializer.innerSerialize(this, gen);
     }
 
     /**
      * The Jackson serializer.
      */
-    static class Serializer extends StdSerializer<ErrorWitness> {
+    public static final class Serializer extends StdSerializer<ErrorWitness> {
+
+        private static final long serialVersionUID = 1L;
 
         /**
          * Default constructor - required for Jackson
@@ -107,11 +108,11 @@ public class ErrorWitness implements SerializableWitness {
         @Override
         public void serialize(ErrorWitness witness, JsonGenerator gen, SerializerProvider provider) throws IOException {
             gen.writeStartObject();
-            innerSerialize(witness, gen, provider);
+            innerSerialize(witness, gen);
             gen.writeEndObject();
         }
 
-        void innerSerialize(ErrorWitness witness, JsonGenerator gen, SerializerProvider provider) throws IOException {
+        static void innerSerialize(ErrorWitness witness, JsonGenerator gen) throws IOException {
             gen.writeObjectFieldStart(KEY);
             MetricSerializer<Metric<String>> stringSerializer = MetricSerializer.Get.stringSerializer(gen);
             stringSerializer.serialize(witness.message);
@@ -123,7 +124,7 @@ public class ErrorWitness implements SerializableWitness {
     /**
      * The snitch for the errors. Used to retrieve discrete metric values.
      */
-    public class Snitch {
+    public static final class Snitch {
         private final ErrorWitness witness;
 
         private Snitch(ErrorWitness witness) {

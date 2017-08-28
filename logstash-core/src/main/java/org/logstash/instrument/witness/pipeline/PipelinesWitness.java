@@ -14,12 +14,11 @@ import java.util.concurrent.ConcurrentHashMap;
  * Witness for the set of pipelines.
  */
 @JsonSerialize(using = PipelinesWitness.Serializer.class)
-final public class PipelinesWitness implements SerializableWitness {
+public final class PipelinesWitness implements SerializableWitness {
 
     private final Map<String, PipelineWitness> pipelines;
 
-    private final static String KEY = "pipelines";
-    private static final Serializer SERIALIZER = new Serializer();
+    private static final String KEY = "pipelines";
 
     /**
      * Constructor.
@@ -40,13 +39,15 @@ final public class PipelinesWitness implements SerializableWitness {
 
     @Override
     public void genJson(JsonGenerator gen, SerializerProvider provider) throws IOException {
-        SERIALIZER.innerSerialize(this, gen, provider);
+        Serializer.innerSerialize(this, gen, provider);
     }
 
     /**
      * The Jackson serializer.
      */
-    static class Serializer extends StdSerializer<PipelinesWitness> {
+    public static final class Serializer extends StdSerializer<PipelinesWitness> {
+
+        private static final long serialVersionUID = 1L;
 
         /**
          * Default constructor - required for Jackson
@@ -71,7 +72,8 @@ final public class PipelinesWitness implements SerializableWitness {
             gen.writeEndObject();
         }
 
-        void innerSerialize(PipelinesWitness witness, JsonGenerator gen, SerializerProvider provider) throws IOException {
+        static void innerSerialize(PipelinesWitness witness, JsonGenerator gen,
+            SerializerProvider provider) throws IOException {
             gen.writeObjectFieldStart(KEY);
             for (Map.Entry<String, PipelineWitness> entry : witness.pipelines.entrySet()) {
                 entry.getValue().genJson(gen, provider);

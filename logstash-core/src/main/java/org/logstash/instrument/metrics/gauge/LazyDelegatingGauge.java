@@ -13,9 +13,10 @@ import org.logstash.instrument.metrics.MetricType;
  *
  * @deprecated - there are no plans to replace this.
  */
+@Deprecated
 public class LazyDelegatingGauge extends AbstractMetric<Object> implements GaugeMetric<Object, Object> {
 
-    private final static Logger LOGGER = LogManager.getLogger(LazyDelegatingGauge.class);
+    private static final Logger LOGGER = LogManager.getLogger(LazyDelegatingGauge.class);
 
     protected final String key;
 
@@ -27,6 +28,7 @@ public class LazyDelegatingGauge extends AbstractMetric<Object> implements Gauge
      * @param key The key <i>(with in the namespace)</i> for this metric
      * @deprecated - there are no plans to replace this
      */
+    @Deprecated
     public LazyDelegatingGauge(final String key) {
         this(key, null);
     }
@@ -38,6 +40,7 @@ public class LazyDelegatingGauge extends AbstractMetric<Object> implements Gauge
      * @param initialValue The initial value for this {@link GaugeMetric}, may be null
      * @deprecated - there are no plans to replace this
      */
+    @Deprecated
     public LazyDelegatingGauge(String key, Object initialValue) {
         super(key);
         this.key = key;

@@ -20,6 +20,7 @@ public interface MetricSerializer<T extends Metric<?>> {
      * Performs this operation on the given argument.
      *
      * @param t the input argument
+     * @throws IOException On failure to serialize
      */
     void serialize(T t) throws IOException;
 

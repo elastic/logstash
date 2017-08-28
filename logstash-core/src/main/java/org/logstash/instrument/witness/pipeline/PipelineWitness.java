@@ -13,7 +13,7 @@ import java.io.IOException;
  * A single pipeline witness.
  */
 @JsonSerialize(using = PipelineWitness.Serializer.class)
-final public class PipelineWitness implements SerializableWitness {
+public final class PipelineWitness implements SerializableWitness {
 
     private final ReloadWitness reloadWitness;
     private final EventsWitness eventsWitness;
@@ -22,7 +22,6 @@ final public class PipelineWitness implements SerializableWitness {
     private final QueueWitness queueWitness;
     private final DeadLetterQueueWitness deadLetterQueueWitness;
     private final String KEY;
-    private static final Serializer SERIALIZER = new Serializer();
 
     /**
      * Constructor.
@@ -138,13 +137,15 @@ final public class PipelineWitness implements SerializableWitness {
 
     @Override
     public void genJson(JsonGenerator gen, SerializerProvider provider) throws IOException {
-        SERIALIZER.innerSerialize(this, gen, provider);
+        Serializer.innerSerialize(this, gen, provider);
     }
 
     /**
      * The Jackson serializer.
      */
-    static class Serializer extends StdSerializer<PipelineWitness> {
+    public static final class Serializer extends StdSerializer<PipelineWitness> {
+
+        private static final long serialVersionUID = 1L;
 
         /**
          * Default constructor - required for Jackson
@@ -158,7 +159,7 @@ final public class PipelineWitness implements SerializableWitness {
          *
          * @param t the type to serialize
          */
-        protected Serializer(Class<PipelineWitness> t) {
+        private Serializer(Class<PipelineWitness> t) {
             super(t);
         }
 
@@ -169,7 +170,8 @@ final public class PipelineWitness implements SerializableWitness {
             gen.writeEndObject();
         }
 
-        void innerSerialize(PipelineWitness witness, JsonGenerator gen, SerializerProvider provider) throws IOException {
+        static void innerSerialize(PipelineWitness witness, JsonGenerator gen,
+            SerializerProvider provider) throws IOException {
             gen.writeObjectFieldStart(witness.KEY);
             witness.events().genJson(gen, provider);
             witness.plugins().genJson(gen, provider);

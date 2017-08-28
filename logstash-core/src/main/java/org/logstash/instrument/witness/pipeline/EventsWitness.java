@@ -15,15 +15,14 @@ import java.io.IOException;
  * Witness for events.
  */
 @JsonSerialize(using = EventsWitness.Serializer.class)
-final public class EventsWitness implements SerializableWitness {
+public final class EventsWitness implements SerializableWitness {
 
     private LongCounter filtered;
     private LongCounter out;
     private LongCounter in;
     private LongCounter duration;
     private LongCounter queuePushDuration;
-    private final static String KEY = "events";
-    private static final Serializer SERIALIZER = new Serializer();
+    private static final String KEY = "events";
     private final Snitch snitch;
 
     /**
@@ -127,13 +126,15 @@ final public class EventsWitness implements SerializableWitness {
 
     @Override
     public void genJson(final JsonGenerator gen, SerializerProvider provider) throws IOException {
-        SERIALIZER.innerSerialize(this, gen, provider);
+        Serializer.innerSerialize(this, gen);
     }
 
     /**
      * The Jackson serializer.
      */
-    static class Serializer extends StdSerializer<EventsWitness> {
+    public static final class Serializer extends StdSerializer<EventsWitness> {
+
+        private static final long serialVersionUID = 1L;
 
         /**
          * Default constructor - required for Jackson
@@ -147,18 +148,18 @@ final public class EventsWitness implements SerializableWitness {
          *
          * @param t the type to serialize
          */
-        protected Serializer(Class<EventsWitness> t) {
+        private Serializer(Class<EventsWitness> t) {
             super(t);
         }
 
         @Override
         public void serialize(EventsWitness witness, JsonGenerator gen, SerializerProvider provider) throws IOException {
             gen.writeStartObject();
-            innerSerialize(witness, gen, provider);
+            innerSerialize(witness, gen);
             gen.writeEndObject();
         }
 
-        void innerSerialize(EventsWitness witness, JsonGenerator gen, SerializerProvider provider) throws IOException {
+        static void innerSerialize(EventsWitness witness, JsonGenerator gen) throws IOException {
             gen.writeObjectFieldStart(KEY);
             MetricSerializer<Metric<Long>> longSerializer = MetricSerializer.Get.longSerializer(gen);
             longSerializer.serialize(witness.duration);
@@ -173,7 +174,7 @@ final public class EventsWitness implements SerializableWitness {
     /**
      * The snitch for the {@link EventsWitness}. Allows to read discrete metrics values.
      */
-    public class Snitch {
+    public static final class Snitch {
 
         private final EventsWitness witness;
 
