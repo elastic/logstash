@@ -45,7 +45,6 @@ describe LogStash::Pipeline do
       "path.dead_letter_queue" => Dir.mktmpdir
     }
   end
-  let(:metric) { LogStash::Instrument::Metric.new(LogStash::Instrument::Collector.new) }
   let(:test_config) {
     <<-eos
         input { singlegenerator { id => input_id } }
@@ -56,9 +55,10 @@ describe LogStash::Pipeline do
     eos
   }
 
-  subject { mock_pipeline_from_string(test_config, pipeline_settings_obj, metric) }
+  subject { mock_pipeline_from_string(test_config, pipeline_settings_obj) }
 
   before(:each) do
+    Witness.setInstance(Witness.new)
     pipeline_settings.each {|k, v| pipeline_settings_obj.set(k, v) }
     allow(LogStash::Plugin).to receive(:lookup).with("input", "singlegenerator").and_return(SingleGeneratorInput)
     allow(LogStash::Plugin).to receive(:lookup).with("codec", "plain").and_return(LogStash::Codecs::Plain)

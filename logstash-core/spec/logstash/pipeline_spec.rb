@@ -8,6 +8,8 @@ require_relative "../logstash/pipeline_reporter_spec" # for DummyOutput class
 require "stud/try"
 require 'timeout'
 
+java_import org.logstash.instrument.witness.Witness
+
 class DummyInput < LogStash::Inputs::Base
   config_name "dummyinput"
   milestone 2
@@ -126,6 +128,7 @@ describe LogStash::Pipeline do
   let(:timeout) {120} #seconds
 
   before :each do
+    Witness.setInstance(Witness.new)
     pipeline_workers_setting = LogStash::SETTINGS.get_setting("pipeline.workers")
     allow(pipeline_workers_setting).to receive(:default).and_return(worker_thread_count)
     dlq_enabled_setting = LogStash::SETTINGS.get_setting("dead_letter_queue.enable")
@@ -503,96 +506,7 @@ describe LogStash::Pipeline do
     end
   end
 
-  context "metrics" do
-    config = "input { } filter { } output { }"
-
-    let(:settings) { LogStash::SETTINGS.clone }
-    subject { mock_pipeline_from_string(config, settings, metric) }
-
-    after :each do
-      subject.close
-    end
-
-    context "when metric.collect is disabled" do
-      before :each do
-        settings.set("metric.collect", false)
-      end
-
-      context "if namespaced_metric is nil" do
-        let(:metric) { nil }
-        it "uses a `NullMetric` object" do
-          expect(subject.metric).to be_a(LogStash::Instrument::NullMetric)
-        end
-      end
-
-      context "if namespaced_metric is a Metric object" do
-        let(:collector) { ::LogStash::Instrument::Collector.new }
-        let(:metric) { ::LogStash::Instrument::Metric.new(collector) }
-
-        it "uses a `NullMetric` object" do
-          expect(subject.metric).to be_a(LogStash::Instrument::NullMetric)
-        end
-
-        it "uses the same collector" do
-          expect(subject.metric.collector).to be(collector)
-        end
-      end
-
-      context "if namespaced_metric is a NullMetric object" do
-        let(:collector) { ::LogStash::Instrument::Collector.new }
-        let(:metric) { ::LogStash::Instrument::NullMetric.new(collector) }
-
-        it "uses a `NullMetric` object" do
-          expect(subject.metric).to be_a(::LogStash::Instrument::NullMetric)
-        end
-
-        it "uses the same collector" do
-          expect(subject.metric.collector).to be(collector)
-        end
-      end
-    end
-
-    context "when metric.collect is enabled" do
-      before :each do
-        settings.set("metric.collect", true)
-      end
-
-      context "if namespaced_metric is nil" do
-        let(:metric) { nil }
-        it "uses a `NullMetric` object" do
-          expect(subject.metric).to be_a(LogStash::Instrument::NullMetric)
-        end
-      end
-
-      context "if namespaced_metric is a Metric object" do
-        let(:collector) { ::LogStash::Instrument::Collector.new }
-        let(:metric) { ::LogStash::Instrument::Metric.new(collector) }
-
-        it "uses a `Metric` object" do
-          expect(subject.metric).to be_a(LogStash::Instrument::Metric)
-        end
-
-        it "uses the same collector" do
-          expect(subject.metric.collector).to be(collector)
-        end
-      end
-
-      context "if namespaced_metric is a NullMetric object" do
-        let(:collector) { ::LogStash::Instrument::Collector.new }
-        let(:metric) { ::LogStash::Instrument::NullMetric.new(collector) }
-
-        it "uses a `NullMetric` object" do
-          expect(subject.metric).to be_a(LogStash::Instrument::NullMetric)
-        end
-
-        it "uses the same collector" do
-          expect(subject.metric.collector).to be(collector)
-        end
-      end
-    end
-  end
-
-  context "Multiples pipelines" do
+ context "Multiples pipelines" do
     before do
       allow(LogStash::Plugin).to receive(:lookup).with("input", "dummyinputgenerator").and_return(DummyInputGenerator)
       allow(LogStash::Plugin).to receive(:lookup).with("codec", "plain").and_return(DummyCodec)
@@ -774,9 +688,8 @@ describe LogStash::Pipeline do
   end
 
   context "when collecting metrics in the pipeline" do
-    let(:metric) { LogStash::Instrument::Metric.new(LogStash::Instrument::Collector.new) }
 
-    subject { mock_pipeline_from_string(config, pipeline_settings_obj, metric) }
+    subject { mock_pipeline_from_string(config, pipeline_settings_obj) }
 
     let(:pipeline_settings) { { "pipeline.id" => pipeline_id } }
     let(:pipeline_id) { "main" }
@@ -809,7 +722,6 @@ describe LogStash::Pipeline do
       EOS
     end
     let(:dummyoutput) { ::LogStash::Outputs::DummyOutput.new({ "id" => dummy_output_id }) }
-    let(:metric_store) { subject.metric.collector.snapshot_metric.metric_store }
     let(:pipeline_thread) do
       # subject has to be called for the first time outside the thread because it will create a race condition
       # with the subject.ready? call since subject is lazily initialized
@@ -818,6 +730,7 @@ describe LogStash::Pipeline do
     end
 
     before :each do
+      Witness.setInstance(Witness.new)
       allow(::LogStash::Outputs::DummyOutput).to receive(:new).with(any_args).and_return(dummyoutput)
       allow(LogStash::Plugin).to receive(:lookup).with("input", "generator").and_return(LogStash::Inputs::Generator)
       allow(LogStash::Plugin).to receive(:lookup).with("codec", "plain").and_return(LogStash::Codecs::Plain)
@@ -844,63 +757,65 @@ describe LogStash::Pipeline do
     end
 
     context "global metric" do
-      let(:collected_metric) { metric_store.get_with_path("stats/events") }
+      let(:snitch) { Witness.instance.events.snitch}
 
       it "populates the different metrics" do
-        expect(collected_metric[:stats][:events][:duration_in_millis].value).not_to be_nil
-        expect(collected_metric[:stats][:events][:in].value).to eq(number_of_events)
-        expect(collected_metric[:stats][:events][:filtered].value).to eq(number_of_events)
-        expect(collected_metric[:stats][:events][:out].value).to eq(number_of_events)
+        expect(snitch.duration).not_to be_nil
+        expect(snitch.in).to eq(number_of_events)
+        expect(snitch.filtered).to eq(number_of_events)
+        expect(snitch.out).to eq(number_of_events)
       end
     end
 
     context "pipelines" do
-      let(:collected_metric) { metric_store.get_with_path("stats/pipelines/") }
+      let(:snitch) { Witness.instance.pipeline("main").events.snitch}
 
       it "populates the pipelines core metrics" do
-        expect(collected_metric[:stats][:pipelines][:main][:events][:duration_in_millis].value).not_to be_nil
-        expect(collected_metric[:stats][:pipelines][:main][:events][:in].value).to eq(number_of_events)
-        expect(collected_metric[:stats][:pipelines][:main][:events][:filtered].value).to eq(number_of_events)
-        expect(collected_metric[:stats][:pipelines][:main][:events][:out].value).to eq(number_of_events)
+        expect(snitch.duration).not_to be_nil
+        expect(snitch.in).to eq(number_of_events)
+        expect(snitch.filtered).to eq(number_of_events)
+        expect(snitch.out).to eq(number_of_events)
       end
 
       it "populates the filter metrics" do
         [dummy_id, dummy_id_other].map(&:to_sym).each do |id|
-          [:in, :out].each do |metric_key|
-            plugin_name = id.to_sym
-            expect(collected_metric[:stats][:pipelines][:main][:plugins][:filters][plugin_name][:events][metric_key].value).to eq(number_of_events)
-          end
+          plugin_name = id.to_s
+          snitch = Witness.instance.pipeline("main").filters(plugin_name).events.snitch
+          expect(snitch.in).to eq(number_of_events)
+          expect(snitch.out).to eq(number_of_events)
         end
       end
 
       it "populates the output metrics" do
         plugin_name = dummy_output_id.to_sym
+        snitch = Witness.instance.pipeline("main").outputs(plugin_name).events.snitch
 
-        expect(collected_metric[:stats][:pipelines][:main][:plugins][:outputs][plugin_name][:events][:in].value).to eq(number_of_events)
-        expect(collected_metric[:stats][:pipelines][:main][:plugins][:outputs][plugin_name][:events][:out].value).to eq(number_of_events)
-        expect(collected_metric[:stats][:pipelines][:main][:plugins][:outputs][plugin_name][:events][:duration_in_millis].value).not_to be_nil
+        expect(snitch.in).to eq(number_of_events)
+        expect(snitch.out).to eq(number_of_events)
+        expect(snitch.duration).not_to be_nil
       end
 
       it "populates the name of the output plugin" do
         plugin_name = dummy_output_id.to_sym
-        expect(collected_metric[:stats][:pipelines][:main][:plugins][:outputs][plugin_name][:name].value).to eq(::LogStash::Outputs::DummyOutput.config_name)
+        expect(Witness.instance.pipeline("main").outputs(plugin_name).snitch.name).to eq(::LogStash::Outputs::DummyOutput.config_name)
       end
 
       it "populates the name of the filter plugin" do
         [dummy_id, dummy_id_other].map(&:to_sym).each do |id|
-          plugin_name = id.to_sym
-          expect(collected_metric[:stats][:pipelines][:main][:plugins][:filters][plugin_name][:name].value).to eq(LogStash::Filters::DummyFilter.config_name)
+          plugin_name = id.to_s
+          expect(Witness.instance.pipeline("main").filters(plugin_name).snitch.name).to eq(LogStash::Filters::Multiline.config_name)
         end
       end
 
+
       context 'when dlq is disabled' do
         let (:collect_stats) { subject.collect_dlq_stats}
-        let (:collected_stats) { collected_metric[:stats][:pipelines][:main][:dlq]}
-        let (:available_stats) {[:path, :queue_size_in_bytes]}
+        let (:snitch) { Witness.instance.pipeline("main").dlq.snitch}
 
-        it 'should show not show any dlq stats' do
+
+        it 'should show not count any dlq stats' do
           collect_stats
-          expect(collected_stats).to be_nil
+          expect(snitch.queue_size_in_bytes).to be_nil
         end
 
       end
@@ -911,12 +826,12 @@ describe LogStash::Pipeline do
         let (:pipeline_dlq_path) { "#{dead_letter_queue_path}/#{pipeline_id}"}
 
         let (:collect_stats) { subject.collect_dlq_stats }
-        let (:collected_stats) { collected_metric[:stats][:pipelines][:main][:dlq]}
+        let (:snitch) { Witness.instance.pipeline("main").dlq.snitch}
 
         it 'should show dlq stats' do
           collect_stats
           # A newly created dead letter queue with no entries will have a size of 1 (the version 'header')
-          expect(collected_stats[:queue_size_in_bytes].value).to eq(1)
+          expect(snitch.queue_size_in_bytes).to eql(1)
         end
       end
     end
