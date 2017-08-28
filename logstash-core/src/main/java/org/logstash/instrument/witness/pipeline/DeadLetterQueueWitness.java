@@ -17,8 +17,7 @@ import java.io.IOException;
 @JsonSerialize(using = DeadLetterQueueWitness.Serializer.class)
 public class DeadLetterQueueWitness implements SerializableWitness {
 
-    private static String KEY = "dead_letter_queue";
-    private static final Serializer SERIALIZER = new Serializer();
+    private static final String KEY = "dead_letter_queue";
     private final Snitch snitch;
     private final NumberGauge queueSizeInBytes;
 
@@ -51,13 +50,15 @@ public class DeadLetterQueueWitness implements SerializableWitness {
 
     @Override
     public void genJson(JsonGenerator gen, SerializerProvider provider) throws IOException {
-        SERIALIZER.innerSerialize(this, gen, provider);
+        Serializer.innerSerialize(this, gen);
     }
 
     /**
      * The Jackson serializer.
      */
-    static class Serializer extends StdSerializer<DeadLetterQueueWitness> {
+    public static final class Serializer extends StdSerializer<DeadLetterQueueWitness> {
+
+        private static final long serialVersionUID = 1L;
 
         /**
          * Default constructor - required for Jackson
@@ -78,11 +79,11 @@ public class DeadLetterQueueWitness implements SerializableWitness {
         @Override
         public void serialize(DeadLetterQueueWitness witness, JsonGenerator gen, SerializerProvider provider) throws IOException {
             gen.writeStartObject();
-            innerSerialize(witness, gen, provider);
+            innerSerialize(witness, gen);
             gen.writeEndObject();
         }
 
-        void innerSerialize(DeadLetterQueueWitness witness, JsonGenerator gen, SerializerProvider provider) throws IOException {
+        static void innerSerialize(DeadLetterQueueWitness witness, JsonGenerator gen) throws IOException {
             gen.writeObjectFieldStart(KEY);
             MetricSerializer<Metric<Number>> numberSerializer = MetricSerializer.Get.numberSerializer(gen);
             numberSerializer.serialize(witness.queueSizeInBytes);

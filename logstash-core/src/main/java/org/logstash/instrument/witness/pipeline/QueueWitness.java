@@ -16,14 +16,14 @@ import java.io.IOException;
  * Witness for the queue.
  */
 @JsonSerialize(using = QueueWitness.Serializer.class)
-final public class QueueWitness implements SerializableWitness {
+public final class QueueWitness implements SerializableWitness {
 
     private final TextGauge type;
     private final NumberGauge events; // note this is NOT an EventsWitness
     private final Snitch snitch;
     private final CapacityWitness capacity;
     private final DataWitness data;
-    private final static String KEY = "queue";
+    private static final String KEY = "queue";
     private static final Serializer SERIALIZER = new Serializer();
 
     /**
@@ -84,7 +84,7 @@ final public class QueueWitness implements SerializableWitness {
 
     @Override
     public void genJson(JsonGenerator gen, SerializerProvider provider) throws IOException {
-        SERIALIZER.innerSerialize(this, gen, provider);
+        SERIALIZER.innerSerialize(this, gen);
     }
 
     /**
@@ -302,7 +302,10 @@ final public class QueueWitness implements SerializableWitness {
     /**
      * The Jackson serializer.
      */
-    static class Serializer extends StdSerializer<QueueWitness> {
+    public static final class Serializer extends StdSerializer<QueueWitness> {
+
+        private static final long serialVersionUID = 1L;
+
         /**
          * Default constructor - required for Jackson
          */
@@ -322,11 +325,11 @@ final public class QueueWitness implements SerializableWitness {
         @Override
         public void serialize(QueueWitness witness, JsonGenerator gen, SerializerProvider provider) throws IOException {
             gen.writeStartObject();
-            innerSerialize(witness, gen, provider);
+            innerSerialize(witness, gen);
             gen.writeEndObject();
         }
 
-        void innerSerialize(QueueWitness witness, JsonGenerator gen, SerializerProvider provider) throws IOException {
+        void innerSerialize(QueueWitness witness, JsonGenerator gen) throws IOException {
             gen.writeObjectFieldStart(KEY);
             MetricSerializer<Metric<Number>> numberSerializer = MetricSerializer.Get.numberSerializer(gen);
             MetricSerializer<Metric<String>> stringSerializer = MetricSerializer.Get.stringSerializer(gen);
@@ -354,7 +357,7 @@ final public class QueueWitness implements SerializableWitness {
     /**
      * Snitch for queue. Provides discrete metric values.
      */
-    public class Snitch {
+    public static final class Snitch {
 
         private final QueueWitness witness;
 

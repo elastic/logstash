@@ -20,8 +20,7 @@ public class PluginsWitness implements SerializableWitness {
     private final Map<String, PluginWitness> outputs;
     private final Map<String, PluginWitness> filters;
     private final Map<String, PluginWitness> codecs;
-    private final static String KEY = "plugins";
-    private static final Serializer SERIALIZER = new Serializer();
+    private static final String KEY = "plugins";
 
     /**
      * Constructor.
@@ -96,13 +95,15 @@ public class PluginsWitness implements SerializableWitness {
 
     @Override
     public void genJson(JsonGenerator gen, SerializerProvider provider) throws IOException {
-        SERIALIZER.innerSerialize(this, gen, provider);
+        PluginsWitness.Serializer.innerSerialize(this, gen, provider);
     }
 
     /**
      * The Jackson serializer.
      */
-    static class Serializer extends StdSerializer<PluginsWitness> {
+    public static final class Serializer extends StdSerializer<PluginsWitness> {
+
+        private static final long serialVersionUID = 1L;
 
         /**
          * Default constructor - required for Jackson
@@ -116,7 +117,7 @@ public class PluginsWitness implements SerializableWitness {
          *
          * @param t the type to serialize
          */
-        protected Serializer(Class<PluginsWitness> t) {
+        private Serializer(Class<PluginsWitness> t) {
             super(t);
         }
 
@@ -127,7 +128,8 @@ public class PluginsWitness implements SerializableWitness {
             gen.writeEndObject();
         }
 
-        void innerSerialize(PluginsWitness witness, JsonGenerator gen, SerializerProvider provider) throws IOException {
+        static void innerSerialize(PluginsWitness witness, JsonGenerator gen,
+            SerializerProvider provider) throws IOException {
             gen.writeObjectFieldStart(KEY);
 
             serializePlugins("inputs", witness.inputs, gen, provider);
@@ -138,7 +140,8 @@ public class PluginsWitness implements SerializableWitness {
             gen.writeEndObject();
         }
 
-        private void serializePlugins(String key, Map<String, PluginWitness> plugin, JsonGenerator gen, SerializerProvider provider) throws IOException {
+        private static void serializePlugins(String key, Map<String, PluginWitness> plugin,
+            JsonGenerator gen, SerializerProvider provider) throws IOException {
             gen.writeArrayFieldStart(key);
             for (Map.Entry<String, PluginWitness> entry : plugin.entrySet()) {
                 gen.writeStartObject();

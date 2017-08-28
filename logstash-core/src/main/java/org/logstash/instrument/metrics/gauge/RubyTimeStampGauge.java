@@ -10,6 +10,7 @@ import org.logstash.instrument.metrics.MetricType;
  * exists for passivity with legacy Ruby code.
  * @deprecated - There are no plans to replace this.
  */
+@Deprecated
 public class RubyTimeStampGauge extends AbstractMetric<Timestamp> implements GaugeMetric<Timestamp, RubyTimestamp> {
 
     private volatile Timestamp value;
@@ -20,6 +21,7 @@ public class RubyTimeStampGauge extends AbstractMetric<Timestamp> implements Gau
      * @param key       The key <i>(with in the namespace)</i> for this metric
      * @deprecated - There are no plans to replace this.
      */
+    @Deprecated
     public RubyTimeStampGauge(String key) {
         super(key);
     }
@@ -31,6 +33,7 @@ public class RubyTimeStampGauge extends AbstractMetric<Timestamp> implements Gau
      * @param initialValue The initial value for this {@link GaugeMetric}, may be null
      * @deprecated - There are no plans to replace this.
      */
+    @Deprecated
     protected RubyTimeStampGauge(String key, RubyTimestamp initialValue) {
         super(key);
         this.value = initialValue == null ? null : initialValue.getTimestamp();

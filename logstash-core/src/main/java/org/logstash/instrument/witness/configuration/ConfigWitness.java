@@ -17,7 +17,7 @@ import java.io.IOException;
  * The witness for configuration.
  */
 @JsonSerialize(using = ConfigWitness.Serializer.class)
-final public class ConfigWitness implements SerializableWitness {
+public final class ConfigWitness implements SerializableWitness {
 
     private final BooleanGauge deadLetterQueueEnabled;
     private final BooleanGauge configReloadAutomatic;
@@ -27,9 +27,7 @@ final public class ConfigWitness implements SerializableWitness {
     private final NumberGauge configReloadInterval;
     private final TextGauge deadLetterQueuePath;
     private final Snitch snitch;
-    private final static String KEY = "config";
-    private static final Serializer SERIALIZER = new Serializer();
-
+    private static final String KEY = "config";
 
     /**
      * Constructor.
@@ -119,13 +117,15 @@ final public class ConfigWitness implements SerializableWitness {
 
     @Override
     public void genJson(JsonGenerator gen, SerializerProvider provider) throws IOException {
-        SERIALIZER.innerSerialize(this, gen, provider);
+        Serializer.innerSerialize(this, gen);
     }
 
     /**
      * The Jackson serializer.
      */
-    static class Serializer extends StdSerializer<ConfigWitness> {
+    public static final class Serializer extends StdSerializer<ConfigWitness> {
+
+        private static final long serialVersionUID = 1L;
 
         /**
          * Default constructor - required for Jackson
@@ -139,18 +139,18 @@ final public class ConfigWitness implements SerializableWitness {
          *
          * @param t the type to serialize
          */
-        protected Serializer(Class<ConfigWitness> t) {
+        private Serializer(Class<ConfigWitness> t) {
             super(t);
         }
 
         @Override
         public void serialize(ConfigWitness witness, JsonGenerator gen, SerializerProvider provider) throws IOException {
             gen.writeStartObject();
-            innerSerialize(witness, gen, provider);
+            innerSerialize(witness, gen);
             gen.writeEndObject();
         }
 
-        void innerSerialize(ConfigWitness witness, JsonGenerator gen, SerializerProvider provider) throws IOException {
+        static void innerSerialize(ConfigWitness witness, JsonGenerator gen) throws IOException {
             gen.writeObjectFieldStart(KEY);
 
             MetricSerializer<Metric<Number>> numberSerializer = MetricSerializer.Get.numberSerializer(gen);
@@ -171,7 +171,7 @@ final public class ConfigWitness implements SerializableWitness {
     /**
      * The snitch for the errors. Used to retrieve discrete metric values.
      */
-    public class Snitch {
+    public static final class Snitch {
         private final ConfigWitness witness;
 
         private Snitch(ConfigWitness witness) {
