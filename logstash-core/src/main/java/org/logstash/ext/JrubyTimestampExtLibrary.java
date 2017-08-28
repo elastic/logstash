@@ -19,6 +19,7 @@ import org.jruby.runtime.ObjectAllocator;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.jruby.runtime.load.Library;
+import org.logstash.RubyUtil;
 import org.logstash.Timestamp;
 import org.logstash.json.RubyTimestampSerializer;
 
@@ -35,7 +36,7 @@ public class JrubyTimestampExtLibrary implements Library {
     }
 
     public static RubyClass createTimestamp(Ruby runtime) {
-        RubyModule module = runtime.defineModule("LogStash");
+        RubyModule module = runtime.defineModule(RubyUtil.LS_MODULE_NAME);
         RubyClass clazz = runtime.defineClassUnder("Timestamp", runtime.getObject(), ALLOCATOR, module);
         clazz.defineAnnotatedMethods(RubyTimestamp.class);
         return clazz;
@@ -57,7 +58,7 @@ public class JrubyTimestampExtLibrary implements Library {
         }
 
         public RubyTimestamp(Ruby runtime, Timestamp timestamp) {
-            this(runtime, runtime.getModule("LogStash").getClass("Timestamp"), timestamp);
+            this(runtime, runtime.getModule(RubyUtil.LS_MODULE_NAME).getClass("Timestamp"), timestamp);
         }
 
         public RubyTimestamp(Ruby runtime) {
@@ -102,7 +103,7 @@ public class JrubyTimestampExtLibrary implements Library {
                 } catch (IllegalArgumentException e) {
                     throw new RaiseException(
                             getRuntime(),
-                            getRuntime().getModule("LogStash").getClass("TimestampParserError"),
+                            getRuntime().getModule(RubyUtil.LS_MODULE_NAME).getClass("TimestampParserError"),
                             "invalid timestamp string format " + time,
                             true
                     );
@@ -181,7 +182,7 @@ public class JrubyTimestampExtLibrary implements Library {
              } catch (IllegalArgumentException e) {
                 throw new RaiseException(
                         context.runtime,
-                        context.runtime.getModule("LogStash").getClass("TimestampParserError"),
+                        context.runtime.getModule(RubyUtil.LS_MODULE_NAME).getClass("TimestampParserError"),
                         "invalid timestamp format " + e.getMessage(),
                         true
                 );
@@ -198,7 +199,7 @@ public class JrubyTimestampExtLibrary implements Library {
                 } catch (IllegalArgumentException e) {
                     throw new RaiseException(
                             context.runtime,
-                            context.runtime.getModule("LogStash").getClass("TimestampParserError"),
+                            context.runtime.getModule(RubyUtil.LS_MODULE_NAME).getClass("TimestampParserError"),
                             "invalid timestamp format " + e.getMessage(),
                             true
                     );

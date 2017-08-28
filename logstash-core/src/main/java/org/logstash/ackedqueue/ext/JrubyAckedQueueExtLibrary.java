@@ -15,6 +15,7 @@ import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.jruby.runtime.load.Library;
 import org.logstash.Event;
+import org.logstash.RubyUtil;
 import org.logstash.ackedqueue.Batch;
 import org.logstash.ackedqueue.Queue;
 import org.logstash.ackedqueue.SettingsImpl;
@@ -25,7 +26,7 @@ import org.logstash.ext.JrubyEventExtLibrary;
 public class JrubyAckedQueueExtLibrary implements Library {
 
     public void load(Ruby runtime, boolean wrap) throws IOException {
-        RubyModule module = runtime.defineModule("LogStash");
+        RubyModule module = runtime.defineModule(RubyUtil.LS_MODULE_NAME);
 
         RubyClass clazz = runtime.defineClassUnder("AckedQueue", runtime.getObject(), new ObjectAllocator() {
             public IRubyObject allocate(Ruby runtime, RubyClass rubyClass) {
