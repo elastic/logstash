@@ -23,6 +23,7 @@ import org.logstash.ConvertedMap;
 import org.logstash.Event;
 import org.logstash.FieldReference;
 import org.logstash.PathCache;
+import org.logstash.RubyUtil;
 import org.logstash.Rubyfier;
 import org.logstash.Valuefier;
 
@@ -34,7 +35,7 @@ public class JrubyEventExtLibrary implements Library {
 
     @Override
     public void load(Ruby runtime, boolean wrap) throws IOException {
-        RubyModule module = runtime.defineModule("LogStash");
+        final RubyModule module = runtime.defineModule(RubyUtil.LS_MODULE_NAME);
 
         RubyClass clazz = runtime.defineClassUnder(
             "Event", runtime.getObject(), RubyEvent::new, module
@@ -50,15 +51,15 @@ public class JrubyEventExtLibrary implements Library {
         clazz.defineAnnotatedMethods(RubyEvent.class);
         clazz.defineAnnotatedConstants(RubyEvent.class);
 
-        PARSER_ERROR = runtime.getModule("LogStash").defineOrGetModuleUnder("Json").getClass("ParserError");
+        PARSER_ERROR = module.defineOrGetModuleUnder("Json").getClass("ParserError");
         if (PARSER_ERROR == null) {
             throw new RaiseException(runtime, runtime.getClass("StandardError"), "Could not find LogStash::Json::ParserError class", true);
         }
-        GENERATOR_ERROR = runtime.getModule("LogStash").defineOrGetModuleUnder("Json").getClass("GeneratorError");
+        GENERATOR_ERROR = module.defineOrGetModuleUnder("Json").getClass("GeneratorError");
         if (GENERATOR_ERROR == null) {
             throw new RaiseException(runtime, runtime.getClass("StandardError"), "Could not find LogStash::Json::GeneratorError class", true);
         }
-        LOGSTASH_ERROR = runtime.getModule("LogStash").getClass("Error");
+        LOGSTASH_ERROR = module.getClass("Error");
         if (LOGSTASH_ERROR == null) {
             throw new RaiseException(runtime, runtime.getClass("StandardError"), "Could not find LogStash::Error class", true);
         }
@@ -86,7 +87,7 @@ public class JrubyEventExtLibrary implements Library {
 
         public static RubyEvent newRubyEvent(Ruby runtime, Event event) {
             final RubyEvent ruby =
-                new RubyEvent(runtime, runtime.getModule("LogStash").getClass("Event"));
+                new RubyEvent(runtime, runtime.getModule(RubyUtil.LS_MODULE_NAME).getClass("Event"));
             ruby.setEvent(event);
             return ruby;
         }

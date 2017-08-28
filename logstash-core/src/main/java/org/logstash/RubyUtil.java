@@ -8,6 +8,11 @@ import org.jruby.Ruby;
 public final class RubyUtil {
 
     /**
+     * Name of the Logstash JRuby module we register.
+     */
+    public static final String LS_MODULE_NAME = "LogStash";
+
+    /**
      * Reference to the global {@link Ruby} runtime.
      */
     public static final Ruby RUBY = setupRuby();
@@ -22,7 +27,7 @@ public final class RubyUtil {
      */
     private static Ruby setupRuby() {
         final Ruby ruby = Ruby.getGlobalRuntime();
-        ruby.getOrCreateModule("LogStash");
+        ruby.getOrCreateModule(LS_MODULE_NAME);
         return ruby;
     }
 }
