@@ -37,13 +37,13 @@ public final class LsQueueUtils {
         int left = count;
         final Collection<JrubyEventExtLibrary.RubyEvent> collection =
             new HashSet<>(4 * count / 3 + 1);
-        while (left > 0) {
+        do {
             final int drained = drain(queue, collection, left, nanos);
             if (drained == 0) {
                 break;
             }
             left -= drained;
-        }
+        } while (left > 0);
         return collection;
     }
 
@@ -65,7 +65,7 @@ public final class LsQueueUtils {
         final long nanos) throws InterruptedException {
         final long deadline = System.nanoTime() + nanos;
         int added = 0;
-        while (added < count) {
+        do {
             added += queue.drainTo(collection, count - added);
             if (added < count) {
                 final JrubyEventExtLibrary.RubyEvent event =
@@ -76,7 +76,7 @@ public final class LsQueueUtils {
                 collection.add(event);
                 added++;
             }
-        }
+        } while (added < count);
         return added;
     }
 
