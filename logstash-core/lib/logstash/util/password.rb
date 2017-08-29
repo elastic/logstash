@@ -1,10 +1,9 @@
 # encoding: utf-8
 require "logstash/namespace"
-require "logstash/util"
 
 # This class exists to quietly wrap a password string so that, when printed or
 # logged, you don't accidentally print the password itself.
-class LogStash::Util::Password
+module LogStash module Util class Password
   attr_reader :value
 
   public
@@ -21,5 +20,4 @@ class LogStash::Util::Password
   def inspect
     return to_s
   end # def inspect
-end # class LogStash::Util::Password
-
+end end end # class LogStash::Util::Password
