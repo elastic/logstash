@@ -71,7 +71,8 @@ module LogStash module Config module Source
           end
 
           config_string = ::File.read(file)
-
+          config_string.force_encoding("UTF-8")
+          
           if config_string.valid_encoding?
             part = org.logstash.common.SourceWithMetadata.new("file", file, 0, 0, config_string)
             config_parts << part

@@ -32,10 +32,12 @@ describe LogStash::PluginManager::PackFetchStrategy::Uri do
     let(:temporary_file) do
       f = Stud::Temporary.file
       f.write("hola")
+      f.close
       f.path
     end
 
-    let(:plugin_path) { "file://#{temporary_file}" }
+    # Windows safe way to produce a file: URI.
+    let(:plugin_path) { URI.join("file:///" + File.absolute_path(temporary_file)).to_s }
 
     it "returns a `LocalInstaller`" do
       expect(subject.get_installer_for(plugin_path)).to be_kind_of(LogStash::PluginManager::PackInstaller::Local)

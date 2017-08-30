@@ -56,7 +56,7 @@ describe LogStash::PluginManager::Utils::Downloader do
       let(:temporary_path) { Stud::Temporary.pathname }
 
       before do
-        expect_any_instance_of(::File).to receive(:close).at_least(:twice).and_raise("Didn't work")
+        expect(Net::HTTP::Get).to receive(:new).once.and_raise("Didn't work")
         expect(Stud::Temporary).to receive(:pathname).and_return(temporary_path)
       end
 
