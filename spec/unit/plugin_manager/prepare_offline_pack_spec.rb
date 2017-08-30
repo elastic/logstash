@@ -79,6 +79,10 @@ describe LogStash::PluginManager::PrepareOfflinePack do
         expect(LogStash::PluginManager::OfflinePluginPackager).not_to receive(:package).with(anything)
       end
 
+      after do
+        FileUtils.rm_rf(tmp_zip_file)
+      end
+
       it "fails to do any action" do
         expect { subject.run(cmd_args) }.to raise_error Clamp::ExecutionError, /you must specify a filename/
       end
@@ -101,13 +105,18 @@ describe LogStash::PluginManager::PrepareOfflinePack do
         FileUtils.touch(tmp_zip_file)
       end
 
+      after do
+        FileUtils.rm_f(tmp_zip_file)
+      end
+
       context "without `--overwrite`" do
         before do
           expect(LogStash::PluginManager::OfflinePluginPackager).not_to receive(:package).with(anything)
         end
 
         it "should fails" do
-          expect { subject.run(cmd_args) }.to raise_error Clamp::ExecutionError, /output file destination #{tmp_zip_file} already exist/
+          # ignore the first path part of tmp_zip_file because on Windows the long path is shrinked in the exception message 
+          expect { subject.run(cmd_args) }.to raise_error Clamp::ExecutionError, /output file destination .+#{::File.basename(tmp_zip_file)} already exist/
         end
       end
 

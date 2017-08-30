@@ -3,17 +3,17 @@ require "spec_helper"
 require "logstash/settings"
 require "tmpdir"
 require "socket" # for UNIXSocket
+require "fileutils"
 
 describe LogStash::Setting::WritableDirectory do
-  let(:mode_rx) { 0555 }
   # linux is 108, Macos is 104, so use a safe value
   # Stud::Temporary.pathname, will exceed that size without adding anything
   let(:parent) { File.join(Dir.tmpdir, Time.now.to_f.to_s) }
   let(:path) { File.join(parent, "fancy") }
 
   before { Dir.mkdir(parent) }
-  after { Dir.exist?(path) && Dir.unlink(path) rescue nil }
-  after { Dir.unlink(parent) }
+  after { Dir.exist?(path) && FileUtils.rm_rf(path)}
+  after { FileUtils.rm_rf(parent) }
 
   shared_examples "failure" do
     before { subject.set(path) }
@@ -44,8 +44,9 @@ describe LogStash::Setting::WritableDirectory do
       end
 
       context "and the directory cannot be created" do
-        before { File.chmod(mode_rx, parent) }
         it "should fail" do
+          # using chmod does not work on Windows better mock and_raise("message")
+          expect(FileUtils).to receive(:mkdir_p).and_raise("foobar")
           expect { subject.value }.to raise_error
         end
       end
@@ -66,7 +67,8 @@ describe LogStash::Setting::WritableDirectory do
       end
 
       context "but is not writable" do
-        before { File.chmod(0, path) }
+        # chmod does not work on Windows, mock writable? instead
+        before { expect(File).to receive(:writable?).and_return(false) }
         it_behaves_like "failure"
       end
     end
@@ -84,12 +86,13 @@ describe LogStash::Setting::WritableDirectory do
         before { socket } # realize `socket` value
         after { socket.close }
         it_behaves_like "failure"
-      end
+      end unless LogStash::Environment.windows?
 
+      
       context "but is a symlink" do
-        before { File::symlink("whatever", path) }
+        before { FileUtils.symlink("whatever", path) }
         it_behaves_like "failure"
-      end
+      end unless LogStash::Environment.windows?
     end
 
     context "when the directory is missing" do
@@ -114,8 +117,8 @@ describe LogStash::Setting::WritableDirectory do
 
       context "and cannot be created" do
         before do
-          # Remove write permission on the parent
-          File.chmod(mode_rx, parent)
+          # chmod does not work on Windows, mock writable? instead
+          expect(File).to receive(:writable?).and_return(false)
         end
 
         it_behaves_like "failure"
