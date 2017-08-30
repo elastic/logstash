@@ -2,14 +2,27 @@ package org.logstash;
 
 import java.io.Serializable;
 import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.Map;
 import org.jruby.RubyHash;
+import org.jruby.RubyString;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 
-public final class ConvertedMap extends HashMap<String, Object> {
+/**
+ * <p>This class is an internal API and behaves very different from a standard {@link Map}.</p>
+ * <p>The {@code get} method only has defined behaviour when used with an interned {@link String}
+ * as key.</p>
+ * <p>The {@code put} method will work with any {@link String} key but is only intended for use in
+ * situations where {@link ConvertedMap#putInterned(String, Object)} would require manually
+ * interning the {@link String} key. This is due to the fact that we use our internal
+ * {@link PathCache} to get an interned version of the given key instead of JDKs
+ * {@link String#intern()}, which is faster since it works from a much smaller and hotter cache
+ * in {@link PathCache} than using String interning directly.</p>
+ */
+public final class ConvertedMap extends IdentityHashMap<String, Object> {
 
-    private static final long serialVersionUID = -4651798808586901122L;
+    private static final long serialVersionUID = 1L;
 
     private static final RubyHash.VisitorWithState<ConvertedMap> RUBY_HASH_VISITOR =
         new RubyHash.VisitorWithState<ConvertedMap>() {
@@ -17,18 +30,27 @@ public final class ConvertedMap extends HashMap<String, Object> {
             public void visit(final ThreadContext context, final RubyHash self,
                 final IRubyObject key, final IRubyObject value,
                 final int index, final ConvertedMap state) {
-                state.put(key.toString(), Valuefier.convert(value));
+                if (key instanceof RubyString) {
+                    state.putInterned(convertKey((RubyString) key), Valuefier.convert(value));
+                } else {
+                    state.put(key.toString(), Valuefier.convert(value));
+                }
             }
         };
 
     ConvertedMap(final int size) {
-        super((size << 2) / 3 + 2);
+        super(size);
     }
-    
+
     public static ConvertedMap newFromMap(Map<Serializable, Object> o) {
         ConvertedMap cm = new ConvertedMap(o.size());
         for (final Map.Entry<Serializable, Object> entry : o.entrySet()) {
-            cm.put(entry.getKey().toString(), Valuefier.convert(entry.getValue()));
+            final Serializable found = entry.getKey();
+            if (found instanceof String) {
+                cm.put((String) found, Valuefier.convert(entry.getValue()));
+            } else {
+                cm.putInterned(convertKey((RubyString) found), entry.getValue());
+            }
         }
         return cm;
     }
@@ -43,11 +65,35 @@ public final class ConvertedMap extends HashMap<String, Object> {
         return result;
     }
 
+    @Override
+    public Object put(final String key, final Object value) {
+        return super.put(PathCache.cache(key).getKey(), value);
+    }
+
+    /**
+     * <p>Behaves like a standard {@link Map#put(Object, Object)} but without the return value.</p>
+     * <p>Only produces correct results if the given {@code key} is an interned {@link String}.</p>
+     * @param key Interned String
+     * @param value Value to put
+     */
+    public void putInterned(final String key, final Object value) {
+        super.put(key, value);
+    }
+
     public Object unconvert() {
         final HashMap<String, Object> result = new HashMap<>(size());
         for (final Map.Entry<String, Object> entry : entrySet()) {
             result.put(entry.getKey(), Javafier.deep(entry.getValue()));
         }
         return result;
+    }
+
+    /**
+     * Converts a {@link RubyString} into a {@link String} that is guaranteed to be interned.
+     * @param key RubyString to convert
+     * @return Interned String
+     */
+    private static String convertKey(final RubyString key) {
+        return PathCache.cache(key.getByteList()).getKey();
     }
 }

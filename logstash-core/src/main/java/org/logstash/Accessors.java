@@ -103,7 +103,7 @@ public final class Accessors {
 
     private static Object setChild(final Object target, final String key, final Object value) {
         if (target instanceof Map) {
-            ((ConvertedMap) target).put(key, value);
+            ((ConvertedMap) target).putInterned(key, value);
             return value;
         } else {
             return setOnList(key, value, (ConvertedList) target);
@@ -112,7 +112,7 @@ public final class Accessors {
 
     private static Object createChild(final ConvertedMap target, final String key) {
         final Object result = new ConvertedMap(1);
-        target.put(key, result);
+        target.putInterned(key, result);
         return result;
     }
 
