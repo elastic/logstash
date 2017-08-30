@@ -44,10 +44,10 @@ public final class Event implements Cloneable, Queueable {
     {
         this.metadata = new ConvertedMap(10);
         this.data = new ConvertedMap(10);
-        this.data.put(VERSION, VERSION_ONE);
+        this.data.putInterned(VERSION, VERSION_ONE);
         this.cancelled = false;
         this.timestamp = new Timestamp();
-        this.data.put(TIMESTAMP, this.timestamp);
+        this.data.putInterned(TIMESTAMP, this.timestamp);
     }
 
     /**
@@ -68,7 +68,7 @@ public final class Event implements Cloneable, Queueable {
     public Event(ConvertedMap data) {
         this.data = data;
         if (!this.data.containsKey(VERSION)) {
-            this.data.put(VERSION, VERSION_ONE);
+            this.data.putInterned(VERSION, VERSION_ONE);
         }
 
         if (this.data.containsKey(METADATA)) {
@@ -120,7 +120,7 @@ public final class Event implements Cloneable, Queueable {
 
     public void setTimestamp(Timestamp t) {
         this.timestamp = t;
-        this.data.put(TIMESTAMP, this.timestamp);
+        this.data.putInterned(TIMESTAMP, this.timestamp);
     }
 
     public Object getField(final String reference) {
