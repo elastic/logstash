@@ -28,7 +28,12 @@ public final class BiValues {
         final Class<?> cls = o.getClass();
         final BiValues.BiValueType type = CONVERTER_CACHE.get(cls);
         if (type == null) {
-            throw new IllegalArgumentException("Unsupported class " + cls);
+            throw new IllegalArgumentException(
+                String.format(
+                    "Missing Converter handling for full class name=%s, simple name=%s",
+                    cls.getName(), cls.getSimpleName()
+                )
+            );
         }
         return type.build(o);
     }
