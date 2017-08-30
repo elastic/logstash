@@ -11,6 +11,7 @@ import com.fasterxml.jackson.dataformat.cbor.CBORGenerator;
 import java.io.IOException;
 import java.util.HashMap;
 import org.jruby.RubyBoolean;
+import org.jruby.RubyFixnum;
 import org.jruby.RubyFloat;
 import org.jruby.RubyString;
 
@@ -20,7 +21,8 @@ public final class ObjectMappers {
         new SimpleModule("RubySerializers")
             .addSerializer(RubyString.class, new RubyStringSerializer())
             .addSerializer(RubyFloat.class, new RubyFloatSerializer())
-            .addSerializer(RubyBoolean.class, new RubyBooleanSerializer());
+            .addSerializer(RubyBoolean.class, new RubyBooleanSerializer())
+            .addSerializer(RubyFixnum.class, new RubyFixnumSerializer());
 
     public static final ObjectMapper JSON_MAPPER = 
         new ObjectMapper().registerModule(RUBY_SERIALIZERS);
@@ -90,6 +92,24 @@ public final class ObjectMappers {
         public void serialize(final RubyBoolean value, final JsonGenerator generator,
             final SerializerProvider provider) throws IOException {
             generator.writeBoolean(value.isTrue());
+        }
+    }
+
+    /**
+     * Serializer for {@link RubyFixnum} since Jackson can't handle that type natively, so we
+     * simply serialize it as if it were a {@code long}.
+     */
+    private static final class RubyFixnumSerializer
+        extends NonTypedScalarSerializerBase<RubyFixnum> {
+
+        RubyFixnumSerializer() {
+            super(RubyFixnum.class, true);
+        }
+
+        @Override
+        public void serialize(final RubyFixnum value, final JsonGenerator generator,
+            final SerializerProvider provider) throws IOException {
+            generator.writeNumber(value.getLongValue());
         }
     }
 }

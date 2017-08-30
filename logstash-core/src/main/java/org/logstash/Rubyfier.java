@@ -6,6 +6,7 @@ import java.util.Map;
 import org.jruby.Ruby;
 import org.jruby.RubyArray;
 import org.jruby.RubyBoolean;
+import org.jruby.RubyFixnum;
 import org.jruby.RubyFloat;
 import org.jruby.RubyHash;
 import org.jruby.RubyString;
@@ -30,18 +31,21 @@ public final class Rubyfier {
 
     public static IRubyObject deep(Ruby runtime, final Object input) {
         if (input instanceof RubyString || input instanceof RubyFloat
-            || input instanceof RubyBoolean
+            || input instanceof RubyBoolean || input instanceof RubyFixnum
             || input instanceof JrubyTimestampExtLibrary.RubyTimestamp) {
             return (IRubyObject) input;
         }
-        if (input instanceof String) return RubyUtil.RUBY.newString((String) input);
+        if (input instanceof String) return runtime.newString((String) input);
         if (input instanceof Double || input instanceof Float) {
-            return RubyUtil.RUBY.newFloat(((Number) input).doubleValue());
+            return runtime.newFloat(((Number) input).doubleValue());
         }
-        if (input instanceof Boolean) return RubyUtil.RUBY.newBoolean((Boolean) input);
+        if (input instanceof Integer || input instanceof Long) {
+            return runtime.newFixnum(((Number) input).longValue());
+        }
+        if (input instanceof Boolean) return runtime.newBoolean((Boolean) input);
         if (input instanceof Timestamp) {
             return JrubyTimestampExtLibrary.RubyTimestamp.newRubyTimestamp(
-                RubyUtil.RUBY, (Timestamp) input
+                runtime, (Timestamp) input
             );
         }
         if (input instanceof BiValue) return ((BiValue) input).rubyValue(runtime);

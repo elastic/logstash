@@ -7,6 +7,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.joda.time.DateTime;
 import org.jruby.RubyArray;
 import org.jruby.RubyBoolean;
+import org.jruby.RubyFixnum;
 import org.jruby.RubyFloat;
 import org.jruby.RubyHash;
 import org.jruby.RubyString;
@@ -27,6 +28,9 @@ public final class Valuefier {
 
     private static final Valuefier.Converter FLOAT_CONVERTER =
         input -> RubyUtil.RUBY.newFloat(((Number) input).doubleValue());
+
+    private static final Valuefier.Converter LONG_CONVERTER
+        = input -> RubyUtil.RUBY.newFixnum(((Number) input).longValue());
 
     private static final Valuefier.Converter JAVAPROXY_CONVERTER =
         input -> {
@@ -95,6 +99,7 @@ public final class Valuefier {
         final Map<Class<?>, Valuefier.Converter> converters =
             new ConcurrentHashMap<>(50, 0.2F, 1);
         converters.put(RubyString.class, IDENTITY);
+        converters.put(RubyFixnum.class, IDENTITY);
         converters.put(JrubyTimestampExtLibrary.RubyTimestamp.class, IDENTITY);
         converters.put(RubyFloat.class, IDENTITY);
         converters.put(ConvertedMap.class, IDENTITY);
@@ -104,6 +109,8 @@ public final class Valuefier {
         converters.put(String.class, input -> RubyUtil.RUBY.newString((String) input));
         converters.put(Float.class, FLOAT_CONVERTER);
         converters.put(Double.class, FLOAT_CONVERTER);
+        converters.put(Long.class, LONG_CONVERTER);
+        converters.put(Integer.class, LONG_CONVERTER);
         converters.put(Boolean.class, input -> RubyUtil.RUBY.newBoolean((Boolean) input));
         converters.put(
             Timestamp.class,
