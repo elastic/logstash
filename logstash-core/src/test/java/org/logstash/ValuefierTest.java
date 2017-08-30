@@ -81,7 +81,7 @@ public class ValuefierTest extends TestBase {
     public void testUnhandledObject() {
         RubyMatchData md = new RubyMatchData(ruby);
         exception.expect(IllegalArgumentException.class);
-        exception.expectMessage("Missing Valuefier handling for full class name=org.jruby.RubyMatchData, simple name=RubyMatchData");
+        exception.expectMessage("Missing Converter handling for full class name=org.jruby.RubyMatchData, simple name=RubyMatchData");
         Valuefier.convert(md);
     }
 
