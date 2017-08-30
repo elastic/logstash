@@ -544,7 +544,6 @@ public interface EventCondition {
             @Override
             public boolean fulfilled(final JrubyEventExtLibrary.RubyEvent event) {
                 final Object val = event.getEvent().getUnconvertedField(field);
-                System.out.println(val.getClass());
                 return val instanceof RubyInteger && ((RubyInteger) val).getLongValue() == value;
             }
         }
