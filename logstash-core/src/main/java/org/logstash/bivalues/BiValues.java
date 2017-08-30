@@ -5,8 +5,6 @@ import java.math.BigInteger;
 import java.util.HashMap;
 import java.util.Map;
 import org.jruby.RubyBignum;
-import org.jruby.RubyFixnum;
-import org.jruby.RubyInteger;
 import org.jruby.RubyNil;
 import org.jruby.RubySymbol;
 import org.jruby.ext.bigdecimal.RubyBigDecimal;
@@ -44,13 +42,9 @@ public final class BiValues {
 
     private static Map<Class<?>, BiValues.BiValueType> initCache() {
         final Map<Class<?>, BiValues.BiValueType> hm = new HashMap<>(50, 0.2F);
-        hm.put(Integer.class, value -> new IntegerBiValue((Integer) value));
-        hm.put(Long.class, value -> new LongBiValue((Long) value));
         hm.put(BigDecimal.class, value -> new BigDecimalBiValue((BigDecimal) value));
         hm.put(BigInteger.class, value -> new BigIntegerBiValue((BigInteger) value));
         hm.put(RubyBignum.class, value -> new BigIntegerBiValue((RubyBignum) value));
-        hm.put(RubyFixnum.class, value -> new LongBiValue((RubyInteger) value));
-        hm.put(RubyInteger.class, value -> new IntegerBiValue((RubyInteger) value));
         hm.put(RubyNil.class, value -> NULL_BI_VALUE);
         hm.put(RubySymbol.class, value -> new SymbolBiValue((RubySymbol) value));
         hm.put(RubyBigDecimal.class, value -> new BigDecimalBiValue((RubyBigDecimal) value));

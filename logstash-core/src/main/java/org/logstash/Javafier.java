@@ -1,7 +1,7 @@
 package org.logstash;
 
-
 import org.jruby.RubyBoolean;
+import org.jruby.RubyFixnum;
 import org.jruby.RubyFloat;
 import org.jruby.RubyString;
 import org.logstash.bivalues.BiValue;
@@ -22,8 +22,9 @@ public class Javafier {
         if (o instanceof RubyString) {
             return o.toString();
         }
-        if (o instanceof String || o instanceof Float || o instanceof Double || 
-            o instanceof Boolean || o instanceof Timestamp) {
+        if (o instanceof String || o instanceof Float || o instanceof Double ||
+            o instanceof Long || o instanceof Integer || o instanceof Boolean ||
+            o instanceof Timestamp) {
             return o;
         }
         if (o instanceof RubyFloat) {
@@ -34,6 +35,9 @@ public class Javafier {
         }
         if (o instanceof RubyBoolean) {
             return ((RubyBoolean) o).isTrue();
+        }
+        if (o instanceof RubyFixnum) {
+            return ((RubyFixnum) o).getLongValue();
         }
         if (o instanceof BiValue) {
             return ((BiValue)o).javaValue();

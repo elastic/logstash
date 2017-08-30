@@ -7,8 +7,6 @@ import java.io.ObjectOutputStream;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import org.jruby.RubyBignum;
-import org.jruby.RubyFixnum;
-import org.jruby.RubyInteger;
 import org.jruby.RubySymbol;
 import org.jruby.ext.bigdecimal.RubyBigDecimal;
 import org.junit.Test;
@@ -27,43 +25,6 @@ public class BiValueTest extends TestBase {
         assertTrue(subject.hasRubyValue());
         assertFalse(subject.hasJavaValue());
         assertEquals(s, subject.javaValue());
-    }
-
-    @Test
-    public void testLongBiValueFromRuby() {
-        Long s = 123456789L;
-        LongBiValue subject = new LongBiValue(RubyFixnum.newFixnum(ruby, s));
-        assertTrue(subject.hasRubyValue());
-        assertFalse(subject.hasJavaValue());
-        assertEquals(s, subject.javaValue());
-    }
-
-    @Test
-    public void testLongBiValueFromJava() {
-        RubyInteger v = RubyFixnum.newFixnum(ruby, 123456789L);
-        LongBiValue subject = new LongBiValue(123456789L);
-        assertFalse(subject.hasRubyValue());
-        assertTrue(subject.hasJavaValue());
-        assertEquals(v, subject.rubyValue(ruby));
-    }
-
-
-    @Test
-    public void testIntegerBiValueFromRuby() {
-        int j = 123456789;
-        IntegerBiValue subject = new IntegerBiValue(RubyFixnum.newFixnum(ruby, j));
-        assertTrue(subject.hasRubyValue());
-        assertFalse(subject.hasJavaValue());
-        assertTrue(j - subject.javaValue() == 0);
-    }
-
-    @Test
-    public void testIntegerBiValueFromJava() {
-        RubyInteger v = RubyFixnum.newFixnum(ruby, 123456789);
-        IntegerBiValue subject = new IntegerBiValue(123456789);
-        assertFalse(subject.hasRubyValue());
-        assertTrue(subject.hasJavaValue());
-        assertEquals(v, subject.rubyValue(ruby));
     }
 
     @Test
