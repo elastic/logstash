@@ -68,7 +68,7 @@ module LogStash module PluginManager module Utils
           downloaded_file.path
         end
       rescue => e
-        downloaded_file.close rescue nil
+        downloaded_file.close unless downloaded_file.closed?
         FileUtils.rm_rf(download_to)
         raise e
       end

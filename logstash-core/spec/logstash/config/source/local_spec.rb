@@ -79,7 +79,7 @@ describe LogStash::Config::Source::Local::ConfigPathLoader do
 
         parts.each do |part|
           basename = ::File.basename(part.id)
-          file_path = ::File.join(directory, basename)
+          file_path = ::File.expand_path(::File.join(directory, basename))
           content = files[basename]
           expect(part).to be_a_source_with_metadata("file", file_path, content)
         end
@@ -99,7 +99,8 @@ describe LogStash::Config::Source::Local::ConfigPathLoader do
       end
 
       it "raises an exception" do
-        expect { subject.read(file_path) }.to raise_error LogStash::ConfigLoadingError, /#{file_path}/
+        # check against base name because on Windows long paths are shrinked in the exception message
+        expect { subject.read(file_path) }.to raise_error LogStash::ConfigLoadingError, /.+#{::File.basename(file_path)}/
       end
     end
 
