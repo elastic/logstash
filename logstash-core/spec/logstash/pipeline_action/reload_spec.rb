@@ -22,7 +22,10 @@ describe LogStash::PipelineAction::Reload do
   end
 
   after do
-    pipelines.each { |_, pipeline| pipeline.shutdown }
+    pipelines.each do |_, pipeline| 
+      pipeline.shutdown
+      pipeline.thread.join
+    end
   end
 
   it "returns the pipeline_id" do

@@ -35,7 +35,7 @@ describe LogStash::Agent do
     # This MUST run first, before `subject` is invoked to ensure clean state
     clear_data_dir
 
-    File.open(config_file, "w") { |f| f.puts config_file_txt }
+    File.open(config_file, "w") { |f| f.puts(config_file_txt) }
 
     agent_args.each do |key, value|
       agent_settings.set(key, value)
@@ -52,8 +52,9 @@ describe LogStash::Agent do
   after :each do
     subject.shutdown
     LogStash::SETTINGS.reset
-    File.unlink(config_file)
-    File.unlink(subject.id_path)
+
+    FileUtils.rm(config_file)
+    FileUtils.rm_rf(subject.id_path)
   end
 
   it "fallback to hostname when no name is provided" do
@@ -324,8 +325,10 @@ describe LogStash::Agent do
   context "metrics after config reloading" do
 
     let(:initial_generator_threshold) { 1000 }
-    let(:temporary_file) { Stud::Temporary.file.path }
-    let(:config_file_txt) { "input { generator { count => #{initial_generator_threshold*2} } } output { file { path => '#{temporary_file}'} }" }
+    let(:original_config_output) { Stud::Temporary.pathname }
+    let(:new_config_output) { Stud::Temporary.pathname }
+
+    let(:config_file_txt) { "input { generator { count => #{initial_generator_threshold*2} } } output { file { path => '#{original_config_output}'} }" }
 
     let(:agent_args) do
       {
@@ -336,15 +339,24 @@ describe LogStash::Agent do
 
     subject { described_class.new(agent_settings, default_source_loader) }
 
+    let(:agent_thread) do
+      # subject has to be called for the first time outside the thread because it could create a race condition
+      # with subsequent subject calls
+      s = subject
+      Thread.new { s.execute }
+    end
+
     before(:each) do
       @abort_on_exception = Thread.abort_on_exception
       Thread.abort_on_exception = true
 
-      @t = Thread.new { subject.execute }
+      agent_thread
 
       # wait for some events to reach the dummy_output
       Timeout.timeout(timeout) do
-        sleep(0.01) until IO.readlines(temporary_file).size > initial_generator_threshold
+        # wait for file existence otherwise it will raise exception on Windows
+        sleep(0.1) until ::File.exist?(original_config_output)
+        sleep(0.1) until IO.readlines(original_config_output).size > initial_generator_threshold
       end
 
       # write new config
@@ -353,10 +365,12 @@ describe LogStash::Agent do
 
     after :each do
       begin
+        Stud.stop!(agent_thread) rescue nil # it may be dead already
+        agent_thread.join
         subject.shutdown
-        Stud.stop!(@t) rescue nil # it may be dead already
-        @t.join
-        File.unlink(temporary_file)
+
+        FileUtils.rm(original_config_output)
+        FileUtils.rm(new_config_output) if File.exist?(new_config_output)
       rescue
           #don't care about errors here.
       ensure
@@ -366,20 +380,19 @@ describe LogStash::Agent do
 
     context "when reloading a good config" do
       let(:new_config_generator_counter) { 500 }
-      let(:new_file) { Stud::Temporary.file.path }
-      let(:new_config) { "input { generator { count => #{new_config_generator_counter} } } output { file { path => '#{new_file}'} }" }
+      let(:new_config) { "input { generator { count => #{new_config_generator_counter} } } output { file { path => '#{new_config_output}'} }" }
 
       before :each do
         subject.converge_state_and_update
         Timeout.timeout(timeout) do
-          sleep(0.01) while ::File.read(new_file).chomp.empty?
+          # wait for file existence otherwise it will raise exception on Windows
+          sleep(0.1) until ::File.exist?(new_config_output)
+          sleep(0.1) while ::File.read(new_config_output).chomp.empty?
         end
         # ensure the converge_state_and_update method has updated metrics by
         # invoking the mutex
         subject.running_pipelines?
       end
-
-      after(:each) { File.unlink(new_file) }
 
       it "resets the pipeline metric collector" do
         snapshot = subject.metric.collector.snapshot_metric
