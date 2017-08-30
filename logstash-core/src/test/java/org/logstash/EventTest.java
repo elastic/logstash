@@ -28,7 +28,7 @@ public final class EventTest {
         byte[] binary = e.serialize();
         Event er = Event.deserialize(binary);
         assertEquals(42L, er.getField("foo"));
-        assertEquals(42, er.getField("bar"));
+        assertEquals(42L, er.getField("bar"));
         assertEquals(42L, er.getField("[baz][innerFoo]"));
         assertEquals(42.42, er.getField("[baz][innerQuux]"));
         assertEquals(42L, er.getField("[@metadata][foo]"));
@@ -48,7 +48,7 @@ public final class EventTest {
         e.setField("[@metadata][foo]", 42L);
         Event er = Event.deserialize(e.serialize());
         assertEquals(42L, er.getField("foo"));
-        assertEquals(42, er.getField("bar"));
+        assertEquals(42L, er.getField("bar"));
         assertEquals(42L, er.getField("[baz][innerFoo]"));
         assertEquals(42.42, er.getField("[baz][innerQuux]"));
         assertEquals(42L, er.getField("[@metadata][foo]"));
@@ -74,6 +74,14 @@ public final class EventTest {
     public void testSimpleIntegerFieldToJson() throws Exception {
         Map<String, Object> data = new HashMap<>();
         data.put("foo", 1);
+        Event e = new Event(data);
+        assertJsonEquals("{\"@timestamp\":\"" + e.getTimestamp().toIso8601() + "\",\"foo\":1,\"@version\":\"1\"}", e.toJson());
+    }
+
+    @Test
+    public void testSimpleLongFieldToJson() throws Exception {
+        Map<String, Object> data = new HashMap<>();
+        data.put("foo", 1L);
         Event e = new Event(data);
         assertJsonEquals("{\"@timestamp\":\"" + e.getTimestamp().toIso8601() + "\",\"foo\":1,\"@version\":\"1\"}", e.toJson());
     }
@@ -139,7 +147,7 @@ public final class EventTest {
         data.put("foo", l);
         l.add(1);
         Event e = new Event(data);
-        assertEquals(1, e.getField("[foo][0]"));
+        assertEquals(1L, e.getField("[foo][0]"));
     }
 
     @Test
