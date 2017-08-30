@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import org.jruby.RubyInteger;
 import org.jruby.RubyString;
 import org.jruby.util.ByteList;
 import org.logstash.ConvertedList;
@@ -329,9 +330,17 @@ public interface EventCondition {
 
         private static EventCondition eq(final EventValueExpression evale,
             final ValueExpression vale) {
-            return new EventCondition.Compiler.FieldEquals(
-                evale.getFieldName(), vale.get().toString()
-            );
+            final Object value = vale.get();
+            final String field = evale.getFieldName();
+            if (value instanceof String) {
+                return new EventCondition.Compiler.FieldEqualsString(field, (String) value);
+            } else if (value instanceof Long || value instanceof Integer ||
+                value instanceof Short) {
+                return new EventCondition.Compiler.FieldEqualsLong(
+                    field, ((Number) value).longValue()
+                );
+            }
+            throw new UnexpectedTypeException(value);
         }
 
         private static EventCondition eq(final Eq equals) {
@@ -374,7 +383,7 @@ public interface EventCondition {
 
         private static EventCondition gt(final EventValueExpression left,
             final ValueExpression right) {
-            return new EventCondition.Compiler.FieldGreaterThan(
+            return new EventCondition.Compiler.FieldGreaterThanString(
                 left.getFieldName(), right.get().toString()
             );
         }
@@ -485,13 +494,13 @@ public interface EventCondition {
             }
         }
 
-        private static final class FieldGreaterThan implements EventCondition {
+        private static final class FieldGreaterThanString implements EventCondition {
 
             private final FieldReference field;
 
             private final RubyString value;
 
-            private FieldGreaterThan(final String field, final String value) {
+            private FieldGreaterThanString(final String field, final String value) {
                 this.field = PathCache.cache(field);
                 this.value = RubyUtil.RUBY.newString(value);
             }
@@ -503,13 +512,13 @@ public interface EventCondition {
             }
         }
 
-        private static final class FieldEquals implements EventCondition {
+        private static final class FieldEqualsString implements EventCondition {
 
             private final FieldReference field;
 
             private final RubyString value;
 
-            private FieldEquals(final String field, final String value) {
+            private FieldEqualsString(final String field, final String value) {
                 this.field = PathCache.cache(field);
                 this.value = RubyUtil.RUBY.newString(value);
             }
@@ -517,7 +526,26 @@ public interface EventCondition {
             @Override
             public boolean fulfilled(final JrubyEventExtLibrary.RubyEvent event) {
                 final Object val = event.getEvent().getUnconvertedField(field);
-                return val != null && value.toString().equals(val.toString());
+                return value.equals(val);
+            }
+        }
+
+        private static final class FieldEqualsLong implements EventCondition {
+
+            private final FieldReference field;
+
+            private final long value;
+
+            private FieldEqualsLong(final String field, final long value) {
+                this.field = PathCache.cache(field);
+                this.value = value;
+            }
+
+            @Override
+            public boolean fulfilled(final JrubyEventExtLibrary.RubyEvent event) {
+                final Object val = event.getEvent().getUnconvertedField(field);
+                System.out.println(val.getClass());
+                return val instanceof RubyInteger && ((RubyInteger) val).getLongValue() == value;
             }
         }
 
@@ -701,8 +729,8 @@ public interface EventCondition {
                 );
             }
 
-            UnexpectedTypeException(final Expression inner) {
-                super(String.format("Unexpected input type %s", inner));
+            UnexpectedTypeException(final Object inner) {
+                super(String.format("Unexpected input type %s", inner.getClass()));
             }
         }
     }
