@@ -7,26 +7,6 @@ require "thread"
 
 module PipelineHelpers
 
-  DEFAULT_NUMBER_OF_TRY = 5
-  DEFAULT_EXCEPTIONS_FOR_TRY = [RSpec::Expectations::ExpectationNotMetError]
-
-  def try(number_of_try = DEFAULT_NUMBER_OF_TRY, &block)
-    Stud.try(number_of_try.times, DEFAULT_EXCEPTIONS_FOR_TRY, &block)
-  end
-
-  def config(configstr)
-    let(:config) { configstr }
-  end # def config
-
-  def type(default_type)
-    let(:default_type) { default_type }
-  end
-
-  def tags(*tags)
-    let(:default_tags) { tags }
-    puts "Setting default tags: #{tags}"
-  end
-
   def sample_one(sample_event, &block)
     name = sample_event.is_a?(String) ? sample_event : LogStash::Json.dump(sample_event)
     name = name[0..50] + "..." if name.length > 50
@@ -65,38 +45,9 @@ module PipelineHelpers
 
       it("when processed", &block)
     end
-  end # def sample
-
-  def input(config, &block)
-    pipeline = new_pipeline_from_string(config)
-    queue = Queue.new
-
-    pipeline.instance_eval do
-      # create closure to capture queue
-      @output_func = lambda { |event| queue << event }
-
-      # output_func is now a method, call closure
-      def output_func(event)
-        @output_func.call(event)
-        # We want to return nil or [] since outputs aren't used here
-        # NOTE: In Ruby 1.9.x, Queue#<< returned nil, but in 2.x it returns the queue itself
-        # So we need to be explicit about the return
-        nil
-      end
-    end
-
-    pipeline_thread = Thread.new { pipeline.run }
-    sleep 0.1 while !pipeline.ready?
-
-    result = block.call(pipeline, queue)
-
-    pipeline.shutdown
-    pipeline_thread.join
-
-    result
-  end # def input
+  end
 
   def new_pipeline_from_string(string)
       LogStash::Pipeline.new(string)
   end
-end # module LogStash
+end
