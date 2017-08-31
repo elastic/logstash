@@ -21,5 +21,4 @@ Gem::Specification.new do |s|
   s.add_development_dependency 'logstash-devutils'
   s.add_development_dependency 'flores'
   s.add_development_dependency 'rubyzip'
-  s.add_development_dependency 'docker-api'
 end
