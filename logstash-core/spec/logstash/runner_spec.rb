@@ -35,16 +35,12 @@ describe LogStash::Runner do
     allow(LogStash::Logging::Logger).to receive(:configure_logging) do |level, path|
       allow(logger).to receive(:level).and_return(level.to_sym)
     end
-
+    allow(LogStash::Logging::Logger).to receive(:reconfigure).with(any_args)
     # Make sure we don't start a real pipeline here.
     # because we cannot easily close the pipeline
     allow(LogStash::Agent).to receive(:new).with(any_args).and_return(agent)
     allow(agent).to receive(:execute)
     allow(agent).to receive(:shutdown)
-  end
-
-  after :each do
-    LogStash::Logging::Logger::configure_logging("info")
   end
 
   describe "argument precedence" do
