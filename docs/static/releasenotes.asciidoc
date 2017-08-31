@@ -3,9 +3,17 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-6-0-0-beta2,Logstash 6.0.0-beta2>>
 * <<logstash-6-0-0-beta1,Logstash 6.0.0-beta1>>
 * <<logstash-6-0-0-alpha2,Logstash 6.0.0-alpha2>>
 * <<logstash-6-0-0-alpha1,Logstash 6.0.0-alpha1>>
+
+[[logstash-6-0-0-beta2]]
+=== Logstash 6.0.0-beta2 Release Notes
+
+* Added `cloud.id` and `cloud.auth` support for modules to provide an easy way to integrate with Elastic Cloud service.
+* Added an explicit `--setup` phase for modules which is used to install dashboards and Elasticsearch template.
+* Enabled DLQ support for multipipelines
 
 [[logstash-6-0-0-beta1]]
 === Logstash 6.0.0-beta1 Release Notes
