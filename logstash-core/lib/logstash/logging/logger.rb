@@ -73,7 +73,7 @@ module LogStash
         raise ArgumentError, "invalid level[#{level}] for logger[#{path}]"
       end
 
-      def self.initialize(config_location)
+      def self.reconfigure(config_location)
         @@config_mutex.synchronize do
           config_location_uri = URI.create(config_location)
           file_path = config_location_uri.path
