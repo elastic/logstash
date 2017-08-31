@@ -1,2 +1,5 @@
 **/.git
 vendor
+build
+logs
+.gradle
