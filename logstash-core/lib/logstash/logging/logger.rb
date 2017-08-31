@@ -92,6 +92,9 @@ module LogStash
         end
       end
 
+      # until dev_utils/rspec/spec_helper is changed, we need to have both methods
+      singleton_class.send(:alias_method, :initialize, :reconfigure)
+
       def self.get_logging_context
         return  LoggerContext.getContext(false)
       end
