@@ -9,10 +9,13 @@ describe "Test Kafka Input" do
   let(:num_events) { 37 }
 
   before(:all) {
-    @fixture = Fixture.new(__FILE__)
+    f = __FILE__
+    require 'pry'; binding.pry
+    @fixture = Fixture.new(f)
   }
 
   after(:all) {
+    require 'pry'; binding.pry
     @fixture.teardown
   }
 
