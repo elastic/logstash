@@ -46,8 +46,4 @@ module PipelineHelpers
       it("when processed", &block)
     end
   end
-
-  def new_pipeline_from_string(string)
-      LogStash::Pipeline.new(string)
-  end
 end
