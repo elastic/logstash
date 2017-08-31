@@ -120,6 +120,5 @@ analyzing, and taking action on your data.
 * https://www.elastic.co/products/watcher[Watcher] with Elasticsearch
 * {logstash-ref}/plugins-outputs-email.html[Email]
 * {logstash-ref}/plugins-outputs-pagerduty.html[Pagerduty]
-* {logstash-ref}/plugins-outputs-hipchat.html[HipChat]
 * {logstash-ref}/plugins-outputs-irc.html[IRC]
 * {logstash-ref}/plugins-outputs-sns.html[SNS]
