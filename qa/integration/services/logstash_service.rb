@@ -77,6 +77,10 @@ class LogstashService < Service
     end
   end
 
+  def start_background_with_config_settings(config, settings_file)
+    spawn_logstash("-f", "#{config}", "--path.settings", settings_file)
+  end
+
   def start_with_config_string(config)
     spawn_logstash("-e", "#{config} ")
   end
