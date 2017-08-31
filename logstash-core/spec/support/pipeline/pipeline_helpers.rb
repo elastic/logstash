@@ -96,15 +96,6 @@ module PipelineHelpers
     result
   end # def input
 
-  def agent(&block)
-
-    it("agent(#{caller[0].gsub(/ .*/, "")}) runs") do
-      pipeline = new_pipeline_from_string(config)
-      pipeline.run
-      block.call
-    end
-  end # def agent
-
   def new_pipeline_from_string(string)
       LogStash::Pipeline.new(string)
   end

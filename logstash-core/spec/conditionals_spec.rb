@@ -220,27 +220,27 @@ describe "conditionals in filter" do
 
   describe "operators" do
     conditional "[message] == 'sample_one'" do
-      sample_one("sample_one") { expect(subject.get("tags") ).to include("success") }
+      sample_one("sample") { expect(subject.get("tags") ).to include("success") }
       sample_one("different") { expect(subject.get("tags") ).to include("failure") }
     end
 
     conditional "'sample_one' == [message]" do
-      sample_one("sample_one") {expect(subject.get("tags")).to include("success")}
+      sample_one("sample") {expect(subject.get("tags")).to include("success")}
       sample_one("different") {expect(subject.get("tags")).to include("failure")}
     end
 
     conditional "'value' == 'value'" do
-      sample_one("sample_one") {expect(subject.get("tags")).to include("success")}
+      sample_one("sample") {expect(subject.get("tags")).to include("success")}
       sample_one("different") {expect(subject.get("tags")).to include("success")}
     end
 
     conditional "'value' == 'other'" do
-      sample_one("sample_one") {expect(subject.get("tags")).to include("failure")}
+      sample_one("sample") {expect(subject.get("tags")).to include("failure")}
       sample_one("different") {expect(subject.get("tags")).to include("failure")}
     end
 
     conditional "[message] != 'sample_one'" do
-      sample_one("sample_one") { expect(subject.get("tags") ).to include("failure") }
+      sample_one("sample") { expect(subject.get("tags") ).to include("failure") }
       sample_one("different") { expect(subject.get("tags") ).to include("success") }
     end
 
@@ -257,24 +257,24 @@ describe "conditionals in filter" do
     conditional "[message] <= 'sample_one'" do
       sample_one("apple") { expect(subject.get("tags") ).to include("success") }
       sample_one("zebra") { expect(subject.get("tags") ).to include("failure") }
-      sample_one("sample_one") { expect(subject.get("tags") ).to include("success") }
+      sample_one("sample") { expect(subject.get("tags") ).to include("success") }
     end
 
     conditional "[message] >= 'sample_one'" do
       sample_one("zebra") { expect(subject.get("tags") ).to include("success") }
-      sample_one("sample_one") { expect(subject.get("tags") ).to include("success") }
+      sample_one("sample") { expect(subject.get("tags") ).to include("success") }
       sample_one("apple") { expect(subject.get("tags") ).to include("failure") }
     end
 
     conditional "[message] =~ /sample_one/" do
       sample_one("apple") { expect(subject.get("tags") ).to include("failure") }
-      sample_one("sample_one") { expect(subject.get("tags") ).to include("success") }
+      sample_one("sample") { expect(subject.get("tags") ).to include("success") }
       sample_one("some sample_one") { expect(subject.get("tags") ).to include("success") }
     end
 
     conditional "[message] !~ /sample_one/" do
       sample_one("apple") { expect(subject.get("tags")).to include("success") }
-      sample_one("sample_one") { expect(subject.get("tags")).to include("failure") }
+      sample_one("sample") { expect(subject.get("tags")).to include("failure") }
       sample_one("some sample_one") { expect(subject.get("tags")).to include("failure") }
     end
 
@@ -282,12 +282,12 @@ describe "conditionals in filter" do
 
   describe "negated expressions" do
     conditional "!([message] == 'sample_one')" do
-      sample_one("sample_one") { expect(subject.get("tags")).not_to include("success") }
+      sample_one("sample") { expect(subject.get("tags")).not_to include("success") }
       sample_one("different") { expect(subject.get("tags")).not_to include("failure") }
     end
 
     conditional "!([message] != 'sample_one')" do
-      sample_one("sample_one") { expect(subject.get("tags")).not_to include("failure") }
+      sample_one("sample") { expect(subject.get("tags")).not_to include("failure") }
       sample_one("different") { expect(subject.get("tags")).not_to include("success") }
     end
 
@@ -304,24 +304,24 @@ describe "conditionals in filter" do
     conditional "!([message] <= 'sample_one')" do
       sample_one("apple") { expect(subject.get("tags")).not_to include("success") }
       sample_one("zebra") { expect(subject.get("tags")).not_to include("failure") }
-      sample_one("sample_one") { expect(subject.get("tags")).not_to include("success")}
+      sample_one("sample") { expect(subject.get("tags")).not_to include("success")}
     end
 
     conditional "!([message] >= 'sample_one')" do
       sample_one("zebra") { expect(subject.get("tags")).not_to include("success") }
-      sample_one("sample_one") { expect(subject.get("tags")).not_to include("success") }
+      sample_one("sample") { expect(subject.get("tags")).not_to include("success") }
       sample_one("apple") { expect(subject.get("tags")).not_to include("failure") }
     end
 
     conditional "!([message] =~ /sample_one/)" do
       sample_one("apple") { expect(subject.get("tags")).not_to include("failure") }
-      sample_one("sample_one") { expect(subject.get("tags")).not_to include("success") }
+      sample_one("sample") { expect(subject.get("tags")).not_to include("success") }
       sample_one("some sample_one") { expect(subject.get("tags")).not_to include("success") }
     end
 
     conditional "!([message] !~ /sample_one/)" do
       sample_one("apple") { expect(subject.get("tags")).not_to include("success") }
-      sample_one("sample_one") { expect(subject.get("tags")).not_to include("failure") }
+      sample_one("sample") { expect(subject.get("tags")).not_to include("failure") }
       sample_one("some sample_one") { expect(subject.get("tags")).not_to include("failure") }
     end
 
@@ -331,14 +331,14 @@ describe "conditionals in filter" do
     # testing that a field has a value should be true.
     conditional "[message]" do
       sample_one("apple") { expect(subject.get("tags")).to include("success") }
-      sample_one("sample_one") { expect(subject.get("tags")).to include("success") }
+      sample_one("sample") { expect(subject.get("tags")).to include("success") }
       sample_one("some sample_one") { expect(subject.get("tags")).to include("success") }
     end
 
     # testing that a missing field has a value should be false.
     conditional "[missing]" do
       sample_one("apple") { expect(subject.get("tags")).to include("failure") }
-      sample_one("sample_one") { expect(subject.get("tags")).to include("failure") }
+      sample_one("sample") { expect(subject.get("tags")).to include("failure") }
       sample_one("some sample_one") { expect(subject.get("tags")).to include("failure") }
     end
   end
