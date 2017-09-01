@@ -414,6 +414,7 @@ describe "conditionals in filter" do
     sample_one({"type" => "original"}) do
       expect(subject).to be_an(Array)
       expect(subject.length).to eq(2)
+      subject.sort! {|a, b| a.get("type") <=> b.get("type")}
 
       expect(subject[1].get("type")).to eq("original")
       expect(subject[1].get("cond1")).to eq("true")
@@ -443,16 +444,19 @@ describe "conditionals in filter" do
 
     sample_one({"type" => "original"}) do
       expect(subject.length).to eq(3)
-      expect(subject[1].get("cond1")).to eq(nil)
-      expect(subject[1].get("cond2")).to eq(nil)
+      subject.sort! {|a, b| a.get("type") <=> b.get("type")}
 
       expect(subject[0].get("type")).to eq("clone1")
       expect(subject[0].get("cond1")).to eq("true")
       expect(subject[0].get("cond2")).to eq(nil)
 
-      expect(subject[2].get("type")).to eq("clone2")
+      expect(subject[1].get("type")).to eq("clone2")
+      expect(subject[1].get("cond1")).to eq(nil)
+      expect(subject[1].get("cond2")).to eq("true")
+
+      expect(subject[2].get("type")).to eq("original")
       expect(subject[2].get("cond1")).to eq(nil)
-      expect(subject[2].get("cond2")).to eq("true")
+      expect(subject[2].get("cond2")).to eq(nil)
     end
   end
 

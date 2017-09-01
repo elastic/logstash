@@ -591,16 +591,8 @@ module LogStash; class Pipeline < BasePipeline
   end
 
   # for backward compatibility in devutils for the rspec helpers, this method is not used
-  # in the pipeline anymore.
+  # anymore and just here to not break TestPipeline that inherits this class.
   def filter(event, &block)
-    maybe_setup_out_plugins
-    # filter_func returns all filtered events, including cancelled ones
-    wait_until_started
-    batch = @filter_queue_client.new_batch
-    batch.merge(event)
-    @lir_execution.buildExecutionDebug.compute(batch, false, false, {}).each do |e|
-      block.call(e) unless e.nil?
-    end
   end
 
   # perform filters flush and yield flushed event to the passed block

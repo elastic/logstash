@@ -5,6 +5,7 @@ require "logstash/filters/multiline"
 require_relative "../support/mocks_classes"
 require_relative "../support/helpers"
 require_relative "../logstash/pipeline_reporter_spec" # for DummyOutput class
+require 'support/pipeline/pipeline_helpers'
 require "stud/try"
 require 'timeout'
 
@@ -388,6 +389,7 @@ describe LogStash::Pipeline do
   end
 
   context "compiled flush function" do
+    extend PipelineHelpers
     describe "flusher thread" do
       before(:each) do
         allow(LogStash::Plugin).to receive(:lookup).with("input", "dummyinput").and_return(DummyInput)
@@ -422,7 +424,7 @@ describe LogStash::Pipeline do
         }
       CONFIG
 
-      sample("hello") do
+      sample_one("hello") do
         expect(subject.get("message")).to eq("hello")
       end
     end
@@ -440,12 +442,13 @@ describe LogStash::Pipeline do
         }
       CONFIG
 
-      sample(["foo", "bar"]) do
-        expect(subject.size).to eq(2)
-        expect(subject[0].get("message")).to eq("foo\nbar")
-        expect(subject[0].get("type")).to be_nil
-        expect(subject[1].get("message")).to eq("foo\nbar")
-        expect(subject[1].get("type")).to eq("clone1")
+      sample_one(["foo", "bar"]) do
+        arr = subject
+        expect(arr.size).to eq(2)
+        expect(arr[0].get("message")).to eq("foo\nbar")
+        expect(arr[0].get("type")).to be_nil
+        expect(arr[1].get("message")).to eq("foo\nbar")
+        expect(arr[1].get("type")).to eq("clone1")
       end
     end
   end
@@ -490,6 +493,7 @@ describe LogStash::Pipeline do
 
   context "compiled filter functions" do
     context "new events should propagate down the filters" do
+      extend PipelineHelpers
       config <<-CONFIG
         filter {
           clone {
@@ -501,7 +505,7 @@ describe LogStash::Pipeline do
         }
       CONFIG
 
-      sample("hello") do
+      sample_one("hello") do
         expect(subject.size).to eq(3)
 
         expect(subject[0].get("message")).to eq("hello")

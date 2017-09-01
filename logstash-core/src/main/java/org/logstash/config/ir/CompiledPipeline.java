@@ -125,28 +125,6 @@ public final class CompiledPipeline {
      * @return Compiled {@link Dataset} representation of the underlying {@link PipelineIR} topology
      */
     public Dataset buildExecution() {
-        return compilePipeline(false);
-    }
-
-    /**
-     * This method contains the actual compilation of the {@link Dataset} representing the
-     * underlying pipeline from the Queue to the outputs as a Debug pipeline.
-     * This means that it will return all {@link JrubyEventExtLibrary.RubyEvent} that passed through
-     * it from its terminal {@link Dataset} by using
-     * {@link Dataset.TerminalDataset.TerminalDebugDataset}.
-     * @return Compiled {@link Dataset} representation of the underlying {@link PipelineIR} topology
-     */
-    public Dataset buildExecutionDebug() {
-        return compilePipeline(true);
-    }
-
-    /**
-     * This method contains the actual compilation of the {@link Dataset} representing the
-     * underlying pipeline from the Queue to the outputs.
-     * @param debug True iff called from {@link CompiledPipeline#buildExecutionDebug()} to
-     * terminate on a {@link Dataset.TerminalDataset.TerminalDebugDataset}
-     */
-    private Dataset compilePipeline(final boolean debug) {
         final Collection<Dataset> datasets = new ArrayList<>(5);
         // We sort the leaves of the graph in a deterministic fashion before compilation.
         // This is not strictly necessary for correctness since it will only influence the order
@@ -155,25 +133,11 @@ public final class CompiledPipeline {
         // reload.
         iffs.clear();
         plugins.clear();
-        graph.getGraph().getAllLeaves().stream().sorted(Comparator.comparing(Vertex::hashPrefix))
-            .forEachOrdered(
-                leaf -> {
-                    final Collection<Dataset> parents =
-                        flatten(Dataset.ROOT_DATASETS, leaf);
-                    if (isFilter(leaf)) {
-                        datasets.add(filterDataset(leaf.getId(), parents));
-                    } else if (leaf instanceof IfVertex) {
-                        datasets.add(
-                            splitRight(parents, buildCondition((IfVertex) leaf), leaf.getId())
-                        );
-                    } else if (isOutput(leaf)) {
-                        datasets.add(outputDataset(leaf.getId(), parents));
-                    } else {
-                        datasets.addAll(parents);
-                    }
-                }
-            );
-        return Dataset.TerminalDataset.from(datasets, debug);
+        graph.getGraph().getAllLeaves().stream().filter(this::isOutput)
+            .sorted(Comparator.comparing(Vertex::hashPrefix)).forEachOrdered(
+            leaf -> datasets.add(outputDataset(leaf.getId(), flatten(Dataset.ROOT_DATASETS, leaf)))
+        );
+        return Dataset.TerminalDataset.from(datasets);
     }
 
     /**
