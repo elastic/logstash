@@ -3,7 +3,6 @@ set -e
 
 # This file sets up the environment for travis integration tests
 
-
 if [[ "$INTEGRATION" != "true" ]]; then
     exit
 fi
