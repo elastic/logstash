@@ -30,6 +30,10 @@ RUN echo 'eval "$(rbenv init -)"' >> .bashrc && \
     rbenv local jruby-9.1.12.0 && \
     mkdir -p /opt/logstash/data
 
+ADD gradlew /opt/logstash/gradlew
+ADD gradle/wrapper /opt/logstash/gradle/wrapper
+RUN /opt/logstash/gradlew wrapper
+
 ADD versions.yml /opt/logstash/versions.yml
 ADD LICENSE /opt/logstash/LICENSE
 ADD CONTRIBUTORS /opt/logstash/CONTRIBUTORS
@@ -40,8 +44,6 @@ ADD build.gradle /opt/logstash/build.gradle
 ADD rakelib /opt/logstash/rakelib
 ADD config /opt/logstash/tools
 ADD spec /opt/logstash/spec
-ADD gradlew /opt/logstash/gradlew
-ADD gradle/wrapper /opt/logstash/gradle/wrapper
 ADD lib /opt/logstash/lib
 ADD pkg /opt/logstash/pkg
 ADD tools /opt/logstash/tools
@@ -49,8 +51,8 @@ ADD logstash-core /opt/logstash/logstash-core
 ADD logstash-core-plugin-api /opt/logstash/logstash-core-plugin-api
 ADD bin /opt/logstash/bin
 ADD modules /opt/logstash/modules
-ADD CHANGELOG /opt/logstash/CHANGELOG
 ADD CHANGELOG.md /opt/logstash/CHANGELOG.md
+ADD settings.gradle /opt/logstash/settings.gradle
 
 USER root
 RUN rm -rf build && \
@@ -58,8 +60,7 @@ RUN rm -rf build && \
     chown -R logstash:logstash /opt/logstash
 USER logstash
 WORKDIR /opt/logstash
-RUN bash -i -c 'rake artifact:tar'
-RUN bash -i -c 'cd build && tar -xzf logstash-*.tar.gz'
+RUN bash -i -c 'rake compile:all && rake artifact:tar && cd build && tar -xzf logstash-*.tar.gz'
 
 USER root
 ADD ci /opt/logstash/ci
