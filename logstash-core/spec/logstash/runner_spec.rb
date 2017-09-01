@@ -21,6 +21,7 @@ describe LogStash::Runner do
 
   subject { LogStash::Runner }
   let(:logger) { double("logger") }
+  let(:agent) { double("agent") }
 
   before :each do
     allow(LogStash::Runner).to receive(:logger).and_return(logger)
@@ -41,6 +42,7 @@ describe LogStash::Runner do
     allow(LogStash::Agent).to receive(:new).with(any_args).and_return(agent)
     allow(agent).to receive(:execute)
     allow(agent).to receive(:shutdown)
+    allow(agent).to receive(:register_pipeline)
   end
 
   describe "argument precedence" do
