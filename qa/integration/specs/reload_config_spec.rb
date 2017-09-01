@@ -72,7 +72,7 @@ describe "Test Logstash service when config reload is enabled" do
     instance_reload_stats = logstash_service.monitoring_api.node_stats["reloads"]
     expect(pipeline_reload_stats["successes"]).to eq(1)
     expect(pipeline_reload_stats["failures"]).to eq(0)
-    expect(pipeline_reload_stats["last_success_timestamp"].blank?).to be false
+    expect(pipeline_reload_stats["last_success_timestamp"].empty?).to be false
     expect(pipeline_reload_stats["last_error"]).to eq(nil)
     
     expect(instance_reload_stats["successes"]).to eq(1)
