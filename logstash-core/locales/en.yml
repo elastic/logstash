@@ -101,7 +101,9 @@ en:
           Available modules: %{available_modules}
         elasticsearch_connection_failed: >-
           Failed to import module configurations to Elasticsearch.
-          Module: %{module_name} has hosts: %{hosts}
+          Module: %{module_name} has hosts: %{elasticsearch_hosts}
+        modules-too-many-specified: >-
+          Too many modules specified. Maximum allowed: %{max}, specified: %{specified_modules}  
 
     runner:
       short-help: |-
@@ -227,6 +229,10 @@ en:
           '-M "MODULE_NAME.var.PLUGIN_TYPE.PLUGIN_NAME.VARIABLE_NAME=VALUE"'
           as in
           '-M "example.var.filter.mutate.fieldname=fieldvalue"'
+        modules_setup: |+
+          Load index template into Elasticsearch, and saved searches, 
+          index-pattern, visualizations, and dashboards into Kibana when
+          running modules.
         configtest: |+
           Check configuration for valid syntax and then exit.
         http_host: Web API binding host

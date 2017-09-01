@@ -4,7 +4,6 @@ require "logstash/logging"
 
 require_relative "file_reader"
 require_relative "kibana_resource"
-require_relative "kibana_base_resource"
 
 module LogStash module Modules class KibanaConfig
   include LogStash::Util::Loggable
@@ -19,6 +18,7 @@ module LogStash module Modules class KibanaConfig
     @name = modul.module_name
     @settings = settings
     @index_name = settings.fetch("dashboards.kibana_index", ".kibana")
+    @pattern_name = "#{@name}-*"
   end
 
   def dashboards
@@ -30,21 +30,16 @@ module LogStash module Modules class KibanaConfig
   end
 
   def index_pattern
-    pattern_name = "#{@name}-*"
-    default_index_json = '{"defaultIndex": "#{pattern_name}"}'
-    default_index_content_id = @settings.fetch("index_pattern.kibana_version", "5.5.1")
-    [
-      KibanaResource.new(@index_name, "index-pattern", dynamic("index-pattern"),nil, pattern_name),
-      KibanaResource.new(@index_name, "config", nil, default_index_json, default_index_content_id)
-    ]
+    [KibanaResource.new(@index_name, "index-pattern", dynamic("index-pattern"),nil, @pattern_name)]
   end
 
   def resources
     list = index_pattern
     dashboards.each do |board|
+      list << board
       extract_panels_into(board, list)
     end
-    list.concat(extract_saved_searches(list))
+    list.concat(extract_saved_searches_into(list))
   end
 
   private
@@ -53,10 +48,12 @@ module LogStash module Modules class KibanaConfig
     ::File.join(@directory, dynamic_folder, "#{filename}.json")
   end
 
-  def extract_panels_into(dashboard, list)
-    list << dashboard
+  def dynamic(dynamic_folder, filename = @name)
+    ::File.join(@directory, dynamic_folder, "#{filename}.json")
+  end
 
-    dash = FileReader.read_json(dashboard.content_path)
+  def extract_panels_into(dashboard, list)
+    dash = dashboard.content_as_object
 
     if !dash.is_a?(Hash)
       logger.warn("Kibana dashboard JSON is not an Object", :module => @name)
@@ -85,20 +82,20 @@ module LogStash module Modules class KibanaConfig
         logger.warn("panelJSON contained unknown type", :type => panel_type)
       end
     end
+  end
 
-    def extract_saved_searches(list)
-      result = [] # must not add to list while iterating
-      list.each do |resource|
-        next unless resource.contains?("savedSearchId")
-        content = resource.content_as_object
-        next if content.nil?
-        saved_search = content["savedSearchId"]
-        next if saved_search.nil?
-        ss_resource = KibanaResource.new(@index_name, "search", dynamic("search", saved_search))
-        next if list.member?(ss_resource) || result.member?(ss_resource)
-        result << ss_resource
-      end
-      result
+  def extract_saved_searches_into(list)
+    result = [] # must not add to list while iterating
+    list.each do |resource|
+      content = resource.content_as_object
+      next if content.nil?
+      next unless content.keys.include?("savedSearchId")
+      saved_search = content["savedSearchId"]
+      next if saved_search.nil?
+      ss_resource = KibanaResource.new(@index_name, "search", dynamic("search", saved_search))
+      next if list.member?(ss_resource) || result.member?(ss_resource)
+      result << ss_resource
     end
+    result
   end
 end end end

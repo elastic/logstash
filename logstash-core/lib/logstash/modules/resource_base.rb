@@ -1,5 +1,6 @@
 # encoding: utf-8
 require "logstash/namespace"
+require "logstash/json"
 require_relative "file_reader"
 
 module LogStash module Modules module ResourceBase
@@ -8,7 +9,11 @@ module LogStash module Modules module ResourceBase
   def initialize(base, content_type, content_path, content = nil, content_id = nil)
     @base, @content_type, @content_path = base, content_type, content_path
     @content_id =  content_id || ::File.basename(@content_path, ".*")
+    # content at this time will be a JSON string
     @content = content
+    if !@content.nil?
+      @content_as_object = LogStash::Json.load(@content) rescue {}
+    end
   end
 
   def content
@@ -19,12 +24,8 @@ module LogStash module Modules module ResourceBase
     "#{base}, #{content_type}, #{content_path}, #{content_id}"
   end
 
-  def contains?(text)
-    content.include?(text)
-  end
-
   def content_as_object
-    LogStash::Json.load(content) rescue nil
+    @content_as_object ||= FileReader.read_json(@content_path) rescue nil
   end
 
   def <=>(other)

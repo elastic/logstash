@@ -15,6 +15,7 @@ module LogStash module Modules class Scaffold
   def initialize(name, directory)
     @module_name = name
     @directory = directory  # this is the 'configuration folder in the GEM root.'
+    logger.info("Initializing module", :module_name => name, :directory => directory)
   end
 
   def import(import_engine)
