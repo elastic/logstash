@@ -8,7 +8,6 @@ fi
 
 echo "Using docker-compose project '$PROJECT'"
 
-INTEGRATION_SETUP="cd /opt/logstash; rm -rf build"
 RUN_PREFIX=docker
 LOGSTASH_VERSION=$(cat versions.yml  | egrep '^logstash:' | cut -d' ' -f 2)
 
@@ -48,47 +47,52 @@ case "$1" in
     docker rm lsdev
     build
   ;;
-  "rsync_dev")
-    rsyncdev
-  ;;
-  "integration")
+  "ci_integration")
     echo "Rebuilding images just in case"
     build
-    time $RUN_PREFIX run -it --rm $IMAGE_NAME bash -c "$INTEGRATION_SETUP && ci/integration_install.sh && ci/travis_integration_run.sh ${@:2}"
+    time $RUN_PREFIX run -it --rm $IMAGE_NAME bash -ic "ci/integration_run.sh ${@:2}"
   ;;
-  "parallel-integration")
+  "ci_parallel_integration")
     build
     num_specs=find qa/integration/ -name "*_spec.rb" | wc -l
   ;;
-  "cli")
-    $RUN_PREFIX run --rm $IMAGE_NAME bash -l
+  "ci_cli")
+    build
+    $RUN_PREFIX run -it --rm $IMAGE_NAME bash -l
   ;;
-  "integration_dev")
+  "dev_integration")
     startdev
     rsyncdev
     time $RUN_PREFIX exec -it lsdev bash -c "ln -sf /opt/logstash build/$LOGSTASH_VERSION && bash -i -c \"$INTEGRATION_SETUP && ci/travis_integration_run.sh ${@:2}\""
   ;;
-  "stop_dev")
+  "dev_stop")
     $RUN_PREFIX stop lsdev
    ;; 
-  "cli_dev")
+  "dev_cli")
     startdev
     echo "Don't forget to rsync"
     #TODO: This should search for running containers and connect to them, starting a new one only if needed
     time $RUN_PREFIX exec -it lsdev bash -c "$INTEGRATION_SETUP && mkdir -p build && ln -sf /opt/logstash build/logstash-$LOGSTASH_VERSION-SNAPSHOT && bash -l"
   ;;
-  "cleanup_dev")
+  "dev_rsync")
+    rsyncdev
+  ;;
+  "dev_cleanup")
     docker stop lsdev
     docker rm $(docker ps -aq)
     build
   ;;
   *)
     echo "Examples command: "
-    echo "# Run integration test"
-    echo "ci/docker_run integration"
-    echo "# Run a specific integration test"
-    echo "ci/docker_run.sh integration ./specs/kafka_input_spec.rb"
-    echo "# Start a CLI prompt with the ENV setup for integration tests"
-    echo "ci/docker_run cli"
+    echo "# Run integration test as it would be run on CI server"
+    echo "ci/docker_tool ci_integration"
+    echo "# Start a CLI prompt with the container setup as it would be for ci_integration"
+    echo "ci/docker_run ci_cli"
+    echo "# Start a container named '$DEV_CONTAINER_NAME' that sticks around for experimenting with tests"
+    echo "ci/docker_run ci_cli"
+    echo "# Rsync the folder contents to the dev container. Must be done to synchronize any local changes"
+    echo "ci/docker_run rsync"
+    echo "# Destroy the dev container to achieve a clean state"
+    echo "ci/docker_run dev_cleanup"
   ;;
 esac
