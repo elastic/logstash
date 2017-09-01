@@ -3,15 +3,16 @@ FROM ubuntu:xenial
 RUN apt-get update && \
     apt-get dist-upgrade && \
     apt-get install -y zlib1g-dev build-essential git curl libssl-dev libreadline-dev libyaml-dev  \
-      libxml2-dev libxslt-dev openjdk-8-jdk-headless curl iputils-ping && \
+      libxml2-dev libxslt-dev openjdk-8-jdk-headless curl iputils-ping netcat && \
     apt-get clean
 
 WORKDIR /root
 
 RUN adduser --disabled-password --gecos "" --home /home/logstash logstash && \
     mkdir -p /usr/local/share/ruby-build && \
-    mkdir -p /opt/working && \
-    chown logstash:logstash /opt/working
+    mkdir -p /opt/logstash && \
+    mkdir -p /mnt/host && \
+    chown logstash:logstash /opt/logstash
 
 USER logstash
 WORKDIR /home/logstash
@@ -28,15 +29,14 @@ RUN echo 'eval "$(rbenv init -)"' >> .bashrc && \
     bash -i -c 'gem install bundler'
 
 RUN rbenv local jruby-9.1.12.0
-#RUN ruby -v
 
-#RUN gem install bundler rake
-
-#ADD . /opt/working
-#USER root
-#RUN chown -R logstash:logstash /opt/working
-#USER logstash
-
-#WORKDIR /home/logstash/logstash
-
-#RUN rake bootstrap && rake test:install-core
+ADD . /opt/logstash
+USER root
+RUN rm -rf build && \
+    mkdir -p build && \
+    chown -R logstash:logstash /opt/logstash
+USER logstash
+WORKDIR /opt/logstash
+RUN bash -i -c 'rake artifact:tar' && \
+    cd qa/integration && \
+    bundle install
