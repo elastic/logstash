@@ -40,16 +40,15 @@ function build {
   docker build -t $IMAGE_NAME .
 }
 
-
 case "$1" in
   "build") 
-    docker stop lsdev
-    docker rm lsdev
+    docker stop lsdev && \
+    docker rm lsdev && \
     build
   ;;
   "ci_integration")
     echo "Rebuilding images just in case"
-    build
+    build && \
     time $RUN_PREFIX run -it --rm $IMAGE_NAME bash -ic "ci/integration_run.sh ${@:2}"
   ;;
   "ci_parallel_integration")
