@@ -37,7 +37,7 @@ class LogstashService < Service
       ls_file = "logstash-" + ls_version_file["logstash"]
       # First try without the snapshot if it's there
       @logstash_home = File.expand_path(File.join(LS_BUILD_DIR, ls_file), __FILE__)
-      @logstash_home += "-SNAPSHOT" unless Dir.exists?(@logstash_home)
+      @logstash_home += "-SNAPSHOT" unless Dir.exist?(@logstash_home)
 
       puts "Using #{@logstash_home} as LS_HOME"
       @logstash_bin = File.join("#{@logstash_home}", LS_BIN)
