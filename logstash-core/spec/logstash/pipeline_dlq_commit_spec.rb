@@ -67,7 +67,7 @@ describe LogStash::Pipeline do
   end
 
   after(:each) do
-    FileUtils.remove_entry pipeline_settings["path.dead_letter_queue"]
+    FileUtils.rm_rf(pipeline_settings["path.dead_letter_queue"])
   end
 
   context "dlq is enabled" do
@@ -85,6 +85,7 @@ describe LogStash::Pipeline do
       entry = dlq_reader.pollEntry(40)
       expect(entry).to_not be_nil
       expect(entry.reason).to eq("my reason")
+      subject.shutdown
     end
   end
 
@@ -101,6 +102,7 @@ describe LogStash::Pipeline do
       subject.run
       dlq_path = java.nio.file.Paths.get(pipeline_settings_obj.get("path.dead_letter_queue"), pipeline_id)
       expect(java.nio.file.Files.exists(dlq_path)).to eq(false)
+      subject.shutdown
     end
   end
 

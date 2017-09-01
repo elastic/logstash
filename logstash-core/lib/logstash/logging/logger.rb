@@ -73,7 +73,7 @@ module LogStash
         raise ArgumentError, "invalid level[#{level}] for logger[#{path}]"
       end
 
-      def self.initialize(config_location)
+      def self.reconfigure(config_location)
         @@config_mutex.synchronize do
           config_location_uri = URI.create(config_location)
           file_path = config_location_uri.path
@@ -91,6 +91,9 @@ module LogStash
           end
         end
       end
+
+      # until dev_utils/rspec/spec_helper is changed, we need to have both methods
+      singleton_class.send(:alias_method, :initialize, :reconfigure)
 
       def self.get_logging_context
         return  LoggerContext.getContext(false)

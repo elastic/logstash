@@ -69,7 +69,7 @@ describe LogStash::Api::Modules::NodeStats do
       "cpu"=>{
         "total_in_millis"=>Numeric,
         "percent"=>Numeric,
-        "load_average" => { "1m" => Numeric }
+        # load_average is not supported on Windows, set it below
       }
     },
    "pipelines" => {
@@ -88,6 +88,10 @@ describe LogStash::Api::Modules::NodeStats do
      "failures" => Numeric
    }
   }
+
+  unless LogStash::Environment.windows?
+    root_structure["process"]["cpu"]["load_average"] = { "1m" => Numeric }
+  end
 
   test_api_and_resources(root_structure)
 end

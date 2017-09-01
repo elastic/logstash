@@ -14,6 +14,7 @@ module LogStash module PipelineAction
     def execute(agent, pipelines)
       pipeline = pipelines[pipeline_id]
       pipeline.shutdown { LogStash::ShutdownWatcher.start(pipeline) }
+      pipeline.thread.join
       pipelines.delete(pipeline_id)
       # If we reach this part of the code we have succeeded because
       # the shutdown call will block.
