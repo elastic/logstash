@@ -3,10 +3,10 @@ require_relative '../framework/fixture'
 require_relative '../framework/settings'
 require_relative '../services/logstash_service'
 require_relative '../framework/helpers'
-require "logstash/devutils/rspec/spec_helper"
 require "yaml"
 require 'json'
 require 'open-uri'
+require 'rspec/wait'
 
 describe "Test Logstash instance" do
   before(:all) {
@@ -41,9 +41,9 @@ describe "Test Logstash instance" do
 
   it "can start the embedded http server on default port 9600" do
     @ls1.start_with_stdin
-    try(num_retries) do
-      expect(is_port_open?(9600)).to be(true)
-    end
+    wait(60).for do
+      is_port_open?(9600)
+    end.to be true
   end
 
   context "multiple instances" do
@@ -56,9 +56,9 @@ describe "Test Logstash instance" do
       expect(is_port_open?(9600)).to be true
 
       @ls2.spawn_logstash("-f", config2, "--path.data", tmp_data_path)
-      try(num_retries) do
-        expect(@ls2.exited?).to be(true)
-      end
+      wait(60).for do
+        @ls2.exited?
+      end.to be true
       expect(@ls2.exit_code).to be(1)
     end
 
@@ -131,9 +131,9 @@ describe "Test Logstash instance" do
   it "should abort if both -f and -e are specified" do
     config_string = "input { tcp { port => #{port1} } }"
     @ls1.spawn_logstash("-e", config_string, "-f", config2)
-    try(num_retries) do
-      expect(@ls1.exited?).to be(true)
-    end
+    wait(60).for do
+      @ls1.exited?
+    end.to be true
     expect(@ls1.exit_code).to be(1)
   end
 

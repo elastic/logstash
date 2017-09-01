@@ -1,6 +1,7 @@
 ---
 services:
   - logstash
+  - kafka
 config: |-
   input {
     kafka {
@@ -8,7 +9,6 @@ config: |-
       auto_offset_reset => "earliest"
       codec => "plain"
       group_id => "ls10"
-      bootstrap_servers => ["kafka:9092"]
     }
   }
   output {

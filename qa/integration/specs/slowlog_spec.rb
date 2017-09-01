@@ -2,7 +2,6 @@ require_relative '../framework/fixture'
 require_relative '../framework/settings'
 require_relative '../services/logstash_service'
 require_relative '../framework/helpers'
-require "logstash/devutils/rspec/spec_helper"
 require "yaml"
 
 describe "Test Logstash Slowlog" do
