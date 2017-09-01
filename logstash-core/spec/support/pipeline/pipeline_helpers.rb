@@ -77,9 +77,6 @@ module PipelineHelpers
       let(:results) do
         SpecSamplerInput.set_event event
         pipeline.run
-        Timeout.timeout(10) do
-          sleep(0.1) until pipeline.ready?
-        end
         SpecSamplerOutput.seen
       end
 

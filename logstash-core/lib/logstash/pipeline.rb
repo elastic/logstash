@@ -473,7 +473,7 @@ module LogStash; class Pipeline < BasePipeline
     # for this we need to create a new empty batch to contain the final flushed events
     batch = @filter_queue_client.new_batch
     @filter_queue_client.start_metrics(batch) # explicitly call start_metrics since we dont do a read_batch here
-    batched_execution.compute(batch, true, true, :final => true)
+    batched_execution.compute(batch, true, true)
     @filter_queue_client.close_batch(batch)
   end
 
@@ -595,17 +595,9 @@ module LogStash; class Pipeline < BasePipeline
   def filter(event, &block)
   end
 
-  # perform filters flush and yield flushed event to the passed block
-  # @param options [Hash]
-  # @option options [Boolean] :final => true to signal a final shutdown flush
+  # for backward compatibility in devutils for the rspec helpers, this method is not used
+  # anymore and just here to not break TestPipeline that inherits this class.
   def flush_filters(options = {}, &block)
-    flushers = options[:final] ? @lir_execution.shutdownFlushers : @lir_execution.periodicFlushers
-
-    events = []
-    flushers.each do |flusher|
-      events += flusher.flush(options, &block)
-    end
-    events.each(&block)
   end
 
   def start_flusher
@@ -714,7 +706,7 @@ module LogStash; class Pipeline < BasePipeline
   private
 
   def execute_batch(batched_execution, batch, flush)
-    batched_execution.compute(batch, flush, false, :final => false)
+    batched_execution.compute(batch, flush, false)
     @filter_queue_client.add_output_metrics(batch)
     @filter_queue_client.add_filtered_metrics(batch)
     @events_filtered.increment(batch.size)

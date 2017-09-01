@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.Collections;
 import org.jruby.RubyArray;
 import org.jruby.RubyHash;
+import org.logstash.RubyUtil;
 import org.logstash.ext.JrubyEventExtLibrary;
 
 /**
@@ -29,11 +30,10 @@ public interface Dataset {
      * @param flush True if flushing flushable nodes while traversing the execution
      * @param shutdown True if this is the last call to this instance's compute method because
      * the pipeline it belongs to is shut down
-     * @param options Flush Option hash passed to {@link RubyIntegration.Filter#flush(RubyHash)}
      * @return Computed {@link RubyArray} of {@link JrubyEventExtLibrary.RubyEvent}
      */
     Collection<JrubyEventExtLibrary.RubyEvent> compute(RubyIntegration.Batch batch,
-        boolean flush, boolean shutdown, RubyHash options);
+        boolean flush, boolean shutdown);
 
     /**
      * Removes all data from the instance and all of its parents, making the instance ready for
@@ -49,8 +49,7 @@ public interface Dataset {
         new Dataset() {
             @Override
             public Collection<JrubyEventExtLibrary.RubyEvent> compute(
-                final RubyIntegration.Batch batch, final boolean flush, final boolean shutdown,
-                final RubyHash options) {
+                final RubyIntegration.Batch batch, final boolean flush, final boolean shutdown) {
                 return batch.collect();
             }
 
@@ -70,7 +69,7 @@ public interface Dataset {
 
         /**
          * Empty {@link Collection} returned by this class's
-         * {@link Dataset#compute(RubyIntegration.Batch, boolean, boolean, RubyHash)} implementation.
+         * {@link Dataset#compute(RubyIntegration.Batch, boolean, boolean)} implementation.
          */
         private static final Collection<JrubyEventExtLibrary.RubyEvent> EMPTY_RETURN =
             Collections.emptyList();
@@ -82,8 +81,7 @@ public interface Dataset {
 
             @Override
             public Collection<JrubyEventExtLibrary.RubyEvent> compute(
-                final RubyIntegration.Batch batch, final boolean flush, final boolean shutdown,
-                final RubyHash options) {
+                final RubyIntegration.Batch batch, final boolean flush, final boolean shutdown) {
                 return EMPTY_RETURN;
             }
 
@@ -98,7 +96,7 @@ public interface Dataset {
          * <p>Builds a terminal {@link Dataset} from the given parent {@link Dataset}s.</p>
          * <p>If the given set of parent {@link Dataset} is empty the sum is defined as the
          * trivial dataset that does not invoke any computation whatsoever.</p>
-         * {@link Dataset#compute(RubyIntegration.Batch, boolean, boolean, RubyHash)} is always
+         * {@link Dataset#compute(RubyIntegration.Batch, boolean, boolean)} is always
          * {@link Collections#emptyList()}.
          * @param parents Parent {@link Dataset} to sum and terminate
          * @return Dataset representing the sum of given parent {@link Dataset}
@@ -120,8 +118,8 @@ public interface Dataset {
 
         @Override
         public Collection<JrubyEventExtLibrary.RubyEvent> compute(final RubyIntegration.Batch batch,
-            final boolean flush, final boolean shutdown, final RubyHash options) {
-            parents.forEach(dataset -> dataset.compute(batch, flush, shutdown, options));
+            final boolean flush, final boolean shutdown) {
+            parents.forEach(dataset -> dataset.compute(batch, flush, shutdown));
             this.clear();
             return EMPTY_RETURN;
         }
@@ -164,13 +162,13 @@ public interface Dataset {
 
         @Override
         public Collection<JrubyEventExtLibrary.RubyEvent> compute(final RubyIntegration.Batch batch,
-            final boolean flush, final boolean shutdown, final RubyHash options) {
+            final boolean flush, final boolean shutdown) {
             if (done) {
                 return data;
             }
             for (final Dataset set : parents) {
                 for (final JrubyEventExtLibrary.RubyEvent event
-                    : set.compute(batch, flush, shutdown, options)) {
+                    : set.compute(batch, flush, shutdown)) {
                     if (func.fulfilled(event)) {
                         data.add(event);
                     } else {
@@ -230,12 +228,11 @@ public interface Dataset {
 
             @Override
             public Collection<JrubyEventExtLibrary.RubyEvent> compute(
-                final RubyIntegration.Batch batch, final boolean flush, final boolean shutdown,
-                final RubyHash options) {
+                final RubyIntegration.Batch batch, final boolean flush, final boolean shutdown) {
                 if (done) {
                     return data;
                 }
-                parent.compute(batch, flush, shutdown, options);
+                parent.compute(batch, flush, shutdown);
                 done = true;
                 return data;
             }
@@ -274,12 +271,12 @@ public interface Dataset {
 
         @Override
         public Collection<JrubyEventExtLibrary.RubyEvent> compute(final RubyIntegration.Batch batch,
-            final boolean flush, final boolean shutdown, final RubyHash options) {
+            final boolean flush, final boolean shutdown) {
             if (done) {
                 return data;
             }
             for (final Dataset set : parents) {
-                buffer.addAll(set.compute(batch, flush, shutdown, options));
+                buffer.addAll(set.compute(batch, flush, shutdown));
             }
             done = true;
             data.addAll(func.multiFilter(buffer));
@@ -303,6 +300,10 @@ public interface Dataset {
      */
     final class FilteredFlushableDataset implements Dataset {
 
+        public static final RubyHash FLUSH_FINAL = flushOpts(true);
+
+        private static final RubyHash FLUSH_NOT_FINAL = flushOpts(false);
+
         private final Collection<Dataset> parents;
 
         private final RubyIntegration.Filter func;
@@ -324,17 +325,17 @@ public interface Dataset {
 
         @Override
         public Collection<JrubyEventExtLibrary.RubyEvent> compute(final RubyIntegration.Batch batch,
-            final boolean flush, final boolean shutdown, final RubyHash options) {
+            final boolean flush, final boolean shutdown) {
             if (done) {
                 return data;
             }
             for (final Dataset set : parents) {
-                buffer.addAll(set.compute(batch, flush, shutdown, options));
+                buffer.addAll(set.compute(batch, flush, shutdown));
             }
             done = true;
             data.addAll(func.multiFilter(buffer));
             if (flush) {
-                data.addAll(func.flush(options));
+                data.addAll(func.flush(shutdown ? FLUSH_FINAL : FLUSH_NOT_FINAL));
             }
             buffer.clear();
             return data;
@@ -347,6 +348,12 @@ public interface Dataset {
             }
             data.clear();
             done = false;
+        }
+
+        private static RubyHash flushOpts(final boolean fin) {
+            final RubyHash res = RubyHash.newHash(RubyUtil.RUBY);
+            res.put(RubyUtil.RUBY.newSymbol("final"), RubyUtil.RUBY.newBoolean(fin));
+            return res;
         }
     }
 
@@ -377,17 +384,17 @@ public interface Dataset {
 
         @Override
         public Collection<JrubyEventExtLibrary.RubyEvent> compute(final RubyIntegration.Batch batch,
-            final boolean flush, final boolean shutdown, final RubyHash options) {
+            final boolean flush, final boolean shutdown) {
             if (done) {
                 return data;
             }
             for (final Dataset set : parents) {
-                buffer.addAll(set.compute(batch, flush, shutdown, options));
+                buffer.addAll(set.compute(batch, flush, shutdown));
             }
             done = true;
             data.addAll(func.multiFilter(buffer));
             if (flush && shutdown) {
-                data.addAll(func.flush(options));
+                data.addAll(func.flush(FilteredFlushableDataset.FLUSH_FINAL));
             }
             buffer.clear();
             return data;
@@ -411,7 +418,7 @@ public interface Dataset {
 
         /**
          * Empty {@link Collection} returned by this class's
-         * {@link Dataset#compute(RubyIntegration.Batch, boolean, boolean, RubyHash)} implementation.
+         * {@link Dataset#compute(RubyIntegration.Batch, boolean, boolean)} implementation.
          */
         private static final Collection<JrubyEventExtLibrary.RubyEvent> EMPTY_RETURN =
             Collections.emptyList();
@@ -433,11 +440,11 @@ public interface Dataset {
 
         @Override
         public Collection<JrubyEventExtLibrary.RubyEvent> compute(final RubyIntegration.Batch batch,
-            final boolean flush, final boolean shutdown, final RubyHash options) {
+            final boolean flush, final boolean shutdown) {
             if(!done) {
                 for (final Dataset set : parents) {
                     for (final JrubyEventExtLibrary.RubyEvent event
-                        : set.compute(batch, flush, shutdown, options)) {
+                        : set.compute(batch, flush, shutdown)) {
                         if (!event.getEvent().isCancelled()) {
                             buffer.add(event);
                         }
