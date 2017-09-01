@@ -330,8 +330,12 @@ module LogStashCompilerLSCLGrammar; module LogStash; module Compiler; module LSC
       case op
       when :and
         return jdsl.eAnd(left, right);
+      when :nand
+        return jdsl.eNand(left, right);
       when :or
         return jdsl.eOr(left, right);
+      when :xor
+        return jdsl.eXor(left, right);
       else
         raise "Unknown op #{jop}"
       end
@@ -514,8 +518,12 @@ module LogStashCompilerLSCLGrammar; module LogStash; module Compiler; module LSC
       case self.text_value
       when "and"
         AND_METHOD
+      when "nand"
+        NAND_METHOD
       when "or"
         OR_METHOD
+      when "xor"
+        XOR_METHOD
       else
         raise "Unknown operator #{self.text_value}"
       end

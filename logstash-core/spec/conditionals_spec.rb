@@ -359,6 +359,36 @@ describe "conditionals in filter" do
       end
     end
 
+    describe "nand" do
+      conditional "[message] nand [message]" do
+        sample_one("whatever") { expect(subject.get("tags")).to include("failure") }
+      end
+      conditional "[message] nand ![message]" do
+        sample_one("whatever") { expect(subject.get("tags")).to include("success") }
+      end
+      conditional "![message] nand [message]" do
+        sample_one("whatever") { expect(subject.get("tags")).to include("success") }
+      end
+      conditional "![message] nand ![message]" do
+        sample_one("whatever") { expect(subject.get("tags")).to include("success") }
+      end
+    end
+
+    describe "xor" do
+      conditional "[message] xor [message]" do
+        sample_one("whatever") { expect(subject.get("tags")).to include("failure") }
+      end
+      conditional "[message] xor ![message]" do
+        sample_one("whatever") { expect(subject.get("tags")).to include("success") }
+      end
+      conditional "![message] xor [message]" do
+        sample_one("whatever") { expect(subject.get("tags")).to include("success") }
+      end
+      conditional "![message] xor ![message]" do
+        sample_one("whatever") { expect(subject.get("tags")).to include("failure") }
+      end
+    end
+
     describe "or" do
       conditional "[message] or [message]" do
         sample_one("whatever") { expect(subject.get("tags")).to include("success") }
