@@ -58,7 +58,7 @@ case "$1" in
       build
     fi
     pushd qa/integration
-    spec_find_cmd='find spec -name *_spec.rb'
+    spec_find_cmd='find specs -name *_spec.rb'
     total_specs=$(expr $($spec_find_cmd | wc -l))
     parallelism=$2
     parallelism_index=$3
