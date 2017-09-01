@@ -57,8 +57,8 @@ case "$1" in
     if [[ "$4" != "false" ]]; then # Build skip flag
       build
     fi
-    spec_find_cmd='find . -name *_spec.rb'
     pushd qa/integration
+    spec_find_cmd='find spec -name *_spec.rb'
     total_specs=$(expr $($spec_find_cmd | wc -l))
     parallelism=$2
     parallelism_index=$3
