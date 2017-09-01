@@ -409,11 +409,16 @@ public interface Dataset {
      */
     final class OutputDataset implements Dataset {
 
+        /**
+         * Empty {@link Collection} returned by this class's
+         * {@link Dataset#compute(RubyIntegration.Batch, boolean, boolean, RubyHash)} implementation.
+         */
+        private static final Collection<JrubyEventExtLibrary.RubyEvent> EMPTY_RETURN =
+            Collections.emptyList();
+
         private final Collection<Dataset> parents;
 
         private final RubyIntegration.Output output;
-
-        private final Collection<JrubyEventExtLibrary.RubyEvent> data;
 
         private final Collection<JrubyEventExtLibrary.RubyEvent> buffer;
 
@@ -422,7 +427,6 @@ public interface Dataset {
         public OutputDataset(Collection<Dataset> parents, final RubyIntegration.Output output) {
             this.parents = parents;
             this.output = output;
-            data = new ArrayList<>(5);
             buffer = new ArrayList<>(5);
             done = false;
         }
@@ -430,25 +434,20 @@ public interface Dataset {
         @Override
         public Collection<JrubyEventExtLibrary.RubyEvent> compute(final RubyIntegration.Batch batch,
             final boolean flush, final boolean shutdown, final RubyHash options) {
-            if (done) {
-                return data;
-            }
-            for (final Dataset set : parents) {
-                for (final JrubyEventExtLibrary.RubyEvent event
-                    : set.compute(batch, flush, shutdown, options)) {
-                    if (!event.getEvent().isCancelled()) {
-                        buffer.add(event);
+            if(!done) {
+                for (final Dataset set : parents) {
+                    for (final JrubyEventExtLibrary.RubyEvent event
+                        : set.compute(batch, flush, shutdown, options)) {
+                        if (!event.getEvent().isCancelled()) {
+                            buffer.add(event);
+                        }
                     }
                 }
+                output.multiReceive(buffer);
+                done = true;
+                buffer.clear();
             }
-            output.multiReceive(buffer);
-            data.addAll(buffer);
-            done = true;
-            buffer.clear();
-            for (final JrubyEventExtLibrary.RubyEvent event : data) {
-                batch.merge(event);
-            }
-            return data;
+            return EMPTY_RETURN;
         }
 
         @Override
@@ -456,7 +455,6 @@ public interface Dataset {
             for (final Dataset parent : parents) {
                 parent.clear();
             }
-            data.clear();
             done = false;
         }
     }
