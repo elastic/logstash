@@ -360,6 +360,7 @@ describe LogStash::Runner do
         let(:module_string) { "cef" }
         let(:client) { double(:client) }
         let(:response) { double(:response) }
+        let(:agent_instance) { double(:agent_instance) }
         before do
           allow(response).to receive(:status).and_return(404)
           allow(client).to receive(:head).and_return(response)

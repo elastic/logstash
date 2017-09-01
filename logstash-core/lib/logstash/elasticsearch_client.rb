@@ -53,7 +53,7 @@ module LogStash class ElasticsearchClient
       rescue Elasticsearch::Transport::Transport::Errors::BadRequest
         true
       rescue Manticore::SocketException => e
-        @logger.error(e)
+        @logger.error("No connection to Elasticsearch", {"elasticsearch host" => host_settings, "error message" => e.message})
         false
       end
     end
@@ -82,7 +82,6 @@ module LogStash class ElasticsearchClient
       begin
         normalize_response(@client.perform_request('HEAD', path, {}, nil))
       rescue Exception => e
-        @logger.error(e)
         if is_404_error?(e)
           Response.new(404, "", {})
         else

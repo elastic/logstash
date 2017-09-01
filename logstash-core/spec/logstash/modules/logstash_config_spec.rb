@@ -2,7 +2,7 @@
 require "logstash/modules/logstash_config"
 
 describe LogStash::Modules::LogStashConfig do
-  let(:mod) { instance_double("module", :directory => Stud::Temporary.directory, :module_name => "testing") }
+  let(:mod) { instance_double("Scaffold", :directory => Stud::Temporary.directory, :module_name => "testing") }
   let(:settings) { {"var.logstash.testing.pants" => "fancy" }}
   subject { described_class.new(mod, settings) }
 
