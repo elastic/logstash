@@ -33,6 +33,7 @@ start_kafka() {
     $KAFKA_HOME/bin/zookeeper-server-start.sh -daemon $KAFKA_HOME/config/zookeeper.properties
     wait_for_port 2181
     echo "Starting Kafka broker"
+    rm -rf ${KAFKA_LOGS_DIR}
     mkdir -p ${KAFKA_LOGS_DIR}
     $KAFKA_HOME/bin/kafka-server-start.sh -daemon $KAFKA_HOME/config/server.properties --override delete.topic.enable=true --override advertised.host.name=127.0.0.1 --override log.dir=${KAFKA_LOGS_DIR} --override log.flush.interval.ms=200
     wait_for_port 9092
@@ -48,7 +49,7 @@ wait_for_messages() {
         count=$(( $count - 1 ))
         [[ $count -eq 0 ]] && return 1
         sleep 0.5
-        ls -lrt $KAFKA_LOGS_DIR/$KAFKA_TOPIC-0/
+        #ls -lrt $KAFKA_LOGS_DIR/$KAFKA_TOPIC-0/
     done
     echo "Kafka topic has been populated with test data"
 }

@@ -5,9 +5,7 @@ require_relative '../services/logstash_service'
 describe "Test Elasticsearch output" do
 
   before(:all) {
-    f = __FILE__
-    require 'pry'; binding.pry
-    @fixture = Fixture.new(f)
+    @fixture = Fixture.new(__FILE__)
   }
 
   after(:all) {

@@ -2,9 +2,9 @@ require_relative '../framework/fixture'
 require_relative '../framework/settings'
 require_relative '../services/logstash_service'
 require_relative '../framework/helpers'
-require "logstash/devutils/rspec/spec_helper"
 require "socket"
 require "yaml"
+require 'rspec/wait'
 
 describe "Test Logstash service when multiple pipelines are used" do
   before(:all) {
@@ -46,9 +46,9 @@ describe "Test Logstash service when multiple pipelines are used" do
   it "executes the multiple pipelines" do
     logstash_service = @fixture.get_service("logstash")
     logstash_service.spawn_logstash("--path.settings", settings_dir, "--log.level=debug")
-    try(retry_attempts) do
-      expect(logstash_service.exited?).to be(true)
-    end
+    wait(60).for do
+      logstash_service.exited?
+    end.to be true
     expect(logstash_service.exit_code).to eq(0)
     expect(File.exist?(temporary_out_file_1)).to be(true)
     expect(IO.readlines(temporary_out_file_1).size).to eq(1)
