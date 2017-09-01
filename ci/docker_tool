@@ -40,7 +40,7 @@ function build {
   docker build -t $IMAGE_NAME .
 }
 
-INTEGRATION_COMMAND="time $RUN_PREFIX run -t --rm $IMAGE_NAME bash -ic ci/integration_run.sh"
+INTEGRATION_COMMAND="time $RUN_PREFIX run -t --rm $IMAGE_NAME ci/integration_run.sh"
 
 case "$1" in
   "build") 
@@ -136,7 +136,7 @@ case "$1" in
     echo "# Destroy the dev container to achieve a clean state"
     echo "ci/docker_run dev_cleanup"
     echo "# Run the full CI suite in 2 threads"
-    echo "ci/docker_run ci_parallel_2x"
+    echo "ci/docker_run ci_integration_2x"
     echo "# Run the CI suite in three parts. Useful for splitting up tests among jenkins build jobs"
     echo "ci/docker_run ci_parallel 3 0; ci/docker_run ci_parallel 3 1; ci/docker_run ci_parallel 3 2"
   ;;
