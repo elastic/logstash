@@ -3,8 +3,6 @@ require_relative "../../framework/fixture"
 require_relative "../../framework/settings"
 require_relative "../../services/logstash_service"
 require_relative "../../framework/helpers"
-require "logstash/devutils/rspec/spec_helper"
-
 
 # These are segmented into a separate tag that MUST be run separately from any docker tests
 # The reason they break the Docker API and that in turn even breaks tests not using Docker 

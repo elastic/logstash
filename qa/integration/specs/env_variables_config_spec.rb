@@ -2,7 +2,7 @@ require_relative '../framework/fixture'
 require_relative '../framework/settings'
 require_relative '../services/logstash_service'
 require_relative '../framework/helpers'
-require "logstash/devutils/rspec/spec_helper"
+require 'rspec/wait'
 
 describe "Test Logstash configuration" do
   before(:all) {
@@ -30,19 +30,19 @@ describe "Test Logstash configuration" do
     logstash_service.env_variables = test_env
     logstash_service.start_background(@fixture.config)
     # check if TCP port env variable was resolved
-    try(num_retries) do
-      expect(is_port_open?(test_tcp_port)).to be true
-    end
+    wait(60).for do
+      is_port_open?(test_tcp_port)
+    end.to be true
     
     #send data and make sure all env variables are expanded by checking each stage
     send_data(test_tcp_port, sample_data)
     output_file = File.join(test_path, "logstash_env_test.log")
-    try(num_retries) do
-      expect(File.exists?(output_file)).to be true
-    end
+    wait(60).for do
+      File.exists?(output_file)
+    end.to be true
     # should have created the file using env variable with filters adding a tag based on env variable
-    try(num_retries) do
-      expect(IO.read(output_file).gsub("\n", "")).to eq("#{sample_data} blah,environment_variables_are_evil")
-    end
+    wait(60).for do
+      IO.read(output_file).gsub("\n", "")
+    end.to eq("#{sample_data} blah,environment_variables_are_evil")
   end
 end  
