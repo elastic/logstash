@@ -26,6 +26,7 @@ describe LogStash::Agent do
     sl
   end
   let(:logger) { double("logger") }
+  let(:timeout) {120} #seconds
 
   subject { LogStash::Agent.new(agent_settings, default_source_loader) }
 
