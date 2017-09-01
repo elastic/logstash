@@ -42,7 +42,7 @@ ADD Gemfile /opt/logstash/Gemfile
 ADD Rakefile /opt/logstash/Rakefile
 ADD build.gradle /opt/logstash/build.gradle
 ADD rakelib /opt/logstash/rakelib
-ADD config /opt/logstash/tools
+ADD config /opt/logstash/config
 ADD spec /opt/logstash/spec
 ADD lib /opt/logstash/lib
 ADD pkg /opt/logstash/pkg
