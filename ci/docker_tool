@@ -1,4 +1,4 @@
-#!/bin/bash -x
+#!/bin/bash
 
 IMAGE_NAME=lsinteg
 
@@ -40,6 +40,8 @@ function build {
   docker build -t $IMAGE_NAME .
 }
 
+INTEGRATION_COMMAND="time $RUN_PREFIX run -t --rm $IMAGE_NAME bash -ic ci/integration_run.sh"
+
 case "$1" in
   "build") 
     docker stop lsdev && \
@@ -49,27 +51,66 @@ case "$1" in
   "ci_integration")
     echo "Rebuilding images just in case"
     build && \
-    time $RUN_PREFIX run -it --rm $IMAGE_NAME bash -ic "ci/integration_run.sh ${@:2}"
+    $INTEGRATION_COMMAND ${@:2}
   ;;
-  "ci_parallel_integration")
+  "ci_integration_parallel")
+    if [[ "$4" != "false" ]]; then # Build skip flag
+      build
+    fi
+    spec_find_cmd='find . -name *_spec.rb'
+    pushd qa/integration
+    total_specs=$(expr $($spec_find_cmd | wc -l))
+    parallelism=$2
+    parallelism_index=$3
+
+    if [[ -z "$parallelism" || -z "$parallelism_index" ]]; then
+      echo "You must invoke with parallelism and index parameters. ex: ci/docker_tool ci_parallel_integration 4 1"
+      exit 1
+    fi
+
+    run_num_specs=$(expr $total_specs / $(expr $parallelism))
+    start_point=$(expr $run_num_specs \* $(expr $parallelism_index))
+    tail_back=$(expr $total_specs - $start_point)
+
+    if expr $(expr $parallelism_index + 1) = $parallelism; then
+      tail_back=$(expr $run_num_specs + $(expr $total_specs % $(expr $parallelism)))
+      run_num_specs=$tail_back
+    fi
+
+    echo "Running $run_num_specs specs for index "$parallelism_index" in $parallelism containers simultaneously"
+    echo "Total Specs: $total_specs"
+
+    matched_specs=$($spec_find_cmd | sort | tail -n $tail_back | head -n $run_num_specs | xargs -n 999999 echo)
+    popd
+    $INTEGRATION_COMMAND $matched_specs
+  ;;
+  "ci_integration_2x")
     build
-    num_specs=find qa/integration/ -name "*_spec.rb" | wc -l
+    ci/docker_tool ci_integration_parallel 2 0 false &
+    ci/docker_tool ci_integration_parallel 2 1 false &
+
+    FAILED=0
+    for job in `jobs -p`
+    do
+    echo $job
+      wait $job || let "FAIL+=1"
+    done
+
+    if [[ "$FAILED" != "0" ]]; then
+      exit 1
+    fi
+    echo "Both jobs succeeded!"
   ;;
   "ci_cli")
     build
     $RUN_PREFIX run -it --rm $IMAGE_NAME bash -l
   ;;
-  "dev_integration")
-    startdev
-    rsyncdev
-    time $RUN_PREFIX exec -it lsdev bash -c "ln -sf /opt/logstash build/$LOGSTASH_VERSION && bash -i -c \"$INTEGRATION_SETUP && ci/travis_integration_run.sh ${@:2}\""
-  ;;
   "dev_stop")
     $RUN_PREFIX stop lsdev
    ;; 
   "dev_cli")
-    startdev
-    echo "Don't forget to rsync"
+    startdev && \
+    echo "Don't forget to rsync" && \
     #TODO: This should search for running containers and connect to them, starting a new one only if needed
     time $RUN_PREFIX exec -it lsdev bash -c "$INTEGRATION_SETUP && mkdir -p build && ln -sf /opt/logstash build/logstash-$LOGSTASH_VERSION-SNAPSHOT && bash -l"
   ;;

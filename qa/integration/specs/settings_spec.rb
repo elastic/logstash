@@ -112,7 +112,7 @@ describe "Test Logstash instance whose default settings are overridden" do
     @logstash_service.spawn_logstash("-e", tcp_config)
     @logstash_service.wait_for_logstash
     # check LS is up and running with new data path
-    wait(60) do
+    wait(60).for do
       is_port_open?(test_port)
     end.to be true
 
