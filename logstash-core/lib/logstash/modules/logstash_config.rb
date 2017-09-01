@@ -33,6 +33,10 @@ module LogStash module Modules class LogStashConfig
     "[#{array.collect { |i| "'#{i}'" }.join(", ")}]"
   end
 
+  def csv_string(array)
+    "'#{array.join(',')}'"
+  end
+
   def get_setting(setting_class)
     raw_value = @settings[setting_class.name]
     # If we dont check for NIL, the Settings class will try to coerce the value
@@ -59,20 +63,24 @@ module LogStash module Modules class LogStashConfig
   end
 
   def elasticsearch_output_config(type_string = nil)
-    hosts = array_to_string(get_setting(LogStash::Setting::SplittableStringArray.new("var.output.elasticsearch.hosts", String, ["localhost:9200"])))
-    index = "#{@name}-#{setting("var.output.elasticsearch.index_suffix", "%{+YYYY.MM.dd}")}"
-    password = "#{setting("var.output.elasticsearch.password", "changeme")}"
-    user = "#{setting("var.output.elasticsearch.user", "elastic")}"
-    document_type_line = type_string ? "document_type => #{type_string}" : ""
+    hosts = array_to_string(get_setting(LogStash::Setting::SplittableStringArray.new("var.elasticsearch.hosts", String, ["localhost:9200"])))
+    index = "#{@name}-#{setting("var.elasticsearch.index_suffix", "%{+YYYY.MM.dd}")}"
+    user = @settings["var.elasticsearch.username"]
+    password = @settings["var.elasticsearch.password"]
+    lines = ["hosts => #{hosts}", "index => \"#{index}\""]
+    lines.push(user ? "user => \"#{user}\"" : nil)
+    lines.push(password ? "password => \"#{password}\"" : nil)
+    lines.push(type_string ? "document_type => #{type_string}" : nil)
+    lines.push("ssl => #{@settings.fetch('var.elasticsearch.ssl.enabled', false)}")
+    if cacert = @settings["var.elasticsearch.ssl.certificate_authority"]
+      lines.push("cacert => \"#{cacert}\"") if cacert
+    end
+    # NOTE: the first line should be indented in the conf.erb
     <<-CONF
 elasticsearch {
-hosts => #{hosts}
-index => "#{index}"
-password => "#{password}"
-user => "#{user}"
-manage_template => false
-#{document_type_line}
-}
+    #{lines.compact.join("\n    ")}
+    manage_template => false
+  }
 CONF
   end
 

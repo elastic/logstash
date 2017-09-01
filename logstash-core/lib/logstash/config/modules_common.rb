@@ -1,18 +1,31 @@
 # encoding: utf-8
 require "logstash/util/loggable"
 require "logstash/elasticsearch_client"
-require "logstash/modules/importer"
+require "logstash/modules/elasticsearch_importer"
+require "logstash/modules/settings_merger"
 require "logstash/errors"
 
 module LogStash module Config
   class ModulesCommon # extracted here for bwc with 5.x
     include LogStash::Util::Loggable
 
+    MODULES_MAX_PIPELINES = 1
+
     def self.pipeline_configs(settings)
       pipelines = []
       plugin_modules = LogStash::PLUGIN_REGISTRY.plugins_with_type(:modules)
 
-      modules_array = settings.get("modules.cli").empty? ? settings.get("modules") : settings.get("modules.cli")
+      cli_settings = settings.get("modules.cli")
+      yml_settings = settings.get("modules")
+
+      modules_array = if !(cli_settings.empty? && yml_settings.empty?)
+            LogStash::Modules::SettingsMerger.merge(cli_settings, yml_settings)
+          elsif cli_settings.empty?
+             yml_settings
+          else
+            cli_settings
+          end
+
       if modules_array.empty?
         # no specifed modules
         return pipelines
@@ -20,6 +33,11 @@ module LogStash module Config
       logger.debug("Specified modules", :modules_array => modules_array.to_s)
 
       module_names = modules_array.collect {|module_hash| module_hash["name"]}
+      if module_names.size > MODULES_MAX_PIPELINES
+        error_message = I18n.t("logstash.modules.configuration.modules-too-many-specified", :max => MODULES_MAX_PIPELINES, :specified_modules => module_names.join(', '))
+        raise LogStash::ConfigLoadingError, error_message
+      end
+
       if module_names.length > module_names.uniq.length
         duplicate_modules = module_names.group_by(&:to_s).select { |_,v| v.size > 1 }.keys
         raise LogStash::ConfigLoadingError, I18n.t("logstash.modules.configuration.modules-must-be-unique", :duplicate_modules => duplicate_modules)
@@ -36,14 +54,15 @@ module LogStash module Config
       specified_and_available_names.each do |module_name|
         connect_fail_args = {}
         begin
+          module_settings = settings.clone
+
           module_hash = modules_array.find {|m| m["name"] == module_name}
           current_module = plugin_modules.find { |allmodules| allmodules.module_name == module_name }
 
           alt_name = "module-#{module_name}"
           pipeline_id = alt_name
-
+          module_settings.set("pipeline.id", pipeline_id)
           current_module.with_settings(module_hash)
-          esclient = LogStash::ElasticsearchClient.build(module_hash)
           config_test = settings.get("config.test_and_exit")
           modul_setup = settings.get("modules_setup")
           # Only import data if it's not a config test and --setup is true
@@ -52,22 +71,19 @@ module LogStash module Config
             esconnected = esclient.can_connect?
             if esconnected
               current_module.import(
-                  LogStash::Modules::Importer.new(esclient)
+                  LogStash::Modules::ElasticsearchImporter.new(esclient)
                 )
             else
               connect_fail_args[:module_name] = module_name
-              connect_fail_args[:hosts] = esclient.host_settings
+              connect_fail_args[:elasticsearch_hosts] = esclient.host_settings
             end
-
-            config_string = current_module.config_string
-
-            pipelines << {"pipeline_id" => pipeline_id, "alt_name" => alt_name, "config_string" => config_string, "settings" => settings}
-          else
-            connect_fail_args[:module_name] = module_name
-            connect_fail_args[:hosts] = esclient.host_settings
           end
+          config_string = current_module.config_string
+          pipelines << {"pipeline_id" => pipeline_id, "alt_name" => alt_name, "config_string" => config_string, "settings" => module_settings}
         rescue => e
-          raise LogStash::ConfigLoadingError, I18n.t("logstash.modules.configuration.parse-failed", :error => e.message)
+          new_error = LogStash::ConfigLoadingError.new(I18n.t("logstash.modules.configuration.parse-failed", :error => e.message))
+          new_error.set_backtrace(e.backtrace)
+          raise new_error
         end
 
         if !connect_fail_args.empty?

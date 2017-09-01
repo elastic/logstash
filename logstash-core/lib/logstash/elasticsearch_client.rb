@@ -26,6 +26,24 @@ module LogStash class ElasticsearchClient
       @settings = settings
       @logger = logger
       @client_args = client_args
+
+      ssl_options = {}
+
+      if @settings["var.elasticsearch.ssl.enabled"] == "true"
+        ssl_options[:verify] = @settings.fetch("var.elasticsearch.ssl.verification_mode", true)
+        ssl_options[:ca_file] = @settings.fetch("var.elasticsearch.ssl.certificate_authority", nil)
+        ssl_options[:client_cert] = @settings.fetch("var.elasticsearch.ssl.certificate", nil)
+        ssl_options[:client_key] = @settings.fetch("var.elasticsearch.ssl.key", nil)
+      end
+
+      @client_args[:ssl] = ssl_options
+
+      username = @settings["var.elasticsearch.username"]
+      password = @settings["var.elasticsearch.password"]
+      if username
+        @client_args[:transport_options] = { :headers => { "Authorization" => 'Basic ' + Base64.encode64( "#{username}:#{password}" ).chomp } }
+      end
+
       @client = Elasticsearch::Client.new(@client_args)
     end
 
@@ -34,7 +52,8 @@ module LogStash class ElasticsearchClient
         head(SecureRandom.hex(32).prepend('_'))
       rescue Elasticsearch::Transport::Transport::Errors::BadRequest
         true
-      rescue Manticore::SocketException
+      rescue Manticore::SocketException => e
+        @logger.error(e)
         false
       end
     end
@@ -63,6 +82,7 @@ module LogStash class ElasticsearchClient
       begin
         normalize_response(@client.perform_request('HEAD', path, {}, nil))
       rescue Exception => e
+        @logger.error(e)
         if is_404_error?(e)
           Response.new(404, "", {})
         else
@@ -90,7 +110,11 @@ module LogStash class ElasticsearchClient
     end
 
     def unpack_hosts
-      @settings.fetch("var.output.elasticsearch.hosts", "localhost:9200").split(',').map(&:strip)
+      setting = @settings.fetch("var.elasticsearch.hosts", "localhost:9200")
+      if setting.is_a?(String)
+        return setting.split(',').map(&:strip)
+      end
+      setting
     end
   end
 
@@ -117,4 +141,4 @@ module LogStash class ElasticsearchClient
   def host_settings
     @client.host_settings
   end
-end end # class LogStash::ModulesImporter
+end end
