@@ -123,7 +123,8 @@ case "$1" in
     build
   ;;
   *)
-    echo "Examples command: "
+    echo "Commands prefixed with 'ci' run in unnamed containers and are intended to be used on the CI server or on a dev box to simulate the CI server as accurately as possible."
+    echo "Example commands: "
     echo "# Run integration test as it would be run on CI server"
     echo "ci/docker_tool ci_integration"
     echo "# Start a CLI prompt with the container setup as it would be for ci_integration"
@@ -134,5 +135,9 @@ case "$1" in
     echo "ci/docker_run rsync"
     echo "# Destroy the dev container to achieve a clean state"
     echo "ci/docker_run dev_cleanup"
+    echo "# Run the full CI suite in 2 threads"
+    echo "ci/docker_run ci_parallel_2x"
+    echo "# Run the CI suite in three parts. Useful for splitting up tests among jenkins build jobs"
+    echo "ci/docker_run ci_parallel 3 0; ci/docker_run ci_parallel 3 1; ci/docker_run ci_parallel 3 2"
   ;;
 esac
