@@ -266,6 +266,55 @@ describe "conditionals in filter" do
       sample_one("apple") { expect(subject.get("tags") ).to include("failure") }
     end
 
+    conditional "[message] == 5" do
+      sample_one("message" => 5) {expect(subject.get("tags")).to include("success")}
+      sample_one("message" => 3) {expect(subject.get("tags")).to include("failure")}
+    end
+
+    conditional "5 == [message]" do
+      sample_one("message" => 5) {expect(subject.get("tags")).to include("success")}
+      sample_one("message" => 3) {expect(subject.get("tags")).to include("failure")}
+    end
+
+    conditional "7 == 7" do
+      sample_one("message" => 7) {expect(subject.get("tags")).to include("success")}
+      sample_one("message" => 3) {expect(subject.get("tags")).to include("success")}
+    end
+
+    conditional "5 == 7" do
+      sample_one("message" => 3) {expect(subject.get("tags")).to include("failure")}
+      sample_one("message" => 2) {expect(subject.get("tags")).to include("failure")}
+    end
+
+    conditional "[message] != 5" do
+      sample_one("message" => 5) {expect(subject.get("tags")).to include("failure")}
+      sample_one("message" => 3) {expect(subject.get("tags")).to include("success")}
+    end
+
+    conditional "[message] < 5" do
+      sample_one("message" => 3) {expect(subject.get("tags")).to include("success")}
+      sample_one("message" => 5) {expect(subject.get("tags")).to include("failure")}
+      sample_one("message" => 9) {expect(subject.get("tags")).to include("failure")}
+    end
+
+    conditional "[message] > 5" do
+      sample_one("message" => 9) {expect(subject.get("tags")).to include("success")}
+      sample_one("message" => 5) {expect(subject.get("tags")).to include("failure")}
+      sample_one("message" => 4) {expect(subject.get("tags")).to include("failure")}
+    end
+
+    conditional "[message] <= 5" do
+      sample_one("message" => 9) {expect(subject.get("tags")).to include("failure")}
+      sample_one("message" => 5) {expect(subject.get("tags")).to include("success")}
+      sample_one("message" => 3) {expect(subject.get("tags")).to include("success")}
+    end
+
+    conditional "[message] >= 5" do
+      sample_one("message" => 5) {expect(subject.get("tags")).to include("success")}
+      sample_one("message" => 7) {expect(subject.get("tags")).to include("success")}
+      sample_one("message" => 3) {expect(subject.get("tags")).to include("failure")}
+    end
+
     conditional "[message] =~ /sample/" do
       sample_one("apple") { expect(subject.get("tags") ).to include("failure") }
       sample_one("sample") { expect(subject.get("tags") ).to include("success") }

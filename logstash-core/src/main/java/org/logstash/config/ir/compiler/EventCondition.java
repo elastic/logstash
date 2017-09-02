@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import org.jruby.RubyFixnum;
 import org.jruby.RubyInteger;
 import org.jruby.RubyString;
 import org.jruby.util.ByteList;
@@ -383,9 +384,17 @@ public interface EventCondition {
 
         private static EventCondition gt(final EventValueExpression left,
             final ValueExpression right) {
-            return new EventCondition.Compiler.FieldGreaterThanString(
-                left.getFieldName(), right.get().toString()
-            );
+            final Object value = right.get();
+            final String field = left.getFieldName();
+            if (value instanceof String) {
+                return new EventCondition.Compiler.FieldGreaterThanString(field, (String) value);
+            } else if (value instanceof Long || value instanceof Integer ||
+                value instanceof Short) {
+                return new EventCondition.Compiler.FieldGreaterThanLong(
+                    field, ((Number) value).longValue()
+                );
+            }
+            throw new UnexpectedTypeException(value);
         }
 
         private static EventCondition truthy(final EventValueExpression evale) {
@@ -509,6 +518,24 @@ public interface EventCondition {
             public boolean fulfilled(final JrubyEventExtLibrary.RubyEvent event) {
                 return value.toString()
                     .compareTo(event.getEvent().getUnconvertedField(field).toString()) < 0;
+            }
+        }
+
+        private static final class FieldGreaterThanLong implements EventCondition {
+
+            private final FieldReference field;
+
+            private long value;
+
+            private FieldGreaterThanLong(final String field, final long value) {
+                this.field = PathCache.cache(field);
+                this.value = value;
+            }
+
+            @Override
+            public boolean fulfilled(final JrubyEventExtLibrary.RubyEvent event) {
+                return ((RubyFixnum) event.getEvent().getUnconvertedField(field))
+                    .getLongValue() > value;
             }
         }
 
