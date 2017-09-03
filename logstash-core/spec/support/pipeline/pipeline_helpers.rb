@@ -5,6 +5,8 @@ require "stud/try"
 require "rspec/expectations"
 require "thread"
 
+java_import org.logstash.common.SourceWithMetadata
+
 module PipelineHelpers
 
   class SpecSamplerInput < LogStash::Inputs::Base
@@ -58,13 +60,18 @@ module PipelineHelpers
 
     describe "\"#{name}\"" do
       let(:pipeline) do
-        cfg = "input { spec_sampler_input {} }\n" + config + "\noutput { spec_sampler_output {} }"
         settings = ::LogStash::SETTINGS.clone
         settings.set_value("queue.drain", true)
         settings.set_value("pipeline.workers", 1)
-        config_part = org.logstash.common.SourceWithMetadata.new("config_string", "config_string", cfg)
-        pipeline_config = LogStash::Config::PipelineConfig.new(LogStash::Config::Source::Local, :main, config_part, settings)
-        LogStash::Pipeline.new(pipeline_config)
+        LogStash::Pipeline.new(
+          LogStash::Config::PipelineConfig.new(
+            LogStash::Config::Source::Local, :main,
+            SourceWithMetadata.new(
+              "config_string", "config_string",
+              "input { spec_sampler_input {} }\n" + config + "\noutput { spec_sampler_output {} }"
+            ), settings
+          )
+        )
       end
       let(:event) do
         sample_event = [sample_event] unless sample_event.is_a?(Array)
