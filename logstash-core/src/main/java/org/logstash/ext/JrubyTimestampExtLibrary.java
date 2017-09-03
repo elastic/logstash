@@ -19,9 +19,9 @@ import org.jruby.runtime.ObjectAllocator;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.jruby.runtime.load.Library;
+import org.logstash.ObjectMappers;
 import org.logstash.RubyUtil;
 import org.logstash.Timestamp;
-import org.logstash.json.RubyTimestampSerializer;
 
 public class JrubyTimestampExtLibrary implements Library {
 
@@ -43,7 +43,7 @@ public class JrubyTimestampExtLibrary implements Library {
     }
 
     @JRubyClass(name = "Timestamp")
-    @JsonSerialize(using = RubyTimestampSerializer.class)
+    @JsonSerialize(using = ObjectMappers.RubyTimestampSerializer.class)
     public static class RubyTimestamp extends RubyObject {
 
         private Timestamp timestamp;
@@ -148,7 +148,7 @@ public class JrubyTimestampExtLibrary implements Library {
         @JRubyMethod(name = "to_iso8601")
         public IRubyObject ruby_to_iso8601(ThreadContext context)
         {
-            return RubyString.newString(context.runtime, this.timestamp.toIso8601());
+            return RubyString.newString(context.runtime, this.timestamp.toString());
         }
 
         @JRubyMethod(name = "to_java")
@@ -160,7 +160,7 @@ public class JrubyTimestampExtLibrary implements Library {
         @JRubyMethod(name = "to_json", rest = true)
         public IRubyObject ruby_to_json(ThreadContext context, IRubyObject[] args)
         {
-            return RubyString.newString(context.runtime,  "\"" + this.timestamp.toIso8601() + "\"");
+            return RubyString.newString(context.runtime,  "\"" + this.timestamp.toString() + "\"");
         }
 
         @JRubyMethod(name = "coerce", required = 1, meta = true)
