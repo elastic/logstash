@@ -3,6 +3,7 @@ package org.logstash;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -37,7 +38,7 @@ public final class EventTest {
         assertEquals(42.42, er.getField("[baz][innerQuux]"));
         assertEquals(42L, er.getField("[@metadata][foo]"));
 
-        assertEquals(e.getTimestamp().toIso8601(), er.getTimestamp().toIso8601());
+        assertEquals(e.getTimestamp().toString(), er.getTimestamp().toString());
     }
 
     @Test
@@ -50,20 +51,26 @@ public final class EventTest {
         inner.put("innerQuux", 42.42);
         e.setField("baz", inner);
         e.setField("[@metadata][foo]", 42L);
+        final Timestamp timestamp = new Timestamp();
+        e.setField("time", timestamp);
+        final Collection<Object> list = new ConvertedList(1);
+        list.add("foo");
+        e.setField("list", list);
         Event er = Event.deserialize(e.serialize());
         assertEquals(42L, er.getField("foo"));
         assertEquals(42L, er.getField("bar"));
         assertEquals(42L, er.getField("[baz][innerFoo]"));
         assertEquals(42.42, er.getField("[baz][innerQuux]"));
         assertEquals(42L, er.getField("[@metadata][foo]"));
-
-        assertEquals(e.getTimestamp().toIso8601(), er.getTimestamp().toIso8601());
+        assertEquals(timestamp, er.getField("time"));
+        assertEquals(list, er.getField("list"));
+        assertEquals(e.getTimestamp().toString(), er.getTimestamp().toString());
     }
 
     @Test
     public void testBareToJson() throws Exception {
         Event e = new Event();
-        assertJsonEquals("{\"@timestamp\":\"" + e.getTimestamp().toIso8601() + "\",\"@version\":\"1\"}", e.toJson());
+        assertJsonEquals("{\"@timestamp\":\"" + e.getTimestamp().toString() + "\",\"@version\":\"1\"}", e.toJson());
     }
 
     @Test
@@ -71,7 +78,7 @@ public final class EventTest {
         Map<String, Object> data = new HashMap<>();
         data.put("foo", "bar");
         Event e = new Event(data);
-        assertJsonEquals("{\"@timestamp\":\"" + e.getTimestamp().toIso8601() + "\",\"foo\":\"bar\",\"@version\":\"1\"}", e.toJson());
+        assertJsonEquals("{\"@timestamp\":\"" + e.getTimestamp().toString() + "\",\"foo\":\"bar\",\"@version\":\"1\"}", e.toJson());
     }
 
     @Test
@@ -79,7 +86,7 @@ public final class EventTest {
         Map<String, Object> data = new HashMap<>();
         data.put("foo", 1);
         Event e = new Event(data);
-        assertJsonEquals("{\"@timestamp\":\"" + e.getTimestamp().toIso8601() + "\",\"foo\":1,\"@version\":\"1\"}", e.toJson());
+        assertJsonEquals("{\"@timestamp\":\"" + e.getTimestamp().toString() + "\",\"foo\":1,\"@version\":\"1\"}", e.toJson());
     }
 
     @Test
@@ -87,7 +94,7 @@ public final class EventTest {
         Map<String, Object> data = new HashMap<>();
         data.put("foo", 1L);
         Event e = new Event(data);
-        assertJsonEquals("{\"@timestamp\":\"" + e.getTimestamp().toIso8601() + "\",\"foo\":1,\"@version\":\"1\"}", e.toJson());
+        assertJsonEquals("{\"@timestamp\":\"" + e.getTimestamp().toString() + "\",\"foo\":1,\"@version\":\"1\"}", e.toJson());
     }
 
     @Test
@@ -95,7 +102,7 @@ public final class EventTest {
         Map<String, Object> data = new HashMap<>();
         data.put("foo", 1.0);
         Event e = new Event(data);
-        assertJsonEquals("{\"@timestamp\":\"" + e.getTimestamp().toIso8601() + "\",\"foo\":1.0,\"@version\":\"1\"}", e.toJson());
+        assertJsonEquals("{\"@timestamp\":\"" + e.getTimestamp().toString() + "\",\"foo\":1.0,\"@version\":\"1\"}", e.toJson());
     }
 
     @Test
@@ -105,18 +112,18 @@ public final class EventTest {
         data.put("bar", "bar");
         data.put("baz", 1);
         Event e = new Event(data);
-        assertJsonEquals("{\"bar\":\"bar\",\"@timestamp\":\"" + e.getTimestamp().toIso8601() + "\",\"foo\":1.0,\"@version\":\"1\",\"baz\":1}", e.toJson());
+        assertJsonEquals("{\"bar\":\"bar\",\"@timestamp\":\"" + e.getTimestamp().toString() + "\",\"foo\":1.0,\"@version\":\"1\",\"baz\":1}", e.toJson());
     }
 
     @Test
     public void testDeepMapFieldToJson() throws Exception {
         Event e = new Event();
         e.setField("[foo][bar][baz]", 1);
-        assertJsonEquals("{\"@timestamp\":\"" + e.getTimestamp().toIso8601() + "\",\"foo\":{\"bar\":{\"baz\":1}},\"@version\":\"1\"}", e.toJson());
+        assertJsonEquals("{\"@timestamp\":\"" + e.getTimestamp().toString() + "\",\"foo\":{\"bar\":{\"baz\":1}},\"@version\":\"1\"}", e.toJson());
 
         e = new Event();
         e.setField("[foo][0][baz]", 1);
-        assertJsonEquals("{\"@timestamp\":\"" + e.getTimestamp().toIso8601() + "\",\"foo\":{\"0\":{\"baz\":1}},\"@version\":\"1\"}", e.toJson());
+        assertJsonEquals("{\"@timestamp\":\"" + e.getTimestamp().toString() + "\",\"foo\":{\"0\":{\"baz\":1}},\"@version\":\"1\"}", e.toJson());
     }
 
     @Test
@@ -127,7 +134,7 @@ public final class EventTest {
         assertJsonEquals(
             String.format(
                 "{\"@timestamp\":\"%s\",\"foo\":{\"bar\":{\"baz\":\"%s\"}},\"@version\":\"1\"}",
-                e.getTimestamp().toIso8601(), new Timestamp(time.getDateTime()).toIso8601()
+                e.getTimestamp().toString(), new Timestamp(time.getDateTime()).toString()
             ), e.toJson()
         );
     }
@@ -139,7 +146,7 @@ public final class EventTest {
         assertJsonEquals(
             String.format(
                 "{\"@timestamp\":\"%s\",\"foo\":{\"bar\":{\"baz\":true}},\"@version\":\"1\"}",
-                e.getTimestamp().toIso8601()
+                e.getTimestamp().toString()
             ), e.toJson()
         );
     }
@@ -185,7 +192,7 @@ public final class EventTest {
 
         Event f = e.clone();
 
-        assertJsonEquals("{\"bar\":\"bar\",\"@timestamp\":\"" + e.getTimestamp().toIso8601() + "\",\"array\":[{\"foo\":\"bar\"}],\"foo\":1.0,\"@version\":\"1\",\"baz\":1}", f.toJson());
+        assertJsonEquals("{\"bar\":\"bar\",\"@timestamp\":\"" + e.getTimestamp().toString() + "\",\"array\":[{\"foo\":\"bar\"}],\"foo\":1.0,\"@version\":\"1\",\"baz\":1}", f.toJson());
         assertJsonEquals(f.toJson(), e.toJson());
     }
 
@@ -257,7 +264,7 @@ public final class EventTest {
         Event e = Event.fromJson("{\"@timestamp\":\"2015-05-28T23:02:05.350Z\",\"foo\":\"bar\"}")[0];
 
         assertEquals("bar", e.getField("[foo]"));
-        assertEquals("2015-05-28T23:02:05.350Z", e.getTimestamp().toIso8601());
+        assertEquals("2015-05-28T23:02:05.350Z", e.getTimestamp().toString());
     }
 
     @Test
@@ -266,7 +273,7 @@ public final class EventTest {
 
         assertEquals(1, l.length);
         assertEquals("bar", l[0].getField("[foo]"));
-        assertEquals("2015-05-28T23:02:05.350Z", l[0].getTimestamp().toIso8601());
+        assertEquals("2015-05-28T23:02:05.350Z", l[0].getTimestamp().toString());
 
         l = Event.fromJson("[{}]");
 
@@ -277,9 +284,9 @@ public final class EventTest {
 
         assertEquals(2, l.length);
         assertEquals("bar", l[0].getField("[foo]"));
-        assertEquals("2015-05-28T23:02:05.350Z", l[0].getTimestamp().toIso8601());
+        assertEquals("2015-05-28T23:02:05.350Z", l[0].getTimestamp().toString());
         assertEquals("baz", l[1].getField("[foo]"));
-        assertEquals("2016-05-28T23:02:05.350Z", l[1].getTimestamp().toIso8601());
+        assertEquals("2016-05-28T23:02:05.350Z", l[1].getTimestamp().toString());
     }
 
     @Test(expected=IOException.class)
@@ -331,7 +338,7 @@ public final class EventTest {
         data.put("host", "foo");
         data.put("message", "bar");
         Event e = new Event(data);
-        assertEquals(e.toString(), e.getTimestamp().toIso8601() + " foo bar");
+        assertEquals(e.toString(), e.getTimestamp().toString() + " foo bar");
     }
 
     @Test
