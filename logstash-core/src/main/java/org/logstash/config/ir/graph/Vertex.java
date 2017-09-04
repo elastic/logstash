@@ -218,10 +218,6 @@ public abstract class Vertex implements SourceComponent, HashableWithSource {
        return getUnusedOutgoingEdgeFactories().size() > 0;
     }
 
-    public static boolean acceptsIncomingEdge(Edge e) {
-        return true;
-    }
-
     public boolean acceptsOutgoingEdge(Edge e) {
         return true;
     }
