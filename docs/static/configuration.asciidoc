@@ -797,7 +797,7 @@ input { stdin { } }
 
 filter {
   grok {
-    match => { "message" => "%{COMBINEDAPACHELOG}" }
+    match => { "message" => "%{HTTPD_COMBINEDLOG}" }
   }
   date {
     match => [ "timestamp" , "dd/MMM/yyyy:HH:mm:ss Z" ]
@@ -867,7 +867,7 @@ filter {
   if [path] =~ "access" {
     mutate { replace => { "type" => "apache_access" } }
     grok {
-      match => { "message" => "%{COMBINEDAPACHELOG}" }
+      match => { "message" => "%{HTTPD_COMBINEDLOG}" }
     }
   }
   date {
@@ -933,7 +933,7 @@ filter {
   if [path] =~ "access" {
     mutate { replace => { type => "apache_access" } }
     grok {
-      match => { "message" => "%{COMBINEDAPACHELOG}" }
+      match => { "message" => "%{HTTPD_COMBINEDLOG}" }
     }
     date {
       match => [ "timestamp" , "dd/MMM/yyyy:HH:mm:ss Z" ]
