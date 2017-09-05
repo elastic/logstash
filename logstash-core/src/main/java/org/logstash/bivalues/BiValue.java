@@ -88,7 +88,7 @@ public abstract class BiValue<R extends IRubyObject, J> implements Serializable 
         return String.valueOf(javaValue);
     }
 
-    protected static Object newProxy(BiValue instance) {
+    protected static Object newProxy(BiValue<?, ?> instance) {
         return new SerializationProxy(instance);
     }
 

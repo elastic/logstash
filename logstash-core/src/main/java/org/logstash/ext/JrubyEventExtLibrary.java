@@ -219,8 +219,8 @@ public class JrubyEventExtLibrary implements Library {
 
         @JRubyMethod(name = "to_hash_with_metadata")
         public IRubyObject ruby_to_hash_with_metadata(ThreadContext context) {
-            Map data = this.event.toMap();
-            Map metadata = this.event.getMetadata();
+            Map<String, Object> data = this.event.toMap();
+            Map<String, Object> metadata = this.event.getMetadata();
 
             if (!metadata.isEmpty()) {
                 data.put(Event.METADATA, metadata);
@@ -323,7 +323,7 @@ public class JrubyEventExtLibrary implements Library {
                 this.event = new Event();
             } else if (data instanceof MapJavaProxy) {
                 this.event = new Event(ConvertedMap.newFromMap(
-                    (Map)((MapJavaProxy)data).getObject())
+                    (Map<String, Object>)((MapJavaProxy)data).getObject())
                 );
             } else {
                 throw context.runtime.newTypeError("wrong argument type " + data.getMetaClass() + " (expected Hash)");
