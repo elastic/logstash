@@ -2,8 +2,8 @@ require_relative '../framework/fixture'
 require_relative '../framework/settings'
 require_relative '../services/logstash_service'
 require_relative '../framework/helpers'
-require "logstash/devutils/rspec/spec_helper"
 require "yaml"
+require 'rspec/wait'
 
 describe "Test Logstash instance whose default settings are overridden" do
   before(:all) {
@@ -48,9 +48,9 @@ describe "Test Logstash instance whose default settings are overridden" do
     @logstash_service.spawn_logstash("-e", tcp_config)
     @logstash_service.wait_for_logstash
     # check LS is up and running with new data path
-    try(num_retries) do
-      expect(is_port_open?(test_port)).to be true
-    end
+    wait(60).for do
+      is_port_open?(test_port)
+    end.to be true
   end
   
   it "should write logs to a new dir" do
@@ -58,9 +58,9 @@ describe "Test Logstash instance whose default settings are overridden" do
     @logstash_service.spawn_logstash("-e", tcp_config)
     @logstash_service.wait_for_logstash
     # check LS is up and running with new data path
-    try(num_retries) do
-      expect(is_port_open?(test_port)).to be true
-    end
+    wait(60).for do
+      is_port_open?(test_port)
+    end.to be true
     expect(File.exists?("#{temp_dir}/logstash-plain.log")).to be true
   end
   
@@ -72,9 +72,9 @@ describe "Test Logstash instance whose default settings are overridden" do
     @logstash_service.spawn_logstash
     @logstash_service.wait_for_logstash
     # check LS is up and running with new data path
-    try(num_retries) do
-      expect(is_port_open?(test_port)).to be true
-    end
+    wait(60).for do
+      is_port_open?(test_port)
+    end.to be true
   end
   
   it "should exit when config test_and_exit is set" do
@@ -87,18 +87,18 @@ describe "Test Logstash instance whose default settings are overridden" do
     s["path.logs"] = temp_dir
     overwrite_settings(s)
     @logstash_service.spawn_logstash
-    try(num_retries) do
-      expect(@logstash_service.exited?).to be true
-    end
+    wait(60).for do
+      @logstash_service.exited?
+    end.to be true
     expect(@logstash_service.exit_code).to eq(0)
     
     # now with bad config
     IO.write(test_config_path, "#{tcp_config} filters {} ")
     expect(File.exists?(test_config_path)).to be true
     @logstash_service.spawn_logstash
-    try(num_retries) do
-      expect(@logstash_service.exited?).to be true
-    end
+    wait(60).for do
+      @logstash_service.exited?
+    end.to be true
     expect(@logstash_service.exit_code).to eq(1)
   end
 
@@ -112,9 +112,9 @@ describe "Test Logstash instance whose default settings are overridden" do
     @logstash_service.spawn_logstash("-e", tcp_config)
     @logstash_service.wait_for_logstash
     # check LS is up and running with new data path
-    try(num_retries) do
-      expect(is_port_open?(test_port)).to be true
-    end
+    wait(60).for do
+      is_port_open?(test_port)
+    end.to be true
 
     # now check monitoring API to validate
     node_info = @logstash_service.monitoring_api.node_info
@@ -129,13 +129,13 @@ describe "Test Logstash instance whose default settings are overridden" do
     @logstash_service.spawn_logstash("-e", tcp_config)
     @logstash_service.wait_for_logstash
     
-    try(num_retries) do
-      expect(is_port_open?(http_port)).to be true
-    end
+    wait(60).for do
+      is_port_open?(http_port)
+    end.to be true
     # check LS is up and running with new data path
-    try(num_retries) do
-      expect(is_port_open?(test_port)).to be true
-    end
+    wait(60).for do
+      is_port_open?(test_port)
+    end.to be true
     
     expect(File.exists?(@logstash_default_logs)).to be true
 
@@ -149,13 +149,13 @@ describe "Test Logstash instance whose default settings are overridden" do
     @logstash_service.spawn_logstash("-e", tcp_config, "--path.settings", "/tmp/fooooobbaaar")
     @logstash_service.wait_for_logstash
     http_port = 9600
-    try(num_retries) do
-      expect(is_port_open?(http_port)).to be true
-    end
+    wait(60).for do
+      is_port_open?(http_port)
+    end.to be true
 
-    try(num_retries) do
-      expect(is_port_open?(test_port)).to be true
-    end
+    wait(60).for do
+      is_port_open?(test_port)
+    end.to be true
 
     resp = Manticore.get("http://localhost:#{http_port}/_node").body
     node_info = JSON.parse(resp)
