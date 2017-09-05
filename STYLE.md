@@ -1,4 +1,4 @@
-# Style Guide 
+# Style Guide   
 
 Rather than write a full style guide, please follow by examples you see in the
 code. If you send me a patch, I will not reject it for style reasons (but I
