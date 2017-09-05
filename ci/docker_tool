@@ -1,12 +1,9 @@
 #!/bin/bash
 
-IMAGE_NAME="$ghprbActualCommit"
+IMAGE_NAME="$branch_specifier"
 
-if [[ -z "$PROJECT" ]]; then 
-  PROJECT="ls_integ"
-fi
 
-echo "Using docker-compose project '$PROJECT'"
+echo "Using docker-compose project '$IMAGE_NAME'"
 
 RUN_PREFIX=docker
 LOGSTASH_VERSION=$(cat versions.yml  | egrep '^logstash:' | cut -d' ' -f 2)
