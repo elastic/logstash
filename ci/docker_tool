@@ -43,6 +43,9 @@ function remove_image {
 
 INTEGRATION_COMMAND="time $RUN_PREFIX run -t --rm $IMAGE_NAME ci/integration_run.sh"
 
+UNIT_COMMAND="time $RUN_PREFIX run -t --rm $IMAGE_NAME ci/unit_run.sh"
+
+
 case "$1" in
   "build") 
     build
@@ -116,6 +119,9 @@ case "$1" in
   "destroy")
       remove_image
   ;;
+  "ci_unit")
+       $UNIT_COMMAND
+    ;;
   "dev_rsync")
     rsyncdev
   ;;
