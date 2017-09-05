@@ -60,9 +60,12 @@ namespace "vendor" do
   end # def untar
 
   task "jruby" do |task, args|
-    name = task.name.split(":")[1]
-    info = VERSIONS[name]
+    JRUBY = "jruby"
+    JRUBY_RUNTIME = "jruby-runtime-override"
+
+    info = VERSIONS[JRUBY_RUNTIME] || VERSIONS[JRUBY]
     version = info["version"]
+    url = info["url"] || "http://jruby.org.s3.amazonaws.com/downloads/#{version}/jruby-bin-#{version}.tar.gz"
 
     discard_patterns = Regexp.union([
       /^samples/,
@@ -72,10 +75,9 @@ namespace "vendor" do
       /lib\/ruby\/shared\/rdoc/,
     ])
 
-    url = "http://jruby.org.s3.amazonaws.com/downloads/#{version}/jruby-bin-#{version}.tar.gz"
     download = file_fetch(url, info["sha1"])
 
-    parent = vendor(name).gsub(/\/$/, "")
+    parent = vendor(JRUBY).gsub(/\/$/, "")
     directory parent => "vendor" do
       next if parent =~ discard_patterns
       FileUtils.mkdir(parent)
@@ -85,7 +87,7 @@ namespace "vendor" do
     untar(download) do |entry|
       out = entry.full_name.gsub(prefix_re, "")
       next if out =~ discard_patterns
-      vendor(name, out)
+      vendor(JRUBY, out)
     end # untar
   end # jruby
 
