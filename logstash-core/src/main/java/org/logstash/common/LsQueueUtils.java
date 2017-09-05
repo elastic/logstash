@@ -16,6 +16,20 @@ public final class LsQueueUtils {
     }
 
     /**
+     * Adds all {@link JrubyEventExtLibrary.RubyEvent} in the given collection to the given queue
+     * in a blocking manner, only returning once all events have been added to the queue.
+     * @param queue Queue to add Events to
+     * @param events Events to add to Queue
+     * @throws InterruptedException On interrupt during blocking queue add
+     */
+    public static void addAll(final BlockingQueue<JrubyEventExtLibrary.RubyEvent> queue,
+        final Collection<JrubyEventExtLibrary.RubyEvent> events) throws InterruptedException {
+        for (final JrubyEventExtLibrary.RubyEvent event : events) {
+            queue.put(event);
+        }
+    }
+
+    /**
      * <p>Drains {@link JrubyEventExtLibrary.RubyEvent} from {@link BlockingQueue} with a timeout.</p>
      * <p>The timeout will be reset as soon as a single {@link JrubyEventExtLibrary.RubyEvent} was
      * drained from the {@link BlockingQueue}. Draining {@link JrubyEventExtLibrary.RubyEvent}
