@@ -37,6 +37,10 @@ function build {
   docker build -t $IMAGE_NAME .
 }
 
+function remove_image {
+  docker rmi $IMAGE_NAME
+}
+
 INTEGRATION_COMMAND="time $RUN_PREFIX run -t --rm $IMAGE_NAME ci/integration_run.sh"
 
 case "$1" in
@@ -108,6 +112,9 @@ case "$1" in
     echo "Don't forget to rsync" && \
     #TODO: This should search for running containers and connect to them, starting a new one only if needed
     time $RUN_PREFIX exec -it lsdev bash -c "$INTEGRATION_SETUP && mkdir -p build && ln -sf /opt/logstash build/logstash-$LOGSTASH_VERSION-SNAPSHOT && bash -l"
+  ;;
+  "destroy")
+      remove_image
   ;;
   "dev_rsync")
     rsyncdev
