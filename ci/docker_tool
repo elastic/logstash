@@ -41,8 +41,6 @@ INTEGRATION_COMMAND="time $RUN_PREFIX run -t --rm $IMAGE_NAME ci/integration_run
 
 case "$1" in
   "build") 
-    docker stop lsdev && \
-    docker rm lsdev && \
     build
   ;;
   "ci_integration")
