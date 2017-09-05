@@ -61,7 +61,7 @@ describe LogStash::Util::WrappedSynchronousQueue do
         context "when we have item in the queue" do
           it "records the `duration_in_millis`" do
             batch = write_client.get_new_batch
-            5.times {|i| batch.push("value-#{i}")}
+            5.times {|i| batch.push(LogStash::Event.new({"message" => "value-#{i}"}))}
             write_client.push_batch(batch)
 
             read_batch = read_client.read_batch
