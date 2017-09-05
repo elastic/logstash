@@ -38,7 +38,7 @@ ADD versions.yml /opt/logstash/versions.yml
 ADD LICENSE /opt/logstash/LICENSE
 ADD CONTRIBUTORS /opt/logstash/CONTRIBUTORS
 ADD NOTICE.TXT /opt/logstash/NOTICE.TXT
-ADD Gemfile /opt/logstash/Gemfile
+ADD Gemfile.template /opt/logstash/Gemfile
 ADD Rakefile /opt/logstash/Rakefile
 ADD build.gradle /opt/logstash/build.gradle
 ADD rakelib /opt/logstash/rakelib
