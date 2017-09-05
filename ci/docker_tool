@@ -88,8 +88,8 @@ case "$1" in
   ;;
   "ci_integration_2x")
     build
-    ci/docker_tool ci_integration_parallel 2 0 false &
-    ci/docker_tool ci_integration_parallel 2 1 false &
+    ci/docker_tool ci_integration_parallel 2 0 false
+    ci/docker_tool ci_integration_parallel 2 1 false
 
     FAILED=0
     for job in `jobs -p`
