@@ -84,13 +84,13 @@ public final class QueueWitness implements SerializableWitness {
 
     @Override
     public void genJson(JsonGenerator gen, SerializerProvider provider) throws IOException {
-        SERIALIZER.innerSerialize(this, gen);
+        Serializer.innerSerialize(this, gen);
     }
 
     /**
      * Inner witness for the queue capacity
      */
-    public class CapacityWitness {
+    public static class CapacityWitness {
 
         private final NumberGauge queueSizeInBytes;
         private final NumberGauge pageCapacityInBytes;
@@ -156,7 +156,7 @@ public final class QueueWitness implements SerializableWitness {
         /**
          * Snitch for queue capacity. Provides discrete metric values.
          */
-        public class Snitch {
+        public static class Snitch {
 
             private final CapacityWitness witness;
 
@@ -206,7 +206,7 @@ public final class QueueWitness implements SerializableWitness {
     /**
      * Inner witness for the queue data
      */
-    public class DataWitness {
+    public static class DataWitness {
 
         private final TextGauge path;
         private final NumberGauge freeSpaceInBytes;
@@ -261,7 +261,7 @@ public final class QueueWitness implements SerializableWitness {
         /**
          * Snitch for queue capacity. Provides discrete metric values.
          */
-        public class Snitch {
+        public static class Snitch {
 
             private final DataWitness witness;
 
@@ -329,7 +329,7 @@ public final class QueueWitness implements SerializableWitness {
             gen.writeEndObject();
         }
 
-        void innerSerialize(QueueWitness witness, JsonGenerator gen) throws IOException {
+        static void innerSerialize(QueueWitness witness, JsonGenerator gen) throws IOException {
             gen.writeObjectFieldStart(KEY);
             MetricSerializer<Metric<Number>> numberSerializer = MetricSerializer.Get.numberSerializer(gen);
             MetricSerializer<Metric<String>> stringSerializer = MetricSerializer.Get.stringSerializer(gen);

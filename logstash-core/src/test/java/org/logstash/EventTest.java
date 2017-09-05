@@ -283,17 +283,17 @@ public final class EventTest {
         Event.fromJson("gabeutch");
     }
 
-    @Test(expected=IOException.class)
+    @Test(expected=ClassCastException.class)
     public void testFromJsonWithInvalidJsonArray1() throws Exception {
         Event.fromJson("[1,2]");
     }
 
-    @Test(expected=IOException.class)
+    @Test(expected=ClassCastException.class)
     public void testFromJsonWithInvalidJsonArray2() throws Exception {
         Event.fromJson("[\"gabeutch\"]");
     }
 
-    @Test(expected=IOException.class)
+    @Test(expected=ClassCastException.class)
     public void testFromJsonWithPartialInvalidJsonArray() throws Exception {
         Event.fromJson("[{\"foo\":\"bar\"}, 1]");
     }

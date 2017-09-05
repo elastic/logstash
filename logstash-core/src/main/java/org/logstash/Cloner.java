@@ -1,6 +1,13 @@
 package org.logstash;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 public final class Cloner {
 
@@ -23,8 +30,6 @@ public final class Cloner {
         if (list instanceof LinkedList<?>) {
             clone = new LinkedList<>();
         } else if (list instanceof ArrayList<?>) {
-            clone = new ArrayList<>();
-        } else if (list instanceof ConvertedList) {
             clone = new ArrayList<>();
         } else {
             throw new ClassCastException("unexpected List type " + list.getClass());

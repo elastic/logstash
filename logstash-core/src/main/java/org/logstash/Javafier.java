@@ -62,7 +62,7 @@ public class Javafier {
         try {
             return BiValues.newBiValue(o).javaValue();
         } catch (IllegalArgumentException e) {
-            Class cls = o.getClass();
+            final Class<?> cls = o.getClass();
             throw new IllegalArgumentException(String.format(ERR_TEMPLATE, cls.getName(), cls.getSimpleName()));
         }
     }

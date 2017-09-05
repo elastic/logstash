@@ -35,17 +35,17 @@ public final class Rubyfier {
             || input instanceof JrubyTimestampExtLibrary.RubyTimestamp) {
             return (IRubyObject) input;
         }
-        if (input instanceof String) return RubyUtil.RUBY.newString((String) input);
+        if (input instanceof String) return runtime.newString((String) input);
         if (input instanceof Double || input instanceof Float) {
-            return RubyUtil.RUBY.newFloat(((Number) input).doubleValue());
+            return runtime.newFloat(((Number) input).doubleValue());
         }
         if (input instanceof Integer || input instanceof Long) {
-            return RubyUtil.RUBY.newFixnum(((Number) input).longValue());
+            return runtime.newFixnum(((Number) input).longValue());
         }
-        if (input instanceof Boolean) return RubyUtil.RUBY.newBoolean((Boolean) input);
+        if (input instanceof Boolean) return runtime.newBoolean((Boolean) input);
         if (input instanceof Timestamp) {
             return JrubyTimestampExtLibrary.RubyTimestamp.newRubyTimestamp(
-                RubyUtil.RUBY, (Timestamp) input
+                runtime, (Timestamp) input
             );
         }
         if (input instanceof BiValue) return ((BiValue) input).rubyValue(runtime);

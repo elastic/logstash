@@ -116,7 +116,7 @@ public final class ReloadWitness implements SerializableWitness {
 
     @Override
     public void genJson(JsonGenerator gen, SerializerProvider provider) throws IOException {
-        SERIALIZER.innerSerialize(this, gen, provider);
+        Serializer.innerSerialize(this, gen, provider);
     }
 
     /**
@@ -149,7 +149,8 @@ public final class ReloadWitness implements SerializableWitness {
             gen.writeEndObject();
         }
 
-        void innerSerialize(ReloadWitness witness, JsonGenerator gen, SerializerProvider provider) throws IOException {
+        static void innerSerialize(ReloadWitness witness, JsonGenerator gen,
+            SerializerProvider provider) throws IOException {
             gen.writeObjectFieldStart(ReloadWitness.KEY);
             witness.lastError.genJson(gen, provider);
             MetricSerializer<Metric<Long>> longSerializer = MetricSerializer.Get.longSerializer(gen);
