@@ -159,12 +159,12 @@ public final class DeadLetterQueueWriter implements Closeable {
      * @param event Logstash Event
      * @return boolean indicating whether the event is eligible to be added to the DLQ
      */
-    private boolean alreadyProcessed(final Event event) {
+    private static boolean alreadyProcessed(final Event event) {
         return event.getMetadata() != null && event.getMetadata().containsKey(DEAD_LETTER_QUEUE_METADATA_KEY);
     }
 
     @Override
-    public synchronized void close() throws IOException {
+    public synchronized void close() {
         if (currentWriter != null) {
             try {
                 currentWriter.close();

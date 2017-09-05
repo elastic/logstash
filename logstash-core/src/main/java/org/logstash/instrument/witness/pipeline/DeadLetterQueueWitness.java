@@ -94,7 +94,7 @@ public class DeadLetterQueueWitness implements SerializableWitness {
     /**
      * The snitch for the dead letter queue. Used to retrieve discrete metric values.
      */
-    public class Snitch {
+    public static class Snitch {
         private final DeadLetterQueueWitness witness;
 
         private Snitch(DeadLetterQueueWitness witness) {

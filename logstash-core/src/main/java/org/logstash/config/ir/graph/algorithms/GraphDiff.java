@@ -1,13 +1,13 @@
 package org.logstash.config.ir.graph.algorithms;
 
-import org.logstash.config.ir.graph.Edge;
-import org.logstash.config.ir.graph.Graph;
-import org.logstash.config.ir.graph.Vertex;
-
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import org.logstash.config.ir.SourceComponent;
+import org.logstash.config.ir.graph.Edge;
+import org.logstash.config.ir.graph.Graph;
+import org.logstash.config.ir.graph.Vertex;
 
 /**
  * Created by andrewvc on 1/5/17.
@@ -86,14 +86,15 @@ public class GraphDiff {
             return output.toString();
         }
 
-        private static String detailedDiffFor(String name, Collection removed, Collection added) {
-            return (name + " GraphDiff: " + "\n") +
-                    "--------------------------\n" +
-                    Stream.concat(removed.stream().map(c -> "-" + c.toString()),
-                            added.stream().map(c -> "+" + c.toString())).
-                            map(Object::toString).
-                            collect(Collectors.joining("\n")) +
-                    "\n--------------------------";
+        private static String detailedDiffFor(final String name,
+            final Collection<? extends SourceComponent> removed,
+            final Collection<? extends SourceComponent> added) {
+            return name + " GraphDiff: \n--------------------------\n" +
+                Stream.concat(
+                    removed.stream().map(c -> '-' + c.toString()),
+                    added.stream().map(c -> '+' + c.toString())
+                ).map(Object::toString).collect(Collectors.joining("\n")) +
+                "\n--------------------------";
         }
     }
 }

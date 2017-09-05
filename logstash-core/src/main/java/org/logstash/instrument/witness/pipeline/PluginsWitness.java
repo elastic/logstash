@@ -89,8 +89,8 @@ public class PluginsWitness implements SerializableWitness {
      * @param id     the id of the plugin
      * @return existing or new {@link PluginWitness}
      */
-    private PluginWitness getPlugin(Map<String, PluginWitness> plugin, String id) {
-        return plugin.computeIfAbsent(id, k -> new PluginWitness(k));
+    private static PluginWitness getPlugin(Map<String, PluginWitness> plugin, String id) {
+        return plugin.computeIfAbsent(id, PluginWitness::new);
     }
 
     @Override
