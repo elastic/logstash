@@ -1,6 +1,6 @@
 #!/bin/bash
 
-IMAGE_NAME=lsinteg
+IMAGE_NAME="$ghprbActualCommit"
 
 if [[ -z "$PROJECT" ]]; then 
   PROJECT="ls_integ"
