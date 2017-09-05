@@ -2,7 +2,9 @@ package org.logstash;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -56,7 +58,7 @@ public final class Event implements Cloneable, Queueable {
      * @param data Map that is assumed to have either {@link String} or {@link RubyString}
      * keys and may contain Java and Ruby objects.
      */
-    public Event(Map data) {
+    public Event(final Map<? extends Serializable, Object> data) {
         this(ConvertedMap.newFromMap(data));
     }
 
@@ -72,7 +74,8 @@ public final class Event implements Cloneable, Queueable {
         }
 
         if (this.data.containsKey(METADATA)) {
-            this.metadata = ConvertedMap.newFromMap((Map) this.data.remove(METADATA));
+            this.metadata =
+                ConvertedMap.newFromMap((Map<String, Object>) this.data.remove(METADATA));
         } else {
             this.metadata = new ConvertedMap(10);
         }
@@ -150,7 +153,7 @@ public final class Event implements Cloneable, Queueable {
     public void setField(final FieldReference field, final Object value) {
         switch (field.type()) {
             case FieldReference.META_PARENT:
-                this.metadata = ConvertedMap.newFromMap((Map) value);
+                this.metadata = ConvertedMap.newFromMap((Map<String, Object>) value);
                 break;
             case FieldReference.META_CHILD:
                 Accessors.set(metadata, field, value);
@@ -209,15 +212,13 @@ public final class Event implements Cloneable, Queueable {
         Object o = JSON_MAPPER.readValue(json, Object.class);
         // we currently only support Map or Array json objects
         if (o instanceof Map) {
-            result = new Event[]{ new Event((Map)o) };
+            result = new Event[]{ new Event((Map<String, Object>)o) };
         } else if (o instanceof List) {
-            result = new Event[((List) o).size()];
+            final Collection<Map<String, Object>> list = (Collection<Map<String, Object>>) o; 
+            result = new Event[list.size()];
             int i = 0;
-            for (Object e : (List)o) {
-                if (!(e instanceof Map)) {
-                    throw new IOException("incompatible inner json array object type=" + e.getClass().getName() + " , only hash map is supported");
-                }
-                result[i++] = new Event((Map)e);
+            for (final Map<String, Object> e : list) {
+                result[i++] = new Event(e);
             }
         } else {
             throw new IOException("incompatible json object type=" + o.getClass().getName() + " , only hash map or arrays are supported");
@@ -226,13 +227,13 @@ public final class Event implements Cloneable, Queueable {
         return result;
     }
 
-    public Map toMap() {
+    public Map<String, Object> toMap() {
         return Cloner.deep(this.data);
     }
 
     public Event overwrite(Event e) {
-        this.data = e.getData();
-        this.cancelled = e.isCancelled();
+        this.data = e.data;
+        this.cancelled = e.cancelled;
         try {
             this.timestamp = e.getTimestamp();
         } catch (IOException exception) {
@@ -262,7 +263,7 @@ public final class Event implements Cloneable, Queueable {
 
     @Override
     public Event clone() {
-        return new Event(Cloner.<Map>deep(this.data));
+        return new Event(Cloner.<Map<String, Object>>deep(this.data));
     }
 
     public String toString() {

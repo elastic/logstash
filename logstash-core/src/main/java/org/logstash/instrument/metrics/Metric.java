@@ -21,6 +21,7 @@ public interface Metric<T> {
      * @return This metric value
      * @deprecated
      */
+    @Deprecated
     default T get() {
         return getValue();
     }
@@ -45,6 +46,7 @@ public interface Metric<T> {
      * @return A description of this Metric that can be used for logging.
      * @deprecated
      */
+    @Deprecated
     default String inspect() {
         return toString();
     }
@@ -55,6 +57,7 @@ public interface Metric<T> {
      * @return The {@link String} version of the {@link MetricType}
      * @deprecated
      */
+    @Deprecated
     default String type() {
         return getType().asString();
     }

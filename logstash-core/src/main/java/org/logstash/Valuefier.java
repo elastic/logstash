@@ -122,13 +122,15 @@ public final class Valuefier {
             )
         );
         converters.put(RubyHash.class, input -> ConvertedMap.newFromRubyHash((RubyHash) input));
-        converters.put(Map.class, input -> ConvertedMap.newFromMap((Map) input));
+        converters.put(Map.class, input -> ConvertedMap.newFromMap((Map<String, Object>) input));
         converters.put(List.class, input -> ConvertedList.newFromList((List) input));
         converters.put(ArrayJavaProxy.class, JAVAPROXY_CONVERTER);
         converters.put(ConcreteJavaProxy.class, JAVAPROXY_CONVERTER);
         converters.put(
             MapJavaProxy.class,
-            input -> ConvertedMap.newFromMap((Map) ((MapJavaProxy) input).getObject())
+            input -> ConvertedMap.newFromMap(
+                (Map<String, Object>) ((MapJavaProxy) input).getObject()
+            )
         );
         converters.put(
             RubyArray.class, input -> ConvertedList.newFromRubyArray((RubyArray) input)

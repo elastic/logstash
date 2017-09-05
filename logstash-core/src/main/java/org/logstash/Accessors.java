@@ -1,7 +1,5 @@
 package org.logstash;
 
-import java.util.Map;
-
 public final class Accessors {
 
     private Accessors() {
@@ -102,7 +100,7 @@ public final class Accessors {
     }
 
     private static Object setChild(final Object target, final String key, final Object value) {
-        if (target instanceof Map) {
+        if (target instanceof ConvertedMap) {
             ((ConvertedMap) target).putInterned(key, value);
             return value;
         } else {

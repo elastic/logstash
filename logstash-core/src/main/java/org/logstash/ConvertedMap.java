@@ -42,9 +42,9 @@ public final class ConvertedMap extends IdentityHashMap<String, Object> {
         super(size);
     }
 
-    public static ConvertedMap newFromMap(Map<Serializable, Object> o) {
+    public static ConvertedMap newFromMap(Map<? extends Serializable, Object> o) {
         ConvertedMap cm = new ConvertedMap(o.size());
-        for (final Map.Entry<Serializable, Object> entry : o.entrySet()) {
+        for (final Map.Entry<? extends Serializable, Object> entry : o.entrySet()) {
             final Serializable found = entry.getKey();
             if (found instanceof String) {
                 cm.put((String) found, Valuefier.convert(entry.getValue()));
