@@ -51,7 +51,6 @@ case "$1" in
     build
   ;;
   "ci_integration")
-    echo "Rebuilding images just in case"
     build && \
     $INTEGRATION_COMMAND ${@:2}
   ;;
