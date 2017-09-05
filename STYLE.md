@@ -97,3 +97,4 @@ inconsistencies between ruby versions.
     str[0, 1]
 
 a
+a
