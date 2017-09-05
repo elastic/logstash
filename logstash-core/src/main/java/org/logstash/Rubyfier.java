@@ -1,8 +1,8 @@
 package org.logstash;
 
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import org.jruby.Ruby;
 import org.jruby.RubyArray;
 import org.jruby.RubyBoolean;
@@ -16,66 +16,108 @@ import org.logstash.bivalues.BiValues;
 import org.logstash.ext.JrubyTimestampExtLibrary;
 
 public final class Rubyfier {
-    private static final String ERR_TEMPLATE = "Missing Java class handling for full class name=%s, simple name=%s";
-    /*
-    Rubyfier.deep() is called by JrubyEventExtLibrary RubyEvent ruby_get_field,
-    ruby_remove, ruby_to_hash and ruby_to_hash_with_metadata.
-    When any value is added to the Event it should pass through Valuefier.convert.
-    Rubyfier.deep is the mechanism to pluck the Ruby value from a BiValue or convert a
-    ConvertedList and ConvertedMap back to RubyArray or RubyHash.
-    However, IRubyObjects and the RUby runtime do not belong in ConvertedMap or ConvertedList
-    so they are unconverted here.
-    */
+
+    private static final Rubyfier.Converter BIVALUES_CONVERTER =
+        (ruby, val) -> BiValues.newBiValue(val).rubyValue(ruby);
+
+    private static final Rubyfier.Converter IDENTITY = (runtime, input) -> (IRubyObject) input;
+
+    private static final Rubyfier.Converter FLOAT_CONVERTER =
+        (runtime, input) -> runtime.newFloat(((Number) input).doubleValue());
+
+    private static final Rubyfier.Converter LONG_CONVERTER =
+        (runtime, input) -> runtime.newFixnum(((Number) input).longValue());
+
+    private static final Map<Class<?>, Rubyfier.Converter> CONVERTER_MAP = initConverters();
+
+    /**
+     * Rubyfier.deep() is called by JrubyEventExtLibrary RubyEvent ruby_get_field,
+     * ruby_remove, ruby_to_hash and ruby_to_hash_with_metadata.
+     * When any value is added to the Event it should pass through Valuefier.convert.
+     * Rubyfier.deep is the mechanism to pluck the Ruby value from a BiValue or convert a
+     * ConvertedList and ConvertedMap back to RubyArray or RubyHash.
+     * However, IRubyObjects and the RUby runtime do not belong in ConvertedMap or ConvertedList
+     * so they are unconverted here.
+     */
     private Rubyfier() {
     }
 
-    public static IRubyObject deep(Ruby runtime, final Object input) {
-        if (input instanceof RubyString || input instanceof RubyFloat
-            || input instanceof RubyBoolean || input instanceof RubyFixnum
-            || input instanceof JrubyTimestampExtLibrary.RubyTimestamp) {
-            return (IRubyObject) input;
+    public static IRubyObject deep(final Ruby runtime, final Object input) {
+        if (input == null) {
+            return runtime.getNil();
         }
-        if (input instanceof String) return runtime.newString((String) input);
-        if (input instanceof Double || input instanceof Float) {
-            return runtime.newFloat(((Number) input).doubleValue());
+        final Class<?> cls = input.getClass();
+        final Rubyfier.Converter converter = CONVERTER_MAP.get(cls);
+        if (converter != null) {
+            return converter.convert(runtime, input);
         }
-        if (input instanceof Integer || input instanceof Long) {
-            return runtime.newFixnum(((Number) input).longValue());
-        }
-        if (input instanceof Boolean) return runtime.newBoolean((Boolean) input);
-        if (input instanceof Timestamp) {
-            return JrubyTimestampExtLibrary.RubyTimestamp.newRubyTimestamp(
-                runtime, (Timestamp) input
-            );
-        }
-        if (input instanceof BiValue) return ((BiValue) input).rubyValue(runtime);
-        if (input instanceof Map) return deepMap(runtime, (Map) input);
-        if (input instanceof List) return deepList(runtime, (List) input);
-        if (input instanceof Collection) throw new ClassCastException("Unexpected Collection type " + input.getClass());
-
-        try {
-            return BiValues.newBiValue(input).rubyValue(runtime);
-        } catch (IllegalArgumentException e) {
-            Class<?> cls = input.getClass();
-            throw new IllegalArgumentException(String.format(ERR_TEMPLATE, cls.getName(), cls.getSimpleName()));
-        }
+        return fallbackConvert(runtime, input, cls);
     }
 
-    private static RubyArray deepList(Ruby runtime, final List list) {
+    private static RubyArray deepList(final Ruby runtime, final Collection<?> list) {
         final int length = list.size();
         final RubyArray array = runtime.newArray(length);
-        for (Object item : list) {
+        for (final Object item : list) {
             array.add(deep(runtime, item));
         }
         return array;
     }
 
-    private static RubyHash deepMap(Ruby runtime, final Map<?, ?> map) {
-        RubyHash hash = RubyHash.newHash(runtime);
-        for (Map.Entry<?, ?> entry : map.entrySet()) {
-            // Note: RubyHash.put calls JavaUtil.convertJavaToUsableRubyObject on keys and values
-            hash.put(entry.getKey(), deep(runtime, entry.getValue()));
-        }
+    private static RubyHash deepMap(final Ruby runtime, final Map<?, ?> map) {
+        final RubyHash hash = RubyHash.newHash(runtime);
+        // Note: RubyHash.put calls JavaUtil.convertJavaToUsableRubyObject on keys and values
+        map.forEach((key, value) -> hash.put(key, deep(runtime, value)));
         return hash;
+    }
+
+    private static Map<Class<?>, Rubyfier.Converter> initConverters() {
+        final Map<Class<?>, Rubyfier.Converter> converters =
+            new ConcurrentHashMap<>(50, 0.2F, 1);
+        converters.put(RubyString.class, IDENTITY);
+        converters.put(RubyFloat.class, IDENTITY);
+        converters.put(RubyFixnum.class, IDENTITY);
+        converters.put(RubyBoolean.class, IDENTITY);
+        converters.put(JrubyTimestampExtLibrary.RubyTimestamp.class, IDENTITY);
+        converters.put(String.class, (runtime, input) -> runtime.newString((String) input));
+        converters.put(Double.class, FLOAT_CONVERTER);
+        converters.put(Float.class, FLOAT_CONVERTER);
+        converters.put(Integer.class, LONG_CONVERTER);
+        converters.put(Long.class, LONG_CONVERTER);
+        converters.put(Boolean.class, (runtime, input) -> runtime.newBoolean((Boolean) input));
+        converters.put(
+            BiValue.class, (runtime, input) -> ((BiValue<?, ?>) input).rubyValue(runtime)
+        );
+        converters.put(Map.class, (runtime, input) -> deepMap(runtime, (Map<?, ?>) input));
+        converters.put(
+            Collection.class, (runtime, input) -> deepList(runtime, (Collection<?>) input)
+        );
+        converters.put(
+            Timestamp.class,
+            (runtime, input) -> JrubyTimestampExtLibrary.RubyTimestamp.newRubyTimestamp(
+                runtime, (Timestamp) input
+            )
+        );
+        return converters;
+    }
+
+    /**
+     * Same principle as {@link Valuefier#fallbackConvert(Object, Class)}.
+     */
+    private static IRubyObject fallbackConvert(final Ruby runtime, final Object o,
+        final Class<?> cls) {
+        for (final Map.Entry<Class<?>, Rubyfier.Converter> entry : CONVERTER_MAP.entrySet()) {
+            if (entry.getKey().isAssignableFrom(cls)) {
+                final Rubyfier.Converter found = entry.getValue();
+                CONVERTER_MAP.put(cls, found);
+                return found.convert(runtime, o);
+            }
+        }
+        CONVERTER_MAP.put(cls, BIVALUES_CONVERTER);
+        return BIVALUES_CONVERTER.convert(runtime, o);
+    }
+
+    private interface Converter {
+
+        IRubyObject convert(Ruby runtime, Object input);
     }
 }
