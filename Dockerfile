@@ -1,5 +1,9 @@
 FROM logstash_base:latest
 
+ADD gradlew /opt/logstash/gradlew
+ADD gradle/wrapper /opt/logstash/gradle/wrapper
+RUN /opt/logstash/gradlew wrapper
+
 ADD versions.yml /opt/logstash/versions.yml
 ADD LICENSE /opt/logstash/LICENSE
 ADD CONTRIBUTORS /opt/logstash/CONTRIBUTORS
