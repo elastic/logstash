@@ -1,6 +1,6 @@
 #!/bin/bash
 
-IMAGE_NAME=$branch_specifier"-"$(date +%s)
+IMAGE_NAME=$branch_specifier"-"$(date +%s%N)
 
 
 echo "Using docker-compose project '$IMAGE_NAME'"
