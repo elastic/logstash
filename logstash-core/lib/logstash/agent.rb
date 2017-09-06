@@ -388,14 +388,20 @@ class LogStash::Agent
   def start_webserver
     options = {:http_host => @http_host, :http_ports => @http_port, :http_environment => @http_environment }
     @webserver = LogStash::WebServer.new(@logger, self, options)
-    Thread.new(@webserver) do |webserver|
+    @webserver_thread = Thread.new(@webserver) do |webserver|
       LogStash::Util.set_thread_name("Api Webserver")
       webserver.run
     end
   end
 
   def stop_webserver
-    @webserver.stop if @webserver
+    if @webserver
+      @webserver.stop
+      if @webserver_thread.join(5).nil?
+        @webserver_thread.kill
+        @webserver_thread.join
+      end
+    end
   end
 
   def configure_metrics_collectors
