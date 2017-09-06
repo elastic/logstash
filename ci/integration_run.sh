@@ -2,6 +2,5 @@
 
 cd qa/integration
 echo "Running spec files $@"
-
-rspec -fd --tag ~offline
-rspec -fd --tag offline
+bundle exec rspec -fd --tag ~offline $@
+bundle exec rspec -fd --tag offline $@
