@@ -6,19 +6,23 @@ require "logstash/devutils/rspec/spec_helper"
 
 describe "Test Dead Letter Queue" do
 
-  before(:each) {
+  before(:all) {
     @fixture = Fixture.new(__FILE__)
+  }
+
+  after(:all) {
+      @fixture.teardown
+  }
+
+  before(:each) {
     IO.write(config_yaml_file, config_yaml)
   }
 
-  after(:each) {
-    begin
-      es_client = @fixture.get_service("elasticsearch").get_client
-      es_client.indices.delete(index: 'logstash-*') unless es_client.nil?
-    ensure
-      @fixture.teardown
-    end
-  }
+  after(:each) do
+    es_client = @fixture.get_service("elasticsearch").get_client
+    es_client.indices.delete(index: 'logstash-*') unless es_client.nil?
+    logstash_service.teardown
+  end
 
   let(:logstash_service) { @fixture.get_service("logstash") }
   let(:dlq_dir) { Stud::Temporary.directory }
