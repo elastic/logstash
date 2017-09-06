@@ -85,7 +85,7 @@ case "$1" in
     popd
     $INTEGRATION_COMMAND $matched_specs
   ;;
-  "ci_integration_2x")
+  "ci_integration_two_x")
     build
     ci/docker_tool ci_integration_parallel 2 0 false &
     ci/docker_tool ci_integration_parallel 2 1 false &
