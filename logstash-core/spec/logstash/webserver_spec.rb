@@ -13,16 +13,12 @@ def block_ports(range)
   range.each do |port|
     begin
       server = TCPServer.new("localhost", port)
-      Thread.new do
-        client = server.accept rescue nil
-      end
       servers << server
     rescue => e
       # The port can already be taken
     end
   end
 
-  sleep(1)
   servers
 end
 
@@ -78,7 +74,8 @@ describe LogStash::WebServer do
       sleep(1)
 
       # We cannot use stop here, since the code is stuck in an infinite loop
-      t.kill rescue nil
+      t.kill
+      t.join
 
       silence_warnings do
         STDERR = backup_stderr
@@ -107,7 +104,7 @@ describe LogStash::WebServer do
         expect(subject.address).to eq("localhost:10006")
 
         subject.stop
-        t.kill rescue nil
+        t.join
       end
     end
 
