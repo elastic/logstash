@@ -119,6 +119,7 @@ case "$1" in
       remove_image
   ;;
   "ci_unit")
+    build && \
        $UNIT_COMMAND
     ;;
   "dev_rsync")
