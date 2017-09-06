@@ -59,7 +59,7 @@ RUN rm -rf build && \
     chown -R logstash:logstash /opt/logstash
 USER logstash
 WORKDIR /opt/logstash
-RUN bash -i -c 'rake test:install-core && rake artifact:tar && cd build && tar -xzf logstash-*.tar.gz'
+RUN bash -i -c 'rake artifact:tar && rake test:install-core && cd build && tar -xzf logstash-*.tar.gz'
 
 USER root
 ADD ci /opt/logstash/ci
