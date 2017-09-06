@@ -247,7 +247,7 @@ module LogStash; module Util
       end
 
       def get_new_batch
-        WriteBatch.new
+        []
       end
 
       def push(event)
@@ -256,30 +256,7 @@ module LogStash; module Util
       alias_method(:<<, :push)
 
       def push_batch(batch)
-        LsQueueUtils.addAll(@queue, batch.events)
-      end
-    end
-
-    class WriteBatch
-      attr_reader :events
-
-      def initialize
-        @events = []
-      end
-
-      def size
-        @events.size
-      end
-
-      def push(event)
-        @events.push(event)
-      end
-      alias_method(:<<, :push)
-
-      def each(&blk)
-        @events.each do |e|
-          blk.call(e)
-        end
+        LsQueueUtils.addAll(@queue, batch)
       end
     end
   end
