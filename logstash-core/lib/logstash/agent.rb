@@ -337,12 +337,13 @@ class LogStash::Agent
 
           unless action_result.successful?
             logger.error("Failed to execute action", :id => action.pipeline_id,
-                        :action_type => action_result.class, :message => action_result.message)
+                        :action_type => action_result.class, :message => action_result.message,
+                        :backtrace => action_result.backtrace)
           end
         rescue SystemExit => e
           converge_result.add(action, e)
         rescue Exception => e
-          logger.error("Failed to execute action", :action => action, :exception => e.class.name, :message => e.message)
+          logger.error("Failed to execute action", :action => action, :exception => e.class.name, :message => e.message, :backtrace => e.backtrace)
           converge_result.add(action, e)
         end
       end

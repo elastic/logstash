@@ -584,17 +584,12 @@ module LogStash; class Pipeline < BasePipeline
       end
 
       # otherwise, report error and restart
-      if @logger.debug?
-        @logger.error(I18n.t("logstash.pipeline.worker-error-debug",
-                             default_logging_keys(
-                               :plugin => plugin.inspect,
-                               :error => e.message,
-                               :exception => e.class,
-                               :stacktrace => e.backtrace.join("\n"))))
-      else
-        @logger.error(I18n.t("logstash.pipeline.worker-error",
-                             default_logging_keys(:plugin => plugin.inspect, :error => e.message)))
-      end
+      @logger.error(I18n.t("logstash.pipeline.worker-error-debug",
+                            default_logging_keys(
+                              :plugin => plugin.inspect,
+                              :error => e.message,
+                              :exception => e.class,
+                              :stacktrace => e.backtrace.join("\n"))))
 
       # Assuming the failure that caused this exception is transient,
       # let's sleep for a bit and execute #run again
