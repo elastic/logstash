@@ -4,6 +4,7 @@ import org.junit.Test;
 import org.logstash.Event;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.function.Consumer;
 
@@ -20,7 +21,7 @@ public class PluginIntegrationTest {
             event.setField("i", i);
             events.add(event);
         }
-        return events;
+        return Collections.unmodifiableCollection(events);
     }
 
     @Test
@@ -45,7 +46,7 @@ public class PluginIntegrationTest {
                 events.add(e);
             }
 
-            consumer.accept(events);
+            consumer.accept(Collections.unmodifiableCollection(events));
         }
     }
 

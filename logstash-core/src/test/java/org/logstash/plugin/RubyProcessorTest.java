@@ -14,8 +14,8 @@ import org.logstash.Event;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
@@ -73,7 +73,7 @@ public class RubyProcessorTest {
 
         RubyProcessor processor = new RubyProcessor(plugin);
 
-        Collection<Event> events = Arrays.asList(new Event());
+        Collection<Event> events = Collections.singletonList(new Event());
         Collection<Event> newEvents = processor.process(events);
 
         for (Event event : events) {
