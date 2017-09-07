@@ -221,7 +221,9 @@ class LogStash::Runner < Clamp::StrictCommand
     java.lang.System.setProperty("ls.log.level", setting("log.level"))
     unless java.lang.System.getProperty("log4j.configurationFile")
       log4j_config_location = ::File.join(setting("path.settings"), "log4j2.properties")
-      LogStash::Logging::Logger::reconfigure("file:///" + log4j_config_location)
+
+      # Windows safe way to produce a file: URI.
+      LogStash::Logging::Logger::reconfigure(URI.join("file:///" + File.absolute_path(log4j_config_location)).to_s)
     end
     # override log level that may have been introduced from a custom log4j config file
     LogStash::Logging::Logger::configure_logging(setting("log.level"))
