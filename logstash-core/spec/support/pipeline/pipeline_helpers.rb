@@ -17,9 +17,7 @@ module PipelineHelpers
 
     def run(queue)
       unless @@event.nil?
-        batch = queue.get_new_batch
-        @@event.each { |e| batch.push(e)}
-        queue.push_batch(batch)
+        queue.push_batch(@@event)
         @@event = nil
       end
     end
