@@ -47,7 +47,7 @@ describe LogStash::Instrument::WrappedWriteClient do
     end
 
     it "pushes batch to the `WriteClient`" do
-      batch = write_client.get_new_batch
+      batch = []
       batch << event
 
       pusher_thread = Thread.new(subject, batch) do |_subject, _batch|
