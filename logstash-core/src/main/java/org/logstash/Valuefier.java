@@ -24,7 +24,7 @@ import org.logstash.ext.JrubyTimestampExtLibrary;
 
 public final class Valuefier {
 
-    private static final Valuefier.Converter IDENTITY = input -> input;
+    public static final Valuefier.Converter IDENTITY = input -> input;
 
     private static final Valuefier.Converter FLOAT_CONVERTER =
         input -> RubyUtil.RUBY.newFloat(((Number) input).doubleValue());
@@ -145,18 +145,8 @@ public final class Valuefier {
         return converters;
     }
 
-    /**
-     * Converter from either a Java or a Ruby type to a type that both {@link Javafier} and
-     * {@link Rubyfier} are able to convert back their respective types efficiently.
-     */
-    private interface Converter {
+    public interface Converter {
 
-        /**
-         * Converts a Java or a Ruby typed object to an object that can be efficiently converted
-         * back to Java as well as Ruby.
-         * @param input Either a Java or Ruby type object
-         * @return Object that can be converted back to Java as well as Ruby efficiently
-         */
         Object convert(Object input);
     }
 }
