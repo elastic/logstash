@@ -19,22 +19,23 @@
 package org.logstash.common.io;
 
 import java.io.Closeable;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.logstash.DLQEntry;
-import org.logstash.Event;
-import org.logstash.Timestamp;
-
 import java.io.IOException;
 import java.nio.channels.FileChannel;
-import java.nio.channels.FileLock;
 import java.nio.channels.OverlappingFileLockException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.LongAdder;
 import java.util.stream.Stream;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.logstash.DLQEntry;
+import org.logstash.Event;
+import org.logstash.FieldReference;
+import org.logstash.PathCache;
+import org.logstash.Timestamp;
 
 import static org.logstash.common.io.RecordIOWriter.RECORD_HEADER_SIZE;
 
@@ -45,16 +46,17 @@ public final class DeadLetterQueueWriter implements Closeable {
 
     static final String SEGMENT_FILE_PATTERN = "%d.log";
     static final String LOCK_FILE = ".lock";
-    public static final String DEAD_LETTER_QUEUE_METADATA_KEY = "dead_letter_queue";
+    private static final FieldReference DEAD_LETTER_QUEUE_METADATA_KEY =
+        PathCache.cache(String.format("%s[dead_letter_queue]", Event.METADATA_BRACKETS));
     private final long maxSegmentSize;
     private final long maxQueueSize;
     private LongAdder currentQueueSize;
     private final Path queuePath;
-    private final FileLock lock;
-    private RecordIOWriter currentWriter;
+    private final FileChannel lockChannel;
+    private volatile RecordIOWriter currentWriter;
     private int currentSegmentIndex;
     private Timestamp lastEntryTimestamp;
-    private boolean open;
+    private final AtomicBoolean open = new AtomicBoolean(true);
 
     public DeadLetterQueueWriter(Path queuePath, long maxSegmentSize, long maxQueueSize) throws IOException {
         // ensure path exists, create it otherwise.
@@ -62,9 +64,9 @@ public final class DeadLetterQueueWriter implements Closeable {
         // check that only one instance of the writer is open in this configured path
         Path lockFilePath = queuePath.resolve(LOCK_FILE);
         boolean isNewlyCreated = lockFilePath.toFile().createNewFile();
-        FileChannel channel = FileChannel.open(lockFilePath, StandardOpenOption.WRITE);
+        lockChannel = FileChannel.open(lockFilePath, StandardOpenOption.WRITE);
         try {
-            this.lock = channel.lock();
+            lockChannel.lock();
         } catch (OverlappingFileLockException e) {
             if (isNewlyCreated) {
                 logger.warn("Previous Dead Letter Queue Writer was not closed safely.");
@@ -81,9 +83,8 @@ public final class DeadLetterQueueWriter implements Closeable {
                 .map(s -> s.getFileName().toString().split("\\.")[0])
                 .mapToInt(Integer::parseInt)
                 .max().orElse(0);
-        this.currentWriter = nextWriter();
+        nextWriter();
         this.lastEntryTimestamp = Timestamp.now();
-        this.open = true;
     }
 
     /**
@@ -102,16 +103,15 @@ public final class DeadLetterQueueWriter implements Closeable {
                     try {
                         return Files.size(p);
                     } catch (IOException e) {
-                        return 0L;
+                        throw new IllegalStateException(e);
                     }
                 } )
                 .sum();
     }
 
-    private RecordIOWriter nextWriter() throws IOException {
-        RecordIOWriter recordIOWriter = new RecordIOWriter(queuePath.resolve(String.format(SEGMENT_FILE_PATTERN, ++currentSegmentIndex)));
+    private void nextWriter() throws IOException {
+        currentWriter = new RecordIOWriter(queuePath.resolve(String.format(SEGMENT_FILE_PATTERN, ++currentSegmentIndex)));
         currentQueueSize.increment();
-        return recordIOWriter;
     }
 
     static Stream<Path> getSegmentPaths(Path path) throws IOException {
@@ -146,7 +146,7 @@ public final class DeadLetterQueueWriter implements Closeable {
             return;
         } else if (currentWriter.getPosition() + eventPayloadSize > maxSegmentSize) {
             currentWriter.close();
-            currentWriter = nextWriter();
+            nextWriter();
         }
         currentQueueSize.add(currentWriter.writeEvent(record));
     }
@@ -160,29 +160,27 @@ public final class DeadLetterQueueWriter implements Closeable {
      * @return boolean indicating whether the event is eligible to be added to the DLQ
      */
     private static boolean alreadyProcessed(final Event event) {
-        return event.getMetadata() != null && event.getMetadata().containsKey(DEAD_LETTER_QUEUE_METADATA_KEY);
+        return event.includes(DEAD_LETTER_QUEUE_METADATA_KEY);
     }
 
     @Override
-    public synchronized void close() {
-        if (currentWriter != null) {
-            try {
-                currentWriter.close();
-                open = false;
-            }catch (Exception e){
-                logger.debug("Unable to close dlq writer", e);
+    public void close() {
+        if (open.compareAndSet(true, false)) {
+            if (currentWriter != null) {
+                try {
+                    currentWriter.close();
+                } catch (Exception e) {
+                    logger.debug("Unable to close dlq writer", e);
+                }
             }
+            releaseLock();
         }
-        releaseLock();
     }
 
     private void releaseLock() {
-        if (this.lock != null){
+        if (lockChannel != null){
             try {
-                this.lock.release();
-                if (this.lock.channel() != null && this.lock.channel().isOpen()) {
-                    this.lock.channel().close();
-                }
+                lockChannel.close();
             } catch (Exception e) {
                 logger.debug("Unable to close lock channel", e);
             }
@@ -195,7 +193,7 @@ public final class DeadLetterQueueWriter implements Closeable {
     }
 
     public boolean isOpen() {
-        return open;
+        return open.get();
     }
 
     public Path getPath(){
