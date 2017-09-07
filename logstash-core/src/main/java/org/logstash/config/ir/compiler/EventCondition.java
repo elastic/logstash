@@ -4,9 +4,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import org.jruby.RubyFixnum;
 import org.jruby.RubyInteger;
+import org.jruby.RubyNumeric;
 import org.jruby.RubyString;
+import org.jruby.runtime.builtin.IRubyObject;
 import org.jruby.util.ByteList;
 import org.logstash.ConvertedList;
 import org.logstash.ConvertedMap;
@@ -341,7 +342,7 @@ public interface EventCondition {
                     field, ((Number) value).longValue()
                 );
             }
-            throw new UnexpectedTypeException(value);
+            throw new EventCondition.Compiler.UnexpectedTypeException(value);
         }
 
         private static EventCondition eq(final Eq equals) {
@@ -390,11 +391,11 @@ public interface EventCondition {
                 return new EventCondition.Compiler.FieldGreaterThanString(field, (String) value);
             } else if (value instanceof Long || value instanceof Integer ||
                 value instanceof Short) {
-                return new EventCondition.Compiler.FieldGreaterThanLong(
-                    field, ((Number) value).longValue()
+                return new FieldGreaterThanNumber(
+                    field, RubyUtil.RUBY.newFixnum(((Number) value).longValue())
                 );
             }
-            throw new UnexpectedTypeException(value);
+            throw new EventCondition.Compiler.UnexpectedTypeException(value);
         }
 
         private static EventCondition truthy(final EventValueExpression evale) {
@@ -516,26 +517,28 @@ public interface EventCondition {
 
             @Override
             public boolean fulfilled(final JrubyEventExtLibrary.RubyEvent event) {
-                return value.toString()
-                    .compareTo(event.getEvent().getUnconvertedField(field).toString()) < 0;
+                return value.compareTo(
+                    (IRubyObject) event.getEvent().getUnconvertedField(field)
+                ) < 0;
             }
         }
 
-        private static final class FieldGreaterThanLong implements EventCondition {
+        private static final class FieldGreaterThanNumber implements EventCondition {
 
             private final FieldReference field;
 
-            private long value;
+            private final RubyNumeric value;
 
-            private FieldGreaterThanLong(final String field, final long value) {
+            private FieldGreaterThanNumber(final String field, final RubyNumeric value) {
                 this.field = PathCache.cache(field);
                 this.value = value;
             }
 
             @Override
             public boolean fulfilled(final JrubyEventExtLibrary.RubyEvent event) {
-                return ((RubyFixnum) event.getEvent().getUnconvertedField(field))
-                    .getLongValue() > value;
+                return value.compareTo(
+                    (IRubyObject) event.getEvent().getUnconvertedField(field)
+                ) < 0;
             }
         }
 
@@ -629,7 +632,7 @@ public interface EventCondition {
             @Override
             public boolean fulfilled(final JrubyEventExtLibrary.RubyEvent event) {
                 final Object found = event.getEvent().getUnconvertedField(field);
-                return found instanceof RubyString && 
+                return found instanceof RubyString &&
                     ((RubyString) found).getByteList().indexOf(bytes) > -1
                     || found instanceof ConvertedList && contains((ConvertedList) found, string);
             }
