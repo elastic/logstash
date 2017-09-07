@@ -51,9 +51,13 @@ describe "Test Dead Letter Queue", :dlq => true do
       try(75) do
         begin
           result = es_client.search(index: 'logstash-*', size: 0, q: '*')
-        rescue Elasticsearch::Transport::Transport::Errors::ServiceUnavailable
+          hits = result["hits"]["total"]
+        rescue Elasticsearch::Transport::Transport::Errors::ServiceUnavailable => e
+          puts 'ignoring elasticsearch error'
+          puts e.inspect
+          hits = 0
         end
-        expect(result["hits"]["total"]).to eq(1000)
+        expect(hits).to eq(1000)
       end
 
       result = es_client.search(index: 'logstash-*', size: 1, q: '*')
