@@ -1,15 +1,15 @@
 @echo off
+setlocal enabledelayedexpansion
+set params='%*'
 
-SETLOCAL
-
-set SCRIPT_DIR=%~dp0
-CALL "%SCRIPT_DIR%\setup.bat"
-
-:EXEC
-if "%VENDORED_JRUBY%" == "" (
-  %RUBYCMD% "%LS_HOME%\lib\pluginmanager\main.rb" %*
-) else (
-  %JRUBY_BIN% %jruby_opts% "%LS_HOME%\lib\pluginmanager\main.rb" %*
+call "%~dp0setup.bat" || exit /b 1
+if errorlevel 1 (
+	if not defined nopauseonerror (
+		pause
+	)
+	exit /B %ERRORLEVEL%
 )
 
-ENDLOCAL
+%JRUBY_BIN% %jruby_opts% "%LS_HOME%\lib\pluginmanager\main.rb" %*
+
+endlocal
