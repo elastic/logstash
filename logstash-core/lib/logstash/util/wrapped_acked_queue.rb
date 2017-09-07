@@ -350,7 +350,7 @@ module LogStash; module Util
       end
 
       def get_new_batch
-        WriteBatch.new
+        []
       end
 
       def push(event)
@@ -367,27 +367,6 @@ module LogStash; module Util
         end
         batch.each do |event|
           push(event)
-        end
-      end
-    end
-
-    class WriteBatch
-      def initialize
-        @events = []
-      end
-
-      def size
-        @events.size
-      end
-
-      def push(event)
-        @events.push(event)
-      end
-      alias_method(:<<, :push)
-
-      def each(&blk)
-        @events.each do |e|
-          blk.call(e)
         end
       end
     end

@@ -5,6 +5,7 @@ module LogStash; module Util
     java_import java.util.concurrent.ArrayBlockingQueue
     java_import java.util.concurrent.TimeUnit
     java_import java.util.HashSet
+    java_import org.logstash.common.LsQueueUtils
 
     def initialize (size)
       @queue = ArrayBlockingQueue.new(size)
@@ -184,7 +185,7 @@ module LogStash; module Util
         #Sizing HashSet to size/load_factor to ensure no rehashing
         @is_iterating = false # Atomic Boolean maybe? Although batches are not shared across threads
         @acked_batch = nil
-        @originals = org.logstash.common.LsQueueUtils.drain(@queue, @size, @wait)
+        @originals = LsQueueUtils.drain(@queue, @size, @wait)
       end
 
       def merge(event)
@@ -249,43 +250,20 @@ module LogStash; module Util
 
     class WriteClient
       def initialize(queue)
-        @queue = queue
+        @queue = queue.queue
       end
 
       def get_new_batch
-        WriteBatch.new
+        []
       end
 
       def push(event)
-        @queue.push(event)
+        @queue.put(event)
       end
       alias_method(:<<, :push)
 
       def push_batch(batch)
-        batch.each do |event|
-          push(event)
-        end
-      end
-    end
-
-    class WriteBatch
-      def initialize
-        @events = []
-      end
-
-      def size
-        @events.size
-      end
-
-      def push(event)
-        @events.push(event)
-      end
-      alias_method(:<<, :push)
-
-      def each(&blk)
-        @events.each do |e|
-          blk.call(e)
-        end
+        LsQueueUtils.addAll(@queue, batch)
       end
     end
   end

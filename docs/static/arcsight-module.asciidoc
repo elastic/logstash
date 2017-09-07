@@ -174,7 +174,7 @@ modules:
   - name: arcsight
     var.input.eventbroker.bootstrap_servers: “eb_host:39092”
     var.input.eventbroker.topics: “eb_topic”
-    var.output.elasticsearch.hosts: "localhost:9200"
+    var.elasticsearch.hosts: "localhost:9200"
     var.elasticsearch.username: "elastic"
     var.elasticsearch.password: "changeme"
     var.kibana.host: “localhost:5601”
