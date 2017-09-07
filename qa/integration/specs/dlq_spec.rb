@@ -43,14 +43,19 @@ describe "Test Dead Letter Queue" do
       es_service = @fixture.get_service("elasticsearch")
       es_client = es_service.get_client
       # Wait for es client to come up
-      sleep(15)
+      sleep(30)
       # test if all data was indexed by ES, but first refresh manually
       es_client.indices.refresh
 
       logstash_service.wait_for_logstash
-      try(75) do
-        result = es_client.search(index: 'logstash-*', size: 0, q: '*')
-        expect(result["hits"]["total"]).to eq(1000)
+      try(60) do
+        begin
+          result = es_client.search(index: 'logstash-*', size: 0, q: '*')
+          hits = result["hits"]["total"]
+        rescue Elasticsearch::Transport::Transport::Errors::ServiceUnavailable => e
+          hits = -1
+        end
+        expect(hits).to eq(1000)
       end
 
       result = es_client.search(index: 'logstash-*', size: 1, q: '*')
