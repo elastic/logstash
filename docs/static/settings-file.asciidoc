@@ -186,6 +186,11 @@ The `logstash.yml` file includes the following settings:
 | Flag to instruct Logstash to enable the DLQ feature supported by plugins.
 | `false`
 
+| `dead_letter_queue.max_bytes`
+| The maximum size of each dead letter queue. Entries will be dropped if they
+  would increase the size of the dead letter queue beyond this setting.
+| `1024mb`
+
 | `path.dead_letter_queue`
 | The directory path where the data files will be stored for the dead-letter queue.
 | `path.data/dead_letter_queue`
