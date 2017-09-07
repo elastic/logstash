@@ -4,7 +4,7 @@ require_relative '../services/logstash_service'
 require_relative '../framework/helpers'
 require "logstash/devutils/rspec/spec_helper"
 
-describe "Test Dead Letter Queue" do
+describe "Test Dead Letter Queue", :dlq => true do
 
   before(:all) {
     @fixture = Fixture.new(__FILE__)
