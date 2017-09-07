@@ -20,7 +20,7 @@ module LogStash module Instrument
     end
 
     def get_new_batch
-      @write_client.get_new_batch
+      []
     end
 
     def push(event)
