@@ -43,7 +43,7 @@ public class LongCounter extends AbstractMetric<Long> implements CounterMetric<L
     @Override
     public void increment(Long by) {
         if (by < 0) {
-            throw NEGATIVE_COUNT_EXCEPTION;
+            throw (IllegalArgumentException)NEGATIVE_COUNT_EXCEPTION.fillInStackTrace();
         }
         longAdder.add(by);
     }
@@ -54,7 +54,7 @@ public class LongCounter extends AbstractMetric<Long> implements CounterMetric<L
      */
     public void increment(long by) {
         if (by < 0) {
-            throw NEGATIVE_COUNT_EXCEPTION;
+            throw (IllegalArgumentException)NEGATIVE_COUNT_EXCEPTION.fillInStackTrace();
         }
         longAdder.add(by);
     }
