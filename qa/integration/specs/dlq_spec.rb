@@ -49,7 +49,10 @@ describe "Test Dead Letter Queue", :dlq => true do
 
       logstash_service.wait_for_logstash
       try(75) do
-        result = es_client.search(index: 'logstash-*', size: 0, q: '*')
+        begin
+          result = es_client.search(index: 'logstash-*', size: 0, q: '*')
+        rescue Elasticsearch::Transport::Transport::Errors::ServiceUnavailable
+        end
         expect(result["hits"]["total"]).to eq(1000)
       end
 
