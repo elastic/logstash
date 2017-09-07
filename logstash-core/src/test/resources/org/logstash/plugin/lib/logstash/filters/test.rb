@@ -14,6 +14,8 @@ class LogStash::Filters::Test < LogStash::Filters::Base
             event.set("test", 1);
             filter_matched(event)
         end
+
+        nil
     end
 end
 

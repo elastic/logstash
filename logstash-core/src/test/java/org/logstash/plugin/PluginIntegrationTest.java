@@ -10,20 +10,9 @@ import java.util.function.Consumer;
 import static org.junit.Assert.assertEquals;
 
 public class PluginIntegrationTest {
-    private Collection<BatchImpl> batches = new LinkedList<>();
+    private Collection<Collection<Event>> batches = new LinkedList<>();
 
-    @Test
-    public void testInput() {
-        Input i = new TestInput();
-        i.run((events) -> batches.add(new BatchImpl(events)));
-
-        assertEquals(batches.size(), 1);
-        for (BatchImpl batch : batches) {
-            assertEquals(batch.size(), 10);
-        }
-    }
-
-    private BatchImpl generateBatch(int count) {
+    static Collection<Event> generateEvents(int count) {
         Collection<Event> events = new LinkedList<>();
         for (int i = 0; i < count; i++) {
             Event event = new Event();
@@ -31,33 +20,17 @@ public class PluginIntegrationTest {
             event.setField("i", i);
             events.add(event);
         }
-        return new BatchImpl(events);
+        return events;
     }
 
     @Test
-    public void testProcessorRemove() {
-        int count = 10;
-        BatchImpl batch = generateBatch(count);
-
-        assertEquals(batch.size(), count);
-
-        Processor p = (b) -> b.remove(b.iterator().next());
-        p.process(batch);
-
-        assertEquals(batch.size(), count - 1);
-    }
-
-    @Test
-    public void testBatchAdd() {
-        int count = 10;
-        BatchImpl batch = generateBatch(count);
-
-        assertEquals(batch.size(), count);
-
-        Processor p = (b) -> b.add(new Event());
-        p.process(batch);
-
-        assertEquals(batch.size(), count + 1);
+    public void testInput() {
+        Input i = new TestInput();
+        i.run((events) -> batches.add(events));
+        assertEquals(batches.size(), 1);
+        for (Collection<Event> events : batches) {
+            assertEquals(events.size(), 10);
+        }
     }
 
     private class TestInput implements Input {
@@ -78,10 +51,11 @@ public class PluginIntegrationTest {
 
     private class TestFilter implements Processor {
         @Override
-        public void process(ProcessorBatch batch) {
-            for (Event e : batch) {
+        public Collection<Event> process(Collection<Event> events) {
+            for (Event e : events) {
                 e.setField("visited", "testFilter");
             }
+            return null;
         }
     }
 

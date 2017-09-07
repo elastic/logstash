@@ -1,5 +1,9 @@
 package org.logstash.plugin;
 
+import org.logstash.Event;
+
+import java.util.Collection;
+
 public interface Processor {
     /**
      * 1) By default, events are assumed successful.
@@ -19,5 +23,8 @@ public interface Processor {
      * Other failures (temporary transport failures) should be retried indefinitely.
      */
     // drop event, fail event, succeed
-    void process(ProcessorBatch batch);
+    //void process(ProcessorBatch batch);
+
+    // Current model of filters takes a set of events and returns any events to add.
+    Collection<Event> process(Collection<Event> events);
 }

@@ -1,13 +1,15 @@
 package org.logstash.plugin;
 
+import org.logstash.Event;
+
+import java.util.Collection;
+
 public interface Output {
     /**
      * Process a batch with the intent of sending the event externally.
-     * <p>
-     * If an event in the Batch is undeliverable, a plugin may indicate the delivery failure
-     * by calling Batch.fail(event, ...)
      *
-     * @param batch The batch to process. A batch contains events.
+     *
+     * @param events the events to output.
      */
-    void process(Batch batch);
+    void process(Collection<Event> events);
 }
