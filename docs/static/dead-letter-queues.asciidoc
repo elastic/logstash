@@ -56,13 +56,13 @@ path.dead_letter_queue: "path/to/data/dead_letter_queue"
 ===== File Rotation
 
 Dead letter queues have a built-in file rotation policy that manages the file
-size of the queue. When the file size reaches a preconfigured threshold,  a new
-file is created automatically. The size limit of the dead letter queue is
-constrained only by the amount of space that you have available on disk.
+size of the queue. When the file size reaches a preconfigured threshold, a new
+file is created automatically.
 
-NOTE: Dead letter queues retain all the events that are written to them.
-Currently, you cannot configure the size of the queue or the size of the files
-that are used to store the queue. 
+By default, the maximum size of each dead letter queue is set to 1024mb. To
+change this setting, use the `dead_letter_queue.max_bytes` option.  Entries
+will be dropped if they would increase the size of the dead letter queue beyond
+this setting. 
 
 [[processing-dlq-events]]
 ==== Processing Events in the Dead Letter Queue
