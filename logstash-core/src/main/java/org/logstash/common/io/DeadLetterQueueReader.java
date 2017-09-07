@@ -68,7 +68,7 @@ public final class DeadLetterQueueReader implements Closeable {
                 try {
                     return DLQEntry.deserialize(b).getEntryTime();
                 } catch (IOException e) {
-                    return null;
+                    throw new IllegalStateException(e);
                 }
             }, Timestamp::compareTo);
             if (event != null) {
