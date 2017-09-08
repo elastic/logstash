@@ -25,7 +25,7 @@ module LogStash module Instrument
 
     def push(event)
       increment_counters(1)
-      start_time = java.lang.System.current_time_millis
+      start_time = java.lang.System.nano_time
       result = @write_client.push(event)
       report_execution_time(start_time)
       result
@@ -35,7 +35,7 @@ module LogStash module Instrument
 
     def push_batch(batch)
       increment_counters(batch.size)
-      start_time = java.lang.System.current_time_millis
+      start_time = java.lang.System.nano_time
       result = @write_client.push_batch(batch)
       report_execution_time(start_time)
       result
@@ -50,7 +50,7 @@ module LogStash module Instrument
     end
 
     def report_execution_time(start_time)
-      execution_time = java.lang.System.current_time_millis - start_time
+      execution_time = (java.lang.System.nano_time - start_time) / 1_000_000
       @events_metrics_time.increment(execution_time)
       @pipeline_metrics_time.increment(execution_time)
       @plugin_events_metrics_time.increment(execution_time)
