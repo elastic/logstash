@@ -1,6 +1,5 @@
 package org.logstash.config.ir.expression;
 
-import org.jruby.embed.ScriptingContainer;
 import org.logstash.common.SourceWithMetadata;
 import org.logstash.config.ir.BaseSourceComponent;
 import org.logstash.config.ir.HashableWithSource;
@@ -14,7 +13,6 @@ import org.logstash.config.ir.HashableWithSource;
  * Created by andrewvc on 9/6/16.
  */
 public abstract class Expression extends BaseSourceComponent implements HashableWithSource {
-    private ScriptingContainer container;
 
     public Expression(SourceWithMetadata meta) {
         super(meta);
