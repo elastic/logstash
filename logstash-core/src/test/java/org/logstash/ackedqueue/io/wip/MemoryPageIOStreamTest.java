@@ -4,7 +4,6 @@ import org.junit.Test;
 import org.logstash.ackedqueue.Queueable;
 import org.logstash.ackedqueue.SequencedList;
 import org.logstash.ackedqueue.StringElement;
-import org.logstash.ackedqueue.io.wip.MemoryPageIOStream;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;

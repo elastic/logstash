@@ -4,11 +4,7 @@ import org.junit.Test;
 import org.logstash.common.Util;
 import org.logstash.config.ir.graph.Graph;
 
-import java.nio.channels.Pipe;
-
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
 import static org.logstash.config.ir.DSL.*;
 import static org.logstash.config.ir.PluginDefinition.Type.*;
 

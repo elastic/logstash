@@ -54,7 +54,7 @@ describe "CLI > logstash-plugin prepare-offline-pack", :offline => true do
 
       unpacked = unpack(temporary_zip_file)
 
-      filters = @logstash_plugin.list(plugins_to_pack.first).stderr_and_stdout.split("\n").delete_if { |f| f =~ /cext/ }
+      filters = @logstash_plugin.list(plugins_to_pack.first).stderr_and_stdout.split("\n").delete_if { |f| f =~ /cext/ || f =~ /JAVA_OPT/ }
 
       expect(unpacked.plugins.collect(&:name)).to include(*filters)
       expect(unpacked.plugins.size).to eq(filters.size)

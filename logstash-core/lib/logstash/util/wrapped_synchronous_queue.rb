@@ -144,7 +144,7 @@ module LogStash; module Util
       end
 
       def start_clock
-        @inflight_clocks[Thread.current] = java.lang.System.current_time_millis
+        @inflight_clocks[Thread.current] = java.lang.System.nano_time
       end
 
       def stop_clock(batch)
@@ -153,7 +153,7 @@ module LogStash; module Util
             # only stop (which also records) the metrics if the batch is non-empty.
             # start_clock is now called at empty batch creation and an empty batch could
             # stay empty all the way down to the close_batch call.
-            time_taken = java.lang.System.current_time_millis - @inflight_clocks[Thread.current]
+            time_taken = (java.lang.System.nano_time - @inflight_clocks[Thread.current]) / 1_000_000
             @event_metric_time.increment(time_taken)
             @pipeline_metric_time.increment(time_taken)
           end

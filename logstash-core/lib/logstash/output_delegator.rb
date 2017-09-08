@@ -47,9 +47,9 @@ module LogStash class OutputDelegator
   def multi_receive(events)
     count = events.size
     @in_counter.increment(count)
-    start_time = java.lang.System.current_time_millis
+    start_time = java.lang.System.nano_time
     @strategy.multi_receive(events)
-    @time_metric.increment(java.lang.System.current_time_millis - start_time)
+    @time_metric.increment((java.lang.System.nano_time - start_time) / 1_000_000)
     @out_counter.increment(count)
   end
 
