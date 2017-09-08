@@ -44,9 +44,9 @@ module LogStash
     def multi_filter(events)
       @metric_events_in.increment(events.size)
 
-      start_time = java.lang.System.current_time_millis
+      start_time = java.lang.System.nano_time
       new_events = @filter.multi_filter(events)
-      @metric_events_time.increment(java.lang.System.current_time_millis - start_time)
+      @metric_events_time.increment((java.lang.System.nano_time - start_time) / 1_000_000)
 
       # There is no guarantee in the context of filter
       # that EVENTS_IN == EVENTS_OUT, see the aggregates and
