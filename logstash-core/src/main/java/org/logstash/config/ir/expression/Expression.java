@@ -3,7 +3,6 @@ package org.logstash.config.ir.expression;
 import org.jruby.RubyInstanceConfig;
 import org.jruby.embed.AttributeName;
 import org.jruby.embed.ScriptingContainer;
-import org.logstash.config.ir.Hashable;
 import org.logstash.config.ir.BaseSourceComponent;
 import org.logstash.common.SourceWithMetadata;
 import org.logstash.config.ir.HashableWithSource;

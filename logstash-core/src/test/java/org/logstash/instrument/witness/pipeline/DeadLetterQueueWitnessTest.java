@@ -4,7 +4,6 @@ package org.logstash.instrument.witness.pipeline;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;
 import org.junit.Test;
-import org.logstash.instrument.witness.pipeline.DeadLetterQueueWitness;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
