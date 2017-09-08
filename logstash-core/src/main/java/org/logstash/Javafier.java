@@ -6,6 +6,7 @@ import org.jruby.RubyBoolean;
 import org.jruby.RubyFixnum;
 import org.jruby.RubyFloat;
 import org.jruby.RubyString;
+import org.jruby.RubySymbol;
 import org.logstash.bivalues.BiValue;
 import org.logstash.bivalues.BiValues;
 import org.logstash.ext.JrubyTimestampExtLibrary;
@@ -57,9 +58,10 @@ public final class Javafier {
         converters.put(Integer.class, Valuefier.IDENTITY);
         converters.put(Boolean.class, Valuefier.IDENTITY);
         converters.put(Timestamp.class, Valuefier.IDENTITY);
-        // Explicitly casting to RubyString when we know it's a RubyString for sure is faster
+        // Explicitly casting to RubyString or RubySymbol when we know its type for sure is faster
         // than having the JVM look up the type.
         converters.put(RubyString.class, value -> ((RubyString) value).toString());
+        converters.put(RubySymbol.class, value -> ((RubySymbol) value).toString());
         converters.put(RubyBoolean.class, value -> ((RubyBoolean) value).isTrue());
         converters.put(BiValue.class, value -> ((BiValue<?, ?>) value).javaValue());
         converters.put(RubyFixnum.class, value -> ((RubyFixnum) value).getLongValue());

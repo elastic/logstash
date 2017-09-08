@@ -7,7 +7,6 @@ import java.io.ObjectOutputStream;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import org.jruby.RubyBignum;
-import org.jruby.RubySymbol;
 import org.jruby.ext.bigdecimal.RubyBigDecimal;
 import org.junit.Test;
 import org.logstash.TestBase;
@@ -17,15 +16,6 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 public class BiValueTest extends TestBase {
-
-    @Test
-    public void testSymbolBiValueFromRuby() {
-        String s = "foo";
-        SymbolBiValue subject = new SymbolBiValue(RubySymbol.newSymbol(ruby, s));
-        assertTrue(subject.hasRubyValue());
-        assertFalse(subject.hasJavaValue());
-        assertEquals(s, subject.javaValue());
-    }
 
     @Test
     public void testBigDecimalBiValueFromRuby() {
