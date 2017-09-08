@@ -28,6 +28,8 @@ public class ConstructingObjectParser<Value> {
                 consumer.accept(value, (Integer) object);
             } else if (object instanceof String) {
                 consumer.accept(value, Integer.parseInt((String) object));
+            } else {
+                throw new IllegalArgumentException("Value must be a number, but is a " + object.getClass());
             }
         };
     }
