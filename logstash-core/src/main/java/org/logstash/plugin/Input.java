@@ -14,9 +14,6 @@ import java.util.function.Consumer;
  */
 public interface Input {
     /**
-     * This is the main method of an input plugin. The `run` method is responsible for building Batches of Events and
-     * handing the Batch to `consumer.accept(batch)`.
-     * <p>
      * The method contract is as follows:
      * <p>
      * 1) When `Thread.interrupted()` is true, you MUST close all open resources and return.
@@ -25,7 +22,7 @@ public interface Input {
      * <p>
      * Acknowledging Data:
      * <p>
-     * When `consumer.accept(...)` returns, the given Batch has been successfully written into the consumer, and it is now
+     * When `consumer.accept(...)` returns, the given Events have been successfully written into the consumer, and it is now
      * safe to acknowledge these events to the upstream data source. The consumer is generally the Logstash internal queue,
      * such as the persistent queue.
      *

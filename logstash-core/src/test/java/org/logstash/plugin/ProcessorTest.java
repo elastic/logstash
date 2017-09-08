@@ -9,7 +9,7 @@ import java.util.LinkedList;
 
 import static org.junit.Assert.assertEquals;
 
-public class PluginIntegrationTest {
+public class ProcessorTest {
     private int eventCount = Util.random.nextInt(100);
     static Collection<Event> generateEvents(int count) {
         Collection<Event> events = new LinkedList<>();
@@ -46,7 +46,5 @@ public class PluginIntegrationTest {
             assertEquals(event.getField("i"), i);
             i++;
         }
-
     }
-
 }
