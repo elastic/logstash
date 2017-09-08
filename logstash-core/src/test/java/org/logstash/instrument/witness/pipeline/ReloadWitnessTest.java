@@ -7,7 +7,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.logstash.Timestamp;
 import org.logstash.ext.JrubyTimestampExtLibrary;
-import org.logstash.instrument.witness.pipeline.ReloadWitness;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 

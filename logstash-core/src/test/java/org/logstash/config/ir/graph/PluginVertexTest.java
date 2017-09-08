@@ -2,7 +2,6 @@ package org.logstash.config.ir.graph;
 
 import org.junit.Test;
 import org.logstash.common.IncompleteSourceWithMetadataException;
-import org.logstash.common.SourceWithMetadata;
 import org.logstash.config.ir.InvalidIRException;
 import org.logstash.config.ir.PluginDefinition;
 

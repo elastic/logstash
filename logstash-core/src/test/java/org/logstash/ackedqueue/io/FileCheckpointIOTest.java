@@ -5,8 +5,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.logstash.ackedqueue.Checkpoint;
-import org.logstash.ackedqueue.io.CheckpointIO;
-import org.logstash.ackedqueue.io.FileCheckpointIO;
 
 import java.net.URL;
 import java.nio.file.Files;

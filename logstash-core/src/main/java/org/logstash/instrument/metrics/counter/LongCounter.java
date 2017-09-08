@@ -4,7 +4,6 @@ package org.logstash.instrument.metrics.counter;
 import org.logstash.instrument.metrics.AbstractMetric;
 import org.logstash.instrument.metrics.MetricType;
 
-import java.util.List;
 import java.util.concurrent.atomic.LongAdder;
 
 /**

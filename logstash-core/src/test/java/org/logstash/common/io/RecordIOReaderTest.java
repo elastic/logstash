@@ -11,7 +11,6 @@ import java.nio.ByteBuffer;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Comparator;
-import java.util.Random;
 import java.util.function.Function;
 
 import static org.hamcrest.CoreMatchers.equalTo;
