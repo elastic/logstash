@@ -10,7 +10,7 @@ import java.util.Collections;
 import java.util.function.Consumer;
 
 class ExampleInput implements Input, Plugin {
-    private static final ConstructingObjectParser<ExampleInput> EXAMPLE = new ConstructingObjectParser("example", () -> new ExampleInput());
+    private static final ConstructingObjectParser<ExampleInput> EXAMPLE = new ConstructingObjectParser("example", (args) -> new ExampleInput());
 
     static {
         EXAMPLE.declareInteger("port", ExampleInput::setPort);

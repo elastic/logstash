@@ -16,7 +16,7 @@ public class ConstructingObjectParserTest {
     public static class IntegrationTest {
         @Test
         public void testParsing() {
-            ConstructingObjectParser<Example> c = new ConstructingObjectParser<>("example", Example::new);
+            ConstructingObjectParser<Example> c = new ConstructingObjectParser<>("example", (args) -> new Example());
             c.declareInteger("foo", Example::setValue);
             Map<String, Object> config = Collections.singletonMap("foo", 1);
 
