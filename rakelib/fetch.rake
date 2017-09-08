@@ -10,7 +10,7 @@ def fetch(url, sha1, output)
   puts "Downloading #{url}"
   actual_sha1 = download(url, output)
 
-  if actual_sha1 != sha1
+  if sha1 != "IGNORE" && actual_sha1 != sha1
     fail "SHA1 does not match (expected '#{sha1}' but got '#{actual_sha1}')"
   end
 end # def fetch
@@ -21,7 +21,7 @@ def file_fetch(url, sha1)
   task output => [ "vendor/_" ] do
     begin
       actual_sha1 = file_sha1(output)
-      if actual_sha1 != sha1
+      if sha1 != "IGNORE" && actual_sha1 != sha1
         fetch(url, sha1, output)
       end
     rescue Errno::ENOENT
