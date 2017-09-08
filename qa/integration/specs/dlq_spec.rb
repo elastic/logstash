@@ -4,7 +4,7 @@ require_relative '../services/logstash_service'
 require_relative '../framework/helpers'
 require "logstash/devutils/rspec/spec_helper"
 
-describe "Test Dead Letter Queue" do
+describe "Test Dead Letter Queue", :dlq => true do
 
   before(:all) {
     @fixture = Fixture.new(__FILE__)
@@ -49,8 +49,15 @@ describe "Test Dead Letter Queue" do
 
       logstash_service.wait_for_logstash
       try(75) do
-        result = es_client.search(index: 'logstash-*', size: 0, q: '*')
-        expect(result["hits"]["total"]).to eq(1000)
+        begin
+          result = es_client.search(index: 'logstash-*', size: 0, q: '*')
+          hits = result["hits"]["total"]
+        rescue Elasticsearch::Transport::Transport::Errors::ServiceUnavailable => e
+          puts 'ignoring elasticsearch error'
+          puts e.inspect
+          hits = 0
+        end
+        expect(hits).to eq(1000)
       end
 
       result = es_client.search(index: 'logstash-*', size: 1, q: '*')
