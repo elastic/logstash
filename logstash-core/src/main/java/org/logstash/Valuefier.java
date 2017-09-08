@@ -11,6 +11,7 @@ import org.jruby.RubyFixnum;
 import org.jruby.RubyFloat;
 import org.jruby.RubyHash;
 import org.jruby.RubyString;
+import org.jruby.RubySymbol;
 import org.jruby.RubyTime;
 import org.jruby.java.proxies.ArrayJavaProxy;
 import org.jruby.java.proxies.ConcreteJavaProxy;
@@ -99,6 +100,7 @@ public final class Valuefier {
         final Map<Class<?>, Valuefier.Converter> converters =
             new ConcurrentHashMap<>(50, 0.2F, 1);
         converters.put(RubyString.class, IDENTITY);
+        converters.put(RubySymbol.class, IDENTITY);
         converters.put(RubyFixnum.class, IDENTITY);
         converters.put(JrubyTimestampExtLibrary.RubyTimestamp.class, IDENTITY);
         converters.put(RubyFloat.class, IDENTITY);
