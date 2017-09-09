@@ -21,3 +21,4 @@ module CoverageHelper
     end
   end
 end
+ 
