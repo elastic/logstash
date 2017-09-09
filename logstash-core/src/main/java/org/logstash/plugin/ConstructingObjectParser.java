@@ -20,6 +20,15 @@ public class ConstructingObjectParser<Value> {
         this.builder = builder;
     }
 
+    /**
+     * Returns a function which, given an object, tries to convert it to an Integer.
+     * <p>
+     * If the conversion fails, the returned function will throw IllegalArgumentException
+     *
+     * @param consumer if transform is possible, consumer is called with the Intger.
+     * @param <Value>  the type of object being constructed by this class
+     * @return
+     */
     private static <Value> BiConsumer<Value, Object> integerTransform(BiConsumer<Value, Integer> consumer) {
         return (value, object) -> {
             if (object instanceof Integer) {
@@ -44,14 +53,34 @@ public class ConstructingObjectParser<Value> {
         };
     }
 
+    /**
+     * Add an field with an integer value.
+     *
+     * @param name the name of this field
+     * @param consumer the function to call once the value is available
+     */
     public void integer(String name, BiConsumer<Value, Integer> consumer) {
         declareField(name, integerTransform(consumer));
     }
 
+    /**
+     * Add a field with a string value.
+     *
+     * @param name the name of this field
+     * @param consumer the function to call once the value is available
+     */
     public void string(String name, BiConsumer<Value, String> consumer) {
         declareField(name, stringTransform(consumer));
     }
 
+    /**
+     * Add a field with an object value
+     *
+     * @param name the name of this field
+     * @param consumer the function to call once the value is available
+     * @param parser The ConstructingObjectParser that will build the object
+     * @param <T> The type of object to store as the value.
+     */
     public <T> void object(String name, BiConsumer<Value, T> consumer, ConstructingObjectParser<T> parser) {
         declareField(name, (value, object) -> {
             if (object instanceof Map) {
@@ -63,10 +92,24 @@ public class ConstructingObjectParser<Value> {
         });
     }
 
-    public void declareField(String name, BiConsumer<Value, Object> consumer) {
+    private void declareField(String name, BiConsumer<Value, Object> consumer) {
         parsers.put(name, consumer);
     }
 
+    /**
+     * Construct an object using the given config.
+     *
+     * The intent is that a config map, such as one from a Logstash pipeline config:
+     *
+     *     input {
+     *         example {
+     *             some => "setting"
+     *             goes => "here"
+     *         }
+     *     }
+     *
+     *  ... will know how to build an object for the above "example" input plugin.
+     */
     public Value parse(Map<String, Object> config) {
         Value value = this.builder.get();
 
@@ -85,29 +128,5 @@ public class ConstructingObjectParser<Value> {
         }
 
         return value;
-    }
-    private class Field {
-        String name;
-        boolean isConstructorArg;
-        BiConsumer<Value, Object> consumer;
-
-        Field(String name, boolean isConstructorArg, BiConsumer<Value, Object> consumer) {
-            this.name = name;
-            this.isConstructorArg = isConstructorArg;
-            this.consumer = consumer;
-        }
-
-        String getName() {
-            return name;
-        }
-
-        BiConsumer<Value, Object> getConsumer() {
-            return consumer;
-        }
-
-        boolean isConstructorArg() {
-            return isConstructorArg;
-        }
-
     }
 }
