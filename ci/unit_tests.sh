@@ -23,3 +23,5 @@ else
   echo "Running test:core"
   rake test:core            # Run core tests
 fi
+
+#Note - ensure that the -e flag is set to properly set the $? status if any command fails
