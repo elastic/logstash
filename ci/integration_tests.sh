@@ -26,3 +26,5 @@ bundle install
 echo "Running integration tests $@"
 rspec --tag ~offline $@
 rspec --tag offline $@
+
+#Note - ensure that the -e flag is set to properly set the $? status if any command fails
