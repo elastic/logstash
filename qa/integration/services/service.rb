@@ -13,7 +13,7 @@ class Service
   def setup
     puts "Setting up #{@name} service"
     if File.exists?(@setup_script)
-      `#{@setup_script}`
+      exit(1) unless system `#{@setup_script}`
     else
       puts "Setup script not found for #{@name}"
     end
@@ -23,7 +23,7 @@ class Service
   def teardown
     puts "Tearing down #{@name} service"
     if File.exists?(@setup_script)
-      `#{@teardown_script}`
+      exit(1) unless system  `#{@teardown_script}`
     else
       puts "Teardown script not found for #{@name}"
     end

@@ -2,26 +2,47 @@
 
 These set of tests are full integration tests as in: they can start LS from a binary, run configs using `-e` and can use any external services like Kafka, ES and S3. This framework is hybrid -- a combination of bash scripts (to mainly setup services), Ruby service files, and RSpec. All test assertions are done in RSpec.
 
-No VMs, all tests run locally.
+## Dependencies 
+* `JRuby`
+* `rspec` 
+* `rake`
 
-## Dependencies
-* An existing Logstash binary, defaults to `LS_HOME/build/logstash-<version>`
-* `rspec`
-* A local Docker installation (OSX and Linux are both supported for Docker versions 1.12.x and up)
+## Running integration tests locally (Mac/Linux)
 
-## Preparing a test run
+From the Logstash root directory:
 
-1. If you already have a LS binary in `LS_HOME/build/logstash-<version>`, skip to step 5
-2. From Logstash git source directory or `LS_HOME` run `rake artifact:tar` to build a package
-2. Untar the newly built package
-3. `cd build`
-4. `tar xvf logstash-<version>.tar.gz`
-5. `cd LS_HOME/qa/integration`
-6. `bundle install`: This will install test dependency gems.
+* Run all tests: `ci/integration_tests.sh`
+* Run a single test: `ci/integration_tests.sh specs/es_output_how_spec.rb`
+* Debug tests: 
+```
+ci/integration_tests.sh setup 
+cd qa/integration
+rspec specs/es_output_how_spec.rb (single test)
+rspec specs/*  (all tests)
+```
+## Running integration tests locally via Docker 
 
-You are now ready to run any tests from `qa/integration`.
-* Run all tests: `rspec specs/*`
-* Run single test: `rspec specs/es_output_how_spec.rb`
+From the Logstash root directory:
+
+* Run all tests: `ci/docker_integration_tests.sh`
+* Run a single test: 
+```
+docker build  -t logstash-integration-tests .
+docker run -it --rm logstash-integration-tests ci/integration_tests.sh specs/es_output_how_spec.rb
+``` 
+* Debug tests:
+```
+docker build -t logstash-integration-tests .
+docker run -it --rm logstash-integration-tests
+ci/integration_tests.sh setup 
+cd qa/integration
+rspec specs/es_output_how_spec.rb (single test)
+rspec specs/*  (all tests)
+```
+
+## Running integration tests locally from Windows
+
+The integration tests need to be run from MacOS or Linux.  However, the `Debug tests` locally with Docker should also work from Windows with Docker installed.   
 
 ### Directory Layout
 
@@ -37,6 +58,4 @@ You are now ready to run any tests from `qa/integration`.
 3. Create a corresponding `test_file_input_spec.rb` in `specs` folder and use the `fixtures` object to get all services, config etc. The `.yml` and rspec file has to be the same name for the settings to be picked up. You can start LS inside the tests and assume all external services have already been started.
 4. Write rspec code to validate.
 
-## Future Improvements
 
-1. Perform setup and teardown from Ruby and get rid of bash files altogether.
