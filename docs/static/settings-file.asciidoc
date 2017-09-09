@@ -78,8 +78,8 @@ The `logstash.yml` file includes the following settings:
 | `125`
 
 | `pipeline.batch.delay`
-| When creating pipeline event batches, how long in milliseconds to wait before dispatching an undersized
-  batch to filters and workers.
+| When creating pipeline event batches, how long in milliseconds to wait for
+  each event before dispatching an undersized batch to pipeline workers.
 | `5`
 
 | `pipeline.unsafe_shutdown`
