@@ -6,6 +6,7 @@
 export JRUBY_OPTS="-J-Xmx1g"
 
 export SPEC_OPTS="--order rand --format documentation"
+export CI=true
 
 if [[ ! -d "build" ]]; then
   mkdir build
