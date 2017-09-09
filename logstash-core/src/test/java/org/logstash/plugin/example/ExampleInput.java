@@ -1,7 +1,6 @@
 package org.logstash.plugin.example;
 
 import org.logstash.Event;
-import org.logstash.plugin.ConstructingObjectParser;
 import org.logstash.plugin.Input;
 import org.logstash.plugin.Plugin;
 
@@ -9,22 +8,23 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.function.Consumer;
 
-class ExampleInput implements Input, Plugin {
-    private static final ConstructingObjectParser<ExampleInput> EXAMPLE = new ConstructingObjectParser("example", (args) -> new ExampleInput());
+public class ExampleInput implements Input, Plugin {
+    private TLSContext context;
 
-    static {
-        EXAMPLE.declareInteger("port", ExampleInput::setPort);
+    public TLSContext getTLS() {
+        return context;
+    }
+
+    void setTLS(TLSContext context) {
+        this.context = context;
     }
 
     private int port;
 
-    public ConstructingObjectParser<? extends Input> getInputs() {
-        return EXAMPLE;
-    }
-
     void setPort(int port) {
         this.port = port;
     }
+
 
     @Override
     public void run(Consumer<Collection<Event>> consumer) {

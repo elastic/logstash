@@ -4,6 +4,8 @@ import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
+import org.logstash.plugin.example.ExampleInput;
+import org.logstash.plugin.example.ExamplePlugin;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
@@ -13,11 +15,29 @@ import static org.junit.runners.Parameterized.Parameters;
 
 @RunWith(Enclosed.class)
 public class ConstructingObjectParserTest {
+    public static class ExampleInputTest {
+        @Test
+        public void testExample() {
+            Plugin example = new ExamplePlugin();
+            ConstructingObjectParser<? extends Input> inputConstructor = example.getInputs();
+
+            Map<String, Object> config = new TreeMap<>();
+            config.put("port", 5000);
+
+            Map<String, Object> tlsConfig = new TreeMap<>();
+            tlsConfig.put("truststore", "/path/to/trust");
+            config.put("tls", tlsConfig);
+
+            ExampleInput input = (ExampleInput) inputConstructor.parse(config);
+            System.out.println(input.getClass().getCanonicalName());
+            System.out.println(input.getTLS().getClass().getCanonicalName());
+        }
+    }
     public static class IntegrationTest {
         @Test
         public void testParsing() {
-            ConstructingObjectParser<Example> c = new ConstructingObjectParser<>("example", (args) -> new Example());
-            c.declareInteger("foo", Example::setValue);
+            ConstructingObjectParser<Example> c = new ConstructingObjectParser<>(Example::new);
+            c.integer("foo", Example::setValue);
             Map<String, Object> config = Collections.singletonMap("foo", 1);
 
             Example e = c.parse(config);
@@ -26,6 +46,9 @@ public class ConstructingObjectParserTest {
 
         private class Example {
             private int i;
+
+            public Example() {
+            }
 
             int getValue() {
                 return i;
@@ -77,7 +100,11 @@ public class ConstructingObjectParserTest {
 
         @Parameters
         public static List<Object> data() {
-            return Arrays.asList(new Object(), Collections.emptyMap(), Collections.emptyList());
+            return Arrays.asList(
+                    new Object(),
+                    Collections.emptyMap(),
+                    Collections.emptyList()
+            );
         }
 
         @Test(expected = IllegalArgumentException.class)

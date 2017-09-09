@@ -1,27 +1,26 @@
 package org.logstash.plugin;
 
-import java.util.*;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.function.BiConsumer;
-import java.util.function.Function;
+import java.util.function.Supplier;
 
 /**
  * This is idea is taken largely from Elasticsearch but is unavailable as a library, so the code exists here as well.
  *
- * @param <T> The object type to construct.
+ * @param <Value> The object type to construct when `parse` is called.
  */
 public class ConstructingObjectParser<Value> {
-    private final String name;
-    //private final Function<Object[], Value> builder;
-    private final Function<Object[], Value> builder;
-    private final Map<String, Field> parsers = new LinkedHashMap<>(); // keep insertion order
-    private final List<BiConsumer<Value, ?>> constructorArgs = new ArrayList<>();
+    private final Supplier<Value> builder;
+    private final Map<String, BiConsumer<Value, Object>> parsers = new LinkedHashMap<>();
 
-    public ConstructingObjectParser(String name, Function<Object[], Value> builder) {
-        this.name = name;
+    public ConstructingObjectParser(Supplier<Value> builder) {
         this.builder = builder;
     }
 
-    static <Value> BiConsumer<Value, Object> integerTransform(BiConsumer<Value, Integer> consumer) {
+    private static <Value> BiConsumer<Value, Object> integerTransform(BiConsumer<Value, Integer> consumer) {
         return (value, object) -> {
             if (object instanceof Integer) {
                 consumer.accept(value, (Integer) object);
@@ -45,18 +44,31 @@ public class ConstructingObjectParser<Value> {
         };
     }
 
-    public void declareField(String name, boolean isConstructorArg, BiConsumer<Value, Object> consumer) {
-        parsers.put(name, new Field(name, isConstructorArg, consumer));
+    public void integer(String name, BiConsumer<Value, Integer> consumer) {
+        declareField(name, integerTransform(consumer));
+    }
+
+    public void string(String name, BiConsumer<Value, String> consumer) {
+        declareField(name, stringTransform(consumer));
+    }
+
+    public <T> void object(String name, BiConsumer<Value, T> consumer, ConstructingObjectParser<T> parser) {
+        declareField(name, (value, object) -> {
+            if (object instanceof Map) {
+                // XXX: Fix this unchecked cast.
+                consumer.accept(value, parser.parse((Map<String, Object>) object));
+            } else {
+                throw new IllegalArgumentException("Object value must be a Map, but is a " + object.getClass());
+            }
+        });
     }
 
     public void declareField(String name, BiConsumer<Value, Object> consumer) {
-        declareField(name, false, consumer);
+        parsers.put(name, consumer);
     }
 
     public Value parse(Map<String, Object> config) {
-        // XXX: Compute constructor args
-        Object[] args = new Object[0];
-        Value value = this.builder.apply(args);
+        Value value = this.builder.get();
 
         Set<String> missing = new TreeSet<>();
         missing.addAll(parsers.keySet());
@@ -68,17 +80,12 @@ public class ConstructingObjectParser<Value> {
 
         for (Map.Entry<String, Object> entry : config.entrySet()) {
             String name = entry.getKey();
-            BiConsumer<Value, Object> parser = parsers.get(entry.getKey()).getConsumer();
+            BiConsumer<Value, Object> parser = parsers.get(entry.getKey());
             parser.accept(value, entry.getValue());
         }
 
         return value;
     }
-
-    public void declareInteger(String name, BiConsumer<Value, Integer> consumer) {
-        declareField(name, integerTransform(consumer));
-    }
-
     private class Field {
         String name;
         boolean isConstructorArg;
