@@ -11,11 +11,13 @@ specific use cases or data sources.
 You can think of modules as providing three essential functions that make it
 easier for you to get started. When you run a module, it will:
 
-. Create the Elasticsearch index
+. Create the Elasticsearch index.
 
-. Set up the Kibana dashboards
+. Set up the Kibana dashboards, including the index pattern, searches, and
+visualizations required to visualize your data in Kibana.
 
-. Run the Logstash pipeline
+. Run the Logstash pipeline with the configurations required to read and parse
+the data.
 
 image::static/images/logstash-module-overview.png[Logstash modules overview]
 
@@ -23,44 +25,45 @@ image::static/images/logstash-module-overview.png[Logstash modules overview]
 [[running-logstash-modules]]
 === Running modules
 
-When you run a module, Logstash creates and loads the pipeline configurations
-required to read and parse the data. It also loads the index pattern,
-field definitions, searches, visualizations, and dashboards required to
-visualize your data in Kibana.
-
-To run a module, you use the `--modules` option:
+To run a module and set up dashboards, you specify the following options:
 
 [source,shell]
 ----
-bin/logstash --modules MODULE_NAME [-M CONFIG_SETTINGS]
+bin/logstash --modules MODULE_NAME --setup [-M "CONFIG_SETTING=VALUE"]
 ----
 
 
 //TODO: For 6.0, show how to run mutliple modules
 
-Where `MODULE_NAME` is the name of Logstash module and `CONFIG_SETTINGS`
-is one or more optional configuration settings. `CONFIG_SETTINGS` are only
-required when the default configuration doesn't meet your needs, or you need to
-override settings specified in the `logstash.yml` settings file.
+Where:
+
+* `--modules` runs the Logstash module specified by `MODULE_NAME`.
+
+* `-M "CONFIG_SETTING=VALUE"` is optional and overrides the specified
+configuration setting. You can specify multiple overrides. Each override must
+start with `-M`. See <<overriding-logstash-module-settings>> for more info.
+
+* `--setup` creates an index pattern in Elasticsearch and imports Kibana
+dashboards and visualizations. Running `--setup` is a one-time setup step. Omit
+this option for subsequent runs of the module to avoid overwriting existing
+Kibana dashboards.
 
 For example, the following command runs the Netflow module with the default
-settings:
+settings, and sets up the netflow index pattern and dashboards:
 
 [source,shell]
 ----
-bin/logstash --modules netflow
+bin/logstash --modules netflow --setup 
 ----
 
 The following command runs the Netflow module and overrides the Elasticsearch
-`host` setting:
+`host` setting. Here it's assumed that you've already run the setup step.
 
 [source,shell]
 ----
 bin/logstash --modules netflow -M "netflow.var.elasticsearch.host=es.mycloud.com"
 ----
 
-
-See <<overriding-logstash-module-settings>> for more info about overriding settings.
 
 [float]
 [[configuring-logstash-modules]]
