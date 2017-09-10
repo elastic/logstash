@@ -32,13 +32,23 @@ docker run -it --rm logstash-integration-tests ci/integration_tests.sh specs/es_
 ``` 
 * Debug tests:
 ```
-docker build -t logstash-integration-tests .
-docker run -it --rm logstash-integration-tests
-ci/integration_tests.sh setup 
+docker ps -a | grep Exited | awk '{print $1}' | xargs docker rm
+docker build -t logstash-integration-tests . 
+docker run -d --name debug logstash-integration-tests tail -f /dev/null
+docker exec -it debug ci/integration_tests.sh setup 
+docker exec -it debug bash
 cd qa/integration
-rspec specs/es_output_how_spec.rb (single test)
-rspec specs/*  (all tests)
+rspec specs/es_output_how_spec.rb
+exit
+docker kill debug
+docker rm debug
 ```
+
+* Clean up docker environment:
+
+Warning this will remove all images a containers except for `logstash-base` !
+
+* `ci/docker_prune.sh`
 
 ## Running integration tests locally from Windows
 

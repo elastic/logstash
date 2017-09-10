@@ -15,12 +15,18 @@ describe "Test Elasticsearch output" do
   }
 
   it "can ingest 37K log lines of sample apache logs" do
+    puts "Getting logstash service"
     logstash_service = @fixture.get_service("logstash")
+    puts "Getting elasticsearch service"
     es_service = @fixture.get_service("elasticsearch")
+    puts "Starting logstash and feeding input ..."
     logstash_service.start_with_input(@fixture.config, @fixture.input)
+    puts "Getting elasticsearch client"
     es_client = es_service.get_client
     # now we test if all data was indexed by ES, but first refresh manually
+    puts "Refreshing elasticsearch indexes"
     es_client.indices.refresh
+    puts "Searching logstsash-* index"
     result = es_client.search(index: 'logstash-*', size: 0, q: '*')
     expect(result["hits"]["total"]).to eq(37)
     
