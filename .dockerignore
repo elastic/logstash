@@ -1,5 +1,4 @@
 **/.git
 build
 logs
-.gradle
-ci/docker_tool
+
