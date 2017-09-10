@@ -8,8 +8,8 @@ This section summarizes the changes in the following releases:
 * <<logstash-5-5-1,Logstash 5.5.1>>
 * <<logstash-5-5-0,Logstash 5.5.0>>
 
-[[logstash-5-5-2]]
-=== Logstash 5.5.2 Release Notes
+[[logstash-5-5-3]]
+=== Logstash 5.5.3 Release Notes
 
 There are no user-facing changes in Logstash core for this release.
 
