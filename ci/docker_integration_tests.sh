@@ -1,6 +1,5 @@
 #!/bin/bash -i
 
-echo "here"
 if [ -z "$branch_specifier" ]; then
     # manual
     IMAGE_NAME="logstash-integration-tests"
