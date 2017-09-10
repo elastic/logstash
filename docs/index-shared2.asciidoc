@@ -117,3 +117,8 @@ include::static/submitting-a-plugin.asciidoc[]
 
 :edit_url: https://github.com/elastic/logstash/edit/5.x/docs/static/glossary.asciidoc
 include::static/glossary.asciidoc[]
+
+// Release notes
+:edit_url: https://github.com/elastic/logstash/edit/5.5/docs/static/releasenotes.asciidoc
+include::static/releasenotes.asciidoc[]
+

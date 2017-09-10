@@ -16,6 +16,7 @@ This section summarizes the changes in the following releases:
 * Improved the performance of metrics collection and reporting infrastructure. Overall, in this release, there is lower load 
   average, less GC and higher throughput when running Logstash.
 * When processing events from the DLQ, there are added checks now to stop them from being written to the DLQ again.
+* Fixed an issue which would crash Logstash when accessing DLQ events using a timestamp range.
 
 [float]
 
