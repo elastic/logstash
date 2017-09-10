@@ -34,5 +34,5 @@ RUN rm -rf build && \
 USER logstash
 WORKDIR /opt/logstash
 
-
+LABEL retention="prune"
 
