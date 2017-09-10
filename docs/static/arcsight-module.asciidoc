@@ -12,12 +12,10 @@ and is therefore free to use. Please contact
 mailto:arcsight@elastic.co[arcsight@elastic.co] for questions or more
 information.
 
-The Logstash ArcSight module enables you to easily integrate with and augment
-the ArcSight Data Platform (ADP) to explore your data in Elasticsearch using
-Kibana visualizations. With a single command, the module taps directly into the
-ADP data stream, parses and indexes the security events into Elasticsearch, and
-installs a suite of Kibana dashboards to get you exploring your data
-immediately. 
+The Logstash ArcSight module enables you to easily integrate your ArcSight data with the Elastic Stack. 
+With a single command, the module taps directly into the Smart Connector or the Event Broker, 
+parses and indexes the security events into Elasticsearch, and installs a suite of Kibana dashboards 
+to get you exploring your data immediately. 
 
 [role="screenshot"]
 image::static/images/arcsight-architecture-diagram-2017.png[ArcSight architecture]
@@ -29,19 +27,83 @@ The Logstash ArcSight module understands CEF (Common Event Format), and can
 accept, enrich, and index these events for analysis on the Elastic Stack. ADP
 contains two core data collection components for data streaming:
 
+* The _Smart Connectors (SC)_ are edge log collectors that parse and normalize
+data to CEF prior to publishing to the Logstash receiver.
 * The _Event Broker (EB)_ is the central hub for incoming data and is based on
 open source Apache Kafka. The Logstash ArcSight module can consume directly from
 EB topics.
-* The _Smart Connectors (SC)_ are edge log collectors that parse and normalize
-data to CEF prior to publishing to the EB.
 
-[[arcsight-getting-started]]
-==== Getting Started
+[[arcsight-getting-started-smart-connector]]
+==== Getting Started With Smart Connector
+
+To get started, you can use a basic Elastic Stack setup that reads events from
+the Smart Connector directly.
+
+[[arcsight-requirements-smartconnector]]
+===== Requirements
+
+* These instructions assume you have part of the Elastic Stack (Logstash, Elasticsearch,
+Kibana) already installed. The products you need are
+https://www.elastic.co/downloads[available to download] and easy to install. The
+Elastic Stack 5.6 or higher is required for this module.
+* The Elastic Stack is running locally with default ports exposed, namely
+Elasticsearch as “localhost:9200” and Kibana as “localhost:5601”. Note that you can also run 
+Elasticsearch, Kibana and Logstash on separate hosts to consume data from ArcSight.
+* Smart Connector has been configured to publish ArcSight data (to TCP port `5000`) using the CEF syslog 
+destination.
+
+[[arcsight-instructions-smartconnector]]
+===== Instructions
+
+. {ref}/installing-xpack-es.html[Install X-Pack on Elasticsearch] and then start
+Elasticsearch.
+
+. {kibana-ref}/installing-xpack-kb.html[Install X-Pack on Kibana] and then start
+Kibana.
+
+. {logstash-ref}/installing-xpack-log.html[Install X-Pack on Logstash], which
+includes the Logstash ArcSight module.
+. Start the Logstash ArcSight module by running the following command in the
+Logstash install directory with your respective EB host and port:
++
+[source,shell]
+-----
+bin/logstash --modules arcsight --setup
+  -M "arcsight.var.inputs=smartconnector" 
+  -M "arcsight.var.elasticsearch.username=elastic" 
+  -M "arcsight.var.elasticsearch.password=changeme" 
+  -M "arcsight.var.kibana.username=elastic" 
+  -M "arcsight.var.kibana.password=changeme"
+-----
++
+--
+TIP: The command in this example is formatted for readability. Remove the line
+breaks before running this command.
+
+The `--modules arcsight` option spins up an ArcSight CEF-aware Logstash
+pipeline for ingestion. The `--setup` option creates an `arcsight-*` index
+pattern in Elasticsearch and imports Kibana dashboards and visualizations. On
+subsequent module runs or when scaling out the Logstash deployment,
+the `--setup` option should be omitted to avoid overwriting the existing Kibana
+dashboards.
+--
+
+. Explore your data with Kibana:
+.. Open browser @ http://localhost:5601[http://localhost:5601] (username:
+  “elastic”; password: “changeme”)
+.. Open the “[ArcSight] Network Overview Dashboard”
+.. See <<exploring-data-arcsight>> for additional details on data exploration.
+
+See <<configuring-arcsight>> if you want to specify additional options that
+control the behavior of the ArcSight module.
+
+[[arcsight-getting-started-eventbroker]]
+==== Getting Started With Event Broker
 
 To get started, you can use a basic Elastic Stack setup that reads events from
 the EB event stream.
 
-[[arcsight-requirements]]
+[[arcsight-requirements-eventbroker]]
 ===== Requirements
 
 * These instructions assume you have the Elastic Stack (Logstash, Elasticsearch,
@@ -54,7 +116,7 @@ Elasticsearch as “localhost:9200” and Kibana as “localhost:5601”.
 For additional EB settings, see <<arcsight-module-config>>. Consuming from a
 secured EB port is not currently available.
 
-[[arcsight-instructions]]
+[[arcsight-instructions-eventbroker]]
 ===== Instructions
 
 . {ref}/installing-xpack-es.html[Install X-Pack on Elasticsearch] and then start
