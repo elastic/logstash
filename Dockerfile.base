@@ -3,7 +3,7 @@ FROM ubuntu:xenial
 
 RUN apt-get update && \
     apt-get dist-upgrade && \
-    apt-get install -y zlib1g-dev build-essential rake git curl libssl-dev libreadline-dev libyaml-dev  \
+    apt-get install -y zlib1g-dev build-essential vim rake git curl libssl-dev libreadline-dev libyaml-dev  \
       libxml2-dev libxslt-dev openjdk-8-jdk-headless curl iputils-ping netcat && \
     apt-get clean
 
@@ -37,11 +37,12 @@ RUN echo 'eval "$(rbenv init -)"' >> .bashrc && \
 RUN git clone https://github.com/elastic/logstash.git /tmp/logstash && \
     cd /tmp/logstash && \
     rake test:install-core && \
-    ./gradlew jar && \
+    ./gradlew compileJava compileTestJava && \
     cd qa/integration && \
     /home/logstash/.rbenv/shims/bundle install && \
     mv /tmp/logstash/vendor /tmp/vendor && \
     rm -rf /tmp/logstash
+
 
 # used by the purge policy
 LABEL retention="keep"

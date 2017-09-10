@@ -31,7 +31,7 @@ start_es() {
   echo "Waiting for elasticsearch to respond..."
   while ! curl --silent localhost:9200 && [[ $count -ne 0 ]]; do
       count=$(( $count - 1 ))
-      [[ $count -eq 0 ]] && return 1
+      [[ $count -eq 0 ]] && cat /tmp/elasticsearch.log && return 1
       sleep 1
   done
   echo "Elasticsearch is Up !"
@@ -40,4 +40,5 @@ start_es() {
 
 setup_install_dir
 setup_es $version
+export ES_JAVA_OPTS="-Xms512m -Xmx512m"
 start_es
