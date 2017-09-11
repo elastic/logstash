@@ -1,7 +1,6 @@
 package org.logstash.ext;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import java.io.IOException;
 import org.jruby.Ruby;
 import org.jruby.RubyClass;
 import org.jruby.RubyFixnum;
@@ -23,7 +22,7 @@ import org.logstash.ObjectMappers;
 import org.logstash.RubyUtil;
 import org.logstash.Timestamp;
 
-public class JrubyTimestampExtLibrary implements Library {
+public final class JrubyTimestampExtLibrary implements Library {
 
     private static final ObjectAllocator ALLOCATOR = new ObjectAllocator() {
         public RubyTimestamp allocate(Ruby runtime, RubyClass rubyClass) {
@@ -31,7 +30,8 @@ public class JrubyTimestampExtLibrary implements Library {
         }
     };
 
-    public void load(Ruby runtime, boolean wrap) throws IOException {
+    @Override
+    public void load(Ruby runtime, boolean wrap) {
         createTimestamp(runtime);
     }
 
@@ -44,7 +44,9 @@ public class JrubyTimestampExtLibrary implements Library {
 
     @JRubyClass(name = "Timestamp")
     @JsonSerialize(using = ObjectMappers.RubyTimestampSerializer.class)
-    public static class RubyTimestamp extends RubyObject {
+    public static final class RubyTimestamp extends RubyObject {
+
+        private static final long serialVersionUID = 1L;
 
         private Timestamp timestamp;
 
@@ -67,11 +69,6 @@ public class JrubyTimestampExtLibrary implements Library {
 
         public static RubyTimestamp newRubyTimestamp(Ruby runtime) {
             return new RubyTimestamp(runtime);
-        }
-
-        public static RubyTimestamp newRubyTimestamp(Ruby runtime, long epoch) {
-            // Ruby epoch is in seconds, Java in milliseconds
-            return new RubyTimestamp(runtime, new Timestamp(epoch * 1000));
         }
 
         public static RubyTimestamp newRubyTimestamp(Ruby runtime, Timestamp timestamp) {

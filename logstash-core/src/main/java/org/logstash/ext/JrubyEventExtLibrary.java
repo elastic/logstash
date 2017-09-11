@@ -27,14 +27,14 @@ import org.logstash.RubyUtil;
 import org.logstash.Rubyfier;
 import org.logstash.Valuefier;
 
-public class JrubyEventExtLibrary implements Library {
+public final class JrubyEventExtLibrary implements Library {
 
     private static RubyClass PARSER_ERROR = null;
     private static RubyClass GENERATOR_ERROR = null;
     private static RubyClass LOGSTASH_ERROR = null;
 
     @Override
-    public void load(Ruby runtime, boolean wrap) throws IOException {
+    public void load(Ruby runtime, boolean wrap) {
         final RubyModule module = runtime.defineModule(RubyUtil.LS_MODULE_NAME);
 
         RubyClass clazz = runtime.defineClassUnder(
@@ -67,6 +67,8 @@ public class JrubyEventExtLibrary implements Library {
 
     @JRubyClass(name = "Event")
     public static final class RubyEvent extends RubyObject {
+
+        private static final long serialVersionUID = 1L;
 
         /**
          * Sequence number generator, for generating {@link RubyEvent#hash}.

@@ -5,12 +5,10 @@ import org.jruby.Ruby;
 import org.jruby.RubyBoolean;
 import org.jruby.RubyClass;
 import org.jruby.RubyFixnum;
-import org.jruby.RubyModule;
 import org.jruby.RubyObject;
 import org.jruby.anno.JRubyClass;
 import org.jruby.anno.JRubyMethod;
 import org.jruby.runtime.Arity;
-import org.jruby.runtime.ObjectAllocator;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.jruby.runtime.load.Library;
@@ -23,26 +21,25 @@ import org.logstash.ackedqueue.io.FileCheckpointIO;
 import org.logstash.ackedqueue.io.MmapPageIO;
 import org.logstash.ext.JrubyEventExtLibrary;
 
-public class JrubyAckedQueueExtLibrary implements Library {
+public final class JrubyAckedQueueExtLibrary implements Library {
 
-    public void load(Ruby runtime, boolean wrap) throws IOException {
-        RubyModule module = runtime.defineModule(RubyUtil.LS_MODULE_NAME);
-
-        RubyClass clazz = runtime.defineClassUnder("AckedQueue", runtime.getObject(), new ObjectAllocator() {
-            public IRubyObject allocate(Ruby runtime, RubyClass rubyClass) {
-                return new RubyAckedQueue(runtime, rubyClass);
-            }
-        }, module);
-
-        clazz.defineAnnotatedMethods(RubyAckedQueue.class);
+    @Override
+    public void load(Ruby runtime, boolean wrap) {
+        runtime.defineClassUnder(
+            "AckedQueue", runtime.getObject(), JrubyAckedQueueExtLibrary.RubyAckedQueue::new,
+            runtime.defineModule(RubyUtil.LS_MODULE_NAME)
+        ).defineAnnotatedMethods(JrubyAckedQueueExtLibrary.RubyAckedQueue.class);
     }
 
     // TODO:
     // as a simplified first prototyping implementation, the Settings class is not exposed and the queue elements
     // are assumed to be logstash Event.
 
-    @JRubyClass(name = "AckedQueue", parent = "Object")
-    public static class RubyAckedQueue extends RubyObject {
+    @JRubyClass(name = "AckedQueue")
+    public static final class RubyAckedQueue extends RubyObject {
+
+        private static final long serialVersionUID = 1L;
+
         private Queue queue;
 
         public RubyAckedQueue(Ruby runtime, RubyClass klass) {
