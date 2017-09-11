@@ -14,12 +14,15 @@ import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import com.fasterxml.jackson.dataformat.cbor.CBORFactory;
 import com.fasterxml.jackson.dataformat.cbor.CBORGenerator;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.HashMap;
+import org.jruby.RubyBignum;
 import org.jruby.RubyBoolean;
 import org.jruby.RubyFixnum;
 import org.jruby.RubyFloat;
 import org.jruby.RubyString;
 import org.jruby.RubySymbol;
+import org.jruby.ext.bigdecimal.RubyBigDecimal;
 import org.logstash.ext.JrubyTimestampExtLibrary;
 
 public final class ObjectMappers {
@@ -30,14 +33,22 @@ public final class ObjectMappers {
             .addSerializer(RubySymbol.class, new RubySymbolSerializer())
             .addSerializer(RubyFloat.class, new RubyFloatSerializer())
             .addSerializer(RubyBoolean.class, new RubyBooleanSerializer())
-            .addSerializer(RubyFixnum.class, new RubyFixnumSerializer());
+            .addSerializer(RubyFixnum.class, new RubyFixnumSerializer())
+            .addSerializer(RubyBigDecimal.class, new RubyBigDecimalSerializer())
+            .addSerializer(RubyBignum.class, new RubyBignumSerializer());
+
+    private static final SimpleModule CBOR_DESERIALIZERS =
+        new SimpleModule("CborRubyDeserializers")
+            .addDeserializer(RubyBigDecimal.class, new RubyBigDecimalDeserializer())
+            .addDeserializer(RubyBignum.class, new RubyBignumDeserializer());
 
     public static final ObjectMapper JSON_MAPPER = 
         new ObjectMapper().registerModule(RUBY_SERIALIZERS);
 
     public static final ObjectMapper CBOR_MAPPER = new ObjectMapper(
         new CBORFactory().configure(CBORGenerator.Feature.WRITE_MINIMAL_INTS, false)
-    ).registerModule(RUBY_SERIALIZERS).enableDefaultTyping(ObjectMapper.DefaultTyping.NON_FINAL);
+    ).registerModules(RUBY_SERIALIZERS, CBOR_DESERIALIZERS)
+        .enableDefaultTyping(ObjectMapper.DefaultTyping.NON_FINAL);
 
     /**
      * {@link JavaType} for the {@link HashMap} that {@link Event} is serialized as.
@@ -176,6 +187,84 @@ public final class ObjectMappers {
         public Timestamp deserialize(final JsonParser p, final DeserializationContext ctxt)
             throws IOException {
             return new Timestamp(p.getText());
+        }
+    }
+
+    /**
+     * Serializer for {@link RubyBignum} since Jackson can't handle that type natively, so we
+     * simply serialize it as if it were a {@code String} and wrap it in type arguments, so that
+     * deserialization happens via {@link ObjectMappers.RubyBignumDeserializer}.
+     */
+    private static final class RubyBignumSerializer extends StdSerializer<RubyBignum> {
+
+        RubyBignumSerializer() {
+            super(RubyBignum.class);
+        }
+
+        @Override
+        public void serialize(final RubyBignum value, final JsonGenerator jgen,
+            final SerializerProvider provider) throws IOException {
+            jgen.writeString(value.toString());
+        }
+
+        @Override
+        public void serializeWithType(final RubyBignum value, final JsonGenerator jgen,
+            final SerializerProvider serializers, final TypeSerializer typeSer) throws IOException {
+            typeSer.writeTypePrefixForScalar(value, jgen, RubyBignum.class);
+            jgen.writeString(value.toString());
+            typeSer.writeTypeSuffixForScalar(value, jgen);
+        }
+    }
+
+    private static final class RubyBignumDeserializer extends StdDeserializer<RubyBignum> {
+
+        RubyBignumDeserializer() {
+            super(RubyBignum.class);
+        }
+
+        @Override
+        public RubyBignum deserialize(final JsonParser p, final DeserializationContext ctxt)
+            throws IOException {
+            return RubyBignum.newBignum(RubyUtil.RUBY, p.getText());
+        }
+    }
+
+    /**
+     * Serializer for {@link RubyBigDecimal} since Jackson can't handle that type natively, so we
+     * simply serialize it as if it were a {@code String} and wrap it in type arguments, so that
+     * deserialization happens via {@link ObjectMappers.RubyBigDecimalDeserializer}.
+     */
+    private static final class RubyBigDecimalSerializer extends StdSerializer<RubyBigDecimal> {
+
+        RubyBigDecimalSerializer() {
+            super(RubyBigDecimal.class);
+        }
+
+        @Override
+        public void serialize(final RubyBigDecimal value, final JsonGenerator jgen,
+            final SerializerProvider provider) throws IOException {
+            jgen.writeString(value.getBigDecimalValue().toString());
+        }
+
+        @Override
+        public void serializeWithType(final RubyBigDecimal value, final JsonGenerator jgen,
+            final SerializerProvider serializers, final TypeSerializer typeSer) throws IOException {
+            typeSer.writeTypePrefixForScalar(value, jgen, RubyBigDecimal.class);
+            jgen.writeString(value.getBigDecimalValue().toString());
+            typeSer.writeTypeSuffixForScalar(value, jgen);
+        }
+    }
+
+    private static final class RubyBigDecimalDeserializer extends StdDeserializer<RubyBigDecimal> {
+
+        RubyBigDecimalDeserializer() {
+            super(RubyBigDecimal.class);
+        }
+
+        @Override
+        public RubyBigDecimal deserialize(final JsonParser p, final DeserializationContext ctxt)
+            throws IOException {
+            return new RubyBigDecimal(RubyUtil.RUBY, new BigDecimal(p.getText()));
         }
     }
 
