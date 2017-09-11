@@ -1,12 +1,8 @@
 package org.logstash.bivalues;
 
-import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.util.HashMap;
 import java.util.Map;
-import org.jruby.RubyBignum;
 import org.jruby.RubyNil;
-import org.jruby.ext.bigdecimal.RubyBigDecimal;
 import org.jruby.java.proxies.ConcreteJavaProxy;
 import org.jruby.java.proxies.JavaProxy;
 
@@ -41,11 +37,7 @@ public final class BiValues {
 
     private static Map<Class<?>, BiValues.BiValueType> initCache() {
         final Map<Class<?>, BiValues.BiValueType> hm = new HashMap<>(50, 0.2F);
-        hm.put(BigDecimal.class, value -> new BigDecimalBiValue((BigDecimal) value));
-        hm.put(BigInteger.class, value -> new BigIntegerBiValue((BigInteger) value));
-        hm.put(RubyBignum.class, value -> new BigIntegerBiValue((RubyBignum) value));
         hm.put(RubyNil.class, value -> NULL_BI_VALUE);
-        hm.put(RubyBigDecimal.class, value -> new BigDecimalBiValue((RubyBigDecimal) value));
         hm.put(ConcreteJavaProxy.class, value -> {
             if (value instanceof JavaProxy) {
                 return new JavaProxyBiValue((JavaProxy) value);

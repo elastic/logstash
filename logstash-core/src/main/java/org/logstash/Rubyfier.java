@@ -1,16 +1,20 @@
 package org.logstash;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import org.jruby.Ruby;
 import org.jruby.RubyArray;
+import org.jruby.RubyBignum;
 import org.jruby.RubyBoolean;
 import org.jruby.RubyFixnum;
 import org.jruby.RubyFloat;
 import org.jruby.RubyHash;
 import org.jruby.RubyString;
 import org.jruby.RubySymbol;
+import org.jruby.ext.bigdecimal.RubyBigDecimal;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.bivalues.BiValue;
 import org.logstash.bivalues.BiValues;
@@ -76,6 +80,8 @@ public final class Rubyfier {
             new ConcurrentHashMap<>(50, 0.2F, 1);
         converters.put(RubyString.class, IDENTITY);
         converters.put(RubySymbol.class, IDENTITY);
+        converters.put(RubyBignum.class, IDENTITY);
+        converters.put(RubyBigDecimal.class, IDENTITY);
         converters.put(RubyFloat.class, IDENTITY);
         converters.put(RubyFixnum.class, IDENTITY);
         converters.put(RubyBoolean.class, IDENTITY);
@@ -84,6 +90,12 @@ public final class Rubyfier {
         converters.put(Double.class, FLOAT_CONVERTER);
         converters.put(Float.class, FLOAT_CONVERTER);
         converters.put(Integer.class, LONG_CONVERTER);
+        converters.put(
+            BigInteger.class, (runtime, value) -> RubyBignum.newBignum(runtime, (BigInteger) value)
+        );
+        converters.put(
+            BigDecimal.class, (runtime, value) -> new RubyBigDecimal(runtime, (BigDecimal) value)
+        );
         converters.put(Long.class, LONG_CONVERTER);
         converters.put(Boolean.class, (runtime, input) -> runtime.newBoolean((Boolean) input));
         converters.put(
