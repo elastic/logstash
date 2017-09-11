@@ -138,9 +138,27 @@ public class ConstructingObjectParser<Value> implements Function<Map<String, Obj
      *  ... will know how to build an object for the above "example" input plugin.
      */
     public Value apply(Map<String, Object> config) {
-        // XXX: Implement constructor building.
-        ArrayList<Object> args = new ArrayList<>(constructorArgs.size());
+        rejectUnknownFields();
+        Value value = construct(config);
 
+        // Now call all the object setters/etc
+        for (Map.Entry<String, Object> entry : config.entrySet()) {
+            String name = entry.getKey();
+            if (constructorArgs.containsKey(name)) {
+                // Skip constructor arguments
+                continue;
+            }
+
+            BiConsumer<Value, Object> parser = parsers.get(name);
+            assert parser != null
+
+            parser.accept(value, entry.getValue());
+        }
+
+        return value;
+    }
+
+    private void rejectUnknownFields() {
         // Check for any unknown parameters.
         Set<String> unknown = new TreeSet<>();
         Set<String> known = new TreeSet<>();
@@ -151,7 +169,11 @@ public class ConstructingObjectParser<Value> implements Function<Map<String, Obj
         if (!unknown.isEmpty()) {
             throw new IllegalArgumentException("Unknown settings " + unknown);
         }
+    }
 
+    private Value construct(Map<String, Object> config) {
+        // XXX: Implement constructor building.
+        ArrayList<Object> args = new ArrayList<>(constructorArgs.size());
         // Constructor arguments. Any constructor argument is a *required* setting.
         for (Map.Entry<String, BiConsumer<ArrayList<Object>, Object>> argInfo : constructorArgs.entrySet()) {
             String name = argInfo.getKey();
@@ -163,20 +185,6 @@ public class ConstructingObjectParser<Value> implements Function<Map<String, Obj
             }
         }
 
-        Value value = builder.apply(args.toArray());
-
-        // Now call all the object setters/etc
-        for (Map.Entry<String, Object> entry : config.entrySet()) {
-            String name = entry.getKey();
-            if (constructorArgs.containsKey(name)) {
-                // Skip constructor arguments
-                continue;
-            }
-
-            BiConsumer<Value, Object> parser = parsers.get(name);
-            parser.accept(value, entry.getValue());
-        }
-
-        return value;
+        return builder.apply(args.toArray());
     }
 }
