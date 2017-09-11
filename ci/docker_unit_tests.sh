@@ -8,7 +8,7 @@ else
     IMAGE_NAME=$branch_specifier"-"$(date +%s%N)
 fi
 
-echo "Running CI build for '$IMAGE_NAME' "
+echo "Running Docker CI build for '$IMAGE_NAME' "
 
 docker build  -t $IMAGE_NAME .
 exit_code=$?; [[ $exit_code != 0 ]] && exit $exit_code

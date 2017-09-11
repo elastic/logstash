@@ -9,7 +9,7 @@ export SPEC_OPTS="--order rand --format documentation"
 export CI=true
 
 if [[ ! -d "build" ]]; then
-  mkdir build
+    mkdir build
 fi
 rm -rf build/*
 echo "Building tar"
@@ -21,11 +21,47 @@ cd ../qa/integration
 echo "Installing test dependencies"
 bundle install
 
-#exit early if only setting up
-[[ $1 = "setup" ]] && exit 0
+if [[ $1 = "setup" ]]; then
+ echo "Setup only, no tests will be run"
+ exit 0
 
-echo "Running integration tests $@"
-rspec --tag ~offline $@
-rspec --tag offline $@
+elif [[ $1 == "split" ]]; then
+    glob1=(specs/*spec.rb)
+    glob2=(specs/**/*spec.rb)
+    all_specs=("${glob1[@]}" "${glob2[@]}")
+
+    specs0=${all_specs[@]::$((${#all_specs[@]} / 2 ))}
+    specs1=${all_specs[@]:$((${#all_specs[@]} / 2 ))}
+
+    if [[ $2 == 0 ]]; then
+       echo "Running the first half of integration specs: $specs0"
+       rspec $specs0
+    elif [[ $2 == 1 ]]; then
+       echo "Running the second half of integration specs: $specs1"
+       rspec $specs1
+    else
+       echo "Error, must specify 0 or 1 after the split. For example ci/integration_tests.sh split 0"
+       exit 1
+    fi
+
+elif [[ $1 == "offline" ]]; then
+    echo "Running all offline integration tests"
+    rspec --tag offline
+
+elif [[ !  -z  $@  ]]; then
+    echo "Running integration tests 'rspec $@'"
+    rspec $@
+
+else
+    echo "Running all online integration tests"
+    rspec --tag ~offline
+    echo "Running all offline integration tests"
+    rspec --tag offline
+fi
+
+
+
+
+
 
 #Note - ensure that the -e flag is set to properly set the $? status if any command fails
