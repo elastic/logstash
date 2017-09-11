@@ -1,4 +1,4 @@
-FROM logstash-base:latest
+FROM container-registry-test.elastic.co/logstash-test/logstash-base:latest
 
 RUN mv /tmp/vendor /opt/logstash/vendor
 
