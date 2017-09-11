@@ -6,15 +6,16 @@ The following configuration options are supported by all modules:
 +
 --
 * Value type is <<uri,uri>>
-* Default value is “localhost:9200”
+* Default value is "localhost:9200"
 --
 +
-Sets the host(s) of the Elasticsearch cluster. If given an <<array,array>> it
-will load balance requests across the hosts specified in the hosts parameter. It
-is important to exclude {ref}/modules-node.html[dedicated master nodes] from the
-hosts list to prevent Logstash from sending bulk requests to the master nodes.
-So this parameter should only reference either data or client nodes in
-Elasticsearch.
+Sets the host(s) of the Elasticsearch cluster. For each host, you must specify
+the hostname and port. For example, "myhost:9200". If given an <<array,array>>,
+Logstash will load balance requests across the hosts specified in the hosts
+parameter. It is important to exclude {ref}/modules-node.html[dedicated master
+nodes] from the hosts list to prevent Logstash from sending bulk requests to the
+master nodes. So this parameter should only reference either data or client
+nodes in Elasticsearch.
 +
 Any special characters present in the URLs here MUST be URL escaped! This means #
 should be put in as %23 for instance.
@@ -23,7 +24,7 @@ should be put in as %23 for instance.
 +
 --
 * Value type is <<string,string>>
-* Default value is “elastic”
+* Default value is "elastic"
 --
 +
 The username to authenticate to a secure Elasticsearch cluster.
@@ -32,7 +33,7 @@ The username to authenticate to a secure Elasticsearch cluster.
 +
 --
 * Value type is <<string,string>>
-* Default value is “changeme”
+* Default value is "changeme"
 --
 +
 The password to authenticate to a secure Elasticsearch cluster.
@@ -95,16 +96,17 @@ with Elasticsearch.
 +
 --
 * Value type is <<string,string>>
-* Default value is “localhost:5601”
+* Default value is "localhost:5601"
 --
 +
-Sets the host of the Kibana instance to import dashboards and visualizations.
+Sets the hostname and port of the Kibana instance to use for importing
+dashboards and visualizations. For example: "myhost:5601".
 
 *`var.kibana.username`*::
 +
 --
 * Value type is <<string,string>>
-* Default value is “elastic”
+* Default value is "elastic"
 --
 +
 The username to authenticate to a secured Kibana instance.
@@ -113,7 +115,7 @@ The username to authenticate to a secured Kibana instance.
 +
 --
 * Value type is <<string,string>>
-* Default value is “changeme”
+* Default value is "changeme"
 --
 +
 The password to authenticate to a secure Kibana instance.
