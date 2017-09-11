@@ -50,3 +50,5 @@ qa/integration/services/installed/
 logstash-core/bin
 plugins_version_docs.json
 tools/benchmark-cli/out/
+qa/integration/fixtures/offline_wrapper/offline
+qa/integration/fixtures/offline_wrapper/offline.o
