@@ -13,12 +13,9 @@ mailto:arcsight@elastic.co[arcsight@elastic.co] for questions or more
 information.
 
 The Logstash ArcSight module enables you to easily integrate your ArcSight data with the Elastic Stack. 
-With a single command, the module taps directly into the Smart Connector or the Event Broker, 
+With a single command, the module taps directly into the ArcSight Smart Connector or the Event Broker, 
 parses and indexes the security events into Elasticsearch, and installs a suite of Kibana dashboards 
 to get you exploring your data immediately. 
-
-[role="screenshot"]
-image::static/images/arcsight-architecture-diagram-2017.png[ArcSight architecture]
 
 [[arcsight-architecture]]
 ==== Deployment Architecture
@@ -34,10 +31,13 @@ open source Apache Kafka. The Logstash ArcSight module can consume directly from
 EB topics.
 
 [[arcsight-getting-started-smart-connector]]
-==== Getting Started With Smart Connector
+==== Getting Started With The Smart Connector
 
 To get started, you can use a basic Elastic Stack setup that reads events from
 the Smart Connector directly.
+
+[role="screenshot"]
+image::static/images/arcsight-architecture-diagram-smartconnector-2017.png[ArcSight architecture]
 
 [[arcsight-requirements-smartconnector]]
 ===== Requirements
@@ -98,10 +98,13 @@ See <<configuring-arcsight>> if you want to specify additional options that
 control the behavior of the ArcSight module.
 
 [[arcsight-getting-started-eventbroker]]
-==== Getting Started With Event Broker
+==== Getting Started With The Event Broker
 
 To get started, you can use a basic Elastic Stack setup that reads events from
 the EB event stream.
+
+[role="screenshot"]
+image::static/images/arcsight-architecture-diagram-eventbroker-2017.png[ArcSight architecture]
 
 [[arcsight-requirements-eventbroker]]
 ===== Requirements
