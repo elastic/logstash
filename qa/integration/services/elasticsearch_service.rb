@@ -1,17 +1,8 @@
-require_relative "service_container"
 require 'elasticsearch'
-require 'docker'
 
-class ElasticsearchService < ServiceContainer
+class ElasticsearchService < Service
   def initialize(settings)
     super("elasticsearch", settings)
-
-    # Binding container to host ports.
-    @container_create_opts[:HostConfig] = {
-                                            :PortBindings => {
-                                              '9200/tcp' => [{ :HostPort => '9200' }],
-                                              '9300/tcp' => [{ :HostPort => '9300' }]
-                                          }}
   end
 
   def get_client
