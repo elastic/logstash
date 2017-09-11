@@ -1,21 +1,52 @@
 package org.logstash.plugin.example;
 
 import org.logstash.Event;
+import org.logstash.plugin.ConstructingObjectParser;
 import org.logstash.plugin.Input;
 import org.logstash.plugin.Plugin;
 
+import javax.net.ssl.SSLContext;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.function.Consumer;
 
 public class ExampleInput implements Input, Plugin {
-    private TLSContext context;
+    static final ConstructingObjectParser<ExampleInput> EXAMPLE = new ConstructingObjectParser<>(args -> new ExampleInput((int) args[0]));
 
-    public TLSContext getTLS() {
+    static {
+        // Pass an integer named "port" as the first constructor argument.
+        EXAMPLE.integer("port");
+
+        /*
+         * Have a single 'tls' setting that configures an object.
+         *
+         * The intent here is to be able to box a component (such as TLS) in a way that can be reused among plugins.
+         *
+         * In this example, we have 'example' input having a 'tls' setting, and this would look like this
+         * in the Logstash config:
+         *
+         * input {
+         *   example {
+         *     port => 12345
+         *     tls => {
+         *       truststore => "/path/to/trust"
+         *       key => "/path/to/private.key"
+         *       certificate => "/path/to/server.crt"
+         *       ciphers => [ "some", "specific", "ciphers" ]
+         *     }
+         *   }
+         * }
+         */
+        EXAMPLE.object("tls", ExampleInput::setTLS, SSLContextConstructor.TLS);
+    }
+
+    private SSLContext context;
+
+    public SSLContext getTLS() {
         return context;
     }
 
-    void setTLS(TLSContext context) {
+    void setTLS(SSLContext context) {
         this.context = context;
     }
 
