@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.jruby.RubySymbol;
 import org.jruby.RubyTime;
 import org.junit.Test;
 
@@ -22,11 +23,14 @@ public final class EventTest {
         e.setField("bar", 42);
         Map<String, Object> inner = new HashMap<>(2);
         inner.put("innerFoo", 42L);
+        final RubySymbol symbol = RubyUtil.RUBY.newSymbol("val");
+        e.setField("symbol", symbol);
         inner.put("innerQuux", 42.42);
         e.setField("baz", inner);
         e.setField("[@metadata][foo]", 42L);
         byte[] binary = e.serialize();
         Event er = Event.deserialize(binary);
+        assertEquals(symbol.toString(), er.getField("symbol"));
         assertEquals(42L, er.getField("foo"));
         assertEquals(42L, er.getField("bar"));
         assertEquals(42L, er.getField("[baz][innerFoo]"));

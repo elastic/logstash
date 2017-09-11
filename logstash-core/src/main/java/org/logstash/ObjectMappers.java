@@ -14,12 +14,14 @@ import org.jruby.RubyBoolean;
 import org.jruby.RubyFixnum;
 import org.jruby.RubyFloat;
 import org.jruby.RubyString;
+import org.jruby.RubySymbol;
 
 public final class ObjectMappers {
 
     private static final SimpleModule RUBY_SERIALIZERS =
         new SimpleModule("RubySerializers")
             .addSerializer(RubyString.class, new RubyStringSerializer())
+            .addSerializer(RubySymbol.class, new RubySymbolSerializer())
             .addSerializer(RubyFloat.class, new RubyFloatSerializer())
             .addSerializer(RubyBoolean.class, new RubyBooleanSerializer())
             .addSerializer(RubyFixnum.class, new RubyFixnumSerializer());
@@ -53,6 +55,25 @@ public final class ObjectMappers {
 
         @Override
         public void serialize(final RubyString value, final JsonGenerator generator,
+            final SerializerProvider provider)
+            throws IOException {
+            generator.writeString(value.asJavaString());
+        }
+    }
+
+    /**
+     * Serializer for {@link RubySymbol} since Jackson can't handle that type natively, so we
+     * simply serialize it as if it were a {@link String}.
+     */
+    private static final class RubySymbolSerializer
+        extends NonTypedScalarSerializerBase<RubySymbol> {
+
+        RubySymbolSerializer() {
+            super(RubySymbol.class, true);
+        }
+
+        @Override
+        public void serialize(final RubySymbol value, final JsonGenerator generator,
             final SerializerProvider provider)
             throws IOException {
             generator.writeString(value.asJavaString());
