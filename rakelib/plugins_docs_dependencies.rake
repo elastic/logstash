@@ -128,7 +128,6 @@ task :generate_plugins_version do
   require "bundler"
   require "bundler/dsl"
   require "json"
-  Bundler.setup(:default)
   require "pluginmanager/gemfile"
   require "bootstrap/environment"
 
