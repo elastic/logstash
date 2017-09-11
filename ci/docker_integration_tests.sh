@@ -8,11 +8,11 @@ else
     IMAGE_NAME=$branch_specifier"-"$(date +%s%N)
 fi
 
-echo "Running CI build for '$IMAGE_NAME' "
+echo "Running Docker CI build for '$IMAGE_NAME' "
 
 docker build  -t $IMAGE_NAME .
 exit_code=$?; [[ $exit_code != 0 ]] && exit $exit_code
-docker run -t --rm $IMAGE_NAME ci/integration_tests.sh
+docker run -t --rm $IMAGE_NAME ci/integration_tests.sh $@
 exit_code=$?
 [[ $IMAGE_NAME != "logstash-integration-tests" ]] && docker rmi $IMAGE_NAME
 echo "exiting with code: '$exit_code'"
