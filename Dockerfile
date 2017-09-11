@@ -1,0 +1,41 @@
+FROM logstash_base:latest
+
+ADD gradlew /opt/logstash/gradlew
+ADD gradle/wrapper /opt/logstash/gradle/wrapper
+RUN /opt/logstash/gradlew wrapper
+
+ADD versions.yml /opt/logstash/versions.yml
+ADD LICENSE /opt/logstash/LICENSE
+ADD CONTRIBUTORS /opt/logstash/CONTRIBUTORS
+ADD Gemfile.template /opt/logstash/Gemfile
+ADD Rakefile /opt/logstash/Rakefile
+ADD build.gradle /opt/logstash/build.gradle
+ADD rakelib /opt/logstash/rakelib
+ADD config /opt/logstash/config
+ADD spec /opt/logstash/spec
+ADD lib /opt/logstash/lib
+ADD pkg /opt/logstash/pkg
+ADD tools /opt/logstash/tools
+ADD logstash-core /opt/logstash/logstash-core
+ADD logstash-core-plugin-api /opt/logstash/logstash-core-plugin-api
+ADD bin /opt/logstash/bin
+ADD modules /opt/logstash/modules
+ADD CHANGELOG.md /opt/logstash/CHANGELOG.md
+ADD settings.gradle /opt/logstash/settings.gradle
+
+USER root
+RUN rm -rf build && \
+    mkdir -p build && \
+    chown -R logstash:logstash /opt/logstash
+USER logstash
+WORKDIR /opt/logstash
+RUN bash -i -c 'rake artifact:tar && rake test:install-core && cd build && tar -xzf logstash-*.tar.gz'
+
+USER root
+ADD ci /opt/logstash/ci
+ADD qa /opt/logstash/qa
+RUN chown -R logstash:logstash /opt/logstash/ci /opt/logstash/qa
+
+USER logstash
+RUN bash -i -c 'cd qa/integration && bundle install'
+
