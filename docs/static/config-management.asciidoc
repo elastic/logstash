@@ -11,18 +11,18 @@ https://forge.puppet.com/elastic/logstash[Logstash Puppet module documentation].
 
 [role="xpack"]
 [[logstash-centralized-pipeline-management]]
-=== Centralized Pipeline Management
+=== Centralized Pipeline Configuration Management
 
-NOTE: Centralized pipeline management is an {xpack} feature that requires a
-paid {xpack} license. See the
-https://www.elastic.co/subscriptions[Elastic Subscriptions] page for
-information about obtaining a license.
+NOTE: Centralized pipeline configuration management is an {xpack} feature that
+requires a paid {xpack} license. See the
+https://www.elastic.co/subscriptions[Elastic Subscriptions] page for information
+about obtaining a license.
 
-The pipeline management feature in {xpack} centralizes the creation and
-management of Logstash configuration pipelines. From within the pipeline
-management UI, you can control multiple Logstash instances. You can add, edit,
-and delete pipeline configurations. On the Logstash side, you simply need
-to register Logstash to use the centrally managed pipeline configurations. 
+The pipeline configuration management feature in {xpack} centralizes the
+creation and management of Logstash configuration pipelines. From within the
+pipeline management UI, you can control multiple Logstash instances. You can
+add, edit, and delete pipeline configurations. On the Logstash side, you simply
+need to register Logstash to use the centrally managed pipeline configurations. 
 
 The pipeline configurations, along with some metadata, are stored in
 Elasticsearch. Any changes that you make to a pipeline definition in the UI are
@@ -31,14 +31,15 @@ the pipeline. The changes are applied immediately; you do not have to restart
 Logstash to pick up the changes, as long as Logtash is already registered to
 use the pipeline. 
 
-To use centralized pipeline management, you must install {xpack} and specify
-the configuration management settings described in
-{logstash-ref}/setup-xpack.html[Setting up {xpack}].
+To use centralized pipeline configuration management, you must install {xpack}
+and specify the
+{logstash-ref}/settings-xpack.html#configuration-management-settings[configuration management settings]
+described under {logstash-ref}/setup-xpack.html[Setting up {xpack}].
 
 IMPORTANT: After you've configured Logstash to use centralized pipeline
-management, you can no longer specify local pipeline configurations. This
-means that the `pipelines.yml` file and settings like `path.config` and
-`config.string` are inactive when this feature is enabled.
+configuration management, you can no longer specify local pipeline
+configurations. This means that the `pipelines.yml` file and settings like
+`path.config` and `config.string` are inactive when this feature is enabled.
 
 ==== Pipeline management UI
 
