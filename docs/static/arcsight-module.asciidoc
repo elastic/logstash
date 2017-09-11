@@ -37,7 +37,7 @@ To get started, you can use a basic Elastic Stack setup that reads events from
 the Smart Connector directly.
 
 [role="screenshot"]
-image::static/images/arcsight-architecture-diagram-smartconnector-2017.png[ArcSight architecture]
+image::static/images/arcsight-architecture-diagram-smartconnector-2017.png[ArcSight Smart Connector architecture]
 
 [[arcsight-requirements-smartconnector]]
 ===== Requirements
@@ -104,7 +104,7 @@ To get started, you can use a basic Elastic Stack setup that reads events from
 the EB event stream.
 
 [role="screenshot"]
-image::static/images/arcsight-architecture-diagram-eventbroker-2017.png[ArcSight architecture]
+image::static/images/arcsight-architecture-diagram-eventbroker-2017.png[ArcSight Event Broker architecture]
 
 [[arcsight-requirements-eventbroker]]
 ===== Requirements
