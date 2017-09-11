@@ -25,6 +25,9 @@ public class ExampleInput implements Input, Plugin {
         this.port = port;
     }
 
+    public ExampleInput(int port) {
+        this.port = port;
+    }
 
     @Override
     public void run(Consumer<Collection<Event>> consumer) {

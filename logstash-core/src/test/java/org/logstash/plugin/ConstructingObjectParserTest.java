@@ -8,7 +8,6 @@ import org.logstash.plugin.example.ExampleInput;
 import org.logstash.plugin.example.ExamplePlugin;
 
 import java.util.*;
-import java.util.concurrent.atomic.AtomicReference;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.runners.Parameterized.Parameters;
@@ -28,7 +27,7 @@ public class ConstructingObjectParserTest {
             tlsConfig.put("truststore", "/path/to/trust");
             config.put("tls", tlsConfig);
 
-            ExampleInput input = (ExampleInput) inputConstructor.parse(config);
+            ExampleInput input = (ExampleInput) inputConstructor.apply(config);
             System.out.println(input.getClass().getCanonicalName());
             System.out.println(input.getTLS().getClass().getCanonicalName());
         }
@@ -36,11 +35,12 @@ public class ConstructingObjectParserTest {
     public static class IntegrationTest {
         @Test
         public void testParsing() {
-            ConstructingObjectParser<Example> c = new ConstructingObjectParser<>(Example::new);
+            ConstructingObjectParser<Example> c = new ConstructingObjectParser<>((args) -> new Example());
             c.integer("foo", Example::setValue);
+
             Map<String, Object> config = Collections.singletonMap("foo", 1);
 
-            Example e = c.parse(config);
+            Example e = c.apply(config);
             assertEquals(1, e.getValue());
         }
 
@@ -83,19 +83,18 @@ public class ConstructingObjectParserTest {
 
         @Test
         public void testStringTransform() {
-            AtomicReference<Object> x = new AtomicReference<>(); // a container for calling setters via lambda
-            ConstructingObjectParser.<AtomicReference<Object>>stringTransform(AtomicReference::set).accept(x, input);
-            assertEquals(expected, x.get());
+            String value = ConstructingObjectParser.stringTransform(input);
+            assertEquals(expected, value);
 
         }
     }
 
     @RunWith(Parameterized.class)
     public static class StringRejections {
-        private Object value;
+        private Object input;
 
-        public StringRejections(Object value) {
-            this.value = value;
+        public StringRejections(Object input) {
+            this.input = input;
         }
 
         @Parameters
@@ -109,8 +108,7 @@ public class ConstructingObjectParserTest {
 
         @Test(expected = IllegalArgumentException.class)
         public void testFailure() {
-            AtomicReference<Object> x = new AtomicReference<>(); // a container for calling setters via lambda
-            ConstructingObjectParser.<AtomicReference<Object>>stringTransform(AtomicReference::set).accept(x, value);
+            ConstructingObjectParser.stringTransform(input);
         }
     }
 }

@@ -1,56 +1,54 @@
 package org.logstash.plugin;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
 import java.util.function.BiConsumer;
-import java.util.function.Supplier;
+import java.util.function.Function;
 
 /**
  * This is idea is taken largely from Elasticsearch but is unavailable as a library, so the code exists here as well.
  *
  * @param <Value> The object type to construct when `parse` is called.
  */
-public class ConstructingObjectParser<Value> {
-    private final Supplier<Value> builder;
+public class ConstructingObjectParser<Value> implements Function<Map<String, Object>, Value> {
+    private final Function<Object[], Value> builder;
     private final Map<String, BiConsumer<Value, Object>> parsers = new LinkedHashMap<>();
+    private final Map<String, BiConsumer<ArrayList<Object>, Object>> constructorArgs = new TreeMap<>();
 
-    public ConstructingObjectParser(Supplier<Value> builder) {
+    private final BiConsumer<Value, Object> CONSTRUCTOR_ARG = (a, b) -> {
+        throw new UnsupportedOperationException("This function should never get called. It is a marker.");
+    };
+
+    public ConstructingObjectParser(Function<Object[], Value> builder) {
         this.builder = builder;
     }
 
-    /**
-     * Returns a function which, given an object, tries to convert it to an Integer.
-     * <p>
-     * If the conversion fails, the returned function will throw IllegalArgumentException
-     *
-     * @param consumer if transform is possible, consumer is called with the Intger.
-     * @param <Value>  the type of object being constructed by this class
-     * @return
-     */
-    private static <Value> BiConsumer<Value, Object> integerTransform(BiConsumer<Value, Integer> consumer) {
-        return (value, object) -> {
-            if (object instanceof Integer) {
-                consumer.accept(value, (Integer) object);
-            } else if (object instanceof String) {
-                consumer.accept(value, Integer.parseInt((String) object));
-            } else {
-                throw new IllegalArgumentException("Value must be a number, but is a " + object.getClass());
-            }
-        };
+    private static Integer integerTransform(Object object) {
+        if (object instanceof Integer) {
+            return (Integer) object;
+        } else if (object instanceof String) {
+            return Integer.parseInt((String) object);
+        } else {
+            throw new IllegalArgumentException("Value must be a number, but is a " + object.getClass());
+        }
     }
 
-    static <Value> BiConsumer<Value, Object> stringTransform(BiConsumer<Value, String> consumer) {
-        return (value, object) -> {
-            if (object instanceof String) {
-                consumer.accept(value, (String) object);
-            } else if (object instanceof Number) {
-                consumer.accept(value, object.toString());
-            } else {
-                throw new IllegalArgumentException("Value must be a string, but is a " + object.getClass());
-            }
-        };
+    static String stringTransform(Object object) {
+        if (object instanceof String) {
+            return (String) object;
+        } else if (object instanceof Number) {
+            return object.toString();
+        } else {
+            throw new IllegalArgumentException("Value must be a string, but is a " + object.getClass());
+        }
+    }
+
+    static <T> T objectTransform(Object object, ConstructingObjectParser<T> parser) {
+        if (object instanceof Map) {
+            // XXX: Fix this unchecked cast.
+            return parser.apply((Map<String, Object>) object);
+        } else {
+            throw new IllegalArgumentException("Object value must be a Map, but is a " + object.getClass());
+        }
     }
 
     /**
@@ -60,7 +58,16 @@ public class ConstructingObjectParser<Value> {
      * @param consumer the function to call once the value is available
      */
     public void integer(String name, BiConsumer<Value, Integer> consumer) {
-        declareField(name, integerTransform(consumer));
+        declareField(name, consumer, ConstructingObjectParser::integerTransform);
+    }
+
+    /**
+     * Declare an integer constructor argument.
+     *
+     * @param name the name of the field.
+     */
+    public void integer(String name) {
+        declareConstructorArg(name, ConstructingObjectParser::integerTransform);
     }
 
     /**
@@ -70,7 +77,16 @@ public class ConstructingObjectParser<Value> {
      * @param consumer the function to call once the value is available
      */
     public void string(String name, BiConsumer<Value, String> consumer) {
-        declareField(name, stringTransform(consumer));
+        declareField(name, consumer, ConstructingObjectParser::stringTransform);
+    }
+
+    /**
+     * Declare a constructor argument that is a string.
+     *
+     * @param name the name of this field.
+     */
+    public void string(String name) {
+        declareConstructorArg(name, ConstructingObjectParser::stringTransform);
     }
 
     /**
@@ -82,18 +98,29 @@ public class ConstructingObjectParser<Value> {
      * @param <T> The type of object to store as the value.
      */
     public <T> void object(String name, BiConsumer<Value, T> consumer, ConstructingObjectParser<T> parser) {
-        declareField(name, (value, object) -> {
-            if (object instanceof Map) {
-                // XXX: Fix this unchecked cast.
-                consumer.accept(value, parser.parse((Map<String, Object>) object));
-            } else {
-                throw new IllegalArgumentException("Object value must be a Map, but is a " + object.getClass());
-            }
-        });
+        declareField(name, consumer, (t) -> objectTransform(t, parser));
     }
 
-    private void declareField(String name, BiConsumer<Value, Object> consumer) {
-        parsers.put(name, consumer);
+    /**
+     * Declare a constructor argument that is an object.
+     *
+     * @param name   the name of the field which represents this constructor argument
+     * @param parser the ConstructingObjectParser that builds the object
+     * @param <T>    The type of object created by the parser.
+     */
+    public <T> void object(String name, ConstructingObjectParser<T> parser) {
+        declareConstructorArg(name, (t) -> objectTransform(t, parser));
+    }
+
+    private <T> void declareField(String name, BiConsumer<Value, T> consumer, Function<Object, T> transform) {
+        BiConsumer<Value, Object> objConsumer = (value, object) -> consumer.accept(value, transform.apply(object));
+        parsers.put(name, objConsumer);
+    }
+
+    private <T> void declareConstructorArg(String name, Function<Object, T> transform) {
+        int position = constructorArgs.size();
+        BiConsumer<ArrayList<Object>, Object> objConsumer = (array, object) -> array.add(position, transform.apply(object));
+        constructorArgs.put(name, objConsumer);
     }
 
     /**
@@ -110,20 +137,43 @@ public class ConstructingObjectParser<Value> {
      *
      *  ... will know how to build an object for the above "example" input plugin.
      */
-    public Value parse(Map<String, Object> config) {
-        Value value = this.builder.get();
+    public Value apply(Map<String, Object> config) {
+        // XXX: Implement constructor building.
+        ArrayList<Object> args = new ArrayList<>(constructorArgs.size());
 
-        Set<String> missing = new TreeSet<>();
-        missing.addAll(parsers.keySet());
-        missing.retainAll(config.keySet());
-
+        // Check for any unknown parameters.
         Set<String> unknown = new TreeSet<>();
-        unknown.addAll(config.keySet());
-        unknown.retainAll(parsers.keySet());
+        Set<String> known = new TreeSet<>();
+        known.addAll(parsers.keySet());
+        known.addAll(constructorArgs.keySet());
+        unknown.removeAll(known);
 
+        if (!unknown.isEmpty()) {
+            throw new IllegalArgumentException("Unknown settings " + unknown);
+        }
+
+        // Constructor arguments. Any constructor argument is a *required* setting.
+        for (Map.Entry<String, BiConsumer<ArrayList<Object>, Object>> argInfo : constructorArgs.entrySet()) {
+            String name = argInfo.getKey();
+            BiConsumer<ArrayList<Object>, Object> argsBuilder = argInfo.getValue();
+            if (config.containsKey(name)) {
+                argsBuilder.accept(args, config.get(name));
+            } else {
+                throw new IllegalArgumentException("Missing required argument '" + name + "' for " + getClass());
+            }
+        }
+
+        Value value = builder.apply(args.toArray());
+
+        // Now call all the object setters/etc
         for (Map.Entry<String, Object> entry : config.entrySet()) {
             String name = entry.getKey();
-            BiConsumer<Value, Object> parser = parsers.get(entry.getKey());
+            if (constructorArgs.containsKey(name)) {
+                // Skip constructor arguments
+                continue;
+            }
+
+            BiConsumer<Value, Object> parser = parsers.get(name);
             parser.accept(value, entry.getValue());
         }
 

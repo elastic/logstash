@@ -5,15 +5,14 @@ import org.logstash.plugin.Input;
 import org.logstash.plugin.Plugin;
 
 public class ExamplePlugin implements Plugin {
-    private static final ConstructingObjectParser<TLSContext> TLS = new ConstructingObjectParser<>(TLSContext::new);
-    private static final ConstructingObjectParser<ExampleInput> EXAMPLE = new ConstructingObjectParser<>(ExampleInput::new);
-
+    private static final ConstructingObjectParser<TLSContext> TLS = new ConstructingObjectParser<>(args -> new TLSContext());
+    private static final ConstructingObjectParser<ExampleInput> EXAMPLE = new ConstructingObjectParser<>(args -> new ExampleInput((int) args[0]));
     static {
         TLS.string("truststore", TLSContext::setTrustStore);
         //TLS.stringList("ciphers", TLSContext::setCiphers);
         //TLS.boolean("require client certificate", TLSContext::setClientCertificateRequired)
 
-        EXAMPLE.integer("port", ExampleInput::setPort);
+        EXAMPLE.integer("port");
 
         /*
          * Have a single 'tls' setting that configures an object.
