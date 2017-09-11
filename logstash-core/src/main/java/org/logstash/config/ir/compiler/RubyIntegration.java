@@ -92,7 +92,6 @@ public final class RubyIntegration {
          * are not cancelled
          */
         Collection<JrubyEventExtLibrary.RubyEvent> collect();
-        
-        void merge(JrubyEventExtLibrary.RubyEvent event);
+
     }
 }
