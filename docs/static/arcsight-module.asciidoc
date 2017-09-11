@@ -30,7 +30,7 @@ data to CEF prior to publishing to the Logstash receiver.
 open source Apache Kafka. The Logstash ArcSight module can consume directly from
 EB topics.
 
-[[arcsight-getting-started-smart-connector]]
+[[arcsight-getting-started-smartconnector]]
 ==== Getting Started With The Smart Connector
 
 To get started, you can use a basic Elastic Stack setup that reads events from
