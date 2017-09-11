@@ -1,43 +1,31 @@
 package org.logstash.instrument.metrics.gauge;
 
+import java.net.URI;
+import java.util.Collections;
 import org.jruby.RubyHash;
-import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.logstash.RubyUtil;
 import org.logstash.Timestamp;
 import org.logstash.ext.JrubyTimestampExtLibrary;
 import org.logstash.instrument.metrics.MetricType;
-import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
-
-import java.net.URI;
-import java.util.Collections;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.when;
 
 /**
  * Unit tests for {@link LazyDelegatingGauge}
  */
-@RunWith(MockitoJUnitRunner.class)
 public class LazyDelegatingGaugeTest {
 
-    @Mock
-    RubyHash rubyHash;
+    private static final RubyHash RUBY_HASH = RubyHash.newHash(RubyUtil.RUBY);
 
-    @Mock
-    private JrubyTimestampExtLibrary.RubyTimestamp rubyTimestamp;
+    private static final Timestamp TIMESTAMP = new Timestamp();
 
-    private final Timestamp timestamp = new Timestamp();
+    private static final JrubyTimestampExtLibrary.RubyTimestamp RUBY_TIMESTAMP =
+        JrubyTimestampExtLibrary.RubyTimestamp.newRubyTimestamp(
+            RubyUtil.RUBY, TIMESTAMP
+        );
 
     private static final String RUBY_HASH_AS_STRING = "{}";
-
-    @Before
-    public void _setup() {
-        //hacky workaround using the toString method to avoid mocking the Ruby runtime
-        when(rubyHash.toString()).thenReturn(RUBY_HASH_AS_STRING);
-        when(rubyTimestamp.getTimestamp()).thenReturn(timestamp);
-    }
 
     @Test
     public void getValue() {
@@ -62,13 +50,13 @@ public class LazyDelegatingGaugeTest {
         assertThat(gauge.getType()).isEqualTo(MetricType.GAUGE_TEXT);
 
         //Ruby Hash
-        gauge = new LazyDelegatingGauge("bar", rubyHash);
+        gauge = new LazyDelegatingGauge("bar", RUBY_HASH);
         assertThat(gauge.getValue().toString()).isEqualTo(RUBY_HASH_AS_STRING);
         assertThat(gauge.getType()).isEqualTo(MetricType.GAUGE_RUBYHASH);
 
         //Ruby Timestamp
-        gauge = new LazyDelegatingGauge("bar", rubyTimestamp);
-        assertThat(gauge.getValue()).isEqualTo(timestamp);
+        gauge = new LazyDelegatingGauge("bar", RUBY_TIMESTAMP);
+        assertThat(gauge.getValue()).isEqualTo(TIMESTAMP);
         assertThat(gauge.getType()).isEqualTo(MetricType.GAUGE_RUBYTIMESTAMP);
 
         //Unknown
@@ -128,14 +116,14 @@ public class LazyDelegatingGaugeTest {
 
         //Ruby Hash
         gauge = new LazyDelegatingGauge("bar");
-        gauge.set(rubyHash);
+        gauge.set(RUBY_HASH);
         assertThat(gauge.getValue().toString()).isEqualTo(RUBY_HASH_AS_STRING);
         assertThat(gauge.getType()).isEqualTo(MetricType.GAUGE_RUBYHASH);
 
         //Ruby Timestamp
         gauge = new LazyDelegatingGauge("bar");
-        gauge.set(rubyTimestamp);
-        assertThat(gauge.getValue()).isEqualTo(timestamp);
+        gauge.set(RUBY_TIMESTAMP);
+        assertThat(gauge.getValue()).isEqualTo(TIMESTAMP);
         assertThat(gauge.getType()).isEqualTo(MetricType.GAUGE_RUBYTIMESTAMP);
 
         //Unknown
