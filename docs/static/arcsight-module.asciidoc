@@ -47,7 +47,7 @@ Kibana) already installed. The products you need are
 https://www.elastic.co/downloads[available to download] and easy to install. The
 Elastic Stack 5.6 or higher is required for this module.
 * The Elastic Stack is running locally with default ports exposed, namely
-Elasticsearch as “localhost:9200” and Kibana as “localhost:5601”. Note that you can also run 
+Elasticsearch as "localhost:9200" and Kibana as "localhost:5601". Note that you can also run 
 Elasticsearch, Kibana and Logstash on separate hosts to consume data from ArcSight.
 * Smart Connector has been configured to publish ArcSight data (to TCP port `5000`) using the CEF syslog 
 destination.
@@ -90,8 +90,8 @@ dashboards.
 
 . Explore your data with Kibana:
 .. Open browser @ http://localhost:5601[http://localhost:5601] (username:
-  “elastic”; password: “changeme”)
-.. Open the “[ArcSight] Network Overview Dashboard”
+  "elastic"; password: "changeme")
+.. Open the *[ArcSight] Network Overview Dashboard*
 .. See <<exploring-data-arcsight>> for additional details on data exploration.
 
 See <<configuring-arcsight>> if you want to specify additional options that
@@ -114,8 +114,8 @@ Kibana) already installed. The products you need are
 https://www.elastic.co/downloads[available to download] and easy to install. The
 Elastic Stack 5.6 or higher is required for this module.
 * The Elastic Stack is running locally with default ports exposed, namely
-Elasticsearch as “localhost:9200” and Kibana as “localhost:5601”.
-* By default, the Logstash ArcSight module consumes from the EB “eb-cef” topic.
+Elasticsearch as "localhost:9200" and Kibana as "localhost:5601".
+* By default, the Logstash ArcSight module consumes from the EB "eb-cef" topic.
 For additional EB settings, see <<arcsight-module-config>>. Consuming from a
 secured EB port is not currently available.
 
@@ -166,8 +166,8 @@ dashboards.
 
 . Explore your data with Kibana:
 .. Open browser @ http://localhost:5601[http://localhost:5601] (username:
-  “elastic”; password: “changeme”)
-.. Open the “[ArcSight] Network Overview Dashboard”
+  "elastic"; password: "changeme")
+.. Open the *[ArcSight] Network Overview Dashboard*
 .. See <<exploring-data-arcsight>> for additional details on data exploration.
 
 See <<configuring-arcsight>> if you want to specify additional options that
@@ -237,8 +237,8 @@ configure your module:
 -----
 modules:
   - name: arcsight
-    var.input.eventbroker.bootstrap_servers: “eb_host:39092”
-    var.input.eventbroker.topics: “eb_topic”
+    var.input.eventbroker.bootstrap_servers: "eb_host:39092"
+    var.input.eventbroker.topics: "eb_topic"
     var.elasticsearch.hosts: "localhost:9200"
     var.elasticsearch.username: "elastic"
     var.elasticsearch.password: "changeme"
@@ -250,29 +250,33 @@ modules:
 [[arcsight-module-config]]
 ===== Logstash ArcSight Module Configuration Options
 
-These are the configurable settings available for the Logstash ArcSight module.
-When overriding settings in the command line, the setting option must be
-prefixed with the module name, i.e. `arcsight.var.inputs` instead of `var.inputs`.
+The ArcSight module provides the following settings for configuring the behavior
+of the module. These settings include ArcSight-specific options plus common
+options that are supported by all Logstash modules. 
 
-All settings are optional. If you don't specify configuration settings, Logstash
-uses the defaults.
+When you override a setting at the command line, remember to prefix the setting
+with the module name, for example, `arcsight.var.inputs` instead of `var.inputs`.
+
+If you don't specify configuration settings, Logstash uses the defaults.
+
+*ArcSight Module Options*
 
 *`var.inputs`*::
 +
 --
 * Value type is <<string,string>>
-* Default value is “eventbroker”
+* Default value is "eventbroker"
 --
 +
 Set the input(s) to expose for the Logstash ArcSight module. Valid settings are
-“eventbroker”, “smartconnector”, or “eventbroker,smartconnector” (exposes both
-  inputs concurrently).
+"eventbroker", "smartconnector", or "eventbroker,smartconnector" (exposes both
+inputs concurrently).
 
 *`var.input.eventbroker.bootstrap_servers`*::
 +
 --
 * Value type is <<string,string>>
-* Default value is “localhost:39092”
+* Default value is "localhost:39092"
 --
 +
 A list of EB URLs to use for establishing the initial connection to the cluster.
@@ -285,7 +289,7 @@ servers (you may want more than one, though, in case a server is down).
 +
 --
 * Value type is <<array,array>>
-* Default value is [“eb-cef”]
+* Default value is ["eb-cef"]
 --
 +
 A list of EB topics to subscribe to.
@@ -299,168 +303,4 @@ A list of EB topics to subscribe to.
 +
 The TCP port to listen on when receiving data from SCs.
 
-*`var.elasticsearch.hosts`*::
-+
---
-* Value type is <<uri,uri>>
-* Default value is “localhost:9200”
---
-+
-Sets the host(s) of the Elasticsearch cluster. If given an <<array,array>> it
-will load balance requests across the hosts specified in the hosts parameter. It
-is important to exclude {ref}/modules-node.html[dedicated master nodes] from the
-hosts list to prevent Logstash from sending bulk requests to the master nodes.
-So this parameter should only reference either data or client nodes in
-Elasticsearch.
-+
-Any special characters present in the URLs here MUST be URL escaped! This means #
-should be put in as %23 for instance.
-
-*`var.elasticsearch.username`*::
-+
---
-* Value type is <<string,string>>
-* Default value is “elastic”
---
-+
-The username to authenticate to a secure Elasticsearch cluster.
-
-*`var.elasticsearch.password`*::
-+
---
-* Value type is <<string,string>>
-* Default value is “changeme”
---
-+
-The password to authenticate to a secure Elasticsearch cluster.
-
-*`var.elasticsearch.ssl.enabled`*::
-+
---
-* Value type is <<boolean,boolean>>
-* There is no default value for this setting.
---
-+
-Enable SSL/TLS secured communication to the Elasticsearch cluster. Leaving this
-unspecified will use whatever scheme is specified in the URLs listed in `hosts`.
-If no explicit protocol is specified, plain HTTP will be used. If SSL is
-explicitly disabled here, the plugin will refuse to start if an HTTPS URL is
-given in hosts.
-
-*`var.elasticsearch.ssl.verification_mode`*::
-+
---
-* Value type is <<string,string>>
-* Default value is "strict"
---
-+
-The hostname verification setting when communicating with Elasticsearch. Set to
-`disable` to turn off hostname verification. Disabling this has serious security
-concerns.
-
-*`var.elasticsearch.ssl.certificate_authority`*::
-+
---
-* Value type is <<string,string>>
-* There is no default value for this setting
---
-+
-The path to an X.509 certificate to use to validate SSL certificates when
-communicating with Kibana.
-
-*`var.elasticsearch.ssl.certificate`*::
-+
---
-* Value type is <<string,string>>
-* There is no default value for this setting
---
-+
-The path to an X.509 certificate to use for client authentication when
-communicating with Elasticsearch.
-
-*`var.elasticsearch.ssl.key`*::
-+
---
-* Value type is <<string,string>>
-* There is no default value for this setting
---
-+
-The path to the certificate key for client authentication when communicating
-with Elasticsearch.
-
-*`var.kibana.host`*::
-+
---
-* Value type is <<string,string>>
-* Default value is “localhost:5601”
---
-+
-Sets the host of the Kibana instance to import dashboards and visualizations.
-
-*`var.kibana.username`*::
-+
---
-* Value type is <<string,string>>
-* Default value is “elastic”
---
-+
-The username to authenticate to a secured Kibana instance.
-
-*`var.kibana.password`*::
-+
---
-* Value type is <<string,string>>
-* Default value is “changeme”
---
-+
-The password to authenticate to a secure Kibana instance.
-
-*`var.kibana.ssl.enabled`*::
-+
---
-* Value type is <<boolean,boolean>>
-* Default value is false
---
-+
-Enable SSL/TLS secured communication to the Kibana instance.
-
-*`var.kibana.ssl.verification_mode`*::
-+
---
-* Value type is <<string,string>>
-* Default value is "strict"
---
-+
-The hostname verification setting when communicating with Kibana. Set to
-`disable` to turn off hostname verification. Disabling this has serious security
-concerns.
-
-*`var.kibana.ssl.certificate_authority`*::
-+
---
-* Value type is <<string,string>>
-* There is no default value for this setting
---
-+
-The path to an X.509 certificate to use to validate SSL certificates when
-communicating with Kibana.
-
-*`var.kibana.ssl.certificate`*::
-+
---
-* Value type is <<string,string>>
-* There is no default value for this setting
---
-+
-The path to an X.509 certificate to use for client authentication when
-communicating with Kibana.
-
-*`var.kibana.ssl.key`*::
-+
---
-* Value type is <<string,string>>
-* There is no default value for this setting
---
-+
-The path to the certificate key for client authentication when communicating
-with Kibana.
+include::shared-module-options.asciidoc[]
