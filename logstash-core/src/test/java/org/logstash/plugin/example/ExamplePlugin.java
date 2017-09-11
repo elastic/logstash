@@ -3,17 +3,21 @@ package org.logstash.plugin.example;
 import org.logstash.plugin.ConstructingObjectParser;
 import org.logstash.plugin.Input;
 import org.logstash.plugin.Plugin;
+import org.logstash.plugin.Processor;
+
+import java.util.Collections;
+import java.util.Map;
 
 public class ExamplePlugin implements Plugin {
     private static final ConstructingObjectParser<TLSContext> TLS = new ConstructingObjectParser<>(args -> new TLSContext());
     private static final ConstructingObjectParser<ExampleInput> EXAMPLE = new ConstructingObjectParser<>(args -> new ExampleInput((int) args[0]));
+
     static {
         TLS.string("truststore", TLSContext::setTrustStore);
         //TLS.stringList("ciphers", TLSContext::setCiphers);
         //TLS.boolean("require client certificate", TLSContext::setClientCertificateRequired)
 
         EXAMPLE.integer("port");
-
         /*
          * Have a single 'tls' setting that configures an object.
          *
@@ -37,8 +41,12 @@ public class ExamplePlugin implements Plugin {
         EXAMPLE.object("tls", ExampleInput::setTLS, TLS);
     }
 
-    public ConstructingObjectParser<? extends Input> getInputs() {
-        return EXAMPLE;
+    public Map<String, ConstructingObjectParser<? extends Input>> getInputs() {
+        return Collections.singletonMap("example", EXAMPLE);
+    }
+
+    public Map<String, ConstructingObjectParser<? extends Processor>> getProcessors() {
+        return Collections.singletonMap("example", ExampleProcessor.EXAMPLE_PROCESSOR);
     }
 
 }

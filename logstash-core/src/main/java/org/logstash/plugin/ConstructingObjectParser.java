@@ -7,6 +7,10 @@ import java.util.function.Function;
 /**
  * This is idea is taken largely from Elasticsearch but is unavailable as a library, so the code exists here as well.
  *
+ * A functional class which constructs an object from a given configuration map.
+ *
+ * See ExampleInput
+ *
  * @param <Value> The object type to construct when `parse` is called.
  */
 public class ConstructingObjectParser<Value> implements Function<Map<String, Object>, Value> {
@@ -14,15 +18,11 @@ public class ConstructingObjectParser<Value> implements Function<Map<String, Obj
     private final Map<String, BiConsumer<Value, Object>> parsers = new LinkedHashMap<>();
     private final Map<String, BiConsumer<ArrayList<Object>, Object>> constructorArgs = new TreeMap<>();
 
-    private final BiConsumer<Value, Object> CONSTRUCTOR_ARG = (a, b) -> {
-        throw new UnsupportedOperationException("This function should never get called. It is a marker.");
-    };
-
     public ConstructingObjectParser(Function<Object[], Value> builder) {
         this.builder = builder;
     }
 
-    private static Integer integerTransform(Object object) {
+    public static Integer integerTransform(Object object) {
         if (object instanceof Integer) {
             return (Integer) object;
         } else if (object instanceof String) {
@@ -32,7 +32,7 @@ public class ConstructingObjectParser<Value> implements Function<Map<String, Obj
         }
     }
 
-    static String stringTransform(Object object) {
+    public static String stringTransform(Object object) {
         if (object instanceof String) {
             return (String) object;
         } else if (object instanceof Number) {
@@ -42,7 +42,7 @@ public class ConstructingObjectParser<Value> implements Function<Map<String, Obj
         }
     }
 
-    static <T> T objectTransform(Object object, ConstructingObjectParser<T> parser) {
+    public static <T> T objectTransform(Object object, ConstructingObjectParser<T> parser) {
         if (object instanceof Map) {
             // XXX: Fix this unchecked cast.
             return parser.apply((Map<String, Object>) object);
@@ -112,12 +112,12 @@ public class ConstructingObjectParser<Value> implements Function<Map<String, Obj
         declareConstructorArg(name, (t) -> objectTransform(t, parser));
     }
 
-    private <T> void declareField(String name, BiConsumer<Value, T> consumer, Function<Object, T> transform) {
+    public <T> void declareField(String name, BiConsumer<Value, T> consumer, Function<Object, T> transform) {
         BiConsumer<Value, Object> objConsumer = (value, object) -> consumer.accept(value, transform.apply(object));
         parsers.put(name, objConsumer);
     }
 
-    private <T> void declareConstructorArg(String name, Function<Object, T> transform) {
+    public <T> void declareConstructorArg(String name, Function<Object, T> transform) {
         int position = constructorArgs.size();
         BiConsumer<ArrayList<Object>, Object> objConsumer = (array, object) -> array.add(position, transform.apply(object));
         constructorArgs.put(name, objConsumer);
@@ -150,7 +150,7 @@ public class ConstructingObjectParser<Value> implements Function<Map<String, Obj
             }
 
             BiConsumer<Value, Object> parser = parsers.get(name);
-            assert parser != null
+            assert parser != null;
 
             parser.accept(value, entry.getValue());
         }

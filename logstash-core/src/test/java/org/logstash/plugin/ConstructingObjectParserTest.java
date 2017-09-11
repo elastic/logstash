@@ -18,7 +18,8 @@ public class ConstructingObjectParserTest {
         @Test
         public void testExample() {
             Plugin example = new ExamplePlugin();
-            ConstructingObjectParser<? extends Input> inputConstructor = example.getInputs();
+            Map<String, ConstructingObjectParser<? extends Input>> inputs = example.getInputs();
+            ConstructingObjectParser<? extends Input> inputConstructor = inputs.get("example");
 
             Map<String, Object> config = new TreeMap<>();
             config.put("port", 5000);

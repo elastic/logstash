@@ -1,18 +1,20 @@
 package org.logstash.plugin;
 
+import java.util.Map;
+
 public interface Plugin {
     // register hooks
     // additional settings
 
-    default ConstructingObjectParser<? extends Input> getInputs() {
+    default Map<String, ConstructingObjectParser<? extends Input>> getInputs() {
         return null;
     }
 
-    default ConstructingObjectParser<? extends Processor> getProcessors() {
+    default Map<String, ConstructingObjectParser<? extends Processor>> getProcessors() {
         return null;
     }
 
-    default ConstructingObjectParser<? extends Output> getOutputs() {
+    default Map<String, ConstructingObjectParser<? extends Output>> getOutputs() {
         return null;
     }
 }
