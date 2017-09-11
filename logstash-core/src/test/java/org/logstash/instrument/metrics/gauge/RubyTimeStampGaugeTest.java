@@ -1,16 +1,14 @@
 package org.logstash.instrument.metrics.gauge;
 
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.logstash.RubyUtil;
 import org.logstash.Timestamp;
-import org.logstash.ext.JrubyTimestampExtLibrary.RubyTimestamp;
+import org.logstash.ext.JrubyTimestampExtLibrary;
 import org.logstash.instrument.metrics.MetricType;
-import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.when;
 
 /**
  * Unit tests for {@link RubyTimeStampGauge}
@@ -18,20 +16,17 @@ import static org.mockito.Mockito.when;
 @RunWith(MockitoJUnitRunner.class)
 public class RubyTimeStampGaugeTest {
 
-    @Mock
-    private RubyTimestamp rubyTimestamp;
+    private static final Timestamp TIMESTAMP = new Timestamp();
 
-    private final Timestamp timestamp = new Timestamp();
-
-    @Before
-    public void _setup() {
-        when(rubyTimestamp.getTimestamp()).thenReturn(timestamp);
-    }
+    private static final JrubyTimestampExtLibrary.RubyTimestamp RUBY_TIMESTAMP =
+        JrubyTimestampExtLibrary.RubyTimestamp.newRubyTimestamp(
+            RubyUtil.RUBY, TIMESTAMP
+        );
 
     @Test
     public void getValue() {
-        RubyTimeStampGauge gauge = new RubyTimeStampGauge("bar", rubyTimestamp);
-        assertThat(gauge.getValue()).isEqualTo(rubyTimestamp.getTimestamp());
+        RubyTimeStampGauge gauge = new RubyTimeStampGauge("bar", RUBY_TIMESTAMP);
+        assertThat(gauge.getValue()).isEqualTo(RUBY_TIMESTAMP.getTimestamp());
         assertThat(gauge.getType()).isEqualTo(MetricType.GAUGE_RUBYTIMESTAMP);
 
         //Null initialize
@@ -43,8 +38,8 @@ public class RubyTimeStampGaugeTest {
     @Test
     public void set() {
         RubyTimeStampGauge gauge = new RubyTimeStampGauge("bar");
-        gauge.set(rubyTimestamp);
-        assertThat(gauge.getValue()).isEqualTo(rubyTimestamp.getTimestamp());
+        gauge.set(RUBY_TIMESTAMP);
+        assertThat(gauge.getValue()).isEqualTo(RUBY_TIMESTAMP.getTimestamp());
         assertThat(gauge.getType()).isEqualTo(MetricType.GAUGE_RUBYTIMESTAMP);
     }
 }

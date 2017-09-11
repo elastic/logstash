@@ -20,9 +20,10 @@ import org.logstash.ext.JrubyEventExtLibrary;
 
 import java.io.IOException;
 
-public class JrubyAckedBatchExtLibrary implements Library {
+public final class JrubyAckedBatchExtLibrary implements Library {
 
-    public void load(Ruby runtime, boolean wrap) throws IOException {
+    @Override
+    public void load(Ruby runtime, boolean wrap) {
         RubyModule module = runtime.defineModule(RubyUtil.LS_MODULE_NAME);
 
         RubyClass clazz = runtime.defineClassUnder("AckedBatch", runtime.getObject(), new ObjectAllocator() {
@@ -35,7 +36,7 @@ public class JrubyAckedBatchExtLibrary implements Library {
     }
 
     @JRubyClass(name = "AckedBatch")
-    public static class RubyAckedBatch extends RubyObject {
+    public static final class RubyAckedBatch extends RubyObject {
         private static final long serialVersionUID = -3118949118637372130L;
         private Batch batch;
 
