@@ -1,5 +1,6 @@
 package org.logstash;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import java.util.Date;
 import org.joda.time.DateTime;
@@ -9,14 +10,14 @@ import org.joda.time.LocalDateTime;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
 import org.logstash.ackedqueue.Queueable;
-import org.logstash.json.TimestampSerializer;
 
 /**
  * Wrapper around a {@link DateTime} with Logstash specific serialization behaviour.
  * This class is immutable and thread-safe since its only state is held in a final {@link DateTime}
  * reference and {@link DateTime} which itself is immutable and thread-safe.
  */
-@JsonSerialize(using = TimestampSerializer.class)
+@JsonSerialize(using = ObjectMappers.TimestampSerializer.class)
+@JsonDeserialize(using = ObjectMappers.TimestampDeserializer.class)
 public final class Timestamp implements Comparable<Timestamp>, Queueable {
 
     // all methods setting the time object must set it in the UTC timezone
@@ -54,12 +55,8 @@ public final class Timestamp implements Comparable<Timestamp>, Queueable {
         return new Timestamp();
     }
 
-    public String toIso8601() {
-        return iso8601Formatter.print(this.time);
-    }
-
     public String toString() {
-        return toIso8601();
+        return iso8601Formatter.print(this.time);
     }
 
     public long usec() {
@@ -71,6 +68,11 @@ public final class Timestamp implements Comparable<Timestamp>, Queueable {
     @Override
     public int compareTo(Timestamp other) {
         return time.compareTo(other.time);
+    }
+    
+    @Override
+    public boolean equals(final Object other) {
+        return other instanceof Timestamp && time.equals(((Timestamp) other).time);
     }
 
     @Override

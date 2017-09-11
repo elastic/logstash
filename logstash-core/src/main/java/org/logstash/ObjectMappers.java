@@ -1,11 +1,16 @@
 package org.logstash;
 
 import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializerProvider;
+import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
+import com.fasterxml.jackson.databind.jsontype.TypeSerializer;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.ser.std.NonTypedScalarSerializerBase;
+import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import com.fasterxml.jackson.dataformat.cbor.CBORFactory;
 import com.fasterxml.jackson.dataformat.cbor.CBORGenerator;
 import java.io.IOException;
@@ -15,6 +20,7 @@ import org.jruby.RubyFixnum;
 import org.jruby.RubyFloat;
 import org.jruby.RubyString;
 import org.jruby.RubySymbol;
+import org.logstash.ext.JrubyTimestampExtLibrary;
 
 public final class ObjectMappers {
 
@@ -31,7 +37,7 @@ public final class ObjectMappers {
 
     public static final ObjectMapper CBOR_MAPPER = new ObjectMapper(
         new CBORFactory().configure(CBORGenerator.Feature.WRITE_MINIMAL_INTS, false)
-    ).registerModule(RUBY_SERIALIZERS);
+    ).registerModule(RUBY_SERIALIZERS).enableDefaultTyping(ObjectMapper.DefaultTyping.NON_FINAL);
 
     /**
      * {@link JavaType} for the {@link HashMap} that {@link Event} is serialized as.
@@ -88,7 +94,7 @@ public final class ObjectMappers {
         extends NonTypedScalarSerializerBase<RubyFloat> {
 
         RubyFloatSerializer() {
-            super(RubyFloat.class, true);
+            super(RubyFloat.class);
         }
 
         @Override
@@ -106,7 +112,7 @@ public final class ObjectMappers {
         extends NonTypedScalarSerializerBase<RubyBoolean> {
 
         RubyBooleanSerializer() {
-            super(RubyBoolean.class, true);
+            super(RubyBoolean.class);
         }
 
         @Override
@@ -131,6 +137,75 @@ public final class ObjectMappers {
         public void serialize(final RubyFixnum value, final JsonGenerator generator,
             final SerializerProvider provider) throws IOException {
             generator.writeNumber(value.getLongValue());
+        }
+    }
+
+    /**
+     * Serializer for {@link Timestamp} since Jackson can't handle that type natively, so we
+     * simply serialize it as if it were a {@code String} and wrap it in type arguments, so that
+     * deserialization happens via {@link ObjectMappers.TimestampDeserializer}.
+     */
+    public static final class TimestampSerializer extends StdSerializer<Timestamp> {
+
+        TimestampSerializer() {
+            super(Timestamp.class);
+        }
+
+        @Override
+        public void serialize(final Timestamp value, final JsonGenerator jgen, 
+            final SerializerProvider provider) throws IOException {
+            jgen.writeString(value.toString());
+        }
+
+        @Override
+        public void serializeWithType(final Timestamp value, final JsonGenerator jgen, 
+            final SerializerProvider serializers, final TypeSerializer typeSer) throws IOException {
+            typeSer.writeTypePrefixForScalar(value, jgen, Timestamp.class);
+            jgen.writeString(value.toString());
+            typeSer.writeTypeSuffixForScalar(value, jgen);
+        }
+    }
+
+    public static final class TimestampDeserializer extends StdDeserializer<Timestamp> {
+
+        TimestampDeserializer() {
+            super(Timestamp.class);
+        }
+
+        @Override
+        public Timestamp deserialize(final JsonParser p, final DeserializationContext ctxt)
+            throws IOException {
+            return new Timestamp(p.getText());
+        }
+    }
+
+    /**
+     * Serializer for {@link JrubyTimestampExtLibrary.RubyTimestamp} that serializes it exactly the
+     * same way {@link ObjectMappers.TimestampSerializer} serializes
+     * {@link Timestamp} to ensure consistent serialization across Java and Ruby
+     * representation of {@link Timestamp}.
+     */
+    public static final class RubyTimestampSerializer
+        extends StdSerializer<JrubyTimestampExtLibrary.RubyTimestamp> {
+
+        RubyTimestampSerializer() {
+            super(JrubyTimestampExtLibrary.RubyTimestamp.class);
+        }
+
+        @Override
+        public void serialize(final JrubyTimestampExtLibrary.RubyTimestamp value,
+            final JsonGenerator jgen, final SerializerProvider provider) throws IOException {
+            jgen.writeString(value.getTimestamp().toString());
+        }
+
+        @Override
+        public void serializeWithType(final JrubyTimestampExtLibrary.RubyTimestamp value,
+            final JsonGenerator jgen, final SerializerProvider serializers,
+            final TypeSerializer typeSer)
+            throws IOException {
+            typeSer.writeTypePrefixForScalar(value, jgen, Timestamp.class);
+            jgen.writeObject(value.getTimestamp());
+            typeSer.writeTypeSuffixForScalar(value, jgen);
         }
     }
 }

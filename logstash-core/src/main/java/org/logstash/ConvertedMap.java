@@ -38,6 +38,10 @@ public final class ConvertedMap extends IdentityHashMap<String, Object> {
             }
         };
 
+    ConvertedMap() {
+        super(10);
+    }
+
     ConvertedMap(final int size) {
         super(size);
     }

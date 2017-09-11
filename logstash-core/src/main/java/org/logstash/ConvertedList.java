@@ -12,6 +12,10 @@ public final class ConvertedList extends ArrayList<Object> {
 
     private static final long serialVersionUID = 1396291343595074238L;
 
+    ConvertedList() {
+        super(10);
+    }
+
     ConvertedList(final int size) {
         super(size);
     }

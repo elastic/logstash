@@ -47,7 +47,7 @@ public class DLQEntryTest {
         byte[] bytes = expected.serialize();
         DLQEntry actual = DLQEntry.deserialize(bytes);
         assertJsonEquals(actual.getEvent().toJson(), event.toJson());
-        assertThat(actual.getEntryTime().toIso8601(), equalTo(expected.getEntryTime().toIso8601()));
+        assertThat(actual.getEntryTime().toString(), equalTo(expected.getEntryTime().toString()));
         assertThat(actual.getPluginType(), equalTo("type"));
         assertThat(actual.getPluginId(), equalTo("id"));
         assertThat(actual.getReason(), equalTo("reason"));
