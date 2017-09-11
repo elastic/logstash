@@ -1,12 +1,16 @@
 package org.logstash;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import org.jruby.RubyBignum;
 import org.jruby.RubyBoolean;
 import org.jruby.RubyFixnum;
 import org.jruby.RubyFloat;
 import org.jruby.RubyString;
 import org.jruby.RubySymbol;
+import org.jruby.ext.bigdecimal.RubyBigDecimal;
 import org.logstash.bivalues.BiValue;
 import org.logstash.bivalues.BiValues;
 import org.logstash.ext.JrubyTimestampExtLibrary;
@@ -57,11 +61,17 @@ public final class Javafier {
         converters.put(Long.class, Valuefier.IDENTITY);
         converters.put(Integer.class, Valuefier.IDENTITY);
         converters.put(Boolean.class, Valuefier.IDENTITY);
+        converters.put(BigInteger.class, Valuefier.IDENTITY);
+        converters.put(BigDecimal.class, Valuefier.IDENTITY);
         converters.put(Timestamp.class, Valuefier.IDENTITY);
         // Explicitly casting to RubyString or RubySymbol when we know its type for sure is faster
         // than having the JVM look up the type.
         converters.put(RubyString.class, value -> ((RubyString) value).toString());
         converters.put(RubySymbol.class, value -> ((RubySymbol) value).toString());
+        converters.put(RubyBignum.class, value -> ((RubyBignum) value).getBigIntegerValue());
+        converters.put(
+            RubyBigDecimal.class, value -> ((RubyBigDecimal) value).getBigDecimalValue()
+        );
         converters.put(RubyBoolean.class, value -> ((RubyBoolean) value).isTrue());
         converters.put(BiValue.class, value -> ((BiValue<?, ?>) value).javaValue());
         converters.put(RubyFixnum.class, value -> ((RubyFixnum) value).getLongValue());
