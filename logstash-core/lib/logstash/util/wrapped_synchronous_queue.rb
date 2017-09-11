@@ -253,10 +253,6 @@ module LogStash; module Util
         @queue = queue.queue
       end
 
-      def get_new_batch
-        []
-      end
-
       def push(event)
         @queue.put(event)
       end
