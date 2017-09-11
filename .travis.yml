@@ -1,6 +1,4 @@
-sudo: required
-services:
-  - docker
+sudo: false
 language: ruby
 cache:
   directories:

@@ -1,0 +1,143 @@
+#!/bin/bash
+
+IMAGE_NAME=lsinteg
+
+if [[ -z "$PROJECT" ]]; then 
+  PROJECT="ls_integ"
+fi
+
+echo "Using docker-compose project '$PROJECT'"
+
+RUN_PREFIX=docker
+LOGSTASH_VERSION=$(cat versions.yml  | egrep '^logstash:' | cut -d' ' -f 2)
+
+function startdev {
+  # If container exists, start it
+  docker ps -a | awk '{print $NF}' | grep lsdev
+  if [[ $? -eq 0 ]]; then
+    docker start lsdev
+  else # Otherwise run it
+    #-agentlib:jdwp=transport=dt_socket,server=y,address=8000,suspend=n
+    docker run \
+      -v "$PWD:/mnt/host:delegated" \
+      -e 'LS_JAVA_OPTS=-Xmx1500M -Xms1500M' \
+      -e 'INTEGRATION=true' \
+      -e "JRUBY_OPTS=-Xcompile.invokedynamic=false" \
+      -d \
+      --name lsdev \
+      $IMAGE_NAME \
+      bash -c ' tail -f /dev/null'
+  fi
+  # Speeds up gem install etc.
+  docker exec lsdev rsync /mnt/host/vendor /opt/logstash/vendor
+}
+
+function rsyncdev {
+  docker exec lsdev rsync --delete --exclude .git --exclude logs --exclude build --exclude .gradle --exclude vendor -r /mnt/host/ /opt/logstash/ 
+}
+
+function build {
+  docker build -t $IMAGE_NAME .
+}
+
+INTEGRATION_COMMAND="time $RUN_PREFIX run -t --rm $IMAGE_NAME ci/integration_run.sh"
+
+case "$1" in
+  "build") 
+    docker stop lsdev && \
+    docker rm lsdev && \
+    build
+  ;;
+  "ci_integration")
+    echo "Rebuilding images just in case"
+    build && \
+    $INTEGRATION_COMMAND ${@:2}
+  ;;
+  "ci_integration_parallel")
+    if [[ "$4" != "false" ]]; then # Build skip flag
+      build
+    fi
+    pushd qa/integration
+    spec_find_cmd='find specs -name *_spec.rb'
+    total_specs=$(expr $($spec_find_cmd | wc -l))
+    parallelism=$2
+    parallelism_index=$3
+
+    if [[ -z "$parallelism" || -z "$parallelism_index" ]]; then
+      echo "You must invoke with parallelism and index parameters. ex: ci/docker_tool ci_parallel_integration 4 1"
+      exit 1
+    fi
+
+    run_num_specs=$(expr $total_specs / $(expr $parallelism))
+    start_point=$(expr $run_num_specs \* $(expr $parallelism_index))
+    tail_back=$(expr $total_specs - $start_point)
+
+    if expr $(expr $parallelism_index + 1) = $parallelism; then
+      tail_back=$(expr $run_num_specs + $(expr $total_specs % $(expr $parallelism)))
+      run_num_specs=$tail_back
+    fi
+
+    echo "Running $run_num_specs specs for index "$parallelism_index" in $parallelism containers simultaneously"
+    echo "Total Specs: $total_specs"
+
+    matched_specs=$($spec_find_cmd | sort | tail -n $tail_back | head -n $run_num_specs | xargs -n 999999 echo)
+    popd
+    $INTEGRATION_COMMAND $matched_specs
+  ;;
+  "ci_integration_2x")
+    build
+    ci/docker_tool ci_integration_parallel 2 0 false &
+    ci/docker_tool ci_integration_parallel 2 1 false &
+
+    FAILED=0
+    for job in `jobs -p`
+    do
+    echo $job
+      wait $job || let "FAIL+=1"
+    done
+
+    if [[ "$FAILED" != "0" ]]; then
+      exit 1
+    fi
+    echo "Both jobs succeeded!"
+  ;;
+  "ci_cli")
+    build
+    $RUN_PREFIX run -it --rm $IMAGE_NAME bash -l
+  ;;
+  "dev_stop")
+    $RUN_PREFIX stop lsdev
+   ;; 
+  "dev_cli")
+    startdev && \
+    echo "Don't forget to rsync" && \
+    #TODO: This should search for running containers and connect to them, starting a new one only if needed
+    time $RUN_PREFIX exec -it lsdev bash -c "$INTEGRATION_SETUP && mkdir -p build && ln -sf /opt/logstash build/logstash-$LOGSTASH_VERSION-SNAPSHOT && bash -l"
+  ;;
+  "dev_rsync")
+    rsyncdev
+  ;;
+  "dev_cleanup")
+    docker stop lsdev
+    docker rm $(docker ps -aq)
+    build
+  ;;
+  *)
+    echo "Commands prefixed with 'ci' run in unnamed containers and are intended to be used on the CI server or on a dev box to simulate the CI server as accurately as possible."
+    echo "Example commands: "
+    echo "# Run integration test as it would be run on CI server"
+    echo "ci/docker_tool ci_integration"
+    echo "# Start a CLI prompt with the container setup as it would be for ci_integration"
+    echo "ci/docker_run ci_cli"
+    echo "# Start a container named '$DEV_CONTAINER_NAME' that sticks around for experimenting with tests"
+    echo "ci/docker_run ci_cli"
+    echo "# Rsync the folder contents to the dev container. Must be done to synchronize any local changes"
+    echo "ci/docker_run rsync"
+    echo "# Destroy the dev container to achieve a clean state"
+    echo "ci/docker_run dev_cleanup"
+    echo "# Run the full CI suite in 2 threads"
+    echo "ci/docker_run ci_integration_2x"
+    echo "# Run the CI suite in three parts. Useful for splitting up tests among jenkins build jobs"
+    echo "ci/docker_run ci_parallel 3 0; ci/docker_run ci_parallel 3 1; ci/docker_run ci_parallel 3 2"
+  ;;
+esac
