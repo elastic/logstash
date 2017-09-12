@@ -69,7 +69,7 @@ module LogStash module Modules class LogStashConfig
     password = @settings["var.elasticsearch.password"]
     lines = ["hosts => #{hosts}", "index => \"#{index}\""]
     lines.push(user ? "user => \"#{user}\"" : nil)
-    lines.push(password ? "password => \"#{password}\"" : nil)
+    lines.push(password ? "password => \"#{password_value(password)}\"" : nil)
     lines.push(type_string ? "document_type => #{type_string}" : nil)
     lines.push("ssl => #{@settings.fetch('var.elasticsearch.ssl.enabled', false)}")
     if cacert = @settings["var.elasticsearch.ssl.certificate_authority"]
@@ -82,6 +82,10 @@ elasticsearch {
     manage_template => false
   }
 CONF
+  end
+
+  def password_value(password)
+    password.is_a?(LogStash::Util::Password) ? password.value : password
   end
 
   def config_string
