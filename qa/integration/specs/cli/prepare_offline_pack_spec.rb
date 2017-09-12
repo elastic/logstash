@@ -4,12 +4,7 @@ require_relative "../../framework/settings"
 require_relative "../../services/logstash_service"
 require_relative "../../framework/helpers"
 
-# These are segmented into a separate tag that MUST be run separately from any docker tests
-# The reason they break the Docker API and that in turn even breaks tests not using Docker 
-# is that the Docker API has a global singleton Docker container set up as soon as it's 
-# required that acts in the background and will err out if the internet is down
-# See https://github.com/elastic/logstash/issues/7160#issue-229902725
-describe "CLI > logstash-plugin prepare-offline-pack", :offline => true do
+describe "CLI > logstash-plugin prepare-offline-pack" do
   before(:all) do
     @fixture = Fixture.new(__FILE__)
     @logstash_plugin = @fixture.get_service("logstash").plugin_cli

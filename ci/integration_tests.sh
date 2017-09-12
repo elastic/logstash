@@ -35,33 +35,22 @@ elif [[ $1 == "split" ]]; then
 
     if [[ $2 == 0 ]]; then
        echo "Running the first half of integration specs: $specs0"
-       rspec $specs0
+       bundle exec rspec $specs0
     elif [[ $2 == 1 ]]; then
        echo "Running the second half of integration specs: $specs1"
-       rspec $specs1
+       bundle exec rspec $specs1
     else
        echo "Error, must specify 0 or 1 after the split. For example ci/integration_tests.sh split 0"
        exit 1
     fi
-
-elif [[ $1 == "offline" ]]; then
-    echo "Running all offline integration tests"
-    rspec --tag offline
 
 elif [[ !  -z  $@  ]]; then
     echo "Running integration tests 'rspec $@'"
     rspec $@
 
 else
-    echo "Running all online integration tests"
-    rspec --tag ~offline
-    echo "Running all offline integration tests"
-    rspec --tag offline
+    echo "Running all of the integration tests"
+    bundle exec rspec
 fi
-
-
-
-
-
 
 #Note - ensure that the -e flag is set to properly set the $? status if any command fails
