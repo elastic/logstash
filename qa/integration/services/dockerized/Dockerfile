@@ -16,6 +16,11 @@ USER tester
 ENV WORKDIR /home/tester
 WORKDIR $WORKDIR
 
+# Generate TLS certificates that can be used by services.
+ENV CERTIFICATES_DIR $WORKDIR/certificates
+RUN mkdir -p $CERTIFICATES_DIR && \
+openssl req -subj '/CN=localhost/' -x509 -days $((100 * 365)) -batch -nodes -newkey rsa:2048 -keyout $CERTIFICATES_DIR/certificate.key -out $CERTIFICATES_DIR/certificate.crt
+
 # Script with routines that can be used in derived images.
 ADD helpers.sh .
 
