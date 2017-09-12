@@ -4,38 +4,37 @@ package org.logstash.instrument.witness.pipeline;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.logstash.RubyUtil;
 import org.logstash.Timestamp;
 import org.logstash.ext.JrubyTimestampExtLibrary;
-import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.when;
 
 /**
  * Unit tests for {@link ReloadWitness}
  */
-@RunWith(MockitoJUnitRunner.class)
 public class ReloadWitnessTest {
 
     private ReloadWitness witness;
-    private Timestamp timestamp = new Timestamp();
-    @Mock
-    JrubyTimestampExtLibrary.RubyTimestamp rubyTimestamp;
+
+    private static final Timestamp TIMESTAMP = new Timestamp();
+
+    private static final JrubyTimestampExtLibrary.RubyTimestamp RUBY_TIMESTAMP =
+        JrubyTimestampExtLibrary.RubyTimestamp.newRubyTimestamp(
+            RubyUtil.RUBY, TIMESTAMP
+        );
 
     @Before
     public void setup() {
         witness = new ReloadWitness();
-        when(rubyTimestamp.getTimestamp()).thenReturn(timestamp);
     }
 
     @Test
     public void testSuccess() {
         witness.success();
-        witness.lastSuccessTimestamp(rubyTimestamp);
+        witness.lastSuccessTimestamp(RUBY_TIMESTAMP);
         assertThat(witness.snitch().successes()).isEqualTo(1);
-        assertThat(witness.snitch().lastSuccessTimestamp()).isEqualTo(timestamp);
+        assertThat(witness.snitch().lastSuccessTimestamp()).isEqualTo(TIMESTAMP);
         witness.successes(99);
         assertThat(witness.snitch().successes()).isEqualTo(100);
     }
@@ -43,9 +42,9 @@ public class ReloadWitnessTest {
     @Test
     public void testFailure() {
         witness.failure();
-        witness.lastFailureTimestamp(rubyTimestamp);
+        witness.lastFailureTimestamp(RUBY_TIMESTAMP);
         assertThat(witness.snitch().failures()).isEqualTo(1);
-        assertThat(witness.snitch().lastFailureTimestamp()).isEqualTo(timestamp);
+        assertThat(witness.snitch().lastFailureTimestamp()).isEqualTo(TIMESTAMP);
         witness.failures(99);
         assertThat(witness.snitch().failures()).isEqualTo(100);
     }
@@ -72,19 +71,21 @@ public class ReloadWitnessTest {
     @Test
     public void testSerializeSuccess() throws Exception {
         witness.success();
-        witness.lastSuccessTimestamp(rubyTimestamp);
+        witness.lastSuccessTimestamp(RUBY_TIMESTAMP);
         String json = witness.asJson();
-        assertThat(json).isEqualTo("{\"reloads\":{\"last_error\":{\"message\":null,\"backtrace\":null},\"successes\":1,\"last_success_timestamp\":\"" + timestamp.toString() +
-                "\",\"last_failure_timestamp\":null,\"failures\":0}}");
+        assertThat(json).isEqualTo("{\"reloads\":{\"last_error\":{\"message\":null,\"backtrace\":null},\"successes\":1,\"last_success_timestamp\":\"" 
+            + TIMESTAMP.toString() + "\",\"last_failure_timestamp\":null,\"failures\":0}}");
     }
 
     @Test
     public void testSerializeFailure() throws Exception {
         witness.failure();
-        witness.lastFailureTimestamp(rubyTimestamp);
+        witness.lastFailureTimestamp(RUBY_TIMESTAMP);
         String json = witness.asJson();
-        assertThat(json).isEqualTo("{\"reloads\":{\"last_error\":{\"message\":null,\"backtrace\":null},\"successes\":0,\"last_success_timestamp\":null," +
-                "\"last_failure_timestamp\":\"" + timestamp.toString() + "\",\"failures\":1}}");
+        assertThat(json).isEqualTo(
+            "{\"reloads\":{\"last_error\":{\"message\":null,\"backtrace\":null},\"successes\":0,\"last_success_timestamp\":null," +
+                "\"last_failure_timestamp\":\"" + TIMESTAMP.toString() + "\",\"failures\":1}}"
+        );
     }
 
     @Test

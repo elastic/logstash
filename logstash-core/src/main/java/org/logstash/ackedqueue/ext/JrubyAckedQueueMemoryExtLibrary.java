@@ -5,12 +5,10 @@ import org.jruby.Ruby;
 import org.jruby.RubyBoolean;
 import org.jruby.RubyClass;
 import org.jruby.RubyFixnum;
-import org.jruby.RubyModule;
 import org.jruby.RubyObject;
 import org.jruby.anno.JRubyClass;
 import org.jruby.anno.JRubyMethod;
 import org.jruby.runtime.Arity;
-import org.jruby.runtime.ObjectAllocator;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.jruby.runtime.load.Library;
@@ -23,18 +21,15 @@ import org.logstash.ackedqueue.io.ByteBufferPageIO;
 import org.logstash.ackedqueue.io.MemoryCheckpointIO;
 import org.logstash.ext.JrubyEventExtLibrary;
 
-public class JrubyAckedQueueMemoryExtLibrary implements Library {
+public final class JrubyAckedQueueMemoryExtLibrary implements Library {
 
-    public void load(Ruby runtime, boolean wrap) throws IOException {
-        RubyModule module = runtime.defineModule(RubyUtil.LS_MODULE_NAME);
-
-        RubyClass clazz = runtime.defineClassUnder("AckedMemoryQueue", runtime.getObject(), new ObjectAllocator() {
-            public IRubyObject allocate(Ruby runtime, RubyClass rubyClass) {
-                return new RubyAckedMemoryQueue(runtime, rubyClass);
-            }
-        }, module);
-
-        clazz.defineAnnotatedMethods(RubyAckedMemoryQueue.class);
+    @Override
+    public void load(Ruby runtime, boolean wrap) {
+        runtime.defineClassUnder(
+            "AckedMemoryQueue", runtime.getObject(),
+            JrubyAckedQueueMemoryExtLibrary.RubyAckedMemoryQueue::new,
+            runtime.defineModule(RubyUtil.LS_MODULE_NAME)
+        ).defineAnnotatedMethods(JrubyAckedQueueMemoryExtLibrary.RubyAckedMemoryQueue.class);
     }
 
     // TODO:
@@ -42,8 +37,11 @@ public class JrubyAckedQueueMemoryExtLibrary implements Library {
     // are assumed to be logstash Event.
 
 
-    @JRubyClass(name = "AckedMemoryQueue", parent = "Object")
-    public static class RubyAckedMemoryQueue extends RubyObject {
+    @JRubyClass(name = "AckedMemoryQueue")
+    public static final class RubyAckedMemoryQueue extends RubyObject {
+
+        private static final long serialVersionUID = 1L;
+
         private Queue queue;
 
         public RubyAckedMemoryQueue(Ruby runtime, RubyClass klass) {
