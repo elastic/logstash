@@ -205,7 +205,7 @@ class LogstashService < Service
   end
 
   def lock_file
-    File.join(@logstash_home, "Gemfile.jruby-2.3.lock")
+    File.join(@logstash_home, "Gemfile.lock")
   end
 
   class PluginCli
