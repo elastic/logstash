@@ -3,15 +3,11 @@ package org.logstash.benchmark.cli;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.InetAddress;
 import java.net.URI;
-import java.net.UnknownHostException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.NoSuchAlgorithmException;
 import java.util.AbstractMap;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 import joptsimple.OptionException;
@@ -19,7 +15,6 @@ import joptsimple.OptionParser;
 import joptsimple.OptionSet;
 import joptsimple.OptionSpec;
 import joptsimple.OptionSpecBuilder;
-import org.apache.commons.lang3.SystemUtils;
 import org.logstash.benchmark.cli.cases.ApacheLogsComplex;
 import org.logstash.benchmark.cli.cases.Case;
 import org.logstash.benchmark.cli.cases.GeneratorToStdout;
@@ -46,7 +41,7 @@ public final class Main {
      * CLI Entrypoint.
      * @param args Cli Args
      */
-    public static void main(final String... args) throws Exception {
+    public static void main(final String... args) throws IOException, NoSuchAlgorithmException {
         final OptionParser parser = new OptionParser();
         final OptionSpecBuilder gitbuilder =
             parser.accepts(UserInput.GIT_VERSION_PARAM, UserInput.GIT_VERSION_HELP);
@@ -82,6 +77,14 @@ public final class Main {
         final OptionSpec<Integer> repeats = parser.accepts(
             UserInput.REPEAT_PARAM, UserInput.REPEAT_PARAM_HELP
         ).withRequiredArg().ofType(Integer.class).defaultsTo(1).forHelp();
+        final OptionSpec<Integer> workers = parser.accepts(
+            UserInput.LS_WORKER_THREADS, UserInput.LS_WORKER_THREADS_HELP
+        ).withRequiredArg().ofType(Integer.class)
+            .defaultsTo(UserInput.LS_WORKER_THREADS_DEFAULT).forHelp();
+        final OptionSpec<Integer> batchsize = parser.accepts(
+            UserInput.LS_BATCH_SIZE, UserInput.LS_BATCH_SIZE_HELP
+        ).withRequiredArg().ofType(Integer.class)
+            .defaultsTo(UserInput.LS_BATCHSIZE_DEFAULT).forHelp();
         final OptionSet options;
         try {
             options = parser.parse(args);
@@ -105,9 +108,13 @@ public final class Main {
         settings.setProperty(
             LsBenchSettings.INPUT_DATA_REPEAT, String.valueOf(options.valueOf(repeats))
         );
+        final BenchmarkMeta runConfig = new BenchmarkMeta(
+            options.valueOf(testcase), version, type, options.valueOf(workers),
+            options.valueOf(batchsize)
+        );
         execute(
-            new UserOutput(System.out), settings, options.valueOf(testcase),
-            options.valueOf(pwd).toPath(), version, type, options.valueOf(esout)
+            new UserOutput(System.out), settings, options.valueOf(pwd).toPath(), runConfig,
+            options.valueOf(esout)
         );
     }
 
@@ -115,20 +122,26 @@ public final class Main {
      * Programmatic Entrypoint.
      * @param output Output Printer
      * @param settings Properties
-     * @param test String identifier of the testcase to run
      * @param cwd Working Directory to run in and write cache files to
-     * @param version Version of Logstash to benchmark
-     * @param type Type of Logstash version to benchmark
+     * @param runConfig Logstash Settings
      * @param esout Elastic Search URL (empty string is interpreted as not using ES output)
-     * @throws Exception On Failure
+     * @throws IOException On Failure
+     * @throws NoSuchAlgorithmException On Failure
      */
     public static void execute(final UserOutput output, final Properties settings,
-        final String test, final Path cwd, final String version, final LsVersionType type,
-        final String esout)
-        throws Exception {
+        final Path cwd, final BenchmarkMeta runConfig, final String esout)
+        throws IOException, NoSuchAlgorithmException {
         output.printBanner();
         output.printLine();
+        final String version = runConfig.getVersion();
         output.green(String.format("Benchmarking Version: %s", version));
+        output.green(
+            String.format(
+                "Logstash Parameters: -w %d -b %d", runConfig.getWorkers(),
+                runConfig.getBatchsize()
+            )
+        );
+        final String test = runConfig.getTestcase();
         output.green(
             String.format(
                 "Running Test Case: %s (x%d)", test,
@@ -138,6 +151,7 @@ public final class Main {
         output.printLine();
         Files.createDirectories(cwd);
         final LogstashInstallation logstash;
+        final LsVersionType type = runConfig.getVtype();
         if (type == LsVersionType.GIT) {
             logstash = LsBenchLsSetup.logstashFromGit(
                 cwd.toAbsolutePath().toString(), version, JRubyInstallation.bootstrapJruby(cwd)
@@ -146,8 +160,8 @@ public final class Main {
             logstash =
                 LsBenchLsSetup.setupLS(cwd.toAbsolutePath().toString(), version, type, output);
         }
-        try (final DataStore store = setupDataStore(esout, test, version, type)) {
-            final Case testcase = setupTestCase(store, logstash, cwd, settings, test, output);
+        try (final DataStore store = setupDataStore(esout, runConfig)) {
+            final Case testcase = setupTestCase(store, logstash, cwd, settings, runConfig, output);
             output.printStartTime();
             final long start = System.currentTimeMillis();
             final AbstractMap<LsMetricStats, ListStatistics> stats = testcase.run();
@@ -163,43 +177,30 @@ public final class Main {
     }
 
     private static Case setupTestCase(final DataStore store, final LogstashInstallation logstash,
-        final Path cwd, final Properties settings, final String test, final UserOutput output)
+        final Path cwd, final Properties settings, final BenchmarkMeta runConfig, final UserOutput output)
         throws IOException, NoSuchAlgorithmException {
         final Case testcase;
+        final String test = runConfig.getTestcase();
         if (GeneratorToStdout.IDENTIFIER.equalsIgnoreCase(test)) {
-            testcase = new GeneratorToStdout(store, logstash, settings);
+            testcase = new GeneratorToStdout(store, logstash, settings, runConfig);
         } else if (ApacheLogsComplex.IDENTIFIER.equalsIgnoreCase(test)) {
-            testcase = new ApacheLogsComplex(store, logstash, cwd, settings, output);
+            testcase = new ApacheLogsComplex(store, logstash, cwd, settings, output, runConfig);
         } else {
             throw new IllegalArgumentException(String.format("Unknown test case %s", test));
         }
         return testcase;
     }
 
-    private static DataStore setupDataStore(final String elastic, final String test,
-        final String version, final LsVersionType vtype) throws UnknownHostException {
+    private static DataStore setupDataStore(final String elastic, final BenchmarkMeta config) {
         if (elastic.isEmpty()) {
             return DataStore.NONE;
         } else {
             final URI elasticsearch = URI.create(elastic);
             return new DataStore.ElasticSearch(
                 elasticsearch.getHost(), elasticsearch.getPort(), elasticsearch.getScheme(),
-                meta(test, version, vtype)
+                config.asMap()
             );
         }
-    }
-
-    private static Map<String, Object> meta(final String testcase, final String version,
-        final LsVersionType vtype) throws UnknownHostException {
-        final Map<String, Object> result = new HashMap<>();
-        result.put("test_name", testcase);
-        result.put("os_name", SystemUtils.OS_NAME);
-        result.put("os_version", SystemUtils.OS_VERSION);
-        result.put("host_name", InetAddress.getLocalHost().getHostName());
-        result.put("cpu_cores", Runtime.getRuntime().availableProcessors());
-        result.put("version_type", vtype);
-        result.put("version", version);
-        return result;
     }
 
     private static Properties loadSettings() throws IOException {
