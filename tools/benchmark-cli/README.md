@@ -31,6 +31,10 @@ Option                           Description
 --local-path <String>            Path to the root of a local Logstash           
                                    distribution.                                
                                   E.g. `/opt/logstash`                          
+--ls-batch-size <Integer>        Logstash batch size (-b argument) to           
+                                   configure. (default: 128)                    
+--ls-workers <Integer>           Number of Logstash worker threads (-w          
+                                   argument) to configure. (default: 2)         
 --repeat-data <Integer>          Sets how often the test's dataset should be    
                                    run. (default: 1)                            
 --testcase <String>              Currently available test cases are 'baseline'  

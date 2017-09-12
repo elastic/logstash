@@ -5,6 +5,7 @@ import java.util.EnumMap;
 import java.util.Properties;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
+import org.logstash.benchmark.cli.BenchmarkMeta;
 import org.logstash.benchmark.cli.DataStore;
 import org.logstash.benchmark.cli.LogstashInstallation;
 import org.logstash.benchmark.cli.LsBenchSettings;
@@ -29,8 +30,9 @@ public final class GeneratorToStdout implements Case {
     private final DataStore store;
 
     public GeneratorToStdout(final DataStore store, final LogstashInstallation logstash,
-        final Properties settings) {
+        final Properties settings, final BenchmarkMeta lsSettings) {
         this.logstash = logstash;
+        logstash.configure(lsSettings);
         this.store = store;
         configuration =
             String.format(

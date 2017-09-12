@@ -34,6 +34,20 @@ public final class UserInput {
     public static final String TEST_CASE_HELP =
         "Currently available test cases are 'baseline' and 'apache'.";
 
+    public static final String LS_WORKER_THREADS = "ls-workers";
+
+    public static final String LS_BATCH_SIZE = "ls-batch-size";
+
+    public static final int LS_BATCHSIZE_DEFAULT = 128;
+
+    public static final String LS_BATCH_SIZE_HELP =
+        "Logstash batch size (-b argument) to configure.";
+
+    public static final int LS_WORKER_THREADS_DEFAULT = 2;
+
+    public static final String LS_WORKER_THREADS_HELP =
+        "Number of Logstash worker threads (-w argument) to configure.";
+
     /**
      * Version parameter to use for Logstash build downloaded from elastic.co.
      */
