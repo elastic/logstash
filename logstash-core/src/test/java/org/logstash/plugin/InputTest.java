@@ -2,6 +2,7 @@ package org.logstash.plugin;
 
 import org.junit.Test;
 import org.logstash.Event;
+import org.logstash.Util;
 
 import java.util.Collection;
 import java.util.Collections;

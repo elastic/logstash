@@ -2,6 +2,7 @@ package org.logstash.plugin;
 
 import org.junit.Test;
 import org.logstash.Event;
+import org.logstash.Util;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -10,7 +11,6 @@ import java.util.LinkedList;
 import static org.junit.Assert.assertEquals;
 
 public class ProcessorTest {
-    private int eventCount = Util.random.nextInt(100);
     static Collection<Event> generateEvents(int count) {
         Collection<Event> events = new LinkedList<>();
         for (long i = 0; i < count; i++) {
@@ -33,10 +33,11 @@ public class ProcessorTest {
     }
 
     private Processor processor = new TestFilter();
+    private int eventCount = Util.random.nextInt(100);
+    private Collection<Event> events = generateEvents(eventCount);
 
     @Test
     public void testFilter() {
-        Collection<Event> events = generateEvents(eventCount);
         Collection<Event> newEvents = processor.process(events);
 
         assertEquals(null, newEvents);

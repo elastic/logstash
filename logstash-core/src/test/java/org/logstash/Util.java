@@ -1,4 +1,4 @@
-package org.logstash.plugin;
+package org.logstash;
 
 import java.util.Random;
 
