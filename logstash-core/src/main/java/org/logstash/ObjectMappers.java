@@ -40,7 +40,8 @@ public final class ObjectMappers {
     private static final SimpleModule CBOR_DESERIALIZERS =
         new SimpleModule("CborRubyDeserializers")
             .addDeserializer(RubyBigDecimal.class, new RubyBigDecimalDeserializer())
-            .addDeserializer(RubyBignum.class, new RubyBignumDeserializer());
+            .addDeserializer(RubyBignum.class, new RubyBignumDeserializer())
+            .addDeserializer(RubyString.class, new RubyStringDeserializer());
 
     public static final ObjectMapper JSON_MAPPER = 
         new ObjectMapper().registerModule(RUBY_SERIALIZERS);
