@@ -11,10 +11,12 @@ rvm:
 jdk:
   - oraclejdk8
 env:
-  - INTEGRATION=false SPEC_OPTS="--order rand --format documentation" JRUBY_OPTS='-Xcompile.invokedynamic=false'
-  - INTEGRATION=true SPEC_OPTS="--order rand --format documentation" JRUBY_OPTS='-Xcompile.invokedynamic=false'
-  - INTEGRATION=false FEATURE_FLAG=persistent_queues SPEC_OPTS="--order rand --format documentation" JRUBY_OPTS='-Xcompile.invokedynamic=false'
-  - INTEGRATION=true FEATURE_FLAG=persistent_queues SPEC_OPTS="--order rand --format documentation" JRUBY_OPTS='-Xcompile.invokedynamic=false'
+  - INTEGRATION=false SPEC_OPTS="--order rand --format documentation --profile --fail-fast" JRUBY_OPTS='-Xcompile.invokedynamic=false'
+  - INTEGRATION=true DEPENDENT=false SPEC_OPTS="--order rand --format documentation --profile --fail-fast" JRUBY_OPTS='-Xcompile.invokedynamic=false'
+  - INTEGRATION=true DEPENDENT=true SPEC_OPTS="--order rand --format documentation --profile --fail-fast" JRUBY_OPTS='-Xcompile.invokedynamic=false'
+  - INTEGRATION=false FEATURE_FLAG=persistent_queues SPEC_OPTS="--order rand --format documentation --profile --fail-fast" JRUBY_OPTS='-Xcompile.invokedynamic=false'
+  - INTEGRATION=true DEPENDENT=true FEATURE_FLAG=persistent_queues SPEC_OPTS="--order rand --format documentation --profile --fail-fast" JRUBY_OPTS='-Xcompile.invokedynamic=false'
+  - INTEGRATION=true DEPENDENT=false FEATURE_FLAG=persistent_queues SPEC_OPTS="--order rand --format documentation --profile --fail-fast" JRUBY_OPTS='-Xcompile.invokedynamic=false'
 before_install:
   - sudo apt-get update && sudo apt-get install -y docker-ce
   - sudo service docker stop
@@ -29,7 +31,11 @@ script:
   - |+
       if [ "$INTEGRATION" == "true" ]; then
         ci/travis_integration_install.sh
-        ci/travis_integration_run.sh;
+        if [ "DEPENDENT" == "true" ]; then
+          ci/travis_integration_run_dependent.sh
+        else
+          ci/travis_integration_run.sh
+        fi
       else
         rake test:core
       fi
