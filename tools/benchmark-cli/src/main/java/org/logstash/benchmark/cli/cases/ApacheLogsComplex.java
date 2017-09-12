@@ -11,6 +11,7 @@ import java.util.Properties;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 import org.apache.commons.io.IOUtils;
+import org.logstash.benchmark.cli.BenchmarkMeta;
 import org.logstash.benchmark.cli.DataStore;
 import org.logstash.benchmark.cli.LogstashInstallation;
 import org.logstash.benchmark.cli.LsBenchSettings;
@@ -46,14 +47,15 @@ public final class ApacheLogsComplex implements Case {
     private final int repeats;
 
     public ApacheLogsComplex(final DataStore store, final LogstashInstallation logstash,
-        final Path cwd, final Properties settings, final UserOutput output)
-        throws IOException, NoSuchAlgorithmException {
+        final Path cwd, final Properties settings, final UserOutput output,
+        final BenchmarkMeta runConfig) throws IOException, NoSuchAlgorithmException {
         data = cwd.resolve("data_apache").resolve("apache_access_logs").toFile();
         ensureDatafile(
             data.toPath().getParent().toFile(),
             settings.getProperty(LsBenchSettings.APACHE_DATASET_URL), output
         );
         this.logstash = logstash;
+        logstash.configure(runConfig);
         this.store = store;
         repeats = Integer.parseInt(settings.getProperty(LsBenchSettings.INPUT_DATA_REPEAT));
     }

@@ -14,7 +14,10 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 
 public final class LsBenchDownloader {
-    
+
+    private LsBenchDownloader() {
+    }
+
     public static void downloadDecompress(final File file, final String url)
         throws IOException, NoSuchAlgorithmException {
         if (file.exists()) {
