@@ -5,9 +5,14 @@ require "pluginmanager/util"
 
 namespace "test" do
 
-  desc "run the java tests"
+  desc "run the java unit tests"
   task "core-java" do
-    exit(1) unless system './gradlew clean test --info'
+    exit(1) unless system './gradlew clean test'
+  end
+
+  desc "run the ruby unit tests"
+  task "core-ruby" do
+    exit 1 unless system(*default_spec_command)
   end
 
   desc "run all core specs"
