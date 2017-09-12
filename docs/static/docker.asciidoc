@@ -10,7 +10,7 @@ https://github.com/elastic/logstash-docker/tree/{branch}[GitHub].
 The images are shipped with https://www.elastic.co/products/x-pack[X-Pack]
 installed.
 
-=== Pulling the image
+==== Pulling the image
 Obtaining Logstash for Docker is as simple as issuing a +docker
 pull+ command against the Elastic Docker registry.
 
