@@ -1,6 +1,8 @@
 package org.logstash;
 
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -28,10 +30,16 @@ public final class EventTest {
         e.setField("symbol", symbol);
         inner.put("innerQuux", 42.42);
         e.setField("baz", inner);
+        final BigInteger bigint = BigInteger.valueOf(Long.MAX_VALUE).multiply(BigInteger.TEN);
+        final BigDecimal bigdecimal = BigDecimal.valueOf(10L);
+        e.setField("biginteger", bigint);
+        e.setField("bigdecimal", bigdecimal);
         e.setField("[@metadata][foo]", 42L);
         byte[] binary = e.serialize();
         Event er = Event.deserialize(binary);
         assertEquals(symbol.toString(), er.getField("symbol"));
+        assertEquals(bigint, er.getField("biginteger"));
+        assertEquals(bigdecimal, er.getField("bigdecimal"));
         assertEquals(42L, er.getField("foo"));
         assertEquals(42L, er.getField("bar"));
         assertEquals(42L, er.getField("[baz][innerFoo]"));

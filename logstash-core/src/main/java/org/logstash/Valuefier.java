@@ -1,11 +1,14 @@
 package org.logstash;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import org.joda.time.DateTime;
 import org.jruby.RubyArray;
+import org.jruby.RubyBignum;
 import org.jruby.RubyBoolean;
 import org.jruby.RubyFixnum;
 import org.jruby.RubyFloat;
@@ -13,6 +16,7 @@ import org.jruby.RubyHash;
 import org.jruby.RubyString;
 import org.jruby.RubySymbol;
 import org.jruby.RubyTime;
+import org.jruby.ext.bigdecimal.RubyBigDecimal;
 import org.jruby.java.proxies.ArrayJavaProxy;
 import org.jruby.java.proxies.ConcreteJavaProxy;
 import org.jruby.java.proxies.JavaProxy;
@@ -107,10 +111,18 @@ public final class Valuefier {
         converters.put(ConvertedMap.class, IDENTITY);
         converters.put(ConvertedList.class, IDENTITY);
         converters.put(RubyBoolean.class, IDENTITY);
+        converters.put(RubyBignum.class, IDENTITY);
+        converters.put(RubyBigDecimal.class, IDENTITY);
         converters.put(BiValue.class, IDENTITY);
         converters.put(String.class, input -> RubyUtil.RUBY.newString((String) input));
         converters.put(Float.class, FLOAT_CONVERTER);
         converters.put(Double.class, FLOAT_CONVERTER);
+        converters.put(
+            BigInteger.class, value -> RubyBignum.newBignum(RubyUtil.RUBY, (BigInteger) value)
+        );
+        converters.put(
+            BigDecimal.class, value -> new RubyBigDecimal(RubyUtil.RUBY, (BigDecimal) value)
+        );
         converters.put(Long.class, LONG_CONVERTER);
         converters.put(Integer.class, LONG_CONVERTER);
         converters.put(Boolean.class, input -> RubyUtil.RUBY.newBoolean((Boolean) input));
