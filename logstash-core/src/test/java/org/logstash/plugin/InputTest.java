@@ -2,7 +2,7 @@ package org.logstash.plugin;
 
 import org.junit.Test;
 import org.logstash.Event;
-import org.logstash.Util;
+import org.logstash.TestUtil;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -14,7 +14,7 @@ import static org.junit.Assert.assertFalse;
 
 public class InputTest {
     private Collection<Collection<Event>> batches = new LinkedList<>();
-    private int batchCount = Util.random.nextInt(10) + 1;
+    private int batchCount = TestUtil.random.nextInt(10) + 1;
 
     @Test
     public void testInput() {
@@ -30,7 +30,7 @@ public class InputTest {
         @Override
         public void run(Consumer<Collection<Event>> consumer) {
             for (int b = 0; b < batchCount; b++) {
-                int eventCountPerBatch = Util.random.nextInt(100) + 1;
+                int eventCountPerBatch = TestUtil.random.nextInt(100) + 1;
                 Collection<Event> events = new LinkedList<>();
                 for (int i = 0; i < eventCountPerBatch; i++) {
                     Event e = new Event();

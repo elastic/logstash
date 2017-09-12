@@ -2,7 +2,7 @@ package org.logstash.plugin;
 
 import org.junit.Test;
 import org.logstash.Event;
-import org.logstash.Util;
+import org.logstash.TestUtil;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -33,7 +33,7 @@ public class ProcessorTest {
     }
 
     private Processor processor = new TestFilter();
-    private int eventCount = Util.random.nextInt(100);
+    private int eventCount = TestUtil.random.nextInt(100);
     private Collection<Event> events = generateEvents(eventCount);
 
     @Test
