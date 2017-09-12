@@ -13,7 +13,7 @@ public class ProcessorTest {
     private int eventCount = Util.random.nextInt(100);
     static Collection<Event> generateEvents(int count) {
         Collection<Event> events = new LinkedList<>();
-        for (int i = 0; i < count; i++) {
+        for (long i = 0; i < count; i++) {
             Event event = new Event();
             event.setField("message", "hello world");
             event.setField("i", i);
@@ -41,9 +41,9 @@ public class ProcessorTest {
 
         assertEquals(null, newEvents);
 
-        int i = 0;
+        long i = 0;
         for (Event event : events) {
-            assertEquals(event.getField("i"), i);
+            assertEquals(i, event.getField("i"));
             i++;
         }
     }
