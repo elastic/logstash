@@ -42,8 +42,6 @@ describe "Test Dead Letter Queue" do
     it 'should index all documents' do
       es_service = @fixture.get_service("elasticsearch")
       es_client = es_service.get_client
-      # Wait for es client to come up
-      sleep(20)
       # test if all data was indexed by ES, but first refresh manually
       es_client.indices.refresh
 
