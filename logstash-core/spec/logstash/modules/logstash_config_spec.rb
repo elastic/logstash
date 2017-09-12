@@ -3,7 +3,7 @@ require "logstash/modules/logstash_config"
 
 describe LogStash::Modules::LogStashConfig do
   let(:mod) { instance_double("module", :directory => Stud::Temporary.directory, :module_name => "testing") }
-  let(:settings) { {"var.logstash.testing.pants" => "fancy" }}
+  let(:settings) { {"var.logstash.testing.pants" => "fancy", "var.elasticsearch.password" => LogStash::Util::Password.new('correct_horse_battery_staple') }}
   subject { described_class.new(mod, settings) }
 
   describe "configured inputs" do
@@ -33,6 +33,12 @@ describe LogStash::Modules::LogStashConfig do
   describe "array to logstash array string" do
     it "return an escaped string" do
       expect(subject.array_to_string(["hello", "ninja"])).to eq("['hello', 'ninja']")
+    end
+  end
+
+  describe 'elastic_search_config' do
+    it 'should put the password in correctly' do
+      expect(subject.elasticsearch_output_config()).to include("password => \"correct_horse_battery_staple\"")
     end
   end
 
