@@ -52,8 +52,7 @@ public final class ObjectMappers {
      * Serializer for {@link RubyString} since Jackson can't handle that type natively, so we
      * simply serialize it as if it were a {@link String}.
      */
-    private static final class RubyStringSerializer
-        extends NonTypedScalarSerializerBase<RubyString> {
+    private static final class RubyStringSerializer extends StdSerializer<RubyString> {
 
         RubyStringSerializer() {
             super(RubyString.class, true);
@@ -64,6 +63,27 @@ public final class ObjectMappers {
             final SerializerProvider provider)
             throws IOException {
             generator.writeString(value.asJavaString());
+        }
+
+        @Override
+        public void serializeWithType(final RubyString value, final JsonGenerator jgen,
+            final SerializerProvider serializers, final TypeSerializer typeSer) throws IOException {
+            typeSer.writeTypePrefixForScalar(value, jgen, RubyString.class);
+            jgen.writeString(value.toString());
+            typeSer.writeTypeSuffixForScalar(value, jgen);
+        }
+    }
+
+    public static final class RubyStringDeserializer extends StdDeserializer<RubyString> {
+
+        RubyStringDeserializer() {
+            super(RubyString.class);
+        }
+
+        @Override
+        public RubyString deserialize(final JsonParser p, final DeserializationContext ctxt)
+            throws IOException {
+            return RubyString.newString(RubyUtil.RUBY, p.getText());
         }
     }
 
