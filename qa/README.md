@@ -25,7 +25,7 @@ take a while depending on your internet speed).
 ### Running Tests
 
 It is possible to run the full suite of the acceptance test with the codebase by 
-running the command `ci/ci_acceptance.sh`, this command will generate the artifacts, bootstrap
+running the command `ci/acceptance_tests.sh`, this command will generate the artifacts, bootstrap
 the VM and run the tests.
 
 This test are based on a collection of Vagrant defined VM's where the
