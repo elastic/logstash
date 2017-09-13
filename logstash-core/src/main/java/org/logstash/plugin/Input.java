@@ -3,6 +3,8 @@ package org.logstash.plugin;
 import org.logstash.Event;
 
 import java.util.Collection;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Executors;
 import java.util.function.Consumer;
 
 /**
@@ -29,4 +31,14 @@ public interface Input {
      * @param consumer Send batches of events with consumer.accept(batch).
      */
     void run(Consumer<Collection<Event>> consumer);
+
+    /**
+     * Return this Input as a Callable for use with an ExecutorService.
+     *
+     * @param consumer the
+     * @return A Callable which wraps the `run` method.
+     */
+    default Callable<Void> toCallable(Consumer<Collection<Event>> consumer) {
+        return Executors.callable(() -> run(consumer), null);
+    }
 }
