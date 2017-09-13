@@ -53,6 +53,10 @@ specify a different path for the files:
 path.dead_letter_queue: "path/to/data/dead_letter_queue"
 -------------------------------------------------------------------------------
 
+
+NOTE: You may not use the same `dead_letter_queue` path for two different
+Logstash instances.
+
 ===== File Rotation
 
 Dead letter queues have a built-in file rotation policy that manages the file
