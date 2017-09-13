@@ -66,7 +66,7 @@ public class QueueRWBenchmark {
     private ExecutorService exec;
 
     @Setup
-    public void setUp() throws IOException, CloneNotSupportedException {
+    public void setUp() throws IOException {
         final Settings settingsPersisted = settings(true);
         EVENT.setField("Foo", "Bar");
         EVENT.setField("Foo1", "Bar1");

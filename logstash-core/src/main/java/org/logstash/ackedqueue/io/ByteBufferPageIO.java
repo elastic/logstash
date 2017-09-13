@@ -1,25 +1,24 @@
 package org.logstash.ackedqueue.io;
 
-import java.io.IOException;
 import java.nio.ByteBuffer;
 
 public class ByteBufferPageIO extends AbstractByteBufferPageIO {
 
     private final ByteBuffer buffer;
 
-    public ByteBufferPageIO(int pageNum, int capacity, String path) throws IOException {
+    public ByteBufferPageIO(int pageNum, int capacity, String path) {
         this(capacity, new byte[0]);
     }
 
-    public ByteBufferPageIO(int capacity) throws IOException {
+    public ByteBufferPageIO(int capacity) {
         this(capacity, new byte[0]);
     }
 
-    public ByteBufferPageIO(int capacity, byte[] initialBytes) throws IOException {
+    public ByteBufferPageIO(int capacity, byte[] initialBytes) {
         super(0, capacity);
 
         if (initialBytes.length > capacity) {
-            throw new IOException("initial bytes greater than capacity");
+            throw new IllegalArgumentException("initial bytes greater than capacity");
         }
 
         this.buffer = ByteBuffer.allocate(capacity);

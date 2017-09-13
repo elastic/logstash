@@ -37,14 +37,14 @@ public class MemoryCheckpointIO implements CheckpointIO {
     }
 
     @Override
-    public Checkpoint write(String fileName, int pageNum, int firstUnackedPageNum, long firstUnackedSeqNum, long minSeqNum, int elementCount) throws IOException {
+    public Checkpoint write(String fileName, int pageNum, int firstUnackedPageNum, long firstUnackedSeqNum, long minSeqNum, int elementCount) {
         Checkpoint checkpoint = new Checkpoint(pageNum, firstUnackedPageNum, firstUnackedSeqNum, minSeqNum, elementCount);
         write(fileName, checkpoint);
         return checkpoint;
     }
 
     @Override
-    public void write(String fileName, Checkpoint checkpoint) throws IOException {
+    public void write(String fileName, Checkpoint checkpoint) {
         Map<String, Checkpoint> ns = sources.get(dirPath);
         if (ns == null) {
             ns = new HashMap<>();
