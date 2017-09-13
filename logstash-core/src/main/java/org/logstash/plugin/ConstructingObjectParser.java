@@ -3,13 +3,12 @@ package org.logstash.plugin;
 import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
- * This is idea is taken largely from Elasticsearch but is unavailable as a library, so the code exists here as well.
- *
  * A functional class which constructs an object from a given configuration map.
  *
- * See ExampleInput
+ * History: This is idea is taken largely from Elasticsearch's ConstructingObjectParser
  *
  * @param <Value> The object type to construct when `parse` is called.
  */
@@ -138,7 +137,7 @@ public class ConstructingObjectParser<Value> implements Function<Map<String, Obj
      *  ... will know how to build an object for the above "example" input plugin.
      */
     public Value apply(Map<String, Object> config) {
-        rejectUnknownFields();
+        rejectUnknownFields(config.keySet());
         Value value = construct(config);
 
         // Now call all the object setters/etc
@@ -158,13 +157,9 @@ public class ConstructingObjectParser<Value> implements Function<Map<String, Obj
         return value;
     }
 
-    private void rejectUnknownFields() {
+    private void rejectUnknownFields(Set<String> configNames) {
         // Check for any unknown parameters.
-        Set<String> unknown = new TreeSet<>();
-        Set<String> known = new TreeSet<>();
-        known.addAll(parsers.keySet());
-        known.addAll(constructorArgs.keySet());
-        unknown.removeAll(known);
+        List<String> unknown = configNames.stream().filter(name -> !(parsers.containsKey(name) || constructorArgs.containsKey(name))).collect(Collectors.toList());
 
         if (!unknown.isEmpty()) {
             throw new IllegalArgumentException("Unknown settings " + unknown);
@@ -172,8 +167,8 @@ public class ConstructingObjectParser<Value> implements Function<Map<String, Obj
     }
 
     private Value construct(Map<String, Object> config) {
-        // XXX: Implement constructor building.
         ArrayList<Object> args = new ArrayList<>(constructorArgs.size());
+
         // Constructor arguments. Any constructor argument is a *required* setting.
         for (Map.Entry<String, BiConsumer<ArrayList<Object>, Object>> argInfo : constructorArgs.entrySet()) {
             String name = argInfo.getKey();
