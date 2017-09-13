@@ -51,7 +51,7 @@ public class ByteBufferPageIOTest {
         return io;
     }
 
-    private static ByteBufferPageIO newPageIO(int capacity, byte[] bytes) throws IOException {
+    private static ByteBufferPageIO newPageIO(int capacity, byte[] bytes) {
         return new ByteBufferPageIO(capacity, bytes);
     }
 

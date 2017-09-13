@@ -185,7 +185,7 @@ public abstract class AbstractByteBufferPageIO implements PageIO {
     }
 
     @Override
-    public void write(byte[] bytes, long seqNum) throws IOException {
+    public void write(byte[] bytes, long seqNum) {
         write(bytes, seqNum, bytes.length, checksum(bytes));
     }
 

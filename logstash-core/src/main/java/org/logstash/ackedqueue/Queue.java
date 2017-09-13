@@ -740,7 +740,7 @@ public class Queue implements Closeable {
         }
     }
 
-    protected Page firstUnreadPage() throws IOException {
+    protected Page firstUnreadPage() {
         // look at head page if no unreadTailPages
         return (this.unreadTailPages.isEmpty()) ? (this.headPage.isFullyRead() ? null : this.headPage) : this.unreadTailPages.get(0);
     }
