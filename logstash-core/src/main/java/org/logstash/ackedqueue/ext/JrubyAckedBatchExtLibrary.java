@@ -17,7 +17,6 @@ import org.logstash.ackedqueue.Batch;
 import org.logstash.Event;
 import org.logstash.ackedqueue.Queueable;
 import org.logstash.ext.JrubyEventExtLibrary;
-
 import java.io.IOException;
 
 public final class JrubyAckedBatchExtLibrary implements Library {
@@ -84,7 +83,7 @@ public final class JrubyAckedBatchExtLibrary implements Library {
             try {
                 this.batch.close();
             } catch (IOException e) {
-                throw context.runtime.newIOErrorFromException(e);
+                throw RubyUtil.newRubyIOError(context.runtime, e);
             }
 
             return context.nil;
