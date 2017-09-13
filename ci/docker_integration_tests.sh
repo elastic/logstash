@@ -1,4 +1,5 @@
 #!/bin/bash -i
+#Note - ensure that the -e flag is NOT set, and explicitly check the $? status to allow for clean up
 
 if [ -z "$branch_specifier" ]; then
     # manual
@@ -18,4 +19,3 @@ exit_code=$?
 echo "exiting with code: '$exit_code'"
 exit $exit_code #preserve the exit code from the test run
 
-#Note - ensure that the -e flag is NOT set, and explicitly check the $? status to allow for clean up

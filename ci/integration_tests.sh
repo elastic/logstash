@@ -51,4 +51,3 @@ else
     echo "Running all integration tests"
     bundle exec rspec
 fi
-

@@ -40,4 +40,3 @@ else
   echo "Running test:core"
   rake test:core
 fi
-
