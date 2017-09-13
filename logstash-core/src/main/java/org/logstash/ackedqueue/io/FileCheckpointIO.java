@@ -83,7 +83,7 @@ public class FileCheckpointIO implements CheckpointIO {
     }
 
     @Override
-    public void purge() throws IOException {
+    public void purge() {
         // TODO: dir traversal and delete all checkpoints?
         throw new UnsupportedOperationException("purge() is not supported");
     }

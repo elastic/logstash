@@ -13,7 +13,7 @@ public class ByteBufferStreamInput extends StreamInput {
     }
 
     @Override
-    public int read() throws IOException {
+    public int read() {
         if (!buffer.hasRemaining()) {
             return -1;
         }
@@ -29,7 +29,7 @@ public class ByteBufferStreamInput extends StreamInput {
     }
 
     @Override
-    public int read(byte[] b, int off, int len) throws IOException {
+    public int read(byte[] b, int off, int len) {
         if (!buffer.hasRemaining()) {
             return -1;
         }
@@ -59,7 +59,7 @@ public class ByteBufferStreamInput extends StreamInput {
     }
 
     @Override
-    public void reset() throws IOException {
+    public void reset() {
         buffer.reset();
     }
 
@@ -68,7 +68,7 @@ public class ByteBufferStreamInput extends StreamInput {
     }
 
     @Override
-    public int available() throws IOException {
+    public int available() {
         return buffer.remaining();
     }
 
@@ -83,7 +83,7 @@ public class ByteBufferStreamInput extends StreamInput {
     }
 
     @Override
-    public void close() throws IOException {
+    public void close() {
     }
 }
 
