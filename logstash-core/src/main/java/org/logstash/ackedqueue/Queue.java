@@ -382,6 +382,7 @@ public class Queue implements Closeable {
                     // not trigger a checkpoint creation in itself
                     TailPage tailPage = new TailPage(this.headPage);
                     tailPage.purge();
+                    currentByteSize -= tailPage.getPageIO().getCapacity();
                 } else {
                     // beheading includes checkpoint+fsync if required
                     TailPage tailPage = this.headPage.behead();
