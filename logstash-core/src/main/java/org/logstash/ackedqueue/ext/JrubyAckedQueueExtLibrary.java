@@ -128,7 +128,7 @@ public final class JrubyAckedQueueExtLibrary implements Library {
             try {
                 this.queue.open();
             } catch (IOException e) {
-                throw context.runtime.newIOErrorFromException(e);
+                throw RubyUtil.newRubyIOError(context.runtime, e);
             }
 
             return context.nil;
@@ -145,7 +145,7 @@ public final class JrubyAckedQueueExtLibrary implements Library {
             try {
                 seqNum = this.queue.write(((JrubyEventExtLibrary.RubyEvent) event).getEvent());
             } catch (IOException e) {
-                throw context.runtime.newIOErrorFromException(e);
+                throw RubyUtil.newRubyIOError(context.runtime, e);
             }
 
             return context.runtime.newFixnum(seqNum);
@@ -159,7 +159,7 @@ public final class JrubyAckedQueueExtLibrary implements Library {
             try {
                 b = this.queue.readBatch(RubyFixnum.num2int(limit), RubyFixnum.num2int(timeout));
             } catch (IOException e) {
-                throw context.runtime.newIOErrorFromException(e);
+                throw RubyUtil.newRubyIOError(context.runtime, e);
             }
 
             // TODO: return proper Batch object
@@ -184,7 +184,7 @@ public final class JrubyAckedQueueExtLibrary implements Library {
             try {
                 this.queue.close();
             } catch (IOException e) {
-                throw context.runtime.newIOErrorFromException(e);
+                throw RubyUtil.newRubyIOError(context.runtime, e);
             }
 
             return context.nil;
