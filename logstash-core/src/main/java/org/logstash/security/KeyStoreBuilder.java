@@ -14,7 +14,9 @@ import java.security.*;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
+import java.security.cert.X509Certificate;
 import java.security.spec.InvalidKeySpecException;
+import java.util.Arrays;
 import java.util.Collection;
 
 public class KeyStoreBuilder {
@@ -31,9 +33,14 @@ public class KeyStoreBuilder {
     private final char[] IN_MEMORY_KEYSTORE_PASSPHRASE = "hurray".toCharArray();
     private boolean modified;
     private KeyStore keyStore;
-    private KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance(keyManagerAlgorithm);
+    private KeyManagerFactory keyManagerFactory;
 
     public KeyStoreBuilder() {
+        try {
+            keyManagerFactory = KeyManagerFactory.getInstance(keyManagerAlgorithm);
+        } catch (NoSuchAlgorithmException e) {
+            throw new Error("Failed to get an instance of KeyManagerFactory. Something is wrong with the jvm?", e);
+        }
         empty();
         modified = false;
     }
