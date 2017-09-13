@@ -1,3 +1,22 @@
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'org.yaml:snakeyaml:1.17'
+    }
+}
+
+plugins {
+    id "de.undercouch.download" version "3.2.0"
+}
+
+apply plugin: 'de.undercouch.download'
+
+import de.undercouch.gradle.tasks.download.Download
+import de.undercouch.gradle.tasks.download.Verify
+import org.yaml.snakeyaml.Yaml
+
 allprojects {
   group = 'org.logstash'
 
@@ -8,7 +27,6 @@ allprojects {
   project.targetCompatibility = JavaVersion.VERSION_1_8
 
   tasks.withType(JavaCompile).all {
-
       def env = System.getenv()
       boolean ci = env['CI']
 
@@ -19,7 +37,7 @@ allprojects {
   }
 
   clean {
-    delete "${projectDir}/out/"
+      delete "${projectDir}/out/"
   }
 
   //https://stackoverflow.com/questions/3963708/gradle-how-to-display-test-results-in-the-console-in-real-time
@@ -51,3 +69,54 @@ allprojects {
     }
   }
 }
+
+// fetch version from Logstash's master versions.yml file
+def versionMap = (Map) (new Yaml()).load(new File("${projectDir}/versions.yml").text)
+
+String jRubyURL
+String jRubyVersion
+String jRubySha1
+Boolean doChecksum
+
+if (versionMap["jruby-runtime-override"]) {
+    jRubyVersion = versionMap["jruby-runtime-override"]["version"]
+    jRubyURL = versionMap["jruby-runtime-override"]["url"]
+    doChecksum = false
+} else {
+    jRubyVersion = versionMap["jruby"]["version"]
+    jRubySha1 = versionMap["jruby"]["sha1"]
+    jRubyURL = "http://jruby.org.s3.amazonaws.com/downloads/${jRubyVersion}/jruby-bin-${jRubyVersion}.tar.gz"
+    doChecksum = true
+}
+
+// Tasks
+task bootstrap {}
+
+task downloadJRuby(type: Download) {
+    description "Download JRuby artifact from this specific URL: ${jRubyURL}"
+    src jRubyURL
+    onlyIfNewer true
+    dest new File("${projectDir}/vendor/_", "jruby-bin-${jRubyVersion}.tar.gz")
+}
+
+task verifyFile(dependsOn: downloadJRuby, type: Verify) {
+    description "Verify the SHA1 of the download JRuby artifact"
+    src new File("${projectDir}/vendor/_/jruby-bin-${jRubyVersion}.tar.gz")
+    algorithm 'SHA-1'
+    checksum jRubySha1
+}
+
+task downloadAndInstallJRuby(dependsOn: verifyFile, type: Copy) {
+    description "Install JRuby in the vendor directory"
+    from tarTree(downloadJRuby.dest)
+    eachFile { f ->
+      f.path = f.path.replaceFirst("^jruby-${jRubyVersion}", '')
+    }
+    exclude "**/stdlib/rdoc/**"
+    includeEmptyDirs = false
+    into "${projectDir}/vendor/jruby"
+}
+
+// If you are running a JRuby snapshot we will skip the integrity check.
+verifyFile.onlyIf { doChecksum }
+bootstrap.dependsOn downloadAndInstallJRuby
