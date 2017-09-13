@@ -12,11 +12,11 @@ import org.jruby.runtime.ObjectAllocator;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.jruby.runtime.load.Library;
+import org.logstash.RubyUtil;
 import org.logstash.ackedqueue.Batch;
 import org.logstash.Event;
 import org.logstash.ackedqueue.Queueable;
 import org.logstash.ext.JrubyEventExtLibrary;
-
 import java.io.IOException;
 
 public class JrubyAckedBatchExtLibrary implements Library {
@@ -81,7 +81,7 @@ public class JrubyAckedBatchExtLibrary implements Library {
             try {
                 this.batch.close();
             } catch (IOException e) {
-                throw context.runtime.newIOErrorFromException(e);
+                throw RubyUtil.newRubyIOError(context.runtime, e);
             }
 
             return context.nil;
