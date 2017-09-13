@@ -330,14 +330,7 @@ public class Graph implements SourceComponent, Hashable {
     }
 
     public String toString() {
-        Stream<Edge> edgesToFormat;
-        try {
-            edgesToFormat = sortedEdges();
-        } catch (InvalidIRException e) {
-            // Even if this isn't a valid graph we still need to print it
-            edgesToFormat = edges.stream();
-        }
-
+        final Stream<Edge> edgesToFormat = sortedEdges();
         String edgelessVerticesStr;
         if (this.isolatedVertices().count() > 0) {
             edgelessVerticesStr = "\n== Vertices Without Edges ==\n" +
@@ -362,20 +355,20 @@ public class Graph implements SourceComponent, Hashable {
         return this.sortedVertices;
     }
 
-    public Stream<Edge> sortedEdges() throws InvalidIRException {
+    public Stream<Edge> sortedEdges() {
         return getSortedVertices().stream().
                 flatMap(Vertex::outgoingEdges);
     }
 
-    public List<Vertex> getSortedVerticesBefore(Vertex end) throws InvalidIRException {
+    public List<Vertex> getSortedVerticesBefore(Vertex end) {
         return getSortedVerticesBetween(null, end);
     }
 
-    public List<Vertex> getSortedVerticesAfter(Vertex start) throws InvalidIRException {
+    public List<Vertex> getSortedVerticesAfter(Vertex start) {
         return getSortedVerticesBetween(start, null);
     }
 
-    public List<Vertex> getSortedVerticesBetween(Vertex start, Vertex end) throws InvalidIRException {
+    public List<Vertex> getSortedVerticesBetween(Vertex start, Vertex end) {
         List<Vertex> sortedVertices = getSortedVertices();
 
         int startIndex = start == null ? 0 : sortedVertices.indexOf(start);

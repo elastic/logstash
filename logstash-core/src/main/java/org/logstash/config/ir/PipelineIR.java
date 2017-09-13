@@ -62,7 +62,7 @@ public final class PipelineIR implements Hashable {
         return this.originalSource;
     }
 
-    public List<Vertex> getPostQueue() throws InvalidIRException {
+    public List<Vertex> getPostQueue() {
        return graph.getSortedVerticesAfter(queue);
     }
 
