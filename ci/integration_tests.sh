@@ -1,4 +1,5 @@
 #!/bin/bash -ie
+#Note - ensure that the -e flag is set to properly set the $? status if any command fails
 
 # Since we are using the system jruby, we need to make sure our jvm process
 # uses at least 1g of memory, If we don't do this we can get OOM issues when
@@ -8,10 +9,8 @@ export JRUBY_OPTS="-J-Xmx1g"
 export SPEC_OPTS="--order rand --format documentation"
 export CI=true
 
-if [[ ! -d "build" ]]; then
-    mkdir build
-fi
-rm -rf build/*
+rm -rf build && mkdir build
+
 echo "Building tar"
 rake artifact:tar
 cd build
@@ -50,7 +49,6 @@ elif [[ !  -z  $@  ]]; then
 
 else
     echo "Running all integration tests"
-    bundle exec rspec 
+    bundle exec rspec
 fi
 
-#Note - ensure that the -e flag is set to properly set the $? status if any command fails

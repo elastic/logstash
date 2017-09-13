@@ -1,6 +1,6 @@
 FROM container-registry-test.elastic.co/logstash-test/logstash-base:latest
 
-RUN mv /tmp/vendor /opt/logstash/vendor
+RUN ln -s /tmp/vendor /opt/logstash/vendor
 
 ADD gradlew /opt/logstash/gradlew
 ADD gradle/wrapper /opt/logstash/gradle/wrapper
