@@ -3,8 +3,6 @@ package org.logstash.bivalues;
 import java.util.HashMap;
 import java.util.Map;
 import org.jruby.RubyNil;
-import org.jruby.java.proxies.ConcreteJavaProxy;
-import org.jruby.java.proxies.JavaProxy;
 
 public final class BiValues {
     private BiValues() {
@@ -38,12 +36,6 @@ public final class BiValues {
     private static Map<Class<?>, BiValues.BiValueType> initCache() {
         final Map<Class<?>, BiValues.BiValueType> hm = new HashMap<>(50, 0.2F);
         hm.put(RubyNil.class, value -> NULL_BI_VALUE);
-        hm.put(ConcreteJavaProxy.class, value -> {
-            if (value instanceof JavaProxy) {
-                return new JavaProxyBiValue((JavaProxy) value);
-            }
-            return new JavaProxyBiValue(value);
-        });
         return hm;
     }
 }

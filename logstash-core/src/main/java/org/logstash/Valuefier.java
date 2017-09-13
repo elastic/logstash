@@ -2,7 +2,6 @@ package org.logstash;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -37,17 +36,20 @@ public final class Valuefier {
     private static final Valuefier.Converter LONG_CONVERTER
         = input -> RubyUtil.RUBY.newFixnum(((Number) input).longValue());
 
+    /**
+     * Unwraps a {@link JavaProxy} and passes the result to {@link Valuefier#convert(Object)}.
+     * Handles {code IRubyObject[]} as a special case, since we do only receive this type wrapped
+     * in a {@link JavaProxy} and never directly as an argument to
+     * {@link Valuefier#convert(Object)}.
+     */
     private static final Valuefier.Converter JAVAPROXY_CONVERTER =
         input -> {
             final Object obj = JavaUtil.unwrapJavaObject((JavaProxy) input);
             if (obj instanceof IRubyObject[]) {
                 return ConvertedList.newFromRubyArray((IRubyObject[]) obj);
             }
-            if (obj instanceof List) {
-                return ConvertedList.newFromList((Collection<?>) obj);
-            }
             try {
-                return BiValues.newBiValue(input);
+                return Valuefier.convert(obj);
             } catch (IllegalArgumentException e) {
                 final Class<?> cls = obj.getClass();
                 throw new IllegalArgumentException(String.format(
