@@ -14,6 +14,7 @@ import org.jruby.runtime.ObjectAllocator;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.jruby.runtime.load.Library;
+import org.logstash.RubyUtil;
 import org.logstash.Event;
 import org.logstash.ackedqueue.Batch;
 import org.logstash.ackedqueue.Queue;
@@ -130,7 +131,7 @@ public class JrubyAckedQueueExtLibrary implements Library {
             try {
                 this.queue.open();
             } catch (IOException e) {
-                throw context.runtime.newIOErrorFromException(e);
+                throw RubyUtil.newRubyIOError(context.runtime, e);
             }
 
             return context.nil;
@@ -147,7 +148,7 @@ public class JrubyAckedQueueExtLibrary implements Library {
             try {
                 seqNum = this.queue.write(((JrubyEventExtLibrary.RubyEvent) event).getEvent());
             } catch (IOException e) {
-                throw context.runtime.newIOErrorFromException(e);
+                throw RubyUtil.newRubyIOError(context.runtime, e);
             }
 
             return context.runtime.newFixnum(seqNum);
@@ -161,7 +162,7 @@ public class JrubyAckedQueueExtLibrary implements Library {
             try {
                 b = this.queue.readBatch(RubyFixnum.num2int(limit), RubyFixnum.num2int(timeout));
             } catch (IOException e) {
-                throw context.runtime.newIOErrorFromException(e);
+                throw RubyUtil.newRubyIOError(context.runtime, e);
             }
 
             // TODO: return proper Batch object
@@ -186,7 +187,7 @@ public class JrubyAckedQueueExtLibrary implements Library {
             try {
                 this.queue.close();
             } catch (IOException e) {
-                throw context.runtime.newIOErrorFromException(e);
+                throw RubyUtil.newRubyIOError(context.runtime, e);
             }
 
             return context.nil;
