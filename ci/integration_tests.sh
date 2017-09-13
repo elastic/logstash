@@ -46,11 +46,11 @@ elif [[ $1 == "split" ]]; then
 
 elif [[ !  -z  $@  ]]; then
     echo "Running integration tests 'rspec $@'"
-    rspec $@
+    bundle exec rspec $@
 
 else
-    echo "Running all of the integration tests"
-    bundle exec rspec
+    echo "Running all integration tests"
+    bundle exec rspec 
 fi
 
 #Note - ensure that the -e flag is set to properly set the $? status if any command fails
