@@ -33,7 +33,7 @@ public class ConstructingObjectParser<Value> implements Function<Map<String, Obj
     }
 
     @SuppressWarnings("WeakerAccess") // Public Interface
-    public static Integer integerTransform(Object object) {
+    public static Integer transformInteger(Object object) {
         if (object instanceof Number) {
             return ((Number) object).intValue();
         } else if (object instanceof String) {
@@ -44,7 +44,7 @@ public class ConstructingObjectParser<Value> implements Function<Map<String, Obj
     }
 
     @SuppressWarnings("WeakerAccess") // Public Interface
-    public static Float floatTransform(Object object) {
+    public static Float transformFloat(Object object) {
         if (object instanceof Number) {
             return ((Number) object).floatValue();
         } else if (object instanceof String) {
@@ -55,7 +55,7 @@ public class ConstructingObjectParser<Value> implements Function<Map<String, Obj
     }
 
     @SuppressWarnings("WeakerAccess") // Public Interface
-    public static Double doubleTransform(Object object) {
+    public static Double transformDouble(Object object) {
         if (object instanceof Number) {
             return ((Number) object).doubleValue();
         } else if (object instanceof String) {
@@ -66,7 +66,7 @@ public class ConstructingObjectParser<Value> implements Function<Map<String, Obj
     }
 
     @SuppressWarnings("WeakerAccess") // Public Interface
-    public static Long longTransform(Object object) {
+    public static Long transformLong(Object object) {
         if (object instanceof Number) {
             return ((Number) object).longValue();
         } else if (object instanceof String) {
@@ -77,7 +77,7 @@ public class ConstructingObjectParser<Value> implements Function<Map<String, Obj
     }
 
     @SuppressWarnings("WeakerAccess") // Public Interface
-    public static String stringTransform(Object object) {
+    public static String transformString(Object object) {
         if (object instanceof String) {
             return (String) object;
         } else if (object instanceof Number) {
@@ -88,7 +88,7 @@ public class ConstructingObjectParser<Value> implements Function<Map<String, Obj
     }
 
     @SuppressWarnings("WeakerAccess") // Public Interface
-    public static Boolean booleanTransform(Object object) {
+    public static Boolean transformBoolean(Object object) {
         if (object instanceof Boolean) {
             return (Boolean) object;
         } else if (object instanceof String) {
@@ -106,12 +106,25 @@ public class ConstructingObjectParser<Value> implements Function<Map<String, Obj
     }
 
     @SuppressWarnings("WeakerAccess") // Public Interface
-    public static <T> T objectTransform(Object object, ConstructingObjectParser<T> parser) {
+    public static <T> T transformObject(Object object, ConstructingObjectParser<T> parser) {
         if (object instanceof Map) {
             // XXX: Fix this unchecked cast.
             return parser.apply((Map<String, Object>) object);
         } else {
             throw new IllegalArgumentException("Object value must be a Map, but is a " + object.getClass());
+        }
+    }
+
+    @SuppressWarnings("WeakerAccess") // Public Interface
+    public static <T> List<T> transformList(Object object, Function<Object, T> transform) {
+        // XXX: Support Iterator?
+        if (object instanceof List) {
+            List<Object> list = (List<Object>) object;
+            List<T> result = new ArrayList<>(list.size());
+            list.stream().map(transform).forEach(result::add);
+            return result;
+        } else {
+            throw new IllegalArgumentException("Object value must be a List, but is a " + object.getClass());
         }
     }
 
@@ -123,7 +136,7 @@ public class ConstructingObjectParser<Value> implements Function<Map<String, Obj
      */
     @SuppressWarnings("WeakerAccess") // Public Interface
     public void declareLong(String name, BiConsumer<Value, Long> consumer) {
-        declareField(name, consumer, ConstructingObjectParser::longTransform);
+        declareField(name, consumer, ConstructingObjectParser::transformLong);
     }
 
     /**
@@ -133,7 +146,7 @@ public class ConstructingObjectParser<Value> implements Function<Map<String, Obj
      */
     @SuppressWarnings("WeakerAccess") // Public Interface
     public void declareLong(String name) {
-        declareConstructorArg(name, ConstructingObjectParser::longTransform);
+        declareConstructorArg(name, ConstructingObjectParser::transformLong);
     }
 
     /**
@@ -144,7 +157,7 @@ public class ConstructingObjectParser<Value> implements Function<Map<String, Obj
      */
     @SuppressWarnings("WeakerAccess") // Public Interface
     public void declareInteger(String name, BiConsumer<Value, Integer> consumer) {
-        declareField(name, consumer, ConstructingObjectParser::integerTransform);
+        declareField(name, consumer, ConstructingObjectParser::transformInteger);
     }
 
     /**
@@ -154,7 +167,7 @@ public class ConstructingObjectParser<Value> implements Function<Map<String, Obj
      */
     @SuppressWarnings("WeakerAccess") // Public Interface
     public void declareInteger(String name) {
-        declareConstructorArg(name, ConstructingObjectParser::integerTransform);
+        declareConstructorArg(name, ConstructingObjectParser::transformInteger);
     }
 
     /**
@@ -165,7 +178,7 @@ public class ConstructingObjectParser<Value> implements Function<Map<String, Obj
      */
     @SuppressWarnings("WeakerAccess") // Public Interface
     public void declareString(String name, BiConsumer<Value, String> consumer) {
-        declareField(name, consumer, ConstructingObjectParser::stringTransform);
+        declareField(name, consumer, ConstructingObjectParser::transformString);
     }
 
     /**
@@ -175,18 +188,35 @@ public class ConstructingObjectParser<Value> implements Function<Map<String, Obj
      */
     @SuppressWarnings("WeakerAccess") // Public Interface
     public void declareString(String name) {
-        declareConstructorArg(name, ConstructingObjectParser::stringTransform);
+        declareConstructorArg(name, ConstructingObjectParser::transformString);
     }
 
     @SuppressWarnings("WeakerAccess") // Public Interface
     public void declareFloat(String name) {
-        declareConstructorArg(name, ConstructingObjectParser::floatTransform);
+        declareConstructorArg(name, ConstructingObjectParser::transformFloat);
     }
 
     @SuppressWarnings("WeakerAccess") // Public Interface
     public <T> void declareField(String name, BiConsumer<Value, T> consumer, Function<Object, T> transform) {
         BiConsumer<Value, Object> objConsumer = (value, object) -> consumer.accept(value, transform.apply(object));
         parsers.put(name, objConsumer);
+    }
+
+    @SuppressWarnings("WeakerAccess") // Public Interface
+    public <T> void declareList(String name, BiConsumer<Value, List<T>> consumer, Function<Object, T> transform) {
+        declareField(name, consumer, object -> transformList(object, transform));
+    }
+
+    /**
+     * Declare a constructor argument which is a List
+     *
+     * @param name      The name of the argument.
+     * @param transform The object -> T transform function
+     * @param <T>       The type of object contained in the list.
+     */
+    @SuppressWarnings("WeakerAccess") // Public Interface
+    public <T> void declareList(String name, Function<Object, T> transform) {
+        declareConstructorArg(name, (object) -> transformList(object, transform));
     }
 
     @SuppressWarnings("WeakerAccess") // Public Interface
@@ -198,17 +228,17 @@ public class ConstructingObjectParser<Value> implements Function<Map<String, Obj
 
     @SuppressWarnings("WeakerAccess") // Public Interface
     public void declareFloat(String name, BiConsumer<Value, Float> consumer) {
-        declareField(name, consumer, ConstructingObjectParser::floatTransform);
+        declareField(name, consumer, ConstructingObjectParser::transformFloat);
     }
 
     @SuppressWarnings("WeakerAccess") // Public Interface
     public void declareDouble(String name) {
-        declareConstructorArg(name, ConstructingObjectParser::doubleTransform);
+        declareConstructorArg(name, ConstructingObjectParser::transformDouble);
     }
 
     @SuppressWarnings("WeakerAccess") // Public Interface
     public void declareDouble(String name, BiConsumer<Value, Double> consumer) {
-        declareField(name, consumer, ConstructingObjectParser::doubleTransform);
+        declareField(name, consumer, ConstructingObjectParser::transformDouble);
     }
 
     private Value construct(Map<String, Object> config) {
@@ -231,12 +261,12 @@ public class ConstructingObjectParser<Value> implements Function<Map<String, Obj
 
     @SuppressWarnings("WeakerAccess") // Public Interface
     public void declareBoolean(String name) {
-        declareConstructorArg(name, ConstructingObjectParser::booleanTransform);
+        declareConstructorArg(name, ConstructingObjectParser::transformBoolean);
     }
 
     @SuppressWarnings("WeakerAccess") // Public Interface
     public void declareBoolean(String name, BiConsumer<Value, Boolean> consumer) {
-        declareField(name, consumer, ConstructingObjectParser::booleanTransform);
+        declareField(name, consumer, ConstructingObjectParser::transformBoolean);
     }
 
     /**
@@ -249,7 +279,7 @@ public class ConstructingObjectParser<Value> implements Function<Map<String, Obj
      */
     @SuppressWarnings("WeakerAccess") // Public Interface
     public <T> void declareObject(String name, BiConsumer<Value, T> consumer, ConstructingObjectParser<T> parser) {
-        declareField(name, consumer, (t) -> objectTransform(t, parser));
+        declareField(name, consumer, (t) -> transformObject(t, parser));
     }
 
     /**
@@ -261,7 +291,7 @@ public class ConstructingObjectParser<Value> implements Function<Map<String, Obj
      */
     @SuppressWarnings("WeakerAccess") // Public Interface
     public <T> void declareObject(String name, ConstructingObjectParser<T> parser) {
-        declareConstructorArg(name, (t) -> objectTransform(t, parser));
+        declareConstructorArg(name, (t) -> transformObject(t, parser));
     }
 
     /**

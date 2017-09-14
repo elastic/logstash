@@ -27,6 +27,7 @@ public class ConstructingObjectParserTest {
             EXAMPLE_BUILDER.declareDouble("double", Example::setD);
             EXAMPLE_BUILDER.declareBoolean("boolean", Example::setB);
             EXAMPLE_BUILDER.declareString("string", Example::setS);
+            EXAMPLE_BUILDER.declareList("stringList", Example::setStringList, ConstructingObjectParser::transformString);
 
             // Custom transform (Object => Path)
             EXAMPLE_BUILDER.declareString("path", (example, path) -> example.setPath(Paths.get(path)));
@@ -44,6 +45,7 @@ public class ConstructingObjectParserTest {
             config.put("double", 1D);
             config.put("boolean", true);
             config.put("string", "hello");
+            config.put("stringList", Collections.singletonList("hello"));
         }
 
         @Test
@@ -55,6 +57,7 @@ public class ConstructingObjectParserTest {
             assertEquals(1L, e.getL());
             assertEquals(true, e.isB());
             assertEquals("hello", e.getS());
+            assertEquals(Collections.singletonList("hello"), e.getStringList());
         }
 
         @Test
@@ -80,7 +83,16 @@ public class ConstructingObjectParserTest {
             private long l;
             private String s;
 
+            private List<String> stringList;
             private Path path;
+
+            public List<String> getStringList() {
+                return stringList;
+            }
+
+            public void setStringList(List<String> stringList) {
+                this.stringList = stringList;
+            }
 
             Path getPath() {
                 return path;
@@ -137,11 +149,12 @@ public class ConstructingObjectParserTest {
             void setS(String s) {
                 this.s = s;
             }
+
         }
     }
 
     public static class ConstructorIntegrationTest {
-        static final ConstructingObjectParser<Example> EXAMPLE_BUILDER = new ConstructingObjectParser<>(args -> new Example((int) args[0], (float) args[1], (long) args[2], (double) args[3], (boolean) args[4], (String) args[5], (Path) args[6], (Path) args[7]));
+        static final ConstructingObjectParser<Example> EXAMPLE_BUILDER = new ConstructingObjectParser<>(args -> new Example((int) args[0], (float) args[1], (long) args[2], (double) args[3], (boolean) args[4], (String) args[5], (Path) args[6], (Path) args[7], (List<String>) args[8]));
         static final ConstructingObjectParser<Path> PATH_BUILDER = new ConstructingObjectParser<>(args -> Paths.get((String) args[0]));
 
         static {
@@ -160,6 +173,8 @@ public class ConstructingObjectParserTest {
             // Custom nested object constructor: { "object": { "path": "some path" } }
             EXAMPLE_BUILDER.declareObject("object", PATH_BUILDER);
 
+            EXAMPLE_BUILDER.declareList("stringList", ConstructingObjectParser::transformString);
+
         }
 
         private final Map<String, Object> config = new LinkedHashMap<>();
@@ -173,6 +188,7 @@ public class ConstructingObjectParserTest {
             config.put("string", "hello");
             config.put("path", "path1");
             config.put("object", Collections.singletonMap("path", "path2"));
+            config.put("stringList", Collections.singletonList("hello"));
         }
 
         @Test
@@ -186,6 +202,8 @@ public class ConstructingObjectParserTest {
             assertEquals("hello", e.getS());
             assertEquals(Paths.get("path1"), e.getP1());
             assertEquals(Paths.get("path2"), e.getP2());
+
+            assertEquals(Collections.singletonList("hello"), e.getStringList());
         }
 
         private static class Example {
@@ -200,7 +218,9 @@ public class ConstructingObjectParserTest {
             private final Path p1;
             private final Path p2;
 
-            Example(int i, float f, long l, double d, boolean b, String s, Path p1, Path p2) {
+            private List<String> stringList;
+
+            Example(int i, float f, long l, double d, boolean b, String s, Path p1, Path p2, List<String> stringList) {
                 this.i = i;
                 this.f = f;
                 this.l = l;
@@ -209,6 +229,7 @@ public class ConstructingObjectParserTest {
                 this.s = s;
                 this.p1 = p1;
                 this.p2 = p2;
+                this.stringList = stringList;
             }
 
             int getI() {
@@ -242,6 +263,10 @@ public class ConstructingObjectParserTest {
             Path getP2() {
                 return p2;
             }
+
+            List<String> getStringList() {
+                return stringList;
+            }
         }
     }
 
@@ -268,7 +293,7 @@ public class ConstructingObjectParserTest {
 
         @Test
         public void testStringTransform() {
-            String value = ConstructingObjectParser.stringTransform(input);
+            String value = ConstructingObjectParser.transformString(input);
             assertEquals(expected, value);
 
         }
@@ -293,7 +318,7 @@ public class ConstructingObjectParserTest {
 
         @Test(expected = IllegalArgumentException.class)
         public void testFailure() {
-            ConstructingObjectParser.stringTransform(input);
+            ConstructingObjectParser.transformString(input);
         }
     }
 }
