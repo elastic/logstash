@@ -443,12 +443,11 @@ describe LogStash::Pipeline do
       CONFIG
 
       sample_one(["foo", "bar"]) do
-        arr = subject
-        expect(arr.size).to eq(2)
-        expect(arr[0].get("message")).to eq("foo\nbar")
-        expect(arr[0].get("type")).to be_nil
-        expect(arr[1].get("message")).to eq("foo\nbar")
-        expect(arr[1].get("type")).to eq("clone1")
+        expect(subject.size).to eq(2)
+        expect(subject[0].get("message")).to eq("foo\nbar")
+        expect(subject[0].get("type")).to be_nil
+        expect(subject[1].get("message")).to eq("foo\nbar")
+        expect(subject[1].get("type")).to eq("clone1")
       end
     end
   end

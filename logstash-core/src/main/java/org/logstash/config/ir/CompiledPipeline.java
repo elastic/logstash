@@ -71,15 +71,15 @@ public final class CompiledPipeline {
     /**
      * Parsed pipeline configuration graph.
      */
-    private final PipelineIR graph;
+    private final PipelineIR pipelineIR;
 
     /**
      * Ruby pipeline object.
      */
     private final RubyIntegration.Pipeline pipeline;
 
-    public CompiledPipeline(final PipelineIR graph, final RubyIntegration.Pipeline pipeline) {
-        this.graph = graph;
+    public CompiledPipeline(final PipelineIR pipelineIR, final RubyIntegration.Pipeline pipeline) {
+        this.pipelineIR = pipelineIR;
         this.pipeline = pipeline;
         inputs = setupInputs();
         filters = setupFilters();
@@ -133,7 +133,7 @@ public final class CompiledPipeline {
         // reload.
         iffs.clear();
         plugins.clear();
-        graph.getGraph().getAllLeaves().stream().filter(this::isOutput)
+        pipelineIR.getGraph().allLeaves().filter(this::isOutput)
             .sorted(Comparator.comparing(Vertex::hashPrefix)).forEachOrdered(
             leaf -> datasets.add(outputDataset(leaf.getId(), flatten(Dataset.ROOT_DATASETS, leaf)))
         );
@@ -144,7 +144,7 @@ public final class CompiledPipeline {
      * Sets up all Ruby outputs learnt from {@link PipelineIR}.
      */
     private Map<String, RubyIntegration.Output> setupOutputs() {
-        final Collection<PluginVertex> outs = graph.getOutputPluginVertices();
+        final Collection<PluginVertex> outs = pipelineIR.getOutputPluginVertices();
         final Map<String, RubyIntegration.Output> res = new HashMap<>(outs.size());
         outs.forEach(v -> {
             final PluginDefinition def = v.getPluginDefinition();
@@ -161,8 +161,8 @@ public final class CompiledPipeline {
      * Sets up all Ruby filters learnt from {@link PipelineIR}.
      */
     private Map<String, RubyIntegration.Filter> setupFilters() {
-        final Collection<PluginVertex> plugins = graph.getFilterPluginVertices();
-        final Map<String, RubyIntegration.Filter> res = new HashMap<>(plugins.size());
+        final Collection<PluginVertex> plugins = pipelineIR.getFilterPluginVertices();
+        final Map<String, RubyIntegration.Filter> res = new HashMap<>(plugins.size(), 1);
         for (final PluginVertex plugin : plugins) {
             final String ident = plugin.getId();
             if (!res.containsKey(ident)) {
@@ -176,7 +176,7 @@ public final class CompiledPipeline {
      * Sets up all Ruby inputs learnt from {@link PipelineIR}.
      */
     private Collection<IRubyObject> setupInputs() {
-        final Collection<PluginVertex> vertices = graph.getInputPluginVertices();
+        final Collection<PluginVertex> vertices = pipelineIR.getInputPluginVertices();
         final Collection<IRubyObject> nodes = new HashSet<>(vertices.size());
         vertices.forEach(v -> {
             final PluginDefinition def = v.getPluginDefinition();

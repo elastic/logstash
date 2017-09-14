@@ -231,12 +231,10 @@ describe "conditionals in filter" do
 
     conditional "'value' == 'value'" do
       sample_one("sample") {expect(subject.get("tags")).to include("success")}
-      sample_one("different") {expect(subject.get("tags")).to include("success")}
     end
 
     conditional "'value' == 'other'" do
       sample_one("sample") {expect(subject.get("tags")).to include("failure")}
-      sample_one("different") {expect(subject.get("tags")).to include("failure")}
     end
 
     conditional "[message] != 'sample'" do
