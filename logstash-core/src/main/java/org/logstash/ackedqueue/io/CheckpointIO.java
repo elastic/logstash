@@ -14,7 +14,7 @@ public interface CheckpointIO {
 
     void purge(String fileName) throws IOException;
 
-    void purge() throws IOException;
+    void purge();
 
     // @return the head page checkpoint file name
     String headFileName();

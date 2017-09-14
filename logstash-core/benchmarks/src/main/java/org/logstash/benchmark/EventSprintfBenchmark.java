@@ -1,6 +1,5 @@
 package org.logstash.benchmark;
 
-import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 import org.logstash.Event;
 import org.logstash.Timestamp;
@@ -34,7 +33,7 @@ public class EventSprintfBenchmark {
     private static final Event EVENT = new Event();
 
     @Setup
-    public void setUp() throws IOException {
+    public void setUp() {
         EVENT.setField("Foo", "Bar");
         EVENT.setField("Foo1", "Bar1");
         EVENT.setField("Foo2", "Bar2");

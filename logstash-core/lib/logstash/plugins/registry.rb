@@ -9,6 +9,8 @@ module LogStash module Plugins
   class Registry
     include LogStash::Util::Loggable
 
+    class UnknownPlugin < NameError; end
+
     # Add a bit more sanity with when interacting with the rubygems'
     # specifications database, most of out code interact directly with really low level
     # components of bundler/rubygems we need to encapsulate that and this is a start.
@@ -152,14 +154,19 @@ module LogStash module Plugins
       begin
         path = "logstash/#{type}s/#{plugin_name}"
 
-        begin
-          require path
-        rescue LoadError
-          # Plugin might be already defined in the current scope
-          # This scenario often happen in test when we write an adhoc class
+        klass = begin
+          namespace_lookup(type, plugin_name)
+        rescue UnknownPlugin => e
+          # Plugin not registered. Try to load it.
+          begin
+            require path
+            namespace_lookup(type, plugin_name)
+          rescue LoadError => e
+            logger.error("Tried to load a plugin's code, but failed.", :exception => e, :path => path, :type => type, :name => plugin_name)
+            raise
+          end
         end
 
-        klass = namespace_lookup(type, plugin_name)
         plugin = lazy_add(type, plugin_name, klass)
       rescue => e
         logger.error("Problems loading a plugin with",
@@ -223,7 +230,7 @@ module LogStash module Plugins
       klass_sym = namespace.constants.find { |c| is_a_plugin?(namespace.const_get(c), name) }
       klass = klass_sym && namespace.const_get(klass_sym)
 
-      raise(NameError) unless klass
+      raise(UnknownPlugin) unless klass
       klass
     end
 

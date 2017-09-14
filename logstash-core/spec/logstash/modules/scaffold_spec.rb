@@ -81,7 +81,7 @@ ERB
 
     it "provides a logstash config" do
       expect(test_module.logstash_configuration).to be_nil
-      test_module.with_settings(module_settings)
+      test_module.with_settings(LogStash::Util::ModulesSettingArray.new([module_settings]).first)
       expect(test_module.logstash_configuration).not_to be_nil
       config_string = test_module.config_string
       expect(config_string).to include("port => 5606")

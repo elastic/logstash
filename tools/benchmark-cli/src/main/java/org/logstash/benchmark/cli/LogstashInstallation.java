@@ -9,6 +9,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
 import java.security.NoSuchAlgorithmException;
 import java.util.Map;
@@ -42,6 +43,13 @@ public interface LogstashInstallation {
      * @return Metrics URL
      */
     String metrics();
+
+    /**
+     * Temporarily (will be reverted after the benchmark execution finishes) overwrites the existing
+     * logstash.yml configuration in this installation.
+     * @param meta Benchmark settings
+     */
+    void configure(BenchmarkMeta meta);
 
     final class FromRelease implements LogstashInstallation {
 
@@ -79,6 +87,11 @@ public interface LogstashInstallation {
             return base.metrics();
         }
 
+        @Override
+        public void configure(final BenchmarkMeta meta) {
+            base.configure(meta);
+        }
+
         private static void download(final File pwd, final String version)
             throws IOException, NoSuchAlgorithmException {
             LsBenchDownloader.downloadDecompress(
@@ -105,6 +118,10 @@ public interface LogstashInstallation {
 
         private final ProcessBuilder pbuilder;
 
+        private final Path previousYml;
+        
+        private final Path logstashYml;
+
         public FromLocalPath(final String path) {
             this.location = Paths.get(path);
             this.pbuilder = new ProcessBuilder().directory(location.toFile());
@@ -113,6 +130,16 @@ public interface LogstashInstallation {
             final Map<String, String> env = pbuilder.environment();
             env.put("JRUBY_HOME", jruby.toString());
             env.put("JAVA_OPTS", "");
+            logstashYml = location.resolve("config").resolve("logstash.yml");
+            try {
+                previousYml =
+                    Files.copy(
+                        logstashYml, logstashYml.getParent().resolve("logstash.yml.back"),
+                        StandardCopyOption.REPLACE_EXISTING
+                    );
+            } catch (final IOException ex) {
+                throw new IllegalStateException(ex);
+            }
         }
 
         @Override
@@ -134,9 +161,8 @@ public interface LogstashInstallation {
             LsBenchFileUtil.ensureExecutable(lsbin.toFile());
             final File output = Files.createTempFile(null, null).toFile();
             final Process process =
-                pbuilder.command(lsbin.toString(), "-w", "2", "-f", cfg.toString()).redirectOutput(
-                    ProcessBuilder.Redirect.to(output)
-                ).start();
+                pbuilder.command(lsbin.toString(), "-f", cfg.toString()
+                ).redirectOutput(ProcessBuilder.Redirect.to(output)).start();
             if (data != null) {
                 try (final OutputStream out = process.getOutputStream()) {
                     pipeRepeatedly(data, out, repeat);
@@ -146,12 +172,29 @@ public interface LogstashInstallation {
                 throw new IllegalStateException("Logstash failed to start!");
             }
             LsBenchFileUtil.ensureDeleted(cfg.toFile());
+            Files.move(previousYml, logstashYml, StandardCopyOption.REPLACE_EXISTING);
             LsBenchFileUtil.ensureDeleted(output);
         }
 
         @Override
         public String metrics() {
             return METRICS_URL;
+        }
+
+        @Override
+        public void configure(final BenchmarkMeta meta) {
+            try {
+                Files.write(
+                    logstashYml, String.format(
+                        "pipeline.workers: %d\npipeline.batch.size: %d", meta.getWorkers()
+                        , meta.getBatchsize()
+                    ).getBytes(StandardCharsets.UTF_8),
+                    StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING,
+                    StandardOpenOption.CREATE
+                );
+            } catch (final IOException ex) {
+                throw new IllegalStateException(ex);
+            }
         }
 
         /**
@@ -207,6 +250,11 @@ public interface LogstashInstallation {
         @Override
         public String metrics() {
             return base.metrics();
+        }
+
+        @Override
+        public void configure(final BenchmarkMeta meta) {
+            base.configure(meta);
         }
 
         private static void download(final File pwd, final String user, final String hash)
