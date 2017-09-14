@@ -74,6 +74,13 @@ public class ConstructingObjectParserTest {
             assertEquals(Paths.get("example"), e.getPath());
         }
 
+        @Test(expected = UnsupportedOperationException.class)
+        public void testInvalidConstructor() {
+            // EXAMPLE_BUILDER gives a Supplier (not a Function<Object[], ...>), so constructor arguments
+            // should be disabled and this call should fail.
+            EXAMPLE_BUILDER.declareString("invalid");
+        }
+
         private static class Example {
             private int i;
             private float f;

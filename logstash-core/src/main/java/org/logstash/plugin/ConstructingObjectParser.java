@@ -18,6 +18,10 @@ public class ConstructingObjectParser<Value> implements Function<Map<String, Obj
     private final Map<String, BiConsumer<Value, Object>> parsers = new LinkedHashMap<>();
     private final Map<String, BiConsumer<Object[], Object>> constructorArgs;
 
+
+    /**
+     * @param supplier The supplier which produces an object instance.
+     */
     @SuppressWarnings("WeakerAccess") // Public Interface
     public ConstructingObjectParser(Supplier<Value> supplier) {
         this.builder = args -> supplier.get();
@@ -26,14 +30,24 @@ public class ConstructingObjectParser<Value> implements Function<Map<String, Obj
         constructorArgs = Collections.emptyMap();
     }
 
+    /**
+     * @param builder A function which takes an Object[] as argument and returns a Value instance
+     */
     @SuppressWarnings("WeakerAccess") // Public Interface
     public ConstructingObjectParser(Function<Object[], Value> builder) {
         this.builder = builder;
         constructorArgs = new TreeMap<>();
     }
 
+    /**
+     * A function which takes an Object and returns an Integer
+     *
+     * @param object
+     * @return An Integer based on the given object.
+     * @throws IllegalArgumentException if conversion is not possible
+     */
     @SuppressWarnings("WeakerAccess") // Public Interface
-    public static Integer transformInteger(Object object) {
+    public static Integer transformInteger(Object object) throws IllegalArgumentException {
         if (object instanceof Number) {
             return ((Number) object).intValue();
         } else if (object instanceof String) {
@@ -44,7 +58,7 @@ public class ConstructingObjectParser<Value> implements Function<Map<String, Obj
     }
 
     @SuppressWarnings("WeakerAccess") // Public Interface
-    public static Float transformFloat(Object object) {
+    public static Float transformFloat(Object object) throws IllegalArgumentException {
         if (object instanceof Number) {
             return ((Number) object).floatValue();
         } else if (object instanceof String) {
@@ -55,7 +69,7 @@ public class ConstructingObjectParser<Value> implements Function<Map<String, Obj
     }
 
     @SuppressWarnings("WeakerAccess") // Public Interface
-    public static Double transformDouble(Object object) {
+    public static Double transformDouble(Object object) throws IllegalArgumentException {
         if (object instanceof Number) {
             return ((Number) object).doubleValue();
         } else if (object instanceof String) {
@@ -66,7 +80,7 @@ public class ConstructingObjectParser<Value> implements Function<Map<String, Obj
     }
 
     @SuppressWarnings("WeakerAccess") // Public Interface
-    public static Long transformLong(Object object) {
+    public static Long transformLong(Object object) throws IllegalArgumentException {
         if (object instanceof Number) {
             return ((Number) object).longValue();
         } else if (object instanceof String) {
@@ -77,7 +91,7 @@ public class ConstructingObjectParser<Value> implements Function<Map<String, Obj
     }
 
     @SuppressWarnings("WeakerAccess") // Public Interface
-    public static String transformString(Object object) {
+    public static String transformString(Object object) throws IllegalArgumentException {
         if (object instanceof String) {
             return (String) object;
         } else if (object instanceof Number) {
@@ -88,7 +102,7 @@ public class ConstructingObjectParser<Value> implements Function<Map<String, Obj
     }
 
     @SuppressWarnings("WeakerAccess") // Public Interface
-    public static Boolean transformBoolean(Object object) {
+    public static Boolean transformBoolean(Object object) throws IllegalArgumentException {
         if (object instanceof Boolean) {
             return (Boolean) object;
         } else if (object instanceof String) {
@@ -106,7 +120,7 @@ public class ConstructingObjectParser<Value> implements Function<Map<String, Obj
     }
 
     @SuppressWarnings("WeakerAccess") // Public Interface
-    public static <T> T transformObject(Object object, ConstructingObjectParser<T> parser) {
+    public static <T> T transformObject(Object object, ConstructingObjectParser<T> parser) throws IllegalArgumentException {
         if (object instanceof Map) {
             // XXX: Fix this unchecked cast.
             return parser.apply((Map<String, Object>) object);
@@ -116,7 +130,7 @@ public class ConstructingObjectParser<Value> implements Function<Map<String, Obj
     }
 
     @SuppressWarnings("WeakerAccess") // Public Interface
-    public static <T> List<T> transformList(Object object, Function<Object, T> transform) {
+    public static <T> List<T> transformList(Object object, Function<Object, T> transform) throws IllegalArgumentException {
         // XXX: Support Iterator?
         if (object instanceof List) {
             List<Object> list = (List<Object>) object;
@@ -147,6 +161,25 @@ public class ConstructingObjectParser<Value> implements Function<Map<String, Obj
     @SuppressWarnings("WeakerAccess") // Public Interface
     public void declareLong(String name) {
         declareConstructorArg(name, ConstructingObjectParser::transformLong);
+    }
+
+    @SuppressWarnings("WeakerAccess") // Public Interface
+    public <T> void declareField(String name, BiConsumer<Value, T> consumer, Function<Object, T> transform) {
+        BiConsumer<Value, Object> objConsumer = (value, object) -> consumer.accept(value, transform.apply(object));
+        parsers.put(name, objConsumer);
+    }
+
+    @SuppressWarnings("WeakerAccess") // Public Interface
+    public <T> void declareConstructorArg(String name, Function<Object, T> transform) {
+        final int position = constructorArgs.size();
+        BiConsumer<Object[], Object> objConsumer = (array, object) -> array[position] = transform.apply(object);
+        try {
+            constructorArgs.put(name, objConsumer);
+        } catch (UnsupportedOperationException e) {
+            // This will be thrown when this ConstructingObjectParser is created with a Supplier (which takes no arguments)
+            // for example, new ConstructingObjectParser<>((Supplier<String>) String::new)
+            throw new UnsupportedOperationException("Cannot add constructor args because the constructor doesn't take any arguments!");
+        }
     }
 
     /**
@@ -191,17 +224,13 @@ public class ConstructingObjectParser<Value> implements Function<Map<String, Obj
         declareConstructorArg(name, ConstructingObjectParser::transformString);
     }
 
-    @SuppressWarnings("WeakerAccess") // Public Interface
-    public void declareFloat(String name) {
-        declareConstructorArg(name, ConstructingObjectParser::transformFloat);
-    }
-
-    @SuppressWarnings("WeakerAccess") // Public Interface
-    public <T> void declareField(String name, BiConsumer<Value, T> consumer, Function<Object, T> transform) {
-        BiConsumer<Value, Object> objConsumer = (value, object) -> consumer.accept(value, transform.apply(object));
-        parsers.put(name, objConsumer);
-    }
-
+    /**
+     * Declare a field with a List containing T instances
+     * @param name the name of this field
+     * @param consumer the consumer to call when this field is processed
+     * @param transform the function for transforming Object to T types
+     * @param <T> the type stored in the List.
+     */
     @SuppressWarnings("WeakerAccess") // Public Interface
     public <T> void declareList(String name, BiConsumer<Value, List<T>> consumer, Function<Object, T> transform) {
         declareField(name, consumer, object -> transformList(object, transform));
@@ -219,11 +248,14 @@ public class ConstructingObjectParser<Value> implements Function<Map<String, Obj
         declareConstructorArg(name, (object) -> transformList(object, transform));
     }
 
+    /**
+     * Declare a constructor argument that is a float.
+     *
+     * @param name the name of the argument
+     */
     @SuppressWarnings("WeakerAccess") // Public Interface
-    public <T> void declareConstructorArg(String name, Function<Object, T> transform) {
-        final int position = constructorArgs.size();
-        BiConsumer<Object[], Object> objConsumer = (array, object) -> array[position] = transform.apply(object);
-        constructorArgs.put(name, objConsumer);
+    public void declareFloat(String name) {
+        declareConstructorArg(name, ConstructingObjectParser::transformFloat);
     }
 
     @SuppressWarnings("WeakerAccess") // Public Interface
@@ -239,24 +271,6 @@ public class ConstructingObjectParser<Value> implements Function<Map<String, Obj
     @SuppressWarnings("WeakerAccess") // Public Interface
     public void declareDouble(String name, BiConsumer<Value, Double> consumer) {
         declareField(name, consumer, ConstructingObjectParser::transformDouble);
-    }
-
-    private Value construct(Map<String, Object> config) {
-        // XXX: Maybe this can just be an Object[]
-        Object[] args = new Object[constructorArgs.size()];
-
-        // Constructor arguments. Any constructor argument is a *required* setting.
-        for (Map.Entry<String, BiConsumer<Object[], Object>> argInfo : constructorArgs.entrySet()) {
-            String name = argInfo.getKey();
-            BiConsumer<Object[], Object> argsBuilder = argInfo.getValue();
-            if (config.containsKey(name)) {
-                argsBuilder.accept(args, config.get(name));
-            } else {
-                throw new IllegalArgumentException("Missing required argument '" + name + "' for " + getClass());
-            }
-        }
-
-        return builder.apply(args);
     }
 
     @SuppressWarnings("WeakerAccess") // Public Interface
@@ -334,16 +348,34 @@ public class ConstructingObjectParser<Value> implements Function<Map<String, Obj
         return value;
     }
 
-    private boolean isKnownField(String name) {
-        return (parsers.containsKey(name) || constructorArgs.containsKey(name));
-    }
-
-    private void rejectUnknownFields(Set<String> configNames) {
+    private void rejectUnknownFields(Set<String> configNames) throws IllegalArgumentException {
         // Check for any unknown parameters.
         List<String> unknown = configNames.stream().filter(name -> !isKnownField(name)).collect(Collectors.toList());
 
         if (!unknown.isEmpty()) {
             throw new IllegalArgumentException("Unknown settings: " + unknown);
         }
+    }
+
+    private boolean isKnownField(String name) {
+        return (parsers.containsKey(name) || constructorArgs.containsKey(name));
+    }
+
+    private Value construct(Map<String, Object> config) throws IllegalArgumentException {
+        // XXX: Maybe this can just be an Object[]
+        Object[] args = new Object[constructorArgs.size()];
+
+        // Constructor arguments. Any constructor argument is a *required* setting.
+        for (Map.Entry<String, BiConsumer<Object[], Object>> argInfo : constructorArgs.entrySet()) {
+            String name = argInfo.getKey();
+            BiConsumer<Object[], Object> argsBuilder = argInfo.getValue();
+            if (config.containsKey(name)) {
+                argsBuilder.accept(args, config.get(name));
+            } else {
+                throw new IllegalArgumentException("Missing required argument '" + name + "' for " + getClass());
+            }
+        }
+
+        return builder.apply(args);
     }
 }
