@@ -24,7 +24,6 @@ ADD logstash-core-plugin-api /opt/logstash/logstash-core-plugin-api
 ADD bin /opt/logstash/bin
 ADD modules /opt/logstash/modules
 ADD ci /opt/logstash/ci
-ADD CHANGELOG.md /opt/logstash/CHANGELOG.md
 ADD settings.gradle /opt/logstash/settings.gradle
 
 USER root
