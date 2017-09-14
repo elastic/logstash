@@ -1,5 +1,8 @@
 package org.logstash.plugin;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
@@ -14,10 +17,10 @@ import java.util.stream.Collectors;
  * @param <Value> The object type to construct when `parse` is called.
  */
 public class ConstructingObjectParser<Value> implements Function<Map<String, Object>, Value> {
+    private final Logger logger = LogManager.getLogger();
     private final Function<Object[], Value> builder;
-    private final Map<String, BiConsumer<Value, Object>> parsers = new LinkedHashMap<>();
-    private final Map<String, BiConsumer<Object[], Object>> constructorArgs;
-
+    private final Map<String, FieldDefinition<Value>> parsers = new LinkedHashMap<>();
+    private final Map<String, FieldDefinition<Object[]>> constructorArgs;
 
     /**
      * @param supplier The supplier which produces an object instance.
@@ -42,7 +45,7 @@ public class ConstructingObjectParser<Value> implements Function<Map<String, Obj
     /**
      * A function which takes an Object and returns an Integer
      *
-     * @param object
+     * @param object the object to transform to Integer
      * @return An Integer based on the given object.
      * @throws IllegalArgumentException if conversion is not possible
      */
@@ -149,8 +152,8 @@ public class ConstructingObjectParser<Value> implements Function<Map<String, Obj
      * @param consumer the function to call once the value is available
      */
     @SuppressWarnings("WeakerAccess") // Public Interface
-    public void declareLong(String name, BiConsumer<Value, Long> consumer) {
-        declareField(name, consumer, ConstructingObjectParser::transformLong);
+    public Field declareLong(String name, BiConsumer<Value, Long> consumer) {
+        return declareField(name, consumer, ConstructingObjectParser::transformLong);
     }
 
     /**
@@ -159,27 +162,31 @@ public class ConstructingObjectParser<Value> implements Function<Map<String, Obj
      * @param name the name of the field.
      */
     @SuppressWarnings("WeakerAccess") // Public Interface
-    public void declareLong(String name) {
-        declareConstructorArg(name, ConstructingObjectParser::transformLong);
+    public Field declareLong(String name) {
+        return declareConstructorArg(name, ConstructingObjectParser::transformLong);
     }
 
     @SuppressWarnings("WeakerAccess") // Public Interface
-    public <T> void declareField(String name, BiConsumer<Value, T> consumer, Function<Object, T> transform) {
+    public <T> Field declareField(String name, BiConsumer<Value, T> consumer, Function<Object, T> transform) {
         BiConsumer<Value, Object> objConsumer = (value, object) -> consumer.accept(value, transform.apply(object));
-        parsers.put(name, objConsumer);
+        FieldDefinition<Value> field = new FieldDefinition<>(objConsumer, FieldUsage.Field);
+        parsers.put(name, field);
+        return field;
     }
 
     @SuppressWarnings("WeakerAccess") // Public Interface
-    public <T> void declareConstructorArg(String name, Function<Object, T> transform) {
+    public <T> Field declareConstructorArg(String name, Function<Object, T> transform) {
         final int position = constructorArgs.size();
         BiConsumer<Object[], Object> objConsumer = (array, object) -> array[position] = transform.apply(object);
+        FieldDefinition<Object[]> field = new FieldDefinition<>(objConsumer, FieldUsage.Constructor);
         try {
-            constructorArgs.put(name, objConsumer);
+            constructorArgs.put(name, field);
         } catch (UnsupportedOperationException e) {
             // This will be thrown when this ConstructingObjectParser is created with a Supplier (which takes no arguments)
             // for example, new ConstructingObjectParser<>((Supplier<String>) String::new)
             throw new UnsupportedOperationException("Cannot add constructor args because the constructor doesn't take any arguments!");
         }
+        return field;
     }
 
     /**
@@ -189,8 +196,8 @@ public class ConstructingObjectParser<Value> implements Function<Map<String, Obj
      * @param consumer the function to call once the value is available
      */
     @SuppressWarnings("WeakerAccess") // Public Interface
-    public void declareInteger(String name, BiConsumer<Value, Integer> consumer) {
-        declareField(name, consumer, ConstructingObjectParser::transformInteger);
+    public Field declareInteger(String name, BiConsumer<Value, Integer> consumer) {
+        return declareField(name, consumer, ConstructingObjectParser::transformInteger);
     }
 
     /**
@@ -199,8 +206,8 @@ public class ConstructingObjectParser<Value> implements Function<Map<String, Obj
      * @param name the name of the field.
      */
     @SuppressWarnings("WeakerAccess") // Public Interface
-    public void declareInteger(String name) {
-        declareConstructorArg(name, ConstructingObjectParser::transformInteger);
+    public Field declareInteger(String name) {
+        return declareConstructorArg(name, ConstructingObjectParser::transformInteger);
     }
 
     /**
@@ -210,8 +217,8 @@ public class ConstructingObjectParser<Value> implements Function<Map<String, Obj
      * @param consumer the function to call once the value is available
      */
     @SuppressWarnings("WeakerAccess") // Public Interface
-    public void declareString(String name, BiConsumer<Value, String> consumer) {
-        declareField(name, consumer, ConstructingObjectParser::transformString);
+    public Field declareString(String name, BiConsumer<Value, String> consumer) {
+        return declareField(name, consumer, ConstructingObjectParser::transformString);
     }
 
     /**
@@ -220,8 +227,8 @@ public class ConstructingObjectParser<Value> implements Function<Map<String, Obj
      * @param name the name of this field.
      */
     @SuppressWarnings("WeakerAccess") // Public Interface
-    public void declareString(String name) {
-        declareConstructorArg(name, ConstructingObjectParser::transformString);
+    public Field declareString(String name) {
+        return declareConstructorArg(name, ConstructingObjectParser::transformString);
     }
 
     /**
@@ -232,8 +239,8 @@ public class ConstructingObjectParser<Value> implements Function<Map<String, Obj
      * @param <T> the type stored in the List.
      */
     @SuppressWarnings("WeakerAccess") // Public Interface
-    public <T> void declareList(String name, BiConsumer<Value, List<T>> consumer, Function<Object, T> transform) {
-        declareField(name, consumer, object -> transformList(object, transform));
+    public <T> Field declareList(String name, BiConsumer<Value, List<T>> consumer, Function<Object, T> transform) {
+        return declareField(name, consumer, object -> transformList(object, transform));
     }
 
     /**
@@ -244,8 +251,8 @@ public class ConstructingObjectParser<Value> implements Function<Map<String, Obj
      * @param <T>       The type of object contained in the list.
      */
     @SuppressWarnings("WeakerAccess") // Public Interface
-    public <T> void declareList(String name, Function<Object, T> transform) {
-        declareConstructorArg(name, (object) -> transformList(object, transform));
+    public <T> Field declareList(String name, Function<Object, T> transform) {
+        return declareConstructorArg(name, (object) -> transformList(object, transform));
     }
 
     /**
@@ -254,33 +261,33 @@ public class ConstructingObjectParser<Value> implements Function<Map<String, Obj
      * @param name the name of the argument
      */
     @SuppressWarnings("WeakerAccess") // Public Interface
-    public void declareFloat(String name) {
-        declareConstructorArg(name, ConstructingObjectParser::transformFloat);
+    public Field declareFloat(String name) {
+        return declareConstructorArg(name, ConstructingObjectParser::transformFloat);
     }
 
     @SuppressWarnings("WeakerAccess") // Public Interface
-    public void declareFloat(String name, BiConsumer<Value, Float> consumer) {
-        declareField(name, consumer, ConstructingObjectParser::transformFloat);
+    public Field declareFloat(String name, BiConsumer<Value, Float> consumer) {
+        return declareField(name, consumer, ConstructingObjectParser::transformFloat);
     }
 
     @SuppressWarnings("WeakerAccess") // Public Interface
-    public void declareDouble(String name) {
-        declareConstructorArg(name, ConstructingObjectParser::transformDouble);
+    public Field declareDouble(String name) {
+        return declareConstructorArg(name, ConstructingObjectParser::transformDouble);
     }
 
     @SuppressWarnings("WeakerAccess") // Public Interface
-    public void declareDouble(String name, BiConsumer<Value, Double> consumer) {
-        declareField(name, consumer, ConstructingObjectParser::transformDouble);
+    public Field declareDouble(String name, BiConsumer<Value, Double> consumer) {
+        return declareField(name, consumer, ConstructingObjectParser::transformDouble);
     }
 
     @SuppressWarnings("WeakerAccess") // Public Interface
-    public void declareBoolean(String name) {
-        declareConstructorArg(name, ConstructingObjectParser::transformBoolean);
+    public Field declareBoolean(String name) {
+        return declareConstructorArg(name, ConstructingObjectParser::transformBoolean);
     }
 
     @SuppressWarnings("WeakerAccess") // Public Interface
-    public void declareBoolean(String name, BiConsumer<Value, Boolean> consumer) {
-        declareField(name, consumer, ConstructingObjectParser::transformBoolean);
+    public Field declareBoolean(String name, BiConsumer<Value, Boolean> consumer) {
+        return declareField(name, consumer, ConstructingObjectParser::transformBoolean);
     }
 
     /**
@@ -292,8 +299,8 @@ public class ConstructingObjectParser<Value> implements Function<Map<String, Obj
      * @param <T> The type of object to store as the value.
      */
     @SuppressWarnings("WeakerAccess") // Public Interface
-    public <T> void declareObject(String name, BiConsumer<Value, T> consumer, ConstructingObjectParser<T> parser) {
-        declareField(name, consumer, (t) -> transformObject(t, parser));
+    public <T> Field declareObject(String name, BiConsumer<Value, T> consumer, ConstructingObjectParser<T> parser) {
+        return declareField(name, consumer, (t) -> transformObject(t, parser));
     }
 
     /**
@@ -304,8 +311,8 @@ public class ConstructingObjectParser<Value> implements Function<Map<String, Obj
      * @param <T>    The type of object created by the parser.
      */
     @SuppressWarnings("WeakerAccess") // Public Interface
-    public <T> void declareObject(String name, ConstructingObjectParser<T> parser) {
-        declareConstructorArg(name, (t) -> transformObject(t, parser));
+    public <T> Field declareObject(String name, ConstructingObjectParser<T> parser) {
+        return declareConstructorArg(name, (t) -> transformObject(t, parser));
     }
 
     /**
@@ -335,11 +342,11 @@ public class ConstructingObjectParser<Value> implements Function<Map<String, Obj
                 continue;
             }
 
-            BiConsumer<Value, Object> parser = parsers.get(name);
-            assert parser != null;
+            FieldDefinition<Value> field = parsers.get(name);
+            assert field != null;
 
             try {
-                parser.accept(value, entry.getValue());
+                field.accept(value, entry.getValue());
             } catch (IllegalArgumentException e) {
                 throw new IllegalArgumentException("Field " + name + ": " + e.getMessage(), e);
             }
@@ -366,11 +373,18 @@ public class ConstructingObjectParser<Value> implements Function<Map<String, Obj
         Object[] args = new Object[constructorArgs.size()];
 
         // Constructor arguments. Any constructor argument is a *required* setting.
-        for (Map.Entry<String, BiConsumer<Object[], Object>> argInfo : constructorArgs.entrySet()) {
+        for (Map.Entry<String, FieldDefinition<Object[]>> argInfo : constructorArgs.entrySet()) {
             String name = argInfo.getKey();
-            BiConsumer<Object[], Object> argsBuilder = argInfo.getValue();
+            FieldDefinition<Object[]> field = argInfo.getValue();
+
             if (config.containsKey(name)) {
-                argsBuilder.accept(args, config.get(name));
+                if (field.isObsolete()) {
+                    throw new IllegalArgumentException("Field '" + name + "' is obsolete and may not be used. " + field.getDetails());
+                } else if (field.isDeprecated()) {
+                    logger.warn("Field '" + name + "' is deprecated and should be avoided. " + field.getDetails());
+                }
+
+                field.accept(args, config.get(name));
             } else {
                 throw new IllegalArgumentException("Missing required argument '" + name + "' for " + getClass());
             }
