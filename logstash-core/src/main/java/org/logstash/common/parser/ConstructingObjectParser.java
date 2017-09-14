@@ -42,6 +42,7 @@ public class ConstructingObjectParser<Value> implements ObjectParser<Value> {
         constructorArgs = new TreeMap<>();
     }
 
+    @Override
     @SuppressWarnings("WeakerAccess") // Public Interface
     public <T> Field declareField(String name, BiConsumer<Value, T> consumer, Function<Object, T> transform) {
         if (isKnownField(name)) {
