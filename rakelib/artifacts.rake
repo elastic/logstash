@@ -8,7 +8,6 @@ namespace "artifact" do
   def package_files
     [
       "LICENSE",
-      "CHANGELOG.md",
       "NOTICE.TXT",
       "CONTRIBUTORS",
       "bin/**/*",
