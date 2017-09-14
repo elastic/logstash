@@ -1,4 +1,4 @@
-package org.logstash.plugin;
+package org.logstash.common.parser;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -11,6 +11,7 @@ import java.nio.file.Paths;
 import java.util.*;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.runners.Parameterized.Parameters;
 
 @RunWith(Enclosed.class)
@@ -36,13 +37,13 @@ public class ConstructingObjectParserTest {
             check(EXAMPLE_BUILDER.declareDouble("double", Example::setD));
             check(EXAMPLE_BUILDER.declareBoolean("boolean", Example::setB));
             check(EXAMPLE_BUILDER.declareString("string", Example::setS));
-            check(EXAMPLE_BUILDER.declareList("stringList", Example::setStringList, ConstructingObjectParser::transformString));
+            check(EXAMPLE_BUILDER.declareList("stringList", Example::setStringList, ObjectTransforms::transformString));
 
             // Custom transform (Object => Path)
-            check(EXAMPLE_BUILDER.declareString("path", (example, path) -> example.setPath(Paths.get(path))));
+            check(EXAMPLE_BUILDER.declareString("path", (example, path) -> example.setP1(Paths.get(path))));
 
             // Custom nested object constructor: { "object": { "path": "some path" } }
-            check(EXAMPLE_BUILDER.declareObject("object", Example::setPath, PATH_BUILDER));
+            check(EXAMPLE_BUILDER.declareObject("object", Example::setP2, PATH_BUILDER));
 
             config.put("float", 1F);
             config.put("integer", 1);
@@ -63,20 +64,24 @@ public class ConstructingObjectParserTest {
             assertEquals(true, e.isB());
             assertEquals("hello", e.getS());
             assertEquals(Collections.singletonList("hello"), e.getStringList());
+
+            // because they are not set and the default in the Example class is null.
+            assertNull(e.getP1());
+            assertNull(e.getP2());
         }
 
         @Test
         public void testCustomTransform() {
             config.put("path", "example");
             Example e = EXAMPLE_BUILDER.apply(config);
-            assertEquals(Paths.get("example"), e.getPath());
+            assertEquals(Paths.get("example"), e.getP1());
         }
 
         @Test
         public void testNestedObject() {
             config.put("object", Collections.singletonMap("path", "example"));
             Example e = EXAMPLE_BUILDER.apply(config);
-            assertEquals(Paths.get("example"), e.getPath());
+            assertEquals(Paths.get("example"), e.getP2());
         }
 
         @Test(expected = UnsupportedOperationException.class)
@@ -86,82 +91,11 @@ public class ConstructingObjectParserTest {
             check(EXAMPLE_BUILDER.declareString("invalid"));
         }
 
-        private static class Example {
-            private int i;
-            private float f;
-            private double d;
-            private boolean b;
-
-            private long l;
-            private String s;
-
-            private List<String> stringList;
-            private Path path;
-
-            List<String> getStringList() {
-                return stringList;
-            }
-
-            void setStringList(List<String> stringList) {
-                this.stringList = stringList;
-            }
-
-            Path getPath() {
-                return path;
-            }
-
-            void setPath(Path path) {
-                this.path = path;
-            }
-
-            long getL() {
-                return l;
-            }
-
-            void setL(long l) {
-                this.l = l;
-            }
-
-            int getI() {
-                return i;
-            }
-
-            void setI(int i) {
-                this.i = i;
-            }
-
-            float getF() {
-                return f;
-            }
-
-            void setF(float f) {
-                this.f = f;
-            }
-
-            double getD() {
-                return d;
-            }
-
-            void setD(double d) {
-                this.d = d;
-            }
-
-            boolean isB() {
-                return b;
-            }
-
-            void setB(boolean b) {
-                this.b = b;
-            }
-
-            String getS() {
-                return s;
-            }
-
-            void setS(String s) {
-                this.s = s;
-            }
-
+        @Test(expected = IllegalArgumentException.class)
+        public void testDuplicateFieldsAreRejected() {
+            // field 'float' is already defined, so this should fail.
+            check(EXAMPLE_BUILDER.declareString("float", (a, b) -> {
+            }));
         }
     }
 
@@ -188,7 +122,7 @@ public class ConstructingObjectParserTest {
             // Custom nested object constructor: { "object": { "path": "some path" } }
             check(EXAMPLE_BUILDER.declareObject("object", PATH_BUILDER));
 
-            check(EXAMPLE_BUILDER.declareList("stringList", ConstructingObjectParser::transformString));
+            check(EXAMPLE_BUILDER.declareList("stringList", ObjectTransforms::transformString));
 
             config.put("float", 1F);
             config.put("integer", 1);
@@ -216,68 +150,19 @@ public class ConstructingObjectParserTest {
             assertEquals(Collections.singletonList("hello"), e.getStringList());
         }
 
-        private static class Example {
-            private final int i;
-            private final float f;
-            private final double d;
-            private final boolean b;
-
-            private final long l;
-            private final String s;
-
-            private final Path p1;
-            private final Path p2;
-
-            private final List<String> stringList;
-
-            Example(int i, float f, long l, double d, boolean b, String s, Path p1, Path p2, List<String> stringList) {
-                this.i = i;
-                this.f = f;
-                this.l = l;
-                this.d = d;
-                this.b = b;
-                this.s = s;
-                this.p1 = p1;
-                this.p2 = p2;
-                this.stringList = stringList;
-            }
-
-            int getI() {
-                return i;
-            }
-
-            float getF() {
-                return f;
-            }
-
-            double getD() {
-                return d;
-            }
-
-            boolean isB() {
-                return b;
-            }
-
-            long getL() {
-                return l;
-            }
-
-            String getS() {
-                return s;
-            }
-
-            Path getP1() {
-                return p1;
-            }
-
-            Path getP2() {
-                return p2;
-            }
-
-            List<String> getStringList() {
-                return stringList;
-            }
+        @Test(expected = IllegalArgumentException.class)
+        public void testDuplicateFieldsAreRejected() {
+            // field 'float' is already defined, so this should fail.
+            check(EXAMPLE_BUILDER.declareString("float", (a, b) -> {
+            }));
         }
+
+        @Test(expected = IllegalArgumentException.class)
+        public void testDuplicateConstructorFieldsAreRejected() {
+            // field 'float' is already defined, so this should fail.
+            check(EXAMPLE_BUILDER.declareString("float"));
+        }
+
     }
 
     @RunWith(Parameterized.class)
@@ -303,7 +188,7 @@ public class ConstructingObjectParserTest {
 
         @Test
         public void testStringTransform() {
-            String value = ConstructingObjectParser.transformString(input);
+            String value = ObjectTransforms.transformString(input);
             assertEquals(expected, value);
 
         }
@@ -328,7 +213,7 @@ public class ConstructingObjectParserTest {
 
         @Test(expected = IllegalArgumentException.class)
         public void testFailure() {
-            ConstructingObjectParser.transformString(input);
+            ObjectTransforms.transformString(input);
         }
     }
 
@@ -337,9 +222,9 @@ public class ConstructingObjectParserTest {
 
         @Before
         public void setup() {
-            c.declareInteger("deprecated").setDeprecated("This setting will warn the user when used.");
-            c.declareInteger("obsolete", (a, b) -> {
-            }).setObsolete("This setting should cause a failure when someone uses it.");
+            check(c.declareInteger("deprecated").setDeprecated("This setting will warn the user when used."));
+            check(c.declareInteger("obsolete", (a, b) -> {
+            }).setObsolete("This setting should cause a failure when someone uses it."));
         }
 
         @Test

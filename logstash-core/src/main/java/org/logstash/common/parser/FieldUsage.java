@@ -1,4 +1,4 @@
-package org.logstash.plugin;
+package org.logstash.common.parser;
 
 public enum FieldUsage {
     Constructor,

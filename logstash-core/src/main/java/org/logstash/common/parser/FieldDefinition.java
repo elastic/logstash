@@ -1,4 +1,4 @@
-package org.logstash.plugin;
+package org.logstash.common.parser;
 
 import java.util.function.BiConsumer;
 
