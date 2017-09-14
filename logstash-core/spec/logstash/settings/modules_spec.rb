@@ -9,12 +9,23 @@ describe LogStash::Setting::Modules do
   describe "Modules.Cli" do
     subject { described_class.new("mycloudid", LogStash::Util::ModulesSettingArray, []) }
     context "when given an array of hashes that contains a password key" do
+      let(:secret) { 'some_secret'}
       it "should convert password Strings to Password" do
-        source = [{"var.kibana.password" => "some_secret"}]
+        source = [{"var.kibana.password" => secret}]
         setting = subject.set(source)
         expect(setting).to be_a(Array)
         expect(setting.__class__).to eq(LogStash::Util::ModulesSettingArray)
         expect(setting.first.fetch("var.kibana.password")).to be_a(LogStash::Util::Password)
+        expect(setting.first.fetch("var.kibana.password").value).to eq(secret)
+      end
+
+      it 'should not wrap values that are already passwords' do
+        source = [{"var.kibana.password" => LogStash::Util::Password.new(secret)}]
+        setting = subject.set(source)
+        expect(setting).to be_a(Array)
+        expect(setting.__class__).to eq(LogStash::Util::ModulesSettingArray)
+        expect(setting.first.fetch("var.kibana.password")).to be_a(LogStash::Util::Password)
+        expect(setting.first.fetch("var.kibana.password").value).to eq(secret)
       end
     end
   end
