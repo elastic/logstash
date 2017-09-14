@@ -129,7 +129,6 @@ public class ConstructingObjectParser<Value> implements ObjectParser<Value> {
     }
 
     private Value construct(Map<String, Object> config) throws IllegalArgumentException {
-        // XXX: Maybe this can just be an Object[]
         Object[] args = new Object[constructorArgs.size()];
 
         // Constructor arguments. Any constructor argument is a *required* setting.
