@@ -17,14 +17,22 @@ From the Logstash root directory:
 ```
 ci/integration_tests.sh setup 
 cd qa/integration
-rspec specs/es_output_how_spec.rb (single test)
-rspec specs/*  (all tests)
+bundle exec rspec specs/es_output_how_spec.rb (single test)
+bundle exec rspec specs/*  (all tests)
 ```
 ## Running integration tests locally via Docker 
 
 From the Logstash root directory:
 
-* Run all tests: `ci/docker_integration_tests.sh`
+* Run all tests (Mac/Linux): `ci/docker_integration_tests.sh`
+
+or
+
+* Run all tests:
+```
+docker build  -t logstash-integration-tests .
+docker run -it --rm logstash-integration-tests ci/integration_tests.sh 
+```
 * Run a single test: 
 ```
 docker build  -t logstash-integration-tests .
@@ -32,7 +40,8 @@ docker run -it --rm logstash-integration-tests ci/integration_tests.sh specs/es_
 ``` 
 * Debug tests:
 ```
-docker ps -a | grep Exited | awk '{print $1}' | xargs docker rm
+docker ps --all -q -f status=exited | xargs docker rm  
+(Windows `docker ps -a` and take not of any exited containers, then `docker rm <container-id>`) 
 docker build -t logstash-integration-tests . 
 docker run -d --name debug logstash-integration-tests tail -f /dev/null
 docker exec -it debug ci/integration_tests.sh setup 
@@ -43,16 +52,15 @@ exit
 docker kill debug
 docker rm debug
 ```
-
-* Clean up docker environment:
-
-Warning this will remove all images a containers except for `logstash-base` !
-
-* `ci/docker_prune.sh`
-
 ## Running integration tests locally from Windows
 
-The integration tests need to be run from MacOS or Linux.  However, the `Debug tests` locally with Docker should also work from Windows with Docker installed.   
+The integration tests need to be run from MacOS or Linux.  However, the tests may be run locally within Docker.   
+
+## Docker clean up (Mac/Linux)
+
+! Warning this will remove all images and containers except for the `logstash-base` container !
+
+* `ci/docker_prune.sh`
 
 ### Directory Layout
 
