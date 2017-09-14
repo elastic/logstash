@@ -47,7 +47,7 @@ docker run -d --name debug logstash-integration-tests tail -f /dev/null
 docker exec -it debug ci/integration_tests.sh setup 
 docker exec -it debug bash
 cd qa/integration
-rspec specs/es_output_how_spec.rb
+bundle exec rspec specs/es_output_how_spec.rb
 exit
 docker kill debug
 docker rm debug
