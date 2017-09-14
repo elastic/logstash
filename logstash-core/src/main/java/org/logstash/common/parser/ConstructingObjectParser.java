@@ -46,6 +46,30 @@ public class ConstructingObjectParser<Value> implements ObjectParser<Value> {
         constructorArgs = new HashMap<>();
     }
 
+    /**
+     * Declare a field. Field ordering does not matter.
+     * <p>
+     * A field is intended to call a Setter on an Object.
+     * <p>
+     * When calling `apply`, all fields are considered optional and may be absent from the config map.
+     * <p>
+     * <code>{@code
+     * ConstructingObjectParser<SocketServer> c = new ConstructingObjectParser<>(SocketServer::new)
+     * c.declareBoolean("reuseAddress", SocketServer::setReuseAddress);
+     * c.declareInteger("receiveBufferSize", SocketServer::setReceiveBufferSize);
+     * <p>
+     * Map<String, Object> config = new HashMap<>();
+     * config.put("reuseAddress", true);
+     * config.put("receiveBufferSize", 65536);
+     * SocketServer server = c.apply(config);
+     * }</code>
+     *
+     * @param name
+     * @param consumer
+     * @param transform
+     * @param <T>
+     * @return
+     */
     @Override
     @SuppressWarnings("WeakerAccess") // Public Interface
     public <T> Field declareField(String name, BiConsumer<Value, T> consumer, Function<Object, T> transform) {
@@ -59,6 +83,27 @@ public class ConstructingObjectParser<Value> implements ObjectParser<Value> {
         return field;
     }
 
+    /**
+     * Declare a constructor argument. Constructor arguments are implicitly ordered by the order they are executed.
+     * <p>
+     * When calling `apply`, all constructor arguments are considered required. If missing, `apply` will throw an exception.
+     * <p>
+     * <code>{@code
+     * ConstructingObjectParser<Integer> c = new ConstructingObjectParser<>(args -> new Integer((int) args[0])0;
+     * c.declareInteger("number");
+     * <p>
+     * // alternately, the longer way:
+     * //c.declareConstructorArg("number", ObjectTransform::transformInteger)
+     * <p>
+     * Integer i = c.apply(Collections.singletonMap("number", 100);
+     * // i == 100
+     * }</code>
+     *
+     * @param name      The name of this constructor argument
+     * @param transform The function to transform an Object to the specified T type
+     * @param <T>       the type of value expected for this constructor arg.
+     * @return
+     */
     @Override
     @SuppressWarnings("WeakerAccess") // Public Interface
     public <T> Field declareConstructorArg(String name, Function<Object, T> transform) {
@@ -80,18 +125,16 @@ public class ConstructingObjectParser<Value> implements ObjectParser<Value> {
     }
 
     /**
-     * Construct an object using the given config.
-     * <p>
-     * The intent is that a config map, such as one from a Logstash pipeline config:
-     * <p>
-     * input {
-     * example {
-     * some => "setting"
-     * goes => "here"
-     * }
-     * }
-     * <p>
-     * ... will know how to build an object for the above "example" input plugin.
+     * Use the given config to produce the Value object.
+     *
+     * Contract:
+     * 1) All declared constructor arguments are required. If any are missing, an IllegalArgumentException is thrown.
+     * 2) All declared fields are optional.
+     * 3) Any unknown fields found will cause this method to throw an IllegalArgumentException.
+     * 4) If any field processing fails, an IllegalArgumentException is thrown
+     *
+     * @param config the configuration
+     * @return the configured object
      */
     public Value apply(Map<String, Object> config) {
         rejectUnknownFields(config.keySet());
