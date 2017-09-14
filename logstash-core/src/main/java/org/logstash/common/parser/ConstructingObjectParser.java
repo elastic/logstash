@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
 public class ConstructingObjectParser<Value> implements ObjectParser<Value> {
     private final Logger logger = LogManager.getLogger();
     private final Function<Object[], Value> builder;
-    private final Map<String, FieldDefinition<Value>> parsers = new LinkedHashMap<>();
+    private final Map<String, FieldDefinition<Value>> parsers = new HashMap<>();
     private final Map<String, FieldDefinition<Object[]>> constructorArgs;
 
     /**
@@ -39,7 +39,7 @@ public class ConstructingObjectParser<Value> implements ObjectParser<Value> {
     @SuppressWarnings("WeakerAccess") // Public Interface
     public ConstructingObjectParser(Function<Object[], Value> builder) {
         this.builder = builder;
-        constructorArgs = new TreeMap<>();
+        constructorArgs = new HashMap<>();
     }
 
     @Override
