@@ -10,7 +10,7 @@ These set of tests are full integration tests as in: they can start LS from a bi
 * `JRuby`
 * `rspec` 
 * `rake`
-* 'bundler'
+* `bundler`
 
 From the Logstash root directory:
 
