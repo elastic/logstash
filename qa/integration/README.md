@@ -2,12 +2,15 @@
 
 These set of tests are full integration tests as in: they can start LS from a binary, run configs using `-e` and can use any external services like Kafka, ES and S3. This framework is hybrid -- a combination of bash scripts (to mainly setup services), Ruby service files, and RSpec. All test assertions are done in RSpec.
 
-## Dependencies 
+
+
+## Running integration tests locally (Mac/Linux)
+
+### Dependencies 
 * `JRuby`
 * `rspec` 
 * `rake`
-
-## Running integration tests locally (Mac/Linux)
+* 'bundler'
 
 From the Logstash root directory:
 
@@ -22,11 +25,10 @@ bundle exec rspec specs/*  (all tests)
 ```
 ## Running integration tests locally via Docker 
 
+### Dependencies 
+* `Docker`
+
 From the Logstash root directory:
-
-* Run all tests (Mac/Linux): `ci/docker_integration_tests.sh`
-
-or
 
 * Run all tests:
 ```
@@ -40,8 +42,8 @@ docker run -it --rm logstash-integration-tests ci/integration_tests.sh specs/es_
 ``` 
 * Debug tests:
 ```
-docker ps --all -q -f status=exited | xargs docker rm  
-(Windows `docker ps -a` and take not of any exited containers, then `docker rm <container-id>`) 
+(Mac/Linux) docker ps --all -q -f status=exited | xargs docker rm  
+(Windows) `docker ps -a` and take note of any exited containers, then `docker rm <container-id>`
 docker build -t logstash-integration-tests . 
 docker run -d --name debug logstash-integration-tests tail -f /dev/null
 docker exec -it debug ci/integration_tests.sh setup 
