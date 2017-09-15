@@ -17,12 +17,6 @@ if [[ $SELECTED_TEST_SUITE == $"core-fail-fast" ]]; then
   rake test:install-core
   echo "Running test:core-fail-fast"
   rake test:core-fail-fast
-elif [[ $SELECTED_TEST_SUITE == $"all" ]]; then
-  echo "Running all plugins tests"
-  echo "Running test:install-all"  # Install all plugins in this logstash instance, including development dependencies
-  rake test:install-all
-  echo "Running test:plugins"    # Run all plugins tests
-  rake test:plugins
 elif [[ $SELECTED_TEST_SUITE == $"java" ]]; then
   echo "Running Java unit tests"
   echo "Running test:core-java"
