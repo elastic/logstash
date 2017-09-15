@@ -6,7 +6,6 @@ DEFAULT_DOC_DIRECTORY = ::File.join(::File.dirname(__FILE__), "..", "build", "do
 namespace "docs" do
   desc "Generate documentation for all plugins"
   task "generate" do
-    Rake::Task['plugin:install-all'].invoke
     Rake::Task['docs:generate-plugins'].invoke
   end
 
