@@ -6,8 +6,6 @@ cache:
   directories:
     - vendor/bundle
     - ~/.gradle/
-rvm:
-  - jruby-9.1.10.0
 jdk:
   - oraclejdk8
 env:
@@ -20,12 +18,15 @@ before_install:
   - sudo service docker stop
   - sudo dockerd --disable-legacy-registry &>/dev/null &
   - export JRUBY_OPTS=""
-  # Force bundler 1.12.5 because version 1.13 has issues, see https://github.com/fastlane/fastlane/issues/6065#issuecomment-246044617
-  - yes | gem uninstall -q -i /home/travis/.rvm/gems/jruby-9.1.10.0@global bundler
-  - gem install bundler -v 1.12.5 --no-rdoc --no-ri --no-document --quiet
+  - wget http://central.maven.org/maven2/org/jruby/jruby-dist/9.1.13.0/jruby-dist-9.1.13.0-bin.tar.gz
+  - tar xvf jruby-dist-9.1.13.0-bin.tar.gz --strip 1 -C ~/jruby
+  - export PATH=~/jruby/bin:$PATH 
 install:
+  - export PATH=~/jruby/bin:$PATH
+  - gem install rake
   - rake test:install-core
 script:
+  - export PATH=~/jruby/bin:$PATH
   - |+
       if [ "$INTEGRATION" == "true" ]; then
         ci/travis_integration_install.sh
