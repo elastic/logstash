@@ -23,6 +23,7 @@ class TranslateFilterPlugin {
         TRANSLATE.declareConstructorArg("dictionary", (config) -> config);
         TRANSLATE.declareConstructorArg("dictionary_path", (object) -> Paths.get(ObjectTransforms.transformString(object)));
 
+        // These are all nice settings that are optional in the plugin.
         TRANSLATE.declareString("destination", TranslateFilter::setDestination);
         TRANSLATE.declareBoolean("exact", TranslateFilter::setExact);
         TRANSLATE.declareBoolean("override", TranslateFilter::setOverride);
@@ -40,7 +41,7 @@ class TranslateFilterPlugin {
         }
 
         if (args[1] != null) {
-            // "dictionary" field was set, so args[0] is a map.
+            // "dictionary" field was set, so args[1] is a map.
             return new TranslateFilter(source, (Map<String, Object>) args[1]);
         } else {
             // dictionary_path set, so let's use a file-backed translate filter.
@@ -92,6 +93,8 @@ class TranslateFilterPlugin {
 
         @Override
         public Collection<Event> apply(Collection<Event> events) {
+            // This implementation is incomplete. This test implementation primarily exists to demonstrate
+            // the usage of the ConstructingObjectParser with a real plugin.
             for (Event event : events) {
                 Object input = event.getField(source);
                 if (input == null && fallback != null) {
