@@ -24,7 +24,6 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-
 // TODO: Notes
 //
 // - time-based fsync
@@ -435,11 +434,27 @@ public class Queue implements Closeable {
         }
     }
 
-    // @return true if the queue is deemed at full capacity
+    /**
+     * <p>Checks if the Queue is full, with "full" defined as either of:</p>
+     * <p>Assuming a maximum size of the queue larger than 0 is defined:</p>
+     * <ul>
+     *     <li>The sum of the size of all allocated pages is more than the allowed maximum Queue 
+     *     size</li>
+     *     <li>The sum of the size of all allocated pages equal to the allowed maximum Queue size 
+     *     and the current head page has no remaining capacity.</li>
+     * </ul>
+     * <p>or assuming a max unread count larger than 0, is defined "full" is also defined as:</p>
+     * <ul>
+     *     <li>The current number of unread events exceeds or is equal to the configured maximum 
+     *     number of allowed unread events.</li>
+     * </ul>
+     * @return True iff the queue is full
+     */
     public boolean isFull() {
-        // TODO: I am not sure if having unreadCount as volatile is sufficient here. all unreadCount updates are done inside synchronized
-        // TODO: sections, I believe that to only read the value here, having it as volatile is sufficient?
-        if ((this.maxBytes > 0) && this.currentByteSize >= this.maxBytes) {
+        if (this.maxBytes > 0L && (
+            this.currentByteSize > this.maxBytes 
+                || this.currentByteSize == this.maxBytes && !headPage.hasSpace(1)
+        )) {
             return true;
         } else {
             return ((this.maxUnread > 0) && this.unreadCount >= this.maxUnread);

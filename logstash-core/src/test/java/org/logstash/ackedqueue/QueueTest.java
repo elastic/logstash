@@ -106,6 +106,29 @@ public class QueueTest {
         }
     }
 
+    /**
+     * This test ensures that the {@link Queue} functions properly when pagesize is equal to overall
+     * queue size (i.e. there is only a single page).
+     * @throws IOException On Failure
+     */
+    @Test(timeout = 5000)
+    public void writeWhenPageEqualsQueueSize() throws IOException {
+        final Queueable element = new StringElement("foobarbaz");
+        // Queue that can only hold one element per page.
+        try (Queue q = new TestQueue(
+            TestSettings.volatileQueueSettings(1024, 1024L))) {
+            q.open();
+            for (int i = 0; i < 3; ++i) {
+                q.write(element);
+                try (Batch b = q.readBatch(1, 500L)) {
+                    assertThat(b.getElements().size(), is(1));
+                    assertThat(b.getElements().get(0).toString(), is(element.toString()));
+                }
+            }
+            assertThat(q.nonBlockReadBatch(1), nullValue());
+        }
+    }
+
     @Test
     public void singleWriteMultiRead() throws IOException {
         try (Queue q = new TestQueue(TestSettings.volatileQueueSettings(100))) {
@@ -458,7 +481,7 @@ public class QueueTest {
     }
 
     @Test(timeout = 5000)
-    public void reachMaxSizeTest() throws IOException, InterruptedException, ExecutionException {
+    public void reachMaxSizeTest() throws IOException, InterruptedException {
         Queueable element = new StringElement("0123456789"); // 10 bytes
 
         int singleElementCapacity = singleElementCapacityForByteBufferPageIO(element);
@@ -468,8 +491,8 @@ public class QueueTest {
         try (TestQueue q = new TestQueue(settings)) {
             q.open();
 
-            int ELEMENT_COUNT = 90; // should be able to write 99 events before getting full
-            for (int i = 0; i < ELEMENT_COUNT; i++) {
+            int elementCount = 99; // should be able to write 99 events before getting full
+            for (int i = 0; i < elementCount; i++) {
                 q.write(element);
             }
 
@@ -495,9 +518,9 @@ public class QueueTest {
         Settings settings = TestSettings.volatileQueueSettings(singleElementCapacity * 10, singleElementCapacity * 100);
         try (TestQueue q = new TestQueue(settings)) {
             q.open();
-            // should be able to write 90 events (9 pages) before getting full
-            final long ELEMENT_COUNT = 90;
-            for (int i = 0; i < ELEMENT_COUNT; i++) {
+            // should be able to write 90 + 9 events (9 pages + 1 head-page) before getting full
+            final long elementCount = 99;
+            for (int i = 0; i < elementCount; i++) {
                 q.write(element);
             }
             assertThat(q.isFull(), is(false));
@@ -517,7 +540,7 @@ public class QueueTest {
             while (q.isFull()) { Thread.sleep(10); }
             assertThat(q.isFull(), is(false));
             
-            assertThat(future.get(), is(ELEMENT_COUNT + 1));
+            assertThat(future.get(), is(elementCount + 1));
         }
     }
 
@@ -531,9 +554,9 @@ public class QueueTest {
         Settings settings = TestSettings.volatileQueueSettings(singleElementCapacity * 10, singleElementCapacity * 100);
         try (TestQueue q = new TestQueue(settings)) {
             q.open();
-            int ELEMENT_COUNT =
-                90; // should be able to write 90 events (9 pages) before getting full
-            for (int i = 0; i < ELEMENT_COUNT; i++) { 
+            // should be able to write 90 + 9 events (9 pages + 1 head-page) before getting full
+            int elementCount = 99;
+            for (int i = 0; i < elementCount; i++) { 
                 q.write(element);
             }
 
@@ -554,12 +577,12 @@ public class QueueTest {
 
             b.close();  // purge 1 page
 
-            assertThat(future.get(), is(ELEMENT_COUNT + 1L));
+            assertThat(future.get(), is(elementCount + 1L));
         }
     }
 
     @Test(timeout = 5000)
-    public void queueStillFullAfterPartialPageAckTest() throws IOException, InterruptedException, ExecutionException {
+    public void queueStillFullAfterPartialPageAckTest() throws IOException, InterruptedException {
 
         Queueable element = new StringElement("0123456789"); // 10 bytes
 
@@ -570,7 +593,7 @@ public class QueueTest {
         try (TestQueue q = new TestQueue(settings)) {
             q.open();
 
-            int ELEMENT_COUNT = 90; // should be able to write 99 events before getting full
+            int ELEMENT_COUNT = 99; // should be able to write 99 events before getting full
             for (int i = 0; i < ELEMENT_COUNT; i++) {
                 q.write(element);
             }
