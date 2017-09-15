@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
-class ObjectTransforms {
+public class ObjectTransforms {
     /**
      * A function which takes an Object and returns an Integer
      *
