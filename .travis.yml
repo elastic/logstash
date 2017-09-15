@@ -1,7 +1,6 @@
 sudo: required
 services:
   - docker
-language: ruby
 cache:
   directories:
     - vendor/bundle
