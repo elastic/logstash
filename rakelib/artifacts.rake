@@ -197,12 +197,6 @@ namespace "artifact" do
     end
   end
 
-  task "prepare-all" do
-    if ENV['SKIP_PREPARE'] != "1"
-      ["bootstrap", "plugin:install-all", "artifact:clean-bundle-config"].each {|task| Rake::Task[task].invoke }
-    end
-  end
-
   def build_tar(tar_suffix = nil)
     require "zlib"
     require "archive/tar/minitar"
