@@ -16,7 +16,7 @@ module LogStash module Util class ModulesSettingArray
     @original = value
     # wrap passwords
     @original.each do |hash|
-      hash.keys.select{|key| key.to_s.end_with?('password')}.each do |key|
+      hash.keys.select{|key| key.to_s.end_with?('password') && !hash[key].is_a?(LogStash::Util::Password)}.each do |key|
         hash[key] = LogStash::Util::Password.new(hash[key])
       end
     end

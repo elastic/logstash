@@ -70,7 +70,7 @@ concerns.
 --
 +
 The path to an X.509 certificate to use to validate SSL certificates when
-communicating with Kibana.
+communicating with Elasticsearch.
 
 *`var.elasticsearch.ssl.certificate`*::
 +
