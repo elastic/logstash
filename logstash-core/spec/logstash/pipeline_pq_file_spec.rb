@@ -1,8 +1,8 @@
 # encoding: utf-8
 require "spec_helper"
 require "logstash/inputs/generator"
-require "logstash/filters/multiline"
 require_relative "../support/helpers"
+require_relative "../support/mocks_classes"
 
 class PipelinePqFileOutput < LogStash::Outputs::Base
   config_name "pipelinepqfileoutput"
@@ -40,7 +40,7 @@ describe LogStash::Pipeline do
   let(:pipeline_settings_obj) { LogStash::SETTINGS.clone }
   let(:pipeline_id) { "main" }
 
-  let(:multiline_id) { "my-multiline" }
+  let(:dummy_id) { "my-dummyid" }
   let(:output_id) { "my-pipelinepqfileoutput" }
   let(:generator_id) { "my-generator" }
   let(:config) do
@@ -52,10 +52,8 @@ describe LogStash::Pipeline do
       }
     }
     filter {
-      multiline {
-        id => "#{multiline_id}"
-        pattern => "hello"
-        what => next
+      dummyfilter {
+        id => "#{dummy_id}"
       }
     }
     output {
@@ -98,7 +96,7 @@ describe LogStash::Pipeline do
     allow(PipelinePqFileOutput).to receive(:new).with(any_args).and_return(counting_output)
     allow(LogStash::Plugin).to receive(:lookup).with("input", "generator").and_return(LogStash::Inputs::Generator)
     allow(LogStash::Plugin).to receive(:lookup).with("codec", "plain").and_return(LogStash::Codecs::Plain)
-    allow(LogStash::Plugin).to receive(:lookup).with("filter", "multiline").and_return(LogStash::Filters::Multiline)
+    allow(LogStash::Plugin).to receive(:lookup).with("filter", "dummyfilter").and_return(LogStash::Filters::DummyFilter)
     allow(LogStash::Plugin).to receive(:lookup).with("output", "pipelinepqfileoutput").and_return(PipelinePqFileOutput)
 
     pipeline_workers_setting = LogStash::SETTINGS.get_setting("pipeline.workers")
