@@ -65,7 +65,7 @@ namespace "vendor" do
 
     info = VERSIONS[JRUBY_RUNTIME] || VERSIONS[JRUBY]
     version = info["version"]
-    url = info["url"] || "http://jruby.org.s3.amazonaws.com/downloads/#{version}/jruby-bin-#{version}.tar.gz"
+    url = info["url"] || "http://central.maven.org/maven2/org/jruby/jruby-dist/#{version}/jruby-dist-#{version}-bin.tar.gz"
 
     discard_patterns = Regexp.union([
       /^samples/,
