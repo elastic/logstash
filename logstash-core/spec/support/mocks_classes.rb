@@ -14,6 +14,20 @@ module LogStash
       end
     end
   end
+
+  module Filters
+    class DummyFilter < LogStash::Filters::Base
+      config_name "dummyfilter"
+
+      def register
+      end
+
+      def filter(event)
+        # noop
+      end
+    end
+  end
+
   module Outputs
     class DummyOutput < LogStash::Outputs::Base
       config_name "dummyoutput"
