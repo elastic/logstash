@@ -23,6 +23,7 @@ before_install:
 install:
   - export PATH=~/jruby/bin:$PATH
   - gem install rake
+  - gem install bundler
   - rake test:install-core
 script:
   - export PATH=~/jruby/bin:$PATH
