@@ -149,10 +149,9 @@ To run the tests of all currently installed plugins:
 
     rake test:plugin
 
-You can install the default set of plugins included in the logstash package or all plugins:
+You can install the default set of plugins included in the logstash package:
 
     rake test:install-default
-    rake test:install-all
 
 ---
 Note that if a plugin is installed using the plugin manager `bin/logstash-plugin install ...` do not forget to also install the plugins development dependencies using the following command after the plugin installation:
