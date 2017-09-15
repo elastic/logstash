@@ -27,14 +27,18 @@ include::static/managing-multiline-events.asciidoc[]
 include::static/glob-support.asciidoc[]
 
 // Centralized configuration managements
+:edit_url: https://github.com/elastic/logstash/edit/master/docs/static/config-management.asciidoc
 include::static/config-management.asciidoc[]
 
 // Working with Logstash Modules
 
+:edit_url: https://github.com/elastic/logstash/edit/master/docs/static/modules.asciidoc
 include::static/modules.asciidoc[]
 
+:edit_url: https://github.com/elastic/logstash/edit/master/docs/static/arcsight-module.asciidoc
 include::static/arcsight-module.asciidoc[]
 
+:edit_url: https://github.com/elastic/logstash/edit/master/docs/static/netflow-module.asciidoc
 include::static/netflow-module.asciidoc[]
 
 // Working with Filebeat Modules
