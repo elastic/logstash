@@ -159,5 +159,6 @@ public final class DeadLetterQueueReader implements Closeable {
         if (currentReader != null) {
             currentReader.close();
         }
+        this.watchService.close();
     }
 }
