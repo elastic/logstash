@@ -51,24 +51,6 @@ namespace "plugin" do
     task.reenable # Allow this task to be run again
   end
 
-  task "install-all" => "bootstrap" do
-    puts("[plugin:install-all] Installing all plugins from https://github.com/logstash-plugins")
-    p = *LogStash::RakeLib.fetch_all_plugins
-    # Install plugin one by one, ignoring plugins that have issues. Otherwise, one bad plugin will
-    # blow up the entire install process.
-    # TODO Push this downstream to #install_plugins
-    p.each do |plugin|
-      begin
-        install_plugins("--no-verify", "--preserve", plugin)
-      rescue
-        puts "Unable to install #{plugin}. Skipping"
-        next
-      end
-    end
-
-    task.reenable # Allow this task to be run again
-  end
-
   task "clean-local-core-gem", [:name, :path] do |task, args|
     name = args[:name]
     path = args[:path]
