@@ -66,8 +66,6 @@ namespace "test" do
 
   task "install-vendor-plugins" => ["bootstrap", "plugin:install-vendor", "plugin:install-development-dependencies"]
 
-  task "install-jar-dependencies-plugins" => ["bootstrap", "plugin:install-jar-dependencies", "plugin:install-development-dependencies"]
-
   # Setup simplecov to group files per functional modules, like this is easier to spot places with small coverage
   task "setup-simplecov" do
     require "simplecov"

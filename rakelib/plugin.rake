@@ -37,13 +37,6 @@ namespace "plugin" do
     task.reenable # Allow this task to be run again
   end
 
-  task "install-jar-dependencies" => "bootstrap" do
-    puts("[plugin:install-jar-dependencies] Installing jar_dependencies plugins for testing")
-    install_plugins("--no-verify", "--preserve", *LogStash::RakeLib::TEST_JAR_DEPENDENCIES_PLUGINS)
-
-    task.reenable # Allow this task to be run again
-  end
-
   task "install-vendor" => "bootstrap" do
     puts("[plugin:install-jar-dependencies] Installing vendor plugins for testing")
     install_plugins("--no-verify", "--preserve", *LogStash::RakeLib::TEST_VENDOR_PLUGINS)
