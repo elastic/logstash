@@ -1,6 +1,4 @@
 sudo: required
-services:
-  - docker
 language: ruby
 cache:
   directories:
@@ -16,9 +14,6 @@ env:
   - INTEGRATION=false FEATURE_FLAG=persistent_queues SPEC_OPTS="--order rand --format documentation" JRUBY_OPTS='-Xcompile.invokedynamic=false'
   - INTEGRATION=true FEATURE_FLAG=persistent_queues SPEC_OPTS="--order rand --format documentation" JRUBY_OPTS='-Xcompile.invokedynamic=false'
 before_install:
-  - sudo apt-get update && sudo apt-get install -y docker-ce
-  - sudo service docker stop
-  - sudo dockerd --disable-legacy-registry &>/dev/null &
   - export JRUBY_OPTS=""
   # Force bundler 1.12.5 because version 1.13 has issues, see https://github.com/fastlane/fastlane/issues/6065#issuecomment-246044617
   - yes | gem uninstall -q -i /home/travis/.rvm/gems/jruby-9.1.10.0@global bundler
