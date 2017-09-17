@@ -12,9 +12,9 @@ public final class ConvertedMap extends HashMap<String, Object> {
         super((size << 2) / 3 + 2);
     }
     
-    public static ConvertedMap newFromMap(Map<Serializable, Object> o) {
+    public static ConvertedMap newFromMap(Map<? extends Serializable, Object> o) {
         ConvertedMap cm = new ConvertedMap(o.size());
-        for (final Map.Entry<Serializable, Object> entry : o.entrySet()) {
+        for (final Map.Entry<? extends Serializable, Object> entry : o.entrySet()) {
             cm.put(entry.getKey().toString(), Valuefier.convert(entry.getValue()));
         }
         return cm;
