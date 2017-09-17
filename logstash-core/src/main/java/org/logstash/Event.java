@@ -263,7 +263,10 @@ public final class Event implements Cloneable, Queueable {
 
     @Override
     public Event clone() {
-        return new Event(Cloner.<Map<String, Object>>deep(this.data));
+        final ConvertedMap map =
+            ConvertedMap.newFromMap(Cloner.<Map<String, Object>>deep(data));
+        map.putInterned(METADATA, Cloner.<Map<String, Object>>deep(metadata));
+        return new Event(map);
     }
 
     public String toString() {
