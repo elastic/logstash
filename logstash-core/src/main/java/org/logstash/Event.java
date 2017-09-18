@@ -26,7 +26,6 @@ public final class Event implements Cloneable, Queueable {
     private boolean cancelled;
     private ConvertedMap data;
     private ConvertedMap metadata;
-    private Timestamp timestamp;
 
     public static final String METADATA = "@metadata";
     public static final String METADATA_BRACKETS = "[" + METADATA + "]";
@@ -48,8 +47,7 @@ public final class Event implements Cloneable, Queueable {
         this.data = new ConvertedMap(10);
         this.data.putInterned(VERSION, VERSION_ONE);
         this.cancelled = false;
-        this.timestamp = new Timestamp();
-        this.data.putInterned(TIMESTAMP, this.timestamp);
+        this.data.putInterned(TIMESTAMP, new Timestamp());
     }
 
     /**
@@ -84,8 +82,7 @@ public final class Event implements Cloneable, Queueable {
         Object providedTimestamp = data.get(TIMESTAMP);
         // keep reference to the parsedTimestamp for tagging below
         Timestamp parsedTimestamp = initTimestamp(providedTimestamp);
-        this.timestamp = (parsedTimestamp == null) ? Timestamp.now() : parsedTimestamp;
-        Accessors.set(data, FieldReference.TIMESTAMP_REFERENCE, timestamp);
+        data.putInterned(TIMESTAMP, parsedTimestamp == null ? Timestamp.now() : parsedTimestamp);
         // the tag() method has to be called after the Accessors initialization
         if (parsedTimestamp == null) {
             tag(TIMESTAMP_FAILURE_TAG);
@@ -114,16 +111,16 @@ public final class Event implements Cloneable, Queueable {
     }
 
     public Timestamp getTimestamp() throws IOException {
-        if (this.data.containsKey(TIMESTAMP)) {
-            return this.timestamp;
+        final Timestamp timestamp = (Timestamp) data.get(TIMESTAMP);
+        if (timestamp != null) {
+            return timestamp;
         } else {
             throw new IOException("fails");
         }
     }
 
     public void setTimestamp(Timestamp t) {
-        this.timestamp = t;
-        this.data.putInterned(TIMESTAMP, this.timestamp);
+        this.data.putInterned(TIMESTAMP, t);
     }
 
     public Object getField(final String reference) {
@@ -235,9 +232,9 @@ public final class Event implements Cloneable, Queueable {
         this.data = e.data;
         this.cancelled = e.cancelled;
         try {
-            this.timestamp = e.getTimestamp();
+            e.getTimestamp();
         } catch (IOException exception) {
-            this.timestamp = new Timestamp();
+            setTimestamp(new Timestamp());
         }
 
         return this;
