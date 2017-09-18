@@ -1,7 +1,7 @@
 PATH
   remote: ./logstash-core
   specs:
-    logstash-core (5.6.1-java)
+    logstash-core (5.6.2-java)
       chronic_duration (= 0.10.6)
       clamp (~> 0.6.5)
       concurrent-ruby (~> 1.0, >= 1.0.5)
@@ -28,7 +28,7 @@ PATH
   remote: ./logstash-core-plugin-api
   specs:
     logstash-core-plugin-api (2.1.12-java)
-      logstash-core (= 5.6.1)
+      logstash-core (= 5.6.2)
 
 GEM
   remote: https://rubygems.org/
@@ -129,7 +129,7 @@ GEM
     jruby-openssl (0.9.19-java)
     jruby-stdin-channel (0.2.0-java)
     json (1.8.6-java)
-    kramdown (1.15.0)
+    kramdown (1.14.0)
     logstash-codec-cef (4.1.4-java)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
     logstash-codec-collectd (3.0.7)
@@ -174,11 +174,11 @@ GEM
     logstash-codec-rubydebug (3.0.4)
       awesome_print
       logstash-core-plugin-api (>= 1.60, <= 2.99)
-    logstash-devutils (1.3.3-java)
+    logstash-devutils (1.3.4-java)
       fivemat
       gem_publisher
       insist (= 1.0.0)
-      kramdown
+      kramdown (= 1.14.0)
       logstash-core-plugin-api (>= 2.0, <= 2.99)
       minitar
       rake
@@ -346,10 +346,10 @@ GEM
       logstash-codec-json
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       logstash-mixin-rabbitmq_connection (>= 4.3.0, < 5.0.0)
-    logstash-input-redis (3.1.4)
+    logstash-input-redis (3.1.5)
       logstash-codec-json
       logstash-core-plugin-api (>= 1.60, <= 2.99)
-      redis
+      redis (~> 3)
     logstash-input-s3 (3.1.6)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       logstash-mixin-aws
@@ -460,7 +460,7 @@ GEM
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       redis
       stud
-    logstash-output-s3 (4.0.10)
+    logstash-output-s3 (4.0.11)
       concurrent-ruby
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       logstash-mixin-aws
@@ -564,7 +564,7 @@ GEM
     ruby-maven (3.3.12)
       ruby-maven-libs (~> 3.3.9)
     ruby-maven-libs (3.3.9)
-    ruby-progressbar (1.8.1)
+    ruby-progressbar (1.8.3)
     rubyzip (1.1.7)
     rufus-scheduler (3.0.9)
       tzinfo
