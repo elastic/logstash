@@ -5,7 +5,6 @@ require "pluginmanager/ui"
 require "pluginmanager/errors"
 require "jar-dependencies"
 require "jar_install_post_install_hook"
-require "file-dependencies/gem"
 require "fileutils"
 
 class LogStash::PluginManager::Install < LogStash::PluginManager::Command
