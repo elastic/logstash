@@ -1,94 +1,10 @@
 namespace "vendor" do
-  require "yaml"
-  VERSIONS = YAML.load(File.read(File.join(File.dirname(__FILE__), "..", "versions.yml")))
-
   def vendor(*args)
     return File.join("vendor", *args)
   end
 
-  # Untar any files from the given tarball file name.
-  #
-  # A tar entry is passed to the block. The block should should return
-  # * nil to skip this file
-  # * or, the desired string filename to write the file to.
-  def self.untar(tarball, &block)
-    Rake::Task["dependency:archive-tar-minitar"].invoke
-    require "archive/tar/minitar"
-    tgz = Zlib::GzipReader.new(File.open(tarball,"rb"))
-    tar = Archive::Tar::Minitar::Input.open(tgz)
-    tar.each do |entry|
-      path = block.call(entry)
-      next if path.nil?
-      parent = File.dirname(path)
-
-      FileUtils.mkdir_p(parent) unless File.directory?(parent)
-
-      # Skip this file if the output file is the same size
-      if entry.directory?
-        FileUtils.mkdir(path) unless File.directory?(path)
-      else
-        entry_mode = entry.instance_eval { @mode } & 0777
-        if File.exists?(path)
-          stat = File.stat(path)
-          # TODO(sissel): Submit a patch to archive-tar-minitar upstream to
-          # expose headers in the entry.
-          entry_size = entry.instance_eval { @size }
-          # If file sizes are same, skip writing.
-          if Gem.win_platform?
-            #Do not fight with windows permission scheme
-            next if stat.size == entry_size
-          else
-            next if stat.size == entry_size && (stat.mode & 0777) == entry_mode
-          end
-        end
-        puts "Extracting #{entry.full_name} from #{tarball} #{entry_mode.to_s(8)}" if ENV['DEBUG']
-        File.open(path, "wb") do |fd|
-          # eof? check lets us skip empty files. Necessary because the API provided by
-          # Archive::Tar::Minitar::Reader::EntryStream only mostly acts like an
-          # IO object. Something about empty files in this EntryStream causes
-          # IO.copy_stream to throw "can't convert nil into String" on JRuby
-          # TODO(sissel): File a bug about this.
-          while !entry.eof?
-            chunk = entry.read(16384)
-            fd.write(chunk)
-          end
-        end
-        File.chmod(entry_mode, path)
-      end
-    end
-    tar.close
-  end # def untar
-
   task "jruby" do |task, args|
-    JRUBY = "jruby"
-    JRUBY_RUNTIME = "jruby-runtime-override"
-
-    info = VERSIONS[JRUBY_RUNTIME] || VERSIONS[JRUBY]
-    version = info["version"]
-    url = info["url"] || "http://jruby.org.s3.amazonaws.com/downloads/#{version}/jruby-bin-#{version}.tar.gz"
-
-    discard_patterns = Regexp.union([
-      /^samples/,
-      /@LongLink/,
-      /lib\/ruby\/1.8/,
-      /lib\/ruby\/2.0/,
-      /lib\/ruby\/shared\/rdoc/,
-    ])
-
-    download = file_fetch(url, info["sha1"])
-
-    parent = vendor(JRUBY).gsub(/\/$/, "")
-    directory parent => "vendor" do
-      next if parent =~ discard_patterns
-      FileUtils.mkdir(parent)
-    end.invoke unless Rake::Task.task_defined?(parent)
-
-    prefix_re = /^#{Regexp.quote("jruby-#{version}/")}/
-    untar(download) do |entry|
-      out = entry.full_name.gsub(prefix_re, "")
-      next if out =~ discard_patterns
-      vendor(JRUBY, out)
-    end # untar
+    system('./gradlew bootstrap')
   end # jruby
 
   task "all" => "jruby"

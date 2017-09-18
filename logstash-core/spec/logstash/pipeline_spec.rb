@@ -1,7 +1,7 @@
 # encoding: utf-8
 require "spec_helper"
 require "logstash/inputs/generator"
-require "logstash/filters/multiline"
+require "logstash/filters/drop"
 require_relative "../support/mocks_classes"
 require_relative "../support/helpers"
 require_relative "../logstash/pipeline_reporter_spec" # for DummyOutput class
@@ -413,19 +413,12 @@ describe LogStash::Pipeline do
     context "cancelled events should not propagate down the filters" do
       config <<-CONFIG
         filter {
-          multiline {
-           pattern => "hello"
-           what => next
-          }
-          multiline {
-           pattern => "hello"
-           what => next
-          }
+          drop {}
         }
       CONFIG
 
       sample_one("hello") do
-        expect(subject.get("message")).to eq("hello")
+        expect(subject).to eq(nil)
       end
     end
 
@@ -435,19 +428,11 @@ describe LogStash::Pipeline do
           clone {
             clones => ["clone1"]
           }
-          multiline {
-            pattern => "bar"
-            what => previous
-          }
         }
       CONFIG
 
       sample_one(["foo", "bar"]) do
-        expect(subject.size).to eq(2)
-        expect(subject[0].get("message")).to eq("foo\nbar")
-        expect(subject[0].get("type")).to be_nil
-        expect(subject[1].get("message")).to eq("foo\nbar")
-        expect(subject[1].get("type")).to eq("clone1")
+        expect(subject.size).to eq(4)
       end
     end
   end
@@ -732,8 +717,8 @@ describe LogStash::Pipeline do
     let(:pipeline_settings) { { "pipeline.id" => pipeline_id } }
     let(:pipeline_id) { "main" }
     let(:number_of_events) { 420 }
-    let(:multiline_id) { "my-multiline" }
-    let(:multiline_id_other) { "my-multiline_other" }
+    let(:dummy_id) { "my-multiline" }
+    let(:dummy_id_other) { "my-multiline_other" }
     let(:dummy_output_id) { "my-dummyoutput" }
     let(:generator_id) { "my-generator" }
     let(:config) do
@@ -745,15 +730,11 @@ describe LogStash::Pipeline do
         }
       }
       filter {
-         multiline {
-              id => "#{multiline_id}"
-              pattern => "hello"
-              what => next
+          dummyfilter {
+              id => "#{dummy_id}"
           }
-          multiline {
-               id => "#{multiline_id_other}"
-               pattern => "hello"
-               what => next
+          dummyfilter {
+               id => "#{dummy_id_other}"
            }
       }
       output {
@@ -776,7 +757,7 @@ describe LogStash::Pipeline do
       allow(::LogStash::Outputs::DummyOutput).to receive(:new).with(any_args).and_return(dummyoutput)
       allow(LogStash::Plugin).to receive(:lookup).with("input", "generator").and_return(LogStash::Inputs::Generator)
       allow(LogStash::Plugin).to receive(:lookup).with("codec", "plain").and_return(LogStash::Codecs::Plain)
-      allow(LogStash::Plugin).to receive(:lookup).with("filter", "multiline").and_return(LogStash::Filters::Multiline)
+      allow(LogStash::Plugin).to receive(:lookup).with("filter", "dummyfilter").and_return(LogStash::Filters::DummyFilter)
       allow(LogStash::Plugin).to receive(:lookup).with("output", "dummyoutput").and_return(::LogStash::Outputs::DummyOutput)
 
       pipeline_thread
@@ -820,7 +801,7 @@ describe LogStash::Pipeline do
       end
 
       it "populates the filter metrics" do
-        [multiline_id, multiline_id_other].map(&:to_sym).each do |id|
+        [dummy_id, dummy_id_other].map(&:to_sym).each do |id|
           [:in, :out].each do |metric_key|
             plugin_name = id.to_sym
             expect(collected_metric[:stats][:pipelines][:main][:plugins][:filters][plugin_name][:events][metric_key].value).to eq(number_of_events)
@@ -842,9 +823,9 @@ describe LogStash::Pipeline do
       end
 
       it "populates the name of the filter plugin" do
-        [multiline_id, multiline_id_other].map(&:to_sym).each do |id|
+        [dummy_id, dummy_id_other].map(&:to_sym).each do |id|
           plugin_name = id.to_sym
-          expect(collected_metric[:stats][:pipelines][:main][:plugins][:filters][plugin_name][:name].value).to eq(LogStash::Filters::Multiline.config_name)
+          expect(collected_metric[:stats][:pipelines][:main][:plugins][:filters][plugin_name][:name].value).to eq(LogStash::Filters::DummyFilter.config_name)
         end
       end
 
