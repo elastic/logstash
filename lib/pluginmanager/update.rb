@@ -2,7 +2,6 @@
 require "pluginmanager/command"
 require "jar-dependencies"
 require "jar_install_post_install_hook"
-require "file-dependencies/gem"
 
 class LogStash::PluginManager::Update < LogStash::PluginManager::Command
   REJECTED_OPTIONS = [:path, :git, :github]
