@@ -1,6 +1,0 @@
-#!/usr/bin/env ruby
-
-require "bundler/setup"
-require "logstash/docgen/runner"
-
-LogStash::Docgen::Runner.run
