@@ -129,7 +129,7 @@ GEM
     jruby-openssl (0.9.19-java)
     jruby-stdin-channel (0.2.0-java)
     json (1.8.6-java)
-    kramdown (1.15.0)
+    kramdown (1.14.0)
     logstash-codec-cef (4.1.4-java)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
     logstash-codec-collectd (3.0.7)
