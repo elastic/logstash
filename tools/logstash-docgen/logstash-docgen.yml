@@ -1,8 +1,0 @@
----
-ignore_plugins:
-  - -mixin-
-  - logstash-input-example
-  - logstash-output-example
-  - logstash-codec-example
-  - logstash-filter-example
-  - logstash-patterns-core
