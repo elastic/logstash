@@ -3,7 +3,6 @@ package org.logstash.config.ir;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -41,17 +40,6 @@ public final class CompiledPipeline {
      * Configured Filters, indexed by their ID as returned by {@link PluginVertex#getId()}.
      */
     private final Map<String, RubyIntegration.Filter> filters;
-
-    /**
-     * Compiled {@link IfVertex, indexed by their ID as returned by {@link Vertex#getId()}.
-     */
-    private final Map<String, Dataset.SplitDataset> iffs = new HashMap<>(5);
-
-    /**
-     * Cached {@link Dataset} compiled from {@link PluginVertex} indexed by their ID as returned
-     * by {@link Vertex#getId()} to avoid duplicate computations.
-     */
-    private final Map<String, Dataset> plugins = new HashMap<>(5);
 
     /**
      * Immutable collection of filters that flush on shutdown.
@@ -125,21 +113,19 @@ public final class CompiledPipeline {
      * @return Compiled {@link Dataset} representation of the underlying {@link PipelineIR} topology
      */
     public Dataset buildExecution() {
-        // We sort the leaves of the graph in a deterministic fashion before compilation.
-        // This is not strictly necessary for correctness since it will only influence the order
-        // of output events for which Logstash makes no guarantees, but it greatly simplifies
-        // testing and is no issue performance wise since compilation only happens on pipeline
-        // reload.
-        iffs.clear();
-        plugins.clear();
+        final CompiledPipeline.CompiledExecution execution =
+            new CompiledPipeline.CompiledExecution();
         final Collection<Dataset> datasets = new ArrayList<>(5);
         pipelineIR.getGraph()
             .allLeaves()
             .filter(this::isOutput)
-            .sorted(Comparator.comparing(Vertex::hashPrefix))
-            .forEachOrdered(
-            leaf -> datasets.add(outputDataset(leaf.getId(), flatten(Dataset.ROOT_DATASETS, leaf)))
-        );
+            .forEach(
+                leaf -> datasets.add(
+                    execution.outputDataset(
+                        leaf.getId(), execution.flatten(Dataset.ROOT_DATASETS, leaf)
+                    )
+                )
+            );
         return Dataset.TerminalDataset.from(datasets);
     }
 
@@ -253,107 +239,6 @@ public final class CompiledPipeline {
     }
 
     /**
-     * Compiles the next level of the execution from the given {@link Vertex} or simply return
-     * the given {@link Dataset} at the previous level if the starting {@link Vertex} cannot
-     * be expanded any further (i.e. doesn't have any more incoming vertices that are either
-     * a {code filter} or and {code if} statement).
-     * @param datasets Nodes from the last already compiled level
-     * @param start Vertex to compile children for
-     * @return Datasets originating from given {@link Vertex}
-     */
-    private Collection<Dataset> flatten(final Collection<Dataset> datasets, final Vertex start) {
-        final Collection<Vertex> endings = start.incomingVertices()
-            .filter(v -> isFilter(v) || isOutput(v) || v instanceof IfVertex)
-            .collect(Collectors.toList());
-        return endings.isEmpty() ? datasets : compileDependencies(start, datasets, endings);
-    }
-
-    /**
-     * Compiles all child vertices for a given vertex.
-     * @param datasets Datasets from previous stage
-     * @param start Start Vertex that got expanded
-     * @param dependencies Dependencies of {@code start}
-     * @return Datasets compiled from vertex children
-     */
-    private Collection<Dataset> compileDependencies(final Vertex start,
-        final Collection<Dataset> datasets, final Collection<Vertex> dependencies) {
-        return dependencies.stream().map(
-            dependency -> {
-                final Collection<Dataset> transientDependencies = flatten(datasets, dependency);
-                if (isFilter(dependency)) {
-                    return filterDataset(dependency.getId(), transientDependencies);
-                } else if (isOutput(dependency)) {
-                    return outputDataset(dependency.getId(), transientDependencies);
-                } else {
-                    // We know that it's an if vertex since the the input children are either 
-                    // output, filter or if in type.
-                    final IfVertex ifvert = (IfVertex) dependency;
-                    final EventCondition iff = buildCondition(ifvert);
-                    final String index = ifvert.getId();
-                    // It is important that we double check that we are actually dealing with the
-                    // positive/left branch of the if condition
-                    if (ifvert.getOutgoingBooleanEdgesByType(true).stream()
-                        .anyMatch(edge -> Objects.equals(edge.getTo(), start))) {
-                        return split(transientDependencies, iff, index);
-                    } else {
-                        return split(transientDependencies, iff, index).right();
-                    }
-                }
-            }).collect(Collectors.toList());
-    }
-
-    /**
-     * Build a {@link Dataset} representing the {@link JrubyEventExtLibrary.RubyEvent}s after
-     * the application of the given filter.
-     * @param vertex Vertex Id of the filter to create this {@link Dataset} for
-     * @param datasets All the datasets that pass through this filter
-     * @return Filter {@link Dataset}
-     */
-    private Dataset filterDataset(final String vertex, final Collection<Dataset> datasets) {
-        return plugins.computeIfAbsent(vertex, v -> {
-            final Dataset filter;
-            final RubyIntegration.Filter ruby = filters.get(v);
-            if (ruby.hasFlush()) {
-                if (ruby.periodicFlush()) {
-                    filter = new Dataset.FilteredFlushableDataset(datasets, ruby);
-                } else {
-                    filter = new Dataset.FilteredShutdownFlushableDataset(datasets, ruby);
-                }
-            } else {
-                filter = new Dataset.FilteredDataset(datasets, ruby);
-            }
-            return filter;
-        });
-    }
-
-    /**
-     * Build a {@link Dataset} representing the {@link JrubyEventExtLibrary.RubyEvent}s after
-     * the application of the given output.
-     * @param vertexId Vertex Id of the filter to create this {@link Dataset} for
-     * filter node in the topology once
-     * @param datasets All the datasets that are passed into this output
-     * @return Output {@link Dataset}
-     */
-    private Dataset outputDataset(final String vertexId, final Collection<Dataset> datasets) {
-        return plugins.computeIfAbsent(
-            vertexId, v -> new Dataset.OutputDataset(datasets, outputs.get(v))
-        );
-    }
-
-    /**
-     * Split the given {@link Dataset}s and return the dataset half of their elements that contains
-     * the {@link JrubyEventExtLibrary.RubyEvent} that fulfil the given {@link EventCondition}.
-     * @param datasets Datasets to split
-     * @param condition Condition that must be fulfilled
-     * @param index Vertex id to cache the resulting {@link Dataset} under
-     * @return The half of the datasets contents that fulfils the condition
-     */
-    private Dataset.SplitDataset split(final Collection<Dataset> datasets,
-        final EventCondition condition, final String index) {
-        return iffs.computeIfAbsent(index, ind -> new Dataset.SplitDataset(datasets, condition));
-    }
-
-    /**
      * Compiles an {@link IfVertex} into an {@link EventCondition}.
      * @param iff IfVertex to build condition for
      * @return EventCondition for given {@link IfVertex}
@@ -362,4 +247,121 @@ public final class CompiledPipeline {
         return EventCondition.Compiler.buildCondition(iff.getBooleanExpression());
     }
 
+    private final class CompiledExecution {
+
+        /**
+         * Compiled {@link IfVertex, indexed by their ID as returned by {@link Vertex#getId()}.
+         */
+        private final Map<String, Dataset.SplitDataset> iffs = new HashMap<>(5);
+
+        /**
+         * Cached {@link Dataset} compiled from {@link PluginVertex} indexed by their ID as returned
+         * by {@link Vertex#getId()} to avoid duplicate computations.
+         */
+        private final Map<String, Dataset> plugins = new HashMap<>(5);
+
+        /**
+         * Build a {@link Dataset} representing the {@link JrubyEventExtLibrary.RubyEvent}s after
+         * the application of the given filter.
+         * @param vertex Vertex Id of the filter to create this {@link Dataset} for
+         * @param datasets All the datasets that pass through this filter
+         * @return Filter {@link Dataset}
+         */
+        private Dataset filterDataset(final String vertex, final Collection<Dataset> datasets) {
+            return plugins.computeIfAbsent(vertex, v -> {
+                final Dataset filter;
+                final RubyIntegration.Filter ruby = filters.get(v);
+                if (ruby.hasFlush()) {
+                    if (ruby.periodicFlush()) {
+                        filter = new Dataset.FilteredFlushableDataset(datasets, ruby);
+                    } else {
+                        filter = new Dataset.FilteredShutdownFlushableDataset(datasets, ruby);
+                    }
+                } else {
+                    filter = new Dataset.FilteredDataset(datasets, ruby);
+                }
+                return filter;
+            });
+        }
+
+        /**
+         * Build a {@link Dataset} representing the {@link JrubyEventExtLibrary.RubyEvent}s after
+         * the application of the given output.
+         * @param vertexId Vertex Id of the filter to create this {@link Dataset} for
+         * filter node in the topology once
+         * @param datasets All the datasets that are passed into this output
+         * @return Output {@link Dataset}
+         */
+        private Dataset outputDataset(final String vertexId, final Collection<Dataset> datasets) {
+            return plugins.computeIfAbsent(
+                vertexId, v -> new Dataset.OutputDataset(datasets, outputs.get(v))
+            );
+        }
+
+        /**
+         * Split the given {@link Dataset}s and return the dataset half of their elements that contains
+         * the {@link JrubyEventExtLibrary.RubyEvent} that fulfil the given {@link EventCondition}.
+         * @param datasets Datasets to split
+         * @param condition Condition that must be fulfilled
+         * @param index Vertex id to cache the resulting {@link Dataset} under
+         * @return The half of the datasets contents that fulfils the condition
+         */
+        private Dataset.SplitDataset split(final Collection<Dataset> datasets,
+            final EventCondition condition, final String index) {
+            return iffs
+                .computeIfAbsent(index, ind -> new Dataset.SplitDataset(datasets, condition));
+        }
+
+        /**
+         * Compiles the next level of the execution from the given {@link Vertex} or simply return
+         * the given {@link Dataset} at the previous level if the starting {@link Vertex} cannot
+         * be expanded any further (i.e. doesn't have any more incoming vertices that are either
+         * a {code filter} or and {code if} statement).
+         * @param datasets Nodes from the last already compiled level
+         * @param start Vertex to compile children for
+         * @return Datasets originating from given {@link Vertex}
+         */
+        private Collection<Dataset> flatten(final Collection<Dataset> datasets,
+            final Vertex start) {
+            final Collection<Vertex> dependencies = start.incomingVertices()
+                .filter(v -> isFilter(v) || isOutput(v) || v instanceof IfVertex)
+                .collect(Collectors.toList());
+            return dependencies.isEmpty() ? datasets
+                : compileDependencies(start, datasets, dependencies);
+        }
+
+        /**
+         * Compiles all child vertices for a given vertex.
+         * @param datasets Datasets from previous stage
+         * @param start Start Vertex that got expanded
+         * @param dependencies Dependencies of {@code start}
+         * @return Datasets compiled from vertex children
+         */
+        private Collection<Dataset> compileDependencies(final Vertex start,
+            final Collection<Dataset> datasets, final Collection<Vertex> dependencies) {
+            return dependencies.stream().map(
+                dependency -> {
+                    final Collection<Dataset> transientDependencies = flatten(datasets, dependency);
+                    if (isFilter(dependency)) {
+                        return filterDataset(dependency.getId(), transientDependencies);
+                    } else if (isOutput(dependency)) {
+                        return outputDataset(dependency.getId(), transientDependencies);
+                    } else {
+                        // We know that it's an if vertex since the the input children are either 
+                        // output, filter or if in type.
+                        final IfVertex ifvert = (IfVertex) dependency;
+                        final EventCondition iff = buildCondition(ifvert);
+                        final String index = ifvert.getId();
+                        // It is important that we double check that we are actually dealing with the
+                        // positive/left branch of the if condition
+                        if (ifvert.getOutgoingBooleanEdgesByType(true).stream()
+                            .anyMatch(edge -> Objects.equals(edge.getTo(), start))) {
+                            return split(transientDependencies, iff, index);
+                        } else {
+                            return split(transientDependencies, iff, index).right();
+                        }
+                    }
+                }).collect(Collectors.toList());
+        }
+    }
 }
