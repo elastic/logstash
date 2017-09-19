@@ -141,10 +141,7 @@ public final class CompiledPipeline {
         final Map<String, RubyIntegration.Filter> res =
             new HashMap<>(filterPlugins.size(), 1.0F);
         for (final PluginVertex plugin : filterPlugins) {
-            final String ident = plugin.getId();
-            if (!res.containsKey(ident)) {
-                res.put(ident, buildFilter(plugin));
-            }
+            res.put(plugin.getId(), buildFilter(plugin));
         }
         return res;
     }
