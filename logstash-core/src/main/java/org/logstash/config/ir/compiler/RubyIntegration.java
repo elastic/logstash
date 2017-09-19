@@ -91,7 +91,7 @@ public final class RubyIntegration {
          * @return Collection of all {@link JrubyEventExtLibrary.RubyEvent} in the batch that
          * are not cancelled
          */
-        Collection<JrubyEventExtLibrary.RubyEvent> collect();
+        Collection<JrubyEventExtLibrary.RubyEvent> to_a();
 
     }
 }

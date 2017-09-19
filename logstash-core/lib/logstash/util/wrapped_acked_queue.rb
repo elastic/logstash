@@ -286,7 +286,7 @@ module LogStash; module Util
         # @cancelled[event] = true
       end
 
-      def collect
+      def to_a
         events = []
         each {|e| events << e}
         events

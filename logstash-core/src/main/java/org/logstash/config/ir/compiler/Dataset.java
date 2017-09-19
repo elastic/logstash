@@ -50,7 +50,7 @@ public interface Dataset {
             @Override
             public Collection<JrubyEventExtLibrary.RubyEvent> compute(
                 final RubyIntegration.Batch batch, final boolean flush, final boolean shutdown) {
-                return batch.collect();
+                return batch.to_a();
             }
 
             @Override
