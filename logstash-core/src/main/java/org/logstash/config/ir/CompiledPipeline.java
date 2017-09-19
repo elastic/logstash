@@ -133,8 +133,11 @@ public final class CompiledPipeline {
         // reload.
         iffs.clear();
         plugins.clear();
-        pipelineIR.getGraph().allLeaves().filter(this::isOutput)
-            .sorted(Comparator.comparing(Vertex::hashPrefix)).forEachOrdered(
+        pipelineIR.getGraph()
+            .allLeaves()
+            .filter(this::isOutput)
+            .sorted(Comparator.comparing(Vertex::hashPrefix))
+            .forEachOrdered(
             leaf -> datasets.add(outputDataset(leaf.getId(), flatten(Dataset.ROOT_DATASETS, leaf)))
         );
         return Dataset.TerminalDataset.from(datasets);
@@ -307,11 +310,9 @@ public final class CompiledPipeline {
      * @return Filter {@link Dataset}
      */
     private Dataset filterDataset(final String vertex, final Collection<Dataset> parents) {
-        final Dataset filter;
-        if (plugins.containsKey(vertex)) {
-            filter = plugins.get(vertex);
-        } else {
-            final RubyIntegration.Filter ruby = filters.get(vertex);
+        return plugins.computeIfAbsent(vertex, v -> {
+            final Dataset filter;
+            final RubyIntegration.Filter ruby = filters.get(v);
             if (ruby.hasFlush()) {
                 if (ruby.periodicFlush()) {
                     filter = new Dataset.FilteredFlushableDataset(parents, ruby);
@@ -321,9 +322,8 @@ public final class CompiledPipeline {
             } else {
                 filter = new Dataset.FilteredDataset(parents, ruby);
             }
-            plugins.put(vertex, filter);
-        }
-        return filter;
+            return filter;
+        });
     }
 
     /**
@@ -335,15 +335,9 @@ public final class CompiledPipeline {
      * @return Output {@link Dataset}
      */
     private Dataset outputDataset(final String vertex, final Collection<Dataset> parents) {
-        final Dataset output;
-        if (plugins.containsKey(vertex)) {
-            output = plugins.get(vertex);
-        } else {
-            final RubyIntegration.Output ruby = outputs.get(vertex);
-            output = new Dataset.OutputDataset(parents, ruby);
-            plugins.put(vertex, output);
-        }
-        return output;
+        return plugins.computeIfAbsent(
+            vertex, v -> new Dataset.OutputDataset(parents, outputs.get(vertex))
+        );
     }
 
     /**
