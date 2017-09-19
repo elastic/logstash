@@ -29,13 +29,7 @@ IF "%SELECTEDTESTSUITE%"=="core-fail-fast" (
   %RAKEPATH% test:install-core
   %RAKEPATH% test:core-fail-fast
 ) ELSE (
-  IF "%SELECTEDTESTSUITE%"=="all" (
-    echo "Running all plugins tests"
-    %RAKEPATH% test:install-all
-    %RAKEPATH% test:plugins
-  ) ELSE (
-    echo "Running core tests"
-    %RAKEPATH% test:install-core
-    %RAKEPATH% test:core
-  )
+  echo "Running core tests"
+  %RAKEPATH% test:install-core
+  %RAKEPATH% test:core
 )
