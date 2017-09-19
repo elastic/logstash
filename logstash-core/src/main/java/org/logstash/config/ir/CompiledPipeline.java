@@ -26,8 +26,8 @@ import org.logstash.ext.JrubyEventExtLibrary;
  * <h3>Compiled Logstash Pipeline Configuration.</h3>
  * This class represents an executable pipeline, compiled from the configured topology that is
  * learnt from {@link PipelineIR}.
- * Each compiled pipeline consists in graph of {@link Dataset} that represent either a {@code filter}
- * or an {@code if} condition.
+ * Each compiled pipeline consists in graph of {@link Dataset} that represent either a
+ * {@code filter}, {@code output} or an {@code if} condition.
  */
 public final class CompiledPipeline {
 
@@ -113,20 +113,7 @@ public final class CompiledPipeline {
      * @return Compiled {@link Dataset} representation of the underlying {@link PipelineIR} topology
      */
     public Dataset buildExecution() {
-        final CompiledPipeline.CompiledExecution execution =
-            new CompiledPipeline.CompiledExecution();
-        final Collection<Dataset> datasets = new ArrayList<>(5);
-        pipelineIR.getGraph()
-            .allLeaves()
-            .filter(this::isOutput)
-            .forEach(
-                leaf -> datasets.add(
-                    execution.outputDataset(
-                        leaf.getId(), execution.flatten(Dataset.ROOT_DATASETS, leaf)
-                    )
-                )
-            );
-        return Dataset.TerminalDataset.from(datasets);
+        return new CompiledPipeline.CompiledExecution().toDataset();
     }
 
     /**
@@ -247,6 +234,11 @@ public final class CompiledPipeline {
         return EventCondition.Compiler.buildCondition(iff.getBooleanExpression());
     }
 
+    /**
+     * Instances of this class represent a fully compiled pipeline execution. Note that this class
+     * has a separate lifecycle from {@link CompiledPipeline} because it holds per (worker-thread) 
+     * state and thus needs to be instantiated once per thread.
+     */
     private final class CompiledExecution {
 
         /**
@@ -259,6 +251,32 @@ public final class CompiledPipeline {
          * by {@link Vertex#getId()} to avoid duplicate computations.
          */
         private final Map<String, Dataset> plugins = new HashMap<>(5);
+
+        private final Dataset compiled;
+
+        CompiledExecution() {
+            compiled = compile();
+        }
+
+        Dataset toDataset() {
+            return compiled;
+        }
+
+        /**
+         * Instantiates the graph of compiled {@link Dataset}.
+         * @return Compiled {@link Dataset} representing the pipeline.
+         */
+        private Dataset compile() {
+            final Collection<Dataset> datasets = new ArrayList<>();
+            pipelineIR.getGraph()
+                .allLeaves()
+                .filter(CompiledPipeline.this::isOutput)
+                .forEach(leaf -> datasets.add(
+                    outputDataset(leaf.getId(), flatten(Dataset.ROOT_DATASETS, leaf))
+                    )
+                );
+            return Dataset.TerminalDataset.from(datasets);
+        }
 
         /**
          * Build a {@link Dataset} representing the {@link JrubyEventExtLibrary.RubyEvent}s after
