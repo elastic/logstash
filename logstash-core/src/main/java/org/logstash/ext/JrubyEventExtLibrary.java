@@ -119,6 +119,14 @@ public final class JrubyEventExtLibrary implements Library {
             );
         }
 
+        @JRubyMethod(name = "get", required = 2)
+        public IRubyObject ruby_get_field(ThreadContext context, RubyString reference, IRubyObject defaultValue) {
+            return Rubyfier.deep(
+                    context.runtime,
+                    this.event.getField(reference.asJavaString(), defaultValue)
+            );
+        }
+
         @JRubyMethod(name = "set", required = 2)
         public IRubyObject ruby_set_field(ThreadContext context, RubyString reference, IRubyObject value)
         {
