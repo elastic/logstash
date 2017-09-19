@@ -256,46 +256,46 @@ public final class CompiledPipeline {
      * the given {@link Dataset} at the previous level if the starting {@link Vertex} cannot
      * be expanded any further (i.e. doesn't have any more incoming vertices that are either
      * a {code filter} or and {code if} statement).
-     * @param parents Nodes from the last already compiled level
+     * @param datasets Nodes from the last already compiled level
      * @param start Vertex to compile children for
      * @return Datasets originating from given {@link Vertex}
      */
-    private Collection<Dataset> flatten(final Collection<Dataset> parents, final Vertex start) {
+    private Collection<Dataset> flatten(final Collection<Dataset> datasets, final Vertex start) {
         final Collection<Vertex> endings = start.incomingVertices()
             .filter(v -> isFilter(v) || isOutput(v) || v instanceof IfVertex)
             .collect(Collectors.toList());
-        return endings.isEmpty() ? parents : flattenChildren(parents, start, endings);
+        return endings.isEmpty() ? datasets : flattenDependencies(datasets, start, endings);
     }
 
     /**
      * Compiles all child vertices for a given vertex.
-     * @param parents Parent datasets from previous stage
+     * @param datasets Datasets from previous stage
      * @param start Start Vertex that got expanded
-     * @param children Children of {@code start}
+     * @param dependencies Dependencies of {@code start}
      * @return Datasets compiled from vertex children
      */
-    private Collection<Dataset> flattenChildren(final Collection<Dataset> parents,
-        final Vertex start, final Collection<Vertex> children) {
-        return children.stream().map(
-            child -> {
-                final Collection<Dataset> newparents = flatten(parents, child);
-                if (isFilter(child)) {
-                    return filterDataset(child.getId(), newparents);
-                } else if (isOutput(child)) {
-                    return outputDataset(child.getId(), newparents);
+    private Collection<Dataset> flattenDependencies(final Collection<Dataset> datasets,
+        final Vertex start, final Collection<Vertex> dependencies) {
+        return dependencies.stream().map(
+            dependency -> {
+                final Collection<Dataset> transientDependencies = flatten(datasets, dependency);
+                if (isFilter(dependency)) {
+                    return filterDataset(dependency.getId(), transientDependencies);
+                } else if (isOutput(dependency)) {
+                    return outputDataset(dependency.getId(), transientDependencies);
                 } else {
                     // We know that it's an if vertex since the the input children are either 
                     // output, filter or if in type.
-                    final IfVertex ifvert = (IfVertex) child;
+                    final IfVertex ifvert = (IfVertex) dependency;
                     final EventCondition iff = buildCondition(ifvert);
                     final String index = ifvert.getId();
                     // It is important that we double check that we are actually dealing with the
                     // positive/left branch of the if condition
                     if (ifvert.getOutgoingBooleanEdgesByType(true).stream()
                         .anyMatch(edge -> Objects.equals(edge.getTo(), start))) {
-                        return split(newparents, iff, index);
+                        return split(transientDependencies, iff, index);
                     } else {
-                        return split(newparents, iff, index).right();
+                        return split(transientDependencies, iff, index).right();
                     }
                 }
             }).collect(Collectors.toList());
@@ -305,21 +305,21 @@ public final class CompiledPipeline {
      * Build a {@link Dataset} representing the {@link JrubyEventExtLibrary.RubyEvent}s after
      * the application of the given filter.
      * @param vertex Vertex Id of the filter to create this {@link Dataset} for
-     * @param parents All the parent nodes that go into this filter
+     * @param datasets All the datasets that pass through this filter
      * @return Filter {@link Dataset}
      */
-    private Dataset filterDataset(final String vertex, final Collection<Dataset> parents) {
+    private Dataset filterDataset(final String vertex, final Collection<Dataset> datasets) {
         return plugins.computeIfAbsent(vertex, v -> {
             final Dataset filter;
             final RubyIntegration.Filter ruby = filters.get(v);
             if (ruby.hasFlush()) {
                 if (ruby.periodicFlush()) {
-                    filter = new Dataset.FilteredFlushableDataset(parents, ruby);
+                    filter = new Dataset.FilteredFlushableDataset(datasets, ruby);
                 } else {
-                    filter = new Dataset.FilteredShutdownFlushableDataset(parents, ruby);
+                    filter = new Dataset.FilteredShutdownFlushableDataset(datasets, ruby);
                 }
             } else {
-                filter = new Dataset.FilteredDataset(parents, ruby);
+                filter = new Dataset.FilteredDataset(datasets, ruby);
             }
             return filter;
         });
@@ -330,26 +330,26 @@ public final class CompiledPipeline {
      * the application of the given output.
      * @param vertexId Vertex Id of the filter to create this {@link Dataset} for
      * filter node in the topology once
-     * @param parents All the parent nodes that go into this output
+     * @param datasets All the datasets that are passed into this output
      * @return Output {@link Dataset}
      */
-    private Dataset outputDataset(final String vertexId, final Collection<Dataset> parents) {
+    private Dataset outputDataset(final String vertexId, final Collection<Dataset> datasets) {
         return plugins.computeIfAbsent(
-            vertexId, v -> new Dataset.OutputDataset(parents, outputs.get(v))
+            vertexId, v -> new Dataset.OutputDataset(datasets, outputs.get(v))
         );
     }
 
     /**
-     * Split the parent {@link Dataset}s and return the dataset half of their elements that contains
+     * Split the given {@link Dataset}s and return the dataset half of their elements that contains
      * the {@link JrubyEventExtLibrary.RubyEvent} that fulfil the given {@link EventCondition}.
-     * @param parents Datasets to split
+     * @param datasets Datasets to split
      * @param condition Condition that must be fulfilled
      * @param index Vertex id to cache the resulting {@link Dataset} under
      * @return The half of the datasets contents that fulfils the condition
      */
-    private Dataset.SplitDataset split(final Collection<Dataset> parents,
+    private Dataset.SplitDataset split(final Collection<Dataset> datasets,
         final EventCondition condition, final String index) {
-        return iffs.computeIfAbsent(index, ind -> new Dataset.SplitDataset(parents, condition));
+        return iffs.computeIfAbsent(index, ind -> new Dataset.SplitDataset(datasets, condition));
     }
 
     /**
