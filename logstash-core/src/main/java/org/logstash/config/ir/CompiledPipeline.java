@@ -271,8 +271,7 @@ public final class CompiledPipeline {
      * Compiles all child vertices for a given vertex.
      * @param parents Parent datasets from previous stage
      * @param start Start Vertex that got expanded
-     * @param children Children of {@code start} that are either {@code if} or {@code filter} in
-     * type
+     * @param children Children of {@code start}
      * @return Datasets compiled from vertex children
      */
     private Collection<Dataset> flattenChildren(final Collection<Dataset> parents,
@@ -329,14 +328,14 @@ public final class CompiledPipeline {
     /**
      * Build a {@link Dataset} representing the {@link JrubyEventExtLibrary.RubyEvent}s after
      * the application of the given output.
-     * @param vertex Vertex Id of the filter to create this {@link Dataset} for
+     * @param vertexId Vertex Id of the filter to create this {@link Dataset} for
      * filter node in the topology once
      * @param parents All the parent nodes that go into this output
      * @return Output {@link Dataset}
      */
-    private Dataset outputDataset(final String vertex, final Collection<Dataset> parents) {
+    private Dataset outputDataset(final String vertexId, final Collection<Dataset> parents) {
         return plugins.computeIfAbsent(
-            vertex, v -> new Dataset.OutputDataset(parents, outputs.get(vertex))
+            vertexId, v -> new Dataset.OutputDataset(parents, outputs.get(v))
         );
     }
 
