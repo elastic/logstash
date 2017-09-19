@@ -1,3 +1,5 @@
+require_relative '../../../logstash-core/lib/logstash-core.rb'
+
 # Base class for a service like Kafka, ES, Logstash
 class Service
 
