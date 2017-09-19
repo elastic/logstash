@@ -523,7 +523,6 @@ GEM
     ruby-maven (3.3.12)
       ruby-maven-libs (~> 3.3.9)
     ruby-maven-libs (3.3.9)
-    ruby-progressbar (1.8.1)
     rubyzip (1.2.1)
     rufus-scheduler (3.0.9)
       tzinfo
@@ -684,7 +683,7 @@ DEPENDENCIES
   pleaserun (~> 0.0.28)
   rack-test
   rspec (~> 3.5)
-  ruby-progressbar (~> 1.8.1)
+  ruby-progressbar (~> 1.8.3)
   rubyzip (~> 1.2.1)
   simplecov
   stud (~> 0.0.22)
