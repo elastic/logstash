@@ -25,6 +25,7 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.logstash.DLQEntry;
 import org.logstash.Event;
+import org.logstash.LockException;
 
 import java.io.IOException;
 import java.nio.channels.FileChannel;
@@ -70,7 +71,7 @@ public class DeadLetterQueueWriterTest {
         try {
             new DeadLetterQueueWriter(dir, 1000, 100000);
             fail();
-        } catch (RuntimeException e) {
+        } catch (LockException e) {
         } finally {
             writer.close();
         }
