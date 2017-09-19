@@ -245,12 +245,12 @@ public interface EventCondition {
             final Expression left = in.getLeft();
             final Expression right = in.getRight();
             final EventCondition condition;
-            if (eAndV(in) && scalarValueRight(in)) {
+            if (eAndV(in) && isScalar((ValueExpression) in.getRight())) {
                 condition = new EventCondition.Compiler.FieldInConstantScalar(
                     PathCache.cache(((EventValueExpression) left).getFieldName()),
                     ((ValueExpression) right).get().toString()
                 );
-            } else if (vAndE(in) && scalarValueLeft(in)) {
+            } else if (vAndE(in) && isScalar((ValueExpression) in.getLeft())) {
                 final Object leftv = ((ValueExpression) left).get();
                 final FieldReference rfield =
                     PathCache.cache(((EventValueExpression) right).getFieldName());
@@ -308,14 +308,6 @@ public interface EventCondition {
 
         private static boolean listValueRight(final In in) {
             return ((ValueExpression) in.getRight()).get() instanceof List;
-        }
-
-        private static boolean scalarValueRight(final In in) {
-            return isScalar((ValueExpression) in.getRight());
-        }
-
-        private static boolean scalarValueLeft(final In in) {
-            return isScalar((ValueExpression) in.getLeft());
         }
 
         private static boolean isScalar(final ValueExpression expression) {
