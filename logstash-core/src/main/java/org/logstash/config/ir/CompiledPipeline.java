@@ -125,7 +125,6 @@ public final class CompiledPipeline {
      * @return Compiled {@link Dataset} representation of the underlying {@link PipelineIR} topology
      */
     public Dataset buildExecution() {
-        final Collection<Dataset> datasets = new ArrayList<>(5);
         // We sort the leaves of the graph in a deterministic fashion before compilation.
         // This is not strictly necessary for correctness since it will only influence the order
         // of output events for which Logstash makes no guarantees, but it greatly simplifies
@@ -133,6 +132,7 @@ public final class CompiledPipeline {
         // reload.
         iffs.clear();
         plugins.clear();
+        final Collection<Dataset> datasets = new ArrayList<>(5);
         pipelineIR.getGraph()
             .allLeaves()
             .filter(this::isOutput)
@@ -164,9 +164,10 @@ public final class CompiledPipeline {
      * Sets up all Ruby filters learnt from {@link PipelineIR}.
      */
     private Map<String, RubyIntegration.Filter> setupFilters() {
-        final Collection<PluginVertex> plugins = pipelineIR.getFilterPluginVertices();
-        final Map<String, RubyIntegration.Filter> res = new HashMap<>(plugins.size(), 1);
-        for (final PluginVertex plugin : plugins) {
+        final Collection<PluginVertex> filterPlugins = pipelineIR.getFilterPluginVertices();
+        final Map<String, RubyIntegration.Filter> res =
+            new HashMap<>(filterPlugins.size(), 1.0F);
+        for (final PluginVertex plugin : filterPlugins) {
             final String ident = plugin.getId();
             if (!res.containsKey(ident)) {
                 res.put(ident, buildFilter(plugin));
@@ -264,7 +265,7 @@ public final class CompiledPipeline {
         final Collection<Vertex> endings = start.incomingVertices()
             .filter(v -> isFilter(v) || isOutput(v) || v instanceof IfVertex)
             .collect(Collectors.toList());
-        return endings.isEmpty() ? datasets : flattenDependencies(datasets, start, endings);
+        return endings.isEmpty() ? datasets : compileDependencies(start, datasets, endings);
     }
 
     /**
@@ -274,8 +275,8 @@ public final class CompiledPipeline {
      * @param dependencies Dependencies of {@code start}
      * @return Datasets compiled from vertex children
      */
-    private Collection<Dataset> flattenDependencies(final Collection<Dataset> datasets,
-        final Vertex start, final Collection<Vertex> dependencies) {
+    private Collection<Dataset> compileDependencies(final Vertex start,
+        final Collection<Dataset> datasets, final Collection<Vertex> dependencies) {
         return dependencies.stream().map(
             dependency -> {
                 final Collection<Dataset> transientDependencies = flatten(datasets, dependency);
