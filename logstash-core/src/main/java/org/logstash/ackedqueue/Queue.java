@@ -139,14 +139,19 @@ public class Queue implements Closeable {
     }
 
     public long getPersistedByteSize() {
-        final long size;
-        if (headPage == null) {
-            size = 0L;
-        } else {
-            size = headPage.getPageIO().getHead()
-                + tailPages.stream().mapToLong(p -> p.getPageIO().getHead()).sum();
+        lock.lock();
+        try {
+            final long size;
+            if (headPage == null) {
+                size = 0L;
+            } else {
+                size = headPage.getPageIO().getHead()
+                    + tailPages.stream().mapToLong(p -> p.getPageIO().getHead()).sum();
+            }
+            return size;
+        } finally {
+            lock.unlock();
         }
-        return size;
     }
 
     public int getPageCapacity() {
