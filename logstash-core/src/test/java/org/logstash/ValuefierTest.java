@@ -2,7 +2,6 @@ package org.logstash;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import org.joda.time.DateTime;
@@ -18,7 +17,6 @@ import org.jruby.runtime.builtin.IRubyObject;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import org.logstash.bivalues.BiValue;
 import org.logstash.ext.JrubyTimestampExtLibrary;
 
 import static junit.framework.TestCase.assertEquals;
@@ -83,16 +81,6 @@ public class ValuefierTest extends TestBase {
         exception.expect(IllegalArgumentException.class);
         exception.expectMessage("Missing Converter handling for full class name=org.jruby.RubyMatchData, simple name=RubyMatchData");
         Valuefier.convert(md);
-    }
-
-    @Test
-    public void testUnhandledProxyObject() {
-        HashSet<Integer> hs = new HashSet<>();
-        hs.add(42);
-        RubyClass proxyClass = (RubyClass) Java.getProxyClass(ruby, HashSet.class);
-        ConcreteJavaProxy cjp = new ConcreteJavaProxy(ruby, proxyClass, hs);
-        BiValue result = (BiValue) Valuefier.convert(cjp);
-        assertEquals(hs, result.javaValue());
     }
 
     @Test

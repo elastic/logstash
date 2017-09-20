@@ -9,11 +9,17 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.hamcrest.CoreMatchers;
+import org.hamcrest.MatcherAssert;
 import org.jruby.RubySymbol;
 import org.jruby.RubyTime;
+import org.jruby.java.proxies.ConcreteJavaProxy;
 import org.junit.Test;
+import org.logstash.ext.JrubyTimestampExtLibrary;
 
 import static net.javacrumbs.jsonunit.JsonAssert.assertJsonEquals;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
@@ -361,5 +367,15 @@ public final class EventTest {
         e = new Event();
         e.remove("@timestamp");
         assertEquals(e.toString(), "%{host} %{message}");
+    }
+
+    @Test
+    public void unwrapsJavaProxyValues() throws Exception {
+        final Event event = new Event();
+        final Timestamp timestamp = new Timestamp();
+        event.setField("timestamp", new ConcreteJavaProxy(RubyUtil.RUBY,
+            JrubyTimestampExtLibrary.createTimestamp(RubyUtil.RUBY).getRealClass(), timestamp
+        ));
+        assertThat(event.getField("timestamp"), is(timestamp));
     }
 }
