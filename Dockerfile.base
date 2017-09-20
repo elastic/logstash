@@ -26,7 +26,6 @@ ENV PATH "/home/logstash/.rbenv/bin:$PATH"
 #Only used to help bootstrap the build (not to run Logstash itself)
 RUN echo 'eval "$(rbenv init -)"' >> .bashrc && \
     rbenv install jruby-9.1.12.0 && \
-    rbenv install jruby-1.7.27 && \
     rbenv global jruby-9.1.12.0 && \
     bash -i -c 'gem install bundler' && \
     rbenv local jruby-9.1.12.0 && \
