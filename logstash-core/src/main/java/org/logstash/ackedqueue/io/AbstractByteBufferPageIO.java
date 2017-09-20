@@ -42,7 +42,7 @@ public abstract class AbstractByteBufferPageIO implements PageIO {
     protected int head; // head is the write position and is an int per ByteBuffer class position
     protected byte version;
     private CRC32 checkSummer;
-    private final List<Integer> offsetMap; // has to be extendable
+    private final IntVector offsetMap;
 
     public AbstractByteBufferPageIO(int pageNum, int capacity) {
         this.minSeqNum = 0;
@@ -51,7 +51,7 @@ public abstract class AbstractByteBufferPageIO implements PageIO {
         this.head = 0;
         this.pageNum = pageNum;
         this.capacity = capacity;
-        this.offsetMap = new ArrayList<>();
+        this.offsetMap = new IntVector();
         this.checkSummer = new CRC32();
     }
 
