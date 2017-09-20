@@ -167,12 +167,7 @@ module LogStash; module Util
         end
 
         batch = new_batch
-        @mutex.lock
-        begin
-          batch.read_next
-        ensure
-          @mutex.unlock
-        end
+        batch.read_next
         start_metrics(batch)
         batch
       end
