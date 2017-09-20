@@ -30,6 +30,8 @@ public final class JrubyTimestampExtLibrary implements Library {
         }
     };
 
+    private static final RubyClass TIMESTAMP_CLASS = createTimestamp(RubyUtil.RUBY);
+
     @Override
     public void load(Ruby runtime, boolean wrap) {
         createTimestamp(runtime);
@@ -60,7 +62,7 @@ public final class JrubyTimestampExtLibrary implements Library {
         }
 
         public RubyTimestamp(Ruby runtime, Timestamp timestamp) {
-            this(runtime, runtime.getModule(RubyUtil.LS_MODULE_NAME).getClass("Timestamp"), timestamp);
+            this(runtime, TIMESTAMP_CLASS, timestamp);
         }
 
         public RubyTimestamp(Ruby runtime) {
