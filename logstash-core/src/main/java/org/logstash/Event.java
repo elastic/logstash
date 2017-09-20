@@ -47,7 +47,7 @@ public final class Event implements Cloneable, Queueable {
         this.data = new ConvertedMap(10);
         this.data.putInterned(VERSION, VERSION_ONE);
         this.cancelled = false;
-        this.data.putInterned(TIMESTAMP, new Timestamp());
+        setTimestamp(Timestamp.now());
     }
 
     /**
@@ -82,7 +82,7 @@ public final class Event implements Cloneable, Queueable {
         Object providedTimestamp = data.get(TIMESTAMP);
         // keep reference to the parsedTimestamp for tagging below
         Timestamp parsedTimestamp = initTimestamp(providedTimestamp);
-        data.putInterned(TIMESTAMP, parsedTimestamp == null ? Timestamp.now() : parsedTimestamp);
+        setTimestamp(parsedTimestamp == null ? Timestamp.now() : parsedTimestamp);
         // the tag() method has to be called after the Accessors initialization
         if (parsedTimestamp == null) {
             tag(TIMESTAMP_FAILURE_TAG);
@@ -111,16 +111,19 @@ public final class Event implements Cloneable, Queueable {
     }
 
     public Timestamp getTimestamp() throws IOException {
-        final Timestamp timestamp = (Timestamp) data.get(TIMESTAMP);
+        final JrubyTimestampExtLibrary.RubyTimestamp timestamp = 
+            (JrubyTimestampExtLibrary.RubyTimestamp) data.get(TIMESTAMP);
         if (timestamp != null) {
-            return timestamp;
+            return timestamp.getTimestamp();
         } else {
             throw new IOException("fails");
         }
     }
 
     public void setTimestamp(Timestamp t) {
-        this.data.putInterned(TIMESTAMP, t);
+        this.data.putInterned(
+            TIMESTAMP, JrubyTimestampExtLibrary.RubyTimestamp.newRubyTimestamp(RubyUtil.RUBY, t)
+        );
     }
 
     public Object getField(final String reference) {

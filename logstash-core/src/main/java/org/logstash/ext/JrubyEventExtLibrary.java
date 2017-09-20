@@ -288,8 +288,10 @@ public final class JrubyEventExtLibrary implements Library {
         }
 
         @JRubyMethod(name = "timestamp")
-        public IRubyObject ruby_timestamp(ThreadContext context) throws IOException {
-            return new JrubyTimestampExtLibrary.RubyTimestamp(context.getRuntime(), this.event.getTimestamp());
+        public IRubyObject ruby_timestamp(ThreadContext context) {
+            // We can just cast to IRubyObject here, because we know that Event stores a
+            // RubyTimestamp internally.
+            return (IRubyObject) event.getUnconvertedField(FieldReference.TIMESTAMP_REFERENCE);
         }
 
         @JRubyMethod(name = "timestamp=", required = 1)
