@@ -8,11 +8,14 @@ This section summarizes the changes in the following releases:
 * <<logstash-6-0-0-beta1,Logstash 6.0.0-beta1>>
 * <<logstash-6-0-0-alpha2,Logstash 6.0.0-alpha2>>
 * <<logstash-6-0-0-alpha1,Logstash 6.0.0-alpha1>>
+ifdef::include-xpack[]
+* <<release-notes-xls>>
+endif::include-xpack[]
 
 [[logstash-6-0-0-rc1]]
 === Logstash 6.0.0-rc1 Release Notes
 
-Placeholder for RC1 release notes. 
+Placeholder for RC1 release notes.
 
 
 [[logstash-6-0-0-beta2]]
@@ -25,13 +28,13 @@ Placeholder for RC1 release notes.
 [[logstash-6-0-0-beta1]]
 === Logstash 6.0.0-beta1 Release Notes
 
-* Added new `logstash.yml` setting: `config.support_escapes`. When enabled, Logstash will interpret escape sequences in 
+* Added new `logstash.yml` setting: `config.support_escapes`. When enabled, Logstash will interpret escape sequences in
   strings in the pipeline configuration.
-* Breaking: The setting `config.reload.interval` has been changed to use time value strings such as `5m`, `10s`, etc for 
+* Breaking: The setting `config.reload.interval` has been changed to use time value strings such as `5m`, `10s`, etc for
   convenience. Previously, users had to convert this to a second time value themselves.
-* Breaking: The list of plugins bundled with Logstash 6.0.0-beta1 release has changed. Please consult the breaking changes document 
+* Breaking: The list of plugins bundled with Logstash 6.0.0-beta1 release has changed. Please consult the breaking changes document
   for a complete list.
-* Added an {xpack} feature to manage Logstash configurations centrally in Elasticsearch. We've also added a UI to manage 
+* Added an {xpack} feature to manage Logstash configurations centrally in Elasticsearch. We've also added a UI to manage
   configurations directly in Kibana without having to restart Logstash.
 * Users can now visualize the Logstash configuration pipeline as part of the {xpack} monitoring feature.
 * We now report an error if config file referenced in the `pipelines.yml` is missing.
@@ -39,23 +42,23 @@ Placeholder for RC1 release notes.
 [[logstash-6-0-0-alpha2]]
 === Logstash 6.0.0-alpha2 Release Notes
 
-* Breaking: Currently, when Logstash is installed and set up via package managers, it loads all files found 
-  in `/etc/logstash/conf.d` as configuration. This can be problematic if there are non-configuration files in this 
+* Breaking: Currently, when Logstash is installed and set up via package managers, it loads all files found
+  in `/etc/logstash/conf.d` as configuration. This can be problematic if there are non-configuration files in this
   folder. Starting from alpha2, Logstash will only glob files ending with `.conf` extension in `/etc/logstash/conf.d` ({lsissue}6979)[Issue 6979)]).
-* Added support for running multiple pipelines in the same Logstash instance. Running multiple pipelines 
-  allow users to isolate data flow, provide separate runtime pipeline parameters and helps simplify complex 
+* Added support for running multiple pipelines in the same Logstash instance. Running multiple pipelines
+  allow users to isolate data flow, provide separate runtime pipeline parameters and helps simplify complex
   configurations.
 * A new `pipelines.yml` configuration file has been added to define pipelines.
 
 [[logstash-6-0-0-alpha1]]
 === Logstash 6.0.0-alpha1 Release Notes
 
-* Introducing a new internal representation for the existing Logstash configuration that forms the 
+* Introducing a new internal representation for the existing Logstash configuration that forms the
   foundation of many new features. This is not a breaking change, and existing configs will work as is.
 
 [float]
 
 ==== Filter Plugins
 
-*`GeoIP`*: You can now use MaxMind's commercial database to get enriched Geo information. ASN data can be 
+*`GeoIP`*: You can now use MaxMind's commercial database to get enriched Geo information. ASN data can be
   obtained via the GeoIP2-ISP database.
