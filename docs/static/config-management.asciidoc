@@ -22,7 +22,9 @@ The pipeline configuration management feature in {xpack} centralizes the
 creation and management of Logstash configuration pipelines. From within the
 pipeline management UI, you can control multiple Logstash instances. You can
 add, edit, and delete pipeline configurations. On the Logstash side, you simply
-need to register Logstash to use the centrally managed pipeline configurations. 
+need to
+{logstash-ref}/settings-xpack.html#configuration-management-settings[configure
+Logstash] to use the centrally managed pipeline configurations. 
 
 The pipeline configurations, along with some metadata, are stored in
 Elasticsearch. Any changes that you make to a pipeline definition in the UI are
