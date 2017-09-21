@@ -13,7 +13,7 @@ SELECTED_TEST_SUITE=$1
 # we will clear them out to make sure we use the latest version of theses files
 # If we don't do this we will run into gem Conflict error.
 [ -f Gemfile ] && rm Gemfile
-[ -f Gemfile.jruby-2.3.lock ] && rm Gemfile.jruby-2.3.lock
+[ -f Gemfile.lock ] && rm Gemfile.lock
 
 if [[ $SELECTED_TEST_SUITE == $"redhat" ]]; then
   echo "Generating the RPM, make sure you start with a clean environment before generating other packages."
