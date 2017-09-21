@@ -768,16 +768,26 @@ public class Queue implements Closeable {
     }
 
     public long getAckedCount() {
-        return headPage.ackedSeqNums.cardinality() + tailPages.stream()
-                .mapToLong(page -> page.ackedSeqNums.cardinality())
-                .sum();
+        lock.lock();
+        try {
+            return headPage.ackedSeqNums.cardinality() + tailPages.stream()
+                .mapToLong(page -> page.ackedSeqNums.cardinality()).sum();
+        } finally {
+            lock.unlock();
+        }
     }
 
     public long getUnackedCount() {
-        long headPageCount = (headPage.getElementCount() - headPage.ackedSeqNums.cardinality());
-        long tailPagesCount = tailPages.stream()
-                .mapToLong(page -> (page.getElementCount() - page.ackedSeqNums.cardinality())).sum();
-        return headPageCount + tailPagesCount;
+        lock.lock();
+        try {
+            long headPageCount = (headPage.getElementCount() - headPage.ackedSeqNums.cardinality());
+            long tailPagesCount = tailPages.stream()
+                .mapToLong(page -> (page.getElementCount() - page.ackedSeqNums.cardinality()))
+                .sum();
+            return headPageCount + tailPagesCount;
+        } finally {
+            lock.unlock();
+        }
     }
 
     protected long nextSeqNum() {
