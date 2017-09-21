@@ -173,16 +173,19 @@ Example:
 
 These settings can be specified in the `logstash.yml` <<logstash-settings-file,settings file>>.
 They should be added separately from any module configuration settings you may have added before.
-[source,yaml]
+
+["source","yaml",subs="attributes"]
 ----
 # example with a label
 cloud.id: "staging:dXMtZWFzdC0xLmF3cy5mb3VuZC5pbyRub3RhcmVhbCRpZGVudGlmaWVy"
-cloud.auth: "elastic:changeme"
+cloud.auth: "elastic:{pwd}"
 ----
+
+["source","yaml",subs="attributes"]
 ----
 # example without a label
 cloud.id: "dXMtZWFzdC0xLmF3cy5mb3VuZC5pbyRub3RhcmVhbCRpZGVudGlmaWVy"
-cloud.auth: "elastic:changeme"
+cloud.auth: "elastic:{pwd}"
 ----
 
 These settings can be also specified at the command line, like this:
