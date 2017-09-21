@@ -1,9 +1,14 @@
 package org.logstash.ingest;
 
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.regex.Pattern;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.net.URL;
+import org.apache.commons.io.IOUtils;
 import org.junit.Rule;
 import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
@@ -19,6 +24,17 @@ import static org.junit.runners.Parameterized.Parameter;
 @RunWith(Parameterized.class)
 public abstract class IngestTest {
 
+    /**
+     * Used to normalize line endings since static reference result files have Unix line endings.
+     */
+    private static final Pattern CR_LF =
+        Pattern.compile("\\r\\n");
+
+    /**
+     * Used to normalize line endings since static reference result files have Unix line endings.
+     */
+    private static final Pattern CARRIAGE_RETURN = Pattern.compile("\\r");
+
     @Rule
     public TemporaryFolder temp = new TemporaryFolder();
 
@@ -26,12 +42,12 @@ public abstract class IngestTest {
     public String testCase;
     
     protected final void assertCorrectConversion(final Class clazz) throws Exception {
-        final String append = getResultPath(temp);
+        final URL append = getResultPath(temp);
         clazz.getMethod("main", String[].class).invoke(
             null,
             (Object) new String[]{
-                String.format("--input=file://%s", resourcePath(String.format("ingest%s.json", testCase))),
-                String.format("--output=file://%s", append)
+                String.format("--input=%s", resourcePath(String.format("ingest%s.json", testCase))),
+                String.format("--output=%s", append)
             }
         );
         assertThat(
@@ -39,15 +55,30 @@ public abstract class IngestTest {
         );
     } 
     
-    static String utf8File(final String path) throws IOException {
-        return new String(Files.readAllBytes(Paths.get(path)), StandardCharsets.UTF_8);
+    /**
+     * Reads a file, normalizes line endings to Unix line endings and returns the whole content
+     * as a String.
+     * @param path Url to read
+     * @return String content of the URL
+     * @throws IOException On failure to read from given URL
+     */
+    private static String utf8File(final URL path) throws IOException {
+        final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        try (final InputStream input = path.openStream()) {
+            IOUtils.copy(input, baos);
+        }
+        return CARRIAGE_RETURN.matcher(
+            CR_LF.matcher(
+                baos.toString(StandardCharsets.UTF_8.name())
+            ).replaceAll("\n")
+        ).replaceAll("\n");
     }
 
-    static String resourcePath(final String name) {
-        return IngestTest.class.getResource(name).getPath();
+    private static URL resourcePath(final String name) {
+        return IngestTest.class.getResource(name);
     }
 
-    static String getResultPath(TemporaryFolder temp) throws IOException {
-        return temp.newFolder().toPath().resolve("converted").toString();
+    private static URL getResultPath(TemporaryFolder temp) throws IOException {
+        return temp.newFolder().toPath().resolve("converted").toUri().toURL();
     }
 }
