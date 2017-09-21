@@ -224,7 +224,7 @@ public abstract class AbstractByteBufferPageIO implements PageIO {
                 String.format("seqNum=%d is > maxSeqNum=%d", seqNum, maxSeqNum());
 
         List<byte[]> elements = new ArrayList<>();
-        List<Long> seqNums = new ArrayList<>();
+        final LongVector seqNums = new LongVector(limit);
 
         int offset = this.offsetMap.get((int)(seqNum - this.minSeqNum));
 

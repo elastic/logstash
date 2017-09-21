@@ -5,6 +5,7 @@ import org.apache.logging.log4j.Logger;
 import org.logstash.FileLockFactory;
 import org.logstash.LockException;
 import org.logstash.ackedqueue.io.CheckpointIO;
+import org.logstash.ackedqueue.io.LongVector;
 import org.logstash.ackedqueue.io.PageIO;
 import org.logstash.ackedqueue.io.PageIOFactory;
 
@@ -623,7 +624,7 @@ public class Queue implements Closeable {
     // same-page elements. A fully acked page will trigger a checkpoint for that page. Also if a page has more than checkpointMaxAcks
     // acks since last checkpoint it will also trigger a checkpoint.
     // @param seqNums the list of same-page sequence numbers to ack
-    public void ack(List<Long> seqNums) throws IOException {
+    public void ack(LongVector seqNums) throws IOException {
         // as a first implementation we assume that all batches are created from the same page
         // so we will avoid multi pages acking here for now
 
