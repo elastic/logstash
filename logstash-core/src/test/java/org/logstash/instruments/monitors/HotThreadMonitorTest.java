@@ -1,6 +1,8 @@
 package org.logstash.instruments.monitors;
 
 
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import org.junit.Test;
 import org.logstash.instrument.monitors.HotThreadsMonitor;
 
@@ -45,16 +47,38 @@ public class HotThreadMonitorTest {
     }
 
     @Test
-    public void testStackTraceSizeOption(){
+    public void testStackTraceSizeOption() throws InterruptedException {
         final String testStackSize = "4";
-        Map<String, String> options = new HashMap<>();
-        options.put("stacktrace_size", testStackSize);
-        new HotThreadsMonitor().detect(options).stream().filter(tr -> !tr.getThreadName().equals("Signal Dispatcher") &&
-                                                                      !tr.getThreadName().equals("Reference Handler"))
-                                                        .forEach(tr -> {
-            List stackTrace = (List)tr.toMap().get("thread.stacktrace");
-            assertThat(stackTrace.size(), is(Integer.valueOf(testStackSize)));
-        });
+        final CountDownLatch latch = new CountDownLatch(1);
+        final Thread thread = new Thread() {
+            @Override
+            public void run() {
+                waitEnd();
+            }
+
+            void waitEnd() {
+                try {
+                    latch.await();
+                } catch (final InterruptedException ex) {
+                    throw new IllegalArgumentException(ex);
+                }
+            }
+        };
+        try {
+            thread.start();
+            TimeUnit.MILLISECONDS.sleep(300L);
+            final Map<String, String> options = new HashMap<>();
+            options.put("stacktrace_size", testStackSize);
+            assertThat(
+                ((List) new HotThreadsMonitor().detect(options).stream()
+                    .filter(tr -> thread.getName().equals(tr.getThreadName())).findFirst()
+                    .get().toMap().get("thread.stacktrace")).size(),
+                is(Integer.parseInt(testStackSize))
+            );
+        } finally {
+            latch.countDown();
+            thread.join();
+        }
     }
 
     @Test
