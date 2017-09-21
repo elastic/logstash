@@ -1,12 +1,13 @@
 package org.logstash.ackedqueue;
 
 import java.util.List;
+import org.logstash.ackedqueue.io.LongVector;
 
 public class SequencedList<E> {
     private final List<E> elements;
-    private final List<Long> seqNums;
+    private final LongVector seqNums;
 
-    public SequencedList(List<E> elements, List<Long> seqNums) {
+    public SequencedList(List<E> elements, LongVector seqNums) {
         this.elements = elements;
         this.seqNums = seqNums;
     }
@@ -15,7 +16,7 @@ public class SequencedList<E> {
         return elements;
     }
 
-    public List<Long> getSeqNums() {
+    public LongVector getSeqNums() {
         return seqNums;
     }
 }

@@ -1,23 +1,25 @@
 package org.logstash.ackedqueue.ext;
 
+import java.io.IOException;
+import java.util.Collection;
 import java.util.List;
 import org.jruby.Ruby;
+import org.jruby.RubyArray;
 import org.jruby.RubyClass;
 import org.jruby.RubyModule;
 import org.jruby.RubyObject;
-import org.jruby.RubyArray;
 import org.jruby.anno.JRubyClass;
 import org.jruby.anno.JRubyMethod;
 import org.jruby.runtime.ObjectAllocator;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.jruby.runtime.load.Library;
+import org.logstash.Event;
 import org.logstash.RubyUtil;
 import org.logstash.ackedqueue.Batch;
-import org.logstash.Event;
 import org.logstash.ackedqueue.Queueable;
+import org.logstash.ackedqueue.io.LongVector;
 import org.logstash.ext.JrubyEventExtLibrary;
-import java.io.IOException;
 
 public final class JrubyAckedBatchExtLibrary implements Library {
 
@@ -62,8 +64,12 @@ public final class JrubyAckedBatchExtLibrary implements Library {
             if (! (queue instanceof JrubyAckedQueueExtLibrary.RubyAckedQueue)) {
                 context.runtime.newArgumentError("expected queue AckedQueue");
             }
-
-            this.batch = new Batch((List<Queueable>) events, (List<Long>) seqNums, ((JrubyAckedQueueExtLibrary.RubyAckedQueue)queue).getQueue());
+            final Collection<Long> seqList = (List<Long>) seqNums;
+            final LongVector seqs = new LongVector(seqList.size());
+            for (final long seq : seqList) {
+                seqs.add(seq);
+            }
+            this.batch = new Batch((List<Queueable>) events, seqs, ((JrubyAckedQueueExtLibrary.RubyAckedQueue)queue).getQueue());
 
             return context.nil;
         }

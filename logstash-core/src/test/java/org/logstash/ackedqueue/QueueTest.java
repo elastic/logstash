@@ -24,6 +24,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.logstash.ackedqueue.io.AbstractByteBufferPageIO;
+import org.logstash.ackedqueue.io.LongVector;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
@@ -637,7 +638,9 @@ public class QueueTest {
             assertThat(b.getElements().get(0), is(element2));
             assertThat(b.getElements().get(1), is(element3));
 
-            q.ack(Collections.singletonList(firstSeqNum));
+            final LongVector seqs = new LongVector(1);
+            seqs.add(firstSeqNum);
+            q.ack(seqs);
         }
 
         try(Queue q = new Queue(settings)) {
@@ -646,7 +649,10 @@ public class QueueTest {
             b = q.nonBlockReadBatch(2);
             assertThat(b.getElements().size(), is(2));
 
-            q.ack(Arrays.asList(secondSeqNum, thirdSeqNum));
+            final LongVector seqs = new LongVector(2);
+            seqs.add(secondSeqNum);
+            seqs.add(thirdSeqNum);
+            q.ack(seqs);
 
             assertThat(q.getAckedCount(), equalTo(0L));
             assertThat(q.getUnackedCount(), equalTo(0L));
