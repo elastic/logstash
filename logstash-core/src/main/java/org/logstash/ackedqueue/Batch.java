@@ -4,16 +4,17 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
+import org.logstash.ackedqueue.io.LongVector;
 
 public class Batch implements Closeable {
 
     private final List<Queueable> elements;
 
-    private final List<Long> seqNums;
+    private final LongVector seqNums;
     private final Queue queue;
     private final AtomicBoolean closed;
 
-    public Batch(List<Queueable> elements, List<Long> seqNums, Queue q) {
+    public Batch(List<Queueable> elements, LongVector seqNums, Queue q) {
         this.elements = elements;
         this.seqNums = seqNums;
         this.queue = q;
@@ -38,7 +39,7 @@ public class Batch implements Closeable {
         return elements;
     }
 
-    public List<Long> getSeqNums() { return this.seqNums; }
+    public LongVector getSeqNums() { return this.seqNums; }
 
     public Queue getQueue() {
         return queue;
