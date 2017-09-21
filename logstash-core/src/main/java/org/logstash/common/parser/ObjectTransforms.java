@@ -108,4 +108,13 @@ public class ObjectTransforms {
             throw new IllegalArgumentException("Object value must be a List, but is a " + object.getClass());
         }
     }
+
+    public static Map<String, Object> transformMap(Object object) {
+        if (object instanceof Map) {
+            // XXX: Validate all entries in this map for the cast?
+            return (Map<String, Object>) object;
+        } else {
+            throw new IllegalArgumentException("Expected a map `{ ... }` but got a " + object.getClass());
+        }
+    }
 }

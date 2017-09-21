@@ -15,6 +15,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.BiConsumer;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
@@ -27,16 +28,35 @@ public class ConstructingObjectParserTest {
         // Exists to do return type compile-time checks.
         // no body is needed
     }
+
+    public static class MixedUsageTest {
+        private Map<String, Object> config = new HashMap<>();
+        private int foo = 1000; // XXX: randomize
+        private String bar = "hello"; // XXX: randomize
+
+        @Before
+        public void setup() {
+            config.put("foo", foo);
+            config.put("bar", bar);
+        }
+
+        @Test
+        public void testGoodConstruction() {
+            MixedExample example = MixedExample.BUILDER.apply(config);
+            assertEquals(foo, example.getFoo());
+            assertEquals(bar, example.getBar());
+        }
+    }
+
     public static class FieldIntegrationTest {
         private final ConstructingObjectParser<Example> EXAMPLE_BUILDER = new ConstructingObjectParser<>(Example::new);
-        private final ConstructingObjectParser<Path> PATH_BUILDER = new ConstructingObjectParser<>(args -> Paths.get((String) args[0]));
+        private final ConstructingObjectParser<Path> PATH_BUILDER = new ConstructingObjectParser<Path>(Paths::get, Field.declareString("path"));
 
         private final Map<String, Object> config = new HashMap<>();
 
 
         @Before
         public void setup() {
-            check(PATH_BUILDER.declareString("path"));
             check(EXAMPLE_BUILDER.declareFloat("float", Example::setF));
             check(EXAMPLE_BUILDER.declareInteger("integer", Example::setI));
             check(EXAMPLE_BUILDER.declareLong("long", Example::setL));
@@ -46,10 +66,10 @@ public class ConstructingObjectParserTest {
             check(EXAMPLE_BUILDER.declareList("stringList", Example::setStringList, ObjectTransforms::transformString));
 
             // Custom transform (Object => Path)
-            check(EXAMPLE_BUILDER.declareString("path", (example, path) -> example.setP1(Paths.get(path))));
+            check(EXAMPLE_BUILDER.declareString("path", (example, path) -> example.setP(Paths.get(path))));
 
             // Custom nested object constructor: { "object": { "path": "some path" } }
-            check(EXAMPLE_BUILDER.declareObject("object", Example::setP2, PATH_BUILDER));
+            //check(EXAMPLE_BUILDER.declareObject("object", Example::setP2, PATH_BUILDER));
 
             config.put("float", 1F);
             config.put("integer", 1);
@@ -72,29 +92,21 @@ public class ConstructingObjectParserTest {
             assertEquals(Collections.singletonList("hello"), e.getStringList());
 
             // because they are not set and the default in the Example class is null.
-            assertNull(e.getP1());
-            assertNull(e.getP2());
+            assertNull(e.getP());
         }
 
         @Test
         public void testCustomTransform() {
             config.put("path", "example");
             Example e = EXAMPLE_BUILDER.apply(config);
-            assertEquals(Paths.get("example"), e.getP1());
+            assertEquals(Paths.get("example"), e.getP());
         }
 
         @Test
         public void testNestedObject() {
             config.put("object", Collections.singletonMap("path", "example"));
             Example e = EXAMPLE_BUILDER.apply(config);
-            assertEquals(Paths.get("example"), e.getP2());
-        }
-
-        @Test(expected = UnsupportedOperationException.class)
-        public void testInvalidConstructor() {
-            // EXAMPLE_BUILDER gives a Supplier (not a Function<Object[], ...>), so constructor arguments
-            // should be disabled and this call should fail.
-            check(EXAMPLE_BUILDER.declareString("invalid"));
+            //assertEquals(Paths.get("example"), e.getP2());
         }
 
         @Test(expected = IllegalArgumentException.class)
@@ -106,30 +118,24 @@ public class ConstructingObjectParserTest {
     }
 
     public static class ConstructorIntegrationTest {
-        private final ConstructingObjectParser<Example> EXAMPLE_BUILDER = new ConstructingObjectParser<>(args -> new Example((int) args[0], (float) args[1], (long) args[2], (double) args[3], (boolean) args[4], (String) args[5], (Path) args[6], (Path) args[7], (List<String>) args[8]));
-        private final ConstructingObjectParser<Path> PATH_BUILDER = new ConstructingObjectParser<>(args -> Paths.get((String) args[0]));
+        private final ConstructingObjectParser<Example> EXAMPLE_BUILDER = new ConstructingObjectParser<Example>(
+                Example::new,
+                Field.declareInteger("integer"), // arg0
+                Field.declareFloat("float"), // arg0
+                Field.declareLong("long"), // arg2 ...
+                Field.declareDouble("double"),
+                Field.declareBoolean("boolean"),
+                Field.declareString("string"),
+                Field.declareField("path", object -> Paths.get(ObjectTransforms.transformString(object))),
+                Field.declareList("strings", ObjectTransforms::transformString)
+        );
+
+        private final ConstructingObjectParser<Path> PATH_BUILDER = new ConstructingObjectParser<>(Paths::get, Field.declareString("path"));
 
         private final Map<String, Object> config = new LinkedHashMap<>();
 
         @Before
         public void setup() {
-            check(PATH_BUILDER.declareString("path"));
-
-            check(EXAMPLE_BUILDER.declareInteger("integer"));
-            check(EXAMPLE_BUILDER.declareFloat("float"));
-            check(EXAMPLE_BUILDER.declareLong("long"));
-            check(EXAMPLE_BUILDER.declareDouble("double"));
-            check(EXAMPLE_BUILDER.declareBoolean("boolean"));
-            check(EXAMPLE_BUILDER.declareString("string"));
-
-            // Custom transform (Object => Path)
-            check(EXAMPLE_BUILDER.declareConstructorArg("path", (object) -> Paths.get((String) object)));
-
-            // Custom nested object constructor: { "object": { "path": "some path" } }
-            check(EXAMPLE_BUILDER.declareObject("object", PATH_BUILDER));
-
-            check(EXAMPLE_BUILDER.declareList("stringList", ObjectTransforms::transformString));
-
             config.put("float", 1F);
             config.put("integer", 1);
             config.put("long", 1L);
@@ -150,8 +156,7 @@ public class ConstructingObjectParserTest {
             assertEquals(1L, e.getL());
             assertEquals(true, e.isB());
             assertEquals("hello", e.getS());
-            assertEquals(Paths.get("path1"), e.getP1());
-            assertEquals(Paths.get("path2"), e.getP2());
+            assertEquals(Paths.get("path"), e.getP());
 
             assertEquals(Collections.singletonList("hello"), e.getStringList());
         }
@@ -165,8 +170,8 @@ public class ConstructingObjectParserTest {
 
         @Test(expected = IllegalArgumentException.class)
         public void testDuplicateConstructorFieldsAreRejected() {
-            // field 'float' is already defined, so this should fail.
-            check(EXAMPLE_BUILDER.declareString("float"));
+            String name = "foo";
+            new ConstructingObjectParser<Path>(Paths::get, Field.declareString(name), Field.declareString(name));
         }
 
     }
@@ -224,13 +229,16 @@ public class ConstructingObjectParserTest {
     }
 
     public static class DeprecationsAndObsoletes {
-        final ConstructingObjectParser<Example> c = new ConstructingObjectParser<>((args) -> new Example());
+        final ConstructingObjectParser<Example> c = new ConstructingObjectParser<>(Example::new);
+        final BiConsumer<Example, Integer> noOp = (a, b) -> { /* empty */ };
 
         @Before
         public void setup() {
-            check(c.declareInteger("deprecated").setDeprecated("This setting will warn the user when used."));
-            check(c.declareInteger("obsolete", (a, b) -> {
-            }).setObsolete("This setting should cause a failure when someone uses it."));
+            check(c.declareInteger("deprecated", noOp).setDeprecated("This setting will warn the user when used."));
+            check(c.declareInteger("obsolete", noOp).setObsolete("This setting should cause a failure when someone uses it."));
+        }
+
+        private static class Example {
         }
 
         @Test
@@ -239,12 +247,5 @@ public class ConstructingObjectParserTest {
             c.apply(Collections.singletonMap("deprecated", 1));
         }
 
-        @Test(expected = IllegalArgumentException.class)
-        public void obsoletesOnConstructorArgsIsInvalid() {
-            c.declareInteger("fail").setObsolete("...");
-        }
-
-        private static class Example {
-        }
     }
 }

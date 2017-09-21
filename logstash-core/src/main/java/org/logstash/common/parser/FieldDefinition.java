@@ -1,17 +1,20 @@
 package org.logstash.common.parser;
 
-import java.util.function.BiConsumer;
+import java.util.function.Function;
 
-class FieldDefinition<Value> implements Field, BiConsumer<Value, Object> {
-    private final FieldUsage usage;
-    private final BiConsumer<Value, Object> consumer;
+class FieldDefinition<Value> implements Field<Value> {
+    private final Function<Object, Value> transform;
 
-    private String details;
+    private String name;
+
+    // This is only set if deprecated or obsolete
+    // XXX: Move this concept separately to DeprecatedFieldDefinition and ObsoleteFieldDefinition
     private FieldStatus status;
+    private String details;
 
-    FieldDefinition(BiConsumer<Value, Object> consumer, FieldUsage usage) {
-        this.consumer = consumer;
-        this.usage = usage;
+    FieldDefinition(String name, Function<Object, Value> transform) {
+        this.name = name;
+        this.transform = transform;
     }
 
     @Override
@@ -22,9 +25,6 @@ class FieldDefinition<Value> implements Field, BiConsumer<Value, Object> {
 
     @Override
     public Field setObsolete(String details) {
-        if (usage == FieldUsage.Constructor) {
-            throw new IllegalArgumentException("Constructor arguments cannot be made obsolete.");
-        }
         setStatus(FieldStatus.Obsolete, details);
         return this;
     }
@@ -35,19 +35,26 @@ class FieldDefinition<Value> implements Field, BiConsumer<Value, Object> {
     }
 
     @Override
-    public void accept(Value value, Object object) {
-        consumer.accept(value, object);
+    public Value apply(Object object) {
+        return transform.apply(object);
     }
 
-    boolean isDeprecated() {
+    @Override
+    public boolean isDeprecated() {
         return status == FieldStatus.Deprecated;
     }
 
-    boolean isObsolete() {
+    @Override
+    public boolean isObsolete() {
         return status == FieldStatus.Obsolete;
     }
 
-    String getDetails() {
+    public String getName() {
+        return name;
+    }
+
+    @Override
+    public String getDetails() {
         return details;
     }
 }

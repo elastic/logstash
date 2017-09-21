@@ -1,14 +1,12 @@
 package org.logstash.common.parser;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
-import java.util.Collections;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -21,29 +19,101 @@ import java.util.stream.Collectors;
  * @param <Value> The object type to construct when `parse` is called.
  */
 public class ConstructingObjectParser<Value> implements ObjectParser<Value> {
-    private final Logger logger = LogManager.getLogger();
-    private final Function<Object[], Value> builder;
-    private final Map<String, FieldDefinition<Value>> parsers = new HashMap<>();
-    private final Map<String, FieldDefinition<Object[]>> constructorArgs;
-
+    private final Map<String, BiConsumer<Value, Object>> parsers = new HashMap<>();
+    private List<Field<?>> constructorFields = null;
+    private Function<Map<String, Object>, Value> builder;
     /**
+     * Zero-argument object constructor (A Supplier)
      * @param supplier The supplier which produces an object instance.
      */
     @SuppressWarnings("WeakerAccess") // Public Interface
     public ConstructingObjectParser(Supplier<Value> supplier) {
-        this.builder = args -> supplier.get();
-
-        // Reject any attempts to add constructor fields with an immutable map.
-        constructorArgs = Collections.emptyMap();
+        this(config -> supplier.get());
+    }
+    /**
+     * One-argument object constructor
+     */
+    @SuppressWarnings("WeakerAccess") // Public Interface
+    public <Arg0> ConstructingObjectParser(Function<Arg0, Value> function, Field<Arg0> arg0) {
+        this(config -> function.apply(arg0.apply(config)));
+        constructorFields = Arrays.asList(arg0);
     }
 
     /**
-     * @param builder A function which takes an Object[] as argument and returns a Value instance
+     * Two-argument object constructor
      */
     @SuppressWarnings("WeakerAccess") // Public Interface
-    public ConstructingObjectParser(Function<Object[], Value> builder) {
+    public <Arg0, Arg1> ConstructingObjectParser(BiFunction<Arg0, Arg1, Value> function, Field<Arg0> arg0, Field<Arg1> arg1) {
+        this(config -> function.apply(arg0.apply(config), arg1.apply(config)));
+        constructorFields = Arrays.asList(arg0, arg1);
+    }
+
+    /**
+     * Three-argument object constructor
+     */
+    @SuppressWarnings("WeakerAccess") // Public Interface
+    public <Arg0, Arg1, Arg2> ConstructingObjectParser(Function3<Arg0, Arg1, Arg2, Value> function, Field<Arg0> arg0, Field<Arg1> arg1, Field<Arg2> arg2) {
+        this(config -> function.apply(arg0.apply(config), arg1.apply(config), arg2.apply(config)));
+        constructorFields = Arrays.asList(arg0, arg1, arg2);
+    }
+
+
+    @SuppressWarnings("WeakerAccess") // Public Interface
+    public <Arg0, Arg1, Arg2, Arg3> ConstructingObjectParser(Function4<Arg0, Arg1, Arg2, Arg3, Value> function, Field<Arg0> arg0, Field<Arg1> arg1, Field<Arg2> arg2, Field<Arg3> arg3) {
+        this(config -> function.apply(arg0.apply(config), arg1.apply(config), arg2.apply(config), arg3.apply(config)));
+        constructorFields = Arrays.asList(arg0, arg1, arg2, arg3);
+    }
+
+    @SuppressWarnings("WeakerAccess") // Public Interface
+    public <Arg0, Arg1, Arg2, Arg3, Arg4> ConstructingObjectParser(Function5<Arg0, Arg1, Arg2, Arg3, Arg4, Value> function, Field<Arg0> arg0, Field<Arg1> arg1, Field<Arg2> arg2, Field<Arg3> arg3, Field<Arg4> arg4) {
+        this(config -> function.apply(arg0.apply(config), arg1.apply(config), arg2.apply(config), arg3.apply(config), arg4.apply(config)));
+        constructorFields = Arrays.asList(arg0, arg1, arg2, arg3, arg4);
+    }
+
+    @SuppressWarnings("WeakerAccess") // Public Interface
+    public <Arg0, Arg1, Arg2, Arg3, Arg4, Arg5> ConstructingObjectParser(Function6<Arg0, Arg1, Arg2, Arg3, Arg4, Arg5, Value> function, Field<Arg0> arg0, Field<Arg1> arg1, Field<Arg2> arg2, Field<Arg3> arg3, Field<Arg4> arg4, Field<Arg5> arg5) {
+        this(config -> function.apply(arg0.apply(config), arg1.apply(config), arg2.apply(config), arg3.apply(config), arg4.apply(config), arg5.apply(config)));
+        constructorFields = Arrays.asList(arg0, arg1, arg2, arg3, arg4, arg5);
+    }
+
+    @SuppressWarnings("WeakerAccess") // Public Interface
+    public <Arg0, Arg1, Arg2, Arg3, Arg4, Arg5, Arg6> ConstructingObjectParser(Function7<Arg0, Arg1, Arg2, Arg3, Arg4, Arg5, Arg6, Value> function, Field<Arg0> arg0, Field<Arg1> arg1, Field<Arg2> arg2, Field<Arg3> arg3, Field<Arg4> arg4, Field<Arg5> arg5, Field<Arg6> arg6) {
+        this(config -> function.apply(arg0.apply(config), arg1.apply(config), arg2.apply(config), arg3.apply(config), arg4.apply(config), arg5.apply(config), arg6.apply(config)));
+        constructorFields = Arrays.asList(arg0, arg1, arg2, arg3, arg4, arg5, arg6);
+    }
+
+    @SuppressWarnings("WeakerAccess") // Public Interface
+    public <Arg0, Arg1, Arg2, Arg3, Arg4, Arg5, Arg6, Arg7> ConstructingObjectParser(Function8<Arg0, Arg1, Arg2, Arg3, Arg4, Arg5, Arg6, Arg7, Value> function, Field<Arg0> arg0, Field<Arg1> arg1, Field<Arg2> arg2, Field<Arg3> arg3, Field<Arg4> arg4, Field<Arg5> arg5, Field<Arg6> arg6, Field<Arg7> arg7) {
+        this(config -> function.apply(arg0.apply(config), arg1.apply(config), arg2.apply(config), arg3.apply(config), arg4.apply(config), arg5.apply(config), arg6.apply(config), arg7.apply(config)));
+        constructorFields = Arrays.asList(arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7);
+    }
+
+    @SuppressWarnings("WeakerAccess") // Public Interface
+    public <Arg0, Arg1, Arg2, Arg3, Arg4, Arg5, Arg6, Arg7, Arg8> ConstructingObjectParser(Function9<Arg0, Arg1, Arg2, Arg3, Arg4, Arg5, Arg6, Arg7, Arg8, Value> function, Field<Arg0> arg0, Field<Arg1> arg1, Field<Arg2> arg2, Field<Arg3> arg3, Field<Arg4> arg4, Field<Arg5> arg5, Field<Arg6> arg6, Field<Arg7> arg7, Field<Arg8> arg8) {
+        this(config -> function.apply(arg0.apply(config), arg1.apply(config), arg2.apply(config), arg3.apply(config), arg4.apply(config), arg5.apply(config), arg6.apply(config), arg7.apply(config), arg8.apply(config)));
+        constructorFields = Arrays.asList(arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
+    }
+
+    private ConstructingObjectParser(Function<Map<String, Object>, Value> builder) {
         this.builder = builder;
-        constructorArgs = new HashMap<>();
+    }
+
+    private static <Value> Value construct(Map<String, Object> config, Function<Object[], Value> builder, Field<?>... constructorFields) throws IllegalArgumentException {
+        Object[] builderArgs = new Object[constructorFields.length];
+        int i = 0;
+        for (Field<?> field : constructorFields) {
+            final String name = field.getName();
+
+            if (config.containsKey(name)) {
+                builderArgs[i] = field.apply(config.get(name));
+            } else {
+                throw new IllegalArgumentException("Missing required argument '" + name + "'");
+            }
+
+            i++;
+        }
+
+        return builder.apply(builderArgs);
     }
 
     /**
@@ -78,49 +148,8 @@ public class ConstructingObjectParser<Value> implements ObjectParser<Value> {
         }
 
         BiConsumer<Value, Object> objConsumer = (value, object) -> consumer.accept(value, transform.apply(object));
-        FieldDefinition<Value> field = new FieldDefinition<>(objConsumer, FieldUsage.Field);
-        parsers.put(name, field);
-        return field;
-    }
-
-    /**
-     * Declare a constructor argument. Constructor arguments are implicitly ordered by the order they are executed.
-     * <p>
-     * When calling `apply`, all constructor arguments are considered required. If missing, `apply` will throw an exception.
-     * <p>
-     * <code>{@code
-     * ConstructingObjectParser<Integer> c = new ConstructingObjectParser<>(args -> new Integer((int) args[0])0;
-     * c.declareInteger("number");
-     * <p>
-     * // alternately, the longer way:
-     * //c.declareConstructorArg("number", ObjectTransform::transformInteger)
-     * <p>
-     * Integer i = c.apply(Collections.singletonMap("number", 100);
-     * // i == 100
-     * }</code>
-     *
-     * @param name      The name of this constructor argument
-     * @param transform The function to transform an Object to the specified T type
-     * @param <T>       the type of value expected for this constructor arg.
-     * @return
-     */
-    @Override
-    @SuppressWarnings("WeakerAccess") // Public Interface
-    public <T> Field declareConstructorArg(String name, Function<Object, T> transform) {
-        if (isKnownField(name)) {
-            throw new IllegalArgumentException("Duplicate field defined '" + name + "'");
-        }
-
-        final int position = constructorArgs.size();
-        BiConsumer<Object[], Object> objConsumer = (array, object) -> array[position] = transform.apply(object);
-        FieldDefinition<Object[]> field = new FieldDefinition<>(objConsumer, FieldUsage.Constructor);
-        try {
-            constructorArgs.put(name, field);
-        } catch (UnsupportedOperationException e) {
-            // This will be thrown when this ConstructingObjectParser is created with a Supplier (which takes no arguments)
-            // for example, new ConstructingObjectParser<>((Supplier<String>) String::new)
-            throw new UnsupportedOperationException("Cannot add constructor args because the constructor doesn't take any arguments!");
-        }
+        FieldDefinition<T> field = new FieldDefinition<T>(name, transform);
+        parsers.put(name, (value, input) -> consumer.accept(value, transform.apply(input)));
         return field;
     }
 
@@ -139,27 +168,58 @@ public class ConstructingObjectParser<Value> implements ObjectParser<Value> {
     public Value apply(Map<String, Object> config) {
         rejectUnknownFields(config.keySet());
 
-        Value value = construct(config);
+        Value value = this.builder.apply(config);
 
         // Now call all the object setters/etc
         for (Map.Entry<String, Object> entry : config.entrySet()) {
             String name = entry.getKey();
-            if (constructorArgs.containsKey(name)) {
-                // Skip constructor arguments
+            if (isConstructorField(name)) {
                 continue;
             }
 
-            FieldDefinition<Value> field = parsers.get(name);
-            assert field != null;
+            BiConsumer<Value, Object> parser = parsers.get(name);
+            assert parser != null;
 
             try {
-                field.accept(value, entry.getValue());
+                parser.accept(value, entry.getValue());
             } catch (IllegalArgumentException e) {
                 throw new IllegalArgumentException("Field " + name + ": " + e.getMessage(), e);
             }
         }
 
         return value;
+    }
+
+    private boolean isConstructorField(String name) {
+        return constructorFields.stream().anyMatch(f -> f.getName().equals(name));
+    }
+
+    private boolean isKnownField(String name) {
+        return parsers.containsKey(name) || isConstructorField(name);
+    }
+
+    public interface Function3<Arg0, Arg1, Arg2, Value> {
+        Value apply(Arg0 arg0, Arg1 arg1, Arg2 arg2);
+    }
+
+    public interface Function4<Arg0, Arg1, Arg2, Arg3, Value> {
+        Value apply(Arg0 arg0, Arg1 arg1, Arg2 arg2, Arg3 arg3);
+    }
+
+    /**
+     * @param builder A function which takes an Object[] as argument and returns a Value instance
+     */
+    //@SuppressWarnings("WeakerAccess") // Public Interface
+    //public ConstructingObjectParser(Function<Object[], Value> builder, Field<?>... fields) {
+    //this(config -> construct(config, builder, fields), fields);
+    //}
+
+    public interface Function5<Arg0, Arg1, Arg2, Arg3, Arg4, Value> {
+        Value apply(Arg0 arg0, Arg1 arg1, Arg2 arg2, Arg3 arg3, Arg4 arg4);
+    }
+
+    public interface Function6<Arg0, Arg1, Arg2, Arg3, Arg4, Arg5, Value> {
+        Value apply(Arg0 arg0, Arg1 arg1, Arg2 arg2, Arg3 arg3, Arg4 arg4, Arg5 arg5);
     }
 
     private void rejectUnknownFields(Set<String> configNames) throws IllegalArgumentException {
@@ -171,31 +231,15 @@ public class ConstructingObjectParser<Value> implements ObjectParser<Value> {
         }
     }
 
-    private boolean isKnownField(String name) {
-        return (parsers.containsKey(name) || constructorArgs.containsKey(name));
+    public interface Function7<Arg0, Arg1, Arg2, Arg3, Arg4, Arg5, Arg6, Value> {
+        Value apply(Arg0 arg0, Arg1 arg1, Arg2 arg2, Arg3 arg3, Arg4 arg4, Arg5 arg5, Arg6 arg6);
     }
 
-    private Value construct(Map<String, Object> config) throws IllegalArgumentException {
-        Object[] args = new Object[constructorArgs.size()];
+    public interface Function8<Arg0, Arg1, Arg2, Arg3, Arg4, Arg5, Arg6, Arg7, Value> {
+        Value apply(Arg0 arg0, Arg1 arg1, Arg2 arg2, Arg3 arg3, Arg4 arg4, Arg5 arg5, Arg6 arg6, Arg7 arg7);
+    }
 
-        // Constructor arguments. Any constructor argument is a *required* setting.
-        for (Map.Entry<String, FieldDefinition<Object[]>> argInfo : constructorArgs.entrySet()) {
-            String name = argInfo.getKey();
-            FieldDefinition<Object[]> field = argInfo.getValue();
-
-            if (config.containsKey(name)) {
-                if (field.isObsolete()) {
-                    throw new IllegalArgumentException("Field '" + name + "' is obsolete and may not be used. " + field.getDetails());
-                } else if (field.isDeprecated()) {
-                    logger.warn("Field '" + name + "' is deprecated and should be avoided. " + field.getDetails());
-                }
-
-                field.accept(args, config.get(name));
-            } else {
-                throw new IllegalArgumentException("Missing required argument '" + name);
-            }
-        }
-
-        return builder.apply(args);
+    public interface Function9<Arg0, Arg1, Arg2, Arg3, Arg4, Arg5, Arg6, Arg7, Arg8, Value> {
+        Value apply(Arg0 arg0, Arg1 arg1, Arg2 arg2, Arg3 arg3, Arg4 arg4, Arg5 arg5, Arg6 arg6, Arg7 arg7, Arg8 arg8);
     }
 }

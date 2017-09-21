@@ -11,22 +11,20 @@ class Example {
     private boolean b;
     private long l;
     private String s;
-    private Path p1;
-    private Path p2;
+    private Path p;
     private List<String> stringList;
 
     Example() {
     }
 
-    Example(int i, float f, long l, double d, boolean b, String s, Path p1, Path p2, List<String> stringList) {
+    Example(int i, float f, long l, double d, boolean b, String s, Path p, List<String> stringList) {
         this.i = i;
         this.f = f;
         this.l = l;
         this.d = d;
         this.b = b;
         this.s = s;
-        this.p1 = p1;
-        this.p2 = p2;
+        this.p = p;
         this.stringList = stringList;
     }
 
@@ -78,20 +76,12 @@ class Example {
         this.s = s;
     }
 
-    Path getP1() {
-        return p1;
+    Path getP() {
+        return p;
     }
 
-    void setP1(Path p1) {
-        this.p1 = p1;
-    }
-
-    Path getP2() {
-        return p2;
-    }
-
-    void setP2(Path p2) {
-        this.p2 = p2;
+    void setP(Path p) {
+        this.p = p;
     }
 
     List<String> getStringList() {
