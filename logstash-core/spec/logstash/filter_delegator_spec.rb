@@ -146,7 +146,7 @@ describe LogStash::FilterDelegator do
     end
 
     it "doesnt define a flush method" do
-      expect(subject.respond_to?(:flush)).to be_falsey
+      expect(subject.has_flush).to be_falsey
     end
 
     it "increments the in/out of the metric" do

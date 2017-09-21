@@ -1,18 +1,36 @@
 package org.logstash.config.ir;
 
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 import org.logstash.common.SourceWithMetadata;
-import org.logstash.config.ir.expression.*;
-import org.logstash.config.ir.expression.binary.*;
+import org.logstash.config.ir.expression.BooleanExpression;
+import org.logstash.config.ir.expression.EventValueExpression;
+import org.logstash.config.ir.expression.Expression;
+import org.logstash.config.ir.expression.RegexValueExpression;
+import org.logstash.config.ir.expression.ValueExpression;
+import org.logstash.config.ir.expression.binary.And;
+import org.logstash.config.ir.expression.binary.Eq;
+import org.logstash.config.ir.expression.binary.Gt;
+import org.logstash.config.ir.expression.binary.Gte;
+import org.logstash.config.ir.expression.binary.In;
+import org.logstash.config.ir.expression.binary.Lt;
+import org.logstash.config.ir.expression.binary.Lte;
+import org.logstash.config.ir.expression.binary.Neq;
+import org.logstash.config.ir.expression.binary.Or;
+import org.logstash.config.ir.expression.binary.RegexEq;
 import org.logstash.config.ir.expression.unary.Not;
 import org.logstash.config.ir.expression.unary.Truthy;
 import org.logstash.config.ir.graph.Graph;
 import org.logstash.config.ir.graph.IfVertex;
 import org.logstash.config.ir.graph.PluginVertex;
-import org.logstash.config.ir.imperative.*;
-
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
+import org.logstash.config.ir.imperative.ComposedParallelStatement;
+import org.logstash.config.ir.imperative.ComposedSequenceStatement;
+import org.logstash.config.ir.imperative.ComposedStatement;
+import org.logstash.config.ir.imperative.IfStatement;
+import org.logstash.config.ir.imperative.NoopStatement;
+import org.logstash.config.ir.imperative.PluginStatement;
+import org.logstash.config.ir.imperative.Statement;
 
 /**
  * Created by andrewvc on 9/15/16.
@@ -107,12 +125,20 @@ public class DSL {
         return new And(null, left, right);
     }
 
+    public static Not eNand(Expression left, Expression right) throws InvalidIRException {
+        return eNot(eAnd(left, right));
+    }
+
     public static Or eOr(SourceWithMetadata meta, Expression left, Expression right) {
         return new Or(meta, left, right);
     }
 
     public static Or eOr(Expression left, Expression right) {
         return new Or(null, left, right);
+    }
+
+    public static Or eXor(Expression left, Expression right) throws InvalidIRException {
+        return eOr(eAnd(eNot(left), right), eAnd(left, eNot(right)));
     }
 
     public static RegexEq eRegexEq(SourceWithMetadata meta, Expression left, ValueExpression right) throws InvalidIRException {
