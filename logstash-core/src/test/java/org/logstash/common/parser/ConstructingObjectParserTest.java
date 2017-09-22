@@ -6,7 +6,6 @@ import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Collection;
@@ -17,8 +16,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.BiConsumer;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.*;
 import static org.junit.runners.Parameterized.Parameters;
 
 @RunWith(Enclosed.class)
@@ -30,9 +28,9 @@ public class ConstructingObjectParserTest {
     }
 
     public static class MixedUsageTest {
-        private Map<String, Object> config = new HashMap<>();
-        private int foo = 1000; // XXX: randomize
-        private String bar = "hello"; // XXX: randomize
+        private final Map<String, Object> config = new HashMap<>();
+        private final int foo = 1000; // XXX: randomize
+        private final String bar = "hello"; // XXX: randomize
 
         @Before
         public void setup() {
@@ -48,41 +46,34 @@ public class ConstructingObjectParserTest {
         }
     }
 
+    public static class NestedTest {
+        private final Map<String, Object> config = Collections.singletonMap("foo", Collections.singletonMap("i", 100));
+
+        @Test
+        public void testNested() {
+            NestedExample e = NestedExample.BUILDER.apply(config);
+            assertEquals(100, e.getNested().getI());
+        }
+
+    }
+
     public static class FieldIntegrationTest {
-        private final ConstructingObjectParser<Example> EXAMPLE_BUILDER = new ConstructingObjectParser<>(Example::new);
-        private final ConstructingObjectParser<Path> PATH_BUILDER = new ConstructingObjectParser<Path>(Paths::get, Field.declareString("path"));
-
         private final Map<String, Object> config = new HashMap<>();
-
 
         @Before
         public void setup() {
-            check(EXAMPLE_BUILDER.declareFloat("float", Example::setF));
-            check(EXAMPLE_BUILDER.declareInteger("integer", Example::setI));
-            check(EXAMPLE_BUILDER.declareLong("long", Example::setL));
-            check(EXAMPLE_BUILDER.declareDouble("double", Example::setD));
-            check(EXAMPLE_BUILDER.declareBoolean("boolean", Example::setB));
-            check(EXAMPLE_BUILDER.declareString("string", Example::setS));
-            check(EXAMPLE_BUILDER.declareList("stringList", Example::setStringList, ObjectTransforms::transformString));
-
-            // Custom transform (Object => Path)
-            check(EXAMPLE_BUILDER.declareString("path", (example, path) -> example.setP(Paths.get(path))));
-
-            // Custom nested object constructor: { "object": { "path": "some path" } }
-            //check(EXAMPLE_BUILDER.declareObject("object", Example::setP2, PATH_BUILDER));
-
-            config.put("float", 1F);
             config.put("integer", 1);
-            config.put("long", 1L);
+            config.put("float", 1F);
             config.put("double", 1D);
+            config.put("long", 1L);
             config.put("boolean", true);
             config.put("string", "hello");
-            config.put("stringList", Collections.singletonList("hello"));
+            config.put("list", Collections.singletonList("hello"));
         }
 
         @Test
         public void testParsing() {
-            Example e = EXAMPLE_BUILDER.apply(config);
+            FieldExample e = FieldExample.BUILDER.apply(config);
             assertEquals(1F, e.getF(), 0.1);
             assertEquals(1D, e.getD(), 0.1);
             assertEquals(1, e.getI());
@@ -98,40 +89,25 @@ public class ConstructingObjectParserTest {
         @Test
         public void testCustomTransform() {
             config.put("path", "example");
-            Example e = EXAMPLE_BUILDER.apply(config);
+            FieldExample e = FieldExample.BUILDER.apply(config);
             assertEquals(Paths.get("example"), e.getP());
         }
 
         @Test
         public void testNestedObject() {
-            config.put("object", Collections.singletonMap("path", "example"));
-            Example e = EXAMPLE_BUILDER.apply(config);
+            //config.put("object", Collections.singletonMap("path", "example"));
+            //Example e = EXAMPLE_BUILDER.apply(config);
             //assertEquals(Paths.get("example"), e.getP2());
         }
 
         @Test(expected = IllegalArgumentException.class)
         public void testDuplicateFieldsAreRejected() {
             // field 'float' is already defined, so this should fail.
-            check(EXAMPLE_BUILDER.declareString("float", (a, b) -> {
-            }));
+            check(FieldExample.BUILDER.declareString("float", (a, b) -> { /*empty*/ }));
         }
     }
 
     public static class ConstructorIntegrationTest {
-        private final ConstructingObjectParser<Example> EXAMPLE_BUILDER = new ConstructingObjectParser<Example>(
-                Example::new,
-                Field.declareInteger("integer"), // arg0
-                Field.declareFloat("float"), // arg0
-                Field.declareLong("long"), // arg2 ...
-                Field.declareDouble("double"),
-                Field.declareBoolean("boolean"),
-                Field.declareString("string"),
-                Field.declareField("path", object -> Paths.get(ObjectTransforms.transformString(object))),
-                Field.declareList("strings", ObjectTransforms::transformString)
-        );
-
-        private final ConstructingObjectParser<Path> PATH_BUILDER = new ConstructingObjectParser<>(Paths::get, Field.declareString("path"));
-
         private final Map<String, Object> config = new LinkedHashMap<>();
 
         @Before
@@ -142,14 +118,13 @@ public class ConstructingObjectParserTest {
             config.put("double", 1D);
             config.put("boolean", true);
             config.put("string", "hello");
-            config.put("path", "path1");
-            config.put("object", Collections.singletonMap("path", "path2"));
-            config.put("stringList", Collections.singletonList("hello"));
+            config.put("path", "path");
+            config.put("list", Collections.singletonList("hello"));
         }
 
         @Test
         public void testParsing() {
-            Example e = EXAMPLE_BUILDER.apply(config);
+            ConstructorExample e = ConstructorExample.BUILDER.apply(config);
             assertEquals(1F, e.getF(), 0.1);
             assertEquals(1D, e.getD(), 0.1);
             assertEquals(1, e.getI());
@@ -157,23 +132,21 @@ public class ConstructingObjectParserTest {
             assertEquals(true, e.isB());
             assertEquals("hello", e.getS());
             assertEquals(Paths.get("path"), e.getP());
-
             assertEquals(Collections.singletonList("hello"), e.getStringList());
         }
 
         @Test(expected = IllegalArgumentException.class)
-        public void testDuplicateFieldsAreRejected() {
-            // field 'float' is already defined, so this should fail.
-            check(EXAMPLE_BUILDER.declareString("float", (a, b) -> {
-            }));
+        public void testInvalidTypesAreRejected() {
+            config.put("float", "Hello"); // put a string for the float field.
+            ConstructorExample.BUILDER.apply(config); // should fail
         }
 
-        @Test(expected = IllegalArgumentException.class)
-        public void testDuplicateConstructorFieldsAreRejected() {
-            String name = "foo";
-            new ConstructingObjectParser<Path>(Paths::get, Field.declareString(name), Field.declareString(name));
-        }
+        @Test(expected = NullPointerException.class)
+        public void testMissingArgumentsAreRejected() {
+            config.remove("path");
+            ConstructorExample.BUILDER.apply(config); // should fail
 
+        }
     }
 
     @RunWith(Parameterized.class)
@@ -229,8 +202,8 @@ public class ConstructingObjectParserTest {
     }
 
     public static class DeprecationsAndObsoletes {
-        final ConstructingObjectParser<Example> c = new ConstructingObjectParser<>(Example::new);
-        final BiConsumer<Example, Integer> noOp = (a, b) -> { /* empty */ };
+        final ConstructingObjectParser<ConstructorExample> c = new ConstructingObjectParser<>(ConstructorExample::new);
+        final BiConsumer<ConstructorExample, Integer> noOp = (a, b) -> { /* empty */ };
 
         @Before
         public void setup() {
@@ -238,13 +211,75 @@ public class ConstructingObjectParserTest {
             check(c.declareInteger("obsolete", noOp).setObsolete("This setting should cause a failure when someone uses it."));
         }
 
-        private static class Example {
+        private static class ConstructorExample {
         }
 
         @Test
         public void deprecatedUsageIsAllowed() {
             // XXX: Implement a custom log appender that captures log4j logs so we can verify the warning is logged.
             c.apply(Collections.singletonMap("deprecated", 1));
+        }
+    }
+
+    @RunWith(Parameterized.class)
+    public static class ConstructionArguments {
+        static final ConstructingObjectParser<List<Integer>> c0 = /* 0 args */ new ConstructingObjectParser<>(Arrays::<Integer>asList);
+        static final ConstructingObjectParser<List<Integer>> c1 = /* 1 args */ new ConstructingObjectParser<>(Arrays::<Integer>asList, Field.declareInteger("a0"));
+        static final ConstructingObjectParser<List<Integer>> c2 = /* 2 args */ new ConstructingObjectParser<>(Arrays::<Integer>asList, Field.declareInteger("a0"), Field.declareInteger("a1"));
+        static final ConstructingObjectParser<List<Integer>> c3 = /* 3 args */ new ConstructingObjectParser<>(Arrays::<Integer>asList, Field.declareInteger("a0"), Field.declareInteger("a1"), Field.declareInteger("a2"));
+        static final ConstructingObjectParser<List<Integer>> c4 = /* 4 args */ new ConstructingObjectParser<>(Arrays::<Integer>asList, Field.declareInteger("a0"), Field.declareInteger("a1"), Field.declareInteger("a2"), Field.declareInteger("a3"));
+        static final ConstructingObjectParser<List<Integer>> c5 = /* 5 args */ new ConstructingObjectParser<>(Arrays::<Integer>asList, Field.declareInteger("a0"), Field.declareInteger("a1"), Field.declareInteger("a2"), Field.declareInteger("a3"), Field.declareInteger("a4"));
+        static final ConstructingObjectParser<List<Integer>> c6 = /* 6 args */ new ConstructingObjectParser<>(Arrays::<Integer>asList, Field.declareInteger("a0"), Field.declareInteger("a1"), Field.declareInteger("a2"), Field.declareInteger("a3"), Field.declareInteger("a4"), Field.declareInteger("a5"));
+        static final ConstructingObjectParser<List<Integer>> c7 = /* 7 args */ new ConstructingObjectParser<>(Arrays::<Integer>asList, Field.declareInteger("a0"), Field.declareInteger("a1"), Field.declareInteger("a2"), Field.declareInteger("a3"), Field.declareInteger("a4"), Field.declareInteger("a5"), Field.declareInteger("a6"));
+        static final ConstructingObjectParser<List<Integer>> c8 = /* 8 args */ new ConstructingObjectParser<>(Arrays::<Integer>asList, Field.declareInteger("a0"), Field.declareInteger("a1"), Field.declareInteger("a2"), Field.declareInteger("a3"), Field.declareInteger("a4"), Field.declareInteger("a5"), Field.declareInteger("a6"), Field.declareInteger("a7"));
+        static final ConstructingObjectParser<List<Integer>> c9 = /* 9 args */ new ConstructingObjectParser<>(Arrays::<Integer>asList, Field.declareInteger("a0"), Field.declareInteger("a1"), Field.declareInteger("a2"), Field.declareInteger("a3"), Field.declareInteger("a4"), Field.declareInteger("a5"), Field.declareInteger("a6"), Field.declareInteger("a7"), Field.declareInteger("a8"));
+        private final ConstructingObjectParser<List<Integer>> builder;
+        private final int i;
+
+        public ConstructionArguments(ConstructingObjectParser<List<Integer>> builder, int i) {
+            this.builder = builder;
+            this.i = i;
+        }
+
+        static Map<String, Object> genMap(int count) {
+            Map map = new HashMap();
+            for (int i = 0; i < count; i++) {
+                map.put("a" + i, i);
+            }
+            return map;
+        }
+
+        @Parameters
+        public static Collection<Object[]> data() {
+            return Arrays.asList(new Object[][]{
+                    {c0, 0},
+                    {c1, 1},
+                    {c2, 2},
+                    {c3, 3},
+                    {c4, 4},
+                    {c5, 5},
+                    {c6, 6},
+                    {c7, 7},
+                    {c8, 8},
+                    {c9, 9},
+            });
+        }
+
+        @Test
+        public void testBuilder() {
+            for (int args = 0; args <= 9; args++) {
+                try {
+                    builder.apply(genMap(args));
+                } catch (IllegalArgumentException e) {
+                    if (args < i) {
+                        fail("Having fewer args than required should not generate an IllegalArgumentException");
+                    }
+                } catch (NullPointerException e) {
+                    if (args >= i) {
+                        fail("Having enough arguments should not generate a NullPointerException");
+                    }
+                }
+            }
         }
 
     }

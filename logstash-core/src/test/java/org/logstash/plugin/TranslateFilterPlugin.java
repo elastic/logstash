@@ -7,35 +7,39 @@ import org.logstash.common.parser.ObjectTransforms;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
 import java.util.function.Function;
 
 class TranslateFilterPlugin {
-    final static ConstructingObjectParser<TranslateFilter> TRANSLATE = new ConstructingObjectParser<TranslateFilter>(
-            TranslateFilterPlugin::newFilter,
-            Field.declareString("field"),
+    private final static ConstructingObjectParser<TranslateFilter> TRANSLATE_MAP = new ConstructingObjectParser<>(
+            TranslateFilter::new, Field.declareString("field"), Field.declareMap("dictionary"));
+    private final static ConstructingObjectParser<FileBackedTranslateFilter> TRANSLATE_FILE = new ConstructingObjectParser<>(
+            FileBackedTranslateFilter::new, Field.declareString("field"), Field.declareField("dictionary_path", TranslateFilterPlugin::parsePath));
 
-            // Things get a bit weird here. I can explain. The translate filter has two modes of operation:
-            // One, where the user specifies a 'dictionary'. Two, where the user specifies 'dictionary_path'.
-            // These two modes are mutually exclusive, so it makes sense to have a custom builder method to
-            // determine which mode to use based on the given arguments. See TranslateFilter.newFilter.
-            // It's unclear if this modality is a desirable feature, but I am only porting the translate filter
-            // in this scenario as a a way to demonstrate and test the capabilities of ConstructingObjectParser.
-            Field.declareMap("dictionary"),
-            Field.declareField("dictionary_path", TranslateFilterPlugin::parsePath)
-    );
+    /**
+     * The translate filter (as written in Ruby) is currently bimodal. There are two modes:
+     * <p>
+     * 1) A hand-written dictionary `dictionary => { "key" => value, ... }
+     * 2) A file-backed dictionary `dictionary_path => "/some/path.yml"`
+     * <p>
+     * Because of these, provide a custom Function to call the correct implementation (file or static)
+     */
+    final static Function<Map<String, Object>, TranslateFilter> BUILDER = TranslateFilterPlugin::newFilter;
 
     static {
-        // These are all nice settings that are optional in the plugin.
-        TRANSLATE.declareString("destination", TranslateFilter::setDestination);
-        TRANSLATE.declareBoolean("exact", TranslateFilter::setExact);
-        TRANSLATE.declareBoolean("override", TranslateFilter::setOverride);
-        TRANSLATE.declareBoolean("regex", TranslateFilter::setRegex);
-        TRANSLATE.declareString("fallback", TranslateFilter::setFallback);
+        // Apply most settings to both Translate Filter modes.
+        for (ConstructingObjectParser<? extends TranslateFilter> builder : Arrays.asList(TRANSLATE_MAP, TRANSLATE_FILE)) {
+            builder.declareString("destination", TranslateFilter::setDestination);
+            builder.declareBoolean("exact", TranslateFilter::setExact);
+            builder.declareBoolean("override", TranslateFilter::setOverride);
+            builder.declareBoolean("regex", TranslateFilter::setRegex);
+            builder.declareString("fallback", TranslateFilter::setFallback);
+        }
 
-        // Special handling of refresh_interval to reject when dictionary_path is not also set.
-        TRANSLATE.declareInteger("refresh_interval", TranslateFilterPlugin::setRefreshInterval);
+        // File-backed mode gets a special `refresh_interval` setting.
+        TRANSLATE_FILE.declareInteger("refresh_interval", FileBackedTranslateFilter::setRefreshInterval);
     }
 
     private static Path parsePath(Object input) {
@@ -48,34 +52,26 @@ class TranslateFilterPlugin {
         return path;
     }
 
-    private static TranslateFilter newFilter(String source, Map<String, Object> map, Path path) {
-        if (map != null && path != null) {
+    private static TranslateFilter newFilter(Map<String, Object> config) {
+        if (config.containsKey("dictionary") && config.containsKey("dictionary_path")) {
             throw new IllegalArgumentException("You must specify either dictionary or dictionary_path, not both. Both are set.");
         }
 
-        if (map != null) {
+        if (config.containsKey("dictionary")) {
             // "dictionary" field was set, so args[1] is a map.
-            return new TranslateFilter(source, map);
+            return TRANSLATE_MAP.apply(config);
         } else {
             // dictionary_path set, so let's use a file-backed translate filter.
-            return new FileBackedTranslateFilter(source, path);
+            return TRANSLATE_FILE.apply(config);
         }
     }
 
-    private static void setRefreshInterval(TranslateFilter filter, int refresh) {
-        if (filter instanceof FileBackedTranslateFilter) {
-            ((FileBackedTranslateFilter) filter).setRefreshInterval(refresh);
-        } else {
-            throw new IllegalArgumentException("refresh_interval is only valid when using dictionary_path.");
-        }
-    }
-
-    // Processor will be defined in another PR, so this exists as a placeholder;
-    interface Processor extends Function<Collection<Event>, Collection<Event>> {
+    // Processor interface will be defined in another PR, so this exists as a placeholder;
+    private interface Processor extends Function<Collection<Event>, Collection<Event>> {
     }
 
     public static class TranslateFilter implements Processor {
-        protected Map<String, Object> map;
+        Map<String, Object> map;
         private String source;
         private String target = "translation";
         private String fallback;
@@ -142,7 +138,7 @@ class TranslateFilterPlugin {
         }
     }
 
-    public static class FileBackedTranslateFilter extends TranslateFilter {
+    static class FileBackedTranslateFilter extends TranslateFilter {
         private final Path path;
         private int refresh;
 

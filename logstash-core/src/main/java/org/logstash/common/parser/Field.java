@@ -36,6 +36,10 @@ public interface Field<Value> extends Function<Object, Value> {
         return declareField(name, ObjectTransforms::transformMap);
     }
 
+    static <V> Field<V> declareObject(String name, ConstructingObjectParser<V> parser) {
+        return declareField(name, (config) -> parser.apply(ObjectTransforms.transformMap(config)));
+    }
+
     static <V> Field<List<V>> declareList(String name, Function<Object, V> transform) {
         return new FieldDefinition<>(name, (object) -> ObjectTransforms.transformList(object, transform));
     }
@@ -43,10 +47,6 @@ public interface Field<Value> extends Function<Object, Value> {
     static <V> Field<V> declareField(String name, Function<Object, V> transform) {
         return new FieldDefinition<>(name, transform);
     }
-
-    boolean isDeprecated();
-
-    boolean isObsolete();
 
     String getName();
 

@@ -1,6 +1,15 @@
 package org.logstash.common.parser;
 
+import org.logstash.common.parser.Functions.Function3;
+import org.logstash.common.parser.Functions.Function4;
+import org.logstash.common.parser.Functions.Function5;
+import org.logstash.common.parser.Functions.Function6;
+import org.logstash.common.parser.Functions.Function7;
+import org.logstash.common.parser.Functions.Function8;
+import org.logstash.common.parser.Functions.Function9;
+
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -21,7 +30,7 @@ import java.util.stream.Collectors;
 public class ConstructingObjectParser<Value> implements ObjectParser<Value> {
     private final Map<String, BiConsumer<Value, Object>> parsers = new HashMap<>();
     private List<Field<?>> constructorFields = null;
-    private Function<Map<String, Object>, Value> builder;
+    private final Function<Map<String, Object>, Value> builder;
     /**
      * Zero-argument object constructor (A Supplier)
      * @param supplier The supplier which produces an object instance.
@@ -29,14 +38,16 @@ public class ConstructingObjectParser<Value> implements ObjectParser<Value> {
     @SuppressWarnings("WeakerAccess") // Public Interface
     public ConstructingObjectParser(Supplier<Value> supplier) {
         this(config -> supplier.get());
+        constructorFields = Collections.emptyList();
     }
+
     /**
      * One-argument object constructor
      */
     @SuppressWarnings("WeakerAccess") // Public Interface
     public <Arg0> ConstructingObjectParser(Function<Arg0, Value> function, Field<Arg0> arg0) {
         this(config -> function.apply(arg0.apply(config)));
-        constructorFields = Arrays.asList(arg0);
+        constructorFields = Collections.singletonList(arg0);
     }
 
     /**
@@ -148,7 +159,7 @@ public class ConstructingObjectParser<Value> implements ObjectParser<Value> {
         }
 
         BiConsumer<Value, Object> objConsumer = (value, object) -> consumer.accept(value, transform.apply(object));
-        FieldDefinition<T> field = new FieldDefinition<T>(name, transform);
+        FieldDefinition<T> field = new FieldDefinition<>(name, transform);
         parsers.put(name, (value, input) -> consumer.accept(value, transform.apply(input)));
         return field;
     }
@@ -198,29 +209,6 @@ public class ConstructingObjectParser<Value> implements ObjectParser<Value> {
         return parsers.containsKey(name) || isConstructorField(name);
     }
 
-    public interface Function3<Arg0, Arg1, Arg2, Value> {
-        Value apply(Arg0 arg0, Arg1 arg1, Arg2 arg2);
-    }
-
-    public interface Function4<Arg0, Arg1, Arg2, Arg3, Value> {
-        Value apply(Arg0 arg0, Arg1 arg1, Arg2 arg2, Arg3 arg3);
-    }
-
-    /**
-     * @param builder A function which takes an Object[] as argument and returns a Value instance
-     */
-    //@SuppressWarnings("WeakerAccess") // Public Interface
-    //public ConstructingObjectParser(Function<Object[], Value> builder, Field<?>... fields) {
-    //this(config -> construct(config, builder, fields), fields);
-    //}
-
-    public interface Function5<Arg0, Arg1, Arg2, Arg3, Arg4, Value> {
-        Value apply(Arg0 arg0, Arg1 arg1, Arg2 arg2, Arg3 arg3, Arg4 arg4);
-    }
-
-    public interface Function6<Arg0, Arg1, Arg2, Arg3, Arg4, Arg5, Value> {
-        Value apply(Arg0 arg0, Arg1 arg1, Arg2 arg2, Arg3 arg3, Arg4 arg4, Arg5 arg5);
-    }
 
     private void rejectUnknownFields(Set<String> configNames) throws IllegalArgumentException {
         // Check for any unknown parameters.
@@ -231,15 +219,4 @@ public class ConstructingObjectParser<Value> implements ObjectParser<Value> {
         }
     }
 
-    public interface Function7<Arg0, Arg1, Arg2, Arg3, Arg4, Arg5, Arg6, Value> {
-        Value apply(Arg0 arg0, Arg1 arg1, Arg2 arg2, Arg3 arg3, Arg4 arg4, Arg5 arg5, Arg6 arg6);
-    }
-
-    public interface Function8<Arg0, Arg1, Arg2, Arg3, Arg4, Arg5, Arg6, Arg7, Value> {
-        Value apply(Arg0 arg0, Arg1 arg1, Arg2 arg2, Arg3 arg3, Arg4 arg4, Arg5 arg5, Arg6 arg6, Arg7 arg7);
-    }
-
-    public interface Function9<Arg0, Arg1, Arg2, Arg3, Arg4, Arg5, Arg6, Arg7, Arg8, Value> {
-        Value apply(Arg0 arg0, Arg1 arg1, Arg2 arg2, Arg3 arg3, Arg4 arg4, Arg5 arg5, Arg6 arg6, Arg7 arg7, Arg8 arg8);
-    }
 }

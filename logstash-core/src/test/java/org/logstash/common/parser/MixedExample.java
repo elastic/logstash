@@ -1,7 +1,7 @@
 package org.logstash.common.parser;
 
 class MixedExample {
-    static final ConstructingObjectParser<MixedExample> BUILDER = new ConstructingObjectParser<MixedExample>(MixedExample::new, Field.declareInteger("foo"));
+    static final ConstructingObjectParser<MixedExample> BUILDER = new ConstructingObjectParser<>(MixedExample::new, Field.declareInteger("foo"));
 
     static {
         BUILDER.declareString("bar", MixedExample::setBar);
@@ -10,7 +10,7 @@ class MixedExample {
     private int foo;
     private String bar;
 
-    public MixedExample(int foo) {
+    private MixedExample(int foo) {
         this.foo = foo;
     }
 
@@ -23,7 +23,7 @@ class MixedExample {
         return bar;
     }
 
-    public void setBar(String bar) {
+    private void setBar(String bar) {
         this.bar = bar;
     }
 }

@@ -13,6 +13,6 @@ public class TranslateFilterPluginTest {
         config.put("dictionary", Collections.emptyMap());
         config.put("field", "fancy");
 
-        TranslateFilterPlugin.TranslateFilter filter = TranslateFilterPlugin.TRANSLATE.apply(config);
+        TranslateFilterPlugin.TranslateFilter filter = TranslateFilterPlugin.BUILDER.apply(config);
     }
 }
