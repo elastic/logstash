@@ -34,7 +34,21 @@ grok filters are causing bottlenecks.
 
 Before using the pipeline viewer, you need to
 {logstash-ref}/setup-xpack.html[set up {xpack}] and configure
-{xpack-ref}/monitoring-logstash.html[Logstash monitoring]. 
+{xpack-ref}/monitoring-logstash.html[Logstash monitoring].
+
+[float]
+==== What types of problems does the pipeline viewer show?
+
+The pipeline viewer highlights CPU% and event latency in cases where the values
+are anomalous. The purpose of these highlights is to enable users to quickly
+identify processing that is disproportionately slow. This may not necessarily
+mean that anything is wrong with a given plugin, since some plugins are slower
+than others due to the nature of the work they do. For instance, you may find
+that a grok filter that uses a complicated regexp runs a lot slower than a
+mutate filter that simply adds a field. The grok filter might be highlighted in
+this case, though it may not be possible to further optimize its work.
+
+The exact formula used is a heuristic, and thus is subject to change. 
 
 [float]
 ==== View the pipeline diagram
