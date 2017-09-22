@@ -131,7 +131,7 @@ public class RecordIOReaderTest {
 
     private void writeSeekAndVerify(final int eventCount, final int expectedSize) throws IOException {
         int blocks = (int)Math.ceil(expectedSize / (double)BLOCK_SIZE);
-        int fillSize = (int) (expectedSize - (blocks * RECORD_HEADER_SIZE));
+        int fillSize = expectedSize - (blocks * RECORD_HEADER_SIZE);
 
         try(RecordIOWriter writer = new RecordIOWriter(file)){
             for (char i = 0; i < eventCount; i++) {
@@ -145,7 +145,7 @@ public class RecordIOReaderTest {
             Function<byte[], Character> toChar = (b) -> (char) ByteBuffer.wrap(b).get(0);
 
             for (char i = 0; i < eventCount; i++) {
-                reader.seekToNextEventPosition(i, toChar, Comparator.comparing(o -> ((Character) o)));
+                reader.seekToNextEventPosition(i, toChar, Comparator.comparing(o -> o));
                 assertThat(toChar.apply(reader.readEvent()), equalTo(i));
             }
         }
