@@ -6,6 +6,7 @@ def versionMap = (Map) (new Yaml()).load(new File("$projectDir/../versions.yml")
 description = """Logstash Core Java"""
 version = versionMap['logstash-core']
 String jrubyVersion = versionMap['jruby']['version']
+String jacksonVersion = versionMap['jackson']
 
 repositories {
     mavenCentral()
@@ -101,18 +102,18 @@ dependencies {
     compile 'org.apache.logging.log4j:log4j-api:2.6.2'
     compile 'org.apache.logging.log4j:log4j-core:2.6.2'
     runtime 'org.apache.logging.log4j:log4j-slf4j-impl:2.6.2'
-    //Ensure Jackson version here is kept in sync with version used by jrjackson gem
-    compile 'com.fasterxml.jackson.core:jackson-core:2.7.3'
-    compile 'com.fasterxml.jackson.core:jackson-databind:2.7.3'
-    compile 'com.fasterxml.jackson.core:jackson-annotations:2.7.3'
-    compile 'com.fasterxml.jackson.module:jackson-module-afterburner:2.7.3'
-    compile 'com.fasterxml.jackson.dataformat:jackson-dataformat-cbor:2.7.3'
+    // Jackson version moved to versions.yml in the project root (the JrJackson version is there too)
+    compile "com.fasterxml.jackson.core:jackson-core:${jacksonVersion}"
+    compile "com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}"
+    compile "com.fasterxml.jackson.core:jackson-annotations:${jacksonVersion}"
+    compile "com.fasterxml.jackson.module:jackson-module-afterburner:${jacksonVersion}"
+    compile "com.fasterxml.jackson.dataformat:jackson-dataformat-cbor:${jacksonVersion}"
     testCompile 'org.apache.logging.log4j:log4j-core:2.6.2:tests'
     testCompile 'org.apache.logging.log4j:log4j-api:2.6.2:tests'
     testCompile 'junit:junit:4.12'
     testCompile 'net.javacrumbs.json-unit:json-unit:1.9.0'
     testCompile 'org.elasticsearch:securemock:1.2'
     testCompile 'org.assertj:assertj-core:3.8.0'
-    provided "org.jruby:jruby-core:$jrubyVersion"
+    provided "org.jruby:jruby-core:${jrubyVersion}"
 }
 

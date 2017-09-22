@@ -1,5 +1,3 @@
-require "logstash/version"
-
 namespace "artifact" do
 
   SNAPSHOT_BUILD = ENV["RELEASE"] != "1"
@@ -22,6 +20,7 @@ namespace "artifact" do
       "logstash-core/lib/**/*",
       "logstash-core/locales/**/*",
       "logstash-core/vendor/**/*",
+      "logstash-core/versions-gem-copy.yml",
       "logstash-core/*.gemspec",
       "logstash-core/gemspec_jars.rb",
 
@@ -202,11 +201,21 @@ namespace "artifact" do
       ["bootstrap", "plugin:install-all", "artifact:clean-bundle-config"].each {|task| Rake::Task[task].invoke }
     end
   end
+  
+  
+  def ensure_logstash_version_constant_defined
+    # we do not want this file required when rake (ruby) parses this file
+    # only when there is a task executing, not at the very top of this file
+    if !defined?(LOGSTASH_VERSION)
+      require "logstash/version"
+    end
+  end
+
 
   def build_tar(tar_suffix = nil)
     require "zlib"
     require "archive/tar/minitar"
-    require "logstash/version"
+    ensure_logstash_version_constant_defined
     tarpath = "build/logstash#{tar_suffix}-#{LOGSTASH_VERSION}#{PACKAGE_SUFFIX}.tar.gz"
     puts("[artifact:tar] building #{tarpath}")
     gz = Zlib::GzipWriter.new(File.new(tarpath, "wb"), Zlib::BEST_COMPRESSION)
@@ -250,6 +259,7 @@ namespace "artifact" do
 
   def build_zip(zip_suffix = "")
     require 'zip'
+    ensure_logstash_version_constant_defined
     zippath = "build/logstash#{zip_suffix}-#{LOGSTASH_VERSION}#{PACKAGE_SUFFIX}.zip"
     puts("[artifact:zip] building #{zippath}")
     File.unlink(zippath) if File.exists?(zippath)
@@ -309,6 +319,7 @@ namespace "artifact" do
       dir.input("#{path}=/etc/logstash")
     end
 
+    ensure_logstash_version_constant_defined
     package_filename = "logstash-#{LOGSTASH_VERSION}#{PACKAGE_SUFFIX}.TYPE"
 
     case platform
