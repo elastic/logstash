@@ -3,8 +3,6 @@ package org.logstash.plugin;
 import org.logstash.Event;
 
 import java.util.Collection;
-import java.util.concurrent.Callable;
-import java.util.concurrent.Executors;
 import java.util.function.Consumer;
 
 /**
@@ -16,29 +14,30 @@ import java.util.function.Consumer;
  */
 public interface Input {
     /**
-     * The method contract is as follows:
-     * <p>
-     * 1) When `Thread.interrupted()` is true, you MUST close all open resources and return.
-     * 2) When this method returns, it is assumed all work for this input is completed.
-     * 3) consumer.accept(...) may block
-     * <p>
+     * This is the main method for the input.
+     *
      * Acknowledging Data:
      * <p>
      * When `consumer.accept(...)` returns, the given Events have been successfully written into the consumer, and it is now
      * safe to acknowledge these events to the upstream data source. The consumer is generally the Logstash internal queue,
      * such as the persistent queue.
      *
+     * * for any request-response plugins, you should only respond *after* consumer.accept() has returned.
+     * * for any protocols with acknowledgements, you should only acknowledge *after* consumer.accept() has returned.
+     *
      * @param consumer Send batches of events with consumer.accept(batch).
      */
     void run(Consumer<Collection<Event>> consumer);
 
     /**
-     * Return this Input as a Callable for use with an ExecutorService.
+     * Initiate and complete shutdown of this input.
      *
-     * @param consumer the
-     * @return A Callable which wraps the `run` method.
+     * This method will be called when any of the following occur:
+     *   * Logstash is shutting down
+     *   * The pipeline containing this input is being terminated.
+     *
+     * Note: This method will be called from a separate thread than the one executing the `run` method.
+     *
      */
-    default Callable<Void> toCallable(Consumer<Collection<Event>> consumer) {
-        return Executors.callable(() -> run(consumer), null);
-    }
+    void shutdown();
 }
