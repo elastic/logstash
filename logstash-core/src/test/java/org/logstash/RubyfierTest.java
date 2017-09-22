@@ -31,10 +31,8 @@ public class RubyfierTest extends TestBase {
     }
 
     @Test
-    public void testDeepMapWithString()
-            throws Exception
-    {
-        Map data = new HashMap();
+    public void testDeepMapWithString() throws Exception {
+        Map<String, String> data = new HashMap<>();
         data.put("foo", "bar");
         RubyHash rubyHash = ((RubyHash) Rubyfier.deep(ruby, data));
 
@@ -50,10 +48,8 @@ public class RubyfierTest extends TestBase {
     }
 
     @Test
-    public void testDeepListWithString()
-            throws Exception
-    {
-        List data = new ArrayList();
+    public void testDeepListWithString() throws Exception {
+        List<String> data = new ArrayList<>();
         data.add("foo");
 
         RubyArray rubyArray = ((RubyArray)Rubyfier.deep(ruby, data));
@@ -71,10 +67,8 @@ public class RubyfierTest extends TestBase {
     }
 
     @Test
-    public void testDeepMapWithInteger()
-            throws Exception
-    {
-        Map data = new HashMap();
+    public void testDeepMapWithInteger() throws Exception {
+        Map<String, Integer> data = new HashMap<>();
         data.put("foo", 1);
         RubyHash rubyHash = ((RubyHash)Rubyfier.deep(ruby, data));
 
@@ -90,10 +84,8 @@ public class RubyfierTest extends TestBase {
     }
 
     @Test
-    public void testDeepListWithInteger()
-            throws Exception
-    {
-        List data = new ArrayList();
+    public void testDeepListWithInteger() throws Exception {
+        List<Integer> data = new ArrayList<>();
         data.add(1);
 
         RubyArray rubyArray = ((RubyArray)Rubyfier.deep(ruby, data));
@@ -111,10 +103,8 @@ public class RubyfierTest extends TestBase {
     }
 
     @Test
-    public void testDeepMapWithFloat()
-            throws Exception
-    {
-        Map data = new HashMap();
+    public void testDeepMapWithFloat() throws Exception {
+        Map<String, Float> data = new HashMap<>();
         data.put("foo", 1.0F);
         RubyHash rubyHash = ((RubyHash)Rubyfier.deep(ruby, data));
 
@@ -130,10 +120,8 @@ public class RubyfierTest extends TestBase {
     }
 
     @Test
-    public void testDeepListWithFloat()
-            throws Exception
-    {
-        List data = new ArrayList();
+    public void testDeepListWithFloat() throws Exception {
+        List<Float> data = new ArrayList<>();
         data.add(1.0F);
 
         RubyArray rubyArray = ((RubyArray)Rubyfier.deep(ruby, data));
@@ -151,10 +139,8 @@ public class RubyfierTest extends TestBase {
     }
 
     @Test
-    public void testDeepMapWithDouble()
-            throws Exception
-    {
-        Map data = new HashMap();
+    public void testDeepMapWithDouble() throws Exception {
+        Map<String, Double> data = new HashMap<>();
         data.put("foo", 1.0D);
         RubyHash rubyHash = ((RubyHash)Rubyfier.deep(ruby, data));
 
@@ -170,10 +156,8 @@ public class RubyfierTest extends TestBase {
     }
 
     @Test
-    public void testDeepListWithDouble()
-            throws Exception
-    {
-        List data = new ArrayList();
+    public void testDeepListWithDouble() throws Exception {
+        List<Double> data = new ArrayList<>();
         data.add(1.0D);
 
         RubyArray rubyArray = ((RubyArray)Rubyfier.deep(ruby, data));
@@ -191,10 +175,8 @@ public class RubyfierTest extends TestBase {
     }
 
     @Test
-    public void testDeepMapWithBigDecimal()
-            throws Exception
-    {
-        Map data = new HashMap();
+    public void testDeepMapWithBigDecimal() throws Exception {
+        Map<String, BigDecimal> data = new HashMap<>();
         data.put("foo", new BigDecimal(1));
 
         RubyHash rubyHash = ((RubyHash)Rubyfier.deep(ruby, data));
@@ -211,10 +193,8 @@ public class RubyfierTest extends TestBase {
     }
 
     @Test
-    public void testDeepListWithBigDecimal()
-            throws Exception
-    {
-        List data = new ArrayList();
+    public void testDeepListWithBigDecimal() throws Exception {
+        List<BigDecimal> data = new ArrayList<>();
         data.add(new BigDecimal(1));
 
         RubyArray rubyArray = ((RubyArray)Rubyfier.deep(ruby, data));

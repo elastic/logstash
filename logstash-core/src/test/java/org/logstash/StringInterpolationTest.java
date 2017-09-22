@@ -93,7 +93,7 @@ public class StringInterpolationTest {
 
     @Test
     public void TestValueIsArray() throws IOException {
-        ArrayList l = new ArrayList();
+        ArrayList<String> l = new ArrayList<>();
         l.add("Hello");
         l.add("world");
 
@@ -113,8 +113,8 @@ public class StringInterpolationTest {
     }
 
     public Event getTestEvent() {
-        Map data = new HashMap();
-        Map inner = new HashMap();
+        Map<String, Object> data = new HashMap<>();
+        Map<String, String> inner = new HashMap<>();
 
         inner.put("k1", "v");
 
