@@ -12,18 +12,14 @@ import org.jruby.RubyBoolean;
 import org.jruby.RubyFixnum;
 import org.jruby.RubyFloat;
 import org.jruby.RubyHash;
+import org.jruby.RubyNil;
 import org.jruby.RubyString;
 import org.jruby.RubySymbol;
 import org.jruby.ext.bigdecimal.RubyBigDecimal;
 import org.jruby.runtime.builtin.IRubyObject;
-import org.logstash.bivalues.BiValue;
-import org.logstash.bivalues.BiValues;
 import org.logstash.ext.JrubyTimestampExtLibrary;
 
 public final class Rubyfier {
-
-    private static final Rubyfier.Converter BIVALUES_CONVERTER =
-        (ruby, val) -> BiValues.newBiValue(val).rubyValue(ruby);
 
     private static final Rubyfier.Converter IDENTITY = (runtime, input) -> (IRubyObject) input;
 
@@ -79,6 +75,7 @@ public final class Rubyfier {
         final Map<Class<?>, Rubyfier.Converter> converters =
             new ConcurrentHashMap<>(50, 0.2F, 1);
         converters.put(RubyString.class, IDENTITY);
+        converters.put(RubyNil.class, IDENTITY);
         converters.put(RubySymbol.class, IDENTITY);
         converters.put(RubyBignum.class, IDENTITY);
         converters.put(RubyBigDecimal.class, IDENTITY);
@@ -98,9 +95,6 @@ public final class Rubyfier {
         );
         converters.put(Long.class, LONG_CONVERTER);
         converters.put(Boolean.class, (runtime, input) -> runtime.newBoolean((Boolean) input));
-        converters.put(
-            BiValue.class, (runtime, input) -> ((BiValue<?, ?>) input).rubyValue(runtime)
-        );
         converters.put(Map.class, (runtime, input) -> deepMap(runtime, (Map<?, ?>) input));
         converters.put(
             Collection.class, (runtime, input) -> deepList(runtime, (Collection<?>) input)
@@ -126,8 +120,7 @@ public final class Rubyfier {
                 return found.convert(runtime, o);
             }
         }
-        CONVERTER_MAP.put(cls, BIVALUES_CONVERTER);
-        return BIVALUES_CONVERTER.convert(runtime, o);
+        throw new MissingConverterException(cls);
     }
 
     private interface Converter {

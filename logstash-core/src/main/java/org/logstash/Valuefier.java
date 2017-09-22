@@ -12,6 +12,7 @@ import org.jruby.RubyBoolean;
 import org.jruby.RubyFixnum;
 import org.jruby.RubyFloat;
 import org.jruby.RubyHash;
+import org.jruby.RubyNil;
 import org.jruby.RubyString;
 import org.jruby.RubySymbol;
 import org.jruby.RubyTime;
@@ -22,8 +23,6 @@ import org.jruby.java.proxies.JavaProxy;
 import org.jruby.java.proxies.MapJavaProxy;
 import org.jruby.javasupport.JavaUtil;
 import org.jruby.runtime.builtin.IRubyObject;
-import org.logstash.bivalues.BiValue;
-import org.logstash.bivalues.BiValues;
 import org.logstash.ext.JrubyTimestampExtLibrary;
 
 public final class Valuefier {
@@ -59,8 +58,6 @@ public final class Valuefier {
             }
         };
 
-    private static final Valuefier.Converter BIVALUES_CONVERTER = BiValues::newBiValue;
-
     private static final Map<Class<?>, Valuefier.Converter> CONVERTER_MAP = initConverters();
 
     private Valuefier() {
@@ -68,7 +65,7 @@ public final class Valuefier {
 
     public static Object convert(final Object o) {
         if (o == null) {
-            return BiValues.NULL_BI_VALUE;
+            return RubyUtil.RUBY.getNil();
         }
         final Class<?> cls = o.getClass();
         final Valuefier.Converter converter = CONVERTER_MAP.get(cls);
@@ -84,8 +81,7 @@ public final class Valuefier {
      * the only subclasses of the keys in {@link Valuefier#CONVERTER_MAP} as set up by
      * {@link Valuefier#initConverters()} can be converted here and hence find the appropriate
      * super class for unknown types by checking each entry in {@link Valuefier#CONVERTER_MAP} for
-     * being a supertype of the given class. If this fails {@link Valuefier#BIVALUES_CONVERTER}
-     * will be cached and used.
+     * being a supertype of the given class.
      * @param o Object to convert
      * @param cls Class of given object {@code o}
      * @return Conversion result equivalent to what {@link Valuefier#convert(Object)} would return
@@ -98,14 +94,14 @@ public final class Valuefier {
                 return found.convert(o);
             }
         }
-        CONVERTER_MAP.put(cls, BIVALUES_CONVERTER);
-        return BIVALUES_CONVERTER.convert(o);
+        throw new MissingConverterException(cls);
     }
 
     private static Map<Class<?>, Valuefier.Converter> initConverters() {
         final Map<Class<?>, Valuefier.Converter> converters =
             new ConcurrentHashMap<>(50, 0.2F, 1);
         converters.put(RubyString.class, IDENTITY);
+        converters.put(RubyNil.class, IDENTITY);
         converters.put(RubySymbol.class, IDENTITY);
         converters.put(RubyFixnum.class, IDENTITY);
         converters.put(JrubyTimestampExtLibrary.RubyTimestamp.class, IDENTITY);
@@ -115,7 +111,6 @@ public final class Valuefier {
         converters.put(RubyBoolean.class, IDENTITY);
         converters.put(RubyBignum.class, IDENTITY);
         converters.put(RubyBigDecimal.class, IDENTITY);
-        converters.put(BiValue.class, IDENTITY);
         converters.put(String.class, input -> RubyUtil.RUBY.newString((String) input));
         converters.put(Float.class, FLOAT_CONVERTER);
         converters.put(Double.class, FLOAT_CONVERTER);

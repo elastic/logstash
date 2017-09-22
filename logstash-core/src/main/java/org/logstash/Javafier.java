@@ -8,19 +8,15 @@ import org.jruby.RubyBignum;
 import org.jruby.RubyBoolean;
 import org.jruby.RubyFixnum;
 import org.jruby.RubyFloat;
+import org.jruby.RubyNil;
 import org.jruby.RubyString;
 import org.jruby.RubySymbol;
 import org.jruby.ext.bigdecimal.RubyBigDecimal;
-import org.logstash.bivalues.BiValue;
-import org.logstash.bivalues.BiValues;
 import org.logstash.ext.JrubyTimestampExtLibrary;
 
 public final class Javafier {
 
     private static final Map<Class<?>, Valuefier.Converter> CONVERTER_MAP = initConverters();
-
-    private static final Valuefier.Converter BIVALUES_CONVERTER =
-        value -> BiValues.newBiValue(value).javaValue();
 
     /**
      * Javafier.deep() is called by getField.
@@ -32,6 +28,9 @@ public final class Javafier {
     }
 
     public static Object deep(Object o) {
+        if (o == null) {
+            return null;
+        }
         final Class<?> cls = o.getClass();
         final Valuefier.Converter converter = CONVERTER_MAP.get(cls);
         if (converter != null) {
@@ -48,8 +47,7 @@ public final class Javafier {
                 return found.convert(o);
             }
         }
-        CONVERTER_MAP.put(cls, BIVALUES_CONVERTER);
-        return BIVALUES_CONVERTER.convert(o);
+        throw new MissingConverterException(cls);
     }
 
     private static Map<Class<?>, Valuefier.Converter> initConverters() {
@@ -57,6 +55,7 @@ public final class Javafier {
             new ConcurrentHashMap<>(50, 0.2F, 1);
         converters.put(String.class, Valuefier.IDENTITY);
         converters.put(Float.class, Valuefier.IDENTITY);
+        converters.put(RubyNil.class, value -> null);
         converters.put(Double.class, Valuefier.IDENTITY);
         converters.put(Long.class, Valuefier.IDENTITY);
         converters.put(Integer.class, Valuefier.IDENTITY);
@@ -73,7 +72,6 @@ public final class Javafier {
             RubyBigDecimal.class, value -> ((RubyBigDecimal) value).getBigDecimalValue()
         );
         converters.put(RubyBoolean.class, value -> ((RubyBoolean) value).isTrue());
-        converters.put(BiValue.class, value -> ((BiValue<?, ?>) value).javaValue());
         converters.put(RubyFixnum.class, value -> ((RubyFixnum) value).getLongValue());
         converters.put(RubyFloat.class, value -> ((RubyFloat) value).getDoubleValue());
         converters.put(ConvertedMap.class, value -> ((ConvertedMap) value).unconvert());

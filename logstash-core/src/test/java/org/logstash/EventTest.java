@@ -22,6 +22,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 
 public final class EventTest {
 
@@ -34,6 +35,7 @@ public final class EventTest {
         inner.put("innerFoo", 42L);
         final RubySymbol symbol = RubyUtil.RUBY.newSymbol("val");
         e.setField("symbol", symbol);
+        e.setField("null", null);
         inner.put("innerQuux", 42.42);
         e.setField("baz", inner);
         final BigInteger bigint = BigInteger.valueOf(Long.MAX_VALUE).multiply(BigInteger.TEN);
@@ -51,6 +53,7 @@ public final class EventTest {
         assertEquals(42L, er.getField("[baz][innerFoo]"));
         assertEquals(42.42, er.getField("[baz][innerQuux]"));
         assertEquals(42L, er.getField("[@metadata][foo]"));
+        assertNull(er.getField("null"));
 
         assertEquals(e.getTimestamp().toString(), er.getTimestamp().toString());
     }

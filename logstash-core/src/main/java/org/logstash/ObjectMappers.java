@@ -20,6 +20,7 @@ import org.jruby.RubyBignum;
 import org.jruby.RubyBoolean;
 import org.jruby.RubyFixnum;
 import org.jruby.RubyFloat;
+import org.jruby.RubyNil;
 import org.jruby.RubyString;
 import org.jruby.RubySymbol;
 import org.jruby.ext.bigdecimal.RubyBigDecimal;
@@ -35,12 +36,14 @@ public final class ObjectMappers {
             .addSerializer(RubyBoolean.class, new RubyBooleanSerializer())
             .addSerializer(RubyFixnum.class, new RubyFixnumSerializer())
             .addSerializer(RubyBigDecimal.class, new RubyBigDecimalSerializer())
-            .addSerializer(RubyBignum.class, new RubyBignumSerializer());
+            .addSerializer(RubyBignum.class, new RubyBignumSerializer())
+            .addSerializer(RubyNil.class, new RubyNilSerializer());
 
     private static final SimpleModule CBOR_DESERIALIZERS =
         new SimpleModule("CborRubyDeserializers")
             .addDeserializer(RubyBigDecimal.class, new RubyBigDecimalDeserializer())
-            .addDeserializer(RubyBignum.class, new RubyBignumDeserializer());
+            .addDeserializer(RubyBignum.class, new RubyBignumDeserializer())
+            .addDeserializer(RubyNil.class, new RubyNilDeserializer());
 
     public static final ObjectMapper JSON_MAPPER = 
         new ObjectMapper().registerModule(RUBY_SERIALIZERS);
@@ -295,6 +298,43 @@ public final class ObjectMappers {
             typeSer.writeTypePrefixForScalar(value, jgen, Timestamp.class);
             jgen.writeObject(value.getTimestamp());
             typeSer.writeTypeSuffixForScalar(value, jgen);
+        }
+    }
+
+    /**
+     * Serializer for {@link RubyNil} that serializes it to as an empty {@link String} for JSON
+     * serialization and as a typed {@link RubyNil} for CBOR.
+     */
+    private static final class RubyNilSerializer extends StdSerializer<RubyNil> {
+
+        RubyNilSerializer() {
+            super(RubyNil.class);
+        }
+
+        @Override
+        public void serialize(final RubyNil value, final JsonGenerator jgen,
+            final SerializerProvider provider) throws IOException {
+            jgen.writeString("");
+        }
+
+        @Override
+        public void serializeWithType(final RubyNil value, final JsonGenerator jgen,
+            final SerializerProvider serializers, final TypeSerializer typeSer) throws IOException {
+            typeSer.writeTypePrefixForScalar(value, jgen, RubyNil.class);
+            jgen.writeNull();
+            typeSer.writeTypeSuffixForScalar(value, jgen);
+        }
+    }
+
+    private static final class RubyNilDeserializer extends StdDeserializer<RubyNil> {
+
+        RubyNilDeserializer() {
+            super(RubyNil.class);
+        }
+
+        @Override
+        public RubyNil deserialize(final JsonParser p, final DeserializationContext ctxt) {
+            return (RubyNil) RubyUtil.RUBY.getNil();
         }
     }
 }

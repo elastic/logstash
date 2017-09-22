@@ -12,10 +12,10 @@ import java.util.Map;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.joda.time.DateTime;
+import org.jruby.RubyNil;
 import org.jruby.RubyString;
 import org.jruby.RubySymbol;
 import org.logstash.ackedqueue.Queueable;
-import org.logstash.bivalues.NullBiValue;
 import org.logstash.ext.JrubyTimestampExtLibrary;
 
 import static org.logstash.ObjectMappers.CBOR_MAPPER;
@@ -280,7 +280,7 @@ public final class Event implements Cloneable, Queueable {
     }
 
     private static Timestamp initTimestamp(Object o) {
-        if (o == null || o instanceof NullBiValue) {
+        if (o == null || o instanceof RubyNil) {
             // most frequent
             return new Timestamp();
         } else {
