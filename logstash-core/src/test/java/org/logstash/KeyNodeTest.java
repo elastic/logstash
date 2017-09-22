@@ -12,7 +12,7 @@ public class KeyNodeTest {
 
     @Test
     public void testNoElementJoin() throws IOException {
-        assertEquals("", KeyNode.join(new ArrayList(), ","));
+        assertEquals("", KeyNode.join(new ArrayList<>(), ","));
     }
 
     @Test

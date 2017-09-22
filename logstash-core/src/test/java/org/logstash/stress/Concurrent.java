@@ -108,7 +108,7 @@ public class Concurrent {
 
     public static void oneProducersOneMultipleConsumer() throws IOException, InterruptedException {
         final List<StringElement> input = new ArrayList<>();
-        final Collection<StringElement> output = new ConcurrentLinkedQueue();
+        final Collection<StringElement> output = new ConcurrentLinkedQueue<>();
         final int CONSUMERS = 5;
         List<Thread> consumers = new ArrayList<>();
 

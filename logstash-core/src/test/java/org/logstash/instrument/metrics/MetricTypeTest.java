@@ -20,7 +20,7 @@ public class MetricTypeTest {
      */
     @Test
     public void ensurePassivity(){
-        Map<MetricType, String>  nameMap = new HashMap(EnumSet.allOf(MetricType.class).size());
+        Map<MetricType, String> nameMap = new HashMap<>(EnumSet.allOf(MetricType.class).size());
         nameMap.put(MetricType.COUNTER_LONG, "counter/long");
         nameMap.put(MetricType.GAUGE_TEXT, "gauge/text");
         nameMap.put(MetricType.GAUGE_BOOLEAN, "gauge/boolean");
