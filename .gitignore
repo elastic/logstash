@@ -5,7 +5,6 @@ pkg/*.deb
 pkg/*.rpm
 *.class
 .rbx
-.rbx
 *.tar.gz
 *.jar
 .bundle
@@ -49,3 +48,6 @@ qa/integration/services/installed/
 logstash-core/bin
 plugins_version_docs.json
 tools/benchmark-cli/out/
+qa/integration/fixtures/offline_wrapper/offline
+qa/integration/fixtures/offline_wrapper/offline.o
+logstash-core/versions-gem-copy.yml
