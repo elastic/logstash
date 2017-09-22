@@ -1,7 +1,6 @@
 package org.logstash;
 
 import java.util.List;
-import org.logstash.bivalues.BiValue;
 
 /**
  * Created by ph on 15-05-22.
@@ -31,9 +30,6 @@ public class KeyNode {
     private static String toString(Object value, String delim) {
         if (value == null) return "";
         if (value instanceof List) return join((List)value, delim);
-        if (value instanceof BiValue) {
-            return value.toString();
-        }
         return value.toString();
     }
 }
