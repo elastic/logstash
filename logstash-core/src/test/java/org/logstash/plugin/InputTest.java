@@ -42,5 +42,10 @@ public class InputTest {
                 consumer.accept(Collections.unmodifiableCollection(events));
             }
         }
+
+        @Override
+        public void shutdown() {
+
+        }
     }
 }
