@@ -5,11 +5,11 @@ pkg/*.deb
 pkg/*.rpm
 *.class
 .rbx
-.rbx
 *.tar.gz
 *.jar
 .bundle
 build
+out
 local
 test/setup/elasticsearch/elasticsearch-*
 vendor
@@ -47,3 +47,7 @@ qa/integration/services/installed/
 **/.classpath
 logstash-core/bin
 plugins_version_docs.json
+tools/benchmark-cli/out/
+qa/integration/fixtures/offline_wrapper/offline
+qa/integration/fixtures/offline_wrapper/offline.o
+logstash-core/versions-gem-copy.yml
