@@ -5,12 +5,17 @@ import java.util.Map;
 import java.util.function.Function;
 
 public interface Field<Value> extends Function<Object, Value> {
-    Field setDeprecated(String details);
+    static <V> Field<V> declareObject(String name, ObjectFactory<V> parser) {
+        return declareField(name, (config) -> parser.apply(ObjectTransforms.transformMap(config)));
+    }
+
+    String getName();
+
+    String getDetails();
 
     static Field<String> declareString(String name) {
         return declareField(name, ObjectTransforms::transformString);
     }
-    Field setObsolete(String details);
 
     static Field<Float> declareFloat(String name) {
         return declareField(name, ObjectTransforms::transformFloat);
@@ -36,8 +41,8 @@ public interface Field<Value> extends Function<Object, Value> {
         return declareField(name, ObjectTransforms::transformMap);
     }
 
-    static <V> Field<V> declareObject(String name, ConstructingObjectParser<V> parser) {
-        return declareField(name, (config) -> parser.apply(ObjectTransforms.transformMap(config)));
+    default Value apply(Map<String, Object> map) {
+        return apply(map.get(getName()));
     }
 
     static <V> Field<List<V>> declareList(String name, Function<Object, V> transform) {
@@ -46,14 +51,6 @@ public interface Field<Value> extends Function<Object, Value> {
 
     static <V> Field<V> declareField(String name, Function<Object, V> transform) {
         return new FieldDefinition<>(name, transform);
-    }
-
-    String getName();
-
-    String getDetails();
-
-    default Value apply(Map<String, Object> map) {
-        return apply(map.get(getName()));
     }
 
 }

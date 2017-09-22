@@ -5,18 +5,15 @@ import java.nio.file.Paths;
 import java.util.List;
 
 class FieldExample {
-    public static final ConstructingObjectParser<FieldExample> BUILDER = new ConstructingObjectParser<>(FieldExample::new);
-
-    static {
-        BUILDER.declareInteger("integer", FieldExample::setI);
-        BUILDER.declareFloat("float", FieldExample::setF);
-        BUILDER.declareDouble("double", FieldExample::setD);
-        BUILDER.declareLong("long", FieldExample::setL);
-        BUILDER.declareBoolean("boolean", FieldExample::setB);
-        BUILDER.declareString("string", FieldExample::setS);
-        BUILDER.declareField("path", FieldExample::setP, (object) -> Paths.get(ObjectTransforms.transformString(object)));
-        BUILDER.declareList("list", FieldExample::setStringList, ObjectTransforms::transformString);
-    }
+    static final ObjectFactory<FieldExample> BUILDER = new ObjectFactory<>(FieldExample::new)
+            .define(Field.declareInteger("integer"), FieldExample::setI)
+            .define(Field.declareFloat("float"), FieldExample::setF)
+            .define(Field.declareDouble("double"), FieldExample::setD)
+            .define(Field.declareLong("long"), FieldExample::setL)
+            .define(Field.declareBoolean("boolean"), FieldExample::setB)
+            .define(Field.declareString("string"), FieldExample::setS)
+            .define(Field.declareField("path", (object) -> Paths.get(ObjectTransforms.transformString(object))), FieldExample::setP)
+            .define(Field.declareList("list", ObjectTransforms::transformString), FieldExample::setStringList);
 
     private int i;
     private float f;

@@ -11,8 +11,7 @@ class FieldDefinition<Value> implements Field<Value> {
 
     private final String name;
 
-    // This is only set if deprecated or obsolete
-    // XXX: Move this concept separately to DeprecatedFieldDefinition and ObsoleteFieldDefinition
+    // XXX: Should Field definitions be separated in Field, DeprecatedField, ObsoleteField ?
     private FieldStatus status = FieldStatus.Supported;
     private String details;
 
@@ -22,42 +21,14 @@ class FieldDefinition<Value> implements Field<Value> {
     }
 
     @Override
-    public Field setDeprecated(String details) {
-        setStatus(FieldStatus.Deprecated, details);
-        return this;
-    }
-
-    @Override
-    public Field setObsolete(String details) {
-        setStatus(FieldStatus.Obsolete, details);
-        return this;
-    }
-
-    private void setStatus(FieldStatus status, String details) {
-        this.status = status;
-        this.details = details;
-    }
-
-    @Override
     public Value apply(Object object) {
         if (object == null) {
             throw new NullPointerException("The '" + name + "' field is required and no value was provided.");
         }
-        switch (status) {
-            // XXX: use Structured logging + localization lookups.
-            case Deprecated:
-                logger.warn("The field '" + getName() + "' is deprecated and will be removed soon: " + getDetails());
-                break;
-            case Obsolete:
-                logger.fatal("The field '" + getName() + "' is obsolete and has been removed: " + getDetails());
-                break;
-            case Supported:
-                break;
-        }
-
         return transform.apply(object);
     }
 
+    @Override
     public String getName() {
         return name;
     }

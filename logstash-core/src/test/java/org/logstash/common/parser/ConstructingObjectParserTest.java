@@ -22,7 +22,7 @@ import static org.junit.runners.Parameterized.Parameters;
 @RunWith(Enclosed.class)
 public class ConstructingObjectParserTest {
     @SuppressWarnings("unused")
-    private static void check(Field field) {
+    private static void check(ObjectFactory<?> factory) {
         // Exists to do return type compile-time checks.
         // no body is needed
     }
@@ -53,6 +53,13 @@ public class ConstructingObjectParserTest {
         public void testNested() {
             NestedExample e = NestedExample.BUILDER.apply(config);
             assertEquals(100, e.getNested().getI());
+        }
+
+        @Test
+        public void testNestedSetter() {
+            NestedExample e = NestedExample.BUILDER_USING_SETTERS.apply(config);
+            assertEquals(100, e.getNested().getI());
+
         }
 
     }
@@ -103,7 +110,7 @@ public class ConstructingObjectParserTest {
         @Test(expected = IllegalArgumentException.class)
         public void testDuplicateFieldsAreRejected() {
             // field 'float' is already defined, so this should fail.
-            check(FieldExample.BUILDER.declareString("float", (a, b) -> { /*empty*/ }));
+            check(FieldExample.BUILDER.define(Field.declareString("float"), (a, b) -> { /*empty*/ }));
         }
     }
 
@@ -202,16 +209,13 @@ public class ConstructingObjectParserTest {
     }
 
     public static class DeprecationsAndObsoletes {
-        final ConstructingObjectParser<ConstructorExample> c = new ConstructingObjectParser<>(ConstructorExample::new);
-        final BiConsumer<ConstructorExample, Integer> noOp = (a, b) -> { /* empty */ };
+        static final BiConsumer<Object, Integer> noOp = (a, b) -> { /* empty */ };
+        final ObjectFactory<Object> c = new ObjectFactory<>(Object::new);
 
         @Before
         public void setup() {
-            check(c.declareInteger("deprecated", noOp).setDeprecated("This setting will warn the user when used."));
-            check(c.declareInteger("obsolete", noOp).setObsolete("This setting should cause a failure when someone uses it."));
-        }
-
-        private static class ConstructorExample {
+            check(c.deprecate(Field.declareInteger("deprecated"), noOp, "This thing is deprecated."));
+            check(c.obsolete(Field.declareInteger("obsolete"), noOp, "This thing is obsolete."));
         }
 
         @Test
@@ -219,30 +223,35 @@ public class ConstructingObjectParserTest {
             // XXX: Implement a custom log appender that captures log4j logs so we can verify the warning is logged.
             c.apply(Collections.singletonMap("deprecated", 1));
         }
+
+        @Test(expected = IllegalArgumentException.class)
+        public void obsoleteUsageFails() {
+            c.apply(Collections.singletonMap("obsolete", 1));
+        }
     }
 
     @RunWith(Parameterized.class)
     public static class ConstructionArguments {
-        static final ConstructingObjectParser<List<Integer>> c0 = /* 0 args */ new ConstructingObjectParser<>(Arrays::<Integer>asList);
-        static final ConstructingObjectParser<List<Integer>> c1 = /* 1 args */ new ConstructingObjectParser<>(Arrays::<Integer>asList, Field.declareInteger("a0"));
-        static final ConstructingObjectParser<List<Integer>> c2 = /* 2 args */ new ConstructingObjectParser<>(Arrays::<Integer>asList, Field.declareInteger("a0"), Field.declareInteger("a1"));
-        static final ConstructingObjectParser<List<Integer>> c3 = /* 3 args */ new ConstructingObjectParser<>(Arrays::<Integer>asList, Field.declareInteger("a0"), Field.declareInteger("a1"), Field.declareInteger("a2"));
-        static final ConstructingObjectParser<List<Integer>> c4 = /* 4 args */ new ConstructingObjectParser<>(Arrays::<Integer>asList, Field.declareInteger("a0"), Field.declareInteger("a1"), Field.declareInteger("a2"), Field.declareInteger("a3"));
-        static final ConstructingObjectParser<List<Integer>> c5 = /* 5 args */ new ConstructingObjectParser<>(Arrays::<Integer>asList, Field.declareInteger("a0"), Field.declareInteger("a1"), Field.declareInteger("a2"), Field.declareInteger("a3"), Field.declareInteger("a4"));
-        static final ConstructingObjectParser<List<Integer>> c6 = /* 6 args */ new ConstructingObjectParser<>(Arrays::<Integer>asList, Field.declareInteger("a0"), Field.declareInteger("a1"), Field.declareInteger("a2"), Field.declareInteger("a3"), Field.declareInteger("a4"), Field.declareInteger("a5"));
-        static final ConstructingObjectParser<List<Integer>> c7 = /* 7 args */ new ConstructingObjectParser<>(Arrays::<Integer>asList, Field.declareInteger("a0"), Field.declareInteger("a1"), Field.declareInteger("a2"), Field.declareInteger("a3"), Field.declareInteger("a4"), Field.declareInteger("a5"), Field.declareInteger("a6"));
-        static final ConstructingObjectParser<List<Integer>> c8 = /* 8 args */ new ConstructingObjectParser<>(Arrays::<Integer>asList, Field.declareInteger("a0"), Field.declareInteger("a1"), Field.declareInteger("a2"), Field.declareInteger("a3"), Field.declareInteger("a4"), Field.declareInteger("a5"), Field.declareInteger("a6"), Field.declareInteger("a7"));
-        static final ConstructingObjectParser<List<Integer>> c9 = /* 9 args */ new ConstructingObjectParser<>(Arrays::<Integer>asList, Field.declareInteger("a0"), Field.declareInteger("a1"), Field.declareInteger("a2"), Field.declareInteger("a3"), Field.declareInteger("a4"), Field.declareInteger("a5"), Field.declareInteger("a6"), Field.declareInteger("a7"), Field.declareInteger("a8"));
-        private final ConstructingObjectParser<List<Integer>> builder;
+        static final ObjectFactory<List<Integer>> c0 = /* 0 args */ new ObjectFactory<>(Arrays::<Integer>asList);
+        static final ObjectFactory<List<Integer>> c1 = /* 1 args */ new ObjectFactory<>(Arrays::<Integer>asList, Field.declareInteger("a0"));
+        static final ObjectFactory<List<Integer>> c2 = /* 2 args */ new ObjectFactory<>(Arrays::<Integer>asList, Field.declareInteger("a0"), Field.declareInteger("a1"));
+        static final ObjectFactory<List<Integer>> c3 = /* 3 args */ new ObjectFactory<>(Arrays::<Integer>asList, Field.declareInteger("a0"), Field.declareInteger("a1"), Field.declareInteger("a2"));
+        static final ObjectFactory<List<Integer>> c4 = /* 4 args */ new ObjectFactory<>(Arrays::<Integer>asList, Field.declareInteger("a0"), Field.declareInteger("a1"), Field.declareInteger("a2"), Field.declareInteger("a3"));
+        static final ObjectFactory<List<Integer>> c5 = /* 5 args */ new ObjectFactory<>(Arrays::<Integer>asList, Field.declareInteger("a0"), Field.declareInteger("a1"), Field.declareInteger("a2"), Field.declareInteger("a3"), Field.declareInteger("a4"));
+        static final ObjectFactory<List<Integer>> c6 = /* 6 args */ new ObjectFactory<>(Arrays::<Integer>asList, Field.declareInteger("a0"), Field.declareInteger("a1"), Field.declareInteger("a2"), Field.declareInteger("a3"), Field.declareInteger("a4"), Field.declareInteger("a5"));
+        static final ObjectFactory<List<Integer>> c7 = /* 7 args */ new ObjectFactory<>(Arrays::<Integer>asList, Field.declareInteger("a0"), Field.declareInteger("a1"), Field.declareInteger("a2"), Field.declareInteger("a3"), Field.declareInteger("a4"), Field.declareInteger("a5"), Field.declareInteger("a6"));
+        static final ObjectFactory<List<Integer>> c8 = /* 8 args */ new ObjectFactory<>(Arrays::<Integer>asList, Field.declareInteger("a0"), Field.declareInteger("a1"), Field.declareInteger("a2"), Field.declareInteger("a3"), Field.declareInteger("a4"), Field.declareInteger("a5"), Field.declareInteger("a6"), Field.declareInteger("a7"));
+        static final ObjectFactory<List<Integer>> c9 = /* 9 args */ new ObjectFactory<>(Arrays::<Integer>asList, Field.declareInteger("a0"), Field.declareInteger("a1"), Field.declareInteger("a2"), Field.declareInteger("a3"), Field.declareInteger("a4"), Field.declareInteger("a5"), Field.declareInteger("a6"), Field.declareInteger("a7"), Field.declareInteger("a8"));
+        private final ObjectFactory<List<Integer>> builder;
         private final int i;
 
-        public ConstructionArguments(ConstructingObjectParser<List<Integer>> builder, int i) {
+        public ConstructionArguments(ObjectFactory<List<Integer>> builder, int i) {
             this.builder = builder;
             this.i = i;
         }
 
         static Map<String, Object> genMap(int count) {
-            Map map = new HashMap();
+            Map<String, Object> map = new HashMap<>();
             for (int i = 0; i < count; i++) {
                 map.put("a" + i, i);
             }

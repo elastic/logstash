@@ -5,7 +5,7 @@ import java.nio.file.Paths;
 import java.util.List;
 
 class ConstructorExample {
-    static final ConstructingObjectParser<ConstructorExample> BUILDER = new ConstructingObjectParser<>(
+    static final ObjectFactory<ConstructorExample> BUILDER = new ObjectFactory<>(
             ConstructorExample::new,
             Field.declareInteger("integer"),
             Field.declareFloat("float"),

@@ -1,11 +1,8 @@
 package org.logstash.common.parser;
 
 class MixedExample {
-    static final ConstructingObjectParser<MixedExample> BUILDER = new ConstructingObjectParser<>(MixedExample::new, Field.declareInteger("foo"));
-
-    static {
-        BUILDER.declareString("bar", MixedExample::setBar);
-    }
+    static final ObjectFactory<MixedExample> BUILDER = new ObjectFactory<>(MixedExample::new, Field.declareInteger("foo"))
+            .define(Field.declareString("bar"), MixedExample::setBar);
 
     private int foo;
     private String bar;

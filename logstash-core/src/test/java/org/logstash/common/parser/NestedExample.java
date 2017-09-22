@@ -1,12 +1,15 @@
 package org.logstash.common.parser;
 
 public class NestedExample {
-    static final ConstructingObjectParser<NestedExample> BUILDER = new ConstructingObjectParser<>(
-            NestedExample::new,
-            Field.declareObject("foo", Nested.BUILDER)
-    );
-    private final Nested nested;
+    static final ObjectFactory<NestedExample> BUILDER = new ObjectFactory<>(NestedExample::new, Field.declareObject("foo", Nested.BUILDER));
 
+    static final ObjectFactory<NestedExample> BUILDER_USING_SETTERS = new ObjectFactory<>(NestedExample::new)
+            .define(Field.declareObject("foo", Nested.BUILDER), NestedExample::setNested);
+
+    private Nested nested;
+
+    private NestedExample() {
+    }
     private NestedExample(Nested nested) {
         this.nested = nested;
     }
@@ -15,8 +18,12 @@ public class NestedExample {
         return nested;
     }
 
+    public void setNested(Nested nested) {
+        this.nested = nested;
+    }
+
     public static class Nested {
-        static final ConstructingObjectParser<Nested> BUILDER = new ConstructingObjectParser<>(Nested::new, Field.declareInteger("i"));
+        static final ObjectFactory<Nested> BUILDER = new ObjectFactory<>(Nested::new, Field.declareInteger("i"));
 
         private final int i;
 

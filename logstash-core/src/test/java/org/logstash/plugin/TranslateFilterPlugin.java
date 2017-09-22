@@ -1,8 +1,8 @@
 package org.logstash.plugin;
 
 import org.logstash.Event;
-import org.logstash.common.parser.ConstructingObjectParser;
 import org.logstash.common.parser.Field;
+import org.logstash.common.parser.ObjectFactory;
 import org.logstash.common.parser.ObjectTransforms;
 
 import java.nio.file.Path;
@@ -13,9 +13,9 @@ import java.util.Map;
 import java.util.function.Function;
 
 class TranslateFilterPlugin {
-    private final static ConstructingObjectParser<TranslateFilter> TRANSLATE_MAP = new ConstructingObjectParser<>(
+    private final static ObjectFactory<TranslateFilter> TRANSLATE_MAP = new ObjectFactory<>(
             TranslateFilter::new, Field.declareString("field"), Field.declareMap("dictionary"));
-    private final static ConstructingObjectParser<FileBackedTranslateFilter> TRANSLATE_FILE = new ConstructingObjectParser<>(
+    private final static ObjectFactory<FileBackedTranslateFilter> TRANSLATE_FILE = new ObjectFactory<>(
             FileBackedTranslateFilter::new, Field.declareString("field"), Field.declareField("dictionary_path", TranslateFilterPlugin::parsePath));
 
     /**
@@ -30,16 +30,16 @@ class TranslateFilterPlugin {
 
     static {
         // Apply most settings to both Translate Filter modes.
-        for (ConstructingObjectParser<? extends TranslateFilter> builder : Arrays.asList(TRANSLATE_MAP, TRANSLATE_FILE)) {
-            builder.declareString("destination", TranslateFilter::setDestination);
-            builder.declareBoolean("exact", TranslateFilter::setExact);
-            builder.declareBoolean("override", TranslateFilter::setOverride);
-            builder.declareBoolean("regex", TranslateFilter::setRegex);
-            builder.declareString("fallback", TranslateFilter::setFallback);
+        for (ObjectFactory<? extends TranslateFilter> builder : Arrays.asList(TRANSLATE_MAP, TRANSLATE_FILE)) {
+            builder.define(Field.declareString("destination"), TranslateFilter::setDestination);
+            builder.define(Field.declareBoolean("exact"), TranslateFilter::setExact);
+            builder.define(Field.declareBoolean("override"), TranslateFilter::setOverride);
+            builder.define(Field.declareBoolean("regex"), TranslateFilter::setRegex);
+            builder.define(Field.declareString("fallback"), TranslateFilter::setFallback);
         }
 
         // File-backed mode gets a special `refresh_interval` setting.
-        TRANSLATE_FILE.declareInteger("refresh_interval", FileBackedTranslateFilter::setRefreshInterval);
+        TRANSLATE_FILE.define(Field.declareInteger("refresh_interval"), FileBackedTranslateFilter::setRefreshInterval);
     }
 
     private static Path parsePath(Object input) {

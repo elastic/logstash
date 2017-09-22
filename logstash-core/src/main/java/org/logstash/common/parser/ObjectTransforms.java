@@ -87,7 +87,7 @@ public class ObjectTransforms {
     }
 
     @SuppressWarnings("WeakerAccess") // Public Interface
-    public static <T> T transformObject(Object object, ConstructingObjectParser<T> parser) throws IllegalArgumentException {
+    public static <T> T transformObject(Object object, ObjectFactory<T> parser) throws IllegalArgumentException {
         if (object instanceof Map) {
             // XXX: Fix this unchecked cast.
             return parser.apply((Map<String, Object>) object);
@@ -109,6 +109,7 @@ public class ObjectTransforms {
         }
     }
 
+    @SuppressWarnings("WeakerAccess") // Public Interface
     public static Map<String, Object> transformMap(Object object) {
         if (object instanceof Map) {
             // XXX: Validate all entries in this map for the cast?
