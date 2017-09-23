@@ -71,9 +71,16 @@ describe LogStash::Agent do
           TestSourceLoader.new(infinite_pipeline_config, system_pipeline_config)
         end
 
+        before(:each) do
+            @agent_task = start_agent(subject)
+        end
+
+        after(:each) do
+            @agent_task.stop!
+        end
+
         describe "#running_user_defined_pipelines" do
           it "returns the user defined pipelines" do
-            start_agent(subject)
             wait_for do
               subject.with_running_user_defined_pipelines {|pipelines| pipelines.keys }
             end.to eq([:main])
@@ -82,7 +89,6 @@ describe LogStash::Agent do
 
         describe "#running_user_defined_pipelines?" do
           it "returns true" do
-            start_agent(subject)
             wait_for do
               subject.running_user_defined_pipelines?
             end.to be_truthy
@@ -102,14 +108,19 @@ describe LogStash::Agent do
         context "and successfully load the config" do
           let(:agent_settings) { mock_settings("config.reload.automatic" => false) }
 
-          it "converge only once" do
-            agent_task = start_agent(subject)
+          before(:each) do
+            @agent_task = start_agent(subject)
+          end
 
+          after(:each) do
+            @agent_task.stop!
+          end
+
+          it "converge only once" do
             expect(source_loader.fetch_count).to eq(1)
             expect(subject).to have_running_pipeline?(pipeline_config)
 
             subject.shutdown
-            agent_task.stop!
           end
         end
 
@@ -137,11 +148,16 @@ describe LogStash::Agent do
             "config.reload.interval" =>  interval
           )
         end
+        before(:each) do
+          @agent_task = start_agent(subject)
+        end
+
+        after(:each) do
+          @agent_task.stop!
+        end
 
         context "and successfully load the config" do
           it "converges periodically the pipelines from the configs source" do
-            agent_task = start_agent(subject)
-
             sleep(2) # let the interval reload a few times
             expect(subject).to have_running_pipeline?(pipeline_config)
 
@@ -152,7 +168,6 @@ describe LogStash::Agent do
             end
 
             subject.shutdown
-            agent_task.stop!
           end
         end
 
@@ -162,14 +177,12 @@ describe LogStash::Agent do
           end
 
           it "it will keep trying to converge" do
-            agent_task = start_agent(subject)
 
             sleep(agent_settings.get("config.reload.interval") / 1_000_000_000.0 * 20) # let the interval reload a few times
             expect(subject.pipelines_count).to eq(0)
             expect(source_loader.fetch_count).to be > 1
 
             subject.shutdown
-            agent_task.stop!
           end
         end
       end
