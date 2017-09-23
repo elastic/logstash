@@ -66,7 +66,7 @@ def start_agent(agent)
     end
   end
 
-  sleep(0.1) unless subject.running?
+  wait(30).for { agent.running? }.to be(true)
   agent_task
 end
 
