@@ -202,6 +202,10 @@ module LogStash module Plugins
       add_plugin(type, name, klass)
     end
 
+    def remove(type, plugin_name)
+      @registry.delete(key_for(type, plugin_name))
+    end
+
     def get(type, plugin_name)
       @registry[key_for(type, plugin_name)]
     end
