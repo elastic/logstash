@@ -15,6 +15,10 @@ SELECTED_TEST_SUITE=$1
 [ -f Gemfile ] && rm Gemfile
 [ -f Gemfile.jruby-2.3.lock ] && rm Gemfile.jruby-2.3.lock
 
+# When running these tests in a Jenkins matrix, in parallel, once one Vagrant job is done, the Jenkins ProcessTreeKiller will kill any other Vagrant processes with the same
+# BUILD_ID unless you set this magic flag:  https://wiki.jenkins.io/display/JENKINS/ProcessTreeKiller
+export BUILD_ID=dontKillMe
+
 if [[ $SELECTED_TEST_SUITE == $"redhat" ]]; then
   echo "Generating the RPM, make sure you start with a clean environment before generating other packages."
   rake artifact:rpm
