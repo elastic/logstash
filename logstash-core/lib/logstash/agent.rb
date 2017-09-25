@@ -397,8 +397,6 @@ class LogStash::Agent
         @webserver_thread.join
       end
     end
-  end
-
   def shutdown_pipelines
     logger.debug("Shutting down all pipelines", :pipelines_count => pipelines_count)
 
