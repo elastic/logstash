@@ -21,13 +21,22 @@ shared_context "api setup" do
     settings = mock_settings
     config_string = "input { generator {id => 'api-generator-pipeline' count => 100 } } output { dummyoutput {} }"
     settings.set("config.string", config_string)
+    settings.set("config.reload.automatic", false)
     @agent = make_test_agent(settings)
     @agent.register_pipeline(settings)
     @agent.execute
+    pipeline_config = mock_pipeline_config(:main, "input { generator { id => '123' } } output { null {} }")
+    pipeline_creator =  LogStash::PipelineAction::Create.new(pipeline_config, @agent.metric)
+    @pipelines = Hash.new
+    expect(pipeline_creator.execute(@agent, @pipelines)).to be_truthy
   end
 
   after :all do
     @agent.shutdown
+    @pipelines.each do |_, pipeline|
+      pipeline.shutdown
+      pipeline.thread.join
+    end
   end
 
   include Rack::Test::Methods
