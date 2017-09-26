@@ -373,7 +373,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ==========================================================================
-RubyGem: cinch Version: 2.3.3
+RubyGem: cinch Version: 2.3.4
 Copyright (c) 2010 Lee Jarvis, Dominik Honnef
 Copyright (c) 2011 Dominik Honnef
 
