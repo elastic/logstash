@@ -3,16 +3,12 @@
 
 This section summarizes the changes in the following releases:
 
-* <<logstash-5-6-1,Logstash 5.6.1>>
+* <<logstash-5-6-2,Logstash 5.6.2>>
 
-[[logstash-5-6-1]]
-=== Logstash 5.6.1 Release Notes
+[[logstash-5-6-2]]
+=== Logstash 5.6.2 Release Notes
 
-* There are no user-facing changes in this release
+* Fix a regression where `Event.clone` would not clone event metadata
+* https://github.com/elastic/logstash/pulls?utf8=%E2%9C%93&q=is%3Apr%20label%3Av5.6.2%20is%3Aclosed%20label%3Abug%20[Various minor bug fixes]
 
 [float]
-
-==== Filter Plugins
-
-*`GeoIP`*: The free GeoIPLite2-ASN database from MaxMind is now bundled in Logstash to be able to look up ASN data out 
-  of the box.
