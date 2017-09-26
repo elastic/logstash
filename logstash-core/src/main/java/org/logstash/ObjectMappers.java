@@ -314,7 +314,7 @@ public final class ObjectMappers {
         @Override
         public void serialize(final RubyNil value, final JsonGenerator jgen,
             final SerializerProvider provider) throws IOException {
-            jgen.writeString("");
+            jgen.writeNull();
         }
 
         @Override

@@ -10,6 +10,11 @@ TIMESTAMP = "@timestamp"
 
 describe LogStash::Event do
   context "to_json" do
+    it "should correctly serialize RubyNil values a Null values" do
+      e = LogStash::Event.new({ "null_value" => nil, TIMESTAMP => "2015-05-28T23:02:05.350Z"})
+      expect(JSON.parse(e.to_json)).to eq(JSON.parse("{\"null_value\":null,\"@timestamp\":\"2015-05-28T23:02:05.350Z\",\"@version\":\"1\"}"))
+    end
+
     it "should serialize simple values" do
       e = LogStash::Event.new({"foo" => "bar", "bar" => 1, "baz" => 1.0, TIMESTAMP => "2015-05-28T23:02:05.350Z"})
       expect(JSON.parse(e.to_json)).to eq(JSON.parse("{\"foo\":\"bar\",\"bar\":1,\"baz\":1.0,\"@timestamp\":\"2015-05-28T23:02:05.350Z\",\"@version\":\"1\"}"))
