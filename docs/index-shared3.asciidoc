@@ -18,6 +18,9 @@ include::static/managing-multiline-events.asciidoc[]
 :edit_url: https://github.com/elastic/logstash/edit/5.6/docs/static/glob-support.asciidoc
 include::static/glob-support.asciidoc[]
 
+:edit_url: https://github.com/elastic/logstash/edit/5.6/docs/static/ingest-convert.asciidoc
+include::static/ingest-convert.asciidoc[]
+
 // Working with Logstash Modules
 
 include::static/modules.asciidoc[]
