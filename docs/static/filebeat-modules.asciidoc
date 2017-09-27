@@ -15,26 +15,15 @@ you'll need to use Logstash.
 
 [float]
 [[graduating-to-Logstash]]
-=== Graduating to Logstash
+=== Using Logstash instead of Ingest Node
 
-You may need to graduate to using Logstash instead of ingest pipelines if you
-want to:
-
-* Use multiple outputs. Ingest pipelines were designed to only support
-Elasticsearch as an output, but you may want to use more than one output. For
-example, you may want to archive your incoming data to S3 as well as indexing
-it in Elasticsearch.
-* Use the <<persistent-queues,persistent queue>> feature to handle spikes when
-ingesting data (from Beats and other sources).
-* Take advantage of the richer transformation capabilities in Logstash, such as
-external lookups.
-
-Currently, we don't provide an automatic migration path from ingest pipelines
-to Logstash pipelines (but that's coming). For now, you can follow the steps in
-this section to configure Filebeat and build Logstash pipeline configurations
-that are equivalent to the ingest node pipelines available with the Filebeat
-modules. Then you'll be able to use the same dashboards available with Filebeat
-to visualize your data in Kibana.
+Logstash provides an <<ingest-converter,ingest pipeline conversion tool>>
+to help you migrate ingest pipeline definitions to Logstash configs. However,
+the tool does not currently support all the processors that are available for
+ingest node. You can follow the steps in this section to configure Filebeat and
+build Logstash pipeline configurations that are equivalent to the ingest node
+pipelines available with the Filebeat modules. Then you'll be able to use the
+same dashboards available with Filebeat to visualize your data in Kibana.
 
 Follow the steps in this section to build and run Logstash configurations that
 provide capabilities similar to Filebeat modules.
