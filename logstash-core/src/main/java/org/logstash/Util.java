@@ -35,6 +35,7 @@ public class Util {
         return map;
     }
 
+    @SuppressWarnings("unchecked")
     public static void mapMerge(final Map<String, Object> target, final Map<String, Object> add) {
         LinkedHashSet<Object> buffer = null;
         for (final Map.Entry<String, Object> entry : add.entrySet()) {

@@ -9,8 +9,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.hamcrest.CoreMatchers;
-import org.hamcrest.MatcherAssert;
+
 import org.jruby.RubySymbol;
 import org.jruby.RubyTime;
 import org.jruby.java.proxies.ConcreteJavaProxy;
@@ -343,6 +342,7 @@ public final class EventTest {
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     public void testTagOnEmptyTagsField() throws Exception {
         Event e = new Event();
         e.tag("foo");
@@ -353,6 +353,7 @@ public final class EventTest {
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     public void testTagOnExistingTagsField() throws Exception {
         Map<String, Object> data = new HashMap<>();
         data.put("tags", "foo");
@@ -366,7 +367,7 @@ public final class EventTest {
     }
 
     @Test
-    public void toStringwithTimestamp() throws Exception {
+    public void toStringWithTimestamp() throws Exception {
         Map<String, Object> data = new HashMap<>();
         data.put("host", "foo");
         data.put("message", "bar");
@@ -375,7 +376,7 @@ public final class EventTest {
     }
 
     @Test
-    public void toStringwithoutTimestamp() throws Exception {
+    public void toStringWithoutTimestamp() throws Exception {
         Map<String, Object> data = new HashMap<>();
         data.put("host", "foo");
         data.put("message", "bar");
