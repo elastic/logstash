@@ -21,6 +21,9 @@ include::static/managing-multiline-events.asciidoc[]
 :edit_url: https://github.com/elastic/logstash/edit/master/docs/static/glob-support.asciidoc
 include::static/glob-support.asciidoc[]
 
+:edit_url: https://github.com/elastic/logstash/edit/master/docs/static/ingest-convert.asciidoc
+include::static/ingest-convert.asciidoc[]
+
 // Centralized configuration managements
 include::static/config-management.asciidoc[]
 
