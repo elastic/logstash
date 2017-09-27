@@ -231,8 +231,7 @@ public class Queue implements Closeable {
 
             if (this.headPage.getMinSeqNum() <= 0 && this.headPage.getElementCount() <= 0) {
                 // head page is empty, let's keep it as-is
-
-                this.currentByteSize += pageIO.getCapacity();
+                increaseCurrentByteSize(pageIO.getCapacity());
 
                 // but checkpoint it to update the firstUnackedPageNum if it changed
                 this.headPage.checkpoint();
@@ -296,7 +295,7 @@ public class Queue implements Closeable {
             this.tailPages.add(page);
             this.unreadTailPages.add(page);
             this.unreadCount += page.unreadCount();
-            this.currentByteSize += page.getPageIO().getCapacity();
+            increaseCurrentByteSize(page.getPageIO().getCapacity());
 
             // for now deactivate all tail pages, we will only reactivate the first one at the end
             page.getPageIO().deactivate();
@@ -305,6 +304,14 @@ public class Queue implements Closeable {
         // track the seqNum as we rebuild tail pages, prevent empty pages with a minSeqNum of 0 to reset seqNum
         if (checkpoint.maxSeqNum() > this.seqNum) {
             this.seqNum = checkpoint.maxSeqNum();
+        }
+    }
+
+    private void increaseCurrentByteSize(int size) {
+        this.currentByteSize += size;
+        if (this.currentByteSize >= this.maxBytes) {
+            logger.info("reached the maximum queue capacity {}, current byte size: {}",
+                    this.maxBytes, this.currentByteSize);
         }
     }
 
@@ -333,7 +340,7 @@ public class Queue implements Closeable {
             this.tailPages.add(page);
             this.unreadTailPages.add(page);
             this.unreadCount += page.unreadCount();
-            this.currentByteSize += page.getPageIO().getCapacity();
+            increaseCurrentByteSize(page.getPageIO().getCapacity());
 
             // for now deactivate all tail pages, we will only reactivate the first one at the end
             page.getPageIO().deactivate();
@@ -352,7 +359,7 @@ public class Queue implements Closeable {
         headPageIO.create();
         this.headPage = new HeadPage(pageNum, this, headPageIO);
         this.headPage.forceCheckpoint();
-        this.currentByteSize += headPageIO.getCapacity();
+        increaseCurrentByteSize(headPageIO.getCapacity());
     }
 
     // @param element the Queueable object to write to the queue
