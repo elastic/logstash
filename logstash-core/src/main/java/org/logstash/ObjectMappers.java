@@ -15,6 +15,7 @@ import com.fasterxml.jackson.dataformat.cbor.CBORFactory;
 import com.fasterxml.jackson.dataformat.cbor.CBORGenerator;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.HashMap;
 import org.jruby.RubyBignum;
 import org.jruby.RubyBoolean;
@@ -41,8 +42,6 @@ public final class ObjectMappers {
 
     private static final SimpleModule CBOR_DESERIALIZERS =
         new SimpleModule("CborRubyDeserializers")
-            .addDeserializer(RubyBigDecimal.class, new RubyBigDecimalDeserializer())
-            .addDeserializer(RubyBignum.class, new RubyBignumDeserializer())
             .addDeserializer(RubyNil.class, new RubyNilDeserializer());
 
     public static final ObjectMapper JSON_MAPPER = 
@@ -195,79 +194,35 @@ public final class ObjectMappers {
 
     /**
      * Serializer for {@link RubyBignum} since Jackson can't handle that type natively, so we
-     * simply serialize it as if it were a {@code String} and wrap it in type arguments, so that
-     * deserialization happens via {@link ObjectMappers.RubyBignumDeserializer}.
+     * simply serialize it as if it were a {@link BigInteger}.
      */
-    private static final class RubyBignumSerializer extends StdSerializer<RubyBignum> {
+    private static final class RubyBignumSerializer extends NonTypedScalarSerializerBase<RubyBignum> {
 
         RubyBignumSerializer() {
-            super(RubyBignum.class);
+            super(RubyBignum.class, true);
         }
 
         @Override
         public void serialize(final RubyBignum value, final JsonGenerator jgen,
             final SerializerProvider provider) throws IOException {
-            jgen.writeString(value.toString());
-        }
-
-        @Override
-        public void serializeWithType(final RubyBignum value, final JsonGenerator jgen,
-            final SerializerProvider serializers, final TypeSerializer typeSer) throws IOException {
-            typeSer.writeTypePrefixForScalar(value, jgen, RubyBignum.class);
-            jgen.writeString(value.toString());
-            typeSer.writeTypeSuffixForScalar(value, jgen);
-        }
-    }
-
-    private static final class RubyBignumDeserializer extends StdDeserializer<RubyBignum> {
-
-        RubyBignumDeserializer() {
-            super(RubyBignum.class);
-        }
-
-        @Override
-        public RubyBignum deserialize(final JsonParser p, final DeserializationContext ctxt)
-            throws IOException {
-            return RubyBignum.newBignum(RubyUtil.RUBY, p.getText());
+            jgen.writeNumber(value.getBigIntegerValue());
         }
     }
 
     /**
-     * Serializer for {@link RubyBigDecimal} since Jackson can't handle that type natively, so we
-     * simply serialize it as if it were a {@code String} and wrap it in type arguments, so that
-     * deserialization happens via {@link ObjectMappers.RubyBigDecimalDeserializer}.
+     * Serializer for {@link BigDecimal} since Jackson can't handle that type natively, so we
+     * simply serialize it as if it were a {@link BigDecimal}.
      */
-    private static final class RubyBigDecimalSerializer extends StdSerializer<RubyBigDecimal> {
+    private static final class RubyBigDecimalSerializer extends NonTypedScalarSerializerBase<RubyBigDecimal> {
 
         RubyBigDecimalSerializer() {
-            super(RubyBigDecimal.class);
+            super(RubyBigDecimal.class, true);
         }
 
         @Override
         public void serialize(final RubyBigDecimal value, final JsonGenerator jgen,
             final SerializerProvider provider) throws IOException {
-            jgen.writeString(value.getBigDecimalValue().toString());
-        }
-
-        @Override
-        public void serializeWithType(final RubyBigDecimal value, final JsonGenerator jgen,
-            final SerializerProvider serializers, final TypeSerializer typeSer) throws IOException {
-            typeSer.writeTypePrefixForScalar(value, jgen, RubyBigDecimal.class);
-            jgen.writeString(value.getBigDecimalValue().toString());
-            typeSer.writeTypeSuffixForScalar(value, jgen);
-        }
-    }
-
-    private static final class RubyBigDecimalDeserializer extends StdDeserializer<RubyBigDecimal> {
-
-        RubyBigDecimalDeserializer() {
-            super(RubyBigDecimal.class);
-        }
-
-        @Override
-        public RubyBigDecimal deserialize(final JsonParser p, final DeserializationContext ctxt)
-            throws IOException {
-            return new RubyBigDecimal(RubyUtil.RUBY, new BigDecimal(p.getText()));
+            jgen.writeNumber(value.getBigDecimalValue());
         }
     }
 
