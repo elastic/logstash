@@ -754,9 +754,9 @@ public class QueueTest {
             final int count = 20_000;
             final int concurrent = 2;
             queue.open();
-            final Future<Integer>[] futures = new Future[concurrent];
+            final List<Future<Integer>> futures = new ArrayList<>(concurrent);
             for (int c = 0; c < concurrent; ++c) {
-                futures[c] = exec.submit(() -> {
+                futures.add(exec.submit(() -> {
                     int i = 0;
                     try {
                         while (i < count / concurrent) {
@@ -771,7 +771,7 @@ public class QueueTest {
                     } catch (final IOException ex) {
                         throw new IllegalStateException(ex);
                     }
-                });
+                }));
             }
             for (int i = 0; i < count; ++i) {
                 try {
@@ -782,7 +782,7 @@ public class QueueTest {
                 }
             }
             assertThat(
-                Arrays.stream(futures).map(i -> {
+                futures.stream().map(i -> {
                     try {
                         return i.get(2L, TimeUnit.MINUTES);
                     } catch (final InterruptedException | ExecutionException | TimeoutException ex) {

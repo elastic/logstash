@@ -114,7 +114,7 @@ public class Queue implements Closeable {
 
         // retrieve the deserialize method
         try {
-            final Class<?>[] cArg = new Class[1];
+            final Class<?>[] cArg = new Class<?>[1];
             cArg[0] = byte[].class;
             this.deserializeMethod = this.elementClass.getDeclaredMethod("deserialize", cArg);
         } catch (NoSuchMethodException e) {
