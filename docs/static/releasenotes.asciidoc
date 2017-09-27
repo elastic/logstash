@@ -15,8 +15,15 @@ endif::include-xpack[]
 [[logstash-6-0-0-rc1]]
 === Logstash 6.0.0-rc1 Release Notes
 
-Placeholder for RC1 release notes.
-
+* https://github.com/elastic/logstash/pull/8318[Added all commercially supported plugins to bundled plugins]
+* existing `JAVA_OPTS` env var is now ignored for consistency with Elasticsearch
+* JAVA_TOOL_OPTIONS env var is cleared for consistency with Elasticsearch
+* Now only LS_JAVA_OPTS env var is supported to append options to parsed options from the jvm.options file.
+* dropped support of the LS_JVM_OPTS env var
+* dropped support of the USE_RUBY and USE_DRIP environment variables
+* Fixed  https://github.com/elastic/logstash/pull/8226[password support] in modules
+* A variety of small consistency / testing fixes for the Windows platform
+* Misc stability fixes
 
 [[logstash-6-0-0-beta2]]
 === Logstash 6.0.0-beta2 Release Notes
