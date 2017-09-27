@@ -11,5 +11,5 @@ public interface Processor {
      * @param events The events to be processed
      * @return Any new events created by this processor.
      */
-    Collection<Event> process(Collection<Event> events);
+    void process(Collection<Event> events);
 }

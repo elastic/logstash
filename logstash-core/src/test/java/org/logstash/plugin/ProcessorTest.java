@@ -22,13 +22,14 @@ public class ProcessorTest {
         return Collections.unmodifiableCollection(events);
     }
 
-    private class TestFilter implements Processor {
-        @Override
-        public Collection<Event> process(Collection<Event> events) {
-            for (Event e : events) {
-                e.setField("visited", "testFilter");
-            }
-            return null;
+    @Test
+    public void testFilter() {
+        processor.process(events);
+
+        long i = 0;
+        for (Event event : events) {
+            assertEquals(i, event.getField("i"));
+            i++;
         }
     }
 
@@ -36,16 +37,13 @@ public class ProcessorTest {
     private int eventCount = TestUtil.random.nextInt(100);
     private Collection<Event> events = generateEvents(eventCount);
 
-    @Test
-    public void testFilter() {
-        Collection<Event> newEvents = processor.process(events);
+    private class TestFilter implements Processor {
 
-        assertEquals(null, newEvents);
-
-        long i = 0;
-        for (Event event : events) {
-            assertEquals(i, event.getField("i"));
-            i++;
+        @Override
+        public void process(Collection<Event> events) {
+            for (Event e : events) {
+                e.setField("visited", "testFilter");
+            }
         }
     }
 }
