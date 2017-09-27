@@ -22,7 +22,7 @@ public class SampleOutput implements Output, Witnessable, UsesDLQ {
      * <p>
      * and the user's configuration will determine how this behaves.
      */
-    private DeadLetterQueueWriter dlq; /* = new LoggingDeadLetterQueueWriter() */
+    private DeadLetterQueueWriter dlq;
     /**
      * This is how plugins should declare metrics:
      * 1) Define their own internal private metric fields
