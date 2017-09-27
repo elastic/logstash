@@ -84,6 +84,22 @@ public final class EventTest {
         assertEquals(e.getTimestamp().toString(), er.getTimestamp().toString());
     }
 
+    /**
+     * Test for proper BigInteger and BigDecimal serialization
+     * related to Jackson/CBOR issue https://github.com/elastic/logstash/issues/8379
+     */
+    @Test
+    public void bigNumsBinaryRoundtrip() throws Exception {
+        final Event e = new Event();
+        final BigInteger bi = new BigInteger("9223372036854776000");
+        final BigDecimal bd =  new BigDecimal("9223372036854776001.99");
+        e.setField("bi", bi);
+        e.setField("bd", bd);
+        final Event deserialized = Event.deserialize(e.serialize());
+        assertEquals(bi, deserialized.getField("bi"));
+        assertEquals(bd, deserialized.getField("bd"));
+    }
+
     @Test
     public void testBareToJson() throws Exception {
         Event e = new Event();
