@@ -10,29 +10,21 @@ import java.util.Collection;
 import java.util.List;
 
 public class SampleOutput implements Output, Witnessable, UsesDLQ {
+    // Dead letter queue
     /**
      * Todo: DeadLetterQueueWriter should probably be an interface with two implementations:
      * 1) File-backed (the current DeadLetterQueueWriter)
      * 2) LoggingDeadLetterQueueWriter which will log to log4j2 but is incompatible with dead_letter_queue input
      * <p>
      * For options, I think '2' (log) should be the default. This would save plugin authors complexity
-     * and they can just write:
+     * and they can write:
      * <p>
      * dlq.write(...)
      * <p>
      * and the user's configuration will determine how this behaves.
      */
     private DeadLetterQueueWriter dlq;
-    /**
-     * This is how plugins should declare metrics:
-     * 1) Define their own internal private metric fields
-     * 2) implement `HasMetrics`
-     */
-    private LongCounter eventCounter = new LongCounter("events");
-    private LongCounter batchCounter = new LongCounter("batches");
-    private List<Metric<?>> metrics = Arrays.asList(
-            batchCounter, eventCounter
-    );
+
 
     /**
      * This method would be called by the pipeline after creating the output instance.
@@ -58,6 +50,18 @@ public class SampleOutput implements Output, Witnessable, UsesDLQ {
         this.dlq = dlq;
     }
 
+    // Metrics.
+    /**
+     * This is how plugins would declare metrics:
+     * 1) Define their own internal private metric fields
+     * 2) implement `HasMetrics`
+     */
+    private LongCounter eventCounter = new LongCounter("events");
+    private LongCounter batchCounter = new LongCounter("batches");
+    private List<Metric<?>> metrics = Arrays.asList(
+            batchCounter, eventCounter
+    );
+
     /**
      * The metrics system would invoke this.
      * <p>
@@ -74,6 +78,7 @@ public class SampleOutput implements Output, Witnessable, UsesDLQ {
         return metrics;
     }
 
+    // All outputs would have this method.
     @Override /* output interface */
     public void process(Collection<Event> events) {
         batchCounter.increment();
