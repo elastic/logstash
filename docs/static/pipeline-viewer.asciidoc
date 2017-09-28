@@ -2,10 +2,9 @@
 [[logstash-pipeline-viewer]]
 === Pipeline Viewer UI
 
-NOTE: The pipeline viewer is an {xpack} feature that requires a
-paid {xpack} license. See the
-https://www.elastic.co/subscriptions[Elastic Subscriptions] page for
-information about obtaining a license.
+NOTE: The Logstash pipeline viewer is an
+https://www.elastic.co/products/x-pack[X-Pack] feature under the Basic License
+and is therefore free to use. 
 
 The pipeline viewer in {xpack} provides a simple way for you to visualize and
 monitor the behavior of complex Logstash pipeline configurations. Within the
