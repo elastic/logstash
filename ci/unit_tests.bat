@@ -14,9 +14,7 @@ for /f "tokens=1* delims==> " %%G IN ('subst') do (
   :: expanding H to a short path in order not to break the resulting command line
   set spath=%%~sfH
 
-  rem echo trying !spath! vs "%WORKSPACE%"
   if /I "!spath!" == "%WORKSPACE%" (
-    rem echo found drive=!sdrive!, path=!spath!
     set use_drive=!sdrive!
     goto :found_drive
   )
@@ -26,7 +24,6 @@ for /f "tokens=1* delims==> " %%G IN ('subst') do (
 :: try to assign "%WORKSPACE%" to the first drive letter which works
 for %%i in (A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z) do (
     set "drive=%%i:"
-    rem echo trying subst !drive! "%WORKSPACE%"
     subst !drive! "%WORKSPACE%" >nul
     if not errorlevel 1 (
         set use_drive=!drive!
@@ -38,42 +35,42 @@ echo Error: unable to subst drive to path "%WORKSPACE%"
 exit /B 1
 
 :found_drive
-echo using drive !use_drive! for "%WORKSPACE%"
+echo Using drive !use_drive! for "%WORKSPACE%"
 
 :: change current directory to that drive
 !use_drive!
 
-REM Since we are using the system jruby, we need to make sure our jvm process
-REM uses at least 1g of memory, If we don't do this we can get OOM issues when
-REM installing gems. See https://github.com/elastic/logstash/issues/5179
+:: Since we are using the system jruby, we need to make sure our jvm process
+:: uses at least 1g of memory, If we don't do this we can get OOM issues when
+:: installing gems. See https://github.com/elastic/logstash/issues/5179
 
-SET JRUBY_OPTS="-J-Xmx1g"
-SET SELECTEDTESTSUITE=%1
-SET /p JRUBYVERSION=<.ruby-version
+set JRUBY_OPTS="-J-Xmx1g"
+set SELECTEDTESTSUITE=%1
+set /p JRUBYVERSION=<.ruby-version
 
 if "%JRUBYSRCDIR%" == "" (
   echo Error: environment variable JRUBYSRCDIR must be defined
   exit /B 1
 )
 
-IF NOT EXIST %JRUBYSRCDIR% (
-  echo "Variable JRUBYSRCDIR must be declared with a valid directory. Aborting.."
+if not exist %JRUBYSRCDIR% (
+  echo "Error: variable JRUBYSRCDIR must be declared with a valid directory. Aborting.."
   exit /B 1
 )
 
-SET JRUBYPATH=%JRUBYSRCDIR%\%JRUBYVERSION%
+set JRUBYPATH=%JRUBYSRCDIR%\%JRUBYVERSION%
 
-IF NOT EXIST %JRUBYPATH% (
-  echo "Could not find JRuby in %JRUBYPATH%. Aborting.."
+if not exist %JRUBYPATH% (
+  echo "Error: could not find JRuby in %JRUBYPATH%. Aborting.."
   exit /B 1
 )
 
-SET RAKEPATH=%JRUBYPATH%\bin\rake
+set RAKEPATH=%JRUBYPATH%\bin\rake
 
 echo Installing core plugins
 %RAKEPATH% test:install-core
 if errorlevel 1 (
-  echo Error: failed to install core plugins, Aborting
+  echo "Error: failed to install core plugins, Aborting"
   exit /B 1
 )
 
@@ -85,6 +82,6 @@ if "%SELECTEDTESTSUITE%"=="core-fail-fast" (
   %RAKEPATH% test:core
 )
 if errorlevel 1 (
-  echo Error: failed to run core tests
+  echo "Error: failed to run core tests"
   exit /B 1
 )
