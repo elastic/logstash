@@ -11,8 +11,7 @@ for /f "tokens=1* delims==> " %%G IN ('subst') do (
   set sdrive=%%G
   :: removing extra space
   set sdrive=!sdrive:~0,2!
-  :: expanding H to a short path in order not to break the resulting command line
-  set spath=%%~sfH
+  set spath=%%H
 
   if /I "!spath!" == "%WORKSPACE%" (
     set use_drive=!sdrive!
