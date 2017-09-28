@@ -67,8 +67,8 @@ if not exist %JRUBYPATH% (
 
 set RAKEPATH=%JRUBYPATH%\bin\rake
 
-echo Installing core plugins
-%RAKEPATH% test:install-core
+echo "Installing core plugins"
+call %RAKEPATH% test:install-core
 if errorlevel 1 (
   echo "Error: failed to install core plugins, Aborting"
   exit /B 1
@@ -76,10 +76,10 @@ if errorlevel 1 (
 
 if "%SELECTEDTESTSUITE%"=="core-fail-fast" (
   echo "Running core-fail-fast tests"
-  %RAKEPATH% test:core-fail-fast
+  call %RAKEPATH% test:core-fail-fast
 ) else (
   echo "Running core tests"
-  %RAKEPATH% test:core
+  call %RAKEPATH% test:core
 )
 if errorlevel 1 (
   echo "Error: failed to run core tests"
