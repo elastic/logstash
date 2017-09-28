@@ -1,8 +1,8 @@
 @echo off
 setlocal enabledelayedexpansion
 
-if not exist %WORKSPACE% (
-  echo Error: env var WORKSPACE must be defined
+if "%WORKSPACE%" == "" (
+  echo Error: environment variable WORKSPACE must be defined
   exit /B 1
 )
 
