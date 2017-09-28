@@ -51,6 +51,11 @@ SET JRUBY_OPTS="-J-Xmx1g"
 SET SELECTEDTESTSUITE=%1
 SET /p JRUBYVERSION=<.ruby-version
 
+if "%JRUBYSRCDIR%" == "" (
+  echo Error: environment variable JRUBYSRCDIR must be defined
+  exit /B 1
+)
+
 IF NOT EXIST %JRUBYSRCDIR% (
   echo "Variable JRUBYSRCDIR must be declared with a valid directory. Aborting.."
   exit /B 1
