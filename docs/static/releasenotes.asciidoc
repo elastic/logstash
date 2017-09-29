@@ -4,6 +4,8 @@
 This section summarizes the changes in the following releases:
 
 * <<logstash-5-6-2,Logstash 5.6.2>>
+* <<logstash-5-6-1,Logstash 5.6.1>>
+* <<logstash-5-6-0,Logstash 5.6.0>>
 
 [[logstash-5-6-2]]
 === Logstash 5.6.2 Release Notes
@@ -11,4 +13,28 @@ This section summarizes the changes in the following releases:
 * Fix a regression where `Event.clone` would not clone event metadata
 * https://github.com/elastic/logstash/pulls?utf8=%E2%9C%93&q=is%3Apr%20label%3Av5.6.2%20is%3Aclosed%20label%3Abug%20[Various minor bug fixes]
 
+[[logstash-5-6-1]]
+=== Logstash 5.6.1 Release Notes
+
+* There are no user-facing changes in this release
+
+[[logstash-5-6-0]]
+=== Logstash 5.6.0 Release Notes
+
+* Introduced modules for Netflow and ArcSight data. Modules contain pre-packaged Logstash configuration, Kibana dashboards 
+  and other metadata files to ease the set up of the Elastic stack for certain data sources. The goal of these modules are 
+  to provide an end-to-end, 5-min getting started experience for a user exploring a data source.
+* Added a new setting called `config.support_escapes`. This setting enables the use of escape characters such as `\n` in 
+  the Logstash configuration.
+* Improved the performance of metrics collection and reporting infrastructure. Overall, in this release, there is lower load 
+  average, less GC and higher throughput when running Logstash.
+* When processing events from the DLQ, there are added checks now to stop them from being written to the DLQ again.
+* Fixed an issue which would crash Logstash when accessing DLQ events using a timestamp range.
+
 [float]
+==== Filter Plugins
+
+*`GeoIP`*: The free GeoIPLite2-ASN database from MaxMind is now bundled in Logstash to be able to look up ASN data out 
+  of the box.
+
+
