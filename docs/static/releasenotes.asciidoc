@@ -4,7 +4,10 @@
 This section summarizes the changes in the following releases:
 
 * <<logstash-7-0-0-alpha1,Logstash 7.0.0-alpha1>>
+
 ifdef::include-xpack[]
+See also:
+
 * <<release-notes-xls>>
 endif::include-xpack[]
 
