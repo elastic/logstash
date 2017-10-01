@@ -9,7 +9,7 @@ import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import com.fasterxml.jackson.databind.jsontype.TypeSerializer;
 import com.fasterxml.jackson.databind.module.SimpleModule;
-import com.fasterxml.jackson.databind.ser.std.NonTypedScalarSerializerBase;
+import com.fasterxml.jackson.databind.ser.std.StdScalarSerializer;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import com.fasterxml.jackson.dataformat.cbor.CBORFactory;
 import com.fasterxml.jackson.dataformat.cbor.CBORGenerator;
@@ -62,14 +62,34 @@ public final class ObjectMappers {
     }
 
     /**
+     * Serializer for scalar types that does not write type information when called via
+     * {@link ObjectMappers.NonTypedScalarSerializer#serializeWithType(
+     * Object, JsonGenerator, SerializerProvider, TypeSerializer)}.
+     * @param <T>
+     */
+    private abstract static class NonTypedScalarSerializer<T> extends StdScalarSerializer<T> {
+
+        NonTypedScalarSerializer(final Class<T> t) {
+            super(t);
+        }
+
+        @Override
+        public final void serializeWithType(final T value, final JsonGenerator gen, 
+            final SerializerProvider provider, final TypeSerializer typeSer) throws IOException {
+            serialize(value, gen, provider);
+        }
+    }
+
+
+    /**
      * Serializer for {@link RubyString} since Jackson can't handle that type natively, so we
      * simply serialize it as if it were a {@link String}.
      */
     private static final class RubyStringSerializer
-        extends NonTypedScalarSerializerBase<RubyString> {
+        extends ObjectMappers.NonTypedScalarSerializer<RubyString> {
 
         RubyStringSerializer() {
-            super(RubyString.class, true);
+            super(RubyString.class);
         }
 
         @Override
@@ -85,10 +105,10 @@ public final class ObjectMappers {
      * simply serialize it as if it were a {@link String}.
      */
     private static final class RubySymbolSerializer
-        extends NonTypedScalarSerializerBase<RubySymbol> {
+        extends ObjectMappers.NonTypedScalarSerializer<RubySymbol> {
 
         RubySymbolSerializer() {
-            super(RubySymbol.class, true);
+            super(RubySymbol.class);
         }
 
         @Override
@@ -104,7 +124,7 @@ public final class ObjectMappers {
      * simply serialize it as if it were a {@code double}.
      */
     private static final class RubyFloatSerializer
-        extends NonTypedScalarSerializerBase<RubyFloat> {
+        extends ObjectMappers.NonTypedScalarSerializer<RubyFloat> {
 
         RubyFloatSerializer() {
             super(RubyFloat.class);
@@ -122,7 +142,7 @@ public final class ObjectMappers {
      * simply serialize it as if it were a {@code boolean}.
      */
     private static final class RubyBooleanSerializer
-        extends NonTypedScalarSerializerBase<RubyBoolean> {
+        extends ObjectMappers.NonTypedScalarSerializer<RubyBoolean> {
 
         RubyBooleanSerializer() {
             super(RubyBoolean.class);
@@ -139,11 +159,11 @@ public final class ObjectMappers {
      * Serializer for {@link RubyFixnum} since Jackson can't handle that type natively, so we
      * simply serialize it as if it were a {@code long}.
      */
-    private static final class RubyFixnumSerializer
-        extends NonTypedScalarSerializerBase<RubyFixnum> {
+    private static final class RubyFixnumSerializer 
+        extends ObjectMappers.NonTypedScalarSerializer<RubyFixnum> {
 
         RubyFixnumSerializer() {
-            super(RubyFixnum.class, true);
+            super(RubyFixnum.class);
         }
 
         @Override
@@ -196,10 +216,11 @@ public final class ObjectMappers {
      * Serializer for {@link RubyBignum} since Jackson can't handle that type natively, so we
      * simply serialize it as if it were a {@link BigInteger}.
      */
-    private static final class RubyBignumSerializer extends NonTypedScalarSerializerBase<RubyBignum> {
+    private static final class RubyBignumSerializer
+        extends ObjectMappers.NonTypedScalarSerializer<RubyBignum> {
 
         RubyBignumSerializer() {
-            super(RubyBignum.class, true);
+            super(RubyBignum.class);
         }
 
         @Override
@@ -213,10 +234,11 @@ public final class ObjectMappers {
      * Serializer for {@link BigDecimal} since Jackson can't handle that type natively, so we
      * simply serialize it as if it were a {@link BigDecimal}.
      */
-    private static final class RubyBigDecimalSerializer extends NonTypedScalarSerializerBase<RubyBigDecimal> {
+    private static final class RubyBigDecimalSerializer
+        extends ObjectMappers.NonTypedScalarSerializer<RubyBigDecimal> {
 
         RubyBigDecimalSerializer() {
-            super(RubyBigDecimal.class, true);
+            super(RubyBigDecimal.class);
         }
 
         @Override
