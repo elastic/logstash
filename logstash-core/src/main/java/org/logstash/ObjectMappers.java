@@ -2,6 +2,8 @@ package org.logstash;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonToken;
+import com.fasterxml.jackson.core.type.WritableTypeId;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -44,7 +46,7 @@ public final class ObjectMappers {
         new SimpleModule("CborRubyDeserializers")
             .addDeserializer(RubyNil.class, new RubyNilDeserializer());
 
-    public static final ObjectMapper JSON_MAPPER = 
+    public static final ObjectMapper JSON_MAPPER =
         new ObjectMapper().registerModule(RUBY_SERIALIZERS);
 
     public static final ObjectMapper CBOR_MAPPER = new ObjectMapper(
@@ -63,9 +65,8 @@ public final class ObjectMappers {
 
     /**
      * Serializer for scalar types that does not write type information when called via
-     * {@link ObjectMappers.NonTypedScalarSerializer#serializeWithType(
-     * Object, JsonGenerator, SerializerProvider, TypeSerializer)}.
-     * @param <T>
+     * {@link ObjectMappers.NonTypedScalarSerializer#serializeWithType(Object, JsonGenerator, SerializerProvider, TypeSerializer)}.
+     * @param <T> Scalar Type
      */
     private abstract static class NonTypedScalarSerializer<T> extends StdScalarSerializer<T> {
 
@@ -74,12 +75,11 @@ public final class ObjectMappers {
         }
 
         @Override
-        public final void serializeWithType(final T value, final JsonGenerator gen, 
+        public final void serializeWithType(final T value, final JsonGenerator gen,
             final SerializerProvider provider, final TypeSerializer typeSer) throws IOException {
             serialize(value, gen, provider);
         }
     }
-
 
     /**
      * Serializer for {@link RubyString} since Jackson can't handle that type natively, so we
@@ -159,7 +159,7 @@ public final class ObjectMappers {
      * Serializer for {@link RubyFixnum} since Jackson can't handle that type natively, so we
      * simply serialize it as if it were a {@code long}.
      */
-    private static final class RubyFixnumSerializer 
+    private static final class RubyFixnumSerializer
         extends ObjectMappers.NonTypedScalarSerializer<RubyFixnum> {
 
         RubyFixnumSerializer() {
@@ -185,17 +185,19 @@ public final class ObjectMappers {
         }
 
         @Override
-        public void serialize(final Timestamp value, final JsonGenerator jgen, 
+        public void serialize(final Timestamp value, final JsonGenerator jgen,
             final SerializerProvider provider) throws IOException {
             jgen.writeString(value.toString());
         }
 
         @Override
-        public void serializeWithType(final Timestamp value, final JsonGenerator jgen, 
+        public void serializeWithType(final Timestamp value, final JsonGenerator jgen,
             final SerializerProvider serializers, final TypeSerializer typeSer) throws IOException {
-            typeSer.writeTypePrefixForScalar(value, jgen, Timestamp.class);
+            final WritableTypeId typeId =
+                typeSer.typeId(value, Timestamp.class, JsonToken.VALUE_STRING);
+            typeSer.writeTypePrefix(jgen, typeId);
             jgen.writeString(value.toString());
-            typeSer.writeTypeSuffixForScalar(value, jgen);
+            typeSer.writeTypeSuffix(jgen, typeId);
         }
     }
 
@@ -272,9 +274,11 @@ public final class ObjectMappers {
             final JsonGenerator jgen, final SerializerProvider serializers,
             final TypeSerializer typeSer)
             throws IOException {
-            typeSer.writeTypePrefixForScalar(value, jgen, Timestamp.class);
+            final WritableTypeId typeId =
+                typeSer.typeId(value, Timestamp.class, JsonToken.VALUE_STRING);
+            typeSer.writeTypePrefix(jgen, typeId);
             jgen.writeObject(value.getTimestamp());
-            typeSer.writeTypeSuffixForScalar(value, jgen);
+            typeSer.writeTypeSuffix(jgen, typeId);
         }
     }
 
@@ -297,9 +301,11 @@ public final class ObjectMappers {
         @Override
         public void serializeWithType(final RubyNil value, final JsonGenerator jgen,
             final SerializerProvider serializers, final TypeSerializer typeSer) throws IOException {
-            typeSer.writeTypePrefixForScalar(value, jgen, RubyNil.class);
+            final WritableTypeId typeId =
+                typeSer.typeId(value, RubyNil.class, JsonToken.VALUE_NULL);
+            typeSer.writeTypePrefix(jgen, typeId);
             jgen.writeNull();
-            typeSer.writeTypeSuffixForScalar(value, jgen);
+            typeSer.writeTypeSuffix(jgen, typeId);
         }
     }
 
