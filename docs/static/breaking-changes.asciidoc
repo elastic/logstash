@@ -37,12 +37,12 @@ These changes can impact any instance of Logstash and are plugin agnostic, but o
 
 ==== Elasticsearch output changes
 
-* The default `document_type` used has changed from `logs` to `doc`. 
+* The default `document_type` has changed from `logs` to `doc`.
   Furthermore, users are advised that Elasticsearch 6.0 deprecates doctypes, and 7.0 will remove them. 
   See https://www.elastic.co/guide/en/elasticsearch/reference/master/removal-of-types.html[Removal of Mapping Types] for more info.
-* The options `:flush_size; `:idle_flush_time` are obsolete and may no longer be used
+* The options `flush_size` and `idle_flush_time` are now obsolete.
 * Please note that the https://www.elastic.co/guide/en/elasticsearch/reference/6.0/mapping-all-field.html[_all] field is deprecated in 6.0.
-  The new mapping template has been updated to reflect that. If you are using a custom mapping template you may need to update it to reflect that.
+ The new mapping template has been updated to reflect that. If you are using a custom mapping template you may need to update it to reflect that.
 
 [float]
 ==== List of plugins bundled with Logstash
