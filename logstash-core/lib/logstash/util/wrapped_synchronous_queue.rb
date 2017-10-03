@@ -218,6 +218,12 @@ module LogStash; module Util
         # @cancelled[event] = true
       end
 
+      def to_a
+        events = []
+        each {|e| events << e}
+        events
+      end
+
       def each(&blk)
         # take care not to cause @originals or @generated to change during iteration
         @iterating = true

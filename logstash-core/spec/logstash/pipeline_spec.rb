@@ -585,9 +585,9 @@ describe LogStash::Pipeline do
 
     it "should handle evaluating different config" do
       expect(pipeline1.output_func(LogStash::Event.new)).not_to include(nil)
-      expect(pipeline1.filter_func(LogStash::Event.new)).not_to include(nil)
+      expect(pipeline1.filter_func([LogStash::Event.new])).not_to include(nil)
       expect(pipeline2.output_func(LogStash::Event.new)).not_to include(nil)
-      expect(pipeline1.filter_func(LogStash::Event.new)).not_to include(nil)
+      expect(pipeline1.filter_func([LogStash::Event.new])).not_to include(nil)
     end
   end
 
@@ -668,9 +668,9 @@ describe LogStash::Pipeline do
       # in the current instance and was returning an array containing nil values for
       # the match.
       expect(pipeline1.output_func(LogStash::Event.new)).not_to include(nil)
-      expect(pipeline1.filter_func(LogStash::Event.new)).not_to include(nil)
+      expect(pipeline1.filter_func([LogStash::Event.new])).not_to include(nil)
       expect(pipeline2.output_func(LogStash::Event.new)).not_to include(nil)
-      expect(pipeline1.filter_func(LogStash::Event.new)).not_to include(nil)
+      expect(pipeline1.filter_func([LogStash::Event.new])).not_to include(nil)
     end
   end
 

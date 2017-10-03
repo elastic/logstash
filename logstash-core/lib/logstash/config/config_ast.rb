@@ -141,7 +141,7 @@ module LogStash; module Config; module AST
         # of the output/filter function
         definitions << "define_singleton_method :#{type}_func do |event|"
         definitions << "  targeted_outputs = []" if type == "output"
-        definitions << "  events = [event]" if type == "filter"
+        definitions << "  events = event" if type == "filter"
         definitions << "  @logger.debug? && @logger.debug(\"#{type} received\", \"event\" => event.to_hash)"
 
         sections.select { |s| s.plugin_type.text_value == type }.each do |s|
