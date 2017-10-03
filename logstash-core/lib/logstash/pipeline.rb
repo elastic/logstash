@@ -395,11 +395,9 @@ module LogStash; class Pipeline < BasePipeline
   end
 
   def filter_batch(batch)
-    batch.each do |event|
-      filter_func(event).each do |e|
-        #these are both original and generated events
-        batch.merge(e) unless e.cancelled?
-      end
+    filter_func(batch.to_a).each do |e|
+      #these are both original and generated events
+      batch.merge(e) unless e.cancelled?
     end
     @filter_queue_client.add_filtered_metrics(batch)
     @events_filtered.increment(batch.size)
@@ -539,7 +537,7 @@ module LogStash; class Pipeline < BasePipeline
   # in the pipeline anymore.
   def filter(event, &block)
     # filter_func returns all filtered events, including cancelled ones
-    filter_func(event).each { |e| block.call(e) }
+    filter_func([event]).each {|e| block.call(e)}
   end
 
 
