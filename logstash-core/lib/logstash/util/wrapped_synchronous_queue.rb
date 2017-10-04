@@ -156,17 +156,12 @@ module LogStash; module Util
 
     class ReadBatch
       def initialize(queue, size, wait)
-        @queue = queue.queue
-        @size = size
-        @wait = wait
-
         # TODO: disabled for https://github.com/elastic/logstash/issues/6055 - will have to properly refactor
         # @cancelled = Hash.new
 
         #Sizing HashSet to size/load_factor to ensure no rehashing
         @is_iterating = false # Atomic Boolean maybe? Although batches are not shared across threads
-        @acked_batch = nil
-        @originals = LsQueueUtils.drain(@queue, @size, @wait)
+        @originals = LsQueueUtils.drain(queue.queue, size, wait)
       end
 
       def merge(event)
