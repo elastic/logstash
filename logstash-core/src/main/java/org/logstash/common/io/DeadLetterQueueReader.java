@@ -19,23 +19,22 @@
 package org.logstash.common.io;
 
 import java.io.Closeable;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.logstash.DLQEntry;
-import org.logstash.Timestamp;
-
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.FileSystems;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardWatchEventKinds;
 import java.nio.file.WatchEvent;
 import java.nio.file.WatchKey;
 import java.nio.file.WatchService;
+import java.util.Comparator;
 import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Function;
 import java.util.stream.Collectors;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.logstash.DLQEntry;
+import org.logstash.Timestamp;
 
 import static java.nio.file.StandardWatchEventKinds.ENTRY_CREATE;
 import static java.nio.file.StandardWatchEventKinds.ENTRY_DELETE;
@@ -53,22 +52,20 @@ public final class DeadLetterQueueReader implements Closeable {
         this.queuePath = queuePath;
         this.watchService = FileSystems.getDefault().newWatchService();
         this.queuePath.register(watchService, ENTRY_CREATE, ENTRY_DELETE);
-        this.segments = new ConcurrentSkipListSet<>((p1, p2) -> {
-            Function<Path, Integer> id = (p) -> Integer.parseInt(p.getFileName().toString().split("\\.")[0]);
-            return id.apply(p1).compareTo(id.apply(p2));
-        });
-
+        this.segments = new ConcurrentSkipListSet<>(Comparator.comparing(
+            p -> Integer.parseInt(p.getFileName().toString().split("\\.")[0]))
+        );
         segments.addAll(getSegmentPaths(queuePath).collect(Collectors.toList()));
     }
 
     public void seekToNextEvent(Timestamp timestamp) throws IOException {
         for (Path segment : segments) {
             currentReader = new RecordIOReader(segment);
-            byte[] event = currentReader.seekToNextEventPosition(timestamp, (b) -> {
+            byte[] event = currentReader.seekToNextEventPosition(timestamp, bytes -> {
                 try {
-                    return DLQEntry.deserialize(b).getEntryTime();
-                } catch (IOException e) {
-                    throw new IllegalStateException(e);
+                    return DLQEntry.deserialize(bytes).getEntryTime();
+                } catch (final IOException ex) {
+                    throw new IllegalStateException(ex);
                 }
             }, Timestamp::compareTo);
             if (event != null) {
@@ -85,10 +82,10 @@ public final class DeadLetterQueueReader implements Closeable {
         if (key != null) {
             for (WatchEvent<?> watchEvent : key.pollEvents()) {
                 if (watchEvent.kind() == StandardWatchEventKinds.ENTRY_CREATE) {
-                    segments.addAll(getSegmentPaths(queuePath).collect(Collectors.toList()));
+                    getSegmentPaths(queuePath).forEach(segments::add);
                 }
-                key.reset();
             }
+            key.reset();
         }
         return System.currentTimeMillis() - startTime;
     }
@@ -107,6 +104,7 @@ public final class DeadLetterQueueReader implements Closeable {
 
     byte[] pollEntryBytes(long timeout) throws IOException, InterruptedException {
         long timeoutRemaining = timeout;
+        getSegmentPaths(queuePath).forEach(segments::add);
         if (currentReader == null) {
             timeoutRemaining -= pollNewSegments(timeout);
             // If no new segments are found, exit
@@ -120,7 +118,10 @@ public final class DeadLetterQueueReader implements Closeable {
         byte[] event = currentReader.readEvent();
         if (event == null && currentReader.isEndOfStream()) {
             if (currentReader.getPath().equals(segments.last())) {
-                pollNewSegments(timeoutRemaining);
+                getSegmentPaths(queuePath).forEach(segments::add);
+                if (currentReader.getPath().equals(segments.last())) {
+                    pollNewSegments(timeoutRemaining);
+                }
             } else {
                 currentReader.close();
                 currentReader = new RecordIOReader(segments.higher(currentReader.getPath()));

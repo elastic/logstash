@@ -19,7 +19,15 @@
 
 package org.logstash.common.io;
 
-
+import java.io.IOException;
+import java.nio.file.Path;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Random;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -28,12 +36,6 @@ import org.logstash.DLQEntry;
 import org.logstash.Event;
 import org.logstash.Timestamp;
 import org.logstash.ackedqueue.StringElement;
-
-import java.io.IOException;
-import java.nio.file.Path;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Random;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
@@ -298,6 +300,53 @@ public class DeadLetterQueueReaderTest {
             for (int i = 0; i < eventCount;i++) {
                 DLQEntry entry = readManager.pollEntry(100);
                 assertThat(entry.getReason(), is(String.valueOf(i)));
+            }
+        }
+    }
+
+    /**
+     * Tests concurrently reading and writing from the DLQ.
+     * @throws Exception On Failure
+     */
+    @Test
+    public void testConcurrentWriteReadRandomEventSize() throws Exception {
+        final ExecutorService exec = Executors.newSingleThreadExecutor();
+        try {
+            final int maxEventSize = BLOCK_SIZE * 2;
+            final int eventCount = 3000;
+            exec.submit(() -> {
+                final Event event = new Event();
+                long startTime = System.currentTimeMillis();
+                try (DeadLetterQueueWriter writeManager = new DeadLetterQueueWriter(
+                    dir, (long) (10 * 1024 * 1024), 1_000_000_000L
+                    )
+                ) {
+                    for (int i = 0; i < eventCount; i++) {
+                        event.setField(
+                            "message",
+                            generateMessageContent((int) (Math.random() * (maxEventSize)))
+                        );
+                        writeManager.writeEntry(
+                            new DLQEntry(
+                                event, "", "", String.valueOf(i),
+                                new Timestamp(startTime++)
+                            )
+                        );
+                    }
+                } catch (final IOException ex) {
+                    throw new IllegalStateException(ex);
+                }
+            });
+            try (DeadLetterQueueReader readManager = new DeadLetterQueueReader(dir)) {
+                for (int i = 0; i < eventCount; i++) {
+                    DLQEntry entry = readManager.pollEntry(30_000L);
+                    assertThat(entry.getReason(), is(String.valueOf(i)));
+                }
+            }
+        } finally {
+            exec.shutdown();
+            if (!exec.awaitTermination(2L, TimeUnit.MINUTES)) {
+                Assert.fail("Failed to shut down record writer");
             }
         }
     }
