@@ -165,7 +165,7 @@ public final class RecordIOReader implements Closeable {
              return -1;
          }
          while (true) {
-             RecordType type = RecordType.fromByte(currentBlock.array()[currentBlock.arrayOffset() + currentBlock.position()]);
+             RecordType type = RecordType.fromByte(currentBlock.get(currentBlock.position()));
              if (RecordType.COMPLETE.equals(type) || RecordType.START.equals(type)) {
                  return currentBlock.position();
              } else if (RecordType.END.equals(type)) {

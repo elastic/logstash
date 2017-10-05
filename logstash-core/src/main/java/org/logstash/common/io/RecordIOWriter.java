@@ -26,7 +26,6 @@ import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.OptionalInt;
 import java.util.zip.CRC32;
-import java.util.zip.Checksum;
 
 import static org.logstash.common.io.RecordType.COMPLETE;
 import static org.logstash.common.io.RecordType.END;
@@ -67,6 +66,12 @@ import static org.logstash.common.io.RecordType.START;
 public final class RecordIOWriter implements Closeable {
 
     private final FileChannel channel;
+
+    private final ByteBuffer writeBuffer =
+        ByteBuffer.allocateDirect(2 * (BLOCK_SIZE + VERSION_SIZE));
+
+    private final CRC32 checksum = new CRC32();
+
     private int posInBlock;
     private int currentBlockIdx;
 
@@ -74,6 +79,8 @@ public final class RecordIOWriter implements Closeable {
     static final int RECORD_HEADER_SIZE = 13;
     static final int VERSION_SIZE = 1;
     static final char VERSION = '1';
+
+    private static final byte[] PADDING_BYTES = new byte[BLOCK_SIZE]; 
 
     public RecordIOWriter(Path recordsFile) throws IOException {
         this.posInBlock = 0;
@@ -87,14 +94,12 @@ public final class RecordIOWriter implements Closeable {
         return BLOCK_SIZE - posInBlock;
     }
 
-    int writeRecordHeader(RecordHeader header) throws IOException {
-        ByteBuffer buffer = ByteBuffer.allocate(RECORD_HEADER_SIZE);
-        buffer.put(header.getType().toByte());
-        buffer.putInt(header.getSize());
-        buffer.putInt(header.getTotalEventSize().orElse(-1));
-        buffer.putInt(header.getChecksum());
-        buffer.rewind();
-        return channel.write(buffer);
+    private static void writeRecordHeader(final RecordType type, final int size,
+        final OptionalInt total, final int checksum, final ByteBuffer buffer) {
+        buffer.put(type.toByte());
+        buffer.putInt(size);
+        buffer.putInt(total.orElse(-1));
+        buffer.putInt(checksum);
     }
 
     private RecordType getNextType(ByteBuffer buffer, RecordType previous) {
@@ -113,13 +118,14 @@ public final class RecordIOWriter implements Closeable {
     }
 
     public long writeEvent(byte[] eventArray) throws IOException {
-        ByteBuffer eventBuffer = ByteBuffer.wrap(eventArray);
         RecordType nextType = null;
-        ByteBuffer slice = eventBuffer.slice();
-        long startPosition = channel.position();
+        ByteBuffer slice = ByteBuffer.wrap(eventArray);
+        final long startPosition = channel.position();
         while (slice.hasRemaining()) {
+            writeBuffer.clear();
             if (posInBlock + RECORD_HEADER_SIZE + 1 > BLOCK_SIZE) {
-                channel.position((++currentBlockIdx) * BLOCK_SIZE + VERSION_SIZE);
+                final long padding = (++currentBlockIdx) * BLOCK_SIZE + VERSION_SIZE - channel.position();
+                writeBuffer.put(PADDING_BYTES, 0, (int) padding);
                 posInBlock = 0;
             }
             nextType = getNextType(slice, nextType);
@@ -127,13 +133,15 @@ public final class RecordIOWriter implements Closeable {
             int nextRecordSize = Math.min(remainingInBlock() - RECORD_HEADER_SIZE, slice.remaining());
             OptionalInt optTotalSize = (nextType == RecordType.START) ? OptionalInt.of(eventArray.length) : OptionalInt.empty();
             slice.limit(nextRecordSize);
-
-            Checksum checksum = new CRC32();
-            checksum.update(slice.array(), slice.arrayOffset() + slice.position(), nextRecordSize);
-            posInBlock += writeRecordHeader(
-                    new RecordHeader(nextType, nextRecordSize, optTotalSize, (int) checksum.getValue()));
-            posInBlock += channel.write(slice);
-
+            checksum.reset();
+            checksum.update(slice);
+            writeRecordHeader(
+                nextType, nextRecordSize, optTotalSize, (int) checksum.getValue(), writeBuffer
+            );
+            slice.position(0);
+            writeBuffer.put(slice);
+            writeBuffer.flip();
+            posInBlock += channel.write(writeBuffer);
             slice.limit(originalLimit);
             slice = slice.slice();
         }
