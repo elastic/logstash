@@ -19,6 +19,13 @@
 
 package org.logstash.common.io;
 
+import java.io.IOException;
+import java.nio.channels.FileChannel;
+import java.nio.channels.OverlappingFileLockException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
+import java.util.stream.Stream;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -26,13 +33,6 @@ import org.junit.rules.TemporaryFolder;
 import org.logstash.DLQEntry;
 import org.logstash.Event;
 import org.logstash.LockException;
-
-import java.io.IOException;
-import java.nio.channels.FileChannel;
-import java.nio.channels.OverlappingFileLockException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
 
 import static junit.framework.TestCase.assertFalse;
 import static org.hamcrest.CoreMatchers.is;
@@ -144,9 +144,9 @@ public class DeadLetterQueueWriterTest {
     }
 
     private long dlqLength() throws IOException {
-        return Files.list(dir)
-                .filter(p -> p.toString().endsWith(".log"))
-                .mapToLong(p -> p.toFile().length())
-                .sum();
+        try(final Stream<Path> files = Files.list(dir)) {
+            return files.filter(p -> p.toString().endsWith(".log"))
+                .mapToLong(p -> p.toFile().length()).sum();
+        }
     }
 }

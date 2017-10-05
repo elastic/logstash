@@ -18,15 +18,6 @@
  */
 package org.logstash.common.io;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.logstash.DLQEntry;
-import org.logstash.Event;
-import org.logstash.FieldReference;
-import org.logstash.FileLockFactory;
-import org.logstash.PathCache;
-import org.logstash.Timestamp;
-
 import java.io.Closeable;
 import java.io.IOException;
 import java.nio.channels.FileLock;
@@ -35,7 +26,16 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.LongAdder;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.logstash.DLQEntry;
+import org.logstash.Event;
+import org.logstash.FieldReference;
+import org.logstash.FileLockFactory;
+import org.logstash.PathCache;
+import org.logstash.Timestamp;
 
 import static org.logstash.common.io.RecordIOWriter.RECORD_HEADER_SIZE;
 
@@ -102,7 +102,10 @@ public final class DeadLetterQueueWriter implements Closeable {
     }
 
     static Stream<Path> getSegmentPaths(Path path) throws IOException {
-        return Files.list(path).filter((p) -> p.toString().endsWith(".log"));
+        try(final Stream<Path> files = Files.list(path)) {
+            return files.filter(p -> p.toString().endsWith(".log"))
+                .collect(Collectors.toList()).stream();
+        }
     }
 
     public synchronized void writeEntry(DLQEntry entry) throws IOException {
