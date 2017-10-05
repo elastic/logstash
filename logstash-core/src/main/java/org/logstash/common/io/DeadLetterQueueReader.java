@@ -53,7 +53,7 @@ public final class DeadLetterQueueReader implements Closeable {
         this.queuePath.register(
             watchService, new WatchEvent.Kind[]{
                 StandardWatchEventKinds.ENTRY_CREATE, StandardWatchEventKinds.ENTRY_DELETE
-            }, 
+            },
             SensitivityWatchEventModifier.HIGH
         );
         this.segments = new ConcurrentSkipListSet<>(Comparator.comparing(
@@ -87,14 +87,10 @@ public final class DeadLetterQueueReader implements Closeable {
             .filter(Boolean::booleanValue).count() == 0L) {
             WatchKey key = watchService.poll(timeout, TimeUnit.MILLISECONDS);
             if (key != null) {
-                for (WatchEvent<?> watchEvent : key.pollEvents()) {
-                    if (watchEvent.kind() == StandardWatchEventKinds.ENTRY_CREATE) {
-                        getSegmentPaths(queuePath).forEach(segments::add);
-                        break;
-                    }
-                }
+                key.pollEvents();
                 key.reset();
             }
+            getSegmentPaths(queuePath).forEach(segments::add);
         }
         return System.currentTimeMillis() - startTime;
     }
