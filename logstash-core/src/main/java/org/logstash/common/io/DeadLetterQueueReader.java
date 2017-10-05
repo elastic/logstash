@@ -18,6 +18,7 @@
  */
 package org.logstash.common.io;
 
+import com.sun.nio.file.SensitivityWatchEventModifier;
 import java.io.Closeable;
 import java.io.IOException;
 import java.nio.file.FileSystems;
@@ -36,8 +37,6 @@ import org.apache.logging.log4j.Logger;
 import org.logstash.DLQEntry;
 import org.logstash.Timestamp;
 
-import static java.nio.file.StandardWatchEventKinds.ENTRY_CREATE;
-import static java.nio.file.StandardWatchEventKinds.ENTRY_DELETE;
 import static org.logstash.common.io.DeadLetterQueueWriter.getSegmentPaths;
 
 public final class DeadLetterQueueReader implements Closeable {
@@ -51,7 +50,12 @@ public final class DeadLetterQueueReader implements Closeable {
     public DeadLetterQueueReader(Path queuePath) throws IOException {
         this.queuePath = queuePath;
         this.watchService = FileSystems.getDefault().newWatchService();
-        this.queuePath.register(watchService, ENTRY_CREATE, ENTRY_DELETE);
+        this.queuePath.register(
+            watchService, new WatchEvent.Kind[]{
+                StandardWatchEventKinds.ENTRY_CREATE, StandardWatchEventKinds.ENTRY_DELETE
+            }, 
+            SensitivityWatchEventModifier.HIGH
+        );
         this.segments = new ConcurrentSkipListSet<>(Comparator.comparing(
             p -> Integer.parseInt(p.getFileName().toString().split("\\.")[0]))
         );
@@ -78,14 +82,19 @@ public final class DeadLetterQueueReader implements Closeable {
 
     private long pollNewSegments(long timeout) throws IOException, InterruptedException {
         long startTime = System.currentTimeMillis();
-        WatchKey key = watchService.poll(timeout, TimeUnit.MILLISECONDS);
-        if (key != null) {
-            for (WatchEvent<?> watchEvent : key.pollEvents()) {
-                if (watchEvent.kind() == StandardWatchEventKinds.ENTRY_CREATE) {
-                    getSegmentPaths(queuePath).forEach(segments::add);
+        //We have to actually count on the stream to add all new segments
+        if (getSegmentPaths(queuePath).map(segments::add)
+            .filter(Boolean::booleanValue).count() == 0L) {
+            WatchKey key = watchService.poll(timeout, TimeUnit.MILLISECONDS);
+            if (key != null) {
+                for (WatchEvent<?> watchEvent : key.pollEvents()) {
+                    if (watchEvent.kind() == StandardWatchEventKinds.ENTRY_CREATE) {
+                        getSegmentPaths(queuePath).forEach(segments::add);
+                        break;
+                    }
                 }
+                key.reset();
             }
-            key.reset();
         }
         return System.currentTimeMillis() - startTime;
     }
@@ -106,7 +115,9 @@ public final class DeadLetterQueueReader implements Closeable {
         long timeoutRemaining = timeout;
         getSegmentPaths(queuePath).forEach(segments::add);
         if (currentReader == null) {
-            timeoutRemaining -= pollNewSegments(timeout);
+            if (segments.isEmpty()) {
+                timeoutRemaining -= pollNewSegments(timeout);
+            }
             // If no new segments are found, exit
             if (segments.isEmpty()) {
                 logger.debug("No entries found: no segment files found in dead-letter-queue directory");
@@ -117,9 +128,10 @@ public final class DeadLetterQueueReader implements Closeable {
 
         byte[] event = currentReader.readEvent();
         if (event == null && currentReader.isEndOfStream()) {
-            if (currentReader.getPath().equals(segments.last())) {
+            final Path currentPath = currentReader.getPath();
+            if (currentPath.equals(segments.last())) {
                 getSegmentPaths(queuePath).forEach(segments::add);
-                if (currentReader.getPath().equals(segments.last())) {
+                if (currentPath.equals(segments.last())) {
                     pollNewSegments(timeoutRemaining);
                 }
             } else {
