@@ -50,6 +50,8 @@ module LogStashCompilerLSCLGrammar; module LogStash; module Compiler; module LSC
     end
     
     AND_METHOD = jdsl.method(:eAnd)
+    NAND_METHOD = jdsl.method(:eNand)
     OR_METHOD = jdsl.method(:eOr)
+    XOR_METHOD = jdsl.method(:eXor)
   end
 end; end; end; end; end

@@ -93,6 +93,11 @@ class LogStash::Runner < Clamp::StrictCommand
     :attribute_name => "pipeline.workers",
     :default => LogStash::SETTINGS.get_default("pipeline.workers")
 
+  option ["--experimental-java-execution"], :flag,
+         I18n.t("logstash.runner.flag.experimental-java-execution"),
+         :attribute_name => "pipeline.java_execution",
+         :default => LogStash::SETTINGS.get_default("pipeline.java_execution")
+
   option ["-b", "--pipeline.batch.size"], "SIZE",
     I18n.t("logstash.runner.flag.pipeline-batch-size"),
     :attribute_name => "pipeline.batch.size",
