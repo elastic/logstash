@@ -82,7 +82,7 @@ public final class DeadLetterQueueReader implements Closeable {
 
     private long pollNewSegments(long timeout) throws IOException, InterruptedException {
         long startTime = System.currentTimeMillis();
-        //We have to actually count on the stream to add all new segments
+        // We have to actually count on the stream to add all new segments
         if (getSegmentPaths(queuePath).map(segments::add)
             .filter(Boolean::booleanValue).count() == 0L) {
             WatchKey key = watchService.poll(timeout, TimeUnit.MILLISECONDS);
