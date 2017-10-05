@@ -5,6 +5,7 @@ require "logstash/output_delegator_strategies/single"
 require "logstash/output_delegator_strategies/legacy"
 
 module LogStash class OutputDelegator
+  include org.logstash.config.ir.compiler.RubyIntegration::Output
   attr_reader :metric, :metric_events, :strategy, :namespaced_metric, :metric_events, :id
 
   def initialize(logger, output_class, metric, execution_context, strategy_registry, plugin_args)
@@ -44,11 +45,12 @@ module LogStash class OutputDelegator
   end
 
   def multi_receive(events)
-    @in_counter.increment(events.length)
+    count = events.size
+    @in_counter.increment(count)
     start_time = java.lang.System.nano_time
     @strategy.multi_receive(events)
     @time_metric.increment((java.lang.System.nano_time - start_time) / 1_000_000)
-    @out_counter.increment(events.length)
+    @out_counter.increment(count)
   end
 
   def do_close

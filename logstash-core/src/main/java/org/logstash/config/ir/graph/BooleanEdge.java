@@ -7,7 +7,7 @@ import org.logstash.config.ir.InvalidIRException;
 /**
  * Created by andrewvc on 9/15/16.
  */
-public class BooleanEdge extends Edge {
+public final class BooleanEdge extends Edge {
     public static class BooleanEdgeFactory extends EdgeFactory {
         public Boolean getEdgeType() {
             return edgeType;
