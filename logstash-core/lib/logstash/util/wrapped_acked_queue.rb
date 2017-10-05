@@ -238,6 +238,7 @@ module LogStash; module Util
     end
 
     class ReadBatch
+      include org.logstash.config.ir.compiler.RubyIntegration::Batch
       def initialize(queue, size, wait)
         @queue = queue
         @size = size

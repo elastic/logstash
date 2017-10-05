@@ -27,7 +27,12 @@ module LogStash module PipelineAction
       end
 
       begin
-        pipeline_validator = LogStash::BasePipeline.new(@pipeline_config)
+        pipeline_validator =
+          if @pipeline_config.settings.get_value("pipeline.java_execution")
+            LogStash::JavaBasePipeline.new(@pipeline_config)
+          else
+            LogStash::BasePipeline.new(@pipeline_config)
+          end
       rescue => e
         return LogStash::ConvergeResult::FailedAction.from_exception(e)
       end

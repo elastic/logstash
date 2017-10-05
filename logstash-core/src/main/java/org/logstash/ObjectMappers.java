@@ -27,6 +27,7 @@ import org.jruby.RubyNil;
 import org.jruby.RubyString;
 import org.jruby.RubySymbol;
 import org.jruby.ext.bigdecimal.RubyBigDecimal;
+import org.jruby.util.ByteList;
 import org.logstash.ext.JrubyTimestampExtLibrary;
 
 public final class ObjectMappers {
@@ -44,6 +45,7 @@ public final class ObjectMappers {
 
     private static final SimpleModule CBOR_DESERIALIZERS =
         new SimpleModule("CborRubyDeserializers")
+            .addDeserializer(RubyString.class, new RubyStringDeserializer())
             .addDeserializer(RubyNil.class, new RubyNilDeserializer());
 
     public static final ObjectMapper JSON_MAPPER =
@@ -85,8 +87,7 @@ public final class ObjectMappers {
      * Serializer for {@link RubyString} since Jackson can't handle that type natively, so we
      * simply serialize it as if it were a {@link String}.
      */
-    private static final class RubyStringSerializer
-        extends ObjectMappers.NonTypedScalarSerializer<RubyString> {
+    private static final class RubyStringSerializer extends StdSerializer<RubyString> {
 
         RubyStringSerializer() {
             super(RubyString.class);
@@ -97,6 +98,30 @@ public final class ObjectMappers {
             final SerializerProvider provider)
             throws IOException {
             generator.writeString(value.asJavaString());
+        }
+
+        @Override
+        public void serializeWithType(final RubyString value, final JsonGenerator jgen,
+            final SerializerProvider serializers, final TypeSerializer typeSer) throws IOException {
+            final WritableTypeId typeId =
+                typeSer.typeId(value, RubyString.class, JsonToken.VALUE_STRING);
+            typeSer.writeTypePrefix(jgen, typeId);
+            final ByteList bytes = value.getByteList();
+            jgen.writeBinary(bytes.getUnsafeBytes(), 0, bytes.length());
+            typeSer.writeTypeSuffix(jgen, typeId);
+        }
+    }
+
+    public static final class RubyStringDeserializer extends StdDeserializer<RubyString> {
+
+        RubyStringDeserializer() {
+            super(RubyString.class);
+        }
+
+        @Override
+        public RubyString deserialize(final JsonParser p, final DeserializationContext ctxt)
+            throws IOException {
+            return RubyString.newString(RubyUtil.RUBY, p.getBinaryValue());
         }
     }
 
@@ -113,8 +138,7 @@ public final class ObjectMappers {
 
         @Override
         public void serialize(final RubySymbol value, final JsonGenerator generator,
-            final SerializerProvider provider)
-            throws IOException {
+            final SerializerProvider provider) throws IOException {
             generator.writeString(value.asJavaString());
         }
     }
