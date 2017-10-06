@@ -26,5 +26,8 @@ if exist %LS_JVM_OPTIONS_CONFIG% (
 set JAVA_OPTS=%LS_JAVA_OPTS%
 
 %JRUBY_BIN% "%LS_HOME%\lib\bootstrap\rspec.rb" %*
+if errorlevel 1 (
+  exit /B 1
+)
 
 endlocal
