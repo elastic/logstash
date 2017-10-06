@@ -39,7 +39,7 @@ These changes can impact any instance of Logstash and are plugin agnostic, but o
 [float]
 ==== Elasticsearch output changes
 
-* The default `document_type` has changed from `logs` to `doc`.
+* The default `document_type` has changed from `logs` to `doc` for consistency with Beats.
   Furthermore, users are advised that Elasticsearch 6.0 deprecates doctypes, and 7.0 will remove them. 
   See https://www.elastic.co/guide/en/elasticsearch/reference/master/removal-of-types.html[Removal of Mapping Types] for more info.
 * The options `flush_size` and `idle_flush_time` are now obsolete.
@@ -49,23 +49,25 @@ These changes can impact any instance of Logstash and are plugin agnostic, but o
 [float]
 ==== Kafka input changes
 
-* Updated to 0.10.1.0 client protocol. Only supports brokers 0.10.1.x or later
-* Decorated fields are now nested under `@metadata` to avoid mapping conflicts with beats
-* The `ssl` option is now obsolete
+Upgraded Kafka client support to v0.11.0.0, which only supports Kafka brokers v0.10.x or later.
+** Please refer to <<plugins-input-kafka,Kafka input plugin>>  documentation for information about Kafka compatibility with Logstash.
+* Decorated fields are now nested under `@metadata` to avoid mapping conflicts with Beats.
+** See the `Metadata Fields` section in the <<plugins-input-kafka>> documentation for more details.
+* The `ssl` option is now obsolete.
 
 [float]
 ==== Kafka output changes
 
-* Updated to 0.10.1.0 client protocol. Only supports brokers 0.10.1.x or later
-* The options `block_on_buffer_full`, `ssl` and `timeout_ms` are now obsolete
+Upgraded Kafka client support to v0.11.0.0, which only supports Kafka brokers v0.10.x or later.
+** Please refer to <<plugins-output-kafka, Kafka output plugin>> documentation for information about Kafka compatibility with Logstash.
+* The options `block_on_buffer_full`, `ssl`, and `timeout_ms` are now obsolete.
 
 [float]
 ==== Beats input changes
 
-* Logstash will no longer start when multiline codec is used with the Beats input plugin
-* The options `congestion_threshold` and `target_field_for_codec` are now obsolete
-
-
+* Logstash will no longer start when <<plugins-codecs-multiline,Multiline codec plugin>> is used with the Beats input plugin.
+** It is recommended to use the multiline support in Filebeat as a replacement - see https://www.elastic.co/guide/en/beats/filebeat/current/multiline-examples.html[configuration options available in Filebeat] for details.
+* The options `congestion_threshold` and `target_field_for_codec` are now obsolete.
 
 [float]
 ==== List of plugins bundled with Logstash
