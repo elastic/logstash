@@ -500,7 +500,7 @@ module LogStash; class Pipeline < BasePipeline
       #these are both original and generated events
       batch.merge(e) unless e.cancelled?
     end
-    @filter_queue_client.add_filtered_metrics(batch)
+    @filter_queue_client.add_filtered_metrics(batch.filtered_size)
     @events_filtered.increment(batch.size)
   rescue Exception => e
     # Plugins authors should manage their own exceptions in the plugin code
@@ -532,7 +532,7 @@ module LogStash; class Pipeline < BasePipeline
       events.clear
     end
 
-    @filter_queue_client.add_output_metrics(batch)
+    @filter_queue_client.add_output_metrics(batch.filtered_size)
   end
 
   def wait_inputs

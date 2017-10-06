@@ -220,20 +220,14 @@ module LogStash; module Util
         end
       end
 
-      def add_starting_metrics(batch)
-        return if @event_metric.nil? || @pipeline_metric.nil?
-        @event_metric.increment(:in, batch.starting_size)
-        @pipeline_metric.increment(:in, batch.starting_size)
+      def add_filtered_metrics(filtered_size)
+        @event_metric.increment(:filtered, filtered_size)
+        @pipeline_metric.increment(:filtered, filtered_size)
       end
 
-      def add_filtered_metrics(batch)
-        @event_metric.increment(:filtered, batch.filtered_size)
-        @pipeline_metric.increment(:filtered, batch.filtered_size)
-      end
-
-      def add_output_metrics(batch)
-        @event_metric.increment(:out, batch.filtered_size)
-        @pipeline_metric.increment(:out, batch.filtered_size)
+      def add_output_metrics(filtered_size)
+        @event_metric.increment(:out, filtered_size)
+        @pipeline_metric.increment(:out, filtered_size)
       end
     end
 

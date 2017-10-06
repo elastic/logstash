@@ -143,14 +143,14 @@ module LogStash; module Util
         end
       end
 
-      def add_filtered_metrics(batch)
-        @event_metric_filtered.increment(batch.filtered_size)
-        @pipeline_metric_filtered.increment(batch.filtered_size)
+      def add_filtered_metrics(filtered_size)
+        @event_metric_filtered.increment(filtered_size)
+        @pipeline_metric_filtered.increment(filtered_size)
       end
 
-      def add_output_metrics(batch)
-        @event_metric_out.increment(batch.filtered_size)
-        @pipeline_metric_out.increment(batch.filtered_size)
+      def add_output_metrics(filtered_size)
+        @event_metric_out.increment(filtered_size)
+        @pipeline_metric_out.increment(filtered_size)
       end
     end
 
