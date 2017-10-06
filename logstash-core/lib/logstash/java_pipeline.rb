@@ -702,9 +702,10 @@ module LogStash; class JavaPipeline < JavaBasePipeline
 
   def execute_batch(batched_execution, batch, flush)
     batched_execution.compute(batch, flush, false)
-    @filter_queue_client.add_output_metrics(batch)
-    @filter_queue_client.add_filtered_metrics(batch)
     @events_filtered.increment(batch.size)
+    filtered_size = batch.filtered_size
+    @filter_queue_client.add_output_metrics(filtered_size)
+    @filter_queue_client.add_filtered_metrics(filtered_size)
   rescue Exception => e
     # Plugins authors should manage their own exceptions in the plugin code
     # but if an exception is raised up to the worker thread they are considered

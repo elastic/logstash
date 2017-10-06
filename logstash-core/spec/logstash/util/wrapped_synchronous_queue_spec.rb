@@ -68,8 +68,8 @@ describe LogStash::Util::WrappedSynchronousQueue do
             sleep(0.1) # simulate some work for the `duration_in_millis`
             # TODO: this interaction should be cleaned in an upcoming PR,
             # This is what the current pipeline does.
-            read_client.add_filtered_metrics(read_batch)
-            read_client.add_output_metrics(read_batch)
+            read_client.add_filtered_metrics(read_batch.filtered_size)
+            read_client.add_output_metrics(read_batch.filtered_size)
             read_client.close_batch(read_batch)
             store = collector.snapshot_metric.metric_store
 
