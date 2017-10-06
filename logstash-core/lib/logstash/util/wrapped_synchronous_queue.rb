@@ -161,21 +161,12 @@ module LogStash; module Util
         # @cancelled = Hash.new
 
         #Sizing HashSet to size/load_factor to ensure no rehashing
-        @is_iterating = false # Atomic Boolean maybe? Although batches are not shared across threads
         @originals = LsQueueUtils.drain(queue.queue, size, wait)
       end
 
       def merge(event)
-        return if event.nil? || @originals.contains(event)
-        # take care not to cause @generated to change during iteration
-        # @iterating_temp is merged after the iteration
-        if @is_iterating
-          @iterating_temp = HashSet.new if @iterating_temp.nil?
-          @iterating_temp.add(event)
-        else
-          # the periodic flush could generate events outside of an each iteration
-          @originals.add(event)
-        end
+        return if event.nil?
+        @originals.add(event)
       end
 
       def cancel(event)
@@ -186,21 +177,14 @@ module LogStash; module Util
 
       def to_a
         events = []
-        each {|e| events << e}
+        @originals.each {|e| events << e unless e.cancelled?}
         events
       end
 
       def each(&blk)
-        # take care not to cause @originals or @generated to change during iteration
-        @is_iterating = true
-
         # below the checks for @cancelled.include?(e) have been replaced by e.cancelled?
         # TODO: for https://github.com/elastic/logstash/issues/6055 = will have to properly refactor
-        @originals.each do |e|
-          blk.call(e) unless e.cancelled?
-        end
-        @is_iterating = false
-        update_generated unless @iterating_temp.nil?
+        @originals.each {|e| blk.call(e) unless e.cancelled?}
       end
 
       def filtered_size
@@ -213,15 +197,6 @@ module LogStash; module Util
       # TODO: disabled for https://github.com/elastic/logstash/issues/6055 = will have to properly refactor
       raise("cancelled_size is unsupported ")
         # @cancelled.size
-      end
-
-      private
-
-      def update_generated
-        @originals.add_all(@iterating_temp)
-        # Iterating Temp will not be used again in the lifecycle of the batch so we
-        # give a hint to the garbage collector here
-        @iterating_temp = nil
       end
     end
 
