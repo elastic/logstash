@@ -250,8 +250,6 @@ module LogStash; module Util
         # @cancelled = Hash.new
 
         @generated = Hash.new
-        @iterating_temp = Hash.new
-        @is_iterating = false # Atomic Boolean maybe? Although batches are not shared across threads
         @acked_batch = nil
       end
 
@@ -270,14 +268,7 @@ module LogStash; module Util
 
       def merge(event)
         return if event.nil? || @originals.key?(event)
-        # take care not to cause @generated to change during iteration
-        # @iterating_temp is merged after the iteration
-        if @is_iterating
-          @iterating_temp[event] = true
-        else
-          # the periodic flush could generate events outside of an each iteration
-          @generated[event] = true
-        end
+        @generated[event] = true
       end
 
       def cancel(event)
@@ -293,19 +284,14 @@ module LogStash; module Util
       end
 
       def each(&blk)
-        # take care not to cause @originals or @generated to change during iteration
-
         # below the checks for @cancelled.include?(e) have been replaced by e.cancelled?
         # TODO: for https://github.com/elastic/logstash/issues/6055 = will have to properly refactor
-        @is_iterating = true
         @originals.each do |e, _|
           blk.call(e) unless e.cancelled?
         end
         @generated.each do |e, _|
           blk.call(e) unless e.cancelled?
         end
-        @is_iterating = false
-        update_generated
       end
 
       def size
@@ -332,13 +318,6 @@ module LogStash; module Util
 
       def flush_signal_received?
         false
-      end
-
-      private
-
-      def update_generated
-        @generated.update(@iterating_temp)
-        @iterating_temp.clear
       end
     end
 
