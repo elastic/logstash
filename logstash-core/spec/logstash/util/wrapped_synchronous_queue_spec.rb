@@ -100,7 +100,7 @@ describe LogStash::Util::WrappedSynchronousQueue do
           write_client.push_batch(batch)
           read_batch = read_client.read_batch
           expect(read_batch.size).to eq(5)
-          read_batch.each do |data|
+          read_batch.to_a.each do |data|
             message = data.get("message")
             expect(messages).to include(message)
             messages.delete(message)
