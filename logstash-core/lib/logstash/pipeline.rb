@@ -466,19 +466,20 @@ module LogStash; class Pipeline < BasePipeline
     shutdown_requested = false
 
     @filter_queue_client.set_batch_dimensions(batch_size, batch_delay)
-
+    output_events_map = Hash.new { |h, k| h[k] = [] }
     while true
       signal = @signal_queue.poll || NO_SIGNAL
       shutdown_requested |= signal.shutdown? # latch on shutdown signal
 
       batch = @filter_queue_client.read_batch # metrics are started in read_batch
-      if batch.size > 0
-        @events_consumed.increment(batch.size)
+      batch_size = batch.size
+      if batch_size > 0
+        @events_consumed.increment(batch_size)
         filter_batch(batch)
       end
       flush_filters_to_batch(batch, :final => false) if signal.flush?
       if batch.size > 0
-        output_batch(batch)
+        output_batch(batch, output_events_map)
         @filter_queue_client.close_batch(batch)
       end
       # keep break at end of loop, after the read_batch operation, some pipeline specs rely on this "final read_batch" before shutdown.
@@ -490,7 +491,7 @@ module LogStash; class Pipeline < BasePipeline
     batch = @filter_queue_client.new_batch
     @filter_queue_client.start_metrics(batch) # explicitly call start_metrics since we dont do a read_batch here
     flush_filters_to_batch(batch, :final => true)
-    output_batch(batch)
+    output_batch(batch, output_events_map)
     @filter_queue_client.close_batch(batch)
   end
 
@@ -515,16 +516,12 @@ module LogStash; class Pipeline < BasePipeline
   end
 
   # Take an array of events and send them to the correct output
-  def output_batch(batch)
+  def output_batch(batch, output_events_map)
     # Build a mapping of { output_plugin => [events...]}
-    output_events_map = Hash.new { |h, k| h[k] = [] }
     batch.each do |event|
       # We ask the AST to tell us which outputs to send each event to
       # Then, we stick it in the correct bin
-
-      # output_func should never return anything other than an Array but we have lots of legacy specs
-      # that monkeypatch it and return nil. We can deprecate  "|| []" after fixing these specs
-      (output_func(event) || []).each do |output|
+      output_func(event).each do |output|
         output_events_map[output].push(event)
       end
     end
@@ -532,6 +529,7 @@ module LogStash; class Pipeline < BasePipeline
     # once with its list of events
     output_events_map.each do |output, events|
       output.multi_receive(events)
+      events.clear
     end
 
     @filter_queue_client.add_output_metrics(batch)
