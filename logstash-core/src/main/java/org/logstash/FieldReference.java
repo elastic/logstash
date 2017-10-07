@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
 
 public final class FieldReference {
@@ -43,12 +44,18 @@ public final class FieldReference {
     private static final FieldReference METADATA_PARENT_REFERENCE =
         new FieldReference(EMPTY_STRING_ARRAY, Event.METADATA, META_PARENT);
 
+    /**
+     * Cache of all existing {@link FieldReference}.
+     */
+    private static final Map<CharSequence, FieldReference> CACHE =
+        new ConcurrentHashMap<>(64, 0.2F, 1);
+
     private final String[] path;
 
     private final String key;
 
     private final int hash;
-    
+
     /**
      * Either {@link FieldReference#META_PARENT}, {@link FieldReference#META_CHILD} or
      * {@link FieldReference#DATA_CHILD}.
@@ -62,25 +69,13 @@ public final class FieldReference {
         hash = calculateHash(this.key, this.path, this.type);
     }
 
-    public static FieldReference parse(final CharSequence reference) {
-        final String[] parts = SPLIT_PATTERN.split(reference);
-        final List<String> path = new ArrayList<>(parts.length);
-        for (final String part : parts) {
-            if (!part.isEmpty()) {
-                path.add(part.intern());
-            }
+    public static FieldReference from(final CharSequence reference) {
+        // atomicity between the get and put is not important
+        final FieldReference result = CACHE.get(reference);
+        if (result != null) {
+            return result;
         }
-        final String key = path.remove(path.size() - 1).intern();
-        final boolean empty = path.isEmpty();
-        if (empty && key.equals(Event.METADATA)) {
-            return METADATA_PARENT_REFERENCE;
-        } else if (!empty && path.get(0).equals(Event.METADATA)) {
-            return deduplicate(new FieldReference(
-                path.subList(1, path.size()).toArray(EMPTY_STRING_ARRAY), key, META_CHILD));
-        } else {
-            return deduplicate(
-                new FieldReference(path.toArray(EMPTY_STRING_ARRAY), key, DATA_CHILD));
-        }
+        return parseToCache(reference);
     }
 
     /**
@@ -113,7 +108,7 @@ public final class FieldReference {
     public int hashCode() {
         return hash;
     }
-    
+
     /**
      * De-duplicates instances using {@link FieldReference#DEDUP}. This method must be
      * {@code synchronized} since we are running non-atomic get-put sequence on
@@ -145,5 +140,32 @@ public final class FieldReference {
         }
         hash = prime * hash + key.hashCode();
         return prime * hash + type;
+    }
+
+    private static FieldReference parseToCache(final CharSequence reference) {
+        final FieldReference result = parse(reference);
+        CACHE.put(reference, result);
+        return result;
+    }
+
+    private static FieldReference parse(final CharSequence reference) {
+        final String[] parts = SPLIT_PATTERN.split(reference);
+        final List<String> path = new ArrayList<>(parts.length);
+        for (final String part : parts) {
+            if (!part.isEmpty()) {
+                path.add(part.intern());
+            }
+        }
+        final String key = path.remove(path.size() - 1).intern();
+        final boolean empty = path.isEmpty();
+        if (empty && key.equals(Event.METADATA)) {
+            return METADATA_PARENT_REFERENCE;
+        } else if (!empty && path.get(0).equals(Event.METADATA)) {
+            return deduplicate(new FieldReference(
+                path.subList(1, path.size()).toArray(EMPTY_STRING_ARRAY), key, META_CHILD));
+        } else {
+            return deduplicate(
+                new FieldReference(path.toArray(EMPTY_STRING_ARRAY), key, DATA_CHILD));
+        }
     }
 }

@@ -12,7 +12,6 @@ import org.jruby.util.ByteList;
 import org.logstash.ConvertedList;
 import org.logstash.ConvertedMap;
 import org.logstash.FieldReference;
-import org.logstash.PathCache;
 import org.logstash.RubyUtil;
 import org.logstash.Valuefier;
 import org.logstash.config.ir.expression.BinaryBooleanExpression;
@@ -246,13 +245,13 @@ public interface EventCondition {
             final EventCondition condition;
             if (eAndV(in) && isScalar((ValueExpression) in.getRight())) {
                 condition = new EventCondition.Compiler.FieldInConstantScalar(
-                    PathCache.cache(((EventValueExpression) left).getFieldName()),
+                    FieldReference.from(((EventValueExpression) left).getFieldName()),
                     ((ValueExpression) right).get().toString()
                 );
             } else if (vAndE(in) && isScalar((ValueExpression) in.getLeft())) {
                 final Object leftv = ((ValueExpression) left).get();
                 final FieldReference rfield =
-                    PathCache.cache(((EventValueExpression) right).getFieldName());
+                    FieldReference.from(((EventValueExpression) right).getFieldName());
                 if (leftv instanceof String) {
                     condition = new EventCondition.Compiler.ConstantStringInField(
                         rfield, (String) leftv
@@ -276,7 +275,7 @@ public interface EventCondition {
 
         private static EventCondition in(final EventValueExpression left, final List<?> right) {
             return new EventCondition.Compiler.FieldInConstantList(
-                PathCache.cache(left.getFieldName()), right
+                FieldReference.from(left.getFieldName()), right
             );
         }
 
@@ -317,7 +316,7 @@ public interface EventCondition {
         private static EventCondition in(final EventValueExpression left,
             final EventValueExpression right) {
             return new EventCondition.Compiler.FieldInField(
-                PathCache.cache(left.getFieldName()), PathCache.cache(right.getFieldName())
+                FieldReference.from(left.getFieldName()), FieldReference.from(right.getFieldName())
             );
         }
 
@@ -358,7 +357,7 @@ public interface EventCondition {
         private static EventCondition eq(final EventValueExpression first,
             final EventValueExpression second) {
             return new EventCondition.Compiler.FieldEqualsField(
-                PathCache.cache(first.getFieldName()), PathCache.cache(second.getFieldName())
+                FieldReference.from(first.getFieldName()), FieldReference.from(second.getFieldName())
             );
         }
 
@@ -390,7 +389,7 @@ public interface EventCondition {
         }
 
         private static EventCondition truthy(final EventValueExpression evalE) {
-            return new EventCondition.Compiler.FieldTruthy(PathCache.cache(evalE.getFieldName()));
+            return new EventCondition.Compiler.FieldTruthy(FieldReference.from(evalE.getFieldName()));
         }
 
         private static EventCondition[] booleanPair(final BinaryBooleanExpression expression) {
@@ -499,7 +498,7 @@ public interface EventCondition {
             private final RubyString value;
 
             private FieldGreaterThanString(final String field, final String value) {
-                this.field = PathCache.cache(field);
+                this.field = FieldReference.from(field);
                 this.value = RubyUtil.RUBY.newString(value);
             }
 
@@ -518,7 +517,7 @@ public interface EventCondition {
             private final RubyNumeric value;
 
             private FieldGreaterThanNumber(final String field, final RubyNumeric value) {
-                this.field = PathCache.cache(field);
+                this.field = FieldReference.from(field);
                 this.value = value;
             }
 
@@ -537,7 +536,7 @@ public interface EventCondition {
             private final RubyString value;
 
             private FieldEqualsString(final String field, final String value) {
-                this.field = PathCache.cache(field);
+                this.field = FieldReference.from(field);
                 this.value = RubyUtil.RUBY.newString(value);
             }
 
@@ -555,7 +554,7 @@ public interface EventCondition {
             private final long value;
 
             private FieldEqualsLong(final String field, final long value) {
-                this.field = PathCache.cache(field);
+                this.field = FieldReference.from(field);
                 this.value = value;
             }
 
@@ -591,7 +590,7 @@ public interface EventCondition {
             private final RubyString regex;
 
             private FieldMatches(final String field, final String regex) {
-                this.field = PathCache.cache(field);
+                this.field = FieldReference.from(field);
                 this.regex = RubyUtil.RUBY.newString(regex);
             }
 

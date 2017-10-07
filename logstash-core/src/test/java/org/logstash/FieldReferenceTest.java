@@ -10,34 +10,34 @@ public final class FieldReferenceTest {
 
     @Test
     public void testParseSingleBareField() throws Exception {
-        FieldReference f = FieldReference.parse("foo");
+        FieldReference f = FieldReference.from("foo");
         assertEquals(0, f.getPath().length);
         assertEquals(f.getKey(), "foo");
     }
 
     @Test
     public void testParseSingleFieldPath() throws Exception {
-        FieldReference f = FieldReference.parse("[foo]");
+        FieldReference f = FieldReference.from("[foo]");
         assertEquals(0, f.getPath().length);
         assertEquals(f.getKey(), "foo");
     }
 
     @Test
     public void testParse2FieldsPath() throws Exception {
-        FieldReference f = FieldReference.parse("[foo][bar]");
+        FieldReference f = FieldReference.from("[foo][bar]");
         assertArrayEquals(f.getPath(), new String[]{"foo"});
         assertEquals(f.getKey(), "bar");
     }
 
     @Test
     public void testParse3FieldsPath() throws Exception {
-        FieldReference f = FieldReference.parse("[foo][bar]]baz]");
+        FieldReference f = FieldReference.from("[foo][bar]]baz]");
         assertArrayEquals(f.getPath(), new String[]{"foo", "bar"});
         assertEquals(f.getKey(), "baz");
     }
 
     @Test
     public void deduplicatesTimestamp() throws Exception {
-        assertTrue(FieldReference.parse("@timestamp") == FieldReference.parse("[@timestamp]"));
+        assertTrue(FieldReference.from("@timestamp") == FieldReference.from("[@timestamp]"));
     }
 }
