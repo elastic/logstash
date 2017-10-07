@@ -138,12 +138,6 @@ module LogStash; module Util
         @originals.add(event)
       end
 
-      def cancel(event)
-        # TODO: disabled for https://github.com/elastic/logstash/issues/6055 - will have to properly refactor
-        raise("cancel is unsupported")
-        # @cancelled[event] = true
-      end
-
       def to_a
         events = []
         @originals.each {|e| events << e unless e.cancelled?}
@@ -161,12 +155,6 @@ module LogStash; module Util
       end
 
       alias_method(:size, :filtered_size)
-
-      def cancelled_size
-      # TODO: disabled for https://github.com/elastic/logstash/issues/6055 = will have to properly refactor
-      raise("cancelled_size is unsupported ")
-        # @cancelled.size
-      end
     end
 
     class WriteClient
