@@ -3,10 +3,12 @@ package org.logstash;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import java.util.Date;
+import org.joda.time.Chronology;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.Duration;
 import org.joda.time.LocalDateTime;
+import org.joda.time.chrono.ISOChronology;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
 import org.logstash.ackedqueue.Queueable;
@@ -27,24 +29,31 @@ public final class Timestamp implements Comparable<Timestamp>, Queueable {
 
     private static final LocalDateTime JAN_1_1970 = new LocalDateTime(1970, 1, 1, 0, 0);
 
+    /**
+     * {@link Chronology} for UTC timezone, cached here to avoid lookup of it when constructing
+     * {@link DateTime} instances.
+     */
+    private static final Chronology UTC_CHRONOLOGY = ISOChronology.getInstance(DateTimeZone.UTC);
+
     public Timestamp() {
-        this.time = new DateTime(DateTimeZone.UTC);
+        this.time = new DateTime(UTC_CHRONOLOGY);
     }
 
     public Timestamp(String iso8601) {
-        this.time = ISODateTimeFormat.dateTimeParser().parseDateTime(iso8601).toDateTime(DateTimeZone.UTC);
+        this.time =
+            ISODateTimeFormat.dateTimeParser().parseDateTime(iso8601).toDateTime(UTC_CHRONOLOGY);
     }
 
     public Timestamp(long epoch_milliseconds) {
-        this.time = new DateTime(epoch_milliseconds, DateTimeZone.UTC);
+        this.time = new DateTime(epoch_milliseconds, UTC_CHRONOLOGY);
     }
 
     public Timestamp(Date date) {
-        this.time = new DateTime(date, DateTimeZone.UTC);
+        this.time = new DateTime(date, UTC_CHRONOLOGY);
     }
 
     public Timestamp(DateTime date) {
-        this.time = date.toDateTime(DateTimeZone.UTC);
+        this.time = date.toDateTime(UTC_CHRONOLOGY);
     }
 
     public DateTime getTime() {
