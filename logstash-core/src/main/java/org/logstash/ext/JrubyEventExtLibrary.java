@@ -22,7 +22,6 @@ import org.jruby.runtime.load.Library;
 import org.logstash.ConvertedMap;
 import org.logstash.Event;
 import org.logstash.FieldReference;
-import org.logstash.PathCache;
 import org.logstash.RubyUtil;
 import org.logstash.Rubyfier;
 import org.logstash.Valuefier;
@@ -117,14 +116,14 @@ public final class JrubyEventExtLibrary implements Library {
         {
             return Rubyfier.deep(
                 context.runtime,
-                this.event.getUnconvertedField(PathCache.cache(reference.getByteList()))
+                this.event.getUnconvertedField(FieldReference.from(reference.getByteList()))
             );
         }
 
         @JRubyMethod(name = "set", required = 2)
         public IRubyObject ruby_set_field(ThreadContext context, RubyString reference, IRubyObject value)
         {
-            final FieldReference r = PathCache.cache(reference.getByteList());
+            final FieldReference r = FieldReference.from(reference.getByteList());
             if (r  == FieldReference.TIMESTAMP_REFERENCE) {
                 if (!(value instanceof JrubyTimestampExtLibrary.RubyTimestamp)) {
                     throw context.runtime.newTypeError("wrong argument type " + value.getMetaClass() + " (expected LogStash::Timestamp)");
@@ -159,7 +158,7 @@ public final class JrubyEventExtLibrary implements Library {
         @JRubyMethod(name = "include?", required = 1)
         public IRubyObject ruby_includes(ThreadContext context, RubyString reference) {
             return RubyBoolean.newBoolean(
-                context.runtime, this.event.includes(PathCache.cache(reference.getByteList()))
+                context.runtime, this.event.includes(FieldReference.from(reference.getByteList()))
             );
         }
 
@@ -167,7 +166,7 @@ public final class JrubyEventExtLibrary implements Library {
         public IRubyObject ruby_remove(ThreadContext context, RubyString reference) {
             return Rubyfier.deep(
                 context.runtime,
-                this.event.remove(PathCache.cache(reference.getByteList()))
+                this.event.remove(FieldReference.from(reference.getByteList()))
             );
         }
 
