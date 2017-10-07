@@ -271,12 +271,6 @@ module LogStash; module Util
         @generated[event] = true
       end
 
-      def cancel(event)
-        # TODO: disabled for https://github.com/elastic/logstash/issues/6055 - will have to properly refactor
-        raise("cancel is unsupported")
-        # @cancelled[event] = true
-      end
-
       def to_a
         events = []
         each {|e| events << e}
@@ -304,12 +298,6 @@ module LogStash; module Util
 
       def filtered_size
         @originals.size + @generated.size
-      end
-
-      def cancelled_size
-        # TODO: disabled for https://github.com/elastic/logstash/issues/6055 = will have to properly refactor
-        raise("cancelled_size is unsupported ")
-        # @cancelled.size
       end
 
       def shutdown_signal_received?
