@@ -228,6 +228,14 @@ describe LogStash::Pipeline do
           pipeline = TestPipeline.new(test_config_with_filters, pipeline_settings_obj)
           pipeline.close
         end
+
+        it "should log each filtered event if config.debug is set to true" do
+          pipeline_settings_obj.set("config.debug", true)
+          pipeline = TestPipeline.new(test_config_with_filters, pipeline_settings_obj)
+          expect(logger).to receive(:debug).with(/filter received/, anything)
+          pipeline.filter_func([LogStash::Event.new])
+          pipeline.close
+        end
       end
 
       context "when there is no command line -w N set" do
