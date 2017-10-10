@@ -24,18 +24,20 @@ If this filter is successful, add any arbitrary fields to this event.
 Field names can be dynamic and include parts of the event using the `%{field}`.
 
 Example:
-[source,ruby]
+
+["source","json",subs="attributes"]
     filter {
-      PLUGIN_NAME {
-        add_field => { "foo_%{somefield}" => "Hello world, from %{host}" }
+      {plugin} {
+        add_field => { "foo_%\{somefield\}" => "Hello world, from %\{host\}" }
       }
     }
-[source,ruby]
+    
+["source","json",subs="attributes"]
     # You can also add multiple fields at once:
     filter {
-      PLUGIN_NAME {
+      {plugin} {
         add_field => {
-          "foo_%{somefield}" => "Hello world, from %{host}"
+          "foo_%\{somefield\}" => "Hello world, from %\{host\}"
           "new_field" => "new_static_value"
         }
       }
@@ -57,17 +59,19 @@ Tags can be dynamic and include parts of the event using the `%{field}`
 syntax.
 
 Example:
-[source,ruby]
+
+["source","json",subs="attributes"]
     filter {
-      PLUGIN_NAME {
-        add_tag => [ "foo_%{somefield}" ]
+      {plugin} {
+        add_tag => [ "foo_%\{somefield\}" ]
       }
     }
-[source,ruby]
+    
+["source","json",subs="attributes"]
     # You can also add multiple tags at once:
     filter {
-      PLUGIN_NAME {
-        add_tag => [ "foo_%{somefield}", "taggedy_tag"]
+      {plugin} {
+        add_tag => [ "foo_%\{somefield\}", "taggedy_tag"]
       }
     }
 
@@ -90,19 +94,18 @@ for a specific plugin.
   * Value type is <<string,string>>
   * There is no default value for this setting.
 
-Add a unique `ID` to the plugin instance, this `ID` is used for tracking
-information for a specific configuration of the plugin.
+Add a unique `ID` to the plugin configuration. If no ID is specified, Logstash will generate one.
+It is strongly recommended to set this ID in your configuration. This is particularly useful
+when you have two or more plugins of the same type, for example, if you have 2 {plugin} filters.
+Adding a named ID in this case will help in monitoring Logstash when using the monitoring APIs.
 
-```
-output {
- stdout {
-   id => "ABC"
- }
-}
-```
 
-If you don't explicitely set this variable Logstash will generate a unique name.
-
+["source","json",subs="attributes"]
+    filter {
+      {plugin} {
+        id => "ABC"
+      }
+    }
 
 [id="plugins-{type}s-{plugin}-periodic_flush"]
 ===== `periodic_flush`
@@ -122,17 +125,19 @@ Optional.
 If this filter is successful, remove arbitrary fields from this event.
 Fields names can be dynamic and include parts of the event using the %{field}
 Example:
-[source,ruby]
+
+["source","json",subs="attributes"]
     filter {
-      PLUGIN_NAME {
-        remove_field => [ "foo_%{somefield}" ]
+      {plugin} {
+        remove_field => [ "foo_%\{somefield\}" ]
       }
     }
-[source,ruby]
+    
+["source","json",subs="attributes"]
     # You can also remove multiple fields at once:
     filter {
-      PLUGIN_NAME {
-        remove_field => [ "foo_%{somefield}", "my_extraneous_field" ]
+      {plugin} {
+        remove_field => [ "foo_%\{somefield\}", "my_extraneous_field" ]
       }
     }
 
@@ -151,17 +156,19 @@ Tags can be dynamic and include parts of the event using the `%{field}`
 syntax.
 
 Example:
-[source,ruby]
+
+["source","json",subs="attributes"]
     filter {
-      PLUGIN_NAME {
-        remove_tag => [ "foo_%{somefield}" ]
+      {plugin} {
+        remove_tag => [ "foo_%\{somefield\}" ]
       }
     }
-[source,ruby]
+    
+["source","json",subs="attributes"]
     # You can also remove multiple tags at once:
     filter {
-      PLUGIN_NAME {
-        remove_tag => [ "foo_%{somefield}", "sad_unwanted_tag"]
+      {plugin} {
+        remove_tag => [ "foo_%\{somefield\}", "sad_unwanted_tag"]
       }
     }
 
