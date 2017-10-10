@@ -11,6 +11,8 @@ This section summarizes the changes in the following releases:
 [[logstash-5-6-3]]
 === Logstash 5.6.3 Release Notes
 
+* Known Issue: Running Logstash with log level set to debug will cause the pipeline to crash
+* Improved pipeline performance
 * Fixed issue where DLQ would crash at startup when a segment file was missing
 * Fixed issues with proxy handling when installing plugins
 
