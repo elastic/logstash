@@ -49,17 +49,17 @@ These changes can impact any instance of Logstash and are plugin agnostic, but o
 [float]
 ==== Kafka input changes
 
-Upgraded Kafka client support to v0.11.0.0, which only supports Kafka brokers v0.10.x or later.
-** Please refer to <<plugins-input-kafka,Kafka input plugin>>  documentation for information about Kafka compatibility with Logstash.
+* Upgraded Kafka client support to v0.11.0.0, which only supports Kafka brokers v0.10.x or later.
+** Please refer to <<plugins-inputs-kafka,Kafka input plugin>> documentation for information about Kafka compatibility with Logstash.
 * Decorated fields are now nested under `@metadata` to avoid mapping conflicts with Beats.
-** See the `Metadata Fields` section in the <<plugins-input-kafka>> documentation for more details.
+** See the `Metadata Fields` section in the <<plugins-inputs-kafka,Kafka input plugin>> documentation for more details.
 * The `ssl` option is now obsolete.
 
 [float]
 ==== Kafka output changes
 
-Upgraded Kafka client support to v0.11.0.0, which only supports Kafka brokers v0.10.x or later.
-** Please refer to <<plugins-output-kafka, Kafka output plugin>> documentation for information about Kafka compatibility with Logstash.
+* Upgraded Kafka client support to v0.11.0.0, which only supports Kafka brokers v0.10.x or later.
+** Please refer to <<plugins-outputs-kafka,Kafka output plugin>> documentation for information about Kafka compatibility with Logstash.
 * The options `block_on_buffer_full`, `ssl`, and `timeout_ms` are now obsolete.
 
 [float]
