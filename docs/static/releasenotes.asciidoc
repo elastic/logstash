@@ -3,9 +3,16 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-5-6-3,Logstash 5.6.3>>
 * <<logstash-5-6-2,Logstash 5.6.2>>
 * <<logstash-5-6-1,Logstash 5.6.1>>
 * <<logstash-5-6-0,Logstash 5.6.0>>
+
+[[logstash-5-6-3]]
+=== Logstash 5.6.3 Release Notes
+
+* Fixed issue where DLQ would crash at startup when a segment file was missing
+* Fixed issues with proxy handling when installing plugins
 
 [[logstash-5-6-2]]
 === Logstash 5.6.2 Release Notes
