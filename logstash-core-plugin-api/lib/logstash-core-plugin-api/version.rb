@@ -7,6 +7,12 @@ if !defined?(ALL_VERSIONS)
   require 'yaml'
   ALL_VERSIONS = YAML.load_file(File.expand_path("../../versions-gem-copy.yml", File.dirname(__FILE__)))
 end
-if !defined?(LOGSTASH_CORE_PLUGIN_API)
+
+unless defined?(LOGSTASH_CORE_PLUGIN_API)
   LOGSTASH_CORE_PLUGIN_API = ALL_VERSIONS.fetch("logstash-core-plugin-api")
 end
+
+unless defined?(LOGSTASH_CORE_VERSION)
+  LOGSTASH_CORE_VERSION = ALL_VERSIONS.fetch("logstash-core")
+end
+
