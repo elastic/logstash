@@ -198,6 +198,16 @@ class LogStash::Agent
     end
   end
 
+  def get_running_user_defined_pipelines
+    found = @upgrade_mutex.synchronize do
+      @pipelines.select do |pipeline_id, _|
+        pipeline = @pipelines[pipeline_id]
+        pipeline.running? && !pipeline.system?
+      end
+    end
+    found
+  end
+
   def close_pipeline(id)
     pipeline = @pipelines[id]
     if pipeline
