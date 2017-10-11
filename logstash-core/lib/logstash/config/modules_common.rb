@@ -65,6 +65,7 @@ module LogStash module Config
           pipeline_id = alt_name
           module_settings.set("pipeline.id", pipeline_id)
           LogStash::Modules::SettingsMerger.merge_cloud_settings(module_hash, module_settings)
+          LogStash::Modules::SettingsMerger.merge_kibana_auth!(module_hash)
           current_module.with_settings(module_hash)
           config_test = settings.get("config.test_and_exit")
           modul_setup = settings.get("modules_setup")
