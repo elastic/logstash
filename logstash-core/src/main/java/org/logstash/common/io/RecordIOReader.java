@@ -202,19 +202,23 @@ public final class RecordIOReader implements Closeable {
         }
     }
 
-    private void maybeRollToNextBlock() throws IOException {
+    // Return whether we rolled
+    private boolean maybeRollToNextBlock() throws IOException {
         // check block position state
         if (currentBlock.remaining() < RECORD_HEADER_SIZE + 1) {
             consumeBlock(true);
+            return true;
         }
+        return false;
     }
 
-    private void getRecord(ByteBuffer buffer, RecordHeader header) {
+    private void getRecord(ByteBuffer buffer, RecordHeader header, boolean rolled, long bufferSize, long cumReadSize) {
         Checksum computedChecksum = new CRC32();
         computedChecksum.update(currentBlock.array(), currentBlock.position(), header.getSize());
 
         if ((int) computedChecksum.getValue() != header.getChecksum()) {
-            throw new RuntimeException("invalid checksum of record");
+            throw new RuntimeException("invalid checksum of record. Header size = " + header.getSize() + ", current block position = " + currentBlock.position() +
+                    "block size read from channel " + currentBlockSizeReadFromChannel + " was rolled " + rolled + " buffer size " + bufferSize + "read so far " + cumReadSize);
         }
 
         buffer.put(currentBlock.array(), currentBlock.position(), header.getSize());
@@ -230,12 +234,12 @@ public final class RecordIOReader implements Closeable {
             int cumReadSize = 0;
             int bufferSize = header.getTotalEventSize().orElseGet(header::getSize);
             ByteBuffer buffer = ByteBuffer.allocate(bufferSize);
-            getRecord(buffer, header);
+            getRecord(buffer, header, false, bufferSize, cumReadSize);
             cumReadSize += header.getSize();
             while (cumReadSize < bufferSize) {
-                maybeRollToNextBlock();
+                boolean rolled = maybeRollToNextBlock();
                 RecordHeader nextHeader = RecordHeader.get(currentBlock);
-                getRecord(buffer, nextHeader);
+                getRecord(buffer, nextHeader, rolled, bufferSize, cumReadSize);
                 cumReadSize += nextHeader.getSize();
             }
             return buffer.array();
