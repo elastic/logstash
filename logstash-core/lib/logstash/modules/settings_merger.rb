@@ -54,6 +54,11 @@ module LogStash module Modules module SettingsMerger
     end
   end
 
+  def merge_kibana_auth!(module_settings)
+    module_settings["var.kibana.username"] = module_settings["var.elasticsearch.username"] if module_settings["var.kibana.username"].nil?
+    module_settings["var.kibana.password"] = module_settings["var.elasticsearch.password"] if module_settings["var.kibana.password"].nil?
+  end
+
   def format_module_settings(settings_before, settings_after)
     output = []
     output << "-------- Module Settings ---------"
