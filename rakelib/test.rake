@@ -39,7 +39,7 @@ namespace "test" do
   end
   
   desc "run all installed plugins specs"
-  task "plugins" do
+  task "plugins"  => "bootstrap" do
     plugins_to_exclude = ENV.fetch("EXCLUDE_PLUGIN", "").split(",")
     # grab all spec files using the live plugins gem specs. this allows correctly also running the specs
     # of a local plugin dir added using the Gemfile :path option. before this, any local plugin spec would
@@ -55,7 +55,7 @@ namespace "test" do
     end.flatten.compact
 
     # "--format=documentation"
-    exit(RSpec::Core::Runner.run(["--order", "rand", test_files]))
+    exit 1 unless system(*(["bin/rspec", "-fd", "--order", "rand"].concat(test_files)))
   end
 
   desc "install core plugins and dev dependencies"
