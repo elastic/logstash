@@ -1,6 +1,8 @@
 require 'yaml'
 
 VERSION_FILE = "versions.yml"
+README_FILE = "README.md"
+INDEX_SHARED1_FILE = "docs/index-shared1.asciidoc"
 
 def get_versions
   yaml_versions = YAML.safe_load(IO.read(VERSION_FILE))
@@ -12,13 +14,26 @@ def get_versions
 end
 
 # Update the version file, keeping the comments in tact
-def update_version_file(hash)
-  existing_versions = YAML.safe_load(File.read(VERSION_FILE))
+def update_version_file(hash, existing_versions)
   versions_as_text = IO.read(VERSION_FILE)
   %w(logstash logstash-core logstash-core-plugin-api).each do |field|
     versions_as_text.gsub!(/(?<=#{field}: )#{existing_versions[field]}/, "#{hash[field]}")
   end
   IO.write(VERSION_FILE, versions_as_text)
+end
+
+def update_index_shared1(hash, existing_versions)
+  index_shared1 = IO.read(INDEX_SHARED1_FILE)
+  %w(logstash elasticsearch kibana).each do |field|
+    index_shared1.gsub!(/(:#{field}_version:\s+)#{existing_versions['logstash']}/) { "#{$1}#{hash['logstash']}" }
+  end
+  IO.write(INDEX_SHARED1_FILE, index_shared1)
+end
+
+def update_readme(hash, existing_versions)
+  readme = IO.read(README_FILE)
+  readme.gsub!(/(logstash\-)#{existing_versions['logstash']}/) { "#{$1}#{hash['logstash']}" }
+  IO.write(README_FILE, readme)
 end
 
 namespace :version do
@@ -42,7 +57,10 @@ namespace :version do
         hash[component] = args[:version]
       end
     end
-    update_version_file(hash)
+    existing_versions = YAML.safe_load(File.read(VERSION_FILE))
+    update_index_shared1(hash, existing_versions)
+    update_readme(hash, existing_versions)
+    update_version_file(hash, existing_versions)
   end
 
   desc "set version of logstash-core-plugin-api"
