@@ -9,7 +9,7 @@ import org.logstash.RubyUtil;
 import org.logstash.ext.JrubyEventExtLibrary;
 
 /**
- * <p>A trueData structure backed by a {@link RubyArray} that represents one step of execution flow of a 
+ * <p>A data structure backed by a {@link RubyArray} that represents one step of execution flow of a
  * batch is lazily filled with {@link JrubyEventExtLibrary.RubyEvent} computed from its dependent
  * {@link Dataset}.</p>
  * <p>Each {@link Dataset} either represents a filter, output or one branch of an {@code if}
@@ -32,7 +32,7 @@ public interface Dataset {
      * the pipeline it belongs to is shut down
      * @return Computed {@link RubyArray} of {@link JrubyEventExtLibrary.RubyEvent}
      */
-    Collection<JrubyEventExtLibrary.RubyEvent> compute(RubyIntegration.Batch batch,
+    Collection<JrubyEventExtLibrary.RubyEvent> compute(RubyArray batch,
         boolean flush, boolean shutdown);
 
     /**
@@ -46,92 +46,8 @@ public interface Dataset {
      * the given set of {@link JrubyEventExtLibrary.RubyEvent} and have no state.
      */
     Collection<Dataset> ROOT_DATASETS = Collections.singleton(
-        new Dataset() {
-            @Override
-            public Collection<JrubyEventExtLibrary.RubyEvent> compute(
-                final RubyIntegration.Batch batch, final boolean flush, final boolean shutdown) {
-                return batch.to_a();
-            }
-
-            @Override
-            public void clear() {
-            }
-        }
+        DatasetCompiler.compile("return batch;", "")
     );
-
-    /**
-     * <p>{@link Dataset} that contains all {@link JrubyEventExtLibrary.RubyEvent} instances of all 
-     * from its dependencies and is assumed to be at the end of an execution.</p>
-     * This dataset does not require an explicit call to {@link Dataset#clear()} since it will
-     * automatically {@code clear} all of its parents.
-     */
-    final class TerminalDataset implements Dataset {
-
-        /**
-         * Empty {@link Collection} returned by this class's
-         * {@link Dataset#compute(RubyIntegration.Batch, boolean, boolean)} implementation.
-         */
-        private static final Collection<JrubyEventExtLibrary.RubyEvent> EMPTY_RETURN =
-            Collections.emptyList();
-
-        /**
-         * Trivial {@link Dataset} that simply returns an empty collection of elements.
-         */
-        private static final Dataset EMPTY_DATASET = new Dataset() {
-
-            @Override
-            public Collection<JrubyEventExtLibrary.RubyEvent> compute(
-                final RubyIntegration.Batch batch, final boolean flush, final boolean shutdown) {
-                return EMPTY_RETURN;
-            }
-
-            @Override
-            public void clear() {
-            }
-        };
-
-        private final Collection<Dataset> parents;
-
-        /**
-         * <p>Builds a terminal {@link Dataset} from the given parent {@link Dataset}s.</p>
-         * <p>If the given set of parent {@link Dataset} is empty the sum is defined as the
-         * trivial dataset that does not invoke any computation whatsoever.</p>
-         * {@link Dataset#compute(RubyIntegration.Batch, boolean, boolean)} is always
-         * {@link Collections#emptyList()}.
-         * @param parents Parent {@link Dataset} to sum and terminate
-         * @return Dataset representing the sum of given parent {@link Dataset}
-         */
-        public static Dataset from(final Collection<Dataset> parents) {
-            final int count = parents.size();
-            final Dataset result;
-            if (count > 0) {
-                result = new Dataset.TerminalDataset(parents);
-            } else {
-                result = EMPTY_DATASET;
-            }
-            return result;
-        }
-
-        private TerminalDataset(final Collection<Dataset> parents) {
-            this.parents = parents;
-        }
-
-        @Override
-        public Collection<JrubyEventExtLibrary.RubyEvent> compute(final RubyIntegration.Batch batch,
-            final boolean flush, final boolean shutdown) {
-            parents.forEach(dataset -> dataset.compute(batch, flush, shutdown));
-            this.clear();
-            return EMPTY_RETURN;
-        }
-
-        @Override
-        public void clear() {
-            for (final Dataset parent : parents) {
-                parent.clear();
-            }
-        }
-
-    }
 
     /**
      * {@link Dataset} that results from the {@code if} branch of its backing
@@ -162,7 +78,7 @@ public interface Dataset {
         }
 
         @Override
-        public Collection<JrubyEventExtLibrary.RubyEvent> compute(final RubyIntegration.Batch batch,
+        public Collection<JrubyEventExtLibrary.RubyEvent> compute(final RubyArray batch,
             final boolean flush, final boolean shutdown) {
             if (done) {
                 return trueData;
@@ -207,7 +123,7 @@ public interface Dataset {
             private final Dataset parent;
 
             /**
-             * This collection is shared with {@link Dataset.SplitDataset.Complement#parent} and 
+             * This collection is shared with {@link Dataset.SplitDataset.Complement#parent} and
              * mutated when calling its {@code compute} method. This class does not directly compute
              * it.
              */
@@ -229,7 +145,7 @@ public interface Dataset {
 
             @Override
             public Collection<JrubyEventExtLibrary.RubyEvent> compute(
-                final RubyIntegration.Batch batch, final boolean flush, final boolean shutdown) {
+                final RubyArray batch, final boolean flush, final boolean shutdown) {
                 if (done) {
                     return data;
                 }
@@ -271,7 +187,7 @@ public interface Dataset {
         }
 
         @Override
-        public Collection<JrubyEventExtLibrary.RubyEvent> compute(final RubyIntegration.Batch batch,
+        public Collection<JrubyEventExtLibrary.RubyEvent> compute(final RubyArray batch,
             final boolean flush, final boolean shutdown) {
             if (done) {
                 return data;
@@ -325,7 +241,7 @@ public interface Dataset {
         }
 
         @Override
-        public Collection<JrubyEventExtLibrary.RubyEvent> compute(final RubyIntegration.Batch batch,
+        public Collection<JrubyEventExtLibrary.RubyEvent> compute(final RubyArray batch,
             final boolean flush, final boolean shutdown) {
             if (done) {
                 return data;
@@ -384,7 +300,7 @@ public interface Dataset {
         }
 
         @Override
-        public Collection<JrubyEventExtLibrary.RubyEvent> compute(final RubyIntegration.Batch batch,
+        public Collection<JrubyEventExtLibrary.RubyEvent> compute(final RubyArray batch,
             final boolean flush, final boolean shutdown) {
             if (done) {
                 return data;
@@ -407,62 +323,6 @@ public interface Dataset {
                 parent.clear();
             }
             data.clear();
-            done = false;
-        }
-    }
-
-    /**
-     * Output {@link Dataset} that passes all its {@link JrubyEventExtLibrary.RubyEvent}
-     * to the underlying {@link RubyIntegration.Output#multiReceive(Collection)}.
-     */
-    final class OutputDataset implements Dataset {
-
-        /**
-         * Empty {@link Collection} returned by this class's
-         * {@link Dataset#compute(RubyIntegration.Batch, boolean, boolean)} implementation.
-         */
-        private static final Collection<JrubyEventExtLibrary.RubyEvent> EMPTY_RETURN =
-            Collections.emptyList();
-
-        private final Collection<Dataset> parents;
-
-        private final RubyIntegration.Output output;
-
-        private final Collection<JrubyEventExtLibrary.RubyEvent> buffer;
-
-        private boolean done;
-
-        public OutputDataset(Collection<Dataset> parents, final RubyIntegration.Output output) {
-            this.parents = parents;
-            this.output = output;
-            buffer = new ArrayList<>(5);
-            done = false;
-        }
-
-        @Override
-        public Collection<JrubyEventExtLibrary.RubyEvent> compute(final RubyIntegration.Batch batch,
-            final boolean flush, final boolean shutdown) {
-            if(!done) {
-                for (final Dataset set : parents) {
-                    for (final JrubyEventExtLibrary.RubyEvent event
-                        : set.compute(batch, flush, shutdown)) {
-                        if (!event.getEvent().isCancelled()) {
-                            buffer.add(event);
-                        }
-                    }
-                }
-                output.multiReceive(buffer);
-                done = true;
-                buffer.clear();
-            }
-            return EMPTY_RETURN;
-        }
-
-        @Override
-        public void clear() {
-            for (final Dataset parent : parents) {
-                parent.clear();
-            }
             done = false;
         }
     }
