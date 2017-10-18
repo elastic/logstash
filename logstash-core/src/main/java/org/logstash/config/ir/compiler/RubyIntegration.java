@@ -54,14 +54,6 @@ public final class RubyIntegration {
     }
 
     /**
-     * A Ruby Output. Currently, this interface is implemented only by the Ruby class
-     * {@code OutputDelegator}.
-     */
-    public interface Output extends RubyIntegration.Plugin {
-        void multiReceive(Collection<JrubyEventExtLibrary.RubyEvent> events);
-    }
-
-    /**
      * The Main Ruby Pipeline Class. Currently, this interface is implemented only by the Ruby class
      * {@code BasePipeline}.
      */
@@ -70,28 +62,12 @@ public final class RubyIntegration {
         IRubyObject buildInput(RubyString name, RubyInteger line, RubyInteger column,
             IRubyObject args);
 
-        RubyIntegration.Output buildOutput(RubyString name, RubyInteger line, RubyInteger column,
+        IRubyObject buildOutput(RubyString name, RubyInteger line, RubyInteger column,
             IRubyObject args);
 
         RubyIntegration.Filter buildFilter(RubyString name, RubyInteger line, RubyInteger column,
             IRubyObject args);
 
         RubyIntegration.Filter buildCodec(RubyString name, IRubyObject args);
-    }
-
-    /**
-     * A Ruby {@code ReadBatch} implemented by {@code WrappedSynchronousQueue::ReadClient::ReadBatch}
-     * and {@code WrappedAckedQueue::ReadClient::ReadBatch}.
-     */
-    public interface Batch {
-
-        /**
-         * Retrieves all {@link JrubyEventExtLibrary.RubyEvent} from the batch that are not
-         * cancelled.
-         * @return Collection of all {@link JrubyEventExtLibrary.RubyEvent} in the batch that
-         * are not cancelled
-         */
-        Collection<JrubyEventExtLibrary.RubyEvent> to_a();
-
     }
 }

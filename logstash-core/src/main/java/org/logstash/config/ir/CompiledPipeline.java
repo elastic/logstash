@@ -14,6 +14,7 @@ import org.logstash.RubyUtil;
 import org.logstash.Rubyfier;
 import org.logstash.common.SourceWithMetadata;
 import org.logstash.config.ir.compiler.Dataset;
+import org.logstash.config.ir.compiler.DatasetCompiler;
 import org.logstash.config.ir.compiler.EventCondition;
 import org.logstash.config.ir.compiler.RubyIntegration;
 import org.logstash.config.ir.graph.IfVertex;
@@ -54,7 +55,7 @@ public final class CompiledPipeline {
     /**
      * Configured outputs.
      */
-    private final Map<String, RubyIntegration.Output> outputs;
+    private final Map<String, IRubyObject> outputs;
 
     /**
      * Parsed pipeline configuration graph.
@@ -90,7 +91,7 @@ public final class CompiledPipeline {
         return periodicFlushes;
     }
 
-    public Collection<RubyIntegration.Output> outputs() {
+    public Collection<IRubyObject> outputs() {
         return Collections.unmodifiableCollection(outputs.values());
     }
 
@@ -119,9 +120,9 @@ public final class CompiledPipeline {
     /**
      * Sets up all Ruby outputs learnt from {@link PipelineIR}.
      */
-    private Map<String, RubyIntegration.Output> setupOutputs() {
+    private Map<String, IRubyObject> setupOutputs() {
         final Collection<PluginVertex> outs = pipelineIR.getOutputPluginVertices();
-        final Map<String, RubyIntegration.Output> res = new HashMap<>(outs.size());
+        final Map<String, IRubyObject> res = new HashMap<>(outs.size());
         outs.forEach(v -> {
             final PluginDefinition def = v.getPluginDefinition();
             final SourceWithMetadata source = v.getSourceWithMetadata();
@@ -214,9 +215,9 @@ public final class CompiledPipeline {
     }
 
     /**
-     * Checks if a certain {@link Vertex} represents a {@link RubyIntegration.Output}.
+     * Checks if a certain {@link Vertex} represents an output.
      * @param vertex Vertex to check
-     * @return True iff {@link Vertex} represents a {@link RubyIntegration.Output}
+     * @return True iff {@link Vertex} represents an output
      */
     private boolean isOutput(final Vertex vertex) {
         return outputs.containsKey(vertex.getId());
@@ -272,7 +273,7 @@ public final class CompiledPipeline {
                     outputDataset(leaf.getId(), flatten(Dataset.ROOT_DATASETS, leaf))
                     )
                 );
-            return Dataset.TerminalDataset.from(datasets);
+            return DatasetCompiler.terminalDataset(datasets);
         }
 
         /**
@@ -309,7 +310,9 @@ public final class CompiledPipeline {
          */
         private Dataset outputDataset(final String vertexId, final Collection<Dataset> datasets) {
             return plugins.computeIfAbsent(
-                vertexId, v -> new Dataset.OutputDataset(datasets, outputs.get(v))
+                vertexId, v -> DatasetCompiler.outputDataset(
+                    datasets, outputs.get(v), outputs.size() == 1
+                )
             );
         }
 
