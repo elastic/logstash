@@ -473,7 +473,7 @@ module LogStash; class JavaPipeline < JavaBasePipeline
     # for this we need to create a new empty batch to contain the final flushed events
     batch = @filter_queue_client.new_batch
     @filter_queue_client.start_metrics(batch) # explicitly call start_metrics since we dont do a read_batch here
-    batched_execution.compute(batch, true, true)
+    batched_execution.compute(batch.to_a, true, true)
     @filter_queue_client.close_batch(batch)
   end
 
@@ -701,7 +701,7 @@ module LogStash; class JavaPipeline < JavaBasePipeline
   private
 
   def execute_batch(batched_execution, batch, flush)
-    batched_execution.compute(batch, flush, false)
+    batched_execution.compute(batch.to_a, flush, false)
     @events_filtered.increment(batch.size)
     filtered_size = batch.filtered_size
     @filter_queue_client.add_output_metrics(filtered_size)
