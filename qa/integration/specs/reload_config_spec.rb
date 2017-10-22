@@ -39,9 +39,11 @@ describe "Test Logstash service when config reload is enabled" do
     end
     
     # check metrics
-    result = logstash_service.monitoring_api.event_stats
-    expect(result["in"]).to eq(1)
-    expect(result["out"]).to eq(1)
+    try(num_retries) do
+      result = logstash_service.monitoring_api.event_stats
+      expect(result["in"]).to eq(1)
+      expect(result["out"]).to eq(1)
+    end
     
     # do a reload
     logstash_service.reload_config(initial_config_file, reload_config_file)
@@ -58,9 +60,11 @@ describe "Test Logstash service when config reload is enabled" do
     end
     
     # check instance metrics. It should not be reset
-    instance_event_stats = logstash_service.monitoring_api.event_stats
-    expect(instance_event_stats["in"]).to eq(2)
-    expect(instance_event_stats["out"]).to eq(2)
+    try(num_retries) do
+      instance_event_stats = logstash_service.monitoring_api.event_stats
+      expect(instance_event_stats["in"]).to eq(2)
+      expect(instance_event_stats["out"]).to eq(2)
+    end
 
     # check pipeline metrics. It should be reset
     pipeline_event_stats = logstash_service.monitoring_api.pipeline_stats("main")["events"]
