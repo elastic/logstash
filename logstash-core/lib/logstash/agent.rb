@@ -83,11 +83,11 @@ class LogStash::Agent
     @thread = Thread.current # this var is implicitly used by Stud.stop?
     logger.debug("starting agent")
 
-    start_webserver
-
     transition_to_running
 
     converge_state_and_update
+
+    start_webserver
 
     if auto_reload?
       # `sleep_then_run` instead of firing the interval right away
