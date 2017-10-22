@@ -17,7 +17,7 @@ class LogstashService < Service
   SETTINGS_CLI_FLAG = "--path.settings"
 
   STDIN_CONFIG = "input {stdin {}} output { }"
-  RETRY_ATTEMPTS = 10
+  RETRY_ATTEMPTS = 60
 
   @process = nil
 
@@ -115,7 +115,6 @@ class LogstashService < Service
       @env_variables.map { |k, v|  @process.environment[k] = v} unless @env_variables.nil?
       @process.io.inherit!
       @process.start
-      wait_for_logstash
       puts "Logstash started with PID #{@process.pid}" if @process.alive?
     end
   end
@@ -164,12 +163,13 @@ class LogstashService < Service
     tries = RETRY_ATTEMPTS
     while tries > 0
       if is_port_open?
-        break
+        return
       else
         sleep 1
       end
       tries -= 1
     end
+    raise "Logstash REST API did not come up after #{RETRY_ATTEMPTS}s."
   end
 
   # this method only overwrites existing config with new config
