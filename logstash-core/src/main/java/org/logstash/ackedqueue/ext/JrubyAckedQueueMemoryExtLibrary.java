@@ -28,7 +28,7 @@ public final class JrubyAckedQueueMemoryExtLibrary implements Library {
         runtime.defineClassUnder(
             "AckedMemoryQueue", runtime.getObject(),
             JrubyAckedQueueMemoryExtLibrary.RubyAckedMemoryQueue::new,
-            runtime.defineModule(RubyUtil.LS_MODULE_NAME)
+            RubyUtil.LOGSTASH_MODULE
         ).defineAnnotatedMethods(JrubyAckedQueueMemoryExtLibrary.RubyAckedMemoryQueue.class);
     }
 
