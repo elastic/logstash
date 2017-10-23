@@ -27,7 +27,7 @@ public final class JrubyAckedQueueExtLibrary implements Library {
     public void load(Ruby runtime, boolean wrap) {
         runtime.defineClassUnder(
             "AckedQueue", runtime.getObject(), JrubyAckedQueueExtLibrary.RubyAckedQueue::new,
-            runtime.defineModule(RubyUtil.LS_MODULE_NAME)
+            RubyUtil.LOGSTASH_MODULE
         ).defineAnnotatedMethods(JrubyAckedQueueExtLibrary.RubyAckedQueue.class);
     }
 

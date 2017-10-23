@@ -5,7 +5,6 @@ import org.jruby.Ruby;
 import org.jruby.RubyClass;
 import org.jruby.RubyFixnum;
 import org.jruby.RubyFloat;
-import org.jruby.RubyModule;
 import org.jruby.RubyObject;
 import org.jruby.RubyString;
 import org.jruby.RubyTime;
@@ -38,8 +37,8 @@ public final class JrubyTimestampExtLibrary implements Library {
     }
 
     public static RubyClass createTimestamp(Ruby runtime) {
-        RubyModule module = runtime.defineModule(RubyUtil.LS_MODULE_NAME);
-        RubyClass clazz = runtime.defineClassUnder("Timestamp", runtime.getObject(), ALLOCATOR, module);
+        RubyClass clazz =
+            runtime.defineClassUnder("Timestamp", runtime.getObject(), ALLOCATOR, RubyUtil.LOGSTASH_MODULE);
         clazz.defineAnnotatedMethods(RubyTimestamp.class);
         return clazz;
     }
@@ -102,7 +101,7 @@ public final class JrubyTimestampExtLibrary implements Library {
                 } catch (IllegalArgumentException e) {
                     throw new RaiseException(
                             getRuntime(),
-                            getRuntime().getModule(RubyUtil.LS_MODULE_NAME).getClass("TimestampParserError"),
+                            RubyUtil.LOGSTASH_MODULE.getClass("TimestampParserError"),
                             "invalid timestamp string format " + time,
                             true
                     );
@@ -181,7 +180,7 @@ public final class JrubyTimestampExtLibrary implements Library {
              } catch (IllegalArgumentException e) {
                 throw new RaiseException(
                         context.runtime,
-                        context.runtime.getModule(RubyUtil.LS_MODULE_NAME).getClass("TimestampParserError"),
+                        RubyUtil.LOGSTASH_MODULE.getClass("TimestampParserError"),
                         "invalid timestamp format " + e.getMessage(),
                         true
                 );
@@ -198,7 +197,7 @@ public final class JrubyTimestampExtLibrary implements Library {
                 } catch (IllegalArgumentException e) {
                     throw new RaiseException(
                             context.runtime,
-                            context.runtime.getModule(RubyUtil.LS_MODULE_NAME).getClass("TimestampParserError"),
+                            RubyUtil.LOGSTASH_MODULE.getClass("TimestampParserError"),
                             "invalid timestamp format " + e.getMessage(),
                             true
                     );

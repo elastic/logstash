@@ -8,7 +8,6 @@ import org.jruby.RubyArray;
 import org.jruby.RubyBoolean;
 import org.jruby.RubyClass;
 import org.jruby.RubyHash;
-import org.jruby.RubyModule;
 import org.jruby.RubyObject;
 import org.jruby.RubyString;
 import org.jruby.anno.JRubyClass;
@@ -35,10 +34,9 @@ public final class JrubyEventExtLibrary implements Library {
 
     @Override
     public void load(Ruby runtime, boolean wrap) {
-        final RubyModule module = runtime.defineModule(RubyUtil.LS_MODULE_NAME);
 
         RubyClass clazz = runtime.defineClassUnder(
-            "Event", runtime.getObject(), RubyEvent::new, module
+            "Event", runtime.getObject(), RubyEvent::new, RubyUtil.LOGSTASH_MODULE
         );
 
         clazz.setConstant("METADATA", runtime.newString(Event.METADATA));
@@ -51,15 +49,15 @@ public final class JrubyEventExtLibrary implements Library {
         clazz.defineAnnotatedMethods(RubyEvent.class);
         clazz.defineAnnotatedConstants(RubyEvent.class);
 
-        PARSER_ERROR = module.defineOrGetModuleUnder("Json").getClass("ParserError");
+        PARSER_ERROR = RubyUtil.LOGSTASH_MODULE.defineOrGetModuleUnder("Json").getClass("ParserError");
         if (PARSER_ERROR == null) {
             throw new RaiseException(runtime, runtime.getClass("StandardError"), "Could not find LogStash::Json::ParserError class", true);
         }
-        GENERATOR_ERROR = module.defineOrGetModuleUnder("Json").getClass("GeneratorError");
+        GENERATOR_ERROR = RubyUtil.LOGSTASH_MODULE.defineOrGetModuleUnder("Json").getClass("GeneratorError");
         if (GENERATOR_ERROR == null) {
             throw new RaiseException(runtime, runtime.getClass("StandardError"), "Could not find LogStash::Json::GeneratorError class", true);
         }
-        LOGSTASH_ERROR = module.getClass("Error");
+        LOGSTASH_ERROR = RubyUtil.LOGSTASH_MODULE.getClass("Error");
         if (LOGSTASH_ERROR == null) {
             throw new RaiseException(runtime, runtime.getClass("StandardError"), "Could not find LogStash::Error class", true);
         }
@@ -89,7 +87,7 @@ public final class JrubyEventExtLibrary implements Library {
 
         public static RubyEvent newRubyEvent(Ruby runtime, Event event) {
             final RubyEvent ruby =
-                new RubyEvent(runtime, runtime.getModule(RubyUtil.LS_MODULE_NAME).getClass("Event"));
+                new RubyEvent(runtime, RubyUtil.LOGSTASH_MODULE.getClass("Event"));
             ruby.setEvent(event);
             return ruby;
         }

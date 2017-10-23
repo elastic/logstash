@@ -2,6 +2,7 @@ package org.logstash;
 
 import org.jruby.NativeException;
 import org.jruby.Ruby;
+import org.jruby.RubyModule;
 import org.jruby.exceptions.RaiseException;
 
 /**
@@ -10,27 +11,21 @@ import org.jruby.exceptions.RaiseException;
 public final class RubyUtil {
 
     /**
-     * Name of the Logstash JRuby module we register.
-     */
-    public static final String LS_MODULE_NAME = "LogStash";
-
-    /**
      * Reference to the global {@link Ruby} runtime.
      */
-    public static final Ruby RUBY = setupRuby();
-
-    private RubyUtil() {
-    }
+    public static final Ruby RUBY;
 
     /**
-     * Sets up the global {@link Ruby} runtime and ensures the creation of the "LogStash" module
-     * on it.
-     * @return Global {@link Ruby} Runtime
+     * Logstash Ruby Module.
      */
-    private static Ruby setupRuby() {
-        final Ruby ruby = Ruby.getGlobalRuntime();
-        ruby.getOrCreateModule(LS_MODULE_NAME);
-        return ruby;
+    public static final RubyModule LOGSTASH_MODULE;
+
+    static {
+        RUBY = Ruby.getGlobalRuntime();
+        LOGSTASH_MODULE = RUBY.getOrCreateModule("LogStash");
+    }
+
+    private RubyUtil() {
     }
 
     /**

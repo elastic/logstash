@@ -6,7 +6,6 @@ import java.util.List;
 import org.jruby.Ruby;
 import org.jruby.RubyArray;
 import org.jruby.RubyClass;
-import org.jruby.RubyModule;
 import org.jruby.RubyObject;
 import org.jruby.anno.JRubyClass;
 import org.jruby.anno.JRubyMethod;
@@ -25,13 +24,11 @@ public final class JrubyAckedBatchExtLibrary implements Library {
 
     @Override
     public void load(Ruby runtime, boolean wrap) {
-        RubyModule module = runtime.defineModule(RubyUtil.LS_MODULE_NAME);
-
         RubyClass clazz = runtime.defineClassUnder("AckedBatch", runtime.getObject(), new ObjectAllocator() {
             public IRubyObject allocate(Ruby runtime, RubyClass rubyClass) {
                 return new RubyAckedBatch(runtime, rubyClass);
             }
-        }, module);
+        }, RubyUtil.LOGSTASH_MODULE);
 
         clazz.defineAnnotatedMethods(RubyAckedBatch.class);
     }
@@ -47,7 +44,7 @@ public final class JrubyAckedBatchExtLibrary implements Library {
         }
 
         public RubyAckedBatch(Ruby runtime, Batch batch) {
-            super(runtime, runtime.getModule(RubyUtil.LS_MODULE_NAME).getClass("AckedBatch"));
+            super(runtime, RubyUtil.LOGSTASH_MODULE.getClass("AckedBatch"));
             this.batch = batch;
         }
 
