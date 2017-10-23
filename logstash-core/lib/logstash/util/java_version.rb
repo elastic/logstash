@@ -3,7 +3,6 @@
 module LogStash::Util::JavaVersion
   # Return the current java version string. Returns nil if this is a non-java platform (e.g. MRI).
   def self.version
-    return nil unless LogStash::Environment.jruby?
     java.lang.System.getProperty("java.runtime.version")
   end
 

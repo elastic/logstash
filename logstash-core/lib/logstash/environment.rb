@@ -132,8 +132,6 @@ module LogStash
     end
 
     def load_jars!(pattern)
-      raise(LogStash::EnvironmentError, I18n.t("logstash.environment.jruby-required")) unless LogStash::Environment.jruby?
-
       jar_files = find_jars(pattern)
       require_jars! jar_files
     end
@@ -154,10 +152,6 @@ module LogStash
 
     def ruby_bin
       ENV["USE_RUBY"] == "1" ? "ruby" : File.join("vendor", "jruby", "bin", "jruby")
-    end
-
-    def jruby?
-      @jruby ||= !!(RUBY_PLATFORM == "java")
     end
 
     def windows?

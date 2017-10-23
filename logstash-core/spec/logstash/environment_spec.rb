@@ -10,11 +10,6 @@ describe LogStash::Environment do
     let(:default_runtime_location) { File.join(default_jars_location,"runtime-jars","*.jar") }
     let(:default_test_location)    { File.join(default_jars_location,"test-jars","*.jar") }
 
-    it "raises an exception if jruby is not available" do
-      expect(subject).to receive(:jruby?).and_return(false)
-      expect { subject.load_runtime_jars! }.to raise_error
-    end
-
     it "find runtime jars in the default location" do
       expect(subject).to receive(:find_jars).with(default_runtime_location).and_return([])
       subject.load_runtime_jars!

@@ -407,7 +407,7 @@ class LogStash::Runner < Clamp::StrictCommand
 
     if logger.info?
       show_version_ruby
-      show_version_java if LogStash::Environment.jruby?
+      show_version_java
       show_gems if logger.debug?
     end
   end # def show_version
