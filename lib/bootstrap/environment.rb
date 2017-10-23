@@ -40,10 +40,6 @@ module LogStash
       ::Gem.win_platform?
     end
 
-    def jruby?
-      @jruby ||= !!(RUBY_PLATFORM == "java")
-    end
-
     def logstash_gem_home
       ::File.join(BUNDLE_DIR, ruby_engine, gem_ruby_version)
     end
