@@ -1,6 +1,6 @@
 # encoding: utf-8
-require "logstash/util/cloud_setting_id"
 require "spec_helper"
+require "logstash/util/cloud_setting_id"
 
 describe LogStash::Util::CloudSettingId do
   let(:input) { "foobar:dXMtZWFzdC0xLmF3cy5mb3VuZC5pbyRub3RhcmVhbCRpZGVudGlmaWVy" }
@@ -64,7 +64,7 @@ describe LogStash::Util::CloudSettingId do
     end
   end
 
-  describe "when given unacceptable input, the accessors:" do
+  describe "when given acceptable input, the accessors:" do
     it '#original has a value' do
       expect(subject.original).to eq(input)
     end
