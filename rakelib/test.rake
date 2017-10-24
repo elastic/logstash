@@ -8,7 +8,7 @@ namespace "test" do
 
   desc "run the java unit tests"
   task "core-java" do
-    exit(1) unless system './gradlew clean test'
+    exit(1) unless system('./gradlew clean javaTests')
   end
 
   desc "run the ruby unit tests"
@@ -24,8 +24,8 @@ namespace "test" do
   end
 
   desc "run all core specs"
-  task "core-slow" => ["core-java"] do
-    exit 1 unless system(*default_spec_command)
+  task "core-slow" do
+    exit 1 unless system('./gradlew clean test')
   end
 
   desc "run core specs excluding slower tests like stress tests"
