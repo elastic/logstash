@@ -13,7 +13,6 @@ import java.util.stream.Collectors;
  * Created by andrewvc on 9/15/16.
  */
 public class IfVertex extends Vertex {
-    private volatile String generatedId;
 
     public BooleanExpression getBooleanExpression() {
         return booleanExpression;
