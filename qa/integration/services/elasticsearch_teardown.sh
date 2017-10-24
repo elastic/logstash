@@ -13,3 +13,6 @@ stop_es() {
 }
 
 stop_es
+
+rm -rf /tmp/ls_integration/es-data
+rm -rf /tmp/ls_integration/es-logs
