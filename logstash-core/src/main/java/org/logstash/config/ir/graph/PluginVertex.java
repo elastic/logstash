@@ -13,7 +13,6 @@ import org.logstash.config.ir.SourceComponent;
 public class PluginVertex extends Vertex {
     private final SourceWithMetadata meta;
     private final PluginDefinition pluginDefinition;
-    private volatile String generatedId;
 
     public PluginDefinition getPluginDefinition() {
         return pluginDefinition;
@@ -65,11 +64,5 @@ public class PluginVertex extends Vertex {
             return otherV.getPluginDefinition().sourceComponentEquals(this.getPluginDefinition());
         }
         return false;
-    }
-
-    @Override
-    public void clearCache() {
-        super.clearCache();
-        this.generatedId = null;
     }
 }
