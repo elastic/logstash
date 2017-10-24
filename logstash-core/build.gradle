@@ -70,6 +70,10 @@ configurations.archives {
     extendsFrom configurations.javadoc
 }
 
+task javaTests(type: Test) {
+    exclude '/org/logstash/RSpecTests.class'
+}
+
 artifacts {
     sources(sourcesJar) {
         // Weird Gradle quirk where type will be used for the extension, but only for sources
@@ -113,6 +117,7 @@ dependencies {
     testCompile 'net.javacrumbs.json-unit:json-unit:1.9.0'
     testCompile 'org.elasticsearch:securemock:1.2'
     testCompile 'org.assertj:assertj-core:3.8.0'
+    testCompile "org.jruby:jruby-complete:${jrubyVersion}"
     provided "org.jruby:jruby-core:${jrubyVersion}"
 }
 
