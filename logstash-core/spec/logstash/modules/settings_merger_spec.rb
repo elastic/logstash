@@ -68,7 +68,7 @@ describe LogStash::Modules::SettingsMerger do
         {
           "var.kibana.scheme" => "https",
           "var.kibana.host" => "identifier.us-east-1.aws.found.io:443",
-          "var.elasticsearch.hosts" => "notareal.us-east-1.aws.found.io:443",
+          "var.elasticsearch.hosts" => "https://notareal.us-east-1.aws.found.io:443",
           "var.elasticsearch.username" => "elastix",
           "var.kibana.username" => "elastix"
         }
@@ -93,7 +93,7 @@ describe LogStash::Modules::SettingsMerger do
         {
           "var.kibana.scheme" => "https",
           "var.kibana.host" => "identifier.us-east-1.aws.found.io:443",
-          "var.elasticsearch.hosts" => "notareal.us-east-1.aws.found.io:443",
+          "var.elasticsearch.hosts" => "https://notareal.us-east-1.aws.found.io:443",
         }
       end
       let(:ls_settings) { SubstituteSettingsForRSpec.new({"cloud.id" => cloud_id}) }
