@@ -1,14 +1,10 @@
 # encoding: utf-8
 require "logstash/environment"
-require "logstash/errors"
 require "jrjackson"
 require "logstash/java_integration"
 
 module LogStash
   module Json
-    class ParserError < LogStash::Error; end
-    class GeneratorError < LogStash::Error; end
-
     extend self
 
     def jruby_load(data, options = {})
