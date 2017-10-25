@@ -7,15 +7,6 @@ module LogStash
     extend self
 
     def patch!
-      # Patch bundler to write a .lock file specific to the version of ruby.
-      # This keeps MRI/JRuby/RBX from conflicting over the Gemfile.lock updates
-      ::Bundler::SharedHelpers.module_exec do
-        def default_lockfile
-          ruby = "#{Environment.ruby_engine}-#{Environment.ruby_abi_version}"
-          Pathname.new("#{default_gemfile}.#{ruby}.lock")
-        end
-      end
-
       # Patch to prevent Bundler to save a .bundle/config file in the root
       # of the application
       ::Bundler::Settings.module_exec do
