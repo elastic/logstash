@@ -13,7 +13,7 @@ SELECTED_TEST_SUITE=$1
 # we will clear them out to make sure we use the latest version of theses files
 # If we don't do this we will run into gem Conflict error.
 [ -f Gemfile ] && rm Gemfile
-[ -f Gemfile.jruby-2.3.lock ] && rm Gemfile.jruby-2.3.lock
+[ -f Gemfile.lock ] && rm Gemfile.lock
 
 # When running these tests in a Jenkins matrix, in parallel, once one Vagrant job is done, the Jenkins ProcessTreeKiller will kill any other Vagrant processes with the same
 # BUILD_ID unless you set this magic flag:  https://wiki.jenkins.io/display/JENKINS/ProcessTreeKiller

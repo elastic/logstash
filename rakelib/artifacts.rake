@@ -38,7 +38,7 @@ namespace "artifact" do
       # See more in https://github.com/elastic/logstash/issues/4818
       "vendor/??*/**/.mvn/**/*",
       "Gemfile",
-      "Gemfile.jruby-2.3.lock",
+      "Gemfile.lock",
     ]
   end
 
