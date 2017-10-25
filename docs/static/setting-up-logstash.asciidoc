@@ -56,11 +56,6 @@ config and the logs directories so that you do not delete important data later o
   | `{extract.path}/logs`
   | `path.logs`
 
-| plugins
-  | Local, non Ruby-Gem plugin files. Each plugin is contained in a subdirectory. Recommended for development only.
-  | `{extract.path}/plugins`
-  | `path.plugins`
-
 |=======================================================================
 
 [[deb-layout]]
