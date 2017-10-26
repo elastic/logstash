@@ -1,15 +1,13 @@
 package org.logstash.ackedqueue;
 
+import java.io.IOException;
 import org.junit.Test;
 import org.logstash.ackedqueue.io.PageIO;
-
-import java.io.IOException;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.logstash.ackedqueue.QueueTestHelpers.singleElementCapacityForByteBufferPageIO;
-import static org.mockito.Mockito.mock;
 
 public class HeadPageTest {
 
@@ -17,15 +15,17 @@ public class HeadPageTest {
     public void newHeadPage() throws IOException {
         Settings s = TestSettings.volatileQueueSettings(100);
         // Close method on HeadPage requires an instance of Queue that has already been opened.
-        Queue q = mock(Queue.class);
-        PageIO pageIO = s.getPageIOFactory().build(0, 100, "dummy");
-        pageIO.create();
-        try(final HeadPage p = new HeadPage(0, q, pageIO)) {
-            assertThat(p.getPageNum(), is(equalTo(0)));
-            assertThat(p.isFullyRead(), is(true));
-            assertThat(p.isFullyAcked(), is(false));
-            assertThat(p.hasSpace(10), is(true));
-            assertThat(p.hasSpace(100), is(false));
+        try (Queue q = new Queue(s)) {
+            q.open();
+            PageIO pageIO = s.getPageIOFactory().build(0, 100, "dummy");
+            pageIO.create();
+            try (final HeadPage p = new HeadPage(0, q, pageIO)) {
+                assertThat(p.getPageNum(), is(equalTo(0)));
+                assertThat(p.isFullyRead(), is(true));
+                assertThat(p.isFullyAcked(), is(false));
+                assertThat(p.hasSpace(10), is(true));
+                assertThat(p.hasSpace(100), is(false));
+            }
         }
     }
 
