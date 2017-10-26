@@ -46,8 +46,6 @@ module LogStash
       options = {:without => [:development]}.merge(options)
       options[:without] = Array(options[:without])
 
-      # make sure we use our own installed bundler
-      LogStash::Rubygems.patch!
       ::Gem.clear_paths
       ENV['GEM_HOME'] = ENV['GEM_PATH'] = Environment.logstash_gem_home
       ::Gem.paths = ENV
@@ -86,9 +84,6 @@ module LogStash
       options[:without] = Array(options[:without])
       options[:update] = Array(options[:update]) if options[:update]
 
-      # make sure we use our own installed bundler
-      # require "logstash/patches/rubygems" # patch rubygems before clear_paths
-      LogStash::Rubygems.patch!
       ::Gem.clear_paths
       ENV['GEM_HOME'] = ENV['GEM_PATH'] = LogStash::Environment.logstash_gem_home
       ::Gem.paths = ENV
