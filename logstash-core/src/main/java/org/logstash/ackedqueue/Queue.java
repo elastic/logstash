@@ -33,9 +33,10 @@ import java.util.concurrent.locks.ReentrantLock;
 //   - what errors cause whole queue to be broken
 //   - where to put try/catch for these errors
 
+public final class Queue implements Closeable {
 
-public class Queue implements Closeable {
-    protected long seqNum;
+    private long seqNum;
+
     protected HeadPage headPage;
 
     // complete list of all non fully acked pages. note that exact sequentially by pageNum cannot be assumed
@@ -48,10 +49,10 @@ public class Queue implements Closeable {
 
     // checkpoints that were not purged in the acking code to keep contiguous checkpoint files
     // regardless of the correcponding data file purge.
-    protected final Set<Integer> preservedCheckpoints;
+    private final Set<Integer> preservedCheckpoints;
 
     protected volatile long unreadCount;
-    protected volatile long currentByteSize;
+    private volatile long currentByteSize;
 
     private final CheckpointIO checkpointIO;
     private final PageIOFactory pageIOFactory;
@@ -80,37 +81,21 @@ public class Queue implements Closeable {
     private static final Logger logger = LogManager.getLogger(Queue.class);
 
     public Queue(Settings settings) {
-        this(
-            settings.getDirPath(),
-            settings.getCapacity(),
-            settings.getQueueMaxBytes(),
-            settings.getCheckpointIOFactory().build(settings.getDirPath()),
-            settings.getPageIOFactory(),
-            settings.getElementClass(),
-            settings.getMaxUnread(),
-            settings.getCheckpointMaxWrites(),
-            settings.getCheckpointMaxAcks()
-        );
-    }
-
-    private Queue(String dirPath, int pageCapacity, long maxBytes, CheckpointIO checkpointIO,
-        PageIOFactory pageIOFactory, Class<? extends Queueable> elementClass, int maxUnread,
-        int checkpointMaxWrites, int checkpointMaxAcks) {
-        this.dirPath = dirPath;
-        this.pageCapacity = pageCapacity;
-        this.maxBytes = maxBytes;
-        this.checkpointIO = checkpointIO;
-        this.pageIOFactory = pageIOFactory;
-        this.elementClass = elementClass;
+        this.dirPath = settings.getDirPath();
+        this.pageCapacity = settings.getCapacity();
+        this.maxBytes = settings.getQueueMaxBytes();
+        this.checkpointIO = settings.getCheckpointIOFactory().build(dirPath);
+        this.pageIOFactory = settings.getPageIOFactory();
+        this.elementClass = settings.getElementClass();
         this.tailPages = new ArrayList<>();
         this.unreadTailPages = new ArrayList<>();
         this.preservedCheckpoints = new HashSet<>();
         this.closed = new AtomicBoolean(true); // not yet opened
-        this.maxUnread = maxUnread;
-        this.checkpointMaxAcks = checkpointMaxAcks;
-        this.checkpointMaxWrites = checkpointMaxWrites;
-        this.unreadCount = 0;
-        this.currentByteSize = 0;
+        this.maxUnread = settings.getMaxUnread();
+        this.checkpointMaxAcks = settings.getCheckpointMaxAcks();
+        this.checkpointMaxWrites = settings.getCheckpointMaxWrites();
+        this.unreadCount = 0L;
+        this.currentByteSize = 0L;
 
         // retrieve the deserialize method
         try {
@@ -402,7 +387,7 @@ public class Queue implements Closeable {
                 newCheckpointedHeadpage(newHeadPageNum);
             }
 
-            long seqNum = nextSeqNum();
+            long seqNum = this.seqNum += 1;
             this.headPage.write(data, seqNum, this.checkpointMaxWrites);
             this.unreadCount++;
             
@@ -723,6 +708,7 @@ public class Queue implements Closeable {
         }
     }
 
+    @Override
     public void close() throws IOException {
         // TODO: review close strategy and exception handling and resiliency of first closing tail pages if crash in the middle
 
@@ -762,7 +748,7 @@ public class Queue implements Closeable {
         }
     }
 
-    protected Page firstUnreadPage() {
+    Page firstUnreadPage() {
         // look at head page if no unreadTailPages
         return (this.unreadTailPages.isEmpty()) ? (this.headPage.isFullyRead() ? null : this.headPage) : this.unreadTailPages.get(0);
     }
@@ -776,7 +762,7 @@ public class Queue implements Closeable {
         }
     }
 
-    protected int firstUnackedPageNum() {
+    int firstUnackedPageNum() {
         if (this.tailPages.isEmpty()) {
             return this.headPage.getPageNum();
         }
@@ -806,11 +792,7 @@ public class Queue implements Closeable {
         }
     }
 
-    protected long nextSeqNum() {
-        return this.seqNum += 1;
-    }
-
-    protected boolean isClosed() {
+    private boolean isClosed() {
         return this.closed.get();
     }
 }
