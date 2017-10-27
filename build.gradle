@@ -17,6 +17,8 @@ import de.undercouch.gradle.tasks.download.Download
 import de.undercouch.gradle.tasks.download.Verify
 import org.yaml.snakeyaml.Yaml
 
+task bootstrap {}
+
 allprojects {
   group = 'org.logstash'
 
@@ -42,6 +44,7 @@ allprojects {
 
   //https://stackoverflow.com/questions/3963708/gradle-how-to-display-test-results-in-the-console-in-real-time
   tasks.withType(Test) {
+    dependsOn bootstrap
     testLogging {
       // set options for log level LIFECYCLE
       events "passed", "skipped", "failed", "standardOut"
@@ -89,9 +92,6 @@ if (versionMap["jruby-runtime-override"]) {
     doChecksum = true
 }
 
-// Tasks
-task bootstrap {}
-
 task downloadJRuby(type: Download) {
     description "Download JRuby artifact from this specific URL: ${jRubyURL}"
     src jRubyURL
@@ -131,6 +131,11 @@ task installGems(dependsOn: [downloadAndInstallJRuby], type: Exec) {
 
 project(":logstash-core") {
   installGems.dependsOn assemble
+}
+
+clean {
+  delete "${projectDir}/vendor/"
+  delete "${projectDir}/Gemfile"
 }
 
 bootstrap.dependsOn installGems
