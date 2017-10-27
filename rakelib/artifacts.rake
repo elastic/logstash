@@ -191,6 +191,8 @@ namespace "artifact" do
   end
 
   task "prepare" do
+    exit 1 unless system('./gradlew assemble bootstrap :ingest-converter:assemble')
+    Rake::Task["vendor:gems"].invoke
     if ENV['SKIP_PREPARE'] != "1"
       ["plugin:install-default", "artifact:clean-bundle-config"].each {|task| Rake::Task[task].invoke }
     end
