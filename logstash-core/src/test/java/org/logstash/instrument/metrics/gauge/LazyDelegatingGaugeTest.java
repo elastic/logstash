@@ -70,6 +70,8 @@ public class LazyDelegatingGaugeTest {
         assertThat(gauge.getValue()).isNull();
         assertThat(gauge.get()).isNull();
         assertThat(gauge.getType()).isNull();
+
+        assertThat(gauge.getName()).isNotEmpty();
     }
 
     @Test
