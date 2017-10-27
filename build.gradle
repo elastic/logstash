@@ -122,6 +122,13 @@ verifyFile.onlyIf { doChecksum }
 
 task installGems(dependsOn: [downloadAndInstallJRuby], type: Exec) {
   workingDir projectDir
+  inputs.files file("$projectDir/Gemfile.template")
+  inputs.files fileTree("$projectDir/rakelib")
+  inputs.files fileTree("$projectDir/versions.yml")
+  outputs.files file("$projectDir/Gemfile")
+  outputs.files file("$projectDir/Gemfile.lock")
+  outputs.files fileTree("$projectDir/vendor/bundle")
+  outputs.files fileTree("$projectDir/vendor/jruby")
   commandLine './vendor/jruby/bin/jruby', "${projectDir}/vendor/jruby/bin/rake".toString(), "vendor:gems", "test:install-core"
   standardOutput = new ByteArrayOutputStream()
   ext.output = {
