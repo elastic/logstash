@@ -136,6 +136,7 @@ project(":logstash-core") {
 clean {
   delete "${projectDir}/vendor/"
   delete "${projectDir}/Gemfile"
+  delete "${projectDir}/Gemfile.lock"
 }
 
 bootstrap.dependsOn installGems
