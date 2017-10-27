@@ -196,20 +196,18 @@ public final class EventTest {
 
     @Test
     public void testGetFieldDefaultValue() throws Exception {
-        Event e = new Event();
+        Event event = new Event();
 
-        assertNull(e.getField("foo"));
-        assertEquals(1, e.getField("foo", 1));
-        e.setField("foo", 42L);
-        assertEquals(42L, e.getField("foo"));
+        assertNull(event.getField("foo"));
+        assertEquals(1, event.getField("foo", 1));
+        event.setField("foo", 42L);
+        assertEquals(42L, event.getField("foo"));
+        assertEquals(42L, event.getField("foo", 1));
 
-        Map<String, Object> inner = new HashMap<>(2);
-        inner.put("innerFoo", 42L);
-
-        e.setField("bar", inner);
-        assertEquals(42L, e.getField("[bar][innerFoo]"));
-        assertNull(e.getField("[bar][innerBar]"));
-        assertEquals(41L, e.getField("[bar][innerBar]", 41L));
+        event.setField("[bar][innerFoo]", 42L);
+        assertEquals(42L, event.getField("[bar][innerFoo]"));
+        assertNull(event.getField("[bar][innerBar]"));
+        assertEquals(41L, event.getField("[bar][innerBar]", 41L));
     }
 
 
