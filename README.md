@@ -65,7 +65,7 @@ If you prefer to use rvm (ruby version manager) to manage Ruby versions on your 
 
 ```sh
 gpg --keyserver hkp://keys.gnupg.net --recv-keys 409B6B1796C275462A1703113804BB82D39DC0E3
-\curl -sSL https://get.rvm.io | bash -s stable --ruby=jruby-9.1.10.0
+curl -sSL https://get.rvm.io | bash -s stable --ruby=jruby-9.1.10.0
 ```
 
 ### Check Ruby version
