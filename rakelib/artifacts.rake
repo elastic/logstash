@@ -192,7 +192,7 @@ namespace "artifact" do
 
   task "prepare" do
     if ENV['SKIP_PREPARE'] != "1"
-      ["bootstrap", "plugin:install-default", "artifact:clean-bundle-config"].each {|task| Rake::Task[task].invoke }
+      ["plugin:install-default", "artifact:clean-bundle-config"].each {|task| Rake::Task[task].invoke }
     end
   end
 

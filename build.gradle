@@ -119,4 +119,18 @@ task downloadAndInstallJRuby(dependsOn: verifyFile, type: Copy) {
 
 // If you are running a JRuby snapshot we will skip the integrity check.
 verifyFile.onlyIf { doChecksum }
-bootstrap.dependsOn downloadAndInstallJRuby
+
+task installGems(dependsOn: [downloadAndInstallJRuby], type: Exec) {
+  workingDir projectDir
+  commandLine './vendor/jruby/bin/jruby', "${projectDir}/vendor/jruby/bin/rake".toString(), "vendor:gems", "test:install-core"
+  standardOutput = new ByteArrayOutputStream()
+  ext.output = {
+    return standardOutput.toString()
+  }
+}
+
+project(":logstash-core") {
+  installGems.dependsOn assemble
+}
+
+bootstrap.dependsOn installGems

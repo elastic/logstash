@@ -14,7 +14,7 @@ namespace "license" do
   NOTICE_FILE_PATH = File.join(LogStash::Environment::LOGSTASH_HOME, "NOTICE.TXT")
 
   desc "Generate a license/notice file for default plugin dependencies"
-  task "generate-notice-file" => ["bootstrap", "plugin:install-default"] do
+  task "generate-notice-file" => ["plugin:install-default"] do
     puts("[license:generate-notice-file] Generating notice file for default plugin dependencies")
     generate_notice_file
   end

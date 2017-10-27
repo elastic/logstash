@@ -47,7 +47,7 @@ describe LogStash::Compiler do
         end
       end
 
-      subject(:pipeline) { described_class.compile_sources(sources_with_metadata, settings) }
+      subject(:pipeline) { described_class.compile_sources(sources_with_metadata, false) }
 
       it "should generate a hash" do
         expect(pipeline.unique_hash).to be_a(String)
@@ -100,7 +100,7 @@ describe LogStash::Compiler do
   describe "compiling imperative" do
     let(:source_id) { "fake_sourcefile" }
     let(:source_with_metadata) { org.logstash.common.SourceWithMetadata.new(source_protocol, source_id, 0, 0, source) }
-    subject(:compiled) { described_class.compile_imperative(source_with_metadata, settings) }
+    subject(:compiled) { described_class.compile_imperative(source_with_metadata, settings.get_value("config.support_escapes")) }
 
     context "when config.support_escapes" do
       let(:parser) { LogStashCompilerLSCLGrammarParser.new }

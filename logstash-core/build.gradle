@@ -74,6 +74,10 @@ task javaTests(type: Test) {
     exclude '/org/logstash/RSpecTests.class'
 }
 
+tasks.withType(Test) {
+    systemProperty 'logstash.core.root.dir', projectDir.absolutePath
+}
+
 artifacts {
     sources(sourcesJar) {
         // Weird Gradle quirk where type will be used for the extension, but only for sources

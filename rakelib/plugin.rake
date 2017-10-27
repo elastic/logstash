@@ -8,7 +8,7 @@ namespace "plugin" do
     raise(RuntimeError, $!.to_s) unless $?.success?
   end
 
-  task "install-development-dependencies" => "bootstrap" do
+  task "install-development-dependencies" do
     puts("[plugin:install-development-dependencies] Installing development dependencies of all installed plugins")
     install_plugins("--development",  "--preserve")
 
@@ -23,21 +23,21 @@ namespace "plugin" do
     task.reenable # Allow this task to be run again
   end # task "install"
 
-  task "install-default" => "bootstrap" do
+  task "install-default" do
     puts("[plugin:install-default] Installing default plugins")
     install_plugins("--no-verify", "--preserve", *LogStash::RakeLib::DEFAULT_PLUGINS)
 
     task.reenable # Allow this task to be run again
   end
 
-  task "install-core" => "bootstrap" do
+  task "install-core" do
     puts("[plugin:install-core] Installing core plugins")
     install_plugins("--no-verify", "--preserve", *LogStash::RakeLib::CORE_SPECS_PLUGINS)
 
     task.reenable # Allow this task to be run again
   end
 
-  task "install-jar-dependencies" => "bootstrap" do
+  task "install-jar-dependencies" do
     puts("[plugin:install-jar-dependencies] Installing jar_dependencies plugins for testing")
     install_plugins("--no-verify", "--preserve", *LogStash::RakeLib::TEST_JAR_DEPENDENCIES_PLUGINS)
 

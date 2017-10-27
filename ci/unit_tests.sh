@@ -13,24 +13,23 @@ SELECTED_TEST_SUITE=$1
 
 if [[ $SELECTED_TEST_SUITE == $"core-fail-fast" ]]; then
   echo "Running Java and Ruby unit tests, but will fail fast"
-  echo "Running test:install-core"
-  rake test:install-core
+  echo "Running Gradle clean bootstrap"
+  ./gradlew clean bootstrap
   echo "Running test:core-fail-fast"
   rake test:core-fail-fast
 elif [[ $SELECTED_TEST_SUITE == $"java" ]]; then
   echo "Running Java unit tests"
-  echo "Running test:core-java"
-  rake test:core-java
+  ./gradlew clean javaTests
 elif [[ $SELECTED_TEST_SUITE == $"ruby" ]]; then
   echo "Running Ruby unit tests"
-  echo "Running test:install-core"
-  rake test:install-core
+  echo "Running Gradle clean bootstrap"
+  ./gradlew clean bootstrap
   echo "Running test:core-ruby"
   rake test:core-ruby
 else
   echo "Running Java and Ruby unit tests"
-  echo "Running test:install-core"
-  rake test:install-core
+  echo "Running Gradle clean bootstrap"
+  ./gradlew clean bootstrap
   echo "Running test:core"
   rake test:core
 fi
