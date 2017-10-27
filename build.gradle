@@ -137,6 +137,7 @@ clean {
   delete "${projectDir}/vendor/"
   delete "${projectDir}/Gemfile"
   delete "${projectDir}/Gemfile.lock"
+  delete "${projectDir}/NOTICE.TXT"
 }
 
 bootstrap.dependsOn installGems
