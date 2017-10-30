@@ -5,6 +5,9 @@ input {
         codec => netflow {
             versions => [5,9]
         }
+        workers => <%= setting("var.input.udp.workers", 2) %>
+        receive_buffer_bytes => <%= setting("var.input.udp.receive_buffer_bytes", 212992) %>
+        queue_size => <%= setting("var.input.udp.queue_size", 2000) %>
     }
 }
 
