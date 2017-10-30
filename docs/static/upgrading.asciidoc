@@ -66,6 +66,10 @@ Before upgrading Logstash, remember to read the <<breaking-changes,breaking chan
 If you are installing Logstash with other components in the Elastic Stack, also see the
 {stack-ref}/index.html[Elastic Stack installation and upgrade documentation].
 
+If you are using the default mapping templates in Logstash, to continue using these after migrating Elasticsearch to 6.0, you must override the existing template with the 6.x template.
+ This can be done by starting a pipeline with the `overwrite_template => true` option in the Elasticsearch output definition in the Logstash config.
+
+
 ==== When to Upgrade
 
 Fresh installations can and should start with the same version across the Elastic Stack.
