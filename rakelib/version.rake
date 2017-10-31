@@ -65,15 +65,16 @@ namespace :version do
 
   desc "set version of logstash-core-plugin-api"
   task :set_plugin_api, [:version] => [:validate] do |t, args|
-    hash = {}
+    new_version = {}
     get_versions.each do |component, version|
       if component == "logstash-core-plugin-api"
-        hash[component] = args[:version]
+        new_version[component] = args[:version]
       else
-        hash[component] = version
+        new_version[component] = version
       end
     end
-    update_version_file(hash)
+    old_version = YAML.safe_load(File.read(VERSION_FILE))
+    update_version_file(old_version, new_version)
   end
 
   task :validate, :version do |t, args|
