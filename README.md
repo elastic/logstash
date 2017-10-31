@@ -141,7 +141,7 @@ Most of the unit tests in Logstash are written using [rspec](http://rspec.info/)
     
 3- To run the subset of tests covering the Java codebase only run:
     
-    ./gradlew test
+    ./gradlew javaTests
 
 ### Plugins tests
 
