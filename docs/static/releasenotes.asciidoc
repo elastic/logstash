@@ -16,7 +16,7 @@ See also:
 * <<release-notes-xls>>
 endif::include-xpack[]
 
-[[logstash-6.0.0-rc2]]
+[[logstash-6-0-0-rc2]]
 === Logstash 6.0.0-rc2 Release Notes
 
 * https://github.com/elastic/logstash/commit/840439722d8ef4737c7e8101c59652ced191bbea[Improved performance]
