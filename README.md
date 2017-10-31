@@ -82,7 +82,7 @@ jruby 9.1.10.0 (2.3.3) 2017-05-25 b09c48a Java HotSpot(TM) 64-Bit Server VM 25.1
 * To run Logstash from the repo you must first bootstrap the environment:
 
 ```sh
-rake bootstrap
+./gradlew bootstrap
 ```
     
 * You can then use `bin/logstash` to start Logstash, but there are no plugins installed. To install default plugins, you can run:
@@ -126,22 +126,18 @@ Most of the unit tests in Logstash are written using [rspec](http://rspec.info/)
 
 ### Core tests
 
-1- In order to run the core tests, a small set of plugins must first be installed:
+1- To run the core tests you can use the rake task:
 
-    rake test:install-core
-
-2- To run the core tests you can use the rake task:
-
-    rake test:core
+    ./gradlew test
 
   or use the `rspec` tool to run all tests or run a specific test:
 
     bin/rspec
     bin/rspec spec/foo/bar_spec.rb
     
-3- To run the subset of tests covering the Java codebase only run:
+2- To run the subset of tests covering the Java codebase only run:
     
-    ./gradlew test
+    ./gradlew javaTests
 
 ### Plugins tests
 
@@ -163,8 +159,8 @@ Note that if a plugin is installed using the plugin manager `bin/logstash-plugin
 You can build a Logstash snapshot package as tarball or zip file
 
 ```sh
-rake artifact:tar
-rake artifact:zip
+./gradlew bootstrap && rake artifact:tar
+./gradlew bootstrap && rake artifact:zip
 ```
 
 This will create the artifact `LS_HOME/build` directory
