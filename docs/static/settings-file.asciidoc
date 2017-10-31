@@ -83,10 +83,6 @@ The `logstash.yml` file includes the following settings:
   CPU is not saturated, consider increasing this number to better utilize machine processing power.
 | Number of the host's CPU cores
 
-| `pipeline.output.workers`
-| The number of workers to use per output plugin instance.
-| `1`
-
 | `pipeline.batch.size`
 | The maximum number of events an individual worker thread will collect from inputs
   before attempting to execute its filters and outputs.
