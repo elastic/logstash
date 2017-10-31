@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-6-0-0-rc2,Logstash 6.0.0-rc2>>
 * <<logstash-6-0-0-rc1,Logstash 6.0.0-rc1>>
 * <<logstash-6-0-0-beta2,Logstash 6.0.0-beta2>>
 * <<logstash-6-0-0-beta1,Logstash 6.0.0-beta1>>
@@ -14,6 +15,14 @@ See also:
 
 * <<release-notes-xls>>
 endif::include-xpack[]
+
+[[logstash-6.0.0-rc2]]
+=== Logstash 6.0.0-rc2 Release Notes
+
+* https://github.com/elastic/logstash/commit/840439722d8ef4737c7e8101c59652ced191bbea[Improved performance]
+* https://github.com/elastic/logstash/commit/546951fa889902d8ec56f8a7cec1dc41a21088ff[Modules: Set default credentials for Kibana if es info is present]
+* More small consistency fixes for Windows 
+* Fix bug where the Elasticsearch output would not correctly log errors but rather log an exception in the error handler, thus hiding the actual error message.
 
 [[logstash-6-0-0-rc1]]
 === Logstash 6.0.0-rc1 Release Notes
