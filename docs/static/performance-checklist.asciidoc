@@ -48,7 +48,6 @@ You may be tempted to jump ahead and change settings like `pipeline.workers` (`-
 . *Tune Logstash worker settings:*
 +
 * Begin by scaling up the number of pipeline workers by using the `-w` flag. This will increase the number of threads available for filters and outputs. It is safe to scale this up to a multiple of CPU cores, if need be, as the threads can become idle on I/O.
-* Each output can only be active in a single pipeline worker thread by default. You can increase this by changing the `workers` setting in the configuration block for each output. Never make this value larger than the number of pipeline workers.
 * You may also tune the output batch size. For many outputs, such as the Elasticsearch output, this setting will correspond to the size of I/O operations. In the case of the Elasticsearch output, this setting corresponds to the batch size.
 
 [[tuning-logstash]]
@@ -83,7 +82,7 @@ following suggestions:
 
 * Threads in Java have names and you can use the `jstack`, `top`, and the VisualVM graphical tools to figure out which resources a given thread uses.
 
-* On Linux platforms, Logstash labels all the threads it can with something descriptive. For example, inputs show up as `[base]<inputname`, filter/output workers show up as `[base]>workerN`, where N is an integer.  Where possible, other threads are also labeled to help you identify their purpose.
+* On Linux platforms, Logstash labels all the threads it can with something descriptive. For example, inputs show up as `[base]<inputname`, and filter workers show up as `[base]>workerN`, where N is an integer.  Where possible, other threads are also labeled to help you identify their purpose.
 
 [float]
 [[profiling-the-heap]]
