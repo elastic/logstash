@@ -8,7 +8,6 @@ The following configuration options are supported by all output plugins:
 | <<plugins-{type}s-{plugin}-codec>> |<<codec,codec>>|No
 | <<plugins-{type}s-{plugin}-enable_metric>> |<<boolean,boolean>>|No
 | <<plugins-{type}s-{plugin}-id>> |<<string,string>>|No
-| <<plugins-{type}s-{plugin}-workers>> |<<number,number>>|No
 |=======================================================================
 
 [id="plugins-{type}s-{plugin}-codec"]
@@ -50,8 +49,3 @@ output {
 ---------------------------------------------------------------------------------------------------
 
 
-[id="plugins-{type}s-{plugin}-workers"]
-===== `workers`
-
-  * Value type is <<string,string>>
-  * Default value is `1`
