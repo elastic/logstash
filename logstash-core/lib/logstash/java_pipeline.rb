@@ -29,6 +29,7 @@ java_import org.logstash.common.DeadLetterQueueFactory
 java_import org.logstash.common.SourceWithMetadata
 java_import org.logstash.common.io.DeadLetterQueueWriter
 java_import org.logstash.config.ir.CompiledPipeline
+java_import org.logstash.config.ir.ConfigCompiler
 
 module LogStash; class JavaBasePipeline
   include org.logstash.config.ir.compiler.RubyIntegration::Pipeline 
@@ -47,7 +48,9 @@ module LogStash; class JavaBasePipeline
     @settings = pipeline_config.settings
     @config_hash = Digest::SHA1.hexdigest(@config_str)
 
-    @lir = compile_lir
+    @lir = ConfigCompiler.configToPipelineIR(
+      @config_str, @settings.get_value("config.support_escapes")
+    )
 
     # Every time #plugin is invoked this is incremented to give each plugin
     # a unique id when auto-generating plugin ids
@@ -83,13 +86,6 @@ module LogStash; class JavaBasePipeline
     if settings.get_value("dead_letter_queue.enable")
       DeadLetterQueueFactory.release(pipeline_id)
     end
-  end
-
-  def compile_lir
-    sources_with_metadata = [
-      SourceWithMetadata.new("str", "pipeline", 0, 0, self.config_str)
-    ]
-    LogStash::Compiler.compile_sources(sources_with_metadata, @settings)
   end
 
   def buildOutput(name, line, column, *args)

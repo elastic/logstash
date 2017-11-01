@@ -3,12 +3,6 @@ namespace "vendor" do
     return File.join("vendor", *args)
   end
 
-  task "jruby" do |task, args|
-    system('./gradlew bootstrap')
-  end # jruby
-
-  task "all" => "jruby"
-
   task "system_gem", :jruby_bin, :name, :version do |task, args|
     jruby_bin = args[:jruby_bin]
     name = args[:name]
@@ -39,7 +33,6 @@ namespace "vendor" do
     puts(output)
     raise(exception) if exception
   end # task gems
-  task "all" => "gems"
 
   desc "Clean the vendored files"
   task :clean do

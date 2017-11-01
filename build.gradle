@@ -17,6 +17,8 @@ import de.undercouch.gradle.tasks.download.Download
 import de.undercouch.gradle.tasks.download.Verify
 import org.yaml.snakeyaml.Yaml
 
+task bootstrap {}
+
 allprojects {
   group = 'org.logstash'
 
@@ -42,6 +44,7 @@ allprojects {
 
   //https://stackoverflow.com/questions/3963708/gradle-how-to-display-test-results-in-the-console-in-real-time
   tasks.withType(Test) {
+    dependsOn bootstrap
     testLogging {
       // set options for log level LIFECYCLE
       events "passed", "skipped", "failed", "standardOut"
@@ -89,9 +92,6 @@ if (versionMap["jruby-runtime-override"]) {
     doChecksum = true
 }
 
-// Tasks
-task bootstrap {}
-
 task downloadJRuby(type: Download) {
     description "Download JRuby artifact from this specific URL: ${jRubyURL}"
     src jRubyURL
@@ -119,4 +119,32 @@ task downloadAndInstallJRuby(dependsOn: verifyFile, type: Copy) {
 
 // If you are running a JRuby snapshot we will skip the integrity check.
 verifyFile.onlyIf { doChecksum }
-bootstrap.dependsOn downloadAndInstallJRuby
+
+task installGems(dependsOn: [downloadAndInstallJRuby], type: Exec) {
+  workingDir projectDir
+  inputs.files file("$projectDir/Gemfile.template")
+  inputs.files fileTree("$projectDir/rakelib")
+  inputs.files fileTree("$projectDir/versions.yml")
+  outputs.files file("$projectDir/Gemfile")
+  outputs.files file("$projectDir/Gemfile.lock")
+  outputs.files fileTree("$projectDir/vendor/bundle")
+  outputs.files fileTree("$projectDir/vendor/jruby")
+  commandLine './vendor/jruby/bin/jruby', "${projectDir}/vendor/jruby/bin/rake".toString(), "vendor:gems", "test:install-core"
+  standardOutput = new ByteArrayOutputStream()
+  ext.output = {
+    return standardOutput.toString()
+  }
+}
+
+project(":logstash-core") {
+  installGems.dependsOn assemble
+}
+
+clean {
+  delete "${projectDir}/vendor/"
+  delete "${projectDir}/Gemfile"
+  delete "${projectDir}/Gemfile.lock"
+  delete "${projectDir}/NOTICE.TXT"
+}
+
+bootstrap.dependsOn installGems

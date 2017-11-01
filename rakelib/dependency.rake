@@ -4,10 +4,6 @@ namespace "dependency" do
     Rake::Task["gem:require"].invoke("bundler", "~> 1.9.4")
   end
 
-  task "rbx-stdlib" do
-    Rake::Task["gem:require"].invoke("rubysl", ">= 0")
-  end # task rbx-stdlib
-
   task "archive-tar-minitar" do
     Rake::Task["gem:require"].invoke("minitar", "0.5.4")
   end # task archive-minitar

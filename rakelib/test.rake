@@ -6,11 +6,6 @@ require 'pathname'
 
 namespace "test" do
 
-  desc "run the java unit tests"
-  task "core-java" do
-    exit(1) unless system('./gradlew clean javaTests')
-  end
-
   desc "run the ruby unit tests"
   task "core-ruby" do
     exit 1 unless system(*default_spec_command)
@@ -39,7 +34,7 @@ namespace "test" do
   end
   
   desc "run all installed plugins specs"
-  task "plugins"  => "bootstrap" do
+  task "plugins" do
     plugins_to_exclude = ENV.fetch("EXCLUDE_PLUGIN", "").split(",")
     # grab all spec files using the live plugins gem specs. this allows correctly also running the specs
     # of a local plugin dir added using the Gemfile :path option. before this, any local plugin spec would
@@ -59,16 +54,16 @@ namespace "test" do
   end
 
   desc "install core plugins and dev dependencies"
-  task "install-core" => ["bootstrap", "plugin:install-core", "plugin:install-development-dependencies"]
+  task "install-core" => ["plugin:install-core", "plugin:install-development-dependencies"]
 
   desc "install default plugins and dev dependencies"
-  task "install-default" => ["bootstrap", "plugin:install-default", "plugin:install-development-dependencies"]
+  task "install-default" => ["plugin:install-default", "plugin:install-development-dependencies"]
 
   desc "install vendor plugins and dev dependencies"
-  task "install-vendor-plugins" => ["bootstrap", "plugin:install-vendor", "plugin:install-development-dependencies"]
+  task "install-vendor-plugins" => ["plugin:install-vendor", "plugin:install-development-dependencies"]
 
   desc "install jar dependencies and dev dependencies"
-  task "install-jar-dependencies-plugins" => ["bootstrap", "plugin:install-jar-dependencies", "plugin:install-development-dependencies"]
+  task "install-jar-dependencies-plugins" => ["plugin:install-jar-dependencies", "plugin:install-development-dependencies"]
 end
 
 task "test" => [ "test:core" ]
