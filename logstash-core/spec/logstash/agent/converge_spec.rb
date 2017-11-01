@@ -48,7 +48,7 @@ describe LogStash::Agent do
     end
 
     context "system pipeline" do
-      
+
       let(:system_pipeline_config) { mock_pipeline_config(:system_pipeline, "input { generator { } } output { null {} }", { "pipeline.system" => true }) }
 
       context "when we have a finite pipeline and a system pipeline running" do
@@ -81,15 +81,15 @@ describe LogStash::Agent do
 
         describe "#running_user_defined_pipelines" do
           it "returns the user defined pipelines" do
-            wait_for do
-              subject.with_running_user_defined_pipelines {|pipelines| pipelines.keys }
+            wait(30, :delay => 1).for do
+              subject.with_running_user_defined_pipelines{|pipelines| pipelines.keys}
             end.to eq([:main])
           end
         end
 
         describe "#running_user_defined_pipelines?" do
           it "returns true" do
-            wait_for do
+            wait(30, :delay => 1).for do
               subject.running_user_defined_pipelines?
             end.to be_truthy
           end

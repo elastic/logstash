@@ -39,9 +39,7 @@ class LogStash::Agent
     @auto_reload = setting("config.reload.automatic")
     @ephemeral_id = SecureRandom.uuid
 
-    # Do not use @pipelines directly. Use #with_pipelines which does locking
-    @pipelines = {}
-    @pipelines_lock = java.util.concurrent.locks.ReentrantLock.new
+    @pipelines = Concurrent::Hash.new
 
     @name = setting("node.name")
     @http_host = setting("http.host")
@@ -133,17 +131,6 @@ class LogStash::Agent
     !@running.value
   end
 
-  # Safely perform an operation on the pipelines hash
-  # Using the correct synchronization
-  def with_pipelines
-    begin
-      @pipelines_lock.lock
-      yield @pipelines
-    ensure
-      @pipelines_lock.unlock
-    end
-  end
-
   def converge_state_and_update
     results = @source_loader.fetch
 
@@ -156,16 +143,10 @@ class LogStash::Agent
       end
     end
 
-    # We Lock any access on the pipelines, since the actions will modify the
-    # content of it.
-    converge_result = nil
-
-    # we don't use the variable here, but we want the locking
-    with_pipelines do |pipelines|
-      pipeline_actions = resolve_actions(results.response)
-      converge_result = converge_state(pipeline_actions)
-      update_metrics(converge_result)
-    end
+    # @pipelines is now a Concurrent::Hash
+    pipeline_actions = resolve_actions(results.response)
+    converge_result = converge_state(pipeline_actions)
+    update_metrics(converge_result)
 
     report_currently_running_pipelines(converge_result)
     dispatch_events(converge_result)
@@ -229,21 +210,22 @@ class LogStash::Agent
   end
 
   def get_pipeline(pipeline_id)
-    with_pipelines do |pipelines|
-      pipelines[pipeline_id]
-    end
+    # @pipelines is now a Concurrent::Hash
+    @pipelines[pipeline_id]
   end
 
   def pipelines_count
-    with_pipelines do |pipelines|
-      pipelines.size
-    end
+    @pipelines.size
+  end
+
+  def with_pipelines
+    # expose block based access to @pipelines - used in tests
+    yield @pipelines
   end
 
   def with_running_pipelines
-    with_pipelines do |pipelines|
-      yield pipelines.select {|pipeline_id, _| running_pipeline?(pipeline_id) }
-    end
+    entries = @pipelines.select {|pipeline_id, _| running_pipeline?(pipeline_id) }
+    yield entries
   end
 
   def running_pipelines?
@@ -263,30 +245,23 @@ class LogStash::Agent
   end
 
   def with_running_user_defined_pipelines
-    with_pipelines do |pipelines|
-      found = pipelines.select do |_, pipeline|
-        pipeline.running? && !pipeline.system?
-      end
-
-      yield found
+    entries = @pipelines.select do |_, pipeline|
+      pipeline.running? && !pipeline.system?
     end
+    yield entries
   end
 
   def close_pipeline(id)
-    with_pipelines do |pipelines|
-      pipeline = pipelines[id]
-      if pipeline
-        @logger.warn("closing pipeline", :id => id)
-        pipeline.close
-      end
+    pipeline = @pipelines[id]
+    if pipeline
+      @logger.warn("closing pipeline", :id => id)
+      pipeline.close
     end
   end
 
   def close_pipelines
-    with_pipelines do |pipelines|
-      pipelines.each  do |id, _|
-        close_pipeline(id)
-      end
+    @pipelines.each  do |id, _|
+      close_pipeline(id)
     end
   end
 
@@ -329,23 +304,21 @@ class LogStash::Agent
       #
       # This give us a bit more extensibility with the current startup/validation model
       # that we currently have.
-      with_pipelines do |pipelines|
-        begin
-          logger.debug("Executing action", :action => action)
-            action_result = action.execute(self, pipelines)
-          converge_result.add(action, action_result)
+      begin
+        logger.debug("Executing action", :action => action)
+        action_result = action.execute(self, @pipelines)
+        converge_result.add(action, action_result)
 
-          unless action_result.successful?
-            logger.error("Failed to execute action", :id => action.pipeline_id,
-                        :action_type => action_result.class, :message => action_result.message,
-                        :backtrace => action_result.backtrace)
-          end
-        rescue SystemExit => e
-          converge_result.add(action, e)
-        rescue Exception => e
-          logger.error("Failed to execute action", :action => action, :exception => e.class.name, :message => e.message, :backtrace => e.backtrace)
-          converge_result.add(action, e)
+        unless action_result.successful?
+          logger.error("Failed to execute action", :id => action.pipeline_id,
+          :action_type => action_result.class, :message => action_result.message,
+          :backtrace => action_result.backtrace)
         end
+      rescue SystemExit => e
+        converge_result.add(action, e)
+      rescue Exception => e
+        logger.error("Failed to execute action", :action => action, :exception => e.class.name, :message => e.message, :backtrace => e.backtrace)
+        converge_result.add(action, e)
       end
     end
 
@@ -359,9 +332,7 @@ class LogStash::Agent
   end
 
   def resolve_actions(pipeline_configs)
-    with_pipelines do |pipelines|
-      @state_resolver.resolve(pipelines, pipeline_configs)
-    end
+    @state_resolver.resolve(@pipelines, pipeline_configs)
   end
 
   def report_currently_running_pipelines(converge_result)
@@ -433,10 +404,8 @@ class LogStash::Agent
     # In this context I could just call shutdown, but I've decided to
     # use the stop action implementation for that so we have the same code.
     # This also give us some context into why a shutdown is failing
-    with_pipelines do |pipelines|
-      pipeline_actions = resolve_actions([]) # We stop all the pipeline, so we converge to a empty state
-      converge_state(pipeline_actions)
-    end
+    pipeline_actions = resolve_actions([]) # We stop all the pipeline, so we converge to a empty state
+    converge_state(pipeline_actions)
   end
 
   def running_pipeline?(pipeline_id)
@@ -445,9 +414,7 @@ class LogStash::Agent
   end
 
   def clean_state?
-    with_pipelines do |pipelines|
-      pipelines.empty?
-    end
+    @pipelines.empty?
   end
 
   def setting(key)
