@@ -1,11 +1,8 @@
 package org.logstash.config.ir.compiler;
 
-import java.util.Collection;
-import org.jruby.RubyHash;
 import org.jruby.RubyInteger;
 import org.jruby.RubyString;
 import org.jruby.runtime.builtin.IRubyObject;
-import org.logstash.ext.JrubyEventExtLibrary;
 
 /**
  * This class holds interfaces implemented by Ruby concrete classes.
@@ -30,15 +27,10 @@ public final class RubyIntegration {
     public interface Filter extends RubyIntegration.Plugin {
 
         /**
-         * Same as {@code FilterDelegator}'s {@code multi_filter}.
-         * @param events Events to Filter
-         * @return Filtered {@link JrubyEventExtLibrary.RubyEvent}
+         * Returns the underlying {@link IRubyObject} for this filter instance.
+         * @return Underlying {@link IRubyObject}
          */
-        Collection<JrubyEventExtLibrary.RubyEvent> multiFilter(
-            Collection<JrubyEventExtLibrary.RubyEvent> events
-        );
-
-        Collection<JrubyEventExtLibrary.RubyEvent> flush(RubyHash options);
+        IRubyObject toRuby();
 
         /**
          * Checks if this filter has a flush method.
