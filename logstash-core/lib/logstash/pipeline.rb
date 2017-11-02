@@ -29,6 +29,7 @@ require "securerandom"
 java_import org.logstash.common.DeadLetterQueueFactory
 java_import org.logstash.common.SourceWithMetadata
 java_import org.logstash.common.io.DeadLetterQueueWriter
+java_import org.logstash.config.ir.ConfigCompiler
 
 module LogStash; class BasePipeline
   include LogStash::Util::Loggable
@@ -46,7 +47,9 @@ module LogStash; class BasePipeline
     @settings = pipeline_config.settings
     @config_hash = Digest::SHA1.hexdigest(@config_str)
 
-    @lir = compile_lir
+    @lir = ConfigCompiler.configToPipelineIR(
+      @config_str, @settings.get_value("config.support_escapes")
+    )
 
     # Every time #plugin is invoked this is incremented to give each plugin
     # a unique id when auto-generating plugin ids
@@ -101,10 +104,9 @@ module LogStash; class BasePipeline
   end
 
   def compile_lir
-    sources_with_metadata = [
-      SourceWithMetadata.new("str", "pipeline", 0, 0, self.config_str)
-    ]
-    LogStash::Compiler.compile_sources(sources_with_metadata, @settings)
+    org.logstash.config.ir.ConfigCompiler.configToPipelineIR(
+      self.config_str, @settings.get_value("config.support_escapes")
+    )
   end
 
   def plugin(plugin_type, name, line, column, *args)
