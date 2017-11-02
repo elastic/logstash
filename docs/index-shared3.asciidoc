@@ -71,11 +71,6 @@ include::static/performance-checklist.asciidoc[]
 :edit_url: https://github.com/elastic/logstash/edit/master/docs/static/monitoring.asciidoc
 include::static/monitoring.asciidoc[]
 
-// Pipeline viewer
-
-:edit_url: https://github.com/elastic/logstash/edit/master/docs/static/pipeline-viewer.asciidoc
-include::static/pipeline-viewer.asciidoc[]
-
 // Monitoring APIs
 
 :edit_url: https://github.com/elastic/logstash/edit/master/docs/static/monitoring-apis.asciidoc
