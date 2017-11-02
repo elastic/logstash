@@ -1,8 +1,5 @@
 package org.logstash.ackedqueue.io;
 
-import sun.misc.Cleaner;
-import sun.nio.ch.DirectBuffer;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
@@ -10,11 +7,15 @@ import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-
+import org.logstash.LogstashJavaCompat;
 // TODO: this essentially a copy of ByteBufferPageIO and should be DRY'ed - temp impl to test file based stress test
-
-@SuppressWarnings("sunapi")
 public class MmapPageIO extends AbstractByteBufferPageIO {
+
+    /**
+     * Cleaner function for forcing unmapping of backing {@link MmapPageIO#buffer}.
+     */
+    private static final ByteBufferCleaner BUFFER_CLEANER =
+        LogstashJavaCompat.setupBytebufferCleaner();
 
     private File file;
 
@@ -108,11 +109,7 @@ public class MmapPageIO extends AbstractByteBufferPageIO {
     public void close() throws IOException {
         if (this.buffer != null) {
             this.buffer.force();
-
-            // calling the cleaner() method releases resources held by this direct buffer which would be held until GC otherwise.
-            // see https://github.com/elastic/logstash/pull/6740
-            Cleaner cleaner = ((DirectBuffer) this.buffer).cleaner();
-            if (cleaner != null) { cleaner.clean(); }
+            BUFFER_CLEANER.clean(buffer);
 
         }
         if (this.channel != null) {
