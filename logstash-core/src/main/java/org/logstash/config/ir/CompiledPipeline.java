@@ -288,14 +288,13 @@ public final class CompiledPipeline {
             return plugins.computeIfAbsent(vertex, v -> {
                 final Dataset filter;
                 final RubyIntegration.Filter ruby = filters.get(v);
+                final IRubyObject base = ruby.toRuby();
                 if (ruby.hasFlush()) {
-                    if (ruby.periodicFlush()) {
-                        filter = new Dataset.FilteredFlushableDataset(datasets, ruby);
+                    filter = DatasetCompiler.flushingFilterDataset(
+                        datasets, base, !ruby.periodicFlush()
+                    );
                     } else {
-                        filter = new Dataset.FilteredShutdownFlushableDataset(datasets, ruby);
-                    }
-                } else {
-                    filter = new Dataset.FilteredDataset(datasets, ruby);
+                    filter = DatasetCompiler.filterDataset(datasets, base);
                 }
                 return filter;
             });
