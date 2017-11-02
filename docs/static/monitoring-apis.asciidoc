@@ -1,5 +1,5 @@
 [[monitoring]]
-=== Monitoring APIs
+== Monitoring APIs
 
 Logstash provides the following monitoring APIs to retrieve runtime metrics
 about Logstash:
@@ -275,7 +275,7 @@ Gets JVM stats, including stats about threads, memory usage, garbage collectors,
 and uptime.
 <<process-stats,`process`>>::
 Gets process stats, including stats about file descriptors, memory consumption, and CPU usage.
-<<event-stats,`events`>>:: 
+<<event-stats,`events`>>::
 Gets event-related statistics for the Logstash instance (regardless of how many
 pipelines were created and destroyed).
 <<pipeline-stats,`pipelines`>>::
@@ -640,7 +640,7 @@ Example response:
 
 When Logstash is running in a container, the following request returns a JSON document that
 contains cgroup information to give you a more accurate view of CPU load, including whether
-the container is being throttled. 
+the container is being throttled.
 
 [source,js]
 --------------------------------------------------
@@ -653,7 +653,7 @@ Example response:
 --------------------------------------------------
 {
   "os" : {
-    "cgroup" : { 
+    "cgroup" : {
       "cpuacct" : {
         "control_group" : "/elastic1",
         "usage_nanos" : 378477588075
@@ -667,7 +667,7 @@ Example response:
           "number_of_times_throttled" : 460,
           "time_throttled_nanos" : 581617440755
         }
-      }    
+      }
     }
   }
 --------------------------------------------------
@@ -739,23 +739,22 @@ Example of a human-readable response:
 ["source","js",subs="attributes"]
 --------------------------------------------------
  ::: {}
- Hot threads at 2017-06-06T18:31:17-07:00, busiestThreads=3: 
+ Hot threads at 2017-06-06T18:31:17-07:00, busiestThreads=3:
  ================================================================================
- 0.0 % of cpu usage, state: timed_waiting, thread name: 'Ruby-0-Thread-7' 
+ 0.0 % of cpu usage, state: timed_waiting, thread name: 'Ruby-0-Thread-7'
  /path/to/logstash-{logstash_version}/vendor/bundle/jruby/1.9/gems/puma-2.16.0-java/lib/puma/thread_pool.rb:187
 	 java.lang.Object.wait(Native Method)
 	 org.jruby.RubyThread.sleep(RubyThread.java:1002)
 	 org.jruby.RubyKernel.sleep(RubyKernel.java:803)
  --------------------------------------------------------------------------------
- 0.0 % of cpu usage, state: waiting, thread name: 'defaultEventExecutorGroup-5-4' 
+ 0.0 % of cpu usage, state: waiting, thread name: 'defaultEventExecutorGroup-5-4'
 	 sun.misc.Unsafe.park(Native Method)
 	 java.util.concurrent.locks.LockSupport.park(LockSupport.java:175)
 	 java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.await(AbstractQueuedSynchronizer.java:2039)
  --------------------------------------------------------------------------------
- 0.05 % of cpu usage, state: timed_waiting, thread name: '[test]-pipeline-manager' 
+ 0.05 % of cpu usage, state: timed_waiting, thread name: '[test]-pipeline-manager'
 	 java.lang.Object.wait(Native Method)
 	 java.lang.Thread.join(Thread.java:1253)
 	 org.jruby.internal.runtime.NativeThread.join(NativeThread.java:75)
 
 --------------------------------------------------
-
