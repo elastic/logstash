@@ -1,4 +1,3 @@
-[float]
 [[monitoring]]
 === Monitoring APIs
 
@@ -468,7 +467,7 @@ Example response:
 
 When Logstash is running in a container, the following request returns a JSON document that
 contains cgroup information to give you a more accurate view of CPU load, including whether
-the container is being throttled. 
+the container is being throttled.
 
 [source,js]
 --------------------------------------------------
@@ -481,7 +480,7 @@ Example response:
 --------------------------------------------------
 {
   "os" : {
-    "cgroup" : { 
+    "cgroup" : {
       "cpuacct" : {
         "control_group" : "/elastic1",
         "usage_nanos" : 378477588075
@@ -495,7 +494,7 @@ Example response:
           "number_of_times_throttled" : 460,
           "time_throttled_nanos" : 581617440755
         }
-      }    
+      }
     }
   }
 --------------------------------------------------
@@ -602,9 +601,9 @@ Example of a human-readable response:
 [source,js]
 --------------------------------------------------
  ::: {}
- Hot threads at 2017-01-12T12:10:15-08:00, busiestThreads=3: 
+ Hot threads at 2017-01-12T12:10:15-08:00, busiestThreads=3:
  ================================================================================
- 1.02 % of cpu usage, state: timed_waiting, thread name: 'LogStash::Runner' 
+ 1.02 % of cpu usage, state: timed_waiting, thread name: 'LogStash::Runner'
 	java.lang.Object.wait(Native Method)
 	java.lang.Thread.join(Thread.java:1253)
 	org.jruby.internal.runtime.NativeThread.join(NativeThread.java:75)
@@ -616,7 +615,7 @@ Example of a human-readable response:
 	org.jruby.runtime.callsite.CachingCallSite.call(CachingCallSite.java:136)
 	org.jruby.ast.CallNoArgNode.interpret(CallNoArgNode.java:60)
  --------------------------------------------------------------------------------
- 0.71 % of cpu usage, state: waiting, thread name: '[main]>worker7' 
+ 0.71 % of cpu usage, state: waiting, thread name: '[main]>worker7'
 	sun.misc.Unsafe.park(Native Method)
 	java.util.concurrent.locks.LockSupport.park(LockSupport.java:175)
 	java.util.concurrent.locks.AbstractQueuedSynchronizer.parkAndCheckInterrupt(AbstractQueuedSynchronizer.java:836)
@@ -628,7 +627,7 @@ Example of a human-readable response:
 	org.jruby.ext.thread.Mutex.synchronize(Mutex.java:147)
 	org.jruby.ext.thread.Mutex$INVOKER$i$0$0$synchronize.call(Mutex$INVOKER$i$0$0$synchronize.gen)
  --------------------------------------------------------------------------------
- 0.71 % of cpu usage, state: timed_waiting, thread name: '[main]>worker3' 
+ 0.71 % of cpu usage, state: timed_waiting, thread name: '[main]>worker3'
 	sun.misc.Unsafe.park(Native Method)
 	java.util.concurrent.locks.LockSupport.parkNanos(LockSupport.java:215)
 	java.util.concurrent.SynchronousQueue$TransferStack.awaitFulfill(SynchronousQueue.java:460)
@@ -641,4 +640,3 @@ Example of a human-readable response:
 	org.jruby.javasupport.JavaMethod.invokeDirect(JavaMethod.java:324)
 
 --------------------------------------------------
-
