@@ -126,20 +126,20 @@ Most of the unit tests in Logstash are written using [rspec](http://rspec.info/)
 
 ### Core tests
 
-1- In order to run the core tests, a small set of plugins must first be installed:
+1- To run the core tests you can use the Gradle task:
 
-    rake test:install-core
-
-2- To run the core tests you can use the rake task:
-
-    rake test:core
+    ./gradlew test
 
   or use the `rspec` tool to run all tests or run a specific test:
 
     bin/rspec
     bin/rspec spec/foo/bar_spec.rb
     
-3- To run the subset of tests covering the Java codebase only run:
+  Note that before running the `rspec` command for the first time you need to set up the RSpec test dependencies by running:
+
+    ./gradlew bootstrap
+
+2- To run the subset of tests covering the Java codebase only run:
     
     ./gradlew javaTests
 

@@ -4,7 +4,7 @@ namespace "vendor" do
   end
 
   task "jruby" do |task, args|
-    system('./gradlew bootstrap')
+    system('./gradlew downloadAndInstallJRuby')
   end # jruby
 
   task "all" => "jruby"
