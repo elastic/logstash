@@ -90,7 +90,23 @@ if (versionMap["jruby-runtime-override"]) {
 }
 
 // Tasks
+
+clean {
+  delete "${projectDir}/Gemfile"
+  delete "${projectDir}/Gemfile.lock"
+  delete "${projectDir}/vendor"
+  delete "${projectDir}/NOTICE.TXT"
+}
+
 task bootstrap {}
+
+project(":logstash-core") {
+  ["rubyTests", "test"].each { tsk ->
+    tasks.getByPath(":logstash-core:" + tsk).configure {
+      dependsOn bootstrap
+    }
+  }
+}
 
 task downloadJRuby(type: Download) {
     description "Download JRuby artifact from this specific URL: ${jRubyURL}"
@@ -108,6 +124,8 @@ task verifyFile(dependsOn: downloadJRuby, type: Verify) {
 
 task downloadAndInstallJRuby(dependsOn: verifyFile, type: Copy) {
     description "Install JRuby in the vendor directory"
+    inputs.files file("${projectDir}/versions.yml")
+    outputs.files fileTree("${projectDir}/vendor/jruby")
     from tarTree(downloadJRuby.dest)
     eachFile { f ->
       f.path = f.path.replaceFirst("^jruby-${jRubyVersion}", '')
@@ -117,6 +135,22 @@ task downloadAndInstallJRuby(dependsOn: verifyFile, type: Copy) {
     into "${projectDir}/vendor/jruby"
 }
 
+task installTestGems(dependsOn: downloadAndInstallJRuby, type: Exec) {
+  workingDir projectDir
+  inputs.files file("${projectDir}/Gemfile.template")
+  inputs.files fileTree("${projectDir}/rakelib")
+  inputs.files file("${projectDir}/versions.yml")
+  outputs.files file("${projectDir}/Gemfile")
+  outputs.files file("${projectDir}/Gemfile.lock")
+  outputs.files fileTree("${projectDir}/vendor/bundle/gems")
+  outputs.files fileTree("${projectDir}/vendor/jruby")
+  commandLine './vendor/jruby/bin/jruby', "${projectDir}/vendor/jruby/bin/rake".toString(), "test:install-core"
+  standardOutput = new ByteArrayOutputStream()
+  ext.output = {
+    standardOutput.toString()
+  }
+}
+
 // If you are running a JRuby snapshot we will skip the integrity check.
 verifyFile.onlyIf { doChecksum }
-bootstrap.dependsOn downloadAndInstallJRuby
+bootstrap.dependsOn installTestGems
