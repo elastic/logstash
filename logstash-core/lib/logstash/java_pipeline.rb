@@ -32,7 +32,6 @@ java_import org.logstash.config.ir.CompiledPipeline
 java_import org.logstash.config.ir.ConfigCompiler
 
 module LogStash; class JavaBasePipeline
-  include org.logstash.config.ir.compiler.RubyIntegration::Pipeline 
   include LogStash::Util::Loggable
 
   attr_reader :settings, :config_str, :config_hash, :inputs, :filters, :outputs, :pipeline_id, :lir, :execution_context, :ephemeral_id
@@ -52,19 +51,16 @@ module LogStash; class JavaBasePipeline
       @config_str, @settings.get_value("config.support_escapes")
     )
 
-    # Every time #plugin is invoked this is incremented to give each plugin
-    # a unique id when auto-generating plugin ids
-    @plugin_counter ||= 0
-
     @pipeline_id = @settings.get_value("pipeline.id") || self.object_id
-
-    # A list of plugins indexed by id
-    @plugins_by_id = {}
     @agent = agent
-
     @dlq_writer = dlq_writer
-
-    @lir_execution = CompiledPipeline.new(@lir, self)
+    @plugin_factory = LogStash::Plugins::PluginFactory.new(
+      # use NullMetric if called in the BasePipeline context otherwise use the @metric value
+      @lir, LogStash::Plugins::PluginMetricFactory.new(pipeline_id, @metric || Instrument::NullMetric.new),
+      @logger, LogStash::Plugins::ExecutionContextFactory.new(@agent, self, @dlq_writer),
+      JavaFilterDelegator
+    )
+    @lir_execution = CompiledPipeline.new(@lir, @plugin_factory)
     if settings.get_value("config.debug") && @logger.debug?
       @logger.debug("Compiled pipeline code", default_logging_keys(:code => @lir.get_graph.to_string))
     end
@@ -105,54 +101,7 @@ module LogStash; class JavaBasePipeline
   end
 
   def plugin(plugin_type, name, line, column, *args)
-    @plugin_counter += 1
-
-    # Collapse the array of arguments into a single merged hash
-    args = args.reduce({}, &:merge)
-
-    if plugin_type == "codec"
-      id = SecureRandom.uuid # codecs don't really use their IDs for metrics, so we can use anything here
-    else
-      # Pull the ID from LIR to keep IDs consistent between the two representations
-      id = lir.graph.vertices.filter do |v| 
-        v.source_with_metadata && 
-        v.source_with_metadata.line == line && 
-        v.source_with_metadata.column == column
-      end.findFirst.get.id
-    end
-
-    args["id"] = id # some code pulls the id out of the args
-
-    if !id
-      raise ConfigurationError, "Could not determine ID for #{plugin_type}/#{plugin_name}"
-    end
-
-    raise ConfigurationError, "Two plugins have the id '#{id}', please fix this conflict" if @plugins_by_id[id]
-    @plugins_by_id[id] = true
-
-    # use NullMetric if called in the BasePipeline context otherwise use the @metric value
-    metric = @metric || Instrument::NullMetric.new
-
-    pipeline_scoped_metric = metric.namespace([:stats, :pipelines, pipeline_id.to_s.to_sym, :plugins])
-    # Scope plugins of type 'input' to 'inputs'
-    type_scoped_metric = pipeline_scoped_metric.namespace("#{plugin_type}s".to_sym)
-
-    klass = Plugin.lookup(plugin_type, name)
-
-    execution_context = ExecutionContext.new(self, @agent, id, klass.config_name, @dlq_writer)
-
-    if plugin_type == "output"
-      OutputDelegator.new(@logger, klass, type_scoped_metric, execution_context, OutputDelegatorStrategyRegistry.instance, args)
-    elsif plugin_type == "filter"
-      JavaFilterDelegator.new(@logger, klass, type_scoped_metric, execution_context, args)
-    else # input
-      input_plugin = klass.new(args)
-      scoped_metric = type_scoped_metric.namespace(id.to_sym)
-      scoped_metric.gauge(:name, input_plugin.config_name)
-      input_plugin.metric = scoped_metric
-      input_plugin.execution_context = execution_context
-      input_plugin
-    end
+    @plugin_factory.plugin(plugin_type, name, line, column, *args)
   end
 
   def reloadable?
