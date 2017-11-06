@@ -24,10 +24,6 @@ import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.annotations.TearDown;
 import org.openjdk.jmh.annotations.Warmup;
-import org.openjdk.jmh.runner.Runner;
-import org.openjdk.jmh.runner.RunnerException;
-import org.openjdk.jmh.runner.options.Options;
-import org.openjdk.jmh.runner.options.OptionsBuilder;
 
 @Warmup(iterations = 3, time = 100, timeUnit = TimeUnit.MILLISECONDS)
 @Measurement(iterations = 10, time = 100, timeUnit = TimeUnit.MILLISECONDS)
@@ -72,14 +68,6 @@ public class QueueWriteBenchmark {
             evnt.setTimestamp(Timestamp.now());
             queue.write(evnt);
         }
-    }
-
-    public static void main(final String... args) throws RunnerException {
-        Options opt = new OptionsBuilder()
-            .include(QueueWriteBenchmark.class.getSimpleName())
-            .forks(2)
-            .build();
-        new Runner(opt).run();
     }
 
     private static Settings settings() {
