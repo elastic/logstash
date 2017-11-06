@@ -7,7 +7,13 @@ import org.jruby.RubyException;
 import org.jruby.RubyModule;
 import org.jruby.anno.JRubyClass;
 import org.jruby.exceptions.RaiseException;
+import org.jruby.runtime.ObjectAllocator;
+import org.jruby.runtime.builtin.IRubyObject;
+import org.logstash.ackedqueue.ext.JrubyAckedBatchExtLibrary;
+import org.logstash.ackedqueue.ext.JrubyAckedQueueExtLibrary;
+import org.logstash.ackedqueue.ext.JrubyAckedQueueMemoryExtLibrary;
 import org.logstash.ext.JrubyEventExtLibrary;
+import org.logstash.ext.JrubyTimestampExtLibrary;
 
 /**
  * Utilities around interaction with the {@link Ruby} runtime.
@@ -26,6 +32,10 @@ public final class RubyUtil {
 
     public static final RubyClass RUBY_EVENT_CLASS;
 
+    public static final RubyClass RUBY_ACKED_BATCH_CLASS;
+
+    public static final RubyClass RUBY_TIMESTAMP_CLASS;
+
     public static final RubyClass PARSER_ERROR;
 
     public static final RubyClass GENERATOR_ERROR;
@@ -35,8 +45,15 @@ public final class RubyUtil {
     static {
         RUBY = Ruby.getGlobalRuntime();
         LOGSTASH_MODULE = RUBY.getOrCreateModule("LogStash");
-        RUBY_EVENT_CLASS = RUBY.defineClassUnder(
-            "Event", RUBY.getObject(), JrubyEventExtLibrary.RubyEvent::new, LOGSTASH_MODULE
+        RUBY_TIMESTAMP_CLASS = setupLogstashClass("Timestamp", new ObjectAllocator() {
+            @Override
+            public JrubyTimestampExtLibrary.RubyTimestamp allocate(final Ruby runtime,
+                final RubyClass rubyClass) {
+                return new JrubyTimestampExtLibrary.RubyTimestamp(runtime, rubyClass);
+            }
+        }, JrubyTimestampExtLibrary.RubyTimestamp.class);
+        RUBY_EVENT_CLASS = setupLogstashClass(
+            "Event", JrubyEventExtLibrary.RubyEvent::new, JrubyEventExtLibrary.RubyEvent.class
         );
         final RubyModule json = LOGSTASH_MODULE.defineOrGetModuleUnder("Json");
         LOGSTASH_ERROR = LOGSTASH_MODULE.defineClassUnder(
@@ -63,6 +80,20 @@ public final class RubyUtil {
         RUBY_EVENT_CLASS.setConstant("VERSION_ONE", RUBY.newString(Event.VERSION_ONE));
         RUBY_EVENT_CLASS.defineAnnotatedMethods(JrubyEventExtLibrary.RubyEvent.class);
         RUBY_EVENT_CLASS.defineAnnotatedConstants(JrubyEventExtLibrary.RubyEvent.class);
+        RUBY_ACKED_BATCH_CLASS = setupLogstashClass("AckedBatch", new ObjectAllocator() {
+            @Override
+            public IRubyObject allocate(final Ruby runtime, final RubyClass rubyClass) {
+                return new JrubyAckedBatchExtLibrary.RubyAckedBatch(runtime, rubyClass);
+            }
+        }, JrubyAckedBatchExtLibrary.RubyAckedBatch.class);
+        setupLogstashClass(
+            "AckedQueue", JrubyAckedQueueExtLibrary.RubyAckedQueue::new,
+            JrubyAckedQueueExtLibrary.RubyAckedQueue.class
+        );
+        setupLogstashClass(
+            "AckedMemoryQueue", JrubyAckedQueueMemoryExtLibrary.RubyAckedMemoryQueue::new,
+            JrubyAckedQueueMemoryExtLibrary.RubyAckedMemoryQueue.class
+        );
     }
 
     private RubyUtil() {
@@ -78,6 +109,22 @@ public final class RubyUtil {
     public static RaiseException newRubyIOError(Ruby runtime, Throwable e) {
         // will preserve Java stacktrace & bubble up as a Ruby IOError
         return new RaiseException(e, new NativeException(runtime, runtime.getIOError(), e));
+    }
+
+    /**
+     * Sets up a Java-defined {@link RubyClass} in the Logstash Ruby module.
+     * @param name Name of the class
+     * @param allocator Allocator of the class
+     * @param jclass Underlying Java class that is annotated by {@link JRubyClass}
+     * @return RubyClass
+     */
+    private static RubyClass setupLogstashClass(final String name,
+        final ObjectAllocator allocator, final Class<?> jclass) {
+        final RubyClass clazz = RUBY.defineClassUnder(
+            name, RUBY.getObject(), allocator, LOGSTASH_MODULE
+        );
+        clazz.defineAnnotatedMethods(jclass);
+        return clazz;
     }
 
     @JRubyClass(name = "Error")

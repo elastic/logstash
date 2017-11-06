@@ -9,10 +9,8 @@ import org.jruby.RubyClass;
 import org.jruby.RubyObject;
 import org.jruby.anno.JRubyClass;
 import org.jruby.anno.JRubyMethod;
-import org.jruby.runtime.ObjectAllocator;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
-import org.jruby.runtime.load.Library;
 import org.logstash.Event;
 import org.logstash.RubyUtil;
 import org.logstash.ackedqueue.Batch;
@@ -20,18 +18,7 @@ import org.logstash.ackedqueue.Queueable;
 import org.logstash.ackedqueue.io.LongVector;
 import org.logstash.ext.JrubyEventExtLibrary;
 
-public final class JrubyAckedBatchExtLibrary implements Library {
-
-    @Override
-    public void load(Ruby runtime, boolean wrap) {
-        RubyClass clazz = runtime.defineClassUnder("AckedBatch", runtime.getObject(), new ObjectAllocator() {
-            public IRubyObject allocate(Ruby runtime, RubyClass rubyClass) {
-                return new RubyAckedBatch(runtime, rubyClass);
-            }
-        }, RubyUtil.LOGSTASH_MODULE);
-
-        clazz.defineAnnotatedMethods(RubyAckedBatch.class);
-    }
+public final class JrubyAckedBatchExtLibrary {
 
     @JRubyClass(name = "AckedBatch")
     public static final class RubyAckedBatch extends RubyObject {
@@ -40,11 +27,10 @@ public final class JrubyAckedBatchExtLibrary implements Library {
 
         public RubyAckedBatch(Ruby runtime, RubyClass klass) {
             super(runtime, klass);
-            this.batch = null;
         }
 
         public RubyAckedBatch(Ruby runtime, Batch batch) {
-            super(runtime, RubyUtil.LOGSTASH_MODULE.getClass("AckedBatch"));
+            super(runtime, RubyUtil.RUBY_ACKED_BATCH_CLASS);
             this.batch = batch;
         }
 

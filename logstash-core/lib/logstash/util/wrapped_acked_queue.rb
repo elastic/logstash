@@ -1,7 +1,9 @@
 # encoding: utf-8
 
-require "jruby_acked_queue_ext"
-require "jruby_acked_batch_ext"
+# Force loading the RubyUtil to ensure its loaded before the WrappedAckedQueue class is set up in
+# Ruby since WrappedAckedQueue depends on Ruby classes that are dynamically set up by Java code.
+java_import org.logstash.RubyUtil
+
 require "concurrent"
 # This is an adapted copy of the wrapped_synchronous_queue file
 # ideally this should be moved to Java/JRuby
