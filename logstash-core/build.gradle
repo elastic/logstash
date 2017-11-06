@@ -72,13 +72,15 @@ configurations.archives {
 
 task javaTests(type: Test) {
     exclude '/org/logstash/RSpecTests.class'
-    exclude 'org/logstash/config/ir/ConfigCompilerTest.class'
+    exclude '/org/logstash/config/ir/ConfigCompilerTest.class'
+    exclude '/org/logstash/config/ir/CompiledPipelineTest.class'
 }
 
 task rubyTests(type: Test) {
     systemProperty 'logstash.core.root.dir', projectDir.absolutePath
     include '/org/logstash/RSpecTests.class'
-    include 'org/logstash/config/ir/ConfigCompilerTest.class'
+    include '/org/logstash/config/ir/ConfigCompilerTest.class'
+    include '/org/logstash/config/ir/CompiledPipelineTest.class'
 }
 
 artifacts {
