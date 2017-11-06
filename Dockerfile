@@ -4,6 +4,7 @@ RUN ln -s /tmp/vendor /opt/logstash/vendor
 
 ADD gradlew /opt/logstash/gradlew
 ADD gradle/wrapper /opt/logstash/gradle/wrapper
+ADD buildSrc /opt/logstash/buildSrc
 RUN /opt/logstash/gradlew wrapper
 
 ADD versions.yml /opt/logstash/versions.yml
