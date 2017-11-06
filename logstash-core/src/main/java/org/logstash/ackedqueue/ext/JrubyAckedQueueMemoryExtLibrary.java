@@ -11,7 +11,6 @@ import org.jruby.anno.JRubyMethod;
 import org.jruby.runtime.Arity;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
-import org.jruby.runtime.load.Library;
 import org.logstash.Event;
 import org.logstash.RubyUtil;
 import org.logstash.ackedqueue.Batch;
@@ -21,16 +20,7 @@ import org.logstash.ackedqueue.io.ByteBufferPageIO;
 import org.logstash.ackedqueue.io.MemoryCheckpointIO;
 import org.logstash.ext.JrubyEventExtLibrary;
 
-public final class JrubyAckedQueueMemoryExtLibrary implements Library {
-
-    @Override
-    public void load(Ruby runtime, boolean wrap) {
-        runtime.defineClassUnder(
-            "AckedMemoryQueue", runtime.getObject(),
-            JrubyAckedQueueMemoryExtLibrary.RubyAckedMemoryQueue::new,
-            RubyUtil.LOGSTASH_MODULE
-        ).defineAnnotatedMethods(JrubyAckedQueueMemoryExtLibrary.RubyAckedMemoryQueue.class);
-    }
+public final class JrubyAckedQueueMemoryExtLibrary {
 
     // TODO:
     // as a simplified first prototyping implementation, the Settings class is not exposed and the queue elements

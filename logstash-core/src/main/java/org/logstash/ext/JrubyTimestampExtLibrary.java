@@ -13,35 +13,13 @@ import org.jruby.anno.JRubyMethod;
 import org.jruby.exceptions.RaiseException;
 import org.jruby.javasupport.JavaUtil;
 import org.jruby.runtime.Arity;
-import org.jruby.runtime.ObjectAllocator;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
-import org.jruby.runtime.load.Library;
 import org.logstash.ObjectMappers;
 import org.logstash.RubyUtil;
 import org.logstash.Timestamp;
 
-public final class JrubyTimestampExtLibrary implements Library {
-
-    private static final ObjectAllocator ALLOCATOR = new ObjectAllocator() {
-        public RubyTimestamp allocate(Ruby runtime, RubyClass rubyClass) {
-            return new RubyTimestamp(runtime, rubyClass);
-        }
-    };
-
-    private static final RubyClass TIMESTAMP_CLASS = createTimestamp(RubyUtil.RUBY);
-
-    @Override
-    public void load(Ruby runtime, boolean wrap) {
-        createTimestamp(runtime);
-    }
-
-    public static RubyClass createTimestamp(Ruby runtime) {
-        RubyClass clazz =
-            runtime.defineClassUnder("Timestamp", runtime.getObject(), ALLOCATOR, RubyUtil.LOGSTASH_MODULE);
-        clazz.defineAnnotatedMethods(RubyTimestamp.class);
-        return clazz;
-    }
+public final class JrubyTimestampExtLibrary {
 
     @JRubyClass(name = "Timestamp")
     @JsonSerialize(using = ObjectMappers.RubyTimestampSerializer.class)
@@ -61,7 +39,7 @@ public final class JrubyTimestampExtLibrary implements Library {
         }
 
         public RubyTimestamp(Ruby runtime, Timestamp timestamp) {
-            this(runtime, TIMESTAMP_CLASS, timestamp);
+            this(runtime, RubyUtil.RUBY_TIMESTAMP_CLASS, timestamp);
         }
 
         public RubyTimestamp(Ruby runtime) {
