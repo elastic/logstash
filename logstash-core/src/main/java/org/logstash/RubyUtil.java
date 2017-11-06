@@ -42,6 +42,8 @@ public final class RubyUtil {
 
     public static final RubyClass LOGSTASH_ERROR;
 
+    public static final RubyClass TIMESTAMP_PARSER_ERROR;
+
     static {
         RUBY = Ruby.getGlobalRuntime();
         LOGSTASH_MODULE = RUBY.getOrCreateModule("LogStash");
@@ -56,11 +58,15 @@ public final class RubyUtil {
             "Event", JrubyEventExtLibrary.RubyEvent::new, JrubyEventExtLibrary.RubyEvent.class
         );
         final RubyModule json = LOGSTASH_MODULE.defineOrGetModuleUnder("Json");
+        final RubyClass stdErr = RUBY.getStandardError();
         LOGSTASH_ERROR = LOGSTASH_MODULE.defineClassUnder(
-            "Error", RUBY.getStandardError(), RubyUtil.LogstashRubyError::new
+            "Error", stdErr, RubyUtil.LogstashRubyError::new
         );
         PARSER_ERROR = json.defineClassUnder(
             "ParserError", LOGSTASH_ERROR, RubyUtil.LogstashRubyParserError::new
+        );
+        TIMESTAMP_PARSER_ERROR = LOGSTASH_MODULE.defineClassUnder(
+            "TimestampParserError", stdErr, RubyUtil.LogstashTimestampParserError::new
         );
         GENERATOR_ERROR = json.defineClassUnder("GeneratorError", LOGSTASH_ERROR,
             RubyUtil.LogstashRubyGeneratorError::new
@@ -147,6 +153,14 @@ public final class RubyUtil {
     public static final class LogstashRubyGeneratorError extends RubyException {
 
         public LogstashRubyGeneratorError(final Ruby runtime, final RubyClass metaClass) {
+            super(runtime, metaClass);
+        }
+    }
+
+    @JRubyClass(name = "TimestampParserError")
+    public static final class LogstashTimestampParserError extends RubyException {
+
+        public LogstashTimestampParserError(final Ruby runtime, final RubyClass metaClass) {
             super(runtime, metaClass);
         }
     }

@@ -78,8 +78,7 @@ public final class JrubyTimestampExtLibrary {
                     this.timestamp = new Timestamp(time.toString());
                 } catch (IllegalArgumentException e) {
                     throw new RaiseException(
-                            getRuntime(),
-                            RubyUtil.LOGSTASH_MODULE.getClass("TimestampParserError"),
+                            getRuntime(), RubyUtil.TIMESTAMP_PARSER_ERROR,
                             "invalid timestamp string format " + time,
                             true
                     );
@@ -157,8 +156,7 @@ public final class JrubyTimestampExtLibrary {
                 }
              } catch (IllegalArgumentException e) {
                 throw new RaiseException(
-                        context.runtime,
-                        RubyUtil.LOGSTASH_MODULE.getClass("TimestampParserError"),
+                        context.runtime, RubyUtil.TIMESTAMP_PARSER_ERROR,
                         "invalid timestamp format " + e.getMessage(),
                         true
                 );
@@ -174,8 +172,7 @@ public final class JrubyTimestampExtLibrary {
                     return fromRString(context.runtime, (RubyString) time);
                 } catch (IllegalArgumentException e) {
                     throw new RaiseException(
-                            context.runtime,
-                            RubyUtil.LOGSTASH_MODULE.getClass("TimestampParserError"),
+                            context.runtime, RubyUtil.TIMESTAMP_PARSER_ERROR,
                             "invalid timestamp format " + e.getMessage(),
                             true
                     );
