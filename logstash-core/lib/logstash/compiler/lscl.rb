@@ -101,9 +101,21 @@ module LogStashCompilerLSCLGrammar; module LogStash; module Compiler; module LSC
         else
           [k,v]
         end
-      }.reduce({}) do |hash,kv|
-        k,v = kv
-        hash[k] = v
+      }.reduce({}) do |hash, kv|
+        k, v = kv
+        existing = hash[k]
+        if existing.nil?
+          hash[k] = v
+        elsif existing.kind_of?(::Hash)
+          # For legacy reasons, a config can contain multiple `AST::Attribute`s with the same name
+          # and a hash-type value (e.g., "match" in the grok filter), which are merged into a single
+          # hash value; e.g., `{"match" => {"baz" => "bar"}, "match" => {"foo" => "bulb"}}` is
+          # interpreted as `{"match" => {"baz" => "bar", "foo" => "blub"}}`.
+          # (NOTE: this bypasses `AST::Hash`'s ability to detect duplicate keys)
+          hash[k] = existing.merge(v)
+        else
+          hash[k] = existing + v
+        end
         hash
       end
 
