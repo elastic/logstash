@@ -146,7 +146,7 @@ describe LogStash::Event do
     end
 
     it "should set XXJavaProxy Jackson crafted" do
-      proxy = org.logstash.Util.getMapFixtureJackson()
+      proxy = org.logstash.RspecTestUtils.getMapFixtureJackson()
       # proxy is {"string": "foo", "int": 42, "float": 42.42, "array": ["bar","baz"], "hash": {"string":"quux"} }
       e = LogStash::Event.new()
       e.set("[proxy]", proxy)
@@ -159,7 +159,7 @@ describe LogStash::Event do
     end
 
     it "should set XXJavaProxy hand crafted" do
-      proxy = org.logstash.Util.getMapFixtureHandcrafted()
+      proxy = org.logstash.RspecTestUtils.getMapFixtureHandcrafted()
       # proxy is {"string": "foo", "int": 42, "float": 42.42, "array": ["bar","baz"], "hash": {"string":"quux"} }
       e = LogStash::Event.new()
       e.set("[proxy]", proxy)
