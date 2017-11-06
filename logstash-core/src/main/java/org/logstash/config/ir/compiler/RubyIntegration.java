@@ -54,10 +54,9 @@ public final class RubyIntegration {
     }
 
     /**
-     * The Main Ruby Pipeline Class. Currently, this interface is implemented only by the Ruby class
-     * {@code BasePipeline}.
+     * Plugin Factory that instantiates Ruby plugins and is implemented in Ruby.
      */
-    public interface Pipeline {
+    public interface PluginFactory {
 
         IRubyObject buildInput(RubyString name, RubyInteger line, RubyInteger column,
             IRubyObject args);
