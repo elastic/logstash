@@ -394,7 +394,7 @@ public final class EventTest {
         final Event event = new Event();
         final Timestamp timestamp = new Timestamp();
         event.setField("timestamp", new ConcreteJavaProxy(RubyUtil.RUBY,
-            JrubyTimestampExtLibrary.createTimestamp(RubyUtil.RUBY).getRealClass(), timestamp
+            RubyUtil.RUBY_TIMESTAMP_CLASS, timestamp
         ));
         assertThat(event.getField("timestamp"), is(timestamp));
     }
