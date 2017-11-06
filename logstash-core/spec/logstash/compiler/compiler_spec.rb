@@ -193,6 +193,35 @@ describe LogStash::Compiler do
           expect(c_plugin).to ir_eql(j.iPlugin(INPUT, "generator", expected_plugin_args))
         end
       end
+
+      describe "a filter plugin that repeats a Hash directive" do
+        let(:source) { "input { } filter { #{plugin_source} } output { } " }
+        subject(:c_plugin) { compiled[:filter] }
+
+        let(:plugin_source) do
+          %q[
+              grok {
+                match => { "message" => "%{WORD:word}" }
+                match => { "examplefield" => "%{NUMBER:num}" }
+                break_on_match => false
+              }
+          ]
+        end
+
+        let(:expected_plugin_args) do
+          {
+            "match" => {
+              "message" => "%{WORD:word}",
+              "examplefield" => "%{NUMBER:num}"
+            },
+            "break_on_match" => "false"
+          }
+        end
+
+        it "should merge the contents of the individual directives" do
+          expect(c_plugin).to ir_eql(j.iPlugin(FILTER, "grok", expected_plugin_args))
+        end
+      end
     end
 
     context "inputs" do
