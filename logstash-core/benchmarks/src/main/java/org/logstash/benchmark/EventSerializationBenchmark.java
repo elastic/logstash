@@ -17,10 +17,6 @@ import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.annotations.Warmup;
-import org.openjdk.jmh.runner.Runner;
-import org.openjdk.jmh.runner.RunnerException;
-import org.openjdk.jmh.runner.options.Options;
-import org.openjdk.jmh.runner.options.OptionsBuilder;
 import org.openjdk.jmh.util.NullOutputStream;
 
 @Warmup(iterations = 3, time = 500, timeUnit = TimeUnit.MILLISECONDS)
@@ -66,13 +62,5 @@ public class EventSerializationBenchmark {
         for (int i = 0; i < EVENTS_PER_INVOCATION; ++i) {
             SINK.writeBytes(EVENT.toJson());
         }
-    }
-
-    public static void main(final String... args) throws RunnerException {
-        Options opt = new OptionsBuilder()
-            .include(EventSerializationBenchmark.class.getSimpleName())
-            .forks(2)
-            .build();
-        new Runner(opt).run();
     }
 }
