@@ -3,10 +3,17 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-5-6-4,Logstash 5.6.4>>
 * <<logstash-5-6-3,Logstash 5.6.3>>
 * <<logstash-5-6-2,Logstash 5.6.2>>
 * <<logstash-5-6-1,Logstash 5.6.1>>
 * <<logstash-5-6-0,Logstash 5.6.0>>
+
+[[logstash-5-6-4]]
+=== Logstash 5.6.4 Release Notes
+* Fix bug where setting `log.level=debug` would cause Logstash to crash
+* Fix bug where queues configured to use a single page would not be able to process events. This also wound up being a small perf boost. https://github.com/elastic/logstash/pull/8275[#8275]
+* Fix bug where a `0` exit status could be emitted when exiting due to an error by the `logstash-plugin.bat` command on windows.
 
 [[logstash-5-6-3]]
 === Logstash 5.6.3 Release Notes
