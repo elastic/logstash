@@ -74,14 +74,21 @@ configurations.archives {
 
 task javaTests(type: Test) {
     exclude '/org/logstash/RSpecTests.class'
-    exclude 'org/logstash/config/ir/ConfigCompilerTest.class'
+    exclude '/org/logstash/config/ir/ConfigCompilerTest.class'
 }
 
 task rubyTests(type: Test) {
+    inputs.files fileTree("${projectDir}/lib")
+    inputs.files fileTree("${projectDir}/spec")
     systemProperty 'logstash.core.root.dir', projectDir.absolutePath
     include '/org/logstash/RSpecTests.class'
-    include 'org/logstash/config/ir/ConfigCompilerTest.class'
+    include '/org/logstash/config/ir/ConfigCompilerTest.class'
 }
+
+test {
+    exclude '/**'
+}
+test.dependsOn javaTests, rubyTests
 
 artifacts {
     sources(sourcesJar) {
