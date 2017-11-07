@@ -180,7 +180,7 @@ class LogstashService < Service
   end  
   
   def get_version
-    `#{@logstash_bin} --version`
+    `#{@logstash_bin} --version`.split("\n").last
   end
   
   def get_version_yml

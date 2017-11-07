@@ -143,6 +143,10 @@ Most of the unit tests in Logstash are written using [rspec](http://rspec.info/)
     
     ./gradlew javaTests
 
+3- To execute the complete test-suite including the integration tests run:
+
+    ./gradlew check
+
 ### Plugins tests
 
 To run the tests of all currently installed plugins:
