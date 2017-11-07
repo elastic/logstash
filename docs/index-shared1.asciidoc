@@ -1,5 +1,5 @@
 
-:branch:                master
+:branch:                6.x
 :major-version:         6.x
 :logstash_version:      6.1.0
 :elasticsearch_version: 6.1.0
