@@ -9,35 +9,26 @@ export JRUBY_OPTS="-J-Xmx1g"
 export SPEC_OPTS="--order rand --format documentation"
 export CI=true
 
-rm -rf build && mkdir build
-
-echo "Building tar"
-rake artifact:tar
-cd build
-tar xf *.tar.gz
-
-cd ../qa/integration
-echo "Installing test dependencies"
-bundle install
-
 if [[ $1 = "setup" ]]; then
  echo "Setup only, no tests will be run"
  exit 0
 
 elif [[ $1 == "split" ]]; then
+    cd qa/integration 
     glob1=(specs/*spec.rb)
     glob2=(specs/**/*spec.rb)
     all_specs=("${glob1[@]}" "${glob2[@]}")
 
     specs0=${all_specs[@]::$((${#all_specs[@]} / 2 ))}
     specs1=${all_specs[@]:$((${#all_specs[@]} / 2 ))}
-
+    cd ..
+    cd ..
     if [[ $2 == 0 ]]; then
        echo "Running the first half of integration specs: $specs0"
-       bundle exec rspec $specs0
+       ./gradlew runIntegrationTests -PrubyIntegrationSpecs="$specs0"
     elif [[ $2 == 1 ]]; then
        echo "Running the second half of integration specs: $specs1"
-       bundle exec rspec $specs1
+       ./gradlew runIntegrationTests -PrubyIntegrationSpecs="$specs1"
     else
        echo "Error, must specify 0 or 1 after the split. For example ci/integration_tests.sh split 0"
        exit 1
@@ -45,9 +36,9 @@ elif [[ $1 == "split" ]]; then
 
 elif [[ !  -z  $@  ]]; then
     echo "Running integration tests 'rspec $@'"
-    bundle exec rspec $@
+    ./gradlew runIntegrationTests -PrubyIntegrationSpecs="$@"
 
 else
     echo "Running all integration tests"
-    bundle exec rspec
+    ./gradlew runIntegrationTests
 fi
