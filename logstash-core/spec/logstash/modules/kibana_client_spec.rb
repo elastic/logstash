@@ -56,5 +56,33 @@ module LogStash module Modules
         expect(kibana_client.endpoint).to eq(kibana_host)
       end
     end
+
+    describe "ssl option handling" do
+      context "when using a string for ssl.enabled" do
+        let(:settings) do
+          { "var.kibana.ssl.enabled" => "true" }
+        end
+
+        it "should set the ssl options" do
+          expect(Manticore::Client).to receive(:new) do |args|
+            expect(args[:ssl]).to_not be_empty
+          end.and_return(test_client)
+          described_class.new(settings)
+        end
+      end
+
+      context "when using a boolean for ssl.enabled" do
+        let(:settings) do
+          { "var.kibana.ssl.enabled" => true }
+        end
+
+        it "should set the ssl options" do
+          expect(Manticore::Client).to receive(:new) do |args|
+            expect(args[:ssl]).to_not be_empty
+          end.and_return(test_client)
+          described_class.new(settings)
+        end
+      end
+    end
   end
 end end
