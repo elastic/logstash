@@ -5,10 +5,12 @@ import org.apache.logging.log4j.Logger;
 import org.logstash.secret.SecretIdentifier;
 import org.logstash.secret.store.SecretStore;
 import org.logstash.secret.store.SecretStoreException;
+import org.logstash.secret.store.SecretStoreUtil;
 
 import javax.crypto.SecretKey;
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
@@ -21,6 +23,7 @@ import java.security.KeyStore;
 import java.security.KeyStore.PasswordProtection;
 import java.security.KeyStore.ProtectionParameter;
 import java.security.KeyStoreException;
+import java.security.UnrecoverableKeyException;
 import java.util.*;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
@@ -34,6 +37,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 public final class JavaKeyStore implements SecretStore {
     public static final String LOGSTASH_MARKER = "logstash-key-store";
     private static final Logger LOGGER = LogManager.getLogger(JavaKeyStore.class);
+    private static final String KEYSTORE_TYPE = "pkcs12";
 
     private final char[] keyStorePass;
     private final Path keyStorePath;
@@ -52,85 +56,67 @@ public final class JavaKeyStore implements SecretStore {
     public JavaKeyStore(Path keyStorePath, char[] keyStorePass) {
         try {
             this.keyStorePath = keyStorePath;
-            String keyStoreType = System.getProperty("java.keystore.type", "pkcs12");
-            this.keyStore = KeyStore.getInstance(keyStoreType);
-            this.keyStorePass = keyStorePass;
+            this.keyStore = KeyStore.getInstance(KEYSTORE_TYPE);
+            this.keyStorePass = SecretStoreUtil.base64Encode(keyStorePass);
             ReadWriteLock readWriteLock = new ReentrantReadWriteLock();
             readLock = readWriteLock.readLock();
             writeLock = readWriteLock.writeLock();
-            this.protectionParameter = new PasswordProtection(keyStorePass);
+            this.protectionParameter = new PasswordProtection(this.keyStorePass);
             SecretIdentifier logstashMarker = new SecretIdentifier(LOGSTASH_MARKER);
 
             try (final InputStream is = Files.newInputStream(keyStorePath)) {
-                keyStore.load(is, keyStorePass);
+                try {
+                    keyStore.load(is, this.keyStorePass);
+                } catch (IOException ioe) {
+                    if (ioe.getCause() instanceof UnrecoverableKeyException) {
+                        throw new SecretStoreException.AccessException(
+                                String.format("Can not access Java keystore at %s, check file permissions and the keystore password", keyStorePath.toAbsolutePath
+                                        ()), ioe);
+                    } else {
+                        throw new SecretStoreException.NotLogstashKeyStore(String.format("Found a file at %s, but it is not a valid logstash keystore.",
+                                keyStorePath.toAbsolutePath().toString()), ioe);
+                    }
+                }
                 byte[] marker = retrieveSecret(logstashMarker);
                 if (marker == null) {
-                    throw new SecretStoreException.NotLogstashKeyStore("Found a keystore, but it is not a logstash keystore.");
+                    throw new SecretStoreException.NotLogstashKeyStore(String.format("Found a keystore at %s, but it is not a logstash keystore.",
+                            keyStorePath.toAbsolutePath().toString()));
                 }
+                LOGGER.debug("Using existing keystore at {}", keyStorePath.toAbsolutePath().toString());
             } catch (NoSuchFileException noSuchFileException) {
-                LOGGER.warn("Keystore not found at {}. Creating new keystore.", keyStorePath.toAbsolutePath().toString());
-
+                LOGGER.info("Keystore not found at {}. Creating new keystore.", keyStorePath.toAbsolutePath().toString());
                 //create the keystore on disk with a default entry to identify this as a logstash keystore
                 try (final OutputStream os = Files.newOutputStream(keyStorePath)) {
-                    keyStore = KeyStore.Builder.newInstance(keyStoreType, null, protectionParameter).getKeyStore();
+                    keyStore = KeyStore.Builder.newInstance(KEYSTORE_TYPE, null, protectionParameter).getKeyStore();
                     SecretKeyFactory factory = SecretKeyFactory.getInstance("PBE");
-                    byte[] base64 = Base64.getEncoder().encode(LOGSTASH_MARKER.getBytes(StandardCharsets.UTF_8));
-                    SecretKey secretKey = factory.generateSecret(new PBEKeySpec(asciiBytesToChar(base64)));
+                    byte[] base64 = SecretStoreUtil.base64Encode(LOGSTASH_MARKER.getBytes(StandardCharsets.UTF_8));
+                    SecretKey secretKey = factory.generateSecret(new PBEKeySpec(SecretStoreUtil.asciiBytesToChar(base64)));
                     keyStore.setEntry(logstashMarker.toExternalForm(), new KeyStore.SecretKeyEntry(secretKey), protectionParameter);
-                    keyStore.store(os, keyStorePass);
+                    keyStore.store(os, this.keyStorePass);
 
                     PosixFileAttributeView attrs = Files.getFileAttributeView(keyStorePath, PosixFileAttributeView.class);
                     if (attrs != null) {
-                        attrs.setPermissions(PosixFilePermissions.fromString("rw-rw----"));
+                        try {
+                            //wrapped in a system mostly for testing, but could be used for more restrictive defaults
+                            attrs.setPermissions(PosixFilePermissions.fromString(System.getProperty("logstash.keystore.java.file.perms", "rw-rw----")));
+                        } catch (Exception e) {
+                            try {
+                                Files.delete(keyStorePath);
+                            } catch (IOException ioe) {
+                                //do nothing
+                            }
+                            throw new SecretStoreException.CreateException("Error can not set file permissions on Java keystore", e);
+                        }
                     }
+                    LOGGER.info("Keystore created at {}", keyStorePath.toAbsolutePath().toString());
+                } catch (Exception e) {
+                    throw new SecretStoreException.CreateException("Error can not create Java keystore", e);
                 }
             }
-        } catch (Exception e) {
-            throw new SecretStoreException("Error while construction the JavaKeyStore", e);
-        }
-    }
-
-    /**
-     * Converts bytes from ascii encoded text to a char[] and zero outs the original byte[]
-     *
-     * @param bytes the bytes from an ascii encoded text (note - no validation is done to ensure ascii encoding)
-     * @return the corresponding char[]
-     */
-    private char[] asciiBytesToChar(byte[] bytes) {
-        char[] chars = new char[bytes.length];
-        for (int i = 0; i < bytes.length; i++) {
-            chars[i] = (char) bytes[i];
-            bytes[i] = '\0';
-        }
-        return chars;
-    }
-
-    /**
-     * Converts characters from ascii encoded text to a byte[] and zero outs the original char[]
-     *
-     * @param chars the chars from an ascii encoded text (note - no validation is done to ensure ascii encoding)
-     * @return the corresponding byte[]
-     */
-    private byte[] asciiCharToBytes(char[] chars) {
-        byte[] bytes = new byte[chars.length];
-        for (int i = 0; i < chars.length; i++) {
-            bytes[i] = (byte) chars[i];
-            chars[i] = '\0';
-        }
-        return bytes;
-    }
-
-    /**
-     * Attempt to keep the secret data out of the heap.
-     *
-     * @param secret the secret to zero out
-     */
-    private void clearSecret(byte[] secret) {
-        if (secret != null) {
-            for (int i = 0; i < secret.length; ++i) {
-                secret[i] = '\0';
-            }
-            secret = null;
+        } catch (SecretStoreException sse) {
+            throw sse;
+        } catch (Exception e) { //should never happen
+            throw new SecretStoreException("Error while trying to create or launch the JavaKeyStore", e);
         }
     }
 
@@ -145,7 +131,7 @@ public final class JavaKeyStore implements SecretStore {
                 identifiers.add(SecretIdentifier.fromExternalForm(alias));
             }
         } catch (KeyStoreException e) {
-            e.printStackTrace();
+            throw new SecretStoreException.ListException(e);
         } finally {
             readLock.unlock();
         }
@@ -158,16 +144,17 @@ public final class JavaKeyStore implements SecretStore {
             writeLock.lock();
             SecretKeyFactory factory = SecretKeyFactory.getInstance("PBE");
             //PBEKey requires an ascii password, so base64 encode it
-            byte[] base64 = Base64.getEncoder().encode(secret);
-            PBEKeySpec passwordBasedKeySpec = new PBEKeySpec(asciiBytesToChar(base64));
+            byte[] base64 = SecretStoreUtil.base64Encode(secret);
+            PBEKeySpec passwordBasedKeySpec = new PBEKeySpec(SecretStoreUtil.asciiBytesToChar(base64));
             SecretKey secretKey = factory.generateSecret(passwordBasedKeySpec);
             keyStore.setEntry(identifier.toExternalForm(), new KeyStore.SecretKeyEntry(secretKey), protectionParameter);
             try (final OutputStream os = Files.newOutputStream(keyStorePath)) {
                 keyStore.store(os, keyStorePass);
             } finally {
                 passwordBasedKeySpec.clearPassword();
-                clearSecret(secret);
+                SecretStoreUtil.clearBytes(secret);
             }
+            LOGGER.debug("persisted secret {}", identifier.toExternalForm());
         } catch (Exception e) {
             throw new SecretStoreException.PersistException(identifier, e);
         } finally {
@@ -182,12 +169,11 @@ public final class JavaKeyStore implements SecretStore {
             try (final InputStream is = Files.newInputStream(keyStorePath)) {
                 keyStore.load(is, keyStorePass);
                 keyStore.deleteEntry(identifier.toExternalForm());
-            } catch (Exception e) {
-                e.printStackTrace();
             }
             try (final OutputStream os = Files.newOutputStream(keyStorePath)) {
                 keyStore.store(os, keyStorePass);
             }
+            LOGGER.debug("purged secret {}", identifier.toExternalForm());
         } catch (Exception e) {
             throw new SecretStoreException.PurgeException(identifier, e);
         } finally {
@@ -206,13 +192,15 @@ public final class JavaKeyStore implements SecretStore {
                     KeyStore.SecretKeyEntry secretKeyEntry = (KeyStore.SecretKeyEntry) keyStore.getEntry(identifier.toExternalForm(), protectionParameter);
                     //not found
                     if (secretKeyEntry == null) {
+                        LOGGER.warn("requested secret {} not found", identifier.toExternalForm());
                         return null;
                     }
                     PBEKeySpec passwordBasedKeySpec = (PBEKeySpec) factory.getKeySpec(secretKeyEntry.getSecretKey(), PBEKeySpec.class);
                     //base64 encoded char[]
-                    char[] base64secret = passwordBasedKeySpec.getPassword().clone();
-                    byte[] secret = Base64.getDecoder().decode(asciiCharToBytes(base64secret));
+                    char[] base64secret = passwordBasedKeySpec.getPassword();
+                    byte[] secret = SecretStoreUtil.base64Decode(base64secret);
                     passwordBasedKeySpec.clearPassword();
+                    LOGGER.debug("retrieved secret {}", identifier.toExternalForm());
                     return secret;
                 }
             } catch (Exception e) {

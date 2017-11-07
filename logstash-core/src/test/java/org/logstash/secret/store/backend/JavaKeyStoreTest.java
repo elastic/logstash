@@ -79,8 +79,7 @@ public class JavaKeyStoreTest {
      */
     @Test
     public void notLogstashKeystore() throws Exception {
-        thrown.expect(SecretStoreException.class);
-        thrown.expectCause(instanceOf(SecretStoreException.NotLogstashKeyStore.class));
+        thrown.expect(SecretStoreException.NotLogstashKeyStore.class);
         new JavaKeyStore(Paths.get(this.getClass().getClassLoader().getResource("not.a.logstash.keystore").toURI()), "mypassword".toCharArray());
     }
 
@@ -192,7 +191,7 @@ public class JavaKeyStoreTest {
     @Test
     public void tamperedKeystore() throws Exception {
 
-        thrown.expect(SecretStoreException.class);
+        thrown.expect(SecretStoreException.NotLogstashKeyStore.class);
         byte[] keyStoreAsBytes = Files.readAllBytes(keyStorePath);
         //bump the middle byte by 1
         int tamperLocation = keyStoreAsBytes.length / 2;
@@ -263,13 +262,36 @@ public class JavaKeyStoreTest {
     }
 
     /**
+     * When the permissions are unable to be set, the keystore should not be created.
+     *
+     * @throws Exception when it goes boom.
+     */
+    @Test
+    public void testUnableToSetPermissions() throws Exception {
+        String beforeTest = System.getProperty("logstash.keystore.java.file.perms");
+        thrown.expect(SecretStoreException.CreateException.class);
+        try {
+            System.setProperty("logstash.keystore.java.file.perms", "junk");
+            Path altPath = folder.newFolder().toPath().resolve("alt.logstash.keystore");
+            keyStore = new JavaKeyStore(altPath, keyStorePass);
+            assertThat(altPath.toFile().exists()).isFalse();
+        } finally {
+            if (beforeTest == null) {
+                System.clearProperty("logstash.keystore.java.file.perms");
+            } else {
+                System.setProperty("logstash.keystore.java.file.perms", beforeTest);
+            }
+        }
+    }
+
+    /**
      * Ensure that the when the wrong password is presented the corrected exception is thrown.
      *
      * @throws Exception when ever it wants to
      */
     @Test
     public void wrongPassword() throws Exception {
-        thrown.expect(SecretStoreException.class);
+        thrown.expect(SecretStoreException.AccessException.class);
         new JavaKeyStore(Paths.get(this.getClass().getClassLoader().getResource("logstash.keystore").toURI()), "wrongpassword".toCharArray());
     }
 }

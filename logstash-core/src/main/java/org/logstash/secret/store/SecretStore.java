@@ -23,7 +23,7 @@ public interface SecretStore {
      * Persist a secret to the store. Implementations should overwrite existing secrets with same identifier without error unless explicitly documented otherwise.
      *
      * @param id     The {@link SecretIdentifier} to identify the secret to persist
-     * @param secret The byte[] representation of the secret.
+     * @param secret The byte[] representation of the secret. Implementations should zero out this byte[] once it has been persisted.
      */
     void persistSecret(SecretIdentifier id, byte[] secret);
 

@@ -19,11 +19,27 @@ public class SecretStoreException extends RuntimeException {
         public NotLogstashKeyStore(String message) {
             super(message);
         }
+
+        public NotLogstashKeyStore(String message, Throwable cause) {
+            super(message, cause);
+        }
     }
 
     static public class RetrievalException extends SecretStoreException {
         public RetrievalException(SecretIdentifier secretIdentifier, Throwable cause) {
             super(String.format("Error while trying to retrieve secret %s", secretIdentifier.toExternalForm()), cause);
+        }
+    }
+
+    static public class ListException extends SecretStoreException {
+        public ListException(Throwable cause) {
+            super("Error while trying to list keys in secret store", cause);
+        }
+    }
+
+    static public class CreateException extends SecretStoreException {
+        public CreateException(String message, Throwable cause) {
+            super(message, cause);
         }
     }
 
@@ -39,4 +55,9 @@ public class SecretStoreException extends RuntimeException {
         }
     }
 
+    static public class AccessException extends SecretStoreException {
+        public AccessException(String message, Throwable throwable) {
+            super(message, throwable);
+        }
+    }
 }

@@ -10,8 +10,8 @@ import java.util.regex.Pattern;
 public class SecretIdentifier {
 
     private final static Pattern colonPattern = Pattern.compile(":");
-    private final static Pattern urnPattern = Pattern.compile("urn:logstash:secret:v1:.*$");
-    private final String VERSION = "v1";
+    private final static String VERSION = "v1";
+    private final static Pattern urnPattern = Pattern.compile("urn:logstash:secret:"+ VERSION + ":.*$");
     private final String key;
 
     /**
@@ -31,7 +31,7 @@ public class SecretIdentifier {
      */
     public static SecretIdentifier fromExternalForm(String urn) {
         if (urn == null || !urnPattern.matcher(urn).matches()) {
-            return null;
+            throw new IllegalArgumentException("Invalid external form " + urn);
         }
         String[] parts = colonPattern.split(urn, 5);
         return new SecretIdentifier(validateWithTransform(parts[4], "key"));
@@ -48,7 +48,7 @@ public class SecretIdentifier {
         if (part == null || part.isEmpty()) {
             throw new IllegalArgumentException(String.format("%s may not be null or empty", partName));
         }
-        return part.replace(":", "_").toLowerCase(Locale.US);
+        return part.toLowerCase(Locale.US);
     }
 
     @Override
@@ -90,7 +90,7 @@ public class SecretIdentifier {
         sb.append("logstash").append(":");
         sb.append("secret").append(":");
         sb.append(VERSION).append(":");
-        sb.append(this.key == null ? "-" : this.key.toLowerCase(Locale.US));
+        sb.append(this.key);
         return sb.toString();
     }
 

@@ -34,12 +34,13 @@ public class SecretIdentifierTest {
     }
 
     /**
-     * Colons get transformed to underscores
+     * Colon in the key don't cause issues with parsing the colon separated URN
      */
     @Test
     public void testColon() {
         SecretIdentifier id = new SecretIdentifier("foo:bar");
-        assertThat(id.toExternalForm()).isEqualTo("urn:logstash:secret:v1:foo_bar");
+        assertThat(id.toExternalForm()).isEqualTo("urn:logstash:secret:v1:foo:bar");
+        assertThat(id.getKey()).isEqualTo("foo:bar");
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -56,13 +57,9 @@ public class SecretIdentifierTest {
         assertThat(SecretIdentifier.fromExternalForm("urn:logstash:secret:v1:foo:bar")).isEqualTo(new SecretIdentifier("foo:bar"));
     }
 
-    /**
-     * invalid urn's return null
-     */
-    @Test
+    @Test(expected = IllegalArgumentException.class)
     public void testFromExternalInvalid() {
-        assertThat(SecretIdentifier.fromExternalForm("urn:logstash:secret:nope:foo")).isNull();
-        assertThat(SecretIdentifier.fromExternalForm("urn:logstash:foo")).isNull();
+        SecretIdentifier.fromExternalForm("urn:logstash:secret:invalid:foo");
     }
 
     @Test(expected = IllegalArgumentException.class)
