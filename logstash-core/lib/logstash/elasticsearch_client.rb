@@ -29,7 +29,9 @@ module LogStash class ElasticsearchClient
 
       ssl_options = {}
 
-      if @settings["var.elasticsearch.ssl.enabled"] == "true"
+      # boolean settings may be strings if set through the cli
+      # or booleans if set through the yaml file, so we use .to_s
+      if @settings["var.elasticsearch.ssl.enabled"].to_s == "true"
         ssl_options[:verify] = @settings.fetch("var.elasticsearch.ssl.verification_mode", true)
         ssl_options[:ca_file] = @settings.fetch("var.elasticsearch.ssl.certificate_authority", nil)
         ssl_options[:client_cert] = @settings.fetch("var.elasticsearch.ssl.certificate", nil)
