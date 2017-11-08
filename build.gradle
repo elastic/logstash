@@ -136,6 +136,9 @@ task downloadAndInstallJRuby(dependsOn: verifyFile, type: Copy) {
     into "${projectDir}/vendor/jruby"
 }
 
+def jrubyBin = './vendor/jruby/bin/jruby' +
+  (System.getProperty("os.name").startsWith("Windows") ? '.bat' : '')
+
 task installTestGems(dependsOn: downloadAndInstallJRuby, type: Exec) {
   workingDir projectDir
   inputs.files file("${projectDir}/Gemfile.template")
@@ -145,9 +148,12 @@ task installTestGems(dependsOn: downloadAndInstallJRuby, type: Exec) {
   outputs.files file("${projectDir}/Gemfile.lock")
   outputs.files fileTree("${projectDir}/vendor/bundle/gems")
   outputs.files fileTree("${projectDir}/vendor/jruby")
+  // Override z_rubycheck.rb because we execute the vendored JRuby and don't have to guard against
+  // any Ruby environment leaking into the build
+  environment "GEM_PATH", "1"
   standardOutput = new ExecLogOutputStream(System.out)
   errorOutput =  new ExecLogOutputStream(System.err)
-  commandLine './vendor/jruby/bin/jruby', "${projectDir}/vendor/jruby/bin/rake".toString(), "test:install-core"
+  commandLine jrubyBin, "${projectDir}/vendor/jruby/bin/rake", "test:install-core"
 }
 
 // If you are running a JRuby snapshot we will skip the integrity check.
