@@ -42,7 +42,7 @@ public final class RubyAckedBatch extends RubyObject {
         if (!(seqNums instanceof RubyArray)) {
             context.runtime.newArgumentError("expected seqNums array");
         }
-        if (!(queue instanceof JrubyAckedQueueExtLibrary.RubyAckedQueue)) {
+        if (!(queue instanceof AbstractJRubyQueue.RubyAckedQueue)) {
             context.runtime.newArgumentError("expected queue AckedQueue");
         }
         final Collection<Long> seqList = (List<Long>) seqNums;
@@ -51,7 +51,7 @@ public final class RubyAckedBatch extends RubyObject {
             seqs.add(seq);
         }
         this.batch = new Batch((List<Queueable>) events, seqs,
-            ((JrubyAckedQueueExtLibrary.RubyAckedQueue) queue).getQueue()
+            ((AbstractJRubyQueue.RubyAckedQueue) queue).getQueue()
         );
         return context.nil;
     }
