@@ -151,7 +151,7 @@ public final class JrubyAckedQueueMemoryExtLibrary {
             }
 
             // TODO: return proper Batch object
-            return (b == null) ? context.nil : new JrubyAckedBatchExtLibrary.RubyAckedBatch(context.runtime, b);
+            return (b == null) ? context.nil : new RubyAckedBatch(context.runtime, b);
         }
 
         @JRubyMethod(name = "is_fully_acked?")
