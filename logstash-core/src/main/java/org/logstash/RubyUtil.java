@@ -9,9 +9,9 @@ import org.jruby.anno.JRubyClass;
 import org.jruby.exceptions.RaiseException;
 import org.jruby.runtime.ObjectAllocator;
 import org.jruby.runtime.builtin.IRubyObject;
-import org.logstash.ackedqueue.ext.JrubyAckedBatchExtLibrary;
 import org.logstash.ackedqueue.ext.JrubyAckedQueueExtLibrary;
 import org.logstash.ackedqueue.ext.JrubyAckedQueueMemoryExtLibrary;
+import org.logstash.ackedqueue.ext.RubyAckedBatch;
 import org.logstash.ext.JrubyEventExtLibrary;
 import org.logstash.ext.JrubyTimestampExtLibrary;
 
@@ -89,9 +89,9 @@ public final class RubyUtil {
         RUBY_ACKED_BATCH_CLASS = setupLogstashClass("AckedBatch", new ObjectAllocator() {
             @Override
             public IRubyObject allocate(final Ruby runtime, final RubyClass rubyClass) {
-                return new JrubyAckedBatchExtLibrary.RubyAckedBatch(runtime, rubyClass);
+                return new RubyAckedBatch(runtime, rubyClass);
             }
-        }, JrubyAckedBatchExtLibrary.RubyAckedBatch.class);
+        }, RubyAckedBatch.class);
         setupLogstashClass(
             "AckedQueue", JrubyAckedQueueExtLibrary.RubyAckedQueue::new,
             JrubyAckedQueueExtLibrary.RubyAckedQueue.class
