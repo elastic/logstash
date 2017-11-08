@@ -8,7 +8,6 @@ import org.jruby.RubyModule;
 import org.jruby.anno.JRubyClass;
 import org.jruby.exceptions.RaiseException;
 import org.jruby.runtime.ObjectAllocator;
-import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.ackedqueue.ext.AbstractJRubyQueue;
 import org.logstash.ackedqueue.ext.RubyAckedBatch;
 import org.logstash.ext.JrubyEventExtLibrary;
@@ -82,15 +81,12 @@ public final class RubyUtil {
         RUBY_EVENT_CLASS.setConstant("VERSION_ONE", RUBY.newString(Event.VERSION_ONE));
         RUBY_EVENT_CLASS.defineAnnotatedMethods(JrubyEventExtLibrary.RubyEvent.class);
         RUBY_EVENT_CLASS.defineAnnotatedConstants(JrubyEventExtLibrary.RubyEvent.class);
-        RUBY_ACKED_BATCH_CLASS = setupLogstashClass("AckedBatch", new ObjectAllocator() {
-            @Override
-            public IRubyObject allocate(final Ruby runtime, final RubyClass rubyClass) {
-                return new RubyAckedBatch(runtime, rubyClass);
-            }
-        }, RubyAckedBatch.class);
         final RubyClass abstractQueue = setupLogstashClass(
             "AbstractAckedQueue", ObjectAllocator.NOT_ALLOCATABLE_ALLOCATOR,
             AbstractJRubyQueue.class
+        );
+        RUBY_ACKED_BATCH_CLASS = setupLogstashClass(
+            "AckedBatch", RubyAckedBatch::new, RubyAckedBatch.class
         );
         setupLogstashClass(
             "AckedQueue", abstractQueue, AbstractJRubyQueue.RubyAckedQueue::new,
@@ -132,7 +128,7 @@ public final class RubyUtil {
     /**
      * Sets up a Java-defined {@link RubyClass} in the Logstash Ruby module.
      * @param name Name of the class
-     * @param parent Parent RubyClass 
+     * @param parent Parent RubyClass
      * @param allocator Allocator of the class
      * @param jclass Underlying Java class that is annotated by {@link JRubyClass}
      * @return RubyClass

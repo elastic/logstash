@@ -27,9 +27,11 @@ public final class RubyAckedBatch extends RubyObject {
         super(runtime, klass);
     }
 
-    public RubyAckedBatch(Ruby runtime, Batch batch) {
-        super(runtime, RubyUtil.RUBY_ACKED_BATCH_CLASS);
-        this.batch = batch;
+    public static RubyAckedBatch create(Ruby runtime, Batch batch) {
+        final RubyAckedBatch ackedBatch =
+            new RubyAckedBatch(runtime, RubyUtil.RUBY_ACKED_BATCH_CLASS);
+        ackedBatch.batch = batch;
+        return ackedBatch;
     }
 
     @SuppressWarnings("unchecked") // for the getList() calls
