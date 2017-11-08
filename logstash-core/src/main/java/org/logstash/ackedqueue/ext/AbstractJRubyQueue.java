@@ -117,7 +117,7 @@ public abstract class AbstractJRubyQueue extends RubyObject {
             throw RubyUtil.newRubyIOError(context.runtime, e);
         }
         // TODO: return proper Batch object
-        return (b == null) ? context.nil : new RubyAckedBatch(context.runtime, b);
+        return (b == null) ? context.nil : RubyAckedBatch.create(context.runtime, b);
     }
 
     @JRubyMethod(name = "is_fully_acked?")
