@@ -33,25 +33,10 @@ public final class JrubyTimestampExtLibrary {
             super(runtime, klass);
         }
 
-        public RubyTimestamp(Ruby runtime, RubyClass klass, Timestamp timestamp) {
-            this(runtime, klass);
-            this.timestamp = timestamp;
-        }
-
-        public RubyTimestamp(Ruby runtime, Timestamp timestamp) {
-            this(runtime, RubyUtil.RUBY_TIMESTAMP_CLASS, timestamp);
-        }
-
-        public RubyTimestamp(Ruby runtime) {
-            this(runtime, new Timestamp());
-        }
-
-        public static RubyTimestamp newRubyTimestamp(Ruby runtime) {
-            return new RubyTimestamp(runtime);
-        }
-
         public static RubyTimestamp newRubyTimestamp(Ruby runtime, Timestamp timestamp) {
-            return new RubyTimestamp(runtime, timestamp);
+            final RubyTimestamp stamp = new RubyTimestamp(runtime, RubyUtil.RUBY_TIMESTAMP_CLASS);
+            stamp.timestamp = timestamp;
+            return stamp;
         }
 
         public Timestamp getTimestamp() {
@@ -199,7 +184,7 @@ public final class JrubyTimestampExtLibrary {
         @JRubyMethod(name = "now", meta = true)
         public static IRubyObject ruby_now(ThreadContext context, IRubyObject recv)
         {
-            return RubyTimestamp.newRubyTimestamp(context.runtime);
+            return RubyTimestamp.newRubyTimestamp(context.runtime, new Timestamp());
         }
 
         @JRubyMethod(name = "utc")
