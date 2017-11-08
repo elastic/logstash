@@ -9,8 +9,7 @@ import org.jruby.anno.JRubyClass;
 import org.jruby.exceptions.RaiseException;
 import org.jruby.runtime.ObjectAllocator;
 import org.jruby.runtime.builtin.IRubyObject;
-import org.logstash.ackedqueue.ext.JrubyAckedQueueExtLibrary;
-import org.logstash.ackedqueue.ext.JrubyAckedQueueMemoryExtLibrary;
+import org.logstash.ackedqueue.ext.AbstractJRubyQueue;
 import org.logstash.ackedqueue.ext.RubyAckedBatch;
 import org.logstash.ext.JrubyEventExtLibrary;
 import org.logstash.ext.JrubyTimestampExtLibrary;
@@ -92,13 +91,17 @@ public final class RubyUtil {
                 return new RubyAckedBatch(runtime, rubyClass);
             }
         }, RubyAckedBatch.class);
-        setupLogstashClass(
-            "AckedQueue", JrubyAckedQueueExtLibrary.RubyAckedQueue::new,
-            JrubyAckedQueueExtLibrary.RubyAckedQueue.class
+        final RubyClass abstractQueue = setupLogstashClass(
+            "AbstractAckedQueue", ObjectAllocator.NOT_ALLOCATABLE_ALLOCATOR,
+            AbstractJRubyQueue.class
         );
         setupLogstashClass(
-            "AckedMemoryQueue", JrubyAckedQueueMemoryExtLibrary.RubyAckedMemoryQueue::new,
-            JrubyAckedQueueMemoryExtLibrary.RubyAckedMemoryQueue.class
+            "AckedQueue", abstractQueue, AbstractJRubyQueue.RubyAckedQueue::new,
+            AbstractJRubyQueue.RubyAckedQueue.class
+        );
+        setupLogstashClass(
+            "AckedMemoryQueue", abstractQueue, AbstractJRubyQueue.RubyAckedMemoryQueue::new,
+            AbstractJRubyQueue.RubyAckedMemoryQueue.class
         );
     }
 
@@ -126,9 +129,20 @@ public final class RubyUtil {
      */
     private static RubyClass setupLogstashClass(final String name,
         final ObjectAllocator allocator, final Class<?> jclass) {
-        final RubyClass clazz = RUBY.defineClassUnder(
-            name, RUBY.getObject(), allocator, LOGSTASH_MODULE
-        );
+        return setupLogstashClass(name, RUBY.getObject(), allocator, jclass);
+    }
+
+    /**
+     * Sets up a Java-defined {@link RubyClass} in the Logstash Ruby module.
+     * @param name Name of the class
+     * @param parent Parent RubyClass 
+     * @param allocator Allocator of the class
+     * @param jclass Underlying Java class that is annotated by {@link JRubyClass}
+     * @return RubyClass
+     */
+    private static RubyClass setupLogstashClass(final String name, final RubyClass parent,
+        final ObjectAllocator allocator, final Class<?> jclass) {
+        final RubyClass clazz = RUBY.defineClassUnder(name, parent, allocator, LOGSTASH_MODULE);
         clazz.defineAnnotatedMethods(jclass);
         return clazz;
     }
