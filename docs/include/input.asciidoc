@@ -80,7 +80,6 @@ This can help with processing later.
   * Value type is <<string,string>>
   * There is no default value for this setting.
 
-This is the base class for Logstash inputs.
 Add a `type` field to all events handled by this input.
 
 Types are used mainly for filter activation.
@@ -93,3 +92,13 @@ example when you send an event from a shipper to an indexer) then
 a new input will not override the existing type. A type set at
 the shipper stays with that event for its life even
 when sent to another Logstash server.
+
+ifeval::["{type}"=="input" and "{plugin}"=="beats"]
+
+NOTE: The Beats shipper automatically sets the `type` field on the event.
+You cannot override this setting in the Logstash config. If you specify
+a setting for the <<plugins-inputs-beats-type,`type`>> config option in
+Logstash, it is ignored.
+
+endif::[]
+
