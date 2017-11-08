@@ -174,8 +174,10 @@ endif::[]
 
 ==== Docker
 
-An image is available for running Logstash as a Docker container. It is
-available from the Elastic Docker registry. See {logstash-ref}/docker.html[Running Logstash on Docker] for
+Images are available for running Logstash as a Docker container. They are
+available from the Elastic Docker registry.
+
+See <<docker,Running Logstash on Docker>> for
 details on how to configure and run Logstash Docker containers.
 
 [[first-event]]
