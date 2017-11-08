@@ -31,7 +31,6 @@ public abstract class AbstractByteBufferPageIO implements PageIO {
     public static final int WRAPPER_SIZE = HEADER_SIZE + SEQNUM_SIZE + LENGTH_SIZE + CHECKSUM_SIZE;
 
     public static final boolean VERIFY_CHECKSUM = true;
-    public static final boolean STRICT_CAPACITY = true;
 
     private static final Logger logger = LogManager.getLogger(AbstractByteBufferPageIO.class);
 
