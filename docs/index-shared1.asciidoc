@@ -4,7 +4,8 @@
 :logstash_version:      6.0.0-rc2
 :elasticsearch_version: 6.0.0-rc2
 :kibana_version:        6.0.0-rc2
-:docker-image:          docker.elastic.co/logstash/logstash:{logstash_version}
+:docker-repo:           docker.elastic.co/logstash/logstash
+:docker-image:          {docker-repo}:{logstash_version}
 
 //////////
 release-state can be: released | prerelease | unreleased
