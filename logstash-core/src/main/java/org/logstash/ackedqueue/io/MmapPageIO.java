@@ -30,7 +30,7 @@ public class MmapPageIO extends AbstractByteBufferPageIO {
 
     @Override
     public void open(long minSeqNum, int elementCount) throws IOException {
-        mapFile(STRICT_CAPACITY);
+        mapFile();
         super.open(minSeqNum, elementCount);
     }
 
@@ -38,13 +38,12 @@ public class MmapPageIO extends AbstractByteBufferPageIO {
     // to reflect what it recovered from the page
     @Override
     public void recover() throws IOException {
-        mapFile(!STRICT_CAPACITY);
+        mapFile();
         super.recover();
     }
 
     // memory map data file to this.buffer and read initial version byte
-    // @param strictCapacity if true verify that data file size is same as configured page capacity, if false update page capacity to actual file size
-    private void mapFile(boolean strictCapacity) throws IOException {
+    private void mapFile() throws IOException {
         RandomAccessFile raf = new RandomAccessFile(this.file, "rw");
 
         if (raf.length() > Integer.MAX_VALUE) {
@@ -52,11 +51,7 @@ public class MmapPageIO extends AbstractByteBufferPageIO {
         }
         int pageFileCapacity = (int)raf.length();
 
-        if (strictCapacity && this.capacity != pageFileCapacity) {
-            throw new IOException("Page file size " + pageFileCapacity + " different to configured page capacity " + this.capacity + " for " + this.file);
-        }
-
-        // update capacity to actual raf length
+        // update capacity to actual raf length. this can happen if a page size was changed on a non empty queue directory for example.
         this.capacity = pageFileCapacity;
 
         if (this.capacity < MIN_CAPACITY) { throw new IOException(String.format("Page file size is too small to hold elements")); }

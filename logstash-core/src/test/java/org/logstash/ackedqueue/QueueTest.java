@@ -891,4 +891,42 @@ public class QueueTest {
         }
     }
 
+    @Test
+    public void pageCapacityChangeOnExistingQueue() throws IOException {
+        final Queueable element = new StringElement("foobarbaz1");
+        final int singleElementCapacity = singleElementCapacityForByteBufferPageIO(element);
+        final int ORIGINAL_CAPACITY = 2 * singleElementCapacity;
+        final int NEW_CAPACITY = 10 * singleElementCapacity;
+
+        try (Queue q = new Queue(TestSettings.persistedQueueSettings(ORIGINAL_CAPACITY, dataPath))) {
+            q.open();
+            q.write(element);
+        }
+
+        try (Queue q = new Queue(TestSettings.persistedQueueSettings(NEW_CAPACITY, dataPath))) {
+            q.open();
+            assertThat(q.tailPages.get(0).getPageIO().getCapacity(), is(ORIGINAL_CAPACITY));
+            assertThat(q.headPage.getPageIO().getCapacity(), is(NEW_CAPACITY));
+            q.write(element);
+        }
+
+        try (Queue q = new Queue(TestSettings.persistedQueueSettings(NEW_CAPACITY, dataPath))) {
+            q.open();
+            assertThat(q.tailPages.get(0).getPageIO().getCapacity(), is(ORIGINAL_CAPACITY));
+            assertThat(q.tailPages.get(1).getPageIO().getCapacity(), is(NEW_CAPACITY));
+            assertThat(q.headPage.getPageIO().getCapacity(), is(NEW_CAPACITY));
+
+            // will read only within a page boundary
+            Batch b1 = q.readBatch( 10);
+            assertThat(b1.size(), is(1));
+            b1.close();
+
+            // will read only within a page boundary
+            Batch b2 = q.readBatch( 10);
+            assertThat(b2.size(), is(1));
+            b2.close();
+
+            assertThat(q.tailPages.size(), is(0));
+        }
+    }
 }
