@@ -46,13 +46,10 @@ public final class RubyUtil {
     static {
         RUBY = Ruby.getGlobalRuntime();
         LOGSTASH_MODULE = RUBY.getOrCreateModule("LogStash");
-        RUBY_TIMESTAMP_CLASS = setupLogstashClass("Timestamp", new ObjectAllocator() {
-            @Override
-            public JrubyTimestampExtLibrary.RubyTimestamp allocate(final Ruby runtime,
-                final RubyClass rubyClass) {
-                return new JrubyTimestampExtLibrary.RubyTimestamp(runtime, rubyClass);
-            }
-        }, JrubyTimestampExtLibrary.RubyTimestamp.class);
+        RUBY_TIMESTAMP_CLASS = setupLogstashClass(
+            "Timestamp",
+            JrubyTimestampExtLibrary.RubyTimestamp::new, JrubyTimestampExtLibrary.RubyTimestamp.class
+        );
         RUBY_EVENT_CLASS = setupLogstashClass(
             "Event", JrubyEventExtLibrary.RubyEvent::new, JrubyEventExtLibrary.RubyEvent.class
         );
