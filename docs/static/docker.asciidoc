@@ -17,7 +17,7 @@ open source Logstash.
 NOTE: https://www.elastic.co/guide/en/x-pack/current/index.html[X-Pack] is
 pre-installed in the default image. With X-Pack installed, Logstash expects to
 connect to an Elasticsearch cluster that is also running X-Pack, in order to
-publish data for the {xpack-ref}/monitoring.html[Monitoring] component.
+publish data for the {xpack-ref}/xpack-monitoring.html[Monitoring] component.
 
 ==== Pulling the image
 Obtaining Logstash for Docker is as simple as issuing a +docker
