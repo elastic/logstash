@@ -29,7 +29,7 @@ java_import org.logstash.common.DeadLetterQueueFactory
 java_import org.logstash.common.SourceWithMetadata
 java_import org.logstash.common.io.DeadLetterQueueWriter
 java_import org.logstash.config.ir.CompiledPipeline
-java_import org.logstash.config.ir.ConfigCompiler
+java_import org.logstash.LogstashSession
 
 module LogStash; class JavaBasePipeline
   include LogStash::Util::Loggable
@@ -47,7 +47,7 @@ module LogStash; class JavaBasePipeline
     @settings = pipeline_config.settings
     @config_hash = Digest::SHA1.hexdigest(@config_str)
 
-    @lir = ConfigCompiler.configToPipelineIR(
+    @lir = LogstashSession.get_or_create(self).config_compiler.configToPipelineIR(
       @config_str, @settings.get_value("config.support_escapes")
     )
 

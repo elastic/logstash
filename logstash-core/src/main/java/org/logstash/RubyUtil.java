@@ -7,11 +7,6 @@ import org.jruby.RubyException;
 import org.jruby.RubyModule;
 import org.jruby.anno.JRubyClass;
 import org.jruby.exceptions.RaiseException;
-import org.jruby.runtime.ObjectAllocator;
-import org.logstash.ackedqueue.ext.AbstractJRubyQueue;
-import org.logstash.ackedqueue.ext.RubyAckedBatch;
-import org.logstash.ext.JrubyEventExtLibrary;
-import org.logstash.ext.JrubyTimestampExtLibrary;
 
 /**
  * Utilities around interaction with the {@link Ruby} runtime.
@@ -23,9 +18,6 @@ public final class RubyUtil {
      */
     public static final Ruby RUBY;
 
-    /**
-     * Logstash Ruby Module.
-     */
     public static final RubyModule LOGSTASH_MODULE;
 
     public static final RubyClass RUBY_EVENT_CLASS;
@@ -44,58 +36,15 @@ public final class RubyUtil {
 
     static {
         RUBY = Ruby.getGlobalRuntime();
-        LOGSTASH_MODULE = RUBY.getOrCreateModule("LogStash");
-        RUBY_TIMESTAMP_CLASS = setupLogstashClass(
-            "Timestamp",
-            JrubyTimestampExtLibrary.RubyTimestamp::new, JrubyTimestampExtLibrary.RubyTimestamp.class
-        );
-        RUBY_EVENT_CLASS = setupLogstashClass(
-            "Event", JrubyEventExtLibrary.RubyEvent::new, JrubyEventExtLibrary.RubyEvent.class
-        );
-        final RubyModule json = LOGSTASH_MODULE.defineOrGetModuleUnder("Json");
-        final RubyClass stdErr = RUBY.getStandardError();
-        LOGSTASH_ERROR = LOGSTASH_MODULE.defineClassUnder(
-            "Error", stdErr, RubyUtil.LogstashRubyError::new
-        );
-        PARSER_ERROR = json.defineClassUnder(
-            "ParserError", LOGSTASH_ERROR, RubyUtil.LogstashRubyParserError::new
-        );
-        TIMESTAMP_PARSER_ERROR = LOGSTASH_MODULE.defineClassUnder(
-            "TimestampParserError", stdErr, RubyUtil.LogstashTimestampParserError::new
-        );
-        GENERATOR_ERROR = json.defineClassUnder("GeneratorError", LOGSTASH_ERROR,
-            RubyUtil.LogstashRubyGeneratorError::new
-        );
-        RUBY_EVENT_CLASS.setConstant("METADATA", RUBY.newString(Event.METADATA));
-        RUBY_EVENT_CLASS.setConstant(
-            "METADATA_BRACKETS", RUBY.newString(Event.METADATA_BRACKETS)
-        );
-        RUBY_EVENT_CLASS.setConstant("TIMESTAMP", RUBY.newString(Event.TIMESTAMP));
-        RUBY_EVENT_CLASS.setConstant(
-            "TIMESTAMP_FAILURE_TAG", RUBY.newString(Event.TIMESTAMP_FAILURE_TAG)
-        );
-        RUBY_EVENT_CLASS.setConstant(
-            "TIMESTAMP_FAILURE_FIELD", RUBY.newString(Event.TIMESTAMP_FAILURE_FIELD)
-        );
-        RUBY_EVENT_CLASS.setConstant("VERSION", RUBY.newString(Event.VERSION));
-        RUBY_EVENT_CLASS.setConstant("VERSION_ONE", RUBY.newString(Event.VERSION_ONE));
-        RUBY_EVENT_CLASS.defineAnnotatedMethods(JrubyEventExtLibrary.RubyEvent.class);
-        RUBY_EVENT_CLASS.defineAnnotatedConstants(JrubyEventExtLibrary.RubyEvent.class);
-        final RubyClass abstractQueue = setupLogstashClass(
-            "AbstractAckedQueue", ObjectAllocator.NOT_ALLOCATABLE_ALLOCATOR,
-            AbstractJRubyQueue.class
-        );
-        RUBY_ACKED_BATCH_CLASS = setupLogstashClass(
-            "AckedBatch", RubyAckedBatch::new, RubyAckedBatch.class
-        );
-        setupLogstashClass(
-            "AckedQueue", abstractQueue, AbstractJRubyQueue.RubyAckedQueue::new,
-            AbstractJRubyQueue.RubyAckedQueue.class
-        );
-        setupLogstashClass(
-            "AckedMemoryQueue", abstractQueue, AbstractJRubyQueue.RubyAckedMemoryQueue::new,
-            AbstractJRubyQueue.RubyAckedMemoryQueue.class
-        );
+        final LogstashJRubySession rubySession = LogstashSession.getOrCreate(RUBY).getRubySession();
+        RUBY_TIMESTAMP_CLASS = rubySession.getTimestamp();
+        RUBY_EVENT_CLASS = rubySession.getEvent();
+        LOGSTASH_ERROR = rubySession.getLogstashError();
+        PARSER_ERROR = rubySession.getParserError();
+        GENERATOR_ERROR = rubySession.getGeneratorError();
+        TIMESTAMP_PARSER_ERROR = rubySession.getTimestampParserError();
+        RUBY_ACKED_BATCH_CLASS = rubySession.getAckedBatch();
+        LOGSTASH_MODULE = rubySession.getLogstashModule();
     }
 
     private RubyUtil() {
@@ -111,33 +60,6 @@ public final class RubyUtil {
     public static RaiseException newRubyIOError(Ruby runtime, Throwable e) {
         // will preserve Java stacktrace & bubble up as a Ruby IOError
         return new RaiseException(e, new NativeException(runtime, runtime.getIOError(), e));
-    }
-
-    /**
-     * Sets up a Java-defined {@link RubyClass} in the Logstash Ruby module.
-     * @param name Name of the class
-     * @param allocator Allocator of the class
-     * @param jclass Underlying Java class that is annotated by {@link JRubyClass}
-     * @return RubyClass
-     */
-    private static RubyClass setupLogstashClass(final String name,
-        final ObjectAllocator allocator, final Class<?> jclass) {
-        return setupLogstashClass(name, RUBY.getObject(), allocator, jclass);
-    }
-
-    /**
-     * Sets up a Java-defined {@link RubyClass} in the Logstash Ruby module.
-     * @param name Name of the class
-     * @param parent Parent RubyClass
-     * @param allocator Allocator of the class
-     * @param jclass Underlying Java class that is annotated by {@link JRubyClass}
-     * @return RubyClass
-     */
-    private static RubyClass setupLogstashClass(final String name, final RubyClass parent,
-        final ObjectAllocator allocator, final Class<?> jclass) {
-        final RubyClass clazz = RUBY.defineClassUnder(name, parent, allocator, LOGSTASH_MODULE);
-        clazz.defineAnnotatedMethods(jclass);
-        return clazz;
     }
 
     @JRubyClass(name = "Error")
