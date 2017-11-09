@@ -49,36 +49,23 @@ public final class RubyUtil {
             JrubyTimestampExtLibrary.RubyTimestamp::new,
             JrubyTimestampExtLibrary.RubyTimestamp.class
         );
-        RUBY_EVENT_CLASS = setupLogstashClass(
-            JrubyEventExtLibrary.RubyEvent::new, JrubyEventExtLibrary.RubyEvent.class
-        );
-        defineStringConstant(RUBY_EVENT_CLASS, "METADATA", Event.METADATA);
-        defineStringConstant(RUBY_EVENT_CLASS, "METADATA_BRACKETS", Event.METADATA_BRACKETS);
-        defineStringConstant(RUBY_EVENT_CLASS, "TIMESTAMP", Event.TIMESTAMP);
-        defineStringConstant(
-            RUBY_EVENT_CLASS, "TIMESTAMP_FAILURE_TAG", Event.TIMESTAMP_FAILURE_TAG
-        );
-        defineStringConstant(
-            RUBY_EVENT_CLASS, "TIMESTAMP_FAILURE_FIELD", Event.TIMESTAMP_FAILURE_FIELD
-        );
-        defineStringConstant(RUBY_EVENT_CLASS, "VERSION", Event.VERSION);
-        defineStringConstant(RUBY_EVENT_CLASS, "VERSION_ONE", Event.VERSION_ONE);
-        final RubyModule json = LOGSTASH_MODULE.defineOrGetModuleUnder("Json");
+        RUBY_EVENT_CLASS = setupEvent();
         final RubyClass stdErr = RUBY.getStandardError();
         LOGSTASH_ERROR = setupLogstashClass(
             stdErr, RubyUtil.LogstashRubyError::new, RubyUtil.LogstashRubyError.class
         );
+        final RubyModule json = LOGSTASH_MODULE.defineOrGetModuleUnder("Json");
         PARSER_ERROR = setupClass(
             json, LOGSTASH_ERROR, RubyUtil.LogstashRubyParserError::new,
             RubyUtil.LogstashRubyParserError.class
         );
-        TIMESTAMP_PARSER_ERROR = setupLogstashClass(
-            stdErr, RubyUtil.LogstashTimestampParserError::new,
-            RubyUtil.LogstashTimestampParserError.class
-        );
         GENERATOR_ERROR = setupClass(
             json, LOGSTASH_ERROR, RubyUtil.LogstashRubyGeneratorError::new,
             RubyUtil.LogstashRubyGeneratorError.class
+        );
+        TIMESTAMP_PARSER_ERROR = setupLogstashClass(
+            stdErr, RubyUtil.LogstashTimestampParserError::new,
+            RubyUtil.LogstashTimestampParserError.class
         );
         final RubyClass abstractQueue = setupLogstashClass(
             ObjectAllocator.NOT_ALLOCATABLE_ALLOCATOR, AbstractJRubyQueue.class
@@ -109,6 +96,32 @@ public final class RubyUtil {
         return new RaiseException(e, new NativeException(runtime, runtime.getIOError(), e));
     }
 
+    /**
+     * Sets up the Ruby {@code Event} Class.
+     * @return RubyClass for Event
+     */
+    private static RubyClass setupEvent() {
+        final RubyClass event = setupLogstashClass(
+            JrubyEventExtLibrary.RubyEvent::new, JrubyEventExtLibrary.RubyEvent.class
+        );
+        defineStringConstant(event, "METADATA", Event.METADATA);
+        defineStringConstant(event, "METADATA_BRACKETS", Event.METADATA_BRACKETS);
+        defineStringConstant(event, "TIMESTAMP", Event.TIMESTAMP);
+        defineStringConstant(event, "TIMESTAMP_FAILURE_TAG", Event.TIMESTAMP_FAILURE_TAG);
+        defineStringConstant(
+            event, "TIMESTAMP_FAILURE_FIELD", Event.TIMESTAMP_FAILURE_FIELD
+        );
+        defineStringConstant(event, "VERSION", Event.VERSION);
+        defineStringConstant(event, "VERSION_ONE", Event.VERSION_ONE);
+        return event;
+    }
+
+    /**
+     * Defines a {@link org.jruby.RubyString String} constant on a {@link RubyClass}. 
+     * @param clazz RubyClass
+     * @param name Name of the Constant
+     * @param value Value of the Constant
+     */
     private static void defineStringConstant(final RubyClass clazz, final String name,
         final String value) {
         clazz.setConstant(name, RUBY.newString(value));
