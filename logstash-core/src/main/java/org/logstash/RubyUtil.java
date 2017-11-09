@@ -4,6 +4,7 @@ import org.jruby.NativeException;
 import org.jruby.Ruby;
 import org.jruby.RubyClass;
 import org.jruby.RubyException;
+import org.jruby.RubyModule;
 import org.jruby.anno.JRubyClass;
 import org.jruby.exceptions.RaiseException;
 
@@ -16,6 +17,8 @@ public final class RubyUtil {
      * Reference to the global {@link Ruby} runtime.
      */
     public static final Ruby RUBY;
+
+    public static final RubyModule LOGSTASH_MODULE;
 
     public static final RubyClass RUBY_EVENT_CLASS;
 
@@ -41,6 +44,7 @@ public final class RubyUtil {
         GENERATOR_ERROR = rubySession.getGeneratorError();
         TIMESTAMP_PARSER_ERROR = rubySession.getTimestampParserError();
         RUBY_ACKED_BATCH_CLASS = rubySession.getAckedBatch();
+        LOGSTASH_MODULE = rubySession.getLogstashModule();
     }
 
     private RubyUtil() {

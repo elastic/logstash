@@ -84,6 +84,10 @@ public final class LogstashJRubySession implements AutoCloseable {
         return timestampParserError;
     }
 
+    public RubyModule getLogstashModule() {
+        return logstashModule;
+    }
+
     @Override
     public void close() {
         ruby.tearDown(false);
