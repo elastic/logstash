@@ -52,6 +52,17 @@ public final class RubyUtil {
         RUBY_EVENT_CLASS = setupLogstashClass(
             JrubyEventExtLibrary.RubyEvent::new, JrubyEventExtLibrary.RubyEvent.class
         );
+        defineStringConstant(RUBY_EVENT_CLASS, "METADATA", Event.METADATA);
+        defineStringConstant(RUBY_EVENT_CLASS, "METADATA_BRACKETS", Event.METADATA_BRACKETS);
+        defineStringConstant(RUBY_EVENT_CLASS, "TIMESTAMP", Event.TIMESTAMP);
+        defineStringConstant(
+            RUBY_EVENT_CLASS, "TIMESTAMP_FAILURE_TAG", Event.TIMESTAMP_FAILURE_TAG
+        );
+        defineStringConstant(
+            RUBY_EVENT_CLASS, "TIMESTAMP_FAILURE_FIELD", Event.TIMESTAMP_FAILURE_FIELD
+        );
+        defineStringConstant(RUBY_EVENT_CLASS, "VERSION", Event.VERSION);
+        defineStringConstant(RUBY_EVENT_CLASS, "VERSION_ONE", Event.VERSION_ONE);
         final RubyModule json = LOGSTASH_MODULE.defineOrGetModuleUnder("Json");
         final RubyClass stdErr = RUBY.getStandardError();
         LOGSTASH_ERROR = setupLogstashClass(
@@ -69,17 +80,6 @@ public final class RubyUtil {
             json, LOGSTASH_ERROR, RubyUtil.LogstashRubyGeneratorError::new,
             RubyUtil.LogstashRubyGeneratorError.class
         );
-        defineStringConstant(RUBY_EVENT_CLASS, "METADATA", Event.METADATA);
-        defineStringConstant(RUBY_EVENT_CLASS, "METADATA_BRACKETS", Event.METADATA_BRACKETS);
-        defineStringConstant(RUBY_EVENT_CLASS, "TIMESTAMP", Event.TIMESTAMP);
-        defineStringConstant(
-            RUBY_EVENT_CLASS, "TIMESTAMP_FAILURE_TAG", Event.TIMESTAMP_FAILURE_TAG
-        );
-        defineStringConstant(
-            RUBY_EVENT_CLASS, "TIMESTAMP_FAILURE_FIELD", Event.TIMESTAMP_FAILURE_FIELD
-        );
-        defineStringConstant(RUBY_EVENT_CLASS, "VERSION", Event.VERSION);
-        defineStringConstant(RUBY_EVENT_CLASS, "VERSION_ONE", Event.VERSION_ONE);
         final RubyClass abstractQueue = setupLogstashClass(
             ObjectAllocator.NOT_ALLOCATABLE_ALLOCATOR, AbstractJRubyQueue.class
         );
