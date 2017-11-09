@@ -1,10 +1,14 @@
 package org.logstash;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import org.jruby.Ruby;
 import org.jruby.RubyClass;
+import org.jruby.RubyHash;
 import org.jruby.RubyModule;
 import org.jruby.anno.JRubyClass;
 import org.jruby.runtime.ObjectAllocator;
+import org.jruby.runtime.load.LoadService;
 import org.logstash.ackedqueue.ext.AbstractJRubyQueue;
 import org.logstash.ackedqueue.ext.RubyAckedBatch;
 import org.logstash.ext.JrubyEventExtLibrary;
@@ -54,6 +58,11 @@ public final class LogstashJRubySession implements AutoCloseable {
         timestampParserError = setupLogstashStdError(
             RubyUtil.LogstashTimestampParserError::new, RubyUtil.LogstashTimestampParserError.class
         );
+        ensureLoadpath();
+    }
+
+    public Ruby getRuby() {
+        return ruby;
     }
 
     public RubyClass getEvent() {
@@ -195,5 +204,24 @@ public final class LogstashJRubySession implements AutoCloseable {
         clazz.defineAnnotatedMethods(jclass);
         clazz.defineAnnotatedConstants(jclass);
         return clazz;
+    }
+
+    /**
+     * Loads the logstash-core/lib path if the load service can't find {@code logstash/compiler}.
+     */
+    private void ensureLoadpath() {
+        final LoadService loader = ruby.getLoadService();
+        if (loader.findFileForLoad("logstash/compiler").library == null) {
+            final RubyHash environment = ruby.getENV();
+            final Path root = Paths.get(
+                System.getProperty("logstash.core.root.dir", "")
+            ).toAbsolutePath();
+            final String gems = root.getParent().resolve("vendor").resolve("bundle")
+                .resolve("jruby").resolve("2.3.0").toFile().getAbsolutePath();
+            environment.put("GEM_HOME", gems);
+            environment.put("GEM_PATH", gems);
+            loader.addPaths(root.resolve("lib").toFile().getAbsolutePath()
+            );
+        }
     }
 }

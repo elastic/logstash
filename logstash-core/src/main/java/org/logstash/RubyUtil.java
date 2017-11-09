@@ -36,7 +36,7 @@ public final class RubyUtil {
 
     static {
         RUBY = Ruby.getGlobalRuntime();
-        final LogstashJRubySession rubySession = new LogstashJRubySession(RUBY);
+        final LogstashJRubySession rubySession = LogstashSession.getOrCreate(RUBY).getRubySession();
         RUBY_TIMESTAMP_CLASS = rubySession.getTimestamp();
         RUBY_EVENT_CLASS = rubySession.getEvent();
         LOGSTASH_ERROR = rubySession.getLogstashError();
