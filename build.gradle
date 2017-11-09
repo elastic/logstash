@@ -150,7 +150,7 @@ task installTestGems(dependsOn: downloadAndInstallJRuby, type: Exec) {
   outputs.files fileTree("${projectDir}/vendor/jruby")
   // Override z_rubycheck.rb because we execute the vendored JRuby and don't have to guard against
   // any Ruby environment leaking into the build
-  environment "GEM_PATH", "1"
+  environment "USE_RUBY", "1"
   standardOutput = new ExecLogOutputStream(System.out)
   errorOutput =  new ExecLogOutputStream(System.err)
   commandLine jrubyBin, "${projectDir}/vendor/jruby/bin/rake", "test:install-core"
