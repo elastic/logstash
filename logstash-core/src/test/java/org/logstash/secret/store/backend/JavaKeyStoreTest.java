@@ -9,6 +9,7 @@ import org.junit.rules.TemporaryFolder;
 import org.logstash.secret.SecretIdentifier;
 import org.logstash.secret.store.SecretStoreException;
 
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -16,6 +17,7 @@ import java.nio.file.Paths;
 import java.nio.file.attribute.PosixFileAttributeView;
 import java.nio.file.attribute.PosixFilePermission;
 import java.util.*;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static java.nio.file.attribute.PosixFilePermission.*;
@@ -256,9 +258,10 @@ public class JavaKeyStoreTest {
         if (attrs != null) {
             Set<PosixFilePermission> permissions = attrs.readAttributes().permissions();
             EnumSet<PosixFilePermission> expected = EnumSet.of(OWNER_READ, OWNER_WRITE, GROUP_READ, GROUP_WRITE);
-                assertThat(permissions.toArray()).containsExactlyInAnyOrder(expected.toArray());
+            assertThat(permissions.toArray()).containsExactlyInAnyOrder(expected.toArray());
         }
     }
+
     /**
      * Ensure the permissions can be set to be set more restrictive then default
      *
@@ -292,6 +295,73 @@ public class JavaKeyStoreTest {
                 System.setProperty("logstash.keystore.file.perms", beforeTest);
             }
         }
+    }
+
+    /**
+     * Simulates a different JVM modifying the keystore and ensure a consistent read view
+     */
+    @Test
+    public void testExternalUpdateRead() throws IOException {
+        Path altPath = folder.newFolder().toPath().resolve("alt.logstash.keystore");
+        JavaKeyStore keyStore1 = new JavaKeyStore(altPath, "mypass".toCharArray());
+        JavaKeyStore keyStore2 = new JavaKeyStore(altPath, "mypass".toCharArray());
+        String value = UUID.randomUUID().toString();
+        SecretIdentifier id = new SecretIdentifier(value);
+        //jvm1 persist, jvm2 read
+        keyStore1.persistSecret(id, value.getBytes(StandardCharsets.UTF_8));
+        assertThat(new String(keyStore2.retrieveSecret(new SecretIdentifier(value)), StandardCharsets.UTF_8)).isEqualTo(value);
+        //purge from jvm2
+        assertThat(new String(keyStore1.retrieveSecret(new SecretIdentifier(value)), StandardCharsets.UTF_8)).isEqualTo(value);
+        keyStore2.purgeSecret(id);
+        assertThat(keyStore1.retrieveSecret(new SecretIdentifier(value))).isNull();
+    }
+
+    /**
+     * Simulates a different JVM modifying the keystore and ensure a consistent list view
+     */
+    @Test
+    public void testExternalUpdateList() throws IOException {
+        Path altPath = folder.newFolder().toPath().resolve("alt.logstash.keystore");
+        JavaKeyStore keyStore1 = new JavaKeyStore(altPath, "mypass".toCharArray());
+        JavaKeyStore keyStore2 = new JavaKeyStore(altPath, "mypass".toCharArray());
+        String value = UUID.randomUUID().toString();
+        SecretIdentifier id = new SecretIdentifier(value);
+        //jvm1 persist, jvm2 list
+        keyStore1.persistSecret(id, value.getBytes(StandardCharsets.UTF_8));
+        assertThat(keyStore2.list().stream().map(k -> keyStore2.retrieveSecret(k)).map(v -> new String(v, StandardCharsets.UTF_8)).collect(Collectors.toSet())).contains(value);
+        //purge from jvm1
+        assertThat(new String(keyStore2.retrieveSecret(new SecretIdentifier(value)), StandardCharsets.UTF_8)).isEqualTo(value);
+        keyStore1.purgeSecret(id);
+        assertThat(keyStore2.retrieveSecret(new SecretIdentifier(value))).isNull();
+    }
+
+    /**
+     * Simulates a different JVMs modifying the keystore and ensure a consistent view
+     */
+    @Test
+    public void testExternalUpdatePersist() throws IOException {
+        Path altPath = folder.newFolder().toPath().resolve("alt.logstash.keystore");
+        JavaKeyStore keyStore1 = new JavaKeyStore(altPath, "mypass".toCharArray());
+        JavaKeyStore keyStore2 = new JavaKeyStore(altPath, "mypass".toCharArray());
+        String value1 = UUID.randomUUID().toString();
+        String value2 = UUID.randomUUID().toString();
+        SecretIdentifier id1 = new SecretIdentifier(value1);
+        SecretIdentifier id2 = new SecretIdentifier(value2);
+        //jvm1 persist id1, jvm2 persist id2
+        keyStore1.persistSecret(id1, value1.getBytes(StandardCharsets.UTF_8));
+        keyStore2.persistSecret(id2, value2.getBytes(StandardCharsets.UTF_8));
+        //both keystores should contain both values
+        assertThat(keyStore1.list().stream().map(k -> keyStore1.retrieveSecret(k)).map(v -> new String(v, StandardCharsets.UTF_8))
+                .collect(Collectors.toSet())).contains(value1,  value2);
+        assertThat(keyStore2.list().stream().map(k -> keyStore2.retrieveSecret(k)).map(v -> new String(v, StandardCharsets.UTF_8))
+                .collect(Collectors.toSet())).contains(value1,  value2);
+        //purge from jvm1
+        keyStore1.purgeSecret(id1);
+        keyStore1.purgeSecret(id2);
+        assertThat(keyStore1.retrieveSecret(new SecretIdentifier(value1))).isNull();
+        assertThat(keyStore1.retrieveSecret(new SecretIdentifier(value2))).isNull();
+        assertThat(keyStore2.retrieveSecret(new SecretIdentifier(value1))).isNull();
+        assertThat(keyStore2.retrieveSecret(new SecretIdentifier(value2))).isNull();
     }
 
     /**

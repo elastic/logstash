@@ -24,7 +24,9 @@ import java.security.KeyStore;
 import java.security.KeyStore.PasswordProtection;
 import java.security.KeyStore.ProtectionParameter;
 import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
+import java.security.cert.CertificateException;
 import java.util.*;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
@@ -119,12 +121,13 @@ public final class JavaKeyStore implements SecretStore {
         Set<SecretIdentifier> identifiers = new HashSet<>();
         try {
             readLock.lock();
+            reloadKeyStore();
             Enumeration<String> aliases = keyStore.aliases();
             while (aliases.hasMoreElements()) {
                 String alias = aliases.nextElement();
                 identifiers.add(SecretIdentifier.fromExternalForm(alias));
             }
-        } catch (KeyStoreException e) {
+        } catch (Exception e) {
             throw new SecretStoreException.ListException(e);
         } finally {
             readLock.unlock();
@@ -136,6 +139,7 @@ public final class JavaKeyStore implements SecretStore {
     public void persistSecret(SecretIdentifier identifier, byte[] secret) {
         try {
             writeLock.lock();
+            reloadKeyStore();
             SecretKeyFactory factory = SecretKeyFactory.getInstance("PBE");
             //PBEKey requires an ascii password, so base64 encode it
             byte[] base64 = SecretStoreUtil.base64Encode(secret);
@@ -160,10 +164,8 @@ public final class JavaKeyStore implements SecretStore {
     public void purgeSecret(SecretIdentifier identifier) {
         try {
             writeLock.lock();
-            try (final InputStream is = Files.newInputStream(keyStorePath)) {
-                keyStore.load(is, keyStorePass);
-                keyStore.deleteEntry(identifier.toExternalForm());
-            }
+            reloadKeyStore();
+            keyStore.deleteEntry(identifier.toExternalForm());
             try (final OutputStream os = Files.newOutputStream(keyStorePath)) {
                 keyStore.store(os, keyStorePass);
             }
@@ -180,23 +182,21 @@ public final class JavaKeyStore implements SecretStore {
         if (identifier != null && identifier.getKey() != null && !identifier.getKey().isEmpty()) {
             try {
                 readLock.lock();
-                try (final InputStream is = Files.newInputStream(keyStorePath)) {
-                    keyStore.load(is, keyStorePass);
-                    SecretKeyFactory factory = SecretKeyFactory.getInstance("PBE");
-                    KeyStore.SecretKeyEntry secretKeyEntry = (KeyStore.SecretKeyEntry) keyStore.getEntry(identifier.toExternalForm(), protectionParameter);
-                    //not found
-                    if (secretKeyEntry == null) {
-                        LOGGER.warn("requested secret {} not found", identifier.toExternalForm());
-                        return null;
-                    }
-                    PBEKeySpec passwordBasedKeySpec = (PBEKeySpec) factory.getKeySpec(secretKeyEntry.getSecretKey(), PBEKeySpec.class);
-                    //base64 encoded char[]
-                    char[] base64secret = passwordBasedKeySpec.getPassword();
-                    byte[] secret = SecretStoreUtil.base64Decode(base64secret);
-                    passwordBasedKeySpec.clearPassword();
-                    LOGGER.debug("retrieved secret {}", identifier.toExternalForm());
-                    return secret;
+                reloadKeyStore();
+                SecretKeyFactory factory = SecretKeyFactory.getInstance("PBE");
+                KeyStore.SecretKeyEntry secretKeyEntry = (KeyStore.SecretKeyEntry) keyStore.getEntry(identifier.toExternalForm(), protectionParameter);
+                //not found
+                if (secretKeyEntry == null) {
+                    LOGGER.warn("requested secret {} not found", identifier.toExternalForm());
+                    return null;
                 }
+                PBEKeySpec passwordBasedKeySpec = (PBEKeySpec) factory.getKeySpec(secretKeyEntry.getSecretKey(), PBEKeySpec.class);
+                //base64 encoded char[]
+                char[] base64secret = passwordBasedKeySpec.getPassword();
+                byte[] secret = SecretStoreUtil.base64Decode(base64secret);
+                passwordBasedKeySpec.clearPassword();
+                LOGGER.debug("retrieved secret {}", identifier.toExternalForm());
+                return secret;
             } catch (Exception e) {
                 throw new SecretStoreException.RetrievalException(identifier, e);
             } finally {
@@ -204,6 +204,15 @@ public final class JavaKeyStore implements SecretStore {
             }
         }
         return null;
+    }
+
+    /**
+     * Need to reload the keystore before any operations in case an external (or different JVM)  has modified the keystore on disk.
+     */
+    private void reloadKeyStore() throws CertificateException, NoSuchAlgorithmException, IOException {
+        try (final InputStream is = Files.newInputStream(keyStorePath)) {
+            keyStore.load(is, keyStorePass);
+        }
     }
 }
 
