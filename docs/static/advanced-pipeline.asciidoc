@@ -286,6 +286,7 @@ After Logstash applies the grok pattern, the events will have the following JSON
 
 [source,json]
 --------------------------------------------------------------------------------
+{
         "request" => "/presentations/logstash-monitorama-2013/images/kibana-search.png",
           "agent" => "\"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/32.0.1700.77 Safari/537.36\"",
          "offset" => 325,
