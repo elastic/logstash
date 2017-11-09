@@ -23,11 +23,6 @@ public final class RubyUtil {
      */
     public static final Ruby RUBY;
 
-    /**
-     * Logstash Ruby Module.
-     */
-    public static final RubyModule LOGSTASH_MODULE;
-
     public static final RubyClass RUBY_EVENT_CLASS;
 
     public static final RubyClass RUBY_ACKED_BATCH_CLASS;
@@ -41,6 +36,11 @@ public final class RubyUtil {
     public static final RubyClass LOGSTASH_ERROR;
 
     public static final RubyClass TIMESTAMP_PARSER_ERROR;
+
+    /**
+     * Logstash Ruby Module.
+     */
+    private static final RubyModule LOGSTASH_MODULE;
 
     static {
         RUBY = Ruby.getGlobalRuntime();
@@ -67,18 +67,7 @@ public final class RubyUtil {
             stdErr, RubyUtil.LogstashTimestampParserError::new,
             RubyUtil.LogstashTimestampParserError.class
         );
-        final RubyClass abstractQueue = setupLogstashClass(
-            ObjectAllocator.NOT_ALLOCATABLE_ALLOCATOR, AbstractJRubyQueue.class
-        );
-        RUBY_ACKED_BATCH_CLASS = setupLogstashClass(RubyAckedBatch::new, RubyAckedBatch.class);
-        setupLogstashClass(
-            abstractQueue, AbstractJRubyQueue.RubyAckedQueue::new,
-            AbstractJRubyQueue.RubyAckedQueue.class
-        );
-        setupLogstashClass(
-            abstractQueue, AbstractJRubyQueue.RubyAckedMemoryQueue::new,
-            AbstractJRubyQueue.RubyAckedMemoryQueue.class
-        );
+        RUBY_ACKED_BATCH_CLASS = setupAckedBatch(); 
     }
 
     private RubyUtil() {
@@ -94,6 +83,26 @@ public final class RubyUtil {
     public static RaiseException newRubyIOError(Ruby runtime, Throwable e) {
         // will preserve Java stacktrace & bubble up as a Ruby IOError
         return new RaiseException(e, new NativeException(runtime, runtime.getIOError(), e));
+    }
+
+    /**
+     * Sets up the AckedBatch RubyClass including its dependencies. 
+     * @return AckedBatch RubyClass
+     */
+    private static RubyClass setupAckedBatch() {
+        final RubyClass ackedBatch = setupLogstashClass(RubyAckedBatch::new, RubyAckedBatch.class);
+        final RubyClass abstractQueue = setupLogstashClass(
+            ObjectAllocator.NOT_ALLOCATABLE_ALLOCATOR, AbstractJRubyQueue.class
+        );
+        setupLogstashClass(
+            abstractQueue, AbstractJRubyQueue.RubyAckedQueue::new,
+            AbstractJRubyQueue.RubyAckedQueue.class
+        );
+        setupLogstashClass(
+            abstractQueue, AbstractJRubyQueue.RubyAckedMemoryQueue::new,
+            AbstractJRubyQueue.RubyAckedMemoryQueue.class
+        );
+        return ackedBatch;
     }
 
     /**
