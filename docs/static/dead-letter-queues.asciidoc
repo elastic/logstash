@@ -178,7 +178,7 @@ failure:
        "entry_time" => #<Java::OrgLogstash::Timestamp:0x5b5dacd5>,
         "plugin_id" => "fb80f1925088497215b8d037e622dec5819b503e-4",
       "plugin_type" => "elasticsearch",
-           "reason" => "Could not index event to Elasticsearch. status: 400, action: [\"index\", {:_id=>nil, :_index=>\"logstash-2017.06.22\", :_type=>\"logs\", :_routing=>nil}, 2017-06-22T01:29:29.804Z Suyogs-MacBook-Pro-2.local {\"geoip\":{\"location\":\"home\"}}], response: {\"index\"=>{\"_index\"=>\"logstash-2017.06.22\", \"_type\"=>\"logs\", \"_id\"=>\"AVzNayPze1iR9yDdI2MD\", \"status\"=>400, \"error\"=>{\"type\"=>\"mapper_parsing_exception\", \"reason\"=>\"failed to parse\", \"caused_by\"=>{\"type\"=>\"illegal_argument_exception\", \"reason\"=>\"illegal latitude value [266.30859375] for geoip.location\"}}}}"
+           "reason" => "Could not index event to Elasticsearch. status: 400, action: [\"index\", {:_id=>nil, :_index=>\"logstash-2017.06.22\", :_type=>\"doc\", :_routing=>nil}, 2017-06-22T01:29:29.804Z My-MacBook-Pro-2.local {\"geoip\":{\"location\":\"home\"}}], response: {\"index\"=>{\"_index\"=>\"logstash-2017.06.22\", \"_type\"=>\"doc\", \"_id\"=>\"AVzNayPze1iR9yDdI2MD\", \"status\"=>400, \"error\"=>{\"type\"=>\"mapper_parsing_exception\", \"reason\"=>\"failed to parse\", \"caused_by\"=>{\"type\"=>\"illegal_argument_exception\", \"reason\"=>\"illegal latitude value [266.30859375] for geoip.location\"}}}}"
     }
   },
   "@timestamp" => 2017-06-22T01:29:29.804Z,
@@ -186,7 +186,7 @@ failure:
        "geoip" => {
     "location" => "home"
   },
-        "host" => "Suyogs-MacBook-Pro-2.local",
+        "host" => "My-MacBook-Pro-2.local",
      "message" => "{\"geoip\":{\"location\":\"home\"}}"
 }
 --------------------------------------------------------------------------------
