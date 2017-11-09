@@ -38,7 +38,7 @@ public class SecretIdentifier {
     }
 
     /**
-     * Minor validation and transformation on input. Converts ":" to "_" to avoid URN conflicts, and downcases the parts
+     * Minor validation and downcases the parts
      *
      * @param part     The part of the URN to validate
      * @param partName The name of the part used for logging.

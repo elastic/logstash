@@ -17,6 +17,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.nio.file.attribute.PosixFileAttributeView;
 import java.nio.file.attribute.PosixFilePermissions;
 import java.security.KeyStore;
@@ -70,53 +71,46 @@ public final class JavaKeyStore implements SecretStore {
                 } catch (IOException ioe) {
                     if (ioe.getCause() instanceof UnrecoverableKeyException) {
                         throw new SecretStoreException.AccessException(
-                                String.format("Can not access Java keystore at %s, check file permissions and the keystore password", keyStorePath.toAbsolutePath
-                                        ()), ioe);
+                                String.format("Can not access Java keystore at %s. Please verify correct file permissions and keystore password.",
+                                        keyStorePath.toAbsolutePath()), ioe);
                     } else {
-                        throw new SecretStoreException.NotLogstashKeyStore(String.format("Found a file at %s, but it is not a valid logstash keystore.",
+                        throw new SecretStoreException.NotLogstashKeyStore(String.format("Found a file at %s, but it is not a valid Logstash keystore.",
                                 keyStorePath.toAbsolutePath().toString()), ioe);
                     }
                 }
                 byte[] marker = retrieveSecret(logstashMarker);
                 if (marker == null) {
-                    throw new SecretStoreException.NotLogstashKeyStore(String.format("Found a keystore at %s, but it is not a logstash keystore.",
+                    throw new SecretStoreException.NotLogstashKeyStore(String.format("Found a keystore at %s, but it is not a Logstash keystore.",
                             keyStorePath.toAbsolutePath().toString()));
                 }
-                LOGGER.debug("Using existing keystore at {}", keyStorePath.toAbsolutePath().toString());
+                LOGGER.debug("Using existing keystore at {}", keyStorePath.toAbsolutePath());
             } catch (NoSuchFileException noSuchFileException) {
-                LOGGER.info("Keystore not found at {}. Creating new keystore.", keyStorePath.toAbsolutePath().toString());
+                LOGGER.info("Keystore not found at {}. Creating new keystore.", keyStorePath.toAbsolutePath());
+                //wrapped in a system property mostly for testing, but could be used for more restrictive defaults
+                String keyStorePermissions = System.getProperty("logstash.keystore.file.perms", "rw-rw----");
                 //create the keystore on disk with a default entry to identify this as a logstash keystore
-                try (final OutputStream os = Files.newOutputStream(keyStorePath)) {
+                Files.createFile(keyStorePath, PosixFilePermissions.asFileAttribute(PosixFilePermissions.fromString(keyStorePermissions)));
+                try (final OutputStream os = Files.newOutputStream(keyStorePath, StandardOpenOption.WRITE)) {
                     keyStore = KeyStore.Builder.newInstance(KEYSTORE_TYPE, null, protectionParameter).getKeyStore();
                     SecretKeyFactory factory = SecretKeyFactory.getInstance("PBE");
                     byte[] base64 = SecretStoreUtil.base64Encode(LOGSTASH_MARKER.getBytes(StandardCharsets.UTF_8));
                     SecretKey secretKey = factory.generateSecret(new PBEKeySpec(SecretStoreUtil.asciiBytesToChar(base64)));
                     keyStore.setEntry(logstashMarker.toExternalForm(), new KeyStore.SecretKeyEntry(secretKey), protectionParameter);
                     keyStore.store(os, this.keyStorePass);
-
                     PosixFileAttributeView attrs = Files.getFileAttributeView(keyStorePath, PosixFileAttributeView.class);
                     if (attrs != null) {
-                        try {
-                            //wrapped in a system mostly for testing, but could be used for more restrictive defaults
-                            attrs.setPermissions(PosixFilePermissions.fromString(System.getProperty("logstash.keystore.java.file.perms", "rw-rw----")));
-                        } catch (Exception e) {
-                            try {
-                                Files.delete(keyStorePath);
-                            } catch (IOException ioe) {
-                                //do nothing
-                            }
-                            throw new SecretStoreException.CreateException("Error can not set file permissions on Java keystore", e);
-                        }
+                        //the directory umask applies when creating the file, so re-apply permissions here
+                        attrs.setPermissions(PosixFilePermissions.fromString(keyStorePermissions));
                     }
-                    LOGGER.info("Keystore created at {}", keyStorePath.toAbsolutePath().toString());
+                    LOGGER.info("Keystore created at {}", keyStorePath.toAbsolutePath());
                 } catch (Exception e) {
-                    throw new SecretStoreException.CreateException("Error can not create Java keystore", e);
+                    throw new SecretStoreException.CreateException("Failed to create Logstash keystore.", e);
                 }
             }
         } catch (SecretStoreException sse) {
             throw sse;
         } catch (Exception e) { //should never happen
-            throw new SecretStoreException("Error while trying to create or launch the JavaKeyStore", e);
+            throw new SecretStoreException("Error while trying to create or load the Logstash keystore", e);
         }
     }
 

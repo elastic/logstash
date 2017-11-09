@@ -245,9 +245,8 @@ public class JavaKeyStoreTest {
      * @throws Exception when it goes boom.
      */
     @Test
-    public void testPermissions() throws Exception {
+    public void testDefaultPermissions() throws Exception {
         PosixFileAttributeView attrs = Files.getFileAttributeView(keyStorePath, PosixFileAttributeView.class);
-
         boolean isWindows = System.getProperty("os.name").startsWith("Windows");
         //not all Windows FS are Posix
         if (!isWindows && attrs == null) {
@@ -257,29 +256,40 @@ public class JavaKeyStoreTest {
         if (attrs != null) {
             Set<PosixFilePermission> permissions = attrs.readAttributes().permissions();
             EnumSet<PosixFilePermission> expected = EnumSet.of(OWNER_READ, OWNER_WRITE, GROUP_READ, GROUP_WRITE);
-            assertThat(permissions.toArray()).containsExactlyInAnyOrder(expected.toArray());
+                assertThat(permissions.toArray()).containsExactlyInAnyOrder(expected.toArray());
         }
     }
-
     /**
-     * When the permissions are unable to be set, the keystore should not be created.
+     * Ensure the permissions can be set to be set more restrictive then default
      *
      * @throws Exception when it goes boom.
      */
     @Test
-    public void testUnableToSetPermissions() throws Exception {
-        String beforeTest = System.getProperty("logstash.keystore.java.file.perms");
-        thrown.expect(SecretStoreException.CreateException.class);
+    public void testRestrictivePermissions() throws Exception {
+        String beforeTest = System.getProperty("logstash.keystore.file.perms");
         try {
-            System.setProperty("logstash.keystore.java.file.perms", "junk");
+            System.setProperty("logstash.keystore.file.perms", "rw-------");
             Path altPath = folder.newFolder().toPath().resolve("alt.logstash.keystore");
             keyStore = new JavaKeyStore(altPath, keyStorePass);
-            assertThat(altPath.toFile().exists()).isFalse();
+            assertThat(altPath.toFile().exists()).isTrue();
+            PosixFileAttributeView attrs = Files.getFileAttributeView(altPath, PosixFileAttributeView.class);
+
+            boolean isWindows = System.getProperty("os.name").startsWith("Windows");
+            //not all Windows FS are Posix
+            if (!isWindows && attrs == null) {
+                fail("Can not determine POSIX file permissions for " + keyStore + " this is likely an error in the test");
+            }
+            // if we got attributes, lets assert them.
+            if (attrs != null) {
+                Set<PosixFilePermission> permissions = attrs.readAttributes().permissions();
+                EnumSet<PosixFilePermission> expected = EnumSet.of(OWNER_READ, OWNER_WRITE);
+                assertThat(permissions.toArray()).containsExactlyInAnyOrder(expected.toArray());
+            }
         } finally {
             if (beforeTest == null) {
-                System.clearProperty("logstash.keystore.java.file.perms");
+                System.clearProperty("logstash.keystore.file.perms");
             } else {
-                System.setProperty("logstash.keystore.java.file.perms", beforeTest);
+                System.setProperty("logstash.keystore.file.perms", beforeTest);
             }
         }
     }
