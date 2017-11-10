@@ -42,7 +42,7 @@ public abstract class AbstractByteBufferPageIO implements PageIO {
     protected int head; // head is the write position and is an int per ByteBuffer class position
     protected byte version;
     private CRC32 checkSummer;
-    private final List<Integer> offsetMap; // has to be extendable
+    private final IntVector offsetMap;
 
     public AbstractByteBufferPageIO(int pageNum, int capacity) {
         this.minSeqNum = 0;
@@ -51,7 +51,7 @@ public abstract class AbstractByteBufferPageIO implements PageIO {
         this.head = 0;
         this.pageNum = pageNum;
         this.capacity = capacity;
-        this.offsetMap = new ArrayList<>();
+        this.offsetMap = new IntVector();
         this.checkSummer = new CRC32();
     }
 
@@ -185,7 +185,7 @@ public abstract class AbstractByteBufferPageIO implements PageIO {
     }
 
     @Override
-    public void write(byte[] bytes, long seqNum) throws IOException {
+    public void write(byte[] bytes, long seqNum) {
         write(bytes, seqNum, bytes.length, checksum(bytes));
     }
 
@@ -224,7 +224,7 @@ public abstract class AbstractByteBufferPageIO implements PageIO {
                 String.format("seqNum=%d is > maxSeqNum=%d", seqNum, maxSeqNum());
 
         List<byte[]> elements = new ArrayList<>();
-        List<Long> seqNums = new ArrayList<>();
+        final LongVector seqNums = new LongVector(limit);
 
         int offset = this.offsetMap.get((int)(seqNum - this.minSeqNum));
 
