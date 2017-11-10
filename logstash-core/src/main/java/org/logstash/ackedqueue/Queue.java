@@ -1,13 +1,5 @@
 package org.logstash.ackedqueue;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.logstash.FileLockFactory;
-import org.logstash.LockException;
-import org.logstash.ackedqueue.io.CheckpointIO;
-import org.logstash.ackedqueue.io.PageIO;
-import org.logstash.ackedqueue.io.PageIOFactory;
-
 import java.io.Closeable;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -23,6 +15,14 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.logstash.FileLockFactory;
+import org.logstash.LockException;
+import org.logstash.ackedqueue.io.CheckpointIO;
+import org.logstash.ackedqueue.io.LongVector;
+import org.logstash.ackedqueue.io.PageIO;
+import org.logstash.ackedqueue.io.PageIOFactory;
 
 // TODO: Notes
 //
@@ -359,7 +359,7 @@ public class Queue implements Closeable {
                 newCheckpointedHeadpage(newHeadPageNum);
             }
 
-            long seqNum = nextSeqNum();
+            long seqNum = this.seqNum += 1;
             this.headPage.write(data, seqNum, this.checkpointMaxWrites);
             this.unreadCount++;
             
@@ -596,7 +596,7 @@ public class Queue implements Closeable {
     // same-page elements. A fully acked page will trigger a checkpoint for that page. Also if a page has more than checkpointMaxAcks
     // acks since last checkpoint it will also trigger a checkpoint.
     // @param seqNums the list of same-page sequence numbers to ack
-    public void ack(List<Long> seqNums) throws IOException {
+    public void ack(LongVector seqNums) throws IOException {
         // as a first implementation we assume that all batches are created from the same page
         // so we will avoid multi pages acking here for now
 
@@ -761,10 +761,6 @@ public class Queue implements Closeable {
         } finally {
             lock.unlock();
         }
-    }
-
-    protected long nextSeqNum() {
-        return this.seqNum += 1;
     }
 
     protected boolean isClosed() {

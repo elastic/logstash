@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.List;
+import org.logstash.ackedqueue.io.LongVector;
 import org.logstash.ackedqueue.io.PageIO;
 
 public abstract class Page implements Closeable {
@@ -102,8 +103,10 @@ public abstract class Page implements Closeable {
     //
     // @param seqNums the list of same-page seqNums to ack
     // @param checkpointMaxAcks the number of acks that will trigger a page checkpoint
-    public void ack(List<Long> seqNums, int checkpointMaxAcks) throws IOException {
-        for (long seqNum : seqNums) {
+    public void ack(LongVector seqNums, int checkpointMaxAcks) throws IOException {
+        final int count = seqNums.size();
+        for (int i = 0; i < count; ++i) {
+            final long seqNum = seqNums.get(i);
             // TODO: eventually refactor to use new bit handling class
 
             assert seqNum >= this.minSeqNum :
