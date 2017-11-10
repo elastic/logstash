@@ -25,6 +25,7 @@ fi
 
 LOGSTASH_HOME="$(cd `dirname $SOURCEPATH`/..; pwd)"
 export LOGSTASH_HOME
+export LS_HOME="${LOGSTASH_HOME}"
 SINCEDB_DIR="${LOGSTASH_HOME}"
 export SINCEDB_DIR
 
