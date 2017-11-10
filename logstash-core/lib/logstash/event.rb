@@ -4,10 +4,6 @@ require "logstash/namespace"
 require "logstash/json"
 require "logstash/timestamp"
 
-# Force loading the RubyUtil to ensure its loaded before the Event class is set up in Ruby since
-# Event depends on Ruby classes that are dynamically set up by Java code.
-java_import org.logstash.RubyUtil
-
 # transient pipeline events for normal in-flow signaling as opposed to
 # flow altering exceptions. for now having base classes is adequate and
 # in the future it might be necessary to refactor using like a BaseEvent
