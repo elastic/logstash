@@ -1,5 +1,5 @@
 [[config-management]]
-== Configuration Management
+== Managing Logstash
 
 Logstash provides configuration management features to make it easier for you to
 manage updates to your configuration over time.
