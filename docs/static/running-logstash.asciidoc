@@ -14,7 +14,7 @@ startup styles they use.  This list is intended to be informative, not exhaustiv
 | Debian 8 "jessie" and newer | <<running-logstash-systemd,systemd>> |
 | Debian 7 "wheezy" and older | <<running-logstash-sysv,sysv>> |
 | CentOS (and RHEL) 7 and newer | <<running-logstash-systemd,systemd>> |
-| CentOS (and RHEL) 6 | <<running-logstash-upstart,upstart>> |
+| CentOS (and RHEL) 6 | <<running-logstash-sysv,sysv>> |
 |=======================================================================
 
 [[running-logstash-systemd]]
