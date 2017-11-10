@@ -92,6 +92,7 @@ public final class RubyUtil {
             abstractQueue, AbstractJRubyQueue.RubyAckedMemoryQueue::new,
             AbstractJRubyQueue.RubyAckedMemoryQueue.class
         );
+        RUBY.getGlobalVariables().set("$LS_JARS_LOADED", RUBY.newString("true"));
     }
 
     private RubyUtil() {

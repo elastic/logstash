@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 # Run logstash from source
 #
 # This is most useful when done from a git checkout.
@@ -58,5 +58,14 @@ if [ "$1" = "-V" ] || [ "$1" = "--version" ]; then
   fi
   echo "logstash $LOGSTASH_VERSION"
 else
-  ruby_exec "${LOGSTASH_HOME}/lib/bootstrap/environment.rb" "logstash/runner.rb" "$@"
+  function classpath() {
+    echo -n "$1"
+    shift
+    while [ $# -gt 0 ] ; do
+      echo -n ":${1}"
+      shift
+    done
+  }
+  CLASSPATH="$(classpath ${LOGSTASH_HOME}/logstash-core/lib/jars/*.jar)"
+  exec "${JAVACMD}" ${JAVA_OPTS} -cp "${CLASSPATH}" org.logstash.Logstash "$@"
 fi
