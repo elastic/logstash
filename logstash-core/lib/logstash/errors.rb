@@ -1,9 +1,5 @@
 # encoding: utf-8
 
-# Force loading the RubyUtil to ensure that the custom Exception types it sets up are ready at the
-# same time as those that are set by this script.
-java_import org.logstash.RubyUtil
-
 module LogStash
   class EnvironmentError < Error; end
   class ConfigurationError < Error; end

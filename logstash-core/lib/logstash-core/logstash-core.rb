@@ -31,3 +31,7 @@ else
     raise("Error loading logstash-core/logstash-core.jar file, cause: #{e.message}")
   end
 end
+
+# Load Logstash's Java-defined RubyClasses by classloading RubyUtil which sets them up in its
+# static constructor
+java_import org.logstash.RubyUtil
