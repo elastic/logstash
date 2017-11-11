@@ -58,5 +58,5 @@ if [ "$1" = "-V" ] || [ "$1" = "--version" ]; then
   fi
   echo "logstash $LOGSTASH_VERSION"
 else
-  ruby_exec "${LOGSTASH_HOME}/lib/bootstrap/environment.rb" "logstash/runner.rb" "$@"
+  java -jar ${LOGSTASH_HOME}'/logstash-core/lib/logstash-core/logstash-core.jar' "$@"
 fi

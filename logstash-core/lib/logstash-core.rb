@@ -1,1 +1,1 @@
-require "logstash-core/logstash-core"
+# placeholder
