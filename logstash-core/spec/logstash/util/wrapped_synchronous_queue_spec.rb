@@ -21,8 +21,8 @@ describe LogStash::Util::WrappedSynchronousQueue do
     end
 
     describe "WriteClient | ReadClient" do
-      let(:write_client) { LogStash::Util::WrappedSynchronousQueue::WriteClient.new(subject)}
-      let(:read_client)  { LogStash::Util::WrappedSynchronousQueue::ReadClient.new(subject)}
+      let(:write_client) { subject.write_client }
+      let(:read_client)  { subject.read_client }
 
       context "when reading from the queue" do
         let(:collector) { LogStash::Instrument::Collector.new }
