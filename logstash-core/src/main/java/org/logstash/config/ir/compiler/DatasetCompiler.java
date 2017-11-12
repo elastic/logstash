@@ -10,13 +10,16 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Stream;
 import org.codehaus.commons.compiler.CompileException;
 import org.codehaus.janino.ClassBodyEvaluator;
 import org.jruby.RubyArray;
 import org.jruby.RubyHash;
 import org.jruby.internal.runtime.methods.DynamicMethod;
+import org.jruby.runtime.Block;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.RubyUtil;
+import org.logstash.ext.JrubyEventExtLibrary;
 
 /**
  * Compiler that can compile implementations of {@link Dataset} at runtime.
@@ -74,13 +77,13 @@ public final class DatasetCompiler {
 
     /**
      * Relative offset of the field holding the collection used to buffer input
-     * {@link org.logstash.ext.JrubyEventExtLibrary.RubyEvent}.
+     * {@link JrubyEventExtLibrary.RubyEvent}.
      */
     private static final int INPUT_BUFFER_OFFSET = 3;
 
     /**
      * Relative offset of the field holding the collection used to buffer computed
-     * {@link org.logstash.ext.JrubyEventExtLibrary.RubyEvent}.
+     * {@link JrubyEventExtLibrary.RubyEvent}.
      */
     private static final int RESULT_BUFFER_OFFSET = 4;
 
@@ -119,13 +122,11 @@ public final class DatasetCompiler {
                     String.format("CompiledDataset%d", SEQUENCE.incrementAndGet());
                 se.setClassName(classname);
                 se.setDefaultImports(
-                    new String[]{
-                        "java.util.Collection", "java.util.Collections",
-                        "org.logstash.config.ir.compiler.Dataset",
-                        "org.logstash.ext.JrubyEventExtLibrary",
-                        "org.logstash.RubyUtil", "org.logstash.config.ir.compiler.DatasetCompiler",
-                        "org.jruby.runtime.Block", "org.jruby.RubyArray"
-                    }
+                    Stream.of(
+                        Collection.class, Collections.class, Dataset.class,
+                        JrubyEventExtLibrary.class, RubyUtil.class, DatasetCompiler.class,
+                        Block.class, RubyArray.class
+                    ).map(Class::getName).toArray(String[]::new)
                 );
                 se.cook(new StringReader(join(fieldsAndCtor(classname, fieldValues), source)));
                 clazz = se.getClazz();
@@ -223,7 +224,7 @@ public final class DatasetCompiler {
      * 1. Caching the method's {@link org.jruby.runtime.CallSite} into an instance
      * variable.
      * 2. Calling the low level CallSite invocation
-     * {@link DynamicMethod#call(org.jruby.runtime.ThreadContext, IRubyObject, org.jruby.RubyModule, String, IRubyObject[], org.jruby.runtime.Block)}
+     * {@link DynamicMethod#call(org.jruby.runtime.ThreadContext, IRubyObject, org.jruby.RubyModule, String, IRubyObject[], Block)}
      * using an {@code IRubyObject[]} field that is repopulated with the current Event array on
      * every call to {@code compute}.
      * @param parents Parent Datasets

@@ -43,16 +43,6 @@ public final class CompiledPipeline {
     private final Map<String, RubyIntegration.Filter> filters;
 
     /**
-     * Immutable collection of filters that flush on shutdown.
-     */
-    private final Collection<RubyIntegration.Filter> shutdownFlushes;
-
-    /**
-     * Immutable collection of filters that flush periodically.
-     */
-    private final Collection<RubyIntegration.Filter> periodicFlushes;
-
-    /**
      * Configured outputs.
      */
     private final Map<String, IRubyObject> outputs;
@@ -74,22 +64,6 @@ public final class CompiledPipeline {
         inputs = setupInputs();
         filters = setupFilters();
         outputs = setupOutputs();
-        shutdownFlushes = Collections.unmodifiableList(
-            filters.values().stream().filter(RubyIntegration.Filter::hasFlush)
-                .collect(Collectors.toList())
-        );
-        periodicFlushes = Collections.unmodifiableList(
-            shutdownFlushes.stream().filter(RubyIntegration.Filter::periodicFlush)
-                .collect(Collectors.toList())
-        );
-    }
-
-    public Collection<RubyIntegration.Filter> shutdownFlushers() {
-        return shutdownFlushes;
-    }
-
-    public Collection<RubyIntegration.Filter> periodicFlushers() {
-        return periodicFlushes;
     }
 
     public Collection<IRubyObject> outputs() {
