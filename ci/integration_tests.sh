@@ -21,8 +21,7 @@ elif [[ $1 == "split" ]]; then
 
     specs0=${all_specs[@]::$((${#all_specs[@]} / 2 ))}
     specs1=${all_specs[@]:$((${#all_specs[@]} / 2 ))}
-    cd ..
-    cd ..
+    cd ../..
     if [[ $2 == 0 ]]; then
        echo "Running the first half of integration specs: $specs0"
        ./gradlew runIntegrationTests -PrubyIntegrationSpecs="$specs0"
