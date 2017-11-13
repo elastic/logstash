@@ -53,3 +53,4 @@ qa/integration/fixtures/offline_wrapper/offline
 qa/integration/fixtures/offline_wrapper/offline.o
 logstash-core/versions-gem-copy.yml
 logstash-core-plugin-api/versions-gem-copy.yml
+config/logstash.keystore

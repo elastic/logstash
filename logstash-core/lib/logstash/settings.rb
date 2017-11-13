@@ -9,6 +9,7 @@ module LogStash
   class Settings
 
     include LogStash::Util::SubstitutionVariables
+    include LogStash::Util::Loggable
     
     def initialize
       @settings = {}
@@ -25,6 +26,10 @@ module LogStash
       else
         @settings[setting.name] = setting
       end
+    end
+
+    def registered?(setting_name)
+       @settings.key?(setting_name)
     end
 
     def get_setting(setting_name)

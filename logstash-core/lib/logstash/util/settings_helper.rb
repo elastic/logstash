@@ -32,6 +32,7 @@ module LogStash::Util::SettingsHelper
     settings_path = fetch_settings_path(args)
 
     LogStash::SETTINGS.set("path.settings", settings_path) if settings_path
+    LogStash::SETTINGS.set("keystore.file", ::File.join(settings_path, "logstash.keystore")) if settings_path
 
     begin
       LogStash::SETTINGS.from_yaml(LogStash::SETTINGS.get("path.settings"))
