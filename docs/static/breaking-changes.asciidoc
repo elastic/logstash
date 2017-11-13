@@ -75,7 +75,7 @@ Note that the list of plugins included with Logstash has changed. Please check t
 === TCP Input Changes
 * Changed the behaviour of the host field to contain the resolved peer hostname for a connection instead of its peer IP.
 * Removed the `data_timeout` and `ssl_cacert` options because they are now obsolete.
-* Poved the peer's IP to the new field `ip_address`.
+* Moved the peer's IP to the new field `ip_address`.
 
 [float]
 === TCP Output Changes
