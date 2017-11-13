@@ -23,8 +23,8 @@ These changes can impact any instance of Logstash and are plugin agnostic, but o
 [float]
 ==== RPM/Deb package changes
 
-* For `rpm` and `deb` release artifacts, config files that match the `*.conf` glob pattern must be in the conf.d folder,
-  or the files will not be loaded.
+* For `rpm` and `deb` release artifacts, config files that match the `*.conf` glob pattern must be in the conf.d folder, 
+  or the files will not be loaded. If there are non-configuration files in this folder this can be problematic.
 
 [float]
 ==== Command Line Interface behavior
@@ -35,6 +35,8 @@ These changes can impact any instance of Logstash and are plugin agnostic, but o
 
 [float]
 === Plugin Changes
+
+Note that the list of plugins included with Logstash has changed. Please check that the new plugin list still includes all plugins you use.
 
 [float]
 ==== Elasticsearch output changes
@@ -71,40 +73,41 @@ These changes can impact any instance of Logstash and are plugin agnostic, but o
 
 [float]
 === TCP Input Changes
-* Changed the behaviour of the host field to contain the resolved peer hostname for a connection instead of its peer IP
-* Mark deprecated :data_timeout and :ssl_cacert options as obsolete and moved the peer's IP to the new field ip_address
+* Changed the behaviour of the host field to contain the resolved peer hostname for a connection instead of its peer IP.
+* Removed the `data_timeout` and `ssl_cacert` options because they are now obsolete.
+* Poved the peer's IP to the new field `ip_address`.
 
 [float]
 === TCP Output Changes
-* Breaking: mark deprecated option message_format as obsolete
+* Breaking: removed the `message_format` option because it is now obsolete.
 
 [float]
 === SQS Output Changes
-* Breaking: mark deprecated batch and batch_timeout options as obsolete
+* Breaking: removed the `batch` and `batch_timeout` options because they are now obsolete.
 
 [float]
 === Redis Output Changes
-* Mark deprecated name and queue configuration parameters as obsolete 
+* Removed the `name` and `queue` options because they are now obsolete.
 
 [float]
 === RabbitMQ Input/Output Changes
-* Mark deprecated options `debug`, `tls_certificate_path` and `tls_certificate_password` as obsolete
+* Removed the `debug`, `tls_certificate_path`, and `tls_certificate_password` options because they are now obsolete.
 
 [float]
 === Logstash Output HTTP
-* Breaking: mark ssl_certificate_verify as obsolete
+* Removed the `ssl_certificate_verify` option because it is now obsolete.
 
 [float]
 === Logstash Input HTTP Poller
-* Breaking: mark ssl_certificate_verify as obsolete
+* Removed the `ssl_certificate_verify` option because it is now obsolete.
 
 [float]
 === GeoIP Changes
-* Make deprecated field lru_cache_size obsolete
+* Removed the `lru_cache_size` option because it is now obsolete.
 
 [float]
 === CEF Codec Changes
-* move sev and deprecated_v1_fields fields from deprecated to obsolete
+* Removed the `sev` and `deprecated_v1_fields` options because they are now obsolete.
 
 [float]
 ==== List of plugins bundled with Logstash

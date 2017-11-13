@@ -14,35 +14,29 @@ endif::include-xpack[]
 [[logstash-6-0-0]]
 === Logstash 6.0.0 Release Notes
 
-* Breaking: The setting `config.reload.interval` has been changed to use time value strings such as `5m`, `10s`, etc for
-  convenience. Previously, users had to convert this to a second time value themselves.
-* Breaking: The list of plugins bundled with Logstash 6.0.0-beta1 release has changed. Please consult the breaking changes document
-  for a complete list.
-* Breaking: Currently, when Logstash is installed and set up via package managers, it loads all files found
-  in `/etc/logstash/conf.d` as configuration. This can be problematic if there are non-configuration files in this
-  folder. Starting from alpha2, Logstash will only glob files ending with `.conf` extension in `/etc/logstash/conf.d` ({lsissue}6979)[Issue 6979)]).
+* This list does not include all breaking changes, please consult the <<breaking-changes,breaking changes>> document separately.
 * Added new `logstash.yml` setting: `config.support_escapes`. When enabled, Logstash will interpret escape sequences in
   strings in the pipeline configuration.
-* Added an explicit `--setup` phase for modules which is used to install dashboards and Elasticsearch template.
+* Added an explicit --setup phase for modules. This phase is used to install dashboards and the Elasticsearch template.
 * Added support for running multiple pipelines in the same Logstash instance. Running multiple pipelines
-  allow users to isolate data flow, provide separate runtime pipeline parameters and helps simplify complex
+  allows users to isolate data flow, provide separate runtime pipeline parameters and helps simplify complex
   configurations. This can be configured via the new `pipelines.yml` file.
-* https://github.com/elastic/logstash/commit/840439722d8ef4737c7e8101c59652ced191bbea[Improved performance]
-* https://github.com/elastic/logstash/commit/546951fa889902d8ec56f8a7cec1dc41a21088ff[Modules: Set default credentials for Kibana if es info is present]
-* A variety of small consistency / testing fixes for the Windows platform
-* https://github.com/elastic/logstash/pull/8318[Added all commercially supported plugins to bundled plugins]
-* Existing `JAVA_OPTS` env var is now ignored for consistency with Elasticsearch
-* JAVA_TOOL_OPTIONS env var is cleared for consistency with Elasticsearch
+* https://github.com/elastic/logstash/commit/840439722d8ef4737c7e8101c59652ced191bbea[Improved performance].
+* https://github.com/elastic/logstash/commit/546951fa889902d8ec56f8a7cec1dc41a21088ff[Modules: Set default credentials for Kibana if es info is present].
+* A variety of small consistency and testing fixes for the Windows platform
+* https://github.com/elastic/logstash/pull/8318[Added all commercially supported plugins to bundled plugins].
+* The existing `JAVA_OPTS` env var is now ignored for consistency with Elasticsearch.
+* JAVA_TOOL_OPTIONS env var is cleared for consistency with Elasticsearch.
 * Now only LS_JAVA_OPTS env var is supported to append options to parsed options from the jvm.options file.
-* Dropped support of the LS_JVM_OPTS env var
-* Dropped support of the USE_RUBY and USE_DRIP environment variables
+* Dropped support for the LS_JVM_OPTS environment variable.
+* Dropped support for the USE_RUBY and USE_DRIP environment variables.
 * Added `cloud.id` and `cloud.auth` support for modules to provide an easy way to integrate with Elastic Cloud service.
-* Enabled DLQ support for multipipelines
+* Enabled DLQ support for multipipelines.
 * Added an {xpack} feature to manage Logstash configurations centrally in Elasticsearch. We've also added a UI to manage
   configurations directly in Kibana without having to restart Logstash.
 * Users can now visualize the Logstash configuration pipeline as part of the {xpack} monitoring feature.
 
 ==== Plugins
 
-*`GeoIP Filter`: You can now use MaxMind's commercial database to get enriched Geo information. ASN data can be
+* `GeoIP Filter`: You can now use MaxMind's commercial database to get enriched Geo information. ASN data can be
   obtained via the GeoIP2-ISP database.
