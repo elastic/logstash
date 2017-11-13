@@ -70,6 +70,43 @@ These changes can impact any instance of Logstash and are plugin agnostic, but o
 * The options `congestion_threshold` and `target_field_for_codec` are now obsolete.
 
 [float]
+=== TCP Input Changes
+* Changed the behaviour of the host field to contain the resolved peer hostname for a connection instead of its peer IP
+* Mark deprecated :data_timeout and :ssl_cacert options as obsolete and moved the peer's IP to the new field ip_address
+
+[float]
+=== TCP Output Changes
+* Breaking: mark deprecated option message_format as obsolete
+
+[float]
+=== SQS Output Changes
+* Breaking: mark deprecated batch and batch_timeout options as obsolete
+
+[float]
+=== Redis Output Changes
+* Mark deprecated name and queue configuration parameters as obsolete 
+
+[float]
+=== RabbitMQ Input/Output Changes
+* Mark deprecated options `debug`, `tls_certificate_path` and `tls_certificate_password` as obsolete
+
+[float]
+=== Logstash Output HTTP
+* Breaking: mark ssl_certificate_verify as obsolete
+
+[float]
+=== Logstash Input HTTP Poller
+* Breaking: mark ssl_certificate_verify as obsolete
+
+[float]
+=== GeoIP Changes
+* Make deprecated field lru_cache_size obsolete
+
+[float]
+=== CEF Codec Changes
+* move sev and deprecated_v1_fields fields from deprecated to obsolete
+
+[float]
 ==== List of plugins bundled with Logstash
 
 The following plugins were removed from the 6.0 default bundle based on usage data. You can still install these plugins manually:
