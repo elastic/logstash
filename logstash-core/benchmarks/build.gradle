@@ -8,13 +8,13 @@ version = versionMap['logstash-core']
 String jrubyVersion = versionMap['jruby']['version']
 
 repositories {
-  mavenCentral()
+  mavenCentral(artifactUrls: ["http://repo.maven.apache.org/maven2/"])
   jcenter()
 }
 
 buildscript {
   repositories {
-    mavenCentral()
+    mavenCentral(artifactUrls: ["http://repo.maven.apache.org/maven2/"])
     jcenter()
   }
   dependencies {

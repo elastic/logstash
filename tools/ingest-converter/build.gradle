@@ -7,13 +7,13 @@ description = """Ingest JSON to Logstash Grok Config Converter"""
 version = versionMap['logstash-core']
 
 repositories {
-  mavenCentral()
+  mavenCentral(artifactUrls: ["http://repo.maven.apache.org/maven2/"])
   jcenter()
 }
 
 buildscript {
   repositories {
-    mavenCentral()
+    mavenCentral(artifactUrls: ["http://repo.maven.apache.org/maven2/"])
     jcenter()
   }
   dependencies {
