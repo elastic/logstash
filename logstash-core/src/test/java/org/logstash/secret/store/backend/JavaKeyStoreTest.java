@@ -8,36 +8,133 @@ import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 import org.logstash.secret.SecretIdentifier;
 import org.logstash.secret.store.SecretStoreException;
+import org.logstash.secret.store.SecretStoreFactory;
+import org.logstash.secret.store.SecureConfig;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.nio.channels.FileLock;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.PosixFileAttributeView;
 import java.nio.file.attribute.PosixFilePermission;
 import java.util.*;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static java.nio.file.attribute.PosixFilePermission.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Fail.fail;
-import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.hamcrest.CoreMatchers.isA;
+import static org.logstash.secret.store.SecretStoreFactory.LOGSTASH_MARKER;
 
 /**
  * Unit tests for the {@link JavaKeyStore}
  */
 public class JavaKeyStoreTest {
 
+    private final static String EXTERNAL_TEST_FILE_LOCK = "test_file_lock";
+    private final static String EXTERNAL_TEST_WRITE = "test_external_write";
     @Rule
     public TemporaryFolder folder = new TemporaryFolder();
-
     @Rule
     public ExpectedException thrown = ExpectedException.none();
     private JavaKeyStore keyStore;
-    private char[] keyStorePass;
-    private Path keyStorePath;
+    private char[] keyStorePath;
+    private SecureConfig withDefaultPassConfig;
+    private SecureConfig withDefinedPassConfig;
+
+    /**
+     * Launch a second JVM with the expected args
+     * <ul>
+     * <li>arg[0] - the descriptor to identify which test this is for</li>
+     * <li>arg[1] - path to file to write as marker that the second JVM is ready to be tested</li>
+     * <li>arg[2..n] - any additional information needed for the test</li>
+     * </ul>
+     *
+     * @param args the args as described
+     * @throws IOException when i/o exceptions happen
+     */
+    public static void main(String... args) throws IOException, InterruptedException {
+
+        Path magicFile = Paths.get(args[1]);
+
+        //Use a second JVM to lock the keystore for 2 seconds
+        if (EXTERNAL_TEST_FILE_LOCK.equals(args[0])) {
+            Path keystoreFile = Paths.get(args[2]);
+            FileLock fileLock = null;
+            try (final FileOutputStream keystore = new FileOutputStream(keystoreFile.toFile(), true)) {
+                fileLock = keystore.getChannel().tryLock();
+                assertThat(fileLock).isNotNull();
+                //write the magic file to let the other process know the test is ready
+                try (final OutputStream os = Files.newOutputStream(magicFile)) {
+                    os.write(args[0].getBytes(StandardCharsets.UTF_8));
+                    Thread.sleep(2000);
+                } finally {
+                    Files.delete(magicFile);
+                }
+            } finally {
+                if (fileLock != null) {
+                    fileLock.release();
+                }
+            }
+        } else if (EXTERNAL_TEST_WRITE.equals(args[0])) {
+            Path keyStoreFile = Paths.get(args[2]);
+            SecureConfig config = new SecureConfig();
+            config.add("keystore.path", keyStoreFile.toAbsolutePath().toString().toCharArray());
+            JavaKeyStore keyStore = new JavaKeyStore(config);
+            writeAtoZ(keyStore);
+            validateAtoZ(keyStore);
+            //write the magic file to let the other process know the test is ready
+            try (final OutputStream os = Files.newOutputStream(magicFile)) {
+                os.write(args[0].getBytes(StandardCharsets.UTF_8));
+            } finally {
+                Files.delete(magicFile);
+            }
+        }
+    }
+
+    private static void validateAtoZ(JavaKeyStore keyStore) {
+        //contents of the existing is a-z for both the key and value
+        for (int i = 65; i <= 90; i++) {
+            byte[] expected = new byte[]{(byte) i};
+            SecretIdentifier id = new SecretIdentifier(new String(expected, StandardCharsets.UTF_8));
+            assertThat(keyStore.retrieveSecret(id)).isEqualTo(expected);
+        }
+    }
+
+    private static void writeAtoZ(JavaKeyStore keyStore) {
+        //a-z key and value
+        for (int i = 65; i <= 90; i++) {
+            byte[] expected = new byte[]{(byte) i};
+            SecretIdentifier id = new SecretIdentifier(new String(expected, StandardCharsets.UTF_8));
+            keyStore.persistSecret(id, expected);
+        }
+    }
+
+    @Before
+    public void _setup() throws Exception {
+        keyStorePath = folder.newFolder().toPath().resolve("logstash.keystore").toString().toCharArray();
+        SecureConfig secureConfig = new SecureConfig();
+        secureConfig.add("keystore.path", keyStorePath.clone());
+        keyStore = new JavaKeyStore(secureConfig);
+
+        withDefinedPassConfig = new SecureConfig();
+        withDefinedPassConfig.add(SecretStoreFactory.KEYSTORE_ACCESS_KEY, "mypassword".toCharArray());
+        withDefinedPassConfig.add("keystore.path",
+                Paths.get(this.getClass().getClassLoader().getResource("logstash.keystore.with.defined.pass").toURI()).toString().toCharArray());
+
+        withDefaultPassConfig = new SecureConfig();
+        withDefaultPassConfig.add("keystore.path",
+                Paths.get(this.getClass().getClassLoader().getResource("logstash.keystore.with.default.pass").toURI()).toString().toCharArray());
+    }
 
     /**
      * Simple example usage.
@@ -65,13 +162,32 @@ public class JavaKeyStoreTest {
     @Test
     public void isLogstashKeystore() throws Exception {
         //newly created
-        byte[] marker = keyStore.retrieveSecret(new SecretIdentifier(JavaKeyStore.LOGSTASH_MARKER));
-        assertThat(new String(marker, StandardCharsets.UTF_8)).isEqualTo(JavaKeyStore.LOGSTASH_MARKER);
+        byte[] marker = keyStore.retrieveSecret(LOGSTASH_MARKER);
+        assertThat(new String(marker, StandardCharsets.UTF_8)).isEqualTo(LOGSTASH_MARKER.getKey());
 
         //exiting
-        JavaKeyStore existingKeyStore = new JavaKeyStore(Paths.get(this.getClass().getClassLoader().getResource("logstash.keystore").toURI()), "mypassword".toCharArray());
-        marker = existingKeyStore.retrieveSecret(new SecretIdentifier(JavaKeyStore.LOGSTASH_MARKER));
-        assertThat(new String(marker, StandardCharsets.UTF_8)).isEqualTo(JavaKeyStore.LOGSTASH_MARKER);
+        JavaKeyStore existingKeyStore = new JavaKeyStore(withDefinedPassConfig);
+        marker = existingKeyStore.retrieveSecret(LOGSTASH_MARKER);
+        assertThat(new String(marker, StandardCharsets.UTF_8)).isEqualTo(LOGSTASH_MARKER.getKey());
+    }
+
+    /**
+     * Tests that trying to read a random file throws the right error.
+     *
+     * @throws Exception when ever it wants to.
+     */
+    @Test
+    public void notLogstashKeystore() throws Exception {
+        thrown.expect(SecretStoreException.NotLogstashKeyStore.class);
+        SecureConfig altConfig = new SecureConfig();
+        Path altPath = folder.newFolder().toPath().resolve("alt.not.a.logstash.keystore");
+        try (OutputStream out = Files.newOutputStream(altPath)) {
+            byte[] randomBytes = new byte[300];
+            new Random().nextBytes(randomBytes);
+            out.write(randomBytes);
+        }
+        altConfig.add("keystore.path", altPath.toString().toCharArray());
+        new JavaKeyStore(altConfig);
     }
 
     /**
@@ -80,9 +196,10 @@ public class JavaKeyStoreTest {
      * @throws Exception when ever it wants to.
      */
     @Test
-    public void notLogstashKeystore() throws Exception {
+    public void notLogstashKeystoreNoMarker() throws Exception {
         thrown.expect(SecretStoreException.NotLogstashKeyStore.class);
-        new JavaKeyStore(Paths.get(this.getClass().getClassLoader().getResource("not.a.logstash.keystore").toURI()), "mypassword".toCharArray());
+        withDefinedPassConfig.add("keystore.path", Paths.get(this.getClass().getClassLoader().getResource("not.a.logstash.keystore").toURI()).toString().toCharArray().clone());
+        new JavaKeyStore(withDefinedPassConfig);
     }
 
     /**
@@ -119,46 +236,31 @@ public class JavaKeyStoreTest {
      */
     @Test
     public void readExisting() throws Exception {
-        JavaKeyStore existingKeyStore = new JavaKeyStore(Paths.get(this.getClass().getClassLoader().getResource("logstash.keystore").toURI()), "mypassword".toCharArray());
-        //contents of the existing is a-z for both the key and value
-        for (int i = 65; i <= 90; i++) {
-            byte[] expected = new byte[]{(byte) i};
-            SecretIdentifier id = new SecretIdentifier(new String(expected, StandardCharsets.UTF_8));
-            assertThat(existingKeyStore.retrieveSecret(id)).isEqualTo(expected);
-        }
+        //uses an explicit password
+        validateAtoZ(new JavaKeyStore(this.withDefinedPassConfig));
+
+        //uses an implicit password
+        validateAtoZ(new JavaKeyStore(this.withDefaultPassConfig));
     }
 
     /**
      * Comprehensive tests that uses a freshly created keystore to write 26 entries, list them, read them, and delete them.
      */
     @Test
-    public void readWriteListDelete() {
-        Set<String> values = new HashSet<>(27);
-        Set<SecretIdentifier> keys = new HashSet<>(27);
-        SecretIdentifier markerId = new SecretIdentifier(JavaKeyStore.LOGSTASH_MARKER);
-        //add the marker
-        keys.add(markerId);
-        values.add(JavaKeyStore.LOGSTASH_MARKER);
-        //a-z key and value
-        for (int i = 65; i <= 90; i++) {
-            byte[] expected = new byte[]{(byte) i};
-            values.add(new String(expected, StandardCharsets.UTF_8));
-            SecretIdentifier id = new SecretIdentifier(new String(expected, StandardCharsets.UTF_8));
-            keyStore.persistSecret(id, expected);
-            keys.add(id);
-        }
+    public void readWriteListDelete() throws InterruptedException {
+
+
+        writeAtoZ(keyStore);
         Collection<SecretIdentifier> foundIds = keyStore.list();
         assertThat(keyStore.list().size()).isEqualTo(26 + 1);
-        assertThat(values.size()).isEqualTo(26 + 1);
-        assertThat(keys.size()).isEqualTo(26 + 1);
 
-        foundIds.stream().forEach(id -> assertThat(keys).contains(id));
-        foundIds.stream().forEach(id -> assertThat(values).contains(new String(keyStore.retrieveSecret(id), StandardCharsets.UTF_8)));
+        validateAtoZ(keyStore);
 
-        foundIds.stream().filter(id -> !id.equals(markerId)).forEach(id -> keyStore.purgeSecret(id));
+
+        foundIds.stream().filter(id -> !id.equals(LOGSTASH_MARKER)).forEach(id -> keyStore.purgeSecret(id));
 
         assertThat(keyStore.list().size()).isEqualTo(1);
-        assertThat(keyStore.list().stream().findFirst().get()).isEqualTo(markerId);
+        assertThat(keyStore.list().stream().findFirst().get()).isEqualTo(LOGSTASH_MARKER);
     }
 
     /**
@@ -177,13 +279,6 @@ public class JavaKeyStoreTest {
         assertThat(keyStore.retrieveSecret(null)).isNull();
     }
 
-    @Before
-    public void setup() throws Exception {
-        keyStorePath = folder.newFolder().toPath().resolve("logstash.keystore");
-        keyStorePass = UUID.randomUUID().toString().toCharArray();
-        keyStore = new JavaKeyStore(keyStorePath, keyStorePass);
-    }
-
     /**
      * Test to ensure that keystore is tamper proof.  This really ends up testing the Java's KeyStore implementation, not the code here....but an important attribute to ensure
      * for any type of secret store.
@@ -192,15 +287,217 @@ public class JavaKeyStoreTest {
      */
     @Test
     public void tamperedKeystore() throws Exception {
-
-        thrown.expect(SecretStoreException.NotLogstashKeyStore.class);
-        byte[] keyStoreAsBytes = Files.readAllBytes(keyStorePath);
+        thrown.expect(SecretStoreException.class);
+        byte[] keyStoreAsBytes = Files.readAllBytes(Paths.get(new String(keyStorePath)));
         //bump the middle byte by 1
         int tamperLocation = keyStoreAsBytes.length / 2;
         keyStoreAsBytes[tamperLocation] = (byte) (keyStoreAsBytes[tamperLocation] + 1);
         Path tamperedPath = folder.newFolder().toPath().resolve("tampered.logstash.keystore");
         Files.write(tamperedPath, keyStoreAsBytes);
-        new JavaKeyStore(tamperedPath, keyStorePass);
+        SecureConfig sc = new SecureConfig();
+        sc.add(SecretStoreFactory.KEYSTORE_ACCESS_KEY, "mypassword".toCharArray());
+        sc.add("keystore.path", tamperedPath.toUri().toString().toCharArray());
+        new JavaKeyStore(sc);
+    }
+
+    /**
+     * The default permissions should be restrictive for Posix filesystems.
+     *
+     * @throws Exception when it goes boom.
+     */
+    @Test
+    public void testDefaultPermissions() throws Exception {
+        PosixFileAttributeView attrs = Files.getFileAttributeView(Paths.get(new String(keyStorePath)), PosixFileAttributeView.class);
+
+        boolean isWindows = System.getProperty("os.name").startsWith("Windows");
+        //not all Windows FS are Posix
+        if (!isWindows && attrs == null) {
+            fail("Can not determine POSIX file permissions for " + keyStore + " this is likely an error in the test");
+        }
+        // if we got attributes, lets assert them.
+        if (attrs != null) {
+            Set<PosixFilePermission> permissions = attrs.readAttributes().permissions();
+            EnumSet<PosixFilePermission> expected = EnumSet.of(OWNER_READ, OWNER_WRITE, GROUP_READ, GROUP_WRITE);
+            assertThat(permissions.toArray()).containsExactlyInAnyOrder(expected.toArray());
+        }
+    }
+
+    /**
+     * Empty passwords are not allowed
+     *
+     * @throws IOException when ever it wants to
+     */
+    @Test
+    public void testEmptyNotAllowedOnCreate() throws IOException {
+        thrown.expect(SecretStoreException.CreateException.class);
+        Path altPath = folder.newFolder().toPath().resolve("alt.logstash.keystore");
+        SecureConfig altConfig = new SecureConfig();
+        altConfig.add("keystore.path", altPath.toString().toCharArray());
+        altConfig.add(SecretStoreFactory.KEYSTORE_ACCESS_KEY, "".toCharArray());
+        new JavaKeyStore(altConfig);
+    }
+
+    /**
+     * Empty passwords should always throw an Access Exception
+     *
+     * @throws Exception when ever it wants to
+     */
+    @Test
+    public void testEmptyNotAllowedOnExisting() throws Exception {
+        thrown.expect(SecretStoreException.AccessException.class);
+        Path altPath = folder.newFolder().toPath().resolve("alt.logstash.keystore");
+        SecureConfig altConfig = new SecureConfig();
+        altConfig.add("keystore.path", altPath.toString().toCharArray());
+        SecureConfig altConfig2 = altConfig.clone();
+        altConfig2.add("keystore.path", altPath.toString().toCharArray());
+        altConfig2.add(SecretStoreFactory.KEYSTORE_ACCESS_KEY, "".toCharArray());
+        new JavaKeyStore(altConfig);
+        new JavaKeyStore(altConfig2);
+    }
+
+    /**
+     * Simulates different JVMs modifying the keystore and ensure a consistent list view
+     *
+     * @throws IOException when it goes boom.
+     */
+    @Test
+    public void testExternalUpdateList() throws IOException {
+        Path altPath = folder.newFolder().toPath().resolve("alt.logstash.keystore");
+        SecureConfig secureConfig = new SecureConfig();
+        secureConfig.add("keystore.path", altPath.toString().toCharArray());
+        JavaKeyStore keyStore1 = new JavaKeyStore(secureConfig.clone());
+        JavaKeyStore keyStore2 = new JavaKeyStore(secureConfig);
+        String value = UUID.randomUUID().toString();
+        SecretIdentifier id = new SecretIdentifier(value);
+        //jvm1 persist, jvm2 list
+        keyStore1.persistSecret(id, value.getBytes(StandardCharsets.UTF_8));
+        assertThat(keyStore2.list().stream().map(k -> keyStore2.retrieveSecret(k)).map(v -> new String(v, StandardCharsets.UTF_8)).collect(Collectors.toSet())).contains(value);
+        //purge from jvm1
+        assertThat(new String(keyStore2.retrieveSecret(new SecretIdentifier(value)), StandardCharsets.UTF_8)).isEqualTo(value);
+        keyStore1.purgeSecret(id);
+        assertThat(keyStore2.retrieveSecret(new SecretIdentifier(value))).isNull();
+    }
+
+    /**
+     * Simulates different JVMs modifying the keystore and ensure a consistent view
+     *
+     * @throws IOException when it goes boom.
+     */
+    @Test
+    public void testExternalUpdatePersist() throws IOException {
+        Path altPath = folder.newFolder().toPath().resolve("alt.logstash.keystore");
+        SecureConfig secureConfig = new SecureConfig();
+        secureConfig.add("keystore.path", altPath.toString().toCharArray());
+        JavaKeyStore keyStore1 = new JavaKeyStore(secureConfig.clone());
+        JavaKeyStore keyStore2 = new JavaKeyStore(secureConfig);
+        String value1 = UUID.randomUUID().toString();
+        String value2 = UUID.randomUUID().toString();
+        SecretIdentifier id1 = new SecretIdentifier(value1);
+        SecretIdentifier id2 = new SecretIdentifier(value2);
+        //jvm1 persist id1, jvm2 persist id2
+        keyStore1.persistSecret(id1, value1.getBytes(StandardCharsets.UTF_8));
+        keyStore2.persistSecret(id2, value2.getBytes(StandardCharsets.UTF_8));
+        //both keystores should contain both values
+        assertThat(keyStore1.list().stream().map(k -> keyStore1.retrieveSecret(k)).map(v -> new String(v, StandardCharsets.UTF_8))
+                .collect(Collectors.toSet())).contains(value1, value2);
+        assertThat(keyStore2.list().stream().map(k -> keyStore2.retrieveSecret(k)).map(v -> new String(v, StandardCharsets.UTF_8))
+                .collect(Collectors.toSet())).contains(value1, value2);
+        //purge from jvm1
+        keyStore1.purgeSecret(id1);
+        keyStore1.purgeSecret(id2);
+        assertThat(keyStore1.retrieveSecret(new SecretIdentifier(value1))).isNull();
+        assertThat(keyStore1.retrieveSecret(new SecretIdentifier(value2))).isNull();
+        assertThat(keyStore2.retrieveSecret(new SecretIdentifier(value1))).isNull();
+        assertThat(keyStore2.retrieveSecret(new SecretIdentifier(value2))).isNull();
+    }
+
+    /**
+     * Simulates different JVMs modifying the keystore and ensure a consistent read view
+     *
+     * @throws IOException when it goes boom.
+     */
+    @Test
+    public void testExternalUpdateRead() throws IOException {
+        Path altPath = folder.newFolder().toPath().resolve("alt.logstash.keystore");
+        SecureConfig secureConfig = new SecureConfig();
+        secureConfig.add("keystore.path", altPath.toString().toCharArray());
+        secureConfig.add(SecretStoreFactory.KEYSTORE_ACCESS_KEY, "mypass".toCharArray());
+        JavaKeyStore keyStore1 = new JavaKeyStore(secureConfig.clone());
+        JavaKeyStore keyStore2 = new JavaKeyStore(secureConfig);
+        String value = UUID.randomUUID().toString();
+        SecretIdentifier id = new SecretIdentifier(value);
+        //jvm1 persist, jvm2 read
+        keyStore1.persistSecret(id, value.getBytes(StandardCharsets.UTF_8));
+        assertThat(new String(keyStore2.retrieveSecret(new SecretIdentifier(value)), StandardCharsets.UTF_8)).isEqualTo(value);
+        //purge from jvm2
+        assertThat(new String(keyStore1.retrieveSecret(new SecretIdentifier(value)), StandardCharsets.UTF_8)).isEqualTo(value);
+        keyStore2.purgeSecret(id);
+        assertThat(keyStore1.retrieveSecret(new SecretIdentifier(value))).isNull();
+    }
+
+    /**
+     * Spins up a second VM, locks the underlying keystore, asserts correct exception, once lock is released and now can write
+     *
+     * @throws Exception when exceptions happen
+     */
+    @Test
+    public void testFileLock() throws Exception {
+        Path magicFile = folder.newFolder().toPath().resolve(EXTERNAL_TEST_FILE_LOCK);
+
+        String java = System.getProperty("java.home") + File.separator + "bin" + File.separator + "java";
+        ProcessBuilder builder = new ProcessBuilder(java, "-cp", System.getProperty("java.class.path"), getClass().getCanonicalName(),
+                EXTERNAL_TEST_FILE_LOCK, magicFile.toAbsolutePath().toString(), new String(keyStorePath));
+        Future<Integer> future = Executors.newScheduledThreadPool(1).submit(() -> builder.start().waitFor());
+
+        boolean passed = false;
+        while (!future.isDone()) {
+            try {
+                Files.readAllBytes(magicFile);
+            } catch (NoSuchFileException sfe) {
+                Thread.sleep(100);
+                continue;
+            }
+            try {
+                keyStore.persistSecret(new SecretIdentifier("foo"), "bar".getBytes(StandardCharsets.UTF_8));
+            } catch (SecretStoreException.PersistException e) {
+                assertThat(e.getCause()).isInstanceOf(IllegalStateException.class);
+                assertThat(e.getCause().getMessage()).contains("has a lock on the file");
+                passed = true;
+            }
+            break;
+        }
+        assertThat(passed).isTrue();
+
+        //can still read
+        byte[] marker = keyStore.retrieveSecret(LOGSTASH_MARKER);
+        assertThat(new String(marker, StandardCharsets.UTF_8)).isEqualTo(LOGSTASH_MARKER.getKey());
+
+        //block until other JVM finishes
+        future.get();
+        //can write/read now
+        SecretIdentifier id = new SecretIdentifier("foo2");
+        keyStore.persistSecret(id, "bar".getBytes(StandardCharsets.UTF_8));
+        assertThat(new String(keyStore.retrieveSecret(id), StandardCharsets.UTF_8)).isEqualTo("bar");
+    }
+
+    /**
+     * Simulates different JVMs can read using a default (non-provided) password
+     *
+     * @throws IOException when it goes boom.
+     */
+    @Test
+    public void testGeneratedSecret() throws IOException {
+        Path altPath = folder.newFolder().toPath().resolve("alt.logstash.keystore");
+        SecureConfig altConfig = new SecureConfig();
+        altConfig.add("keystore.path", altPath.toString().toCharArray());
+        //note - no password given here.
+        JavaKeyStore keyStore1 = new JavaKeyStore(altConfig.clone());
+        JavaKeyStore keyStore2 = new JavaKeyStore(altConfig);
+        String value = UUID.randomUUID().toString();
+        SecretIdentifier id = new SecretIdentifier(value);
+        //jvm1 persist, jvm2 read
+        keyStore1.persistSecret(id, value.getBytes(StandardCharsets.UTF_8));
+        assertThat(new String(keyStore2.retrieveSecret(new SecretIdentifier(value)), StandardCharsets.UTF_8)).isEqualTo(value);
     }
 
     /**
@@ -227,6 +524,13 @@ public class JavaKeyStoreTest {
         keyStore.purgeSecret(id);
     }
 
+    @Test
+    public void testNoPathDefined() {
+        thrown.expect(SecretStoreException.class);
+        thrown.expectCause(isA(IllegalArgumentException.class));
+        new JavaKeyStore(new SecureConfig());
+    }
+
     /**
      * Ensure that non-ascii keys and values are properly handled.
      *
@@ -236,30 +540,15 @@ public class JavaKeyStoreTest {
     public void testNonAscii() throws Exception {
         int[] codepoints = {0xD83E, 0xDD21, 0xD83E, 0xDD84};
         String nonAscii = new String(codepoints, 0, codepoints.length);
-        SecretIdentifier id = new SecretIdentifier(nonAscii);
-        keyStore.persistSecret(id, nonAscii.getBytes(StandardCharsets.UTF_8));
-        assertThat(new String(keyStore.retrieveSecret(id), StandardCharsets.UTF_8)).isEqualTo(nonAscii);
-    }
 
-    /**
-     * The default permissions should be restrictive for Posix filesystems.
-     *
-     * @throws Exception when it goes boom.
-     */
-    @Test
-    public void testDefaultPermissions() throws Exception {
-        PosixFileAttributeView attrs = Files.getFileAttributeView(keyStorePath, PosixFileAttributeView.class);
-        boolean isWindows = System.getProperty("os.name").startsWith("Windows");
-        //not all Windows FS are Posix
-        if (!isWindows && attrs == null) {
-            fail("Can not determine POSIX file permissions for " + keyStore + " this is likely an error in the test");
-        }
-        // if we got attributes, lets assert them.
-        if (attrs != null) {
-            Set<PosixFilePermission> permissions = attrs.readAttributes().permissions();
-            EnumSet<PosixFilePermission> expected = EnumSet.of(OWNER_READ, OWNER_WRITE, GROUP_READ, GROUP_WRITE);
-            assertThat(permissions.toArray()).containsExactlyInAnyOrder(expected.toArray());
-        }
+        SecureConfig sc = new SecureConfig();
+        sc.add(SecretStoreFactory.KEYSTORE_ACCESS_KEY, nonAscii.toCharArray());
+        sc.add("keystore.path", (new String(keyStorePath) + ".nonAscii").toCharArray());
+        JavaKeyStore nonAsciiKeyStore = new JavaKeyStore(sc);
+
+        SecretIdentifier id = new SecretIdentifier(nonAscii);
+        nonAsciiKeyStore.persistSecret(id, nonAscii.getBytes(StandardCharsets.UTF_8));
+        assertThat(new String(nonAsciiKeyStore.retrieveSecret(id), StandardCharsets.UTF_8)).isEqualTo(nonAscii);
     }
 
     /**
@@ -273,7 +562,10 @@ public class JavaKeyStoreTest {
         try {
             System.setProperty("logstash.keystore.file.perms", "rw-------");
             Path altPath = folder.newFolder().toPath().resolve("alt.logstash.keystore");
-            keyStore = new JavaKeyStore(altPath, keyStorePass);
+            SecureConfig secureConfig = new SecureConfig();
+            secureConfig.add("keystore.path", altPath.toString().toCharArray());
+
+            keyStore = new JavaKeyStore(secureConfig);
             assertThat(altPath.toFile().exists()).isTrue();
             PosixFileAttributeView attrs = Files.getFileAttributeView(altPath, PosixFileAttributeView.class);
 
@@ -298,70 +590,32 @@ public class JavaKeyStoreTest {
     }
 
     /**
-     * Simulates a different JVM modifying the keystore and ensure a consistent read view
+     * Spins up a second JVM, writes all the data, then read it from this JVM
+     *
+     * @throws Exception when exceptions happen
      */
     @Test
-    public void testExternalUpdateRead() throws IOException {
+    public void testWithRealSecondJvm() throws Exception {
+        Path magicFile = folder.newFolder().toPath().resolve(EXTERNAL_TEST_FILE_LOCK);
         Path altPath = folder.newFolder().toPath().resolve("alt.logstash.keystore");
-        JavaKeyStore keyStore1 = new JavaKeyStore(altPath, "mypass".toCharArray());
-        JavaKeyStore keyStore2 = new JavaKeyStore(altPath, "mypass".toCharArray());
-        String value = UUID.randomUUID().toString();
-        SecretIdentifier id = new SecretIdentifier(value);
-        //jvm1 persist, jvm2 read
-        keyStore1.persistSecret(id, value.getBytes(StandardCharsets.UTF_8));
-        assertThat(new String(keyStore2.retrieveSecret(new SecretIdentifier(value)), StandardCharsets.UTF_8)).isEqualTo(value);
-        //purge from jvm2
-        assertThat(new String(keyStore1.retrieveSecret(new SecretIdentifier(value)), StandardCharsets.UTF_8)).isEqualTo(value);
-        keyStore2.purgeSecret(id);
-        assertThat(keyStore1.retrieveSecret(new SecretIdentifier(value))).isNull();
-    }
 
-    /**
-     * Simulates a different JVM modifying the keystore and ensure a consistent list view
-     */
-    @Test
-    public void testExternalUpdateList() throws IOException {
-        Path altPath = folder.newFolder().toPath().resolve("alt.logstash.keystore");
-        JavaKeyStore keyStore1 = new JavaKeyStore(altPath, "mypass".toCharArray());
-        JavaKeyStore keyStore2 = new JavaKeyStore(altPath, "mypass".toCharArray());
-        String value = UUID.randomUUID().toString();
-        SecretIdentifier id = new SecretIdentifier(value);
-        //jvm1 persist, jvm2 list
-        keyStore1.persistSecret(id, value.getBytes(StandardCharsets.UTF_8));
-        assertThat(keyStore2.list().stream().map(k -> keyStore2.retrieveSecret(k)).map(v -> new String(v, StandardCharsets.UTF_8)).collect(Collectors.toSet())).contains(value);
-        //purge from jvm1
-        assertThat(new String(keyStore2.retrieveSecret(new SecretIdentifier(value)), StandardCharsets.UTF_8)).isEqualTo(value);
-        keyStore1.purgeSecret(id);
-        assertThat(keyStore2.retrieveSecret(new SecretIdentifier(value))).isNull();
-    }
+        String java = System.getProperty("java.home") + File.separator + "bin" + File.separator + "java";
+        ProcessBuilder builder = new ProcessBuilder(java, "-cp", System.getProperty("java.class.path"), getClass().getCanonicalName(),
+                EXTERNAL_TEST_WRITE, magicFile.toAbsolutePath().toString(), altPath.toAbsolutePath().toString());
+        Future<Integer> future = Executors.newScheduledThreadPool(1).submit(() -> builder.start().waitFor());
 
-    /**
-     * Simulates a different JVMs modifying the keystore and ensure a consistent view
-     */
-    @Test
-    public void testExternalUpdatePersist() throws IOException {
-        Path altPath = folder.newFolder().toPath().resolve("alt.logstash.keystore");
-        JavaKeyStore keyStore1 = new JavaKeyStore(altPath, "mypass".toCharArray());
-        JavaKeyStore keyStore2 = new JavaKeyStore(altPath, "mypass".toCharArray());
-        String value1 = UUID.randomUUID().toString();
-        String value2 = UUID.randomUUID().toString();
-        SecretIdentifier id1 = new SecretIdentifier(value1);
-        SecretIdentifier id2 = new SecretIdentifier(value2);
-        //jvm1 persist id1, jvm2 persist id2
-        keyStore1.persistSecret(id1, value1.getBytes(StandardCharsets.UTF_8));
-        keyStore2.persistSecret(id2, value2.getBytes(StandardCharsets.UTF_8));
-        //both keystores should contain both values
-        assertThat(keyStore1.list().stream().map(k -> keyStore1.retrieveSecret(k)).map(v -> new String(v, StandardCharsets.UTF_8))
-                .collect(Collectors.toSet())).contains(value1,  value2);
-        assertThat(keyStore2.list().stream().map(k -> keyStore2.retrieveSecret(k)).map(v -> new String(v, StandardCharsets.UTF_8))
-                .collect(Collectors.toSet())).contains(value1,  value2);
-        //purge from jvm1
-        keyStore1.purgeSecret(id1);
-        keyStore1.purgeSecret(id2);
-        assertThat(keyStore1.retrieveSecret(new SecretIdentifier(value1))).isNull();
-        assertThat(keyStore1.retrieveSecret(new SecretIdentifier(value2))).isNull();
-        assertThat(keyStore2.retrieveSecret(new SecretIdentifier(value1))).isNull();
-        assertThat(keyStore2.retrieveSecret(new SecretIdentifier(value2))).isNull();
+        while (!future.isDone()) {
+            try {
+                Files.readAllBytes(magicFile);
+            } catch (NoSuchFileException sfe) {
+                Thread.sleep(100);
+                continue;
+            }
+        }
+        SecureConfig config = new SecureConfig();
+        config.add("keystore.path", altPath.toAbsolutePath().toString().toCharArray());
+        JavaKeyStore keyStore = new JavaKeyStore(config);
+        validateAtoZ(keyStore);
     }
 
     /**
@@ -372,6 +626,9 @@ public class JavaKeyStoreTest {
     @Test
     public void wrongPassword() throws Exception {
         thrown.expect(SecretStoreException.AccessException.class);
-        new JavaKeyStore(Paths.get(this.getClass().getClassLoader().getResource("logstash.keystore").toURI()), "wrongpassword".toCharArray());
+        withDefinedPassConfig.add(SecretStoreFactory.KEYSTORE_ACCESS_KEY, "wrongpassword".toCharArray());
+        new JavaKeyStore(withDefinedPassConfig);
     }
+
+
 }

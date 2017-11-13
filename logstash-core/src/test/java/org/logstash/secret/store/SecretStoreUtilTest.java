@@ -14,8 +14,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class SecretStoreUtilTest {
 
     private String asciiString;
+
     @Before
-    public void setup(){
+    public void _setup() {
         asciiString = UUID.randomUUID().toString();
     }
 
@@ -28,7 +29,7 @@ public class SecretStoreUtilTest {
     }
 
     @Test
-    public void testAsciiCharToBytes(){
+    public void testAsciiCharToBytes() {
         char[] asciiChars = asciiString.toCharArray();
         byte[] asciiBytes = SecretStoreUtil.asciiCharToBytes(asciiChars);
         assertThat(asciiBytes).isEqualTo(asciiString.getBytes(StandardCharsets.US_ASCII));
@@ -36,7 +37,7 @@ public class SecretStoreUtilTest {
     }
 
     @Test
-    public void testBase64EncodeBytes(){
+    public void testBase64EncodeBytes() {
         byte[] asciiBytes = asciiString.getBytes(StandardCharsets.US_ASCII);
         byte[] base64Bytes = SecretStoreUtil.base64Encode(asciiBytes);
         assertThat(asciiBytes).containsOnly('\0');
@@ -46,7 +47,17 @@ public class SecretStoreUtilTest {
     }
 
     @Test
-    public void testBase64EncodeChars(){
+    public void testBase64EncodeBytesToChars() {
+        byte[] asciiBytes = asciiString.getBytes(StandardCharsets.US_ASCII);
+        char[] base64Chars = SecretStoreUtil.base64EncodeToChars(asciiBytes);
+        assertThat(asciiBytes).containsOnly('\0');
+        asciiBytes = SecretStoreUtil.base64Decode(base64Chars);
+        assertThat(base64Chars).containsOnly('\0');
+        assertThat(asciiBytes).isEqualTo(asciiString.getBytes(StandardCharsets.US_ASCII));
+    }
+
+    @Test
+    public void testBase64EncodeChars() {
         char[] asciiChars = asciiString.toCharArray();
         char[] base64Chars = SecretStoreUtil.base64Encode(asciiChars);
         assertThat(asciiChars).containsOnly('\0');
@@ -54,4 +65,19 @@ public class SecretStoreUtilTest {
         assertThat(base64Chars).containsOnly('\0');
         assertThat(asciiBytes).isEqualTo(asciiString.getBytes(StandardCharsets.US_ASCII));
     }
+
+    @Test
+    public void testClear() {
+        byte[] asciiBytes = asciiString.getBytes(StandardCharsets.US_ASCII);
+        char[] base64Chars = SecretStoreUtil.base64EncodeToChars(asciiBytes);
+        SecretStoreUtil.clearChars(base64Chars);
+        assertThat(base64Chars).containsOnly('\0');
+    }
+
+    @Test
+    public void testObfuscate() {
+        String original = UUID.randomUUID().toString();
+        assertThat(SecretStoreUtil.deObfuscate(SecretStoreUtil.obfuscate(original.toCharArray()))).isEqualTo(original.toCharArray());
+    }
+
 }
