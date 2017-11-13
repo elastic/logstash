@@ -18,7 +18,7 @@ supported platforms, from [downloads page](https://www.elastic.co/downloads/logs
 
 ### Snapshot Builds
 
-For the daring, snapshot builds from `master` branch are available. These builds are created nightly and have undergone no formal QA, so they should **never** be run in production.
+For the daring, snapshot builds are available. These builds are created nightly and have undergone no formal QA, so they should **never** be run in production.
 
 | artifact |
 | --- |
