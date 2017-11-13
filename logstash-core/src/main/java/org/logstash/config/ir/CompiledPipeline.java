@@ -1,6 +1,5 @@
 package org.logstash.config.ir;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -17,6 +16,7 @@ import org.logstash.config.ir.compiler.Dataset;
 import org.logstash.config.ir.compiler.DatasetCompiler;
 import org.logstash.config.ir.compiler.EventCondition;
 import org.logstash.config.ir.compiler.RubyIntegration;
+import org.logstash.config.ir.compiler.SplitDataset;
 import org.logstash.config.ir.graph.IfVertex;
 import org.logstash.config.ir.graph.PluginVertex;
 import org.logstash.config.ir.graph.Vertex;
@@ -199,17 +199,8 @@ public final class CompiledPipeline {
     }
 
     /**
-     * Compiles an {@link IfVertex} into an {@link EventCondition}.
-     * @param iff IfVertex to build condition for
-     * @return EventCondition for given {@link IfVertex}
-     */
-    private static EventCondition buildCondition(final IfVertex iff) {
-        return EventCondition.Compiler.buildCondition(iff.getBooleanExpression());
-    }
-
-    /**
      * Instances of this class represent a fully compiled pipeline execution. Note that this class
-     * has a separate lifecycle from {@link CompiledPipeline} because it holds per (worker-thread) 
+     * has a separate lifecycle from {@link CompiledPipeline} because it holds per (worker-thread)
      * state and thus needs to be instantiated once per thread.
      */
     private final class CompiledExecution {
@@ -217,7 +208,7 @@ public final class CompiledPipeline {
         /**
          * Compiled {@link IfVertex, indexed by their ID as returned by {@link Vertex#getId()}.
          */
-        private final Map<String, Dataset.SplitDataset> iffs = new HashMap<>(5);
+        private final Map<String, SplitDataset> iffs = new HashMap<>(5);
 
         /**
          * Cached {@link Dataset} compiled from {@link PluginVertex} indexed by their ID as returned
@@ -240,15 +231,17 @@ public final class CompiledPipeline {
          * @return Compiled {@link Dataset} representing the pipeline.
          */
         private Dataset compile() {
-            final Collection<Dataset> datasets = new ArrayList<>();
-            pipelineIR.getGraph()
-                .allLeaves()
-                .filter(CompiledPipeline.this::isOutput)
-                .forEach(leaf -> datasets.add(
-                    outputDataset(leaf.getId(), flatten(Dataset.ROOT_DATASETS, leaf))
-                    )
-                );
-            return DatasetCompiler.terminalDataset(datasets);
+            final Collection<Vertex> outputs = pipelineIR.getGraph()
+                .allLeaves().filter(CompiledPipeline.this::isOutput)
+                .collect(Collectors.toList());
+            if (outputs.isEmpty()) {
+                return DatasetCompiler.ROOT_DATASETS.iterator().next();
+            } else {
+                return DatasetCompiler.terminalDataset(outputs.stream().map(
+                    leaf ->
+                        outputDataset(leaf.getId(), flatten(DatasetCompiler.ROOT_DATASETS, leaf))
+                ).collect(Collectors.toList()));
+            }
         }
 
         /**
@@ -259,19 +252,9 @@ public final class CompiledPipeline {
          * @return Filter {@link Dataset}
          */
         private Dataset filterDataset(final String vertex, final Collection<Dataset> datasets) {
-            return plugins.computeIfAbsent(vertex, v -> {
-                final Dataset filter;
-                final RubyIntegration.Filter ruby = filters.get(v);
-                final IRubyObject base = ruby.toRuby();
-                if (ruby.hasFlush()) {
-                    filter = DatasetCompiler.flushingFilterDataset(
-                        datasets, base, !ruby.periodicFlush()
-                    );
-                    } else {
-                    filter = DatasetCompiler.filterDataset(datasets, base);
-                }
-                return filter;
-            });
+            return plugins.computeIfAbsent(
+                vertex, v -> DatasetCompiler.filterDataset(datasets, filters.get(v))
+            );
         }
 
         /**
@@ -298,10 +281,11 @@ public final class CompiledPipeline {
          * @param index Vertex id to cache the resulting {@link Dataset} under
          * @return The half of the datasets contents that fulfils the condition
          */
-        private Dataset.SplitDataset split(final Collection<Dataset> datasets,
+        private SplitDataset split(final Collection<Dataset> datasets,
             final EventCondition condition, final String index) {
-            return iffs
-                .computeIfAbsent(index, ind -> new Dataset.SplitDataset(datasets, condition));
+            return iffs.computeIfAbsent(
+                index, ind -> DatasetCompiler.splitDataset(datasets, condition)
+            );
         }
 
         /**
@@ -334,23 +318,27 @@ public final class CompiledPipeline {
             return dependencies.stream().map(
                 dependency -> {
                     final Collection<Dataset> transientDependencies = flatten(datasets, dependency);
+                    final String id = dependency.getId();
                     if (isFilter(dependency)) {
-                        return filterDataset(dependency.getId(), transientDependencies);
+                        return filterDataset(id, transientDependencies);
                     } else if (isOutput(dependency)) {
-                        return outputDataset(dependency.getId(), transientDependencies);
+                        return outputDataset(id, transientDependencies);
                     } else {
-                        // We know that it's an if vertex since the the input children are either 
+                        // We know that it's an if vertex since the the input children are either
                         // output, filter or if in type.
                         final IfVertex ifvert = (IfVertex) dependency;
-                        final EventCondition iff = buildCondition(ifvert);
-                        final String index = ifvert.getId();
+                        final SplitDataset ifDataset = split(
+                            transientDependencies,
+                            EventCondition.Compiler.buildCondition(ifvert.getBooleanExpression()),
+                            id
+                        );
                         // It is important that we double check that we are actually dealing with the
                         // positive/left branch of the if condition
                         if (ifvert.getOutgoingBooleanEdgesByType(true).stream()
                             .anyMatch(edge -> Objects.equals(edge.getTo(), start))) {
-                            return split(transientDependencies, iff, index);
+                            return ifDataset;
                         } else {
-                            return split(transientDependencies, iff, index).right();
+                            return ifDataset.right();
                         }
                     }
                 }).collect(Collectors.toList());
