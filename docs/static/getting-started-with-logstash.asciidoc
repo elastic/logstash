@@ -93,12 +93,31 @@ You may need to install the `apt-transport-https` package on Debian before proce
 sudo apt-get install apt-transport-https
 --------------------------------------------------
 
+// THIS IS A NESTED STATEMENT - This block executes if release-state != unreleased and release-state == released
+
+ifeval::["{release-state}"=="released"]
+
 Save the repository definition to  +/etc/apt/sources.list.d/elastic-{major-version}.list+:
 
-["source","sh",subs="attributes,callouts"]
+["source","sh",subs="attributes"]
+--------------------------------------------------
+echo "deb https://artifacts.elastic.co/packages/{major-version}/apt stable main" | sudo tee -a /etc/apt/sources.list.d/elastic-{major-version}.list
+--------------------------------------------------
+
+endif::[]
+
+// THIS IS A NESTED STATEMENT - This block executes if release-state != unreleased and release-state == prerelase
+
+ifeval::["{release-state}"=="prerelease"]
+
+Save the repository definition to  +/etc/apt/sources.list.d/elastic-{major-version}-prerelease.list+:
+
+["source","sh",subs="attributes"]
 --------------------------------------------------
 echo "deb https://artifacts.elastic.co/packages/{major-version}-prerelease/apt stable main" | sudo tee -a /etc/apt/sources.list.d/elastic-{major-version}-prerelease.list
 --------------------------------------------------
+
+endif::[]
 
 [WARNING]
 ==================================================
@@ -146,7 +165,11 @@ rpm --import https://artifacts.elastic.co/GPG-KEY-elasticsearch
 Add the following in your `/etc/yum.repos.d/` directory
 in a file with a `.repo` suffix, for example `logstash.repo`
 
-["source","sh",subs="attributes,callouts"]
+// THIS IS A NESTED STATEMENT - This block executes if release-state != unreleased and release-state == prerelase
+
+ifeval::["{release-state}"=="prerelease"]
+
+["source","sh",subs="attributes"]
 --------------------------------------------------
 [logstash-{major-version}]
 name=Elastic repository for {major-version} packages
@@ -157,6 +180,26 @@ enabled=1
 autorefresh=1
 type=rpm-md
 --------------------------------------------------
+
+endif::[]
+
+// THIS IS A NESTED STATEMENT - This block executes if release-state != unreleased and release-state == released
+
+ifeval::["{release-state}"=="released"]
+
+["source","sh",subs="attributes"]
+--------------------------------------------------
+[logstash-{major-version}]
+name=Elastic repository for {major-version} packages
+baseurl=https://artifacts.elastic.co/packages/{major-version}/yum
+gpgcheck=1
+gpgkey=https://artifacts.elastic.co/GPG-KEY-elasticsearch
+enabled=1
+autorefresh=1
+type=rpm-md
+--------------------------------------------------
+
+endif::[]
 
 And your repository is ready for use. You can install it with:
 
