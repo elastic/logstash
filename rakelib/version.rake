@@ -22,10 +22,11 @@ def update_version_file(old_version, new_version)
   IO.write(VERSION_FILE, versions_as_text)
 end
 
-def update_index_shared1(old_version, new_version)
+def update_index_shared1(new_version)
   index_shared1 = IO.read(INDEX_SHARED1_FILE)
+  old_version = index_shared1.match(':logstash_version:\s+(?<logstash_version>\d[.]\d[.]\d.*)')[:logstash_version]
   %w(logstash elasticsearch kibana).each do |field|
-    index_shared1.gsub!(/(:#{field}_version:\s+)#{old_version['logstash']}/) { "#{$1}#{new_version['logstash']}" }
+    index_shared1.gsub!(/(:#{field}_version:\s+)#{old_version}/) { "#{$1}#{new_version}" }
   end
   IO.write(INDEX_SHARED1_FILE, index_shared1)
 end
@@ -58,9 +59,13 @@ namespace :version do
       end
     end
     old_version = YAML.safe_load(File.read(VERSION_FILE))
-    update_index_shared1(old_version, new_version)
     update_readme(old_version, new_version)
     update_version_file(old_version, new_version)
+  end
+
+  desc "set stack version referenced in docs"
+  task :set_doc_version, [:version] => [:validate] do |t, args|
+    update_index_shared1(args[:version])
   end
 
   desc "set version of logstash-core-plugin-api"
