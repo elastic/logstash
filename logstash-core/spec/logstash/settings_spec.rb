@@ -15,10 +15,16 @@ describe LogStash::Settings do
       it "should raise an exception" do
         expect { subject.register(numeric_setting) }.to raise_error
       end
+      it "registered? should return true" do
+        expect( subject.registered?(numeric_setting_name)).to be_truthy
+      end
     end
     context "if setting hasn't been registered" do
       it "should not raise an exception" do
         expect { subject.register(numeric_setting) }.to_not raise_error
+      end
+      it "registered? should return false" do
+        expect( subject.registered?(numeric_setting_name)).to be_falsey
       end
     end
   end
@@ -150,23 +156,31 @@ describe LogStash::Settings do
 
   describe "#from_yaml" do
 
-    context "env placeholders in flat logstash.yml" do
+    before :each do
+      LogStash::SETTINGS.set("keystore.file", File.join(File.dirname(__FILE__), "../../src/test/resources/logstash.keystore.with.default.pass"))
+    end
+
+    context "placeholders in flat logstash.yml" do
+
 
       after do
         ENV.delete('SOME_LOGSTASH_SPEC_ENV_VAR')
         ENV.delete('some.logstash.spec.env.var')
+        ENV.delete('a')
       end
       
       subject do
         settings = described_class.new
-        settings.register(LogStash::Setting::String.new("interpolated", "missing"))
-        settings.register(LogStash::Setting::String.new("with_dot", "missing"))
+        settings.register(LogStash::Setting::String.new("interpolated_env", "missing"))
+        settings.register(LogStash::Setting::String.new("with_dot_env", "missing"))
+        settings.register(LogStash::Setting::String.new("interpolated_store", "missing"))
         settings
       end
 
       let(:values) {{
-        "interpolated" => "${SOME_LOGSTASH_SPEC_ENV_VAR}",
-        "with_dot" => "${some.logstash.spec.env.var}"
+        "interpolated_env" => "${SOME_LOGSTASH_SPEC_ENV_VAR}",
+        "with_dot_env" => "${some.logstash.spec.env.var}",
+        "interpolated_store" => "${a}"
       }}
       let(:yaml_path) do
         p = Stud::Temporary.pathname
@@ -178,28 +192,37 @@ describe LogStash::Settings do
         p
       end
 
-      it "can interpolate environment into settings" do
-        expect(subject.get('interpolated')).to eq("missing")
-        expect(subject.get('with_dot')).to eq("missing")
-        ENV['SOME_LOGSTASH_SPEC_ENV_VAR'] = "correct_setting"
-        ENV['some.logstash.spec.env.var'] = "correct_setting_for_dotted"
+      it "can interpolate into settings" do
+        expect(subject.get('interpolated_env')).to eq("missing")
+        expect(subject.get('with_dot_env')).to eq("missing")
+        expect(subject.get('interpolated_store')).to eq("missing")
+        ENV['SOME_LOGSTASH_SPEC_ENV_VAR'] = "correct_setting_env"
+        ENV['some.logstash.spec.env.var'] = "correct_setting_for_dotted_env"
+        ENV['a'] = "wrong_value" # the store should take precedence
         subject.from_yaml(yaml_path)
-        expect(subject.get('interpolated')).to eq("correct_setting")
-        expect(subject.get('with_dot')).to eq("correct_setting_for_dotted")
+        expect(subject.get('interpolated_env')).to eq("correct_setting_env")
+        expect(subject.get('with_dot_env')).to eq("correct_setting_for_dotted_env")
+        expect(subject.get('interpolated_store')).to eq("A")
       end
     end
   end
 
-  context "env placeholders in nested logstash.yml" do
+  context "placeholders in nested logstash.yml" do
+
+    before :each do
+      LogStash::SETTINGS.set("keystore.file", File.join(File.dirname(__FILE__), "../../src/test/resources/logstash.keystore.with.default.pass"))
+    end
 
     before do
-      ENV['lsspecdomain'] = "domain1"
-      ENV['lsspecdomain2'] = "domain2"
+      ENV['lsspecdomain_env'] = "domain1"
+      ENV['lsspecdomain2_env'] = "domain2"
+      ENV['a'] = "wrong_value" # the store should take precedence
     end
 
     after do
-      ENV.delete('lsspecdomain')
-      ENV.delete('lsspecdomain2')
+      ENV.delete('lsspecdomain_env')
+      ENV.delete('lsspecdomain2_env')
+      ENV.delete('a')
     end
 
     subject do
@@ -210,10 +233,12 @@ describe LogStash::Settings do
     end
 
     let(:values) {{
-      "host" => ["dev1.${lsspecdomain}", "dev2.${lsspecdomain}"],
+      "host" => ["dev1.${lsspecdomain_env}", "dev2.${lsspecdomain_env}", "dev3.${a}"],
       "modules" => [
-        {"name" => "${lsspecdomain}", "testing" => "${lsspecdomain}"}, 
-        {"name" => "${lsspecdomain2}", "testing" => "${lsspecdomain2}"}
+        {"name" => "${lsspecdomain_env}", "testing" => "${lsspecdomain_env}"},
+        {"name" => "${lsspecdomain2_env}", "testing" => "${lsspecdomain2_env}"},
+        {"name" => "${a}", "testing" => "${a}"},
+        {"name" => "${b}", "testing" => "${b}"}
       ]
     }}
     let(:yaml_path) do
@@ -230,10 +255,12 @@ describe LogStash::Settings do
       expect(subject.get('host')).to match_array([])
       expect(subject.get('modules')).to match_array([])
       subject.from_yaml(yaml_path)
-      expect(subject.get('host')).to match_array(["dev1.domain1", "dev2.domain1"])
+      expect(subject.get('host')).to match_array(["dev1.domain1", "dev2.domain1", "dev3.A"])
       expect(subject.get('modules')).to match_array([
                                                       {"name" => "domain1", "testing" => "domain1"},
-                                                      {"name" => "domain2", "testing" => "domain2"}
+                                                      {"name" => "domain2", "testing" => "domain2"},
+                                                      {"name" => "A", "testing" => "A"},
+                                                      {"name" => "B", "testing" => "B"}
                                                     ])
     end
   end
