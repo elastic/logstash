@@ -355,7 +355,7 @@ describe LogStash::JavaPipeline do
       after do
         pipeline.shutdown
       end
-      
+
       it "should call close of output without output-workers" do
         pipeline.run
 
@@ -380,7 +380,7 @@ describe LogStash::JavaPipeline do
       # cause the suite to fail :(
       pipeline.close
     end
-    
+
     it "should use LIR provided IDs" do
       expect(pipeline.inputs.first.id).to eq(pipeline.lir.input_plugin_vertices.first.id)
       expect(pipeline.filters.first.id).to eq(pipeline.lir.filter_plugin_vertices.first.id)
@@ -639,6 +639,48 @@ describe LogStash::JavaPipeline do
       pipeline.shutdown
 
       t.join
+    end
+  end
+
+  context "with multiple outputs" do
+    let(:config) do
+      <<-EOS
+      input {
+        generator { count => 10 }
+      }
+      filter {
+       clone {
+          add_field => { 
+            'cloned' =>  'cloned' 
+          }
+          clones => ["clone1"]
+        }
+      }
+      output {
+        dummy_output {}
+        dummy_output {}
+        dummy_output {}
+      }
+      EOS
+    end
+    let(:output) { ::LogStash::Outputs::DummyOutput.new }
+
+    before do
+      allow(::LogStash::Outputs::DummyOutput).to receive(:new).with(any_args).and_return(output)
+      allow(LogStash::Plugin).to receive(:lookup).with("input", "generator").and_call_original
+      allow(LogStash::Plugin).to receive(:lookup).with("filter", "clone").and_call_original
+      3.times {
+        allow(LogStash::Plugin).to receive(:lookup).with("output", "dummy_output").and_return(::LogStash::Outputs::DummyOutput)
+        allow(LogStash::Plugin).to receive(:lookup).with("codec", "plain").and_return(LogStash::Codecs::Plain)
+      }
+    end
+
+    it "correctly distributes events" do
+      pipeline = mock_java_pipeline_from_string(config, pipeline_settings_obj)
+      pipeline.run
+      pipeline.shutdown
+      expect(output.events.size).to eq(60)
+      expect(output.events.count {|e| e.get("cloned") == "cloned"}).to eq(30)
     end
   end
 
