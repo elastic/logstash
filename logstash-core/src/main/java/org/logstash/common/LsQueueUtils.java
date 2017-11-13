@@ -77,13 +77,12 @@ public final class LsQueueUtils {
     private static int drain(final BlockingQueue<JrubyEventExtLibrary.RubyEvent> queue,
         final Collection<JrubyEventExtLibrary.RubyEvent> collection, final int count,
         final long nanos) throws InterruptedException {
-        final long deadline = System.nanoTime() + nanos;
         int added = 0;
         do {
             added += queue.drainTo(collection, count - added);
             if (added < count) {
                 final JrubyEventExtLibrary.RubyEvent event =
-                    queue.poll(deadline - System.nanoTime(), TimeUnit.NANOSECONDS);
+                    queue.poll(nanos, TimeUnit.NANOSECONDS);
                 if (event == null) {
                     break;
                 }
