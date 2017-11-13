@@ -1,18 +1,10 @@
 package org.logstash.config.ir.compiler;
 
-import java.io.IOException;
-import java.io.StringReader;
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Stream;
-import org.codehaus.commons.compiler.CompileException;
-import org.codehaus.janino.ClassBodyEvaluator;
+import java.util.stream.Collectors;
 import org.jruby.RubyArray;
 import org.jruby.RubyHash;
 import org.jruby.internal.runtime.methods.DynamicMethod;
@@ -36,61 +28,26 @@ public final class DatasetCompiler {
      */
     public static final IRubyObject[] FLUSH_NOT_FINAL = {flushOpts(false)};
 
-    /**
-     * Sequence number to ensure unique naming for runtime compiled classes.
-     */
-    private static final AtomicInteger SEQUENCE = new AtomicInteger(0);
-
-    /**
-     * Cache of runtime compiled classes to prevent duplicate classes being compiled.
-     */
-    private static final Map<String, Class<?>> CLASS_CACHE = new HashMap<>();
-
-    private static final String RETURN_NULL = "return null;";
-    /**
-     * Trivial {@link Dataset} that simply returns an empty collection of elements.
-     */
-    private static final Dataset EMPTY_DATASET = DatasetCompiler.compile(RETURN_NULL, "");
-
-    private static final String MULTI_FILTER = "multi_filter";
-
     private static final String MULTI_RECEIVE = "multi_receive";
 
     private static final String FLUSH = "flush";
 
-    /**
-     * Relative offset of the field holding the cached arguments used to invoke the
-     * primary callsite of a dataset.
-     */
-    private static final int ARG_ARRAY_OFFSET = 0;
+    public static final SyntaxFactory.IdentifierStatement FLUSH_ARG =
+        SyntaxFactory.identifier("flushArg");
+
+    public static final SyntaxFactory.IdentifierStatement SHUTDOWN_ARG =
+        SyntaxFactory.identifier("shutdownArg");
+
+    public static final SyntaxFactory.IdentifierStatement BATCH_ARG =
+        SyntaxFactory.identifier("batchArg");
 
     /**
-     * Relative offset of the primary (either multi_filter or multi_receive) {@link DynamicMethod}
-     * callsite in generated code.
+     * Root {@link Dataset}s at the beginning of the execution tree that simply pass through
+     * the given set of {@link JrubyEventExtLibrary.RubyEvent} and have no state.
      */
-    private static final int PRIMARY_CALLSITE_OFFSET = 1;
-
-    /**
-     * Relative offset of the field holding a wrapped Ruby plugin.
-     */
-    private static final int PLUGIN_FIELD_OFFSET = 2;
-
-    /**
-     * Relative offset of the field holding the collection used to buffer input
-     * {@link JrubyEventExtLibrary.RubyEvent}.
-     */
-    private static final int INPUT_BUFFER_OFFSET = 3;
-
-    /**
-     * Relative offset of the field holding the collection used to buffer computed
-     * {@link JrubyEventExtLibrary.RubyEvent}.
-     */
-    private static final int RESULT_BUFFER_OFFSET = 4;
-
-    /**
-     * Relative offset of the field holding the filter flush method callsite.
-     */
-    private static final int FLUSH_CALLSITE_OFFSET = 5;
+    public static final Collection<Dataset> ROOT_DATASETS = Collections.singleton(
+        compile(Closure.wrap(SyntaxFactory.ret(BATCH_ARG)), Closure.EMPTY, new ClassFields())
+    );
 
     private DatasetCompiler() {
         // Utility Class
@@ -105,85 +62,106 @@ public final class DatasetCompiler {
      * @param fieldValues Constructor Arguments
      * @return Dataset Instance
      */
-    public static synchronized Dataset compile(final String compute, final String clear,
-        final Object... fieldValues) {
-        try {
-            final Class<?> clazz;
-            final String source = String.format(
-                "public Collection compute(RubyArray batch, boolean flush, boolean shutdown) { %s } public void clear() { %s }",
-                compute, clear
-            );
-            if (CLASS_CACHE.containsKey(source)) {
-                clazz = CLASS_CACHE.get(source);
-            } else {
-                final ClassBodyEvaluator se = new ClassBodyEvaluator();
-                se.setImplementedInterfaces(new Class[]{Dataset.class});
-                final String classname =
-                    String.format("CompiledDataset%d", SEQUENCE.incrementAndGet());
-                se.setClassName(classname);
-                se.setDefaultImports(
-                    Stream.of(
-                        Collection.class, Collections.class, Dataset.class,
-                        JrubyEventExtLibrary.class, RubyUtil.class, DatasetCompiler.class,
-                        Block.class, RubyArray.class
-                    ).map(Class::getName).toArray(String[]::new)
-                );
-                se.cook(new StringReader(join(fieldsAndCtor(classname, fieldValues), source)));
-                clazz = se.getClazz();
-                CLASS_CACHE.put(source, clazz);
-            }
-            final Class<?>[] args = new Class[fieldValues.length];
-            Arrays.fill(args, Object.class);
-            return (Dataset) clazz.getConstructor(args).newInstance(fieldValues);
-        } catch (final CompileException | IOException | NoSuchMethodException
-            | InvocationTargetException | InstantiationException | IllegalAccessException ex) {
-            throw new IllegalStateException(ex);
-        }
+    public static synchronized Dataset compile(final Closure compute, final Closure clear,
+        final ClassFields fieldValues) {
+        return new ComputeStepSyntaxElement(
+            Arrays.asList(MethodSyntaxElement.compute(compute), MethodSyntaxElement.clear(clear)),
+            fieldValues
+        ).instantiate(Dataset.class);
+    }
+
+    public static SplitDataset splitDataset(final Collection<Dataset> parents,
+        final EventCondition condition) {
+        final ClassFields fields = new ClassFields();
+        final Collection<ValueSyntaxElement> parentFields =
+            parents.stream().map(fields::add).collect(Collectors.toList());
+        final SyntaxElement arrayInit =
+            SyntaxFactory.constant(RubyUtil.class, "RUBY").call("newArray");
+        final ValueSyntaxElement ifData = fields.add(RubyArray.class, arrayInit);
+        final ValueSyntaxElement elseData = fields.add(RubyArray.class, arrayInit);
+        final ValueSyntaxElement buffer = fields.add(RubyArray.class, arrayInit);
+        final ValueSyntaxElement done = fields.add(boolean.class);
+        final VariableDefinition event =
+            new VariableDefinition(JrubyEventExtLibrary.RubyEvent.class, "event");
+        final ValueSyntaxElement eventVal = event.access();
+        return new ComputeStepSyntaxElement(
+            Arrays.asList(
+                MethodSyntaxElement.compute(
+                    returnBuffer(ifData, done)
+                        .add(bufferParents(parentFields, buffer))
+                        .add(
+                            SyntaxFactory.forLoop(event, buffer,
+                                Closure.wrap(
+                                    SyntaxFactory.ifCondition(
+                                        fields.add(condition).call("fulfilled", eventVal),
+                                        Closure.wrap(ifData.call("add", eventVal)),
+                                        Closure.wrap(elseData.call("add", eventVal))
+                                    )
+                                )
+                            )
+                        ).add(clear(buffer))
+                        .add(SyntaxFactory.assignment(done, SyntaxFactory.TRUE))
+                        .add(SyntaxFactory.ret(ifData))
+                ),
+                MethodSyntaxElement.clear(
+                    clearSyntax(parentFields).add(clear(ifData)).add(clear(elseData))
+                        .add(SyntaxFactory.assignment(done, SyntaxFactory.FALSE))
+                ),
+                MethodSyntaxElement.right(elseData)
+            ), fields
+        ).instantiate(SplitDataset.class);
     }
 
     /**
      * Compiles a {@link Dataset} representing a filter plugin without flush behaviour.
      * @param parents Parent {@link Dataset} to aggregate for this filter
-     * @param filter Filter Plugin
+     * @param plugin Filter Plugin
      * @return Dataset representing the filter plugin
      */
     public static Dataset filterDataset(final Collection<Dataset> parents,
-        final IRubyObject filter) {
-        final Object[] parentArr = parents.toArray();
-        final int offset = parentArr.length;
-        final Object[] allArgs = new Object[offset + 5];
-        setupFilterFields(filter, parentArr, allArgs);
-        return compileFilterDataset(offset, filterBody(offset), allArgs);
-    }
-
-    /**
-     * Compiles a {@link Dataset} representing a filter plugin with flush behaviour.
-     * @param parents Parent {@link Dataset} to aggregate for this filter
-     * @param filter Filter Plugin
-     * @param shutdownFlushOnly True iff plugin only flushes on shutdown
-     * @return Dataset representing the filter plugin
-     */
-    public static Dataset flushingFilterDataset(final Collection<Dataset> parents,
-        final IRubyObject filter, final boolean shutdownFlushOnly) {
-        final Object[] parentArr = parents.toArray();
-        final int offset = parentArr.length;
-        final Object[] allArgs = new Object[offset + 6];
-        setupFilterFields(filter, parentArr, allArgs);
-        allArgs[offset + FLUSH_CALLSITE_OFFSET] = rubyCallsite(filter, FLUSH);
-        return compileFilterDataset(
-            offset, join(filterBody(offset), callFilterFlush(offset, shutdownFlushOnly)), allArgs
+        final RubyIntegration.Filter plugin) {
+        final ClassFields fields = new ClassFields();
+        final Collection<ValueSyntaxElement> parentFields =
+            parents.stream().map(fields::add).collect(Collectors.toList());
+        final RubyArray inputBuffer = RubyUtil.RUBY.newArray();
+        final ValueSyntaxElement inputBufferField = fields.add(inputBuffer);
+        final ValueSyntaxElement outputBuffer = fields.add(new ArrayList<>());
+        final IRubyObject filter = plugin.toRuby();
+        final ValueSyntaxElement filterField = fields.add(filter);
+        final ValueSyntaxElement done = fields.add(boolean.class);
+        final String multiFilter = "multi_filter";
+        final Closure body = returnBuffer(outputBuffer, done).add(
+            bufferParents(parentFields, inputBufferField)
+                .add(
+                    buffer(
+                        outputBuffer,
+                        SyntaxFactory.cast(
+                            RubyArray.class,
+                            callRubyCallsite(
+                                fields.add(rubyCallsite(filter, multiFilter)),
+                                fields.add(new IRubyObject[]{inputBuffer}), filterField,
+                                multiFilter
+                            )
+                        )
+                    )
+                ).add(clear(inputBufferField))
         );
-    }
-
-    private static void setupFilterFields(final IRubyObject filter, final Object[] parentArr,
-        final Object[] allArgs) {
-        final RubyArray buffer = RubyUtil.RUBY.newArray();
-        final int offset = parentArr.length;
-        System.arraycopy(parentArr, 0, allArgs, 0, offset);
-        allArgs[offset + INPUT_BUFFER_OFFSET] = buffer;
-        allArgs[offset + PRIMARY_CALLSITE_OFFSET] = rubyCallsite(filter, MULTI_FILTER);
-        allArgs[offset + ARG_ARRAY_OFFSET] = new IRubyObject[]{buffer};
-        allArgs[offset + PLUGIN_FIELD_OFFSET] = filter;
+        if (plugin.hasFlush()) {
+            body.add(
+                callFilterFlush(
+                    outputBuffer, fields.add(rubyCallsite(filter, FLUSH)), filterField,
+                    !plugin.periodicFlush()
+                )
+            );
+        }
+        return compile(
+            body.add(SyntaxFactory.assignment(done, SyntaxFactory.TRUE))
+                .add(SyntaxFactory.ret(outputBuffer)),
+            Closure.wrap(
+                clearSyntax(parentFields), clear(outputBuffer),
+                SyntaxFactory.assignment(done, SyntaxFactory.FALSE)
+            ), fields
+        );
     }
 
     /**
@@ -199,19 +177,23 @@ public final class DatasetCompiler {
         final int count = parents.size();
         final Dataset result;
         if (count > 1) {
-            final Object[] parentArr = parents.toArray();
-            final int offset = parentArr.length;
-            final StringBuilder syntax = new StringBuilder();
-            for (int i = 0; i < offset; ++i) {
-                syntax.append(computeDataset(i)).append(';');
-            }
-            result = compileOutput(join(syntax.toString(), clearSyntax(offset)), "", parentArr);
+            final ClassFields fields = new ClassFields();
+            final Collection<ValueSyntaxElement> parentFields =
+                parents.stream().map(fields::add).collect(Collectors.toList());
+            result = compileOutput(
+                Closure.wrap(
+                    parentFields.stream().map(DatasetCompiler::computeDataset)
+                        .toArray(MethodLevelSyntaxElement[]::new)
+                ).add(clearSyntax(parentFields)), Closure.EMPTY, fields
+            );
         } else if (count == 1) {
             // No need for a terminal dataset here, if there is only a single parent node we can
             // call it directly.
             result = parents.iterator().next();
         } else {
-            result = EMPTY_DATASET;
+            throw new IllegalArgumentException(
+                "Cannot create Terminal Dataset for an empty number of parent datasets"
+            );
         }
         return result;
     }
@@ -236,94 +218,81 @@ public final class DatasetCompiler {
         final boolean terminal) {
         final DynamicMethod method = rubyCallsite(output, MULTI_RECEIVE);
         // Short-circuit trivial case of only output(s) in the pipeline
-        if (parents == Dataset.ROOT_DATASETS) {
+        if (parents == ROOT_DATASETS) {
             return outputDatasetFromRoot(output, method);
         }
+        final ClassFields fields = new ClassFields();
+        final Collection<ValueSyntaxElement> parentFields =
+            parents.stream().map(fields::add).collect(Collectors.toList());
         final RubyArray buffer = RubyUtil.RUBY.newArray();
-        final Object[] parentArr = parents.toArray();
-        final int offset = parentArr.length;
-        final Object[] allArgs = new Object[offset + 4];
-        System.arraycopy(parentArr, 0, allArgs, 0, offset);
-        allArgs[offset + INPUT_BUFFER_OFFSET] = buffer;
-        allArgs[offset + PRIMARY_CALLSITE_OFFSET] = method;
-        allArgs[offset + ARG_ARRAY_OFFSET] = new IRubyObject[]{buffer};
-        allArgs[offset + PLUGIN_FIELD_OFFSET] = output;
-        final String clearSyntax;
-        final String inlineClear;
+        final ValueSyntaxElement inputBuffer = fields.add(buffer);
+        final Closure clearSyntax;
+        final Closure inlineClear;
         if (terminal) {
-            clearSyntax = "";
-            inlineClear = clearSyntax(offset);
+            clearSyntax = Closure.EMPTY;
+            inlineClear = clearSyntax(parentFields);
         } else {
-            inlineClear = "";
-            clearSyntax = clearSyntax(offset);
+            inlineClear = Closure.EMPTY;
+            clearSyntax = clearSyntax(parentFields);
         }
         return compileOutput(
-            join(
-                join(
-                    bufferForOutput(offset), callOutput(offset), clear(offset + INPUT_BUFFER_OFFSET)
-                ), inlineClear
-            ), clearSyntax, allArgs
+            Closure.wrap(
+                bufferParents(parentFields, inputBuffer),
+                callRubyCallsite(
+                    fields.add(method), fields.add(new IRubyObject[]{buffer}),
+                    fields.add(output), MULTI_RECEIVE
+                ),
+                clear(inputBuffer),
+                inlineClear
+            ),
+            clearSyntax, fields
         );
     }
 
-    private static String callFilterFlush(final int offset, final boolean shutdownOnly) {
-        final String condition;
-        final String flushArgs;
+    private static Closure returnBuffer(final MethodLevelSyntaxElement ifData,
+        final MethodLevelSyntaxElement done) {
+        return Closure.wrap(
+            SyntaxFactory.ifCondition(done, Closure.wrap(SyntaxFactory.ret(ifData)))
+        );
+    }
+
+    private static MethodLevelSyntaxElement callFilterFlush(final ValueSyntaxElement resultBuffer,
+        final ValueSyntaxElement flushMethod, final ValueSyntaxElement filterPlugin,
+        final boolean shutdownOnly) {
+        final MethodLevelSyntaxElement condition;
+        final ValueSyntaxElement flushArgs;
+        final ValueSyntaxElement flushFinal =
+            SyntaxFactory.constant(DatasetCompiler.class, "FLUSH_FINAL");
         if (shutdownOnly) {
-            condition = "flush && shutdown";
-            flushArgs = "DatasetCompiler.FLUSH_FINAL";
+            condition = SyntaxFactory.and(FLUSH_ARG, SHUTDOWN_ARG);
+            flushArgs = flushFinal;
         } else {
-            condition = "flush";
-            flushArgs = "shutdown ? DatasetCompiler.FLUSH_FINAL : DatasetCompiler.FLUSH_NOT_FINAL";
+            condition = FLUSH_ARG;
+            flushArgs = SyntaxFactory.ternary(
+                SHUTDOWN_ARG, flushFinal,
+                SyntaxFactory.constant(DatasetCompiler.class, "FLUSH_NOT_FINAL")
+            );
         }
-        return join(
-            "if(", condition, "){", field(offset + RESULT_BUFFER_OFFSET), ".addAll((RubyArray)",
-            callRubyCallsite(FLUSH_CALLSITE_OFFSET, flushArgs, offset, FLUSH), ");}"
+        return SyntaxFactory.ifCondition(
+            condition,
+            Closure.wrap(
+                buffer(
+                    resultBuffer,
+                    SyntaxFactory.cast(
+                        RubyArray.class,
+                        callRubyCallsite(flushMethod, flushArgs, filterPlugin, FLUSH)
+                    )
+                )
+            )
         );
     }
 
-    private static String clear(final int fieldIndex) {
-        return String.format("%s.clear();", field(fieldIndex));
+    private static MethodLevelSyntaxElement clear(final ValueSyntaxElement field) {
+        return field.call("clear");
     }
 
-    private static String computeDataset(final int fieldIndex) {
-        return String.format("%s.compute(batch, flush, shutdown)", field(fieldIndex));
-    }
-
-    private static String field(final int id) {
-        return String.format("field%d", id);
-    }
-
-    /**
-     * Generates the Java code for defining one field and constructor argument for each given value.
-     * @param classname Classname to generate constructor for
-     * @param values Values to store in instance fields and to generate assignments in the
-     * constructor for
-     * @return Java Source String
-     */
-    private static String fieldsAndCtor(final String classname, final Object... values) {
-        final StringBuilder result = new StringBuilder();
-        int i = 0;
-        for (final Object fieldValue : values) {
-            result.append(join("private final ", typeName(fieldValue), " ", field(i), ";"));
-            ++i;
-        }
-        result.append(join("public ", classname, "("));
-        for (int k = 0; k < i; ++k) {
-            if (k > 0) {
-                result.append(',');
-            }
-            result.append(join("Object ", field(k)));
-        }
-        result.append(") {");
-        int j = 0;
-        for (final Object fieldValue : values) {
-            final String fieldName = field(j);
-            result.append(join("this.", fieldName, "=", castToOwnType(fieldValue), fieldName, ";"));
-            ++j;
-        }
-        result.append('}');
-        return result.toString();
+    private static ValueSyntaxElement computeDataset(final ValueSyntaxElement parent) {
+        return parent.call("compute", BATCH_ARG, FLUSH_ARG, SHUTDOWN_ARG);
     }
 
     private static IRubyObject flushOpts(final boolean fin) {
@@ -332,18 +301,25 @@ public final class DatasetCompiler {
         return res;
     }
 
-    private static String bufferForOutput(final int offset) {
-        final StringBuilder syntax = new StringBuilder();
-        for (int i = 0; i < offset; ++i) {
-            syntax.append(
-                join(
-                    "for (JrubyEventExtLibrary.RubyEvent e : ", computeDataset(i), ") {",
-                    "if (!e.getEvent().isCancelled()) { ", field(offset + INPUT_BUFFER_OFFSET),
-                    ".add(e); } }"
+    private static Closure bufferParents(final Collection<ValueSyntaxElement> parents,
+        final ValueSyntaxElement buffer) {
+        final VariableDefinition event =
+            new VariableDefinition(JrubyEventExtLibrary.RubyEvent.class, "e");
+        final ValueSyntaxElement eventVar = event.access();
+        return Closure.wrap(
+            parents.stream().map(par ->
+                SyntaxFactory.forLoop(
+                    event, computeDataset(par),
+                    Closure.wrap(
+                        SyntaxFactory.ifCondition(
+                            SyntaxFactory.not(
+                                eventVar.call("getEvent").call("isCancelled")
+                            ), Closure.wrap(buffer.call("add", eventVar))
+                        )
+                    )
                 )
-            );
-        }
-        return syntax.toString();
+            ).toArray(MethodLevelSyntaxElement[]::new)
+        );
     }
 
     /**
@@ -357,123 +333,104 @@ public final class DatasetCompiler {
      */
     private static Dataset outputDatasetFromRoot(final IRubyObject output,
         final DynamicMethod method) {
-        final Object[] allArgs = new Object[3];
-        allArgs[PRIMARY_CALLSITE_OFFSET] = method;
-        allArgs[ARG_ARRAY_OFFSET] = new IRubyObject[1];
-        allArgs[PLUGIN_FIELD_OFFSET] = output;
+        final ClassFields fields = new ClassFields();
+        final ValueSyntaxElement args = fields.add(new IRubyObject[1]);
         return compileOutput(
-            join(field(ARG_ARRAY_OFFSET), "[0] = batch;", callOutput(0)), "",
-            allArgs
+            Closure.wrap(
+                SyntaxFactory.assignment(SyntaxFactory.arrayField(args, 0), BATCH_ARG),
+                callRubyCallsite(fields.add(method), args, fields.add(output), MULTI_RECEIVE)
+            ),
+            Closure.EMPTY, fields
         );
     }
 
-    private static Dataset compileOutput(final String syntax, final String clearSyntax,
-        final Object[] allArgs) {
-        return compile(join(syntax, RETURN_NULL), clearSyntax, allArgs);
-    }
-
-    /**
-     * Generates the code for invoking the Output plugin's `multi_receive` method.
-     * @param offset Number of Parent Dataset Fields
-     * @return Java Code String
-     */
-    private static String callOutput(final int offset) {
-        return join(
-            callRubyCallsite(
-                PRIMARY_CALLSITE_OFFSET, field(offset + ARG_ARRAY_OFFSET), offset, MULTI_RECEIVE
-            ), ";"
-        );
-    }
-
-    private static String callFilter(final int offset) {
-        return join(
-            field(offset + RESULT_BUFFER_OFFSET), ".addAll((RubyArray)",
-            callRubyCallsite(
-                PRIMARY_CALLSITE_OFFSET, field(offset + ARG_ARRAY_OFFSET), offset, MULTI_FILTER
-            ), ");"
-        );
-    }
-
-    private static String callRubyCallsite(final int callsiteOffset, final String argument,
-        final int offset, final String method) {
-        return join(
-            field(offset + callsiteOffset), ".call(RubyUtil.RUBY.getCurrentContext(), ",
-            field(offset + PLUGIN_FIELD_OFFSET),
-            ", RubyUtil.LOGSTASH_MODULE,", join("\"", method, "\""), ", ", argument,
-            ", Block.NULL_BLOCK)"
-        );
-    }
-
-    private static Dataset compileFilterDataset(final int offset, final String syntax,
-        final Object[] allArgs) {
-        allArgs[offset + RESULT_BUFFER_OFFSET] = new ArrayList<>();
+    private static Dataset compileOutput(final Closure syntax, final Closure clearSyntax,
+        final ClassFields fields) {
         return compile(
-            join(syntax, "return ", field(offset + RESULT_BUFFER_OFFSET), ";"),
-            join(clearSyntax(offset), clear(offset + RESULT_BUFFER_OFFSET)), allArgs
+            syntax.add(MethodLevelSyntaxElement.RETURN_NULL), clearSyntax, fields
         );
     }
 
-    private static String clearSyntax(final int count) {
-        final StringBuilder syntax = new StringBuilder();
-        for (int i = 0; i < count; ++i) {
-            syntax.append(clear(i));
-        }
-        return syntax.toString();
+    private static MethodLevelSyntaxElement buffer(final ValueSyntaxElement resultBuffer,
+        final ValueSyntaxElement argument) {
+        return resultBuffer.call("addAll", argument);
+    }
+
+    private static ValueSyntaxElement callRubyCallsite(final ValueSyntaxElement callsite,
+        final ValueSyntaxElement argument, final ValueSyntaxElement plugin, final String method) {
+        return callsite.call(
+            "call",
+            ValueSyntaxElement.GET_RUBY_THREAD_CONTEXT,
+            plugin,
+            SyntaxFactory.constant(RubyUtil.class, "LOGSTASH_MODULE"),
+            SyntaxFactory.value(SyntaxFactory.join("\"", method, "\"")),
+            argument,
+            SyntaxFactory.constant(Block.class, "NULL_BLOCK")
+        );
+    }
+
+    private static Closure clearSyntax(final Collection<ValueSyntaxElement> toClear) {
+        return Closure.wrap(
+            toClear.stream().map(DatasetCompiler::clear).toArray(MethodLevelSyntaxElement[]::new)
+        );
     }
 
     private static DynamicMethod rubyCallsite(final IRubyObject rubyObject, final String name) {
         return rubyObject.getMetaClass().searchMethod(name);
     }
 
-    private static String evalParents(final int count) {
-        final StringBuilder syntax = new StringBuilder();
-        for (int i = 0; i < count; ++i) {
-            syntax.append(
-                join(field(count + INPUT_BUFFER_OFFSET), ".addAll(", computeDataset(i), ");")
-            );
-        }
-        return syntax.toString();
-    }
-
-    private static String filterBody(final int offset) {
-        return join(evalParents(offset), callFilter(offset), clear(offset + INPUT_BUFFER_OFFSET));
-    }
-
     /**
-     * Generates a code-snippet typecast to the strictest possible type for the given object.
-     * Example: Given a obj = "foo" the method generates {@code (java.lang.String) obj}
-     * @param obj Object to generate type cast snippet for
-     * @return Java Source Code
+     * Complementary {@link Dataset} to a {@link SplitDataset} representing the
+     * negative branch of the {@code if} statement.
      */
-    private static String castToOwnType(final Object obj) {
-        return String.format("(%s)", typeName(obj));
-    }
+    public static final class Complement implements Dataset {
 
-    /**
-     * Returns the strictest possible syntax conform type for the given object. Note that for
-     * any {@link Dataset} instance, this will be {@code org.logstash.config.ir.compiler.Dataset}
-     * instead of a concrete class, since Dataset implementations are using runtime compiled
-     * classes.
-     * @param obj Object to lookup type name for
-     * @return Syntax conform type name
-     */
-    private static String typeName(final Object obj) {
-        final Class<?> clazz;
-        if (obj instanceof Dataset) {
-            clazz = Dataset.class;
-        } else {
-            clazz = obj.getClass();
+        /**
+         * Positive branch of underlying {@code if} statement.
+         */
+        private final Dataset parent;
+
+        /**
+         * This collection is shared with {@link DatasetCompiler.Complement#parent} and
+         * mutated when calling its {@code compute} method. This class does not directly compute
+         * it.
+         */
+        private final Collection<JrubyEventExtLibrary.RubyEvent> data;
+
+        private boolean done;
+
+        public static Dataset from(final Dataset parent,
+            final Collection<JrubyEventExtLibrary.RubyEvent> complement) {
+            return new DatasetCompiler.Complement(parent, complement);
         }
-        final String classname = clazz.getTypeName();
-        // JavaFilterDelegator classes are runtime generated by Ruby and are not available
-        // to the Janino compiler's classloader. There is no value in casting to the concrete class
-        // here anyways since JavaFilterDelegator instances are only passed as IRubyObject type
-        // method parameters in the generated code.
-        return classname.contains("JavaFilterDelegator")
-            ? IRubyObject.class.getTypeName() : classname;
-    }
 
-    private static String join(final String... parts) {
-        return String.join("", parts);
+        /**
+         * Ctor.
+         * @param left Positive Branch {@link SplitDataset}
+         * @param complement Collection of {@link JrubyEventExtLibrary.RubyEvent}s that did
+         * not match {@code left}
+         */
+        private Complement(
+            final Dataset left, final Collection<JrubyEventExtLibrary.RubyEvent> complement) {
+            this.parent = left;
+            data = complement;
+        }
+
+        @Override
+        public Collection<JrubyEventExtLibrary.RubyEvent> compute(final RubyArray batch,
+            final boolean flush, final boolean shutdown) {
+            if (done) {
+                return data;
+            }
+            parent.compute(batch, flush, shutdown);
+            done = true;
+            return data;
+        }
+
+        @Override
+        public void clear() {
+            parent.clear();
+            done = false;
+        }
     }
 }

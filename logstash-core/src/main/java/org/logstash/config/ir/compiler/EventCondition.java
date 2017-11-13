@@ -381,7 +381,7 @@ public interface EventCondition {
                 return new EventCondition.Compiler.FieldGreaterThanString(field, (String) value);
             } else if (value instanceof Long || value instanceof Integer ||
                 value instanceof Short) {
-                return new FieldGreaterThanNumber(
+                return new EventCondition.Compiler.FieldGreaterThanNumber(
                     field, RubyUtil.RUBY.newFixnum(((Number) value).longValue())
                 );
             }
