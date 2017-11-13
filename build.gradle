@@ -200,7 +200,7 @@ task installIntegrationTestGems(dependsOn: installIntegrationTestBundler, type: 
   outputs.files file("${projectDir}/qa/integration/Gemfile.lock")
   standardOutput = new ExecLogOutputStream(System.out)
   errorOutput =  new ExecLogOutputStream(System.err)
-  commandLine jrubyBin, bundleBin, "update"
+  commandLine jrubyBin, bundleBin, "install"
 }
 
 def rubyIntegrationSpecs = project.hasProperty("rubyIntegrationSpecs") ? ((String) project.property("rubyIntegrationSpecs")).split(/\s+/) : []
