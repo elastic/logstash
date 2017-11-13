@@ -2,10 +2,13 @@
 === Dead Letter Queues
 
 NOTE: The dead letter queue feature is currently supported for the
-<<plugins-outputs-elasticsearch>> output only. Support for additional outputs
-will be available in future releases of the Logstash plugins. Before configuring
-Logstash to use this feature, refer to the output plugin documentation to
-verify that the plugin supports the dead letter queue feature.
+<<plugins-outputs-elasticsearch>> output only. Additionally, The dead
+letter queue is only used where the response code is either 400
+or 404, both of which indicate an event that cannot be retried.   
+Support for additional outputs will be available in future releases of the 
+Logstash plugins. Before configuring Logstash to use this feature, refer to
+the output plugin documentation to verify that the plugin supports the dead
+letter queue feature.
 
 By default, when Logstash encounters an event that it cannot process because the
 data contains a mapping error or some other issue, the Logstash pipeline 
