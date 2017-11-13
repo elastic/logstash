@@ -1,6 +1,6 @@
 buildscript {
     repositories {
-        mavenCentral()
+        mavenCentral(artifactUrls: ["http://repo.maven.apache.org/maven2/"])
     }
     dependencies {
         classpath 'org.yaml:snakeyaml:1.17'
