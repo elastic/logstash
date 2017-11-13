@@ -80,10 +80,6 @@ module LogStash; module Util
         yield(@inflight_batches)
       end
 
-      def current_inflight_batch
-        @inflight_batches.fetch(Thread.current, [])
-      end
-
       # create a new empty batch
       # @return [ReadBatch] a new empty read batch
       def new_batch
@@ -97,25 +93,15 @@ module LogStash; module Util
       end
 
       def start_metrics(batch)
-        set_current_thread_inflight_batch(batch)
-        start_clock
-      end
-
-      def set_current_thread_inflight_batch(batch)
-        @inflight_batches[Thread.current] = batch
+        thread = Thread.current
+        @inflight_batches[thread] = batch
+        @inflight_clocks[thread] = java.lang.System.nano_time
       end
 
       def close_batch(batch)
-        @inflight_batches.delete(Thread.current)
-        stop_clock(batch)
-      end
-
-      def start_clock
-        @inflight_clocks[Thread.current] = java.lang.System.nano_time
-      end
-
-      def stop_clock(batch)
-        start_time = @inflight_clocks.get_and_set(Thread.current, nil)
+        thread = Thread.current
+        @inflight_batches.delete(thread)
+        start_time = @inflight_clocks.get_and_set(thread, nil)
         unless start_time.nil?
           if batch.size > 0
             # only stop (which also records) the metrics if the batch is non-empty.
