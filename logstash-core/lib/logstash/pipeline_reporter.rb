@@ -87,7 +87,8 @@ module LogStash; class PipelineReporter
   def worker_states(batch_map)
     pipeline.worker_threads.map.with_index do |thread, idx|
       status = thread.status || "dead"
-      inflight_count = batch_map[thread] ? batch_map[thread].size : 0
+      batch = batch_map[thread]
+      inflight_count = batch ? batch.size : 0
       {
         :status => status,
         :alive => thread.alive?,
