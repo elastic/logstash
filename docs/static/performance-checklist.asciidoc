@@ -82,7 +82,7 @@ following suggestions:
 
 * Threads in Java have names and you can use the `jstack`, `top`, and the VisualVM graphical tools to figure out which resources a given thread uses.
 
-* On Linux platforms, Logstash labels all the threads it can with something descriptive. For example, inputs show up as `[base]<inputname`, and filter workers show up as `[base]>workerN`, where N is an integer.  Where possible, other threads are also labeled to help you identify their purpose.
+* On Linux platforms, Logstash labels all the threads it can with something descriptive. For example, inputs show up as `[base]<inputname`, and pipeline workers show up as `[base]>workerN`, where N is an integer.  Where possible, other threads are also labeled to help you identify their purpose.
 
 [float]
 [[profiling-the-heap]]
