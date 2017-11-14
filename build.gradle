@@ -210,6 +210,8 @@ task runIntegrationTests(dependsOn: installIntegrationTestGems, type: Exec) {
   environment "JAVA_OPTS", ""
   environment "GEM_PATH", gemPath
   environment "GEM_HOME", gemPath
+  // FEATURE_FLAG is set in the CI to configure testing with enabled PQ
+  environment "FEATURE_FLAG", System.getenv('FEATURE_FLAG')
   standardOutput = new ExecLogOutputStream(System.out)
   errorOutput =  new ExecLogOutputStream(System.err)
   commandLine([jrubyBin, bundleBin, "exec", "rspec"].plus((Collection<String>)rubyIntegrationSpecs))
