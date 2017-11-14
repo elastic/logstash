@@ -8,7 +8,7 @@
 The Logstash Netflow module simplifies the collection, normalization, and
 visualization of network flow data. With a single command, the module parses
 network flow data, indexes the events into Elasticsearch, and installs a suite
-of Kibana dashboards to get you exploring your data immediately. 
+of Kibana dashboards to get you exploring your data immediately.
 
 Logstash modules support Netflow Version 5 and 9.
 
@@ -70,7 +70,7 @@ security.
 
 Once the Logstash Netflow module starts processing events, you can immediately
 begin using the packaged Kibana dashboards to explore and visualize your
-network flow data. 
+network flow data.
 
 You can use the dashboards as-is, or tailor them to work better with existing
 use cases and business requirements.
@@ -97,7 +97,7 @@ by viewing the traffic volume in bytes.
 image::static/images/netflow-traffic-analysis.png[Netflow traffic analysis dashboard]
 
 Then you can go to the *Geo Location* dashboard where you can visualize the
-location of destinations and sources on a heat map. 
+location of destinations and sources on a heat map.
 
 [role="screenshot"]
 image::static/images/netflow-geo-location.png[Netflow geo location dashboard]
@@ -108,10 +108,10 @@ image::static/images/netflow-geo-location.png[Netflow geo location dashboard]
 
 You can further refine the behavior of the Logstash Netflow module by specifying
 settings in the `logstash.yml` settings file, or overriding settings at the
-command line. 
+command line.
 
 For example, the following configuration in the `settings.yml` file sets
-Logstash to listen on port 9996 for network traffic data: 
+Logstash to listen on port 9996 for network traffic data:
 [source,yaml]
 -----
 modules:
@@ -134,7 +134,7 @@ For more information about configuring modules, see
 
 The Netflow module provides the following settings for configuring the behavior
 of the module. These settings include Netflow-specific options plus common
-options that are supported by all Logstash modules. 
+options that are supported by all Logstash modules.
 
 When you override a setting at the command line, remember to prefix the setting
 with the module name, for example,  `netflow.var.input.udp.port` instead of
@@ -148,11 +148,41 @@ If you don't specify configuration settings, Logstash uses the defaults.
 +
 --
 * Value type is <<number,number>>
-* Default value is 2055. 
+* Default value is 2055.
 --
 +
 Sets the UDP port on which Logstash listens for network traffic data. Although
 2055 is the default for this setting, some devices use ports in the range of
 9995 through 9998, with 9996 being the most commonly used alternative.
+
+*`var.input.udp.workers:`*::
++
+--
+* Value type is <<number,number>>
+* Default value is 2.
+--
++
+Number of threads processing packets.
+
+*`var.input.udp.receive_buffer_bytes:`*::
++
+--
+* Value type is <<number,number>>
+* Default value is 212992.
+--
++
+The socket receive buffer size in bytes.
+The operating system will use the max allowed value if receive_buffer_bytes is larger than allowed.
+Consult your operating system documentation if you need to increase this max allowed value.
+
+*`var.input.udp.queue_size:`*::
++
+--
+* Value type is <<number,number>>
+* Default value is 2000.
+--
++
+This is the number of unprocessed UDP packets you can hold in memory before
+packets will start dropping.
 
 include::shared-module-options.asciidoc[]
