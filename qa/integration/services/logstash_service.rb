@@ -254,6 +254,7 @@ class LogstashService < Service
       environment.each do |k, v|
         process.environment[k] = v
       end
+      process.environment['LS_JAVA_OPTS'] = process.environment.delete('JAVA_OPTS')
       process.io.stdout = process.io.stderr = out
 
       Bundler.with_clean_env do
