@@ -2,6 +2,7 @@ package org.logstash.ackedqueue;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.logstash.ackedqueue.io.LongVector;
@@ -19,6 +20,10 @@ public class Batch implements Closeable {
         this.seqNums = seqNums;
         this.queue = q;
         this.closed = new AtomicBoolean(false);
+    }
+
+    public Batch(SequencedList<byte[]> serialized, Queue q) {
+        this(deserializeElements(serialized.getElements(), q), serialized.getSeqNums(), q);
     }
 
     // close acks the batch ackable events
@@ -43,5 +48,19 @@ public class Batch implements Closeable {
 
     public Queue getQueue() {
         return queue;
+    }
+
+    /**
+     *
+     * @param serialized Collection of serialized elements
+     * @param q {@link Queue} instance
+     * @return Collection of deserialized {@link Queueable} elements
+     */
+    private static List<Queueable> deserializeElements(List<byte[]> serialized, Queue q) {
+        final List<Queueable> deserialized = new ArrayList<>(serialized.size());
+        for (final byte[] element : serialized) {
+            deserialized.add(q.deserialize(element));
+        }
+        return deserialized;
     }
 }

@@ -38,34 +38,22 @@ public abstract class Page implements Closeable {
         return "pageNum=" + this.pageNum + ", minSeqNum=" + this.minSeqNum + ", elementCount=" + this.elementCount + ", firstUnreadSeqNum=" + this.firstUnreadSeqNum;
     }
 
-    // NOTE:
-    // we have a page concern inconsistency where readBatch() takes care of the
-    // deserialization and returns a Batch object which contains the deserialized
-    // elements objects of the proper elementClass but HeadPage.write() deals with
-    // a serialized element byte[] and serialization is done at the Queue level to
-    // be able to use the Page.hasSpace() method with the serialized element byte size.
-    //
-    // @param limit the batch size limit
-    // @param elementClass the concrete element class for deserialization
-    // @return Batch batch of elements read when the number of elements can be <= limit
-    public Batch readBatch(int limit) throws IOException {
+    /**
+     * @param limit the maximum number of elements to read
+     * @return {@link SequencedList}<byte[]> collection of elements read. the number of elements can be <= limit
+     */
+    public SequencedList<byte[]> read(int limit) throws IOException {
 
         // first make sure this page is activated, activating previously activated is harmless
         this.pageIO.activate();
 
         SequencedList<byte[]> serialized = this.pageIO.read(this.firstUnreadSeqNum, limit);
-        List<byte[]> elements = serialized.getElements();
-        final int count = elements.size();
-        List<Queueable> deserialized = new ArrayList<>(count);
-        for (final byte[] element : elements) {
-            deserialized.add(this.queue.deserialize(element));
-        }
         assert serialized.getSeqNums().get(0) == this.firstUnreadSeqNum :
             String.format("firstUnreadSeqNum=%d != first result seqNum=%d", this.firstUnreadSeqNum, serialized.getSeqNums().get(0));
 
-        this.firstUnreadSeqNum += count;
+        this.firstUnreadSeqNum += serialized.getElements().size();
 
-        return new Batch(deserialized, serialized.getSeqNums(), this.queue);
+        return serialized;
     }
 
     /**
@@ -149,10 +137,6 @@ public abstract class Page implements Closeable {
 
     public int getElementCount() {
         return elementCount;
-    }
-
-    public Queue getQueue() {
-        return queue;
     }
 
     public PageIO getPageIO() {

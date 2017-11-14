@@ -36,13 +36,6 @@ public class HeadPage extends Page {
         return this.pageIO.hasSpace((byteSize));
     }
 
-    // NOTE:
-    // we have a page concern inconsistency where readBatch() takes care of the
-    // deserialization and returns a Batch object which contains the deserialized
-    // elements objects of the proper elementClass but HeadPage.write() deals with
-    // a serialized element byte[] and serialization is done at the Queue level to
-    // be able to use the Page.hasSpace() method with the serialized element byte size.
-    //
     public void write(byte[] bytes, long seqNum, int checkpointMaxWrites) throws IOException {
         this.pageIO.write(bytes, seqNum);
 

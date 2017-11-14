@@ -864,7 +864,7 @@ public class QueueTest {
             // work directly on the tail page and not the queue to avoid habing the queue purge the page
             // but make sure the tail page checkpoint marks it as fully acked
             TailPage tp = q.tailPages.get(0);
-            Batch b = tp.readBatch(1);
+            Batch b = new Batch(tp.read(1), q);
             assertThat(b.getElements().get(0), is(element1));
             tp.ack(b.getSeqNums(), 1);
             assertThat(tp.isFullyAcked(), is(true));
