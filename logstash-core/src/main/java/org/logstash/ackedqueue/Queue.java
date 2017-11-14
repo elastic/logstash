@@ -571,13 +571,14 @@ public final class Queue implements Closeable {
     private Batch _readPageBatch(Page p, int limit) throws IOException {
         boolean wasFull = isFull();
 
-        Batch b = p.readBatch(limit);
-        this.unreadCount -= b.size();
+        SequencedList<byte[]> serialized = p.read(limit);
+
+        this.unreadCount -= serialized.getElements().size();
 
         if (p.isFullyRead()) { removeUnreadPage(p); }
         if (wasFull) { notFull.signalAll(); }
 
-        return b;
+        return new Batch(serialized, this);
     }
 
     private static class TailPageResult {
