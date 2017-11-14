@@ -16,6 +16,8 @@ final public class SecretStoreUtil {
     private SecretStoreUtil() {
     }
 
+    private static final Random RANDOM = new Random();
+
     /**
      * Converts bytes from ascii encoded text to a char[] and zero outs the original byte[]
      *
@@ -146,7 +148,7 @@ final public class SecretStoreUtil {
     public static char[] obfuscate(char[] chars) {
         byte[] bytes = asciiCharToBytes(chars);
         byte[] random = new byte[bytes.length];
-        new Random().nextBytes(random);
+        RANDOM.nextBytes(random);
 
         ByteBuffer obfuscated = ByteBuffer.allocate(bytes.length * 2);
         for (int i = 0; i < bytes.length; i++) {

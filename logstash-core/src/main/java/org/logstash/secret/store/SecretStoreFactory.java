@@ -17,8 +17,7 @@ public class SecretStoreFactory {
     //secret stores should create a secret with this as the key and value to identify a logstash secret
     public final static SecretIdentifier LOGSTASH_MARKER = new SecretIdentifier("logstash-secret-store");
 
-    public final static String SYSTEM_PROPERTY_PASS_KEY = "logstash.keystore.pass";
-    public final static String ENVIRONMENT_PASS_KEY = "LOGSTASH_KEYSTORE_PASS";
+    public final static String ENVIRONMENT_PASS_KEY = "LOGSTASH_SECRET_STORE_PASS";
 
     /**
      * Private constructor
@@ -55,23 +54,15 @@ public class SecretStoreFactory {
     }
 
     /**
-     * <p>Adds the credential to the {@link SecureConfig} that is needed to access the {@link SecretStore}. The credential is searched for in the following order:</p>
-     * <ul>
-     * <li>Java System Property "logstash.keystore.pass" </li>
-     * <li>Environment variable "LOGSTASH_KEYSTORE_PASS"</li>
-     * </ul>
+     * <p>Adds the credential to the {@link SecureConfig} that is needed to access the {@link SecretStore}. Value read from environment variable "LOGSTASH_KEYSTORE_PASS"</p>
      *
      * @param secureConfig The configuration to add the secret store access
      */
     private static void addSecretStoreAccess(SecureConfig secureConfig) {
-        String systemProperty = System.getProperty(SYSTEM_PROPERTY_PASS_KEY);
         String environment = System.getenv(ENVIRONMENT_PASS_KEY);
 
         char[] pass = null;
-        if (systemProperty != null) {
-            secureConfig.add(KEYSTORE_ACCESS_KEY, systemProperty.toCharArray());
-            systemProperty = null;
-        } else if (environment != null) {
+        if (environment != null) {
             secureConfig.add(KEYSTORE_ACCESS_KEY, environment.toCharArray());
             environment = null;
         }
@@ -79,5 +70,4 @@ public class SecretStoreFactory {
         //futile attempt to remove the original pass from memory
         System.gc();
     }
-
 }

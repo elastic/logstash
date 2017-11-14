@@ -102,7 +102,6 @@ public class SecretStoreFactoryTest {
 
     @Test
     public void testDefaultLoadWithEnvPass() throws Exception {
-        String beforeSystem = System.getProperty(SYSTEM_PROPERTY_PASS_KEY);
         Map<String, String> beforeEnvironment = System.getenv();
         try {
 
@@ -110,8 +109,6 @@ public class SecretStoreFactoryTest {
             setEnv(new HashMap<String, String>() {{
                 put(ENVIRONMENT_PASS_KEY, pass);
             }});
-            //clear the system property to ensure it doesn't take precedence
-            System.clearProperty(SYSTEM_PROPERTY_PASS_KEY);
 
             //Each usage of the secure config requires it's own instance since implementations can/should clear all the values once used.
             SecureConfig secureConfig1 = new SecureConfig();
@@ -143,63 +140,6 @@ public class SecretStoreFactoryTest {
             validateMarker(secretStore);
 
         } finally {
-            if (beforeSystem == null) {
-                System.clearProperty(SYSTEM_PROPERTY_PASS_KEY);
-            } else {
-                System.setProperty(SYSTEM_PROPERTY_PASS_KEY, beforeSystem);
-            }
-            setEnv(new HashMap<>(beforeEnvironment));
-        }
-    }
-
-    @Test
-    public void testDefaultLoadWithSystemPropPass() throws Exception {
-        String beforeSystem = System.getProperty(SYSTEM_PROPERTY_PASS_KEY);
-        Map<String, String> beforeEnvironment = System.getenv();
-        try {
-            String pass = UUID.randomUUID().toString();
-            System.setProperty(SYSTEM_PROPERTY_PASS_KEY, pass);
-            String notPass = UUID.randomUUID().toString();
-            //setting environment to ensure system property takes precedence
-            setEnv(new HashMap<String, String>() {{
-                put(ENVIRONMENT_PASS_KEY, notPass);
-            }});
-
-            //Each usage of the secure config requires it's own instance since implementations can/should clear all the values once used.
-            SecureConfig secureConfig1 = new SecureConfig();
-            secureConfig1.add("keystore.path", folder.newFolder().toPath().resolve("logstash.keystore").toString().toCharArray());
-            SecureConfig secureConfig2 = secureConfig1.clone();
-            SecureConfig secureConfig3 = secureConfig1.clone();
-            SecureConfig secureConfig4 = secureConfig1.clone();
-
-            //ensure that with only the system property we can retrieve the marker from the store
-            SecretStore secretStore = SecretStoreFactory.loadSecretStore(secureConfig1);
-            validateMarker(secretStore);
-
-            //ensure that aren't simply using the defaults
-            boolean expectedException = false;
-            try {
-                new JavaKeyStore(secureConfig2);
-            } catch (SecretStoreException e) {
-                expectedException = true;
-            }
-            assertThat(expectedException).isTrue();
-
-            //ensure that direct key access using the system key wil work
-            secureConfig3.add(KEYSTORE_ACCESS_KEY, pass.toCharArray());
-            secretStore = new JavaKeyStore(secureConfig3);
-            validateMarker(secretStore);
-
-            //ensure that pass will work again
-            secretStore = SecretStoreFactory.loadSecretStore(secureConfig4);
-            validateMarker(secretStore);
-
-        } finally {
-            if (beforeSystem == null) {
-                System.clearProperty(SYSTEM_PROPERTY_PASS_KEY);
-            } else {
-                System.setProperty(SYSTEM_PROPERTY_PASS_KEY, beforeSystem);
-            }
             setEnv(new HashMap<>(beforeEnvironment));
         }
     }
