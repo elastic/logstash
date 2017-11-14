@@ -5,6 +5,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.security.MessageDigest;
+import java.time.Instant;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -55,7 +56,7 @@ public class ProcessWitnessTest {
         ProcessWitness.Snitch snitch = witness.snitch();
         assumeTrue(ProcessWitness.isUnix);
         witness.refresh();
-        long before = snitch.cpuProcessPercent();
+        short before = snitch.cpuProcessPercent();
 
         ScheduledExecutorService refresh = Executors.newSingleThreadScheduledExecutor();
         refresh.scheduleAtFixedRate(() -> witness.refresh(), 0 , 100, TimeUnit.MILLISECONDS);
@@ -76,11 +77,17 @@ public class ProcessWitnessTest {
                 }
             }
         });
-        //give the threads some time up add measurable load
-        Thread.sleep(3000);
-        long after = snitch.cpuProcessPercent();
-        //There is a slim chance that the stars align and the before and after are indeed equal, but should be very rare.
-        assertThat(before).isNotEqualTo(after);
+        //we only care that the value changes, give the load some time to change it
+        boolean pass = false;
+        Instant end = Instant.now().plusSeconds(10);
+        do {
+            Thread.sleep(100);
+            if (before != snitch.cpuProcessPercent()) {
+                pass = true;
+                break;
+            }
+        } while (end.isAfter(Instant.now()));
+        assertThat(pass).isTrue();
 
         refresh.shutdownNow();
         cpuLoad.shutdownNow();
