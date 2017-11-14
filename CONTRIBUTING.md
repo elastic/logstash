@@ -44,8 +44,9 @@ Logstash user base and our own goals for the project. Through this process, we t
 
 If you have a bugfix or new feature that you would like to contribute to Logstash, and you think it will take
 more than a few minutes to produce the fix (ie; write code), it is worth discussing the change with the Logstash
-users and developers first! You can reach us via [GitHub](https://github.com/elastic/logstash/issues), the [forum](https://discuss.elastic.co/c/logstash), or via IRC (#logstash on freenode irc)
-Please note that Pull Requests without tests will not be merged. If you would like to contribute but do not have
+users and developers first. You can reach us via [GitHub](https://github.com/elastic/logstash/issues), the [forum](https://discuss.elastic.co/c/logstash), or via IRC (#logstash on freenode irc)
+
+Please note that Pull Requests without tests and documentation may not be merged. If you would like to contribute but do not have
 experience with writing tests, please ping us on IRC/forum or create a PR and ask our help.
 
 If you would like to contribute to Logstash, but don't know where to start, you can use the GitHub labels "adoptme"
@@ -59,7 +60,7 @@ Using IntelliJ? See a detailed getting started guide [here](https://docs.google.
 
 ## Contributing to plugins
 
-Check our [documentation](https://www.elastic.co/guide/en/logstash/current/contributing-to-logstash.html) on how to contribute to plugins or write your own! It is super easy!
+Check our [documentation](https://www.elastic.co/guide/en/logstash/current/contributing-to-logstash.html) on how to contribute to plugins or write your own!
 
 ## Contribution Steps
 
@@ -75,3 +76,41 @@ Check our [documentation](https://www.elastic.co/guide/en/logstash/current/contr
    request](https://help.github.com/articles/using-pull-requests). In the pull
    request, describe what your changes do and mention any bugs/issues related
    to the pull request.
+   
+# Pull Request Guidelines
+
+The following exists as a way to set expectations for yourself and for the review process. We *want* to merge fixes and features, so let's describe how we can achieve this:
+   
+## Goals
+
+* To constantly make forward progress on PRs
+
+* To have constructive discussions on PRs
+
+## Overarching Guiding Principles
+
+Keep these in mind as both authors and reviewers of PRs:
+
+* Have empathy in both directions (reviewer <--> reviewee/author)
+* Progress over perfection and personal preferences
+
+## As a reviewee (i.e. author) of a PR:
+
+* I must put up atomic PRs. This helps the reviewer of the PR do a high quality review fast. "Atomic" here means two things:
+  - The PR must contain related changes and leave out unrelated changes (e.g. refactorings, etc. that could be their own PR instead).
+  - If the PR could be broken up into two or more PRs either "vertically" (by separating concerns logically) or horizontally (by sharding the PR into a series of PRs --- usually works well with mass refactoring or cleanup type PRs), it should. A set of such related PRs can be tracked and given context in a meta issue.
+
+* I must strive to please the reviewer(s). In other words, bias towards taking the reviewers suggestions rather than getting into a protracted argument. This helps move the PR forward. A convenient "escape hatch" to use might be to file a new issue for a follow up discussion/PR. If you find yourself getting into a drawn out argument, ask yourself: is this a good use of our time?
+
+## As a reviewer of a PR:
+
+* I must first focus on whether the PR works functionally -- i.e. does it solve the problem (bug, feature, etc.) it sets out to solve.
+
+* Then I should ask myself: can I understand what the code in this PR is doing and, more importantly, why its doing whatever its doing, within 1 or 2 passes over the PR?
+
+  * If yes, LGTM the PR!
+
+  * If no, ask for clarifications on the PR. This will usually lead to changes in the code such as renaming of variables/functions or extracting of functions or simply adding "why" inline comments. But first ask the author for clarifications before assuming any intent on their part.
+
+* I must not focus on personal preferences or nitpicks. If I understand the code in the PR but simply would've implemented the same solution a different way that's great but its not feedback that belongs in the PR. Such feedback only serves to slow down progress for little to no gain.
+
