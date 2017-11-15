@@ -162,6 +162,11 @@ task installTestGems(dependsOn: downloadAndInstallJRuby, type: Exec) {
 task assembleTarDistribution(dependsOn: installTestGems, type: Exec) {
   workingDir projectDir
   inputs.files fileTree("${projectDir}/rakelib")
+  inputs.files fileTree("${projectDir}/bin")
+  inputs.files fileTree("${projectDir}/config")
+  inputs.files fileTree("${projectDir}/lib")
+  inputs.files fileTree("${projectDir}/modules")
+  inputs.files fileTree("${projectDir}/logstash-core-plugin-api")
   inputs.files fileTree("${projectDir}/logstash-core/lib")
   inputs.files fileTree("${projectDir}/logstash-core/src")
   outputs.files file("${buildDir}/logstash-${project.version}.tar.gz")
@@ -170,10 +175,12 @@ task assembleTarDistribution(dependsOn: installTestGems, type: Exec) {
   commandLine jrubyBin, rakeBin, "artifact:tar"
 }
 
+def logstashBuildDir = "${buildDir}/logstash-${project.version}-SNAPSHOT"
+
 task unpackTarDistribution(dependsOn: assembleTarDistribution, type: Copy) {
   def tar = file("${buildDir}/logstash-${project.version}-SNAPSHOT.tar.gz")
   inputs.files tar
-  outputs.files fileTree("${buildDir}/logstash-${project.version}-SNAPSHOT")
+  outputs.files fileTree(logstashBuildDir)
   from tarTree(tar)
   into {buildDir}
 }
@@ -195,6 +202,9 @@ task installIntegrationTestGems(dependsOn: installIntegrationTestBundler, type: 
   environment "GEM_PATH", gemPath
   environment "GEM_HOME", gemPath
   inputs.files file("${projectDir}/qa/integration/Gemfile")
+  inputs.files file("${logstashBuildDir}/Gemfile")
+  inputs.files file("${logstashBuildDir}/Gemfile.lock")
+  inputs.files file("${logstashBuildDir}/logstash-core/logstash-core.gemspec")
   inputs.files file("${projectDir}/qa/integration/integration_tests.gemspec")
   outputs.files fileTree("${gemPath}/gems")
   outputs.files file("${projectDir}/qa/integration/Gemfile.lock")
