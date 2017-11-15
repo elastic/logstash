@@ -40,7 +40,7 @@ public abstract class Page implements Closeable {
 
     /**
      * @param limit the maximum number of elements to read
-     * @return {@link SequencedList}<byte[]> collection of elements read. the number of elements can be <= limit
+     * @return {@link SequencedList} collection of elements read. the number of elements can be {@literal <=} limit
      */
     public SequencedList<byte[]> read(int limit) throws IOException {
 
