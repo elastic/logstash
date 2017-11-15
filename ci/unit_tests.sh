@@ -19,11 +19,11 @@ if [[ $SELECTED_TEST_SUITE == $"core-fail-fast" ]]; then
   rake test:core-fail-fast
 elif [[ $SELECTED_TEST_SUITE == $"java" ]]; then
   echo "Running Java Tests"
-  ./gradlew javaTests
+  ./gradlew javaTests --console=plain
 elif [[ $SELECTED_TEST_SUITE == $"ruby" ]]; then
   echo "Running Ruby unit tests"
-  ./gradlew rubyTests
+  ./gradlew rubyTests --console=plain
 else
   echo "Running Java and Ruby unit tests"
-  ./gradlew test
+  ./gradlew test --console=plain
 fi
