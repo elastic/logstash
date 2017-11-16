@@ -37,30 +37,30 @@ public class HeadPage extends Page {
     }
 
     public void write(byte[] bytes, long seqNum, int checkpointMaxWrites) throws IOException {
-        this.pageIO.write(bytes, seqNum);
-
-        if (this.minSeqNum <= 0) {
-            this.minSeqNum = seqNum;
-            this.firstUnreadSeqNum = seqNum;
-        }
-        this.elementCount++;
-
-        // force a checkpoint if we wrote checkpointMaxWrites elements since last checkpoint
-        // the initial condition of an "empty" checkpoint, maxSeqNum() will return -1
-        if (checkpointMaxWrites > 0 && (seqNum >= this.lastCheckpoint.maxSeqNum() + checkpointMaxWrites)) {
-            // did we write more than checkpointMaxWrites elements? if so checkpoint now
-            checkpoint();
-        }
+//        this.pageIO.write(bytes, seqNum);
+//
+//        if (this.minSeqNum <= 0) {
+//            this.minSeqNum = seqNum;
+//            this.firstUnreadSeqNum = seqNum;
+//        }
+//        this.elementCount++;
+//
+//        // force a checkpoint if we wrote checkpointMaxWrites elements since last checkpoint
+//        // the initial condition of an "empty" checkpoint, maxSeqNum() will return -1
+//        if (checkpointMaxWrites > 0 && (seqNum >= this.lastCheckpoint.maxSeqNum() + checkpointMaxWrites)) {
+//            // did we write more than checkpointMaxWrites elements? if so checkpoint now
+//            checkpoint();
+//        }
     }
 
     public void ensurePersistedUpto(long seqNum) throws IOException {
-        long lastCheckpointUptoSeqNum = this.lastCheckpoint.getMinSeqNum() + this.lastCheckpoint.getElementCount();
-
-        // if the last checkpoint for this headpage already included the given seqNum, no need to fsync/checkpoint
-        if (seqNum > lastCheckpointUptoSeqNum) {
-            // head page checkpoint does a data file fsync
-            checkpoint();
-        }
+//        long lastCheckpointUptoSeqNum = this.lastCheckpoint.getMinSeqNum() + this.lastCheckpoint.getElementCount();
+//
+//        // if the last checkpoint for this headpage already included the given seqNum, no need to fsync/checkpoint
+//        if (seqNum > lastCheckpointUptoSeqNum) {
+//            // head page checkpoint does a data file fsync
+//            checkpoint();
+//        }
     }
 
     public TailPage behead() throws IOException {
@@ -86,23 +86,24 @@ public class HeadPage extends Page {
     // update checkpoint only if it changed since lastCheckpoint
     public void checkpoint() throws IOException {
 
-         if (this.elementCount > this.lastCheckpoint.getElementCount()) {
-             // fsync & checkpoint if data written since last checkpoint
-
-             this.pageIO.ensurePersisted();
-             forceCheckpoint();
-        } else {
-             Checkpoint checkpoint = new Checkpoint(this.pageNum, this.queue.firstUnackedPageNum(), firstUnackedSeqNum(), this.minSeqNum, this.elementCount);
-             if (! checkpoint.equals(this.lastCheckpoint)) {
-                 // checkpoint only if it changed since last checkpoint
-
-                 // non-dry code with forceCheckpoint() to avoid unnecessary extra new Checkpoint object creation
-                 CheckpointIO io = queue.getCheckpointIO();
-                 io.write(io.headFileName(), checkpoint);
-                 this.lastCheckpoint = checkpoint;
-             }
-         }
+//         if (this.elementCount > this.lastCheckpoint.getElementCount()) {
+//             // fsync & checkpoint if data written since last checkpoint
+//
+//             this.pageIO.ensurePersisted();
+//             forceCheckpoint();
+//        } else {
+//             Checkpoint checkpoint = new Checkpoint(this.pageNum, this.queue.firstUnackedPageNum(), firstUnackedSeqNum(), this.minSeqNum, this.elementCount);
+//             if (! checkpoint.equals(this.lastCheckpoint)) {
+//                 // checkpoint only if it changed since last checkpoint
+//
+//                 // non-dry code with forceCheckpoint() to avoid unnecessary extra new Checkpoint object creation
+//                 CheckpointIO io = queue.getCheckpointIO();
+//                 io.write(io.headFileName(), checkpoint);
+//                 this.lastCheckpoint = checkpoint;
+//             }
+//         }
       }
+
 
     // unconditionally update head checkpoint
     public void forceCheckpoint() throws IOException {

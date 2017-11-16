@@ -2,19 +2,21 @@ package org.logstash.ackedqueue;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.List;
 import org.logstash.ackedqueue.io.LongVector;
 import org.logstash.ackedqueue.io.PageIO;
 
-public abstract class Page implements Closeable {
+public class Page implements Closeable {
     protected final int pageNum;
     protected long minSeqNum; // TODO: see if we can make it final?
     protected int elementCount;
     protected long firstUnreadSeqNum;
     protected final Queue queue;
     protected PageIO pageIO;
+    private PageAccess access;
 
     // bit 0 is minSeqNum
     // TODO: go steal LocalCheckpointService in feature/seq_no from ES
@@ -32,6 +34,11 @@ public abstract class Page implements Closeable {
         this.ackedSeqNums = ackedSeqNums;
         this.lastCheckpoint = new Checkpoint(0, 0, 0, 0, 0);
         this.pageIO = pageIO;
+        this.access = null;
+    }
+
+    public void setAccess(PageAccess access) {
+        this.access = access;
     }
 
     public String toString() {
@@ -43,22 +50,18 @@ public abstract class Page implements Closeable {
      * @return {@link SequencedList} collection of elements read. the number of elements can be {@literal <=} limit
      */
     public SequencedList<byte[]> read(int limit) throws IOException {
-
-        // first make sure this page is activated, activating previously activated is harmless
-        this.pageIO.activate();
-
-        SequencedList<byte[]> serialized = this.pageIO.read(this.firstUnreadSeqNum, limit);
-        assert serialized.getSeqNums().get(0) == this.firstUnreadSeqNum :
-            String.format("firstUnreadSeqNum=%d != first result seqNum=%d", this.firstUnreadSeqNum, serialized.getSeqNums().get(0));
-
-        this.firstUnreadSeqNum += serialized.getElements().size();
-
-        return serialized;
+        return this.access.read(limit);
     }
+
+
+    public void write(byte[] bytes, long seqNum, int checkpointMaxWrites) throws IOException {
+        this.access.write(bytes, seqNum, checkpointMaxWrites);
+    }
+
 
     /**
      * Page is considered empty if it does not contain any element or if all elements are acked.
-     *
+     * <p>
      * TODO: note that this should be the same as isFullyAcked once fixed per https://github.com/elastic/logstash/issues/7570
      *
      * @return true if the page has no element or if all elements are acked.
@@ -100,9 +103,9 @@ public abstract class Page implements Closeable {
             assert seqNum >= this.minSeqNum :
                     String.format("seqNum=%d is smaller than minSeqnum=%d", seqNum, this.minSeqNum);
 
-            assert seqNum < this.minSeqNum + this.elementCount:
+            assert seqNum < this.minSeqNum + this.elementCount :
                     String.format("seqNum=%d is greater than minSeqnum=%d + elementCount=%d = %d", seqNum, this.minSeqNum, this.elementCount, this.minSeqNum + this.elementCount);
-            int index = (int)(seqNum - this.minSeqNum);
+            int index = (int) (seqNum - this.minSeqNum);
 
             this.ackedSeqNums.set(index);
         }
@@ -114,7 +117,7 @@ public abstract class Page implements Closeable {
         if (isFullyAcked()) {
             checkpoint();
 
-            assert firstUnackedSeqNum >= this.minSeqNum + this.elementCount - 1:
+            assert firstUnackedSeqNum >= this.minSeqNum + this.elementCount - 1 :
                     String.format("invalid firstUnackedSeqNum=%d for minSeqNum=%d and elementCount=%d and cardinality=%d", firstUnackedSeqNum, this.minSeqNum, this.elementCount, this.ackedSeqNums.cardinality());
 
         } else if (checkpointMaxAcks > 0 && (firstUnackedSeqNum >= this.lastCheckpoint.getFirstUnackedSeqNum() + checkpointMaxAcks)) {
@@ -123,9 +126,34 @@ public abstract class Page implements Closeable {
         }
     }
 
-    public abstract void checkpoint() throws IOException;
+    public void checkpoint() throws IOException {
+        this.access.checkpoint();
+    }
 
-    public abstract void close() throws IOException;
+    public void forceCheckpoint() throws IOException {
+        this.access.forceCheckpoint();
+    }
+
+
+    public boolean hasSpace(int byteSize) {
+        return this.access.hasSpace(byteSize);
+    }
+
+    public boolean hasCapacity(int byteSize) {
+        return this.access.hasCapacity(byteSize);
+    }
+
+    public void purge() throws IOException {
+        this.access.purge();
+    }
+
+    public  void close() throws IOException {
+        this.access.close();
+    }
+
+    public void ensurePersistedUpto(long seqNum) throws IOException {
+        this.access.ensurePersistedUpto(seqNum);
+    }
 
     public int getPageNum() {
         return pageNum;

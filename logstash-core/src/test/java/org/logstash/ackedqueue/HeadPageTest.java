@@ -14,12 +14,12 @@ public class HeadPageTest {
     @Test
     public void newHeadPage() throws IOException {
         Settings s = TestSettings.volatileQueueSettings(100);
-        // Close method on HeadPage requires an instance of Queue that has already been opened.
+        // Close method on Page requires an instance of Queue that has already been opened.
         try (Queue q = new Queue(s)) {
             q.open();
             PageIO pageIO = s.getPageIOFactory().build(0, 100, "dummy");
             pageIO.create();
-            try (final HeadPage p = new HeadPage(0, q, pageIO)) {
+            try (final Page p = PageFactory.newHeadPage(0, q, pageIO)) {
                 assertThat(p.getPageNum(), is(equalTo(0)));
                 assertThat(p.isFullyRead(), is(true));
                 assertThat(p.isFullyAcked(), is(false));
@@ -36,7 +36,7 @@ public class HeadPageTest {
         Settings s = TestSettings.volatileQueueSettings(singleElementCapacityForByteBufferPageIO(element));
         try(Queue q = new Queue(s)) {
             q.open();
-            HeadPage p = q.headPage;
+            Page p = q.headPage;
 
             assertThat(p.hasSpace(element.serialize().length), is(true));
             p.write(element.serialize(), 0, 1);
@@ -56,7 +56,7 @@ public class HeadPageTest {
         Settings s = TestSettings.volatileQueueSettings(singleElementCapacity);
         try(Queue q = new Queue(s)) {
             q.open();
-            HeadPage p = q.headPage;
+            Page p = q.headPage;
 
             assertThat(p.hasSpace(element.serialize().length), is(true));
             p.write(element.serialize(), seqNum, 1);
@@ -79,7 +79,7 @@ public class HeadPageTest {
         Settings s = TestSettings.volatileQueueSettings(1000);
         try(Queue q = new Queue(s)) {
             q.open();
-            HeadPage p = q.headPage;
+            Page p = q.headPage;
 
             assertThat(p.isEmpty(), is(true));
             p.write(element.serialize(), 1, 1);
@@ -99,7 +99,7 @@ public class HeadPageTest {
         Settings s = TestSettings.volatileQueueSettings(singleElementCapacityForByteBufferPageIO(element));
         try(Queue q = new Queue(s)) {
             q.open();
-            HeadPage p = q.headPage;
+            Page p = q.headPage;
 
             assertThat(p.hasSpace(element.serialize().length), is(true));
             p.write(element.serialize(), seqNum, 1);
