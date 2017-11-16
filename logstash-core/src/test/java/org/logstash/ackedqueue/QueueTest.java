@@ -233,7 +233,7 @@ public class QueueTest {
             assertThat(q.tailPages.size(), is(1));
 
             // lets keep a ref to that tail page before acking
-            TailPage tailPage = q.tailPages.get(0);
+            Page tailPage = q.tailPages.get(0);
 
             assertThat(tailPage.isFullyRead(), is(true));
 
@@ -863,7 +863,7 @@ public class QueueTest {
 
             // work directly on the tail page and not the queue to avoid habing the queue purge the page
             // but make sure the tail page checkpoint marks it as fully acked
-            TailPage tp = q.tailPages.get(0);
+            Page tp = q.tailPages.get(0);
             Batch b = new Batch(tp.read(1), q);
             assertThat(b.getElements().get(0), is(element1));
             tp.ack(b.getSeqNums(), 1);

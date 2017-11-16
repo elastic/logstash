@@ -37,15 +37,15 @@ public final class Queue implements Closeable {
 
     private long seqNum;
 
-    protected HeadPage headPage;
+    protected Page headPage;
 
     // complete list of all non fully acked pages. note that exact sequentially by pageNum cannot be assumed
     // because any fully acked page will be removed from this list potentially creating pageNum gaps in the list.
-    protected final List<TailPage> tailPages;
+    protected final List<Page> tailPages;
 
     // this list serves the only purpose of quickly retrieving the first unread page, operation necessary on every read
     // reads will simply remove the first page from the list when fully read and writes will append new pages upon beheading
-    protected final List<TailPage> unreadTailPages;
+    protected final List<Page> unreadTailPages;
 
     // checkpoints that were not purged in the acking code to keep contiguous checkpoint files
     // regardless of the correcponding data file purge.
@@ -212,7 +212,7 @@ public final class Queue implements Closeable {
                 }
                 headCheckpoint = new Checkpoint(headCheckpoint.getPageNum(), headCheckpoint.getFirstUnackedPageNum(), firstUnackedSeqNum, pageIO.getMinSeqNum(), pageIO.getElementCount());
             }
-            this.headPage = new HeadPage(headCheckpoint, this, pageIO);
+            this.headPage = PageFactory.newHeadPage(headCheckpoint, this, pageIO);
 
             if (this.headPage.getMinSeqNum() <= 0 && this.headPage.getElementCount() <= 0) {
                 // head page is empty, let's keep it as-is
@@ -223,7 +223,8 @@ public final class Queue implements Closeable {
                 this.headPage.checkpoint();
             } else {
                 // head page is non-empty, transform it into a tail page and create a new empty head page
-                addPage(headCheckpoint, this.headPage.behead());
+                this.headPage.behead();
+                addPage(headCheckpoint, this.headPage);
 
                 headPageNum = headCheckpoint.getPageNum() + 1;
                 newCheckpointedHeadpage(headPageNum);
@@ -272,11 +273,11 @@ public final class Queue implements Closeable {
                 // create a tail page with a null PageIO and add it to tail pages but not unreadTailPages
                 // since it is fully read because also fully acked
                 // TODO: I don't like this null pageIO tail page...
-                this.tailPages.add(new TailPage(checkpoint, this, null));
+                this.tailPages.add(PageFactory.newTailPage(checkpoint, this, null));
             }
         } else {
             pageIO.open(checkpoint.getMinSeqNum(), checkpoint.getElementCount());
-            TailPage page = new TailPage(checkpoint, this, pageIO);
+            Page page = PageFactory.newTailPage(checkpoint, this, pageIO);
 
             this.tailPages.add(page);
             this.unreadTailPages.add(page);
@@ -295,7 +296,7 @@ public final class Queue implements Closeable {
 
     // add a read tail page into this queue structures but also verify that this tail page
     // is not fully acked in which case it will be purged
-    private void addPage(Checkpoint checkpoint, TailPage page) throws IOException {
+    private void addPage(Checkpoint checkpoint, Page page) throws IOException {
         if (checkpoint.isFullyAcked()) {
             // first make sure any fully acked page per the checkpoint is purged if not already
             try { page.getPageIO().purge(); } catch (NoSuchFileException e) { /* ignore */ }
@@ -312,7 +313,7 @@ public final class Queue implements Closeable {
                 // create a tail page with a null PageIO and add it to tail pages but not unreadTailPages
                 // since it is fully read because also fully acked
                 // TODO: I don't like this null pageIO tail page...
-                this.tailPages.add(new TailPage(checkpoint, this, null));
+                this.tailPages.add(PageFactory.newTailPage(checkpoint, this, null));
             }
         } else {
             this.tailPages.add(page);
@@ -335,7 +336,7 @@ public final class Queue implements Closeable {
     private void newCheckpointedHeadpage(int pageNum) throws IOException {
         PageIO headPageIO = this.pageIOFactory.build(pageNum, this.pageCapacity, this.dirPath);
         headPageIO.create();
-        this.headPage = new HeadPage(pageNum, this, headPageIO);
+        this.headPage = PageFactory.newHeadPage(pageNum, this, headPageIO);
         this.headPage.forceCheckpoint();
         this.currentByteSize += headPageIO.getCapacity();
     }
@@ -344,10 +345,6 @@ public final class Queue implements Closeable {
     // @return long written sequence number
     public long write(Queueable element) throws IOException {
         byte[] data = element.serialize();
-
-        if (! this.headPage.hasCapacity(data.length)) {
-            throw new IOException("data to be written is bigger than page capacity");
-        }
 
         // the write strategy with regard to the isFull() state is to assume there is space for this element
         // and write it, then after write verify if we just filled the queue and wait on the notFull condition
@@ -358,6 +355,9 @@ public final class Queue implements Closeable {
 
         lock.lock();
         try {
+            if (! this.headPage.hasCapacity(data.length)) {
+                throw new IOException("data to be written is bigger than page capacity");
+            }
 
             // create a new head page if the current does not have sufficient space left for data to be written
             if (! this.headPage.hasSpace(data.length)) {
@@ -370,16 +370,14 @@ public final class Queue implements Closeable {
                     // purge the old headPage because its full and fully acked
                     // there is no checkpoint file to purge since just creating a new TailPage from a HeadPage does
                     // not trigger a checkpoint creation in itself
-                    TailPage tailPage = new TailPage(this.headPage);
-                    tailPage.purge();
-                    currentByteSize -= tailPage.getPageIO().getCapacity();
+                    this.headPage.purge();
+                    currentByteSize -= this.headPage.getPageIO().getCapacity();
                 } else {
                     // beheading includes checkpoint+fsync if required
-                    TailPage tailPage = this.headPage.behead();
-
-                    this.tailPages.add(tailPage);
-                    if (! tailPage.isFullyRead()) {
-                        this.unreadTailPages.add(tailPage);
+                    this.headPage.behead();
+                    this.tailPages.add(this.headPage);
+                    if (! this.headPage.isFullyRead()) {
+                        this.unreadTailPages.add(this.headPage);
                     }
                 }
 
@@ -437,13 +435,18 @@ public final class Queue implements Closeable {
      * @return True iff the queue is full
      */
     public boolean isFull() {
-        if (this.maxBytes > 0L && (
-            this.currentByteSize > this.maxBytes 
-                || this.currentByteSize == this.maxBytes && !headPage.hasSpace(1)
-        )) {
-            return true;
-        } else {
-            return ((this.maxUnread > 0) && this.unreadCount >= this.maxUnread);
+        lock.lock();
+        try {
+            if (this.maxBytes > 0L && (
+                this.currentByteSize > this.maxBytes
+                    || this.currentByteSize == this.maxBytes && !this.headPage.hasSpace(1)
+            )) {
+                return true;
+            } else {
+                return ((this.maxUnread > 0) && this.unreadCount >= this.maxUnread);
+            }
+        } finally {
+            lock.unlock();
         }
     }
 
@@ -582,10 +585,10 @@ public final class Queue implements Closeable {
     }
 
     private static class TailPageResult {
-        public TailPage page;
+        public Page page;
         public int index;
 
-        public TailPageResult(TailPage page, int index) {
+        public TailPageResult(Page page, int index) {
             this.page = page;
             this.index = index;
         }
@@ -597,7 +600,7 @@ public final class Queue implements Closeable {
         int hi = this.tailPages.size() - 1;
         while (lo <= hi) {
             int mid = lo + (hi - lo) / 2;
-            TailPage p = this.tailPages.get(mid);
+            Page p = this.tailPages.get(mid);
 
             if (seqNum < p.getMinSeqNum()) {
                 hi = mid - 1;
@@ -613,7 +616,7 @@ public final class Queue implements Closeable {
     // perform a linear search through tail pages to find in which page this seqNum falls into
     private TailPageResult linearFindPageForSeqnum(long seqNum) {
         for (int i = 0; i < this.tailPages.size(); i++) {
-            TailPage p = this.tailPages.get(i);
+            Page p = this.tailPages.get(i);
             if (p.getMinSeqNum() > 0 && seqNum >= p.getMinSeqNum() && seqNum < p.getMinSeqNum() + p.getElementCount()) {
                 return new TailPageResult(p, i);
             }
@@ -638,7 +641,7 @@ public final class Queue implements Closeable {
 
             if (this.tailPages.size() > 0) {
                 // short-circuit: first check in the first tail page as it is the most likely page where acking will happen
-                TailPage p = this.tailPages.get(0);
+                Page p = this.tailPages.get(0);
                 if (p.getMinSeqNum() > 0 && firstAckSeqNum >= p.getMinSeqNum() && firstAckSeqNum < p.getMinSeqNum() + p.getElementCount()) {
                     result = new TailPageResult(p, 0);
                 } else {
@@ -719,7 +722,7 @@ public final class Queue implements Closeable {
                 // TODO: not sure if we need to do this here since the headpage close will also call ensurePersisted
                 ensurePersistedUpto(this.seqNum);
 
-                for (TailPage p : this.tailPages) { p.close(); }
+                for (Page p : this.tailPages) { p.close(); }
                 this.headPage.close();
 
                 // release all referenced objects
@@ -749,25 +752,35 @@ public final class Queue implements Closeable {
         }
     }
 
-    Page firstUnreadPage() {
-        // look at head page if no unreadTailPages
-        return (this.unreadTailPages.isEmpty()) ? (this.headPage.isFullyRead() ? null : this.headPage) : this.unreadTailPages.get(0);
+    public Page firstUnreadPage() {
+        lock.lock();
+        try {
+            // look at head page if no unreadTailPages
+            return (this.unreadTailPages.isEmpty()) ? (this.headPage.isFullyRead() ? null : this.headPage) : this.unreadTailPages.get(0);
+        } finally {
+            lock.unlock();
+        }
     }
 
     private void removeUnreadPage(Page p) {
         // HeadPage is not part of the unreadTailPages, just ignore
-        if (p instanceof TailPage){
+        if (p != this.headPage) {
             // the page to remove should always be the first one
             assert this.unreadTailPages.get(0) == p : String.format("unread page is not first in unreadTailPages list");
             this.unreadTailPages.remove(0);
         }
     }
 
-    int firstUnackedPageNum() {
-        if (this.tailPages.isEmpty()) {
-            return this.headPage.getPageNum();
+    public int firstUnackedPageNum() {
+        lock.lock();
+        try {
+            if (this.tailPages.isEmpty()) {
+                return this.headPage.getPageNum();
+            }
+            return this.tailPages.get(0).getPageNum();
+        } finally {
+            lock.unlock();
         }
-        return this.tailPages.get(0).getPageNum();
     }
 
     public long getAckedCount() {
