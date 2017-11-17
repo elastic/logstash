@@ -535,7 +535,7 @@ public class QueueTest {
             }
             assertThat(q.isFull(), is(true));
             
-            Batch b = q.readBatch(10); // read 1 page (10 events)
+            Batch b = q.readBatch(10, Queue.TIMEOUT_SECOND); // read 1 page (10 events)
             b.close();  // purge 1 page
             
             while (q.isFull()) { Thread.sleep(10); }
@@ -565,7 +565,7 @@ public class QueueTest {
 
             // read 1 page (10 events) here while not full yet so that the read will not singal the not full state
             // we want the batch closing below to signal the not full state
-            Batch b = q.readBatch(10);
+            Batch b = q.readBatch(10, Queue.TIMEOUT_SECOND);
 
             // we expect this next write call to block so let's wrap it in a Future
             Future<Long> future = executor.submit(() -> q.write(element));
@@ -608,7 +608,7 @@ public class QueueTest {
             }
             assertThat(q.isFull(), is(true));
 
-            Batch b = q.readBatch(9); // read 90% of page (9 events)
+            Batch b = q.readBatch(9, Queue.TIMEOUT_SECOND); // read 90% of page (9 events)
             b.close();  // this should not purge a page
 
             assertThat(q.isFull(), is(true)); // queue should still be full
@@ -714,7 +714,7 @@ public class QueueTest {
             int read_count = 0;
 
             while (read_count < ELEMENT_COUNT * WRITER_COUNT) {
-                Batch b = q.readBatch(BATCH_SIZE);
+                Batch b = q.readBatch(BATCH_SIZE, Queue.TIMEOUT_SECOND);
                 read_count += b.size();
                 b.close();
             }
@@ -789,10 +789,12 @@ public class QueueTest {
                     int i = 0;
                     try {
                         while (i < count / concurrent) {
-                            final Batch batch = queue.readBatch(1);
-                            for (final Queueable elem : batch.getElements()) {
-                                if (elem != null) {
-                                    ++i;
+                            final Batch batch = queue.readBatch(1, Queue.TIMEOUT_SECOND);
+                            if (batch != null) {
+                                for (final Queueable elem : batch.getElements()) {
+                                    if (elem != null) {
+                                        ++i;
+                                    }
                                 }
                             }
                         }
@@ -832,7 +834,7 @@ public class QueueTest {
             q.write(new StringElement("foobarbaz"));
             assertThat(q.isEmpty(), is(false));
 
-            Batch b = q.readBatch(1);
+            Batch b = q.readBatch(1, Queue.TIMEOUT_SECOND);
             assertThat(q.isEmpty(), is(false));
 
             b.close();
@@ -917,16 +919,45 @@ public class QueueTest {
             assertThat(q.headPage.getPageIO().getCapacity(), is(NEW_CAPACITY));
 
             // will read only within a page boundary
-            Batch b1 = q.readBatch( 10);
+            Batch b1 = q.readBatch( 10, Queue.TIMEOUT_SECOND);
             assertThat(b1.size(), is(1));
             b1.close();
 
             // will read only within a page boundary
-            Batch b2 = q.readBatch( 10);
+            Batch b2 = q.readBatch( 10, Queue.TIMEOUT_SECOND);
             assertThat(b2.size(), is(1));
             b2.close();
 
             assertThat(q.tailPages.size(), is(0));
         }
     }
+
+
+    @Test(timeout = 5000)
+    public void maximizeBatch() throws IOException, InterruptedException, ExecutionException {
+
+        // very small pages to maximize page creation
+        Settings settings = TestSettings.persistedQueueSettings(1000, dataPath);
+        try (Queue q = new Queue(settings)) {
+            q.open();
+
+            Callable<Integer> writer = () -> {
+                Thread.sleep(500); // sleep 500 ms
+                q.write(new StringElement("E2"));
+                return 1;
+             };
+
+            // write one element now and schedule the 2nd write in 500ms
+            q.write(new StringElement("E1"));
+            Future<Integer> future = executor.submit(writer);
+
+            // issue a batch read with a 2s timeout, normally the batch should contain both element since
+            // the timeout is greater than the 2nd write delay
+            Batch b = q.readBatch(10, Queue.TIMEOUT_SECOND);
+
+            assertThat(b.size(), is(2));
+            future.get();
+        }
+    }
+
 }
