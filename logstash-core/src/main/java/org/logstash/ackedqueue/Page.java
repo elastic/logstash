@@ -202,21 +202,24 @@ public final class Page implements Closeable {
     }
 
     public void behead() throws IOException {
-        checkpoint();
+        assert this.writable == true : "cannot behead a tail page";
+
+        headPageCheckpoint();
 
         this.writable = false;
         this.lastCheckpoint = new Checkpoint(0, 0, 0, 0, 0);
 
         // first thing that must be done after beheading is to create a new checkpoint for that new tail page
         // tail page checkpoint does NOT includes a fsync
-        checkpoint();
+        tailPageCheckpoint();
+    }
 
-        // TODO: should we have a better deactivation strategy to avoid too rapid reactivation scenario?
-        Page firstUnreadPage = queue.firstUnreadPage();
-        if (firstUnreadPage == null || (this.getPageNum() > firstUnreadPage.getPageNum())) {
-            // deactivate if this new tailPage is not where the read is occurring
-            this.getPageIO().deactivate();
-        }
+    /**
+     * signal that this page is not active and resources can be released
+     * @throws IOException
+     */
+    public void deactivate() throws IOException {
+        this.getPageIO().deactivate();
     }
 
     public boolean hasSpace(int byteSize) {

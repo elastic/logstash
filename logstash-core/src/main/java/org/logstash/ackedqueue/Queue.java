@@ -25,14 +25,6 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-// TODO: Notes
-//
-// - time-based fsync
-//
-// - tragic errors handling
-//   - what errors cause whole queue to be broken
-//   - where to put try/catch for these errors
-
 public final class Queue implements Closeable {
 
     private long seqNum;
@@ -147,9 +139,10 @@ public final class Queue implements Closeable {
         return this.unreadCount;
     }
 
-    // moved queue opening logic in open() method until we have something in place to used in-memory checkpoints for testing
-    // because for now we need to pass a Queue instance to the Page and we don't want to trigger a Queue recovery when
-    // testing Page
+    /**
+     * Open an existing {@link Queue} or create a new one in the configured path.
+     * @throws IOException
+     */
     public void open() throws IOException {
         final int headPageNum;
 
@@ -308,8 +301,12 @@ public final class Queue implements Closeable {
         page.getPageIO().deactivate();
     }
 
-    // create a new empty headpage for the given pageNum and immediately checkpoint it
-    // @param pageNum the page number of the new head page
+    /**
+     * create a new empty headpage for the given pageNum and immediately checkpoint it
+     *
+     * @param pageNum the page number of the new head page
+     * @throws IOException
+     */
     private void newCheckpointedHeadpage(int pageNum) throws IOException {
         PageIO headPageIO = this.pageIOFactory.build(pageNum, this.pageCapacity, this.dirPath);
         headPageIO.create();
@@ -318,8 +315,14 @@ public final class Queue implements Closeable {
         this.currentByteSize += headPageIO.getCapacity();
     }
 
-    // @param element the Queueable object to write to the queue
-    // @return long written sequence number
+    /**
+     * write a {@link Queueable} element to the queue. Note that the element will always be written and the queue full
+     * condition will be checked and waited on **after** the write operation.
+     *
+     * @param element the {@link Queueable} element to write
+     * @return the written sequence number
+     * @throws IOException
+     */
     public long write(Queueable element) throws IOException {
         byte[] data = element.serialize();
 
@@ -344,18 +347,13 @@ public final class Queue implements Closeable {
                 int newHeadPageNum = this.headPage.pageNum + 1;
 
                 if (this.headPage.isFullyAcked()) {
-                    // purge the old headPage because its full and fully acked
-                    // there is no checkpoint file to purge since just creating a new TailPage from a HeadPage does
-                    // not trigger a checkpoint creation in itself
+                    // here we can just purge the data file and avoid beheading since we do not need
+                    // to add this fully hacked page into tailPages. a new head page will just be created.
+                    // TODO: we could possibly reuse the same page file but just rename it?
                     this.headPage.purge();
                     currentByteSize -= this.headPage.getPageIO().getCapacity();
                 } else {
-                    // beheading includes checkpoint+fsync if required
-                    this.headPage.behead();
-                    this.tailPages.add(this.headPage);
-                    if (! this.headPage.isFullyRead()) {
-                        this.unreadTailPages.add(this.headPage);
-                    }
+                    behead();
                 }
 
                 // create new head page
@@ -392,6 +390,29 @@ public final class Queue implements Closeable {
             return seqNum;
         } finally {
             lock.unlock();
+        }
+    }
+
+    /**
+     * mark head page as read-only (behead) and add it to the tailPages and unreadTailPages collections accordingly
+     * also deactivate it if it's not next-in-line for reading
+     *
+     * @throws IOException
+     */
+    private void behead() throws IOException {
+        // beheading includes checkpoint+fsync if required
+        this.headPage.behead();
+        this.tailPages.add(this.headPage);
+
+        if (! this.headPage.isFullyRead()) {
+            if (!this.unreadTailPages.isEmpty()) {
+                // there are already other unread pages so this new one is not next in line and we can deactivate
+                this.headPage.deactivate();
+            }
+            this.unreadTailPages.add(this.headPage);
+        } else {
+            // it is fully read so we can deactivate
+            this.headPage.deactivate();
         }
     }
 
@@ -445,7 +466,9 @@ public final class Queue implements Closeable {
 
     }
 
-    // @return true if the queue is fully acked, which implies that it is fully read which works as an "empty" state.
+    /**
+     * @return true if the queue is fully acked, which implies that it is fully read which works as an "empty" state.
+     */
     public boolean isFullyAcked() {
         lock.lock();
         try {
@@ -455,7 +478,12 @@ public final class Queue implements Closeable {
         }
     }
 
-    // @param seqNum the element sequence number upper bound for which persistence should be guaranteed (by fsync'ing)
+    /**
+     * guarantee persistence up to a given sequence number.
+     *
+     * @param seqNum the element sequence number upper bound for which persistence should be guaranteed (by fsync'ing)
+     * @throws IOException
+     */
     public void ensurePersistedUpto(long seqNum) throws IOException{
         lock.lock();
         try {
@@ -465,100 +493,100 @@ public final class Queue implements Closeable {
         }
     }
 
-    // non-blockin queue read
-    // @param limit read the next bach of size up to this limit. the returned batch size can be smaller than than the requested limit if fewer elements are available
-    // @return Batch the batch containing 1 or more element up to the required limit or null of no elements were available
+    /**
+     * non-blocking queue read
+     *
+     * @param limit read the next bach of size up to this limit. the returned batch size can be smaller than than the requested limit if fewer elements are available
+     * @return {@link Batch} the batch containing 1 or more element up to the required limit or null of no elements were available
+     * @throws IOException
+     */
     public Batch nonBlockReadBatch(int limit) throws IOException {
         lock.lock();
         try {
-            Page p = firstUnreadPage();
-            return (p == null) ? null : _readPageBatch(p, limit);
+            Page p = nextReadPage();
+            return (isHeadPage(p) && p.isFullyRead()) ? null : _readPageBatch(p, limit, 0L);
         } finally {
             lock.unlock();
         }
     }
 
-    // blocking readBatch notes:
-    //   the queue close() notifies all pending blocking read so that they unblock if the queue is being closed.
-    //   this means that all blocking read methods need to verify for the queue close condition.
-    //
-    // blocking queue read until elements are available for read
-    // @param limit read the next bach of size up to this limit. the returned batch size can be smaller than than the requested limit if fewer elements are available
-    // @return Batch the batch containing 1 or more element up to the required limit or null if no elements were available or the blocking call was interrupted
-    public Batch readBatch(int limit) throws IOException {
-        Page p;
-
-        lock.lock();
-        try {
-            while ((p = firstUnreadPage()) == null && !isClosed()) {
-                try {
-                    notEmpty.await();
-                } catch (InterruptedException e) {
-                    // the thread interrupt() has been called while in the await() blocking call.
-                    // at this point the interrupted flag is reset and Thread.interrupted() will return false
-                    // to any upstream calls on it. for now our choice is to simply return null and set back
-                    // the Thread.interrupted() flag so it can be checked upstream.
-
-                    // set back the interrupted flag
-                    Thread.currentThread().interrupt();
-
-                    return null;
-                }
-            }
-
-            // need to check for close since it is a condition for exiting the while loop
-            return (isClosed()) ? null : _readPageBatch(p, limit);
-        } finally {
-            lock.unlock();
-        }
-    }
-
-    // blocking queue read until elements are available for read or the given timeout is reached.
-    // @param limit read the next batch of size up to this limit. the returned batch size can be smaller than than the requested limit if fewer elements are available
-    // @param timeout the maximum time to wait in milliseconds
-    // @return Batch the batch containing 1 or more element up to the required limit or null if no elements were available or the blocking call was interrupted
+    /**
+     *
+     * @param limit size limit of the batch to read. returned {@link Batch} can be smaller.
+     * @param timeout the maximum time to wait in milliseconds on write operations
+     * @return the read {@link Batch} or null if no element upon timeout
+     * @throws IOException
+     */
     public Batch readBatch(int limit, long timeout) throws IOException {
-        Page p;
-
         lock.lock();
         try {
-            // wait only if queue is empty
-            if ((p = firstUnreadPage()) == null) {
-                try {
-                    notEmpty.await(timeout, TimeUnit.MILLISECONDS);
-                } catch (InterruptedException e) {
-                    // the thread interrupt() has been called while in the await() blocking call.
-                    // at this point the interrupted flag is reset and Thread.interrupted() will return false
-                    // to any upstream calls on it. for now our choice is to simply return null and set back
-                    // the Thread.interrupted() flag so it can be checked upstream.
-
-                    // set back the interrupted flag
-                    Thread.currentThread().interrupt();
-
-                    return null;
-                }
-
-                // if after returning from wait queue is still empty, or the queue was closed return null
-                if ((p = firstUnreadPage()) == null || isClosed()) { return null; }
-            }
-
-            return _readPageBatch(p, limit);
+            return _readPageBatch(nextReadPage(), limit, timeout);
         } finally {
             lock.unlock();
         }
     }
 
-    private Batch _readPageBatch(Page p, int limit) throws IOException {
-        boolean wasFull = isFull();
+    /**
+     * read a {@link Batch} from the given {@link Page}. If the page is a head page, try to maximize the
+     * batch size by waiting for writes.
+     * @param p the {@link Page} to read from.
+     * @param limit size limit of the batch to read.
+     * @param timeout  the maximum time to wait in milliseconds on write operations.
+     * @return {@link Batch} with read elements or null if nothing was read
+     * @throws IOException
+     */
+    private Batch _readPageBatch(Page p, int limit, long timeout) throws IOException {
+        int left = limit;
+        final List<byte[]> elements = new ArrayList<>(limit);
+        final LongVector seqNums = new LongVector(limit);
 
-        SequencedList<byte[]> serialized = p.read(limit);
+        // NOTE: the tricky thing here is that upon entering this method, if p is initially a head page
+        // it could become a tail page upon returning from the notEmpty.await call.
 
-        this.unreadCount -= serialized.getElements().size();
+        do {
+            if (isHeadPage(p) && p.isFullyRead()) {
+                boolean elapsed;
+                // a head page is fully read but can be written to so let's wait for more data
+                try {
+                    elapsed = !notEmpty.await(timeout, TimeUnit.MILLISECONDS);
+                } catch (InterruptedException e) {
+                    // set back the interrupted flag
+                    Thread.currentThread().interrupt();
+                    break;
+                }
 
-        if (p.isFullyRead()) { removeUnreadPage(p); }
-        if (wasFull) { notFull.signalAll(); }
+                if ((elapsed && p.isFullyRead()) || isClosed()) {
+                    break;
+                }
+            }
 
-        return new Batch(serialized, this);
+            if (! p.isFullyRead()) {
+                boolean wasFull = isFull();
+
+                final SequencedList<byte[]> serialized = p.read(left);
+                int n = serialized.getElements().size();
+                assert n > 0 : "page read returned 0 elements";
+                elements.addAll(serialized.getElements());
+                seqNums.add(serialized.getSeqNums());
+
+                this.unreadCount -= n;
+                left -= n;
+
+                if (wasFull) {
+                    notFull.signalAll();
+                }
+            }
+
+            if (isTailPage(p) && p.isFullyRead()) {
+                break;
+            }
+        } while (left > 0);
+
+        if (isTailPage(p) && p.isFullyRead()) {
+            removeUnreadPage(p);
+        }
+
+        return (left >= limit) ? null :  new Batch(elements, seqNums, this);
     }
 
     private static class TailPageResult {
@@ -571,7 +599,12 @@ public final class Queue implements Closeable {
         }
     }
 
-    // perform a binary search through tail pages to find in which page this seqNum falls into
+    /**
+     * perform a binary search through tail pages to find in which page this seqNum falls into
+     *
+     * @param seqNum the sequence number to search for in the tail pages
+     * @return {@link TailPageResult}
+     */
     private TailPageResult binaryFindPageForSeqnum(long seqNum) {
         int lo = 0;
         int hi = this.tailPages.size() - 1;
@@ -590,7 +623,12 @@ public final class Queue implements Closeable {
         return null;
     }
 
-    // perform a linear search through tail pages to find in which page this seqNum falls into
+    /**
+     * perform a linear search through tail pages to find in which page this seqNum falls into
+     *
+     * @param seqNum the sequence number to search for in the tail pages
+     * @return {@link TailPageResult}
+     */
     private TailPageResult linearFindPageForSeqnum(long seqNum) {
         for (int i = 0; i < this.tailPages.size(); i++) {
             Page p = this.tailPages.get(i);
@@ -601,10 +639,14 @@ public final class Queue implements Closeable {
         return null;
     }
 
-    // ack a list of seqNums that are assumed to be all part of the same page, leveraging the fact that batches are also created from
-    // same-page elements. A fully acked page will trigger a checkpoint for that page. Also if a page has more than checkpointMaxAcks
-    // acks since last checkpoint it will also trigger a checkpoint.
-    // @param seqNums the list of same-page sequence numbers to ack
+    /**
+     * ack a list of seqNums that are assumed to be all part of the same page, leveraging the fact that batches are also created from
+     * same-page elements. A fully acked page will trigger a checkpoint for that page. Also if a page has more than checkpointMaxAcks
+     * acks since last checkpoint it will also trigger a checkpoint.
+     *
+     * @param seqNums the list of same-page sequence numbers to ack
+     * @throws IOException
+     */
     public void ack(LongVector seqNums) throws IOException {
         // as a first implementation we assume that all batches are created from the same page
         // so we will avoid multi pages acking here for now
@@ -677,10 +719,13 @@ public final class Queue implements Closeable {
     public CheckpointIO getCheckpointIO() {
         return this.checkpointIO;
     }
-
-    // deserialize a byte array into the required element class.
-    // @param bytes the byte array to deserialize
-    // @return Queueable the deserialized byte array into the required Queueable interface implementation concrete class
+    
+    /**
+     *  deserialize a byte array into the required element class.
+     *
+     * @param bytes the byte array to deserialize
+     * @return {@link Queueable} the deserialized byte array into the required Queueable interface implementation concrete class
+     */
     public Queueable deserialize(byte[] bytes) {
         try {
             return (Queueable)this.deserializeMethod.invoke(this.elementClass, bytes);
@@ -729,22 +774,28 @@ public final class Queue implements Closeable {
         }
     }
 
-    public Page firstUnreadPage() {
+    /**
+     * return the {@link Page} for the next read operation.
+     * @return {@link Page} will be either a read-only tail page or the head page.
+     */
+    public Page nextReadPage() {
         lock.lock();
         try {
             // look at head page if no unreadTailPages
-            return (this.unreadTailPages.isEmpty()) ? (this.headPage.isFullyRead() ? null : this.headPage) : this.unreadTailPages.get(0);
+            return (this.unreadTailPages.isEmpty()) ?  this.headPage : this.unreadTailPages.get(0);
         } finally {
             lock.unlock();
         }
     }
 
     private void removeUnreadPage(Page p) {
-        // HeadPage is not part of the unreadTailPages, just ignore
-        if (p != this.headPage) {
-            // the page to remove should always be the first one
-            assert this.unreadTailPages.get(0) == p : String.format("unread page is not first in unreadTailPages list");
-            this.unreadTailPages.remove(0);
+        if (! this.unreadTailPages.isEmpty()) {
+            Page firstUnread = this.unreadTailPages.get(0);
+            assert p.pageNum <= firstUnread.pageNum : String.format("fully read pageNum=%d is greater than first unread pageNum=%d", p.pageNum, firstUnread.pageNum);
+            if (firstUnread == p) {
+                // it is possible that when starting to read from a head page which is beheaded will not be inserted in the unreadTailPages list
+                this.unreadTailPages.remove(0);
+            }
         }
     }
 
@@ -785,5 +836,21 @@ public final class Queue implements Closeable {
 
     private boolean isClosed() {
         return this.closed.get();
+    }
+
+    /**
+     * @param p the {@link Page} to verify if it is the head page
+     * @return true if the given {@link Page} is the head page
+     */
+    private boolean isHeadPage(Page p) {
+        return p == this.headPage;
+    }
+
+    /**
+     * @param p the {@link Page} to verify if it is a tail page
+     * @return true if the given {@link Page} is a tail page
+     */
+    private boolean isTailPage(Page p) {
+        return !isHeadPage(p);
     }
 }

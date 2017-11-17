@@ -1,6 +1,8 @@
 package org.logstash.ackedqueue;
 
 import java.io.IOException;
+import java.util.concurrent.TimeUnit;
+
 import org.junit.Test;
 import org.logstash.ackedqueue.io.PageIO;
 
@@ -84,7 +86,7 @@ public class HeadPageTest {
             assertThat(p.isEmpty(), is(true));
             p.write(element.serialize(), 1, 1);
             assertThat(p.isEmpty(), is(false));
-            Batch b = q.readBatch(1);
+            Batch b = q.readBatch(1, TimeUnit.SECONDS.toMillis(1));
             assertThat(p.isEmpty(), is(false));
             b.close();
             assertThat(p.isEmpty(), is(true));
