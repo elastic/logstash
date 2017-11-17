@@ -61,7 +61,7 @@ public class Page implements Closeable {
 
     /**
      * Page is considered empty if it does not contain any element or if all elements are acked.
-     * <p>
+     *
      * TODO: note that this should be the same as isFullyAcked once fixed per https://github.com/elastic/logstash/issues/7570
      *
      * @return true if the page has no element or if all elements are acked.
@@ -100,7 +100,7 @@ public class Page implements Closeable {
             final long seqNum = seqNums.get(i);
             // TODO: eventually refactor to use new bit handling class
 
-            assert seqNum >= this.minSeqNum:
+            assert seqNum >= this.minSeqNum :
                     String.format("seqNum=%d is smaller than minSeqnum=%d", seqNum, this.minSeqNum);
 
             assert seqNum < this.minSeqNum + this.elementCount :
