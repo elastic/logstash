@@ -15,15 +15,15 @@ public class Batch implements Closeable {
     private final Queue queue;
     private final AtomicBoolean closed;
 
-    public Batch(List<Queueable> elements, LongVector seqNums, Queue q) {
-        this.elements = elements;
+    public Batch(SequencedList<byte[]> serialized, Queue q) {
+        this(serialized.getElements(), serialized.getSeqNums(), q);
+    }
+
+    public Batch(List<byte[]> elements, LongVector seqNums, Queue q) {
+        this.elements = deserializeElements(elements, q);
         this.seqNums = seqNums;
         this.queue = q;
         this.closed = new AtomicBoolean(false);
-    }
-
-    public Batch(SequencedList<byte[]> serialized, Queue q) {
-        this(deserializeElements(serialized.getElements(), q), serialized.getSeqNums(), q);
     }
 
     // close acks the batch ackable events

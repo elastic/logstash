@@ -8,6 +8,8 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.TimeUnit;
+
 import org.logstash.ackedqueue.Batch;
 import org.logstash.ackedqueue.SettingsImpl;
 import org.logstash.ackedqueue.Queue;
@@ -75,7 +77,7 @@ public class Concurrent {
 
             try {
                 while (consumedCount < ELEMENT_COUNT) {
-                    Batch b = q.readBatch(BATCH_SIZE);
+                    Batch b = q.readBatch(BATCH_SIZE, TimeUnit.SECONDS.toMillis(1));
 //                    if (b.getElements().size() < BATCH_SIZE) {
 //                        System.out.println("read small batch=" + b.getElements().size());
 //                    } else {
@@ -129,7 +131,7 @@ public class Concurrent {
             consumers.add(new Thread(() -> {
                 try {
                     while (output.size() < ELEMENT_COUNT) {
-                        Batch b = q.readBatch(BATCH_SIZE);
+                        Batch b = q.readBatch(BATCH_SIZE, TimeUnit.SECONDS.toMillis(1));
 //                        if (b.getElements().size() < BATCH_SIZE) {
 //                            System.out.println("read small batch=" + b.getElements().size());
 //                        } else {
