@@ -78,6 +78,8 @@ public final class Queue implements Closeable {
     private FileLock dirLock;
     private final static String LOCK_NAME = ".lock";
 
+    public static final long TIMEOUT_SECOND = 1000; // 1s in millisec
+
     private static final Logger logger = LogManager.getLogger(Queue.class);
 
     public Queue(Settings settings) {
@@ -495,58 +497,26 @@ public final class Queue implements Closeable {
         lock.lock();
         try {
             Page p = firstUnreadPage();
-            return (p == null) ? null : _readPageBatch(p, limit);
+            return (p == null) ? null : _readPageBatch(p, limit, 0L);
         } finally {
             lock.unlock();
         }
     }
 
-    // blocking readBatch notes:
-    //   the queue close() notifies all pending blocking read so that they unblock if the queue is being closed.
-    //   this means that all blocking read methods need to verify for the queue close condition.
-    //
-    // blocking queue read until elements are available for read
-    // @param limit read the next bach of size up to this limit. the returned batch size can be smaller than than the requested limit if fewer elements are available
-    // @return Batch the batch containing 1 or more element up to the required limit or null if no elements were available or the blocking call was interrupted
-    public Batch readBatch(int limit) throws IOException {
-        Page p;
-
-        lock.lock();
-        try {
-            while ((p = firstUnreadPage()) == null && !isClosed()) {
-                try {
-                    notEmpty.await();
-                } catch (InterruptedException e) {
-                    // the thread interrupt() has been called while in the await() blocking call.
-                    // at this point the interrupted flag is reset and Thread.interrupted() will return false
-                    // to any upstream calls on it. for now our choice is to simply return null and set back
-                    // the Thread.interrupted() flag so it can be checked upstream.
-
-                    // set back the interrupted flag
-                    Thread.currentThread().interrupt();
-
-                    return null;
-                }
-            }
-
-            // need to check for close since it is a condition for exiting the while loop
-            return (isClosed()) ? null : _readPageBatch(p, limit);
-        } finally {
-            lock.unlock();
-        }
-    }
-
-    // blocking queue read until elements are available for read or the given timeout is reached.
-    // @param limit read the next batch of size up to this limit. the returned batch size can be smaller than than the requested limit if fewer elements are available
-    // @param timeout the maximum time to wait in milliseconds
-    // @return Batch the batch containing 1 or more element up to the required limit or null if no elements were available or the blocking call was interrupted
+    /**
+     *
+     * @param limit size limit of the batch to read. returned {@link Batch} can be smaller.
+     * @param timeout the maximum time to wait in milliseconds
+     * @return the read {@link Batch} or null if no element upon timeout
+     * @throws IOException
+     */
     public Batch readBatch(int limit, long timeout) throws IOException {
         Page p;
 
         lock.lock();
         try {
-            // wait only if queue is empty
             if ((p = firstUnreadPage()) == null) {
+                // wait only if queue is empty
                 try {
                     notEmpty.await(timeout, TimeUnit.MILLISECONDS);
                 } catch (InterruptedException e) {
@@ -565,23 +535,66 @@ public final class Queue implements Closeable {
                 if ((p = firstUnreadPage()) == null || isClosed()) { return null; }
             }
 
-            return _readPageBatch(p, limit);
+            return _readPageBatch(p, limit, timeout);
         } finally {
             lock.unlock();
         }
     }
 
-    private Batch _readPageBatch(Page p, int limit) throws IOException {
-        boolean wasFull = isFull();
+    private Batch _readPageBatch(Page p, int limit, long timeout) throws IOException {
+        int left = limit;
+        final List<byte[]> elements = new ArrayList<>(limit);
+        final LongVector seqNums = new LongVector(limit);
 
-        SequencedList<byte[]> serialized = p.read(limit);
+        do {
+            boolean wasFull = isFull();
 
-        this.unreadCount -= serialized.getElements().size();
+            final SequencedList<byte[]> serialized = p.read(left);
+            int n = serialized.getElements().size();
+            elements.addAll(serialized.getElements());
+            seqNums.add(serialized.getSeqNums());
 
-        if (p.isFullyRead()) { removeUnreadPage(p); }
-        if (wasFull) { notFull.signalAll(); }
+            this.unreadCount -= n;
+            left -= n;
 
-        return new Batch(serialized, this);
+            if (wasFull) {
+                notFull.signalAll();
+            }
+
+            if (left == 0) {
+                 break;
+            }
+            if (p != this.headPage && p.isFullyRead()) {
+                break;
+            }
+
+            if (p == this.headPage) {
+                if (p.isFullyRead()) {
+                    try {
+                        notEmpty.await(timeout, TimeUnit.MILLISECONDS);
+                    } catch (InterruptedException e) {
+                        // the thread interrupt() has been called while in the await() blocking call.
+                        // at this point the interrupted flag is reset and Thread.interrupted() will return false
+                        // to any upstream calls on it. for now our choice is to simply return null and set back
+                        // the Thread.interrupted() flag so it can be checked upstream.
+
+                        // set back the interrupted flag
+                        Thread.currentThread().interrupt();
+
+                        break;
+                    }
+                    if (p.isFullyRead()) {
+                        break;
+                    }
+                }
+            }
+        } while (left > 0);
+
+        if (p != this.headPage && p.isFullyRead()) {
+            removeUnreadPage(p);
+        }
+
+        return new Batch(elements, seqNums, this);
     }
 
     private static class TailPageResult {
