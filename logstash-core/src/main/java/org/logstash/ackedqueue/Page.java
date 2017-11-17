@@ -100,12 +100,12 @@ public class Page implements Closeable {
             final long seqNum = seqNums.get(i);
             // TODO: eventually refactor to use new bit handling class
 
-            assert seqNum >= this.minSeqNum :
+            assert seqNum >= this.minSeqNum:
                     String.format("seqNum=%d is smaller than minSeqnum=%d", seqNum, this.minSeqNum);
 
             assert seqNum < this.minSeqNum + this.elementCount :
                     String.format("seqNum=%d is greater than minSeqnum=%d + elementCount=%d = %d", seqNum, this.minSeqNum, this.elementCount, this.minSeqNum + this.elementCount);
-            int index = (int) (seqNum - this.minSeqNum);
+            int index = (int)(seqNum - this.minSeqNum);
 
             this.ackedSeqNums.set(index);
         }
@@ -117,7 +117,7 @@ public class Page implements Closeable {
         if (isFullyAcked()) {
             checkpoint();
 
-            assert firstUnackedSeqNum >= this.minSeqNum + this.elementCount - 1 :
+            assert firstUnackedSeqNum >= this.minSeqNum + this.elementCount - 1:
                     String.format("invalid firstUnackedSeqNum=%d for minSeqNum=%d and elementCount=%d and cardinality=%d", firstUnackedSeqNum, this.minSeqNum, this.elementCount, this.ackedSeqNums.cardinality());
 
         } else if (checkpointMaxAcks > 0 && (firstUnackedSeqNum >= this.lastCheckpoint.getFirstUnackedSeqNum() + checkpointMaxAcks)) {
