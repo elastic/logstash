@@ -2,10 +2,7 @@ package org.logstash.ackedqueue;
 
 import java.io.Closeable;
 import java.io.IOException;
-import java.lang.reflect.Constructor;
-import java.util.ArrayList;
 import java.util.BitSet;
-import java.util.List;
 
 import org.logstash.ackedqueue.io.CheckpointIO;
 import org.logstash.ackedqueue.io.LongVector;
