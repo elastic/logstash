@@ -19,4 +19,22 @@ public class LongVectorTest {
             assertThat((long) i, is(vector.get(i)));
         }
     }
+
+    @Test
+    public void storesVecorAndResizes() {
+        final int count = 1000;
+        final LongVector vector1 = new LongVector(count);
+        for (long i = 0L; i < count; ++i) {
+            vector1.add(i);
+        }
+        final LongVector vector2 = new LongVector(count);
+        for (long i = 0L + count; i < 2 * count; ++i) {
+            vector2.add(i);
+        }
+        vector1.add(vector2);
+        assertThat(vector1.size(), is(2 * count));
+        for (int i = 0; i < 2 * count; ++i) {
+            assertThat((long) i, is(vector1.get(i)));
+        }
+    }
 }
