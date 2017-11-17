@@ -24,7 +24,7 @@ public class PageReader extends PageAccess {
 
     @Override
     public void forceCheckpoint() throws IOException {
-        checkpoint();
+        throw new IOException("forceCheckpoint cannot be called from PageReader");
     }
 
     @Override
@@ -44,14 +44,12 @@ public class PageReader extends PageAccess {
 
     @Override
     public boolean hasSpace(int byteSize) {
-        // TODO: should we throw?
-        return false;
+        throw new RuntimeException("hasSpace cannot be called from PageReader");
     }
 
     @Override
     public boolean hasCapacity(int byteSize) {
-        // TODO: should we throw?
-        return false;
+        throw new RuntimeException("hasSpace cannot be called from PageReader");
     }
 
     @Override

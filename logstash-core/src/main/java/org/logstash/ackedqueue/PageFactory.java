@@ -37,17 +37,6 @@ public class PageFactory {
         return p;
     }
 
-    public static Page newTailPage() {
-        return null;
-    }
-
-
-    public static Page newTailPage(Page headPage) {
-        Page p = new Page(headPage.pageNum, headPage.queue, headPage.minSeqNum, headPage.elementCount, headPage.firstUnreadSeqNum, headPage.ackedSeqNums, headPage.pageIO);
-        p.setAccess(new PageReader(p));
-        return p;
-    }
-
     // create a new TailPage object for an exiting Checkpoint and data file
     // @param pageIO the PageIO object is expected to be open/recover/create
     public static Page newTailPage(Checkpoint checkpoint, Queue queue, PageIO pageIO) {

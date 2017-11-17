@@ -134,6 +134,24 @@ public class Page implements Closeable {
         this.access.forceCheckpoint();
     }
 
+    public void behead() throws IOException {
+        checkpoint();
+
+        this.access = new PageReader(this);
+        this.lastCheckpoint = new Checkpoint(0, 0, 0, 0, 0);
+
+        // first thing that must be done after beheading is to create a new checkpoint for that new tail page
+        // tail page checkpoint does NOT includes a fsync
+        checkpoint();
+
+        // TODO: should we have a better deactivation strategy to avoid too rapid reactivation scenario?
+        Page firstUnreadPage = queue.firstUnreadPage();
+        if (firstUnreadPage == null || (this.getPageNum() > firstUnreadPage.getPageNum())) {
+            // deactivate if this new tailPage is not where the read is occurring
+            this.getPageIO().deactivate();
+        }
+    }
+
 
     public boolean hasSpace(int byteSize) {
         return this.access.hasSpace(byteSize);

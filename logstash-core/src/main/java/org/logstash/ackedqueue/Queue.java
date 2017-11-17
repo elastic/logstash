@@ -223,7 +223,7 @@ public final class Queue implements Closeable {
                 this.headPage.checkpoint();
             } else {
                 // head page is non-empty, transform it into a tail page and create a new empty head page
-                this.headPage.setAccess(new PageReader(this.headPage));
+                this.headPage.behead();
                 addPage(headCheckpoint, this.headPage);
 
                 headPageNum = headCheckpoint.getPageNum() + 1;
@@ -346,10 +346,6 @@ public final class Queue implements Closeable {
     public long write(Queueable element) throws IOException {
         byte[] data = element.serialize();
 
-        if (! this.headPage.hasCapacity(data.length)) {
-            throw new IOException("data to be written is bigger than page capacity");
-        }
-
         // the write strategy with regard to the isFull() state is to assume there is space for this element
         // and write it, then after write verify if we just filled the queue and wait on the notFull condition
         // *after* the write which is both safer for a crash condition, and the queue closing sequence. In the former case
@@ -359,6 +355,9 @@ public final class Queue implements Closeable {
 
         lock.lock();
         try {
+            if (! this.headPage.hasCapacity(data.length)) {
+                throw new IOException("data to be written is bigger than page capacity");
+            }
 
             // create a new head page if the current does not have sufficient space left for data to be written
             if (! this.headPage.hasSpace(data.length)) {
@@ -375,8 +374,7 @@ public final class Queue implements Closeable {
                     currentByteSize -= this.headPage.getPageIO().getCapacity();
                 } else {
                     // beheading includes checkpoint+fsync if required
-                    this.headPage.setAccess(new PageReader(this.headPage));
-
+                    this.headPage.behead();
                     this.tailPages.add(this.headPage);
                     if (! this.headPage.isFullyRead()) {
                         this.unreadTailPages.add(this.headPage);
@@ -437,13 +435,18 @@ public final class Queue implements Closeable {
      * @return True iff the queue is full
      */
     public boolean isFull() {
-        if (this.maxBytes > 0L && (
-            this.currentByteSize > this.maxBytes 
-                || this.currentByteSize == this.maxBytes && !headPage.hasSpace(1)
-        )) {
-            return true;
-        } else {
-            return ((this.maxUnread > 0) && this.unreadCount >= this.maxUnread);
+        lock.lock();
+        try {
+            if (this.maxBytes > 0L && (
+                this.currentByteSize > this.maxBytes
+                    || this.currentByteSize == this.maxBytes && !this.headPage.hasSpace(1)
+            )) {
+                return true;
+            } else {
+                return ((this.maxUnread > 0) && this.unreadCount >= this.maxUnread);
+            }
+        } finally {
+            lock.unlock();
         }
     }
 
@@ -749,9 +752,14 @@ public final class Queue implements Closeable {
         }
     }
 
-    Page firstUnreadPage() {
-        // look at head page if no unreadTailPages
-        return (this.unreadTailPages.isEmpty()) ? (this.headPage.isFullyRead() ? null : this.headPage) : this.unreadTailPages.get(0);
+    public Page firstUnreadPage() {
+        lock.lock();
+        try {
+            // look at head page if no unreadTailPages
+            return (this.unreadTailPages.isEmpty()) ? (this.headPage.isFullyRead() ? null : this.headPage) : this.unreadTailPages.get(0);
+        } finally {
+            lock.unlock();
+        }
     }
 
     private void removeUnreadPage(Page p) {
@@ -763,11 +771,16 @@ public final class Queue implements Closeable {
         }
     }
 
-    int firstUnackedPageNum() {
-        if (this.tailPages.isEmpty()) {
-            return this.headPage.getPageNum();
+    public int firstUnackedPageNum() {
+        lock.lock();
+        try {
+            if (this.tailPages.isEmpty()) {
+                return this.headPage.getPageNum();
+            }
+            return this.tailPages.get(0).getPageNum();
+        } finally {
+            lock.unlock();
         }
-        return this.tailPages.get(0).getPageNum();
     }
 
     public long getAckedCount() {
