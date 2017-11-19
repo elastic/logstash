@@ -6,10 +6,7 @@ import org.logstash.common.SourceWithMetadata;
 /**
  * Created by andrewvc on 9/15/16.
  */
-public class QueueVertex extends Vertex {
-    public QueueVertex() {
-        super(null);
-    }
+public final class QueueVertex extends Vertex {
 
     @Override
     public String getId() {
@@ -32,7 +29,6 @@ public class QueueVertex extends Vertex {
 
     @Override
     public boolean sourceComponentEquals(SourceComponent other) {
-        if (other == null) return false;
         return other instanceof QueueVertex;
     }
 

@@ -1,10 +1,10 @@
 package org.logstash.config.ir.graph;
 
+import java.util.concurrent.atomic.AtomicInteger;
 import org.logstash.common.Util;
 import org.logstash.config.ir.HashableWithSource;
 import org.logstash.config.ir.SourceComponent;
 import org.logstash.config.ir.InvalidIRException;
-import org.logstash.common.SourceWithMetadata;
 import org.logstash.config.ir.graph.algorithms.DepthFirst;
 
 import java.nio.charset.StandardCharsets;
@@ -18,24 +18,25 @@ import java.util.stream.Stream;
  * Created by andrewvc on 9/15/16.
  */
 public abstract class Vertex implements SourceComponent, HashableWithSource {
-    private final SourceWithMetadata sourceWithMetadata;
-    private Graph graph = this.getGraph();
+
+    private static final AtomicInteger SEQUENCE = new AtomicInteger();
+
+    private final int hashCode = SEQUENCE.incrementAndGet();
+
+    private final String explicitId;
+
+    private Graph graph;
+
     private volatile String contextualHashCache;
     private volatile String hashCache;
     private volatile String individualHashSourceCache;
-    private final String explicitId;
     private volatile String generatedId;
 
-    public Vertex() {
+    protected Vertex() {
         this(null);
     }
 
-    public Vertex(SourceWithMetadata sourceWithMetadata) {
-        this(sourceWithMetadata, null);
-    }
-
-    public Vertex(SourceWithMetadata sourceWithMetadata, String explicitId) {
-        this.sourceWithMetadata = sourceWithMetadata;
+    protected Vertex(String explicitId) {
         this.explicitId = explicitId;
     }
 
@@ -49,11 +50,20 @@ public abstract class Vertex implements SourceComponent, HashableWithSource {
         }
     }
 
-    public Graph getGraph() {
+    @Override
+    public final int hashCode() {
+        return hashCode;
+    }
+
+    public final boolean equals(final Object other) {
+        return this == other;
+    }
+
+    public final Graph getGraph() {
         return this.graph;
     }
 
-    public void setGraph(Graph graph) {
+    public final void setGraph(Graph graph) {
         if (this.graph == graph) {
             return;
         } else if (this.graph == null) {
@@ -104,11 +114,11 @@ public abstract class Vertex implements SourceComponent, HashableWithSource {
     }
 
     public Stream<Edge> incomingEdges() {
-        return this.getGraph().getIncomingEdges(this).stream();
+        return this.graph.getIncomingEdges(this).stream();
     }
 
     public Stream<Edge> outgoingEdges() {
-        return this.getGraph().getOutgoingEdges(this).stream();
+        return this.graph.getOutgoingEdges(this).stream();
     }
 
     public Stream<Vertex> ancestors() {
@@ -150,10 +160,7 @@ public abstract class Vertex implements SourceComponent, HashableWithSource {
 
         // The lineage can be quite long and we want to avoid the quadratic complexity of string concatenation
         // Thus, in this case there's no real way to get the hash source, we just hash as we go.
-        lineage().
-                map(Vertex::contextualHashSource).
-                sorted().
-                forEachOrdered(v -> {
+        lineage().map(Vertex::contextualHashSource).forEachOrdered(v -> {
                     byte[] bytes = v.getBytes(StandardCharsets.UTF_8);
                     lineageDigest.update(bytes);
                 });
@@ -192,7 +199,7 @@ public abstract class Vertex implements SourceComponent, HashableWithSource {
         return this.contextualHashCache;
     }
 
-    public String individualHashSource() {
+    public final String individualHashSource() {
         if (this.individualHashSourceCache != null) {
             return this.individualHashSourceCache;
         }
@@ -209,7 +216,7 @@ public abstract class Vertex implements SourceComponent, HashableWithSource {
     // a partial leaf.
     public Collection<Edge.EdgeFactory> getUnusedOutgoingEdgeFactories() {
        if (!this.hasOutgoingEdges()) {
-           return Collections.singletonList(new PlainEdge.PlainEdgeFactory());
+           return Collections.singletonList(PlainEdge.factory);
        }
        return Collections.emptyList();
     }
@@ -239,7 +246,7 @@ public abstract class Vertex implements SourceComponent, HashableWithSource {
         // they have no source metadata. This might also be used in the future by alternate config languages which are
         // willing to take the hit.
         if (this.getSourceWithMetadata() != null) {
-            generatedId = Util.digest(this.getGraph().uniqueHash() + "|" + this.getSourceWithMetadata().uniqueHash());
+            generatedId = Util.digest(this.graph.uniqueHash() + "|" + this.getSourceWithMetadata().uniqueHash());
         } else {
             generatedId = this.uniqueHash();
         }

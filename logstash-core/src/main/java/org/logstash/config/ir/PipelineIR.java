@@ -14,7 +14,7 @@ import org.logstash.config.ir.graph.Vertex;
  */
 public final class PipelineIR implements Hashable {
 
-    private String uniqueHash;
+    private final String uniqueHash;
 
     public Graph getGraph() {
         return graph;

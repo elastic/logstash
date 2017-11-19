@@ -119,7 +119,7 @@ public class GraphTest {
     @Test
     public void testThreadingTyped() throws InvalidIRException {
         Graph graph = Graph.empty();
-        Vertex if1 = new IfVertex(null, createTestExpression());
+        Vertex if1 = new IfVertex(createTestExpression());
         Vertex condT = IRHelpers.createTestVertex();
         Edge tEdge = graph.chainVertices(BooleanEdge.trueFactory, if1, condT).stream().findFirst().get();
         assertThat(tEdge, instanceOf(BooleanEdge.class));
