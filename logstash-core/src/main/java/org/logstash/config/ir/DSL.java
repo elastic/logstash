@@ -314,10 +314,10 @@ public class DSL {
 
 
     public static IfVertex gIf(SourceWithMetadata meta, BooleanExpression expression) {
-       return new IfVertex(meta, expression);
+       return new IfVertex(expression);
     }
 
     public static IfVertex gIf(BooleanExpression expression) {
-       return new IfVertex(null, expression);
+       return new IfVertex(expression);
     }
 }

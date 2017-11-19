@@ -18,12 +18,12 @@ import java.util.stream.Stream;
 /**
  * Created by andrewvc on 9/15/16.
  */
-public class Graph implements SourceComponent, Hashable {
-    public final Set<Vertex> vertices = new HashSet<>();
-    private final Set<Edge> edges = new HashSet<>();
-    private Map<Vertex, Integer> vertexRanks = new HashMap<>();
-    private final Map<Vertex,Set<Edge>> outgoingEdgeLookup = new HashMap<>();
-    private final Map<Vertex,Set<Edge>> incomingEdgeLookup = new HashMap<>();
+public final class Graph implements SourceComponent, Hashable {
+    private final Set<Vertex> vertices = new LinkedHashSet<>();
+    private final Set<Edge> edges = new LinkedHashSet<>();
+    private Map<Vertex, Integer> vertexRanks = new LinkedHashMap<>();
+    private final Map<Vertex,Set<Edge>> outgoingEdgeLookup = new LinkedHashMap<>();
+    private final Map<Vertex,Set<Edge>> incomingEdgeLookup = new LinkedHashMap<>();
     private List<Vertex> sortedVertices;
 
     // Builds a graph that has the specified vertices and edges
@@ -79,14 +79,16 @@ public class Graph implements SourceComponent, Hashable {
     }
 
     private Graph addEdge(Edge e, boolean doRefresh) throws InvalidIRException {
-        if (!(this.getVertices().contains(e.getFrom()) && this.getVertices().contains(e.getTo()))) {
+        if (!(vertices.contains(e.getFrom()) && vertices.contains(e.getTo()))) {
             throw new InvalidIRException("Attempted to add edge referencing vertices not in this graph!");
         }
 
         this.edges.add(e);
 
-        BiFunction<Vertex, Set<Edge>, Set<Edge>> lookupComputeFunction = (vertex, edgeSet) -> {
-            if (edgeSet == null) edgeSet = new HashSet<>();
+        final BiFunction<Vertex, Set<Edge>, Set<Edge>> lookupComputeFunction = (vertex, edgeSet) -> {
+            if (edgeSet == null) {
+                edgeSet = new LinkedHashSet<>();
+            }
             edgeSet.add(e);
             return edgeSet;
         };
@@ -114,11 +116,11 @@ public class Graph implements SourceComponent, Hashable {
     // Returns a new graph that is the union of all provided graphs.
     // If a single graph is passed in this will return a copy of it
     public static GraphCombinationResult combine(Graph... graphs) throws InvalidIRException {
-        Map<Vertex, Vertex> oldToNewVertices = new HashMap<>();
-        Map<Edge,Edge> oldToNewEdges = new HashMap<>();
+        Map<Vertex, Vertex> oldToNewVertices = new LinkedHashMap<>();
+        Map<Edge,Edge> oldToNewEdges = new LinkedHashMap<>();
 
         for (Graph graph : graphs) {
-            graph.vertices().forEach(v -> oldToNewVertices.put(v, v.copy()));
+            graph.vertices().forEachOrdered(v -> oldToNewVertices.put(v, v.copy()));
 
             for (Edge e : graph.getEdges()) {
                 Edge copy = e.copy(oldToNewVertices.get(e.getFrom()), oldToNewVertices.get(e.getTo()));
@@ -147,7 +149,7 @@ public class Graph implements SourceComponent, Hashable {
       the other graph's root
     */
     public Graph chain(Graph otherGraph) throws InvalidIRException {
-        if (otherGraph.getVertices().size() == 0) return this.copy();
+        if (otherGraph.vertices.isEmpty()) return this.copy();
         if (this.isEmpty()) return otherGraph.copy();
 
         GraphCombinationResult combineResult = Graph.combine(this, otherGraph);
@@ -305,7 +307,7 @@ public class Graph implements SourceComponent, Hashable {
     // Vertices which are partially leaves in that they support multiple
     // outgoing edge types but only have one or fewer attached
     public Stream<Vertex> allLeaves() {
-        return vertices.stream().filter(Vertex::isPartialLeaf);
+        return vertices().filter(Vertex::isPartialLeaf);
     }
 
     // Get all leaves whether partial or not
@@ -314,7 +316,7 @@ public class Graph implements SourceComponent, Hashable {
     }
 
     public Stream<Vertex> leaves() {
-        return vertices.stream().filter(Vertex::isLeaf);
+        return vertices().filter(Vertex::isLeaf);
     }
 
     public Collection<Vertex> getLeaves() {
@@ -325,13 +327,13 @@ public class Graph implements SourceComponent, Hashable {
         return vertices;
     }
 
-    public Set<Edge> getEdges() {
+    public Collection<Edge> getEdges() {
         return edges;
     }
 
     public String toString() {
         final Stream<Edge> edgesToFormat = sortedEdges();
-        String edgelessVerticesStr;
+        final String edgelessVerticesStr;
         if (this.isolatedVertices().count() > 0) {
             edgelessVerticesStr = "\n== Vertices Without Edges ==\n" +
                     this.isolatedVertices().map(Vertex::toString).collect(Collectors.joining("\n"));
@@ -348,7 +350,7 @@ public class Graph implements SourceComponent, Hashable {
     }
 
     public Stream<Vertex> isolatedVertices() {
-        return this.getVertices().stream().filter(v -> v.getOutgoingEdges().isEmpty() && v.getIncomingEdges().isEmpty());
+        return vertices().filter(v -> v.getOutgoingEdges().isEmpty() && v.getIncomingEdges().isEmpty());
     }
 
     public List<Vertex> getSortedVertices() {
@@ -369,11 +371,8 @@ public class Graph implements SourceComponent, Hashable {
     }
 
     public List<Vertex> getSortedVerticesBetween(Vertex start, Vertex end) {
-        List<Vertex> sortedVertices = getSortedVertices();
-
         int startIndex = start == null ? 0 : sortedVertices.indexOf(start);
         int endIndex = end == null ? sortedVertices.size() : sortedVertices.indexOf(end);
-
         return sortedVertices.subList(startIndex+1, endIndex);
     }
 
@@ -391,11 +390,11 @@ public class Graph implements SourceComponent, Hashable {
 
     // returns true if this graph has a .sourceComponentEquals equivalent edge
     public boolean hasEquivalentEdge(Edge otherE) {
-        return this.getEdges().stream().anyMatch(e -> e.sourceComponentEquals(otherE));
+        return edges().anyMatch(e -> e.sourceComponentEquals(otherE));
     }
 
     public boolean hasEquivalentVertex(Vertex otherV) {
-        return this.getVertices().stream().anyMatch(v -> v.sourceComponentEquals(otherV));
+        return vertices().anyMatch(v -> v.sourceComponentEquals(otherV));
     }
 
     @Override
@@ -404,7 +403,7 @@ public class Graph implements SourceComponent, Hashable {
     }
 
     public boolean isEmpty() {
-        return (this.getVertices().size() == 0);
+        return vertices.isEmpty();
     }
 
     public Stream<Vertex> vertices() {
