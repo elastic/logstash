@@ -24,7 +24,7 @@ public class PluginVertex extends Vertex {
 
     public PluginVertex(SourceWithMetadata meta, PluginDefinition pluginDefinition) {
         // We know that if the ID value exists it will be as a string
-        super(meta, (String) pluginDefinition.getArguments().get("id"));
+        super((String) pluginDefinition.getArguments().get("id"));
         this.meta = meta;
         this.pluginDefinition = pluginDefinition;
     }
@@ -50,7 +50,7 @@ public class PluginVertex extends Vertex {
 
     @Override
     public PluginVertex copy() {
-        return new PluginVertex(meta, getPluginDefinition());
+        return new PluginVertex(meta, pluginDefinition);
     }
 
     @Override
