@@ -20,8 +20,8 @@ public class IfVertex extends Vertex {
 
     private final BooleanExpression booleanExpression;
 
-    public IfVertex(SourceWithMetadata meta, BooleanExpression booleanExpression) {
-        super(meta);
+    public IfVertex(BooleanExpression booleanExpression) {
+        super();
         this.booleanExpression = booleanExpression;
     }
 
@@ -72,8 +72,8 @@ public class IfVertex extends Vertex {
         return getOutgoingEdges().stream().map(e -> (BooleanEdge) e).collect(Collectors.toList());
     }
 
-    public Collection<BooleanEdge> getOutgoingBooleanEdgesByType(Boolean edgeType) {
-        return getOutgoingBooleanEdges().stream().filter(e -> e.getEdgeType().equals(edgeType)).collect(Collectors.toList());
+    public Collection<BooleanEdge> getOutgoingBooleanEdgesByType(boolean edgeType) {
+        return getOutgoingBooleanEdges().stream().filter(e -> e.getEdgeType() == edgeType).collect(Collectors.toList());
     }
 
     // The easiest readable version of this for a human.
@@ -89,7 +89,7 @@ public class IfVertex extends Vertex {
 
     @Override
     public IfVertex copy() {
-        return new IfVertex(getSourceWithMetadata(),getBooleanExpression());
+        return new IfVertex(booleanExpression);
     }
 
     @Override
