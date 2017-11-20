@@ -202,14 +202,16 @@ public class Page implements Closeable {
     }
 
     public void behead() throws IOException {
-        checkpoint();
+        assert this.writable == true : "cannot behead a tail page";
+
+        headPageCheckpoint();
 
         this.writable = false;
         this.lastCheckpoint = new Checkpoint(0, 0, 0, 0, 0);
 
         // first thing that must be done after beheading is to create a new checkpoint for that new tail page
         // tail page checkpoint does NOT includes a fsync
-        checkpoint();
+        tailPageCheckpoint();
     }
 
     /**
