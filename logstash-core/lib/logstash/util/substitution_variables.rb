@@ -1,7 +1,7 @@
 # encoding: utf-8
-module ::LogStash::Util::EnvironmentVariables
+module ::LogStash::Util::SubstitutionVariables
 
-  ENV_PLACEHOLDER_REGEX = /\${(?<name>[a-zA-Z_.][a-zA-Z0-9_.]*)(:(?<default>[^}]*))?}/
+  SUBSTITUTION_PLACEHOLDER_REGEX = /\${(?<name>[a-zA-Z_.][a-zA-Z0-9_.]*)(:(?<default>[^}]*))?}/
 
   # Recursive method to replace environment variable references in parameters
   def deep_replace(value)
@@ -15,17 +15,19 @@ module ::LogStash::Util::EnvironmentVariables
           value[valueArrayIndex] = deep_replace(value[valueArrayIndex])
         end
       else
-        return replace_env_placeholders(value)
+        return replace_placeholders(value)
       end
     end
   end
 
-  # Replace all environment variable references in 'value' param by environment variable value and return updated value
-  # Process following patterns : $VAR, ${VAR}, ${VAR:defaultValue}
-  def replace_env_placeholders(value)
+  # Replace all substitution variable references in the 'value' param and returns the substituted value, or the original value if a substitution can not be made
+  # Process following patterns : ${VAR}, ${VAR:defaultValue}
+  # If value matches the pattern, returns the following precedence : Environment entry value, default value as provided in the pattern
+  # If the value does not match the pattern, the 'value' param returns as-is
+  def replace_placeholders(value)
     return value unless value.is_a?(String)
 
-    value.gsub(ENV_PLACEHOLDER_REGEX) do |placeholder|
+    value.gsub(SUBSTITUTION_PLACEHOLDER_REGEX) do |placeholder|
       # Note: Ruby docs claim[1] Regexp.last_match is thread-local and scoped to
       # the call, so this should be thread-safe.
       #
@@ -39,5 +41,5 @@ module ::LogStash::Util::EnvironmentVariables
       end
       replacement
     end
-  end # def replace_env_placeholders
+  end # def replace_placeholders
 end
