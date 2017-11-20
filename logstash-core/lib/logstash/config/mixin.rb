@@ -34,7 +34,7 @@ LogStash::Environment.load_locale!
 #
 module LogStash::Config::Mixin
   
-  include LogStash::Util::EnvironmentVariables
+  include LogStash::Util::SubstitutionVariables
   
   attr_accessor :config
   attr_accessor :original_params
@@ -144,7 +144,7 @@ module LogStash::Config::Mixin
 
   module DSL
 
-    include LogStash::Util::EnvironmentVariables
+    include LogStash::Util::SubstitutionVariables
 
     attr_accessor :flags
 
