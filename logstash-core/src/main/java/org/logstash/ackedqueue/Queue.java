@@ -369,18 +369,13 @@ public final class Queue implements Closeable {
                 int newHeadPageNum = this.headPage.pageNum + 1;
 
                 if (this.headPage.isFullyAcked()) {
-                    // purge the old headPage because its full and fully acked
-                    // there is no checkpoint file to purge since just creating a new TailPage from a HeadPage does
-                    // not trigger a checkpoint creation in itself
+                    // here we can just purge the data file and avoid beheading since we do not need
+                    // to add this fully hacked page into tailPages. a new head page will just be created.
+                    // TODO: we could possibly reuse the same page file but just rename it?
                     this.headPage.purge();
                     currentByteSize -= this.headPage.getPageIO().getCapacity();
                 } else {
-                    // beheading includes checkpoint+fsync if required
-                    this.headPage.behead();
-                    this.tailPages.add(this.headPage);
-                    if (! this.headPage.isFullyRead()) {
-                        this.unreadTailPages.add(this.headPage);
-                    }
+                    behead();
                 }
 
                 // create new head page
@@ -417,6 +412,28 @@ public final class Queue implements Closeable {
             return seqNum;
         } finally {
             lock.unlock();
+        }
+    }
+
+    /**
+     * mark head page as read-only (behead) and add it to the tailPages and unreadTailPages collections accordingly
+     * also deactivate it if it's not next-in-line for reading
+     * @throws IOException
+     */
+    private void behead() throws IOException {
+        // beheading includes checkpoint+fsync if required
+        this.headPage.behead();
+        this.tailPages.add(this.headPage);
+
+        if (! this.headPage.isFullyRead()) {
+            if (!this.unreadTailPages.isEmpty()) {
+                // there are already other unread pages so this new one is not next in line and we can deactivate
+                this.headPage.deactivate();
+            }
+            this.unreadTailPages.add(this.headPage);
+        } else {
+            // it is fully read so we can deactivate
+            this.headPage.deactivate();
         }
     }
 
@@ -496,8 +513,8 @@ public final class Queue implements Closeable {
     public Batch nonBlockReadBatch(int limit) throws IOException {
         lock.lock();
         try {
-            Page p = firstUnreadPage();
-            return (p == null) ? null : _readPageBatch(p, limit, 0L);
+            Page p = nextReadPage();
+            return (isHeadPage(p) && p.isFullyRead()) ? null : _readPageBatch(p, limit, 0L);
         } finally {
             lock.unlock();
         }
@@ -511,31 +528,9 @@ public final class Queue implements Closeable {
      * @throws IOException
      */
     public Batch readBatch(int limit, long timeout) throws IOException {
-        Page p;
-
         lock.lock();
         try {
-            if ((p = firstUnreadPage()) == null) {
-                // wait only if queue is empty
-                try {
-                    notEmpty.await(timeout, TimeUnit.MILLISECONDS);
-                } catch (InterruptedException e) {
-                    // the thread interrupt() has been called while in the await() blocking call.
-                    // at this point the interrupted flag is reset and Thread.interrupted() will return false
-                    // to any upstream calls on it. for now our choice is to simply return null and set back
-                    // the Thread.interrupted() flag so it can be checked upstream.
-
-                    // set back the interrupted flag
-                    Thread.currentThread().interrupt();
-
-                    return null;
-                }
-
-                // if after returning from wait queue is still empty, or the queue was closed return null
-                if ((p = firstUnreadPage()) == null || isClosed()) { return null; }
-            }
-
-            return _readPageBatch(p, limit, timeout);
+            return _readPageBatch(nextReadPage(), limit, timeout);
         } finally {
             lock.unlock();
         }
@@ -547,54 +542,49 @@ public final class Queue implements Closeable {
         final LongVector seqNums = new LongVector(limit);
 
         do {
-            boolean wasFull = isFull();
-
-            final SequencedList<byte[]> serialized = p.read(left);
-            int n = serialized.getElements().size();
-            elements.addAll(serialized.getElements());
-            seqNums.add(serialized.getSeqNums());
-
-            this.unreadCount -= n;
-            left -= n;
-
-            if (wasFull) {
-                notFull.signalAll();
-            }
-
-            if (left == 0) {
-                 break;
-            }
-            if (p != this.headPage && p.isFullyRead()) {
-                break;
-            }
-
-            if (p == this.headPage) {
-                if (p.isFullyRead()) {
-                    try {
-                        notEmpty.await(timeout, TimeUnit.MILLISECONDS);
-                    } catch (InterruptedException e) {
-                        // the thread interrupt() has been called while in the await() blocking call.
-                        // at this point the interrupted flag is reset and Thread.interrupted() will return false
-                        // to any upstream calls on it. for now our choice is to simply return null and set back
-                        // the Thread.interrupted() flag so it can be checked upstream.
-
-                        // set back the interrupted flag
-                        Thread.currentThread().interrupt();
-
-                        break;
-                    }
-                    if (p.isFullyRead()) {
-                        break;
-                    }
+            if (isHeadPage(p) && p.isFullyRead()) {
+                // a head page can be written to so let's wait for more data
+                try {
+                    notEmpty.await(timeout, TimeUnit.MILLISECONDS);
+                } catch (InterruptedException e) {
+                    // set back the interrupted flag
+                    Thread.currentThread().interrupt();
+                    break;
                 }
+
+                if ((isHeadPage(p) && p.isFullyRead()) || isClosed()) {
+                    // we either hit the timeout or the queue was closed
+                    break;
+                }
+            }
+
+            if (!p.isFullyRead()) {
+                boolean wasFull = isFull();
+
+                final SequencedList<byte[]> serialized = p.read(left);
+                int n = serialized.getElements().size();
+                assert n > 0 : "page read returned 0 elements";
+                elements.addAll(serialized.getElements());
+                seqNums.add(serialized.getSeqNums());
+
+                this.unreadCount -= n;
+                left -= n;
+
+                if (wasFull) {
+                    notFull.signalAll();
+                }
+            }
+
+            if (isTailPage(p) && p.isFullyRead()) {
+                break;
             }
         } while (left > 0);
 
-        if (p != this.headPage && p.isFullyRead()) {
+        if (isTailPage(p) && p.isFullyRead()) {
             removeUnreadPage(p);
         }
 
-        return new Batch(elements, seqNums, this);
+        return (left >= limit) ? null :  new Batch(elements, seqNums, this);
     }
 
     private static class TailPageResult {
@@ -765,22 +755,28 @@ public final class Queue implements Closeable {
         }
     }
 
-    public Page firstUnreadPage() {
+    /**
+     * return the {@link Page} for the next read operation.
+     * @return {@link Page} will be either a read-only tail page or the head page.
+     */
+    public Page nextReadPage() {
         lock.lock();
         try {
             // look at head page if no unreadTailPages
-            return (this.unreadTailPages.isEmpty()) ? (this.headPage.isFullyRead() ? null : this.headPage) : this.unreadTailPages.get(0);
+            return (this.unreadTailPages.isEmpty()) ?  this.headPage : this.unreadTailPages.get(0);
         } finally {
             lock.unlock();
         }
     }
 
     private void removeUnreadPage(Page p) {
-        // HeadPage is not part of the unreadTailPages, just ignore
-        if (p != this.headPage) {
-            // the page to remove should always be the first one
-            assert this.unreadTailPages.get(0) == p : String.format("unread page is not first in unreadTailPages list");
-            this.unreadTailPages.remove(0);
+        if (! this.unreadTailPages.isEmpty()) {
+            Page firstUnread = this.unreadTailPages.get(0);
+            assert p.pageNum <= firstUnread.pageNum : String.format("fully read pageNum=%d is greater than first unread pageNum=%d", p.pageNum, firstUnread.pageNum);
+            if (firstUnread == p) {
+                // it is possible that when starting to read from a head page which is beheaded will not be inserted in the unreadTailPages list
+                this.unreadTailPages.remove(0);
+            }
         }
     }
 
@@ -821,5 +817,21 @@ public final class Queue implements Closeable {
 
     private boolean isClosed() {
         return this.closed.get();
+    }
+
+    /**
+     * @param p the {@link Page} to verify if it is the head page
+     * @return true if the given {@link Page} is the head page
+     */
+    private boolean isHeadPage(Page p) {
+        return p == this.headPage;
+    }
+
+    /**
+     * @param p the {@link Page} to verify if it is a tail page
+     * @return true if the given {@link Page} is a tail page
+     */
+    private boolean isTailPage(Page p) {
+        return !isHeadPage(p);
     }
 }
