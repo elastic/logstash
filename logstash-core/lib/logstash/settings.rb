@@ -2,13 +2,13 @@
 require "logstash/util/loggable"
 require "fileutils"
 require "logstash/util/byte_value"
-require "logstash/util/environment_variables"
+require "logstash/util/substitution_variables"
 require "logstash/util/time_value"
 
 module LogStash
   class Settings
 
-    include LogStash::Util::EnvironmentVariables
+    include LogStash::Util::SubstitutionVariables
     
     def initialize
       @settings = {}

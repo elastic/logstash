@@ -1,6 +1,6 @@
 # encoding: utf-8
 require "spec_helper"
-require "logstash/util/environment_variables"
+require "logstash/util/substitution_variables"
 require "logstash/settings"
 require "fileutils"
 
