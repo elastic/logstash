@@ -1,7 +1,6 @@
 package org.logstash.secret.store;
 
 import java.nio.CharBuffer;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 

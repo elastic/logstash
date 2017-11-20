@@ -15,17 +15,7 @@ public class SecretStoreException extends RuntimeException {
         super(message);
     }
 
-    static public class NotLogstashKeyStore extends SecretStoreException {
-        public NotLogstashKeyStore(String message) {
-            super(message);
-        }
-
-        public NotLogstashKeyStore(String message, Throwable cause) {
-            super(message, cause);
-        }
-    }
-
-    static public class RetrievalException extends SecretStoreException {
+      static public class RetrievalException extends SecretStoreException {
         public RetrievalException(SecretIdentifier secretIdentifier, Throwable cause) {
             super(String.format("Error while trying to retrieve secret %s", secretIdentifier.toExternalForm()), cause);
         }
@@ -49,6 +39,10 @@ public class SecretStoreException extends RuntimeException {
     static public class LoadException extends SecretStoreException {
         public LoadException(String message, Throwable cause) {
             super(message, cause);
+        }
+
+        public LoadException(String message) {
+            super(message);
         }
     }
 
@@ -85,6 +79,19 @@ public class SecretStoreException extends RuntimeException {
             super(message);
         }
     }
+
+    static public class AlreadyExistsException extends SecretStoreException {
+        public AlreadyExistsException(String message) {
+            super(message);
+        }
+    }
+
+    static public class InvalidConfigurationException extends SecretStoreException {
+        public InvalidConfigurationException(String message) {
+            super(message);
+        }
+    }
+
 
 
 }
