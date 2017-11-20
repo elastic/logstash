@@ -10,6 +10,7 @@ require "logstash/namespace"
 require "logstash-core/logstash-core"
 require "logstash/environment"
 require "logstash/modules/cli_parser"
+require "logstash/util/settings_helper"
 
 LogStash::Environment.load_locale!
 
@@ -30,12 +31,8 @@ java_import 'org.logstash.FileLockFactory'
 
 class LogStash::Runner < Clamp::StrictCommand
   include LogStash::Util::Loggable
-  # The `path.settings` and `path.logs` need to be defined in the runner instead of the `logstash-core/lib/logstash/environment.rb`
-  # because the `Environment::LOGSTASH_HOME` doesn't exist in the context of the `logstash-core` gem.
-  #
-  # See issue https://github.com/elastic/logstash/issues/5361
-  LogStash::SETTINGS.register(LogStash::Setting::String.new("path.settings", ::File.join(LogStash::Environment::LOGSTASH_HOME, "config")))
-  LogStash::SETTINGS.register(LogStash::Setting::String.new("path.logs", ::File.join(LogStash::Environment::LOGSTASH_HOME, "logs")))
+
+  LogStash::Util::SettingsHelper.pre_process
 
   # Ordered list of check to run before starting logstash
   # theses checks can be changed by a plugin loaded into memory.
@@ -213,35 +210,12 @@ class LogStash::Runner < Clamp::StrictCommand
   end
 
   def run(args)
-    settings_path = fetch_settings_path(args)
-
-    @settings.set("path.settings", settings_path) if settings_path
-
-    begin
-      LogStash::SETTINGS.from_yaml(LogStash::SETTINGS.get("path.settings"))
-    rescue Errno::ENOENT
-      $stderr.puts "WARNING: Could not find logstash.yml which is typically located in $LS_HOME/config or /etc/logstash. You can specify the path using --path.settings. Continuing using the defaults"
-    rescue => e
-      # abort unless we're just looking for the help
-      unless cli_help?(args)
-        if e.kind_of?(Psych::Exception)
-          yaml_file_path = ::File.join(LogStash::SETTINGS.get("path.settings"), "logstash.yml")
-          $stderr.puts "ERROR: Failed to parse YAML file \"#{yaml_file_path}\". Please confirm if the YAML structure is valid (e.g. look for incorrect usage of whitespace or indentation). Aborting... parser_error=>#{e.message}"
-        else
-          $stderr.puts "ERROR: Failed to load settings file from \"path.settings\". Aborting... path.setting=#{LogStash::SETTINGS.get("path.settings")}, exception=#{e.class}, message=>#{e.message}"
-        end
-        return 1
-      end
-    end
-
+    return 1 unless LogStash::Util::SettingsHelper.from_yaml(args)
     super(*[args])
   end
 
   def execute
-    # Only when execute is have the CLI options been added to the @settings
-    # We invoke post_process to apply extra logic to them.
-    # The post_process callbacks have been added in environment.rb
-    @settings.post_process
+    LogStash::Util::SettingsHelper.post_process
 
     require "logstash/util"
     require "logstash/util/java_version"
@@ -503,30 +477,6 @@ class LogStash::Runner < Clamp::StrictCommand
 
   def setting(key)
     @settings.get_value(key)
-  end
-
-  # where can I find the logstash.yml file?
-  # 1. look for a "--path.settings path"
-  # 2. look for a "--path.settings=path"
-  # 3. check if the LS_SETTINGS_DIR environment variable is set
-  # 4. return nil if not found
-  def fetch_settings_path(cli_args)
-    if i=cli_args.find_index("--path.settings")
-      cli_args[i+1]
-    elsif settings_arg = cli_args.find {|v| v.match(/--path.settings=/) }
-      match = settings_arg.match(/--path.settings=(.*)/)
-      match[1]
-    elsif ENV['LS_SETTINGS_DIR']
-      ENV['LS_SETTINGS_DIR']
-    else
-      nil
-    end
-  end
-
-  # is the user asking for CLI help subcommand?
-  def cli_help?(args)
-    # I know, double negative
-    !(["--help", "-h"] & args).empty?
   end
 
 end
