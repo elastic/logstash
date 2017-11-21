@@ -150,6 +150,11 @@ similar directory layout.
   | `/usr/share/logstash/plugins`
   | `path.plugins`
 
+| data
+  | Data files used by logstash and its plugins for any persistent needs.
+  | `/usr/share/logstash/data`
+  | `path.data`
+
 |=======================================================================
 
 NOTE: Logstash Docker containers do not create log files by default. They log
