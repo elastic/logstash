@@ -8,7 +8,7 @@ import org.logstash.ackedqueue.io.CheckpointIO;
 import org.logstash.ackedqueue.io.LongVector;
 import org.logstash.ackedqueue.io.PageIO;
 
-public class Page implements Closeable {
+public final class Page implements Closeable {
     protected final int pageNum;
     protected long minSeqNum; // TODO: see if we can make it final?
     protected int elementCount;
@@ -51,7 +51,7 @@ public class Page implements Closeable {
 
         SequencedList<byte[]> serialized = this.pageIO.read(this.firstUnreadSeqNum, limit);
         assert serialized.getSeqNums().get(0) == this.firstUnreadSeqNum :
-                String.format("firstUnreadSeqNum=%d != first result seqNum=%d", this.firstUnreadSeqNum, serialized.getSeqNums().get(0));
+            String.format("firstUnreadSeqNum=%d != first result seqNum=%d", this.firstUnreadSeqNum, serialized.getSeqNums().get(0));
 
         this.firstUnreadSeqNum += serialized.getElements().size();
 
@@ -60,7 +60,7 @@ public class Page implements Closeable {
 
     public void write(byte[] bytes, long seqNum, int checkpointMaxWrites) throws IOException {
         if (! this.writable) {
-            throw new IOException(String.format("page=%d is not writable", this.pageNum));
+            throw new IllegalStateException(String.format("page=%d is not writable", this.pageNum));
         }
 
         this.pageIO.write(bytes, seqNum);

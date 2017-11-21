@@ -2,9 +2,10 @@ package org.logstash.ackedqueue;
 
 import org.logstash.ackedqueue.io.PageIO;
 
+import java.io.IOException;
 import java.util.BitSet;
 
-public class PageFactory {
+class PageFactory {
 
     /**
      * create a new head page object and new page.{@literal {pageNum}} empty valid data file
@@ -26,8 +27,8 @@ public class PageFactory {
      * @param pageIO the {@link PageIO} delegate
      * @return {@link Page} the new head page
      */
-    public static Page newHeadPage(Checkpoint checkpoint, Queue queue, PageIO pageIO) {
-        Page p = new Page(
+    public static Page newHeadPage(Checkpoint checkpoint, Queue queue, PageIO pageIO) throws IOException {
+        final Page p = new Page(
                 checkpoint.getPageNum(),
                 queue,
                 checkpoint.getMinSeqNum(),
@@ -37,16 +38,20 @@ public class PageFactory {
                 pageIO,
                 true
         );
+        try {
+            assert checkpoint.getMinSeqNum() == pageIO.getMinSeqNum() && checkpoint.getElementCount() == pageIO.getElementCount() :
+                    String.format("checkpoint minSeqNum=%d or elementCount=%d is different than pageIO minSeqNum=%d or elementCount=%d", checkpoint.getMinSeqNum(), checkpoint.getElementCount(), pageIO.getMinSeqNum(), pageIO.getElementCount());
 
-        assert checkpoint.getMinSeqNum() == pageIO.getMinSeqNum() && checkpoint.getElementCount() == pageIO.getElementCount() :
-                String.format("checkpoint minSeqNum=%d or elementCount=%d is different than pageIO minSeqNum=%d or elementCount=%d", checkpoint.getMinSeqNum(), checkpoint.getElementCount(), pageIO.getMinSeqNum(), pageIO.getElementCount());
+            // this page ackedSeqNums bitset is a new empty bitset, if we have some acked elements, set them in the bitset
+            if (checkpoint.getFirstUnackedSeqNum() > checkpoint.getMinSeqNum()) {
+                p.ackedSeqNums.flip(0, (int) (checkpoint.getFirstUnackedSeqNum() - checkpoint.getMinSeqNum()));
+            }
 
-        // this page ackedSeqNums bitset is a new empty bitset, if we have some acked elements, set them in the bitset
-        if (checkpoint.getFirstUnackedSeqNum() > checkpoint.getMinSeqNum()) {
-            p.ackedSeqNums.flip(0, (int) (checkpoint.getFirstUnackedSeqNum() - checkpoint.getMinSeqNum()));
+            return p;
+        } catch (Exception e) {
+            p.close();
+            throw e;
         }
-
-        return p;
     }
 
     /**
@@ -57,8 +62,8 @@ public class PageFactory {
      * @param pageIO the {@link PageIO} delegate
      * @return {@link Page} the new tail page
      */
-    public static Page newTailPage(Checkpoint checkpoint, Queue queue, PageIO pageIO) {
-        Page p = new Page(
+    public static Page newTailPage(Checkpoint checkpoint, Queue queue, PageIO pageIO) throws IOException {
+        final Page p = new Page(
                 checkpoint.getPageNum(),
                 queue,
                 checkpoint.getMinSeqNum(),
@@ -69,12 +74,17 @@ public class PageFactory {
                 false
         );
 
-        // this page ackedSeqNums bitset is a new empty bitset, if we have some acked elements, set them in the bitset
-        if (checkpoint.getFirstUnackedSeqNum() > checkpoint.getMinSeqNum()) {
-            p.ackedSeqNums.flip(0, (int) (checkpoint.getFirstUnackedSeqNum() - checkpoint.getMinSeqNum()));
-        }
+        try {
+            // this page ackedSeqNums bitset is a new empty bitset, if we have some acked elements, set them in the bitset
+            if (checkpoint.getFirstUnackedSeqNum() > checkpoint.getMinSeqNum()) {
+                p.ackedSeqNums.flip(0, (int) (checkpoint.getFirstUnackedSeqNum() - checkpoint.getMinSeqNum()));
+            }
 
-        return p;
+            return p;
+        } catch (Exception e) {
+            p.close();
+            throw e;
+        }
     }
 
 }
