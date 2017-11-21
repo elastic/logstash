@@ -84,7 +84,7 @@ public class HeadPageTest {
             assertThat(p.isEmpty(), is(true));
             p.write(element.serialize(), 1, 1);
             assertThat(p.isEmpty(), is(false));
-            Batch b = q.readBatch(1);
+            Batch b = q.readBatch(1, Queue.TIMEOUT_SECOND);
             assertThat(p.isEmpty(), is(false));
             b.close();
             assertThat(p.isEmpty(), is(true));

@@ -75,7 +75,7 @@ public class Concurrent {
 
             try {
                 while (consumedCount < ELEMENT_COUNT) {
-                    Batch b = q.readBatch(BATCH_SIZE);
+                    Batch b = q.readBatch(BATCH_SIZE, Queue.TIMEOUT_SECOND);
 //                    if (b.getElements().size() < BATCH_SIZE) {
 //                        System.out.println("read small batch=" + b.getElements().size());
 //                    } else {
@@ -129,7 +129,7 @@ public class Concurrent {
             consumers.add(new Thread(() -> {
                 try {
                     while (output.size() < ELEMENT_COUNT) {
-                        Batch b = q.readBatch(BATCH_SIZE);
+                        Batch b = q.readBatch(BATCH_SIZE, Queue.TIMEOUT_SECOND);
 //                        if (b.getElements().size() < BATCH_SIZE) {
 //                            System.out.println("read small batch=" + b.getElements().size());
 //                        } else {
