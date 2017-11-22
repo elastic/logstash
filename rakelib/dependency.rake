@@ -9,7 +9,7 @@ namespace "dependency" do
   end # task rbx-stdlib
 
   task "archive-tar-minitar" do
-    Rake::Task["gem:require"].invoke("minitar", "0.5.4")
+    Rake::Task["gem:require"].invoke("minitar", "0.6.1")
   end # task archive-minitar
 
   task "stud" do
