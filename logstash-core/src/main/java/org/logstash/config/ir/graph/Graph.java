@@ -156,8 +156,8 @@ public final class Graph implements SourceComponent, Hashable {
 
         // Build these lists here since we do mutate the graph in place later
         // This isn't strictly necessary, but makes things less confusing
-        Collection<Vertex> fromLeaves = allLeaves().map(combineResult.oldToNewVertices::get).collect(Collectors.toSet());
-        Collection<Vertex> toRoots = otherGraph.roots().map(combineResult.oldToNewVertices::get).collect(Collectors.toSet());
+        Collection<Vertex> fromLeaves = allLeaves().map(combineResult.oldToNewVertices::get).collect(Collectors.toList());
+        Collection<Vertex> toRoots = otherGraph.roots().map(combineResult.oldToNewVertices::get).collect(Collectors.toList());
 
         return combineResult.graph.chain(fromLeaves, toRoots);
     }
