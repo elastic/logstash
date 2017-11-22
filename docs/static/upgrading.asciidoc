@@ -68,7 +68,13 @@ If you are installing Logstash with other components in the Elastic Stack, also 
 
 ==== Logstash 6.0.0 `document_type` Handling Bug
 
-We’d like to alert users to a bug in Logstash 6.0.0 that can cause errors writing to Elasticsearch 6.0+ clusters. When the `type` field is set to more than one value per Elasticsearch index Logstash will encounter errors while indexing documents. Logstash 6.0 uses the value of the `type` field to set the Elasticsearch `type` by default. Elasticsearch 6 [no longer supports more than one type]((https://www.elastic.co/guide/en/elasticsearch/reference/current/removal-of-types.html) per index. In Logstash 6.0.1 we will fix this bug by changing the behavior so that when communicating with an Elasticsearch 6.0+ cluster Logstash will not set the document type by default, but rather, will set it to the value `doc`, regardless of whether an event’s `[type]` field has been set. The type information of a document will still be available under the field `type`.
+We’d like to alert users to a bug in Logstash 6.0.0 that can cause errors writing to Elasticsearch 6.0+ clusters. When the `type` field has different values for different events per Elasticsearch index Logstash will encounter errors while indexing documents. These errols look something like the example below, which has been shortened from the full message.
+
+
+`[2017-11-21T14:26:01,991][WARN ][logstash.outputs.elasticsearch] Could not index event to Elasticsearch. {:status=>400,  :response=>{"error"=>{"reason"=>"Rejecting mapping update to [myindex] as the final mapping would have more than 1 type: [type1, type2]"}}}}`
+
+
+ Logstash 6.0 uses the value of the `type` field to set the Elasticsearch `type` by default. Elasticsearch 6 [no longer supports more than one type]((https://www.elastic.co/guide/en/elasticsearch/reference/current/removal-of-types.html) per index. In Logstash 6.0.1 we will fix this bug by changing the behavior so that when communicating with an Elasticsearch 6.0+ cluster Logstash will not set the document type by default, but rather, will set it to the value `doc`, regardless of whether an event’s `[type]` field has been set. The type information of a document will still be available under the field `type`.
 
 The workaround for Logstash 6.0.0 is to add the setting `document_type => doc` to the Elasticsearch output configuration.
 
@@ -78,7 +84,7 @@ Please read on for more information about document types with Logstash and Elast
 
 As of Elasticsearch 6.0 document types are [on the way out](https://www.elastic.co/guide/en/elasticsearch/reference/current/removal-of-types.html) with only a single mapping type per index supported. For Logstash users this means transitioning to using the `type` field inside of the document instead of the document type. The effect is the same, but the usage is slightly different. This may mean reconfiguring existing Kibana dashboards to use this new field in lieu of the document type.
 
-If you are using the default mapping templates in Logstash you will need to upgrade your mapping templates. To do this, after migrating Elasticsearch to 6.0, you must override the existing template with the 6.x template. This can be done by starting a pipeline with the `overwrite_template => true` option in the Elasticsearch output definition in the Logstash config.
+If you are using the default mapping templates in Logstash you will need to upgrade your mapping templates. To do this, after migrating Elasticsearch to 6.0, you must override the existing template with the 6.x template. This can be done by ensuring that all configured Elasticsearch outputs have the following setting included: `overwrite_template => true`.
 
 ==== When to Upgrade
 
