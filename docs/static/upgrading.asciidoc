@@ -66,7 +66,7 @@ Before upgrading Logstash, remember to read the <<breaking-changes,breaking chan
 If you are installing Logstash with other components in the Elastic Stack, also see the
 {stack-ref}/index.html[Elastic Stack installation and upgrade documentation].
 
-==== Logstash 6.0.0 `document_type` Handling Bug
+==== Issue with Logstash 6.0.0 `document_type` when writing to Elasticsearch 6.x
 
 We’d like to alert users to behavior in Logstash 6.0.0 that can cause errors writing to Elasticsearch 6.0+ clusters. When the `type` field has different values for different events per Elasticsearch index Logstash will encounter errors while indexing documents. These errors look something like the example below, which has been shortened from the full message. This bug is likely to be encountered by users using either Beats, or multiple inputs with different `type` values.
 
