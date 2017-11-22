@@ -72,7 +72,7 @@ We’d like to alert users to behavior in Logstash 6.0.0 that can cause errors w
 
 `[2017-11-21T14:26:01,991][WARN ][logstash.outputs.elasticsearch] Could not index event to Elasticsearch. {:status=>400,  :response=>{"error"=>{"reason"=>"Rejecting mapping update to [myindex] as the final mapping would have more than 1 type: [type1, type2]"}}}}`
 
-The workaround for Logstash 6.0.0 is to add the setting `document_type => doc` to the Elasticsearch output configuration. Logstash 6.0.1+ will not require this workaround as that will become the new default behavior for Logstash when communicating with Elasticsearch 6.0+.
+The workaround for Logstash 6.0.0 is to add the setting `document_type => doc` to the Elasticsearch output configuration. We will issue a patch to address this issue soon in a new version of Logstash. 
 
 Logstash has historically used the value of the `type` field to set the Elasticsearch `type` by default. Elasticsearch 6 [no longer supports more than one type]((https://www.elastic.co/guide/en/elasticsearch/reference/current/removal-of-types.html) per index. This is why the new behavior will only be applied to Elasticsearch 6.0 + clusters with our upcoming fixes.
 
