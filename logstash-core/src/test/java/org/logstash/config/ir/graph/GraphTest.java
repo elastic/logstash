@@ -83,10 +83,11 @@ public class GraphTest {
 
     @Test
     public void complexConsistencyTest() throws InvalidIRException {
-        Graph g1 = IRHelpers.samplePipeline().getGraph();
-        Graph g2 = IRHelpers.samplePipeline().getGraph();
-
-        assertEquals(g1.uniqueHash(), g2.uniqueHash());
+        for (int i = 0; i < 10; ++i) {
+            Graph g1 = IRHelpers.samplePipeline().getGraph();
+            Graph g2 = IRHelpers.samplePipeline().getGraph();
+            assertEquals(g1.uniqueHash(), g2.uniqueHash());
+        }
     }
 
     @Test
