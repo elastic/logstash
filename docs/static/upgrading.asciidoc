@@ -68,21 +68,33 @@ If you are installing Logstash with other components in the Elastic Stack, also 
 
 ==== Issue with Logstash 6.0.0 `document_type` when writing to Elasticsearch 6.x
 
-We’d like to alert users to behavior in Logstash 6.0.0 that can cause errors writing to Elasticsearch 6.0+ clusters. When the `type` field has different values for different events per Elasticsearch index Logstash will encounter errors while indexing documents. These errors look something like the example below, which has been shortened from the full message. This bug is likely to be encountered by users using either Beats, or multiple inputs with different `type` values.
+We’d like to alert users to behavior in Logstash 6.0.0 that can cause errors when writing to Elasticsearch 6.0+ clusters. When Logstash attempts to index events that result in multiple `type` values, Logstash encounters indexing errors. These errors look similar to the following example, which has been shortened from the full message:
 
-`[2017-11-21T14:26:01,991][WARN ][logstash.outputs.elasticsearch] Could not index event to Elasticsearch. {:status=>400,  :response=>{"error"=>{"reason"=>"Rejecting mapping update to [myindex] as the final mapping would have more than 1 type: [type1, type2]"}}}}`
+[source,shell]
+----
+[2017-11-21T14:26:01,991][WARN ][logstash.outputs.elasticsearch] Could not index
+event to Elasticsearch.{:status=>400,  :response=>{"error"=>{"reason"=>"Rejecting
+mapping update to [myindex] as the final mapping would have more than 1 type:
+[type1, type2]"}}}}
+----
 
-The workaround for Logstash 6.0.0 is to add the setting `document_type => doc` to the Elasticsearch output configuration. We will issue a patch to address this issue soon in a new version of Logstash. 
+Users are likely to encounter this error when Logstash is receiving data from:
 
-Logstash has historically used the value of the `type` field to set the Elasticsearch `type` by default. Elasticsearch 6 [no longer supports more than one type]((https://www.elastic.co/guide/en/elasticsearch/reference/current/removal-of-types.html) per index. This is why the new behavior will only be applied to Elasticsearch 6.0 + clusters with our upcoming fixes.
+* multiple types of Beats
+* instances of Filebeat tailing mutliple files with different types
+* multiple Logstash inputs that specify different `type` values
+
+To work around this problem in Logstash 6.0.0, add the setting `document_type => doc` to the Elasticsearch output configuration. We will issue a patch to address this issue soon in a new version of Logstash. 
+
+Logstash has historically used the value of the `type` field to set the Elasticsearch `type` by default. Elasticsearch 6.0 https://www.elastic.co/guide/en/elasticsearch/reference/6.0/removal-of-types.html[no longer supports more than one type] per index. This is why the new behavior will only be applied to Elasticsearch 6.0+ clusters with our upcoming fixes.
 
 Please read on for more information about document types with Logstash and Elasticsearch 6.0
 
 ==== Handling Document Types in Elasticsearch 6.0+
 
-As of Elasticsearch 6.0 document types are [on the way out](https://www.elastic.co/guide/en/elasticsearch/reference/current/removal-of-types.html) with only a single mapping type per index supported. For Logstash users this means transitioning to using the `type` field inside of the document instead of the document type. The effect is the same, but the usage is slightly different. This may mean reconfiguring existing Kibana dashboards to use this new field in lieu of the document type.
+As of Elasticsearch 6.0, document types are https://www.elastic.co/guide/en/elasticsearch/reference/6.0/removal-of-types.html[on the way out], and only a single mapping type per index is supported. For Logstash users this means transitioning to using the `type` field inside of the document instead of the document type. The effect is the same, but the usage is slightly different. This may mean reconfiguring existing Kibana dashboards to use the new `type` field instead of the document type.
 
-If you are using the default mapping templates in Logstash you will need to upgrade your mapping templates. To do this, after migrating Elasticsearch to 6.0, you must override the existing template with the 6.x template. This can be done by ensuring that all configured Elasticsearch outputs have the following setting included: `overwrite_template => true`.
+If you are using the default mapping templates in Logstash, you will need to upgrade your mapping templates. To do this, after migrating Elasticsearch to 6.0, you must override the existing template with the 6.x template. This can be done by ensuring that all configured Elasticsearch outputs have the following setting specified: `overwrite_template => true`.
 
 ==== When to Upgrade
 
