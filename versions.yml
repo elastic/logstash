@@ -6,8 +6,8 @@ logstash-core-plugin-api: 2.1.16
 # jruby must reference a *released* version of jruby which can be downloaded from the official download url
 # *and* for which jars artifacts are published for compile-time
 jruby:
-  version: 9.1.14.0
-  sha1: 56cd68e5ac1324ab56e2e86a57a0154f8142bde2
+  version: 9.1.13.0
+  sha1: 815bac27d5daa1459a4477d6d80584f007ce6a68
 
 # jruby-runtime-override, if specified, will override the jruby version installed in vendor/jruby for logstash runtime only,
 # not for the compile-time jars
