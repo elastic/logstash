@@ -7,11 +7,6 @@ module LogStash
   class Timestamp
     include Comparable
 
-    # TODO (colin) implement in Java
-    def <=>(other)
-      self.time <=> other.time
-    end
-
     def eql?(other)
       self.== other
     end

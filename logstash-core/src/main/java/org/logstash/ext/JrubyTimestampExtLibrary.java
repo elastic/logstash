@@ -211,6 +211,16 @@ public final class JrubyTimestampExtLibrary {
             return RubyFixnum.newFixnum(context.runtime, this.timestamp.getTime().getYear());
         }
 
+        @JRubyMethod(name = "<=>", required = 1)
+        public IRubyObject op_cmp(final ThreadContext context, final IRubyObject other) {
+            if (other instanceof JrubyTimestampExtLibrary.RubyTimestamp) {
+                return ((RubyTime) ruby_time(context)).op_cmp(
+                    context, ((JrubyTimestampExtLibrary.RubyTimestamp) other).ruby_time(context)
+                );
+            }
+            return context.nil;
+        }
+
         private static RubyTimestamp fromRString(final Ruby runtime, final RubyString string) {
             return RubyTimestamp.newRubyTimestamp(runtime, new Timestamp(string.toString()));
         }
