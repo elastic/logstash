@@ -36,6 +36,11 @@ describe LogStash::Timestamp do
       expect{LogStash::Timestamp.new("foobar")}.to raise_error
     end
 
+    it "compares to any type" do
+      t = LogStash::Timestamp.new
+      expect(t == '-').to be_falsey
+    end
+
   end
 
 end
