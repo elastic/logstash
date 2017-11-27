@@ -110,7 +110,7 @@ You can further refine the behavior of the Logstash Netflow module by specifying
 settings in the `logstash.yml` settings file, or overriding settings at the
 command line.
 
-For example, the following configuration in the `settings.yml` file sets
+For example, the following configuration in the `logstash.yml` file sets
 Logstash to listen on port 9996 for network traffic data:
 [source,yaml]
 -----
