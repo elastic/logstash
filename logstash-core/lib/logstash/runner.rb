@@ -465,7 +465,10 @@ class LogStash::Runner < Clamp::StrictCommand
     Stud::trap("INT") do
       if @interrupted_once
         logger.fatal(I18n.t("logstash.agent.forced_sigint"))
-        exit(1)
+        # calling just Kernel.exit only raises SystemExit exception
+        # and doesn't guarantee the process will terminate
+        # We must call Kernel.exit! so java.lang.System.exit is called
+        exit!(1)
       else
         logger.warn(I18n.t("logstash.agent.sigint"))
         Thread.new(logger) {|lg| sleep 5; lg.warn(I18n.t("logstash.agent.slow_shutdown")) }
