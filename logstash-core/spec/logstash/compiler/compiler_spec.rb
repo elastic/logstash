@@ -221,6 +221,62 @@ describe LogStash::Compiler do
         it "should merge the contents of the individual directives" do
           expect(c_plugin).to ir_eql(j.iPlugin(FILTER, "grok", expected_plugin_args))
         end
+
+        describe "a filter plugin that has nested Hash directives" do
+          let(:source) { "input { } filter { #{plugin_source} } output { } " }
+          let(:plugin_source) do
+            <<-FILTER
+              matryoshka {
+                key => "%{host}"
+                filter_options => {
+                  string  => "string"
+                  integer => 3
+                  nested  => { # <-- This is nested hash!
+                    string  => "nested-string"
+                    integer => 7
+                    "quoted-key-string" => "nested-quoted-key-string"
+                    "quoted-key-integer" => 31
+                    deep    => { # <-- This is deeper nested hash!
+                      string  => "deeply-nested-string"
+                      integer => 127
+                      "quoted-key-string" => "deeply-nested-quoted-key-string"
+                      "quoted-key-integer" => 8191
+                    }
+                  }
+                }
+                ttl => 5
+              }
+            FILTER
+          end
+          subject(:c_plugin) { compiled[:filter] }
+
+          let(:expected_plugin_args) do
+            {
+                "key" => "%{host}",
+                "filter_options" => {
+                    "string"  => "string",
+                    "integer" => 3,
+                    "nested"  => { # <-- This is nested hash!
+                        "string"  => "nested-string",
+                        "integer" => 7,
+                        "quoted-key-string" => "nested-quoted-key-string",
+                        "quoted-key-integer" => 31,
+                        "deep"    => { # <-- This is deeper nested hash!
+                            "string"  => "deeply-nested-string",
+                            "integer" => 127,
+                            "quoted-key-string" => "deeply-nested-quoted-key-string",
+                            "quoted-key-integer" => 8191
+                        }
+                    }
+                },
+                "ttl" => 5
+            }
+          end
+
+          it "should produce a nested ::Hash object" do
+            expect(c_plugin).to ir_eql(j.iPlugin(FILTER, "matryoshka", expected_plugin_args))
+          end
+        end
       end
     end
 
