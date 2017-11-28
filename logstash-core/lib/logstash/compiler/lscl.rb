@@ -199,7 +199,7 @@ module LogStashCompilerLSCLGrammar; module LogStash; module Compiler; module LSC
 
     def expr
       validate!
-      ::Hash[recursive_select(HashEntry).map(&:expr)]
+      jdsl.eValue(source_meta, ::Hash[recursive_select(HashEntry).map(&:expr)])
     end
   end
 

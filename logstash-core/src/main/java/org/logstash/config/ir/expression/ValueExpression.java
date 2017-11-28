@@ -6,6 +6,7 @@ import org.logstash.common.SourceWithMetadata;
 
 import java.math.BigDecimal;
 import java.util.List;
+import org.jruby.RubyHash;
 
 /**
  * Created by andrewvc on 9/13/16.
@@ -25,6 +26,7 @@ public class ValueExpression extends Expression {
                 value instanceof BigDecimal ||
                 value instanceof String ||
                 value instanceof List ||
+                value instanceof RubyHash ||
                 value instanceof java.time.Instant
         )) {
             // This *should* be caught by the treetop grammar, but we need this case just in case there's a bug
