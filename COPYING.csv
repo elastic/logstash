@@ -37,4 +37,42 @@ json-generator,unknown,https://github.com/flori/json,Ruby License
 json-parser,unknown,https://github.com/flori/json,Ruby License
 
 
+# Generated list using maven on the JRuby repo (misses URL and License):
+# mvn -o dependency:list  | sed -ne '/The following files have been resolved:/,/^\[INFO\] *$/ { /^\[INFO\]   .*:/p }' | egrep '(:[^:]+){3,}' | fex 2 | grep -v ':test$' | awk -F: '{printf("%s:%s,%s,unknown\n", $1, $2, $4)}'
+org.ow2.asm:asm-tree,5.0.4,unknown
+org.jruby.joni:joni,2.1.12,unknown
+com.github.jnr:jnr-unixsocket,0.17,unknown
+com.github.jnr:jffi,1.2.16,unknown
+me.qmx.jitescript:jitescript,0.4.1,unknown
+com.github.jnr:jnr-constants,0.9.9,unknown
+bsf:bsf,2.4.0,unknown
+org.osgi:org.osgi.core,5.0.0,unknown
+commons-logging:commons-logging,1.0.4,unknown
+org.slf4j:slf4j-api,1.7.12,unknown
+org.apache.ant:ant-launcher,1.9.2,unknown
+org.ow2.asm:asm-analysis,5.0.4,unknown
+com.github.jnr:jnr-enxio,0.16,unknown
+org.apache.ant:ant,1.9.2,unknown
+org.ow2.asm:asm,5.0.4,unknown
+org.jruby.jcodings:jcodings,1.0.26,unknown
+com.jcraft:jzlib,1.1.3,unknown
+com.github.jnr:jnr-ffi,2.1.7,unknown
+org.ow2.asm:asm-commons,5.0.4,unknown
+com.headius:options,1.4,unknown
+com.martiansoftware:nailgun-server,0.9.1,unknown
+com.headius:modulator,1.0,unknown
+org.jruby.extras:bytelist,1.0.15,unknown
+org.jruby:dirgra,0.3,unknown
+org.jruby:joda-timezones,2013d,unknown
+org.ow2.asm:asm-util,5.0.4,unknown
+com.headius:invokebinder,1.10,unknown
+com.github.jnr:jnr-netdb,1.1.6,unknown
+com.github.jnr:jnr-posix,3.0.42,unknown
+com.github.jnr:jnr-x86asm,1.0.2,unknown
+joda-time:joda-time,2.8.2,unknown
+com.github.jnr:jffi,native,unknown
+org.bouncycastle:bcprov-jdk15on,1.56,unknown
+org.yaml:snakeyaml,1.18,unknown
+jline:jline,2.11,unknown
+org.bouncycastle:bcpkix-jdk15on,1.56,unknown
 
