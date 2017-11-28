@@ -1,0 +1,40 @@
+#dependency,version,url,licenses
+jruby,9.1.14.0,https://jruby.org/,EPL1.0|GPL2|LGPL2.1
+bytelist,unknown,http://github.com/jruby/bytelist,EPL1.0|GPL2|LGPL2.1
+jnr-posix,unknown,https://github.com/jnr/jnr-posix,EPL1.0|GPL2|LGPL2.1
+jruby-openssl,unknown,https://github.com/jruby/jruby-openssl,EPL1.0|GPL2|LGPL2.1
+jruby-readline,unknown,https://github.com/jruby/jruby-readline,EPL1.0|GPL2|LGPL2.1
+psych,unknown,https://github.com/ruby/psych),MIT
+jay-yydebug,unknown,http://svn.codehaus.org/jruby/trunk/jay/yydebug,EPL1.0|GPL2|LGPL2.1 (according to JRuby)
+control.js,unknown,unknown,MIT (according to JRuby)
+dragdrop.js,unknown,unknown,MIT (according to JRuby)
+effect.js,unknown,unknown,MIT (according to JRuby)
+prototype.js,unknown,unknown,MIT (according to JRuby)
+asm,unknown,http://asm.objectweb.org,BSD (according to JRuby)
+jline2,unknown,https://github.com/jline/jline2,BSD (according to JRuby)
+jzlib,unknown,https://www.jcraft.com/jzlib/,3-clause BSD
+rake,unknown,https://github.com/ruby/rake,MIT
+jcodings,unknown,http://github.com/jruby/jcodings,MIT
+joni,unknown,http://github.com/jruby/joni,MIT
+bouncycastle,unknown,http://www.bouncycastle.org,MIT
+jnr-x86asm,unknown,https://github.com/jnr/jnr-x86asm,MIT
+invokebinder,unknown,https://github.com/headius/invokebinder,Apache 2.0
+jffi,unknown,https://github.com/jnr/jffi,Apache 2.0
+jitescript,unknown,https://github.com/qmx/jitescript,Apache 2.0
+jnr-constants,unknown,http://github.com/jnr/jnr-constants,Apache 2.0
+jnr-enxio,unknown,https://github.com/jnr/jnr-enxio,Apache 2.0
+jnr-ffi,unknown,https://github.com/jnr/jnr-jffi,Apache 2.0
+jnr-netdb,unknown,http://github.com/jnr/jnr-netdb,Apache 2.0
+jnr-unixsocket,unknown,https://github.com/jnr/jnr-unixsocket,Apache 2.0
+joda-time,unknown,http://joda-time.sourceforge.net,Apache 2.0
+maven,unknown,http://maven.apache.org/,Apache 2.0
+nailgun,unknown,http://martiansoftware.com/nailgun,Apache 2.0
+options,unknown,https://github.com/headius/options,Apache 2.0
+snakeyaml,unknown,https://github.com/asomov/snakeyaml,Apache 2.0
+unsafe-fences,unknown,https://github.com/headius/unsafe-fences,Apache 2.0
+racc,unknown,https://github.com/tenderlove/racc,Ruby License
+json-generator,unknown,https://github.com/flori/json,Ruby License
+json-parser,unknown,https://github.com/flori/json,Ruby License
+
+
+
