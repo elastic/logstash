@@ -7,11 +7,11 @@ import org.logstash.secret.SecretIdentifier;
  */
 public class SecretStoreException extends RuntimeException {
 
-    public SecretStoreException(String message, Throwable cause) {
+    private SecretStoreException(String message, Throwable cause) {
         super(message, cause);
     }
 
-    public SecretStoreException(String message) {
+    private SecretStoreException(String message) {
         super(message);
     }
 
@@ -41,6 +41,15 @@ public class SecretStoreException extends RuntimeException {
         public CreateException(String message, Throwable cause) {
             super(message, cause);
         }
+        public CreateException(String message) {
+            super(message);
+        }
+    }
+
+    static public class LoadException extends SecretStoreException {
+        public LoadException(String message, Throwable cause) {
+            super(message, cause);
+        }
     }
 
     static public class PersistException extends SecretStoreException {
@@ -55,9 +64,27 @@ public class SecretStoreException extends RuntimeException {
         }
     }
 
+    static public class UnknownException extends SecretStoreException {
+        public UnknownException(String message, Throwable cause) {
+            super(message, cause);
+        }
+    }
+
+    static public class ImplementationNotFoundException extends SecretStoreException {
+        public ImplementationNotFoundException(String message, Throwable throwable) {
+            super(message, throwable);
+        }
+    }
+
     static public class AccessException extends SecretStoreException {
         public AccessException(String message, Throwable throwable) {
             super(message, throwable);
         }
+
+        public AccessException(String message) {
+            super(message);
+        }
     }
+
+
 }
