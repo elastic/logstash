@@ -33,11 +33,6 @@ namespace "test" do
     exit 1 unless system(*(default_spec_command.concat(["--tag", "~stress_test"])))
   end
 
-  desc "run all core specs in fail-fast mode"
-  task "core-fail-fast" do
-    exit 1 unless system(*(default_spec_command.concat(["--fail-fast"])))
-  end
-  
   desc "run all installed plugins specs"
   task "plugins"  => "bootstrap" do
     plugins_to_exclude = ENV.fetch("EXCLUDE_PLUGIN", "").split(",")

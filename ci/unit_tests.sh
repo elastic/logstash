@@ -11,13 +11,7 @@ export CI=true
 
 SELECTED_TEST_SUITE=$1
 
-if [[ $SELECTED_TEST_SUITE == $"core-fail-fast" ]]; then
-  echo "Running Java and Ruby unit tests, but will fail fast"
-  echo "Running test:install-core"
-  rake test:install-core
-  echo "Running test:core-fail-fast"
-  rake test:core-fail-fast
-elif [[ $SELECTED_TEST_SUITE == $"java" ]]; then
+if [[ $SELECTED_TEST_SUITE == $"java" ]]; then
   echo "Running Java Tests"
   ./gradlew javaTests --console=plain
 elif [[ $SELECTED_TEST_SUITE == $"ruby" ]]; then
