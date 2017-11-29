@@ -775,7 +775,43 @@ public class QueueTest {
             assertThat(q.getPersistedByteSize(), is(0L));
         }
     }
-    
+
+    @Test
+    public void getsPersistedByteSizeCorrectlyForFullyAckedDeletedTailPages() throws Exception {
+        final Queueable element = new StringElement("0123456789"); // 10 bytes
+        final int singleElementCapacity = singleElementCapacityForByteBufferPageIO(element);
+        final Settings settings = TestSettings.persistedQueueSettings(singleElementCapacity, dataPath);
+
+        try (Queue q = new Queue(settings)) {
+            q.open();
+
+            q.write(element);
+            Batch b1 = q.readBatch(2);
+            q.write(element);
+            Batch b2 = q.readBatch(2);
+            q.write(element);
+            Batch b3 = q.readBatch(2);
+            q.write(element);
+            Batch b4 = q.readBatch(2);
+
+            assertThat(q.tailPages.size(), is(3));
+            assertThat(q.getPersistedByteSize() > 0, is(true));
+
+            // fully ack middle page and head page
+            b2.close();
+            b4.close();
+
+            assertThat(q.tailPages.size(), is(2));
+            assertThat(q.getPersistedByteSize() > 0, is(true));
+
+            q.close();
+            q.open();
+
+            assertThat(q.tailPages.size(), is(2));
+            assertThat(q.getPersistedByteSize() > 0, is(true));
+        }
+    }
+
     private void stableUnderStress(final int capacity) throws IOException {
         Settings settings = TestSettings.persistedQueueSettings(capacity, dataPath);
         final ExecutorService exec = Executors.newScheduledThreadPool(2);
