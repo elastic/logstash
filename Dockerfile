@@ -25,6 +25,7 @@ ADD bin /opt/logstash/bin
 ADD modules /opt/logstash/modules
 ADD ci /opt/logstash/ci
 ADD settings.gradle /opt/logstash/settings.gradle
+ADD Gemfile.jruby-1.9.lock.release /opt/logstash/Gemfile.jruby-1.9.lock.release
 
 USER root
 RUN rm -rf build && \
