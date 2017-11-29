@@ -269,11 +269,6 @@ public final class Queue implements Closeable {
             if (this.tailPages.size() == 0) {
                 // this is the first tail page and it is fully acked so just purge it
                 this.checkpointIO.purge(this.checkpointIO.tailFileName(checkpoint.getPageNum()));
-            } else {
-                // create a tail page with a null PageIO and add it to tail pages but not unreadTailPages
-                // since it is fully read because also fully acked
-                // TODO: I don't like this null pageIO tail page...
-                this.tailPages.add(PageFactory.newTailPage(checkpoint, this, null));
             }
         } else {
             pageIO.open(checkpoint.getMinSeqNum(), checkpoint.getElementCount());
@@ -309,11 +304,6 @@ public final class Queue implements Closeable {
             if (this.tailPages.size() == 0) {
                 // this is the first tail page and it is fully acked so just purge it
                 this.checkpointIO.purge(this.checkpointIO.tailFileName(checkpoint.getPageNum()));
-            } else {
-                // create a tail page with a null PageIO and add it to tail pages but not unreadTailPages
-                // since it is fully read because also fully acked
-                // TODO: I don't like this null pageIO tail page...
-                this.tailPages.add(PageFactory.newTailPage(checkpoint, this, null));
             }
         } else {
             this.tailPages.add(page);
