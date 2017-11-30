@@ -22,11 +22,6 @@
 -XX:CMSInitiatingOccupancyFraction=75
 -XX:+UseCMSInitiatingOccupancyOnly
 
-## optimizations
-
-# disable calls to System#gc
--XX:+DisableExplicitGC
-
 ## Locale
 # Set the locale language
 #-Duser.language=en
