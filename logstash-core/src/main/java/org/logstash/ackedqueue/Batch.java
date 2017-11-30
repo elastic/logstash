@@ -39,7 +39,7 @@ public class Batch implements Closeable {
         return elements;
     }
 
-    public List<Long> getSeqNums() { return this.seqNums; }
+    public LongVector getSeqNums() { return this.seqNums; }
 
     public Queue getQueue() {
         return queue;
