@@ -36,6 +36,17 @@ module LogStash
           end
         end
 
+        put "/reset" do
+          context = LogStash::Logging::Logger::get_logging_context
+          if context.nil?
+            status 500
+            respond_with({"error" => "Logstash loggers were not initialized properly"})
+          else
+            context.reconfigure
+            respond_with({"acknowledged" => true})
+          end
+        end
+
         get "/" do
           context = LogStash::Logging::Logger::get_logging_context
           if context.nil?
