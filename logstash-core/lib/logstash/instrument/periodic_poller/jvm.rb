@@ -20,8 +20,8 @@ java_import 'org.logstash.instrument.reports.ProcessReport'
 module LogStash module Instrument module PeriodicPoller
   class JVM < Base
     class GarbageCollectorName
-      YOUNG_GC_NAMES = Set.new(["Copy", "PS Scavenge", "ParNew", "G1 Young Generation"])
-      OLD_GC_NAMES = Set.new(["MarkSweepCompact", "PS MarkSweep", "ConcurrentMarkSweep", "G1 Old Generation"])
+      YOUNG_GC_NAMES = Set.new(["Copy", "PS Scavenge", "ParNew", "G1 Young Generation", "scavenge"])
+      OLD_GC_NAMES = Set.new(["MarkSweepCompact", "PS MarkSweep", "ConcurrentMarkSweep", "G1 Old Generation", "global"])
 
       YOUNG = :young
       OLD = :old
@@ -64,7 +64,9 @@ module LogStash module Instrument module PeriodicPoller
       garbage_collectors = ManagementFactory.getGarbageCollectorMXBeans()
 
       garbage_collectors.each do |collector|
-        name = GarbageCollectorName.get(collector.getName())
+        collector_name = collector.getName()
+        logger.error("collector name", :name => collector_name)
+        name = GarbageCollectorName.get(collector_name)
         if name.nil?
           logger.error("Unknown garbage collector name", :name => name)
         else
