@@ -60,30 +60,6 @@ module LogStash::Config::Mixin
     # store the plugin type, turns LogStash::Inputs::Base into 'input'
     @plugin_type = self.class.ancestors.find { |a| a.name =~ /::Base$/ }.config_name
 
-    # warn about deprecated variable use
-    params.each do |name, value|
-      opts = self.class.get_config[name]
-      if opts && opts[:deprecated]
-        extra = opts[:deprecated].is_a?(String) ? opts[:deprecated] : ""
-        extra.gsub!("%PLUGIN%", self.class.config_name)
-        self.logger.warn("You are using a deprecated config setting " +
-                     "#{name.inspect} set in #{self.class.config_name}. " +
-                     "Deprecated settings will continue to work, " +
-                     "but are scheduled for removal from logstash " +
-                     "in the future. #{extra} If you have any questions " +
-                     "about this, please visit the #logstash channel " +
-                     "on freenode irc.", :name => name, :plugin => self)
-
-      end
-      if opts && opts[:obsolete]
-        extra = opts[:obsolete].is_a?(String) ? opts[:obsolete] : ""
-        extra.gsub!("%PLUGIN%", self.class.config_name)
-        raise LogStash::ConfigurationError,
-          I18n.t("logstash.runner.configuration.obsolete", :name => name,
-                 :plugin => self.class.config_name, :extra => extra)
-      end
-    end
-
     # Set defaults from 'config :foo, :default => somevalue'
     self.class.get_config.each do |name, opts|
       next if params.include?(name.to_s)
@@ -109,17 +85,46 @@ module LogStash::Config::Mixin
       params[name.to_s] = deep_replace(value)
     end
 
-
     if !self.class.validate(params)
       raise LogStash::ConfigurationError,
         I18n.t("logstash.runner.configuration.invalid_plugin_settings")
+    end
+
+    # now that we know the parameters are valid, we can obfuscate the original copy
+    # of the parameters before storing them as an instance variable
+    self.class.secure_params!(original_params)
+    @original_params = original_params
+
+    # warn about deprecated variable use
+    original_params.each do |name, value|
+      opts = self.class.get_config[name]
+      if opts && opts[:deprecated]
+        extra = opts[:deprecated].is_a?(String) ? opts[:deprecated] : ""
+        extra.gsub!("%PLUGIN%", self.class.config_name)
+        self.logger.warn("You are using a deprecated config setting " +
+                     "#{name.inspect} set in #{self.class.config_name}. " +
+                     "Deprecated settings will continue to work, " +
+                     "but are scheduled for removal from logstash " +
+                     "in the future. #{extra} If you have any questions " +
+                     "about this, please visit the #logstash channel " +
+                     "on freenode irc.", :name => name, :plugin => self)
+
+      end
+
+      if opts && opts[:obsolete]
+        extra = opts[:obsolete].is_a?(String) ? opts[:obsolete] : ""
+        extra.gsub!("%PLUGIN%", self.class.config_name)
+        raise LogStash::ConfigurationError,
+          I18n.t("logstash.runner.configuration.obsolete", :name => name,
+                 :plugin => self.class.config_name, :extra => extra)
+      end
     end
 
     # We remove any config options marked as obsolete,
     # no code should be associated to them and their values should not bleed
     # to the plugin context.
     #
-    # This need to be done after fetching the options from the parents classed
+    # This need to be done after fetching the options from the parents class
     params.reject! do |name, value|
       opts = self.class.get_config[name]
       opts.include?(:obsolete)
@@ -133,11 +138,6 @@ module LogStash::Config::Mixin
       self.logger.debug("config #{self.class.name}/@#{key} = #{value.inspect}")
       instance_variable_set("@#{key}", value)
     end
-
-    # now that we know the parameters are valid, we can obfuscate the original copy
-    # of the parameters before storing them as an instance variable
-    self.class.secure_params!(original_params)
-    @original_params = original_params
 
     @config = params
   end # def config_init
