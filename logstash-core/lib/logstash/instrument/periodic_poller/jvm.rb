@@ -65,7 +65,7 @@ module LogStash module Instrument module PeriodicPoller
 
       garbage_collectors.each do |collector|
         collector_name = collector.getName()
-        logger.error("collector name", :name => collector_name)
+        logger.debug("collector name", :name => collector_name)
         name = GarbageCollectorName.get(collector_name)
         if name.nil?
           logger.error("Unknown garbage collector name", :name => name)
