@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-6-0-1,Logstash 6.0.1>>
 * <<logstash-6-0-0,Logstash 6.0.0>>
 
 ifdef::include-xpack[]
@@ -10,6 +11,16 @@ See also:
 
 * <<release-notes-xls>>
 endif::include-xpack[]
+
+[[logstash-6-0-1]]
+=== Logstash 6.0.1 Release Notes
+* Elasticsearch Output: We now ignore an event's type field for the purpose of setting the document _type if the cluster is Elasticsearch 6.x or above.
+* Fixed bug where plugins that used nested hashes for configuration would not work correctly
+* Improved shutdown process by ensuring that Logstash terminates on second SIGINT. Prior to this release, there were some situations where executing two SIGNINTs would not kill Logstash.
+* Fixed a bug where persistent queue could not be opened when in some states
+* Fixed an issue where the aggregate filter would not always shut down correctly
+* Fixed a large performance regression in the grok filter that has been with us since Logstash 5.x. 
+  Users should see a significant improvement in grok performance.
 
 [[logstash-6-0-0]]
 === Logstash 6.0.0 Release Notes
