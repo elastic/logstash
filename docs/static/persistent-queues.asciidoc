@@ -83,7 +83,7 @@ Logstash <<logstash-settings-file,settings file>>:
 
 * `queue.type`: Specify `persisted` to enable persistent queues. By default, persistent queues are disabled (default: `queue.type: memory`).
 * `path.queue`: The directory path where the data files will be stored. By default, the files are stored in `path.data/queue`. 
-* `queue.page_capacity`: The maximum size of a queue page in bytes. The queue data consists of append-only files called "pages". The default size is 250mb. Changing this value is unlikely to have performance benefits.
+* `queue.page_capacity`: The maximum size of a queue page in bytes. The queue data consists of append-only files called "pages". The default size is 64mb. Changing this value is unlikely to have performance benefits.
 * `queue.drain`: Specify `true` if you want Logstash to wait until the persistent queue is drained before shutting down. The amount of time it takes to drain the queue depends on the number of events that have accumulated in the queue. Therefore, you should avoid using this setting unless the queue, even when full, is relatively small and can be drained quickly. 
 // Technically, I know, this isn't "maximum number of events" it's really maximum number of events not yet read by the pipeline worker. We only use this for testing and users generally shouldn't be setting this.
 * `queue.max_events`:  The maximum number of events that are allowed in the queue. The default is 0 (unlimited). This value is used internally for the Logstash test suite.

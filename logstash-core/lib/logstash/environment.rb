@@ -38,7 +38,7 @@ module LogStash
    Setting::PositiveInteger.new("pipeline.workers", LogStash::Config::CpuCoreStrategy.maximum),
    Setting::PositiveInteger.new("pipeline.output.workers", 1),
    Setting::PositiveInteger.new("pipeline.batch.size", 125),
-           Setting::Numeric.new("pipeline.batch.delay", 5), # in milliseconds
+           Setting::Numeric.new("pipeline.batch.delay", 50), # in milliseconds
            Setting::Boolean.new("pipeline.unsafe_shutdown", false),
            Setting::Boolean.new("pipeline.java_execution", true),
            Setting::Boolean.new("pipeline.reloadable", true),
@@ -54,7 +54,7 @@ module LogStash
             Setting::String.new("http.environment", "production"),
             Setting::String.new("queue.type", "memory", true, ["persisted", "memory", "memory_acked"]),
             Setting::Boolean.new("queue.drain", false),
-            Setting::Bytes.new("queue.page_capacity", "250mb"),
+            Setting::Bytes.new("queue.page_capacity", "64mb"),
             Setting::Bytes.new("queue.max_bytes", "1024mb"),
             Setting::Numeric.new("queue.max_events", 0), # 0 is unlimited
             Setting::Numeric.new("queue.checkpoint.acks", 1024), # 0 is unlimited

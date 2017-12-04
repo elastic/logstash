@@ -44,10 +44,10 @@
 #
 # pipeline.batch.size: 125
 #
-# How long to wait before dispatching an undersized batch to filters+workers
-# Value is in milliseconds.
+# How long to wait in milliseconds while polling for the next event
+# before dispatching an undersized batch to filters+outputs
 #
-# pipeline.batch.delay: 5
+# pipeline.batch.delay: 50
 #
 # Force Logstash to exit during shutdown even if there are still inflight
 # events in memory. By default, logstash will refuse to quit until all
@@ -135,9 +135,9 @@
 # path.queue:
 #
 # If using queue.type: persisted, the page data files size. The queue data consists of
-# append-only data files separated into pages. Default is 250mb
+# append-only data files separated into pages. Default is 64mb
 #
-# queue.page_capacity: 250mb
+# queue.page_capacity: 64mb
 #
 # If using queue.type: persisted, the maximum number of unread events in the queue.
 # Default is 0 (unlimited)
