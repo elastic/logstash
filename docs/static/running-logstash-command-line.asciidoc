@@ -100,7 +100,7 @@ With this command, Logstash concatenates three config files, `/tmp/one`, `/tmp/t
 *`-u, --pipeline.batch.delay DELAY_IN_MS`*::
   When creating pipeline batches, how long to wait while polling for the next event. This option defines
   how long in milliseconds to wait while polling for the next event before dispatching an undersized batch
-  to filters and workers. The default is 250ms.
+  to filters and outputs. The default is 50ms.
 
 *`--pipeline.unsafe_shutdown`*::
   Force Logstash to exit during shutdown even if there are still inflight events

@@ -16,7 +16,7 @@ hierarchical form to set the pipeline batch size and batch delay, you specify:
 pipeline:
   batch:
     size: 125
-    delay: 5
+    delay: 50
 -------------------------------------------------------------------------------------
 
 To express the same values as flat keys, you specify:
@@ -24,7 +24,7 @@ To express the same values as flat keys, you specify:
 [source,yaml]
 -------------------------------------------------------------------------------------
 pipeline.batch.size: 125
-pipeline.batch.delay: 5
+pipeline.batch.delay: 50
 -------------------------------------------------------------------------------------
 
 The `logstash.yml` file also supports bash-style interpolation of environment variables in
@@ -35,7 +35,7 @@ setting values.
 pipeline:
   batch:
     size: ${BATCH_SIZE}
-    delay: ${BATCH_DELAY:5}
+    delay: ${BATCH_DELAY:50}
 node:
   name: "node_${LS_NODE_NAME}"
 path:
@@ -43,7 +43,7 @@ path:
 -------------------------------------------------------------------------------------
 
 Note that the `${VAR_NAME:default_value}` notation is supported, setting a default batch delay
-of `5` and a default `path.queue` of `/tmp/queue` in the above example.
+of `50` and a default `path.queue` of `/tmp/queue` in the above example.
 
 Modules may also be specified in the `logstash.yml` file. The modules definition will have
 this format:
@@ -94,7 +94,7 @@ The `logstash.yml` file includes the following settings:
 | `pipeline.batch.delay`
 | When creating pipeline event batches, how long in milliseconds to wait for
   each event before dispatching an undersized batch to pipeline workers.
-| `5`
+| `50`
 
 | `pipeline.unsafe_shutdown`
 | When set to `true`, forces Logstash to exit during shutdown even if there are still inflight events
@@ -152,7 +152,7 @@ The `logstash.yml` file includes the following settings:
 
 | `queue.page_capacity`
 | The size of the page data files used when persistent queues are enabled (`queue.type: persisted`). The queue data consists of append-only data files separated into pages.
-| 250mb
+| 64mb
 
 | `queue.max_events`
 | The maximum number of unread events in the queue when persistent queues are enabled (`queue.type: persisted`).
