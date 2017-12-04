@@ -23,8 +23,8 @@ These changes can impact any instance of Logstash and are plugin agnostic, but o
 [float]
 ==== RPM/Deb package changes
 
-* For `rpm` and `deb` release artifacts, config files that match the `*.conf` glob pattern must be in the conf.d folder,
-  or the files will not be loaded.
+* For `rpm` and `deb` release artifacts, config files that match the `*.conf` glob pattern must be in the conf.d folder, 
+  or the files will not be loaded. If there are non-configuration files in this folder this can be problematic.
 
 [float]
 ==== Command Line Interface behavior
@@ -35,6 +35,8 @@ These changes can impact any instance of Logstash and are plugin agnostic, but o
 
 [float]
 === Plugin Changes
+
+Note that the list of plugins included with Logstash has changed. Please check that the new plugin list still includes all plugins you use.
 
 [float]
 ==== Elasticsearch output changes
@@ -68,6 +70,44 @@ These changes can impact any instance of Logstash and are plugin agnostic, but o
 * Logstash will no longer start when <<plugins-codecs-multiline,Multiline codec plugin>> is used with the Beats input plugin.
 ** It is recommended to use the multiline support in Filebeat as a replacement - see https://www.elastic.co/guide/en/beats/filebeat/current/multiline-examples.html[configuration options available in Filebeat] for details.
 * The options `congestion_threshold` and `target_field_for_codec` are now obsolete.
+
+[float]
+=== TCP Input Changes
+* Changed the behaviour of the host field to contain the resolved peer hostname for a connection instead of its peer IP.
+* Removed the `data_timeout` and `ssl_cacert` options because they are now obsolete.
+* Moved the peer's IP to the new field `ip_address`.
+
+[float]
+=== TCP Output Changes
+* Breaking: removed the `message_format` option because it is now obsolete.
+
+[float]
+=== SQS Output Changes
+* Breaking: removed the `batch` and `batch_timeout` options because they are now obsolete.
+
+[float]
+=== Redis Output Changes
+* Removed the `name` and `queue` options because they are now obsolete.
+
+[float]
+=== RabbitMQ Input/Output Changes
+* Removed the `debug`, `tls_certificate_path`, and `tls_certificate_password` options because they are now obsolete.
+
+[float]
+=== Logstash Output HTTP
+* Removed the `ssl_certificate_verify` option because it is now obsolete.
+
+[float]
+=== Logstash Input HTTP Poller
+* Removed the `ssl_certificate_verify` option because it is now obsolete.
+
+[float]
+=== GeoIP Changes
+* Removed the `lru_cache_size` option because it is now obsolete.
+
+[float]
+=== CEF Codec Changes
+* Removed the `sev` and `deprecated_v1_fields` options because they are now obsolete.
 
 [float]
 ==== List of plugins bundled with Logstash
