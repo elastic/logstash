@@ -6,11 +6,16 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.codehaus.commons.compiler.CompileException;
 import org.codehaus.janino.ClassBodyEvaluator;
 
@@ -20,6 +25,7 @@ import org.codehaus.janino.ClassBodyEvaluator;
  */
 final class ComputeStepSyntaxElement implements SyntaxElement {
 
+    private static final Logger LOGGER = LogManager.getLogger(ComputeStepSyntaxElement.class);
     private static final DynamicClassLoader CLASS_LOADER = new DynamicClassLoader();
 
     /**
@@ -28,10 +34,14 @@ final class ComputeStepSyntaxElement implements SyntaxElement {
     private static final Map<ComputeStepSyntaxElement, Class<? extends Dataset>> CLASS_CACHE
         = new HashMap<>();
 
+    private static final Map<String, String> SOURCE_CACHE = new HashMap<>();
+
     /**
      * Sequence number to ensure unique naming for runtime compiled classes.
      */
     private static final AtomicInteger SEQUENCE = new AtomicInteger(0);
+
+    private static final int INDENT_WIDTH = 4;
 
     private final String name;
 
@@ -39,9 +49,63 @@ final class ComputeStepSyntaxElement implements SyntaxElement {
 
     private final ClassFields fields;
 
+    /**
+     * Get the generated source
+     * @return sorted and formatted lines of generated code
+     */
+    public static List<String> getGeneratedSource() {
+        List<String> output = new ArrayList<>();
+        SOURCE_CACHE.forEach((k, v) -> {
+            output.add(String.format("class %s {", k));
+            LOGGER.trace("{}:{}", k, v);
+            getFormattedLines(v, output, INDENT_WIDTH);
+            output.add("}");
+        });
+        return output;
+    }
+
+    private static List<String> getFormattedLines(String input, List<String> output, int indent) {
+        int curlyOpen = input.indexOf("{");
+        int curlyClose = input.indexOf("}");
+        int semiColon = input.indexOf(";");
+
+        List<Integer> positions = Arrays.asList(curlyOpen, curlyClose, semiColon);
+        positions.sort(Comparator.naturalOrder());
+        Optional<Integer> firstMatch = positions.stream().filter(i -> i >= 0).findFirst();
+
+        if (firstMatch.isPresent()) {
+            int pos = firstMatch.get();
+            int preIndent = indent;
+            int postIndent = indent;
+            if (pos == curlyOpen) {
+                postIndent += INDENT_WIDTH;
+            } else if (pos == curlyClose) {
+                preIndent -= INDENT_WIDTH;
+                postIndent = preIndent;
+            }
+
+            if (input.trim().length() > 0) {
+                String sub = input.substring(0, pos + 1);
+                if (!sub.equals(";")) {
+                    output.add(String.format("%" + preIndent + "s%s", " ", sub));
+                }
+            }
+            return getFormattedLines(input.substring(pos + 1), output, postIndent);
+        }
+
+        if (input.trim().equals("}")) {
+            indent -= INDENT_WIDTH;
+        }
+
+        if (input.trim().length() > 0 && !input.trim().equals(";")) {
+            output.add(String.format("%" + indent + "s%s", " ", input));
+        }
+        return output;
+    }
+
     ComputeStepSyntaxElement(final Iterable<MethodSyntaxElement> methods,
-        final ClassFields fields) {
-        this(String.format("CompiledDataset%d", SEQUENCE.incrementAndGet()), methods, fields);
+        final ClassFields fields, DatasetCompiler.DatasetFlavor datasetFlavor) {
+        this(String.format("Generated%d_" + datasetFlavor.getDisplay() + "Dataset", SEQUENCE.incrementAndGet()), methods, fields);
     }
 
     private ComputeStepSyntaxElement(final String name, final Iterable<MethodSyntaxElement> methods,
@@ -61,7 +125,10 @@ final class ComputeStepSyntaxElement implements SyntaxElement {
                 se.setParentClassLoader(CLASS_LOADER);
                 se.setImplementedInterfaces(new Class[]{interfce});
                 se.setClassName(name);
-                se.cook(new StringReader(generateCode()));
+                String code = generateCode();
+                SOURCE_CACHE.put(name, generateCode());
+                se.cook(new StringReader(code));
+                se.toString();
                 clazz = (Class<T>) se.getClazz();
                 CLASS_LOADER.addClass(clazz);
                 CLASS_CACHE.put(this, clazz);
@@ -145,14 +212,13 @@ final class ComputeStepSyntaxElement implements SyntaxElement {
     }
 
     /**
-     * Renders the string concatenation of the given {@link SyntaxElement}, delimited by
-     * line breaks.
+     * Renders the string concatenation of the given {@link SyntaxElement}
      * @param parts Elements to concatenate
      * @return Java source
      */
     private static String combine(final SyntaxElement... parts) {
         return Arrays.stream(parts).map(SyntaxElement::generateCode)
-            .collect(Collectors.joining("\n"));
+            .collect(Collectors.joining(""));
     }
 
 }

@@ -78,7 +78,7 @@ final class Closure implements MethodLevelSyntaxElement {
             this.optimizeRubyThreadContexts().statements;
         return optimized.isEmpty() ? "" : SyntaxFactory.join(
             optimized.stream().map(MethodLevelSyntaxElement::generateCode).collect(
-                Collectors.joining(";\n")
+                Collectors.joining(";")
             ), ";"
         );
     }

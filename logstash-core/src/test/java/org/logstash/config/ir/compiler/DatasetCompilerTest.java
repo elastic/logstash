@@ -19,7 +19,7 @@ public final class DatasetCompilerTest {
     public void compilesEmptyMethod() {
         final Dataset func = DatasetCompiler.compile(
             Closure.wrap(SyntaxFactory.ret(DatasetCompiler.BATCH_ARG.call("to_a"))),
-            Closure.EMPTY, new ClassFields()
+            Closure.EMPTY, new ClassFields(), DatasetCompiler.DatasetFlavor.ROOT
         );
         final RubyArray batch = RubyUtil.RUBY.newArray();
         assertThat(func.compute(batch, false, false), is(batch));
@@ -44,7 +44,7 @@ public final class DatasetCompilerTest {
                 ),
                 SyntaxFactory.ret(events)
             ),
-            Closure.EMPTY, fields
+            Closure.EMPTY, fields, DatasetCompiler.DatasetFlavor.ROOT
         );
         assertThat(func.compute(batch, false, false).size(), is(2));
     }
@@ -98,8 +98,7 @@ public final class DatasetCompilerTest {
                 )
             ).generateCode(),
             is(
-                String.join(
-                    "\n",
+                String.join("",
                     "org.jruby.runtime.ThreadContext context=org.logstash.RubyUtil.RUBY.getCurrentContext();",
                     "org.jruby.runtime.ThreadContext context1=context;",
                     "org.jruby.runtime.ThreadContext context2=context;"
