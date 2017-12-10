@@ -148,7 +148,7 @@ final class SyntaxFactory {
             public String generateCode() {
                 return join(
                     "for (", element.generateCode(), " : ",
-                    iterable.generateCode(), ") {\n", body.generateCode(), "\n}"
+                    iterable.generateCode(), ") {", body.generateCode(), "}"
                 );
             }
         };
@@ -165,8 +165,8 @@ final class SyntaxFactory {
             @Override
             public String generateCode() {
                 return join(
-                    "if(", condition.generateCode(), ") {\n", left.generateCode(),
-                    "\n} else {\n", right.generateCode(), "\n}"
+                    "if(", condition.generateCode(), ") {", left.generateCode(),
+                    "} else {", right.generateCode(), "}"
                 );
             }
 

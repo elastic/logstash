@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.stream.Collectors;
 import org.jruby.RubyArray;
 import org.jruby.RubyHash;
@@ -42,11 +43,27 @@ public final class DatasetCompiler {
         SyntaxFactory.identifier("batchArg");
 
     /**
+     * Hint to the intended purpose of a Dataset.
+     */
+    enum DatasetFlavor {
+        ROOT("Root"), FILTER("Filter"), OUTPUT("Output"), CONDITIONAL("Conditional");
+        private final String display;
+
+        DatasetFlavor(final String display) {
+            this.display = display;
+        }
+
+        String getDisplay() {
+            return display;
+        }
+    }
+
+    /**
      * Root {@link Dataset}s at the beginning of the execution tree that simply pass through
      * the given set of {@link JrubyEventExtLibrary.RubyEvent} and have no state.
      */
     public static final Collection<Dataset> ROOT_DATASETS = Collections.singleton(
-        compile(Closure.wrap(SyntaxFactory.ret(BATCH_ARG)), Closure.EMPTY, new ClassFields())
+        compile(Closure.wrap(SyntaxFactory.ret(BATCH_ARG)), Closure.EMPTY, new ClassFields(), DatasetFlavor.ROOT)
     );
 
     private DatasetCompiler() {
@@ -60,13 +77,15 @@ public final class DatasetCompiler {
      * @param compute Method body of {@link Dataset#compute(RubyArray, boolean, boolean)}
      * @param clear Method body of {@link Dataset#clear()}
      * @param fieldValues Constructor Arguments
+     * @param datasetFlavor The flavor of {@link Dataset} to compile.
+     * This is only helpful for human debugging to differentiate between the intended usage of the {@link Dataset}
      * @return Dataset Instance
      */
     public static synchronized Dataset compile(final Closure compute, final Closure clear,
-        final ClassFields fieldValues) {
+        final ClassFields fieldValues, final DatasetFlavor datasetFlavor) {
         return new ComputeStepSyntaxElement(
             Arrays.asList(MethodSyntaxElement.compute(compute), MethodSyntaxElement.clear(clear)),
-            fieldValues
+            fieldValues, datasetFlavor
         ).instantiate(Dataset.class);
     }
 
@@ -108,7 +127,7 @@ public final class DatasetCompiler {
                         .add(SyntaxFactory.assignment(done, SyntaxFactory.FALSE))
                 ),
                 MethodSyntaxElement.right(elseData)
-            ), fields
+            ), fields, DatasetFlavor.CONDITIONAL
         ).instantiate(SplitDataset.class);
     }
 
@@ -160,7 +179,7 @@ public final class DatasetCompiler {
             Closure.wrap(
                 clearSyntax(parentFields), clear(outputBuffer),
                 SyntaxFactory.assignment(done, SyntaxFactory.FALSE)
-            ), fields
+            ), fields, DatasetFlavor.FILTER
         );
     }
 
@@ -344,10 +363,18 @@ public final class DatasetCompiler {
         );
     }
 
+    /**
+     * Get the generated source
+     * @return sorted and formatted lines of generated code
+     */
+    public static List<String> getGeneratedSource() {
+        return ComputeStepSyntaxElement.getGeneratedSource();
+    }
+
     private static Dataset compileOutput(final Closure syntax, final Closure clearSyntax,
         final ClassFields fields) {
         return compile(
-            syntax.add(MethodLevelSyntaxElement.RETURN_NULL), clearSyntax, fields
+            syntax.add(MethodLevelSyntaxElement.RETURN_NULL), clearSyntax, fields, DatasetFlavor.OUTPUT
         );
     }
 

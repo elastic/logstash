@@ -21,7 +21,7 @@ final class FieldDeclarationGroup implements SyntaxElement {
     @Override
     public String generateCode() {
         return fields.isEmpty() ? "" : SyntaxFactory.join(fields.stream().map(
-            SyntaxElement::generateCode).collect(Collectors.joining(";\n")), ";"
+            SyntaxElement::generateCode).collect(Collectors.joining(";")), ";"
         );
     }
 }
