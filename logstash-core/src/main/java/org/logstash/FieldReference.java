@@ -43,6 +43,9 @@ public final class FieldReference {
     private static final FieldReference METADATA_PARENT_REFERENCE =
         new FieldReference(EMPTY_STRING_ARRAY, Event.METADATA, META_PARENT);
 
+    static final FieldReference DATA_EMPTY_STRING_REFERENCE =
+            new FieldReference(EMPTY_STRING_ARRAY, "", DATA_CHILD);
+
     private final String[] path;
 
     private final String key;
@@ -63,6 +66,9 @@ public final class FieldReference {
     }
 
     public static FieldReference parse(final CharSequence reference) {
+        if( reference == null || reference.length() == 0){
+            return DATA_EMPTY_STRING_REFERENCE;
+        }
         final String[] parts = SPLIT_PATTERN.split(reference);
         final List<String> path = new ArrayList<>(parts.length);
         for (final String part : parts) {
