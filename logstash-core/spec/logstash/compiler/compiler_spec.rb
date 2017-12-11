@@ -194,6 +194,32 @@ describe LogStash::Compiler do
         end
       end
 
+      describe "a plugin with multiple array parameter types" do
+        let(:plugin_source) { "generator { aarg => [1] aarg => [2] aarg => [3]}" }
+        let(:expected_plugin_args) do
+          {
+              "aarg" => [1, 2, 3]
+          }
+        end
+
+        it "should contain the plugin" do
+          expect(c_plugin).to ir_eql(j.iPlugin(INPUT, "generator", expected_plugin_args))
+        end
+      end
+
+      describe "a plugin with multiple parameter types that converge to an array" do
+        let(:plugin_source) { "generator { aarg => [1] aarg => 2 aarg => '3' aarg => [4] }"}
+        let(:expected_plugin_args) do
+          {
+              "aarg" => [1, 2, "3", 4]
+          }
+        end
+
+        it "should contain the plugin" do
+          expect(c_plugin).to ir_eql(j.iPlugin(INPUT, "generator", expected_plugin_args))
+        end
+      end
+
       describe "a filter plugin that repeats a Hash directive" do
         let(:source) { "input { } filter { #{plugin_source} } output { } " }
         subject(:c_plugin) { compiled[:filter] }
