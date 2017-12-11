@@ -44,6 +44,9 @@ public final class FieldReference {
     private static final FieldReference METADATA_PARENT_REFERENCE =
         new FieldReference(EMPTY_STRING_ARRAY, Event.METADATA, META_PARENT);
 
+    static final FieldReference DATA_EMPTY_STRING_REFERENCE =
+            new FieldReference(EMPTY_STRING_ARRAY, "", DATA_CHILD);
+
     /**
      * Cache of all existing {@link FieldReference}.
      */
@@ -70,6 +73,9 @@ public final class FieldReference {
     }
 
     public static FieldReference from(final CharSequence reference) {
+        if( reference == null || reference.length() == 0){
+            return DATA_EMPTY_STRING_REFERENCE;
+        }
         // atomicity between the get and put is not important
         final FieldReference result = CACHE.get(reference);
         if (result != null) {

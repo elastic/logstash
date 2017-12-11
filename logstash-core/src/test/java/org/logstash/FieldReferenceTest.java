@@ -40,4 +40,14 @@ public final class FieldReferenceTest {
     public void deduplicatesTimestamp() throws Exception {
         assertTrue(FieldReference.from("@timestamp") == FieldReference.from("[@timestamp]"));
     }
+
+    @Test
+    public void testParseEmptyString(){
+        assertEquals(FieldReference.from(""), FieldReference.DATA_EMPTY_STRING_REFERENCE);
+    }
+
+    @Test
+    public void testParseNull(){
+        assertEquals(FieldReference.from(null), FieldReference.DATA_EMPTY_STRING_REFERENCE);
+    }
 }
