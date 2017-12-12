@@ -2,7 +2,7 @@
 require "logstash/namespace"
 require "logstash/logging"
 require "logstash/json"
-require "manticore/client"
+require "manticore"
 
 module LogStash module Modules class KibanaClient
   include LogStash::Util::Loggable
