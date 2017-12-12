@@ -13,9 +13,9 @@ endif::include-xpack[]
 
 [[logstash-6-1-0]]
 === Logstash 6.1.0 Release Notes
-* New experimental Java execution engine for Logstash pipelines. Off by default, it can be enabled with `--experimental-java-execution` ({lsissue}7950[Issue 7950]).
+* Implemented a new experimental Java execution engine for Logstash pipelines. The Java engine is off by default, but can be enabled with --experimental-java-execution ({lsissue}7950[Issue 7950]).
 * Added support for changing the <<configuring-persistent-queues,page capacity>> for an existing queue ({lsissue}8628[Issue 8628]).
-* {lsissue}7692[Many], {lsissue}8776[many], {lsissue}8577[many], {lsissue}8446[many], {lsissue}8333[many], {lsissue}8163[many], {lsissue}8103[many], {lsissue}8087[many] (did I say {lsissue}7691[many]?) improvements in pipeline execution performance and memory efficiency.
+* Made extensive improvements to pipeline execution performance and memory efficiency ({lsissue}7692[Issue 7692], {lsissue}8776[8776], {lsissue}8577[8577], {lsissue}8446[8446], {lsissue}8333[8333], {lsissue}8163[8163], {lsissue}8103[8103], {lsissue}8087[8087], and {lsissue}7691[7691]).
 
 [float]
 ==== Filter Plugins
@@ -26,15 +26,16 @@ endif::include-xpack[]
 
 *`Mutate`*:
 
-* Added support for boolean to integer conversion (https://github.com/logstash-plugins/logstash-filter-mutate/pull/108[#108]).
+* Added support for boolean-to-integer conversion (https://github.com/logstash-plugins/logstash-filter-mutate/pull/108[#108]).
 
 *`Ruby`*:
 
 * Fixed concurrency issues with multiple worker threads that was caused by a (https://github.com/jruby/jruby/issues/4868[JRuby issue]).
-* Added file based Ruby script support as an alternative to the existing inline option (https://github.com/logstash-plugins/logstash-filter-ruby/pull/35[#35]).
+* Added file-based Ruby script support as an alternative to the existing inline option (https://github.com/logstash-plugins/logstash-filter-ruby/pull/35[#35]).
 
+[float]
 ==== Output Plugins
 
 *`Elasticsearch`*:
 
-* Ignore event's `type` field for the purpose of setting the document's `_type` when indexing to Elasticsearch 6.x or above (https://github.com/logstash-plugins/logstash-filter-elasticsearch/pull/712[#712]).
+* When indexing to Elasticsearch 6.x or above, Logstash ignores the event's `type` field and no longer uses it to set the document's `_type` (https://github.com/logstash-plugins/logstash-filter-elasticsearch/pull/712[#712]).
