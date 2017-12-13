@@ -1,6 +1,8 @@
 package org.logstash.config.ir.graph;
 
 import java.util.concurrent.atomic.AtomicInteger;
+
+import org.logstash.common.SourceWithMetadata;
 import org.logstash.common.Util;
 import org.logstash.config.ir.HashableWithSource;
 import org.logstash.config.ir.SourceComponent;
@@ -25,6 +27,8 @@ public abstract class Vertex implements SourceComponent, HashableWithSource {
 
     private final String explicitId;
 
+    private final SourceWithMetadata meta;
+
     private Graph graph;
 
     private volatile String contextualHashCache;
@@ -32,11 +36,18 @@ public abstract class Vertex implements SourceComponent, HashableWithSource {
     private volatile String individualHashSourceCache;
     private volatile String generatedId;
 
-    protected Vertex() {
-        this(null);
+    protected Vertex(SourceWithMetadata meta) {
+        this(meta,null);
     }
 
-    protected Vertex(String explicitId) {
+    protected Vertex(SourceWithMetadata meta, String explicitId) {
+        if (meta == null) {
+            throw new IllegalArgumentException(
+                        "No source with metadata declared for " +
+                        this.getClass().getName()
+            );
+        }
+        this.meta = meta;
         this.explicitId = explicitId;
     }
 
@@ -148,67 +159,19 @@ public abstract class Vertex implements SourceComponent, HashableWithSource {
             return this.hashCache;
         }
 
-        // Sort the lineage to ensure consistency. We prepend each item with a lexicographically sortable
-        // encoding of its rank (using hex notation) so that the sort order is identical to the traversal order.
-        // This is a required since there may be individually identical components in different locations in the graph.
-        // It is, however, illegal to have functionally identical vertices, that is to say two vertices with the same
-        // contents that have the same lineage.
-
-        MessageDigest lineageDigest = Util.defaultMessageDigest();
-
-        lineageDigest.update(hashPrefix().getBytes(StandardCharsets.UTF_8));
-
-        // The lineage can be quite long and we want to avoid the quadratic complexity of string concatenation
-        // Thus, in this case there's no real way to get the hash source, we just hash as we go.
-        lineage().map(Vertex::contextualHashSource).forEachOrdered(v -> {
-                    byte[] bytes = v.getBytes(StandardCharsets.UTF_8);
-                    lineageDigest.update(bytes);
-                });
-
-        this.hashCache = Util.bytesToHexString(lineageDigest.digest());
-        return hashCache;
+        if (this.getSourceWithMetadata() != null) {
+            return this.getSourceWithMetadata().uniqueHash();
+        } else {
+            // This should never happen outside of the test suite where we construct pipelines
+            // without source metadata
+            throw new RuntimeException("Attempted to compute unique hash on a vertex with no source metadata!");
+        }
     }
 
     @Override
     public String hashSource() {
-        // In this case the source can be quite large, so we never actually use this function.
         return this.uniqueHash();
     }
-
-    public String hashPrefix() {
-        return String.format("Vertex[%08x]=", this.rank()) + this.individualHashSource() + "|";
-    }
-
-    public String contextualHashSource() {
-        if (this.contextualHashCache != null) {
-            return this.contextualHashCache;
-        }
-
-        // This string must be lexicographically sortable hence the ID at the front. It also must have the calculateIndividualHashSource
-        // repeated at the front for the case of a graph with two nodes at the same rank, same contents, but different lineages
-        StringBuilder result = new StringBuilder();
-        result.append(hashPrefix());
-        result.append(individualHashSource());
-
-        result.append("I:");
-        this.incomingEdges().map(Edge::individualHashSource).sorted().forEachOrdered(result::append);
-        result.append("O:");
-        this.outgoingEdges().map(Edge::individualHashSource).sorted().forEachOrdered(result::append);
-
-        this.contextualHashCache = result.toString();
-        return this.contextualHashCache;
-    }
-
-    public final String individualHashSource() {
-        if (this.individualHashSourceCache != null) {
-            return this.individualHashSourceCache;
-        }
-
-        this.individualHashSourceCache = calculateIndividualHashSource();
-        return this.individualHashSourceCache;
-    }
-
-    public abstract String calculateIndividualHashSource();
 
     // Can be overriden in subclasses to define multiple
     // expected Edge classes this Vertex can take.
@@ -260,4 +223,8 @@ public abstract class Vertex implements SourceComponent, HashableWithSource {
         this.individualHashSourceCache = null;
     }
 
+    @Override
+    public SourceWithMetadata getSourceWithMetadata() {
+        return meta;
+    }
 }

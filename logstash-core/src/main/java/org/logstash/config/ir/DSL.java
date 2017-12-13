@@ -3,6 +3,9 @@ package org.logstash.config.ir;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
+
+import org.logstash.common.IncompleteSourceWithMetadataException;
 import org.logstash.common.SourceWithMetadata;
 import org.logstash.config.ir.expression.BooleanExpression;
 import org.logstash.config.ir.expression.EventValueExpression;
@@ -125,8 +128,8 @@ public class DSL {
         return new And(null, left, right);
     }
 
-    public static Not eNand(Expression left, Expression right) throws InvalidIRException {
-        return eNot(eAnd(left, right));
+    public static Not eNand(SourceWithMetadata meta, Expression left, Expression right) throws InvalidIRException {
+        return eNot(meta, eAnd(left, right));
     }
 
     public static Or eOr(SourceWithMetadata meta, Expression left, Expression right) {
@@ -137,8 +140,8 @@ public class DSL {
         return new Or(null, left, right);
     }
 
-    public static Or eXor(Expression left, Expression right) throws InvalidIRException {
-        return eOr(eAnd(eNot(left), right), eAnd(left, eNot(right)));
+    public static Or eXor(SourceWithMetadata meta, Expression left, Expression right) throws InvalidIRException {
+        return eOr(meta, eAnd(eNot(left), right), eAnd(left, eNot(right)));
     }
 
     public static RegexEq eRegexEq(SourceWithMetadata meta, Expression left, ValueExpression right) throws InvalidIRException {
@@ -150,11 +153,11 @@ public class DSL {
     }
 
     public static Expression eRegexNeq(SourceWithMetadata meta, Expression left, ValueExpression right) throws InvalidIRException {
-        return eNot(eRegexEq(meta, left, right));
+        return new Not(meta, eRegexEq(meta, left, right));
     }
 
     public static Expression eRegexNeq(Expression left, ValueExpression right) throws InvalidIRException {
-        return eNot(eRegexEq(left, right));
+        return new Not(null, eRegexEq(null, left, right));
     }
 
     public static Neq eNeq(SourceWithMetadata meta, Expression left, Expression right) {
@@ -221,6 +224,12 @@ public class DSL {
     }
 
     public static NoopStatement noop() {
+        try {
+            SourceWithMetadata meta = new SourceWithMetadata("internal", "noop", 0, 0, UUID.randomUUID().toString());
+        } catch (IncompleteSourceWithMetadataException e) {
+            // Should never happen
+            throw new RuntimeException("Noop could not instantiate metadata, this should never happen");
+        }
         return new NoopStatement(null);
     }
 
@@ -228,20 +237,12 @@ public class DSL {
         return new PluginStatement(meta, new PluginDefinition(pluginType, pluginName, pluginArguments));
     }
 
-    public static PluginStatement iPlugin(PluginDefinition.Type type, String pluginName, Map<String, Object> pluginArguments) {
-        return iPlugin(null, type, pluginName, pluginArguments);
+    public static PluginStatement iPlugin(SourceWithMetadata meta, PluginDefinition.Type pluginType, String pluginName, String pluginId) {
+        return iPlugin(meta, pluginType, pluginName, pargs().put("id", pluginId).build());
     }
 
-    public static PluginStatement iPlugin(PluginDefinition.Type type, String pluginName, MapBuilder<String, Object> argBuilder) {
-        return iPlugin(type, pluginName, argBuilder.build());
-    }
-
-    public static PluginStatement iPlugin(PluginDefinition.Type type, String pluginName, String id) {
-        return iPlugin(type, pluginName, argumentBuilder().put("id", id).build());
-    }
-
-    public static PluginStatement iPlugin(PluginDefinition.Type type, String pluginName) {
-        return iPlugin(type, pluginName, pargs());
+    public static PluginStatement iPlugin(SourceWithMetadata meta, PluginDefinition.Type pluginType, String pluginName) {
+        return iPlugin(meta, pluginType, pluginName, pargs().build());
     }
 
     public static IfStatement iIf(SourceWithMetadata meta,
@@ -252,15 +253,9 @@ public class DSL {
         return new IfStatement(meta, booleanExpression, ifTrue, ifFalse);
     }
 
-    public static IfStatement iIf(Expression condition,
-                                  Statement ifTrue,
-                                  Statement ifFalse) throws InvalidIRException {
-        return iIf(null, condition, ifTrue, ifFalse);
-    }
-
-    public static IfStatement iIf(Expression condition,
+    public static IfStatement iIf(SourceWithMetadata meta, Expression condition,
                                   Statement ifTrue) throws InvalidIRException {
-        return iIf(null, condition, ifTrue, noop());
+        return iIf(meta, condition, ifTrue, noop());
     }
 
     public static class MapBuilder<K,V> {
@@ -300,24 +295,16 @@ public class DSL {
        return new PluginVertex(sourceWithMetadata, new PluginDefinition(pluginType, pluginName, pluginArgs));
     }
 
-    public static PluginVertex gPlugin(PluginDefinition.Type type, String pluginName, Map<String, Object> pluginArgs) {
-        return gPlugin(null, type, pluginName, pluginArgs);
+    public static PluginVertex gPlugin(SourceWithMetadata meta, PluginDefinition.Type type, String pluginName, String id) {
+        return gPlugin(meta, type, pluginName, argumentBuilder().put("id", id).build());
     }
 
-    public static PluginVertex gPlugin(PluginDefinition.Type type, String pluginName, String id) {
-        return gPlugin(type, pluginName, argumentBuilder().put("id", id).build());
-    }
-
-    public static PluginVertex gPlugin(PluginDefinition.Type type, String pluginName) {
-        return gPlugin(null, type, pluginName, new HashMap<>());
+    public static PluginVertex gPlugin(SourceWithMetadata meta, PluginDefinition.Type type, String pluginName) {
+        return gPlugin(meta, type, pluginName, new HashMap<>());
     }
 
 
     public static IfVertex gIf(SourceWithMetadata meta, BooleanExpression expression) {
-       return new IfVertex(expression);
-    }
-
-    public static IfVertex gIf(BooleanExpression expression) {
-       return new IfVertex(expression);
+       return new IfVertex(meta, expression);
     }
 }
