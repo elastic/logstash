@@ -3,7 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
-* <<logstash-6-0-0,Logstash 6.0.0>>
+* <<logstash-6-1-0,Logstash 6.1.0>>
 
 ifdef::include-xpack[]
 See also:
@@ -11,32 +11,31 @@ See also:
 * <<release-notes-xls>>
 endif::include-xpack[]
 
-[[logstash-6-0-0]]
-=== Logstash 6.0.0 Release Notes
+[[logstash-6-1-0]]
+=== Logstash 6.1.0 Release Notes
+* Implemented a new experimental Java execution engine for Logstash pipelines. The Java engine is off by default, but can be enabled with --experimental-java-execution ({lsissue}7950[Issue 7950]).
+* Added support for changing the <<configuring-persistent-queues,page capacity>> for an existing queue ({lsissue}8628[Issue 8628]).
+* Made extensive improvements to pipeline execution performance and memory efficiency ({lsissue}7692[Issue 7692], {lsissue}8776[8776], {lsissue}8577[8577], {lsissue}8446[8446], {lsissue}8333[8333], {lsissue}8163[8163], {lsissue}8103[8103], {lsissue}8087[8087], and {lsissue}7691[7691]).
 
-* This list does not include all breaking changes, please consult the <<breaking-changes,breaking changes>> document separately.
-* Added new `logstash.yml` setting: `config.support_escapes`. When enabled, Logstash will interpret escape sequences in
-  strings in the pipeline configuration.
-* Added an explicit --setup phase for modules. This phase is used to install dashboards and the Elasticsearch template.
-* Added support for running multiple pipelines in the same Logstash instance. Running multiple pipelines
-  allows users to isolate data flow, provide separate runtime pipeline parameters and helps simplify complex
-  configurations. This can be configured via the new `pipelines.yml` file.
-* https://github.com/elastic/logstash/commit/840439722d8ef4737c7e8101c59652ced191bbea[Improved performance].
-* https://github.com/elastic/logstash/commit/546951fa889902d8ec56f8a7cec1dc41a21088ff[Modules: Set default credentials for Kibana if es info is present].
-* A variety of small consistency and testing fixes for the Windows platform
-* https://github.com/elastic/logstash/pull/8318[Added all commercially supported plugins to bundled plugins].
-* The existing `JAVA_OPTS` env var is now ignored for consistency with Elasticsearch.
-* JAVA_TOOL_OPTIONS env var is cleared for consistency with Elasticsearch.
-* Now only LS_JAVA_OPTS env var is supported to append options to parsed options from the jvm.options file.
-* Dropped support for the LS_JVM_OPTS environment variable.
-* Dropped support for the USE_RUBY and USE_DRIP environment variables.
-* Added `cloud.id` and `cloud.auth` support for modules to provide an easy way to integrate with Elastic Cloud service.
-* Enabled DLQ support for multipipelines.
-* Added an {xpack} feature to manage Logstash configurations centrally in Elasticsearch. We've also added a UI to manage
-  configurations directly in Kibana without having to restart Logstash.
-* Users can now visualize the Logstash configuration pipeline as part of the {xpack} monitoring feature.
+[float]
+==== Filter Plugins
 
-==== Plugins
+*`Grok`*:
 
-* `GeoIP Filter`: You can now use MaxMind's commercial database to get enriched Geo information. ASN data can be
-  obtained via the GeoIP2-ISP database.
+* Fixed slow metric invocation and needless locking on timeout enforcer (https://github.com/logstash-plugins/logstash-filter-grok/pull/125[#125]).
+
+*`Mutate`*:
+
+* Added support for boolean-to-integer conversion (https://github.com/logstash-plugins/logstash-filter-mutate/pull/108[#108]).
+
+*`Ruby`*:
+
+* Fixed concurrency issues with multiple worker threads that was caused by a (https://github.com/jruby/jruby/issues/4868[JRuby issue]).
+* Added file-based Ruby script support as an alternative to the existing inline option (https://github.com/logstash-plugins/logstash-filter-ruby/pull/35[#35]).
+
+[float]
+==== Output Plugins
+
+*`Elasticsearch`*:
+
+* When indexing to Elasticsearch 6.x or above, Logstash ignores the event's `type` field and no longer uses it to set the document's `_type` (https://github.com/logstash-plugins/logstash-filter-elasticsearch/pull/712[#712]).
