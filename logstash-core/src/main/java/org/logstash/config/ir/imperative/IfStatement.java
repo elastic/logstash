@@ -89,7 +89,7 @@ public class IfStatement extends Statement {
         Collection<Vertex> trueRoots = trueGraph.roots().map(combination.oldToNewVertices::get).collect(Collectors.toList());
         Collection<Vertex> falseRoots = falseGraph.roots().map(combination.oldToNewVertices::get).collect(Collectors.toList());
 
-        IfVertex ifVertex = new IfVertex(this.booleanExpression);
+        IfVertex ifVertex = new IfVertex(this.getSourceWithMetadata(), this.booleanExpression);
         newGraph.addVertex(ifVertex);
 
         for (Vertex v : trueRoots) {

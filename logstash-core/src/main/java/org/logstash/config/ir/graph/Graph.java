@@ -278,14 +278,14 @@ public final class Graph implements SourceComponent, Hashable {
         }
 
         // Check for duplicate IDs in the config
-        List<String> duplicateIdErrorMessages = this.vertices().parallel()
+        List<String> duplicateIdErrorMessages = this.vertices()
                 .collect(Collectors.groupingBy(Vertex::getId))
                 .values()
                 .stream()
                 .filter(group -> group.size() > 1)
                 .map(group -> {
                     return "ID: " + group.stream().findAny().get().getId() + " " +
-                            group.stream().map(Object::toString).collect(Collectors.joining(","));
+                            group.stream().map(Object::toString).collect(Collectors.joining("\n"));
                 })
                 .collect(Collectors.toList());
 
@@ -415,18 +415,11 @@ public final class Graph implements SourceComponent, Hashable {
     }
 
     public String uniqueHash() {
-        MessageDigest lineageDigest = Util.defaultMessageDigest();
-
-        // We only need to calculate the hashes of the leaves since those hashes are sensitive to changes
-        // anywhere else on the graph. It would also be OK to use the roots, the decision is arbitrary
-        List<byte[]> sources = this.leaves().parallel()
-                .map(Vertex::uniqueHash)
-                .sorted()
-                .map(String::getBytes)
-                .collect(Collectors.toList());
-        // We don't do this inline with the stream because we need this to be single threaded
-        // not parallel
-        sources.forEach(lineageDigest::update);
-        return Util.bytesToHexString(lineageDigest.digest());
+        return Util.digest(this.vertices().
+                filter(v -> !(v instanceof QueueVertex)). // has no metadata
+                map(Vertex::getSourceWithMetadata).
+                map(SourceWithMetadata::uniqueHash).
+                sorted().
+                collect(Collectors.joining()));
     }
 }

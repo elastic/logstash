@@ -1,6 +1,7 @@
 package org.logstash.config.ir.graph;
 
 import org.junit.Test;
+import org.logstash.common.SourceWithMetadata;
 import org.logstash.config.ir.DSL;
 import org.logstash.config.ir.IRHelpers;
 import org.logstash.config.ir.InvalidIRException;
@@ -9,12 +10,14 @@ import org.logstash.config.ir.imperative.IfStatement;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Random;
 
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.*;
 import static org.logstash.config.ir.IRHelpers.createTestExpression;
 import static org.logstash.config.ir.IRHelpers.createTestVertex;
+import static org.logstash.config.ir.IRHelpers.randMeta;
 
 /**
  * Created by andrewvc on 11/18/16.
@@ -73,16 +76,18 @@ public class GraphTest {
 
     @Test
     public void SimpleConsistencyTest() throws InvalidIRException {
+        SourceWithMetadata meta = randMeta();
         Graph g1 = Graph.empty();
-        g1.addVertex(createTestVertex("a"));
+        g1.addVertex(createTestVertex(meta, "a"));
         Graph g2 = Graph.empty();
-        g2.addVertex(createTestVertex("a"));
+        g2.addVertex(createTestVertex(meta, "a"));
 
         assertEquals(g1.uniqueHash(), g2.uniqueHash());
     }
 
+
     @Test
-    public void complexConsistencyTest() throws InvalidIRException {
+    public void complexConsistencyTest() throws Exception {
         for (int i = 0; i < 10; ++i) {
             Graph g1 = IRHelpers.samplePipeline().getGraph();
             Graph g2 = IRHelpers.samplePipeline().getGraph();
@@ -120,7 +125,7 @@ public class GraphTest {
     @Test
     public void testThreadingTyped() throws InvalidIRException {
         Graph graph = Graph.empty();
-        Vertex if1 = new IfVertex(createTestExpression());
+        Vertex if1 = new IfVertex(randMeta(), createTestExpression());
         Vertex condT = IRHelpers.createTestVertex();
         Edge tEdge = graph.chainVertices(BooleanEdge.trueFactory, if1, condT).stream().findFirst().get();
         assertThat(tEdge, instanceOf(BooleanEdge.class));
@@ -138,27 +143,6 @@ public class GraphTest {
         Vertex rv = right.getVertexById("t1");
         assertTrue(lv.sourceComponentEquals(rv));
         assertTrue(rv.sourceComponentEquals(lv));
-    }
-
-    @Test
-    public void uniqueHashingOfSimilarLeaves() throws InvalidIRException {
-        // the initial implementation didn't handle this well, so we'll leave it here as a tricky test
-
-        IfStatement imperative = DSL.iIf(
-                DSL.eTruthy(DSL.eValue("1")),
-                DSL.iPlugin(PluginDefinition.Type.FILTER, "drop"),
-                DSL.iIf(
-                        DSL.eTruthy(DSL.eValue("2")),
-                        DSL.iPlugin(PluginDefinition.Type.FILTER, "drop"),
-                        DSL.iIf(
-                                DSL.eTruthy(DSL.eValue("3")),
-                                DSL.iPlugin(PluginDefinition.Type.FILTER, "drop")
-                        )
-                )
-        );
-
-        Graph g = imperative.toGraph();
-        g.validate();
     }
 
     private void assertVerticesConnected(Graph graph, String fromId, String toId) {
