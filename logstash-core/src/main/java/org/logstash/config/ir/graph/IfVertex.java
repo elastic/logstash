@@ -20,8 +20,8 @@ public class IfVertex extends Vertex {
 
     private final BooleanExpression booleanExpression;
 
-    public IfVertex(BooleanExpression booleanExpression) {
-        super();
+    public IfVertex(SourceWithMetadata meta, BooleanExpression booleanExpression) {
+        super(meta);
         this.booleanExpression = booleanExpression;
     }
 
@@ -40,12 +40,6 @@ public class IfVertex extends Vertex {
             return otherV.booleanExpression.sourceComponentEquals(this.booleanExpression);
         }
         return false;
-    }
-
-    // An IfVertex has no real metadata in and of itself, but its expression does!
-    @Override
-    public SourceWithMetadata getSourceWithMetadata() {
-        return null;
     }
 
     public boolean hasEdgeType(boolean type) {
@@ -89,11 +83,6 @@ public class IfVertex extends Vertex {
 
     @Override
     public IfVertex copy() {
-        return new IfVertex(booleanExpression);
-    }
-
-    @Override
-    public String calculateIndividualHashSource() {
-        return this.getClass().getCanonicalName() + "{" + this.booleanExpression.hashSource() + "}";
+        return new IfVertex(this.getSourceWithMetadata(), booleanExpression);
     }
 }
