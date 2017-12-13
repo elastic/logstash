@@ -49,9 +49,10 @@ module LogStashCompilerLSCLGrammar; module LogStash; module Compiler; module LSC
       org.logstash.config.ir.DSL
     end
     
-    AND_METHOD = jdsl.method(:eAnd)
-    NAND_METHOD = jdsl.method(:eNand)
-    OR_METHOD = jdsl.method(:eOr)
-    XOR_METHOD = jdsl.method(:eXor)
+    BOOLEAN_DSL_METHOD_SIGNATURE = [org.logstash.common.SourceWithMetadata, org.logstash.config.ir.expression.Expression, org.logstash.config.ir.expression.Expression]
+    AND_METHOD = jdsl.java_method(:eAnd, BOOLEAN_DSL_METHOD_SIGNATURE)
+    NAND_METHOD = jdsl.java_method(:eNand, BOOLEAN_DSL_METHOD_SIGNATURE)
+    OR_METHOD = jdsl.java_method(:eOr, BOOLEAN_DSL_METHOD_SIGNATURE)
+    XOR_METHOD = jdsl.java_method(:eXor, BOOLEAN_DSL_METHOD_SIGNATURE)
   end
 end; end; end; end; end

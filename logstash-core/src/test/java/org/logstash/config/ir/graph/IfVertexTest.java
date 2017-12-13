@@ -60,7 +60,7 @@ public class IfVertexTest {
     }
 
     public IfVertex testIfVertex() throws InvalidIRException {
-        return new IfVertex(createTestExpression());
+        return new IfVertex(randMeta(), createTestExpression());
     }
 
 }
