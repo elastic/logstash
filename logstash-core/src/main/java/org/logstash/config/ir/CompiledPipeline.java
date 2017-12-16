@@ -248,7 +248,7 @@ public final class CompiledPipeline {
             } else {
                 return DatasetCompiler.terminalDataset(outputs.stream().map(
                     leaf ->
-                        outputDataset(leaf.getId(), flatten(DatasetCompiler.ROOT_DATASETS, leaf))
+                        outputDataset(leaf.getId(), getConfigSource(leaf), flatten(DatasetCompiler.ROOT_DATASETS, leaf))
                 ).collect(Collectors.toList()));
             }
         }
@@ -256,13 +256,14 @@ public final class CompiledPipeline {
         /**
          * Build a {@link Dataset} representing the {@link JrubyEventExtLibrary.RubyEvent}s after
          * the application of the given filter.
-         * @param vertex Vertex Id of the filter to create this {@link Dataset} for
+         * @param vertexId Vertex Id of the filter to create this {@link Dataset}
+         * @param configSource The Logstash configuration that maps to the returned Dataset
          * @param datasets All the datasets that pass through this filter
          * @return Filter {@link Dataset}
          */
-        private Dataset filterDataset(final String vertex, final Collection<Dataset> datasets) {
+        private Dataset filterDataset(final String vertexId, String configSource, final Collection<Dataset> datasets) {
             return plugins.computeIfAbsent(
-                vertex, v -> DatasetCompiler.filterDataset(datasets, filters.get(v))
+                vertexId, v -> DatasetCompiler.filterDataset(datasets, filters.get(v), configSource)
             );
         }
 
@@ -271,13 +272,14 @@ public final class CompiledPipeline {
          * the application of the given output.
          * @param vertexId Vertex Id of the filter to create this {@link Dataset} for
          * filter node in the topology once
+         * @param configSource The Logstash configuration that maps to the returned Dataset
          * @param datasets All the datasets that are passed into this output
          * @return Output {@link Dataset}
          */
-        private Dataset outputDataset(final String vertexId, final Collection<Dataset> datasets) {
+        private Dataset outputDataset(final String vertexId, String configSource, final Collection<Dataset> datasets) {
             return plugins.computeIfAbsent(
                 vertexId, v -> DatasetCompiler.outputDataset(
-                    datasets, outputs.get(v), outputs.size() == 1
+                    datasets, outputs.get(v), configSource, outputs.size() == 1
                 )
             );
         }
@@ -288,12 +290,13 @@ public final class CompiledPipeline {
          * @param datasets Datasets to split
          * @param condition Condition that must be fulfilled
          * @param index Vertex id to cache the resulting {@link Dataset} under
+         * @param configSource The Logstash configuration that maps to the returned Dataset
          * @return The half of the datasets contents that fulfils the condition
          */
         private SplitDataset split(final Collection<Dataset> datasets,
-            final EventCondition condition, final String index) {
+            final EventCondition condition, final String index, String configSource) {
             return iffs.computeIfAbsent(
-                index, ind -> DatasetCompiler.splitDataset(datasets, condition)
+                index, ind -> DatasetCompiler.splitDataset(datasets, condition, configSource)
             );
         }
 
@@ -329,9 +332,9 @@ public final class CompiledPipeline {
                     final Collection<Dataset> transientDependencies = flatten(datasets, dependency);
                     final String id = dependency.getId();
                     if (isFilter(dependency)) {
-                        return filterDataset(id, transientDependencies);
+                        return filterDataset(id, getConfigSource(dependency), transientDependencies);
                     } else if (isOutput(dependency)) {
-                        return outputDataset(id, transientDependencies);
+                        return outputDataset(id, getConfigSource(dependency), transientDependencies);
                     } else {
                         // We know that it's an if vertex since the the input children are either
                         // output, filter or if in type.
@@ -339,7 +342,7 @@ public final class CompiledPipeline {
                         final SplitDataset ifDataset = split(
                             transientDependencies,
                             EventCondition.Compiler.buildCondition(ifvert.getBooleanExpression()),
-                            id
+                            id, getConfigSource(dependency)
                         );
                         // It is important that we double check that we are actually dealing with the
                         // positive/left branch of the if condition
@@ -352,5 +355,22 @@ public final class CompiledPipeline {
                     }
                 }).collect(Collectors.toList());
         }
+    }
+
+    /**
+     * Gets the configuration source for debugging purposes. Uses the metadata text if it exists, else the vertex toString method
+     * @param vertex The {@link Vertex} to read the Logstash configuration source
+     * @return A String that can be useful for debugging the Logstash configuration to generated Dataset/code
+     */
+    private String getConfigSource(Vertex vertex){
+        if( vertex == null){
+            return "(vertex is null, this is likely a bug)";
+        }
+        //conditionals will use this
+        if(vertex.getSourceWithMetadata() == null){
+            return vertex.toString();
+        }
+        String text  = vertex.getSourceWithMetadata().getText();
+        return text == null ? "(vertex.getSourceWithMetadata().getText() is null, this is likely a bug)" : text;
     }
 }

@@ -36,6 +36,8 @@ final class ComputeStepSyntaxElement implements SyntaxElement {
 
     private static final Map<String, String> SOURCE_CACHE = new HashMap<>();
 
+    private static final Map<String, String> CONFIG_SOURCE_CACHE = new HashMap<>();
+
     /**
      * Sequence number to ensure unique naming for runtime compiled classes.
      */
@@ -49,18 +51,28 @@ final class ComputeStepSyntaxElement implements SyntaxElement {
 
     private final ClassFields fields;
 
-    /**
+    private final String configSource;
+
+     /**
      * Get the generated source
      * @return sorted and formatted lines of generated code
      */
     public static List<String> getGeneratedSource() {
         List<String> output = new ArrayList<>();
+
+        output.add("/******************************************************************************************");
+        CONFIG_SOURCE_CACHE.forEach((k, v) -> {
+            output.add("* " +  v + " <==> " + k.replaceAll("[\\t\\n\\r\\s]+",""));
+        });
+        output.add("******************************************************************************************/");
+
         SOURCE_CACHE.forEach((k, v) -> {
             output.add(String.format("class %s {", k));
             LOGGER.trace("{}:{}", k, v);
             getFormattedLines(v, output, INDENT_WIDTH);
             output.add("}");
         });
+
         return output;
     }
 
@@ -104,19 +116,21 @@ final class ComputeStepSyntaxElement implements SyntaxElement {
     }
 
     ComputeStepSyntaxElement(final Iterable<MethodSyntaxElement> methods,
-        final ClassFields fields, DatasetCompiler.DatasetFlavor datasetFlavor) {
-        this(String.format("Generated%d_" + datasetFlavor.getDisplay() + "Dataset", SEQUENCE.incrementAndGet()), methods, fields);
+        final ClassFields fields, DatasetCompiler.DatasetFlavor datasetFlavor, String configSource) {
+        this(String.format("Generated%d_" + datasetFlavor.getDisplay() + "Dataset", SEQUENCE.incrementAndGet()), methods, fields, configSource);
     }
 
     private ComputeStepSyntaxElement(final String name, final Iterable<MethodSyntaxElement> methods,
-        final ClassFields fields) {
+        final ClassFields fields, String configSource) {
         this.name = name;
         this.methods = methods;
         this.fields = fields;
+        this.configSource = configSource;
     }
 
     public <T extends Dataset> T instantiate(final Class<T> interfce) {
         try {
+
             final Class<? extends Dataset> clazz;
             if (CLASS_CACHE.containsKey(this)) {
                 clazz = CLASS_CACHE.get(this);
@@ -133,6 +147,7 @@ final class ComputeStepSyntaxElement implements SyntaxElement {
                 CLASS_LOADER.addClass(clazz);
                 CLASS_CACHE.put(this, clazz);
             }
+            CONFIG_SOURCE_CACHE.putIfAbsent(configSource, clazz.getName());
             return (T) clazz.<T>getConstructor(ctorTypes()).newInstance(ctorArguments());
         } catch (final CompileException | IOException | NoSuchMethodException
             | InvocationTargetException | InstantiationException | IllegalAccessException ex) {
@@ -185,7 +200,7 @@ final class ComputeStepSyntaxElement implements SyntaxElement {
      * @return Source of this class, with its name set to {@code CONSTANT}.
      */
     private String normalizedSource() {
-        return new ComputeStepSyntaxElement("CONSTANT", methods, fields)
+        return new ComputeStepSyntaxElement("CONSTANT", methods, fields, "")
             .generateCode();
     }
 

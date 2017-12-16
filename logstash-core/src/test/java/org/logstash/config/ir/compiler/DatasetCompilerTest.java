@@ -19,7 +19,7 @@ public final class DatasetCompilerTest {
     public void compilesEmptyMethod() {
         final Dataset func = DatasetCompiler.compile(
             Closure.wrap(SyntaxFactory.ret(DatasetCompiler.BATCH_ARG.call("to_a"))),
-            Closure.EMPTY, new ClassFields(), DatasetCompiler.DatasetFlavor.ROOT
+            Closure.EMPTY, new ClassFields(), DatasetCompiler.DatasetFlavor.ROOT, "foo"
         );
         final RubyArray batch = RubyUtil.RUBY.newArray();
         assertThat(func.compute(batch, false, false), is(batch));
@@ -44,7 +44,7 @@ public final class DatasetCompilerTest {
                 ),
                 SyntaxFactory.ret(events)
             ),
-            Closure.EMPTY, fields, DatasetCompiler.DatasetFlavor.ROOT
+            Closure.EMPTY, fields, DatasetCompiler.DatasetFlavor.ROOT, "foo"
         );
         assertThat(func.compute(batch, false, false).size(), is(2));
     }
@@ -60,7 +60,7 @@ public final class DatasetCompilerTest {
                 RubyUtil.RUBY.evalScriptlet(
                     "output = Object.new\noutput.define_singleton_method(:multi_receive) do |batch|\nend\noutput"
                 ),
-                true
+                "foo", true
             ).compute(RubyUtil.RUBY.newArray(), false, false),
             nullValue()
         );
@@ -71,7 +71,7 @@ public final class DatasetCompilerTest {
         final FieldReference key = FieldReference.from("foo");
         final EventCondition condition = event -> event.getEvent().includes(key);
         final SplitDataset left =
-            DatasetCompiler.splitDataset(DatasetCompiler.ROOT_DATASETS, condition);
+            DatasetCompiler.splitDataset(DatasetCompiler.ROOT_DATASETS, condition, "foo");
         final Event trueEvent = new Event();
         trueEvent.setField(key, "val");
         final JrubyEventExtLibrary.RubyEvent falseEvent =
