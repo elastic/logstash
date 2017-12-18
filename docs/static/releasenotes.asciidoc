@@ -14,7 +14,46 @@ endif::include-xpack[]
 
 [[logstash-6-1-1]]
 === Logstash 6.1.1 Release Notes
-*  There are no user-facing changes in this release.
+*  There are no user-facing changes in Logstash core in this release.
+
+[float]
+==== Input Plugins
+
+*`Beats`*:
+
+* Fixed issue with close_wait connections to make sure that keep alive is sent back to the client. (https://github.com/logstash-plugins/logstash-input-beats/pull/272[#272])
+
+*`HTTP`*:
+
+* If all webserver threads are busy, the plugin now returns status code 429. (https://github.com/logstash-plugins/logstash-input-http/pull/75[#75])
+
+*`JDBC`*:
+
+* Fixed connection and memory leak. (https://github.com/logstash-plugins/logstash-input-jdbc/issues/251[#251])
+
+*`Syslog`*:
+
+* Fixed issue where stopping a pipeline with active inbound syslog connections (for example, while reloading the configuration) could cause Logstash to crash. (https://github.com/logstash-plugins/logstash-input-syslog/issues/40[#40])
+
+[float]
+==== Filter Plugins
+
+*`Split`*:
+
+* Fixed crash on arrays with null values. (https://github.com/logstash-plugins/logstash-filter-split#31[#31])
+
+[float]
+==== Codecs
+
+*`Line`*:
+
+* Fixed thread safety issue. (https://github.com/logstash-plugins/logstash-codec-line/pull/13[#13])
+
+*`Netflow`*:
+
+* Added vIPtela support.
+* Added fields for Cisco ASR1k.
+
 
 [[logstash-6-1-0]]
 === Logstash 6.1.0 Release Notes
