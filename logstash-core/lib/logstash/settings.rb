@@ -9,6 +9,7 @@ module LogStash
   class Settings
 
     include LogStash::Util::SubstitutionVariables
+    include LogStash::Util::Loggable
     
     def initialize
       @settings = {}

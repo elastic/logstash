@@ -90,8 +90,8 @@ public class SecretStoreFactory {
             }
         } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
             throw new SecretStoreException.ImplementationNotFoundException(
-                    String.format("Could not %s class %s, please ensure it is on the Java classpath, implements org.logstash.secret.store.SecretStore, and has a zero " +
-                            "argument constructor", mode.name().toLowerCase(), className), e);
+                    String.format("Could not %s class %s, please validate the `keystore.classname` is configured correctly and that the class can be loaded by Logstash ", mode
+                                    .name().toLowerCase(), className), e);
         }
     }
 

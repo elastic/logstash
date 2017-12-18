@@ -65,7 +65,8 @@ module LogStash
             Setting::TimeValue.new("slowlog.threshold.warn", "-1"),
             Setting::TimeValue.new("slowlog.threshold.info", "-1"),
             Setting::TimeValue.new("slowlog.threshold.debug", "-1"),
-            Setting::TimeValue.new("slowlog.threshold.trace", "-1")
+            Setting::TimeValue.new("slowlog.threshold.trace", "-1"),
+            Setting::String.new("keystore.classname", "org.logstash.secret.store.backend.JavaKeyStore")
   ].each {|setting| SETTINGS.register(setting) }
 
   # Compute the default queue path based on `path.data`
@@ -74,6 +75,9 @@ module LogStash
   # Compute the default dead_letter_queue path based on `path.data`
   default_dlq_file_path = ::File.join(SETTINGS.get("path.data"), "dead_letter_queue")
   SETTINGS.register Setting::WritableDirectory.new("path.dead_letter_queue", default_dlq_file_path)
+  # Compute the default secret store path based on `path.data`
+  default_secret_store_file_path = ::File.join(SETTINGS.get("path.data"), "logstash.keystore")
+  SETTINGS.register Setting::String.new("keystore.file", default_secret_store_file_path)
 
   SETTINGS.on_post_process do |settings|
     # If the data path is overridden but the queue path isn't recompute the queue path
@@ -85,6 +89,9 @@ module LogStash
       end
       if !settings.set?("path.dead_letter_queue")
         settings.set_value("path.dead_letter_queue", ::File.join(settings.get("path.data"), "dead_letter_queue"))
+      end
+      if !settings.set?("keystore.file")
+        settings.set_value("keystore.file", ::File.join(settings.get("path.data"), "logstash.keystore"))
       end
     end
   end
