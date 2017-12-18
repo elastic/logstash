@@ -58,46 +58,45 @@ public class SecretStoreFactoryTest {
     }
 
     @Test
-    public void testAlternativeImplementation(){
-        String beforeSystem = System.getProperty(SecretStore.class.getCanonicalName());
-        try {
-            System.setProperty(SecretStore.class.getCanonicalName(), "org.logstash.secret.store.SecretStoreFactoryTest$MemoryStore");
-            SecretStore secretStore = SecretStoreFactory.loadSecretStore(new SecureConfig());
-            assertThat(secretStore).isInstanceOf(MemoryStore.class);
-            validateMarker(secretStore);
-        } finally {
-            if (beforeSystem == null) {
-                System.clearProperty(SecretStore.class.getCanonicalName());
-            } else {
-                System.setProperty(SecretStore.class.getCanonicalName(), beforeSystem);
-            }
-        }
-    }
-
-    @Test
-    public void testAlternativeImplementationInvalid(){
-        thrown.expect(SecretStoreException.ImplementationNotFoundException.class);
-        String beforeSystem = System.getProperty(SecretStore.class.getCanonicalName());
-        try {
-            System.setProperty(SecretStore.class.getCanonicalName(), "junk");
-            SecretStoreFactory.loadSecretStore(new SecureConfig());
-        } finally {
-            if (beforeSystem == null) {
-                System.clearProperty(SecretStore.class.getCanonicalName());
-            } else {
-                System.setProperty(SecretStore.class.getCanonicalName(), beforeSystem);
-            }
-        }
-    }
-
-    @Test
-    public void testDefaultLoad() throws IOException {
+    public void testAlternativeImplementation() {
         SecureConfig secureConfig = new SecureConfig();
-        secureConfig.add("keystore.path", folder.newFolder().toPath().resolve("logstash.keystore").toString().toCharArray());
-        SecretStore secretStore = SecretStoreFactory.loadSecretStore(secureConfig);
+        secureConfig.add("keystore.classname", "org.logstash.secret.store.SecretStoreFactoryTest$MemoryStore".toCharArray());
+        SecretStore secretStore = SecretStoreFactory.load(secureConfig);
+        assertThat(secretStore).isInstanceOf(MemoryStore.class);
+        validateMarker(secretStore);
+    }
+
+    @Test
+    public void testAlternativeImplementationInvalid() {
+        thrown.expect(SecretStoreException.ImplementationNotFoundException.class);
+        SecureConfig secureConfig = new SecureConfig();
+        secureConfig.add("keystore.classname", "junk".toCharArray());
+        SecretStore secretStore = SecretStoreFactory.load(secureConfig);
+        assertThat(secretStore).isInstanceOf(MemoryStore.class);
+        validateMarker(secretStore);
+    }
+
+    @Test
+    public void testCreateLoad() throws IOException {
+        SecretIdentifier id = new SecretIdentifier(UUID.randomUUID().toString());
+        String value = UUID.randomUUID().toString();
+        SecureConfig secureConfig = new SecureConfig();
+        secureConfig.add("keystore.file", folder.newFolder().toPath().resolve("logstash.keystore").toString().toCharArray());
+        SecretStore secretStore = SecretStoreFactory.create(secureConfig.clone());
 
         byte[] marker = secretStore.retrieveSecret(LOGSTASH_MARKER);
         assertThat(new String(marker, StandardCharsets.UTF_8)).isEqualTo(LOGSTASH_MARKER.getKey());
+        secretStore.persistSecret(id, value.getBytes(StandardCharsets.UTF_8));
+        byte[] retrievedValue = secretStore.retrieveSecret(id);
+        assertThat(new String(retrievedValue, StandardCharsets.UTF_8)).isEqualTo(value);
+
+
+        secretStore = SecretStoreFactory.load(secureConfig);
+        marker = secretStore.retrieveSecret(LOGSTASH_MARKER);
+        assertThat(new String(marker, StandardCharsets.UTF_8)).isEqualTo(LOGSTASH_MARKER.getKey());
+        secretStore.persistSecret(id, value.getBytes(StandardCharsets.UTF_8));
+        retrievedValue = secretStore.retrieveSecret(id);
+        assertThat(new String(retrievedValue, StandardCharsets.UTF_8)).isEqualTo(value);
     }
 
     @Test
@@ -112,19 +111,19 @@ public class SecretStoreFactoryTest {
 
             //Each usage of the secure config requires it's own instance since implementations can/should clear all the values once used.
             SecureConfig secureConfig1 = new SecureConfig();
-            secureConfig1.add("keystore.path", folder.newFolder().toPath().resolve("logstash.keystore").toString().toCharArray());
+            secureConfig1.add("keystore.file", folder.newFolder().toPath().resolve("logstash.keystore").toString().toCharArray());
             SecureConfig secureConfig2 = secureConfig1.clone();
             SecureConfig secureConfig3 = secureConfig1.clone();
             SecureConfig secureConfig4 = secureConfig1.clone();
 
             //ensure that with only the environment we can retrieve the marker from the store
-            SecretStore secretStore = SecretStoreFactory.loadSecretStore(secureConfig1);
+            SecretStore secretStore = SecretStoreFactory.create(secureConfig1);
             validateMarker(secretStore);
 
             //ensure that aren't simply using the defaults
             boolean expectedException = false;
             try {
-                new JavaKeyStore(secureConfig2);
+                new JavaKeyStore().create(secureConfig2);
             } catch (SecretStoreException e) {
                 expectedException = true;
             }
@@ -132,11 +131,11 @@ public class SecretStoreFactoryTest {
 
             //ensure that direct key access using the system key wil work
             secureConfig3.add(KEYSTORE_ACCESS_KEY, pass.toCharArray());
-            secretStore = new JavaKeyStore(secureConfig3);
+            secretStore = new JavaKeyStore().load(secureConfig3);
             validateMarker(secretStore);
 
             //ensure that pass will work again
-            secretStore = SecretStoreFactory.loadSecretStore(secureConfig4);
+            secretStore = SecretStoreFactory.load(secureConfig4);
             validateMarker(secretStore);
 
         } finally {
@@ -149,9 +148,9 @@ public class SecretStoreFactoryTest {
      */
     @Test
     public void testErrorLoading() {
-        thrown.expect(SecretStoreException.LoadException.class);
+        thrown.expect(SecretStoreException.InvalidConfigurationException.class);
         //default implementation requires a path
-        SecretStoreFactory.loadSecretStore(new SecureConfig());
+        SecretStoreFactory.load(new SecureConfig());
     }
 
     private void validateMarker(SecretStore secretStore) {
@@ -166,8 +165,28 @@ public class SecretStoreFactoryTest {
 
         Map<SecretIdentifier, ByteBuffer> secrets = new HashMap(1);
 
-        public MemoryStore(SecureConfig secureConfig){
+        public MemoryStore() {
             persistSecret(LOGSTASH_MARKER, LOGSTASH_MARKER.getKey().getBytes(StandardCharsets.UTF_8));
+        }
+
+        @Override
+        public SecretStore create(SecureConfig secureConfig) {
+            return this;
+        }
+
+        @Override
+        public void delete(SecureConfig secureConfig) {
+            secrets.clear();
+        }
+
+        @Override
+        public SecretStore load(SecureConfig secureConfig) {
+            return this;
+        }
+
+        @Override
+        public boolean exists(SecureConfig secureConfig) {
+            return true;
         }
 
         @Override

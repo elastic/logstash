@@ -4,20 +4,18 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.logstash.secret.SecretIdentifier;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
-
 /**
- * <p>A factory to load the implementation of a {@link SecretStore}. Where the implementation requires a constructor that accepts a {@link SecureConfig} as it's only parameter.
+ * <p>A factory to load the implementation of a {@link SecretStore}. Implementation may be defined via the {@link SecureConfig} via with a key of "keystore.classname" and
+ * value equal to the fqn of the class that implements {@link SecretStore}
  * </p>
  */
 public class SecretStoreFactory {
 
     public static final String KEYSTORE_ACCESS_KEY = "keystore.pass";
     //secret stores should create a secret with this as the key and value to identify a logstash secret
-    public final static SecretIdentifier LOGSTASH_MARKER = new SecretIdentifier("logstash-secret-store");
+    public final static SecretIdentifier LOGSTASH_MARKER = new SecretIdentifier("keystore.seed");
 
-    public final static String ENVIRONMENT_PASS_KEY = "LOGSTASH_SECRET_STORE_PASS";
+    public final static String ENVIRONMENT_PASS_KEY = "LOGSTASH_KEYSTORE_PASS";
 
     /**
      * Private constructor
@@ -27,29 +25,73 @@ public class SecretStoreFactory {
 
     private static final Logger LOGGER = LogManager.getLogger(SecretStoreFactory.class);
 
+    private enum MODE {LOAD, CREATE, EXISTS, DELETE}
+
     /**
-     * Creates a {@link SecretStore} based on the provided configuration
+     * Determine if this secret store currently exists
+     */
+    public static boolean exists(SecureConfig secureConfig) {
+        return doIt(MODE.EXISTS, secureConfig).exists(secureConfig);
+    }
+
+    /**
+     * Creates a new {@link SecretStore} based on the provided configuration
      *
      * @param secureConfig The configuration to pass to the implementation
-     * @return
+     * @return the newly created SecretStore
+     * @throws {@link SecretStoreException} if errors occur while loading, or if store already exists
      */
+    static public SecretStore create(SecureConfig secureConfig) {
+        return doIt(MODE.CREATE, secureConfig);
+    }
+
+    /**
+     * Deletes a {@link SecretStore} based on the provided configuration
+     *
+     * @param secureConfig The configuration to pass to the implementation
+     * @throws {@link SecretStoreException} if errors occur
+     */
+    static public void delete(SecureConfig secureConfig) {
+        doIt(MODE.DELETE, secureConfig);
+    }
+
+    /**
+     * Loads an existing {@link SecretStore} based on the provided configuration
+     *
+     * @param secureConfig The configuration to pass to the implementation
+     * @return the loaded SecretStore
+     * @throws {@link SecretStoreException} if errors occur while loading, or if store does not exist
+     */
+    static public SecretStore load(SecureConfig secureConfig) {
+        return doIt(MODE.LOAD, secureConfig);
+    }
+
     @SuppressWarnings({"unchecked", "JavaReflectionMemberAccess"})
-    static public SecretStore loadSecretStore(SecureConfig secureConfig) {
-        //cheap SPI, if we ever support more then one implementation we should expose it as a setting and push the class name here via the secureConfig
-        String className = System.getProperty("org.logstash.secret.store.SecretStore", "org.logstash.secret.store.backend.JavaKeyStore");
+    private static SecretStore doIt(MODE mode, SecureConfig secureConfig) {
+        char[] configuredClassName = secureConfig.getPlainText("keystore.classname");
+        String className = configuredClassName != null ? new String(configuredClassName) : "org.logstash.secret.store.backend.JavaKeyStore";
         try {
-            LOGGER.debug("Attempting to loadSecretStore secret store with implementation: {}", className);
+            LOGGER.debug("Attempting to {} or secret store with implementation: {}", mode.name().toLowerCase(), className);
             Class<? extends SecretStore> implementation = (Class<? extends SecretStore>) Class.forName(className);
-            Constructor<? extends SecretStore> constructor = implementation.getConstructor(SecureConfig.class);
+
             addSecretStoreAccess(secureConfig);
-            return constructor.newInstance(secureConfig);
-        } catch (InstantiationException | IllegalAccessException | ClassNotFoundException | NoSuchMethodException e) {
+
+            if (MODE.LOAD.equals(mode)) {
+                return implementation.newInstance().load(secureConfig);
+            } else if (MODE.CREATE.equals(mode)) {
+                return implementation.newInstance().create(secureConfig);
+            } else if (MODE.DELETE.equals(mode)) {
+                implementation.newInstance().delete(secureConfig);
+                return null;
+            } else if (MODE.EXISTS.equals(mode)) {
+                return implementation.newInstance();
+            } else {
+                throw new IllegalStateException("missing mode. This is bug in Logstash.");
+            }
+        } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
             throw new SecretStoreException.ImplementationNotFoundException(
-                    String.format("Could not loadSecretStore class %s, please ensure it is on the Java classpath, implements org.logstash.secret.store.SecretStore, and has a 1 " +
-                            "argument constructor that accepts a org.logstash.secret.store.SecureConfig", className), e);
-        } catch (InvocationTargetException ite) {
-            //this is thrown if an exception is thrown from the constructor
-            throw new SecretStoreException.LoadException("Unable to load Logstash secret store", ite);
+                    String.format("Could not %s class %s, please ensure it is on the Java classpath, implements org.logstash.secret.store.SecretStore, and has a zero " +
+                            "argument constructor", mode.name().toLowerCase(), className), e);
         }
     }
 

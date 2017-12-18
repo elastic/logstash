@@ -38,101 +38,116 @@ import static org.logstash.secret.store.SecretStoreFactory.LOGSTASH_MARKER;
  * <p>This class is threadsafe.</p>
  */
 public final class JavaKeyStore implements SecretStore {
-    private static final Logger LOGGER = LogManager.getLogger(JavaKeyStore.class);
     private static final String KEYSTORE_TYPE = "pkcs12";
+    private static final Logger LOGGER = LogManager.getLogger(JavaKeyStore.class);
+    private static final String PATH_KEY = "keystore.file";
     private static final CharsetEncoder asciiEncoder = StandardCharsets.US_ASCII.newEncoder();
-
+    private KeyStore keyStore;
     private char[] keyStorePass;
     private Path keyStorePath;
-    private final ProtectionParameter protectionParameter;
-    private final Lock readLock;
-    private final Lock writeLock;
-    private KeyStore keyStore;
-    private final SecureConfig config;
+    private ProtectionParameter protectionParameter;
+    private Lock readLock;
+    private boolean useDefaultPass = false;
+    private Lock writeLock;
+    //package private for testing
+    static String filePermissions = "rw-rw----";
 
     /**
-     * Constructor - will create the keystore if it does not exist.
+     * {@inheritDoc}
      *
-     * @param config The configuration for this keystore <p>Requires "keystore.pass" and "keystore.path" in the configuration</p><p>WARNING! this constructor clears all values
+     * @param config The configuration for this keystore <p>Requires "keystore.file" in the configuration,</p><p>WARNING! this method clears all values
      *               from this configuration, meaning this config is NOT reusable after passed in here.</p>
-     * @throws SecretStoreException if errors occur while trying to create or access the keystore
+     * @throws SecretStoreException.CreateException if the store can not be created
+     * @throws SecretStoreException                 (of other sub types) if contributing factors prevent the creation
      */
-    public JavaKeyStore(SecureConfig config) {
-        this.config = config;
+    @Override
+    public JavaKeyStore create(SecureConfig config) {
+        if (exists(config)) {
+            throw new SecretStoreException.AlreadyExistsException(String.format("Logstash keystore at %s already exists.",
+                    new String(config.getPlainText(PATH_KEY))));
+        }
         try {
-            char[] path = config.getPlainText("keystore.path");
-            if (path == null) {
-                throw new IllegalArgumentException("Logstash keystore path must be defined");
-            }
-            this.keyStorePath = Paths.get(new String(path));
-            this.keyStorePass = getKeyStorePassword(keyStorePath.toFile().exists());
-            this.keyStore = KeyStore.getInstance(KEYSTORE_TYPE);
-
-            ReadWriteLock readWriteLock = new ReentrantReadWriteLock();
-            readLock = readWriteLock.readLock();
-            writeLock = readWriteLock.writeLock();
-            this.protectionParameter = new PasswordProtection(this.keyStorePass);
-
-            try (final InputStream is = Files.newInputStream(keyStorePath)) {
-                try {
-                    keyStore.load(is, this.keyStorePass);
-                } catch (IOException ioe) {
-                    if (ioe.getCause() instanceof UnrecoverableKeyException) {
-                        throw new SecretStoreException.AccessException(
-                                String.format("Can not access Java keystore at %s. Please verify correct file permissions and keystore password.",
-                                        keyStorePath.toAbsolutePath()), ioe);
-                    } else {
-                        throw new SecretStoreException.NotLogstashKeyStore(String.format("Found a file at %s, but it is not a valid Logstash keystore.",
-                                keyStorePath.toAbsolutePath().toString()), ioe);
-                    }
+            init(config);
+            writeLock.lock();
+            LOGGER.debug("Creating new keystore at {}.", keyStorePath.toAbsolutePath());
+            String keyStorePermissions = filePermissions;
+            //create the keystore on disk with a default entry to identify this as a logstash keystore
+            Files.createFile(keyStorePath, PosixFilePermissions.asFileAttribute(PosixFilePermissions.fromString(keyStorePermissions)));
+            try {
+                keyStore = KeyStore.Builder.newInstance(KEYSTORE_TYPE, null, protectionParameter).getKeyStore();
+                SecretKeyFactory factory = SecretKeyFactory.getInstance("PBE");
+                byte[] base64 = SecretStoreUtil.base64Encode(LOGSTASH_MARKER.getKey().getBytes(StandardCharsets.UTF_8));
+                SecretKey secretKey = factory.generateSecret(new PBEKeySpec(SecretStoreUtil.asciiBytesToChar(base64)));
+                keyStore.setEntry(LOGSTASH_MARKER.toExternalForm(), new KeyStore.SecretKeyEntry(secretKey), protectionParameter);
+                saveKeyStore();
+                PosixFileAttributeView attrs = Files.getFileAttributeView(keyStorePath, PosixFileAttributeView.class);
+                if (attrs != null) {
+                    //the directory umask applies when creating the file, so re-apply permissions here
+                    attrs.setPermissions(PosixFilePermissions.fromString(keyStorePermissions));
                 }
-                byte[] marker = retrieveSecret(LOGSTASH_MARKER);
-                if (marker == null) {
-                    throw new SecretStoreException.NotLogstashKeyStore(String.format("Found a keystore at %s, but it is not a Logstash keystore.",
-                            keyStorePath.toAbsolutePath().toString()));
-                }
-                LOGGER.debug("Using existing keystore at {}", keyStorePath.toAbsolutePath());
-            } catch (NoSuchFileException noSuchFileException) {
-                LOGGER.info("Keystore not found at {}. Creating new keystore.", keyStorePath.toAbsolutePath());
-                //wrapped in a system property mostly for testing, but could be used for more restrictive defaults
-                String keyStorePermissions = System.getProperty("logstash.keystore.file.perms", "rw-rw----");
-                //create the keystore on disk with a default entry to identify this as a logstash keystore
-                Files.createFile(keyStorePath, PosixFilePermissions.asFileAttribute(PosixFilePermissions.fromString(keyStorePermissions)));
-                try {
-                    keyStore = KeyStore.Builder.newInstance(KEYSTORE_TYPE, null, protectionParameter).getKeyStore();
-                    SecretKeyFactory factory = SecretKeyFactory.getInstance("PBE");
-                    byte[] base64 = SecretStoreUtil.base64Encode(LOGSTASH_MARKER.getKey().getBytes(StandardCharsets.UTF_8));
-                    SecretKey secretKey = factory.generateSecret(new PBEKeySpec(SecretStoreUtil.asciiBytesToChar(base64)));
-                    keyStore.setEntry(LOGSTASH_MARKER.toExternalForm(), new KeyStore.SecretKeyEntry(secretKey), protectionParameter);
-                    saveKeyStore();
-                    PosixFileAttributeView attrs = Files.getFileAttributeView(keyStorePath, PosixFileAttributeView.class);
-                    if (attrs != null) {
-                        //the directory umask applies when creating the file, so re-apply permissions here
-                        attrs.setPermissions(PosixFilePermissions.fromString(keyStorePermissions));
-                    }
-                    LOGGER.info("Keystore created at {}", keyStorePath.toAbsolutePath());
-                } catch (Exception e) {
-                    throw new SecretStoreException.CreateException("Failed to create Logstash keystore.", e);
-                }
+                LOGGER.info("Created Logstash keystore at {}", keyStorePath.toAbsolutePath());
+                return this;
+            } catch (Exception e) {
+                throw new SecretStoreException.CreateException("Failed to create Logstash keystore.", e);
             }
         } catch (SecretStoreException sse) {
             throw sse;
         } catch (Exception e) { //should never happen
-            throw new SecretStoreException.UnknownException("Error while trying to create or load the Logstash keystore", e);
+            throw new SecretStoreException.UnknownException("Error while trying to create the Logstash keystore", e);
         } finally {
+            releaseLock(writeLock);
+            config.clearValues();
+        }
+    }
+
+    @Override
+    public void delete(SecureConfig config) {
+        try {
+            initLocks();
+            writeLock.lock();
+            if (exists(config)) {
+                Files.delete(Paths.get(new String(config.getPlainText(PATH_KEY))));
+            }
+        } catch (SecretStoreException sse) {
+            throw sse;
+        } catch (Exception e) { //should never happen
+            throw new SecretStoreException.UnknownException("Error while trying to delete the Logstash keystore", e);
+        } finally {
+            releaseLock(writeLock);
             config.clearValues();
         }
     }
 
     /**
+     * {@inheritDoc}
+     *
+     * @param config The configuration for this keystore <p>Requires "keystore.file" in the configuration</p>
+     * @throws SecretStoreException.InvalidConfigurationException if "keystore.file" is not defined in the config
+     */
+    @Override
+    public boolean exists(SecureConfig config) {
+        char[] path = config.getPlainText(PATH_KEY);
+        if (!valid(path)) {
+            throw new SecretStoreException.InvalidConfigurationException("Logstash keystore path (keystore.file) must be defined");
+        }
+        return new File(new String(path)).exists();
+    }
+
+    @Override
+    protected void finalize() throws Throwable {
+        SecretStoreUtil.clearChars(keyStorePass);
+    }
+
+    /**
      * Obtains the keystore password depending on if the password is explicitly defined and/or if this is a new keystore.
      *
-     * @param existing true if the keystore file already exists
+     * @param config the configuration
      * @return the char[] of the keystore password
      * @throws IOException on io errors
      */
-    private char[] getKeyStorePassword(boolean existing) throws IOException {
+    private char[] getKeyStorePassword(SecureConfig config) throws IOException {
         char[] plainText = config.getPlainText(SecretStoreFactory.KEYSTORE_ACCESS_KEY);
+        boolean existing = exists(config);
 
         //ensure if a password is configured, that we don't allow empty passwords
         if (config.has(SecretStoreFactory.KEYSTORE_ACCESS_KEY) && (plainText == null || plainText.length == 0)) {
@@ -145,7 +160,9 @@ public final class JavaKeyStore implements SecretStore {
             }
         }
 
-        if (plainText == null) {
+        useDefaultPass = !config.has(SecretStoreFactory.KEYSTORE_ACCESS_KEY);
+
+        if (useDefaultPass) {
             if (existing) {
                 //read the pass
                 SeekableByteChannel byteChannel = Files.newByteChannel(keyStorePath, StandardOpenOption.READ);
@@ -168,11 +185,30 @@ public final class JavaKeyStore implements SecretStore {
                 return SecretStoreUtil.base64EncodeToChars(randomBytes);
             }
         } else {
+            //explicit user defined pass
             //keystore passwords require ascii encoding, only base64 encode if necessary
             return asciiEncoder.canEncode(CharBuffer.wrap(plainText)) ? plainText : SecretStoreUtil.base64Encode(plainText);
         }
         throw new SecretStoreException.AccessException(
                 String.format("Could not determine keystore password. Please ensure the file at %s is a valid Logstash keystore", keyStorePath.toAbsolutePath()));
+    }
+
+    private void init(SecureConfig config) throws IOException, KeyStoreException {
+        char[] path = config.getPlainText(PATH_KEY);
+        if (!valid(path)) {
+            throw new IllegalArgumentException("Logstash keystore path must be defined");
+        }
+        this.keyStorePath = Paths.get(new String(path));
+        this.keyStorePass = getKeyStorePassword(config);
+        this.keyStore = KeyStore.getInstance(KEYSTORE_TYPE);
+        this.protectionParameter = new PasswordProtection(this.keyStorePass);
+        initLocks();
+    }
+
+    private void initLocks(){
+        ReadWriteLock readWriteLock = new ReentrantReadWriteLock();
+        readLock = readWriteLock.readLock();
+        writeLock = readWriteLock.writeLock();
     }
 
     @Override
@@ -189,9 +225,67 @@ public final class JavaKeyStore implements SecretStore {
         } catch (Exception e) {
             throw new SecretStoreException.ListException(e);
         } finally {
-            readLock.unlock();
+            releaseLock(readLock);
         }
         return identifiers;
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @param config The configuration for this keystore <p>Requires "keystore.file" in the configuration</p><p>WARNING! this method clears all values
+     *               from this configuration, meaning this config is NOT reusable after passed in here.</p>
+     * @throws SecretStoreException.CreateException if the store can not be created
+     * @throws SecretStoreException                 (of other sub types) if contributing factors prevent the creation
+     */
+    @Override
+    public JavaKeyStore load(SecureConfig config) {
+        if (!exists(config)) {
+            throw new SecretStoreException.LoadException(
+                    String.format("Can not find Logstash keystore at %s. Please verify this file exists and is a valid Logstash keystore.",
+                            new String(config.getPlainText("keystore.file"))));
+        }
+        try {
+            init(config);
+            readLock.lock();
+            try (final InputStream is = Files.newInputStream(keyStorePath)) {
+                try {
+                    keyStore.load(is, this.keyStorePass);
+                } catch (IOException ioe) {
+                    if (ioe.getCause() instanceof UnrecoverableKeyException) {
+                        throw new SecretStoreException.AccessException(
+                                String.format("Can not access Logstash keystore at %s. Please verify correct file permissions and keystore password.",
+                                        keyStorePath.toAbsolutePath()), ioe);
+                    } else {
+                        throw new SecretStoreException.LoadException(String.format("Found a file at %s, but it is not a valid Logstash keystore.",
+                                keyStorePath.toAbsolutePath().toString()), ioe);
+                    }
+                }
+                byte[] marker = retrieveSecret(LOGSTASH_MARKER);
+                if (marker == null) {
+                    throw new SecretStoreException.LoadException(String.format("Found a keystore at %s, but it is not a Logstash keystore.",
+                            keyStorePath.toAbsolutePath().toString()));
+                }
+                LOGGER.debug("Using existing keystore at {}", keyStorePath.toAbsolutePath());
+                return this;
+            }
+        } catch (SecretStoreException sse) {
+            throw sse;
+        } catch (Exception e) { //should never happen
+            throw new SecretStoreException.UnknownException("Error while trying to load the Logstash keystore", e);
+        } finally {
+            releaseLock(readLock);
+            config.clearValues();
+        }
+    }
+
+    /**
+     * Need to load the keystore before any operations in case an external (or different JVM) has modified the keystore on disk.
+     */
+    private void loadKeyStore() throws CertificateException, NoSuchAlgorithmException, IOException {
+        try (final InputStream is = Files.newInputStream(keyStorePath)) {
+            keyStore.load(is, keyStorePass);
+        }
     }
 
     @Override
@@ -215,7 +309,7 @@ public final class JavaKeyStore implements SecretStore {
         } catch (Exception e) {
             throw new SecretStoreException.PersistException(identifier, e);
         } finally {
-            writeLock.unlock();
+            releaseLock(writeLock);
         }
     }
 
@@ -230,7 +324,13 @@ public final class JavaKeyStore implements SecretStore {
         } catch (Exception e) {
             throw new SecretStoreException.PurgeException(identifier, e);
         } finally {
-            writeLock.unlock();
+            releaseLock(writeLock);
+        }
+    }
+
+    private void releaseLock(Lock lock) {
+        if (lock != null) {
+            lock.unlock();
         }
     }
 
@@ -244,7 +344,7 @@ public final class JavaKeyStore implements SecretStore {
                 KeyStore.SecretKeyEntry secretKeyEntry = (KeyStore.SecretKeyEntry) keyStore.getEntry(identifier.toExternalForm(), protectionParameter);
                 //not found
                 if (secretKeyEntry == null) {
-                    LOGGER.warn("requested secret {} not found", identifier.toExternalForm());
+                    LOGGER.debug("requested secret {} not found", identifier.toExternalForm());
                     return null;
                 }
                 PBEKeySpec passwordBasedKeySpec = (PBEKeySpec) factory.getKeySpec(secretKeyEntry.getSecretKey(), PBEKeySpec.class);
@@ -257,26 +357,17 @@ public final class JavaKeyStore implements SecretStore {
             } catch (Exception e) {
                 throw new SecretStoreException.RetrievalException(identifier, e);
             } finally {
-                readLock.unlock();
+                releaseLock(readLock);
             }
         }
         return null;
     }
 
     /**
-     * Need to reload the keystore before any operations in case an external (or different JVM)  has modified the keystore on disk.
-     */
-    private void loadKeyStore() throws CertificateException, NoSuchAlgorithmException, IOException {
-        try (final InputStream is = Files.newInputStream(keyStorePath)) {
-            keyStore.load(is, keyStorePass);
-        }
-    }
-
-    /**
      * Saves the keystore with some extra meta data if needed. Note - need two output streams here to allow checking the with the append flag, and the other without an append.
      */
     private void saveKeyStore() throws IOException, CertificateException, NoSuchAlgorithmException, KeyStoreException {
-        FileLock fileLock = null;
+        FileLock fileLock;
         try (final FileOutputStream appendOs = new FileOutputStream(keyStorePath.toFile(), true)) {
             fileLock = appendOs.getChannel().tryLock();
             if (fileLock == null) {
@@ -284,7 +375,7 @@ public final class JavaKeyStore implements SecretStore {
             }
             try (final OutputStream os = Files.newOutputStream(keyStorePath, StandardOpenOption.WRITE)) {
                 keyStore.store(os, keyStorePass);
-                if (!config.has(SecretStoreFactory.KEYSTORE_ACCESS_KEY)) {
+                if (useDefaultPass) {
                     byte[] obfuscatedPass = SecretStoreUtil.asciiCharToBytes(SecretStoreUtil.obfuscate(keyStorePass.clone()));
                     DataOutputStream dataOutputStream = new DataOutputStream(os);
                     os.write(obfuscatedPass);
@@ -298,9 +389,12 @@ public final class JavaKeyStore implements SecretStore {
         }
     }
 
-    @Override
-    protected void finalize() throws Throwable {
-        SecretStoreUtil.clearChars(keyStorePass);
+    /**
+     * @param chars char[] to check for null or empty
+     * @return true if not null, and not empty, false otherwise
+     */
+    private boolean valid(char[] chars) {
+        return !(chars == null || chars.length == 0);
     }
 }
 
