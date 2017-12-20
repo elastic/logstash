@@ -14,7 +14,7 @@ class LogStash::DependencyReport < Clamp::Command
 
   def execute
     require "csv"
-    CSV.open(output_path, "wb", :headers => [ "name", "version", "url", "license" ]) do |csv|
+    CSV.open(output_path, "wb", :headers => [ "name", "version", "url", "license" ], :write_headers => true) do |csv|
       puts "Finding gem dependencies"
       gems.each { |d| csv << d }
       puts "Finding java/jar dependencies"
@@ -30,7 +30,9 @@ class LogStash::DependencyReport < Clamp::Command
   end
 
   def gems
-    Gem::Specification.collect do |gem|
+    # @mgreau requested `logstash-*` dependencies be removed from this list: 
+    # https://github.com/elastic/logstash/pull/8837#issuecomment-351859433
+    Gem::Specification.reject { |g| g.name =~ /^logstash-/ }.collect do |gem|
       [gem.name, gem.version.to_s, gem.homepage, gem.licenses.map { |l| SPDX.map(l) }.join("|")]
     end
   end
@@ -41,10 +43,6 @@ class LogStash::DependencyReport < Clamp::Command
     #   Look at META-INF/MANIFEST.MF for any jars in each gem
     #   Note any important details.
     Gem::Specification.select { |g| g.requirements && g.requirements.any? { |r| r =~ /^jar / } }.collect do |gem|
-
-      # @mgreau requested `logstash-*` dependencies be removed from this list: 
-      # https://github.com/elastic/logstash/pull/8837#issuecomment-351859433
-      next if gem.name =~ /^logstash-/
 
       # Where is the gem installed
       root = gem.full_gem_path
