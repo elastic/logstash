@@ -29,6 +29,10 @@
 #
 # ------------ Pipeline Settings --------------
 #
+# The ID of the pipeline.
+#
+# pipeline.id: main
+#
 # Set the number of workers that will, in parallel, execute the filters+outputs
 # stage of the pipeline.
 #

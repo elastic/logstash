@@ -85,6 +85,11 @@ class LogStash::Runner < Clamp::StrictCommand
     :attribute_name => "cloud.auth"
 
   # Pipeline settings
+  option ["--pipeline.id"], "ID",
+    I18n.t("logstash.runner.flag.pipeline-id"),
+    :attribute_name => "pipeline.id",
+    :default => LogStash::SETTINGS.get_default("pipeline.id")
+
   option ["-w", "--pipeline.workers"], "COUNT",
     I18n.t("logstash.runner.flag.pipeline-workers"),
     :attribute_name => "pipeline.workers",

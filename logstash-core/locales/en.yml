@@ -262,6 +262,8 @@ en:
           Check configuration for valid syntax and then exit.
         http_host: Web API binding host
         http_port: Web API http port
+        pipeline-id: |+
+          Sets the ID of the pipeline.
         pipeline-workers: |+
           Sets the number of pipeline workers to run.
         experimental-java-execution: |+

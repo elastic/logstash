@@ -77,6 +77,10 @@ The `logstash.yml` file includes the following settings:
 | The directory that Logstash and its plugins use for any persistent needs.
 |`LOGSTASH_HOME/data`
 
+| `pipeline.id`
+| The ID of the pipeline.
+| `main`
+
 | `pipeline.workers`
 | The number of workers that will, in parallel, execute the filter and output stages of the pipeline.
   If you find that events are backing up, or that the
