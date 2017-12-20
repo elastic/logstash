@@ -1,4 +1,5 @@
 # encoding: utf-8
+require "logstash-core" # for LogStash::Error
 
 module LogStash
   class EnvironmentError < Error; end
