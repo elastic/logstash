@@ -496,7 +496,7 @@ public final class Queue implements Closeable {
     /**
      * non-blocking queue read
      *
-     * @param limit read the next batch of size up to this limit. the returned batch size can be smaller than than the requested limit if fewer elements are available
+     * @param limit read the next batch of size up to this limit. the returned batch size can be smaller than the requested limit if fewer elements are available
      * @return {@link Batch} the batch containing 1 or more element up to the required limit or null of no elements were available
      * @throws IOException
      */
