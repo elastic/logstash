@@ -88,12 +88,12 @@ public class SettingsImpl implements Settings {
         private static final int DEFAULT_MAX_UNREAD = 0;
 
         /**
-         * Default max number of writes after which we checkpoint.
+         * Default max number of acknowledgements after which we checkpoint.
          */
         private static final int DEFAULT_CHECKPOINT_MAX_ACKS = 1024;
 
         /**
-         * Default number of acknowledgements after which we checkpoint.
+         * Default max number of writes after which we checkpoint.
          */
         private static final int DEFAULT_CHECKPOINT_MAX_WRITES = 1024;
 
