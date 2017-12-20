@@ -84,6 +84,9 @@ With this command, Logstash concatenates three config files, `/tmp/one`, `/tmp/t
   that setting will be used.  The `-M` flag is only used in conjunction with the `--modules`
   flag.  It will be ignored if the `--modules` flag is absent.
 
+*`--pipeline.id ID`*::
+  Sets the ID of pipeline. The default is `main`.
+
 *`-w, --pipeline.workers COUNT`*::
   Sets the number of pipeline workers to run. This option sets the number of workers that will,
   in parallel, execute the filter and output stages of the pipeline. If you find that events are
