@@ -45,7 +45,7 @@ filebeat.prospectors:
   paths:
     - /path/to/file/logstash-tutorial.log <1>
 output.logstash:
-  hosts: ["localhost:5044"]
+  hosts: ["localhost:5043"]
 --------------------------------------------------------------------------------
 
 <1> Absolute path to the file or files that Filebeat processes.
