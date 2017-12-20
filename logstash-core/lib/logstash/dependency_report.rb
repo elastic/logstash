@@ -14,18 +14,24 @@ class LogStash::DependencyReport < Clamp::Command
 
   def execute
     require "csv"
-    CSV.open(output_path, "wb") do |csv|
+    CSV.open(output_path, "wb", :headers => [ "name", "version", "url", "license" ]) do |csv|
       puts "Finding gem dependencies"
       gems.each { |d| csv << d }
       puts "Finding java/jar dependencies"
       jars.each { |d| csv << d }
+    end
+
+    # Copy in COPYING.csv which is a best-effort, hand-maintained file of dependency license information.
+    File.open(output_path, "a+") do |file|
+      extra = File.join(File.dirname(__FILE__), "..", "..", "..", "COPYING.csv")
+      file.write(IO.read(extra))
     end
     nil
   end
 
   def gems
     Gem::Specification.collect do |gem|
-      [gem.name, gem.version.to_s, gem.homepage, gem.licenses.join("|")]
+      [gem.name, gem.version.to_s, gem.homepage, gem.licenses.map { |l| SPDX.map(l) }.join("|")]
     end
   end
 
@@ -35,6 +41,11 @@ class LogStash::DependencyReport < Clamp::Command
     #   Look at META-INF/MANIFEST.MF for any jars in each gem
     #   Note any important details.
     Gem::Specification.select { |g| g.requirements && g.requirements.any? { |r| r =~ /^jar / } }.collect do |gem|
+
+      # @mgreau requested `logstash-*` dependencies be removed from this list: 
+      # https://github.com/elastic/logstash/pull/8837#issuecomment-351859433
+      next if gem.name =~ /^logstash-/
+
       # Where is the gem installed
       root = gem.full_gem_path
 
@@ -72,7 +83,7 @@ class LogStash::DependencyReport < Clamp::Command
             group + ":" + artifact,
             attributes.fetch("Bundle-Version"),
             attributes.fetch("Bundle-DocURL"),
-            attributes.fetch("Bundle-License"),
+            SPDX.map(attributes.fetch("Bundle-License")),
           ]
         rescue KeyError => e
           # The jar is missing a required manifest field, it may not have any useful manifest data.
@@ -81,5 +92,28 @@ class LogStash::DependencyReport < Clamp::Command
       end
     end
     jars.uniq.sort
+  end
+
+  module SPDX
+    # This is a non-exhaustive, best effort list of licenses as they map to SPDX identifiers.
+    ALIASES = {
+      "Apache-2.0" => [
+        "Apache 2",
+        "apache-2.0",
+        "Apache 2.0",
+        "Apache License (2.0)",
+        "Apache License 2.0",
+        "https://www.apache.org/licenses/LICENSE-2.0.txt",
+        "http://www.apache.org/licenses/LICENSE-2.0.txt",
+      ]
+    }
+
+    # Get a map of name => spdx
+    MAP = Hash[ALIASES.map { |spdx,aliases| aliases.map { |value| [value, spdx] } }[0]]
+
+    module_function
+    def map(value)
+      MAP[value] || value
+    end
   end
 end
