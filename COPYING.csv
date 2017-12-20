@@ -1,17 +1,17 @@
-#dependency,version,url,licenses
+#name,version,url,licenses
 jruby,9.1.14.0,https://jruby.org/,EPL1.0|GPL2|LGPL2.1
 bytelist,unknown,http://github.com/jruby/bytelist,EPL1.0|GPL2|LGPL2.1
 jnr-posix,unknown,https://github.com/jnr/jnr-posix,EPL1.0|GPL2|LGPL2.1
 jruby-openssl,unknown,https://github.com/jruby/jruby-openssl,EPL1.0|GPL2|LGPL2.1
 jruby-readline,unknown,https://github.com/jruby/jruby-readline,EPL1.0|GPL2|LGPL2.1
 psych,unknown,https://github.com/ruby/psych),MIT
-jay-yydebug,unknown,http://svn.codehaus.org/jruby/trunk/jay/yydebug,EPL1.0|GPL2|LGPL2.1 (according to JRuby)
-control.js,unknown,unknown,MIT (according to JRuby)
-dragdrop.js,unknown,unknown,MIT (according to JRuby)
-effect.js,unknown,unknown,MIT (according to JRuby)
-prototype.js,unknown,unknown,MIT (according to JRuby)
-asm,unknown,http://asm.objectweb.org,BSD (according to JRuby)
-jline2,unknown,https://github.com/jline/jline2,BSD (according to JRuby)
+jay-yydebug,unknown,http://svn.codehaus.org/jruby/trunk/jay/yydebug,EPL1.0|GPL2|LGPL2
+control.js,unknown,unknown,MIT
+dragdrop.js,unknown,unknown,MIT
+effect.js,unknown,unknown,MIT
+prototype.js,unknown,unknown,MIT
+asm,unknown,http://asm.objectweb.org,BSD
+jline2,unknown,https://github.com/jline/jline2,BSD
 jzlib,unknown,https://www.jcraft.com/jzlib/,BSD-3-Clause
 rake,unknown,https://github.com/ruby/rake,MIT
 jcodings,unknown,http://github.com/jruby/jcodings,MIT
