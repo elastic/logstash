@@ -16,7 +16,7 @@ The following configuration options are supported by all output plugins:
   * Value type is <<codec,codec>>
   * Default value is `"plain"`
 
-The codec used for output data. Output codecs are a convenient method for encoding your data before it leaves the output, without needing a separate filter in your Logstash pipeline.
+The codec used for output data. Output codecs are a convenient method for encoding your data before it leaves the output without needing a separate filter in your Logstash pipeline.
 
 [id="plugins-{type}s-{plugin}-enable_metric"]
 ===== `enable_metric`
@@ -24,8 +24,8 @@ The codec used for output data. Output codecs are a convenient method for encodi
   * Value type is <<boolean,boolean>>
   * Default value is `true`
 
-Disable or enable metric logging for this specific plugin instance
-by default we record all the metrics we can, but you can disable metrics collection
+Disable or enable metric logging for this specific plugin instance.
+By default we record all the metrics we can, but you can disable metrics collection
 for a specific plugin.
 
 [id="plugins-{type}s-{plugin}-id"]
@@ -36,7 +36,7 @@ for a specific plugin.
 
 Add a unique `ID` to the plugin configuration. If no ID is specified, Logstash will generate one.
 It is strongly recommended to set this ID in your configuration. This is particularly useful
-when you have two or more plugins of the same type, for example, if you have 2 {plugin} outputs.
+when you have two or more plugins of the same type. For example, if you have 2 {plugin} outputs.
 Adding a named ID in this case will help in monitoring Logstash when using the monitoring APIs.
 
 ["source","json",subs="attributes"]
