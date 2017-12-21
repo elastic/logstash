@@ -3,7 +3,7 @@
 module LogStash
   module Api
     module Commands
-      class Base
+      class Base  
         attr_reader :service
         
         def initialize(service = LogStash::Api::Service.instance)
