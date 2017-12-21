@@ -33,7 +33,8 @@ class LogStash::DependencyReport < Clamp::Command
     # @mgreau requested `logstash-*` dependencies be removed from this list: 
     # https://github.com/elastic/logstash/pull/8837#issuecomment-351859433
     Gem::Specification.reject { |g| g.name =~ /^logstash-/ }.collect do |gem|
-      [gem.name, gem.version.to_s, gem.homepage, gem.licenses.map { |l| SPDX.map(l) }.join("|")]
+      licenses = ("UNKNOWN" if gem.licenses.empty?) || (gem.licenses.map { |l| SPDX.map(l) }.join("|") if !gem.licenses.empty?)
+      [gem.name, gem.version.to_s, gem.homepage, licenses]
     end
   end
 
@@ -103,15 +104,28 @@ class LogStash::DependencyReport < Clamp::Command
         "Apache License 2.0",
         "https://www.apache.org/licenses/LICENSE-2.0.txt",
         "http://www.apache.org/licenses/LICENSE-2.0.txt",
+      ],
+      "Artistic-2.0" => [
+        "Artistic 2.0"
+      ],
+      "BSD-2-Clause" => [
+        "2-clause BSDL",
+        "2-clause"
+      ],
+      "GPL-2.0" => [
+        "GPL-2"
       ]
     }
 
     # Get a map of name => spdx
-    MAP = Hash[ALIASES.map { |spdx,aliases| aliases.map { |value| [value, spdx] } }[0]]
+    MAP_APACHE2 = Hash[ALIASES.map { |spdx,aliases| aliases.map { |value| [value, spdx] } }[0]]
+    MAP_ARTISTIC2 = Hash[ALIASES.map { |spdx,aliases| aliases.map { |value| [value, spdx] } }[1]]
+    MAP_BSD = Hash[ALIASES.map { |spdx,aliases| aliases.map { |value| [value, spdx] } }[2]]
+    MAP_GPL2 = Hash[ALIASES.map { |spdx,aliases| aliases.map { |value| [value, spdx] } }[3]]
 
     module_function
     def map(value)
-      MAP[value] || value
+      MAP_APACHE2[value] ||  MAP_ARTISTIC2[value] || MAP_BSD[value] ||  MAP_GPL2[value] || value
     end
   end
 end
