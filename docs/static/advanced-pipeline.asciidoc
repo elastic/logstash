@@ -45,7 +45,7 @@ filebeat.prospectors:
   paths:
     - /path/to/file/logstash-tutorial.log <1>
 output.logstash:
-  hosts: ["localhost:5043"]
+  hosts: ["localhost:5044"]
 --------------------------------------------------------------------------------
 
 <1> Absolute path to the file or files that Filebeat processes.
@@ -66,7 +66,7 @@ NOTE: If you run Filebeat as root, you need to change ownership of the configura
 {libbeat}config-file-permissions.html[Config File Ownership and Permissions]
 in the _Beats Platform Reference_).
 
-Filebeat will attempt to connect on port 5043. Until Logstash starts with an active Beats plugin, there
+Filebeat will attempt to connect on port 5044. Until Logstash starts with an active Beats plugin, there
 won’t be any answer on that port, so any messages you see regarding failure to connect on that port are normal for now.
 
 ==== Configuring Logstash for Filebeat Input
@@ -102,7 +102,7 @@ of the `first-pipeline.conf` file:
 [source,json]
 --------------------------------------------------------------------------------
     beats {
-        port => "5043"
+        port => "5044"
     }
 --------------------------------------------------------------------------------
 
@@ -120,7 +120,7 @@ When you're done, the contents of `first-pipeline.conf` should look like this:
 --------------------------------------------------------------------------------
 input {
     beats {
-        port => "5043"
+        port => "5044"
     }
 }
 # The filter part of this file is commented out to indicate that it is
@@ -246,7 +246,7 @@ When you're done, the contents of `first-pipeline.conf` should look like this:
 --------------------------------------------------------------------------------
 input {
     beats {
-        port => "5043"
+        port => "5044"
     }
 }
 filter {
@@ -349,7 +349,7 @@ When you're done, the contents of `first-pipeline.conf` should look like this:
 --------------------------------------------------------------------------------
 input {
     beats {
-        port => "5043"
+        port => "5044"
     }
 }
  filter {
@@ -430,7 +430,7 @@ something like this:
 --------------------------------------------------------------------------------
 input {
     beats {
-        port => "5043"
+        port => "5044"
     }
 }
  filter {
@@ -709,7 +709,7 @@ filebeat.prospectors:
   fields:
     type: syslog <2>
 output.logstash:
-  hosts: ["localhost:5043"]
+  hosts: ["localhost:5044"]
 --------------------------------------------------------------------------------
 
 <1> Absolute path to the file or files that Filebeat processes.
@@ -726,7 +726,7 @@ of the `second-pipeline.conf` file:
 [source,json]
 --------------------------------------------------------------------------------
     beats {
-        port => "5043"
+        port => "5044"
     }
 --------------------------------------------------------------------------------
 
@@ -786,7 +786,7 @@ input {
         oauth_token_secret => "enter_your_access_token_secret_here"
     }
     beats {
-        port => "5043"
+        port => "5044"
     }
 }
 output {
@@ -809,7 +809,7 @@ At the data source machine, run Filebeat with the following command:
 sudo ./filebeat -e -c filebeat.yml -d "publish"
 --------------------------------------------------------------------------------
 
-Filebeat will attempt to connect on port 5043. Until Logstash starts with an active Beats plugin, there
+Filebeat will attempt to connect on port 5044. Until Logstash starts with an active Beats plugin, there
 won’t be any answer on that port, so any messages you see regarding failure to connect on that port are normal for now.
 
 To verify your configuration, run the following command:
