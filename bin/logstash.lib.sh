@@ -4,7 +4,7 @@ unset CDPATH
 if [ -L "$0" ]; then
   # Launched from a symlink
   # --Test for the readlink binary
-  RL="$(which readlink)"
+  RL="$(command -v readlink)"
   if [ $? -eq 0 ]; then
     # readlink exists
     SOURCEPATH="$($RL $0)"
@@ -58,7 +58,7 @@ setup_java() {
     JAVACMD="$JAVA_HOME/bin/java"
   else
     set +e
-    JAVACMD=`which java`
+    JAVACMD=`command -v java`
     set -e
   fi
 
