@@ -280,7 +280,9 @@ namespace "artifact" do
     # This will make a the thread dies, in 1.7.25 we had a Thread Death
     require_relative "childprocess_patch"
 
+    basedir = File.join(File.dirname(__FILE__), "..")
     dir = FPM::Package::Dir.new
+    dir.attributes[:workdir] = File.join(basedir, "build", "fpm")
 
     metadata_file_path = File.join("logstash-core", "lib", "logstash", "build.rb")
     metadata_source_file_path = BUILD_METADATA_FILE.path
@@ -293,8 +295,6 @@ namespace "artifact" do
       next if path.start_with?("config/")
       dir.input("#{path}=/usr/share/logstash/#{path}")
     end
-
-    basedir = File.join(File.dirname(__FILE__), "..")
 
     # Create an empty /var/log/logstash/ directory in the package
     # This is a bit obtuse, I suppose, but it is necessary until
@@ -313,17 +313,21 @@ namespace "artifact" do
     ensure_logstash_version_constant_defined
     package_filename = "logstash-#{LOGSTASH_VERSION}#{PACKAGE_SUFFIX}.TYPE"
 
+    File.join(basedir, "pkg", "startup.options").tap do |path|
+      dir.input("#{path}=/etc/logstash")
+    end
+    File.join(basedir, "pkg", "jvm.options").tap do |path|
+      dir.input("#{path}=/etc/logstash")
+    end
+    File.join(basedir, "config", "logstash.yml").tap do |path|
+      dir.input("#{path}=/etc/logstash")
+    end
+    File.join(basedir, "pkg", "pipelines.yml").tap do |path|
+      dir.input("#{path}=/etc/logstash")
+    end
+
     case platform
       when "redhat", "centos"
-        File.join(basedir, "pkg", "startup.options").tap do |path|
-          dir.input("#{path}=/etc/logstash")
-        end
-        File.join(basedir, "pkg", "jvm.options").tap do |path|
-          dir.input("#{path}=/etc/logstash")
-        end
-        File.join(basedir, "config", "logstash.yml").tap do |path|
-          dir.input("#{path}=/etc/logstash")
-        end
         require "fpm/package/rpm"
         out = dir.convert(FPM::Package::RPM)
         out.license = "ASL 2.0" # Red Hat calls 'Apache Software License' == ASL
@@ -336,15 +340,6 @@ namespace "artifact" do
         out.config_files << "/etc/logstash/log4j2.properties"
         out.config_files << "/etc/logstash/logstash.yml"
       when "debian", "ubuntu"
-        File.join(basedir, "pkg", "startup.options").tap do |path|
-          dir.input("#{path}=/etc/logstash")
-        end
-        File.join(basedir, "pkg", "jvm.options").tap do |path|
-          dir.input("#{path}=/etc/logstash")
-        end
-        File.join(basedir, "config", "logstash.yml").tap do |path|
-          dir.input("#{path}=/etc/logstash")
-        end
         require "fpm/package/deb"
         out = dir.convert(FPM::Package::Deb)
         out.license = "Apache 2.0"
