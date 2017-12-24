@@ -95,8 +95,8 @@ locations for the system:
 
 | conf
   | Logstash pipeline configuration files
-  | `/etc/logstash/conf.d`
-  | `path.config`
+  | `/etc/logstash/conf.d/*.conf`
+  | See `/etc/logstash/pipelines.yml`
 
 | logs
   | Log files
