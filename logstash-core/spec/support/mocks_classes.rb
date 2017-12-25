@@ -39,13 +39,17 @@ module LogStash
         super
         @num_closes = 0
         @events = []
+        @mutex = Mutex.new
       end
 
       def register
       end
 
       def receive(event)
+        @mutex.lock
         @events << event
+      ensure
+          @mutex.unlock
       end
 
       def close
