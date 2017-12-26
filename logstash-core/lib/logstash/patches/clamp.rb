@@ -48,6 +48,12 @@ module Clamp
         end
       end
 
+      def define_appender_for(option)
+        define_method(option.append_method) do |value|
+          LogStash::SETTINGS.get_value(option.attribute_name) << value
+        end
+      end
+
       def define_deprecated_accessors_for(option, opts, &block)
         define_deprecated_writer_for(option, opts, &block)
       end
