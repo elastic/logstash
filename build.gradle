@@ -141,6 +141,8 @@ def jrubyBin = "${projectDir}/vendor/jruby/bin/jruby" +
   (System.getProperty("os.name").startsWith("Windows") ? '.bat' : '')
 
 def rakeBin = "${projectDir}/vendor/jruby/bin/rake"
+def gemPath = "${projectDir}/vendor/bundle/jruby/2.3.0/"
+def bundleBin = "${gemPath}/bin/bundle"
 
 task installTestGems(dependsOn: downloadAndInstallJRuby, type: Exec) {
   workingDir projectDir
@@ -154,6 +156,8 @@ task installTestGems(dependsOn: downloadAndInstallJRuby, type: Exec) {
   // Override z_rubycheck.rb because we execute the vendored JRuby and don't have to guard against
   // any Ruby environment leaking into the build
   environment "USE_RUBY", "1"
+  environment "GEM_PATH", gemPath
+  environment "GEM_HOME", gemPath
   standardOutput = new ExecLogOutputStream(System.out)
   errorOutput =  new ExecLogOutputStream(System.err)
   commandLine jrubyBin, rakeBin, "test:install-core"
@@ -170,6 +174,9 @@ task assembleTarDistribution(dependsOn: installTestGems, type: Exec) {
   inputs.files fileTree("${projectDir}/logstash-core/lib")
   inputs.files fileTree("${projectDir}/logstash-core/src")
   outputs.files file("${buildDir}/logstash-${project.version}.tar.gz")
+  environment "USE_RUBY", "1"
+  environment "GEM_PATH", gemPath
+  environment "GEM_HOME", gemPath
   standardOutput = new ExecLogOutputStream(System.out)
   errorOutput =  new ExecLogOutputStream(System.err)
   commandLine jrubyBin, rakeBin, "artifact:tar"
@@ -184,9 +191,6 @@ task unpackTarDistribution(dependsOn: assembleTarDistribution, type: Copy) {
   from tarTree(tar)
   into {buildDir}
 }
-
-def bundleBin = "${projectDir}/vendor/bundle/jruby/2.3.0/bin/bundle"
-def gemPath = "${buildDir}/qa/integration/gems"
 
 task installIntegrationTestBundler(dependsOn: unpackTarDistribution, type: Exec) {
   outputs.files fileTree("${gemPath}/gems/bundler-1.16.0")

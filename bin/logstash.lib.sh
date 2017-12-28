@@ -115,6 +115,8 @@ setup_vendored_jruby() {
     echo "If you are a developer, please run 'rake bootstrap'. Running 'rake' requires the 'ruby' program be available."
     exit 1
   fi
+  export GEM_HOME="${LOGSTASH_HOME}/vendor/bundle/jruby/2.3.0"
+  export GEM_PATH=${GEM_HOME}
 }
 
 setup() {

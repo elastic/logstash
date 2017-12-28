@@ -1,7 +1,7 @@
 
 namespace "dependency" do
   task "bundler" do
-    Rake::Task["gem:require"].invoke("bundler", "~> 1.9.4")
+    Rake::Task["gem:require"].invoke("bundler", "~> 1.16.0")
   end
 
   task "rbx-stdlib" do
