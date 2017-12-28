@@ -117,6 +117,16 @@ public final class JrubyTimestampExtLibrary {
             return JavaUtil.convertJavaToUsableRubyObject(context.runtime, this.timestamp);
         }
 
+        @JRubyMethod(name = "clone")
+        public IRubyObject ruby_clone(ThreadContext context) {
+            return RubyTimestamp.newRubyTimestamp(context.runtime, this.timestamp);
+        }
+
+        @JRubyMethod(name = "dup")
+        public IRubyObject ruby_dup(ThreadContext context) {
+            return ruby_clone(context);
+        }
+
         @JRubyMethod(name = "to_json", rest = true)
         public IRubyObject ruby_to_json(ThreadContext context, IRubyObject[] args)
         {
