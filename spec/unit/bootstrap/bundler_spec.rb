@@ -44,7 +44,7 @@ describe LogStash::Bundler do
     after do
       expect(::Bundler.settings[:path]).to eq(LogStash::Environment::BUNDLE_DIR)
       expect(::Bundler.settings[:gemfile]).to eq(LogStash::Environment::GEMFILE_PATH)
-      expect(::Bundler.settings[:without]).to eq(options.fetch(:without, []).join(':'))
+      expect(::Bundler.settings[:without]).to eq(options.fetch(:without, []))
 
       expect(ENV['GEM_PATH']).to eq(LogStash::Environment.logstash_gem_home)
 
