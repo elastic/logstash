@@ -30,6 +30,10 @@ describe LogStash::Timestamp do
       expect{LogStash::Timestamp.new("foobar")}.to raise_error
     end
 
+    it "should copy itself correctly on clone and dup" do
+      expect(LogStash::Timestamp.now.clone.to_java).not_to be_nil
+      expect(LogStash::Timestamp.now.dup.to_java).not_to be_nil
+    end
   end
 
 end
