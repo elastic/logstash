@@ -23,6 +23,7 @@ allprojects {
 
   apply plugin: 'java'
   apply plugin: 'idea'
+  apply plugin: 'checkstyle'
 
   project.sourceCompatibility = JavaVersion.VERSION_1_8
   project.targetCompatibility = JavaVersion.VERSION_1_8
@@ -41,8 +42,17 @@ allprojects {
       delete "${projectDir}/out/"
   }
 
+  checkstyle {
+    toolVersion = '7.5'
+    configFile = file("${rootProject.projectDir}/buildSrc/src/main/resources/checkstyle.xml")
+    configProperties = [
+      suppressions: file("${rootProject.projectDir}/buildSrc/src/main/resources/checkstyle_suppressions.xml")
+    ]
+  }
+
   //https://stackoverflow.com/questions/3963708/gradle-how-to-display-test-results-in-the-console-in-real-time
   tasks.withType(Test) {
+    dependsOn checkstyleMain, checkstyleTest
     testLogging {
       // set options for log level LIFECYCLE
       events "passed", "skipped", "failed", "standardOut"

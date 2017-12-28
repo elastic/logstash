@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<!DOCTYPE suppressions PUBLIC
+    "-//Puppy Crawl//DTD Suppressions 1.1//EN"
+    "http://www.puppycrawl.com/dtds/suppressions_1_1.dtd">
+
+<suppressions>
+    <suppress files="tools[/\\]benchmark-cli[/\\]src[/\\]main[/\\]java[/\\]org[/\\]logstash[/\\].+\.java" checks="." />
+    <suppress files="tools[/\\]benchmark-cli[/\\]src[/\\]test[/\\]java[/\\]org[/\\]logstash[/\\].+\.java" checks="." />
+    <suppress files="tools[/\\]ingest-converter[/\\]src[/\\]main[/\\]java[/\\]org[/\\]logstash[/\\].+\.java" checks="." />
+    <suppress files="tools[/\\]ingest-converter[/\\]src[/\\]test[/\\]java[/\\]org[/\\]logstash[/\\].+\.java" checks="." />
+    <suppress files="logstash-core[/\\]src[/\\]main[/\\]java[/\\]org[/\\]logstash[/\\].+\.java" checks="." />
+    <suppress files="logstash-core[/\\]src[/\\]test[/\\]java[/\\]org[/\\]logstash[/\\].+\.java" checks="." />
+</suppressions>
