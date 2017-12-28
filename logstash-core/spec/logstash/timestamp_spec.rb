@@ -41,6 +41,10 @@ describe LogStash::Timestamp do
       expect(t == '-').to be_falsey
     end
 
+    it "should copy itself correctly on clone and dup" do
+      expect(Timestamp.now.clone.to_java).not_to be_nil
+      expect(Timestamp.now.dup.to_java).not_to be_nil
+    end
   end
 
 end
