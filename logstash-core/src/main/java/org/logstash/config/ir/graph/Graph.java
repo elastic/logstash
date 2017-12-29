@@ -1,5 +1,14 @@
 package org.logstash.config.ir.graph;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import org.logstash.common.Util;
 import org.logstash.config.ir.Hashable;
 import org.logstash.config.ir.SourceComponent;
@@ -9,8 +18,6 @@ import org.logstash.config.ir.graph.algorithms.BreadthFirst;
 import org.logstash.config.ir.graph.algorithms.GraphDiff;
 import org.logstash.config.ir.graph.algorithms.TopologicalSort;
 
-import java.security.MessageDigest;
-import java.util.*;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;

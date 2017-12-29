@@ -1,5 +1,10 @@
 package org.logstash.config.ir;
 
+import java.util.HashMap;
+import java.util.Objects;
+import java.util.Random;
+import java.util.UUID;
+import java.util.concurrent.Callable;
 import org.hamcrest.MatcherAssert;
 import org.logstash.common.IncompleteSourceWithMetadataException;
 import org.logstash.common.SourceWithMetadata;
@@ -10,18 +15,17 @@ import org.logstash.config.ir.graph.Edge;
 import org.logstash.config.ir.graph.Graph;
 import org.logstash.config.ir.graph.Vertex;
 import org.logstash.config.ir.graph.algorithms.GraphDiff;
-import org.logstash.config.ir.imperative.Statement;
 
-import javax.xml.transform.Source;
-import java.util.HashMap;
-import java.util.Objects;
-import java.util.Random;
-import java.util.UUID;
-import java.util.concurrent.Callable;
-import java.util.stream.IntStream;
-
-import static org.logstash.config.ir.DSL.*;
-import static org.logstash.config.ir.PluginDefinition.Type.*;
+import static org.logstash.config.ir.DSL.eEq;
+import static org.logstash.config.ir.DSL.eEventValue;
+import static org.logstash.config.ir.DSL.eGt;
+import static org.logstash.config.ir.DSL.eValue;
+import static org.logstash.config.ir.DSL.iComposeParallel;
+import static org.logstash.config.ir.DSL.iIf;
+import static org.logstash.config.ir.DSL.iPlugin;
+import static org.logstash.config.ir.PluginDefinition.Type.FILTER;
+import static org.logstash.config.ir.PluginDefinition.Type.INPUT;
+import static org.logstash.config.ir.PluginDefinition.Type.OUTPUT;
 
 /**
  * Created by andrewvc on 9/19/16.
@@ -86,10 +90,6 @@ public class IRHelpers {
         Vertex v2 = createTestVertex();
         return new TestEdge(v1,v2);
 
-    }
-
-    public static Edge createTestEdge(Vertex from, Vertex to) throws InvalidIRException {
-        return new TestEdge(from, to);
     }
 
     public static final class TestEdge extends Edge {

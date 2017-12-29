@@ -1,20 +1,16 @@
 package org.logstash.config.ir.graph;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.concurrent.atomic.AtomicInteger;
-
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.logstash.common.SourceWithMetadata;
 import org.logstash.common.Util;
 import org.logstash.config.ir.HashableWithSource;
-import org.logstash.config.ir.SourceComponent;
 import org.logstash.config.ir.InvalidIRException;
+import org.logstash.config.ir.SourceComponent;
 import org.logstash.config.ir.graph.algorithms.DepthFirst;
-
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * Created by andrewvc on 9/15/16.
@@ -31,9 +27,7 @@ public abstract class Vertex implements SourceComponent, HashableWithSource {
 
     private Graph graph;
 
-    private volatile String contextualHashCache;
     private volatile String hashCache;
-    private volatile String individualHashSourceCache;
     private volatile String generatedId;
 
     protected Vertex(SourceWithMetadata meta) {
@@ -219,8 +213,6 @@ public abstract class Vertex implements SourceComponent, HashableWithSource {
 
     public void clearCache() {
         this.hashCache = null;
-        this.contextualHashCache = null;
-        this.individualHashSourceCache = null;
     }
 
     @Override
