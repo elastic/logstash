@@ -70,7 +70,7 @@ If you are installing Logstash with other components in the Elastic Stack, also 
 
 As of Elasticsearch 6.0, document types are https://www.elastic.co/guide/en/elasticsearch/reference/6.0/removal-of-types.html[on the way out], and only a single mapping type per index is supported. For Logstash users this means transitioning to using the `type` field inside of the document instead of the document type. The effect is the same, but the usage is slightly different. This may mean reconfiguring existing Kibana dashboards to use the new `type` field instead of the document type.
 
-If you are using the default mapping templates in Logstash, you will need to upgrade your mapping templates. To do this, after migrating Elasticsearch to 6.0, you must override the existing template with the 6.x template. This can be done by ensuring that all configured Elasticsearch outputs have the following setting specified: `overwrite_template => true`.
+If you are using the default mapping templates in Logstash, you will need to upgrade your mapping templates. To do this, after migrating Elasticsearch to 6.0, you must override the existing template with the 6.x template. This can be done by ensuring that all configured Elasticsearch outputs have the following setting specified: `template_overwrite => true`.
 
 ==== When to Upgrade
 
