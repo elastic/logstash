@@ -3,10 +3,8 @@ package org.logstash;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.regex.Pattern;
 
 public final class FieldReference {
 
@@ -28,8 +26,6 @@ public final class FieldReference {
 
     private static final String[] EMPTY_STRING_ARRAY = new String[0];
 
-    private static final Pattern SPLIT_PATTERN = Pattern.compile("[\\[\\]]");
-
     /**
      * Holds all existing {@link FieldReference} instances for de-duplication.
      */
@@ -43,9 +39,6 @@ public final class FieldReference {
 
     private static final FieldReference METADATA_PARENT_REFERENCE =
         new FieldReference(EMPTY_STRING_ARRAY, Event.METADATA, META_PARENT);
-
-    static final FieldReference DATA_EMPTY_STRING_REFERENCE =
-            new FieldReference(EMPTY_STRING_ARRAY, "", DATA_CHILD);
 
     /**
      * Cache of all existing {@link FieldReference}.
@@ -73,9 +66,6 @@ public final class FieldReference {
     }
 
     public static FieldReference from(final CharSequence reference) {
-        if( reference == null || reference.length() == 0){
-            return DATA_EMPTY_STRING_REFERENCE;
-        }
         // atomicity between the get and put is not important
         final FieldReference result = CACHE.get(reference);
         if (result != null) {
@@ -155,13 +145,25 @@ public final class FieldReference {
     }
 
     private static FieldReference parse(final CharSequence reference) {
-        final String[] parts = SPLIT_PATTERN.split(reference);
-        final List<String> path = new ArrayList<>(parts.length);
-        for (final String part : parts) {
-            if (!part.isEmpty()) {
-                path.add(part.intern());
+        final ArrayList<String> path = new ArrayList<>();
+        final int length = reference.length();
+        int splitPoint = 0;
+        for (int i = 0; i < length; ++i) {
+            final char seen = reference.charAt(i);
+            if (seen == '[' || seen == ']') {
+                if (i == 0) {
+                    splitPoint = 1;
+                }
+                if (i > splitPoint) {
+                    path.add(reference.subSequence(splitPoint, i).toString().intern());
+                }
+                splitPoint = i + 1;
             }
         }
+        if (splitPoint < length || length == 0) {
+            path.add(reference.subSequence(splitPoint, length).toString().intern());
+        }
+        path.trimToSize();
         final String key = path.remove(path.size() - 1).intern();
         final boolean empty = path.isEmpty();
         if (empty && key.equals(Event.METADATA)) {
