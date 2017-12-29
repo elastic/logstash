@@ -64,6 +64,7 @@ configurations.archives {
 task javaTests(type: Test) {
     exclude '/org/logstash/RSpecTests.class'
     exclude '/org/logstash/config/ir/ConfigCompilerTest.class'
+    exclude '/org/logstash/config/ir/CompiledPipelineTest.class'
 }
 
 task rubyTests(type: Test) {
@@ -72,6 +73,7 @@ task rubyTests(type: Test) {
     systemProperty 'logstash.core.root.dir', projectDir.absolutePath
     include '/org/logstash/RSpecTests.class'
     include '/org/logstash/config/ir/ConfigCompilerTest.class'
+    include '/org/logstash/config/ir/CompiledPipelineTest.class'
 }
 
 test {
@@ -115,9 +117,10 @@ dependencies {
     compile "com.fasterxml.jackson.core:jackson-core:${jacksonVersion}"
     compile "com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}"
     compile "com.fasterxml.jackson.core:jackson-annotations:${jacksonVersion}"
-    compile 'org.codehaus.janino:janino:3.0.7'
+    compile 'org.codehaus.janino:janino:3.0.8'
     compile "com.fasterxml.jackson.dataformat:jackson-dataformat-cbor:${jacksonVersion}"
     compile "org.jruby:jruby-complete:${jrubyVersion}"
+    compile 'com.google.googlejavaformat:google-java-format:1.5'
     testCompile 'org.apache.logging.log4j:log4j-core:2.6.2:tests'
     testCompile 'org.apache.logging.log4j:log4j-api:2.6.2:tests'
     testCompile 'junit:junit:4.12'
