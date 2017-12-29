@@ -17,10 +17,10 @@ public final class DatasetCompilerTest {
 
     @Test
     public void compilesEmptyMethod() {
-        final Dataset func = DatasetCompiler.compile(
+        final Dataset func = DatasetCompiler.prepare(
             Closure.wrap(SyntaxFactory.ret(DatasetCompiler.BATCH_ARG.call("to_a"))),
-            Closure.EMPTY, new ClassFields(), DatasetCompiler.DatasetFlavor.ROOT, "foo"
-        );
+            Closure.EMPTY, new ClassFields()
+        ).instantiate();
         final RubyArray batch = RubyUtil.RUBY.newArray();
         assertThat(func.compute(batch, false, false), is(batch));
     }
@@ -33,7 +33,7 @@ public final class DatasetCompilerTest {
         final VariableDefinition eventsDef = new VariableDefinition(Collection.class, "events");
         final ValueSyntaxElement events = eventsDef.access();
         final ClassFields fields = new ClassFields();
-        final Dataset func = DatasetCompiler.compile(
+        final Dataset func = DatasetCompiler.prepare(
             Closure.wrap(
                 SyntaxFactory.definition(eventsDef, DatasetCompiler.BATCH_ARG.call("to_a")),
                 events.call(
@@ -44,8 +44,8 @@ public final class DatasetCompilerTest {
                 ),
                 SyntaxFactory.ret(events)
             ),
-            Closure.EMPTY, fields, DatasetCompiler.DatasetFlavor.ROOT, "foo"
-        );
+            Closure.EMPTY, fields
+        ).instantiate();
         assertThat(func.compute(batch, false, false).size(), is(2));
     }
 
@@ -60,8 +60,8 @@ public final class DatasetCompilerTest {
                 RubyUtil.RUBY.evalScriptlet(
                     "output = Object.new\noutput.define_singleton_method(:multi_receive) do |batch|\nend\noutput"
                 ),
-                "foo", true
-            ).compute(RubyUtil.RUBY.newArray(), false, false),
+                true
+            ).instantiate().compute(RubyUtil.RUBY.newArray(), false, false),
             nullValue()
         );
     }
@@ -69,9 +69,9 @@ public final class DatasetCompilerTest {
     @Test
     public void compilesSplitDataset() {
         final FieldReference key = FieldReference.from("foo");
-        final EventCondition condition = event -> event.getEvent().includes(key);
-        final SplitDataset left =
-            DatasetCompiler.splitDataset(DatasetCompiler.ROOT_DATASETS, condition, "foo");
+        final SplitDataset left = DatasetCompiler.splitDataset(
+            DatasetCompiler.ROOT_DATASETS, event -> event.getEvent().includes(key)
+        ).instantiate();
         final Event trueEvent = new Event();
         trueEvent.setField(key, "val");
         final JrubyEventExtLibrary.RubyEvent falseEvent =
@@ -98,7 +98,8 @@ public final class DatasetCompilerTest {
                 )
             ).generateCode(),
             is(
-                String.join("",
+                String.join(
+                    "\n",
                     "org.jruby.runtime.ThreadContext context=org.logstash.RubyUtil.RUBY.getCurrentContext();",
                     "org.jruby.runtime.ThreadContext context1=context;",
                     "org.jruby.runtime.ThreadContext context2=context;"

@@ -22,8 +22,7 @@ final class FieldDefinition implements SyntaxElement {
      */
     public static FieldDefinition fromValue(final int index, final Object value) {
         return new FieldDefinition(
-            new VariableDefinition(value.getClass(), field(index)), false,
-            null, value
+            variableDefinition(value.getClass(), index), false, null, value
         );
     }
 
@@ -35,7 +34,7 @@ final class FieldDefinition implements SyntaxElement {
      */
     public static FieldDefinition mutableUnassigned(final int index, final Class<?> type) {
         return new FieldDefinition(
-            new VariableDefinition(type, field(index)), true, null, null
+            variableDefinition(type, index), true, null, null
         );
     }
 
@@ -50,7 +49,7 @@ final class FieldDefinition implements SyntaxElement {
     public static FieldDefinition withInitializer(final int index, final Class<?> type,
         final SyntaxElement initializer) {
         return new FieldDefinition(
-            new VariableDefinition(type, field(index)), false, initializer, null
+            variableDefinition(type, index), false, initializer, null
         );
     }
 
@@ -91,12 +90,7 @@ final class FieldDefinition implements SyntaxElement {
         );
     }
 
-    /**
-     * Field Naming Schema.
-     * @param id Index for naming
-     * @return Field name
-     */
-    private static String field(final int id) {
-        return String.format("field%d", id);
+    private static VariableDefinition variableDefinition(final Class<?> type, final int index) {
+        return new VariableDefinition(type, String.format("field%d", index));
     }
 }

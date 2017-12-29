@@ -2,25 +2,14 @@ package org.logstash.config.ir;
 
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import org.jruby.RubyHash;
-import org.jruby.runtime.load.LoadService;
-import org.junit.BeforeClass;
 import org.junit.Test;
-import org.logstash.RubyUtil;
 import org.logstash.common.IncompleteSourceWithMetadataException;
 import org.logstash.config.ir.graph.Graph;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 
-public class ConfigCompilerTest {
-
-    @BeforeClass
-    public static void before() {
-        ensureLoadpath();
-    }
+public class ConfigCompilerTest extends RubyEnvTestCase {
 
     @Test
     public void testConfigToPipelineIR() throws Exception {
@@ -74,25 +63,5 @@ public class ConfigCompilerTest {
     private static String graphHash(final String config)
         throws IncompleteSourceWithMetadataException {
         return ConfigCompiler.configToPipelineIR(config, false).uniqueHash();
-    }
-
-    /**
-     * Loads the logstash-core/lib path if the load service can't find {@code logstash/compiler}
-     * because {@code environment.rb} hasn't been loaded yet.
-     */
-    private static void ensureLoadpath() {
-        final LoadService loader = RubyUtil.RUBY.getLoadService();
-        if (loader.findFileForLoad("logstash/compiler").library == null) {
-            final RubyHash environment = RubyUtil.RUBY.getENV();
-            final Path root = Paths.get(
-                System.getProperty("logstash.core.root.dir", "")
-            ).toAbsolutePath();
-            final String gems = root.getParent().resolve("vendor").resolve("bundle")
-                .resolve("jruby").resolve("2.3.0").toFile().getAbsolutePath();
-            environment.put("GEM_HOME", gems);
-            environment.put("GEM_PATH", gems);
-            loader.addPaths(root.resolve("lib").toFile().getAbsolutePath()
-            );
-        }
     }
 }
