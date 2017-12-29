@@ -4,6 +4,7 @@ import org.junit.Test;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 public final class FieldReferenceTest {
@@ -42,12 +43,11 @@ public final class FieldReferenceTest {
     }
 
     @Test
-    public void testParseEmptyString(){
-        assertEquals(FieldReference.from(""), FieldReference.DATA_EMPTY_STRING_REFERENCE);
-    }
-
-    @Test
-    public void testParseNull(){
-        assertEquals(FieldReference.from(null), FieldReference.DATA_EMPTY_STRING_REFERENCE);
+    public void testParseEmptyString() {
+        final FieldReference emptyReference = FieldReference.from("");
+        assertNotNull(emptyReference);
+        assertEquals(
+            emptyReference, FieldReference.from(RubyUtil.RUBY.newString("").getByteList())
+        );
     }
 }
