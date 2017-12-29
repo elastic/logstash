@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
 import java.util.stream.Collectors;
 import org.jruby.RubyArray;
 import org.jruby.RubyHash;
@@ -18,16 +17,6 @@ import org.logstash.ext.JrubyEventExtLibrary;
  * Compiler that can compile implementations of {@link Dataset} at runtime.
  */
 public final class DatasetCompiler {
-
-    /**
-     * Argument passed to Ruby Filter flush method in generated code.
-     */
-    public static final IRubyObject[] FLUSH_FINAL = {flushOpts(true)};
-
-    /**
-     * Argument passed to Ruby Filter flush method in generated code.
-     */
-    public static final IRubyObject[] FLUSH_NOT_FINAL = {flushOpts(false)};
 
     private static final String MULTI_RECEIVE = "multi_receive";
 
@@ -43,27 +32,12 @@ public final class DatasetCompiler {
         SyntaxFactory.identifier("batchArg");
 
     /**
-     * Hint to the intended purpose of a Dataset.
-     */
-    enum DatasetFlavor {
-        ROOT("Root"), FILTER("Filter"), OUTPUT("Output"), CONDITIONAL("Conditional");
-        private final String display;
-
-        DatasetFlavor(final String display) {
-            this.display = display;
-        }
-
-        String getDisplay() {
-            return display;
-        }
-    }
-
-    /**
      * Root {@link Dataset}s at the beginning of the execution tree that simply pass through
      * the given set of {@link JrubyEventExtLibrary.RubyEvent} and have no state.
      */
     public static final Collection<Dataset> ROOT_DATASETS = Collections.singleton(
-        compile(Closure.wrap(SyntaxFactory.ret(BATCH_ARG)), Closure.EMPTY, new ClassFields(), DatasetFlavor.ROOT, "(root)")
+        prepare(Closure.wrap(SyntaxFactory.ret(BATCH_ARG)), Closure.EMPTY, new ClassFields())
+            .instantiate()
     );
 
     private DatasetCompiler() {
@@ -77,21 +51,18 @@ public final class DatasetCompiler {
      * @param compute Method body of {@link Dataset#compute(RubyArray, boolean, boolean)}
      * @param clear Method body of {@link Dataset#clear()}
      * @param fieldValues Constructor Arguments
-     * @param datasetFlavor The flavor of {@link Dataset} to compile.
-     * @param configSource The Logstash configuration that maps to the returned Dataset
-     * This is only helpful for human debugging to differentiate between the intended usage of the {@link Dataset}
      * @return Dataset Instance
      */
-    public static synchronized Dataset compile(final Closure compute, final Closure clear,
-        final ClassFields fieldValues, final DatasetFlavor datasetFlavor, String configSource) {
-        return new ComputeStepSyntaxElement(
+    public static synchronized ComputeStepSyntaxElement<Dataset> prepare(final Closure compute, final Closure clear,
+        final ClassFields fieldValues) {
+        return new ComputeStepSyntaxElement<>(
             Arrays.asList(MethodSyntaxElement.compute(compute), MethodSyntaxElement.clear(clear)),
-            fieldValues, datasetFlavor, configSource
-        ).instantiate(Dataset.class);
+            fieldValues, Dataset.class
+        );
     }
 
-    public static SplitDataset splitDataset(final Collection<Dataset> parents,
-        final EventCondition condition, String configSource) {
+    public static ComputeStepSyntaxElement<SplitDataset> splitDataset(final Collection<Dataset> parents,
+        final EventCondition condition) {
         final ClassFields fields = new ClassFields();
         final Collection<ValueSyntaxElement> parentFields =
             parents.stream().map(fields::add).collect(Collectors.toList());
@@ -104,13 +75,14 @@ public final class DatasetCompiler {
         final VariableDefinition event =
             new VariableDefinition(JrubyEventExtLibrary.RubyEvent.class, "event");
         final ValueSyntaxElement eventVal = event.access();
-        return new ComputeStepSyntaxElement(
+        return new ComputeStepSyntaxElement<>(
             Arrays.asList(
                 MethodSyntaxElement.compute(
-                    returnBuffer(ifData, done)
+                    returnIffBuffered(ifData, done)
                         .add(bufferParents(parentFields, buffer))
                         .add(
-                            SyntaxFactory.forLoop(event, buffer,
+                            SyntaxFactory.forLoop(
+                                event, buffer,
                                 Closure.wrap(
                                     SyntaxFactory.ifCondition(
                                         fields.add(condition).call("fulfilled", eventVal),
@@ -128,19 +100,18 @@ public final class DatasetCompiler {
                         .add(SyntaxFactory.assignment(done, SyntaxFactory.FALSE))
                 ),
                 MethodSyntaxElement.right(elseData)
-            ), fields, DatasetFlavor.CONDITIONAL, configSource
-        ).instantiate(SplitDataset.class);
+            ), fields, SplitDataset.class
+        );
     }
 
     /**
      * Compiles a {@link Dataset} representing a filter plugin without flush behaviour.
      * @param parents Parent {@link Dataset} to aggregate for this filter
      * @param plugin Filter Plugin
-     * @param configSource The Logstash configuration that maps to the returned Dataset
      * @return Dataset representing the filter plugin
      */
-    public static Dataset filterDataset(final Collection<Dataset> parents,
-        final RubyIntegration.Filter plugin, String configSource) {
+    public static ComputeStepSyntaxElement<Dataset> filterDataset(final Collection<Dataset> parents,
+        final RubyIntegration.Filter plugin) {
         final ClassFields fields = new ClassFields();
         final Collection<ValueSyntaxElement> parentFields =
             parents.stream().map(fields::add).collect(Collectors.toList());
@@ -151,7 +122,7 @@ public final class DatasetCompiler {
         final ValueSyntaxElement filterField = fields.add(filter);
         final ValueSyntaxElement done = fields.add(boolean.class);
         final String multiFilter = "multi_filter";
-        final Closure body = returnBuffer(outputBuffer, done).add(
+        final Closure body = returnIffBuffered(outputBuffer, done).add(
             bufferParents(parentFields, inputBufferField)
                 .add(
                     buffer(
@@ -170,18 +141,18 @@ public final class DatasetCompiler {
         if (plugin.hasFlush()) {
             body.add(
                 callFilterFlush(
-                    outputBuffer, fields.add(rubyCallsite(filter, FLUSH)), filterField,
+                    fields, outputBuffer, fields.add(rubyCallsite(filter, FLUSH)), filterField,
                     !plugin.periodicFlush()
                 )
             );
         }
-        return compile(
+        return prepare(
             body.add(SyntaxFactory.assignment(done, SyntaxFactory.TRUE))
                 .add(SyntaxFactory.ret(outputBuffer)),
             Closure.wrap(
                 clearSyntax(parentFields), clear(outputBuffer),
                 SyntaxFactory.assignment(done, SyntaxFactory.FALSE)
-            ), fields, DatasetFlavor.FILTER, configSource
+            ), fields
         );
     }
 
@@ -205,8 +176,8 @@ public final class DatasetCompiler {
                 Closure.wrap(
                     parentFields.stream().map(DatasetCompiler::computeDataset)
                         .toArray(MethodLevelSyntaxElement[]::new)
-                ).add(clearSyntax(parentFields)), Closure.EMPTY, fields, "(terminal)"
-            );
+                ).add(clearSyntax(parentFields)), Closure.EMPTY, fields
+            ).instantiate();
         } else if (count == 1) {
             // No need for a terminal dataset here, if there is only a single parent node we can
             // call it directly.
@@ -232,16 +203,16 @@ public final class DatasetCompiler {
      * every call to {@code compute}.
      * @param parents Parent Datasets
      * @param output Output Plugin (of Ruby type OutputDelegator)
-     * @param configSource The Logstash configuration that maps to the output Dataset
      * @param terminal Set to true if this output is the only output in the pipeline
      * @return Output Dataset
      */
-    public static Dataset outputDataset(final Collection<Dataset> parents, final IRubyObject output, String configSource,
+    public static ComputeStepSyntaxElement<Dataset> outputDataset(final Collection<Dataset> parents,
+        final IRubyObject output,
         final boolean terminal) {
         final DynamicMethod method = rubyCallsite(output, MULTI_RECEIVE);
         // Short-circuit trivial case of only output(s) in the pipeline
         if (parents == ROOT_DATASETS) {
-            return outputDatasetFromRoot(output, method, configSource);
+            return outputDatasetFromRoot(output, method);
         }
         final ClassFields fields = new ClassFields();
         final Collection<ValueSyntaxElement> parentFields =
@@ -267,32 +238,30 @@ public final class DatasetCompiler {
                 clear(inputBuffer),
                 inlineClear
             ),
-            clearSyntax, fields, configSource
+            clearSyntax, fields
         );
     }
 
-    private static Closure returnBuffer(final MethodLevelSyntaxElement ifData,
+    private static Closure returnIffBuffered(final MethodLevelSyntaxElement ifData,
         final MethodLevelSyntaxElement done) {
         return Closure.wrap(
             SyntaxFactory.ifCondition(done, Closure.wrap(SyntaxFactory.ret(ifData)))
         );
     }
 
-    private static MethodLevelSyntaxElement callFilterFlush(final ValueSyntaxElement resultBuffer,
-        final ValueSyntaxElement flushMethod, final ValueSyntaxElement filterPlugin,
-        final boolean shutdownOnly) {
+    private static MethodLevelSyntaxElement callFilterFlush(final ClassFields fields,
+        final ValueSyntaxElement resultBuffer, final ValueSyntaxElement flushMethod,
+        final ValueSyntaxElement filterPlugin, final boolean shutdownOnly) {
         final MethodLevelSyntaxElement condition;
         final ValueSyntaxElement flushArgs;
-        final ValueSyntaxElement flushFinal =
-            SyntaxFactory.constant(DatasetCompiler.class, "FLUSH_FINAL");
+        final ValueSyntaxElement flushFinal = fields.add(flushOpts(true));
         if (shutdownOnly) {
             condition = SyntaxFactory.and(FLUSH_ARG, SHUTDOWN_ARG);
             flushArgs = flushFinal;
         } else {
             condition = FLUSH_ARG;
             flushArgs = SyntaxFactory.ternary(
-                SHUTDOWN_ARG, flushFinal,
-                SyntaxFactory.constant(DatasetCompiler.class, "FLUSH_NOT_FINAL")
+                SHUTDOWN_ARG, flushFinal, fields.add(flushOpts(false))
             );
         }
         return SyntaxFactory.ifCondition(
@@ -317,10 +286,10 @@ public final class DatasetCompiler {
         return parent.call("compute", BATCH_ARG, FLUSH_ARG, SHUTDOWN_ARG);
     }
 
-    private static IRubyObject flushOpts(final boolean fin) {
+    private static IRubyObject[] flushOpts(final boolean fin) {
         final RubyHash res = RubyHash.newHash(RubyUtil.RUBY);
         res.put(RubyUtil.RUBY.newSymbol("final"), RubyUtil.RUBY.newBoolean(fin));
-        return res;
+        return new IRubyObject[]{res};
     }
 
     private static Closure bufferParents(final Collection<ValueSyntaxElement> parents,
@@ -347,15 +316,14 @@ public final class DatasetCompiler {
     /**
      * Special case optimization for when the output plugin is directly connected to the Queue
      * without any filters or conditionals in between. This special case does not arise naturally
-     * from {@link DatasetCompiler#outputDataset(Collection, IRubyObject, String, boolean)} since it saves
+     * from {@link DatasetCompiler#outputDataset(Collection, IRubyObject, boolean)} since it saves
      * the internal buffering of events and instead forwards events directly from the batch to the
      * Output plugin.
      * @param output Output Plugin
-     * @param configSource The Logstash configuration that maps to the returned Dataset
      * @return Dataset representing the Output
      */
-    private static Dataset outputDatasetFromRoot(final IRubyObject output,
-        final DynamicMethod method, String configSource) {
+    private static ComputeStepSyntaxElement<Dataset> outputDatasetFromRoot(final IRubyObject output,
+        final DynamicMethod method) {
         final ClassFields fields = new ClassFields();
         final ValueSyntaxElement args = fields.add(new IRubyObject[1]);
         return compileOutput(
@@ -363,22 +331,14 @@ public final class DatasetCompiler {
                 SyntaxFactory.assignment(SyntaxFactory.arrayField(args, 0), BATCH_ARG),
                 callRubyCallsite(fields.add(method), args, fields.add(output), MULTI_RECEIVE)
             ),
-            Closure.EMPTY, fields, configSource
+            Closure.EMPTY, fields
         );
     }
 
-    /**
-     * Get the generated source
-     * @return sorted and formatted lines of generated code
-     */
-    public static List<String> getGeneratedSource() {
-        return ComputeStepSyntaxElement.getGeneratedSource();
-    }
-
-    private static Dataset compileOutput(final Closure syntax, final Closure clearSyntax,
-        final ClassFields fields, String configSource) {
-        return compile(
-            syntax.add(MethodLevelSyntaxElement.RETURN_NULL), clearSyntax, fields, DatasetFlavor.OUTPUT, configSource
+    private static ComputeStepSyntaxElement<Dataset> compileOutput(final Closure syntax,
+        final Closure clearSyntax, final ClassFields fields) {
+        return prepare(
+            syntax.add(MethodLevelSyntaxElement.RETURN_NULL), clearSyntax, fields
         );
     }
 

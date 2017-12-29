@@ -374,20 +374,11 @@ module LogStash; class JavaPipeline < JavaBasePipeline
 
       pipeline_workers.times do |t|
         batched_execution = @lir_execution.buildExecution
-        if t.eql? 0
-          @logger.debug ("Generated Java pipeline entry class: " + batched_execution.class.to_s)
-        end
         thread = Thread.new(self, batched_execution) do |_pipeline, _batched_execution|
           _pipeline.worker_loop(_batched_execution)
         end
         thread.name="[#{pipeline_id}]>worker#{t}"
         @worker_threads << thread
-      end
-
-      if @logger.debug? || @logger.trace?
-        @lir_execution.getGeneratedSource.each do |line|
-          @logger.debug line
-        end
       end
 
       # inputs should be started last, after all workers
