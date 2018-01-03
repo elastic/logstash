@@ -29,6 +29,7 @@ public class SecretStoreFactory {
 
     /**
      * Determine if this secret store currently exists
+     * @return true if the secret store exists, false otherwise
      */
     public static boolean exists(SecureConfig secureConfig) {
         return doIt(MODE.EXISTS, secureConfig).exists(secureConfig);
@@ -38,8 +39,7 @@ public class SecretStoreFactory {
      * Creates a new {@link SecretStore} based on the provided configuration
      *
      * @param secureConfig The configuration to pass to the implementation
-     * @return the newly created SecretStore
-     * @throws {@link SecretStoreException} if errors occur while loading, or if store already exists
+     * @return the newly created SecretStore, throws {@link SecretStoreException} if errors occur while loading, or if store already exists
      */
     static public SecretStore create(SecureConfig secureConfig) {
         return doIt(MODE.CREATE, secureConfig);
@@ -49,7 +49,7 @@ public class SecretStoreFactory {
      * Deletes a {@link SecretStore} based on the provided configuration
      *
      * @param secureConfig The configuration to pass to the implementation
-     * @throws {@link SecretStoreException} if errors occur
+     * throws {@link SecretStoreException} if errors occur
      */
     static public void delete(SecureConfig secureConfig) {
         doIt(MODE.DELETE, secureConfig);
@@ -59,8 +59,7 @@ public class SecretStoreFactory {
      * Loads an existing {@link SecretStore} based on the provided configuration
      *
      * @param secureConfig The configuration to pass to the implementation
-     * @return the loaded SecretStore
-     * @throws {@link SecretStoreException} if errors occur while loading, or if store does not exist
+     * @return the loaded SecretStore, throws {@link SecretStoreException} if errors occur while loading, or if store does not exist
      */
     static public SecretStore load(SecureConfig secureConfig) {
         return doIt(MODE.LOAD, secureConfig);

@@ -5,7 +5,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * A String -> char[] container that holds a referenced char[] obfuscated in memory and allows for easy clearing all values from memory.
+ * A String to char[] container that holds a referenced char[] obfuscated in memory and allows for easy clearing all values from memory.
  */
 public class SecureConfig {
 
