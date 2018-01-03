@@ -663,6 +663,7 @@ module LogStash; class JavaPipeline < JavaBasePipeline
     filtered_size = batch.filtered_size
     @filter_queue_client.add_output_metrics(filtered_size)
     @filter_queue_client.add_filtered_metrics(filtered_size)
+    @flushing.set(false) if flush
   rescue Exception => e
     # Plugins authors should manage their own exceptions in the plugin code
     # but if an exception is raised up to the worker thread they are considered

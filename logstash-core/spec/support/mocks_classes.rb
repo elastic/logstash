@@ -13,6 +13,23 @@ module LogStash
         # noop
       end
     end
+
+    class DummyBlockingInput < LogStash::Inputs::Base
+      config_name "dummyblockinginput"
+      milestone 2
+
+      def register
+        @latch = java.util.concurrent.CountDownLatch.new(1)
+      end
+
+      def run(_)
+        @latch.await
+      end
+
+      def stop
+        @latch.count_down
+      end
+    end
   end
 
   module Filters

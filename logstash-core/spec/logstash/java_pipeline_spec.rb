@@ -642,6 +642,59 @@ describe LogStash::JavaPipeline do
     end
   end
 
+  context "Periodic Flush Wrapped in Nested Conditional" do
+    let(:config) do
+      <<-EOS
+      input {
+        dummy_input {}
+      }
+      filter {
+        if [type] == "foo" {
+          if [@bar] {
+             dummy_flushing_filter {}
+          }
+        } else {
+          drop {}
+        }
+      }
+      output {
+        dummy_output {}
+      }
+      EOS
+    end
+    let(:output) { ::LogStash::Outputs::DummyOutput.new }
+
+    before do
+      allow(::LogStash::Outputs::DummyOutput).to receive(:new).with(any_args).and_return(output)
+      allow(LogStash::Plugin).to receive(:lookup).with("input", "dummy_input").and_return(LogStash::Inputs::DummyBlockingInput)
+      allow(LogStash::Plugin).to receive(:lookup).with("filter", "dummy_flushing_filter").and_return(DummyFlushingFilterPeriodic)
+      allow(LogStash::Plugin).to receive(:lookup).with("output", "dummy_output").and_return(::LogStash::Outputs::DummyOutput)
+      allow(LogStash::Plugin).to receive(:lookup).with("filter", "drop").and_call_original
+      allow(LogStash::Plugin).to receive(:lookup).with("codec", "plain").and_return(LogStash::Codecs::Plain)
+    end
+
+    it "flush periodically" do
+      Thread.abort_on_exception = true
+      pipeline = mock_java_pipeline_from_string(config, pipeline_settings_obj)
+      t = Thread.new { pipeline.run }
+      Timeout.timeout(timeout) do
+        sleep(0.1) until pipeline.ready?
+      end
+      Stud.try(max_retry.times, [StandardError, RSpec::Expectations::ExpectationNotMetError]) do
+        wait(11).for do
+          # give us a bit of time to flush the events
+          output.events.size >= 2
+        end.to be_truthy
+      end
+
+      expect(output.events.any? {|e| e.get("message") == "dummy_flush"}).to eq(true)
+
+      pipeline.shutdown
+
+      t.join
+    end
+  end
+
   context "with multiple outputs" do
     let(:config) do
       <<-EOS
