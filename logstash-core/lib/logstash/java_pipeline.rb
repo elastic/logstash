@@ -330,7 +330,10 @@ module LogStash; class JavaPipeline < JavaBasePipeline
   # @param plugins [Array[Plugin]] the list of plugins to register
   def register_plugins(plugins)
     registered = []
-    plugins.each { |plugin| registered << @lir_execution.registerPlugin(plugin) }
+    plugins.each do |plugin|
+      plugin.register
+      registered << plugin
+    end
   rescue => e
     registered.each(&:do_close)
     raise e
