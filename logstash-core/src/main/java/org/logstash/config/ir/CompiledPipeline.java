@@ -79,11 +79,6 @@ public final class CompiledPipeline {
         return inputs;
     }
 
-    public RubyIntegration.Plugin registerPlugin(final RubyIntegration.Plugin plugin) {
-        plugin.register();
-        return plugin;
-    }
-
     /**
      * This method contains the actual compilation of the {@link Dataset} representing the
      * underlying pipeline from the Queue to the outputs.
