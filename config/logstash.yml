@@ -40,10 +40,6 @@
 #
 # pipeline.workers: 2
 #
-# How many workers should be used per output plugin instance
-#
-# pipeline.output.workers: 1
-#
 # How many events to retrieve from inputs before sending to filters+workers
 #
 # pipeline.batch.size: 125
