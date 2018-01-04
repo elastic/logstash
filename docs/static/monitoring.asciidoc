@@ -12,7 +12,7 @@ The metrics collected by Logstash include:
 runtime stats.
 * Hot threads.
 
-You can use the basic <<monitoring,monitoring APIs>> providing by Logstash
+You can use the basic <<monitoring,monitoring APIs>> provided by Logstash
 to retrieve these metrics. These APIs are available by default without
 requiring any extra configuration.
 
