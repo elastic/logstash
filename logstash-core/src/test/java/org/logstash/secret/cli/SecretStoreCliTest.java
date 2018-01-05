@@ -37,24 +37,43 @@ public class SecretStoreCliTest {
     @Test
     public void testBadCommand() {
         cli.command("nonsense", null, null);
-        assertHelped();
+        assertPrimaryHelped();
     }
 
     @Test
-    public void testHelp() {
-        cli.command("help", null, null);
-        assertHelped();
+    public void testHelpAdd() {
+        cli.command("add", null, "--help");
+        assertThat(terminal.out).containsIgnoringCase("Adds a new secret to the keystore");
+    }
+
+    @Test
+    public void testHelpCreate() {
+        cli.command("create", null, "--help");
+        assertThat(terminal.out).containsIgnoringCase("Creates a new keystore");
+    }
+
+    @Test
+    public void testHelpList() {
+        cli.command("list", null, "--help");
+        assertThat(terminal.out).containsIgnoringCase("List all secret identifiers from the keystore");
+    }
+
+    @Test
+    public void testHelpRemove() {
+        cli.command("remove", null, "--help");
+        assertThat(terminal.out).containsIgnoringCase("Removes a new secret to the keystore");
     }
 
     @Test
     public void testList() {
         cli.command("list", existingStoreConfig, null);
-        //contents of the existing store is a-z for both the key and value
+
+       // contents of the existing store is a-z for both the key and value
         for (int i = 65; i <= 90; i++) {
             String expected = new String(new byte[]{(byte) i});
             assertListed(expected.toLowerCase());
         }
-        assertListed("keystore.seed");
+        assertThat(terminal.out).doesNotContain("keystore.seed");
     }
 
     @Test
@@ -174,11 +193,10 @@ public class SecretStoreCliTest {
     }
 
     private void assertListed(String expected) {
-        System.out.println(terminal.out);
         assertThat(terminal.out).contains(expected);
     }
 
-    private void assertHelped() {
+    private void assertPrimaryHelped() {
         assertThat(terminal.out).
                 containsIgnoringCase("Commands").
                 containsIgnoringCase("create").

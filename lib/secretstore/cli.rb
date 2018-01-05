@@ -36,7 +36,7 @@ class LogStash::SecretStoreCli
     cli.command(ARGV[0], secure_config, ARGV[1])
     exit 0
   rescue => e
-    logger.error(e.message, :backtrace => e.backtrace)
+    logger.error(e.message, :cause => e.cause, :backtrace => e.backtrace)
     exit 1
   end
 

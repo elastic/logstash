@@ -92,8 +92,11 @@ public final class JavaKeyStore implements SecretStore {
             }
         } catch (SecretStoreException sse) {
             throw sse;
+        } catch (NoSuchFileException | AccessDeniedException fe) {
+            throw new SecretStoreException.CreateException("Error while trying to create the Logstash keystore. Please ensure that path to " + keyStorePath.toAbsolutePath() +
+                    " exists and is writable", fe);
         } catch (Exception e) { //should never happen
-            throw new SecretStoreException.UnknownException("Error while trying to create the Logstash keystore", e);
+            throw new SecretStoreException.UnknownException("Error while trying to create the Logstash keystore. ", e);
         } finally {
             releaseLock(writeLock);
             config.clearValues();
