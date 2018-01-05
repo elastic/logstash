@@ -197,31 +197,31 @@ task unpackTarDistribution(dependsOn: assembleTarDistribution, type: Copy) {
 }
 
 def bundleBin = "${projectDir}/vendor/bundle/jruby/2.3.0/bin/bundle"
-def gemPath = "${buildDir}/qa/integration/gems"
+def qaGemPath = "${buildDir}/qa/integration/vendor"
 
 task installIntegrationTestBundler(dependsOn: unpackTarDistribution, type: Exec) {
-  outputs.files fileTree("${gemPath}/gems/bundler-1.16.0")
-  environment "GEM_PATH", gemPath
-  environment "GEM_HOME", gemPath
+  outputs.files fileTree("${qaGemPath}/gems/bundler-1.16.0")
+  environment "GEM_PATH", qaGemPath
+  environment "GEM_HOME", qaGemPath
   standardOutput = new ExecLogOutputStream(System.out)
   errorOutput =  new ExecLogOutputStream(System.err)
-  commandLine jrubyBin, "${projectDir}/vendor/jruby/bin/gem", "install", "bundler", "-v", "1.16.0"
+  commandLine jrubyBin, "-S", "${projectDir}/vendor/jruby/bin/gem", "install", "bundler", "-v", "1.16.0"
 }
 
 task installIntegrationTestGems(dependsOn: installIntegrationTestBundler, type: Exec) {
   workingDir "${projectDir}/qa/integration"
-  environment "GEM_PATH", gemPath
-  environment "GEM_HOME", gemPath
+  environment "GEM_PATH", qaGemPath
+  environment "GEM_HOME", qaGemPath
   inputs.files file("${projectDir}/qa/integration/Gemfile")
   inputs.files file("${logstashBuildDir}/Gemfile")
   inputs.files file("${logstashBuildDir}/Gemfile.lock")
   inputs.files file("${logstashBuildDir}/logstash-core/logstash-core.gemspec")
   inputs.files file("${projectDir}/qa/integration/integration_tests.gemspec")
-  outputs.files fileTree("${gemPath}/gems")
+  outputs.files fileTree("${qaGemPath}")
   outputs.files file("${projectDir}/qa/integration/Gemfile.lock")
   standardOutput = new ExecLogOutputStream(System.out)
   errorOutput =  new ExecLogOutputStream(System.err)
-  commandLine jrubyBin, bundleBin, "install"
+  commandLine jrubyBin, "-S", bundleBin, "install"
 }
 
 def rubyIntegrationSpecs = project.hasProperty("rubyIntegrationSpecs") ? ((String) project.property("rubyIntegrationSpecs")).split(/\s+/) : []
@@ -229,13 +229,13 @@ def rubyIntegrationSpecs = project.hasProperty("rubyIntegrationSpecs") ? ((Strin
 task runIntegrationTests(dependsOn: installIntegrationTestGems, type: Exec) {
   workingDir "${projectDir}/qa/integration"
   environment "JAVA_OPTS", ""
-  environment "GEM_PATH", gemPath
-  environment "GEM_HOME", gemPath
+  environment "GEM_PATH", qaGemPath
+  environment "GEM_HOME", qaGemPath
   // FEATURE_FLAG is set in the CI to configure testing with enabled PQ
   environment "FEATURE_FLAG", System.getenv('FEATURE_FLAG')
   standardOutput = new ExecLogOutputStream(System.out)
   errorOutput =  new ExecLogOutputStream(System.err)
-  commandLine([jrubyBin, bundleBin, "exec", "rspec"].plus((Collection<String>)rubyIntegrationSpecs))
+  commandLine([jrubyBin, "-S", bundleBin, "exec", "rspec"].plus((Collection<String>)rubyIntegrationSpecs))
 }
 
 // If you are running a JRuby snapshot we will skip the integrity check.
