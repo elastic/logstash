@@ -211,16 +211,16 @@ task installIntegrationTestBundler(dependsOn: unpackTarDistribution, type: Exec)
 
 task installIntegrationTestGems(dependsOn: installIntegrationTestBundler, type: Exec) {
   workingDir "${projectDir}/qa/integration"
-  environment "LS_GEM_PATH", qaGemPath
-  environment "LS_GEM_HOME", qaGemPath
-  environment "SKIP_SETUP_JAVA_OPTS", "1"
   inputs.files file("${projectDir}/qa/integration/Gemfile")
+  inputs.files file("${projectDir}/qa/integration/integration_tests.gemspec")
   inputs.files file("${logstashBuildDir}/Gemfile")
   inputs.files file("${logstashBuildDir}/Gemfile.lock")
   inputs.files file("${logstashBuildDir}/logstash-core/logstash-core.gemspec")
-  inputs.files file("${projectDir}/qa/integration/integration_tests.gemspec")
   outputs.files fileTree("${qaGemPath}")
   outputs.files file("${projectDir}/qa/integration/Gemfile.lock")
+  environment "LS_GEM_PATH", qaGemPath
+  environment "LS_GEM_HOME", qaGemPath
+  environment "SKIP_SETUP_JAVA_OPTS", "1"
   standardOutput = new ExecLogOutputStream(System.out)
   errorOutput =  new ExecLogOutputStream(System.err)
   commandLine jrubyBin, "-S", qaBundleBin, "install"
