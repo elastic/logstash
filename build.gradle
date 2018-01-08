@@ -201,8 +201,8 @@ def qaBundleBin = "${buildDir}/qa/integration/vendor/bin/bundle"
 
 task installIntegrationTestBundler(dependsOn: unpackTarDistribution, type: Exec) {
   outputs.files fileTree("${qaGemPath}/gems/bundler-1.16.0")
-  environment "GEM_PATH", qaGemPath
-  environment "GEM_HOME", qaGemPath
+  environment "LS_GEM_PATH", qaGemPath
+  environment "LS_GEM_HOME", qaGemPath
   environment "SKIP_SETUP_JAVA_OPTS", "1"
   standardOutput = new ExecLogOutputStream(System.out)
   errorOutput =  new ExecLogOutputStream(System.err)
