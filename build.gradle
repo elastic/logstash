@@ -203,6 +203,7 @@ task installIntegrationTestBundler(dependsOn: unpackTarDistribution, type: Exec)
   outputs.files fileTree("${qaGemPath}/gems/bundler-1.16.0")
   environment "GEM_PATH", qaGemPath
   environment "GEM_HOME", qaGemPath
+  environment "SKIP_SETUP_JAVA_OPTS", "1"
   standardOutput = new ExecLogOutputStream(System.out)
   errorOutput =  new ExecLogOutputStream(System.err)
   commandLine jrubyBin, "-S", "${projectDir}/vendor/jruby/bin/gem", "install", "bundler", "-v", "1.16.0"
@@ -210,8 +211,9 @@ task installIntegrationTestBundler(dependsOn: unpackTarDistribution, type: Exec)
 
 task installIntegrationTestGems(dependsOn: installIntegrationTestBundler, type: Exec) {
   workingDir "${projectDir}/qa/integration"
-  environment "GEM_PATH", qaGemPath
-  environment "GEM_HOME", qaGemPath
+  environment "LS_GEM_PATH", qaGemPath
+  environment "LS_GEM_HOME", qaGemPath
+  environment "SKIP_SETUP_JAVA_OPTS", "1"
   inputs.files file("${projectDir}/qa/integration/Gemfile")
   inputs.files file("${logstashBuildDir}/Gemfile")
   inputs.files file("${logstashBuildDir}/Gemfile.lock")
@@ -228,9 +230,9 @@ def rubyIntegrationSpecs = project.hasProperty("rubyIntegrationSpecs") ? ((Strin
 
 task runIntegrationTests(dependsOn: installIntegrationTestGems, type: Exec) {
   workingDir "${projectDir}/qa/integration"
-  environment "JAVA_OPTS", ""
-  environment "GEM_PATH", qaGemPath
-  environment "GEM_HOME", qaGemPath
+  environment "LS_GEM_PATH", qaGemPath
+  environment "LS_GEM_HOME", qaGemPath
+  environment "SKIP_SETUP_JAVA_OPTS", "1"
   // FEATURE_FLAG is set in the CI to configure testing with enabled PQ
   environment "FEATURE_FLAG", System.getenv('FEATURE_FLAG')
   standardOutput = new ExecLogOutputStream(System.out)
