@@ -196,17 +196,16 @@ task unpackTarDistribution(dependsOn: assembleTarDistribution, type: Copy) {
   into {buildDir}
 }
 
-def qaGemPath = "${buildDir}/qa/integration/vendor"
-def qaBundleBin = "${buildDir}/qa/integration/vendor/bin/bundle"
+def qaVendorPath = "${buildDir}/qa/integration/vendor"
+def qaBundledGemPath = "${qaVendorPath}/jruby/2.3.0"
+def qaBundleBin = "${qaBundledGemPath}/bin/bundle"
 
 task installIntegrationTestBundler(dependsOn: unpackTarDistribution, type: Exec) {
-  outputs.files fileTree("${qaGemPath}/gems/bundler-1.16.0")
-  environment "LS_GEM_PATH", qaGemPath
-  environment "LS_GEM_HOME", qaGemPath
-  environment "SKIP_SETUP_JAVA_OPTS", "1"
+  outputs.files fileTree("${qaBundledGemPath}/gems/bundler-1.16.0")
   standardOutput = new ExecLogOutputStream(System.out)
   errorOutput =  new ExecLogOutputStream(System.err)
-  commandLine jrubyBin, "-S", "${projectDir}/vendor/jruby/bin/gem", "install", "bundler", "-v", "1.16.0"
+  // directly invoke bin/gem to install bundlers and force install dir "-i" into qaBundledGemPath
+  commandLine "${projectDir}/vendor/jruby/bin/gem", "install", "bundler", "-v", "1.16.0", "-i", qaBundledGemPath
 }
 
 task installIntegrationTestGems(dependsOn: installIntegrationTestBundler, type: Exec) {
@@ -216,27 +215,28 @@ task installIntegrationTestGems(dependsOn: installIntegrationTestBundler, type: 
   inputs.files file("${logstashBuildDir}/Gemfile")
   inputs.files file("${logstashBuildDir}/Gemfile.lock")
   inputs.files file("${logstashBuildDir}/logstash-core/logstash-core.gemspec")
-  outputs.files fileTree("${qaGemPath}")
+  outputs.files fileTree("${qaVendorPath}")
   outputs.files file("${projectDir}/qa/integration/Gemfile.lock")
-  environment "LS_GEM_PATH", qaGemPath
-  environment "LS_GEM_HOME", qaGemPath
-  environment "SKIP_SETUP_JAVA_OPTS", "1"
   standardOutput = new ExecLogOutputStream(System.out)
   errorOutput =  new ExecLogOutputStream(System.err)
-  commandLine jrubyBin, "-S", qaBundleBin, "install"
+  // directly invoke bin/bundler and force install gem path to qaVendorPath
+  // note that bundler appends jruby/2.3.0 to the install path
+  commandLine qaBundleBin, "install", "--path", qaVendorPath
 }
 
 def rubyIntegrationSpecs = project.hasProperty("rubyIntegrationSpecs") ? ((String) project.property("rubyIntegrationSpecs")).split(/\s+/) : []
 
 task runIntegrationTests(dependsOn: installIntegrationTestGems, type: Exec) {
   workingDir "${projectDir}/qa/integration"
-  environment "LS_GEM_PATH", qaGemPath
-  environment "LS_GEM_HOME", qaGemPath
+  environment "LS_GEM_PATH", qaBundledGemPath
+  environment "LS_GEM_HOME", qaBundledGemPath
   environment "SKIP_SETUP_JAVA_OPTS", "1"
   // FEATURE_FLAG is set in the CI to configure testing with enabled PQ
   environment "FEATURE_FLAG", System.getenv('FEATURE_FLAG')
   standardOutput = new ExecLogOutputStream(System.out)
   errorOutput =  new ExecLogOutputStream(System.err)
+  // indirect launching of bin/bundle via bin/jruby so that the bundle exec command inherit
+  // the correct gem path environment which is not settable by command line
   commandLine([jrubyBin, "-S", qaBundleBin, "exec", "rspec"].plus((Collection<String>)rubyIntegrationSpecs))
 }
 
