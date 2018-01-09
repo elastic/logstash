@@ -233,7 +233,7 @@ task runIntegrationTests(dependsOn: installIntegrationTestGems, type: Exec) {
   workingDir "${projectDir}/qa/integration"
   environment "LS_GEM_PATH", qaBundledGemPath
   environment "LS_GEM_HOME", qaBundledGemPath
-  //environment "SKIP_SETUP_JAVA_OPTS", "1"
+  environment "SKIP_SETUP_JAVA_OPTS", "1"
   // FEATURE_FLAG is set in the CI to configure testing with enabled PQ
   environment "FEATURE_FLAG", System.getenv('FEATURE_FLAG')
   standardOutput = new ExecLogOutputStream(System.out)
