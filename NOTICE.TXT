@@ -1,5 +1,5 @@
 Logstash
-Copyright 2012-2017 Elasticsearch
+Copyright 2012-2018 Elasticsearch
 
 This product includes software developed by The Apache Software Foundation (http://www.apache.org/).
 
@@ -57,7 +57,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ==========================================================================
-RubyGem: jar-dependencies Version: 0.3.11
+RubyGem: jar-dependencies Version: 0.3.12
 Copyright (c) 2014 Christian Meier
 
 Permission is hereby granted, free of charge, to any person obtaining
@@ -397,7 +397,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ==========================================================================
-RubyGem: sequel Version: 5.2.0
+RubyGem: sequel Version: 5.4.0
 Copyright (c) 2007-2008 Sharon Rosner
 Copyright (c) 2008-2017 Jeremy Evans
 

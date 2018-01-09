@@ -1,7 +1,7 @@
 PATH
   remote: ./logstash-core
   specs:
-    logstash-core (5.6.5-java)
+    logstash-core (5.6.6-java)
       chronic_duration (= 0.10.6)
       clamp (~> 0.6.5)
       concurrent-ruby (~> 1.0, >= 1.0.5)
@@ -27,8 +27,8 @@ PATH
 PATH
   remote: ./logstash-core-plugin-api
   specs:
-    logstash-core-plugin-api (2.1.12-java)
-      logstash-core (= 5.6.5)
+    logstash-core-plugin-api (2.1.29-java)
+      logstash-core (= 5.6.6)
 
 GEM
   remote: https://rubygems.org/
@@ -119,7 +119,7 @@ GEM
     http_parser.rb (0.6.0-java)
     i18n (0.6.9)
     insist (1.0.0)
-    jar-dependencies (0.3.11)
+    jar-dependencies (0.3.12)
     jls-grok (0.11.4)
       cabin (>= 0.6.0)
     jls-lumberjack (0.0.26)
@@ -157,7 +157,7 @@ GEM
     logstash-codec-json_lines (3.0.5)
       logstash-codec-line (>= 2.1.0)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
-    logstash-codec-line (3.0.5)
+    logstash-codec-line (3.0.8)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
     logstash-codec-msgpack (3.0.7-java)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
@@ -166,10 +166,10 @@ GEM
       jls-grok (~> 0.11.1)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       logstash-patterns-core
-    logstash-codec-netflow (3.9.0)
+    logstash-codec-netflow (3.10.0)
       bindata (>= 1.5.0)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
-    logstash-codec-plain (3.0.5)
+    logstash-codec-plain (3.0.6)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
     logstash-codec-rubydebug (3.0.5)
       awesome_print
@@ -206,7 +206,7 @@ GEM
       murmurhash3
     logstash-filter-geoip (4.3.1-java)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
-    logstash-filter-grok (4.0.0)
+    logstash-filter-grok (4.0.1)
       jls-grok (~> 0.11.3)
       logstash-core (>= 5.6.0)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
@@ -227,7 +227,7 @@ GEM
       logstash-filter-date
     logstash-filter-sleep (3.0.6)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
-    logstash-filter-split (3.1.5)
+    logstash-filter-split (3.1.6)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
     logstash-filter-syslog_pri (3.0.5)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
@@ -247,7 +247,7 @@ GEM
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       nokogiri
       xml-simple
-    logstash-input-beats (3.1.24-java)
+    logstash-input-beats (3.1.26-java)
       concurrent-ruby (~> 1.0)
       jar-dependencies (~> 0.3.4)
       logstash-codec-multiline (>= 2.0.5)
@@ -295,7 +295,7 @@ GEM
       logstash-codec-plain
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       stud
-    logstash-input-http (3.0.7)
+    logstash-input-http (3.0.8)
       logstash-codec-plain
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       puma (~> 2.16, >= 2.16.0)
@@ -313,12 +313,12 @@ GEM
       mail (~> 2.6.3)
       mime-types (= 2.6.2)
       stud (~> 0.0.22)
-    logstash-input-irc (3.0.5)
+    logstash-input-irc (3.0.6)
       cinch
       logstash-codec-plain
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       stud (~> 0.0.22)
-    logstash-input-jdbc (4.3.1)
+    logstash-input-jdbc (4.3.3)
       logstash-codec-plain
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       rufus-scheduler
@@ -351,8 +351,8 @@ GEM
       logstash-codec-json
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       redis (~> 3)
-    logstash-input-s3 (3.1.8)
-      logstash-core-plugin-api (>= 1.60, <= 2.99)
+    logstash-input-s3 (3.2.0)
+      logstash-core-plugin-api (>= 2.1.12, <= 2.99)
       logstash-mixin-aws
       stud (~> 0.0.18)
     logstash-input-snmptrap (3.0.5)
@@ -388,7 +388,7 @@ GEM
       public_suffix (<= 1.4.6)
       stud (>= 0.0.22, < 0.1)
       twitter (= 5.15.0)
-    logstash-input-udp (3.1.3)
+    logstash-input-udp (3.2.1)
       logstash-codec-plain
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       stud (~> 0.0.22)
@@ -509,8 +509,8 @@ GEM
       hitimes (~> 1.1)
     mime-types (2.6.2)
     minitar (0.6.1)
-    msgpack (1.1.0-java)
-    multi_json (1.12.2)
+    msgpack (1.2.1-java)
+    multi_json (1.13.0)
     multipart-post (2.0.0)
     murmurhash3 (0.1.6-java)
     mustache (0.99.8)
@@ -571,7 +571,7 @@ GEM
     sawyer (0.6.0)
       addressable (~> 2.3.5)
       faraday (~> 0.8, < 0.10)
-    sequel (5.3.0)
+    sequel (5.4.0)
     simple_oauth (0.3.1)
     simplecov (0.15.1)
       docile (~> 1.1.0)
@@ -617,6 +617,7 @@ GEM
     unf (0.1.4-java)
     webhdfs (0.8.0)
       addressable
+    webrick (1.3.1)
     xml-simple (1.1.5)
     xmpp4r (0.5.6)
 
@@ -746,3 +747,4 @@ DEPENDENCIES
   stud (~> 0.0.22)
   term-ansicolor (~> 1.3.2)
   tins (= 1.6)
+  webrick (~> 1.3.1)
