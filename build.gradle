@@ -240,7 +240,7 @@ task runIntegrationTests(dependsOn: installIntegrationTestGems, type: Exec) {
   errorOutput =  new ExecLogOutputStream(System.err)
   // indirect launching of bin/bundle via bin/jruby so that the bundle exec command inherit
   // the correct gem path environment which is not settable by command line
-  commandLine([jrubyBin, "-S", qaBundleBin, "exec", "rspec"].plus((Collection<String>)rubyIntegrationSpecs))
+  commandLine([jrubyBin, qaBundleBin, "exec", "rspec"].plus((Collection<String>)rubyIntegrationSpecs))
 }
 
 // If you are running a JRuby snapshot we will skip the integrity check.
