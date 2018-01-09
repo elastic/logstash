@@ -118,6 +118,7 @@ setup_java() {
   export JAVA_OPTS
 }
 
+# custom GEM_HOME and GEM_PATH can be injected using LS_GEM_HOME and LS_GEM_PATH
 setup_vendored_jruby() {
   if [ "$DEBUG" ] ; then
     echo "Setting up vendored JRuby"
@@ -134,33 +135,26 @@ setup_vendored_jruby() {
 
   if [ -z "$LS_GEM_HOME" ] ; then
     export GEM_HOME="${LOGSTASH_HOME}/vendor/bundle/jruby/2.3.0"
-    if [ "$DEBUG" ] ; then
-      echo "Using GEM_HOME=${GEM_HOME}"
-    fi
   else
     export GEM_HOME=${LS_GEM_HOME}
-    if [ "$DEBUG" ] ; then
-      echo "Using LS_GEM_HOME=${LS_GEM_HOME}"
-    fi
+  fi
+  if [ "$DEBUG" ] ; then
+    echo "Using GEM_HOME=${GEM_HOME}"
   fi
 
   if [ -z "$LS_GEM_PATH" ] ; then
     export GEM_PATH=${GEM_HOME}
-    if [ "$DEBUG" ] ; then
-      echo "Using GEM_PATH=${GEM_PATH}"
-    fi
   else
     export GEM_PATH=${LS_GEM_PATH}
-    if [ "$DEBUG" ] ; then
-      echo "Using LS_GEM_PATH=${LS_GEM_PATH}"
-    fi
+  fi
+  if [ "$DEBUG" ] ; then
+    echo "Using GEM_PATH=${GEM_PATH}"
   fi
 }
 
+# the setup of java opts can be skipped using SKIP_SETUP_JAVA_OPTS
 setup() {
-  if [ -z "$SKIP_SETUP_JAVA" ] ; then
-    setup_java
-  fi
+  setup_java
   if [ -z "$SKIP_SETUP_JAVA_OPTS" ] ; then
     setup_java_opts
   fi
