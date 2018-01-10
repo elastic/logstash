@@ -86,16 +86,20 @@ Logstash <<logstash-settings-file,settings file>>:
 * `queue.page_capacity`: The maximum size of a queue page in bytes. The queue data consists of append-only files called "pages". The default size is 64mb. Changing this value is unlikely to have performance benefits.
 * `queue.drain`: Specify `true` if you want Logstash to wait until the persistent queue is drained before shutting down. The amount of time it takes to drain the queue depends on the number of events that have accumulated in the queue. Therefore, you should avoid using this setting unless the queue, even when full, is relatively small and can be drained quickly. 
 // Technically, I know, this isn't "maximum number of events" it's really maximum number of events not yet read by the pipeline worker. We only use this for testing and users generally shouldn't be setting this.
-* `queue.max_events`:  The maximum number of events that are allowed in the queue. The default is 0 (unlimited). This value is used internally for the Logstash test suite.
+* `queue.max_events`:  The maximum number of events that are allowed in the queue. The default is 0 (unlimited).
 * `queue.max_bytes`: The total capacity of the queue in number of bytes. The
 default is 1024mb (1gb). Make sure the capacity of your disk drive is greater
 than the value you specify here.
++
+TIP: If you are using persistent queues to protect against data loss, but don't
+require much buffering, you can set `queue.max_bytes` to a smaller value, such
+as 10mb, to produce smaller queues and improve queue performance. 
 
 If both `queue.max_events` and 
 `queue.max_bytes` are specified, Logstash uses whichever criteria is reached
 first. See <<backpressure-persistent-queue>> for behavior when these queue limits are reached.
 
-You can also specify options that control when the checkpoint file gets updated (`queue.checkpoint.acks`, `queue.checkpoint.writes`). See <<durability-persistent-queues>>.
+You can also control when the checkpoint file gets updated by setting `queue.checkpoint.writes`. See <<durability-persistent-queues>>.
 
 Example configuration:
 
@@ -146,20 +150,26 @@ When recording a checkpoint, Logstash will:
 * Call fsync on the head page.
 * Atomically write to disk the current state of the queue.
 
-The following settings are available to let you tune durability:
+// REVIEWERS: I've removed the descriptions of these options here because it
+// sounds like users are confused about when to change these settings. The 
+// settings are already described in the reference topic about the logstash.yml.
+// I've also removed the statement about tuning queue.checkpoint.writes to
+// higher and lower values because it sounds like most users should either
+// accept the default or set the option to 1. 
 
-* `queue.checkpoint.writes`: Logstash will checkpoint after this many writes into the queue. Currently, one event counts as one write, but this may change in future releases.
-* `queue.checkpoint.acks`: Logstash will checkpoint after this many events are acknowledged. This configuration controls the durability at the processing (filter + output)
-part of Logstash.
-
-Disk writes have a resource cost. Tuning the above values higher or lower will trade durability for performance. For instance, if you want the strongest durability for all input events, you can set `queue.checkpoint.writes: 1`.
 
 The process of checkpointing is atomic, which means any update to the file is saved if successful.
 
-If Logstash is terminated, or if there is a hardware level failure, any data
+If Logstash is terminated, or if there is a hardware-level failure, any data
 that is buffered in the persistent queue, but not yet checkpointed, is lost.
-To avoid this possibility, you can set `queue.checkpoint.writes: 1`, but keep in
-mind that this setting can severely impact performance.
+
+You can force Logstash to checkpoint more frequently by setting
+`queue.checkpoint.writes`. This setting specifies the maximum number of events
+that may be written to disk before forcing a checkpoint. The default is 1024. To
+ensure maximum durability and avoid losing data in the persistent queue, you can
+set `queue.checkpoint.writes: 1` to force a checkpoint after each event is
+written. Keep in mind that disk writes have a resource cost. Setting this value
+to `1` can severely impact performance. 
 
 [[garbage-collection]]
 ==== Disk Garbage Collection
