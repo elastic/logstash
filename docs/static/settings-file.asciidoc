@@ -174,10 +174,6 @@ The `logstash.yml` file includes the following settings:
 | The maximum number of written events before forcing a checkpoint when persistent queues are enabled (`queue.type: persisted`). Specify `queue.checkpoint.writes: 0` to set this value to unlimited.
 | 1024
 
-| `queue.checkpoint.interval`
-| The interval in milliseconds when a checkpoint is forced on the head page when persistent queues are enabled (`queue.type: persisted`). Specify `queue.checkpoint.interval: 0` for no periodic checkpoint.
-| 1000
-
 | `queue.drain`
 | When enabled, Logstash waits until the persistent queue is drained before shutting down.
 | false
