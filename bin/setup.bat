@@ -47,7 +47,7 @@ if not "%JAVA_OPTS%" == "" (
 rem ### 3: set jruby
 
 set JRUBY_BIN="%LS_HOME%\vendor\jruby\bin\jruby"
-if not exist "%JRUBY_BIN%" (
+if not exist %JRUBY_BIN% (
   echo "could not find jruby in %LS_HOME%\vendor\jruby" 1>&2
   exit /b 1
 )
