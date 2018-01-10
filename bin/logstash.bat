@@ -32,7 +32,7 @@ for /F "usebackq tokens=1-2* delims= " %%A in (!params!) do (
 
 rem if explicit jvm.options is not found use default location
 if "%LS_JVM_OPTIONS_CONFIG%" == "" (
-  set LS_JVM_OPTIONS_CONFIG=%LS_HOME%\config\jvm.options
+  set LS_JVM_OPTIONS_CONFIG="%LS_HOME%\config\jvm.options"
 )
 
 rem extract the options from the JVM options file %LS_JVM_OPTIONS_CONFIG%
