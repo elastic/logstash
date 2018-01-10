@@ -236,7 +236,7 @@ class LogStash::Runner < Clamp::StrictCommand
 
       # Windows safe way to produce a file: URI.
       file_schema = "file://" + (LogStash::Environment.windows? ? "/" : "")
-      LogStash::Logging::Logger::reconfigure(URI.join(file_schema + File.absolute_path(log4j_config_location)).to_s)
+      LogStash::Logging::Logger::reconfigure(URI.encode(file_schema + File.absolute_path(log4j_config_location)))
     end
     # override log level that may have been introduced from a custom log4j config file
     LogStash::Logging::Logger::configure_logging(setting("log.level"))
