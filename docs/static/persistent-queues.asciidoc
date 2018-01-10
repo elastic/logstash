@@ -150,14 +150,6 @@ When recording a checkpoint, Logstash will:
 * Call fsync on the head page.
 * Atomically write to disk the current state of the queue.
 
-// REVIEWERS: I've removed the descriptions of these options here because it
-// sounds like users are confused about when to change these settings. The 
-// settings are already described in the reference topic about the logstash.yml.
-// I've also removed the statement about tuning queue.checkpoint.writes to
-// higher and lower values because it sounds like most users should either
-// accept the default or set the option to 1. 
-
-
 The process of checkpointing is atomic, which means any update to the file is saved if successful.
 
 If Logstash is terminated, or if there is a hardware-level failure, any data
