@@ -491,15 +491,14 @@ describe "conditionals in filter" do
     sample_one({"type" => "original"}) do
       expect(subject).to be_an(Array)
       expect(subject.length).to eq(2)
-      subject.sort! {|a, b| a.get("type") <=> b.get("type")}
-
-      expect(subject[1].get("type")).to eq("original")
-      expect(subject[1].get("cond1")).to eq("true")
-      expect(subject[1].get("cond2")).to eq(nil)
-
-      expect(subject[0].get("type")).to eq("clone")
-      # expect(subject[1].get("cond1")).to eq(nil)
-      # expect(subject[1].get("cond2")).to eq("true")
+      original_event = subject[0]
+      expect(original_event.get("type")).to eq("original")
+      expect(original_event.get("cond1")).to eq("true")
+      expect(original_event.get("cond2")).to eq(nil)
+      cloned_event = subject[1]
+      expect(cloned_event.get("cond1")).to eq(nil)
+      expect(cloned_event.get("cond2")).to eq("true")
+      expect(cloned_event.get("type")).to eq("clone")
     end
   end
 
@@ -520,20 +519,18 @@ describe "conditionals in filter" do
     CONFIG
 
     sample_one({"type" => "original"}) do
-      expect(subject.length).to eq(3)
-      subject.sort! {|a, b| a.get("type") <=> b.get("type")}
-
-      expect(subject[0].get("type")).to eq("clone1")
-      expect(subject[0].get("cond1")).to eq("true")
-      expect(subject[0].get("cond2")).to eq(nil)
-
-      expect(subject[1].get("type")).to eq("clone2")
-      expect(subject[1].get("cond1")).to eq(nil)
-      expect(subject[1].get("cond2")).to eq("true")
-
-      expect(subject[2].get("type")).to eq("original")
-      expect(subject[2].get("cond1")).to eq(nil)
-      expect(subject[2].get("cond2")).to eq(nil)
+      clone_event_1 = subject[0]
+      expect(clone_event_1.get("type")).to eq("clone1")
+      expect(clone_event_1.get("cond1")).to eq("true")
+      expect(clone_event_1.get("cond2")).to eq(nil)
+      clone_event_2 = subject[1]
+      expect(clone_event_2.get("type")).to eq("clone2")
+      expect(clone_event_2.get("cond1")).to eq(nil)
+      expect(clone_event_2.get("cond2")).to eq("true")
+      original_event = subject[2]
+      expect(original_event.get("type")).to eq("original")
+      expect(original_event.get("cond1")).to eq(nil)
+      expect(original_event.get("cond2")).to eq(nil)
     end
   end
 
@@ -586,7 +583,7 @@ describe "conditionals in filter" do
       expect(tags[6]).to eq("prev")
       expect(tags[7]).to eq("final")
     end
-    
+
     sample_one("type" => "original") do
       tags = subject.get("tags")
       expect(tags[0]).to eq("prev")
