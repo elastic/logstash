@@ -125,13 +125,13 @@ public final class JavaKeyStore implements SecretStore {
      * {@inheritDoc}
      *
      * @param config The configuration for this keystore <p>Requires "keystore.file" in the configuration</p>
-     * @throws SecretStoreException.InvalidConfigurationException if "keystore.file" is not defined in the config
      */
     @Override
     public boolean exists(SecureConfig config) {
         char[] path = config.getPlainText(PATH_KEY);
         if (!valid(path)) {
-            throw new SecretStoreException.InvalidConfigurationException("Logstash keystore path (keystore.file) must be defined");
+            LOGGER.warn("keystore.file configuration is not defined"); // should only every happen via tests
+            return false;
         }
         return new File(new String(path)).exists();
     }
@@ -246,7 +246,7 @@ public final class JavaKeyStore implements SecretStore {
         if (!exists(config)) {
             throw new SecretStoreException.LoadException(
                     String.format("Can not find Logstash keystore at %s. Please verify this file exists and is a valid Logstash keystore.",
-                            new String(config.getPlainText("keystore.file"))));
+                            config.getPlainText("keystore.file") == null ? "<undefined>" : new String(config.getPlainText("keystore.file"))));
         }
         try {
             init(config);

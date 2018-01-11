@@ -148,7 +148,7 @@ public class SecretStoreFactoryTest {
      */
     @Test
     public void testErrorLoading() {
-        thrown.expect(SecretStoreException.InvalidConfigurationException.class);
+        thrown.expect(SecretStoreException.LoadException.class);
         //default implementation requires a path
         SecretStoreFactory.load(new SecureConfig());
     }

@@ -38,12 +38,12 @@ public class SecretStoreCli {
      * Entry point to issue a command line command.
      * @param primaryCommand The string representation of a {@link Command}, if the String does not map to a {@link Command}, then it will show the help menu.
      * @param config The configuration needed to work a secret store. May be null for help.
-     * @param subCommand command. This can be either the identifier for a secret, or a sub command like --help. May be null.
+     * @param argument This can be either the identifier for a secret, or a sub command like --help. May be null.
      */
-    public void command(String primaryCommand, SecureConfig config, String subCommand) {
+    public void command(String primaryCommand, SecureConfig config, String argument) {
         terminal.writeLine("");
         final Command command = Command.fromString(primaryCommand).orElse(Command.HELP);
-        final Optional<Command> sub = Command.fromString(subCommand);
+        final Optional<Command> sub = Command.fromString(argument);
         boolean help = Command.HELP.equals(sub.orElse(null));
         switch (command) {
             case CREATE: {
@@ -79,16 +79,16 @@ public class SecretStoreCli {
                             "`bin/logstash-keystore add my-secret`, at the prompt enter your secret. You will use the identifier ${my-secret} in your Logstash configuration.");
                     return;
                 }
-                if (subCommand == null || subCommand.isEmpty()) {
+                if (argument == null || argument.isEmpty()) {
                     terminal.writeLine("ERROR: You must supply a identifier to add.");
                     return;
                 }
                 if (SecretStoreFactory.exists(config.clone())) {
-                    SecretIdentifier id = new SecretIdentifier(subCommand);
+                    SecretIdentifier id = new SecretIdentifier(argument);
                     SecretStore secretStore = SecretStoreFactory.load(config);
                     byte[] s = secretStore.retrieveSecret(id);
                     if (s == null) {
-                        terminal.write(String.format("Enter value for %s: ", subCommand));
+                        terminal.write(String.format("Enter value for %s: ", argument));
                         char[] secret = terminal.readSecret();
                         if(secret == null || secret.length == 0){
                             terminal.writeLine("ERROR: You must supply a identifier to add.");
@@ -97,9 +97,9 @@ public class SecretStoreCli {
                         add(secretStore, id, SecretStoreUtil.asciiCharToBytes(secret));
                     } else {
                         SecretStoreUtil.clearBytes(s);
-                        terminal.write(String.format("%s already exists. Overwrite ? [y/N] ", subCommand));
+                        terminal.write(String.format("%s already exists. Overwrite ? [y/N] ", argument));
                         if (isYes(terminal.readLine())) {
-                            terminal.write(String.format("Enter value for %s: ", subCommand));
+                            terminal.write(String.format("Enter value for %s: ", argument));
                             char[] secret = terminal.readSecret();
                             add(secretStore, id, SecretStoreUtil.asciiCharToBytes(secret));
                         }
@@ -111,20 +111,20 @@ public class SecretStoreCli {
             }
             case REMOVE: {
                 if (help){
-                    terminal.writeLine("Removes a new secret to the keystore. For example: " +
+                    terminal.writeLine("Removes a secret from the keystore. For example: " +
                             "`bin/logstash-keystore remove my-secret`");
                     return;
                 }
-                if (subCommand == null || subCommand.isEmpty()) {
+                if (argument == null || argument.isEmpty()) {
                     terminal.writeLine("ERROR: You must supply a value to add.");
                     return;
                 }
-                SecretIdentifier id = new SecretIdentifier(subCommand);
+                SecretIdentifier id = new SecretIdentifier(argument);
 
                 SecretStore secretStore = SecretStoreFactory.load(config);
                 byte[] s = secretStore.retrieveSecret(id);
                 if (s == null) {
-                    terminal.writeLine(String.format("ERROR: '%s' does not exist in the Logstash keystore.", subCommand));
+                    terminal.writeLine(String.format("ERROR: '%s' does not exist in the Logstash keystore.", argument));
                 } else {
                     SecretStoreUtil.clearBytes(s);
                     secretStore.purgeSecret(id);
@@ -135,7 +135,7 @@ public class SecretStoreCli {
             case HELP: {
                 terminal.writeLine("Usage:");
                 terminal.writeLine("--------");
-                terminal.writeLine("bin/logstash-keystore [option] command [sub command]");
+                terminal.writeLine("bin/logstash-keystore [option] command [argument]");
                 terminal.writeLine("");
                 terminal.writeLine("Commands:");
                 terminal.writeLine("--------");
@@ -144,15 +144,14 @@ public class SecretStoreCli {
                 terminal.writeLine("add    - Add a value to the keystore (e.g. bin/logstash-keystore add my-secret)");
                 terminal.writeLine("remove - Remove a value from the keystore  (e.g. bin/logstash-keystore remove my-secret)");
                 terminal.writeLine("");
-                terminal.writeLine("Sub Commands:");
+                terminal.writeLine("Argument:");
                 terminal.writeLine("--------");
                 terminal.writeLine("--help - Display command specific help  (e.g. bin/logstash-keystore add --help)");
                 terminal.writeLine("");
                 terminal.writeLine("Options:");
                 terminal.writeLine("--------");
                 terminal.writeLine("--path.settings - Set the directory for the keystore. This is should be the same directory as the logstash.yml settings file. " +
-                        "This can also be set through the LS_SETTINGS_DIR environment variable. The default is the config directory under Logstash home. " +
-                        "(e.g. bin/logstash-keystore --path.settings /tmp/foo create)");
+                        "The default is the config directory under Logstash home. (e.g. bin/logstash-keystore --path.settings /tmp/foo create)");
                 terminal.writeLine("");
                 break;
             }

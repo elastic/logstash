@@ -5,14 +5,6 @@ describe LogStash::Util::SecretStore do
 
   subject {LogStash::Util::SecretStore}
 
-  before :each do
-    @settings = LogStash::SETTINGS.clone
-  end
-
-  after :each do
-    LogStash::SETTINGS = @settings
-  end
-
   describe "with missing keystore" do
     before :each do
       LogStash::SETTINGS.set("keystore.file", File.join(File.dirname(__FILE__), "nothing_here"))

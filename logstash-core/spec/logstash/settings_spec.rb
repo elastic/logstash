@@ -151,12 +151,7 @@ describe LogStash::Settings do
   describe "#from_yaml" do
 
     before :each do
-      @settings = LogStash::SETTINGS.clone
       LogStash::SETTINGS.set("keystore.file", File.join(File.dirname(__FILE__), "../../src/test/resources/logstash.keystore.with.default.pass"))
-    end
-
-    after :each do
-      LogStash::SETTINGS = @settings
     end
 
     context "placeholders in flat logstash.yml" do
@@ -209,12 +204,7 @@ describe LogStash::Settings do
   context "placeholders in nested logstash.yml" do
 
     before :each do
-      @settings = LogStash::SETTINGS.clone
       LogStash::SETTINGS.set("keystore.file", File.join(File.dirname(__FILE__), "../../src/test/resources/logstash.keystore.with.default.pass"))
-    end
-
-    after :each do
-      LogStash::SETTINGS = @settings
     end
 
     before do

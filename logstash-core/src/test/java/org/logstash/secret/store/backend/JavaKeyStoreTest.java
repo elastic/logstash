@@ -566,7 +566,7 @@ public class JavaKeyStoreTest {
 
     @Test
     public void testNoPathDefined() {
-        thrown.expect(SecretStoreException.InvalidConfigurationException.class);
+        thrown.expect(SecretStoreException.LoadException.class);
         new JavaKeyStore().load(new SecureConfig());
     }
 

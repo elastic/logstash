@@ -61,7 +61,7 @@ public class SecretStoreCliTest {
     @Test
     public void testHelpRemove() {
         cli.command("remove", null, "--help");
-        assertThat(terminal.out).containsIgnoringCase("Removes a new secret to the keystore");
+        assertThat(terminal.out).containsIgnoringCase("Removes a secret from the keystore");
     }
 
     @Test
