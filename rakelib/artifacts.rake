@@ -16,6 +16,7 @@ namespace "artifact" do
       "lib/bootstrap/**/*",
       "lib/pluginmanager/**/*",
       "lib/systeminstall/**/*",
+      "lib/secretstore/**/*",
 
       "logstash-core/lib/**/*",
       "logstash-core/locales/**/*",

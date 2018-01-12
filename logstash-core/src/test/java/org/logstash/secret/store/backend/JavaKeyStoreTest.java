@@ -154,6 +154,14 @@ public class JavaKeyStoreTest {
         assertThat(secret).isNull();
     }
 
+    @Test (expected = SecretStoreException.CreateException.class)
+    public void invalidDirectory() throws IOException {
+        keyStorePath = Paths.get("/doesnt_exist_root_volume").resolve("logstash.keystore").toString().toCharArray();
+        SecureConfig secureConfig = new SecureConfig();
+        secureConfig.add("keystore.file", keyStorePath.clone());
+        keyStore = new JavaKeyStore().create(secureConfig);
+    }
+
     /**
      * Tests that the magic marker that identifies this a logstash keystore is present.  This marker helps to ensure that we are only dealing with our keystore, we do not want
      * to support arbitrary keystores.
@@ -558,7 +566,7 @@ public class JavaKeyStoreTest {
 
     @Test
     public void testNoPathDefined() {
-        thrown.expect(SecretStoreException.InvalidConfigurationException.class);
+        thrown.expect(SecretStoreException.LoadException.class);
         new JavaKeyStore().load(new SecureConfig());
     }
 

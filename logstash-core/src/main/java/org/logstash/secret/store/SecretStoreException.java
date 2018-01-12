@@ -15,7 +15,7 @@ public class SecretStoreException extends RuntimeException {
         super(message);
     }
 
-      static public class RetrievalException extends SecretStoreException {
+    static public class RetrievalException extends SecretStoreException {
         public RetrievalException(SecretIdentifier secretIdentifier, Throwable cause) {
             super(String.format("Error while trying to retrieve secret %s", secretIdentifier.toExternalForm()), cause);
         }
@@ -31,6 +31,7 @@ public class SecretStoreException extends RuntimeException {
         public CreateException(String message, Throwable cause) {
             super(message, cause);
         }
+
         public CreateException(String message) {
             super(message);
         }
@@ -91,7 +92,6 @@ public class SecretStoreException extends RuntimeException {
             super(message);
         }
     }
-
 
 
 }
