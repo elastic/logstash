@@ -15,10 +15,16 @@ describe LogStash::Settings do
       it "should raise an exception" do
         expect { subject.register(numeric_setting) }.to raise_error
       end
+      it "registered? should return true" do
+        expect( subject.registered?(numeric_setting_name)).to be_truthy
+      end
     end
     context "if setting hasn't been registered" do
       it "should not raise an exception" do
         expect { subject.register(numeric_setting) }.to_not raise_error
+      end
+      it "registered? should return false" do
+        expect( subject.registered?(numeric_setting_name)).to be_falsey
       end
     end
   end

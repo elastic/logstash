@@ -91,7 +91,7 @@ public class SecretStoreCli {
                         terminal.write(String.format("Enter value for %s: ", argument));
                         char[] secret = terminal.readSecret();
                         if(secret == null || secret.length == 0){
-                            terminal.writeLine("ERROR: You must supply a identifier to add.");
+                            terminal.writeLine("ERROR: You must supply a identifier to add. (e.g. bin/logstash-keystore add my-secret)");
                             return;
                         }
                         add(secretStore, id, SecretStoreUtil.asciiCharToBytes(secret));
@@ -116,7 +116,7 @@ public class SecretStoreCli {
                     return;
                 }
                 if (argument == null || argument.isEmpty()) {
-                    terminal.writeLine("ERROR: You must supply a value to add.");
+                    terminal.writeLine("ERROR: You must supply a value to remove. (e.g. bin/logstash-keystore remove my-secret)");
                     return;
                 }
                 SecretIdentifier id = new SecretIdentifier(argument);

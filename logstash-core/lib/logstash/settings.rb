@@ -28,6 +28,10 @@ module LogStash
       end
     end
 
+    def registered?(setting_name)
+       @settings.key?(setting_name)
+    end
+
     def get_setting(setting_name)
       setting = @settings[setting_name]
       raise ArgumentError.new("Setting \"#{setting_name}\" hasn't been registered") if setting.nil?

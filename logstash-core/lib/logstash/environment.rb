@@ -67,7 +67,8 @@ module LogStash
             Setting::TimeValue.new("slowlog.threshold.debug", "-1"),
             Setting::TimeValue.new("slowlog.threshold.trace", "-1"),
             Setting::String.new("keystore.classname", "org.logstash.secret.store.backend.JavaKeyStore"),
-            Setting::String.new("keystore.file", "", false) # will be populated on post_process
+            Setting::String.new("keystore.file", ::File.join(::File.join(LogStash::Environment::LOGSTASH_HOME, "config"), "logstash.keystore"), false) # will be populated on
+  # post_process
   ].each {|setting| SETTINGS.register(setting) }
 
 
@@ -93,7 +94,7 @@ module LogStash
     end
 
     # Compute the default secret store path based on `path.settings`, the path.settings is defaulted in pre_process, and possibly reset to the command line switch in the from_yaml
-    if settings.set?("path.settings")
+    if settings.registered?("path.settings")
       SETTINGS.set("keystore.file", ::File.join(SETTINGS.get("path.settings"), "logstash.keystore"))
     end
 
