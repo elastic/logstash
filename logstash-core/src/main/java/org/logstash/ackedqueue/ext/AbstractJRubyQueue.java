@@ -22,7 +22,7 @@ import org.logstash.ackedqueue.io.MemoryCheckpointIO;
 import org.logstash.ackedqueue.io.MmapPageIO;
 import org.logstash.ext.JrubyEventExtLibrary;
 
-@JRubyClass(name = "AbstractAckedQueue")
+@JRubyClass(name = "AbstractAckedQueue") 
 public abstract class AbstractJRubyQueue extends RubyObject {
 
     private static final long serialVersionUID = 1L;
