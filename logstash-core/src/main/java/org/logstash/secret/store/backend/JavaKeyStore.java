@@ -51,6 +51,7 @@ public final class JavaKeyStore implements SecretStore {
     private Lock writeLock;
     //package private for testing
     static String filePermissions = "rw-rw----";
+    private static final boolean IS_WINDOWS = System.getProperty("os.name").startsWith("Windows");
 
     /**
      * {@inheritDoc}
@@ -72,7 +73,8 @@ public final class JavaKeyStore implements SecretStore {
             LOGGER.debug("Creating new keystore at {}.", keyStorePath.toAbsolutePath());
             String keyStorePermissions = filePermissions;
             //create the keystore on disk with a default entry to identify this as a logstash keystore
-            Files.createFile(keyStorePath, PosixFilePermissions.asFileAttribute(PosixFilePermissions.fromString(keyStorePermissions)));
+            //can not set posix attributes on create here since not all Windows are posix, *nix will get the umask default and posix permissions will be set below
+            Files.createFile(keyStorePath);
             try {
                 keyStore = KeyStore.Builder.newInstance(KEYSTORE_TYPE, null, protectionParameter).getKeyStore();
                 SecretKeyFactory factory = SecretKeyFactory.getInstance("PBE");
@@ -370,11 +372,14 @@ public final class JavaKeyStore implements SecretStore {
      * Saves the keystore with some extra meta data if needed. Note - need two output streams here to allow checking the with the append flag, and the other without an append.
      */
     private void saveKeyStore() throws IOException, CertificateException, NoSuchAlgorithmException, KeyStoreException {
-        FileLock fileLock;
         try (final FileOutputStream appendOs = new FileOutputStream(keyStorePath.toFile(), true)) {
-            fileLock = appendOs.getChannel().tryLock();
-            if (fileLock == null) {
-                throw new IllegalStateException("Can not save Logstash keystore. Some other process has a lock on the file: " + keyStorePath.toAbsolutePath());
+            FileLock fileLock = null;
+            // The keystore.store method on Windows checks for the file lock and does not allow _any_ interaction with the keystore if it is locked.
+            if(!IS_WINDOWS){
+                fileLock = appendOs.getChannel().tryLock();
+                if (fileLock == null) {
+                    throw new IllegalStateException("Can not save Logstash keystore. Some other process has locked on the file: " + keyStorePath.toAbsolutePath());
+                }
             }
             try (final OutputStream os = Files.newOutputStream(keyStorePath, StandardOpenOption.WRITE)) {
                 keyStore.store(os, keyStorePass);
