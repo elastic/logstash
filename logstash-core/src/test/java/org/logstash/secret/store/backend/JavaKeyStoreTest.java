@@ -473,6 +473,7 @@ public class JavaKeyStoreTest {
      */
     @Test
     public void testFileLock() throws Exception {
+        boolean isWindows = System.getProperty("os.name").startsWith("Windows");
         Path magicFile = folder.newFolder().toPath().resolve(EXTERNAL_TEST_FILE_LOCK);
 
         String java = System.getProperty("java.home") + File.separator + "bin" + File.separator + "java";
@@ -491,17 +492,19 @@ public class JavaKeyStoreTest {
             try {
                 keyStore.persistSecret(new SecretIdentifier("foo"), "bar".getBytes(StandardCharsets.UTF_8));
             } catch (SecretStoreException.PersistException e) {
-                assertThat(e.getCause()).isInstanceOf(IllegalStateException.class);
-                assertThat(e.getCause().getMessage()).contains("has a lock on the file");
+                assertThat(e.getCause().getMessage()).contains("locked");
                 passed = true;
             }
             break;
         }
         assertThat(passed).isTrue();
 
-        //can still read
-        byte[] marker = keyStore.retrieveSecret(LOGSTASH_MARKER);
-        assertThat(new String(marker, StandardCharsets.UTF_8)).isEqualTo(LOGSTASH_MARKER.getKey());
+        // The keystore.store method on Windows checks for the file lock and does not allow _any_ interaction with the keystore if it is locked.
+        if (!isWindows) {
+            //can still read
+            byte[] marker = keyStore.retrieveSecret(LOGSTASH_MARKER);
+            assertThat(new String(marker, StandardCharsets.UTF_8)).isEqualTo(LOGSTASH_MARKER.getKey());
+        }
 
         //block until other JVM finishes
         future.get();
