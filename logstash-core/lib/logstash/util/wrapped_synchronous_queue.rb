@@ -83,11 +83,11 @@ module LogStash; module Util
       # create a new empty batch
       # @return [ReadBatch] a new empty read batch
       def new_batch
-        ReadBatch.new(@queue, 0, 0)
+        LogStash::MemoryReadBatch.new(java.util.LinkedHashSet.new(0))
       end
 
       def read_batch
-        batch = ReadBatch.new(@queue, @batch_size, @wait_for)
+        batch = LogStash::MemoryReadBatch.new(LsQueueUtils.drain(@queue, @batch_size, @wait_for))
         start_metrics(batch)
         batch
       end
@@ -123,38 +123,6 @@ module LogStash; module Util
         @event_metric_out.increment(filtered_size)
         @pipeline_metric_out.increment(filtered_size)
       end
-    end
-
-    class ReadBatch
-      def initialize(queue, size, wait)
-        # TODO: disabled for https://github.com/elastic/logstash/issues/6055 - will have to properly refactor
-        # @cancelled = Hash.new
-
-        @originals = LsQueueUtils.drain(queue, size, wait)
-      end
-
-      def merge(event)
-        return if event.nil?
-        @originals.add(event)
-      end
-
-      def to_a
-        events = []
-        @originals.each {|e| events << e unless e.cancelled?}
-        events
-      end
-
-      def each(&blk)
-        # below the checks for @cancelled.include?(e) have been replaced by e.cancelled?
-        # TODO: for https://github.com/elastic/logstash/issues/6055 = will have to properly refactor
-        @originals.each {|e| blk.call(e) unless e.cancelled?}
-      end
-
-      def filtered_size
-        @originals.size
-      end
-
-      alias_method(:size, :filtered_size)
     end
 
     class WriteClient
