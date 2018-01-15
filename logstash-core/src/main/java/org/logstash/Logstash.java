@@ -96,6 +96,8 @@ public final class Logstash implements Runnable, AutoCloseable {
                 if (status != null && !status.isNil() && RubyNumeric.fix2int(status) != 0) {
                     throw new IllegalStateException(ex);
                 }
+            } else {
+                throw new IllegalStateException(ex);
             }
         }
     }
