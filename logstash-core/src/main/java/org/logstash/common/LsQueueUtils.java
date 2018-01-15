@@ -45,12 +45,12 @@ public final class LsQueueUtils {
      * @throws InterruptedException On Interrupt during {@link BlockingQueue#poll()} or
      * {@link BlockingQueue#drainTo(Collection)}
      */
-    public static Collection<JrubyEventExtLibrary.RubyEvent> drain(
+    public static LinkedHashSet<JrubyEventExtLibrary.RubyEvent> drain(
         final BlockingQueue<JrubyEventExtLibrary.RubyEvent> queue, final int count, final long nanos
     ) throws InterruptedException {
         int left = count;
         //todo: make this an ArrayList once we remove the Ruby pipeline/execution
-        final Collection<JrubyEventExtLibrary.RubyEvent> collection =
+        final LinkedHashSet<JrubyEventExtLibrary.RubyEvent> collection =
             new LinkedHashSet<>(4 * count / 3 + 1);
         do {
             final int drained = drain(queue, collection, left, nanos);
