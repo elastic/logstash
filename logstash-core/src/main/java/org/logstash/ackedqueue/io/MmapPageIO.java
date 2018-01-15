@@ -206,6 +206,7 @@ public final class MmapPageIO implements PageIO {
     public void purge() throws IOException {
         close();
         Files.delete(this.file.toPath());
+        this.head = 0;
     }
 
     @Override

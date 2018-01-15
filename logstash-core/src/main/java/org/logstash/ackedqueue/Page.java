@@ -4,6 +4,7 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.util.BitSet;
 
+import org.codehaus.commons.nullanalysis.NotNull;
 import org.logstash.ackedqueue.io.CheckpointIO;
 import org.logstash.ackedqueue.io.LongVector;
 import org.logstash.ackedqueue.io.PageIO;
@@ -23,7 +24,7 @@ public final class Page implements Closeable {
     protected BitSet ackedSeqNums;
     protected Checkpoint lastCheckpoint;
 
-    public Page(int pageNum, Queue queue, long minSeqNum, int elementCount, long firstUnreadSeqNum, BitSet ackedSeqNums, PageIO pageIO, boolean writable) {
+    public Page(int pageNum, Queue queue, long minSeqNum, int elementCount, long firstUnreadSeqNum, BitSet ackedSeqNums, @NotNull PageIO pageIO, boolean writable) {
         this.pageNum = pageNum;
         this.queue = queue;
 
@@ -34,6 +35,8 @@ public final class Page implements Closeable {
         this.lastCheckpoint = new Checkpoint(0, 0, 0, 0, 0);
         this.pageIO = pageIO;
         this.writable = writable;
+
+        assert this.pageIO != null : "invalid null pageIO";
     }
 
     public String toString() {
@@ -238,15 +241,11 @@ public final class Page implements Closeable {
 
     public void close() throws IOException {
         checkpoint();
-        if (this.pageIO != null) {
-            this.pageIO.close();
-        }
+        this.pageIO.close();
     }
 
     public void purge() throws IOException {
-        if (this.pageIO != null) {
-            this.pageIO.purge(); // page IO purge calls close
-        }
+        this.pageIO.purge(); // page IO purge calls close
     }
 
     public int getPageNum() {

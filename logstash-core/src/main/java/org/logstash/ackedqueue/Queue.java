@@ -44,7 +44,6 @@ public final class Queue implements Closeable {
     private final Set<Integer> preservedCheckpoints;
 
     protected volatile long unreadCount;
-    private volatile long currentByteSize;
 
     private final CheckpointIO checkpointIO;
     private final int pageCapacity;
@@ -85,7 +84,6 @@ public final class Queue implements Closeable {
         this.checkpointMaxAcks = settings.getCheckpointMaxAcks();
         this.checkpointMaxWrites = settings.getCheckpointMaxWrites();
         this.unreadCount = 0L;
-        this.currentByteSize = 0L;
 
         // retrieve the deserialize method
         try {
@@ -107,10 +105,6 @@ public final class Queue implements Closeable {
 
     public long getMaxUnread() {
         return this.maxUnread;
-    }
-
-    public long getCurrentByteSize() {
-        return this.currentByteSize;
     }
 
     public long getPersistedByteSize() {
@@ -227,9 +221,6 @@ public final class Queue implements Closeable {
 
             if (this.headPage.getMinSeqNum() <= 0 && this.headPage.getElementCount() <= 0) {
                 // head page is empty, let's keep it as-is
-
-                this.currentByteSize += pageIO.getCapacity();
-
                 // but checkpoint it to update the firstUnackedPageNum if it changed
                 this.headPage.checkpoint();
             } else {
@@ -301,7 +292,6 @@ public final class Queue implements Closeable {
         this.tailPages.add(page);
         this.unreadTailPages.add(page);
         this.unreadCount += page.unreadCount();
-        this.currentByteSize += page.getPageIO().getCapacity();
 
         // for now deactivate all tail pages, we will only reactivate the first one at the end
         page.getPageIO().deactivate();
@@ -318,7 +308,6 @@ public final class Queue implements Closeable {
         headPageIO.create();
         this.headPage = PageFactory.newHeadPage(pageNum, this, headPageIO);
         this.headPage.forceCheckpoint();
-        this.currentByteSize += headPageIO.getCapacity();
     }
 
     /**
@@ -357,7 +346,6 @@ public final class Queue implements Closeable {
                     // to add this fully hacked page into tailPages. a new head page will just be created.
                     // TODO: we could possibly reuse the same page file but just rename it?
                     this.headPage.purge();
-                    currentByteSize -= this.headPage.getPageIO().getCapacity();
                 } else {
                     behead();
                 }
@@ -441,17 +429,19 @@ public final class Queue implements Closeable {
     public boolean isFull() {
         lock.lock();
         try {
-            if (this.maxBytes > 0L && (
-                this.currentByteSize > this.maxBytes
-                    || this.currentByteSize == this.maxBytes && !this.headPage.hasSpace(1)
-            )) {
+            if (this.maxBytes > 0L && isMaxBytesReached()) {
                 return true;
             } else {
-                return ((this.maxUnread > 0) && this.unreadCount >= this.maxUnread);
+                return (this.maxUnread > 0 && this.unreadCount >= this.maxUnread);
             }
         } finally {
             lock.unlock();
         }
+    }
+
+    private boolean isMaxBytesReached() {
+        final long persistedByteSize = getPersistedByteSize();
+        return ((persistedByteSize > this.maxBytes) || (persistedByteSize == this.maxBytes && !this.headPage.hasSpace(1)));
     }
 
     /**
@@ -694,7 +684,6 @@ public final class Queue implements Closeable {
 
                     // remove page data file regardless if it is the first or a middle tail page to free resources
                     result.page.purge();
-                    this.currentByteSize -= result.page.getPageIO().getCapacity();
 
                     if (result.index != 0) {
                         // this an in-between page, we don't purge it's checkpoint to preserve checkpoints sequence on disk
