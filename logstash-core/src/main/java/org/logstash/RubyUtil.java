@@ -11,6 +11,7 @@ import org.jruby.runtime.ObjectAllocator;
 import org.logstash.ackedqueue.ext.AbstractJRubyQueue;
 import org.logstash.ackedqueue.ext.RubyAckedBatch;
 import org.logstash.ext.JrubyEventExtLibrary;
+import org.logstash.ext.JrubyMemoryReadBatchExt;
 import org.logstash.ext.JrubyTimestampExtLibrary;
 
 /**
@@ -42,12 +43,16 @@ public final class RubyUtil {
 
     public static final RubyClass TIMESTAMP_PARSER_ERROR;
 
+    public static final RubyClass MEMORY_READ_BATCH_CLASS;
+
     static {
         RUBY = Ruby.getGlobalRuntime();
         LOGSTASH_MODULE = RUBY.getOrCreateModule("LogStash");
         RUBY_TIMESTAMP_CLASS = setupLogstashClass(
             JrubyTimestampExtLibrary.RubyTimestamp::new, JrubyTimestampExtLibrary.RubyTimestamp.class
         );
+        MEMORY_READ_BATCH_CLASS =
+            setupLogstashClass(JrubyMemoryReadBatchExt::new, JrubyMemoryReadBatchExt.class);
         RUBY_EVENT_CLASS = setupLogstashClass(
             JrubyEventExtLibrary.RubyEvent::new, JrubyEventExtLibrary.RubyEvent.class
         );
