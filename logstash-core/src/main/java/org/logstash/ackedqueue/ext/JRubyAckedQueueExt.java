@@ -76,11 +76,6 @@ public final class JRubyAckedQueueExt extends RubyObject {
         return context.runtime.newString(queue.getDirPath());
     }
 
-    @JRubyMethod(name = "current_byte_size")
-    public IRubyObject ruby_current_byte_size(ThreadContext context) {
-        return context.runtime.newFixnum(queue.getCurrentByteSize());
-    }
-
     @JRubyMethod(name = "persisted_size_in_bytes")
     public IRubyObject ruby_persisted_size_in_bytes(ThreadContext context) {
         return context.runtime.newFixnum(queue.getPersistedByteSize());

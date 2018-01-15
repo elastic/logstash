@@ -14,7 +14,17 @@ public class QueueTestHelpers {
      * @return int - capacity required for the supplied element
      * @throws IOException Throws if a serialization error occurs
      */
-    public static int singleElementCapacityForByteBufferPageIO(final Queueable element) throws IOException {
-        return MmapPageIO.WRAPPER_SIZE + element.serialize().length;
+    public static int computeCapacityForMmapPageIO(final Queueable element) throws IOException {
+        return computeCapacityForMmapPageIO(element, 1);
+    }
+
+    /**
+     * Returns the {@link org.logstash.ackedqueue.io.MmapPageI} capacity require to hold a multiple elements including all headers and other metadata.
+     * @param element
+     * @return int - capacity required for the supplied number of elements
+     * @throws IOException Throws if a serialization error occurs
+     */
+    public static int computeCapacityForMmapPageIO(final Queueable element, int count) throws IOException {
+        return MmapPageIO.HEADER_SIZE + (count * (MmapPageIO.SEQNUM_SIZE + MmapPageIO.LENGTH_SIZE + element.serialize().length + MmapPageIO.CHECKSUM_SIZE));
     }
 }

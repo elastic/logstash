@@ -12,7 +12,7 @@ import org.logstash.ackedqueue.io.PageIO;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.logstash.ackedqueue.QueueTestHelpers.singleElementCapacityForByteBufferPageIO;
+import static org.logstash.ackedqueue.QueueTestHelpers.computeCapacityForMmapPageIO;
 
 public class HeadPageTest {
 
@@ -49,7 +49,7 @@ public class HeadPageTest {
         Queueable element = new StringElement("foobarbaz");
 
         Settings s = TestSettings.persistedQueueSettings(
-            singleElementCapacityForByteBufferPageIO(element), dataPath
+                computeCapacityForMmapPageIO(element), dataPath
         );
         try(Queue q = new Queue(s)) {
             q.open();
@@ -68,9 +68,8 @@ public class HeadPageTest {
     public void pageWriteAndReadSingle() throws IOException {
         long seqNum = 1L;
         Queueable element = new StringElement("foobarbaz");
-        int singleElementCapacity = singleElementCapacityForByteBufferPageIO(element);
 
-        Settings s = TestSettings.persistedQueueSettings(singleElementCapacity, dataPath);
+        Settings s = TestSettings.persistedQueueSettings(computeCapacityForMmapPageIO(element), dataPath);
         try(Queue q = new Queue(s)) {
             q.open();
             Page p = q.headPage;
@@ -114,7 +113,7 @@ public class HeadPageTest {
         Queueable element = new StringElement("foobarbaz");
 
         Settings s = TestSettings.persistedQueueSettings(
-            singleElementCapacityForByteBufferPageIO(element), dataPath
+                computeCapacityForMmapPageIO(element), dataPath
         );
         try(Queue q = new Queue(s)) {
             q.open();
@@ -140,7 +139,7 @@ public class HeadPageTest {
 //        URL url = FileCheckpointIOTest.class.getResource("checkpoint.head");
 //        String dirPath = Paths.get(url.toURI()).getParent().toString();
 //        Queueable element = new StringElement("foobarbaz");
-//        int singleElementCapacity = singleElementCapacityForByteBufferPageIO(element);
+//        int singleElementCapacity = computeCapacityForByteBufferPageIO(element);
 //        Settings s = TestSettings.persistedQueueSettings(singleElementCapacity, dirPath);
 //        TestQueue q = new TestQueue(s);
 //        try {
