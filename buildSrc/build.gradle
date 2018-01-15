@@ -1,3 +1,12 @@
-group = 'org.logstash'
-
 apply plugin: 'java'
+apply plugin: 'groovy'
+
+group = 'org.logstash.gradle'
+
+repositories {
+  mavenCentral()
+}
+
+dependencies {
+  compile group: 'org.jruby', name: 'jruby-complete', version: '9.1.13.0'
+}
