@@ -167,8 +167,8 @@ Note that if a plugin is installed using the plugin manager `bin/logstash-plugin
 You can build a Logstash snapshot package as tarball or zip file
 
 ```sh
-rake artifact:tar
-rake artifact:zip
+./gradlew assembleTarDistribution
+./gradlew assembleZipDistribution
 ```
 
 This will create the artifact `LS_HOME/build` directory

@@ -159,7 +159,7 @@ task installTestGems(dependsOn: downloadAndInstallJRuby, type: Exec) {
   commandLine jrubyBin, rakeBin, "test:install-core"
 }
 
-task assembleTarDistribution(dependsOn: installTestGems, type: Exec) {
+task assembleTarDistribution(dependsOn: downloadAndInstallJRuby, type: Exec) {
   workingDir projectDir
   inputs.files fileTree("${projectDir}/rakelib")
   inputs.files fileTree("${projectDir}/bin")
@@ -173,6 +173,22 @@ task assembleTarDistribution(dependsOn: installTestGems, type: Exec) {
   standardOutput = new ExecLogOutputStream(System.out)
   errorOutput =  new ExecLogOutputStream(System.err)
   commandLine jrubyBin, rakeBin, "artifact:tar"
+}
+
+task assembleZipDistribution(dependsOn: downloadAndInstallJRuby, type: Exec) {
+  workingDir projectDir
+  inputs.files fileTree("${projectDir}/rakelib")
+  inputs.files fileTree("${projectDir}/bin")
+  inputs.files fileTree("${projectDir}/config")
+  inputs.files fileTree("${projectDir}/lib")
+  inputs.files fileTree("${projectDir}/modules")
+  inputs.files fileTree("${projectDir}/logstash-core-plugin-api")
+  inputs.files fileTree("${projectDir}/logstash-core/lib")
+  inputs.files fileTree("${projectDir}/logstash-core/src")
+  outputs.files file("${buildDir}/logstash-${project.version}.tar.gz")
+  standardOutput = new ExecLogOutputStream(System.out)
+  errorOutput =  new ExecLogOutputStream(System.err)
+  commandLine jrubyBin, rakeBin, "artifact:zip"
 }
 
 def logstashBuildDir = "${buildDir}/logstash-${project.version}-SNAPSHOT"
