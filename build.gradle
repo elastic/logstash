@@ -137,8 +137,12 @@ task downloadAndInstallJRuby(dependsOn: verifyFile, type: Copy) {
     into "${projectDir}/vendor/jruby"
 }
 
-def jrubyBin = "${projectDir}/vendor/jruby/bin/jruby" +
-  (System.getProperty("os.name").startsWith("Windows") ? '.bat' : '')
+def isWindows = System.getProperty("os.name").startsWith("Windows")
+// The default environment loaded by bin/ruby segfaults on CI for unknown reasons. For now we work
+// around this fact by directly invoking the jruby binary on CI.
+def jrubyBin = System.getenv('CI') || isWindows ?
+  ("${projectDir}/vendor/jruby/bin/jruby" + (isWindows ? '.bat' : ''))
+  : "${projectDir}/bin/ruby"
 
 def rakeBin = "${projectDir}/vendor/jruby/bin/rake"
 
