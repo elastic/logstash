@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-6-1-2,Logstash 6.1.2>>
 * <<logstash-6-1-1,Logstash 6.1.1>>
 * <<logstash-6-1-0,Logstash 6.1.0>>
 
@@ -11,6 +12,77 @@ See also:
 
 * <<release-notes-xls>>
 endif::include-xpack[]
+
+[[logstash-6-1-2]]
+=== Logstash 6.1.2 Release Notes
+* Fixed a bug that caused empty objects when cloning Logstash Timestamp instances
+* Changed the way pipeline configurations are hashed to ensure consistence (not user facing)
+
+[float]
+==== Input Plugins
+
+*`Beats`*:
+
+* Re-order Netty pipeline to avoid NullPointerExceptions in KeepAliveHandler when Logstash is under load
+* Improve exception logging
+* Upgrade to Netty 4.1.18 with tcnative 2.0.7
+* Better handle case when remoteAddress is nil to reduce amount of warning messages in logs
+
+*`Jdbc`*:
+
+* Fix thread and memory leak. See (https://github.com/logstash-plugins/logstash-input-jdbc/issues/255[#255])
+
+*`Kafka`*:
+
+* Upgrade Kafka client to version 1.0.0
+
+*`S3`*:
+
+* Add support for auto-detecting gzip files with .gzip extension, in addition to existing support for *.gz
+* Improve performance of gzip decoding by 10x by using Java's Zlib
+* Change default sincedb path to live in `{path.data}/plugins/inputs/s3` instead of $HOME. Prior Logstash installations (using $HOME default) are automatically migrated.
+* Don't download the file if the length is 0
+
+*`Tcp`*:
+
+* Fix bug where codec was not flushed when client disconnected
+* Restore INFO logging statement on startup
+* Fixed typo in @metadata tag
+
+[float]
+==== Filter Plugins
+
+*`Geoip`*:
+
+* Skip lookup operation if source field contains an empty string
+* Update of the GeoIP2 DB
+
+*`Grok`*:
+
+* Fix potential race condition. see (https://github.com/logstash-plugins/logstash-filter-grok/pull/131[#131])
+
+[float]
+==== Output Plugins
+
+*`Kafka`*:
+
+* bump kafka dependency to 1.0.0
+
+[float]
+==== Codecs
+
+*`Line`*:
+
+* Reverted thread safety fix and instead fixed udp input codec per worker. See (https://github.com/logstash-plugins/logstash-codec-line/pull/14[#14])
+
+*`Netflow`*:
+
+* Added support for Nokia BRAS
+* Added Netflow v9 IE150 IE151, IE154, IE155
+
+*`Plain`*:
+
+* Code cleanup. See (https://github.com/logstash-plugins/logstash-codec-plain/pull/6[#6])
 
 [[logstash-6-1-1]]
 === Logstash 6.1.1 Release Notes
