@@ -53,7 +53,7 @@ describe "Test that Logstash" do
   it "expands secret store variables from settings" do
     test_env["LOGSTASH_KEYSTORE_PASS"] = "keystore_pa9454w3rd"
     @logstash.env_variables = test_env
-    @logstash.spawn_logstash("-e", "input {stdin {}} output { }", "--path.settings", settings_dir)
+    @logstash.spawn_logstash("-e", "input {heartbeat {}} output { }", "--path.settings", settings_dir)
     @logstash.wait_for_logstash
     Stud.try(num_retries.times, [StandardError, RSpec::Expectations::ExpectationNotMetError]) do
       result = @logstash.monitoring_api.node_stats rescue nil
