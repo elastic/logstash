@@ -15,14 +15,14 @@ rescue LoadError
 end
 
 if defined? Jars
-  require_jar( 'org.apache.logging.log4j', 'log4j-core', '2.6.2' )
-  require_jar( 'com.fasterxml.jackson.core', 'jackson-databind', '2.9.1' )
-  require_jar( 'org.apache.logging.log4j', 'log4j-api', '2.6.2' )
-  require_jar( 'org.slf4j', 'slf4j-api', '1.7.21' )
-  require_jar( 'com.fasterxml.jackson.core', 'jackson-annotations', '2.9.1' )
-  require_jar( 'org.apache.logging.log4j', 'log4j-slf4j-impl', '2.6.2' )
-  require_jar( 'com.fasterxml.jackson.dataformat', 'jackson-dataformat-cbor', '2.9.1' )
-  require_jar( 'org.codehaus.janino', 'commons-compiler', '3.0.7' )
-  require_jar( 'com.fasterxml.jackson.core', 'jackson-core', '2.9.1' )
-  require_jar( 'org.codehaus.janino', 'janino', '3.0.7' )
+  require_jar 'org.apache.logging.log4j', 'log4j-core', '2.6.2'
+  require_jar 'com.fasterxml.jackson.core', 'jackson-databind', '2.9.1'
+  require_jar 'org.apache.logging.log4j', 'log4j-api', '2.6.2'
+  require_jar 'org.slf4j', 'slf4j-api', '1.7.21'
+  require_jar 'com.fasterxml.jackson.core', 'jackson-annotations', '2.9.1'
+  require_jar 'org.apache.logging.log4j', 'log4j-slf4j-impl', '2.6.2'
+  require_jar 'com.fasterxml.jackson.dataformat', 'jackson-dataformat-cbor', '2.9.1'
+  require_jar 'org.codehaus.janino', 'commons-compiler', '3.0.7'
+  require_jar 'com.fasterxml.jackson.core', 'jackson-core', '2.9.1'
+  require_jar 'org.codehaus.janino', 'janino', '3.0.7'
 end
