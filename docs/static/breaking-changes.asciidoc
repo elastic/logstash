@@ -38,6 +38,8 @@ These changes can impact any instance of Logstash and are plugin agnostic, but o
 
 The following plugins were removed from the 5.0 default bundle based on usage data. You can still install these plugins manually:
 
+Test
+
 * logstash-codec-oldlogstashjson
 * logstash-input-couchdb_changes
 * logstash-input-irc
