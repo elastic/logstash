@@ -2,7 +2,6 @@
 
 require "logstash/namespace"
 require "logstash/json"
-require "logstash/timestamp"
 
 # transient pipeline events for normal in-flow signaling as opposed to
 # flow altering exceptions. for now having base classes is adequate and
