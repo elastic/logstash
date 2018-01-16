@@ -11,7 +11,6 @@ describe LogStash::OutputDelegator do
     end
   end
 
-  let(:logger) { double("logger") }
   let(:events) { 7.times.map { LogStash::Event.new }}
   let(:plugin_args) { {"id" => "foo", "arg1" => "val1"} }
   let(:collector) { [] }
@@ -22,7 +21,7 @@ describe LogStash::OutputDelegator do
 
   include_context "execution_context"
 
-  subject { described_class.new(logger, out_klass, metric, execution_context, ::LogStash::OutputDelegatorStrategyRegistry.instance, plugin_args) }
+  subject { described_class.new(out_klass, metric, execution_context, ::LogStash::OutputDelegatorStrategyRegistry.instance, plugin_args) }
 
   context "with a plain output plugin" do
     let(:out_klass) { double("output klass") }
@@ -47,7 +46,6 @@ describe LogStash::OutputDelegator do
       allow(out_inst).to receive(:id).and_return("a-simple-plugin")
 
       allow(subject.metric_events).to receive(:increment).with(any_args)
-      allow(logger).to receive(:debug).with(any_args)
     end
 
     it "should initialize cleanly" do
@@ -56,7 +54,7 @@ describe LogStash::OutputDelegator do
 
     it "should push the name of the plugin to the metric" do
       expect(metric).to receive(:gauge).with(:name, out_klass.config_name)
-      described_class.new(logger, out_klass, metric, execution_context, ::LogStash::OutputDelegatorStrategyRegistry.instance, plugin_args)
+      described_class.new(out_klass, metric, execution_context, ::LogStash::OutputDelegatorStrategyRegistry.instance, plugin_args)
     end
 
     context "after having received a batch of events" do
@@ -112,7 +110,7 @@ describe LogStash::OutputDelegator do
           it "should find the correct concurrency type for the output" do
             expect(subject.concurrency).to eq(strategy_concurrency)
           end
-          
+
           it "should find the correct Strategy class for the worker" do
             expect(subject.strategy).to be_a(klass)
           end
@@ -130,7 +128,7 @@ describe LogStash::OutputDelegator do
               before do
                 allow(subject.strategy).to receive(method)
               end
-              
+
               it "should delegate #{method} to the strategy" do
                 subject.send(method, *args)
                 if args
@@ -145,7 +143,7 @@ describe LogStash::OutputDelegator do
               before do
                 allow(out_inst).to receive(method)
               end
-              
+
               it "should delegate #{method} to the strategy" do
                 subject.send(method, *args)
                 if args

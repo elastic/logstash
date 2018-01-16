@@ -32,11 +32,10 @@ module LogStash
     class PluginFactory
       include org.logstash.config.ir.compiler.RubyIntegration::PluginFactory
 
-      def initialize(lir, metric_factory, logger, exec_factory, filter_class)
+      def initialize(lir, metric_factory, exec_factory, filter_class)
         @lir = lir
         @plugins_by_id = {}
         @metric_factory = metric_factory
-        @logger = logger
         @exec_factory = exec_factory
         @filter_class = filter_class
       end
@@ -83,7 +82,7 @@ module LogStash
         execution_context = @exec_factory.create(id, klass.config_name)
 
         if plugin_type == "output"
-          OutputDelegator.new(@logger, klass, type_scoped_metric, execution_context, OutputDelegatorStrategyRegistry.instance, args)
+          OutputDelegator.new(klass, type_scoped_metric, execution_context, OutputDelegatorStrategyRegistry.instance, args)
         elsif plugin_type == "filter"
           @filter_class.new(klass, type_scoped_metric, execution_context, args)
         else # input or codec plugin
