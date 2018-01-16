@@ -1,5 +1,6 @@
 package org.logstash;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
 import java.nio.file.Path;
@@ -21,19 +22,9 @@ public final class Logstash implements Runnable, AutoCloseable {
     private static final Logger LOGGER = LogManager.getLogger(Logstash.class);
 
     /**
-     * Configuration for {@link #ruby}.
-     */
-    private final RubyInstanceConfig config;
-
-    /**
      * JRuby Runtime Environment.
      */
     private final Ruby ruby;
-
-    /**
-     * Ruby Entrypoint Script.
-     */
-    private final InputStream script;
 
     /**
      * Main Entrypoint.
@@ -69,11 +60,10 @@ public final class Logstash implements Runnable, AutoCloseable {
      */
     Logstash(final Path home, final String[] args, final PrintStream output,
         final PrintStream error, final InputStream input) {
-        config = buildConfig(home, args);
+        final RubyInstanceConfig config = buildConfig(home, args);
         config.setOutput(output);
         config.setError(error);
         config.setInput(input);
-        script = config.getScriptSource();
         ruby = Ruby.newInstance(config);
     }
 
@@ -85,7 +75,8 @@ public final class Logstash implements Runnable, AutoCloseable {
                 "More than one JRuby Runtime detected in the current JVM!"
             );
         }
-        try {
+        final RubyInstanceConfig config = ruby.getInstanceConfig();
+        try (InputStream script = config.getScriptSource()) {
             Thread.currentThread().setContextClassLoader(ruby.getJRubyClassLoader());
             ruby.runFromMain(script, config.displayedFileName());
         } catch (final RaiseException ex) {
@@ -99,13 +90,14 @@ public final class Logstash implements Runnable, AutoCloseable {
             } else {
                 throw new IllegalStateException(ex);
             }
+        } catch (final IOException ex) {
+            throw new IllegalStateException(ex);
         }
     }
 
     @Override
-    public void close() throws Exception {
+    public void close() {
         ruby.tearDown(false);
-        script.close();
     }
 
     /**
