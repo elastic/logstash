@@ -3,12 +3,18 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-5-6-6,Logstash 5.6.6>>
 * <<logstash-5-6-5,Logstash 5.6.5>>
 * <<logstash-5-6-4,Logstash 5.6.4>>
 * <<logstash-5-6-3,Logstash 5.6.3>>
 * <<logstash-5-6-2,Logstash 5.6.2>>
 * <<logstash-5-6-1,Logstash 5.6.1>>
 * <<logstash-5-6-0,Logstash 5.6.0>>
+
+[[logstash-5-6-6]]
+=== Logstash 5.6.6 Release Notes
+* Fixed a bug where cloning a LogStash Timestamp object would result in an empty object
+* Changed option validation to occur before checking for deprecation/obsoletion
 
 [[logstash-5-6-5]]
 === Logstash 5.6.5 Release Notes
