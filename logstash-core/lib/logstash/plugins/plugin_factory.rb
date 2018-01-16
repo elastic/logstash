@@ -85,7 +85,7 @@ module LogStash
         if plugin_type == "output"
           OutputDelegator.new(@logger, klass, type_scoped_metric, execution_context, OutputDelegatorStrategyRegistry.instance, args)
         elsif plugin_type == "filter"
-          @filter_class.new(@logger, klass, type_scoped_metric, execution_context, args)
+          @filter_class.new(klass, type_scoped_metric, execution_context, args)
         else # input or codec plugin
           plugin_instance = klass.new(args)
           scoped_metric = type_scoped_metric.namespace(id.to_sym)

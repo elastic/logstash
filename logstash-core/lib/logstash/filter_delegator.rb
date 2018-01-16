@@ -16,8 +16,7 @@ module LogStash
 
     attr_reader :id
 
-    def initialize(logger, klass, metric, execution_context, plugin_args)
-      @logger = logger
+    def initialize(klass, metric, execution_context, plugin_args)
       @klass = klass
       @id = plugin_args["id"]
       @filter = klass.new(plugin_args)
