@@ -1,25 +1,2 @@
-# encoding: utf-8
-
-require "logstash/namespace"
-
-module LogStash
-
-  class Timestamp
-    include Comparable
-
-    def eql?(other)
-      self.== other
-    end
-
-    # TODO (colin) implement in Java
-    def +(other)
-      self.time + other
-    end
-
-    # TODO (colin) implement in Java
-    def -(value)
-      self.time - (value.is_a?(Timestamp) ? value.time : value)
-    end
-
-  end
-end
+# The contents of this file have been ported to Java. It is included for for compatibility
+# with plugins that directly require "logstash/timestamp".

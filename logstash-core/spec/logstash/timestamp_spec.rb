@@ -1,7 +1,6 @@
 # encoding: utf-8
 
 require "spec_helper"
-require "logstash/timestamp"
 
 describe LogStash::Timestamp do
   context "constructors" do
