@@ -53,11 +53,10 @@ module LogStash; class PipelineReporter
 
   def to_hash
     # pipeline.filter_queue_client.inflight_batches is synchronized
-    pipeline.filter_queue_client.inflight_batches do |batch_map|
-      worker_states_snap = worker_states(batch_map) # We only want to run this once
-      inflight_count = worker_states_snap.map {|s| s[:inflight_count] }.reduce(0, :+)
-
-      {
+    batch_map = pipeline.filter_queue_client.inflight_batches
+    worker_states_snap = worker_states(batch_map) # We only want to run this once
+    inflight_count = worker_states_snap.map {|s| s[:inflight_count]}.reduce(0, :+)
+    {
         :events_filtered => events_filtered,
         :events_consumed => events_consumed,
         :inflight_count => inflight_count,
@@ -65,8 +64,7 @@ module LogStash; class PipelineReporter
         :output_info => output_info,
         :thread_info => pipeline.plugin_threads_info,
         :stalling_threads_info => pipeline.stalling_threads_info
-      }
-    end
+    }
   end
 
   private
@@ -103,7 +101,7 @@ module LogStash; class PipelineReporter
       {
         :type => output_delegator.config_name,
         :id => output_delegator.id,
-        :concurrency => output_delegator.concurrency,        
+        :concurrency => output_delegator.concurrency,
       }
     end
   end

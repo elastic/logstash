@@ -96,10 +96,9 @@ module LogStash; module Util
 
       def initialize(queue, batch_size = 125, wait_for = 50)
         @queue = queue
-        @mutex = Mutex.new
         # Note that @inflight_batches as a central mechanism for tracking inflight
         # batches will fail if we have multiple read clients in the pipeline.
-        @inflight_batches = {}
+        @inflight_batches = Concurrent::Map.new
         # allow the worker thread to report the execution time of the filter + output
         @inflight_clocks = Concurrent::Map.new
         @batch_size = batch_size
@@ -111,12 +110,7 @@ module LogStash; module Util
       end
 
       def empty?
-        @mutex.lock
-        begin
-          @queue.is_empty?
-        ensure
-          @mutex.unlock
-        end
+        @queue.is_empty?
       end
 
       def set_batch_dimensions(batch_size, wait_for)
@@ -141,12 +135,7 @@ module LogStash; module Util
       end
 
       def inflight_batches
-        @mutex.lock
-        begin
-          yield(@inflight_batches)
-        ensure
-          @mutex.unlock
-        end
+        @inflight_batches
       end
 
       # create a new empty batch
@@ -168,24 +157,14 @@ module LogStash; module Util
 
       def start_metrics(batch)
         thread = Thread.current
-        @mutex.lock
-        begin
-          @inflight_batches[thread] = batch
-        ensure
-          @mutex.unlock
-        end
+        @inflight_batches[thread] = batch
         @inflight_clocks[thread] = java.lang.System.nano_time
       end
 
       def close_batch(batch)
         thread = Thread.current
-        @mutex.lock
-        begin
-          batch.close
-          @inflight_batches.delete(thread)
-        ensure
-          @mutex.unlock
-        end
+        batch.close
+        @inflight_batches.delete(thread)
         start_time = @inflight_clocks.get_and_set(thread, nil)
         unless start_time.nil?
           if batch.size > 0
