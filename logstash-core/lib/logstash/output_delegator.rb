@@ -8,7 +8,6 @@ module LogStash class OutputDelegator
   attr_reader :metric, :metric_events, :strategy, :namespaced_metric, :metric_events, :id
 
   def initialize(logger, output_class, metric, execution_context, strategy_registry, plugin_args)
-    @logger = logger
     @output_class = output_class
     @metric = metric
     @id = plugin_args["id"]
@@ -24,7 +23,7 @@ module LogStash class OutputDelegator
     @time_metric = @metric_events.counter(:duration_in_millis)
     @strategy = strategy_registry.
                   class_for(self.concurrency).
-                  new(@logger, @output_class, @namespaced_metric, execution_context, plugin_args)
+                  new(logger, @output_class, @namespaced_metric, execution_context, plugin_args)
   end
 
   def config_name

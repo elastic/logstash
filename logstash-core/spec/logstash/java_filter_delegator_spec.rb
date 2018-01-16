@@ -14,8 +14,7 @@ describe LogStash::JavaFilterDelegator do
   end
 
   include_context "execution_context"
-  
-  let(:logger) { double(:logger) }
+
   let(:filter_id) { "my-filter" }
   let(:config) do
     { "host" => "127.0.0.1", "id" => filter_id }
@@ -43,11 +42,11 @@ describe LogStash::JavaFilterDelegator do
     end
   end
 
-  subject { described_class.new(logger, plugin_klass, metric, execution_context, config) }
+  subject { described_class.new(plugin_klass, metric, execution_context, config) }
 
   it "create a plugin with the passed options" do
     expect(plugin_klass).to receive(:new).with(config).and_return(plugin_klass.new(config))
-    described_class.new(logger, plugin_klass, metric, execution_context, config)
+    described_class.new(plugin_klass, metric, execution_context, config)
   end
 
   context "when the plugin support flush" do
