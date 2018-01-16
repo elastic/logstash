@@ -1,7 +1,7 @@
 PATH
   remote: ./logstash-core
   specs:
-    logstash-core (5.6.6-java)
+    logstash-core (5.6.7-java)
       chronic_duration (= 0.10.6)
       clamp (~> 0.6.5)
       concurrent-ruby (~> 1.0, >= 1.0.5)
@@ -28,7 +28,7 @@ PATH
   remote: ./logstash-core-plugin-api
   specs:
     logstash-core-plugin-api (2.1.29-java)
-      logstash-core (= 5.6.6)
+      logstash-core (= 5.6.7)
 
 GEM
   remote: https://rubygems.org/
@@ -86,7 +86,7 @@ GEM
       faraday
       multi_json
     equalizer (0.0.10)
-    excon (0.59.0)
+    excon (0.60.0)
     faraday (0.9.2)
       multipart-post (>= 1.2, < 3)
     ffi (1.9.18-java)
@@ -189,7 +189,7 @@ GEM
       logstash-core-plugin-api (>= 1.60, <= 2.99)
     logstash-filter-clone (3.0.5)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
-    logstash-filter-csv (3.0.7)
+    logstash-filter-csv (3.0.8)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
     logstash-filter-date (3.1.9)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
@@ -262,10 +262,15 @@ GEM
     logstash-input-dead_letter_queue (1.1.2)
       logstash-codec-plain
       logstash-core-plugin-api (>= 1.60, <= 2.99)
-    logstash-input-elasticsearch (4.1.1)
+    logstash-input-elasticsearch (4.2.0)
       elasticsearch (>= 5.0.3, < 6.0.0)
       logstash-codec-json
+      logstash-codec-plain
       logstash-core-plugin-api (>= 1.60, <= 2.99)
+      rufus-scheduler
+      sequel
+      tzinfo
+      tzinfo-data
     logstash-input-exec (3.1.5)
       logstash-codec-plain
       logstash-core-plugin-api (>= 1.60, <= 2.99)
@@ -280,7 +285,7 @@ GEM
       logstash-codec-plain
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       stud (~> 0.0.22)
-    logstash-input-gelf (3.0.7)
+    logstash-input-gelf (3.1.0)
       gelfd (= 0.2.0)
       logstash-codec-plain
       logstash-core-plugin-api (>= 1.60, <= 2.99)
@@ -509,8 +514,8 @@ GEM
       hitimes (~> 1.1)
     mime-types (2.6.2)
     minitar (0.6.1)
-    msgpack (1.2.1-java)
-    multi_json (1.13.0)
+    msgpack (1.2.2-java)
+    multi_json (1.13.1)
     multipart-post (2.0.0)
     murmurhash3 (0.1.6-java)
     mustache (0.99.8)
