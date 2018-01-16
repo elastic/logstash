@@ -57,7 +57,7 @@ module LogStash; class JavaBasePipeline
     @plugin_factory = LogStash::Plugins::PluginFactory.new(
       # use NullMetric if called in the BasePipeline context otherwise use the @metric value
       @lir, LogStash::Plugins::PluginMetricFactory.new(pipeline_id, @metric || Instrument::NullMetric.new),
-      @logger, LogStash::Plugins::ExecutionContextFactory.new(@agent, self, @dlq_writer),
+      LogStash::Plugins::ExecutionContextFactory.new(@agent, self, @dlq_writer),
       JavaFilterDelegator
     )
     @lir_execution = CompiledPipeline.new(@lir, @plugin_factory)
