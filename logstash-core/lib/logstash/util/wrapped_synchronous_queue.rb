@@ -77,7 +77,7 @@ module LogStash; module Util
       end
 
       def inflight_batches
-        yield(@inflight_batches)
+        @inflight_batches
       end
 
       # create a new empty batch
