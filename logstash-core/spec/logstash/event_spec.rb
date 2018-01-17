@@ -345,14 +345,6 @@ describe LogStash::Event do
   context "method missing exception messages" do
     subject { LogStash::Event.new({"foo" => "bar"}) }
 
-    it "#[] method raises a better exception message" do
-      expect { subject["foo"] }.to raise_error(NoMethodError, /Direct event field references \(i\.e\. event\['field'\]\)/)
-    end
-
-    it "#[]= method raises a better exception message" do
-      expect { subject["foo"] = "baz" }.to raise_error(NoMethodError, /Direct event field references \(i\.e\. event\['field'\] = 'value'\)/)
-    end
-
     it "other missing method raises normal exception message" do
       expect { subject.baz() }.to raise_error(NoMethodError, /undefined method `baz' for/)
     end
