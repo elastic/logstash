@@ -152,12 +152,9 @@ setup_vendored_jruby() {
   fi
 }
 
-# the setup of java opts can be skipped using SKIP_SETUP_JAVA_OPTS
 setup() {
   setup_java
-  if [ -z "$SKIP_SETUP_JAVA_OPTS" ] ; then
-    setup_java_opts
-  fi
+  setup_java_opts
   setup_vendored_jruby
 }
 
