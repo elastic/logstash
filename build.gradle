@@ -146,13 +146,16 @@ task downloadAndInstallJRuby(dependsOn: verifyFile, type: Copy) {
 def jrubyBin = "${projectDir}/vendor/jruby/bin/jruby" +
   (System.getProperty("os.name").startsWith("Windows") ? '.bat' : '')
 
+def rubyBin = "${projectDir}/bin/ruby" +
+  (System.getProperty("os.name").startsWith("Windows") ? '.bat' : '')
+
 task installTestGems(dependsOn: downloadAndInstallJRuby) {
   inputs.files file("${projectDir}/Gemfile.template")
   inputs.files fileTree("${projectDir}/rakelib")
   inputs.files file("${projectDir}/versions.yml")
   outputs.files file("${projectDir}/Gemfile")
   outputs.files file("${projectDir}/Gemfile.lock")
-  outputs.files fileTree("${projectDir}/vendor/bundle/gems")
+  outputs.files fileTree("${projectDir}/vendor/bundle/jruby/2.3.0/gems")
   outputs.files fileTree("${projectDir}/vendor/jruby")
   doLast {
     rubyGradleUtils.rake('test:install-core')
@@ -238,9 +241,9 @@ task runIntegrationTests(dependsOn: installIntegrationTestGems, type: Exec) {
   environment "FEATURE_FLAG", System.getenv('FEATURE_FLAG')
   standardOutput = new ExecLogOutputStream(System.out)
   errorOutput =  new ExecLogOutputStream(System.err)
-  // indirect launching of bin/bundle via bin/jruby so that the bundle exec command inherit
+  // indirect launching of bin/bundle via bin/ruby so that the bundle exec command inherit
   // the correct gem path environment which is not settable by command line
-  commandLine([jrubyBin, qaBundleBin, "exec", "rspec"].plus((Collection<String>)rubyIntegrationSpecs))
+  commandLine([rubyBin, qaBundleBin, "exec", "rspec"].plus((Collection<String>)rubyIntegrationSpecs))
 }
 
 // If you are running a JRuby snapshot we will skip the integrity check.
