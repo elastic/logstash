@@ -2,6 +2,7 @@
 require "logstash/outputs/base"
 require "logstash/config/source_loader"
 require "logstash/inputs/base"
+require "logstash/filters/base"
 require "thread"
 
 module LogStash

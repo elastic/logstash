@@ -1,22 +1,19 @@
 # encoding: utf-8
 require "logstash/instrument/metric"
-require "logstash/instrument/wrapped_write_client"
 require "logstash/util/wrapped_synchronous_queue"
 require "logstash/event"
 require_relative "../../support/mocks_classes"
 require "spec_helper"
 
-describe LogStash::Instrument::WrappedWriteClient do
+describe LogStash::WrappedWriteClient do
   let!(:write_client) { queue.write_client }
   let!(:read_client) { queue.read_client }
-  let(:pipeline) { double("pipeline", :pipeline_id => :main) }
   let(:collector)   { LogStash::Instrument::Collector.new }
   let(:metric) { LogStash::Instrument::Metric.new(collector) }
-  let(:plugin) { LogStash::Inputs::DummyInput.new({ "id" => myid }) }
   let(:event) { LogStash::Event.new }
-  let(:myid) { "1234myid" }
+  let(:myid) { ":1234myid".to_sym }
 
-  subject { described_class.new(write_client, pipeline, metric, plugin) }
+  subject { described_class.new(write_client, :main, metric, myid) }
 
   def threaded_read_client
     Thread.new do
@@ -81,7 +78,7 @@ describe LogStash::Instrument::WrappedWriteClient do
       end
 
       it "record input `out`" do
-        expect(snapshot_metric[:pipelines][:main][:plugins][:inputs][myid.to_sym][:events][:out].value).to eq(1)
+        expect(snapshot_metric[:pipelines][:main][:plugins][:inputs][myid][:events][:out].value).to eq(1)
       end
 
       context "recording of the duration of pushing to the queue" do
@@ -94,7 +91,7 @@ describe LogStash::Instrument::WrappedWriteClient do
         end
 
         it "records at the `plugin level" do
-          expect(snapshot_metric[:pipelines][:main][:plugins][:inputs][myid.to_sym][:events][:queue_push_duration_in_millis].value).to be_kind_of(Integer)
+          expect(snapshot_metric[:pipelines][:main][:plugins][:inputs][myid][:events][:queue_push_duration_in_millis].value).to be_kind_of(Integer)
         end
       end
     end
