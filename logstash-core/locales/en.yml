@@ -8,6 +8,10 @@ en:
   logstash:
     error: >-
       Error: %{error}
+    bootstrap_check:
+      persisted_queue_config:
+        page-capacity: >-
+          Invalid configuration, 'queue.page_capacity' must be less than or equal to 'queue.max_bytes'
     environment:
       jruby-required:  >-
         JRuby is required
