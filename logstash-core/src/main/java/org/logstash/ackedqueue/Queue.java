@@ -23,6 +23,7 @@ import org.logstash.ackedqueue.io.CheckpointIO;
 import org.logstash.ackedqueue.io.LongVector;
 import org.logstash.ackedqueue.io.MmapPageIO;
 import org.logstash.ackedqueue.io.PageIO;
+import org.logstash.common.FsUtil;
 
 public final class Queue implements Closeable {
 
@@ -158,6 +159,8 @@ public final class Queue implements Closeable {
 
                 logger.debug("No head checkpoint found at: {}, creating new head page", checkpointIO.headFileName());
 
+                this.ensureDiskAvailable(this.maxBytes);
+
                 this.seqNum = 0;
                 headPageNum = 0;
 
@@ -168,6 +171,9 @@ public final class Queue implements Closeable {
             }
 
             // at this point we have a head checkpoint to figure queue recovery
+
+            // as we load pages, compute actuall disk needed substracting existing pages size to the required maxBytes
+            long diskNeeded = this.maxBytes;
 
             // reconstruct all tail pages state upto but excluding the head page
             for (int pageNum = headCheckpoint.getFirstUnackedPageNum(); pageNum < headCheckpoint.getPageNum(); pageNum++) {
@@ -185,6 +191,7 @@ public final class Queue implements Closeable {
                 } else {
                     pageIO.open(cp.getMinSeqNum(), cp.getElementCount());
                     addTailPage(cp, PageFactory.newTailPage(cp, this, pageIO));
+                    diskNeeded -= (long)pageIO.getHead();
                 }
 
                 // track the seqNum as we rebuild tail pages, prevent empty pages with a minSeqNum of 0 to reset seqNum
@@ -200,6 +207,8 @@ public final class Queue implements Closeable {
 
             PageIO pageIO = new MmapPageIO(headCheckpoint.getPageNum(), this.pageCapacity, this.dirPath);
             pageIO.recover(); // optimistically recovers the head page data file and set minSeqNum and elementCount to the actual read/recovered data
+
+            ensureDiskAvailable(diskNeeded - (long)pageIO.getHead());
 
             if (pageIO.getMinSeqNum() != headCheckpoint.getMinSeqNum() || pageIO.getElementCount() != headCheckpoint.getElementCount()) {
                 // the recovered page IO shows different minSeqNum or elementCount than the checkpoint, use the page IO attributes
@@ -849,5 +858,11 @@ public final class Queue implements Closeable {
      */
     private boolean isTailPage(Page p) {
         return !isHeadPage(p);
+    }
+
+    private void ensureDiskAvailable(final long diskNeeded) throws IOException {
+        if (!FsUtil.hasFreeSpace(this.dirPath, diskNeeded)) {
+            throw new IOException("Not enough free disk space available to allocate persisted queue.");
+        }
     }
 }
