@@ -1,7 +1,7 @@
 [[running-logstash]]
 === Running Logstash as a Service on Debian or RPM
 
-Logstash is *not* started automatically after installation. How to start and stop Logstash depends on whether your system
+Logstash is **NOT** started automatically after installation. How to start and stop Logstash depends on whether your system
 uses systemd, upstart, or SysV.
 
 Here are some common operating systems and versions, and the corresponding
