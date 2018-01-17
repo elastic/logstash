@@ -32,21 +32,4 @@ module LogStash
   FLUSH = FlushEvent.new
   SHUTDOWN = ShutdownEvent.new
   NO_SIGNAL = NoSignal.new
-
-  class Event
-    MSG_BRACKETS_METHOD_MISSING = "Direct event field references (i.e. event['field']) have been disabled in favor of using event get and set methods (e.g. event.get('field')). Please consult the Logstash 5.0 breaking changes documentation for more details.".freeze
-    MSG_BRACKETS_EQUALS_METHOD_MISSING = "Direct event field references (i.e. event['field'] = 'value') have been disabled in favor of using event get and set methods (e.g. event.set('field', 'value')). Please consult the Logstash 5.0 breaking changes documentation for more details.".freeze
-    RE_BRACKETS_METHOD = /^\[\]$/.freeze
-    RE_BRACKETS_EQUALS_METHOD = /^\[\]=$/.freeze
-
-    def method_missing(method_name, *arguments, &block)
-      if RE_BRACKETS_METHOD.match(method_name.to_s)
-        raise NoMethodError.new(MSG_BRACKETS_METHOD_MISSING)
-      end
-      if RE_BRACKETS_EQUALS_METHOD.match(method_name.to_s)
-        raise NoMethodError.new(MSG_BRACKETS_EQUALS_METHOD_MISSING)
-      end
-      super
-    end
-  end
 end
