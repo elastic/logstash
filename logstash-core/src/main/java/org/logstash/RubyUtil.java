@@ -10,6 +10,7 @@ import org.jruby.exceptions.RaiseException;
 import org.jruby.runtime.ObjectAllocator;
 import org.logstash.ackedqueue.ext.AbstractJRubyQueue;
 import org.logstash.ackedqueue.ext.RubyAckedBatch;
+import org.logstash.ext.JRubyWrappedWriteClientExt;
 import org.logstash.ext.JrubyEventExtLibrary;
 import org.logstash.ext.JrubyMemoryReadBatchExt;
 import org.logstash.ext.JrubyTimestampExtLibrary;
@@ -45,6 +46,8 @@ public final class RubyUtil {
 
     public static final RubyClass MEMORY_READ_BATCH_CLASS;
 
+    public static final RubyClass WRAPPED_WRITE_CLIENT_CLASS;
+
     static {
         RUBY = Ruby.getGlobalRuntime();
         LOGSTASH_MODULE = RUBY.getOrCreateModule("LogStash");
@@ -53,6 +56,8 @@ public final class RubyUtil {
         );
         MEMORY_READ_BATCH_CLASS =
             setupLogstashClass(JrubyMemoryReadBatchExt::new, JrubyMemoryReadBatchExt.class);
+        WRAPPED_WRITE_CLIENT_CLASS =
+            setupLogstashClass(JRubyWrappedWriteClientExt::new, JRubyWrappedWriteClientExt.class);
         RUBY_EVENT_CLASS = setupLogstashClass(
             JrubyEventExtLibrary.RubyEvent::new, JrubyEventExtLibrary.RubyEvent.class
         );

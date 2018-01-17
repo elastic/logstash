@@ -17,7 +17,6 @@ require "logstash/instrument/namespaced_metric"
 require "logstash/instrument/null_metric"
 require "logstash/instrument/namespaced_null_metric"
 require "logstash/instrument/collector"
-require "logstash/instrument/wrapped_write_client"
 require "logstash/util/dead_letter_queue_manager"
 require "logstash/output_delegator"
 require "logstash/filter_delegator"
@@ -512,7 +511,7 @@ module LogStash; class Pipeline < BasePipeline
   def inputworker(plugin)
     Util::set_thread_name("[#{pipeline_id}]<#{plugin.class.config_name}")
     begin
-      input_queue_client = wrapped_write_client(plugin)
+      input_queue_client = wrapped_write_client(plugin.id.to_sym)
       plugin.run(input_queue_client)
     rescue => e
       if plugin.stop?
@@ -747,10 +746,10 @@ module LogStash; class Pipeline < BasePipeline
     @drain_queue ? !@filter_queue_client.empty? : false
   end
 
-  def wrapped_write_client(plugin)
+  def wrapped_write_client(plugin_id)
     #need to ensure that metrics are initialized one plugin at a time, else a race condition can exist.
     @mutex.synchronize do
-      LogStash::Instrument::WrappedWriteClient.new(@input_queue_client, self, metric, plugin)
+      LogStash::WrappedWriteClient.new(@input_queue_client, @pipeline_id.to_s.to_sym, metric, plugin_id)
     end
   end
 end; end
