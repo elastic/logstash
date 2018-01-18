@@ -99,6 +99,9 @@ clean {
   delete "${projectDir}/Gemfile.lock"
   delete "${projectDir}/vendor"
   delete "${projectDir}/NOTICE.TXT"
+  delete "${projectDir}/.bundle"
+  delete "${projectDir}/qa/integration/Gemfile.lock"
+  delete "${projectDir}/qa/integration/.bundle"
 }
 
 task bootstrap {}
@@ -143,13 +146,16 @@ task downloadAndInstallJRuby(dependsOn: verifyFile, type: Copy) {
 def jrubyBin = "${projectDir}/vendor/jruby/bin/jruby" +
   (System.getProperty("os.name").startsWith("Windows") ? '.bat' : '')
 
+def rubyBin = "${projectDir}/bin/ruby" +
+  (System.getProperty("os.name").startsWith("Windows") ? '.bat' : '')
+
 task installTestGems(dependsOn: downloadAndInstallJRuby) {
   inputs.files file("${projectDir}/Gemfile.template")
   inputs.files fileTree("${projectDir}/rakelib")
   inputs.files file("${projectDir}/versions.yml")
   outputs.files file("${projectDir}/Gemfile")
   outputs.files file("${projectDir}/Gemfile.lock")
-  outputs.files fileTree("${projectDir}/vendor/bundle/gems")
+  outputs.files fileTree("${projectDir}/vendor/bundle/jruby/2.3.0/gems")
   outputs.files fileTree("${projectDir}/vendor/jruby")
   doLast {
     rubyGradleUtils.rake('test:install-core')
@@ -196,46 +202,47 @@ task unpackTarDistribution(dependsOn: assembleTarDistribution, type: Copy) {
   into {buildDir}
 }
 
-def bundleBin = "${projectDir}/vendor/bundle/jruby/2.3.0/bin/bundle"
-def gemPath = "${buildDir}/qa/integration/gems"
+def qaVendorPath = "${buildDir}/qa/integration/vendor"
+def qaBundledGemPath = "${qaVendorPath}/jruby/2.3.0"
+def qaBundleBin = "${qaBundledGemPath}/bin/bundle"
 
 task installIntegrationTestBundler(dependsOn: unpackTarDistribution, type: Exec) {
-  outputs.files fileTree("${gemPath}/gems/bundler-1.16.0")
-  environment "GEM_PATH", gemPath
-  environment "GEM_HOME", gemPath
+  outputs.files fileTree("${qaBundledGemPath}/gems/bundler-1.16.0")
   standardOutput = new ExecLogOutputStream(System.out)
   errorOutput =  new ExecLogOutputStream(System.err)
-  commandLine jrubyBin, "${projectDir}/vendor/jruby/bin/gem", "install", "bundler", "-v", "1.16.0"
+  // directly invoke bin/gem to install bundlers and force install dir "-i" into qaBundledGemPath
+  commandLine "${projectDir}/vendor/jruby/bin/gem", "install", "bundler", "-v", "1.16.0", "-i", qaBundledGemPath
 }
 
 task installIntegrationTestGems(dependsOn: installIntegrationTestBundler, type: Exec) {
   workingDir "${projectDir}/qa/integration"
-  environment "GEM_PATH", gemPath
-  environment "GEM_HOME", gemPath
   inputs.files file("${projectDir}/qa/integration/Gemfile")
+  inputs.files file("${projectDir}/qa/integration/integration_tests.gemspec")
   inputs.files file("${logstashBuildDir}/Gemfile")
   inputs.files file("${logstashBuildDir}/Gemfile.lock")
   inputs.files file("${logstashBuildDir}/logstash-core/logstash-core.gemspec")
-  inputs.files file("${projectDir}/qa/integration/integration_tests.gemspec")
-  outputs.files fileTree("${gemPath}/gems")
+  outputs.files fileTree("${qaVendorPath}")
   outputs.files file("${projectDir}/qa/integration/Gemfile.lock")
   standardOutput = new ExecLogOutputStream(System.out)
   errorOutput =  new ExecLogOutputStream(System.err)
-  commandLine jrubyBin, bundleBin, "install"
+  // directly invoke bin/bundler and force install gem path to qaVendorPath
+  // note that bundler appends jruby/2.3.0 to the install path
+  commandLine qaBundleBin, "install", "--path", qaVendorPath
 }
 
 def rubyIntegrationSpecs = project.hasProperty("rubyIntegrationSpecs") ? ((String) project.property("rubyIntegrationSpecs")).split(/\s+/) : []
 
 task runIntegrationTests(dependsOn: installIntegrationTestGems, type: Exec) {
   workingDir "${projectDir}/qa/integration"
-  environment "JAVA_OPTS", ""
-  environment "GEM_PATH", gemPath
-  environment "GEM_HOME", gemPath
+  environment "LS_GEM_PATH", qaBundledGemPath
+  environment "LS_GEM_HOME", qaBundledGemPath
   // FEATURE_FLAG is set in the CI to configure testing with enabled PQ
   environment "FEATURE_FLAG", System.getenv('FEATURE_FLAG')
   standardOutput = new ExecLogOutputStream(System.out)
   errorOutput =  new ExecLogOutputStream(System.err)
-  commandLine([jrubyBin, bundleBin, "exec", "rspec"].plus((Collection<String>)rubyIntegrationSpecs))
+  // indirect launching of bin/bundle via bin/ruby so that the bundle exec command inherit
+  // the correct gem path environment which is not settable by command line
+  commandLine([rubyBin, qaBundleBin, "exec", "rspec"].plus((Collection<String>)rubyIntegrationSpecs))
 }
 
 // If you are running a JRuby snapshot we will skip the integrity check.
@@ -244,3 +251,4 @@ bootstrap.dependsOn installTestGems
 
 runIntegrationTests.shouldRunAfter tasks.getByPath(":logstash-core:test")
 check.dependsOn runIntegrationTests
+
