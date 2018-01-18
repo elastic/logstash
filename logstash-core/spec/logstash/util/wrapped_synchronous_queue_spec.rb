@@ -16,7 +16,7 @@ describe LogStash::Util::WrappedSynchronousQueue do
 
     context "when requesting a read client" do
       it "returns a client" do
-        expect(subject.read_client).to be_a(LogStash::Util::WrappedSynchronousQueue::ReadClient)
+        expect(subject.read_client).to be_a(LogStash::MemoryReadClient)
       end
     end
 
