@@ -13,6 +13,7 @@ import org.jruby.internal.runtime.methods.DynamicMethod;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.RubyUtil;
+import org.logstash.instrument.metrics.counter.LongCounter;
 
 @JRubyClass(name = "WrappedWriteClient")
 public final class JRubyWrappedWriteClientExt extends RubyObject {
@@ -22,19 +23,21 @@ public final class JRubyWrappedWriteClientExt extends RubyObject {
 
     private static final RubySymbol IN_KEY = RubyUtil.RUBY.newSymbol("in");
 
+    private static final LongCounter DUMMY_COUNTER = new LongCounter("dummy");
+
     private DynamicMethod pushOne;
     private DynamicMethod pushBatch;
 
     private IRubyObject writeClient;
 
-    private IRubyObject eventsMetricsCounter;
-    private IRubyObject eventsMetricsTime;
+    private LongCounter eventsMetricsCounter;
+    private LongCounter eventsMetricsTime;
 
-    private IRubyObject pipelineMetricsCounter;
-    private IRubyObject pipelineMetricsTime;
+    private LongCounter pipelineMetricsCounter;
+    private LongCounter pipelineMetricsTime;
 
-    private IRubyObject pluginMetricsCounter;
-    private IRubyObject pluginMetricsTime;
+    private LongCounter pluginMetricsCounter;
+    private LongCounter pluginMetricsTime;
 
     public JRubyWrappedWriteClientExt(final Ruby runtime, final RubyClass metaClass) {
         super(runtime, metaClass);
@@ -68,11 +71,11 @@ public final class JRubyWrappedWriteClientExt extends RubyObject {
     @JRubyMethod(name = {"push", "<<"}, required = 1)
     public IRubyObject push(final ThreadContext context, final IRubyObject event) {
         final long start = System.nanoTime();
-        incrementCounters(context, 1L);
+        incrementCounters(1L);
         final IRubyObject res = pushOne.call(
             context, writeClient, RubyUtil.WRAPPED_WRITE_CLIENT_CLASS, "push", event
         );
-        incrementTimers(context, start);
+        incrementTimers(start);
         return res;
     }
 
@@ -80,11 +83,11 @@ public final class JRubyWrappedWriteClientExt extends RubyObject {
     @JRubyMethod(name = "push_batch", required = 1)
     public IRubyObject pushBatch(final ThreadContext context, final IRubyObject batch) {
         final long start = System.nanoTime();
-        incrementCounters(context, (long) ((Collection<IRubyObject>) batch).size());
+        incrementCounters((long) ((Collection<IRubyObject>) batch).size());
         final IRubyObject res = pushBatch.call(
             context, writeClient, RubyUtil.WRAPPED_WRITE_CLIENT_CLASS, "push_batch", batch
         );
-        incrementTimers(context, start);
+        incrementTimers(start);
         return res;
     }
 
@@ -100,22 +103,19 @@ public final class JRubyWrappedWriteClientExt extends RubyObject {
         return context.runtime.newArray();
     }
 
-    private void incrementCounters(final ThreadContext context, final long count) {
-        final IRubyObject increment = context.runtime.newFixnum(count);
-        eventsMetricsCounter.callMethod(context, "increment", increment);
-        pipelineMetricsCounter.callMethod(context, "increment", increment);
-        pluginMetricsCounter.callMethod(context, "increment", increment);
+    private void incrementCounters(final long count) {
+        eventsMetricsCounter.increment(count);
+        pipelineMetricsCounter.increment(count);
+        pluginMetricsCounter.increment(count);
     }
 
-    private void incrementTimers(final ThreadContext context, final long start) {
-        final IRubyObject increment = context.runtime.newFixnum(
-            TimeUnit.NANOSECONDS.convert(
-                System.nanoTime() - start, TimeUnit.MILLISECONDS
-            )
+    private void incrementTimers(final long start) {
+        final long increment = TimeUnit.NANOSECONDS.convert(
+            System.nanoTime() - start, TimeUnit.MILLISECONDS
         );
-        eventsMetricsTime.callMethod(context, "increment", increment);
-        pipelineMetricsTime.callMethod(context, "increment", increment);
-        pluginMetricsTime.callMethod(context, "increment", increment);
+        eventsMetricsTime.increment(increment);
+        pipelineMetricsTime.increment(increment);
+        pluginMetricsTime.increment(increment);
     }
 
     private static IRubyObject getMetric(final IRubyObject base, final String... keys) {
@@ -132,11 +132,16 @@ public final class JRubyWrappedWriteClientExt extends RubyObject {
         return RubyUtil.RUBY.newArray(res);
     }
 
-    private static IRubyObject getCounter(final IRubyObject metric, final RubySymbol key) {
+    private static LongCounter getCounter(final IRubyObject metric, final RubySymbol key) {
         final ThreadContext context = RubyUtil.RUBY.getCurrentContext();
         final IRubyObject counter = metric.callMethod(context, "counter", key);
         counter.callMethod(context, "increment", context.runtime.newFixnum(0));
-        return counter;
+        if(LongCounter.class.isAssignableFrom(counter.getJavaClass())) {
+            return (LongCounter) counter.toJava(LongCounter.class);
+        } else {
+            // Metrics deactivated, we didn't get an actual counter from the base metric.
+            return DUMMY_COUNTER;
+        }
     }
 
 }
