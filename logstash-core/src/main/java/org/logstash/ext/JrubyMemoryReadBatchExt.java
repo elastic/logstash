@@ -11,6 +11,7 @@ import org.jruby.anno.JRubyMethod;
 import org.jruby.runtime.Block;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
+import org.logstash.RubyUtil;
 
 @JRubyClass(name = "MemoryReadBatch")
 public class JrubyMemoryReadBatchExt extends RubyObject {
@@ -18,13 +19,24 @@ public class JrubyMemoryReadBatchExt extends RubyObject {
     private LinkedHashSet<IRubyObject> events;
 
     public JrubyMemoryReadBatchExt(final Ruby runtime, final RubyClass metaClass) {
-        super(runtime, metaClass);
+        this(runtime, metaClass, new LinkedHashSet<>());
     }
 
-    @JRubyMethod(name = "initialize", required = 1)
-    @SuppressWarnings("unchecked")
-    public void ruby_initialize(final ThreadContext context, final IRubyObject events) {
-        this.events = (LinkedHashSet<IRubyObject>) events.toJava(LinkedHashSet.class);
+    public JrubyMemoryReadBatchExt(final Ruby runtime, final RubyClass metaClass, final LinkedHashSet<IRubyObject> events) {
+        super(runtime, metaClass);
+        this.events = events;
+    }
+
+    public static JrubyMemoryReadBatchExt create(LinkedHashSet<IRubyObject> events) {
+        JrubyMemoryReadBatchExt batch = new JrubyMemoryReadBatchExt(RubyUtil.RUBY,
+                RubyUtil.MEMORY_READ_BATCH_CLASS, events);
+        return batch;
+    }
+
+    public static JrubyMemoryReadBatchExt create() {
+        JrubyMemoryReadBatchExt batch = new JrubyMemoryReadBatchExt(RubyUtil.RUBY,
+                RubyUtil.MEMORY_READ_BATCH_CLASS, new LinkedHashSet<>());
+        return batch;
     }
 
     @JRubyMethod(name = "to_a")
@@ -47,6 +59,10 @@ public class JrubyMemoryReadBatchExt extends RubyObject {
     @JRubyMethod(name = "filtered_size", alias = "size")
     public IRubyObject filteredSize(final ThreadContext context) {
         return context.runtime.newFixnum(events.size());
+    }
+
+    public int filteredSize() {
+        return events.size();
     }
 
     @JRubyMethod
