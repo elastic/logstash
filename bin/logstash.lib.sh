@@ -1,3 +1,21 @@
+# This script is used to initialize a number of env variables and setup the
+# runtime environment of logstash. It sets to following env variables:
+#   LOGSTASH_HOME & LS_HOME
+#   SINCEDB_DIR
+#   JAVACMD
+#   JAVA_OPTS
+#   GEM_HOME & GEM_PATH
+#   DEBUG
+#
+# These functions are provided for the calling script:
+#   setup() to setup the environment
+#   ruby_exec() to execute a ruby script with using the setup runtime environment
+#
+# The following env var will be used by this script if set:
+#   LS_GEM_HOME and LS_GEM_PATH to overwrite the path assigned to GEM_HOME and GEM_PATH
+#   LS_JAVA_OPTS to append extra options to the JVM options provided by logstash
+#   JAVA_HOME to point to the java home
+
 unset CDPATH
 # This unwieldy bit of scripting is to try to catch instances where Logstash
 # was launched from a symlink, rather than a full path to the Logstash binary
@@ -116,8 +134,24 @@ setup_vendored_jruby() {
     echo "If you are a developer, please run 'rake bootstrap'. Running 'rake' requires the 'ruby' program be available."
     exit 1
   fi
-  export GEM_HOME="${LOGSTASH_HOME}/vendor/bundle/jruby/2.3.0"
-  export GEM_PATH=${GEM_HOME}
+
+  if [ -z "$LS_GEM_HOME" ] ; then
+    export GEM_HOME="${LOGSTASH_HOME}/vendor/bundle/jruby/2.3.0"
+  else
+    export GEM_HOME=${LS_GEM_HOME}
+  fi
+  if [ "$DEBUG" ] ; then
+    echo "Using GEM_HOME=${GEM_HOME}"
+  fi
+
+  if [ -z "$LS_GEM_PATH" ] ; then
+    export GEM_PATH=${GEM_HOME}
+  else
+    export GEM_PATH=${LS_GEM_PATH}
+  fi
+  if [ "$DEBUG" ] ; then
+    echo "Using GEM_PATH=${GEM_PATH}"
+  fi
 }
 
 setup() {
