@@ -54,6 +54,10 @@ parse_jvm_options() {
 }
 
 setup_java() {
+  if [ "$DEBUG" ] ; then
+    echo "Setting up Java"
+  fi
+
   # set the path to java into JAVACMD which will be picked up by JRuby to launch itself
   if [ -x "$JAVA_HOME/bin/java" ]; then
     JAVACMD="$JAVA_HOME/bin/java"
@@ -72,6 +76,14 @@ setup_java() {
   if [ ! -z "$JAVA_TOOL_OPTIONS" ]; then
     echo "warning: ignoring JAVA_TOOL_OPTIONS=$JAVA_TOOL_OPTIONS"
     unset JAVA_TOOL_OPTIONS
+  fi
+
+  export JAVACMD
+ }
+
+ setup_java_opts() {
+  if [ "$DEBUG" ] ; then
+    echo "Setting up JAVA_OPTS"
   fi
 
   # JAVA_OPTS is not a built-in JVM mechanism but some people think it is so we
@@ -103,11 +115,15 @@ setup_java() {
   JAVA_OPTS=$LS_JAVA_OPTS
 
   # jruby launcher uses JAVACMD as its java executable and JAVA_OPTS as the JVM options
-  export JAVACMD
   export JAVA_OPTS
 }
 
+# custom GEM_HOME and GEM_PATH can be injected using LS_GEM_HOME and LS_GEM_PATH
 setup_vendored_jruby() {
+  if [ "$DEBUG" ] ; then
+    echo "Setting up vendored JRuby"
+  fi
+
   JRUBY_BIN="${LOGSTASH_HOME}/vendor/jruby/bin/jruby"
 
   if [ ! -f "${JRUBY_BIN}" ] ; then
@@ -116,12 +132,29 @@ setup_vendored_jruby() {
     echo "If you are a developer, please run 'rake bootstrap'. Running 'rake' requires the 'ruby' program be available."
     exit 1
   fi
-  export GEM_HOME="${LOGSTASH_HOME}/vendor/bundle/jruby/2.3.0"
-  export GEM_PATH=${GEM_HOME}
+
+  if [ -z "$LS_GEM_HOME" ] ; then
+    export GEM_HOME="${LOGSTASH_HOME}/vendor/bundle/jruby/2.3.0"
+  else
+    export GEM_HOME=${LS_GEM_HOME}
+  fi
+  if [ "$DEBUG" ] ; then
+    echo "Using GEM_HOME=${GEM_HOME}"
+  fi
+
+  if [ -z "$LS_GEM_PATH" ] ; then
+    export GEM_PATH=${GEM_HOME}
+  else
+    export GEM_PATH=${LS_GEM_PATH}
+  fi
+  if [ "$DEBUG" ] ; then
+    echo "Using GEM_PATH=${GEM_PATH}"
+  fi
 }
 
 setup() {
   setup_java
+  setup_java_opts
   setup_vendored_jruby
 }
 
