@@ -1,6 +1,5 @@
 # encoding: utf-8
 require "logstash/instrument/metric"
-require "logstash/util/wrapped_synchronous_queue"
 require "logstash/event"
 require_relative "../../support/mocks_classes"
 require "spec_helper"
@@ -98,7 +97,7 @@ describe LogStash::WrappedWriteClient do
   end
 
   context "WrappedSynchronousQueue" do
-    let(:queue) { LogStash::Util::WrappedSynchronousQueue.new(1024) }
+    let(:queue) { LogStash::WrappedSynchronousQueue.new(1024) }
 
     before do
       read_client.set_events_metric(metric.namespace([:stats, :events]))
