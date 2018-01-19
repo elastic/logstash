@@ -28,8 +28,6 @@ public class JrubyMemoryReadClientExt extends RubyObject {
     private static final RubySymbol DURATION_IN_MILLIS_KEY =
             RubyUtil.RUBY.newSymbol("duration_in_millis");
 
-    private static final LongCounter DUMMY_COUNTER = new LongCounter("dummy");
-
     private BlockingQueue queue;
     private ConcurrentHashMap<Long, IRubyObject> inflightBatches;
     private ConcurrentHashMap<Long, Long> inflightClocks;
@@ -92,17 +90,17 @@ public class JrubyMemoryReadClientExt extends RubyObject {
 
     @JRubyMethod(name = "set_events_metric", required = 1)
     public IRubyObject setEventsMetric(final ThreadContext context, IRubyObject metric) {
-        eventMetricOut = getCounter(metric, OUT_KEY);
-        eventMetricFiltered = getCounter(metric, FILTERED_KEY);
-        eventMetricTime = getCounter(metric, DURATION_IN_MILLIS_KEY);
+        eventMetricOut = LongCounter.fromRubyBase(metric, OUT_KEY);
+        eventMetricFiltered = LongCounter.fromRubyBase(metric, FILTERED_KEY);
+        eventMetricTime = LongCounter.fromRubyBase(metric, DURATION_IN_MILLIS_KEY);
         return this;
     }
 
     @JRubyMethod(name = "set_pipeline_metric", required = 1)
     public IRubyObject setPipelineMetric(final ThreadContext context, IRubyObject metric) {
-        pipelineMetricOut = getCounter(metric, OUT_KEY);
-        pipelineMetricFiltered = getCounter(metric, FILTERED_KEY);
-        pipelineMetricTime = getCounter(metric, DURATION_IN_MILLIS_KEY);
+        pipelineMetricOut = LongCounter.fromRubyBase(metric, OUT_KEY);
+        pipelineMetricFiltered = LongCounter.fromRubyBase(metric, FILTERED_KEY);
+        pipelineMetricTime = LongCounter.fromRubyBase(metric, DURATION_IN_MILLIS_KEY);
         return this;
     }
 
@@ -165,18 +163,6 @@ public class JrubyMemoryReadClientExt extends RubyObject {
         eventMetricOut.increment(typedFilteredSize);
         pipelineMetricOut.increment(typedFilteredSize);
         return this;
-    }
-
-    private static LongCounter getCounter(final IRubyObject metric, final RubySymbol key) {
-        final ThreadContext context = RubyUtil.RUBY.getCurrentContext();
-        final IRubyObject counter = metric.callMethod(context, "counter", key);
-        counter.callMethod(context, "increment", context.runtime.newFixnum(0));
-        if (LongCounter.class.isAssignableFrom(counter.getJavaClass())) {
-            return (LongCounter) counter.toJava(LongCounter.class);
-        } else {
-            // Metrics deactivated, we didn't get an actual counter from the base metric.
-            return DUMMY_COUNTER;
-        }
     }
 
 }
