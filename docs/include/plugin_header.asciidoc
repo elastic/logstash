@@ -5,7 +5,7 @@ ifeval::["{versioned_docs}"!="true"]
 endif::[]
 ifeval::["{versioned_docs}"=="true"]
 ++++
-<titleabbrev>{plugin} {version}</titleabbrev>
+<titleabbrev>{version}</titleabbrev>
 ++++
 endif::[]
 
