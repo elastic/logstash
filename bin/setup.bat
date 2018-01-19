@@ -40,8 +40,9 @@ if not "%JAVA_TOOL_OPTIONS%" == "" (
 rem JAVA_OPTS is not a built-in JVM mechanism but some people think it is so we
 rem warn them that we are not observing the value of %JAVA_OPTS%
 if not "%JAVA_OPTS%" == "" (
-  echo|set /p="warning: ignoring JAVA_OPTS=%JAVA_OPTS%; "
+  echo warning: ignoring JAVA_OPTS=%JAVA_OPTS%;
   echo pass JVM parameters via LS_JAVA_OPTS
+  set JAVA_OPTS=
 )
 
 rem ### 3: set jruby
