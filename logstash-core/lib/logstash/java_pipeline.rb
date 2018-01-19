@@ -374,7 +374,10 @@ module LogStash; class JavaPipeline < JavaBasePipeline
       pipeline_workers.times do |t|
         batched_execution = @lir_execution.buildExecution
         thread = Thread.new(self, batched_execution) do |_pipeline, _batched_execution|
-          _pipeline.worker_loop(_batched_execution)
+          org.logstash.execution.WorkerLoop.new(_batched_execution, @signal_queue,
+                                                @filter_queue_client, @events_filtered,
+                                                @events_consumed, @flushing,
+                                                @drain_queue).run
         end
         thread.name="[#{pipeline_id}]>worker#{t}"
         @worker_threads << thread
@@ -398,30 +401,6 @@ module LogStash; class JavaPipeline < JavaBasePipeline
 
   def dlq_enabled?
     @settings.get("dead_letter_queue.enable")
-  end
-
-  # Main body of what a worker thread does
-  # Repeatedly takes batches off the queue, filters, then outputs them
-  def worker_loop(batched_execution)
-    shutdown_requested = false
-    while true
-      signal = @signal_queue.poll || NO_SIGNAL
-      shutdown_requested |= signal.shutdown? # latch on shutdown signal
-
-      batch = @filter_queue_client.read_batch # metrics are started in read_batch
-      @events_consumed.increment(batch.size)
-      execute_batch(batched_execution, batch, signal.flush?)
-      @filter_queue_client.close_batch(batch)
-      # keep break at end of loop, after the read_batch operation, some pipeline specs rely on this "final read_batch" before shutdown.
-      break if (shutdown_requested && !draining_queue?)
-    end
-
-    # we are shutting down, queue is drained if it was required, now  perform a final flush.
-    # for this we need to create a new empty batch to contain the final flushed events
-    batch = @filter_queue_client.new_batch
-    @filter_queue_client.start_metrics(batch) # explicitly call start_metrics since we dont do a read_batch here
-    batched_execution.compute(batch.to_a, true, true)
-    @filter_queue_client.close_batch(batch)
   end
 
   def wait_inputs
@@ -646,26 +625,6 @@ module LogStash; class JavaPipeline < JavaBasePipeline
   end
 
   private
-
-  def execute_batch(batched_execution, batch, flush)
-    batched_execution.compute(batch.to_a, flush, false)
-    @events_filtered.increment(batch.size)
-    filtered_size = batch.filtered_size
-    @filter_queue_client.add_output_metrics(filtered_size)
-    @filter_queue_client.add_filtered_metrics(filtered_size)
-    @flushing.set(false) if flush
-  rescue Exception => e
-    # Plugins authors should manage their own exceptions in the plugin code
-    # but if an exception is raised up to the worker thread they are considered
-    # fatal and logstash will not recover from this situation.
-    #
-    # Users need to check their configuration or see if there is a bug in the
-    # plugin.
-    @logger.error("Exception in pipelineworker, the pipeline stopped processing new events, please check your filter configuration and restart Logstash.",
-                  default_logging_keys("exception" => e.message, "backtrace" => e.backtrace))
-
-    raise e
-  end
 
   def maybe_setup_out_plugins
     if @outputs_registered.make_true
