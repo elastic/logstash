@@ -23,8 +23,6 @@ public final class JRubyWrappedWriteClientExt extends RubyObject {
 
     private static final RubySymbol IN_KEY = RubyUtil.RUBY.newSymbol("in");
 
-    private static final LongCounter DUMMY_COUNTER = new LongCounter("dummy");
-
     private DynamicMethod pushOne;
     private DynamicMethod pushBatch;
 
@@ -50,18 +48,19 @@ public final class JRubyWrappedWriteClientExt extends RubyObject {
         final IRubyObject metric = args[2];
         final IRubyObject pluginId = args[3];
         final IRubyObject eventsMetrics = getMetric(metric, "stats", "events");
-        eventsMetricsCounter = getCounter(eventsMetrics, IN_KEY);
-        eventsMetricsTime = getCounter(eventsMetrics, PUSH_DURATION_KEY);
+        eventsMetricsCounter = LongCounter.fromRubyBase(eventsMetrics, IN_KEY);
+        eventsMetricsTime = LongCounter.fromRubyBase(eventsMetrics, PUSH_DURATION_KEY);
         final IRubyObject pipelineMetrics =
             getMetric(metric, "stats", "pipelines", pipelineId, "events");
-        pipelineMetricsCounter = getCounter(pipelineMetrics, IN_KEY);
-        pipelineMetricsTime = getCounter(pipelineMetrics, PUSH_DURATION_KEY);
+        pipelineMetricsCounter = LongCounter.fromRubyBase(pipelineMetrics, IN_KEY);
+        pipelineMetricsTime = LongCounter.fromRubyBase(pipelineMetrics, PUSH_DURATION_KEY);
         final IRubyObject pluginMetrics = getMetric(
             metric, "stats", "pipelines", pipelineId, "plugins", "inputs",
             pluginId.asJavaString(), "events"
         );
-        pluginMetricsCounter = getCounter(pluginMetrics, context.runtime.newSymbol("out"));
-        pluginMetricsTime = getCounter(pluginMetrics, PUSH_DURATION_KEY);
+        pluginMetricsCounter =
+            LongCounter.fromRubyBase(pluginMetrics, context.runtime.newSymbol("out"));
+        pluginMetricsTime = LongCounter.fromRubyBase(pluginMetrics, PUSH_DURATION_KEY);
         final RubyClass writerClass = writeClient.getMetaClass();
         pushOne = writerClass.searchMethod("push");
         pushBatch = writerClass.searchMethod("push_batch");
@@ -131,17 +130,4 @@ public final class JRubyWrappedWriteClientExt extends RubyObject {
         }
         return RubyUtil.RUBY.newArray(res);
     }
-
-    private static LongCounter getCounter(final IRubyObject metric, final RubySymbol key) {
-        final ThreadContext context = RubyUtil.RUBY.getCurrentContext();
-        final IRubyObject counter = metric.callMethod(context, "counter", key);
-        counter.callMethod(context, "increment", context.runtime.newFixnum(0));
-        if(LongCounter.class.isAssignableFrom(counter.getJavaClass())) {
-            return (LongCounter) counter.toJava(LongCounter.class);
-        } else {
-            // Metrics deactivated, we didn't get an actual counter from the base metric.
-            return DUMMY_COUNTER;
-        }
-    }
-
 }
