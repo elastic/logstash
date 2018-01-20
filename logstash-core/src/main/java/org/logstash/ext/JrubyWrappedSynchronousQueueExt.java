@@ -35,6 +35,8 @@ public class JrubyWrappedSynchronousQueueExt extends RubyObject {
 
     @JRubyMethod(name = "read_client")
     public IRubyObject getReadClient(final ThreadContext context) {
+        // the read client has configurable batch size and timeout but those values
+        // are currently hard-coded to 125 and 50ms for clients of the sync queue
         return JrubyMemoryReadClientExt.create(queue, 125, 50);
     }
 
