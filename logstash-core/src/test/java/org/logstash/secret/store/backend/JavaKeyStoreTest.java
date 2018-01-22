@@ -332,7 +332,7 @@ public class JavaKeyStoreTest {
         // if we got attributes, lets assert them.
         if (attrs != null) {
             Set<PosixFilePermission> permissions = attrs.readAttributes().permissions();
-            EnumSet<PosixFilePermission> expected = EnumSet.of(OWNER_READ, OWNER_WRITE, GROUP_READ, GROUP_WRITE);
+            EnumSet<PosixFilePermission> expected = EnumSet.of(OWNER_READ, OWNER_WRITE, GROUP_READ, OTHERS_READ);
             assertThat(permissions.toArray()).containsExactlyInAnyOrder(expected.toArray());
         }
     }
