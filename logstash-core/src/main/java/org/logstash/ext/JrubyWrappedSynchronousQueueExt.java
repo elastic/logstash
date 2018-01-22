@@ -13,7 +13,7 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 
 @JRubyClass(name = "WrappedSynchronousQueue")
-public class JrubyWrappedSynchronousQueueExt extends RubyObject {
+public final class JrubyWrappedSynchronousQueueExt extends RubyObject {
 
     private BlockingQueue<JrubyEventExtLibrary.RubyEvent> queue;
 

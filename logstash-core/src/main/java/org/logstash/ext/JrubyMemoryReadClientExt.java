@@ -1,5 +1,8 @@
 package org.logstash.ext;
 
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 import org.jruby.Ruby;
 import org.jruby.RubyBasicObject;
 import org.jruby.RubyClass;
@@ -9,19 +12,14 @@ import org.jruby.RubyObject;
 import org.jruby.RubySymbol;
 import org.jruby.anno.JRubyClass;
 import org.jruby.anno.JRubyMethod;
-import org.jruby.java.proxies.JavaProxy;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.RubyUtil;
 import org.logstash.common.LsQueueUtils;
 import org.logstash.instrument.metrics.counter.LongCounter;
 
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeUnit;
-
 @JRubyClass(name = "MemoryReadClient")
-public class JrubyMemoryReadClientExt extends RubyObject {
+public final class JrubyMemoryReadClientExt extends RubyObject {
 
     private static final RubySymbol OUT_KEY = RubyUtil.RUBY.newSymbol("out");
     private static final RubySymbol FILTERED_KEY = RubyUtil.RUBY.newSymbol("filtered");
@@ -50,16 +48,6 @@ public class JrubyMemoryReadClientExt extends RubyObject {
         this.queue = queue;
         this.batchSize = batchSize;
         waitForNanos = TimeUnit.NANOSECONDS.convert(waitForMillis, TimeUnit.MILLISECONDS);
-    }
-
-    @JRubyMethod(name = "initialize")
-    @SuppressWarnings("unchecked")
-    public void rubyInitialize(final ThreadContext context, IRubyObject queue,
-                               IRubyObject batchSize, IRubyObject waitForMillis) {
-        this.queue = (BlockingQueue) (((JavaProxy) queue).getObject());
-        this.batchSize = ((RubyNumeric) batchSize).getIntValue();
-        waitForNanos = TimeUnit.NANOSECONDS.convert(
-                ((RubyNumeric) waitForMillis).getIntValue(), TimeUnit.MILLISECONDS);
     }
 
     public static JrubyMemoryReadClientExt create(BlockingQueue queue, int batchSize,
