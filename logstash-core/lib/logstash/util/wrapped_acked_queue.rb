@@ -18,12 +18,6 @@ module LogStash; module Util
     class QueueClosedError < ::StandardError; end
     class NotImplementedError < ::StandardError; end
 
-    def self.create_memory_based(path, capacity, max_events, max_bytes)
-      self.allocate.with_queue(
-        LogStash::AckedMemoryQueue.new(path, capacity, max_events, max_bytes)
-      )
-    end
-
     def self.create_file_based(path, capacity, max_events, checkpoint_max_writes, checkpoint_max_acks, checkpoint_max_interval, max_bytes)
       self.allocate.with_queue(
         LogStash::AckedQueue.new(path, capacity, max_events, checkpoint_max_writes, checkpoint_max_acks, checkpoint_max_interval, max_bytes)
