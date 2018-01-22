@@ -2,8 +2,8 @@ package org.logstash.ackedqueue.ext;
 
 import java.io.IOException;
 import org.jruby.Ruby;
-import org.jruby.RubyArray;
 import org.jruby.RubyClass;
+import org.jruby.RubyHash;
 import org.jruby.RubyObject;
 import org.jruby.anno.JRubyClass;
 import org.jruby.anno.JRubyMethod;
@@ -32,9 +32,12 @@ public final class RubyAckedBatch extends RubyObject {
 
     @JRubyMethod(name = "get_elements")
     public IRubyObject ruby_get_elements(ThreadContext context) {
-        RubyArray result = context.runtime.newArray();
-        this.batch.getElements().forEach(e -> result.add(
-            JrubyEventExtLibrary.RubyEvent.newRubyEvent(context.runtime, (Event) e)));
+        final RubyHash result = RubyHash.newHash(context.runtime);
+        this.batch.getElements().forEach(e -> result.put(
+            JrubyEventExtLibrary.RubyEvent.newRubyEvent(context.runtime, (Event) e),
+            context.tru
+            )
+        );
         return result;
     }
 

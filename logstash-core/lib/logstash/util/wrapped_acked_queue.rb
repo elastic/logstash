@@ -55,12 +55,6 @@ module LogStash; module Util
     end
     alias_method(:<<, :push)
 
-    # Block for X millis
-    def poll(millis)
-      check_closed("read")
-      @queue.read_batch(1, millis).get_elements.first
-    end
-
     def read_batch(size, wait)
       check_closed("read a batch")
       @queue.read_batch(size, wait)
@@ -141,7 +135,7 @@ module LogStash; module Util
       # create a new empty batch
       # @return [ReadBatch] a new empty read batch
       def new_batch
-        ReadBatch.new(@queue, @batch_size, @wait_for)
+        ReadBatch.new(@queue, 0, 0)
       end
 
       def read_batch
@@ -149,8 +143,7 @@ module LogStash; module Util
           raise QueueClosedError.new("Attempt to take a batch from a closed AckedQueue")
         end
 
-        batch = new_batch
-        batch.read_next
+        batch = ReadBatch.new(@queue, @batch_size, @wait_for)
         start_metrics(batch)
         batch
       end
@@ -191,23 +184,9 @@ module LogStash; module Util
 
     class ReadBatch
       def initialize(queue, size, wait)
-        @queue = queue
-        @size = size
-        @wait = wait
-
-        @originals = Hash.new
-
-        # TODO: disabled for https://github.com/elastic/logstash/issues/6055 - will have to properly refactor
-        # @cancelled = Hash.new
-
         @generated = Hash.new
-        @acked_batch = nil
-      end
-
-      def read_next
-        @acked_batch = @queue.read_batch(@size, @wait)
-        return if @acked_batch.nil?
-        @acked_batch.get_elements.each { |e| @originals[e] = true }
+        @acked_batch = queue.read_batch(size, wait)
+        @originals = @acked_batch.nil? ? Hash.new : @acked_batch.get_elements
       end
 
       def close
@@ -229,8 +208,6 @@ module LogStash; module Util
       end
 
       def each(&blk)
-        # below the checks for @cancelled.include?(e) have been replaced by e.cancelled?
-        # TODO: for https://github.com/elastic/logstash/issues/6055 = will have to properly refactor
         @originals.each do |e, _|
           blk.call(e) unless e.cancelled?
         end
