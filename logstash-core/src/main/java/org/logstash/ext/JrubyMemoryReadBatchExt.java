@@ -14,9 +14,9 @@ import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.RubyUtil;
 
 @JRubyClass(name = "MemoryReadBatch")
-public class JrubyMemoryReadBatchExt extends RubyObject {
+public final class JrubyMemoryReadBatchExt extends RubyObject {
 
-    private LinkedHashSet<IRubyObject> events;
+    private final LinkedHashSet<IRubyObject> events;
 
     public JrubyMemoryReadBatchExt(final Ruby runtime, final RubyClass metaClass) {
         this(runtime, metaClass, new LinkedHashSet<>());
@@ -34,9 +34,7 @@ public class JrubyMemoryReadBatchExt extends RubyObject {
     }
 
     public static JrubyMemoryReadBatchExt create() {
-        JrubyMemoryReadBatchExt batch = new JrubyMemoryReadBatchExt(RubyUtil.RUBY,
-                RubyUtil.MEMORY_READ_BATCH_CLASS, new LinkedHashSet<>());
-        return batch;
+        return create(new LinkedHashSet<>());
     }
 
     @JRubyMethod(name = "to_a")
