@@ -85,13 +85,13 @@ public final class Logstash implements Runnable, AutoCloseable {
                 final IRubyObject status =
                     rexep.callMethod(ruby.getCurrentContext(), "status");
                 if (status != null && !status.isNil() && RubyNumeric.fix2int(status) != 0) {
-                    throw new IllegalStateException(ex);
+                    uncleanShutdown(ex);
                 }
             } else {
-                throw new IllegalStateException(ex);
+                uncleanShutdown(ex);
             }
         } catch (final IOException ex) {
-            throw new IllegalStateException(ex);
+            uncleanShutdown(ex);
         }
     }
 
@@ -136,5 +136,9 @@ public final class Logstash implements Runnable, AutoCloseable {
             throw new IllegalArgumentException(String.format("Missing: %s.", resolved));
         }
         return resolved.toString();
+    }
+
+    private static void uncleanShutdown(final Exception ex) {
+        throw new IllegalStateException("Logstash stopped processing because of an error:", ex);
     }
 }
