@@ -16,7 +16,6 @@ import org.logstash.RubyUtil;
 import org.logstash.ackedqueue.Batch;
 import org.logstash.ackedqueue.Queue;
 import org.logstash.ackedqueue.SettingsImpl;
-import org.logstash.ackedqueue.io.ByteBufferPageIO;
 import org.logstash.ackedqueue.io.FileCheckpointIO;
 import org.logstash.ackedqueue.io.MemoryCheckpointIO;
 import org.logstash.ackedqueue.io.MmapPageIO;
@@ -162,7 +161,7 @@ public abstract class AbstractJRubyQueue extends RubyObject {
                     .capacity(capacity)
                     .maxUnread(maxUnread)
                     .queueMaxBytes(queueMaxBytes)
-                    .elementIOFactory(ByteBufferPageIO::new)
+                    .elementIOFactory(MmapPageIO::new)
                     .checkpointIOFactory(MemoryCheckpointIO::new)
                     .elementClass(Event.class)
                     .build()

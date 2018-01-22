@@ -15,10 +15,8 @@ import org.logstash.ackedqueue.SettingsImpl;
 import org.logstash.ackedqueue.Queue;
 import org.logstash.ackedqueue.Settings;
 import org.logstash.ackedqueue.StringElement;
-import org.logstash.ackedqueue.io.ByteBufferPageIO;
 import org.logstash.ackedqueue.io.CheckpointIOFactory;
 import org.logstash.ackedqueue.io.FileCheckpointIO;
-import org.logstash.ackedqueue.io.MemoryCheckpointIO;
 import org.logstash.ackedqueue.io.MmapPageIO;
 import org.logstash.ackedqueue.io.PageIOFactory;
 
@@ -26,13 +24,6 @@ public class Concurrent {
     final static int ELEMENT_COUNT = 2000000;
     final static int BATCH_SIZE = 1000;
     static Settings settings;
-
-    public static Settings memorySettings(int capacity) {
-        PageIOFactory pageIOFactory = (pageNum, size, path) -> new ByteBufferPageIO(pageNum, size, path);
-        CheckpointIOFactory checkpointIOFactory = (source) -> new MemoryCheckpointIO(source);
-        return SettingsImpl.memorySettingsBuilder().capacity(capacity).elementIOFactory(pageIOFactory)
-            .checkpointIOFactory(checkpointIOFactory).elementClass(StringElement.class).build();
-    }
 
     public static Settings fileSettings(int capacity) {
         PageIOFactory pageIOFactory = (pageNum, size, path) -> new MmapPageIO(pageNum, size, path);
@@ -171,12 +162,6 @@ public class Concurrent {
 
 
     public static void main(String[] args) throws IOException, InterruptedException {
-        System.out.println(">>> starting in-memory stress test");
-
-        settings = memorySettings(1024 * 1024); // 1MB
-        oneProducersOneConsumer();
-        oneProducersOneMultipleConsumer();
-
         System.out.println("\n>>> starting file-based stress test in /tmp/queue");
 
         settings = fileSettings(1024 * 1024); // 1MB
