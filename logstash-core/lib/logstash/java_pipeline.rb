@@ -4,7 +4,6 @@ require "stud/interval"
 require "concurrent"
 require "logstash/namespace"
 require "logstash/errors"
-require "logstash-core/logstash-core"
 require "logstash/event"
 require "logstash/filters/base"
 require "logstash/inputs/base"
@@ -17,11 +16,9 @@ require "logstash/instrument/null_metric"
 require "logstash/instrument/namespaced_null_metric"
 require "logstash/instrument/collector"
 require "logstash/util/dead_letter_queue_manager"
-require "logstash/output_delegator"
 require "logstash/java_filter_delegator"
 require "logstash/queue_factory"
 require "logstash/compiler"
-require "logstash/execution_context"
 require "securerandom"
 
 java_import org.logstash.common.DeadLetterQueueFactory
@@ -33,7 +30,7 @@ java_import org.logstash.config.ir.ConfigCompiler
 module LogStash; class JavaBasePipeline
   include LogStash::Util::Loggable
 
-  attr_reader :settings, :config_str, :config_hash, :inputs, :filters, :outputs, :pipeline_id, :lir, :execution_context, :ephemeral_id
+  attr_reader :settings, :config_str, :config_hash, :inputs, :filters, :outputs, :pipeline_id, :lir, :ephemeral_id
   attr_reader :pipeline_config
 
   def initialize(pipeline_config, namespaced_metric = nil, agent = nil)
