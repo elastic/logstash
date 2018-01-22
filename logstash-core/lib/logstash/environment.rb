@@ -53,7 +53,7 @@ module LogStash
             Setting::String.new("http.host", "127.0.0.1"),
             Setting::PortRange.new("http.port", 9600..9700),
             Setting::String.new("http.environment", "production"),
-            Setting::String.new("queue.type", "memory", true, ["persisted", "memory", "memory_acked"]),
+            Setting::String.new("queue.type", "memory", true, ["persisted", "memory"]),
             Setting::Boolean.new("queue.drain", false),
             Setting::Bytes.new("queue.page_capacity", "64mb"),
             Setting::Bytes.new("queue.max_bytes", "1024mb"),
