@@ -1,16 +1,15 @@
 # encoding: utf-8
 require "spec_helper"
-require "logstash/util/wrapped_synchronous_queue"
 require "logstash/instrument/collector"
 
-describe LogStash::Util::WrappedSynchronousQueue do
+describe LogStash::WrappedSynchronousQueue do
 
-  subject {LogStash::Util::WrappedSynchronousQueue.new(5)}
+  subject {LogStash::WrappedSynchronousQueue.new(5)}
 
   describe "queue clients" do
     context "when requesting a write client" do
       it "returns a client" do
-        expect(subject.write_client).to be_a(LogStash::Util::WrappedSynchronousQueue::WriteClient)
+        expect(subject.write_client).to be_a(LogStash::MemoryWriteClient)
       end
     end
 

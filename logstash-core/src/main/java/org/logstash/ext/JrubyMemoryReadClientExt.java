@@ -29,8 +29,8 @@ public class JrubyMemoryReadClientExt extends RubyObject {
             RubyUtil.RUBY.newSymbol("duration_in_millis");
 
     private BlockingQueue queue;
-    private ConcurrentHashMap<Long, IRubyObject> inflightBatches;
-    private ConcurrentHashMap<Long, Long> inflightClocks;
+    private final ConcurrentHashMap<Long, IRubyObject> inflightBatches = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<Long, Long> inflightClocks = new ConcurrentHashMap<>();
     private int batchSize;
     private long waitForNanos;
     private LongCounter eventMetricOut;
@@ -44,21 +44,28 @@ public class JrubyMemoryReadClientExt extends RubyObject {
         super(runtime, metaClass);
     }
 
+    private JrubyMemoryReadClientExt(final Ruby runtime, final RubyClass metaClass,
+                                     BlockingQueue queue, int batchSize, int waitForMillis) {
+        super(runtime, metaClass);
+        this.queue = queue;
+        this.batchSize = batchSize;
+        waitForNanos = TimeUnit.NANOSECONDS.convert(waitForMillis, TimeUnit.MILLISECONDS);
+    }
+
     @JRubyMethod(name = "initialize")
     @SuppressWarnings("unchecked")
     public void rubyInitialize(final ThreadContext context, IRubyObject queue,
                                IRubyObject batchSize, IRubyObject waitForMillis) {
         this.queue = (BlockingQueue) (((JavaProxy) queue).getObject());
-
-        // Note that @inflight_batches as a central mechanism for tracking inflight
-        // batches will fail if we have multiple read clients in the pipeline.
-        inflightBatches = new ConcurrentHashMap<>();
-
-        // allow the worker thread to report the execution time of the filter + output
-        inflightClocks = new ConcurrentHashMap<>();
         this.batchSize = ((RubyNumeric) batchSize).getIntValue();
         waitForNanos = TimeUnit.NANOSECONDS.convert(
                 ((RubyNumeric) waitForMillis).getIntValue(), TimeUnit.MILLISECONDS);
+    }
+
+    public static JrubyMemoryReadClientExt create(BlockingQueue queue, int batchSize,
+                                                  int waitForMillis) {
+        return new JrubyMemoryReadClientExt(RubyUtil.RUBY,
+                RubyUtil.MEMORY_READ_CLIENT_CLASS, queue, batchSize, waitForMillis);
     }
 
     @JRubyMethod(name = "close")
