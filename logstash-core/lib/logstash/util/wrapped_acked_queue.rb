@@ -250,14 +250,6 @@ module LogStash; module Util
       def filtered_size
         @originals.size + @generated.size
       end
-
-      def shutdown_signal_received?
-        false
-      end
-
-      def flush_signal_received?
-        false
-      end
     end
 
     class WriteClient
