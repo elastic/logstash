@@ -59,7 +59,7 @@ public class QueueTest {
 
     @Test
     public void newQueue() throws IOException {
-        try (Queue q = new Queue(TestSettings.volatileQueueSettings(10))) {
+        try (Queue q = new Queue(TestSettings.persistedQueueSettings(10, dataPath))) {
             q.open();
 
             assertThat(q.nonBlockReadBatch(1), nullValue());
@@ -68,7 +68,7 @@ public class QueueTest {
 
     @Test
     public void singleWriteRead() throws IOException {
-        try (Queue q = new Queue(TestSettings.volatileQueueSettings(100))) {
+        try (Queue q = new Queue(TestSettings.persistedQueueSettings(100, dataPath))) {
             q.open();
 
             Queueable element = new StringElement("foobarbaz");
@@ -94,7 +94,7 @@ public class QueueTest {
         final int page = element.serialize().length * 2 + AbstractByteBufferPageIO.MIN_CAPACITY;
         // Queue that can only hold one element per page.
         try (Queue q = new Queue(
-            TestSettings.volatileQueueSettings(page, page * 2 - 1))) {
+            TestSettings.persistedQueueSettings(page, page * 2 - 1, dataPath))) {
             q.open();
             for (int i = 0; i < 5; ++i) {
                 q.write(element);
@@ -117,7 +117,7 @@ public class QueueTest {
         final Queueable element = new StringElement("foobarbaz");
         // Queue that can only hold one element per page.
         try (Queue q = new Queue(
-            TestSettings.volatileQueueSettings(1024, 1024L))) {
+            TestSettings.persistedQueueSettings(1024, 1024L, dataPath))) {
             q.open();
             for (int i = 0; i < 3; ++i) {
                 q.write(element);
@@ -132,7 +132,7 @@ public class QueueTest {
 
     @Test
     public void singleWriteMultiRead() throws IOException {
-        try (Queue q = new Queue(TestSettings.volatileQueueSettings(100))) {
+        try (Queue q = new Queue(TestSettings.persistedQueueSettings(100, dataPath))) {
             q.open();
 
             Queueable element = new StringElement("foobarbaz");
@@ -148,7 +148,7 @@ public class QueueTest {
 
     @Test
     public void multiWriteSamePage() throws IOException {
-        try (Queue q = new Queue(TestSettings.volatileQueueSettings(100))) {
+        try (Queue q = new Queue(TestSettings.persistedQueueSettings(100, dataPath))) {
             q.open();
             List<Queueable> elements = Arrays
                 .asList(new StringElement("foobarbaz1"), new StringElement("foobarbaz2"),
@@ -176,7 +176,7 @@ public class QueueTest {
         List<Queueable> elements = Arrays.asList(new StringElement("foobarbaz1"), new StringElement("foobarbaz2"), new StringElement("foobarbaz3"), new StringElement("foobarbaz4"));
         int singleElementCapacity = singleElementCapacityForByteBufferPageIO(elements.get(0));
         try (Queue q = new Queue(
-            TestSettings.volatileQueueSettings(2 * singleElementCapacity))) {
+            TestSettings.persistedQueueSettings(2 * singleElementCapacity, dataPath))) {
             q.open();
 
             for (Queueable e : elements) {
@@ -220,7 +220,7 @@ public class QueueTest {
         List<Queueable> elements = Arrays.asList(new StringElement("foobarbaz1"), new StringElement("foobarbaz2"), new StringElement("foobarbaz3"), new StringElement("foobarbaz4"));
         int singleElementCapacity = singleElementCapacityForByteBufferPageIO(elements.get(0));
         try (Queue q = new Queue(
-            TestSettings.volatileQueueSettings(2 * singleElementCapacity))) {
+            TestSettings.persistedQueueSettings(2 * singleElementCapacity, dataPath))) {
             q.open();
 
             for (Queueable e : elements) {
@@ -263,7 +263,7 @@ public class QueueTest {
         int singleElementCapacity = singleElementCapacityForByteBufferPageIO(elements1.get(0));
 
         Settings settings = SettingsImpl.builder(
-            TestSettings.volatileQueueSettings(2 * singleElementCapacity)
+            TestSettings.persistedQueueSettings(2 * singleElementCapacity, dataPath)
         ).checkpointMaxWrites(1024) // arbitrary high enough threshold so that it's not reached (default for TestSettings is 1)
         .build();
         try (Queue q = new Queue(settings)) {
@@ -362,7 +362,7 @@ public class QueueTest {
             }
             int singleElementCapacity = singleElementCapacityForByteBufferPageIO(elements.get(0));
             try (Queue q = new Queue(
-                TestSettings.volatileQueueSettings(singleElementCapacity))) {
+                TestSettings.persistedQueueSettings(singleElementCapacity, dataPath))) {
                 q.open();
 
                 for (Queueable e : elements) {
@@ -395,7 +395,7 @@ public class QueueTest {
         int singleElementCapacity = singleElementCapacityForByteBufferPageIO(element);
 
         Settings settings = SettingsImpl.builder(
-            TestSettings.volatileQueueSettings(singleElementCapacity)
+            TestSettings.persistedQueueSettings(singleElementCapacity, dataPath)
         ).maxUnread(2) // 2 so we know the first write should not block and the second should
         .build();
         try (Queue q = new Queue(settings)) {
@@ -438,7 +438,7 @@ public class QueueTest {
 
         // TODO: add randomized testing on the page size (but must be > single element size)
         Settings settings = SettingsImpl.builder(
-            TestSettings.volatileQueueSettings(256) // 256 is arbitrary, large enough to hold a few elements
+            TestSettings.persistedQueueSettings(256, dataPath) // 256 is arbitrary, large enough to hold a few elements
         ).maxUnread(2)
         .build(); // 2 so we know the first write should not block and the second should
         try (Queue q = new Queue(settings)) {
@@ -488,7 +488,9 @@ public class QueueTest {
         int singleElementCapacity = singleElementCapacityForByteBufferPageIO(element);
 
         // allow 10 elements per page but only 100 events in total
-        Settings settings = TestSettings.volatileQueueSettings(singleElementCapacity * 10, singleElementCapacity * 100);
+        Settings settings = TestSettings.persistedQueueSettings(
+            singleElementCapacity * 10, singleElementCapacity * 100L, dataPath
+        );
         try (Queue q = new Queue(settings)) {
             q.open();
 
@@ -516,7 +518,9 @@ public class QueueTest {
         int singleElementCapacity = singleElementCapacityForByteBufferPageIO(element);
 
         // allow 10 elements per page but only 100 events in total
-        Settings settings = TestSettings.volatileQueueSettings(singleElementCapacity * 10, singleElementCapacity * 100);
+        Settings settings = TestSettings.persistedQueueSettings(
+            singleElementCapacity * 10, singleElementCapacity * 100L, dataPath
+        );
         try (Queue q = new Queue(settings)) {
             q.open();
             // should be able to write 90 + 9 events (9 pages + 1 head-page) before getting full
@@ -552,7 +556,9 @@ public class QueueTest {
         int singleElementCapacity = singleElementCapacityForByteBufferPageIO(element);
 
         // allow 10 elements per page but only 100 events in total
-        Settings settings = TestSettings.volatileQueueSettings(singleElementCapacity * 10, singleElementCapacity * 100);
+        Settings settings = TestSettings.persistedQueueSettings(
+            singleElementCapacity * 10, singleElementCapacity * 100L, dataPath
+        );
         try (Queue q = new Queue(settings)) {
             q.open();
             // should be able to write 90 + 9 events (9 pages + 1 head-page) before getting full
@@ -590,7 +596,9 @@ public class QueueTest {
         int singleElementCapacity = singleElementCapacityForByteBufferPageIO(element);
 
         // allow 10 elements per page but only 100 events in total
-        Settings settings = TestSettings.volatileQueueSettings(singleElementCapacity * 10, singleElementCapacity * 100);
+        Settings settings = TestSettings.persistedQueueSettings(
+            singleElementCapacity * 10, singleElementCapacity * 100L, dataPath
+        );
         try (Queue q = new Queue(settings)) {
             q.open();
 
@@ -689,7 +697,7 @@ public class QueueTest {
 
         final ExecutorService executorService = Executors.newFixedThreadPool(WRITER_COUNT);
         // very small pages to maximize page creation
-        Settings settings = TestSettings.volatileQueueSettings(100);
+        Settings settings = TestSettings.persistedQueueSettings(100, dataPath);
         try (Queue q = new Queue(settings)) {
             q.open();
 
@@ -737,7 +745,7 @@ public class QueueTest {
         Queueable element = new StringElement("foobarbaz1");
         int singleElementCapacity = singleElementCapacityForByteBufferPageIO(element);
         try (Queue q = new Queue(
-            TestSettings.volatileQueueSettings(2 * singleElementCapacity))) {
+            TestSettings.persistedQueueSettings(2 * singleElementCapacity, dataPath))) {
             q.open();
 
             Batch b;
@@ -863,7 +871,7 @@ public class QueueTest {
 
     @Test
     public void inEmpty() throws IOException {
-        try(Queue q = new Queue(TestSettings.volatileQueueSettings(1000))) {
+        try(Queue q = new Queue(TestSettings.persistedQueueSettings(1000, dataPath))) {
             q.open();
             assertThat(q.isEmpty(), is(true));
 

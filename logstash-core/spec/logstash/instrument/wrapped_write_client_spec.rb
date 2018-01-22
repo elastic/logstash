@@ -108,7 +108,8 @@ describe LogStash::WrappedWriteClient do
   end
 
   context "AckedMemoryQueue" do
-    let(:queue) { LogStash::Util::WrappedAckedQueue.create_memory_based("", 1024, 10, 4096) }
+    let(:path) { Stud::Temporary.directory }
+    let(:queue) { LogStash::Util::WrappedAckedQueue.create_file_based(path, 1024, 10, 1024, 1024, 1024, 4096) }
 
     before do
       read_client.set_events_metric(metric.namespace([:stats, :events]))

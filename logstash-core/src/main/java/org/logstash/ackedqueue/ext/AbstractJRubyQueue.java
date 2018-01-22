@@ -17,7 +17,6 @@ import org.logstash.ackedqueue.Batch;
 import org.logstash.ackedqueue.Queue;
 import org.logstash.ackedqueue.SettingsImpl;
 import org.logstash.ackedqueue.io.FileCheckpointIO;
-import org.logstash.ackedqueue.io.MemoryCheckpointIO;
 import org.logstash.ackedqueue.io.MmapPageIO;
 import org.logstash.ext.JrubyEventExtLibrary;
 
@@ -157,12 +156,12 @@ public abstract class AbstractJRubyQueue extends RubyObject {
             int maxUnread = RubyFixnum.num2int(args[2]);
             long queueMaxBytes = RubyFixnum.num2long(args[3]);
             this.queue = new Queue(
-                SettingsImpl.memorySettingsBuilder(args[0].asJavaString())
+                SettingsImpl.fileSettingsBuilder(args[0].asJavaString())
                     .capacity(capacity)
                     .maxUnread(maxUnread)
                     .queueMaxBytes(queueMaxBytes)
                     .elementIOFactory(MmapPageIO::new)
-                    .checkpointIOFactory(MemoryCheckpointIO::new)
+                    .checkpointIOFactory(FileCheckpointIO::new)
                     .elementClass(Event.class)
                     .build()
             );
@@ -172,7 +171,6 @@ public abstract class AbstractJRubyQueue extends RubyObject {
         @JRubyMethod(name = "open")
         @Override
         public IRubyObject ruby_open(ThreadContext context) {
-            this.queue.getCheckpointIO().purge();
             return super.ruby_open(context);
         }
     }
