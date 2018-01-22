@@ -107,7 +107,7 @@ describe LogStash::WrappedWriteClient do
     include_examples "queue tests"
   end
 
-  context "AckedMemoryQueue" do
+  context "WrappedAckedQueue" do
     let(:path) { Stud::Temporary.directory }
     let(:queue) { LogStash::Util::WrappedAckedQueue.create_file_based(path, 1024, 10, 1024, 1024, 1024, 4096) }
 
