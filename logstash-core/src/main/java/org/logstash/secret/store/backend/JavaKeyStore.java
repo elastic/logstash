@@ -50,7 +50,7 @@ public final class JavaKeyStore implements SecretStore {
     private boolean useDefaultPass = false;
     private Lock writeLock;
     //package private for testing
-    static String filePermissions = "rw-rw----";
+    static String filePermissions = "rw-r--r--";
     private static final boolean IS_WINDOWS = System.getProperty("os.name").startsWith("Windows");
 
     /**
