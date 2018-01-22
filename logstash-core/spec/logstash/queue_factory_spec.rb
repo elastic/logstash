@@ -79,7 +79,7 @@ describe LogStash::QueueFactory do
 
     it "returns a `WrappedSynchronousQueue`" do
       queue =  subject.create(settings)
-      expect(queue).to be_kind_of(LogStash::Util::WrappedSynchronousQueue)
+      expect(queue).to be_kind_of(LogStash::WrappedSynchronousQueue)
       queue.close
     end
   end

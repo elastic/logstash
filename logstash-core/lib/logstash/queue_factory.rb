@@ -3,7 +3,6 @@ require "fileutils"
 require "logstash/event"
 require "logstash/namespace"
 require "logstash/util/wrapped_acked_queue"
-require "logstash/util/wrapped_synchronous_queue"
 
 module LogStash
   class QueueFactory
@@ -29,7 +28,7 @@ module LogStash
         LogStash::Util::WrappedAckedQueue.create_file_based(queue_path, queue_page_capacity, queue_max_events, checkpoint_max_writes, checkpoint_max_acks, checkpoint_max_interval, queue_max_bytes)
       when "memory"
         # memory is the legacy and default setting
-        LogStash::Util::WrappedSynchronousQueue.new(
+        LogStash::WrappedSynchronousQueue.new(
           settings.get("pipeline.batch.size") * settings.get("pipeline.workers") * 2
         )
       else
