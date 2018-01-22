@@ -383,7 +383,7 @@ public class QueueTest {
                 for (Batch b : batches) {
                     b.close();
                 }
-                
+
                 assertThat(q.tailPages.size(), is(0));
             }
         }
@@ -400,7 +400,7 @@ public class QueueTest {
         .build();
         try (Queue q = new Queue(settings)) {
             q.open();
-            
+
             long seqNum = q.write(element);
             assertThat(seqNum, is(1L));
             assertThat(q.isFull(), is(false));
@@ -525,22 +525,22 @@ public class QueueTest {
                 q.write(element);
             }
             assertThat(q.isFull(), is(false));
-            
+
             // we expect this next write call to block so let's wrap it in a Future
             Future<Long> future = executor.submit(() -> q.write(element));
             assertThat(future.isDone(), is(false));
-            
+
             while (!q.isFull()) {
                 Thread.sleep(10);
             }
             assertThat(q.isFull(), is(true));
-            
+
             Batch b = q.readBatch(10, TimeUnit.SECONDS.toMillis(1)); // read 1 page (10 events)
             b.close();  // purge 1 page
-            
+
             while (q.isFull()) { Thread.sleep(10); }
             assertThat(q.isFull(), is(false));
-            
+
             assertThat(future.get(), is(elementCount + 1));
         }
     }
@@ -557,7 +557,7 @@ public class QueueTest {
             q.open();
             // should be able to write 90 + 9 events (9 pages + 1 head-page) before getting full
             int elementCount = 99;
-            for (int i = 0; i < elementCount; i++) { 
+            for (int i = 0; i < elementCount; i++) {
                 q.write(element);
             }
 
@@ -619,7 +619,7 @@ public class QueueTest {
     public void queueStableUnderStressHugeCapacity() throws Exception {
         stableUnderStress(100_000);
     }
-    
+
     @Test
     public void queueStableUnderStressLowCapacity() throws Exception {
         stableUnderStress(50);
@@ -682,7 +682,7 @@ public class QueueTest {
         }
     }
 
-    @Test(timeout = 5000)
+    @Test(timeout = 50_000)
     public void concurrentWritesTest() throws IOException, InterruptedException, ExecutionException {
 
         final int WRITER_COUNT = 5;

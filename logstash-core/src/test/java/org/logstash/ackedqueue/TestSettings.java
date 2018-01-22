@@ -1,6 +1,5 @@
 package org.logstash.ackedqueue;
 
-import org.logstash.ackedqueue.io.ByteBufferPageIO;
 import org.logstash.ackedqueue.io.CheckpointIOFactory;
 import org.logstash.ackedqueue.io.FileCheckpointIO;
 import org.logstash.ackedqueue.io.MemoryCheckpointIO;
@@ -11,7 +10,7 @@ public class TestSettings {
 
     public static Settings volatileQueueSettings(int capacity) {
         MemoryCheckpointIO.clearSources();
-        PageIOFactory pageIOFactory = (pageNum, size, path) -> new ByteBufferPageIO(pageNum, size, path);
+        PageIOFactory pageIOFactory = (pageNum, size, path) -> new MmapPageIO(pageNum, size, path);
         CheckpointIOFactory checkpointIOFactory = (source) -> new MemoryCheckpointIO(source);
         return SettingsImpl.memorySettingsBuilder().capacity(capacity).elementIOFactory(pageIOFactory)
             .checkpointIOFactory(checkpointIOFactory).elementClass(StringElement.class).build();
@@ -19,7 +18,7 @@ public class TestSettings {
 
     public static Settings volatileQueueSettings(int capacity, long size) {
         MemoryCheckpointIO.clearSources();
-        PageIOFactory pageIOFactory = (pageNum, pageSize, path) -> new ByteBufferPageIO(pageNum, pageSize, path);
+        PageIOFactory pageIOFactory = (pageNum, pageSize, path) -> new MmapPageIO(pageNum, pageSize, path);
         CheckpointIOFactory checkpointIOFactory = (source) -> new MemoryCheckpointIO(source);
         return SettingsImpl.memorySettingsBuilder().capacity(capacity).queueMaxBytes(size)
             .elementIOFactory(pageIOFactory).checkpointIOFactory(checkpointIOFactory)

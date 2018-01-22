@@ -2,8 +2,9 @@ package org.logstash.ackedqueue;
 
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
-
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 import org.logstash.ackedqueue.io.PageIO;
 
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -13,13 +14,17 @@ import static org.logstash.ackedqueue.QueueTestHelpers.singleElementCapacityForB
 
 public class HeadPageTest {
 
+    @Rule
+    public TemporaryFolder temporaryFolder = new TemporaryFolder();
+
     @Test
     public void newHeadPage() throws IOException {
         Settings s = TestSettings.volatileQueueSettings(100);
         // Close method on Page requires an instance of Queue that has already been opened.
         try (Queue q = new Queue(s)) {
             q.open();
-            PageIO pageIO = s.getPageIOFactory().build(0, 100, "dummy");
+            PageIO pageIO = s.getPageIOFactory()
+                .build(0, 100, temporaryFolder.newFolder().getAbsolutePath());
             pageIO.create();
             try (final Page p = PageFactory.newHeadPage(0, q, pageIO)) {
                 assertThat(p.getPageNum(), is(equalTo(0)));
