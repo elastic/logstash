@@ -350,7 +350,7 @@ public class QueueTest {
 
         // 10 tests of random queue sizes
         for (int loop = 0; loop < 10; loop++) {
-            int page_count = random.nextInt(10000) + 1;
+            int page_count = random.nextInt(100) + 1;
 
             // String format call below needs to at least print one digit
             final int digits = Math.max((int) Math.ceil(Math.log10(page_count)), 1);
@@ -389,7 +389,7 @@ public class QueueTest {
         }
     }
 
-    @Test(timeout = 5000)
+    @Test(timeout = 50_000)
     public void reachMaxUnread() throws IOException, InterruptedException, ExecutionException {
         Queueable element = new StringElement("foobarbaz");
         int singleElementCapacity = singleElementCapacityForByteBufferPageIO(element);
@@ -481,7 +481,7 @@ public class QueueTest {
         }
     }
 
-    @Test(timeout = 5000)
+    @Test(timeout = 50_000)
     public void reachMaxSizeTest() throws IOException, InterruptedException {
         Queueable element = new StringElement("0123456789"); // 10 bytes
 
@@ -510,7 +510,7 @@ public class QueueTest {
         }
     }
 
-    @Test(timeout = 5000)
+    @Test(timeout = 50_000)
     public void ackingMakesQueueNotFullAgainTest() throws IOException, InterruptedException, ExecutionException {
 
         Queueable element = new StringElement("0123456789"); // 10 bytes
@@ -549,7 +549,7 @@ public class QueueTest {
         }
     }
 
-    @Test(timeout = 5000)
+    @Test(timeout = 50_000)
     public void resumeWriteOnNoLongerFullQueueTest() throws IOException, InterruptedException, ExecutionException {
         Queueable element = new StringElement("0123456789"); // 10 bytes
 
@@ -588,7 +588,7 @@ public class QueueTest {
         }
     }
 
-    @Test(timeout = 5000)
+    @Test(timeout = 50_000)
     public void queueStillFullAfterPartialPageAckTest() throws IOException, InterruptedException {
 
         Queueable element = new StringElement("0123456789"); // 10 bytes
@@ -701,7 +701,7 @@ public class QueueTest {
         try (Queue q = new Queue(settings)) {
             q.open();
 
-            int ELEMENT_COUNT = 10000;
+            int ELEMENT_COUNT = 1000;
             AtomicInteger element_num = new AtomicInteger(0);
 
             // we expect this next write call to block so let's wrap it in a Future
