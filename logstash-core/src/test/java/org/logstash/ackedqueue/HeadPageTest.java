@@ -2,6 +2,7 @@ package org.logstash.ackedqueue;
 
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -17,14 +18,21 @@ public class HeadPageTest {
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
+    private String dataPath;
+
+    @Before
+    public void setUp() throws Exception {
+        dataPath = temporaryFolder.newFolder("data").getPath();
+    }
+
     @Test
     public void newHeadPage() throws IOException {
-        Settings s = TestSettings.volatileQueueSettings(100);
+        Settings s = TestSettings.persistedQueueSettings(100, dataPath);
         // Close method on Page requires an instance of Queue that has already been opened.
         try (Queue q = new Queue(s)) {
             q.open();
             PageIO pageIO = s.getPageIOFactory()
-                .build(0, 100, temporaryFolder.newFolder().getAbsolutePath());
+                .build(0, 100, dataPath);
             pageIO.create();
             try (final Page p = PageFactory.newHeadPage(0, q, pageIO)) {
                 assertThat(p.getPageNum(), is(equalTo(0)));
@@ -40,7 +48,9 @@ public class HeadPageTest {
     public void pageWrite() throws IOException {
         Queueable element = new StringElement("foobarbaz");
 
-        Settings s = TestSettings.volatileQueueSettings(singleElementCapacityForByteBufferPageIO(element));
+        Settings s = TestSettings.persistedQueueSettings(
+            singleElementCapacityForByteBufferPageIO(element), dataPath
+        );
         try(Queue q = new Queue(s)) {
             q.open();
             Page p = q.headPage;
@@ -60,7 +70,7 @@ public class HeadPageTest {
         Queueable element = new StringElement("foobarbaz");
         int singleElementCapacity = singleElementCapacityForByteBufferPageIO(element);
 
-        Settings s = TestSettings.volatileQueueSettings(singleElementCapacity);
+        Settings s = TestSettings.persistedQueueSettings(singleElementCapacity, dataPath);
         try(Queue q = new Queue(s)) {
             q.open();
             Page p = q.headPage;
@@ -83,7 +93,7 @@ public class HeadPageTest {
     public void inEmpty() throws IOException {
         Queueable element = new StringElement("foobarbaz");
 
-        Settings s = TestSettings.volatileQueueSettings(1000);
+        Settings s = TestSettings.persistedQueueSettings(1000, dataPath);
         try(Queue q = new Queue(s)) {
             q.open();
             Page p = q.headPage;
@@ -103,7 +113,9 @@ public class HeadPageTest {
         long seqNum = 1L;
         Queueable element = new StringElement("foobarbaz");
 
-        Settings s = TestSettings.volatileQueueSettings(singleElementCapacityForByteBufferPageIO(element));
+        Settings s = TestSettings.persistedQueueSettings(
+            singleElementCapacityForByteBufferPageIO(element), dataPath
+        );
         try(Queue q = new Queue(s)) {
             q.open();
             Page p = q.headPage;

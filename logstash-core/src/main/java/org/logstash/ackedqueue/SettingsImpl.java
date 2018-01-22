@@ -27,15 +27,6 @@ public class SettingsImpl implements Settings {
         return new BuilderImpl(dirForFiles);
     }
 
-    public static Builder memorySettingsBuilder() {
-        return memorySettingsBuilder("");
-    }
-
-    public static Builder memorySettingsBuilder(final String dirForFiles) {
-        return new BuilderImpl(dirForFiles).checkpointMaxAcks(1)
-            .checkpointMaxWrites(1);
-    }
-
     private SettingsImpl(final String dirForFiles, final CheckpointIOFactory checkpointIOFactory,
         final PageIOFactory pageIOFactory, final Class<? extends Queueable> elementClass,
         final int capacity, final long queueMaxBytes, final int maxUnread,
@@ -60,7 +51,7 @@ public class SettingsImpl implements Settings {
     public int getCheckpointMaxWrites() {
         return checkpointMaxWrites;
     }
-    
+
     @Override
     public CheckpointIOFactory getCheckpointIOFactory() {
         return checkpointIOFactory;
@@ -96,7 +87,7 @@ public class SettingsImpl implements Settings {
     }
 
     private static final class BuilderImpl implements Builder {
-        
+
         /**
          * The default Queue has a capacity of 0 events, meaning infinite capacity.
          * todo: Remove the ability to set infinite capacity.
@@ -124,7 +115,7 @@ public class SettingsImpl implements Settings {
          * Default number of acknowledgements after which we checkpoint.
          */
         private static final int DEFAULT_CHECKPOINT_MAX_WRITES = 1024;
-        
+
         private final String dirForFiles;
 
         private final CheckpointIOFactory checkpointIOFactory;
@@ -142,7 +133,7 @@ public class SettingsImpl implements Settings {
         private final int checkpointMaxAcks;
 
         private final int checkpointMaxWrites;
-        
+
         private BuilderImpl(final String dirForFiles) {
             this(dirForFiles, null, null, null, DEFAULT_CAPACITY, DEFAULT_MAX_QUEUE_BYTES,
                 DEFAULT_MAX_UNREAD, DEFAULT_CHECKPOINT_MAX_ACKS, DEFAULT_CHECKPOINT_MAX_WRITES

@@ -28,7 +28,7 @@ public class Concurrent {
     public static Settings fileSettings(int capacity) {
         PageIOFactory pageIOFactory = (pageNum, size, path) -> new MmapPageIO(pageNum, size, path);
         CheckpointIOFactory checkpointIOFactory = (source) -> new FileCheckpointIO(source);
-        return SettingsImpl.memorySettingsBuilder("/tmp/queue").capacity(capacity)
+        return SettingsImpl.fileSettingsBuilder("/tmp/queue").capacity(capacity)
             .elementIOFactory(pageIOFactory)
             .checkpointIOFactory(checkpointIOFactory).elementClass(StringElement.class).build();
     }
