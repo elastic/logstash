@@ -1,7 +1,7 @@
 package org.logstash.ackedqueue;
 
 import java.io.IOException;
-import org.logstash.ackedqueue.io.AbstractByteBufferPageIO;
+import org.logstash.ackedqueue.io.MmapPageIO;
 
 /**
  * Class containing common methods to help DRY up acked queue tests.
@@ -15,6 +15,6 @@ public class QueueTestHelpers {
      * @throws IOException Throws if a serialization error occurs
      */
     public static int singleElementCapacityForByteBufferPageIO(final Queueable element) throws IOException {
-        return AbstractByteBufferPageIO.WRAPPER_SIZE + element.serialize().length;
+        return MmapPageIO.WRAPPER_SIZE + element.serialize().length;
     }
 }
