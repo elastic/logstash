@@ -17,8 +17,6 @@ import org.logstash.ackedqueue.Settings;
 import org.logstash.ackedqueue.StringElement;
 import org.logstash.ackedqueue.io.CheckpointIOFactory;
 import org.logstash.ackedqueue.io.FileCheckpointIO;
-import org.logstash.ackedqueue.io.MmapPageIO;
-import org.logstash.ackedqueue.io.PageIOFactory;
 
 public class Concurrent {
     final static int ELEMENT_COUNT = 2000000;
@@ -26,10 +24,8 @@ public class Concurrent {
     static Settings settings;
 
     public static Settings fileSettings(int capacity) {
-        PageIOFactory pageIOFactory = (pageNum, size, path) -> new MmapPageIO(pageNum, size, path);
         CheckpointIOFactory checkpointIOFactory = (source) -> new FileCheckpointIO(source);
         return SettingsImpl.fileSettingsBuilder("/tmp/queue").capacity(capacity)
-            .elementIOFactory(pageIOFactory)
             .checkpointIOFactory(checkpointIOFactory).elementClass(StringElement.class).build();
     }
 
