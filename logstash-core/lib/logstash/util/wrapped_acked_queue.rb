@@ -31,12 +31,12 @@ module LogStash; module Util
     def with_queue(queue)
       @queue = queue
       @queue.open
-      @closed = Concurrent::AtomicBoolean.new(false)
+      @closed = java.util.concurrent.atomic.AtomicBoolean.new(false)
       self
     end
 
     def closed?
-      @closed.true?
+      @closed.get
     end
 
     # Push an object to the queue if the queue is full
@@ -55,7 +55,7 @@ module LogStash; module Util
     end
 
     def write_client
-      WriteClient.new(self)
+      LogStash::AckedWriteClient.create(@queue, @closed)
     end
 
     def read_client()
@@ -63,7 +63,7 @@ module LogStash; module Util
     end
 
     def check_closed(action)
-      if closed?
+      if @closed.get
         raise QueueClosedError.new("Attempted to #{action} on a closed AckedQueue")
       end
     end
@@ -74,7 +74,7 @@ module LogStash; module Util
 
     def close
       @queue.close
-      @closed.make_true
+      @closed.set(true)
     end
 
     class ReadClient
@@ -220,29 +220,6 @@ module LogStash; module Util
 
       def filtered_size
         @originals.size + @generated.size
-      end
-    end
-
-    class WriteClient
-      def initialize(queue)
-        @queue = queue
-      end
-
-      def push(event)
-        if @queue.closed?
-          raise QueueClosedError.new("Attempted to write an event to a closed AckedQueue")
-        end
-        @queue.push(event)
-      end
-      alias_method(:<<, :push)
-
-      def push_batch(batch)
-        if @queue.closed?
-          raise QueueClosedError.new("Attempted to write a batch to a closed AckedQueue")
-        end
-        batch.each do |event|
-          push(event)
-        end
       end
     end
   end
