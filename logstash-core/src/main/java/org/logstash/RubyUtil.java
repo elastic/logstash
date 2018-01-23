@@ -8,7 +8,7 @@ import org.jruby.RubyModule;
 import org.jruby.anno.JRubyClass;
 import org.jruby.exceptions.RaiseException;
 import org.jruby.runtime.ObjectAllocator;
-import org.logstash.ackedqueue.ext.AbstractJRubyQueue;
+import org.logstash.ackedqueue.ext.JRubyAckedQueueExt;
 import org.logstash.ackedqueue.ext.RubyAckedBatch;
 import org.logstash.ext.JRubyWrappedWriteClientExt;
 import org.logstash.ext.JrubyEventExtLibrary;
@@ -106,14 +106,8 @@ public final class RubyUtil {
         RUBY_EVENT_CLASS.setConstant("VERSION_ONE", RUBY.newString(Event.VERSION_ONE));
         RUBY_EVENT_CLASS.defineAnnotatedMethods(JrubyEventExtLibrary.RubyEvent.class);
         RUBY_EVENT_CLASS.defineAnnotatedConstants(JrubyEventExtLibrary.RubyEvent.class);
-        final RubyClass abstractQueue = setupLogstashClass(
-            ObjectAllocator.NOT_ALLOCATABLE_ALLOCATOR, AbstractJRubyQueue.class
-        );
+        setupLogstashClass(JRubyAckedQueueExt::new, JRubyAckedQueueExt.class);
         RUBY_ACKED_BATCH_CLASS = setupLogstashClass(RubyAckedBatch::new, RubyAckedBatch.class);
-        setupLogstashClass(
-            abstractQueue, AbstractJRubyQueue.RubyAckedQueue::new,
-            AbstractJRubyQueue.RubyAckedQueue.class
-        );
         RUBY.getGlobalVariables().set("$LS_JARS_LOADED", RUBY.newString("true"));
     }
 
