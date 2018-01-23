@@ -20,19 +20,42 @@ import org.logstash.ackedqueue.io.FileCheckpointIO;
 import org.logstash.ackedqueue.io.MmapPageIO;
 import org.logstash.ext.JrubyEventExtLibrary;
 
-@JRubyClass(name = "AbstractAckedQueue")
-public abstract class AbstractJRubyQueue extends RubyObject {
+@JRubyClass(name = "AckedQueue")
+public final class JRubyAckedQueueExt extends RubyObject {
 
     private static final long serialVersionUID = 1L;
 
-    protected Queue queue;
+    private Queue queue;
 
-    AbstractJRubyQueue(final Ruby runtime, final RubyClass metaClass) {
+    public JRubyAckedQueueExt(final Ruby runtime, final RubyClass metaClass) {
         super(runtime, metaClass);
     }
 
-    public final Queue getQueue() {
+    public Queue getQueue() {
         return this.queue;
+    }
+
+    @JRubyMethod(name = "initialize", optional = 7)
+    public IRubyObject ruby_initialize(ThreadContext context, IRubyObject[] args) {
+        args = Arity.scanArgs(context.runtime, args, 7, 0);
+        int capacity = RubyFixnum.num2int(args[1]);
+        int maxUnread = RubyFixnum.num2int(args[2]);
+        int checkpointMaxAcks = RubyFixnum.num2int(args[3]);
+        int checkpointMaxWrites = RubyFixnum.num2int(args[4]);
+        long queueMaxBytes = RubyFixnum.num2long(args[6]);
+        this.queue = new Queue(
+            SettingsImpl.fileSettingsBuilder(args[0].asJavaString())
+                .capacity(capacity)
+                .maxUnread(maxUnread)
+                .queueMaxBytes(queueMaxBytes)
+                .checkpointMaxAcks(checkpointMaxAcks)
+                .checkpointMaxWrites(checkpointMaxWrites)
+                .elementIOFactory(MmapPageIO::new)
+                .checkpointIOFactory(FileCheckpointIO::new)
+                .elementClass(Event.class)
+                .build()
+        );
+        return context.nil;
     }
 
     @JRubyMethod(name = "max_unread_events")
@@ -136,38 +159,5 @@ public abstract class AbstractJRubyQueue extends RubyObject {
             throw RubyUtil.newRubyIOError(context.runtime, e);
         }
         return context.nil;
-    }
-
-    @JRubyClass(name = "AckedQueue", parent = "AbstractAckedQueue")
-    public static final class RubyAckedQueue extends AbstractJRubyQueue {
-
-        private static final long serialVersionUID = 1L;
-
-        public RubyAckedQueue(Ruby runtime, RubyClass klass) {
-            super(runtime, klass);
-        }
-
-        @JRubyMethod(name = "initialize", optional = 7)
-        public IRubyObject ruby_initialize(ThreadContext context, IRubyObject[] args) {
-            args = Arity.scanArgs(context.runtime, args, 7, 0);
-            int capacity = RubyFixnum.num2int(args[1]);
-            int maxUnread = RubyFixnum.num2int(args[2]);
-            int checkpointMaxAcks = RubyFixnum.num2int(args[3]);
-            int checkpointMaxWrites = RubyFixnum.num2int(args[4]);
-            long queueMaxBytes = RubyFixnum.num2long(args[6]);
-            this.queue = new Queue(
-                SettingsImpl.fileSettingsBuilder(args[0].asJavaString())
-                    .capacity(capacity)
-                    .maxUnread(maxUnread)
-                    .queueMaxBytes(queueMaxBytes)
-                    .checkpointMaxAcks(checkpointMaxAcks)
-                    .checkpointMaxWrites(checkpointMaxWrites)
-                    .elementIOFactory(MmapPageIO::new)
-                    .checkpointIOFactory(FileCheckpointIO::new)
-                    .elementClass(Event.class)
-                    .build()
-            );
-            return context.nil;
-        }
     }
 }
