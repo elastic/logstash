@@ -1,6 +1,7 @@
 package org.logstash.execution;
 
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jruby.RubyArray;
@@ -19,7 +20,7 @@ public final class WorkerLoop implements Runnable {
 
     private final IRubyObject readClient;
 
-    private final IRubyObject flushing;
+    private final AtomicBoolean flushing;
 
     private final IRubyObject consumedCounter;
 
@@ -29,7 +30,7 @@ public final class WorkerLoop implements Runnable {
 
     public WorkerLoop(final Dataset execution, final BlockingQueue<IRubyObject> signalQueue,
         final IRubyObject readClient, final IRubyObject filteredCounter,
-        final IRubyObject consumedCounter, final IRubyObject flushing, final boolean drainQueue) {
+        final IRubyObject consumedCounter, final AtomicBoolean flushing, final boolean drainQueue) {
         this.consumedCounter = consumedCounter;
         this.filteredCounter = filteredCounter;
         this.execution = execution;
@@ -63,7 +64,7 @@ public final class WorkerLoop implements Runnable {
                 readClient.callMethod(context, "add_filtered_metrics", filteredSize);
                 readClient.callMethod(context, "close_batch", batch);
                 if (isFlush) {
-                    flushing.callMethod(context, "set", context.fals);
+                    flushing.set(false);
                 }
             } while (!shutdownRequested && !isDraining(context));
             //we are shutting down, queue is drained if it was required, now  perform a final flush.
