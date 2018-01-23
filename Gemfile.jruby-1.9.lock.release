@@ -162,7 +162,7 @@ GEM
     logstash-codec-msgpack (3.0.7-java)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       msgpack (~> 1.1)
-    logstash-codec-multiline (3.0.8)
+    logstash-codec-multiline (3.0.9)
       jls-grok (~> 0.11.1)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       logstash-patterns-core
