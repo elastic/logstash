@@ -6,6 +6,7 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+import org.logstash.ackedqueue.io.MmapPageIO;
 import org.logstash.ackedqueue.io.PageIO;
 
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -31,8 +32,7 @@ public class HeadPageTest {
         // Close method on Page requires an instance of Queue that has already been opened.
         try (Queue q = new Queue(s)) {
             q.open();
-            PageIO pageIO = s.getPageIOFactory()
-                .build(0, 100, dataPath);
+            PageIO pageIO = new MmapPageIO(0, 100, dataPath);
             pageIO.create();
             try (final Page p = PageFactory.newHeadPage(0, q, pageIO)) {
                 assertThat(p.getPageNum(), is(equalTo(0)));
