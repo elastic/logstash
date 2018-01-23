@@ -1,6 +1,5 @@
 # encoding: utf-8
 require "thread"
-require "stud/interval"
 require "concurrent"
 require "logstash/namespace"
 require "logstash/errors"
@@ -181,7 +180,7 @@ module LogStash; class JavaPipeline < JavaBasePipeline
     # @ready requires thread safety since it is typically polled from outside the pipeline thread
     @ready = Concurrent::AtomicBoolean.new(false)
     @running = Concurrent::AtomicBoolean.new(false)
-    @flushing = Concurrent::AtomicReference.new(false)
+    @flushing = java.util.concurrent.atomic.AtomicBoolean.new(false)
     @outputs_registered = Concurrent::AtomicBoolean.new(false)
     @finished_execution = Concurrent::AtomicBoolean.new(false)
   end # def initialize
@@ -521,24 +520,12 @@ module LogStash; class JavaPipeline < JavaBasePipeline
   def start_flusher
     # Invariant to help detect improper initialization
     raise "Attempted to start flusher on a stopped pipeline!" if stopped?
-
-    @flusher_thread = Thread.new do
-      while Stud.stoppable_sleep(5, 0.1) { stopped? }
-        flush
-        break if stopped?
-      end
-    end
+    @flusher_thread = org.logstash.execution.PeriodicFlush.new(@signal_queue, FLUSH, @flushing)
+    @flusher_thread.start
   end
 
   def shutdown_flusher
-    @flusher_thread.join
-  end
-
-  def flush
-    if @flushing.compare_and_set(false, true)
-      @logger.debug? && @logger.debug("Pushing flush onto pipeline", default_logging_keys)
-      @signal_queue.put(FLUSH)
-    end
+    @flusher_thread.close
   end
 
   # Calculate the uptime in milliseconds
