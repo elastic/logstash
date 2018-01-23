@@ -23,8 +23,8 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
-import org.logstash.ackedqueue.io.AbstractByteBufferPageIO;
 import org.logstash.ackedqueue.io.LongVector;
+import org.logstash.ackedqueue.io.MmapPageIO;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
@@ -91,7 +91,7 @@ public class QueueTest {
     @Test(timeout = 5000)
     public void writeToFullyAckedHeadpage() throws IOException {
         final Queueable element = new StringElement("foobarbaz");
-        final int page = element.serialize().length * 2 + AbstractByteBufferPageIO.MIN_CAPACITY;
+        final int page = element.serialize().length * 2 + MmapPageIO.MIN_CAPACITY;
         // Queue that can only hold one element per page.
         try (Queue q = new Queue(
             TestSettings.persistedQueueSettings(page, page * 2 - 1, dataPath))) {
