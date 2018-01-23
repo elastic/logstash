@@ -11,6 +11,7 @@ import org.jruby.runtime.ObjectAllocator;
 import org.logstash.ackedqueue.ext.JRubyAckedQueueExt;
 import org.logstash.ackedqueue.ext.RubyAckedBatch;
 import org.logstash.ext.JRubyWrappedWriteClientExt;
+import org.logstash.ext.JrubyAckedWriteClientExt;
 import org.logstash.ext.JrubyEventExtLibrary;
 import org.logstash.ext.JrubyMemoryReadBatchExt;
 import org.logstash.ext.JrubyMemoryReadClientExt;
@@ -55,6 +56,8 @@ public final class RubyUtil {
 
     public static final RubyClass MEMORY_WRITE_CLIENT_CLASS;
 
+    public static final RubyClass ACKED_WRITE_CLIENT_CLASS;
+
     public static final RubyClass WRAPPED_SYNCHRONOUS_QUEUE_CLASS;
 
     static {
@@ -71,6 +74,8 @@ public final class RubyUtil {
             setupLogstashClass(JrubyMemoryReadClientExt::new, JrubyMemoryReadClientExt.class);
         MEMORY_WRITE_CLIENT_CLASS =
             setupLogstashClass(JrubyMemoryWriteClientExt::new, JrubyMemoryWriteClientExt.class);
+        ACKED_WRITE_CLIENT_CLASS =
+            setupLogstashClass(JrubyAckedWriteClientExt::new, JrubyAckedWriteClientExt.class);
         WRAPPED_SYNCHRONOUS_QUEUE_CLASS =
             setupLogstashClass(JrubyWrappedSynchronousQueueExt::new,
                     JrubyWrappedSynchronousQueueExt.class);
