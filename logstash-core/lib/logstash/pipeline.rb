@@ -183,7 +183,7 @@ module LogStash; class Pipeline < BasePipeline
     @filter_queue_client.set_pipeline_metric(
         metric.namespace([:stats, :pipelines, pipeline_id.to_s.to_sym, :events])
     )
-    @drain_queue =  @settings.get_value("queue.drain")
+    @drain_queue =  @settings.get_value("queue.drain") || settings.get("queue.type") == "memory"
 
 
     @events_filtered = Concurrent::AtomicFixnum.new(0)
