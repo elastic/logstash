@@ -623,10 +623,6 @@ module LogStash; class JavaPipeline < JavaBasePipeline
     keys
   end
 
-  def draining_queue?
-    @drain_queue ? !@filter_queue_client.empty? : false
-  end
-
   def wrapped_write_client(plugin_id)
     #need to ensure that metrics are initialized one plugin at a time, else a race condition can exist.
     @mutex.synchronize do
