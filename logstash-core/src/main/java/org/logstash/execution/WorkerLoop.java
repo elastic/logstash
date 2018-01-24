@@ -66,7 +66,7 @@ public final class WorkerLoop implements Runnable {
                 if (isFlush) {
                     flushing.set(false);
                 }
-            } while (!shutdownRequested && !isDraining(context));
+            } while (!shutdownRequested || isDraining(context));
             //we are shutting down, queue is drained if it was required, now  perform a final flush.
             //for this we need to create a new empty batch to contain the final flushed events
             final IRubyObject batch = readClient.callMethod(context, "new_batch");

@@ -171,7 +171,7 @@ module LogStash; class JavaPipeline < JavaBasePipeline
     @filter_queue_client.set_pipeline_metric(
         metric.namespace([:stats, :pipelines, pipeline_id.to_s.to_sym, :events])
     )
-    @drain_queue =  @settings.get_value("queue.drain")
+    @drain_queue =  @settings.get_value("queue.drain") || settings.get("queue.type") == "memory"
 
     @events_filtered = Concurrent::AtomicFixnum.new(0)
     @events_consumed = Concurrent::AtomicFixnum.new(0)
