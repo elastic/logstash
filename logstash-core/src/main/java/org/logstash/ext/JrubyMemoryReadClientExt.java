@@ -4,7 +4,6 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import org.jruby.Ruby;
-import org.jruby.RubyBasicObject;
 import org.jruby.RubyClass;
 import org.jruby.RubyHash;
 import org.jruby.RubyNumeric;
@@ -101,7 +100,9 @@ public final class JrubyMemoryReadClientExt extends RubyObject {
 
     @JRubyMethod(name = "inflight_batches")
     public IRubyObject rubyGetInflightBatches(final ThreadContext context) {
-        return RubyHash.newHash(context.runtime, inflightBatches, RubyBasicObject.UNDEF);
+        final RubyHash result = RubyHash.newHash(context.runtime);
+        result.putAll(inflightBatches);
+        return result;
     }
 
     // create a new, empty batch
