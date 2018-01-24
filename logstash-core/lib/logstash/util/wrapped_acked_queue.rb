@@ -129,7 +129,7 @@ module LogStash; module Util
       # create a new empty batch
       # @return [ReadBatch] a new empty read batch
       def new_batch
-        ReadBatch.new(@queue, 0, 0)
+        LogStash::AckedReadBatch.new(@queue, 0, 0)
       end
 
       def read_batch
@@ -137,7 +137,7 @@ module LogStash; module Util
           raise QueueClosedError.new("Attempt to take a batch from a closed AckedQueue")
         end
 
-        batch = ReadBatch.new(@queue, @batch_size, @wait_for)
+        batch = LogStash::AckedReadBatch.new(@queue, @batch_size, @wait_for)
         start_metrics(batch)
         batch
       end
@@ -173,53 +173,6 @@ module LogStash; module Util
       def add_output_metrics(filtered_size)
         @event_metric.increment(:out, filtered_size)
         @pipeline_metric.increment(:out, filtered_size)
-      end
-    end
-
-    class ReadBatch
-      def initialize(queue, size, wait)
-        @generated = Hash.new
-        @acked_batch = queue.read_batch(size, wait)
-        @originals = @acked_batch.nil? ? Hash.new : @acked_batch.get_elements
-      end
-
-      def close
-        # this will ack the whole batch, regardless of whether some
-        # events were cancelled or failed
-        return if @acked_batch.nil?
-        @acked_batch.close
-      end
-
-      def merge(event)
-        return if event.nil? || @originals.key?(event)
-        @generated[event] = true
-      end
-
-      def to_a
-        events = []
-        each {|e| events << e}
-        events
-      end
-
-      def each(&blk)
-        @originals.each do |e, _|
-          blk.call(e) unless e.cancelled?
-        end
-        @generated.each do |e, _|
-          blk.call(e) unless e.cancelled?
-        end
-      end
-
-      def size
-        filtered_size
-      end
-
-      def starting_size
-        @originals.size
-      end
-
-      def filtered_size
-        @originals.size + @generated.size
       end
     end
   end
