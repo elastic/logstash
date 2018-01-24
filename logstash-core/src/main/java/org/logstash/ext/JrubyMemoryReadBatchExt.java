@@ -27,6 +27,10 @@ public final class JrubyMemoryReadBatchExt extends RubyObject {
         this.events = events;
     }
 
+    public static boolean isCancelled(final IRubyObject event) {
+        return ((JrubyEventExtLibrary.RubyEvent) event).getEvent().isCancelled();
+    }
+
     public static JrubyMemoryReadBatchExt create(LinkedHashSet<IRubyObject> events) {
         JrubyMemoryReadBatchExt batch = new JrubyMemoryReadBatchExt(RubyUtil.RUBY,
                 RubyUtil.MEMORY_READ_BATCH_CLASS, events);
@@ -76,9 +80,5 @@ public final class JrubyMemoryReadBatchExt extends RubyObject {
             }
         }
         return this;
-    }
-
-    private static boolean isCancelled(final IRubyObject event) {
-        return ((JrubyEventExtLibrary.RubyEvent) event).getEvent().isCancelled();
     }
 }
