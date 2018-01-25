@@ -4,6 +4,10 @@ namespace "dependency" do
     Rake::Task["gem:require"].invoke("bundler", "~> 1.9.4")
   end
 
+  task "clamp" do
+    Rake::Task["gem:require"].invoke("clamp", "~> 0.6.5")
+  end
+
   task "rbx-stdlib" do
     Rake::Task["gem:require"].invoke("rubysl", ">= 0")
   end # task rbx-stdlib
