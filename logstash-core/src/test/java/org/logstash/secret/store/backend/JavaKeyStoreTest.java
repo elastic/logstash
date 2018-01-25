@@ -187,7 +187,7 @@ public class JavaKeyStoreTest {
      */
     @Test
     public void notLogstashKeystore() throws Exception {
-        thrown.expect(SecretStoreException.LoadException.class);
+        thrown.expect(SecretStoreException.class);
         SecureConfig altConfig = new SecureConfig();
         Path altPath = folder.newFolder().toPath().resolve("alt.not.a.logstash.keystore");
         try (OutputStream out = Files.newOutputStream(altPath)) {
