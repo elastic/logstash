@@ -133,8 +133,8 @@ When running Logstash 5.2 or greater,
 the https://www.elastic.co/products/x-pack/monitoring[Monitoring UI] provides
 deep visibility into your deployment metrics, helping observe performance and
 alleviate bottlenecks as you scale. Monitoring is an X-Pack feature under the
-Basic License and is therefore *free to use*. To get started, consult the
-{xpack-ref}/monitoring-logstash.html[X-Pack Monitoring documentation].
+Basic License and is therefore *free to use*. To get started, see
+{logstash-ref}/monitoring-logstash.html[Monitoring Logstash].
 
 If external monitoring is preferred, there are <<monitoring,Monitoring APIs>>
 that return point-in-time metrics snapshots.
