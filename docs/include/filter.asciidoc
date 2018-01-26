@@ -1,23 +1,47 @@
 ==== Common Options
 
+// Contributors: You must conditionally code all internal links and IDs in this
+// file to make the common files work in both the LS Reference and the versioned
+// plugin docs
+
 The following configuration options are supported by all filter plugins:
 
+ifeval::["{versioned_docs}"!="true"]
 [cols="<,<,<",options="header",]
 |=======================================================================
 |Setting |Input type|Required
-| <<plugins-{type}s-{plugin}-add_field>> |<<hash,hash>>|No
-| <<plugins-{type}s-{plugin}-add_tag>> |<<array,array>>|No
-| <<plugins-{type}s-{plugin}-enable_metric>> |<<boolean,boolean>>|No
-| <<plugins-{type}s-{plugin}-id>> |<<string,string>>|No
-| <<plugins-{type}s-{plugin}-periodic_flush>> |<<boolean,boolean>>|No
-| <<plugins-{type}s-{plugin}-remove_field>> |<<array,array>>|No
-| <<plugins-{type}s-{plugin}-remove_tag>> |<<array,array>>|No
+| <<plugins-{type}s-{plugin}-add_field>> |{logstash-ref}/configuration-file-structure.html#hash[hash]|No
+| <<plugins-{type}s-{plugin}-add_tag>> |{logstash-ref}/configuration-file-structure.html#array[array]|No
+| <<plugins-{type}s-{plugin}-enable_metric>> |{logstash-ref}/configuration-file-structure.html#boolean[boolean]|No
+| <<plugins-{type}s-{plugin}-id>> |{logstash-ref}/configuration-file-structure.html#string[string]|No
+| <<plugins-{type}s-{plugin}-periodic_flush>> |{logstash-ref}/configuration-file-structure.html#boolean[boolean]|No
+| <<plugins-{type}s-{plugin}-remove_field>> |{logstash-ref}/configuration-file-structure.html#array[array]|No
+| <<plugins-{type}s-{plugin}-remove_tag>> |{logstash-ref}/configuration-file-structure.html#array[array]|No
 |=======================================================================
+endif::[]
+ifeval::["{versioned_docs}"=="true"]
+[cols="<,<,<",options="header",]
+|=======================================================================
+|Setting |Input type|Required
+| <<{version}-plugins-{type}s-{plugin}-add_field>> |{logstash-ref}/configuration-file-structure.html#hash[hash]|No
+| <<{version}-plugins-{type}s-{plugin}-add_tag>> |{logstash-ref}/configuration-file-structure.html#array[array]|No
+| <<{version}-plugins-{type}s-{plugin}-enable_metric>> |{logstash-ref}/configuration-file-structure.html#boolean[boolean]|No
+| <<{version}-plugins-{type}s-{plugin}-id>> |{logstash-ref}/configuration-file-structure.html#string[string]|No
+| <<{version}-plugins-{type}s-{plugin}-periodic_flush>> |{logstash-ref}/configuration-file-structure.html#boolean[boolean]|No
+| <<{version}-plugins-{type}s-{plugin}-remove_field>> |{logstash-ref}/configuration-file-structure.html#array[array]|No
+| <<{version}-plugins-{type}s-{plugin}-remove_tag>> |{logstash-ref}/configuration-file-structure.html#array[array]|No
+|=======================================================================
+endif::[]
 
+ifeval::["{versioned_docs}"!="true"]
 [id="plugins-{type}s-{plugin}-add_field"]
+endif::[]
+ifeval::["{versioned_docs}"=="true"]
+[id="{version}-plugins-{type}s-{plugin}-add_field"]
+endif::[]
 ===== `add_field`
 
-  * Value type is <<hash,hash>>
+  * Value type is {logstash-ref}/configuration-file-structure.html#hash[hash]
   * Default value is `{}`
 
 If this filter is successful, add any arbitrary fields to this event.
@@ -48,10 +72,15 @@ would add field `foo_hello` if it is present, with the
 value above and the `%{host}` piece replaced with that value from the
 event. The second example would also add a hardcoded field.
 
+ifeval::["{versioned_docs}"!="true"]
 [id="plugins-{type}s-{plugin}-add_tag"]
+endif::[]
+ifeval::["{versioned_docs}"=="true"]
+[id="{version}-plugins-{type}s-{plugin}-add_tag"]
+endif::[]
 ===== `add_tag`
 
-  * Value type is <<array,array>>
+  * Value type is {logstash-ref}/configuration-file-structure.html#array[array]
   * Default value is `[]`
 
 If this filter is successful, add arbitrary tags to the event.
@@ -78,20 +107,30 @@ Example:
 If the event has field `"somefield" == "hello"` this filter, on success,
 would add a tag `foo_hello` (and the second example would of course add a `taggedy_tag` tag).
 
+ifeval::["{versioned_docs}"!="true"]
 [id="plugins-{type}s-{plugin}-enable_metric"]
+endif::[]
+ifeval::["{versioned_docs}"=="true"]
+[id="{version}-plugins-{type}s-{plugin}-enable_metric"]
+endif::[]
 ===== `enable_metric`
 
-  * Value type is <<boolean,boolean>>
+  * Value type is {logstash-ref}/configuration-file-structure.html#boolean[boolean]
   * Default value is `true`
 
 Disable or enable metric logging for this specific plugin instance
 by default we record all the metrics we can, but you can disable metrics collection
 for a specific plugin.
 
+ifeval::["{versioned_docs}"!="true"]
 [id="plugins-{type}s-{plugin}-id"]
+endif::[]
+ifeval::["{versioned_docs}"=="true"]
+[id="{version}-plugins-{type}s-{plugin}-id"]
+endif::[]
 ===== `id`
 
-  * Value type is <<string,string>>
+  * Value type is {logstash-ref}/configuration-file-structure.html#string[string]
   * There is no default value for this setting.
 
 Add a unique `ID` to the plugin configuration. If no ID is specified, Logstash will generate one.
@@ -107,19 +146,30 @@ Adding a named ID in this case will help in monitoring Logstash when using the m
       }
     }
 
+
+ifeval::["{versioned_docs}"!="true"]
 [id="plugins-{type}s-{plugin}-periodic_flush"]
+endif::[]
+ifeval::["{versioned_docs}"=="true"]
+[id="{version}-plugins-{type}s-{plugin}-periodic_flush"]
+endif::[]
 ===== `periodic_flush`
 
-  * Value type is <<boolean,boolean>>
+  * Value type is {logstash-ref}/configuration-file-structure.html#boolean[boolean]
   * Default value is `false`
 
 Call the filter flush method at regular interval.
 Optional.
 
+ifeval::["{versioned_docs}"!="true"]
 [id="plugins-{type}s-{plugin}-remove_field"]
+endif::[]
+ifeval::["{versioned_docs}"=="true"]
+[id="{version}-plugins-{type}s-{plugin}-remove_field"]
+endif::[]
 ===== `remove_field`
 
-  * Value type is <<array,array>>
+  * Value type is {logstash-ref}/configuration-file-structure.html#array[array]
   * Default value is `[]`
 
 If this filter is successful, remove arbitrary fields from this event.
@@ -145,10 +195,15 @@ If the event has field `"somefield" == "hello"` this filter, on success,
 would remove the field with name `foo_hello` if it is present. The second
 example would remove an additional, non-dynamic field.
 
+ifeval::["{versioned_docs}"!="true"]
 [id="plugins-{type}s-{plugin}-remove_tag"]
+endif::[]
+ifeval::["{versioned_docs}"=="true"]
+[id="{version}-plugins-{type}s-{plugin}-remove_tag"]
+endif::[]
 ===== `remove_tag`
 
-  * Value type is <<array,array>>
+  * Value type is {logstash-ref}/configuration-file-structure.html#array[array]
   * Default value is `[]`
 
 If this filter is successful, remove arbitrary tags from the event.

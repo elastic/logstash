@@ -1,37 +1,67 @@
 ==== Common Options
 
+// Contributors: You must conditionally code all internal links and IDs in this
+// file to make the common files work in both the LS Reference and the versioned
+// plugin docs
+
 The following configuration options are supported by all output plugins:
 
+ifeval::["{versioned_docs}"!="true"]
 [cols="<,<,<",options="header",]
 |=======================================================================
 |Setting |Input type|Required
-| <<plugins-{type}s-{plugin}-codec>> |<<codec,codec>>|No
-| <<plugins-{type}s-{plugin}-enable_metric>> |<<boolean,boolean>>|No
-| <<plugins-{type}s-{plugin}-id>> |<<string,string>>|No
+| <<plugins-{type}s-{plugin}-codec>> |{logstash-ref}/configuration-file-structure.html#codec[codec]|No
+| <<plugins-{type}s-{plugin}-enable_metric>> |{logstash-ref}/configuration-file-structure.html#boolean[boolean]|No
+| <<plugins-{type}s-{plugin}-id>> |{logstash-ref}/configuration-file-structure.html#string[string]|No
 |=======================================================================
+endif::[]
+ifeval::["{versioned_docs}"=="true"]
+[cols="<,<,<",options="header",]
+|=======================================================================
+|Setting |Input type|Required
+| <<{version}-plugins-{type}s-{plugin}-codec>> |{logstash-ref}/configuration-file-structure.html#codec[codec]|No
+| <<{version}-plugins-{type}s-{plugin}-enable_metric>> |{logstash-ref}/configuration-file-structure.html#boolean[boolean]|No
+| <<{version}-plugins-{type}s-{plugin}-id>> |{logstash-ref}/configuration-file-structure.html#string[string]|No
+|=======================================================================
+endif::[]
 
+ifeval::["{versioned_docs}"!="true"]
 [id="plugins-{type}s-{plugin}-codec"]
+endif::[]
+ifeval::["{versioned_docs}"=="true"]
+[id="{version}-plugins-{type}s-{plugin}-codec"]
+endif::[]
 ===== `codec`
 
-  * Value type is <<codec,codec>>
+  * Value type is {logstash-ref}/configuration-file-structure.html#codec[codec]
   * Default value is `"plain"`
 
 The codec used for output data. Output codecs are a convenient method for encoding your data before it leaves the output without needing a separate filter in your Logstash pipeline.
 
+ifeval::["{versioned_docs}"!="true"]
 [id="plugins-{type}s-{plugin}-enable_metric"]
+endif::[]
+ifeval::["{versioned_docs}"=="true"]
+[id="{version}-plugins-{type}s-{plugin}-enable_metric"]
+endif::[]
 ===== `enable_metric`
 
-  * Value type is <<boolean,boolean>>
+  * Value type is {logstash-ref}/configuration-file-structure.html#boolean[boolean]
   * Default value is `true`
 
 Disable or enable metric logging for this specific plugin instance.
 By default we record all the metrics we can, but you can disable metrics collection
 for a specific plugin.
 
+ifeval::["{versioned_docs}"!="true"]
 [id="plugins-{type}s-{plugin}-id"]
+endif::[]
+ifeval::["{versioned_docs}"=="true"]
+[id="{version}-plugins-{type}s-{plugin}-id"]
+endif::[]
 ===== `id`
 
-  * Value type is <<string,string>>
+  * Value type is {logstash-ref}/configuration-file-structure.html#string[string]
   * There is no default value for this setting.
 
 Add a unique `ID` to the plugin configuration. If no ID is specified, Logstash will generate one.
