@@ -143,11 +143,8 @@ task downloadAndInstallJRuby(dependsOn: verifyFile, type: Copy) {
     into "${projectDir}/vendor/jruby"
 }
 
-def jrubyBin = "${projectDir}/vendor/jruby/bin/jruby" +
-  (System.getProperty("os.name").startsWith("Windows") ? '.bat' : '')
-
-def rubyBin = "${projectDir}/bin/ruby" +
-  (System.getProperty("os.name").startsWith("Windows") ? '.bat' : '')
+def rubyBin = "${projectDir}" +
+  (System.getProperty("os.name").startsWith("Windows") ? '/vendor/jruby/bin/jruby.bat' : '/bin/ruby')
 
 task installTestGems(dependsOn: downloadAndInstallJRuby) {
   inputs.files file("${projectDir}/Gemfile.template")
