@@ -1,53 +1,89 @@
 ==== Common Options
 
+// Contributors: You must conditionally code all internal links and IDs in this
+// file to make the common files work in both the LS Reference and the versioned
+// plugin docs
+
 The following configuration options are supported by all input plugins:
+
 [cols="<,<,<",options="header",]
+ifeval::["{versioned_docs}"!="true"]
 |=======================================================================
 |Setting |Input type|Required
-| <<plugins-{type}s-{plugin}-add_field>> |<<hash,hash>>|No
-| <<plugins-{type}s-{plugin}-codec>> |<<codec,codec>>|No
-| <<plugins-{type}s-{plugin}-enable_metric>> |<<boolean,boolean>>|No
-| <<plugins-{type}s-{plugin}-id>> |<<string,string>>|No
-| <<plugins-{type}s-{plugin}-tags>> |<<array,array>>|No
-| <<plugins-{type}s-{plugin}-type>> |<<string,string>>|No
+| <<plugins-{type}s-{plugin}-add_field>> |{logstash-ref}/configuration-file-structure.html#hash[hash]|No
+| <<plugins-{type}s-{plugin}-codec>> |{logstash-ref}/configuration-file-structure.html#codec[codec]|No
+| <<plugins-{type}s-{plugin}-enable_metric>> |{logstash-ref}/configuration-file-structure.html#boolean[boolean]|No
+| <<plugins-{type}s-{plugin}-id>> |{logstash-ref}/configuration-file-structure.html#string[string]|No
+| <<plugins-{type}s-{plugin}-tags>> |{logstash-ref}/configuration-file-structure.html#array[array]|No
+| <<plugins-{type}s-{plugin}-type>> |{logstash-ref}/configuration-file-structure.html#string[string]|No
 |=======================================================================
-
+endif::[]
+ifeval::["{versioned_docs}"=="true"]
+|=======================================================================
+|Setting |Input type|Required
+| <<{version}-plugins-{type}s-{plugin}-add_field>> |{logstash-ref}/configuration-file-structure.html#hash[hash]|No
+| <<{version}-plugins-{type}s-{plugin}-codec>> |{logstash-ref}/configuration-file-structure.html#codec[codec]|No
+| <<{version}-plugins-{type}s-{plugin}-enable_metric>> |{logstash-ref}/configuration-file-structure.html#boolean[boolean]|No
+| <<{version}-plugins-{type}s-{plugin}-id>> |{logstash-ref}/configuration-file-structure.html#string[string]|No
+| <<{version}-plugins-{type}s-{plugin}-tags>> |{logstash-ref}/configuration-file-structure.html#array[array]|No
+| <<{version}-plugins-{type}s-{plugin}-type>> |{logstash-ref}/configuration-file-structure.html#string[string]|No
+|=======================================================================
+endif::[]
 
 ==== Details
 
 &nbsp;
 
+ifeval::["{versioned_docs}"!="true"]
 [id="plugins-{type}s-{plugin}-add_field"]
+endif::[]
+ifeval::["{versioned_docs}"=="true"]
+[id="{version}-plugins-{type}s-{plugin}-add_field"]
+endif::[]
 ===== `add_field`
 
-  * Value type is <<hash,hash>>
+  * Value type is {logstash-ref}/configuration-file-structure.html#hash[hash]
   * Default value is `{}`
 
 Add a field to an event
 
+ifeval::["{versioned_docs}"!="true"]
 [id="plugins-{type}s-{plugin}-codec"]
+endif::[]
+ifeval::["{versioned_docs}"=="true"]
+[id="{version}-plugins-{type}s-{plugin}-codec"]
+endif::[]
 ===== `codec`
 
-  * Value type is <<codec,codec>>
+  * Value type is {logstash-ref}/configuration-file-structure.html#codec[codec]
   * Default value is `"plain"`
 
 The codec used for input data. Input codecs are a convenient method for decoding your data before it enters the input, without needing a separate filter in your Logstash pipeline.
 
-
+ifeval::["{versioned_docs}"!="true"]
 [id="plugins-{type}s-{plugin}-enable_metric"]
+endif::[]
+ifeval::["{versioned_docs}"=="true"]
+[id="{version}-plugins-{type}s-{plugin}-enable_metric"]
+endif::[]
 ===== `enable_metric`
 
-  * Value type is <<boolean,boolean>>
+  * Value type is {logstash-ref}/configuration-file-structure.html#boolean[boolean]
   * Default value is `true`
 
 Disable or enable metric logging for this specific plugin instance
 by default we record all the metrics we can, but you can disable metrics collection
 for a specific plugin.
 
+ifeval::["{versioned_docs}"!="true"]
 [id="plugins-{type}s-{plugin}-id"]
+endif::[]
+ifeval::["{versioned_docs}"=="true"]
+[id="{version}-plugins-{type}s-{plugin}-id"]
+endif::[]
 ===== `id`
 
-  * Value type is <<string,string>>
+  * Value type is {logstash-ref}/configuration-file-structure.html#string[string]
   * There is no default value for this setting.
 
 Add a unique `ID` to the plugin configuration. If no ID is specified, Logstash will generate one.
@@ -64,20 +100,31 @@ input {
 }
 ---------------------------------------------------------------------------------------------------
 
+
+ifeval::["{versioned_docs}"!="true"]
 [id="plugins-{type}s-{plugin}-tags"]
+endif::[]
+ifeval::["{versioned_docs}"=="true"]
+[id="{version}-plugins-{type}s-{plugin}-tags"]
+endif::[]
 ===== `tags`
 
-  * Value type is <<array,array>>
+  * Value type is {logstash-ref}/configuration-file-structure.html#array[array]
   * There is no default value for this setting.
 
 Add any number of arbitrary tags to your event.
 
 This can help with processing later.
 
+ifeval::["{versioned_docs}"!="true"]
 [id="plugins-{type}s-{plugin}-type"]
+endif::[]
+ifeval::["{versioned_docs}"=="true"]
+[id="{version}-plugins-{type}s-{plugin}-type"]
+endif::[]
 ===== `type`
 
-  * Value type is <<string,string>>
+  * Value type is {logstash-ref}/configuration-file-structure.html#string[string]
   * There is no default value for this setting.
 
 Add a `type` field to all events handled by this input.
@@ -95,10 +142,18 @@ when sent to another Logstash server.
 
 ifeval::["{type}"=="input" and "{plugin}"=="beats"]
 
+ifeval::["{versioned_docs}"!="true"]
 NOTE: The Beats shipper automatically sets the `type` field on the event.
 You cannot override this setting in the Logstash config. If you specify
 a setting for the <<plugins-inputs-beats-type,`type`>> config option in
 Logstash, it is ignored.
+endif::[]
+ifeval::["{versioned_docs}"=="true"]
+NOTE: The Beats shipper automatically sets the `type` field on the event.
+You cannot override this setting in the Logstash config. If you specify
+a setting for the <<{version}-plugins-inputs-beats-type,`type`>> config option in
+Logstash, it is ignored.
+endif::[]
 
 endif::[]
 
