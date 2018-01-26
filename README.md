@@ -120,6 +120,26 @@ Example:
 
 Drip does not work with STDIN. You cannot use drip for running configs which use the stdin plugin.
 
+## Building Logstash documentation
+
+To build the Logstash Reference on your local machine, clone the following repos:
+
+[logstash]https://github.com/elastic/logstash - contains main docs about core features
+[logstash-docs]https://github.com/elastic/logstash-docs - contains generated plugin docs
+[docs]https://github.com/elastic/docs - contains doc build files
+
+Make sure you have the same branch checked out in `logstash` and `logstash-docs`.
+Check out `master` in the `docs` repo.
+
+Run the doc build script from within the `docs` repo. For example:
+
+```
+./build_docs.pl --doc ../logstash/docs/index.asciidoc --chunk=1 -open
+```
+
+To build the Logstash Reference with X-Pack content, see
+the [x-pack-logstash readme]https://github.com/elastic/x-pack-logstash#building-documentation.
+
 ## Testing
 
 Most of the unit tests in Logstash are written using [rspec](http://rspec.info/) for the Ruby parts. For the Java parts, we use junit. For testing you can use the *test* `rake` tasks and the `bin/rspec` command, see instructions below:
