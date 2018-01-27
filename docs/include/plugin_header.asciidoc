@@ -15,8 +15,8 @@ endif::[]
 
 ifeval::["{versioned_docs}"!="true"]
 
-For other plugin versions, see the
-{lsplugindocs}/{type}-{plugin}-index.html[Versioned {plugin} {type} plugin docs].
+For other versions, see the
+{lsplugindocs}/{type}-{plugin}-index.html[Versioned plugin docs].
 
 endif::[]
 
