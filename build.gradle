@@ -116,24 +116,30 @@ project(":logstash-core") {
   }
 }
 
+def jrubyTarPath = "${projectDir}/vendor/_/jruby-bin-${jRubyVersion}.tar.gz"
+
 task downloadJRuby(type: Download) {
     description "Download JRuby artifact from this specific URL: ${jRubyURL}"
     src jRubyURL
     onlyIfNewer true
+    inputs.file("${projectDir}/versions.yml")
+    outputs.file(jrubyTarPath)
     dest new File("${projectDir}/vendor/_", "jruby-bin-${jRubyVersion}.tar.gz")
 }
 
 task verifyFile(dependsOn: downloadJRuby, type: Verify) {
     description "Verify the SHA1 of the download JRuby artifact"
-    src new File("${projectDir}/vendor/_/jruby-bin-${jRubyVersion}.tar.gz")
+    inputs.file(jrubyTarPath)
+    outputs.file(jrubyTarPath)
+    src new File(jrubyTarPath)
     algorithm 'SHA-1'
     checksum jRubySha1
 }
 
 task downloadAndInstallJRuby(dependsOn: verifyFile, type: Copy) {
     description "Install JRuby in the vendor directory"
-    inputs.files file("${projectDir}/versions.yml")
-    outputs.files fileTree("${projectDir}/vendor/jruby")
+    inputs.file(jrubyTarPath)
+    outputs.dir("${projectDir}/vendor/jruby")
     from tarTree(downloadJRuby.dest)
     eachFile { f ->
       f.path = f.path.replaceFirst("^jruby-${jRubyVersion}", '')
@@ -143,17 +149,13 @@ task downloadAndInstallJRuby(dependsOn: verifyFile, type: Copy) {
     into "${projectDir}/vendor/jruby"
 }
 
-def rubyBin = "${projectDir}" +
-  (System.getProperty("os.name").startsWith("Windows") ? '/vendor/jruby/bin/jruby.bat' : '/bin/ruby')
-
 task installTestGems(dependsOn: downloadAndInstallJRuby) {
   inputs.files file("${projectDir}/Gemfile.template")
   inputs.files fileTree("${projectDir}/rakelib")
   inputs.files file("${projectDir}/versions.yml")
-  outputs.files file("${projectDir}/Gemfile")
-  outputs.files file("${projectDir}/Gemfile.lock")
-  outputs.files fileTree("${projectDir}/vendor/bundle/jruby/2.3.0/gems")
-  outputs.files fileTree("${projectDir}/vendor/jruby")
+  outputs.file("${projectDir}/Gemfile")
+  outputs.file("${projectDir}/Gemfile.lock")
+  outputs.dir("${projectDir}/vendor/bundle/jruby/2.3.0")
   doLast {
     rubyGradleUtils.rake('test:install-core')
   }
@@ -228,6 +230,8 @@ task installIntegrationTestGems(dependsOn: installIntegrationTestBundler, type: 
 }
 
 def rubyIntegrationSpecs = project.hasProperty("rubyIntegrationSpecs") ? ((String) project.property("rubyIntegrationSpecs")).split(/\s+/) : []
+def rubyBin = "${projectDir}" +
+  (System.getProperty("os.name").startsWith("Windows") ? '/vendor/jruby/bin/jruby.bat' : '/bin/ruby')
 
 task runIntegrationTests(dependsOn: installIntegrationTestGems, type: Exec) {
   workingDir "${projectDir}/qa/integration"
