@@ -1,10 +1,6 @@
 package org.logstash.ackedqueue;
 
-import org.logstash.ackedqueue.io.CheckpointIOFactory;
-
 public interface Settings {
-
-    CheckpointIOFactory getCheckpointIOFactory();
 
     Class<? extends Queueable> getElementClass();
 
@@ -21,8 +17,6 @@ public interface Settings {
     int getCheckpointMaxWrites();
 
     interface Builder {
-
-        Builder checkpointIOFactory(CheckpointIOFactory factory);
 
         Builder elementClass(Class<? extends Queueable> elementClass);
 
