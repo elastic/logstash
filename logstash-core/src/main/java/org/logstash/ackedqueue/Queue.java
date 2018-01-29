@@ -184,7 +184,7 @@ public final class Queue implements Closeable {
                     purgeTailPage(cp, pageIO);
                 } else {
                     pageIO.open(cp.getMinSeqNum(), cp.getElementCount());
-                    addTailPage(cp, PageFactory.newTailPage(cp, this, pageIO));
+                    addTailPage(PageFactory.newTailPage(cp, this, pageIO));
                     diskNeeded -= (long)pageIO.getHead();
                 }
 
@@ -230,7 +230,7 @@ public final class Queue implements Closeable {
                 if (headCheckpoint.isFullyAcked()) {
                     purgeTailPage(headCheckpoint, pageIO);
                 } else {
-                    addTailPage(headCheckpoint, this.headPage);
+                    addTailPage(this.headPage);
                 }
 
                 // track the seqNum as we add this new tail page, prevent empty tailPage with a minSeqNum of 0 to reset seqNum
@@ -284,11 +284,10 @@ public final class Queue implements Closeable {
     /**
      * add a not fully-acked tail page into this queue structures and un-mmap it.
      *
-     * @param checkpoint the tail page {@link Checkpoint}
      * @param page the tail {@link Page}
      * @throws IOException
      */
-    private void addTailPage(Checkpoint checkpoint, Page page) throws IOException {
+    private void addTailPage(Page page) throws IOException {
         this.tailPages.add(page);
         this.unreadTailPages.add(page);
         this.unreadCount += page.unreadCount();
