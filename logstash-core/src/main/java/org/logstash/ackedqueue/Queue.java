@@ -20,6 +20,7 @@ import org.apache.logging.log4j.Logger;
 import org.logstash.FileLockFactory;
 import org.logstash.LockException;
 import org.logstash.ackedqueue.io.CheckpointIO;
+import org.logstash.ackedqueue.io.FileCheckpointIO;
 import org.logstash.ackedqueue.io.LongVector;
 import org.logstash.ackedqueue.io.MmapPageIO;
 import org.logstash.ackedqueue.io.PageIO;
@@ -74,7 +75,7 @@ public final class Queue implements Closeable {
         this.dirPath = settings.getDirPath();
         this.pageCapacity = settings.getCapacity();
         this.maxBytes = settings.getQueueMaxBytes();
-        this.checkpointIO = settings.getCheckpointIOFactory().build(dirPath);
+        this.checkpointIO = new FileCheckpointIO(dirPath);
         this.elementClass = settings.getElementClass();
         this.tailPages = new ArrayList<>();
         this.unreadTailPages = new ArrayList<>();

@@ -15,8 +15,6 @@ import org.logstash.ackedqueue.Queue;
 import org.logstash.ackedqueue.Queueable;
 import org.logstash.ackedqueue.Settings;
 import org.logstash.ackedqueue.SettingsImpl;
-import org.logstash.ackedqueue.io.CheckpointIOFactory;
-import org.logstash.ackedqueue.io.FileCheckpointIO;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
 import org.openjdk.jmh.annotations.Fork;
@@ -119,13 +117,11 @@ public class QueueRWBenchmark {
     }
 
     private static Settings settings() {
-        final CheckpointIOFactory checkpointIOFactory = FileCheckpointIO::new;
         return SettingsImpl.fileSettingsBuilder(Files.createTempDir().getPath())
             .capacity(256 * 1024 * 1024)
             .queueMaxBytes(Long.MAX_VALUE)
             .checkpointMaxWrites(ACK_INTERVAL)
             .checkpointMaxAcks(ACK_INTERVAL)
-            .checkpointIOFactory(checkpointIOFactory)
             .elementClass(Event.class).build();
     }
 }

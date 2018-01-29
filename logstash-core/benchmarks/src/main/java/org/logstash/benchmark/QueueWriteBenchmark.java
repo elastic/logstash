@@ -10,7 +10,6 @@ import org.logstash.Timestamp;
 import org.logstash.ackedqueue.Queue;
 import org.logstash.ackedqueue.Settings;
 import org.logstash.ackedqueue.SettingsImpl;
-import org.logstash.ackedqueue.io.FileCheckpointIO;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
 import org.openjdk.jmh.annotations.Fork;
@@ -75,7 +74,6 @@ public class QueueWriteBenchmark {
             .queueMaxBytes(Long.MAX_VALUE)
             .checkpointMaxWrites(1024)
             .checkpointMaxAcks(1024)
-            .checkpointIOFactory(FileCheckpointIO::new)
             .elementClass(Event.class).build();
     }
 }
