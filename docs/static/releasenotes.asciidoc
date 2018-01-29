@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-5-6-7,Logstash 5.6.7>>
 * <<logstash-5-6-6,Logstash 5.6.6>>
 * <<logstash-5-6-5,Logstash 5.6.5>>
 * <<logstash-5-6-4,Logstash 5.6.4>>
@@ -10,6 +11,25 @@ This section summarizes the changes in the following releases:
 * <<logstash-5-6-2,Logstash 5.6.2>>
 * <<logstash-5-6-1,Logstash 5.6.1>>
 * <<logstash-5-6-0,Logstash 5.6.0>>
+
+[[logstash-5-6-7]]
+=== Logstash 5.6.7 Release Notes
+
+*Gelf Input*
+
+* Add support for listening on a raw TCP socket
+
+*Multiline Codec*
+
+* Fixed concurrency issue causing random failures when multiline codec was used together with a multi-threaded input plugin
+
+*CSV Filter*
+
+* Added support for tagging empty rows which users can reference to conditionally drop events
+
+*Elasticsearch Input*
+
+* Add support for scheduling periodic execution of the query
 
 [[logstash-5-6-6]]
 === Logstash 5.6.6 Release Notes
