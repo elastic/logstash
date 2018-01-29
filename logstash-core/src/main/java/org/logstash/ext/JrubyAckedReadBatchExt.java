@@ -12,6 +12,7 @@ import org.jruby.anno.JRubyMethod;
 import org.jruby.runtime.Block;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
+import org.logstash.RubyUtil;
 import org.logstash.ackedqueue.ext.RubyAckedBatch;
 
 @JRubyClass(name = "AckedReadBatch")
@@ -25,6 +26,13 @@ public final class JrubyAckedReadBatchExt extends RubyObject {
 
     public JrubyAckedReadBatchExt(final Ruby runtime, final RubyClass metaClass) {
         super(runtime, metaClass);
+    }
+
+    public static JrubyAckedReadBatchExt create(final ThreadContext context,
+        final IRubyObject queue, final IRubyObject size, final IRubyObject timeout) {
+        final JrubyAckedReadBatchExt batch =
+            new JrubyAckedReadBatchExt(context.runtime, RubyUtil.ACKED_READ_BATCH_CLASS);
+        return (JrubyAckedReadBatchExt) batch.ruby_initialize(context, queue, size, timeout);
     }
 
     @JRubyMethod(name = "initialize", required = 3)
