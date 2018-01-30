@@ -70,11 +70,11 @@ module LogStash; class PipelineReporter
   private
 
   def events_filtered
-    pipeline.events_filtered.value
+    pipeline.events_filtered.sum
   end
 
   def events_consumed
-    pipeline.events_consumed.value
+    pipeline.events_consumed.sum
   end
 
   def plugin_threads

@@ -173,8 +173,8 @@ module LogStash; class JavaPipeline < JavaBasePipeline
     )
     @drain_queue =  @settings.get_value("queue.drain") || settings.get("queue.type") == "memory"
 
-    @events_filtered = Concurrent::AtomicFixnum.new(0)
-    @events_consumed = Concurrent::AtomicFixnum.new(0)
+    @events_filtered = java.util.concurrent.atomic.LongAdder.new
+    @events_consumed = java.util.concurrent.atomic.LongAdder.new
 
     @input_threads = []
     # @ready requires thread safety since it is typically polled from outside the pipeline thread
@@ -368,9 +368,8 @@ module LogStash; class JavaPipeline < JavaBasePipeline
       @filter_queue_client.set_batch_dimensions(batch_size, batch_delay)
 
       pipeline_workers.times do |t|
-        batched_execution = @lir_execution.buildExecution
-        thread = Thread.new(self, batched_execution) do |_pipeline, _batched_execution|
-          org.logstash.execution.WorkerLoop.new(_batched_execution, @signal_queue,
+        thread = Thread.new do
+          org.logstash.execution.WorkerLoop.new(@lir_execution, @signal_queue,
                                                 @filter_queue_client, @events_filtered,
                                                 @events_consumed, @flushing,
                                                 @drain_queue).run

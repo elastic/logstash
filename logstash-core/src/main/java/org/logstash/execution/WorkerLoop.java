@@ -2,12 +2,14 @@ package org.logstash.execution;
 
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.LongAdder;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jruby.RubyArray;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.RubyUtil;
+import org.logstash.config.ir.CompiledPipeline;
 import org.logstash.config.ir.compiler.Dataset;
 
 public final class WorkerLoop implements Runnable {
@@ -22,18 +24,18 @@ public final class WorkerLoop implements Runnable {
 
     private final AtomicBoolean flushing;
 
-    private final IRubyObject consumedCounter;
+    private final LongAdder consumedCounter;
 
-    private final IRubyObject filteredCounter;
+    private final LongAdder filteredCounter;
 
     private final boolean drainQueue;
 
-    public WorkerLoop(final Dataset execution, final BlockingQueue<IRubyObject> signalQueue,
-        final IRubyObject readClient, final IRubyObject filteredCounter,
-        final IRubyObject consumedCounter, final AtomicBoolean flushing, final boolean drainQueue) {
+    public WorkerLoop(final CompiledPipeline pipeline, final BlockingQueue<IRubyObject> signalQueue,
+        final IRubyObject readClient, final LongAdder filteredCounter,
+        final LongAdder consumedCounter, final AtomicBoolean flushing, final boolean drainQueue) {
         this.consumedCounter = consumedCounter;
         this.filteredCounter = filteredCounter;
-        this.execution = execution;
+        this.execution = pipeline.buildExecution();
         this.signalQueue = signalQueue;
         this.drainQueue = drainQueue;
         this.readClient = readClient;
@@ -50,14 +52,14 @@ public final class WorkerLoop implements Runnable {
                 shutdownRequested = shutdownRequested
                     || signal != null && signal.callMethod(context, "shutdown?").isTrue();
                 final IRubyObject batch = readClient.callMethod(context, "read_batch");
-                consumedCounter.callMethod(
-                    context, "increment", batch.callMethod(context, "size")
+                consumedCounter.add(
+                    (long) batch.callMethod(context, "size").convertToInteger().getIntValue()
                 );
                 final boolean isFlush = signal != null && signal.callMethod(context, "flush?").isTrue();
                 readClient.callMethod(context, "start_metrics", batch);
                 execution.compute((RubyArray) batch.callMethod(context, "to_a"), isFlush, false);
-                filteredCounter.callMethod(
-                    context, "increment", batch.callMethod(context, "size")
+                filteredCounter.add(
+                    (long) batch.callMethod(context, "size").convertToInteger().getIntValue()
                 );
                 final IRubyObject filteredSize = batch.callMethod(context, "filtered_size");
                 readClient.callMethod(context, "add_output_metrics", filteredSize);
