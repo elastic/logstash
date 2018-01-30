@@ -17,10 +17,10 @@ endif::include-xpack[]
 [[logstash-6-1-3]]
 === Logstash 6.1.3 Release Notes
 
-* Fix bug where with terminating input plugins in-memory queue might not be drained. This could happen in some situations with inputs like the stdin input or the Elasticsearch input. This could result in some messages not being processed. See 
+* Fix bug where with terminating input plugins in-memory queue might not be drained. This could happen in some situations with inputs like the stdin input or the Elasticsearch input. This could result in some messages not being processed.
 * Correctly handle paths with spaces on Windows. See https://github.com/elastic/logstash/pull/8931[#8931] for details.
 
-=== Plugins
+==== Plugins
 
 *Multiline Codec*
 
