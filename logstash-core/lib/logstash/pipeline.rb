@@ -186,8 +186,8 @@ module LogStash; class Pipeline < BasePipeline
     @drain_queue =  @settings.get_value("queue.drain") || settings.get("queue.type") == "memory"
 
 
-    @events_filtered = Concurrent::AtomicFixnum.new(0)
-    @events_consumed = Concurrent::AtomicFixnum.new(0)
+    @events_filtered = java.util.concurrent.atomic.LongAdder.new
+    @events_consumed = java.util.concurrent.atomic.LongAdder.new
 
     @input_threads = []
     # @ready requires thread safety since it is typically polled from outside the pipeline thread
@@ -421,7 +421,7 @@ module LogStash; class Pipeline < BasePipeline
       batch = @filter_queue_client.read_batch # metrics are started in read_batch
       batch_size = batch.size
       if batch_size > 0
-        @events_consumed.increment(batch_size)
+        @events_consumed.add(batch_size)
         filter_batch(batch)
       end
       flush_filters_to_batch(batch, :final => false) if signal.flush?
@@ -448,7 +448,7 @@ module LogStash; class Pipeline < BasePipeline
       batch.merge(e) unless e.cancelled?
     end
     @filter_queue_client.add_filtered_metrics(batch.filtered_size)
-    @events_filtered.increment(batch.size)
+    @events_filtered.add(batch.size)
   rescue Exception => e
     # Plugins authors should manage their own exceptions in the plugin code
     # but if an exception is raised up to the worker thread they are considered
