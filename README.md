@@ -8,8 +8,10 @@ For more info, see <https://www.elastic.co/products/logstash>
 
 ## Documentation and Getting Started
 
-You can find the documentation and getting started guides for Logstash 
+You can find the documentation and getting started guides for Logstash
 on the [elastic.co site](https://www.elastic.co/guide/en/logstash/current/getting-started-with-logstash.html)
+
+For information about building the documentation, see the README in https://github.com/elastic/docs
 
 ## Downloads
 
@@ -84,7 +86,7 @@ jruby 9.1.10.0 (2.3.3) 2017-05-25 b09c48a Java HotSpot(TM) 64-Bit Server VM 25.1
 ```sh
 rake bootstrap
 ```
-    
+
 * You can then use `bin/logstash` to start Logstash, but there are no plugins installed. To install default plugins, you can run:
 
 ```sh
@@ -134,13 +136,13 @@ Most of the unit tests in Logstash are written using [rspec](http://rspec.info/)
 
     bin/rspec
     bin/rspec spec/foo/bar_spec.rb
-    
+
   Note that before running the `rspec` command for the first time you need to set up the RSpec test dependencies by running:
 
     ./gradlew bootstrap
 
 2- To run the subset of tests covering the Java codebase only run:
-    
+
     ./gradlew javaTests
 
 3- To execute the complete test-suite including the integration tests run:
@@ -161,7 +163,7 @@ You can install the default set of plugins included in the logstash package:
 Note that if a plugin is installed using the plugin manager `bin/logstash-plugin install ...` do not forget to also install the plugins development dependencies using the following command after the plugin installation:
 
     bin/logstash-plugin install --development
-    
+
 ## Building Artifacts
 
 You can build a Logstash snapshot package as tarball or zip file
