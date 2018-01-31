@@ -1,0 +1,55 @@
+{
+  "ansible_type": "task",
+  "ansible_result": " \"rate_limit\": 0, \"ratio\": 1, \"session_status\": \"SESSION_STATUS_ENABLED\"",
+  "ansible_playbook": "f5_disable_ltm_node_v2.yml",
+  "ansible_task": "TASK: Get Node facts - \"10.1.1.1\"",
+  "tags": [],
+  "ansible_host": "DEVSFRML01b.devrns.devfg.rbc.com",
+  "@timestamp": "2017-10-26T13:56:16.208Z",
+  "host": "ulvansip02.fg.rbc.com",
+  "status": "OK"
+}
+  {
+    "ansible_type": "task",
+    "ansible_result": " \"/Common/10.47.128.188\": {\"address\": \"10.47.128.188\", \"connection_limit\": 0, \"description\": \"\", \"dynamic_ratio\": 1, \"monitor_rule\": {\"monitor_templates\": [\"/Common/icmp\"], \"quorum\": 0, \"type\": \"MONITOR_RULE_TYPE_SINGLE\"",
+    "ansible_playbook": "f5_disable_ltm_node_v2.yml",
+    "ansible_task": "TASK: Get Node facts - \"10.1.1.1\"",
+    "tags": [],
+    "ansible_host": "DEVSFRML01b.devrns.devfg.rbc.com",
+    "@timestamp": "2017-10-26T13:56:16.208Z",
+    "host": "ulvansip02.fg.rbc.com",
+    "status": "OK"
+  }
+  {
+    "ansible_type": "task",
+    "ansible_result": " \"monitor_status\": \"MONITOR_STATUS_UP\", \"object_status\": {\"availability_status\": \"AVAILABILITY_STATUS_GREEN\", \"enabled_status\": \"ENABLED_STATUS_ENABLED\", \"status_description\": \"Node address is available\"",
+    "ansible_playbook": "f5_disable_ltm_node_v2.yml",
+    "ansible_task": "TASK: Get Node facts - \"10.1.1.1\"",
+    "tags": [],
+    "ansible_host": "DEVSFRML01b.devrns.devfg.rbc.com",
+    "@timestamp": "2017-10-26T13:56:16.208Z",
+    "host": "ulvansip02.fg.rbc.com",
+    "status": "OK"
+  }
+  {
+    "ansible_type": "task",
+    "ansible_result": " \"rate_limit\": 0, \"ratio\": 1, \"session_status\": \"SESSION_STATUS_ENABLED\"",
+    "ansible_playbook": "f5_disable_ltm_node_v2.yml",
+    "ansible_task": "TASK: Get Node facts - \"10.1.1.1\"",
+    "tags": [],
+    "ansible_host": "DEVSFRML01b.devrns.devfg.rbc.com",
+    "@timestamp": "2017-10-26T13:56:16.208Z",
+    "host": "ulvansip02.fg.rbc.com",
+    "status": "OK"
+  }
+  {
+    "ansible_type": "task",
+    "ansible_result": " \"/Common/10.47.128.40\": {\"address\": \"10.47.128.40\", \"connection_limit\": 0, \"description\": \"\", \"dynamic_ratio\": 1, \"monitor_rule\": {\"monitor_templates\": [\"/Common/icmp\"], \"quorum\": 0, \"type\": \"MONITOR_RULE_TYPE_SINGLE\"",
+    "ansible_playbook": "f5_disable_ltm_node_v2.yml",
+    "ansible_task": "TASK: Get Node facts - \"10.1.1.1\"",
+    "tags": [],
+    "ansible_host": "DEVSFRML01b.devrns.devfg.rbc.com",
+    "@timestamp": "2017-10-26T13:56:16.208Z",
+    "host": "ulvansip02.fg.rbc.com",
+    "status": "OK"
+  }
