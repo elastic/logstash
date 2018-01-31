@@ -351,17 +351,17 @@ namespace "artifact" do
       dir.input("#{empty}/=/etc/logstash/conf.d")
     end
 
-    File.join(basedir, "pkg", "log4j2.properties").tap do |path|
+    File.join(basedir, "config", "log4j2.properties").tap do |path|
       dir.input("#{path}=/etc/logstash")
     end
 
     ensure_logstash_version_constant_defined
     package_filename = "logstash#{suffix}-#{LOGSTASH_VERSION}#{PACKAGE_SUFFIX}.TYPE"
 
-    File.join(basedir, "pkg", "startup.options").tap do |path|
+    File.join(basedir, "config", "startup.options").tap do |path|
       dir.input("#{path}=/etc/logstash")
     end
-    File.join(basedir, "pkg", "jvm.options").tap do |path|
+    File.join(basedir, "config", "jvm.options").tap do |path|
       dir.input("#{path}=/etc/logstash")
     end
     File.join(basedir, "config", "logstash.yml").tap do |path|
