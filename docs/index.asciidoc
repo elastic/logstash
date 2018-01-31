@@ -7,9 +7,4 @@
 :log-repo-dir:      {docdir}
 :plugins-repo-dir:  {docdir}/../../logstash-docs/docs
 
-<<<<<<< HEAD
-include::index-shared1.asciidoc[]
-include::index-shared2.asciidoc[]
-=======
 include::{xls-repo-dir}/index.asciidoc[]
->>>>>>> 10d85e944... [DOCS] Build Logstash Reference from logstash repo (#9078)
