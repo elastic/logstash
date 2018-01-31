@@ -14,8 +14,10 @@ For more info, see <https://www.elastic.co/products/logstash>
 
 ## Documentation and Getting Started
 
-You can find the documentation and getting started guides for Logstash 
+You can find the documentation and getting started guides for Logstash
 on the [elastic.co site](https://www.elastic.co/guide/en/logstash/current/getting-started-with-logstash.html)
+
+For information about building the documentation, see the README in https://github.com/elastic/docs
 
 ## Downloads
 
@@ -63,7 +65,7 @@ Logstash core will continue to exist under this repository and all related issue
 ```sh
 rake bootstrap
 ```
-    
+
 * You can then use `bin/logstash` to start Logstash, but there are no plugins installed. Logstash ships with default plugins. To install those, you can run:
 
 ```sh
@@ -137,7 +139,7 @@ You can install the default set of plugins included in the logstash package or a
 Note that if a plugin is installed using the plugin manager `bin/logstash-plugin install ...` do not forget to also install the plugins development dependencies using the following command after the plugin installation:
 
     bin/logstash-plugin install --development
-    
+
 ## Building Artifacts
 
 You can build a Logstash snapshot package as tarball or zip file
