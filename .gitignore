@@ -3,6 +3,9 @@
 logstash*/*.gem
 pkg/*.deb
 pkg/*.rpm
+pkg/jvm.options
+pkg/log4j2.properties
+pkg/startup.options
 *.class
 .rbx
 *.tar.gz
