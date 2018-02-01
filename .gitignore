@@ -51,3 +51,4 @@ tools/benchmark-cli/out/
 qa/integration/fixtures/offline_wrapper/offline
 qa/integration/fixtures/offline_wrapper/offline.o
 logstash-core/versions-gem-copy.yml
+versions-gem-copy.yml

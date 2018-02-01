@@ -50,7 +50,7 @@ Gem::Specification.new do |gem|
 
   # Later versions are ruby 2.0 only. We should remove the rack dep once we support 9k
   gem.add_runtime_dependency "rack", '1.6.6'
-  
+
   gem.add_runtime_dependency "sinatra", '~> 1.4', '>= 1.4.6'
   gem.add_runtime_dependency 'puma', '~> 2.16'
   gem.add_runtime_dependency "jruby-openssl", "0.9.19" # >= 0.9.13 Required to support TLSv1.2
@@ -65,7 +65,7 @@ Gem::Specification.new do |gem|
 
   # filetools and rakelib
   gem.add_runtime_dependency "minitar", "~> 0.6.1"
-  gem.add_runtime_dependency "rubyzip", "~> 1.1.7"
+  gem.add_runtime_dependency "rubyzip", "~> 1.2.1"
   gem.add_runtime_dependency "thread_safe", "~> 0.3.5" #(Apache 2.0 license)
 
   gem.add_runtime_dependency "jrjackson", "~> #{ALL_VERSIONS.fetch('jrjackson')}" #(Apache 2.0 license)
