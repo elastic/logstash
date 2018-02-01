@@ -27,8 +27,8 @@ public final class JrubyAckedReadClientExt extends RubyObject {
     private final ConcurrentHashMap<Long, Long> inflightClocks = new ConcurrentHashMap<>();
 
     private IRubyObject queue;
-    private IRubyObject batchSize;
-    private IRubyObject waitForMillis;
+    private IRubyObject batchSize = RubyNumeric.int2fix(RubyUtil.RUBY, 125);
+    private IRubyObject waitForMillis = RubyNumeric.int2fix(RubyUtil.RUBY, 50);
     private LongCounter eventMetricOut;
     private LongCounter eventMetricFiltered;
     private LongCounter eventMetricTime;
@@ -42,6 +42,10 @@ public final class JrubyAckedReadClientExt extends RubyObject {
         return new JrubyAckedReadClientExt(
             context.runtime, RubyUtil.ACKED_READ_CLIENT_CLASS, queue
         );
+    }
+
+    public static JrubyAckedReadClientExt create(IRubyObject queue) {
+        return new JrubyAckedReadClientExt(RubyUtil.RUBY, RubyUtil.ACKED_READ_CLIENT_CLASS, queue);
     }
 
     public JrubyAckedReadClientExt(final Ruby runtime, final RubyClass metaClass) {
