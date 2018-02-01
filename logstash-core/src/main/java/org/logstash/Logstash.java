@@ -44,7 +44,7 @@ public final class Logstash implements Runnable, AutoCloseable {
         ) {
             logstash.run();
         } catch (final Throwable t) {
-            LOGGER.error(t);
+            LOGGER.error(t.toString());
             System.exit(1);
         }
         System.exit(0);
