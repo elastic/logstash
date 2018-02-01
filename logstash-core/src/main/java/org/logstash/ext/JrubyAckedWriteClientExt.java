@@ -17,7 +17,7 @@ public final class JrubyAckedWriteClientExt extends RubyObject {
 
     private JRubyAckedQueueExt queue;
 
-    private AtomicBoolean closed;
+    private AtomicBoolean closed = new AtomicBoolean();
 
     @JRubyMethod(meta = true, required = 2)
     public static IRubyObject create(final ThreadContext context, IRubyObject recv,
@@ -29,6 +29,11 @@ public final class JrubyAckedWriteClientExt extends RubyObject {
             ),
             (AtomicBoolean) closed.toJava(AtomicBoolean.class)
         );
+    }
+
+    public static JrubyAckedWriteClientExt create(JRubyAckedQueueExt queue, AtomicBoolean closed) {
+        return new JrubyAckedWriteClientExt(
+                RubyUtil.RUBY, RubyUtil.ACKED_WRITE_CLIENT_CLASS, queue, closed);
     }
 
     public JrubyAckedWriteClientExt(final Ruby runtime, final RubyClass metaClass) {

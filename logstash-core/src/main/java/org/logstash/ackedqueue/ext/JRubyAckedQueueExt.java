@@ -33,6 +33,12 @@ public final class JRubyAckedQueueExt extends RubyObject {
         return this.queue;
     }
 
+    public static JRubyAckedQueueExt create(String path, int capacity, int maxEvents, int checkpointMaxWrites, int checkpointMaxAcks, long maxBytes) {
+        JRubyAckedQueueExt queueExt = new JRubyAckedQueueExt(RubyUtil.RUBY, RubyUtil.ACKED_QUEUE_CLASS);
+        queueExt.initializeQueue(path, capacity, maxEvents, checkpointMaxWrites, checkpointMaxAcks, maxBytes);
+        return queueExt;
+    }
+
     @JRubyMethod(name = "initialize", optional = 7)
     public IRubyObject ruby_initialize(ThreadContext context, IRubyObject[] args) {
         args = Arity.scanArgs(context.runtime, args, 7, 0);
@@ -41,17 +47,22 @@ public final class JRubyAckedQueueExt extends RubyObject {
         int checkpointMaxAcks = RubyFixnum.num2int(args[3]);
         int checkpointMaxWrites = RubyFixnum.num2int(args[4]);
         long queueMaxBytes = RubyFixnum.num2long(args[6]);
+        initializeQueue(args[0].asJavaString(), capacity, maxUnread, checkpointMaxWrites, checkpointMaxAcks, queueMaxBytes);
+
+        return context.nil;
+    }
+
+    private void initializeQueue(String path, int capacity, int maxEvents, int checkpointMaxWrites, int checkpointMaxAcks, long maxBytes) {
         this.queue = new Queue(
-            SettingsImpl.fileSettingsBuilder(args[0].asJavaString())
+            SettingsImpl.fileSettingsBuilder(path)
                 .capacity(capacity)
-                .maxUnread(maxUnread)
-                .queueMaxBytes(queueMaxBytes)
+                .maxUnread(maxEvents)
+                .queueMaxBytes(maxBytes)
                 .checkpointMaxAcks(checkpointMaxAcks)
                 .checkpointMaxWrites(checkpointMaxWrites)
                 .elementClass(Event.class)
                 .build()
         );
-        return context.nil;
     }
 
     @JRubyMethod(name = "max_unread_events")
@@ -97,11 +108,15 @@ public final class JRubyAckedQueueExt extends RubyObject {
     @JRubyMethod(name = "open")
     public IRubyObject ruby_open(ThreadContext context) {
         try {
-            this.queue.open();
+            open();
         } catch (IOException e) {
             throw RubyUtil.newRubyIOError(context.runtime, e);
         }
         return context.nil;
+    }
+
+    public void open() throws IOException {
+        queue.open();
     }
 
     @JRubyMethod(name = {"write", "<<"}, required = 1)
@@ -145,10 +160,14 @@ public final class JRubyAckedQueueExt extends RubyObject {
     @JRubyMethod(name = "close")
     public IRubyObject ruby_close(ThreadContext context) {
         try {
-            this.queue.close();
+            close();
         } catch (IOException e) {
             throw RubyUtil.newRubyIOError(context.runtime, e);
         }
         return context.nil;
+    }
+
+    public void close() throws IOException {
+        queue.close();
     }
 }
