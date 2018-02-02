@@ -18,7 +18,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
  * Tests for {@link JrubyMemoryReadClientExt}.
  */
 public final class JrubyMemoryReadClientExtTest {
-
     @Test
     public void testInflightBatchesTracking() throws InterruptedException, IOException {
         final BlockingQueue<JrubyEventExtLibrary.RubyEvent> queue =

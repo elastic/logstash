@@ -18,6 +18,7 @@ import com.fasterxml.jackson.dataformat.cbor.CBORGenerator;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.HashMap;
 import org.jruby.RubyBignum;
 import org.jruby.RubyBoolean;
@@ -61,6 +62,9 @@ public final class ObjectMappers {
      */
     public static final JavaType EVENT_MAP_TYPE =
         CBOR_MAPPER.getTypeFactory().constructMapType(HashMap.class, String.class, Object.class);
+
+    public static final JavaType EVENT_LIST_TYPE =
+        CBOR_MAPPER.getTypeFactory().constructArrayType(ArrayList.class);
 
     private ObjectMappers() {
     }

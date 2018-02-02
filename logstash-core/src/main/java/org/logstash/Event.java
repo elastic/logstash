@@ -3,12 +3,8 @@ package org.logstash;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.joda.time.DateTime;
@@ -194,6 +190,33 @@ public final class Event implements Cloneable, Queueable {
         }
         dataMap.put(METADATA, metaMap);
         return new Event(dataMap);
+    }
+
+    private static Event[] fromSerializableArrayOfMaps(final byte[] source) throws IOException {
+        final Map<String, Map<String, Object>>[] representation = CBOR_MAPPER.readValue(source, Map[].class);
+
+        if (representation == null) {
+            throw new IOException("incompatible from binary object type only HashMap is supported");
+        }
+
+        Event[] events = new Event[representation.length];
+
+        int i = 0;
+        for (Map<String, Map<String, Object>> item : representation) {
+            final Map<String, Object> dataMap = item.get(DATA_MAP_KEY);
+            if (dataMap == null) {
+                throw new IOException("The deserialized Map must contain the \"DATA\" key");
+            }
+            final Map<String, Object> metaMap = item.get(META_MAP_KEY);
+            if (metaMap == null) {
+                throw new IOException("The deserialized Map must contain the \"META\" key");
+            }
+            dataMap.put(METADATA, metaMap);
+            events[i] = new Event(dataMap);
+            i++;
+        }
+
+        return events;
     }
 
     public String toJson() throws JsonProcessingException {
@@ -389,10 +412,31 @@ public final class Event implements Cloneable, Queueable {
         return CBOR_MAPPER.writeValueAsBytes(map);
     }
 
+    public static byte[] serializeMany(Event... events) throws JsonProcessingException {
+        Map[] mappedList = new Map[events.length];
+        int i = 0;
+        for (Event e : events) {
+            final Map<String, Map<String, Object>> map = new HashMap<>(2, 1.0F);
+            map.put(DATA_MAP_KEY, e.data);
+            map.put(META_MAP_KEY, e.metadata);
+            mappedList[i] = map;
+            i++;
+        }
+        return CBOR_MAPPER.writeValueAsBytes(mappedList);
+    }
+
     public static Event deserialize(byte[] data) throws IOException {
         if (data == null || data.length == 0) {
             return new Event();
         }
         return fromSerializableMap(data);
+    }
+
+    public static Event[] deserializeMany(byte[] data) throws IOException {
+        if (data == null || data.length ==0) {
+            return new Event[0];
+        }
+
+        return fromSerializableArrayOfMaps(data);
     }
 }
