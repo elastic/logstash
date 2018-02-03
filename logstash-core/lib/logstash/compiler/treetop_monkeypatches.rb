@@ -90,4 +90,16 @@ class Treetop::Runtime::SyntaxNode
         ""
       )
   end
+
+  def _parse_context(context = self)
+    start = interval.min
+    "line #{input.line_of(start)}, " +
+        "column #{input.column_of(start)} (byte #{start+1}) " +
+        "in `#{context.text_value}`"
+  end
+
+  def _node_type_name
+    name = self.class.name
+    name ? name.split('::').last : 'SyntaxNode'
+  end
 end

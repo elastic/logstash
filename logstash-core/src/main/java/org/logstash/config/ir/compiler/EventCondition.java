@@ -4,16 +4,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+
 import org.jruby.RubyInteger;
 import org.jruby.RubyNumeric;
 import org.jruby.RubyString;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.jruby.util.ByteList;
-import org.logstash.ConvertedList;
-import org.logstash.ConvertedMap;
-import org.logstash.FieldReference;
-import org.logstash.RubyUtil;
-import org.logstash.Valuefier;
+import org.logstash.*;
 import org.logstash.config.ir.expression.BinaryBooleanExpression;
 import org.logstash.config.ir.expression.BooleanExpression;
 import org.logstash.config.ir.expression.EventValueExpression;
@@ -331,6 +328,12 @@ public interface EventCondition {
                 return new EventCondition.Compiler.FieldEqualsLong(
                     field, ((Number) value).longValue()
                 );
+            } else if (value instanceof List) {
+                if (!((List) value).isEmpty()) {
+                    // shouldn't get here; this is pre-validated in the lscl.
+                    throw new IllegalStateException("non-empty arrays are not allowed in boolean expressions");
+                }
+                return new FieldEqualsEmptyList(field);
             }
             throw new EventCondition.Compiler.UnexpectedTypeException(value);
         }
@@ -562,6 +565,20 @@ public interface EventCondition {
             public boolean fulfilled(final JrubyEventExtLibrary.RubyEvent event) {
                 final Object val = event.getEvent().getUnconvertedField(field);
                 return val instanceof RubyInteger && ((RubyInteger) val).getLongValue() == value;
+            }
+        }
+
+        private static final class FieldEqualsEmptyList implements EventCondition {
+            private final FieldReference field;
+
+            private FieldEqualsEmptyList(final String field) {
+                this.field = FieldReference.from(field);
+            }
+
+            @Override
+            public boolean fulfilled(final JrubyEventExtLibrary.RubyEvent event) {
+                final Object val = event.getEvent().getUnconvertedField(field);
+                return val instanceof List && ((List) val).isEmpty();
             }
         }
 

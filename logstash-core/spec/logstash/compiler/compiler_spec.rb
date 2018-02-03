@@ -560,18 +560,92 @@ describe LogStash::Compiler do
             end
 
             describe "'=='" do
-              let(:expression) { "[foo] == 5"}
+              let(:lhs) { fail(NotImplementedError) }
+              let(:expression) { "[foo] == #{rhs}"}
 
-              it "should compile correctly" do
-                expect(c_expression).to ir_eql(j.eEq(j.eEventValue("[foo]"), j.eValue(5.to_java)))
+              context 'when RHS represents an integer' do
+                let(:rhs) { '5' }
+                it "should compile correctly" do
+                  expect(c_expression).to ir_eql(j.eEq(j.eEventValue("[foo]"), j.eValue(5.to_java)))
+                end
+              end
+
+              context 'when RHS represents an empty array' do
+                let(:rhs) { '[]' }
+                it "should compile correctly" do
+                  expect(c_expression).to ir_eql(j.eEq(j.eEventValue("[foo]"), j.eValue([])))
+                end
+              end
+
+              # multi-item arrays are not supported because a single-item arrays in this context are
+              # syntactically ambiguous with _selector_s, which take a higher precedence; if/when support
+              # is added for unambiguously declaring a single-item array as a condition clause, this spec
+              # can be removed.
+              context 'when RHS represents a multi-item array' do
+                let(:rhs) { '["foo","bar"]'}
+                it "should fail to compile with a helpful message" do
+                  expect { c_expression }.to raise_error do |error|
+                    expect(error).to be_a_kind_of(RuntimeError)
+                    expect(error.message).to include("Invalid Config: Comparison exprs do not support non-empty arrays")
+                  end
+                end
+              end
+
+              # equality with a regexp is not something people _intend_ to do, and
+              # is an example of a valid `rvalue` that _parses_ but doesn't have semantic meaning.
+              context 'when RHS represents a Regexp' do
+                let(:rhs) { '/foo/' }
+                it "should fail to compile with a helpful message" do
+                  expect { c_expression }.to raise_error do |error|
+                    expect(error).to be_a_kind_of(RuntimeError)
+                    expect(error.message).to include("Invalid Config: Unsupported RegExp value on right-hand side of boolean expr")
+                  end
+                end
               end
             end
 
             describe "'!='" do
-              let(:expression) { "[foo] != 5"}
+              let(:lhs) { fail(NotImplementedError) }
+              let(:expression) { "[foo] != #{rhs}"}
 
-              it "should compile correctly" do
-                expect(c_expression).to ir_eql(j.eNeq(j.eEventValue("[foo]"), j.eValue(5.to_java)))
+              context 'when RHS represents an integer' do
+                let(:rhs) { '5' }
+                it "should compile correctly" do
+                  expect(c_expression).to ir_eql(j.eNeq(j.eEventValue("[foo]"), j.eValue(5.to_java)))
+                end
+              end
+
+              context 'when RHS represents an empty array' do
+                let(:rhs) { '[]' }
+                it "should compile correctly" do
+                  expect(c_expression).to ir_eql(j.eNeq(j.eEventValue("[foo]"), j.eValue([])))
+                end
+              end
+
+              # multi-item arrays are not supported because a single-item arrays in this context are
+              # syntactically ambiguous with `selector`s, which take a higher precedence; if/when support
+              # is added for unambiguously declaring a single-item array as a condition clause, this spec
+              # can be removed
+              context 'when RHS represents a multi-item array' do
+                let(:rhs) { '["foo","bar"]'}
+                it "should fail to compile with a helpful message" do
+                  expect { c_expression }.to raise_error do |error|
+                    expect(error).to be_a_kind_of(RuntimeError)
+                    expect(error.message).to include("Invalid Config: Comparison exprs do not support non-empty arrays")
+                  end
+                end
+              end
+
+              # equality with a regexp is not something people _intend_ to do, and
+              # is an example of a valid `rvalue` that _parses_ but doesn't have semantic meaning.
+              context 'when RHS represents a Regexp' do
+                let(:rhs) { '/foo/' }
+                it "should fail to compile with a helpful message" do
+                  expect { c_expression }.to raise_error do |error|
+                    expect(error).to be_a_kind_of(RuntimeError)
+                    expect(error.message).to include("Invalid Config: Unsupported RegExp value on right-hand side of boolean expr")
+                  end
+                end
               end
             end
 

@@ -439,8 +439,33 @@ module LogStashCompilerLSCLGrammar; module LogStash; module Compiler; module LSC
     include Helpers
 
     def expr
-      lval, comparison_method, rval = self.recursive_select(Selector, Expression, ComparisonOperator, Number, String).map(&:expr)
-      comparison_method.call(source_meta, lval, rval)
+      lval, comparison_method, rval = self.recursive_select(RValue, ComparisonOperator)
+
+      ensure_comparable(lval, "left")
+      ensure_comparable(rval, "right")
+
+      comparison_method.expr.call(source_meta, lval.expr, rval.expr)
+    end
+
+    private
+
+    # while the grammar allows for either side of a comparison expression to be any `rvalue`,
+    # comparisons are not implemented for all `rvalue`; catch them here, where we
+    # can emit a helpful message.
+    def ensure_comparable(val, side)
+      return if val.is_a?(Selector)
+
+      return if val.is_a?(String)
+      return if val.is_a?(Number)
+
+      if val.is_a?(Array)
+        # empty arrays are explicitly supported.
+        return if val.expr.get.empty?
+
+        raise "Invalid Config: Comparison exprs do not support non-empty arrays; #{val._parse_context(self)}"
+      end
+
+      raise "Invalid Config: Unsupported #{val._node_type_name} value on #{side}-hand side of boolean expr; #{val._parse_context(self)}"
     end
   end
 
