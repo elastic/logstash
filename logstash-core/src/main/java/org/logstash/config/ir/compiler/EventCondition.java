@@ -577,9 +577,10 @@ public interface EventCondition {
             }
 
             @Override
-            public boolean fulfilled(final JrubyEventExtLibrary.RubyEvent event) {
-                return event.getEvent().getUnconvertedField(one)
-                    .equals(event.getEvent().getUnconvertedField(other));
+            public boolean fulfilled(final JrubyEventExtLibrary.RubyEvent eventWrapper) {
+                final Event event = eventWrapper.getEvent();
+                return Objects.equals(event.getUnconvertedField(one),
+                                      event.getUnconvertedField(other));
             }
         }
 
