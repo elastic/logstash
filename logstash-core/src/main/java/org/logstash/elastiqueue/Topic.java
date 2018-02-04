@@ -1,5 +1,6 @@
 package org.logstash.elastiqueue;
 
+import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
@@ -9,12 +10,14 @@ public class Topic {
     private final String name;
     private final List<Partition> partitions = new ArrayList<>();
     private final BlockingQueue<Partition> writablePartitions;
+    private final Object metadataIndexName;
     private int numPartitions;
 
     public Topic(final Elastiqueue elastiqueue, String name, int numPartitions) {
         this.elastiqueue = elastiqueue;
         this.name = name;
         this.numPartitions = numPartitions;
+        this.metadataIndexName = "esqueue-metadata-" + getName();
         writablePartitions = new ArrayBlockingQueue<>(this.numPartitions);
         for (int i = 0; i < numPartitions; i++) {
             Partition p = new Partition(elastiqueue, this, i);
@@ -27,6 +30,8 @@ public class Topic {
             }
         }
     }
+    
+    
 
     public Producer makeProducer(String producerId) {
         return new Producer(elastiqueue, this, producerId);
@@ -52,7 +57,15 @@ public class Topic {
         return numPartitions;
     }
 
-    public Consumer makeConsumer(String consumerId) {
-        return new Consumer(elastiqueue, this, consumerId);
+    public Consumer makeConsumer(String consumerGroupName, String consumerId) throws IOException {
+        return new Consumer(elastiqueue, this, consumerGroupName, consumerId);
+    }
+
+    public Elastiqueue getElastiqueue() {
+        return elastiqueue;
+    }
+
+    public Object getMetadataIndexName() {
+        return metadataIndexName;
     }
 }

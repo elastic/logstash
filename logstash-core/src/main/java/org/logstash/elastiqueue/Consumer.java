@@ -5,6 +5,7 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.http.client.entity.EntityBuilder;
 import org.elasticsearch.client.Response;
+import org.elasticsearch.client.ResponseException;
 import org.logstash.Event;
 
 import java.io.ByteArrayInputStream;
@@ -16,7 +17,6 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.zip.GZIPInputStream;
 
@@ -27,18 +27,21 @@ public class Consumer {
     private final int prefetchAmount;
     private final Thread prefetchThread;
     private final ArrayBlockingQueue<Object> prefetchWakeup;
+    private final ConsumerGroup consumerGroup;
     private volatile long offset;
     private Map<Partition,Long> partitionOffsets = new ConcurrentHashMap<>();
     private Map<String, Partition> partitionsByIndexName = new ConcurrentHashMap<>();
     private Map<Partition,Long> partitionLastPrefetchOffsets = new ConcurrentHashMap<>();
     private BlockingQueue<byte[]> topicPrefetch;
+    private static ObjectMapper objectMapper = new ObjectMapper();
 
-    public Consumer(Elastiqueue elastiqueue, Topic topic, String consumerId) {
+    Consumer(Elastiqueue elastiqueue, Topic topic, String consumerGroupName, String name) throws IOException {
         this.elastiqueue = elastiqueue;
         this.topic = topic;
-        this.consumerId = consumerId;
+        this.consumerId = name;
         this.offset = 0;
-        this.prefetchAmount = 10;
+        this.prefetchAmount = 50;
+        this.consumerGroup = new ConsumerGroup(topic, consumerGroupName);
 
         topic.getPartitions().forEach(p -> {
             topicPrefetch = new ArrayBlockingQueue<>(prefetchAmount*2);

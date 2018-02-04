@@ -11,6 +11,7 @@ import org.elasticsearch.client.RestClient;
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.util.*;
 import java.util.concurrent.BlockingQueue;
@@ -30,24 +31,43 @@ public class Elastiqueue implements Closeable {
      }
 
     private void setup() throws IOException {
-        putTemplate();
+        putTemplate("esqueue_segments");
+        putTemplate("esqueue_meta");
     }
 
-    private void putTemplate() throws IOException {
+    private void putTemplate(String id) throws IOException {
         simpleRequest(
                 "put",
-                "/_template/esqueue_segments",
-                new StringEntity(template())
+                "/_template/" + id,
+                new StringEntity(template(id))
         );
 
     }
 
-    public Response simpleRequest(String method, String endpoint, HttpEntity body) throws IOException {
+    Response simpleRequest(String method, String endpoint, HttpEntity body) throws IOException {
         return client.performRequest(method, endpoint, Collections.emptyMap(), body, defaultHeaders);
     }
 
-    private String template() throws IOException {
-        URL resource = getClass().getClassLoader().getResource("esqueue_segments_template.json");
+    Response simpleRequest(String method, String endpoint, String body) throws IOException {
+        StringEntity bodyEntity = new StringEntity(body);
+        return simpleRequest(method, endpoint, bodyEntity);
+    }
+
+    Response simpleRequest(String method, String endpoint) throws IOException {
+        return client.performRequest(method, endpoint, Collections.emptyMap(), new StringEntity(""), defaultHeaders);
+    }
+
+    Response simpleRequest(String method, String endpoint, byte[] body) throws IOException {
+        return simpleRequest(method, endpoint, new String(body, "UTF-8"));
+    }
+
+    private String template(String id) throws IOException {
+        String templateFilename = id + "_template.json";
+        URL resource = getClass().getClassLoader().getResource(templateFilename);
+
+        if (resource == null) {
+            throw new IOException("Could not find template resource " + templateFilename);
+        }
 
         try (InputStream is = resource.openStream()) {
             return new Scanner(is, "UTF-8").useDelimiter("\\A").next();
@@ -62,4 +82,5 @@ public class Elastiqueue implements Closeable {
     public void close() throws IOException {
         client.close();
     }
+
 }

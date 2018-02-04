@@ -56,11 +56,11 @@ public class ElastiqueueTest {
 
         int numProducers = 10;
         int batchesPerProducer = 4000;
-        int batchSize = 250;
+        int batchSize = 500;
         int totalBatches = numProducers * batchesPerProducer;
         AtomicLong batchesLeft = new AtomicLong(totalBatches);
 
-        final boolean doProduce = true;
+        final boolean doProduce = false;
 
         for (int i =0; i<numProducers; i++) {
             Thread t = new Thread(new Runnable() {
@@ -95,7 +95,7 @@ public class ElastiqueueTest {
             t.start();
         }
 
-        Consumer consumer = topic.makeConsumer("testConsId");
+        Consumer consumer = topic.makeConsumer("testGroup", "testConsId");
         Thread reporter = new Thread(new Runnable() {
             @Override
             public void run() {

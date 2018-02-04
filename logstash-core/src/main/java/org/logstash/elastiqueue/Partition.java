@@ -2,12 +2,11 @@ package org.logstash.elastiqueue;
 
 import java.io.Closeable;
 import java.io.IOException;
-import java.util.concurrent.atomic.AtomicLong;
 
 public class Partition implements Closeable {
     private final Elastiqueue elastiqueue;
     private final Topic topic;
-    private final int partitionId;
+    private final int number;
     private final String indexName;
     private volatile long seq = -1;
     private static String PARTITION_PREFIX = "esqueue-partition-";
@@ -15,7 +14,7 @@ public class Partition implements Closeable {
     public Partition(Elastiqueue elastiqueue, Topic topic, int partitionId) {
         this.elastiqueue = elastiqueue;
         this.topic = topic;
-        this.partitionId = partitionId;
+        this.number = partitionId;
         this.indexName = PARTITION_PREFIX + topic.getName() + "-" + Integer.toString(partitionId);
     }
 
@@ -38,5 +37,9 @@ public class Partition implements Closeable {
 
     public void setSeq(long num) {
         seq = num;
+    }
+
+    public int getNumber() {
+        return number;
     }
 }
