@@ -2,6 +2,7 @@ package org.logstash.elastiqueue;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class Partition implements Closeable {
     private final Elastiqueue elastiqueue;

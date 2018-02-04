@@ -37,7 +37,8 @@
             "clock": {"type": "long"},
             "consumer_last_update": {"type": "date"},
             "takeover_clock": {"type": "long"},
-            "takeover_by": {"type": "keyword"}
+            "takeover_uuid": {"type": "keyword"},
+            "takeover_name": {"type": "keyword"}
           }
         }
       }

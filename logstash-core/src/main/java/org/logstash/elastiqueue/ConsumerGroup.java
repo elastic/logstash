@@ -5,9 +5,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import org.elasticsearch.client.Response;
 import org.elasticsearch.client.ResponseException;
 
@@ -61,11 +59,16 @@ public class ConsumerGroup implements AutoCloseable {
 
                         // If already owned and in use
                         if (partitionState.getConsumerUUID().equals(this.getConsumerUUID())) {
-                            if (partitionState.getTakeoverClock() > internalClock) {
+                            if (partitionState.getTakeoverClock() < internalClock) {
+                                System.out.println("Relinquishing control!" + partitionState);
                                 partitionState.relinquishControl();
+                            } else {
+                                partitionState.incrementClock();
                             }
                         } else {
+                            System.out.println("Internal clock compare" +  partitionState.getClock() + " | " + internalClock);
                             if (internalClock > (partitionState.getClock() + 10L)) {
+                                System.out.println("Taking over!" + partitionState);
                                 partitionState.executeTakeover();
                             }
                         }
@@ -172,7 +175,7 @@ public class ConsumerGroup implements AutoCloseable {
 
             ensureDocumentExists();
             refresh();
-            takeover();
+            stateTakeoverIntent();
         }
 
         public void refresh() throws IOException {
@@ -185,10 +188,22 @@ public class ConsumerGroup implements AutoCloseable {
             this.clock = ((Number) fields.get("clock")).longValue();
             this.consumerLastUpdate = ((Number) fields.get("consumer_last_update")).longValue();
             this.takeoverClock = ((Number) fields.get("takeover_clock")).longValue();
-            this.takeoverBy = (String) fields.get("takeover_by");
+            this.takeoverBy = (String) fields.get("takeover_uuid");
         }
 
-        public void takeover() throws IOException {
+        public void executeScript(String script) throws IOException {
+            executeScript(script, null);
+        }
+
+        public void executeScript(String script, Map<String, Object> argParams) throws IOException {
+            Map<String, Object> params = new HashMap<>();
+            params.put("consumer_uuid", this.consumerGroup.getConsumerUUID());
+            params.put("consumer_name", this.consumerGroup.getConsumerUUID());
+
+            if (argParams != null) {
+                params.putAll(argParams);
+            }
+
             JsonFactory jsonFactory = new JsonFactory();
             byte[] requestSource;
             try (
@@ -196,25 +211,66 @@ public class ConsumerGroup implements AutoCloseable {
                 JsonGenerator jsonGenerator = jsonFactory.createGenerator(baos);
             ) {
                 jsonGenerator.writeStartObject();
+
+                // Open script
                 jsonGenerator.writeObjectFieldStart("script");
-                String script = "if (ctx._source.consumer_group_partition.consumer_uuid != params.consumer_uuid) { " +
-                        "  ctx._source.consumer_group_partition.takeover_by = params.consumer_uuid; " +
-                        "  ctx._source.consumer_group_partition.takeover_clock += 10L; " +
-                        "}";
+
                 jsonGenerator.writeStringField("source", script);
                 jsonGenerator.writeStringField("lang", "painless");
-                jsonGenerator.writeObjectFieldStart("params");
-                jsonGenerator.writeStringField("consumer_uuid", this.consumerGroup.consumerUUID);
+                jsonGenerator.writeFieldName("params");
+                objectMapper.writeValue(jsonGenerator, params);
+
+                // Close script
                 jsonGenerator.writeEndObject();
+
+                // Close outer object
                 jsonGenerator.writeEndObject();
+
                 jsonGenerator.close();
                 requestSource = baos.toByteArray();
             }
             String s = new String(requestSource);
-            System.out.println("HELLO" + s);
+            System.out.println("Execute Script " + s);
             elastiqueue.simpleRequest("POST", url + "/_update", requestSource);
         }
 
+        public void incrementClock() throws IOException {
+            String script = "if (ctx._source.consumer_group_partition.consumer_uuid == params.consumer_uuid) { " +
+                        "  ctx._source.consumer_group_partition.clock += 1; " +
+                        "}";
+
+           executeScript(script);
+        }
+
+        public void stateTakeoverIntent() throws IOException {
+           String script = "if (ctx._source.consumer_group_partition.consumer_uuid != params.consumer_uuid) { " +
+                        "  ctx._source.consumer_group_partition.takeover_uuid = params.consumer_uuid; " +
+                        "  ctx._source.consumer_group_partition.takeover_clock += 10L; " +
+                        "}";
+
+           executeScript(script);
+        }
+
+        public void executeTakeover() throws IOException {
+            String script = "if (ctx._source.consumer_group_partition.consumer_uuid != params.consumer_uuid " +
+                                "&& ctx._source.consumer_group_partition.takeover_uuid == params.consumer_uuid) {" +
+                                "  ctx._source.consumer_group_partition.consumer_uuid = params.consumer_uuid; " +
+                                "  ctx._source.consumer_group_partition.consumer_name = params.consumer_name; " +
+                                "  ctx._source.consumer_group_partition.takeover_uuid = null; " +
+                                "  ctx._source.consumer_group_partition.takeover_name = null; " +
+                            "}";
+            executeScript(script);
+        }
+
+        public void relinquishControl() throws IOException {
+            String script = "if (ctx._source.consumer_group_partition.takeover_uuid != null) {" +
+                                "  ctx._source.consumer_group_partition.consumer_uuid = ctx._source.consumer_group_partition.takeover_uuid; " +
+                                "  ctx._source.consumer_group_partition.consumer_name = ctx._source.consumer_group_partition.takeover_name; " +
+                                "  ctx._source.consumer_group_partition.takeover_uuid = null; " +
+                                "  ctx._source.consumer_group_partition.takeover_name = null; " +
+                            "}";
+            executeScript(script);
+        }
 
         private void ensureDocumentExists() throws IOException {
             ConsumerGroupPartitionStateDoc wrapped = new ConsumerGroupPartitionStateDoc(this);
@@ -298,15 +354,17 @@ public class ConsumerGroup implements AutoCloseable {
             this.takeoverClock = takeoverClock;
         }
 
-        @JsonProperty("takeover_by")
+        @JsonProperty("takeover_uuid")
         public String getTakeoverBy() {
             return takeoverBy;
         }
 
-        @JsonProperty("takeover_by")
+        @JsonProperty("takeover_uuid")
         public void setTakeoverBy(String takeoverBy) {
             this.takeoverBy = takeoverBy;
         }
+
+
 
         public static class ConsumerGroupPartitionStateDoc {
             @JsonProperty("consumer_group_partition")
