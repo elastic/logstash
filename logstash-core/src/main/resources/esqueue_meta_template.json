@@ -33,7 +33,7 @@
             "partition": {"type": "integer"},
             "consumer_uuid": {"type": "keyword"},
             "consumer_name": {"type": "keyword"},
-            "consumer_offset": {"type": "long"},
+            "offset": {"type": "long"},
             "clock": {"type": "long"},
             "consumer_last_update": {"type": "date"},
             "takeover_clock": {"type": "long"},

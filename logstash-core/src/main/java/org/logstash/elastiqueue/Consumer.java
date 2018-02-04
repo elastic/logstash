@@ -5,13 +5,9 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.http.client.entity.EntityBuilder;
 import org.elasticsearch.client.Response;
-import org.elasticsearch.client.ResponseException;
 import org.logstash.Event;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.util.*;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
@@ -32,7 +28,7 @@ public class Consumer {
     private Map<Partition,Long> partitionOffsets = new ConcurrentHashMap<>();
     private Map<String, Partition> partitionsByIndexName = new ConcurrentHashMap<>();
     private Map<Partition,Long> partitionLastPrefetchOffsets = new ConcurrentHashMap<>();
-    private BlockingQueue<byte[]> topicPrefetch;
+    private BlockingQueue<CompressedEventsWithSeq> topicPrefetch;
     private static ObjectMapper objectMapper = new ObjectMapper();
 
     Consumer(Elastiqueue elastiqueue, Topic topic, String consumerGroupName, String name) throws IOException {
@@ -69,14 +65,18 @@ public class Consumer {
         prefetchThread.start();
     }
 
-    public Event[] poll(int timeout) throws InterruptedException, IOException {
+    public EventsWithSeq poll(int timeout) throws InterruptedException, IOException {
         prefetchWakeup.offer(new Object());
-        byte[] compressedEvents = topicPrefetch.poll(timeout, TimeUnit.MILLISECONDS);
+        CompressedEventsWithSeq compressedEvents = topicPrefetch.poll(timeout, TimeUnit.MILLISECONDS);
         if (compressedEvents != null) {
-            return Event.deserializeMany(gzipUncompress(compressedEvents));
+            return compressedEvents.deserialize();
         } else {
             return null;
         }
+    }
+
+    public ConsumerGroup getConsumerGroup() {
+        return consumerGroup;
     }
 
     private class DocumentUrl {
@@ -108,10 +108,14 @@ public class Consumer {
         List<Partition> shuffled = new ArrayList<>(partitions);
         Collections.shuffle(shuffled);
         for (Partition partition : shuffled) {
+            if (!consumerGroup.isPartitionLocallyActive(partition)) {
+                continue;
+            }
+
             int neededPrefetches = prefetchAmount - topicPrefetch.size(); // .size is slow for juc, we should count ourselves
             List<DocumentUrl> docUrls = new ArrayList<>();
             for (long i = 0; i < neededPrefetches; i++) {
-                Long lastPrefetch = partitionLastPrefetchOffsets.get(partition);
+                Long lastPrefetch = consumerGroup.getPrefetchOffsetFor(partition);
                 //System.out.println("LASTPREFETCH" + lastPrefetch);
                 long nextPrefetch = lastPrefetch + i + 1;
                 DocumentUrl docUrl = new DocumentUrl(partition.getIndexName(), Long.toString(nextPrefetch));
@@ -173,18 +177,9 @@ public class Consumer {
                         String eventsEncoded = (String) source.get("events");
                         byte[] compressedEvents = decoder.decode(eventsEncoded);
 
-                        seenSeqs.compute(partition.getIndexName() + Long.valueOf(seq), (k,v) -> {
-                           if (v == null) {
-                               return 0L;
-                           } else {
-                               System.out.println("Dupe seq " + partition.getIndexName() + " -> " + seq + " -> " + v+1);
-                               return v + 1;
-                           }
-                        });
-
-                        partitionLastPrefetchOffsets.compute(partition, (p, existing) -> existing > seq ? existing : seq);
+                        consumerGroup.setPrefetchOffsetFor(partition, seq);
                         try {
-                            topicPrefetch.put(compressedEvents);
+                            topicPrefetch.put(new CompressedEventsWithSeq(partition, seq, compressedEvents));
                         } catch (InterruptedException e) {
                             throw new RuntimeException(e);
                         }
@@ -218,5 +213,59 @@ public class Consumer {
             e.printStackTrace();
         }
         return result;
+    }
+
+    public class EventsWithSeq {
+        private final Partition partition;
+        private final long lastSeq;
+        private final Event[] events;
+
+        EventsWithSeq(Partition partition, long lastSeq, Event[] events) {
+            this.partition = partition;
+            this.lastSeq = lastSeq;
+            this.events = events;
+        }
+
+        public long getLastSeq() {
+            return lastSeq;
+        }
+
+        public Event[] getEvents() {
+            return events;
+        }
+
+        public void setOffset() {
+            consumerGroup.setOffset(partition, lastSeq);
+        }
+
+        public Partition getPartition() {
+            return partition;
+        }
+    }
+
+    private class CompressedEventsWithSeq {
+        private final byte[] compressedEvents;
+        private final long lastSeq;
+        private final Partition partition;
+
+        CompressedEventsWithSeq(Partition partition, long lastSeq, byte[] compressedEvents) {
+            this.partition = partition;
+            this.lastSeq = lastSeq;
+            this.compressedEvents = compressedEvents;
+        }
+
+        public EventsWithSeq deserialize() throws IOException {
+            try (ByteArrayInputStream bis = new ByteArrayInputStream(compressedEvents);
+                 ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                 GZIPInputStream gzipIS = new GZIPInputStream(bis)) {
+                byte[] buffer = new byte[1024];
+                int len;
+                while ((len = gzipIS.read(buffer)) != -1) {
+                    baos.write(buffer, 0, len);
+                }
+                bis.close();
+                return new EventsWithSeq(partition, lastSeq, Event.deserializeMany(baos.toByteArray()));
+            }
+        }
     }
 }

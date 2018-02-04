@@ -1,24 +1,17 @@
 package org.logstash.elastiqueue;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import jdk.nashorn.internal.codegen.CompilerConstants;
 import org.apache.http.HttpHost;
 import org.junit.Test;
 import org.logstash.Event;
 import org.logstash.Timestamp;
-import org.logstash.instrument.metrics.counter.LongCounter;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.LongAdder;
-import java.util.concurrent.locks.ReentrantLock;
 
 import static org.junit.Assert.*;
 
@@ -43,7 +36,7 @@ public class ElastiqueueTest {
     @Test
     public void testSetup() throws IOException, InterruptedException {
         Elastiqueue eq = new Elastiqueue(localhost);
-        Topic topic = eq.topic("test", 10);
+        Topic topic = eq.topic("test", 1);
         Producer producer = topic.makeProducer("testProducer");
 
         System.out.println("Start");
@@ -60,7 +53,7 @@ public class ElastiqueueTest {
         int totalBatches = numProducers * batchesPerProducer;
         AtomicLong batchesLeft = new AtomicLong(totalBatches);
 
-        final boolean doProduce = false;
+        final boolean doProduce = true;
 
         for (int i =0; i<numProducers; i++) {
             Thread t = new Thread(new Runnable() {
@@ -123,23 +116,24 @@ public class ElastiqueueTest {
                         int i = 0;
                         Event[] lastResults = new Event[0];
                         while (true) {
-                            int timeout = i > 0  ? 100 : 10000;
-                            Event[] results = consumer.poll(timeout);
+                            int timeout = i > 0  ? 100 : 30000;
+                            Consumer.EventsWithSeq results = consumer.poll(timeout);
 
                             if (results != null) {
-                                eventsRead.add(results.length);
+                                eventsRead.add(results.getEvents().length);
                                 batchesRead.increment();
+                                System.out.println("SET OFFSET " + results.getLastSeq());
+                                results.setOffset();
                             }
 
                             if (results != null) {
-                                lastResults = results;
+                                lastResults = results.getEvents();
                                 //System.out.println("PollStop " + results.length + " | " + eventsRead.longValue());
                             }
-                            if (results != null && results.length > 0) {
+                            if (results != null && results.getEvents().length > 0) {
                                 //System.out.println("OVERREAD!" + (eventsRead.longValue() - eventsWritten.longValue()) + " BATCH " + (batchesRead.longValue() - batchesWritten.longValue()));
                             } else {
                                 System.out.println("Null Poll, consumer dead.");
-                                System.out.println("LAST SEQ: " + lastResults[lastResults.length-1].getField("Sequence"));
                                 break;
                             }
                         }

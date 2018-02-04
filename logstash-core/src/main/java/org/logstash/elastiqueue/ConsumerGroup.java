@@ -11,9 +11,11 @@ import org.elasticsearch.client.ResponseException;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class ConsumerGroup implements AutoCloseable {
     private static ObjectMapper objectMapper = new ObjectMapper();
@@ -24,7 +26,7 @@ public class ConsumerGroup implements AutoCloseable {
     private final Elastiqueue elastiqueue;
     private final String name;
     private final Map<Partition, ConsumerGroupPartitionState> partitionStates;
-    private final Map<Partition, Long> partitionStatesInternalClock = new HashMap<>();
+    private final Map<Partition, Long> partitionStatesInternalClock = new ConcurrentHashMap<>();
     private final String consumerUUID;
     private volatile boolean shutdown = false;
 
@@ -59,15 +61,16 @@ public class ConsumerGroup implements AutoCloseable {
 
                         // If already owned and in use
                         if (partitionState.getConsumerUUID().equals(this.getConsumerUUID())) {
-                            if (partitionState.getTakeoverClock() < internalClock) {
+                            if (partitionState.getTakeoverClock() != null && partitionState.getTakeoverClock() > 0 && partitionState.getTakeoverClock() < internalClock) {
                                 System.out.println("Relinquishing control!" + partitionState);
                                 partitionState.relinquishControl();
                             } else {
-                                partitionState.incrementClock();
+                                partitionState.updateRemote();
                             }
                         } else {
-                            System.out.println("Internal clock compare" +  partitionState.getClock() + " | " + internalClock);
-                            if (internalClock > (partitionState.getClock() + 10L)) {
+                            Long partClock = partitionState.getClock();
+                            System.out.println("Internal clock compare" +  partClock + " | " + internalClock);
+                            if (partClock == null || internalClock > (partClock + 10L)) {
                                 System.out.println("Taking over!" + partitionState);
                                 partitionState.executeTakeover();
                             }
@@ -140,6 +143,22 @@ public class ConsumerGroup implements AutoCloseable {
         this.partitionStateKeeper.join();
     }
 
+    public void setOffset(Partition partition, long lastSeq) {
+        this.partitionStates.get(partition).setOffset(lastSeq);
+    }
+
+    public boolean isPartitionLocallyActive(Partition partition) {
+        return this.partitionStates.get(partition).isLocallyActive();
+    }
+
+    public Long getPrefetchOffsetFor(Partition partition) {
+        return this.partitionStates.get(partition).getPrefetchOffset();
+    }
+
+    public void setPrefetchOffsetFor(Partition partition, Long offset) {
+        this.partitionStates.get(partition).setPrefetchOffset(offset);
+    }
+
     static class ConsumerGroupPartitionState {
         @JsonIgnore
         private final ConsumerGroup consumerGroup;
@@ -148,10 +167,12 @@ public class ConsumerGroup implements AutoCloseable {
         private String consumerUUID;
         @JsonIgnore
         private String consumerName;
-        private long consumerOffset;
-        private long clock = 0;
-        private long consumerLastUpdate = System.currentTimeMillis();
-        private long takeoverClock = -1;
+        private volatile Long offset = 0L;
+        @JsonIgnore
+        private volatile Long prefetchOffset;
+        private Long clock = 0L;
+        private Long consumerLastUpdate = System.currentTimeMillis();
+        private Long takeoverClock = null;
         private String takeoverBy;
         private Elastiqueue elastiqueue;
 
@@ -184,10 +205,21 @@ public class ConsumerGroup implements AutoCloseable {
             Map<String, Object> fields = deserialized.get("consumer_group_partition");
             this.consumerName = (String) fields.get("consumer_name");
             this.consumerUUID = (String) fields.get("consumer_uuid");
-            this.consumerOffset = ((Number) fields.get("consumer_offset")).longValue();
-            this.clock = ((Number) fields.get("clock")).longValue();
-            this.consumerLastUpdate = ((Number) fields.get("consumer_last_update")).longValue();
-            this.takeoverClock = ((Number) fields.get("takeover_clock")).longValue();
+
+            // The authoritative offset is local in this case, ot remote
+            if (!this.isLocallyActive()) {
+                this.offset = fields.get("offset") != null ? ((Number) fields.get("offset")).longValue() : null;
+                this.prefetchOffset = null;
+                System.out.println("Not locally active, syncing offset" + this.offset);
+            } else {
+                if (this.prefetchOffset == null) {
+                    this.prefetchOffset = this.offset;
+                }
+            }
+
+            this.clock = fields.get("clock") != null ? ((Number) fields.get("clock")).longValue() : null;
+            this.consumerLastUpdate = fields.get("consumer_last_update") != null ? ((Number) fields.get("consumer_last_update")).longValue() : null;
+            this.takeoverClock = fields.get("takeover_clock") != null ? ((Number) fields.get("takeover_clock")).longValue() : null;
             this.takeoverBy = (String) fields.get("takeover_uuid");
         }
 
@@ -230,34 +262,44 @@ public class ConsumerGroup implements AutoCloseable {
                 requestSource = baos.toByteArray();
             }
             String s = new String(requestSource);
-            System.out.println("Execute Script " + s);
+            //System.out.println("Execute Script " + s);
             elastiqueue.simpleRequest("POST", url + "/_update", requestSource);
         }
 
-        public void incrementClock() throws IOException {
+        public void updateRemote() throws IOException {
             String script = "if (ctx._source.consumer_group_partition.consumer_uuid == params.consumer_uuid) { " +
                         "  ctx._source.consumer_group_partition.clock += 1; " +
+                        "  ctx._source.consumer_group_partition.offset = params.offset; " +
                         "}";
 
-           executeScript(script);
+            executeScript(script, Collections.singletonMap("offset", consumerGroup.partitionStates.get(partition).getOffset()));
         }
 
         public void stateTakeoverIntent() throws IOException {
            String script = "if (ctx._source.consumer_group_partition.consumer_uuid != params.consumer_uuid) { " +
                         "  ctx._source.consumer_group_partition.takeover_uuid = params.consumer_uuid; " +
-                        "  ctx._source.consumer_group_partition.takeover_clock += 10L; " +
+                        "  ctx._source.consumer_group_partition.takeover_name = params.consumer_name; " +
+                        "  ctx._source.consumer_group_partition.takeover_clock = ctx._source.consumer_group_partition.clock + 10L; " +
                         "}";
 
            executeScript(script);
         }
 
         public void executeTakeover() throws IOException {
-            String script = "if (ctx._source.consumer_group_partition.consumer_uuid != params.consumer_uuid " +
-                                "&& ctx._source.consumer_group_partition.takeover_uuid == params.consumer_uuid) {" +
+            String script = "if (ctx._source.consumer_group_partition.consumer_uuid != params.consumer_uuid) {" +
+                                // If this consumer is registered to takeover and the clock has counted up the original should be dead
+                                "if ( ctx._source.consumer_group_partition.takeover_uuid == params.consumer_uuid) {" +
                                 "  ctx._source.consumer_group_partition.consumer_uuid = params.consumer_uuid; " +
                                 "  ctx._source.consumer_group_partition.consumer_name = params.consumer_name; " +
                                 "  ctx._source.consumer_group_partition.takeover_uuid = null; " +
                                 "  ctx._source.consumer_group_partition.takeover_name = null; " +
+                                "  ctx._source.consumer_group_partition.takeover_clock = null; " +
+                                // stake takeover intent if the consumer staging registered to execute the attempt has failed
+                                "} else {" +
+                                "  ctx._source.consumer_group_partition.takeover_uuid = params.consumer_uuid; " +
+                                "  ctx._source.consumer_group_partition.takeover_name = params.consumer_name; " +
+                                "  ctx._source.consumer_group_partition.takeover_clock = ctx._source.consumer_group_partition.clock + 10L; " +
+                                "}" +
                             "}";
             executeScript(script);
         }
@@ -284,6 +326,7 @@ public class ConsumerGroup implements AutoCloseable {
             }
 
         }
+
 
         @JsonGetter("topic")
         public String getTopicName() {
@@ -314,18 +357,18 @@ public class ConsumerGroup implements AutoCloseable {
             return consumerGroup;
         }
 
-        @JsonProperty("consumer_offset")
-        public long getConsumerOffset() {
-            return consumerOffset;
+        @JsonProperty("offset")
+        public Long getOffset() {
+            return offset;
         }
 
-        @JsonProperty("consumer_offset")
-        public void setConsumerOffset(long consumerOffset) {
-            this.consumerOffset = consumerOffset;
+        @JsonProperty("offset")
+        public void setOffset(long consumerOffset) {
+            this.offset = consumerOffset;
         }
 
         @JsonProperty("clock")
-        public long getClock() {
+        public Long getClock() {
             return clock;
         }
 
@@ -335,7 +378,7 @@ public class ConsumerGroup implements AutoCloseable {
         }
 
         @JsonProperty("consumer_last_update")
-        public long getConsumerLastUpdate() {
+        public Long getConsumerLastUpdate() {
             return consumerLastUpdate;
         }
 
@@ -345,7 +388,7 @@ public class ConsumerGroup implements AutoCloseable {
         }
 
         @JsonProperty("takeover_clock")
-        public long getTakeoverClock() {
+        public Long getTakeoverClock() {
             return takeoverClock;
         }
 
@@ -364,6 +407,17 @@ public class ConsumerGroup implements AutoCloseable {
             this.takeoverBy = takeoverBy;
         }
 
+        public boolean isLocallyActive() {
+            return this.consumerUUID.equals(consumerGroup.consumerUUID);
+        }
+
+        public Long getPrefetchOffset() {
+            return prefetchOffset;
+        }
+
+        public void setPrefetchOffset(Long prefetchOffset) {
+            this.prefetchOffset = prefetchOffset;
+        }
 
 
         public static class ConsumerGroupPartitionStateDoc {

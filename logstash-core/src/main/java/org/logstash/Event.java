@@ -1,7 +1,10 @@
 package org.logstash;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.Serializable;
 import java.util.*;
 
@@ -192,7 +195,7 @@ public final class Event implements Cloneable, Queueable {
         return new Event(dataMap);
     }
 
-    private static Event[] fromSerializableArrayOfMaps(final byte[] source) throws IOException {
+    private static Event[] fromSerializableArrayOfMaps(final InputStream source) throws IOException {
         final Map<String, Map<String, Object>>[] representation = CBOR_MAPPER.readValue(source, Map[].class);
 
         if (representation == null) {
@@ -437,6 +440,11 @@ public final class Event implements Cloneable, Queueable {
             return new Event[0];
         }
 
+        ByteArrayInputStream bais = new ByteArrayInputStream(data);
+        return deserializeMany(bais);
+    }
+
+    public static Event[] deserializeMany(InputStream data) throws IOException {
         return fromSerializableArrayOfMaps(data);
     }
 }
