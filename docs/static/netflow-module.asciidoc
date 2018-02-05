@@ -39,7 +39,7 @@ Logstash installation directory:
 +
 [source,shell]
 -----
-bin/logstash --modules netflow --setup -M netflow.var.input.udp.port=NNNN
+bin/logstash --modules netflow --setup -M "netflow.var.input.udp.port=NNNN"
 -----
 +
 Where `NNNN` is the UDP port on which Logstash will listen for network traffic
@@ -123,7 +123,7 @@ To specify the same settings at the command line, you use:
 
 [source,shell]
 -----
-bin/logstash --modules netflow -M netflow.var.input.udp.port=9996
+bin/logstash --modules netflow -M "netflow.var.input.udp.port=9996"
 -----
 
 For more information about configuring modules, see
