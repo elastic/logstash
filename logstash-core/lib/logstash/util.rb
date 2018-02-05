@@ -37,7 +37,8 @@ module LogStash::Util
   end
 
   def self.thread_info(thread)
-    backtrace = thread.backtrace.map do |line|
+    # When the `thread` is dead, `Thread#backtrace` returns `nil`; fall back to an empty array.
+    backtrace = (thread.backtrace || []).map do |line|
       line.gsub(LogStash::Environment::LOGSTASH_HOME, "[...]")
     end
 
