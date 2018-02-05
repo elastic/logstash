@@ -324,6 +324,7 @@ class LogStash::Runner < Clamp::StrictCommand
           puts "Configuration OK"
           logger.info "Using config.test_and_exit mode. Config Validation Result: OK. Exiting Logstash"
         else
+          puts "Configuration invalid. Check logstash-plain.log for clues"
           raise "Could not load the configuration file"
         end
         return 0
