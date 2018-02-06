@@ -18,32 +18,32 @@ endif::include-xpack[]
 [[logstash-6-2-0]]
 === Logstash 6.2.0 Release Notes
 
-* Added support to protect sensitive settings and configuration in a keystore
-* Added {logstash-ref}/plugins-filters-jdbc_static.html[JDBC static filter] as a default plugin
-* Set better defaults to allow for higher throughput under load. https://github.com/elastic/logstash/issues/8707[#8707] https://github.com/elastic/logstash/issues/8702[#8702]
-* Set default configuration for RPM/DEB/Docker installations to use {logstash-ref}/multiple-pipelines.html[Multiple pipelines]
-* Added default max size value (100MB) for log files.
+* Added support to protect sensitive settings and configuration in a {logstash-ref}/keystore.html[keystore].
+* Added the {logstash-ref}/plugins-filters-jdbc_static.html[jdbc_static filter] as a default plugin.
+* Set better defaults to allow for higher throughput under load. (https://github.com/elastic/logstash/issues/8707[#8707] and https://github.com/elastic/logstash/issues/8702[#8702])
+* Set the default configuration for RPM/DEB/Docker installations to use {logstash-ref}/multiple-pipelines.html[Multiple pipelines].
+* Added a default max size value (100MB) for log files.
 * Added compression when log files are rolled (for ZIP-based installs).
-* Added ability to specify `--pipeline.id` from the command line https://github.com/elastic/logstash/issues/8868[#8868]
-* Implemented continued improvements to the next generation of execution. Give it a try with the command line switch `--experimental-java-execution`
+* Added the ability to specify `--pipeline.id` from the command line. (https://github.com/elastic/logstash/issues/8868[#8868])
+* Implemented continued improvements to the next generation of execution. Give it a try with the command line switch `--experimental-java-execution`.
 
 ==== Plugins
 
-*JDBC Static Filter*
+*Jdbc_static Filter*
 
-* Initial release
+* Released the initial version the {logstash-ref}/plugins-filters-jdbc_static.html[jdbc_static filter], which enriches events with data pre-loaded from a remote database.
 
 *Dissect Filter*
 
-* Bug fixes. See plugin release notes for https://github.com/logstash-plugins/logstash-filter-dissect/blob/master/CHANGELOG.md#113[1.1.3]
+* Fixed multiple bugs. See the plugin release notes for https://github.com/logstash-plugins/logstash-filter-dissect/blob/master/CHANGELOG.md#113[1.1.3].
 
 *Grok Filter*
 
-* Fix thread leak on when Logstash is reloaded
+* Fixed a thread leak that occurred when Logstash was reloaded.
 
 *Kafka Output*
 
-* Improve error logging when a producer cannot be created.
+* Improved error logging for when a producer cannot be created.
 
 [[logstash-6-1-3]]
 === Logstash 6.1.3 Release Notes
