@@ -67,6 +67,9 @@ include::static/setting-up-logstash.asciidoc[]
 :edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/settings-file.asciidoc
 include::static/settings-file.asciidoc[]
 
+:edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/keystore.asciidoc
+include::static/keystore.asciidoc[]
+
 :edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/running-logstash-command-line.asciidoc
 include::static/running-logstash-command-line.asciidoc[]
 
