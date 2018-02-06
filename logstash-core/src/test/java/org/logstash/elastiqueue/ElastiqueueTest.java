@@ -35,8 +35,10 @@ public class ElastiqueueTest {
 
     @Test
     public void testSetup() throws IOException, InterruptedException {
+        int parallelism = 10;
+
         Elastiqueue eq = new Elastiqueue(localhost);
-        Topic topic = eq.topic("test", 1);
+        Topic topic = eq.topic("test", parallelism);
         Producer producer = topic.makeProducer("testProducer");
 
         System.out.println("Start");
@@ -47,7 +49,7 @@ public class ElastiqueueTest {
         LongAdder eventsRead = new LongAdder();
         LongAdder batchesRead = new LongAdder();
 
-        int numProducers = 10;
+        int numProducers = parallelism;
         int batchesPerProducer = 4000;
         int batchSize = 500;
         int totalBatches = numProducers * batchesPerProducer;
@@ -108,7 +110,7 @@ public class ElastiqueueTest {
         reporter.start();
 
 
-        for (int i =0; i<10; i++) {
+        for (int i =0; i<parallelism; i++) {
             Thread t = new Thread(new Runnable() {
                 @Override
                 public void run() {
@@ -122,7 +124,7 @@ public class ElastiqueueTest {
                             if (results != null) {
                                 eventsRead.add(results.getEvents().length);
                                 batchesRead.increment();
-                                System.out.println("SET OFFSET " + results.getLastSeq());
+                                //System.out.println("SET OFFSET " + results.getLastSeq());
                                 results.setOffset();
                             }
 

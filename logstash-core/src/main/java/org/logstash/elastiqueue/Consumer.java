@@ -29,7 +29,6 @@ public class Consumer {
     private Map<String, Partition> partitionsByIndexName = new ConcurrentHashMap<>();
     private Map<Partition,Long> partitionLastPrefetchOffsets = new ConcurrentHashMap<>();
     private BlockingQueue<CompressedEventsWithSeq> topicPrefetch;
-    private static ObjectMapper objectMapper = new ObjectMapper();
 
     Consumer(Elastiqueue elastiqueue, Topic topic, String consumerGroupName, String name) throws IOException {
         this.elastiqueue = elastiqueue;
