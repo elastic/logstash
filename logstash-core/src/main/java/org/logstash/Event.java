@@ -131,6 +131,10 @@ public final class Event implements Cloneable, Queueable {
         return unconverted == null ? null : Javafier.deep(unconverted);
     }
 
+    public Object getField(final String reference, Object defaultValue) {
+        return includes(reference) ? getField(reference) : defaultValue;
+    }
+
     public Object getUnconvertedField(final String reference) {
         return getUnconvertedField(FieldReference.from(reference));
     }

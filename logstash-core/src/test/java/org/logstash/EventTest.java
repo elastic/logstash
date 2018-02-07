@@ -1,5 +1,11 @@
 package org.logstash;
 
+import org.jruby.RubySymbol;
+import org.jruby.RubyTime;
+import org.jruby.java.proxies.ConcreteJavaProxy;
+import org.junit.Test;
+import org.logstash.ext.JrubyTimestampExtLibrary;
+
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -9,12 +15,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import org.jruby.RubySymbol;
-import org.jruby.RubyTime;
-import org.jruby.java.proxies.ConcreteJavaProxy;
-import org.junit.Test;
-import org.logstash.ext.JrubyTimestampExtLibrary;
 
 import static net.javacrumbs.jsonunit.JsonAssert.assertJsonEquals;
 import static org.hamcrest.CoreMatchers.is;
@@ -192,6 +192,24 @@ public final class EventTest {
         Event e = new Event(data);
         assertEquals(1L, e.getField("[foo][0]"));
     }
+
+
+    @Test
+    public void testGetFieldDefaultValue() throws Exception {
+        Event event = new Event();
+
+        assertNull(event.getField("foo"));
+        assertEquals(1, event.getField("foo", 1));
+        event.setField("foo", 42L);
+        assertEquals(42L, event.getField("foo"));
+        assertEquals(42L, event.getField("foo", 1));
+
+        event.setField("[bar][innerFoo]", 42L);
+        assertEquals(42L, event.getField("[bar][innerFoo]"));
+        assertNull(event.getField("[bar][innerBar]"));
+        assertEquals(41L, event.getField("[bar][innerBar]", 41L));
+    }
+
 
     @Test
     public void testDeepGetField() throws Exception {
