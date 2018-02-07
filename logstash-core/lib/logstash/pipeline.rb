@@ -418,14 +418,14 @@ module LogStash; class Pipeline < BasePipeline
       signal = @signal_queue.poll || NO_SIGNAL
       shutdown_requested |= signal.shutdown? # latch on shutdown signal
 
-      batch = @filter_queue_client.read_batch # metrics are started in read_batch
-      batch_size = batch.size
+      batch = @filter_queue_client.read_batch.to_java # metrics are started in read_batch
+      batch_size = batch.filteredSize
       if batch_size > 0
         @events_consumed.add(batch_size)
         filter_batch(batch)
       end
       flush_filters_to_batch(batch, :final => false) if signal.flush?
-      if batch.size > 0
+      if batch.filteredSize > 0
         output_batch(batch, output_events_map)
         @filter_queue_client.close_batch(batch)
       end
@@ -435,7 +435,7 @@ module LogStash; class Pipeline < BasePipeline
 
     # we are shutting down, queue is drained if it was required, now  perform a final flush.
     # for this we need to create a new empty batch to contain the final flushed events
-    batch = @filter_queue_client.new_batch
+    batch = @filter_queue_client.to_java.newBatch
     @filter_queue_client.start_metrics(batch) # explicitly call start_metrics since we dont do a read_batch here
     flush_filters_to_batch(batch, :final => true)
     output_batch(batch, output_events_map)
@@ -448,7 +448,7 @@ module LogStash; class Pipeline < BasePipeline
       batch.merge(e) unless e.cancelled?
     end
     @filter_queue_client.add_filtered_metrics(batch.filtered_size)
-    @events_filtered.add(batch.size)
+    @events_filtered.add(batch.filteredSize)
   rescue Exception => e
     # Plugins authors should manage their own exceptions in the plugin code
     # but if an exception is raised up to the worker thread they are considered
@@ -465,7 +465,7 @@ module LogStash; class Pipeline < BasePipeline
   # Take an array of events and send them to the correct output
   def output_batch(batch, output_events_map)
     # Build a mapping of { output_plugin => [events...]}
-    batch.each do |event|
+    batch.to_a.each do |event|
       # We ask the AST to tell us which outputs to send each event to
       # Then, we stick it in the correct bin
       output_func(event).each do |output|
@@ -679,7 +679,7 @@ module LogStash; class Pipeline < BasePipeline
   def collect_stats
     pipeline_metric = @metric.namespace([:stats, :pipelines, pipeline_id.to_s.to_sym, :queue])
     pipeline_metric.gauge(:type, settings.get("queue.type"))
-    if @queue.is_a?(LogStash::Util::WrappedAckedQueue) && @queue.queue.is_a?(LogStash::AckedQueue)
+    if @queue.is_a?(LogStash::WrappedAckedQueue) && @queue.queue.is_a?(LogStash::AckedQueue)
       queue = @queue.queue
       dir_path = queue.dir_path
       file_store = Files.get_file_store(Paths.get(dir_path))

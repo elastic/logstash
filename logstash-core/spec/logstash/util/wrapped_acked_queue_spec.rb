@@ -1,6 +1,5 @@
 # encoding: utf-8
 require "spec_helper"
-require "logstash/util/wrapped_acked_queue"
 
 describe LogStash::WrappedAckedQueue do
   shared_examples "queue tests" do
@@ -15,15 +14,16 @@ describe LogStash::WrappedAckedQueue do
 
     it "not is_empty? when all elements are not acked" do
       queue.push(LogStash::Event.new)
-      batch = queue.read_batch(1, 250)
-      expect(batch.get_elements.size).to eq(1)
+      batch = queue.read_batch(1, 250).to_java
+      expect(batch.size()).to eq(1)
+
       expect(queue.is_empty?).to be_falsey
     end
 
     it "is_empty? when all elements are acked" do
       queue.push(LogStash::Event.new)
-      batch = queue.read_batch(1, 250)
-      expect(batch.get_elements.size).to eq(1)
+      batch = queue.read_batch(1, 250).to_java
+      expect(batch.size()).to eq(1)
       expect(queue.is_empty?).to be_falsey
       batch.close
       expect(queue.is_empty?).to be_truthy
