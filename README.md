@@ -128,7 +128,9 @@ To build the Logstash Reference (open source content only) on your local
 machine, clone the following repos:
 
 [logstash](https://github.com/elastic/logstash) - contains main docs about core features
+
 [logstash-docs](https://github.com/elastic/logstash-docs) - contains generated plugin docs
+
 [docs](https://github.com/elastic/docs) - contains doc build files
 
 Make sure you have the same branch checked out in `logstash` and `logstash-docs`.
