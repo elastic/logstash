@@ -29,8 +29,7 @@ Where it all started.
 * Handle all types of logging data
 ** Easily ingest a multitude of web logs like {logstash-ref}/advanced-pipeline.html[Apache], and application
 logs like {logstash-ref}/plugins-inputs-log4j.html[log4j] for Java
-** Capture many other log formats like {logstash-ref}/plugins-inputs-syslog.html[syslog],
-{logstash-ref}/plugins-inputs-eventlog.html[Windows event logs], networking and firewall logs, and more
+** Capture many other log formats like {logstash-ref}/plugins-inputs-syslog.html[syslog], networking and firewall logs, and more
 * Enjoy complementary secure log forwarding capabilities with https://www.elastic.co/products/beats/filebeat[Filebeat]
 * Collect metrics from {logstash-ref}/plugins-inputs-ganglia.html[Ganglia], {logstash-ref}/plugins-codecs-collectd.html[collectd],
 {logstash-ref}/plugins-codecs-netflow.html[NetFlow], {logstash-ref}/plugins-inputs-jmx.html[JMX], and many other infrastructure
@@ -57,7 +56,7 @@ Discover more value from the data you already own.
 * Better understand your data from any relational database or NoSQL store with a
 {logstash-ref}/plugins-inputs-jdbc.html[JDBC] interface 
 * Unify diverse data streams from messaging queues like Apache {logstash-ref}/plugins-outputs-kafka.html[Kafka],
-{logstash-ref}/plugins-outputs-rabbitmq.html[RabbitMQ], {logstash-ref}/plugins-outputs-sqs.html[Amazon SQS], and {logstash-ref}/plugins-outputs-zeromq.html[ZeroMQ]
+{logstash-ref}/plugins-outputs-rabbitmq.html[RabbitMQ], and {logstash-ref}/plugins-outputs-sqs.html[Amazon SQS]
 
 [float]
 === Sensors and IoT
@@ -104,7 +103,6 @@ analyzing, and taking action on your data.
 
 * {logstash-ref}/plugins-outputs-webhdfs.html[HDFS]
 * {logstash-ref}/plugins-outputs-s3.html[S3]
-* {logstash-ref}/plugins-outputs-google_cloud_storage.html[Google Cloud Storage]
 
 *Monitoring*
 
