@@ -679,7 +679,7 @@ module LogStash; class Pipeline < BasePipeline
   def collect_stats
     pipeline_metric = @metric.namespace([:stats, :pipelines, pipeline_id.to_s.to_sym, :queue])
     pipeline_metric.gauge(:type, settings.get("queue.type"))
-    if @queue.is_a?(LogStash::Util::WrappedAckedQueue) && @queue.queue.is_a?(LogStash::AckedQueue)
+    if @queue.is_a?(LogStash::WrappedAckedQueue) && @queue.queue.is_a?(LogStash::AckedQueue)
       queue = @queue.queue
       dir_path = queue.dir_path
       file_store = Files.get_file_store(Paths.get(dir_path))
