@@ -255,12 +255,10 @@ class LogStash::Runner < Clamp::StrictCommand
 
     # Starting up log message. This will repeat if the service manager is continually
     # restarting Logstash due to a ConfigurationError being raised
-    logger.info <<~EOT
-      Logstash is starting. It will try to read and parse various settings files configuration files.
-        If you see this message repeated with little else in between then there could
-        be a syntax error in one or more of these files and the service manager is
-        restarting logstash. Look for more info in the service manager logs.
-    EOT
+    logger.info("Configuring Logstash by trying to read and parse various settings and configuration files\n" +
+      "  If you see this message repeated with little else in between then there could be a syntax error in one or more of these files and the service manager is restarting logstash\n" +
+      "  You may find more info in the service manager logs",
+      "logstash.version" => LOGSTASH_VERSION)
 
     # Add local modules to the registry before everything else
     LogStash::Modules::Util.register_local_modules(LogStash::Environment::LOGSTASH_HOME)
