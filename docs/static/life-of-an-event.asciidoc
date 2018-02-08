@@ -82,13 +82,17 @@ For more information about the available codecs, see
 === Execution Model
 
 The Logstash event processing pipeline coordinates the execution of inputs,
-filters, and outputs. 
+filters, and outputs.
 
-Each input stage in the Logstash pipeline runs in its own thread. Inputs write events to a common Java https://docs.oracle.com/javase/8/docs/api/java/util/concurrent/SynchronousQueue.html[SynchronousQueue]. This queue holds no events, instead transferring each pushed event to a free worker, blocking if all workers are busy. Each pipeline worker thread takes a batch of events off this queue, creating a buffer per worker, runs the batch of events through the configured filters, then runs the filtered events through any outputs. The size of the batch and number of pipeline worker threads are configurable (see <<tuning-logstash>>). 
+Each input stage in the Logstash pipeline runs in its own thread. Inputs write
+events to a central queue that is either in memory (default) or on disk. Each
+pipeline worker thread takes a batch of events off this queue, runs the batch of
+events through the configured filters, and then runs the filtered events through
+any outputs. The size of the batch and number of pipeline worker threads are
+configurable (see <<tuning-logstash>>).
 
 By default, Logstash uses in-memory bounded queues between pipeline stages
 (input → filter and filter → output) to buffer events. If Logstash terminates
-unsafely, any events that are stored in memory will be lost. To prevent data
+unsafely, any events that are stored in memory will be lost. To help prevent data
 loss, you can enable Logstash to persist in-flight events to disk. See
 <<persistent-queues>> for more information.
-
