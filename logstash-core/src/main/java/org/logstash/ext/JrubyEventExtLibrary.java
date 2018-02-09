@@ -86,9 +86,10 @@ public final class JrubyEventExtLibrary {
         public IRubyObject ruby_get_field(final ThreadContext context,
                                           final RubyString reference,
                                           final IRubyObject defaultValue) {
+            final FieldReference fieldReference = FieldReference.from(reference.asJavaString());
             return Rubyfier.deep(
                     context.runtime,
-                    this.event.getField(reference.asJavaString(), defaultValue)
+                    this.event.getUnconvertedField(fieldReference, defaultValue)
             );
         }
 

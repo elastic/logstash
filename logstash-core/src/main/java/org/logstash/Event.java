@@ -127,12 +127,18 @@ public final class Event implements Cloneable, Queueable {
     }
 
     public Object getField(final String reference) {
-        final Object unconverted = getUnconvertedField(FieldReference.from(reference));
-        return unconverted == null ? null : Javafier.deep(unconverted);
+        return getField(reference, null);
     }
 
-    public Object getField(final String reference, final Object defaultValue) {
-        return includes(reference) ? getField(reference) : defaultValue;
+    public Object getField(final String reference,
+                           final Object defaultValue) {
+        return getField(FieldReference.from(reference), defaultValue);
+    }
+
+    public Object getField(final FieldReference reference,
+                           final Object defaultValue) {
+        final Object unconverted = getUnconvertedField(reference, defaultValue);
+        return unconverted == null ? null : Javafier.deep(unconverted);
     }
 
     public Object getUnconvertedField(final String reference) {
@@ -140,6 +146,15 @@ public final class Event implements Cloneable, Queueable {
     }
 
     public Object getUnconvertedField(final FieldReference field) {
+        return getUnconvertedField(field, null);
+    }
+
+    public Object getUnconvertedField(final FieldReference field,
+                                      final Object defaultValue) {
+        if (!includes(field)) {
+            return defaultValue;
+        }
+
         switch (field.type()) {
             case FieldReference.META_PARENT:
                 return this.metadata;
