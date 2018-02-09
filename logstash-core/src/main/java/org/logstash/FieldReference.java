@@ -1,10 +1,15 @@
 package org.logstash;
 
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
+import org.codehaus.commons.nullanalysis.NotNull;
+
+import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutionException;
 
 public final class FieldReference {
 
@@ -29,7 +34,14 @@ public final class FieldReference {
     /**
      * Holds all existing {@link FieldReference} instances for de-duplication.
      */
-    private static final Map<FieldReference, FieldReference> DEDUP = new HashMap<>(64);
+    private static final LoadingCache<FieldReference, FieldReference> DEDUP = CacheBuilder.newBuilder()
+            .maximumSize(2000)
+            .build(new CacheLoader<FieldReference, FieldReference>() {
+                @Override
+                public FieldReference load(@Nonnull FieldReference key) throws Exception {
+                    return key;
+                }
+            });
 
     /**
      * Unique {@link FieldReference} pointing at the timestamp field in a {@link Event}.
@@ -43,8 +55,14 @@ public final class FieldReference {
     /**
      * Cache of all existing {@link FieldReference}.
      */
-    private static final Map<CharSequence, FieldReference> CACHE =
-        new ConcurrentHashMap<>(64, 0.2F, 1);
+    private static final LoadingCache<CharSequence, FieldReference> CACHE = CacheBuilder.newBuilder()
+            .maximumSize(1000)
+            .build(new CacheLoader<CharSequence, FieldReference>() {
+                @Override
+                public FieldReference load(@Nonnull CharSequence key) throws Exception {
+                    return parse(key);
+                }
+            });
 
     private final String[] path;
 
@@ -67,11 +85,11 @@ public final class FieldReference {
 
     public static FieldReference from(final CharSequence reference) {
         // atomicity between the get and put is not important
-        final FieldReference result = CACHE.get(reference);
-        if (result != null) {
-            return result;
+        try {
+            return CACHE.get(reference);
+        } catch (ExecutionException e) {
+            throw new RuntimeException(e);
         }
-        return parseToCache(reference);
     }
 
     /**
@@ -106,19 +124,16 @@ public final class FieldReference {
     }
 
     /**
-     * De-duplicates instances using {@link FieldReference#DEDUP}. This method must be
-     * {@code synchronized} since we are running non-atomic get-put sequence on
-     * {@link FieldReference#DEDUP}.
+     * De-duplicates instances using {@link FieldReference#DEDUP}.
      * @param parsed FieldReference to de-duplicate
      * @return De-duplicated FieldReference
      */
-    private static synchronized FieldReference deduplicate(final FieldReference parsed) {
-        FieldReference ret = DEDUP.get(parsed);
-        if (ret == null) {
-            DEDUP.put(parsed, parsed);
-            ret = parsed;
+    private static FieldReference deduplicate(final FieldReference parsed) {
+        try {
+            return DEDUP.get(parsed);
+        } catch (ExecutionException e) {
+            throw new RuntimeException(e);
         }
-        return ret;
     }
 
     /**
@@ -136,12 +151,6 @@ public final class FieldReference {
         }
         hash = prime * hash + key.hashCode();
         return prime * hash + type;
-    }
-
-    private static FieldReference parseToCache(final CharSequence reference) {
-        final FieldReference result = parse(reference);
-        CACHE.put(reference, result);
-        return result;
     }
 
     private static FieldReference parse(final CharSequence reference) {
