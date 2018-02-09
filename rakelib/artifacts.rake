@@ -340,6 +340,7 @@ namespace "artifact" do
         out.config_files << "/etc/logstash/jvm.options"
         out.config_files << "/etc/logstash/log4j2.properties"
         out.config_files << "/etc/logstash/logstash.yml"
+        out.config_files << "/etc/logstash/pipelines.yml"
       when "debian", "ubuntu"
         require "fpm/package/deb"
         out = dir.convert(FPM::Package::Deb)
@@ -351,6 +352,7 @@ namespace "artifact" do
         out.config_files << "/etc/logstash/jvm.options"
         out.config_files << "/etc/logstash/log4j2.properties"
         out.config_files << "/etc/logstash/logstash.yml"
+        out.config_files << "/etc/logstash/pipelines.yml"
     end
 
     # Packaging install/removal scripts
