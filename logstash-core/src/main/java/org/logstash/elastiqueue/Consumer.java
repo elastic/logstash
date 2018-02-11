@@ -5,18 +5,20 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.http.client.entity.EntityBuilder;
 import org.elasticsearch.client.Response;
+import org.jruby.RubyArray;
+import org.jruby.RubyObject;
 import org.logstash.Event;
+import org.logstash.RubyUtil;
+import org.logstash.ext.JrubyEventExtLibrary;
 
 import java.io.*;
 import java.util.*;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
+import java.util.function.Function;
 import java.util.stream.Stream;
 import java.util.zip.GZIPInputStream;
 
-public class Consumer {
+public class Consumer implements AutoCloseable {
     private final Elastiqueue elastiqueue;
     private final Topic topic;
     private final String consumerId;
@@ -24,22 +26,25 @@ public class Consumer {
     private final Thread prefetchThread;
     private final ArrayBlockingQueue<Object> prefetchWakeup;
     private final ConsumerGroup consumerGroup;
+    private final List<Thread> consumerThreads;
     private volatile long offset;
     private Map<Partition,Long> partitionOffsets = new ConcurrentHashMap<>();
     private Map<String, Partition> partitionsByIndexName = new ConcurrentHashMap<>();
     private Map<Partition,Long> partitionLastPrefetchOffsets = new ConcurrentHashMap<>();
-    private BlockingQueue<CompressedEventsWithSeq> topicPrefetch;
+    private Map<Partition, BlockingQueue<CompressedEventsWithSeq>> topicPrefetch;
+    private volatile boolean running = true;
 
     Consumer(Elastiqueue elastiqueue, Topic topic, String consumerGroupName, String name) throws IOException {
         this.elastiqueue = elastiqueue;
         this.topic = topic;
         this.consumerId = name;
         this.offset = 0;
-        this.prefetchAmount = 50;
+        this.prefetchAmount = 10000;
         this.consumerGroup = new ConsumerGroup(topic, consumerGroupName);
+        this.topicPrefetch = new HashMap<>();
 
         topic.getPartitions().forEach(p -> {
-            topicPrefetch = new ArrayBlockingQueue<>(prefetchAmount*2);
+            topicPrefetch.put(p, new ArrayBlockingQueue<>(prefetchAmount / topic.getNumPartitions()));
             partitionOffsets.put(p, (long) 0);
             partitionLastPrefetchOffsets.put(p, (long) -1);
             partitionsByIndexName.put(p.getIndexName(), p);
@@ -50,10 +55,10 @@ public class Consumer {
         this.prefetchThread = new Thread(new Runnable() {
             @Override
             public void run() {
-                while(true) {
+                while(running) {
                     fillPrefetch();
                     try {
-                        prefetchWakeup.poll(1000, TimeUnit.MILLISECONDS);
+                        prefetchWakeup.poll(100, TimeUnit.MILLISECONDS);
                     } catch(InterruptedException ex) {
                         // Shouldn't happen
                         ex.printStackTrace();
@@ -61,21 +66,53 @@ public class Consumer {
                 }
             }
         }, "Consumer Prefetcher");
+
+        this.consumerThreads = new ArrayList<Thread>(topic.getNumPartitions());
         prefetchThread.start();
     }
 
-    public EventsWithSeq poll(int timeout) throws InterruptedException, IOException {
-        prefetchWakeup.offer(new Object());
-        CompressedEventsWithSeq compressedEvents = topicPrefetch.poll(timeout, TimeUnit.MILLISECONDS);
-        if (compressedEvents != null) {
-            return compressedEvents.deserialize();
-        } else {
-            return null;
+    public void consumePartitions(java.util.function.Consumer<EventsWithSeq> func) {
+        for (Partition p : this.partitionsByIndexName.values()) {
+            Thread t = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    BlockingQueue<CompressedEventsWithSeq> prefetchQueue = topicPrefetch.get(p);
+                    while (running) {
+                        try {
+                            CompressedEventsWithSeq polled = prefetchQueue.poll(100, TimeUnit.MILLISECONDS);
+                            if (polled != null) {
+                                EventsWithSeq deserialized = polled.deserialize();
+                                //System.out.println("Consumed" + deserialized.getLastSeq());
+                                func.accept(deserialized);
+                                deserialized.setOffset();
+                            }
+                        } catch (InterruptedException | IOException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+                }
+            }, "Partition Consumer " + this.topic.getName() + "/" + this.getConsumerGroup().getName() + "/" + p.getNumber());
+            this.consumerThreads.add(t);
+            t.start();
         }
+    }
+
+    public void rubyConsumePartitions(Function<RubyArray, RubyObject> func) {
+        consumePartitions(eventsWithSeq -> func.apply(eventsWithSeq.getRubyEvents()));
     }
 
     public ConsumerGroup getConsumerGroup() {
         return consumerGroup;
+    }
+
+    @Override
+    public void close() throws Exception {
+        this.running = false;
+        this.consumerGroup.close();
+        this.prefetchThread.join();
+        for (Thread t : this.consumerThreads) {
+            t.join();
+        }
     }
 
     private class DocumentUrl {
@@ -107,11 +144,12 @@ public class Consumer {
         List<Partition> shuffled = new ArrayList<>(partitions);
         Collections.shuffle(shuffled);
         for (Partition partition : shuffled) {
+            BlockingQueue<CompressedEventsWithSeq> partitionPrefetch = topicPrefetch.get(partition);
             if (!consumerGroup.isPartitionLocallyActive(partition)) {
                 continue;
             }
 
-            int neededPrefetches = prefetchAmount - topicPrefetch.size(); // .size is slow for juc, we should count ourselves
+            int neededPrefetches = prefetchAmount - partitionPrefetch.size(); // .size is slow for juc, we should count ourselves
             List<DocumentUrl> docUrls = new ArrayList<>();
             for (long i = 0; i < neededPrefetches; i++) {
                 Long lastPrefetch = consumerGroup.getPrefetchOffsetFor(partition);
@@ -178,7 +216,7 @@ public class Consumer {
 
                         consumerGroup.setPrefetchOffsetFor(partition, seq);
                         try {
-                            topicPrefetch.put(new CompressedEventsWithSeq(partition, seq, compressedEvents));
+                            topicPrefetch.get(partition).put(new CompressedEventsWithSeq(partition, seq, compressedEvents));
                         } catch (InterruptedException e) {
                             throw new RuntimeException(e);
                         }
@@ -231,6 +269,15 @@ public class Consumer {
 
         public Event[] getEvents() {
             return events;
+        }
+
+        public RubyArray getRubyEvents() {
+            RubyArray arr = RubyArray.newArray(RubyUtil.RUBY, events.length);
+            for (Event e : events) {
+                JrubyEventExtLibrary.RubyEvent re = JrubyEventExtLibrary.RubyEvent.newRubyEvent(RubyUtil.RUBY, e);
+                arr.add(re);
+            }
+            return arr;
         }
 
         public void setOffset() {

@@ -199,6 +199,19 @@ public class ConsumerGroup implements AutoCloseable {
             stateTakeoverIntent();
         }
 
+        public String toString() {
+            String base =  "PartitionState(" + this.getPartitionNumber() + "@" + " " +
+                    this.getOffset() + ") " +
+                    this.consumerName + "<" + this.consumerUUID + "> ";
+
+            if (this.takeoverBy != null) {
+                return base + " TAKEOVER " +
+                this.takeoverBy + "<" + this.takeoverClock + "> ";
+            } else {
+                return base;
+            }
+        }
+
         public void refresh() throws IOException {
             Response resp = elastiqueue.simpleRequest("GET", url + "/_source");
             Map<String, Map<String, Object>> deserialized = objectMapper.readValue(resp.getEntity().getContent(), HashMap.class);
@@ -210,7 +223,7 @@ public class ConsumerGroup implements AutoCloseable {
             if (!this.isLocallyActive()) {
                 this.offset = fields.get("offset") != null ? ((Number) fields.get("offset")).longValue() : null;
                 this.prefetchOffset = null;
-                System.out.println("Not locally active, syncing offset" + this.offset);
+                System.out.println("Not locally active, syncing offset" + this);
             } else {
                 if (this.prefetchOffset == null) {
                     this.prefetchOffset = this.offset;

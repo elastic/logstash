@@ -22,6 +22,14 @@ public class Elastiqueue implements Closeable {
             new BasicHeader("Content-Type", "application/json"),
     };
 
+    public static Elastiqueue make(String... hostStrings) throws IOException {
+        HttpHost[] hosts = new HttpHost[hostStrings.length];
+        for (int i = 0; i < hostStrings.length; i++) {
+            hosts[i] = HttpHost.create(hostStrings[i]);
+        }
+        return new Elastiqueue(hosts);
+    }
+
     public Elastiqueue(HttpHost... hosts) throws IOException {
         client = RestClient.builder(hosts).build();
         setup();

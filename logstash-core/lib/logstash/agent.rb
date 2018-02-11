@@ -39,6 +39,10 @@ class LogStash::Agent
     @auto_reload = setting("config.reload.automatic")
     @ephemeral_id = SecureRandom.uuid
 
+    require 'logstash/inputs/elastiqueue'
+    LogStash::PLUGIN_REGISTRY.add(:input, "elastiqueue", ::LogStash::Inputs::Elastiqueue )
+
+
     # Do not use @pipelines directly. Use #with_pipelines which does locking
     @pipelines = {}
     @pipelines_lock = java.util.concurrent.locks.ReentrantLock.new
@@ -74,7 +78,7 @@ class LogStash::Agent
 
     @dispatcher = LogStash::EventDispatcher.new(self)
     LogStash::PLUGIN_REGISTRY.hooks.register_emitter(self.class, dispatcher)
-    dispatcher.fire(:after_initialize)
+       dispatcher.fire(:after_initialize)
 
     @running = Concurrent::AtomicBoolean.new(false)
   end

@@ -9,7 +9,9 @@ import org.apache.http.HttpEntity;
 import org.apache.http.client.entity.EntityBuilder;
 import org.apache.http.entity.BasicHttpEntity;
 import org.elasticsearch.client.Response;
+import org.jruby.RubyArray;
 import org.logstash.Event;
+import org.logstash.ext.JrubyEventExtLibrary;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -34,6 +36,16 @@ public class Producer {
         this.topic = topic;
         this.producerId = producerId;
         this.writeOps = new AtomicLong();
+    }
+
+    public void rubyWrite(RubyArray events) throws IOException, InterruptedException {
+        Event[] javaEvents = new Event[events.size()];
+        int size = events.size();
+        for (int i = 0; i < size; i++) {
+            JrubyEventExtLibrary.RubyEvent rubyEvent = (JrubyEventExtLibrary.RubyEvent) events.get(i);
+            javaEvents[i] = rubyEvent.getEvent();
+        }
+        write(javaEvents);
     }
 
     public long write(Event... events) throws IOException, InterruptedException {

@@ -34,7 +34,7 @@ public class ElastiqueueTest {
     }
 
     @Test
-    public void testSetup() throws IOException, InterruptedException {
+    public void testSetup() throws Exception {
         int parallelism = 10;
 
         Elastiqueue eq = new Elastiqueue(localhost);
@@ -50,8 +50,8 @@ public class ElastiqueueTest {
         LongAdder batchesRead = new LongAdder();
 
         int numProducers = parallelism;
-        int batchesPerProducer = 4000;
-        int batchSize = 500;
+        int batchesPerProducer = 1000;
+        int batchSize = 1000;
         int totalBatches = numProducers * batchesPerProducer;
         AtomicLong batchesLeft = new AtomicLong(totalBatches);
 
@@ -109,50 +109,19 @@ public class ElastiqueueTest {
         }, "Reporter");
         reporter.start();
 
-
-        for (int i =0; i<parallelism; i++) {
-            Thread t = new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        int i = 0;
-                        Event[] lastResults = new Event[0];
-                        while (true) {
-                            int timeout = i > 0  ? 100 : 30000;
-                            Consumer.EventsWithSeq results = consumer.poll(timeout);
-
-                            if (results != null) {
-                                eventsRead.add(results.getEvents().length);
-                                batchesRead.increment();
-                                //System.out.println("SET OFFSET " + results.getLastSeq());
-                                results.setOffset();
-                            }
-
-                            if (results != null) {
-                                lastResults = results.getEvents();
-                                //System.out.println("PollStop " + results.length + " | " + eventsRead.longValue());
-                            }
-                            if (results != null && results.getEvents().length > 0) {
-                                //System.out.println("OVERREAD!" + (eventsRead.longValue() - eventsWritten.longValue()) + " BATCH " + (batchesRead.longValue() - batchesWritten.longValue()));
-                            } else {
-                                System.out.println("Null Poll, consumer dead.");
-                                break;
-                            }
-                        }
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }, "Consumer "+i);
-            threads.add(t);
-            t.start();
-        }
+        consumer.consumePartitions(eventsWithSeq -> {
+            eventsRead.add(eventsWithSeq.getEvents().length);
+            batchesRead.increment();
+            //System.out.println("SET OFFSET " + results.getLastSeq());
+            eventsWithSeq.setOffset();
+        });
 
         for (Thread t : threads) {
             t.join();
         }
+
+        consumer.close();
+
         long endedAt = System.nanoTime();
 
         float runTimeMillis = TimeUnit.MILLISECONDS.convert(endedAt-startedAt, TimeUnit.NANOSECONDS);
