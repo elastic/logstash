@@ -23,7 +23,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.zip.GZIPOutputStream;
 
-public class Producer {
+public class Producer implements AutoCloseable {
     private final Elastiqueue elastiqueue;
     private final Topic topic;
     private final String producerId;
@@ -102,5 +102,9 @@ public class Producer {
             e.printStackTrace();
         }
         return result;
+    }
+
+    @Override
+    public void close() throws Exception {
     }
 }

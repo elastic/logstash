@@ -7,6 +7,9 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.message.BasicHeader;
 import org.elasticsearch.client.Response;
 import org.elasticsearch.client.RestClient;
+import org.jruby.RubyArray;
+import org.jruby.RubyString;
+import org.jruby.runtime.builtin.IRubyObject;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -15,12 +18,22 @@ import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.util.*;
 import java.util.concurrent.BlockingQueue;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class Elastiqueue implements Closeable {
     private final RestClient client;
     private static final Header defaultHeaders[] = {
             new BasicHeader("Content-Type", "application/json"),
     };
+
+    public static Elastiqueue make(RubyArray hosts) throws IOException {
+        HttpHost[] javaHosts = new HttpHost[hosts.size()];
+        for (int i = 0; i < hosts.size(); i++) {
+            javaHosts[i] = HttpHost.create(hosts.get(i).toString());
+        }
+        return new Elastiqueue(javaHosts);
+    }
 
     public static Elastiqueue make(String... hostStrings) throws IOException {
         HttpHost[] hosts = new HttpHost[hostStrings.length];
@@ -39,8 +52,8 @@ public class Elastiqueue implements Closeable {
      }
 
     private void setup() throws IOException {
-        putTemplate("esqueue_segments");
-        putTemplate("esqueue_meta");
+        putTemplate("elastiqueue_segments");
+        putTemplate("elastiqueue_meta");
     }
 
     private void putTemplate(String id) throws IOException {

@@ -1,11 +1,11 @@
 {
-  "index_patterns": "esqueue-partition-*",
+  "index_patterns": "elastiqueue-partition-*",
   "settings": {
     "index": {
       "sort.field": "seq",
       "sort.order": "asc",
       "number_of_shards": 1,
-      "refresh_interval": "60s"
+      "refresh_interval": "5s"
 
     }
   },

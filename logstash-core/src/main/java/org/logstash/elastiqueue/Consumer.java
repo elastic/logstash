@@ -135,6 +135,10 @@ public class Consumer implements AutoCloseable {
         public String getId() {
             return id;
         }
+
+        public String toString() {
+            return "DocUrl<" + getIndexName() + "/" + getType() + "/" + getId() + ">";
+        }
     }
 
     private void fillPrefetch() {
@@ -154,7 +158,7 @@ public class Consumer implements AutoCloseable {
             for (long i = 0; i < neededPrefetches; i++) {
                 Long lastPrefetch = consumerGroup.getPrefetchOffsetFor(partition);
                 //System.out.println("LASTPREFETCH" + lastPrefetch);
-                long nextPrefetch = lastPrefetch + i + 1;
+                long nextPrefetch = lastPrefetch + i;
                 DocumentUrl docUrl = new DocumentUrl(partition.getIndexName(), Long.toString(nextPrefetch));
                 docUrls.add(docUrl);
             }
@@ -176,6 +180,7 @@ public class Consumer implements AutoCloseable {
             jg.writeFieldName("docs");
             jg.writeStartArray();
             for (DocumentUrl docUrl : docUrls) {
+                //System.out.println(docUrl);
                 jg.writeStartObject();
                 jg.writeStringField("_index", docUrl.getIndexName());
                 jg.writeStringField("_type", docUrl.getType());
@@ -185,7 +190,7 @@ public class Consumer implements AutoCloseable {
             jg.writeEndArray();
             jg.close();
 
-
+            Map<Partition,List<CompressedEventsWithSeq>> resultsByPartition = new HashMap<>();
             while (true) {
                 Response resp = elastiqueue.simpleRequest(
                         "get",
@@ -194,6 +199,7 @@ public class Consumer implements AutoCloseable {
                 );
                 int responseCode = resp.getStatusLine().getStatusCode();
                 if (responseCode == 200) {
+                    //System.out.println("GOT 200");
                     InputStream is = resp.getEntity().getContent();
                     ObjectMapper om = new ObjectMapper();
                     HashMap<String,Object> parsed = om.readValue(is, HashMap.class);
@@ -205,6 +211,7 @@ public class Consumer implements AutoCloseable {
                     // we need to check we prefetched without gaps before advancing an offset
                     Base64.Decoder decoder = Base64.getDecoder();
                     //Ordered so we update the seqs monotonically later
+                    //System.out.println("FOUND DOCS" + docs.stream().filter(d -> d.containsKey("_source")).count());
                     foundDocs.forEach(doc -> {
                         Event[] events;
                         String index = (String) doc.get("_index");
@@ -214,23 +221,39 @@ public class Consumer implements AutoCloseable {
                         String eventsEncoded = (String) source.get("events");
                         byte[] compressedEvents = decoder.decode(eventsEncoded);
 
-                        consumerGroup.setPrefetchOffsetFor(partition, seq);
-                        try {
-                            topicPrefetch.get(partition).put(new CompressedEventsWithSeq(partition, seq, compressedEvents));
-                        } catch (InterruptedException e) {
-                            throw new RuntimeException(e);
-                        }
+                        resultsByPartition.computeIfAbsent(partition, k -> new LinkedList<>());
+                        //System.out.println("ADD DOC" + seq);
+                        resultsByPartition.get(partition).add(new CompressedEventsWithSeq(partition, seq, compressedEvents));
                     });
+
+                    for (Map.Entry<Partition, List<CompressedEventsWithSeq>> entry : resultsByPartition.entrySet()) {
+                        Partition partition = entry.getKey();
+                        List<CompressedEventsWithSeq> cewsList = entry.getValue();
+                        cewsList.sort(Comparator.comparingLong(o -> o.seq));
+                        BlockingQueue<CompressedEventsWithSeq> partitionPrefetch = topicPrefetch.get(partition);
+                        long fetchLastSeq = -1L;
+                        for (CompressedEventsWithSeq cews : cewsList) {
+                            if ((fetchLastSeq == -1L) || (cews.seq == (fetchLastSeq + 1))) {
+                                fetchLastSeq = cews.seq;
+                                partitionPrefetch.put(cews);
+                                System.out.println("PREFETCH" + partition + cews.seq);
+                                consumerGroup.setPrefetchOffsetFor(partition, cews.seq);
+                            } else {
+                                System.err.println("OUT OF ORDER PREFETCH");
+                                // We are out of order, read from an out of sync replica? We'll refetch
+                                break;
+                            }
+                        }
+                    }
                     break;
                 } else if (responseCode != 429) {
                     break;
                 }
             }
-
-            //System.out.println(baos.toString("UTF-8"));
         } catch (IOException e) {
-            // Never happens
-            e.printStackTrace();
+            throw new RuntimeException(e);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -291,12 +314,12 @@ public class Consumer implements AutoCloseable {
 
     private class CompressedEventsWithSeq {
         private final byte[] compressedEvents;
-        private final long lastSeq;
+        private final long seq;
         private final Partition partition;
 
-        CompressedEventsWithSeq(Partition partition, long lastSeq, byte[] compressedEvents) {
+        CompressedEventsWithSeq(Partition partition, long seq, byte[] compressedEvents) {
             this.partition = partition;
-            this.lastSeq = lastSeq;
+            this.seq = seq;
             this.compressedEvents = compressedEvents;
         }
 
@@ -310,7 +333,7 @@ public class Consumer implements AutoCloseable {
                     baos.write(buffer, 0, len);
                 }
                 bis.close();
-                return new EventsWithSeq(partition, lastSeq, Event.deserializeMany(baos.toByteArray()));
+                return new EventsWithSeq(partition, seq, Event.deserializeMany(baos.toByteArray()));
             }
         }
     }

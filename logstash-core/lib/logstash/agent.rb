@@ -39,10 +39,6 @@ class LogStash::Agent
     @auto_reload = setting("config.reload.automatic")
     @ephemeral_id = SecureRandom.uuid
 
-    require 'logstash/inputs/elastiqueue'
-    LogStash::PLUGIN_REGISTRY.add(:input, "elastiqueue", ::LogStash::Inputs::Elastiqueue )
-
-
     # Do not use @pipelines directly. Use #with_pipelines which does locking
     @pipelines = {}
     @pipelines_lock = java.util.concurrent.locks.ReentrantLock.new
@@ -84,6 +80,13 @@ class LogStash::Agent
   end
 
   def execute
+    # Load default plugins
+    require 'logstash/inputs/elastiqueue'
+    require 'logstash/outputs/elastiqueue'
+    LogStash::PLUGIN_REGISTRY.add(:input, "elastiqueue", ::LogStash::Inputs::Elastiqueue )
+    LogStash::PLUGIN_REGISTRY.add(:output, "elastiqueue", ::LogStash::Outputs::Elastiqueue )
+
+
     @thread = Thread.current # this var is implicitly used by Stud.stop?
     logger.debug("Starting agent")
 

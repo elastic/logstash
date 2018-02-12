@@ -261,4 +261,5 @@ module LogStash module Plugins
   end end
 
   PLUGIN_REGISTRY = Plugins::Registry.new
+
 end

@@ -17,7 +17,7 @@ public class Topic {
         this.elastiqueue = elastiqueue;
         this.name = name;
         this.numPartitions = numPartitions;
-        this.metadataIndexName = "esqueue-metadata-" + getName();
+        this.metadataIndexName = "elastiqueue-metadata-" + getName();
         writablePartitions = new ArrayBlockingQueue<>(this.numPartitions);
         for (int i = 0; i < numPartitions; i++) {
             Partition p = new Partition(elastiqueue, this, i);

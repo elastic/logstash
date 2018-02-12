@@ -10,7 +10,7 @@ public class Partition implements Closeable {
     private final int number;
     private final String indexName;
     private volatile long seq = -1;
-    private static String PARTITION_PREFIX = "esqueue-partition-";
+    private static String PARTITION_PREFIX = "elastiqueue-partition-";
 
     public Partition(Elastiqueue elastiqueue, Topic topic, int partitionId) {
         this.elastiqueue = elastiqueue;
@@ -38,6 +38,10 @@ public class Partition implements Closeable {
 
     public void setSeq(long num) {
         seq = num;
+    }
+
+    public String toString() {
+        return "Partition<" + this.topic.getName() + "/" + this.number + ">";
     }
 
     public int getNumber() {

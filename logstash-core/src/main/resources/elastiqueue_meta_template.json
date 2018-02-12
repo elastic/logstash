@@ -1,5 +1,5 @@
 {
-  "index_patterns": "esqueue-metadata-*",
+  "index_patterns": "elastiqueue-metadata-*",
   "settings": {
     "index": {
       "number_of_shards": 1
