@@ -21,8 +21,9 @@ public interface Filter extends AutoCloseable {
         /**
          * Required Constructor Signature only taking a {@link LsConfiguration}.
          * @param configuration Logstash Configuration
+         * @param context Logstash Context
          */
-        public Mutate(final LsConfiguration configuration) {
+        public Mutate(final LsConfiguration configuration, final LsContext context) {
             this.field = configuration.getString("ls.plugin.mutate.field");
             this.value = configuration.getString("ls.plugin.mutate.value");
         }

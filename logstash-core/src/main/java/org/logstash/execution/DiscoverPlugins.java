@@ -16,7 +16,7 @@ public final class DiscoverPlugins {
         for (final Class<?> cls : annotated) {
             System.out.println(cls.getName());
             System.out.println(((LogstashPlugin) cls.getAnnotations()[0]).name());
-            final Constructor<?> ctor = cls.getConstructor(LsConfiguration.class);
+            final Constructor<?> ctor = cls.getConstructor(LsConfiguration.class, LsContext.class);
             System.out.println("Found Ctor at : " + ctor.getName());
             if (Filter.class.isAssignableFrom(cls)) {
                 System.out.println("Filter");

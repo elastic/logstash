@@ -40,8 +40,9 @@ public interface Input extends AutoCloseable {
         /**
          * Required Constructor Signature only taking a {@link LsConfiguration}.
          * @param configuration Logstash Configuration
+         * @param context Logstash Context
          */
-        public StreamInput(final LsConfiguration configuration) {
+        public StreamInput(final LsConfiguration configuration, final LsContext context) {
             // Do whatever
         }
 

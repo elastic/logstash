@@ -32,8 +32,9 @@ public interface Output extends AutoCloseable {
         /**
          * Required Constructor Signature only taking a {@link LsConfiguration}.
          * @param configuration Logstash Configuration
+         * @param context Logstash Context
          */
-        public StreamOutput(final LsConfiguration configuration) {
+        public StreamOutput(final LsConfiguration configuration, final LsContext context) {
             this.outpt = new PrintStream(System.out);
         }
 
