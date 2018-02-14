@@ -9,8 +9,8 @@ This section includes the following topics:
 
 * <<installing-logstash>>
 * <<first-event>>
-* {logstash-ref}/advanced-pipeline.html[Advanced Pipeline]
-* {logstash-ref}/multiple-input-output-plugins.html[Multiple Output Plugins]
+* {logstash-ref}/advanced-pipeline.html[Parsing Logs with Logstash]
+* {logstash-ref}/multiple-input-output-plugins.html[Stitching Together Multiple Input and Output Plugins]
 
 [[installing-logstash]]
 === Installing Logstash
