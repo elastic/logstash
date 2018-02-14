@@ -139,8 +139,11 @@ public final class FieldReference {
     }
 
     private static FieldReference parseToCache(final CharSequence reference) {
-        final FieldReference result = parse(reference);
-        CACHE.put(reference, result);
+        FieldReference result = parse(reference);
+        if (CACHE.size() < 10_000) {
+            result = deduplicate(result);
+            CACHE.put(reference, result);
+        }
         return result;
     }
 
@@ -169,11 +172,11 @@ public final class FieldReference {
         if (empty && key.equals(Event.METADATA)) {
             return METADATA_PARENT_REFERENCE;
         } else if (!empty && path.get(0).equals(Event.METADATA)) {
-            return deduplicate(new FieldReference(
-                path.subList(1, path.size()).toArray(EMPTY_STRING_ARRAY), key, META_CHILD));
+            return new FieldReference(
+                path.subList(1, path.size()).toArray(EMPTY_STRING_ARRAY), key, META_CHILD
+            );
         } else {
-            return deduplicate(
-                new FieldReference(path.toArray(EMPTY_STRING_ARRAY), key, DATA_CHILD));
+            return new FieldReference(path.toArray(EMPTY_STRING_ARRAY), key, DATA_CHILD);
         }
     }
 }
