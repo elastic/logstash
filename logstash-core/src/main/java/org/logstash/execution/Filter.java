@@ -24,8 +24,8 @@ public interface Filter extends AutoCloseable {
          * @param context Logstash Context
          */
         public Mutate(final LsConfiguration configuration, final LsContext context) {
-            this.field = configuration.getString("ls.plugin.mutate.field");
-            this.value = configuration.getString("ls.plugin.mutate.value");
+            this.field = configuration.getString("field");
+            this.value = configuration.getString("value");
         }
 
         @Override
@@ -45,6 +45,72 @@ public interface Filter extends AutoCloseable {
                     final long seq = reader.poll(event, millis);
                     if (seq > -1L) {
                         event.setField(field, value);
+                    }
+                    return seq;
+                }
+
+                @Override
+                public void acknowledge(final long sequenceNum) {
+                    reader.acknowledge(sequenceNum);
+                }
+            };
+        }
+
+        @Override
+        public void flush(final boolean isShutdown) {
+            // Nothing to do here
+        }
+
+        @Override
+        public void close() {
+            // Nothing to do here
+        }
+    }
+
+    @LogstashPlugin(name = "clone")
+    final class Clone implements Filter {
+
+        private Event clone;
+
+        private long lastSeq = -1L;
+
+        /**
+         * Required Constructor Signature only taking a {@link LsConfiguration}.
+         * @param configuration Logstash Configuration
+         * @param context Logstash Context
+         */
+        public Clone(final LsConfiguration configuration, final LsContext context) {
+        }
+
+        @Override
+        public QueueReader filter(final QueueReader reader) {
+            return new QueueReader() {
+                @Override
+                public long poll(final Event event) {
+                    if (clone != null) {
+                        event.overwrite(clone);
+                        clone = null;
+                        return lastSeq;
+                    }
+                    final long seq = reader.poll(event);
+                    lastSeq = seq;
+                    if (seq > -1L) {
+                        clone = event.clone();
+                    }
+                    return seq;
+                }
+
+                @Override
+                public long poll(final Event event, final long millis) {
+                    if (clone != null) {
+                        event.overwrite(clone);
+                        clone = null;
+                        return lastSeq;
+                    }
+                    final long seq = reader.poll(event, millis);
+                    lastSeq = seq;
+                    if (seq > -1L) {
+                        clone = event.clone();
                     }
                     return seq;
                 }
