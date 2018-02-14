@@ -86,7 +86,7 @@ public final class JrubyEventExtLibrary {
         public IRubyObject ruby_set_field(ThreadContext context, RubyString reference, IRubyObject value)
         {
             final FieldReference r = FieldReference.from(reference.getByteList());
-            if (r  == FieldReference.TIMESTAMP_REFERENCE) {
+            if (r.equals(FieldReference.TIMESTAMP_REFERENCE)) {
                 if (!(value instanceof JrubyTimestampExtLibrary.RubyTimestamp)) {
                     throw context.runtime.newTypeError("wrong argument type " + value.getMetaClass() + " (expected LogStash::Timestamp)");
                 }
