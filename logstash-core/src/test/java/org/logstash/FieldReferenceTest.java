@@ -1,10 +1,14 @@
 package org.logstash;
 
+import java.lang.reflect.Field;
+import java.util.Map;
+import org.hamcrest.CoreMatchers;
 import org.junit.Test;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 public final class FieldReferenceTest {
@@ -49,5 +53,18 @@ public final class FieldReferenceTest {
         assertEquals(
             emptyReference, FieldReference.from(RubyUtil.RUBY.newString("").getByteList())
         );
+    }
+
+    @Test
+    public void testCacheUpperBound() throws NoSuchFieldException, IllegalAccessException {
+        final Field cacheField = FieldReference.class.getDeclaredField("CACHE");
+        cacheField.setAccessible(true);
+        final Map<CharSequence, FieldReference> cache =
+            (Map<CharSequence, FieldReference>) cacheField.get(null);
+        final int initial = cache.size();
+        for (int i = 0; i < 10_001 - initial; ++i) {
+            FieldReference.from(String.format("[array][%d]", i));
+        }
+        assertThat(cache.size(), CoreMatchers.is(10_000));
     }
 }
