@@ -56,7 +56,12 @@ endif::[]
 ===== `codec`
 
   * Value type is {logstash-ref}/configuration-file-structure.html#codec[codec]
+ifdef::default_codec[]
+  * Default value is +"{default_codec}"+
+endif::[]
+ifndef::default_codec[]
   * Default value is `"plain"`
+endif::[]
 
 The codec used for input data. Input codecs are a convenient method for decoding your data before it enters the input, without needing a separate filter in your Logstash pipeline.
 
