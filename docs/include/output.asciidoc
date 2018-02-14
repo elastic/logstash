@@ -34,7 +34,12 @@ endif::[]
 ===== `codec`
 
   * Value type is {logstash-ref}/configuration-file-structure.html#codec[codec]
+ifdef::default_codec[]
+  * Default value is +"{default_codec}"+
+endif::[]
+ifndef::default_codec[]
   * Default value is `"plain"`
+endif::[]
 
 The codec used for output data. Output codecs are a convenient method for encoding your data before it leaves the output without needing a separate filter in your Logstash pipeline.
 
