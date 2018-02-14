@@ -112,7 +112,7 @@ public class JRubyWrappedAckedQueueExt extends RubyObject {
 
     @JRubyMethod(name = "read_client")
     public IRubyObject rubyReadClient(final ThreadContext context) {
-        return JrubyAckedReadClientExt.create(this);
+        return JrubyAckedReadClientExt.create(queue);
     }
 
     @JRubyMethod(name = "is_empty?")

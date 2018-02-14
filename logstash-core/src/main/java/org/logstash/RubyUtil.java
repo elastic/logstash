@@ -10,13 +10,11 @@ import org.jruby.exceptions.RaiseException;
 import org.jruby.runtime.ObjectAllocator;
 import org.logstash.ackedqueue.ext.JRubyAckedQueueExt;
 import org.logstash.ackedqueue.ext.JRubyWrappedAckedQueueExt;
-import org.logstash.ackedqueue.ext.RubyAckedBatch;
+import org.logstash.execution.QueueReadClientBase;
 import org.logstash.ext.JRubyWrappedWriteClientExt;
-import org.logstash.ext.JrubyAckedReadBatchExt;
 import org.logstash.ext.JrubyAckedReadClientExt;
 import org.logstash.ext.JrubyAckedWriteClientExt;
 import org.logstash.ext.JrubyEventExtLibrary;
-import org.logstash.ext.JrubyMemoryReadBatchExt;
 import org.logstash.ext.JrubyMemoryReadClientExt;
 import org.logstash.ext.JrubyMemoryWriteClientExt;
 import org.logstash.ext.JrubyTimestampExtLibrary;
@@ -39,8 +37,6 @@ public final class RubyUtil {
 
     public static final RubyClass RUBY_EVENT_CLASS;
 
-    public static final RubyClass RUBY_ACKED_BATCH_CLASS;
-
     public static final RubyClass RUBY_TIMESTAMP_CLASS;
 
     public static final RubyClass PARSER_ERROR;
@@ -51,11 +47,9 @@ public final class RubyUtil {
 
     public static final RubyClass TIMESTAMP_PARSER_ERROR;
 
-    public static final RubyClass MEMORY_READ_BATCH_CLASS;
-
-    public static final RubyClass ACKED_READ_BATCH_CLASS;
-
     public static final RubyClass WRAPPED_WRITE_CLIENT_CLASS;
+
+    public static final RubyClass QUEUE_READ_CLIENT_BASE_CLASS;
 
     public static final RubyClass MEMORY_READ_CLIENT_CLASS;
 
@@ -77,16 +71,14 @@ public final class RubyUtil {
         RUBY_TIMESTAMP_CLASS = setupLogstashClass(
             JrubyTimestampExtLibrary.RubyTimestamp::new, JrubyTimestampExtLibrary.RubyTimestamp.class
         );
-        MEMORY_READ_BATCH_CLASS =
-            setupLogstashClass(JrubyMemoryReadBatchExt::new, JrubyMemoryReadBatchExt.class);
-        ACKED_READ_BATCH_CLASS =
-            setupLogstashClass(JrubyAckedReadBatchExt::new, JrubyAckedReadBatchExt.class);
         WRAPPED_WRITE_CLIENT_CLASS =
             setupLogstashClass(JRubyWrappedWriteClientExt::new, JRubyWrappedWriteClientExt.class);
+        QUEUE_READ_CLIENT_BASE_CLASS =
+                setupLogstashClass(ObjectAllocator.NOT_ALLOCATABLE_ALLOCATOR, QueueReadClientBase.class);
         MEMORY_READ_CLIENT_CLASS =
-            setupLogstashClass(JrubyMemoryReadClientExt::new, JrubyMemoryReadClientExt.class);
+            setupLogstashClass(QUEUE_READ_CLIENT_BASE_CLASS, JrubyMemoryReadClientExt::new, JrubyMemoryReadClientExt.class);
         ACKED_READ_CLIENT_CLASS =
-            setupLogstashClass(JrubyAckedReadClientExt::new, JrubyAckedReadClientExt.class);
+            setupLogstashClass(QUEUE_READ_CLIENT_BASE_CLASS, JrubyAckedReadClientExt::new, JrubyAckedReadClientExt.class);
         MEMORY_WRITE_CLIENT_CLASS =
             setupLogstashClass(JrubyMemoryWriteClientExt::new, JrubyMemoryWriteClientExt.class);
         ACKED_WRITE_CLIENT_CLASS =
@@ -129,7 +121,6 @@ public final class RubyUtil {
         RUBY_EVENT_CLASS.setConstant("VERSION_ONE", RUBY.newString(Event.VERSION_ONE));
         RUBY_EVENT_CLASS.defineAnnotatedMethods(JrubyEventExtLibrary.RubyEvent.class);
         RUBY_EVENT_CLASS.defineAnnotatedConstants(JrubyEventExtLibrary.RubyEvent.class);
-        RUBY_ACKED_BATCH_CLASS = setupLogstashClass(RubyAckedBatch::new, RubyAckedBatch.class);
         RUBY.getGlobalVariables().set("$LS_JARS_LOADED", RUBY.newString("true"));
     }
 
