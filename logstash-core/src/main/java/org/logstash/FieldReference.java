@@ -35,7 +35,7 @@ public final class FieldReference {
      * Unique {@link FieldReference} pointing at the timestamp field in a {@link Event}.
      */
     public static final FieldReference TIMESTAMP_REFERENCE =
-        deduplicate(new FieldReference(EMPTY_STRING_ARRAY, Event.TIMESTAMP, DATA_CHILD));
+        new FieldReference(EMPTY_STRING_ARRAY, Event.TIMESTAMP, DATA_CHILD);
 
     private static final FieldReference METADATA_PARENT_REFERENCE =
         new FieldReference(EMPTY_STRING_ARRAY, Event.METADATA, META_PARENT);
@@ -168,6 +168,8 @@ public final class FieldReference {
         final boolean empty = path.isEmpty();
         if (empty && key.equals(Event.METADATA)) {
             return METADATA_PARENT_REFERENCE;
+        } else if (empty && key.equals(Event.TIMESTAMP)) {
+            return TIMESTAMP_REFERENCE;
         } else if (!empty && path.get(0).equals(Event.METADATA)) {
             return deduplicate(new FieldReference(
                 path.subList(1, path.size()).toArray(EMPTY_STRING_ARRAY), key, META_CHILD));
