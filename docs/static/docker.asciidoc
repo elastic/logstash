@@ -42,6 +42,7 @@ docker pull {docker-repo}-oss:{logstash_version}
 
 endif::[]
 
+[[docker-config]]
 === Configuring Logstash for Docker
 
 Logstash differentiates between two types of configuration:
