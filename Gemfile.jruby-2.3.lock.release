@@ -192,7 +192,7 @@ GEM
       logstash-core-plugin-api (>= 1.60, <= 2.99)
     logstash-filter-de_dot (1.0.3)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
-    logstash-filter-dissect (1.1.3)
+    logstash-filter-dissect (1.1.4)
       jar-dependencies
       logstash-core-plugin-api (>= 2.1.1, <= 2.99)
     logstash-filter-dns (3.0.7)
