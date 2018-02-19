@@ -2,7 +2,6 @@
 require "fileutils"
 require "logstash/event"
 require "logstash/namespace"
-require "logstash/util/wrapped_acked_queue"
 
 module LogStash
   class QueueFactory

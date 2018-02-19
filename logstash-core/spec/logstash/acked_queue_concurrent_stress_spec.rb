@@ -1,5 +1,4 @@
 # encoding: utf-8
-require "logstash/util/wrapped_acked_queue"
 require "logstash/event"
 require "logstash/instrument/namespaced_metric"
 
@@ -40,10 +39,10 @@ describe LogStash::WrappedAckedQueue, :stress_test => true do
           begin
             tally = 0
             while true
-              batch = _reader.read_batch
-              break if batch.size.zero? && writers_finished.value == true && queue.queue.is_fully_acked?
+              batch = _reader.read_batch.to_java
+              break if batch.filteredSize == 0 && writers_finished.value == true && queue.queue.is_fully_acked?
               sleep(rand * 0.01) if simulate_work
-              tally += batch.size
+              tally += batch.filteredSize
               batch.close
             end
             _counts[_i] = tally

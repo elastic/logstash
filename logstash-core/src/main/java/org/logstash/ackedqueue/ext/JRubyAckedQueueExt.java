@@ -8,11 +8,13 @@ import org.jruby.RubyFixnum;
 import org.jruby.RubyObject;
 import org.jruby.anno.JRubyClass;
 import org.jruby.anno.JRubyMethod;
+import org.jruby.javasupport.JavaObject;
 import org.jruby.runtime.Arity;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.Event;
 import org.logstash.RubyUtil;
+import org.logstash.ackedqueue.AckedBatch;
 import org.logstash.ackedqueue.Batch;
 import org.logstash.ackedqueue.Queue;
 import org.logstash.ackedqueue.SettingsImpl;
@@ -137,14 +139,19 @@ public final class JRubyAckedQueueExt extends RubyObject {
     @JRubyMethod(name = "read_batch", required = 2)
     public IRubyObject ruby_read_batch(ThreadContext context, IRubyObject limit,
         IRubyObject timeout) {
-        Batch b;
+        AckedBatch b;
         try {
-            b = this.queue.readBatch(RubyFixnum.num2int(limit), RubyFixnum.num2int(timeout));
+            b = readBatch(RubyFixnum.num2int(limit), RubyFixnum.num2int(timeout));
         } catch (IOException e) {
             throw RubyUtil.newRubyIOError(context.runtime, e);
         }
         // TODO: return proper Batch object
-        return (b == null) ? context.nil : RubyAckedBatch.create(context.runtime, b);
+        return (b == null) ? context.nil : JavaObject.wrap(context.runtime, b);
+    }
+
+    public AckedBatch readBatch(int limit, long timeout) throws IOException {
+        Batch b = queue.readBatch(limit, timeout);
+        return (b == null) ? null : AckedBatch.create(b);
     }
 
     @JRubyMethod(name = "is_fully_acked?")
@@ -155,6 +162,10 @@ public final class JRubyAckedQueueExt extends RubyObject {
     @JRubyMethod(name = "is_empty?")
     public IRubyObject ruby_is_empty(ThreadContext context) {
         return RubyBoolean.newBoolean(context.runtime, this.queue.isEmpty());
+    }
+
+    public boolean isEmpty() {
+        return queue.isEmpty();
     }
 
     @JRubyMethod(name = "close")

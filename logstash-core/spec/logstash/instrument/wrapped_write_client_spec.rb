@@ -3,6 +3,7 @@ require "logstash/instrument/metric"
 require "logstash/event"
 require_relative "../../support/mocks_classes"
 require "spec_helper"
+require "java"
 
 describe LogStash::WrappedWriteClient do
   let!(:write_client) { queue.write_client }
@@ -23,7 +24,8 @@ describe LogStash::WrappedWriteClient do
         if Time.now - started_at > 60
           raise "Took too much time to read from the queue"
         end
-        batch_size = read_client.read_batch.size
+        batch = read_client.read_batch.to_java
+        batch_size = batch.filteredSize()
 
         break if batch_size > 0
       }
@@ -122,4 +124,5 @@ describe LogStash::WrappedWriteClient do
 
     include_examples "queue tests"
   end
+
 end
