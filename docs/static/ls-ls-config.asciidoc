@@ -1,0 +1,105 @@
+[[ls-to-ls]]
+=== Configuring Logstash-to-Logstash Communication
+
+In a complex network environment, you may need two Logstash machines talking to each other. That is, the output from the upstream Logstash machine becomes the input for the downstream Logstash machine. You may need this configuration if the data path crosses network or firewall boundaries, for example.
+
+Keep your configuration as simple as possible. If you don't have a compelling need for Logstash-to-Logstash communication, then don't implement it.
+
+[[ls-to-ls-overview]]
+==== Configuration overview
+
+. Use the Lumberjack output plugin on the upstream Logstash machine.
+. Use the Beats input plugin on the downstream Logstash machine.
+. Generate a trusted SSL certificate (required by the lumberjack protocol).
+. Save the SSL certificate on the upstream Logstash machine.
+. Save the SSL certificate and key on the downstream Logstash machine.
+. Test it.
+
+[[generate-self-signed-cert]]
+===== Generate a self-signed SSL certificate and key
+
+You can use the `openssl req` command to generate a self-signed certificate and key. The `openssl req` command is available on any operating system that comes with SSL.
+
+Run the following command:
+
+[source,shell]
+----
+openssl req -x509 -batch -nodes -newkey rsa:2048 -keyout lumberjack.key -out lumberjack.crt -subj /CN=localhost
+----
+
+where:
+
+* `lumberjack.key` specifies the name of the SSL key to be created
+* `lumberjack.cert` specifies the name of the SSL certificate to be created
+* `localhost` specifies the name of the upstream Logstash computer
+
+
+This command produces output similar to the following:
+
+[source,shell]
+----
+Generating a 2048 bit RSA private key
+.................................+++
+....................+++
+writing new private key to 'lumberjack.key'
+----
+
+[[save-cert-ls1]]
+===== Save the SSL certificate on the upstream Logstash machine
+
+On the upstream Logstash machine, run the following command:
+[source,shell]
+----
+bin/logstash --path.data /tmp/z -e 'input { generator { count => 5 } } output { lumberjack { codec => json hosts => "localhost" ssl_certificate => "lumberjack.crt" port => 5000 } }'
+----
+
+where:
+
+* `5` specifies the number of events you want to generate and send
+* `lumberjack.cert` specifies the name of the SSL certificate you created
+* `localhost` specifies the name of the upstream Logstash computer
+
+[[save-cert-ls2]]
+===== Save the SSL certificate and key on the downstream Logstash machine
+
+On the downstream Logstash machine, run the following command:
+
+[source,shell]
+----
+bin/logstash -e 'input {beats { codec =>? json port => 5000 ssl => ssl_certificate => "lumberjack.crt" ssl_key => "lumberjack.key"} }'
+----
+
+where:
+
+* `lumberjack.key` specifies the name of the SSL key to be created
+* `lumberjack.cert` specifies the name of the SSL certificate to be created
+* `localhost` specifies the name of the computer
+
+[[test-ls-to-ls]]
+===== Test the communication
+
+Use the input generator to send test events from the upstream Logstash machine.
+
+The following command sends five events over port 5000:
+
+[source,shell]
+----
+bin/logstash —path.data /tmp/z -e 'input { generator {count => 5 } } output { lumberjack { codec => json hosts => "localhost" ssl_certificate => "lumberjack.crt" Port => 5000 } }'
+----
+
+Watch the downstream Logstash machine for the incoming events. You should see five incrementing events similar to the following:
+
+[source,shell]
+----
+{
+  "@timestamp" => 2018-02-07T12:16:39.415Z,
+  "sequence"   => 0
+  "tags"       => [
+    [0] "beats_input_codec_json_applied"
+  ],
+  "message"    => "Hello world",
+  "@version"   => "1",
+  "host"       => "ls1.semicomplete.com"
+}
+----
+If you see all five events with consistent fields and formatting, incrementing by one, then your configuration is correct.

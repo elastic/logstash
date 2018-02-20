@@ -24,6 +24,9 @@ include::static/glob-support.asciidoc[]
 :edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/ingest-convert.asciidoc
 include::static/ingest-convert.asciidoc[]
 
+:edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/ls-ls-config.asciidoc
+include::static/ls-ls-config.asciidoc[]
+
 // Centralized configuration managements
 :edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/config-management.asciidoc
 include::static/config-management.asciidoc[]
