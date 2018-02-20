@@ -20,7 +20,7 @@ endif::include-xpack[]
 [[logstash-6-2-2]]
 === Logstash 6.2.2 Release Notes
 
-* There are no user facing changes in this release
+* Fix issue introduced in 6.2.1 where `bin/logstash-plugin` could not install or upgrade plugins
 
 [[logstash-6-2-1]]
 === Logstash 6.2.1 Release Notes
