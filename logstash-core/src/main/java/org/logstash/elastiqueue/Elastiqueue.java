@@ -3,10 +3,16 @@ package org.logstash.elastiqueue;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.CredentialsProvider;
 import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.BasicCredentialsProvider;
+import org.apache.http.impl.nio.client.HttpAsyncClientBuilder;
 import org.apache.http.message.BasicHeader;
 import org.elasticsearch.client.Response;
 import org.elasticsearch.client.RestClient;
+import org.elasticsearch.client.RestClientBuilder;
 import org.jruby.RubyArray;
 import org.jruby.RubyString;
 import org.jruby.runtime.builtin.IRubyObject;
@@ -27,24 +33,41 @@ public class Elastiqueue implements Closeable {
             new BasicHeader("Content-Type", "application/json"),
     };
 
-    public static Elastiqueue make(RubyArray hosts) throws IOException {
-        HttpHost[] javaHosts = new HttpHost[hosts.size()];
+    public static Elastiqueue make(String username, String password, RubyArray hosts) throws IOException {
+        String[] javaHosts = new String[hosts.size()];
         for (int i = 0; i < hosts.size(); i++) {
-            javaHosts[i] = HttpHost.create(hosts.get(i).toString());
+            javaHosts[i] = hosts.get(i).toString();
         }
-        return new Elastiqueue(javaHosts);
+        return make(username, password, javaHosts);
     }
 
     public static Elastiqueue make(String... hostStrings) throws IOException {
+        return make(null, null, hostStrings);
+    }
+
+    public static Elastiqueue make(String username, String password, String... hostStrings) throws IOException {
+        CredentialsProvider credentialsProvider = null;
+        if (username != null && password != null) {
+            credentialsProvider = new BasicCredentialsProvider();
+            credentialsProvider.setCredentials(AuthScope.ANY, new UsernamePasswordCredentials(username, password));
+        }
+
         HttpHost[] hosts = new HttpHost[hostStrings.length];
         for (int i = 0; i < hostStrings.length; i++) {
             hosts[i] = HttpHost.create(hostStrings[i]);
         }
-        return new Elastiqueue(hosts);
+        return new Elastiqueue(credentialsProvider, hosts);
     }
 
-    public Elastiqueue(HttpHost... hosts) throws IOException {
-        client = RestClient.builder(hosts).build();
+    public Elastiqueue(CredentialsProvider credentialsProvider, HttpHost... hosts) throws IOException {
+        client = RestClient.builder(hosts)
+                .setHttpClientConfigCallback(httpClientBuilder -> {
+                    if (credentialsProvider != null) {
+                        httpClientBuilder.setDefaultCredentialsProvider(credentialsProvider);
+                    }
+                    return httpClientBuilder;
+                })
+                .build();
         setup();
     }
      public Topic topic(String name, int numPartitions) {

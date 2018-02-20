@@ -158,7 +158,7 @@ public class Consumer implements AutoCloseable {
             for (long i = 0; i < neededPrefetches; i++) {
                 Long lastPrefetch = consumerGroup.getPrefetchOffsetFor(partition);
                 //System.out.println("LASTPREFETCH" + lastPrefetch);
-                long nextPrefetch = lastPrefetch + i;
+                long nextPrefetch = lastPrefetch + i + 1;
                 DocumentUrl docUrl = new DocumentUrl(partition.getIndexName(), Long.toString(nextPrefetch));
                 docUrls.add(docUrl);
             }
@@ -236,7 +236,7 @@ public class Consumer implements AutoCloseable {
                             if ((fetchLastSeq == -1L) || (cews.seq == (fetchLastSeq + 1))) {
                                 fetchLastSeq = cews.seq;
                                 partitionPrefetch.put(cews);
-                                System.out.println("PREFETCH" + partition + cews.seq);
+                                //System.out.println("PREFETCH" + partition + cews.seq);
                                 consumerGroup.setPrefetchOffsetFor(partition, cews.seq);
                             } else {
                                 System.err.println("OUT OF ORDER PREFETCH");

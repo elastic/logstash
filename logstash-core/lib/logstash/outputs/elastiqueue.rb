@@ -5,9 +5,12 @@ class LogStash::Outputs::Elastiqueue < LogStash::Outputs::Base
   config :hosts, :validate => :uri, :list => true
   config :topic, :validate => :string
   config :partitions, :validate => :number
+  config :user, :validate => :string
+  config :password, :validate => :password
 
   def register
-    @elastiqueue = org.logstash.elastiqueue.Elastiqueue.make(hosts.map(&:uri).map(&:to_s).to_a)
+    plain_password = password ? password.value : nil
+    @elastiqueue = org.logstash.elastiqueue.Elastiqueue.make(user, plain_password, hosts.map(&:uri).map(&:to_s).to_a)
     @topic = @elastiqueue.topic(topic, partitions)
     @producer = @topic.makeProducer("A producer")
   end

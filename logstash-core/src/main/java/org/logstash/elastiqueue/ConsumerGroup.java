@@ -110,13 +110,13 @@ public class ConsumerGroup implements AutoCloseable {
         try {
             Response createResp = elastiqueue.simpleRequest(
                     "post",
-                    url() + "/_create",
+                    "/" + url() + "/_create",
                     body
             );
         } catch (ResponseException re) {
             // Not an error!
             if (re.getResponse().getStatusLine().getStatusCode() == 409) return;
-            throw new IOException(re);
+            //throw new IOException(re);
         }
     }
 
@@ -167,7 +167,7 @@ public class ConsumerGroup implements AutoCloseable {
         private String consumerUUID;
         @JsonIgnore
         private String consumerName;
-        private volatile Long offset = 0L;
+        private volatile Long offset = -1L;
         @JsonIgnore
         private volatile Long prefetchOffset;
         private Long clock = 0L;
@@ -213,7 +213,7 @@ public class ConsumerGroup implements AutoCloseable {
         }
 
         public void refresh() throws IOException {
-            Response resp = elastiqueue.simpleRequest("GET", url + "/_source");
+            Response resp = elastiqueue.simpleRequest("GET", "/" + url + "/_source");
             Map<String, Map<String, Object>> deserialized = objectMapper.readValue(resp.getEntity().getContent(), HashMap.class);
             Map<String, Object> fields = deserialized.get("consumer_group_partition");
             this.consumerName = (String) fields.get("consumer_name");
@@ -276,7 +276,7 @@ public class ConsumerGroup implements AutoCloseable {
             }
             String s = new String(requestSource);
             //System.out.println("Execute Script " + s);
-            elastiqueue.simpleRequest("POST", url + "/_update", requestSource);
+            elastiqueue.simpleRequest("POST", "/" + url + "/_update", requestSource);
         }
 
         public void updateRemote() throws IOException {
@@ -332,7 +332,7 @@ public class ConsumerGroup implements AutoCloseable {
             this.elastiqueue = consumerGroup.getTopic().getElastiqueue();
             String json = objectMapper.writeValueAsString(wrapped);
             try {
-                elastiqueue.simpleRequest("POST", url + "/_create", json);
+                elastiqueue.simpleRequest("POST", "/" + url + "/_create", json);
             } catch (ResponseException e) {
                 if (e.getResponse().getStatusLine().getStatusCode() == 409) return;
                 throw e;
