@@ -1,11 +1,14 @@
 package org.logstash.execution;
 
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import org.logstash.Event;
 
 /**
  * A Filter is simply a mapping of {@link QueueReader} to a new {@link QueueReader}.
  */
-public interface Filter extends AutoCloseable {
+public interface Filter extends LsPlugin {
 
     QueueReader filter(QueueReader reader);
 
@@ -62,8 +65,11 @@ public interface Filter extends AutoCloseable {
         }
 
         @Override
-        public void close() {
-            // Nothing to do here
+        public Collection<PluginConfigSpec<?>> configSchema() {
+            return Arrays.asList(
+                new PluginConfigSpec<>("field", String.class, null, false),
+                new PluginConfigSpec<>("value", String.class, null, false)
+            );
         }
     }
 
@@ -128,8 +134,8 @@ public interface Filter extends AutoCloseable {
         }
 
         @Override
-        public void close() {
-            // Nothing to do here
+        public Collection<PluginConfigSpec<?>> configSchema() {
+            return Collections.emptyList();
         }
     }
 }

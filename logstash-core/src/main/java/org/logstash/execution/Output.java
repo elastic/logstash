@@ -2,13 +2,15 @@ package org.logstash.execution;
 
 import java.io.IOException;
 import java.io.PrintStream;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.concurrent.CountDownLatch;
 import org.logstash.Event;
 
 /**
  * A Logstash Pipeline Output consumes a {@link QueueReader}.
  */
-public interface Output extends AutoCloseable {
+public interface Output extends LsPlugin {
 
     /**
      * Polls events from event reader and runs output action.
@@ -60,6 +62,7 @@ public interface Output extends AutoCloseable {
 
         @Override
         public void stop() {
+            outpt.close();
             stopped = true;
         }
 
@@ -69,8 +72,8 @@ public interface Output extends AutoCloseable {
         }
 
         @Override
-        public void close() {
-            outpt.close();
+        public Collection<PluginConfigSpec<?>> configSchema() {
+            return Collections.emptyList();
         }
     }
 }

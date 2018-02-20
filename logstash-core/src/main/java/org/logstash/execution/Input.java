@@ -1,5 +1,6 @@
 package org.logstash.execution;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Scanner;
 import java.util.concurrent.CountDownLatch;
@@ -7,7 +8,7 @@ import java.util.concurrent.CountDownLatch;
 /**
  * A Logstash Pipeline Input pushes to a {@link QueueWriter}.
  */
-public interface Input extends AutoCloseable {
+public interface Input extends LsPlugin {
 
     /**
      * Start pushing {@link org.logstash.Event} to given {@link QueueWriter}.
@@ -71,8 +72,8 @@ public interface Input extends AutoCloseable {
         }
 
         @Override
-        public void close() {
-            inpt.close();
+        public Collection<PluginConfigSpec<?>> configSchema() {
+            return Collections.emptyList();
         }
     }
 }
