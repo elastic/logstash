@@ -68,7 +68,7 @@ Gem::Specification.new do |gem|
   gem.add_runtime_dependency "rubyzip", "~> 1.2.1"
   gem.add_runtime_dependency "thread_safe", "~> 0.3.5" #(Apache 2.0 license)
 
-  gem.add_runtime_dependency "jrjackson", "~> #{ALL_VERSIONS.fetch('jrjackson')}" #(Apache 2.0 license)
+  gem.add_runtime_dependency "jrjackson", "= #{ALL_VERSIONS.fetch('jrjackson')}" #(Apache 2.0 license)
 
   gem.add_runtime_dependency "jar-dependencies"
   # as of Feb 3rd 2016, the ruby-maven gem is resolved to version 3.3.3 and that version
