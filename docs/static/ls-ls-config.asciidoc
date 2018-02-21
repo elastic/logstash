@@ -60,6 +60,7 @@ You can demo the configuration by running two Logstash instances on one computer
 ===== Start the upstream Logstash machine
 
 On the upstream Logstash machine, run the following command:
+
 [source,shell]
 ----
 bin/logstash -e 'input { beats { codec => json port => 5000 ssl_certificate => "lumberjack.cert" ssl_key => "lumberjack.key"} }'
