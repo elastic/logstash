@@ -1,13 +1,11 @@
 package org.logstash.execution;
 
-import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.jruby.runtime.builtin.IRubyObject;
 
 public final class PeriodicFlush implements AutoCloseable {
 
@@ -17,16 +15,12 @@ public final class PeriodicFlush implements AutoCloseable {
         r -> new Thread(r, "logstash-pipeline-flush")
     );
 
-    private final BlockingQueue<IRubyObject> queue;
-
-    private final IRubyObject signal;
+    private final AtomicBoolean flushRequested;
 
     private final AtomicBoolean flushing;
 
-    public PeriodicFlush(final BlockingQueue<IRubyObject> queue, final IRubyObject signal,
-        final AtomicBoolean flushing) {
-        this.queue = queue;
-        this.signal = signal;
+    public PeriodicFlush(final AtomicBoolean flushRequested, final AtomicBoolean flushing) {
+        this.flushRequested = flushRequested;
         this.flushing = flushing;
     }
 
@@ -34,11 +28,7 @@ public final class PeriodicFlush implements AutoCloseable {
         executor.scheduleAtFixedRate(() -> {
             if (flushing.compareAndSet(false, true)) {
                 LOGGER.debug("Pushing flush onto pipeline.");
-                try {
-                    queue.put(signal);
-                } catch (final InterruptedException ex) {
-                    throw new IllegalStateException(ex);
-                }
+                flushRequested.set(true);
             }
         }, 0L, 5L, TimeUnit.SECONDS);
     }

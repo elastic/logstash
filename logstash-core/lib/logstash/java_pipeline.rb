@@ -164,7 +164,6 @@ module LogStash; class JavaPipeline < JavaBasePipeline
 
     @input_queue_client = @queue.write_client
     @filter_queue_client = @queue.read_client
-    @signal_queue = java.util.concurrent.LinkedBlockingQueue.new
     # Note that @inflight_batches as a central mechanism for tracking inflight
     # batches will fail if we have multiple read clients here.
     @filter_queue_client.set_events_metric(metric.namespace([:stats, :events]))
@@ -181,6 +180,8 @@ module LogStash; class JavaPipeline < JavaBasePipeline
     @ready = Concurrent::AtomicBoolean.new(false)
     @running = Concurrent::AtomicBoolean.new(false)
     @flushing = java.util.concurrent.atomic.AtomicBoolean.new(false)
+    @flushRequested = java.util.concurrent.atomic.AtomicBoolean.new(false)
+    @shutdownRequested = java.util.concurrent.atomic.AtomicBoolean.new(false)
     @outputs_registered = Concurrent::AtomicBoolean.new(false)
     @finished_execution = Concurrent::AtomicBoolean.new(false)
   end # def initialize
@@ -369,10 +370,9 @@ module LogStash; class JavaPipeline < JavaBasePipeline
 
       pipeline_workers.times do |t|
         thread = Thread.new do
-          org.logstash.execution.WorkerLoop.new(@lir_execution, @signal_queue,
-                                                @filter_queue_client, @events_filtered,
-                                                @events_consumed, @flushing,
-                                                @drain_queue).run
+          org.logstash.execution.WorkerLoop.new(
+              @lir_execution, @filter_queue_client, @events_filtered, @events_consumed,
+              @flushRequested, @flushing, @shutdownRequested, @drain_queue).run
         end
         thread.name="[#{pipeline_id}]>worker#{t}"
         @worker_threads << thread
@@ -491,11 +491,7 @@ module LogStash; class JavaPipeline < JavaBasePipeline
   # tell the worker threads to stop and then block until they've fully stopped
   # This also stops all filter and output plugins
   def shutdown_workers
-    # Each worker thread will receive this exactly once!
-    @worker_threads.each do |t|
-      @logger.debug("Pushing shutdown", default_logging_keys(:thread => t.inspect))
-      @signal_queue.put(SHUTDOWN)
-    end
+    @shutdownRequested.set(true)
 
     @worker_threads.each do |t|
       @logger.debug("Shutdown waiting for worker thread" , default_logging_keys(:thread => t.inspect))
@@ -519,7 +515,7 @@ module LogStash; class JavaPipeline < JavaBasePipeline
   def start_flusher
     # Invariant to help detect improper initialization
     raise "Attempted to start flusher on a stopped pipeline!" if stopped?
-    @flusher_thread = org.logstash.execution.PeriodicFlush.new(@signal_queue, FLUSH, @flushing)
+    @flusher_thread = org.logstash.execution.PeriodicFlush.new(@flushRequested, @flushing)
     @flusher_thread.start
   end
 
