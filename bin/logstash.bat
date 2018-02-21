@@ -10,6 +10,9 @@ if errorlevel 1 (
 	exit /B %ERRORLEVEL%
 )
 
+if "%1" == "-V" goto version
+if "%1" == "--version" goto version
+
 rem iterate over the command line args and look for the argument
 rem after --path.settings to see if the jvm.options file is in
 rem that path and set LS_JVM_OPTIONS_CONFIG accordingly
@@ -51,12 +54,38 @@ for %%i in ("%LS_HOME%\logstash-core\lib\jars\*.jar") do (
 
 %JAVA% %JAVA_OPTS% -cp %CLASSPATH% org.logstash.Logstash %*
 
-endlocal
+goto :end
 
-goto :eof
+:version
+set "LOGSTASH_VERSION_FILE1=%LS_HOME%\logstash-core\versions-gem-copy.yml"
+set "LOGSTASH_VERSION_FILE2=%LS_HOME%\versions.yml"
+
+set "LOGSTASH_VERSION=Version not detected"
+if exist !LOGSTASH_VERSION_FILE1! (
+	rem this file is present in zip, deb and rpm artifacts and after bundle install
+	rem but might not be for a git checkout type install
+	for /F "tokens=1,2 delims=: " %%a in (!LOGSTASH_VERSION_FILE1!) do (
+		if "%%a"=="logstash" set LOGSTASH_VERSION=%%b
+	)
+) else (
+	if exist !LOGSTASH_VERSION_FILE2! (
+		rem this file is present for a git checkout type install
+		rem but its not in zip, deb and rpm artifacts (and in integration tests)
+		for /F "tokens=1,2 delims=: " %%a in (!LOGSTASH_VERSION_FILE2!) do (
+			if "%%a"=="logstash" set LOGSTASH_VERSION=%%b
+		)
+	)
+)
+echo logstash !LOGSTASH_VERSION!
+goto :end
+
 :concat
 IF not defined CLASSPATH (
   set CLASSPATH="%~1"
 ) ELSE (
   set CLASSPATH=%CLASSPATH%;"%~1"
 )
+goto :eof
+
+:end
+endlocal
