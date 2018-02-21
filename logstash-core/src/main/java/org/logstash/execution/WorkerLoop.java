@@ -1,13 +1,9 @@
 package org.logstash.execution;
 
-import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.LongAdder;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.jruby.runtime.ThreadContext;
-import org.jruby.runtime.builtin.IRubyObject;
-import org.logstash.RubyUtil;
 import org.logstash.config.ir.CompiledPipeline;
 import org.logstash.config.ir.compiler.Dataset;
 
@@ -17,11 +13,13 @@ public final class WorkerLoop implements Runnable {
 
     private final Dataset execution;
 
-    private final BlockingQueue<IRubyObject> signalQueue;
-
     private final QueueReadClient readClient;
 
+    private final AtomicBoolean flushRequested;
+
     private final AtomicBoolean flushing;
+
+    private final AtomicBoolean shutdownRequested;
 
     private final LongAdder consumedCounter;
 
@@ -29,30 +27,29 @@ public final class WorkerLoop implements Runnable {
 
     private final boolean drainQueue;
 
-    public WorkerLoop(final CompiledPipeline pipeline, final BlockingQueue<IRubyObject> signalQueue,
-        final QueueReadClient readClient, final LongAdder filteredCounter,
-        final LongAdder consumedCounter, final AtomicBoolean flushing, final boolean drainQueue) {
+    public WorkerLoop(final CompiledPipeline pipeline, final QueueReadClient readClient,
+        final LongAdder filteredCounter, final LongAdder consumedCounter,
+        final AtomicBoolean flushRequested, final AtomicBoolean flushing,
+        final AtomicBoolean shutdownRequested, final boolean drainQueue) {
         this.consumedCounter = consumedCounter;
         this.filteredCounter = filteredCounter;
         this.execution = pipeline.buildExecution();
-        this.signalQueue = signalQueue;
         this.drainQueue = drainQueue;
         this.readClient = readClient;
+        this.flushRequested = flushRequested;
         this.flushing = flushing;
+        this.shutdownRequested = shutdownRequested;
     }
 
     @Override
     public void run() {
         try {
-            boolean shutdownRequested = false;
-            final ThreadContext context = RubyUtil.RUBY.getCurrentContext();
+            boolean isShutdown = false;
             do {
-                final IRubyObject signal = signalQueue.poll();
-                shutdownRequested = shutdownRequested
-                    || signal != null && signal.callMethod(context, "shutdown?").isTrue();
+                isShutdown = isShutdown || shutdownRequested.get();
                 final QueueBatch batch = readClient.readBatch();
                 consumedCounter.add(batch.filteredSize());
-                final boolean isFlush = signal != null && signal.callMethod(context, "flush?").isTrue();
+                final boolean isFlush = flushRequested.get();
                 readClient.startMetrics(batch);
                 execution.compute(batch.to_a(), isFlush, false);
                 int filteredCount = batch.filteredSize();
@@ -62,13 +59,14 @@ public final class WorkerLoop implements Runnable {
                 readClient.closeBatch(batch);
                 if (isFlush) {
                     flushing.set(false);
+                    flushRequested.set(false);
                 }
-            } while (!shutdownRequested || isDraining());
+            } while (!isShutdown || isDraining());
             //we are shutting down, queue is drained if it was required, now  perform a final flush.
             //for this we need to create a new empty batch to contain the final flushed events
             final QueueBatch batch = readClient.newBatch();
             readClient.startMetrics(batch);
-            execution.compute(batch.to_a(), true, false);
+            execution.compute(batch.to_a(), true, true);
             readClient.closeBatch(batch);
         } catch (final Exception ex) {
             LOGGER.error(
