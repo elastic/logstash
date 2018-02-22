@@ -93,6 +93,7 @@ Keep these in mind as both authors and reviewers of PRs:
 
 * Have empathy in both directions (reviewer <--> reviewee/author)
 * Progress over perfection and personal preferences
+* Authors and reviewers should proactively address questions of pacing in order to reach an acceptable balance between meeting the author's expected timeline for merging the PR and the reviewer's ability to keep up with revisions to the PR.
 
 ## As a reviewee (i.e. author) of a PR:
 
