@@ -14,11 +14,7 @@ release-state can be: released | prerelease | unreleased
 :versioned_docs: false
 
 :jdk:                   1.8.0
-:guide:                 https://www.elastic.co/guide/en/elasticsearch/guide/current/
-:libbeat:               https://www.elastic.co/guide/en/beats/libbeat/{branch}/
-:filebeat:              https://www.elastic.co/guide/en/beats/filebeat/{branch}/
-:metricbeat:            https://www.elastic.co/guide/en/beats/metricbeat/{branch}/
-:lsissue:               https://github.com/elastic/logstash/issues/
+:lsissue:               https://github.com/elastic/logstash/issues
 :lsplugindocs:          https://www.elastic.co/guide/en/logstash-versioned-plugins/current
 
 include::{asciidoc-dir}/../../shared/attributes.asciidoc[]
