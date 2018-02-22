@@ -49,7 +49,7 @@ public final class WorkerLoop implements Runnable {
                 isShutdown = isShutdown || shutdownRequested.get();
                 final QueueBatch batch = readClient.readBatch();
                 consumedCounter.add(batch.filteredSize());
-                final boolean isFlush = flushRequested.get();
+                final boolean isFlush = flushRequested.compareAndSet(true, false);
                 readClient.startMetrics(batch);
                 execution.compute(batch.to_a(), isFlush, false);
                 int filteredCount = batch.filteredSize();
@@ -59,7 +59,6 @@ public final class WorkerLoop implements Runnable {
                 readClient.closeBatch(batch);
                 if (isFlush) {
                     flushing.set(false);
-                    flushRequested.set(false);
                 }
             } while (!isShutdown || isDraining());
             //we are shutting down, queue is drained if it was required, now  perform a final flush.
