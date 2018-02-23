@@ -66,7 +66,10 @@ public final class LsConfiguration {
     }
 
     @SuppressWarnings("unchecked")
-    public static PluginConfigSpec<Map<String, String>> requiredHashSetting(final String name) {
-        return new PluginConfigSpec(name, Map.class, null, false, true);
+    public static PluginConfigSpec<Map<String, LsConfiguration>> requiredHashSetting(
+        final String name, final Collection<PluginConfigSpec<?>> spec) {
+        return new PluginConfigSpec(
+            name, Map.class, null, false, true
+        );
     }
 }

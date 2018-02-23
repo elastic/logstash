@@ -24,8 +24,13 @@ public final class HttpPoller implements Input {
     private static final PluginConfigSpec<Path> CA_CERT_CONFIG =
         LsConfiguration.pathSetting("cacert");
 
-    private static final PluginConfigSpec<Map<String, String>> URLS_CONFIG =
-        LsConfiguration.requiredHashSetting("urls");
+    private static final PluginConfigSpec<String> URL_METHOD_CONFIG =
+        LsConfiguration.stringSetting("method");
+
+    private static final PluginConfigSpec<Map<String, LsConfiguration>> URLS_CONFIG =
+        LsConfiguration.requiredHashSetting(
+            "urls", Arrays.asList(URL_METHOD_CONFIG, USER_CONFIG)
+        );
 
     private final LsConfiguration configuration;
 
@@ -42,6 +47,11 @@ public final class HttpPoller implements Input {
         } else {
             // no password things
         }
+        final Map<String, LsConfiguration> urls = configuration.get(URLS_CONFIG);
+        urls.forEach((key, config) -> {
+            System.out.println("Schema on method " + key + " is " + config.get(URL_METHOD_CONFIG));
+            System.out.println("User on method " + key + " is " + config.get(USER_CONFIG));
+        });
     }
 
     @Override
