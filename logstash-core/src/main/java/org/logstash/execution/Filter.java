@@ -17,6 +17,12 @@ public interface Filter extends LsPlugin {
     @LogstashPlugin(name = "mutate")
     final class Mutate implements Filter {
 
+        private static final PluginConfigSpec<String> FIELD_CONFIG =
+            LsConfiguration.requiredStringSetting("field");
+
+        private static final PluginConfigSpec<String> VALUE_CONFIG =
+            LsConfiguration.requiredStringSetting("value");
+
         private final String field;
 
         private final String value;
@@ -27,8 +33,8 @@ public interface Filter extends LsPlugin {
          * @param context Logstash Context
          */
         public Mutate(final LsConfiguration configuration, final LsContext context) {
-            this.field = configuration.getString("field");
-            this.value = configuration.getString("value");
+            this.field = configuration.get(FIELD_CONFIG);
+            this.value = configuration.get(VALUE_CONFIG);
         }
 
         @Override
@@ -66,10 +72,7 @@ public interface Filter extends LsPlugin {
 
         @Override
         public Collection<PluginConfigSpec<?>> configSchema() {
-            return Arrays.asList(
-                new PluginConfigSpec<>("field", String.class, null, false),
-                new PluginConfigSpec<>("value", String.class, null, false)
-            );
+            return Arrays.asList(FIELD_CONFIG, VALUE_CONFIG);
         }
     }
 

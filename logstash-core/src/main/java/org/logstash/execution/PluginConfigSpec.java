@@ -8,18 +8,25 @@ public final class PluginConfigSpec<T> {
 
     private final boolean deprecated;
 
+    private final boolean required;
+
     private final T defaultValue;
 
     public PluginConfigSpec(final String name, final Class<T> type,
-        final T defaultValue, final boolean deprecated) {
+        final T defaultValue, final boolean deprecated, final boolean required) {
         this.name = name;
         this.type = type;
         this.defaultValue = defaultValue;
         this.deprecated = deprecated;
+        this.required = required;
     }
 
     public boolean deprecated() {
         return this.deprecated;
+    }
+
+    public boolean required() {
+        return this.required;
     }
 
     public T defaultValue() {
