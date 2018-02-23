@@ -12,8 +12,6 @@ public interface Filter extends LsPlugin {
 
     QueueReader filter(QueueReader reader);
 
-    void flush(boolean isShutdown);
-
     @LogstashPlugin(name = "mutate")
     final class Mutate implements Filter {
 
@@ -63,11 +61,6 @@ public interface Filter extends LsPlugin {
                     reader.acknowledge(sequenceNum);
                 }
             };
-        }
-
-        @Override
-        public void flush(final boolean isShutdown) {
-            // Nothing to do here
         }
 
         @Override
@@ -129,11 +122,6 @@ public interface Filter extends LsPlugin {
                     reader.acknowledge(sequenceNum);
                 }
             };
-        }
-
-        @Override
-        public void flush(final boolean isShutdown) {
-            // Nothing to do here
         }
 
         @Override
