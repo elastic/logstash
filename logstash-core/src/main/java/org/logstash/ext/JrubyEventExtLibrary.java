@@ -48,6 +48,10 @@ public final class JrubyEventExtLibrary {
             super(runtime, klass);
         }
 
+        public static RubyEvent newRubyEvent(Ruby runtime) {
+            return newRubyEvent(runtime, new Event());
+        }
+
         public static RubyEvent newRubyEvent(Ruby runtime, Event event) {
             final RubyEvent ruby =
                 new RubyEvent(runtime, RubyUtil.RUBY_EVENT_CLASS);
@@ -133,9 +137,14 @@ public final class JrubyEventExtLibrary {
         }
 
         @JRubyMethod(name = "clone")
-        public IRubyObject ruby_clone(ThreadContext context)
+        public IRubyObject rubyClone(ThreadContext context)
         {
-            return RubyEvent.newRubyEvent(context.runtime, this.event.clone());
+            return rubyClone(context.runtime);
+        }
+
+        public RubyEvent rubyClone(Ruby runtime)
+        {
+            return RubyEvent.newRubyEvent(runtime, this.event.clone());
         }
 
         @JRubyMethod(name = "overwrite", required = 1)
