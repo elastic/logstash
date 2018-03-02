@@ -40,13 +40,24 @@ module LogStash module PipelineAction
           LogStash::Pipeline.new(@pipeline_config, @metric, agent)
         end
 
-      status = pipeline.start # block until the pipeline is correctly started or crashed
-
-      if status
-        pipelines[pipeline_id] = pipeline # The pipeline is successfully started we can add it to the hash
+      status = nil
+      pipelines.compute(pipeline_id) do |id,value|
+        if value
+          message = "Attempted to create a pipeline that already exists! This shouldn't be possible"
+          logger.error(message, :pipeline_id => id, :pipelines => pipelines)
+          raise message
+        end
+        status = pipeline.start # block until the pipeline is correctly started or crashed
+        pipeline # The pipeline is successfully started we can add it to the map
       end
 
+
       LogStash::ConvergeResult::ActionResult.create(self, status)
+    end
+
+
+    def to_s
+      "PipelineAction::Create<#{pipeline_id}>"
     end
   end
 end end

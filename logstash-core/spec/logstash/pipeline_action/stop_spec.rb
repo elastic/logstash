@@ -9,7 +9,7 @@ describe LogStash::PipelineAction::Stop do
   let(:pipeline_config) { "input { generator {} } output { null {} }" }
   let(:pipeline_id) { :main }
   let(:pipeline) { mock_pipeline_from_string(pipeline_config) }
-  let(:pipelines) { { :main => pipeline } }
+  let(:pipelines) { chm = java.util.concurrent.ConcurrentHashMap.new; chm[:main] = pipeline; chm }
   let(:agent) { double("agent") }
 
   subject { described_class.new(pipeline_id) }
