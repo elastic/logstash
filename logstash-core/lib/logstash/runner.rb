@@ -29,7 +29,7 @@ require "logstash/shutdown_watcher"
 require "logstash/patches/clamp"
 require "logstash/settings"
 require "logstash/version"
-require "logstash/plugins/registry"
+require 'logstash/plugins'
 require "logstash/modules/util"
 require "logstash/bootstrap_check/default_config"
 require "logstash/bootstrap_check/bad_java"
