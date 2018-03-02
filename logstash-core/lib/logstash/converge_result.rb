@@ -60,7 +60,7 @@ module LogStash
 
     def initialize(expected_actions_count)
       @expected_actions_count = expected_actions_count
-      @actions = {}
+      @actions = java.util.concurrent.ConcurrentHashMap.new
     end
 
     def add(action, action_result)

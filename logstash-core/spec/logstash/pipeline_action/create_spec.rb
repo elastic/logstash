@@ -9,7 +9,7 @@ require "logstash/inputs/generator"
 describe LogStash::PipelineAction::Create do
   let(:metric) { LogStash::Instrument::NullMetric.new(LogStash::Instrument::Collector.new) }
   let(:pipeline_config) { mock_pipeline_config(:main, "input { generator { id => '123' } } output { null {} }") }
-  let(:pipelines) {  Hash.new }
+  let(:pipelines) { java.util.concurrent.ConcurrentHashMap.new }
   let(:agent) { double("agent") }
 
   before do

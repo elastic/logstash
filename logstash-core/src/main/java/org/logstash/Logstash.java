@@ -139,6 +139,6 @@ public final class Logstash implements Runnable, AutoCloseable {
     }
 
     private static void uncleanShutdown(final Exception ex) {
-        throw new IllegalStateException("Logstash stopped processing because of an error:", ex);
+        throw new IllegalStateException("Logstash stopped processing because of an error: " + ex.getMessage(), ex);
     }
 }
