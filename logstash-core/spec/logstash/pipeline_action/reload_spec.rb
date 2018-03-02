@@ -11,7 +11,7 @@ describe LogStash::PipelineAction::Reload do
   let(:new_pipeline_config) { mock_pipeline_config(pipeline_id, "input { generator { id => 'new' } } output { null {} }", { "pipeline.reloadable" => true}) }
   let(:pipeline_config) { "input { generator {} } output { null {} }" }
   let(:pipeline) { mock_pipeline_from_string(pipeline_config, mock_settings("pipeline.reloadable" => true)) }
-  let(:pipelines) { { pipeline_id => pipeline } }
+  let(:pipelines) { chm = java.util.concurrent.ConcurrentHashMap.new; chm[pipeline_id] = pipeline; chm }
   let(:agent) { double("agent") }
 
   subject { described_class.new(new_pipeline_config, metric) }

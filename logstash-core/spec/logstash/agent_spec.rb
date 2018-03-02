@@ -132,8 +132,14 @@ describe LogStash::Agent do
 
           it "does not upgrade the new config" do
             t = Thread.new { subject.execute }
+<<<<<<< HEAD
             sleep(0.01) until subject.with_pipelines {|pipelines| subject.running_pipelines? && pipelines.values.first.ready? }
 
+=======
+            Timeout.timeout(timeout) do
+              sleep(0.01) until subject.running_pipelines? && subject.pipelines.values.first.ready?
+            end
+>>>>>>> a1c0e417e5... Support for inter-pipeline comms with a new pipeline input/output
             expect(subject.converge_state_and_update).not_to be_a_successful_converge
             expect(subject).to have_running_pipeline?(mock_config_pipeline)
 
@@ -151,7 +157,13 @@ describe LogStash::Agent do
 
           it "does upgrade the new config" do
             t = Thread.new { subject.execute }
+<<<<<<< HEAD
             sleep(0.01) until subject.with_pipelines {|pipelines| subject.pipelines_count > 0 && pipelines.values.first.ready? }
+=======
+            Timeout.timeout(timeout) do
+              sleep(0.01) until subject.pipelines_count > 0 && subject.pipelines.values.first.ready?
+            end
+>>>>>>> a1c0e417e5... Support for inter-pipeline comms with a new pipeline input/output
 
             expect(subject.converge_state_and_update).to be_a_successful_converge
             expect(subject).to have_running_pipeline?(mock_second_pipeline_config)
@@ -173,8 +185,14 @@ describe LogStash::Agent do
 
           it "does not try to reload the pipeline" do
             t = Thread.new { subject.execute }
+<<<<<<< HEAD
             sleep(0.01) until subject.with_pipelines {|pipelines| subject.running_pipelines? && pipelines.values.first.running? }
 
+=======
+            Timeout.timeout(timeout) do
+              sleep(0.01) until subject.running_pipelines? && subject.pipelines.values.first.running?
+            end
+>>>>>>> a1c0e417e5... Support for inter-pipeline comms with a new pipeline input/output
             expect(subject.converge_state_and_update).not_to be_a_successful_converge
             expect(subject).to have_running_pipeline?(mock_config_pipeline)
 
@@ -192,7 +210,13 @@ describe LogStash::Agent do
 
           it "tries to reload the pipeline" do
             t = Thread.new { subject.execute }
+<<<<<<< HEAD
             sleep(0.01) until subject.with_pipelines {|pipelines| subject.running_pipelines? && pipelines.values.first.running? }
+=======
+            Timeout.timeout(timeout) do
+              sleep(0.01) until subject.running_pipelines? && subject.pipelines.values.first.running?
+            end
+>>>>>>> a1c0e417e5... Support for inter-pipeline comms with a new pipeline input/output
 
             expect(subject.converge_state_and_update).to be_a_successful_converge
             expect(subject).to have_running_pipeline?(mock_second_pipeline_config)

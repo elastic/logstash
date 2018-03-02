@@ -97,7 +97,13 @@ module LogStash module Plugins
     attr_reader :hooks
 
     def initialize
-      @registry = {}
+      @mutex = Mutex.new
+      # We need a threadsafe class here because we may perform
+      # get/set operations concurrently despite the fact we don't use
+      # the special atomic methods. That may not be apparent from this file,
+      # but it is the case that we can call lookups from multiple threads, 
+      # when multiple pipelines are in play, and that a lookup may modify the registry.
+      @registry = java.util.concurrent.ConcurrentHashMap.new
       @hooks = HooksRegistry.new
     end
 
@@ -123,6 +129,8 @@ module LogStash module Plugins
     end
 
     def load_available_plugins
+      require "logstash/plugins/builtin"
+
       GemRegistry.logstash_plugins.each do |plugin_context|
         # When a plugin has a HOOK_FILE defined, its the responsibility of the plugin
         # to register itself to the registry of available plugins.
@@ -140,17 +148,21 @@ module LogStash module Plugins
     end
 
     def lookup(type, plugin_name, &block)
-      plugin = get(type, plugin_name)
-      # Assume that we have a legacy plugin
-      if plugin.nil?
-        plugin = legacy_lookup(type, plugin_name)
-      end
+      @mutex.synchronize do
+        plugin_spec = get(type, plugin_name)
+        # Assume that we have a legacy plugin
+        if plugin_spec.nil?
+          plugin_spec = legacy_lookup(type, plugin_name)
+        end
 
-      if block_given? # if provided pass a block to do validation
-        raise LoadError, "Block validation fails for plugin named #{plugin_name} of type #{type}," unless block.call(plugin.klass, plugin_name)
-      end
+        raise LoadError, "No plugin found with name '#{plugin_name}'" unless plugin_spec
 
-      return plugin.klass
+        if block_given? # if provided pass a block to do validation
+          raise LoadError, "Block validation fails for plugin named #{plugin_name} of type #{type}," unless block.call(plugin_spec.klass, plugin_name)
+        end
+
+        return plugin_spec.klass
+      end
     end
 
     # The legacy_lookup method uses the 1.5->5.0 file structure to find and match
