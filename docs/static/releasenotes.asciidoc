@@ -3,6 +3,12 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-6-2-2,Logstash 6.2.2>>
+* <<logstash-6-2-1,Logstash 6.2.1>>
+* <<logstash-6-2-0,Logstash 6.2.0>>
+* <<logstash-6-1-3,Logstash 6.1.3>>
+* <<logstash-6-1-2,Logstash 6.1.2>>
+* <<logstash-6-1-1,Logstash 6.1.1>>
 * <<logstash-6-1-0,Logstash 6.1.0>>
 
 ifdef::include-xpack[]
@@ -11,7 +17,224 @@ See also:
 * <<release-notes-xls>>
 endif::include-xpack[]
 
+[[logstash-6-2-2]]
+=== Logstash 6.2.2 Release Notes
+
+* Fix issue introduced in 6.2.1 where `bin/logstash-plugin` could not install or upgrade plugins
+
+[[logstash-6-2-1]]
+=== Logstash 6.2.1 Release Notes
+
+* There are no user facing changes in this release
+
+
+[[logstash-6-2-0]]
+=== Logstash 6.2.0 Release Notes
+
+* Added support to protect sensitive settings and configuration in a {logstash-ref}/keystore.html[keystore].
+* Added the {logstash-ref}/plugins-filters-jdbc_static.html[jdbc_static filter] as a default plugin.
+* Set better defaults to allow for higher throughput under load. (https://github.com/elastic/logstash/issues/8707[#8707] and https://github.com/elastic/logstash/issues/8702[#8702])
+* Set the default configuration for RPM/DEB/Docker installations to use {logstash-ref}/multiple-pipelines.html[Multiple pipelines].
+* Added a default max size value (100MB) for log files.
+* Added compression when log files are rolled (for ZIP-based installs).
+* Added the ability to specify `--pipeline.id` from the command line. (https://github.com/elastic/logstash/issues/8868[#8868])
+* Implemented continued improvements to the next generation of execution. Give it a try with the command line switch `--experimental-java-execution`.
+
+==== Plugins
+
+*Jdbc_static Filter*
+
+* Released the initial version the {logstash-ref}/plugins-filters-jdbc_static.html[jdbc_static filter], which enriches events with data pre-loaded from a remote database.
+
+*Dissect Filter*
+
+* Fixed multiple bugs. See the plugin release notes for https://github.com/logstash-plugins/logstash-filter-dissect/blob/master/CHANGELOG.md#113[1.1.3].
+
+*Grok Filter*
+
+* Fixed a thread leak that occurred when Logstash was reloaded.
+
+*Kafka Output*
+
+* Improved error logging for when a producer cannot be created.
+
+[[logstash-6-1-3]]
+=== Logstash 6.1.3 Release Notes
+
+* Fix bug where with terminating input plugins in-memory queue might not be drained. This could happen in some situations with inputs like the stdin input or the Elasticsearch input. This could result in some messages not being processed.
+* Correctly handle paths with spaces on Windows. See https://github.com/elastic/logstash/pull/8931[#8931] for details.
+
+==== Plugins
+
+*Multiline Codec*
+
+* Fixed concurrency issue causing random failures when multiline codec was used together with a multi-threaded input plugin
+
+*CSV Filter*
+
+* Added support for tagging empty rows which users can reference to conditionally drop events
+
+*Elasticsearch Filter*
+
+* If elasticsearch response contains a shard failure, then tag_on_failure tags are added to Logstash event
+* Enhancement : add support for nested fields
+* Enhancement : add 'docinfo_fields' option
+* Enhancement : add 'aggregation_fields' option
+
+*Elasticsearch Input*
+
+* Add support for scheduling periodic execution of the query
+
+*RabbitMQ Input/Output*
+
+* Bug Fix: undefined method `value' for nil:NilClass with SSL enabled, but no certificates provided
+* Output Only: Use shared concurrency / multiple channels for performance
+
+*HTTP Output*
+
+* Added json_batch format
+* Make 429 responses log at debug, not error level. They are really just flow control
+
+
+[[logstash-6-1-2]]
+=== Logstash 6.1.2 Release Notes
+* Fixed a bug that caused empty objects when cloning Logstash Timestamp instances
+* Changed the way pipeline configurations are hashed to ensure consistence (not user facing)
+
+[float]
+==== Input Plugins
+
+*`Beats`*:
+
+* Re-order Netty pipeline to avoid NullPointerExceptions in KeepAliveHandler when Logstash is under load
+* Improve exception logging
+* Upgrade to Netty 4.1.18 with tcnative 2.0.7
+* Better handle case when remoteAddress is nil to reduce amount of warning messages in logs
+
+*`Jdbc`*:
+
+* Fix thread and memory leak. See (https://github.com/logstash-plugins/logstash-input-jdbc/issues/255[#255])
+
+*`Kafka`*:
+
+* Upgrade Kafka client to version 1.0.0
+
+*`S3`*:
+
+* Add support for auto-detecting gzip files with .gzip extension, in addition to existing support for *.gz
+* Improve performance of gzip decoding by 10x by using Java's Zlib
+* Change default sincedb path to live in `{path.data}/plugins/inputs/s3` instead of $HOME. Prior Logstash installations (using $HOME default) are automatically migrated.
+* Don't download the file if the length is 0
+
+*`Tcp`*:
+
+* Fix bug where codec was not flushed when client disconnected
+* Restore INFO logging statement on startup
+* Fixed typo in @metadata tag
+
+[float]
+==== Filter Plugins
+
+*`Geoip`*:
+
+* Skip lookup operation if source field contains an empty string
+* Update of the GeoIP2 DB
+
+*`Grok`*:
+
+* Fix potential race condition. see (https://github.com/logstash-plugins/logstash-filter-grok/pull/131[#131])
+
+[float]
+==== Output Plugins
+
+*`Kafka`*:
+
+* bump kafka dependency to 1.0.0
+
+[float]
+==== Codecs
+
+*`Line`*:
+
+* Reverted thread safety fix and instead fixed udp input codec per worker. See (https://github.com/logstash-plugins/logstash-codec-line/pull/14[#14])
+
+*`Netflow`*:
+
+* Added support for Nokia BRAS
+* Added Netflow v9 IE150 IE151, IE154, IE155
+
+*`Plain`*:
+
+* Code cleanup. See (https://github.com/logstash-plugins/logstash-codec-plain/pull/6[#6])
+
+[[logstash-6-1-1]]
+=== Logstash 6.1.1 Release Notes
+*  There are no user-facing changes in Logstash core in this release.
+
+[float]
+==== Input Plugins
+
+*`Beats`*:
+
+* Fixed issue with close_wait connections to make sure that keep alive is sent back to the client. (https://github.com/logstash-plugins/logstash-input-beats/pull/272[#272])
+
+*`HTTP`*:
+
+* If all webserver threads are busy, the plugin now returns status code 429. (https://github.com/logstash-plugins/logstash-input-http/pull/75[#75])
+
+*`JDBC`*:
+
+* Fixed connection and memory leak. (https://github.com/logstash-plugins/logstash-input-jdbc/issues/251[#251])
+
+*`Syslog`*:
+
+* Fixed issue where stopping a pipeline with active inbound syslog connections (for example, while reloading the configuration) could cause Logstash to crash. (https://github.com/logstash-plugins/logstash-input-syslog/issues/40[#40])
+
+[float]
+==== Filter Plugins
+
+*`Split`*:
+
+* Fixed crash on arrays with null values. (https://github.com/logstash-plugins/logstash-filter-split#31[#31])
+
+[float]
+==== Codecs
+
+*`Line`*:
+
+* Fixed thread safety issue. (https://github.com/logstash-plugins/logstash-codec-line/pull/13[#13])
+
+*`Netflow`*:
+
+* Added vIPtela support.
+* Added fields for Cisco ASR1k.
+
+
 [[logstash-6-1-0]]
 === Logstash 6.1.0 Release Notes
+* Implemented a new experimental Java execution engine for Logstash pipelines. The Java engine is off by default, but can be enabled with --experimental-java-execution ({lsissue}7950[Issue 7950]).
+* Added support for changing the <<configuring-persistent-queues,page capacity>> for an existing queue ({lsissue}8628[Issue 8628]).
+* Made extensive improvements to pipeline execution performance and memory efficiency ({lsissue}7692[Issue 7692], {lsissue}8776[8776], {lsissue}8577[8577], {lsissue}8446[8446], {lsissue}8333[8333], {lsissue}8163[8163], {lsissue}8103[8103], {lsissue}8087[8087], and {lsissue}7691[7691]).
 
-Placeholder for 6.1.0 release notes
+[float]
+==== Filter Plugins
+
+*`Grok`*:
+
+* Fixed slow metric invocation and needless locking on timeout enforcer (https://github.com/logstash-plugins/logstash-filter-grok/pull/125[#125]).
+
+*`Mutate`*:
+
+* Added support for boolean-to-integer conversion (https://github.com/logstash-plugins/logstash-filter-mutate/pull/108[#108]).
+
+*`Ruby`*:
+
+* Fixed concurrency issues with multiple worker threads that was caused by a (https://github.com/jruby/jruby/issues/4868[JRuby issue]).
+* Added file-based Ruby script support as an alternative to the existing inline option (https://github.com/logstash-plugins/logstash-filter-ruby/pull/35[#35]).
+
+[float]
+==== Output Plugins
+
+*`Elasticsearch`*:
+
+* When indexing to Elasticsearch 6.x or above, Logstash ignores the event's `type` field and no longer uses it to set the document's `_type` (https://github.com/logstash-plugins/logstash-filter-elasticsearch/pull/712[#712]).
