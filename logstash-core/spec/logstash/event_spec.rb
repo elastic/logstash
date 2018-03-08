@@ -76,6 +76,26 @@ describe LogStash::Event do
         expect(e.get("[foo][-1]")).to eq(list[-1])
       end
     end
+
+    context("with default value") do
+      let(:event) do
+        LogStash::Event.new({"foo" => "bar", "false-value" => false, "nil-value" => nil})
+      end
+
+      it "should get values that exist" do
+        expect(event.get("foo", "supplied-default")).to eq("bar")
+        expect(event.get("[foo]", "supplied-default")).to eq("bar")
+        expect(event.get("false-value", "supplied-default")).to eq(false)
+        expect(event.get("[false-value]", "supplied-default")).to eq(false)
+        expect(event.get("nil-value", "supplied-default")).to eq(nil)
+        expect(event.get("[nil-value]", "supplied-default")).to eq(nil)
+      end
+
+      it "should fall back to default value when field doesn't exist" do
+        expect(event.get("not-set", "supplied-default")).to eq("supplied-default")
+        expect(event.get("[not-set]", "supplied-default")).to eq("supplied-default")
+      end
+    end
   end
 
   context "#set" do
