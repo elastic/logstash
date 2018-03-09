@@ -102,6 +102,7 @@ module LogStash module Plugins
     end
 
     def setup!
+      load_xpack unless LogStash::OSS
       load_available_plugins
       execute_universal_plugins
     end
@@ -114,6 +115,11 @@ module LogStash module Plugins
 
     def plugins_with_type(type)
       @registry.values.select { |specification| specification.type.to_sym == type.to_sym }.collect(&:klass)
+    end
+
+    def load_xpack
+      logger.info("Loading x-pack")
+      require_relative(::File.join(LogStash::ROOT, "x-pack/lib/logstash_registry"))
     end
 
     def load_available_plugins
