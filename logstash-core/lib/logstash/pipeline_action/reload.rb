@@ -19,6 +19,10 @@ module LogStash module PipelineAction
       @pipeline_config.pipeline_id
     end
 
+    def to_s
+      "PipelineAction::Reload<#{pipeline_id}>"
+    end
+
     def execute(agent, pipelines)
       old_pipeline = pipelines[pipeline_id]
 
@@ -42,12 +46,16 @@ module LogStash module PipelineAction
       end
 
       logger.info("Reloading pipeline", "pipeline.id" => pipeline_id)
-      status = Stop.new(pipeline_id).execute(agent, pipelines)
 
-      if status
-        return Create.new(@pipeline_config, @metric).execute(agent, pipelines)
-      else
-        return status
+      pipelines.compute(pipeline_id) do |k,pipeline|
+        status = Stop.new(pipeline_id).execute(agent, pipelines)
+
+        if status
+          return Create.new(@pipeline_config, @metric).execute(agent, pipelines)
+        else
+          return status
+        end
+        pipeline
       end
     end
   end
