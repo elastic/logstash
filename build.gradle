@@ -170,9 +170,24 @@ task assembleTarDistribution(dependsOn: downloadAndInstallJRuby) {
   inputs.files fileTree("${projectDir}/logstash-core-plugin-api")
   inputs.files fileTree("${projectDir}/logstash-core/lib")
   inputs.files fileTree("${projectDir}/logstash-core/src")
+  inputs.files fileTree("${projectDir}/x-pack")
   outputs.files file("${buildDir}/logstash-${project.version}.tar.gz")
   doLast {
     rubyGradleUtils.rake('artifact:tar')
+  }
+}
+
+task assembleOssTarDistribution() {
+  inputs.files fileTree("${projectDir}/rakelib")
+  inputs.files fileTree("${projectDir}/bin")
+  inputs.files fileTree("${projectDir}/config")
+  inputs.files fileTree("${projectDir}/lib")
+  inputs.files fileTree("${projectDir}/modules")
+  inputs.files fileTree("${projectDir}/logstash-core-plugin-api")
+  inputs.files fileTree("${projectDir}/logstash-core/lib")
+  inputs.files fileTree("${projectDir}/logstash-core/src")
+  doLast {
+    rubyGradleUtils.rake('artifact:tar_oss')
   }
 }
 
@@ -185,9 +200,25 @@ task assembleZipDistribution(dependsOn: downloadAndInstallJRuby) {
   inputs.files fileTree("${projectDir}/logstash-core-plugin-api")
   inputs.files fileTree("${projectDir}/logstash-core/lib")
   inputs.files fileTree("${projectDir}/logstash-core/src")
+  inputs.files fileTree("${projectDir}/x-pack")
   outputs.files file("${buildDir}/logstash-${project.version}.zip")
   doLast {
     rubyGradleUtils.rake('artifact:zip')
+  }
+}
+
+task assembleOssZipDistribution(dependsOn: downloadAndInstallJRuby) {
+  inputs.files fileTree("${projectDir}/rakelib")
+  inputs.files fileTree("${projectDir}/bin")
+  inputs.files fileTree("${projectDir}/config")
+  inputs.files fileTree("${projectDir}/lib")
+  inputs.files fileTree("${projectDir}/modules")
+  inputs.files fileTree("${projectDir}/logstash-core-plugin-api")
+  inputs.files fileTree("${projectDir}/logstash-core/lib")
+  inputs.files fileTree("${projectDir}/logstash-core/src")
+  outputs.files file("${buildDir}/logstash-${project.version}.zip")
+  doLast {
+    rubyGradleUtils.rake('artifact:zip_oss')
   }
 }
 
