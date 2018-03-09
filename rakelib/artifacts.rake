@@ -39,6 +39,7 @@ namespace "artifact" do
       "vendor/??*/**/.mvn/**/*",
       "Gemfile",
       "Gemfile.lock",
+      "x-pack/**/*",
     ]
   end
 
@@ -62,13 +63,26 @@ namespace "artifact" do
   end
 
   def exclude?(path)
-    excludes.any? { |ex| path == ex || (File.directory?(ex) && path =~ /^#{ex}\//) }
+    excludes.any? { |ex| path_matches_exclude?(path, ex) }
   end
 
-  def files
+  def exclude_oss?(path)
+    path_matches_exclude?(path, "x-pack" ) || exclude?(path)
+  end
+
+  def oss_excluder
+    @oss_excluder ||= self.method(:exclude_oss?)
+  end
+
+  def path_matches_exclude?(path, ex)
+    path == ex || (File.directory?(ex) && path =~ /^#{ex}\//)
+  end
+
+  def files(excluder=nil)
+    excluder ||= self.method(:exclude?)
     return @files if @files
     @files = package_files.collect do |glob|
-      Rake::FileList[glob].reject { |path| exclude?(path) }
+      Rake::FileList[glob].reject(&excluder)
     end.flatten.uniq
   end
 
@@ -81,11 +95,24 @@ namespace "artifact" do
     build_tar
   end
 
+  desc "Build an OSS tar.gz of default logstash plugins with all dependencies"
+  task "tar_oss" => ["prepare", "generate_build_metadata", "license:generate-notice-file"] do
+    puts("[artifact:tar] Building tar.gz of default plugins")
+    build_tar("-oss", oss_excluder)
+  end
+
   desc "Build a zip of default logstash plugins with all dependencies"
   task "zip" => ["prepare", "generate_build_metadata", "license:generate-notice-file"] do
     puts("[artifact:zip] Building zip of default plugins")
     build_zip
   end
+
+  desc "Build a zip of default logstash plugins with all dependencies"
+  task "zip_oss" => ["prepare", "generate_build_metadata", "license:generate-notice-file"] do
+    puts("[artifact:zip] Building zip of default plugins")
+    build_zip("-oss", oss_excluder)
+  end
+
 
   desc "Build an RPM of logstash with all dependencies"
   task "rpm" => ["prepare", "generate_build_metadata", "license:generate-notice-file"] do
@@ -93,10 +120,23 @@ namespace "artifact" do
     package("centos", "5")
   end
 
+  desc "Build an RPM of logstash with all dependencies"
+  task "rpm_oss" => ["prepare", "generate_build_metadata", "license:generate-notice-file"] do
+    puts("[artifact:rpm] building rpm package")
+    package("centos", "5", "-oss", oss_excluder)
+  end
+
+
   desc "Build a DEB of logstash with all dependencies"
   task "deb" => ["prepare", "generate_build_metadata", "license:generate-notice-file"] do
     puts("[artifact:deb] building deb package")
     package("ubuntu", "12.04")
+  end
+
+  desc "Build a DEB of logstash with all dependencies"
+  task "deb_oss" => ["prepare", "generate_build_metadata", "license:generate-notice-file"] do
+    puts("[artifact:deb] building deb package")
+    package("ubuntu", "12.04", "-oss", oss_excluder)
   end
 
   desc "Generate logstash core gems"
@@ -125,9 +165,13 @@ namespace "artifact" do
   task "build" => [:generate_build_metadata] do
     Rake::Task["artifact:gems"].invoke unless SNAPSHOT_BUILD
     Rake::Task["artifact:deb"].invoke
+    Rake::Task["artifact:deb_oss"].invoke
     Rake::Task["artifact:rpm"].invoke
+    Rake::Task["artifact:rpm_oss"].invoke
     Rake::Task["artifact:zip"].invoke
+    Rake::Task["artifact:zip_oss"].invoke
     Rake::Task["artifact:tar"].invoke
+    Rake::Task["artifact:tar_oss"].invoke
   end
 
   task "generate_build_metadata" do
@@ -204,7 +248,7 @@ namespace "artifact" do
     end
   end
 
-  def build_tar(tar_suffix = nil)
+  def build_tar(tar_suffix = nil, excluder=nil)
     require "zlib"
     require "archive/tar/minitar"
     ensure_logstash_version_constant_defined
@@ -212,7 +256,7 @@ namespace "artifact" do
     puts("[artifact:tar] building #{tarpath}")
     gz = Zlib::GzipWriter.new(File.new(tarpath, "wb"), Zlib::BEST_COMPRESSION)
     tar = Archive::Tar::Minitar::Output.new(gz)
-    files.each do |path|
+    files(excluder).each do |path|
       write_to_tar(tar, path, "logstash-#{LOGSTASH_VERSION}#{PACKAGE_SUFFIX}/#{path}")
     end
 
@@ -249,14 +293,14 @@ namespace "artifact" do
     end
   end
 
-  def build_zip(zip_suffix = "")
+  def build_zip(zip_suffix = "", excluder=nil)
     require 'zip'
     ensure_logstash_version_constant_defined
     zippath = "build/logstash#{zip_suffix}-#{LOGSTASH_VERSION}#{PACKAGE_SUFFIX}.zip"
     puts("[artifact:zip] building #{zippath}")
     File.unlink(zippath) if File.exists?(zippath)
     Zip::File.open(zippath, Zip::File::CREATE) do |zipfile|
-      files.each do |path|
+      files(excluder).each do |path|
         path_in_zip = "logstash-#{LOGSTASH_VERSION}#{PACKAGE_SUFFIX}/#{path}"
         zipfile.add(path_in_zip, path)
       end
@@ -271,7 +315,7 @@ namespace "artifact" do
     puts "Complete: #{zippath}"
   end
 
-  def package(platform, version)
+  def package(platform, version, suffix=nil, excluder=nil)
     require "stud/temporary"
     require "fpm/errors" # TODO(sissel): fix this in fpm
     require "fpm/package/dir"
@@ -289,7 +333,7 @@ namespace "artifact" do
     metadata_source_file_path = BUILD_METADATA_FILE.path
     dir.input("#{metadata_source_file_path}=/usr/share/logstash/#{metadata_file_path}")
 
-    files.each do |path|
+    files(excluder).each do |path|
       next if File.directory?(path)
       # Omit any config dir from /usr/share/logstash for packages, since we're
       # using /etc/logstash below
@@ -312,7 +356,7 @@ namespace "artifact" do
     end
 
     ensure_logstash_version_constant_defined
-    package_filename = "logstash-#{LOGSTASH_VERSION}#{PACKAGE_SUFFIX}.TYPE"
+    package_filename = "logstash#{suffix}-#{LOGSTASH_VERSION}#{PACKAGE_SUFFIX}.TYPE"
 
     File.join(basedir, "pkg", "startup.options").tap do |path|
       dir.input("#{path}=/etc/logstash")
