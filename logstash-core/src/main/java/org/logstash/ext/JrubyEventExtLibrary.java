@@ -135,7 +135,7 @@ public final class JrubyEventExtLibrary {
         @JRubyMethod(name = "clone")
         public IRubyObject ruby_clone(ThreadContext context)
         {
-            return RubyEvent.newRubyEvent(context.runtime, this.event.clone());
+            return RubyEvent.newRubyEvent(context.runtime, this.event.cowClone());
         }
 
         @JRubyMethod(name = "overwrite", required = 1)

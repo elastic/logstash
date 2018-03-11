@@ -1,13 +1,15 @@
 package org.logstash;
 
 import java.io.Serializable;
-import java.util.HashMap;
-import java.util.IdentityHashMap;
-import java.util.Map;
+import java.lang.ref.WeakReference;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import org.jruby.RubyHash;
 import org.jruby.RubyString;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
+import org.openjdk.tools.javac.util.Convert;
 
 /**
  * <p>This class is an internal API and behaves very different from a standard {@link Map}.</p>
@@ -21,6 +23,7 @@ import org.jruby.runtime.builtin.IRubyObject;
  * in {@link FieldReference#CACHE} than using String interning directly.</p>
  */
 public final class ConvertedMap extends IdentityHashMap<String, Object> {
+    private final Set<String> cowKeys = new HashSet<>();
 
     private static final long serialVersionUID = 1L;
 
@@ -44,6 +47,29 @@ public final class ConvertedMap extends IdentityHashMap<String, Object> {
 
     ConvertedMap(final int size) {
         super(size);
+    }
+
+    ConvertedMap(ConvertedMap cowParent) {
+        super(cowParent.size());
+    }
+
+    /**
+     * Creates a shallow copy of an Event
+     * @return
+     */
+    public ConvertedMap cowCopy() {
+        ConvertedMap copy = new ConvertedMap(this);
+        for (final Map.Entry<String, Object> entry : this.entrySet()) {
+            this.cowKeys.add(entry.getKey());
+            copy.cowKeys.add(entry.getKey());
+            copy.putInternedCowUnsafe(entry.getKey(), entry.getValue());
+        }
+        return copy;
+    }
+
+    // Only for internal use, doesn't uncow things.
+    private void putInternedCowUnsafe(String key, Object value) {
+        super.put(key, value);
     }
 
     public static ConvertedMap newFromMap(Map<? extends Serializable, Object> o) {
@@ -71,7 +97,9 @@ public final class ConvertedMap extends IdentityHashMap<String, Object> {
 
     @Override
     public Object put(final String key, final Object value) {
-        return super.put(FieldReference.from(key).getKey(), value);
+        final FieldReference fr = FieldReference.from(key);
+        cowKeys.remove(fr.getKey());
+        return super.put(fr.getKey(), value);
     }
 
     /**
@@ -81,6 +109,7 @@ public final class ConvertedMap extends IdentityHashMap<String, Object> {
      * @param value Value to put
      */
     public void putInterned(final String key, final Object value) {
+        cowKeys.remove(key);
         super.put(key, value);
     }
 
@@ -99,5 +128,19 @@ public final class ConvertedMap extends IdentityHashMap<String, Object> {
      */
     private static String convertKey(final RubyString key) {
         return FieldReference.from(key.getByteList()).getKey();
+    }
+
+    public void deCow(FieldReference field) {
+        String root = field.getRoot();
+        boolean removed = cowKeys.remove(root);
+        if (removed) {
+            FieldReference rootFieldRef = FieldReference.from(field.getRoot());
+            Object original = get(rootFieldRef.getKey());
+            Object clone = Cloner.deep(original);
+            if (clone instanceof Map && !(clone instanceof ConvertedMap)) {
+                clone = ConvertedMap.newFromMap((Map) clone);
+            }
+            putInternedCowUnsafe(rootFieldRef.getKey(), clone);
+        }
     }
 }

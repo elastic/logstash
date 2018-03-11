@@ -24,6 +24,13 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 
 public final class EventTest {
+    @Test
+    public void pathIsEmptyWhenOnlyKey() throws Exception {
+        Event e = new Event();
+        e.setField("[foo][bar]", 5);
+        e.setField("[baz]", 10);
+        assertEquals(1,1);
+    }
 
     @Test
     public void queueableInterfaceRoundTrip() throws Exception {
@@ -397,5 +404,35 @@ public final class EventTest {
             RubyUtil.RUBY_TIMESTAMP_CLASS, timestamp
         ));
         assertThat(event.getField("timestamp"), is(timestamp));
+    }
+
+    @Test
+    public void testCowClone() throws Exception {
+        final Event event = new Event();
+        event.setField("[foo][bar]", "baz");
+        event.setField("bot", "blah");
+
+        final Event clone = event.cowClone();
+        // Different identity
+        assertEquals(false, clone.getData() == event.getData());
+        for (Map.Entry<String, Object> entry : event.getData().entrySet()) {
+            assertEquals(true, entry.getValue() == clone.getData().get(entry.getKey()));
+        }
+        for (Map.Entry<String, Object> entry : clone.getData().entrySet()) {
+            assertEquals(true, entry.getValue() == event.getData().get(entry.getKey()));
+        }
+
+        event.setField("bot", "blargh");
+
+        // Assert that only the field we asked to change changed
+        assertEquals("blargh", event.getField("bot"));
+        assertEquals("baz", event.getField("[foo][bar]"));
+        assertEquals("blah", clone.getField("bot"));
+        assertEquals("baz", clone.getField("[foo][bar]"));
+
+        clone.setField("[foo][borg]", "something");
+        assertEquals("something", clone.getField("[foo][borg]"));
+        assertNull(event.getField("[foo][borg]"));
+
     }
 }

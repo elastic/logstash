@@ -9,6 +9,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.joda.time.DateTime;
@@ -88,6 +90,11 @@ public final class Event implements Cloneable, Queueable {
             tag(TIMESTAMP_FAILURE_TAG);
             this.setField(TIMESTAMP_FAILURE_FIELD, providedTimestamp);
         }
+    }
+
+    public Event(ConvertedMap data, ConvertedMap metadata) {
+        this.data = data;
+        this.metadata = metadata;
     }
 
     public ConvertedMap getData() {
@@ -267,6 +274,16 @@ public final class Event implements Cloneable, Queueable {
             ConvertedMap.newFromMap(Cloner.<Map<String, Object>>deep(data));
         map.putInterned(METADATA, Cloner.<Map<String, Object>>deep(metadata));
         return new Event(map);
+    }
+
+    /**
+     * Create a cheap copy of this event that doesn't copy any event data.
+     * On the first invocation of {@link #setField(FieldReference, Object)} in either the original event
+     * or the copy a deep copy will be made
+     * @return
+     */
+    public Event cowClone() {
+        return new Event(data.cowCopy(), metadata.cowCopy());
     }
 
     public String toString() {

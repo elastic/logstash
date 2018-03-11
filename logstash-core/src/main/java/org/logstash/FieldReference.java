@@ -92,6 +92,10 @@ public final class FieldReference {
         return key;
     }
 
+    public String getRoot() {
+        return path.length > 0 ? path[0] : key;
+    }
+
     @Override
     public boolean equals(final Object that) {
         if (this == that) return true;

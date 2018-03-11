@@ -13,10 +13,12 @@ public final class Accessors {
 
     public static Object set(final ConvertedMap data, final FieldReference field,
         final Object value) {
+        data.deCow(field);
         return setChild(findCreateTarget(data, field), field.getKey(), value);
     }
 
     public static Object del(final ConvertedMap data, final FieldReference field) {
+        data.deCow(field);
         final Object target = findParent(data, field);
         if (target instanceof ConvertedMap) {
             return ((ConvertedMap) target).remove(field.getKey());
