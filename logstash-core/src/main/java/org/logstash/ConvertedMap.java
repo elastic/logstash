@@ -23,7 +23,9 @@ import org.openjdk.tools.javac.util.Convert;
  * in {@link FieldReference#CACHE} than using String interning directly.</p>
  */
 public final class ConvertedMap extends IdentityHashMap<String, Object> {
-    private final Set<String> cowKeys = new HashSet<>();
+    // This could probably just be a bloom filter and save memory
+    // while being accurate enough for our purposes
+    private Set<String> cowKeys = null;
 
     private static final long serialVersionUID = 1L;
 
@@ -59,6 +61,8 @@ public final class ConvertedMap extends IdentityHashMap<String, Object> {
      */
     public ConvertedMap cowCopy() {
         ConvertedMap copy = new ConvertedMap(this);
+        this.cowKeys = new HashSet<>();
+        copy.cowKeys = new HashSet<>();
         for (final Map.Entry<String, Object> entry : this.entrySet()) {
             this.cowKeys.add(entry.getKey());
             copy.cowKeys.add(entry.getKey());
@@ -98,7 +102,7 @@ public final class ConvertedMap extends IdentityHashMap<String, Object> {
     @Override
     public Object put(final String key, final Object value) {
         final FieldReference fr = FieldReference.from(key);
-        cowKeys.remove(fr.getKey());
+        if (cowKeys != null) cowKeys.remove(fr.getKey());
         return super.put(fr.getKey(), value);
     }
 
@@ -109,7 +113,7 @@ public final class ConvertedMap extends IdentityHashMap<String, Object> {
      * @param value Value to put
      */
     public void putInterned(final String key, final Object value) {
-        cowKeys.remove(key);
+        if (cowKeys != null) cowKeys.remove(key);
         super.put(key, value);
     }
 
@@ -131,6 +135,7 @@ public final class ConvertedMap extends IdentityHashMap<String, Object> {
     }
 
     public void deCow(FieldReference field) {
+        if (cowKeys == null) return;
         String root = field.getRoot();
         boolean removed = cowKeys.remove(root);
         if (removed) {

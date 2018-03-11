@@ -1,8 +1,8 @@
-package org.logstash.plugins.pipeline;
+package org.logstash.plugins.internal;
 
 import org.logstash.ext.JrubyEventExtLibrary;
 
-public interface PipelineInput {
+public interface InternalInput {
     boolean internalReceive(JrubyEventExtLibrary.RubyEvent event);
     boolean isRunning();
 }

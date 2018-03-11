@@ -120,6 +120,8 @@ module LogStash module Plugins
     end
 
     def load_available_plugins
+      require "logstash/plugins/builtin"
+
       GemRegistry.logstash_plugins.each do |plugin_context|
         # When a plugin has a HOOK_FILE defined, its the responsibility of the plugin
         # to register itself to the registry of available plugins.
