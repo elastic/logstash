@@ -63,11 +63,11 @@ Logstash core will continue to exist under this repository and all related issue
 
 ### RVM install (optional)
 
-If you prefer to use rvm (ruby version manager) to manage Ruby versions on your machine, follow these directions:
+If you prefer to use rvm (ruby version manager) to manage Ruby versions on your machine, follow these directions. In the Logstash folder:
 
 ```sh
 gpg --keyserver hkp://keys.gnupg.net --recv-keys 409B6B1796C275462A1703113804BB82D39DC0E3
-\curl -sSL https://get.rvm.io | bash -s stable --ruby=jruby-9.1.10.0
+\curl -sSL https://get.rvm.io | bash -s stable --ruby=$(cat .ruby-version)
 ```
 
 ### Check Ruby version
@@ -76,8 +76,9 @@ Before you proceed, please check your ruby version by:
 
 ```sh
 $ ruby -v
-jruby 9.1.10.0 (2.3.3) 2017-05-25 b09c48a Java HotSpot(TM) 64-Bit Server VM 25.131-b11 on 1.8.0_131-b11 +jit [darwin-x86_64]
 ```
+
+The printed version should be the same as in the `.ruby-version` file.
 
 ### Building Logstash
 
@@ -114,7 +115,7 @@ hello world
 
 To tell logstash to use drip, either set the `USE_DRIP=1` environment variable or set `` JAVACMD=`which drip` ``.
 
-Example:
+Example (but see the *Testing* section below before running rspec for the first time):
 
     USE_DRIP=1 bin/rspec
 
