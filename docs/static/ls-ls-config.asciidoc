@@ -24,14 +24,14 @@ Run the following command:
 
 [source,shell]
 ----
-openssl req -x509 -batch -nodes -newkey rsa:2048 -keyout lumberjack.key -out lumberjack.cert -subj /CN=mylocalhost
+openssl req -x509 -batch -nodes -newkey rsa:2048 -keyout lumberjack.key -out lumberjack.cert -subj /CN=localhost
 ----
 
 where:
 
 * `lumberjack.key` is the name of the SSL key to be created
 * `lumberjack.cert` is the name of the SSL certificate to be created
-* `mylocalhost` is the name of the upstream Logstash computer
+* `localhost` is the name of the upstream Logstash computer
 
 
 This command produces output similar to the following:
@@ -58,10 +58,10 @@ Start Logstash and generate test events:
 
 [source,shell]
 ----
-bin/logstash -e 'input { generator { count => 5 } } output { lumberjack { codec => json hosts => "mylocalhost" ssl_certificate => "lumberjack.cert" port => 5000 } }'
+bin/logstash -e 'input { generator { count => 5 } } output { lumberjack { codec => json hosts => "localhost" ssl_certificate => "lumberjack.cert" port => 5000 } }'
 ----
 
-This sample command sends five events to mylocalhost:5000 using the SSL certificate provided.
+This sample command sends five events to localhost:5000 using the SSL certificate provided.
 
 [[save-cert-ls2]]
 ===== Start the downstream Logstash instance
@@ -70,7 +70,7 @@ Start the downstream instance of Logstash:
 
 [source,shell]
 ----
-bin/logstash -e 'input { beats { codec => json port => 5000 ssl_certificate => "lumberjack.cert" ssl_key => "lumberjack.key"} }'
+bin/logstash -e 'input { beats { codec => json port => 5000 ssl => true ssl_certificate => "lumberjack.cert" ssl_key => "lumberjack.key"} }'
 ----
 
 This sample command sets port 5000 to listen for incoming Beats input.
