@@ -63,7 +63,7 @@ Logstash core will continue to exist under this repository and all related issue
 
 ### RVM install (optional)
 
-If you prefer to use rvm (ruby version manager) to manage Ruby versions on your machine, follow these directions:
+If you prefer to use rvm (ruby version manager) to manage Ruby versions on your machine, follow these directions. In the Logstash folder:
 
 ```sh
 gpg --keyserver hkp://keys.gnupg.net --recv-keys 409B6B1796C275462A1703113804BB82D39DC0E3
@@ -76,7 +76,6 @@ Before you proceed, please check your ruby version by:
 
 ```sh
 $ ruby -v
-jruby 9.1.12.0 (2.3.3) 2017-05-25 b09c48a Java HotSpot(TM) 64-Bit Server VM 25.131-b11 on 1.8.0_131-b11 +jit [darwin-x86_64]
 ```
 
 The printed version should be the same as in the `.ruby-version` file.
