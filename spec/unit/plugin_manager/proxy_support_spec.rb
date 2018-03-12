@@ -128,4 +128,18 @@ describe "Proxy support" do
       expect { configure_proxy }.not_to raise_exception
     end
   end
+
+  context "when proxies are set to invalid values" do
+    let(:environments) {
+      {
+        "http_proxy" => "myproxy:8080",   # missing scheme
+        "https_proxy" => "myproxy:8080"
+      }
+    }
+
+
+    it "raises an exception" do
+      expect { configure_proxy }.to raise_error(RuntimeError)
+    end
+  end
 end
