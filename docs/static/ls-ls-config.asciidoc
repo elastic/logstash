@@ -58,10 +58,10 @@ Start Logstash and generate test events:
 
 [source,shell]
 ----
-bin/logstash -e 'input { generator { count => 5 } } output { lumberjack { codec => json hosts => "localhost" ssl_certificate => "lumberjack.cert" port => 5000 } }'
+bin/logstash -e 'input { generator { count => 5 } } output { lumberjack { codec => json hosts => "mydownstreamhost" ssl_certificate => "lumberjack.cert" port => 5000 } }'
 ----
 
-This sample command sends five events to localhost:5000 using the SSL certificate provided.
+This sample command sends five events to mydownstreamhost:5000 using the SSL certificate provided.
 
 [[save-cert-ls2]]
 ===== Start the downstream Logstash instance
