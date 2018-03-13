@@ -88,7 +88,7 @@ following suggestions:
 [[profiling-the-heap]]
 ==== Profiling the Heap
 
-When tuning Logstash you may have to adjust the heap size. You can use the https://visualvm.java.net/[VisualVM] tool to profile the heap. The *Monitor* pane in particular is useful for checking whether your heap allocation is sufficient for the current workload. The screenshots below show sample *Monitor* panes. The first pane examines a Logstash instance configured with too many inflight events. The second pane examines a Logstash instance configured with an appropriate amount of inflight events. Note that the specific batch sizes used here are most likely not applicable to your specific workload, as the memory demands of Logstash vary in large part based on the type of messages you are sending.
+When tuning Logstash you may have to adjust the heap size. You can use the https://visualvm.github.io/[VisualVM] tool to profile the heap. The *Monitor* pane in particular is useful for checking whether your heap allocation is sufficient for the current workload. The screenshots below show sample *Monitor* panes. The first pane examines a Logstash instance configured with too many inflight events. The second pane examines a Logstash instance configured with an appropriate amount of inflight events. Note that the specific batch sizes used here are most likely not applicable to your specific workload, as the memory demands of Logstash vary in large part based on the type of messages you are sending.
 
 image::static/images/pipeline_overload.png[]
 
@@ -96,7 +96,7 @@ image::static/images/pipeline_correct_load.png[]
 
 In the first example we see that the CPU isn’t being used very efficiently. In fact, the JVM is often times having to stop the VM for “full GCs”. Full garbage collections are a common symptom of excessive memory pressure. This is visible in the spiky pattern on the CPU chart. In the more efficiently configured example, the GC graph pattern is more smooth, and the CPU is used in a more uniform manner. You can also see that there is ample headroom between the allocated heap size, and the maximum allowed, giving the JVM GC a lot of room to work with.
 
-Examining the in-depth GC statistics with a tool similar to the excellent https://visualvm.java.net/plugins.html[VisualGC] plugin shows that the over-allocated VM spends very little time in the efficient Eden GC, compared to the time spent in the more resource-intensive Old Gen “Full” GCs.
+Examining the in-depth GC statistics with a tool similar to the excellent https://visualvm.github.io/plugins.html[VisualGC] plugin shows that the over-allocated VM spends very little time in the efficient Eden GC, compared to the time spent in the more resource-intensive Old Gen “Full” GCs.
 
 NOTE: As long as the GC pattern is acceptable, heap sizes that occasionally increase to the maximum are acceptable. Such heap size spikes happen in response to a burst of large events passing through the pipeline. In general practice, maintain a gap between the used amount of heap memory and the maximum.
 This document is not a comprehensive guide to JVM GC tuning. Read the official http://www.oracle.com/webfolder/technetwork/tutorials/obe/java/gc01/index.html[Oracle guide] for more information on the topic. We also recommend reading http://www.semicomplete.com/blog/geekery/debugging-java-performance.html[Debugging Java Performance].
