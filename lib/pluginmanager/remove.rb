@@ -1,5 +1,6 @@
 # encoding: utf-8
 require "pluginmanager/bundler/logstash_uninstall"
+require "pluginmanager/x_pack_interceptor.rb"
 require "pluginmanager/command"
 
 class LogStash::PluginManager::Remove < LogStash::PluginManager::Command
@@ -14,6 +15,10 @@ class LogStash::PluginManager::Remove < LogStash::PluginManager::Command
     # finding the plugins
     ##
     LogStash::Bundler.setup!({:without => [:build, :development]})
+
+    # If a user is attempting to uninstall X-Pack, present helpful output to guide
+    # them toward the OSS-only distribution of Logstash
+    LogStash::PluginManager::XPackInterceptor::Remove.intercept!(plugin)
 
     # make sure this is an installed plugin and present in Gemfile.
     # it is not possible to uninstall a dependency not listed in the Gemfile, for example a dependent codec
