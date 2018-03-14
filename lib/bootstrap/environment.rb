@@ -36,6 +36,12 @@ module LogStash
       RUBY_ENGINE
     end
 
+    def oss_only?
+      return true if ENV['OSS']=="true"
+
+      !File.exists?(File.join(LogStash::Environment::LOGSTASH_HOME, "x-pack"))
+    end
+
     def windows?
       ::Gem.win_platform?
     end
