@@ -5,7 +5,7 @@
 # uses at least 1g of memory, If we don't do this we can get OOM issues when
 # installing gems. See https://github.com/elastic/logstash/issues/5179
 export JRUBY_OPTS="-J-Xmx1g"
-export GRADLE_OPTS="-Xmx2g -Dorg.gradle.daemon=false"
+export GRADLE_OPTS="-Xmx2g -Dorg.gradle.daemon=false -Dorg.gradle.logging.level=info"
 
 export SPEC_OPTS="--order rand --format documentation"
 export CI=true
@@ -41,5 +41,4 @@ elif [[ !  -z  $@  ]]; then
 else
     echo "Running all integration tests"
     ./gradlew runIntegrationTests --console=plain
-ADLE_OPTS
-nnn
+fi
