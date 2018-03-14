@@ -40,7 +40,7 @@ echo Using drive !use_drive! for %WORKSPACE%
 !use_drive!
 
 echo Running core tests..
-call .\gradlew.bat test --console=plain
+call .\gradlew.bat test --console=plain --no-daemon
 
 if errorlevel 1 (
   echo Error: failed to run core tests. Aborting..
