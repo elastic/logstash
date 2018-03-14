@@ -310,7 +310,7 @@ describe LogStash::Filters::NOOP do
     end
   end
 
-  describe "when neither add_tag not remove_tag is specified, the tags field is left untouched" do
+  describe "when neither add_tag nor remove_tag is specified, the tags field is left untouched" do
     config <<-CONFIG
     filter {
       noop {}
