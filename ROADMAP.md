@@ -1,6 +1,6 @@
 ## Logstash Roadmap
 
-[Logstash](https://www.elastic.co/products/logstash "Logstash") is an open-source data collection engine, developed directly on Github and distributed under the Apache License 2.0. The roadmap is defined by the core themes of performance, resiliency, and manageability, along with the overall plugin ecosystem. User requirements are the main driving force behind our development efforts. If a user has a bad time, it’s a bug!  All submitted [issues](https://github.com/elastic/logstash/issues/new "New Issue"), suggestions, or ideas are greatly encouraged and appreciated.
+[Logstash](https://www.elastic.co/products/logstash "Logstash") is a data collection engine that is developed directly on Github. The roadmap is defined by the core themes of performance, resiliency, and manageability, along with the overall plugin ecosystem. User requirements are the main driving force behind our development efforts. If a user has a bad time, it’s a bug!  All submitted [issues](https://github.com/elastic/logstash/issues/new "New Issue"), suggestions, or ideas are greatly encouraged and appreciated.
 
 ### Logstash Core
 
