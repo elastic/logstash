@@ -284,3 +284,44 @@ bootstrap.dependsOn installTestGems
 runIntegrationTests.shouldRunAfter tasks.getByPath(":logstash-core:test")
 check.dependsOn runIntegrationTests
 
+task runXPackUnitTests(type: Exec, dependsOn: installTestGems) {
+    workingDir "${projectDir}/x-pack"
+    standardOutput = new ExecLogOutputStream(System.out)
+    errorOutput = new ExecLogOutputStream(System.err)
+    commandLine(['../bin/rspec', 'spec', '-fd'])
+}
+
+
+String elasticsearchSnapshotURL = "https://snapshots.elastic.co/downloads/elasticsearch/elasticsearch-${version}-SNAPSHOT.tar.gz"
+String elasticsearchDownloadLocation = "${projectDir}/build/elasticsearch-${version}-SNAPSHOT.tar.gz"
+
+task downloadEs(type: Download) {
+    description "Download ES Snapshot for current branch version: ${version}"
+    src elasticsearchSnapshotURL
+    onlyIfNewer true
+    inputs.file("${projectDir}/versions.yml")
+    outputs.file(elasticsearchDownloadLocation)
+    dest new File(elasticsearchDownloadLocation)
+    doLast {
+        System.out.println "Downloaded to ${elasticsearchDownloadLocation}"
+    }
+}
+
+task deleteLocalEs(type: Delete) {
+    delete ('./build/elasticsearch')
+}
+
+task copyEs(type: Copy, dependsOn: [downloadEs, deleteLocalEs]) {
+    from tarTree(resources.gzip(elasticsearchDownloadLocation))
+    into "./build/"
+    doLast {
+        file("./build/elasticsearch-${version}-SNAPSHOT").renameTo('./build/elasticsearch')
+    }
+}
+
+task runXPackIntegrationTests(type: Exec, dependsOn: [installTestGems, copyEs]) {
+    workingDir "${projectDir}/x-pack"
+    standardOutput = new ExecLogOutputStream(System.out)
+    errorOutput = new ExecLogOutputStream(System.err)
+    commandLine(['../bin/rspec', '-fd', 'qa/integration'])
+}
