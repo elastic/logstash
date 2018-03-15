@@ -7,6 +7,12 @@ Before upgrading Logstash:
 
 * Consult the <<breaking-changes,breaking changes>> docs.
 * Test upgrades in a development environment before upgrading your production cluster.
+
+While upgrading Logstash:
+
+* If you use {monitoring}, you must re-use the data directory when you
+upgrade Logstash. Otherwise, the Logstash node is assigned a new persistent UUID
+and becomes a new node in the monitoring data.
 ===========================================
 
 If you're upgrading other products in the stack, also read the
