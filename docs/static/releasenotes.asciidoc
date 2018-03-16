@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-6-2-3,Logstash 6.2.3>>
 * <<logstash-6-2-2,Logstash 6.2.2>>
 * <<logstash-6-2-1,Logstash 6.2.1>>
 * <<logstash-6-2-0,Logstash 6.2.0>>
@@ -16,6 +17,46 @@ See also:
 
 * <<release-notes-xls>>
 endif::include-xpack[]
+
+[[logstash-6-2-3]]
+=== Logstash 6.2.3 Release Notes
+
+* There are no changes to Logstash core in this release
+
+==== Plugins
+
+*Fluent codec*
+
+* Added ability to encode tags as fluent forward protocol tags
+
+*Netflow codec*
+
+* Improved decoding performance of ASA ACL ids, MAC addresses and IPv4 addresses
+
+*KV Filter*
+
+* Added option to split fields and values using a regex pattern (#55)
+
+*Mutate Filter*
+
+* Introduced support for number strings using a decimal comma (e.g. 1,23), added convert support to specify integer_eu and float_eu
+
+*Beats Input*
+
+* Improved memory management and back pressure handling
+
+*JDBC Input*
+
+* Added fixes for thread and memory leak
+
+*Syslog Input*
+
+* Changed syslog field to be a configurable option. This is useful for when codecs change the field containing the syslog data.
+
+*Elasticsearch Output*
+
+* Changed sniffing beahvior to connect only to `http.enabled` nodes that serve data for Elasticsearch 5.x and 6.x. Master-only nodes are ignored.
+  (For Elasticsearch 1.x and 2.x, any nodes with `http.enabled` are added to the hosts lists, including master-only nodes.)
 
 [[logstash-6-2-2]]
 === Logstash 6.2.2 Release Notes
