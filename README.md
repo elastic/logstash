@@ -24,10 +24,10 @@ For the daring, snapshot builds are available. These builds are created nightly 
 
 | artifact |
 | --- |
-| [tar](https://snapshots.elastic.co/downloads/logstash/logstash-6.1.4-SNAPSHOT.tar.gz) |
-| [zip](https://snapshots.elastic.co/downloads/logstash/logstash-6.1.4-SNAPSHOT.zip) |
-| [deb](https://snapshots.elastic.co/downloads/logstash/logstash-6.1.4-SNAPSHOT.deb) |
-| [rpm](https://snapshots.elastic.co/downloads/logstash/logstash-6.1.4-SNAPSHOT.rpm) |
+| [tar](https://snapshots.elastic.co/downloads/logstash/logstash-6.1.5-SNAPSHOT.tar.gz) |
+| [zip](https://snapshots.elastic.co/downloads/logstash/logstash-6.1.5-SNAPSHOT.zip) |
+| [deb](https://snapshots.elastic.co/downloads/logstash/logstash-6.1.5-SNAPSHOT.deb) |
+| [rpm](https://snapshots.elastic.co/downloads/logstash/logstash-6.1.5-SNAPSHOT.rpm) |
 
 ## Need Help?
 
