@@ -15,6 +15,7 @@ import org.jruby.RubyTime;
 import org.jruby.java.proxies.ConcreteJavaProxy;
 import org.junit.Test;
 import org.logstash.ext.JrubyTimestampExtLibrary;
+import org.mockito.internal.matchers.NotNull;
 
 import static net.javacrumbs.jsonunit.JsonAssert.assertJsonEquals;
 import static org.hamcrest.CoreMatchers.is;
@@ -22,6 +23,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertNotNull;
 
 public final class EventTest {
 
@@ -367,26 +369,20 @@ public final class EventTest {
     }
 
     @Test
+    public void testReservedFieldNotRemoved() throws Exception {
+        final Timestamp timestamp = new Timestamp();
+        Event e = new Event();
+        e.remove("@timestamp");
+        assertThat(e.getField("@timestamp"), is(timestamp));
+    }
+
+    @Test
     public void toStringWithTimestamp() throws Exception {
         Map<String, Object> data = new HashMap<>();
         data.put("host", "foo");
         data.put("message", "bar");
         Event e = new Event(data);
         assertEquals(e.toString(), e.getTimestamp().toString() + " foo bar");
-    }
-
-    @Test
-    public void toStringWithoutTimestamp() throws Exception {
-        Map<String, Object> data = new HashMap<>();
-        data.put("host", "foo");
-        data.put("message", "bar");
-        Event e = new Event(data);
-        e.remove("@timestamp");
-        assertEquals(e.toString(), "foo bar");
-
-        e = new Event();
-        e.remove("@timestamp");
-        assertEquals(e.toString(), "%{host} %{message}");
     }
 
     @Test

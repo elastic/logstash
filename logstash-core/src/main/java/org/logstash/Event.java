@@ -9,6 +9,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Arrays;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.joda.time.DateTime;
@@ -27,6 +28,7 @@ public final class Event implements Cloneable, Queueable {
     private ConvertedMap data;
     private ConvertedMap metadata;
 
+    public static final String[] RESERVED_FIELDS = { "@timestamp", "@version", "@metadata" };
     public static final String METADATA = "@metadata";
     public static final String METADATA_BRACKETS = "[" + METADATA + "]";
     public static final String TIMESTAMP = "@timestamp";
@@ -249,7 +251,15 @@ public final class Event implements Cloneable, Queueable {
         return this;
     }
 
+    public Boolean isReserved(final String field) {
+        return Arrays.asList(RESERVED_FIELDS).contains(field);
+    }
+
     public Object remove(final String path) {
+        if(isReserved(path)){
+            logger.warn("Unable to remove reserved field " + path);
+            return null;
+        }
         return remove(FieldReference.from(path));
     }
 
