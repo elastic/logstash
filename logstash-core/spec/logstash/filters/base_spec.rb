@@ -309,4 +309,17 @@ describe LogStash::Filters::NOOP do
       reject { subject }.include?("go")
     end
   end
+
+  describe "when neither add_tag nor remove_tag is specified, the tags field is left untouched" do
+    config <<-CONFIG
+    filter {
+      noop {}
+    }
+    CONFIG
+
+    sample_one("type" => "noop", "go" => "away", "tags" => {"blackhole" => "go"}) do
+      expect(subject.get("[tags][blackhole]")).to eq("go")
+    end
+
+  end
 end
