@@ -196,6 +196,8 @@ class LogStash::Filters::Base < LogStash::Plugin
     # this is important because a construct like event["tags"].delete(tag) will not work
     # in the current Java event implementation. see https://github.com/elastic/logstash/issues/4140
 
+    return if @remove_tag.empty?
+
     tags = event.get("tags")
     return unless tags
 
