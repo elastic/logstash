@@ -55,7 +55,7 @@ endif::include-xpack[]
 
 *Elasticsearch Output*
 
-* Changed sniffing beahvior to connect only to `http.enabled` nodes that serve data for Elasticsearch 5.x and 6.x. Master-only nodes are ignored.
+* Changed sniffing behavior to connect only to `http.enabled` nodes that serve data for Elasticsearch 5.x and 6.x. Master-only nodes are ignored.
   (For Elasticsearch 1.x and 2.x, any nodes with `http.enabled` are added to the hosts lists, including master-only nodes.)
 
 [[logstash-6-2-2]]
