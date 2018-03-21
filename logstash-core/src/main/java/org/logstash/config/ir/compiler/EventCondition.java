@@ -1,9 +1,9 @@
 package org.logstash.config.ir.compiler;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
 import org.jruby.RubyInteger;
 import org.jruby.RubyNumeric;
 import org.jruby.RubyString;
@@ -67,7 +67,7 @@ public interface EventCondition {
         /**
          * Cache of all compiled {@link EventCondition}.
          */
-        private static final Map<String, EventCondition> CACHE = new HashMap<>(10);
+        private static final Map<String, EventCondition> CACHE = new ConcurrentHashMap<>(10);
 
         private Compiler() {
             //Utility Class.
@@ -82,9 +82,13 @@ public interface EventCondition {
          * @return Compiled {@link EventCondition}
          */
         public static EventCondition buildCondition(final BooleanExpression expression) {
+            final String cachekey = expression.toRubyString();
+            EventCondition cached = CACHE.get(cachekey);
+            if (cached != null) {
+                return cached;
+            }
             synchronized (CACHE) {
-                final String cachekey = expression.toRubyString();
-                final EventCondition cached = CACHE.get(cachekey);
+                cached = CACHE.get(cachekey);
                 if (cached != null) {
                     return cached;
                 }
