@@ -21,7 +21,7 @@ release-state can be: released | prerelease | unreleased
 :lsissue:               https://github.com/elastic/logstash/issues/
 :lsplugindocs:          https://www.elastic.co/guide/en/logstash-versioned-plugins/current
 
-include::{asciidoc-dir}/../../shared/attributes.asciidoc[]
+include::{asciidoc-dir}/../../shared/attributes62.asciidoc[]
 
 [[introduction]]
 == Logstash Introduction
