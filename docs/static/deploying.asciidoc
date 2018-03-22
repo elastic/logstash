@@ -18,10 +18,10 @@ recommendations provided here may vary based on your own requirements.
 
 For first time users, if you simply want to tail a log file to grasp the power
 of the Elastic Stack, we recommend trying
-{filebeat}filebeat-modules-overview.html[Filebeat Modules]. Filebeat Modules
+{filebeat-ref}/filebeat-modules-overview.html[Filebeat Modules]. Filebeat Modules
 enable you to quickly collect, parse, and index popular log types and view
 pre-built Kibana dashboards within minutes.
-{metricbeat}metricbeat-modules.html[Metricbeat Modules] provide a similar
+{metricbeat-ref}/metricbeat-modules.html[Metricbeat Modules] provide a similar
 experience, but with metrics data. In this context, Beats will ship data
 directly to Elasticsearch where {ref}/ingest.html[Ingest Nodes] will process
 and index your data.
@@ -75,7 +75,7 @@ streaming even through variable throughput loads. If the Logstash layer becomes
 an ingestion bottleneck, simply add more nodes to scale out. Here are a few
 general recommendations:
 
-* Beats should {filebeat}load-balancing.html[load balance] across a group of
+* Beats should {filebeat-ref}/load-balancing.html[load balance] across a group of
 Logstash nodes.
 * A minimum of two Logstash nodes are recommended for high availability.
 * It’s common to deploy just one Beats input per Logstash node, but multiple
@@ -119,7 +119,7 @@ Make sure to check out the other <<filter-plugins,available filter plugins>>.
 Enterprise-grade security is available across the entire delivery chain.
 
 * Wire encryption is recommended for both the transport from
-{filebeat}configuring-ssl-logstash.html[Beats to Logstash] and from
+{filebeat-ref}/configuring-ssl-logstash.html[Beats to Logstash] and from
 {logstash-ref}/ls-security.html[Logstash to Elasticsearch].
 * There’s a wealth of security options when communicating with Elasticsearch
 including basic authentication, TLS, PKI, LDAP, AD, and other custom realms.

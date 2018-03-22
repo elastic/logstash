@@ -31,7 +31,7 @@ input plugin enables Logstash to receive events from the Elastic Beats framework
 to work with the Beats framework, such as Packetbeat and Metricbeat, can also send event data to Logstash.
 
 To install Filebeat on your data source machine, download the appropriate package from the Filebeat https://www.elastic.co/downloads/beats/filebeat[product page]. You can also refer to
-{filebeat}filebeat-getting-started.html[Getting Started with Filebeat] in the Beats documentation for additional
+{filebeat-ref}/filebeat-getting-started.html[Getting Started with Filebeat] in the Beats documentation for additional
 installation instructions.
 
 After installing Filebeat, you need to configure it. Open the `filebeat.yml` file located in your Filebeat installation
@@ -63,7 +63,7 @@ sudo ./filebeat -e -c filebeat.yml -d "publish"
 --------------------------------------------------------------------------------
 
 NOTE: If you run Filebeat as root, you need to change ownership of the configuration file (see
-{libbeat}config-file-permissions.html[Config File Ownership and Permissions]
+{beats-ref}/config-file-permissions.html[Config File Ownership and Permissions]
 in the _Beats Platform Reference_).
 
 Filebeat will attempt to connect on port 5044. Until Logstash starts with an active Beats plugin, there
@@ -638,7 +638,7 @@ If you are using Kibana to visualize your data, you can also explore the Filebea
 
 image::static/images/kibana-filebeat-data.png[Discovering Filebeat data in Kibana]
 
-See the {filebeat}filebeat-getting-started.html[Filebeat getting started docs] for info about loading the Kibana
+See the {filebeat-ref}/filebeat-getting-started.html[Filebeat getting started docs] for info about loading the Kibana
 index pattern for Filebeat.
 
 You've successfully created a pipeline that uses Filebeat to take Apache web logs as input, parses those logs to
