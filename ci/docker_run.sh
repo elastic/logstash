@@ -11,16 +11,25 @@ if [ -z "$branch_specifier" ]; then
     REMOVE_IMAGE=true
     IMAGE_NAME="$1"
 else
-    # Jenkins
     IMAGE_NAME=$branch_specifier"-"$(date +%s%N)
 fi
 
 echo "Running Docker CI build for '$IMAGE_NAME' "
 
-docker build  -t $IMAGE_NAME .
+# Remove old docker cid just in case
+rm -f docker_cid
+
+docker build -t $IMAGE_NAME .
 exit_code=$?; [[ $exit_code != 0 ]] && exit $exit_code
+
+cleanup() {
+  cat docker_cid | xargs docker rm --force -v 
+}
+trap cleanup EXIT
+
 # Run the command, skip the first argument, which is the image name
-docker run --sig-proxy=true --rm $IMAGE_NAME ${@:2}
+echo "Running tests in built docker image"
+docker run --sig-proxy=true --cidfile=docker_cid --rm $IMAGE_NAME ${@:2}
 exit_code=$?
 [[ $REMOVE_IMAGE == "true" ]] && docker rmi $IMAGE_NAME
 echo "exiting with code: '$exit_code'"
