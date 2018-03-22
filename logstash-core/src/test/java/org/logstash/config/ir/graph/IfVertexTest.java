@@ -53,8 +53,8 @@ public class IfVertexTest {
         assertThat(ifV.getUnusedOutgoingEdgeFactories().isEmpty(), is(true));
 
 
-        BooleanEdge trueEdge = ifV.getOutgoingBooleanEdgesByType(true).stream().findAny().get();
-        BooleanEdge falseEdge = ifV.getOutgoingBooleanEdgesByType(false).stream().findAny().get();
+        BooleanEdge trueEdge = ifV.outgoingBooleanEdgesByType(true).findAny().get();
+        BooleanEdge falseEdge = ifV.outgoingBooleanEdgesByType(false).findAny().get();
         assertThat(trueEdge.getEdgeType(), is(true));
         assertThat(falseEdge.getEdgeType(), is(false));
     }

@@ -1,13 +1,12 @@
 package org.logstash.config.ir.graph;
 
-import org.logstash.config.ir.SourceComponent;
-import org.logstash.common.SourceWithMetadata;
-import org.logstash.config.ir.expression.BooleanExpression;
-
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import org.logstash.common.SourceWithMetadata;
+import org.logstash.config.ir.SourceComponent;
+import org.logstash.config.ir.expression.BooleanExpression;
 
 /**
  * Created by andrewvc on 9/15/16.
@@ -61,13 +60,8 @@ public class IfVertex extends Vertex {
         return (e instanceof BooleanEdge);
     }
 
-    public Collection<BooleanEdge> getOutgoingBooleanEdges() {
-        // Wish there was a way to do this as a java a cast without an operation
-        return getOutgoingEdges().stream().map(e -> (BooleanEdge) e).collect(Collectors.toList());
-    }
-
-    public Collection<BooleanEdge> getOutgoingBooleanEdgesByType(boolean edgeType) {
-        return getOutgoingBooleanEdges().stream().filter(e -> e.getEdgeType() == edgeType).collect(Collectors.toList());
+    public Stream<BooleanEdge> outgoingBooleanEdgesByType(boolean edgeType) {
+        return outgoingEdges().map(e -> (BooleanEdge) e).filter(e -> e.getEdgeType() == edgeType);
     }
 
     // The easiest readable version of this for a human.
