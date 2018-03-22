@@ -2,7 +2,7 @@
 
 == Working with Filebeat Modules
 
-Filebeat comes packaged with pre-built  {filebeat}filebeat-modules.html[modules]
+Filebeat comes packaged with pre-built  {filebeat-ref}/filebeat-modules.html[modules]
 that contain the configurations needed to collect, parse, enrich, and visualize
 data from various log file formats. Each Filebeat module consists of one or more
 filesets that contain ingest node pipelines, Elasticsearch templates, Filebeat
@@ -108,11 +108,11 @@ location expected by the module, you can set the `var.paths` option.
 +
 NOTE: Depending on how you've installed Filebeat, you might see errors
 related to file ownership or permissions when you try to run Filebeat modules.
-See {libbeat}/config-file-permissions.html[Config File Ownership and Permissions]
+See {beats-ref}/config-file-permissions.html[Config File Ownership and Permissions]
 in the _Beats Platform Reference_ if you encounter errors related to file
 ownership or permissions.
 +
-See {filebeat}/filebeat-starting.html[Starting Filebeat] for more info.
+See {filebeat-ref}/filebeat-starting.html[Starting Filebeat] for more info.
 
 [float]
 ==== Visualize the data
@@ -137,7 +137,7 @@ data sent collected by Filebeat modules:
 
 The Logstash pipeline configuration in this example shows how to ship and parse
 access and error logs collected by the
-{filebeat}filebeat-module-apache2.html[`apache2` Filebeat module].
+{filebeat-ref}/filebeat-module-apache2.html[`apache2` Filebeat module].
 
 [source,json]
 ----------------------------------------------------------------------------
@@ -150,7 +150,7 @@ include::filebeat_modules/apache2/pipeline.conf[]
 
 The Logstash pipeline configuration in this example shows how to ship and parse
 error and slowlog logs collected by the
-{filebeat}filebeat-module-mysql.html[`mysql` Filebeat module].
+{filebeat-ref}/filebeat-module-mysql.html[`mysql` Filebeat module].
 
 [source,json]
 ----------------------------------------------------------------------------
@@ -163,7 +163,7 @@ include::filebeat_modules/mysql/pipeline.conf[]
 
 The Logstash pipeline configuration in this example shows how to ship and parse
 access and error logs collected by the
-{filebeat}filebeat-module-nginx.html[`nginx` Filebeat module].
+{filebeat-ref}/filebeat-module-nginx.html[`nginx` Filebeat module].
 
 [source,json]
 ----------------------------------------------------------------------------
@@ -176,7 +176,7 @@ include::filebeat_modules/nginx/pipeline.conf[]
 
 The Logstash pipeline configuration in this example shows how to ship and parse
 system logs collected by the
-{filebeat}filebeat-module-system.html[`system` Filebeat module].
+{filebeat-ref}/filebeat-module-system.html[`system` Filebeat module].
 
 [source,json]
 ----------------------------------------------------------------------------
