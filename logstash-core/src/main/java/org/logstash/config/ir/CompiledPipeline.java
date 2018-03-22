@@ -348,7 +348,7 @@ public final class CompiledPipeline {
                         );
                         // It is important that we double check that we are actually dealing with the
                         // positive/left branch of the if condition
-                        if (ifvert.getOutgoingBooleanEdgesByType(true).stream()
+                        if (ifvert.outgoingBooleanEdgesByType(true)
                             .anyMatch(edge -> Objects.equals(edge.getTo(), start))) {
                             return ifDataset;
                         } else {
