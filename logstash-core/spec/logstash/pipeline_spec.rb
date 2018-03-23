@@ -22,6 +22,15 @@ class DummyInput < LogStash::Inputs::Base
   end
 end
 
+# This input runs long enough that a flush should occur
+class DummyFlushEnablingInput < DummyInput
+  def run(queue)
+    while !stop?
+      sleep 1
+    end
+  end
+end
+
 class DummyInputGenerator < LogStash::Inputs::Base
   config_name "dummyinputgenerator"
   milestone 2
@@ -650,7 +659,7 @@ describe LogStash::Pipeline do
 
     before do
       allow(::LogStash::Outputs::DummyOutput).to receive(:new).with(any_args).and_return(output)
-      allow(LogStash::Plugin).to receive(:lookup).with("input", "dummy_input").and_return(DummyInput)
+      allow(LogStash::Plugin).to receive(:lookup).with("input", "dummy_input").and_return(DummyFlushEnablingInput)
       allow(LogStash::Plugin).to receive(:lookup).with("filter", "dummy_flushing_filter").and_return(DummyFlushingFilterPeriodic)
       allow(LogStash::Plugin).to receive(:lookup).with("output", "dummy_output").and_return(::LogStash::Outputs::DummyOutput)
       allow(LogStash::Plugin).to receive(:lookup).with("codec", "plain").and_return(LogStash::Codecs::Plain)
