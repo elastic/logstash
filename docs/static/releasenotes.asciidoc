@@ -253,9 +253,9 @@ endif::include-xpack[]
 
 [[logstash-6-1-0]]
 === Logstash 6.1.0 Release Notes
-* Implemented a new experimental Java execution engine for Logstash pipelines. The Java engine is off by default, but can be enabled with --experimental-java-execution ({lsissue}7950[Issue 7950]).
-* Added support for changing the <<configuring-persistent-queues,page capacity>> for an existing queue ({lsissue}8628[Issue 8628]).
-* Made extensive improvements to pipeline execution performance and memory efficiency ({lsissue}7692[Issue 7692], {lsissue}8776[8776], {lsissue}8577[8577], {lsissue}8446[8446], {lsissue}8333[8333], {lsissue}8163[8163], {lsissue}8103[8103], {lsissue}8087[8087], and {lsissue}7691[7691]).
+* Implemented a new experimental Java execution engine for Logstash pipelines. The Java engine is off by default, but can be enabled with --experimental-java-execution ({lsissue}/7950[Issue 7950]).
+* Added support for changing the <<configuring-persistent-queues,page capacity>> for an existing queue ({lsissue}/8628[Issue 8628]).
+* Made extensive improvements to pipeline execution performance and memory efficiency ({lsissue}/7692[Issue 7692], {lsissue}/8776[8776], {lsissue}/8577[8577], {lsissue}/8446[8446], {lsissue}/8333[8333], {lsissue}/8163[8163], {lsissue}/8103[8103], {lsissue}/8087[8087], and {lsissue}/7691[7691]).
 
 [float]
 ==== Filter Plugins
