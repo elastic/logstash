@@ -195,6 +195,7 @@ module LogStash; class Pipeline < BasePipeline
     @running = Concurrent::AtomicBoolean.new(false)
     @flushing = Concurrent::AtomicReference.new(false)
     @outputs_registered = Concurrent::AtomicBoolean.new(false)
+    @worker_shutdown = java.util.concurrent.atomic.AtomicBoolean.new(false)
   end # def initialize
 
   def ready?
@@ -410,13 +411,10 @@ module LogStash; class Pipeline < BasePipeline
   # Main body of what a worker thread does
   # Repeatedly takes batches off the queue, filters, then outputs them
   def worker_loop(batch_size, batch_delay)
-    shutdown_requested = false
-
     @filter_queue_client.set_batch_dimensions(batch_size, batch_delay)
     output_events_map = Hash.new { |h, k| h[k] = [] }
     while true
       signal = @signal_queue.poll || NO_SIGNAL
-      shutdown_requested |= signal.shutdown? # latch on shutdown signal
 
       batch = @filter_queue_client.read_batch.to_java # metrics are started in read_batch
       batch_size = batch.filteredSize
@@ -430,7 +428,7 @@ module LogStash; class Pipeline < BasePipeline
         @filter_queue_client.close_batch(batch)
       end
       # keep break at end of loop, after the read_batch operation, some pipeline specs rely on this "final read_batch" before shutdown.
-      break if (shutdown_requested && !draining_queue?)
+      break if (@worker_shutdown.get && !draining_queue?)
     end
 
     # we are shutting down, queue is drained if it was required, now  perform a final flush.
@@ -575,11 +573,8 @@ module LogStash; class Pipeline < BasePipeline
   # tell the worker threads to stop and then block until they've fully stopped
   # This also stops all filter and output plugins
   def shutdown_workers
-    # Each worker thread will receive this exactly once!
-    @worker_threads.each do |t|
-      @logger.debug("Pushing shutdown", default_logging_keys(:thread => t.inspect))
-      @signal_queue.put(SHUTDOWN)
-    end
+    @logger.debug("Setting shutdown", default_logging_keys)
+    @worker_shutdown.set(true)
 
     @worker_threads.each do |t|
       @logger.debug("Shutdown waiting for worker thread" , default_logging_keys(:thread => t.inspect))
