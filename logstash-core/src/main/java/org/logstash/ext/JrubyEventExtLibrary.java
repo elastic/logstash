@@ -101,14 +101,14 @@ public final class JrubyEventExtLibrary {
         public IRubyObject ruby_cancel(ThreadContext context)
         {
             this.event.cancel();
-            return RubyBoolean.createTrueClass(context.runtime);
+            return context.runtime.getTrue();
         }
 
         @JRubyMethod(name = "uncancel")
         public IRubyObject ruby_uncancel(ThreadContext context)
         {
             this.event.uncancel();
-            return RubyBoolean.createFalseClass(context.runtime);
+            return context.runtime.getFalse();
         }
 
         @JRubyMethod(name = "cancelled?")
