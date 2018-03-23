@@ -39,6 +39,11 @@ public final class CompiledPipeline {
     private static final Logger LOGGER = LogManager.getLogger(CompiledPipeline.class);
 
     /**
+     * Compiler for conditional expressions that turn {@link IfVertex} into {@link EventCondition}.
+     */
+    private final EventCondition.Compiler conditionalCompiler = new EventCondition.Compiler();
+
+    /**
      * Configured inputs.
      */
     private final Collection<IRubyObject> inputs;
@@ -342,7 +347,7 @@ public final class CompiledPipeline {
                         final IfVertex ifvert = (IfVertex) dependency;
                         final SplitDataset ifDataset = split(
                             datasets,
-                            EventCondition.Compiler.buildCondition(ifvert.getBooleanExpression()),
+                            conditionalCompiler.buildCondition(ifvert.getBooleanExpression()),
                             dependency
                         );
                         // It is important that we double check that we are actually dealing with the
