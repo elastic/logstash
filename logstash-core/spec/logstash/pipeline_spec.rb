@@ -4,7 +4,6 @@ require "logstash/inputs/generator"
 require "logstash/filters/drop"
 require_relative "../support/mocks_classes"
 require_relative "../support/helpers"
-require_relative "../logstash/pipeline_reporter_spec" # for DummyOutput class
 require "stud/try"
 require 'timeout'
 
