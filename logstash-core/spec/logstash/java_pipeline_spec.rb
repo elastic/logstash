@@ -111,6 +111,20 @@ class DummyFlushingFilterPeriodic < DummyFlushingFilter
   end
 end
 
+class NilFlushingFilterPeriodic < DummyFlushingFilter
+  config_name "nilflushingfilterperiodic"
+
+  def register
+    @count = 0
+  end
+
+  def flush(options)
+    # Just returns nil as some plugins do at times
+    @count += 1
+    @count > 2 ? [::LogStash::Event.new("message" => "dummy_flush")] : nil
+  end
+end
+
 class JavaTestPipeline < LogStash::JavaPipeline
   attr_reader :outputs, :settings
 end
@@ -621,6 +635,52 @@ describe LogStash::JavaPipeline do
     end
 
     it "flush periodically" do
+      Thread.abort_on_exception = true
+      pipeline = mock_java_pipeline_from_string(config, pipeline_settings_obj)
+      t = Thread.new { pipeline.run }
+      Timeout.timeout(timeout) do
+        sleep(0.1) until pipeline.ready?
+      end
+      Stud.try(max_retry.times, [StandardError, RSpec::Expectations::ExpectationNotMetError]) do
+        wait(10).for do
+          # give us a bit of time to flush the events
+          output.events.empty?
+        end.to be_falsey
+      end
+
+      expect(output.events.any? {|e| e.get("message") == "dummy_flush"}).to eq(true)
+
+      pipeline.shutdown
+
+      t.join
+    end
+  end
+
+  context "Periodic Flush that intermittently returns nil" do
+    let(:config) do
+      <<-EOS
+      input {
+        dummy_input {}
+      }
+      filter {
+        nil_flushing_filter {}
+      }
+      output {
+        dummy_output {}
+      }
+      EOS
+    end
+    let(:output) { ::LogStash::Outputs::DummyOutput.new }
+
+    before do
+      allow(::LogStash::Outputs::DummyOutput).to receive(:new).with(any_args).and_return(output)
+      allow(LogStash::Plugin).to receive(:lookup).with("input", "dummy_input").and_return(LogStash::Inputs::DummyBlockingInput)
+      allow(LogStash::Plugin).to receive(:lookup).with("filter", "nil_flushing_filter").and_return(NilFlushingFilterPeriodic)
+      allow(LogStash::Plugin).to receive(:lookup).with("output", "dummy_output").and_return(::LogStash::Outputs::DummyOutput)
+      allow(LogStash::Plugin).to receive(:lookup).with("codec", "plain").and_return(LogStash::Codecs::Plain)
+    end
+
+    it "flush periodically without error on nil flush return" do
       Thread.abort_on_exception = true
       pipeline = mock_java_pipeline_from_string(config, pipeline_settings_obj)
       t = Thread.new { pipeline.run }
