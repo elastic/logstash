@@ -46,10 +46,20 @@ final class ClassFields {
         return addField(FieldDefinition.mutableUnassigned(definitions.size(), type));
     }
 
+    /**
+     * Add a {@link Closure} that should be executed in the constructor after field assignments
+     * have been executed.
+     * @param closure Closure to run after field assignments
+     */
     public void addAfterInit(final Closure closure) {
         afterInit.add(closure);
     }
 
+    /**
+     * Returns a closure of actions that should be run in the constructor after all field
+     * assignments have been executed.
+     * @return Closure that should be executed after field assignments are done
+     */
     public Closure afterInit() {
         return Closure.wrap(afterInit.toArray(new Closure[0]));
     }

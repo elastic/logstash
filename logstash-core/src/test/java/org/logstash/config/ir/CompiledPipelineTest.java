@@ -2,6 +2,7 @@ package org.logstash.config.ir;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedTransferQueue;
@@ -91,6 +92,37 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
         MatcherAssert.assertThat(outputEvents.contains(testEvent), CoreMatchers.is(true));
     }
 
+    @Test
+    public void buildsForkedPipeline() throws Exception {
+        final PipelineIR pipelineIR = ConfigCompiler.configToPipelineIR(
+            "input {mockinput{}} filter { " +
+                "if [foo] != \"bar\" { " +
+                "mockfilter {} " +
+                "mockaddfilter {} " +
+                "if [foo] != \"bar\" { " +
+                "mockfilter {} " +
+                "}} " +
+                "} output {mockoutput{} }",
+            false
+        );
+        final JrubyEventExtLibrary.RubyEvent testEvent =
+            JrubyEventExtLibrary.RubyEvent.newRubyEvent(RubyUtil.RUBY, new Event());
+        final Map<String, Supplier<RubyIntegration.Filter>> filters = new HashMap<>();
+        filters.put("mockfilter", CompiledPipelineTest.IdentityFilter::new);
+        filters.put("mockaddfilter", CompiledPipelineTest.AddFieldFilter::new);
+        new CompiledPipeline(
+            pipelineIR,
+            new CompiledPipelineTest.MockPluginFactory(
+                Collections.singletonMap("mockinput", () -> null),
+                filters,
+                Collections.singletonMap("mockoutput", mockOutputSupplier())
+            )
+        ).buildExecution().compute(RubyUtil.RUBY.newArray(testEvent), false, false);
+        final Collection<JrubyEventExtLibrary.RubyEvent> outputEvents = EVENT_SINKS.get(runId);
+        MatcherAssert.assertThat(outputEvents.size(), CoreMatchers.is(1));
+        MatcherAssert.assertThat(outputEvents.contains(testEvent), CoreMatchers.is(true));
+    }
+
     private Supplier<IRubyObject> mockOutputSupplier() {
         return () -> RubyUtil.RUBY.evalScriptlet(
             String.join(
@@ -158,6 +190,39 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
                 );
             }
             return suppliers.get(name.asJavaString()).get();
+        }
+    }
+
+    /**
+     * Mock filter that adds the value 'bar' to the field 'foo' for every event in the batch.
+     */
+    private static final class AddFieldFilter implements RubyIntegration.Filter {
+        @Override
+        public IRubyObject toRuby() {
+            return RubyUtil.RUBY.evalScriptlet(
+                String.join(
+                    "\n",
+                    "output = Object.new",
+                    "output.define_singleton_method(:multi_filter) do |batch|",
+                    "batch.each { |e| e.set('foo', 'bar')}",
+                    "end",
+                    "output"
+                )
+            );
+        }
+
+        @Override
+        public boolean hasFlush() {
+            return false;
+        }
+
+        @Override
+        public boolean periodicFlush() {
+            return false;
+        }
+
+        @Override
+        public void register() {
         }
     }
 
