@@ -35,19 +35,40 @@ public final class Logstash implements Runnable, AutoCloseable {
         final String lsHome = System.getenv("LS_HOME");
         if (lsHome == null) {
             throw new IllegalStateException(
-                "LS_HOME environment variable must be set. This is likely a bug that should be reported."
+                    "LS_HOME environment variable must be set. This is likely a bug that should be reported."
             );
         }
         final Path home = Paths.get(lsHome).toAbsolutePath();
         try (
-            final Logstash logstash = new Logstash(home, args, System.out, System.err, System.in)
+                final Logstash logstash = new Logstash(home, args, System.out, System.err, System.in)
         ) {
             logstash.run();
+        } catch (final IllegalStateException e) {
+            String errorMessage[] = null;
+            if (e.getMessage().contains("Could not load FFI Provider")) {
+                errorMessage = new String[]{
+                        "\nError accessing temp directory: " + System.getProperty("java.io.tmpdir"),
+                        "This often occurs because the temp directory has been mounted with NOEXEC or",
+                        "the Logstash user has insufficient permissions on the directory. Possible",
+                        "workarounds include setting the -Djava.io.tmpdir property in the jvm.options",
+                        "file to an alternate directory or correcting the Logstash user's permissions."
+                };
+            }
+            handleCriticalError(e, errorMessage);
         } catch (final Throwable t) {
-            LOGGER.error("Logstash encountered an unexpected fatal error!", t);
-            System.exit(1);
+            handleCriticalError(t, null);
         }
         System.exit(0);
+    }
+
+    private static void handleCriticalError(Throwable t, String[] errorMessage) {
+        LOGGER.error(t);
+        if (errorMessage != null) {
+            for (String err : errorMessage) {
+                System.err.println(err);
+            }
+        }
+        System.exit(1);
     }
 
     /**
