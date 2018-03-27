@@ -10,11 +10,9 @@ import java.util.stream.Collectors;
  */
 final class ClassFields {
 
-    private final Collection<FieldDefinition> definitions;
+    private final Collection<FieldDefinition> definitions = new ArrayList<>();
 
-    ClassFields() {
-        definitions = new ArrayList<>();
-    }
+    private final Collection<Closure> afterInit = new ArrayList<>();
 
     /**
      * Add a field of given type that is initialized by the given {@link SyntaxElement} that will
@@ -46,6 +44,14 @@ final class ClassFields {
      */
     public ValueSyntaxElement add(final Class<?> type) {
         return addField(FieldDefinition.mutableUnassigned(definitions.size(), type));
+    }
+
+    public void addAfterInit(final Closure closure) {
+        afterInit.add(closure);
+    }
+
+    public Closure afterInit() {
+        return Closure.wrap(afterInit.toArray(new Closure[0]));
     }
 
     /**

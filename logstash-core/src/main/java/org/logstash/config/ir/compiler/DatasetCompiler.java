@@ -72,9 +72,21 @@ public final class DatasetCompiler {
         final ValueSyntaxElement elseData = fields.add(RubyArray.class, arrayInit);
         final ValueSyntaxElement buffer = fields.add(RubyArray.class, arrayInit);
         final ValueSyntaxElement done = fields.add(boolean.class);
+        final ValueSyntaxElement right = fields.add(DatasetCompiler.Complement.class);
         final VariableDefinition event =
             new VariableDefinition(JrubyEventExtLibrary.RubyEvent.class, "event");
         final ValueSyntaxElement eventVal = event.access();
+        fields.addAfterInit(
+            Closure.wrap(
+                SyntaxFactory.assignment(right,
+                    SyntaxFactory.cast(
+                        DatasetCompiler.Complement.class, SyntaxFactory.constant(
+                            DatasetCompiler.class, DatasetCompiler.Complement.class.getSimpleName()
+                        ).call("from", SyntaxFactory.THIS, elseData)
+                    )
+                )
+            )
+        );
         return new ComputeStepSyntaxElement<>(
             Arrays.asList(
                 MethodSyntaxElement.compute(
@@ -96,10 +108,15 @@ public final class DatasetCompiler {
                         .add(SyntaxFactory.ret(ifData))
                 ),
                 MethodSyntaxElement.clear(
-                    clearSyntax(parentFields).add(clear(ifData)).add(clear(elseData))
-                        .add(SyntaxFactory.assignment(done, SyntaxFactory.FALSE))
+                    Closure.wrap(
+                        SyntaxFactory.ifCondition(
+                            done,
+                            clearSyntax(parentFields).add(clear(ifData)).add(clear(elseData))
+                                .add(SyntaxFactory.assignment(done, SyntaxFactory.FALSE))
+                        )
+                    )
                 ),
-                MethodSyntaxElement.right(elseData)
+                MethodSyntaxElement.right(right)
             ), fields, SplitDataset.class
         );
     }
@@ -150,8 +167,13 @@ public final class DatasetCompiler {
             body.add(SyntaxFactory.assignment(done, SyntaxFactory.TRUE))
                 .add(SyntaxFactory.ret(outputBuffer)),
             Closure.wrap(
-                clearSyntax(parentFields), clear(outputBuffer),
-                SyntaxFactory.assignment(done, SyntaxFactory.FALSE)
+                SyntaxFactory.ifCondition(
+                    done,
+                    Closure.wrap(
+                        clearSyntax(parentFields), clear(outputBuffer),
+                        SyntaxFactory.assignment(done, SyntaxFactory.FALSE)
+                    )
+                )
             ), fields
         );
     }
@@ -420,8 +442,10 @@ public final class DatasetCompiler {
 
         @Override
         public void clear() {
-            parent.clear();
-            done = false;
+            if (done) {
+                parent.clear();
+                done = false;
+            }
         }
     }
 }
