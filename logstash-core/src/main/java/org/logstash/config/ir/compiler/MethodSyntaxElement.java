@@ -55,13 +55,7 @@ interface MethodSyntaxElement extends SyntaxElement {
      */
     static MethodSyntaxElement right(final ValueSyntaxElement elseData) {
         return new MethodSyntaxElement.MethodSyntaxElementImpl(Dataset.class, "right",
-            Closure.wrap(
-                SyntaxFactory.ret(
-                    SyntaxFactory.constant(
-                        DatasetCompiler.class, DatasetCompiler.Complement.class.getSimpleName()
-                    ).call("from", SyntaxFactory.THIS, elseData)
-                )
-            )
+            Closure.wrap(SyntaxFactory.ret(elseData))
         );
     }
 

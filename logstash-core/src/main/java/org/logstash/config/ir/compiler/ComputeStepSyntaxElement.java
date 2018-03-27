@@ -204,7 +204,10 @@ public final class ComputeStepSyntaxElement<T extends Dataset> implements Syntax
                 ctor.add(argVar);
             }
         }
-        return combine(ctorFields, MethodSyntaxElement.constructor(name, constructor, ctor));
+        return combine(
+            ctorFields,
+            MethodSyntaxElement.constructor(name, constructor.add(fields.afterInit()), ctor)
+        );
     }
 
     /**
