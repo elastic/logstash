@@ -297,16 +297,25 @@ public final class CompiledPipeline {
          */
         private SplitDataset split(final Collection<Dataset> datasets,
             final EventCondition condition, final Vertex vertex) {
-            return iffs.computeIfAbsent(
-                vertex.getId(), v -> {
+            final String key = vertex.getId();
+            SplitDataset conditional = iffs.get(key);
+            if (conditional == null) {
+                final Collection<Dataset> dependencies = flatten(datasets, vertex);
+                conditional = iffs.get(key);
+                // Check that compiling the dependencies did not already instantiate the conditional
+                // by requiring its else branch.
+                if (conditional == null) {
                     final ComputeStepSyntaxElement<SplitDataset> prepared =
-                        DatasetCompiler.splitDataset(flatten(datasets, vertex), condition);
+                        DatasetCompiler.splitDataset(dependencies, condition);
                     LOGGER.debug(
                         "Compiled conditional\n {} \n into \n {}", vertex, prepared
                     );
-                    return prepared.instantiate();
+                    conditional = prepared.instantiate();
+                    iffs.put(key, conditional);
                 }
-            );
+
+            }
+            return conditional;
         }
 
         /**
