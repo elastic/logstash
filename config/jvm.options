@@ -75,6 +75,3 @@
 
 # Entropy source for randomness
 -Djava.security.egd=file:/dev/urandom
--agentlib:jdwp=transport=dt_socket,server=n,address=localhost:5006,suspend=y
--Dorg.codehaus.janino.source_debugging.dir=/Users/brownbear/src/logstash/logs/debug
--Dorg.codehaus.janino.source_debugging.enable=true
