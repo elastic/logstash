@@ -13,7 +13,7 @@ module LogStashCompilerLSCLGrammar; module LogStash; module Compiler; module LSC
 
     class Node < Treetop::Runtime::SyntaxNode
     include Helpers
-    
+
     def section_type
       if recursive_select_parent(Plugin).any?
         return "codec"
@@ -30,7 +30,7 @@ module LogStashCompilerLSCLGrammar; module LogStash; module Compiler; module LSC
     def process_escape_sequences=(val)
       set_meta(PROCESS_ESCAPE_SEQUENCES, val)
     end
-    
+
     def compile(base_source_with_metadata=nil)
       # There is no way to move vars across nodes in treetop :(
       self.base_source_with_metadata = base_source_with_metadata
@@ -63,7 +63,7 @@ module LogStashCompilerLSCLGrammar; module LogStash; module Compiler; module LSC
 
   class Comment < Node; end
   class Whitespace < Node; end
-  
+
   class PluginSection < Node
     def expr
       recursive_select(Branch, Plugin).map(&:expr)
@@ -128,13 +128,13 @@ module LogStashCompilerLSCLGrammar; module LogStash; module Compiler; module LSC
       return text_value
     end
   end
-  
+
   class Attribute < Node
     def expr
       [name.text_value, value.expr]
     end
   end
-  
+
   class RValue < Node; end
   class Value < RValue; end
 
@@ -143,7 +143,7 @@ module LogStashCompilerLSCLGrammar; module LogStash; module Compiler; module LSC
       jdsl.eValue(source_meta, text_value)
     end
   end
-  
+
   class String < Value
     def expr
       value = if get_meta(PROCESS_ESCAPE_SEQUENCES)
@@ -154,28 +154,28 @@ module LogStashCompilerLSCLGrammar; module LogStash; module Compiler; module LSC
       jdsl.eValue(source_meta, value)
     end
   end
-  
+
   class RegExp < Value
     def expr
       # Strip the slashes off
       jdsl.eRegex(text_value[1..-2])
     end
   end
-  
+
   class Number < Value
     def expr
-      jdsl.eValue(source_meta, text_value.include?(".") ? 
-        text_value.to_f : 
+      jdsl.eValue(source_meta, text_value.include?(".") ?
+        text_value.to_f :
         text_value.to_i)
     end
   end
-  
+
   class Array < Value
     def expr
       jdsl.eValue(source_meta, recursive_select(Value).map(&:expr).map(&:get))
     end
   end
-  
+
   class Hash < Value
     def validate!
       duplicate_values = find_duplicate_keys
@@ -293,7 +293,7 @@ module LogStashCompilerLSCLGrammar; module LogStash; module Compiler; module LSC
 
   class Condition < Node
     include Helpers
-    
+
     def expr
       first_element = elements.first
       rest_elements = elements.size > 1 ? elements[1].recursive_select(BooleanOperator, Expression, SelectorElement) : []
@@ -304,8 +304,7 @@ module LogStashCompilerLSCLGrammar; module LogStash; module Compiler; module LSC
       res = if all_elements.size == 1
         elem = all_elements.first
         if elem.is_a?(Selector)
-          eventValue = elem.recursive_select(SelectorElement).first.expr
-          jdsl.eTruthy(source_meta, eventValue)
+          jdsl.eTruthy(source_meta, elem.expr)
         elsif elem.is_a?(RegexpExpression)
           elem.expr
         else
@@ -468,9 +467,9 @@ module LogStashCompilerLSCLGrammar; module LogStash; module Compiler; module LSC
   class RegexpExpression < Node
     def expr
       selector, operator_method, regexp = recursive_select(
-        Selector, 
-        LogStash::Compiler::LSCL::AST::RegExpOperator, 
-        LogStash::Compiler::LSCL::AST::RegExp, 
+        Selector,
+        LogStash::Compiler::LSCL::AST::RegExpOperator,
+        LogStash::Compiler::LSCL::AST::RegExp,
         LogStash::Compiler::LSCL::AST::String # Strings work as rvalues! :p
       ).map(&:expr)
 
@@ -479,7 +478,7 @@ module LogStashCompilerLSCLGrammar; module LogStash; module Compiler; module LSC
       if regexp.class == org.logstash.config.ir.expression.ValueExpression
         regexp = jdsl.eRegex(source_meta, regexp.get)
       end
-      
+
       raise "Expected a selector in #{text_value}!" unless selector
       raise "Expected a regexp in #{text_value}!" unless regexp
 
@@ -511,10 +510,10 @@ module LogStashCompilerLSCLGrammar; module LogStash; module Compiler; module LSC
       end
     end
   end
-  
+
   module RegExpOperator
     include Helpers
-    
+
     def expr
       if self.text_value == '!~'
         jdsl.java_method(:eRegexNeq, [org.logstash.common.SourceWithMetadata, org.logstash.config.ir.expression.Expression, org.logstash.config.ir.expression.ValueExpression])
@@ -525,10 +524,10 @@ module LogStashCompilerLSCLGrammar; module LogStash; module Compiler; module LSC
       end
     end
   end
-  
+
   module BooleanOperator
     include Helpers
-    
+
     def expr
       case self.text_value
       when "and"
@@ -544,13 +543,13 @@ module LogStashCompilerLSCLGrammar; module LogStash; module Compiler; module LSC
       end
     end
   end
-  
+
   class Selector < RValue
     def expr
       jdsl.eEventValue(source_meta, text_value)
     end
   end
-  
+
   class SelectorElement < Node;
     def expr
       jdsl.eEventValue(source_meta, text_value)
