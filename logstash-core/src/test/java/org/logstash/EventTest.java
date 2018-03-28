@@ -6,6 +6,7 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -14,7 +15,6 @@ import org.jruby.RubySymbol;
 import org.jruby.RubyTime;
 import org.jruby.java.proxies.ConcreteJavaProxy;
 import org.junit.Test;
-import org.logstash.ext.JrubyTimestampExtLibrary;
 
 import static net.javacrumbs.jsonunit.JsonAssert.assertJsonEquals;
 import static org.hamcrest.CoreMatchers.is;
@@ -397,5 +397,35 @@ public final class EventTest {
             RubyUtil.RUBY_TIMESTAMP_CLASS, timestamp
         ));
         assertThat(event.getField("timestamp"), is(timestamp));
+    }
+
+    @Test
+    public void metadataFieldsShouldBeValuefied() {
+        final Event event = new Event();
+        event.setField("[@metadata][foo]", Collections.emptyMap());
+        assertEquals(HashMap.class, event.getField("[@metadata][foo]").getClass());
+
+        event.setField("[@metadata][bar]", Collections.singletonList("hello"));
+        final List list = (List) event.getField("[@metadata][bar]");
+        assertEquals(ArrayList.class, list.getClass());
+        assertEquals(list, Arrays.asList("hello"));
+    }
+
+    @Test
+    public void metadataRootShouldBeValueified() {
+        final Event event = new Event();
+
+        final Map<String, Object> metadata = new HashMap<>();
+        metadata.put("foo", Collections.emptyMap());
+        metadata.put("bar", Collections.singletonList("hello"));
+
+        event.setField("@metadata", metadata);
+
+        assertEquals(HashMap.class, event.getField("[@metadata][foo]").getClass());
+
+        final List list = (List) event.getField("[@metadata][bar]");
+        assertEquals(ArrayList.class, list.getClass());
+        assertEquals(list, Arrays.asList("hello"));
+
     }
 }
