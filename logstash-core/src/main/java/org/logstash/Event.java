@@ -153,10 +153,11 @@ public final class Event implements Cloneable, Queueable {
     public void setField(final FieldReference field, final Object value) {
         switch (field.type()) {
             case FieldReference.META_PARENT:
+                // ConvertedMap.newFromMap already does valuefication
                 this.metadata = ConvertedMap.newFromMap((Map<String, Object>) value);
                 break;
             case FieldReference.META_CHILD:
-                Accessors.set(metadata, field, value);
+                Accessors.set(metadata, field, Valuefier.convert(value));
                 break;
             default:
                 Accessors.set(data, field, Valuefier.convert(value));
