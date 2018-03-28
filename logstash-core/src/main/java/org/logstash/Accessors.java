@@ -99,12 +99,25 @@ public final class Accessors {
         return target;
     }
 
+    public static class InvalidFieldSetException extends RuntimeException {
+        public InvalidFieldSetException(final Object target, final String key, final Object value) {
+            super(String.format(
+                    "Could not set field '%s' on object '%s' to value '%s'." +
+                    "This is probably due to trying to set a field like [foo][bar] = someValue" +
+                    "when [foo] is not either a map or a string",
+                    key, target, value
+            ));
+        }
+    }
+
     private static Object setChild(final Object target, final String key, final Object value) {
         if (target instanceof ConvertedMap) {
             ((ConvertedMap) target).putInterned(key, value);
             return value;
-        } else {
+        } else if (target instanceof ConvertedList) {
             return setOnList(key, value, (ConvertedList) target);
+        } else {
+            throw new InvalidFieldSetException(target, key, value);
         }
     }
 

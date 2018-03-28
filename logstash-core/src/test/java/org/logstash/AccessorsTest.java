@@ -187,6 +187,13 @@ public class AccessorsTest {
         assertEquals(0, Accessors.listIndex(-10, 10));
     }
 
+    @Test(expected = Accessors.InvalidFieldSetException.class)
+    public void testSetOnNonMapOrList() {
+        final ConvertedMap data = new ConvertedMap(1);
+        set(data, "[foo]", "AString");
+        set(data, "[foo][bar]", "Another String");
+    }
+
     private static Object get(final ConvertedMap data, final CharSequence reference) {
         return Accessors.get(data, FieldReference.from(reference));
     }
