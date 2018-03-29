@@ -1,18 +1,18 @@
 package org.logstash.ackedqueue.io;
 
-import java.nio.channels.FileChannel;
-import org.logstash.ackedqueue.Checkpoint;
-import org.logstash.common.io.BufferedChecksumStreamInput;
-import org.logstash.common.io.InputStreamStreamInput;
-
 import java.io.ByteArrayInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.zip.CRC32;
+import org.logstash.ackedqueue.Checkpoint;
+import org.logstash.common.io.BufferedChecksumStreamInput;
+import org.logstash.common.io.InputStreamStreamInput;
 
 public class FileCheckpointIO implements CheckpointIO {
 //    Checkpoint file structure
@@ -70,10 +70,12 @@ public class FileCheckpointIO implements CheckpointIO {
     public void write(String fileName, Checkpoint checkpoint) throws IOException {
         write(checkpoint, buffer);
         buffer.flip();
-        try (FileOutputStream out = new FileOutputStream(Paths.get(dirPath, fileName).toFile())) {
+        final Path tmpPath = Paths.get(dirPath, fileName + ".tmp");
+        try (FileOutputStream out = new FileOutputStream(tmpPath.toFile())) {
             out.getChannel().write(buffer);
             out.getFD().sync();
         }
+        Files.move(tmpPath, Paths.get(dirPath, fileName), StandardCopyOption.ATOMIC_MOVE);
     }
 
     @Override
