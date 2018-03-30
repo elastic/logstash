@@ -15,6 +15,8 @@ import static org.logstash.secret.store.SecretStoreFactory.LOGSTASH_MARKER;
 public class SecretStoreCli {
 
     private final Terminal terminal;
+    private final SecretStoreFactory secretStoreFactory;
+
     enum Command {
         CREATE("create"), LIST("list"), ADD("add"), REMOVE("remove"), HELP("--help");
 
@@ -31,7 +33,12 @@ public class SecretStoreCli {
     }
 
     public SecretStoreCli(Terminal terminal){
+        this(terminal, SecretStoreFactory.fromEnvironment());
+    }
+
+    SecretStoreCli(final Terminal terminal, final SecretStoreFactory secretStoreFactory) {
         this.terminal = terminal;
+        this.secretStoreFactory = secretStoreFactory;
     }
 
     /**
@@ -51,7 +58,7 @@ public class SecretStoreCli {
                     terminal.writeLine("Creates a new keystore. For example: 'bin/logstash-keystore create'");
                     return;
                 }
-                if (SecretStoreFactory.exists(config.clone())) {
+                if (secretStoreFactory.exists(config.clone())) {
                     terminal.write("An Logstash keystore already exists. Overwrite ? [y/N] ");
                     if (isYes(terminal.readLine())) {
                         create(config);
@@ -67,7 +74,7 @@ public class SecretStoreCli {
                             "`bin/logstash-keystore list`. Note - only the identifiers will be listed, not the secrets.");
                     return;
                 }
-                Collection<SecretIdentifier> ids = SecretStoreFactory.load(config).list();
+                Collection<SecretIdentifier> ids = secretStoreFactory.load(config).list();
                 List<String> keys = ids.stream().filter(id -> !id.equals(LOGSTASH_MARKER)).map(id -> id.getKey()).collect(Collectors.toList());
                 Collections.sort(keys);
                 keys.forEach(terminal::writeLine);
@@ -83,9 +90,9 @@ public class SecretStoreCli {
                     terminal.writeLine("ERROR: You must supply a identifier to add. (e.g. bin/logstash-keystore add my-secret)");
                     return;
                 }
-                if (SecretStoreFactory.exists(config.clone())) {
+                if (secretStoreFactory.exists(config.clone())) {
                     SecretIdentifier id = new SecretIdentifier(argument);
-                    SecretStore secretStore = SecretStoreFactory.load(config);
+                    SecretStore secretStore = secretStoreFactory.load(config);
                     byte[] s = secretStore.retrieveSecret(id);
                     if (s == null) {
                         terminal.write(String.format("Enter value for %s: ", argument));
@@ -121,7 +128,7 @@ public class SecretStoreCli {
                 }
                 SecretIdentifier id = new SecretIdentifier(argument);
 
-                SecretStore secretStore = SecretStoreFactory.load(config);
+                SecretStore secretStore = secretStoreFactory.load(config);
                 byte[] s = secretStore.retrieveSecret(id);
                 if (s == null) {
                     terminal.writeLine(String.format("ERROR: '%s' does not exist in the Logstash keystore.", argument));
@@ -177,8 +184,8 @@ public class SecretStoreCli {
     }
 
     private void deleteThenCreate(SecureConfig config) {
-        SecretStoreFactory.delete(config.clone());
-        SecretStoreFactory.create(config.clone());
+        secretStoreFactory.delete(config.clone());
+        secretStoreFactory.create(config.clone());
         char[] fileLocation = config.getPlainText("keystore.file");
         terminal.writeLine("Created Logstash keystore" + (fileLocation == null ? "." : " at " + new String(fileLocation)));
     }
