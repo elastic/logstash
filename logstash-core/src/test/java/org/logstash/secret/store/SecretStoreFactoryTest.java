@@ -4,7 +4,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
-import org.logstash.secret.EnvironmentUtil;
 import org.logstash.secret.SecretIdentifier;
 import org.logstash.secret.store.backend.JavaKeyStore;
 
@@ -32,13 +31,13 @@ public class SecretStoreFactoryTest {
     @Rule
     public ExpectedException thrown = ExpectedException.none();
 
-
+    private static final SecretStoreFactory secretStoreFactory = SecretStoreFactory.fromEnvironment();
 
     @Test
     public void testAlternativeImplementation() {
         SecureConfig secureConfig = new SecureConfig();
         secureConfig.add("keystore.classname", "org.logstash.secret.store.SecretStoreFactoryTest$MemoryStore".toCharArray());
-        SecretStore secretStore = SecretStoreFactory.load(secureConfig);
+        SecretStore secretStore = secretStoreFactory.load(secureConfig);
         assertThat(secretStore).isInstanceOf(MemoryStore.class);
         validateMarker(secretStore);
     }
@@ -48,7 +47,7 @@ public class SecretStoreFactoryTest {
         thrown.expect(SecretStoreException.ImplementationNotFoundException.class);
         SecureConfig secureConfig = new SecureConfig();
         secureConfig.add("keystore.classname", "junk".toCharArray());
-        SecretStore secretStore = SecretStoreFactory.load(secureConfig);
+        SecretStore secretStore = secretStoreFactory.load(secureConfig);
         assertThat(secretStore).isInstanceOf(MemoryStore.class);
         validateMarker(secretStore);
     }
@@ -59,7 +58,7 @@ public class SecretStoreFactoryTest {
         String value = UUID.randomUUID().toString();
         SecureConfig secureConfig = new SecureConfig();
         secureConfig.add("keystore.file", folder.newFolder().toPath().resolve("logstash.keystore").toString().toCharArray());
-        SecretStore secretStore = SecretStoreFactory.create(secureConfig.clone());
+        SecretStore secretStore = secretStoreFactory.create(secureConfig.clone());
 
         byte[] marker = secretStore.retrieveSecret(LOGSTASH_MARKER);
         assertThat(new String(marker, StandardCharsets.UTF_8)).isEqualTo(LOGSTASH_MARKER.getKey());
@@ -68,7 +67,7 @@ public class SecretStoreFactoryTest {
         assertThat(new String(retrievedValue, StandardCharsets.UTF_8)).isEqualTo(value);
 
 
-        secretStore = SecretStoreFactory.load(secureConfig);
+        secretStore = secretStoreFactory.load(secureConfig);
         marker = secretStore.retrieveSecret(LOGSTASH_MARKER);
         assertThat(new String(marker, StandardCharsets.UTF_8)).isEqualTo(LOGSTASH_MARKER.getKey());
         secretStore.persistSecret(id, value.getBytes(StandardCharsets.UTF_8));
@@ -78,44 +77,41 @@ public class SecretStoreFactoryTest {
 
     @Test
     public void testDefaultLoadWithEnvPass() throws Exception {
+        String pass = UUID.randomUUID().toString();
+        final Map<String,String> modifiedEnvironment = new HashMap<String,String>(System.getenv()) {{
+            put(ENVIRONMENT_PASS_KEY, pass);
+        }};
+
+        final SecretStoreFactory secretStoreFactory = SecretStoreFactory.withEnvironment(modifiedEnvironment);
+
+        //Each usage of the secure config requires it's own instance since implementations can/should clear all the values once used.
+        SecureConfig secureConfig1 = new SecureConfig();
+        secureConfig1.add("keystore.file", folder.newFolder().toPath().resolve("logstash.keystore").toString().toCharArray());
+        SecureConfig secureConfig2 = secureConfig1.clone();
+        SecureConfig secureConfig3 = secureConfig1.clone();
+        SecureConfig secureConfig4 = secureConfig1.clone();
+
+        //ensure that with only the environment we can retrieve the marker from the store
+        SecretStore secretStore = secretStoreFactory.create(secureConfig1);
+        validateMarker(secretStore);
+
+        //ensure that aren't simply using the defaults
+        boolean expectedException = false;
         try {
-            String pass = UUID.randomUUID().toString();
-            EnvironmentUtil.add(new HashMap<String, String>() {{
-                put(ENVIRONMENT_PASS_KEY, pass);
-            }});
-
-            //Each usage of the secure config requires it's own instance since implementations can/should clear all the values once used.
-            SecureConfig secureConfig1 = new SecureConfig();
-            secureConfig1.add("keystore.file", folder.newFolder().toPath().resolve("logstash.keystore").toString().toCharArray());
-            SecureConfig secureConfig2 = secureConfig1.clone();
-            SecureConfig secureConfig3 = secureConfig1.clone();
-            SecureConfig secureConfig4 = secureConfig1.clone();
-
-            //ensure that with only the environment we can retrieve the marker from the store
-            SecretStore secretStore = SecretStoreFactory.create(secureConfig1);
-            validateMarker(secretStore);
-
-            //ensure that aren't simply using the defaults
-            boolean expectedException = false;
-            try {
-                new JavaKeyStore().create(secureConfig2);
-            } catch (SecretStoreException e) {
-                expectedException = true;
-            }
-            assertThat(expectedException).isTrue();
-
-            //ensure that direct key access using the system key wil work
-            secureConfig3.add(KEYSTORE_ACCESS_KEY, pass.toCharArray());
-            secretStore = new JavaKeyStore().load(secureConfig3);
-            validateMarker(secretStore);
-
-            //ensure that pass will work again
-            secretStore = SecretStoreFactory.load(secureConfig4);
-            validateMarker(secretStore);
-
-        } finally {
-            EnvironmentUtil.remove(ENVIRONMENT_PASS_KEY);
+            new JavaKeyStore().create(secureConfig2);
+        } catch (SecretStoreException e) {
+            expectedException = true;
         }
+        assertThat(expectedException).isTrue();
+
+        //ensure that direct key access using the system key wil work
+        secureConfig3.add(KEYSTORE_ACCESS_KEY, pass.toCharArray());
+        secretStore = new JavaKeyStore().load(secureConfig3);
+        validateMarker(secretStore);
+
+        //ensure that pass will work again
+        secretStore = secretStoreFactory.load(secureConfig4);
+        validateMarker(secretStore);
     }
 
     /**
@@ -125,7 +121,7 @@ public class SecretStoreFactoryTest {
     public void testErrorLoading() {
         thrown.expect(SecretStoreException.LoadException.class);
         //default implementation requires a path
-        SecretStoreFactory.load(new SecureConfig());
+        secretStoreFactory.load(new SecureConfig());
     }
 
     private void validateMarker(SecretStore secretStore) {
