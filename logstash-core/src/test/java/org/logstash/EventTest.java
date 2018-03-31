@@ -11,12 +11,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.jruby.RubySymbol;
 import org.jruby.RubyTime;
 import org.jruby.java.proxies.ConcreteJavaProxy;
 import org.junit.Test;
 
 import static net.javacrumbs.jsonunit.JsonAssert.assertJsonEquals;
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -24,6 +26,22 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 
 public final class EventTest {
+
+    @Test
+    public void serializeManyTest() throws IOException {
+        Event e1 = new Event();
+        e1.setField("Foo", "bar");
+        e1.setField("[@metadata][qux]", "qat");
+        Event e2 = new Event();
+        e2.setField("Baz", "Bot");
+        e2.setField("[@metadata][blot]", "bling");
+        Event[] events = {e1, e2};
+        byte[] serialized = Event.serializeMany(events);
+        Event[] deserialized = Event.deserializeMany(serialized);
+        assertThat(events.length, is(deserialized.length));
+        assertThat(e1, equalTo(deserialized[0]));
+        assertThat(e2, equalTo(deserialized[1]));
+    }
 
     @Test
     public void queueableInterfaceRoundTrip() throws Exception {

@@ -1,0 +1,47 @@
+{
+  "index_patterns": "elastiqueue-metadata-*",
+  "settings": {
+    "index": {
+      "number_of_shards": 1
+    }
+  },
+  "mappings": {
+    "doc": {
+      "properties": {
+        "@timestamp": {
+          "type": "date"
+        },
+        "type": {"type": "keyword"},
+        "topic": {
+          "properties": {
+            "name": {"type": "keyword"},
+            "partitions": {"type": "integer"},
+            "created_at": {"type": "date"}
+          }
+        },
+        "consumer_group": {
+          "properties": {
+            "name": {"type": "keyword"},
+            "created_at": {"type": "date"},
+            "topic": {"type": "keyword"}
+          }
+        },
+        "consumer_group_partition": {
+          "properties": {
+            "topic": {"type": "keyword"},
+            "consumer_group": {"type": "keyword"},
+            "partition": {"type": "integer"},
+            "consumer_uuid": {"type": "keyword"},
+            "consumer_name": {"type": "keyword"},
+            "offset": {"type": "long"},
+            "clock": {"type": "long"},
+            "consumer_last_update": {"type": "date"},
+            "takeover_clock": {"type": "long"},
+            "takeover_uuid": {"type": "keyword"},
+            "takeover_name": {"type": "keyword"}
+          }
+        }
+      }
+    }
+  }
+}

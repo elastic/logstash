@@ -1,0 +1,28 @@
+{
+  "index_patterns": "elastiqueue-partition-*",
+  "settings": {
+    "index": {
+      "sort.field": "seq",
+      "sort.order": "asc",
+      "number_of_shards": 1,
+      "refresh_interval": "5s"
+
+    }
+  },
+  "mappings": {
+    "doc": {
+      "properties": {
+        "@timestamp": {
+          "type": "date"
+        },
+        "seq": {
+          "type": "long"
+        },
+        "event_count": {"type": "integer"},
+        "events": {
+            "type": "binary"
+        }
+      }
+    }
+  }
+}

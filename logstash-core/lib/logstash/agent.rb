@@ -74,12 +74,19 @@ class LogStash::Agent
 
     @dispatcher = LogStash::EventDispatcher.new(self)
     LogStash::PLUGIN_REGISTRY.hooks.register_emitter(self.class, dispatcher)
-    dispatcher.fire(:after_initialize)
+       dispatcher.fire(:after_initialize)
 
     @running = Concurrent::AtomicBoolean.new(false)
   end
 
   def execute
+    # Load default plugins
+    require 'logstash/inputs/elastiqueue'
+    require 'logstash/outputs/elastiqueue'
+    LogStash::PLUGIN_REGISTRY.add(:input, "elastiqueue", ::LogStash::Inputs::Elastiqueue )
+    LogStash::PLUGIN_REGISTRY.add(:output, "elastiqueue", ::LogStash::Outputs::Elastiqueue )
+
+
     @thread = Thread.current # this var is implicitly used by Stud.stop?
     logger.debug("Starting agent")
 
