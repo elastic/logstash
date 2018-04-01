@@ -10,7 +10,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
+import org.jruby.RubyString;
 import org.jruby.RubySymbol;
 import org.jruby.RubyTime;
 import org.jruby.java.proxies.ConcreteJavaProxy;
@@ -81,6 +81,18 @@ public final class EventTest {
         assertEquals(timestamp, er.getField("time"));
         assertEquals(list, er.getField("list"));
         assertEquals(e.getTimestamp().toString(), er.getTimestamp().toString());
+    }
+
+    @Test
+    public void toBinaryRoundtripSubstring() throws Exception {
+        Event e = new Event();
+        e.setField(
+            "foo",
+            RubyString.newString(RubyUtil.RUBY, "--bar--").substr(RubyUtil.RUBY, 2, 3)
+        );
+        final RubyString before = (RubyString) e.getUnconvertedField("foo");
+        Event er = Event.deserialize(e.serialize());
+        assertEquals(before, er.getUnconvertedField("foo"));
     }
 
     /**
