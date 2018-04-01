@@ -107,7 +107,7 @@ public final class ObjectMappers {
                 typeSer.typeId(value, RubyString.class, JsonToken.VALUE_STRING);
             typeSer.writeTypePrefix(jgen, typeId);
             final ByteList bytes = value.getByteList();
-            jgen.writeBinary(bytes.getUnsafeBytes(), 0, bytes.length());
+            jgen.writeBinary(bytes.getUnsafeBytes(), bytes.begin(), bytes.length());
             typeSer.writeTypeSuffix(jgen, typeId);
         }
     }
