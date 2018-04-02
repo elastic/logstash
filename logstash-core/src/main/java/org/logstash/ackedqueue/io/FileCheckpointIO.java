@@ -1,6 +1,5 @@
 package org.logstash.ackedqueue.io;
 
-import java.io.ByteArrayInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -11,8 +10,6 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.zip.CRC32;
 import org.logstash.ackedqueue.Checkpoint;
-import org.logstash.common.io.BufferedChecksumStreamInput;
-import org.logstash.common.io.InputStreamStreamInput;
 
 public class FileCheckpointIO implements CheckpointIO {
 //    Checkpoint file structure
@@ -51,11 +48,7 @@ public class FileCheckpointIO implements CheckpointIO {
     @Override
     public Checkpoint read(String fileName) throws IOException {
         return read(
-            new BufferedChecksumStreamInput(
-                new InputStreamStreamInput(
-                    new ByteArrayInputStream(Files.readAllBytes(Paths.get(dirPath, fileName)))
-                )
-            )
+            ByteBuffer.wrap(Files.readAllBytes(Paths.get(dirPath, fileName)))
         );
     }
 
@@ -102,17 +95,18 @@ public class FileCheckpointIO implements CheckpointIO {
         return TAIL_CHECKPOINT + pageNum;
     }
 
-    private static Checkpoint read(BufferedChecksumStreamInput crcsi) throws IOException {
-        int version = (int) crcsi.readShort();
+    private static Checkpoint read(ByteBuffer data) throws IOException {
+        int version = (int) data.getShort();
         // TODO - build reader for this version
-        int pageNum = crcsi.readInt();
-        int firstUnackedPageNum = crcsi.readInt();
-        long firstUnackedSeqNum = crcsi.readLong();
-        long minSeqNum = crcsi.readLong();
-        int elementCount = crcsi.readInt();
-
-        int calcCrc32 = (int)crcsi.getChecksum();
-        int readCrc32 = crcsi.readInt();
+        int pageNum = data.getInt();
+        int firstUnackedPageNum = data.getInt();
+        long firstUnackedSeqNum = data.getLong();
+        long minSeqNum = data.getLong();
+        int elementCount = data.getInt();
+        final CRC32 crc32 = new CRC32();
+        crc32.update(data.array(), 0, BUFFER_SIZE - Integer.BYTES);
+        int calcCrc32 = (int) crc32.getValue();
+        int readCrc32 = data.getInt();
         if (readCrc32 != calcCrc32) {
             throw new IOException(String.format("Checkpoint checksum mismatch, expected: %d, actual: %d", calcCrc32, readCrc32));
         }
