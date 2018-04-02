@@ -1,6 +1,5 @@
 package org.logstash.config.ir.compiler;
 
-import java.util.Collection;
 import org.jruby.RubyArray;
 import org.jruby.runtime.ThreadContext;
 import org.junit.Test;
@@ -14,40 +13,6 @@ import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 public final class DatasetCompilerTest {
-
-    @Test
-    public void compilesEmptyMethod() {
-        final Dataset func = DatasetCompiler.prepare(
-            Closure.wrap(SyntaxFactory.ret(DatasetCompiler.BATCH_ARG.call("to_a"))),
-            Closure.EMPTY, new ClassFields()
-        ).instantiate();
-        final RubyArray batch = RubyUtil.RUBY.newArray();
-        assertThat(func.compute(batch, false, false), is(batch));
-    }
-
-    @Test
-    public void compilesParametrizedMethod() {
-        final RubyArray batch = RubyUtil.RUBY.newArray(
-            JrubyEventExtLibrary.RubyEvent.newRubyEvent(RubyUtil.RUBY, new Event())
-        );
-        final VariableDefinition eventsDef = new VariableDefinition(Collection.class, "events");
-        final ValueSyntaxElement events = eventsDef.access();
-        final ClassFields fields = new ClassFields();
-        final Dataset func = DatasetCompiler.prepare(
-            Closure.wrap(
-                SyntaxFactory.definition(eventsDef, DatasetCompiler.BATCH_ARG.call("to_a")),
-                events.call(
-                    "add",
-                    fields.add(
-                        JrubyEventExtLibrary.RubyEvent.newRubyEvent(RubyUtil.RUBY, new Event())
-                    )
-                ),
-                SyntaxFactory.ret(events)
-            ),
-            Closure.EMPTY, fields
-        ).instantiate();
-        assertThat(func.compute(batch, false, false).size(), is(2));
-    }
 
     /**
      * Smoke test ensuring that output {@link Dataset} is compiled correctly.
