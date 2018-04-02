@@ -45,7 +45,7 @@ public class FileMmapIOTest {
         }
         writeIo.close();
         readIo.open(1, 16);
-        SequencedList<byte[]> result = readIo.read(1, 16);
+        SequencedList result = readIo.read(1, 16);
         for (byte[] bytes : result.getElements()) {
             StringElement element = StringElement.deserialize(bytes);
             readList.add(element);

@@ -108,7 +108,7 @@ public class MemoryPageIOStreamTest {
     @Test
     public void read() throws Exception {
         MemoryPageIOStream subj = subject();
-        SequencedList<byte[]> result = subj.read(1L, 1);
+        SequencedList result = subj.read(1L, 1);
         assertThat(result.getElements().isEmpty(), is(true));
     }
 
@@ -118,7 +118,7 @@ public class MemoryPageIOStreamTest {
         Queueable element = buildStringElement("foobarbaz");
         MemoryPageIOStream subj = subject();
         subj.write(element.serialize(), seqNum);
-        SequencedList<byte[]> result = subj.read(seqNum, 1);
+        SequencedList result = subj.read(seqNum, 1);
         assertThat(result.getElements().size(), is(equalTo(1)));
         Queueable readElement = StringElement.deserialize(result.getElements().get(0));
         assertThat(result.getSeqNums().get(0), is(equalTo(seqNum)));
@@ -131,7 +131,7 @@ public class MemoryPageIOStreamTest {
         Queueable element = buildStringElement("");
         MemoryPageIOStream subj = subject();
         subj.write(element.serialize(), seqNum);
-        SequencedList<byte[]> result = subj.read(seqNum, 1);
+        SequencedList result = subj.read(seqNum, 1);
         assertThat(result.getElements().size(), is(equalTo(1)));
         Queueable readElement = StringElement.deserialize(result.getElements().get(0));
         assertThat(result.getSeqNums().get(0), is(equalTo(seqNum)));
@@ -150,7 +150,7 @@ public class MemoryPageIOStreamTest {
         subj.write(element3.serialize(), 44L);
         subj.write(element4.serialize(), 46L);
         int batchSize = 11;
-        SequencedList<byte[]> result = subj.read(40L, batchSize);
+        SequencedList result = subj.read(40L, batchSize);
         assertThat(result.getElements().size(), is(equalTo(4)));
 
         assertThat(result.getSeqNums().get(0), is(equalTo(40L)));
@@ -177,7 +177,7 @@ public class MemoryPageIOStreamTest {
         MemoryPageIOStream subj = subject(stream.getBuffer(), 10L, 10);
         int batchSize = 3;
         seqNum = 13L;
-        SequencedList<byte[]> result = subj.read(seqNum, batchSize);
+        SequencedList result = subj.read(seqNum, batchSize);
         for (int i = 0; i < 3; i++) {
             Queueable ele = StringElement.deserialize(result.getElements().get(i));
             assertThat(result.getSeqNums().get(i), is(equalTo(seqNum + i)));

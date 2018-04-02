@@ -15,7 +15,7 @@ public class Batch implements Closeable {
     private final Queue queue;
     private final AtomicBoolean closed;
 
-    public Batch(SequencedList<byte[]> serialized, Queue q) {
+    public Batch(SequencedList serialized, Queue q) {
         this(serialized.getElements(), serialized.getSeqNums(), q);
     }
 

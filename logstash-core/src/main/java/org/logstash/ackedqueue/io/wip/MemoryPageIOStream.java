@@ -142,9 +142,9 @@ public class MemoryPageIOStream implements PageIO {
     }
 
     @Override
-    public SequencedList<byte[]> read(long seqNum, int limit) throws IOException {
+    public SequencedList read(long seqNum, int limit) throws IOException {
         if (elementCount == 0) {
-            return new SequencedList<>(Collections.emptyList(), new LongVector(0));
+            return new SequencedList(Collections.emptyList(), new LongVector(0));
         }
         setReadPoint(seqNum);
         return read(limit);
@@ -255,7 +255,7 @@ public class MemoryPageIOStream implements PageIO {
         crcWrappedOutput.close();
     }
 
-    private SequencedList<byte[]> read(int limit) throws IOException {
+    private SequencedList read(int limit) throws IOException {
         int upto = available(limit);
         List<byte[]> elements = new ArrayList<>(upto);
         final LongVector seqNums = new LongVector(upto);
@@ -266,7 +266,7 @@ public class MemoryPageIOStream implements PageIO {
             elements.add(data);
             seqNums.add(seqNum);
         }
-        return new SequencedList<>(elements, seqNums);
+        return new SequencedList(elements, seqNums);
     }
 
     private long readSeqNum() throws IOException {

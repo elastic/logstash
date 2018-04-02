@@ -48,11 +48,11 @@ public final class Page implements Closeable {
      * @return {@link SequencedList} collection of serialized elements read
      * @throws IOException
      */
-    public SequencedList<byte[]> read(int limit) throws IOException {
+    public SequencedList read(int limit) throws IOException {
         // first make sure this page is activated, activating previously activated is harmless
         this.pageIO.activate();
 
-        SequencedList<byte[]> serialized = this.pageIO.read(this.firstUnreadSeqNum, limit);
+        SequencedList serialized = this.pageIO.read(this.firstUnreadSeqNum, limit);
         assert serialized.getSeqNums().get(0) == this.firstUnreadSeqNum :
             String.format("firstUnreadSeqNum=%d != first result seqNum=%d", this.firstUnreadSeqNum, serialized.getSeqNums().get(0));
 

@@ -559,7 +559,7 @@ public final class Queue implements Closeable {
             if (! p.isFullyRead()) {
                 boolean wasFull = isFull();
 
-                final SequencedList<byte[]> serialized = p.read(left);
+                final SequencedList serialized = p.read(left);
                 int n = serialized.getElements().size();
                 assert n > 0 : "page read returned 0 elements";
                 elements.addAll(serialized.getElements());

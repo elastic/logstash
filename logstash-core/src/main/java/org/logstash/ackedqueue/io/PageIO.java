@@ -32,7 +32,7 @@ public interface PageIO extends Closeable {
     void write(byte[] bytes, long seqNum) throws IOException;
 
     // read up to limit number of items starting at give seqNum
-    SequencedList<byte[]> read(long seqNum, int limit) throws IOException;
+    SequencedList read(long seqNum, int limit) throws IOException;
 
     // @return the data container total capacity in bytes
     int getCapacity();
