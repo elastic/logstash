@@ -108,12 +108,8 @@ public final class DatasetCompiler {
                         .add(SyntaxFactory.ret(ifData))
                 ),
                 MethodSyntaxElement.clear(
-                    Closure.wrap(
-                        SyntaxFactory.ifCondition(
-                            done,
-                            clearSyntax(parentFields).add(clear(ifData)).add(clear(elseData))
-                                .add(SyntaxFactory.assignment(done, SyntaxFactory.FALSE))
-                        )
+                    clearIfDone(
+                        clearSyntax(parentFields).add(clear(ifData)).add(clear(elseData)), done
                     )
                 ),
                 MethodSyntaxElement.right(right)
@@ -166,15 +162,8 @@ public final class DatasetCompiler {
         return prepare(
             body.add(SyntaxFactory.assignment(done, SyntaxFactory.TRUE))
                 .add(SyntaxFactory.ret(outputBuffer)),
-            Closure.wrap(
-                SyntaxFactory.ifCondition(
-                    done,
-                    Closure.wrap(
-                        clearSyntax(parentFields), clear(outputBuffer),
-                        SyntaxFactory.assignment(done, SyntaxFactory.FALSE)
-                    )
-                )
-            ), fields
+            clearIfDone(Closure.wrap(clearSyntax(parentFields), clear(outputBuffer)), done),
+            fields
         );
     }
 
@@ -261,6 +250,23 @@ public final class DatasetCompiler {
                 inlineClear
             ),
             clearSyntax, fields
+        );
+    }
+
+    /**
+     * Generates code that clears a {@link Dataset}'s internal buffers if the given boolean flag
+     * is set to true, then sets the flag to false once done.
+     * @param clearAction Action for clearing buffers
+     * @param doneField Boolean field that must be true for the action to run
+     * @return Closure wrapping the conditional clear action
+     */
+    private static Closure clearIfDone(final Closure clearAction,
+        final MethodLevelSyntaxElement doneField) {
+        return Closure.wrap(
+            SyntaxFactory.ifCondition(
+                doneField,
+                Closure.wrap(clearAction, SyntaxFactory.assignment(doneField, SyntaxFactory.FALSE))
+            )
         );
     }
 
