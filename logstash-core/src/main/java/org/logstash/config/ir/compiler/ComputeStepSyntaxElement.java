@@ -13,7 +13,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -25,7 +24,7 @@ import org.codehaus.janino.SimpleCompiler;
 /**
  * One step of a compiled pipeline that compiles to a {@link Dataset}.
  */
-public final class ComputeStepSyntaxElement<T extends Dataset> implements SyntaxElement {
+public final class ComputeStepSyntaxElement<T extends Dataset> {
 
     private static final Path SOURCE_DIR = debugDir();
 
@@ -38,17 +37,10 @@ public final class ComputeStepSyntaxElement<T extends Dataset> implements Syntax
         = new HashMap<>();
 
     /**
-     * Sequence number to ensure unique naming for runtime compiled classes.
-     */
-    private static final AtomicInteger SEQUENCE = new AtomicInteger(0);
-
-    /**
      * Pattern to remove redundant {@code ;} from formatted code since {@link Formatter} does not
      * remove those.
      */
     private static final Pattern REDUNDANT_SEMICOLON = Pattern.compile("\n[ ]*;\n");
-
-    private final String name;
 
     private final Iterable<MethodSyntaxElement> methods;
 
@@ -56,17 +48,14 @@ public final class ComputeStepSyntaxElement<T extends Dataset> implements Syntax
 
     private final Class<T> type;
 
-    ComputeStepSyntaxElement(final Iterable<MethodSyntaxElement> methods,
-        final ClassFields fields, final Class<T> interfce) {
-        this(
-            String.format("CompiledDataset%d", SEQUENCE.incrementAndGet()), methods, fields,
-            interfce
-        );
+    public static <T extends Dataset> ComputeStepSyntaxElement<T> create(
+        final Iterable<MethodSyntaxElement> methods, final ClassFields fields,
+        final Class<T> interfce) {
+        return new ComputeStepSyntaxElement<>(methods, fields, interfce);
     }
 
-    private ComputeStepSyntaxElement(final String name, final Iterable<MethodSyntaxElement> methods,
+    private ComputeStepSyntaxElement(final Iterable<MethodSyntaxElement> methods,
         final ClassFields fields, final Class<T> interfce) {
-        this.name = name;
         this.methods = methods;
         this.fields = fields;
         type = interfce;
@@ -82,7 +71,8 @@ public final class ComputeStepSyntaxElement<T extends Dataset> implements Syntax
                 if (CLASS_CACHE.containsKey(this)) {
                     clazz = CLASS_CACHE.get(this);
                 } else {
-                    final String code = generateCode();
+                    final String name = String.format("CompiledDataset%d", CLASS_CACHE.size());
+                    final String code = generateCode(name);
                     final Path sourceFile = SOURCE_DIR.resolve(String.format("%s.java", name));
                     Files.write(sourceFile, code.getBytes(StandardCharsets.UTF_8));
                     COMPILER.cookFile(sourceFile.toFile());
@@ -102,28 +92,6 @@ public final class ComputeStepSyntaxElement<T extends Dataset> implements Syntax
     }
 
     @Override
-    public String generateCode() {
-        try {
-            return REDUNDANT_SEMICOLON.matcher(new Formatter().formatSource(
-                String.format(
-                    "package org.logstash.generated;\npublic final class %s implements %s { %s }",
-                    name,
-                    type.getName(),
-                    SyntaxFactory.join(
-                        fields.inlineAssigned().generateCode(), fieldsAndCtor(),
-                        combine(
-                            StreamSupport.stream(methods.spliterator(), false)
-                                .toArray(SyntaxElement[]::new)
-                        )
-                    )
-                )
-            )).replaceAll("\n");
-        } catch (final FormatterException ex) {
-            throw new IllegalStateException(ex);
-        }
-    }
-
-    @Override
     public int hashCode() {
         return normalizedSource().hashCode();
     }
@@ -134,9 +102,25 @@ public final class ComputeStepSyntaxElement<T extends Dataset> implements Syntax
             normalizedSource().equals(((ComputeStepSyntaxElement<?>) other).normalizedSource());
     }
 
-    @Override
-    public String toString() {
-        return generateCode();
+    private String generateCode(final String name) {
+        try {
+            return REDUNDANT_SEMICOLON.matcher(new Formatter().formatSource(
+                String.format(
+                    "package org.logstash.generated;\npublic final class %s implements %s { %s }",
+                    name,
+                    type.getName(),
+                    SyntaxFactory.join(
+                        fields.inlineAssigned().generateCode(), fieldsAndCtor(name),
+                        combine(
+                            StreamSupport.stream(methods.spliterator(), false)
+                                .toArray(SyntaxElement[]::new)
+                        )
+                    )
+                )
+            )).replaceAll("\n");
+        } catch (final FormatterException ex) {
+            throw new IllegalStateException(ex);
+        }
     }
 
     private static Path debugDir() {
@@ -181,8 +165,7 @@ public final class ComputeStepSyntaxElement<T extends Dataset> implements Syntax
      * @return Source of this class, with its name set to {@code CONSTANT}.
      */
     private String normalizedSource() {
-        return new ComputeStepSyntaxElement<>("CONSTANT", methods, fields, type)
-            .generateCode();
+        return this.generateCode("CONSTANT");
     }
 
     /**
@@ -190,7 +173,7 @@ public final class ComputeStepSyntaxElement<T extends Dataset> implements Syntax
      * constructor for
      * @return Java Source String
      */
-    private String fieldsAndCtor() {
+    private String fieldsAndCtor(final String name) {
         final Closure constructor = new Closure();
         final FieldDeclarationGroup ctorFields = fields.ctorAssigned();
         final Collection<VariableDefinition> ctor = new ArrayList<>();

@@ -9,12 +9,6 @@ import java.util.stream.Collectors;
  */
 final class SyntaxFactory {
 
-    public static final SyntaxFactory.IdentifierStatement THIS = identifier("this");
-
-    public static final SyntaxFactory.IdentifierStatement TRUE = identifier("true");
-
-    public static final SyntaxFactory.IdentifierStatement FALSE = identifier("false");
-
     /**
      * Joins given {@link String}s without delimiter.
      * @param parts Strings to join
