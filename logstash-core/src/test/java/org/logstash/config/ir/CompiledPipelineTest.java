@@ -246,9 +246,6 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
             return false;
         }
 
-        @Override
-        public void register() {
-        }
     }
 
     /**
@@ -279,8 +276,5 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
             return false;
         }
 
-        @Override
-        public void register() {
-        }
     }
 }
