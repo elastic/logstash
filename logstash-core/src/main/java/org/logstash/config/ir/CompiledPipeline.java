@@ -241,10 +241,10 @@ public final class CompiledPipeline {
                 .allLeaves().filter(CompiledPipeline.this::isOutput)
                 .collect(Collectors.toList());
             if (outputNodes.isEmpty()) {
-                return DatasetCompiler.ROOT_DATASETS.iterator().next();
+                return Dataset.IDENTITY;
             } else {
                 return DatasetCompiler.terminalDataset(outputNodes.stream().map(
-                    leaf -> outputDataset(leaf, flatten(DatasetCompiler.ROOT_DATASETS, leaf))
+                    leaf -> outputDataset(leaf, flatten(Collections.emptyList(), leaf))
                 ).collect(Collectors.toList()));
             }
         }
