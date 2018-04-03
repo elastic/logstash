@@ -37,7 +37,7 @@ public class IfStatementTest {
     @Test
     public void testIfWithOneTrueStatement() throws InvalidIRException {
         PluginDefinition pluginDef = testPluginDefinition();
-        Statement trueStatement = new PluginStatement(randMeta(), testPluginDefinition());
+        Statement trueStatement = new PluginStatement(randMeta(), pluginDef);
         Statement falseStatement = new NoopStatement(randMeta());
         BooleanExpression ifExpression = createTestExpression();
         IfStatement ifStatement = new IfStatement(
@@ -53,7 +53,7 @@ public class IfStatementTest {
         Graph expected = new Graph();
         IfVertex expectedIf = DSL.gIf(randMeta(), ifExpression);
         expected.addVertex(expectedIf);
-        PluginVertex expectedT = DSL.gPlugin(randMeta(), testPluginDefinition());
+        PluginVertex expectedT = DSL.gPlugin(randMeta(), pluginDef);
         expected.chainVertices(true, expectedIf, expectedT);
 
         assertSyntaxEquals(expected, ifStatementGraph);
