@@ -303,6 +303,9 @@ public class DSL {
         return gPlugin(meta, type, pluginName, new HashMap<>());
     }
 
+    public static PluginVertex gPlugin(SourceWithMetadata meta, PluginDefinition pluginDefinition) {
+        return gPlugin(meta, pluginDefinition.getType(), pluginDefinition.getName(), pluginDefinition.getArguments());
+    }
 
     public static IfVertex gIf(SourceWithMetadata meta, BooleanExpression expression) {
        return new IfVertex(meta, expression);
