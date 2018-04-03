@@ -62,8 +62,10 @@ public class IfStatementTest {
 
     @Test
     public void testIfWithOneFalseStatement() throws InvalidIRException {
+        PluginDefinition pluginDef = testPluginDefinition();
         Statement trueStatement = new NoopStatement(randMeta());
-        Statement falseStatement = new PluginStatement(randMeta(), testPluginDefinition());
+        Statement falseStatement = new PluginStatement(randMeta(), pluginDef);
+        BooleanExpression ifExpression = createTestExpression();
         IfStatement ifStatement = new IfStatement(
                 randMeta(),
                 createTestExpression(),
@@ -74,27 +76,22 @@ public class IfStatementTest {
         Graph ifStatementGraph = ifStatement.toGraph();
         assertFalse(ifStatementGraph.isEmpty());
 
-        Stream<Vertex> trueVertices = ifStatementGraph
-                .edges()
-                .filter(e -> e instanceof BooleanEdge)
-                .map(e -> (BooleanEdge) e)
-                .filter(e -> e.getEdgeType() == true)
-                .map(e -> e.getTo());
-        assertEquals(0, trueVertices.count());
+        Graph expected = new Graph();
+        IfVertex expectedIf = DSL.gIf(randMeta(), ifExpression);
+        expected.addVertex(expectedIf);
 
-        Stream<Vertex> falseVertices = ifStatementGraph
-                .edges()
-                .filter(e -> e instanceof BooleanEdge)
-                .map(e -> (BooleanEdge) e)
-                .filter(e -> e.getEdgeType() == false)
-                .map(e -> e.getTo());
-        assertEquals(1, falseVertices.count());
+        PluginVertex expectedF = DSL.gPlugin(randMeta(), pluginDef);
+        expected.chainVertices(false, expectedIf, expectedF);
+
+        assertSyntaxEquals(expected, ifStatementGraph);
     }
 
     @Test
     public void testIfWithOneTrueOneFalseStatement() throws InvalidIRException {
-        Statement trueStatement = new PluginStatement(randMeta(), testPluginDefinition());
-        Statement falseStatement = new PluginStatement(randMeta(), testPluginDefinition());
+        PluginDefinition pluginDef = testPluginDefinition();
+        Statement trueStatement = new PluginStatement(randMeta(), pluginDef);
+        Statement falseStatement = new PluginStatement(randMeta(), pluginDef);
+        BooleanExpression ifExpression = createTestExpression();
         IfStatement ifStatement = new IfStatement(
                 randMeta(),
                 createTestExpression(),
@@ -105,20 +102,16 @@ public class IfStatementTest {
         Graph ifStatementGraph = ifStatement.toGraph();
         assertFalse(ifStatementGraph.isEmpty());
 
-        Stream<Vertex> trueVertices = ifStatementGraph
-                .edges()
-                .filter(e -> e instanceof BooleanEdge)
-                .map(e -> (BooleanEdge) e)
-                .filter(e -> e.getEdgeType() == true)
-                .map(e -> e.getTo());
-        assertEquals(1, trueVertices.count());
+        Graph expected = new Graph();
+        IfVertex expectedIf = DSL.gIf(randMeta(), ifExpression);
+        expected.addVertex(expectedIf);
 
-        Stream<Vertex> falseVertices = ifStatementGraph
-                .edges()
-                .filter(e -> e instanceof BooleanEdge)
-                .map(e -> (BooleanEdge) e)
-                .filter(e -> e.getEdgeType() == false)
-                .map(e -> e.getTo());
-        assertEquals(1, falseVertices.count());
+        PluginVertex expectedT = DSL.gPlugin(randMeta(), pluginDef);
+        expected.chainVertices(true, expectedIf, expectedT);
+
+        PluginVertex expectedF = DSL.gPlugin(randMeta(), pluginDef);
+        expected.chainVertices(false, expectedIf, expectedF);
+
+        assertSyntaxEquals(expected, ifStatementGraph);
     }
 }
