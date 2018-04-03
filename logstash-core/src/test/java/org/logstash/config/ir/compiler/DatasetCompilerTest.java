@@ -1,5 +1,6 @@
 package org.logstash.config.ir.compiler;
 
+import java.util.Collections;
 import org.jruby.RubyArray;
 import org.jruby.runtime.ThreadContext;
 import org.junit.Test;
@@ -21,7 +22,7 @@ public final class DatasetCompilerTest {
     public void compilesOutputDataset() {
         assertThat(
             DatasetCompiler.outputDataset(
-                DatasetCompiler.ROOT_DATASETS,
+                Collections.emptyList(),
                 RubyUtil.RUBY.evalScriptlet(
                     "output = Object.new\noutput.define_singleton_method(:multi_receive) do |batch|\nend\noutput"
                 ),
@@ -35,7 +36,7 @@ public final class DatasetCompilerTest {
     public void compilesSplitDataset() {
         final FieldReference key = FieldReference.from("foo");
         final SplitDataset left = DatasetCompiler.splitDataset(
-            DatasetCompiler.ROOT_DATASETS, event -> event.getEvent().includes(key)
+            Collections.emptyList(), event -> event.getEvent().includes(key)
         ).instantiate();
         final Event trueEvent = new Event();
         trueEvent.setField(key, "val");

@@ -19,6 +19,20 @@ import org.logstash.ext.JrubyEventExtLibrary;
 public interface Dataset {
 
     /**
+     * Dataset that does not modify the input events.
+     */
+    Dataset IDENTITY = new Dataset() {
+        @Override
+        public Collection<JrubyEventExtLibrary.RubyEvent> compute(final RubyArray batch, final boolean flush, final boolean shutdown) {
+            return batch;
+        }
+
+        @Override
+        public void clear() {
+        }
+    };
+
+    /**
      * Compute the actual contents of the backing {@link RubyArray} and cache them.
      * Repeated invocations will be effectively free.
      * @param batch Input {@link JrubyEventExtLibrary.RubyEvent} received at the root
