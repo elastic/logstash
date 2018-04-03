@@ -17,7 +17,7 @@ import org.logstash.ackedqueue.SequencedList;
 
 public final class MmapPageIO implements PageIO {
 
-    public static final byte VERSION_ONE = 1;
+    public static final byte VERSION = 2;
     public static final int VERSION_SIZE = Byte.BYTES;
     public static final int CHECKSUM_SIZE = Integer.BYTES;
     public static final int LENGTH_SIZE = Integer.BYTES;
@@ -174,7 +174,7 @@ public final class MmapPageIO implements PageIO {
         this.buffer = this.channel.map(FileChannel.MapMode.READ_WRITE, 0, this.capacity);
         raf.close();
         buffer.position(0);
-        buffer.put(VERSION_ONE);
+        buffer.put(VERSION);
         this.head = 1;
         this.minSeqNum = 0L;
         this.elementCount = 0;
@@ -376,13 +376,14 @@ public final class MmapPageIO implements PageIO {
         return initialHead;
     }
 
-    // we don't have different versions yet so simply check if the version is VERSION_ONE for basic integrity check
+    // we don't have automatic conversions from the original serialization version to the
+    // current version yet so simply check if the version is VERSION for basic integrity check
     // and if an unexpected version byte is read throw PageIOInvalidVersionException
     private static void validateVersion(byte version)
         throws MmapPageIO.PageIOInvalidVersionException {
-        if (version != VERSION_ONE) {
+        if (version != VERSION) {
             throw new MmapPageIO.PageIOInvalidVersionException(String
-                .format("Expected page version=%d but found version=%d", VERSION_ONE, version));
+                .format("Expected page version=%d but found version=%d", VERSION, version));
         }
     }
 
