@@ -14,17 +14,10 @@ public final class RubyIntegration {
     }
 
     /**
-     * A Ruby Plugin.
-     */
-    public interface Plugin {
-        void register();
-    }
-
-    /**
      * A Ruby Filter. Currently, this interface is implemented only by the Ruby class
      * {@code FilterDelegator}.
      */
-    public interface Filter extends RubyIntegration.Plugin {
+    public interface Filter {
 
         /**
          * Returns the underlying {@link IRubyObject} for this filter instance.
