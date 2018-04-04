@@ -539,7 +539,7 @@ public final class Queue implements Closeable {
         // NOTE: the tricky thing here is that upon entering this method, if p is initially a head page
         // it could become a tail page upon returning from the notEmpty.await call.
 
-        do {
+        while (left > 0) {
             if (isHeadPage(p) && p.isFullyRead()) {
                 boolean elapsed;
                 // a head page is fully read but can be written to so let's wait for more data
@@ -576,13 +576,13 @@ public final class Queue implements Closeable {
             if (isTailPage(p) && p.isFullyRead()) {
                 break;
             }
-        } while (left > 0);
+        }
 
         if (isTailPage(p) && p.isFullyRead()) {
             removeUnreadPage(p);
         }
 
-        return (left >= limit) ? null :  new Batch(elements, seqNums, this);
+        return new Batch(elements, seqNums, this);
     }
 
     private static class TailPageResult {
@@ -644,6 +644,9 @@ public final class Queue implements Closeable {
      * @throws IOException
      */
     public void ack(LongVector seqNums) throws IOException {
+        if (seqNums.size() == 0) {
+            return;
+        }
         // as a first implementation we assume that all batches are created from the same page
         // so we will avoid multi pages acking here for now
 
