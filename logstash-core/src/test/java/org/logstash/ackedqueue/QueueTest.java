@@ -107,6 +107,18 @@ public class QueueTest {
         }
     }
 
+    @Test
+    public void canReadBatchZeroSize() throws IOException {
+        final int page = MmapPageIO.MIN_CAPACITY;
+        try (Queue q = new Queue(
+            TestSettings.persistedQueueSettings(page, page * 2 - 1, dataPath))) {
+            q.open();
+            try (Batch b = q.readBatch(0, 500L)) {
+                assertThat(b.getElements().size(), is(0));
+            }
+        }
+    }
+
     /**
      * This test ensures that the {@link Queue} functions properly when pagesize is equal to overall
      * queue size (i.e. there is only a single page).
