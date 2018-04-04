@@ -17,6 +17,7 @@ require "pluginmanager/gemfile"
 require "pluginmanager/install"
 require "pluginmanager/remove"
 require "pluginmanager/list"
+require "pluginmanager/search"
 require "pluginmanager/update"
 require "pluginmanager/pack"
 require "pluginmanager/unpack"
@@ -30,6 +31,7 @@ module LogStash
     class Error < StandardError; end
 
     class Main < Clamp::Command
+      subcommand "search", "Search Rubygems.org for plugins", LogStash::PluginManager::Search
       subcommand "list", "List all installed Logstash plugins", LogStash::PluginManager::List
       subcommand "install", "Install a Logstash plugin", LogStash::PluginManager::Install
       subcommand "remove", "Remove a Logstash plugin", LogStash::PluginManager::Remove
