@@ -4,17 +4,18 @@ require "pluginmanager/command"
 
 class LogStash::PluginManager::Search < LogStash::PluginManager::Command
 
-  parameter "[REGEX]", "regular expression to use"
+  parameter "[PATTERN]", "pattern to look for"
 
   option "--author", "NAME", "Show only plugins authored by this name"
 
   def execute
     LogStash::Bundler.setup!({:without => [:build, :development]})
     fetcher = Gem::SpecFetcher.fetcher
-    regex_obj = Regexp.new(regex)
-    results = fetcher.detect(:latest) {|name_tuple| name_tuple.name.match(regex_obj) }
-    results.map {|name_tuple, source| source.fetch_spec(name_tuple) }.each do |spec|
-      next unless spec.metadata["logstash_plugin"] == "true"
+    fetcher.detect(:latest) do |name_tuple|
+      File.fnmatch?(pattern, name_tuple.name)
+    end.map {|name_tuple, source| source.fetch_spec(name_tuple) }.each do |spec|
+      next unless spec.metadata && spec.metadata["logstash_plugin"] == "true"
+      next unless spec.platform == 'java' || (spec.platform.is_a?(Gem::Platform) && spec.platform.os == 'java')
       if author
         next unless spec.authors.include?(author)
       end
