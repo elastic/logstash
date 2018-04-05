@@ -27,7 +27,6 @@ import org.jruby.RubyNil;
 import org.jruby.RubyString;
 import org.jruby.RubySymbol;
 import org.jruby.ext.bigdecimal.RubyBigDecimal;
-import org.jruby.util.ByteList;
 import org.logstash.ext.JrubyTimestampExtLibrary;
 
 public final class ObjectMappers {
@@ -106,8 +105,7 @@ public final class ObjectMappers {
             final WritableTypeId typeId =
                 typeSer.typeId(value, RubyString.class, JsonToken.VALUE_STRING);
             typeSer.writeTypePrefix(jgen, typeId);
-            final ByteList bytes = value.getByteList();
-            jgen.writeBinary(bytes.getUnsafeBytes(), bytes.begin(), bytes.length());
+            jgen.writeString(value.asJavaString());
             typeSer.writeTypeSuffix(jgen, typeId);
         }
     }
@@ -121,7 +119,7 @@ public final class ObjectMappers {
         @Override
         public RubyString deserialize(final JsonParser p, final DeserializationContext ctxt)
             throws IOException {
-            return RubyString.newString(RubyUtil.RUBY, p.getBinaryValue());
+            return RubyString.newString(RubyUtil.RUBY, p.getValueAsString());
         }
     }
 
