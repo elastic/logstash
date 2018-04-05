@@ -111,7 +111,7 @@ describe LogStash::WrappedAckedQueue, :stress_test => true do
           output_strings << e.message
         end
 
-        queue.queue.close
+        queue.close
 
         if output_strings.any?
           output_strings << __memoized.reject{|k,v| reject_memo_keys.include?(k)}.inspect

@@ -168,16 +168,6 @@ public final class JRubyAckedQueueExt extends RubyObject {
         return queue.isEmpty();
     }
 
-    @JRubyMethod(name = "close")
-    public IRubyObject ruby_close(ThreadContext context) {
-        try {
-            close();
-        } catch (IOException e) {
-            throw RubyUtil.newRubyIOError(context.runtime, e);
-        }
-        return context.nil;
-    }
-
     public void close() throws IOException {
         queue.close();
     }
