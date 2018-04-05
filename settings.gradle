@@ -1,6 +1,7 @@
-include ':logstash-core', 'logstash-core-benchmarks', 'ingest-converter', 'benchmark-cli', 'logstash-integration-tests'
+include ':logstash-core', 'logstash-core-benchmarks', 'ingest-converter', 'benchmark-cli', 'logstash-integration-tests', 'dependencies-report'
 project(':logstash-core').projectDir = new File('./logstash-core')
 project(':logstash-core-benchmarks').projectDir = new File('./logstash-core/benchmarks')
 project(':logstash-integration-tests').projectDir = new File('./qa/integration')
 project(':ingest-converter').projectDir = new File('./tools/ingest-converter')
 project(':benchmark-cli').projectDir = new File('./tools/benchmark-cli')
+project(':dependencies-report').projectDir = new File('./tools/dependencies-report')

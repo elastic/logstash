@@ -1,0 +1,6 @@
+"artifact","moduleUrl","moduleLicense","moduleLicenseUrl",
+"com.fasterxml.jackson.core:jackson-core:2.9.4","https://github.com/FasterXML/jackson-core","The Apache Software License, Version 2.0","http://www.apache.org/licenses/LICENSE-2.0.txt",
+"com.google.errorprone:javac-shaded:9-dev-r4023-3","https://github.com/google/error-prone-javac","GNU General Public License, version 2, with the Classpath Exception","http://openjdk.java.net/legal/gplv2+ce.html",
+"gradle.plugin.com.github.jk1:gradle-license-report:0.7.1",,,,
+"junit:junit:4.12","http://junit.org","Eclipse Public License 1.0","http://www.eclipse.org/legal/epl-v10.html",
+"org.codehaus.janino:commons-compiler:3.0.8",,"New BSD License","https://raw.githubusercontent.com/janino-compiler/janino/master/LICENSE",
