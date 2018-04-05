@@ -1,7 +1,8 @@
 package org.logstash.ackedqueue.ext;
 
+import java.io.IOException;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.jruby.Ruby;
-import org.jruby.RubyBoolean;
 import org.jruby.RubyClass;
 import org.jruby.RubyFixnum;
 import org.jruby.RubyObject;
@@ -14,14 +15,11 @@ import org.logstash.RubyUtil;
 import org.logstash.ext.JrubyAckedReadClientExt;
 import org.logstash.ext.JrubyAckedWriteClientExt;
 
-import java.io.IOException;
-import java.util.concurrent.atomic.AtomicBoolean;
-
 @JRubyClass(name = "WrappedAckedQueue")
-public class JRubyWrappedAckedQueueExt extends RubyObject {
+public final class JRubyWrappedAckedQueueExt extends RubyObject {
 
     private JRubyAckedQueueExt queue;
-    private AtomicBoolean isClosed = new AtomicBoolean();
+    private final AtomicBoolean isClosed = new AtomicBoolean();
 
     @JRubyMethod(name = "initialize", optional = 7)
     public IRubyObject ruby_initialize(ThreadContext context, IRubyObject[] args) throws IOException {
@@ -39,43 +37,14 @@ public class JRubyWrappedAckedQueueExt extends RubyObject {
         return context.nil;
     }
 
-    public static JRubyWrappedAckedQueueExt createFileBased(
-            String path, int capacity, int maxEvents, int checkpointMaxWrites,
-            int checkpointMaxAcks, long maxBytes) throws IOException {
-        JRubyWrappedAckedQueueExt wrappedQueue =
-                new JRubyWrappedAckedQueueExt(JRubyAckedQueueExt.create(path, capacity, maxEvents,
-                        checkpointMaxWrites, checkpointMaxAcks, maxBytes));
-        wrappedQueue.queue.open();
-        return wrappedQueue;
-    }
-
     public JRubyWrappedAckedQueueExt(final Ruby runtime, final RubyClass metaClass) {
         super(runtime, metaClass);
     }
 
-    private JRubyWrappedAckedQueueExt(JRubyAckedQueueExt queue) {
-        super(RubyUtil.RUBY, RubyUtil.WRAPPED_ACKED_QUEUE_CLASS);
-        this.queue = queue;
-    }
-
     @JRubyMethod(name = "queue")
     public IRubyObject rubyGetQueue(ThreadContext context) {
-        return getQueue();
-    }
-
-    public JRubyAckedQueueExt getQueue() {
         return queue;
     }
-
-    public boolean isClosed() {
-        return isClosed.get();
-    }
-
-    @JRubyMethod(name = "closed?")
-    public IRubyObject rubyIsClosed(ThreadContext context) {
-        return RubyBoolean.newBoolean(context.runtime, isClosed());
-    }
-
 
     public void close() throws IOException {
         queue.close();
@@ -121,9 +90,8 @@ public class JRubyWrappedAckedQueueExt extends RubyObject {
     }
 
     private void checkIfClosed(String action) {
-        if (isClosed()) {
+        if (isClosed.get()) {
             throw new RuntimeException("Attempted to " + action + " on a closed AckedQueue");
         }
     }
-
 }
