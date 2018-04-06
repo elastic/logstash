@@ -105,12 +105,6 @@ describe LogStash::WrappedAckedQueue, :stress_test => true do
           output_strings.concat files
         end
 
-        begin
-          queue.queue.open
-        rescue Exception => e
-          output_strings << e.message
-        end
-
         queue.close
 
         if output_strings.any?

@@ -3,6 +3,7 @@ package org.logstash.ackedqueue.ext;
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.jruby.Ruby;
+import org.jruby.RubyBoolean;
 import org.jruby.RubyClass;
 import org.jruby.RubyFixnum;
 import org.jruby.RubyObject;
@@ -14,6 +15,7 @@ import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.RubyUtil;
 import org.logstash.ext.JrubyAckedReadClientExt;
 import org.logstash.ext.JrubyAckedWriteClientExt;
+import org.logstash.ext.JrubyEventExtLibrary;
 
 @JRubyClass(name = "WrappedAckedQueue")
 public final class JRubyWrappedAckedQueueExt extends RubyObject {
@@ -62,9 +64,9 @@ public final class JRubyWrappedAckedQueueExt extends RubyObject {
     }
 
     @JRubyMethod(name = {"push", "<<"})
-    public void rubyPush(ThreadContext context, IRubyObject object) {
+    public void rubyPush(ThreadContext context, IRubyObject event) {
         checkIfClosed("write");
-        queue.ruby_write(context, object);
+        queue.rubyWrite(context, ((JrubyEventExtLibrary.RubyEvent) event).getEvent());
     }
 
     @JRubyMethod(name = "read_batch")
@@ -86,7 +88,7 @@ public final class JRubyWrappedAckedQueueExt extends RubyObject {
 
     @JRubyMethod(name = "is_empty?")
     public IRubyObject rubyIsEmpty(ThreadContext context) {
-        return queue.ruby_is_empty(context);
+        return RubyBoolean.newBoolean(context.runtime, this.queue.isEmpty());
     }
 
     private void checkIfClosed(String action) {

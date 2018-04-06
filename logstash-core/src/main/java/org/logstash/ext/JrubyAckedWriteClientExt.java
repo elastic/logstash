@@ -50,7 +50,7 @@ public final class JrubyAckedWriteClientExt extends RubyObject {
     @JRubyMethod(name = {"push", "<<"}, required = 1)
     public IRubyObject rubyPush(final ThreadContext context, IRubyObject event) {
         ensureOpen();
-        queue.ruby_write(context, event);
+        queue.rubyWrite(context, ((JrubyEventExtLibrary.RubyEvent) event).getEvent());
         return this;
     }
 
@@ -58,7 +58,7 @@ public final class JrubyAckedWriteClientExt extends RubyObject {
     public IRubyObject rubyPushBatch(final ThreadContext context, IRubyObject batch) {
         ensureOpen();
         for (final IRubyObject event : (Collection<JrubyEventExtLibrary.RubyEvent>) batch) {
-            queue.ruby_write(context, event);
+            queue.rubyWrite(context, ((JrubyEventExtLibrary.RubyEvent) event).getEvent());
         }
         return this;
     }
