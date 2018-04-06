@@ -1,5 +1,5 @@
 [[logstash-settings-file]]
-=== Settings File
+=== Logstash.yml
 
 You can set options in the Logstash settings file, `logstash.yml`, to control Logstash execution. For example,
 you can specify pipeline settings, the location of configuration files, logging options, and other settings.
@@ -91,8 +91,8 @@ The `logstash.yml` file includes the following settings. If you are using X-Pack
 | The maximum number of events an individual worker thread will collect from inputs
   before attempting to execute its filters and outputs.
   Larger batch sizes are generally more efficient, but come at the cost of increased memory
-  overhead. You may have to increase the JVM heap size by setting the `LS_HEAP_SIZE`
-  variable to effectively use the option.
+  overhead. You may need to increase JVM heap space in the `jvm.options` config file.
+  See <<config-setting-files>> for more info.
 | `125`
 
 | `pipeline.batch.delay`
