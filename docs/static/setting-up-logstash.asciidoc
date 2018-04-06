@@ -182,9 +182,14 @@ The settings files are already defined in the Logstash installation. Logstash in
 *`logstash.yml`*::
   Contains Logstash configuration flags. You can set flags in this file instead of passing the flags at the command
   line. Any flags that you set at the command line override the corresponding settings in the `logstash.yml` file. See <<logstash-settings-file>> for more info.
+*`pipelines.yml`*::
+  Contains the framework and instructions for running multiple pipelines in a single Logstash instance. See <<multiple-pipelines>> for more info.
 *`jvm.options`*::
-  Contains JVM configuration flags. Specify each flag on a separate line. You can also use this file to set the locale
-  for Logstash.
+  Contains JVM configuration flags. Use this file to set initial and maximum values for
+  total heap space. You can also use this file to set the locale for Logstash.
+  Specify each flag on a separate line. All other settings in this file are
+  considered expert settings.
+*`log4j2.properties`*:: Contains default settings for `log4j 2` library. See <<log4j2>> for more info.
 *`startup.options` (Linux)*::
   Contains options used by the `system-install` script in `/usr/share/logstash/bin` to build the appropriate startup
   script for your system. When you install the Logstash package, the `system-install` script executes at the end of the
