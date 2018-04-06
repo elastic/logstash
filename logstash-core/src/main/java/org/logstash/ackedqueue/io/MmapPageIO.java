@@ -24,8 +24,6 @@ public final class MmapPageIO implements PageIO {
     public static final int SEQNUM_SIZE = Long.BYTES;
     public static final int MIN_CAPACITY = VERSION_SIZE + SEQNUM_SIZE + LENGTH_SIZE + 1 + CHECKSUM_SIZE; // header overhead plus elements overhead to hold a single 1 byte element
     public static final int HEADER_SIZE = 1;     // version byte
-    // Size of: Header + Sequence Number + Length + Checksum
-    public static final int WRAPPER_SIZE = HEADER_SIZE + SEQNUM_SIZE + LENGTH_SIZE + CHECKSUM_SIZE;
     public static final boolean VERIFY_CHECKSUM = true;
 
     private static final Logger LOGGER = LogManager.getLogger(MmapPageIO.class);
@@ -41,8 +39,6 @@ public final class MmapPageIO implements PageIO {
     private final CRC32 checkSummer;
 
     private final IntVector offsetMap;
-
-    private FileChannel channel;
 
     private int capacity; // page capacity is an int per the ByteBuffer class.
     private long minSeqNum; // TODO: to make minSeqNum final we have to pass in the minSeqNum in the constructor and not set it on first write
@@ -169,10 +165,9 @@ public final class MmapPageIO implements PageIO {
 
     @Override
     public void create() throws IOException {
-        RandomAccessFile raf = new RandomAccessFile(this.file, "rw");
-        this.channel = raf.getChannel();
-        this.buffer = this.channel.map(FileChannel.MapMode.READ_WRITE, 0, this.capacity);
-        raf.close();
+        try (RandomAccessFile raf = new RandomAccessFile(this.file, "rw")) {
+            this.buffer = raf.getChannel().map(FileChannel.MapMode.READ_WRITE, 0, this.capacity);
+        }
         buffer.position(0);
         buffer.put(VERSION_ONE);
         this.head = 1;
@@ -181,17 +176,16 @@ public final class MmapPageIO implements PageIO {
     }
 
     @Override
-    public void deactivate() throws IOException {
+    public void deactivate() {
         close(); // close can be called multiple times
     }
 
     @Override
     public void activate() throws IOException {
-        if (this.channel == null) {
-            RandomAccessFile raf = new RandomAccessFile(this.file, "rw");
-            this.channel = raf.getChannel();
-            this.buffer = this.channel.map(FileChannel.MapMode.READ_WRITE, 0, this.capacity);
-            raf.close();
+        if (this.buffer == null) {
+            try (RandomAccessFile raf = new RandomAccessFile(this.file, "rw")) {
+                this.buffer = raf.getChannel().map(FileChannel.MapMode.READ_WRITE, 0, this.capacity);
+            }
             this.buffer.load();
         }
         // TODO: do we need to check is the channel is still open? not sure how it could be closed
@@ -215,19 +209,12 @@ public final class MmapPageIO implements PageIO {
     }
 
     @Override
-    public void close() throws IOException {
+    public void close() {
         if (this.buffer != null) {
             this.buffer.force();
             BUFFER_CLEANER.clean(buffer);
 
         }
-        if (this.channel != null) {
-            if (this.channel.isOpen()) {
-                this.channel.force(false);
-            }
-            this.channel.close(); // close can be called multiple times
-        }
-        this.channel = null;
         this.buffer = null;
     }
 
@@ -274,23 +261,21 @@ public final class MmapPageIO implements PageIO {
 
     // memory map data file to this.buffer and read initial version byte
     private void mapFile() throws IOException {
-        RandomAccessFile raf = new RandomAccessFile(this.file, "rw");
+        try (RandomAccessFile raf = new RandomAccessFile(this.file, "rw")) {
 
-        if (raf.length() > Integer.MAX_VALUE) {
-            throw new IOException("Page file too large " + this.file);
+            if (raf.length() > Integer.MAX_VALUE) {
+                throw new IOException("Page file too large " + this.file);
+            }
+            int pageFileCapacity = (int) raf.length();
+
+            // update capacity to actual raf length. this can happen if a page size was changed on a non empty queue directory for example.
+            this.capacity = pageFileCapacity;
+
+            if (this.capacity < MIN_CAPACITY) {
+                throw new IOException(String.format("Page file size is too small to hold elements"));
+            }
+            this.buffer = raf.getChannel().map(FileChannel.MapMode.READ_WRITE, 0, this.capacity);
         }
-        int pageFileCapacity = (int) raf.length();
-
-        // update capacity to actual raf length. this can happen if a page size was changed on a non empty queue directory for example.
-        this.capacity = pageFileCapacity;
-
-        if (this.capacity < MIN_CAPACITY) {
-            throw new IOException(String.format("Page file size is too small to hold elements"));
-        }
-
-        this.channel = raf.getChannel();
-        this.buffer = this.channel.map(FileChannel.MapMode.READ_WRITE, 0, this.capacity);
-        raf.close();
         this.buffer.load();
     }
 

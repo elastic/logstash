@@ -182,6 +182,4 @@ public abstract class QueueReadClientBase extends RubyObject implements QueueRea
     }
 
     public abstract void close() throws IOException;
-    public abstract boolean isEmpty();
-
 }
