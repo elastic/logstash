@@ -27,6 +27,7 @@ public class Batch implements Closeable {
     }
 
     // close acks the batch ackable events
+    @Override
     public void close() throws IOException {
         if (closed.getAndSet(true) == false) {
               this.queue.ack(this.seqNums);

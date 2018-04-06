@@ -7,7 +7,6 @@ import org.logstash.Event;
 import org.logstash.ext.JrubyEventExtLibrary;
 
 public final class AckedBatch {
-    private static final long serialVersionUID = -3118949118637372130L;
     private Batch batch;
 
     public static AckedBatch create(Batch batch) {
