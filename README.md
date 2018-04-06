@@ -168,6 +168,10 @@ Most of the unit tests in Logstash are written using [rspec](http://rspec.info/)
 
     ./gradlew check
 
+Sometimes you might find a change to a piece of Logstash code causes a test to hang. These can be hard to debug.
+
+If you set `LS_JAVA_OPTS="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005"` you can connect to a running Logstash with your IDEs debugger which can be a great way of finding the issue.
+
 ### Plugins tests
 
 To run the tests of all currently installed plugins:
