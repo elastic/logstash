@@ -5,20 +5,21 @@ Logstash emits internal logs during its operation, which are placed in `LS_HOME/
 DEB/RPM). The default logging level is `INFO`. Logstash's logging framework is based on
 http://logging.apache.org/log4j/2.x/[Log4j 2 framework], and much of its functionality is exposed directly to users.
 
-When debugging problems, particularly problems with plugins, it can be helpful to increase the logging level to `DEBUG` 
-to emit more verbose messages. Previously, you could only set a log level that applied to the entire Logstash product. 
-Starting with 5.0, you can configure logging for a particular subsystem in Logstash. For example, if you are 
-debugging issues with Elasticsearch Output, you can increase log levels just for that component. This way 
+When debugging problems, particularly problems with plugins, it can be helpful to increase the logging level to `DEBUG`
+to get more verbose messages. Previously, you could only set a log level that applied to the entire Logstash product.
+Starting with 5.0, you can configure logging for a particular subsystem in Logstash. For example, if you are
+debugging issues with Elasticsearch Output, you can increase log levels just for that component. This way
 you can reduce noise due to excessive logging and focus on the problem area effectively.
 
 ==== Log file location
 
 You can specify the log file location using `--path.logs` setting.
 
+[[log4j2]]
 ==== Log4j 2 Configuration
 
-Logstash ships with a `log4j2.properties` file with out-of-the-box settings. You  can modify this file directly to change the 
-rotation policy, type, and other https://logging.apache.org/log4j/2.x/manual/configuration.html#Loggers[log4j2 configuration]. 
+Logstash ships with a `log4j2.properties` file with out-of-the-box settings. You can modify this file to change the
+rotation policy, type, and other https://logging.apache.org/log4j/2.x/manual/configuration.html#Loggers[log4j2 configuration].
 You must restart Logstash to apply any changes that you make to this file.
 
 ==== Slowlog
@@ -55,15 +56,15 @@ The logs will include the full event and filter configuration that are responsib
 
 ==== Logging APIs
 
-You could modify the `log4j2.properties` file and restart your Logstash, but that is both tedious and leads to unnecessary 
-downtime. Instead, you can dynamically update logging levels through the logging API. These settings are effective 
+You could modify the `log4j2.properties` file and restart your Logstash, but that is both tedious and leads to unnecessary
+downtime. Instead, you can dynamically update logging levels through the logging API. These settings are effective
 immediately and do not need a restart.
 
 NOTE: By default, the logging API attempts to bind to `tcp:9600`. If this port is already in use by another Logstash
 instance, you need to launch Logstash with the `--http.port` flag specified to bind to a different port. See
 <<command-line-flags>> for more information.
 
-To update logging levels, take the subsystem/module you are interested in and prepend 
+To update logging levels, take the subsystem/module you are interested in and prepend
 `logger.` to it. For example:
 
 [source,js]
@@ -75,7 +76,7 @@ curl -XPUT 'localhost:9600/_node/logging?pretty' -H 'Content-Type: application/j
 '
 --------------------------------------------------
 
-While this setting is in effect, Logstash will begin to emit DEBUG-level logs for __all__ the Elasticsearch outputs 
+While this setting is in effect, Logstash emits DEBUG-level logs for __all__ the Elasticsearch outputs
 specified in your configuration. Please note this new setting is transient and will not survive a restart.
 
 Persistent changes should be added to `log4j2.properties`. For example:
