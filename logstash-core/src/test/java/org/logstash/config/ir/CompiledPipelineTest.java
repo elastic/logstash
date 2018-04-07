@@ -18,7 +18,12 @@ import org.junit.Before;
 import org.junit.Test;
 import org.logstash.Event;
 import org.logstash.RubyUtil;
+import org.logstash.config.ir.compiler.PluginFactory;
 import org.logstash.config.ir.compiler.RubyIntegration;
+import org.logstash.execution.Filter;
+import org.logstash.execution.Input;
+import org.logstash.execution.LsConfiguration;
+import org.logstash.execution.LsContext;
 import org.logstash.ext.JrubyEventExtLibrary;
 
 /**
@@ -165,9 +170,9 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
     }
 
     /**
-     * Configurable Mock {@link RubyIntegration.PluginFactory}
+     * Configurable Mock {@link PluginFactory}
      */
-    private static final class MockPluginFactory implements RubyIntegration.PluginFactory {
+    private static final class MockPluginFactory implements PluginFactory {
 
         private final Map<String, Supplier<IRubyObject>> inputs;
 
@@ -215,6 +220,17 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
                 );
             }
             return suppliers.get(name.asJavaString()).get();
+        }
+
+        @Override
+        public Input buildInput(final String name, final String id, final LsConfiguration configuration, final LsContext context) {
+            return null;
+        }
+
+        @Override
+        public Filter buildFilter(final String name, final String id,
+            final LsConfiguration configuration, final LsContext context) {
+            return null;
         }
     }
 

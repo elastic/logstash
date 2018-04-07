@@ -1,5 +1,8 @@
 package org.logstash.config.ir;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -25,6 +28,12 @@ import org.logstash.config.ir.graph.IfVertex;
 import org.logstash.config.ir.graph.PluginVertex;
 import org.logstash.config.ir.graph.Vertex;
 import org.logstash.config.ir.imperative.PluginStatement;
+import org.logstash.execution.Filter;
+import org.logstash.execution.Input;
+import org.logstash.execution.LsConfiguration;
+import org.logstash.execution.LsContext;
+import org.logstash.execution.Output;
+import org.logstash.execution.plugins.DiscoverPlugins;
 import org.logstash.ext.JrubyEventExtLibrary;
 
 /**
@@ -38,6 +47,30 @@ public final class CompiledPipeline {
 
     private static final Logger LOGGER = LogManager.getLogger(CompiledPipeline.class);
 
+    private static final Map<String, Class<Input>> JAVA_INPUTS = new HashMap<>();
+    private static final Map<String, Class<Filter>> JAVA_FILTERS = new HashMap<>();
+    private static final Map<String, Class<Output>> JAVA_OUTPUTS = new HashMap<>();
+
+    static {
+        populatePluginDefinitions();
+    }
+
+    @SuppressWarnings("unchecked")
+    private static void populatePluginDefinitions() {
+        final Map<String, Class<?>> plugins = DiscoverPlugins.discoverPlugins();
+        plugins.forEach((name, cls) -> {
+            if (Filter.class.isAssignableFrom(cls)) {
+                JAVA_FILTERS.put(name, (Class<Filter>) cls);
+            }
+            if (Output.class.isAssignableFrom(cls)) {
+                JAVA_OUTPUTS.put(name, (Class<Output>) cls);
+            }
+            if (Input.class.isAssignableFrom(cls)) {
+                JAVA_INPUTS.put(name, (Class<Input>) cls);
+            }
+        });
+    }
+
     /**
      * Compiler for conditional expressions that turn {@link IfVertex} into {@link EventCondition}.
      */
@@ -47,6 +80,11 @@ public final class CompiledPipeline {
      * Configured inputs.
      */
     private final Collection<IRubyObject> inputs;
+
+    /**
+     * Configured Java Inputs.
+     */
+    private final Collection<Input> javaInputs = new ArrayList<>();
 
     /**
      * Configured Filters, indexed by their ID as returned by {@link PluginVertex#getId()}.
@@ -87,6 +125,10 @@ public final class CompiledPipeline {
 
     public Collection<IRubyObject> inputs() {
         return inputs;
+    }
+
+    public Collection<Input> javaInputs() {
+        return javaInputs;
     }
 
     /**
@@ -136,11 +178,22 @@ public final class CompiledPipeline {
         final Collection<IRubyObject> nodes = new HashSet<>(vertices.size());
         vertices.forEach(v -> {
             final PluginDefinition def = v.getPluginDefinition();
-            final SourceWithMetadata source = v.getSourceWithMetadata();
-            nodes.add(pluginFactory.buildInput(
-                RubyUtil.RUBY.newString(def.getName()), RubyUtil.RUBY.newFixnum(source.getLine()),
-                RubyUtil.RUBY.newFixnum(source.getColumn()), convertArgs(def)
-            ));
+            if (JAVA_INPUTS.containsKey(def.getName())) {
+                final Class<Input> cls = JAVA_INPUTS.get(def.getName());
+                try {
+                    final Constructor<Input> ctor =
+                        cls.getConstructor(LsConfiguration.class, LsContext.class);
+                    javaInputs.add(ctor.newInstance(new LsConfiguration(Collections.emptyMap()), new LsContext()));
+                } catch (NoSuchMethodException | IllegalAccessException | InstantiationException | InvocationTargetException ex) {
+                    throw new IllegalStateException(ex);
+                }
+            } else {
+                final SourceWithMetadata source = v.getSourceWithMetadata();
+                nodes.add(pluginFactory.buildInput(
+                    RubyUtil.RUBY.newString(def.getName()), RubyUtil.RUBY.newFixnum(source.getLine()),
+                    RubyUtil.RUBY.newFixnum(source.getColumn()), convertArgs(def)
+                ));
+            }
         });
         return nodes;
     }

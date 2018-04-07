@@ -60,6 +60,7 @@ module LogStash; class JavaBasePipeline
       @logger.debug("Compiled pipeline code", default_logging_keys(:code => @lir.get_graph.to_string))
     end
     @inputs = @lir_execution.inputs
+    @java_inputs = @lir_execution.javaInputs
     @filters = @lir_execution.filters
     @outputs = @lir_execution.outputs
   end
