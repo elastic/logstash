@@ -13,6 +13,7 @@ import org.jruby.javasupport.JavaObject;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.RubyUtil;
+import org.logstash.instrument.metrics.MetricKeys;
 import org.logstash.instrument.metrics.counter.LongCounter;
 
 import java.io.IOException;
@@ -21,11 +22,6 @@ import java.util.concurrent.TimeUnit;
 
 @JRubyClass(name = "QueueReadClientBase")
 public abstract class QueueReadClientBase extends RubyObject implements QueueReadClient {
-
-    private static final RubySymbol OUT_KEY = RubyUtil.RUBY.newSymbol("out");
-    private static final RubySymbol FILTERED_KEY = RubyUtil.RUBY.newSymbol("filtered");
-    private static final RubySymbol DURATION_IN_MILLIS_KEY =
-            RubyUtil.RUBY.newSymbol("duration_in_millis");
 
     protected final ConcurrentHashMap<Long, QueueBatch> inflightBatches =
             new ConcurrentHashMap<>();
@@ -53,17 +49,17 @@ public abstract class QueueReadClientBase extends RubyObject implements QueueRea
 
     @JRubyMethod(name = "set_events_metric", required = 1)
     public IRubyObject setEventsMetric(final ThreadContext context, IRubyObject metric) {
-        eventMetricOut = LongCounter.fromRubyBase(metric, OUT_KEY);
-        eventMetricFiltered = LongCounter.fromRubyBase(metric, FILTERED_KEY);
-        eventMetricTime = LongCounter.fromRubyBase(metric, DURATION_IN_MILLIS_KEY);
+        eventMetricOut = LongCounter.fromRubyBase(metric, MetricKeys.OUT_KEY);
+        eventMetricFiltered = LongCounter.fromRubyBase(metric, MetricKeys.FILTERED_KEY);
+        eventMetricTime = LongCounter.fromRubyBase(metric, MetricKeys.DURATION_IN_MILLIS_KEY);
         return this;
     }
 
     @JRubyMethod(name = "set_pipeline_metric", required = 1)
     public IRubyObject setPipelineMetric(final ThreadContext context, IRubyObject metric) {
-        pipelineMetricOut = LongCounter.fromRubyBase(metric, OUT_KEY);
-        pipelineMetricFiltered = LongCounter.fromRubyBase(metric, FILTERED_KEY);
-        pipelineMetricTime = LongCounter.fromRubyBase(metric, DURATION_IN_MILLIS_KEY);
+        pipelineMetricOut = LongCounter.fromRubyBase(metric, MetricKeys.OUT_KEY);
+        pipelineMetricFiltered = LongCounter.fromRubyBase(metric, MetricKeys.FILTERED_KEY);
+        pipelineMetricTime = LongCounter.fromRubyBase(metric, MetricKeys.DURATION_IN_MILLIS_KEY);
         return this;
     }
 

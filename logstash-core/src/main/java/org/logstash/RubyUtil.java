@@ -10,6 +10,7 @@ import org.jruby.exceptions.RaiseException;
 import org.jruby.runtime.ObjectAllocator;
 import org.logstash.ackedqueue.ext.JRubyAckedQueueExt;
 import org.logstash.ackedqueue.ext.JRubyWrappedAckedQueueExt;
+import org.logstash.config.ir.compiler.OutputDelegatorExt;
 import org.logstash.execution.QueueReadClientBase;
 import org.logstash.ext.JRubyWrappedWriteClientExt;
 import org.logstash.ext.JrubyAckedReadClientExt;
@@ -65,6 +66,8 @@ public final class RubyUtil {
 
     public static final RubyClass ACKED_QUEUE_CLASS;
 
+    public static final RubyClass OUTPUT_DELEGATOR_CLASS;
+
     static {
         RUBY = Ruby.getGlobalRuntime();
         LOGSTASH_MODULE = RUBY.getOrCreateModule("LogStash");
@@ -91,6 +94,9 @@ public final class RubyUtil {
         ACKED_QUEUE_CLASS = setupLogstashClass(JRubyAckedQueueExt::new, JRubyAckedQueueExt.class);
         RUBY_EVENT_CLASS = setupLogstashClass(
             JrubyEventExtLibrary.RubyEvent::new, JrubyEventExtLibrary.RubyEvent.class
+        );
+        OUTPUT_DELEGATOR_CLASS = setupLogstashClass(
+            OutputDelegatorExt::new, OutputDelegatorExt.class
         );
         final RubyModule json = LOGSTASH_MODULE.defineOrGetModuleUnder("Json");
         final RubyClass stdErr = RUBY.getStandardError();
