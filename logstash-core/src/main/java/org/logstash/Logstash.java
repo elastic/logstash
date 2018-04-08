@@ -14,8 +14,7 @@ import org.jruby.RubyInstanceConfig;
 import org.jruby.RubyNumeric;
 import org.jruby.exceptions.RaiseException;
 import org.jruby.runtime.builtin.IRubyObject;
-import org.pf4j.DefaultPluginManager;
-import org.pf4j.PluginManager;
+
 
 /**
  * Logstash Main Entrypoint.
@@ -25,7 +24,11 @@ public final class Logstash implements Runnable, AutoCloseable {
     private static final Logger LOGGER = LogManager.getLogger(Logstash.class);
     final static Path LOGSTASH_HOME = Paths.get(System.getenv("LS_HOME")).toAbsolutePath();
     static final Path PLUGINS_PATH = Logstash.LOGSTASH_HOME.resolve("vendor").resolve("java-plugins");
-    static final PluginManager PLUGIN_MANAGER = new DefaultPluginManager(PLUGINS_PATH);
+    public static final DefaultPluginManager PLUGIN_MANAGER = new DefaultPluginManager(PLUGINS_PATH);
+
+    public static DefaultPluginManager getPluginManager(){
+        return PLUGIN_MANAGER;
+    }
 
     /**
      * JRuby Runtime Environment.

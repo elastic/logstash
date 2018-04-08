@@ -25,6 +25,7 @@ java_import org.logstash.common.SourceWithMetadata
 java_import org.logstash.common.io.DeadLetterQueueWriter
 java_import org.logstash.config.ir.CompiledPipeline
 java_import org.logstash.config.ir.ConfigCompiler
+java_import org.logstash.Logstash
 
 module LogStash; class JavaBasePipeline
   include LogStash::Util::Loggable
@@ -59,6 +60,13 @@ module LogStash; class JavaBasePipeline
     if settings.get_value("config.debug") && @logger.debug?
       @logger.debug("Compiled pipeline code", default_logging_keys(:code => @lir.get_graph.to_string))
     end
+
+    # again ... just for illustration purposes
+    @plugin_manager = org.logstash.Logstash.getPluginManager()
+    @plugin_manager.get_inputs.each do |input|
+      input.start
+    end
+
     @inputs = @lir_execution.inputs
     @filters = @lir_execution.filters
     @outputs = @lir_execution.outputs

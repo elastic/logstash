@@ -20,6 +20,7 @@ require "socket"
 require "securerandom"
 
 LogStash::Environment.load_locale!
+java_import  org.logstash.Logstash
 
 class LogStash::Agent
   include LogStash::Util::Loggable
@@ -34,9 +35,9 @@ class LogStash::Agent
   #   :auto_reload [Boolean] - enable reloading of pipelines
   #   :reload_interval [Integer] - reload pipelines every X seconds
   def initialize(settings = LogStash::SETTINGS, source_loader = nil)
-    @agent_hooks = org.logstash.AgentHooks.new
+    @plugin_manager = org.logstash.Logstash.getPluginManager()
 
-    @agent_hooks.start()
+    @plugin_manager.start()
 
     @logger = self.class.logger
     @settings = settings
@@ -187,7 +188,7 @@ class LogStash::Agent
   end
 
   def shutdown
-    @agent_hooks.shutdown()
+    @plugin_manager.shutdown()
     stop_collecting_metrics
     stop_webserver
     transition_to_stopped
