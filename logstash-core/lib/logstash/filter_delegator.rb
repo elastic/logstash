@@ -16,16 +16,13 @@ module LogStash
 
     attr_reader :id
 
-    def initialize(klass, metric, execution_context, plugin_args)
-      @klass = klass
-      @id = plugin_args["id"]
-      @filter = klass.new(plugin_args)
+    def initialize(filter, id)
+      @klass = filter.class
+      @id = id
+      @filter = filter
 
       # Scope the metrics to the plugin
-      namespaced_metric = metric.namespace(@id.to_sym)
-      @filter.metric = namespaced_metric
-      @filter.execution_context = execution_context
-
+      namespaced_metric = filter.metric
       @metric_events = namespaced_metric.namespace(:events)
       @metric_events_in = @metric_events.counter(:in)
       @metric_events_out = @metric_events.counter(:out)

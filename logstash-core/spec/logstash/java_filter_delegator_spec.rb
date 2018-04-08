@@ -42,12 +42,11 @@ describe LogStash::JavaFilterDelegator do
     end
   end
 
-  subject { described_class.new(plugin_klass, metric, execution_context, config) }
-
-  it "create a plugin with the passed options" do
-    expect(plugin_klass).to receive(:new).with(config).and_return(plugin_klass.new(config))
-    described_class.new(plugin_klass, metric, execution_context, config)
-  end
+  subject {
+    LogStash::Plugins::PluginFactory.filter_delegator(
+        described_class, plugin_klass, config, metric, execution_context
+    )
+  }
 
   context "when the plugin support flush" do
     let(:plugin_klass) do
