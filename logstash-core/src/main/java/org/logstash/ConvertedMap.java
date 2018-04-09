@@ -16,9 +16,9 @@ import org.jruby.runtime.builtin.IRubyObject;
  * <p>The {@code put} method will work with any {@link String} key but is only intended for use in
  * situations where {@link ConvertedMap#putInterned(String, Object)} would require manually
  * interning the {@link String} key. This is due to the fact that we use our internal
- * {@link PathCache} to get an interned version of the given key instead of JDKs
+ * {@link FieldReference} cache to get an interned version of the given key instead of JDKs
  * {@link String#intern()}, which is faster since it works from a much smaller and hotter cache
- * in {@link PathCache} than using String interning directly.</p>
+ * in {@link FieldReference#CACHE} than using String interning directly.</p>
  */
 public final class ConvertedMap extends IdentityHashMap<String, Object> {
 
@@ -71,7 +71,7 @@ public final class ConvertedMap extends IdentityHashMap<String, Object> {
 
     @Override
     public Object put(final String key, final Object value) {
-        return super.put(PathCache.cache(key).getKey(), value);
+        return super.put(FieldReference.from(key).getKey(), value);
     }
 
     /**
@@ -98,6 +98,6 @@ public final class ConvertedMap extends IdentityHashMap<String, Object> {
      * @return Interned String
      */
     private static String convertKey(final RubyString key) {
-        return PathCache.cache(key.getByteList()).getKey();
+        return FieldReference.from(key.getByteList()).getKey();
     }
 }

@@ -8,8 +8,8 @@ describe LogStash::QueueFactory do
   let(:settings_array) do
     [
       LogStash::Setting::WritableDirectory.new("path.queue", Stud::Temporary.pathname),
-      LogStash::Setting::String.new("queue.type", "memory", true, ["persisted", "memory", "memory_acked"]),
-      LogStash::Setting::Bytes.new("queue.page_capacity", "250mb"),
+      LogStash::Setting::String.new("queue.type", "memory", true, ["persisted", "memory"]),
+      LogStash::Setting::Bytes.new("queue.page_capacity", "64mb"),
       LogStash::Setting::Bytes.new("queue.max_bytes", "1024mb"),
       LogStash::Setting::Numeric.new("queue.max_events", 0),
       LogStash::Setting::Numeric.new("queue.checkpoint.acks", 1024),
@@ -39,7 +39,7 @@ describe LogStash::QueueFactory do
 
     it "returns a `WrappedAckedQueue`" do
       queue =  subject.create(settings)
-      expect(queue).to be_kind_of(LogStash::Util::WrappedAckedQueue)
+      expect(queue).to be_kind_of(LogStash::WrappedAckedQueue)
       queue.close
     end
 
@@ -59,18 +59,6 @@ describe LogStash::QueueFactory do
     end
   end
 
-  context "when `queue.type` is `memory_acked`" do
-    before do
-      settings.set("queue.type", "memory_acked")
-    end
-
-    it "returns a `WrappedAckedQueue`" do
-      queue =  subject.create(settings)
-      expect(queue).to be_kind_of(LogStash::Util::WrappedAckedQueue)
-      queue.close
-    end
-  end
-
   context "when `queue.type` is `memory`" do
     before do
       settings.set("queue.type", "memory")
@@ -79,7 +67,7 @@ describe LogStash::QueueFactory do
 
     it "returns a `WrappedSynchronousQueue`" do
       queue =  subject.create(settings)
-      expect(queue).to be_kind_of(LogStash::Util::WrappedSynchronousQueue)
+      expect(queue).to be_kind_of(LogStash::WrappedSynchronousQueue)
       queue.close
     end
   end

@@ -10,6 +10,11 @@ TIMESTAMP = "@timestamp"
 
 describe LogStash::Event do
   context "to_json" do
+    it "should correctly serialize RubyNil values a Null values" do
+      e = LogStash::Event.new({ "null_value" => nil, TIMESTAMP => "2015-05-28T23:02:05.350Z"})
+      expect(JSON.parse(e.to_json)).to eq(JSON.parse("{\"null_value\":null,\"@timestamp\":\"2015-05-28T23:02:05.350Z\",\"@version\":\"1\"}"))
+    end
+
     it "should serialize simple values" do
       e = LogStash::Event.new({"foo" => "bar", "bar" => 1, "baz" => 1.0, TIMESTAMP => "2015-05-28T23:02:05.350Z"})
       expect(JSON.parse(e.to_json)).to eq(JSON.parse("{\"foo\":\"bar\",\"bar\":1,\"baz\":1.0,\"@timestamp\":\"2015-05-28T23:02:05.350Z\",\"@version\":\"1\"}"))
@@ -141,7 +146,7 @@ describe LogStash::Event do
     end
 
     it "should set XXJavaProxy Jackson crafted" do
-      proxy = org.logstash.Util.getMapFixtureJackson()
+      proxy = org.logstash.RspecTestUtils.getMapFixtureJackson()
       # proxy is {"string": "foo", "int": 42, "float": 42.42, "array": ["bar","baz"], "hash": {"string":"quux"} }
       e = LogStash::Event.new()
       e.set("[proxy]", proxy)
@@ -154,7 +159,7 @@ describe LogStash::Event do
     end
 
     it "should set XXJavaProxy hand crafted" do
-      proxy = org.logstash.Util.getMapFixtureHandcrafted()
+      proxy = org.logstash.RspecTestUtils.getMapFixtureHandcrafted()
       # proxy is {"string": "foo", "int": 42, "float": 42.42, "array": ["bar","baz"], "hash": {"string":"quux"} }
       e = LogStash::Event.new()
       e.set("[proxy]", proxy)
@@ -339,14 +344,6 @@ describe LogStash::Event do
 
   context "method missing exception messages" do
     subject { LogStash::Event.new({"foo" => "bar"}) }
-
-    it "#[] method raises a better exception message" do
-      expect { subject["foo"] }.to raise_error(NoMethodError, /Direct event field references \(i\.e\. event\['field'\]\)/)
-    end
-
-    it "#[]= method raises a better exception message" do
-      expect { subject["foo"] = "baz" }.to raise_error(NoMethodError, /Direct event field references \(i\.e\. event\['field'\] = 'value'\)/)
-    end
 
     it "other missing method raises normal exception message" do
       expect { subject.baz() }.to raise_error(NoMethodError, /undefined method `baz' for/)

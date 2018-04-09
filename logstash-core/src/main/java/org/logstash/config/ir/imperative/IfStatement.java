@@ -84,6 +84,12 @@ public class IfStatement extends Statement {
         Graph trueGraph = getTrueStatement().toGraph();
         Graph falseGraph = getFalseStatement().toGraph();
 
+        // If there is nothing in the true or false sections of this if statement,
+        // we can omit the if statement altogether!
+        if (trueGraph.isEmpty() && falseGraph.isEmpty()) {
+            return new Graph();
+        }
+
         Graph.GraphCombinationResult combination = Graph.combine(trueGraph, falseGraph);
         Graph newGraph = combination.graph;
         Collection<Vertex> trueRoots = trueGraph.roots().map(combination.oldToNewVertices::get).collect(Collectors.toList());

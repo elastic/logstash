@@ -67,7 +67,7 @@ public class AccessorsTest {
     @Test
     public void testDeepListGet() throws Exception {
         Map<Serializable, Object>  data = new HashMap<>();
-        List inner = new ArrayList();
+        List<String> inner = new ArrayList<>();
         data.put("foo", inner);
         inner.add("bar");
         String reference = "[foo][0]";
@@ -79,7 +79,7 @@ public class AccessorsTest {
     @Test
     public void testAbsentDeepListGet() throws Exception {
         Map<Serializable, Object>  data = new HashMap<>();
-        List inner = new ArrayList();
+        List<String> inner = new ArrayList<>();
         data.put("foo", inner);
         inner.add("bar");
         String reference = "[foo][1]";
@@ -94,7 +94,7 @@ public class AccessorsTest {
     @Test
     public void testInvalidIdList() throws Exception {
         final ConvertedMap data = new ConvertedMap(1);
-        List inner = new ConvertedList(2);
+        List<Object> inner = new ConvertedList(2);
         data.put("map1", inner);
         inner.add("obj1");
         inner.add("obj2");
@@ -137,7 +137,7 @@ public class AccessorsTest {
     @Test
     public void testDel() throws Exception {
         final ConvertedMap data = new ConvertedMap(1);
-        List inner = new ConvertedList(1);
+        List<Object> inner = new ConvertedList(1);
         data.put("foo", inner);
         inner.add("bar");
         data.put("bar", "baz");
@@ -187,20 +187,27 @@ public class AccessorsTest {
         assertEquals(0, Accessors.listIndex(-10, 10));
     }
 
+    @Test(expected = Accessors.InvalidFieldSetException.class)
+    public void testSetOnNonMapOrList() {
+        final ConvertedMap data = new ConvertedMap(1);
+        set(data, "[foo]", "AString");
+        set(data, "[foo][bar]", "Another String");
+    }
+
     private static Object get(final ConvertedMap data, final CharSequence reference) {
-        return Accessors.get(data, PathCache.cache(reference));
+        return Accessors.get(data, FieldReference.from(reference));
     }
 
     private static Object set(final ConvertedMap data, final CharSequence reference,
         final Object value) {
-        return Accessors.set(data, PathCache.cache(reference), value);
+        return Accessors.set(data, FieldReference.from(reference), value);
     }
 
     private static Object del(final ConvertedMap data, final CharSequence reference) {
-        return Accessors.del(data, PathCache.cache(reference));
+        return Accessors.del(data, FieldReference.from(reference));
     }
 
     private static boolean includes(final ConvertedMap data, final CharSequence reference) {
-        return Accessors.includes(data, PathCache.cache(reference));
+        return Accessors.includes(data, FieldReference.from(reference));
     }
 }

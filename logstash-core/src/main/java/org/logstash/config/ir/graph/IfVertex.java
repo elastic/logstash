@@ -1,19 +1,17 @@
 package org.logstash.config.ir.graph;
 
-import org.logstash.config.ir.SourceComponent;
-import org.logstash.common.SourceWithMetadata;
-import org.logstash.config.ir.expression.BooleanExpression;
-
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import org.logstash.common.SourceWithMetadata;
+import org.logstash.config.ir.SourceComponent;
+import org.logstash.config.ir.expression.BooleanExpression;
 
 /**
  * Created by andrewvc on 9/15/16.
  */
 public class IfVertex extends Vertex {
-    private volatile String generatedId;
 
     public BooleanExpression getBooleanExpression() {
         return booleanExpression;
@@ -43,12 +41,6 @@ public class IfVertex extends Vertex {
         return false;
     }
 
-    // An IfVertex has no real metadata in and of itself, but its expression does!
-    @Override
-    public SourceWithMetadata getSourceWithMetadata() {
-        return null;
-    }
-
     public boolean hasEdgeType(boolean type) {
         for (Edge e : getOutgoingEdges()) {
             BooleanEdge bEdge = (BooleanEdge) e; // There should only  be boolean edges here!
@@ -68,13 +60,8 @@ public class IfVertex extends Vertex {
         return (e instanceof BooleanEdge);
     }
 
-    public Collection<BooleanEdge> getOutgoingBooleanEdges() {
-        // Wish there was a way to do this as a java a cast without an operation
-        return getOutgoingEdges().stream().map(e -> (BooleanEdge) e).collect(Collectors.toList());
-    }
-
-    public Collection<BooleanEdge> getOutgoingBooleanEdgesByType(Boolean edgeType) {
-        return getOutgoingBooleanEdges().stream().filter(e -> e.getEdgeType().equals(edgeType)).collect(Collectors.toList());
+    public Stream<BooleanEdge> outgoingBooleanEdgesByType(boolean edgeType) {
+        return outgoingEdges().map(e -> (BooleanEdge) e).filter(e -> e.getEdgeType() == edgeType);
     }
 
     // The easiest readable version of this for a human.
@@ -90,11 +77,6 @@ public class IfVertex extends Vertex {
 
     @Override
     public IfVertex copy() {
-        return new IfVertex(getSourceWithMetadata(),getBooleanExpression());
-    }
-
-    @Override
-    public String calculateIndividualHashSource() {
-        return this.getClass().getCanonicalName() + "{" + this.booleanExpression.hashSource() + "}";
+        return new IfVertex(this.getSourceWithMetadata(), booleanExpression);
     }
 }

@@ -6,16 +6,22 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.jruby.RubyString;
 import org.jruby.RubySymbol;
 import org.jruby.RubyTime;
+import org.jruby.java.proxies.ConcreteJavaProxy;
 import org.junit.Test;
 
 import static net.javacrumbs.jsonunit.JsonAssert.assertJsonEquals;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 
 public final class EventTest {
 
@@ -28,6 +34,7 @@ public final class EventTest {
         inner.put("innerFoo", 42L);
         final RubySymbol symbol = RubyUtil.RUBY.newSymbol("val");
         e.setField("symbol", symbol);
+        e.setField("null", null);
         inner.put("innerQuux", 42.42);
         e.setField("baz", inner);
         final BigInteger bigint = BigInteger.valueOf(Long.MAX_VALUE).multiply(BigInteger.TEN);
@@ -45,6 +52,7 @@ public final class EventTest {
         assertEquals(42L, er.getField("[baz][innerFoo]"));
         assertEquals(42.42, er.getField("[baz][innerQuux]"));
         assertEquals(42L, er.getField("[@metadata][foo]"));
+        assertNull(er.getField("null"));
 
         assertEquals(e.getTimestamp().toString(), er.getTimestamp().toString());
     }
@@ -73,6 +81,34 @@ public final class EventTest {
         assertEquals(timestamp, er.getField("time"));
         assertEquals(list, er.getField("list"));
         assertEquals(e.getTimestamp().toString(), er.getTimestamp().toString());
+    }
+
+    @Test
+    public void toBinaryRoundtripSubstring() throws Exception {
+        Event e = new Event();
+        e.setField(
+            "foo",
+            RubyString.newString(RubyUtil.RUBY, "--bar--").substr(RubyUtil.RUBY, 2, 3)
+        );
+        final RubyString before = (RubyString) e.getUnconvertedField("foo");
+        Event er = Event.deserialize(e.serialize());
+        assertEquals(before, er.getUnconvertedField("foo"));
+    }
+
+    /**
+     * Test for proper BigInteger and BigDecimal serialization
+     * related to Jackson/CBOR issue https://github.com/elastic/logstash/issues/8379
+     */
+    @Test
+    public void bigNumsBinaryRoundtrip() throws Exception {
+        final Event e = new Event();
+        final BigInteger bi = new BigInteger("9223372036854776000");
+        final BigDecimal bd =  new BigDecimal("9223372036854776001.99");
+        e.setField("bi", bi);
+        e.setField("bd", bd);
+        final Event deserialized = Event.deserialize(e.serialize());
+        assertEquals(bi, deserialized.getField("bi"));
+        assertEquals(bd, deserialized.getField("bd"));
     }
 
     @Test
@@ -318,6 +354,7 @@ public final class EventTest {
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     public void testTagOnEmptyTagsField() throws Exception {
         Event e = new Event();
         e.tag("foo");
@@ -328,6 +365,7 @@ public final class EventTest {
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     public void testTagOnExistingTagsField() throws Exception {
         Map<String, Object> data = new HashMap<>();
         data.put("tags", "foo");
@@ -341,7 +379,7 @@ public final class EventTest {
     }
 
     @Test
-    public void toStringwithTimestamp() throws Exception {
+    public void toStringWithTimestamp() throws Exception {
         Map<String, Object> data = new HashMap<>();
         data.put("host", "foo");
         data.put("message", "bar");
@@ -350,7 +388,7 @@ public final class EventTest {
     }
 
     @Test
-    public void toStringwithoutTimestamp() throws Exception {
+    public void toStringWithoutTimestamp() throws Exception {
         Map<String, Object> data = new HashMap<>();
         data.put("host", "foo");
         data.put("message", "bar");
@@ -361,5 +399,45 @@ public final class EventTest {
         e = new Event();
         e.remove("@timestamp");
         assertEquals(e.toString(), "%{host} %{message}");
+    }
+
+    @Test
+    public void unwrapsJavaProxyValues() throws Exception {
+        final Event event = new Event();
+        final Timestamp timestamp = new Timestamp();
+        event.setField("timestamp", new ConcreteJavaProxy(RubyUtil.RUBY,
+            RubyUtil.RUBY_TIMESTAMP_CLASS, timestamp
+        ));
+        assertThat(event.getField("timestamp"), is(timestamp));
+    }
+
+    @Test
+    public void metadataFieldsShouldBeValuefied() {
+        final Event event = new Event();
+        event.setField("[@metadata][foo]", Collections.emptyMap());
+        assertEquals(HashMap.class, event.getField("[@metadata][foo]").getClass());
+
+        event.setField("[@metadata][bar]", Collections.singletonList("hello"));
+        final List list = (List) event.getField("[@metadata][bar]");
+        assertEquals(ArrayList.class, list.getClass());
+        assertEquals(list, Arrays.asList("hello"));
+    }
+
+    @Test
+    public void metadataRootShouldBeValueified() {
+        final Event event = new Event();
+
+        final Map<String, Object> metadata = new HashMap<>();
+        metadata.put("foo", Collections.emptyMap());
+        metadata.put("bar", Collections.singletonList("hello"));
+
+        event.setField("@metadata", metadata);
+
+        assertEquals(HashMap.class, event.getField("[@metadata][foo]").getClass());
+
+        final List list = (List) event.getField("[@metadata][bar]");
+        assertEquals(ArrayList.class, list.getClass());
+        assertEquals(list, Arrays.asList("hello"));
+
     }
 }

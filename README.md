@@ -1,15 +1,15 @@
 # Logstash
 
-Logstash is part of the [Elastic Stack](https://www.elastic.co/products) along with Beats, Elasticsearch and Kibana. Logstash is an open source, server-side data processing pipeline that ingests data from a multitude of sources simultaneously, transforms it, and then sends it to your favorite "stash." (Ours is Elasticsearch, naturally.). Logstash has over 200 plugins, and you can write your own very easily as well.
-
-The license is Apache 2.0, meaning you are pretty much free to use it however you want in whatever way.
+Logstash is part of the [Elastic Stack](https://www.elastic.co/products) along with Beats, Elasticsearch and Kibana. Logstash is a server-side data processing pipeline that ingests data from a multitude of sources simultaneously, transforms it, and then sends it to your favorite "stash." (Ours is Elasticsearch, naturally.). Logstash has over 200 plugins, and you can write your own very easily as well.
 
 For more info, see <https://www.elastic.co/products/logstash>
 
 ## Documentation and Getting Started
 
-You can find the documentation and getting started guides for Logstash 
+You can find the documentation and getting started guides for Logstash
 on the [elastic.co site](https://www.elastic.co/guide/en/logstash/current/getting-started-with-logstash.html)
+
+For information about building the documentation, see the README in https://github.com/elastic/docs
 
 ## Downloads
 
@@ -18,7 +18,7 @@ supported platforms, from [downloads page](https://www.elastic.co/downloads/logs
 
 ### Snapshot Builds
 
-For the daring, snapshot builds from `master` branch are available. These builds are created nightly and have undergone no formal QA, so they should **never** be run in production.
+For the daring, snapshot builds are available. These builds are created nightly and have undergone no formal QA, so they should **never** be run in production.
 
 | artifact |
 | --- |
@@ -61,11 +61,11 @@ Logstash core will continue to exist under this repository and all related issue
 
 ### RVM install (optional)
 
-If you prefer to use rvm (ruby version manager) to manage Ruby versions on your machine, follow these directions:
+If you prefer to use rvm (ruby version manager) to manage Ruby versions on your machine, follow these directions. In the Logstash folder:
 
 ```sh
 gpg --keyserver hkp://keys.gnupg.net --recv-keys 409B6B1796C275462A1703113804BB82D39DC0E3
-\curl -sSL https://get.rvm.io | bash -s stable --ruby=jruby-9.1.10.0
+\curl -sSL https://get.rvm.io | bash -s stable --ruby=$(cat .ruby-version)
 ```
 
 ### Check Ruby version
@@ -74,8 +74,9 @@ Before you proceed, please check your ruby version by:
 
 ```sh
 $ ruby -v
-jruby 9.1.10.0 (2.3.3) 2017-05-25 b09c48a Java HotSpot(TM) 64-Bit Server VM 25.131-b11 on 1.8.0_131-b11 +jit [darwin-x86_64]
 ```
+
+The printed version should be the same as in the `.ruby-version` file.
 
 ### Building Logstash
 
@@ -84,7 +85,7 @@ jruby 9.1.10.0 (2.3.3) 2017-05-25 b09c48a Java HotSpot(TM) 64-Bit Server VM 25.1
 ```sh
 rake bootstrap
 ```
-    
+
 * You can then use `bin/logstash` to start Logstash, but there are no plugins installed. To install default plugins, you can run:
 
 ```sh
@@ -112,7 +113,7 @@ hello world
 
 To tell logstash to use drip, either set the `USE_DRIP=1` environment variable or set `` JAVACMD=`which drip` ``.
 
-Example:
+Example (but see the *Testing* section below before running rspec for the first time):
 
     USE_DRIP=1 bin/rspec
 
@@ -120,28 +121,56 @@ Example:
 
 Drip does not work with STDIN. You cannot use drip for running configs which use the stdin plugin.
 
+## Building Logstash Documentation
+
+To build the Logstash Reference (open source content only) on your local
+machine, clone the following repos:
+
+[logstash](https://github.com/elastic/logstash) - contains main docs about core features
+
+[logstash-docs](https://github.com/elastic/logstash-docs) - contains generated plugin docs
+
+[docs](https://github.com/elastic/docs) - contains doc build files
+
+Make sure you have the same branch checked out in `logstash` and `logstash-docs`.
+Check out `master` in the `docs` repo.
+
+Run the doc build script from within the `docs` repo. For example:
+
+```
+./build_docs.pl --doc ../logstash/docs/index.asciidoc --chunk=1 -open
+```
+
 ## Testing
 
 Most of the unit tests in Logstash are written using [rspec](http://rspec.info/) for the Ruby parts. For the Java parts, we use junit. For testing you can use the *test* `rake` tasks and the `bin/rspec` command, see instructions below:
 
 ### Core tests
 
-1- In order to run the core tests, a small set of plugins must first be installed:
+1- To run the core tests you can use the Gradle task:
 
-    rake test:install-core
-
-2- To run the core tests you can use the rake task:
-
-    rake test:core
+    ./gradlew test
 
   or use the `rspec` tool to run all tests or run a specific test:
 
     bin/rspec
     bin/rspec spec/foo/bar_spec.rb
-    
-3- To run the subset of tests covering the Java codebase only run:
-    
-    ./gradlew test
+
+  Note that before running the `rspec` command for the first time you need to set up the RSpec test dependencies by running:
+
+    ./gradlew bootstrap
+
+2- To run the subset of tests covering the Java codebase only run:
+
+    ./gradlew javaTests
+
+3- To execute the complete test-suite including the integration tests run:
+
+    ./gradlew check
+
+Sometimes you might find a change to a piece of Logstash code causes a test to hang. These can be hard to debug.
+
+If you set `LS_JAVA_OPTS="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005"` you can connect to a running Logstash with your IDEs debugger which can be a great way of finding the issue.
 
 ### Plugins tests
 
@@ -149,23 +178,22 @@ To run the tests of all currently installed plugins:
 
     rake test:plugin
 
-You can install the default set of plugins included in the logstash package or all plugins:
+You can install the default set of plugins included in the logstash package:
 
     rake test:install-default
-    rake test:install-all
 
 ---
 Note that if a plugin is installed using the plugin manager `bin/logstash-plugin install ...` do not forget to also install the plugins development dependencies using the following command after the plugin installation:
 
     bin/logstash-plugin install --development
-    
+
 ## Building Artifacts
 
 You can build a Logstash snapshot package as tarball or zip file
 
 ```sh
-rake artifact:tar
-rake artifact:zip
+./gradlew assembleTarDistribution
+./gradlew assembleZipDistribution
 ```
 
 This will create the artifact `LS_HOME/build` directory

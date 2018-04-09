@@ -1,28 +1,40 @@
 # encoding: utf-8
-require "logstash/output_delegator"
 require "logstash/execution_context"
 require "spec_helper"
 require "support/shared_contexts"
+require "logstash/output_delegator_strategy_registry"
+require "logstash/output_delegator_strategies/shared"
+require "logstash/output_delegator_strategies/single"
+require "logstash/output_delegator_strategies/legacy"
 
 describe LogStash::OutputDelegator do
 
-  class MockGauge
-    def increment(_)
-    end
-  end
-
-  let(:logger) { double("logger") }
   let(:events) { 7.times.map { LogStash::Event.new }}
   let(:plugin_args) { {"id" => "foo", "arg1" => "val1"} }
-  let(:collector) { [] }
-  let(:counter_in) { MockGauge.new }
-  let(:counter_out) { MockGauge.new }
-  let(:counter_time) { MockGauge.new }
-  let(:metric) { LogStash::Instrument::NamespacedNullMetric.new(collector, :null) }
+  let(:metric) {
+    LogStash::Instrument::NamespacedMetric.new(
+      LogStash::Instrument::Metric.new(LogStash::Instrument::Collector.new), [:output]
+    )
+  }
+  let(:counter_in) {
+    counter = metric.counter(:in)
+    counter.increment(0)
+    counter
+  }
+  let(:counter_out) {
+    counter = metric.counter(:out)
+    counter.increment(0)
+    counter
+  }
+  let(:counter_time) {
+    counter = metric.counter(:duration_in_millis)
+    counter.increment(0)
+    counter
+  }
 
   include_context "execution_context"
 
-  subject { described_class.new(logger, out_klass, metric, execution_context, ::LogStash::OutputDelegatorStrategyRegistry.instance, plugin_args) }
+  subject { described_class.new(out_klass, metric, execution_context, ::LogStash::OutputDelegatorStrategyRegistry.instance, plugin_args) }
 
   context "with a plain output plugin" do
     let(:out_klass) { double("output klass") }
@@ -31,12 +43,7 @@ describe LogStash::OutputDelegator do
 
     before(:each) do
       # use the same metric instance
-      allow(metric).to receive(:namespace).with(any_args).and_return(metric)
-      allow(metric).to receive(:counter).with(:in).and_return(counter_in)
-      allow(metric).to receive(:counter).with(:out).and_return(counter_out)
-      allow(metric).to receive(:counter).with(:duration_in_millis).and_return(counter_time)
-
-      allow(out_klass).to receive(:new).with(any_args).and_return(out_inst)
+      allow(out_klass).to receive(:new).with(plugin_args).and_return(out_inst)
       allow(out_klass).to receive(:name).and_return("example")
       allow(out_klass).to receive(:concurrency).with(any_args).and_return concurrency
       allow(out_klass).to receive(:config_name).and_return("dummy_plugin")
@@ -45,9 +52,6 @@ describe LogStash::OutputDelegator do
       allow(out_inst).to receive(:metric=).with(any_args)
       allow(out_inst).to receive(:execution_context=).with(execution_context)
       allow(out_inst).to receive(:id).and_return("a-simple-plugin")
-
-      allow(subject.metric_events).to receive(:increment).with(any_args)
-      allow(logger).to receive(:debug).with(any_args)
     end
 
     it "should initialize cleanly" do
@@ -55,8 +59,8 @@ describe LogStash::OutputDelegator do
     end
 
     it "should push the name of the plugin to the metric" do
-      expect(metric).to receive(:gauge).with(:name, out_klass.config_name)
-      described_class.new(logger, out_klass, metric, execution_context, ::LogStash::OutputDelegatorStrategyRegistry.instance, plugin_args)
+      described_class.new(out_klass, metric, execution_context, ::LogStash::OutputDelegatorStrategyRegistry.instance, plugin_args)
+      expect(metric.collector.snapshot_metric.metric_store.get_with_path("output/foo")[:output][:foo][:name].value).to eq(out_klass.config_name)
     end
 
     context "after having received a batch of events" do
@@ -70,14 +74,21 @@ describe LogStash::OutputDelegator do
       end
 
       it "should increment the number of events received" do
-        expect(counter_in).to receive(:increment).with(events.length)
-        expect(counter_out).to receive(:increment).with(events.length)
         subject.multi_receive(events)
+        store = metric.collector.snapshot_metric.metric_store.get_with_path("output/foo")[:output][:foo][:events]
+        number_of_events = events.length
+        expect(store[:in].value).to eq(number_of_events)
+        expect(store[:out].value).to eq(number_of_events)
       end
 
       it "should record the `duration_in_millis`" do
-        expect(counter_time).to receive(:increment).with(Integer)
-        subject.multi_receive(events)
+        value = 0
+        while value == 0
+          subject.multi_receive(events)
+          store = metric.collector.snapshot_metric.metric_store.get_with_path("output/foo")[:output][:foo][:events]
+          value = store[:duration_in_millis].value
+        end
+        expect(value).to be > 0
       end
     end
 
@@ -112,17 +123,13 @@ describe LogStash::OutputDelegator do
           it "should find the correct concurrency type for the output" do
             expect(subject.concurrency).to eq(strategy_concurrency)
           end
-          
+
           it "should find the correct Strategy class for the worker" do
             expect(subject.strategy).to be_a(klass)
           end
 
-          it "should set the correct parameters on the instance" do
-            expect(out_klass).to have_received(:new).with(plugin_args)
-          end
-
           it "should set the metric on the instance" do
-            expect(out_inst).to have_received(:metric=).with(metric)
+            expect(out_inst).to have_received(:metric=).with(subject.namespaced_metric)
           end
 
           [[:register], [:do_close], [:multi_receive, [[]] ] ].each do |method, args|
@@ -130,7 +137,7 @@ describe LogStash::OutputDelegator do
               before do
                 allow(subject.strategy).to receive(method)
               end
-              
+
               it "should delegate #{method} to the strategy" do
                 subject.send(method, *args)
                 if args
@@ -145,7 +152,7 @@ describe LogStash::OutputDelegator do
               before do
                 allow(out_inst).to receive(method)
               end
-              
+
               it "should delegate #{method} to the strategy" do
                 subject.send(method, *args)
                 if args

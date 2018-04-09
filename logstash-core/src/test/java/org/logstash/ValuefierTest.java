@@ -2,7 +2,6 @@ package org.logstash;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import org.joda.time.DateTime;
@@ -18,18 +17,17 @@ import org.jruby.runtime.builtin.IRubyObject;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import org.logstash.bivalues.BiValue;
 import org.logstash.ext.JrubyTimestampExtLibrary;
 
 import static junit.framework.TestCase.assertEquals;
 
-public class ValuefierTest extends TestBase {
+public class ValuefierTest {
     @Test
     public void testMapJavaProxy() {
         Map<IRubyObject, IRubyObject> map = new HashMap<>();
-        map.put(RubyString.newString(ruby, "foo"), RubyString.newString(ruby, "bar"));
-        RubyClass proxyClass = (RubyClass) Java.getProxyClass(ruby, HashMap.class);
-        MapJavaProxy mjp = new MapJavaProxy(ruby, proxyClass);
+        map.put(RubyString.newString(RubyUtil.RUBY, "foo"), RubyString.newString(RubyUtil.RUBY, "bar"));
+        RubyClass proxyClass = (RubyClass) Java.getProxyClass(RubyUtil.RUBY, HashMap.class);
+        MapJavaProxy mjp = new MapJavaProxy(RubyUtil.RUBY, proxyClass);
         mjp.setObject(map);
 
         Object result = Valuefier.convert(mjp);
@@ -39,9 +37,9 @@ public class ValuefierTest extends TestBase {
 
     @Test
     public void testArrayJavaProxy() {
-        IRubyObject[] array = new IRubyObject[]{RubyString.newString(ruby, "foo")};
-        RubyClass proxyClass = (RubyClass) Java.getProxyClass(ruby, String[].class);
-        ArrayJavaProxy ajp = new ArrayJavaProxy(ruby, proxyClass, array);
+        IRubyObject[] array = new IRubyObject[]{RubyString.newString(RubyUtil.RUBY, "foo")};
+        RubyClass proxyClass = (RubyClass) Java.getProxyClass(RubyUtil.RUBY, String[].class);
+        ArrayJavaProxy ajp = new ArrayJavaProxy(RubyUtil.RUBY, proxyClass, array);
 
         Object result = Valuefier.convert(ajp);
         assertEquals(ConvertedList.class, result.getClass());
@@ -51,9 +49,9 @@ public class ValuefierTest extends TestBase {
     @Test
     public void testConcreteJavaProxy() {
         List<IRubyObject> array = new ArrayList<>();
-        array.add(RubyString.newString(ruby, "foo"));
-        RubyClass proxyClass = (RubyClass) Java.getProxyClass(ruby, ArrayList.class);
-        ConcreteJavaProxy cjp = new ConcreteJavaProxy(ruby, proxyClass, array);
+        array.add(RubyString.newString(RubyUtil.RUBY, "foo"));
+        RubyClass proxyClass = (RubyClass) Java.getProxyClass(RubyUtil.RUBY, ArrayList.class);
+        ConcreteJavaProxy cjp = new ConcreteJavaProxy(RubyUtil.RUBY, proxyClass, array);
         Object result = Valuefier.convert(cjp);
         assertEquals(ConvertedList.class, result.getClass());
         List<Object> a = (ConvertedList) result;
@@ -61,7 +59,7 @@ public class ValuefierTest extends TestBase {
 
     @Test
     public void testRubyTime() {
-        RubyTime ro = RubyTime.newTime(ruby, DateTime.now());
+        RubyTime ro = RubyTime.newTime(RubyUtil.RUBY, DateTime.now());
         Object result = Valuefier.convert(ro);
         assertEquals(JrubyTimestampExtLibrary.RubyTimestamp.class, result.getClass());
     }
@@ -79,20 +77,10 @@ public class ValuefierTest extends TestBase {
 
     @Test
     public void testUnhandledObject() {
-        RubyMatchData md = new RubyMatchData(ruby);
-        exception.expect(IllegalArgumentException.class);
+        RubyMatchData md = new RubyMatchData(RubyUtil.RUBY);
+        exception.expect(MissingConverterException.class);
         exception.expectMessage("Missing Converter handling for full class name=org.jruby.RubyMatchData, simple name=RubyMatchData");
         Valuefier.convert(md);
-    }
-
-    @Test
-    public void testUnhandledProxyObject() {
-        HashSet<Integer> hs = new HashSet<>();
-        hs.add(42);
-        RubyClass proxyClass = (RubyClass) Java.getProxyClass(ruby, HashSet.class);
-        ConcreteJavaProxy cjp = new ConcreteJavaProxy(ruby, proxyClass, hs);
-        BiValue result = (BiValue) Valuefier.convert(cjp);
-        assertEquals(hs, result.javaValue());
     }
 
     @Test

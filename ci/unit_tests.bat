@@ -1,41 +1,48 @@
 @echo off
+setlocal enabledelayedexpansion
 
-setlocal
-
-REM Since we are using the system jruby, we need to make sure our jvm process
-REM uses at least 1g of memory, If we don't do this we can get OOM issues when
-REM installing gems. See https://github.com/elastic/logstash/issues/5179
-
-SET JRUBY_OPTS="-J-Xmx1g"
-SET SELECTEDTESTSUITE=%1
-SET /p JRUBYVERSION=<.ruby-version
-
-IF NOT EXIST %JRUBYSRCDIR% (
-  echo "Variable JRUBYSRCDIR must be declared with a valid directory. Aborting.."
+if "%WORKSPACE%" == "" (
+  echo Error: environment variable WORKSPACE must be defined. Aborting..
   exit /B 1
 )
 
-SET JRUBYPATH=%JRUBYSRCDIR%\%JRUBYVERSION%
+:: see if %WORKSPACE% is alread mapped to a drive
+for /f "tokens=1* delims==> " %%G IN ('subst') do (
+  set sdrive=%%G
+  :: removing extra space
+  set sdrive=!sdrive:~0,2!
+  set spath=%%H
 
-IF NOT EXIST %JRUBYPATH% (
-  echo "Could not find JRuby in %JRUBYPATH%. Aborting.."
-  exit /B 1
-)
-
-SET RAKEPATH=%JRUBYPATH%\bin\rake
-
-IF "%SELECTEDTESTSUITE%"=="core-fail-fast" (
-  echo "Running core-fail-fast tests"
-  %RAKEPATH% test:install-core
-  %RAKEPATH% test:core-fail-fast
-) ELSE (
-  IF "%SELECTEDTESTSUITE%"=="all" (
-    echo "Running all plugins tests"
-    %RAKEPATH% test:install-all
-    %RAKEPATH% test:plugins
-  ) ELSE (
-    echo "Running core tests"
-    %RAKEPATH% test:install-core
-    %RAKEPATH% test:core
+  if /I "!spath!" == "%WORKSPACE%" (
+    set use_drive=!sdrive!
+    goto :found_drive
   )
+)
+
+:: no existing mapping
+:: try to assign "%WORKSPACE%" to the first drive letter which works
+for %%i in (A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z) do (
+    set "drive=%%i:"
+    subst !drive! "%WORKSPACE%" >nul
+    if not errorlevel 1 (
+        set use_drive=!drive!
+        goto :found_drive
+    )
+)
+
+echo Error: unable to subst drive to path %WORKSPACE%. Aborting...
+exit /B 1
+
+:found_drive
+echo Using drive !use_drive! for %WORKSPACE%
+
+:: change current directory to that drive
+!use_drive!
+
+echo Running core tests..
+call .\gradlew.bat test --console=plain --no-daemon --info
+
+if errorlevel 1 (
+  echo Error: failed to run core tests. Aborting..
+  exit /B 1
 )

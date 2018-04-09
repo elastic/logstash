@@ -747,5 +747,68 @@
 		"test-jar-dependencies": false,
 		"test-vendor-plugins": false,
 		"skip-list": true
+	},
+	"logstash-filter-aggregate": {
+		"default-plugins": true,
+		"core-specs": false,
+		"test-jar-dependencies": false,
+		"test-vendor-plugins": false,
+		"skip-list": false
+	},
+	"logstash-filter-anonymize": {
+		"default-plugins": true,
+		"core-specs": false,
+		"test-jar-dependencies": false,
+		"test-vendor-plugins": false,
+		"skip-list": false
+	},
+	"logstash-filter-de_dot": {
+		"default-plugins": true,
+		"core-specs": false,
+		"test-jar-dependencies": false,
+		"test-vendor-plugins": false,
+		"skip-list": false
+	},
+	"logstash-filter-elasticsearch": {
+		"default-plugins": true,
+		"core-specs": false,
+		"test-jar-dependencies": false,
+		"test-vendor-plugins": false,
+		"skip-list": false
+	},
+	"logstash-filter-jdbc_static": {
+		"default-plugins": true,
+		"core-specs": false,
+		"test-jar-dependencies": false,
+		"test-vendor-plugins": false,
+		"skip-list": false
+	},
+	"logstash-filter-jdbc_streaming": {
+		"default-plugins": true,
+		"core-specs": false,
+		"test-jar-dependencies": false,
+		"test-vendor-plugins": false,
+		"skip-list": false
+	},
+	"logstash-filter-truncate": {
+		"default-plugins": true,
+		"core-specs": false,
+		"test-jar-dependencies": false,
+		"test-vendor-plugins": false,
+		"skip-list": false
+	},
+	"logstash-output-email": {
+		"default-plugins": true,
+		"core-specs": false,
+		"test-jar-dependencies": false,
+		"test-vendor-plugins": false,
+		"skip-list": false
+	},
+	"logstash-output-lumberjack": {
+		"default-plugins": true,
+		"core-specs": false,
+		"test-jar-dependencies": false,
+		"test-vendor-plugins": false,
+		"skip-list": false
 	}
 }

@@ -1,8 +1,4 @@
 # encoding: utf-8
-require_relative 'coverage_helper'
-# In order to archive an expected coverage analysis we need to eager load
-# all logstash code base, otherwise it will not get a good analysis.
-CoverageHelper.eager_load if ENV['COVERAGE']
 
 require "logstash/devutils/rspec/spec_helper"
 
@@ -61,7 +57,7 @@ RSpec.configure do |c|
     # Some tests mess with the settings. This ensures one test cannot pollute another
     LogStash::SETTINGS.reset
 
-    LogStash::SETTINGS.set("queue.type", "memory_acked")
+    LogStash::SETTINGS.set("queue.type", "persisted")
     LogStash::SETTINGS.set("queue.page_capacity", 1024 * 1024)
     LogStash::SETTINGS.set("queue.max_events", 250)
   end

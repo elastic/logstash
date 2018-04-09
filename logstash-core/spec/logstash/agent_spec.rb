@@ -65,7 +65,7 @@ describe LogStash::Agent do
     let(:agent_args) { { "config.string" => config_string } }
 
     it "should delegate settings to new pipeline" do
-      expect(LogStash::Pipeline).to receive(:new) do |arg1, arg2|
+      expect(LogStash::JavaPipeline).to receive(:new) do |arg1, arg2|
         expect(arg1).to eq(config_string)
         expect(arg2.to_hash).to include(agent_args)
       end

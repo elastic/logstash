@@ -11,22 +11,16 @@ import org.logstash.config.ir.SourceComponent;
  * Created by andrewvc on 9/15/16.
  */
 public class PluginVertex extends Vertex {
-    private final SourceWithMetadata meta;
     private final PluginDefinition pluginDefinition;
-    private volatile String generatedId;
 
     public PluginDefinition getPluginDefinition() {
         return pluginDefinition;
     }
-    @Override
-    public SourceWithMetadata getSourceWithMetadata() {
-        return meta;
-    }
+
 
     public PluginVertex(SourceWithMetadata meta, PluginDefinition pluginDefinition) {
         // We know that if the ID value exists it will be as a string
         super(meta, (String) pluginDefinition.getArguments().get("id"));
-        this.meta = meta;
         this.pluginDefinition = pluginDefinition;
     }
 
@@ -35,23 +29,8 @@ public class PluginVertex extends Vertex {
     }
 
     @Override
-    public String calculateIndividualHashSource() {
-        try {
-            return Util.digest(this.getClass().getCanonicalName() + "|" +
-                    (this.getExplicitId() != null ? this.getExplicitId() : "NOID") + "|" +
-                    this.pluginDefinition.getName() + "|" +
-                    this.pluginDefinition.getType().toString() + "|" +
-                    ObjectMappers.JSON_MAPPER
-                        .writeValueAsString(this.pluginDefinition.getArguments()));
-        } catch (JsonProcessingException e) {
-            // This is basically impossible given the constrained values in the plugin definition
-            throw new RuntimeException(e);
-        }
-    }
-
-    @Override
     public PluginVertex copy() {
-        return new PluginVertex(meta, getPluginDefinition());
+        return new PluginVertex(this.getSourceWithMetadata(), pluginDefinition);
     }
 
     @Override
@@ -65,11 +44,5 @@ public class PluginVertex extends Vertex {
             return otherV.getPluginDefinition().sourceComponentEquals(this.getPluginDefinition());
         }
         return false;
-    }
-
-    @Override
-    public void clearCache() {
-        super.clearCache();
-        this.generatedId = null;
     }
 }

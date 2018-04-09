@@ -4,12 +4,13 @@ RUN ln -s /tmp/vendor /opt/logstash/vendor
 
 ADD gradlew /opt/logstash/gradlew
 ADD gradle/wrapper /opt/logstash/gradle/wrapper
+ADD buildSrc /opt/logstash/buildSrc
 RUN /opt/logstash/gradlew wrapper
 
 ADD versions.yml /opt/logstash/versions.yml
 ADD LICENSE /opt/logstash/LICENSE
 ADD CONTRIBUTORS /opt/logstash/CONTRIBUTORS
-ADD Gemfile.template /opt/logstash/Gemfile
+ADD Gemfile.template /opt/logstash/Gemfile.template
 ADD Rakefile /opt/logstash/Rakefile
 ADD build.gradle /opt/logstash/build.gradle
 ADD rakelib /opt/logstash/rakelib

@@ -1,9 +1,8 @@
 # encoding: utf-8
-require "logstash/util/wrapped_acked_queue"
 require "logstash/event"
 require "logstash/instrument/namespaced_metric"
 
-describe LogStash::Util::WrappedAckedQueue, :stress_test => true do
+describe LogStash::WrappedAckedQueue, :stress_test => true do
   let(:path) { Stud::Temporary.directory }
 
   context "with multiple writers" do
@@ -15,7 +14,7 @@ describe LogStash::Util::WrappedAckedQueue, :stress_test => true do
     let(:reject_memo_keys) { [:reject_memo_keys, :path, :queue, :writer_threads, :collector, :metric, :reader_threads, :output_strings] }
 
     let(:queue) do
-      described_class.create_file_based(path, page_capacity, 0, queue_checkpoint_acks, queue_checkpoint_writes, queue_checkpoint_interval, queue_capacity)
+      described_class.new(path, page_capacity, 0, queue_checkpoint_acks, queue_checkpoint_writes, queue_checkpoint_interval, queue_capacity)
     end
 
     let(:writer_threads) do
@@ -40,10 +39,10 @@ describe LogStash::Util::WrappedAckedQueue, :stress_test => true do
           begin
             tally = 0
             while true
-              batch = _reader.read_batch
-              break if batch.size.zero? && writers_finished.value == true && queue.queue.is_fully_acked?
+              batch = _reader.read_batch.to_java
+              break if batch.filteredSize == 0 && writers_finished.value == true && queue.queue.is_fully_acked?
               sleep(rand * 0.01) if simulate_work
-              tally += batch.size
+              tally += batch.filteredSize
               batch.close
             end
             _counts[_i] = tally
@@ -106,13 +105,7 @@ describe LogStash::Util::WrappedAckedQueue, :stress_test => true do
           output_strings.concat files
         end
 
-        begin
-          queue.queue.open
-        rescue Exception => e
-          output_strings << e.message
-        end
-
-        queue.queue.close
+        queue.close
 
         if output_strings.any?
           output_strings << __memoized.reject{|k,v| reject_memo_keys.include?(k)}.inspect

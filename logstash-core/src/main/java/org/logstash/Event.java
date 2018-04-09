@@ -12,10 +12,10 @@ import java.util.Map;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.joda.time.DateTime;
+import org.jruby.RubyNil;
 import org.jruby.RubyString;
 import org.jruby.RubySymbol;
 import org.logstash.ackedqueue.Queueable;
-import org.logstash.bivalues.NullBiValue;
 import org.logstash.ext.JrubyTimestampExtLibrary;
 
 import static org.logstash.ObjectMappers.CBOR_MAPPER;
@@ -37,7 +37,7 @@ public final class Event implements Cloneable, Queueable {
     private static final String DATA_MAP_KEY = "DATA";
     private static final String META_MAP_KEY = "META";
 
-    private static final FieldReference TAGS_FIELD = PathCache.cache("tags");
+    private static final FieldReference TAGS_FIELD = FieldReference.from("tags");
     
     private static final Logger logger = LogManager.getLogger(Event.class);
 
@@ -47,7 +47,7 @@ public final class Event implements Cloneable, Queueable {
         this.data = new ConvertedMap(10);
         this.data.putInterned(VERSION, VERSION_ONE);
         this.cancelled = false;
-        this.data.putInterned(TIMESTAMP, new Timestamp());
+        setTimestamp(Timestamp.now());
     }
 
     /**
@@ -82,7 +82,7 @@ public final class Event implements Cloneable, Queueable {
         Object providedTimestamp = data.get(TIMESTAMP);
         // keep reference to the parsedTimestamp for tagging below
         Timestamp parsedTimestamp = initTimestamp(providedTimestamp);
-        data.putInterned(TIMESTAMP, parsedTimestamp == null ? Timestamp.now() : parsedTimestamp);
+        setTimestamp(parsedTimestamp == null ? Timestamp.now() : parsedTimestamp);
         // the tag() method has to be called after the Accessors initialization
         if (parsedTimestamp == null) {
             tag(TIMESTAMP_FAILURE_TAG);
@@ -111,25 +111,28 @@ public final class Event implements Cloneable, Queueable {
     }
 
     public Timestamp getTimestamp() throws IOException {
-        final Timestamp timestamp = (Timestamp) data.get(TIMESTAMP);
+        final JrubyTimestampExtLibrary.RubyTimestamp timestamp = 
+            (JrubyTimestampExtLibrary.RubyTimestamp) data.get(TIMESTAMP);
         if (timestamp != null) {
-            return timestamp;
+            return timestamp.getTimestamp();
         } else {
             throw new IOException("fails");
         }
     }
 
     public void setTimestamp(Timestamp t) {
-        this.data.putInterned(TIMESTAMP, t);
+        this.data.putInterned(
+            TIMESTAMP, JrubyTimestampExtLibrary.RubyTimestamp.newRubyTimestamp(RubyUtil.RUBY, t)
+        );
     }
 
     public Object getField(final String reference) {
-        final Object unconverted = getUnconvertedField(PathCache.cache(reference));
+        final Object unconverted = getUnconvertedField(FieldReference.from(reference));
         return unconverted == null ? null : Javafier.deep(unconverted);
     }
 
     public Object getUnconvertedField(final String reference) {
-        return getUnconvertedField(PathCache.cache(reference));
+        return getUnconvertedField(FieldReference.from(reference));
     }
 
     public Object getUnconvertedField(final FieldReference field) {
@@ -144,16 +147,17 @@ public final class Event implements Cloneable, Queueable {
     }
 
     public void setField(final String reference, final Object value) {
-        setField(PathCache.cache(reference), value);
+        setField(FieldReference.from(reference), value);
     }
 
     public void setField(final FieldReference field, final Object value) {
         switch (field.type()) {
             case FieldReference.META_PARENT:
+                // ConvertedMap.newFromMap already does valuefication
                 this.metadata = ConvertedMap.newFromMap((Map<String, Object>) value);
                 break;
             case FieldReference.META_CHILD:
-                Accessors.set(metadata, field, value);
+                Accessors.set(metadata, field, Valuefier.convert(value));
                 break;
             default:
                 Accessors.set(data, field, Valuefier.convert(value));
@@ -161,7 +165,7 @@ public final class Event implements Cloneable, Queueable {
     }
 
     public boolean includes(final String field) {
-        return includes(PathCache.cache(field));
+        return includes(FieldReference.from(field));
     }
 
     public boolean includes(final FieldReference field) {
@@ -247,7 +251,7 @@ public final class Event implements Cloneable, Queueable {
     }
 
     public Object remove(final String path) {
-        return remove(PathCache.cache(path));
+        return remove(FieldReference.from(path));
     }
 
     public Object remove(final FieldReference field) {
@@ -280,7 +284,7 @@ public final class Event implements Cloneable, Queueable {
     }
 
     private static Timestamp initTimestamp(Object o) {
-        if (o == null || o instanceof NullBiValue) {
+        if (o == null || o instanceof RubyNil) {
             // most frequent
             return new Timestamp();
         } else {

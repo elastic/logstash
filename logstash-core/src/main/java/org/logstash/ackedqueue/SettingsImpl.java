@@ -1,12 +1,7 @@
 package org.logstash.ackedqueue;
 
-import org.logstash.ackedqueue.io.CheckpointIOFactory;
-import org.logstash.ackedqueue.io.PageIOFactory;
-
 public class SettingsImpl implements Settings {
     private String dirForFiles;
-    private CheckpointIOFactory checkpointIOFactory;
-    private PageIOFactory pageIOFactory;
     private Class<? extends Queueable> elementClass;
     private int capacity;
     private long queueMaxBytes;
@@ -15,9 +10,7 @@ public class SettingsImpl implements Settings {
     private int checkpointMaxWrites;
 
     public static Builder builder(final Settings settings) {
-        return new BuilderImpl(settings.getDirPath(),
-            settings.getCheckpointIOFactory(),
-            settings.getPageIOFactory(), settings.getElementClass(), settings.getCapacity(),
+        return new BuilderImpl(settings.getDirPath(), settings.getElementClass(), settings.getCapacity(),
             settings.getQueueMaxBytes(), settings.getMaxUnread(), settings.getCheckpointMaxAcks(),
             settings.getCheckpointMaxWrites()
         );
@@ -27,22 +20,10 @@ public class SettingsImpl implements Settings {
         return new BuilderImpl(dirForFiles);
     }
 
-    public static Builder memorySettingsBuilder() {
-        return memorySettingsBuilder("");
-    }
-
-    public static Builder memorySettingsBuilder(final String dirForFiles) {
-        return new BuilderImpl(dirForFiles).checkpointMaxAcks(1)
-            .checkpointMaxWrites(1);
-    }
-
-    private SettingsImpl(final String dirForFiles, final CheckpointIOFactory checkpointIOFactory,
-        final PageIOFactory pageIOFactory, final Class<? extends Queueable> elementClass,
+    private SettingsImpl(final String dirForFiles, final Class<? extends Queueable> elementClass,
         final int capacity, final long queueMaxBytes, final int maxUnread,
         final int checkpointMaxAcks, final int checkpointMaxWrites) {
         this.dirForFiles = dirForFiles;
-        this.checkpointIOFactory = checkpointIOFactory;
-        this.pageIOFactory = pageIOFactory;
         this.elementClass = elementClass;
         this.capacity = capacity;
         this.queueMaxBytes = queueMaxBytes;
@@ -59,15 +40,6 @@ public class SettingsImpl implements Settings {
     @Override
     public int getCheckpointMaxWrites() {
         return checkpointMaxWrites;
-    }
-    
-    @Override
-    public CheckpointIOFactory getCheckpointIOFactory() {
-        return checkpointIOFactory;
-    }
-
-    public PageIOFactory getPageIOFactory() {
-        return pageIOFactory;
     }
 
     @Override
@@ -96,7 +68,7 @@ public class SettingsImpl implements Settings {
     }
 
     private static final class BuilderImpl implements Builder {
-        
+
         /**
          * The default Queue has a capacity of 0 events, meaning infinite capacity.
          * todo: Remove the ability to set infinite capacity.
@@ -116,20 +88,16 @@ public class SettingsImpl implements Settings {
         private static final int DEFAULT_MAX_UNREAD = 0;
 
         /**
-         * Default max number of writes after which we checkpoint.
+         * Default max number of acknowledgements after which we checkpoint.
          */
         private static final int DEFAULT_CHECKPOINT_MAX_ACKS = 1024;
 
         /**
-         * Default number of acknowledgements after which we checkpoint.
+         * Default max number of writes after which we checkpoint.
          */
         private static final int DEFAULT_CHECKPOINT_MAX_WRITES = 1024;
-        
+
         private final String dirForFiles;
-
-        private final CheckpointIOFactory checkpointIOFactory;
-
-        private final PageIOFactory pageIOFactory;
 
         private final Class<? extends Queueable> elementClass;
 
@@ -142,20 +110,17 @@ public class SettingsImpl implements Settings {
         private final int checkpointMaxAcks;
 
         private final int checkpointMaxWrites;
-        
+
         private BuilderImpl(final String dirForFiles) {
-            this(dirForFiles, null, null, null, DEFAULT_CAPACITY, DEFAULT_MAX_QUEUE_BYTES,
+            this(dirForFiles, null, DEFAULT_CAPACITY, DEFAULT_MAX_QUEUE_BYTES,
                 DEFAULT_MAX_UNREAD, DEFAULT_CHECKPOINT_MAX_ACKS, DEFAULT_CHECKPOINT_MAX_WRITES
             );
         }
 
-        private BuilderImpl(final String dirForFiles, final CheckpointIOFactory checkpointIOFactory,
-            final PageIOFactory pageIOFactory, final Class<? extends Queueable> elementClass,
+        private BuilderImpl(final String dirForFiles, final Class<? extends Queueable> elementClass,
             final int capacity, final long queueMaxBytes, final int maxUnread,
             final int checkpointMaxAcks, final int checkpointMaxWrites) {
             this.dirForFiles = dirForFiles;
-            this.checkpointIOFactory = checkpointIOFactory;
-            this.pageIOFactory = pageIOFactory;
             this.elementClass = elementClass;
             this.capacity = capacity;
             this.queueMaxBytes = queueMaxBytes;
@@ -165,30 +130,10 @@ public class SettingsImpl implements Settings {
         }
 
         @Override
-        public Builder checkpointIOFactory(final CheckpointIOFactory factory) {
-            return new BuilderImpl(
-                this.dirForFiles, factory, this.pageIOFactory, this.elementClass, this.capacity,
-                this.queueMaxBytes, this.maxUnread, this.checkpointMaxAcks,
-                this.checkpointMaxWrites
-            );
-        }
-
-        @Override
-        public Builder elementIOFactory(final PageIOFactory factory) {
-            return new BuilderImpl(
-                this.dirForFiles, this.checkpointIOFactory, factory, this.elementClass,
-                this.capacity,
-                this.queueMaxBytes, this.maxUnread, this.checkpointMaxAcks,
-                this.checkpointMaxWrites
-            );
-        }
-
-        @Override
         public Builder elementClass(final Class<? extends Queueable> elementClass) {
             return new BuilderImpl(
-                this.dirForFiles, this.checkpointIOFactory, this.pageIOFactory, elementClass,
-                this.capacity,
-                this.queueMaxBytes, this.maxUnread, this.checkpointMaxAcks,
+                this.dirForFiles, elementClass, this.capacity, this.queueMaxBytes, this.maxUnread,
+                this.checkpointMaxAcks,
                 this.checkpointMaxWrites
             );
         }
@@ -196,25 +141,23 @@ public class SettingsImpl implements Settings {
         @Override
         public Builder capacity(final int capacity) {
             return new BuilderImpl(
-                this.dirForFiles, this.checkpointIOFactory, this.pageIOFactory, this.elementClass,
-                capacity, this.queueMaxBytes, this.maxUnread, this.checkpointMaxAcks,
-                this.checkpointMaxWrites
+                this.dirForFiles, this.elementClass, capacity, this.queueMaxBytes, this.maxUnread,
+                this.checkpointMaxAcks, this.checkpointMaxWrites
             );
         }
 
         @Override
         public Builder queueMaxBytes(final long size) {
             return new BuilderImpl(
-                this.dirForFiles, this.checkpointIOFactory, this.pageIOFactory, this.elementClass,
-                this.capacity, size, this.maxUnread, this.checkpointMaxAcks,
-                this.checkpointMaxWrites
+                this.dirForFiles, this.elementClass, this.capacity, size, this.maxUnread,
+                this.checkpointMaxAcks, this.checkpointMaxWrites
             );
         }
 
         @Override
         public Builder maxUnread(final int maxUnread) {
             return new BuilderImpl(
-                this.dirForFiles, this.checkpointIOFactory, this.pageIOFactory, this.elementClass,
+                this.dirForFiles, this.elementClass,
                 this.capacity, this.queueMaxBytes, maxUnread, this.checkpointMaxAcks,
                 this.checkpointMaxWrites
             );
@@ -223,7 +166,7 @@ public class SettingsImpl implements Settings {
         @Override
         public Builder checkpointMaxAcks(final int checkpointMaxAcks) {
             return new BuilderImpl(
-                this.dirForFiles, this.checkpointIOFactory, this.pageIOFactory, this.elementClass,
+                this.dirForFiles, this.elementClass,
                 this.capacity, this.queueMaxBytes, this.maxUnread, checkpointMaxAcks,
                 this.checkpointMaxWrites
             );
@@ -232,18 +175,16 @@ public class SettingsImpl implements Settings {
         @Override
         public Builder checkpointMaxWrites(final int checkpointMaxWrites) {
             return new BuilderImpl(
-                this.dirForFiles, this.checkpointIOFactory, this.pageIOFactory, this.elementClass,
-                this.capacity, this.queueMaxBytes, this.maxUnread, this.checkpointMaxAcks,
-                checkpointMaxWrites
+                this.dirForFiles, this.elementClass, this.capacity, this.queueMaxBytes,
+                this.maxUnread, this.checkpointMaxAcks, checkpointMaxWrites
             );
         }
 
         @Override
         public Settings build() {
             return new SettingsImpl(
-                this.dirForFiles, this.checkpointIOFactory, this.pageIOFactory, this.elementClass,
-                this.capacity, this.queueMaxBytes, this.maxUnread, this.checkpointMaxAcks,
-                this.checkpointMaxWrites
+                this.dirForFiles, this.elementClass, this.capacity, this.queueMaxBytes,
+                this.maxUnread, this.checkpointMaxAcks, this.checkpointMaxWrites
             );
         }
     }

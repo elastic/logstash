@@ -2,6 +2,7 @@
 require "logstash/outputs/base"
 require "logstash/config/source_loader"
 require "logstash/inputs/base"
+require "logstash/filters/base"
 require "thread"
 
 module LogStash
@@ -11,6 +12,23 @@ module LogStash
 
       def run(queue)
         # noop
+      end
+    end
+
+    class DummyBlockingInput < LogStash::Inputs::Base
+      config_name "dummyblockinginput"
+      milestone 2
+
+      def register
+        @latch = java.util.concurrent.CountDownLatch.new(1)
+      end
+
+      def run(_)
+        @latch.await
+      end
+
+      def stop
+        @latch.count_down
       end
     end
   end
@@ -39,13 +57,17 @@ module LogStash
         super
         @num_closes = 0
         @events = []
+        @mutex = Mutex.new
       end
 
       def register
       end
 
       def receive(event)
+        @mutex.lock
         @events << event
+      ensure
+          @mutex.unlock
       end
 
       def close

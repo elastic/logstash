@@ -4,7 +4,6 @@ require "logstash/inputs/generator"
 require "logstash/filters/drop"
 require_relative "../support/mocks_classes"
 require_relative "../support/helpers"
-require_relative "../logstash/pipeline_reporter_spec" # for DummyOutput class
 require "stud/try"
 require 'timeout'
 
@@ -19,6 +18,15 @@ class DummyInput < LogStash::Inputs::Base
   end
 
   def close
+  end
+end
+
+# This input runs long enough that a flush should occur
+class DummyFlushEnablingInput < DummyInput
+  def run(queue)
+    while !stop?
+      sleep 1
+    end
   end
 end
 
@@ -252,6 +260,14 @@ describe LogStash::Pipeline do
           pipeline_settings_obj.set("config.debug", true)
           expect(logger).to receive(:debug).with(/Compiled pipeline/, anything)
           pipeline = mock_pipeline_from_string(test_config_with_filters, pipeline_settings_obj)
+          pipeline.close
+        end
+
+        it "should log each filtered event if config.debug is set to true" do
+          pipeline_settings_obj.set("config.debug", true)
+          pipeline = mock_pipeline_from_string(test_config_with_filters, pipeline_settings_obj)
+          expect(logger).to receive(:debug).with(/filter received/, anything)
+          pipeline.filter_func([LogStash::Event.new])
           pipeline.close
         end
       end
@@ -618,9 +634,9 @@ describe LogStash::Pipeline do
 
     it "should handle evaluating different config" do
       expect(pipeline1.output_func(LogStash::Event.new)).not_to include(nil)
-      expect(pipeline1.filter_func(LogStash::Event.new)).not_to include(nil)
+      expect(pipeline1.filter_func([LogStash::Event.new])).not_to include(nil)
       expect(pipeline2.output_func(LogStash::Event.new)).not_to include(nil)
-      expect(pipeline1.filter_func(LogStash::Event.new)).not_to include(nil)
+      expect(pipeline1.filter_func([LogStash::Event.new])).not_to include(nil)
     end
   end
 
@@ -642,7 +658,7 @@ describe LogStash::Pipeline do
 
     before do
       allow(::LogStash::Outputs::DummyOutput).to receive(:new).with(any_args).and_return(output)
-      allow(LogStash::Plugin).to receive(:lookup).with("input", "dummy_input").and_return(DummyInput)
+      allow(LogStash::Plugin).to receive(:lookup).with("input", "dummy_input").and_return(DummyFlushEnablingInput)
       allow(LogStash::Plugin).to receive(:lookup).with("filter", "dummy_flushing_filter").and_return(DummyFlushingFilterPeriodic)
       allow(LogStash::Plugin).to receive(:lookup).with("output", "dummy_output").and_return(::LogStash::Outputs::DummyOutput)
       allow(LogStash::Plugin).to receive(:lookup).with("codec", "plain").and_return(LogStash::Codecs::Plain)
@@ -700,9 +716,9 @@ describe LogStash::Pipeline do
       # in the current instance and was returning an array containing nil values for
       # the match.
       expect(pipeline1.output_func(LogStash::Event.new)).not_to include(nil)
-      expect(pipeline1.filter_func(LogStash::Event.new)).not_to include(nil)
+      expect(pipeline1.filter_func([LogStash::Event.new])).not_to include(nil)
       expect(pipeline2.output_func(LogStash::Event.new)).not_to include(nil)
-      expect(pipeline1.filter_func(LogStash::Event.new)).not_to include(nil)
+      expect(pipeline1.filter_func([LogStash::Event.new])).not_to include(nil)
     end
   end
 

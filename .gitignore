@@ -3,8 +3,10 @@
 logstash*/*.gem
 pkg/*.deb
 pkg/*.rpm
+pkg/jvm.options
+pkg/log4j2.properties
+pkg/startup.options
 *.class
-.rbx
 .rbx
 *.tar.gz
 *.jar
@@ -34,7 +36,7 @@ qa/.vm_ssh_config
 qa/.vagrant
 qa/acceptance/.vagrant
 qa/Gemfile.lock
-Gemfile.jruby-2.3.lock
+Gemfile.lock
 Gemfile
 *.ipr
 *.iws
@@ -52,3 +54,7 @@ plugins_version_docs.json
 tools/benchmark-cli/out/
 qa/integration/fixtures/offline_wrapper/offline
 qa/integration/fixtures/offline_wrapper/offline.o
+logstash-core/versions-gem-copy.yml
+logstash-core-plugin-api/versions-gem-copy.yml
+config/logstash.keystore
+html_docs

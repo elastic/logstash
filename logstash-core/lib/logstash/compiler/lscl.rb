@@ -13,7 +13,7 @@ module LogStashCompilerLSCLGrammar; module LogStash; module Compiler; module LSC
 
     class Node < Treetop::Runtime::SyntaxNode
     include Helpers
-    
+
     def section_type
       if recursive_select_parent(Plugin).any?
         return "codec"
@@ -30,7 +30,7 @@ module LogStashCompilerLSCLGrammar; module LogStash; module Compiler; module LSC
     def process_escape_sequences=(val)
       set_meta(PROCESS_ESCAPE_SEQUENCES, val)
     end
-    
+
     def compile(base_source_with_metadata=nil)
       # There is no way to move vars across nodes in treetop :(
       self.base_source_with_metadata = base_source_with_metadata
@@ -63,7 +63,7 @@ module LogStashCompilerLSCLGrammar; module LogStash; module Compiler; module LSC
 
   class Comment < Node; end
   class Whitespace < Node; end
-  
+
   class PluginSection < Node
     def expr
       recursive_select(Branch, Plugin).map(&:expr)
@@ -101,12 +101,25 @@ module LogStashCompilerLSCLGrammar; module LogStash; module Compiler; module LSC
         else
           [k,v]
         end
-      }.reduce({}) do |hash,kv|
-        k,v = kv
-        hash[k] = v
+      }.reduce({}) do |hash, kv|
+        k, v = kv
+        existing = hash[k]
+        if existing.nil?
+          hash[k] = v
+        elsif existing.kind_of?(::Hash)
+          # For legacy reasons, a config can contain multiple `AST::Attribute`s with the same name
+          # and a hash-type value (e.g., "match" in the grok filter), which are merged into a single
+          # hash value; e.g., `{"match" => {"baz" => "bar"}, "match" => {"foo" => "bulb"}}` is
+          # interpreted as `{"match" => {"baz" => "bar", "foo" => "blub"}}`.
+          # (NOTE: this bypasses `AST::Hash`'s ability to detect duplicate keys)
+          hash[k] = existing.merge(v)
+        elsif existing.kind_of?(::Array)
+          hash[k] = existing.push(*v)
+        else
+          hash[k] = existing + v
+        end
         hash
       end
-
     end
   end
 
@@ -115,13 +128,13 @@ module LogStashCompilerLSCLGrammar; module LogStash; module Compiler; module LSC
       return text_value
     end
   end
-  
+
   class Attribute < Node
     def expr
       [name.text_value, value.expr]
     end
   end
-  
+
   class RValue < Node; end
   class Value < RValue; end
 
@@ -130,7 +143,7 @@ module LogStashCompilerLSCLGrammar; module LogStash; module Compiler; module LSC
       jdsl.eValue(source_meta, text_value)
     end
   end
-  
+
   class String < Value
     def expr
       value = if get_meta(PROCESS_ESCAPE_SEQUENCES)
@@ -141,28 +154,28 @@ module LogStashCompilerLSCLGrammar; module LogStash; module Compiler; module LSC
       jdsl.eValue(source_meta, value)
     end
   end
-  
+
   class RegExp < Value
     def expr
       # Strip the slashes off
       jdsl.eRegex(text_value[1..-2])
     end
   end
-  
+
   class Number < Value
     def expr
-      jdsl.eValue(source_meta, text_value.include?(".") ? 
-        text_value.to_f : 
+      jdsl.eValue(source_meta, text_value.include?(".") ?
+        text_value.to_f :
         text_value.to_i)
     end
   end
-  
+
   class Array < Value
     def expr
       jdsl.eValue(source_meta, recursive_select(Value).map(&:expr).map(&:get))
     end
   end
-  
+
   class Hash < Value
     def validate!
       duplicate_values = find_duplicate_keys
@@ -187,7 +200,7 @@ module LogStashCompilerLSCLGrammar; module LogStash; module Compiler; module LSC
 
     def expr
       validate!
-      ::Hash[recursive_select(HashEntry).map(&:expr)]
+      jdsl.eValue(source_meta, ::Hash[recursive_select(HashEntry).map(&:expr)])
     end
   end
 
@@ -249,7 +262,10 @@ module LogStashCompilerLSCLGrammar; module LogStash; module Compiler; module LSC
         java_f_branch = f_branch && javaify_sexpr(f_branch)
 
         if java_t_branch || java_f_branch
-          jdsl.iIf(condition, java_t_branch || jdsl.noop, java_f_branch || jdsl.noop)
+          # We use the condition as the source with metadata because it hashes correctly
+          # It's hard to use the 'real' source due to the re-branching from if / elsif into if/else only
+          # branches. We should come back and improve this at some point if that makes a difference
+          jdsl.iIf(condition.source_with_metadata, condition, java_t_branch || jdsl.noop, java_f_branch || jdsl.noop)
         else
           jdsl.noop()
         end
@@ -277,18 +293,18 @@ module LogStashCompilerLSCLGrammar; module LogStash; module Compiler; module LSC
 
   class Condition < Node
     include Helpers
-    
+
     def expr
       first_element = elements.first
       rest_elements = elements.size > 1 ? elements[1].recursive_select(BooleanOperator, Expression, SelectorElement) : []
 
       all_elements = [first_element, *rest_elements]
 
-      if all_elements.size == 1
+
+      res = if all_elements.size == 1
         elem = all_elements.first
         if elem.is_a?(Selector)
-          eventValue = elem.recursive_select(SelectorElement).first.expr
-          jdsl.eTruthy(source_meta, eventValue)
+          jdsl.eTruthy(source_meta, elem.expr)
         elsif elem.is_a?(RegexpExpression)
           elem.expr
         else
@@ -297,6 +313,7 @@ module LogStashCompilerLSCLGrammar; module LogStash; module Compiler; module LSC
       else
         join_conditions(all_elements)
       end
+      res
     end
 
     def precedence(op)
@@ -326,9 +343,13 @@ module LogStashCompilerLSCLGrammar; module LogStash; module Compiler; module LSC
 
       case op
       when :and
-        return jdsl.eAnd(left, right);
+        return jdsl.eAnd(source_meta, left, right);
+      when :nand
+        return jdsl.eNand(source_meta, left, right);
       when :or
-        return jdsl.eOr(left, right);
+        return jdsl.eOr(source_meta, left, right);
+      when :xor
+        return jdsl.eXor(source_meta, left, right);
       else
         raise "Unknown op #{jop}"
       end
@@ -377,7 +398,7 @@ module LogStashCompilerLSCLGrammar; module LogStash; module Compiler; module LSC
       while elem = stack.pop
         if elem.is_a?(::Method)
           right, left = working_stack.pop, working_stack.pop
-          working_stack << elem.call(left, right)
+          working_stack << elem.call(source_meta, left, right)
         else
           working_stack << elem
         end
@@ -446,22 +467,22 @@ module LogStashCompilerLSCLGrammar; module LogStash; module Compiler; module LSC
   class RegexpExpression < Node
     def expr
       selector, operator_method, regexp = recursive_select(
-        Selector, 
-        LogStash::Compiler::LSCL::AST::RegExpOperator, 
-        LogStash::Compiler::LSCL::AST::RegExp, 
+        Selector,
+        LogStash::Compiler::LSCL::AST::RegExpOperator,
+        LogStash::Compiler::LSCL::AST::RegExp,
         LogStash::Compiler::LSCL::AST::String # Strings work as rvalues! :p
       ).map(&:expr)
 
       # Handle string rvalues, they just get turned into regexps
       # Maybe we really shouldn't handle these anymore...
       if regexp.class == org.logstash.config.ir.expression.ValueExpression
-        regexp = jdsl.eRegex(regexp.get)
+        regexp = jdsl.eRegex(source_meta, regexp.get)
       end
-      
+
       raise "Expected a selector in #{text_value}!" unless selector
       raise "Expected a regexp in #{text_value}!" unless regexp
 
-      operator_method.call(source_meta, selector, regexp);
+      operator_method.call(source_meta, selector, regexp)
     end
   end
 
@@ -489,42 +510,46 @@ module LogStashCompilerLSCLGrammar; module LogStash; module Compiler; module LSC
       end
     end
   end
-  
+
   module RegExpOperator
     include Helpers
-    
+
     def expr
       if self.text_value == '!~'
-        jdsl.method(:eRegexNeq)
+        jdsl.java_method(:eRegexNeq, [org.logstash.common.SourceWithMetadata, org.logstash.config.ir.expression.Expression, org.logstash.config.ir.expression.ValueExpression])
       elsif self.text_value == '=~'
-        jdsl.method(:eRegexEq)
+        jdsl.java_method(:eRegexEq, [org.logstash.common.SourceWithMetadata, org.logstash.config.ir.expression.Expression, org.logstash.config.ir.expression.ValueExpression])
       else
         raise "Unknown regex operator #{self.text_value}"
       end
     end
   end
-  
+
   module BooleanOperator
     include Helpers
-    
+
     def expr
       case self.text_value
       when "and"
         AND_METHOD
+      when "nand"
+        NAND_METHOD
       when "or"
         OR_METHOD
+      when "xor"
+        XOR_METHOD
       else
         raise "Unknown operator #{self.text_value}"
       end
     end
   end
-  
+
   class Selector < RValue
     def expr
       jdsl.eEventValue(source_meta, text_value)
     end
   end
-  
+
   class SelectorElement < Node;
     def expr
       jdsl.eEventValue(source_meta, text_value)

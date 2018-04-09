@@ -61,6 +61,13 @@ describe LogStash::Plugins::Registry do
       expect(registry.lookup("filter", "simple_plugin")).to eq(simple_plugin)
     end
 
+    it "should be possible to remove the plugin" do
+      registry.add(:filter, "simple_plugin", simple_plugin)
+      expect(registry.lookup("filter", "simple_plugin")).to eq(simple_plugin)
+      registry.remove(:filter, "simple_plugin")
+      expect { registry.lookup("filter", "simple_plugin") }.to raise_error(LoadError)
+    end
+
     it "doesn't add multiple time the same plugin" do
       plugin1 = Class.new
       plugin2 = Class.new

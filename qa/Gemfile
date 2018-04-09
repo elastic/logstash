@@ -2,4 +2,5 @@ source "https://rubygems.org"
 gem "runner-tool", :git => "https://github.com/purbon/runner-tool.git"
 gem "rspec", "~> 3.1.0"
 gem "rake"
+gem "stud"
 gem "pry", :group => :test

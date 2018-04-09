@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 # Run logstash from source
 #
 # This is most useful when done from a git checkout.
@@ -9,13 +9,9 @@
 # See 'bin/logstash --help' for a list of commands.
 #
 # Supported environment variables:
-#   LS_JVM_OPTS="xxx" path to file with JVM options
-#   LS_JAVA_OPTS="xxx" to append extra options to the defaults JAVA_OPTS provided by logstash
-#   JAVA_OPTS="xxx" to *completely override* the default set of JAVA_OPTS provided by logstash
+#   LS_JAVA_OPTS="xxx" to append extra options to the JVM options provided by logstash
 #
 # Development environment variables:
-#   USE_RUBY=1 to force use the local "ruby" command to launch logstash instead of using the vendored JRuby
-#   USE_DRIP=1 to force use drip
 #   DEBUG=1 to output debugging information
 
 unset CDPATH
@@ -24,10 +20,10 @@ unset CDPATH
 if [ -L "$0" ]; then
   # Launched from a symlink
   # --Test for the readlink binary
-  RL="$(which readlink)"
+  RL="$(command -v readlink)"
   if [ $? -eq 0 ]; then
     # readlink exists
-    SOURCEPATH="$($RL -f $0)"
+    SOURCEPATH="$(${RL} -f $0)"
   else
     # readlink not found, attempt to parse the output of stat
     SOURCEPATH="$(stat -c %N $0 | awk '{print $3}' | sed -e 's/\‘//' -e 's/\’//')"
@@ -43,14 +39,33 @@ else
   SOURCEPATH="$0"
 fi
 
-. "$(cd `dirname $SOURCEPATH`/..; pwd)/bin/logstash.lib.sh"
+. "$(cd `dirname ${SOURCEPATH}`/..; pwd)/bin/logstash.lib.sh"
 setup
 
-if [ "$1" = "-V" ] || [ "$1" = "--version" ];
-then
-  LOGSTASH_VERSION_FILE="${LOGSTASH_HOME}/logstash-core/lib/logstash/version.rb"
-  LOGSTASH_VERSION="$(sed -ne 's/^LOGSTASH_VERSION = "\([^*]*\)"$/\1/p' $LOGSTASH_VERSION_FILE)"
+if [ "$1" = "-V" ] || [ "$1" = "--version" ]; then
+  LOGSTASH_VERSION_FILE1="${LOGSTASH_HOME}/logstash-core/versions-gem-copy.yml"
+  LOGSTASH_VERSION_FILE2="${LOGSTASH_HOME}/versions.yml"
+  if [ -f ${LOGSTASH_VERSION_FILE1} ]; then
+    # this file is present in zip, deb and rpm artifacts and after bundle install
+    # but might not be for a git checkout type install
+    LOGSTASH_VERSION="$(sed -ne 's/^logstash: \([^*]*\)$/\1/p' ${LOGSTASH_VERSION_FILE1})"
+  elif [ -f ${LOGSTASH_VERSION_FILE2} ]; then
+    # this file is present for a git checkout type install
+    # but its not in zip, deb and rpm artifacts (and in integration tests)
+    LOGSTASH_VERSION="$(sed -ne 's/^logstash: \([^*]*\)$/\1/p' ${LOGSTASH_VERSION_FILE2})"
+  else
+    LOGSTASH_VERSION="Version not detected"
+  fi
   echo "logstash $LOGSTASH_VERSION"
 else
-  ruby_exec "${LOGSTASH_HOME}/lib/bootstrap/environment.rb" "logstash/runner.rb" "$@"
+  function classpath() {
+    echo -n "$1"
+    shift
+    while [ $# -gt 0 ] ; do
+      echo -n ":${1}"
+      shift
+    done
+  }
+  CLASSPATH="$(classpath ${LOGSTASH_HOME}/logstash-core/lib/jars/*.jar)"
+  exec "${JAVACMD}" ${JAVA_OPTS} -cp "${CLASSPATH}" org.logstash.Logstash "$@"
 fi

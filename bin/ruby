@@ -5,12 +5,10 @@
 #   bin/ruby [arguments]
 #
 # Supported environment variables:
-#   LS_JVM_OPTS="xxx" path to file with JVM options
-#   LS_JAVA_OPTS="xxx" to append extra options to the defaults JAVA_OPTS provided by logstash
-#   JAVA_OPTS="xxx" to *completely override* the default set of JAVA_OPTS provided by logstash
+#   LS_JAVA_OPTS="xxx" to append extra options to the JVM options provided by logstash
+#   LS_GEM_HOME and LS_GEM_PATH to overwrite the path assigned to GEM_HOME and GEM_PATH
 #
 # Development environment variables:
-#   USE_RUBY=1 to force use the local "ruby" command to launch logstash instead of using the vendored JRuby
 #   DEBUG=1 to output debugging information
 
 # use faster starting JRuby options see https://github.com/jruby/jruby/wiki/Improving-startup-time

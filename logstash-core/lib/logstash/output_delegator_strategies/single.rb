@@ -1,5 +1,5 @@
 module LogStash module OutputDelegatorStrategies class Single
-  def initialize(logger, klass, metric, execution_context, plugin_args)
+  def initialize(klass, metric, execution_context, plugin_args)
     @output = klass.new(plugin_args)
     @output.metric = metric
     @output.execution_context = execution_context
@@ -9,7 +9,7 @@ module LogStash module OutputDelegatorStrategies class Single
   def register
     @output.register
   end
-  
+
   def multi_receive(events)
     @mutex.synchronize do
       @output.multi_receive(events)

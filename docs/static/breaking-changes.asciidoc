@@ -1,7 +1,13 @@
 [[breaking-changes]]
-== Breaking changes
+== Breaking Changes
 
 This section discusses the changes that you need to be aware of when migrating to Logstash 6.0.0 from the previous major releases.
+
+ifdef::include-xpack[]
+See also:
+
+* <<breaking-changes-xls>>
+endif::include-xpack[]
 
 [float]
 === Changes in Logstash Core
@@ -12,18 +18,18 @@ These changes can impact any instance of Logstash and are plugin agnostic, but o
 ==== Application Settings
 
 * The setting `config.reload.interval` has been changed to use time value strings such as `5m`, `10s` etc.
-  Previously, users had to convert this to a millisecond time value themselves. 
+  Previously, users had to convert this to a millisecond time value themselves.
 
 [float]
 ==== RPM/Deb package changes
 
-* For `rpm` and `deb` release artifacts, config files that match the `*.conf` glob pattern must be in the conf.d folder, 
+* For `rpm` and `deb` release artifacts, config files that match the `*.conf` glob pattern must be in the conf.d folder,
   or the files will not be loaded.
-  
+
 [float]
 ==== Command Line Interface behavior
 
-* The `-e` and `-f` CLI options are now mutually exclusive. This also applies to the corresponding long form options `config.string` and 
+* The `-e` and `-f` CLI options are now mutually exclusive. This also applies to the corresponding long form options `config.string` and
   `path.config`. This means any configurations  provided via `-e` will no longer be appended to the configurations provided via `-f`.
 * Configurations provided with `-f` or `config.path` will not be appended with `stdin` input and `stdout` output automatically.
 

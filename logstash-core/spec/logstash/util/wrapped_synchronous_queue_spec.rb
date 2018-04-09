@@ -1,28 +1,27 @@
 # encoding: utf-8
 require "spec_helper"
-require "logstash/util/wrapped_synchronous_queue"
 require "logstash/instrument/collector"
 
-describe LogStash::Util::WrappedSynchronousQueue do
+describe LogStash::WrappedSynchronousQueue do
 
-  subject {LogStash::Util::WrappedSynchronousQueue.new(5)}
+  subject {LogStash::WrappedSynchronousQueue.new(5)}
 
   describe "queue clients" do
     context "when requesting a write client" do
       it "returns a client" do
-        expect(subject.write_client).to be_a(LogStash::Util::WrappedSynchronousQueue::WriteClient)
+        expect(subject.write_client).to be_a(LogStash::MemoryWriteClient)
       end
     end
 
     context "when requesting a read client" do
       it "returns a client" do
-        expect(subject.read_client).to be_a(LogStash::Util::WrappedSynchronousQueue::ReadClient)
+        expect(subject.read_client).to be_a(LogStash::MemoryReadClient)
       end
     end
 
     describe "WriteClient | ReadClient" do
-      let(:write_client) { LogStash::Util::WrappedSynchronousQueue::WriteClient.new(subject)}
-      let(:read_client)  { LogStash::Util::WrappedSynchronousQueue::ReadClient.new(subject)}
+      let(:write_client) { subject.write_client }
+      let(:read_client)  { subject.read_client }
 
       context "when reading from the queue" do
         let(:collector) { LogStash::Instrument::Collector.new }
@@ -64,12 +63,12 @@ describe LogStash::Util::WrappedSynchronousQueue do
             5.times {|i| batch.push(LogStash::Event.new({"message" => "value-#{i}"}))}
             write_client.push_batch(batch)
 
-            read_batch = read_client.read_batch
+            read_batch = read_client.read_batch.to_java
             sleep(0.1) # simulate some work for the `duration_in_millis`
             # TODO: this interaction should be cleaned in an upcoming PR,
             # This is what the current pipeline does.
-            read_client.add_filtered_metrics(read_batch)
-            read_client.add_output_metrics(read_batch)
+            read_client.add_filtered_metrics(read_batch.filteredSize)
+            read_client.add_output_metrics(read_batch.filteredSize)
             read_client.close_batch(read_batch)
             store = collector.snapshot_metric.metric_store
 
@@ -98,9 +97,9 @@ describe LogStash::Util::WrappedSynchronousQueue do
             messages << message
           end
           write_client.push_batch(batch)
-          read_batch = read_client.read_batch
-          expect(read_batch.size).to eq(5)
-          read_batch.each do |data|
+          read_batch = read_client.read_batch.to_java
+          expect(read_batch.filteredSize).to eq(5)
+          read_batch.to_a.each do |data|
             message = data.get("message")
             expect(messages).to include(message)
             messages.delete(message)
@@ -112,7 +111,7 @@ describe LogStash::Util::WrappedSynchronousQueue do
           end
           # expect(read_batch.cancelled_size).to eq(2) # disabled for https://github.com/elastic/logstash/issues/6055
           received = []
-          read_batch.each do |data|
+          read_batch.to_a.each do |data|
             received << data.get("message")
           end
           (0..2).each {|i| expect(received).to include("value-#{i}")}

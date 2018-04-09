@@ -46,6 +46,9 @@ javadoc {
 }
 
 test {
+  // We need to force IPV4 usage to make WireMock tests portable between *nix and Windows.
+  // For details see: https://github.com/elastic/logstash/pull/8372
+  jvmArgs '-Djava.net.preferIPv4Stack=true'
   exclude '**/org/logstash/benchmark/cli/MainTest*'
   exclude '**/org/logstash/benchmark/cli/MainEsStorageTest*'
 }

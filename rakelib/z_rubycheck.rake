@@ -4,7 +4,7 @@ if ENV['USE_RUBY'] != '1'
 
     # Make sure we have JRuby, then rerun ourselves under jruby.
     Rake::Task["vendor:jruby"].invoke
-    jruby = File.join("vendor", "jruby", "bin", "jruby")
+    jruby = File.join("bin", "ruby")
     rake = File.join("vendor", "jruby", "bin", "rake")
 
     # if required at this point system gems can be installed using the system_gem task, for example:

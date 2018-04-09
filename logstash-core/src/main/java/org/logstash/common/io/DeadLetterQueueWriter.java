@@ -20,21 +20,20 @@ package org.logstash.common.io;
 
 import java.io.Closeable;
 import java.io.IOException;
-import java.nio.channels.FileChannel;
-import java.nio.channels.OverlappingFileLockException;
+import java.nio.channels.FileLock;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.LongAdder;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.logstash.DLQEntry;
 import org.logstash.Event;
 import org.logstash.FieldReference;
-import org.logstash.PathCache;
+import org.logstash.FileLockFactory;
 import org.logstash.Timestamp;
 
 import static org.logstash.common.io.RecordIOWriter.RECORD_HEADER_SIZE;
@@ -47,32 +46,19 @@ public final class DeadLetterQueueWriter implements Closeable {
     static final String SEGMENT_FILE_PATTERN = "%d.log";
     static final String LOCK_FILE = ".lock";
     private static final FieldReference DEAD_LETTER_QUEUE_METADATA_KEY =
-        PathCache.cache(String.format("%s[dead_letter_queue]", Event.METADATA_BRACKETS));
+        FieldReference.from(String.format("%s[dead_letter_queue]", Event.METADATA_BRACKETS));
     private final long maxSegmentSize;
     private final long maxQueueSize;
     private LongAdder currentQueueSize;
     private final Path queuePath;
-    private final FileChannel lockChannel;
+    private final FileLock lock;
     private volatile RecordIOWriter currentWriter;
     private int currentSegmentIndex;
     private Timestamp lastEntryTimestamp;
     private final AtomicBoolean open = new AtomicBoolean(true);
 
     public DeadLetterQueueWriter(Path queuePath, long maxSegmentSize, long maxQueueSize) throws IOException {
-        // ensure path exists, create it otherwise.
-        Files.createDirectories(queuePath);
-        // check that only one instance of the writer is open in this configured path
-        Path lockFilePath = queuePath.resolve(LOCK_FILE);
-        boolean isNewlyCreated = lockFilePath.toFile().createNewFile();
-        lockChannel = FileChannel.open(lockFilePath, StandardOpenOption.WRITE);
-        try {
-            lockChannel.lock();
-        } catch (OverlappingFileLockException e) {
-            if (isNewlyCreated) {
-                logger.warn("Previous Dead Letter Queue Writer was not closed safely.");
-            }
-            throw new RuntimeException("uh oh, someone else is writing to this dead-letter queue");
-        }
+        this.lock = FileLockFactory.obtainLock(queuePath.toString(), LOCK_FILE);
         this.queuePath = queuePath;
         this.maxSegmentSize = maxSegmentSize;
         this.maxQueueSize = maxQueueSize;
@@ -115,7 +101,10 @@ public final class DeadLetterQueueWriter implements Closeable {
     }
 
     static Stream<Path> getSegmentPaths(Path path) throws IOException {
-        return Files.list(path).filter((p) -> p.toString().endsWith(".log"));
+        try(final Stream<Path> files = Files.list(path)) {
+            return files.filter(p -> p.toString().endsWith(".log"))
+                .collect(Collectors.toList()).stream();
+        }
     }
 
     public synchronized void writeEntry(DLQEntry entry) throws IOException {
@@ -178,17 +167,15 @@ public final class DeadLetterQueueWriter implements Closeable {
     }
 
     private void releaseLock() {
-        if (lockChannel != null){
-            try {
-                lockChannel.close();
-            } catch (Exception e) {
-                logger.debug("Unable to close lock channel", e);
-            }
-            try {
-                Files.deleteIfExists(queuePath.resolve(LOCK_FILE));
-            } catch (IOException e){
-                logger.debug("Unable to delete lock file", e);
-            }
+        try {
+            FileLockFactory.releaseLock(lock);
+        } catch (IOException e) {
+            logger.debug("Unable to release lock", e);
+        }
+        try {
+            Files.deleteIfExists(queuePath.resolve(LOCK_FILE));
+        } catch (IOException e){
+            logger.debug("Unable to delete lock file", e);
         }
     }
 

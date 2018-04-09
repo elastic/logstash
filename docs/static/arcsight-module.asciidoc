@@ -36,8 +36,7 @@ EB topics.
 To get started, you can use a basic Elastic Stack setup that reads events from
 the Smart Connector directly.
 
-[role="screenshot"]
-image::static/images/arcsight-architecture-diagram-smartconnector-2017.png[ArcSight Smart Connector architecture]
+image::static/images/arcsight-diagram-smart-connectors.svg[ArcSight Smart Connector architecture]
 
 [[arcsight-requirements-smartconnector]]
 ===== Requirements
@@ -66,14 +65,14 @@ includes the Logstash ArcSight module.
 . Start the Logstash ArcSight module by running the following command in the
 Logstash install directory with your respective EB host and port:
 +
-[source,shell]
+["source","shell",subs="attributes"]
 -----
 bin/logstash --modules arcsight --setup
   -M "arcsight.var.inputs=smartconnector" 
   -M "arcsight.var.elasticsearch.username=elastic" 
-  -M "arcsight.var.elasticsearch.password=changeme" 
+  -M "arcsight.var.elasticsearch.password={pwd}" 
   -M "arcsight.var.kibana.username=elastic" 
-  -M "arcsight.var.kibana.password=changeme"
+  -M "arcsight.var.kibana.password={pwd}"
 -----
 +
 --
@@ -90,7 +89,7 @@ dashboards.
 
 . Explore your data with Kibana:
 .. Open browser @ http://localhost:5601[http://localhost:5601] (username:
-  "elastic"; password: "changeme")
+  "elastic"; password: "{pwd}")
 .. Open the *[ArcSight] Network Overview Dashboard*
 .. See <<exploring-data-arcsight>> for additional details on data exploration.
 
@@ -103,8 +102,7 @@ control the behavior of the ArcSight module.
 To get started, you can use a basic Elastic Stack setup that reads events from
 the EB event stream.
 
-[role="screenshot"]
-image::static/images/arcsight-architecture-diagram-eventbroker-2017.png[ArcSight Event Broker architecture]
+image::static/images/arcsight-diagram-adp.svg[ArcSight Event Broker architecture]
 
 [[arcsight-requirements-eventbroker]]
 ===== Requirements
@@ -142,14 +140,14 @@ bin/logstash-plugin install --version 6.2.7 logstash-input-kafka
 . Start the Logstash ArcSight module by running the following command in the
 Logstash install directory with your respective EB host and port:
 +
-[source,shell]
+["source","shell",subs="attributes"]
 -----
 bin/logstash --modules arcsight --setup
   -M "arcsight.var.input.eventbroker.bootstrap_servers={eb_host}:{eb_port}" 
   -M "arcsight.var.elasticsearch.username=elastic" 
-  -M "arcsight.var.elasticsearch.password=changeme" 
+  -M "arcsight.var.elasticsearch.password={pwd}" 
   -M "arcsight.var.kibana.username=elastic" 
-  -M "arcsight.var.kibana.password=changeme"
+  -M "arcsight.var.kibana.password={pwd}"
 -----
 +
 --
@@ -166,7 +164,7 @@ dashboards.
 
 . Explore your data with Kibana:
 .. Open browser @ http://localhost:5601[http://localhost:5601] (username:
-  "elastic"; password: "changeme")
+  "elastic"; password: "{pwd}")
 .. Open the *[ArcSight] Network Overview Dashboard*
 .. See <<exploring-data-arcsight>> for additional details on data exploration.
 
@@ -233,7 +231,7 @@ like in the getting started. For more information about configuring modules, see
 As an example, the following settings can be appended to `logstash.yml` to
 configure your module:
 
-[source,yaml]
+["source","yaml",subs="attributes"] 
 -----
 modules:
   - name: arcsight
@@ -241,10 +239,10 @@ modules:
     var.input.eventbroker.topics: "eb_topic"
     var.elasticsearch.hosts: "localhost:9200"
     var.elasticsearch.username: "elastic"
-    var.elasticsearch.password: "changeme"
+    var.elasticsearch.password: "{pwd}"
     var.kibana.host: “localhost:5601”
     var.kibana.username: "elastic"
-    var.kibana.password: "changeme"
+    var.kibana.password: "{pwd}"
 -----
 
 [[arcsight-module-config]]

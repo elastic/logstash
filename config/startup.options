@@ -15,7 +15,7 @@
 LS_HOME=/usr/share/logstash
 
 # logstash settings directory, the path which contains logstash.yml
-LS_SETTINGS_DIR="${LS_HOME}/config"
+LS_SETTINGS_DIR=/etc/logstash
 
 # Arguments to pass to logstash
 LS_OPTS="--path.settings ${LS_SETTINGS_DIR}"

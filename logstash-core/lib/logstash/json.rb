@@ -1,35 +1,11 @@
 # encoding: utf-8
 require "logstash/environment"
-require "logstash/errors"
-if LogStash::Environment.jruby?
-  require "jrjackson"
-  require "logstash/java_integration"
-else
-  require  "oj"
-end
+require "jrjackson"
+require "logstash/java_integration"
 
 module LogStash
   module Json
-    class ParserError < LogStash::Error; end
-    class GeneratorError < LogStash::Error; end
-
     extend self
-
-    ### MRI
-
-    def mri_load(data, options = {})
-      Oj.load(data)
-    rescue Oj::ParseError => e
-      raise LogStash::Json::ParserError.new(e.message)
-    end
-
-    def mri_dump(o)
-      Oj.dump(o, :mode => :compat, :use_to_json => true)
-    rescue => e
-      raise LogStash::Json::GeneratorError.new(e.message)
-    end
-
-    ### JRuby
 
     def jruby_load(data, options = {})
       # TODO [guyboertje] remove these comments in 5.0
@@ -52,9 +28,8 @@ module LogStash
       raise LogStash::Json::GeneratorError.new(e.message)
     end
 
-    prefix = LogStash::Environment.jruby? ? "jruby" : "mri"
-    alias_method :load, "#{prefix}_load".to_sym
-    alias_method :dump, "#{prefix}_dump".to_sym
+    alias_method :load, "jruby_load".to_sym
+    alias_method :dump, "jruby_dump".to_sym
 
   end
 end
