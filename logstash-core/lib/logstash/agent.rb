@@ -34,6 +34,10 @@ class LogStash::Agent
   #   :auto_reload [Boolean] - enable reloading of pipelines
   #   :reload_interval [Integer] - reload pipelines every X seconds
   def initialize(settings = LogStash::SETTINGS, source_loader = nil)
+    @agent_hooks = org.logstash.AgentHooks.new
+
+    @agent_hooks.start()
+
     @logger = self.class.logger
     @settings = settings
     @auto_reload = setting("config.reload.automatic")
@@ -183,6 +187,7 @@ class LogStash::Agent
   end
 
   def shutdown
+    @agent_hooks.shutdown()
     stop_collecting_metrics
     stop_webserver
     transition_to_stopped

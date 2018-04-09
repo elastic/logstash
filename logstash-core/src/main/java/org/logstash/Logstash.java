@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.io.PrintStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jruby.Ruby;
@@ -13,6 +14,8 @@ import org.jruby.RubyInstanceConfig;
 import org.jruby.RubyNumeric;
 import org.jruby.exceptions.RaiseException;
 import org.jruby.runtime.builtin.IRubyObject;
+import org.pf4j.DefaultPluginManager;
+import org.pf4j.PluginManager;
 
 /**
  * Logstash Main Entrypoint.
@@ -20,6 +23,9 @@ import org.jruby.runtime.builtin.IRubyObject;
 public final class Logstash implements Runnable, AutoCloseable {
 
     private static final Logger LOGGER = LogManager.getLogger(Logstash.class);
+    final static Path LOGSTASH_HOME = Paths.get(System.getenv("LS_HOME")).toAbsolutePath();
+    static final Path PLUGINS_PATH = Logstash.LOGSTASH_HOME.resolve("vendor").resolve("java-plugins");
+    static final PluginManager PLUGIN_MANAGER = new DefaultPluginManager(PLUGINS_PATH);
 
     /**
      * JRuby Runtime Environment.
