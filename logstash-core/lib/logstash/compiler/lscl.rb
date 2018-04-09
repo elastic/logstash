@@ -181,7 +181,7 @@ module LogStashCompilerLSCLGrammar; module LogStash; module Compiler; module LSC
       duplicate_values = find_duplicate_keys
 
       if duplicate_values.size > 0
-        raise ConfigurationError.new(
+        raise ::LogStash::ConfigurationError.new(
           I18n.t("logstash.runner.configuration.invalid_plugin_settings_duplicate_keys",
             :keys => duplicate_values.join(', '),
             :line => input.line_of(interval.first),
