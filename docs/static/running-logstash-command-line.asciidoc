@@ -172,3 +172,4 @@ With this command, Logstash concatenates three config files, `/tmp/one`, `/tmp/t
 
 *`-h, --help`*::
   Print help
+
