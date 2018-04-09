@@ -1,5 +1,5 @@
 [[logstash-settings-file]]
-=== Logstash.yml
+=== logstash.yml
 
 You can set options in the Logstash settings file, `logstash.yml`, to control Logstash execution. For example,
 you can specify pipeline settings, the location of configuration files, logging options, and other settings.
