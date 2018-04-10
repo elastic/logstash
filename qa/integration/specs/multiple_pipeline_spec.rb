@@ -37,7 +37,7 @@ describe "Test Logstash service when multiple pipelines are used" do
   let!(:pipelines_yaml) { pipelines.to_yaml }
   let!(:pipelines_yaml_file) { ::File.join(settings_dir, "pipelines.yml") }
 
-  let(:retry_attempts) { 30 }
+  let(:retry_attempts) { 40 }
 
   before(:each) do
     IO.write(pipelines_yaml_file, pipelines_yaml)
