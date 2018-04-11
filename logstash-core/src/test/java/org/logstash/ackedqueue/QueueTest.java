@@ -8,7 +8,9 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -23,6 +25,7 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+import org.logstash.Event;
 import org.logstash.ackedqueue.io.LongVector;
 import org.logstash.ackedqueue.io.MmapPageIO;
 
@@ -43,10 +46,17 @@ public class QueueTest {
 
     private String dataPath;
 
+    private List<Queueable> batch;
+
     @Before
     public void setUp() throws Exception {
         dataPath = temporaryFolder.newFolder("data").getPath();
         executor = Executors.newSingleThreadExecutor();
+        int batchSize = 10;
+        batch = new ArrayList<>(batchSize);
+        for (int i = 0; i < batchSize; i++) {
+            batch.add(new StringElement("foo " + i));
+        }
     }
 
     @After
@@ -78,6 +88,24 @@ public class QueueTest {
 
             assertThat(b.getElements().size(), is(1));
             assertThat(b.getElements().get(0).toString(), is(element.toString()));
+            assertThat(q.nonBlockReadBatch(1), nullValue());
+        }
+    }
+
+    @Test
+    public void batchWriteRead() throws IOException {
+        // We need a fairly large size because reads don't span pages
+        try (Queue q = new Queue(TestSettings.persistedQueueSettings(1000, dataPath))) {
+            q.open();
+
+            long res = q.write(batch);
+
+            Batch b = q.nonBlockReadBatch(batch.size());
+
+            assertThat(b.getElements().size(), is(batch.size()));
+            for (int i = 0; i < batch.size(); i++) {
+                assertThat(b.getElements().get(i).toString(), is(batch.get(i).toString()));
+            }
             assertThat(q.nonBlockReadBatch(1), nullValue());
         }
     }
@@ -132,7 +160,7 @@ public class QueueTest {
             TestSettings.persistedQueueSettings(1024, 1024L, dataPath))) {
             q.open();
             for (int i = 0; i < 3; ++i) {
-                q.write(element);
+                long res = q.write(element);
                 try (Batch b = q.readBatch(1, 500L)) {
                     assertThat(b.getElements().size(), is(1));
                     assertThat(b.getElements().get(0).toString(), is(element.toString()));

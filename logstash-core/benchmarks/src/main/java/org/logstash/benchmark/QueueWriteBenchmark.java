@@ -3,6 +3,7 @@ package org.logstash.benchmark;
 import com.google.common.io.Files;
 import java.io.File;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.concurrent.TimeUnit;
 import org.apache.commons.io.FileUtils;
 import org.logstash.Event;
@@ -64,7 +65,7 @@ public class QueueWriteBenchmark {
         for (int i = 0; i < EVENTS_PER_INVOCATION; ++i) {
             final Event evnt = EVENT.clone();
             evnt.setTimestamp(Timestamp.now());
-            queue.write(evnt);
+            queue.write(Collections.singletonList(evnt),-1);
         }
     }
 

@@ -3,6 +3,7 @@ package org.logstash.benchmark;
 import com.google.common.io.Files;
 import java.io.File;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -82,7 +83,7 @@ public class QueueRWBenchmark {
         final Future<?> future = exec.submit(() -> {
             for (int i = 0; i < EVENTS_PER_INVOCATION; ++i) {
                 try {
-                    this.queuePersisted.write(EVENT);
+                    this.queuePersisted.write(Collections.singletonList(EVENT), -1);
                 } catch (final IOException ex) {
                     throw new IllegalStateException(ex);
                 }
