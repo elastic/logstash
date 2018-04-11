@@ -1,7 +1,5 @@
 package org.logstash.config.ir.compiler;
 
-import com.google.googlejavaformat.java.Formatter;
-import com.google.googlejavaformat.java.FormatterException;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.StandardCharsets;
@@ -37,8 +35,7 @@ public final class ComputeStepSyntaxElement<T extends Dataset> {
         = new HashMap<>();
 
     /**
-     * Pattern to remove redundant {@code ;} from formatted code since {@link Formatter} does not
-     * remove those.
+     * Pattern to remove redundant {@code ;} from formatted code
      */
     private static final Pattern REDUNDANT_SEMICOLON = Pattern.compile("\n[ ]*;\n");
 
@@ -103,24 +100,20 @@ public final class ComputeStepSyntaxElement<T extends Dataset> {
     }
 
     private String generateCode(final String name) {
-        try {
-            return REDUNDANT_SEMICOLON.matcher(new Formatter().formatSource(
-                String.format(
-                    "package org.logstash.generated;\npublic final class %s implements %s { %s }",
-                    name,
-                    type.getName(),
-                    SyntaxFactory.join(
-                        fields.inlineAssigned().generateCode(), fieldsAndCtor(name),
-                        combine(
-                            StreamSupport.stream(methods.spliterator(), false)
-                                .toArray(SyntaxElement[]::new)
-                        )
+        return REDUNDANT_SEMICOLON.matcher(
+            String.format(
+                "package org.logstash.generated;\npublic final class %s implements %s { %s }",
+                name,
+                type.getName(),
+                SyntaxFactory.join(
+                    fields.inlineAssigned().generateCode(), fieldsAndCtor(name),
+                    combine(
+                        StreamSupport.stream(methods.spliterator(), false)
+                            .toArray(SyntaxElement[]::new)
                     )
                 )
-            )).replaceAll("\n");
-        } catch (final FormatterException ex) {
-            throw new IllegalStateException(ex);
-        }
+            )
+        ).replaceAll("\n");
     }
 
     private static Path debugDir() {
