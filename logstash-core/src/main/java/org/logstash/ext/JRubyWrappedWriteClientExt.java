@@ -1,6 +1,7 @@
 package org.logstash.ext;
 
 import java.util.Collection;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import org.jruby.Ruby;
 import org.jruby.RubyArray;
@@ -13,10 +14,11 @@ import org.jruby.internal.runtime.methods.DynamicMethod;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.RubyUtil;
+import org.logstash.execution.queue.QueueWriter;
 import org.logstash.instrument.metrics.counter.LongCounter;
 
 @JRubyClass(name = "WrappedWriteClient")
-public final class JRubyWrappedWriteClientExt extends RubyObject {
+public final class JRubyWrappedWriteClientExt extends RubyObject implements QueueWriter {
 
     private static final RubySymbol PUSH_DURATION_KEY =
         RubyUtil.RUBY.newSymbol("queue_push_duration_in_millis");
@@ -27,6 +29,7 @@ public final class JRubyWrappedWriteClientExt extends RubyObject {
     private DynamicMethod pushBatch;
 
     private IRubyObject writeClient;
+    private QueueWriter wrappedQueueWriter;
 
     private LongCounter eventsMetricsCounter;
     private LongCounter eventsMetricsTime;
@@ -44,6 +47,7 @@ public final class JRubyWrappedWriteClientExt extends RubyObject {
     @JRubyMethod(name = "initialize", optional = 4)
     public IRubyObject ruby_initialize(final ThreadContext context, final IRubyObject[] args) {
         this.writeClient = args[0];
+        this.wrappedQueueWriter = (QueueWriter)this.writeClient;
         final String pipelineId = args[1].asJavaString();
         final IRubyObject metric = args[2];
         final IRubyObject pluginId = args[3];
@@ -129,5 +133,13 @@ public final class JRubyWrappedWriteClientExt extends RubyObject {
             res[i] = RubyUtil.RUBY.newSymbol(strings[i]);
         }
         return RubyUtil.RUBY.newArray(res);
+    }
+
+    @Override
+    public void push(Map<String, Object> event) {
+        final long start = System.nanoTime();
+        incrementCounters(1L);
+        wrappedQueueWriter.push(event);
+        incrementTimers(start);
     }
 }

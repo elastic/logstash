@@ -1,6 +1,7 @@
 package org.logstash.ext;
 
 import java.util.Collection;
+import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import org.jruby.Ruby;
 import org.jruby.RubyClass;
@@ -9,11 +10,13 @@ import org.jruby.anno.JRubyClass;
 import org.jruby.anno.JRubyMethod;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
+import org.logstash.Event;
 import org.logstash.RubyUtil;
 import org.logstash.common.LsQueueUtils;
+import org.logstash.execution.queue.QueueWriter;
 
 @JRubyClass(name = "MemoryWriteClient")
-public final class JrubyMemoryWriteClientExt extends RubyObject {
+public final class JrubyMemoryWriteClientExt extends RubyObject implements QueueWriter {
 
     private BlockingQueue<JrubyEventExtLibrary.RubyEvent> queue;
 
@@ -49,4 +52,12 @@ public final class JrubyMemoryWriteClientExt extends RubyObject {
         return this;
     }
 
+    @Override
+    public void push(Map<String, Object> event) {
+        try {
+            queue.put(JrubyEventExtLibrary.RubyEvent.newRubyEvent(RubyUtil.RUBY, new Event(event)));
+        } catch (InterruptedException e) {
+            throw new IllegalStateException(e);
+        }
+    }
 }

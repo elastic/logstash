@@ -1,6 +1,8 @@
 package org.logstash.ext;
 
+import java.io.IOException;
 import java.util.Collection;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.jruby.Ruby;
 import org.jruby.RubyClass;
@@ -9,11 +11,13 @@ import org.jruby.anno.JRubyClass;
 import org.jruby.anno.JRubyMethod;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
+import org.logstash.Event;
 import org.logstash.RubyUtil;
 import org.logstash.ackedqueue.ext.JRubyAckedQueueExt;
+import org.logstash.execution.queue.QueueWriter;
 
 @JRubyClass(name = "AckedWriteClient")
-public final class JrubyAckedWriteClientExt extends RubyObject {
+public final class JrubyAckedWriteClientExt extends RubyObject implements QueueWriter {
 
     private JRubyAckedQueueExt queue;
 
@@ -68,4 +72,14 @@ public final class JrubyAckedWriteClientExt extends RubyObject {
             throw new IllegalStateException("Tried to write to a closed queue.");
         }
     }
+
+    @Override
+    public void push(Map<String, Object> event) {
+        try {
+            queue.write(new Event(event));
+        } catch (IOException e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
 }

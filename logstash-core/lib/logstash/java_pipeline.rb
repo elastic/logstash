@@ -27,6 +27,7 @@ java_import org.logstash.config.ir.ConfigCompiler
 
 module LogStash; class JavaBasePipeline
   include LogStash::Util::Loggable
+  include org.logstash.execution.QueueWriterProvider
 
   attr_reader :settings, :config_str, :config_hash, :inputs, :filters, :outputs, :pipeline_id, :lir, :ephemeral_id
   attr_reader :pipeline_config
@@ -59,7 +60,7 @@ module LogStash; class JavaBasePipeline
       @logger.debug("Compiled pipeline code", default_logging_keys(:code => @lir.get_graph.to_string))
     end
     @inputs = @lir_execution.inputs
-    @java_inputs = @lir_execution.javaInputs
+    @java_inputs_controller = org.logstash.execution.InputsController.new(@lir_execution.javaInputs)
     @filters = @lir_execution.filters
     @outputs = @lir_execution.outputs
   end
@@ -400,6 +401,7 @@ module LogStash; class JavaPipeline < JavaBasePipeline
 
   def wait_inputs
     @input_threads.each(&:join)
+    @java_inputs_controller.awaitStop
   end
 
   def start_inputs
@@ -418,6 +420,7 @@ module LogStash; class JavaPipeline < JavaBasePipeline
 
     # then after all input plugins are successfully registered, start them
     @inputs.each { |input| start_input(input) }
+    @java_inputs_controller.startInputs(self)
   end
 
   def start_input(plugin)
@@ -484,6 +487,7 @@ module LogStash; class JavaPipeline < JavaBasePipeline
   def stop_inputs
     @logger.debug("Closing inputs", default_logging_keys)
     @inputs.each(&:do_stop)
+    @java_inputs_controller.stopInputs
     @logger.debug("Closed inputs", default_logging_keys)
   end
 
@@ -601,6 +605,10 @@ module LogStash; class JavaPipeline < JavaBasePipeline
       :running => @running,
       :flushing => @flushing
     }
+  end
+
+  def getQueueWriter(plugin_name)
+    wrapped_write_client(plugin_name)
   end
 
   private
