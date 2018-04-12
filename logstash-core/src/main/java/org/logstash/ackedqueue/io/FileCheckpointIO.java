@@ -77,12 +77,6 @@ public class FileCheckpointIO implements CheckpointIO {
         Files.delete(path);
     }
 
-    @Override
-    public void purge() {
-        // TODO: dir traversal and delete all checkpoints?
-        throw new UnsupportedOperationException("purge() is not supported");
-    }
-
     // @return the head page checkpoint file name
     @Override
     public String headFileName() {
