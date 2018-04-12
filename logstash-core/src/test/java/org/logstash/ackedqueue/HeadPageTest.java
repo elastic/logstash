@@ -1,6 +1,7 @@
 package org.logstash.ackedqueue;
 
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.concurrent.TimeUnit;
 import org.junit.Before;
 import org.junit.Rule;
@@ -32,7 +33,7 @@ public class HeadPageTest {
         // Close method on Page requires an instance of Queue that has already been opened.
         try (Queue q = new Queue(s)) {
             q.open();
-            PageIO pageIO = new MmapPageIO(0, 100, dataPath);
+            PageIO pageIO = new MmapPageIO(0, 100, Paths.get(dataPath));
             pageIO.create();
             try (final Page p = PageFactory.newHeadPage(0, q, pageIO)) {
                 assertThat(p.getPageNum(), is(equalTo(0)));

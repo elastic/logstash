@@ -58,7 +58,7 @@ public final class DeadLetterQueueWriter implements Closeable {
     private final AtomicBoolean open = new AtomicBoolean(true);
 
     public DeadLetterQueueWriter(Path queuePath, long maxSegmentSize, long maxQueueSize) throws IOException {
-        this.lock = FileLockFactory.obtainLock(queuePath.toString(), LOCK_FILE);
+        this.lock = FileLockFactory.obtainLock(queuePath, LOCK_FILE);
         this.queuePath = queuePath;
         this.maxSegmentSize = maxSegmentSize;
         this.maxQueueSize = maxQueueSize;

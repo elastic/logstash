@@ -6,7 +6,7 @@ import java.io.RandomAccessFile;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.zip.CRC32;
@@ -48,7 +48,7 @@ public final class MmapPageIO implements PageIO {
 
     private MappedByteBuffer buffer;
 
-    public MmapPageIO(int pageNum, int capacity, String dirPath) {
+    public MmapPageIO(int pageNum, int capacity, Path dirPath) {
         this.minSeqNum = 0;
         this.elementCount = 0;
         this.version = 0;
@@ -56,7 +56,7 @@ public final class MmapPageIO implements PageIO {
         this.capacity = capacity;
         this.offsetMap = new IntVector();
         this.checkSummer = new CRC32();
-        this.file = Paths.get(dirPath, "page." + pageNum).toFile();
+        this.file = dirPath.resolve("page." + pageNum).toFile();
     }
 
     @Override

@@ -343,7 +343,7 @@ class LogStash::Runner < Clamp::StrictCommand
     end
 
     # lock path.data before starting the agent
-    @data_path_lock = FileLockFactory.obtainLock(setting("path.data"), ".lock");
+    @data_path_lock = FileLockFactory.obtainLock(java.nio.file.Paths.get(setting("path.data")).to_absolute_path, ".lock")
 
     @dispatcher.fire(:before_agent)
     @agent = create_agent(@settings, @source_loader)
