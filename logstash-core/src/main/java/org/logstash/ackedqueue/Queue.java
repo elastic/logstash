@@ -5,7 +5,10 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.nio.channels.FileLock;
+import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -49,7 +52,7 @@ public final class Queue implements Closeable {
     private final CheckpointIO checkpointIO;
     private final int pageCapacity;
     private final long maxBytes;
-    private final String dirPath;
+    private final Path dirPath;
     private final int maxUnread;
     private final int checkpointMaxAcks;
     private final int checkpointMaxWrites;
@@ -72,7 +75,13 @@ public final class Queue implements Closeable {
     private static final Logger logger = LogManager.getLogger(Queue.class);
 
     public Queue(Settings settings) {
-        this.dirPath = settings.getDirPath();
+        try {
+            final Path queueDir = Paths.get(settings.getDirPath());
+            Files.createDirectories(queueDir);
+            this.dirPath = queueDir.toRealPath();
+        } catch (final IOException ex) {
+            throw new IllegalStateException(ex);
+        }
         this.pageCapacity = settings.getCapacity();
         this.maxBytes = settings.getQueueMaxBytes();
         this.checkpointIO = new FileCheckpointIO(dirPath);
@@ -97,7 +106,7 @@ public final class Queue implements Closeable {
     }
 
     public String getDirPath() {
-        return this.dirPath;
+        return this.dirPath.toString();
     }
 
     public long getMaxBytes() {

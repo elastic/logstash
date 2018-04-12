@@ -1,6 +1,7 @@
 package org.logstash;
 
 import java.io.IOException;
+import java.nio.file.Paths;
 
 /*
  * This program is used to test the FileLockFactory in cross-process/JVM.
@@ -9,7 +10,7 @@ public class FileLockFactoryMain {
 
     public static void main(String[] args) {
         try {
-            FileLockFactory.obtainLock(args[0], args[1]);
+            FileLockFactory.obtainLock(Paths.get(args[0]), args[1]);
             System.out.println("File locked");
             // Sleep enough time until this process is killed.
             Thread.sleep(Long.MAX_VALUE);

@@ -1,11 +1,10 @@
 package org.logstash.ackedqueue.io;
 
+import java.nio.file.Path;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
-import org.logstash.ackedqueue.io.MmapPageIO;
-import org.logstash.ackedqueue.io.PageIO;
 
 import java.io.IOException;
 
@@ -18,11 +17,11 @@ public class MmapPageIOTest {
     @Rule
     public final TemporaryFolder temporaryFolder = new TemporaryFolder();
 
-    private String dir;
+    private Path dir;
 
     @Before
     public void setUp() throws Exception {
-        dir = temporaryFolder.newFolder().getPath();
+        dir = temporaryFolder.newFolder().toPath();
     }
 
     @Test
