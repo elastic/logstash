@@ -15,25 +15,25 @@ public final class FsUtilTest {
     public final TemporaryFolder temp = new TemporaryFolder();
 
     /**
-     * {@link FsUtil#hasFreeSpace(String, long)} should return true when asked for 1kb of free
+     * {@link FsUtil#hasFreeSpace(java.nio.file.Path, long)} should return true when asked for 1kb of free
      * space in a subfolder of the system's TEMP location.
      */
     @Test
     public void trueIfEnoughSpace() throws Exception {
         MatcherAssert.assertThat(
-                FsUtil.hasFreeSpace(temp.newFolder().getAbsolutePath(), 1024L),
+                FsUtil.hasFreeSpace(temp.newFolder().toPath().toAbsolutePath(), 1024L),
                 CoreMatchers.is(true)
         );
     }
 
     /**
-     * {@link FsUtil#hasFreeSpace(String, long)} should return false when asked for
+     * {@link FsUtil#hasFreeSpace(java.nio.file.Path, long)} should return false when asked for
      * {@link Long#MAX_VALUE} of free space in a subfolder of the system's TEMP location.
      */
     @Test
     public void falseIfNotEnoughSpace() throws Exception {
         MatcherAssert.assertThat(
-                FsUtil.hasFreeSpace(temp.newFolder().getAbsolutePath(), Long.MAX_VALUE),
+                FsUtil.hasFreeSpace(temp.newFolder().toPath().toAbsolutePath(), Long.MAX_VALUE),
                 CoreMatchers.is(false)
         );
     }

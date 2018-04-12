@@ -22,7 +22,6 @@ package org.logstash;
 import java.io.IOException;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
-import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
@@ -49,13 +48,8 @@ public class FileLockFactory {
     private static final Set<String> LOCK_HELD = Collections.synchronizedSet(new HashSet<>());
     private static final Map<FileLock, String> LOCK_MAP =  Collections.synchronizedMap(new HashMap<>());
 
-    public static FileLock obtainLock(String lockDir, String lockName) throws IOException {
-        Path dirPath = FileSystems.getDefault().getPath(lockDir);
-
-        // Ensure that lockDir exists and is a directory.
-        // note: this will fail if lockDir is a symlink
+    public static FileLock obtainLock(Path dirPath, String lockName) throws IOException {
         Files.createDirectories(dirPath);
-
         Path lockPath = dirPath.resolve(lockName);
 
         try {
