@@ -53,7 +53,7 @@ public interface PluginFactory extends RubyIntegration.PluginFactory {
         }
 
         @Override
-        public RubyIntegration.Filter buildCodec(final RubyString name, final IRubyObject args) {
+        public IRubyObject buildCodec(final RubyString name, final IRubyObject args) {
             return rubyFactory.buildCodec(name, args);
         }
     }
