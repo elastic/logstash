@@ -53,6 +53,7 @@ describe LogStash::WebServer do
     let(:spy_output) { spy("stderr").as_null_object }
 
     it "should not log to STDERR" do
+      skip("This test fails randomly, tracked in https://github.com/elastic/logstash/issues/9361.")
       backup_stderr = STDERR
       backup_stdout = STDOUT
 
