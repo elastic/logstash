@@ -47,11 +47,11 @@ module LogStash
       require "bundler"
       LogStash::Bundler.patch!
 
-      ::Bundler.settings[:path] = Environment::BUNDLE_DIR
-      ::Bundler.settings[:without] = options[:without].join(":")
+      ::Bundler.settings.set_local(:path, Environment::BUNDLE_DIR)
+      ::Bundler.settings.set_local(:without, options[:without].join(":"))
       # in the context of Bundler.setup it looks like this is useless here because Gemfile path can only be specified using
       # the ENV, see https://github.com/bundler/bundler/blob/v1.8.3/lib/bundler/shared_helpers.rb#L103
-      ::Bundler.settings[:gemfile] = Environment::GEMFILE_PATH
+      ::Bundler.settings.set_local(:gemfile, Environment::GEMFILE_PATH)
 
       ::Bundler.reset!
       ::Bundler.setup
@@ -103,10 +103,10 @@ module LogStash
       # force Rubygems sources to our Gemfile sources
       ::Gem.sources = ::Gem::SourceList.from(options[:rubygems_source]) if options[:rubygems_source]
 
-      ::Bundler.settings[:path] = LogStash::Environment::BUNDLE_DIR
-      ::Bundler.settings[:gemfile] = LogStash::Environment::GEMFILE_PATH
-      ::Bundler.settings[:without] = options[:without].join(":")
-      ::Bundler.settings[:force] = options[:force]
+      ::Bundler.settings.set_local(:path, LogStash::Environment::BUNDLE_DIR)
+      ::Bundler.settings.set_local(:gemfile, LogStash::Environment::GEMFILE_PATH)
+      ::Bundler.settings.set_local(:without, options[:without].join(":"))
+      ::Bundler.settings.set_local(:force, options[:force])
 
       if !debug?
         # Will deal with transient network errors
