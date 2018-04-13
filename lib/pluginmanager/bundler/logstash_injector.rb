@@ -67,7 +67,7 @@ module Bundler
       gemfile = LogStash::Gemfile.new(File.new(gemfile_path, "r+")).load
 
       begin
-        @new_deps.each do |dependency|
+        @deps.each do |dependency|
           gemfile.update(dependency.name, dependency.requirement)
         end
 

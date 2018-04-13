@@ -324,9 +324,9 @@ def qaBundledGemPath = "${qaVendorPath}/jruby/2.3.0"
 def qaBundleBin = "${qaBundledGemPath}/bin/bundle"
 
 task installIntegrationTestBundler(dependsOn: unpackTarDistribution) {
-  outputs.files fileTree("${qaBundledGemPath}/gems/bundler-1.16.0")
+  outputs.files fileTree("${qaBundledGemPath}/gems/bundler-1.17.1")
   doLast {
-    rubyGradleUtils.gem("bundler", "1.16.0", qaBundledGemPath)
+    rubyGradleUtils.gem("bundler", "1.17.1", qaBundledGemPath)
   }
 }
 
