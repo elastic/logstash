@@ -20,5 +20,5 @@ jruby:
 # Note: this file is copied to the root of logstash-core because its gemspec needs it when
 #       bundler evaluates the gemspec via bin/logstash
 # Ensure Jackson version here is kept in sync with version used by jrjackson gem
-jrjackson: 0.4.5
-jackson: 2.9.4
+jrjackson: 0.4.6
+jackson: 2.9.5

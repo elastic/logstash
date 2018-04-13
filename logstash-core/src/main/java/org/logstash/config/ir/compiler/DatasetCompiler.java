@@ -18,8 +18,6 @@ import org.logstash.ext.JrubyEventExtLibrary;
  */
 public final class DatasetCompiler {
 
-    private static final String MULTI_RECEIVE = "multi_receive";
-
     private static final String FLUSH = "flush";
 
     public static final SyntaxFactory.IdentifierStatement FLUSH_ARG =
@@ -167,18 +165,13 @@ public final class DatasetCompiler {
      * @return Output Dataset
      */
     public static ComputeStepSyntaxElement<Dataset> outputDataset(final Collection<Dataset> parents,
-        final IRubyObject output, final boolean terminal) {
-        final DynamicMethod method = rubyCallsite(output, MULTI_RECEIVE);
+        final OutputDelegatorExt output, final boolean terminal) {
         final ClassFields fields = new ClassFields();
         final Closure clearSyntax;
         final Closure computeSyntax;
         if (parents.isEmpty()) {
-            final ValueSyntaxElement args = fields.add(new IRubyObject[1]);
             clearSyntax = Closure.EMPTY;
-            computeSyntax = Closure.wrap(
-                SyntaxFactory.assignment(SyntaxFactory.arrayField(args, 0), BATCH_ARG),
-                callRubyCallsite(fields.add(method), args, fields.add(output), MULTI_RECEIVE)
-            );
+            computeSyntax = Closure.wrap(invokeOutput(fields.add(output), BATCH_ARG));
         } else {
             final Collection<ValueSyntaxElement> parentFields =
                 parents.stream().map(fields::add).collect(Collectors.toList());
@@ -191,16 +184,18 @@ public final class DatasetCompiler {
                 inlineClear = Closure.EMPTY;
                 clearSyntax = clearSyntax(parentFields);
             }
+            final ValueSyntaxElement inputBuffer = fields.add(buffer);
             computeSyntax = withInputBuffering(
-                Closure.wrap(
-                    callRubyCallsite(
-                        fields.add(method), fields.add(new IRubyObject[]{buffer}),
-                        fields.add(output), MULTI_RECEIVE
-                    ), inlineClear
-                ), parentFields, fields.add(buffer)
+                Closure.wrap(invokeOutput(fields.add(output), inputBuffer), inlineClear),
+                parentFields, inputBuffer
             );
         }
         return compileOutput(computeSyntax, clearSyntax, fields);
+    }
+
+    private static ValueSyntaxElement invokeOutput(final ValueSyntaxElement output,
+        final MethodLevelSyntaxElement events) {
+        return output.call("multiReceive", ValueSyntaxElement.GET_RUBY_THREAD_CONTEXT, events);
     }
 
     private static Closure filterBody(final Closure body, final ValueSyntaxElement outputBuffer,
