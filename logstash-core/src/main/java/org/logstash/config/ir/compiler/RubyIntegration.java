@@ -46,7 +46,7 @@ public final class RubyIntegration {
         IRubyObject buildInput(RubyString name, RubyInteger line, RubyInteger column,
             IRubyObject args);
 
-        IRubyObject buildOutput(RubyString name, RubyInteger line, RubyInteger column,
+        OutputDelegatorExt buildOutput(RubyString name, RubyInteger line, RubyInteger column,
             IRubyObject args);
 
         RubyIntegration.Filter buildFilter(RubyString name, RubyInteger line, RubyInteger column,
