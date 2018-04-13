@@ -1,5 +1,6 @@
 package org.logstash;
 
+import java.nio.file.Path;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -25,7 +26,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 
 public class FileLockFactoryTest {
     @Rule public TemporaryFolder temporaryFolder = new TemporaryFolder();
-    private String lockDir;
+    private Path lockDir;
     private final String LOCK_FILE = ".test";
 
     private FileLock lock;
@@ -34,7 +35,7 @@ public class FileLockFactoryTest {
 
     @Before
     public void setUp() throws Exception {
-        lockDir = temporaryFolder.newFolder("lock").getPath();
+        lockDir = temporaryFolder.newFolder("lock").toPath();
         executor = Executors.newSingleThreadExecutor();
     }
 
@@ -117,7 +118,7 @@ public class FileLockFactoryTest {
             Paths.get(System.getProperty("java.home"), "bin", "java").toString(),
             "-cp", System.getProperty("java.class.path"),
             Class.forName("org.logstash.FileLockFactoryMain").getName(),
-            lockDir, lockFile
+            lockDir.toString(), lockFile
         };
 
         try {

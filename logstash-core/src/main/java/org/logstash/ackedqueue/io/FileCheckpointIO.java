@@ -6,7 +6,6 @@ import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.zip.CRC32;
 import org.logstash.ackedqueue.Checkpoint;
@@ -39,16 +38,16 @@ public class FileCheckpointIO implements CheckpointIO {
 
     private static final String HEAD_CHECKPOINT = "checkpoint.head";
     private static final String TAIL_CHECKPOINT = "checkpoint.";
-    private final String dirPath;
+    private final Path dirPath;
 
-    public FileCheckpointIO(String dirPath) {
+    public FileCheckpointIO(Path dirPath) {
         this.dirPath = dirPath;
     }
 
     @Override
     public Checkpoint read(String fileName) throws IOException {
         return read(
-            ByteBuffer.wrap(Files.readAllBytes(Paths.get(dirPath, fileName)))
+            ByteBuffer.wrap(Files.readAllBytes(dirPath.resolve(fileName)))
         );
     }
 
@@ -63,24 +62,18 @@ public class FileCheckpointIO implements CheckpointIO {
     public void write(String fileName, Checkpoint checkpoint) throws IOException {
         write(checkpoint, buffer);
         buffer.flip();
-        final Path tmpPath = Paths.get(dirPath, fileName + ".tmp");
+        final Path tmpPath = dirPath.resolve(fileName + ".tmp");
         try (FileOutputStream out = new FileOutputStream(tmpPath.toFile())) {
             out.getChannel().write(buffer);
             out.getFD().sync();
         }
-        Files.move(tmpPath, Paths.get(dirPath, fileName), StandardCopyOption.ATOMIC_MOVE);
+        Files.move(tmpPath, dirPath.resolve(fileName), StandardCopyOption.ATOMIC_MOVE);
     }
 
     @Override
     public void purge(String fileName) throws IOException {
-        Path path = Paths.get(dirPath, fileName);
+        Path path = dirPath.resolve(fileName);
         Files.delete(path);
-    }
-
-    @Override
-    public void purge() {
-        // TODO: dir traversal and delete all checkpoints?
-        throw new UnsupportedOperationException("purge() is not supported");
     }
 
     // @return the head page checkpoint file name

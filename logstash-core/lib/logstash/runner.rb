@@ -29,7 +29,7 @@ require "logstash/shutdown_watcher"
 require "logstash/patches/clamp"
 require "logstash/settings"
 require "logstash/version"
-require "logstash/plugins/registry"
+require 'logstash/plugins'
 require "logstash/modules/util"
 require "logstash/bootstrap_check/default_config"
 require "logstash/bootstrap_check/bad_java"
@@ -343,7 +343,7 @@ class LogStash::Runner < Clamp::StrictCommand
     end
 
     # lock path.data before starting the agent
-    @data_path_lock = FileLockFactory.obtainLock(setting("path.data"), ".lock");
+    @data_path_lock = FileLockFactory.obtainLock(java.nio.file.Paths.get(setting("path.data")).to_absolute_path, ".lock")
 
     @dispatcher.fire(:before_agent)
     @agent = create_agent(@settings, @source_loader)

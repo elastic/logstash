@@ -1,5 +1,10 @@
 # encoding: utf-8
 
+require "logstash/output_delegator_strategy_registry"
+require "logstash/output_delegator_strategies/shared"
+require "logstash/output_delegator_strategies/single"
+require "logstash/output_delegator_strategies/legacy"
+
 module LogStash
   module Plugins
 
@@ -31,6 +36,14 @@ module LogStash
 
     class PluginFactory
       include org.logstash.config.ir.compiler.RubyIntegration::PluginFactory
+
+      def self.filter_delegator(wrapper_class, filter_class, args, filter_metrics, execution_context)
+        filter_instance = filter_class.new(args)
+        id = args["id"]
+        filter_instance.metric = filter_metrics.namespace(id.to_sym)
+        filter_instance.execution_context = execution_context
+        wrapper_class.new(filter_instance, id)
+      end
 
       def initialize(lir, metric_factory, exec_factory, filter_class)
         @lir = lir
@@ -84,7 +97,7 @@ module LogStash
         if plugin_type == "output"
           OutputDelegator.new(klass, type_scoped_metric, execution_context, OutputDelegatorStrategyRegistry.instance, args)
         elsif plugin_type == "filter"
-          @filter_class.new(klass, type_scoped_metric, execution_context, args)
+          self.class.filter_delegator(@filter_class, klass, args, type_scoped_metric, execution_context)
         else # input or codec plugin
           plugin_instance = klass.new(args)
           scoped_metric = type_scoped_metric.namespace(id.to_sym)

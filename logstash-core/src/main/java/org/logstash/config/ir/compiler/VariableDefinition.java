@@ -1,5 +1,6 @@
 package org.logstash.config.ir.compiler;
 
+import org.jruby.internal.runtime.methods.DynamicMethod;
 import org.jruby.runtime.builtin.IRubyObject;
 
 /**
@@ -52,6 +53,8 @@ final class VariableDefinition implements SyntaxElement {
             safe = IRubyObject.class;
         } else if (EventCondition.class.isAssignableFrom(clazz)) {
             safe = EventCondition.class;
+        } else if (DynamicMethod.class.isAssignableFrom(clazz)) {
+            safe = DynamicMethod.class;
         } else {
             safe = clazz;
         }

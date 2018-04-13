@@ -207,7 +207,7 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
         }
 
         @Override
-        public RubyIntegration.Filter buildCodec(final RubyString name, final IRubyObject args) {
+        public IRubyObject buildCodec(final RubyString name, final IRubyObject args) {
             throw new IllegalStateException("No codec setup expected in this test.");
         }
 

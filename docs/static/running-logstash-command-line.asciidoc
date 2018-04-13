@@ -22,12 +22,12 @@ bin/logstash -f mypipeline.conf
 ----
 
 Any flags that you set at the command line override the corresponding settings
-in the Logstash <<logstash-settings-file,settings file>>, but the settings file
+in <<logstash-settings-file>>, but the file
 itself is not changed. It remains as-is for subsequent Logstash runs.
 
 Specifying command line options is useful when you are testing Logstash.
-However, in a production environment, we recommend that you use the Logstash
-<<logstash-settings-file,settings file>> to control Logstash execution. Using
+However, in a production environment, we recommend that you use
+<<logstash-settings-file>> to control Logstash execution. Using
 the settings file makes it easier for you to specify multiple options, and it
 provides you with a single, versionable file that you can use to start up
 Logstash consistently for each run.
@@ -97,8 +97,8 @@ With this command, Logstash concatenates three config files, `/tmp/one`, `/tmp/t
   Size of batches the pipeline is to work in. This option defines the maximum number of events an
   individual worker thread will collect from inputs before attempting to execute its filters and outputs.
   The default is 125 events. Larger batch sizes are generally more efficient, but come at the cost of
-  increased memory overhead. You may have to increase the JVM heap size by setting the `LS_HEAP_SIZE`
-  variable to effectively use the option.
+  increased memory overhead. You may need to increase JVM heap space in the `jvm.options` config file.
+  See <<config-setting-files>> for more info.
 
 *`-u, --pipeline.batch.delay DELAY_IN_MS`*::
   When creating pipeline batches, how long to wait while polling for the next event. This option defines

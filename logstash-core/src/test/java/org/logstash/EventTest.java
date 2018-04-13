@@ -22,6 +22,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 public final class EventTest {
 
@@ -93,6 +94,16 @@ public final class EventTest {
         final RubyString before = (RubyString) e.getUnconvertedField("foo");
         Event er = Event.deserialize(e.serialize());
         assertEquals(before, er.getUnconvertedField("foo"));
+    }
+
+    @Test
+    public void toBinaryRoundtripNonAscii() throws Exception {
+        Event e = new Event();
+        e.setField("foo", "bör");
+        final RubyString before = (RubyString) e.getUnconvertedField("foo");
+        Event er = Event.deserialize(e.serialize());
+        assertEquals(before, er.getUnconvertedField("foo"));
+        assertTrue(before.op_cmp((RubyString)er.getUnconvertedField("foo")) == 0);
     }
 
     /**
