@@ -10,7 +10,7 @@ PATH
       gems (~> 0.8.3)
       i18n (= 0.6.9)
       jar-dependencies
-      jrjackson (= 0.4.5)
+      jrjackson (= 0.4.6)
       jruby-openssl (= 0.9.19)
       manticore (>= 0.5.4, < 1.0.0)
       minitar (~> 0.6.1)
@@ -127,7 +127,7 @@ GEM
     jls-lumberjack (0.0.26)
       concurrent-ruby
     jmespath (1.4.0)
-    jrjackson (0.4.5-java)
+    jrjackson (0.4.6-java)
     jruby-openssl (0.9.19-java)
     jruby-stdin-channel (0.2.0-java)
     json (1.8.6-java)
@@ -249,7 +249,7 @@ GEM
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       nokogiri
       xml-simple
-    logstash-input-beats (3.1.30-java)
+    logstash-input-beats (3.1.31-java)
       concurrent-ruby (~> 1.0)
       jar-dependencies (~> 0.3.4)
       logstash-codec-multiline (>= 2.0.5)
