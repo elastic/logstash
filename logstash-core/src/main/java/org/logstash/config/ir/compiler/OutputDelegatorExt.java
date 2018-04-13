@@ -1,5 +1,6 @@
 package org.logstash.config.ir.compiler;
 
+import com.google.common.annotations.VisibleForTesting;
 import java.util.concurrent.TimeUnit;
 import org.jruby.Ruby;
 import org.jruby.RubyArray;
@@ -67,6 +68,15 @@ public final class OutputDelegatorExt extends RubyObject {
             new IRubyObject[]{outputClass, namespacedMetric, arguments[2], args},
             Block.NULL_BLOCK
         );
+        return this;
+    }
+
+    @VisibleForTesting
+    public OutputDelegatorExt initForTesting(final IRubyObject strategy) {
+        eventMetricOut = LongCounter.DUMMY_COUNTER;
+        eventMetricIn = LongCounter.DUMMY_COUNTER;
+        eventMetricTime = LongCounter.DUMMY_COUNTER;
+        this.strategy = strategy;
         return this;
     }
 

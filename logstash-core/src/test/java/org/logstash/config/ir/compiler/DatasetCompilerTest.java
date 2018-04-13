@@ -23,9 +23,10 @@ public final class DatasetCompilerTest {
         assertThat(
             DatasetCompiler.outputDataset(
                 Collections.emptyList(),
-                RubyUtil.RUBY.evalScriptlet(
-                    "output = Object.new\noutput.define_singleton_method(:multi_receive) do |batch|\nend\noutput"
-                ),
+                new OutputDelegatorExt(RubyUtil.RUBY, RubyUtil.OUTPUT_DELEGATOR_CLASS)
+                    .initForTesting(RubyUtil.RUBY.evalScriptlet(
+                        "output = Object.new\noutput.define_singleton_method(:multi_receive) do |batch|\nend\noutput"
+                    )),
                 true
             ).instantiate().compute(RubyUtil.RUBY.newArray(), false, false),
             nullValue()
