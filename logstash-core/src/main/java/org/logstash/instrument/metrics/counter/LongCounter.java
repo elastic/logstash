@@ -16,7 +16,7 @@ public class LongCounter extends AbstractMetric<Long> implements CounterMetric<L
     /**
      * Dummy counter used by some functionality as a placeholder when metrics are disabled.
      */
-    private static final LongCounter DUMMY_COUNTER = new LongCounter("dummy");
+    public static final LongCounter DUMMY_COUNTER = new LongCounter("dummy");
 
     private static final IllegalArgumentException NEGATIVE_COUNT_EXCEPTION = new IllegalArgumentException("Counters can not be incremented by negative values");
     private LongAdder longAdder;

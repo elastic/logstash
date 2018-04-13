@@ -18,6 +18,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.logstash.Event;
 import org.logstash.RubyUtil;
+import org.logstash.config.ir.compiler.OutputDelegatorExt;
 import org.logstash.config.ir.compiler.RubyIntegration;
 import org.logstash.ext.JrubyEventExtLibrary;
 
@@ -190,9 +191,11 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
         }
 
         @Override
-        public IRubyObject buildOutput(final RubyString name, final RubyInteger line,
+        public OutputDelegatorExt buildOutput(final RubyString name, final RubyInteger line,
             final RubyInteger column, final IRubyObject args) {
-            return setupPlugin(name, outputs);
+            return new OutputDelegatorExt(
+                RubyUtil.RUBY, RubyUtil.OUTPUT_DELEGATOR_CLASS)
+                .initForTesting(setupPlugin(name, outputs));
         }
 
         @Override
