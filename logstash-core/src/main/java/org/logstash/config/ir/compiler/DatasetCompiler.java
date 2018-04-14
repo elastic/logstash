@@ -85,30 +85,22 @@ public final class DatasetCompiler {
      * @return Dataset representing the filter plugin
      */
     public static ComputeStepSyntaxElement<Dataset> filterDataset(final Collection<Dataset> parents,
-        final RubyIntegration.Filter plugin) {
+        final FilterDelegatorExt plugin) {
         final ClassFields fields = new ClassFields();
         final ValueSyntaxElement outputBuffer = fields.add(new ArrayList<>());
         final Closure clear = Closure.wrap();
         final Closure compute;
         if (parents.isEmpty()) {
-            final ValueSyntaxElement inputBufferHolder = fields.add(new IRubyObject[1]);
-            compute = filterBody(
-                Closure.wrap(
-                    SyntaxFactory.assignment(
-                        SyntaxFactory.arrayField(inputBufferHolder, 0), BATCH_ARG
-                    )
-                ), outputBuffer, inputBufferHolder, fields, plugin
-            );
+            compute = filterBody(outputBuffer, BATCH_ARG, fields, plugin);
         } else {
             final Collection<ValueSyntaxElement> parentFields =
                 parents.stream().map(fields::add).collect(Collectors.toList());
             final RubyArray inputBuffer = RubyUtil.RUBY.newArray();
             clear.add(clearSyntax(parentFields));
+            final ValueSyntaxElement inputBufferField = fields.add(inputBuffer);
             compute = withInputBuffering(
-                filterBody(
-                    Closure.wrap(), outputBuffer, fields.add(new IRubyObject[]{inputBuffer}),
-                    fields, plugin
-                ), parentFields, fields.add(inputBuffer)
+                filterBody(outputBuffer, inputBufferField, fields, plugin),
+                parentFields, inputBufferField
             );
         }
         return prepare(withOutputBuffering(compute, clear, outputBuffer, fields));
@@ -198,31 +190,20 @@ public final class DatasetCompiler {
         return output.call("multiReceive", ValueSyntaxElement.GET_RUBY_THREAD_CONTEXT, events);
     }
 
-    private static Closure filterBody(final Closure body, final ValueSyntaxElement outputBuffer,
-        final ValueSyntaxElement inputBufferHolder, final ClassFields fields,
-        final RubyIntegration.Filter plugin) {
-        final String multiFilter = "multi_filter";
-        final IRubyObject filter = plugin.toRuby();
-        final ValueSyntaxElement filterField = fields.add(filter);
-        body.add(
+    private static Closure filterBody(final ValueSyntaxElement outputBuffer,
+        final ValueSyntaxElement inputBuffer, final ClassFields fields,
+        final FilterDelegatorExt plugin) {
+        final ValueSyntaxElement filterField = fields.add(plugin);
+        final Closure body = Closure.wrap(
             buffer(
                 outputBuffer,
-                SyntaxFactory.cast(
-                    RubyArray.class,
-                    callRubyCallsite(
-                        fields.add(rubyCallsite(filter, multiFilter)), inputBufferHolder
-                        , filterField, multiFilter
-                    )
+                filterField.call(
+                    "multiFilter", ValueSyntaxElement.GET_RUBY_THREAD_CONTEXT, inputBuffer
                 )
             )
         );
         if (plugin.hasFlush()) {
-            body.add(
-                callFilterFlush(
-                    fields, outputBuffer, fields.add(rubyCallsite(filter, FLUSH)), filterField,
-                    !plugin.periodicFlush()
-                )
-            );
+            body.add(callFilterFlush(fields, outputBuffer, filterField, !plugin.periodicFlush()));
         }
         return body;
     }
@@ -321,8 +302,8 @@ public final class DatasetCompiler {
     }
 
     private static MethodLevelSyntaxElement callFilterFlush(final ClassFields fields,
-        final ValueSyntaxElement resultBuffer, final ValueSyntaxElement flushMethod,
-        final ValueSyntaxElement filterPlugin, final boolean shutdownOnly) {
+        final ValueSyntaxElement resultBuffer, final ValueSyntaxElement filterPlugin,
+        final boolean shutdownOnly) {
         final MethodLevelSyntaxElement condition;
         final ValueSyntaxElement flushArgs;
         final ValueSyntaxElement flushFinal = fields.add(flushOpts(true));
@@ -340,10 +321,7 @@ public final class DatasetCompiler {
             Closure.wrap(
                 buffer(
                     resultBuffer,
-                    SyntaxFactory.cast(
-                        RubyArray.class,
-                        callRubyCallsite(flushMethod, flushArgs, filterPlugin, FLUSH)
-                    )
+                    filterPlugin.call(FLUSH, ValueSyntaxElement.GET_RUBY_THREAD_CONTEXT, flushArgs)
                 )
             )
         );
@@ -357,10 +335,10 @@ public final class DatasetCompiler {
         return parent.call("compute", BATCH_ARG, FLUSH_ARG, SHUTDOWN_ARG);
     }
 
-    private static IRubyObject[] flushOpts(final boolean fin) {
+    private static RubyHash flushOpts(final boolean fin) {
         final RubyHash res = RubyHash.newHash(RubyUtil.RUBY);
         res.put(RubyUtil.RUBY.newSymbol("final"), RubyUtil.RUBY.newBoolean(fin));
-        return new IRubyObject[]{res};
+        return res;
     }
 
     private static ComputeStepSyntaxElement<Dataset> compileOutput(final Closure syntax,
@@ -375,27 +353,10 @@ public final class DatasetCompiler {
         return resultBuffer.call("addAll", argument);
     }
 
-    private static ValueSyntaxElement callRubyCallsite(final ValueSyntaxElement callsite,
-        final ValueSyntaxElement argument, final ValueSyntaxElement plugin, final String method) {
-        return callsite.call(
-            "call",
-            ValueSyntaxElement.GET_RUBY_THREAD_CONTEXT,
-            plugin,
-            SyntaxFactory.constant(RubyUtil.class, "LOGSTASH_MODULE"),
-            SyntaxFactory.value(SyntaxFactory.join("\"", method, "\"")),
-            argument,
-            SyntaxFactory.constant(Block.class, "NULL_BLOCK")
-        );
-    }
-
     private static Closure clearSyntax(final Collection<ValueSyntaxElement> toClear) {
         return Closure.wrap(
             toClear.stream().map(DatasetCompiler::clear).toArray(MethodLevelSyntaxElement[]::new)
         );
-    }
-
-    private static DynamicMethod rubyCallsite(final IRubyObject rubyObject, final String name) {
-        return rubyObject.getMetaClass().searchMethod(name);
     }
 
     private static DatasetCompiler.ComputeAndClear computeAndClear(final Closure compute, final Closure clear,
