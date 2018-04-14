@@ -5,7 +5,6 @@ import org.jruby.RubyClass;
 import org.jruby.RubyHash;
 import org.jruby.RubyNumeric;
 import org.jruby.RubyObject;
-import org.jruby.RubySymbol;
 import org.jruby.anno.JRubyClass;
 import org.jruby.anno.JRubyMethod;
 import org.jruby.java.proxies.JavaProxy;

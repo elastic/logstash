@@ -36,27 +36,6 @@ final class SyntaxFactory {
             join(clazz.getName(), ".", name));
     }
 
-    public static ValueSyntaxElement arrayField(final MethodLevelSyntaxElement array,
-        final int index) {
-        return new ValueSyntaxElement() {
-            @Override
-            public MethodLevelSyntaxElement replace(final MethodLevelSyntaxElement search,
-                final MethodLevelSyntaxElement replacement) {
-                return arrayField(array.replace(search, replacement), index);
-            }
-
-            @Override
-            public int count(final MethodLevelSyntaxElement search) {
-                return array.count(search);
-            }
-
-            @Override
-            public String generateCode() {
-                return join(array.generateCode(), String.format("[%d]", index));
-            }
-        };
-    }
-
     public static MethodLevelSyntaxElement assignment(final SyntaxElement target,
         final MethodLevelSyntaxElement value) {
         return new SyntaxFactory.Assignment(target, value);
