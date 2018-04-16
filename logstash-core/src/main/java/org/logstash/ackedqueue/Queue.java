@@ -333,7 +333,7 @@ public final class Queue implements Closeable {
     /**
      * Write a {@link Queueable} element to the queue. This will block until the write succeeds or timeout occurs
      * @param queueable
-     * @param timeoutMillis maximum time to block until returning
+     * @param timeoutMillis maximum time to block before returning. -1 for infinity
      * @return the written sequence number, or -1 if timed out
      * @throws IOException
      */
@@ -357,7 +357,7 @@ public final class Queue implements Closeable {
      * Write a {@link Queueable} element to the queue. This will block until the write succeeds or a timeout occurs
      *
      * @param queueables list of events
-     * @param timeoutMillis maximum time to block before returning
+     * @param timeoutMillis maximum time to block before returning. -1 for infinity
      * @return the maximum written sequence number, or -1 if timed out
      * @throws IOException
      */
