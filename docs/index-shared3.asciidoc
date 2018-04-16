@@ -12,6 +12,9 @@ include::static/configuration.asciidoc[]
 :edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/multiple-pipelines.asciidoc
 include::static/multiple-pipelines.asciidoc[]
 
+:edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/pipeline-pipeline-config.asciidoc
+include::static/pipeline-pipeline-config.asciidoc[]
+
 :edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/reloading-config.asciidoc
 include::static/reloading-config.asciidoc[]
 
