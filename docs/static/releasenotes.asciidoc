@@ -22,10 +22,10 @@ endif::include-xpack[]
 [[logstash-6-2-4]]
 === Logstash 6.2.4 Release Notes
 
-* Fixed an issue where events passing through PQ would have their RubyStrings encoding changed. The solution involved serializing the RubyString as Java String UTF-16 encoded https://github.com/elastic/logstash/pull/9167[#9167]
+* Fixed an issue where events passing through the persistent queue had the contents of string type fields corrupted for values containing non-ASCII characters. The solution involved serializing the RubyString as Java String UTF-16 encoded https://github.com/elastic/logstash/pull/9167[#9167]
 * Fixed serialization bug when a RubyString that comes out of a matching, substring or similar operation may not have offset 0 pointing at the underlying BytesList. Solved by serializing the correct part of the BytesList https://github.com/elastic/logstash/pull/9308[#9308]
 * Improved performance of Event#cancel, where each operation would unnecessarily generate a new object. In configurations that use plugins like the `drop filter` throughput may increase up to 5x https://github.com/elastic/logstash/pull/9284[#9284]
-* Ensure that metadata keys are valuefied. Before this could cause a plugin to trigger a Java exception when placing data into an event's metadata https://github.com/elastic/logstash/pull/9299[#9299]
+* Fixed an issue with type handling in metadata fields. Before this a plugin could trigger a Java exception when placing data into an event's metadata https://github.com/elastic/logstash/pull/9299[#9299]
 * Fixed a race condition in shutdown of pipelines where not all workers would consume a single SHUTDOWN signal https://github.com/elastic/logstash/pull/9285[#9285]
 * Multiple documentation improvements relating to configuration files, JVM options, default plugin codecs, Logstash-to-Logstash communication and Keystore.
 
