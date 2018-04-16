@@ -43,7 +43,7 @@ endif::include-xpack[]
 *Aggregate Filter*
 
 * new feature: add 'timeout_timestamp_field' option.
-  When set, this option lets to compute timeout based on event timestamp field (and not system time). It's particularly useful when processing old logs.
+  When set, this option computes timeout based on event timestamp field (and not system time). It's particularly useful when processing old logs.
 * new feature: add 'inactivity_timeout' option.
   Events for a given `task_id` will be aggregated for as long as they keep arriving within the defined `inactivity_timeout` option - the inactivity timeout is reset each time a new event happens. On the contrary, `timeout` is never reset and happens after `timeout` seconds since aggregation map creation.
 
@@ -58,7 +58,7 @@ endif::include-xpack[]
 
 *Kv Filter*
 
-* Fix correctly handle empty values between value separator and field separator (#58)
+* Correctly handle empty values between value separator and field separator https://github.com/logstash-plugins/logstash-filter-kv/issues/58[#58]
 
 *Ruby Filter*
 
