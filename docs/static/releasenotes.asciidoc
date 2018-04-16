@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-6-2-4,Logstash 6.2.4>>
 * <<logstash-6-2-3,Logstash 6.2.3>>
 * <<logstash-6-2-2,Logstash 6.2.2>>
 * <<logstash-6-2-1,Logstash 6.2.1>>
@@ -11,6 +12,130 @@ This section summarizes the changes in the following releases:
 * <<logstash-6-1-2,Logstash 6.1.2>>
 * <<logstash-6-1-1,Logstash 6.1.1>>
 * <<logstash-6-1-0,Logstash 6.1.0>>
+
+[[logstash-6-2-4]]
+=== Logstash 6.2.4 Release Notes
+
+* Fixed an issue where events passing through the persistent queue had the contents of string type fields corrupted for values containing non-ASCII characters. The solution involved serializing the RubyString as Java String UTF-16 encoded https://github.com/elastic/logstash/pull/9167[#9167]
+* Fixed serialization bug when a RubyString that comes out of a matching, substring or similar operation may not have offset 0 pointing at the underlying BytesList. Solved by serializing the correct part of the BytesList https://github.com/elastic/logstash/pull/9308[#9308]
+* Improved performance of Event#cancel, where each operation would unnecessarily generate a new object. In configurations that use plugins like the `drop filter` throughput may increase up to 5x https://github.com/elastic/logstash/pull/9284[#9284]
+* Fixed an issue with type handling in metadata fields. Before this a plugin could trigger a Java exception when placing data into an event's metadata https://github.com/elastic/logstash/pull/9299[#9299]
+* Fixed a race condition in shutdown of pipelines where not all workers would consume a single SHUTDOWN signal https://github.com/elastic/logstash/pull/9285[#9285]
+* Multiple documentation improvements relating to configuration files, JVM options, default plugin codecs, Logstash-to-Logstash communication and Keystore.
+
+==== Plugins
+
+*Json_lines Codec*
+
+* Support flush method, see https://github.com/logstash-plugins/logstash-codec-json_lines/pull/35
+
+*Netflow Codec*
+
+* Workaround for breaking change in Netflow-Input-UDP > 3.2.0, see issue https://github.com/logstash-plugins/logstash-codec-netflow/issues/122[#122]
+* Renamed some unknown VMware VDS fields
+
+*Aggregate Filter*
+
+* new feature: add 'timeout_timestamp_field' option.
+  When set, this option computes timeout based on event timestamp field (and not system time). It's particularly useful when processing old logs.
+* new feature: add 'inactivity_timeout' option.
+  Events for a given `task_id` will be aggregated for as long as they keep arriving within the defined `inactivity_timeout` option - the inactivity timeout is reset each time a new event happens. On the contrary, `timeout` is never reset and happens after `timeout` seconds since aggregation map creation.
+
+*Dns Filter*
+
+* Logging improvement to include DNS resolution failure reason https://github.com/logstash-plugins/logstash-filter-dns/issues/36[#36]
+* Fix bug where forward lookups would not cache timeout errors
+
+*Jdbc_streaming Filter*
+
+* Load the driver with the system class loader. Fixes issue loading some JDBC drivers in Logstash 6.2+ https://github.com/logstash-plugins/logstash-input-jdbc/issues/263[#263]
+
+*Kv Filter*
+
+* Correctly handle empty values between value separator and field separator https://github.com/logstash-plugins/logstash-filter-kv/issues/58[#58]
+
+*Ruby Filter*
+
+* Fix return of multiple events when using file based scripts https://github.com/logstash-plugins/logstash-filter-ruby/issues/41[#41]
+
+*Translate Filter*
+
+* Add 'refresh_behaviour' to either 'merge' or 'replace' during a refresh https://github.com/logstash-plugins/logstash-filter-translate/issues/57[#57]
+
+*Beats Input*
+
+* Ensure that the keep-alive is sent for ALL pending batches when the pipeline is blocked, not only the batches attempting to write to the queue. https://github.com/logstash-plugins/logstash-input-beats/issues/310[#310]
+
+*Exec Input*
+
+* Add metadata data to the event wrt execution duration and exit status
+* Add 'schedule' option to schedule the command to run, using a cron expression
+
+*Http Input*
+
+* Make sure default codec is also cloned for thread safety. https://github.com/logstash-plugins/logstash-input-http/pull/80[#80]
+* Always flush codec after each request and codec decoding. https://github.com/logstash-plugins/logstash-input-http/pull/81[#81]
+
+*Jdbc Input*
+
+* Clarify use of use_column_value. Make last_run_metadata_path reference in record_last_run entry clickable. https://github.com/logstash-plugins/logstash-input-jdbc/issues/273[#273]
+* Load the driver with the system class loader. Fixes issue loading some JDBC drivers in Logstash 6.2+ https://github.com/logstash-plugins/logstash-input-jdbc/issues/263[#263]
+* Fix regression with 4.3.5 that can result in NULL :sql_last_value depending on timestamp format https://github.com/logstash-plugins/logstash-input-jdbc/issues/274[#274]
+
+*Redis Input*
+
+* Add support for SSL https://github.com/logstash-plugins/logstash-input-redis/issues/61[#61]
+* Add support for Redis unix sockets https://github.com/logstash-plugins/logstash-input-redis/issues/64[#64]
+
+*S3 Input*
+
+* Improve error handling when listing/downloading from S3 https://github.com/logstash-plugins/logstash-input-s3/issues/144[#144]
+* Add documentation for endpoint, role_arn and role_session_name https://github.com/logstash-plugins/logstash-input-s3/issues/142[#142]
+* Add support for additional_settings option https://github.com/logstash-plugins/logstash-input-s3/issues/141[#141]
+
+*Sqs Input*
+
+* Add documentation for endpoint, role_arn and role_session_name https://github.com/logstash-plugins/logstash-input-sqs/issues/46[#46]
+* Fix sample IAM policy to match to match the documentation https://github.com/logstash-plugins/logstash-input-sqs/issues/32[#32]
+
+*Tcp Input*
+
+* Restore SSLSUBJECT field when ssl_verify is enabled. https://github.com/logstash-plugins/logstash-input-tcp/issues/115[#115]
+* Update Netty/tc-native versions to match those in beats input https://github.com/logstash-plugins/logstash-input-tcp/issues/113[#113]
+
+*Udp Input*
+
+* Add metrics support for events, operations, connections and errors produced during execution. https://github.com/logstash-plugins/logstash-input-udp/issues/34[#34]
+* Fix support for IPv6 https://github.com/logstash-plugins/logstash-input-udp/issues/31[#31]
+
+*Aws Mixin*
+
+* Drop strict value validation for region option https://github.com/logstash-plugins/logstash-mixin-aws/issues/36[#36]
+* Add endpoint option to customize the endpoint uri https://github.com/logstash-plugins/logstash-mixin-aws/issues/32[#32]
+* Allow user to provide a role to assume https://github.com/logstash-plugins/logstash-mixin-aws/issues/27[#27]
+* Update aws-sdk dependency to '~> 2'
+
+*Elasticsearch Output*
+
+* Set number_of_shards to 1 and document_type to '_doc' for es 7.x clusters #741 https://github.com/logstash-plugins/logstash-output-elasticsearch/issues/747[#747]
+* Fix usage of upsert and script when update action is interpolated https://github.com/logstash-plugins/logstash-output-elasticsearch/issues/239[#239]
+* Add metrics to track bulk level and document level responses https://github.com/logstash-plugins/logstash-output-elasticsearch/issues/585[#585]
+
+*File Output*
+
+* Add feature `write_behavior` to the documentation https://github.com/logstash-plugins/logstash-output-file/issues/58[#58]
+
+*S3 Output*
+
+* Add documentation for endpoint, role_arn and role_session_name https://github.com/logstash-plugins/logstash-output-s3/issues/174[#174]
+* Add option for additional settings https://github.com/logstash-plugins/logstash-output-s3/issues/173[#173]
+* Add more S3 bucket ACLs https://github.com/logstash-plugins/logstash-output-s3/issues/158[#158]
+* Handle file not found exception on S3 upload https://github.com/logstash-plugins/logstash-output-s3/issues/144[#144]
+* Document prefix interpolation https://github.com/logstash-plugins/logstash-output-s3/issues/154[#154]
+
+*Sqs Output*
+
+* Add documentation for endpoint, role_arn and role_session_name https://github.com/logstash-plugins/logstash-output-sqs/issues/29[#29]
 
 [[logstash-6-2-3]]
 === Logstash 6.2.3 Release Notes
