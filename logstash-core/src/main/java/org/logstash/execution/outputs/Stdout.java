@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.util.Collection;
+import java.util.concurrent.CountDownLatch;
 
 @LogstashPlugin(name = "java-stdout")
 public class Stdout implements Output {
@@ -20,6 +21,7 @@ public class Stdout implements Output {
 
     private OutputStream stdout;
     private PrintStream printer;
+    private final CountDownLatch done = new CountDownLatch(1);
 
     /**
      * Required Constructor Signature only taking a {@link LsConfiguration}.
@@ -54,6 +56,14 @@ public class Stdout implements Output {
         } catch (IOException e) {
             // do nothing
         }
+        finally {
+            done.countDown();
+        }
+    }
+
+    @Override
+    public void awaitStop() throws InterruptedException {
+        done.await();
     }
 
     @Override

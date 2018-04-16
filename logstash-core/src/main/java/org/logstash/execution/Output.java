@@ -20,6 +20,8 @@ public interface Output extends LsPlugin {
 
     void stop();
 
+    void awaitStop() throws InterruptedException;
+
     @LogstashPlugin(name = "output")
     final class StreamOutput implements Output {
 
@@ -52,6 +54,11 @@ public interface Output extends LsPlugin {
         public void stop() {
             outpt.close();
             stopped = true;
+        }
+
+        @Override
+        public void awaitStop() throws InterruptedException {
+            done.await();
         }
 
         @Override

@@ -5,7 +5,6 @@ import org.logstash.execution.LsConfiguration;
 import org.logstash.execution.queue.QueueWriter;
 
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -13,37 +12,10 @@ import java.util.List;
 import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.fail;
 
 public class StdinTest {
 
-    private static boolean streamWasClosed = false;
-
-    /**
-     * Verifies that the stdin input is reloadable because it does not close the underlying
-     * input stream which, outside of test cases, is always {@link java.lang.System#in}.
-     */
-    @Test
-    public void testUnderlyingStreamIsNotClosed() {
-        InputStream dummyInputStream = new ByteArrayInputStream(new byte[0]) {
-            @Override
-            public void close() throws IOException {
-                streamWasClosed = true;
-                super.close();
-            }
-        };
-        Stdin stdin = new Stdin(new LsConfiguration(Collections.EMPTY_MAP), null, dummyInputStream);
-        Thread t = new Thread(() -> stdin.start(new TestQueueWriter()));
-        t.start();
-        try {
-            stdin.awaitStop();
-        } catch (InterruptedException e) {
-            fail("Stdin.awaitStop failed with exception: " + e);
-        }
-
-        assertFalse(streamWasClosed);
-    }
 
     @Test
     public void testSimpleEvent() {

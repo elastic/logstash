@@ -12,6 +12,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class LineTest {
 
@@ -48,6 +49,39 @@ public class LineTest {
     }
 
     @Test
+    public void testSuccessiveDecodesWithTrailingDelimiter() {
+        // setup inputs
+        String delimiter = "\n";
+        String[] inputs = {"foo", "bar", "baz"};
+        String input = String.join(delimiter, inputs) + delimiter;
+        byte[] inputBytes = input.getBytes();
+        Map<String, Object>[] events = getEventBuffer(3);
+        Map<String, Object>[] flushEvents = getEventBuffer(0);
+        Line line = getLineCodec(null, null);
+
+        // first call to decode
+        ByteBuffer buffer = ByteBuffer.allocate(inputBytes.length * 3);
+        buffer.put(inputBytes);
+        buffer.flip();
+        int numEvents = line.decode(buffer, events);
+        assertEquals(inputs.length, numEvents);
+        compareMessages(inputs, events, numEvents, flushEvents);
+
+        // second call to encode
+        buffer.compact();
+        buffer.put(inputBytes);
+        buffer.flip();
+        numEvents = line.decode(buffer, events);
+        assertEquals(inputs.length, numEvents);
+        compareMessages(inputs, events, numEvents, flushEvents);
+
+        buffer.compact();
+        buffer.flip();
+        events = line.flush(buffer);
+        assertEquals(0, events.length);
+    }
+
+    @Test
     public void testDecodeOnDelimiterOnly() {
         String delimiter = "z";
         String input = "z";
@@ -80,7 +114,57 @@ public class LineTest {
     }
 
     @Test
-    public void testDecodeAcrossMulticharBoundary() {
+    public void testDecodeAcrossMultibyteCharBoundary() {
+        final int BUFFER_SIZE = 12;
+        int lastPos = 0;
+        Map<String, Object>[] events = getEventBuffer(3);
+        String input = "安安安\n安安安\n安安安";
+        byte[] bytes = input.getBytes();
+        assertTrue(bytes.length>input.length());
+        ByteBuffer b1 = ByteBuffer.allocate(BUFFER_SIZE);
+        System.out.println(b1);
+        b1.put(bytes, lastPos, 12);
+        System.out.println(b1);
+        b1.flip();
+        System.out.println(b1);
+
+        System.out.println("byte length "+bytes.length+", "+input.length());
+
+        Line line = getLineCodec(null, null);
+        int numEvents = line.decode(b1,events);
+        System.out.println("numEvents: "+numEvents);
+        System.out.println(b1);
+        b1.compact();
+        System.out.println(b1);
+
+        int remaining = b1.remaining();
+        lastPos += BUFFER_SIZE;
+        b1.put(bytes, lastPos, remaining);
+        System.out.println(b1);
+        b1.flip();
+        System.out.println(b1);
+        numEvents = line.decode(b1,events);
+        System.out.println("numEvents: "+numEvents);
+        System.out.println(b1);
+        b1.compact();
+        System.out.println(b1);
+
+        remaining = b1.remaining();
+        lastPos += remaining;
+        b1.put(bytes, lastPos, bytes.length - lastPos);
+        System.out.println(b1);
+        b1.flip();
+        System.out.println(b1);
+        numEvents = line.decode(b1,events);
+        System.out.println("numEvents: "+numEvents);
+        System.out.println(b1);
+        b1.compact();
+        System.out.println(b1);
+        b1.flip();
+        System.out.println(b1);
+        events = line.flush(b1);
+        System.out.println("flushed events: "+events.length);
+
 
     }
 
@@ -97,21 +181,12 @@ public class LineTest {
     }
 
     private void testDecode(String delimiter, String charset, String inputString, Integer expectedPreflushEvents, Integer expectedFlushEvents, String[] expectedMessages, Integer bufferSize) {
-        // construct codec with specified config values
-        Map<String, String> config = new HashMap<>();
-        if (delimiter != null) {
-            config.put("delimiter", delimiter);
-        }
-        if (charset != null) {
-            config.put("charset", charset);
-        }
-        Line line = new Line(new LsConfiguration(config), null);
+        Line line = getLineCodec(delimiter, charset);
 
         int bufSize = bufferSize != null
                 ? bufferSize
                 : expectedPreflushEvents == null ? 10 : expectedPreflushEvents + 1;
-        Map<String, Object>[] events =
-                (HashMap<String, Object>[]) Array.newInstance(new HashMap<String, Object>().getClass(), bufSize);
+        Map<String, Object>[] events = getEventBuffer(bufSize);
 
         byte[] inputBytes = inputString.getBytes();
         ByteBuffer inputBuffer = ByteBuffer.wrap(inputBytes, 0, inputBytes.length);
@@ -120,11 +195,7 @@ public class LineTest {
             assertEquals(expectedPreflushEvents.intValue(), num);
         }
 
-        if (inputBuffer.position() == inputBuffer.limit()) {
-            inputBuffer.clear();
-        } else {
-            inputBuffer.compact();
-        }
+        inputBuffer.compact();
         inputBuffer.flip();
 
         Map<String, Object>[] flushEvents = line.flush(inputBuffer);
@@ -132,14 +203,35 @@ public class LineTest {
             assertEquals(expectedFlushEvents.intValue(), flushEvents.length);
         }
 
+        compareMessages(expectedMessages, events, num, flushEvents);
+    }
+
+    private static void compareMessages(String[] expectedMessages, Map<String, Object>[] events, int numEvents, Map<String, Object>[] flushEvents) {
         if (expectedMessages != null) {
-            for (int k = 0; k < num; k++) {
+            for (int k = 0; k < numEvents; k++) {
                 assertEquals(expectedMessages[k], events[k].get(Line.MESSAGE_FIELD));
             }
-            for (int k = num; k < (num + flushEvents.length); k++) {
-                assertEquals(expectedMessages[k], flushEvents[k - num].get(Line.MESSAGE_FIELD));
+            for (int k = numEvents; k < (numEvents + flushEvents.length); k++) {
+                assertEquals(expectedMessages[k], flushEvents[k - numEvents].get(Line.MESSAGE_FIELD));
             }
         }
+    }
+
+    private static Line getLineCodec(String delimiter, String charset) {
+        Map<String, String> config = new HashMap<>();
+        if (delimiter != null) {
+            config.put("delimiter", delimiter);
+        }
+        if (charset != null) {
+            config.put("charset", charset);
+        }
+        return new Line(new LsConfiguration(config), null);
+    }
+
+    private static Map<String, Object>[] getEventBuffer(int size) {
+        Map<String, Object>[] events =
+                (HashMap<String, Object>[]) Array.newInstance(new HashMap<String, Object>().getClass(), size);
+        return events;
     }
 
 

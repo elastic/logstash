@@ -11,9 +11,14 @@ import org.logstash.execution.plugins.PluginConfigSpec;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.reflect.Array;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
 import java.nio.charset.CharacterCodingException;
 import java.nio.charset.Charset;
+import java.nio.charset.CharsetDecoder;
+import java.nio.charset.CoderResult;
+import java.nio.charset.CodingErrorAction;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -45,6 +50,9 @@ public class Line implements Codec {
     private final Charset charset;
     private String format = null;
 
+    private final CharBuffer charBuffer = ByteBuffer.allocateDirect(64 * 1024).asCharBuffer();
+    private final CharsetDecoder decoder;
+
     public Line(final LsConfiguration configuration, final LsContext context) {
         /*
         delimiter = configuration.get(DELIMITER_CONFIG);
@@ -53,50 +61,50 @@ public class Line implements Codec {
         */
         delimiter = "\n";
         charset = Charset.forName("UTF-8");
+        decoder = charset.newDecoder();
+        decoder.onMalformedInput(CodingErrorAction.IGNORE);
     }
 
     @Override
     public int decode(ByteBuffer buffer, Map<String, Object>[] events) {
-        try {
-            String s = charset.newDecoder().decode(buffer).toString();
-            String remainderSuffix = "";
-            if (s.endsWith(delimiter)) {
-                // strip trailing delimiter, if any, to match Ruby implementation
-                s = s.substring(0, s.length() - delimiter.length());
-                buffer.position(buffer.position() - delimiter.getBytes(charset).length);
+        int pos = buffer.position(), lim = buffer.limit();
+        int bufferPosition = buffer.position();
+        CoderResult result = decoder.decode(buffer, charBuffer, false);
+        charBuffer.flip();
+        String s = charBuffer.toString();
+        charBuffer.clear();
+
+        if (s.endsWith(delimiter)) {
+            // strip trailing delimiter, if any, to match Ruby implementation
+            s = s.substring(0, s.length() - delimiter.length());
+        } else {
+            int lastIndex = s.lastIndexOf(delimiter);
+            if (lastIndex == -1) {
+                buffer.position(bufferPosition);
+                s = "";
             } else {
-                int lastIndex = s.lastIndexOf(delimiter);
-                if (lastIndex == -1) {
-                    buffer.position(buffer.position() - s.getBytes(charset).length);
-                    s = "";
-                } else {
-                    remainderSuffix = s.substring(lastIndex + delimiter.length());
-                    buffer.position(buffer.position() - remainderSuffix.getBytes(charset).length);
-                    s = s.substring(0, lastIndex);
-                }
+                s = s.substring(0, lastIndex);
             }
-
-            int numEvents;
-            if (s.length() > 0) {
-                String[] lines = s.split(delimiter, events.length + 1);
-                numEvents = (lines.length == events.length + 1) ? events.length : lines.length;
-                for (int k = 0; k < numEvents; k++) {
-                    setEvent(events, k, lines[k]);
-                }
-
-                int moveBack = (lines.length == events.length + 1)
-                        ? (lines[events.length] + delimiter).getBytes(charset).length
-                        : 0;
-
-                buffer.position(buffer.position() - moveBack);
-            } else {
-                numEvents = 0;
-            }
-
-            return numEvents;
-        } catch (CharacterCodingException e) {
-            throw new IllegalStateException(e);
         }
+
+        int numEvents;
+        if (s.length() > 0) {
+            String[] lines = s.split(delimiter, events.length + 1);
+            numEvents = (lines.length == events.length + 1) ? events.length : lines.length;
+            for (int k = 0; k < numEvents; k++) {
+                setEvent(events, k, lines[k]);
+            }
+
+            int moveBack = (lines.length == events.length + 1)
+                    ? (lines[events.length]).getBytes(charset).length
+                    : 0;
+
+            buffer.position(buffer.position() - moveBack);
+        } else {
+            numEvents = 0;
+        }
+
+        return numEvents;
 
     }
 

@@ -34,13 +34,12 @@ public class InputsController {
 
     public void awaitStop() {
         // trivial implementation
-        for (Input input:inputs) {
+        for (Input input : inputs) {
             try {
                 input.awaitStop();
             } catch (InterruptedException e) {
                 // do nothing
             }
         }
-
     }
 }
