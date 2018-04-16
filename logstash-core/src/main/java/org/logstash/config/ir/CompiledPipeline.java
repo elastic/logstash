@@ -22,6 +22,7 @@ import org.logstash.config.ir.compiler.ComputeStepSyntaxElement;
 import org.logstash.config.ir.compiler.Dataset;
 import org.logstash.config.ir.compiler.DatasetCompiler;
 import org.logstash.config.ir.compiler.EventCondition;
+import org.logstash.config.ir.compiler.FilterDelegatorExt;
 import org.logstash.config.ir.compiler.OutputDelegatorExt;
 import org.logstash.config.ir.compiler.RubyIntegration;
 import org.logstash.config.ir.compiler.SplitDataset;
@@ -90,7 +91,7 @@ public final class CompiledPipeline {
     /**
      * Configured Filters, indexed by their ID as returned by {@link PluginVertex#getId()}.
      */
-    private final Map<String, RubyIntegration.Filter> filters;
+    private final Map<String, FilterDelegatorExt> filters;
 
     /**
      * Configured outputs.
@@ -120,7 +121,7 @@ public final class CompiledPipeline {
         return Collections.unmodifiableCollection(outputs.values());
     }
 
-    public Collection<RubyIntegration.Filter> filters() {
+    public Collection<FilterDelegatorExt> filters() {
         return Collections.unmodifiableCollection(filters.values());
     }
 
@@ -161,9 +162,9 @@ public final class CompiledPipeline {
     /**
      * Sets up all Ruby filters learnt from {@link PipelineIR}.
      */
-    private Map<String, RubyIntegration.Filter> setupFilters() {
+    private Map<String, FilterDelegatorExt> setupFilters() {
         final Collection<PluginVertex> filterPlugins = pipelineIR.getFilterPluginVertices();
-        final Map<String, RubyIntegration.Filter> res =
+        final Map<String, FilterDelegatorExt> res =
             new HashMap<>(filterPlugins.size(), 1.0F);
         for (final PluginVertex plugin : filterPlugins) {
             res.put(plugin.getId(), buildFilter(plugin));
@@ -227,11 +228,11 @@ public final class CompiledPipeline {
     }
 
     /**
-     * Compiles a {@link RubyIntegration.Filter} from a given {@link PluginVertex}.
+     * Compiles a {@link FilterDelegatorExt} from a given {@link PluginVertex}.
      * @param vertex Filter {@link PluginVertex}
-     * @return Compiled {@link RubyIntegration.Filter}
+     * @return Compiled {@link FilterDelegatorExt}
      */
-    private RubyIntegration.Filter buildFilter(final PluginVertex vertex) {
+    private FilterDelegatorExt buildFilter(final PluginVertex vertex) {
         final PluginDefinition def = vertex.getPluginDefinition();
         final SourceWithMetadata source = vertex.getSourceWithMetadata();
         return pluginFactory.buildFilter(
@@ -241,9 +242,9 @@ public final class CompiledPipeline {
     }
 
     /**
-     * Checks if a certain {@link Vertex} represents a {@link RubyIntegration.Filter}.
+     * Checks if a certain {@link Vertex} represents a {@link FilterDelegatorExt}.
      * @param vertex Vertex to check
-     * @return True iff {@link Vertex} represents a {@link RubyIntegration.Filter}
+     * @return True iff {@link Vertex} represents a {@link FilterDelegatorExt}
      */
     private boolean isFilter(final Vertex vertex) {
         return filters.containsKey(vertex.getId());

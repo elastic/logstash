@@ -18,9 +18,9 @@ import org.junit.Before;
 import org.junit.Test;
 import org.logstash.Event;
 import org.logstash.RubyUtil;
-import org.logstash.config.ir.compiler.PluginFactory;
+import org.logstash.config.ir.compiler.FilterDelegatorExt;
 import org.logstash.config.ir.compiler.OutputDelegatorExt;
-import org.logstash.config.ir.compiler.RubyIntegration;
+import org.logstash.config.ir.compiler.PluginFactory;
 import org.logstash.execution.Filter;
 import org.logstash.execution.Input;
 import org.logstash.execution.LsConfiguration;
@@ -38,6 +38,34 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
      */
     public static final Map<Long, Collection<JrubyEventExtLibrary.RubyEvent>> EVENT_SINKS =
         new ConcurrentHashMap<>();
+
+    /**
+     * Mock filter that does not modify the batch.
+     */
+    private static final IRubyObject IDENTITY_FILTER = RubyUtil.RUBY.evalScriptlet(
+        String.join(
+            "\n",
+            "output = Object.new",
+            "output.define_singleton_method(:multi_filter) do |batch|",
+            "batch",
+            "end",
+            "output"
+        )
+    );
+
+    /**
+     * Mock filter that adds the value 'bar' to the field 'foo' for every event in the batch.
+     */
+    private static final IRubyObject ADD_FIELD_FILTER = RubyUtil.RUBY.evalScriptlet(
+        String.join(
+            "\n",
+            "output = Object.new",
+            "output.define_singleton_method(:multi_filter) do |batch|",
+            "batch.each { |e| e.set('foo', 'bar')}",
+            "end",
+            "output"
+        )
+    );
 
     private static final AtomicLong TEST_RUN = new AtomicLong();
 
@@ -89,7 +117,7 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
             pipelineIR,
             new CompiledPipelineTest.MockPluginFactory(
                 Collections.singletonMap("mockinput", () -> null),
-                Collections.singletonMap("mockfilter", CompiledPipelineTest.IdentityFilter::new),
+                Collections.singletonMap("mockfilter", () -> IDENTITY_FILTER),
                 Collections.singletonMap("mockoutput", mockOutputSupplier())
             )
         ).buildExecution().compute(RubyUtil.RUBY.newArray(testEvent), false, false);
@@ -113,9 +141,9 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
         );
         final JrubyEventExtLibrary.RubyEvent testEvent =
             JrubyEventExtLibrary.RubyEvent.newRubyEvent(RubyUtil.RUBY, new Event());
-        final Map<String, Supplier<RubyIntegration.Filter>> filters = new HashMap<>();
-        filters.put("mockfilter", CompiledPipelineTest.IdentityFilter::new);
-        filters.put("mockaddfilter", CompiledPipelineTest.AddFieldFilter::new);
+        final Map<String, Supplier<IRubyObject>> filters = new HashMap<>();
+        filters.put("mockfilter", () -> IDENTITY_FILTER);
+        filters.put("mockaddfilter", () -> ADD_FIELD_FILTER);
         new CompiledPipeline(
             pipelineIR,
             new CompiledPipelineTest.MockPluginFactory(
@@ -137,9 +165,9 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
         );
         final JrubyEventExtLibrary.RubyEvent testEvent =
             JrubyEventExtLibrary.RubyEvent.newRubyEvent(RubyUtil.RUBY, new Event());
-        final Map<String, Supplier<RubyIntegration.Filter>> filters = new HashMap<>();
-        filters.put("mockfilter", CompiledPipelineTest.IdentityFilter::new);
-        filters.put("mockaddfilter", CompiledPipelineTest.AddFieldFilter::new);
+        final Map<String, Supplier<IRubyObject>> filters = new HashMap<>();
+        filters.put("mockfilter", () -> IDENTITY_FILTER);
+        filters.put("mockaddfilter", () -> ADD_FIELD_FILTER);
         new CompiledPipeline(
             pipelineIR,
             new CompiledPipelineTest.MockPluginFactory(
@@ -177,12 +205,12 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
 
         private final Map<String, Supplier<IRubyObject>> inputs;
 
-        private final Map<String, Supplier<RubyIntegration.Filter>> filters;
+        private final Map<String, Supplier<IRubyObject>> filters;
 
         private final Map<String, Supplier<IRubyObject>> outputs;
 
         MockPluginFactory(final Map<String, Supplier<IRubyObject>> inputs,
-            final Map<String, Supplier<RubyIntegration.Filter>> filters,
+            final Map<String, Supplier<IRubyObject>> filters,
             final Map<String, Supplier<IRubyObject>> outputs) {
             this.inputs = inputs;
             this.filters = filters;
@@ -204,9 +232,11 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
         }
 
         @Override
-        public RubyIntegration.Filter buildFilter(final RubyString name, final RubyInteger line,
+        public FilterDelegatorExt buildFilter(final RubyString name, final RubyInteger line,
             final RubyInteger column, final IRubyObject args) {
-            return setupPlugin(name, filters);
+            return new FilterDelegatorExt(
+                RubyUtil.RUBY, RubyUtil.OUTPUT_DELEGATOR_CLASS)
+                .initForTesting(setupPlugin(name, filters));
         }
 
         @Override
@@ -235,65 +265,5 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
             final LsConfiguration configuration, final LsContext context) {
             return null;
         }
-    }
-
-    /**
-     * Mock filter that adds the value 'bar' to the field 'foo' for every event in the batch.
-     */
-    private static final class AddFieldFilter implements RubyIntegration.Filter {
-        @Override
-        public IRubyObject toRuby() {
-            return RubyUtil.RUBY.evalScriptlet(
-                String.join(
-                    "\n",
-                    "output = Object.new",
-                    "output.define_singleton_method(:multi_filter) do |batch|",
-                    "batch.each { |e| e.set('foo', 'bar')}",
-                    "end",
-                    "output"
-                )
-            );
-        }
-
-        @Override
-        public boolean hasFlush() {
-            return false;
-        }
-
-        @Override
-        public boolean periodicFlush() {
-            return false;
-        }
-
-    }
-
-    /**
-     * Mock filter that does not modify the batch.
-     */
-    private static final class IdentityFilter implements RubyIntegration.Filter {
-        @Override
-        public IRubyObject toRuby() {
-            return RubyUtil.RUBY.evalScriptlet(
-                String.join(
-                    "\n",
-                    "output = Object.new",
-                    "output.define_singleton_method(:multi_filter) do |batch|",
-                    "batch",
-                    "end",
-                    "output"
-                )
-            );
-        }
-
-        @Override
-        public boolean hasFlush() {
-            return false;
-        }
-
-        @Override
-        public boolean periodicFlush() {
-            return false;
-        }
-
     }
 }
