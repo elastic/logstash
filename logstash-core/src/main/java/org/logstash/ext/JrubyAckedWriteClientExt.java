@@ -1,5 +1,6 @@
 package org.logstash.ext;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -61,9 +62,11 @@ public final class JrubyAckedWriteClientExt extends RubyObject {
     }
 
     @JRubyMethod(name = "push_batch", required = 1)
-    public IRubyObject rubyPushBatch(final ThreadContext context, IRubyObject batch) {
+    public IRubyObject rubyPushBatch(final ThreadContext context, final IRubyObject batch) {
         ensureOpen();
-        List<Queueable> events = ((List<JrubyEventExtLibrary.RubyEvent>) batch).stream().map(e -> e.getEvent()).collect(Collectors.toList());
+        final List<JrubyEventExtLibrary.RubyEvent> rubyEvents = (List<JrubyEventExtLibrary.RubyEvent>) batch;
+        final List<Queueable> events = new ArrayList<>(rubyEvents.size());
+        for (JrubyEventExtLibrary.RubyEvent rubyEvent : rubyEvents) events.add(rubyEvent.getEvent());
         queue.rubyWrite(context, events, -1);
         return this;
     }
