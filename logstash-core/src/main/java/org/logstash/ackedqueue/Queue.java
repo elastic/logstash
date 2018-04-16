@@ -1,6 +1,16 @@
 package org.logstash.ackedqueue;
 
-import java.io.ByteArrayOutputStream;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.logstash.FileLockFactory;
+import org.logstash.LockException;
+import org.logstash.ackedqueue.io.CheckpointIO;
+import org.logstash.ackedqueue.io.FileCheckpointIO;
+import org.logstash.ackedqueue.io.LongVector;
+import org.logstash.ackedqueue.io.MmapPageIO;
+import org.logstash.ackedqueue.io.PageIO;
+import org.logstash.common.FsUtil;
+
 import java.io.Closeable;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -13,7 +23,6 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -21,22 +30,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.zip.DataFormatException;
-import java.util.zip.Deflater;
-import java.util.zip.Inflater;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.logstash.Event;
-import org.logstash.FileLockFactory;
-import org.logstash.LockException;
-import org.logstash.ackedqueue.io.CheckpointIO;
-import org.logstash.ackedqueue.io.FileCheckpointIO;
-import org.logstash.ackedqueue.io.LongVector;
-import org.logstash.ackedqueue.io.MmapPageIO;
-import org.logstash.ackedqueue.io.PageIO;
-import org.logstash.common.FsUtil;
 
 public final class Queue implements Closeable {
     private long seqNum;
@@ -371,6 +364,12 @@ public final class Queue implements Closeable {
     public long write(List<Queueable> queueables, long timeoutMillis) throws IOException {
         if (queueables.isEmpty()) return -1;
 
+        try {
+            timeoutMillis -= optionallyLockForTimeout(timeoutMillis);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            return -1;
+        }
 
         List<byte[]> serializedQueueables = new ArrayList<>(queueables.size());
         int dataSize = 0;
@@ -387,16 +386,16 @@ public final class Queue implements Closeable {
         // element at risk in the always-full queue state. In the later, when closing a full queue, it would be impossible
         // to write the current element.
 
-        long maxSeqNum = -1;
-        int headPageCapacity = this.headPage.getPageIO().getCapacity();
+        final int headPageCapacity = this.headPage.getPageIO().getCapacity();
         // Our batch might span multiple pages, so we have to break it up if its too big
 
-        int persistedBatchSize = this.headPage.getPageIO().persistedByteCount(dataSize, serializedQueueables.size());
+        final int persistedBatchSize = this.headPage.getPageIO().persistedByteCount(dataSize, serializedQueueables.size());
 
         if (persistedBatchSize <= headPageCapacity) {
-            lock.lock();
+
+
             try {
-                maxSeqNum = unsafeQueueWrite(serializedQueueables, timeoutMillis, persistedBatchSize);
+                return unsafeQueueWrite(serializedQueueables, timeoutMillis, persistedBatchSize);
             } finally {
                 lock.unlock();
             }
@@ -404,8 +403,34 @@ public final class Queue implements Closeable {
             // Batch is larger than a page, we can't do an atomic write
             throw new IOException("data to be written is bigger than page capacity");
         }
+    }
 
-        return maxSeqNum;
+    /**
+     * Locks blocking, waiting on the lock for the given timeout. -1 is an infinite timeout
+     *
+     * @param timeoutMillis millis to wait for a timeout
+     * @return  If a lock was not acquired, -1.
+     *          If a positive timeout value was given this returns the time spent waiting.
+     *          If no value was given, zero.
+     * @throws InterruptedException when the timeout is exceeded
+     */
+    private long optionallyLockForTimeout(final long timeoutMillis) throws InterruptedException {
+        if (timeoutMillis <= -1) {
+                lock.lock();
+                return 0;
+            } else {
+                // Try to avoid the nanotime calculation with a simple tryLock
+                if (lock.tryLock()) {
+                    return 0;
+                } else {
+                    final long start = System.nanoTime();
+                    if (lock.tryLock(timeoutMillis, TimeUnit.MILLISECONDS)) {
+                        return timeoutMillis - ((System.nanoTime() - start) / 1000000);
+                    } else {
+                        return -1;
+                    }
+                }
+            }
     }
 
     /**
