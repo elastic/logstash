@@ -104,6 +104,10 @@ public final class JRubyAckedQueueExt extends RubyObject {
         }
     }
 
+    public void write(Event event) throws IOException {
+        this.queue.write(event);
+    }
+
     @JRubyMethod(name = "read_batch", required = 2)
     public IRubyObject ruby_read_batch(ThreadContext context, IRubyObject limit,
         IRubyObject timeout) {
