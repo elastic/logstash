@@ -13,20 +13,23 @@ import java.io.FileDescriptor;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.Array;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.nio.channels.AsynchronousCloseException;
+import java.nio.channels.Channel;
+import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
+import java.nio.channels.InterruptibleChannel;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.LongAdder;
+import java.util.function.Consumer;
 
 @LogstashPlugin(name = "java-stdin")
-public class Stdin implements Input {
+public class Stdin implements Input, Consumer<Map<String, Object>> {
 
     /*
     public static final PluginConfigSpec<String> CODEC_CONFIG =
@@ -36,11 +39,13 @@ public class Stdin implements Input {
     private static final int BUFFER_SIZE = 64 * 1024;
     static final int EVENT_BUFFER_LENGTH = 64;
 
+    private final LongAdder eventCounter = new LongAdder();
     private String hostname;
     private Codec codec;
     private volatile boolean stopRequested = false;
     private final CountDownLatch isStopped = new CountDownLatch(1);
     private FileChannel input;
+    private QueueWriter writer;
 
     /**
      * Required Constructor Signature only taking a {@link LsConfiguration}.
@@ -49,10 +54,10 @@ public class Stdin implements Input {
      * @param context       Logstash Context
      */
     public Stdin(final LsConfiguration configuration, final LsContext context) {
-        this(configuration, context, System.in);
+        this(configuration, context, new FileInputStream(FileDescriptor.in).getChannel());
     }
 
-    Stdin(final LsConfiguration configuration, final LsContext context, InputStream sourceStream) {
+    Stdin(final LsConfiguration configuration, final LsContext context, FileChannel inputChannel) {
         try {
             hostname = InetAddress.getLocalHost().getHostName();
         } catch (UnknownHostException e) {
@@ -62,32 +67,18 @@ public class Stdin implements Input {
         //        configuration, context);
         codec = CodecFactory.getInstance().getCodec("line",
                 configuration, context);
+        input = inputChannel;
     }
 
     @Override
     public void start(QueueWriter writer) {
-        input = new FileInputStream(FileDescriptor.in).getChannel();
+        this.writer = writer;
         final ByteBuffer buffer = ByteBuffer.allocateDirect(BUFFER_SIZE);
-
-        @SuppressWarnings({"unchecked"}) final Map<String, Object>[] eventBuffer =
-                (HashMap<String, Object>[]) Array.newInstance(
-                        new HashMap<String, Object>().getClass(), EVENT_BUFFER_LENGTH);
-
-        int eventsRead;
         try {
             while (!stopRequested && (input.read(buffer) > -1)) {
-                do {
-                    buffer.flip();
-                    eventsRead = codec.decode(buffer, eventBuffer);
-                    buffer.compact();
-                    sendEvents(writer, eventBuffer, eventsRead);
-                } while (eventsRead == EVENT_BUFFER_LENGTH);
-            }
-
-            buffer.flip();
-            if (buffer.hasRemaining()) {
-                Map<String, Object>[] flushedEvents = codec.flush(buffer);
-                sendEvents(writer, eventBuffer, flushedEvents.length);
+                buffer.flip();
+                codec.decode(buffer, this);
+                buffer.compact();
             }
         } catch (AsynchronousCloseException e2) {
             // do nothing -- this happens when stop is called during a pending read
@@ -100,23 +91,25 @@ public class Stdin implements Input {
             } catch (IOException e) {
                 // do nothing
             }
+
+            buffer.flip();
+            codec.flush(buffer, this);
             isStopped.countDown();
         }
     }
 
-    private void sendEvents(QueueWriter writer, Map<String, Object>[] events, int eventCount) {
-        for (int k = 0; k < eventCount; k++) {
-            Map<String, Object> event = events[k];
-            event.putIfAbsent("hostname", hostname);
-            writer.push(event);
-        }
+    @Override
+    public void accept(Map<String, Object> event) {
+        event.putIfAbsent("hostname", hostname);
+        writer.push(event);
+        eventCounter.increment();
     }
 
     @Override
     public void stop() {
         stopRequested = true;
         try {
-            input.close();
+            input.close(); // interrupts any pending reads
         } catch (IOException e) {
             // do nothing
         }

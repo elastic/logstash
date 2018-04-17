@@ -10,8 +10,6 @@ import org.logstash.execution.plugins.PluginConfigSpec;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.lang.reflect.Array;
-import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.charset.CharacterCodingException;
@@ -19,11 +17,11 @@ import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CoderResult;
 import java.nio.charset.CodingErrorAction;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Consumer;
 
 @LogstashPlugin(name = "line")
 public class Line implements Codec {
@@ -39,11 +37,6 @@ public class Line implements Codec {
             LsConfiguration.stringSetting("format");
     */
 
-    // not sure of the preferred method (if any) for arrays of generic types
-    @SuppressWarnings({"unchecked"})
-    private static Map<String, Object>[] EMPTY_ARRAY =
-            (HashMap<String, Object>[]) Array.newInstance(new HashMap<String, Object>().getClass(), 0);
-
     static final String MESSAGE_FIELD = "message";
 
     private final String delimiter;
@@ -52,6 +45,7 @@ public class Line implements Codec {
 
     private final CharBuffer charBuffer = ByteBuffer.allocateDirect(64 * 1024).asCharBuffer();
     private final CharsetDecoder decoder;
+    private String remainder = "";
 
     public Line(final LsConfiguration configuration, final LsContext context) {
         /*
@@ -66,12 +60,11 @@ public class Line implements Codec {
     }
 
     @Override
-    public int decode(ByteBuffer buffer, Map<String, Object>[] events) {
-        int pos = buffer.position(), lim = buffer.limit();
+    public void decode(ByteBuffer buffer, Consumer<Map<String, Object>> eventConsumer) {
         int bufferPosition = buffer.position();
         CoderResult result = decoder.decode(buffer, charBuffer, false);
         charBuffer.flip();
-        String s = charBuffer.toString();
+        String s = (remainder == null ? "" : remainder) + charBuffer.toString();
         charBuffer.clear();
 
         if (s.endsWith(delimiter)) {
@@ -83,63 +76,38 @@ public class Line implements Codec {
                 buffer.position(bufferPosition);
                 s = "";
             } else {
+                remainder = s.substring(lastIndex + 1, s.length());
                 s = s.substring(0, lastIndex);
             }
         }
 
-        int numEvents;
         if (s.length() > 0) {
-            String[] lines = s.split(delimiter, events.length + 1);
-            numEvents = (lines.length == events.length + 1) ? events.length : lines.length;
-            for (int k = 0; k < numEvents; k++) {
-                setEvent(events, k, lines[k]);
+            String[] lines = s.split(delimiter, 0);
+            for (int k = 0; k < lines.length; k++) {
+                eventConsumer.accept(simpleMap(lines[k]));
             }
-
-            int moveBack = (lines.length == events.length + 1)
-                    ? (lines[events.length]).getBytes(charset).length
-                    : 0;
-
-            buffer.position(buffer.position() - moveBack);
-        } else {
-            numEvents = 0;
         }
-
-        return numEvents;
-
     }
 
     @Override
-    public Map<String, Object>[] flush(ByteBuffer buffer) {
-        if (buffer.position() == buffer.limit()) {
-            return EMPTY_ARRAY;
-        } else {
+    public void flush(ByteBuffer buffer, Consumer<Map<String, Object>> eventConsumer) {
+        if (remainder.length() > 0 || buffer.position() != buffer.limit()) {
             try {
-                String remainder = charset.newDecoder().decode(buffer).toString();
+                String remainder = this.remainder + charset.newDecoder().decode(buffer).toString();
                 String[] lines = remainder.split(delimiter, 0);
-                @SuppressWarnings({"unchecked"})
-                HashMap<String, Object>[] events =
-                        (HashMap<String, Object>[]) Array.newInstance(new HashMap<String, Object>().getClass(), lines.length);
-
                 for (int k = 0; k < lines.length; k++) {
-                    setEvent(events, k, lines[k]);
+                    eventConsumer.accept(simpleMap(lines[k]));
                 }
-                return events;
             } catch (CharacterCodingException e) {
                 throw new IllegalStateException(e);
             }
         }
     }
 
-    private static void setEvent(Map<String, Object>[] events, int index, String message) {
-        Map<String, Object> event;
-        if (events[index] == null) {
-            event = new HashMap<>();
-            events[index] = event;
-        } else {
-            event = events[index];
-        }
-        event.clear();
-        event.put(MESSAGE_FIELD, message);
+    private static Map<String, Object> simpleMap(String message) {
+        HashMap<String, Object> simpleMap = new HashMap<>();
+        simpleMap.put(MESSAGE_FIELD, message);
+        return simpleMap;
     }
 
     @Override

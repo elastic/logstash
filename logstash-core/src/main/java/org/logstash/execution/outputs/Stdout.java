@@ -1,6 +1,5 @@
 package org.logstash.execution.outputs;
 
-import org.apache.commons.io.output.CloseShieldOutputStream;
 import org.logstash.Event;
 import org.logstash.execution.LogstashPlugin;
 import org.logstash.execution.LsConfiguration;
@@ -19,7 +18,6 @@ import java.util.concurrent.CountDownLatch;
 public class Stdout implements Output {
     public static final String DEFAULT_CODEC_NAME = "line"; // no codec support, yet
 
-    private OutputStream stdout;
     private PrintStream printer;
     private final CountDownLatch done = new CountDownLatch(1);
 
@@ -34,8 +32,7 @@ public class Stdout implements Output {
     }
 
     Stdout(final LsConfiguration configuration, final LsContext context, OutputStream targetStream) {
-        stdout = new CloseShieldOutputStream(targetStream);
-        printer = new PrintStream(stdout); // replace this with a codec
+        printer = new PrintStream(targetStream); // replace this with a codec
     }
 
     @Override
@@ -51,14 +48,7 @@ public class Stdout implements Output {
 
     @Override
     public void stop() {
-        try {
-            stdout.close();
-        } catch (IOException e) {
-            // do nothing
-        }
-        finally {
-            done.countDown();
-        }
+        done.countDown();
     }
 
     @Override

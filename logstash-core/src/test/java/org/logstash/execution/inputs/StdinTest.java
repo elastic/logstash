@@ -4,8 +4,12 @@ import org.junit.Test;
 import org.logstash.execution.LsConfiguration;
 import org.logstash.execution.queue.QueueWriter;
 
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
+import java.io.IOException;
+import java.io.RandomAccessFile;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -18,56 +22,24 @@ public class StdinTest {
 
 
     @Test
-    public void testSimpleEvent() {
+    public void testSimpleEvent() throws IOException {
         String testInput = "foo" + System.lineSeparator();
-        InputStream dummyInputStream = new ByteArrayInputStream(testInput.getBytes());
-        Stdin stdin = new Stdin(new LsConfiguration(Collections.EMPTY_MAP), null, dummyInputStream);
-        TestQueueWriter queueWriter = new TestQueueWriter();
-        Thread t = new Thread(() -> stdin.start(queueWriter));
-        t.start();
-        try {
-            Thread.sleep(50);
-            stdin.awaitStop();
-        } catch (InterruptedException e) {
-            fail("Stdin.awaitStop failed with exception: " + e);
-        }
-
+        TestQueueWriter queueWriter = testStdin(testInput.getBytes());
         assertEquals(1, queueWriter.getEvents().size());
     }
 
     @Test
-    public void testEvents() {
+    public void testEvents() throws IOException {
         String testInput = "foo" + System.lineSeparator() + "bar" + System.lineSeparator() + "baz" + System.lineSeparator();
-        InputStream dummyInputStream = new ByteArrayInputStream(testInput.getBytes());
-        Stdin stdin = new Stdin(new LsConfiguration(Collections.EMPTY_MAP), null, dummyInputStream);
-        TestQueueWriter queueWriter = new TestQueueWriter();
-        Thread t = new Thread(() -> stdin.start(queueWriter));
-        t.start();
-        try {
-            Thread.sleep(50);
-            stdin.awaitStop();
-        } catch (InterruptedException e) {
-            fail("Stdin.awaitStop failed with exception: " + e);
-        }
-
+        TestQueueWriter queueWriter = testStdin(testInput.getBytes());
         assertEquals(3, queueWriter.getEvents().size());
     }
 
     @Test
-    public void testUtf8Events() {
+    public void testUtf8Events() throws IOException {
         String[] inputs = {"München1", "安装中文输入法", "München3"};
         String testInput = String.join(System.lineSeparator(), inputs) + System.lineSeparator();
-        InputStream dummyInputStream = new ByteArrayInputStream(testInput.getBytes());
-        Stdin stdin = new Stdin(new LsConfiguration(Collections.EMPTY_MAP), null, dummyInputStream);
-        TestQueueWriter queueWriter = new TestQueueWriter();
-        Thread t = new Thread(() -> stdin.start(queueWriter));
-        t.start();
-        try {
-            Thread.sleep(50);
-            stdin.awaitStop();
-        } catch (InterruptedException e) {
-            fail("Stdin.awaitStop failed with exception: " + e);
-        }
+        TestQueueWriter queueWriter = testStdin(testInput.getBytes());
 
         List<Map<String, Object>> events = queueWriter.getEvents();
         assertEquals(3, events.size());
@@ -76,26 +48,29 @@ public class StdinTest {
         }
     }
 
-    @Test
-    public void testMoreEventsPerReadThanBufferSize() {
-        int expectedEvents = Stdin.EVENT_BUFFER_LENGTH + 2;
-        StringBuilder s = new StringBuilder("");
-        for (int k = 0; k < expectedEvents; k++) {
-            s.append("z").append(System.lineSeparator());
-        }
-        InputStream dummyInputStream = new ByteArrayInputStream(s.toString().getBytes());
-        Stdin stdin = new Stdin(new LsConfiguration(Collections.EMPTY_MAP), null, dummyInputStream);
+    private static TestQueueWriter testStdin(byte[] input) throws IOException {
         TestQueueWriter queueWriter = new TestQueueWriter();
-        Thread t = new Thread(() -> stdin.start(queueWriter));
-        t.start();
-        try {
-            Thread.sleep(50);
-            stdin.awaitStop();
-        } catch (InterruptedException e) {
-            fail("Stdin.awaitStop failed with exception: " + e);
+        try (FileChannel inChannel = getTestFileChannel(input)) {
+            Stdin stdin = new Stdin(new LsConfiguration(Collections.EMPTY_MAP), null, inChannel);
+            Thread t = new Thread(() -> stdin.start(queueWriter));
+            t.start();
+            try {
+                Thread.sleep(50);
+                stdin.awaitStop();
+            } catch (InterruptedException e) {
+                fail("Stdin.awaitStop failed with exception: " + e);
+            }
         }
+        return queueWriter;
+    }
 
-        assertEquals(expectedEvents, queueWriter.getEvents().size());
+    private static FileChannel getTestFileChannel(byte[] testBytes) throws IOException {
+        Path tempFile = Files.createTempFile("StdinTest","");
+        RandomAccessFile raf = new RandomAccessFile(tempFile.toString(), "rw");
+        FileChannel fc = raf.getChannel();
+        fc.write(ByteBuffer.wrap(testBytes));
+        fc.position(0);
+        return fc;
     }
 
 }

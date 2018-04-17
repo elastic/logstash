@@ -5,11 +5,13 @@ import org.logstash.Event;
 import org.logstash.execution.LsConfiguration;
 
 import java.io.ByteArrayOutputStream;
-import java.lang.reflect.Array;
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -19,7 +21,7 @@ public class LineTest {
     @Test
     public void testSimpleDecode() {
         String input = "abc";
-        testDecode(null, null, input, 0, 1, new String[] {input});
+        testDecode(null, null, input, 0, 1, new String[]{input});
     }
 
     @Test
@@ -55,30 +57,31 @@ public class LineTest {
         String[] inputs = {"foo", "bar", "baz"};
         String input = String.join(delimiter, inputs) + delimiter;
         byte[] inputBytes = input.getBytes();
-        Map<String, Object>[] events = getEventBuffer(3);
-        Map<String, Object>[] flushEvents = getEventBuffer(0);
+        TestEventConsumer eventConsumer = new TestEventConsumer();
+        TestEventConsumer flushedEvents = new TestEventConsumer();
         Line line = getLineCodec(null, null);
 
         // first call to decode
         ByteBuffer buffer = ByteBuffer.allocate(inputBytes.length * 3);
         buffer.put(inputBytes);
         buffer.flip();
-        int numEvents = line.decode(buffer, events);
-        assertEquals(inputs.length, numEvents);
-        compareMessages(inputs, events, numEvents, flushEvents);
+        line.decode(buffer, eventConsumer);
+        assertEquals(inputs.length, eventConsumer.events.size());
+        compareMessages(inputs, eventConsumer.events, flushedEvents.events);
 
         // second call to encode
+        eventConsumer.events.clear();
         buffer.compact();
         buffer.put(inputBytes);
         buffer.flip();
-        numEvents = line.decode(buffer, events);
-        assertEquals(inputs.length, numEvents);
-        compareMessages(inputs, events, numEvents, flushEvents);
+        line.decode(buffer, eventConsumer);
+        assertEquals(inputs.length, eventConsumer.events.size());
+        compareMessages(inputs, eventConsumer.events, flushedEvents.events);
 
         buffer.compact();
         buffer.flip();
-        events = line.flush(buffer);
-        assertEquals(0, events.length);
+        line.flush(buffer, flushedEvents);
+        assertEquals(0, flushedEvents.events.size());
     }
 
     @Test
@@ -117,10 +120,10 @@ public class LineTest {
     public void testDecodeAcrossMultibyteCharBoundary() {
         final int BUFFER_SIZE = 12;
         int lastPos = 0;
-        Map<String, Object>[] events = getEventBuffer(3);
+        TestEventConsumer eventConsumer = new TestEventConsumer();
         String input = "安安安\n安安安\n安安安";
         byte[] bytes = input.getBytes();
-        assertTrue(bytes.length>input.length());
+        assertTrue(bytes.length > input.length());
         ByteBuffer b1 = ByteBuffer.allocate(BUFFER_SIZE);
         System.out.println(b1);
         b1.put(bytes, lastPos, 12);
@@ -128,11 +131,8 @@ public class LineTest {
         b1.flip();
         System.out.println(b1);
 
-        System.out.println("byte length "+bytes.length+", "+input.length());
-
         Line line = getLineCodec(null, null);
-        int numEvents = line.decode(b1,events);
-        System.out.println("numEvents: "+numEvents);
+        line.decode(b1, eventConsumer);
         System.out.println(b1);
         b1.compact();
         System.out.println(b1);
@@ -143,8 +143,7 @@ public class LineTest {
         System.out.println(b1);
         b1.flip();
         System.out.println(b1);
-        numEvents = line.decode(b1,events);
-        System.out.println("numEvents: "+numEvents);
+        line.decode(b1, eventConsumer);
         System.out.println(b1);
         b1.compact();
         System.out.println(b1);
@@ -155,64 +154,52 @@ public class LineTest {
         System.out.println(b1);
         b1.flip();
         System.out.println(b1);
-        numEvents = line.decode(b1,events);
-        System.out.println("numEvents: "+numEvents);
+        line.decode(b1, eventConsumer);
         System.out.println(b1);
         b1.compact();
         System.out.println(b1);
         b1.flip();
         System.out.println(b1);
-        events = line.flush(b1);
-        System.out.println("flushed events: "+events.length);
-
-
+        line.flush(b1, eventConsumer);
     }
 
     @Test
     public void testFlush() {
         String[] inputs = {"The", "quick", "brown", "fox", "jumps"};
         String input = String.join(System.lineSeparator(), inputs);
-        int bufferSize = 2;
-        testDecode(null, null, input, bufferSize, inputs.length - bufferSize, inputs, bufferSize);
+        testDecode(null, null, input, inputs.length - 1, 1, inputs);
     }
 
     private void testDecode(String delimiter, String charset, String inputString, Integer expectedPreflushEvents, Integer expectedFlushEvents, String[] expectedMessages) {
-        testDecode(delimiter, charset, inputString, expectedPreflushEvents, expectedFlushEvents, expectedMessages, null);
-    }
-
-    private void testDecode(String delimiter, String charset, String inputString, Integer expectedPreflushEvents, Integer expectedFlushEvents, String[] expectedMessages, Integer bufferSize) {
         Line line = getLineCodec(delimiter, charset);
 
-        int bufSize = bufferSize != null
-                ? bufferSize
-                : expectedPreflushEvents == null ? 10 : expectedPreflushEvents + 1;
-        Map<String, Object>[] events = getEventBuffer(bufSize);
-
         byte[] inputBytes = inputString.getBytes();
+        TestEventConsumer eventConsumer = new TestEventConsumer();
         ByteBuffer inputBuffer = ByteBuffer.wrap(inputBytes, 0, inputBytes.length);
-        int num = line.decode(inputBuffer, events);
+        line.decode(inputBuffer, eventConsumer);
         if (expectedPreflushEvents != null) {
-            assertEquals(expectedPreflushEvents.intValue(), num);
+            assertEquals(expectedPreflushEvents.intValue(), eventConsumer.events.size());
         }
 
         inputBuffer.compact();
         inputBuffer.flip();
 
-        Map<String, Object>[] flushEvents = line.flush(inputBuffer);
+        TestEventConsumer flushConsumer = new TestEventConsumer();
+        line.flush(inputBuffer, flushConsumer);
         if (expectedFlushEvents != null) {
-            assertEquals(expectedFlushEvents.intValue(), flushEvents.length);
+            assertEquals(expectedFlushEvents.intValue(), flushConsumer.events.size());
         }
 
-        compareMessages(expectedMessages, events, num, flushEvents);
+        compareMessages(expectedMessages, eventConsumer.events, flushConsumer.events);
     }
 
-    private static void compareMessages(String[] expectedMessages, Map<String, Object>[] events, int numEvents, Map<String, Object>[] flushEvents) {
+    private static void compareMessages(String[] expectedMessages, List<Map<String, Object>> events, List<Map<String, Object>> flushedEvents) {
         if (expectedMessages != null) {
-            for (int k = 0; k < numEvents; k++) {
-                assertEquals(expectedMessages[k], events[k].get(Line.MESSAGE_FIELD));
+            for (int k = 0; k < events.size(); k++) {
+                assertEquals(expectedMessages[k], events.get(k).get(Line.MESSAGE_FIELD));
             }
-            for (int k = numEvents; k < (numEvents + flushEvents.length); k++) {
-                assertEquals(expectedMessages[k], flushEvents[k - numEvents].get(Line.MESSAGE_FIELD));
+            for (int k = events.size(); k < (events.size() + flushedEvents.size()); k++) {
+                assertEquals(expectedMessages[k], flushedEvents.get(k - events.size()).get(Line.MESSAGE_FIELD));
             }
         }
     }
@@ -228,33 +215,30 @@ public class LineTest {
         return new Line(new LsConfiguration(config), null);
     }
 
-    private static Map<String, Object>[] getEventBuffer(int size) {
-        Map<String, Object>[] events =
-                (HashMap<String, Object>[]) Array.newInstance(new HashMap<String, Object>().getClass(), size);
-        return events;
-    }
-
-
     @Test
     public void testDecodeWithCharset() throws Exception {
-        Map<String, Object>[] events =
-                (HashMap<String, Object>[]) Array.newInstance(new HashMap<String, Object>().getClass(), 2);
-        Map<String, Object>[] flushEvents;
+        TestEventConsumer flushConsumer = new TestEventConsumer();
 
+        // decode with cp-1252
         Line cp1252decoder = new Line(new LsConfiguration(Collections.singletonMap("charset", "cp1252")), null);
         byte[] rightSingleQuoteInCp1252 = {(byte) 0x92};
         ByteBuffer b1 = ByteBuffer.wrap(rightSingleQuoteInCp1252);
-        assertEquals(0, cp1252decoder.decode(b1, events));
-        flushEvents = cp1252decoder.flush(b1);
-        assertEquals(1, flushEvents.length);
-        String fromCp1252 = (String)flushEvents[0].get(Line.MESSAGE_FIELD);
+        cp1252decoder.decode(b1, flushConsumer);
+        assertEquals(0, flushConsumer.events.size());
+        cp1252decoder.flush(b1, flushConsumer);
+        assertEquals(1, flushConsumer.events.size());
+        String fromCp1252 = (String) flushConsumer.events.get(0).get(Line.MESSAGE_FIELD);
+
+        // decode with UTF-8
+        flushConsumer.events.clear();
         Line utf8decoder = new Line(new LsConfiguration(Collections.EMPTY_MAP), null);
         byte[] rightSingleQuoteInUtf8 = {(byte) 0xE2, (byte) 0x80, (byte) 0x99};
         ByteBuffer b2 = ByteBuffer.wrap(rightSingleQuoteInUtf8);
-        assertEquals(0, utf8decoder.decode(b2, events));
-        flushEvents = utf8decoder.flush(b2);
-        assertEquals(1, flushEvents.length);
-        String fromUtf8 = (String)flushEvents[0].get(Line.MESSAGE_FIELD);
+        utf8decoder.decode(b2, flushConsumer);
+        assertEquals(0, flushConsumer.events.size());
+        utf8decoder.flush(b2, flushConsumer);
+        assertEquals(1, flushConsumer.events.size());
+        String fromUtf8 = (String) flushConsumer.events.get(0).get(Line.MESSAGE_FIELD);
         assertEquals(fromCp1252, fromUtf8);
     }
 
@@ -315,4 +299,14 @@ public class LineTest {
         assertEquals(expectedOutput, resultingString);
     }
 
+}
+
+class TestEventConsumer implements Consumer<Map<String, Object>> {
+
+    List<Map<String, Object>> events = new ArrayList<>();
+
+    @Override
+    public void accept(Map<String, Object> stringObjectMap) {
+        events.add(stringObjectMap);
+    }
 }
