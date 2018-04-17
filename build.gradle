@@ -237,16 +237,14 @@ def qaVendorPath = "${buildDir}/qa/integration/vendor"
 def qaBundledGemPath = "${qaVendorPath}/jruby/2.3.0"
 def qaBundleBin = "${qaBundledGemPath}/bin/bundle"
 
-task installIntegrationTestBundler(dependsOn: unpackTarDistribution, type: Exec) {
+task installIntegrationTestBundler(dependsOn: unpackTarDistribution) {
   outputs.files fileTree("${qaBundledGemPath}/gems/bundler-1.16.0")
-  standardOutput = new ExecLogOutputStream(System.out)
-  errorOutput =  new ExecLogOutputStream(System.err)
-  // directly invoke bin/gem to install bundlers and force install dir "-i" into qaBundledGemPath
-  commandLine "${projectDir}/vendor/jruby/bin/gem", "install", "bundler", "-v", "1.16.0", "-i", qaBundledGemPath
+  doLast {
+    rubyGradleUtils.gem("bundler", "1.16.0", qaBundledGemPath)
+  }
 }
 
-task installIntegrationTestGems(dependsOn: installIntegrationTestBundler, type: Exec) {
-  workingDir "${projectDir}/qa/integration"
+task installIntegrationTestGems(dependsOn: installIntegrationTestBundler) {
   inputs.files file("${projectDir}/qa/integration/Gemfile")
   inputs.files file("${projectDir}/qa/integration/integration_tests.gemspec")
   inputs.files file("${logstashBuildDir}/Gemfile")
@@ -254,29 +252,27 @@ task installIntegrationTestGems(dependsOn: installIntegrationTestBundler, type: 
   inputs.files file("${logstashBuildDir}/logstash-core/logstash-core.gemspec")
   outputs.files fileTree("${qaVendorPath}")
   outputs.files file("${projectDir}/qa/integration/Gemfile.lock")
-  standardOutput = new ExecLogOutputStream(System.out)
-  errorOutput =  new ExecLogOutputStream(System.err)
-  // directly invoke bin/bundler and force install gem path to qaVendorPath
-  // note that bundler appends jruby/2.3.0 to the install path
-  commandLine qaBundleBin, "install", "--path", qaVendorPath
+  doLast {
+    rubyGradleUtils.bundle(
+      "${projectDir}/qa/integration", qaBundleBin, ['install', '--path', qaVendorPath],
+      [LS_GEM_PATH: qaBundledGemPath, LS_GEM_HOME: qaBundledGemPath]
+    )
+  }
 }
 
-def rubyIntegrationSpecs = project.hasProperty("rubyIntegrationSpecs") ? ((String) project.property("rubyIntegrationSpecs")).split(/\s+/) : []
-def rubyBin = "${projectDir}" +
-  (System.getProperty("os.name").startsWith("Windows") ? '/vendor/jruby/bin/jruby.bat' : '/bin/ruby')
+def rubyIntegrationSpecs = project.hasProperty("rubyIntegrationSpecs") ? ((String) project.property("rubyIntegrationSpecs")).split(/\s+/).join(",") : "specs/**/*_spec.rb"
+def integrationTestPwd = "${projectDir}/qa/integration"
 
-task runIntegrationTests(dependsOn: installIntegrationTestGems, type: Exec) {
-  workingDir "${projectDir}/qa/integration"
-  environment "LS_GEM_PATH", qaBundledGemPath
-  environment "LS_GEM_HOME", qaBundledGemPath
-  // FEATURE_FLAG is set in the CI to configure testing with enabled PQ
-  environment "FEATURE_FLAG", System.getenv('FEATURE_FLAG')
-  standardOutput = new ExecLogOutputStream(System.out)
-  errorOutput =  new ExecLogOutputStream(System.err)
-  // indirect launching of bin/bundle via bin/ruby so that the bundle exec command inherit
-  // the correct gem path environment which is not settable by command line
-  commandLine([rubyBin, qaBundleBin, "exec", "rspec"].plus((Collection<String>)rubyIntegrationSpecs))
+project(":logstash-integration-tests") {
+    tasks.getByPath(":logstash-integration-tests:integrationTests").configure {
+      systemProperty 'org.logstash.integration.specs', rubyIntegrationSpecs
+      environment "FEATURE_FLAG", System.getenv('FEATURE_FLAG')
+      workingDir integrationTestPwd
+      dependsOn installIntegrationTestGems
+  }
 }
+
+task runIntegrationTests(dependsOn: [tasks.getByPath(":logstash-integration-tests:integrationTests")]) {}
 
 // If you are running a JRuby snapshot we will skip the integrity check.
 verifyFile.onlyIf { doChecksum }
