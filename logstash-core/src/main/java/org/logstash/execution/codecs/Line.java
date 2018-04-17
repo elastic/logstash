@@ -6,6 +6,7 @@ import org.logstash.execution.Codec;
 import org.logstash.execution.LogstashPlugin;
 import org.logstash.execution.LsConfiguration;
 import org.logstash.execution.LsContext;
+import org.logstash.execution.PluginHelper;
 import org.logstash.execution.plugins.PluginConfigSpec;
 
 import java.io.IOException;
@@ -17,8 +18,8 @@ import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CoderResult;
 import java.nio.charset.CodingErrorAction;
+import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
@@ -26,16 +27,16 @@ import java.util.function.Consumer;
 @LogstashPlugin(name = "line")
 public class Line implements Codec {
 
-    /*
+    public static final String DEFAULT_DELIMITER = "\n";
+
     private static final PluginConfigSpec<String> CHARSET_CONFIG =
             LsConfiguration.stringSetting("charset", "UTF-8");
 
     private static final PluginConfigSpec<String> DELIMITER_CONFIG =
-            LsConfiguration.stringSetting("delimiter", System.lineSeparator());
+            LsConfiguration.stringSetting("delimiter", DEFAULT_DELIMITER);
 
     private static final PluginConfigSpec<String> FORMAT_CONFIG =
             LsConfiguration.stringSetting("format");
-    */
 
     static final String MESSAGE_FIELD = "message";
 
@@ -48,13 +49,9 @@ public class Line implements Codec {
     private String remainder = "";
 
     public Line(final LsConfiguration configuration, final LsContext context) {
-        /*
-        delimiter = configuration.get(DELIMITER_CONFIG);
-        charset = Charset.forName(configuration.get(CHARSET_CONFIG));
-        format = configuration.get(FORMAT_CONFIG);
-        */
-        delimiter = "\n";
-        charset = Charset.forName("UTF-8");
+        delimiter = configuration.getRawValue(DELIMITER_CONFIG);
+        charset = Charset.forName(configuration.getRawValue(CHARSET_CONFIG));
+        format = configuration.getRawValue(FORMAT_CONFIG);
         decoder = charset.newDecoder();
         decoder.onMalformedInput(CodingErrorAction.IGNORE);
     }
@@ -76,7 +73,7 @@ public class Line implements Codec {
                 buffer.position(bufferPosition);
                 s = "";
             } else {
-                remainder = s.substring(lastIndex + 1, s.length());
+                remainder = s.substring(lastIndex + delimiter.length(), s.length());
                 s = s.substring(0, lastIndex);
             }
         }
@@ -125,7 +122,7 @@ public class Line implements Codec {
 
     @Override
     public Collection<PluginConfigSpec<?>> configSchema() {
-        //return Arrays.asList(CHARSET_CONFIG, DELIMITER_CONFIG, FORMAT_CONFIG);
-        return Collections.EMPTY_LIST;
+        return PluginHelper.commonInputOptions(
+                Arrays.asList(CHARSET_CONFIG, DELIMITER_CONFIG, FORMAT_CONFIG));
     }
 }
