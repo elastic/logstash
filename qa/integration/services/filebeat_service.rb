@@ -10,7 +10,6 @@ class FilebeatService < Service
       @process = ChildProcess.build(*cmd)
       @process.duplex = true
       @process.io.stdout = @process.io.stderr = @client_out
-      ChildProcess.posix_spawn = true
     end
 
     def start
