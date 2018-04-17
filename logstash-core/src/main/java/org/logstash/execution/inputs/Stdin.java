@@ -5,6 +5,7 @@ import org.logstash.execution.Input;
 import org.logstash.execution.LogstashPlugin;
 import org.logstash.execution.LsConfiguration;
 import org.logstash.execution.LsContext;
+import org.logstash.execution.PluginHelper;
 import org.logstash.execution.plugins.PluginConfigSpec;
 import org.logstash.execution.queue.QueueWriter;
 import org.logstash.execution.codecs.CodecFactory;
@@ -12,15 +13,11 @@ import org.logstash.execution.codecs.CodecFactory;
 import java.io.FileDescriptor;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.nio.channels.AsynchronousCloseException;
-import java.nio.channels.Channel;
-import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
-import java.nio.channels.InterruptibleChannel;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
@@ -31,13 +28,10 @@ import java.util.function.Consumer;
 @LogstashPlugin(name = "java-stdin")
 public class Stdin implements Input, Consumer<Map<String, Object>> {
 
-    /*
     public static final PluginConfigSpec<String> CODEC_CONFIG =
             LsConfiguration.stringSetting("codec", "line");
-    */
 
     private static final int BUFFER_SIZE = 64 * 1024;
-    static final int EVENT_BUFFER_LENGTH = 64;
 
     private final LongAdder eventCounter = new LongAdder();
     private String hostname;
@@ -63,9 +57,7 @@ public class Stdin implements Input, Consumer<Map<String, Object>> {
         } catch (UnknownHostException e) {
             hostname = "[unknownHost]";
         }
-        //codec = CodecFactory.getInstance().getCodec(configuration.get(CODEC_CONFIG),
-        //        configuration, context);
-        codec = CodecFactory.getInstance().getCodec("line",
+        codec = CodecFactory.getInstance().getCodec(configuration.getRawValue(CODEC_CONFIG),
                 configuration, context);
         input = inputChannel;
     }
@@ -122,7 +114,6 @@ public class Stdin implements Input, Consumer<Map<String, Object>> {
 
     @Override
     public Collection<PluginConfigSpec<?>> configSchema() {
-        //return PluginHelper.commonInputOptions(Collections.singletonList(CODEC_CONFIG));
-        return Collections.EMPTY_LIST;
+        return PluginHelper.commonInputOptions(Collections.singletonList(CODEC_CONFIG));
     }
 }
