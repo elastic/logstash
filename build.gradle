@@ -155,6 +155,7 @@ task installTestGems(dependsOn: downloadAndInstallJRuby) {
   inputs.files file("${projectDir}/versions.yml")
   outputs.file("${projectDir}/Gemfile")
   outputs.file("${projectDir}/Gemfile.lock")
+  outputs.dir("${projectDir}/logstash-core/lib/jars")
   outputs.dir("${projectDir}/vendor/bundle/jruby/2.3.0")
   doLast {
     rubyGradleUtils.rake('test:install-core')
