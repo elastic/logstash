@@ -1,6 +1,6 @@
 # encoding: utf-8
 require "spec_helper"
-require "logstash/modules/kibana_client"
+require "logstash/kibana/client"
 module LogStash module Modules
   KibanaTestResponse = Struct.new(:code, :body, :headers)
   class KibanaTestClient
@@ -11,7 +11,7 @@ module LogStash module Modules
       KibanaTestResponse.new(200, '{"version":{"number":"1.2.3","build_snapshot":false}}', {})
     end
   end
-  describe KibanaClient do
+  describe Client do
     let(:settings) { Hash.new }
     let(:test_client) { KibanaTestClient.new }
     let(:kibana_host) { "https://foo.bar:4321" }

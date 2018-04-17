@@ -4,7 +4,7 @@ require "logstash/logging"
 require "logstash/json"
 require "manticore"
 
-module LogStash module Modules class KibanaClient
+module LogStash module Kibana class Client
   include LogStash::Util::Loggable
 
   class Response
@@ -43,24 +43,24 @@ module LogStash module Modules class KibanaClient
 
     # boolean settings may be strings if set through the cli
     # or booleans if set through the yaml file, so we use .to_s
-    ssl_enabled = @settings["var.kibana.ssl.enabled"].to_s == "true"
+    ssl_enabled = @settings["ssl.enabled"].to_s == "true"
     if ssl_enabled
-      ssl_options[:verify] = @settings.fetch("var.kibana.ssl.verification_mode", "strict").to_sym
-      ssl_options[:ca_file] = @settings.fetch("var.kibana.ssl.certificate_authority", nil)
-      ssl_options[:client_cert] = @settings.fetch("var.kibana.ssl.certificate", nil)
-      ssl_options[:client_key] = @settings.fetch("var.kibana.ssl.key", nil)
+      ssl_options[:verify] = @settings.fetch("ssl.verification_mode", "strict").to_sym
+      ssl_options[:ca_file] = @settings.fetch("ssl.certificate_authority", nil)
+      ssl_options[:client_cert] = @settings.fetch("ssl.certificate", nil)
+      ssl_options[:client_key] = @settings.fetch("ssl.key", nil)
     end
 
     client_options[:ssl] = ssl_options
 
-    @host = @settings.fetch("var.kibana.host", "localhost:5601")
+    @host = @settings.fetch("host", "localhost:5601")
     implicit_scheme, colon_slash_slash, host = @host.partition("://")
-    explicit_scheme = @settings["var.kibana.scheme"]
+    explicit_scheme = @settings["scheme"]
     @scheme = "http"
     if !colon_slash_slash.empty?
       if !explicit_scheme.nil? && implicit_scheme != explicit_scheme
         # both are set and not the same - error
-        msg = sprintf("Detected differing Kibana host schemes as sourced from var.kibana.host: '%s' and var.kibana.scheme: '%s'", implicit_scheme, explicit_scheme)
+        msg = sprintf("Detected differing Kibana host schemes as sourced from host: '%s' and scheme: '%s'", implicit_scheme, explicit_scheme)
         raise ArgumentError.new(msg)
       end
       @scheme = implicit_scheme
@@ -82,9 +82,9 @@ module LogStash module Modules class KibanaClient
 
     @client = client || Manticore::Client.new(client_options)
     @http_options = {:headers => {'Content-Type' => 'application/json'}}
-    username = @settings["var.kibana.username"]
+    username = @settings["username"]
     if username
-      password = @settings["var.kibana.password"]
+      password = @settings["password"]
       if password.is_a?(LogStash::Util::Password)
         password = password.value
       end

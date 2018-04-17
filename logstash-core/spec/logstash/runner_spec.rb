@@ -374,13 +374,13 @@ describe LogStash::Runner do
           allow(kbnclient).to receive(:version_parts).and_return(kbn_version.split('.'))
           allow(kbnclient).to receive(:can_connect?).and_return(true)
           allow(LogStash::ElasticsearchClient).to receive(:build).and_return(esclient)
-          allow(LogStash::Modules::KibanaClient).to receive(:new).and_return(kbnclient)
+          allow(LogStash::Modules::Client).to receive(:new).and_return(kbnclient)
 
           expect(esclient).to receive(:put).once do |path, content|
             LogStash::ElasticsearchClient::Response.new(201, "", {})
           end
           expect(kbnclient).to receive(:post).twice do |path, content|
-            LogStash::Modules::KibanaClient::Response.new(201, "", {})
+            LogStash::Kibana::Client::Response.new(201, "", {})
           end
 
           expect(LogStash::Agent).to receive(:new) do |settings, source_loader|

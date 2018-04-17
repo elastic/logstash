@@ -2,7 +2,7 @@
 #
 require "logstash/namespace"
 require "logstash/elasticsearch_client"
-require "logstash/modules/kibana_client"
+require "logstash/kibana/client"
 require "logstash/modules/kibana_config"
 require "logstash/modules/scaffold"
 require "logstash/modules/elasticsearch_importer"
@@ -197,7 +197,7 @@ ERB
       expect(kbnclient).to receive(:post).twice do |path, content|
         paths << path
         contents << content
-        LogStash::Modules::KibanaClient::Response.new(201, "", {})
+        LogStash::Kibana::Client::Response.new(201, "", {})
       end
       test_module.with_settings(module_settings)
       test_module.import(LogStash::Modules::ElasticsearchImporter.new(client), LogStash::Modules::KibanaImporter.new(kbnclient))
