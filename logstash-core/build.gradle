@@ -46,7 +46,7 @@ task copyGemjar(type: Copy, dependsOn: [sourcesJar, copyRuntimeLibs]) {
 }
 
 task cleanGemjar {
-    delete fileTree(project.file('lib/logstash-core/')) {
+    delete fileTree(project.file('lib/jars/')) {
         include '*.jar'
     }
 }
