@@ -1,0 +1,30 @@
+description = """Logstash Integration Tests"""
+
+repositories {
+  mavenCentral()
+}
+
+buildscript {
+  repositories {
+    mavenCentral()
+  }
+}
+
+dependencies {
+  testCompile project(':logstash-core')
+  testCompile 'org.assertj:assertj-core:3.8.0'
+  testCompile 'junit:junit:4.12'
+}
+
+test {
+  exclude '/**'
+}
+
+task integrationTests(type: Test) {
+  inputs.files fileTree("${projectDir}/services")
+  inputs.files fileTree("${projectDir}/framework")
+  inputs.files fileTree("${projectDir}/fixtures")
+  inputs.files fileTree("${projectDir}/specs")
+  systemProperty 'logstash.core.root.dir', projectDir.absolutePath
+  include '/org/logstash/integration/RSpecTests.class'
+}

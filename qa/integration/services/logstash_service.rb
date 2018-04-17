@@ -20,7 +20,7 @@ class LogstashService < Service
   RETRY_ATTEMPTS = 10
 
   @process = nil
-  
+
   attr_reader :logstash_home
   attr_reader :default_settings_file
   attr_writer :env_variables
@@ -43,7 +43,7 @@ class LogstashService < Service
       @logstash_bin = File.join("#{@logstash_home}", LS_BIN)
       raise "Logstash binary not found in path #{@logstash_home}" unless File.file? @logstash_bin
     end
-    
+
     @default_settings_file = File.join(@logstash_home, LS_CONFIG_FILE)
     @monitoring_api = MonitoringAPI.new
   end
@@ -55,14 +55,14 @@ class LogstashService < Service
       @process.alive?
     end
   end
-  
+
   def exited?
     @process.exited?
   end
-  
+
   def exit_code
     @process.exit_code
-  end  
+  end
 
   # Starts a LS process in background with a given config file
   # and shuts it down after input is completely processed
@@ -171,22 +171,22 @@ class LogstashService < Service
       tries -= 1
     end
   end
-  
+
   # this method only overwrites existing config with new config
-  # it does not assume that LS pipeline is fully reloaded after a 
+  # it does not assume that LS pipeline is fully reloaded after a
   # config change. It is up to the caller to validate that.
   def reload_config(initial_config_file, reload_config_file)
     FileUtils.cp(reload_config_file, initial_config_file)
-  end  
-  
+  end
+
   def get_version
     `#{@logstash_bin} --version`.split("\n").last
   end
-  
+
   def get_version_yml
     LS_VERSION_FILE
-  end   
-  
+  end
+
   def process_id
     @process.pid
   end
