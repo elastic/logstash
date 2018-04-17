@@ -10,16 +10,23 @@ import org.logstash.execution.plugins.PluginConfigSpec;
  */
 public final class LsConfiguration {
 
+    private final Map<String, String> rawSettings;
+
     /**
      * @param raw Configuration Settings Map. Values are serialized.
      */
     public LsConfiguration(final Map<String, String> raw) {
-
+        this.rawSettings = raw;
     }
 
     public <T> T get(final PluginConfigSpec<T> configSpec) {
         // TODO: Implement
         return null;
+    }
+
+    public String getRawValue(PluginConfigSpec<?> configSpec) {
+        String rawValue = rawSettings.get(configSpec.name());
+        return rawValue == null ? (String)configSpec.defaultValue() : rawValue;
     }
 
     public boolean contains(final PluginConfigSpec<?> configSpec) {
@@ -34,6 +41,12 @@ public final class LsConfiguration {
     public static PluginConfigSpec<String> stringSetting(final String name) {
         return new PluginConfigSpec<>(
             name, String.class, null, false, false
+        );
+    }
+
+    public static PluginConfigSpec<String> stringSetting(final String name, final String defaultValue) {
+        return new PluginConfigSpec<>(
+                name, String.class, defaultValue, false, false
         );
     }
 

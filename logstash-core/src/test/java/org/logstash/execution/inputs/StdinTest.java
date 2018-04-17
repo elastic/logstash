@@ -2,6 +2,7 @@ package org.logstash.execution.inputs;
 
 import org.junit.Test;
 import org.logstash.execution.LsConfiguration;
+import org.logstash.execution.codecs.Line;
 import org.logstash.execution.queue.QueueWriter;
 
 import java.io.IOException;
@@ -23,14 +24,14 @@ public class StdinTest {
 
     @Test
     public void testSimpleEvent() throws IOException {
-        String testInput = "foo" + System.lineSeparator();
+        String testInput = "foo" + Line.DEFAULT_DELIMITER;
         TestQueueWriter queueWriter = testStdin(testInput.getBytes());
         assertEquals(1, queueWriter.getEvents().size());
     }
 
     @Test
     public void testEvents() throws IOException {
-        String testInput = "foo" + System.lineSeparator() + "bar" + System.lineSeparator() + "baz" + System.lineSeparator();
+        String testInput = "foo" + Line.DEFAULT_DELIMITER + "bar" + Line.DEFAULT_DELIMITER + "baz" + Line.DEFAULT_DELIMITER;
         TestQueueWriter queueWriter = testStdin(testInput.getBytes());
         assertEquals(3, queueWriter.getEvents().size());
     }
@@ -38,7 +39,7 @@ public class StdinTest {
     @Test
     public void testUtf8Events() throws IOException {
         String[] inputs = {"München1", "安装中文输入法", "München3"};
-        String testInput = String.join(System.lineSeparator(), inputs) + System.lineSeparator();
+        String testInput = String.join(Line.DEFAULT_DELIMITER, inputs) + Line.DEFAULT_DELIMITER;
         TestQueueWriter queueWriter = testStdin(testInput.getBytes());
 
         List<Map<String, Object>> events = queueWriter.getEvents();

@@ -27,7 +27,7 @@ public class LineTest {
     @Test
     public void testDecodeDefaultDelimiter() {
         String[] inputStrings = {"foo", "bar", "baz"};
-        String input = String.join(System.lineSeparator(), inputStrings);
+        String input = String.join(Line.DEFAULT_DELIMITER, inputStrings);
 
         testDecode(null, null, input, inputStrings.length - 1, 1, inputStrings);
     }
@@ -113,7 +113,7 @@ public class LineTest {
     @Test
     public void testDecodeWithUtf8() {
         String input = "München 安装中文输入法";
-        testDecode(null, null, input + System.lineSeparator(), 1, 0, new String[]{input});
+        testDecode(null, null, input + Line.DEFAULT_DELIMITER, 1, 0, new String[]{input});
     }
 
     @Test
@@ -166,7 +166,7 @@ public class LineTest {
     @Test
     public void testFlush() {
         String[] inputs = {"The", "quick", "brown", "fox", "jumps"};
-        String input = String.join(System.lineSeparator(), inputs);
+        String input = String.join(Line.DEFAULT_DELIMITER, inputs);
         testDecode(null, null, input, inputs.length - 1, 1, inputs);
     }
 
@@ -254,7 +254,7 @@ public class LineTest {
         e.setField("myfield2", 43L);
         line.encode(e, outputStream);
 
-        String delimiter = System.lineSeparator();
+        String delimiter = Line.DEFAULT_DELIMITER;
         String resultingString = outputStream.toString();
         // first delimiter should occur at the halfway point of the string
         assertEquals(resultingString.indexOf(delimiter), (resultingString.length() / 2) - delimiter.length());
@@ -288,7 +288,7 @@ public class LineTest {
         Line line = new Line(new LsConfiguration(Collections.singletonMap("format", "%{host}-%{message}")), null);
         String message = "Hello world";
         String host = "test";
-        String expectedOutput = host + "-" + message + System.lineSeparator();
+        String expectedOutput = host + "-" + message + Line.DEFAULT_DELIMITER;
         Event e = new Event();
         e.setField("message", message);
         e.setField("host", host);
