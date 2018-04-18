@@ -46,24 +46,27 @@ public final class JRubyWrappedWriteClientExt extends RubyObject {
         this.writeClient = args[0];
         final String pipelineId = args[1].asJavaString();
         final IRubyObject metric = args[2];
-        final IRubyObject pluginId = args[3];
-        final IRubyObject eventsMetrics = getMetric(metric, "stats", "events");
-        eventsMetricsCounter = LongCounter.fromRubyBase(eventsMetrics, IN_KEY);
-        eventsMetricsTime = LongCounter.fromRubyBase(eventsMetrics, PUSH_DURATION_KEY);
-        final IRubyObject pipelineMetrics =
-            getMetric(metric, "stats", "pipelines", pipelineId, "events");
-        pipelineMetricsCounter = LongCounter.fromRubyBase(pipelineMetrics, IN_KEY);
-        pipelineMetricsTime = LongCounter.fromRubyBase(pipelineMetrics, PUSH_DURATION_KEY);
-        final IRubyObject pluginMetrics = getMetric(
-            metric, "stats", "pipelines", pipelineId, "plugins", "inputs",
-            pluginId.asJavaString(), "events"
-        );
-        pluginMetricsCounter =
-            LongCounter.fromRubyBase(pluginMetrics, context.runtime.newSymbol("out"));
-        pluginMetricsTime = LongCounter.fromRubyBase(pluginMetrics, PUSH_DURATION_KEY);
-        final RubyClass writerClass = writeClient.getMetaClass();
-        pushOne = writerClass.searchMethod("push");
-        pushBatch = writerClass.searchMethod("push_batch");
+        // Synchronize on the metric since setting up new fields on it is not threadsafe
+        synchronized (metric) {
+            final IRubyObject pluginId = args[3];
+            final IRubyObject eventsMetrics = getMetric(metric, "stats", "events");
+            eventsMetricsCounter = LongCounter.fromRubyBase(eventsMetrics, IN_KEY);
+            eventsMetricsTime = LongCounter.fromRubyBase(eventsMetrics, PUSH_DURATION_KEY);
+            final IRubyObject pipelineMetrics =
+                getMetric(metric, "stats", "pipelines", pipelineId, "events");
+            pipelineMetricsCounter = LongCounter.fromRubyBase(pipelineMetrics, IN_KEY);
+            pipelineMetricsTime = LongCounter.fromRubyBase(pipelineMetrics, PUSH_DURATION_KEY);
+            final IRubyObject pluginMetrics = getMetric(
+                metric, "stats", "pipelines", pipelineId, "plugins", "inputs",
+                pluginId.asJavaString(), "events"
+            );
+            pluginMetricsCounter =
+                LongCounter.fromRubyBase(pluginMetrics, context.runtime.newSymbol("out"));
+            pluginMetricsTime = LongCounter.fromRubyBase(pluginMetrics, PUSH_DURATION_KEY);
+            final RubyClass writerClass = writeClient.getMetaClass();
+            pushOne = writerClass.searchMethod("push");
+            pushBatch = writerClass.searchMethod("push_batch");
+        }
         return this;
     }
 
