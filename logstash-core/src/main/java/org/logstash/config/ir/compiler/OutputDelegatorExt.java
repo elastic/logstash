@@ -14,6 +14,7 @@ import org.jruby.anno.JRubyMethod;
 import org.jruby.runtime.Block;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
+import org.logstash.execution.WorkerLoop;
 import org.logstash.instrument.metrics.MetricKeys;
 import org.logstash.instrument.metrics.counter.LongCounter;
 
@@ -132,6 +133,10 @@ public final class OutputDelegatorExt extends RubyObject {
     @JRubyMethod
     public IRubyObject strategy(final ThreadContext context) {
         return strategy;
+    }
+
+    public IRubyObject multiReceive(final RubyArray events) {
+        return multiReceive(WorkerLoop.THREAD_CONTEXT.get(), events);
     }
 
     @JRubyMethod(name = "multi_receive")

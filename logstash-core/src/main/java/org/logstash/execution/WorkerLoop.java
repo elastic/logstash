@@ -4,10 +4,20 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.LongAdder;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jruby.runtime.ThreadContext;
+import org.logstash.RubyUtil;
 import org.logstash.config.ir.CompiledPipeline;
 import org.logstash.config.ir.compiler.Dataset;
 
 public final class WorkerLoop implements Runnable {
+
+    /**
+     * Hard Reference to the Ruby {@link ThreadContext} for this thread. It is ok to keep
+     * a hard reference instead of Ruby's weak references here since we can expect worker threads
+     * to be runnable most of the time.
+     */
+    public static final ThreadLocal<ThreadContext> THREAD_CONTEXT =
+        ThreadLocal.withInitial(RubyUtil.RUBY::getCurrentContext);
 
     private static final Logger LOGGER = LogManager.getLogger(WorkerLoop.class);
 
