@@ -69,7 +69,6 @@ describe "Test that Logstash" do
       test_env["LOGSTASH_KEYSTORE_PASS"] = "WRONG_PASSWRD"
       @logstash.env_variables = test_env
       @logstash.spawn_logstash("-e", "input {generator { count => 1 }} output { }", "--path.settings", settings_dir)
-      @logstash.wait_for_logstash
       try(num_retries) do
         expect(@logstash.exited?).to be(true)
       end
@@ -83,7 +82,6 @@ describe "Test that Logstash" do
       test_env["LOGSTASH_KEYSTORE_PASS"] = "WRONG_PASSWRD"
       @logstash.env_variables = test_env
       @logstash.spawn_logstash("-e", "input {generator { count => 1 }} output { }", "--path.settings", settings_dir)
-      @logstash.wait_for_logstash
       try(num_retries) do
         expect(@logstash.exited?).to be(true)
       end
@@ -97,7 +95,6 @@ describe "Test that Logstash" do
       test_env["LOGSTASH_KEYSTORE_PASS"] = "keystore_pa9454w3rd"
       @logstash.env_variables = test_env
       @logstash.spawn_logstash("-e", "input {stdin {}} output { }", "--path.settings", settings_dir)
-      @logstash.wait_for_logstash
       try(num_retries) do
         expect(@logstash.exited?).to be(true)
       end
