@@ -15,6 +15,7 @@ import org.jruby.anno.JRubyMethod;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.RubyUtil;
+import org.logstash.execution.WorkerLoop;
 import org.logstash.ext.JrubyEventExtLibrary;
 import org.logstash.instrument.metrics.MetricKeys;
 import org.logstash.instrument.metrics.counter.LongCounter;
@@ -127,7 +128,8 @@ public final class FilterDelegatorExt extends RubyObject {
     }
 
     @SuppressWarnings("unchecked")
-    public RubyArray multiFilter(final ThreadContext context, final RubyArray batch) {
+    public RubyArray multiFilter(final RubyArray batch) {
+        final ThreadContext context = WorkerLoop.THREAD_CONTEXT.get();
         eventMetricIn.increment((long) batch.size());
         final long start = System.nanoTime();
         final RubyArray result = (RubyArray) filter.callMethod(context, "multi_filter", batch);
@@ -144,7 +146,8 @@ public final class FilterDelegatorExt extends RubyObject {
         return result;
     }
 
-    public RubyArray flush(final ThreadContext context, final RubyHash options) {
+    public RubyArray flush(final RubyHash options) {
+        final ThreadContext context = WorkerLoop.THREAD_CONTEXT.get();
         final IRubyObject newEvents = filter.callMethod(context, "flush", options);
         final RubyArray result;
         if (newEvents.isNil()) {

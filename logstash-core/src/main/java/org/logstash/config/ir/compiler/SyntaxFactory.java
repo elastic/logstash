@@ -41,38 +41,13 @@ final class SyntaxFactory {
         return new SyntaxFactory.Assignment(target, value);
     }
 
-    public static MethodLevelSyntaxElement definition(final VariableDefinition declaration,
-        final MethodLevelSyntaxElement value) {
-        return new SyntaxFactory.Assignment(declaration, value);
-    }
-
     public static ValueSyntaxElement cast(final Class<?> clazz, final ValueSyntaxElement argument) {
         return new SyntaxFactory.TypeCastStatement(clazz, argument);
     }
 
     public static MethodLevelSyntaxElement and(final ValueSyntaxElement left,
         final ValueSyntaxElement right) {
-        return new MethodLevelSyntaxElement() {
-
-            @Override
-            public String generateCode() {
-                return join("(", left.generateCode(), "&&", right.generateCode(), ")");
-            }
-
-            @Override
-            public MethodLevelSyntaxElement replace(final MethodLevelSyntaxElement search,
-                final MethodLevelSyntaxElement replacement) {
-                return and(
-                    (ValueSyntaxElement) left.replace(search, replacement),
-                    (ValueSyntaxElement) right.replace(search, replacement)
-                );
-            }
-
-            @Override
-            public int count(final MethodLevelSyntaxElement search) {
-                return left.count(search) + right.count(search);
-            }
-        };
+        return () -> join("(", left.generateCode(), "&&", right.generateCode(), ")");
     }
 
     public static ValueSyntaxElement ternary(final ValueSyntaxElement condition,
@@ -81,50 +56,15 @@ final class SyntaxFactory {
     }
 
     public static MethodLevelSyntaxElement not(final ValueSyntaxElement var) {
-        return new MethodLevelSyntaxElement() {
-            @Override
-            public MethodLevelSyntaxElement replace(final MethodLevelSyntaxElement search,
-                final MethodLevelSyntaxElement replacement) {
-                return not((ValueSyntaxElement) var.replace(search, replacement));
-            }
-
-            @Override
-            public int count(final MethodLevelSyntaxElement search) {
-                return var.count(search);
-            }
-
-            @Override
-            public String generateCode() {
-                return join("!(", var.generateCode(), ")");
-            }
-        };
+        return () -> join("!(", var.generateCode(), ")");
     }
 
     public static MethodLevelSyntaxElement forLoop(final VariableDefinition element,
         final MethodLevelSyntaxElement iterable, final Closure body) {
-        return new MethodLevelSyntaxElement() {
-            @Override
-            public MethodLevelSyntaxElement replace(final MethodLevelSyntaxElement search,
-                final MethodLevelSyntaxElement replacement) {
-                return forLoop(
-                    element, iterable.replace(search, replacement),
-                    (Closure) body.replace(search, replacement)
-                );
-            }
-
-            @Override
-            public int count(final MethodLevelSyntaxElement search) {
-                return iterable.count(search) + iterable.count(search);
-            }
-
-            @Override
-            public String generateCode() {
-                return join(
-                    "for (", element.generateCode(), " : ",
-                    iterable.generateCode(), ") {\n", body.generateCode(), "\n}"
-                );
-            }
-        };
+        return () -> join(
+            "for (", element.generateCode(), " : ",
+            iterable.generateCode(), ") {\n", body.generateCode(), "\n}"
+        );
     }
 
     public static MethodLevelSyntaxElement ifCondition(final MethodLevelSyntaxElement condition,
@@ -134,37 +74,13 @@ final class SyntaxFactory {
 
     public static MethodLevelSyntaxElement ifCondition(final MethodLevelSyntaxElement condition,
         final Closure left, final Closure right) {
-        return new MethodLevelSyntaxElement() {
-            @Override
-            public String generateCode() {
-                return join(
-                    "if(", condition.generateCode(), ") {\n", left.generateCode(),
-                    "\n}",
-                    right.empty() ? "" : join(" else {\n", right.generateCode(), "\n}")
-                );
-            }
-
-            @Override
-            public MethodLevelSyntaxElement replace(final MethodLevelSyntaxElement search,
-                final MethodLevelSyntaxElement replacement) {
-                return ifCondition(
-                    condition.replace(search, replacement),
-                    (Closure) left.replace(search, replacement),
-                    (Closure) right.replace(search, replacement)
-                );
-            }
-
-            @Override
-            public int count(final MethodLevelSyntaxElement search) {
-                return condition.count(search) + left.count(search) + right.count(search);
-            }
-        };
+        return () -> join(
+            "if(", condition.generateCode(), ") {\n", left.generateCode(),
+            "\n}",
+            right.empty() ? "" : join(" else {\n", right.generateCode(), "\n}")
+        );
     }
 
-    /**
-     * Syntax Element that cannot be replaced via
-     * {@link MethodLevelSyntaxElement#replace(MethodLevelSyntaxElement, MethodLevelSyntaxElement)}.
-     */
     public static final class IdentifierStatement implements ValueSyntaxElement {
 
         private final String value;
@@ -176,17 +92,6 @@ final class SyntaxFactory {
         @Override
         public String generateCode() {
             return value;
-        }
-
-        @Override
-        public MethodLevelSyntaxElement replace(final MethodLevelSyntaxElement search,
-            final MethodLevelSyntaxElement replacement) {
-            return this;
-        }
-
-        @Override
-        public int count(final MethodLevelSyntaxElement search) {
-            return this == search ? 1 : 0;
         }
     }
 
@@ -208,17 +113,6 @@ final class SyntaxFactory {
         public String generateCode() {
             return join(field.generateCode(), "=", value.generateCode());
         }
-
-        @Override
-        public MethodLevelSyntaxElement replace(final MethodLevelSyntaxElement search,
-            final MethodLevelSyntaxElement replacement) {
-            return new SyntaxFactory.Assignment(field, value.replace(search, replacement));
-        }
-
-        @Override
-        public int count(final MethodLevelSyntaxElement search) {
-            return value.count(search);
-        }
     }
 
     /**
@@ -235,17 +129,6 @@ final class SyntaxFactory {
         @Override
         public String generateCode() {
             return value;
-        }
-
-        @Override
-        public MethodLevelSyntaxElement replace(final MethodLevelSyntaxElement search,
-            final MethodLevelSyntaxElement replacement) {
-            return this.equals(search) ? replacement : this;
-        }
-
-        @Override
-        public int count(final MethodLevelSyntaxElement search) {
-            return this.equals(search) ? 1 : 0;
         }
 
         @Override
@@ -288,22 +171,6 @@ final class SyntaxFactory {
         }
 
         @Override
-        public MethodLevelSyntaxElement replace(final MethodLevelSyntaxElement search,
-            final MethodLevelSyntaxElement replacement) {
-            return this.equals(search) ? replacement : new SyntaxFactory.MethodCallReturnValue(
-                instance.replace(search, replacement), method,
-                args.stream().map(var -> var.replace(search, replacement))
-                    .toArray(ValueSyntaxElement[]::new)
-            );
-        }
-
-        @Override
-        public int count(final MethodLevelSyntaxElement search) {
-            return this.equals(search) ? 1 :
-                instance.count(search) + args.stream().mapToInt(v -> v.count(search)).sum();
-        }
-
-        @Override
         public String generateCode() {
             return join(
                 instance.generateCode(), ".", method, "(", String.join(
@@ -340,19 +207,6 @@ final class SyntaxFactory {
         }
 
         @Override
-        public MethodLevelSyntaxElement replace(final MethodLevelSyntaxElement search,
-            final MethodLevelSyntaxElement replacement) {
-            return new SyntaxFactory.TypeCastStatement(
-                clazz, (ValueSyntaxElement) argument.replace(search, replacement)
-            );
-        }
-
-        @Override
-        public int count(final MethodLevelSyntaxElement search) {
-            return argument.count(search);
-        }
-
-        @Override
         public String generateCode() {
             return join("((", clazz.getName(), ")", argument.generateCode(), ")");
         }
@@ -369,17 +223,6 @@ final class SyntaxFactory {
         @Override
         public String generateCode() {
             return join("return ", value.generateCode());
-        }
-
-        @Override
-        public MethodLevelSyntaxElement replace(final MethodLevelSyntaxElement search,
-            final MethodLevelSyntaxElement replacement) {
-            return new SyntaxFactory.ReturnStatement(value.replace(search, replacement));
-        }
-
-        @Override
-        public int count(final MethodLevelSyntaxElement search) {
-            return value.count(search);
         }
     }
 
@@ -404,21 +247,6 @@ final class SyntaxFactory {
                 "(", condition.generateCode(), " ? ", left.generateCode(), " : ",
                 right.generateCode(), ")"
             );
-        }
-
-        @Override
-        public MethodLevelSyntaxElement replace(final MethodLevelSyntaxElement search,
-            final MethodLevelSyntaxElement replacement) {
-            return new SyntaxFactory.TernaryStatement(
-                (ValueSyntaxElement) condition.replace(search, replacement),
-                (ValueSyntaxElement) left.replace(search, replacement),
-                (ValueSyntaxElement) right.replace(search, replacement)
-            );
-        }
-
-        @Override
-        public int count(final MethodLevelSyntaxElement search) {
-            return left.count(search) + right.count(search);
         }
     }
 }
