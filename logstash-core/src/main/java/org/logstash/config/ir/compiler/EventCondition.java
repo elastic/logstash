@@ -31,6 +31,7 @@ import org.logstash.config.ir.expression.binary.Or;
 import org.logstash.config.ir.expression.binary.RegexEq;
 import org.logstash.config.ir.expression.unary.Not;
 import org.logstash.config.ir.expression.unary.Truthy;
+import org.logstash.execution.WorkerLoop;
 import org.logstash.ext.JrubyEventExtLibrary;
 
 /**
@@ -598,7 +599,7 @@ public interface EventCondition {
             public boolean fulfilled(final JrubyEventExtLibrary.RubyEvent event) {
                 final Object tomatch = event.getEvent().getUnconvertedField(field);
                 return tomatch instanceof RubyString &&
-                    !((RubyString) tomatch).match(RubyUtil.RUBY.getCurrentContext(), regex).isNil();
+                    !((RubyString) tomatch).match(WorkerLoop.THREAD_CONTEXT.get(), regex).isNil();
             }
         }
 
