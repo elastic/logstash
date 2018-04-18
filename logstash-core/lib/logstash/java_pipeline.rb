@@ -33,7 +33,6 @@ module LogStash; class JavaBasePipeline
 
   def initialize(pipeline_config, namespaced_metric = nil, agent = nil)
     @logger = self.logger
-    @mutex = Mutex.new
     @ephemeral_id = SecureRandom.uuid
 
     @pipeline_config = pipeline_config
@@ -426,8 +425,7 @@ module LogStash; class JavaPipeline < JavaBasePipeline
   def inputworker(plugin)
     Util::set_thread_name("[#{pipeline_id}]<#{plugin.class.config_name}")
     begin
-      input_queue_client = wrapped_write_client(plugin.id.to_sym)
-      plugin.run(input_queue_client)
+      plugin.run(LogStash::WrappedWriteClient.new(@input_queue_client, @pipeline_id.to_s.to_sym, metric, plugin.id.to_sym))
     rescue => e
       if plugin.stop?
         @logger.debug("Input plugin raised exception during shutdown, ignoring it.",
@@ -615,12 +613,5 @@ module LogStash; class JavaPipeline < JavaBasePipeline
     keys = super
     keys[:thread] ||= thread.inspect if thread
     keys
-  end
-
-  def wrapped_write_client(plugin_id)
-    #need to ensure that metrics are initialized one plugin at a time, else a race condition can exist.
-    @mutex.synchronize do
-      LogStash::WrappedWriteClient.new(@input_queue_client, @pipeline_id.to_s.to_sym, metric, plugin_id)
-    end
   end
 end; end
