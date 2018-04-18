@@ -10,6 +10,7 @@ require "logstash/config/source_loader"
 require "logstash/config/modules_common"
 require "logstash/modules/util"
 require "logstash/elasticsearch_client"
+require "logstash/kibana_client"
 require "json"
 require_relative "../support/helpers"
 require_relative "../support/matchers"
@@ -374,13 +375,13 @@ describe LogStash::Runner do
           allow(kbnclient).to receive(:version_parts).and_return(kbn_version.split('.'))
           allow(kbnclient).to receive(:can_connect?).and_return(true)
           allow(LogStash::ElasticsearchClient).to receive(:build).and_return(esclient)
-          allow(LogStash::Modules::KibanaClient).to receive(:new).and_return(kbnclient)
+          allow(LogStash::KibanaClient).to receive(:new).and_return(kbnclient)
 
           expect(esclient).to receive(:put).once do |path, content|
             LogStash::ElasticsearchClient::Response.new(201, "", {})
           end
           expect(kbnclient).to receive(:post).twice do |path, content|
-            LogStash::Modules::KibanaClient::Response.new(201, "", {})
+            LogStash::KibanaClient::Response.new(201, "", {})
           end
 
           expect(LogStash::Agent).to receive(:new) do |settings, source_loader|

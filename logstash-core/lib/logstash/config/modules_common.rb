@@ -1,7 +1,7 @@
 # encoding: utf-8
 require "logstash/util/loggable"
 require "logstash/elasticsearch_client"
-require "logstash/modules/kibana_client"
+require "logstash/kibana_client"
 require "logstash/modules/elasticsearch_importer"
 require "logstash/modules/kibana_importer"
 require "logstash/modules/settings_merger"
@@ -72,7 +72,15 @@ module LogStash module Config
           # Only import data if it's not a config test and --setup is true
           if !config_test && modul_setup
             esclient = LogStash::ElasticsearchClient.build(module_hash)
-            kbnclient = LogStash::Modules::KibanaClient.new(module_hash)
+
+            kbn_settings_hash = Hash.new
+            module_hash.each do | setting_name, setting_value |
+              setting_name.match("var\.kibana\.(.+)") do | match |
+                kbn_settings_hash[match[1]] = setting_value
+              end
+            end
+            kbnclient = LogStash::KibanaClient.new(module_hash)
+
             esconnected = esclient.can_connect?
             kbnconnected = kbnclient.can_connect?
             if esconnected && kbnconnected
