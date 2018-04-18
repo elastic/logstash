@@ -85,4 +85,4 @@ module LogStash
       end
     end
   end
-end end
+end

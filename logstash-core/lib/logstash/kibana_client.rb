@@ -151,4 +151,4 @@ module LogStash class KibanaClient
   def full_url(relative)
     "#{@endpoint}/#{relative}"
   end
-end end end
+end end
