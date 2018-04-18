@@ -117,9 +117,11 @@ describe "Test Logstash instance whose default settings are overridden" do
     end
 
     # now check monitoring API to validate
-    node_info = @logstash_service.monitoring_api.node_info
-    expect(node_info["pipelines"]["main"]["workers"]).to eq(workers)
-    expect(node_info["pipelines"]["main"]["batch_size"]).to eq(batch_size)
+    try(num_retries) do
+      node_info = @logstash_service.monitoring_api.node_info
+      expect(node_info["pipelines"]["main"]["workers"]).to eq(workers)
+      expect(node_info["pipelines"]["main"]["batch_size"]).to eq(batch_size)
+    end
   end
 
   it "start on a different HTTP port" do
