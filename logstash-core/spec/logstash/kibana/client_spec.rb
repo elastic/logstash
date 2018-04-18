@@ -1,7 +1,7 @@
 # encoding: utf-8
 require "spec_helper"
 require "logstash/kibana/client"
-module LogStash module Modules
+module LogStash module Kibana
   KibanaTestResponse = Struct.new(:code, :body, :headers)
   class KibanaTestClient
     def http(method, endpoint, options)
@@ -18,9 +18,9 @@ module LogStash module Modules
     subject(:kibana_client) { described_class.new(settings, test_client) }
 
     context "when supplied with conflicting scheme data" do
-      let(:settings) { {"var.kibana.scheme" => "http", "var.kibana.host" => kibana_host} }
+      let(:settings) { {"scheme" => "http", "host" => kibana_host} }
       it "a new instance will throw an error" do
-        expect{described_class.new(settings, test_client)}.to raise_error(ArgumentError, /Detected differing Kibana host schemes as sourced from var\.kibana\.host: 'https' and var\.kibana\.scheme: 'http'/)
+        expect{described_class.new(settings, test_client)}.to raise_error(ArgumentError, /Detected differing Kibana host schemes as sourced from host: 'https' and scheme: 'http'/)
       end
     end
 
@@ -28,13 +28,13 @@ module LogStash module Modules
       ["httpd", "ftp", "telnet"].each do |uri_scheme|
         it "a new instance will throw an error" do
           re = /Kibana host scheme given is invalid, given value: '#{uri_scheme}' - acceptable values: 'http', 'https'/
-          expect{described_class.new({"var.kibana.scheme" => uri_scheme}, test_client)}.to raise_error(ArgumentError, re)
+          expect{described_class.new({"scheme" => uri_scheme}, test_client)}.to raise_error(ArgumentError, re)
         end
       end
     end
 
     context "when supplied with the scheme in the host only" do
-      let(:settings) { {"var.kibana.host" => kibana_host} }
+      let(:settings) { {"host" => kibana_host} }
       it "has a version and an endpoint" do
         expect(kibana_client.version).to eq("1.2.3")
         expect(kibana_client.endpoint).to eq("https://foo.bar:4321")
@@ -42,7 +42,7 @@ module LogStash module Modules
     end
 
     context "when supplied with the scheme in the scheme setting" do
-      let(:settings) { {"var.kibana.scheme" => "https", "var.kibana.host" => "foo.bar:4321"} }
+      let(:settings) { {"scheme" => "https", "host" => "foo.bar:4321"} }
       it "has a version and an endpoint" do
         expect(kibana_client.version).to eq("1.2.3")
         expect(kibana_client.endpoint).to eq(kibana_host)
@@ -50,7 +50,7 @@ module LogStash module Modules
     end
 
     context "when supplied with a no scheme host setting and ssl is enabled" do
-      let(:settings) { {"var.kibana.ssl.enabled" => "true", "var.kibana.host" => "foo.bar:4321"} }
+      let(:settings) { {"ssl.enabled" => "true", "host" => "foo.bar:4321"} }
       it "has a version and an endpoint" do
         expect(kibana_client.version).to eq("1.2.3")
         expect(kibana_client.endpoint).to eq(kibana_host)
@@ -60,7 +60,7 @@ module LogStash module Modules
     describe "ssl option handling" do
       context "when using a string for ssl.enabled" do
         let(:settings) do
-          { "var.kibana.ssl.enabled" => "true" }
+          { "ssl.enabled" => "true" }
         end
 
         it "should set the ssl options" do
@@ -73,7 +73,7 @@ module LogStash module Modules
 
       context "when using a boolean for ssl.enabled" do
         let(:settings) do
-          { "var.kibana.ssl.enabled" => true }
+          { "ssl.enabled" => true }
         end
 
         it "should set the ssl options" do
