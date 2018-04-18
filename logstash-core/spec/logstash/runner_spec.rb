@@ -375,7 +375,7 @@ describe LogStash::Runner do
           allow(kbnclient).to receive(:version_parts).and_return(kbn_version.split('.'))
           allow(kbnclient).to receive(:can_connect?).and_return(true)
           allow(LogStash::ElasticsearchClient).to receive(:build).and_return(esclient)
-          allow(LogStash::Modules::Client).to receive(:new).and_return(kbnclient)
+          allow(LogStash::KibanaClient).to receive(:new).and_return(kbnclient)
 
           expect(esclient).to receive(:put).once do |path, content|
             LogStash::ElasticsearchClient::Response.new(201, "", {})
