@@ -187,7 +187,7 @@ public final class DatasetCompiler {
 
     private static ValueSyntaxElement invokeOutput(final ValueSyntaxElement output,
         final MethodLevelSyntaxElement events) {
-        return output.call("multiReceive", ValueSyntaxElement.GET_RUBY_THREAD_CONTEXT, events);
+        return output.call("multiReceive", events);
     }
 
     private static Closure filterBody(final ValueSyntaxElement outputBuffer,
@@ -195,12 +195,7 @@ public final class DatasetCompiler {
         final FilterDelegatorExt plugin) {
         final ValueSyntaxElement filterField = fields.add(plugin);
         final Closure body = Closure.wrap(
-            buffer(
-                outputBuffer,
-                filterField.call(
-                    "multiFilter", ValueSyntaxElement.GET_RUBY_THREAD_CONTEXT, inputBuffer
-                )
-            )
+            buffer(outputBuffer, filterField.call("multiFilter", inputBuffer))
         );
         if (plugin.hasFlush()) {
             body.add(callFilterFlush(fields, outputBuffer, filterField, !plugin.periodicFlush()));
@@ -317,13 +312,7 @@ public final class DatasetCompiler {
             );
         }
         return SyntaxFactory.ifCondition(
-            condition,
-            Closure.wrap(
-                buffer(
-                    resultBuffer,
-                    filterPlugin.call(FLUSH, ValueSyntaxElement.GET_RUBY_THREAD_CONTEXT, flushArgs)
-                )
-            )
+            condition, Closure.wrap(buffer(resultBuffer, filterPlugin.call(FLUSH, flushArgs)))
         );
     }
 

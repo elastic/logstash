@@ -83,20 +83,19 @@ describe LogStash::JavaFilterDelegator do
 
     context "when the flush return events" do
       it "increments the out" do
-        ruby_context = RubyUtil::RUBY.getCurrentContext
-        subject.to_java.multiFilter(ruby_context, [LogStash::Event.new])
+        subject.to_java.multiFilter([LogStash::Event.new])
         event_metrics = metric.collector.snapshot_metric.metric_store.get_with_path(
             "filter/my_filter"
         )[:filter][:my_filter][:events]
         expect(event_metrics[:out].value).to eq(0)
-        subject.to_java.flush(ruby_context, {})
+        subject.to_java.flush({})
         expect(event_metrics[:out].value).to eq(1)
       end
     end
 
     context "when the flush doesn't return anything" do
       it "doesnt increment the out" do
-        subject.to_java.flush(RubyUtil::RUBY.getCurrentContext, {})
+        subject.to_java.flush({})
         expect(
             metric.collector.snapshot_metric.metric_store.
                 get_with_path("filter/my_filter")[:filter][:my_filter][:events][:duration_in_millis].value
@@ -107,7 +106,7 @@ describe LogStash::JavaFilterDelegator do
     context "when the filter buffer events" do
 
       it "has incremented :in" do
-        subject.to_java.multiFilter(RubyUtil::RUBY.getCurrentContext, events)
+        subject.to_java.multiFilter(events)
         expect(
             metric.collector.snapshot_metric.metric_store.
                 get_with_path("filter/my_filter")[:filter][:my_filter][:events][:in].value
@@ -115,7 +114,7 @@ describe LogStash::JavaFilterDelegator do
       end
 
       it "has not incremented :out" do
-        subject.to_java.multiFilter(RubyUtil::RUBY.getCurrentContext, events)
+        subject.to_java.multiFilter(events)
         expect(
             metric.collector.snapshot_metric.metric_store.
                 get_with_path("filter/my_filter")[:filter][:my_filter][:events][:out].value
@@ -140,7 +139,7 @@ describe LogStash::JavaFilterDelegator do
       end
 
       it "increments the in/out of the metric" do
-        subject.to_java.multiFilter(RubyUtil::RUBY.getCurrentContext, events)
+        subject.to_java.multiFilter(events)
         event_metrics = metric.collector.snapshot_metric.metric_store.get_with_path(
             "filter/my_filter"
         )[:filter][:my_filter][:events]
@@ -171,7 +170,7 @@ describe LogStash::JavaFilterDelegator do
     end
 
     it "increments the in/out of the metric" do
-      subject.to_java.multiFilter(RubyUtil::RUBY.getCurrentContext, events)
+      subject.to_java.multiFilter(events)
       event_metrics = metric.collector.snapshot_metric.metric_store.get_with_path(
           "filter/my_filter"
       )[:filter][:my_filter][:events]

@@ -2,7 +2,6 @@ package org.logstash.config.ir.compiler;
 
 import java.util.Collections;
 import org.jruby.RubyArray;
-import org.jruby.runtime.ThreadContext;
 import org.junit.Test;
 import org.logstash.Event;
 import org.logstash.FieldReference;
@@ -49,29 +48,5 @@ public final class DatasetCompilerTest {
         );
         assertThat(left.compute(batch, false, false).size(), is(1));
         assertThat(right.compute(batch, false, false).size(), is(1));
-    }
-
-    @Test
-    public void optimizesRedundantRubyThreadContext() {
-        assertThat(
-            Closure.wrap(
-                SyntaxFactory.definition(
-                    new VariableDefinition(ThreadContext.class, "context1"),
-                    ValueSyntaxElement.GET_RUBY_THREAD_CONTEXT
-                ),
-                SyntaxFactory.definition(
-                    new VariableDefinition(ThreadContext.class, "context2"),
-                    ValueSyntaxElement.GET_RUBY_THREAD_CONTEXT
-                )
-            ).generateCode(),
-            is(
-                String.join(
-                    "\n",
-                    "org.jruby.runtime.ThreadContext context=org.logstash.RubyUtil.RUBY.getCurrentContext();",
-                    "org.jruby.runtime.ThreadContext context1=context;",
-                    "org.jruby.runtime.ThreadContext context2=context;"
-                )
-            )
-        );
     }
 }
