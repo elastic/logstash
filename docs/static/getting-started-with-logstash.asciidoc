@@ -46,6 +46,12 @@ error message, and Logstash will be unable to start properly.
 Download the https://www.elastic.co/downloads/logstash[Logstash installation file] that matches your host environment.
 Unpack the file. Do not install Logstash into a directory path that contains colon (:) characters.
 
+NOTE: This package contains both open source and commercial features. 
+{xpack-ref}/license-management.html[Start a 30-day trial license] to enable all       
+of the available commercial features. See the 
+https://www.elastic.co/subscriptions[Subscriptions] page for information about 
+Elastic license levels.
+
 On supported Linux operating systems, you can use a package manager to install Logstash.
 
 [float]
