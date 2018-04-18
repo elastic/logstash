@@ -4,7 +4,7 @@ require "logstash/logging"
 require "logstash/json"
 require "manticore"
 
-module LogStash module Kibana class Client
+module LogStash class KibanaClient
   include LogStash::Util::Loggable
 
   class Response
