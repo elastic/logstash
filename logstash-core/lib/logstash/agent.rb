@@ -159,7 +159,7 @@ class LogStash::Agent
         :count => running_pipelines.size,
         :running_pipelines => running_pipelines.keys,
         :non_running_pipelines => non_running_pipelines.keys
-    )
+    ) if converge_result.success? && converge_result.total > 0
 
     dispatch_events(converge_result)
 
