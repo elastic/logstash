@@ -1,11 +1,10 @@
-package org.logstash.execution.plugins;
+package org.logstash.execution.plugins.discovery;
 
 import java.lang.annotation.Annotation;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import org.logstash.execution.LogstashPlugin;
-import org.reflections.Reflections;
 
 /**
  * Logstash Java Plugin Discovery.

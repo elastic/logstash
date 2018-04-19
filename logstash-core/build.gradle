@@ -125,9 +125,7 @@ dependencies {
     compile('com.google.googlejavaformat:google-java-format:1.1') {
         exclude group: 'com.google.guava', module: 'guava'
     }
-    compile('org.reflections:reflections:0.9.11') {
-        exclude group: 'com.google.guava', module: 'guava'
-    }
+    compile 'org.javassist:javassist:3.22.0-GA'
     compile 'com.google.guava:guava:20.0'
     testCompile 'org.apache.logging.log4j:log4j-core:2.9.1:tests'
     testCompile 'junit:junit:4.12'

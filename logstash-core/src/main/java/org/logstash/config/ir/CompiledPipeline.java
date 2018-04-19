@@ -35,7 +35,7 @@ import org.logstash.execution.Input;
 import org.logstash.execution.LsConfiguration;
 import org.logstash.execution.LsContext;
 import org.logstash.execution.Output;
-import org.logstash.execution.plugins.DiscoverPlugins;
+import org.logstash.execution.plugins.discovery.DiscoverPlugins;
 import org.logstash.ext.JrubyEventExtLibrary;
 
 /**
