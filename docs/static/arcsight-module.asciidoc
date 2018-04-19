@@ -7,7 +7,7 @@
 ++++
 
 NOTE: The Logstash ArcSight module is an
-https://www.elastic.co/products/x-pack[X-Pack] feature under the Basic License
+https://www.elastic.co/products/x-pack[{xpack}] feature under the Basic License
 and is therefore free to use. Please contact
 mailto:arcsight@elastic.co[arcsight@elastic.co] for questions or more
 information.
@@ -54,14 +54,13 @@ destination.
 [[arcsight-instructions-smartconnector]]
 ===== Instructions
 
-. {ref}/installing-xpack-es.html[Install X-Pack on Elasticsearch] and then start
-Elasticsearch.
+. {ref}/install-elasticsearch.html[Install {es}] and then start it.
 
-. {kibana-ref}/installing-xpack-kb.html[Install X-Pack on Kibana] and then start
-Kibana.
+. {kibana-ref}/install.html[Install {kib}] and then start it.
 
-. {logstash-ref}/installing-xpack-log.html[Install X-Pack on Logstash], which
-includes the Logstash ArcSight module.
+. {logstash-ref}/installing-logstash.html[Install Logstash], which includes the 
+Logstash ArcSight module.
+
 . Start the Logstash ArcSight module by running the following command in the
 Logstash install directory with your respective EB host and port:
 +
@@ -120,20 +119,17 @@ secured EB port is not currently available.
 [[arcsight-instructions-eventbroker]]
 ===== Instructions
 
-. {ref}/installing-xpack-es.html[Install X-Pack on Elasticsearch] and then start
-Elasticsearch.
+. {ref}/install-elasticsearch.html[Install {es}] and then start it.
 
-. {kibana-ref}/installing-xpack-kb.html[Install X-Pack on Kibana] and then start
-Kibana.
+. {kibana-ref}/install.html[Install {kib}] and then start it.
 
-. {logstash-ref}/installing-xpack-log.html[Install X-Pack on Logstash], which
+. {logstash-ref}/installing-logstash.html[Install Logstash], which
 includes the Logstash ArcSight module. Then update the Logstash
 <<plugins-inputs-kafka,Kafka input plugin>> to an EB compatible version. In the
 Logstash install directory, run:
 +
 [source,shell]
 -----
-bin/logstash-plugin install x-pack
 bin/logstash-plugin install --version 6.2.7 logstash-input-kafka
 -----
 
