@@ -606,7 +606,7 @@ module LogStash; class JavaPipeline < JavaBasePipeline
   end
 
   def getQueueWriter(plugin_name)
-    wrapped_write_client(plugin_name)
+    LogStash::WrappedWriteClient.new(@input_queue_client, @pipeline_id.to_s.to_sym, metric, plugin_name.to_sym)
   end
 
   private
