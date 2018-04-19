@@ -198,6 +198,8 @@ module LogStash::Util
       o.clone
     when String
       o.clone #need to keep internal state e.g. frozen
+    when LogStash::Timestamp
+      o.clone
     else
       Marshal.load(Marshal.dump(o))
     end

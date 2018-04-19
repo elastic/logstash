@@ -43,6 +43,13 @@ describe LogStash::Util do
     end
   end
 
+  context "deep_clone" do
+    it "correctly clones a LogStash::Timestamp" do
+      timestamp = LogStash::Timestamp.now
+      expect(LogStash::Util.deep_clone(timestamp).inspect).to eq(timestamp.inspect)
+    end
+  end
+
   describe ".class_name" do
     context "when the class is a top level class" do
       let(:klass) { ClassNameTest.new }
