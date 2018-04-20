@@ -2,6 +2,8 @@ package org.logstash.config.ir.compiler;
 
 import java.util.Collections;
 import org.jruby.RubyArray;
+import org.jruby.runtime.ThreadContext;
+import org.jruby.runtime.builtin.IRubyObject;
 import org.junit.Test;
 import org.logstash.Event;
 import org.logstash.FieldReference;
@@ -23,9 +25,15 @@ public final class DatasetCompilerTest {
             DatasetCompiler.outputDataset(
                 Collections.emptyList(),
                 new OutputDelegatorExt(RubyUtil.RUBY, RubyUtil.OUTPUT_DELEGATOR_CLASS)
-                    .initForTesting(RubyUtil.RUBY.evalScriptlet(
-                        "output = Object.new\noutput.define_singleton_method(:multi_receive) do |batch|\nend\noutput"
-                    )),
+                    .initForTesting(
+                        new OutputStrategyExt.SimpleAbstractOutputStrategyExt(
+                            RubyUtil.RUBY, RubyUtil.RUBY.getObject()
+                        ) {
+                            @Override
+                            protected IRubyObject output(final ThreadContext context, final IRubyObject events) {
+                                return this;
+                            }
+                        }),
                 true
             ).instantiate().compute(RubyUtil.RUBY.newArray(), false, false),
             nullValue()
