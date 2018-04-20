@@ -1,0 +1,14 @@
+[role="xpack"]
+[[breaking-changes-xls]]
+== {xpack} Breaking Changes
+
+This section summarizes the changes that you need to be aware of when migrating
+your application from one version of {xpack} to another.
+
+See also:
+
+* <<breaking-changes,Breaking Changes in Logstash>>
+* {ref}/breaking-changes-xes.html[{xpack} Breaking Changes in {es}]
+* {kibana-ref}/breaking-changes-xkb.html[ {xpack} Breaking Changes in {kib}]
+
+There are no breaking changes in Logstash {xpack} 6.x features.

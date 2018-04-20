@@ -1,0 +1,80 @@
+[role="xpack"]
+[[configuration-management-settings]]
+==== Configuration Management Settings in Logstash
+++++
+<titleabbrev>Configuration Management Settings</titleabbrev>
+++++
+
+You can set the following `xpack.management` settings in `logstash.yml` to
+enable
+<<logstash-centralized-pipeline-management,centralized pipeline management>>.
+For more information about configuring Logstash, see <<logstash-settings-file>>.
+
+The following example shows basic settings that assume {es} and {kib} are
+installed on the localhost with basic AUTH enabled, but no SSL. If you're using
+SSL, you need to specify additional SSL settings.
+
+[source,shell]
+-----
+xpack.management.enabled: true
+xpack.management.elasticsearch.url: "http://localhost:9200/"
+xpack.management.elasticsearch.username: logstash_admin_user
+xpack.management.elasticsearch.password: t0p.s3cr3t
+xpack.management.logstash.poll_interval: 5s
+xpack.management.pipeline.id: ["apache", "cloudwatch_logs"]
+-----
+
+
+`xpack.management.enabled`::
+
+Set to `true` to enable {xpack} centralized configuration management for
+Logstash.
+
+`xpack.management.logstash.poll_interval`::
+
+How often the Logstash instance polls for pipeline changes from Elasticsearch.
+The default is 5s.
+
+`xpack.management.pipeline.id`::
+
+Specify a comma-separated list of pipeline IDs to register for centralized
+pipeline management. After changing this setting, you need to restart Logstash
+to pick up changes.
+
+`xpack.management.elasticsearch.url`::
+
+The {es} instance that will store the Logstash pipeline configurations and
+metadata. This might be the same {es} instance specified in the `outputs`
+section in your Logstash configuration, or a different one. Defaults to
+`http://localhost:9200`.
+
+`xpack.management.elasticsearch.username` and `xpack.management.elasticsearch.password`::
+
+If your {es} cluster is protected with basic authentication, these settings
+provide the username and password that the Logstash instance uses to
+authenticate for accessing the configuration data. The username you specify here
+should have the `logstash_admin` role, which provides access to `.logstash-*`
+indices for managing configurations. 
+
+`xpack.management.elasticsearch.ssl.ca`::
+
+Optional setting that enables you to specify a path to the `.pem` file for the
+certificate authority for your {es} instance.
+
+`xpack.management.elasticsearch.ssl.truststore.path`::
+
+Optional setting that provides the path to the Java keystore (JKS) to validate
+the server’s certificate.
+
+`xpack.management.elasticsearch.ssl.truststore.password`::
+
+Optional setting that provides the password to the truststore.
+
+`xpack.management.elasticsearch.ssl.keystore.path`::
+
+Optional setting that provides the path to the Java keystore (JKS) to validate
+the client’s certificate.
+
+`xpack.management.elasticsearch.ssl.keystore.password`::
+
+Optional setting that provides the password to the keystore.

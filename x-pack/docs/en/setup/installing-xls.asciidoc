@@ -1,0 +1,9 @@
+[role="xpack"]
+[[installing-xpack-log]]
+=== Installing X-Pack in Logstash
+++++
+<titleabbrev>Installing {xpack}</titleabbrev>
+++++
+
+By default, when you install Logstash, {xpack} is installed. See
+<<installing-logstash>>.

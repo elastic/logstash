@@ -281,7 +281,7 @@ bootstrap.dependsOn installTestGems
 runIntegrationTests.shouldRunAfter tasks.getByPath(":logstash-core:test")
 check.dependsOn runIntegrationTests
 
-String elasticsearchSnapshotURL = "https://snapshots.elastic.co/downloads/elasticsearch/elasticsearch-${version}-SNAPSHOT.tar.gz"
+String elasticsearchSnapshotURL = System.getenv("ELASTICSEARCH_SNAPSHOT_URL") ?: "https://snapshots.elastic.co/downloads/elasticsearch/elasticsearch-${version}-SNAPSHOT.tar.gz"
 String elasticsearchDownloadLocation = "${projectDir}/build/elasticsearch-${version}-SNAPSHOT.tar.gz"
 
 task downloadEs(type: Download) {

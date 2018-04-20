@@ -1,0 +1,7 @@
+[role="xpack"]
+[[xls-6.2.3]]
+=== Logstash {xpack} 6.2.3 Release Notes
+
+coming[6.2.3]
+
+There are no user-facing changes in this release.

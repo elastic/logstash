@@ -8,7 +8,8 @@ ADD buildSrc /opt/logstash/buildSrc
 RUN /opt/logstash/gradlew wrapper
 
 ADD versions.yml /opt/logstash/versions.yml
-ADD LICENSE /opt/logstash/LICENSE
+ADD LICENSE.txt /opt/logstash/LICENSE.txt
+ADD licenses /opt/logstash/licenses
 ADD CONTRIBUTORS /opt/logstash/CONTRIBUTORS
 ADD Gemfile.template /opt/logstash/Gemfile.template
 ADD Rakefile /opt/logstash/Rakefile
@@ -24,6 +25,7 @@ ADD logstash-core /opt/logstash/logstash-core
 ADD logstash-core-plugin-api /opt/logstash/logstash-core-plugin-api
 ADD bin /opt/logstash/bin
 ADD modules /opt/logstash/modules
+ADD x-pack /opt/logstash/x-pack
 ADD ci /opt/logstash/ci
 ADD settings.gradle /opt/logstash/settings.gradle
 

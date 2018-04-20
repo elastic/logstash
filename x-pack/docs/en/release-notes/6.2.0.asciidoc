@@ -1,0 +1,9 @@
+[role="xpack"]
+[[xls-6.2.0]]
+=== Logstash {xpack} 6.2.0 Release Notes
+
+There are enhancements and bug fixes for the
+<<logstash-pipeline-viewer,Pipeline Viewer UI>> and the
+<<logstash-centralized-pipeline-management,pipeline management feature>> in
+{kib}. For more information, see
+{kibana-ref}/xkb-6.2.0.html[{kib} {xpack} 6.2.0 Release Notes]. 

@@ -61,6 +61,13 @@ module LogStash module Config
           module_hash = modules_array.find {|m| m["name"] == module_name}
           current_module = plugin_modules.find { |allmodules| allmodules.module_name == module_name }
 
+          enabled = current_module.is_enabled?(module_settings)
+          unless enabled
+            logger.warn("The #{module_name} module is not enabled. Please check the logs for additional information.")
+            next
+          end
+
+
           alt_name = "module-#{module_name}"
           pipeline_id = alt_name
           module_settings.set("pipeline.id", pipeline_id)
@@ -71,6 +78,7 @@ module LogStash module Config
           modul_setup = settings.get("modules_setup")
           # Only import data if it's not a config test and --setup is true
           if !config_test && modul_setup
+            logger.info("Setting up the #{module_name} module")
             esclient = LogStash::ElasticsearchClient.build(module_hash)
             kbnclient = LogStash::Modules::KibanaClient.new(module_hash)
             esconnected = esclient.can_connect?
@@ -86,7 +94,10 @@ module LogStash module Config
               connect_fail_args[:elasticsearch_hosts] = esclient.host_settings
               connect_fail_args[:kibana_hosts] = kbnclient.host_settings
             end
+          else
+            logger.info("Starting the #{module_name} module")
           end
+
           config_string = current_module.config_string
           pipelines << {"pipeline_id" => pipeline_id, "alt_name" => alt_name, "config_string" => config_string, "settings" => module_settings}
         rescue => e
@@ -101,5 +112,6 @@ module LogStash module Config
       end
       pipelines
     end
+
   end
 end end
