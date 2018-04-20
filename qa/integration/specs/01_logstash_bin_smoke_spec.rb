@@ -53,7 +53,7 @@ describe "Test Logstash instance" do
       FileUtils.mkdir_p(tmp_data_path)
       @ls1.spawn_logstash("-f", config1, "--path.data", tmp_data_path)
       sleep(0.1) until File.exist?(file_config1) && File.size(file_config1) > 0 # Everything is started successfully at this point
-      expect(is_port_open?(9600)).to be true
+      @ls1.wait_for_logstash
 
       @ls2.spawn_logstash("-f", config2, "--path.data", tmp_data_path)
       try(num_retries) do
@@ -71,7 +71,7 @@ describe "Test Logstash instance" do
       FileUtils.mkdir_p(tmp_data_path_2)
       @ls1.spawn_logstash("-f", config1, "--path.data", tmp_data_path_1)
       sleep(0.1) until File.exist?(file_config1) && File.size(file_config1) > 0 # Everything is started successfully at this point
-      expect(is_port_open?(9600)).to be true
+      @ls1.wait_for_logstash
 
       @ls2.spawn_logstash("-f", config2, "--path.data", tmp_data_path_2)
       sleep(0.1) until File.exist?(file_config2) && File.size(file_config2) > 0 # Everything is started successfully at this point
@@ -82,7 +82,7 @@ describe "Test Logstash instance" do
       if @ls2.settings.feature_flag != "persistent_queues"
         @ls1.spawn_logstash("-f", config1)
         sleep(0.1) until File.exist?(file_config1) && File.size(file_config1) > 0 # Everything is started successfully at this point
-        expect(is_port_open?(9600)).to be true
+        @ls1.wait_for_logstash
 
         puts "will try to start the second LS instance on 9601"
 
@@ -92,7 +92,9 @@ describe "Test Logstash instance" do
         FileUtils.mkdir_p(tmp_data_path)
         @ls2.spawn_logstash("-f", config2, "--path.data", tmp_data_path)
         sleep(0.1) until File.exist?(file_config2) && File.size(file_config2) > 0 # Everything is started successfully at this point
-        expect(is_port_open?(9601)).to be true
+        try(num_retries) do
+          expect(is_port_open?(9601)).to be true
+        end
         expect(@ls1.process_id).not_to eq(@ls2.process_id)
       else
         # Make sure that each instance use a different `path.data`
@@ -104,7 +106,7 @@ describe "Test Logstash instance" do
 
         @ls1.spawn_logstash("--path.settings", path, "-f", config1)
         sleep(0.1) until File.exist?(file_config1) && File.size(file_config1) > 0 # Everything is started successfully at this point
-        expect(is_port_open?(9600)).to be true
+        @ls1.wait_for_logstash
 
         puts "will try to start the second LS instance on 9601"
 
@@ -116,7 +118,9 @@ describe "Test Logstash instance" do
         IO.write(File.join(path, "logstash.yml"), YAML.dump(settings))
         @ls2.spawn_logstash("--path.settings", path, "-f", config2)
         sleep(0.1) until File.exist?(file_config2) && File.size(file_config2) > 0 # Everything is started successfully at this point
-        expect(is_port_open?(9601)).to be true
+        try(num_retries) do
+          expect(is_port_open?(9601)).to be true
+        end
 
         expect(@ls1.process_id).not_to eq(@ls2.process_id)
       end

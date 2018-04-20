@@ -12,6 +12,7 @@ import org.logstash.ackedqueue.ext.JRubyAckedQueueExt;
 import org.logstash.ackedqueue.ext.JRubyWrappedAckedQueueExt;
 import org.logstash.config.ir.compiler.FilterDelegatorExt;
 import org.logstash.config.ir.compiler.OutputDelegatorExt;
+import org.logstash.config.ir.compiler.OutputStrategyExt;
 import org.logstash.execution.QueueReadClientBase;
 import org.logstash.ext.JRubyWrappedWriteClientExt;
 import org.logstash.ext.JrubyAckedReadClientExt;
@@ -31,11 +32,6 @@ public final class RubyUtil {
      * Reference to the global {@link Ruby} runtime.
      */
     public static final Ruby RUBY;
-
-    /**
-     * Logstash Ruby Module.
-     */
-    public static final RubyModule LOGSTASH_MODULE;
 
     public static final RubyClass RUBY_EVENT_CLASS;
 
@@ -71,16 +67,77 @@ public final class RubyUtil {
 
     public static final RubyClass FILTER_DELEGATOR_CLASS;
 
+    public static final RubyClass OUTPUT_STRATEGY_REGISTRY;
+
+    public static final RubyClass OUTPUT_STRATEGY_ABSTRACT;
+
+    public static final RubyClass OUTPUT_STRATEGY_SIMPLE_ABSTRACT;
+
+    public static final RubyClass OUTPUT_STRATEGY_LEGACY;
+
+    public static final RubyClass OUTPUT_STRATEGY_SINGLE;
+
+    public static final RubyClass OUTPUT_STRATEGY_SHARED;
+
+    /**
+     * Logstash Ruby Module.
+     */
+    private static final RubyModule LOGSTASH_MODULE;
+
+    private static final RubyModule OUTPUT_DELEGATOR_STRATEGIES;
+
     static {
         RUBY = Ruby.getGlobalRuntime();
         LOGSTASH_MODULE = RUBY.getOrCreateModule("LogStash");
+        OUTPUT_STRATEGY_REGISTRY = setupLogstashClass(
+            OutputStrategyExt.OutputStrategyRegistryExt::new,
+            OutputStrategyExt.OutputStrategyRegistryExt.class
+        );
+        OUTPUT_DELEGATOR_STRATEGIES =
+            RUBY.defineModuleUnder("OutputDelegatorStrategies", LOGSTASH_MODULE);
+        OUTPUT_STRATEGY_ABSTRACT = OUTPUT_DELEGATOR_STRATEGIES.defineClassUnder(
+            "AbstractStrategy", RUBY.getObject(), ObjectAllocator.NOT_ALLOCATABLE_ALLOCATOR
+        );
+        OUTPUT_STRATEGY_SIMPLE_ABSTRACT = OUTPUT_DELEGATOR_STRATEGIES.defineClassUnder(
+            "SimpleAbstractStrategy", OUTPUT_STRATEGY_ABSTRACT,
+            ObjectAllocator.NOT_ALLOCATABLE_ALLOCATOR
+        );
+        OUTPUT_STRATEGY_LEGACY = OUTPUT_DELEGATOR_STRATEGIES.defineClassUnder(
+            "Legacy", OUTPUT_STRATEGY_ABSTRACT,
+            OutputStrategyExt.LegacyOutputStrategyExt::new
+        );
+        OUTPUT_STRATEGY_SINGLE = OUTPUT_DELEGATOR_STRATEGIES.defineClassUnder(
+            "Single", OUTPUT_STRATEGY_SIMPLE_ABSTRACT,
+            OutputStrategyExt.SingleOutputStrategyExt::new
+        );
+        OUTPUT_STRATEGY_SHARED = OUTPUT_DELEGATOR_STRATEGIES.defineClassUnder(
+            "Shared", OUTPUT_STRATEGY_SIMPLE_ABSTRACT,
+            OutputStrategyExt.SharedOutputStrategyExt::new
+        );
+        OUTPUT_STRATEGY_ABSTRACT.defineAnnotatedMethods(OutputStrategyExt.AbstractOutputStrategyExt.class);
+        OUTPUT_STRATEGY_ABSTRACT.defineAnnotatedMethods(OutputStrategyExt.SimpleAbstractOutputStrategyExt.class);
+        OUTPUT_STRATEGY_SHARED.defineAnnotatedMethods(OutputStrategyExt.SharedOutputStrategyExt.class);
+        OUTPUT_STRATEGY_SINGLE.defineAnnotatedMethods(OutputStrategyExt.SingleOutputStrategyExt.class);
+        OUTPUT_STRATEGY_LEGACY.defineAnnotatedMethods(OutputStrategyExt.LegacyOutputStrategyExt.class);
+        final OutputStrategyExt.OutputStrategyRegistryExt outputStrategyRegistry =
+            (OutputStrategyExt.OutputStrategyRegistryExt) OutputStrategyExt.OutputStrategyRegistryExt
+                .instance(RUBY.getCurrentContext(), OUTPUT_DELEGATOR_STRATEGIES);
+        outputStrategyRegistry.register(
+            RUBY.getCurrentContext(), RUBY.newSymbol("shared"), OUTPUT_STRATEGY_SHARED
+        );
+        outputStrategyRegistry.register(
+            RUBY.getCurrentContext(), RUBY.newSymbol("legacy"), OUTPUT_STRATEGY_LEGACY
+        );
+        outputStrategyRegistry.register(
+            RUBY.getCurrentContext(), RUBY.newSymbol("single"), OUTPUT_STRATEGY_SINGLE
+        );
         RUBY_TIMESTAMP_CLASS = setupLogstashClass(
             JrubyTimestampExtLibrary.RubyTimestamp::new, JrubyTimestampExtLibrary.RubyTimestamp.class
         );
         WRAPPED_WRITE_CLIENT_CLASS =
             setupLogstashClass(JRubyWrappedWriteClientExt::new, JRubyWrappedWriteClientExt.class);
         QUEUE_READ_CLIENT_BASE_CLASS =
-                setupLogstashClass(ObjectAllocator.NOT_ALLOCATABLE_ALLOCATOR, QueueReadClientBase.class);
+            setupLogstashClass(ObjectAllocator.NOT_ALLOCATABLE_ALLOCATOR, QueueReadClientBase.class);
         MEMORY_READ_CLIENT_CLASS =
             setupLogstashClass(QUEUE_READ_CLIENT_BASE_CLASS, JrubyMemoryReadClientExt::new, JrubyMemoryReadClientExt.class);
         ACKED_READ_CLIENT_CLASS =
@@ -91,9 +148,9 @@ public final class RubyUtil {
             setupLogstashClass(JrubyAckedWriteClientExt::new, JrubyAckedWriteClientExt.class);
         WRAPPED_SYNCHRONOUS_QUEUE_CLASS =
             setupLogstashClass(JrubyWrappedSynchronousQueueExt::new,
-                    JrubyWrappedSynchronousQueueExt.class);
+                JrubyWrappedSynchronousQueueExt.class);
         WRAPPED_ACKED_QUEUE_CLASS = setupLogstashClass(JRubyWrappedAckedQueueExt::new,
-                JRubyWrappedAckedQueueExt.class);
+            JRubyWrappedAckedQueueExt.class);
         ACKED_QUEUE_CLASS = setupLogstashClass(JRubyAckedQueueExt::new, JRubyAckedQueueExt.class);
         RUBY_EVENT_CLASS = setupLogstashClass(
             JrubyEventExtLibrary.RubyEvent::new, JrubyEventExtLibrary.RubyEvent.class
