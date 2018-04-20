@@ -53,7 +53,7 @@ describe "Test Logstash instance" do
       FileUtils.mkdir_p(tmp_data_path)
       @ls1.spawn_logstash("-f", config1, "--path.data", tmp_data_path)
       sleep(0.1) until File.exist?(file_config1) && File.size(file_config1) > 0 # Everything is started successfully at this point
-      expect(is_port_open?(9600)).to be true
+      @ls1.wait_for_logstash
 
       @ls2.spawn_logstash("-f", config2, "--path.data", tmp_data_path)
       try(num_retries) do
@@ -82,7 +82,7 @@ describe "Test Logstash instance" do
       if @ls2.settings.feature_flag != "persistent_queues"
         @ls1.spawn_logstash("-f", config1)
         sleep(0.1) until File.exist?(file_config1) && File.size(file_config1) > 0 # Everything is started successfully at this point
-        expect(is_port_open?(9600)).to be true
+        @ls1.wait_for_logstash
 
         puts "will try to start the second LS instance on 9601"
 
