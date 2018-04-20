@@ -25,7 +25,7 @@ public final class OutputDelegatorExt extends RubyObject {
 
     private IRubyObject outputClass;
 
-    private IRubyObject strategy;
+    private OutputStrategyExt.AbstractOutputStrategyExt strategy;
 
     private IRubyObject metric;
 
@@ -62,8 +62,9 @@ public final class OutputDelegatorExt extends RubyObject {
         eventMetricTime = LongCounter.fromRubyBase(
             metricEvents, MetricKeys.DURATION_IN_MILLIS_KEY
         );
-        strategy = ((RubyClass)
-            arguments[3].callMethod(context, "class_for", concurrency(context))
+        strategy = (OutputStrategyExt.AbstractOutputStrategyExt) ((RubyClass)
+            ((OutputStrategyExt.OutputStrategyRegistryExt) arguments[3])
+                .classFor(context, concurrency(context))
         ).newInstance(
             context,
             new IRubyObject[]{outputClass, namespacedMetric, arguments[2], args},
@@ -73,7 +74,9 @@ public final class OutputDelegatorExt extends RubyObject {
     }
 
     @VisibleForTesting
-    public OutputDelegatorExt initForTesting(final IRubyObject strategy) {
+    public OutputDelegatorExt initForTesting(
+        final OutputStrategyExt.AbstractOutputStrategyExt strategy
+    ) {
         eventMetricOut = LongCounter.DUMMY_COUNTER;
         eventMetricIn = LongCounter.DUMMY_COUNTER;
         eventMetricTime = LongCounter.DUMMY_COUNTER;
@@ -87,12 +90,12 @@ public final class OutputDelegatorExt extends RubyObject {
 
     @JRubyMethod
     public IRubyObject register(final ThreadContext context) {
-        return strategy.callMethod(context, "register");
+        return strategy.register(context);
     }
 
     @JRubyMethod(name = "do_close")
     public IRubyObject doClose(final ThreadContext context) {
-        return strategy.callMethod(context, "do_close");
+        return strategy.doClose(context);
     }
 
     @JRubyMethod(name = "reloadable?")
@@ -136,16 +139,21 @@ public final class OutputDelegatorExt extends RubyObject {
     }
 
     public IRubyObject multiReceive(final RubyArray events) {
-        return multiReceive(WorkerLoop.THREAD_CONTEXT.get(), events);
+        try {
+            return multiReceive(WorkerLoop.THREAD_CONTEXT.get(), events);
+        } catch (final InterruptedException ex) {
+            throw new IllegalStateException(ex);
+        }
     }
 
     @JRubyMethod(name = "multi_receive")
-    public IRubyObject multiReceive(final ThreadContext context, final IRubyObject events) {
+    public IRubyObject multiReceive(final ThreadContext context, final IRubyObject events)
+        throws InterruptedException {
         final RubyArray batch = (RubyArray) events;
         final int count = batch.size();
         eventMetricIn.increment((long) count);
         final long start = System.nanoTime();
-        strategy.callMethod(context, "multi_receive", batch);
+        strategy.multiReceive(context, batch);
         eventMetricTime.increment(
             TimeUnit.MILLISECONDS.convert(System.nanoTime() - start, TimeUnit.NANOSECONDS)
         );
