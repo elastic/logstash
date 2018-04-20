@@ -1,0 +1,15 @@
+[role="xpack"]
+[[release-notes-xls]]
+== {xpack} Release Notes
+
+This section summarizes the changes in each release for all of the {xpack} components in Logstash.
+
+* <<xls-7.0.0-alpha1>>
+
+See also:
+
+* <<releasenotes,Logstash Release Notes>>
+* {ref}/release-notes-xes.html[{es} {xpack} Release Notes]
+* {kibana-ref}/release-notes-xkb.html[{kib} {xpack} Release Notes]
+
+include::7.0.0-alpha1.asciidoc[]

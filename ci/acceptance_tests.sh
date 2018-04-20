@@ -6,6 +6,7 @@ set -e
 # installing gems. See https://github.com/elastic/logstash/issues/5179
 export JRUBY_OPTS="-J-Xmx1g"
 export GRADLE_OPTS="-Xmx2g -Dorg.gradle.daemon=false -Dorg.gradle.logging.level=info"
+export OSS=true
 
 SELECTED_TEST_SUITE=$1
 

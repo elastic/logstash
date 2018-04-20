@@ -1,0 +1,36 @@
+[role="xpack"]
+[[monitoring-troubleshooting]]
+=== Troubleshooting {monitoring} in Logstash
+++++
+<titleabbrev>Troubleshooting</titleabbrev>
+++++
+
+
+[float]
+==== Logstash Monitoring Not Working After Upgrade
+
+When upgrading from older versions, the built-in `logstash_system` user is
+disabled for security reasons. To resume monitoring:
+
+. Change the `logstash_system` password:
++
+--
+[source, sh]
+---------------------------------------------------------------
+PUT _xpack/security/user/logstash_system/_password
+{
+  "password": "newpassword"
+}
+---------------------------------------------------------------
+//CONSOLE
+--
+
+. Re-enable the `logstash_system` user:
++
+--
+[source, sh]
+---------------------------------------------------------------
+PUT _xpack/security/user/logstash_system/_enable
+---------------------------------------------------------------
+//CONSOLE
+--

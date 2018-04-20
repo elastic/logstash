@@ -1,0 +1,77 @@
+[role="xpack"]
+[[monitoring-settings]]
+==== Monitoring Settings in Logstash
+++++
+<titleabbrev>Monitoring Settings</titleabbrev>
+++++
+
+You can set the following `xpack.monitoring` settings in `logstash.yml` to
+control how monitoring data is collected from your Logstash nodes. However, the
+defaults work best in most circumstances. For more information about configuring
+Logstash, see <<logstash-settings-file>>.
+
+[float]
+[[monitoring-general-settings]]
+===== General Monitoring Settings
+
+`xpack.monitoring.enabled`::
+
+Monitoring is disabled by default. Set to `true` to enable {xpack} monitoring.
+
+`xpack.monitoring.elasticsearch.url`::
+
+The {es} instances that you want to ship your Logstash metrics to. This might be
+the same {es} instance specified in the `outputs` section in your Logstash
+configuration, or a different one. This is *not* the URL of your dedicated
+monitoring cluster. Even if you are using a dedicated monitoring cluster, the
+Logstash metrics must be routed through your production cluster. You can specify
+a single host as a string, or specify multiple hosts as an array. Defaults to
+`http://localhost:9200`.
+
+`xpack.monitoring.elasticsearch.username` and `xpack.monitoring.elasticsearch.password`::
+
+If your {es} is protected with basic authentication, these settings provide the
+username and password that the Logstash instance uses to authenticate for
+shipping monitoring data.
+
+
+[float]
+[[monitoring-collection-settings]]
+==== Monitoring Collection Settings
+
+`xpack.monitoring.collection.interval`::
+
+Controls how often data samples are collected and shipped on the Logstash side.
+Defaults to `10s`. If you modify the collection interval, set the 
+`xpack.monitoring.min_interval_seconds` option in `kibana.yml` to the same value.
+
+[float]
+[[monitoring-ssl-settings]]
+===== {monitoring} TLS/SSL Settings
+
+You can configure the following Transport Layer Security (TLS) or
+Secure Sockets Layer (SSL) settings. For more information, see 
+<<ls-monitoring-user>>.
+
+`xpack.monitoring.elasticsearch.ssl.ca`::
+
+Optional setting that enables you to specify a path to the `.pem` file for the
+certificate authority for your {es} instance.
+
+`xpack.monitoring.elasticsearch.ssl.truststore.path`::
+
+Optional settings that provide the paths to the Java keystore (JKS) to validate
+the server’s certificate.
+
+`xpack.monitoring.elasticsearch.ssl.truststore.password`::
+
+Optional settings that provide the password to the truststore.
+
+`xpack.monitoring.elasticsearch.ssl.keystore.path`::
+
+Optional settings that provide the paths to the Java keystore (JKS) to validate
+the client’s certificate.
+
+`xpack.monitoring.elasticsearch.ssl.keystore.password`::
+
+Optional settings that provide the password to the keystore.

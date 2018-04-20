@@ -1,0 +1,35 @@
+[role="xpack"]
+[[logstash-monitoring-overview]]
+=== {monitoring} Overview
+++++
+<titleabbrev>Overview</titleabbrev>
+++++
+
+This section deals with Logstash, including an explanation of its internal parts
+at a high level. {monitoring} for Logstash represents a total of two pieces:
+
+* <<logstash-monitoring-collectors,Collectors>>
+* <<logstash-monitoring-output,Output>>
+
+These pieces are created when {monitoring} for Logstash is enabled, and they 
+live outside of the default Logstash pipeline in a dedicated monitoring
+pipeline. This configuration means that all data and processing has a minimal 
+impact on ordinary Logstash processing. As a secondary benefit of existing in a 
+separate pipeline, existing Logstash features, such as the 
+<<plugins-outputs-elasticsearch,`elasticsearch` output>>, can be reused to 
+benefit from its retry policies. 
+
+NOTE: The `elasticsearch` output that is used by {monitoring} for Logstash is 
+configured exclusively via settings found in `logstash.yml`. It is not 
+configured by using anything from the Logstash configurations that might also be 
+using their own separate `elasticsearch` outputs.
+
+The {es} cluster that is configured for use with {monitoring} for Logstash is 
+expected to be the production cluster. This configuration enables the production 
+{es} cluster to add metadata (for example, its cluster UUID) to the Logstash
+monitoring data then route it to the monitoring clusters. For more information 
+about typical monitoring architectures, see 
+{xpack-ref}/how-monitoring-works.html[How Monitoring Works]. 
+
+include::collectors.asciidoc[]
+include::monitoring-output.asciidoc[]
