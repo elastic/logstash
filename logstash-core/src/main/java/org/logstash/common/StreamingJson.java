@@ -18,7 +18,7 @@ import java.util.regex.Pattern;
 
 public class StreamingJson {
     private static final Pattern SLASH = Pattern.compile("/", Pattern.LITERAL);
-    private static final Pattern ARRAY_PATH_START = Pattern.compile("^(/\\d+/?).*?");
+    private static final Pattern ARRAY_PATH_START = Pattern.compile("^(/\\d+/).*?");
     private final JsonFactory factory = new JsonFactory();
     private JsonParser parser;
     private ByteArrayFeeder feeder;
@@ -32,42 +32,49 @@ public class StreamingJson {
     }
 
     private static boolean inRoot(final JsonStreamContext ctx) {
-        return evaluateRoot(ctx) >= 0;
+        if (ctx.inArray() && ctx.getParent().inRoot()) {
+            return true;
+        }
+        return ctx.inRoot();
     }
 
-    private static int evaluateRoot(final JsonStreamContext ctx) {
-        return evaluateRoot(ctx.pathAsPointer().toString());
-    }
-
-    private static int evaluateRoot(final String path) {
-        // not in root
-        int result = -1;
+    private static int realPathStartingPoint(final String path) {
         if (path.isEmpty() || "/".equals(path)) {
-            result = 0;
+            // there is nothing to skip
+            return 0;
         }
-        // if the JSON is one big array, we mine the Objects inside it as Events
+        // assume the path looks like this /array-field/0/hash-field/h2-field/a-field
+        // so we set the starts_at point to 1 to skip the leading slash
+        // if the root JSON data structure is an array, we mine the Objects inside it as Events
         // the path will look something like "/0/array-field/0/hash-field"
+        // we want to effectively ignore the array and treat the elements as it was NDJSON
         final Matcher match = ARRAY_PATH_START.matcher(path);
+        int startsAt = 1;
         if (match.matches() && !match.hitEnd()) {
-            result = match.end(1);
+            // the matcher found that the path starts with '/<integer>/'
+            // we set the starts_at point to be after the leading '/0/'
+            // in other words we fake that path is 'array-field/0/hash-field'
+            startsAt = match.end(1);
         }
-        return result;
+        return startsAt;
     }
 
     private static String toRef(final JsonStreamContext ctx) {
         final String path = ctx.pathAsPointer().toString();
-        final int rootedness = evaluateRoot(path);
+        final int startingPoint = realPathStartingPoint(path);
         String result = "";
-        if (rootedness < 0) {
-            result = bracketize(path, 1);
-        } else if (rootedness > 0) {
-            result = bracketize(path, rootedness);
+        if (startingPoint > 0) {
+            result = convertJsonPathFieldReference(path.substring(startingPoint));
         }
         return result;
     }
 
-    private static String bracketize(final String inner, final int from) {
-        return String.format("%s%s%s", '[', SLASH.matcher(inner.substring(from)).replaceAll(Matcher.quoteReplacement("][")), ']');
+    private static String convertJsonPathFieldReference(final String jsonPath) {
+        // jsonPath is expected to look like a/b/c/d
+        // we replace the slashes with inner ']['
+        final String inner = SLASH.matcher(jsonPath).replaceAll(Matcher.quoteReplacement("]["));
+        // add the opening and closing brackets
+        return String.format("%s%s%s", '[', inner, ']');
     }
 
     public final void close() throws IOException {
@@ -85,7 +92,7 @@ public class StreamingJson {
         return process(bytes, 0, bytes.length);
     }
 
-    public final List<Event> process(final byte[] bytes, int start, int length) throws IOException {
+    public final List<Event> process(final byte[] bytes, final int start, final int length) throws IOException {
         if (parser == null) {
             parser = factory.createNonBlockingByteArrayParser();
             feeder = (ByteArrayFeeder) parser.getNonBlockingInputFeeder();
