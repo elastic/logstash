@@ -1,10 +1,5 @@
 # encoding: utf-8
 
-require "logstash/output_delegator_strategy_registry"
-require "logstash/output_delegator_strategies/shared"
-require "logstash/output_delegator_strategies/single"
-require "logstash/output_delegator_strategies/legacy"
-
 module LogStash
   module Plugins
 

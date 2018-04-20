@@ -2,10 +2,6 @@
 require "logstash/execution_context"
 require "spec_helper"
 require "support/shared_contexts"
-require "logstash/output_delegator_strategy_registry"
-require "logstash/output_delegator_strategies/shared"
-require "logstash/output_delegator_strategies/single"
-require "logstash/output_delegator_strategies/legacy"
 
 describe LogStash::OutputDelegator do
 
@@ -34,24 +30,55 @@ describe LogStash::OutputDelegator do
 
   include_context "execution_context"
 
+  class FakeOutClass
+
+    def self.set_out_strategy(out_strategy)
+      @@out_strategy = out_strategy
+    end
+
+    def self.set_out_inst(out_inst)
+      @@out_inst = out_inst
+    end
+
+    def self.name
+      "example"
+    end
+
+    def self.concurrency
+      @@out_strategy
+    end
+
+    def self.config_name
+      "dummy_plugin"
+    end
+
+    class << self
+      def new(args)
+        if args == {"id" => "foo", "arg1" => "val1"}
+          @@out_inst
+        else
+          raise "unexpected plugin arguments"
+        end
+      end
+    end
+  end
+
+  let(:out_klass) {FakeOutClass}
+
   subject { described_class.new(out_klass, metric, execution_context, ::LogStash::OutputDelegatorStrategyRegistry.instance, plugin_args) }
 
   context "with a plain output plugin" do
-    let(:out_klass) { double("output klass") }
     let(:out_inst) { double("output instance") }
-    let(:concurrency) { :single }
 
     before(:each) do
       # use the same metric instance
-      allow(out_klass).to receive(:new).with(plugin_args).and_return(out_inst)
-      allow(out_klass).to receive(:name).and_return("example")
-      allow(out_klass).to receive(:concurrency).with(any_args).and_return concurrency
-      allow(out_klass).to receive(:config_name).and_return("dummy_plugin")
       allow(out_inst).to receive(:register)
       allow(out_inst).to receive(:multi_receive)
       allow(out_inst).to receive(:metric=).with(any_args)
       allow(out_inst).to receive(:execution_context=).with(execution_context)
       allow(out_inst).to receive(:id).and_return("a-simple-plugin")
+      FakeOutClass.set_out_inst(out_inst)
+      FakeOutClass.set_out_strategy(:single)
     end
 
     it "should initialize cleanly" do
@@ -120,6 +147,10 @@ describe LogStash::OutputDelegator do
         context "with strategy #{strategy_concurrency}" do
           let(:concurrency) { strategy_concurrency }
 
+          before(:each) do
+            FakeOutClass.set_out_strategy(strategy_concurrency)
+          end
+
           it "should find the correct concurrency type for the output" do
             expect(subject.concurrency).to eq(strategy_concurrency)
           end
@@ -135,15 +166,15 @@ describe LogStash::OutputDelegator do
           [[:register], [:do_close], [:multi_receive, [[]] ] ].each do |method, args|
             context "strategy objects" do
               before do
-                allow(subject.strategy).to receive(method)
+                allow(out_inst).to receive(method)
               end
 
               it "should delegate #{method} to the strategy" do
                 subject.send(method, *args)
                 if args
-                  expect(subject.strategy).to have_received(method).with(*args)
+                  expect(out_inst).to have_received(method).with(*args)
                 else
-                  expect(subject.strategy).to have_received(method).with(no_args)
+                  expect(out_inst).to have_received(method).with(no_args)
                 end
               end
             end
