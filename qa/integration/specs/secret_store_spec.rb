@@ -43,7 +43,6 @@ describe "Test that Logstash" do
     test_env["LOGSTASH_KEYSTORE_PASS"] = "keystore_pa9454w3rd"
     @logstash.env_variables = test_env
     @logstash.start_background_with_config_settings(config_to_temp_file(@fixture.config), settings_dir)
-    @logstash.wait_for_logstash
     Stud.try(num_retries.times, [StandardError, RSpec::Expectations::ExpectationNotMetError]) do
       # 10 generated outputs, mypath, and the tags all come from the secret store
       expect(IO.read(File.join(File.join(test_path, "mypath"), "logstash_secretstore_test.output")).gsub("\n", "")).to eq("Hello world! mytag1,mytag2.mytag3" * 10)
@@ -54,7 +53,6 @@ describe "Test that Logstash" do
     test_env["LOGSTASH_KEYSTORE_PASS"] = "keystore_pa9454w3rd"
     @logstash.env_variables = test_env
     @logstash.spawn_logstash("-e", "input {heartbeat {}} output { }", "--path.settings", settings_dir)
-    @logstash.wait_for_logstash
     Stud.try(num_retries.times, [StandardError, RSpec::Expectations::ExpectationNotMetError]) do
       result = @logstash.monitoring_api.node_stats rescue nil
       expect(result).not_to be_nil
