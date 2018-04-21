@@ -13,7 +13,6 @@ import org.apache.http.entity.ContentType;
 // TODO:
 // SSL options
 // Auth options
-// Create custom exception subclass and use it
 //
 // Javadocs
 // Unit tests
@@ -50,57 +49,91 @@ public class Client {
         }
     }
 
-    public String get(String relativePath) throws IOException {
+    public String get(String relativePath) throws RequestFailedException {
         return get(relativePath, new HashMap<>());
     }
 
-    public String get(String relativePath, Map<String, String> headers) throws IOException {
-        Request request = Request.Get(makeUrlFrom(relativePath));
+    public String get(String relativePath, Map<String, String> headers) throws RequestFailedException {
+        String url = makeUrlFrom(relativePath);
+        Request request = Request.Get(url);
         headers.forEach(request::addHeader);
 
-        return request
-                .execute()
-                .returnContent()
-                .asString();
-    }
-
-    public void head(String relativePath) throws Exception {
-        head(relativePath, new HashMap<>());
-    }
-
-    public void head(String relativePath, Map<String, String> headers) throws Exception {
-        Request request = Request.Head(makeUrlFrom(relativePath));
-        headers.forEach(request::addHeader);
-
-        StatusLine statusLine = request
-                .execute()
-                .returnResponse()
-                .getStatusLine();
-
-        int statusCode = statusLine.getStatusCode();
-        if (statusCode >= 400) {
-            throw new Exception(statusLine.getReasonPhrase());
+        try {
+            return request
+                    .execute()
+                    .returnContent()
+                    .asString();
+        } catch (IOException e) {
+            throw new RequestFailedException("GET", url, e);
         }
     }
 
-    public String post(String relativePath, String jsonContent) throws IOException {
+    public void head(String relativePath) throws RequestFailedException {
+        head(relativePath, new HashMap<>());
+    }
+
+    public void head(String relativePath, Map<String, String> headers) throws RequestFailedException {
+        String url = makeUrlFrom(relativePath);
+        Request request = Request.Head(url);
+        headers.forEach(request::addHeader);
+
+        StatusLine statusLine;
+        try {
+            statusLine = request
+                    .execute()
+                    .returnResponse()
+                    .getStatusLine();
+        } catch (IOException e) {
+            throw new RequestFailedException("HEAD", url ,e);
+        }
+
+        int statusCode = statusLine.getStatusCode();
+        if (statusCode >= 400) {
+            throw new RequestFailedException("HEAD", url ,statusLine.getReasonPhrase());
+        }
+    }
+
+    public String post(String relativePath, String jsonContent) throws RequestFailedException {
         return post(relativePath, jsonContent, new HashMap<>());
     }
 
-    public String post(String relativePath, String jsonContent, Map<String, String> headers) throws IOException {
-        Request request = Request.Post(makeUrlFrom(relativePath));
+    public String post(String relativePath, String jsonContent, Map<String, String> headers) throws RequestFailedException {
+        String url = makeUrlFrom(relativePath);
+        Request request = Request.Post(url);
         headers.forEach(request::addHeader);
 
-        return request
-                .bodyString(jsonContent, ContentType.APPLICATION_JSON)
-                .execute()
-                .returnContent()
-                .asString();
+        try {
+            return request
+                    .bodyString(jsonContent, ContentType.APPLICATION_JSON)
+                    .execute()
+                    .returnContent()
+                    .asString();
+        } catch (IOException e) {
+            throw new RequestFailedException("POST", url, e);
+        }
     }
 
     private String makeUrlFrom(String relativePath) {
         String url = this.baseUrl.toString() + '/' + relativePath;
         return url.replaceAll("/\\/+/", "/");
+    }
+
+    public static class RequestFailedException extends Exception {
+        RequestFailedException(String method, String url, Throwable cause) {
+            super(makeMessage(method, url, null), cause);
+        }
+
+        RequestFailedException(String method, String url, String reason) {
+            super(makeMessage(method, url, reason));
+        }
+
+        private static String makeMessage(String method, String url, String reason) {
+            String message = "Could not make " + method + " " + url + " request to Kibana";
+            if (reason != null) {
+                message += "; reason: " + reason;
+            }
+            return message;
+        }
     }
 
 }
