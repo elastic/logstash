@@ -1,4 +1,4 @@
-package org.logstash.common.clients;
+package org.logstash.common.kibana;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -16,25 +16,29 @@ import org.apache.http.entity.ContentType;
 // Create custom exception subclass and use it
 //
 // Javadocs
-// @see https://github.com/elastic/logstash/blob/master/logstash-core/lib/logstash/modules/kibana_client.rb
-public class Kibana {
+// Unit tests
+public class Client {
     private URL baseUrl;
     private static final String STATUS_API = "api/status";
 
-    public Kibana(URL baseUri) {
+    public Client(URL baseUri) {
         this.baseUrl = baseUri;
     }
 
-    public Kibana(String baseUri) throws MalformedURLException {
+    public Client(String baseUri) throws MalformedURLException {
         this(new URL(baseUri));
     }
 
-    public Kibana(String protocol, String host, int port, String basePath) throws MalformedURLException {
+    public Client(String protocol, String host, int port, String basePath) throws MalformedURLException {
         this(new URL(protocol, host, port, basePath));
     }
 
-    public Kibana() throws MalformedURLException {
-        this("http", "localhost", 5601, "/");
+    public Client(String protocol, String host, int port) throws MalformedURLException {
+        this(protocol, host, port, "/");
+    }
+
+    public Client() throws MalformedURLException {
+        this("http", "localhost", 5601);
     }
 
     public boolean canConnect() {
