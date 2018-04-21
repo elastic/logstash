@@ -56,7 +56,7 @@ https://www.elastic.co/subscriptions[Subscriptions] page for information about
 Elastic license levels. 
 
 Alternatively, you can download an `oss` package, which contains only features 
-that are available under the Apache 2.0 license: 
+that are available under the Apache 2.0 license. 
 --
 
 On supported Linux operating systems, you can use a package manager to install Logstash.
