@@ -9,15 +9,15 @@ found on https://github.com/elastic/logstash-docker/tree/{branch}[GitHub].
 
 ==== Image types
 
-These images are free to use under the Elastic license. They contain open source, 
-free commercial, and paid commercial features.  
+These images are free to use under the Elastic license. They contain open source 
+and free commercial features and access to paid commercial features.  
 {xpack-ref}/license-management.html[Start a 30-day trial] to try out all of the 
 paid commercial features. See the 
 https://www.elastic.co/subscriptions[Subscriptions] page for information about 
 Elastic license levels.
 
-Alternatively, you can download `-oss` images that include only Apache 2.0 
-licensed code. 
+Alternatively, you can download `-oss` images, which contain only features that 
+are available under the Apache 2.0 license. 
 
 ==== Pulling the image
 Obtaining Logstash for Docker is as simple as issuing a +docker
