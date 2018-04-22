@@ -117,16 +117,6 @@ public final class FilterDelegatorExt extends RubyObject {
         return id;
     }
 
-    @JRubyMethod(name = "metric_events")
-    public IRubyObject metricEvents(final ThreadContext context) {
-        return metricEvents;
-    }
-
-    @JRubyMethod
-    public IRubyObject strategy(final ThreadContext context) {
-        return filter;
-    }
-
     @SuppressWarnings("unchecked")
     public RubyArray multiFilter(final RubyArray batch) {
         final ThreadContext context = WorkerLoop.THREAD_CONTEXT.get();
