@@ -127,8 +127,9 @@ public final class RubyUtil {
         OUTPUT_STRATEGY_SINGLE.defineAnnotatedMethods(OutputStrategyExt.SingleOutputStrategyExt.class);
         OUTPUT_STRATEGY_LEGACY.defineAnnotatedMethods(OutputStrategyExt.LegacyOutputStrategyExt.class);
         final OutputStrategyExt.OutputStrategyRegistryExt outputStrategyRegistry =
-            (OutputStrategyExt.OutputStrategyRegistryExt) OutputStrategyExt.OutputStrategyRegistryExt
-                .instance(RUBY.getCurrentContext(), OUTPUT_DELEGATOR_STRATEGIES);
+            OutputStrategyExt.OutputStrategyRegistryExt.instance(
+                RUBY.getCurrentContext(), OUTPUT_DELEGATOR_STRATEGIES
+            );
         outputStrategyRegistry.register(
             RUBY.getCurrentContext(), RUBY.newSymbol("shared"), OUTPUT_STRATEGY_SHARED
         );

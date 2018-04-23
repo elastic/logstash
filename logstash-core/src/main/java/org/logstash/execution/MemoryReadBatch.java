@@ -13,10 +13,6 @@ public final class MemoryReadBatch implements QueueBatch {
 
     private final LinkedHashSet<IRubyObject> events;
 
-    public MemoryReadBatch() {
-        this(new LinkedHashSet<>());
-    }
-
     public MemoryReadBatch(final LinkedHashSet<IRubyObject> events) {
         this.events = events;
     }

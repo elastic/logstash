@@ -62,14 +62,13 @@ public final class OutputDelegatorExt extends RubyObject {
         eventMetricTime = LongCounter.fromRubyBase(
             metricEvents, MetricKeys.DURATION_IN_MILLIS_KEY
         );
-        strategy = (OutputStrategyExt.AbstractOutputStrategyExt) ((RubyClass)
-            ((OutputStrategyExt.OutputStrategyRegistryExt) arguments[3])
-                .classFor(context, concurrency(context))
-        ).newInstance(
-            context,
-            new IRubyObject[]{outputClass, namespacedMetric, arguments[2], args},
-            Block.NULL_BLOCK
-        );
+        strategy = (OutputStrategyExt.AbstractOutputStrategyExt) (
+            (OutputStrategyExt.OutputStrategyRegistryExt) arguments[3])
+            .classFor(context, concurrency(context)).newInstance(
+                context,
+                new IRubyObject[]{outputClass, namespacedMetric, arguments[2], args},
+                Block.NULL_BLOCK
+            );
         return this;
     }
 
