@@ -1,5 +1,4 @@
 # encoding: utf-8
-require "logstash/instrument/metric"
 require "logstash/instrument/collector"
 require_relative "../../support/matchers"
 require "spec_helper"

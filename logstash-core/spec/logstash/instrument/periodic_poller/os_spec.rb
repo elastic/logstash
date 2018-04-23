@@ -1,6 +1,5 @@
 # encoding: utf-8
 require "logstash/instrument/periodic_poller/os"
-require "logstash/instrument/metric"
 require "logstash/instrument/collector"
 
 describe LogStash::Instrument::PeriodicPoller::Os do

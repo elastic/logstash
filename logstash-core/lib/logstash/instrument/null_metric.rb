@@ -1,5 +1,4 @@
 # encoding: utf-8
-require "logstash/instrument/metric"
 
 module LogStash module Instrument
   # This class is used in the context when we disable the metric collection
