@@ -77,7 +77,7 @@ public final class JrubyTimestampExtLibrary {
         }
 
         @JRubyMethod(name = "time")
-        public IRubyObject ruby_time(ThreadContext context)
+        public RubyTime ruby_time(ThreadContext context)
         {
             return RubyTime.newTime(context.runtime, this.timestamp.getTime());
         }
@@ -225,7 +225,7 @@ public final class JrubyTimestampExtLibrary {
         @JRubyMethod(name = "<=>", required = 1)
         public IRubyObject op_cmp(final ThreadContext context, final IRubyObject other) {
             if (other instanceof JrubyTimestampExtLibrary.RubyTimestamp) {
-                return ((RubyTime) ruby_time(context)).op_cmp(
+                return ruby_time(context).op_cmp(
                     context, ((JrubyTimestampExtLibrary.RubyTimestamp) other).ruby_time(context)
                 );
             }
