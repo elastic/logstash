@@ -23,6 +23,8 @@ import org.logstash.ext.JrubyMemoryReadClientExt;
 import org.logstash.ext.JrubyMemoryWriteClientExt;
 import org.logstash.ext.JrubyTimestampExtLibrary;
 import org.logstash.ext.JrubyWrappedSynchronousQueueExt;
+import org.logstash.instrument.metrics.MetricExt;
+import org.logstash.instrument.metrics.NamespacedMetricExt;
 
 /**
  * Utilities around interaction with the {@link Ruby} runtime.
@@ -82,6 +84,20 @@ public final class RubyUtil {
 
     public static final RubyClass BUFFERED_TOKENIZER;
 
+    public static final RubyClass METRIC_CLASS;
+
+    public static final RubyClass NAMESPACED_METRIC_CLASS;
+
+    public static final RubyClass METRIC_EXCEPTION_CLASS;
+
+    public static final RubyClass METRIC_NO_KEY_PROVIDED_CLASS;
+
+    public static final RubyClass METRIC_NO_BLOCK_PROVIDED_CLASS;
+
+    public static final RubyClass METRIC_NO_NAMESPACE_PROVIDED_CLASS;
+
+    public static final RubyClass TIMED_EXECUTION_CLASS;
+
     /**
      * Logstash Ruby Module.
      */
@@ -92,6 +108,33 @@ public final class RubyUtil {
     static {
         RUBY = Ruby.getGlobalRuntime();
         LOGSTASH_MODULE = RUBY.getOrCreateModule("LogStash");
+        final RubyModule instrumentModule =
+            RUBY.defineModuleUnder("Instrument", LOGSTASH_MODULE);
+        METRIC_EXCEPTION_CLASS = instrumentModule.defineClassUnder(
+            "MetricException", RUBY.getException(), MetricExt.MetricException::new
+        );
+        METRIC_NO_KEY_PROVIDED_CLASS = instrumentModule.defineClassUnder(
+            "MetricNoKeyProvided", METRIC_EXCEPTION_CLASS, MetricExt.MetricNoKeyProvided::new
+        );
+        METRIC_NO_BLOCK_PROVIDED_CLASS = instrumentModule.defineClassUnder(
+            "MetricNoBlockProvided", METRIC_EXCEPTION_CLASS,
+            MetricExt.MetricNoBlockProvided::new
+        );
+        METRIC_NO_NAMESPACE_PROVIDED_CLASS = instrumentModule.defineClassUnder(
+            "MetricNoNamespaceProvided", METRIC_EXCEPTION_CLASS,
+            MetricExt.MetricNoNamespaceProvided::new
+        );
+        METRIC_CLASS
+            = instrumentModule.defineClassUnder("Metric", RUBY.getObject(), MetricExt::new);
+        TIMED_EXECUTION_CLASS = METRIC_CLASS.defineClassUnder(
+            "TimedExecution", RUBY.getObject(), MetricExt.TimedExecution::new
+        );
+        NAMESPACED_METRIC_CLASS = instrumentModule.defineClassUnder(
+            "NamespacedMetric", RUBY.getObject(), NamespacedMetricExt::new
+        );
+        METRIC_CLASS.defineAnnotatedMethods(MetricExt.class);
+        NAMESPACED_METRIC_CLASS.defineAnnotatedMethods(NamespacedMetricExt.class);
+        TIMED_EXECUTION_CLASS.defineAnnotatedMethods(MetricExt.TimedExecution.class);
         OUTPUT_STRATEGY_REGISTRY = setupLogstashClass(
             OutputStrategyExt.OutputStrategyRegistryExt::new,
             OutputStrategyExt.OutputStrategyRegistryExt.class
