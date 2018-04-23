@@ -1,5 +1,4 @@
 # encoding: utf-8
-require "logstash/instrument/metric"
 require "logstash/event"
 require_relative "../../support/mocks_classes"
 require "spec_helper"
