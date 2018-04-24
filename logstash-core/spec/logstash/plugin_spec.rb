@@ -5,7 +5,6 @@ require "logstash/outputs/base"
 require "logstash/codecs/base"
 require "logstash/inputs/base"
 require "logstash/filters/base"
-require "logstash/execution_context"
 require "support/shared_contexts"
 
 describe LogStash::Plugin do
@@ -319,7 +318,7 @@ describe LogStash::Plugin do
         end
       end
 
-      subject { plugin.new(config) } 
+      subject { plugin.new(config) }
 
       context "when no metric is set to the plugin" do
         context "when `enable_metric` is TRUE" do

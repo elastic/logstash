@@ -19,7 +19,6 @@ require "logstash/filter_delegator"
 require "logstash/queue_factory"
 require "logstash/plugins/plugin_factory"
 require "logstash/compiler"
-require "logstash/execution_context"
 require "securerandom"
 
 java_import org.logstash.common.DeadLetterQueueFactory
