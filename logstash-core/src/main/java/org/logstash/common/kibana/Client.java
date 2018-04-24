@@ -7,8 +7,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.http.StatusLine;
-import org.apache.http.client.fluent.Request;
-import org.apache.http.entity.ContentType;
+import org.apache.http.client.methods.*;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
 
 /**
  * Basic Kibana Client. Allows consumers to perform requests against Kibana's HTTP APIs.
@@ -19,6 +21,8 @@ import org.apache.http.entity.ContentType;
  */
 public class Client {
     private URL baseUrl;
+    private CloseableHttpClient httpClient;
+
     private static final String STATUS_API = "api/status";
 
     /**
@@ -26,6 +30,7 @@ public class Client {
      */
     public Client(URL baseUrl) {
         this.baseUrl = baseUrl;
+        this.httpClient = HttpClients.createDefault();
     }
 
     /**
@@ -86,7 +91,7 @@ public class Client {
      * @return Response body
      * @throws RequestFailedException
      */
-    public String get(String relativePath) throws RequestFailedException {
+    public String get(String relativePath) throws RequestFailedException, IOException {
         return get(relativePath, new HashMap<>());
     }
 
@@ -97,19 +102,27 @@ public class Client {
      * @param headers       Headers to include with request
      * @return Response body
      * @throws RequestFailedException
+     * @throws IOException
      */
-    public String get(String relativePath, Map<String, String> headers) throws RequestFailedException {
+    public String get(String relativePath, Map<String, String> headers) throws RequestFailedException, IOException {
         String url = makeUrlFrom(relativePath);
-        Request request = Request.Get(url);
+
+        HttpGet request = new HttpGet(url);
         headers.forEach(request::addHeader);
+        CloseableHttpResponse response = null;
 
         try {
-            return request
-                    .execute()
-                    .returnContent()
-                    .asString();
+            response = httpClient.execute(request);
+            return response
+                    .getEntity()
+                    .getContent()
+                    .toString();
         } catch (IOException e) {
             throw new RequestFailedException("GET", url, e);
+        } finally {
+            if (response != null) {
+                response.close();
+            }
         }
     }
 
@@ -118,8 +131,9 @@ public class Client {
      *
      * @param relativePath  Relative path to Kibana API resource, e.g. api/status
      * @throws RequestFailedException
+     * @throws IOException
      */
-    public void head(String relativePath) throws RequestFailedException {
+    public void head(String relativePath) throws RequestFailedException, IOException {
         head(relativePath, new HashMap<>());
     }
 
@@ -129,20 +143,27 @@ public class Client {
      * @param relativePath  Relative path to Kibana API resource, e.g. api/status
      * @param headers       Headers to include with request
      * @throws RequestFailedException
+     * @throws IOException
      */
-    public void head(String relativePath, Map<String, String> headers) throws RequestFailedException {
+    public void head(String relativePath, Map<String, String> headers) throws RequestFailedException, IOException {
         String url = makeUrlFrom(relativePath);
-        Request request = Request.Head(url);
+
+
+        HttpHead request = new HttpHead(url);
         headers.forEach(request::addHeader);
 
+        CloseableHttpResponse response = null;
         StatusLine statusLine;
+
         try {
-            statusLine = request
-                    .execute()
-                    .returnResponse()
-                    .getStatusLine();
+            response = httpClient.execute(request);
+            statusLine =  response.getStatusLine();
         } catch (IOException e) {
             throw new RequestFailedException("HEAD", url ,e);
+        } finally {
+            if (response != null) {
+                response.close();
+            }
         }
 
         int statusCode = statusLine.getStatusCode();
@@ -158,8 +179,9 @@ public class Client {
      * @param requestBody   Body of request
      * @return Response body
      * @throws RequestFailedException
+     * @throws IOException
      */
-    public String post(String relativePath, String requestBody) throws RequestFailedException {
+    public String post(String relativePath, String requestBody) throws RequestFailedException, IOException {
         return post(relativePath, requestBody, new HashMap<>());
     }
 
@@ -171,20 +193,30 @@ public class Client {
      * @param headers       Headers to include with request
      * @return Response body
      * @throws RequestFailedException
+     * @throws IOException
      */
-    public String post(String relativePath, String requestBody, Map<String, String> headers) throws RequestFailedException {
+    public String post(String relativePath, String requestBody, Map<String, String> headers) throws RequestFailedException, IOException {
+
         String url = makeUrlFrom(relativePath);
-        Request request = Request.Post(url);
+
+        HttpPost request = new HttpPost(url);
         headers.forEach(request::addHeader);
+        request.setEntity(new StringEntity(requestBody));
+
+        CloseableHttpResponse response = null;
 
         try {
-            return request
-                    .bodyString(requestBody, ContentType.APPLICATION_JSON)
-                    .execute()
-                    .returnContent()
-                    .asString();
+            response = httpClient.execute(request);
+            return response
+                    .getEntity()
+                    .getContent()
+                    .toString();
         } catch (IOException e) {
             throw new RequestFailedException("POST", url, e);
+        } finally {
+            if (response != null) {
+                response.close();
+            }
         }
     }
 
