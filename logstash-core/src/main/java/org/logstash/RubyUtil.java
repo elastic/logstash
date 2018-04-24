@@ -10,11 +10,12 @@ import org.jruby.exceptions.RaiseException;
 import org.jruby.runtime.ObjectAllocator;
 import org.logstash.ackedqueue.ext.JRubyAckedQueueExt;
 import org.logstash.ackedqueue.ext.JRubyWrappedAckedQueueExt;
-import org.logstash.common.BufferedTokenizerExt;
 import org.logstash.common.AbstractDeadLetterQueueWriterExt;
+import org.logstash.common.BufferedTokenizerExt;
 import org.logstash.config.ir.compiler.FilterDelegatorExt;
 import org.logstash.config.ir.compiler.OutputDelegatorExt;
 import org.logstash.config.ir.compiler.OutputStrategyExt;
+import org.logstash.execution.ExecutionContextExt;
 import org.logstash.execution.QueueReadClientBase;
 import org.logstash.ext.JRubyWrappedWriteClientExt;
 import org.logstash.ext.JrubyAckedReadClientExt;
@@ -104,6 +105,8 @@ public final class RubyUtil {
     public static final RubyClass DUMMY_DLQ_WRITER_CLASS;
 
     public static final RubyClass PLUGIN_DLQ_WRITER_CLASS;
+
+    public static final RubyClass EXECUTION_CONTEXT_CLASS;
 
     /**
      * Logstash Ruby Module.
@@ -208,6 +211,9 @@ public final class RubyUtil {
         );
         outputStrategyRegistry.register(
             RUBY.getCurrentContext(), RUBY.newSymbol("single"), OUTPUT_STRATEGY_SINGLE
+        );
+        EXECUTION_CONTEXT_CLASS = setupLogstashClass(
+            ExecutionContextExt::new, ExecutionContextExt.class
         );
         RUBY_TIMESTAMP_CLASS = setupLogstashClass(
             JrubyTimestampExtLibrary.RubyTimestamp::new, JrubyTimestampExtLibrary.RubyTimestamp.class

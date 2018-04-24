@@ -1,6 +1,5 @@
 # encoding: utf-8
 require "spec_helper"
-require "logstash/execution_context"
 require "logstash/inputs/base"
 require "support/shared_contexts"
 
@@ -90,15 +89,15 @@ describe "LogStash::Inputs::Base#decorate" do
     let(:input) do
       LogStash::Inputs::NOOP.new("add_field" => {"field" => ["value1", "value2"], "field2" => "value"})
     end
-    
+
     let(:cloned) do
       input.clone
     end
-    
+
     it "should clone the codec when cloned" do
       expect(input.codec).not_to eq(cloned.codec)
-    end  
-    
+    end
+
     it "should preserve codec params" do
       expect(input.codec.params).to eq(cloned.codec.params)
     end
