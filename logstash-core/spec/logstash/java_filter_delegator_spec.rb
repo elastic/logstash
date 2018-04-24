@@ -3,7 +3,6 @@ require "spec_helper"
 require "logstash/filter_delegator"
 require "logstash/instrument/null_metric"
 require "logstash/event"
-require "logstash/execution_context"
 require "support/shared_contexts"
 
 java_import org.logstash.RubyUtil

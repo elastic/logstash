@@ -75,9 +75,6 @@ describe LogStash::Pipeline do
     let(:pipeline_id) { "test-dlq" }
 
     it "retrieves proper pipeline-level DLQ writer" do
-      expect(LogStash::Util::PluginDeadLetterQueueWriter).to receive(:new).with(anything, "input_id", "singlegenerator").and_call_original
-      expect(LogStash::Util::PluginDeadLetterQueueWriter).to receive(:new).with(anything, "filter_id", "dlq_commit").and_call_original
-      expect(LogStash::Util::PluginDeadLetterQueueWriter).to receive(:new).with(anything, "output_id", "dummyoutput").and_call_original
       expect_any_instance_of(org.logstash.common.io.DeadLetterQueueWriter).to receive(:close).and_call_original
       subject.run
       dlq_path = java.nio.file.Paths.get(pipeline_settings_obj.get("path.dead_letter_queue"), pipeline_id)
@@ -94,9 +91,6 @@ describe LogStash::Pipeline do
     let(:pipeline_id) { "test-without-dlq" }
 
     it "does not write to the DLQ" do
-      expect(LogStash::Util::PluginDeadLetterQueueWriter).to receive(:new).with(anything, "input_id", "singlegenerator").and_call_original
-      expect(LogStash::Util::PluginDeadLetterQueueWriter).to receive(:new).with(anything, "filter_id", "dlq_commit").and_call_original
-      expect(LogStash::Util::PluginDeadLetterQueueWriter).to receive(:new).with(anything, "output_id", "dummyoutput").and_call_original
       expect(LogStash::Util::DummyDeadLetterQueueWriter).to receive(:new).and_call_original
       expect_any_instance_of(LogStash::Util::DummyDeadLetterQueueWriter).to receive(:close).and_call_original
       subject.run

@@ -1,7 +1,6 @@
 # encoding: utf-8
 require "spec_helper"
 require "logstash/outputs/base"
-require "logstash/execution_context"
 require "support/shared_contexts"
 
 # use a dummy NOOP output to test Outputs::Base
@@ -20,7 +19,7 @@ end
 
 class LogStash::Outputs::NOOPShared < ::LogStash::Outputs::Base
   concurrency :shared
-  
+
   def register; end
 end
 
@@ -30,7 +29,7 @@ end
 
 class LogStash::Outputs::NOOPMultiReceiveEncoded < ::LogStash::Outputs::Base
   concurrency :single
-  
+
   def register; end
 
   def multi_receive_encoded(events_and_encoded)
@@ -38,12 +37,12 @@ class LogStash::Outputs::NOOPMultiReceiveEncoded < ::LogStash::Outputs::Base
 end
 
 describe "LogStash::Outputs::Base#new" do
-  let(:params) { {} }  
+  let(:params) { {} }
   subject(:instance) { klass.new(params.dup) }
 
   context "single" do
     let(:klass) { LogStash::Outputs::NOOPSingle }
-    
+
     it "should instantiate cleanly" do
       params = { "dummy_option" => "potatoes", "codec" => "json", "workers" => 2 }
       worker_params = params.dup; worker_params["workers"] = 1
@@ -58,7 +57,7 @@ describe "LogStash::Outputs::Base#new" do
 
   context "shared" do
     let(:klass) { LogStash::Outputs::NOOPShared }
-    
+
     it "should set concurrency correctly" do
       expect(subject.concurrency).to eq(:shared)
     end
@@ -66,7 +65,7 @@ describe "LogStash::Outputs::Base#new" do
 
   context "legacy" do
     let(:klass) { LogStash::Outputs::NOOPLegacy }
-    
+
     it "should set concurrency correctly" do
       expect(subject.concurrency).to eq(:legacy)
     end
@@ -105,16 +104,16 @@ describe "LogStash::Outputs::Base#new" do
   describe "dispatching multi_receive" do
     let(:event) { double("event") }
     let(:events) { [event] }
-    
+
     context "with multi_receive_encoded" do
       let(:klass) { LogStash::Outputs::NOOPMultiReceiveEncoded }
       let(:codec) { double("codec") }
       let(:encoded) { double("encoded") }
-      
+
       before do
         allow(codec).to receive(:multi_encode).with(events).and_return(encoded)
         allow(instance).to receive(:codec).and_return(codec)
-        allow(instance).to receive(:multi_receive_encoded)        
+        allow(instance).to receive(:multi_receive_encoded)
         instance.multi_receive(events)
       end
 
