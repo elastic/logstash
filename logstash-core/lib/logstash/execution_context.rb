@@ -1,5 +1,5 @@
 # encoding: utf-8
-require "logstash/util/dead_letter_queue_manager"
+
 module LogStash
   class ExecutionContext
     attr_reader :pipeline, :agent, :dlq_writer

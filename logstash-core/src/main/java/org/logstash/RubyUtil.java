@@ -11,6 +11,7 @@ import org.jruby.runtime.ObjectAllocator;
 import org.logstash.ackedqueue.ext.JRubyAckedQueueExt;
 import org.logstash.ackedqueue.ext.JRubyWrappedAckedQueueExt;
 import org.logstash.common.BufferedTokenizerExt;
+import org.logstash.common.AbstractDeadLetterQueueWriterExt;
 import org.logstash.config.ir.compiler.FilterDelegatorExt;
 import org.logstash.config.ir.compiler.OutputDelegatorExt;
 import org.logstash.config.ir.compiler.OutputStrategyExt;
@@ -98,6 +99,12 @@ public final class RubyUtil {
 
     public static final RubyClass TIMED_EXECUTION_CLASS;
 
+    public static final RubyClass ABSTRACT_DLQ_WRITER_CLASS;
+
+    public static final RubyClass DUMMY_DLQ_WRITER_CLASS;
+
+    public static final RubyClass PLUGIN_DLQ_WRITER_CLASS;
+
     /**
      * Logstash Ruby Module.
      */
@@ -135,6 +142,26 @@ public final class RubyUtil {
         METRIC_CLASS.defineAnnotatedMethods(MetricExt.class);
         NAMESPACED_METRIC_CLASS.defineAnnotatedMethods(NamespacedMetricExt.class);
         TIMED_EXECUTION_CLASS.defineAnnotatedMethods(MetricExt.TimedExecution.class);
+        final RubyModule util = LOGSTASH_MODULE.defineModuleUnder("Util");
+        ABSTRACT_DLQ_WRITER_CLASS = util.defineClassUnder(
+            "AbstractDeadLetterQueueWriterExt", RUBY.getObject(),
+            ObjectAllocator.NOT_ALLOCATABLE_ALLOCATOR
+        );
+        ABSTRACT_DLQ_WRITER_CLASS.defineAnnotatedMethods(AbstractDeadLetterQueueWriterExt.class);
+        DUMMY_DLQ_WRITER_CLASS = util.defineClassUnder(
+            "DummyDeadLetterQueueWriter", ABSTRACT_DLQ_WRITER_CLASS,
+            AbstractDeadLetterQueueWriterExt.DummyDeadLetterQueueWriterExt::new
+        );
+        DUMMY_DLQ_WRITER_CLASS.defineAnnotatedMethods(
+            AbstractDeadLetterQueueWriterExt.DummyDeadLetterQueueWriterExt.class
+        );
+        PLUGIN_DLQ_WRITER_CLASS = util.defineClassUnder(
+            "PluginDeadLetterQueueWriter", ABSTRACT_DLQ_WRITER_CLASS,
+            AbstractDeadLetterQueueWriterExt.PluginDeadLetterQueueWriterExt::new
+        );
+        PLUGIN_DLQ_WRITER_CLASS.defineAnnotatedMethods(
+            AbstractDeadLetterQueueWriterExt.PluginDeadLetterQueueWriterExt.class
+        );
         OUTPUT_STRATEGY_REGISTRY = setupLogstashClass(
             OutputStrategyExt.OutputStrategyRegistryExt::new,
             OutputStrategyExt.OutputStrategyRegistryExt.class
