@@ -1,9 +1,9 @@
 
-:branch:                6.x
+:branch:                6.3
 :major-version:         6.x
-:logstash_version:      6.2.0
-:elasticsearch_version: 6.2.0
-:kibana_version:        6.2.0
+:logstash_version:      6.3.0
+:elasticsearch_version: 6.3.0
+:kibana_version:        6.3.0
 :docker-repo:           docker.elastic.co/logstash/logstash
 :docker-image:          {docker-repo}:{logstash_version}
 
