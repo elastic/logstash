@@ -3,7 +3,6 @@ require "logstash/namespace"
 require "logstash/logging"
 require "logstash/config/mixin"
 require "logstash/instrument/null_metric"
-require "logstash/util/dead_letter_queue_manager"
 require "concurrent"
 require "securerandom"
 
@@ -21,9 +20,9 @@ class LogStash::Plugin
   # for a specific plugin.
   config :enable_metric, :validate => :boolean, :default => true
 
-  # Add a unique `ID` to the plugin configuration. If no ID is specified, Logstash will generate one. 
-  # It is strongly recommended to set this ID in your configuration. This is particularly useful 
-  # when you have two or more plugins of the same type, for example, if you have 2 grok filters. 
+  # Add a unique `ID` to the plugin configuration. If no ID is specified, Logstash will generate one.
+  # It is strongly recommended to set this ID in your configuration. This is particularly useful
+  # when you have two or more plugins of the same type, for example, if you have 2 grok filters.
   # Adding a named ID in this case will help in monitoring Logstash when using the monitoring APIs.
   #
   # [source,ruby]
