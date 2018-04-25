@@ -1,7 +1,6 @@
 # encoding: utf-8
 require "logstash-core/logstash-core"
 require "logstash/errors"
-require "logstash/java_integration"
 require "logstash/config/cpu_core_strategy"
 require "logstash/settings"
 require "logstash/util/cloud_setting_id"
