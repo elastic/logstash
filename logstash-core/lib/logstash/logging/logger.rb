@@ -1,4 +1,3 @@
-require "logstash/java_integration"
 require "uri"
 
 module LogStash
