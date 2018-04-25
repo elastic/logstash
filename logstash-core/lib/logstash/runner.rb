@@ -209,6 +209,10 @@ class LogStash::Runner < Clamp::StrictCommand
     I18n.t("logstash.runner.flag.quiet"),
     :new_flag => "log.level", :new_value => "error"
 
+  # We configure the registry and load any plugin that can register hooks
+  # with logstash, this needs to be done before any operation.
+  LogStash::PLUGIN_REGISTRY.setup!
+
   attr_reader :agent, :settings, :source_loader
   attr_accessor :bootstrap_checks
 
@@ -264,10 +268,6 @@ class LogStash::Runner < Clamp::StrictCommand
 
     # Add local modules to the registry before everything else
     LogStash::Modules::Util.register_local_modules(LogStash::Environment::LOGSTASH_HOME)
-
-    # We configure the registry and load any plugin that can register hooks
-    # with logstash, this need to be done before any operation.
-    LogStash::PLUGIN_REGISTRY.setup!
 
     @dispatcher = LogStash::EventDispatcher.new(self)
     LogStash::PLUGIN_REGISTRY.hooks.register_emitter(self.class, @dispatcher)
