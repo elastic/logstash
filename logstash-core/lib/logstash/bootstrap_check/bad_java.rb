@@ -1,7 +1,6 @@
 # encoding: utf-8
 require "logstash/util"
 require "logstash/util/java_version"
-require "logstash/errors"
 
 module LogStash module BootstrapCheck
   class BadJava
