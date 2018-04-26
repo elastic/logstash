@@ -26,8 +26,14 @@ import org.logstash.ext.JrubyMemoryReadClientExt;
 import org.logstash.ext.JrubyMemoryWriteClientExt;
 import org.logstash.ext.JrubyTimestampExtLibrary;
 import org.logstash.ext.JrubyWrappedSynchronousQueueExt;
+import org.logstash.instrument.metrics.AbstractMetricExt;
+import org.logstash.instrument.metrics.AbstractNamespacedMetricExt;
+import org.logstash.instrument.metrics.AbstractSimpleMetricExt;
 import org.logstash.instrument.metrics.MetricExt;
 import org.logstash.instrument.metrics.NamespacedMetricExt;
+import org.logstash.instrument.metrics.NullMetricExt;
+import org.logstash.instrument.metrics.NullNamespacedMetricExt;
+import org.logstash.plugins.PluginFactoryExt;
 
 /**
  * Utilities around interaction with the {@link Ruby} runtime.
@@ -87,9 +93,21 @@ public final class RubyUtil {
 
     public static final RubyClass BUFFERED_TOKENIZER;
 
+    public static final RubyClass ABSTRACT_METRIC_CLASS;
+
+    public static final RubyClass ABSTRACT_SIMPLE_METRIC_CLASS;
+
+    public static final RubyClass ABSTRACT_NAMESPACED_METRIC_CLASS;
+
     public static final RubyClass METRIC_CLASS;
 
+    public static final RubyClass NULL_METRIC_CLASS;
+
+    public static final RubyClass NULL_COUNTER_CLASS;
+
     public static final RubyClass NAMESPACED_METRIC_CLASS;
+
+    public static final RubyClass NULL_NAMESPACED_METRIC_CLASS;
 
     public static final RubyClass METRIC_EXCEPTION_CLASS;
 
@@ -101,6 +119,8 @@ public final class RubyUtil {
 
     public static final RubyClass TIMED_EXECUTION_CLASS;
 
+    public static final RubyClass NULL_TIMED_EXECUTION_CLASS;
+
     public static final RubyClass ABSTRACT_DLQ_WRITER_CLASS;
 
     public static final RubyClass DUMMY_DLQ_WRITER_CLASS;
@@ -111,12 +131,18 @@ public final class RubyUtil {
 
     public static final RubyClass BUG_CLASS;
 
+    public static final RubyClass EXECUTION_CONTEXT_FACTORY_CLASS;
+
+    public static final RubyClass PLUGIN_METRIC_FACTORY_CLASS;
+
     /**
      * Logstash Ruby Module.
      */
     private static final RubyModule LOGSTASH_MODULE;
 
     private static final RubyModule OUTPUT_DELEGATOR_STRATEGIES;
+
+    private static final RubyModule PLUGINS_MODULE;
 
     static {
         RUBY = Ruby.getGlobalRuntime();
@@ -125,8 +151,20 @@ public final class RubyUtil {
             "Inputs", "Outputs", "Filters", "Search", "Config", "File", "Web", "PluginMixins",
             "PluginManager", "Api", "Modules"
         ).forEach(module -> RUBY.defineModuleUnder(module, LOGSTASH_MODULE));
+        PLUGINS_MODULE = RUBY.defineModuleUnder("Plugins", LOGSTASH_MODULE);
         final RubyModule instrumentModule =
             RUBY.defineModuleUnder("Instrument", LOGSTASH_MODULE);
+        EXECUTION_CONTEXT_FACTORY_CLASS = PLUGINS_MODULE.defineClassUnder(
+            "ExecutionContextFactory", RUBY.getObject(),
+            PluginFactoryExt.ExecutionContext::new
+        );
+        PLUGIN_METRIC_FACTORY_CLASS = PLUGINS_MODULE.defineClassUnder(
+            "PluginMetricFactory", RUBY.getObject(), PluginFactoryExt.Metrics::new
+        );
+        PLUGIN_METRIC_FACTORY_CLASS.defineAnnotatedMethods(PluginFactoryExt.Metrics.class);
+        EXECUTION_CONTEXT_FACTORY_CLASS.defineAnnotatedMethods(
+            PluginFactoryExt.ExecutionContext.class
+        );
         METRIC_EXCEPTION_CLASS = instrumentModule.defineClassUnder(
             "MetricException", RUBY.getException(), MetricExt.MetricException::new
         );
@@ -141,17 +179,50 @@ public final class RubyUtil {
             "MetricNoNamespaceProvided", METRIC_EXCEPTION_CLASS,
             MetricExt.MetricNoNamespaceProvided::new
         );
-        METRIC_CLASS
-            = instrumentModule.defineClassUnder("Metric", RUBY.getObject(), MetricExt::new);
+        ABSTRACT_METRIC_CLASS = instrumentModule.defineClassUnder(
+            "AbstractMetric", RUBY.getObject(),
+            ObjectAllocator.NOT_ALLOCATABLE_ALLOCATOR
+        );
+        ABSTRACT_NAMESPACED_METRIC_CLASS = instrumentModule.defineClassUnder(
+            "AbstractNamespacedMetric", ABSTRACT_METRIC_CLASS,
+            ObjectAllocator.NOT_ALLOCATABLE_ALLOCATOR
+        );
+        ABSTRACT_SIMPLE_METRIC_CLASS = instrumentModule.defineClassUnder(
+            "AbstractSimpleMetric", ABSTRACT_METRIC_CLASS,
+            ObjectAllocator.NOT_ALLOCATABLE_ALLOCATOR
+        );
+        METRIC_CLASS = instrumentModule.defineClassUnder(
+            "Metric", ABSTRACT_SIMPLE_METRIC_CLASS, MetricExt::new
+        );
+        NULL_METRIC_CLASS = instrumentModule.defineClassUnder(
+            "NullMetric", ABSTRACT_SIMPLE_METRIC_CLASS, NullMetricExt::new
+        );
         TIMED_EXECUTION_CLASS = METRIC_CLASS.defineClassUnder(
             "TimedExecution", RUBY.getObject(), MetricExt.TimedExecution::new
         );
-        NAMESPACED_METRIC_CLASS = instrumentModule.defineClassUnder(
-            "NamespacedMetric", RUBY.getObject(), NamespacedMetricExt::new
+        NULL_TIMED_EXECUTION_CLASS = NULL_METRIC_CLASS.defineClassUnder(
+            "NullTimedExecution", RUBY.getObject(), NullMetricExt.NullTimedExecution::new
         );
+        NULL_COUNTER_CLASS = METRIC_CLASS.defineClassUnder(
+            "NullCounter", RUBY.getObject(), NullNamespacedMetricExt.NullCounter::new
+        );
+        NAMESPACED_METRIC_CLASS = instrumentModule.defineClassUnder(
+            "NamespacedMetric", ABSTRACT_NAMESPACED_METRIC_CLASS, NamespacedMetricExt::new
+        );
+        NULL_NAMESPACED_METRIC_CLASS = instrumentModule.defineClassUnder(
+            "NamespacedNullMetric", ABSTRACT_NAMESPACED_METRIC_CLASS,
+            NullNamespacedMetricExt::new
+        );
+        ABSTRACT_METRIC_CLASS.defineAnnotatedMethods(AbstractMetricExt.class);
+        ABSTRACT_SIMPLE_METRIC_CLASS.defineAnnotatedMethods(AbstractSimpleMetricExt.class);
+        ABSTRACT_NAMESPACED_METRIC_CLASS.defineAnnotatedMethods(AbstractNamespacedMetricExt.class);
         METRIC_CLASS.defineAnnotatedMethods(MetricExt.class);
+        NULL_METRIC_CLASS.defineAnnotatedMethods(NullMetricExt.class);
         NAMESPACED_METRIC_CLASS.defineAnnotatedMethods(NamespacedMetricExt.class);
+        NULL_NAMESPACED_METRIC_CLASS.defineAnnotatedMethods(NullNamespacedMetricExt.class);
         TIMED_EXECUTION_CLASS.defineAnnotatedMethods(MetricExt.TimedExecution.class);
+        NULL_TIMED_EXECUTION_CLASS.defineAnnotatedMethods(NullMetricExt.NullTimedExecution.class);
+        NULL_COUNTER_CLASS.defineAnnotatedMethods(NullNamespacedMetricExt.NullCounter.class);
         final RubyModule util = LOGSTASH_MODULE.defineModuleUnder("Util");
         ABSTRACT_DLQ_WRITER_CLASS = util.defineClassUnder(
             "AbstractDeadLetterQueueWriterExt", RUBY.getObject(),

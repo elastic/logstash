@@ -1,7 +1,6 @@
 # encoding: utf-8
 require "logstash/logging"
 require "logstash/config/mixin"
-require "logstash/instrument/null_metric"
 require "concurrent"
 require "securerandom"
 
