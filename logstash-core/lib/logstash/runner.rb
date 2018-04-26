@@ -15,7 +15,6 @@ end
 require "clamp"
 require "net/http"
 
-require "logstash/namespace"
 require "logstash-core/logstash-core"
 require "logstash/environment"
 require "logstash/modules/cli_parser"

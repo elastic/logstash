@@ -1,8 +1,7 @@
 # encoding: utf-8
 require "logstash/filters/base"
-require "logstash/namespace"
 
-# This <%= @plugin_name %> filter will replace the contents of the default 
+# This <%= @plugin_name %> filter will replace the contents of the default
 # message field with whatever you specify in the configuration.
 #
 # It is only intended to be used as an <%= @plugin_name %>.
@@ -18,14 +17,14 @@ class LogStash::Filters::<%= classify(plugin_name) %> < LogStash::Filters::Base
   # }
   #
   config_name "<%= plugin_name %>"
-  
+
   # Replace the message with this value.
   config :message, :validate => :string, :default => "Hello World!"
-  
+
 
   public
   def register
-    # Add instance variables 
+    # Add instance variables
   end # def register
 
   public
