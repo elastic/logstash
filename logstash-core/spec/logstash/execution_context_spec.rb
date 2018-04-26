@@ -1,7 +1,5 @@
 # encoding: utf-8
 require "spec_helper"
-require "logstash/util/dead_letter_queue_manager"
-require "logstash/execution_context"
 
 describe LogStash::ExecutionContext do
   let(:pipeline) { double("pipeline") }

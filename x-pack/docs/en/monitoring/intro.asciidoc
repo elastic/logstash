@@ -1,0 +1,19 @@
+
+Alternatively, you can <<configuring-logstash,configure {monitoring}>> to send
+data to a monitoring cluster.
+
+NOTE: Monitoring is an {xpack} feature under the Basic License and is therefore
+*free to use*.
+
+You can use the <<logstash-monitoring-ui,monitoring UI>> in {xpack} to view the
+metrics and gain insight into how your Logstash deployment is running.
+
+The <<logstash-pipeline-viewer,pipeline viewer>> in {xpack} offers additional
+visibility into the behavior and performance of complex pipeline configurations.
+It shows a graph representation of the overall pipeline topology, data flow, and
+branching logic, overlaid with important metrics, like events per second, for
+each plugin in the view.
+
+This documentation focuses on the {monitoring} infrastructure and setup in
+Logstash. For an introduction to monitoring your Elastic stack, including {es}
+and {kib}, see {xpack-ref}/xpack-monitoring.html[Monitoring the Elastic Stack].

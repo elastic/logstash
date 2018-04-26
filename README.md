@@ -18,14 +18,24 @@ supported platforms, from [downloads page](https://www.elastic.co/downloads/logs
 
 ### Snapshot Builds
 
-For the daring, snapshot builds are available. These builds are created nightly and have undergone no formal QA, so they should **never** be run in production.
+For the daring, snapshot builds are available.
+These builds are created nightly and have undergone no formal QA, so they should **never** be run in production.
 
-| artifact |
-| --- |
-| [tar](https://snapshots.elastic.co/downloads/logstash/logstash-7.0.0-alpha1-SNAPSHOT.tar.gz) |
-| [zip](https://snapshots.elastic.co/downloads/logstash/logstash-7.0.0-alpha1-SNAPSHOT.zip) |
-| [deb](https://snapshots.elastic.co/downloads/logstash/logstash-7.0.0-alpha1-SNAPSHOT.deb) |
-| [rpm](https://snapshots.elastic.co/downloads/logstash/logstash-7.0.0-alpha1-SNAPSHOT.rpm) |
+| Complete, with X-Pack | Apache 2.0 licensed    |
+| --------------------- | ---------------------- |
+| [tar-complete][]      | [tar-oss][]            |
+| [zip-complete][]      | [zip-oss][]            |
+| [deb-complete][]      | [deb-oss][]            |
+| [rpm-complete][]      | [rpm-oss][]            |
+
+[tar-complete]: https://snapshots.elastic.co/downloads/logstash/logstash-7.0.0-alpha1-SNAPSHOT.tar.gz
+[zip-complete]: https://snapshots.elastic.co/downloads/logstash/logstash-7.0.0-alpha1-SNAPSHOT.zip
+[deb-complete]: https://snapshots.elastic.co/downloads/logstash/logstash-7.0.0-alpha1-SNAPSHOT.deb
+[rpm-complete]: https://snapshots.elastic.co/downloads/logstash/logstash-7.0.0-alpha1-SNAPSHOT.rpm
+[tar-oss]: https://snapshots.elastic.co/downloads/logstash/logstash-oss-7.0.0-alpha1-SNAPSHOT.tar.gz
+[zip-oss]: https://snapshots.elastic.co/downloads/logstash/logstash-oss-7.0.0-alpha1-SNAPSHOT.zip
+[deb-oss]: https://snapshots.elastic.co/downloads/logstash/logstash-oss-7.0.0-alpha1-SNAPSHOT.deb
+[rpm-oss]: https://snapshots.elastic.co/downloads/logstash/logstash-oss-7.0.0-alpha1-SNAPSHOT.rpm
 
 ## Need Help?
 
@@ -79,6 +89,12 @@ $ ruby -v
 The printed version should be the same as in the `.ruby-version` file.
 
 ### Building Logstash
+
+The Logstash project includes the source code for all of Logstash, including the Elastic-Licensed X-Pack features and functions; to run Logstash from source using only the OSS-licensed code, export the `OSS` environment variable with a value of `true`:
+
+``` sh
+export OSS=true
+```
 
 * To run Logstash from the repo you must first bootstrap the environment:
 
@@ -189,6 +205,8 @@ Note that if a plugin is installed using the plugin manager `bin/logstash-plugin
 
 ## Building Artifacts
 
+Built artifacts will be placed in the `LS_HOME/build` directory, and will create the directory if it is not already present.
+
 You can build a Logstash snapshot package as tarball or zip file
 
 ```sh
@@ -196,13 +214,25 @@ You can build a Logstash snapshot package as tarball or zip file
 ./gradlew assembleZipDistribution
 ```
 
-This will create the artifact `LS_HOME/build` directory
+OSS-only artifacts can similarly be built with their own gradle tasks:
+```sh
+./gradlew assembleOssTarDistribution
+./gradlew assembleOssZipDistribution
+
+```
 
 You can also build .rpm and .deb, but the [fpm](https://github.com/jordansissel/fpm) tool is required.
 
 ```sh
 rake artifact:rpm
 rake artifact:deb
+```
+
+and:
+
+```sh
+rake artifact:rpm_oss
+rake artifact:deb_oss
 ```
 
 ## Project Principles

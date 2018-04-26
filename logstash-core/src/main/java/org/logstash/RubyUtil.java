@@ -10,9 +10,12 @@ import org.jruby.exceptions.RaiseException;
 import org.jruby.runtime.ObjectAllocator;
 import org.logstash.ackedqueue.ext.JRubyAckedQueueExt;
 import org.logstash.ackedqueue.ext.JRubyWrappedAckedQueueExt;
+import org.logstash.common.AbstractDeadLetterQueueWriterExt;
+import org.logstash.common.BufferedTokenizerExt;
 import org.logstash.config.ir.compiler.FilterDelegatorExt;
 import org.logstash.config.ir.compiler.OutputDelegatorExt;
 import org.logstash.config.ir.compiler.OutputStrategyExt;
+import org.logstash.execution.ExecutionContextExt;
 import org.logstash.execution.QueueReadClientBase;
 import org.logstash.ext.JRubyWrappedWriteClientExt;
 import org.logstash.ext.JrubyAckedReadClientExt;
@@ -22,6 +25,8 @@ import org.logstash.ext.JrubyMemoryReadClientExt;
 import org.logstash.ext.JrubyMemoryWriteClientExt;
 import org.logstash.ext.JrubyTimestampExtLibrary;
 import org.logstash.ext.JrubyWrappedSynchronousQueueExt;
+import org.logstash.instrument.metrics.MetricExt;
+import org.logstash.instrument.metrics.NamespacedMetricExt;
 
 /**
  * Utilities around interaction with the {@link Ruby} runtime.
@@ -79,6 +84,30 @@ public final class RubyUtil {
 
     public static final RubyClass OUTPUT_STRATEGY_SHARED;
 
+    public static final RubyClass BUFFERED_TOKENIZER;
+
+    public static final RubyClass METRIC_CLASS;
+
+    public static final RubyClass NAMESPACED_METRIC_CLASS;
+
+    public static final RubyClass METRIC_EXCEPTION_CLASS;
+
+    public static final RubyClass METRIC_NO_KEY_PROVIDED_CLASS;
+
+    public static final RubyClass METRIC_NO_BLOCK_PROVIDED_CLASS;
+
+    public static final RubyClass METRIC_NO_NAMESPACE_PROVIDED_CLASS;
+
+    public static final RubyClass TIMED_EXECUTION_CLASS;
+
+    public static final RubyClass ABSTRACT_DLQ_WRITER_CLASS;
+
+    public static final RubyClass DUMMY_DLQ_WRITER_CLASS;
+
+    public static final RubyClass PLUGIN_DLQ_WRITER_CLASS;
+
+    public static final RubyClass EXECUTION_CONTEXT_CLASS;
+
     /**
      * Logstash Ruby Module.
      */
@@ -89,10 +118,61 @@ public final class RubyUtil {
     static {
         RUBY = Ruby.getGlobalRuntime();
         LOGSTASH_MODULE = RUBY.getOrCreateModule("LogStash");
+        final RubyModule instrumentModule =
+            RUBY.defineModuleUnder("Instrument", LOGSTASH_MODULE);
+        METRIC_EXCEPTION_CLASS = instrumentModule.defineClassUnder(
+            "MetricException", RUBY.getException(), MetricExt.MetricException::new
+        );
+        METRIC_NO_KEY_PROVIDED_CLASS = instrumentModule.defineClassUnder(
+            "MetricNoKeyProvided", METRIC_EXCEPTION_CLASS, MetricExt.MetricNoKeyProvided::new
+        );
+        METRIC_NO_BLOCK_PROVIDED_CLASS = instrumentModule.defineClassUnder(
+            "MetricNoBlockProvided", METRIC_EXCEPTION_CLASS,
+            MetricExt.MetricNoBlockProvided::new
+        );
+        METRIC_NO_NAMESPACE_PROVIDED_CLASS = instrumentModule.defineClassUnder(
+            "MetricNoNamespaceProvided", METRIC_EXCEPTION_CLASS,
+            MetricExt.MetricNoNamespaceProvided::new
+        );
+        METRIC_CLASS
+            = instrumentModule.defineClassUnder("Metric", RUBY.getObject(), MetricExt::new);
+        TIMED_EXECUTION_CLASS = METRIC_CLASS.defineClassUnder(
+            "TimedExecution", RUBY.getObject(), MetricExt.TimedExecution::new
+        );
+        NAMESPACED_METRIC_CLASS = instrumentModule.defineClassUnder(
+            "NamespacedMetric", RUBY.getObject(), NamespacedMetricExt::new
+        );
+        METRIC_CLASS.defineAnnotatedMethods(MetricExt.class);
+        NAMESPACED_METRIC_CLASS.defineAnnotatedMethods(NamespacedMetricExt.class);
+        TIMED_EXECUTION_CLASS.defineAnnotatedMethods(MetricExt.TimedExecution.class);
+        final RubyModule util = LOGSTASH_MODULE.defineModuleUnder("Util");
+        ABSTRACT_DLQ_WRITER_CLASS = util.defineClassUnder(
+            "AbstractDeadLetterQueueWriterExt", RUBY.getObject(),
+            ObjectAllocator.NOT_ALLOCATABLE_ALLOCATOR
+        );
+        ABSTRACT_DLQ_WRITER_CLASS.defineAnnotatedMethods(AbstractDeadLetterQueueWriterExt.class);
+        DUMMY_DLQ_WRITER_CLASS = util.defineClassUnder(
+            "DummyDeadLetterQueueWriter", ABSTRACT_DLQ_WRITER_CLASS,
+            AbstractDeadLetterQueueWriterExt.DummyDeadLetterQueueWriterExt::new
+        );
+        DUMMY_DLQ_WRITER_CLASS.defineAnnotatedMethods(
+            AbstractDeadLetterQueueWriterExt.DummyDeadLetterQueueWriterExt.class
+        );
+        PLUGIN_DLQ_WRITER_CLASS = util.defineClassUnder(
+            "PluginDeadLetterQueueWriter", ABSTRACT_DLQ_WRITER_CLASS,
+            AbstractDeadLetterQueueWriterExt.PluginDeadLetterQueueWriterExt::new
+        );
+        PLUGIN_DLQ_WRITER_CLASS.defineAnnotatedMethods(
+            AbstractDeadLetterQueueWriterExt.PluginDeadLetterQueueWriterExt.class
+        );
         OUTPUT_STRATEGY_REGISTRY = setupLogstashClass(
             OutputStrategyExt.OutputStrategyRegistryExt::new,
             OutputStrategyExt.OutputStrategyRegistryExt.class
         );
+        BUFFERED_TOKENIZER = RUBY.getOrCreateModule("FileWatch").defineClassUnder(
+            "BufferedTokenizer", RUBY.getObject(), BufferedTokenizerExt::new
+        );
+        BUFFERED_TOKENIZER.defineAnnotatedMethods(BufferedTokenizerExt.class);
         OUTPUT_DELEGATOR_STRATEGIES =
             RUBY.defineModuleUnder("OutputDelegatorStrategies", LOGSTASH_MODULE);
         OUTPUT_STRATEGY_ABSTRACT = OUTPUT_DELEGATOR_STRATEGIES.defineClassUnder(
@@ -120,8 +200,9 @@ public final class RubyUtil {
         OUTPUT_STRATEGY_SINGLE.defineAnnotatedMethods(OutputStrategyExt.SingleOutputStrategyExt.class);
         OUTPUT_STRATEGY_LEGACY.defineAnnotatedMethods(OutputStrategyExt.LegacyOutputStrategyExt.class);
         final OutputStrategyExt.OutputStrategyRegistryExt outputStrategyRegistry =
-            (OutputStrategyExt.OutputStrategyRegistryExt) OutputStrategyExt.OutputStrategyRegistryExt
-                .instance(RUBY.getCurrentContext(), OUTPUT_DELEGATOR_STRATEGIES);
+            OutputStrategyExt.OutputStrategyRegistryExt.instance(
+                RUBY.getCurrentContext(), OUTPUT_DELEGATOR_STRATEGIES
+            );
         outputStrategyRegistry.register(
             RUBY.getCurrentContext(), RUBY.newSymbol("shared"), OUTPUT_STRATEGY_SHARED
         );
@@ -130,6 +211,9 @@ public final class RubyUtil {
         );
         outputStrategyRegistry.register(
             RUBY.getCurrentContext(), RUBY.newSymbol("single"), OUTPUT_STRATEGY_SINGLE
+        );
+        EXECUTION_CONTEXT_CLASS = setupLogstashClass(
+            ExecutionContextExt::new, ExecutionContextExt.class
         );
         RUBY_TIMESTAMP_CLASS = setupLogstashClass(
             JrubyTimestampExtLibrary.RubyTimestamp::new, JrubyTimestampExtLibrary.RubyTimestamp.class

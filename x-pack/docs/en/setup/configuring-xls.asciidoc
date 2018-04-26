@@ -1,0 +1,10 @@
+[role="xpack"]
+[[settings-xpack]]
+=== {xpack} Settings in Logstash
+++++
+<titleabbrev>{xpack} Settings</titleabbrev>
+++++
+
+include::{asciidoc-dir}/../../shared/settings.asciidoc[]
+
+For more Logstash configuration settings, see <<logstash-settings-file>>.

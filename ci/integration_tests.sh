@@ -9,6 +9,7 @@ export GRADLE_OPTS="-Xmx2g -Dorg.gradle.daemon=false -Dorg.gradle.logging.level=
 
 export SPEC_OPTS="--order rand --format documentation"
 export CI=true
+export OSS=true
 
 if [[ $1 = "setup" ]]; then
  echo "Setup only, no tests will be run"

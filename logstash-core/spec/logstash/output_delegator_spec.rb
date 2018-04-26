@@ -1,5 +1,4 @@
 # encoding: utf-8
-require "logstash/execution_context"
 require "spec_helper"
 require "support/shared_contexts"
 

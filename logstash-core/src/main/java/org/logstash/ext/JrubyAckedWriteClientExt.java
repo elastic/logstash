@@ -24,7 +24,7 @@ public final class JrubyAckedWriteClientExt extends RubyObject implements QueueW
     private AtomicBoolean closed = new AtomicBoolean();
 
     @JRubyMethod(meta = true, required = 2)
-    public static IRubyObject create(final ThreadContext context, IRubyObject recv,
+    public static JrubyAckedWriteClientExt create(final ThreadContext context, IRubyObject recv,
         final IRubyObject queue, final IRubyObject closed) {
         return new JrubyAckedWriteClientExt(
             context.runtime, RubyUtil.ACKED_WRITE_CLIENT_CLASS,

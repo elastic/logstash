@@ -1,7 +1,6 @@
 package org.logstash.config.ir.compiler;
 
 import org.jruby.internal.runtime.methods.DynamicMethod;
-import org.jruby.runtime.builtin.IRubyObject;
 
 /**
  * Definition of a variable.
@@ -49,9 +48,7 @@ final class VariableDefinition implements SyntaxElement {
      */
     private static Class<?> safeType(final Class<?> clazz) {
         final Class<?> safe;
-        if (clazz.getSimpleName().contains("JavaFilterDelegator")) {
-            safe = IRubyObject.class;
-        } else if (EventCondition.class.isAssignableFrom(clazz)) {
+        if (EventCondition.class.isAssignableFrom(clazz)) {
             safe = EventCondition.class;
         } else if (DynamicMethod.class.isAssignableFrom(clazz)) {
             safe = DynamicMethod.class;

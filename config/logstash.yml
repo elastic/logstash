@@ -211,4 +211,36 @@
 #
 # Where to find custom plugins
 # path.plugins: []
-
+#
+# ------------ X-Pack Settings (not applicable for OSS build)--------------
+#
+# X-Pack Monitoring
+# https://www.elastic.co/guide/en/logstash/current/monitoring-logstash.html
+#xpack.monitoring.enabled: false
+#xpack.monitoring.elasticsearch.username: logstash_system
+#xpack.monitoring.elasticsearch.password: password
+#xpack.monitoring.elasticsearch.url: ["https://es1:9200", "https://es2:9200"]
+#xpack.monitoring.elasticsearch.ssl.ca: [ "/path/to/ca.crt" ]
+#xpack.monitoring.elasticsearch.ssl.truststore.path: path/to/file
+#xpack.monitoring.elasticsearch.ssl.truststore.password: password
+#xpack.monitoring.elasticsearch.ssl.keystore.path: /path/to/file
+#xpack.monitoring.elasticsearch.ssl.keystore.password: password
+#xpack.monitoring.elasticsearch.ssl.verification_mode: certificate
+#xpack.monitoring.elasticsearch.sniffing: false
+#xpack.monitoring.collection.interval: 10s
+#xpack.monitoring.collection.pipeline.details.enabled: true
+#
+# X-Pack Management
+# https://www.elastic.co/guide/en/logstash/current/logstash-centralized-pipeline-management.html
+#xpack.management.enabled: false
+#xpack.management.pipeline.id: ["main", "apache_logs"]
+#xpack.management.elasticsearch.username: logstash_admin_user
+#xpack.management.elasticsearch.password: password
+#xpack.management.elasticsearch.url: ["https://es1:9200", "https://es2:9200"]
+#xpack.management.elasticsearch.ssl.ca: [ "/path/to/ca.crt" ]
+#xpack.management.elasticsearch.ssl.truststore.path: /path/to/file
+#xpack.management.elasticsearch.ssl.truststore.password: password
+#xpack.management.elasticsearch.ssl.keystore.path: /path/to/file
+#xpack.management.elasticsearch.ssl.keystore.password: password
+#xpack.management.elasticsearch.sniffing: false
+#xpack.management.logstash.poll_interval: 5s

@@ -24,7 +24,7 @@ public final class OutputStrategyExt {
     @JRubyClass(name = "OutputDelegatorStrategyRegistry")
     public static final class OutputStrategyRegistryExt extends RubyObject {
 
-        private static OutputStrategyRegistryExt instance;
+        private static OutputStrategyExt.OutputStrategyRegistryExt instance;
 
         private RubyHash map;
 
@@ -33,10 +33,10 @@ public final class OutputStrategyExt {
         }
 
         @JRubyMethod(meta = true)
-        public static synchronized IRubyObject instance(final ThreadContext context,
-            final IRubyObject recv) {
+        public static synchronized OutputStrategyExt.OutputStrategyRegistryExt instance(
+            final ThreadContext context, final IRubyObject recv) {
             if (instance == null) {
-                instance = new OutputStrategyRegistryExt(
+                instance = new OutputStrategyExt.OutputStrategyRegistryExt(
                     context.runtime, RubyUtil.OUTPUT_STRATEGY_REGISTRY
                 );
                 instance.init(context);
@@ -68,7 +68,7 @@ public final class OutputStrategyExt {
 
         @JRubyMethod(name = "class_for")
         @SuppressWarnings("unchecked")
-        public IRubyObject classFor(final ThreadContext context, final IRubyObject type) {
+        public RubyClass classFor(final ThreadContext context, final IRubyObject type) {
             final IRubyObject klass = map.op_aref(context, type);
             if (!klass.isTrue()) {
                 throw new IllegalArgumentException(
@@ -80,7 +80,7 @@ public final class OutputStrategyExt {
                     )
                 );
             }
-            return klass;
+            return (RubyClass) klass;
         }
     }
 
@@ -192,7 +192,7 @@ public final class OutputStrategyExt {
 
         private IRubyObject output;
 
-        public SimpleAbstractOutputStrategyExt(final Ruby runtime, final RubyClass metaClass) {
+        protected SimpleAbstractOutputStrategyExt(final Ruby runtime, final RubyClass metaClass) {
             super(runtime, metaClass);
         }
 
