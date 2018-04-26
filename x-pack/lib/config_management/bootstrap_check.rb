@@ -4,7 +4,6 @@
 
 require "logstash/bootstrap_check/default_config"
 require "logstash/logging/logger"
-require "logstash/errors"
 
 java_import java.util.concurrent.TimeUnit
 

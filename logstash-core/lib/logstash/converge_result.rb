@@ -1,5 +1,4 @@
 # encoding: utf-8
-require "logstash/errors"
 
 module LogStash
   # This class allow us to keep track and uniform all the return values from the
