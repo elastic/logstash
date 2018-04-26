@@ -1,5 +1,4 @@
 # encoding: utf-8
-require "logstash/namespace"
 require "base64"
 
 module LogStash module Util class CloudSettingId

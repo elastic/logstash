@@ -1,5 +1,6 @@
 package org.logstash;
 
+import java.util.stream.Stream;
 import org.jruby.NativeException;
 import org.jruby.Ruby;
 import org.jruby.RubyClass;
@@ -118,6 +119,10 @@ public final class RubyUtil {
     static {
         RUBY = Ruby.getGlobalRuntime();
         LOGSTASH_MODULE = RUBY.getOrCreateModule("LogStash");
+        Stream.of(
+            "Inputs", "Outputs", "Filters", "Search", "Config", "File", "Web", "PluginMixins",
+            "PluginManager", "Api", "Modules"
+        ).forEach(module -> RUBY.defineModuleUnder(module, LOGSTASH_MODULE));
         final RubyModule instrumentModule =
             RUBY.defineModuleUnder("Instrument", LOGSTASH_MODULE);
         METRIC_EXCEPTION_CLASS = instrumentModule.defineClassUnder(

@@ -1,5 +1,4 @@
 # encoding: utf-8
-require "logstash/namespace"
 require "logstash/event"
 require "logstash/plugin"
 require "logstash/logging"
@@ -94,7 +93,7 @@ class LogStash::Inputs::Base < LogStash::Plugin
   def stop?
     @stop_called.value
   end
-  
+
   def clone
     cloned = super
     cloned.codec = @codec.clone if @codec
@@ -105,7 +104,7 @@ class LogStash::Inputs::Base < LogStash::Plugin
     super
     # There is no easy way to propage an instance variable into the codec, because the codec
     # are created at the class level
-    # TODO(talevy): Codecs should have their own execution_context, for now they will inherit their 
+    # TODO(talevy): Codecs should have their own execution_context, for now they will inherit their
     #               parent plugin's
     @codec.execution_context = context
     context

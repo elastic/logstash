@@ -1,6 +1,5 @@
 # encoding: utf-8
 
-require "logstash/namespace"
 require "logstash/json"
 
 # transient pipeline events for normal in-flow signaling as opposed to

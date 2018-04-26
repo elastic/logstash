@@ -1,5 +1,4 @@
 # encoding: utf-8
-require "logstash/namespace"
 require "logstash/plugins/registry"
 require "logstash/logging"
 require "logstash/util/password"
@@ -33,21 +32,21 @@ LogStash::Environment.load_locale!
 # }
 #
 module LogStash::Config::Mixin
-  
+
   include LogStash::Util::SubstitutionVariables
-  
+
   attr_accessor :config
   attr_accessor :original_params
 
   PLUGIN_VERSION_1_0_0 = LogStash::Util::PluginVersion.new(1, 0, 0)
   PLUGIN_VERSION_0_9_0 = LogStash::Util::PluginVersion.new(0, 9, 0)
-  
+
   # This method is called when someone does 'include LogStash::Config'
   def self.included(base)
     # Add the DSL methods to the 'base' given.
     base.extend(LogStash::Config::Mixin::DSL)
   end
-  
+
   def config_init(params)
     # Validation will modify the values inside params if necessary.
     # For example: converting a string to a number, etc.

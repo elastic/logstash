@@ -1,7 +1,6 @@
 # encoding: utf-8
 require "thread"
 require "concurrent"
-require "logstash/namespace"
 require "logstash/errors"
 require "logstash/event"
 require "logstash/filters/base"
