@@ -5,7 +5,6 @@ require "logstash/modules/kibana_client"
 require "logstash/modules/elasticsearch_importer"
 require "logstash/modules/kibana_importer"
 require "logstash/modules/settings_merger"
-require "logstash/errors"
 
 module LogStash module Config
   class ModulesCommon # extracted here for bwc with 5.x

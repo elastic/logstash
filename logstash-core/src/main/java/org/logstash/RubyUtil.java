@@ -4,7 +4,6 @@ import java.util.stream.Stream;
 import org.jruby.NativeException;
 import org.jruby.Ruby;
 import org.jruby.RubyClass;
-import org.jruby.RubyException;
 import org.jruby.RubyModule;
 import org.jruby.anno.JRubyClass;
 import org.jruby.exceptions.RaiseException;
@@ -18,6 +17,7 @@ import org.logstash.config.ir.compiler.OutputDelegatorExt;
 import org.logstash.config.ir.compiler.OutputStrategyExt;
 import org.logstash.execution.ExecutionContextExt;
 import org.logstash.execution.QueueReadClientBase;
+import org.logstash.ext.JRubyLogstashErrorsExt;
 import org.logstash.ext.JRubyWrappedWriteClientExt;
 import org.logstash.ext.JrubyAckedReadClientExt;
 import org.logstash.ext.JrubyAckedWriteClientExt;
@@ -108,6 +108,8 @@ public final class RubyUtil {
     public static final RubyClass PLUGIN_DLQ_WRITER_CLASS;
 
     public static final RubyClass EXECUTION_CONTEXT_CLASS;
+
+    public static final RubyClass BUG_CLASS;
 
     /**
      * Logstash Ruby Module.
@@ -253,16 +255,48 @@ public final class RubyUtil {
         final RubyModule json = LOGSTASH_MODULE.defineOrGetModuleUnder("Json");
         final RubyClass stdErr = RUBY.getStandardError();
         LOGSTASH_ERROR = LOGSTASH_MODULE.defineClassUnder(
-            "Error", stdErr, RubyUtil.LogstashRubyError::new
+            "Error", stdErr, JRubyLogstashErrorsExt.LogstashRubyError::new
+        );
+        LOGSTASH_MODULE.defineClassUnder(
+            "EnvironmentError", stdErr, JRubyLogstashErrorsExt.LogstashEnvironmentError::new
+        );
+        LOGSTASH_MODULE.defineClassUnder(
+            "ConfigurationError", stdErr, JRubyLogstashErrorsExt.ConfigurationError::new
+        );
+        LOGSTASH_MODULE.defineClassUnder(
+            "PluginLoadingError", stdErr, JRubyLogstashErrorsExt.PluginLoadingError::new
+        );
+        LOGSTASH_MODULE.defineClassUnder(
+            "ShutdownSignal", stdErr, JRubyLogstashErrorsExt.ShutdownSignal::new
+        );
+        LOGSTASH_MODULE.defineClassUnder(
+            "PluginNoVersionError", stdErr, JRubyLogstashErrorsExt.PluginNoVersionError::new
+        );
+        LOGSTASH_MODULE.defineClassUnder(
+            "BootstrapCheckError", stdErr, JRubyLogstashErrorsExt.BootstrapCheckError::new
+        );
+        BUG_CLASS = LOGSTASH_MODULE.defineClassUnder(
+            "Bug", stdErr, JRubyLogstashErrorsExt.Bug::new
+        );
+        LOGSTASH_MODULE.defineClassUnder(
+            "ThisMethodWasRemoved", BUG_CLASS,
+            JRubyLogstashErrorsExt.ThisMethodWasRemoved::new
+        );
+        LOGSTASH_MODULE.defineClassUnder(
+            "ConfigLoadingError", stdErr, JRubyLogstashErrorsExt.ConfigLoadingError::new
+        );
+        LOGSTASH_MODULE.defineClassUnder(
+            "InvalidSourceLoaderSettingError", stdErr,
+            JRubyLogstashErrorsExt.InvalidSourceLoaderSettingError::new
         );
         PARSER_ERROR = json.defineClassUnder(
-            "ParserError", LOGSTASH_ERROR, RubyUtil.LogstashRubyParserError::new
+            "ParserError", LOGSTASH_ERROR, JRubyLogstashErrorsExt.LogstashRubyParserError::new
         );
         TIMESTAMP_PARSER_ERROR = LOGSTASH_MODULE.defineClassUnder(
-            "TimestampParserError", stdErr, RubyUtil.LogstashTimestampParserError::new
+            "TimestampParserError", stdErr, JRubyLogstashErrorsExt.LogstashTimestampParserError::new
         );
         GENERATOR_ERROR = json.defineClassUnder("GeneratorError", LOGSTASH_ERROR,
-            RubyUtil.LogstashRubyGeneratorError::new
+            JRubyLogstashErrorsExt.LogstashRubyGeneratorError::new
         );
         RUBY_EVENT_CLASS.setConstant("METADATA", RUBY.newString(Event.METADATA));
         RUBY_EVENT_CLASS.setConstant(
@@ -325,35 +359,4 @@ public final class RubyUtil {
         return clazz;
     }
 
-    @JRubyClass(name = "Error")
-    public static final class LogstashRubyError extends RubyException {
-
-        public LogstashRubyError(final Ruby runtime, final RubyClass metaClass) {
-            super(runtime, metaClass);
-        }
-    }
-
-    @JRubyClass(name = "ParserError")
-    public static final class LogstashRubyParserError extends RubyException {
-
-        public LogstashRubyParserError(final Ruby runtime, final RubyClass metaClass) {
-            super(runtime, metaClass);
-        }
-    }
-
-    @JRubyClass(name = "GeneratorError")
-    public static final class LogstashRubyGeneratorError extends RubyException {
-
-        public LogstashRubyGeneratorError(final Ruby runtime, final RubyClass metaClass) {
-            super(runtime, metaClass);
-        }
-    }
-
-    @JRubyClass(name = "TimestampParserError")
-    public static final class LogstashTimestampParserError extends RubyException {
-
-        public LogstashTimestampParserError(final Ruby runtime, final RubyClass metaClass) {
-            super(runtime, metaClass);
-        }
-    }
 }
