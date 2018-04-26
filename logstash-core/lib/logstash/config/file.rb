@@ -1,5 +1,4 @@
 # encoding: utf-8
-require "logstash/namespace"
 require "logstash/config/grammar"
 require "logstash/config/config_ast"
 require "logstash/errors"

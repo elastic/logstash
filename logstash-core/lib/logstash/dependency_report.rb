@@ -4,7 +4,6 @@ Encoding.default_external = Encoding::UTF_8
 $DEBUGLIST = (ENV["DEBUG"] || "").split(",")
 
 require "clamp"
-require "logstash/namespace"
 require "rubygems"
 require "jars/gemspec_artifacts"
 
@@ -30,7 +29,7 @@ class LogStash::DependencyReport < Clamp::Command
   end
 
   def gems
-    # @mgreau requested `logstash-*` dependencies be removed from this list: 
+    # @mgreau requested `logstash-*` dependencies be removed from this list:
     # https://github.com/elastic/logstash/pull/8837#issuecomment-351859433
     Gem::Specification.reject { |g| g.name =~ /^logstash-/ }.collect do |gem|
       licenses = ("UNKNOWN" if gem.licenses.empty?) || (gem.licenses.map { |l| SPDX.map(l) }.join("|") if !gem.licenses.empty?)

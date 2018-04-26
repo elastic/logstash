@@ -1,7 +1,6 @@
 # encoding: utf-8
 require "fileutils"
 require "logstash/event"
-require "logstash/namespace"
 
 module LogStash
   class QueueFactory

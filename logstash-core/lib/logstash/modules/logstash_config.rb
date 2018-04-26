@@ -1,5 +1,4 @@
 # encoding: utf-8
-require "logstash/namespace"
 require_relative "file_reader"
 require "logstash/settings"
 

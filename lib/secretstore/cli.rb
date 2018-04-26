@@ -2,7 +2,6 @@ $LOAD_PATH.push(File.expand_path(File.dirname(__FILE__) + "/../../logstash-core/
 require_relative "../bootstrap/environment"
 LogStash::Bundler.setup!({:without => [:build, :development]})
 
-require "logstash/namespace"
 require "logstash-core/logstash-core"
 require "logstash/util/settings_helper"
 require "logstash/util/secretstore"

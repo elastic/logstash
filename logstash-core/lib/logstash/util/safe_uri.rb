@@ -1,5 +1,4 @@
 # encoding: utf-8
-require "logstash/namespace"
 require "logstash/util"
 require "forwardable"
 
@@ -8,14 +7,14 @@ require "forwardable"
 class LogStash::Util::SafeURI
   PASS_PLACEHOLDER = "xxxxxx".freeze
   HOSTNAME_PORT_REGEX=/\A(?<hostname>([A-Za-z0-9\.\-]+)|\[[0-9A-Fa-f\:]+\])(:(?<port>\d+))?\Z/
-  
+
   extend Forwardable
-  
-  
+
+
   attr_reader :uri
 
   public
-  def initialize(arg)    
+  def initialize(arg)
     @uri = case arg
            when String
              arg = "//#{arg}" if HOSTNAME_PORT_REGEX.match(arg)
@@ -39,7 +38,7 @@ class LogStash::Util::SafeURI
 
   def sanitized
     return uri unless password # nothing to sanitize here!
-    
+
     user_info = user ? "#{user}:#{PASS_PLACEHOLDER}" : nil
 
     make_uri(scheme, user_info, host, port, path, query, fragment)
@@ -64,7 +63,7 @@ class LogStash::Util::SafeURI
     new_query = query
     new_fragment = fragment
 
-    case field 
+    case field
     when :scheme
       new_scheme = value
     when :user
@@ -124,7 +123,7 @@ class LogStash::Util::SafeURI
     # In java this is an int
     uri.port < 1 ? nil : uri.port
   end
- 
+
   def port=(new_port)
     update(:port, new_port)
   end

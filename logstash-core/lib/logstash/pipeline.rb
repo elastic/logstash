@@ -2,7 +2,6 @@
 require "thread"
 require "stud/interval"
 require "concurrent"
-require "logstash/namespace"
 require "logstash/errors"
 require "logstash-core/logstash-core"
 require "logstash/event"
