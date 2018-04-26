@@ -18,7 +18,7 @@ import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.RubyUtil;
 
 @JRubyClass(name = "Metric")
-public final class MetricExt extends RubyObject {
+public final class MetricExt extends AbstractSimpleMetricExt {
 
     public static final RubySymbol COUNTER = RubyUtil.RUBY.newSymbol("counter");
 
@@ -60,20 +60,6 @@ public final class MetricExt extends RubyObject {
         return this;
     }
 
-    @JRubyMethod
-    public IRubyObject collector(final ThreadContext context) {
-        return collector;
-    }
-
-    @JRubyMethod(required = 2, optional = 1)
-    public IRubyObject increment(final ThreadContext context, final IRubyObject[] args) {
-        if (args.length == 2) {
-            return increment(context, args[0], args[1]);
-        } else {
-            return increment(context, args[0], args[1], args[2]);
-        }
-    }
-
     public IRubyObject increment(final ThreadContext context, final IRubyObject namespace,
         final IRubyObject key) {
         return increment(context, namespace, key, ONE);
@@ -85,15 +71,6 @@ public final class MetricExt extends RubyObject {
         return collector.callMethod(
             context, "push", new IRubyObject[]{namespace, key, COUNTER, INCREMENT, value}
         );
-    }
-
-    @JRubyMethod(required = 2, optional = 1)
-    public IRubyObject decrement(final ThreadContext context, final IRubyObject[] args) {
-        if (args.length == 2) {
-            return decrement(context, args[0], args[1], ONE);
-        } else {
-            return decrement(context, args[0], args[1], args[2]);
-        }
     }
 
     public IRubyObject decrement(final ThreadContext context, final IRubyObject namespace,
@@ -109,8 +86,31 @@ public final class MetricExt extends RubyObject {
         );
     }
 
-    @JRubyMethod
-    public IRubyObject gauge(final ThreadContext context, final IRubyObject namespace,
+    @Override
+    protected IRubyObject doDecrement(final ThreadContext context, final IRubyObject[] args) {
+        if (args.length == 2) {
+            return decrement(context, args[0], args[1], ONE);
+        } else {
+            return decrement(context, args[0], args[1], args[2]);
+        }
+    }
+
+    @Override
+    protected IRubyObject getCollector(final ThreadContext context) {
+        return collector;
+    }
+
+    @Override
+    protected IRubyObject doIncrement(final ThreadContext context, final IRubyObject[] args) {
+        if (args.length == 2) {
+            return increment(context, args[0], args[1]);
+        } else {
+            return increment(context, args[0], args[1], args[2]);
+        }
+    }
+
+    @Override
+    protected IRubyObject getGauge(final ThreadContext context, final IRubyObject namespace,
         final IRubyObject key, final IRubyObject value) {
         MetricExt.validateKey(context, null, key);
         return collector.callMethod(
@@ -118,8 +118,8 @@ public final class MetricExt extends RubyObject {
         );
     }
 
-    @JRubyMethod(name = "report_time")
-    public IRubyObject reportTime(final ThreadContext context, final IRubyObject namespace,
+    @Override
+    protected IRubyObject doReportTime(final ThreadContext context, final IRubyObject namespace,
         final IRubyObject key, final IRubyObject duration) {
         MetricExt.validateKey(context, null, key);
         return collector.callMethod(
@@ -127,8 +127,8 @@ public final class MetricExt extends RubyObject {
         );
     }
 
-    @JRubyMethod
-    public IRubyObject time(final ThreadContext context, final IRubyObject namespace,
+    @Override
+    protected IRubyObject doTime(final ThreadContext context, final IRubyObject namespace,
         final IRubyObject key, final Block block) {
         MetricExt.validateKey(context, null, key);
         if (!block.isGiven()) {
@@ -144,8 +144,9 @@ public final class MetricExt extends RubyObject {
         return res;
     }
 
-    @JRubyMethod
-    public NamespacedMetricExt namespace(final ThreadContext context, final IRubyObject name) {
+    @Override
+    protected NamespacedMetricExt createNamespaced(final ThreadContext context,
+        final IRubyObject name) {
         validateName(context, name, RubyUtil.METRIC_NO_NAMESPACE_PROVIDED_CLASS);
         return NamespacedMetricExt.create(
             this,

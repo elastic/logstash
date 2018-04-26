@@ -3,7 +3,6 @@ require "spec_helper"
 require_relative "../../support/helpers"
 require_relative "../../support/matchers"
 require "logstash/pipeline_action/create"
-require "logstash/instrument/null_metric"
 require "logstash/inputs/generator"
 
 describe LogStash::PipelineAction::Create do
@@ -19,8 +18,8 @@ describe LogStash::PipelineAction::Create do
   subject { described_class.new(pipeline_config, metric) }
 
   after do
-    pipelines.each do |_, pipeline| 
-      pipeline.shutdown 
+    pipelines.each do |_, pipeline|
+      pipeline.shutdown
       pipeline.thread.join
     end
   end
