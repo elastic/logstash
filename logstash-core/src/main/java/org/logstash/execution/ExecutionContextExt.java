@@ -24,7 +24,7 @@ public final class ExecutionContextExt extends RubyObject {
     }
 
     @JRubyMethod(required = 5)
-    public IRubyObject initialize(final ThreadContext context,
+    public ExecutionContextExt initialize(final ThreadContext context,
         final IRubyObject[] args) {
         pipeline = args[0];
         agent = args[1];

@@ -3,7 +3,6 @@ require "spec_helper"
 require_relative "../../support/helpers"
 require "logstash/pipeline_action/stop"
 require "logstash/pipeline"
-require "logstash/instrument/null_metric"
 
 describe LogStash::PipelineAction::Stop do
   let(:pipeline_config) { "input { generator {} } output { null {} }" }

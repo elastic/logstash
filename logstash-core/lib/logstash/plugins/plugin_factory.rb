@@ -2,33 +2,6 @@
 
 module LogStash
   module Plugins
-
-    class ExecutionContextFactory
-
-      def initialize(agent, pipeline, dlq_writer)
-        @agent = agent
-        @pipeline = pipeline
-        @dlq_writer = dlq_writer
-      end
-
-      def create(id, klass_cfg_name)
-        ExecutionContext.new(@pipeline, @agent, id, klass_cfg_name, @dlq_writer)
-      end
-    end
-
-    class PluginMetricFactory
-
-      def initialize(pipeline_id, metric)
-        @pipeline_id = pipeline_id.to_s.to_sym
-        @metric = metric
-      end
-
-      def create(plugin_type)
-        @metric.namespace([:stats, :pipelines, @pipeline_id, :plugins])
-          .namespace("#{plugin_type}s".to_sym)
-      end
-    end
-
     class PluginFactory
       include org.logstash.config.ir.compiler.RubyIntegration::PluginFactory
 
@@ -74,8 +47,8 @@ module LogStash
           # Pull the ID from LIR to keep IDs consistent between the two representations
           id = @lir.graph.vertices.filter do |v|
             v.source_with_metadata &&
-              v.source_with_metadata.line == line &&
-              v.source_with_metadata.column == column
+                v.source_with_metadata.line == line &&
+                v.source_with_metadata.column == column
           end.findFirst.get.id
         end
         args["id"] = id # some code pulls the id out of the args
