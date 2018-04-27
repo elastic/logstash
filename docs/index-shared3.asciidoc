@@ -126,6 +126,9 @@ include::static/maintainer-guide.asciidoc[]
 :edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/submitting-a-plugin.asciidoc
 include::static/submitting-a-plugin.asciidoc[]
 
+// :edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/more-resources.asciidoc
+include::static/more-resources.asciidoc[]
+
 // Glossary of Terms
 
 :edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/glossary.asciidoc
