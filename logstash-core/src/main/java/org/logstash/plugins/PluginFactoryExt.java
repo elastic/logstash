@@ -14,6 +14,7 @@ import org.logstash.RubyUtil;
 import org.logstash.execution.ExecutionContextExt;
 import org.logstash.instrument.metrics.AbstractMetricExt;
 import org.logstash.instrument.metrics.AbstractNamespacedMetricExt;
+import org.logstash.instrument.metrics.NullMetricExt;
 
 public final class PluginFactoryExt {
 
@@ -71,7 +72,11 @@ public final class PluginFactoryExt {
         public PluginFactoryExt.Metrics initialize(final ThreadContext context,
             final IRubyObject pipelineId, final IRubyObject metrics) {
             this.pipelineId = pipelineId.convertToString().intern19();
-            this.metric = (AbstractMetricExt) metrics;
+            if (metrics.isNil()) {
+                this.metric = new NullMetricExt(context.runtime, RubyUtil.NULL_METRIC_CLASS);
+            } else {
+                this.metric = (AbstractMetricExt) metrics;
+            }
             return this;
         }
 
