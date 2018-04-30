@@ -33,7 +33,7 @@ end
 
 def update_readme(old_version, new_version)
   readme = IO.read(README_FILE)
-  readme.gsub!(/(logstash\-)#{old_version['logstash']}/) { "#{$1}#{new_version['logstash']}" }
+  readme.gsub!(/(logstash\-(oss\-)?)#{old_version['logstash']}/) { "#{$1}#{new_version['logstash']}" }
   IO.write(README_FILE, readme)
 end
 
