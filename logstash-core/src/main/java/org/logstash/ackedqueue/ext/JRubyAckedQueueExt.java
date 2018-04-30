@@ -1,6 +1,8 @@
 package org.logstash.ackedqueue.ext;
 
 import java.io.IOException;
+import java.util.List;
+
 import org.jruby.Ruby;
 import org.jruby.RubyBoolean;
 import org.jruby.RubyClass;
@@ -16,6 +18,7 @@ import org.logstash.RubyUtil;
 import org.logstash.ackedqueue.AckedBatch;
 import org.logstash.ackedqueue.Batch;
 import org.logstash.ackedqueue.Queue;
+import org.logstash.ackedqueue.Queueable;
 import org.logstash.ackedqueue.SettingsImpl;
 
 @JRubyClass(name = "AckedQueue")
@@ -96,9 +99,9 @@ public final class JRubyAckedQueueExt extends RubyObject {
         queue.open();
     }
 
-    public void rubyWrite(ThreadContext context, Event event) {
+    public void rubyWrite(ThreadContext context, List<Queueable> events, long timeout) {
         try {
-            this.queue.write(event);
+            this.queue.write(events, timeout);
         } catch (IOException e) {
             throw RubyUtil.newRubyIOError(context.runtime, e);
         }

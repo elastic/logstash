@@ -1,6 +1,7 @@
 package org.logstash.ackedqueue.ext;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.jruby.Ruby;
 import org.jruby.RubyBoolean;
@@ -66,7 +67,7 @@ public final class JRubyWrappedAckedQueueExt extends RubyObject {
     @JRubyMethod(name = {"push", "<<"})
     public void rubyPush(ThreadContext context, IRubyObject event) {
         checkIfClosed("write");
-        queue.rubyWrite(context, ((JrubyEventExtLibrary.RubyEvent) event).getEvent());
+        queue.rubyWrite(context, Collections.singletonList(((JrubyEventExtLibrary.RubyEvent) event).getEvent()),-1);
     }
 
     @JRubyMethod(name = "read_batch")

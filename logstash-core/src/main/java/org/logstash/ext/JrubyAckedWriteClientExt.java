@@ -1,7 +1,12 @@
 package org.logstash.ext;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
+
 import org.jruby.Ruby;
 import org.jruby.RubyClass;
 import org.jruby.RubyObject;
@@ -10,6 +15,8 @@ import org.jruby.anno.JRubyMethod;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.RubyUtil;
+import org.logstash.ackedqueue.Batch;
+import org.logstash.ackedqueue.Queueable;
 import org.logstash.ackedqueue.ext.JRubyAckedQueueExt;
 
 @JRubyClass(name = "AckedWriteClient")
@@ -50,16 +57,17 @@ public final class JrubyAckedWriteClientExt extends RubyObject {
     @JRubyMethod(name = {"push", "<<"}, required = 1)
     public IRubyObject rubyPush(final ThreadContext context, IRubyObject event) {
         ensureOpen();
-        queue.rubyWrite(context, ((JrubyEventExtLibrary.RubyEvent) event).getEvent());
+        queue.rubyWrite(context, Collections.singletonList(((JrubyEventExtLibrary.RubyEvent) event).getEvent()), -1);
         return this;
     }
 
     @JRubyMethod(name = "push_batch", required = 1)
-    public IRubyObject rubyPushBatch(final ThreadContext context, IRubyObject batch) {
+    public IRubyObject rubyPushBatch(final ThreadContext context, final IRubyObject batch) {
         ensureOpen();
-        for (final IRubyObject event : (Collection<JrubyEventExtLibrary.RubyEvent>) batch) {
-            queue.rubyWrite(context, ((JrubyEventExtLibrary.RubyEvent) event).getEvent());
-        }
+        final List<JrubyEventExtLibrary.RubyEvent> rubyEvents = (List<JrubyEventExtLibrary.RubyEvent>) batch;
+        final List<Queueable> events = new ArrayList<>(rubyEvents.size());
+        for (JrubyEventExtLibrary.RubyEvent rubyEvent : rubyEvents) events.add(rubyEvent.getEvent());
+        queue.rubyWrite(context, events, -1);
         return this;
     }
 
