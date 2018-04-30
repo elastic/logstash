@@ -3,7 +3,6 @@
 # you may not use this file except in compliance with the Elastic License.
 
 require "logstash/bootstrap_check/default_config"
-require "logstash/logging/logger"
 
 java_import java.util.concurrent.TimeUnit
 
