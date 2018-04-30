@@ -1,12 +1,9 @@
 
 include::{log-repo-dir}/index-shared1.asciidoc[]
 
-:edit_url!:
 include::setup/setting-up-xpack.asciidoc[]
 
-:edit_url:
 include::{log-repo-dir}/index-shared2.asciidoc[]
 
-:edit_url:
 include::{log-repo-dir}/index-shared3.asciidoc[]
 
