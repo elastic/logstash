@@ -3,7 +3,6 @@
 # you may not use this file except in compliance with the Elastic License.
 
 require "logstash/runner"
-require "logstash/logging/logger"
 require "config_management/bootstrap_check"
 require "config_management/elasticsearch_source"
 require "logstash/config/source_loader"

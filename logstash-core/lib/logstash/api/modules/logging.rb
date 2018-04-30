@@ -1,6 +1,7 @@
 # encoding: utf-8
 #
 java_import org.apache.logging.log4j.core.LoggerContext
+java_import java.lang.IllegalArgumentException
 
 module LogStash
   module Api
@@ -30,6 +31,9 @@ module LogStash
               raise ArgumentError, I18n.t("logstash.web_api.logging.unrecognized_option", :option => remaining.keys.first)
             end
             respond_with({"acknowledged" => true})
+          rescue IllegalArgumentException => e
+            status 400
+            respond_with({"error" => e.message})
           rescue ArgumentError => e
             status 400
             respond_with({"error" => e.message})

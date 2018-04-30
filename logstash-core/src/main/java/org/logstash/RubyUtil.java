@@ -33,6 +33,8 @@ import org.logstash.instrument.metrics.MetricExt;
 import org.logstash.instrument.metrics.NamespacedMetricExt;
 import org.logstash.instrument.metrics.NullMetricExt;
 import org.logstash.instrument.metrics.NullNamespacedMetricExt;
+import org.logstash.log.LoggerExt;
+import org.logstash.log.SlowLoggerExt;
 import org.logstash.plugins.PluginFactoryExt;
 
 /**
@@ -134,6 +136,10 @@ public final class RubyUtil {
     public static final RubyClass EXECUTION_CONTEXT_FACTORY_CLASS;
 
     public static final RubyClass PLUGIN_METRIC_FACTORY_CLASS;
+
+    public static final RubyClass LOGGER;
+
+    public static final RubyClass SLOW_LOGGER;
 
     /**
      * Logstash Ruby Module.
@@ -323,6 +329,14 @@ public final class RubyUtil {
         FILTER_DELEGATOR_CLASS = setupLogstashClass(
             FilterDelegatorExt::new, FilterDelegatorExt.class
         );
+
+        final RubyModule loggingModule = LOGSTASH_MODULE.defineOrGetModuleUnder("Logging");
+        LOGGER = loggingModule.defineClassUnder("Logger", RUBY.getObject(), LoggerExt::new);
+        LOGGER.defineAnnotatedMethods(LoggerExt.class);
+        SLOW_LOGGER = loggingModule.defineClassUnder(
+                "SlowLogger", RUBY.getObject(), SlowLoggerExt::new);
+        SLOW_LOGGER.defineAnnotatedMethods(SlowLoggerExt.class);
+
         final RubyModule json = LOGSTASH_MODULE.defineOrGetModuleUnder("Json");
         final RubyClass stdErr = RUBY.getStandardError();
         LOGSTASH_ERROR = LOGSTASH_MODULE.defineClassUnder(
