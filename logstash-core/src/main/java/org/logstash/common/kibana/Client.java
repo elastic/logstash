@@ -2,13 +2,14 @@ package org.logstash.common.kibana;
 
 import java.io.*;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.security.*;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
+import org.apache.http.Header;
 import org.apache.http.StatusLine;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
@@ -20,6 +21,7 @@ import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.http.message.BasicHeader;
 
 import javax.net.ssl.*;
 
@@ -375,11 +377,11 @@ public class Client {
             }
 
             if (usesBasicAuth()) {
-                CredentialsProvider basicAuthCredentialsProvider = new BasicCredentialsProvider();
-                UsernamePasswordCredentials credentials = new UsernamePasswordCredentials(this.basicAuthUsername, this.basicAuthPassword);
-                basicAuthCredentialsProvider.setCredentials(AuthScope.ANY, credentials);
+                String credentials = this.basicAuthUsername + ":" + this.basicAuthPassword;
+                String encodedCredentials = new String(Base64.getEncoder().encode(credentials.getBytes(StandardCharsets.UTF_8)), StandardCharsets.UTF_8);
 
-                httpClientBuilder.setDefaultCredentialsProvider(basicAuthCredentialsProvider);
+                List<Header> headerList = Collections.singletonList(new BasicHeader("Authorization", "Basic " + encodedCredentials));
+                httpClientBuilder.setDefaultHeaders(headerList);
             }
 
             return new Client(httpClientBuilder.build(), baseUrl);

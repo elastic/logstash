@@ -12,6 +12,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class ClientTest {
 
+    private static final String USERNAME = "seger";
+    private static final String PASSWORD = "comma_bob";
+
     @Rule
     public WireMockRule defaultHttp = new WireMockRule(5601);
 
@@ -40,5 +43,28 @@ public class ClientTest {
             .port(customHttp.port())
             .getInstance();
         assertThat(kibanaClient.canConnect()).isTrue();
+    }
+
+    @Test
+    public void canConnectWithBasicAuth() throws Exception {
+        final String path = "/api/status";
+        defaultHttp.stubFor(head(urlPathEqualTo(path))
+                .withBasicAuth(USERNAME, PASSWORD)
+                .willReturn(aResponse().withStatus(200)));
+
+        Client kibanaClient = Client.withOptions()
+                .basicAuth(USERNAME, PASSWORD)
+                .getInstance();
+        assertThat(kibanaClient.canConnect()).isTrue();
+    }
+
+    @Test
+    public void canConnectWithDefaultSsl() throws Exception {
+
+    }
+
+    @Test
+    public void canConnectWithCustomSsl() throws Exception {
+
     }
 }
