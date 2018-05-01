@@ -7,7 +7,6 @@ dependency,licenseOverride
 "filewatch:0.9.0",MIT
 "gelfd:0.2.0",Apache-2.0
 "gmetric:0.1.3",MIT
-"UNKNOWNgzip:1.0",UNKNOWN
 "UNKNOWNjls-grok:0.11.4",UNKNOWN
 "jls-lumberjack:0.0.26",Apache-2.0
 "march_hare:3.1.1",MIT
