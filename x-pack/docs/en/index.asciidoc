@@ -7,11 +7,6 @@ include::setup/setting-up-xpack.asciidoc[]
 :edit_url:
 include::{log-repo-dir}/index-shared2.asciidoc[]
 
-:edit_url!:
-include::release-notes/breaking-changes-xpack.asciidoc[]
-
 :edit_url:
 include::{log-repo-dir}/index-shared3.asciidoc[]
 
-:edit_url!:
-include::release-notes/xpack.asciidoc[]
