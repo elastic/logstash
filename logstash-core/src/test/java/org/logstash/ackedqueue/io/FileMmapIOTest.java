@@ -9,6 +9,7 @@ import org.logstash.ackedqueue.SequencedList;
 import org.logstash.ackedqueue.StringElement;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -42,7 +43,7 @@ public class FileMmapIOTest {
         for (int i = 1; i < 17; i++) {
             StringElement input = new StringElement("element-" + i);
             list.add(input);
-            writeIo.write(input.serialize(), i);
+            writeIo.write(Collections.singletonList(input.serialize()), i);
         }
         writeIo.close();
         readIo.open(1, 16);

@@ -3,11 +3,13 @@ package org.logstash.ackedqueue.io;
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.nio.ByteBuffer;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.zip.CRC32;
 import org.apache.logging.log4j.LogManager;
@@ -204,9 +206,74 @@ public final class MmapPageIO implements PageIO {
     }
 
     @Override
-    public void write(byte[] bytes, long seqNum) {
-        write(bytes, seqNum, bytes.length, checksum(bytes));
+    public void write(final List<byte[]> bytesList, final long minSeqNum) {
+        int persistedSize = bytesList.stream().mapToInt(b -> b.length).sum();
+
+        // We want to make our writes atomic, hence this buffer
+        int writeSize = persistedByteCount(persistedSize, bytesList.size());
+
+        final int initialHead = this.head;
+        int mainBufferOffset = initialHead;
+        final int[] newOffsets = new int[bytesList.size()];
+
+        buffer.position(initialHead);
+
+        for (int i = 0; i < bytesList.size(); i++) {
+            byte[] bytes = bytesList.get(i);
+            long seqNum = minSeqNum + i;
+            // since writes always happen at head, we can just append head to the offsetMap
+            assert this.offsetMap.size() == this.elementCount :
+                String.format("offsetMap size=%d != elementCount=%d", this.offsetMap.size(), this.elementCount);
+
+            newOffsets[i] = mainBufferOffset;
+
+            buffer.putLong(seqNum);
+            buffer.putInt(bytes.length);
+            buffer.put(bytes);
+            buffer.putInt(checksum(bytes));
+
+            mainBufferOffset += persistedByteCount(bytes.length, 1);
+        }
+
+        this.head += writeSize;
+
+        assert this.head == buffer.position() :
+                String.format("head=%d != buffer position=%d", this.head, buffer.position());
+
+        if (this.elementCount <= 0) {
+            this.minSeqNum = minSeqNum;
+        }
+        for (int o : newOffsets) {
+            this.offsetMap.add(o);
+        }
+        this.elementCount+=bytesList.size();
     }
+
+    private int write(byte[] bytes, long seqNum, int length, int checksum) {
+        // since writes always happen at head, we can just append head to the offsetMap
+        assert this.offsetMap.size() == this.elementCount :
+            String.format("offsetMap size=%d != elementCount=%d", this.offsetMap.size(), this.elementCount);
+
+        int initialHead = this.head;
+        buffer.position(this.head);
+        buffer.putLong(seqNum);
+        buffer.putInt(length);
+        buffer.put(bytes);
+        buffer.putInt(checksum);
+        this.head += persistedByteCount(bytes.length, 1);
+
+        assert this.head == buffer.position() :
+            String.format("head=%d != buffer position=%d", this.head, buffer.position());
+
+        if (this.elementCount <= 0) {
+            this.minSeqNum = seqNum;
+        }
+        this.offsetMap.add(initialHead);
+        this.elementCount++;
+
+        return initialHead;
+    }
+
 
     @Override
     public void close() {
@@ -236,12 +303,13 @@ public final class MmapPageIO implements PageIO {
     @Override
     public boolean hasSpace(int bytes) {
         int bytesLeft = this.capacity - this.head;
-        return persistedByteCount(bytes) <= bytesLeft;
+        return bytes <= bytesLeft;
     }
 
     @Override
-    public int persistedByteCount(int byteCount) {
-        return SEQNUM_SIZE + LENGTH_SIZE + byteCount + CHECKSUM_SIZE;
+    public int persistedByteCount(int byteCount, int numElements) {
+        int metadataBytes = (SEQNUM_SIZE + LENGTH_SIZE + CHECKSUM_SIZE) * numElements;
+        return byteCount + metadataBytes;
     }
 
     @Override
@@ -336,30 +404,6 @@ public final class MmapPageIO implements PageIO {
         buffer.position(this.head);
     }
 
-    private int write(byte[] bytes, long seqNum, int length, int checksum) {
-        // since writes always happen at head, we can just append head to the offsetMap
-        assert this.offsetMap.size() == this.elementCount :
-            String.format("offsetMap size=%d != elementCount=%d", this.offsetMap.size(), this.elementCount);
-
-        int initialHead = this.head;
-        buffer.position(this.head);
-        buffer.putLong(seqNum);
-        buffer.putInt(length);
-        buffer.put(bytes);
-        buffer.putInt(checksum);
-        this.head += persistedByteCount(bytes.length);
-
-        assert this.head == buffer.position() :
-            String.format("head=%d != buffer position=%d", this.head, buffer.position());
-
-        if (this.elementCount <= 0) {
-            this.minSeqNum = seqNum;
-        }
-        this.offsetMap.add(initialHead);
-        this.elementCount++;
-
-        return initialHead;
-    }
 
     // we don't have different versions yet so simply check if the version is VERSION_ONE for basic integrity check
     // and if an unexpected version byte is read throw PageIOInvalidVersionException

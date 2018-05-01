@@ -3,6 +3,7 @@ package org.logstash.ackedqueue;
 import java.io.Closeable;
 import java.io.IOException;
 import java.util.BitSet;
+import java.util.List;
 
 import org.codehaus.commons.nullanalysis.NotNull;
 import org.logstash.ackedqueue.io.CheckpointIO;
@@ -61,18 +62,20 @@ public final class Page implements Closeable {
         return serialized;
     }
 
-    public void write(byte[] bytes, long seqNum, int checkpointMaxWrites) throws IOException {
+    public void write(List<byte[]> bytesList, long seqNum, int checkpointMaxWrites) throws IOException {
         if (! this.writable) {
             throw new IllegalStateException(String.format("page=%d is not writable", this.pageNum));
         }
 
-        this.pageIO.write(bytes, seqNum);
+        this.pageIO.write(bytesList, seqNum);
 
         if (this.minSeqNum <= 0) {
             this.minSeqNum = seqNum;
             this.firstUnreadSeqNum = seqNum;
         }
-        this.elementCount++;
+        this.elementCount+=bytesList.size();
+
+        seqNum = seqNum + bytesList.size()-1;
 
         // force a checkpoint if we wrote checkpointMaxWrites elements since last checkpoint
         // the initial condition of an "empty" checkpoint, maxSeqNum() will return -1
@@ -235,8 +238,8 @@ public final class Page implements Closeable {
      * @param byteSize the date size to verify
      * @return true if data plus overhead fit in page
      */
-    public boolean hasCapacity(int byteSize) {
-        return this.pageIO.persistedByteCount(byteSize) <= this.pageIO.getCapacity();
+    public boolean hasCapacity(int byteSize, int numElements) {
+        return this.pageIO.persistedByteCount(byteSize, numElements) <= this.pageIO.getCapacity();
     }
 
     public void close() throws IOException {

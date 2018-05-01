@@ -4,6 +4,7 @@ import org.logstash.ackedqueue.SequencedList;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.util.List;
 
 public interface PageIO extends Closeable {
 
@@ -29,7 +30,7 @@ public interface PageIO extends Closeable {
     boolean hasSpace(int bytes);
 
     // write the given bytes to the data container
-    void write(byte[] bytes, long seqNum) throws IOException;
+    void write(List<byte[]> bytesList, long seqNum) throws IOException;
 
     // read up to limit number of items starting at give seqNum
     SequencedList<byte[]> read(long seqNum, int limit) throws IOException;
@@ -41,7 +42,7 @@ public interface PageIO extends Closeable {
     int getHead();
 
     // @return the actual persisted byte count (with overhead) for the given data bytes
-    int persistedByteCount(int bytes);
+    int persistedByteCount(int bytes, int numElements);
 
     // signal that this data page is not active and resources can be released
     void deactivate() throws IOException;

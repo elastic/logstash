@@ -1,23 +1,5 @@
 package org.logstash.ackedqueue;
 
-import java.io.Closeable;
-import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.nio.channels.FileLock;
-import java.nio.file.Files;
-import java.nio.file.NoSuchFileException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.locks.Condition;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.logstash.FileLockFactory;
@@ -29,8 +11,27 @@ import org.logstash.ackedqueue.io.MmapPageIO;
 import org.logstash.ackedqueue.io.PageIO;
 import org.logstash.common.FsUtil;
 
-public final class Queue implements Closeable {
+import java.io.Closeable;
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.nio.channels.FileLock;
+import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
+public final class Queue implements Closeable {
     private long seqNum;
 
     protected Page headPage;
@@ -320,15 +321,63 @@ public final class Queue implements Closeable {
     }
 
     /**
-     * write a {@link Queueable} element to the queue. Note that the element will always be written and the queue full
-     * condition will be checked and waited on **after** the write operation.
-     *
-     * @param element the {@link Queueable} element to write
+     * Write a {@link Queueable} element to the queue. This will block until the write succeeds
+     * @param queueable
      * @return the written sequence number
      * @throws IOException
      */
-    public long write(Queueable element) throws IOException {
-        byte[] data = element.serialize();
+    public long write(Queueable queueable) throws IOException {
+        return write(queueable, -1);
+    }
+
+    /**
+     * Write a {@link Queueable} element to the queue. This will block until the write succeeds or timeout occurs
+     * @param queueable
+     * @param timeoutMillis maximum time to block before returning. -1 for infinity
+     * @return the written sequence number, or -1 if timed out
+     * @throws IOException
+     */
+    public long write(Queueable queueable, long timeoutMillis)  throws IOException {
+        return write(Collections.singletonList(queueable), timeoutMillis);
+    }
+
+    /**
+     * write a {@link Queueable} element to the queue. Note that the element will always be written and the queue full
+     condition will be checked and waited on **after** the write operation.
+     *
+     * @param queueables list of events
+     * @return the maximum written sequence number
+     * @throws IOException
+     */
+    public long write(List<Queueable> queueables) throws IOException {
+        return write(queueables, -1);
+    }
+
+    /**
+     * Write a {@link Queueable} element to the queue. This will block until the write succeeds or a timeout occurs
+     *
+     * @param queueables list of events
+     * @param timeoutMillis maximum time to block before returning. -1 for infinity
+     * @return the maximum written sequence number, or -1 if timed out
+     * @throws IOException
+     */
+    public long write(List<Queueable> queueables, long timeoutMillis) throws IOException {
+        if (queueables.isEmpty()) return -1;
+
+        try {
+            timeoutMillis -= optionallyLockForTimeout(timeoutMillis);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            return -1;
+        }
+
+        List<byte[]> serializedQueueables = new ArrayList<>(queueables.size());
+        int dataSize = 0;
+        for (Queueable queueable : queueables) {
+            byte[] serialized = queueable.serialize();
+            serializedQueueables.add(serialized);
+            dataSize += serialized.length;
+        }
 
         // the write strategy with regard to the isFull() state is to assume there is space for this element
         // and write it, then after write verify if we just filled the queue and wait on the notFull condition
@@ -337,63 +386,117 @@ public final class Queue implements Closeable {
         // element at risk in the always-full queue state. In the later, when closing a full queue, it would be impossible
         // to write the current element.
 
-        lock.lock();
-        try {
-            if (! this.headPage.hasCapacity(data.length)) {
-                throw new IOException("data to be written is bigger than page capacity");
+        final int headPageCapacity = this.headPage.getPageIO().getCapacity();
+        // Our batch might span multiple pages, so we have to break it up if its too big
+
+        final int persistedBatchSize = this.headPage.getPageIO().persistedByteCount(dataSize, serializedQueueables.size());
+
+        if (persistedBatchSize <= headPageCapacity) {
+
+
+            try {
+                return unsafeQueueWrite(serializedQueueables, timeoutMillis, persistedBatchSize);
+            } finally {
+                lock.unlock();
             }
-
-            // create a new head page if the current does not have sufficient space left for data to be written
-            if (! this.headPage.hasSpace(data.length)) {
-
-                // TODO: verify queue state integrity WRT Queue.open()/recover() at each step of this process
-
-                int newHeadPageNum = this.headPage.pageNum + 1;
-
-                if (this.headPage.isFullyAcked()) {
-                    // here we can just purge the data file and avoid beheading since we do not need
-                    // to add this fully hacked page into tailPages. a new head page will just be created.
-                    // TODO: we could possibly reuse the same page file but just rename it?
-                    this.headPage.purge();
-                } else {
-                    behead();
-                }
-
-                // create new head page
-                newCheckpointedHeadpage(newHeadPageNum);
-            }
-
-            long seqNum = this.seqNum += 1;
-            this.headPage.write(data, seqNum, this.checkpointMaxWrites);
-            this.unreadCount++;
-
-            notEmpty.signal();
-
-            // now check if we reached a queue full state and block here until it is not full
-            // for the next write or the queue was closed.
-            while (isFull() && !isClosed()) {
-                try {
-                    notFull.await();
-                } catch (InterruptedException e) {
-                    // the thread interrupt() has been called while in the await() blocking call.
-                    // at this point the interrupted flag is reset and Thread.interrupted() will return false
-                    // to any upstream calls on it. for now our choice is to return normally and set back
-                    // the Thread.interrupted() flag so it can be checked upstream.
-
-                    // this is a bit tricky in the case of the queue full condition blocking state.
-                    // TODO: we will want to avoid initiating a new write operation if Thread.interrupted() was called.
-
-                    // set back the interrupted flag
-                    Thread.currentThread().interrupt();
-
-                    return seqNum;
-                }
-            }
-
-            return seqNum;
-        } finally {
-            lock.unlock();
+        } else {
+            // Batch is larger than a page, we can't do an atomic write
+            throw new IOException("data to be written is bigger than page capacity");
         }
+    }
+
+    /**
+     * Locks blocking, waiting on the lock for the given timeout. -1 is an infinite timeout
+     *
+     * @param timeoutMillis millis to wait for a timeout
+     * @return  If a lock was not acquired, -1.
+     *          If a positive timeout value was given this returns the time spent waiting.
+     *          If no value was given, zero.
+     * @throws InterruptedException when the timeout is exceeded
+     */
+    private long optionallyLockForTimeout(final long timeoutMillis) throws InterruptedException {
+        if (timeoutMillis <= -1) {
+                lock.lock();
+                return 0;
+            } else {
+                // Try to avoid the nanotime calculation with a simple tryLock
+                if (lock.tryLock()) {
+                    return 0;
+                } else {
+                    final long start = System.nanoTime();
+                    if (lock.tryLock(timeoutMillis, TimeUnit.MILLISECONDS)) {
+                        return timeoutMillis - ((System.nanoTime() - start) / 1000000);
+                    } else {
+                        return -1;
+                    }
+                }
+            }
+    }
+
+    /**
+     * Encapsulates the logic
+     * @param serializedQueueables
+     * @param timeoutMillis
+     * @return
+     * @throws IOException
+     */
+    private long unsafeQueueWrite(List<byte[]> serializedQueueables, long timeoutMillis, int totalPersistedSize) throws IOException {
+        // create a new head page if the current does not have sufficient space left for data to be written
+        if (! this.headPage.hasSpace(totalPersistedSize)) {
+
+            // TODO: verify queue state integrity WRT Queue.open()/recover() at each step of this process
+
+            int newHeadPageNum = this.headPage.pageNum + 1;
+
+            if (this.headPage.isFullyAcked()) {
+                // here we can just purge the data file and avoid beheading since we do not need
+                // to add this fully hacked page into tailPages. a new head page will just be created.
+                // TODO: we could possibly reuse the same page file but just rename it?
+                this.headPage.purge();
+            } else {
+                behead();
+            }
+
+            // create new head page
+            newCheckpointedHeadpage(newHeadPageNum);
+        }
+
+        long minWrittenSeqNum = this.seqNum + 1;
+        long maxWrittenSeqNum = minWrittenSeqNum + (serializedQueueables.size() - 1);
+        this.headPage.write(serializedQueueables, minWrittenSeqNum, this.checkpointMaxWrites);
+        this.seqNum = maxWrittenSeqNum;
+        this.unreadCount += serializedQueueables.size();
+
+        notEmpty.signal();
+
+        // now check if we reached a queue full state and block here until it is not full
+        // for the next write or the queue was closed.
+        while (isFull() && !isClosed()) {
+            try {
+                if (timeoutMillis > 0) {
+                  if (!notFull.await(timeoutMillis, TimeUnit.MILLISECONDS)) {
+                      return -1;
+                  }
+                } else {
+                    notFull.await();
+                }
+            } catch (InterruptedException e) {
+                // the thread interrupt() has been called while in the await() blocking call.
+                // at this point the interrupted flag is reset and Thread.interrupted() will return false
+                // to any upstream calls on it. for now our choice is to return normally and set back
+                // the Thread.interrupted() flag so it can be checked upstream.
+
+                // this is a bit tricky in the case of the queue full condition blocking state.
+                // TODO: we will want to avoid initiating a new write operation if Thread.interrupted() was called.
+
+                // set back the interrupted flag
+                Thread.currentThread().interrupt();
+
+                return maxWrittenSeqNum;
+            }
+        }
+
+        return maxWrittenSeqNum;
     }
 
     /**
@@ -499,7 +602,7 @@ public final class Queue implements Closeable {
     }
 
     /**
-     * non-blocking queue read
+     * non-blocking queue read. This may return fewer items if the requested number span multiple pages
      *
      * @param limit read the next batch of size up to this limit. the returned batch size can be smaller than the requested limit if fewer elements are available
      * @return {@link Batch} the batch containing 1 or more element up to the required limit or null of no elements were available
