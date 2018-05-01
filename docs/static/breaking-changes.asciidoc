@@ -3,12 +3,6 @@
 
 This section discusses the changes that you need to be aware of when migrating to Logstash 6.0.0 from the previous major releases.
 
-ifdef::include-xpack[]
-See also:
-
-* <<breaking-changes-xls>>
-endif::include-xpack[]
-
 [float]
 === Changes in Logstash Core
 
