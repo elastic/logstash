@@ -1,7 +1,6 @@
 package org.logstash.common.kibana;
 
 import java.io.*;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.*;
 import java.security.cert.Certificate;
@@ -32,6 +31,8 @@ import javax.net.ssl.*;
  * TODO: Unit tests
  */
 public class Client {
+    public enum Protocol { HTTP, HTTPS };
+
     private CloseableHttpClient httpClient;
     private URL baseUrl;
 
@@ -219,7 +220,12 @@ public class Client {
         }
     }
 
-    public static Builder options() {
+    // TODO: Throw custom exception wrapping lower-level exceptions
+    public static Client getInstance() throws CertificateException, UnrecoverableKeyException, NoSuchAlgorithmException, IOException, KeyManagementException, KeyStoreException {
+        return new Builder().getInstance();
+    }
+
+    public static Builder withOptions() {
         return new Builder();
     }
 
@@ -238,30 +244,28 @@ public class Client {
         private Certificate clientPublicKeyCertificate;
         private byte[] clientPrivateKey;
 
-        public enum Protocol { HTTP, HTTPS };
-
-        public Builder withProtocol(Protocol protocol) {
+        public Builder protocol(Protocol protocol) {
             this.protocol = protocol;
             return this;
         }
 
-        public Builder withHostname(String hostname) {
+        public Builder hostname(String hostname) {
             this.hostname = hostname;
             return this;
         }
 
-        public Builder withPort(int port) {
+        public Builder port(int port) {
             this.port = port;
             return this;
         }
 
-        public Builder withBasePath(String basePath) {
+        public Builder basePath(String basePath) {
             this.basePath = basePath;
             return this;
         }
 
         // TODO: Throw custom exception wrapping lower-level exceptions
-        public Builder withSSL(boolean useStrictSslVerificationMode, String caCertificatePath, String clientPublicKeyCertificatePath, String clientPrivateKeyPath) throws CertificateException, IOException {
+        public Builder ssl(boolean useStrictSslVerificationMode, String caCertificatePath, String clientPublicKeyCertificatePath, String clientPrivateKeyPath) throws CertificateException, IOException {
             this.useStrictSslVerificationMode = useStrictSslVerificationMode;
 
             if (caCertificatePath != null) {
@@ -280,16 +284,16 @@ public class Client {
         }
 
         // TODO: Throw custom exception wrapping lower-level exceptions
-        public Builder withSSL(boolean useStrictSslVerificationMode, String caCertificatePath) throws CertificateException, IOException {
-            return withSSL(useStrictSslVerificationMode, caCertificatePath, null, null);
+        public Builder ssl(boolean useStrictSslVerificationMode, String caCertificatePath) throws CertificateException, IOException {
+            return ssl(useStrictSslVerificationMode, caCertificatePath, null, null);
         }
 
         // TODO: Throw custom exception wrapping lower-level exceptions
-        public Builder withSSL(boolean useStrictSslVerificationMode) throws CertificateException, IOException {
-            return withSSL(useStrictSslVerificationMode, null, null, null);
+        public Builder ssl(boolean useStrictSslVerificationMode) throws CertificateException, IOException {
+            return ssl(useStrictSslVerificationMode, null, null, null);
         }
 
-        public Builder withBasicAuth(String username, String password) {
+        public Builder basicAuth(String username, String password) {
             this.basicAuthUsername = username;
             this.basicAuthPassword = password;
 
@@ -297,8 +301,8 @@ public class Client {
         }
 
         // TODO: Throw custom exception wrapping lower-level exceptions
-        // TODO: Decide how much work to do in this build() method vs. in withSSL() method
-        public Client build() throws CertificateException, NoSuchAlgorithmException, IOException, KeyStoreException, KeyManagementException, UnrecoverableKeyException {
+        // TODO: Decide how much work to do in this build() method vs. in ssl() method
+        public Client getInstance() throws CertificateException, NoSuchAlgorithmException, IOException, KeyStoreException, KeyManagementException, UnrecoverableKeyException {
 
             Protocol protocol = this.protocol;
             if (protocol == null) {

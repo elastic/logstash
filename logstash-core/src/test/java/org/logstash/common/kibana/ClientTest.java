@@ -24,7 +24,7 @@ public class ClientTest {
         defaultHttp.stubFor(head(urlPathEqualTo(path))
                 .willReturn(aResponse().withStatus(200)));
 
-        Client kibanaClient = Client.options().build();
+        Client kibanaClient = Client.getInstance();
         assertThat(kibanaClient.canConnect()).isTrue();
     }
 
@@ -34,11 +34,11 @@ public class ClientTest {
         customHttp.stubFor(head(urlPathEqualTo(path))
                 .willReturn(aResponse().withStatus(200)));
 
-        Client kibanaClient = Client.options()
-            .withProtocol(Client.Builder.Protocol.HTTP)
-            .withHostname("127.0.0.1")
-            .withPort(customHttp.port())
-            .build();
+        Client kibanaClient = Client.withOptions()
+            .protocol(Client.Protocol.HTTP)
+            .hostname("127.0.0.1")
+            .port(customHttp.port())
+            .getInstance();
         assertThat(kibanaClient.canConnect()).isTrue();
     }
 }
