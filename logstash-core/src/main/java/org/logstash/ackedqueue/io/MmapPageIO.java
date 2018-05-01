@@ -3,13 +3,12 @@ package org.logstash.ackedqueue.io;
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
-import java.nio.ByteBuffer;
+import java.nio.BufferOverflowException;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.zip.CRC32;
 import org.apache.logging.log4j.LogManager;
@@ -27,6 +26,7 @@ public final class MmapPageIO implements PageIO {
     public static final int MIN_CAPACITY = VERSION_SIZE + SEQNUM_SIZE + LENGTH_SIZE + 1 + CHECKSUM_SIZE; // header overhead plus elements overhead to hold a single 1 byte element
     public static final int HEADER_SIZE = 1;     // version byte
     public static final boolean VERIFY_CHECKSUM = true;
+    public static final int METADATA_SIZE = SEQNUM_SIZE + LENGTH_SIZE + CHECKSUM_SIZE;
 
     private static final Logger LOGGER = LogManager.getLogger(MmapPageIO.class);
 
@@ -41,6 +41,7 @@ public final class MmapPageIO implements PageIO {
     private final CRC32 checkSummer;
 
     private final IntVector offsetMap;
+    private final int dataCapacity;
 
     private int capacity; // page capacity is an int per the ByteBuffer class.
     private long minSeqNum; // TODO: to make minSeqNum final we have to pass in the minSeqNum in the constructor and not set it on first write
@@ -50,16 +51,52 @@ public final class MmapPageIO implements PageIO {
 
     private MappedByteBuffer buffer;
 
-    public MmapPageIO(int pageNum, int capacity, Path dirPath) {
+    /**
+     * Constructor that sets the page num, the minimum size of the file, and its path
+     * If the file on disk already exists, and is larger than the minimum capacity, that size
+     * will be used instead.
+     * @param pageNum
+     * @param minimumFileSize
+     * @param dirPath
+     */
+    public MmapPageIO(int pageNum, int minimumFileSize, Path dirPath) {
         this.minSeqNum = 0;
         this.elementCount = 0;
         this.version = 0;
         this.head = 0;
-        this.capacity = capacity;
         this.offsetMap = new IntVector();
         this.checkSummer = new CRC32();
         this.file = dirPath.resolve("page." + pageNum).toFile();
+        int existingFileSize = (int) file.length();
+        int existingFileCapacity = existingFileSize-1;
+        // Account for the version byte at the head of the file
+        // If this file has been created to a larger capacity than our default, use that
+        if (existingFileSize > minimumFileSize) {
+            this.capacity = existingFileSize;
+            this.dataCapacity = existingFileCapacity;
+        } else {
+            this.capacity = minimumFileSize;
+            this.dataCapacity = minimumFileSize-HEADER_SIZE;
+        }
     }
+
+    /**
+     * Makes a new page that is at least as large as minimumPageCapacity, and can definitely hold minimumPageDataCapacity
+     * @param pagenum
+     * @param minimumPageDataCapacity
+     * @param minimumPageCapacity
+     * @param dirPath
+     * @return
+     */
+    public static MmapPageIO makeSuitablySizedPage(int pagenum, int minimumPageDataCapacity, int minimumPageCapacity, Path dirPath) {
+        // Pick the larger of the two potential page sizes
+        if (minimumPageDataCapacity >= minimumPageCapacity) {
+            minimumPageCapacity = minimumPageDataCapacity+HEADER_SIZE;
+        }
+
+        return new MmapPageIO(pagenum, minimumPageCapacity, dirPath);
+    }
+
 
     @Override
     public void open(long minSeqNum, int elementCount) throws IOException {
@@ -227,10 +264,15 @@ public final class MmapPageIO implements PageIO {
 
             newOffsets[i] = mainBufferOffset;
 
-            buffer.putLong(seqNum);
-            buffer.putInt(bytes.length);
-            buffer.put(bytes);
-            buffer.putInt(checksum(bytes));
+            try {
+                buffer.putLong(seqNum);
+                buffer.putInt(bytes.length);
+                buffer.put(bytes);
+                buffer.putInt(checksum(bytes));
+            } catch ( BufferOverflowException e) {
+                e.printStackTrace();
+                throw(e);
+            }
 
             mainBufferOffset += persistedByteCount(bytes.length, 1);
         }
@@ -308,7 +350,7 @@ public final class MmapPageIO implements PageIO {
 
     @Override
     public int persistedByteCount(int byteCount, int numElements) {
-        int metadataBytes = (SEQNUM_SIZE + LENGTH_SIZE + CHECKSUM_SIZE) * numElements;
+        int metadataBytes = METADATA_SIZE * numElements;
         return byteCount + metadataBytes;
     }
 

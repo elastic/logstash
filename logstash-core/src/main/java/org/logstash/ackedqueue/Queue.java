@@ -308,13 +308,23 @@ public final class Queue implements Closeable {
     }
 
     /**
+     * create a new empty headpage of the default size
+     * @param pageNum
+     * @throws IOException
+     */
+    private void newCheckpointedHeadpage(int pageNum) throws IOException {
+        newCheckpointedHeadpage(pageNum, 0);
+    }
+
+    /**
      * create a new empty headpage for the given pageNum and immediately checkpoint it
      *
      * @param pageNum the page number of the new head page
      * @throws IOException
      */
-    private void newCheckpointedHeadpage(int pageNum) throws IOException {
-        PageIO headPageIO = new MmapPageIO(pageNum, this.pageCapacity, this.dirPath);
+    private void newCheckpointedHeadpage(int pageNum, int minimumDataCapacity) throws IOException {
+        PageIO headPageIO = MmapPageIO.makeSuitablySizedPage(pageNum, minimumDataCapacity, pageCapacity, this.dirPath);
+
         headPageIO.create();
         this.headPage = PageFactory.newHeadPage(pageNum, this, headPageIO);
         this.headPage.forceCheckpoint();
@@ -386,22 +396,12 @@ public final class Queue implements Closeable {
         // element at risk in the always-full queue state. In the later, when closing a full queue, it would be impossible
         // to write the current element.
 
-        final int headPageCapacity = this.headPage.getPageIO().getCapacity();
-        // Our batch might span multiple pages, so we have to break it up if its too big
-
         final int persistedBatchSize = this.headPage.getPageIO().persistedByteCount(dataSize, serializedQueueables.size());
 
-        if (persistedBatchSize <= headPageCapacity) {
-
-
-            try {
-                return unsafeQueueWrite(serializedQueueables, timeoutMillis, persistedBatchSize);
-            } finally {
-                lock.unlock();
-            }
-        } else {
-            // Batch is larger than a page, we can't do an atomic write
-            throw new IOException("data to be written is bigger than page capacity");
+        try {
+            return unsafeQueueWrite(serializedQueueables, timeoutMillis, persistedBatchSize);
+        } finally {
+            lock.unlock();
         }
     }
 
@@ -457,8 +457,7 @@ public final class Queue implements Closeable {
                 behead();
             }
 
-            // create new head page
-            newCheckpointedHeadpage(newHeadPageNum);
+            newCheckpointedHeadpage(newHeadPageNum, totalPersistedSize);
         }
 
         long minWrittenSeqNum = this.seqNum + 1;
