@@ -188,6 +188,8 @@ match => {
   "field2" => "value2"
   ...
 }
+# or
+match => { "field1" => "value1" "field2" => "value2" }
 ----------------------------------
 
 [[number]]
