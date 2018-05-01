@@ -17,6 +17,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -96,18 +97,40 @@ public class QueueTest {
     public void batchWriteRead() throws IOException {
         // We need a fairly large size because reads don't span pages
         try (Queue q = new Queue(TestSettings.persistedQueueSettings(1000, dataPath))) {
-            q.open();
-
-            long res = q.write(batch);
-
-            Batch b = q.nonBlockReadBatch(batch.size());
-
-            assertThat(b.getElements().size(), is(batch.size()));
-            for (int i = 0; i < batch.size(); i++) {
-                assertThat(b.getElements().get(i).toString(), is(batch.get(i).toString()));
-            }
-            assertThat(q.nonBlockReadBatch(1), nullValue());
+            assertThatIsReadableAllAtOnce(batch, q);
         }
+    }
+
+    @Test
+    public void batchWritePageLargerThanConfiguredPageCapacity() throws IOException {
+        List<Queueable> tooLargeBatch = new ArrayList<>();
+        int batchSize = 0;
+        int pageCapacity = 1000;
+        int i = 0;
+        while (batchSize < pageCapacity) {
+            Queueable element = new StringElement("Hello There " + i);
+            tooLargeBatch.add(element);
+            batchSize += element.serialize().length;
+            i++;
+        }
+
+        try (Queue q = new Queue(TestSettings.persistedQueueSettings(pageCapacity, dataPath))) {
+            assertThatIsReadableAllAtOnce(tooLargeBatch, q);
+        }
+    }
+
+    private void assertThatIsReadableAllAtOnce(List<Queueable> tooLargeBatch, Queue q) throws IOException {
+        q.open();
+
+        long res = q.write(tooLargeBatch);
+
+        Batch b = q.nonBlockReadBatch(tooLargeBatch.size());
+
+        assertThat(b.getElements().size(), is(tooLargeBatch.size()));
+        for (int i = 0; i < batch.size(); i++) {
+            assertThat(b.getElements().get(i).toString(), is(tooLargeBatch.get(i).toString()));
+        }
+        assertThat(q.nonBlockReadBatch(1), nullValue());
     }
 
     /**
