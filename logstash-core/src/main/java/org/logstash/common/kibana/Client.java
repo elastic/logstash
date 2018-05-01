@@ -79,7 +79,6 @@ public class Client {
     public String get(String relativePath, Map<String, String> headers) throws RequestFailedException, IOException {
         String url = makeUrlFrom(relativePath);
 
-        // TODO: use this.httpClient instead
         HttpGet request = new HttpGet(url);
         headers.forEach(request::addHeader);
         CloseableHttpResponse response = null;
@@ -121,7 +120,6 @@ public class Client {
     public void head(String relativePath, Map<String, String> headers) throws RequestFailedException, IOException {
         String url = makeUrlFrom(relativePath);
 
-        // TODO: use this.httpClient instead
         HttpHead request = new HttpHead(url);
         headers.forEach(request::addHeader);
 
@@ -172,7 +170,6 @@ public class Client {
 
         String url = makeUrlFrom(relativePath);
 
-        // TODO: use this.httpClient instead
         HttpPost request = new HttpPost(url);
         headers.forEach(request::addHeader);
         request.setEntity(new StringEntity(requestBody));
