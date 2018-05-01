@@ -167,10 +167,3 @@ ruby_exec() {
   fi
   exec "${JRUBY_BIN}" "$@"
 }
-
-ruby_run() {
-  if [ "$DEBUG" ] ; then
-    echo "DEBUG: exec ${JRUBY_BIN} $@"
-  fi
-  $JRUBY_BIN $@
-}
