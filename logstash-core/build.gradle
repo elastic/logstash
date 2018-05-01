@@ -129,4 +129,5 @@ dependencies {
     testCompile 'net.javacrumbs.json-unit:json-unit:1.9.0'
     testCompile 'org.elasticsearch:securemock:1.2'
     testCompile 'org.assertj:assertj-core:3.8.0'
+    testCompile group: 'com.github.tomakehurst', name: 'wiremock-standalone', version: '2.6.0'
 }

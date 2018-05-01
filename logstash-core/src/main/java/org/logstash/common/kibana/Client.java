@@ -192,8 +192,10 @@ public class Client {
     }
 
     private String makeUrlFrom(String relativePath) {
-        String url = this.baseUrl.toString() + '/' + relativePath;
-        return url.replaceAll("/\\/+/", "/");
+        String url = this.baseUrl.toString().replaceFirst("\\/$", "")
+                + '/'
+                + relativePath.replaceFirst("^\\/", "");
+        return url;
     }
 
     /**
@@ -217,59 +219,45 @@ public class Client {
         }
     }
 
+    public static Builder options() {
+        return new Builder();
+    }
+
     public static class Builder {
 
-        private URL baseUrl;
+        private Protocol protocol;
+        private String hostname;
+        private int port;
+        private String basePath;
+
+        private String basicAuthUsername;
+        private String basicAuthPassword;
+
         private boolean useStrictSslVerificationMode;
         private Certificate caCertificate;
         private Certificate clientPublicKeyCertificate;
         private byte[] clientPrivateKey;
-        private String basicAuthUsername;
-        private String basicAuthPassword;
 
-        /**
-         * @param baseUrl The base URL for Kibana, e.g. http://localhost:5601/
-         */
-        public Builder(URL baseUrl) {
-            this.baseUrl = baseUrl;
-            this.useStrictSslVerificationMode = true;
+        public enum Protocol { HTTP, HTTPS };
+
+        public Builder withProtocol(Protocol protocol) {
+            this.protocol = protocol;
+            return this;
         }
 
-        /**
-         * @param baseUrl The base URL for Kibana, e.g. http://localhost:5601/
-         */
-        public Builder(String baseUrl) throws MalformedURLException {
-            this(new URL(baseUrl));
+        public Builder withHostname(String hostname) {
+            this.hostname = hostname;
+            return this;
         }
 
-        /**
-         * @param protocol  The protocol part of the base URL for Kibana, e.g. http
-         * @param host      The hostname part of the base URL for Kibana, e.g. localhost
-         * @param port      The port part of the base URL for Kibana, e.g. 5601
-         * @param basePath  The base path part of the base URL for Kibana, e.g. /
-         * @throws MalformedURLException
-         */
-        public Builder(String protocol, String host, int port, String basePath) throws MalformedURLException {
-            this(new URL(protocol, host, port, basePath));
+        public Builder withPort(int port) {
+            this.port = port;
+            return this;
         }
 
-        /**
-         * @param protocol  The protocol part of the base URL for Kibana, e.g. http
-         * @param host      The hostname part of the base URL for Kibana, e.g. localhost
-         * @param port      The port part of the base URL for Kibana, e.g. 5601
-         * @throws MalformedURLException
-         */
-        public Builder(String protocol, String host, int port) throws MalformedURLException {
-            this(protocol, host, port, "/");
-        }
-
-        /**
-         * Default constructor. Creates Kibana client with base URL = http://localhost:5601/
-         *
-         * @throws MalformedURLException
-         */
-        public Builder() throws MalformedURLException {
-            this("http", "localhost", 5601);
+        public Builder withBasePath(String basePath) {
+            this.basePath = basePath;
+            return this;
         }
 
         // TODO: Throw custom exception wrapping lower-level exceptions
@@ -312,14 +300,36 @@ public class Client {
         // TODO: Decide how much work to do in this build() method vs. in withSSL() method
         public Client build() throws CertificateException, NoSuchAlgorithmException, IOException, KeyStoreException, KeyManagementException, UnrecoverableKeyException {
 
-            if (!usesSsl() && !usesBasicAuth()) {
+            Protocol protocol = this.protocol;
+            if (protocol == null) {
+                protocol = Protocol.HTTP;
+            }
+
+            String hostname = this.hostname;
+            if (hostname == null) {
+                hostname = "localhost";
+            }
+
+            int port = this.port;
+            if (port == 0) {
+                port = 5601;
+            }
+
+            String basePath = this.basePath;
+            if (basePath == null) {
+                basePath = "/";
+            }
+
+            URL baseUrl = new URL(protocol.name().toLowerCase(), hostname, port, basePath);
+
+            if (!usesSsl(baseUrl) && !usesBasicAuth()) {
                 CloseableHttpClient httpClient = HttpClients.createDefault();
-                return new Client(httpClient, this.baseUrl);
+                return new Client(httpClient, baseUrl);
             }
 
             HttpClientBuilder httpClientBuilder = HttpClients.custom();
 
-            if (usesSsl()) {
+            if (usesSsl(baseUrl)) {
                 TrustManager[] trustManagers = null;
                 if (this.caCertificate != null) {
                     KeyStore keystore = KeyStore.getInstance(KeyStore.getDefaultType());
@@ -368,11 +378,11 @@ public class Client {
                 httpClientBuilder.setDefaultCredentialsProvider(basicAuthCredentialsProvider);
             }
 
-            return new Client(httpClientBuilder.build(), this.baseUrl);
+            return new Client(httpClientBuilder.build(), baseUrl);
         }
 
-        private boolean usesSsl() {
-            return (this.baseUrl.getProtocol() == "https") && this.useStrictSslVerificationMode;
+        private boolean usesSsl(URL baseUrl) {
+            return (baseUrl.getProtocol() == "https") && this.useStrictSslVerificationMode;
         }
 
         private boolean usesBasicAuth() {
