@@ -323,12 +323,7 @@ public final class Queue implements Closeable {
      * @throws IOException
      */
     private void newCheckpointedHeadpage(int pageNum, int minimumDataCapacity) throws IOException {
-        PageIO headPageIO;
-        if (minimumDataCapacity > pageCapacity - MmapPageIO.HEADER_SIZE) {
-            headPageIO = MmapPageIO.makeExactlySizedPage(pageNum, minimumDataCapacity, this.dirPath);
-        } else {
-            headPageIO = new MmapPageIO(pageNum, pageCapacity, this.dirPath);
-        }
+        PageIO headPageIO = MmapPageIO.makeSuitablySizedPage(pageNum, minimumDataCapacity, pageCapacity, this.dirPath);
 
         headPageIO.create();
         this.headPage = PageFactory.newHeadPage(pageNum, this, headPageIO);

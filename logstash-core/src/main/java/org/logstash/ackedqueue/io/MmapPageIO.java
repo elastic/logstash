@@ -81,16 +81,20 @@ public final class MmapPageIO implements PageIO {
     }
 
     /**
-     * The constructor takes capacity, but uses it as a file size
-     * This method takes a capacity argument, but uses it to create a queue that can hold that much data, when factoring in
-     * the size of the file header
+     * Makes a new page that is at least as large as minimumPageCapacity, and can definitely hold minimumPageDataCapacity
      * @param pagenum
-     * @param pageDataCapacity
+     * @param minimumPageDataCapacity
+     * @param minimumPageCapacity
      * @param dirPath
      * @return
      */
-    public static MmapPageIO makeExactlySizedPage(int pagenum, int pageDataCapacity, Path dirPath) {
-        return new MmapPageIO(pagenum, pageDataCapacity+HEADER_SIZE, dirPath);
+    public static MmapPageIO makeSuitablySizedPage(int pagenum, int minimumPageDataCapacity, int minimumPageCapacity, Path dirPath) {
+        // Pick the larger of the two potential page sizes
+        if (minimumPageDataCapacity >= minimumPageCapacity) {
+            minimumPageCapacity = minimumPageDataCapacity+HEADER_SIZE;
+        }
+
+        return new MmapPageIO(pagenum, minimumPageCapacity, dirPath);
     }
 
 
