@@ -32,6 +32,7 @@ module LogStash
         queue.max_bytes
         queue.checkpoint.writes
       )
+      PIPELINE_PROTOCOL = "x-pack-config-management"
 
       def initialize(settings)
         super(settings)
@@ -98,7 +99,7 @@ module LogStash
 
         raise RemoteConfigError, "Empty configuration for pipeline_id: #{pipeline_id}" if config_string.nil? || config_string.empty?
 
-        config_part = org.logstash.common.SourceWithMetadata.new("x-pack-config-management", pipeline_id.to_s, config_string)
+        config_part = org.logstash.common.SourceWithMetadata.new(PIPELINE_PROTOCOL, pipeline_id.to_s, config_string)
 
         # We don't support multiple pipelines, so use the global settings from the logstash.yml file
         settings = @settings.clone
