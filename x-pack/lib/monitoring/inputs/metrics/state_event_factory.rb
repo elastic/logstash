@@ -27,7 +27,7 @@ module LogStash; module Inputs; class Metrics;
         "id" => pipeline.pipeline_id,
         "hash" => pipeline.lir.unique_hash,
         "ephemeral_id" => pipeline.ephemeral_id,
-        "protocol" => pipeline.pipeline_config.protocol,
+        "protocols" => pipeline.pipeline_config.protocols,
         "workers" =>  pipeline.settings.get("pipeline.workers"),
         "batch_size" =>  pipeline.settings.get("pipeline.batch.size"),
         "representation" => ::LogStash::Inputs::Metrics::StateEvent::LIRSerializer.serialize(pipeline.lir)

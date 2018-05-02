@@ -29,8 +29,8 @@ module LogStash module Config
       @settings.get("pipeline.system")
     end
 
-    def protocol
-      @config_parts[0].protocol.to_s
+    def protocols
+      @config_parts.map { |config_part| config_part.protocol }
     end
 
     def ==(other)
