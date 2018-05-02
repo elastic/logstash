@@ -156,6 +156,9 @@ include::static/arcsight-module.asciidoc[]
 :edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/netflow-module.asciidoc
 include::static/netflow-module.asciidoc[]
 
+:edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/azure-module.asciidoc
+include::static/azure-module.asciidoc[]
+
 // Working with Filebeat Modules
 
 :edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/filebeat-modules.asciidoc
