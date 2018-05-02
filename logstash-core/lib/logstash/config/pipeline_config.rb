@@ -29,6 +29,10 @@ module LogStash module Config
       @settings.get("pipeline.system")
     end
 
+    def protocol
+      @config_parts[0].protocol.to_s
+    end
+
     def ==(other)
       config_hash == other.config_hash && pipeline_id == other.pipeline_id && settings == other.settings
     end
