@@ -248,6 +248,9 @@ public class Client {
 
         public Builder protocol(Protocol protocol) {
             this.protocol = protocol;
+            if (this.port == 0) {
+                this.port = 443;
+            }
             return this;
         }
 
