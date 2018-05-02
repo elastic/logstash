@@ -22,7 +22,7 @@ public class ReportGeneratorTest {
         boolean result = runReportGenerator("/licenseMapping-good.csv", output);
 
         assertTrue(result);
-        assertEquals(expectedOutput, output.toString());
+        assertEquals(normalizeEol(expectedOutput), normalizeEol(output.toString()));
     }
 
     @Test
@@ -68,6 +68,10 @@ public class ReportGeneratorTest {
 
     private static String getStringFromStream(InputStream stream) {
         return new Scanner(stream, "UTF-8").useDelimiter("\\A").next();
+    }
+
+    private static String normalizeEol(String s) {
+        return s.replaceAll("\\r\\n", "\n");
     }
 }
 
