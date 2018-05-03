@@ -104,4 +104,28 @@ public class HttpClientTest {
         // TODO: Setup WireMockRule with self-signed server cert
         // TODO: Create and test Kibana client with self-signed client cert, client private key, and self-signed CA cert
     }
+
+    @Test
+    public void cannotMakeHttpsRequestWithoutSslConfiguration() throws Exception {
+    }
+
+    @Test
+    public void cannotMakeHttpsRequestWithInvalidCaCertificate() throws Exception {
+    }
+
+    @Test
+    public void canMakeHttpHeadRequest() throws Exception {
+    }
+
+    @Test
+    public void canMakeHttpPostRequest() throws Exception {
+    }
+
+    @Test
+    public void canMakeHttpPutRequest() throws Exception {
+    }
+
+    @Test
+    public void canMakeHttpDeleteRequest() throws Exception {
+    }
 }
