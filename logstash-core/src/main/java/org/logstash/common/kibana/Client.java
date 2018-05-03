@@ -1,23 +1,21 @@
 package org.logstash.common.kibana;
 
 import java.io.*;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.security.*;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
+import java.security.cert.X509Certificate;
 import java.util.*;
 
 import org.apache.http.Header;
 import org.apache.http.StatusLine;
-import org.apache.http.auth.AuthScope;
-import org.apache.http.auth.UsernamePasswordCredentials;
-import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.methods.*;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
@@ -33,7 +31,7 @@ import javax.net.ssl.*;
  * TODO: Unit tests
  */
 public class Client {
-    public enum Protocol { HTTP, HTTPS };
+    public enum Protocol { HTTP, HTTPS }
 
     private CloseableHttpClient httpClient;
     private URL baseUrl;
@@ -201,6 +199,264 @@ public class Client {
         return url;
     }
 
+    public static Client build() throws OptionsBuilderException {
+        return new OptionsBuilder().build();
+    }
+
+    public static OptionsBuilder withOptions() {
+        return new OptionsBuilder();
+    }
+
+    public static class OptionsBuilder {
+
+        private Protocol protocol;
+        private String hostname;
+        private int port;
+        private String basePath;
+
+        private String basicAuthUsername;
+        private String basicAuthPassword;
+
+        private Certificate sslCaCertificate;
+        private Certificate sslClientCertificate;
+        private byte[] sslClientPrivateKey;
+        private boolean sslVerifyServerHostname;
+        private boolean sslVerifyServerCredentials;
+
+        private OptionsBuilder() {
+            this.protocol = Protocol.HTTP;
+            this.hostname = "localhost";
+            this.port = 5601;
+            this.basePath = "/";
+            this.sslVerifyServerHostname = true;
+            this.sslVerifyServerCredentials = true;
+        }
+
+        public OptionsBuilder protocol(Protocol protocol) {
+            this.protocol = protocol;
+            if (this.port == 0) {
+                this.port = 443;
+            }
+            return this;
+        }
+
+        public OptionsBuilder hostname(String hostname) {
+            this.hostname = hostname;
+            return this;
+        }
+
+        public OptionsBuilder port(int port) {
+            this.port = port;
+            return this;
+        }
+
+        public OptionsBuilder basePath(String basePath) {
+            this.basePath = basePath;
+            return this;
+        }
+
+        public OptionsBuilder basicAuth(String username, String password) {
+            this.basicAuthUsername = username;
+            this.basicAuthPassword = password;
+
+            return this;
+        }
+
+        public OptionsBuilder sslCaCertificate(String caCertificatePath) throws CertificateException, IOException {
+            this.sslCaCertificate = getCertificate(caCertificatePath);
+            return this;
+        }
+
+        public OptionsBuilder sslClientCertificate(String clientCertificatePath) throws CertificateException, IOException {
+            this.sslClientCertificate = getCertificate(clientCertificatePath);
+            return this;
+        }
+
+        public OptionsBuilder sslClientPrivateKey(String clientPrivateKeyPath) throws IOException {
+            this.sslClientPrivateKey = getPrivateKey(clientPrivateKeyPath);
+            return this;
+        }
+
+        public OptionsBuilder sslNoVerifyServerHostname() {
+            this.sslVerifyServerHostname = false;
+            return this;
+        }
+
+        public OptionsBuilder sslNoVerifyServerCredentials() {
+            this.sslVerifyServerCredentials = false;
+            return this;
+        }
+
+        public OptionsBuilder sslNoVerify() {
+            return this.sslNoVerifyServerHostname()
+                    .sslNoVerifyServerCredentials();
+        }
+
+        // TODO: Throw custom exception wrapping lower-level exceptions
+        public Client build() throws OptionsBuilderException {
+
+            URL baseUrl = null;
+            try {
+                baseUrl = new URL(this.protocol.name().toLowerCase(), this.hostname, this.port, this.basePath);
+            } catch (MalformedURLException e) {
+                throw new OptionsBuilderException("Unable to create Kibana base URL", e);
+            }
+
+            if (!usesSsl(baseUrl) && !usesBasicAuth()) {
+                CloseableHttpClient httpClient = HttpClients.createDefault();
+                return new Client(httpClient, baseUrl);
+            }
+
+            HttpClientBuilder httpClientBuilder = HttpClients.custom();
+
+            if (usesSsl(baseUrl)) {
+                TrustManager[] trustManagers = null;
+                if (this.sslVerifyServerCredentials) {
+                    if (this.sslCaCertificate == null) {
+                        throw new OptionsBuilderException("Certificate authority not provided. "
+                                + "Please provide the certificate authority using the sslCaCertificate method.");
+                    }
+
+                    try {
+                        KeyStore keystore = getKeyStore();
+                        keystore.setCertificateEntry("caCertificate", this.sslCaCertificate);
+
+                        TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+                        trustManagerFactory.init(keystore);
+
+                        trustManagers = trustManagerFactory.getTrustManagers();
+                    } catch (Exception e) {
+                        throw new OptionsBuilderException("Unable to use provided certificate authority.", e);
+                    }
+                } else {
+                    trustManagers = new TrustManager[] { getAnyTrustManager() };
+                }
+
+                KeyManager[] keyManagers = null;
+                if ((this.sslClientCertificate != null) && (this.sslClientPrivateKey != null)) {
+                    KeyStore keystore = getKeyStore();
+
+                    try {
+                        keystore.setCertificateEntry("clientCertificate", this.sslClientCertificate);
+                        keystore.setKeyEntry("clientPrivateKey", this.sslClientPrivateKey, new Certificate[]{this.sslClientCertificate});
+
+                        KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
+                        keyManagerFactory.init(keystore, null);
+
+                        keyManagers = keyManagerFactory.getKeyManagers();
+                    } catch (Exception e) {
+                        throw new OptionsBuilderException("Unable to use provided client certificate and/or client private key", e);
+                    }
+                }
+
+                try {
+                    SSLContext sslContext = SSLContext.getInstance("TLS");
+                    sslContext.init(keyManagers, trustManagers, null);
+
+                    SSLConnectionSocketFactory sslSocketFactory;
+                    if (this.sslVerifyServerHostname) {
+                        sslSocketFactory = new SSLConnectionSocketFactory(sslContext, SSLConnectionSocketFactory.STRICT_HOSTNAME_VERIFIER);
+                    } else {
+                        sslSocketFactory = new SSLConnectionSocketFactory(sslContext, SSLConnectionSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
+                    }
+
+                    httpClientBuilder.setSSLSocketFactory(sslSocketFactory);
+                } catch (Exception e) {
+                    throw new OptionsBuilderException("Unable to configure Kibana client with SSL/TLS", e);
+                }
+            }
+
+            if (usesBasicAuth()) {
+                String credentials = this.basicAuthUsername + ":" + this.basicAuthPassword;
+                String encodedCredentials = new String(Base64.getEncoder().encode(credentials.getBytes(StandardCharsets.UTF_8)), StandardCharsets.UTF_8);
+
+                List<Header> headerList = Collections.singletonList(new BasicHeader("Authorization", "Basic " + encodedCredentials));
+                httpClientBuilder.setDefaultHeaders(headerList);
+            }
+
+            return new Client(httpClientBuilder.build(), baseUrl);
+        }
+
+        private boolean usesBasicAuth() {
+            return (this.basicAuthUsername != null) && (this.basicAuthPassword != null);
+        }
+
+        private boolean usesSsl(URL baseUrl) {
+            return baseUrl.getProtocol().equals("https");
+        }
+
+        private static Certificate getCertificate(String certificateFilePath) throws CertificateException, IOException {
+            FileInputStream fis = new FileInputStream(certificateFilePath);
+
+            CertificateFactory cf = CertificateFactory.getInstance("X.509");
+            Certificate certificate;
+
+            try {
+                certificate = cf.generateCertificate(fis);
+            } finally {
+                fis.close();
+            }
+
+            return certificate;
+        }
+
+        private static byte[] getPrivateKey(String privateKeyPath) throws IOException {
+            FileInputStream fis = new FileInputStream(privateKeyPath);
+            ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+
+            int numBytesRead;
+            byte[] data = new byte[16384];
+
+            while ((numBytesRead = fis.read(data)) != -1) {
+                buffer.write(data, 0, numBytesRead);
+            }
+            buffer.flush();
+
+            return buffer.toByteArray();
+        }
+
+        private static KeyStore getKeyStore() throws OptionsBuilderException {
+            KeyStore keystore;
+            try {
+                keystore = KeyStore.getInstance(KeyStore.getDefaultType());
+                keystore.load(null, null);
+            } catch (Exception e) {
+                throw new OptionsBuilderException("Unable to create keystore", e);
+            }
+            return keystore;
+        }
+
+        private static X509TrustManager getAnyTrustManager() {
+            return new X509TrustManager() {
+                @Override
+                public void checkClientTrusted(X509Certificate[] x509Certificates, String s) {
+
+                }
+
+                @Override
+                public void checkServerTrusted(X509Certificate[] x509Certificates, String s) {
+
+                }
+
+                @Override
+                public X509Certificate[] getAcceptedIssuers() {
+                    return new X509Certificate[0];
+                }
+            };
+        }
+
+    }
+
+    public static class OptionsBuilderException extends Exception {
+        public OptionsBuilderException(String errorMessage, Throwable cause) {
+            super(errorMessage, cause);
+        }
+
+        public OptionsBuilderException(String errorMessage) {
+            super(errorMessage);
+        }
+    }
+
     /**
      * Exception thrown when a request made by this client to the Kibana API fails
      */
@@ -221,212 +477,4 @@ public class Client {
             return message;
         }
     }
-
-    // TODO: Throw custom exception wrapping lower-level exceptions
-    public static Client getInstance() throws CertificateException, UnrecoverableKeyException, NoSuchAlgorithmException, IOException, KeyManagementException, KeyStoreException {
-        return new Builder().getInstance();
-    }
-
-    public static Builder withOptions() {
-        return new Builder();
-    }
-
-    public static class Builder {
-
-        private Protocol protocol;
-        private String hostname;
-        private int port;
-        private String basePath;
-
-        private String basicAuthUsername;
-        private String basicAuthPassword;
-
-        private boolean useStrictSslVerificationMode;
-        private Certificate caCertificate;
-        private Certificate clientPublicKeyCertificate;
-        private byte[] clientPrivateKey;
-
-        public Builder protocol(Protocol protocol) {
-            this.protocol = protocol;
-            if (this.port == 0) {
-                this.port = 443;
-            }
-            return this;
-        }
-
-        public Builder hostname(String hostname) {
-            this.hostname = hostname;
-            return this;
-        }
-
-        public Builder port(int port) {
-            this.port = port;
-            return this;
-        }
-
-        public Builder basePath(String basePath) {
-            this.basePath = basePath;
-            return this;
-        }
-
-        // TODO: Throw custom exception wrapping lower-level exceptions
-        public Builder ssl(boolean useStrictSslVerificationMode, String caCertificatePath, String clientPublicKeyCertificatePath, String clientPrivateKeyPath) throws CertificateException, IOException {
-            this.useStrictSslVerificationMode = useStrictSslVerificationMode;
-
-            if (caCertificatePath != null) {
-                this.caCertificate = getCertificate(caCertificatePath);
-            }
-
-            if (clientPublicKeyCertificatePath != null) {
-                this.clientPublicKeyCertificate = getCertificate(clientPublicKeyCertificatePath);
-            }
-
-            if (clientPrivateKeyPath != null) {
-                this.clientPrivateKey = getPrivateKey(clientPrivateKeyPath);
-            }
-
-            return this;
-        }
-
-        // TODO: Throw custom exception wrapping lower-level exceptions
-        public Builder ssl(boolean useStrictSslVerificationMode, String caCertificatePath) throws CertificateException, IOException {
-            return ssl(useStrictSslVerificationMode, caCertificatePath, null, null);
-        }
-
-        // TODO: Throw custom exception wrapping lower-level exceptions
-        public Builder ssl(boolean useStrictSslVerificationMode) throws CertificateException, IOException {
-            return ssl(useStrictSslVerificationMode, null, null, null);
-        }
-
-        public Builder basicAuth(String username, String password) {
-            this.basicAuthUsername = username;
-            this.basicAuthPassword = password;
-
-            return this;
-        }
-
-        // TODO: Throw custom exception wrapping lower-level exceptions
-        // TODO: Decide how much work to do in this build() method vs. in ssl() method
-        public Client getInstance() throws CertificateException, NoSuchAlgorithmException, IOException, KeyStoreException, KeyManagementException, UnrecoverableKeyException {
-
-            Protocol protocol = this.protocol;
-            if (protocol == null) {
-                protocol = Protocol.HTTP;
-            }
-
-            String hostname = this.hostname;
-            if (hostname == null) {
-                hostname = "localhost";
-            }
-
-            int port = this.port;
-            if (port == 0) {
-                port = 5601;
-            }
-
-            String basePath = this.basePath;
-            if (basePath == null) {
-                basePath = "/";
-            }
-
-            URL baseUrl = new URL(protocol.name().toLowerCase(), hostname, port, basePath);
-
-            if (!usesSsl(baseUrl) && !usesBasicAuth()) {
-                CloseableHttpClient httpClient = HttpClients.createDefault();
-                return new Client(httpClient, baseUrl);
-            }
-
-            HttpClientBuilder httpClientBuilder = HttpClients.custom();
-
-            if (usesSsl(baseUrl)) {
-                TrustManager[] trustManagers = null;
-                if (this.caCertificate != null) {
-                    KeyStore keystore = KeyStore.getInstance(KeyStore.getDefaultType());
-                    keystore.load(null, null);
-
-                    keystore.setCertificateEntry("caCertificate", this.caCertificate);
-
-                    TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
-                    trustManagerFactory.init(keystore);
-
-                    trustManagers = trustManagerFactory.getTrustManagers();
-                }
-
-                KeyManager[] keyManagers = null;
-                if ((this.clientPublicKeyCertificate != null) && (this.clientPrivateKey != null)) {
-                    KeyStore keystore = KeyStore.getInstance(KeyStore.getDefaultType());
-                    keystore.load(null, null);
-
-                    keystore.setCertificateEntry("clientPublicKeyCertificate", this.clientPublicKeyCertificate);
-                    keystore.setKeyEntry("clientPrivateKey", this.clientPrivateKey, new Certificate[]{this.clientPublicKeyCertificate});
-
-                    KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
-                    keyManagerFactory.init(keystore, null);
-
-                    keyManagers = keyManagerFactory.getKeyManagers();
-                }
-
-                SSLContext sslContext = SSLContext.getDefault();
-                sslContext.init(keyManagers, trustManagers, null);
-
-                SSLConnectionSocketFactory sslSocketFactory;
-                if (useStrictSslVerificationMode) {
-                    sslSocketFactory = new SSLConnectionSocketFactory(sslContext, SSLConnectionSocketFactory.STRICT_HOSTNAME_VERIFIER);
-                } else {
-                    sslSocketFactory = new SSLConnectionSocketFactory(sslContext, SSLConnectionSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
-                }
-
-                httpClientBuilder.setSSLSocketFactory(sslSocketFactory);
-            }
-
-            if (usesBasicAuth()) {
-                String credentials = this.basicAuthUsername + ":" + this.basicAuthPassword;
-                String encodedCredentials = new String(Base64.getEncoder().encode(credentials.getBytes(StandardCharsets.UTF_8)), StandardCharsets.UTF_8);
-
-                List<Header> headerList = Collections.singletonList(new BasicHeader("Authorization", "Basic " + encodedCredentials));
-                httpClientBuilder.setDefaultHeaders(headerList);
-            }
-
-            return new Client(httpClientBuilder.build(), baseUrl);
-        }
-
-        private boolean usesSsl(URL baseUrl) {
-            return (baseUrl.getProtocol() == "https") && this.useStrictSslVerificationMode;
-        }
-
-        private boolean usesBasicAuth() {
-            return (this.basicAuthUsername != null) && (this.basicAuthPassword != null);
-        }
-
-        private Certificate getCertificate(String certificateFilePath) throws CertificateException, IOException {
-            FileInputStream fis = new FileInputStream(certificateFilePath);
-
-            CertificateFactory cf = CertificateFactory.getInstance("X.509");
-            Certificate certificate;
-
-            try {
-                certificate = cf.generateCertificate(fis);
-            } finally {
-                fis.close();
-            }
-
-            return certificate;
-        }
-
-        private byte[] getPrivateKey(String privateKeyPath) throws IOException {
-            FileInputStream fis = new FileInputStream(privateKeyPath);
-            ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-
-            int numBytesRead;
-            byte[] data = new byte[16384];
-
-            while ((numBytesRead = fis.read(data)) != -1) {
-                buffer.write(data, 0, numBytesRead);
-            }
-            buffer.flush();
-
-            return buffer.toByteArray();
-        }
-    }
-
 }

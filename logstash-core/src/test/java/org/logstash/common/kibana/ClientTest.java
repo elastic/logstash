@@ -12,6 +12,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class ClientTest {
 
+    private static final String BIND_ADDRESS = "127.0.0.1";
+    private static final int HTTPS_PORT = 5443;
     private static final String USERNAME = "seger";
     private static final String PASSWORD = "comma_bob";
 
@@ -19,7 +21,10 @@ public class ClientTest {
     public WireMockRule defaultHttp = new WireMockRule(5601);
 
     @Rule
-    public WireMockRule customHttp = new WireMockRule(options().dynamicPort().bindAddress("127.0.0.1"));
+    public WireMockRule customHttp = new WireMockRule(options().dynamicPort().bindAddress(BIND_ADDRESS));
+
+    @Rule
+    public WireMockRule defaultHttps = new WireMockRule(options().httpsPort(HTTPS_PORT));
 
     @Test
     public void canConnectWithDefaultSettings() throws Exception {
@@ -27,7 +32,7 @@ public class ClientTest {
         defaultHttp.stubFor(head(urlPathEqualTo(path))
                 .willReturn(aResponse().withStatus(200)));
 
-        Client kibanaClient = Client.getInstance();
+        Client kibanaClient = Client.build();
         assertThat(kibanaClient.canConnect()).isTrue();
     }
 
@@ -39,9 +44,9 @@ public class ClientTest {
 
         Client kibanaClient = Client.withOptions()
             .protocol(Client.Protocol.HTTP)
-            .hostname("127.0.0.1")
+            .hostname(BIND_ADDRESS)
             .port(customHttp.port())
-            .getInstance();
+            .build();
         assertThat(kibanaClient.canConnect()).isTrue();
     }
 
@@ -54,13 +59,22 @@ public class ClientTest {
 
         Client kibanaClient = Client.withOptions()
                 .basicAuth(USERNAME, PASSWORD)
-                .getInstance();
+                .build();
         assertThat(kibanaClient.canConnect()).isTrue();
     }
 
     @Test
     public void canConnectWithDefaultSsl() throws Exception {
+        final String path = "/api/status";
+        defaultHttps.stubFor(head(urlPathEqualTo(path))
+                .willReturn(aResponse().withStatus(200)));
 
+        Client kibanaClient = Client.withOptions()
+                .protocol(Client.Protocol.HTTPS)
+                .port(HTTPS_PORT)
+                .sslNoVerify()
+                .build();
+        assertThat(kibanaClient.canConnect()).isTrue();
     }
 
     @Test
