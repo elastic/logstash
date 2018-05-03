@@ -45,7 +45,7 @@ public class HttpClient {
      * @throws RequestFailedException
      */
     public String get(String relativePath) throws RequestFailedException, IOException {
-        return get(relativePath, new HashMap<>());
+        return get(relativePath, null);
     }
 
     /**
@@ -59,9 +59,12 @@ public class HttpClient {
      */
     public String get(String relativePath, Map<String, String> headers) throws RequestFailedException, IOException {
         String url = makeUrlFrom(relativePath);
-
         HttpGet request = new HttpGet(url);
-        headers.forEach(request::addHeader);
+
+        if (headers != null) {
+            headers.forEach(request::addHeader);
+        }
+
         CloseableHttpResponse response = null;
 
         try {
@@ -87,7 +90,7 @@ public class HttpClient {
      * @throws IOException
      */
     public void head(String relativePath) throws RequestFailedException, IOException {
-        head(relativePath, new HashMap<>());
+        head(relativePath, null);
     }
 
     /**
@@ -100,9 +103,11 @@ public class HttpClient {
      */
     public void head(String relativePath, Map<String, String> headers) throws RequestFailedException, IOException {
         String url = makeUrlFrom(relativePath);
-
         HttpHead request = new HttpHead(url);
-        headers.forEach(request::addHeader);
+
+        if (headers != null) {
+            headers.forEach(request::addHeader);
+        }
 
         CloseableHttpResponse response = null;
         StatusLine statusLine;
@@ -134,7 +139,7 @@ public class HttpClient {
      * @throws IOException
      */
     public String post(String relativePath, String requestBody) throws RequestFailedException, IOException {
-        return post(relativePath, requestBody, new HashMap<>());
+        return post(relativePath, requestBody, null);
     }
 
     /**
@@ -152,8 +157,11 @@ public class HttpClient {
         String url = makeUrlFrom(relativePath);
 
         HttpPost request = new HttpPost(url);
-        headers.forEach(request::addHeader);
         request.setEntity(new StringEntity(requestBody));
+
+        if (headers != null) {
+            headers.forEach(request::addHeader);
+        }
 
         CloseableHttpResponse response = null;
 
