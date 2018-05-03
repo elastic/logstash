@@ -25,10 +25,6 @@ import javax.net.ssl.*;
 
 /**
  * Basic Kibana Client. Allows consumers to perform requests against Kibana's HTTP APIs.
- *
- * TODO: SSL options
- * TODO: Auth options
- * TODO: Unit tests
  */
 public class Client {
     public enum Protocol { HTTP, HTTPS }
@@ -292,7 +288,6 @@ public class Client {
                     .sslNoVerifyServerCredentials();
         }
 
-        // TODO: Throw custom exception wrapping lower-level exceptions
         public Client build() throws OptionsBuilderException {
 
             URL baseUrl = null;
