@@ -169,10 +169,11 @@ public class HttpClient {
 
         try {
             response = httpClient.execute(request);
-            return response
+            OutputStream responseBody = new ByteArrayOutputStream();
+            response
                     .getEntity()
-                    .getContent()
-                    .toString();
+                    .writeTo(responseBody);
+            return ((ByteArrayOutputStream) responseBody).toString("UTF-8");
         } catch (IOException e) {
             throw new RequestFailedException("POST", url, e);
         } finally {
