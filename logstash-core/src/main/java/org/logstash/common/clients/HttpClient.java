@@ -1,4 +1,4 @@
-package org.logstash.common.kibana;
+package org.logstash.common.clients;
 
 import java.io.*;
 import java.net.MalformedURLException;
@@ -24,39 +24,23 @@ import org.apache.http.message.BasicHeader;
 import javax.net.ssl.*;
 
 /**
- * Basic Kibana Client. Allows consumers to perform requests against Kibana's HTTP APIs.
+ * Easy-to-use HTTP client.
  */
-public class Client {
+public class HttpClient {
     public enum Protocol { HTTP, HTTPS }
 
     private CloseableHttpClient httpClient;
     private URL baseUrl;
 
-    private static final String STATUS_API = "api/status";
-
-    private Client(CloseableHttpClient httpClient, URL baseUrl) {
+    private HttpClient(CloseableHttpClient httpClient, URL baseUrl) {
         this.httpClient = httpClient;
         this.baseUrl = baseUrl;
     }
 
     /**
-     * Checks whether the client can connect to Kibana or not
+     * Performs an HTTP GET request
      *
-     * @return true if the client can connect, false otherwise
-     */
-    public boolean canConnect() {
-        try {
-            head(STATUS_API);
-            return true;
-        } catch (Exception e) {
-            return false;
-        }
-    }
-
-    /**
-     * Performs an HTTP GET request against Kibana's API
-     *
-     * @param relativePath  Relative path to Kibana API resource, e.g. api/kibana/dashboards/export
+     * @param relativePath  Relative path to resource, e.g. api/kibana/dashboards/export
      * @return Response body
      * @throws RequestFailedException
      */
@@ -65,9 +49,9 @@ public class Client {
     }
 
     /**
-     * Performs an HTTP GET request against Kibana's API
+     * Performs an HTTP GET request
      *
-     * @param relativePath  Relative path to Kibana API resource, e.g. api/kibana/dashboards/export
+     * @param relativePath  Relative path to resource, e.g. api/kibana/dashboards/export
      * @param headers       Headers to include with request
      * @return Response body
      * @throws RequestFailedException
@@ -96,9 +80,9 @@ public class Client {
     }
 
     /**
-     * Performs an HTTP HEAD request against Kibana's API
+     * Performs an HTTP HEAD request
      *
-     * @param relativePath  Relative path to Kibana API resource, e.g. api/status
+     * @param relativePath  Relative path to resource, e.g. api/status
      * @throws RequestFailedException
      * @throws IOException
      */
@@ -107,9 +91,9 @@ public class Client {
     }
 
     /**
-     * Performs an HTTP HEAD request against Kibana's API
+     * Performs an HTTP HEAD request
      *
-     * @param relativePath  Relative path to Kibana API resource, e.g. api/status
+     * @param relativePath  Relative path to resource, e.g. api/status
      * @param headers       Headers to include with request
      * @throws RequestFailedException
      * @throws IOException
@@ -141,9 +125,9 @@ public class Client {
     }
 
     /**
-     * Performs an HTTP POST request against Kibana's API
+     * Performs an HTTP POST request
      *
-     * @param relativePath  Relative path to Kibana API resource, e.g. api/kibana/dashboards/import
+     * @param relativePath  Relative path to resource, e.g. api/kibana/dashboards/import
      * @param requestBody   Body of request
      * @return Response body
      * @throws RequestFailedException
@@ -154,9 +138,9 @@ public class Client {
     }
 
     /**
-     * Performs an HTTP POST request against Kibana's API
+     * Performs an HTTP POST request
      *
-     * @param relativePath  Relative path to Kibana API resource, e.g. api/kibana/dashboards/import
+     * @param relativePath  Relative path to resource, e.g. api/kibana/dashboards/import
      * @param requestBody   Body of request
      * @param headers       Headers to include with request
      * @return Response body
@@ -195,7 +179,7 @@ public class Client {
         return url;
     }
 
-    public static Client build() throws OptionsBuilderException {
+    public static HttpClient build() throws OptionsBuilderException {
         return new OptionsBuilder().build();
     }
 
@@ -288,18 +272,18 @@ public class Client {
                     .sslNoVerifyServerCredentials();
         }
 
-        public Client build() throws OptionsBuilderException {
+        public HttpClient build() throws OptionsBuilderException {
 
             URL baseUrl = null;
             try {
                 baseUrl = new URL(this.protocol.name().toLowerCase(), this.hostname, this.port, this.basePath);
             } catch (MalformedURLException e) {
-                throw new OptionsBuilderException("Unable to create Kibana base URL", e);
+                throw new OptionsBuilderException("Unable to create base URL", e);
             }
 
             if (!usesSsl(baseUrl) && !usesBasicAuth()) {
                 CloseableHttpClient httpClient = HttpClients.createDefault();
-                return new Client(httpClient, baseUrl);
+                return new HttpClient(httpClient, baseUrl);
             }
 
             HttpClientBuilder httpClientBuilder = HttpClients.custom();
@@ -357,7 +341,7 @@ public class Client {
 
                     httpClientBuilder.setSSLSocketFactory(sslSocketFactory);
                 } catch (Exception e) {
-                    throw new OptionsBuilderException("Unable to configure Kibana client with SSL/TLS", e);
+                    throw new OptionsBuilderException("Unable to configure HTTP client with SSL/TLS", e);
                 }
             }
 
@@ -369,7 +353,7 @@ public class Client {
                 httpClientBuilder.setDefaultHeaders(headerList);
             }
 
-            return new Client(httpClientBuilder.build(), baseUrl);
+            return new HttpClient(httpClientBuilder.build(), baseUrl);
         }
 
         private boolean usesBasicAuth() {
@@ -453,7 +437,7 @@ public class Client {
     }
 
     /**
-     * Exception thrown when a request made by this client to the Kibana API fails
+     * Exception thrown when a request made by this client to the HTTP resource fails
      */
     public static class RequestFailedException extends Exception {
         RequestFailedException(String method, String url, Throwable cause) {
@@ -465,7 +449,7 @@ public class Client {
         }
 
         private static String makeMessage(String method, String url, String reason) {
-            String message = "Could not make " + method + " " + url + " request to Kibana";
+            String message = "Could not make " + method + " " + url + " request";
             if (reason != null) {
                 message += "; reason: " + reason;
             }

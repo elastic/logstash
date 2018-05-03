@@ -1,16 +1,14 @@
-package org.logstash.common.kibana;
+package org.logstash.common.clients;
 
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import org.junit.Rule;
 import org.junit.Test;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
-import static com.github.tomakehurst.wiremock.client.WireMock.head;
-import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
+import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
-public class ClientTest {
+public class HttpClientTest {
 
     private static final String BIND_ADDRESS = "127.0.0.1";
     private static final int HTTPS_PORT = 5443;
@@ -27,58 +25,57 @@ public class ClientTest {
     public WireMockRule defaultHttps = new WireMockRule(options().httpsPort(HTTPS_PORT));
 
     @Test
-    public void canConnectWithDefaultSettings() throws Exception {
+    public void canMakeHttpRequestWithDefaultSettings() throws Exception {
         final String path = "/api/status";
         defaultHttp.stubFor(head(urlPathEqualTo(path))
                 .willReturn(aResponse().withStatus(200)));
 
-        Client kibanaClient = Client.build();
-        assertThat(kibanaClient.canConnect()).isTrue();
+        HttpClient httpClient = HttpClient.build();
+        httpClient.head(path);
     }
 
     @Test
-    public void canConnectWithCustomUrl() throws Exception {
+    public void canMakeHttpRequestWithCustomHostnameAndPort() throws Exception {
         final String path = "/api/status";
         customHttp.stubFor(head(urlPathEqualTo(path))
                 .willReturn(aResponse().withStatus(200)));
 
-        Client kibanaClient = Client.withOptions()
-            .protocol(Client.Protocol.HTTP)
+        HttpClient httpClient = HttpClient.withOptions()
             .hostname(BIND_ADDRESS)
             .port(customHttp.port())
             .build();
-        assertThat(kibanaClient.canConnect()).isTrue();
+        httpClient.head(path);
     }
 
     @Test
-    public void canConnectWithBasicAuth() throws Exception {
+    public void canMakeHttpRequestWithBasicAuth() throws Exception {
         final String path = "/api/status";
         defaultHttp.stubFor(head(urlPathEqualTo(path))
                 .withBasicAuth(USERNAME, PASSWORD)
                 .willReturn(aResponse().withStatus(200)));
 
-        Client kibanaClient = Client.withOptions()
+        HttpClient httpClient = HttpClient.withOptions()
                 .basicAuth(USERNAME, PASSWORD)
                 .build();
-        assertThat(kibanaClient.canConnect()).isTrue();
+        httpClient.head(path);
     }
 
     @Test
-    public void canConnectWithDefaultSsl() throws Exception {
+    public void canMakeHttpsRequestWithSslNoVerify() throws Exception {
         final String path = "/api/status";
         defaultHttps.stubFor(head(urlPathEqualTo(path))
                 .willReturn(aResponse().withStatus(200)));
 
-        Client kibanaClient = Client.withOptions()
-                .protocol(Client.Protocol.HTTPS)
+        HttpClient httpClient = HttpClient.withOptions()
+                .protocol(HttpClient.Protocol.HTTPS)
                 .port(HTTPS_PORT)
                 .sslNoVerify()
                 .build();
-        assertThat(kibanaClient.canConnect()).isTrue();
+        httpClient.head(path);
     }
 
     @Test
-    public void canConnectWithCustomSsl() throws Exception {
+    public void canMakeHttpsRequestWithSslSelfSigned() throws Exception {
         // TODO: Setup fixtures for self-signed server cert, self-signed client cert, client private key, and self-signed CA cert
         // TODO: Setup WireMockRule with self-signed server cert
         // TODO: Create and test Kibana client with self-signed client cert, client private key, and self-signed CA cert
