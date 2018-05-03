@@ -3,7 +3,6 @@ package org.logstash.instrument.metrics;
 import org.jruby.Ruby;
 import org.jruby.RubyArray;
 import org.jruby.RubyClass;
-import org.jruby.RubyObject;
 import org.jruby.anno.JRubyClass;
 import org.jruby.anno.JRubyMethod;
 import org.jruby.runtime.Block;
@@ -13,7 +12,7 @@ import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.RubyUtil;
 
 @JRubyClass(name = "NamespacedMetric")
-public final class NamespacedMetricExt extends RubyObject {
+public final class NamespacedMetricExt extends AbstractNamespacedMetricExt {
 
     private RubyArray namespaceName;
 
@@ -44,26 +43,26 @@ public final class NamespacedMetricExt extends RubyObject {
         return this;
     }
 
-    @JRubyMethod
-    public IRubyObject collector(final ThreadContext context) {
+    @Override
+    protected IRubyObject getCollector(final ThreadContext context) {
         return metric.collector(context);
     }
 
-    @JRubyMethod
-    public IRubyObject counter(final ThreadContext context, final IRubyObject key) {
+    @Override
+    protected IRubyObject getCounter(final ThreadContext context, final IRubyObject key) {
         return collector(context).callMethod(
             context, "get", new IRubyObject[]{namespaceName, key, MetricExt.COUNTER}
         );
     }
 
-    @JRubyMethod
-    public IRubyObject gauge(final ThreadContext context, final IRubyObject key,
+    @Override
+    protected IRubyObject getGauge(final ThreadContext context, final IRubyObject key,
         final IRubyObject value) {
         return metric.gauge(context, namespaceName, key, value);
     }
 
-    @JRubyMethod(required = 1, optional = 1)
-    public IRubyObject increment(final ThreadContext context, final IRubyObject[] args) {
+    @Override
+    protected IRubyObject doIncrement(final ThreadContext context, final IRubyObject[] args) {
         if (args.length == 1) {
             return metric.increment(context, namespaceName, args[0]);
         } else {
@@ -71,8 +70,8 @@ public final class NamespacedMetricExt extends RubyObject {
         }
     }
 
-    @JRubyMethod(required = 1, optional = 1)
-    public IRubyObject decrement(final ThreadContext context, final IRubyObject[] args) {
+    @Override
+    protected IRubyObject doDecrement(final ThreadContext context, final IRubyObject[] args) {
         if (args.length == 1) {
             return metric.decrement(context, namespaceName, args[0]);
         } else {
@@ -80,24 +79,25 @@ public final class NamespacedMetricExt extends RubyObject {
         }
     }
 
-    @JRubyMethod
-    public IRubyObject time(final ThreadContext context, final IRubyObject key, final Block block) {
+    @Override
+    protected IRubyObject doTime(final ThreadContext context, final IRubyObject key,
+        final Block block) {
         return metric.time(context, namespaceName, key, block);
     }
 
-    @JRubyMethod(name = "report_time")
-    public IRubyObject reportTime(final ThreadContext context, final IRubyObject key,
+    protected IRubyObject doReportTime(final ThreadContext context, final IRubyObject key,
         final IRubyObject duration) {
         return metric.reportTime(context, namespaceName, key, duration);
     }
 
-    @JRubyMethod(name = "namespace_name")
-    public RubyArray namespaceName(final ThreadContext context) {
+    @Override
+    protected RubyArray getNamespaceName(final ThreadContext context) {
         return namespaceName;
     }
 
-    @JRubyMethod
-    public NamespacedMetricExt namespace(final ThreadContext context, final IRubyObject name) {
+    @Override
+    protected NamespacedMetricExt createNamespaced(final ThreadContext context,
+        final IRubyObject name) {
         MetricExt.validateName(context, name, RubyUtil.METRIC_NO_NAMESPACE_PROVIDED_CLASS);
         return create(this.metric, (RubyArray) namespaceName.op_plus(
             name instanceof RubyArray ? name : RubyArray.newArray(context.runtime, name)

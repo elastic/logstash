@@ -2,8 +2,6 @@
 require "thread"
 require "stud/interval"
 require "concurrent"
-require "logstash/namespace"
-require "logstash/errors"
 require "logstash-core/logstash-core"
 require "logstash/event"
 require "logstash/config/file"
@@ -12,8 +10,6 @@ require "logstash/inputs/base"
 require "logstash/outputs/base"
 require "logstash/shutdown_watcher"
 require "logstash/pipeline_reporter"
-require "logstash/instrument/null_metric"
-require "logstash/instrument/namespaced_null_metric"
 require "logstash/instrument/collector"
 require "logstash/filter_delegator"
 require "logstash/queue_factory"
@@ -57,7 +53,7 @@ module LogStash; class BasePipeline
 
     @plugin_factory = LogStash::Plugins::PluginFactory.new(
       # use NullMetric if called in the BasePipeline context otherwise use the @metric value
-      @lir, LogStash::Plugins::PluginMetricFactory.new(pipeline_id, @metric || Instrument::NullMetric.new),
+      @lir, LogStash::Plugins::PluginMetricFactory.new(pipeline_id, @metric),
       LogStash::Plugins::ExecutionContextFactory.new(@agent, self, @dlq_writer),
       FilterDelegator
     )
@@ -102,10 +98,6 @@ module LogStash; class BasePipeline
     )
   end
 
-  def plugin(plugin_type, name, line, column, *args)
-    @plugin_factory.plugin(plugin_type, name, line, column, *args)
-  end
-
   def reloadable?
     configured_as_reloadable? && reloadable_plugins?
   end
@@ -123,6 +115,11 @@ module LogStash; class BasePipeline
   end
 
   private
+
+
+  def plugin(plugin_type, name, line, column, *args)
+    @plugin_factory.plugin(plugin_type, name, line, column, *args)
+  end
 
   def default_logging_keys(other_keys = {})
     { :pipeline_id => pipeline_id }.merge(other_keys)

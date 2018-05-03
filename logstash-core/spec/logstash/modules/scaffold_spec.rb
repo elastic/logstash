@@ -1,6 +1,5 @@
 # encoding: utf-8
 #
-require "logstash/namespace"
 require "logstash/elasticsearch_client"
 require "logstash/modules/kibana_client"
 require "logstash/modules/kibana_config"

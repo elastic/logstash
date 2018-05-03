@@ -4,7 +4,6 @@
 
 require "logstash/environment"
 require "logstash/universal_plugin"
-require "logstash/logging/logger"
 require "logstash/runner"
 require "config_management/hooks"
 require "config_management/elasticsearch_source"

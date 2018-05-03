@@ -1,7 +1,6 @@
 # encoding: utf-8
 require "spec_helper"
 require "logstash/filter_delegator"
-require "logstash/instrument/null_metric"
 require "logstash/event"
 require "support/shared_contexts"
 
@@ -18,11 +17,10 @@ describe LogStash::FilterDelegator do
   let(:config) do
     { "host" => "127.0.0.1", "id" => filter_id }
   end
-  let(:collector) { [] }
   let(:counter_in) { MockGauge.new }
   let(:counter_out) { MockGauge.new }
   let(:counter_time) { MockGauge.new }
-  let(:metric) { LogStash::Instrument::NamespacedNullMetric.new(collector, :null) }
+  let(:metric) { LogStash::Instrument::NamespacedNullMetric.new(nil, :null) }
   let(:events) { [LogStash::Event.new, LogStash::Event.new] }
 
   before :each do

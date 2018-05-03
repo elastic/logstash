@@ -1,16 +1,12 @@
 # encoding: utf-8
 require "thread"
 require "concurrent"
-require "logstash/namespace"
-require "logstash/errors"
 require "logstash/event"
 require "logstash/filters/base"
 require "logstash/inputs/base"
 require "logstash/outputs/base"
 require "logstash/shutdown_watcher"
 require "logstash/pipeline_reporter"
-require "logstash/instrument/null_metric"
-require "logstash/instrument/namespaced_null_metric"
 require "logstash/instrument/collector"
 require "logstash/queue_factory"
 require "logstash/compiler"
@@ -43,15 +39,16 @@ module LogStash; class JavaBasePipeline
     )
 
     @pipeline_id = @settings.get_value("pipeline.id") || self.object_id
-    @agent = agent
     @dlq_writer = dlq_writer
-    @plugin_factory = LogStash::Plugins::PluginFactory.new(
-      # use NullMetric if called in the BasePipeline context otherwise use the @metric value
-      @lir, LogStash::Plugins::PluginMetricFactory.new(pipeline_id, @metric || Instrument::NullMetric.new),
-      LogStash::Plugins::ExecutionContextFactory.new(@agent, self, @dlq_writer),
-      JavaFilterDelegator
+    @lir_execution = CompiledPipeline.new(
+        @lir,
+        LogStash::Plugins::PluginFactory.new(
+            # use NullMetric if called in the BasePipeline context otherwise use the @metric value
+            @lir, LogStash::Plugins::PluginMetricFactory.new(pipeline_id, @metric),
+            LogStash::Plugins::ExecutionContextFactory.new(agent, self, @dlq_writer),
+            JavaFilterDelegator
+        )
     )
-    @lir_execution = CompiledPipeline.new(@lir, @plugin_factory)
     if settings.get_value("config.debug") && @logger.debug?
       @logger.debug("Compiled pipeline code", default_logging_keys(:code => @lir.get_graph.to_string))
     end
@@ -74,26 +71,6 @@ module LogStash; class JavaBasePipeline
     if settings.get_value("dead_letter_queue.enable")
       DeadLetterQueueFactory.release(pipeline_id)
     end
-  end
-
-  def buildOutput(name, line, column, *args)
-    plugin("output", name, line, column, *args)
-  end
-
-  def buildFilter(name, line, column, *args)
-    plugin("filter", name, line, column, *args)
-  end
-
-  def buildInput(name, line, column, *args)
-    plugin("input", name, line, column, *args)
-  end
-
-  def buildCodec(name, *args)
-   plugin("codec", name, 0, 0, *args)
-  end
-
-  def plugin(plugin_type, name, line, column, *args)
-    @plugin_factory.plugin(plugin_type, name, line, column, *args)
   end
 
   def reloadable?

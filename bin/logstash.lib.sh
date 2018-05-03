@@ -73,12 +73,14 @@ parse_jvm_options() {
 
 setup_java() {
   # set the path to java into JAVACMD which will be picked up by JRuby to launch itself
-  if [ -x "$JAVA_HOME/bin/java" ]; then
-    JAVACMD="$JAVA_HOME/bin/java"
-  else
-    set +e
-    JAVACMD=`command -v java`
-    set -e
+  if [ -z "$JAVACMD" ]; then
+    if [ -x "$JAVA_HOME/bin/java" ]; then
+      JAVACMD="$JAVA_HOME/bin/java"
+    else
+      set +e
+      JAVACMD=`command -v java`
+      set -e
+    fi
   fi
 
   if [ ! -x "$JAVACMD" ]; then

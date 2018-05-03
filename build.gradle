@@ -1,9 +1,13 @@
 buildscript {
     repositories {
         mavenCentral()
+        maven {
+            url 'https://plugins.gradle.org/m2/'
+        }
     }
     dependencies {
         classpath 'org.yaml:snakeyaml:1.17'
+        classpath "gradle.plugin.com.github.jk1:gradle-license-report:0.7.1"
     }
 }
 
@@ -72,6 +76,24 @@ allprojects {
   }
 }
 
+subprojects {
+    repositories {
+        maven {
+            url 'https://plugins.gradle.org/m2/'
+        }
+    }
+    dependencies {
+        compile "gradle.plugin.com.github.jk1:gradle-license-report:0.7.1"
+    }
+
+    apply plugin: 'com.github.jk1.dependency-license-report'
+
+    licenseReport {
+        renderer = new com.github.jk1.license.render.CsvReportRenderer()
+        configurations = ['compile', 'runtime']
+    }
+}
+
 // fetch version from Logstash's master versions.yml file
 def versionMap = (Map) (new Yaml()).load(new File("${projectDir}/versions.yml").text)
 version = versionMap['logstash-core']
@@ -102,6 +124,8 @@ clean {
   delete "${projectDir}/.bundle"
   delete "${projectDir}/qa/integration/Gemfile.lock"
   delete "${projectDir}/qa/integration/.bundle"
+  delete "${projectDir}/build/licenseReportFolders.txt"
+  delete "${projectDir}/build/rubyDependencies.csv"
 }
 
 task bootstrap {}
@@ -273,6 +297,46 @@ project(":logstash-integration-tests") {
 }
 
 task runIntegrationTests(dependsOn: [tasks.getByPath(":logstash-integration-tests:integrationTests")]) {}
+
+task generateLicenseReport(type: JavaExec) {
+    dependsOn("generateLicenseReportInputs")
+    dependsOn(":dependencies-report:assemble")
+
+    def jarFile = project('dependencies-report').getBuildDir().toString() + "/libs/dependencies-report.jar"
+
+    String licenseReportInputCSV = project.hasProperty("licenseReportInputCSV") ? project.property("licenseReportInputCSV") : "build/dependencies.csv.ruby"
+    String licenseReportOutputCSV = project.hasProperty("licenseReportOutputCSV") ? project.property("licenseReportOutputCSV") : "build/dependencies.csv"
+
+    classpath = project.files([jarFile])
+    main = "org.logstash.dependencies.Main"
+    args \
+      licenseReportInputCSV, \
+      project.getBuildDir().toString() + "/licenseReportFolders.txt", \
+      licenseReportOutputCSV
+}
+
+task generateLicenseReportInputs() {
+    dependsOn subprojects.generateLicenseReport
+
+    // write location of all license reports for subprojects containing artifacts that are distributed to single file
+    StringBuilder licenseReportFolders = new StringBuilder()
+    subprojects.findAll { s1 -> !s1.hasProperty("isDistributedArtifact") || s1.property("isDistributedArtifact") == 'true'}.each { s ->
+        s.tasks.findAll { t2 -> t2.getName() == "generateLicenseReport" }.each { t3 ->
+            licenseReportFolders.append(t3.outputs.files.asPath + "\n")
+        }
+    }
+
+    if (gradle.startParameter.taskNames.contains("generateLicenseReport")) {
+        def licenseReportPath = project.getBuildDir().toString() + "/licenseReportFolders.txt"
+        def licenseReportFolder = new File(licenseReportPath)
+        licenseReportFolder.delete()
+        licenseReportFolder = new File(licenseReportPath)
+        licenseReportFolder.createNewFile()
+        if (licenseReportFolder.canWrite()) {
+            licenseReportFolder.text = licenseReportFolders.toString()
+        }
+    }
+}
 
 // If you are running a JRuby snapshot we will skip the integrity check.
 verifyFile.onlyIf { doChecksum }

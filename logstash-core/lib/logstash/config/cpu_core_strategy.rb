@@ -1,5 +1,4 @@
 # encoding: utf-8
-require "logstash/namespace"
 require "logstash/config/defaults"
 
 module LogStash module Config module CpuCoreStrategy

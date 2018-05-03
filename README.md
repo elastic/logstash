@@ -127,11 +127,11 @@ hello world
 
 [Drip](https://github.com/ninjudd/drip) is a tool that solves the slow JVM startup problem while developing Logstash. The drip script is intended to be a drop-in replacement for the java command. We recommend using drip during development, in particular for running tests. Using drip, the first invocation of a command will not be faster but the subsequent commands will be swift.
 
-To tell logstash to use drip, either set the `USE_DRIP=1` environment variable or set `` JAVACMD=`which drip` ``.
+To tell logstash to use drip, set the environment variable `` JAVACMD=`which drip` ``.
 
 Example (but see the *Testing* section below before running rspec for the first time):
 
-    USE_DRIP=1 bin/rspec
+    JAVACMD=`which drip` bin/rspec
 
 **Caveats**
 

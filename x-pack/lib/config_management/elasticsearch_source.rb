@@ -5,7 +5,6 @@
 require "logstash/config/pipeline_config"
 require "logstash/config/source/base"
 require "logstash/config/source_loader"
-require "logstash/logging/logger"
 require "logstash/outputs/elasticsearch"
 require "logstash/json"
 require 'helpers/elasticsearch_options'

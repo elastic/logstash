@@ -1,9 +1,9 @@
 package org.logstash;
 
+import java.util.stream.Stream;
 import org.jruby.NativeException;
 import org.jruby.Ruby;
 import org.jruby.RubyClass;
-import org.jruby.RubyException;
 import org.jruby.RubyModule;
 import org.jruby.anno.JRubyClass;
 import org.jruby.exceptions.RaiseException;
@@ -17,6 +17,7 @@ import org.logstash.config.ir.compiler.OutputDelegatorExt;
 import org.logstash.config.ir.compiler.OutputStrategyExt;
 import org.logstash.execution.ExecutionContextExt;
 import org.logstash.execution.QueueReadClientBase;
+import org.logstash.ext.JRubyLogstashErrorsExt;
 import org.logstash.ext.JRubyWrappedWriteClientExt;
 import org.logstash.ext.JrubyAckedReadClientExt;
 import org.logstash.ext.JrubyAckedWriteClientExt;
@@ -25,8 +26,16 @@ import org.logstash.ext.JrubyMemoryReadClientExt;
 import org.logstash.ext.JrubyMemoryWriteClientExt;
 import org.logstash.ext.JrubyTimestampExtLibrary;
 import org.logstash.ext.JrubyWrappedSynchronousQueueExt;
+import org.logstash.instrument.metrics.AbstractMetricExt;
+import org.logstash.instrument.metrics.AbstractNamespacedMetricExt;
+import org.logstash.instrument.metrics.AbstractSimpleMetricExt;
 import org.logstash.instrument.metrics.MetricExt;
 import org.logstash.instrument.metrics.NamespacedMetricExt;
+import org.logstash.instrument.metrics.NullMetricExt;
+import org.logstash.instrument.metrics.NullNamespacedMetricExt;
+import org.logstash.log.LoggerExt;
+import org.logstash.log.SlowLoggerExt;
+import org.logstash.plugins.PluginFactoryExt;
 
 /**
  * Utilities around interaction with the {@link Ruby} runtime.
@@ -86,9 +95,21 @@ public final class RubyUtil {
 
     public static final RubyClass BUFFERED_TOKENIZER;
 
+    public static final RubyClass ABSTRACT_METRIC_CLASS;
+
+    public static final RubyClass ABSTRACT_SIMPLE_METRIC_CLASS;
+
+    public static final RubyClass ABSTRACT_NAMESPACED_METRIC_CLASS;
+
     public static final RubyClass METRIC_CLASS;
 
+    public static final RubyClass NULL_METRIC_CLASS;
+
+    public static final RubyClass NULL_COUNTER_CLASS;
+
     public static final RubyClass NAMESPACED_METRIC_CLASS;
+
+    public static final RubyClass NULL_NAMESPACED_METRIC_CLASS;
 
     public static final RubyClass METRIC_EXCEPTION_CLASS;
 
@@ -100,6 +121,8 @@ public final class RubyUtil {
 
     public static final RubyClass TIMED_EXECUTION_CLASS;
 
+    public static final RubyClass NULL_TIMED_EXECUTION_CLASS;
+
     public static final RubyClass ABSTRACT_DLQ_WRITER_CLASS;
 
     public static final RubyClass DUMMY_DLQ_WRITER_CLASS;
@@ -108,6 +131,16 @@ public final class RubyUtil {
 
     public static final RubyClass EXECUTION_CONTEXT_CLASS;
 
+    public static final RubyClass BUG_CLASS;
+
+    public static final RubyClass EXECUTION_CONTEXT_FACTORY_CLASS;
+
+    public static final RubyClass PLUGIN_METRIC_FACTORY_CLASS;
+
+    public static final RubyClass LOGGER;
+
+    public static final RubyClass SLOW_LOGGER;
+
     /**
      * Logstash Ruby Module.
      */
@@ -115,11 +148,29 @@ public final class RubyUtil {
 
     private static final RubyModule OUTPUT_DELEGATOR_STRATEGIES;
 
+    private static final RubyModule PLUGINS_MODULE;
+
     static {
         RUBY = Ruby.getGlobalRuntime();
         LOGSTASH_MODULE = RUBY.getOrCreateModule("LogStash");
+        Stream.of(
+            "Inputs", "Outputs", "Filters", "Search", "Config", "File", "Web", "PluginMixins",
+            "PluginManager", "Api", "Modules"
+        ).forEach(module -> RUBY.defineModuleUnder(module, LOGSTASH_MODULE));
+        PLUGINS_MODULE = RUBY.defineModuleUnder("Plugins", LOGSTASH_MODULE);
         final RubyModule instrumentModule =
             RUBY.defineModuleUnder("Instrument", LOGSTASH_MODULE);
+        EXECUTION_CONTEXT_FACTORY_CLASS = PLUGINS_MODULE.defineClassUnder(
+            "ExecutionContextFactory", RUBY.getObject(),
+            PluginFactoryExt.ExecutionContext::new
+        );
+        PLUGIN_METRIC_FACTORY_CLASS = PLUGINS_MODULE.defineClassUnder(
+            "PluginMetricFactory", RUBY.getObject(), PluginFactoryExt.Metrics::new
+        );
+        PLUGIN_METRIC_FACTORY_CLASS.defineAnnotatedMethods(PluginFactoryExt.Metrics.class);
+        EXECUTION_CONTEXT_FACTORY_CLASS.defineAnnotatedMethods(
+            PluginFactoryExt.ExecutionContext.class
+        );
         METRIC_EXCEPTION_CLASS = instrumentModule.defineClassUnder(
             "MetricException", RUBY.getException(), MetricExt.MetricException::new
         );
@@ -134,17 +185,50 @@ public final class RubyUtil {
             "MetricNoNamespaceProvided", METRIC_EXCEPTION_CLASS,
             MetricExt.MetricNoNamespaceProvided::new
         );
-        METRIC_CLASS
-            = instrumentModule.defineClassUnder("Metric", RUBY.getObject(), MetricExt::new);
+        ABSTRACT_METRIC_CLASS = instrumentModule.defineClassUnder(
+            "AbstractMetric", RUBY.getObject(),
+            ObjectAllocator.NOT_ALLOCATABLE_ALLOCATOR
+        );
+        ABSTRACT_NAMESPACED_METRIC_CLASS = instrumentModule.defineClassUnder(
+            "AbstractNamespacedMetric", ABSTRACT_METRIC_CLASS,
+            ObjectAllocator.NOT_ALLOCATABLE_ALLOCATOR
+        );
+        ABSTRACT_SIMPLE_METRIC_CLASS = instrumentModule.defineClassUnder(
+            "AbstractSimpleMetric", ABSTRACT_METRIC_CLASS,
+            ObjectAllocator.NOT_ALLOCATABLE_ALLOCATOR
+        );
+        METRIC_CLASS = instrumentModule.defineClassUnder(
+            "Metric", ABSTRACT_SIMPLE_METRIC_CLASS, MetricExt::new
+        );
+        NULL_METRIC_CLASS = instrumentModule.defineClassUnder(
+            "NullMetric", ABSTRACT_SIMPLE_METRIC_CLASS, NullMetricExt::new
+        );
         TIMED_EXECUTION_CLASS = METRIC_CLASS.defineClassUnder(
             "TimedExecution", RUBY.getObject(), MetricExt.TimedExecution::new
         );
-        NAMESPACED_METRIC_CLASS = instrumentModule.defineClassUnder(
-            "NamespacedMetric", RUBY.getObject(), NamespacedMetricExt::new
+        NULL_TIMED_EXECUTION_CLASS = NULL_METRIC_CLASS.defineClassUnder(
+            "NullTimedExecution", RUBY.getObject(), NullMetricExt.NullTimedExecution::new
         );
+        NULL_COUNTER_CLASS = METRIC_CLASS.defineClassUnder(
+            "NullCounter", RUBY.getObject(), NullNamespacedMetricExt.NullCounter::new
+        );
+        NAMESPACED_METRIC_CLASS = instrumentModule.defineClassUnder(
+            "NamespacedMetric", ABSTRACT_NAMESPACED_METRIC_CLASS, NamespacedMetricExt::new
+        );
+        NULL_NAMESPACED_METRIC_CLASS = instrumentModule.defineClassUnder(
+            "NamespacedNullMetric", ABSTRACT_NAMESPACED_METRIC_CLASS,
+            NullNamespacedMetricExt::new
+        );
+        ABSTRACT_METRIC_CLASS.defineAnnotatedMethods(AbstractMetricExt.class);
+        ABSTRACT_SIMPLE_METRIC_CLASS.defineAnnotatedMethods(AbstractSimpleMetricExt.class);
+        ABSTRACT_NAMESPACED_METRIC_CLASS.defineAnnotatedMethods(AbstractNamespacedMetricExt.class);
         METRIC_CLASS.defineAnnotatedMethods(MetricExt.class);
+        NULL_METRIC_CLASS.defineAnnotatedMethods(NullMetricExt.class);
         NAMESPACED_METRIC_CLASS.defineAnnotatedMethods(NamespacedMetricExt.class);
+        NULL_NAMESPACED_METRIC_CLASS.defineAnnotatedMethods(NullNamespacedMetricExt.class);
         TIMED_EXECUTION_CLASS.defineAnnotatedMethods(MetricExt.TimedExecution.class);
+        NULL_TIMED_EXECUTION_CLASS.defineAnnotatedMethods(NullMetricExt.NullTimedExecution.class);
+        NULL_COUNTER_CLASS.defineAnnotatedMethods(NullNamespacedMetricExt.NullCounter.class);
         final RubyModule util = LOGSTASH_MODULE.defineModuleUnder("Util");
         ABSTRACT_DLQ_WRITER_CLASS = util.defineClassUnder(
             "AbstractDeadLetterQueueWriterExt", RUBY.getObject(),
@@ -245,19 +329,59 @@ public final class RubyUtil {
         FILTER_DELEGATOR_CLASS = setupLogstashClass(
             FilterDelegatorExt::new, FilterDelegatorExt.class
         );
+
+        final RubyModule loggingModule = LOGSTASH_MODULE.defineOrGetModuleUnder("Logging");
+        LOGGER = loggingModule.defineClassUnder("Logger", RUBY.getObject(), LoggerExt::new);
+        LOGGER.defineAnnotatedMethods(LoggerExt.class);
+        SLOW_LOGGER = loggingModule.defineClassUnder(
+                "SlowLogger", RUBY.getObject(), SlowLoggerExt::new);
+        SLOW_LOGGER.defineAnnotatedMethods(SlowLoggerExt.class);
+
         final RubyModule json = LOGSTASH_MODULE.defineOrGetModuleUnder("Json");
         final RubyClass stdErr = RUBY.getStandardError();
         LOGSTASH_ERROR = LOGSTASH_MODULE.defineClassUnder(
-            "Error", stdErr, RubyUtil.LogstashRubyError::new
+            "Error", stdErr, JRubyLogstashErrorsExt.LogstashRubyError::new
+        );
+        LOGSTASH_MODULE.defineClassUnder(
+            "EnvironmentError", stdErr, JRubyLogstashErrorsExt.LogstashEnvironmentError::new
+        );
+        LOGSTASH_MODULE.defineClassUnder(
+            "ConfigurationError", stdErr, JRubyLogstashErrorsExt.ConfigurationError::new
+        );
+        LOGSTASH_MODULE.defineClassUnder(
+            "PluginLoadingError", stdErr, JRubyLogstashErrorsExt.PluginLoadingError::new
+        );
+        LOGSTASH_MODULE.defineClassUnder(
+            "ShutdownSignal", stdErr, JRubyLogstashErrorsExt.ShutdownSignal::new
+        );
+        LOGSTASH_MODULE.defineClassUnder(
+            "PluginNoVersionError", stdErr, JRubyLogstashErrorsExt.PluginNoVersionError::new
+        );
+        LOGSTASH_MODULE.defineClassUnder(
+            "BootstrapCheckError", stdErr, JRubyLogstashErrorsExt.BootstrapCheckError::new
+        );
+        BUG_CLASS = LOGSTASH_MODULE.defineClassUnder(
+            "Bug", stdErr, JRubyLogstashErrorsExt.Bug::new
+        );
+        LOGSTASH_MODULE.defineClassUnder(
+            "ThisMethodWasRemoved", BUG_CLASS,
+            JRubyLogstashErrorsExt.ThisMethodWasRemoved::new
+        );
+        LOGSTASH_MODULE.defineClassUnder(
+            "ConfigLoadingError", stdErr, JRubyLogstashErrorsExt.ConfigLoadingError::new
+        );
+        LOGSTASH_MODULE.defineClassUnder(
+            "InvalidSourceLoaderSettingError", stdErr,
+            JRubyLogstashErrorsExt.InvalidSourceLoaderSettingError::new
         );
         PARSER_ERROR = json.defineClassUnder(
-            "ParserError", LOGSTASH_ERROR, RubyUtil.LogstashRubyParserError::new
+            "ParserError", LOGSTASH_ERROR, JRubyLogstashErrorsExt.LogstashRubyParserError::new
         );
         TIMESTAMP_PARSER_ERROR = LOGSTASH_MODULE.defineClassUnder(
-            "TimestampParserError", stdErr, RubyUtil.LogstashTimestampParserError::new
+            "TimestampParserError", stdErr, JRubyLogstashErrorsExt.LogstashTimestampParserError::new
         );
         GENERATOR_ERROR = json.defineClassUnder("GeneratorError", LOGSTASH_ERROR,
-            RubyUtil.LogstashRubyGeneratorError::new
+            JRubyLogstashErrorsExt.LogstashRubyGeneratorError::new
         );
         RUBY_EVENT_CLASS.setConstant("METADATA", RUBY.newString(Event.METADATA));
         RUBY_EVENT_CLASS.setConstant(
@@ -275,6 +399,7 @@ public final class RubyUtil {
         RUBY_EVENT_CLASS.defineAnnotatedMethods(JrubyEventExtLibrary.RubyEvent.class);
         RUBY_EVENT_CLASS.defineAnnotatedConstants(JrubyEventExtLibrary.RubyEvent.class);
         RUBY.getGlobalVariables().set("$LS_JARS_LOADED", RUBY.newString("true"));
+        RubyJavaIntegration.setupRubyJavaIntegration(RUBY);
     }
 
     private RubyUtil() {
@@ -319,35 +444,4 @@ public final class RubyUtil {
         return clazz;
     }
 
-    @JRubyClass(name = "Error")
-    public static final class LogstashRubyError extends RubyException {
-
-        public LogstashRubyError(final Ruby runtime, final RubyClass metaClass) {
-            super(runtime, metaClass);
-        }
-    }
-
-    @JRubyClass(name = "ParserError")
-    public static final class LogstashRubyParserError extends RubyException {
-
-        public LogstashRubyParserError(final Ruby runtime, final RubyClass metaClass) {
-            super(runtime, metaClass);
-        }
-    }
-
-    @JRubyClass(name = "GeneratorError")
-    public static final class LogstashRubyGeneratorError extends RubyException {
-
-        public LogstashRubyGeneratorError(final Ruby runtime, final RubyClass metaClass) {
-            super(runtime, metaClass);
-        }
-    }
-
-    @JRubyClass(name = "TimestampParserError")
-    public static final class LogstashTimestampParserError extends RubyException {
-
-        public LogstashTimestampParserError(final Ruby runtime, final RubyClass metaClass) {
-            super(runtime, metaClass);
-        }
-    }
 }

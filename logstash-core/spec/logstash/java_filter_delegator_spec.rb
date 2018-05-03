@@ -1,7 +1,6 @@
 # encoding: utf-8
 require "spec_helper"
 require "logstash/filter_delegator"
-require "logstash/instrument/null_metric"
 require "logstash/event"
 require "support/shared_contexts"
 
@@ -20,7 +19,6 @@ describe LogStash::JavaFilterDelegator do
   let(:config) do
     { "host" => "127.0.0.1", "id" => filter_id }
   end
-  let(:collector) { [] }
   let(:metric) {
     LogStash::Instrument::NamespacedMetric.new(
         LogStash::Instrument::Metric.new(LogStash::Instrument::Collector.new), [:filter]

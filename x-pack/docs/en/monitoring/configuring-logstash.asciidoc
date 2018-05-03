@@ -25,7 +25,7 @@ is disabled in {es} and data is ignored from all other sources.
 . Configure your Logstash nodes to send metrics by setting the
 `xpack.monitoring.elasticsearch.url` in `logstash.yml`. If {security} is enabled,
 you also need to specify the credentials for the 
-{xpack-ref}/setting-up-authentication.html#built-in-users[built-in `logstash_system` user]. For more information about these settings, see <<monitoring-settings>>.
+{stack-ov}/built-in-users.html[built-in `logstash_system` user]. For more information about these settings, see <<monitoring-settings>>.
 +
 --
 [source,yaml]

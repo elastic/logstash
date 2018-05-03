@@ -1,5 +1,4 @@
 # encoding: utf-8
-require "logstash/namespace"
 require "logstash/util/password"
 
 module LogStash module Util class CloudSettingAuth

@@ -1,6 +1,5 @@
 # encoding: utf-8
 require "logstash/environment"
-require "logstash/errors"
 require "logstash/config/cpu_core_strategy"
 require "logstash/instrument/collector"
 require "logstash/instrument/periodic_pollers"

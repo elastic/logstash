@@ -3,7 +3,6 @@ require "spec_helper"
 require_relative "../../support/helpers"
 require_relative "../../support/matchers"
 require "logstash/pipeline_action/reload"
-require "logstash/instrument/null_metric"
 
 describe LogStash::PipelineAction::Reload do
   let(:metric) { LogStash::Instrument::NullMetric.new(LogStash::Instrument::Collector.new) }
@@ -22,7 +21,7 @@ describe LogStash::PipelineAction::Reload do
   end
 
   after do
-    pipelines.each do |_, pipeline| 
+    pipelines.each do |_, pipeline|
       pipeline.shutdown
       pipeline.thread.join
     end

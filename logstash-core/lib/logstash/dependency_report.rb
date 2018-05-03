@@ -4,9 +4,10 @@ Encoding.default_external = Encoding::UTF_8
 $DEBUGLIST = (ENV["DEBUG"] || "").split(",")
 
 require "clamp"
-require "logstash/namespace"
 require "rubygems"
 require "jars/gemspec_artifacts"
+require 'fileutils'
+require 'securerandom'
 
 class LogStash::DependencyReport < Clamp::Command
   option [ "--csv" ], "OUTPUT_PATH", "The path to write the dependency report in csv format.",
@@ -14,23 +15,41 @@ class LogStash::DependencyReport < Clamp::Command
 
   def execute
     require "csv"
-    CSV.open(output_path, "wb", :headers => [ "name", "version", "url", "license" ], :write_headers => true) do |csv|
+
+    tmp_dir = java.lang.System.getProperty("java.io.tmpdir")
+    ruby_output_path = File.join(tmp_dir, SecureRandom.uuid)
+    # Write a CSV with just the ruby stuff
+    CSV.open(ruby_output_path, "wb", :headers => [ "name", "version", "url", "license" ], :write_headers => true) do |csv|
       puts "Finding gem dependencies"
       gems.each { |d| csv << d }
-      puts "Finding java/jar dependencies"
+      puts "Finding gem embedded java/jar dependencies"
       jars.each { |d| csv << d }
     end
+    puts "Wrote temporary ruby deps CSV to #{ruby_output_path}"
+
 
     # Copy in COPYING.csv which is a best-effort, hand-maintained file of dependency license information.
-    File.open(output_path, "a+") do |file|
+    File.open(ruby_output_path, "a+") do |file|
       extra = File.join(File.dirname(__FILE__), "..", "..", "..", "COPYING.csv")
       file.write(IO.read(extra))
     end
+
+    # Use gradle to find the rest and add to the ruby CSV
+    puts "Find gradle jar dependencies #{Dir.pwd}"
+    command = ["./gradlew", "generateLicenseReport", "-PlicenseReportInputCSV=#{ruby_output_path}", "-PlicenseReportOutputCSV=#{output_path}"]
+    puts "Executing #{command}"
+    system(*command)
+    if $?.exitstatus != 0
+      raise "Could not run gradle java deps! Exit status #{$?.exitstatus}"
+    end
+
     nil
+  ensure
+    FileUtils.rm(ruby_output_path) if ruby_output_path
   end
 
   def gems
-    # @mgreau requested `logstash-*` dependencies be removed from this list: 
+    # @mgreau requested `logstash-*` dependencies be removed from this list:
     # https://github.com/elastic/logstash/pull/8837#issuecomment-351859433
     Gem::Specification.reject { |g| g.name =~ /^logstash-/ }.collect do |gem|
       licenses = ("UNKNOWN" if gem.licenses.empty?) || (gem.licenses.map { |l| SPDX.map(l) }.join("|") if !gem.licenses.empty?)
