@@ -79,6 +79,8 @@ public class ClientTest {
 
     @Test
     public void canConnectWithCustomSsl() throws Exception {
-
+        // TODO: Setup fixtures for self-signed server cert, self-signed client cert, client private key, and self-signed CA cert
+        // TODO: Setup WireMockRule with self-signed server cert
+        // TODO: Create and test Kibana client with self-signed client cert, client private key, and self-signed CA cert
     }
 }
