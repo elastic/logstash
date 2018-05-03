@@ -38,53 +38,6 @@ public class HttpClient {
     }
 
     /**
-     * Performs an HTTP GET request
-     *
-     * @param relativePath  Relative path to resource, e.g. api/kibana/dashboards/export
-     * @return Response body
-     * @throws RequestFailedException
-     */
-    public String get(String relativePath) throws RequestFailedException, IOException {
-        return get(relativePath, null);
-    }
-
-    /**
-     * Performs an HTTP GET request
-     *
-     * @param relativePath  Relative path to resource, e.g. api/kibana/dashboards/export
-     * @param headers       Headers to include with request
-     * @return Response body
-     * @throws RequestFailedException
-     * @throws IOException
-     */
-    public String get(String relativePath, Map<String, String> headers) throws RequestFailedException, IOException {
-        String url = makeUrlFrom(relativePath);
-        HttpGet request = new HttpGet(url);
-
-        if (headers != null) {
-            headers.forEach(request::addHeader);
-        }
-
-        CloseableHttpResponse response = null;
-
-        try {
-            response = httpClient.execute(request);
-            OutputStream responseBody = new ByteArrayOutputStream();
-            response
-                .getEntity()
-                .writeTo(responseBody);
-            return ((ByteArrayOutputStream) responseBody).toString("UTF-8");
-
-        } catch (IOException e) {
-            throw new RequestFailedException("GET", url, e);
-        } finally {
-            if (response != null) {
-                response.close();
-            }
-        }
-    }
-
-    /**
      * Performs an HTTP HEAD request
      *
      * @param relativePath  Relative path to resource, e.g. api/status
@@ -128,6 +81,53 @@ public class HttpClient {
         int statusCode = statusLine.getStatusCode();
         if (statusCode >= 400) {
             throw new RequestFailedException("HEAD", url ,statusLine.getReasonPhrase());
+        }
+    }
+
+    /**
+     * Performs an HTTP GET request
+     *
+     * @param relativePath  Relative path to resource, e.g. api/kibana/dashboards/export
+     * @return Response body
+     * @throws RequestFailedException
+     */
+    public String get(String relativePath) throws RequestFailedException, IOException {
+        return get(relativePath, null);
+    }
+
+    /**
+     * Performs an HTTP GET request
+     *
+     * @param relativePath  Relative path to resource, e.g. api/kibana/dashboards/export
+     * @param headers       Headers to include with request
+     * @return Response body
+     * @throws RequestFailedException
+     * @throws IOException
+     */
+    public String get(String relativePath, Map<String, String> headers) throws RequestFailedException, IOException {
+        String url = makeUrlFrom(relativePath);
+        HttpGet request = new HttpGet(url);
+
+        if (headers != null) {
+            headers.forEach(request::addHeader);
+        }
+
+        CloseableHttpResponse response = null;
+
+        try {
+            response = httpClient.execute(request);
+            OutputStream responseBody = new ByteArrayOutputStream();
+            response
+                .getEntity()
+                .writeTo(responseBody);
+            return ((ByteArrayOutputStream) responseBody).toString("UTF-8");
+
+        } catch (IOException e) {
+            throw new RequestFailedException("GET", url, e);
+        } finally {
+            if (response != null) {
+                response.close();
+            }
         }
     }
 
@@ -180,6 +180,105 @@ public class HttpClient {
             if (response != null) {
                 response.close();
             }
+        }
+    }
+
+    /**
+     * Performs an HTTP PUT request
+     *
+     * @param relativePath  Relative path to resource, e.g. api/kibana/dashboards/import
+     * @param requestBody   Body of request
+     * @return Response body
+     * @throws RequestFailedException
+     * @throws IOException
+     */
+    public String put(String relativePath, String requestBody) throws RequestFailedException, IOException {
+        return put(relativePath, requestBody, null);
+    }
+
+    /**
+     * Performs an HTTP PUT request
+     *
+     * @param relativePath  Relative path to resource, e.g. api/kibana/dashboards/import
+     * @param requestBody   Body of request
+     * @param headers       Headers to include with request
+     * @return Response body
+     * @throws RequestFailedException
+     * @throws IOException
+     */
+    public String put(String relativePath, String requestBody, Map<String, String> headers) throws RequestFailedException, IOException {
+
+        String url = makeUrlFrom(relativePath);
+
+        HttpPut request = new HttpPut(url);
+        request.setEntity(new StringEntity(requestBody));
+
+        if (headers != null) {
+            headers.forEach(request::addHeader);
+        }
+
+        CloseableHttpResponse response = null;
+
+        try {
+            response = httpClient.execute(request);
+            OutputStream responseBody = new ByteArrayOutputStream();
+            response
+                    .getEntity()
+                    .writeTo(responseBody);
+            return ((ByteArrayOutputStream) responseBody).toString("UTF-8");
+        } catch (IOException e) {
+            throw new RequestFailedException("PUT", url, e);
+        } finally {
+            if (response != null) {
+                response.close();
+            }
+        }
+    }
+
+    /**
+     * Performs an HTTP DELETE request
+     *
+     * @param relativePath  Relative path to resource, e.g. api/status
+     * @throws RequestFailedException
+     * @throws IOException
+     */
+    public void delete(String relativePath) throws RequestFailedException, IOException {
+        delete(relativePath, null);
+    }
+
+    /**
+     * Performs an HTTP DELETE request
+     *
+     * @param relativePath  Relative path to resource, e.g. api/status
+     * @param headers       Headers to include with request
+     * @throws RequestFailedException
+     * @throws IOException
+     */
+    public void delete(String relativePath, Map<String, String> headers) throws RequestFailedException, IOException {
+        String url = makeUrlFrom(relativePath);
+        HttpDelete request = new HttpDelete(url);
+
+        if (headers != null) {
+            headers.forEach(request::addHeader);
+        }
+
+        CloseableHttpResponse response = null;
+        StatusLine statusLine;
+
+        try {
+            response = httpClient.execute(request);
+            statusLine =  response.getStatusLine();
+        } catch (IOException e) {
+            throw new RequestFailedException("DELETE", url ,e);
+        } finally {
+            if (response != null) {
+                response.close();
+            }
+        }
+
+        int statusCode = statusLine.getStatusCode();
+        if (statusCode >= 400) {
+            throw new RequestFailedException("DELETE", url ,statusLine.getReasonPhrase());
         }
     }
 
