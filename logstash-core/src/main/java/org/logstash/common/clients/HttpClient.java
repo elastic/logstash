@@ -69,10 +69,12 @@ public class HttpClient {
 
         try {
             response = httpClient.execute(request);
-            return response
-                    .getEntity()
-                    .getContent()
-                    .toString();
+            OutputStream responseBody = new ByteArrayOutputStream();
+            response
+                .getEntity()
+                .writeTo(responseBody);
+            return ((ByteArrayOutputStream) responseBody).toString("UTF-8");
+
         } catch (IOException e) {
             throw new RequestFailedException("GET", url, e);
         } finally {

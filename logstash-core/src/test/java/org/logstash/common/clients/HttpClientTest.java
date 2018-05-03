@@ -26,52 +26,76 @@ public class HttpClientTest {
 
     @Test
     public void canMakeHttpRequestWithDefaultSettings() throws Exception {
-        final String path = "/api/status";
-        defaultHttp.stubFor(head(urlPathEqualTo(path))
-                .willReturn(aResponse().withStatus(200)));
+        final String path = "/api/hello";
+        final String expectedResponseBody = "Hello, World";
+
+        defaultHttp.stubFor(get(urlPathEqualTo(path))
+                .willReturn(aResponse()
+                        .withStatus(200)
+                        .withBody(expectedResponseBody))
+        );
 
         HttpClient httpClient = HttpClient.build();
-        httpClient.head(path);
+
+        assertThat(httpClient.get(path)).isEqualTo(expectedResponseBody);
     }
 
     @Test
     public void canMakeHttpRequestWithCustomHostnameAndPort() throws Exception {
-        final String path = "/api/status";
-        customHttp.stubFor(head(urlPathEqualTo(path))
-                .willReturn(aResponse().withStatus(200)));
+        final String path = "/api/hello";
+        final String expectedResponseBody = "Hello, World";
+
+        customHttp.stubFor(get(urlPathEqualTo(path))
+                .willReturn(aResponse()
+                        .withStatus(200)
+                        .withBody(expectedResponseBody))
+        );
 
         HttpClient httpClient = HttpClient.withOptions()
             .hostname(BIND_ADDRESS)
             .port(customHttp.port())
             .build();
-        httpClient.head(path);
+
+        assertThat(httpClient.get(path)).isEqualTo(expectedResponseBody);
     }
 
     @Test
     public void canMakeHttpRequestWithBasicAuth() throws Exception {
-        final String path = "/api/status";
-        defaultHttp.stubFor(head(urlPathEqualTo(path))
+        final String path = "/api/hello";
+        final String expectedResponseBody = "Hello, World";
+
+        defaultHttp.stubFor(get(urlPathEqualTo(path))
                 .withBasicAuth(USERNAME, PASSWORD)
-                .willReturn(aResponse().withStatus(200)));
+                .willReturn(aResponse()
+                        .withStatus(200)
+                        .withBody(expectedResponseBody))
+        );
 
         HttpClient httpClient = HttpClient.withOptions()
                 .basicAuth(USERNAME, PASSWORD)
                 .build();
-        httpClient.head(path);
+
+        assertThat(httpClient.get(path)).isEqualTo(expectedResponseBody);
     }
 
     @Test
     public void canMakeHttpsRequestWithSslNoVerify() throws Exception {
-        final String path = "/api/status";
-        defaultHttps.stubFor(head(urlPathEqualTo(path))
-                .willReturn(aResponse().withStatus(200)));
+        final String path = "/api/hello";
+        final String expectedResponseBody = "Hello, World";
+
+        defaultHttps.stubFor(get(urlPathEqualTo(path))
+                .willReturn(aResponse()
+                        .withStatus(200)
+                        .withBody(expectedResponseBody))
+        );
 
         HttpClient httpClient = HttpClient.withOptions()
                 .protocol(HttpClient.Protocol.HTTPS)
                 .port(HTTPS_PORT)
                 .sslNoVerify()
                 .build();
-        httpClient.head(path);
+
+        assertThat(httpClient.get(path)).isEqualTo(expectedResponseBody);
     }
 
     @Test
