@@ -119,7 +119,7 @@ public class HttpClientTest {
     public void canMakeHttpsRequestWithSslSelfSignedServerCertificate() throws Exception {
         WireMockServer httpsServer = new WireMockServer(options()
                 .dynamicHttpsPort()
-                .keystorePath(Paths.get(getClass().getResource("selfsigned.jks").toURI()).toString())
+                .keystorePath(Paths.get(getClass().getResource("server.jks").toURI()).toString())
                 .keystorePassword("elastic"));
 
         httpsServer.start();
@@ -138,6 +138,43 @@ public class HttpClientTest {
                     .protocol(HttpClient.Protocol.HTTPS)
                     .port(httpsServer.httpsPort())
                     .sslCaCertificate(Paths.get(getClass().getResource("server.crt").toURI()).toString())
+                    .build();
+
+            assertThat(httpClient.get(path)).isEqualTo(expectedResponseBody);
+        } finally {
+            httpsServer.stop();
+        }
+    }
+
+    @Test
+    public void canMakeHttpsRequestWithSslSelfSignedServerAndClientCertificates() throws Exception {
+        WireMockServer httpsServer = new WireMockServer(options()
+                .dynamicHttpsPort()
+                .keystorePath(Paths.get(getClass().getResource("server.jks").toURI()).toString())
+                .keystorePassword("elastic")
+                .needClientAuth(true)
+                .trustStorePath(Paths.get(getClass().getResource("server.jks").toURI()).toString())
+                .trustStorePassword("elastic")
+        );
+
+        httpsServer.start();
+
+        try {
+            final String path = "/api/hello";
+            final String expectedResponseBody = "Hello, World";
+
+            httpsServer.stubFor(get(urlPathEqualTo(path))
+                    .willReturn(aResponse()
+                            .withStatus(200)
+                            .withBody(expectedResponseBody))
+            );
+
+            HttpClient httpClient = HttpClient.builder()
+                    .protocol(HttpClient.Protocol.HTTPS)
+                    .port(httpsServer.httpsPort())
+                    .sslCaCertificate(Paths.get(getClass().getResource("server.crt").toURI()).toString())
+                    .sslClientCertificate(Paths.get(getClass().getResource("client.crt").toURI()).toString())
+                    .sslClientPrivateKey(Paths.get(getClass().getResource("client.key").toURI()).toString())
                     .build();
 
             assertThat(httpClient.get(path)).isEqualTo(expectedResponseBody);

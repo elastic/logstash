@@ -4,12 +4,20 @@ import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.security.*;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
+import java.security.interfaces.RSAPrivateKey;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.KeySpec;
+import java.security.spec.PKCS8EncodedKeySpec;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.http.Header;
 import org.apache.http.StatusLine;
@@ -29,8 +37,8 @@ import javax.net.ssl.*;
 public class HttpClient {
     public enum Protocol { HTTP, HTTPS }
 
-    private CloseableHttpClient httpClient;
-    private URL baseUrl;
+    private final CloseableHttpClient httpClient;
+    private final URL baseUrl;
 
     private HttpClient(CloseableHttpClient httpClient, URL baseUrl) {
         this.httpClient = httpClient;
@@ -283,10 +291,9 @@ public class HttpClient {
     }
 
     private String makeUrlFrom(String relativePath) {
-        String url = this.baseUrl.toString().replaceFirst("\\/$", "")
+        return this.baseUrl.toString().replaceFirst("/$", "")
                 + '/'
-                + relativePath.replaceFirst("^\\/", "");
-        return url;
+                + relativePath.replaceFirst("^/", "");
     }
 
     /**
@@ -321,9 +328,9 @@ public class HttpClient {
         private String basicAuthUsername;
         private String basicAuthPassword;
 
-        private Certificate sslCaCertificate;
-        private Certificate sslClientCertificate;
-        private byte[] sslClientPrivateKey;
+        private X509Certificate sslCaCertificate;
+        private X509Certificate sslClientCertificate;
+        private RSAPrivateKey sslClientPrivateKey;
         private boolean sslVerifyServerHostname;
         private boolean sslVerifyServerCredentials;
 
@@ -404,11 +411,16 @@ public class HttpClient {
          * server's SSL/TLS certificate. By default the certificate authority certificates provided by
          * the system are used.
          *
-         * @param String Path to Certificate Authority certificate file
+         * @param caCertificatePath Path to Certificate Authority certificate file
          * @return Same {@see OptionsBuilder } instance to continue configuring HTTP client
+         * @throws OptionsBuilderException
          */
-        public OptionsBuilder sslCaCertificate(String caCertificatePath) throws CertificateException, IOException {
-            this.sslCaCertificate = getCertificate(caCertificatePath);
+        public OptionsBuilder sslCaCertificate(String caCertificatePath) throws OptionsBuilderException {
+            try {
+                this.sslCaCertificate = getCertificate(caCertificatePath);
+            } catch (Exception e) {
+                throw new OptionsBuilderException("Could not set SSL CA certificate", e);
+            }
             return this;
         }
 
@@ -416,11 +428,16 @@ public class HttpClient {
          * Set the client's certificate the HTTP client should present to the server, should the server ask for it during
          * the ClientKeyExchange step. By default no client certificate is presented to the server.
          *
-         * @param String Path to client certificate file
+         * @param clientCertificatePath Path to client certificate file
          * @return Same {@see OptionsBuilder } instance to continue configuring HTTP client
+         * @throws OptionsBuilderException
          */
-        public OptionsBuilder sslClientCertificate(String clientCertificatePath) throws CertificateException, IOException {
-            this.sslClientCertificate = getCertificate(clientCertificatePath);
+        public OptionsBuilder sslClientCertificate(String clientCertificatePath) throws OptionsBuilderException {
+            try {
+                this.sslClientCertificate = getCertificate(clientCertificatePath);
+            } catch (Exception e) {
+                throw new OptionsBuilderException("Could not set SSL client certificate", e);
+            }
             return this;
         }
 
@@ -428,11 +445,18 @@ public class HttpClient {
          * Set the client's private key the HTTP client should use during the (optional) ClientKeyExchange step. By
          * default no client private key is used.
          *
-         * @param String Path to client private key file
+         * @param clientPrivateKeyPath Path to client private key file
          * @return Same {@see OptionsBuilder } instance to continue configuring HTTP client
+         * @throws OptionsBuilderException
          */
-        public OptionsBuilder sslClientPrivateKey(String clientPrivateKeyPath) throws IOException {
-            this.sslClientPrivateKey = getPrivateKey(clientPrivateKeyPath);
+        public OptionsBuilder sslClientPrivateKey(String clientPrivateKeyPath) throws OptionsBuilderException {
+            try {
+                this.sslClientPrivateKey = getPrivateKey(clientPrivateKeyPath);
+            } catch (OptionsBuilderException e) {
+                throw e;
+            } catch (Exception e) {
+                throw new OptionsBuilderException("Could not set SSL client private key", e);
+            }
             return this;
         }
 
@@ -516,11 +540,10 @@ public class HttpClient {
                     KeyStore keystore = getKeyStore();
 
                     try {
-                        keystore.setCertificateEntry("clientCertificate", this.sslClientCertificate);
-                        keystore.setKeyEntry("clientPrivateKey", this.sslClientPrivateKey, new Certificate[]{this.sslClientCertificate});
+                        keystore.setKeyEntry("clientPrivateKey", this.sslClientPrivateKey, "".toCharArray(), new Certificate[]{this.sslClientCertificate});
 
                         KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
-                        keyManagerFactory.init(keystore, null);
+                        keyManagerFactory.init(keystore, "".toCharArray());
 
                         keyManagers = keyManagerFactory.getKeyManagers();
                     } catch (Exception e) {
@@ -564,14 +587,14 @@ public class HttpClient {
             return baseUrl.getProtocol().equals("https");
         }
 
-        private static Certificate getCertificate(String certificateFilePath) throws CertificateException, IOException {
+        private static X509Certificate getCertificate(String certificateFilePath) throws CertificateException, IOException {
             FileInputStream fis = new FileInputStream(certificateFilePath);
 
             CertificateFactory cf = CertificateFactory.getInstance("X.509");
-            Certificate certificate;
+            X509Certificate certificate;
 
             try {
-                certificate = cf.generateCertificate(fis);
+                certificate = (X509Certificate) cf.generateCertificate(fis);
             } finally {
                 fis.close();
             }
@@ -579,19 +602,32 @@ public class HttpClient {
             return certificate;
         }
 
-        private static byte[] getPrivateKey(String privateKeyPath) throws IOException {
-            FileInputStream fis = new FileInputStream(privateKeyPath);
-            ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+        private static RSAPrivateKey getPrivateKey(String privateKeyPath) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, OptionsBuilderException {
+            String privateKeyFileContents = new String(Files.readAllBytes(Paths.get(privateKeyPath)));
 
-            int numBytesRead;
-            byte[] data = new byte[16384];
+            final Pattern KEY_EXTRACTION_REGEXP = Pattern.compile(".*-----BEGIN (\\S+ )?PRIVATE KEY-----\n(.*)-----END (\\S+ )?PRIVATE KEY.*$", Pattern.DOTALL);
+            Matcher matcher = KEY_EXTRACTION_REGEXP.matcher(privateKeyFileContents);
 
-            while ((numBytesRead = fis.read(data)) != -1) {
-                buffer.write(data, 0, numBytesRead);
+            final String obeMessage = "Could not parse private key file at " + privateKeyPath;
+
+            if (!matcher.matches()) {
+                throw new OptionsBuilderException(obeMessage);
             }
-            buffer.flush();
 
-            return buffer.toByteArray();
+            String keyContentsBase64Encoded = matcher.group(2);
+            if (keyContentsBase64Encoded == null) {
+                throw new OptionsBuilderException(obeMessage);
+            }
+
+            byte[] keyContents;
+            try {
+                keyContents = Base64.getDecoder().decode(keyContentsBase64Encoded.replaceAll("\n", ""));
+            } catch (Exception e) {
+                throw new OptionsBuilderException(obeMessage, e);
+            }
+
+            KeySpec spec = new PKCS8EncodedKeySpec(keyContents);
+            return (RSAPrivateKey) KeyFactory.getInstance("RSA").generatePrivate(spec);
         }
 
         private static KeyStore getKeyStore() throws OptionsBuilderException {
