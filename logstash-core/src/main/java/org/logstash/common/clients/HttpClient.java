@@ -289,14 +289,28 @@ public class HttpClient {
         return url;
     }
 
+    /**
+     * Build an instance of the HTTP client with default configuration options.
+     *
+     * @return HTTP client instance
+     * @throws OptionsBuilderException
+     */
     public static HttpClient build() throws OptionsBuilderException {
         return new OptionsBuilder().build();
     }
 
+    /**
+     * Start building an instance of the HTTP client.
+     *
+     * @return An {@see OptionsBuilder} instance to allow configuration of the HTTP client before building it.
+     */
     public static OptionsBuilder builder() {
         return new OptionsBuilder();
     }
 
+    /**
+     * Builder pattern obj
+     */
     public static class OptionsBuilder {
 
         private Protocol protocol;
@@ -322,26 +336,62 @@ public class HttpClient {
             this.sslVerifyServerCredentials = true;
         }
 
+        /**
+         * Set the HTTP server's protocol (HTTP or HTTPS) that should be used by the HTTP client
+         * when making requests. Defaults to HTTP.
+         *
+         * @param protocol Server protocol, HTTP or HTTPS
+         * @return Same {@see OptionsBuilder } instance to continue configuring HTTP client
+         */
         public OptionsBuilder protocol(Protocol protocol) {
             this.protocol = protocol;
             return this;
         }
 
+        /**
+         * Set the HTTP server's hostname that should be used by the HTTP client when making requests.
+         * Defaults to localhost.
+         *
+         * @param hostname Server hostname
+         * @return Same {@see OptionsBuilder } instance to continue configuring HTTP client
+         */
         public OptionsBuilder hostname(String hostname) {
             this.hostname = hostname;
             return this;
         }
 
+        /**
+         * Set the HTTP server's port that should be used by the HTTP client when making requests. Defaults
+         * to 80.
+         *
+         * @param port Server port
+         * @return Same {@see OptionsBuilder } instance to continue configuring HTTP client
+         */
         public OptionsBuilder port(int port) {
             this.port = port;
             return this;
         }
 
+        /**
+         * Set the HTTP server's base path that should be used by the HTTP client when making requests. Defaults
+         * to /.
+         *
+         * @param basePath Server basePath
+         * @return Same {@see OptionsBuilder } instance to continue configuring HTTP client
+         */
         public OptionsBuilder basePath(String basePath) {
             this.basePath = basePath;
             return this;
         }
 
+        /**
+         * Set the HTTP server's basic authentication credentials that should be used by the HTTP client when
+         * making requests. By default, no basic authentication is used.
+         *
+         * @param username Basic authentication username
+         * @param password Basic authentication password
+         * @return Same {@see OptionsBuilder } instance to continue configuring HTTP client
+         */
         public OptionsBuilder basicAuth(String username, String password) {
             this.basicAuthUsername = username;
             this.basicAuthPassword = password;
@@ -349,39 +399,82 @@ public class HttpClient {
             return this;
         }
 
+        /**
+         * Set the Certificate Authority's certificate that the HTTP client should use for validating the
+         * server's SSL/TLS certificate. By default the certificate authority certificates provided by
+         * the system are used.
+         *
+         * @param String Path to Certificate Authority certificate file
+         * @return Same {@see OptionsBuilder } instance to continue configuring HTTP client
+         */
         public OptionsBuilder sslCaCertificate(String caCertificatePath) throws CertificateException, IOException {
             this.sslCaCertificate = getCertificate(caCertificatePath);
             return this;
         }
 
+        /**
+         * Set the client's certificate the HTTP client should present to the server, should the server ask for it during
+         * the ClientKeyExchange step. By default no client certificate is presented to the server.
+         *
+         * @param String Path to client certificate file
+         * @return Same {@see OptionsBuilder } instance to continue configuring HTTP client
+         */
         public OptionsBuilder sslClientCertificate(String clientCertificatePath) throws CertificateException, IOException {
             this.sslClientCertificate = getCertificate(clientCertificatePath);
             return this;
         }
 
+        /**
+         * Set the client's private key the HTTP client should use during the (optional) ClientKeyExchange step. By
+         * default no client private key is used.
+         *
+         * @param String Path to client private key file
+         * @return Same {@see OptionsBuilder } instance to continue configuring HTTP client
+         */
         public OptionsBuilder sslClientPrivateKey(String clientPrivateKeyPath) throws IOException {
             this.sslClientPrivateKey = getPrivateKey(clientPrivateKeyPath);
             return this;
         }
 
+        /**
+         * Tell the HTTP client not to verify the server's hostname against the server's certificate.
+         *
+         * @return Same {@see OptionsBuilder } instance to continue configuring HTTP client
+         */
         public OptionsBuilder sslNoVerifyServerHostname() {
             this.sslVerifyServerHostname = false;
             return this;
         }
 
+        /**
+         * Tell the HTTP client not to verify the server's certificate against a Certificate Authority.
+         *
+         * @return Same {@see OptionsBuilder } instance to continue configuring HTTP client
+         */
         public OptionsBuilder sslNoVerifyServerCredentials() {
             this.sslVerifyServerCredentials = false;
             return this;
         }
 
+        /**
+         * Tell the HTTP client not to perform any SSL verification checks.
+         *
+         * @return Same {@see OptionsBuilder } instance to continue configuring HTTP client
+         */
         public OptionsBuilder sslNoVerify() {
             return this.sslNoVerifyServerHostname()
                     .sslNoVerifyServerCredentials();
         }
 
+        /**
+         * Finish building configuration for the HTTP client.
+         *
+         * @return Instance of the HTTP client with configuration options provided.
+         * @throws OptionsBuilderException
+         */
         public HttpClient build() throws OptionsBuilderException {
 
-            URL baseUrl = null;
+            URL baseUrl;
             try {
                 baseUrl = new URL(this.protocol.name().toLowerCase(), this.hostname, this.port, this.basePath);
             } catch (MalformedURLException e) {
@@ -396,7 +489,7 @@ public class HttpClient {
             HttpClientBuilder httpClientBuilder = HttpClients.custom();
 
             if (usesSsl(baseUrl)) {
-                TrustManager[] trustManagers = null;
+                TrustManager[] trustManagers;
                 if (this.sslVerifyServerCredentials) {
                     if (this.sslCaCertificate == null) {
                         throw new OptionsBuilderException("Certificate authority not provided. "
@@ -533,6 +626,9 @@ public class HttpClient {
 
     }
 
+    /**
+     * Exception thrown when there is an error while configuring an HTTP client instance
+     */
     public static class OptionsBuilderException extends Exception {
         public OptionsBuilderException(String errorMessage, Throwable cause) {
             super(errorMessage, cause);
