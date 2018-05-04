@@ -13,15 +13,11 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 public class HttpClientTest {
 
-    private static final String BIND_ADDRESS = "127.0.0.1";
-    private static final String USERNAME = "seger";
-    private static final String PASSWORD = "comma_bob";
-
     @Rule
-    public WireMockRule httpServer = new WireMockRule(5601);
+    public WireMockRule httpServer = new WireMockRule(options().dynamicPort());
 
     @Test
-    public void canMakeHttpRequestWithDefaultSettings() throws Exception {
+    public void canMakeHttpRequestWithAlmostDefaultSettings() throws Exception {
         final String path = "/api/hello";
         final String expectedResponseBody = "Hello, World";
 
@@ -31,13 +27,17 @@ public class HttpClientTest {
                         .withBody(expectedResponseBody))
         );
 
-        HttpClient httpClient = HttpClient.build();
+        HttpClient httpClient = HttpClient.builder()
+                .port(httpServer.port()) // We set this one setting so we don't need to run this test as a superuser
+                .build();
 
         assertThat(httpClient.get(path)).isEqualTo(expectedResponseBody);
     }
 
     @Test
     public void canMakeHttpRequestWithCustomHostnameAndPort() throws Exception {
+        final String BIND_ADDRESS = "127.0.0.1";
+
         WireMockServer httpServer = new WireMockServer(options()
                 .dynamicPort()
                 .bindAddress(BIND_ADDRESS));
@@ -66,6 +66,9 @@ public class HttpClientTest {
 
     @Test
     public void canMakeHttpRequestWithBasicAuth() throws Exception {
+        final String USERNAME = "seger";
+        final String PASSWORD = "comma_bob";
+
         final String path = "/api/hello";
         final String expectedResponseBody = "Hello, World";
 
@@ -77,6 +80,7 @@ public class HttpClientTest {
         );
 
         HttpClient httpClient = HttpClient.builder()
+                .port(httpServer.port())
                 .basicAuth(USERNAME, PASSWORD)
                 .build();
 

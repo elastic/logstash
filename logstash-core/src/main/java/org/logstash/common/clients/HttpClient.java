@@ -316,7 +316,7 @@ public class HttpClient {
         private OptionsBuilder() {
             this.protocol = Protocol.HTTP;
             this.hostname = "localhost";
-            this.port = 5601;
+            this.port = 80;
             this.basePath = "/";
             this.sslVerifyServerHostname = true;
             this.sslVerifyServerCredentials = true;
