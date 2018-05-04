@@ -12,6 +12,7 @@ class Dependency implements Comparable<Dependency> {
     String name;
     String version;
     String license;
+    String url;
     String spdxLicense;
 
     // optional
