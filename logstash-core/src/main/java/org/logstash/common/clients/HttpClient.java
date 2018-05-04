@@ -324,9 +324,6 @@ public class HttpClient {
 
         public OptionsBuilder protocol(Protocol protocol) {
             this.protocol = protocol;
-            if (this.port == 0) {
-                this.port = 443;
-            }
             return this;
         }
 
