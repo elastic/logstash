@@ -34,8 +34,8 @@ public class ReportGeneratorTest {
 
         // verify that the two components in the test input with missing licenses are
         // listed in the output with no license, i.e., an empty license field followed by CR/LF
-        assertTrue(output.toString().contains("commons-io:commons-io,2.5,\r\n"));
-        assertTrue(output.toString().contains("filesize,0.0.4,\r\n"));
+        assertTrue(output.toString().contains("commons-io:commons-io,2.5,,\r\n"));
+        assertTrue(output.toString().contains("filesize,0.0.4,,\r\n"));
     }
 
     @Test
@@ -47,8 +47,21 @@ public class ReportGeneratorTest {
 
         // verify that the two components in the test input with unacceptable licenses are
         // listed in the output with no license, i.e., an empty license field followed by CR/LF
-        assertTrue(output.toString().contains("com.fasterxml.jackson.core:jackson-core,2.7.3,\r\n"));
-        assertTrue(output.toString().contains("bundler,1.16.0,\r\n"));
+        assertTrue(output.toString().contains("com.fasterxml.jackson.core:jackson-core,2.7.3,,\r\n"));
+        assertTrue(output.toString().contains("bundler,1.16.0,,\r\n"));
+    }
+
+    @Test
+    public void testReportWithMissingUrls() throws IOException {
+        StringWriter output = new StringWriter();
+        boolean result = runReportGenerator("/licenseMapping-missingUrls.csv", output);
+
+        assertFalse(result);
+
+        // verify that the two components in the test input with missing URLs are
+        // listed in the output with no license, i.e., an empty license field followed by CR/LF
+        assertTrue(output.toString().contains("org.codehaus.janino:commons-compiler,3.0.8,,\r\n"));
+        assertTrue(output.toString().contains("json-parser,,,\r\n"));
     }
 
     private static boolean runReportGenerator(String licenseMappingPath, StringWriter output)

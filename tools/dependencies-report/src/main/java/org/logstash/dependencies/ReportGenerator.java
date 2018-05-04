@@ -1,6 +1,5 @@
 package org.logstash.dependencies;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
 import org.apache.commons.csv.CSVRecord;
@@ -45,32 +44,33 @@ public class ReportGenerator {
             readJavaDependenciesReport(stream, dependencies);
         }
 
-        Map<String, String> licenseMapping = new HashMap<>();
+        Map<String, LicenseUrlPair> licenseMapping = new HashMap<>();
         readLicenseMapping(licenseMappingStream, licenseMapping);
         List<String> acceptableLicenses = new ArrayList<>();
         readAcceptableLicenses(acceptableLicensesStream, acceptableLicenses);
         for (Dependency dependency : dependencies) {
             String nameAndVersion = dependency.name + ":" + dependency.version;
             if (licenseMapping.containsKey(nameAndVersion)) {
-                String mappedLicense = licenseMapping.get(nameAndVersion);
+                LicenseUrlPair pair = licenseMapping.get(nameAndVersion);
 
-                if (acceptableLicenses.stream().anyMatch(mappedLicense::equalsIgnoreCase)) {
-                    dependency.spdxLicense = licenseMapping.get(nameAndVersion);
+                if (pair.url != null && !pair.url.equals("") &&
+                   (acceptableLicenses.stream().anyMatch(pair.license::equalsIgnoreCase))) {
+                    dependency.spdxLicense = pair.license;
+                    dependency.url = pair.url;
                 } else {
-                    // unacceptable license
+                    // unacceptable license or missing URL
                     UNKNOWN_LICENSES.add(dependency);
                 }
             } else {
                 dependency.spdxLicense = UNKNOWN_LICENSE;
                 UNKNOWN_LICENSES.add(dependency);
             }
-
         }
 
         try (CSVPrinter csvPrinter = new CSVPrinter(output,
-                CSVFormat.DEFAULT.withHeader("dependencyName", "dependencyVersion", "license"))) {
+                CSVFormat.DEFAULT.withHeader("dependencyName", "dependencyVersion", "url", "license"))) {
             for (Dependency dependency : dependencies) {
-                csvPrinter.printRecord(dependency.name, dependency.version, dependency.spdxLicense);
+                csvPrinter.printRecord(dependency.name, dependency.version, dependency.url, dependency.spdxLicense);
             }
             csvPrinter.flush();
         }
@@ -81,7 +81,7 @@ public class ReportGenerator {
         if (UNKNOWN_LICENSES.size() > 0) {
             String errMsg =
                 "Add complying licenses (using the SPDX license ID from https://spdx.org/licenses) " +
-                "for the libraries listed below to tools/dependencies-report/src/main/resources/" +
+                "with URLs for the libraries listed below to tools/dependencies-report/src/main/resources/" +
                 "licenseMapping.csv:";
             System.out.println(errMsg);
             for (Dependency dependency : UNKNOWN_LICENSES) {
@@ -120,16 +120,25 @@ public class ReportGenerator {
         }
     }
 
-    private void readLicenseMapping(InputStream stream, Map<String, String> licenseMapping)
+    private void readLicenseMapping(InputStream stream, Map<String, LicenseUrlPair> licenseMapping)
             throws IOException {
         Reader in = new InputStreamReader(stream);
         for (CSVRecord record : CSVFormat.DEFAULT.withFirstRecordAsHeader().parse(in)) {
             String dependencyNameAndVersion = record.get(0);
             if (dependencyNameAndVersion != null && !dependencyNameAndVersion.equals("")) {
-                licenseMapping.put(dependencyNameAndVersion, record.get(1));
+                licenseMapping.put(dependencyNameAndVersion, new LicenseUrlPair(record.get(2), record.get(1)));
             }
         }
     }
 
+}
 
+class LicenseUrlPair {
+    String license;
+    String url;
+
+    LicenseUrlPair(String license, String url) {
+        this.license = license;
+        this.url = url;
+    }
 }
