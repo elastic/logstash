@@ -293,7 +293,7 @@ public class HttpClient {
         return new OptionsBuilder().build();
     }
 
-    public static OptionsBuilder withOptions() {
+    public static OptionsBuilder builder() {
         return new OptionsBuilder();
     }
 

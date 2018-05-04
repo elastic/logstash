@@ -1,8 +1,11 @@
 package org.logstash.common.clients;
 
+import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import org.junit.Rule;
 import org.junit.Test;
+
+import java.nio.file.Paths;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
@@ -11,25 +14,18 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 public class HttpClientTest {
 
     private static final String BIND_ADDRESS = "127.0.0.1";
-    private static final int HTTPS_PORT = 5443;
     private static final String USERNAME = "seger";
     private static final String PASSWORD = "comma_bob";
 
     @Rule
-    public WireMockRule defaultHttp = new WireMockRule(5601);
-
-    @Rule
-    public WireMockRule customHttp = new WireMockRule(options().dynamicPort().bindAddress(BIND_ADDRESS));
-
-    @Rule
-    public WireMockRule defaultHttps = new WireMockRule(options().httpsPort(HTTPS_PORT));
+    public WireMockRule httpServer = new WireMockRule(5601);
 
     @Test
     public void canMakeHttpRequestWithDefaultSettings() throws Exception {
         final String path = "/api/hello";
         final String expectedResponseBody = "Hello, World";
 
-        defaultHttp.stubFor(get(urlPathEqualTo(path))
+        httpServer.stubFor(get(urlPathEqualTo(path))
                 .willReturn(aResponse()
                         .withStatus(200)
                         .withBody(expectedResponseBody))
@@ -42,21 +38,30 @@ public class HttpClientTest {
 
     @Test
     public void canMakeHttpRequestWithCustomHostnameAndPort() throws Exception {
-        final String path = "/api/hello";
-        final String expectedResponseBody = "Hello, World";
+        WireMockServer httpServer = new WireMockServer(options()
+                .dynamicPort()
+                .bindAddress(BIND_ADDRESS));
+        httpServer.start();
 
-        customHttp.stubFor(get(urlPathEqualTo(path))
-                .willReturn(aResponse()
-                        .withStatus(200)
-                        .withBody(expectedResponseBody))
-        );
+        try {
+            final String path = "/api/hello";
+            final String expectedResponseBody = "Hello, World";
 
-        HttpClient httpClient = HttpClient.withOptions()
-            .hostname(BIND_ADDRESS)
-            .port(customHttp.port())
-            .build();
+            httpServer.stubFor(get(urlPathEqualTo(path))
+                    .willReturn(aResponse()
+                            .withStatus(200)
+                            .withBody(expectedResponseBody))
+            );
 
-        assertThat(httpClient.get(path)).isEqualTo(expectedResponseBody);
+            HttpClient httpClient = HttpClient.builder()
+                    .hostname(BIND_ADDRESS)
+                    .port(httpServer.port())
+                    .build();
+
+            assertThat(httpClient.get(path)).isEqualTo(expectedResponseBody);
+        } finally {
+            httpServer.stop();
+        }
     }
 
     @Test
@@ -64,14 +69,14 @@ public class HttpClientTest {
         final String path = "/api/hello";
         final String expectedResponseBody = "Hello, World";
 
-        defaultHttp.stubFor(get(urlPathEqualTo(path))
+        httpServer.stubFor(get(urlPathEqualTo(path))
                 .withBasicAuth(USERNAME, PASSWORD)
                 .willReturn(aResponse()
                         .withStatus(200)
                         .withBody(expectedResponseBody))
         );
 
-        HttpClient httpClient = HttpClient.withOptions()
+        HttpClient httpClient = HttpClient.builder()
                 .basicAuth(USERNAME, PASSWORD)
                 .build();
 
@@ -80,29 +85,62 @@ public class HttpClientTest {
 
     @Test
     public void canMakeHttpsRequestWithSslNoVerify() throws Exception {
-        final String path = "/api/hello";
-        final String expectedResponseBody = "Hello, World";
+        WireMockServer httpsServer = new WireMockServer(options()
+                .dynamicHttpsPort());
+        httpsServer.start();
 
-        defaultHttps.stubFor(get(urlPathEqualTo(path))
-                .willReturn(aResponse()
-                        .withStatus(200)
-                        .withBody(expectedResponseBody))
-        );
+        try {
+            final String path = "/api/hello";
+            final String expectedResponseBody = "Hello, World";
 
-        HttpClient httpClient = HttpClient.withOptions()
-                .protocol(HttpClient.Protocol.HTTPS)
-                .port(HTTPS_PORT)
-                .sslNoVerify()
-                .build();
+            httpsServer.stubFor(get(urlPathEqualTo(path))
+                    .willReturn(aResponse()
+                            .withStatus(200)
+                            .withBody(expectedResponseBody))
+            );
 
-        assertThat(httpClient.get(path)).isEqualTo(expectedResponseBody);
+            HttpClient httpClient = HttpClient.builder()
+                    .protocol(HttpClient.Protocol.HTTPS)
+                    .port(httpsServer.httpsPort())
+                    .sslNoVerify()
+                    .build();
+
+            assertThat(httpClient.get(path)).isEqualTo(expectedResponseBody);
+        } finally {
+            httpsServer.stop();
+        }
     }
 
     @Test
-    public void canMakeHttpsRequestWithSslSelfSigned() throws Exception {
-        // TODO: Setup fixtures for self-signed server cert, self-signed client cert, client private key, and self-signed CA cert
-        // TODO: Setup WireMockRule with self-signed server cert
-        // TODO: Create and test Kibana client with self-signed client cert, client private key, and self-signed CA cert
+    public void canMakeHttpsRequestWithSslSelfSignedServerCertificate() throws Exception {
+        WireMockServer httpsServer = new WireMockServer(options()
+                .dynamicHttpsPort()
+                .keystoreType("PKCS12")
+                .keystorePath(Paths.get(getClass().getResource("keystore.p12").toURI()).toString())
+                .keystorePassword("changeme"));
+
+        httpsServer.start();
+
+        try {
+            final String path = "/api/hello";
+            final String expectedResponseBody = "Hello, World";
+
+            httpsServer.stubFor(get(urlPathEqualTo(path))
+                    .willReturn(aResponse()
+                            .withStatus(200)
+                            .withBody(expectedResponseBody))
+            );
+
+            HttpClient httpClient = HttpClient.builder()
+                    .protocol(HttpClient.Protocol.HTTPS)
+                    .port(httpsServer.httpsPort())
+                    .sslCaCertificate(Paths.get(getClass().getResource("myCA.pem").toURI()).toString())
+                    .build();
+
+            assertThat(httpClient.get(path)).isEqualTo(expectedResponseBody);
+        } finally {
+            httpsServer.stop();
+        }
     }
 
     @Test
