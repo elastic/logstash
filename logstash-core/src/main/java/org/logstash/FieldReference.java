@@ -150,22 +150,55 @@ public final class FieldReference {
     private static FieldReference parse(final CharSequence reference) {
         final ArrayList<String> path = new ArrayList<>();
         final int length = reference.length();
+
         int splitPoint = 0;
-        for (int i = 0; i < length; ++i) {
-            final char seen = reference.charAt(i);
-            if (seen == '[' || seen == ']') {
-                if (i == 0) {
-                    splitPoint = 1;
-                }
-                if (i > splitPoint) {
-                    path.add(reference.subSequence(splitPoint, i).toString().intern());
-                }
-                splitPoint = i + 1;
+        int depth = 0;
+        scan: for (int i=0 ; i < length; i++) {
+            switch (reference.charAt(i)) {
+                case '[':
+                    if (depth == 0) {
+                        // when current depth is zero, we are beginning a new part; set the splitPoint
+                        splitPoint = i + 1;
+                    }
+                    depth++;
+                    continue scan;
+                case ']':
+                    depth--;
+                    if (depth == 0) {
+                        // when depth is zero, we have a valid part; emit it and move the splitPoint.
+                        path.add(reference.subSequence(splitPoint, i).toString().intern());
+                        splitPoint = i + 1;
+                    } else if (depth < 0) {
+                        // when depth is negative, we have an illegal field reference;
+                        // stop the scan and clear the path, allowing the string to be emitted verbatim.
+                        path.clear();
+                        splitPoint = 0;
+                        break scan;
+                    }
+                    continue scan;
+                default:
+                    if (depth == 0) {
+                        // when depth is zero and we encounter anything other than an open- or close-bracket,
+                        // stop the scan and clear the path, allowing the string to be emitted verbatim.
+                        path.clear();
+                        splitPoint = 0;
+                        break scan;
+                    }
             }
         }
+        // when we hit the end without depth being zero, we have an invalid field reference,
+        // but instead of throwing an exception, decrement the `splitPoint` to ensure that
+        // the whole invalid fragment is emitted as the final part.
+        if (depth > 0) {
+            path.clear();
+            splitPoint = 0;
+        }
+        // If we have anything remaining after our current splitPoint, or a zero-length input,
+        // emit the difference as one final part.
         if (splitPoint < length || length == 0) {
             path.add(reference.subSequence(splitPoint, length).toString().intern());
         }
+
         path.trimToSize();
         final String key = path.remove(path.size() - 1).intern();
         final boolean empty = path.isEmpty();
