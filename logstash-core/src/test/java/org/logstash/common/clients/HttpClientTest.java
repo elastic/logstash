@@ -147,26 +147,42 @@ public class HttpClientTest {
     }
 
     @Test
-    public void cannotMakeHttpsRequestWithoutSslConfiguration() throws Exception {
-    }
-
-    @Test
-    public void cannotMakeHttpsRequestWithInvalidCaCertificate() throws Exception {
-    }
-
-    @Test
-    public void canMakeHttpHeadRequest() throws Exception {
-    }
-
-    @Test
     public void canMakeHttpPostRequest() throws Exception {
+        final String path = "/api/hello";
+        final String expectedResponseBody = "Hello, World";
+
+        httpServer.stubFor(post(urlPathEqualTo(path))
+                .willReturn(aResponse()
+                        .withStatus(200)
+                        .withBody(expectedResponseBody))
+        );
+
+        HttpClient httpClient = HttpClient.builder()
+                .port(httpServer.port()) // We set this one setting so we don't need to run this test as a superuser
+                .build();
+
+        String body = "Hello!";
+
+        assertThat(httpClient.post(path, body)).isEqualTo(expectedResponseBody);
     }
 
     @Test
     public void canMakeHttpPutRequest() throws Exception {
-    }
+        final String path = "/api/hello";
+        final String expectedResponseBody = "Hello, World";
 
-    @Test
-    public void canMakeHttpDeleteRequest() throws Exception {
+        httpServer.stubFor(put(urlPathEqualTo(path))
+                .willReturn(aResponse()
+                        .withStatus(200)
+                        .withBody(expectedResponseBody))
+        );
+
+        HttpClient httpClient = HttpClient.builder()
+                .port(httpServer.port()) // We set this one setting so we don't need to run this test as a superuser
+                .build();
+
+        String body = "Hello!";
+
+        assertThat(httpClient.put(path, body)).isEqualTo(expectedResponseBody);
     }
 }
