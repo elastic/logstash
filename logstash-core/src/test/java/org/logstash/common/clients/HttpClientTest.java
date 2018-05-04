@@ -115,9 +115,8 @@ public class HttpClientTest {
     public void canMakeHttpsRequestWithSslSelfSignedServerCertificate() throws Exception {
         WireMockServer httpsServer = new WireMockServer(options()
                 .dynamicHttpsPort()
-                .keystoreType("PKCS12")
-                .keystorePath(Paths.get(getClass().getResource("keystore.p12").toURI()).toString())
-                .keystorePassword("changeme"));
+                .keystorePath(Paths.get(getClass().getResource("selfsigned.jks").toURI()).toString())
+                .keystorePassword("elastic"));
 
         httpsServer.start();
 
@@ -134,7 +133,7 @@ public class HttpClientTest {
             HttpClient httpClient = HttpClient.builder()
                     .protocol(HttpClient.Protocol.HTTPS)
                     .port(httpsServer.httpsPort())
-                    .sslCaCertificate(Paths.get(getClass().getResource("myCA.pem").toURI()).toString())
+                    .sslCaCertificate(Paths.get(getClass().getResource("server.crt").toURI()).toString())
                     .build();
 
             assertThat(httpClient.get(path)).isEqualTo(expectedResponseBody);
