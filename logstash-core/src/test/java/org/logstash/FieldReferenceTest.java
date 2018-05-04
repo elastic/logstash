@@ -17,28 +17,28 @@ public final class FieldReferenceTest {
     public void testParseSingleBareField() throws Exception {
         FieldReference f = FieldReference.from("foo");
         assertEquals(0, f.getPath().length);
-        assertEquals(f.getKey(), "foo");
+        assertEquals("foo", f.getKey());
     }
 
     @Test
     public void testParseSingleFieldPath() throws Exception {
         FieldReference f = FieldReference.from("[foo]");
         assertEquals(0, f.getPath().length);
-        assertEquals(f.getKey(), "foo");
+        assertEquals("foo", f.getKey());
     }
 
     @Test
     public void testParse2FieldsPath() throws Exception {
         FieldReference f = FieldReference.from("[foo][bar]");
-        assertArrayEquals(f.getPath(), new String[]{"foo"});
-        assertEquals(f.getKey(), "bar");
+        assertArrayEquals(new String[]{"foo"}, f.getPath());
+        assertEquals("bar", f.getKey());
     }
 
     @Test
     public void testParse3FieldsPath() throws Exception {
         FieldReference f = FieldReference.from("[foo][bar]]baz]");
-        assertArrayEquals(f.getPath(), new String[]{"foo", "bar"});
-        assertEquals(f.getKey(), "baz");
+        assertArrayEquals(new String[]{"foo", "bar"}, f.getPath());
+        assertEquals("baz", f.getKey());
     }
 
     @Test
