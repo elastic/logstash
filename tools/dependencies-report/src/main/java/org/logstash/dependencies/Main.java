@@ -39,7 +39,7 @@ public class Main {
         );
 
         // If there were unknown results in the report, exit with a non-zero status
-        System.exit(reportResult ? 0 : 1);
+        //System.exit(reportResult ? 0 : 1);
 
     }
 
