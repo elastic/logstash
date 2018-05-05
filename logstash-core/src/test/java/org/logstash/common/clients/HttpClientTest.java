@@ -4,6 +4,7 @@ import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.logstash.common.clients.HttpClient.RequestFailedException;
 
 import java.nio.file.Paths;
@@ -11,12 +12,14 @@ import java.nio.file.Paths;
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.assertj.core.api.AssertionsForClassTypes.failBecauseExceptionWasNotThrown;
 
 public class HttpClientTest {
 
     @Rule
     public WireMockRule httpServer = new WireMockRule(options().dynamicPort());
+
+    @Rule
+    public ExpectedException thrown = ExpectedException.none();
 
     @Test
     public void canMakeHttpRequestWithAlmostDefaultSettings() throws Exception {
@@ -185,6 +188,71 @@ public class HttpClientTest {
         }
     }
 
+    @Test
+    public void cannotMakeHttpsRequestWithUnverifiedHostname() throws Exception {
+        WireMockServer httpsServer = new WireMockServer(options()
+                .dynamicHttpsPort()
+                .keystorePath(Paths.get(getClass().getResource("server_no_san.jks").toURI()).toString())
+                .keystorePassword("elastic")
+        );
+
+        httpsServer.start();
+
+        try {
+            final String path = "/api/hello";
+            final String expectedResponseBody = "Hello, World";
+
+            httpsServer.stubFor(get(urlPathEqualTo(path))
+                    .willReturn(aResponse()
+                            .withStatus(200)
+                            .withBody(expectedResponseBody))
+            );
+
+            HttpClient httpClient = HttpClient.builder()
+                    .protocol(HttpClient.Protocol.HTTPS)
+                    .port(httpsServer.httpsPort())
+                    .sslCaCertificate(Paths.get(getClass().getResource("server_no_san.crt").toURI()).toString())
+                    .build();
+
+            thrown.expect(RequestFailedException.class);
+            assertThat(httpClient.get(path)).isEqualTo(expectedResponseBody);
+        } finally {
+            httpsServer.stop();
+        }
+    }
+
+    @Test
+    public void cantMakeHttpsRequestWithUnverifiedHostnameAndSslNoVerifyServerHostname() throws Exception {
+        WireMockServer httpsServer = new WireMockServer(options()
+                .dynamicHttpsPort()
+                .keystorePath(Paths.get(getClass().getResource("server_no_san.jks").toURI()).toString())
+                .keystorePassword("elastic")
+        );
+
+        httpsServer.start();
+
+        try {
+            final String path = "/api/hello";
+            final String expectedResponseBody = "Hello, World";
+
+            httpsServer.stubFor(get(urlPathEqualTo(path))
+                    .willReturn(aResponse()
+                            .withStatus(200)
+                            .withBody(expectedResponseBody))
+            );
+
+            HttpClient httpClient = HttpClient.builder()
+                    .protocol(HttpClient.Protocol.HTTPS)
+                    .port(httpsServer.httpsPort())
+                    .sslCaCertificate(Paths.get(getClass().getResource("server_no_san.crt").toURI()).toString())
+                    .sslNoVerifyServerHostname()
+                    .build();
+
+            assertThat(httpClient.get(path)).isEqualTo(expectedResponseBody);
+        } finally {
+            httpsServer.stop();
+        }
+    }
     @Test
     public void canMakeHttpPostRequest() throws Exception {
         final String path = "/api/hello";
