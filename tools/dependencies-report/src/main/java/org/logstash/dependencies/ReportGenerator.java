@@ -29,6 +29,7 @@ public class ReportGenerator {
 
     final String UNKNOWN_LICENSE = "UNKNOWN";
     final Collection<Dependency> UNKNOWN_LICENSES = new ArrayList<Dependency>();
+    final String[] CSV_HEADERS = {"name", "version", "revision", "url", "license", "copyright"};
 
     public boolean generateReport(
             InputStream licenseMappingStream,
@@ -38,10 +39,10 @@ public class ReportGenerator {
             Writer output) throws IOException {
 
         SortedSet<Dependency> dependencies = new TreeSet<>();
-        readRubyDependenciesReport(rubyDependenciesStream, dependencies);
+        Dependency.addDependenciesFromRubyReport(rubyDependenciesStream, dependencies);
 
         for (InputStream stream : javaDependenciesStreams) {
-            readJavaDependenciesReport(stream, dependencies);
+            Dependency.addDependenciesFromJavaReport(stream, dependencies);
         }
 
         Map<String, LicenseUrlPair> licenseMapping = new HashMap<>();
@@ -68,9 +69,9 @@ public class ReportGenerator {
         }
 
         try (CSVPrinter csvPrinter = new CSVPrinter(output,
-                CSVFormat.DEFAULT.withHeader("dependencyName", "dependencyVersion", "url", "license"))) {
+                CSVFormat.DEFAULT.withHeader(CSV_HEADERS))) {
             for (Dependency dependency : dependencies) {
-                csvPrinter.printRecord(dependency.name, dependency.version, dependency.url, dependency.spdxLicense);
+                csvPrinter.printRecord(dependency.toCsvReportRecord());
             }
             csvPrinter.flush();
         }
@@ -91,22 +92,6 @@ public class ReportGenerator {
         }
 
         return UNKNOWN_LICENSES.size() == 0;
-    }
-
-    private void readRubyDependenciesReport(InputStream stream, SortedSet<Dependency> dependencies)
-            throws IOException {
-        Reader in = new InputStreamReader(stream);
-        for (CSVRecord record : CSVFormat.DEFAULT.withFirstRecordAsHeader().parse(in)) {
-            dependencies.add(Dependency.fromRubyCsvRecord(record));
-        }
-    }
-
-    private void readJavaDependenciesReport(InputStream stream, SortedSet<Dependency> dependencies)
-            throws IOException {
-        Reader in = new InputStreamReader(stream);
-        for (CSVRecord record : CSVFormat.DEFAULT.withFirstRecordAsHeader().parse(in)) {
-            dependencies.add(Dependency.fromJavaCsvRecord(record));
-        }
     }
 
     private void readAcceptableLicenses(InputStream stream, List<String> acceptableLicenses)
