@@ -1,40 +1,68 @@
 package org.logstash.dependencies;
 
+import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVRecord;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.util.Objects;
+import java.util.SortedSet;
 
 class Dependency implements Comparable<Dependency> {
-    public static final String RUBY_TYPE = "ruby";
-    public static final String JAVA_TYPE = "java";
 
-    String type;
     String name;
     String version;
-    String license;
     String url;
     String spdxLicense;
 
-    // optional
-    String licenseUrl;
+    /**
+     * Returns an object array representing this dependency as a CSV record according
+     * to the format requested here: https://github.com/elastic/logstash/issues/8725
+     */
+    Object[] toCsvReportRecord() {
+        return new String[] {name, version, "", url, spdxLicense, ""};
+    }
 
-    public static Dependency fromRubyCsvRecord(CSVRecord record) {
+    /**
+     * Reads dependencies from the specified stream using the Ruby dependency report format
+     * and adds them to the supplied set.
+     */
+    static void addDependenciesFromRubyReport(InputStream stream, SortedSet<Dependency> dependencies)
+            throws IOException {
+        Reader in = new InputStreamReader(stream);
+        for (CSVRecord record : CSVFormat.DEFAULT.withFirstRecordAsHeader().parse(in)) {
+            dependencies.add(Dependency.fromRubyCsvRecord(record));
+        }
+    }
+
+    /**
+     * Reads dependencies from the specified stream using the Java dependency report format
+     * and adds them to the supplied set.
+     */
+    static void addDependenciesFromJavaReport(InputStream stream, SortedSet<Dependency> dependencies)
+            throws IOException {
+        Reader in = new InputStreamReader(stream);
+        for (CSVRecord record : CSVFormat.DEFAULT.withFirstRecordAsHeader().parse(in)) {
+            dependencies.add(Dependency.fromJavaCsvRecord(record));
+        }
+    }
+
+    private static Dependency fromRubyCsvRecord(CSVRecord record) {
         Dependency d = new Dependency();
 
         // name, version, url, license
-        d.type = RUBY_TYPE;
         d.name = record.get(0);
         d.version = record.get(1);
-        d.license = record.get(3);
 
         return d;
     }
 
-    public static Dependency fromJavaCsvRecord(CSVRecord record) {
+    private static Dependency fromJavaCsvRecord(CSVRecord record) {
         Dependency d = new Dependency();
 
         // artifact,moduleUrl,moduleLicense,moduleLicenseUrl
-        d.type = JAVA_TYPE;
 
         String nameAndVersion = record.get(0);
         int colonIndex = nameAndVersion.indexOf(':');
