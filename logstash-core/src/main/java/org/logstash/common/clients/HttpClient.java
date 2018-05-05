@@ -421,11 +421,7 @@ public class HttpClient {
          * @throws OptionsBuilderException
          */
         public OptionsBuilder sslCaCertificate(String caCertificatePath) throws OptionsBuilderException {
-            try {
-                this.sslCaCertificate = getCertificate(caCertificatePath);
-            } catch (Exception e) {
-                throw new OptionsBuilderException("Could not set SSL CA certificate", e);
-            }
+            this.sslCaCertificate = getCertificate(caCertificatePath);
             return this;
         }
 
@@ -438,11 +434,7 @@ public class HttpClient {
          * @throws OptionsBuilderException
          */
         public OptionsBuilder sslClientCertificate(String clientCertificatePath) throws OptionsBuilderException {
-            try {
-                this.sslClientCertificate = getCertificate(clientCertificatePath);
-            } catch (Exception e) {
-                throw new OptionsBuilderException("Could not set SSL client certificate", e);
-            }
+            this.sslClientCertificate = getCertificate(clientCertificatePath);
             return this;
         }
 
@@ -455,13 +447,7 @@ public class HttpClient {
          * @throws OptionsBuilderException
          */
         public OptionsBuilder sslClientPrivateKey(String clientPrivateKeyPath) throws OptionsBuilderException {
-            try {
-                this.sslClientPrivateKey = getPrivateKey(clientPrivateKeyPath);
-            } catch (OptionsBuilderException e) {
-                throw e;
-            } catch (Exception e) {
-                throw new OptionsBuilderException("Could not set SSL client private key", e);
-            }
+            this.sslClientPrivateKey = getPrivateKey(clientPrivateKeyPath);
             return this;
         }
 
@@ -592,23 +578,36 @@ public class HttpClient {
             return baseUrl.getProtocol().equals("https");
         }
 
-        private static X509Certificate getCertificate(String certificateFilePath) throws CertificateException, IOException {
-            FileInputStream fis = new FileInputStream(certificateFilePath);
-
-            CertificateFactory cf = CertificateFactory.getInstance("X.509");
-            X509Certificate certificate;
-
+        private static X509Certificate getCertificate(String certificateFilePath) throws OptionsBuilderException {
+            FileInputStream fis;
             try {
-                certificate = (X509Certificate) cf.generateCertificate(fis);
-            } finally {
-                fis.close();
+                fis = new FileInputStream(certificateFilePath);
+            } catch (FileNotFoundException e) {
+                throw new OptionsBuilderException("Could not read certificate at " + certificateFilePath, e);
             }
 
-            return certificate;
+            try {
+                CertificateFactory cf = CertificateFactory.getInstance("X.509");
+                return (X509Certificate) cf.generateCertificate(fis);
+            } catch (Exception e) {
+                throw new OptionsBuilderException("Could not generate certificate from " + certificateFilePath, e);
+
+            } finally {
+                try {
+                    fis.close();
+                } catch (IOException e) {
+                    throw new OptionsBuilderException("Could not close certificate file at " + certificateFilePath + " after reading it", e);
+                }
+            }
         }
 
-        private static RSAPrivateKey getPrivateKey(String privateKeyPath) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, OptionsBuilderException {
-            String privateKeyFileContents = new String(Files.readAllBytes(Paths.get(privateKeyPath)));
+        private static RSAPrivateKey getPrivateKey(String privateKeyPath) throws OptionsBuilderException {
+            String privateKeyFileContents;
+            try {
+                privateKeyFileContents = new String(Files.readAllBytes(Paths.get(privateKeyPath)));
+            } catch (IOException e) {
+                throw new OptionsBuilderException("Could not read private key file at " + privateKeyPath, e);
+            }
 
             final Pattern KEY_EXTRACTION_REGEXP = Pattern.compile(".*-----BEGIN (\\S+ )?PRIVATE KEY-----\n(.*)-----END (\\S+ )?PRIVATE KEY.*$", Pattern.DOTALL);
             Matcher matcher = KEY_EXTRACTION_REGEXP.matcher(privateKeyFileContents);
@@ -627,12 +626,11 @@ public class HttpClient {
             byte[] keyContents;
             try {
                 keyContents = Base64.getDecoder().decode(keyContentsBase64Encoded.replaceAll("\n", ""));
+                KeySpec spec = new PKCS8EncodedKeySpec(keyContents);
+                return (RSAPrivateKey) KeyFactory.getInstance("RSA").generatePrivate(spec);
             } catch (Exception e) {
                 throw new OptionsBuilderException(obeMessage, e);
             }
-
-            KeySpec spec = new PKCS8EncodedKeySpec(keyContents);
-            return (RSAPrivateKey) KeyFactory.getInstance("RSA").generatePrivate(spec);
         }
 
         private static KeyStore getKeyStore() throws OptionsBuilderException {
