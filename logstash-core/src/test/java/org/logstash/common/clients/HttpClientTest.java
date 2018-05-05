@@ -4,12 +4,14 @@ import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import org.junit.Rule;
 import org.junit.Test;
+import org.logstash.common.clients.HttpClient.RequestFailedException;
 
 import java.nio.file.Paths;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.AssertionsForClassTypes.failBecauseExceptionWasNotThrown;
 
 public class HttpClientTest {
 
@@ -199,7 +201,6 @@ public class HttpClientTest {
                 .build();
 
         String body = "Hello!";
-
         assertThat(httpClient.post(path, body)).isEqualTo(expectedResponseBody);
     }
 
@@ -219,7 +220,88 @@ public class HttpClientTest {
                 .build();
 
         String body = "Hello!";
-
         assertThat(httpClient.put(path, body)).isEqualTo(expectedResponseBody);
+    }
+
+    @Test(expected = RequestFailedException.class)
+    public void throwsExceptionForUnsuccessfulHeadRequest() throws Exception {
+        final String path = "/api/hello";
+
+        httpServer.stubFor(head(urlPathEqualTo(path))
+                .willReturn(aResponse()
+                        .withStatus(400))
+        );
+
+        HttpClient httpClient = HttpClient.builder()
+                .port(httpServer.port()) // We set this one setting so we don't need to run this test as a superuser
+                .build();
+
+        httpClient.head(path);
+    }
+
+    @Test(expected = RequestFailedException.class)
+    public void throwsExceptionForUnsuccessfulGetRequest() throws Exception {
+        final String path = "/api/hello";
+
+        httpServer.stubFor(get(urlPathEqualTo(path))
+                .willReturn(aResponse()
+                        .withStatus(400))
+        );
+
+        HttpClient httpClient = HttpClient.builder()
+                .port(httpServer.port()) // We set this one setting so we don't need to run this test as a superuser
+                .build();
+
+        httpClient.get(path);
+    }
+
+    @Test(expected = RequestFailedException.class)
+    public void throwsExceptionForUnsuccessfulPostRequest() throws Exception {
+        final String path = "/api/hello";
+
+        httpServer.stubFor(post(urlPathEqualTo(path))
+                .willReturn(aResponse()
+                        .withStatus(400))
+        );
+
+        HttpClient httpClient = HttpClient.builder()
+                .port(httpServer.port()) // We set this one setting so we don't need to run this test as a superuser
+                .build();
+
+        String body = "Hello!";
+        httpClient.post(path, body);
+    }
+
+    @Test(expected = RequestFailedException.class)
+    public void throwsExceptionForUnsuccessfulPutRequest() throws Exception {
+        final String path = "/api/hello";
+
+        httpServer.stubFor(put(urlPathEqualTo(path))
+                .willReturn(aResponse()
+                        .withStatus(400))
+        );
+
+        HttpClient httpClient = HttpClient.builder()
+                .port(httpServer.port()) // We set this one setting so we don't need to run this test as a superuser
+                .build();
+
+        String body = "Hello!";
+        httpClient.put(path, body);
+    }
+
+    @Test(expected = RequestFailedException.class)
+    public void throwsExceptionForUnsuccessfulDeleteRequest() throws Exception {
+        final String path = "/api/hello";
+
+        httpServer.stubFor(delete(urlPathEqualTo(path))
+                .willReturn(aResponse()
+                        .withStatus(400))
+        );
+
+        HttpClient httpClient = HttpClient.builder()
+                .port(httpServer.port()) // We set this one setting so we don't need to run this test as a superuser
+                .build();
+
+        httpClient.delete(path);
     }
 }

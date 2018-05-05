@@ -73,22 +73,19 @@ public class HttpClient {
         }
 
         CloseableHttpResponse response = null;
-        StatusLine statusLine;
 
         try {
             response = httpClient.execute(request);
-            statusLine =  response.getStatusLine();
+            if (response.getStatusLine().getStatusCode() >= 400) {
+                throw new RequestFailedException("HEAD", url , response.getStatusLine().getReasonPhrase());
+            }
+
         } catch (IOException e) {
             throw new RequestFailedException("HEAD", url ,e);
         } finally {
             if (response != null) {
                 response.close();
             }
-        }
-
-        int statusCode = statusLine.getStatusCode();
-        if (statusCode >= 400) {
-            throw new RequestFailedException("HEAD", url ,statusLine.getReasonPhrase());
         }
     }
 
@@ -124,6 +121,10 @@ public class HttpClient {
 
         try {
             response = httpClient.execute(request);
+            if (response.getStatusLine().getStatusCode() >= 400) {
+                throw new RequestFailedException("HEAD", url , response.getStatusLine().getReasonPhrase());
+            }
+
             OutputStream responseBody = new ByteArrayOutputStream();
             response
                 .getEntity()
@@ -177,6 +178,10 @@ public class HttpClient {
 
         try {
             response = httpClient.execute(request);
+            if (response.getStatusLine().getStatusCode() >= 400) {
+                throw new RequestFailedException("HEAD", url , response.getStatusLine().getReasonPhrase());
+            }
+
             OutputStream responseBody = new ByteArrayOutputStream();
             response
                     .getEntity()
@@ -229,6 +234,10 @@ public class HttpClient {
 
         try {
             response = httpClient.execute(request);
+            if (response.getStatusLine().getStatusCode() >= 400) {
+                throw new RequestFailedException("HEAD", url , response.getStatusLine().getReasonPhrase());
+            }
+
             OutputStream responseBody = new ByteArrayOutputStream();
             response
                     .getEntity()
@@ -271,22 +280,18 @@ public class HttpClient {
         }
 
         CloseableHttpResponse response = null;
-        StatusLine statusLine;
 
         try {
             response = httpClient.execute(request);
-            statusLine =  response.getStatusLine();
+            if (response.getStatusLine().getStatusCode() >= 400) {
+                throw new RequestFailedException("HEAD", url , response.getStatusLine().getReasonPhrase());
+            }
         } catch (IOException e) {
             throw new RequestFailedException("DELETE", url ,e);
         } finally {
             if (response != null) {
                 response.close();
             }
-        }
-
-        int statusCode = statusLine.getStatusCode();
-        if (statusCode >= 400) {
-            throw new RequestFailedException("DELETE", url ,statusLine.getReasonPhrase());
         }
     }
 
