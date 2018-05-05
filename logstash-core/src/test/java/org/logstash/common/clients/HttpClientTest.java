@@ -261,7 +261,7 @@ public class HttpClientTest {
         );
 
         HttpClient httpClient = HttpClient.builder()
-                .port(httpServer.port()) // We set this one setting so we don't need to run this test as a superuser
+                .port(httpServer.port())
                 .build();
 
         String body = "Hello!";
@@ -280,7 +280,7 @@ public class HttpClientTest {
         );
 
         HttpClient httpClient = HttpClient.builder()
-                .port(httpServer.port()) // We set this one setting so we don't need to run this test as a superuser
+                .port(httpServer.port())
                 .build();
 
         String body = "Hello!";
@@ -297,7 +297,7 @@ public class HttpClientTest {
         );
 
         HttpClient httpClient = HttpClient.builder()
-                .port(httpServer.port()) // We set this one setting so we don't need to run this test as a superuser
+                .port(httpServer.port())
                 .build();
 
         httpClient.head(path);
@@ -313,7 +313,7 @@ public class HttpClientTest {
         );
 
         HttpClient httpClient = HttpClient.builder()
-                .port(httpServer.port()) // We set this one setting so we don't need to run this test as a superuser
+                .port(httpServer.port())
                 .build();
 
         httpClient.get(path);
@@ -329,7 +329,7 @@ public class HttpClientTest {
         );
 
         HttpClient httpClient = HttpClient.builder()
-                .port(httpServer.port()) // We set this one setting so we don't need to run this test as a superuser
+                .port(httpServer.port())
                 .build();
 
         String body = "Hello!";
@@ -346,7 +346,7 @@ public class HttpClientTest {
         );
 
         HttpClient httpClient = HttpClient.builder()
-                .port(httpServer.port()) // We set this one setting so we don't need to run this test as a superuser
+                .port(httpServer.port())
                 .build();
 
         String body = "Hello!";
@@ -363,7 +363,7 @@ public class HttpClientTest {
         );
 
         HttpClient httpClient = HttpClient.builder()
-                .port(httpServer.port()) // We set this one setting so we don't need to run this test as a superuser
+                .port(httpServer.port())
                 .build();
 
         httpClient.delete(path);
