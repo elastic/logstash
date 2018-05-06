@@ -88,7 +88,7 @@ public class FileCheckpointIO implements CheckpointIO {
         return TAIL_CHECKPOINT + pageNum;
     }
 
-    private static Checkpoint read(ByteBuffer data) throws IOException {
+    public static Checkpoint read(ByteBuffer data) throws IOException {
         int version = (int) data.getShort();
         // TODO - build reader for this version
         int pageNum = data.getInt();
