@@ -51,6 +51,11 @@ public class LoggerExt extends RubyObject {
         return logger.isWarnEnabled() ? context.tru : context.fals;
     }
 
+    @JRubyMethod(name = "info?")
+    public RubyBoolean isInfo(final ThreadContext context) {
+        return logger.isInfoEnabled() ? context.tru : context.fals;
+    }
+
     @JRubyMethod(name = "fatal?")
     public RubyBoolean isFatal(final ThreadContext context) {
         return logger.isDebugEnabled() ? context.tru : context.fals;
