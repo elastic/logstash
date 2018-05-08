@@ -25,7 +25,7 @@ import org.logstash.LockException;
 import org.logstash.ackedqueue.io.CheckpointIO;
 import org.logstash.ackedqueue.io.FileCheckpointIO;
 import org.logstash.ackedqueue.io.LongVector;
-import org.logstash.ackedqueue.io.MmapPageIO;
+import org.logstash.ackedqueue.io.MmapPageIOV2;
 import org.logstash.ackedqueue.io.PageIO;
 import org.logstash.common.FsUtil;
 
@@ -155,6 +155,9 @@ public final class Queue implements Closeable {
             // verify exclusive access to the dirPath
             this.dirLock = FileLockFactory.obtainLock(this.dirPath, LOCK_NAME);
 
+            // Upgrade to serialization format V2
+            QueueUpgrade.upgradeQueueDirectoryToV2(dirPath);
+
             Checkpoint headCheckpoint;
             try {
                 headCheckpoint = this.checkpointIO.read(checkpointIO.headFileName());
@@ -187,7 +190,7 @@ public final class Queue implements Closeable {
 
                 logger.debug("opening tail page: {}, in: {}, with checkpoint: {}", pageNum, this.dirPath, cp.toString());
 
-                PageIO pageIO = new MmapPageIO(pageNum, this.pageCapacity, this.dirPath);
+                PageIO pageIO = new MmapPageIOV2(pageNum, this.pageCapacity, this.dirPath);
                 // important to NOT pageIO.open() just yet, we must first verify if it is fully acked in which case
                 // we can purge it and we don't care about its integrity for example if it is of zero-byte file size.
                 if (cp.isFullyAcked()) {
@@ -209,7 +212,7 @@ public final class Queue implements Closeable {
 
             logger.debug("opening head page: {}, in: {}, with checkpoint: {}", headCheckpoint.getPageNum(), this.dirPath, headCheckpoint.toString());
 
-            PageIO pageIO = new MmapPageIO(headCheckpoint.getPageNum(), this.pageCapacity, this.dirPath);
+            PageIO pageIO = new MmapPageIOV2(headCheckpoint.getPageNum(), this.pageCapacity, this.dirPath);
             pageIO.recover(); // optimistically recovers the head page data file and set minSeqNum and elementCount to the actual read/recovered data
 
             ensureDiskAvailable(diskNeeded - (long)pageIO.getHead());
@@ -313,7 +316,7 @@ public final class Queue implements Closeable {
      * @throws IOException
      */
     private void newCheckpointedHeadpage(int pageNum) throws IOException {
-        PageIO headPageIO = new MmapPageIO(pageNum, this.pageCapacity, this.dirPath);
+        PageIO headPageIO = new MmapPageIOV2(pageNum, this.pageCapacity, this.dirPath);
         headPageIO.create();
         this.headPage = PageFactory.newHeadPage(pageNum, this, headPageIO);
         this.headPage.forceCheckpoint();
