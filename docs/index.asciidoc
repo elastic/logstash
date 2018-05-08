@@ -110,6 +110,9 @@ include::static/upgrading.asciidoc[]
 :edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/configuration.asciidoc
 include::static/configuration.asciidoc[]
 
+:edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/field-reference.asciidoc
+include::static/field-reference.asciidoc[]
+
 :edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/multiple-pipelines.asciidoc
 include::static/multiple-pipelines.asciidoc[]
 

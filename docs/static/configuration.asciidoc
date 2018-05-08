@@ -317,9 +317,9 @@ will not work in an input block.
 ==== Field References
 
 It is often useful to be able to refer to a field by name. To do this,
-you can use the Logstash field reference syntax.
+you can use the Logstash <<field-references,field reference syntax>>.
 
-The syntax to access a field is `[fieldname]`. If you are referring to a
+The basic syntax to access a field is `[fieldname]`. If you are referring to a
 **top-level field**, you can omit the `[]` and simply use `fieldname`.
 To refer to a **nested field**, you specify
 the full path to that field: `[top-level field][nested field]`.
