@@ -9,6 +9,15 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public final class FieldReference {
+    /**
+     * A custom unchecked {@link RuntimeException} that can be thrown by parsing methods when
+     * when they encounter an input with illegal syntax.
+     */
+    public static class IllegalSyntaxException extends RuntimeException {
+        IllegalSyntaxException(String message) {
+            super(message);
+        }
+    }
 
     /**
      * This type indicates that the referenced that is the metadata of an {@link Event} found in
@@ -182,6 +191,13 @@ public final class FieldReference {
         }
         if (splitPoint < length || length == 0) {
             path.add(reference.subSequence(splitPoint, length).toString().intern());
+        }
+        if (path.isEmpty()) {
+            // https://github.com/elastic/logstash/issues/9524
+            // prevents an ArrayIndexOutOfBounds exception that would crash the entire Logstash process.
+            // If the path is empty, we have an illegal syntax input and are unable to build a valid
+            // FieldReference; throw a runtime exception, which can be handled downstream.
+            throw new IllegalSyntaxException(String.format("Invalid FieldReference: `%s`", reference.toString()));
         }
         path.trimToSize();
         final String key = path.remove(path.size() - 1).intern();
