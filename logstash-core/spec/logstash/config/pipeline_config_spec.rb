@@ -73,7 +73,7 @@ describe LogStash::Config::PipelineConfig do
     end
   end
 
-  it "returns the pipeline's protocols" do
-    expect(subject.protocols).to eq(ordered_config_parts.map { | config_part | config_part.protocol })
+  it "returns the pipeline's protocol" do
+    expect(subject.protocol).to eq((ordered_config_parts.uniq { | config_part | config_part.protocol })[0].protocol
   end
 end

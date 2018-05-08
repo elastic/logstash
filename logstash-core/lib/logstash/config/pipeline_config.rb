@@ -8,6 +8,11 @@ module LogStash module Config
     attr_reader :source, :pipeline_id, :config_parts, :settings, :read_at
 
     def initialize(source, pipeline_id, config_parts, settings)
+      num_unique_protocols = (config_parts.uniq { |config_part | config_part.protocol.to_s }).length
+      if num_unique_protocols > 1
+        raise ArgumentError 'There should be exactly one unique protocol in config_parts. Found ' + num_unique_protocols
+      end
+        
       @source = source
       @pipeline_id = pipeline_id
       # We can't use Array() since config_parts may be a java object!
