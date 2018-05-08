@@ -49,7 +49,13 @@ public final class QueueUpgrade {
                     try (final MmapPageIOV1 iov1 = new MmapPageIOV1(
                         num, Ints.checkedCast(v1PageFile.length()), path
                     )) {
-                        final Checkpoint cp = cpIo.read(cpIo.tailFileName(num));
+                        final String cpFilename = cpIo.tailFileName(num);
+                        final Checkpoint cp;
+                        if (path.resolve(cpFilename).toFile().exists()) {
+                            cp = cpIo.read(cpFilename);
+                        } else {
+                            cp = cpIo.read("checkpoint.head");
+                        }
                         final int count = cp.getElementCount();
                         final long minSeqNum = cp.getMinSeqNum();
                         iov1.open(minSeqNum, count);
@@ -75,8 +81,6 @@ public final class QueueUpgrade {
                         raf.writeByte((int) MmapPageIOV2.VERSION_TWO);
                     }
                 }
-            } catch (final Exception ex) {
-                throw new IllegalStateException("Queue upgrade to V2 failed.", ex);
             }
             Files.write(upgradeFile.toPath(), Ints.toByteArray(2), StandardOpenOption.CREATE);
         } else {
