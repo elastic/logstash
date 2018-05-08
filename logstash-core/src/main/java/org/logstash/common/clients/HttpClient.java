@@ -314,7 +314,7 @@ public class HttpClient {
     /**
      * Start building an instance of the HTTP client.
      *
-     * @return An {@see OptionsBuilder} instance to allow configuration of the HTTP client before building it.
+     * @return An OptionsBuilder instance to allow configuration of the HTTP client before building it.
      */
     public static OptionsBuilder builder() {
         return new OptionsBuilder();
@@ -353,7 +353,7 @@ public class HttpClient {
          * when making requests. Defaults to HTTP.
          *
          * @param protocol Server protocol, HTTP or HTTPS
-         * @return Same {@see OptionsBuilder } instance to continue configuring HTTP client
+         * @return Same OptionsBuilder instance to continue configuring HTTP client
          */
         public OptionsBuilder protocol(Protocol protocol) {
             this.protocol = protocol;
@@ -365,7 +365,7 @@ public class HttpClient {
          * Defaults to localhost.
          *
          * @param hostname Server hostname
-         * @return Same {@see OptionsBuilder } instance to continue configuring HTTP client
+         * @return Same OptionsBuilder instance to continue configuring HTTP client
          */
         public OptionsBuilder hostname(String hostname) {
             this.hostname = hostname;
@@ -377,7 +377,7 @@ public class HttpClient {
          * to 80.
          *
          * @param port Server port
-         * @return Same {@see OptionsBuilder } instance to continue configuring HTTP client
+         * @return Same OptionsBuilder instance to continue configuring HTTP client
          */
         public OptionsBuilder port(int port) {
             this.port = port;
@@ -389,7 +389,7 @@ public class HttpClient {
          * to /.
          *
          * @param basePath Server basePath
-         * @return Same {@see OptionsBuilder } instance to continue configuring HTTP client
+         * @return Same OptionsBuilder instance to continue configuring HTTP client
          */
         public OptionsBuilder basePath(String basePath) {
             this.basePath = basePath;
@@ -402,7 +402,7 @@ public class HttpClient {
          *
          * @param username Basic authentication username
          * @param password Basic authentication password
-         * @return Same {@see OptionsBuilder } instance to continue configuring HTTP client
+         * @return Same OptionsBuilder instance to continue configuring HTTP client
          */
         public OptionsBuilder basicAuth(String username, String password) {
             this.basicAuthUsername = username;
@@ -417,7 +417,7 @@ public class HttpClient {
          * the system are used.
          *
          * @param caCertificatePath Path to Certificate Authority certificate file
-         * @return Same {@see OptionsBuilder } instance to continue configuring HTTP client
+         * @return Same OptionsBuilder instance to continue configuring HTTP client
          * @throws OptionsBuilderException
          */
         public OptionsBuilder sslCaCertificate(String caCertificatePath) throws OptionsBuilderException {
@@ -430,7 +430,7 @@ public class HttpClient {
          * the ClientKeyExchange step. By default no client certificate is presented to the server.
          *
          * @param clientCertificatePath Path to client certificate file
-         * @return Same {@see OptionsBuilder } instance to continue configuring HTTP client
+         * @return Same OptionsBuilder instance to continue configuring HTTP client
          * @throws OptionsBuilderException
          */
         public OptionsBuilder sslClientCertificate(String clientCertificatePath) throws OptionsBuilderException {
@@ -443,7 +443,7 @@ public class HttpClient {
          * default no client private key is used.
          *
          * @param clientPrivateKeyPath Path to client private key file
-         * @return Same {@see OptionsBuilder } instance to continue configuring HTTP client
+         * @return Same OptionsBuilder instance to continue configuring HTTP client
          * @throws OptionsBuilderException
          */
         public OptionsBuilder sslClientPrivateKey(String clientPrivateKeyPath) throws OptionsBuilderException {
@@ -454,7 +454,7 @@ public class HttpClient {
         /**
          * Tell the HTTP client not to verify the server's hostname against the server's certificate.
          *
-         * @return Same {@see OptionsBuilder } instance to continue configuring HTTP client
+         * @return Same OptionsBuilder instance to continue configuring HTTP client
          */
         public OptionsBuilder sslNoVerifyServerHostname() {
             this.sslVerifyServerHostname = false;
@@ -464,7 +464,7 @@ public class HttpClient {
         /**
          * Tell the HTTP client not to verify the server's certificate against a Certificate Authority.
          *
-         * @return Same {@see OptionsBuilder } instance to continue configuring HTTP client
+         * @return Same OptionsBuilder instance to continue configuring HTTP client
          */
         public OptionsBuilder sslNoVerifyServerCredentials() {
             this.sslVerifyServerCredentials = false;
@@ -474,7 +474,7 @@ public class HttpClient {
         /**
          * Tell the HTTP client not to perform any SSL verification checks.
          *
-         * @return Same {@see OptionsBuilder } instance to continue configuring HTTP client
+         * @return Same OptionsBuilder instance to continue configuring HTTP client
          */
         public OptionsBuilder sslNoVerify() {
             return this.sslNoVerifyServerHostname()
