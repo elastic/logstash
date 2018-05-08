@@ -3,7 +3,9 @@ package org.logstash;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+
 import java.util.concurrent.ConcurrentHashMap;
 import org.jruby.RubyString;
 
@@ -40,6 +42,26 @@ public final class FieldReference {
      * Holds all existing {@link FieldReference} instances for de-duplication.
      */
     private static final Map<FieldReference, FieldReference> DEDUP = new HashMap<>(64);
+
+    /**
+     * Controls the global parsing mode, in support of the transition to strict-mode parsing.
+     */
+    private static ParsingMode PARSING_MODE = ParsingMode.LEGACY;
+
+    /**
+     * The {@link ParsingMode} enum holds references to the supported parsing modes, in
+     * support of the transition to strict-mode parsing.
+     */
+    enum ParsingMode {
+        LEGACY(new LegacyTokenizer()),
+        ;
+
+        final Tokenizer tokenizer;
+
+        ParsingMode(final Tokenizer tokenizer) {
+            this.tokenizer = tokenizer;
+        }
+    }
 
     /**
      * Unique {@link FieldReference} pointing at the timestamp field in a {@link Event}.
@@ -173,32 +195,8 @@ public final class FieldReference {
     }
 
     private static FieldReference parse(final CharSequence reference) {
-        final ArrayList<String> path = new ArrayList<>();
-        final int length = reference.length();
-        int splitPoint = 0;
-        for (int i = 0; i < length; ++i) {
-            final char seen = reference.charAt(i);
-            if (seen == '[' || seen == ']') {
-                if (i == 0) {
-                    splitPoint = 1;
-                }
-                if (i > splitPoint) {
-                    path.add(reference.subSequence(splitPoint, i).toString().intern());
-                }
-                splitPoint = i + 1;
-            }
-        }
-        if (splitPoint < length || length == 0) {
-            path.add(reference.subSequence(splitPoint, length).toString().intern());
-        }
-        if (path.isEmpty()) {
-            // https://github.com/elastic/logstash/issues/9524
-            // prevents an ArrayIndexOutOfBounds exception that would crash the entire Logstash process.
-            // If the path is empty, we have an illegal syntax input and are unable to build a valid
-            // FieldReference; throw a runtime exception, which can be handled downstream.
-            throw new IllegalSyntaxException(String.format("Invalid FieldReference: `%s`", reference.toString()));
-        }
-        path.trimToSize();
+        final List<String> path = PARSING_MODE.tokenizer.tokenize(reference);
+
         final String key = path.remove(path.size() - 1).intern();
         final boolean empty = path.isEmpty();
         if (empty && key.equals(Event.METADATA)) {
@@ -209,6 +207,54 @@ public final class FieldReference {
             );
         } else {
             return new FieldReference(path.toArray(EMPTY_STRING_ARRAY), key, DATA_CHILD);
+        }
+    }
+
+    /**
+     * A temporary private interface to support the transition to strict-mode tokenizing.
+     */
+    private interface Tokenizer {
+        List<String> tokenize(final CharSequence reference);
+    }
+
+    /**
+     * The {@link LegacyTokenizer} is verbatim the tokenizer code that has long been a part
+     * of {@link FieldReference#parse(CharSequence)}.
+     *
+     * While it handles fully-legal bracket-style and no-bracket inputs, it behaves in
+     * surprising ways when given illegal-syntax inputs.
+     */
+    private static class LegacyTokenizer implements Tokenizer {
+        @Override
+        public List<String> tokenize(CharSequence reference) {
+            final ArrayList<String> path = new ArrayList<>();
+            final int length = reference.length();
+            int splitPoint = 0;
+            for (int i = 0; i < length; ++i) {
+                final char seen = reference.charAt(i);
+                if (seen == '[' || seen == ']') {
+                    if (i == 0) {
+                        splitPoint = 1;
+                    }
+                    if (i > splitPoint) {
+                        path.add(reference.subSequence(splitPoint, i).toString().intern());
+                    }
+                    splitPoint = i + 1;
+                }
+            }
+            if (splitPoint < length || length == 0) {
+                path.add(reference.subSequence(splitPoint, length).toString().intern());
+            }
+            if (path.isEmpty()) {
+                // https://github.com/elastic/logstash/issues/9524
+                // prevents an ArrayIndexOutOfBounds exception that would crash the entire Logstash process.
+                // If the path is empty, we have an illegal syntax input and are unable to build a valid
+                // FieldReference; throw a runtime exception, which can be handled downstream.
+                throw new IllegalSyntaxException(String.format("Invalid FieldReference: `%s`", reference.toString()));
+            }
+            path.trimToSize();
+
+            return path;
         }
     }
 }
