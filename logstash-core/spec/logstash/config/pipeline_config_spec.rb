@@ -1,6 +1,7 @@
 # encoding: utf-8
 require "logstash/config/pipeline_config"
 require "logstash/config/source/local"
+require_relative "../../support/helpers"
 
 describe LogStash::Config::PipelineConfig do
   let(:source) { LogStash::Config::Source::Local }
