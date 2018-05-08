@@ -5,19 +5,23 @@ module LogStash module Config
   class PipelineConfig
     include LogStash::Util::Loggable
 
-    attr_reader :source, :pipeline_id, :config_parts, :settings, :read_at
+    attr_reader :source, :pipeline_id, :config_parts, :protocol, :settings, :read_at
 
     def initialize(source, pipeline_id, config_parts, settings)
-      num_unique_protocols = (config_parts.uniq { |config_part | config_part.protocol.to_s }).length
-      if num_unique_protocols > 1
-        raise ArgumentError 'There should be exactly one unique protocol in config_parts. Found ' + num_unique_protocols
+      config_parts_array = config_parts.is_a?(Array) ? config_parts : [config_parts]
+      unique_protocols = config_parts_array
+        .map { |config_part| config_part.protocol.to_s }
+        .uniq
+
+      if unique_protocols.length > 1
+        raise(ArgumentError, "There should be exactly 1 unique protocol in config_parts. Found #{unique_protocols.length.to_s}.")
       end
         
       @source = source
       @pipeline_id = pipeline_id
       # We can't use Array() since config_parts may be a java object!
-      config_parts_array = config_parts.is_a?(Array) ? config_parts : [config_parts]
       @config_parts = config_parts_array.sort_by { |config_part| [config_part.protocol.to_s, config_part.id] }
+      @protocol = unique_protocols[0]
       @settings = settings
       @read_at = Time.now
     end
@@ -32,10 +36,6 @@ module LogStash module Config
 
     def system?
       @settings.get("pipeline.system")
-    end
-
-    def protocols
-      @config_parts.map { |config_part| config_part.protocol }
     end
 
     def ==(other)
