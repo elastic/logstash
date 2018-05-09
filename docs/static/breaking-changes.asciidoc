@@ -1,5 +1,16 @@
 [[breaking-changes]]
-== Breaking Changes
+
+== Breaking Changes Across PQ Versions
+
+If you are upgrading between Logstash versions and use the persistent queue, we strongly recommend draining or deleting
+your persistent queue prior to the upgrade due to data incompatibilities. We are currently working on resolving these issues in our 6.3.0 release, but extra steps will need to be taken until then.
+
+Drain the persistent queue be starting Logstash with the `queue.drain` setting enabled, followed by signalling Logstash to shutdown, then waiting for it to shutdown cleanly. This may take some time if you have a large queue backlog.
+
+This will not be the case when moving between versions greater than or equal to 6.3.0.
+
+
+== Breaking Changes in 6.0.0
 
 This section discusses the changes that you need to be aware of when migrating to Logstash 6.0.0 from the previous major releases.
 
