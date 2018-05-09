@@ -8,7 +8,7 @@ If you are upgrading Logstash and use the persistent queue, we strongly recommen
 
 To drain the queue, enable the `queue.drain` setting, and then shutdown Logstash. Wait for it to shutdown completely. This may take a while if you have a large queue backlog.
 
-We are working to resolve issues with data incompatibilities in our 6.3.0 release. These steps won’t be required when you upgrade to versions greater than or equal to 6.3.0.
+We are working to resolve issues with data incompatibilities in our 6.3.0 release. These steps won’t be required when you upgrade from a 6.3.0 or greater release to a later 6.x Logstash release.
 
 == Breaking Changes in 6.0.0
 
