@@ -21,7 +21,7 @@ import org.logstash.ackedqueue.io.MmapPageIOV1;
 import org.logstash.ackedqueue.io.MmapPageIOV2;
 import org.logstash.ackedqueue.io.PageIO;
 
-final class QueueUpgrade {
+public final class QueueUpgrade {
 
     private static final Logger LOGGER = LogManager.getLogger(QueueUpgrade.class);
 
