@@ -17,28 +17,98 @@ public final class FieldReferenceTest {
     public void testParseSingleBareField() throws Exception {
         FieldReference f = FieldReference.from("foo");
         assertEquals(0, f.getPath().length);
-        assertEquals(f.getKey(), "foo");
+        assertEquals("foo", f.getKey());
     }
 
     @Test
     public void testParseSingleFieldPath() throws Exception {
         FieldReference f = FieldReference.from("[foo]");
         assertEquals(0, f.getPath().length);
-        assertEquals(f.getKey(), "foo");
+        assertEquals("foo", f.getKey());
     }
 
     @Test
     public void testParse2FieldsPath() throws Exception {
         FieldReference f = FieldReference.from("[foo][bar]");
-        assertArrayEquals(f.getPath(), new String[]{"foo"});
-        assertEquals(f.getKey(), "bar");
+        assertArrayEquals(new String[]{"foo"}, f.getPath());
+        assertEquals("bar", f.getKey());
     }
 
     @Test
     public void testParse3FieldsPath() throws Exception {
-        FieldReference f = FieldReference.from("[foo][bar]]baz]");
-        assertArrayEquals(f.getPath(), new String[]{"foo", "bar"});
-        assertEquals(f.getKey(), "baz");
+        FieldReference f = FieldReference.from("[foo][bar][baz]");
+        assertArrayEquals(new String[]{"foo", "bar"}, f.getPath());
+        assertEquals("baz", f.getKey());
+    }
+
+    @Test
+    public void testParseInvalidNoCloseBracket() throws Exception {
+        FieldReference f = FieldReference.from("[foo][bar][baz");
+        assertEquals(0, f.getPath().length);
+        assertEquals("[foo][bar][baz", f.getKey());
+    }
+
+    @Test
+    public void testParseInvalidNoInitialOpenBracket() throws Exception {
+        FieldReference f = FieldReference.from("foo[bar][baz]");
+        assertEquals(0, f.getPath().length);
+        assertEquals("foo[bar][baz]", f.getKey());
+    }
+
+    @Test
+    public void testParseInvalidMissingMiddleBracket() throws Exception {
+        FieldReference f = FieldReference.from("[foo]bar[baz]");
+        assertEquals(0, f.getPath().length);
+        assertEquals("[foo]bar[baz]", f.getKey());
+    }
+
+    @Test
+    public void testParseInvalidOnlyOpenBracket() throws Exception {
+        FieldReference f = FieldReference.from("[");
+        assertEquals(0, f.getPath().length);
+        assertEquals("[", f.getKey());
+    }
+
+    @Test
+    public void testParseInvalidOnlyCloseBracket() throws Exception {
+        FieldReference f = FieldReference.from("]");
+        assertEquals(0, f.getPath().length);
+        assertEquals("]", f.getKey());
+    }
+
+    @Test
+    public void testParseInvalidLotsOfOpenBrackets() throws Exception {
+        FieldReference f = FieldReference.from("[[[[[[[[[[[]");
+        assertEquals(0, f.getPath().length);
+        assertEquals("[[[[[[[[[[[]", f.getKey());
+    }
+
+    @Test
+    public void testParseInvalidDoubleCloseBrackets() throws Exception {
+        FieldReference f = FieldReference.from("[foo]][bar]");
+        assertEquals(0, f.getPath().length);
+        assertEquals("[foo]][bar]", f.getKey());
+    }
+
+    @Test
+    public void testParseNestingSquareBrackets() throws Exception {
+        FieldReference f = FieldReference.from("[this[is]terrible]");
+        assertEquals(0, f.getPath().length);
+        assertEquals("this[is]terrible", f.getKey());
+    }
+
+    @Test
+    public void testParseChainedNestingSquareBrackets() throws Exception {
+        FieldReference f = FieldReference.from("[this[is]terrible][but][it[should[work]]]");
+        assertArrayEquals(new String[]{"this[is]terrible", "but"}, f.getPath());
+        assertEquals("it[should[work]]", f.getKey());
+    }
+
+    @Test
+    public void testParseLiteralSquareBrackets() throws Exception {
+        FieldReference f = FieldReference.from("this[index]");
+        assertEquals(0, f.getPath().length);
+        assertEquals("this[index]", f.getKey());
     }
 
     @Test
