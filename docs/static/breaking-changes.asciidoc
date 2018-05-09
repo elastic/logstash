@@ -1,6 +1,6 @@
 [[breaking-changes]]
 
-===== Breaking Changes Across PQ Versions Prior to Logstash 6.3.0
+=== Breaking Changes Across PQ Versions Prior to Logstash 6.3.0
 
 The following applies only to users upgrading from Logstash installations that used the persistent queue prior to 6.3.0.
 
