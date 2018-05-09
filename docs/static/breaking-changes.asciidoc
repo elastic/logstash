@@ -2,6 +2,8 @@
 
 == Breaking Changes Across PQ Versions
 
+We regret to say that due to several serialization issues users will have to take some extra steps when upgrading Logstash instances using persistent queues. While we do strive to maintain backward compatibility within a given major release these bugs have forced us to break that compatibility to ensure correctness of operation. For more technical details on this issue please check our tracking github issue for this matter, https://github.com/elastic/logstash/issues/9494[#9494].
+
 If you are upgrading Logstash and use the persistent queue, we strongly recommend that you drain or delete the persistent queue before you upgrade.
 
 To drain the queue, enable the `queue.drain` setting, and then shutdown Logstash. Wait for it to shutdown completely. This may take a while if you have a large queue backlog.
