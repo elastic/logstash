@@ -1,6 +1,6 @@
 [[breaking-changes]]
 
-== Breaking Changes Across PQ Versions Prior to Logstash 6.3.0
+===== Breaking Changes Across PQ Versions Prior to Logstash 6.3.0
 
 The following applies only to users upgrading from Logstash installations that used the persistent queue prior to 6.3.0.
 
@@ -10,12 +10,12 @@ If you are upgrading Logstash from a pre 6.3.0 version and use the persistent qu
 
 To drain the queue, enable the `queue.drain` setting, and then shutdown Logstash. Wait for it to shutdown completely. This may take a while if you have a large queue backlog.
 
-== Breaking Changes in 6.0.0
+=== Breaking Changes in 6.0.0
 
 This section discusses the changes that you need to be aware of when migrating to Logstash 6.0.0 from the previous major releases.
 
 [float]
-=== Changes in Logstash Core
+==== Changes in Logstash Core
 
 These changes can impact any instance of Logstash and are plugin agnostic, but only if you are using the features that are impacted.
 
