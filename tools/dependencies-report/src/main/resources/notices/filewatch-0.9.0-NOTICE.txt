@@ -1,0 +1,1 @@
+License is MIT (very permissive).
