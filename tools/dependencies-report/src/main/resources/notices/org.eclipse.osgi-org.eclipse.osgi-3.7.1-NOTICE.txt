@@ -1,0 +1,10 @@
+source: https://github.com/eclipse/rt.equinox.framework/blob/7c3821768249b76192cd52c9c8e60100e3a1a1f7/bundles/org.eclipse.osgi/pom.xml
+
+  Copyright (c) 2012 Eclipse Foundation.
+  All rights reserved. This program and the accompanying materials
+  are made available under the terms of the Eclipse Distribution License v1.0
+  which accompanies this distribution, and is available at
+  http://www.eclipse.org/org/documents/edl-v10.php
+
+  Contributors:
+     Igor Fedorenko - initial implementation

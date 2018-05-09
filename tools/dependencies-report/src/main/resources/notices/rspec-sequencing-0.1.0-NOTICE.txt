@@ -1,0 +1,3 @@
+source: https://github.com/elastic/rspec-sequencing/blob/v0.1.0/LICENSE
+
+Copyright (c) 2016 Elasticsearch <http://www.elastic.co>
