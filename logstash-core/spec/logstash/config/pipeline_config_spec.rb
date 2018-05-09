@@ -13,7 +13,7 @@ describe LogStash::Config::PipelineConfig do
       org.logstash.common.SourceWithMetadata.new("file", "/tmp/3", 0, 0, "input { generator3 }"),
       org.logstash.common.SourceWithMetadata.new("file", "/tmp/4", 0, 0, "input { generator4 }"),
       org.logstash.common.SourceWithMetadata.new("file", "/tmp/5", 0, 0, "input { generator5 }"),
-      org.logstash.common.SourceWithMetadata.new("file", "/tmp/6", 0, 0, "input { generator6 }")
+      org.logstash.common.SourceWithMetadata.new("file", "/tmp/6", 0, 0, "input { generator6 }"),
     ]
   end
 
