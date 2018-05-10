@@ -1,0 +1,113 @@
+
+==========
+Notice for: bundler-1.16.0
+----------
+
+TEST
+==========
+Notice for: bundler-1.16.1
+----------
+
+TEST-bundler-1.16.1
+
+==========
+Notice for: com.fasterxml.jackson.core:jackson-core-2.7.3
+----------
+
+TEST
+
+==========
+Notice for: com.fasterxml.jackson.core:jackson-core-2.9.1
+----------
+
+TEST
+
+==========
+Notice for: com.fasterxml.jackson.core:jackson-core-2.9.4
+----------
+
+TEST
+
+==========
+Notice for: com.google.errorprone:javac-shaded-9-dev-r4023-3
+----------
+
+TEST
+
+==========
+Notice for: commons-io:commons-io-2.5
+----------
+
+TEST
+
+==========
+Notice for: control.js-
+----------
+
+TEST
+
+==========
+Notice for: filesize-0.0.4
+----------
+
+TEST
+
+==========
+Notice for: gradle.plugin.com.github.jk1:gradle-license-report-0.7.1
+----------
+
+TEST
+
+==========
+Notice for: jar-dependencies-0.3.10
+----------
+
+TEST
+
+==========
+Notice for: jar-dependencies-0.3.11
+----------
+
+TEST
+
+==========
+Notice for: jar-dependencies-0.3.12
+----------
+
+TEST
+
+==========
+Notice for: jruby-openssl-0.9.20
+----------
+
+TEST
+
+==========
+Notice for: jruby-openssl-0.9.21
+----------
+
+TEST
+
+==========
+Notice for: jruby-readline-1.1.1
+----------
+
+TEST
+
+==========
+Notice for: json-parser-
+----------
+
+TEST
+
+==========
+Notice for: junit:junit-4.12
+----------
+
+TEST
+
+==========
+Notice for: org.codehaus.janino:commons-compiler-3.0.8
+----------
+
+TEST
