@@ -1,0 +1,53 @@
+import org.yaml.snakeyaml.Yaml
+
+// fetch version from Logstash's master versions.yml file
+def versionMap = (Map) (new Yaml()).load(new File("$projectDir/../../versions.yml").text)
+
+description = """Logstash Dependency Reporting Utility"""
+version = versionMap['logstash-core']
+String jacksonVersion = versionMap['jackson']
+
+repositories {
+  mavenCentral()
+  jcenter()
+}
+
+buildscript {
+  repositories {
+    mavenCentral()
+    jcenter()
+  }
+  dependencies {
+    classpath 'org.yaml:snakeyaml:1.17'
+    classpath 'com.github.jengelman.gradle.plugins:shadow:1.2.4'
+  }
+}
+
+dependencies {
+  compile 'commons-io:commons-io:2.6'
+  compile 'org.apache.commons:commons-csv:1.5'
+  compile "com.fasterxml.jackson.core:jackson-core:${jacksonVersion}"
+  compile "com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}"
+  compile "com.fasterxml.jackson.core:jackson-annotations:${jacksonVersion}"
+  testCompile 'junit:junit:4.12'
+}
+
+javadoc {
+  enabled = false
+}
+
+test {
+  // We need to force IPV4 usage to make WireMock tests portable between *nix and Windows.
+  // For details see: https://github.com/elastic/logstash/pull/8372
+  jvmArgs '-Djava.net.preferIPv4Stack=true'
+}
+
+apply plugin: 'com.github.johnrengelman.shadow'
+
+shadowJar {
+  baseName = 'dependencies-report'
+  classifier = null
+  version = null
+}
+
+assemble.dependsOn shadowJar

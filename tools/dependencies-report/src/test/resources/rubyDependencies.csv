@@ -1,0 +1,14 @@
+name,version,url,license
+bundler,1.16.1,http://bundler.io,MIT
+bundler,1.16.0,http://bundler.io,MIT
+filesize,0.0.4,http://filesize.rubyforge.org/,UNKNOWN
+jar-dependencies,0.3.12,https://github.com/mkristian/jar-dependencies,MIT
+jar-dependencies,0.3.11,https://github.com/mkristian/jar-dependencies,MIT
+jar-dependencies,0.3.10,https://github.com/mkristian/jar-dependencies,MIT
+jruby-openssl,0.9.21,https://github.com/jruby/jruby-openssl,EPL-1.0|GPL-2.0|LGPL-2.1
+jruby-openssl,0.9.20,https://github.com/jruby/jruby-openssl,EPL-1.0|GPL-2.0|LGPL-2.1
+jruby-readline,1.1.1,https://github.com/jruby/jruby,EPL-1.0|GPL-2.0|LGPL-2.1
+com.fasterxml.jackson.core:jackson-core,2.7.3,https://github.com/FasterXML/jackson-core,Apache-2.0
+com.fasterxml.jackson.core:jackson-core,2.9.1,https://github.com/FasterXML/jackson-core,Apache-2.0
+control.js,,,MIT
+json-parser,,https://github.com/flori/json,Ruby
