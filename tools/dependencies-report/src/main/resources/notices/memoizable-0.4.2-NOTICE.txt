@@ -1,6 +1,6 @@
-source: https://github.com/jduff/numerizer/blob/v0.1.1/LICENSE
+source: https://github.com/dkubb/memoizable/blob/v0.4.2/LICENSE.md
 
-Copyright (c) 2009 Tom Preston-Werner
+Copyright (c) 2013 Dan Kubb, Erik Michaels-Ober
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the

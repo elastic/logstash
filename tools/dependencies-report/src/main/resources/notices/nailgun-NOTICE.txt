@@ -1,0 +1,5 @@
+source: https://github.com/facebook/nailgun/blob/nailgun-all-0.9.3/LICENSE.txt
+
+Nailgun Copyright © 2004-2012, Martian Software, Inc.
+
+Apache License

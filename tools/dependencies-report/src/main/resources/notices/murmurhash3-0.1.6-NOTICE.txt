@@ -1,6 +1,8 @@
-source: https://github.com/jduff/numerizer/blob/v0.1.1/LICENSE
+source: https://github.com/funny-falcon/murmurhash3-ruby/blob/v0.1.5/LICENSE
 
-Copyright (c) 2009 Tom Preston-Werner
+Copyright (c) 2012 Sokolov Yura 'funny-falcon'
+
+MIT License
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the

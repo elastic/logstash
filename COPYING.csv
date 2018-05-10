@@ -26,7 +26,6 @@ jnr-ffi,,https://github.com/jnr/jnr-jffi,Apache-2.0
 jnr-netdb,,http://github.com/jnr/jnr-netdb,Apache-2.0
 jnr-unixsocket,,https://github.com/jnr/jnr-unixsocket,Apache-2.0
 joda-time,,http://joda-time.sourceforge.net,Apache-2.0
-maven,,http://maven.apache.org/,Apache-2.0
 nailgun,,http://martiansoftware.com/nailgun,Apache-2.0
 options,,https://github.com/headius/options,Apache-2.0
 snakeyaml,,https://github.com/asomov/snakeyaml,Apache-2.0
