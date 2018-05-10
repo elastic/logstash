@@ -19,7 +19,7 @@ according to the RFC3164 format
 * *redis*: reads from a redis server, using both redis channels and redis lists.
 Redis is often used as a "broker" in a centralized Logstash installation, which
 queues Logstash events from remote Logstash "shippers".
-* *beats*: processes events sent by https://www.elastic.co/downloads/beats/filebeat[Filebeat].
+* *beats*: processes events sent by https://www.elastic.co/downloads/beats[Beats].
 
 For more information about the available inputs, see
 <<input-plugins,Input Plugins>>.
