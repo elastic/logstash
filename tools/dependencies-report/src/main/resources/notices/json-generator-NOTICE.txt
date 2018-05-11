@@ -1,6 +1,8 @@
-source: https://github.com/jduff/numerizer/blob/v0.1.1/LICENSE
+source: https://github.com/tmattia/json-generator/blob/v0.1.0/LICENSE.txt
 
-Copyright (c) 2009 Tom Preston-Werner
+Copyright (c) 2013 ThoughtWorks Brasil & Abril Midia
+
+MIT License
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
