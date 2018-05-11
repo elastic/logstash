@@ -1,3 +1,5 @@
+source: https://github.com/jnr/jnr-posix/blob/master/LICENSE.txt
+
 jnr-posix is released under a tri EPL/GPL/LGPL license. You can use it,
 redistribute it and/or modify it under the terms of the:
 

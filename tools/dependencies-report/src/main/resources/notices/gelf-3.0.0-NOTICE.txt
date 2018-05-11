@@ -1,3 +1,5 @@
+source: https://github.com/graylog-labs/gelf-rb/blob/v3.0.0/LICENSE
+
 Copyright (c) 2010-2016 Lennart Koopmann, Alexey Palazhchenko
 
 Permission is hereby granted, free of charge, to any person obtaining

@@ -1,3 +1,5 @@
+source: https://github.com/httprb/http/blob/v0.9.9/LICENSE.txt
+
 Copyright (c) 2011-2015 Tony Arcieri, Erik Michaels-Ober, Alexey V. Zapparov, Zachary Anker
 
 Permission is hereby granted, free of charge, to any person obtaining

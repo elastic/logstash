@@ -1,3 +1,5 @@
+source: https://github.com/dkubb/equalizer/blob/v0.0.10/LICENSE
+
 Copyright (c) 2009-2013 Dan Kubb
 Copyright (c) 2012 Markus Schirp (packaging)
 

@@ -1,3 +1,5 @@
+Source: https://github.com/ruby/gserver/blob/v0.0.1/LICENSE.txt
+
 Ruby is copyrighted free software by Yukihiro Matsumoto <matz@netlab.jp>.
 You can redistribute it and/or modify it under either the terms of the
 2-clause BSDL (see the file BSDL), or the conditions below:

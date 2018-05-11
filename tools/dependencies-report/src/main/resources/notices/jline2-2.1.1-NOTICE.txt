@@ -1,3 +1,5 @@
+source: https://github.com/jline/jline2/blob/master/LICENSE.txt
+
 Copyright (c) 2002-2016, the original author or authors.
 All rights reserved.
 

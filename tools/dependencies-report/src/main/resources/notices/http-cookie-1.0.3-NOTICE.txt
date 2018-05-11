@@ -1,3 +1,5 @@
+source: https://github.com/sparklemotion/http-cookie/blob/v1.0.3/LICENSE.txt
+
 Copyright (c) 2013 Akinori MUSHA
 Copyright (c) 2011-2012 Akinori MUSHA, Eric Hodel
 Copyright (c) 2006-2011 Aaron Patterson, Mike Dalessio
