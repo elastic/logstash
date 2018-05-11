@@ -1,6 +1,7 @@
 # encoding: utf-8
 require "logstash/config/pipeline_config"
 require "logstash/config/source/local"
+require_relative "../../support/helpers"
 
 describe LogStash::Config::PipelineConfig do
   let(:source) { LogStash::Config::Source::Local }
@@ -13,7 +14,6 @@ describe LogStash::Config::PipelineConfig do
       org.logstash.common.SourceWithMetadata.new("file", "/tmp/4", 0, 0, "input { generator4 }"),
       org.logstash.common.SourceWithMetadata.new("file", "/tmp/5", 0, 0, "input { generator5 }"),
       org.logstash.common.SourceWithMetadata.new("file", "/tmp/6", 0, 0, "input { generator6 }"),
-      org.logstash.common.SourceWithMetadata.new("string", "config_string", 0, 0, "input { generator1 }"),
     ]
   end
 
@@ -71,5 +71,14 @@ describe LogStash::Config::PipelineConfig do
         expect(subject.system?).to be_falsey
       end
     end
+  end
+
+  it "returns the pipeline's protocol" do
+    expect(subject.protocol).to eq((ordered_config_parts.uniq { | config_part | config_part.protocol })[0].protocol)
+  end
+
+  it "raises an ArgumentError when multiple protocols are supplied" do
+    unordered_config_parts << org.logstash.common.SourceWithMetadata.new("string", "config_string", 0, 0, "input { generator0 }")
+    expect { described_class.new(source, pipeline_id, unordered_config_parts, settings) }.to raise_error ArgumentError, /.+Found 2\./
   end
 end
