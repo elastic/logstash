@@ -55,7 +55,7 @@ dependency,dependencyUrl,licenseOverride
 "aws-sigv4:1.0.2",http://github.com/aws/aws-sdk-ruby,Apache-2.0
 "backports:3.11.3",http://github.com/marcandre/backports,MIT
 "bindata:2.4.3",http://github.com/dmendel/bindata,BSD-2-Clause
-"bouncycastle:",https://www.bouncycastle.org/license.html,MIT
+"bouncycastle:",https://www.bouncycastle.org,MIT
 "buftok:0.2.0",https://github.com/sferik/buftok, MIT OR Ruby|BSD-2-Clause
 "builder:3.2.3",http://onestepback.org,MIT
 "bundler:1.9.10",https://bundler.io/,MIT
