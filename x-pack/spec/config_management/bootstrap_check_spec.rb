@@ -11,7 +11,7 @@ require "config_management/bootstrap_check"
 describe LogStash::ConfigManagement::BootstrapCheck do
   let(:extension) { LogStash::ConfigManagement::Extension.new }
 
-  let(:system_settings) { LogStash::SETTINGS.clone }
+  let(:system_settings) { LogStash::Runner::SYSTEM_SETTINGS.clone }
 
   subject { described_class }
 

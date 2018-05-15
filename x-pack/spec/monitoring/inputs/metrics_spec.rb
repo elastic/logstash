@@ -70,7 +70,7 @@ describe LogStash::Inputs::Metrics do
     let(:number_of_events) { 20 }
     let(:config) { "input { generator { count => #{number_of_events} } } output { null { } }" }
 
-    let(:pipeline_settings) { LogStash::SETTINGS.clone.merge({
+    let(:pipeline_settings) { LogStash::Runner::SYSTEM_SETTINGS.clone.merge({
       "pipeline.id" => "main",
       "config.string" => config,
     }) }
@@ -184,7 +184,7 @@ describe LogStash::Inputs::Metrics do
       let(:license_subject) {   subject { described_class.new(options) }}
       let(:license_reader) { LogStash::LicenseChecker::LicenseReader.new(system_settings, 'monitoring', es_options)}
       let(:extension) {  LogStash::MonitoringExtension.new }
-      let(:system_settings) { LogStash::SETTINGS.clone }
+      let(:system_settings) { LogStash::Runner::SYSTEM_SETTINGS.clone }
       let(:license_status) { 'active'}
       let(:license_type) { 'trial' }
       let(:license_expiry_date) { Time.now + (60 * 60 * 24)}
