@@ -31,8 +31,6 @@ require "logstash/version"
 require 'logstash/plugins'
 require "logstash/modules/util"
 require "logstash/bootstrap_check/default_config"
-require "logstash/bootstrap_check/bad_java"
-require "logstash/bootstrap_check/bad_ruby"
 require "logstash/bootstrap_check/persisted_queue_config"
 require "set"
 
@@ -46,8 +44,6 @@ class LogStash::Runner < Clamp::StrictCommand
   # Ordered list of check to run before starting logstash
   # theses checks can be changed by a plugin loaded into memory.
   DEFAULT_BOOTSTRAP_CHECKS = [
-      LogStash::BootstrapCheck::BadRuby,
-      LogStash::BootstrapCheck::BadJava,
       LogStash::BootstrapCheck::DefaultConfig,
       LogStash::BootstrapCheck::PersistedQueueConfig
   ]
