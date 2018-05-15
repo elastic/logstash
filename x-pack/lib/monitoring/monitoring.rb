@@ -187,7 +187,7 @@ module LogStash
       settings.register(LogStash::Setting::String.new("node.uuid", ""))
     rescue => e
       logger.error e.message
-      logger.error e.backtrace
+      logger.error e.backtrace.to_s
       raise e
     end
   end

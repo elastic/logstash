@@ -385,10 +385,14 @@ if (!oss) {
       commandLine(['../bin/rspec', '-fd', 'qa/integration'])
   }
 
-  task runXPackUnitTests(type: Exec, dependsOn: installTestGems) {
-      workingDir "${projectDir}/x-pack"
-      standardOutput = new ExecLogOutputStream(System.out)
-      errorOutput = new ExecLogOutputStream(System.err)
-      commandLine(['../bin/rspec', 'spec', '-fd'])
+  task runXPackUnitTests(dependsOn: [tasks.getByPath(":logstash-xpack:rubyTests")]) {}
+
+  project(":logstash-xpack") {
+    ["rubyTests", "test"].each { tsk ->
+      tasks.getByPath(":logstash-xpack:" + tsk).configure {
+        dependsOn bootstrap
+      }
+    }
   }
+
 }

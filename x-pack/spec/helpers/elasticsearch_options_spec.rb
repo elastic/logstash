@@ -90,7 +90,7 @@ describe LogStash::Helpers::ElasticsearchOptions do
   let(:expected_username) { elasticsearch_username }
   let(:expected_password) { elasticsearch_password }
   let(:extension) {  LogStash::MonitoringExtension.new }
-  let(:system_settings) { LogStash::SETTINGS.clone }
+  let(:system_settings) { LogStash::Runner::SYSTEM_SETTINGS.clone }
 
   before :each do
     extension.additionals_settings(system_settings)
