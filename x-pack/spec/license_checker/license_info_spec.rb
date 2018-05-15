@@ -33,7 +33,7 @@ describe LogStash::LicenseChecker::XPackInfo do
   let(:issuer) { "elasticsearch"}
   let(:start_date_in_millis) { -1 }
   let(:extension) { LogStash::MonitoringExtension.new }
-  let(:system_settings) { LogStash::SETTINGS.clone }
+  let(:system_settings) { LogStash::Runner::SYSTEM_SETTINGS.clone }
   let(:elasticsearch_url) { ["https://localhost:9898"] }
   let(:elasticsearch_username) { "elastictest" }
   let(:elasticsearch_password) { "testchangeme" }

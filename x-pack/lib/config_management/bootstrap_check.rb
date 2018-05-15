@@ -6,8 +6,6 @@ require "logstash/bootstrap_check/default_config"
 require "logstash/logging/logger"
 require "logstash/errors"
 
-java_import java.util.concurrent.TimeUnit
-
 module LogStash
   module ConfigManagement
     # Override the default Logstash's bootstrap check

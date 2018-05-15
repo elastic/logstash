@@ -2,7 +2,6 @@
 # or more contributor license agreements. Licensed under the Elastic License;
 # you may not use this file except in compliance with the Elastic License.
 
-require "logstash/runner"
 require "logstash/logging/logger"
 require "config_management/bootstrap_check"
 require "config_management/elasticsearch_source"
@@ -19,6 +18,7 @@ module LogStash
 
       def before_bootstrap_checks(runner)
         if management?(runner)
+          require "logstash/runner"
           bootstrap_checks = LogStash::Runner::DEFAULT_BOOTSTRAP_CHECKS.dup
 
           # We only need to allow logstash to start without any parameters

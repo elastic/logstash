@@ -9,7 +9,10 @@ LogStash::XPACK_PATH = File.join(LogStash::ROOT, "x-pack")
 LogStash::OSS = ENV["OSS"] == "true" || !File.exists?(LogStash::XPACK_PATH)
 
 if !LogStash::OSS
-  $LOAD_PATH << File.join(LogStash::XPACK_PATH, "lib")
+  xpack_dir = File.join(LogStash::XPACK_PATH, "lib")
+  unless $LOAD_PATH.include?(xpack_dir)
+    $LOAD_PATH.unshift(xpack_dir)
+  end
 end
 
 require "clamp"
@@ -211,6 +214,7 @@ class LogStash::Runner < Clamp::StrictCommand
 
   # We configure the registry and load any plugin that can register hooks
   # with logstash, this needs to be done before any operation.
+  SYSTEM_SETTINGS = LogStash::SETTINGS.clone
   LogStash::PLUGIN_REGISTRY.setup!
 
   attr_reader :agent, :settings, :source_loader

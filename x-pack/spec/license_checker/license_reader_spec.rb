@@ -16,7 +16,7 @@ describe LogStash::LicenseChecker::LicenseReader do
   let(:elasticsearch_password) { "testchangeme" }
   let(:extension) { LogStash::MonitoringExtension.new }
   let(:system_settings) do
-    LogStash::SETTINGS.clone.tap do |system_settings|
+    LogStash::Runner::SYSTEM_SETTINGS.clone.tap do |system_settings|
       extension.additionals_settings(system_settings) # register defaults from extension
       apply_settings(settings, system_settings) # apply `settings`
     end
