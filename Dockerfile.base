@@ -35,8 +35,7 @@ RUN echo 'eval "$(rbenv init -)"' >> .bashrc && \
 # Create a cache for the dependencies based on the current master, any dependencies not cached will be downloaded at runtime
 RUN git clone https://github.com/elastic/logstash.git /tmp/logstash && \
     cd /tmp/logstash && \
-    rake test:install-core && \
-    ./gradlew compileJava compileTestJava && \
+    ./gradlew bootstrap compileJava compileTestJava && \
     cd qa/integration && \
     /home/logstash/.rbenv/shims/bundle install && \
     mv /tmp/logstash/vendor /tmp/vendor && \

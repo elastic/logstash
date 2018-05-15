@@ -20,11 +20,17 @@ class LogStash::DependencyReport < Clamp::Command
       jars.each { |d| csv << d }
     end
 
-    # Copy in COPYING.csv which is a best-effort, hand-maintained file of dependency license information.
-    File.open(output_path, "a+") do |file|
-      extra = File.join(File.dirname(__FILE__), "..", "..", "..", "COPYING.csv")
-      file.write(IO.read(extra))
+    puts "Wrote temporary ruby deps CSV to #{ruby_output_path}"
+
+    # Use gradle to find the rest and add to the ruby CSV
+    puts "Find gradle jar dependencies #{Dir.pwd}"
+    command = ["./gradlew", "generateLicenseReport", "-PlicenseReportInputCSV=#{ruby_output_path}", "-PlicenseReportOutputCSV=#{output_path}"]
+    puts "Executing #{command}"
+    system(*command)
+    if $?.exitstatus != 0
+      raise "Could not run gradle java deps! Exit status #{$?.exitstatus}"
     end
+
     nil
   end
 

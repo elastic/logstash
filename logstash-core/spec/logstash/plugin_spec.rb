@@ -1,4 +1,4 @@
-# encoding: utf-8
+:# encoding utf-8
 require "spec_helper"
 require "logstash/plugin"
 require "logstash/outputs/base"
