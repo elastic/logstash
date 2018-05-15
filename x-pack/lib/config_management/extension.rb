@@ -5,7 +5,6 @@
 require "logstash/environment"
 require "logstash/universal_plugin"
 require "logstash/logging/logger"
-require "logstash/runner"
 require "config_management/hooks"
 require "config_management/elasticsearch_source"
 require "config_management/bootstrap_check"
@@ -16,10 +15,12 @@ module LogStash
       include LogStash::Util::Loggable
 
       def register_hooks(hooks)
+        require "logstash/runner"
         hooks.register_hooks(LogStash::Runner, Hooks.new)
       end
 
       def additionals_settings(settings)
+        require "logstash/runner"
         logger.trace("Registering additionals settings")
 
         settings.register(LogStash::Setting::Boolean.new("xpack.management.enabled", false))

@@ -4,3 +4,10 @@ project(':logstash-core-benchmarks').projectDir = new File('./logstash-core/benc
 project(':logstash-integration-tests').projectDir = new File('./qa/integration')
 project(':ingest-converter').projectDir = new File('./tools/ingest-converter')
 project(':benchmark-cli').projectDir = new File('./tools/benchmark-cli')
+
+Boolean oss = System.getenv('OSS').equals('true')
+
+if (!oss) {
+  include ':logstash-xpack'
+  project(':logstash-xpack').projectDir = new File('./x-pack')
+}

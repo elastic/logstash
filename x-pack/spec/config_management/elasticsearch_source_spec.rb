@@ -15,7 +15,7 @@ describe LogStash::ConfigManagement::ElasticsearchSource do
   let(:elasticsearch_username) { "elastictest" }
   let(:elasticsearch_password) { "testchangeme" }
   let(:extension) { LogStash::ConfigManagement::Extension.new }
-  let(:system_settings) { LogStash::SETTINGS.clone }
+  let(:system_settings) { LogStash::Runner::SYSTEM_SETTINGS.clone }
   let(:mock_license_client)  { double("http_client") }
   let(:license_status) { 'active'}
   let(:license_type) { 'trial' }
