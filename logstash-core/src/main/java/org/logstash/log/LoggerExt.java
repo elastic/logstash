@@ -130,7 +130,7 @@ public class LoggerExt extends RubyObject {
     public static IRubyObject configureLogging(final ThreadContext context, final IRubyObject self,
                                         final IRubyObject args[]) {
         synchronized (CONFIG_LOCK) {
-            RubyString path = args.length > 1 ? (RubyString) args[1] : null;
+            IRubyObject path = args.length > 1 ? args[1] : null;
             String level = args[0].asJavaString();
             try {
                 setLevel(level, (path == null || path.isNil()) ? null : path.asJavaString());
