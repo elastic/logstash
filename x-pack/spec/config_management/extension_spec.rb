@@ -23,7 +23,7 @@ describe LogStash::ConfigManagement::Extension do
   end
 
   describe "#additionals_settings" do
-    subject(:settings) { LogStash::SETTINGS.clone }
+    subject(:settings) { LogStash::Runner::SYSTEM_SETTINGS.clone }
 
     before { extension.additionals_settings(settings) }
 
