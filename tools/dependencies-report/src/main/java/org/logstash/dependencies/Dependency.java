@@ -119,8 +119,16 @@ class Dependency implements Comparable<Dependency> {
         return "LS_HOME/tools/dependencies-report/src/main/resources/notices/" + noticeFilename();
     }
 
+    /**
+     * The name contains colons, which don't work on windows. The compatible name uses `!` which works on multiple platforms
+     * @return
+     */
+    public String fsCompatibleName() {
+        return name.replace(":", "!");
+    }
+
     public String noticeFilename() {
-        return String.format("%s-%s-NOTICE.txt", name, version != null ? version : "NOVERSION");
+        return String.format("%s-%s-NOTICE.txt", fsCompatibleName(), version != null ? version : "NOVERSION");
     }
 
     public String resourceName() {
