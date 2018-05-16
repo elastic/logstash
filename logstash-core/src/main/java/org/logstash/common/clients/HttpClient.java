@@ -72,20 +72,12 @@ public class HttpClient {
             headers.forEach(request::addHeader);
         }
 
-        CloseableHttpResponse response = null;
-
-        try {
-            response = httpClient.execute(request);
+        try (CloseableHttpResponse response = httpClient.execute(request)) {
             if (response.getStatusLine().getStatusCode() >= 400) {
                 throw new RequestFailedException("HEAD", url , response.getStatusLine().getReasonPhrase());
             }
-
         } catch (IOException e) {
             throw new RequestFailedException("HEAD", url ,e);
-        } finally {
-            if (response != null) {
-                response.close();
-            }
         }
     }
 
@@ -117,10 +109,7 @@ public class HttpClient {
             headers.forEach(request::addHeader);
         }
 
-        CloseableHttpResponse response = null;
-
-        try {
-            response = httpClient.execute(request);
+        try (CloseableHttpResponse response = httpClient.execute(request)) {
             if (response.getStatusLine().getStatusCode() >= 400) {
                 throw new RequestFailedException("HEAD", url , response.getStatusLine().getReasonPhrase());
             }
@@ -133,10 +122,6 @@ public class HttpClient {
 
         } catch (IOException e) {
             throw new RequestFailedException("GET", url, e);
-        } finally {
-            if (response != null) {
-                response.close();
-            }
         }
     }
 
@@ -174,10 +159,7 @@ public class HttpClient {
             headers.forEach(request::addHeader);
         }
 
-        CloseableHttpResponse response = null;
-
-        try {
-            response = httpClient.execute(request);
+        try(CloseableHttpResponse response = httpClient.execute(request)) {
             if (response.getStatusLine().getStatusCode() >= 400) {
                 throw new RequestFailedException("HEAD", url , response.getStatusLine().getReasonPhrase());
             }
@@ -189,10 +171,6 @@ public class HttpClient {
             return ((ByteArrayOutputStream) responseBody).toString("UTF-8");
         } catch (IOException e) {
             throw new RequestFailedException("POST", url, e);
-        } finally {
-            if (response != null) {
-                response.close();
-            }
         }
     }
 
@@ -230,10 +208,7 @@ public class HttpClient {
             headers.forEach(request::addHeader);
         }
 
-        CloseableHttpResponse response = null;
-
-        try {
-            response = httpClient.execute(request);
+        try (CloseableHttpResponse response = httpClient.execute(request)) {
             if (response.getStatusLine().getStatusCode() >= 400) {
                 throw new RequestFailedException("HEAD", url , response.getStatusLine().getReasonPhrase());
             }
@@ -245,10 +220,6 @@ public class HttpClient {
             return ((ByteArrayOutputStream) responseBody).toString("UTF-8");
         } catch (IOException e) {
             throw new RequestFailedException("PUT", url, e);
-        } finally {
-            if (response != null) {
-                response.close();
-            }
         }
     }
 
@@ -279,19 +250,12 @@ public class HttpClient {
             headers.forEach(request::addHeader);
         }
 
-        CloseableHttpResponse response = null;
-
-        try {
-            response = httpClient.execute(request);
+        try(CloseableHttpResponse response = httpClient.execute(request)) {
             if (response.getStatusLine().getStatusCode() >= 400) {
                 throw new RequestFailedException("HEAD", url , response.getStatusLine().getReasonPhrase());
             }
         } catch (IOException e) {
             throw new RequestFailedException("DELETE", url ,e);
-        } finally {
-            if (response != null) {
-                response.close();
-            }
         }
     }
 
