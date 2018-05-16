@@ -26,7 +26,7 @@ See the following topics for information about upgrading Logstash:
 * <<upgrading-using-package-managers>>
 * <<upgrading-using-direct-download>>
 * <<upgrading-logstash-6.0>>
-*  <<upgrading-pq-pre63>>
+* <<upgrading-logstash-pqs>>
 
 [[upgrading-using-package-managers]]
 === Upgrading Using Package Managers
@@ -113,7 +113,7 @@ in the Elastic Stack upgrade guide, Logstash 6.0 should not be upgraded before E
 practical and because some Logstash 6.0 plugins may attempt to use features of Elasticsearch 6.0 that did not exist
 in earlier versions.
 
-[[upgrading-pq-pre63]]
+[[upgrading-logstash-pqs]]
 === Upgrading Persistent Queue from Logstash 6.2.x and Earlier
 
 The following applies only if you are upgrading from Logstash installations prior
@@ -137,7 +137,7 @@ To drain the queue:
  
 . In the logstash.yml file, set `queue.drain:true`.
 . Restart Logstash for this setting to take effect. 
-. Shutdown Logstash, and wait for the queue to empty.
+. Shutdown Logstash (using CTRL+C or SIGTERM), and wait for the queue to empty.
 
 When the queue is empty:
 
