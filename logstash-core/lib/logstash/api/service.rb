@@ -1,6 +1,5 @@
 # encoding: utf-8
 require "logstash/instrument/collector"
-require "logstash/util/loggable"
 
 module LogStash
   module Api

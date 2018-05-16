@@ -1,5 +1,4 @@
 # encoding: utf-8
-require "logstash/util/loggable"
 require "fileutils"
 require "logstash/util/byte_value"
 require "logstash/util/substitution_variables"
@@ -10,7 +9,7 @@ module LogStash
 
     include LogStash::Util::SubstitutionVariables
     include LogStash::Util::Loggable
-    
+
     def initialize
       @settings = {}
       # Theses settings were loaded from the yaml file
@@ -119,7 +118,7 @@ module LogStash
       self.merge(deep_replace(flatten_hash(settings)), true)
       self
     end
-    
+
     def post_process
       if @post_process_callbacks
         @post_process_callbacks.each do |callback|
@@ -127,7 +126,7 @@ module LogStash
         end
       end
     end
-    
+
     def on_post_process(&block)
       @post_process_callbacks ||= []
       @post_process_callbacks << block
@@ -439,7 +438,7 @@ module LogStash
       def initialize(name, default=nil, strict=false)
         super(name, ::String, default, strict)
       end
-      
+
       def validate(path)
         super(path)
 

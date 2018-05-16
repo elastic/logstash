@@ -1,6 +1,4 @@
 # encoding: utf-8
-require "logstash/logging"
-require "logstash/util/loggable"
 require "logstash/util/secretstore"
 
 module ::LogStash::Util::SubstitutionVariables
