@@ -560,7 +560,7 @@ public class HttpClient {
         private static RSAPrivateKey getPrivateKey(String privateKeyPath) throws OptionsBuilderException {
             String privateKeyFileContents;
             try {
-                privateKeyFileContents = new String(Files.readAllBytes(Paths.get(privateKeyPath)));
+                privateKeyFileContents = new String(Files.readAllBytes(Paths.get(privateKeyPath)), StandardCharsets.UTF_8);
             } catch (IOException e) {
                 throw new OptionsBuilderException("Could not read private key file at " + privateKeyPath, e);
             }
