@@ -1,6 +1,5 @@
 # encoding: utf-8
 require "rubygems/package"
-require "logstash/util/loggable"
 require "logstash/plugin"
 require "logstash/plugins/hooks_registry"
 require "logstash/modules/scaffold"

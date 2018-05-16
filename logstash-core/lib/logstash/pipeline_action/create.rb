@@ -3,7 +3,6 @@ require "logstash/pipeline_action/base"
 require "logstash/pipeline"
 require "logstash/java_pipeline"
 require "logstash/converge_result"
-require "logstash/util/loggable"
 
 module LogStash module PipelineAction
   class Create < Base

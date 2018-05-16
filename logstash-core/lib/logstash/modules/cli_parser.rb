@@ -1,6 +1,4 @@
 # encoding: utf-8
-require "logstash/logging"
-
 module LogStash module Modules class CLIParser
   include LogStash::Util::Loggable
 

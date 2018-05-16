@@ -1,4 +1,3 @@
-require 'logstash/util/loggable'
 require 'logstash/compiler/lscl/lscl_grammar'
 
 java_import org.logstash.config.ir.PipelineIR
@@ -15,10 +14,10 @@ module LogStash; class Compiler
     input_graph = Graph.combine(*graph_sections.map {|s| s[:input] }).graph
     output_graph = Graph.combine(*graph_sections.map {|s| s[:output] }).graph
 
-    filter_graph = graph_sections.reduce(nil) do |acc, s| 
+    filter_graph = graph_sections.reduce(nil) do |acc, s|
       filter_section = s[:filter]
 
-      if acc.nil? 
+      if acc.nil?
         filter_section
       else
         acc.chain(filter_section)

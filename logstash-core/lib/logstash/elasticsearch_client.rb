@@ -1,5 +1,4 @@
 # encoding: utf-8
-require "logstash/logging"
 require "elasticsearch"
 require "elasticsearch/transport/transport/http/manticore"
 

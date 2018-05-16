@@ -1,7 +1,6 @@
 # encoding: utf-8
 require "logstash/event"
 require "logstash/plugin"
-require "logstash/logging"
 
 # This is the base class for logstash codecs.
 module LogStash::Codecs; class Base < LogStash::Plugin

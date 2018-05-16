@@ -1,6 +1,5 @@
 # encoding: utf-8
 require "pathname"
-require "logstash/util/loggable"
 
 # Logic from elasticsearch/core/src/main/java/org/elasticsearch/monitor/os/OsProbe.java
 # Move to ruby to remove any existing dependency

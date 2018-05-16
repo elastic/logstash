@@ -10,7 +10,6 @@ import org.jruby.Ruby;
 import org.jruby.RubyBoolean;
 import org.jruby.RubyClass;
 import org.jruby.RubyObject;
-import org.jruby.RubyString;
 import org.jruby.anno.JRubyClass;
 import org.jruby.anno.JRubyMethod;
 import org.jruby.javasupport.JavaUtil;
@@ -31,7 +30,7 @@ public class LoggerExt extends RubyObject {
     }
 
     @JRubyMethod
-    public IRubyObject initialize(final ThreadContext context, final IRubyObject loggerName) {
+    public LoggerExt initialize(final ThreadContext context, final IRubyObject loggerName) {
         logger = LogManager.getLogger(loggerName.asJavaString());
         return this;
     }
