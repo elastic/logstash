@@ -114,11 +114,11 @@ public class HttpClient {
                 throw new RequestFailedException("HEAD", url , response.getStatusLine().getReasonPhrase());
             }
 
-            OutputStream responseBody = new ByteArrayOutputStream();
+            ByteArrayOutputStream responseBody = new ByteArrayOutputStream();
             response
                 .getEntity()
                 .writeTo(responseBody);
-            return ((ByteArrayOutputStream) responseBody).toString("UTF-8");
+            return responseBody.toString("UTF-8");
 
         } catch (IOException e) {
             throw new RequestFailedException("GET", url, e);
@@ -164,11 +164,11 @@ public class HttpClient {
                 throw new RequestFailedException("HEAD", url , response.getStatusLine().getReasonPhrase());
             }
 
-            OutputStream responseBody = new ByteArrayOutputStream();
+            ByteArrayOutputStream responseBody = new ByteArrayOutputStream();
             response
                     .getEntity()
                     .writeTo(responseBody);
-            return ((ByteArrayOutputStream) responseBody).toString("UTF-8");
+            return responseBody.toString("UTF-8");
         } catch (IOException e) {
             throw new RequestFailedException("POST", url, e);
         }
@@ -213,11 +213,11 @@ public class HttpClient {
                 throw new RequestFailedException("HEAD", url , response.getStatusLine().getReasonPhrase());
             }
 
-            OutputStream responseBody = new ByteArrayOutputStream();
+            ByteArrayOutputStream responseBody = new ByteArrayOutputStream();
             response
                     .getEntity()
                     .writeTo(responseBody);
-            return ((ByteArrayOutputStream) responseBody).toString("UTF-8");
+            return responseBody.toString("UTF-8");
         } catch (IOException e) {
             throw new RequestFailedException("PUT", url, e);
         }
