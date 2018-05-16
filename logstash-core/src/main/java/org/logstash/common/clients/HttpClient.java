@@ -545,25 +545,15 @@ public class HttpClient {
         }
 
         private static X509Certificate getCertificate(String certificateFilePath) throws OptionsBuilderException {
-            FileInputStream fis;
-            try {
-                fis = new FileInputStream(certificateFilePath);
-            } catch (FileNotFoundException e) {
-                throw new OptionsBuilderException("Could not read certificate at " + certificateFilePath, e);
-            }
-
-            try {
+            try (FileInputStream fis = new FileInputStream(certificateFilePath)) {
                 CertificateFactory cf = CertificateFactory.getInstance("X.509");
                 return (X509Certificate) cf.generateCertificate(fis);
+            } catch (FileNotFoundException e) {
+                throw new OptionsBuilderException("Could not read certificate at " + certificateFilePath, e);
+            } catch (IOException e) {
+                throw new OptionsBuilderException("Could not close certificate file at " + certificateFilePath + " after reading it", e);
             } catch (Exception e) {
                 throw new OptionsBuilderException("Could not generate certificate from " + certificateFilePath, e);
-
-            } finally {
-                try {
-                    fis.close();
-                } catch (IOException e) {
-                    throw new OptionsBuilderException("Could not close certificate file at " + certificateFilePath + " after reading it", e);
-                }
             }
         }
 
