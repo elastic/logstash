@@ -39,16 +39,16 @@ public class HttpClientTest {
     public void canMakeHttpRequestWithCustomHostnameAndPort() throws Exception {
         final String BIND_ADDRESS = "127.0.0.1";
 
-        WireMockServer httpServer = new WireMockServer(options()
+        WireMockServer localhostHttpServer = new WireMockServer(options()
                 .dynamicPort()
                 .bindAddress(BIND_ADDRESS));
-        httpServer.start();
+        localhostHttpServer.start();
 
         try {
             final String path = "/api/hello";
             final String expectedResponseBody = "Hello, World";
 
-            httpServer.stubFor(get(urlPathEqualTo(path))
+            localhostHttpServer.stubFor(get(urlPathEqualTo(path))
                     .willReturn(aResponse()
                             .withStatus(200)
                             .withBody(expectedResponseBody))
@@ -56,12 +56,12 @@ public class HttpClientTest {
 
             HttpClient httpClient = HttpClient.builder()
                     .hostname(BIND_ADDRESS)
-                    .port(httpServer.port())
+                    .port(localhostHttpServer.port())
                     .build();
 
             assertThat(httpClient.get(path)).isEqualTo(expectedResponseBody);
         } finally {
-            httpServer.stop();
+            localhostHttpServer.stop();
         }
     }
 
