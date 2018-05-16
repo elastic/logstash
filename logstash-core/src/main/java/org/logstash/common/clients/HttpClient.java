@@ -303,6 +303,8 @@ public class HttpClient {
         private boolean sslVerifyServerHostname;
         private boolean sslVerifyServerCredentials;
 
+        private static final Pattern KEY_EXTRACTION_REGEXP =Pattern.compile(".*-----BEGIN (\\S+ )?PRIVATE KEY-----\n(.*)-----END (\\S+ )?PRIVATE KEY.*$", Pattern.DOTALL);
+
         private OptionsBuilder() {
             this.protocol = Protocol.HTTP;
             this.hostname = "localhost";
@@ -573,7 +575,6 @@ public class HttpClient {
                 throw new OptionsBuilderException("Could not read private key file at " + privateKeyPath, e);
             }
 
-            final Pattern KEY_EXTRACTION_REGEXP = Pattern.compile(".*-----BEGIN (\\S+ )?PRIVATE KEY-----\n(.*)-----END (\\S+ )?PRIVATE KEY.*$", Pattern.DOTALL);
             Matcher matcher = KEY_EXTRACTION_REGEXP.matcher(privateKeyFileContents);
 
             final String obeMessage = "Could not parse private key file at " + privateKeyPath;
