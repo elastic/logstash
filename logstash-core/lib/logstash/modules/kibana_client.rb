@@ -1,5 +1,4 @@
 # encoding: utf-8
-require "logstash/logging"
 require "logstash/json"
 require "manticore"
 

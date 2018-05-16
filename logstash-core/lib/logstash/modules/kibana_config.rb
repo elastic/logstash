@@ -1,6 +1,4 @@
 # encoding: utf-8
-require "logstash/logging"
-
 require_relative "file_reader"
 require_relative "kibana_settings"
 require_relative "kibana_dashboards"

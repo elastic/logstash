@@ -1,5 +1,4 @@
 # encoding: utf-8
-require "logstash/util/loggable"
 require "logstash/util"
 require "concurrent"
 

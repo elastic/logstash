@@ -33,6 +33,7 @@ import org.logstash.instrument.metrics.MetricExt;
 import org.logstash.instrument.metrics.NamespacedMetricExt;
 import org.logstash.instrument.metrics.NullMetricExt;
 import org.logstash.instrument.metrics.NullNamespacedMetricExt;
+import org.logstash.log.LoggableExt;
 import org.logstash.log.LoggerExt;
 import org.logstash.log.SlowLoggerExt;
 import org.logstash.plugins.PluginFactoryExt;
@@ -139,7 +140,11 @@ public final class RubyUtil {
 
     public static final RubyClass LOGGER;
 
+    public static final RubyModule LOGGABLE_MODULE;
+
     public static final RubyClass SLOW_LOGGER;
+
+    public static final RubyModule UTIL_MODULE;
 
     /**
      * Logstash Ruby Module.
@@ -229,20 +234,20 @@ public final class RubyUtil {
         TIMED_EXECUTION_CLASS.defineAnnotatedMethods(MetricExt.TimedExecution.class);
         NULL_TIMED_EXECUTION_CLASS.defineAnnotatedMethods(NullMetricExt.NullTimedExecution.class);
         NULL_COUNTER_CLASS.defineAnnotatedMethods(NullNamespacedMetricExt.NullCounter.class);
-        final RubyModule util = LOGSTASH_MODULE.defineModuleUnder("Util");
-        ABSTRACT_DLQ_WRITER_CLASS = util.defineClassUnder(
+        UTIL_MODULE = LOGSTASH_MODULE.defineModuleUnder("Util");
+        ABSTRACT_DLQ_WRITER_CLASS = UTIL_MODULE.defineClassUnder(
             "AbstractDeadLetterQueueWriterExt", RUBY.getObject(),
             ObjectAllocator.NOT_ALLOCATABLE_ALLOCATOR
         );
         ABSTRACT_DLQ_WRITER_CLASS.defineAnnotatedMethods(AbstractDeadLetterQueueWriterExt.class);
-        DUMMY_DLQ_WRITER_CLASS = util.defineClassUnder(
+        DUMMY_DLQ_WRITER_CLASS = UTIL_MODULE.defineClassUnder(
             "DummyDeadLetterQueueWriter", ABSTRACT_DLQ_WRITER_CLASS,
             AbstractDeadLetterQueueWriterExt.DummyDeadLetterQueueWriterExt::new
         );
         DUMMY_DLQ_WRITER_CLASS.defineAnnotatedMethods(
             AbstractDeadLetterQueueWriterExt.DummyDeadLetterQueueWriterExt.class
         );
-        PLUGIN_DLQ_WRITER_CLASS = util.defineClassUnder(
+        PLUGIN_DLQ_WRITER_CLASS = UTIL_MODULE.defineClassUnder(
             "PluginDeadLetterQueueWriter", ABSTRACT_DLQ_WRITER_CLASS,
             AbstractDeadLetterQueueWriterExt.PluginDeadLetterQueueWriterExt::new
         );
@@ -329,14 +334,14 @@ public final class RubyUtil {
         FILTER_DELEGATOR_CLASS = setupLogstashClass(
             FilterDelegatorExt::new, FilterDelegatorExt.class
         );
-
         final RubyModule loggingModule = LOGSTASH_MODULE.defineOrGetModuleUnder("Logging");
         LOGGER = loggingModule.defineClassUnder("Logger", RUBY.getObject(), LoggerExt::new);
         LOGGER.defineAnnotatedMethods(LoggerExt.class);
         SLOW_LOGGER = loggingModule.defineClassUnder(
                 "SlowLogger", RUBY.getObject(), SlowLoggerExt::new);
         SLOW_LOGGER.defineAnnotatedMethods(SlowLoggerExt.class);
-
+        LOGGABLE_MODULE = UTIL_MODULE.defineModuleUnder("Loggable");
+        LOGGABLE_MODULE.defineAnnotatedMethods(LoggableExt.class);
         final RubyModule json = LOGSTASH_MODULE.defineOrGetModuleUnder("Json");
         final RubyClass stdErr = RUBY.getStandardError();
         LOGSTASH_ERROR = LOGSTASH_MODULE.defineClassUnder(

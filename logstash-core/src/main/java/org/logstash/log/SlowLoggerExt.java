@@ -34,7 +34,7 @@ public class SlowLoggerExt extends RubyObject {
     }
 
     @JRubyMethod(required = 5)
-    public IRubyObject initialize(final ThreadContext context, final IRubyObject[] args) {
+    public SlowLoggerExt initialize(final ThreadContext context, final IRubyObject[] args) {
         String loggerName = args[0].asJavaString();
         slowLogger = LogManager.getLogger("slowlog." + loggerName);
         warnThreshold = ((RubyNumeric) args[1]).getLongValue();

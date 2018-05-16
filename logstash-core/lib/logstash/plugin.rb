@@ -1,5 +1,4 @@
 # encoding: utf-8
-require "logstash/logging"
 require "logstash/config/mixin"
 require "concurrent"
 require "securerandom"

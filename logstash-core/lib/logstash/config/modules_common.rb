@@ -1,5 +1,4 @@
 # encoding: utf-8
-require "logstash/util/loggable"
 require "logstash/elasticsearch_client"
 require "logstash/modules/kibana_client"
 require "logstash/modules/elasticsearch_importer"

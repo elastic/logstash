@@ -370,7 +370,7 @@ describe LogStash::Pipeline do
       after do
         pipeline.shutdown
       end
-      
+
       it "should call close of output without output-workers" do
         pipeline.run
 
@@ -395,7 +395,7 @@ describe LogStash::Pipeline do
       # cause the suite to fail :(
       pipeline.close
     end
-    
+
     it "should use LIR provided IDs" do
       expect(pipeline.inputs.first.id).to eq(pipeline.lir.input_plugin_vertices.first.id)
       expect(pipeline.filters.first.id).to eq(pipeline.lir.filter_plugin_vertices.first.id)

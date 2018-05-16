@@ -45,7 +45,7 @@ public final class FilterDelegatorExt extends RubyObject {
     public IRubyObject init(final ThreadContext context, final IRubyObject filter, final IRubyObject id) {
         this.id = (RubyString) id;
         this.filter = filter;
-        this.filterClass = filter.getMetaClass();
+        this.filterClass = filter.getSingletonClass().getRealClass();
         final IRubyObject namespacedMetric = filter.callMethod(context, "metric");
         metricEvents = namespacedMetric.callMethod(context, "namespace", RubyUtil.RUBY.newSymbol("events"));
         eventMetricOut = LongCounter.fromRubyBase(metricEvents, MetricKeys.OUT_KEY);
