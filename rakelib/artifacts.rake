@@ -394,6 +394,9 @@ namespace "artifact" do
     File.join(basedir, "config", "logstash.yml").tap do |path|
       dir.input("#{path}=/etc/logstash")
     end
+    File.join(basedir, "config", "logstash-sample.conf").tap do |path|
+      dir.input("#{path}=/etc/logstash")
+    end
     File.join(basedir, "pkg", "pipelines.yml").tap do |path|
       dir.input("#{path}=/etc/logstash")
     end
@@ -415,6 +418,7 @@ namespace "artifact" do
         out.config_files << "/etc/logstash/jvm.options"
         out.config_files << "/etc/logstash/log4j2.properties"
         out.config_files << "/etc/logstash/logstash.yml"
+        out.config_files << "/etc/logstash/logstash-sample.conf"
         out.config_files << "/etc/logstash/pipelines.yml"
       when "debian", "ubuntu"
         require "fpm/package/deb"
@@ -430,6 +434,7 @@ namespace "artifact" do
         out.config_files << "/etc/logstash/jvm.options"
         out.config_files << "/etc/logstash/log4j2.properties"
         out.config_files << "/etc/logstash/logstash.yml"
+        out.config_files << "/etc/logstash/logstash-sample.conf"
         out.config_files << "/etc/logstash/pipelines.yml"
     end
 
