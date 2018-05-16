@@ -6,6 +6,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.logstash.common.clients.HttpClient.RequestFailedException;
 
+import java.net.InetAddress;
 import java.nio.file.Paths;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
@@ -37,7 +38,7 @@ public class HttpClientTest {
 
     @Test
     public void canMakeHttpRequestWithCustomHostnameAndPort() throws Exception {
-        final String BIND_ADDRESS = "127.0.0.1";
+        final String BIND_ADDRESS = InetAddress.getLoopbackAddress().getHostAddress();
 
         WireMockServer localhostHttpServer = new WireMockServer(options()
                 .dynamicPort()
