@@ -43,9 +43,9 @@ public class HttpClientTest {
         WireMockServer localhostHttpServer = new WireMockServer(options()
                 .dynamicPort()
                 .bindAddress(BIND_ADDRESS));
-        localhostHttpServer.start();
 
         try {
+            localhostHttpServer.start();
             final String path = "/api/hello";
             final String expectedResponseBody = "Hello, World";
 
@@ -93,9 +93,9 @@ public class HttpClientTest {
     public void canMakeHttpsRequestWithSslNoVerify() throws Exception {
         WireMockServer httpsServer = new WireMockServer(options()
                 .dynamicHttpsPort());
-        httpsServer.start();
 
         try {
+            httpsServer.start();
             final String path = "/api/hello";
             final String expectedResponseBody = "Hello, World";
 
@@ -124,9 +124,8 @@ public class HttpClientTest {
                 .keystorePath(Paths.get(getClass().getResource("server.jks").toURI()).toString())
                 .keystorePassword("elastic"));
 
-        httpsServer.start();
-
         try {
+            httpsServer.start();
             final String path = "/api/hello";
             final String expectedResponseBody = "Hello, World";
 
@@ -159,9 +158,8 @@ public class HttpClientTest {
                 .trustStorePassword("elastic")
         );
 
-        httpsServer.start();
-
         try {
+            httpsServer.start();
             final String path = "/api/hello";
             final String expectedResponseBody = "Hello, World";
 
@@ -193,9 +191,8 @@ public class HttpClientTest {
                 .keystorePassword("elastic")
         );
 
-        httpsServer.start();
-
         try {
+            httpsServer.start();
             final String path = "/api/hello";
             final String expectedResponseBody = "Hello, World";
 
@@ -226,9 +223,8 @@ public class HttpClientTest {
                 .keystorePassword("elastic")
         );
 
-        httpsServer.start();
-
         try {
+            httpsServer.start();
             final String path = "/api/hello";
             final String expectedResponseBody = "Hello, World";
 
