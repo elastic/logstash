@@ -50,11 +50,8 @@ describe LogStash::Agent do
   end
 
   after :each do
-    subject.shutdown
-    LogStash::SETTINGS.reset
-
     FileUtils.rm(config_file)
-    FileUtils.rm_rf(subject.id_path)
+    LogStash::SETTINGS.reset
   end
 
   it "fallback to hostname when no name is provided" do
@@ -120,7 +117,6 @@ describe LogStash::Agent do
 
           Stud.stop!(t)
           t.join
-          subject.shutdown
         end
       end
 
@@ -141,7 +137,6 @@ describe LogStash::Agent do
 
             Stud.stop!(t)
             t.join
-            subject.shutdown
           end
         end
 
@@ -162,7 +157,6 @@ describe LogStash::Agent do
 
             Stud.stop!(t)
             t.join
-            subject.shutdown
           end
         end
 
@@ -185,7 +179,6 @@ describe LogStash::Agent do
 
             Stud.stop!(t)
             t.join
-            subject.shutdown
           end
         end
 
@@ -206,7 +199,6 @@ describe LogStash::Agent do
 
             Stud.stop!(t)
             t.join
-            subject.shutdown
           end
         end
       end
@@ -228,10 +220,6 @@ describe LogStash::Agent do
     }
 
     subject { described_class.new(mock_settings(agent_args), source_loader) }
-
-    after do
-      subject.shutdown
-    end
 
     context "environment variable templating" do
       before :each do
@@ -273,17 +261,12 @@ describe LogStash::Agent do
       expect(subject.converge_state_and_update).to be_a_successful_converge
     end
 
-    after(:each) do
-      # new pipelines will be created part of the upgrade process so we need
-      # to close any initialized pipelines
-      subject.shutdown
-    end
-
     context "when the upgrade fails" do
       it "leaves the state untouched" do
         expect(subject.converge_state_and_update).not_to be_a_successful_converge
         expect(subject.get_pipeline(default_pipeline_id).config_str).to eq(pipeline_config)
       end
+
 
       # TODO(ph): This valid?
       xcontext "and current state is empty" do
