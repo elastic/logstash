@@ -8,11 +8,9 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.security.*;
 import java.security.cert.Certificate;
-import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.security.interfaces.RSAPrivateKey;
-import java.security.spec.InvalidKeySpecException;
 import java.security.spec.KeySpec;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.util.*;
@@ -20,7 +18,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.http.Header;
-import org.apache.http.StatusLine;
+import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.*;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.entity.StringEntity;
@@ -50,10 +48,9 @@ public class HttpClient {
      *
      * @param relativePath  Relative path to resource, e.g. api/status
      * @throws RequestFailedException
-     * @throws IOException
      */
-    public void head(String relativePath) throws RequestFailedException, IOException {
-        head(relativePath, null);
+    public Response head(String relativePath) throws RequestFailedException {
+        return head(relativePath, null);
     }
 
     /**
@@ -62,9 +59,8 @@ public class HttpClient {
      * @param relativePath  Relative path to resource, e.g. api/status
      * @param headers       Headers to include with request
      * @throws RequestFailedException
-     * @throws IOException
      */
-    public void head(String relativePath, Map<String, String> headers) throws RequestFailedException, IOException {
+    public Response head(String relativePath, Map<String, String> headers) throws RequestFailedException {
         String url = makeUrlFrom(relativePath);
         HttpHead request = new HttpHead(url);
 
@@ -72,12 +68,10 @@ public class HttpClient {
             headers.forEach(request::addHeader);
         }
 
-        try (CloseableHttpResponse response = httpClient.execute(request)) {
-            if (response.getStatusLine().getStatusCode() >= 400) {
-                throw new RequestFailedException("HEAD", url , response.getStatusLine().getReasonPhrase());
-            }
+        try {
+            return new Response(httpClient.execute(request));
         } catch (IOException e) {
-            throw new RequestFailedException("HEAD", url ,e);
+            throw new RequestFailedException("HEAD", url, e);
         }
     }
 
@@ -85,10 +79,10 @@ public class HttpClient {
      * Performs an HTTP GET request
      *
      * @param relativePath  Relative path to resource, e.g. api/kibana/dashboards/export
-     * @return Response body
+     * @return Response entity
      * @throws RequestFailedException
      */
-    public String get(String relativePath) throws RequestFailedException, IOException {
+    public CloseableResponse get(String relativePath) throws RequestFailedException {
         return get(relativePath, null);
     }
 
@@ -97,11 +91,10 @@ public class HttpClient {
      *
      * @param relativePath  Relative path to resource, e.g. api/kibana/dashboards/export
      * @param headers       Headers to include with request
-     * @return Response body
+     * @return Response entity
      * @throws RequestFailedException
-     * @throws IOException
      */
-    public String get(String relativePath, Map<String, String> headers) throws RequestFailedException, IOException {
+    public CloseableResponse get(String relativePath, Map<String, String> headers) throws RequestFailedException {
         String url = makeUrlFrom(relativePath);
         HttpGet request = new HttpGet(url);
 
@@ -109,17 +102,8 @@ public class HttpClient {
             headers.forEach(request::addHeader);
         }
 
-        try (CloseableHttpResponse response = httpClient.execute(request)) {
-            if (response.getStatusLine().getStatusCode() >= 400) {
-                throw new RequestFailedException("HEAD", url , response.getStatusLine().getReasonPhrase());
-            }
-
-            ByteArrayOutputStream responseBody = new ByteArrayOutputStream();
-            response
-                .getEntity()
-                .writeTo(responseBody);
-            return responseBody.toString("UTF-8");
-
+        try {
+            return new CloseableResponse(httpClient.execute(request));
         } catch (IOException e) {
             throw new RequestFailedException("GET", url, e);
         }
@@ -130,11 +114,10 @@ public class HttpClient {
      *
      * @param relativePath  Relative path to resource, e.g. api/kibana/dashboards/import
      * @param requestBody   Body of request
-     * @return Response body
+     * @return Response entity
      * @throws RequestFailedException
-     * @throws IOException
      */
-    public String post(String relativePath, String requestBody) throws RequestFailedException, IOException {
+    public CloseableResponse post(String relativePath, String requestBody) throws RequestFailedException {
         return post(relativePath, requestBody, null);
     }
 
@@ -144,31 +127,26 @@ public class HttpClient {
      * @param relativePath  Relative path to resource, e.g. api/kibana/dashboards/import
      * @param requestBody   Body of request
      * @param headers       Headers to include with request
-     * @return Response body
+     * @return Response entity
      * @throws RequestFailedException
-     * @throws IOException
      */
-    public String post(String relativePath, String requestBody, Map<String, String> headers) throws RequestFailedException, IOException {
+    public CloseableResponse post(String relativePath, String requestBody, Map<String, String> headers) throws RequestFailedException {
 
         String url = makeUrlFrom(relativePath);
 
         HttpPost request = new HttpPost(url);
-        request.setEntity(new StringEntity(requestBody));
+        try {
+            request.setEntity(new StringEntity(requestBody));
+        } catch (UnsupportedEncodingException e) {
+            throw new RequestFailedException("POST", url, e);
+        }
 
         if (headers != null) {
             headers.forEach(request::addHeader);
         }
 
-        try(CloseableHttpResponse response = httpClient.execute(request)) {
-            if (response.getStatusLine().getStatusCode() >= 400) {
-                throw new RequestFailedException("HEAD", url , response.getStatusLine().getReasonPhrase());
-            }
-
-            ByteArrayOutputStream responseBody = new ByteArrayOutputStream();
-            response
-                    .getEntity()
-                    .writeTo(responseBody);
-            return responseBody.toString("UTF-8");
+        try {
+            return new CloseableResponse(httpClient.execute(request));
         } catch (IOException e) {
             throw new RequestFailedException("POST", url, e);
         }
@@ -179,11 +157,11 @@ public class HttpClient {
      *
      * @param relativePath  Relative path to resource, e.g. api/kibana/dashboards/import
      * @param requestBody   Body of request
-     * @return Response body
+     * @return Response entity
      * @throws RequestFailedException
      * @throws IOException
      */
-    public String put(String relativePath, String requestBody) throws RequestFailedException, IOException {
+    public CloseableResponse put(String relativePath, String requestBody) throws RequestFailedException {
         return put(relativePath, requestBody, null);
     }
 
@@ -193,31 +171,27 @@ public class HttpClient {
      * @param relativePath  Relative path to resource, e.g. api/kibana/dashboards/import
      * @param requestBody   Body of request
      * @param headers       Headers to include with request
-     * @return Response body
+     * @return Response entity
      * @throws RequestFailedException
      * @throws IOException
      */
-    public String put(String relativePath, String requestBody, Map<String, String> headers) throws RequestFailedException, IOException {
+    public CloseableResponse put(String relativePath, String requestBody, Map<String, String> headers) throws RequestFailedException {
 
         String url = makeUrlFrom(relativePath);
 
         HttpPut request = new HttpPut(url);
-        request.setEntity(new StringEntity(requestBody));
+        try {
+            request.setEntity(new StringEntity(requestBody));
+        } catch (UnsupportedEncodingException e) {
+            throw new RequestFailedException("PUT", url, e);
+        }
 
         if (headers != null) {
             headers.forEach(request::addHeader);
         }
 
-        try (CloseableHttpResponse response = httpClient.execute(request)) {
-            if (response.getStatusLine().getStatusCode() >= 400) {
-                throw new RequestFailedException("HEAD", url , response.getStatusLine().getReasonPhrase());
-            }
-
-            ByteArrayOutputStream responseBody = new ByteArrayOutputStream();
-            response
-                    .getEntity()
-                    .writeTo(responseBody);
-            return responseBody.toString("UTF-8");
+        try {
+            return new CloseableResponse(httpClient.execute(request));
         } catch (IOException e) {
             throw new RequestFailedException("PUT", url, e);
         }
@@ -228,10 +202,9 @@ public class HttpClient {
      *
      * @param relativePath  Relative path to resource, e.g. api/status
      * @throws RequestFailedException
-     * @throws IOException
      */
-    public void delete(String relativePath) throws RequestFailedException, IOException {
-        delete(relativePath, null);
+    public Response delete(String relativePath) throws RequestFailedException {
+        return delete(relativePath, null);
     }
 
     /**
@@ -240,9 +213,8 @@ public class HttpClient {
      * @param relativePath  Relative path to resource, e.g. api/status
      * @param headers       Headers to include with request
      * @throws RequestFailedException
-     * @throws IOException
      */
-    public void delete(String relativePath, Map<String, String> headers) throws RequestFailedException, IOException {
+    public Response delete(String relativePath, Map<String, String> headers) throws RequestFailedException {
         String url = makeUrlFrom(relativePath);
         HttpDelete request = new HttpDelete(url);
 
@@ -250,10 +222,8 @@ public class HttpClient {
             headers.forEach(request::addHeader);
         }
 
-        try(CloseableHttpResponse response = httpClient.execute(request)) {
-            if (response.getStatusLine().getStatusCode() >= 400) {
-                throw new RequestFailedException("HEAD", url , response.getStatusLine().getReasonPhrase());
-            }
+        try {
+            return new Response(httpClient.execute(request));
         } catch (IOException e) {
             throw new RequestFailedException("DELETE", url ,e);
         }
@@ -617,6 +587,39 @@ public class HttpClient {
             };
         }
 
+    }
+
+    public static class Response {
+        protected HttpResponse response;
+
+        public Response(HttpResponse response) {
+            this.response = response;
+        }
+
+        public int getStatusCode() {
+            return this.response.getStatusLine().getStatusCode();
+        }
+    }
+
+    public static class CloseableResponse extends Response implements Closeable {
+        public CloseableResponse(CloseableHttpResponse response) {
+            super(response);
+        }
+
+        public String getBodyAsString() throws IOException {
+            ByteArrayOutputStream responseBody = new ByteArrayOutputStream();
+            this.response
+                    .getEntity()
+                    .writeTo(responseBody);
+            return responseBody.toString("UTF-8");
+        }
+
+
+        @Override
+        public void close() throws IOException {
+            ((CloseableHttpResponse)this.response).close();
+
+        }
     }
 
     /**

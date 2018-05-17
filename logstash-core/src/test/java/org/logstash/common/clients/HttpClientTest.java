@@ -33,7 +33,7 @@ public class HttpClientTest {
                 .port(httpServer.port()) // We set this one setting so we don't need to run this test as a superuser
                 .build();
 
-        assertThat(httpClient.get(path)).isEqualTo(expectedResponseBody);
+        assertThat(httpClient.get(path).getBodyAsString()).isEqualTo(expectedResponseBody);
     }
 
     @Test
@@ -60,7 +60,7 @@ public class HttpClientTest {
                     .port(localhostHttpServer.port())
                     .build();
 
-            assertThat(httpClient.get(path)).isEqualTo(expectedResponseBody);
+            assertThat(httpClient.get(path).getBodyAsString()).isEqualTo(expectedResponseBody);
         } finally {
             localhostHttpServer.stop();
         }
@@ -86,7 +86,7 @@ public class HttpClientTest {
                 .basicAuth(USERNAME, PASSWORD)
                 .build();
 
-        assertThat(httpClient.get(path)).isEqualTo(expectedResponseBody);
+        assertThat(httpClient.get(path).getBodyAsString()).isEqualTo(expectedResponseBody);
     }
 
     @Test
@@ -111,7 +111,7 @@ public class HttpClientTest {
                     .sslNoVerify()
                     .build();
 
-            assertThat(httpClient.get(path)).isEqualTo(expectedResponseBody);
+            assertThat(httpClient.get(path).getBodyAsString()).isEqualTo(expectedResponseBody);
         } finally {
             httpsServer.stop();
         }
@@ -141,7 +141,7 @@ public class HttpClientTest {
                     .sslCaCertificate(Paths.get(getClass().getResource("server.crt").toURI()).toString())
                     .build();
 
-            assertThat(httpClient.get(path)).isEqualTo(expectedResponseBody);
+            assertThat(httpClient.get(path).getBodyAsString()).isEqualTo(expectedResponseBody);
         } finally {
             httpsServer.stop();
         }
@@ -177,7 +177,7 @@ public class HttpClientTest {
                     .sslClientPrivateKey(Paths.get(getClass().getResource("client.key").toURI()).toString())
                     .build();
 
-            assertThat(httpClient.get(path)).isEqualTo(expectedResponseBody);
+            assertThat(httpClient.get(path).getBodyAsString()).isEqualTo(expectedResponseBody);
         } finally {
             httpsServer.stop();
         }
@@ -209,7 +209,7 @@ public class HttpClientTest {
                     .sslNoVerifyServerHostname()
                     .build();
 
-            assertThat(httpClient.get(path)).isEqualTo(expectedResponseBody);
+            assertThat(httpClient.get(path).getBodyAsString()).isEqualTo(expectedResponseBody);
         } finally {
             httpsServer.stop();
         }
@@ -262,7 +262,7 @@ public class HttpClientTest {
                 .build();
 
         String body = "Hello!";
-        assertThat(httpClient.post(path, body)).isEqualTo(expectedResponseBody);
+        assertThat(httpClient.post(path, body).getBodyAsString()).isEqualTo(expectedResponseBody);
     }
 
     @Test
@@ -281,10 +281,10 @@ public class HttpClientTest {
                 .build();
 
         String body = "Hello!";
-        assertThat(httpClient.put(path, body)).isEqualTo(expectedResponseBody);
+        assertThat(httpClient.put(path, body).getBodyAsString()).isEqualTo(expectedResponseBody);
     }
 
-    @Test(expected = RequestFailedException.class)
+    @Test
     public void throwsExceptionForUnsuccessfulHeadRequest() throws Exception {
         final String path = "/api/hello";
 
@@ -297,10 +297,10 @@ public class HttpClientTest {
                 .port(httpServer.port())
                 .build();
 
-        httpClient.head(path);
+        assertThat(httpClient.head(path).getStatusCode()).isEqualTo(400);
     }
 
-    @Test(expected = RequestFailedException.class)
+    @Test
     public void throwsExceptionForUnsuccessfulGetRequest() throws Exception {
         final String path = "/api/hello";
 
@@ -313,10 +313,10 @@ public class HttpClientTest {
                 .port(httpServer.port())
                 .build();
 
-        httpClient.get(path);
+        assertThat(httpClient.get(path).getStatusCode()).isEqualTo(400);
     }
 
-    @Test(expected = RequestFailedException.class)
+    @Test
     public void throwsExceptionForUnsuccessfulPostRequest() throws Exception {
         final String path = "/api/hello";
 
@@ -330,11 +330,11 @@ public class HttpClientTest {
                 .build();
 
         String body = "Hello!";
-        httpClient.post(path, body);
+        assertThat(httpClient.post(path, body).getStatusCode()).isEqualTo(400);
     }
 
-    @Test(expected = RequestFailedException.class)
-    public void throwsExceptionForUnsuccessfulPutRequest() throws Exception {
+    @Test
+    public void returnsBadRequestForUnsuccessfulPutRequest() throws Exception {
         final String path = "/api/hello";
 
         httpServer.stubFor(put(urlPathEqualTo(path))
@@ -347,11 +347,11 @@ public class HttpClientTest {
                 .build();
 
         String body = "Hello!";
-        httpClient.put(path, body);
+        assertThat(httpClient.put(path, body).getStatusCode()).isEqualTo(400);
     }
 
-    @Test(expected = RequestFailedException.class)
-    public void throwsExceptionForUnsuccessfulDeleteRequest() throws Exception {
+    @Test
+    public void returnsBadRequestForUnsuccessfulDeleteRequest() throws Exception {
         final String path = "/api/hello";
 
         httpServer.stubFor(delete(urlPathEqualTo(path))
@@ -363,6 +363,6 @@ public class HttpClientTest {
                 .port(httpServer.port())
                 .build();
 
-        httpClient.delete(path);
+        assertThat(httpClient.delete(path).getStatusCode()).isEqualTo(400);
     }
 }
