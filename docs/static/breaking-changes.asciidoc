@@ -1,21 +1,21 @@
 [[breaking-changes]]
-
-=== Breaking Changes Across PQ Versions Prior to Logstash 6.3.0
-
-The following applies only to users upgrading from Logstash installations that used the persistent queue prior to 6.3.0.
-
-We regret to say that due to several serialization issues prior to Logstash 6.3.0 users will have to take some extra steps when upgrading Logstash instances using persistent queues. While we do strive to maintain backward compatibility within a given major release these bugs forced us to break that compatibility in version 6.3.0 to ensure correctness of operation. For more technical details on this issue please check our tracking github issue for this matter, https://github.com/elastic/logstash/issues/9494[#9494].
-
-If you are upgrading Logstash from a pre 6.3.0 version and use the persistent queue, we strongly recommend that you drain or delete the persistent queue before you upgrade.
-
-To drain the queue, enable the `queue.drain` setting, and then shutdown Logstash. Wait for it to shutdown completely. This may take a while if you have a large queue backlog.
-
-=== Breaking Changes in 6.0.0
+== Breaking Changes
 
 This section discusses the changes that you need to be aware of when migrating to Logstash 6.0.0 from the previous major releases.
 
 [float]
-==== Changes in Logstash Core
+=== Breaking change across PQ versions prior to Logstash 6.3.0
+
+If you are upgrading from Logstash 6.2.x or any earlier version (including 5.x)
+and have the persistent queue enabled, we strongly recommend that you drain or
+delete the persistent queue before you upgrade. See <<upgrading-logstash-pqs>>
+for information and instructions.
+
+We are working to resolve issues with data incompatibilities in our 6.3.0
+release so that additional steps won't be required for future upgrades. 
+
+[float]
+=== Changes in Logstash Core
 
 These changes can impact any instance of Logstash and are plugin agnostic, but only if you are using the features that are impacted.
 
