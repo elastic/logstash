@@ -1,8 +1,17 @@
 [[logstash-reference]]
 = Logstash Reference
 
+:include-xpack:     true
+:lang:              en
+:xls-repo-dir:      {docdir}/../x-pack/docs/{lang}
+:log-repo-dir:      {docdir}
 :plugins-repo-dir:  {docdir}/../../logstash-docs/docs
 
-include::index-shared1.asciidoc[]
-include::index-shared2.asciidoc[]
-include::index-shared3.asciidoc[]
+include::{log-repo-dir}/index-shared1.asciidoc[]
+
+:edit_url: https://github.com/elastic/logstash/edit/{branch}/
+include::{xls-repo-dir}/setup/setting-up-xpack.asciidoc[]
+
+include::{log-repo-dir}/index-shared2.asciidoc[]
+
+include::{log-repo-dir}/index-shared3.asciidoc[]
