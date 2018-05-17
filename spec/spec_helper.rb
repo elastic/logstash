@@ -44,9 +44,7 @@ RSpec.configure do |c|
       # Some tests mess with the settings. This ensures one test cannot pollute another
       LogStash::SETTINGS.reset
 
-      LogStash::SETTINGS.set("queue.type", "persisted")
-      LogStash::SETTINGS.set("queue.page_capacity", 1024 * 1024)
-      LogStash::SETTINGS.set("queue.max_events", 250)
+      LogStash::SETTINGS.set("queue.type", "memory")
       LogStash::SETTINGS.set("path.data", temp_directory)
 
       example.run
