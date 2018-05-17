@@ -578,9 +578,8 @@ public class HttpClient {
                 throw new OptionsBuilderException(obeMessage);
             }
 
-            byte[] keyContents;
             try {
-                keyContents = Base64.getDecoder().decode(keyContentsBase64Encoded.replaceAll("\n", ""));
+                byte[] keyContents = Base64.getDecoder().decode(keyContentsBase64Encoded.replaceAll("\n", ""));
                 KeySpec spec = new PKCS8EncodedKeySpec(keyContents);
                 return (RSAPrivateKey) KeyFactory.getInstance("RSA").generatePrivate(spec);
             } catch (Exception e) {
