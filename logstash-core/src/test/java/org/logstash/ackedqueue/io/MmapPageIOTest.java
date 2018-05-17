@@ -30,11 +30,11 @@ public class MmapPageIOTest {
         final int NEW_CAPACITY = 2048;
         final int PAGE_NUM = 0;
 
-        try (PageIO io1 = new MmapPageIO(PAGE_NUM, ORIGINAL_CAPACITY, dir)) {
+        try (PageIO io1 = new MmapPageIOV2(PAGE_NUM, ORIGINAL_CAPACITY, dir)) {
             io1.create();
         }
 
-        try (PageIO io2 = new MmapPageIO(PAGE_NUM, NEW_CAPACITY, dir)) {
+        try (PageIO io2 = new MmapPageIOV2(PAGE_NUM, NEW_CAPACITY, dir)) {
             io2.open(0, PAGE_NUM);
             assertThat(io2.getCapacity(), is(equalTo(ORIGINAL_CAPACITY)));
         }

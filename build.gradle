@@ -173,6 +173,19 @@ task downloadAndInstallJRuby(dependsOn: verifyFile, type: Copy) {
     into "${projectDir}/vendor/jruby"
 }
 
+task installDefaultGems(dependsOn: downloadAndInstallJRuby) {
+  inputs.files file("${projectDir}/Gemfile.template")
+  inputs.files fileTree("${projectDir}/rakelib")
+  inputs.files file("${projectDir}/versions.yml")
+  outputs.file("${projectDir}/Gemfile")
+  outputs.file("${projectDir}/Gemfile.lock")
+  outputs.dir("${projectDir}/logstash-core/lib/jars")
+  outputs.dir("${projectDir}/vendor/bundle/jruby/2.3.0")
+  doLast {
+    rubyGradleUtils.rake('plugin:install-default')
+  }
+}
+
 task installTestGems(dependsOn: downloadAndInstallJRuby) {
   inputs.files file("${projectDir}/Gemfile.template")
   inputs.files fileTree("${projectDir}/rakelib")
@@ -306,13 +319,15 @@ task generateLicenseReport(type: JavaExec) {
 
     String licenseReportInputCSV = project.hasProperty("licenseReportInputCSV") ? project.property("licenseReportInputCSV") : "build/dependencies.csv.ruby"
     String licenseReportOutputCSV = project.hasProperty("licenseReportOutputCSV") ? project.property("licenseReportOutputCSV") : "build/dependencies.csv"
+    String noticePath = "NOTICE.txt"
 
     classpath = project.files([jarFile])
     main = "org.logstash.dependencies.Main"
     args \
       licenseReportInputCSV, \
       project.getBuildDir().toString() + "/licenseReportFolders.txt", \
-      licenseReportOutputCSV
+      licenseReportOutputCSV, \
+      noticePath
 }
 
 task generateLicenseReportInputs() {
@@ -383,10 +398,14 @@ if (!oss) {
       commandLine(['../bin/rspec', '-fd', 'qa/integration'])
   }
 
-  task runXPackUnitTests(type: Exec, dependsOn: installTestGems) {
-      workingDir "${projectDir}/x-pack"
-      standardOutput = new ExecLogOutputStream(System.out)
-      errorOutput = new ExecLogOutputStream(System.err)
-      commandLine(['../bin/rspec', 'spec', '-fd'])
+  task runXPackUnitTests(dependsOn: [tasks.getByPath(":logstash-xpack:rubyTests")]) {}
+
+  project(":logstash-xpack") {
+    ["rubyTests", "test"].each { tsk ->
+      tasks.getByPath(":logstash-xpack:" + tsk).configure {
+        dependsOn bootstrap
+      }
+    }
   }
+
 }

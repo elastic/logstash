@@ -8,7 +8,7 @@ require "logstash/modules/settings_merger"
 describe LogStash::LicenseChecker::ModuleLicenseChecker do
 
 
-  let(:settings) {LogStash::SETTINGS.clone}
+  let(:settings) { LogStash::Runner::SYSTEM_SETTINGS }
 
 
   shared_examples "can not get a license" do

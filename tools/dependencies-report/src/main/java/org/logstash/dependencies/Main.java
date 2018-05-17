@@ -5,6 +5,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 
@@ -17,10 +18,11 @@ public class Main {
     static final String ACCEPTABLE_LICENSES_PATH = "/acceptableLicenses.csv";
 
     public static void main(String[] args) throws IOException {
-        if (args.length < 3) {
-            System.out.println("Usage: org.logstash.dependencies.Main <pathToRubyDependencies.csv> <pathToJavaLicenseReportFolders.txt> <output.csv>");
+        if (args.length < 4) {
+            System.out.println("Usage: org.logstash.dependencies.Main <pathToRubyDependencies.csv> <pathToJavaLicenseReportFolders.txt> <output.csv> <NOTICE.txt>");
             System.exit(1);
         }
+
 
         InputStream rubyDependenciesStream = new FileInputStream(args[0]);
         List<String> javaDependencyReports = Files.readAllLines(Paths.get(args[1]));
@@ -28,18 +30,20 @@ public class Main {
         for (int k = 0; k < javaDependencyReports.size(); k++) {
             javaDependenciesStreams[k] = new FileInputStream(javaDependencyReports.get(k) + "/licenses.csv");
         }
-        FileWriter outputWriter = new FileWriter(args[2]);
+        FileWriter licenseCSVWriter = new FileWriter(args[2]);
+        FileWriter noticeWriter = new FileWriter(args[3]);
 
         boolean reportResult = new ReportGenerator().generateReport(
                 getResourceAsStream(LICENSE_MAPPING_PATH),
                 getResourceAsStream(ACCEPTABLE_LICENSES_PATH),
                 rubyDependenciesStream,
                 javaDependenciesStreams,
-                outputWriter
+                licenseCSVWriter,
+                noticeWriter
         );
 
         // If there were unknown results in the report, exit with a non-zero status
-        System.exit(reportResult ? 0 : 1);
+        //System.exit(reportResult ? 0 : 1);
 
     }
 

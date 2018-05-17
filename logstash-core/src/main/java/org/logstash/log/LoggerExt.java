@@ -41,6 +41,11 @@ public class LoggerExt extends RubyObject {
         return logger.isDebugEnabled() ? context.tru : context.fals;
     }
 
+    @JRubyMethod(name = "info?")
+    public RubyBoolean isInfo(final ThreadContext context) {
+        return logger.isInfoEnabled() ? context.tru : context.fals;
+    }
+
     @JRubyMethod(name = "error?")
     public RubyBoolean isError(final ThreadContext context) {
         return logger.isErrorEnabled() ? context.tru : context.fals;
@@ -125,7 +130,7 @@ public class LoggerExt extends RubyObject {
     public static IRubyObject configureLogging(final ThreadContext context, final IRubyObject self,
                                         final IRubyObject args[]) {
         synchronized (CONFIG_LOCK) {
-            RubyString path = args.length > 1 ? (RubyString) args[1] : null;
+            IRubyObject path = args.length > 1 ? args[1] : null;
             String level = args[0].asJavaString();
             try {
                 setLevel(level, (path == null || path.isNil()) ? null : path.asJavaString());
@@ -138,7 +143,7 @@ public class LoggerExt extends RubyObject {
         return context.nil;
     }
 
-    @JRubyMethod(meta = true)
+    @JRubyMethod(name = {"reconfigure", "initialize"}, meta = true)
     public static IRubyObject reconfigure(final ThreadContext context, final IRubyObject self,
                                           final IRubyObject configPath) {
         synchronized (CONFIG_LOCK) {

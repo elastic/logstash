@@ -101,7 +101,7 @@ module LogStash module Plugins
       # We need a threadsafe class here because we may perform
       # get/set operations concurrently despite the fact we don't use
       # the special atomic methods. That may not be apparent from this file,
-      # but it is the case that we can call lookups from multiple threads, 
+      # but it is the case that we can call lookups from multiple threads,
       # when multiple pipelines are in play, and that a lookup may modify the registry.
       @registry = java.util.concurrent.ConcurrentHashMap.new
       @hooks = HooksRegistry.new
@@ -125,7 +125,7 @@ module LogStash module Plugins
 
     def load_xpack
       logger.info("Loading x-pack")
-      require_relative(::File.join(LogStash::ROOT, "x-pack/lib/logstash_registry"))
+      require("x-pack/logstash_registry")
     end
 
     def load_available_plugins

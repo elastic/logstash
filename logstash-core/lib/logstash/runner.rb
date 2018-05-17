@@ -9,7 +9,10 @@ LogStash::XPACK_PATH = File.join(LogStash::ROOT, "x-pack")
 LogStash::OSS = ENV["OSS"] == "true" || !File.exists?(LogStash::XPACK_PATH)
 
 if !LogStash::OSS
-  $LOAD_PATH << File.join(LogStash::XPACK_PATH, "lib")
+  xpack_dir = File.join(LogStash::XPACK_PATH, "lib")
+  unless $LOAD_PATH.include?(xpack_dir)
+    $LOAD_PATH.unshift(xpack_dir)
+  end
 end
 
 require "clamp"
@@ -31,8 +34,6 @@ require "logstash/version"
 require 'logstash/plugins'
 require "logstash/modules/util"
 require "logstash/bootstrap_check/default_config"
-require "logstash/bootstrap_check/bad_java"
-require "logstash/bootstrap_check/bad_ruby"
 require "logstash/bootstrap_check/persisted_queue_config"
 require "set"
 
@@ -46,8 +47,6 @@ class LogStash::Runner < Clamp::StrictCommand
   # Ordered list of check to run before starting logstash
   # theses checks can be changed by a plugin loaded into memory.
   DEFAULT_BOOTSTRAP_CHECKS = [
-      LogStash::BootstrapCheck::BadRuby,
-      LogStash::BootstrapCheck::BadJava,
       LogStash::BootstrapCheck::DefaultConfig,
       LogStash::BootstrapCheck::PersistedQueueConfig
   ]
@@ -210,6 +209,7 @@ class LogStash::Runner < Clamp::StrictCommand
 
   # We configure the registry and load any plugin that can register hooks
   # with logstash, this needs to be done before any operation.
+  SYSTEM_SETTINGS = LogStash::SETTINGS.clone
   LogStash::PLUGIN_REGISTRY.setup!
 
   attr_reader :agent, :settings, :source_loader

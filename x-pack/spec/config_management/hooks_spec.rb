@@ -21,7 +21,7 @@ describe LogStash::ConfigManagement::Hooks do
   end
 
   before do
-    system_settings = LogStash::SETTINGS.clone
+    system_settings = LogStash::Runner::SYSTEM_SETTINGS.clone
     stub_const("LogStash::SETTINGS", system_settings)
     extension = LogStash::ConfigManagement::Extension.new
     extension.additionals_settings(system_settings)

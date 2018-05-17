@@ -1,39 +1,74 @@
 package org.logstash.dependencies;
 
+import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVRecord;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.net.URL;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Objects;
+import java.util.Scanner;
+import java.util.SortedSet;
 
 class Dependency implements Comparable<Dependency> {
-    public static final String RUBY_TYPE = "ruby";
-    public static final String JAVA_TYPE = "java";
 
-    String type;
     String name;
     String version;
-    String license;
+    String url;
     String spdxLicense;
 
-    // optional
-    String licenseUrl;
+    /**
+     * Returns an object array representing this dependency as a CSV record according
+     * to the format requested here: https://github.com/elastic/logstash/issues/8725
+     */
+    Object[] toCsvReportRecord() {
+        return new String[] {name, version, "", url, spdxLicense, ""};
+    }
 
-    public static Dependency fromRubyCsvRecord(CSVRecord record) {
+    /**
+     * Reads dependencies from the specified stream using the Ruby dependency report format
+     * and adds them to the supplied set.
+     */
+    static void addDependenciesFromRubyReport(InputStream stream, SortedSet<Dependency> dependencies)
+            throws IOException {
+        Reader in = new InputStreamReader(stream);
+        for (CSVRecord record : CSVFormat.DEFAULT.withFirstRecordAsHeader().parse(in)) {
+            dependencies.add(Dependency.fromRubyCsvRecord(record));
+        }
+    }
+
+    /**
+     * Reads dependencies from the specified stream using the Java dependency report format
+     * and adds them to the supplied set.
+     */
+    static void addDependenciesFromJavaReport(InputStream stream, SortedSet<Dependency> dependencies)
+            throws IOException {
+        Reader in = new InputStreamReader(stream);
+        for (CSVRecord record : CSVFormat.DEFAULT.withFirstRecordAsHeader().parse(in)) {
+            dependencies.add(Dependency.fromJavaCsvRecord(record));
+        }
+    }
+
+    private static Dependency fromRubyCsvRecord(CSVRecord record) {
         Dependency d = new Dependency();
 
         // name, version, url, license
-        d.type = RUBY_TYPE;
         d.name = record.get(0);
         d.version = record.get(1);
-        d.license = record.get(3);
 
         return d;
     }
 
-    public static Dependency fromJavaCsvRecord(CSVRecord record) {
+    private static Dependency fromJavaCsvRecord(CSVRecord record) {
         Dependency d = new Dependency();
 
         // artifact,moduleUrl,moduleLicense,moduleLicenseUrl
-        d.type = JAVA_TYPE;
 
         String nameAndVersion = record.get(0);
         int colonIndex = nameAndVersion.indexOf(':');
@@ -43,8 +78,9 @@ class Dependency implements Comparable<Dependency> {
             throw new IllegalStateException(err);
         }
         colonIndex = nameAndVersion.indexOf(':', colonIndex + 1);
-        if (colonIndex == -1) {
-            String err = String.format("Could not parse java artifact name and version from '%s'",
+        String[] split = nameAndVersion.split(":");
+        if (split.length != 3) {
+            String err = String.format("Could not parse java artifact name and version from '%s', must be of the form group:name:version",
                     nameAndVersion);
             throw new IllegalStateException(err);
         }
@@ -77,5 +113,62 @@ class Dependency implements Comparable<Dependency> {
     @Override
     public int compareTo(Dependency o) {
         return (name + version).compareTo(o.name + o.version);
+    }
+
+    public String noticeSourcePath() {
+        return "LS_HOME/tools/dependencies-report/src/main/resources/notices/" + noticeFilename();
+    }
+
+    /**
+     * The name contains colons, which don't work on windows. The compatible name uses `!` which works on multiple platforms
+     * @return
+     */
+    public String fsCompatibleName() {
+        return name.replace(":", "!");
+    }
+
+    public String noticeFilename() {
+        return String.format("%s-%s-NOTICE.txt", fsCompatibleName(), version != null ? version : "NOVERSION");
+    }
+
+    public String resourceName() {
+        return "/notices/" + noticeFilename();
+    }
+
+    public URL noticeURL() {
+        return Dependency.class.getResource(resourceName());
+    }
+
+    public boolean noticeExists() {
+        return noticeURL() != null;
+    }
+
+    public String notice() throws IOException {
+       if (!noticeExists()) throw new IOException(String.format("No notice file found at '%s'", noticeFilename()));
+
+       try (InputStream noticeStream = Dependency.class.getResourceAsStream(resourceName())) {
+            return new Scanner(noticeStream, "UTF-8").useDelimiter("\\A").next();
+       }
+    }
+
+    public Path noticePath() {
+        // Get the base first since this always exists, otherwise getResource will return null if its for a notice
+        // that doesn't exist
+        String noticesBase = ReportGenerator.class.getResource("/notices").getPath();
+        Path path = Paths.get(noticesBase, noticeFilename());
+        return path;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getVersion() {
+        return version;
+    }
+
+    @Override
+    public String toString() {
+        return "<Dependency " + name + " v" + version + ">";
     }
 }
