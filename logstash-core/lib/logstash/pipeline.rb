@@ -13,7 +13,6 @@ require "logstash/pipeline_reporter"
 require "logstash/instrument/collector"
 require "logstash/filter_delegator"
 require "logstash/queue_factory"
-require "logstash/plugins/plugin_factory"
 require "logstash/compiler"
 require "securerandom"
 
