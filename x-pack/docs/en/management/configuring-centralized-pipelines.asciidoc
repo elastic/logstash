@@ -1,6 +1,9 @@
 [role="xpack"]
 [[configuring-centralized-pipelines]]
 === Configuring Centralized Pipeline Management
+++++
+<titleabbrev>Centralized Pipeline Management</titleabbrev>
+++++
 
 To configure
 {logstash-ref}/logstash-centralized-pipeline-management.html[centralized pipeline management]:
