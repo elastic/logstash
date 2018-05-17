@@ -2,7 +2,7 @@
 [[configuring-logstash]]
 === Configuring Monitoring for Logstash Nodes
 ++++
-<titleabbrev>Configuring Monitoring</titleabbrev>
+<titleabbrev>{monitoring}</titleabbrev>
 ++++
 
 To monitor Logstash nodes:
