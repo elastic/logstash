@@ -27,3 +27,11 @@ task rubyTests(type: Test) {
   systemProperty 'logstash.core.root.dir', projectDir.absolutePath
   include '/org/logstash/xpack/test/RSpecTests.class'
 }
+
+task rubyIntegrationTests(type: Test) {
+  inputs.files fileTree("${projectDir}/qa")
+  inputs.files fileTree("${projectDir}/lib")
+  inputs.files fileTree("${projectDir}/modules")
+  systemProperty 'logstash.core.root.dir', projectDir.absolutePath
+  include '/org/logstash/xpack/test/RSpecIntegrationTests.class'
+}

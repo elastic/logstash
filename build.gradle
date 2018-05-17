@@ -17,9 +17,9 @@ plugins {
 
 apply plugin: 'de.undercouch.download'
 
+
 import de.undercouch.gradle.tasks.download.Download
 import de.undercouch.gradle.tasks.download.Verify
-import org.logstash.gradle.ExecLogOutputStream
 import org.logstash.gradle.RubyGradleUtils
 import org.yaml.snakeyaml.Yaml
 
@@ -390,21 +390,17 @@ task copyEs(type: Copy, dependsOn: [downloadEs, deleteLocalEs]) {
 Boolean oss = System.getenv('OSS').equals('true')
 
 if (!oss) {
-  task runXPackIntegrationTests(type: Exec, dependsOn: [installTestGems, copyEs]) {
-      workingDir "${projectDir}/x-pack"
-      standardOutput = new ExecLogOutputStream(System.out)
-      errorOutput = new ExecLogOutputStream(System.err)
-      commandLine(['../bin/rspec', '-fd', 'qa/integration'])
-  }
-
-  task runXPackUnitTests(dependsOn: [tasks.getByPath(":logstash-xpack:rubyTests")]) {}
-
   project(":logstash-xpack") {
-    ["rubyTests", "test"].each { tsk ->
+    ["rubyTests", "rubyIntegrationTests", "test"].each { tsk ->
       tasks.getByPath(":logstash-xpack:" + tsk).configure {
         dependsOn bootstrap
       }
     }
+    tasks.getByPath(":logstash-xpack:rubyIntegrationTests").configure {
+      dependsOn copyEs
+    }
   }
 
+  task runXPackUnitTests(dependsOn: [tasks.getByPath(":logstash-xpack:rubyTests")]) {}
+  task runXPackIntegrationTests(dependsOn: [tasks.getByPath(":logstash-xpack:rubyIntegrationTests")]) {}
 }
