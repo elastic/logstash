@@ -33,7 +33,9 @@ public class HttpClientTest {
                 .port(httpServer.port()) // We set this one setting so we don't need to run this test as a superuser
                 .build();
 
-        assertThat(httpClient.get(path).getBodyAsString()).isEqualTo(expectedResponseBody);
+        try(HttpClient.CloseableResponse closeableResponse = httpClient.get(path)) {
+            assertThat(closeableResponse.getBodyAsString()).isEqualTo(expectedResponseBody);
+        }
     }
 
     @Test
@@ -60,7 +62,9 @@ public class HttpClientTest {
                     .port(localhostHttpServer.port())
                     .build();
 
-            assertThat(httpClient.get(path).getBodyAsString()).isEqualTo(expectedResponseBody);
+            try(HttpClient.CloseableResponse closeableResponse = httpClient.get(path)) {
+                assertThat(closeableResponse.getBodyAsString()).isEqualTo(expectedResponseBody);
+            }
         } finally {
             localhostHttpServer.stop();
         }
@@ -86,7 +90,9 @@ public class HttpClientTest {
                 .basicAuth(USERNAME, PASSWORD)
                 .build();
 
-        assertThat(httpClient.get(path).getBodyAsString()).isEqualTo(expectedResponseBody);
+        try(HttpClient.CloseableResponse closeableResponse = httpClient.get(path)) {
+            assertThat(closeableResponse.getBodyAsString()).isEqualTo(expectedResponseBody);
+        }
     }
 
     @Test
@@ -111,7 +117,9 @@ public class HttpClientTest {
                     .sslNoVerify()
                     .build();
 
-            assertThat(httpClient.get(path).getBodyAsString()).isEqualTo(expectedResponseBody);
+            try(HttpClient.CloseableResponse closeableResponse = httpClient.get(path)) {
+                assertThat(closeableResponse.getBodyAsString()).isEqualTo(expectedResponseBody);
+            }
         } finally {
             httpsServer.stop();
         }
@@ -141,7 +149,9 @@ public class HttpClientTest {
                     .sslCaCertificate(Paths.get(getClass().getResource("server.crt").toURI()).toString())
                     .build();
 
-            assertThat(httpClient.get(path).getBodyAsString()).isEqualTo(expectedResponseBody);
+            try(HttpClient.CloseableResponse response = httpClient.get(path)) {
+                assertThat(response.getBodyAsString()).isEqualTo(expectedResponseBody);
+            }
         } finally {
             httpsServer.stop();
         }
@@ -177,7 +187,9 @@ public class HttpClientTest {
                     .sslClientPrivateKey(Paths.get(getClass().getResource("client.key").toURI()).toString())
                     .build();
 
-            assertThat(httpClient.get(path).getBodyAsString()).isEqualTo(expectedResponseBody);
+            try(HttpClient.CloseableResponse response = httpClient.get(path)) {
+                assertThat(response.getBodyAsString()).isEqualTo(expectedResponseBody);
+            }
         } finally {
             httpsServer.stop();
         }
@@ -209,7 +221,9 @@ public class HttpClientTest {
                     .sslNoVerifyServerHostname()
                     .build();
 
-            assertThat(httpClient.get(path).getBodyAsString()).isEqualTo(expectedResponseBody);
+            try(HttpClient.CloseableResponse response = httpClient.get(path)) {
+                assertThat(response.getBodyAsString()).isEqualTo(expectedResponseBody);
+            }
         } finally {
             httpsServer.stop();
         }
@@ -240,7 +254,7 @@ public class HttpClientTest {
                     .sslCaCertificate(Paths.get(getClass().getResource("server_no_san.crt").toURI()).toString())
                     .build();
 
-            httpClient.get(path);
+            try(HttpClient.CloseableResponse response = httpClient.get(path)) {}
         } finally {
             httpsServer.stop();
         }
@@ -262,7 +276,9 @@ public class HttpClientTest {
                 .build();
 
         String body = "Hello!";
-        assertThat(httpClient.post(path, body).getBodyAsString()).isEqualTo(expectedResponseBody);
+        try(HttpClient.CloseableResponse response = httpClient.post(path, body)) {
+            assertThat(response.getBodyAsString()).isEqualTo(expectedResponseBody);
+        }
     }
 
     @Test
@@ -281,11 +297,13 @@ public class HttpClientTest {
                 .build();
 
         String body = "Hello!";
-        assertThat(httpClient.put(path, body).getBodyAsString()).isEqualTo(expectedResponseBody);
+        try(HttpClient.CloseableResponse response = httpClient.put(path, body)) {
+            assertThat(response.getBodyAsString()).isEqualTo(expectedResponseBody);
+        }
     }
 
     @Test
-    public void throwsExceptionForUnsuccessfulHeadRequest() throws Exception {
+    public void returnsBadRequestForUnsuccessfulHeadRequest() throws Exception {
         final String path = "/api/hello";
 
         httpServer.stubFor(head(urlPathEqualTo(path))
@@ -297,11 +315,12 @@ public class HttpClientTest {
                 .port(httpServer.port())
                 .build();
 
-        assertThat(httpClient.head(path).getStatusCode()).isEqualTo(400);
+        HttpClient.Response response = httpClient.head(path);
+        assertThat(response.getStatusCode()).isEqualTo(400);
     }
 
     @Test
-    public void throwsExceptionForUnsuccessfulGetRequest() throws Exception {
+    public void returnsBadRequestForUnsuccessfulGetRequest() throws Exception {
         final String path = "/api/hello";
 
         httpServer.stubFor(get(urlPathEqualTo(path))
@@ -313,11 +332,13 @@ public class HttpClientTest {
                 .port(httpServer.port())
                 .build();
 
-        assertThat(httpClient.get(path).getStatusCode()).isEqualTo(400);
+        try(HttpClient.CloseableResponse response = httpClient.get(path)) {
+            assertThat(response.getStatusCode()).isEqualTo(400);
+        }
     }
 
     @Test
-    public void throwsExceptionForUnsuccessfulPostRequest() throws Exception {
+    public void returnsBadRequestForUnsuccessfulPostRequest() throws Exception {
         final String path = "/api/hello";
 
         httpServer.stubFor(post(urlPathEqualTo(path))
@@ -330,7 +351,9 @@ public class HttpClientTest {
                 .build();
 
         String body = "Hello!";
-        assertThat(httpClient.post(path, body).getStatusCode()).isEqualTo(400);
+        try(HttpClient.CloseableResponse response = httpClient.post(path, body)) {
+            assertThat(response.getStatusCode()).isEqualTo(400);
+        }
     }
 
     @Test
@@ -347,7 +370,9 @@ public class HttpClientTest {
                 .build();
 
         String body = "Hello!";
-        assertThat(httpClient.put(path, body).getStatusCode()).isEqualTo(400);
+        try(HttpClient.CloseableResponse response = httpClient.put(path, body)) {
+            assertThat(response.getStatusCode()).isEqualTo(400);
+        }
     }
 
     @Test
@@ -363,6 +388,7 @@ public class HttpClientTest {
                 .port(httpServer.port())
                 .build();
 
-        assertThat(httpClient.delete(path).getStatusCode()).isEqualTo(400);
+        HttpClient.Response response = httpClient.delete(path);
+        assertThat(response.getStatusCode()).isEqualTo(400);
     }
 }

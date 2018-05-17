@@ -614,7 +614,6 @@ public class HttpClient {
             return responseBody.toString("UTF-8");
         }
 
-
         @Override
         public void close() throws IOException {
             ((CloseableHttpResponse)this.response).close();
