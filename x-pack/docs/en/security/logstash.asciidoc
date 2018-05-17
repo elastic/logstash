@@ -2,7 +2,7 @@
 [[ls-security]]
 === Configuring Security in Logstash
 ++++
-<titleabbrev>Configuring Security</titleabbrev>
+<titleabbrev>{security}</titleabbrev>
 ++++
 
 The Logstash {es} plugins (
