@@ -2,7 +2,7 @@
 include::{log-repo-dir}/index-shared1.asciidoc[]
 
 :edit_url: https://github.com/elastic/logstash/edit/{branch}/
-include::installing-xls.asciidoc[]
+include::setup/installing-xls.asciidoc[]
 include::setup/setting-up-xpack.asciidoc[]
 
 include::{log-repo-dir}/index-shared2.asciidoc[]
