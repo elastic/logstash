@@ -48,13 +48,24 @@ public class Util {
         return hexString.toString();
     }
 
-    public static void unzipToDirectory(final ZipInputStream input, final Path output) throws IOException {
+    /**
+     * Unzips a ZipInputStream to a given directory
+     * @param input the ZipInputStream
+     * @param output path to the output
+     * @param omitParentDir omit the parent dir the zip is packaged with
+     * @throws IOException
+     */
+    public static void unzipToDirectory(final ZipInputStream input, final Path output, boolean omitParentDir) throws IOException {
         ZipEntry entry;
         final int bufSize = 4096;
         byte[] buffer = new byte[bufSize];
         while ((entry = input.getNextEntry()) != null) {
-            int offset = 0;
-            final Path fullPath = Paths.get(output.toString(), entry.getName());
+            // Skip the top level dir
+            final String destinationPath = omitParentDir ?
+                    entry.getName().replaceFirst("[^/]+/", "") :
+                    entry.getName();
+
+            final Path fullPath = Paths.get(output.toString(), destinationPath);
             // Create parent directories as required
             if (entry.isDirectory()) {
                 Files.createDirectories(fullPath);
@@ -63,7 +74,7 @@ public class Util {
 
                 int readLength;
                 try (SeekableByteChannel outputWriter = Files.newByteChannel(fullPath, StandardOpenOption.CREATE_NEW, StandardOpenOption.WRITE)) {
-                    while ((readLength = input.read(buffer, offset, bufSize)) != -1) {
+                    while ((readLength = input.read(buffer, 0, bufSize)) != -1) {
                         outputWriter.write(ByteBuffer.wrap(buffer, 0, readLength));
                     }
                 }

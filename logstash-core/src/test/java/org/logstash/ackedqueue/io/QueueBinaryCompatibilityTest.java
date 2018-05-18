@@ -3,6 +3,7 @@ package org.logstash.ackedqueue.io;
 import org.junit.Test;
 import org.logstash.ackedqueue.Batch;
 import org.logstash.ackedqueue.Queue;
+import org.logstash.ackedqueue.Settings;
 import org.logstash.ackedqueue.TestSettings;
 import org.logstash.common.Util;
 
@@ -25,7 +26,8 @@ public class QueueBinaryCompatibilityTest {
 
     Queue binaryQueueSample(String resourcePath) throws IOException {
         Path queueDir = unpackBinarySample(resourcePath);
-        return new Queue(TestSettings.persistedQueueSettings(1024*1024*1024, queueDir.toString()));
+        Settings settings = TestSettings.persistedQueueSettings(1024*1024*250, queueDir.toString());
+        return new Queue(settings);
     }
 
     Path unpackBinarySample(String resourcePath) throws IOException {
@@ -33,7 +35,7 @@ public class QueueBinaryCompatibilityTest {
         assert(is != null);
         ZipInputStream zis = new ZipInputStream(is);
         Path destination = Files.createTempDirectory("temp");
-        Util.unzipToDirectory(zis, destination);
+        Util.unzipToDirectory(zis, destination, true);
         return destination;
     }
 }
