@@ -110,7 +110,7 @@ public final class QueueUpgrade {
 
     private static void failValidation(final Throwable ex) {
         LOGGER.error("Logstash was unable to upgrade your persistent queue data." +
-            "Please either downgrade to version 6.2.3 and fully drain " +
+            "Please either downgrade to your previous version of Logstash and fully drain " +
             "your persistent queue or delete your queue data.dir if you " +
             "don't need to retain the data currently in your queue.");
         throw new IllegalStateException(ex);
