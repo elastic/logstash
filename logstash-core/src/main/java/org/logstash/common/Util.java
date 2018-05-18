@@ -1,8 +1,20 @@
 package org.logstash.common;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.channels.SeekableByteChannel;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.OpenOption;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 /**
  * Created by andrewvc on 12/23/16.
@@ -34,5 +46,28 @@ public class Util {
         }
 
         return hexString.toString();
+    }
+
+    public static void unzipToDirectory(final ZipInputStream input, final Path output) throws IOException {
+        ZipEntry entry;
+        final int bufSize = 4096;
+        byte[] buffer = new byte[bufSize];
+        while ((entry = input.getNextEntry()) != null) {
+            int offset = 0;
+            final Path fullPath = Paths.get(output.toString(), entry.getName());
+            // Create parent directories as required
+            if (entry.isDirectory()) {
+                Files.createDirectories(fullPath);
+            } else {
+                Files.createDirectories(fullPath.getParent());
+
+                int readLength;
+                try (SeekableByteChannel outputWriter = Files.newByteChannel(fullPath, StandardOpenOption.CREATE_NEW, StandardOpenOption.WRITE)) {
+                    while ((readLength = input.read(buffer, offset, bufSize)) != -1) {
+                        outputWriter.write(ByteBuffer.wrap(buffer, 0, readLength));
+                    }
+                }
+            }
+        }
     }
 }
