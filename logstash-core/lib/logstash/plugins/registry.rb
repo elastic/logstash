@@ -3,9 +3,6 @@ require "rubygems/package"
 require "logstash/plugin"
 require "logstash/plugins/hooks_registry"
 require "logstash/modules/scaffold"
-require "logstash/codecs/base"
-require "logstash/filters/base"
-require "logstash/outputs/base"
 
 module LogStash module Plugins
   class Registry
