@@ -1,4 +1,5 @@
 # encoding: utf-8
+require "logstash/plugins/registry"
 require "logstash/util/password"
 require "logstash/util/safe_uri"
 require "logstash/version"
