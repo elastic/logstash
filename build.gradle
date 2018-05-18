@@ -260,6 +260,10 @@ task assembleOssZipDistribution(dependsOn: downloadAndInstallJRuby) {
   }
 }
 
+task dockerBuildArtifacts(type: Exec) {
+	commandLine "sh", "-c", "./ci/docker_build_artifacts.sh"
+}
+
 def logstashBuildDir = "${buildDir}/logstash-${project.version}-SNAPSHOT"
 
 task unpackTarDistribution(dependsOn: assembleTarDistribution, type: Copy) {
