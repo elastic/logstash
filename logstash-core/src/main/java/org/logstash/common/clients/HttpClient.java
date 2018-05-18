@@ -159,7 +159,6 @@ public class HttpClient {
      * @param requestBody   Body of request
      * @return Response entity
      * @throws RequestFailedException
-     * @throws IOException
      */
     public CloseableResponse put(String relativePath, String requestBody) throws RequestFailedException {
         return put(relativePath, requestBody, null);
@@ -173,7 +172,6 @@ public class HttpClient {
      * @param headers       Headers to include with request
      * @return Response entity
      * @throws RequestFailedException
-     * @throws IOException
      */
     public CloseableResponse put(String relativePath, String requestBody, Map<String, String> headers) throws RequestFailedException {
 
