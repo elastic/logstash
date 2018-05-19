@@ -242,14 +242,15 @@ example:
 ["source","sh",subs="attributes"]
 --------------------------------------------------
 cd logstash-{logstash_version}
-bin/logstash -e 'input { stdin { } } output { stdout {} }'
+(echo input { stdin { } } && echo output { stdout { } }) > logstash-simple2.conf
+bin/logstash -c logstash-simple.conf
 --------------------------------------------------
 
 NOTE: The location of the `bin` directory varies by platform. See {logstash-ref}/dir-layout.html[Directory layout]
 to find the location of `bin\logstash` on your system.
 
-The `-e` flag enables you to specify a configuration directly from the command line. Specifying configurations at the
-command line lets you quickly test configurations without having to edit a file between iterations.
+The `-c` flag enables you to specify a configuration directly from a file. Specifying configurations at the
+command line isn't currently working on all platforms.
 The pipeline in the example takes input from the standard input, `stdin`, and moves that input to the standard output,
 `stdout`, in a structured format.
 
@@ -257,9 +258,14 @@ After starting Logstash, wait until you see "Pipeline main started" and then ent
 
 [source,shell]
 hello world
-2013-11-21T01:22:14.405+0000 0.0.0.0 hello world
+{
+          "host" => "DESKTOP-IOST18F",
+      "@version" => "1",
+    "@timestamp" => 2018-05-17T18:04:07.698Z,
+       "message" => "hello world\r"
+}
 
-Logstash adds timestamp and IP address information to the message. Exit Logstash by issuing a *CTRL-D* command in the
+Logstash adds host, timestamp and version information to the message. Exit Logstash by issuing a *CTRL-C* command in the
 shell where Logstash is running.
 
 Congratulations! You've created and run a basic Logstash pipeline. Next, you learn how to create a more realistic pipeline.
