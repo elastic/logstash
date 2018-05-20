@@ -138,6 +138,8 @@ public final class RubyUtil {
 
     public static final RubyClass PLUGIN_METRIC_FACTORY_CLASS;
 
+    public static final RubyClass PLUGIN_FACTORY_CLASS;
+
     public static final RubyClass LOGGER;
 
     public static final RubyModule LOGGABLE_MODULE;
@@ -145,6 +147,8 @@ public final class RubyUtil {
     public static final RubyClass SLOW_LOGGER;
 
     public static final RubyModule UTIL_MODULE;
+
+    public static final RubyClass CONFIGURATION_ERROR_CLASS;
 
     /**
      * Logstash Ruby Module.
@@ -350,7 +354,7 @@ public final class RubyUtil {
         LOGSTASH_MODULE.defineClassUnder(
             "EnvironmentError", stdErr, JRubyLogstashErrorsExt.LogstashEnvironmentError::new
         );
-        LOGSTASH_MODULE.defineClassUnder(
+        CONFIGURATION_ERROR_CLASS = LOGSTASH_MODULE.defineClassUnder(
             "ConfigurationError", stdErr, JRubyLogstashErrorsExt.ConfigurationError::new
         );
         LOGSTASH_MODULE.defineClassUnder(
@@ -403,6 +407,10 @@ public final class RubyUtil {
         RUBY_EVENT_CLASS.setConstant("VERSION_ONE", RUBY.newString(Event.VERSION_ONE));
         RUBY_EVENT_CLASS.defineAnnotatedMethods(JrubyEventExtLibrary.RubyEvent.class);
         RUBY_EVENT_CLASS.defineAnnotatedConstants(JrubyEventExtLibrary.RubyEvent.class);
+        PLUGIN_FACTORY_CLASS = PLUGINS_MODULE.defineClassUnder(
+            "PluginFactory", RUBY.getObject(), PluginFactoryExt.Plugins::new
+        );
+        PLUGIN_FACTORY_CLASS.defineAnnotatedMethods(PluginFactoryExt.Plugins.class);
         RUBY.getGlobalVariables().set("$LS_JARS_LOADED", RUBY.newString("true"));
         RubyJavaIntegration.setupRubyJavaIntegration(RUBY);
     }
