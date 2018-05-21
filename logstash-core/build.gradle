@@ -120,6 +120,7 @@ dependencies {
     compile 'org.codehaus.janino:janino:3.0.8'
     compile "com.fasterxml.jackson.dataformat:jackson-dataformat-cbor:${jacksonVersion}"
     compile "org.jruby:jruby-complete:${jrubyVersion}"
+    compile group: 'com.google.guava', name: 'guava', version: '22.0'
     // Do not upgrade this, later versions require GPL licensed code in javac-shaded that is
     // Apache2 incompatible
     compile 'com.google.googlejavaformat:google-java-format:1.1'
