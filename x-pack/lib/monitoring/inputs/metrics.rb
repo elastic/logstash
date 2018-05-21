@@ -54,7 +54,6 @@ module LogStash module Inputs
       @last_updated_pipeline_hashes = []
       @es_options = es_options_from_settings_or_modules(FEATURE, @settings)
       setup_license_checker(FEATURE)
-      configure_snapshot_poller
     end
 
     def pipeline_started(agent, pipeline)
@@ -70,7 +69,7 @@ module LogStash module Inputs
         :execution_interval => @collection_interval,
         :timeout_interval => @collection_timeout_interval
       }) do
-        update(metric.collector.snapshot_metric)
+        update(metric.collector.snapshot_metric) unless @agent.nil?
       end
 
       @timer_task.add_observer(TimerTaskLogger.new)
@@ -79,6 +78,8 @@ module LogStash module Inputs
       def run(arg_queue)
         @logger.debug("Metric: input started")
         @queue = arg_queue
+
+        configure_snapshot_poller
 
         # This must be invoked here because we need a queue to store the data
         LogStash::PLUGIN_REGISTRY.hooks.register_hooks(LogStash::Agent, self)
