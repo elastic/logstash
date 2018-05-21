@@ -333,7 +333,7 @@ class LogStash::Agent
       when LogStash::PipelineAction::Reload
         dispatcher.fire(:pipeline_stopped, get_pipeline(action.pipeline_id))
       when LogStash::PipelineAction::Stop
-        dispatcher.fire(:pipeline_started, get_pipeline(action.pipeline_id))
+        dispatcher.fire(:pipeline_stopped, get_pipeline(action.pipeline_id))
       end
     end
   end
