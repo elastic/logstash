@@ -514,6 +514,14 @@ filter {
                 rename => { "[netflow][protocolIdentifier]" => "[netflow][protocol]" }
             }
         }
+        
+        # Populate TCP flags if available.
+        if [netflow][tcpControlBits] {
+            mutate {
+                id => "IPFIX-normalize-tcp_flags-from-tcpControlBits"
+                rename => { "[netflow][tcpControlBits]" => "[netflow][tcp_flags]" }
+            }
+        }
     }
 
     #--------------------
