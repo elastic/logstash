@@ -149,19 +149,6 @@ task downloadAndInstallJRuby(dependsOn: verifyFile, type: Copy) {
     into "${projectDir}/vendor/jruby"
 }
 
-task installDefaultGems(dependsOn: downloadAndInstallJRuby) {
-  inputs.files file("${projectDir}/Gemfile.template")
-  inputs.files fileTree("${projectDir}/rakelib")
-  inputs.files file("${projectDir}/versions.yml")
-  outputs.file("${projectDir}/Gemfile")
-  outputs.file("${projectDir}/Gemfile.lock")
-  outputs.dir("${projectDir}/logstash-core/lib/jars")
-  outputs.dir("${projectDir}/vendor/bundle/jruby/2.3.0")
-  doLast {
-    rubyGradleUtils.rake('plugin:install-default')
-  }
-}
-
 task installTestGems(dependsOn: downloadAndInstallJRuby) {
   inputs.files file("${projectDir}/Gemfile.template")
   inputs.files fileTree("${projectDir}/rakelib")
