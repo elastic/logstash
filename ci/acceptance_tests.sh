@@ -25,6 +25,9 @@ cleanup() {
 }
 trap cleanup EXIT
 
+# Cleanup any stale VMs from old jobs first
+bundle exec rake qa:vm:halt
+
 if [[ $SELECTED_TEST_SUITE == $"redhat" ]]; then
   echo "Generating the RPM, make sure you start with a clean environment before generating other packages."
   rake artifact:rpm
