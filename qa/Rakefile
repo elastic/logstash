@@ -40,7 +40,9 @@ namespace :qa do
       puts user_feedback_string_for("bootstrapping", args[:platform], machines, {"experimental" => experimental})
 
       options = {:debug => ENV['LS_QA_DEBUG']}
+      puts "Destroying #{machines}"
       LogStash::VagrantHelpers.destroy(machines, options)
+      puts "Bootstrapping #{machines}"
       LogStash::VagrantHelpers.bootstrap(machines, options)
     end
 
@@ -53,6 +55,7 @@ namespace :qa do
       puts user_feedback_string_for("halting", args[:platform], machines, {"experimental" => experimental})
       options = {:debug => ENV['LS_QA_DEBUG']}
 
+      puts "Halting #{machines}"
       LogStash::VagrantHelpers.halt(machines, options)
     end
   end
