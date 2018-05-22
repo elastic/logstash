@@ -37,6 +37,7 @@ import org.logstash.log.LoggableExt;
 import org.logstash.log.LoggerExt;
 import org.logstash.log.SlowLoggerExt;
 import org.logstash.plugins.PluginFactoryExt;
+import org.logstash.plugins.UniversalPluginExt;
 
 /**
  * Utilities around interaction with the {@link Ruby} runtime.
@@ -149,6 +150,8 @@ public final class RubyUtil {
     public static final RubyModule UTIL_MODULE;
 
     public static final RubyClass CONFIGURATION_ERROR_CLASS;
+
+    public static final RubyClass UNIVERSAL_PLUGIN_CLASS;
 
     /**
      * Logstash Ruby Module.
@@ -411,6 +414,8 @@ public final class RubyUtil {
             "PluginFactory", RUBY.getObject(), PluginFactoryExt.Plugins::new
         );
         PLUGIN_FACTORY_CLASS.defineAnnotatedMethods(PluginFactoryExt.Plugins.class);
+        UNIVERSAL_PLUGIN_CLASS =
+            setupLogstashClass(UniversalPluginExt::new, UniversalPluginExt.class);
         RUBY.getGlobalVariables().set("$LS_JARS_LOADED", RUBY.newString("true"));
         RubyJavaIntegration.setupRubyJavaIntegration(RUBY);
     }
