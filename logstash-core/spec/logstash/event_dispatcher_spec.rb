@@ -1,7 +1,5 @@
 # encoding: utf-8
 #
-require "logstash/event_dispatcher"
-
 describe LogStash::EventDispatcher do
   class DummyEmitter
     attr_reader :dispatcher
