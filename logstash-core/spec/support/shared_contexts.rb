@@ -31,11 +31,11 @@ shared_context "api setup" do
   end
 
   after :all do
-    @agent.shutdown
     @pipelines.each do |_, pipeline|
       pipeline.shutdown
       pipeline.thread.join
     end
+    @agent.shutdown
   end
 
   include Rack::Test::Methods
