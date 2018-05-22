@@ -1,7 +1,6 @@
 # encoding: utf-8
 require "spec_helper"
 require "logstash/pipeline"
-require "logstash/pipeline_reporter"
 require_relative "../support/helpers"
 require_relative "../support/mocks_classes"
 
@@ -21,7 +20,7 @@ describe LogStash::PipelineReporter do
     allow(LogStash::Plugin).to receive(:lookup).with("codec", "plain").and_call_original
 
     @pre_snapshot = reporter.snapshot
-    
+
     pipeline.run
     @post_snapshot = reporter.snapshot
   end
