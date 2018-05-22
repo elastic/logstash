@@ -17,6 +17,7 @@ import org.logstash.config.ir.compiler.OutputDelegatorExt;
 import org.logstash.config.ir.compiler.OutputStrategyExt;
 import org.logstash.execution.EventDispatcherExt;
 import org.logstash.execution.ExecutionContextExt;
+import org.logstash.execution.PipelineReporterExt;
 import org.logstash.execution.QueueReadClientBase;
 import org.logstash.ext.JRubyLogstashErrorsExt;
 import org.logstash.ext.JRubyWrappedWriteClientExt;
@@ -155,6 +156,10 @@ public final class RubyUtil {
     public static final RubyClass UNIVERSAL_PLUGIN_CLASS;
 
     public static final RubyClass EVENT_DISPATCHER_CLASS;
+
+    public static final RubyClass PIPELINE_REPORTER_CLASS;
+
+    public static final RubyClass PIPELINE_REPORTER_SNAPSHOT_CLASS;
 
     /**
      * Logstash Ruby Module.
@@ -348,7 +353,7 @@ public final class RubyUtil {
         LOGGER = loggingModule.defineClassUnder("Logger", RUBY.getObject(), LoggerExt::new);
         LOGGER.defineAnnotatedMethods(LoggerExt.class);
         SLOW_LOGGER = loggingModule.defineClassUnder(
-                "SlowLogger", RUBY.getObject(), SlowLoggerExt::new);
+            "SlowLogger", RUBY.getObject(), SlowLoggerExt::new);
         SLOW_LOGGER.defineAnnotatedMethods(SlowLoggerExt.class);
         LOGGABLE_MODULE = UTIL_MODULE.defineModuleUnder("Loggable");
         LOGGABLE_MODULE.defineAnnotatedMethods(LoggableExt.class);
@@ -421,6 +426,15 @@ public final class RubyUtil {
             setupLogstashClass(UniversalPluginExt::new, UniversalPluginExt.class);
         EVENT_DISPATCHER_CLASS =
             setupLogstashClass(EventDispatcherExt::new, EventDispatcherExt.class);
+        PIPELINE_REPORTER_CLASS =
+            setupLogstashClass(PipelineReporterExt::new, PipelineReporterExt.class);
+        PIPELINE_REPORTER_CLASS.defineAnnotatedMethods(PipelineReporterExt.class);
+        PIPELINE_REPORTER_SNAPSHOT_CLASS = PIPELINE_REPORTER_CLASS.defineClassUnder(
+            "Snapshot", RUBY.getObject(), PipelineReporterExt.SnapshotExt::new
+        );
+        PIPELINE_REPORTER_SNAPSHOT_CLASS.defineAnnotatedMethods(
+            PipelineReporterExt.SnapshotExt.class
+        );
         RUBY.getGlobalVariables().set("$LS_JARS_LOADED", RUBY.newString("true"));
         RubyJavaIntegration.setupRubyJavaIntegration(RUBY);
     }
