@@ -15,6 +15,7 @@ import org.logstash.common.BufferedTokenizerExt;
 import org.logstash.config.ir.compiler.FilterDelegatorExt;
 import org.logstash.config.ir.compiler.OutputDelegatorExt;
 import org.logstash.config.ir.compiler.OutputStrategyExt;
+import org.logstash.execution.EventDispatcherExt;
 import org.logstash.execution.ExecutionContextExt;
 import org.logstash.execution.QueueReadClientBase;
 import org.logstash.ext.JRubyLogstashErrorsExt;
@@ -152,6 +153,8 @@ public final class RubyUtil {
     public static final RubyClass CONFIGURATION_ERROR_CLASS;
 
     public static final RubyClass UNIVERSAL_PLUGIN_CLASS;
+
+    public static final RubyClass EVENT_DISPATCHER_CLASS;
 
     /**
      * Logstash Ruby Module.
@@ -416,6 +419,8 @@ public final class RubyUtil {
         PLUGIN_FACTORY_CLASS.defineAnnotatedMethods(PluginFactoryExt.Plugins.class);
         UNIVERSAL_PLUGIN_CLASS =
             setupLogstashClass(UniversalPluginExt::new, UniversalPluginExt.class);
+        EVENT_DISPATCHER_CLASS =
+            setupLogstashClass(EventDispatcherExt::new, EventDispatcherExt.class);
         RUBY.getGlobalVariables().set("$LS_JARS_LOADED", RUBY.newString("true"));
         RubyJavaIntegration.setupRubyJavaIntegration(RUBY);
     }
