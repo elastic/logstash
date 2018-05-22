@@ -285,7 +285,7 @@ filter {
         if [netflow][ipVersion] {
             mutate {
                 id => "IPFIX-normalize-ip_version"
-                add_field => { "[netflow][ipVersion]" => "IPv%{[netflow][ip_version]}" }
+                add_field => { "[netflow][ip_version]" => "IPv%{[netflow][ipVersion]}" }
             }
         }
         
