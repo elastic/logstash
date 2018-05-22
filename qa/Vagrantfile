@@ -9,7 +9,7 @@ Vagrant.configure(2) do |config|
     config.vm.define platform.name do |machine|
       machine.vm.box = platform.box
       machine.vm.provider "virtualbox" do |v|
-        v.memory = 2096
+        v.memory = 4096
         v.cpus = 4
       end
       machine.vm.synced_folder "../build", "/logstash-build", create: true
