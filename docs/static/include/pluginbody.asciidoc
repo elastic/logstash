@@ -836,7 +836,7 @@ TIP: See http://bundler.io/gemfile.html[Bundler's Gemfile page] for more details
 ----------------------------------
 source 'https://rubygems.org'
 gemspec
-gem "logstash", :github => "elastic/logstash", :branch => "{branch}"
+gem "logstash-core", :github => "elastic/logstash", :branch => "{branch}"
 ----------------------------------
 
 ==== Add a `gemspec` file
