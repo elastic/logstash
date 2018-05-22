@@ -10,6 +10,7 @@ export GRADLE_OPTS="-Xmx2g -Dorg.gradle.daemon=false -Dorg.gradle.logging.level=
 export SPEC_OPTS="--order rand --format documentation"
 export CI=true
 export OSS=true
+export TEST_DEBUG=true
 
 SELECTED_TEST_SUITE=$1
 
