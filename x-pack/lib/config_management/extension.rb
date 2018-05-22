@@ -3,7 +3,6 @@
 # you may not use this file except in compliance with the Elastic License.
 
 require "logstash/environment"
-require "logstash/universal_plugin"
 require "config_management/hooks"
 require "config_management/elasticsearch_source"
 require "config_management/bootstrap_check"
