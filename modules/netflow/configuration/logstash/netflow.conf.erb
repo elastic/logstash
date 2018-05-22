@@ -506,6 +506,14 @@ filter {
                 rename => { "[netflow][ipClassOfService]" => "[netflow][tos]" }
             }
         }
+
+        # Populate protocol if available.
+        if [netflow][protocolIdentifier] {
+            mutate {
+                id => "IPFIX-normalize-protocol-from-protocolIdentifier"
+                rename => { "[netflow][protocolIdentifier]" => "[netflow][protocol]" }
+            }
+        }
     }
 
     #--------------------
