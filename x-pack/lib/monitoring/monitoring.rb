@@ -3,7 +3,6 @@
 # you may not use this file except in compliance with the Elastic License.
 
 require "logstash/agent"
-require "logstash/universal_plugin"
 require "monitoring/internal_pipeline_source"
 require "logstash/config/pipeline_config"
 require 'helpers/elasticsearch_options'
