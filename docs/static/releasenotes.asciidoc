@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-6-3-0,Logstash 6.3.0>>
 * <<logstash-6-2-4,Logstash 6.2.4>>
 * <<logstash-6-2-3,Logstash 6.2.3>>
 * <<logstash-6-2-2,Logstash 6.2.2>>
