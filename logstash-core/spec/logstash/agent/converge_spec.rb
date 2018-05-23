@@ -117,7 +117,8 @@ describe LogStash::Agent do
           end
 
           it "converge only once" do
-            expect(source_loader.fetch_count).to eq(1)
+            wait(60).for { source_loader.fetch_count }.to eq(1)
+
             expect(subject).to have_running_pipeline?(pipeline_config)
 
             subject.shutdown
