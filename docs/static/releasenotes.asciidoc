@@ -45,8 +45,19 @@ for more information.
 * Optimize out empty `if` conditions from execution graph #9314
 
 ==== Plugins
-TODO
+*Netflow Codec*
 
+* Added support for IPFIX from Procera/NetIntact/Sandvine 15.1 https://github.com/logstash-plugins/logstash-codec-netflow/pull/131[#131]
+
+*JDBC_static Filter*
+
+* Support multiple driver libraries https://github.com/logstash-plugins/logstash-filter-jdbc_static/issues/22[#22]
+* Use Java classloader to load driver jar. Use system import from file to loader local database. Prevent locking errors when no records returned. https://github.com/logstash-plugins/logstash-filter-jdbc_static/issues/18[#18], https://github.com/logstash-plugins/logstash-filter-jdbc_static/issues/17[#17], https://github.com/logstash-plugins/logstash-filter-jdbc_static/issues/12[#12]
+* `loader_schedule` now works as designed https://github.com/logstash-plugins/logstash-filter-jdbc_static/issues/8[#8]
+
+*UDP Input*
+
+* Fix missing require for the ipaddr library https://github.com/logstash-plugins/logstash-input-udp/pull/37[#37]
 
 [[logstash-6-2-4]]
 === Logstash 6.2.4 Release Notes
