@@ -229,31 +229,22 @@ en:
           If you wish to use both defaults, please use
           the empty string for the '-e' flag.
         field-reference-parser: |+
+          (DEPRECATED) This option is no longer
+          configurable.
+
           Use the given MODE when parsing field
           references.
 
           The field reference parser is used to expand
           field references in your pipeline configs,
-          and will be becoming more strict to better
-          handle illegal and ambbiguous inputs in a
-          future release of Logstash.
+          and has become more strict to better handle
+          ambiguous- and illegal-syntax inputs.
 
-          Available MODEs are:
-           - `LEGACY`: parse with the legacy parser,
-             which is known to handle ambiguous- and
-             illegal-syntax in surprising ways;
-             warnings will not be emitted.
-           - `COMPAT`: warn once for each distinct
-             ambiguous- or illegal-syntax input, but
-             continue to expand field references with
-             the legacy parser.
+          The only available MODE is:
            - `STRICT`: parse in a strict manner; when
              given ambiguous- or illegal-syntax input,
              raises a runtime exception that should
              be handled by the calling plugin.
-
-           The MODE can also be set with
-           `config.field_reference.parser`
 
         modules: |+
           Load Logstash modules.

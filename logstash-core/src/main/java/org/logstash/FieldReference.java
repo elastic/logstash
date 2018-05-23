@@ -1,16 +1,10 @@
 package org.logstash;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
 
 import java.util.concurrent.ConcurrentHashMap;
 import org.jruby.RubyString;
@@ -25,8 +19,6 @@ public final class FieldReference {
             super(message);
         }
     }
-
-    private static final Logger LOGGER = LogManager.getLogger(FieldReference.class);
 
     /**
      * This type indicates that the referenced that is the metadata of an {@link Event} found in
@@ -52,28 +44,9 @@ public final class FieldReference {
     private static final Map<FieldReference, FieldReference> DEDUP = new HashMap<>(64);
 
     /**
-     * Controls the global parsing mode, in support of the transition to strict-mode parsing.
-     *
-     * See {@link FieldReference#setParsingMode(ParsingMode)}.
+     * The tokenizer that will be used when parsing field references
      */
-    private static ParsingMode PARSING_MODE = ParsingMode.LEGACY;
-
-    /**
-     * The {@link ParsingMode} enum holds references to the supported parsing modes, in
-     * support of the transition to strict-mode parsing.
-     */
-    public enum ParsingMode {
-        LEGACY(new LegacyTokenizer()),
-        COMPAT(new StrictTokenizer(LEGACY.tokenizer)),
-        STRICT(new StrictTokenizer()),
-        ;
-
-        final Tokenizer tokenizer;
-
-        ParsingMode(final Tokenizer tokenizer) {
-            this.tokenizer = tokenizer;
-        }
-    }
+    private static final StrictTokenizer TOKENIZER = new StrictTokenizer();
 
     /**
      * Unique {@link FieldReference} pointing at the timestamp field in a {@link Event}.
@@ -131,25 +104,6 @@ public final class FieldReference {
             return result;
         }
         return parseToCache(reference);
-    }
-
-    /**
-     * Sets the global {@link ParsingMode}
-     *
-     * @param newParsingMode a {@link ParsingMode} to be used globally
-     * @return the previous {@link ParsingMode}, enabling tests to reset to default behaviour
-     */
-    public static ParsingMode setParsingMode(final ParsingMode newParsingMode) {
-        final ParsingMode originalParsingMode = PARSING_MODE;
-        PARSING_MODE = newParsingMode;
-        return originalParsingMode;
-    }
-
-    /**
-     * @return the current global {@link ParsingMode}.
-     */
-    static ParsingMode getParsingMode() {
-        return PARSING_MODE;
     }
 
     /**
@@ -226,7 +180,7 @@ public final class FieldReference {
     }
 
     private static FieldReference parse(final CharSequence reference) {
-        final List<String> path = PARSING_MODE.tokenizer.tokenize(reference);
+        final List<String> path = TOKENIZER.tokenize(reference);
 
         final String key = path.remove(path.size() - 1).intern();
         final boolean empty = path.isEmpty();
@@ -242,82 +196,14 @@ public final class FieldReference {
     }
 
     /**
-     * A temporary private interface to support the transition to strict-mode tokenizing.
-     */
-    private interface Tokenizer {
-        List<String> tokenize(final CharSequence reference);
-    }
-
-    /**
-     * The {@link LegacyTokenizer} is verbatim the tokenizer code that has long been a part
-     * of {@link FieldReference#parse(CharSequence)}.
-     *
-     * While it handles fully-legal bracket-style and no-bracket inputs, it behaves in
-     * surprising ways when given illegal-syntax inputs.
-     */
-    private static class LegacyTokenizer implements Tokenizer {
-        @Override
-        public List<String> tokenize(CharSequence reference) {
-            final ArrayList<String> path = new ArrayList<>();
-            final int length = reference.length();
-            int splitPoint = 0;
-            for (int i = 0; i < length; ++i) {
-                final char seen = reference.charAt(i);
-                if (seen == '[' || seen == ']') {
-                    if (i == 0) {
-                        splitPoint = 1;
-                    }
-                    if (i > splitPoint) {
-                        path.add(reference.subSequence(splitPoint, i).toString().intern());
-                    }
-                    splitPoint = i + 1;
-                }
-            }
-            if (splitPoint < length || length == 0) {
-                path.add(reference.subSequence(splitPoint, length).toString().intern());
-            }
-            if (path.isEmpty()) {
-                // https://github.com/elastic/logstash/issues/9524
-                // prevents an ArrayIndexOutOfBounds exception that would crash the entire Logstash process.
-                // If the path is empty, we have an illegal syntax input and are unable to build a valid
-                // FieldReference; throw a runtime exception, which can be handled downstream.
-                throw new IllegalSyntaxException(String.format("Invalid FieldReference: `%s`", reference.toString()));
-            }
-            path.trimToSize();
-
-            return path;
-        }
-    }
-
-    /**
      * The {@link StrictTokenizer} parses field-references in a strict manner; when illegal syntax is encountered,
-     * the input is considered ambiguous.
-     *
-     * If instantiated with a fallback {@link Tokenizer}, when it encounters ambiguous input it will always return
-     * an output that is identical to the output of the fallback {@link Tokenizer#tokenize(CharSequence)}; when their
-     * outputs would differ, it also emits a warning to the logger for each distinct illegal input it encounters.
-     */
-    private static class StrictTokenizer implements Tokenizer {
-        private static final Set<CharSequence> AMBIGUOUS_INPUTS = new HashSet<>();
+     * the input is considered ambiguous and the reference is not expanded.
+     **/
+    private static class StrictTokenizer {
 
-        final Tokenizer legacyTokenizer;
-
-        StrictTokenizer(final Tokenizer legacyTokenizer) {
-            this.legacyTokenizer = Objects.requireNonNull(legacyTokenizer,
-                                                          "to run strict without a fallbackTokenizer, " +
-                                                          "use zero-arg variant");
-        }
-
-        StrictTokenizer() {
-            this.legacyTokenizer = null;
-        }
-
-        @Override
         public List<String> tokenize(CharSequence reference) {
             ArrayList<String> path = new ArrayList<>();
             final int length = reference.length();
-
-            boolean strictMode = !Objects.nonNull(legacyTokenizer);
 
             boolean potentiallyAmbiguousSyntaxDetected = false;
             boolean seenBracket = false;
@@ -393,29 +279,11 @@ public final class FieldReference {
             // if we have encountered ambiguous syntax and are not in strict-mode,
             // fall back to legacy parser.
             if (potentiallyAmbiguousSyntaxDetected) {
-                if (strictMode) {
-                    throw new FieldReference.IllegalSyntaxException(String.format("Invalid FieldReference: `%s`", reference.toString()));
-                } else {
-                    final List<String> legacyPath = legacyTokenizer.tokenize(reference);
-                    if (!path.equals(legacyPath)) {
-                        warnAmbiguous(reference, legacyPath);
-                    }
-                    return legacyPath;
-                }
+                throw new FieldReference.IllegalSyntaxException(String.format("Invalid FieldReference: `%s`", reference.toString()));
             }
 
             path.trimToSize();
             return path;
-        }
-
-        private void warnAmbiguous(final CharSequence reference, final List<String> expansion) {
-            if (AMBIGUOUS_INPUTS.size() > 10_000) {
-                return;
-            }
-            if (AMBIGUOUS_INPUTS.add(reference)) {
-                // TODO: i18n
-                LOGGER.warn(String.format("Detected ambiguous Field Reference `%s`, which we expanded to the path `%s`; in a future release of Logstash, ambiguous Field References will not be expanded.", reference.toString(), expansion));
-            }
         }
     }
 }

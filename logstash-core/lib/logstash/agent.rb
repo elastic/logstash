@@ -46,14 +46,10 @@ class LogStash::Agent
     id
 
     # Set the global FieldReference parsing mode
-    parsing_mode = case setting('config.field_reference.parser')
-                   when 'COMPAT' then org.logstash.FieldReference::ParsingMode::COMPAT;
-                   when 'LEGACY' then org.logstash.FieldReference::ParsingMode::LEGACY;
-                   when 'STRICT' then org.logstash.FieldReference::ParsingMode::STRICT;
-                   else fail('Unsupported FieldReference parsing mode')
-                   end
-    logger.debug("Setting global FieldReference parsing mode: #{parsing_mode}")
-    org.logstash.FieldReference::set_parsing_mode(parsing_mode)
+    if @settings.set?('config.field_reference.parser')
+      # TODO: i18n
+      logger.warn("deprecated setting `config.field_reference.parser` set; field reference parsing is strict by default")
+    end
 
     # This is for backward compatibility in the tests
     if source_loader.nil?
