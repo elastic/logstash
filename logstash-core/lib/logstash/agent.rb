@@ -176,6 +176,10 @@ class LogStash::Agent
   end
 
   def shutdown
+    # Since we're shutting down we need to shutdown the DAG of pipelines that are talking to each other
+    # in order of dependency.
+    pipeline_bus.setBlockOnUnlisten(true)
+
     stop_collecting_metrics
     stop_webserver
     transition_to_stopped

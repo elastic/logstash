@@ -41,6 +41,8 @@ By default, the `ensure_delivery` option on the `pipeline` output is set to `tru
 
 A blocked downstream pipeline blocks the sending output/pipeline regardless of the value of the `ensure_delivery` flag.
 
+These delivery guarantees also inform the shutdown behavior of this feature. When performing a pipeline reload, changes will be made immediately as the user requests, even if that means removing a downstream pipeline an upstream pipeline sends to. This will cause the upstream pipeline to block. You must restore the downstream pipeline to cleanly shutdown Logstash. You may issue a force kill, but inflight events may be lost, unless the persistent queue is in use.
+
 [[avoid-cycles]]
 ===== Avoid cycles
 
