@@ -23,7 +23,6 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
-import org.logstash.ackedqueue.io.LongVector;
 import org.logstash.ackedqueue.io.MmapPageIOV2;
 
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -653,12 +652,11 @@ public class QueueTest {
         }
 
         long secondSeqNum;
-        long thirdSeqNum;
         try(Queue q = new Queue(settings)){
             q.open();
 
             secondSeqNum = q.write(element2);
-            thirdSeqNum = q.write(element3);
+            q.write(element3);
 
             b = q.nonBlockReadBatch(1);
             assertThat(b.getElements().size(), is(1));
@@ -669,9 +667,7 @@ public class QueueTest {
             assertThat(b.getElements().get(0), is(element2));
             assertThat(b.getElements().get(1), is(element3));
 
-            final LongVector seqs = new LongVector(1);
-            seqs.add(firstSeqNum);
-            q.ack(seqs);
+            q.ack(firstSeqNum, 1);
         }
 
         try(Queue q = new Queue(settings)) {
@@ -680,10 +676,7 @@ public class QueueTest {
             b = q.nonBlockReadBatch(2);
             assertThat(b.getElements().size(), is(2));
 
-            final LongVector seqs = new LongVector(2);
-            seqs.add(secondSeqNum);
-            seqs.add(thirdSeqNum);
-            q.ack(seqs);
+            q.ack(secondSeqNum, 2);
 
             assertThat(q.getAckedCount(), equalTo(0L));
             assertThat(q.getUnackedCount(), equalTo(0L));
@@ -834,21 +827,24 @@ public class QueueTest {
 
     private void stableUnderStress(final int capacity) throws IOException {
         Settings settings = TestSettings.persistedQueueSettings(capacity, dataPath);
-        final ExecutorService exec = Executors.newScheduledThreadPool(2);
+        final int concurrent = 2;
+        final ExecutorService exec = Executors.newScheduledThreadPool(concurrent);
+        final int count = 20_000;
         try (Queue queue = new Queue(settings)) {
-            final int count = 20_000;
-            final int concurrent = 2;
             queue.open();
             final List<Future<Integer>> futures = new ArrayList<>(concurrent);
+            final AtomicInteger counter = new AtomicInteger(0);
             for (int c = 0; c < concurrent; ++c) {
                 futures.add(exec.submit(() -> {
                     int i = 0;
                     try {
-                        while (i < count / concurrent) {
-                            final Batch batch = queue.readBatch(1, TimeUnit.SECONDS.toMillis(1));
-                            if (batch != null) {
+                        while (counter.get() < count) {
+                            try (final Batch batch = queue.readBatch(
+                                50, TimeUnit.SECONDS.toMillis(1L))
+                            ) {
                                 for (final Queueable elem : batch.getElements()) {
                                     if (elem != null) {
+                                        counter.incrementAndGet();
                                         ++i;
                                     }
                                 }
@@ -860,9 +856,9 @@ public class QueueTest {
                     }
                 }));
             }
+            final Queueable evnt = new StringElement("foo");
             for (int i = 0; i < count; ++i) {
                 try {
-                    final Queueable evnt = new StringElement("foo");
                     queue.write(evnt);
                 } catch (final IOException ex) {
                     throw new IllegalStateException(ex);
@@ -871,13 +867,14 @@ public class QueueTest {
             assertThat(
                 futures.stream().map(i -> {
                     try {
-                        return i.get(2L, TimeUnit.MINUTES);
+                        return i.get(5L, TimeUnit.MINUTES);
                     } catch (final InterruptedException | ExecutionException | TimeoutException ex) {
                         throw new IllegalStateException(ex);
                     }
                 }).reduce((x, y) -> x + y).orElse(0),
-                is(20_000)
+                is(count)
             );
+            assertThat(queue.isFullyAcked(), is(true));
         }
     }
 
@@ -914,7 +911,7 @@ public class QueueTest {
             Queueable element2 = new StringElement("9876543210");
 
             // write 2 elements to force a new page.
-            q.write(element1);
+            final long firstSeq = q.write(element1);
             q.write(element2);
             assertThat(q.tailPages.size(), is(1));
 
@@ -923,7 +920,7 @@ public class QueueTest {
             Page tp = q.tailPages.get(0);
             Batch b = new Batch(tp.read(1), q);
             assertThat(b.getElements().get(0), is(element1));
-            tp.ack(b.getSeqNums(), 1);
+            tp.ack(firstSeq, 1, 1);
             assertThat(tp.isFullyAcked(), is(true));
 
         }
@@ -988,7 +985,7 @@ public class QueueTest {
 
 
     @Test(timeout = 5000)
-    public void maximizeBatch() throws IOException, InterruptedException, ExecutionException {
+    public void maximizeBatch() throws IOException {
 
         // very small pages to maximize page creation
         Settings settings = TestSettings.persistedQueueSettings(1000, dataPath);
