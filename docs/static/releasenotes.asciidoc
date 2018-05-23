@@ -24,25 +24,25 @@ for more information.
 --
 
 === Logstash 6.3.0 Release Notes
-* BUGFIX: Fix race condition in shutdown of pipelines #9285
-* BUGFIX: Ensure atomic creation of persistent queue checkpoints #9303
-* BUGFIX: Fixed issue where events containing non-ASCII characters were getting encoded incorrectly after passing through the persistent queue #9307
-* BUGFIX: Fixes incorrect serialization of strings extracted from other strings via substring, regex matching, etc. #9308
-* BUGFIX: Fixes nested metadata field lookup in Java execution #9297
-* BUGFIX: Persistent queue must allow reading empty batches #9328
-* BUGFIX: Prevents pipelines.yml from being overwritten during RPM/DEB package upgrade #9130
-* BUGFIX: Different types of values for the `ssl.enabled` module option are now tolerated #8600
-* BUGFIX: Detect invalid proxy and raise error #9230
-* BUGFIX: Fix `Logstash::Util.deep_clone` for `LogStash::Timestamp` #9405
-* BUGFIX: Better error message for temp directory errors #9293
-* BUGFIX: Better error message when `Event#set` is called on non-collection nested field #9298
-* Implemented upgrade to persistent queues v2 #9538
-* Inter-pipeline communication (within multiple pipelines on a single Logstash node) #9225
-* Speed up pipeline compilation #9278
-* Added bootstrap checks for available disk space when persistent queue is enabled #8978
-* Made `-V`/`--version` fast on Windows #8508
-* Start web server after pipeline #9398
-* Optimize out empty `if` conditions from execution graph #9314
+* BUGFIX: Fix race condition in shutdown of pipelines https://github.com/elastic/logstash/pull/9285[#9285]
+* BUGFIX: Ensure atomic creation of persistent queue checkpoints https://github.com/elastic/logstash/pull/9303[#9303]
+* BUGFIX: Fixed issue where events containing non-ASCII characters were getting encoded incorrectly after passing through the persistent queue https://github.com/elastic/logstash/pull/9307[#9307]
+* BUGFIX: Fixes incorrect serialization of strings extracted from other strings via substring, regex matching, etc. https://github.com/elastic/logstash/pull/9308[#9308]
+* BUGFIX: Fixes nested metadata field lookup in Java execution https://github.com/elastic/logstash/pull/9297[#9297]
+* BUGFIX: Persistent queue must allow reading empty batches https://github.com/elastic/logstash/pull/9328[#9328]
+* BUGFIX: Prevents pipelines.yml from being overwritten during RPM/DEB package upgrade https://github.com/elastic/logstash/pull/9130[#9130]
+* BUGFIX: Different types of values for the `ssl.enabled` module option are now tolerated https://github.com/elastic/logstash/pull/8600[#8600]
+* BUGFIX: Detect invalid proxy and raise error https://github.com/elastic/logstash/pull/9230[#9230]
+* BUGFIX: Fix `Logstash::Util.deep_clone` for `LogStash::Timestamp` https://github.com/elastic/logstash/pull/9405[#9405]
+* BUGFIX: Better error message for temp directory errors https://github.com/elastic/logstash/pull/9293[#9293]
+* BUGFIX: Better error message when `Event#set` is called on non-collection nested field https://github.com/elastic/logstash/pull/9298[#9298]
+* Implemented upgrade to persistent queues v2 https://github.com/elastic/logstash/pull/9538[#9538]
+* Inter-pipeline communication (within multiple pipelines on a single Logstash node) https://github.com/elastic/logstash/pull/9225[#9225]
+* Speed up pipeline compilation https://github.com/elastic/logstash/pull/9278[#9278]
+* Added bootstrap checks for available disk space when persistent queue is enabled https://github.com/elastic/logstash/pull/8978[#8978]
+* Made `-V`/`--version` fast on Windows https://github.com/elastic/logstash/pull/8508[#8508]
+* Start web server after pipeline https://github.com/elastic/logstash/pull/9398[#9398]
+* Optimize out empty `if` conditions from execution graph https://github.com/elastic/logstash/pull/9314[#9314]
 
 ==== Plugins
 *Netflow Codec*
