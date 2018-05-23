@@ -24,7 +24,6 @@ import org.logstash.FileLockFactory;
 import org.logstash.LockException;
 import org.logstash.ackedqueue.io.CheckpointIO;
 import org.logstash.ackedqueue.io.FileCheckpointIO;
-import org.logstash.ackedqueue.io.LongVector;
 import org.logstash.ackedqueue.io.MmapPageIOV2;
 import org.logstash.ackedqueue.io.PageIO;
 import org.logstash.common.FsUtil;
@@ -508,11 +507,11 @@ public final class Queue implements Closeable {
      * @return {@link Batch} the batch containing 1 or more element up to the required limit or null of no elements were available
      * @throws IOException
      */
-    public Batch nonBlockReadBatch(int limit) throws IOException {
+    public synchronized Batch nonBlockReadBatch(int limit) throws IOException {
         lock.lock();
         try {
             Page p = nextReadPage();
-            return (isHeadPage(p) && p.isFullyRead()) ? null : _readPageBatch(p, limit, 0L);
+            return (isHeadPage(p) && p.isFullyRead()) ? null : readPageBatch(p, limit, 0L);
         } finally {
             lock.unlock();
         }
@@ -525,10 +524,10 @@ public final class Queue implements Closeable {
      * @return the read {@link Batch} or null if no element upon timeout
      * @throws IOException
      */
-    public Batch readBatch(int limit, long timeout) throws IOException {
+    public synchronized Batch readBatch(int limit, long timeout) throws IOException {
         lock.lock();
         try {
-            return _readPageBatch(nextReadPage(), limit, timeout);
+            return readPageBatch(nextReadPage(), limit, timeout);
         } finally {
             lock.unlock();
         }
@@ -543,14 +542,13 @@ public final class Queue implements Closeable {
      * @return {@link Batch} with read elements or null if nothing was read
      * @throws IOException
      */
-    private Batch _readPageBatch(Page p, int limit, long timeout) throws IOException {
+    private Batch readPageBatch(Page p, int limit, long timeout) throws IOException {
         int left = limit;
         final List<byte[]> elements = new ArrayList<>(limit);
-        final LongVector seqNums = new LongVector(limit);
 
         // NOTE: the tricky thing here is that upon entering this method, if p is initially a head page
         // it could become a tail page upon returning from the notEmpty.await call.
-
+        long firstSeqNum = -1L;
         while (left > 0) {
             if (isHeadPage(p) && p.isFullyRead()) {
                 boolean elapsed;
@@ -575,7 +573,9 @@ public final class Queue implements Closeable {
                 int n = serialized.getElements().size();
                 assert n > 0 : "page read returned 0 elements";
                 elements.addAll(serialized.getElements());
-                seqNums.add(serialized.getSeqNums());
+                if (firstSeqNum == -1L) {
+                    firstSeqNum = serialized.getSeqNums().get(0);
+                }
 
                 this.unreadCount -= n;
                 left -= n;
@@ -594,7 +594,7 @@ public final class Queue implements Closeable {
             removeUnreadPage(p);
         }
 
-        return new Batch(elements, seqNums, this);
+        return new Batch(elements, firstSeqNum, this);
     }
 
     private static class TailPageResult {
@@ -652,18 +652,13 @@ public final class Queue implements Closeable {
      * same-page elements. A fully acked page will trigger a checkpoint for that page. Also if a page has more than checkpointMaxAcks
      * acks since last checkpoint it will also trigger a checkpoint.
      *
-     * @param seqNums the list of same-page sequence numbers to ack
+     * @param firstAckSeqNum First Sequence Number to Ack
+     * @param ackCount Number of Elements to Ack
      * @throws IOException
      */
-    public void ack(LongVector seqNums) throws IOException {
-        if (seqNums.size() == 0) {
-            return;
-        }
+    public void ack(final long firstAckSeqNum, final int ackCount) throws IOException {
         // as a first implementation we assume that all batches are created from the same page
         // so we will avoid multi pages acking here for now
-
-        // find the page to ack by traversing from oldest tail page
-        long firstAckSeqNum = seqNums.get(0);
 
         lock.lock();
         try {
@@ -686,17 +681,14 @@ public final class Queue implements Closeable {
                         String.format("seqNum=%d is not in head page with minSeqNum=%d", firstAckSeqNum, this.headPage.getMinSeqNum());
 
                 // page acking checkpoints fully acked pages
-                this.headPage.ack(seqNums, this.checkpointMaxAcks);
+                this.headPage.ack(firstAckSeqNum, ackCount, this.checkpointMaxAcks);
             } else {
                 // page acking also checkpoints fully acked pages or upon reaching the checkpointMaxAcks threshold
-                result.page.ack(seqNums, this.checkpointMaxAcks);
+                result.page.ack(firstAckSeqNum, ackCount, this.checkpointMaxAcks);
 
                 // cleanup fully acked tail page
                 if (result.page.isFullyAcked()) {
-                    boolean wasFull = isFull();
-
                     this.tailPages.remove(result.index);
-
                     // remove page data file regardless if it is the first or a middle tail page to free resources
                     result.page.purge();
 
@@ -715,8 +707,7 @@ public final class Queue implements Closeable {
                             nextPageNum++;
                         }
                     }
-
-                    if (wasFull) { notFull.signalAll(); }
+                    notFull.signalAll();
                 }
 
                 this.headPage.checkpoint();
