@@ -16,6 +16,7 @@ This section summarizes the changes in the following releases:
 
 
 [[logstash-6-3-0]]
+=== Logstash 6.3.0 Release Notes
 
 [NOTE]
 --
@@ -24,7 +25,6 @@ https://www.elastic.co/guide/en/logstash/current/upgrading-logstash-pqs.html[Upg
 for more information.
 --
 
-=== Logstash 6.3.0 Release Notes
 * BUGFIX: Fix race condition in shutdown of pipelines https://github.com/elastic/logstash/pull/9285[#9285]
 * BUGFIX: Ensure atomic creation of persistent queue checkpoints https://github.com/elastic/logstash/pull/9303[#9303]
 * BUGFIX: Fixed issue where events containing non-ASCII characters were getting encoded incorrectly after passing through the persistent queue https://github.com/elastic/logstash/pull/9307[#9307]
