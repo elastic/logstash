@@ -1,5 +1,5 @@
 [[pipeline-to-pipeline]]
-=== Pipeline-to-Pipeline Communication
+=== Pipeline-to-Pipeline Communication (Beta)
 
 When using the multiple pipeline feature of Logstash, you may want to connect multiple pipelines within the same Logstash instance. This configuration can be useful to isolate the execution of these pipelines, as well as to help break-up the logic of complex pipelines. The `pipeline` input/output enables a number of advanced architectural patterns discussed later in this document.
 
@@ -40,6 +40,8 @@ In its standard configuration the `pipeline` input/output has at-least-once deli
 By default, the `ensure_delivery` option on the `pipeline` output is set to `true.` If you change the `ensure_delivery` flag to `false`, an unavailable downstream pipeline causes the sent message to be discarded. Use `ensure_delivery => false` when you want the ability to temporarily disable a downstream pipeline without the upstream one waiting for it.
 
 A blocked downstream pipeline blocks the sending output/pipeline regardless of the value of the `ensure_delivery` flag.
+
+These delivery guarantees also inform the shutdown behavior of this feature. When performing a pipeline reload, changes will be made immediately as the user requests, even if that means removing a downstream pipeline an upstream pipeline sends to. This will cause the upstream pipeline to block. You must restore the downstream pipeline to cleanly shutdown Logstash. You may issue a force kill, but inflight events may be lost, unless the persistent queue is in use.
 
 [[avoid-cycles]]
 ===== Avoid cycles

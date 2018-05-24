@@ -39,9 +39,14 @@ public class AddressState {
      * @return true if successful, false if another input is listening
      */
     public synchronized boolean assignInputIfMissing(PipelineInput newInput) {
-        if (input != newInput && input != null) return false;
-        this.input = newInput;
-        return true;
+        if (input == null) {
+            input = newInput;
+            return true;
+        } else if (input == newInput) {
+            return true; // We aren't changing anything
+        }
+
+        return false;
     }
 
     /**
