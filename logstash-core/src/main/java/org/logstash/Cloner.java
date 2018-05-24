@@ -1,6 +1,15 @@
 package org.logstash;
 
-import java.util.*;
+import org.jruby.RubyString;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 public final class Cloner {
 
@@ -11,6 +20,8 @@ public final class Cloner {
             return (T) deepMap((Map<?, ?>) input);
         } else if (input instanceof List<?>) {
             return (T) deepList((List<?>) input);
+        } else if (input instanceof RubyString) {
+            return (T) ((RubyString) input).doClone();
         } else if (input instanceof Collection<?>) {
             throw new ClassCastException("unexpected Collection type " + input.getClass());
         }
