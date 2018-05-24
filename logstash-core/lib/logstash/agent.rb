@@ -38,7 +38,6 @@ class LogStash::Agent
     @pipeline_bus = org.logstash.plugins.pipeline.PipelineBus.new
 
     @pipelines = java.util.concurrent.ConcurrentHashMap.new();
-    @converge_state_mutex = Mutex.new
 
     @name = setting("node.name")
     @http_host = setting("http.host")
@@ -131,41 +130,35 @@ class LogStash::Agent
   end
 
   def converge_state_and_update
-    # We want to enforce that only one state converge event can happen at a time
-    # This is especially important in tests, where code will invoke the agent, then
-    # call this method directly
-    # TODO: Switch to an explicit queue for pending changes?
-    @converge_state_mutex.synchronize do
-      results = @source_loader.fetch
+    results = @source_loader.fetch
 
-      unless results.success?
-        if auto_reload?
-          logger.debug("Could not fetch the configuration to converge, will retry", :message => results.error, :retrying_in => @reload_interval)
-          return
-        else
-          raise "Could not fetch the configuration, message: #{results.error}"
-        end
+    unless results.success?
+      if auto_reload?
+        logger.debug("Could not fetch the configuration to converge, will retry", :message => results.error, :retrying_in => @reload_interval)
+        return
+      else
+        raise "Could not fetch the configuration, message: #{results.error}"
       end
-
-      # We Lock any access on the pipelines, since the actions will modify the
-      # content of it.
-      converge_result = nil
-
-      pipeline_actions = resolve_actions(results.response)
-      converge_result = converge_state(pipeline_actions)
-      update_metrics(converge_result)
-
-      logger.info(
-          "Pipelines running",
-          :count => running_pipelines.size,
-          :running_pipelines => running_pipelines.keys,
-          :non_running_pipelines => non_running_pipelines.keys
-      ) if converge_result.success? && converge_result.total > 0
-
-      dispatch_events(converge_result)
-
-      converge_result
     end
+
+    # We Lock any access on the pipelines, since the actions will modify the
+    # content of it.
+    converge_result = nil
+
+    pipeline_actions = resolve_actions(results.response)
+    converge_result = converge_state(pipeline_actions)
+    update_metrics(converge_result)
+
+    logger.info(
+        "Pipelines running",
+        :count => running_pipelines.size,
+        :running_pipelines => running_pipelines.keys,
+        :non_running_pipelines => non_running_pipelines.keys
+    ) if converge_result.success? && converge_result.total > 0
+
+    dispatch_events(converge_result)
+
+    converge_result
   rescue => e
     logger.error("An exception happened when converging configuration", :exception => e.class, :message => e.message, :backtrace => e.backtrace)
   end
@@ -178,6 +171,10 @@ class LogStash::Agent
   end
 
   def shutdown
+    # Since we're shutting down we need to shutdown the DAG of pipelines that are talking to each other
+    # in order of dependency.
+    pipeline_bus.setBlockOnUnlisten(true)
+
     stop_collecting_metrics
     stop_webserver
     transition_to_stopped
