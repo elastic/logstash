@@ -117,9 +117,10 @@ public final class Page implements Closeable {
      * @param firstSeqNum Lowest sequence number to ack
      * @param count Number of elements to ack
      * @param checkpointMaxAcks number of acks before forcing a checkpoint
+     * @return true if Page and its checkpoint were purged as a result of being fully acked
      * @throws IOException
      */
-    public void ack(long firstSeqNum, int count, int checkpointMaxAcks) throws IOException {
+    public boolean ack(long firstSeqNum, int count, int checkpointMaxAcks) throws IOException {
         assert firstSeqNum >= this.minSeqNum :
             String.format("seqNum=%d is smaller than minSeqnum=%d", firstSeqNum, this.minSeqNum);
         final long maxSeqNum = firstSeqNum + count;
@@ -134,9 +135,15 @@ public final class Page implements Closeable {
         // note that fully acked pages cleanup is done at queue level in Queue.ack()
         final long firstUnackedSeqNum = firstUnackedSeqNum();
 
-        if (isFullyAcked()) {
-            checkpoint();
-
+        final boolean done = isFullyAcked();
+        if (done) {
+            if (this.writable) {
+                headPageCheckpoint();
+            } else {
+                purge();
+                final CheckpointIO cpIO = queue.getCheckpointIO();
+                cpIO.purge(cpIO.tailFileName(pageNum));
+            }
             assert firstUnackedSeqNum >= this.minSeqNum + this.elementCount - 1:
                     String.format("invalid firstUnackedSeqNum=%d for minSeqNum=%d and elementCount=%d and cardinality=%d", firstUnackedSeqNum, this.minSeqNum, this.elementCount, this.ackedSeqNums.cardinality());
 
@@ -144,6 +151,7 @@ public final class Page implements Closeable {
             // did we acked more than checkpointMaxAcks elements? if so checkpoint now
             checkpoint();
         }
+        return done;
     }
 
     public void checkpoint() throws IOException {
