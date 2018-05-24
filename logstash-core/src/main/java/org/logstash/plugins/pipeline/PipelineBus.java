@@ -17,7 +17,7 @@ import java.util.stream.Stream;
  * This class is threadsafe.
  */
 public class PipelineBus {
-    final HashMap<String, AddressState> addressStates = new HashMap<>();
+    final ConcurrentHashMap<String, AddressState> addressStates = new ConcurrentHashMap<>();
     final ConcurrentHashMap<PipelineOutput, ConcurrentHashMap<String, AddressState>> outputsToAddressStates = new ConcurrentHashMap<>();
     volatile boolean blockOnUnlisten = false;
    private static final Logger logger = LogManager.getLogger(PipelineBus.class);
