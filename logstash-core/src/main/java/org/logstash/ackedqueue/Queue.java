@@ -10,9 +10,7 @@ import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Condition;
@@ -41,10 +39,6 @@ public final class Queue implements Closeable {
     // this list serves the only purpose of quickly retrieving the first unread page, operation necessary on every read
     // reads will simply remove the first page from the list when fully read and writes will append new pages upon beheading
     protected final List<Page> unreadTailPages;
-
-    // checkpoints that were not purged in the acking code to keep contiguous checkpoint files
-    // regardless of the correcponding data file purge.
-    private final Set<Integer> preservedCheckpoints;
 
     protected volatile long unreadCount;
 
@@ -87,7 +81,6 @@ public final class Queue implements Closeable {
         this.elementClass = settings.getElementClass();
         this.tailPages = new ArrayList<>();
         this.unreadTailPages = new ArrayList<>();
-        this.preservedCheckpoints = new HashSet<>();
         this.closed = new AtomicBoolean(true); // not yet opened
         this.maxUnread = settings.getMaxUnread();
         this.checkpointMaxAcks = settings.getCheckpointMaxAcks();
@@ -183,9 +176,11 @@ public final class Queue implements Closeable {
 
             // reconstruct all tail pages state upto but excluding the head page
             for (int pageNum = headCheckpoint.getFirstUnackedPageNum(); pageNum < headCheckpoint.getPageNum(); pageNum++) {
-
-                // all tail checkpoints in the sequence should exist, if not abort mission with a NoSuchFileException
-                final Checkpoint cp = this.checkpointIO.read(this.checkpointIO.tailFileName(pageNum));
+                final String cpFileName = checkpointIO.tailFileName(pageNum);
+                if (!dirPath.resolve(cpFileName).toFile().exists()) {
+                    continue;
+                }
+                final Checkpoint cp = this.checkpointIO.read(cpFileName);
 
                 logger.debug("opening tail page: {}, in: {}, with checkpoint: {}", pageNum, this.dirPath, cp.toString());
 
@@ -597,54 +592,30 @@ public final class Queue implements Closeable {
         return new Batch(elements, firstSeqNum, this);
     }
 
-    private static class TailPageResult {
-        public Page page;
-        public int index;
-
-        public TailPageResult(Page page, int index) {
-            this.page = page;
-            this.index = index;
-        }
-    }
-
     /**
      * perform a binary search through tail pages to find in which page this seqNum falls into
      *
      * @param seqNum the sequence number to search for in the tail pages
-     * @return {@link TailPageResult}
+     * @return Index of the found {@link Page} in {@link #tailPages}
      */
-    private TailPageResult binaryFindPageForSeqnum(long seqNum) {
+    private int binaryFindPageForSeqnum(final long seqNum) {
         int lo = 0;
         int hi = this.tailPages.size() - 1;
         while (lo <= hi) {
-            int mid = lo + (hi - lo) / 2;
-            Page p = this.tailPages.get(mid);
-
-            if (seqNum < p.getMinSeqNum()) {
+            final int mid = lo + (hi - lo) / 2;
+            final Page p = this.tailPages.get(mid);
+            final long pMinSeq = p.getMinSeqNum();
+            if (seqNum < pMinSeq) {
                 hi = mid - 1;
-            } else if (seqNum >= (p.getMinSeqNum() + p.getElementCount())) {
+            } else if (seqNum >= pMinSeq + (long) p.getElementCount()) {
                 lo = mid + 1;
             } else {
-                return new TailPageResult(p, mid);
+                return mid;
             }
         }
-        return null;
-    }
-
-    /**
-     * perform a linear search through tail pages to find in which page this seqNum falls into
-     *
-     * @param seqNum the sequence number to search for in the tail pages
-     * @return {@link TailPageResult}
-     */
-    private TailPageResult linearFindPageForSeqnum(long seqNum) {
-        for (int i = 0; i < this.tailPages.size(); i++) {
-            Page p = this.tailPages.get(i);
-            if (p.getMinSeqNum() > 0 && seqNum >= p.getMinSeqNum() && seqNum < p.getMinSeqNum() + p.getElementCount()) {
-                return new TailPageResult(p, i);
-            }
-        }
-        return null;
+        throw new IllegalArgumentException(
+            String.format("Sequence number %d not found in any page", seqNum)
+        );
     }
 
     /**
@@ -658,58 +629,16 @@ public final class Queue implements Closeable {
      */
     public void ack(final long firstAckSeqNum, final int ackCount) throws IOException {
         // as a first implementation we assume that all batches are created from the same page
-        // so we will avoid multi pages acking here for now
-
         lock.lock();
         try {
-            TailPageResult result = null;
-
-            if (this.tailPages.size() > 0) {
-                // short-circuit: first check in the first tail page as it is the most likely page where acking will happen
-                Page p = this.tailPages.get(0);
-                if (p.getMinSeqNum() > 0 && firstAckSeqNum >= p.getMinSeqNum() && firstAckSeqNum < p.getMinSeqNum() + p.getElementCount()) {
-                    result = new TailPageResult(p, 0);
-                } else {
-                    // dual search strategy: if few tail pages search linearly otherwise perform binary search
-                    result = (this.tailPages.size() > 3) ? binaryFindPageForSeqnum(firstAckSeqNum) : linearFindPageForSeqnum(firstAckSeqNum);
-                }
-            }
-
-            if (result == null) {
-                // if not found then it is in head page
-                assert this.headPage.getMinSeqNum() > 0 && firstAckSeqNum >= this.headPage.getMinSeqNum() && firstAckSeqNum < this.headPage.getMinSeqNum() + this.headPage.getElementCount():
-                        String.format("seqNum=%d is not in head page with minSeqNum=%d", firstAckSeqNum, this.headPage.getMinSeqNum());
-
-                // page acking checkpoints fully acked pages
+            if (containsSeq(headPage, firstAckSeqNum)) {
                 this.headPage.ack(firstAckSeqNum, ackCount, this.checkpointMaxAcks);
             } else {
-                // page acking also checkpoints fully acked pages or upon reaching the checkpointMaxAcks threshold
-                result.page.ack(firstAckSeqNum, ackCount, this.checkpointMaxAcks);
-
-                // cleanup fully acked tail page
-                if (result.page.isFullyAcked()) {
-                    this.tailPages.remove(result.index);
-                    // remove page data file regardless if it is the first or a middle tail page to free resources
-                    result.page.purge();
-
-                    if (result.index != 0) {
-                        // this an in-between page, we don't purge it's checkpoint to preserve checkpoints sequence on disk
-                        // save that checkpoint so that if it becomes the first checkpoint it can be purged later on.
-                        this.preservedCheckpoints.add(result.page.getPageNum());
-                    } else {
-                        // if this is the first page also remove checkpoint file
-                        this.checkpointIO.purge(this.checkpointIO.tailFileName(result.page.getPageNum()));
-
-                        // check if there are preserved checkpoints file next to this one and delete them
-                        int nextPageNum = result.page.getPageNum() + 1;
-                        while (preservedCheckpoints.remove(nextPageNum)) {
-                            this.checkpointIO.purge(this.checkpointIO.tailFileName(nextPageNum));
-                            nextPageNum++;
-                        }
-                    }
+                final int resultIndex = binaryFindPageForSeqnum(firstAckSeqNum);
+                if (tailPages.get(resultIndex).ack(firstAckSeqNum, ackCount, this.checkpointMaxAcks)) {
+                    this.tailPages.remove(resultIndex);
                     notFull.signalAll();
                 }
-
                 this.headPage.checkpoint();
             }
         } finally {
@@ -859,5 +788,11 @@ public final class Queue implements Closeable {
         if (!FsUtil.hasFreeSpace(this.dirPath, diskNeeded)) {
             throw new IOException("Not enough free disk space available to allocate persisted queue.");
         }
+    }
+
+    private static boolean containsSeq(final Page page, final long seqNum) {
+        final long pMinSeq = page.getMinSeqNum();
+        final long pMaxSeq = pMinSeq + (long) page.getElementCount();
+        return seqNum >= pMinSeq && seqNum < pMaxSeq;
     }
 }
