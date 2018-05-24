@@ -20,10 +20,6 @@ module ::LogStash; module Plugins; module Builtin; module Pipeline; class Output
     pipeline_bus.sendEvents(self, events, ensure_delivery)
   end
 
-  def pipeline_shutting_down?
-    execution_context.pipeline.inputs.all? {|input| input.stop?}
-  end
-
   def close
     pipeline_bus.unregisterSender(self, @send_to)
   end
