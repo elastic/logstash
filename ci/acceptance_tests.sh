@@ -21,8 +21,12 @@ SELECTED_TEST_SUITE=$1
 # BUILD_ID unless you set this magic flag:  https://wiki.jenkins.io/display/JENKINS/ProcessTreeKiller
 export BUILD_ID=dontKillMe
 
+
+QA_DIR="$PWD/qa"
+
 # Always run the halt, even if the test times out or an exit is sent
 cleanup() {
+  cd $QA_DIR
   bundle exec rake qa:vm:halt
 }
 trap cleanup EXIT
