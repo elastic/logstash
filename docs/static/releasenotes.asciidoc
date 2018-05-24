@@ -18,7 +18,7 @@ This section summarizes the changes in the following releases:
 [[logstash-6-3-0]]
 === Logstash 6.3.0 Release Notes
 
-[NOTE]
+[IMPORTANT]
 --
 Persistent Queue users must upgrade. Old data will not be compatible with 6.3.0, and must be migrated or deleted. Read
 {logstash-ref}}/upgrading-logstash-pqs.html[Upgrading Persistent Queue from Logstash 6.2.x and Earlier]
