@@ -445,7 +445,7 @@ filter {
                             add_field => { "[geoip_dst][autonomous_system]" => "%{[geoip_dst][as_org]}" }
                         }
                     }
-                } else if [geoip][asn] {
+                } else if [geoip_dst][asn] {
                     mutate {
                         id => "netflow-postproc-dst-as-from-asn"
                         add_field => { "[geoip_dst][autonomous_system]" => "%{[geoip_dst][asn]}" }
