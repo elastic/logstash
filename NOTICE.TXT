@@ -286,7 +286,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ==========================================================================
-RubyGem: elasticsearch Version: 5.0.5
+RubyGem: elasticsearch Version: 5.0.4
    Copyright 2013 Elasticsearch
 
    Licensed under the Apache License, Version 2.0 (the "License");
