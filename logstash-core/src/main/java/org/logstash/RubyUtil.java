@@ -19,6 +19,7 @@ import org.logstash.execution.EventDispatcherExt;
 import org.logstash.execution.ExecutionContextExt;
 import org.logstash.execution.PipelineReporterExt;
 import org.logstash.execution.QueueReadClientBase;
+import org.logstash.execution.ShutdownWatcherExt;
 import org.logstash.ext.JRubyLogstashErrorsExt;
 import org.logstash.ext.JRubyWrappedWriteClientExt;
 import org.logstash.ext.JrubyAckedReadClientExt;
@@ -163,6 +164,8 @@ public final class RubyUtil {
 
     public static final RubyClass PIPELINE_REPORTER_CLASS;
 
+    public static final RubyClass SHUTDOWN_WATCHER_CLASS;
+
     public static final RubyClass PIPELINE_REPORTER_SNAPSHOT_CLASS;
 
     public static final RubyClass HOOKS_REGISTRY_CLASS;
@@ -196,6 +199,8 @@ public final class RubyUtil {
         PLUGIN_METRIC_FACTORY_CLASS = PLUGINS_MODULE.defineClassUnder(
             "PluginMetricFactory", RUBY.getObject(), PluginFactoryExt.Metrics::new
         );
+        SHUTDOWN_WATCHER_CLASS =
+            setupLogstashClass(ShutdownWatcherExt::new, ShutdownWatcherExt.class);
         PLUGIN_METRIC_FACTORY_CLASS.defineAnnotatedMethods(PluginFactoryExt.Metrics.class);
         EXECUTION_CONTEXT_FACTORY_CLASS.defineAnnotatedMethods(
             PluginFactoryExt.ExecutionContext.class
