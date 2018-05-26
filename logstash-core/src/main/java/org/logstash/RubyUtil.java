@@ -35,6 +35,7 @@ import org.logstash.instrument.metrics.MetricExt;
 import org.logstash.instrument.metrics.NamespacedMetricExt;
 import org.logstash.instrument.metrics.NullMetricExt;
 import org.logstash.instrument.metrics.NullNamespacedMetricExt;
+import org.logstash.instrument.metrics.SnapshotExt;
 import org.logstash.log.LoggableExt;
 import org.logstash.log.LoggerExt;
 import org.logstash.log.SlowLoggerExt;
@@ -123,6 +124,8 @@ public final class RubyUtil {
 
     public static final RubyClass METRIC_NO_NAMESPACE_PROVIDED_CLASS;
 
+    public static final RubyClass METRIC_SNAPSHOT_CLASS;
+
     public static final RubyClass TIMED_EXECUTION_CLASS;
 
     public static final RubyClass NULL_TIMED_EXECUTION_CLASS;
@@ -180,6 +183,9 @@ public final class RubyUtil {
         PLUGINS_MODULE = RUBY.defineModuleUnder("Plugins", LOGSTASH_MODULE);
         final RubyModule instrumentModule =
             RUBY.defineModuleUnder("Instrument", LOGSTASH_MODULE);
+        METRIC_SNAPSHOT_CLASS =
+            instrumentModule.defineClassUnder("Snapshot", RUBY.getObject(), SnapshotExt::new);
+        METRIC_SNAPSHOT_CLASS.defineAnnotatedMethods(SnapshotExt.class);
         EXECUTION_CONTEXT_FACTORY_CLASS = PLUGINS_MODULE.defineClassUnder(
             "ExecutionContextFactory", RUBY.getObject(),
             PluginFactoryExt.ExecutionContext::new
