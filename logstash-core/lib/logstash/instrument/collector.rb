@@ -1,5 +1,4 @@
 # encoding: utf-8
-require "logstash/instrument/snapshot"
 require "logstash/instrument/metric_store"
 require "concurrent/timer_task"
 require "observer"
