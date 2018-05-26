@@ -1,6 +1,5 @@
 # encoding: utf-8
 require "logstash/pipeline_action/base"
-require "logstash/shutdown_watcher"
 require "logstash/converge_result"
 
 module LogStash module PipelineAction
