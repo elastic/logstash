@@ -38,6 +38,7 @@ import org.logstash.instrument.metrics.NullNamespacedMetricExt;
 import org.logstash.log.LoggableExt;
 import org.logstash.log.LoggerExt;
 import org.logstash.log.SlowLoggerExt;
+import org.logstash.plugins.HooksRegistryExt;
 import org.logstash.plugins.PluginFactoryExt;
 import org.logstash.plugins.UniversalPluginExt;
 
@@ -160,6 +161,8 @@ public final class RubyUtil {
     public static final RubyClass PIPELINE_REPORTER_CLASS;
 
     public static final RubyClass PIPELINE_REPORTER_SNAPSHOT_CLASS;
+
+    public static final RubyClass HOOKS_REGISTRY_CLASS;
 
     /**
      * Logstash Ruby Module.
@@ -435,6 +438,9 @@ public final class RubyUtil {
         PIPELINE_REPORTER_SNAPSHOT_CLASS.defineAnnotatedMethods(
             PipelineReporterExt.SnapshotExt.class
         );
+        HOOKS_REGISTRY_CLASS =
+                PLUGINS_MODULE.defineClassUnder("HooksRegistry", RUBY.getObject(), HooksRegistryExt::new);
+        HOOKS_REGISTRY_CLASS.defineAnnotatedMethods(HooksRegistryExt.class);
         RUBY.getGlobalVariables().set("$LS_JARS_LOADED", RUBY.newString("true"));
         RubyJavaIntegration.setupRubyJavaIntegration(RUBY);
     }
