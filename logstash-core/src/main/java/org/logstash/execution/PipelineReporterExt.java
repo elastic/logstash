@@ -155,7 +155,14 @@ public final class PipelineReporterExt extends RubyBasicObject {
     @SuppressWarnings("unchecked")
     private RubyArray outputInfo(final ThreadContext context) {
         final RubyArray result = context.runtime.newArray();
-        ((Iterable<?>) pipeline.callMethod(context, "outputs")).forEach(output -> {
+        final IRubyObject outputs = pipeline.callMethod(context, "outputs");
+        final Iterable<IRubyObject> outputIterable;
+        if (outputs instanceof Iterable) {
+            outputIterable = (Iterable<IRubyObject>) outputs;
+        } else {
+            outputIterable = (Iterable<IRubyObject>) outputs.toJava(Iterable.class);
+        }
+        outputIterable.forEach(output -> {
             final OutputDelegatorExt delegator = (OutputDelegatorExt) output;
             final RubyHash hash = RubyHash.newHash(context.runtime);
             hash.op_aset(context, TYPE_KEY, delegator.configName(context));
@@ -186,7 +193,7 @@ public final class PipelineReporterExt extends RubyBasicObject {
             RubyUtil.RUBY.newString("inflight_count").newFrozen();
 
         private static final RubyString STALLING_THREADS_KEY =
-            RubyUtil.RUBY.newString("stalling_thread_info").newFrozen();
+            RubyUtil.RUBY.newString("stalling_threads_info").newFrozen();
 
         private static final RubyString PLUGIN_KEY =
             RubyUtil.RUBY.newString("plugin").newFrozen();
