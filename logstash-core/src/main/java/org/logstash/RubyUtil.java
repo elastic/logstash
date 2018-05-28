@@ -17,6 +17,7 @@ import org.logstash.config.ir.compiler.OutputDelegatorExt;
 import org.logstash.config.ir.compiler.OutputStrategyExt;
 import org.logstash.execution.EventDispatcherExt;
 import org.logstash.execution.ExecutionContextExt;
+import org.logstash.execution.LogstashPipelineExt;
 import org.logstash.execution.PipelineReporterExt;
 import org.logstash.execution.QueueReadClientBase;
 import org.logstash.execution.ShutdownWatcherExt;
@@ -169,6 +170,8 @@ public final class RubyUtil {
     public static final RubyClass PIPELINE_REPORTER_SNAPSHOT_CLASS;
 
     public static final RubyClass HOOKS_REGISTRY_CLASS;
+
+    public static final RubyClass LOGSTASH_PIPELINE_CLASS;
 
     /**
      * Logstash Ruby Module.
@@ -371,6 +374,8 @@ public final class RubyUtil {
         SLOW_LOGGER.defineAnnotatedMethods(SlowLoggerExt.class);
         LOGGABLE_MODULE = UTIL_MODULE.defineModuleUnder("Loggable");
         LOGGABLE_MODULE.defineAnnotatedMethods(LoggableExt.class);
+        LOGSTASH_PIPELINE_CLASS =
+            setupLogstashClass(LogstashPipelineExt::new, LogstashPipelineExt.class);
         final RubyModule json = LOGSTASH_MODULE.defineOrGetModuleUnder("Json");
         final RubyClass stdErr = RUBY.getStandardError();
         LOGSTASH_ERROR = LOGSTASH_MODULE.defineClassUnder(
@@ -450,7 +455,7 @@ public final class RubyUtil {
             PipelineReporterExt.SnapshotExt.class
         );
         HOOKS_REGISTRY_CLASS =
-                PLUGINS_MODULE.defineClassUnder("HooksRegistry", RUBY.getObject(), HooksRegistryExt::new);
+            PLUGINS_MODULE.defineClassUnder("HooksRegistry", RUBY.getObject(), HooksRegistryExt::new);
         HOOKS_REGISTRY_CLASS.defineAnnotatedMethods(HooksRegistryExt.class);
         RUBY.getGlobalVariables().set("$LS_JARS_LOADED", RUBY.newString("true"));
         RubyJavaIntegration.setupRubyJavaIntegration(RUBY);
