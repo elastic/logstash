@@ -7,7 +7,6 @@ require "logstash/outputs/base"
 require "logstash/instrument/collector"
 require "logstash/queue_factory"
 require "logstash/compiler"
-require "securerandom"
 
 java_import org.logstash.common.DeadLetterQueueFactory
 java_import org.logstash.common.SourceWithMetadata
@@ -15,57 +14,30 @@ java_import org.logstash.common.io.DeadLetterQueueWriter
 java_import org.logstash.config.ir.CompiledPipeline
 java_import org.logstash.config.ir.ConfigCompiler
 
-module LogStash; class JavaBasePipeline
+module LogStash; class JavaBasePipeline < LogstashPipeline
   include LogStash::Util::Loggable
 
-  attr_reader :settings, :config_str, :config_hash, :inputs, :filters, :outputs, :pipeline_id, :lir, :ephemeral_id
-  attr_reader :pipeline_config
+  attr_reader :inputs, :filters, :outputs
 
   def initialize(pipeline_config, namespaced_metric = nil, agent = nil)
+    super pipeline_config, namespaced_metric
     @logger = self.logger
-    @ephemeral_id = SecureRandom.uuid
-
-    @pipeline_config = pipeline_config
-    @config_str = pipeline_config.config_string
-    @settings = pipeline_config.settings
-    @config_hash = Digest::SHA1.hexdigest(@config_str)
-
-    @lir = ConfigCompiler.configToPipelineIR(
-      @config_str, @settings.get_value("config.support_escapes")
-    )
-
-    @pipeline_id = @settings.get_value("pipeline.id") || self.object_id
     @dlq_writer = dlq_writer
     @lir_execution = CompiledPipeline.new(
-        @lir,
+        lir,
         LogStash::Plugins::PluginFactory.new(
             # use NullMetric if called in the BasePipeline context otherwise use the @metric value
-            @lir, LogStash::Plugins::PluginMetricFactory.new(pipeline_id, @metric),
+            lir, LogStash::Plugins::PluginMetricFactory.new(pipeline_id, metric),
             LogStash::Plugins::ExecutionContextFactory.new(agent, self, @dlq_writer),
             JavaFilterDelegator
         )
     )
     if settings.get_value("config.debug") && @logger.debug?
-      @logger.debug("Compiled pipeline code", default_logging_keys(:code => @lir.get_graph.to_string))
+      @logger.debug("Compiled pipeline code", default_logging_keys(:code => lir.get_graph.to_string))
     end
     @inputs = @lir_execution.inputs
     @filters = @lir_execution.filters
     @outputs = @lir_execution.outputs
-  end
-
-  def dlq_writer
-    if settings.get_value("dead_letter_queue.enable")
-      @dlq_writer = DeadLetterQueueFactory.getWriter(pipeline_id, settings.get_value("path.dead_letter_queue"), settings.get_value("dead_letter_queue.max_bytes"))
-    else
-      @dlq_writer = LogStash::Util::DummyDeadLetterQueueWriter.new
-    end
-  end
-
-  def close_dlq_writer
-    @dlq_writer.close
-    if settings.get_value("dead_letter_queue.enable")
-      DeadLetterQueueFactory.release(pipeline_id)
-    end
   end
 
   def reloadable?
@@ -99,8 +71,6 @@ module LogStash; class JavaPipeline < JavaBasePipeline
     :reporter,
     :started_at,
     :thread,
-    :settings,
-    :metric,
     :filter_queue_client,
     :input_queue_client,
     :queue
@@ -108,21 +78,9 @@ module LogStash; class JavaPipeline < JavaBasePipeline
   MAX_INFLIGHT_WARN_THRESHOLD = 10_000
 
   def initialize(pipeline_config, namespaced_metric = nil, agent = nil)
-    @settings = pipeline_config.settings
-    # This needs to be configured before we call super which will evaluate the code to make
-    # sure the metric instance is correctly send to the plugins to make the namespace scoping work
-    @metric = if namespaced_metric
-      settings.get("metric.collect") ? namespaced_metric : Instrument::NullMetric.new(namespaced_metric.collector)
-    else
-      Instrument::NullMetric.new
-    end
-
-    @ephemeral_id = SecureRandom.uuid
-    @settings = settings
+    super
     @reporter = PipelineReporter.new(@logger, self)
     @worker_threads = []
-
-    super
 
     begin
       @queue = LogStash::QueueFactory.create(settings)
@@ -139,7 +97,7 @@ module LogStash; class JavaPipeline < JavaBasePipeline
     @filter_queue_client.set_pipeline_metric(
         metric.namespace([:stats, :pipelines, pipeline_id.to_s.to_sym, :events])
     )
-    @drain_queue =  @settings.get_value("queue.drain") || settings.get("queue.type") == "memory"
+    @drain_queue =  settings.get_value("queue.drain") || settings.get("queue.type") == "memory"
 
     @events_filtered = java.util.concurrent.atomic.LongAdder.new
     @events_consumed = java.util.concurrent.atomic.LongAdder.new
@@ -160,14 +118,14 @@ module LogStash; class JavaPipeline < JavaBasePipeline
   end
 
   def safe_pipeline_worker_count
-    default = @settings.get_default("pipeline.workers")
-    pipeline_workers = @settings.get("pipeline.workers") #override from args "-w 8" or config
+    default = settings.get_default("pipeline.workers")
+    pipeline_workers = settings.get("pipeline.workers") #override from args "-w 8" or config
     safe_filters, unsafe_filters = @filters.partition(&:threadsafe?)
     plugins = unsafe_filters.collect { |f| f.config_name }
 
     return pipeline_workers if unsafe_filters.empty?
 
-    if @settings.set?("pipeline.workers")
+    if settings.set?("pipeline.workers")
       if pipeline_workers > 1
         @logger.warn("Warning: Manual override - there are filters that might not work with multiple worker threads", default_logging_keys(:worker_threads => pipeline_workers, :filters => plugins))
       end
@@ -242,7 +200,7 @@ module LogStash; class JavaPipeline < JavaBasePipeline
 
     start_workers
 
-    @logger.info("Pipeline started", "pipeline.id" => @pipeline_id)
+    @logger.info("Pipeline started", "pipeline.id" => pipeline_id)
 
     # Block until all inputs have stopped
     # Generally this happens if SIGINT is sent and `shutdown` is called from an external thread
@@ -311,8 +269,8 @@ module LogStash; class JavaPipeline < JavaBasePipeline
       maybe_setup_out_plugins
 
       pipeline_workers = safe_pipeline_worker_count
-      batch_size = @settings.get("pipeline.batch.size")
-      batch_delay = @settings.get("pipeline.batch.delay")
+      batch_size = settings.get("pipeline.batch.size")
+      batch_delay = settings.get("pipeline.batch.delay")
 
       max_inflight = batch_size * pipeline_workers
 
@@ -320,8 +278,8 @@ module LogStash; class JavaPipeline < JavaBasePipeline
       config_metric.gauge(:workers, pipeline_workers)
       config_metric.gauge(:batch_size, batch_size)
       config_metric.gauge(:batch_delay, batch_delay)
-      config_metric.gauge(:config_reload_automatic, @settings.get("config.reload.automatic"))
-      config_metric.gauge(:config_reload_interval, @settings.get("config.reload.interval"))
+      config_metric.gauge(:config_reload_automatic, settings.get("config.reload.automatic"))
+      config_metric.gauge(:config_reload_interval, settings.get("config.reload.interval"))
       config_metric.gauge(:dead_letter_queue_enabled, dlq_enabled?)
       config_metric.gauge(:dead_letter_queue_path, @dlq_writer.get_path.to_absolute_path.to_s) if dlq_enabled?
 
@@ -363,10 +321,6 @@ module LogStash; class JavaPipeline < JavaBasePipeline
     end
   end
 
-  def dlq_enabled?
-    @settings.get("dead_letter_queue.enable")
-  end
-
   def wait_inputs
     @input_threads.each(&:join)
   end
@@ -396,7 +350,7 @@ module LogStash; class JavaPipeline < JavaBasePipeline
   def inputworker(plugin)
     Util::set_thread_name("[#{pipeline_id}]<#{plugin.class.config_name}")
     begin
-      plugin.run(LogStash::WrappedWriteClient.new(@input_queue_client, @pipeline_id.to_s.to_sym, metric, plugin.id.to_sym))
+      plugin.run(LogStash::WrappedWriteClient.new(@input_queue_client, pipeline_id.to_s.to_sym, metric, plugin.id.to_sym))
     rescue => e
       if plugin.stop?
         @logger.debug("Input plugin raised exception during shutdown, ignoring it.",
@@ -440,7 +394,7 @@ module LogStash; class JavaPipeline < JavaBasePipeline
     # stopped
     wait_for_workers
     clear_pipeline_metrics
-    @logger.info("Pipeline terminated", "pipeline.id" => @pipeline_id)
+    @logger.info("Pipeline terminated", "pipeline.id" => pipeline_id)
   end # def shutdown
 
   def wait_for_workers
@@ -515,13 +469,13 @@ module LogStash; class JavaPipeline < JavaBasePipeline
 
   def collect_dlq_stats
     if dlq_enabled?
-      dlq_metric = @metric.namespace([:stats, :pipelines, pipeline_id.to_s.to_sym, :dlq])
+      dlq_metric = metric.namespace([:stats, :pipelines, pipeline_id.to_s.to_sym, :dlq])
       dlq_metric.gauge(:queue_size_in_bytes, @dlq_writer.get_current_queue_size)
     end
   end
 
   def collect_stats
-    pipeline_metric = @metric.namespace([:stats, :pipelines, pipeline_id.to_s.to_sym, :queue])
+    pipeline_metric = metric.namespace([:stats, :pipelines, pipeline_id.to_s.to_sym, :queue])
     pipeline_metric.gauge(:type, settings.get("queue.type"))
     if @queue.is_a?(LogStash::WrappedAckedQueue) && @queue.queue.is_a?(LogStash::AckedQueue)
       queue = @queue.queue
@@ -547,7 +501,7 @@ module LogStash; class JavaPipeline < JavaBasePipeline
   def clear_pipeline_metrics
     # TODO(ph): I think the metric should also proxy that call correctly to the collector
     # this will simplify everything since the null metric would simply just do a noop
-    collector = @metric.collector
+    collector = metric.collector
 
     unless collector.nil?
       # selectively reset metrics we don't wish to keep after reloading
@@ -563,8 +517,8 @@ module LogStash; class JavaPipeline < JavaBasePipeline
   # We want to hide most of what's in here
   def inspect
     {
-      :pipeline_id => @pipeline_id,
-      :settings => @settings.inspect,
+      :pipeline_id => pipeline_id,
+      :settings => settings.inspect,
       :ready => @ready,
       :running => @running,
       :flushing => @flushing
