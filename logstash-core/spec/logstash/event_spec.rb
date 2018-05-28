@@ -145,32 +145,6 @@ describe LogStash::Event do
       expect(e.get("foo").to_f).to be_within(0.1).of(time.to_f)
     end
 
-    it "should set XXJavaProxy Jackson crafted" do
-      proxy = org.logstash.RspecTestUtils.getMapFixtureJackson()
-      # proxy is {"string": "foo", "int": 42, "float": 42.42, "array": ["bar","baz"], "hash": {"string":"quux"} }
-      e = LogStash::Event.new()
-      e.set("[proxy]", proxy)
-      expect(e.get("[proxy][string]")).to eql("foo")
-      expect(e.get("[proxy][int]")).to eql(42)
-      expect(e.get("[proxy][float]")).to eql(42.42)
-      expect(e.get("[proxy][array][0]")).to eql("bar")
-      expect(e.get("[proxy][array][1]")).to eql("baz")
-      expect(e.get("[proxy][hash][string]")).to eql("quux")
-    end
-
-    it "should set XXJavaProxy hand crafted" do
-      proxy = org.logstash.RspecTestUtils.getMapFixtureHandcrafted()
-      # proxy is {"string": "foo", "int": 42, "float": 42.42, "array": ["bar","baz"], "hash": {"string":"quux"} }
-      e = LogStash::Event.new()
-      e.set("[proxy]", proxy)
-      expect(e.get("[proxy][string]")).to eql("foo")
-      expect(e.get("[proxy][int]")).to eql(42)
-      expect(e.get("[proxy][float]")).to eql(42.42)
-      expect(e.get("[proxy][array][0]")).to eql("bar")
-      expect(e.get("[proxy][array][1]")).to eql("baz")
-      expect(e.get("[proxy][hash][string]")).to eql("quux")
-    end
-
     it "should fail on non UTF-8 encoding" do
       # e = LogStash::Event.new
       # s1 = "\xE0 Montr\xE9al".force_encoding("ISO-8859-1")
