@@ -129,8 +129,8 @@ include::static/ingest-convert.asciidoc[]
 include::static/ls-ls-config.asciidoc[]
 
 ifdef::include-xpack[]
-:edit_url: https://github.com/elastic/logstash/edit/{branch}/x-pack/docs/en/management/configuring-centralized-pipelines.asciidoc
-include::{xls-repo-dir}/management/configuring-centralized-pipelines.asciidoc[]
+:edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/management/configuring-centralized-pipelines.asciidoc
+include::static/management/configuring-centralized-pipelines.asciidoc[]
 
 :edit_url: https://github.com/elastic/logstash/edit/{branch}/x-pack/docs/en/monitoring/configuring-logstash.asciidoc
 include::{xls-repo-dir}/monitoring/configuring-logstash.asciidoc[]
