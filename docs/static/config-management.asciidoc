@@ -11,5 +11,5 @@ https://forge.puppet.com/elastic/logstash[Logstash Puppet module documentation].
 
 ifdef::include-xpack[]
 :edit_url!:
-include::{xls-repo-dir}/management/centralized-pipelines.asciidoc[]
+include::management/centralized-pipelines.asciidoc[]
 endif::include-xpack[]
