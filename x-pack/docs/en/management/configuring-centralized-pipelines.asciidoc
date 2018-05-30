@@ -42,4 +42,4 @@ management, you can no longer specify local pipeline configurations. This means
 that the `pipelines.yml` file and settings like `path.config` and
 `config.string` are inactive when this feature is enabled.
 
-include::{xls-repo-dir}/settings/configuration-management-settings.asciidoc[]
+include::{log-repo-dir}/static/settings/configuration-management-settings.asciidoc[]
