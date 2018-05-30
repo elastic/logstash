@@ -9,10 +9,10 @@ require 'yaml'
 # A locally started Logstash service
 class LogstashService < Service
 
-  LS_ROOT_DIR = File.join("..", "..", "..", "..")
-  LS_VERSION_FILE = File.expand_path(File.join(LS_ROOT_DIR, "versions.yml"), __FILE__)
-  LS_BUILD_DIR = File.join(LS_ROOT_DIR, "build")
-  LS_BIN = File.join("bin", "logstash")
+  LS_ROOT_DIR = File.expand_path(File.join("..", "..", "..", ".."), __FILE__)
+  LS_VERSION_FILE = File.join(LS_ROOT_DIR, "versions.yml")
+  LS_BUILD_DIR =  File.join(LS_ROOT_DIR, "build")
+  LS_BIN = ENV["LOGSTASH_SOURCE"].nil? ? File.join(LS_BUILD_DIR, "bin", "logstash") : File.join(LS_ROOT_DIR, "bin", "logstash")
   LS_CONFIG_FILE = File.join("config", "logstash.yml")
   SETTINGS_CLI_FLAG = "--path.settings"
 
@@ -40,8 +40,8 @@ class LogstashService < Service
       @logstash_home += "-SNAPSHOT" unless Dir.exist?(@logstash_home)
 
       puts "Using #{@logstash_home} as LS_HOME"
-      @logstash_bin = File.join("#{@logstash_home}", LS_BIN)
-      raise "Logstash binary not found in path #{@logstash_home}" unless File.file? @logstash_bin
+      @logstash_bin = LS_BIN
+      raise "Logstash binary not found in path #{@logstash_bin}" unless File.file? @logstash_bin
     end
 
     @default_settings_file = File.join(@logstash_home, LS_CONFIG_FILE)
