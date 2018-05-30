@@ -102,4 +102,4 @@ When upgrading from older versions of {xpack}, the built-in `logstash_system`
 user is disabled for security reasons. To resume monitoring,
 <<monitoring-troubleshooting, change the password and re-enable the logstash_system user>>.
 
-include::{xls-repo-dir}/settings/monitoring-settings.asciidoc[]
+include::{log-repo-dir}/static/settings/monitoring-settings.asciidoc[]
