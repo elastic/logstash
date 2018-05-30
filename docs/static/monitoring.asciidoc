@@ -18,5 +18,5 @@ requiring any extra configuration.
 
 ifdef::include-xpack[]
 :edit_url!:
-include::{xls-repo-dir}/monitoring/index.asciidoc[]
+include::monitoring/index.asciidoc[]
 endif::include-xpack[]

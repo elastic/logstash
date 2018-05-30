@@ -136,8 +136,8 @@ ifdef::include-xpack[]
 :edit_url: https://github.com/elastic/logstash/edit/{branch}/x-pack/docs/en/management/configuring-centralized-pipelines.asciidoc
 include::{xls-repo-dir}/management/configuring-centralized-pipelines.asciidoc[]
 
-:edit_url: https://github.com/elastic/logstash/edit/{branch}/x-pack/docs/en/monitoring/configuring-logstash.asciidoc
-include::{xls-repo-dir}/monitoring/configuring-logstash.asciidoc[]
+:edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/monitoring/configuring-logstash.asciidoc
+include::static/monitoring/configuring-logstash.asciidoc[]
 
 :edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/security/logstash.asciidoc
 include::static/security/logstash.asciidoc[]
