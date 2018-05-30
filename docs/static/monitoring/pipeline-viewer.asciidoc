@@ -59,7 +59,7 @@ metrics to the monitoring cluster.
 You should see a Logstash section.
 +
 [role="screenshot"]
-image::monitoring/images/monitoring-ui.png[Monitoring UI]
+image::static/monitoring/images/monitoring-ui.png[Monitoring UI]
 
 . Click the *Pipelines* link under Logstash to see all the pipelines that are
 being monitored.
@@ -69,7 +69,7 @@ pipeline, you'll see charts showing the pipeline's throughput and the number
 of nodes on which the pipeline is running during the selected time range.
 +
 [role="screenshot"]
-image::monitoring/images/pipeline-viewer-overview.png[Pipeline Overview]
+image::static/monitoring/images/pipeline-viewer-overview.png[Pipeline Overview]
 +
 // To update the screenshot above, see pipelines/tweets_about_rain.conf
 +
@@ -89,7 +89,7 @@ The diagram shows all the stages feeding data through the pipeline. It also show
 conditional logic.
 +
 [role="screenshot"]
-image::monitoring/images/pipeline-diagram.png[Pipeline Diagram]
+image::static/monitoring/images/pipeline-diagram.png[Pipeline Diagram]
 +
 // To update the screenshot above, see pipelines/tweets_about_rain.conf
 +
@@ -98,7 +98,7 @@ The information displayed on each vertex varies depending on the plugin type.
 Here's an example of an *input* vertex:
 +
 [role="screenshot"]
-image::monitoring/images/pipeline-input-detail.png[Input vertex]
+image::static/monitoring/images/pipeline-input-detail.png[Input vertex]
 +
 The *I* badge indicates that this is an input stage. The vertex shows:
 +
@@ -110,7 +110,7 @@ The *I* badge indicates that this is an input stage. The vertex shows:
 Here's an example of a *filter* vertex.
 
 [role="screenshot"]
-image::monitoring/images/pipeline-filter-detail.png[Filter vertex]
+image::static/monitoring/images/pipeline-filter-detail.png[Filter vertex]
 
 The filter icon indicates that this is a filter stage. The vertex shows:
 
@@ -128,7 +128,7 @@ An *output* vertex shows the same information as a vertex node, but it has an
 *O* badge to indicate that it is an output stage:
 
 [role="screenshot"]
-image::monitoring/images/pipeline-output-detail.png[Output vertex]
+image::static/monitoring/images/pipeline-output-detail.png[Output vertex]
 --
 
 . Hover over a vertex in the diagram, and you'll see only the related nodes that
@@ -139,4 +139,4 @@ are ancestors or descendants of the current vertex.
 . Click on a vertex to see details about it.
 +
 [role="screenshot"]
-image::monitoring/images/pipeline-viewer-detail-drawer.png[Vertex detail]
+image::static/monitoring/images/pipeline-viewer-detail-drawer.png[Vertex detail]
