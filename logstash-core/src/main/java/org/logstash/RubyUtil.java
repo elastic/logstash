@@ -19,7 +19,7 @@ import org.logstash.config.ir.compiler.OutputStrategyExt;
 import org.logstash.execution.AbstractWrappedQueueExt;
 import org.logstash.execution.EventDispatcherExt;
 import org.logstash.execution.ExecutionContextExt;
-import org.logstash.execution.LogstashPipelineExt;
+import org.logstash.execution.AbstractPipelineExt;
 import org.logstash.execution.PipelineReporterExt;
 import org.logstash.execution.QueueReadClientBase;
 import org.logstash.execution.ShutdownWatcherExt;
@@ -390,7 +390,7 @@ public final class RubyUtil {
         LOGGABLE_MODULE = UTIL_MODULE.defineModuleUnder("Loggable");
         LOGGABLE_MODULE.defineAnnotatedMethods(LoggableExt.class);
         LOGSTASH_PIPELINE_CLASS =
-            setupLogstashClass(LogstashPipelineExt::new, LogstashPipelineExt.class);
+            setupLogstashClass(AbstractPipelineExt::new, AbstractPipelineExt.class);
         final RubyModule json = LOGSTASH_MODULE.defineOrGetModuleUnder("Json");
         final RubyClass stdErr = RUBY.getStandardError();
         LOGSTASH_ERROR = LOGSTASH_MODULE.defineClassUnder(
