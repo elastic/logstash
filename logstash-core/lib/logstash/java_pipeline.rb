@@ -13,21 +13,20 @@ java_import org.logstash.common.io.DeadLetterQueueWriter
 java_import org.logstash.config.ir.CompiledPipeline
 java_import org.logstash.config.ir.ConfigCompiler
 
-module LogStash; class JavaBasePipeline < LogstashPipeline
+module LogStash; class JavaBasePipeline < AbstractPipeline
   include LogStash::Util::Loggable
 
   attr_reader :inputs, :filters, :outputs
 
   def initialize(pipeline_config, namespaced_metric = nil, agent = nil)
-    super pipeline_config, namespaced_metric
     @logger = self.logger
-    @dlq_writer = dlq_writer
+    super pipeline_config, namespaced_metric, @logger, @queue
     @lir_execution = CompiledPipeline.new(
         lir,
         LogStash::Plugins::PluginFactory.new(
             # use NullMetric if called in the BasePipeline context otherwise use the @metric value
             lir, LogStash::Plugins::PluginMetricFactory.new(pipeline_id, metric),
-            LogStash::Plugins::ExecutionContextFactory.new(agent, self, @dlq_writer),
+            LogStash::Plugins::ExecutionContextFactory.new(agent, self, dlq_writer),
             JavaFilterDelegator
         )
     )
@@ -41,10 +40,6 @@ module LogStash; class JavaBasePipeline < LogstashPipeline
 
   def reloadable?
     configured_as_reloadable? && reloadable_plugins?
-  end
-
-  def configured_as_reloadable?
-    settings.get("pipeline.reloadable")
   end
 
   def reloadable_plugins?
@@ -67,26 +62,22 @@ module LogStash; class JavaPipeline < JavaBasePipeline
     :worker_threads,
     :events_consumed,
     :events_filtered,
-    :reporter,
     :started_at,
     :thread,
     :filter_queue_client,
-    :input_queue_client,
-    :queue
+    :input_queue_client
 
   MAX_INFLIGHT_WARN_THRESHOLD = 10_000
 
   def initialize(pipeline_config, namespaced_metric = nil, agent = nil)
-    super
-    @reporter = PipelineReporter.new(@logger, self)
-    @worker_threads = []
-
     begin
-      @queue = LogStash::QueueFactory.create(settings)
+      @queue = LogStash::QueueFactory.create(pipeline_config.settings)
     rescue => e
       @logger.error("Logstash failed to create queue", default_logging_keys("exception" => e.message, "backtrace" => e.backtrace))
       raise e
     end
+    super
+    @worker_threads = []
 
     @input_queue_client = @queue.write_client
     @filter_queue_client = @queue.read_client
@@ -244,10 +235,6 @@ module LogStash; class JavaPipeline < JavaBasePipeline
     @running.false?
   end
 
-  def system?
-    settings.get_value("pipeline.system")
-  end
-
   # register_plugins calls #register_plugin on the plugins list and upon exception will call Plugin#do_close on all registered plugins
   # @param plugins [Array[Plugin]] the list of plugins to register
   def register_plugins(plugins)
@@ -280,7 +267,7 @@ module LogStash; class JavaPipeline < JavaBasePipeline
       config_metric.gauge(:config_reload_automatic, settings.get("config.reload.automatic"))
       config_metric.gauge(:config_reload_interval, settings.get("config.reload.interval"))
       config_metric.gauge(:dead_letter_queue_enabled, dlq_enabled?)
-      config_metric.gauge(:dead_letter_queue_path, @dlq_writer.get_path.to_absolute_path.to_s) if dlq_enabled?
+      config_metric.gauge(:dead_letter_queue_path, dlq_writer.get_path.to_absolute_path.to_s) if dlq_enabled?
 
 
       @logger.info("Starting pipeline", default_logging_keys(
@@ -464,37 +451,6 @@ module LogStash; class JavaPipeline < JavaBasePipeline
       .each {|t| t.delete("backtrace") }
       .each {|t| t.delete("blocked_on") }
       .each {|t| t.delete("status") }
-  end
-
-  def collect_dlq_stats
-    if dlq_enabled?
-      dlq_metric = metric.namespace([:stats, :pipelines, pipeline_id.to_s.to_sym, :dlq])
-      dlq_metric.gauge(:queue_size_in_bytes, @dlq_writer.get_current_queue_size)
-    end
-  end
-
-  def collect_stats
-    pipeline_metric = metric.namespace([:stats, :pipelines, pipeline_id.to_s.to_sym, :queue])
-    pipeline_metric.gauge(:type, settings.get("queue.type"))
-    if @queue.is_a?(LogStash::WrappedAckedQueue) && @queue.queue.is_a?(LogStash::AckedQueue)
-      queue = @queue.queue
-      dir_path = queue.dir_path
-      file_store = Files.get_file_store(Paths.get(dir_path))
-
-      pipeline_metric.namespace([:capacity]).tap do |n|
-        n.gauge(:page_capacity_in_bytes, queue.page_capacity)
-        n.gauge(:max_queue_size_in_bytes, queue.max_size_in_bytes)
-        n.gauge(:max_unread_events, queue.max_unread_events)
-        n.gauge(:queue_size_in_bytes, queue.persisted_size_in_bytes)
-      end
-      pipeline_metric.namespace([:data]).tap do |n|
-        n.gauge(:free_space_in_bytes, file_store.get_unallocated_space)
-        n.gauge(:storage_type, file_store.type)
-        n.gauge(:path, dir_path)
-      end
-
-      pipeline_metric.gauge(:events, queue.unread_count)
-    end
   end
 
   def clear_pipeline_metrics

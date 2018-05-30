@@ -6,6 +6,7 @@ import org.jruby.RubyBoolean;
 import org.jruby.RubyClass;
 import org.jruby.RubyFixnum;
 import org.jruby.RubyObject;
+import org.jruby.RubyString;
 import org.jruby.anno.JRubyClass;
 import org.jruby.anno.JRubyMethod;
 import org.jruby.javasupport.JavaObject;
@@ -68,7 +69,7 @@ public final class JRubyAckedQueueExt extends RubyObject {
     }
 
     @JRubyMethod(name = "dir_path")
-    public IRubyObject ruby_dir_path(ThreadContext context) {
+    public RubyString ruby_dir_path(ThreadContext context) {
         return context.runtime.newString(queue.getDirPath());
     }
 
