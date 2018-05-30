@@ -151,7 +151,8 @@ public final class ShutdownWatcherExt extends RubyBasicObject {
                     reports.remove(0);
                 }
                 if (cycleNumber == reportEvery - 1) {
-                    LOGGER.warn(reports.get(reports.size() - 1).anyToString().asJavaString());
+                    LOGGER.warn(reports.get(reports.size() - 1).callMethod(context, "to_s")
+                        .asJavaString());
                     if (shutdownStalled(context).isTrue()) {
                         if (stalledCount == 0) {
                             LOGGER.error(
