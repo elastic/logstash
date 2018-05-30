@@ -88,9 +88,11 @@ include::static/logging.asciidoc[]
 :edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/shutdown.asciidoc
 include::static/shutdown.asciidoc[]
 
-:edit_url: https://github.com/elastic/logstash/edit/{branch}/
-include::{xls-repo-dir}/setup/installing-xls.asciidoc[]
-include::{xls-repo-dir}/setup/setting-up-xpack.asciidoc[]
+:edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/installing-xls.asciidoc
+include::static/setup/installing-xls.asciidoc[]
+
+:edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/setting-up-xpack.asciidoc
+include::static/setup/setting-up-xpack.asciidoc[]
 
 // Breaking Changes
 
@@ -139,8 +141,8 @@ include::{xls-repo-dir}/monitoring/configuring-logstash.asciidoc[]
 :edit_url: https://github.com/elastic/logstash/edit/{branch}/x-pack/docs/en/security/logstash.asciidoc
 include::{xls-repo-dir}/security/logstash.asciidoc[]
 
-:edit_url: https://github.com/elastic/logstash/edit/{branch}/x-pack/docs/en/setup/configuring-xls.asciidoc
-include::{xls-repo-dir}/setup/configuring-xls.asciidoc[]
+:edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/setup/configuring-xls.asciidoc
+include::static/setup/configuring-xls.asciidoc[]
 endif::include-xpack[]
 
 // Centralized configuration managements
