@@ -44,7 +44,7 @@ public final class JRubyWrappedAckedQueueExt extends AbstractWrappedQueueExt {
     }
 
     @JRubyMethod(name = "queue")
-    public IRubyObject rubyGetQueue(ThreadContext context) {
+    public JRubyAckedQueueExt rubyGetQueue() {
         return queue;
     }
 
