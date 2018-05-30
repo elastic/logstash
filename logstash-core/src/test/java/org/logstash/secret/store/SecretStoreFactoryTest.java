@@ -148,5 +148,5 @@ public class SecretStoreFactoryTest {
         byte[] marker = secretStore.retrieveSecret(LOGSTASH_MARKER);
         assertThat(new String(marker, StandardCharsets.UTF_8)).isEqualTo(LOGSTASH_MARKER.getKey());
     }
-    
+
 }
