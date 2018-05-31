@@ -405,9 +405,12 @@ describe LogStash::Agent do
 
       it "increases the successful reload count" do
         snapshot = subject.metric.collector.snapshot_metric
-        value = snapshot.metric_store.get_with_path("/stats/pipelines")[:stats][:pipelines][:main][:reloads][:successes].value
-        expect(value).to eq(1)
-        instance_value = snapshot.metric_store.get_with_path("/stats")[:stats][:reloads][:successes].value
+        pipeline_reloads = snapshot.metric_store.get_with_path("/stats/pipelines")[:stats][:pipelines][:main][:reloads]
+        value = pipeline_reloads[:successes].value
+        expect(value).to eq(1), "expected 1 successful pipeline reload, got #{pipeline_reloads}"
+
+        instance_reloads = snapshot.metric_store.get_with_path("/stats")[:stats][:reloads]
+        instance_value = instance_reloads[:successes].value, "expected 1 successful instance reload, got #{instance_reloads}"
         expect(instance_value).to eq(1)
       end
 
