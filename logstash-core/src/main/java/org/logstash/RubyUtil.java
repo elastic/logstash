@@ -8,6 +8,7 @@ import org.jruby.RubyModule;
 import org.jruby.anno.JRubyClass;
 import org.jruby.exceptions.RaiseException;
 import org.jruby.runtime.ObjectAllocator;
+import org.logstash.ackedqueue.QueueFactoryExt;
 import org.logstash.ackedqueue.ext.JRubyAckedQueueExt;
 import org.logstash.ackedqueue.ext.JRubyWrappedAckedQueueExt;
 import org.logstash.common.AbstractDeadLetterQueueWriterExt;
@@ -15,6 +16,7 @@ import org.logstash.common.BufferedTokenizerExt;
 import org.logstash.config.ir.compiler.FilterDelegatorExt;
 import org.logstash.config.ir.compiler.OutputDelegatorExt;
 import org.logstash.config.ir.compiler.OutputStrategyExt;
+import org.logstash.execution.AbstractWrappedQueueExt;
 import org.logstash.execution.EventDispatcherExt;
 import org.logstash.execution.ExecutionContextExt;
 import org.logstash.execution.LogstashPipelineExt;
@@ -78,6 +80,8 @@ public final class RubyUtil {
     public static final RubyClass MEMORY_WRITE_CLIENT_CLASS;
 
     public static final RubyClass ACKED_WRITE_CLIENT_CLASS;
+
+    public static final RubyClass ABSTRACT_WRAPPED_QUEUE_CLASS;
 
     public static final RubyClass WRAPPED_SYNCHRONOUS_QUEUE_CLASS;
 
@@ -168,6 +172,8 @@ public final class RubyUtil {
     public static final RubyClass SHUTDOWN_WATCHER_CLASS;
 
     public static final RubyClass PIPELINE_REPORTER_SNAPSHOT_CLASS;
+
+    public static final RubyClass QUEUE_FACTORY_CLASS;
 
     public static final RubyClass HOOKS_REGISTRY_CLASS;
 
@@ -339,6 +345,11 @@ public final class RubyUtil {
         RUBY_TIMESTAMP_CLASS = setupLogstashClass(
             JrubyTimestampExtLibrary.RubyTimestamp::new, JrubyTimestampExtLibrary.RubyTimestamp.class
         );
+        ABSTRACT_WRAPPED_QUEUE_CLASS = LOGSTASH_MODULE.defineClassUnder(
+            "AbstractWrappedQueue", RUBY.getObject(),
+            ObjectAllocator.NOT_ALLOCATABLE_ALLOCATOR
+        );
+        ABSTRACT_WRAPPED_QUEUE_CLASS.defineAnnotatedMethods(AbstractWrappedQueueExt.class);
         WRAPPED_WRITE_CLIENT_CLASS =
             setupLogstashClass(JRubyWrappedWriteClientExt::new, JRubyWrappedWriteClientExt.class);
         QUEUE_READ_CLIENT_BASE_CLASS =
@@ -351,12 +362,16 @@ public final class RubyUtil {
             setupLogstashClass(JrubyMemoryWriteClientExt::new, JrubyMemoryWriteClientExt.class);
         ACKED_WRITE_CLIENT_CLASS =
             setupLogstashClass(JrubyAckedWriteClientExt::new, JrubyAckedWriteClientExt.class);
-        WRAPPED_SYNCHRONOUS_QUEUE_CLASS =
-            setupLogstashClass(JrubyWrappedSynchronousQueueExt::new,
-                JrubyWrappedSynchronousQueueExt.class);
-        WRAPPED_ACKED_QUEUE_CLASS = setupLogstashClass(JRubyWrappedAckedQueueExt::new,
-            JRubyWrappedAckedQueueExt.class);
+        WRAPPED_SYNCHRONOUS_QUEUE_CLASS = setupLogstashClass(
+            ABSTRACT_WRAPPED_QUEUE_CLASS, JrubyWrappedSynchronousQueueExt::new,
+            JrubyWrappedSynchronousQueueExt.class
+        );
+        WRAPPED_ACKED_QUEUE_CLASS = setupLogstashClass(
+            ABSTRACT_WRAPPED_QUEUE_CLASS, JRubyWrappedAckedQueueExt::new,
+            JRubyWrappedAckedQueueExt.class
+        );
         ACKED_QUEUE_CLASS = setupLogstashClass(JRubyAckedQueueExt::new, JRubyAckedQueueExt.class);
+        QUEUE_FACTORY_CLASS = setupLogstashClass(QueueFactoryExt::new, QueueFactoryExt.class);
         RUBY_EVENT_CLASS = setupLogstashClass(
             JrubyEventExtLibrary.RubyEvent::new, JrubyEventExtLibrary.RubyEvent.class
         );
