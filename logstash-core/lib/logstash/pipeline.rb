@@ -10,7 +10,6 @@ require "logstash/inputs/base"
 require "logstash/outputs/base"
 require "logstash/instrument/collector"
 require "logstash/filter_delegator"
-require "logstash/queue_factory"
 require "logstash/compiler"
 
 java_import org.logstash.common.DeadLetterQueueFactory

@@ -1,5 +1,7 @@
 package org.logstash.ext;
 
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.TimeUnit;
 import org.jruby.Ruby;
 import org.jruby.RubyClass;
 import org.jruby.anno.JRubyClass;
@@ -7,14 +9,10 @@ import org.logstash.RubyUtil;
 import org.logstash.common.LsQueueUtils;
 import org.logstash.execution.MemoryReadBatch;
 import org.logstash.execution.QueueBatch;
-import org.logstash.execution.QueueReadClient;
 import org.logstash.execution.QueueReadClientBase;
 
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.TimeUnit;
-
 @JRubyClass(name = "MemoryReadClient", parent = "QueueReadClientBase")
-public final class JrubyMemoryReadClientExt extends QueueReadClientBase implements QueueReadClient {
+public final class JrubyMemoryReadClientExt extends QueueReadClientBase {
 
     private BlockingQueue queue;
 
