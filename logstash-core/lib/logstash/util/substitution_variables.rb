@@ -82,4 +82,6 @@ module ::LogStash::Util::SubstitutionVariables
       SECRET_STORE.reset!
     end
   end
+=======
+>>>>>>> Made usage of SS in substitution lazy again.
 end

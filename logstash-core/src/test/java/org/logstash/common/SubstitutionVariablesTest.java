@@ -6,6 +6,7 @@ import org.logstash.secret.SecretIdentifier;
 import org.logstash.secret.store.SecretStore;
 
 import java.util.Collections;
+import java.util.function.Function;
 
 import static org.junit.Assert.*;
 
@@ -14,7 +15,11 @@ public class SubstitutionVariablesTest {
     public void substituteDefaultTest() {
         assertEquals(
             "Some bar Text",
-            SubstitutionVariables.replacePlaceholders("Some ${foo:bar} Text", Collections.emptyMap(), null)
+            SubstitutionVariables.replacePlaceholders(
+                    "Some ${foo:bar} Text",
+                    Collections.emptyMap(),
+                    (Function<String, String>) null
+            )
         );
     }
 
@@ -25,7 +30,7 @@ public class SubstitutionVariablesTest {
             SubstitutionVariables.replacePlaceholders(
                 "Some ${foo:bar} Text",
                 Collections.singletonMap("foo", "env"),
-                null
+                (Function<String, String>) null
             )
         );
     }
@@ -43,7 +48,7 @@ public class SubstitutionVariablesTest {
                 "Some ${foo:bar} Text",
                 // Tests precedence over the env as well
                 Collections.singletonMap("foo", "env"),
-                secretStore
+                (name) -> new String(secretStore.retrieveSecret(new SecretIdentifier(name)))
             )
         );
     }
