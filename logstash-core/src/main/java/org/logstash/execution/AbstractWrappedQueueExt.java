@@ -7,6 +7,7 @@ import org.jruby.anno.JRubyClass;
 import org.jruby.anno.JRubyMethod;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
+import org.logstash.ext.JRubyAbstractQueueWriteClientExt;
 
 @JRubyClass(name = "AbstractWrappedQueue")
 public abstract class AbstractWrappedQueueExt extends RubyBasicObject {
@@ -16,7 +17,7 @@ public abstract class AbstractWrappedQueueExt extends RubyBasicObject {
     }
 
     @JRubyMethod(name = "write_client")
-    public final IRubyObject writeClient(final ThreadContext context) {
+    public final JRubyAbstractQueueWriteClientExt writeClient(final ThreadContext context) {
         return getWriteClient(context);
     }
 
@@ -32,7 +33,7 @@ public abstract class AbstractWrappedQueueExt extends RubyBasicObject {
 
     protected abstract IRubyObject doClose(ThreadContext context);
 
-    protected abstract IRubyObject getWriteClient(ThreadContext context);
+    protected abstract JRubyAbstractQueueWriteClientExt getWriteClient(ThreadContext context);
 
     protected abstract IRubyObject getReadClient();
 }
