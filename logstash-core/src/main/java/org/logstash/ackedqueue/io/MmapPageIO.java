@@ -16,9 +16,9 @@ import org.logstash.ackedqueue.SequencedList;
 import sun.misc.Cleaner;
 import sun.nio.ch.DirectBuffer;
 
-public final class MmapPageIOV2 implements PageIO {
+public final class MmapPageIO implements PageIO {
 
-    public static final byte VERSION_TWO = (byte) 2;
+    public static final byte VERSION_ONE = (byte) 1;
     public static final int VERSION_SIZE = Byte.BYTES;
     public static final int CHECKSUM_SIZE = Integer.BYTES;
     public static final int LENGTH_SIZE = Integer.BYTES;
@@ -27,10 +27,10 @@ public final class MmapPageIOV2 implements PageIO {
     public static final int HEADER_SIZE = 1;     // version byte
     public static final boolean VERIFY_CHECKSUM = true;
 
-    private static final Logger LOGGER = LogManager.getLogger(MmapPageIOV2.class);
+    private static final Logger LOGGER = LogManager.getLogger(MmapPageIO.class);
 
     /**
-     * Cleaner function for forcing unmapping of backing {@link MmapPageIOV2#buffer}.
+     * Cleaner function for forcing unmapping of backing {@link MmapPageIO#buffer}.
      */
     private static final ByteBufferCleaner BUFFER_CLEANER = byteBuffer -> {
         Cleaner c = ((DirectBuffer) byteBuffer).cleaner();
@@ -53,7 +53,7 @@ public final class MmapPageIOV2 implements PageIO {
 
     private MappedByteBuffer buffer;
 
-    public MmapPageIOV2(int pageNum, int capacity, Path dirPath) {
+    public MmapPageIO(int pageNum, int capacity, Path dirPath) {
         this.minSeqNum = 0;
         this.elementCount = 0;
         this.version = 0;
@@ -155,7 +155,7 @@ public final class MmapPageIOV2 implements PageIO {
                 // verify that seqNum must be of strict + 1 increasing order
                 readNextElement(this.minSeqNum + i, VERIFY_CHECKSUM);
                 this.elementCount += 1;
-            } catch (MmapPageIOV2.PageIOInvalidElementException e) {
+            } catch (MmapPageIO.PageIOInvalidElementException e) {
                 // simply stop at first invalid element
                 LOGGER.debug("PageIO recovery element index:{}, readNextElement exception: {}", i, e.getMessage());
                 break;
@@ -174,7 +174,7 @@ public final class MmapPageIOV2 implements PageIO {
             this.buffer = raf.getChannel().map(FileChannel.MapMode.READ_WRITE, 0, this.capacity);
         }
         buffer.position(0);
-        buffer.put(VERSION_TWO);
+        buffer.put(VERSION_ONE);
         this.head = 1;
         this.minSeqNum = 0L;
         this.elementCount = 0;
@@ -286,11 +286,11 @@ public final class MmapPageIOV2 implements PageIO {
 
     // read and validate next element at page head
     // @param verifyChecksum if true the actual element data will be read + checksumed and compared to written checksum
-    private void readNextElement(long expectedSeqNum, boolean verifyChecksum) throws MmapPageIOV2.PageIOInvalidElementException {
+    private void readNextElement(long expectedSeqNum, boolean verifyChecksum) throws MmapPageIO.PageIOInvalidElementException {
         // if there is no room for the seqNum and length bytes stop here
         // TODO: I know this isn't a great exception message but at the time of writing I couldn't come up with anything better :P
         if (this.head + SEQNUM_SIZE + LENGTH_SIZE > capacity) {
-            throw new MmapPageIOV2.PageIOInvalidElementException(
+            throw new MmapPageIO.PageIOInvalidElementException(
                 "cannot read seqNum and length bytes past buffer capacity");
         }
 
@@ -301,7 +301,7 @@ public final class MmapPageIOV2 implements PageIO {
         newHead += SEQNUM_SIZE;
 
         if (seqNum != expectedSeqNum) {
-            throw new MmapPageIOV2.PageIOInvalidElementException(
+            throw new MmapPageIO.PageIOInvalidElementException(
                 String.format("Element seqNum %d is expected to be %d", seqNum, expectedSeqNum));
         }
 
@@ -310,12 +310,12 @@ public final class MmapPageIOV2 implements PageIO {
 
         // length must be > 0
         if (length <= 0) {
-            throw new MmapPageIOV2.PageIOInvalidElementException("Element invalid length");
+            throw new MmapPageIO.PageIOInvalidElementException("Element invalid length");
         }
 
         // if there is no room for the proposed data length and checksum just stop here
         if (newHead + length + CHECKSUM_SIZE > capacity) {
-            throw new MmapPageIOV2.PageIOInvalidElementException(
+            throw new MmapPageIO.PageIOInvalidElementException(
                 "cannot read element payload and checksum past buffer capacity");
         }
 
@@ -329,7 +329,7 @@ public final class MmapPageIOV2 implements PageIO {
             int checksum = buffer.getInt();
             int computedChecksum = (int) this.checkSummer.getValue();
             if (computedChecksum != checksum) {
-                throw new MmapPageIOV2.PageIOInvalidElementException(
+                throw new MmapPageIO.PageIOInvalidElementException(
                     "Element invalid checksum");
             }
         }
@@ -369,10 +369,10 @@ public final class MmapPageIOV2 implements PageIO {
     // we don't have different versions yet so simply check if the version is VERSION_ONE for basic integrity check
     // and if an unexpected version byte is read throw PageIOInvalidVersionException
     private static void validateVersion(byte version)
-        throws MmapPageIOV2.PageIOInvalidVersionException {
-        if (version != VERSION_TWO) {
-            throw new MmapPageIOV2.PageIOInvalidVersionException(String
-                .format("Expected page version=%d but found version=%d", VERSION_TWO, version));
+        throws MmapPageIO.PageIOInvalidVersionException {
+        if (version != VERSION_ONE) {
+            throw new MmapPageIO.PageIOInvalidVersionException(String
+                .format("Expected page version=%d but found version=%d", VERSION_ONE, version));
         }
     }
 

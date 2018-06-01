@@ -17,8 +17,8 @@ import static org.hamcrest.MatcherAssert.assertThat;
 
 public class FileMmapIOTest {
     private Path folder;
-    private MmapPageIOV2 writeIo;
-    private MmapPageIOV2 readIo;
+    private MmapPageIO writeIo;
+    private MmapPageIO readIo;
     private int pageNum;
 
     @Rule
@@ -30,8 +30,8 @@ public class FileMmapIOTest {
         folder = temporaryFolder
                 .newFolder("pages")
                 .toPath();
-        writeIo = new MmapPageIOV2(pageNum, 1024, folder);
-        readIo = new MmapPageIOV2(pageNum, 1024, folder);
+        writeIo = new MmapPageIO(pageNum, 1024, folder);
+        readIo = new MmapPageIO(pageNum, 1024, folder);
     }
 
     @Test

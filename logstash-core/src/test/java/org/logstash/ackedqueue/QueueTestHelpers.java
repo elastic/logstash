@@ -1,7 +1,7 @@
 package org.logstash.ackedqueue;
 
 import java.io.IOException;
-import org.logstash.ackedqueue.io.MmapPageIOV2;
+import org.logstash.ackedqueue.io.MmapPageIO;
 
 /**
  * Class containing common methods to help DRY up acked queue tests.
@@ -19,12 +19,12 @@ public class QueueTestHelpers {
     }
 
     /**
-     * Returns the {@link MmapPageIOV2} capacity require to hold a multiple elements including all headers and other metadata.
+     * Returns the {@link MmapPageIO} capacity require to hold a multiple elements including all headers and other metadata.
      * @param element
      * @return int - capacity required for the supplied number of elements
      * @throws IOException Throws if a serialization error occurs
      */
     public static int computeCapacityForMmapPageIO(final Queueable element, int count) throws IOException {
-        return MmapPageIOV2.HEADER_SIZE + (count * (MmapPageIOV2.SEQNUM_SIZE + MmapPageIOV2.LENGTH_SIZE + element.serialize().length + MmapPageIOV2.CHECKSUM_SIZE));
+        return MmapPageIO.HEADER_SIZE + (count * (MmapPageIO.SEQNUM_SIZE + MmapPageIO.LENGTH_SIZE + element.serialize().length + MmapPageIO.CHECKSUM_SIZE));
     }
 }
