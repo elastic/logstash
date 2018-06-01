@@ -9,6 +9,8 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.UUID;
 import org.apache.commons.codec.binary.Hex;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jruby.Ruby;
 import org.jruby.RubyArray;
 import org.jruby.RubyBasicObject;
@@ -21,18 +23,22 @@ import org.jruby.javasupport.JavaUtil;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.RubyUtil;
+import org.logstash.ackedqueue.QueueFactoryExt;
 import org.logstash.ackedqueue.ext.JRubyAckedQueueExt;
 import org.logstash.ackedqueue.ext.JRubyWrappedAckedQueueExt;
 import org.logstash.common.DeadLetterQueueFactory;
 import org.logstash.common.IncompleteSourceWithMetadataException;
 import org.logstash.config.ir.ConfigCompiler;
 import org.logstash.config.ir.PipelineIR;
+import org.logstash.ext.JRubyAbstractQueueWriteClientExt;
 import org.logstash.instrument.metrics.AbstractMetricExt;
 import org.logstash.instrument.metrics.AbstractNamespacedMetricExt;
 import org.logstash.instrument.metrics.NullMetricExt;
 
 @JRubyClass(name = "AbstractPipeline")
 public final class AbstractPipelineExt extends RubyBasicObject {
+
+    private static final Logger LOGGER = LogManager.getLogger(AbstractPipelineExt.class);
 
     private static final RubyArray CAPACITY_NAMESPACE =
         RubyArray.newArray(RubyUtil.RUBY, RubyUtil.RUBY.newSymbol("capacity"));
@@ -96,21 +102,23 @@ public final class AbstractPipelineExt extends RubyBasicObject {
 
     private PipelineReporterExt reporter;
 
-    private IRubyObject queue;
+    private AbstractWrappedQueueExt queue;
+
+    private JRubyAbstractQueueWriteClientExt inputQueueClient;
 
     public AbstractPipelineExt(final Ruby runtime, final RubyClass metaClass) {
         super(runtime, metaClass);
     }
 
-    @JRubyMethod(required = 4)
-    public AbstractPipelineExt initialize(final ThreadContext context, final IRubyObject[] args)
+    @JRubyMethod
+    public AbstractPipelineExt initialize(final ThreadContext context,
+        final IRubyObject pipelineConfig, final IRubyObject namespacedMetric,
+        final IRubyObject rubyLogger)
         throws NoSuchAlgorithmException, IncompleteSourceWithMetadataException {
-        final IRubyObject namespacedMetric = args[1];
-        queue = args[3];
         reporter = new PipelineReporterExt(
-            context.runtime, RubyUtil.PIPELINE_REPORTER_CLASS).initialize(context, args[2], this
+            context.runtime, RubyUtil.PIPELINE_REPORTER_CLASS).initialize(context, rubyLogger, this
         );
-        pipelineSettings = args[0];
+        pipelineSettings = pipelineConfig;
         configString = (RubyString) pipelineSettings.callMethod(context, "config_string");
         configHash = context.runtime.newString(
             Hex.encodeHexString(
@@ -118,6 +126,13 @@ public final class AbstractPipelineExt extends RubyBasicObject {
             )
         );
         settings = pipelineSettings.callMethod(context, "settings");
+        try {
+            queue = QueueFactoryExt.create(context, null, settings);
+        } catch (final Exception ex) {
+            LOGGER.error("Logstash failed to create queue.", ex);
+            throw new IllegalStateException(ex);
+        }
+        inputQueueClient = queue.writeClient(context);
         final IRubyObject id = getSetting(context, "pipeline.id");
         if (id.isNil()) {
             pipelineId = id();
@@ -286,8 +301,13 @@ public final class AbstractPipelineExt extends RubyBasicObject {
         return context.nil;
     }
 
+    @JRubyMethod(name = "input_queue_client")
+    public JRubyAbstractQueueWriteClientExt inputQueueClient() {
+        return inputQueueClient;
+    }
+
     @JRubyMethod
-    public IRubyObject queue() {
+    public AbstractWrappedQueueExt queue() {
         return queue;
     }
 

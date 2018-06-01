@@ -16,14 +16,15 @@ import org.logstash.common.BufferedTokenizerExt;
 import org.logstash.config.ir.compiler.FilterDelegatorExt;
 import org.logstash.config.ir.compiler.OutputDelegatorExt;
 import org.logstash.config.ir.compiler.OutputStrategyExt;
-import org.logstash.execution.*;
+import org.logstash.execution.AbstractPipelineExt;
 import org.logstash.execution.AbstractWrappedQueueExt;
+import org.logstash.execution.ConvergeResultExt;
 import org.logstash.execution.EventDispatcherExt;
 import org.logstash.execution.ExecutionContextExt;
-import org.logstash.execution.AbstractPipelineExt;
 import org.logstash.execution.PipelineReporterExt;
 import org.logstash.execution.QueueReadClientBase;
 import org.logstash.execution.ShutdownWatcherExt;
+import org.logstash.ext.JRubyAbstractQueueWriteClientExt;
 import org.logstash.ext.JRubyLogstashErrorsExt;
 import org.logstash.ext.JRubyWrappedWriteClientExt;
 import org.logstash.ext.JrubyAckedReadClientExt;
@@ -77,6 +78,8 @@ public final class RubyUtil {
     public static final RubyClass MEMORY_READ_CLIENT_CLASS;
 
     public static final RubyClass ACKED_READ_CLIENT_CLASS;
+
+    public static final RubyClass ABSTRACT_WRITE_CLIENT_CLASS;
 
     public static final RubyClass MEMORY_WRITE_CLIENT_CLASS;
 
@@ -359,6 +362,11 @@ public final class RubyUtil {
             ObjectAllocator.NOT_ALLOCATABLE_ALLOCATOR
         );
         ABSTRACT_WRAPPED_QUEUE_CLASS.defineAnnotatedMethods(AbstractWrappedQueueExt.class);
+        ABSTRACT_WRITE_CLIENT_CLASS = LOGSTASH_MODULE.defineClassUnder(
+            "AbstractQueueWriteClient", RUBY.getObject(),
+            ObjectAllocator.NOT_ALLOCATABLE_ALLOCATOR
+        );
+        ABSTRACT_WRITE_CLIENT_CLASS.defineAnnotatedMethods(JRubyAbstractQueueWriteClientExt.class);
         WRAPPED_WRITE_CLIENT_CLASS =
             setupLogstashClass(JRubyWrappedWriteClientExt::new, JRubyWrappedWriteClientExt.class);
         QUEUE_READ_CLIENT_BASE_CLASS =
@@ -367,10 +375,14 @@ public final class RubyUtil {
             setupLogstashClass(QUEUE_READ_CLIENT_BASE_CLASS, JrubyMemoryReadClientExt::new, JrubyMemoryReadClientExt.class);
         ACKED_READ_CLIENT_CLASS =
             setupLogstashClass(QUEUE_READ_CLIENT_BASE_CLASS, JrubyAckedReadClientExt::new, JrubyAckedReadClientExt.class);
-        MEMORY_WRITE_CLIENT_CLASS =
-            setupLogstashClass(JrubyMemoryWriteClientExt::new, JrubyMemoryWriteClientExt.class);
-        ACKED_WRITE_CLIENT_CLASS =
-            setupLogstashClass(JrubyAckedWriteClientExt::new, JrubyAckedWriteClientExt.class);
+        MEMORY_WRITE_CLIENT_CLASS = setupLogstashClass(
+            ABSTRACT_WRITE_CLIENT_CLASS, JrubyMemoryWriteClientExt::new,
+            JrubyMemoryWriteClientExt.class
+        );
+        ACKED_WRITE_CLIENT_CLASS = setupLogstashClass(
+            ABSTRACT_WRITE_CLIENT_CLASS, JrubyAckedWriteClientExt::new,
+            JrubyAckedWriteClientExt.class
+        );
         WRAPPED_SYNCHRONOUS_QUEUE_CLASS = setupLogstashClass(
             ABSTRACT_WRAPPED_QUEUE_CLASS, JrubyWrappedSynchronousQueueExt::new,
             JrubyWrappedSynchronousQueueExt.class
@@ -480,15 +492,15 @@ public final class RubyUtil {
         );
         CONVERGE_RESULT_CLASS = setupLogstashClass(ConvergeResultExt::new, ConvergeResultExt.class);
         ACTION_RESULT_CLASS = CONVERGE_RESULT_CLASS.defineClassUnder(
-                "ActionResult", RUBY.getObject(), ObjectAllocator.NOT_ALLOCATABLE_ALLOCATOR
+            "ActionResult", RUBY.getObject(), ObjectAllocator.NOT_ALLOCATABLE_ALLOCATOR
         );
         ACTION_RESULT_CLASS.defineAnnotatedMethods(ConvergeResultExt.ActionResultExt.class);
         SUCCESSFUL_ACTION_CLASS = CONVERGE_RESULT_CLASS.defineClassUnder(
-                "SuccessfulAction", ACTION_RESULT_CLASS, ConvergeResultExt.SuccessfulActionExt::new
+            "SuccessfulAction", ACTION_RESULT_CLASS, ConvergeResultExt.SuccessfulActionExt::new
         );
         SUCCESSFUL_ACTION_CLASS.defineAnnotatedMethods(ConvergeResultExt.SuccessfulActionExt.class);
         FAILED_ACTION_CLASS = CONVERGE_RESULT_CLASS.defineClassUnder(
-                "FailedAction", ACTION_RESULT_CLASS, ConvergeResultExt.FailedActionExt::new
+            "FailedAction", ACTION_RESULT_CLASS, ConvergeResultExt.FailedActionExt::new
         );
         FAILED_ACTION_CLASS.defineAnnotatedMethods(ConvergeResultExt.FailedActionExt.class);
         HOOKS_REGISTRY_CLASS =

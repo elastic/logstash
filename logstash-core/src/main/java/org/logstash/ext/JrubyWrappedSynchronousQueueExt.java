@@ -30,7 +30,7 @@ public final class JrubyWrappedSynchronousQueueExt extends AbstractWrappedQueueE
     }
 
     @Override
-    protected IRubyObject getWriteClient(final ThreadContext context) {
+    protected JRubyAbstractQueueWriteClientExt getWriteClient(final ThreadContext context) {
         return JrubyMemoryWriteClientExt.create(queue);
     }
 
