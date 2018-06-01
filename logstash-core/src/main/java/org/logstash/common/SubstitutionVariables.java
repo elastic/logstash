@@ -28,7 +28,7 @@ public class SubstitutionVariables {
             SecretStore secretStore = null;
             try {
                 if (secretStoreFactory.exists(secureConfig)) {
-                    secretStoreFactory.load(secureConfig);
+                    secretStore = secretStoreFactory.load(secureConfig);
                 }
             } catch (SecretStoreException.AccessException e) {
                 // Non-fatal condition
@@ -62,9 +62,13 @@ public class SubstitutionVariables {
                     "Cannot evaluate `%s`. Replacement variable `%s` is not defined in a Logstash secret store " +
                             "or as an Environment entry and there is no default value given.",
                     matchResult.group(0), name);
-            throw new MissingSubstitutionVariableError();
+            throw new MissingSubstitutionVariableError(errMsg);
         });
     }
 
-    static class MissingSubstitutionVariableError extends RuntimeException {}
+    static class MissingSubstitutionVariableError extends RuntimeException {
+        public MissingSubstitutionVariableError(String errMsg) {
+            super(errMsg);
+        }
+    }
 }
