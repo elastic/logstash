@@ -1,6 +1,5 @@
 # encoding: utf-8
 require "logstash/pipeline_action/base"
-require "logstash/converge_result"
 
 module LogStash module PipelineAction
   class Stop < Base
