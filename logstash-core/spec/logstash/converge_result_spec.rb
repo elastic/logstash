@@ -1,5 +1,4 @@
 # encoding: utf-8
-require "logstash/converge_result"
 require "logstash/pipeline_action/stop"
 require "spec_helper"
 

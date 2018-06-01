@@ -2,7 +2,6 @@
 require "logstash/pipeline_action/base"
 require "logstash/pipeline_action/create"
 require "logstash/pipeline_action/stop"
-require "logstash/converge_result"
 
 module LogStash module PipelineAction
   class Reload < Base
