@@ -8,11 +8,7 @@ require "logstash/outputs/base"
 require "logstash/instrument/collector"
 require "logstash/compiler"
 
-java_import org.logstash.common.DeadLetterQueueFactory
-java_import org.logstash.common.SourceWithMetadata
-java_import org.logstash.common.io.DeadLetterQueueWriter
 java_import org.logstash.config.ir.CompiledPipeline
-java_import org.logstash.config.ir.ConfigCompiler
 
 module LogStash; class JavaBasePipeline < AbstractPipeline
   include LogStash::Util::Loggable
@@ -21,7 +17,7 @@ module LogStash; class JavaBasePipeline < AbstractPipeline
 
   def initialize(pipeline_config, namespaced_metric = nil, agent = nil)
     @logger = self.logger
-    super pipeline_config, namespaced_metric, @logger, @queue
+    super pipeline_config, namespaced_metric, @logger
     @lir_execution = CompiledPipeline.new(
         lir,
         LogStash::Plugins::PluginFactory.new(
@@ -65,23 +61,15 @@ module LogStash; class JavaPipeline < JavaBasePipeline
     :events_filtered,
     :started_at,
     :thread,
-    :filter_queue_client,
-    :input_queue_client
+    :filter_queue_client
 
   MAX_INFLIGHT_WARN_THRESHOLD = 10_000
 
   def initialize(pipeline_config, namespaced_metric = nil, agent = nil)
-    begin
-      @queue = LogStash::QueueFactory.create(pipeline_config.settings)
-    rescue => e
-      @logger.error("Logstash failed to create queue", default_logging_keys("exception" => e.message, "backtrace" => e.backtrace))
-      raise e
-    end
     super
     @worker_threads = []
 
-    @input_queue_client = @queue.write_client
-    @filter_queue_client = @queue.read_client
+    @filter_queue_client = queue.read_client
     # Note that @inflight_batches as a central mechanism for tracking inflight
     # batches will fail if we have multiple read clients here.
     @filter_queue_client.set_events_metric(metric.namespace([:stats, :events]))
@@ -216,7 +204,7 @@ module LogStash; class JavaPipeline < JavaBasePipeline
 
   def close
     @filter_queue_client.close
-    @queue.close
+    queue.close
     close_dlq_writer
   end
 
@@ -337,7 +325,7 @@ module LogStash; class JavaPipeline < JavaBasePipeline
   def inputworker(plugin)
     Util::set_thread_name("[#{pipeline_id}]<#{plugin.class.config_name}")
     begin
-      plugin.run(LogStash::WrappedWriteClient.new(@input_queue_client, pipeline_id.to_s.to_sym, metric, plugin.id.to_sym))
+      plugin.run(LogStash::WrappedWriteClient.new(input_queue_client, pipeline_id.to_s.to_sym, metric, plugin.id.to_sym))
     rescue => e
       if plugin.stop?
         @logger.debug("Input plugin raised exception during shutdown, ignoring it.",

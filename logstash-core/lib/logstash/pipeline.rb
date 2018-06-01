@@ -12,11 +12,6 @@ require "logstash/instrument/collector"
 require "logstash/filter_delegator"
 require "logstash/compiler"
 
-java_import org.logstash.common.DeadLetterQueueFactory
-java_import org.logstash.common.SourceWithMetadata
-java_import org.logstash.common.io.DeadLetterQueueWriter
-java_import org.logstash.config.ir.ConfigCompiler
-
 module LogStash; class BasePipeline < AbstractPipeline
   include LogStash::Util::Loggable
 
@@ -24,7 +19,7 @@ module LogStash; class BasePipeline < AbstractPipeline
 
   def initialize(pipeline_config, namespaced_metric = nil, agent = nil)
     @logger = self.logger
-    super pipeline_config, namespaced_metric, @logger, @queue
+    super pipeline_config, namespaced_metric, @logger
     @mutex = Mutex.new
 
     @inputs = nil
@@ -89,24 +84,16 @@ module LogStash; class Pipeline < BasePipeline
     :events_filtered,
     :started_at,
     :thread,
-    :filter_queue_client,
-    :input_queue_client
+    :filter_queue_client
 
   MAX_INFLIGHT_WARN_THRESHOLD = 10_000
 
   def initialize(pipeline_config, namespaced_metric = nil, agent = nil)
-    begin
-      @queue = LogStash::QueueFactory.create(pipeline_config.settings)
-    rescue => e
-      @logger.error("Logstash failed to create queue", default_logging_keys("exception" => e.message, "backtrace" => e.backtrace))
-      raise e
-    end
     super
 
     @worker_threads = []
 
-    @input_queue_client = @queue.write_client
-    @filter_queue_client = @queue.read_client
+    @filter_queue_client = queue.read_client
     @signal_queue = java.util.concurrent.LinkedBlockingQueue.new
     # Note that @inflight_batches as a central mechanism for tracking inflight
     # batches will fail if we have multiple read clients here.
@@ -241,7 +228,7 @@ module LogStash; class Pipeline < BasePipeline
 
   def close
     @filter_queue_client.close
-    @queue.close
+    queue.close
     close_dlq_writer
   end
 
@@ -432,8 +419,7 @@ module LogStash; class Pipeline < BasePipeline
   def inputworker(plugin)
     Util::set_thread_name("[#{pipeline_id}]<#{plugin.class.config_name}")
     begin
-      input_queue_client = wrapped_write_client(plugin.id.to_sym)
-      plugin.run(input_queue_client)
+      plugin.run(wrapped_write_client(plugin.id.to_sym))
     rescue => e
       if plugin.stop?
         @logger.debug("Input plugin raised exception during shutdown, ignoring it.",
@@ -636,7 +622,7 @@ module LogStash; class Pipeline < BasePipeline
   def wrapped_write_client(plugin_id)
     #need to ensure that metrics are initialized one plugin at a time, else a race condition can exist.
     @mutex.synchronize do
-      LogStash::WrappedWriteClient.new(@input_queue_client, pipeline_id.to_s.to_sym, metric, plugin_id)
+      LogStash::WrappedWriteClient.new(input_queue_client, pipeline_id.to_s.to_sym, metric, plugin_id)
     end
   end
 end; end
