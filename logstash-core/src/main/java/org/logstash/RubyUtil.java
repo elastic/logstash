@@ -16,6 +16,7 @@ import org.logstash.common.BufferedTokenizerExt;
 import org.logstash.config.ir.compiler.FilterDelegatorExt;
 import org.logstash.config.ir.compiler.OutputDelegatorExt;
 import org.logstash.config.ir.compiler.OutputStrategyExt;
+import org.logstash.execution.*;
 import org.logstash.execution.AbstractWrappedQueueExt;
 import org.logstash.execution.EventDispatcherExt;
 import org.logstash.execution.ExecutionContextExt;
@@ -170,6 +171,14 @@ public final class RubyUtil {
     public static final RubyClass PIPELINE_REPORTER_CLASS;
 
     public static final RubyClass SHUTDOWN_WATCHER_CLASS;
+
+    public static final RubyClass CONVERGE_RESULT_CLASS;
+
+    public static final RubyClass ACTION_RESULT_CLASS;
+
+    public static final RubyClass FAILED_ACTION_CLASS;
+
+    public static final RubyClass SUCCESSFUL_ACTION_CLASS;
 
     public static final RubyClass PIPELINE_REPORTER_SNAPSHOT_CLASS;
 
@@ -469,6 +478,19 @@ public final class RubyUtil {
         PIPELINE_REPORTER_SNAPSHOT_CLASS.defineAnnotatedMethods(
             PipelineReporterExt.SnapshotExt.class
         );
+        CONVERGE_RESULT_CLASS = setupLogstashClass(ConvergeResultExt::new, ConvergeResultExt.class);
+        ACTION_RESULT_CLASS = CONVERGE_RESULT_CLASS.defineClassUnder(
+                "ActionResult", RUBY.getObject(), ObjectAllocator.NOT_ALLOCATABLE_ALLOCATOR
+        );
+        ACTION_RESULT_CLASS.defineAnnotatedMethods(ConvergeResultExt.ActionResultExt.class);
+        SUCCESSFUL_ACTION_CLASS = CONVERGE_RESULT_CLASS.defineClassUnder(
+                "SuccessfulAction", ACTION_RESULT_CLASS, ConvergeResultExt.SuccessfulActionExt::new
+        );
+        SUCCESSFUL_ACTION_CLASS.defineAnnotatedMethods(ConvergeResultExt.SuccessfulActionExt.class);
+        FAILED_ACTION_CLASS = CONVERGE_RESULT_CLASS.defineClassUnder(
+                "FailedAction", ACTION_RESULT_CLASS, ConvergeResultExt.FailedActionExt::new
+        );
+        FAILED_ACTION_CLASS.defineAnnotatedMethods(ConvergeResultExt.FailedActionExt.class);
         HOOKS_REGISTRY_CLASS =
             PLUGINS_MODULE.defineClassUnder("HooksRegistry", RUBY.getObject(), HooksRegistryExt::new);
         HOOKS_REGISTRY_CLASS.defineAnnotatedMethods(HooksRegistryExt.class);
