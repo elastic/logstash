@@ -110,19 +110,4 @@ describe LogStash::Instrument::WrappedWriteClient do
 
     include_examples "queue tests"
   end
-
-  context "AckedMemoryQueue" do
-    let(:queue) { LogStash::Util::WrappedAckedQueue.create_memory_based("", 1024, 10, 4096) }
-
-    before do
-      read_client.set_events_metric(metric.namespace([:stats, :events]))
-      read_client.set_pipeline_metric(metric.namespace([:stats, :pipelines, :main, :events]))
-    end
-
-    after do
-      queue.close
-    end
-
-    include_examples "queue tests"
-  end
 end

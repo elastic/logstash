@@ -79,7 +79,7 @@ describe LogStash::Pipeline do
   let(:number_of_events) { 100_000 }
   let(:page_capacity) { 1 * 1024 * 512 } # 1 128
   let(:max_bytes) { 1024 * 1024 * 1024 } # 1 gb
-  let(:queue_type) { "persisted" } #  "memory" "memory_acked"
+  let(:queue_type) { "persisted" } #  "memory"
   let(:times) { [] }
 
   let(:pipeline_thread) do

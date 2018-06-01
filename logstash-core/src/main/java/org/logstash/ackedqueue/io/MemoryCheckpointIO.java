@@ -16,10 +16,6 @@ public class MemoryCheckpointIO implements CheckpointIO {
 
     private final String dirPath;
 
-    public static void clearSources() {
-        sources.clear();
-    }
-
     public MemoryCheckpointIO(String dirPath) {
         this.dirPath = dirPath;
     }
@@ -59,11 +55,6 @@ public class MemoryCheckpointIO implements CheckpointIO {
         if (ns != null) {
            ns.remove(fileName);
         }
-    }
-
-    @Override
-    public void purge() {
-        this.sources.remove(this.dirPath);
     }
 
     // @return the head page checkpoint file name

@@ -19,10 +19,6 @@ module LogStash
       queue_path = ::File.join(settings.get("path.queue"), settings.get("pipeline.id"))
 
       case queue_type
-      when "memory_acked"
-        # memory_acked is used in tests/specs
-        FileUtils.mkdir_p(queue_path)
-        LogStash::Util::WrappedAckedQueue.create_memory_based(queue_path, queue_page_capacity, queue_max_events, queue_max_bytes)
       when "persisted"
         # persisted is the disk based acked queue
         FileUtils.mkdir_p(queue_path)
@@ -31,7 +27,7 @@ module LogStash
         # memory is the legacy and default setting
         LogStash::Util::WrappedSynchronousQueue.new
       else
-        raise ConfigurationError, "Invalid setting `#{queue_type}` for `queue.type`, supported types are: 'memory_acked', 'memory', 'persisted'"
+        raise ConfigurationError, "Invalid setting `#{queue_type}` for `queue.type`, supported types are 'memory' and 'persisted'"
       end
     end
   end

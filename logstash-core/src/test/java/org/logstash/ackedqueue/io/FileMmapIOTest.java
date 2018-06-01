@@ -1,12 +1,12 @@
 package org.logstash.ackedqueue.io;
 
+import java.nio.file.Path;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.logstash.ackedqueue.SequencedList;
 import org.logstash.ackedqueue.StringElement;
-import org.logstash.ackedqueue.io.MmapPageIO;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,9 +16,9 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 public class FileMmapIOTest {
-    private String folder;
-    private MmapPageIO writeIo;
-    private MmapPageIO readIo;
+    private Path folder;
+    private MmapPageIOV2 writeIo;
+    private MmapPageIOV2 readIo;
     private int pageNum;
 
     @Rule
@@ -29,9 +29,9 @@ public class FileMmapIOTest {
         pageNum = 0;
         folder = temporaryFolder
                 .newFolder("pages")
-                .getPath();
-        writeIo = new MmapPageIO(pageNum, 1024, folder);
-        readIo = new MmapPageIO(pageNum, 1024, folder);
+                .toPath();
+        writeIo = new MmapPageIOV2(pageNum, 1024, folder);
+        readIo = new MmapPageIOV2(pageNum, 1024, folder);
     }
 
     @Test

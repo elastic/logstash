@@ -10,8 +10,6 @@ import org.logstash.Timestamp;
 import org.logstash.ackedqueue.Queue;
 import org.logstash.ackedqueue.Settings;
 import org.logstash.ackedqueue.SettingsImpl;
-import org.logstash.ackedqueue.io.FileCheckpointIO;
-import org.logstash.ackedqueue.io.MmapPageIO;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
 import org.openjdk.jmh.annotations.Fork;
@@ -24,10 +22,6 @@ import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.annotations.TearDown;
 import org.openjdk.jmh.annotations.Warmup;
-import org.openjdk.jmh.runner.Runner;
-import org.openjdk.jmh.runner.RunnerException;
-import org.openjdk.jmh.runner.options.Options;
-import org.openjdk.jmh.runner.options.OptionsBuilder;
 
 @Warmup(iterations = 3, time = 100, timeUnit = TimeUnit.MILLISECONDS)
 @Measurement(iterations = 10, time = 100, timeUnit = TimeUnit.MILLISECONDS)
@@ -74,22 +68,12 @@ public class QueueWriteBenchmark {
         }
     }
 
-    public static void main(final String... args) throws RunnerException {
-        Options opt = new OptionsBuilder()
-            .include(QueueWriteBenchmark.class.getSimpleName())
-            .forks(2)
-            .build();
-        new Runner(opt).run();
-    }
-
     private static Settings settings() {
         return SettingsImpl.fileSettingsBuilder(Files.createTempDir().getPath())
             .capacity(256 * 1024 * 1024)
             .queueMaxBytes(Long.MAX_VALUE)
-            .elementIOFactory(MmapPageIO::new)
             .checkpointMaxWrites(1024)
             .checkpointMaxAcks(1024)
-            .checkpointIOFactory(FileCheckpointIO::new)
             .elementClass(Event.class).build();
     }
 }
