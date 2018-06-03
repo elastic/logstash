@@ -173,14 +173,10 @@ images:
 
 [horizontal]
 `http.host`:: `0.0.0.0`
-`path.config`:: `/usr/share/logstash/pipeline`
-
-In the `x-pack` image, the following additional defaults are also set:
-
-[horizontal]
 `xpack.monitoring.elasticsearch.url`:: `http://elasticsearch:9200`
-`xpack.monitoring.elasticsearch.username`:: `logstash_system`
-`xpack.monitoring.elasticsearch.password`:: `changeme`
+
+NOTE: The setting `xpack.monitoring.elasticsearch.url` is not
+defined in the `-oss` image.
 
 These settings are defined in the default `logstash.yml`. They can be overridden
 with a <<docker-bind-mount-settings,custom `logstash.yml`>> or via
