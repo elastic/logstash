@@ -25,6 +25,22 @@ public final class LongVector {
     }
 
     /**
+     * Store the {@code long[]} to the underlying {@code long[]}, resizing it if necessary.
+     * @param nums {@code long[]} to store
+     */
+    public void add(final LongVector nums) {
+        if (data.length < count + nums.size()) {
+            final long[] old = data;
+            data = new long[(data.length << 1) + nums.size()];
+            System.arraycopy(old, 0, data, 0, old.length);
+        }
+        for (int i = 0; i < nums.size(); i++) {
+            data[count + i] = nums.get(i);
+        }
+        count += nums.size();
+    }
+
+    /**
      * Get value stored at given index.
      * @param index Array index (only values smaller than {@link LongVector#count} are valid)
      * @return Int

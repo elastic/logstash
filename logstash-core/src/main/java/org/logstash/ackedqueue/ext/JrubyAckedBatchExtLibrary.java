@@ -1,6 +1,5 @@
 package org.logstash.ackedqueue.ext;
 
-import java.util.List;
 import org.jruby.Ruby;
 import org.jruby.RubyClass;
 import org.jruby.RubyModule;
@@ -15,7 +14,6 @@ import org.jruby.runtime.load.Library;
 import org.logstash.RubyUtil;
 import org.logstash.ackedqueue.Batch;
 import org.logstash.Event;
-import org.logstash.ackedqueue.Queueable;
 import org.logstash.ext.JrubyEventExtLibrary;
 import java.io.IOException;
 

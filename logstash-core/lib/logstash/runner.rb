@@ -306,7 +306,7 @@ class LogStash::Runner < Clamp::StrictCommand
     end
 
     # lock path.data before starting the agent
-    @data_path_lock = FileLockFactory.getDefault().obtainLock(setting("path.data"), ".lock");
+    @data_path_lock = FileLockFactory.obtainLock(java.nio.file.Paths.get(setting("path.data")).to_absolute_path, ".lock")
 
     @agent = create_agent(@settings)
 
@@ -351,7 +351,7 @@ class LogStash::Runner < Clamp::StrictCommand
     Stud::untrap("INT", sigint_id) unless sigint_id.nil?
     Stud::untrap("TERM", sigterm_id) unless sigterm_id.nil?
     Stud::untrap("HUP", sighup_id) unless sighup_id.nil?
-    FileLockFactory.getDefault().releaseLock(@data_path_lock) if @data_path_lock
+    FileLockFactory.releaseLock(@data_path_lock) if @data_path_lock
     @log_fd.close if @log_fd
   end # def self.main
 

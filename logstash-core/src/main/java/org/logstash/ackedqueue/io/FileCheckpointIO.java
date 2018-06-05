@@ -1,18 +1,14 @@
 package org.logstash.ackedqueue.io;
 
-import java.nio.channels.FileChannel;
-import org.logstash.ackedqueue.Checkpoint;
-import org.logstash.common.io.BufferedChecksumStreamInput;
-import org.logstash.common.io.InputStreamStreamInput;
-
-import java.io.ByteArrayInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.zip.CRC32;
+import org.logstash.ackedqueue.Checkpoint;
 
 public class FileCheckpointIO implements CheckpointIO {
 //    Checkpoint file structure
@@ -42,20 +38,16 @@ public class FileCheckpointIO implements CheckpointIO {
 
     private static final String HEAD_CHECKPOINT = "checkpoint.head";
     private static final String TAIL_CHECKPOINT = "checkpoint.";
-    private final String dirPath;
+    private final Path dirPath;
 
-    public FileCheckpointIO(String dirPath) {
+    public FileCheckpointIO(Path dirPath) {
         this.dirPath = dirPath;
     }
 
     @Override
     public Checkpoint read(String fileName) throws IOException {
         return read(
-            new BufferedChecksumStreamInput(
-                new InputStreamStreamInput(
-                    new ByteArrayInputStream(Files.readAllBytes(Paths.get(dirPath, fileName)))
-                )
-            )
+            ByteBuffer.wrap(Files.readAllBytes(dirPath.resolve(fileName)))
         );
     }
 
@@ -70,22 +62,18 @@ public class FileCheckpointIO implements CheckpointIO {
     public void write(String fileName, Checkpoint checkpoint) throws IOException {
         write(checkpoint, buffer);
         buffer.flip();
-        try (FileOutputStream out = new FileOutputStream(Paths.get(dirPath, fileName).toFile())) {
+        final Path tmpPath = dirPath.resolve(fileName + ".tmp");
+        try (FileOutputStream out = new FileOutputStream(tmpPath.toFile())) {
             out.getChannel().write(buffer);
             out.getFD().sync();
         }
+        Files.move(tmpPath, dirPath.resolve(fileName), StandardCopyOption.ATOMIC_MOVE);
     }
 
     @Override
     public void purge(String fileName) throws IOException {
-        Path path = Paths.get(dirPath, fileName);
+        Path path = dirPath.resolve(fileName);
         Files.delete(path);
-    }
-
-    @Override
-    public void purge() throws IOException {
-        // TODO: dir traversal and delete all checkpoints?
-        throw new UnsupportedOperationException("purge() is not supported");
     }
 
     // @return the head page checkpoint file name
@@ -100,17 +88,18 @@ public class FileCheckpointIO implements CheckpointIO {
         return TAIL_CHECKPOINT + pageNum;
     }
 
-    private Checkpoint read(BufferedChecksumStreamInput crcsi) throws IOException {
-        int version = (int) crcsi.readShort();
+    public static Checkpoint read(ByteBuffer data) throws IOException {
+        int version = (int) data.getShort();
         // TODO - build reader for this version
-        int pageNum = crcsi.readInt();
-        int firstUnackedPageNum = crcsi.readInt();
-        long firstUnackedSeqNum = crcsi.readLong();
-        long minSeqNum = crcsi.readLong();
-        int elementCount = crcsi.readInt();
-
-        int calcCrc32 = (int)crcsi.getChecksum();
-        int readCrc32 = crcsi.readInt();
+        int pageNum = data.getInt();
+        int firstUnackedPageNum = data.getInt();
+        long firstUnackedSeqNum = data.getLong();
+        long minSeqNum = data.getLong();
+        int elementCount = data.getInt();
+        final CRC32 crc32 = new CRC32();
+        crc32.update(data.array(), 0, BUFFER_SIZE - Integer.BYTES);
+        int calcCrc32 = (int) crc32.getValue();
+        int readCrc32 = data.getInt();
         if (readCrc32 != calcCrc32) {
             throw new IOException(String.format("Checkpoint checksum mismatch, expected: %d, actual: %d", calcCrc32, readCrc32));
         }

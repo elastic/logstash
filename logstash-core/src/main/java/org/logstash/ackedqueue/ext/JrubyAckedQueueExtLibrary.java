@@ -19,8 +19,6 @@ import org.logstash.Event;
 import org.logstash.ackedqueue.Batch;
 import org.logstash.ackedqueue.Queue;
 import org.logstash.ackedqueue.SettingsImpl;
-import org.logstash.ackedqueue.io.FileCheckpointIO;
-import org.logstash.ackedqueue.io.MmapPageIO;
 import org.logstash.ext.JrubyEventExtLibrary;
 
 public class JrubyAckedQueueExtLibrary implements Library {
@@ -72,8 +70,6 @@ public class JrubyAckedQueueExtLibrary implements Library {
                     .queueMaxBytes(queueMaxBytes)
                     .checkpointMaxAcks(checkpointMaxAcks)
                     .checkpointMaxWrites(checkpointMaxWrites)
-                    .elementIOFactory(MmapPageIO::new)
-                    .checkpointIOFactory(FileCheckpointIO::new)
                     .elementClass(Event.class)
                     .build()
             );
@@ -102,7 +98,7 @@ public class JrubyAckedQueueExtLibrary implements Library {
 
         @JRubyMethod(name = "current_byte_size")
         public IRubyObject ruby_current_byte_size(ThreadContext context) {
-            return context.runtime.newFixnum(queue.getCurrentByteSize());
+            return context.runtime.newFixnum(queue.getPersistedByteSize());
         }
 
         @JRubyMethod(name = "persisted_size_in_bytes")

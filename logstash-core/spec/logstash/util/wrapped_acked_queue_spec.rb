@@ -30,20 +30,6 @@ describe LogStash::Util::WrappedAckedQueue do
     end
   end
 
-  context "memory" do
-    let(:page_capacity) { 1024 }
-    let(:max_events) { 0 }
-    let(:max_bytes) { 0 }
-    let(:path) { Stud::Temporary.directory }
-    let(:queue) { LogStash::Util::WrappedAckedQueue.create_memory_based(path, page_capacity, max_events, max_bytes) }
-
-    after do
-      queue.close
-    end
-
-    include_examples "queue tests"
-  end
-
   context "persisted" do
     let(:page_capacity) { 1024 }
     let(:max_events) { 0 }
