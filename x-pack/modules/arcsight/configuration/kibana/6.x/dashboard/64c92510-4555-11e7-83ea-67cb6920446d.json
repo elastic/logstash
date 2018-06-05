@@ -6,14 +6,7 @@
   "optionsJSON": "{\"darkTheme\":false}",
   "uiStateJSON": "{\"P-13\":{\"vis\":{\"colors\":{\"Destination Users\":\"#E24D42\",\"Event Count\":\"#64B0C8\"}}},\"P-14\":{\"vis\":{\"legendOpen\":false}},\"P-15\":{\"vis\":{\"legendOpen\":false}},\"P-2\":{\"vis\":{\"defaultColors\":{\"0 - 100\":\"rgb(0,104,55)\"}}},\"P-3\":{\"vis\":{\"colors\":{\"Count\":\"#64B0C8\",\"Destination User Names\":\"#E24D42\",\"Event Types\":\"#EF843C\"},\"legendOpen\":true}},\"P-4\":{\"vis\":{\"defaultColors\":{\"0 - 100\":\"rgb(0,104,55)\"}}},\"P-5\":{\"vis\":{\"defaultColors\":{\"0 - 55k\":\"rgb(255,255,204)\",\"55k - 110k\":\"rgb(255,241,170)\",\"110k - 165k\":\"rgb(254,225,135)\",\"165k - 220k\":\"rgb(254,201,101)\",\"220k - 275k\":\"rgb(254,171,73)\",\"275k - 330k\":\"rgb(253,141,60)\",\"330k - 385k\":\"rgb(252,91,46)\",\"385k - 440k\":\"rgb(237,47,34)\",\"440k - 495k\":\"rgb(212,16,32)\",\"495k - 550k\":\"rgb(176,0,38)\"},\"legendOpen\":false}},\"P-8\":{\"vis\":{\"colors\":{\"/Attempt\":\"#447EBC\",\"/Failure\":\"#E24D42\",\"/Success\":\"#7EB26D\"}}},\"P-9\":{\"vis\":{\"params\":{\"sort\":{\"columnIndex\":null,\"direction\":null}}}}}",
   "version": 1,
-  "timeRestore": true,
-  "timeTo": "now",
-  "timeFrom": "now-24h",
-  "refreshInterval": {
-    "display": "Off",
-    "pause": false,
-    "value": 0
-  },
+  "timeRestore": false,
   "kibanaSavedObjectMeta": {
     "searchSourceJSON": "{\"filter\":[{\"query\":{\"query_string\":{\"analyze_wildcard\":true,\"query\":\"*\"}}}],\"highlightAll\":true,\"version\":true}"
   }

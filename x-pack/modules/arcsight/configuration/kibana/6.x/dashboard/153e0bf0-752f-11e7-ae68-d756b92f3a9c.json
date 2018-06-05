@@ -6,14 +6,7 @@
   "optionsJSON": "{\"darkTheme\":false}",
   "uiStateJSON": "{\"P-11\":{\"vis\":{\"params\":{\"sort\":{\"columnIndex\":null,\"direction\":null}}}},\"P-13\":{\"vis\":{\"params\":{\"sort\":{\"columnIndex\":null,\"direction\":null}}}},\"P-3\":{\"vis\":{\"defaultColors\":{\"0 - 100\":\"rgb(0,104,55)\"}}},\"P-5\":{\"vis\":{\"defaultColors\":{\"0 - 18k\":\"rgb(247,251,255)\",\"18k - 36k\":\"rgb(227,238,249)\",\"36k - 54k\":\"rgb(208,225,242)\",\"54k - 72k\":\"rgb(182,212,233)\",\"72k - 90k\":\"rgb(148,196,223)\",\"90k - 108k\":\"rgb(107,174,214)\",\"108k - 126k\":\"rgb(74,152,201)\",\"126k - 144k\":\"rgb(46,126,188)\",\"144k - 162k\":\"rgb(23,100,171)\",\"162k - 180k\":\"rgb(8,74,145)\"},\"legendOpen\":false}},\"P-16\":{\"mapZoom\":1,\"mapCenter\":[12.211180191503997,0]},\"P-17\":{\"mapZoom\":1,\"mapCenter\":[-0.17578097424708533,0]}}",
   "version": 1,
-  "timeRestore": true,
-  "timeTo": "now",
-  "timeFrom": "now-24h",
-  "refreshInterval": {
-    "display": "Off",
-    "pause": false,
-    "value": 0
-  },
+  "timeRestore": false,
   "kibanaSavedObjectMeta": {
     "searchSourceJSON": "{\"filter\":[{\"query\":{\"query_string\":{\"analyze_wildcard\":true,\"query\":\"*\"}}}],\"highlightAll\":true,\"version\":true}"
   }
