@@ -14,6 +14,6 @@ LogStash::PLUGIN_REGISTRY.add(:universal, "monitoring", LogStash::MonitoringExte
 LogStash::PLUGIN_REGISTRY.add(:universal, "config_management", LogStash::ConfigManagement::Extension)
 LogStash::PLUGIN_REGISTRY.add(:modules, "arcsight",
                               LogStash::Modules::XpackScaffold.new("arcsight",
-                                                                   File.join(File.dirname(__FILE__), "..", "modules", "arcsight", "configuration"),
+                                                                   File.join(File.dirname(__FILE__), "..", "..", "modules", "arcsight", "configuration"),
                                                                    ["basic", "trial", "standard", "gold", "platinum"]
                               ))
