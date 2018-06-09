@@ -11,6 +11,7 @@ describe LogStash::Config::StringEscape do
     "\\r" => "\r",
     "\\t" => "\t",
     "\\\\" => "\\",
+    "\\0" => "\x00",
   }
 
   table.each do |input, expected|
