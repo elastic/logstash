@@ -70,11 +70,22 @@ public final class PluginFactoryExt {
         }
 
         @JRubyMethod(required = 4)
-        public Plugins initialize(final ThreadContext context, final IRubyObject[] args) {
-            lir = (PipelineIR) args[0].toJava(PipelineIR.class);
-            metrics = (PluginFactoryExt.Metrics) args[1];
-            executionContext = (PluginFactoryExt.ExecutionContext) args[2];
-            filterClass = (RubyClass) args[3];
+        public PluginFactoryExt.Plugins initialize(final ThreadContext context,
+            final IRubyObject[] args) {
+            return init(
+                (PipelineIR) args[0].toJava(PipelineIR.class),
+                (PluginFactoryExt.Metrics) args[1], (PluginFactoryExt.ExecutionContext) args[2],
+                (RubyClass) args[3]
+            );
+        }
+
+        public PluginFactoryExt.Plugins init(final PipelineIR lir,
+            final PluginFactoryExt.Metrics metrics,
+            final PluginFactoryExt.ExecutionContext executionContext, final RubyClass filterClass) {
+            this.lir = lir;
+            this.metrics = metrics;
+            this.executionContext = executionContext;
+            this.filterClass = filterClass;
             return this;
         }
 

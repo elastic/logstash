@@ -30,7 +30,7 @@ module LogStash module PipelineAction
       begin
         pipeline_validator =
           if @pipeline_config.settings.get_value("pipeline.java_execution")
-            LogStash::JavaBasePipeline.new(@pipeline_config)
+            LogStash::JavaBasePipeline.new(@pipeline_config, nil, logger, nil)
           else
             LogStash::BasePipeline.new(@pipeline_config)
           end
