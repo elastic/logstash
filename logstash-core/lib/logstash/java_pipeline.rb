@@ -8,53 +8,8 @@ require "logstash/outputs/base"
 require "logstash/instrument/collector"
 require "logstash/compiler"
 
-java_import org.logstash.config.ir.CompiledPipeline
-
-module LogStash; class JavaBasePipeline < AbstractPipeline
-  include LogStash::Util::Loggable
-
-  attr_reader :inputs, :filters, :outputs
-
-  def initialize(pipeline_config, namespaced_metric = nil, agent = nil)
-    @logger = self.logger
-    super pipeline_config, namespaced_metric, @logger
-    @lir_execution = CompiledPipeline.new(
-        lir,
-        LogStash::Plugins::PluginFactory.new(
-            # use NullMetric if called in the BasePipeline context otherwise use the @metric value
-            lir, LogStash::Plugins::PluginMetricFactory.new(pipeline_id, metric),
-            LogStash::Plugins::ExecutionContextFactory.new(agent, self, dlq_writer),
-            JavaFilterDelegator
-        )
-    )
-    if settings.get_value("config.debug") && @logger.debug?
-      @logger.debug("Compiled pipeline code", default_logging_keys(:code => lir.get_graph.to_string))
-    end
-    @inputs = @lir_execution.inputs
-    @filters = @lir_execution.filters
-    @outputs = @lir_execution.outputs
-  end
-
-  def reloadable?
-    configured_as_reloadable? && reloadable_plugins?
-  end
-
-  def reloadable_plugins?
-    non_reloadable_plugins.empty?
-  end
-
-  def non_reloadable_plugins
-    (inputs + filters + outputs).select { |plugin| !plugin.reloadable? }
-  end
-
-  private
-
-  def default_logging_keys(other_keys = {})
-    { :pipeline_id => pipeline_id }.merge(other_keys)
-  end
-end; end
-
 module LogStash; class JavaPipeline < JavaBasePipeline
+  include LogStash::Util::Loggable
   attr_reader \
     :worker_threads,
     :events_consumed,
@@ -66,7 +21,8 @@ module LogStash; class JavaPipeline < JavaBasePipeline
   MAX_INFLIGHT_WARN_THRESHOLD = 10_000
 
   def initialize(pipeline_config, namespaced_metric = nil, agent = nil)
-    super
+    @logger = self.logger
+    super pipeline_config, namespaced_metric, @logger, agent
     @worker_threads = []
 
     @filter_queue_client = queue.read_client
@@ -99,7 +55,7 @@ module LogStash; class JavaPipeline < JavaBasePipeline
   def safe_pipeline_worker_count
     default = settings.get_default("pipeline.workers")
     pipeline_workers = settings.get("pipeline.workers") #override from args "-w 8" or config
-    safe_filters, unsafe_filters = @filters.partition(&:threadsafe?)
+    safe_filters, unsafe_filters = filters.partition(&:threadsafe?)
     plugins = unsafe_filters.collect { |f| f.config_name }
 
     return pipeline_workers if unsafe_filters.empty?
@@ -121,7 +77,7 @@ module LogStash; class JavaPipeline < JavaBasePipeline
   end
 
   def filters?
-    @filters.any?
+    filters.any?
   end
 
   def start
@@ -273,7 +229,7 @@ module LogStash; class JavaPipeline < JavaBasePipeline
       pipeline_workers.times do |t|
         thread = Thread.new do
           org.logstash.execution.WorkerLoop.new(
-              @lir_execution, @filter_queue_client, @events_filtered, @events_consumed,
+              lir_execution, @filter_queue_client, @events_filtered, @events_consumed,
               @flushRequested, @flushing, @shutdownRequested, @drain_queue).run
         end
         thread.name="[#{pipeline_id}]>worker#{t}"
@@ -302,20 +258,20 @@ module LogStash; class JavaPipeline < JavaBasePipeline
 
   def start_inputs
     moreinputs = []
-    @inputs.each do |input|
+    inputs.each do |input|
       if input.threadable && input.threads > 1
         (input.threads - 1).times do |i|
           moreinputs << input.clone
         end
       end
     end
-    @inputs += moreinputs
+    moreinputs.each {|i| inputs << i}
 
     # first make sure we can register all input plugins
-    register_plugins(@inputs)
+    register_plugins(inputs)
 
     # then after all input plugins are successfully registered, start them
-    @inputs.each { |input| start_input(input) }
+    inputs.each { |input| start_input(input) }
   end
 
   def start_input(plugin)
@@ -380,7 +336,7 @@ module LogStash; class JavaPipeline < JavaBasePipeline
 
   def stop_inputs
     @logger.debug("Closing inputs", default_logging_keys)
-    @inputs.each(&:do_stop)
+    inputs.each(&:do_stop)
     @logger.debug("Closed inputs", default_logging_keys)
   end
 
@@ -395,8 +351,8 @@ module LogStash; class JavaPipeline < JavaBasePipeline
       t.join
     end
 
-    @filters.each(&:do_close)
-    @outputs.each(&:do_close)
+    filters.each(&:do_close)
+    outputs.each(&:do_close)
   end
 
   # for backward compatibility in devutils for the rspec helpers, this method is not used
@@ -473,13 +429,13 @@ module LogStash; class JavaPipeline < JavaBasePipeline
 
   def maybe_setup_out_plugins
     if @outputs_registered.make_true
-      register_plugins(@outputs)
-      register_plugins(@filters)
+      register_plugins(outputs)
+      register_plugins(filters)
     end
   end
 
   def default_logging_keys(other_keys = {})
-    keys = super
+    keys = {:pipeline_id => pipeline_id}.merge other_keys
     keys[:thread] ||= thread.inspect if thread
     keys
   end
