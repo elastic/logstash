@@ -36,7 +36,7 @@ import org.logstash.instrument.metrics.AbstractNamespacedMetricExt;
 import org.logstash.instrument.metrics.NullMetricExt;
 
 @JRubyClass(name = "AbstractPipeline")
-public final class AbstractPipelineExt extends RubyBasicObject {
+public class AbstractPipelineExt extends RubyBasicObject {
 
     private static final Logger LOGGER = LogManager.getLogger(AbstractPipelineExt.class);
 
@@ -80,6 +80,8 @@ public final class AbstractPipelineExt extends RubyBasicObject {
     private static final RubySymbol DLQ_SIZE_KEY =
         RubyUtil.RUBY.newSymbol("queue_size_in_bytes");
 
+    protected PipelineIR lir;
+
     private final RubyString ephemeralId = RubyUtil.RUBY.newString(UUID.randomUUID().toString());
 
     private AbstractNamespacedMetricExt dlqMetric;
@@ -96,8 +98,6 @@ public final class AbstractPipelineExt extends RubyBasicObject {
 
     private AbstractMetricExt metric;
 
-    private PipelineIR lir;
-
     private IRubyObject dlqWriter;
 
     private PipelineReporterExt reporter;
@@ -111,7 +111,7 @@ public final class AbstractPipelineExt extends RubyBasicObject {
     }
 
     @JRubyMethod
-    public AbstractPipelineExt initialize(final ThreadContext context,
+    public final AbstractPipelineExt initialize(final ThreadContext context,
         final IRubyObject pipelineConfig, final IRubyObject namespacedMetric,
         final IRubyObject rubyLogger)
         throws NoSuchAlgorithmException, IncompleteSourceWithMetadataException {
@@ -161,47 +161,47 @@ public final class AbstractPipelineExt extends RubyBasicObject {
     }
 
     @JRubyMethod(name = "config_str")
-    public RubyString configStr() {
+    public final RubyString configStr() {
         return configString;
     }
 
     @JRubyMethod(name = "config_hash")
-    public RubyString configHash() {
+    public final RubyString configHash() {
         return configHash;
     }
 
     @JRubyMethod(name = "ephemeral_id")
-    public RubyString ephemeralId() {
+    public final RubyString ephemeralId() {
         return ephemeralId;
     }
 
     @JRubyMethod
-    public IRubyObject settings() {
+    public final IRubyObject settings() {
         return settings;
     }
 
     @JRubyMethod(name = "pipeline_config")
-    public IRubyObject pipelineConfig() {
+    public final IRubyObject pipelineConfig() {
         return pipelineSettings;
     }
 
     @JRubyMethod(name = "pipeline_id")
-    public IRubyObject pipelineId() {
+    public final IRubyObject pipelineId() {
         return pipelineId;
     }
 
     @JRubyMethod
-    public AbstractMetricExt metric() {
+    public final AbstractMetricExt metric() {
         return metric;
     }
 
     @JRubyMethod
-    public IRubyObject lir(final ThreadContext context) {
+    public final IRubyObject lir(final ThreadContext context) {
         return JavaUtil.convertJavaToUsableRubyObject(context.runtime, lir);
     }
 
     @JRubyMethod(name = "dlq_writer")
-    public IRubyObject dlqWriter(final ThreadContext context) {
+    public final IRubyObject dlqWriter(final ThreadContext context) {
         if (dlqWriter == null) {
             if (dlqEnabled(context).isTrue()) {
                 dlqWriter = JavaUtil.convertJavaToUsableRubyObject(
@@ -221,12 +221,12 @@ public final class AbstractPipelineExt extends RubyBasicObject {
     }
 
     @JRubyMethod(name = "dlq_enabled?")
-    public IRubyObject dlqEnabled(final ThreadContext context) {
+    public final IRubyObject dlqEnabled(final ThreadContext context) {
         return getSetting(context, "dead_letter_queue.enable");
     }
 
     @JRubyMethod(name = "close_dlq_writer")
-    public IRubyObject closeDlqWriter(final ThreadContext context) {
+    public final IRubyObject closeDlqWriter(final ThreadContext context) {
         dlqWriter.callMethod(context, "close");
         if (dlqEnabled(context).isTrue()) {
             DeadLetterQueueFactory.release(pipelineId.asJavaString());
@@ -235,12 +235,12 @@ public final class AbstractPipelineExt extends RubyBasicObject {
     }
 
     @JRubyMethod
-    public PipelineReporterExt reporter() {
+    public final PipelineReporterExt reporter() {
         return reporter;
     }
 
     @JRubyMethod(name = "collect_dlq_stats")
-    public IRubyObject collectDlqStats(final ThreadContext context) {
+    public final IRubyObject collectDlqStats(final ThreadContext context) {
         if (dlqEnabled(context).isTrue()) {
             getDlqMetric(context).gauge(
                 context, DLQ_SIZE_KEY,
@@ -251,17 +251,17 @@ public final class AbstractPipelineExt extends RubyBasicObject {
     }
 
     @JRubyMethod(name = "system?")
-    public IRubyObject isSystem(final ThreadContext context) {
+    public final IRubyObject isSystem(final ThreadContext context) {
         return getSetting(context, "pipeline.system");
     }
 
     @JRubyMethod(name = "configured_as_reloadable?")
-    public IRubyObject isConfiguredReloadable(final ThreadContext context) {
+    public final IRubyObject isConfiguredReloadable(final ThreadContext context) {
         return getSetting(context, "pipeline.reloadable");
     }
 
     @JRubyMethod(name = "collect_stats")
-    public IRubyObject collectStats(final ThreadContext context) throws IOException {
+    public final IRubyObject collectStats(final ThreadContext context) throws IOException {
         final AbstractNamespacedMetricExt pipelineMetric = metric.namespace(
             context,
             RubyArray.newArray(
@@ -302,16 +302,16 @@ public final class AbstractPipelineExt extends RubyBasicObject {
     }
 
     @JRubyMethod(name = "input_queue_client")
-    public JRubyAbstractQueueWriteClientExt inputQueueClient() {
+    public final JRubyAbstractQueueWriteClientExt inputQueueClient() {
         return inputQueueClient;
     }
 
     @JRubyMethod
-    public AbstractWrappedQueueExt queue() {
+    public final AbstractWrappedQueueExt queue() {
         return queue;
     }
 
-    private IRubyObject getSetting(final ThreadContext context, final String name) {
+    protected final IRubyObject getSetting(final ThreadContext context, final String name) {
         return settings.callMethod(context, "get_value", context.runtime.newString(name));
     }
 
