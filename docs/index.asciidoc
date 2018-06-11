@@ -18,7 +18,7 @@
 //////////
 release-state can be: released | prerelease | unreleased
 //////////
-:release-state:  unreleased
+:release-state:  released
 :versioned_docs: false
 
 :jdk:                   1.8.0
