@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-5-6-9,Logstash 5.6.10>>
 * <<logstash-5-6-9,Logstash 5.6.9>>
 * <<logstash-5-6-8,Logstash 5.6.8>>
 * <<logstash-5-6-7,Logstash 5.6.7>>
@@ -13,6 +14,57 @@ This section summarizes the changes in the following releases:
 * <<logstash-5-6-2,Logstash 5.6.2>>
 * <<logstash-5-6-1,Logstash 5.6.1>>
 * <<logstash-5-6-0,Logstash 5.6.0>>
+
+[[logstash-5-6-10]]
+=== Logstash 5.6.10 Release Notes
+* Backport new PQ implementation
+* Fix Cloner to properly clone ruby strings
+
+*Netflow Codec*
+
+* Fixes exception when receiving Netflow 9 from H3C devices
+* Added support for Netflow 9 from H3C devices
+* Fixes incorrect definitions of IE 231 and IE 232
+* Fixes exceptions due to concurrent access of IPFIX templates, see issue #134
+* Added support for Netflow 9 reduced-size encoding support
+* Added support for Barracuda IPFIX Extended Uniflow
+* Added support for IPFIX from Procera/NetIntact/Sandvine 15.1
+
+*Dns Filter*
+
+* Log timeouts as warn instead of error #43
+* Allow concurrent queries when cache enabled #42
+
+*Kv Filter*
+
+* bugfix: improves trim_key and trim_value to trim any sequence of matching characters from the beginning and ends of the corresponding keys and values; a previous implementation limitited trim to a single character from each end, which was surprising.
+* bugfix: fixes issue where we can fail to correctly break up a sequence that includes a partially-quoted value followed by another fully-quoted value by slightly reducing greediness of quoted-value captures.
+
+*Mutate Filter*
+
+* Fix: when converting to float and float_eu, explicitly support same range of inputs as their integer counterparts; eliminates a regression introduced in 3.3.1 in which support for non-string inputs was inadvertently removed.
+
+*S3 Input*
+
+* #136 Avoid plugin crashes when encountering 'bad' files in S3 buckets
+* Log entry when bucket is empty #150
+* Symbolize hash keys for additional_settings hash #148
+
+*UDP Input*
+
+* Work around jruby/jruby#5148 by cloning messages on jruby 9k, therefore resizing the underlying byte buffer
+* Fix missing require for the ipaddr library.
+
+*S3 Output*
+
+* Symbolize hash keys for additional_settings hash #179
+* Docs: Set the default_codec doc attribute.
+
+*Elasticsearch Output*
+
+* Avoid infinite loop by checking for zero body size #737
+* Add support for join based parent indexing (backport of #632) #686
+
 
 [[logstash-5-6-9]]
 === Logstash 5.6.9 Release Notes
@@ -28,7 +80,7 @@ This section summarizes the changes in the following releases:
 *Netflow Codec*
 
 * Workaround for breaking change in Netflow-Input-UDP > 3.2.0 https://github.com/logstash-plugins/logstash-codec-netflow/issues/122[#122]
-* Renamed some unknown VMware VDS fields 
+* Renamed some unknown VMware VDS fields
 * Further improved decoding performance of ASA ACL ids
 * Further improved decoding performance of MAC addresses
 * Improved decoding performance of IPv4 addresses
@@ -81,11 +133,11 @@ This section summarizes the changes in the following releases:
 *Jdbc Input*
 
 * Clarify use of use_column_value. Make last_run_metadata_path reference in record_last_run entry clickable. https://github.com/logstash-plugins/logstash-input-jdbc/issues/273[#273]
-* Load the driver with the system class loader. Fixes issue loading some JDBC drivers in Logstash 6.2+ https://github.com/logstash-plugins/logstash-input-jdbc/issues/263[#263] 
+* Load the driver with the system class loader. Fixes issue loading some JDBC drivers in Logstash 6.2+ https://github.com/logstash-plugins/logstash-input-jdbc/issues/263[#263]
 * Fix regression with 4.3.5 that can result in NULL :sql_last_value depending on timestamp format https://github.com/logstash-plugins/logstash-input-jdbc/issues/274[#274]
 * Fix long standing bug where setting jdbc_default_timezone loses milliseconds. Force all usage of sql_last_value to be typed according to the settings. https://github.com/logstash-plugins/logstash-input-jdbc/issues/140[#140]
 * Fix memory leak https://github.com/logstash-plugins/logstash-input-jdbc/issues/261[#261]
-* Open and close connection for each query https://github.com/logstash-plugins/logstash-input-jdbc/issues/147[#147] 
+* Open and close connection for each query https://github.com/logstash-plugins/logstash-input-jdbc/issues/147[#147]
 
 *Redis Input*
 
@@ -198,12 +250,12 @@ There are no user-facing changes in this release.
 [[logstash-5-6-0]]
 === Logstash 5.6.0 Release Notes
 
-* Introduced modules for Netflow and ArcSight data. Modules contain pre-packaged Logstash configuration, Kibana dashboards 
-  and other metadata files to ease the set up of the Elastic stack for certain data sources. The goal of these modules are 
+* Introduced modules for Netflow and ArcSight data. Modules contain pre-packaged Logstash configuration, Kibana dashboards
+  and other metadata files to ease the set up of the Elastic stack for certain data sources. The goal of these modules are
   to provide an end-to-end, 5-min getting started experience for a user exploring a data source.
-* Added a new setting called `config.support_escapes`. This setting enables the use of escape characters such as `\n` in 
+* Added a new setting called `config.support_escapes`. This setting enables the use of escape characters such as `\n` in
   the Logstash configuration.
-* Improved the performance of metrics collection and reporting infrastructure. Overall, in this release, there is lower load 
+* Improved the performance of metrics collection and reporting infrastructure. Overall, in this release, there is lower load
   average, less GC and higher throughput when running Logstash.
 * When processing events from the DLQ, there are added checks now to stop them from being written to the DLQ again.
 * Fixed an issue which would crash Logstash when accessing DLQ events using a timestamp range.
@@ -211,7 +263,7 @@ There are no user-facing changes in this release.
 [float]
 ==== Filter Plugins
 
-*`GeoIP`*: The free GeoIPLite2-ASN database from MaxMind is now bundled in Logstash to be able to look up ASN data out 
+*`GeoIP`*: The free GeoIPLite2-ASN database from MaxMind is now bundled in Logstash to be able to look up ASN data out
   of the box.
 
 
