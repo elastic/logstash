@@ -1,3 +1,5 @@
+import java.nio.file.Files
+import java.nio.file.Paths
 import org.yaml.snakeyaml.Yaml
 
 // fetch version from Logstash's master versions.yml file
@@ -53,6 +55,7 @@ task cleanGemjar {
 
 clean.dependsOn(cleanGemjar)
 jar.finalizedBy(copyGemjar)
+assemble.dependsOn(copyGemjar)
 
 configurations.create('sources')
 configurations.create('javadoc')
@@ -111,6 +114,9 @@ idea {
     }
 }
 
+def customJRubyDir = project.hasProperty("custom.jruby.path") ? project.property("custom.jruby.path") : ""
+def customJRubyVersion = customJRubyDir == "" ? "" : Files.readAllLines(Paths.get(customJRubyDir, "VERSION")).get(0).trim()
+
 dependencies {
     compile 'org.apache.logging.log4j:log4j-api:2.9.1'
     compile 'org.apache.logging.log4j:log4j-core:2.9.1'
@@ -122,7 +128,11 @@ dependencies {
     compile "com.fasterxml.jackson.core:jackson-annotations:${jacksonVersion}"
     compile 'org.codehaus.janino:janino:3.0.8'
     compile "com.fasterxml.jackson.dataformat:jackson-dataformat-cbor:${jacksonVersion}"
-    compile "org.jruby:jruby-complete:${jrubyVersion}"
+    if (customJRubyDir == "") {
+        compile "org.jruby:jruby-complete:${jrubyVersion}"
+    } else {
+        compile files(customJRubyDir + "/maven/jruby-complete/target/jruby-complete-${customJRubyVersion}.jar")
+    }
     compile group: 'com.google.guava', name: 'guava', version: '22.0'
     // Do not upgrade this, later versions require GPL licensed code in javac-shaded that is
     // Apache2 incompatible
