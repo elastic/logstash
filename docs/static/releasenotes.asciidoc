@@ -37,7 +37,7 @@ This section summarizes the changes in the following releases:
 
 *Kv Filter*
 
-* bugfix: improves trim_key and trim_value to trim any sequence of matching characters from the beginning and ends of the corresponding keys and values; a previous implementation limitited trim to a single character from each end, which was surprising.
+* bugfix: improves trim_key and trim_value to trim any sequence of matching characters from the beginning and ends of the corresponding keys and values; a previous implementation limited trim to a single character from each end, which was surprising.
 * bugfix: fixes issue where we can fail to correctly break up a sequence that includes a partially-quoted value followed by another fully-quoted value by slightly reducing greediness of quoted-value captures.
 
 *Mutate Filter*
