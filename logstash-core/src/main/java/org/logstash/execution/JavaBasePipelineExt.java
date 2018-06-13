@@ -22,7 +22,7 @@ import org.logstash.ext.JRubyWrappedWriteClientExt;
 import org.logstash.plugins.PluginFactoryExt;
 
 @JRubyClass(name = "JavaBasePipeline")
-public final class JavaBasePipelineExt extends AbstractPipelineExt implements QueueWriterProvider {
+public final class JavaBasePipelineExt extends AbstractPipelineExt {
 
     private static final Logger LOGGER = LogManager.getLogger(JavaBasePipelineExt.class);
 
@@ -110,7 +110,6 @@ public final class JavaBasePipelineExt extends AbstractPipelineExt implements Qu
         return result;
     }
 
-    @Override
     public QueueWriter getQueueWriter(final String inputName) {
         return new JRubyWrappedWriteClientExt(RubyUtil.RUBY, RubyUtil.WRAPPED_WRITE_CLIENT_CLASS)
             .initialize(

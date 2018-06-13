@@ -15,7 +15,7 @@ public class InputsController {
         this.inputs = inputs;
     }
 
-    public void startInputs(final QueueWriterProvider provider) {
+    public void startInputs(final JavaBasePipelineExt provider) {
         int inputCounter = 0;
         for (Input input : inputs) {
             String pluginName = input.getClass().getName(); // TODO: get annotated plugin name
