@@ -9,7 +9,6 @@ import org.jruby.RubyClass;
 import org.jruby.RubyHash;
 import org.jruby.RubyObject;
 import org.jruby.RubyString;
-import org.jruby.RubySymbol;
 import org.jruby.anno.JRubyClass;
 import org.jruby.anno.JRubyMethod;
 import org.jruby.runtime.ThreadContext;
@@ -47,17 +46,14 @@ public final class FilterDelegatorExt extends RubyObject {
         this.filter = filter;
         this.filterClass = filter.getSingletonClass().getRealClass();
         final IRubyObject namespacedMetric = filter.callMethod(context, "metric");
-        metricEvents = namespacedMetric.callMethod(context, "namespace", RubyUtil.RUBY.newSymbol("events"));
+        metricEvents = namespacedMetric.callMethod(context, "namespace", MetricKeys.EVENTS_KEY);
         eventMetricOut = LongCounter.fromRubyBase(metricEvents, MetricKeys.OUT_KEY);
         eventMetricIn = LongCounter.fromRubyBase(metricEvents, MetricKeys.IN_KEY);
         eventMetricTime = LongCounter.fromRubyBase(
             metricEvents, MetricKeys.DURATION_IN_MILLIS_KEY
         );
         namespacedMetric.callMethod(
-            context, "gauge",
-            new IRubyObject[]{
-                RubySymbol.newSymbol(context.runtime, "name"), configName(context)
-            }
+            context, "gauge", new IRubyObject[]{MetricKeys.NAME_KEY, configName(context)}
         );
         flushes = filter.respondsTo("flush");
         return this;
