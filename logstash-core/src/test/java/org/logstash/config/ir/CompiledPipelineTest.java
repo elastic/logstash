@@ -7,22 +7,20 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedTransferQueue;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
-import org.jruby.RubyArray;
 import org.jruby.RubyInteger;
 import org.jruby.RubyString;
-import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.logstash.Event;
 import org.logstash.RubyUtil;
+import org.logstash.config.ir.compiler.AbstractOutputDelegatorExt;
 import org.logstash.config.ir.compiler.FilterDelegatorExt;
-import org.logstash.config.ir.compiler.OutputDelegatorExt;
-import org.logstash.config.ir.compiler.OutputStrategyExt;
 import org.logstash.config.ir.compiler.RubyIntegration;
 import org.logstash.ext.JrubyEventExtLibrary;
 
@@ -181,15 +179,10 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
         MatcherAssert.assertThat(testEvent.getEvent().getField("foo"), CoreMatchers.nullValue());
     }
 
-    private Supplier<OutputStrategyExt.AbstractOutputStrategyExt> mockOutputSupplier() {
-        return () -> new OutputStrategyExt.SimpleAbstractOutputStrategyExt(RubyUtil.RUBY, RubyUtil.RUBY.getObject()) {
-            @Override
-            @SuppressWarnings("unchecked")
-            protected IRubyObject output(final ThreadContext context, final IRubyObject events) {
-                ((RubyArray) events).forEach(event -> EVENT_SINKS.get(runId).add((JrubyEventExtLibrary.RubyEvent) event));
-                return this;
-            }
-        };
+    private Supplier<Consumer<Collection<JrubyEventExtLibrary.RubyEvent>>> mockOutputSupplier() {
+        return () -> events -> events.forEach(
+            event -> EVENT_SINKS.get(runId).add((JrubyEventExtLibrary.RubyEvent) event)
+        );
     }
 
     /**
@@ -201,11 +194,12 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
 
         private final Map<String, Supplier<IRubyObject>> filters;
 
-        private final Map<String, Supplier<OutputStrategyExt.AbstractOutputStrategyExt>> outputs;
+        private final Map<String, Supplier<Consumer<Collection<JrubyEventExtLibrary.RubyEvent>>>> outputs;
 
         MockPluginFactory(final Map<String, Supplier<IRubyObject>> inputs,
             final Map<String, Supplier<IRubyObject>> filters,
-            final Map<String, Supplier<OutputStrategyExt.AbstractOutputStrategyExt>> outputs) {
+            final Map<String, Supplier<Consumer<Collection<JrubyEventExtLibrary.RubyEvent>>>> outputs
+        ) {
             this.inputs = inputs;
             this.filters = filters;
             this.outputs = outputs;
@@ -218,18 +212,16 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
         }
 
         @Override
-        public OutputDelegatorExt buildOutput(final RubyString name, final RubyInteger line,
+        public AbstractOutputDelegatorExt buildOutput(final RubyString name, final RubyInteger line,
             final RubyInteger column, final IRubyObject args) {
-            return new OutputDelegatorExt(
-                RubyUtil.RUBY, RubyUtil.OUTPUT_DELEGATOR_CLASS)
-                .initForTesting(setupPlugin(name, outputs));
+            return PipelineTestUtil.buildOutput(setupPlugin(name, outputs));
         }
 
         @Override
         public FilterDelegatorExt buildFilter(final RubyString name, final RubyInteger line,
             final RubyInteger column, final IRubyObject args) {
             return new FilterDelegatorExt(
-                RubyUtil.RUBY, RubyUtil.OUTPUT_DELEGATOR_CLASS)
+                RubyUtil.RUBY, RubyUtil.RUBY_OUTPUT_DELEGATOR_CLASS)
                 .initForTesting(setupPlugin(name, filters));
         }
 

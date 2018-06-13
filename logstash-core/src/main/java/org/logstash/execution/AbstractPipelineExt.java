@@ -33,6 +33,7 @@ import org.logstash.config.ir.PipelineIR;
 import org.logstash.ext.JRubyAbstractQueueWriteClientExt;
 import org.logstash.instrument.metrics.AbstractMetricExt;
 import org.logstash.instrument.metrics.AbstractNamespacedMetricExt;
+import org.logstash.instrument.metrics.MetricKeys;
 import org.logstash.instrument.metrics.NullMetricExt;
 
 @JRubyClass(name = "AbstractPipeline")
@@ -68,8 +69,6 @@ public class AbstractPipelineExt extends RubyBasicObject {
     private static final RubySymbol STATS_KEY = RubyUtil.RUBY.newSymbol("stats");
 
     private static final RubySymbol PIPELINES_KEY = RubyUtil.RUBY.newSymbol("pipelines");
-
-    private static final RubySymbol EVENTS_KEY = RubyUtil.RUBY.newSymbol("events");
 
     private static final RubySymbol TYPE_KEY = RubyUtil.RUBY.newSymbol("type");
 
@@ -296,7 +295,7 @@ public class AbstractPipelineExt extends RubyBasicObject {
             );
             dataMetrics.gauge(context, STORAGE_TYPE, context.runtime.newString(fileStore.type()));
             dataMetrics.gauge(context, PATH, dirPath);
-            pipelineMetric.gauge(context, EVENTS_KEY, inner.ruby_unread_count(context));
+            pipelineMetric.gauge(context, MetricKeys.EVENTS_KEY, inner.ruby_unread_count(context));
         }
         return context.nil;
     }
