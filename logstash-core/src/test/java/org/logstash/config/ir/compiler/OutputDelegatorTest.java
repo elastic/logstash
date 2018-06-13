@@ -18,10 +18,9 @@ import org.logstash.instrument.metrics.NamespacedMetricExt;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
 import static org.logstash.RubyUtil.EXECUTION_CONTEXT_CLASS;
 import static org.logstash.RubyUtil.NAMESPACED_METRIC_CLASS;
-import static org.logstash.RubyUtil.OUTPUT_DELEGATOR_CLASS;
+import static org.logstash.RubyUtil.RUBY_OUTPUT_DELEGATOR_CLASS;
 import static org.logstash.RubyUtil.RUBY;
 
 public class OutputDelegatorTest extends RubyEnvTestCase {
@@ -77,23 +76,15 @@ public class OutputDelegatorTest extends RubyEnvTestCase {
     @Test
     public void multiReceivePassesBatch() {
         OutputDelegatorExt outputDelegator = constructOutputDelegator();
-        try {
-            outputDelegator.multiReceive(RUBY.getCurrentContext(), events);
-            assertEquals(events, fakeOutClass.getMultiReceiveArgs());
-            assertEquals(EVENT_COUNT, ((RubyArray) fakeOutClass.getMultiReceiveArgs()).size());
-        } catch (InterruptedException e) {
-            fail("Multireceive error: " + e);
-        }
+        outputDelegator.multiReceive(events);
+        assertEquals(events, fakeOutClass.getMultiReceiveArgs());
+        assertEquals(EVENT_COUNT, ((RubyArray) fakeOutClass.getMultiReceiveArgs()).size());
     }
 
     @Test
     public void multiReceiveIncrementsEventCount() {
         OutputDelegatorExt outputDelegator = constructOutputDelegator();
-        try {
-            outputDelegator.multiReceive(RUBY.getCurrentContext(), events);
-        } catch (InterruptedException e) {
-            fail("Multireceive error: " + e);
-        }
+        outputDelegator.multiReceive(events);
 
         assertEquals(EVENT_COUNT, getMetricLongValue("in"));
         assertEquals(EVENT_COUNT, getMetricLongValue("out"));
@@ -106,11 +97,7 @@ public class OutputDelegatorTest extends RubyEnvTestCase {
         try {
             fakeOutClass.setMultiReceiveDelay(delay);
             OutputDelegatorExt outputDelegator = constructOutputDelegator();
-            try {
-                outputDelegator.multiReceive(RUBY.getCurrentContext(), events);
-            } catch (InterruptedException e) {
-                fail("Multireceive error: " + e);
-            }
+            outputDelegator.multiReceive(events);
             millis = getMetricLongValue("duration_in_millis");
         } finally {
             fakeOutClass.setMultiReceiveDelay(0);
@@ -159,11 +146,11 @@ public class OutputDelegatorTest extends RubyEnvTestCase {
             assertEquals(pair.symbol, outStrategy);
 
             // test that strategy classes are correctly instantiated
-            IRubyObject strategyClass = outputDelegator.strategy(RUBY.getCurrentContext());
+            IRubyObject strategyClass = outputDelegator.strategy();
             assertThat(strategyClass).isInstanceOf(pair.klazz);
 
             // test that metrics are properly set on the instance
-            assertEquals(outputDelegator.namespacedMetric(RUBY.getCurrentContext()), fakeOutClass.getMetricArgs());
+            assertEquals(outputDelegator.namespacedMetric(), fakeOutClass.getMetricArgs());
         }
     }
 
@@ -185,12 +172,8 @@ public class OutputDelegatorTest extends RubyEnvTestCase {
             outputDelegator.doClose(RUBY.getCurrentContext());
             assertEquals(1, fakeOutClass.getCloseCallCount());
 
-            try {
-                outputDelegator.multiReceive(RUBY.getCurrentContext(), RUBY.newArray(0));
-                assertEquals(1, fakeOutClass.getMultiReceiveCallCount());
-            } catch (InterruptedException e) {
-                fail("multireceive error: " + e);
-            }
+            outputDelegator.multiReceive(RUBY.newArray(0));
+            assertEquals(1, fakeOutClass.getMultiReceiveCallCount());
         }
 
     }
@@ -201,14 +184,13 @@ public class OutputDelegatorTest extends RubyEnvTestCase {
     }
 
     private OutputDelegatorExt constructOutputDelegator() {
-        OutputDelegatorExt outputDelegator = (OutputDelegatorExt)
-                new OutputDelegatorExt(RUBY, OUTPUT_DELEGATOR_CLASS).init(RUBY.getCurrentContext(), new IRubyObject[]{
-                        fakeOutClass,
-                        metric,
-                        executionContext,
-                        OutputStrategyExt.OutputStrategyRegistryExt.instance(RUBY.getCurrentContext(), null),
-                        pluginArgs
-                });
+        OutputDelegatorExt outputDelegator = new OutputDelegatorExt(RUBY, RUBY_OUTPUT_DELEGATOR_CLASS).initialize(RUBY.getCurrentContext(), new IRubyObject[]{
+                fakeOutClass,
+                metric,
+                executionContext,
+                OutputStrategyExt.OutputStrategyRegistryExt.instance(RUBY.getCurrentContext(), null),
+                pluginArgs
+        });
         return outputDelegator;
     }
 

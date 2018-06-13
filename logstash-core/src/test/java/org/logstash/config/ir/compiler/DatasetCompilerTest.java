@@ -2,12 +2,11 @@ package org.logstash.config.ir.compiler;
 
 import java.util.Collections;
 import org.jruby.RubyArray;
-import org.jruby.runtime.ThreadContext;
-import org.jruby.runtime.builtin.IRubyObject;
 import org.junit.Test;
 import org.logstash.Event;
 import org.logstash.FieldReference;
 import org.logstash.RubyUtil;
+import org.logstash.config.ir.PipelineTestUtil;
 import org.logstash.ext.JrubyEventExtLibrary;
 
 import static org.hamcrest.CoreMatchers.is;
@@ -24,16 +23,7 @@ public final class DatasetCompilerTest {
         assertThat(
             DatasetCompiler.outputDataset(
                 Collections.emptyList(),
-                new OutputDelegatorExt(RubyUtil.RUBY, RubyUtil.OUTPUT_DELEGATOR_CLASS)
-                    .initForTesting(
-                        new OutputStrategyExt.SimpleAbstractOutputStrategyExt(
-                            RubyUtil.RUBY, RubyUtil.RUBY.getObject()
-                        ) {
-                            @Override
-                            protected IRubyObject output(final ThreadContext context, final IRubyObject events) {
-                                return this;
-                            }
-                        }),
+                PipelineTestUtil.buildOutput(events -> {}),
                 true
             ).instantiate().compute(RubyUtil.RUBY.newArray(), false, false),
             nullValue()

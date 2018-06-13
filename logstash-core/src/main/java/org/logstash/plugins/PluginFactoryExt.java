@@ -21,6 +21,7 @@ import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.RubyUtil;
 import org.logstash.config.ir.PipelineIR;
+import org.logstash.config.ir.compiler.AbstractOutputDelegatorExt;
 import org.logstash.config.ir.compiler.FilterDelegatorExt;
 import org.logstash.config.ir.compiler.OutputDelegatorExt;
 import org.logstash.config.ir.compiler.OutputStrategyExt;
@@ -110,7 +111,7 @@ public final class PluginFactoryExt {
 
         @SuppressWarnings("unchecked")
         @Override
-        public OutputDelegatorExt buildOutput(final RubyString name, final RubyInteger line,
+        public AbstractOutputDelegatorExt buildOutput(final RubyString name, final RubyInteger line,
             final RubyInteger column, final IRubyObject args) {
             return (OutputDelegatorExt) plugin(
                 RubyUtil.RUBY.getCurrentContext(), PluginLookup.PluginType.OUTPUT,
@@ -120,7 +121,7 @@ public final class PluginFactoryExt {
         }
 
         @JRubyMethod(required = 4)
-        public OutputDelegatorExt buildOutput(final ThreadContext context,
+        public AbstractOutputDelegatorExt buildOutput(final ThreadContext context,
             final IRubyObject[] args) {
             return buildOutput(
                 (RubyString) args[0], args[1].convertToInteger(), args[2].convertToInteger(), args[3]
@@ -214,7 +215,7 @@ public final class PluginFactoryExt {
                 final RubyHash rubyArgs = RubyHash.newHash(context.runtime);
                 rubyArgs.putAll(newArgs);
                 if (type == PluginLookup.PluginType.OUTPUT) {
-                    return new OutputDelegatorExt(context.runtime, RubyUtil.OUTPUT_DELEGATOR_CLASS).init(
+                    return new OutputDelegatorExt(context.runtime, RubyUtil.RUBY_OUTPUT_DELEGATOR_CLASS).initialize(
                         context,
                         new IRubyObject[]{
                             klass, typeScopedMetric, executionCntx,
