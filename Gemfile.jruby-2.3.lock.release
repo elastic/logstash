@@ -161,7 +161,7 @@ GEM
       jls-grok (~> 0.11.1)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       logstash-patterns-core
-    logstash-codec-netflow (4.0.1)
+    logstash-codec-netflow (3.14.1)
       bindata (>= 1.5.0)
       logstash-core-plugin-api (~> 2.0)
     logstash-codec-plain (3.0.6)
@@ -627,7 +627,7 @@ DEPENDENCIES
   logstash-codec-line
   logstash-codec-msgpack
   logstash-codec-multiline
-  logstash-codec-netflow
+  logstash-codec-netflow (>= 3.14.1, < 4.0.0)
   logstash-codec-plain
   logstash-codec-rubydebug
   logstash-core!
