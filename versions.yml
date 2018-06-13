@@ -1,6 +1,6 @@
 ---
-logstash: 6.3.0
-logstash-core: 6.3.0
+logstash: 6.3.1
+logstash-core: 6.3.1
 logstash-core-plugin-api: 2.1.16
 
 # jruby must reference a *released* version of jruby which can be downloaded from the official download url
