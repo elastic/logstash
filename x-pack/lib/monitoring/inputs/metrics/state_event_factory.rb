@@ -6,18 +6,18 @@ module LogStash; module Inputs; class Metrics;
   class StateEventFactory
     require "monitoring/inputs/metrics/state_event/lir_serializer"
     def initialize(pipeline)
-      raise ArgumentError, "No pipeline passed in!" unless pipeline.is_a?(LogStash::Pipeline) || pipeline.is_a?(LogStash::JavaBasePipeline)
+      raise ArgumentError, "No pipeline passed in!" unless pipeline.is_a?(LogStash::Pipeline) || pipeline.is_a?(LogStash::JavaPipeline)
       @event = LogStash::Event.new
-      
+
       @event.set("[@metadata]", {
         "document_type" => "logstash_state",
         "timestamp" => Time.now
       })
-      
+
       @event.set("[pipeline]", pipeline_data(pipeline))
-      
+
       @event.remove("@timestamp")
-      @event.remove("@version")      
+      @event.remove("@version")
 
       @event
     end

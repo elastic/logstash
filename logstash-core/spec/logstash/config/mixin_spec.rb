@@ -7,7 +7,7 @@ describe LogStash::Config::Mixin do
     let(:password) { "sekret" }
     let(:double_logger) { double("logger").as_null_object }
 
-    subject do 
+    subject do
       Class.new(LogStash::Filters::Base) do
         include LogStash::Config::Mixin
         config_name "test_deprecated"
@@ -151,7 +151,7 @@ describe LogStash::Config::Mixin do
 
         it "should raise a configuration error" do
           expect { subject.required_strings }.to raise_error(LogStash::ConfigurationError)
-        end        
+        end
       end
 
       context "with no value specified" do
@@ -160,7 +160,7 @@ describe LogStash::Config::Mixin do
         it "should raise a configuration error" do
           expect { subject.required_strings }.to raise_error(LogStash::ConfigurationError)
         end
-      end          
+      end
     end
   end
 
@@ -208,7 +208,7 @@ describe LogStash::Config::Mixin do
 
     shared_examples("safe URI") do |options|
       options ||= {}
-      
+
       subject { klass.new("uri" => uri_str) }
 
       it "should be a SafeURI object" do

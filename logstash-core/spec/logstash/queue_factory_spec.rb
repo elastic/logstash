@@ -1,5 +1,4 @@
 # encoding: utf-8
-require "logstash/queue_factory"
 require "logstash/settings"
 require "stud/temporary"
 

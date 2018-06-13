@@ -1,8 +1,253 @@
 [[logstash-reference]]
 = Logstash Reference
 
-:plugins-repo-dir:  {docdir}/../../logstash-docs/docs
+:include-xpack:         true
+:lang:                  en
+:xls-repo-dir:          {docdir}/../x-pack/docs/{lang}
+:log-repo-dir:          {docdir}
+:plugins-repo-dir:      {docdir}/../../logstash-docs/docs
+:branch:                master
+:major-version:         7.x
+:logstash_version:      7.0.0-alpha1
+:elasticsearch_version: 7.0.0-alpha1
+:kibana_version:        7.0.0-alpha1
+:docker-repo:           docker.elastic.co/logstash/logstash
+:docker-image:          {docker-repo}:{logstash_version}
 
-include::index-shared1.asciidoc[]
-include::index-shared2.asciidoc[]
-include::index-shared3.asciidoc[]
+//////////
+release-state can be: released | prerelease | unreleased
+//////////
+:release-state:         unreleased
+:versioned_docs:        false
+
+:jdk:                   1.8.0
+:lsissue:               https://github.com/elastic/logstash/issues
+:lsplugindocs:          https://www.elastic.co/guide/en/logstash-versioned-plugins/current
+
+include::{asciidoc-dir}/../../shared/attributes.asciidoc[]
+
+[[introduction]]
+== Logstash Introduction
+
+Logstash is an open source data collection engine with real-time pipelining capabilities. Logstash can dynamically
+unify data from disparate sources and normalize the data into destinations of your choice. Cleanse and democratize all
+your data for diverse advanced downstream analytics and visualization use cases.
+
+While Logstash originally drove innovation in log collection, its capabilities extend well beyond that use case. Any
+type of event can be enriched and transformed with a broad array of input, filter, and output plugins, with many
+native codecs further simplifying the ingestion process. Logstash accelerates your insights by harnessing a greater
+volume and variety of data.
+
+// The pass blocks here point to the correct repository for the edit links in the guide.
+
+// Introduction
+
+:edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/introduction.asciidoc
+include::static/introduction.asciidoc[]
+
+// Glossary and core concepts go here
+
+// Getting Started with Logstash
+
+:edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/getting-started-with-logstash.asciidoc
+include::static/getting-started-with-logstash.asciidoc[]
+
+// Advanced LS Pipelines
+
+:edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/advanced-pipeline.asciidoc
+include::static/advanced-pipeline.asciidoc[]
+
+// Processing Pipeline
+
+:edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/life-of-an-event.asciidoc
+include::static/life-of-an-event.asciidoc[]
+
+// Lostash setup
+
+:edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/setting-up-logstash.asciidoc
+include::static/setting-up-logstash.asciidoc[]
+
+:edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/settings-file.asciidoc
+include::static/settings-file.asciidoc[]
+
+:edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/keystore.asciidoc
+include::static/keystore.asciidoc[]
+
+:edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/running-logstash-command-line.asciidoc
+include::static/running-logstash-command-line.asciidoc[]
+
+:edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/running-logstash.asciidoc
+include::static/running-logstash.asciidoc[]
+
+:edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/docker.asciidoc
+include::static/docker.asciidoc[]
+
+:edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/logging.asciidoc
+include::static/logging.asciidoc[]
+
+:edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/shutdown.asciidoc
+include::static/shutdown.asciidoc[]
+
+:edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/setting-up-xpack.asciidoc
+include::static/setup/setting-up-xpack.asciidoc[]
+
+// Breaking Changes
+
+:edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/breaking-changes.asciidoc
+include::static/breaking-changes.asciidoc[]
+
+
+// Upgrading Logstash
+
+:edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/upgrading.asciidoc
+include::static/upgrading.asciidoc[]
+
+// Configuring Logstash
+
+:edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/configuration.asciidoc
+include::static/configuration.asciidoc[]
+
+:edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/multiple-pipelines.asciidoc
+include::static/multiple-pipelines.asciidoc[]
+
+:edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/pipeline-pipeline-config.asciidoc
+include::static/pipeline-pipeline-config.asciidoc[]
+
+:edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/reloading-config.asciidoc
+include::static/reloading-config.asciidoc[]
+
+:edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/managing-multiline-events.asciidoc
+include::static/managing-multiline-events.asciidoc[]
+
+:edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/glob-support.asciidoc
+include::static/glob-support.asciidoc[]
+
+:edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/ingest-convert.asciidoc
+include::static/ingest-convert.asciidoc[]
+
+:edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/ls-ls-config.asciidoc
+include::static/ls-ls-config.asciidoc[]
+
+ifdef::include-xpack[]
+:edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/management/configuring-centralized-pipelines.asciidoc
+include::static/management/configuring-centralized-pipelines.asciidoc[]
+
+:edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/monitoring/configuring-logstash.asciidoc
+include::static/monitoring/configuring-logstash.asciidoc[]
+
+:edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/security/logstash.asciidoc
+include::static/security/logstash.asciidoc[]
+
+:edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/setup/configuring-xls.asciidoc
+include::static/setup/configuring-xls.asciidoc[]
+endif::include-xpack[]
+
+// Centralized configuration managements
+:edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/config-management.asciidoc
+include::static/config-management.asciidoc[]
+
+// Working with Logstash Modules
+:edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/modules.asciidoc
+include::static/modules.asciidoc[]
+
+:edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/arcsight-module.asciidoc
+include::static/arcsight-module.asciidoc[]
+
+:edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/netflow-module.asciidoc
+include::static/netflow-module.asciidoc[]
+
+// Working with Filebeat Modules
+
+:edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/filebeat-modules.asciidoc
+include::static/filebeat-modules.asciidoc[]
+
+// Data resiliency
+
+:edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/resiliency.asciidoc
+include::static/resiliency.asciidoc[]
+
+:edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/persistent-queues.asciidoc
+include::static/persistent-queues.asciidoc[]
+
+:edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/dead-letter-queues.asciidoc
+include::static/dead-letter-queues.asciidoc[]
+
+// Transforming Data
+
+:edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/transforming-data.asciidoc
+include::static/transforming-data.asciidoc[]
+
+// Deploying & Scaling
+
+:edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/deploying.asciidoc
+include::static/deploying.asciidoc[]
+
+// Troubleshooting performance
+
+:edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/performance-checklist.asciidoc
+include::static/performance-checklist.asciidoc[]
+
+// Monitoring overview
+
+:edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/monitoring.asciidoc
+include::static/monitoring.asciidoc[]
+
+// Monitoring APIs
+
+:edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/monitoring-apis.asciidoc
+include::static/monitoring-apis.asciidoc[]
+
+// Working with Plugins
+
+:edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/plugin-manager.asciidoc
+include::static/plugin-manager.asciidoc[]
+
+// These files do their own pass blocks
+
+include::{plugins-repo-dir}/plugins/inputs.asciidoc[]
+include::{plugins-repo-dir}/plugins/outputs.asciidoc[]
+include::{plugins-repo-dir}/plugins/filters.asciidoc[]
+include::{plugins-repo-dir}/plugins/codecs.asciidoc[]
+
+:edit_url:
+
+// Contributing to Logstash
+
+include::static/contributing-to-logstash.asciidoc[]
+
+include::static/input.asciidoc[]
+include::static/codec.asciidoc[]
+include::static/filter.asciidoc[]
+include::static/output.asciidoc[]
+
+// Contributing a Patch to a Logstash Plugin
+
+:edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/contributing-patch.asciidoc
+include::static/contributing-patch.asciidoc[]
+
+// Logstash Community Maintainer Guide
+
+:edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/maintainer-guide.asciidoc
+include::static/maintainer-guide.asciidoc[]
+
+// A space is necessary here ^^^
+
+
+// Submitting a Plugin
+
+:edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/submitting-a-plugin.asciidoc
+include::static/submitting-a-plugin.asciidoc[]
+
+// Glossary of Terms
+
+:edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/glossary.asciidoc
+include::static/glossary.asciidoc[]
+
+// This is in the pluginbody.asciidoc itself
+//
+
+// Release Notes
+
+:edit_url: https://github.com/elastic/logstash/edit/{branch}/docs/static/releasenotes.asciidoc
+include::static/releasenotes.asciidoc[]
+

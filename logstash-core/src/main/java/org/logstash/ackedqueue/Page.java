@@ -1,12 +1,11 @@
 package org.logstash.ackedqueue;
 
+import com.google.common.primitives.Ints;
 import java.io.Closeable;
 import java.io.IOException;
 import java.util.BitSet;
-
 import org.codehaus.commons.nullanalysis.NotNull;
 import org.logstash.ackedqueue.io.CheckpointIO;
-import org.logstash.ackedqueue.io.LongVector;
 import org.logstash.ackedqueue.io.PageIO;
 
 public final class Page implements Closeable {
@@ -99,10 +98,9 @@ public final class Page implements Closeable {
     }
 
     public boolean isFullyAcked() {
-        // TODO: it should be something similar to this when we use a proper bitset class like ES
-        // this.ackedSeqNum.firstUnackedBit >= this.elementCount;
-        // TODO: for now use a naive & inefficient mechanism with a simple Bitset
-        return this.elementCount > 0 && this.ackedSeqNums.cardinality() >= this.elementCount;
+        final int cardinality = ackedSeqNums.cardinality();
+        return elementCount > 0 && cardinality == ackedSeqNums.length()
+            && cardinality == elementCount;
     }
 
     public long unreadCount() {
@@ -116,40 +114,44 @@ public final class Page implements Closeable {
      * the head page to update firstUnackedPageNum because it will be updated in the next upcoming head page checkpoint
      * and in a crash condition, the Queue open recovery will detect and purge fully acked pages
      *
-     * @param seqNums the list of same-page seqNums to ack
+     * @param firstSeqNum Lowest sequence number to ack
+     * @param count Number of elements to ack
      * @param checkpointMaxAcks number of acks before forcing a checkpoint
+     * @return true if Page and its checkpoint were purged as a result of being fully acked
      * @throws IOException
      */
-    public void ack(LongVector seqNums, int checkpointMaxAcks) throws IOException {
-        final int count = seqNums.size();
-        for (int i = 0; i < count; ++i) {
-            final long seqNum = seqNums.get(i);
-            // TODO: eventually refactor to use new bit handling class
-
-            assert seqNum >= this.minSeqNum :
-                    String.format("seqNum=%d is smaller than minSeqnum=%d", seqNum, this.minSeqNum);
-
-            assert seqNum < this.minSeqNum + this.elementCount :
-                    String.format("seqNum=%d is greater than minSeqnum=%d + elementCount=%d = %d", seqNum, this.minSeqNum, this.elementCount, this.minSeqNum + this.elementCount);
-            int index = (int)(seqNum - this.minSeqNum);
-
-            this.ackedSeqNums.set(index);
-        }
-
+    public boolean ack(long firstSeqNum, int count, int checkpointMaxAcks) throws IOException {
+        assert firstSeqNum >= this.minSeqNum :
+            String.format("seqNum=%d is smaller than minSeqnum=%d", firstSeqNum, this.minSeqNum);
+        final long maxSeqNum = firstSeqNum + count;
+        assert maxSeqNum <= this.minSeqNum + this.elementCount :
+            String.format(
+                "seqNum=%d is greater than minSeqnum=%d + elementCount=%d = %d", maxSeqNum,
+                this.minSeqNum, this.elementCount, this.minSeqNum + this.elementCount
+            );
+        final int offset = Ints.checkedCast(firstSeqNum - this.minSeqNum);
+        ackedSeqNums.flip(offset, offset + count);
         // checkpoint if totally acked or we acked more than checkpointMaxAcks elements in this page since last checkpoint
         // note that fully acked pages cleanup is done at queue level in Queue.ack()
-        long firstUnackedSeqNum = firstUnackedSeqNum();
+        final long firstUnackedSeqNum = firstUnackedSeqNum();
 
-        if (isFullyAcked()) {
-            checkpoint();
-
+        final boolean done = isFullyAcked();
+        if (done) {
+            if (this.writable) {
+                headPageCheckpoint();
+            } else {
+                purge();
+                final CheckpointIO cpIO = queue.getCheckpointIO();
+                cpIO.purge(cpIO.tailFileName(pageNum));
+            }
             assert firstUnackedSeqNum >= this.minSeqNum + this.elementCount - 1:
                     String.format("invalid firstUnackedSeqNum=%d for minSeqNum=%d and elementCount=%d and cardinality=%d", firstUnackedSeqNum, this.minSeqNum, this.elementCount, this.ackedSeqNums.cardinality());
 
-        } else if (checkpointMaxAcks > 0 && (firstUnackedSeqNum >= this.lastCheckpoint.getFirstUnackedSeqNum() + checkpointMaxAcks)) {
+        } else if (checkpointMaxAcks > 0 && firstUnackedSeqNum >= this.lastCheckpoint.getFirstUnackedSeqNum() + checkpointMaxAcks) {
             // did we acked more than checkpointMaxAcks elements? if so checkpoint now
             checkpoint();
         }
+        return done;
     }
 
     public void checkpoint() throws IOException {

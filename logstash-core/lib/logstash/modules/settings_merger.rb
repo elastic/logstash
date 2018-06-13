@@ -1,6 +1,5 @@
 # encoding: utf-8
 require "logstash/util"
-require "logstash/util/loggable"
 
 module LogStash module Modules module SettingsMerger
   include LogStash::Util::Loggable

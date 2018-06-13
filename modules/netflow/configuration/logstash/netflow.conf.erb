@@ -445,7 +445,7 @@ filter {
                             add_field => { "[geoip_dst][autonomous_system]" => "%{[geoip_dst][as_org]}" }
                         }
                     }
-                } else if [geoip][asn] {
+                } else if [geoip_dst][asn] {
                     mutate {
                         id => "netflow-postproc-dst-as-from-asn"
                         add_field => { "[geoip_dst][autonomous_system]" => "%{[geoip_dst][asn]}" }
@@ -536,24 +536,24 @@ filter {
                 source => "[netflow][dst_addr]"
                 default_database_type => "ASN"
             }
-            # Populate geoip.autonomous_system.
-            if [geoip][as_org] {
-                if [geoip][asn] {
-                    mutate {
-                        id => "netflow-postproc-as-from-as_org-asn"
-                        add_field => { "[geoip][autonomous_system]" => "%{[geoip][as_org]} (%{[geoip][asn]})" }
-                    }
-                } else {
-                    mutate {
-                        id => "netflow-postproc-as-from-as_org"
-                        add_field => { "[geoip][autonomous_system]" => "%{[geoip][as_org]}" }
-                    }
-                }
-            } else if [geoip][asn] {
+        }
+        # Populate geoip.autonomous_system.
+        if [geoip][as_org] {
+            if [geoip][asn] {
                 mutate {
-                    id => "netflow-postproc-as-from-asn"
-                    add_field => { "[geoip][autonomous_system]" => "%{[geoip][asn]}" }
+                    id => "netflow-postproc-as-from-as_org-asn"
+                    add_field => { "[geoip][autonomous_system]" => "%{[geoip][as_org]} (%{[geoip][asn]})" }
                 }
+            } else {
+                mutate {
+                    id => "netflow-postproc-as-from-as_org"
+                    add_field => { "[geoip][autonomous_system]" => "%{[geoip][as_org]}" }
+                }
+            }
+        } else if [geoip][asn] {
+            mutate {
+                id => "netflow-postproc-as-from-asn"
+                add_field => { "[geoip][autonomous_system]" => "%{[geoip][asn]}" }
             }
         }
     }

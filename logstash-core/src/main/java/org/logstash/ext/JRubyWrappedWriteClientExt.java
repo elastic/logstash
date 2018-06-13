@@ -44,8 +44,8 @@ public final class JRubyWrappedWriteClientExt extends RubyObject implements Queu
         super(runtime, metaClass);
     }
 
-    @JRubyMethod(name = "initialize", optional = 4)
-    public IRubyObject ruby_initialize(final ThreadContext context, final IRubyObject[] args) {
+    @JRubyMethod(optional = 4)
+    public JRubyWrappedWriteClientExt initialize(final ThreadContext context, final IRubyObject[] args) {
         this.writeClient = args[0];
         this.wrappedQueueWriter = (QueueWriter)this.writeClient;
         final String pipelineId = args[1].asJavaString();

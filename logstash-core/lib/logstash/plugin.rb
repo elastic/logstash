@@ -1,5 +1,4 @@
 # encoding: utf-8
-require "logstash/logging"
 require "logstash/config/mixin"
 require "concurrent"
 require "securerandom"
@@ -134,6 +133,7 @@ class LogStash::Plugin
   # Should I remove this now and make sure the pipeline invoke the Registry or I should wait for 6.0
   # Its not really part of the public api but its used by the tests a lot to mock the plugins.
   def self.lookup(type, name)
+    require "logstash/plugins/registry"
     LogStash::PLUGIN_REGISTRY.lookup_pipeline_plugin(type, name)
   end
 end # class LogStash::Plugin

@@ -1,6 +1,4 @@
 # encoding: utf-8
-require "logstash/logging"
-require "logstash/util/loggable"
 require "erb"
 
 require_relative "elasticsearch_config"

@@ -3,13 +3,10 @@ require "logstash/environment"
 require "logstash/config/cpu_core_strategy"
 require "logstash/instrument/collector"
 require "logstash/instrument/periodic_pollers"
-require "logstash/instrument/collector"
 require "logstash/pipeline"
 require "logstash/webserver"
-require "logstash/event_dispatcher"
 require "logstash/config/source_loader"
 require "logstash/pipeline_action"
-require "logstash/converge_result"
 require "logstash/state_resolver"
 require "stud/trap"
 require "uri"
@@ -173,6 +170,10 @@ class LogStash::Agent
   end
 
   def shutdown
+    # Since we're shutting down we need to shutdown the DAG of pipelines that are talking to each other
+    # in order of dependency.
+    pipeline_bus.setBlockOnUnlisten(true)
+
     stop_collecting_metrics
     stop_webserver
     transition_to_stopped

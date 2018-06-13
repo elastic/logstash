@@ -1,6 +1,5 @@
 # encoding: utf-8
 require "logstash/config/source/local"
-require "logstash/util/loggable"
 require "logstash/pipeline_settings"
 
 module LogStash module Config module Source

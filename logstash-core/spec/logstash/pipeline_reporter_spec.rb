@@ -1,18 +1,17 @@
 # encoding: utf-8
 require "spec_helper"
 require "logstash/pipeline"
-require "logstash/pipeline_reporter"
 require_relative "../support/helpers"
 require_relative "../support/mocks_classes"
 
 #TODO: Figure out how to add more tests that actually cover inflight events
 #This will require some janky multithreading stuff
-describe LogStash::PipelineReporter do
+shared_examples "a pipeline reporter" do |pipeline_setup|
   let(:generator_count) { 5 }
   let(:config) do
     "input { generator { count => #{generator_count} } } output { dummyoutput {} } "
   end
-  let(:pipeline) { mock_pipeline_from_string(config)}
+  let(:pipeline) { Kernel.send(pipeline_setup, config)}
   let(:reporter) { pipeline.reporter }
 
   before do
@@ -21,13 +20,23 @@ describe LogStash::PipelineReporter do
     allow(LogStash::Plugin).to receive(:lookup).with("codec", "plain").and_call_original
 
     @pre_snapshot = reporter.snapshot
-    
+
     pipeline.run
     @post_snapshot = reporter.snapshot
   end
 
   after do
     pipeline.shutdown
+  end
+
+  describe "stalling threads info" do
+    it "should start with no stalled threads" do
+      expect(@pre_snapshot.stalling_threads_info).to eql([])
+    end
+
+    it "should end with no stalled threads" do
+      expect(@pre_snapshot.stalling_threads_info).to eql([])
+    end
   end
 
   describe "events filtered" do
@@ -59,4 +68,9 @@ describe LogStash::PipelineReporter do
       expect(@post_snapshot.inflight_count).to eql(0)
     end
   end
+end
+
+describe LogStash::PipelineReporter do
+  it_behaves_like "a pipeline reporter", :mock_pipeline_from_string
+  it_behaves_like "a pipeline reporter", :mock_java_pipeline_from_string
 end

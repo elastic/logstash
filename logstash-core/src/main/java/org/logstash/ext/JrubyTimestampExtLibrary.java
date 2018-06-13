@@ -49,31 +49,31 @@ public final class JrubyTimestampExtLibrary {
         }
 
         // def initialize(time = Time.new)
-        @JRubyMethod(name = "initialize", optional = 1)
-        public IRubyObject ruby_initialize(ThreadContext context, IRubyObject[] args)
-        {
+        @JRubyMethod(optional = 1)
+        public JrubyTimestampExtLibrary.RubyTimestamp initialize(final ThreadContext context,
+            IRubyObject[] args) {
             args = Arity.scanArgs(context.runtime, args, 0, 1);
             IRubyObject time = args[0];
 
             if (time.isNil()) {
                 this.timestamp = new Timestamp();
             } else if (time instanceof RubyTime) {
-                this.timestamp = new Timestamp(((RubyTime)time).getDateTime());
+                this.timestamp = new Timestamp(((RubyTime) time).getDateTime());
             } else if (time instanceof RubyString) {
                 try {
                     this.timestamp = new Timestamp(time.toString());
                 } catch (IllegalArgumentException e) {
                     throw new RaiseException(
-                            getRuntime(), RubyUtil.TIMESTAMP_PARSER_ERROR,
-                            "invalid timestamp string format " + time,
-                            true
+                        getRuntime(), RubyUtil.TIMESTAMP_PARSER_ERROR,
+                        "invalid timestamp string format " + time,
+                        true
                     );
 
                 }
             } else {
                 throw context.runtime.newTypeError("wrong argument type " + time.getMetaClass() + " (expected Time)");
             }
-            return context.nil;
+            return this;
         }
 
         @JRubyMethod(name = "time")
@@ -180,8 +180,8 @@ public final class JrubyTimestampExtLibrary {
         }
 
         @JRubyMethod(name = "at", required = 1, optional = 1, meta = true)
-        public static IRubyObject ruby_at(ThreadContext context, IRubyObject recv, IRubyObject[] args)
-        {
+        public static JrubyTimestampExtLibrary.RubyTimestamp ruby_at(ThreadContext context,
+            IRubyObject recv, IRubyObject[] args) {
             RubyTime t;
             if (args.length == 1) {
                 // JRuby 9K has fixed the problem iwth BigDecimal precision see https://github.com/elastic/logstash/issues/4565
@@ -193,8 +193,8 @@ public final class JrubyTimestampExtLibrary {
         }
 
         @JRubyMethod(name = "now", meta = true)
-        public static IRubyObject ruby_now(ThreadContext context, IRubyObject recv)
-        {
+        public static JrubyTimestampExtLibrary.RubyTimestamp ruby_now(ThreadContext context,
+            IRubyObject recv) {
             return RubyTimestamp.newRubyTimestamp(context.runtime, new Timestamp());
         }
 

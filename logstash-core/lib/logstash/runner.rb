@@ -27,7 +27,6 @@ LogStash::Environment.load_locale!
 
 require "logstash/agent"
 require "logstash/config/defaults"
-require "logstash/shutdown_watcher"
 require "logstash/patches/clamp"
 require "logstash/settings"
 require "logstash/version"
@@ -276,7 +275,7 @@ class LogStash::Runner < Clamp::StrictCommand
 
     return start_shell(setting("interactive"), binding) if setting("interactive")
 
-    module_parser = LogStash::Modules::CLIParser.new(@modules_list, @modules_variable_list)
+    module_parser = LogStash::Modules::CLIParser.new(setting("modules_list"), setting("modules_variable_list"))
     # Now populate Setting for modules.list with our parsed array.
     @settings.set("modules.cli", module_parser.output)
 

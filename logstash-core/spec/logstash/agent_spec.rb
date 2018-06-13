@@ -27,7 +27,7 @@ describe LogStash::Agent do
     sl
   end
   let(:logger) { double("logger") }
-  let(:timeout) {120} #seconds
+  let(:timeout) {160} #seconds
 
   subject { LogStash::Agent.new(agent_settings, default_source_loader) }
 
@@ -133,9 +133,9 @@ describe LogStash::Agent do
 
           it "does not upgrade the new config" do
             t = Thread.new { subject.execute }
-            Timeout.timeout(timeout) do
-              sleep(0.01) until subject.running_pipelines? && subject.pipelines.values.first.ready?
-            end
+            wait(timeout)
+                .for { subject.running_pipelines? && subject.pipelines.values.first.ready? }
+                .to eq(true)
             expect(subject.converge_state_and_update).not_to be_a_successful_converge
             expect(subject).to have_running_pipeline?(mock_config_pipeline)
 
@@ -384,11 +384,11 @@ describe LogStash::Agent do
 
       before :each do
         subject.converge_state_and_update
-        Timeout.timeout(timeout) do
-          # wait for file existence otherwise it will raise exception on Windows
-          sleep(0.1) until ::File.exist?(new_config_output)
-          sleep(0.1) while ::File.read(new_config_output).chomp.empty?
-        end
+
+        # wait for file existence otherwise it will raise exception on Windows
+        wait(timeout)
+          .for { ::File.exists?(new_config_output) && !::File.read(new_config_output).chomp.empty? }
+          .to eq(true)
         # ensure the converge_state_and_update method has updated metrics by
         # invoking the mutex
         subject.running_pipelines?

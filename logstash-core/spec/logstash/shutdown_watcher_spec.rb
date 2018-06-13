@@ -1,6 +1,5 @@
 # encoding: utf-8
 require "spec_helper"
-require "logstash/shutdown_watcher"
 
 describe LogStash::ShutdownWatcher do
   let(:check_every) { 0.01 }
@@ -22,32 +21,6 @@ describe LogStash::ShutdownWatcher do
     before :each do
       allow(reporter_snapshot).to receive(:inflight_count).and_return(*increasing_count)
       allow(reporter_snapshot).to receive(:stalling_threads) { { } }
-    end
-
-    describe ".unsafe_shutdown = true" do
-      let(:abort_threshold) { subject.abort_threshold }
-      let(:report_every) { subject.report_every }
-
-      before :each do
-        subject.class.unsafe_shutdown = true
-      end
-
-      it "should force the shutdown" do
-        expect(subject).to receive(:force_exit).once
-        subject.start
-      end
-
-      it "should do exactly \"abort_threshold\" stall checks" do
-        allow(subject).to receive(:force_exit)
-        expect(subject).to receive(:shutdown_stalled?).exactly(abort_threshold).times.and_call_original
-        subject.start
-      end
-
-      it "should do exactly \"abort_threshold\"*\"report_every\" stall checks" do
-        allow(subject).to receive(:force_exit)
-        expect(subject).to receive(:pipeline_report_snapshot).exactly(abort_threshold*report_every).times.and_call_original
-        subject.start
-      end
     end
 
     describe ".unsafe_shutdown = false" do

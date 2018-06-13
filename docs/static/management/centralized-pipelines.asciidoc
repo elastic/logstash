@@ -1,0 +1,109 @@
+[role="xpack"]
+[[logstash-centralized-pipeline-management]]
+=== Centralized Pipeline Management
+
+The pipeline management feature centralizes the creation and
+management of Logstash configuration pipelines in {kib}. 
+
+NOTE: Centralized pipeline management is an {xpack} feature that is not included
+with the basic license. If you want to try all of the features, you can start a
+30-day trial. At the end of the trial period, you can purchase a subscription to
+keep using the full functionality of the {xpack} components. For more
+information, see https://www.elastic.co/subscriptions and
+{stack-ov}/license-management.html[License
+Management].
+
+You can control multiple Logstash instances from the pipeline management UI in
+{kib}. You can add, edit, and delete pipeline configurations. On the Logstash
+side, you simply need to enable configuration management and register Logstash
+to use the centrally managed pipeline configurations.
+
+
+==== Manage pipelines
+
+Before using the pipeline management UI, you must:
+
+* <<configuring-centralized-pipelines, Configure centralized pipeline management>>.
+* If {kib} is protected with basic authentication, make sure your {kib} user has
+the `logstash_admin` role as well as the `logstash_writer` role that you created
+when you <<ls-security,configured Logstash to use basic authentication>>. 
+
+To manage Logstash pipelines in {kib}:
+
+. Open {kib} in your browser and go to the Management tab. If you've set up
+configuration management correctly, you'll see an area for managing Logstash.
++
+image::static/management/images/centralized_config.png[]
+
+. Click the *Pipelines* link.
+
+. To add a new pipeline, click *Create pipeline* and specify values.
++
+--
+[horizontal]
+Pipeline ID::
+A name that uniquely identifies the pipeline. This is the ID that you used when
+you
+<<configuring-centralized-pipelines,configured centralized pipeline management>>
+and specified a list of pipeline IDs in the `xpack.management.pipeline.id`
+setting.
+
+Description::
+A description of the pipeline configuration. This information is for your use.
+
+Pipeline::
+The pipeline configuration. You can treat the editor in the pipeline management
+UI like any other editor. You don't have to worry about whitespace or indentation.
+
+Pipeline workers::
+The number of parallel workers used to run the filter and output stages of the pipeline. 
+
+Pipeline batch size::
+The maximum number of events an individual worker thread collects before
+executing filters and outputs.
+
+Pipeline batch delay::
+Time in milliseconds to wait for each event before sending an undersized
+batch to pipeline workers.
+
+Queue type::
+The internal queueing model for event buffering. Options are *memory* for
+in-memory queueing, or *persisted* for disk-based acknowledged queueing. 
+
+Queue max bytes::
+The total capacity of the queue.
+
+Queue checkpoint writes::
+The maximum number of events written before a checkpoint is forced when
+persistent queues are enabled.
+
+--
+
+===== Pipeline behavior
+
+* The pipeline configurations and metadata are stored in Elasticsearch. Any
+changes that you make to a pipeline definition are picked up and loaded
+automatically by all Logstash instances registered to use the pipeline. The
+changes are applied immediately. If Logstash is registered to use the pipeline,
+you do not have to restart Logstash to pick up the changes.
+
+* The pipeline runs on all Logstash instances that are registered to use the
+pipeline.  {kib} saves the new configuration, and Logstash will attempt to load
+it. There is no validation done at the UI level.
+
+* You need to check the local Logstash logs for configuration errors. If you're
+using the Logstash monitoring feature in {xpack}, use the Monitoring tab to
+check the status of your Logstash nodes.
+
+* You can specify multiple pipeline configurations that run in parallel on the
+same Logstash node.
+
+* If you edit and save a pipeline configuration, Logstash reloads
+the configuration in the background and continues processing events.
+
+* If you try to delete a pipeline that is running (for example, `apache`) in {kib}, Logstash will
+attempt to stop the pipeline. Logstash waits until all
+events have been fully processed by the pipeline. Before you delete a pipeline,
+make sure you understand your data sources. Stopping a pipeline may
+lead to data loss.
+

@@ -22,7 +22,7 @@ public final class NullMetricExt extends AbstractSimpleMetricExt {
     }
 
     @JRubyMethod(optional = 1)
-    public IRubyObject initialize(final ThreadContext context, final IRubyObject[] collector) {
+    public NullMetricExt initialize(final ThreadContext context, final IRubyObject[] collector) {
         if (collector.length == 0) {
             this.collector = context.nil;
         } else {

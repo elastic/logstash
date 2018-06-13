@@ -6,7 +6,6 @@ require "spec_helper"
 require "logstash/environment"
 require "logstash/settings"
 require "logstash/util/time_value"
-require "logstash/plugins/hooks_registry"
 require "config_management/extension"
 require "config_management/hooks"
 

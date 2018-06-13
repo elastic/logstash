@@ -6,7 +6,6 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.jruby.Ruby;
 import org.jruby.RubyClass;
-import org.jruby.RubyObject;
 import org.jruby.anno.JRubyClass;
 import org.jruby.anno.JRubyMethod;
 import org.jruby.runtime.ThreadContext;
@@ -14,17 +13,16 @@ import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.Event;
 import org.logstash.RubyUtil;
 import org.logstash.ackedqueue.ext.JRubyAckedQueueExt;
-import org.logstash.execution.queue.QueueWriter;
 
 @JRubyClass(name = "AckedWriteClient")
-public final class JrubyAckedWriteClientExt extends RubyObject implements QueueWriter {
+public final class JrubyAckedWriteClientExt extends JRubyAbstractQueueWriteClientExt {
 
     private JRubyAckedQueueExt queue;
 
     private AtomicBoolean closed = new AtomicBoolean();
 
     @JRubyMethod(meta = true, required = 2)
-    public static JrubyAckedWriteClientExt create(final ThreadContext context, IRubyObject recv,
+    public static JrubyAckedWriteClientExt create(final ThreadContext context, final IRubyObject recv,
         final IRubyObject queue, final IRubyObject closed) {
         return new JrubyAckedWriteClientExt(
             context.runtime, RubyUtil.ACKED_WRITE_CLIENT_CLASS,
@@ -35,9 +33,9 @@ public final class JrubyAckedWriteClientExt extends RubyObject implements QueueW
         );
     }
 
-    public static JrubyAckedWriteClientExt create(JRubyAckedQueueExt queue, AtomicBoolean closed) {
+    public static JrubyAckedWriteClientExt create(final JRubyAckedQueueExt queue, final AtomicBoolean closed) {
         return new JrubyAckedWriteClientExt(
-                RubyUtil.RUBY, RubyUtil.ACKED_WRITE_CLIENT_CLASS, queue, closed);
+            RubyUtil.RUBY, RubyUtil.ACKED_WRITE_CLIENT_CLASS, queue, closed);
     }
 
     public JrubyAckedWriteClientExt(final Ruby runtime, final RubyClass metaClass) {
@@ -51,17 +49,19 @@ public final class JrubyAckedWriteClientExt extends RubyObject implements QueueW
         this.closed = closed;
     }
 
-    @JRubyMethod(name = {"push", "<<"}, required = 1)
-    public IRubyObject rubyPush(final ThreadContext context, IRubyObject event) {
+    @Override
+    protected JRubyAbstractQueueWriteClientExt doPush(final ThreadContext context,
+        final JrubyEventExtLibrary.RubyEvent event) {
         ensureOpen();
-        queue.rubyWrite(context, ((JrubyEventExtLibrary.RubyEvent) event).getEvent());
+        queue.rubyWrite(context, event.getEvent());
         return this;
     }
 
-    @JRubyMethod(name = "push_batch", required = 1)
-    public IRubyObject rubyPushBatch(final ThreadContext context, IRubyObject batch) {
+    @Override
+    protected JRubyAbstractQueueWriteClientExt doPushBatch(final ThreadContext context,
+        final Collection<JrubyEventExtLibrary.RubyEvent> batch) {
         ensureOpen();
-        for (final IRubyObject event : (Collection<JrubyEventExtLibrary.RubyEvent>) batch) {
+        for (final IRubyObject event : batch) {
             queue.rubyWrite(context, ((JrubyEventExtLibrary.RubyEvent) event).getEvent());
         }
         return this;
