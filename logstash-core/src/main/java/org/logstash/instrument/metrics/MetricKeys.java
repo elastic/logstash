@@ -9,6 +9,8 @@ public final class MetricKeys {
         // Constant Holder
     }
 
+    public static final RubySymbol PIPELINES_KEY = RubyUtil.RUBY.newSymbol("pipelines");
+
     public static final RubySymbol NAME_KEY = RubyUtil.RUBY.newSymbol("name");
 
     public static final RubySymbol EVENTS_KEY = RubyUtil.RUBY.newSymbol("events");

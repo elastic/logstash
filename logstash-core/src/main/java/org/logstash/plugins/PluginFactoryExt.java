@@ -30,6 +30,7 @@ import org.logstash.config.ir.graph.Vertex;
 import org.logstash.execution.ExecutionContextExt;
 import org.logstash.instrument.metrics.AbstractMetricExt;
 import org.logstash.instrument.metrics.AbstractNamespacedMetricExt;
+import org.logstash.instrument.metrics.MetricKeys;
 import org.logstash.instrument.metrics.NullMetricExt;
 
 public final class PluginFactoryExt {
@@ -39,8 +40,6 @@ public final class PluginFactoryExt {
         implements RubyIntegration.PluginFactory {
 
         private static final RubyString ID_KEY = RubyUtil.RUBY.newString("id");
-
-        private static final RubySymbol NAME_KEY = RubyUtil.RUBY.newSymbol("name");
 
         private final Collection<String> pluginsById = new HashSet<>();
 
@@ -233,7 +232,7 @@ public final class PluginFactoryExt {
                 } else {
                     final IRubyObject pluginInstance = klass.callMethod(context, "new", rubyArgs);
                     final AbstractNamespacedMetricExt scopedMetric = typeScopedMetric.namespace(context, RubyUtil.RUBY.newSymbol(id));
-                    scopedMetric.gauge(context, NAME_KEY, pluginInstance.callMethod(context, "config_name"));
+                    scopedMetric.gauge(context, MetricKeys.NAME_KEY, pluginInstance.callMethod(context, "config_name"));
                     pluginInstance.callMethod(context, "metric=", scopedMetric);
                     pluginInstance.callMethod(context, "execution_context=", executionCntx);
                     return pluginInstance;
@@ -282,8 +281,6 @@ public final class PluginFactoryExt {
 
         private static final RubySymbol STATS = RubyUtil.RUBY.newSymbol("stats");
 
-        private static final RubySymbol PIPELINES = RubyUtil.RUBY.newSymbol("pipelines");
-
         private static final RubySymbol PLUGINS = RubyUtil.RUBY.newSymbol("plugins");
 
         private RubySymbol pipelineId;
@@ -311,7 +308,7 @@ public final class PluginFactoryExt {
             return metric.namespace(
                 context,
                 RubyArray.newArray(
-                    context.runtime, Arrays.asList(STATS, PIPELINES, pipelineId, PLUGINS)
+                    context.runtime, Arrays.asList(STATS, MetricKeys.PIPELINES_KEY, pipelineId, PLUGINS)
                 )
             ).namespace(
                 context, RubyUtil.RUBY.newSymbol(String.format("%ss", pluginType.asJavaString()))
