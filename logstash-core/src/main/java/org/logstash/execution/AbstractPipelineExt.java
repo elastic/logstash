@@ -68,8 +68,6 @@ public class AbstractPipelineExt extends RubyBasicObject {
 
     private static final RubySymbol STATS_KEY = RubyUtil.RUBY.newSymbol("stats");
 
-    private static final RubySymbol PIPELINES_KEY = RubyUtil.RUBY.newSymbol("pipelines");
-
     private static final RubySymbol TYPE_KEY = RubyUtil.RUBY.newSymbol("type");
 
     private static final RubySymbol QUEUE_KEY = RubyUtil.RUBY.newSymbol("queue");
@@ -265,7 +263,7 @@ public class AbstractPipelineExt extends RubyBasicObject {
             context,
             RubyArray.newArray(
                 context.runtime,
-                Arrays.asList(STATS_KEY, PIPELINES_KEY, pipelineId.asString().intern(), QUEUE_KEY)
+                Arrays.asList(STATS_KEY, MetricKeys.PIPELINES_KEY, pipelineId.asString().intern(), QUEUE_KEY)
             )
         );
         pipelineMetric.gauge(context, TYPE_KEY, getSetting(context, "queue.type"));
@@ -320,7 +318,7 @@ public class AbstractPipelineExt extends RubyBasicObject {
                 context, RubyArray.newArray(
                     context.runtime,
                     Arrays.asList(
-                        STATS_KEY, PIPELINES_KEY, pipelineId.asString().intern(), DLQ_KEY
+                        STATS_KEY, MetricKeys.PIPELINES_KEY, pipelineId.asString().intern(), DLQ_KEY
                     )
                 )
             );
