@@ -3,6 +3,8 @@
 
 This section discusses the changes that you need to be aware of when migrating to Logstash 6.0.0 from the previous major releases.
 
+See also <<releasenotes>>. 
+
 [float]
 === Breaking change across PQ versions prior to Logstash 6.3.0
 
