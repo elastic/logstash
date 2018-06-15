@@ -32,7 +32,7 @@ public final class NamespacedMetricExt extends AbstractNamespacedMetricExt {
     }
 
     @JRubyMethod(visibility = Visibility.PRIVATE)
-    public IRubyObject initialize(final ThreadContext context, final IRubyObject metric,
+    public NamespacedMetricExt initialize(final ThreadContext context, final IRubyObject metric,
         final IRubyObject namespaceName) {
         this.metric = (MetricExt) metric;
         if (namespaceName instanceof RubyArray) {
