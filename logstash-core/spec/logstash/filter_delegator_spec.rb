@@ -1,15 +1,11 @@
 # encoding: utf-8
 require "spec_helper"
+require 'logstash/instrument/collector'
 require "logstash/filter_delegator"
 require "logstash/event"
 require "support/shared_contexts"
 
 describe LogStash::FilterDelegator do
-
-  class MockGauge
-    def increment(_)
-    end
-  end
 
   include_context "execution_context"
 
@@ -17,18 +13,12 @@ describe LogStash::FilterDelegator do
   let(:config) do
     { "host" => "127.0.0.1", "id" => filter_id }
   end
-  let(:counter_in) { MockGauge.new }
-  let(:counter_out) { MockGauge.new }
-  let(:counter_time) { MockGauge.new }
-  let(:metric) { LogStash::Instrument::NamespacedNullMetric.new(nil, :null) }
+  let(:collector) {LogStash::Instrument::Collector.new}
+  let(:metric) { LogStash::Instrument::Metric.new(collector).namespace(:null) }
   let(:events) { [LogStash::Event.new, LogStash::Event.new] }
 
   before :each do
     allow(pipeline).to receive(:id).and_return(pipeline_id)
-    allow(metric).to receive(:namespace).with(anything).and_return(metric)
-    allow(metric).to receive(:counter).with(:in).and_return(counter_in)
-    allow(metric).to receive(:counter).with(:out).and_return(counter_out)
-    allow(metric).to receive(:counter).with(:duration_in_millis).and_return(counter_time)
   end
 
   let(:plugin_klass) do
@@ -67,8 +57,8 @@ describe LogStash::FilterDelegator do
     context "when the flush return events" do
       it "increments the out" do
         subject.multi_filter([LogStash::Event.new])
-        expect(counter_out).to receive(:increment).with(1)
         subject.flush({})
+        expect(collector.snapshot_metric.metric_store.get_with_path("/null")[:null]["my-filter".to_sym][:events][:out].value).to eq(1)
       end
     end
 
@@ -80,18 +70,15 @@ describe LogStash::FilterDelegator do
     end
 
     context "when the filter buffer events" do
-      before do
-        allow(metric).to receive(:increment).with(anything, anything)
-      end
 
       it "has incremented :in" do
-        expect(counter_in).to receive(:increment).with(events.size)
         subject.multi_filter(events)
+        expect(collector.snapshot_metric.metric_store.get_with_path("/null")[:null]["my-filter".to_sym][:events][:in].value).to eq(events.size)
       end
 
       it "has not incremented :out" do
-        expect(counter_out).not_to receive(:increment).with(anything)
         subject.multi_filter(events)
+        expect(collector.snapshot_metric.metric_store.get_with_path("/null")[:null]["my-filter".to_sym][:events][:out].value).to eq(0)
       end
     end
 
@@ -116,10 +103,10 @@ describe LogStash::FilterDelegator do
       end
 
       it "increments the in/out of the metric" do
-        expect(counter_in).to receive(:increment).with(events.size)
-        expect(counter_out).to receive(:increment).with(events.size * 2)
-
         subject.multi_filter(events)
+        event_metrics = collector.snapshot_metric.metric_store.get_with_path("/null")[:null]["my-filter".to_sym][:events]
+        expect(event_metrics[:in].value).to eq(events.size)
+        expect(event_metrics[:out].value).to eq(2 * events.size)
       end
     end
   end
@@ -145,10 +132,10 @@ describe LogStash::FilterDelegator do
     end
 
     it "increments the in/out of the metric" do
-      expect(counter_in).to receive(:increment).with(events.size)
-      expect(counter_out).to receive(:increment).with(events.size)
-
       subject.multi_filter(events)
+      event_metrics = collector.snapshot_metric.metric_store.get_with_path("/null")[:null]["my-filter".to_sym][:events]
+      expect(event_metrics[:in].value).to eq(events.size)
+      expect(event_metrics[:out].value).to eq(events.size)
     end
   end
 
