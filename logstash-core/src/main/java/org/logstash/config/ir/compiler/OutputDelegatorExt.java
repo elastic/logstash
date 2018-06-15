@@ -25,17 +25,17 @@ public final class OutputDelegatorExt extends AbstractOutputDelegatorExt {
 
     private OutputStrategyExt.AbstractOutputStrategyExt strategy;
 
-    @JRubyMethod(name = "initialize", optional = 5)
+    @JRubyMethod(required = 5)
     public OutputDelegatorExt initialize(final ThreadContext context, final IRubyObject[] arguments) {
         return initialize(
-            context, (RubyHash) arguments[4], arguments[0], (AbstractMetricExt) arguments[1],
+            context, (RubyHash) arguments[4], (RubyClass) arguments[0], (AbstractMetricExt) arguments[1],
             (ExecutionContextExt) arguments[2],
             (OutputStrategyExt.OutputStrategyRegistryExt) arguments[3]
         );
     }
 
     public OutputDelegatorExt initialize(final ThreadContext context, final RubyHash args,
-        final IRubyObject outputClass, final AbstractMetricExt metric,
+        final RubyClass outputClass, final AbstractMetricExt metric,
         final ExecutionContextExt executionContext,
         final OutputStrategyExt.OutputStrategyRegistryExt strategyRegistry) {
         this.outputClass = outputClass;
@@ -58,7 +58,7 @@ public final class OutputDelegatorExt extends AbstractOutputDelegatorExt {
 
     @JRubyMethod
     @VisibleForTesting
-    public IRubyObject strategy() {
+    public OutputStrategyExt.AbstractOutputStrategyExt strategy() {
         return strategy;
     }
 
