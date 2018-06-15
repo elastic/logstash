@@ -1,5 +1,6 @@
 package org.logstash.config.ir.compiler;
 
+import javax.annotation.concurrent.NotThreadSafe;
 import org.assertj.core.data.Percentage;
 import org.jruby.RubyArray;
 import org.jruby.RubyClass;
@@ -8,6 +9,7 @@ import org.jruby.RubyHash;
 import org.jruby.RubyString;
 import org.jruby.RubySymbol;
 import org.jruby.java.proxies.ConcreteJavaProxy;
+import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.junit.Before;
 import org.junit.Test;
@@ -20,18 +22,18 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.logstash.RubyUtil.EXECUTION_CONTEXT_CLASS;
 import static org.logstash.RubyUtil.NAMESPACED_METRIC_CLASS;
-import static org.logstash.RubyUtil.RUBY_OUTPUT_DELEGATOR_CLASS;
 import static org.logstash.RubyUtil.RUBY;
+import static org.logstash.RubyUtil.RUBY_OUTPUT_DELEGATOR_CLASS;
 
+@NotThreadSafe
 public class OutputDelegatorTest extends RubyEnvTestCase {
 
-    private FakeOutClass fakeOutClass;
     private NamespacedMetricExt metric;
     private ExecutionContextExt executionContext;
     private RubyHash pluginArgs;
     private RubyArray events;
     private static final int EVENT_COUNT = 7;
-    static RubyClass FAKE_OUT_CLASS;
+    public static final RubyClass FAKE_OUT_CLASS;
 
     static {
         FAKE_OUT_CLASS = RUBY.defineClass("FakeOutClass", RUBY.getObject(), FakeOutClass::new);
@@ -44,15 +46,15 @@ public class OutputDelegatorTest extends RubyEnvTestCase {
         for (int k = 0; k < EVENT_COUNT; k++) {
             events.add(k, new Event());
         }
-        fakeOutClass = FakeOutClass.create();
+        final ThreadContext context = RUBY.getCurrentContext();
         RubyArray namespaces = RubyArray.newArray(RUBY, 1);
         namespaces.add(0, RubySymbol.newSymbol(RUBY, "output"));
         IRubyObject metricWithCollector =
                 runRubyScript("require \"logstash/instrument/collector\"\n" +
                         "metricWithCollector = LogStash::Instrument::Metric.new(LogStash::Instrument::Collector.new)");
 
-        metric = (NamespacedMetricExt) new NamespacedMetricExt(RUBY, NAMESPACED_METRIC_CLASS)
-                .initialize(RUBY.getCurrentContext(), metricWithCollector, namespaces);
+        metric = new NamespacedMetricExt(RUBY, NAMESPACED_METRIC_CLASS)
+                .initialize(context, metricWithCollector, namespaces);
         executionContext = new ExecutionContextExt(RUBY, EXECUTION_CONTEXT_CLASS);
         pluginArgs = RubyHash.newHash(RUBY);
         pluginArgs.put("id", "foo");
@@ -61,24 +63,24 @@ public class OutputDelegatorTest extends RubyEnvTestCase {
 
     @Test
     public void plainOutputPluginInitializesCleanly() {
-        OutputDelegatorExt outputDelegator = constructOutputDelegator();
+        constructOutputDelegator();
     }
 
     @Test
     public void plainOutputPluginPushesPluginNameToMetric() {
-        OutputDelegatorExt outputDelegator = constructOutputDelegator();
+        constructOutputDelegator();
         RubyHash metricStore = getMetricStore(new String[]{"output", "foo"});
         String pluginName = getMetricStringValue(metricStore, "name");
 
-        assertEquals(fakeOutClass.configName(RUBY.getCurrentContext()).asJavaString(), pluginName);
+        assertEquals(FakeOutClass.configName(RUBY.getCurrentContext(), null).asJavaString(), pluginName);
     }
 
     @Test
     public void multiReceivePassesBatch() {
         OutputDelegatorExt outputDelegator = constructOutputDelegator();
         outputDelegator.multiReceive(events);
-        assertEquals(events, fakeOutClass.getMultiReceiveArgs());
-        assertEquals(EVENT_COUNT, ((RubyArray) fakeOutClass.getMultiReceiveArgs()).size());
+        assertEquals(events, FakeOutClass.latestInstance.getMultiReceiveArgs());
+        assertEquals(EVENT_COUNT, ((RubyArray) FakeOutClass.latestInstance.getMultiReceiveArgs()).size());
     }
 
     @Test
@@ -92,15 +94,16 @@ public class OutputDelegatorTest extends RubyEnvTestCase {
 
     @Test
     public void multiReceiveRecordsDurationInMillis() {
-        int delay = 100;
-        long millis = 0;
+        final int delay = 100;
+        final long millis;
+        OutputDelegatorExt outputDelegator = constructOutputDelegator();
+        final FakeOutClass instance = FakeOutClass.latestInstance;
         try {
-            fakeOutClass.setMultiReceiveDelay(delay);
-            OutputDelegatorExt outputDelegator = constructOutputDelegator();
+            instance.setMultiReceiveDelay(delay);
             outputDelegator.multiReceive(events);
             millis = getMetricLongValue("duration_in_millis");
         } finally {
-            fakeOutClass.setMultiReceiveDelay(0);
+            instance.setMultiReceiveDelay(0);
         }
 
         assertThat(millis).isCloseTo((long)delay, Percentage.withPercentage(10));
@@ -111,7 +114,7 @@ public class OutputDelegatorTest extends RubyEnvTestCase {
         OutputDelegatorExt outputDelegator = constructOutputDelegator();
         outputDelegator.register(RUBY.getCurrentContext());
 
-        assertEquals(1, fakeOutClass.getRegisterCallCount());
+        assertEquals(1, FakeOutClass.latestInstance.getRegisterCallCount());
     }
 
     @Test
@@ -119,7 +122,7 @@ public class OutputDelegatorTest extends RubyEnvTestCase {
         OutputDelegatorExt outputDelegator = constructOutputDelegator();
         outputDelegator.doClose(RUBY.getCurrentContext());
 
-        assertEquals(1, fakeOutClass.getCloseCallCount());
+        assertEquals(1, FakeOutClass.latestInstance.getCloseCallCount());
     }
 
     @Test
@@ -138,7 +141,7 @@ public class OutputDelegatorTest extends RubyEnvTestCase {
         };
 
         for (StrategyPair pair : outputStrategies) {
-            fakeOutClass.setOutStrategy(RUBY.getCurrentContext(), pair.symbol);
+            FakeOutClass.setOutStrategy(RUBY.getCurrentContext(), null, pair.symbol);
             OutputDelegatorExt outputDelegator = constructOutputDelegator();
 
             // test that output strategies are properly set
@@ -150,7 +153,7 @@ public class OutputDelegatorTest extends RubyEnvTestCase {
             assertThat(strategyClass).isInstanceOf(pair.klazz);
 
             // test that metrics are properly set on the instance
-            assertEquals(outputDelegator.namespacedMetric(), fakeOutClass.getMetricArgs());
+            assertEquals(outputDelegator.namespacedMetric(), FakeOutClass.latestInstance.getMetricArgs());
         }
     }
 
@@ -161,19 +164,20 @@ public class OutputDelegatorTest extends RubyEnvTestCase {
                 RUBY.newSymbol("single"),
                 RUBY.newSymbol("legacy")
         };
-
+        final ThreadContext context = RUBY.getCurrentContext();
         for (RubySymbol symbol : outputStrategies) {
-            fakeOutClass = FakeOutClass.create();
-            fakeOutClass.setOutStrategy(RUBY.getCurrentContext(), symbol);
+            FakeOutClass.create().initialize(context);
+            FakeOutClass.setOutStrategy(RUBY.getCurrentContext(), null, symbol);
             OutputDelegatorExt outputDelegator = constructOutputDelegator();
             outputDelegator.register(RUBY.getCurrentContext());
-            assertEquals(1, fakeOutClass.getRegisterCallCount());
+            final FakeOutClass instance = FakeOutClass.latestInstance;
+            assertEquals(1, instance.getRegisterCallCount());
 
             outputDelegator.doClose(RUBY.getCurrentContext());
-            assertEquals(1, fakeOutClass.getCloseCallCount());
+            assertEquals(1, instance.getCloseCallCount());
 
             outputDelegator.multiReceive(RUBY.newArray(0));
-            assertEquals(1, fakeOutClass.getMultiReceiveCallCount());
+            assertEquals(1, instance.getMultiReceiveCallCount());
         }
 
     }
@@ -184,14 +188,13 @@ public class OutputDelegatorTest extends RubyEnvTestCase {
     }
 
     private OutputDelegatorExt constructOutputDelegator() {
-        OutputDelegatorExt outputDelegator = new OutputDelegatorExt(RUBY, RUBY_OUTPUT_DELEGATOR_CLASS).initialize(RUBY.getCurrentContext(), new IRubyObject[]{
-                fakeOutClass,
-                metric,
-                executionContext,
-                OutputStrategyExt.OutputStrategyRegistryExt.instance(RUBY.getCurrentContext(), null),
-                pluginArgs
+        return new OutputDelegatorExt(RUBY, RUBY_OUTPUT_DELEGATOR_CLASS).initialize(RUBY.getCurrentContext(), new IRubyObject[]{
+            FAKE_OUT_CLASS,
+            metric,
+            executionContext,
+            OutputStrategyExt.OutputStrategyRegistryExt.instance(RUBY.getCurrentContext(), null),
+            pluginArgs
         });
-        return outputDelegator;
     }
 
     private RubyHash getMetricStore() {
