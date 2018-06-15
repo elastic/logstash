@@ -29,7 +29,7 @@ public final class FilterDelegatorExt extends RubyObject {
 
     private IRubyObject filter;
 
-    private IRubyObject metricEvents;
+    private AbstractNamespacedMetricExt metricEvents;
 
     private RubyString id;
 

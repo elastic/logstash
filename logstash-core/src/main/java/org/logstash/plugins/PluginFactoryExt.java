@@ -59,7 +59,7 @@ public final class PluginFactoryExt {
             final RubyString id = (RubyString) arguments.op_aref(context, ID_KEY);
             filterInstance.callMethod(
                 context, "metric=",
-                args[3].callMethod(context, "namespace", id.intern19())
+                ((AbstractMetricExt) args[3]).namespace(context, id.intern19())
             );
             filterInstance.callMethod(context, "execution_context=", args[4]);
             return args[0].callMethod(context, "new", new IRubyObject[]{filterInstance, id});

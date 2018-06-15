@@ -20,7 +20,6 @@ module LogStash; class BasePipeline < AbstractPipeline
   def initialize(pipeline_config, namespaced_metric = nil, agent = nil)
     @logger = self.logger
     super pipeline_config, namespaced_metric, @logger
-    @mutex = Mutex.new
 
     @inputs = nil
     @filters = nil
@@ -617,12 +616,5 @@ module LogStash; class Pipeline < BasePipeline
 
   def draining_queue?
     @drain_queue ? !@filter_queue_client.empty? : false
-  end
-
-  def wrapped_write_client(plugin_id)
-    #need to ensure that metrics are initialized one plugin at a time, else a race condition can exist.
-    @mutex.synchronize do
-      LogStash::WrappedWriteClient.new(input_queue_client, pipeline_id.to_s.to_sym, metric, plugin_id)
-    end
   end
 end; end

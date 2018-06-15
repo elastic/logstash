@@ -280,7 +280,7 @@ module LogStash; class JavaPipeline < JavaBasePipeline
   def inputworker(plugin)
     Util::set_thread_name("[#{pipeline_id}]<#{plugin.class.config_name}")
     begin
-      plugin.run(LogStash::WrappedWriteClient.new(input_queue_client, pipeline_id.to_s.to_sym, metric, plugin.id.to_sym))
+      plugin.run(wrapped_write_client(plugin.id.to_sym))
     rescue => e
       if plugin.stop?
         @logger.debug("Input plugin raised exception during shutdown, ignoring it.",
