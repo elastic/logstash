@@ -25,7 +25,7 @@ public abstract class AbstractOutputDelegatorExt extends RubyObject {
 
     protected AbstractNamespacedMetricExt namespacedMetric;
 
-    private IRubyObject metricEvents;
+    private AbstractNamespacedMetricExt metricEvents;
 
     private RubyString id;
 

@@ -21,6 +21,7 @@ import org.jruby.anno.JRubyClass;
 import org.jruby.anno.JRubyMethod;
 import org.jruby.javasupport.JavaUtil;
 import org.jruby.runtime.ThreadContext;
+import org.jruby.runtime.Visibility;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.RubyUtil;
 import org.logstash.ackedqueue.QueueFactoryExt;
@@ -31,6 +32,7 @@ import org.logstash.common.IncompleteSourceWithMetadataException;
 import org.logstash.config.ir.ConfigCompiler;
 import org.logstash.config.ir.PipelineIR;
 import org.logstash.ext.JRubyAbstractQueueWriteClientExt;
+import org.logstash.ext.JRubyWrappedWriteClientExt;
 import org.logstash.instrument.metrics.AbstractMetricExt;
 import org.logstash.instrument.metrics.AbstractNamespacedMetricExt;
 import org.logstash.instrument.metrics.MetricKeys;
@@ -73,9 +75,6 @@ public class AbstractPipelineExt extends RubyBasicObject {
     private static final RubySymbol QUEUE_KEY = RubyUtil.RUBY.newSymbol("queue");
 
     private static final RubySymbol DLQ_KEY = RubyUtil.RUBY.newSymbol("dlq");
-
-    private static final RubySymbol DLQ_SIZE_KEY =
-        RubyUtil.RUBY.newSymbol("queue_size_in_bytes");
 
     protected PipelineIR lir;
 
@@ -240,7 +239,7 @@ public class AbstractPipelineExt extends RubyBasicObject {
     public final IRubyObject collectDlqStats(final ThreadContext context) {
         if (dlqEnabled(context).isTrue()) {
             getDlqMetric(context).gauge(
-                context, DLQ_SIZE_KEY,
+                context, QUEUE_SIZE_IN_BYTES,
                 dlqWriter(context).callMethod(context, "get_current_queue_size")
             );
         }
@@ -306,6 +305,13 @@ public class AbstractPipelineExt extends RubyBasicObject {
     @JRubyMethod
     public final AbstractWrappedQueueExt queue() {
         return queue;
+    }
+
+    @JRubyMethod(name = "wrapped_write_client", visibility = Visibility.PROTECTED)
+    public final JRubyWrappedWriteClientExt wrappedWriteClient(final ThreadContext context,
+        final IRubyObject pluginId) {
+        return new JRubyWrappedWriteClientExt(context.runtime, RubyUtil.WRAPPED_WRITE_CLIENT_CLASS)
+            .initialize(inputQueueClient, pipelineId.asJavaString(), metric, pluginId);
     }
 
     protected final IRubyObject getSetting(final ThreadContext context, final String name) {
