@@ -28,6 +28,6 @@ class LogStash::PluginManager::Remove < LogStash::PluginManager::Command
 
     remove_unused_locally_installed_gems!
   rescue => exception
-    report_exception("Operation aborted, cannot remove plugin.", exception)
+    report_exception("Operation aborted, cannot remove plugin", exception)
   end
 end
