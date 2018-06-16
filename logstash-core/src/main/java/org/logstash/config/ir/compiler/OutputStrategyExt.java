@@ -108,20 +108,23 @@ public final class OutputStrategyExt {
             return close(context);
         }
 
-        @JRubyMethod(name = "multi_receive")
+        @JRubyMethod(name = AbstractOutputDelegatorExt.OUTPUT_METHOD_NAME)
         public final IRubyObject multiReceive(final ThreadContext context, final IRubyObject events)
             throws InterruptedException {
             return output(context, events);
         }
 
         protected final void initOutputCallsite(final RubyClass outputClass) {
-            outputMethod = outputClass.searchMethod("multi_receive");
+            outputMethod = outputClass.searchMethod(AbstractOutputDelegatorExt.OUTPUT_METHOD_NAME);
             this.outputClass = outputClass;
         }
 
         protected final void invokeOutput(final ThreadContext context, final IRubyObject batch,
             final IRubyObject pluginInstance) {
-            outputMethod.call(context, pluginInstance, outputClass, "multi_receive", batch);
+            outputMethod.call(
+                context, pluginInstance, outputClass, AbstractOutputDelegatorExt.OUTPUT_METHOD_NAME,
+                batch
+            );
         }
 
         protected abstract IRubyObject output(ThreadContext context, IRubyObject events)

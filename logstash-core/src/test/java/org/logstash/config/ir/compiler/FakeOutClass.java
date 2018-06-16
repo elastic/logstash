@@ -70,7 +70,7 @@ public class FakeOutClass extends RubyObject {
         return this;
     }
 
-    @JRubyMethod(name = "multi_receive")
+    @JRubyMethod(name = AbstractOutputDelegatorExt.OUTPUT_METHOD_NAME)
     public IRubyObject multiReceive(final IRubyObject args) {
         multiReceiveCallCount++;
         multiReceiveArgs = args;
