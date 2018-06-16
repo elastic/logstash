@@ -11,6 +11,7 @@ import org.jruby.RubyObject;
 import org.jruby.RubyString;
 import org.jruby.anno.JRubyClass;
 import org.jruby.anno.JRubyMethod;
+import org.jruby.internal.runtime.methods.DynamicMethod;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.RubyUtil;
@@ -23,9 +24,11 @@ import org.logstash.instrument.metrics.counter.LongCounter;
 @JRubyClass(name = "JavaFilterDelegator")
 public final class FilterDelegatorExt extends RubyObject {
 
+    private static final String FILTER_METHOD_NAME = "multi_filter";
+
     private static final long serialVersionUID = 1L;
 
-    private IRubyObject filterClass;
+    private RubyClass filterClass;
 
     private IRubyObject filter;
 
@@ -37,6 +40,8 @@ public final class FilterDelegatorExt extends RubyObject {
 
     private LongCounter eventMetricIn;
 
+    private DynamicMethod filterMethod;
+
     private LongCounter eventMetricTime;
 
     private boolean flushes;
@@ -46,7 +51,8 @@ public final class FilterDelegatorExt extends RubyObject {
         final IRubyObject id) {
         this.id = (RubyString) id;
         this.filter = filter;
-        this.filterClass = filter.getSingletonClass().getRealClass();
+        filterClass = filter.getSingletonClass().getRealClass();
+        filterMethod = filterClass.searchMethod(FILTER_METHOD_NAME);
         final AbstractNamespacedMetricExt namespacedMetric =
             (AbstractNamespacedMetricExt) filter.callMethod(context, "metric");
         metricEvents = namespacedMetric.namespace(context, MetricKeys.EVENTS_KEY);
@@ -66,6 +72,7 @@ public final class FilterDelegatorExt extends RubyObject {
         eventMetricIn = LongCounter.DUMMY_COUNTER;
         eventMetricTime = LongCounter.DUMMY_COUNTER;
         this.filter = filter;
+        filterMethod = filter.getMetaClass().searchMethod(FILTER_METHOD_NAME);
         flushes = filter.respondsTo("flush");
         return this;
     }
@@ -118,8 +125,8 @@ public final class FilterDelegatorExt extends RubyObject {
     public RubyArray multiFilter(final RubyArray batch) {
         eventMetricIn.increment((long) batch.size());
         final long start = System.nanoTime();
-        final RubyArray result = (RubyArray) filter.callMethod(
-            WorkerLoop.THREAD_CONTEXT.get(), "multi_filter", batch
+        final RubyArray result = (RubyArray) filterMethod.call(
+            WorkerLoop.THREAD_CONTEXT.get(), filter, filterClass, FILTER_METHOD_NAME, batch
         );
         eventMetricTime.increment(
             TimeUnit.MILLISECONDS.convert(System.nanoTime() - start, TimeUnit.NANOSECONDS)
