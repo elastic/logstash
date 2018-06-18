@@ -1,5 +1,6 @@
 package org.logstash.config.ir;
 
+import com.google.common.base.Strings;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -177,6 +178,38 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
         MatcherAssert.assertThat(outputEvents.size(), CoreMatchers.is(1));
         MatcherAssert.assertThat(outputEvents.contains(testEvent), CoreMatchers.is(true));
         MatcherAssert.assertThat(testEvent.getEvent().getField("foo"), CoreMatchers.nullValue());
+    }
+
+    @Test
+    public void moreThan255Parents() throws Exception {
+        final PipelineIR pipelineIR = ConfigCompiler.configToPipelineIR(
+            "input {mockinput{}} filter { " +
+                "if [foo] != \"bar\" { " +
+                "mockfilter {} " +
+                "mockaddfilter {} " +
+                "if [foo] != \"bar\" { " +
+                "mockfilter {} " +
+                Strings.repeat("} else if [foo] != \"bar\" {" +
+                    "mockfilter {} ", 300) + " } } " +
+                "} output {mockoutput{} }",
+            false
+        );
+        final JrubyEventExtLibrary.RubyEvent testEvent =
+            JrubyEventExtLibrary.RubyEvent.newRubyEvent(RubyUtil.RUBY, new Event());
+        final Map<String, Supplier<IRubyObject>> filters = new HashMap<>();
+        filters.put("mockfilter", () -> IDENTITY_FILTER);
+        filters.put("mockaddfilter", () -> ADD_FIELD_FILTER);
+        new CompiledPipeline(
+            pipelineIR,
+            new CompiledPipelineTest.MockPluginFactory(
+                Collections.singletonMap("mockinput", () -> null),
+                filters,
+                Collections.singletonMap("mockoutput", mockOutputSupplier())
+            )
+        ).buildExecution().compute(RubyUtil.RUBY.newArray(testEvent), false, false);
+        final Collection<JrubyEventExtLibrary.RubyEvent> outputEvents = EVENT_SINKS.get(runId);
+        MatcherAssert.assertThat(outputEvents.size(), CoreMatchers.is(1));
+        MatcherAssert.assertThat(outputEvents.contains(testEvent), CoreMatchers.is(true));
     }
 
     private Supplier<Consumer<Collection<JrubyEventExtLibrary.RubyEvent>>> mockOutputSupplier() {
