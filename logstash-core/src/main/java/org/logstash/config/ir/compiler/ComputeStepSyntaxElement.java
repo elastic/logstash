@@ -8,9 +8,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -25,6 +23,9 @@ import org.codehaus.janino.SimpleCompiler;
  * One step of a compiled pipeline that compiles to a {@link Dataset}.
  */
 public final class ComputeStepSyntaxElement<T extends Dataset> {
+
+    public static final VariableDefinition CTOR_ARGUMENT =
+        new VariableDefinition(Map.class, "arguments");
 
     private static final Path SOURCE_DIR = debugDir();
 
@@ -82,7 +83,7 @@ public final class ComputeStepSyntaxElement<T extends Dataset> {
                     );
                     CLASS_CACHE.put(this, clazz);
                 }
-                return (T) clazz.<T>getConstructor(ctorTypes()).newInstance(ctorArguments());
+                return (T) clazz.<T>getConstructor(Map.class).newInstance(ctorArguments());
             } catch (final CompileException | ClassNotFoundException | IOException
                 | NoSuchMethodException | InvocationTargetException | InstantiationException
                 | IllegalAccessException ex) {
@@ -142,21 +143,15 @@ public final class ComputeStepSyntaxElement<T extends Dataset> {
     }
 
     /**
-     * @return Array of constructor argument types with the same ordering that is used by
-     * {@link #ctorArguments()}.
-     */
-    private Class<?>[] ctorTypes() {
-        return fields.ctorAssigned().getFields().stream()
-            .map(FieldDefinition::asVariable)
-            .map(typedVar -> typedVar.type).toArray(Class<?>[]::new);
-    }
-
-    /**
      * @return Array of constructor arguments
      */
-    private Object[] ctorArguments() {
-        return fields.ctorAssigned().getFields().stream()
-            .map(FieldDefinition::getCtorArgument).toArray();
+    private Map<String, Object> ctorArguments() {
+        final Map<String, Object> result = new HashMap<>();
+        fields.ctorAssigned().getFields().forEach(
+            fieldDefinition ->
+                result.put(fieldDefinition.getName(), fieldDefinition.getCtorArgument())
+        );
+        return result;
     }
 
     /**
@@ -176,20 +171,30 @@ public final class ComputeStepSyntaxElement<T extends Dataset> {
     private String fieldsAndCtor(final String name) {
         final Closure constructor = new Closure();
         final FieldDeclarationGroup ctorFields = fields.ctorAssigned();
-        final Collection<VariableDefinition> ctor = new ArrayList<>();
         for (final FieldDefinition field : ctorFields.getFields()) {
             if (field.getCtorArgument() != null) {
-                final String fieldName = field.getName();
                 final VariableDefinition fieldVar = field.asVariable();
-                final VariableDefinition argVar =
-                    fieldVar.rename(SyntaxFactory.join(fieldName, "argument"));
-                constructor.add(SyntaxFactory.assignment(fieldVar.access(), argVar.access()));
-                ctor.add(argVar);
+                constructor.add(
+                    SyntaxFactory.assignment(
+                        fieldVar.access(),
+                        SyntaxFactory.cast(
+                            fieldVar.type,
+                            CTOR_ARGUMENT.access().call(
+                                "get",
+                                SyntaxFactory.value(
+                                    SyntaxFactory.join("\"", field.getName(), "\"")
+                                )
+                            )
+                        )
+                    )
+                );
             }
         }
         return combine(
             ctorFields,
-            MethodSyntaxElement.constructor(name, constructor.add(fields.afterInit()), ctor)
+            MethodSyntaxElement.constructor(
+                name, constructor.add(fields.afterInit())
+            )
         );
     }
 

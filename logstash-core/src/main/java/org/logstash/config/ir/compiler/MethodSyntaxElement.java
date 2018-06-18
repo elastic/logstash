@@ -2,6 +2,7 @@ package org.logstash.config.ir.compiler;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 import org.jruby.RubyArray;
@@ -15,12 +16,13 @@ interface MethodSyntaxElement extends SyntaxElement {
      * Builds a constructor from the given method body and arguments.
      * @param classname Name of the Class
      * @param body Constructor Method Body
-     * @param arguments Method Argument Definitions
      * @return Method Syntax
      */
-    static MethodSyntaxElement constructor(final String classname, final Closure body,
-        final Iterable<VariableDefinition> arguments) {
-        return new MethodSyntaxElement.MethodSyntaxElementImpl(classname, "", body, arguments);
+    static MethodSyntaxElement constructor(final String classname, final Closure body) {
+        return new MethodSyntaxElement.MethodSyntaxElementImpl(
+            classname, "", body,
+            Collections.singletonList(ComputeStepSyntaxElement.CTOR_ARGUMENT)
+        );
     }
 
     /**
