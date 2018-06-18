@@ -111,8 +111,8 @@ public final class JRubyWrappedWriteClientExt extends RubyObject {
     }
 
     private void incrementTimers(final long start) {
-        final long increment = TimeUnit.NANOSECONDS.convert(
-            System.nanoTime() - start, TimeUnit.MILLISECONDS
+        final long increment = TimeUnit.MILLISECONDS.convert(
+            System.nanoTime() - start, TimeUnit.NANOSECONDS
         );
         eventsMetricsTime.increment(increment);
         pipelineMetricsTime.increment(increment);
