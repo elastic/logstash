@@ -29,6 +29,15 @@ messages stored in the persistent queue until delivery succeeds at least once.
 NOTE: You must set `queue.checkpoint.writes: 1` explicitly to guarantee
 maximum durability for all input events. See <<durability-persistent-queues>>.
 
++
+NOTE: The Persistent Queue is under active development and continues to improve
+with each release of Logstash; using the latest available version of Logstash
+will ensure you're using the best available version of this and other features.
+To enable the smoothest transition when upgrading, especially from versions
+prior to 6.3.0, you're encouraged to
+<<upgrading-logstash-pqs#_drain_the_persistent_queue,drain the queue>> prior to
+performing an upgrade.
+
 [[persistent-queues-limitations]]
 ==== Limitations of Persistent Queues
 
