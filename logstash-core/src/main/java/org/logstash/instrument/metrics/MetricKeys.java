@@ -23,4 +23,6 @@ public final class MetricKeys {
         RubyUtil.RUBY.newSymbol("duration_in_millis");
 
     public static final RubySymbol FILTERED_KEY = RubyUtil.RUBY.newSymbol("filtered");
+
+    public static final RubySymbol STATS_KEY = RubyUtil.RUBY.newSymbol("stats");
 }
