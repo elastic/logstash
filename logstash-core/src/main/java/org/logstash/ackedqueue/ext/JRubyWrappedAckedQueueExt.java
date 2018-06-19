@@ -13,6 +13,7 @@ import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.RubyUtil;
 import org.logstash.execution.AbstractWrappedQueueExt;
+import org.logstash.execution.QueueReadClientBase;
 import org.logstash.ext.JRubyAbstractQueueWriteClientExt;
 import org.logstash.ext.JrubyAckedReadClientExt;
 import org.logstash.ext.JrubyAckedWriteClientExt;
@@ -77,7 +78,7 @@ public final class JRubyWrappedAckedQueueExt extends AbstractWrappedQueueExt {
     }
 
     @Override
-    protected IRubyObject getReadClient() {
+    protected QueueReadClientBase getReadClient() {
         return JrubyAckedReadClientExt.create(queue);
     }
 
