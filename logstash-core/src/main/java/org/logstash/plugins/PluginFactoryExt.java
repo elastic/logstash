@@ -279,8 +279,6 @@ public final class PluginFactoryExt {
     @JRubyClass(name = "PluginMetricFactory")
     public static final class Metrics extends RubyBasicObject {
 
-        private static final RubySymbol STATS = RubyUtil.RUBY.newSymbol("stats");
-
         private static final RubySymbol PLUGINS = RubyUtil.RUBY.newSymbol("plugins");
 
         private RubySymbol pipelineId;
@@ -308,7 +306,10 @@ public final class PluginFactoryExt {
             return metric.namespace(
                 context,
                 RubyArray.newArray(
-                    context.runtime, Arrays.asList(STATS, MetricKeys.PIPELINES_KEY, pipelineId, PLUGINS)
+                    context.runtime,
+                    Arrays.asList(
+                        MetricKeys.STATS_KEY, MetricKeys.PIPELINES_KEY, pipelineId, PLUGINS
+                    )
                 )
             ).namespace(
                 context, RubyUtil.RUBY.newSymbol(String.format("%ss", pluginType.asJavaString()))
