@@ -16,8 +16,8 @@ See the following topics for information about upgrading Logstash:
 
 * <<upgrading-using-package-managers>>
 * <<upgrading-using-direct-download>>
-* <<upgrading-logstash-pqs>>
 * <<upgrading-logstash-5.0>>
+* <<upgrading-logstash-pqs>>
 
 [[upgrading-using-package-managers]]
 === Upgrading Using Package Managers
@@ -43,20 +43,6 @@ This procedure downloads the relevant Logstash binaries directly from Elastic.
 4. Test your configuration file with the `logstash --config.test_and_exit -f <configuration-file>` command. Configuration options for
 some Logstash plugins have changed in the 5.x release.
 5. Restart your Logstash pipeline after updating your configuration file.
-
-[[upgrading-logstash-pqs]]
-=== Upgrading with Persistent Queues Enabled
-
-Upgrading Logstash with persistent queues enabled is supported. The persistent
-queue directory is self-contained and can be read by a new Logstash instance
-running the same pipeline. You can safely shut down the original Logstash
-instance, spin up a new instance, and set `path.queue` in the `logstash.yml`
-<<logstash-settings-file,settings file>> to point to the original queue directory.
-You can also use a mounted drive to make this workflow easier.
-
-Keep in mind that only one Logstash instance can write to `path.queue`. You
-cannot have the original instance and the new instance writing to the queue at
-the same time.
 
 [[upgrading-logstash-5.0]]
 === Upgrading Logstash to 5.0
@@ -93,3 +79,38 @@ then this issue can be ignored.
 
 Note the Elasticsearch Output Index Template change in the <<breaking-changes>> documentation for further insight into
 this change and how it impacts operations.
+
+[[upgrading-logstash-pqs]]
+=== Upgrading Persistent Queues Enabled
+
+The following applies only if you are upgrading from Logstash installations prior
+to 6.3.0 with the persistent queue enabled.
+
+We regret to say that due to several serialization issues prior to Logstash
+6.3.0, users will have to take some extra steps when upgrading Logstash
+instances with the persistent queue enabled. While we strive to maintain
+backward compatibility within a given major release, these bugs forced us to
+break that compatibility in version 6.3.0 to ensure correctness of operation.
+For more technical details on this issue, please check our tracking github issue
+for this matter, https://github.com/elastic/logstash/issues/9494[#9494].
+
+==== Drain the Persistent Queue
+
+If you are upgrading from Logstash 6.2.x or an earlier version and use the persistent
+queue, we strongly recommend that you drain or delete the persistent queue
+before you upgrade.
+
+To drain the queue:
+ 
+. In the logstash.yml file, set `queue.drain:true`.
+. Restart Logstash for this setting to take effect. 
+. Shutdown Logstash (using CTRL+C or SIGTERM), and wait for the queue to empty.
+
+When the queue is empty:
+
+. Complete the upgrade.
+. Restart Logstash.
+
+We are working to resolve issues with data incompatibilities so that these steps
+won’t be required for future upgrades.
+
