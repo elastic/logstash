@@ -69,7 +69,7 @@ describe "Read configuration from elasticsearch" do
   end
 
   it "should immediately register a new pipeline state document when the pipeline is reloaded" do
-    wait(20).for do
+    wait(40).for do
       count_hashes(@pipelines.keys)
     end.to eq(2)
 
@@ -84,7 +84,7 @@ describe "Read configuration from elasticsearch" do
       push_elasticsearch_config(pipeline_id, config)
     end
 
-    wait(20).for do
+    wait(40).for do
       count_hashes(@pipelines.keys)
     end.to eq(4)
   end
@@ -96,7 +96,7 @@ describe "Read configuration from elasticsearch" do
     elasticsearch_client.indices.refresh
 
     query = {
-      "size": 0, 
+      "size": 0,
       "query": {
         "term": {
           "type": {
@@ -124,7 +124,7 @@ describe "Read configuration from elasticsearch" do
 
     begin
       res = elasticsearch_client.search(index: '.monitoring-logstash-*', body: query)
-    rescue Elasticsearch::Transport::Transport::Errors::ServiceUnavailable 
+    rescue Elasticsearch::Transport::Transport::Errors::ServiceUnavailable
       return nil
     end
 
