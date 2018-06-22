@@ -26,7 +26,9 @@ Before using the pipeline management UI, you must:
 * <<configuring-centralized-pipelines, Configure centralized pipeline management>>.
 * If {kib} is protected with basic authentication, make sure your {kib} user has
 the `logstash_admin` role as well as the `logstash_writer` role that you created
-when you <<ls-security,configured Logstash to use basic authentication>>. 
+when you <<ls-security,configured Logstash to use basic authentication>>. Additionally,
+in order to view (as read-only) non-centrally-managed pipelines in the pipeline management
+UI, make sure your {kib} user has the `monitoring_user` role as well.
 
 To manage Logstash pipelines in {kib}:
 
