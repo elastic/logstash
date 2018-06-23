@@ -348,4 +348,4 @@ en:
           DEPRECATED: use --log.level=info instead.
         quiet: |+
           Set the log level to info.
-          DEPRECATED: use --log.level=quiet instead.
+          DEPRECATED: use --log.level=info instead.
