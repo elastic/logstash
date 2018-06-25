@@ -432,7 +432,8 @@ describe LogStash::Event do
 #     expect(e.get("фуу")).to eq("bar")
 #      e.get("фуу").gsub!(/bar/, 'pff')
 #      expect(e.get("фуу")).to eq("pff")
-      expect(e.to_java.getField("фуу")).to eq("pff")
+#      expect(e.to_java.getField("фуу")).to eq("pff")
+      expect(e.to_java.getField("фуу")).to eq("bar")
     end
 
   end
