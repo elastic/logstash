@@ -101,7 +101,7 @@ def configure_proxy
 
     if ::File.exist?(target)
       if template_content != ::File.read(target)
-        puts "WARNING: A maven settings file already exist at #{target}, please review the content to make sure it include your proxies configuration."
+        puts "WARNING: A maven settings file already exist at #{target}, please review the content to make sure it includes your proxies configuration."
       end
     else
       ::File.open(target, "w") { |f| f.write(template_content) }
