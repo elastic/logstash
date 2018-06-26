@@ -10,6 +10,9 @@ config: |-
     generator { count => 5 }
   }
   output {
-    file { path => '<%=options[:random_file]%>' }
+    file {
+      path => '<%=options[:random_file]%>'
+      flush_interval => 0
+    }
   }
 
