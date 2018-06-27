@@ -120,7 +120,7 @@ public final class JrubyEventExtLibrary {
         @JRubyMethod(name = "include?", required = 1)
         public IRubyObject ruby_includes(ThreadContext context, RubyString reference) {
             return RubyBoolean.newBoolean(
-                context.runtime, this.event.includes(FieldReference.from(reference.getByteList()))
+                context.runtime, this.event.includes(FieldReference.from(reference.getValue()))
             );
         }
 
