@@ -415,7 +415,7 @@ describe LogStash::Event do
     end
   end
 
-   describe "#event-UTF" do
+   describe "#event-key-non-ASCII" do
     it "should set and get values for non-ASCII keys" do
       e = LogStash::Event.new()
       expect(e.set("фуу", "bar")).to eq("bar")
@@ -429,10 +429,7 @@ describe LogStash::Event do
     it "should set and get values for non-ASCII keys through java APIs" do
       e = LogStash::Event.new()
       e.to_java.setField("фуу", "bar")
-      expect(e.get("фуу")).to eq("bar")
-      e.get("фуу").gsub!(/bar/, 'pff')
-      expect(e.get("фуу")).to eq("pff")
-      expect(e.to_java.getField("фуу")).to eq("pff")
+      expect(e.to_java.getField("фуу")).to eq("bar")
     end
 
   end
