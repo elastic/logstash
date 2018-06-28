@@ -127,6 +127,7 @@ break that compatibility in version 6.3.0 to ensure correctness of operation.
 For more technical details on this issue, please check our tracking github issue
 for this matter, https://github.com/elastic/logstash/issues/9494[#9494].
 
+[[drain-pq]]
 ==== Drain the Persistent Queue
 
 If you are upgrading from Logstash 6.2.x or an earlier version and use the persistent
@@ -144,5 +145,5 @@ When the queue is empty:
 . Complete the upgrade.
 . Restart Logstash.
 
-We are working to resolve issues with data incompatibilities in our 6.3.0
-release so that these steps won’t be required for future upgrades.
+We are working to resolve issues with data incompatibilities so that these steps
+won’t be required for future upgrades.
